@@ -116,7 +116,7 @@ GFX.prototype.configControls = function(camera,renderer,scene){
                 //orbit camera control
 		controls = new THREE.OrbitControls(camera, renderer.domElement);
 		controls.rotateSpeed = 2;
-		controls.zoomSpeed = 5.5;
+		controls.zoomSpeed = 5.3;
 		controls.panSpeed = 0.8;
 		controls.enableZoom  = false;
 		controls.enablePan  = false;
