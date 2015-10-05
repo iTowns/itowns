@@ -4,4 +4,4 @@
  * and open the template in the editor.
  */
 
-var Node = require('Node');
+var Node = require('Scene/Node');
