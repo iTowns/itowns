@@ -9,7 +9,7 @@ function Node(){
     //Constructor
 
     this.parent = null;
-    this.children = null;
+    this.children = [];
     this.bbox = null;
     this.url = null;
     this.content = null;
@@ -27,7 +27,8 @@ function Node(){
 * @return  {int} 
 */
 Node.prototype.childrenCount = function(){
-    //TODO: Implement Me 
+    
+    return this.children.length;
 
 };
 
