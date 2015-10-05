@@ -4,18 +4,26 @@
 * Description: Node + THREE.Mesh. Combine les paramètres d'un Node. NodeMesh peut etre ajouté à la THREE.Scene.
 */
 
-var Node = require('Node');
-
-var Mesh = require('Mesh');
-
-function NodeMesh(){
-    //Constructor
 
 
-}
+define('Renderer/NodeMesh',['Scene/Node','THREE'], function(Node, THREE){
+  
+   
+    var  NodeMesh = function (){
+        //Constructor
 
-NodeMesh.prototype = new Node();
-NodeMesh.prototype = new Mesh();
+        Node.call( this );
+        THREE.Mesh.call( this );
+    };
+
+    NodeMesh.prototype = Object.create( THREE.Mesh.prototype );
+
+    NodeMesh.prototype.constructor = THREE.MeshNode;
+    
+    Node.extend(NodeMesh);
+    
+    return NodeMesh;
+    
+});
 
 
-module.exports = {NodeMesh:NodeMesh};
