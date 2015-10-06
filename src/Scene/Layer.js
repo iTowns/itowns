@@ -5,6 +5,15 @@
 * 
 */
 
+
+define(['Node'],function(Node){
+
+
+
+
+return Layer;
+
+};
 var Node = require('Node');
 
 function Layer(){
