@@ -4,49 +4,55 @@
 * Description: Cette classe générique parcourt un fichier et retourne un object.
 */
 
-function IoDriver(){
-    //Constructor
+
+define('Core/Commander/Providers/IoDriver',[], function(){
 
 
-}
+    function IoDriver(){
+        //Constructor
+        
+
+    }
+    
+    IoDriver.prototype.constructor = IoDriver;
+  
+
+    /**
+    * @param url
+    */
+    IoDriver.prototype.load = function(url){
+        //TODO: Implement Me 
+
+    };
 
 
-/**
-* @param url
-*/
-IoDriver.prototype.read = function(url){
-    //TODO: Implement Me 
+    /**
+    * @param url
+    * @param inputObject {Object} 
+    */
+    IoDriver.prototype.write = function(url, inputObject){
+        //TODO: Implement Me 
 
-};
-
-
-/**
-* @param url
-* @param inputObject {Object} 
-*/
-IoDriver.prototype.write = function(url, inputObject){
-    //TODO: Implement Me 
-
-};
+    };
 
 
-/**
-* @param url
-*/
-IoDriver.prototype.readAsync = function(url){
-    //TODO: Implement Me 
+    /**
+    * @param url
+    */
+    IoDriver.prototype.readAsync = function(url){
+        //TODO: Implement Me 
 
-};
-
-
-/**
-* @param url
-*/
-IoDriver.prototype.writeAsync = function(url){
-    //TODO: Implement Me 
-
-};
+    };
 
 
+    /**
+    * @param url
+    */
+    IoDriver.prototype.writeAsync = function(url){
+        //TODO: Implement Me 
 
-module.exports = {IoDriver:IoDriver};
+    };
+
+    return IoDriver;
+    
+});

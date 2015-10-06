@@ -4,36 +4,45 @@
 * Description: Le globe est le noeud du globe (node) principale.
 */
 
-var Node = require('Node');
+define('Globe/Globe',['Scene/Node','Globe/Map'], function(Node,Map){
 
-function Globe(){
-    //Constructor
+    function Globe(managerCom){
+        //Constructor
 
-    this.layers = null;
+        Node.call( this );
+        
+        this.layers = [];
+        
+        this.terrain = new Map(managerCom);
 
-}
+        this.layers.push(this.terrain);
+    }
 
-Globe.prototype = new Node();
+    Globe.prototype = Object.create( Globe.prototype );
 
-/**
-* @documentation: Gère les interactions entre les QuadTree.
-*
-*/
-Globe.prototype.QuadTreeToMesh = function(){
-    //TODO: Implement Me 
+    Globe.prototype.constructor = Globe;
 
-};
+    /**
+    * @documentation: Gère les interactions entre les QuadTree.
+    *
+    */
+    Globe.prototype.QuadTreeToMesh = function(){
+        //TODO: Implement Me 
 
-
-/**
-* @documentation: Rafrachi les matériaux en fonction du quadTree ORTHO
-*
-*/
-Globe.prototype.QuadTreeToMaterial = function(){
-    //TODO: Implement Me 
-
-};
+    };
 
 
+    /**
+    * @documentation: Rafrachi les matériaux en fonction du quadTree ORTHO
+    *
+    */
+    Globe.prototype.QuadTreeToMaterial = function(){
+        //TODO: Implement Me 
 
-module.exports = {Globe:Globe};
+    };
+    
+    return Globe;
+    
+});
+
+
