@@ -23,6 +23,6 @@
 
     baseUrl : "../../src",
     name: "Main",
-    out: "build/itowns.js",
+    out: "../../build/itowns.js",
     removeCombined: false
 })
