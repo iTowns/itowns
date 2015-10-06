@@ -39,7 +39,7 @@ requirejs(['Core/Commander/Interfaces/ApiInterface/ApiGlobe'],
     function(ApiGlobe) 
     {
           
-        ApiGlobe.CreateSceneGlobe();
+        console.log(ApiGlobe.CreateSceneGlobe());
         
     }
 );

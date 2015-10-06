@@ -4,17 +4,23 @@
 * Description: Map est un calque de données cartographique. Il possède un quadtree et un system de projection.
 */
 
-var Layer = require('Layer');
 
-function Map(){
-    //Constructor
-
-    this.projection = null;
-    this.quatree = null;
-
-}
-
-Map.prototype = new Layer();
+define('Globe/Map',['Scene/Layer'], function(Layer){
 
 
-module.exports = {Map:Map};
+    function Map(managerCommand){
+        //Constructor
+        Layer.call( this,managerCommand );
+        this.projection = null;
+        this.quatree    = null;
+        
+        
+    }
+
+    Map.prototype = Object.create( Layer.prototype );
+
+    Map.prototype.constructor = Map;
+
+    return Map;
+    
+});
