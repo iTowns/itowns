@@ -11,14 +11,22 @@ requirejs.config({
     baseUrl: 'src/',
     paths : {
        
-        'THREE' : "https://rawgit.com/mrdoob/three.js/master/build/three.min"       
+        'THREE' : "https://rawgit.com/mrdoob/three.js/master/build/three.min"  ,        
+        'OrbitControls' : "Renderer/Three/OrbitControls",
+        'StarGeometry' : "Renderer/ThreeExtented/StarGeometry"
     },
 	
 	
     shim: {
         
-        THREE: {
+        THREE: {            
             exports: 'THREE'
+        },
+        OrbitControls: {
+            deps: ['THREE']
+        },
+        StarGeometry: {
+            deps: ['THREE']
         }
 
     },
@@ -27,13 +35,11 @@ requirejs.config({
 });
 
 
-requirejs(['Renderer/NodeMesh'], 
-    function(NodeMesh) 
+requirejs(['Core/Commander/Interfaces/ApiInterface/ApiGlobe'], 
+    function(ApiGlobe) 
     {
-                      
-        var node = new NodeMesh();
-        
-        console.log("Node = ", node);// true
+          
+        ApiGlobe.CreateSceneGlobe();
         
     }
 );
