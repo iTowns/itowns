@@ -4,24 +4,28 @@
 * Description: Cette classe gère les évènements (souris, clavier,réseaux, temporelles, script). Il mets également en place les connections entre les évènements et les commandes.
 */
 
-function EventsManager(){
-    //Constructor
-
-    this.commands = null;
-    this.events = null;
-
-}
 
 
-/**
-* @param pevent {[object Object]} 
-* @param com {[object Object]} 
-*/
-EventsManager.prototype.connect = function(pevent, com){
-    //TODO: Implement Me 
+define('Core/Commander/Interfaces/EventsManager',[], function(){
+ 
+    function EventsManager(){
+        //Constructor
 
-};
+        this.commands = null;
+        this.events = null;
+
+    }
 
 
+    /**
+    * @param pevent {[object Object]} 
+    * @param com {[object Object]} 
+    */
+    EventsManager.prototype.connect = function(pevent, com){
+        //TODO: Implement Me 
 
-module.exports = {EventsManager:EventsManager};
+    };
+    
+    return EventsManager;
+
+});
