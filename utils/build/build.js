@@ -21,8 +21,8 @@
     },
     
 
-    baseUrl : "src",
-    name: "itowns",
-    out: "built/app.js",
+    baseUrl : "../../src",
+    name: "Main",
+    out: "build/itowns.js",
     removeCombined: false
 })

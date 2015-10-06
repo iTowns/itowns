@@ -5,19 +5,8 @@
 * 
 */
 
-<<<<<<< HEAD
 
-define(['Node'],function(Node){
-
-
-
-
-return Layer;
-
-};
 var Node = require('Node');
-=======
->>>>>>> origin/master
 
 define('Scene/Layer',['Scene/Node','Core/Commander/InterfaceCommander'], function(Node,InterfaceCommander){
 

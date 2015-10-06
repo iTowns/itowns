@@ -12,7 +12,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe',['Core/Commander/Interf
 
         this.commandsTree = null;
 
-    }        
+    };        
 
     ApiGlobe.prototype = new EventsManager();
 
