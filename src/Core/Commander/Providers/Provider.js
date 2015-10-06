@@ -4,32 +4,36 @@
 * Description: Cette classe générique permet de fournir des données distantes ou locales, des Nodes ou des services.
 */
 
-function Provider(){
-    //Constructor
-
-    this.type = null;
-    this._IODriver = null;
-
-}
+define('Core/Commander/Providers/Provider',[], function(){
 
 
-/**
-* @param url
-*/
-Provider.prototype.get = function(url){
-    //TODO: Implement Me 
+    function Provider(iodriver){
+        //Constructor
 
-};
+        this.type       = null;
+        this._IoDriver  = iodriver;
+
+    }
+    
+    Provider.prototype.constructor = Provider;
+
+    /**
+    * @param url
+    */
+    Provider.prototype.get = function(url){
+        //TODO: Implement Me 
+
+    };
 
 
-/**
-* @param url
-*/
-Provider.prototype.getInCache = function(url){
-    //TODO: Implement Me 
+    /**
+    * @param url
+    */
+    Provider.prototype.getInCache = function(url){
+        //TODO: Implement Me 
 
-};
-
-
-
-module.exports = {Provider:Provider};
+    };
+    
+    return Provider;
+    
+});

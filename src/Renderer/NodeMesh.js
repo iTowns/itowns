@@ -18,7 +18,7 @@ define('Renderer/NodeMesh',['Scene/Node','THREE'], function(Node, THREE){
 
     NodeMesh.prototype = Object.create( THREE.Mesh.prototype );
 
-    NodeMesh.prototype.constructor = THREE.MeshNode;
+    NodeMesh.prototype.constructor = NodeMesh;
     
     Node.extend(NodeMesh);
     
