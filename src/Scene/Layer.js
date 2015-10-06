@@ -5,6 +5,7 @@
 * 
 */
 
+<<<<<<< HEAD
 
 define(['Node'],function(Node){
 
@@ -15,16 +16,26 @@ return Layer;
 
 };
 var Node = require('Node');
+=======
+>>>>>>> origin/master
 
-function Layer(){
-    //Constructor
-
-    this.interCommand = null;
-    this._descriManager = null;
-
-}
-
-Layer.prototype = new Node();
+define('Scene/Layer',['Scene/Node','Core/Commander/InterfaceCommander'], function(Node,InterfaceCommander){
 
 
-module.exports = {Layer:Layer};
+    function Layer(managerCommand){
+        //Constructor
+
+        Node.call( this );
+        this.interCommand = new InterfaceCommander(managerCommand);
+        this._descriManager = null;
+
+        this.interCommand._managerCommands.getTile(0,0,0);
+    }
+
+    Layer.prototype = Object.create( Node.prototype );
+
+    Layer.prototype.constructor = Layer;
+  
+    return Layer;
+    
+});

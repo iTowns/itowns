@@ -4,7 +4,7 @@
 * Description: La Scene est l'instance principale du client. Elle est le chef orchestre de l'application.
 */
 
-define('Scene/Scene',['Renderer/c3DEngine','Globe/Star','Renderer/NodeMesh'], function(c3DEngine,Star,NodeMesh){
+define('Scene/Scene',['Renderer/c3DEngine','Globe/Star','Globe/Globe','Renderer/NodeMesh','Core/Commander/ManagerCommands'], function(c3DEngine,Star,Globe,NodeMesh,ManagerCommands){
  
 
     function Scene(){
@@ -12,16 +12,17 @@ define('Scene/Scene',['Renderer/c3DEngine','Globe/Star','Renderer/NodeMesh'], fu
 
         this.gfxEngine = new c3DEngine();
         this.browserScene = null;
-        this.nodes = null;
-        this.managerCommand = null;
+        this.nodes = [];
+        this.managerCommand = new ManagerCommands();
         this.cameras = null;
         this.currentCamera = null;
         this.selectNodes = null;
         
         this.add(new Star());
-
+        this.add(new Globe(this.managerCommand ));
+        
+        this.renderScene3D();
     }
-
 
     /**
     */
@@ -59,7 +60,8 @@ define('Scene/Scene',['Renderer/c3DEngine','Globe/Star','Renderer/NodeMesh'], fu
     /**
     */
     Scene.prototype.renderScene3D = function(){
-        //TODO: Implement Me 
+        
+        this.gfxEngine.renderScene();
 
     };
 
@@ -72,7 +74,7 @@ define('Scene/Scene',['Renderer/c3DEngine','Globe/Star','Renderer/NodeMesh'], fu
     Scene.prototype.add = function(layer){
         //TODO: Implement Me 
         
-        
+        this.nodes.push(layer);
         
         if(layer instanceof NodeMesh)
             this.gfxEngine.scene3D.add(layer);

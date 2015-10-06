@@ -4,31 +4,38 @@
 * Description: Cette Classe construit une commande. Cette Command ensuite pousser dans une file d'attente.
 */
 
-function InterfaceCommander(){
-    //Constructor
+define('Core/Commander/InterfaceCommander',[], function(){
 
-    this._managerCommands = null;
+    function InterfaceCommander(managerCom,buildCommand){
+        //Constructor
 
-}
+        this._managerCommands = managerCom;
+        this._builderCommand  = buildCommand;
 
+    }
 
-/**
-* @param com {[object Object]} 
-*/
-InterfaceCommander.prototype.request = function(com){
-    //TODO: Implement Me 
+    InterfaceCommander.prototype.constructor = InterfaceCommander;
 
-};
+    /**
+    * @param com {[object Object]} 
+    */
+    InterfaceCommander.prototype.request = function(com){
+        //TODO: Implement Me 
 
+    };
+    
+    
+    
+    
 
-/**
-* @return  {[object Object]} 
-*/
-InterfaceCommander.prototype.buildCommand = function(){
-    //TODO: Implement Me 
+    /**
+    * @return  {[object Object]} 
+    */
+    InterfaceCommander.prototype.buildCommand = function(){
+        //TODO: Implement Me 
+        this._builderCommand();
+    };
 
-};
-
-
-
-module.exports = {InterfaceCommander:InterfaceCommander};
+    return InterfaceCommander;
+    
+});
