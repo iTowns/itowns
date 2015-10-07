@@ -6,6 +6,8 @@
 */
 
 
+var Node = require('Node');
+
 define('Scene/Layer',['Scene/Node','Core/Commander/InterfaceCommander'], function(Node,InterfaceCommander){
 
 

@@ -15,7 +15,7 @@ define('Globe/Map',['Scene/Layer'], function(Layer){
         this.quatree    = null;
         
         
-    }
+    };
 
     Map.prototype = Object.create( Layer.prototype );
 
