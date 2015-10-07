@@ -4,7 +4,7 @@
 * Description: La Scene est l'instance principale du client. Elle est le chef orchestre de l'application.
 */
 
-define('Scene/Scene',['Renderer/c3DEngine','Globe/Star','Globe/Globe','Renderer/NodeMesh','Core/Commander/ManagerCommands'], function(c3DEngine,Star,Globe,NodeMesh,ManagerCommands){
+define('Scene/Scene',['Renderer/c3DEngine','Globe/Star','Globe/Globe','Renderer/NodeMesh','Core/Commander/ManagerCommands','THREE'], function(c3DEngine,Star,Globe,NodeMesh,ManagerCommands,THREE){
  
 
     function Scene(){
@@ -20,6 +20,26 @@ define('Scene/Scene',['Renderer/c3DEngine','Globe/Star','Globe/Globe','Renderer/
         
         this.add(new Star());
         this.add(new Globe(this.managerCommand ));
+        
+        var scope = this;
+
+        
+        this.managerCommand.getTile(9,129,525).then(function(texture)
+        {
+
+            //console.log(texture);
+            var geometry = new THREE.BoxGeometry( 1, 1, 1 );
+            
+            
+            var material = new THREE.MeshBasicMaterial( {color: 0xffffff, map: texture} );
+            var cube     = new THREE.Mesh( geometry, material );
+            
+            
+            scope.gfxEngine.scene3D.add(cube);
+            
+
+        });
+        
         
         this.renderScene3D();
     }
@@ -76,7 +96,7 @@ define('Scene/Scene',['Renderer/c3DEngine','Globe/Star','Globe/Globe','Renderer/
         
         this.nodes.push(layer);
         
-        if(layer instanceof NodeMesh)
+        if(layer instanceof NodeMesh)            
             this.gfxEngine.scene3D.add(layer);
 
     };

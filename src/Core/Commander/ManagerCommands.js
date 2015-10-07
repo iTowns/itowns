@@ -6,7 +6,6 @@
 
 define('Core/Commander/ManagerCommands',['Core/Commander/Providers/WMTS_Provider'], function(WMTS_Provider){
 
-
     function ManagerCommands(){
         //Constructor
 
@@ -26,7 +25,7 @@ define('Core/Commander/ManagerCommands',['Core/Commander/Providers/WMTS_Provider
     */
     ManagerCommands.prototype.getTile = function(zoom,x,y){
         //TODO: Implement Me 
-        this._providers[0].getTile(zoom,x,y);
+        return this._providers[0].getTile(zoom,x,y);
     };
 
     /**

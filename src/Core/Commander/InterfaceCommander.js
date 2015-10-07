@@ -23,11 +23,7 @@ define('Core/Commander/InterfaceCommander',[], function(){
         //TODO: Implement Me 
 
     };
-    
-    
-    
-    
-
+ 
     /**
     * @return  {[object Object]} 
     */
