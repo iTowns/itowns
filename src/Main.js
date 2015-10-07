@@ -11,9 +11,10 @@ requirejs.config({
     baseUrl: 'src/',
     paths : {
        
-        'THREE' : "https://rawgit.com/mrdoob/three.js/master/build/three.min"  ,        
+        'THREE'         : "https://rawgit.com/mrdoob/three.js/master/build/three.min"  ,
+        'when'          : 'ThirdParty/when',
         'OrbitControls' : "Renderer/Three/OrbitControls",
-        'StarGeometry' : "Renderer/ThreeExtented/StarGeometry"
+        'StarGeometry'  : "Renderer/ThreeExtented/StarGeometry"
     },
 	
 	
@@ -21,6 +22,9 @@ requirejs.config({
         
         THREE: {            
             exports: 'THREE'
+        },
+        when: {            
+            exports: 'when'
         },
         OrbitControls: {
             deps: ['THREE']
@@ -39,7 +43,7 @@ requirejs(['Core/Commander/Interfaces/ApiInterface/ApiGlobe'],
     function(ApiGlobe) 
     {
           
-        console.log(ApiGlobe.CreateSceneGlobe());
+        ApiGlobe.CreateSceneGlobe();
         
     }
 );

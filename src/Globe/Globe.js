@@ -14,6 +14,7 @@ define('Globe/Globe',['Scene/Node','Globe/Map'], function(Node,Map){
         this.layers = [];
         
         this.terrain = new Map(managerCom);
+        
 
         this.layers.push(this.terrain);
     }

@@ -16,9 +16,9 @@ define('Scene/Layer',['Scene/Node','Core/Commander/InterfaceCommander'], functio
         this.interCommand = new InterfaceCommander(managerCommand);
         this._descriManager = null;
 
-        this.interCommand._managerCommands.getTile(0,0,0);
+       
     }
-
+       
     Layer.prototype = Object.create( Node.prototype );
 
     Layer.prototype.constructor = Layer;
@@ -26,3 +26,4 @@ define('Scene/Layer',['Scene/Node','Core/Commander/InterfaceCommander'], functio
     return Layer;
     
 });
+

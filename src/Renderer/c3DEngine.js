@@ -46,6 +46,7 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera'], functio
                 
         this.controls.addEventListener( 'change', this.renderScene );
         
+        
     }
 
     /**
@@ -72,10 +73,12 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera'], functio
 */
     /**
     */
-    c3DEngine.prototype.add3DScene = function(){
-        //TODO: Implement Me 
+    c3DEngine.prototype.add3DScene = function(object){
+        
+        this.scene3D.add(object);                
 
     };
+    
 
     /**
     */
