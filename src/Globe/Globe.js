@@ -4,7 +4,7 @@
 * Description: Le globe est le noeud du globe (node) principale.
 */
 
-define('Globe/Globe',['Scene/Node','Scene/Layer'], function(Node,Layer){
+define('Globe/Globe',['Scene/Node','Scene/Layer','Globe/EllipsoidTileMesh'], function(Node,Layer,EllipsoidTileMesh){
 
     function Globe(managerCom){
         //Constructor
@@ -14,6 +14,8 @@ define('Globe/Globe',['Scene/Node','Scene/Layer'], function(Node,Layer){
         this.layers = [];
         
         this.terrain = new Layer(managerCom);
+        
+        this.terrain.add(new EllipsoidTileMesh());
         
         this.layers.push(this.terrain);
     }
@@ -29,6 +31,11 @@ define('Globe/Globe',['Scene/Node','Scene/Layer'], function(Node,Layer){
     Globe.prototype.QuadTreeToMesh = function(){
         //TODO: Implement Me 
 
+    };
+    
+    Globe.prototype.getMesh = function(){
+
+        return this.terrain.children[0];
     };
 
     /**

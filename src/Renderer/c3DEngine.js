@@ -54,6 +54,17 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera','when'], 
         //TODO: Implement Me 
 
     };
+    
+    /**
+     * 
+     * @param {type} mesh
+     * @param {type} texture
+     * @returns {undefined}
+     */
+    c3DEngine.prototype.setTexture = function(mesh,texture){
+        //TODO: Implement Me         
+        mesh.material = new THREE.MeshBasicMaterial( {color: 0xffffff, map: texture} );
+    };
 
     /**
     */

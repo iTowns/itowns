@@ -12,10 +12,10 @@ define('Core/Commander/ManagerCommands',['Core/Commander/Providers/WMTS_Provider
         this.queueAsync = null;
         this.queueSync = null;
         this.loadQueue = null;
-        this._providers = [];
-        this._history = null;
+        this.providers = [];
+        this.history = null;
         
-        this._providers.push(new WMTS_Provider());
+        this.providers.push(new WMTS_Provider());
    
     }
 
@@ -25,7 +25,7 @@ define('Core/Commander/ManagerCommands',['Core/Commander/Providers/WMTS_Provider
     */
     ManagerCommands.prototype.getTile = function(zoom,x,y){
         //TODO: Implement Me 
-        return this._providers[0].getTile(zoom,x,y);
+        return this.providers[0].getTile(zoom,x,y);
     };
 
     /**
