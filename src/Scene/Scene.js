@@ -18,16 +18,16 @@ define('Scene/Scene',['Renderer/c3DEngine','Globe/Star','Globe/Globe','Renderer/
         this.currentCamera  = null;
         this.selectNodes    = null;
         
-        this.add(new Star());
-        this.add(new Globe(this.managerCommand ));
+        this.add(new Star());                
+        
+        this.add(new Globe(this.managerCommand));
                         
         this.managerCommand.getTile(9,129,525).then(function(texture)
         {        
-            this.gfxEngine.add3Cube(texture);
+            this.gfxEngine.setTexture(this.nodes[1].getMesh(),texture);
             this.renderScene3D(); 
             
-        }.bind(this));
-                 
+        }.bind(this));                 
     }
 
     /**
@@ -71,7 +71,6 @@ define('Scene/Scene',['Renderer/c3DEngine','Globe/Star','Globe/Globe','Renderer/
 
     };
 
-
     /**
     * @documentation: Ajoute des Layers dans la scène.
     *
@@ -83,10 +82,13 @@ define('Scene/Scene',['Renderer/c3DEngine','Globe/Star','Globe/Globe','Renderer/
         this.nodes.push(layer);
         
         if(layer instanceof NodeMesh)            
-            this.gfxEngine.scene3D.add(layer);
+            
+            this.gfxEngine.add3DScene(layer);
 
+        else if(layer instanceof Globe)
+            
+            this.gfxEngine.add3DScene(layer.getMesh());
     };
-
 
     /**
     * @documentation: Retire des layers de la scène
