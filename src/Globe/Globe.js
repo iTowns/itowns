@@ -4,7 +4,7 @@
 * Description: Le globe est le noeud du globe (node) principale.
 */
 
-define('Globe/Globe',['Scene/Node','Globe/Map'], function(Node,Map){
+define('Globe/Globe',['Scene/Node','Scene/Layer'], function(Node,Layer){
 
     function Globe(managerCom){
         //Constructor
@@ -13,9 +13,8 @@ define('Globe/Globe',['Scene/Node','Globe/Map'], function(Node,Map){
         
         this.layers = [];
         
-        this.terrain = new Map(managerCom);
+        this.terrain = new Layer(managerCom);
         
-
         this.layers.push(this.terrain);
     }
 
@@ -31,7 +30,6 @@ define('Globe/Globe',['Scene/Node','Globe/Map'], function(Node,Map){
         //TODO: Implement Me 
 
     };
-
 
     /**
     * @documentation: Rafrachi les matériaux en fonction du quadTree ORTHO

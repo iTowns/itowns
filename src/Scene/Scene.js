@@ -10,13 +10,13 @@ define('Scene/Scene',['Renderer/c3DEngine','Globe/Star','Globe/Globe','Renderer/
     function Scene(){
         //Constructor
 
-        this.gfxEngine = new c3DEngine();
-        this.browserScene = null;
-        this.nodes = [];
+        this.gfxEngine      = new c3DEngine();
+        this.browserScene   = null;
+        this.nodes          = [];
         this.managerCommand = new ManagerCommands();
-        this.cameras = null;
-        this.currentCamera = null;
-        this.selectNodes = null;
+        this.cameras        = null;
+        this.currentCamera  = null;
+        this.selectNodes    = null;
         
         this.add(new Star());
         this.add(new Globe(this.managerCommand ));
@@ -27,8 +27,7 @@ define('Scene/Scene',['Renderer/c3DEngine','Globe/Star','Globe/Globe','Renderer/
             this.renderScene3D(); 
             
         }.bind(this));
-        
-         
+                 
     }
 
     /**
