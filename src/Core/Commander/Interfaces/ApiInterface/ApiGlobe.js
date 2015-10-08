@@ -43,7 +43,11 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe',['Core/Commander/Interf
     ApiGlobe.CreateSceneGlobe = function(){
     //TODO: Normalement la création de scene ne doit pas etre ici....
     // à deplacer plus tard
-     return new Scene();
+    
+    var scene = new Scene();
+    
+  
+     return scene;
 
     };
     
