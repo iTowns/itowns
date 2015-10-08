@@ -61,7 +61,7 @@ define('Core/Commander/Providers/IoDriver_XBIL',['Core/Commander/Providers/IoDri
 
         xhr.onerror = function(){
 
-            deferred.reject(Error("Erreur réseau"));
+            deferred.reject(Error("Error IoDriver_XBIL"));
 
         };
 
