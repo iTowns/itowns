@@ -6,27 +6,22 @@
 */
 
 
-define('Scene/Layer',['Scene/Node','Core/Commander/InterfaceCommander','Scene/Quadtree'], function(Node,InterfaceCommander,Quadtree){
+define('Scene/Layer',['Scene/Node','Core/Commander/InterfaceCommander'], function(Node,InterfaceCommander){
 
-    function Layer(managerCommand,tree){
+    function Layer(managerCommand){
         //Constructor
 
         Node.call( this );
         this.interCommand   = new InterfaceCommander(managerCommand);
         this.descriManager  = null;
         this.projection     = null;
-        this.tree           = tree;
        
     }
        
     Layer.prototype = Object.create( Node.prototype );
 
     Layer.prototype.constructor = Layer;
-    
-    Layer.prototype.getMesh = function(){
-               
-        return this.tree.children;
-    };
+       
   
     return Layer;
     

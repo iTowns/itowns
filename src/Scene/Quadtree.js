@@ -5,27 +5,36 @@
 */
 
 
-define('Scene/Quadtree',['Scene/Node','Scene/BoudingBox'], function(Node,BoudingBox){
+define('Scene/Quadtree',['Scene/Layer','Scene/BoudingBox'], function(Layer,BoudingBox){
 
-    function Quadtree(tileType,schemeTile){
+    function Quadtree(managerCommand,tileType,schemeTile){
         
-        Node.call( this );
-        this.schemeTile = schemeTile;
-        this.tileType   = tileType;
-        
+        Layer.call( this,managerCommand );
+    
+        this.schemeTile       = schemeTile;
+        this.tileType         = tileType;
+       
         for (var i = 0; i < this.schemeTile.rootCount(); i++) 
         {
             var tile = new this.tileType(this.schemeTile.getRoot(i));
             tile.position.set(tile.bbox.center.x,tile.bbox.center.y,0);
             this.add(tile); 
-            //this.subdivide(tile);
-        }
-        
+      
+            this.interCommand.managerCommands.getTile(9,129,525+i).then(function(texture)
+            {   
+                this.setTexture(texture);
+            }.bind(tile)); 
+        }                
     }
     
-    Quadtree.prototype = Object.create( Node.prototype );
+    Quadtree.prototype = Object.create( Layer.prototype );
 
     Quadtree.prototype.constructor = Quadtree;
+    
+    Quadtree.prototype.getMesh = function(){
+               
+        return this.children;
+    };
     
     Quadtree.prototype.northWest = function(node)
     {

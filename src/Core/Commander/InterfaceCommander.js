@@ -9,8 +9,8 @@ define('Core/Commander/InterfaceCommander',[], function(){
     function InterfaceCommander(managerCom,buildCommand){
         //Constructor
 
-        this._managerCommands = managerCom;
-        this._builderCommand  = buildCommand;
+        this.managerCommands = managerCom;
+        this.builderCommand  = buildCommand;
 
     }
 
