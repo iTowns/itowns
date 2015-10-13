@@ -11,15 +11,15 @@ define('Scene/Node',[], function(){
     function Node(){
         //Constructor
 
-        this.parent = null;
-        this.children = [];
-        this.bbox = null;
-        this.url = null;
-        this.content = null;
-        this.description = null;
-        this.id = null;
-        this.saveState = null;
-        this.level = null;
+        this.parent         = null;
+        this.children       = [];
+        this.bbox           = null;
+        this.url            = null;
+        this.content        = null;
+        this.description    = null;
+        this.id             = null;
+        this.saveState      = null;
+        this.level          = 0;
 
     }
 

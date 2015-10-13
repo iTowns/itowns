@@ -4,5 +4,13 @@
  * and open the template in the editor.
  */
 
-/* global requirejs */
 
+define('Core/defaultValue',[], function(){
+
+   var defaultValue = function(value, def) {
+        return value === undefined ? def : value;
+    };
+
+    return defaultValue;
+    
+});
