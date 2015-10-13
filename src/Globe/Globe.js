@@ -13,7 +13,7 @@ define('Globe/Globe',['Scene/Node','Scene/Layer','Scene/Quadtree','Scene/SchemeT
         
         this.layers = [];
         
-        this.terrain = new Layer(managerCom,new Quadtree(EllipsoidTileMesh,this.SchemeTileWMTS(2)));
+        this.terrain = new Quadtree(managerCom,EllipsoidTileMesh,this.SchemeTileWMTS(2));
         
         //this.layers.push(this.terrain);
     }

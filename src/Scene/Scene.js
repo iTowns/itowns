@@ -21,13 +21,7 @@ define('Scene/Scene',['Renderer/c3DEngine','Globe/Star','Globe/Globe','Renderer/
         this.add(new Star());                
         
         this.add(new Globe(this.managerCommand));
-                        
-        this.managerCommand.getTile(9,129,525).then(function(texture)
-        {        
-            this.gfxEngine.setTexture(this.nodes[1].getMesh(),texture);
-            this.renderScene3D(); 
-            
-        }.bind(this));                 
+               
     }
 
     /**

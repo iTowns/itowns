@@ -33,6 +33,11 @@ define('Globe/EllipsoidTileMesh',['Renderer/NodeMesh','Globe/EllipsoidTileGeomet
         }
     };
     
+    EllipsoidTileMesh.prototype.setTexture = function(texture)
+    { 
+        this.material = new THREE.MeshBasicMaterial( {color: 0xffffff, map: texture} );        
+    };
+    
     return EllipsoidTileMesh;
     
 });
