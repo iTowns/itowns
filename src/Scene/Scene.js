@@ -85,9 +85,12 @@ define('Scene/Scene',['Renderer/c3DEngine','Globe/Star','Globe/Globe','Renderer/
             
             this.gfxEngine.add3DScene(layer);
 
-        else if(layer instanceof Globe)
-            
-            this.gfxEngine.add3DScene(layer.getMesh());
+        else if(layer instanceof Globe)            
+        {
+            var meshs = layer.getMesh();
+            for (var i = 0;i<meshs.length;i++)                            
+                this.gfxEngine.add3DScene(meshs[i]);
+        }
     };
 
     /**

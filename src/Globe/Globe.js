@@ -4,7 +4,7 @@
 * Description: Le globe est le noeud du globe (node) principale.
 */
 
-define('Globe/Globe',['Scene/Node','Scene/Layer','Globe/EllipsoidTileMesh'], function(Node,Layer,EllipsoidTileMesh){
+define('Globe/Globe',['Scene/Node','Scene/Layer','Scene/Quadtree','Scene/SchemeTile','Core/Math/MathExtented','Globe/EllipsoidTileMesh'], function(Node,Layer,Quadtree,SchemeTile,MathExt,EllipsoidTileMesh){
 
     function Globe(managerCom){
         //Constructor
@@ -13,11 +13,9 @@ define('Globe/Globe',['Scene/Node','Scene/Layer','Globe/EllipsoidTileMesh'], fun
         
         this.layers = [];
         
-        this.terrain = new Layer(managerCom);
+        this.terrain = new Layer(managerCom,new Quadtree(EllipsoidTileMesh,this.SchemeTileWMTS(2)));
         
-        this.terrain.add(new EllipsoidTileMesh());
-        
-        this.layers.push(this.terrain);
+        //this.layers.push(this.terrain);
     }
 
     Globe.prototype = Object.create( Globe.prototype );
@@ -34,8 +32,9 @@ define('Globe/Globe',['Scene/Node','Scene/Layer','Globe/EllipsoidTileMesh'], fun
     };
     
     Globe.prototype.getMesh = function(){
-
-        return this.terrain.children[0];
+        
+        return this.terrain.getMesh();
+        
     };
 
     /**
@@ -44,6 +43,18 @@ define('Globe/Globe',['Scene/Node','Scene/Layer','Globe/EllipsoidTileMesh'], fun
     */
     Globe.prototype.QuadTreeToMaterial = function(){
         //TODO: Implement Me 
+
+    };
+    
+    Globe.prototype.SchemeTileWMTS = function(type){
+        //TODO: Implement Me 
+        if(2)
+        {
+            var schemeT = new SchemeTile();
+            schemeT.add(0,MathExt.PI,-MathExt.PI_OV_TWO,MathExt.PI_OV_TWO);
+            schemeT.add(MathExt.PI,MathExt.TWO_PI,-MathExt.PI_OV_TWO,MathExt.PI_OV_TWO);
+            return schemeT;
+        }
 
     };
     

@@ -6,9 +6,9 @@
 * Description: Tuile géométrique. Buffer des vertex et des faces
 */
 
-define('Globe/EllipsoidTileGeometry',['THREE'], function(THREE){
+define('Globe/EllipsoidTileGeometry',['THREE','Core/defaultValue','Scene/BoudingBox'], function(THREE,defaultValue,BoudingBox){
 
-    function EllipsoidTileGeometry(){
+    function EllipsoidTileGeometry(bbox){
         //Constructor
         THREE.BufferGeometry.call( this );
         /*
@@ -18,14 +18,16 @@ define('Globe/EllipsoidTileGeometry',['THREE'], function(THREE){
 		widthSegments: widthSegments,
 		heightSegments: heightSegments
 	};*/
+        
+        bbox = defaultValue(bbox,new BoudingBox());
 
-	var width           = 2;
-	var height          = 2;
+	var width           = bbox.dimension.x;
+	var height          = bbox.dimension.y;
 	var widthSegments   = 32;
 	var heightSegments  = 32;
         
-	var width_half = width / 2;
-	var height_half = height / 2;
+	var width_half  = bbox.halfDimension.x;
+	var height_half = bbox.halfDimension.y;
 
 	var gridX = Math.floor( widthSegments ) || 1;
 	var gridY = Math.floor( heightSegments ) || 1;
@@ -33,12 +35,12 @@ define('Globe/EllipsoidTileGeometry',['THREE'], function(THREE){
 	var gridX1 = gridX + 1;
 	var gridY1 = gridY + 1;
 
-	var segment_width = width / gridX;
-	var segment_height = height / gridY;
+	var segment_width   = width / gridX;
+	var segment_height  = height / gridY;
 
-	var vertices = new Float32Array( gridX1 * gridY1 * 3 );
-	var normals = new Float32Array( gridX1 * gridY1 * 3 );
-	var uvs = new Float32Array( gridX1 * gridY1 * 2 );
+	var vertices    = new Float32Array( gridX1 * gridY1 * 3 );
+	var normals     = new Float32Array( gridX1 * gridY1 * 3 );
+	var uvs         = new Float32Array( gridX1 * gridY1 * 2 );
 
 	var offset = 0;
 	var offset2 = 0;
