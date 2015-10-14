@@ -6,9 +6,13 @@
 
 define('Core/Commander/ManagerCommands',['Core/Commander/Providers/WMTS_Provider'], function(WMTS_Provider){
 
+    var instance = null;
+    
     function ManagerCommands(){
         //Constructor
-
+        if(instance !== null){
+            throw new Error("Cannot instantiate more than one ManagerCommands");
+        } 
         this.queueAsync = null;
         this.queueSync = null;
         this.loadQueue = null;
@@ -16,13 +20,17 @@ define('Core/Commander/ManagerCommands',['Core/Commander/Providers/WMTS_Provider
         this.history = null;
         
         this.providers.push(new WMTS_Provider());
-   
     }
 
     ManagerCommands.prototype.constructor = ManagerCommands;
 
     /**
-    */
+     * 
+     * @param {type} zoom
+     * @param {type} x
+     * @param {type} y
+     * @returns {ManagerCommands_L7.ManagerCommands.prototype@arr;providers@call;getTile}
+     */
     ManagerCommands.prototype.getTile = function(zoom,x,y){
         //TODO: Implement Me 
         return this.providers[0].getTile(zoom,x,y);
@@ -68,6 +76,9 @@ define('Core/Commander/ManagerCommands',['Core/Commander/Providers/WMTS_Provider
 
     };
 
-    return ManagerCommands;
+    return function getInstance() {
+        instance = instance || new ManagerCommands();
+        return instance;
+    };
     
 });

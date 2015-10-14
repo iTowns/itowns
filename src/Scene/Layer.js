@@ -8,11 +8,11 @@
 
 define('Scene/Layer',['Scene/Node','Core/Commander/InterfaceCommander'], function(Node,InterfaceCommander){
 
-    function Layer(managerCommand){
+    function Layer(){
         //Constructor
 
         Node.call( this );
-        this.interCommand   = new InterfaceCommander(managerCommand);
+        this.interCommand   = new InterfaceCommander();
         this.descriManager  = null;
         this.projection     = null;
        

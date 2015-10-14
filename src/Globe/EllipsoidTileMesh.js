@@ -4,6 +4,15 @@
 * Description: Tuile de maillage, noeud du quadtree MNT. Le Materiel est issus du QuadTree ORTHO.
 */
 
+/**
+ * 
+ * @param {type} NodeMesh
+ * @param {type} EllipsoidTileGeometry
+ * @param {type} BoudingBox
+ * @param {type} defaultValue
+ * @param {type} THREE
+ * @returns {EllipsoidTileMesh_L10.EllipsoidTileMesh}
+ */
 define('Globe/EllipsoidTileMesh',['Renderer/NodeMesh','Globe/EllipsoidTileGeometry','Scene/BoudingBox','Core/defaultValue','THREE'], function(NodeMesh,EllipsoidTileGeometry,BoudingBox,defaultValue,THREE){
  
 

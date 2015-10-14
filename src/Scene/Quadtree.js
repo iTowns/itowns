@@ -4,12 +4,17 @@
 * Description: Structure de données spatiales possedant jusqu'à 4 Nodes
 */
 
-
+/**
+ * 
+ * @param {type} Layer
+ * @param {type} BoudingBox
+ * @returns {Quadtree_L10.Quadtree}
+ */
 define('Scene/Quadtree',['Scene/Layer','Scene/BoudingBox'], function(Layer,BoudingBox){
 
-    function Quadtree(managerCommand,tileType,schemeTile){
+    function Quadtree(tileType,schemeTile){
         
-        Layer.call( this,managerCommand );
+        Layer.call( this);
     
         this.schemeTile       = schemeTile;
         this.tileType         = tileType;
@@ -20,9 +25,10 @@ define('Scene/Quadtree',['Scene/Layer','Scene/BoudingBox'], function(Layer,Boudi
             tile.position.set(tile.bbox.center.x,tile.bbox.center.y,0);
             this.add(tile); 
       
-            this.interCommand.managerCommands.getTile(9,129,525+i).then(function(texture)
+            this.interCommand.getTile(9,129,525+i).then(function(texture)
             {   
                 this.setTexture(texture);
+                
             }.bind(tile)); 
         }                
     }
@@ -73,6 +79,8 @@ define('Scene/Quadtree',['Scene/Layer','Scene/BoudingBox'], function(Layer,Boudi
         subdiv.push(new BoudingBox(bbox.center.x,bbox.maxLongitude,bbox.minLatitude,bbox.center.y));        
         
         node.subdivise(subdiv);
+        
+        
     };
    
     return Quadtree;
