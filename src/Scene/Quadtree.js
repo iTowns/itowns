@@ -19,18 +19,9 @@ define('Scene/Quadtree',['Scene/Layer','Scene/BoudingBox'], function(Layer,Boudi
         this.schemeTile       = schemeTile;
         this.tileType         = tileType;
        
-        for (var i = 0; i < this.schemeTile.rootCount(); i++) 
-        {
-            var tile = new this.tileType(this.schemeTile.getRoot(i));
-            tile.position.set(tile.bbox.center.x,tile.bbox.center.y,0);
-            this.add(tile); 
-      
-            this.interCommand.getTile(9,129,525+i).then(function(texture)
-            {   
-                this.setTexture(texture);
-                
-            }.bind(tile)); 
-        }                
+        for (var i = 0; i < this.schemeTile.rootCount(); i++)                           
+            this.add(this.createTile(this.schemeTile.getRoot(i),0,0,i));                   
+                        
     }
     
     Quadtree.prototype = Object.create( Layer.prototype );
@@ -61,6 +52,22 @@ define('Scene/Quadtree',['Scene/Layer','Scene/BoudingBox'], function(Layer,Boudi
     {
         return node.children[3];
     };    
+    
+    Quadtree.prototype.createTile = function(bbox,zoom,x,y)
+    {
+        var tile = new this.tileType(bbox);
+        tile.position.set(tile.bbox.center.x,tile.bbox.center.y,0);        
+        tile.level = zoom;
+        this.interCommand.getTile(zoom,x,y).then(function(texture)
+        {   
+            this.setTexture(texture);
+            
+
+        }.bind(tile)); 
+        
+        return tile;
+    };    
+    
     
    /**
     * return 4 equals subdivisions of the bouding box
