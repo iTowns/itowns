@@ -24,11 +24,10 @@ define('Core/Commander/ManagerCommands',['Core/Commander/Providers/WMTS_Provider
 
     ManagerCommands.prototype.constructor = ManagerCommands;
 
+
     /**
      * 
-     * @param {type} zoom
-     * @param {type} x
-     * @param {type} y
+     * @param {type} coWMTS
      * @returns {ManagerCommands_L7.ManagerCommands.prototype@arr;providers@call;getTile}
      */
     ManagerCommands.prototype.getTile = function(coWMTS){
