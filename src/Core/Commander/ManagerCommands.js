@@ -6,11 +6,11 @@
 
 define('Core/Commander/ManagerCommands',['Core/Commander/Providers/WMTS_Provider'], function(WMTS_Provider){
 
-    var instance = null;
+    var instanceCommandManager = null;
     
     function ManagerCommands(){
         //Constructor
-        if(instance !== null){
+        if(instanceCommandManager !== null){
             throw new Error("Cannot instantiate more than one ManagerCommands");
         } 
         this.queueAsync = null;
@@ -76,9 +76,9 @@ define('Core/Commander/ManagerCommands',['Core/Commander/Providers/WMTS_Provider
 
     };
 
-    return function getInstance() {
-        instance = instance || new ManagerCommands();
-        return instance;
+    return function(){
+        instanceCommandManager = instanceCommandManager || new ManagerCommands();
+        return instanceCommandManager;
     };
     
 });

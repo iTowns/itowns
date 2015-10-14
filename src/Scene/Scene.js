@@ -19,7 +19,9 @@ define('Scene/Scene',['Renderer/c3DEngine','Globe/Star','Globe/Globe','Renderer/
         this.selectNodes    = null;
         
         this.add(new Star());                        
-        this.add(new Globe());               
+        this.add(new Globe());
+        
+        this.gfxEngine.renderScene();
     }
 
     /**
