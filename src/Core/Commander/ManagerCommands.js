@@ -31,9 +31,9 @@ define('Core/Commander/ManagerCommands',['Core/Commander/Providers/WMTS_Provider
      * @param {type} y
      * @returns {ManagerCommands_L7.ManagerCommands.prototype@arr;providers@call;getTile}
      */
-    ManagerCommands.prototype.getTile = function(zoom,x,y){
+    ManagerCommands.prototype.getTile = function(coWMTS){
         //TODO: Implement Me 
-        return this.providers[0].getTile(zoom,x,y);
+        return this.providers[0].getTile(coWMTS.zoom,coWMTS.row,coWMTS.col);
     };
 
     /**

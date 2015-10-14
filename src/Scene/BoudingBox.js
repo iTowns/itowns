@@ -9,8 +9,8 @@ define('Scene/BoudingBox',['Core/defaultValue','Core/Math/MathExtented','Core/Ma
     function BoudingBox(minLongitude,maxLongitude, minLatitude ,maxLatitude ,minAltitude ,maxAltitude){
         //Constructor
         
-        this.minCarto       = defaultValue(new CoordCarto(minLongitude,minLatitude,minAltitude),new CoordCarto(0,-MathExt.PI_OV_TWO,-10000));
-        this.maxCarto       = defaultValue(new CoordCarto(maxLongitude,maxLatitude,maxAltitude),new CoordCarto(MathExt.TWO_PI,MathExt.PI_OV_TWO,10000));
+        this.minCarto       = new CoordCarto(defaultValue(minLongitude,0),defaultValue(minLatitude,-MathExt.PI_OV_TWO),defaultValue(minAltitude,-10000));
+        this.maxCarto       = new CoordCarto(defaultValue(maxLongitude,MathExt.TWO_PI),defaultValue(maxLatitude,MathExt.PI_OV_TWO),defaultValue(maxAltitude,10000));
         
         this.dimension      = new Point2D(Math.abs(this.maxCarto.longitude-this.minCarto.longitude),Math.abs(this.maxCarto.latitude-this.minCarto.latitude));        
         this.halfDimension  = new Point2D(this.dimension.x * 0.5,this.dimension.y * 0.5);

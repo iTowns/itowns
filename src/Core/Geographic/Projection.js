@@ -4,7 +4,7 @@
 * Description: Outils de projections cartographiques et de convertion
 */
 
-define('Core/Geographic/Projection',['Core/Geographic/CoordWMTS'], function(CoordWMTS){
+define('Core/Geographic/Projection',['Core/Geographic/CoordWMTS','Core/Math/MathExtented'], function(CoordWMTS,MathExt){
 
 
     function Projection(){
@@ -32,8 +32,19 @@ define('Core/Geographic/Projection',['Core/Geographic/CoordWMTS'], function(Coor
     };
     
     Projection.prototype.WGS84toWMTS = function(bbox){
-        //TODO: Implement Me 
         
+        var zoom    = MathExt.PI / bbox.dimension.x - 1;
+        
+        var nY      = Math.pow(2,zoom);
+        var nX      = 2*nY;
+        
+        var uX      = MathExt.TWO_PI    / nX;
+        var uY      = MathExt.PI        / nY;
+        
+        var col       = Math.floor(bbox.center.x / uX);
+        var row       = Math.floor(bbox.center.y / uY);
+        
+        return new CoordWMTS(zoom,row,col);
     };
 
 

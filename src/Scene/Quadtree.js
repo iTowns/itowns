@@ -18,6 +18,7 @@ define('Scene/Quadtree',['Scene/Layer','Scene/BoudingBox'], function(Layer,Boudi
     
         this.schemeTile       = schemeTile;
         this.tileType         = tileType;
+        
        
         for (var i = 0; i < this.schemeTile.rootCount(); i++)                           
             this.add(this.createTile(this.schemeTile.getRoot(i),0,0,i));                   
@@ -53,15 +54,15 @@ define('Scene/Quadtree',['Scene/Layer','Scene/BoudingBox'], function(Layer,Boudi
         return node.children[3];
     };    
     
-    Quadtree.prototype.createTile = function(bbox,zoom,x,y)
+    Quadtree.prototype.createTile = function(bbox)
     {
-        var tile = new this.tileType(bbox);
+        var cooWMTS = this.projection.WGS84toWMTS(bbox);
+        var tile    = new this.tileType(bbox);
         tile.position.set(tile.bbox.center.x,tile.bbox.center.y,0);        
-        tile.level = zoom;
-        this.interCommand.getTile(zoom,x,y).then(function(texture)
+        tile.level  = cooWMTS.zoom;
+        this.interCommand.getTile(cooWMTS).then(function(texture)
         {   
             this.setTexture(texture);
-            
 
         }.bind(tile)); 
         
