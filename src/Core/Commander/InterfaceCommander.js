@@ -32,9 +32,9 @@ define('Core/Commander/InterfaceCommander',['Core/Commander/ManagerCommands'], f
         this._builderCommand();
     };
     
-    InterfaceCommander.prototype.getTile = function(zoom,x,y){
+    InterfaceCommander.prototype.getTile = function(coWMTS){
         //TODO: Implement Me 
-        return this.managerCommands.getTile(zoom,x,y);
+        return this.managerCommands.getTile(coWMTS);
     };
 
     return InterfaceCommander;

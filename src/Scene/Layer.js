@@ -6,7 +6,7 @@
 */
 
 
-define('Scene/Layer',['Scene/Node','Core/Commander/InterfaceCommander'], function(Node,InterfaceCommander){
+define('Scene/Layer',['Scene/Node','Core/Commander/InterfaceCommander','Core/Geographic/Projection'], function(Node,InterfaceCommander,Projection){
 
     function Layer(){
         //Constructor
@@ -14,8 +14,8 @@ define('Scene/Layer',['Scene/Node','Core/Commander/InterfaceCommander'], functio
         Node.call( this );
         this.interCommand   = new InterfaceCommander();
         this.descriManager  = null;
-        this.projection     = null;
-       
+        this.projection     = new Projection();
+                       
     }
        
     Layer.prototype = Object.create( Node.prototype );
