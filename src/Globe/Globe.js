@@ -6,14 +6,14 @@
 
 define('Globe/Globe',['Scene/Node','Scene/Layer','Scene/Quadtree','Scene/SchemeTile','Core/Math/MathExtented','Globe/EllipsoidTileMesh'], function(Node,Layer,Quadtree,SchemeTile,MathExt,EllipsoidTileMesh){
 
-    function Globe(managerCom){
+    function Globe(){
         //Constructor
 
         Node.call( this );
         
         this.layers = [];
         
-        this.terrain = new Quadtree(managerCom,EllipsoidTileMesh,this.SchemeTileWMTS(2));
+        this.terrain = new Quadtree(EllipsoidTileMesh,this.SchemeTileWMTS(2));
         
         //this.layers.push(this.terrain);
     }
