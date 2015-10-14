@@ -12,16 +12,35 @@
  */
 define('Scene/Quadtree',['Scene/Layer','Scene/BoudingBox'], function(Layer,BoudingBox){
 
+    function Quad(bbox)
+    {
+        this.northWest = new BoudingBox(bbox.minLongitude,bbox.center.x,bbox.center.y,bbox.maxLatitude);
+        this.northEast = new BoudingBox(bbox.center.x,bbox.maxLongitude,bbox.center.y,bbox.maxLatitude);
+        this.southWest = new BoudingBox(bbox.minLongitude,bbox.center.x,bbox.minLatitude,bbox.center.y);
+        this.southEast = new BoudingBox(bbox.center.x,bbox.maxLongitude,bbox.minLatitude,bbox.center.y);
+    }
+    
+    Quad.prototype.array = function()
+    {
+        var subdiv = [];
+        
+        subdiv.push(this.northWest);
+        subdiv.push(this.northEast);
+        subdiv.push(this.southWest);
+        subdiv.push(this.southEast);        
+        
+        return subdiv;
+    };
+
     function Quadtree(tileType,schemeTile){
         
         Layer.call( this);
-    
+        
         this.schemeTile       = schemeTile;
         this.tileType         = tileType;
         
-       
         for (var i = 0; i < this.schemeTile.rootCount(); i++)                           
-            this.add(this.createTile(this.schemeTile.getRoot(i),0,0,i));                   
+            this.add(this.createTile(this.schemeTile.getRoot(i)));                   
                         
     }
     
@@ -68,8 +87,7 @@ define('Scene/Quadtree',['Scene/Layer','Scene/BoudingBox'], function(Layer,Boudi
         
         return tile;
     };    
-    
-    
+        
    /**
     * return 4 equals subdivisions of the bouding box
     * @param {type} node
@@ -77,18 +95,10 @@ define('Scene/Quadtree',['Scene/Layer','Scene/BoudingBox'], function(Layer,Boudi
     */
     Quadtree.prototype.subdivide = function(node)
     {
-        var subdiv = [];
-        
-        var bbox = node.bbox;
-        
-        subdiv.push(new BoudingBox(bbox.minLongitude,bbox.center.x,bbox.center.y,bbox.maxLatitude));
-        subdiv.push(new BoudingBox(bbox.center.x,bbox.maxLongitude,bbox.center.y,bbox.maxLatitude));
-        subdiv.push(new BoudingBox(bbox.minLongitude,bbox.center.x,bbox.minLatitude,bbox.center.y));
-        subdiv.push(new BoudingBox(bbox.center.x,bbox.maxLongitude,bbox.minLatitude,bbox.center.y));        
-        
-        node.subdivise(subdiv);
-        
-        
+        var quad = new Quad(node.bbox);
+
+        node.subdivise(quad.array());
+                
     };
    
     return Quadtree;
