@@ -59,7 +59,10 @@ define('Globe/EllipsoidTileGeometry',['THREE','Core/defaultValue','Scene/Bouding
 			normals[ offset + 2 ] = 1;
 
 			uvs[ offset2 ] = ix / gridX;
-			uvs[ offset2 + 1 ] = 1 - ( iy / gridY );
+                        
+                        //TODO ATTENTION inversion des uv Y
+			//uvs[ offset2 + 1 ] = 1 - ( iy / gridY );
+                        uvs[ offset2 + 1 ] = ( iy / gridY );
 
 			offset += 3;
 			offset2 += 2;

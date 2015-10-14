@@ -4,21 +4,17 @@
 * Description: BoundingBox délimite une zone de l'espace. Cette zone est défnie  par des coordonées cartographiques.
 */
 
-define('Scene/BoudingBox',['Core/defaultValue','Core/Math/MathExtented','Core/Math/Point2D'], function(defaultValue,MathExt,Point2D){
+define('Scene/BoudingBox',['Core/defaultValue','Core/Math/MathExtented','Core/Math/Point2D','Core/Geographic/CoordCarto'], function(defaultValue,MathExt,Point2D,CoordCarto){
 
     function BoudingBox(minLongitude,maxLongitude, minLatitude ,maxLatitude ,minAltitude ,maxAltitude){
         //Constructor
         
-        this.minLongitude   = defaultValue(minLongitude, 0);
-        this.maxLongitude   = defaultValue(maxLongitude, MathExt.TWO_PI);
-        this.minLatitude    = defaultValue(minLatitude, -MathExt.PI_OV_TWO);
-        this.maxLatitude    = defaultValue(maxLatitude,  MathExt.PI_OV_TWO);
-        this.minAltitude    = defaultValue(minAltitude, -10000);
-        this.maxAltitude    = defaultValue(maxAltitude,  10000);
+        this.minCarto       = defaultValue(new CoordCarto(minLongitude,minLatitude,minAltitude),new CoordCarto(0,-MathExt.PI_OV_TWO,-10000));
+        this.maxCarto       = defaultValue(new CoordCarto(maxLongitude,maxLatitude,maxAltitude),new CoordCarto(MathExt.TWO_PI,MathExt.PI_OV_TWO,10000));
         
-        this.dimension      = new Point2D(Math.abs(this.maxLongitude-this.minLongitude),Math.abs(this.maxLatitude-this.minLatitude));        
+        this.dimension      = new Point2D(Math.abs(this.maxCarto.longitude-this.minCarto.longitude),Math.abs(this.maxCarto.latitude-this.minCarto.latitude));        
         this.halfDimension  = new Point2D(this.dimension.x * 0.5,this.dimension.y * 0.5);
-        this.center         = new Point2D(this.minLongitude + this.halfDimension.x,this.minLatitude + this.halfDimension.y);
+        this.center         = new Point2D(this.minCarto.longitude + this.halfDimension.x,this.minCarto.latitude + this.halfDimension.y);
         
     }
 

@@ -22,17 +22,23 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera','when'], 
         
         var ratio   = window.innerWidth/window.innerHeight;        
         this.camera = new Camera(ratio);        
+        
+        
+        this.camera.camera3D.position.x = Math.PI; 
         this.camera.camera3D.position.z = 10;        
         this.scene3D.add(this.camera.camera3D);
         
         
         this.controls = new THREE.OrbitControls( this.camera.camera3D,this.renderer.domElement );
+        this.controls.target        = new THREE.Vector3(Math.PI,0,0);
         this.controls.damping       = 0.1;
         this.controls.noPan         = true;
         this.controls.rotateSpeed   = 0.8;
         this.controls.zoomSpeed     = 1.0;
         this.controls.minDistance   = 8;
         this.controls.maxDistance   = 50.0;
+        
+        this.controls.update();
                             
         this.renderScene = function(){
              
