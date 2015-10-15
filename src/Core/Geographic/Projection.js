@@ -33,7 +33,8 @@ define('Core/Geographic/Projection',['Core/Geographic/CoordWMTS','Core/Math/Math
     
     Projection.prototype.WGS84toWMTS = function(bbox){
         
-        var zoom    = MathExt.PI / bbox.dimension.x - 1;
+
+        var zoom    = Math.log(MathExt.PI / bbox.dimension.y)/MathExt.LOG_TWO;
         
         var nY      = Math.pow(2,zoom);
         var nX      = 2*nY;
@@ -42,7 +43,7 @@ define('Core/Geographic/Projection',['Core/Geographic/CoordWMTS','Core/Math/Math
         var uY      = MathExt.PI        / nY;
         
         var col       = Math.floor(bbox.center.x / uX);
-        var row       = Math.floor(bbox.center.y / uY);
+        var row       = Math.floor(nY - (MathExt.PI_OV_TWO + bbox.center.y) / uY);
         
         return new CoordWMTS(zoom,row,col);
     };

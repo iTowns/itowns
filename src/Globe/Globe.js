@@ -48,7 +48,7 @@ define('Globe/Globe',['Scene/Node','Scene/Layer','Scene/Quadtree','Scene/SchemeT
     
     Globe.prototype.SchemeTileWMTS = function(type){
         //TODO: Implement Me 
-        if(2)
+        if(type === 2)
         {
             var schemeT = new SchemeTile();
             schemeT.add(0,MathExt.PI,-MathExt.PI_OV_TWO,MathExt.PI_OV_TWO);
