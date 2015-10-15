@@ -10,14 +10,14 @@
  * @param {type} BoudingBox
  * @returns {Quadtree_L10.Quadtree}
  */
-define('Scene/Quadtree',['Scene/Layer','Scene/BoudingBox'], function(Layer,BoudingBox){
+define('Scene/Quadtree',['Scene/Layer','Scene/BoudingBox','when'], function(Layer,BoudingBox,when){
 
     function Quad(bbox)
     {
-        this.northWest = new BoudingBox(bbox.minLongitude,bbox.center.x,bbox.center.y,bbox.maxLatitude);
-        this.northEast = new BoudingBox(bbox.center.x,bbox.maxLongitude,bbox.center.y,bbox.maxLatitude);
-        this.southWest = new BoudingBox(bbox.minLongitude,bbox.center.x,bbox.minLatitude,bbox.center.y);
-        this.southEast = new BoudingBox(bbox.center.x,bbox.maxLongitude,bbox.minLatitude,bbox.center.y);
+        this.northWest = new BoudingBox(bbox.minCarto.longitude,bbox.center.x,bbox.center.y,bbox.maxCarto.latitude,bbox.center);
+        this.northEast = new BoudingBox(bbox.center.x,bbox.maxCarto.longitude,bbox.center.y,bbox.maxCarto.latitude,bbox.center);
+        this.southWest = new BoudingBox(bbox.minCarto.longitude,bbox.center.x,bbox.minCarto.latitude,bbox.center.y,bbox.center);
+        this.southEast = new BoudingBox(bbox.center.x,bbox.maxCarto.longitude,bbox.minCarto.latitude,bbox.center.y,bbox.center);
     }
     
     Quad.prototype.array = function()
@@ -40,7 +40,16 @@ define('Scene/Quadtree',['Scene/Layer','Scene/BoudingBox'], function(Layer,Boudi
         this.tileType         = tileType;
         
         for (var i = 0; i < this.schemeTile.rootCount(); i++)                           
-            this.add(this.createTile(this.schemeTile.getRoot(i)));                   
+            this.add(this.createTile(this.schemeTile.getRoot(i)));    
+        
+        this.subdivide(this.children[1]).then(function()
+        {
+            
+            this.subdivide(this.children[1].children[0]).then(function()
+            {
+                this.subdivide(this.children[1].children[0].children[0]);
+            }.bind(this));
+        }.bind(this));
                         
     }
     
@@ -75,13 +84,15 @@ define('Scene/Quadtree',['Scene/Layer','Scene/BoudingBox'], function(Layer,Boudi
     
     Quadtree.prototype.createTile = function(bbox)
     {
-        var cooWMTS = this.projection.WGS84toWMTS(bbox);
+        var cooWMTS = this.projection.WGS84toWMTS(bbox);       
+        
         var tile    = new this.tileType(bbox);
-        tile.position.set(tile.bbox.center.x,tile.bbox.center.y,0);        
+        tile.position.set(tile.bbox.relativeCenter.x,tile.bbox.relativeCenter.y,0);        
         tile.level  = cooWMTS.zoom;
+        
         this.interCommand.getTile(cooWMTS).then(function(texture)
         {   
-            this.setTexture(texture);
+            this.setTexture(texture);             
 
         }.bind(tile)); 
         
@@ -96,9 +107,17 @@ define('Scene/Quadtree',['Scene/Layer','Scene/BoudingBox'], function(Layer,Boudi
     Quadtree.prototype.subdivide = function(node)
     {
         var quad = new Quad(node.bbox);
-
-        node.subdivise(quad.array());
-                
+        
+        return when.all([        
+        node.add(this.createTile(quad.northWest)),
+        node.add(this.createTile(quad.northEast)),
+        node.add(this.createTile(quad.southWest)),
+        node.add(this.createTile(quad.southEast))]).then(function()
+        {
+            node.material.visible = false;
+        });
+        
+        
     };
    
     return Quadtree;

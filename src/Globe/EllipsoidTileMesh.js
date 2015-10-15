@@ -22,6 +22,7 @@ define('Globe/EllipsoidTileMesh',['Renderer/NodeMesh','Globe/EllipsoidTileGeomet
         
         this.bbox       = defaultValue(bbox,new BoudingBox());
         this.geometry   = new EllipsoidTileGeometry(bbox);
+        this.material   = new THREE.MeshBasicMaterial( {color: 0xffffff} ); 
       
     }
 
@@ -44,7 +45,8 @@ define('Globe/EllipsoidTileMesh',['Renderer/NodeMesh','Globe/EllipsoidTileGeomet
     
     EllipsoidTileMesh.prototype.setTexture = function(texture)
     { 
-        this.material = new THREE.MeshBasicMaterial( {color: 0xffffff, map: texture} );        
+        this.material.map = texture;        
+        this.material.needsUpdate = true;
     };
     
     return EllipsoidTileMesh;

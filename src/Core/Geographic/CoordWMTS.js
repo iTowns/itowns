@@ -11,7 +11,13 @@
  */
 define('Core/Geographic/CoordWMTS',['Core/defaultValue'], function(defaultValue){
 
-
+    /**
+     * 
+     * @param {type} zoom
+     * @param {type} x
+     * @param {type} y
+     * @returns {CoordWMTS_L12.CoordWMTS}
+     */
     function CoordWMTS(zoom,x,y)
     {
         this.zoom   = defaultValue(zoom,0);

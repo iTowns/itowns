@@ -38,7 +38,9 @@ define('Core/Math/MathExtented',[], function(){
     * @type {Number}
     * @constant
     */
-    MathExt.TWO_PI = Math.PI * 2.0;
+    MathExt.TWO_PI  = Math.PI * 2.0;
+    
+    MathExt.LOG_TWO = Math.log(2.0);
     
     return MathExt;
     
