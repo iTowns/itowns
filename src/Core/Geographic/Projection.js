@@ -34,7 +34,7 @@ define('Core/Geographic/Projection',['Core/Geographic/CoordWMTS','Core/Math/Math
     Projection.prototype.WGS84toWMTS = function(bbox){
         
 
-        var zoom    = Math.log(MathExt.PI / bbox.dimension.y)/MathExt.LOG_TWO;
+        var zoom    = Math.floor(Math.log(MathExt.PI / bbox.dimension.y )/MathExt.LOG_TWO + 0.5);
         
         var nY      = Math.pow(2,zoom);
         var nX      = 2*nY;

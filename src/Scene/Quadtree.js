@@ -10,7 +10,7 @@
  * @param {type} BoudingBox
  * @returns {Quadtree_L10.Quadtree}
  */
-define('Scene/Quadtree',['Scene/Layer','Scene/BoudingBox','when'], function(Layer,BoudingBox,when){
+define('Scene/Quadtree',['Scene/Layer','Scene/BoudingBox','when','THREE'], function(Layer,BoudingBox,when,THREE){
 
     function Quad(bbox)
     {
@@ -41,16 +41,24 @@ define('Scene/Quadtree',['Scene/Layer','Scene/BoudingBox','when'], function(Laye
         
         for (var i = 0; i < this.schemeTile.rootCount(); i++)                           
             this.add(this.createTile(this.schemeTile.getRoot(i)));    
+          
+        //this.add(this.createTile(this.schemeTile.getRoot(1)));    
         
-        this.subdivide(this.children[1]).then(function()
-        {
-            
-            this.subdivide(this.children[1].children[0]).then(function()
-            {
-                this.subdivide(this.children[1].children[0].children[0]);
-            }.bind(this));
-        }.bind(this));
-                        
+        this.subdivide(this.children[1]);
+        this.subdivide(this.children[1].children[0]);
+        
+        this.subdivide(this.children[1].children[0].children[0]);
+//        
+        this.subdivide(this.children[1].children[0].children[0].children[2]);
+        
+        this.subdivide(this.children[1].children[0].children[0].children[2].children[2]);
+        
+        this.subdivide(this.children[1].children[0].children[0].children[2].children[2].children[2] );
+//                    
+        this.addSphere(new THREE.Vector3(1,0,0),0xff0000);
+        this.addSphere(new THREE.Vector3(0,1,0),0x00ff00);
+        this.addSphere(new THREE.Vector3(0,0,1),0x0000ff);
+
     }
     
     Quadtree.prototype = Object.create( Layer.prototype );
@@ -61,6 +69,16 @@ define('Scene/Quadtree',['Scene/Layer','Scene/BoudingBox','when'], function(Laye
                
         return this.children;
     };
+    
+    Quadtree.prototype.addSphere = function(vec,col){
+               
+        var geometry = new THREE.SphereGeometry( 0.05, 32, 32 );
+        var material = new THREE.MeshBasicMaterial( {color: col} );
+        var sphere = new THREE.Mesh( geometry, material );
+        sphere.position.set(vec.x,vec.y,vec.z);
+        this.add(sphere);
+    };
+    
     
     Quadtree.prototype.northWest = function(node)
     {
@@ -87,7 +105,7 @@ define('Scene/Quadtree',['Scene/Layer','Scene/BoudingBox','when'], function(Laye
         var cooWMTS = this.projection.WGS84toWMTS(bbox);       
         
         var tile    = new this.tileType(bbox);
-        tile.position.set(tile.bbox.relativeCenter.x,tile.bbox.relativeCenter.y,0);        
+        //tile.position.set(tile.bbox.relativeCenter.x,tile.bbox.relativeCenter.y,0);        
         tile.level  = cooWMTS.zoom;
         
         this.interCommand.getTile(cooWMTS).then(function(texture)
@@ -107,7 +125,7 @@ define('Scene/Quadtree',['Scene/Layer','Scene/BoudingBox','when'], function(Laye
     Quadtree.prototype.subdivide = function(node)
     {
         var quad = new Quad(node.bbox);
-        
+        /*
         return when.all([        
         node.add(this.createTile(quad.northWest)),
         node.add(this.createTile(quad.northEast)),
@@ -116,8 +134,14 @@ define('Scene/Quadtree',['Scene/Layer','Scene/BoudingBox','when'], function(Laye
         {
             node.material.visible = false;
         });
-        
-        
+        */
+       
+        node.add(this.createTile(quad.northWest));
+        node.add(this.createTile(quad.northEast));
+        node.add(this.createTile(quad.southWest));
+        node.add(this.createTile(quad.southEast));
+          
+        node.material.visible = false;
     };
    
     return Quadtree;
