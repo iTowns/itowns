@@ -4,7 +4,7 @@
 * Description: La Scene est l'instance principale du client. Elle est le chef orchestre de l'application.
 */
 
-define('Scene/Scene',['Renderer/c3DEngine','Globe/Star','Globe/Globe','Renderer/NodeMesh','Core/Commander/ManagerCommands'], function(c3DEngine,Star,Globe,NodeMesh,ManagerCommands){
+define('Scene/Scene',['Renderer/c3DEngine','Globe/Star','Globe/Globe','Renderer/NodeMesh','Core/Commander/ManagerCommands','Scene/BrowseTree'], function(c3DEngine,Star,Globe,NodeMesh,ManagerCommands,BrowseTree){
  
     var instanceScene = null;
 
@@ -16,7 +16,7 @@ define('Scene/Scene',['Renderer/c3DEngine','Globe/Star','Globe/Globe','Renderer/
         } 
 
         
-        this.browserScene   = null;
+        this.browserScene   = new BrowseTree();
         this.nodes          = [];      
        
         this.cameras        = null;
@@ -24,10 +24,10 @@ define('Scene/Scene',['Renderer/c3DEngine','Globe/Star','Globe/Globe','Renderer/
         this.selectNodes    = null;      
         this.managerCommand = ManagerCommands();
         this.gfxEngine      = c3DEngine(this);                
-        
-        this.add(new Star());                        
-        this.add(new Globe());
                 
+        this.add(new Globe());
+        this.add(new Star());                   
+        
         this.gfxEngine.renderScene();
     }
 
@@ -52,7 +52,8 @@ define('Scene/Scene',['Renderer/c3DEngine','Globe/Star','Globe/Globe','Renderer/
     * @param currentCamera {[object Object]} 
     */
     Scene.prototype.sceneProcess = function(currentCamera){
-        //TODO: Implement Me 
+        //TODO: Implement Me        
+        this.browserScene.browse(this.nodes[0].terrain);
         
     };
     
@@ -67,12 +68,12 @@ define('Scene/Scene',['Renderer/c3DEngine','Globe/Star','Globe/Globe','Renderer/
         var waitTime = 250;
         if(this.timer === null)
         { 
-            this.timer = window.setTimeout(this.sceneProcess,waitTime); 
+            this.timer = window.setTimeout(this.sceneProcess.bind(this),waitTime); 
         }
         else
         {
             window.clearInterval(this.timer);
-            this.timer = window.setTimeout(this.sceneProcess,waitTime); 
+            this.timer = window.setTimeout(this.sceneProcess.bind(this),waitTime); 
         }
     };
 

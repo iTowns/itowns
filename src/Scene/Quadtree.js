@@ -46,9 +46,9 @@ define('Scene/Quadtree',['Scene/Layer','Scene/BoudingBox','when','THREE'], funct
             this.subdivideChildren(this.children[i]);
         }
                       
-        this.addSphere(new THREE.Vector3(1,0,0),0xff0000);
-        this.addSphere(new THREE.Vector3(0,1,0),0x00ff00);
-        this.addSphere(new THREE.Vector3(0,0,1),0x0000ff);
+//        this.addSphere(new THREE.Vector3(1,0,0),0xff0000);
+//        this.addSphere(new THREE.Vector3(0,1,0),0x00ff00);
+//        this.addSphere(new THREE.Vector3(0,0,1),0x0000ff);
     }
     
     Quadtree.prototype = Object.create( Layer.prototype );
