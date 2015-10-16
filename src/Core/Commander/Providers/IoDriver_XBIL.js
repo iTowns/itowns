@@ -55,9 +55,9 @@ define('Core/Commander/Providers/IoDriver_XBIL',['Core/Commander/Providers/IoDri
                    else
                    {
                         rgbaData[i * 4  + 3] = 1.0;
-                        rgbaData[i * 4  + 2] = Math.floor(byteArray[i])/1000.0;
-                        rgbaData[i * 4  + 1] = Math.floor(byteArray[i])/1000.0;
-                        rgbaData[i * 4  + 0] = Math.floor(byteArray[i])/1000.0;
+                        rgbaData[i * 4  + 2] = Math.floor(byteArray[i])/2500.0;
+                        rgbaData[i * 4  + 1] = Math.floor(byteArray[i])/2500.0;
+                        rgbaData[i * 4  + 0] = Math.floor(byteArray[i])/2500.0;
                    }
                    
                 }

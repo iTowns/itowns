@@ -39,26 +39,16 @@ define('Scene/Quadtree',['Scene/Layer','Scene/BoudingBox','when','THREE'], funct
         this.schemeTile       = schemeTile;
         this.tileType         = tileType;
         
-        for (var i = 0; i < this.schemeTile.rootCount(); i++)                           
+        for (var i = 0; i < this.schemeTile.rootCount(); i++)
+        {
             this.add(this.createTile(this.schemeTile.getRoot(i)));    
-          
-        //this.add(this.createTile(this.schemeTile.getRoot(1)));    
-        
-        this.subdivide(this.children[1]);
-        this.subdivide(this.children[1].children[0]);
-        
-        this.subdivide(this.children[1].children[0].children[0]);
-//        
-        this.subdivide(this.children[1].children[0].children[0].children[2]);
-        
-        this.subdivide(this.children[1].children[0].children[0].children[2].children[2]);
-        
-        this.subdivide(this.children[1].children[0].children[0].children[2].children[2].children[2] );
-//                    
+            this.subdivide(this.children[i]);
+            this.subdivideChildren(this.children[i]);
+        }
+                      
         this.addSphere(new THREE.Vector3(1,0,0),0xff0000);
         this.addSphere(new THREE.Vector3(0,1,0),0x00ff00);
         this.addSphere(new THREE.Vector3(0,0,1),0x0000ff);
-
     }
     
     Quadtree.prototype = Object.create( Layer.prototype );
@@ -143,6 +133,14 @@ define('Scene/Quadtree',['Scene/Layer','Scene/BoudingBox','when','THREE'], funct
           
         node.material.visible = false;
     };
+    
+    Quadtree.prototype.subdivideChildren = function(node)
+    {
+        for (var i = 0 ;i<node.children.length;i++)
+            this.subdivide(node.children[i]);
+    };
+    
+    
    
     return Quadtree;
 
