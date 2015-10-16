@@ -27,7 +27,8 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera','when'], 
         document.body.appendChild( this.renderer.domElement );
         
         var ratio   = window.innerWidth/window.innerHeight;        
-        this.camera = new Camera(ratio);        
+        this.camera = new Camera(ratio);
+        
                 
         //this.camera.camera3D.position.x = Math.PI; 
         this.camera.camera3D.position.z = 30;      
@@ -45,7 +46,8 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera','when'], 
         this.controls.update();
                             
         this.renderScene = function(){
-                  
+            
+            this.camera.update();
             this.scene.wait();
             this.renderer.clear();
             this.renderer.setViewport( 0, 0, window.innerWidth, window.innerHeight );
