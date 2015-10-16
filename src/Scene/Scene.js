@@ -15,12 +15,9 @@ define('Scene/Scene',['Renderer/c3DEngine','Globe/Star','Globe/Globe','Renderer/
             throw new Error("Cannot instantiate more than one Scene");
         } 
 
-        
         this.browserScene   = new BrowseTree();
-        this.nodes          = [];      
-       
-        this.cameras        = null;
-        this.currentCamera  = null;
+        this.nodes          = [];            
+        this.cameras        = null;        
         this.selectNodes    = null;      
         this.managerCommand = ManagerCommands();
         this.gfxEngine      = c3DEngine(this);                
@@ -28,6 +25,8 @@ define('Scene/Scene',['Renderer/c3DEngine','Globe/Star','Globe/Globe','Renderer/
         this.add(new Globe());
         this.add(new Star());                   
         
+        this.gfxEngine.scene  = this;
+        this.currentCamera    = this.gfxEngine.camera;
         this.gfxEngine.renderScene();
     }
 
@@ -38,7 +37,6 @@ define('Scene/Scene',['Renderer/c3DEngine','Globe/Star','Globe/Globe','Renderer/
         //TODO: Implement Me 
 
     };
-
 
     /**
     */
@@ -51,10 +49,19 @@ define('Scene/Scene',['Renderer/c3DEngine','Globe/Star','Globe/Globe','Renderer/
     /**
     * @param currentCamera {[object Object]} 
     */
-    Scene.prototype.sceneProcess = function(currentCamera){
-        //TODO: Implement Me        
-        this.browserScene.browse(this.nodes[0].terrain);
+    Scene.prototype.sceneProcess = function(){
         
+        // console.log(this.nodes[0].terrain);
+        //this.currentCamera.update();
+        //this.browserScene.browse(this.nodes[0].terrain,this.currentCamera);
+        
+    };
+    
+    Scene.prototype.realtimeSceneProcess = function(node,camera){        
+        if(this.nodes[0] !== undefined  && this.currentCamera !== undefined )
+        {
+            this.browserScene.browse(this.nodes[0].terrain,this.currentCamera);
+        }                
     };
     
     /**
@@ -65,7 +72,11 @@ define('Scene/Scene',['Renderer/c3DEngine','Globe/Star','Globe/Globe','Renderer/
     };
 
     Scene.prototype.wait = function(){
-        var waitTime = 250;
+        
+        var waitTime = 250;                
+        
+        this.realtimeSceneProcess();
+        
         if(this.timer === null)
         { 
             this.timer = window.setTimeout(this.sceneProcess.bind(this),waitTime); 
@@ -75,6 +86,7 @@ define('Scene/Scene',['Renderer/c3DEngine','Globe/Star','Globe/Globe','Renderer/
             window.clearInterval(this.timer);
             this.timer = window.setTimeout(this.sceneProcess.bind(this),waitTime); 
         }
+        
     };
 
     /**

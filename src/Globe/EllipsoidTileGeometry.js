@@ -38,6 +38,24 @@ define('Globe/EllipsoidTileGeometry',['THREE','Core/defaultValue','Scene/Bouding
 
         var thetaStart      = bbox.minCarto.latitude ;
         var thetaLength     = bbox.dimension.y;
+        
+        //-----------
+         this.normals    = [];
+    
+        this.carto2Normal = function(phi,theta)
+        {   
+            
+            
+            return ellipsoid.geodeticSurfaceNormalCartographic(new CoordCarto( phi, theta,0));                
+        };
+
+        this.normals.push(this.carto2Normal(phiStart, thetaStart));
+        this.normals.push(this.carto2Normal(phiStart+ phiLength, thetaStart+ thetaLength));
+        this.normals.push(this.carto2Normal(phiStart, thetaStart+ thetaLength));
+        this.normals.push(this.carto2Normal(phiStart+ phiLength, thetaStart));
+        
+        //--------
+        
 
         var idVertex        = 0;
         var x, y, verticees = [], uvs = [];
