@@ -11,11 +11,12 @@ define('Core/Commander/Interfaces/EventsManager',[], function(){
     function EventsManager(){
         //Constructor
 
-        this.commands = null;
-        this.events = null;
-
+        this.commands       = null;
+        this.events         = null;
+        this.timer          = null;
+       
+        
     }
-
 
     /**
     * @param pevent {[object Object]} 
@@ -25,7 +26,27 @@ define('Core/Commander/Interfaces/EventsManager',[], function(){
         //TODO: Implement Me 
 
     };
+     
+    EventsManager.prototype.command = function()
+    {
+               
+    };
     
+    EventsManager.prototype.wait = function()
+    {                    
+        var waitTime = 250;
+        if(this.timer === null)
+        { 
+            this.timer = window.setTimeout(this.command,waitTime); 
+        }
+        else
+        {
+            window.clearInterval(this.timer);
+            this.timer = window.setTimeout(this.command,waitTime); 
+        }
+
+    };
+     
     return EventsManager;
 
 });

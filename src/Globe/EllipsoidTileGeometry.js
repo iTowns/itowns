@@ -14,11 +14,11 @@ define('Globe/EllipsoidTileGeometry',['THREE','Core/defaultValue','Scene/Bouding
         
         bbox = defaultValue(bbox,new BoudingBox());
 
-	var radius = 1.0; 
+	var radius = 6.3567523142451793; 
 
-        var ellipsoid  = new Ellipsoid(radius,radius,radius);
+        var ellipsoid  = new Ellipsoid(6.378137, 6.378137, 6.3567523142451793);
         
-        var nSeg            = 8;       
+        var nSeg            = 16;       
         var nVertex         = (nSeg+1)*(nSeg+1); // correct pour uniquement les vertex
         var triangles       = (nSeg)*(nSeg); // correct pour uniquement les vertex
         
@@ -30,10 +30,6 @@ define('Globe/EllipsoidTileGeometry',['THREE','Core/defaultValue','Scene/Bouding
         var bufferNormal    = new Float32Array( nVertex * 3);
         var bufferUV        = new Float32Array( nVertex * 3);
         
-//        widthSegments       = Math.max( 2, Math.floor( widthSegments ) || 8 );
-//        heightSegments      = Math.max( 2, Math.floor( heightSegments ) || 6 );
-
-
         widthSegments       = Math.max( 2, Math.floor( widthSegments ) || 2 );
         heightSegments      = Math.max( 2, Math.floor( heightSegments ) || 2 );
 
@@ -101,8 +97,6 @@ define('Globe/EllipsoidTileGeometry',['THREE','Core/defaultValue','Scene/Bouding
 
         }
 
-        //console.log(uvs);
-
         function bufferize(va,vb,vc,idVertex) 
         {
             bufferIndex[idVertex+ 0] = va;
@@ -120,32 +114,14 @@ define('Globe/EllipsoidTileGeometry',['THREE','Core/defaultValue','Scene/Bouding
                     var v2 = verticees[ y ][ x ];
                     var v3 = verticees[ y + 1 ][ x ];
                     var v4 = verticees[ y + 1 ][ x + 1 ];
-/*
-                    if ( Math.abs( this.vertices[ v1 ].z) === radius) { // TODO --> attention les chapeaux ne sont pas pris en compte dans l'ellispoid
 
-                        bufferize(v4,v3,v1,idVertex);
-                        //console.log(0);
+                    bufferize(v4,v2,v1,idVertex);
+                    
+                    idVertex +=3;
 
-                    } else if ( Math.abs( this.vertices[ v3 ].z) === radius ) {
-
-                        bufferize(v1,v2,v3,idVertex);
-                        //console.log(1);
-                    } 
-                    else */                 
-                    {
-                        //console.log(2);
-
-                        bufferize(v4,v2,v1,idVertex);
-                        
-                        
-
-                        idVertex +=3;
-
-                        bufferize(v4,v3,v2,idVertex);
-                        //bufferize(v2,v3,v4,idVertex);
-
-                      }
-                      idVertex +=3;
+                    bufferize(v4,v3,v2,idVertex);
+                    
+                    idVertex +=3;
                 }
         }
         

@@ -6,10 +6,16 @@
 
 define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera','when'], function(THREE,OrbitControls,Camera,when){
 
+    var instance3DEngine = null;
 
-    function c3DEngine(){
+    function c3DEngine(scene){
         //Constructor
+        
+        if(instance3DEngine !== null){
+            throw new Error("Cannot instantiate more than one c3DEngine");
+        } 
 
+        this.scene      = scene;
         this.scene3D    = new THREE.Scene();       
         this.renderer   = new THREE.WebGLRenderer( { antialias: true,alpha: true } );
         
@@ -22,12 +28,10 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera','when'], 
         
         var ratio   = window.innerWidth/window.innerHeight;        
         this.camera = new Camera(ratio);        
-        
-        
+                
         //this.camera.camera3D.position.x = Math.PI; 
-        this.camera.camera3D.position.z = 10;        
+        this.camera.camera3D.position.z = 30;      
         this.scene3D.add(this.camera.camera3D);
-        
         
         this.controls = new THREE.OrbitControls( this.camera.camera3D,this.renderer.domElement );
         this.controls.target        = new THREE.Vector3(0,0,0);
@@ -36,12 +40,13 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera','when'], 
         this.controls.rotateSpeed   = 0.8;
         this.controls.zoomSpeed     = 1.0;
         this.controls.minDistance   = 1.0;
-        this.controls.maxDistance   = 10.0;
+        this.controls.maxDistance   = 30.0;
         
         this.controls.update();
                             
         this.renderScene = function(){
-             
+                  
+            this.scene.wait();
             this.renderer.clear();
             this.renderer.setViewport( 0, 0, window.innerWidth, window.innerHeight );
             this.renderer.render( this.scene3D, this.camera.camera3D);
@@ -97,6 +102,9 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera','when'], 
 
     };
 
-    return c3DEngine;
+    return function(scene){
+        instance3DEngine = instance3DEngine || new c3DEngine(scene);
+        return instance3DEngine;
+    };    
 
 });

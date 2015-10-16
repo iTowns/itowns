@@ -6,24 +6,32 @@
 
 define('Scene/Scene',['Renderer/c3DEngine','Globe/Star','Globe/Globe','Renderer/NodeMesh','Core/Commander/ManagerCommands'], function(c3DEngine,Star,Globe,NodeMesh,ManagerCommands){
  
+    var instanceScene = null;
 
     function Scene(){
         //Constructor
+        
+        if(instanceScene !== null){
+            throw new Error("Cannot instantiate more than one Scene");
+        } 
 
-        this.gfxEngine      = new c3DEngine();
+        
         this.browserScene   = null;
         this.nodes          = [];      
-        this.managerCommand = ManagerCommands();
+       
         this.cameras        = null;
         this.currentCamera  = null;
-        this.selectNodes    = null;
+        this.selectNodes    = null;      
+        this.managerCommand = ManagerCommands();
+        this.gfxEngine      = c3DEngine(this);                
         
         this.add(new Star());                        
         this.add(new Globe());
-        
+                
         this.gfxEngine.renderScene();
     }
 
+    Scene.prototype.constructor = Scene;
     /**
     */
     Scene.prototype.updateCommand = function(){
@@ -45,17 +53,28 @@ define('Scene/Scene',['Renderer/c3DEngine','Globe/Star','Globe/Globe','Renderer/
     */
     Scene.prototype.sceneProcess = function(currentCamera){
         //TODO: Implement Me 
-
+        
     };
-
-
+    
     /**
     */
     Scene.prototype.updateScene3D = function(){
         //TODO: Implement Me 
-
+       
     };
 
+    Scene.prototype.wait = function(){
+        var waitTime = 250;
+        if(this.timer === null)
+        { 
+            this.timer = window.setTimeout(this.sceneProcess,waitTime); 
+        }
+        else
+        {
+            window.clearInterval(this.timer);
+            this.timer = window.setTimeout(this.sceneProcess,waitTime); 
+        }
+    };
 
     /**
     */
@@ -106,7 +125,10 @@ define('Scene/Scene',['Renderer/c3DEngine','Globe/Star','Globe/Globe','Renderer/
 
     };
 
-    return Scene;
+    return function(){
+        instanceScene = instanceScene || new Scene();
+        return instanceScene;
+    };
 
 });
 
