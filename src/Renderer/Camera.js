@@ -7,28 +7,25 @@
 
 define('Renderer/Camera',['Scene/Node','THREE'], function(Node, THREE){
 
-    function Camera(width,height){
+    function Camera(width,height,debug){
         //Constructor
 
         Node.call( this );
-        
-        
-        var ratio   = width/height;        
-        
+                
+        this.ratio      = width/height;                
         this.FOV        = 30;
-        this.camera3D   = new THREE.PerspectiveCamera( 30, ratio, 0.1, 1000 );
+        this.camera3D   = new THREE.PerspectiveCamera( 30, this.ratio, 0.1, 1000 );
         this.direction  = new THREE.Vector3();        
         this.frustum    = new THREE.Frustum();
         this.width      = width;
         this.height     = height;
         
         var radAngle    = this.FOV * Math.PI / 180;
-        this.HFOV       = 2.0 * Math.atan(Math.tan(radAngle*0.5) * ratio);
-        
-        
-        
+        this.HFOV       = 2.0 * Math.atan(Math.tan(radAngle*0.5) * this.ratio);        
         this.preSSE     = this.width * (2.0 * Math.tan(this.HFOV * 0.5));
         
+        this.cameraHelper  = debug  ? new THREE.CameraHelper( this.camera3D ) : undefined;
+
     }
  
     Camera.prototype = Object.create( Node.prototype );
@@ -43,6 +40,12 @@ define('Renderer/Camera',['Scene/Node','THREE'], function(Node, THREE){
 
     };
     
+    Camera.prototype.camHelper = function(){
+        
+        return this.cameraHelper;
+
+    };
+   
     Camera.prototype.SSE = function(node){
         
         var distance = this.camera3D.position.distanceTo(node.center());
