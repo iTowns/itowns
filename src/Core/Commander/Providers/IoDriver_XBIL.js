@@ -40,7 +40,7 @@ define('Core/Commander/Providers/IoDriver_XBIL',['Core/Commander/Providers/IoDri
                 var rgbaData = new Float32Array( 4 * size );
                 
                 //var mcolor      = new THREE.Color(Math.floor(Math.random()*255),Math.floor(Math.random()*255),Math.floor(Math.random()*255));
-                var mcolor      = Math.random();
+                var mcolor      = 1.0;//Math.random();
 
                 for (var i = 0; i < byteArray.byteLength; i++) 
                 {

@@ -20,10 +20,12 @@ define('Globe/EllipsoidTileMesh',['Renderer/NodeMesh','Globe/EllipsoidTileGeomet
         //Constructor
         NodeMesh.call( this );
         
+        
         this.bbox       = defaultValue(bbox,new BoudingBox());
         this.geometry   = new EllipsoidTileGeometry(bbox);
-        this.material   = new THREE.MeshBasicMaterial( {color: 0xffffff,wireframe:true} ); 
-      
+        this.geometry.computeBoundingSphere();
+        this.material   = new THREE.MeshBasicMaterial( {color: 0xffffff, wireframe: false}); 
+        this.dot        = 0;
     }
 
     EllipsoidTileMesh.prototype = Object.create( NodeMesh.prototype );
@@ -53,6 +55,16 @@ define('Globe/EllipsoidTileMesh',['Renderer/NodeMesh','Globe/EllipsoidTileGeomet
     EllipsoidTileMesh.prototype.normals = function()
     { 
         return this.geometry.normals;
+    };
+    
+    EllipsoidTileMesh.prototype.normal = function()
+    { 
+        return this.geometry.normal;
+    };
+    
+    EllipsoidTileMesh.prototype.center = function()
+    { 
+        return this.geometry.center;
     };
     
     return EllipsoidTileMesh;
