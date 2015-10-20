@@ -27,6 +27,10 @@ define('Scene/Scene',['Renderer/c3DEngine','Globe/Star','Globe/Globe','Renderer/
         
         this.gfxEngine.scene  = this;
         this.currentCamera    = this.gfxEngine.camera;
+        
+        
+        //this.browserScene.addBBoxHelper(this.nodes[0].terrain,this.gfxEngine.scene3D);
+        
         this.gfxEngine.renderScene();
     }
 

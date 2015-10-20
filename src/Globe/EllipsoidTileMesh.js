@@ -20,10 +20,12 @@ define('Globe/EllipsoidTileMesh',['Renderer/NodeMesh','Globe/EllipsoidTileGeomet
         //Constructor
         NodeMesh.call( this );
         
+        this.showHelper = true;
         
         this.bbox       = defaultValue(bbox,new BoudingBox());
         this.geometry   = new EllipsoidTileGeometry(bbox);
         this.geometry.computeBoundingSphere();
+        
         this.material   = new THREE.MeshBasicMaterial( {color: 0xffffff, wireframe: false}); 
         this.dot        = 0;
     }
