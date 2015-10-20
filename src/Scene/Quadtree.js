@@ -94,8 +94,7 @@ define('Scene/Quadtree',['Scene/Layer','Scene/BoudingBox','when','THREE'], funct
     {
         var cooWMTS = this.projection.WGS84toWMTS(bbox);       
         
-        var tile    = new this.tileType(bbox);
-        //tile.position.set(tile.bbox.relativeCenter.x,tile.bbox.relativeCenter.y,0);        
+        var tile    = new this.tileType(bbox);        
         tile.level  = cooWMTS.zoom;
         
         this.interCommand.getTile(cooWMTS).then(function(texture)

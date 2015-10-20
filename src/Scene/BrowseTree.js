@@ -9,40 +9,66 @@ define('Scene/BrowseTree',['Globe/EllipsoidTileMesh','THREE'], function(Ellipsoi
     function BrowseTree(){
         //Constructor
 
-        this.process = null;
+        this.process    = null;        
+        this.root       = undefined;
     }
     
     
     BrowseTree.prototype.backFaceCulling = function(node,camera)
     {
+        var normal  = camera.direction;
+        for(var n = 0; n < node.normals().length; n ++ ) 
+        {
+            
+            var dot = normal.dot(node.normals()[n]);
+            if( dot > 0 )
+            {
+                node.visible    = true;
+                dot             = normal.dot(node.normal());
+                node.dot        = dot < 0 ? 0 : dot;
+                break;
+            }
+        };
         
-        var normal = camera.direction;
+        return node.visible;
+              
+    };
+    
+    BrowseTree.prototype.frustumCulling = function(node,camera)
+    {        
+        var frustum = camera.frustum;
         
+        return frustum.intersectsObject(node);   
+    };
+    
+    BrowseTree.prototype.SSE = function(node,camera)
+    {                                
+        return camera.SSE(node) > 1.0;            
+    };    
+    
+    BrowseTree.prototype.processNode = function(node,camera)
+    {
         if(node instanceof EllipsoidTileMesh)
         {
-                        
+            
             node.visible = false;
             
-            for(var n = 0; n < node.normals().length; n ++ ) 
-            {
-               
-                if( normal.dot(node.normals()[n]) > 0 )
-                {
-                    node.visible = true;
-                    break;
-                }
-            }
+            if(this.frustumCulling(node,camera))
             
+                if(this.backFaceCulling(node,camera));
+            
+                    if(this.SSE(node,camera) && node.noChild() && node.level < 4)
+                    {
+                       
+                        node.level++;                        
+                        //this.root.subdivide(node);
+                        //node.material.color = new THREE.Color(1.0,0.0,0.0);
+                    }
+                                                
             return node.visible;
         }        
         
         return true;
-        
-    };
-    
-    BrowseTree.prototype.processNode = function(node,camera)
-    {
-        return this.backFaceCulling(node,camera);
     };
 
     /**
@@ -53,9 +79,18 @@ define('Scene/BrowseTree',['Globe/EllipsoidTileMesh','THREE'], function(Ellipsoi
      */
     BrowseTree.prototype.browse = function(tree, camera){
              
-        if(this.processNode(tree,camera))       
-            for(var i = 0;i<tree.children.length;i++)
-                this.browse(tree.children[i],camera);
+        this.root = tree;
+        //if(this.processNode(tree,camera))       
+        for(var i = 0;i<tree.children.length;i++)
+            this._browse(tree.children[i],camera);
+
+    };
+    
+    BrowseTree.prototype._browse = function(node, camera){
+             
+        if(this.processNode(node,camera))       
+            for(var i = 0;i<node.children.length;i++)
+                this._browse(node.children[i],camera);
 
     };
 

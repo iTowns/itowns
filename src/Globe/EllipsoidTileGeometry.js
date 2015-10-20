@@ -40,19 +40,21 @@ define('Globe/EllipsoidTileGeometry',['THREE','Core/defaultValue','Scene/Bouding
         var thetaLength     = bbox.dimension.y;
         
         //-----------
-         this.normals    = [];
-    
+        this.normals    = [];
+        
         this.carto2Normal = function(phi,theta)
-        {   
-            
-            
+        {                           
             return ellipsoid.geodeticSurfaceNormalCartographic(new CoordCarto( phi, theta,0));                
         };
 
         this.normals.push(this.carto2Normal(phiStart, thetaStart));
         this.normals.push(this.carto2Normal(phiStart+ phiLength, thetaStart+ thetaLength));
         this.normals.push(this.carto2Normal(phiStart, thetaStart+ thetaLength));
-        this.normals.push(this.carto2Normal(phiStart+ phiLength, thetaStart));
+        this.normals.push();
+        
+        this.normal = this.carto2Normal(bbox.center.x,bbox.center.y);
+        
+        this.center = ellipsoid.cartographicToCartesian(new CoordCarto(bbox.center.x,bbox.center.y,0)) ;
         
         //--------
         

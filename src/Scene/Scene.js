@@ -47,17 +47,19 @@ define('Scene/Scene',['Renderer/c3DEngine','Globe/Star','Globe/Globe','Renderer/
 
 
     /**
-    * @param currentCamera {[object Object]} 
-    */
+     * 
+     * @returns {undefined}
+     */
     Scene.prototype.sceneProcess = function(){
         
-        // console.log(this.nodes[0].terrain);
-        //this.currentCamera.update();
-        //this.browserScene.browse(this.nodes[0].terrain,this.currentCamera);
+        if(this.nodes[0] !== undefined  && this.currentCamera !== undefined )
+        {
+            this.browserScene.browse(this.nodes[0].terrain,this.currentCamera);
+        } 
         
     };
     
-    Scene.prototype.realtimeSceneProcess = function(node,camera){        
+    Scene.prototype.realtimeSceneProcess = function(){        
         if(this.nodes[0] !== undefined  && this.currentCamera !== undefined )
         {
             this.browserScene.browse(this.nodes[0].terrain,this.currentCamera);

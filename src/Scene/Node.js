@@ -34,6 +34,12 @@ define('Scene/Node',[], function(){
         return this.children.length;
 
     };
+    
+    Node.prototype.noChild = function(){
+
+        return this.children.length === 0 ;
+
+    };
 
 
     /**
