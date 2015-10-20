@@ -48,9 +48,9 @@ define('Globe/EllipsoidTileGeometry',['THREE','Core/defaultValue','Scene/Bouding
         };
 
         this.normals.push(this.carto2Normal(phiStart, thetaStart));
-        this.normals.push(this.carto2Normal(phiStart+ phiLength, thetaStart+ thetaLength));
+        this.normals.push(this.carto2Normal(phiStart + phiLength, thetaStart+ thetaLength));
         this.normals.push(this.carto2Normal(phiStart, thetaStart+ thetaLength));
-        this.normals.push();
+        this.normals.push(this.carto2Normal(phiStart + phiLength, thetaStart));
         
         this.normal = this.carto2Normal(bbox.center.x,bbox.center.y);
         
