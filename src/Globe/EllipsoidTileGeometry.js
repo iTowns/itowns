@@ -16,7 +16,9 @@ define('Globe/EllipsoidTileGeometry',['THREE','Core/defaultValue','Scene/Bouding
 
 	var radius = 6.3567523142451793; 
 
-        var ellipsoid  = new Ellipsoid(6.378137, 6.378137, 6.3567523142451793);
+        //var ellipsoid       = new Ellipsoid(6.378137, 6.378137, 6.3567523142451793);
+        
+        var ellipsoid       = new Ellipsoid(6, 6, 6);
         
         var nSeg            = 16;       
         var nVertex         = (nSeg+1)*(nSeg+1); // correct pour uniquement les vertex
@@ -32,6 +34,9 @@ define('Globe/EllipsoidTileGeometry',['THREE','Core/defaultValue','Scene/Bouding
         
         widthSegments       = Math.max( 2, Math.floor( widthSegments ) || 2 );
         heightSegments      = Math.max( 2, Math.floor( heightSegments ) || 2 );
+        
+//        widthSegments       = 1;
+//        heightSegments      = 1;
 
         var phiStart        = bbox.minCarto.longitude ;
         var phiLength       = bbox.dimension.x;
@@ -40,21 +45,50 @@ define('Globe/EllipsoidTileGeometry',['THREE','Core/defaultValue','Scene/Bouding
         var thetaLength     = bbox.dimension.y;
         
         //-----------
-        this.normals    = [];
+        this.normals        = [];
+        this.fourCorners    = [];
         
         this.carto2Normal = function(phi,theta)
         {                           
             return ellipsoid.geodeticSurfaceNormalCartographic(new CoordCarto( phi, theta,0));                
         };
-
+        
         this.normals.push(this.carto2Normal(phiStart, thetaStart));
         this.normals.push(this.carto2Normal(phiStart + phiLength, thetaStart+ thetaLength));
         this.normals.push(this.carto2Normal(phiStart, thetaStart+ thetaLength));
         this.normals.push(this.carto2Normal(phiStart + phiLength, thetaStart));
         
-        this.normal = this.carto2Normal(bbox.center.x,bbox.center.y);
+        this.fourCorners.push(ellipsoid.cartographicToCartesian(new CoordCarto(phiStart, thetaStart,0)));
+        this.fourCorners.push(ellipsoid.cartographicToCartesian(new CoordCarto(phiStart + phiLength, thetaStart+ thetaLength,0)));
+        this.fourCorners.push(ellipsoid.cartographicToCartesian(new CoordCarto(phiStart, thetaStart+ thetaLength,0)));
+        this.fourCorners.push(ellipsoid.cartographicToCartesian(new CoordCarto(phiStart + phiLength, thetaStart,0)));
+      
+        this.normal = this.carto2Normal(bbox.center.x,bbox.center.y);        
+        var ccarto  = new CoordCarto(bbox.center.x,bbox.center.y,0);        
         
-        this.center = ellipsoid.cartographicToCartesian(new CoordCarto(bbox.center.x,bbox.center.y,0)) ;
+        
+        var center  = new THREE.Vector3();
+        
+        center = center.subVectors(this.fourCorners[0],this.fourCorners[1]);
+        
+        center.sub(this.fourCorners[1]);
+        
+        this.center = ellipsoid.cartographicToCartesian(ccarto) ;
+        //this.center = center ;
+
+        var color    = new THREE.Color( Math.random(), Math.random(), Math.random());
+        
+        var width    = this.fourCorners[0].distanceTo(this.fourCorners[2]);
+        var height   = this.fourCorners[1].distanceTo(this.fourCorners[3]);
+        
+        var geometry = new THREE.BoxGeometry(width,height,1.0);
+        
+        var material = new THREE.MeshBasicMaterial( {color: color.getHex(), wireframe : true} );
+        this.cube    = new THREE.Mesh( geometry, material );
+
+        this.cube.position.copy(this.center);
+        this.cube.lookAt(this.normal);
+        this.cube.translateZ(0.5);
         
         //--------
         

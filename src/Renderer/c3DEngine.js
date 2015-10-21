@@ -23,7 +23,7 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera','when'], 
         
         this.renderer.setPixelRatio( window.devicePixelRatio );
         this.renderer.setSize(window.innerWidth, window.innerHeight );        
-        this.renderer.setClearColor( 0xA568C2 );
+        this.renderer.setClearColor( 0x122852 );
         this.renderer.autoClear = false;
         
         document.body.appendChild( this.renderer.domElement );
