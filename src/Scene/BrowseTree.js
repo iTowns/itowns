@@ -11,6 +11,7 @@ define('Scene/BrowseTree',['Globe/EllipsoidTileMesh','THREE'], function(Ellipsoi
 
         this.process    = null;        
         this.root       = undefined;
+        this.oneNode    = 0;
     }
         
     BrowseTree.prototype.backFaceCulling = function(node,camera)
@@ -22,9 +23,7 @@ define('Scene/BrowseTree',['Globe/EllipsoidTileMesh','THREE'], function(Ellipsoi
             var dot = normal.dot(node.normals()[n]);
             if( dot > 0 )
             {
-                node.visible    = true;
-                dot             = normal.dot(node.normal());
-                node.dot        = dot < 0 ? 0 : dot;
+                node.visible    = true;                
                 break;
             }
         };
@@ -59,7 +58,7 @@ define('Scene/BrowseTree',['Globe/EllipsoidTileMesh','THREE'], function(Ellipsoi
                     if(this.SSE(node,camera) && node.noChild() && node.level < 4)
                     {
                        
-                        node.level++;                        
+                        //node.level++;                        
                         //this.root.subdivide(node);
                         //node.material.color = new THREE.Color(1.0,0.0,0.0);
                     }
@@ -95,8 +94,17 @@ define('Scene/BrowseTree',['Globe/EllipsoidTileMesh','THREE'], function(Ellipsoi
     
     BrowseTree.prototype.bBoxHelper = function(node,parent)
     {          
-        if(node instanceof EllipsoidTileMesh && node.level === 2 )
-        {
+        if(node instanceof EllipsoidTileMesh && node.level < 4  && node.noChild())
+        {            
+            if(parent !== undefined && this.oneNode === 7)
+            {    
+                parent.add(node.geometry.cube);
+                
+            }
+            
+            this.oneNode++;
+            
+            /*
             var color      = new THREE.Color( Math.random(), Math.random(), Math.random());            
             var bboxHelper = new THREE.BoundingBoxHelper(node,color.getHex());
             
@@ -106,6 +114,7 @@ define('Scene/BrowseTree',['Globe/EllipsoidTileMesh','THREE'], function(Ellipsoi
                 parent.add(bboxHelper);
 
             return bboxHelper;
+            */
         }
         else
             return parent;
@@ -117,7 +126,7 @@ define('Scene/BrowseTree',['Globe/EllipsoidTileMesh','THREE'], function(Ellipsoi
         var bboxH = this.bBoxHelper(node,parent);
             
         for(var i = 0;i<node.children.length;i++)
-                this.addBBoxHelper(node.children[i],bboxH);
+                this.addBBoxHelper(node.children[i],parent);
             
         return bboxH;
 

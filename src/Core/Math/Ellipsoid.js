@@ -45,8 +45,8 @@ define('Core/Math/Ellipsoid',['Core/Math/MathExtented','THREE'], function(MathEx
     Ellipsoid.prototype.cartographicToCartesian = function(coordCarto) 
     {
         
-        var n;
-        var k = cartographicToCartesianK;
+        //var n;
+        var k = new THREE.Vector3();
         var n = this.geodeticSurfaceNormalCartographic(coordCarto);
      
         k.multiplyVectors(this._radiiSquared, n);

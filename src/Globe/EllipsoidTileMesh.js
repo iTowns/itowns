@@ -59,6 +59,11 @@ define('Globe/EllipsoidTileMesh',['Renderer/NodeMesh','Globe/EllipsoidTileGeomet
         return this.geometry.normals;
     };
     
+     EllipsoidTileMesh.prototype.fourCorners = function()
+    { 
+        return this.geometry.fourCorners;
+    };
+    
     EllipsoidTileMesh.prototype.normal = function()
     { 
         return this.geometry.normal;
