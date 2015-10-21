@@ -26,7 +26,7 @@ define('Globe/EllipsoidTileMesh',['Renderer/NodeMesh','Globe/EllipsoidTileGeomet
         this.geometry   = new EllipsoidTileGeometry(bbox);
         this.geometry.computeBoundingSphere();
         
-        this.material   = new THREE.MeshBasicMaterial( {color: 0xffffff, wireframe: false}); 
+        this.material   = new THREE.MeshBasicMaterial( {color: 0xffffff, wireframe: true}); 
         this.dot        = 0;
     }
 
