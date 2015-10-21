@@ -96,10 +96,10 @@ define('Scene/BrowseTree',['Globe/EllipsoidTileMesh','THREE'], function(Ellipsoi
     {          
         if(node instanceof EllipsoidTileMesh && node.level < 4  && node.noChild())
         {            
-            if(parent !== undefined && this.oneNode === 7)
+            if(parent !== undefined && this.oneNode === 7 )
             {    
-                parent.add(node.geometry.cube);
-                
+                parent.add(node.geometry.helper);
+               
             }
             
             this.oneNode++;
