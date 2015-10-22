@@ -49,33 +49,30 @@ define('Scene/BrowseTree',['Globe/EllipsoidTileMesh','THREE'], function(Ellipsoi
     
     BrowseTree.prototype.frustumCullingOO = function(node,camera)        
     {        
+        var obb         = node.geometry.OBB;
+        var oriObject   = obb.OObject;
         
-        var cube    = node.geometry.OBB.helper.children[0];
-        var cube2   = node.geometry.OBB.helper.children[1];
+        oriObject.updateMatrix(); 
+        oriObject.updateMatrixWorld(); 
 
-        var dummy   = cube.children[0];
-        dummy.position.copy(cube.worldToLocal(camera.position().clone()));
+        var dummy   = oriObject.children[0];
+        dummy.position.copy(oriObject.worldToLocal(camera.position().clone()));
 
-        var quad    = cube.quaternion.clone();            
+        var quad    = oriObject.quaternion.clone();            
         var quadCam = camera.camera3D.quaternion.clone();            
         quad.inverse();            
         quad.multiply(quadCam);            
         dummy.quaternion.copy(quad);
 
-        //°°°°°°°°°°°°°°°°°°°°°°°°°°°°°
         this.camera.position.copy(dummy.position);
         this.camera.rotation.copy(dummy.rotation);
 
-        this.camera.updateMatrix(); // make sure camera's local matrix is updated
-        this.camera.updateMatrixWorld(); // make sure camera's world matrix is updated
+        this.camera.updateMatrix(); 
+        this.camera.updateMatrixWorld(); 
         this.camera.matrixWorldInverse.getInverse( this.camera.matrixWorld );
-
         this.frustum.setFromMatrix( new THREE.Matrix4().multiplyMatrices( this.camera.projectionMatrix, this.camera.matrixWorldInverse));             
-
-        var box = new THREE.Box3();
-        box.setFromObject(cube2);
-
-        node.visible = this.frustum.intersectsBox(box);
+ 
+        node.visible = this.frustum.intersectsBox(node.geometry.OBB);
         
         return node.visible;
         
@@ -141,9 +138,9 @@ define('Scene/BrowseTree',['Globe/EllipsoidTileMesh','THREE'], function(Ellipsoi
         {            
             if(parent !== undefined && this.oneNode === 7 )
             {    
-                parent.add(node.geometry.OBB.helper);
+                //parent.add(node.geometry.OBB.helper);
                // node.geometry.OBB.helper.visible = false;
-                node.material.color = new THREE.Color(1,0,0).getHex();
+                //node.material.color = new THREE.Color(1,0,0).getHex();
 //                parent.add(node.geometry.OBB.OObject);
                 this.node = node;
                
