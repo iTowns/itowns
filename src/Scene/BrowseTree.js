@@ -27,7 +27,7 @@ define('Scene/BrowseTree',['Globe/EllipsoidTileMesh','THREE'], function(Ellipsoi
             if( dot > 0 )
             {
                 node.visible    = true;                
-                break;
+                return true;
             }
         };
         
@@ -89,18 +89,11 @@ define('Scene/BrowseTree',['Globe/EllipsoidTileMesh','THREE'], function(Ellipsoi
             
             node.visible = false;
             
-            if(this.frustumCulling(node,camera))
+            this.backFaceCulling(node,camera);
             
-                if(this.backFaceCulling(node,camera));
-            
-                    if(this.SSE(node,camera) && node.noChild() && node.level < 4)
-                    {
-                       
-                        
-                        //node.level++;                        
-                        //this.root.subdivide(node);
-                        //node.material.color = new THREE.Color(1.0,0.0,0.0);
-                    }
+            if(node.visible)
+                this.frustumCullingOO(node,camera);          
+                 
                                                 
             return node.visible;
         }        
