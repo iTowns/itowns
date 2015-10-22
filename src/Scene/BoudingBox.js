@@ -4,7 +4,7 @@
 * Description: BoundingBox délimite une zone de l'espace. Cette zone est défnie  par des coordonées cartographiques.
 */
 
-define('Scene/BoudingBox',['Core/defaultValue','Core/Math/MathExtented','Core/Math/Point2D','Core/Geographic/CoordCarto'], function(defaultValue,MathExt,Point2D,CoordCarto){
+define('Scene/BoudingBox',['Core/defaultValue','Core/Math/MathExtented','Core/Math/Point2D','Core/Geographic/CoordCarto','THREE'], function(defaultValue,MathExt,Point2D,CoordCarto,THREE){
 
     function BoudingBox(minLongitude,maxLongitude, minLatitude ,maxLatitude ,parentCenter,minAltitude ,maxAltitude){
         //Constructor
@@ -36,6 +36,76 @@ define('Scene/BoudingBox',['Core/defaultValue','Core/Math/MathExtented','Core/Ma
        this.center         = center;
 
     };
+    
+    
+    BoudingBox.prototype.get3DBBox = function(ellipsoid,normal,center){
+       
+        var cardinals       = [];
+        
+        var phiStart        = this.minCarto.longitude ;
+        var phiLength       = this.dimension.x;
+
+        var thetaStart      = this.minCarto.latitude ;
+        var thetaLength     = this.dimension.y;
+        
+        //      0---1---2
+        //      |       |
+        //      7       3
+        //      |       |
+        //      6---5---4
+        
+        cardinals.push(new CoordCarto(phiStart                        , thetaStart    ,0));
+        cardinals.push(new CoordCarto(phiStart + this.halfDimension.x , thetaStart    ,0));
+        cardinals.push(new CoordCarto(phiStart + phiLength            , thetaStart    ,0));
+        cardinals.push(new CoordCarto(phiStart + phiLength            , thetaStart + this.halfDimension.y,0));        
+        cardinals.push(new CoordCarto(phiStart + phiLength            , thetaStart + thetaLength  ,0));
+        cardinals.push(new CoordCarto(phiStart + this.halfDimension.x , thetaStart + thetaLength  ,0));        
+        cardinals.push(new CoordCarto(phiStart                        , thetaStart + thetaLength  ,0));
+        cardinals.push(new CoordCarto(phiStart                        , thetaStart + this.halfDimension.y,0));
+        
+        var cardinals3D     = [];                 
+        var cardin3DPlane   = [];
+        
+        var maxV            = new THREE.Vector3(-1000,-1000,-1000);
+        var minV            = new THREE.Vector3(1000,1000,1000);        
+        var maxHeight       = 0;        
+        var planeZ          = new THREE.Quaternion();
+        var qRotY           = new THREE.Quaternion();
+        var vec             = new THREE.Vector3();
+        var tangentPlane    = new THREE.Plane(normal);
+        
+        planeZ.setFromUnitVectors(normal,new THREE.Vector3(0,1,0));        
+        qRotY.setFromAxisAngle( new THREE.Vector3( 0, 1, 0 ), -this.center.x );        
+        qRotY.multiply(planeZ);
+        
+        for ( var i = 0; i < cardinals.length; i++ )
+        {
+                cardinals3D.push(ellipsoid.cartographicToCartesian(cardinals[i]));
+                cardin3DPlane.push(tangentPlane.projectPoint(cardinals3D[i]));
+                vec.subVectors(cardinals3D[i],center);
+                maxHeight    = Math.max(maxHeight,cardin3DPlane[i].distanceTo(vec));                    
+                cardin3DPlane[i].applyQuaternion( qRotY );
+                maxV.max(cardin3DPlane[i]);
+                minV.min(cardin3DPlane[i]);
+        }
+       
+        var width       = Math.abs(maxV.z - minV.z);
+        var height      = Math.abs(maxV.x - minV.x);
+                
+        var delta       = height * 0.5 - Math.abs(cardin3DPlane[5].x);
+        var geometry    = new THREE.BoxGeometry(width,height,maxHeight);        
+        var material    = new THREE.MeshBasicMaterial( {wireframe : true} );
+        var bbox3D      = new THREE.Mesh( geometry, material );
+        
+        bbox3D.position.copy(center);
+        bbox3D.lookAt(normal);
+        bbox3D.translateZ(maxHeight*0.5);
+        bbox3D.translateY(delta);
+
+        return bbox3D;
+       
+    };
+    
 
     return BoudingBox;
     
