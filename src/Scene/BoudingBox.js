@@ -90,26 +90,26 @@ define('Scene/BoudingBox',['Core/defaultValue','Core/Math/MathExtented','Core/Ma
         }
        
         var width       = Math.abs(maxV.z - minV.z);
-        var height      = Math.abs(maxV.x - minV.x);
-                
+        var height      = Math.abs(maxV.x - minV.x);               
         var delta       = height * 0.5 - Math.abs(cardin3DPlane[5].x);
-        var geometry    = new THREE.BoxGeometry(width,height,maxHeight);        
-        var material    = new THREE.MeshBasicMaterial( {color : 0xff0000,wireframe : true} );
-        var bbox3D      = new THREE.Mesh( geometry, material );
-        var bbox3D2     = new THREE.Mesh( geometry, material );
         
-        var dummy       = new THREE.Mesh( new THREE.BoxGeometry(1,1,0.2));        
-        var helper      = new THREE.Mesh();
         
-        bbox3D.position.copy(center);
-        bbox3D.lookAt(normal);
-        bbox3D.translateZ(maxHeight*0.5);
-        bbox3D.translateY(delta);
-        
-        helper.add(bbox3D);
-        helper.add(bbox3D2);
-        bbox3D.add(dummy);
-        
+        var helper;
+        if(false)
+        {
+            helper          = new THREE.Mesh();
+            var geometry    = new THREE.BoxGeometry(width,height,maxHeight);        
+            var material    = new THREE.MeshBasicMaterial( {color : 0xff0000,wireframe : true} );
+            var bbox3D      = new THREE.Mesh( geometry, material );
+            bbox3D.position.copy(center);
+            bbox3D.lookAt(normal);
+            bbox3D.translateZ(maxHeight*0.5);
+            bbox3D.translateY(delta);       
+            helper.add(bbox3D);
+        }
+        else
+            helper = undefined;
+
         var o3D = new THREE.Object3D();
         o3D.position.copy(center);
         o3D.lookAt(normal);
@@ -119,8 +119,12 @@ define('Scene/BoudingBox',['Core/defaultValue','Core/Math/MathExtented','Core/Ma
         var child = new THREE.Object3D();
         
         o3D.add(child);
+        
+        var max = new THREE.Vector3(width*0.5,height*0.5,maxHeight*0.5);
+        var min = new THREE.Vector3(-width*0.5,-height*0.5,-maxHeight*0.5);   
+        
 
-        var obb = new THREE.OBB(minV,maxV,o3D,helper);
+        var obb = new THREE.OBB(min,max,o3D,helper);
 
         return obb;
        
