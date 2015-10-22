@@ -21,6 +21,9 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera','when'], 
         this.renderer   = new THREE.WebGLRenderer( { antialias: true,alpha: true } );
         this.width      = this.debug ? window.innerWidth * 0.5 : window.innerWidth;
         
+        var axisHelper = new THREE.AxisHelper( 7 );
+        this.scene3D.add( axisHelper );
+        
         this.renderer.setPixelRatio( window.devicePixelRatio );
         this.renderer.setSize(window.innerWidth, window.innerHeight );        
         this.renderer.setClearColor( 0x122852 );

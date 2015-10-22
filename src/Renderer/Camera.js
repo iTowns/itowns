@@ -36,7 +36,7 @@ define('Renderer/Camera',['Scene/Node','THREE'], function(Node, THREE){
     */
     Camera.prototype.position = function(){
         
-        return this.renderCamera.position;
+        return this.camera3D.position;
 
     };
     

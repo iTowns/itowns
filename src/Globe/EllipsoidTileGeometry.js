@@ -72,7 +72,7 @@ define('Globe/EllipsoidTileGeometry',['THREE','Core/defaultValue','Scene/Bouding
         var ccarto  = new CoordCarto(bbox.center.x,bbox.center.y,0);        
         
         this.center = ellipsoid.cartographicToCartesian(ccarto) ;   
-        this.helper = bbox.get3DBBox(ellipsoid,this.normal,this.center);
+        this.OBB    = bbox.get3DBBox(ellipsoid,this.normal,this.center);
 
         
         //--------

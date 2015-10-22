@@ -4,7 +4,7 @@
 * Description: BoundingBox délimite une zone de l'espace. Cette zone est défnie  par des coordonées cartographiques.
 */
 
-define('Scene/BoudingBox',['Core/defaultValue','Core/Math/MathExtented','Core/Math/Point2D','Core/Geographic/CoordCarto','THREE'], function(defaultValue,MathExt,Point2D,CoordCarto,THREE){
+define('Scene/BoudingBox',['Core/defaultValue','Core/Math/MathExtented','Core/Math/Point2D','Core/Geographic/CoordCarto','THREE','OBB'], function(defaultValue,MathExt,Point2D,CoordCarto,THREE,OBB){
 
     function BoudingBox(minLongitude,maxLongitude, minLatitude ,maxLatitude ,parentCenter,minAltitude ,maxAltitude){
         //Constructor
@@ -94,15 +94,35 @@ define('Scene/BoudingBox',['Core/defaultValue','Core/Math/MathExtented','Core/Ma
                 
         var delta       = height * 0.5 - Math.abs(cardin3DPlane[5].x);
         var geometry    = new THREE.BoxGeometry(width,height,maxHeight);        
-        var material    = new THREE.MeshBasicMaterial( {wireframe : true} );
+        var material    = new THREE.MeshBasicMaterial( {color : 0xff0000,wireframe : true} );
         var bbox3D      = new THREE.Mesh( geometry, material );
+        var bbox3D2     = new THREE.Mesh( geometry, material );
+        
+        var dummy       = new THREE.Mesh( new THREE.BoxGeometry(1,1,0.2));        
+        var helper      = new THREE.Mesh();
         
         bbox3D.position.copy(center);
         bbox3D.lookAt(normal);
         bbox3D.translateZ(maxHeight*0.5);
         bbox3D.translateY(delta);
+        
+        helper.add(bbox3D);
+        helper.add(bbox3D2);
+        bbox3D.add(dummy);
+        
+        var o3D = new THREE.Object3D();
+        o3D.position.copy(center);
+        o3D.lookAt(normal);
+        o3D.translateZ(maxHeight*0.5);
+        o3D.translateY(delta);
+        
+        var child = new THREE.Object3D();
+        
+        o3D.add(child);
 
-        return bbox3D;
+        var obb = new THREE.OBB(minV,maxV,o3D,helper);
+
+        return obb;
        
     };
     
