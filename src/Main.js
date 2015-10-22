@@ -14,7 +14,8 @@ requirejs.config({
         'THREE'         : "https://rawgit.com/mrdoob/three.js/master/build/three.min"  ,
         'when'          : 'ThirdParty/when',
         'OrbitControls' : "Renderer/Three/OrbitControls",
-        'StarGeometry'  : "Renderer/ThreeExtented/StarGeometry"
+        'StarGeometry'  : "Renderer/ThreeExtented/StarGeometry",
+        'OBB'           : "Renderer/ThreeExtented/OBB"
     },
 	
 	
@@ -30,6 +31,9 @@ requirejs.config({
             deps: ['THREE']
         },
         StarGeometry: {
+            deps: ['THREE']
+        },
+        OBB: {
             deps: ['THREE']
         }
 

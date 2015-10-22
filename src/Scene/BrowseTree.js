@@ -12,6 +12,9 @@ define('Scene/BrowseTree',['Globe/EllipsoidTileMesh','THREE'], function(Ellipsoi
         this.process    = null;        
         this.root       = undefined;
         this.oneNode    = 0;
+        this.node        = undefined;
+        this.camera     = undefined;
+        this.frustum    = new THREE.Frustum();
     }
         
     BrowseTree.prototype.backFaceCulling = function(node,camera)
@@ -42,10 +45,48 @@ define('Scene/BrowseTree',['Globe/EllipsoidTileMesh','THREE'], function(Ellipsoi
     BrowseTree.prototype.SSE = function(node,camera)
     {                                
         return camera.SSE(node) > 1.0;            
-    };    
+    };
+    
+    BrowseTree.prototype.frustumCullingOO = function(node,camera)        
+    {        
+        
+        var cube    = node.geometry.OBB.helper.children[0];
+        var cube2   = node.geometry.OBB.helper.children[1];
+
+        var dummy   = cube.children[0];
+        dummy.position.copy(cube.worldToLocal(camera.position().clone()));
+
+        var quad    = cube.quaternion.clone();            
+        var quadCam = camera.camera3D.quaternion.clone();            
+        quad.inverse();            
+        quad.multiply(quadCam);            
+        dummy.quaternion.copy(quad);
+
+        //°°°°°°°°°°°°°°°°°°°°°°°°°°°°°
+        this.camera.position.copy(dummy.position);
+        this.camera.rotation.copy(dummy.rotation);
+
+        this.camera.updateMatrix(); // make sure camera's local matrix is updated
+        this.camera.updateMatrixWorld(); // make sure camera's world matrix is updated
+        this.camera.matrixWorldInverse.getInverse( this.camera.matrixWorld );
+
+        this.frustum.setFromMatrix( new THREE.Matrix4().multiplyMatrices( this.camera.projectionMatrix, this.camera.matrixWorldInverse));             
+
+        var box = new THREE.Box3();
+        box.setFromObject(cube2);
+
+        node.visible = this.frustum.intersectsBox(box);
+        
+        return node.visible;
+        
+    };
     
     BrowseTree.prototype.processNode = function(node,camera)
     {
+        if(this.node !== undefined)        
+            this.frustumCullingOO(this.node,camera);
+        
+        
         if(node instanceof EllipsoidTileMesh)
         {
             
@@ -58,6 +99,7 @@ define('Scene/BrowseTree',['Globe/EllipsoidTileMesh','THREE'], function(Ellipsoi
                     if(this.SSE(node,camera) && node.noChild() && node.level < 4)
                     {
                        
+                        
                         //node.level++;                        
                         //this.root.subdivide(node);
                         //node.material.color = new THREE.Color(1.0,0.0,0.0);
@@ -78,6 +120,7 @@ define('Scene/BrowseTree',['Globe/EllipsoidTileMesh','THREE'], function(Ellipsoi
     BrowseTree.prototype.browse = function(tree, camera){
              
         this.root = tree;
+        this.camera = camera.camera3D.clone();
         //if(this.processNode(tree,camera))       
         for(var i = 0;i<tree.children.length;i++)
             this._browse(tree.children[i],camera);
@@ -98,7 +141,11 @@ define('Scene/BrowseTree',['Globe/EllipsoidTileMesh','THREE'], function(Ellipsoi
         {            
             if(parent !== undefined && this.oneNode === 7 )
             {    
-                parent.add(node.geometry.helper);
+                parent.add(node.geometry.OBB.helper);
+               // node.geometry.OBB.helper.visible = false;
+                node.material.color = new THREE.Color(1,0,0).getHex();
+//                parent.add(node.geometry.OBB.OObject);
+                this.node = node;
                
             }
             
