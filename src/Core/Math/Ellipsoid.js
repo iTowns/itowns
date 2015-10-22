@@ -21,7 +21,7 @@ define('Core/Math/Ellipsoid',['Core/Math/MathExtented','THREE'], function(MathEx
     }
     
     //var cartographicToCartesianNormal   = new THREE.Vector3();
-    var cartographicToCartesianK        = new THREE.Vector3();
+    //var cartographicToCartesianK        = new THREE.Vector3();
     
     Ellipsoid.prototype.geodeticSurfaceNormalCartographic = function(coordCarto) {
     
@@ -61,7 +61,20 @@ define('Core/Math/Ellipsoid',['Core/Math/MathExtented','THREE'], function(MathEx
         
         return k.add( n);
     };
-
+    
+    Ellipsoid.prototype.cartographicToCartesianArray = function(coordCartoArray) 
+    {
+        
+        var cartesianArray = [];
+        for ( var i = 0; i < coordCartoArray.length; i++ )
+        {
+            cartesianArray.push(this.cartographicToCartesian(coordCartoArray[i]));
+        }
+        
+        return cartesianArray;
+       
+    };
+    
     return Ellipsoid;
 
 });
