@@ -119,7 +119,7 @@ define('Scene/BrowseTree',['Globe/EllipsoidTileMesh','THREE','OBBHelper'], funct
         {            
             if(parent !== undefined && this.oneNode === 8)
             {                    
-                //parent.add(new THREE.OBBHelper(node.geometry.OBB));
+                parent.add(new THREE.OBBHelper(node.geometry.OBB));
                                 
             }
             this.oneNode++;
