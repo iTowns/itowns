@@ -15,7 +15,8 @@ requirejs.config({
         'when'          : 'ThirdParty/when',
         'OrbitControls' : "Renderer/Three/OrbitControls",
         'StarGeometry'  : "Renderer/ThreeExtented/StarGeometry",
-        'OBB'           : "Renderer/ThreeExtented/OBB"
+        'OBB'           : "Renderer/ThreeExtented/OBB",
+        'OBBHelper'     : "Renderer/ThreeExtented/OBBHelper"
     },
 	
 	
@@ -34,6 +35,9 @@ requirejs.config({
             deps: ['THREE']
         },
         OBB: {
+            deps: ['THREE']
+        },        
+        OBBHelper: {
             deps: ['THREE']
         }
 
