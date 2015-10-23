@@ -15,7 +15,7 @@ define('Scene/Scene',['Renderer/c3DEngine','Globe/Star','Globe/Globe','Renderer/
             throw new Error("Cannot instantiate more than one Scene");
         } 
 
-        this.browserScene   = new BrowseTree();
+        
         this.nodes          = [];            
         this.cameras        = null;        
         this.selectNodes    = null;      
@@ -28,9 +28,11 @@ define('Scene/Scene',['Renderer/c3DEngine','Globe/Star','Globe/Globe','Renderer/
         this.gfxEngine.scene  = this;
         this.currentCamera    = this.gfxEngine.camera;
 
+        this.browserScene   = new BrowseTree(this);
         this.gfxEngine.renderScene();
-
-        this.browserScene.addBBoxHelper(this.nodes[0].terrain,this.gfxEngine.scene3D);
+        
+        
+        this.browserScene.addBBoxHelper(this.nodes[0].terrain);
     }
 
     Scene.prototype.constructor = Scene;
@@ -99,6 +101,11 @@ define('Scene/Scene',['Renderer/c3DEngine','Globe/Star','Globe/Globe','Renderer/
         
         this.gfxEngine.renderScene();
 
+    };
+    
+    Scene.prototype.scene3D = function(){
+        
+        return this.gfxEngine.scene3D;
     };
 
     /**

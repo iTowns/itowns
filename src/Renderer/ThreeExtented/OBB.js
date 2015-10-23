@@ -19,7 +19,7 @@ THREE.OBB = function (min,max)
 THREE.OBB.prototype = Object.create( THREE.Object3D.prototype );
 THREE.OBB.prototype.constructor = THREE.OBB;
 
-THREE.OBB.prototype.update = function(mesh,texture){
+THREE.OBB.prototype.update = function(){
 
     this.updateMatrix(); 
     this.updateMatrixWorld(); 
