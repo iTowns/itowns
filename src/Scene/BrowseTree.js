@@ -4,7 +4,7 @@
 * Description: BrowseTree parcourt un arbre de Node. Lors du parcours un ou plusieur NodeProcess peut etre appliqué sur certains Node.
 */
 
-define('Scene/BrowseTree',['Globe/EllipsoidTileMesh','THREE'], function(EllipsoidTileMesh,THREE){
+define('Scene/BrowseTree',['Globe/EllipsoidTileMesh','THREE','OBBHelper'], function(EllipsoidTileMesh,THREE,OBBHelper){
 
     function BrowseTree(){
         //Constructor
@@ -49,30 +49,18 @@ define('Scene/BrowseTree',['Globe/EllipsoidTileMesh','THREE'], function(Ellipsoi
     
     BrowseTree.prototype.frustumCullingOO = function(node,camera)        
     {        
-        var obb         = node.geometry.OBB;
-        var oriObject   = obb.OObject;
-        
-        oriObject.updateMatrix(); 
-        oriObject.updateMatrixWorld(); 
+        var obb     = node.geometry.OBB;
+        var quadInv = obb.quadInverse().clone();            
 
-        var dummy   = oriObject.children[0];
-        dummy.position.copy(oriObject.worldToLocal(camera.position().clone()));
-
-        var quad    = oriObject.quaternion.clone();            
-        var quadCam = camera.camera3D.quaternion.clone();            
-        quad.inverse();            
-        quad.multiply(quadCam);            
-        dummy.quaternion.copy(quad);
-
-        this.camera.position.copy(dummy.position);
-        this.camera.rotation.copy(dummy.rotation);
+        this.camera.position.copy(obb.worldToLocal(camera.position().clone()));
+        this.camera.quaternion.copy(quadInv.multiply(camera.camera3D.quaternion));
 
         this.camera.updateMatrix(); 
         this.camera.updateMatrixWorld(); 
         this.camera.matrixWorldInverse.getInverse( this.camera.matrixWorld );
         this.frustum.setFromMatrix( new THREE.Matrix4().multiplyMatrices( this.camera.projectionMatrix, this.camera.matrixWorldInverse));             
  
-        node.visible = this.frustum.intersectsBox(node.geometry.OBB);
+        node.visible = this.frustum.intersectsBox(obb.box3D);
         
         return node.visible;
         
@@ -127,31 +115,14 @@ define('Scene/BrowseTree',['Globe/EllipsoidTileMesh','THREE'], function(Ellipsoi
     
     BrowseTree.prototype.bBoxHelper = function(node,parent)
     {          
-        if(node instanceof EllipsoidTileMesh && node.level < 4  && node.noChild())
+        if(node instanceof EllipsoidTileMesh && node.level < 6  && node.noChild())
         {            
-            if(parent !== undefined && this.oneNode === 7 )
-            {    
-                //parent.add(node.geometry.OBB.helper);
-               // node.geometry.OBB.helper.visible = false;
-                //node.material.color = new THREE.Color(1,0,0).getHex();
-//                parent.add(node.geometry.OBB.OObject);
-                this.node = node;
-               
+            if(parent !== undefined && this.oneNode === 8)
+            {                    
+                //parent.add(new THREE.OBBHelper(node.geometry.OBB));
+                                
             }
-            
             this.oneNode++;
-            
-            /*
-            var color      = new THREE.Color( Math.random(), Math.random(), Math.random());            
-            var bboxHelper = new THREE.BoundingBoxHelper(node,color.getHex());
-            
-            bboxHelper.update();
-
-            if(parent !== undefined)
-                parent.add(bboxHelper);
-
-            return bboxHelper;
-            */
         }
         else
             return parent;

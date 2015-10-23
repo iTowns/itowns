@@ -99,11 +99,11 @@ define('Scene/Quadtree',['Scene/Layer','Scene/BoudingBox','when','THREE'], funct
         var tile    = new this.tileType(bbox);        
         tile.level  = cooWMTS.zoom;
         
-//        this.interCommand.getTile(cooWMTS).then(function(texture)
-//        {   
-//            this.setTexture(texture);             
-//
-//        }.bind(tile)); 
+        this.interCommand.getTile(cooWMTS).then(function(texture)
+        {   
+            this.setTexture(texture);             
+
+        }.bind(tile)); 
         
         return tile;
     };    
@@ -143,7 +143,7 @@ define('Scene/Quadtree',['Scene/Layer','Scene/BoudingBox','when','THREE'], funct
         {
             this.subdivide(node.children[i]);
             
-            this.subdivideChildren(node.children[i]);
+            //this.subdivideChildren(node.children[i]);
         }
     };
     

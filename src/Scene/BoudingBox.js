@@ -92,7 +92,9 @@ define('Scene/BoudingBox',['Core/defaultValue','Core/Math/MathExtented','Core/Ma
         var width       = Math.abs(maxV.z - minV.z);
         var height      = Math.abs(maxV.x - minV.x);               
         var delta       = height * 0.5 - Math.abs(cardin3DPlane[5].x);
-        
+        var max         = new THREE.Vector3(width*0.5,height*0.5,maxHeight*0.5);
+        var min         = new THREE.Vector3(-width*0.5,-height*0.5,-maxHeight*0.5);   
+        var obb         = new THREE.OBB(min,max);
         
         var helper;
         if(false)
@@ -110,27 +112,16 @@ define('Scene/BoudingBox',['Core/defaultValue','Core/Math/MathExtented','Core/Ma
         else
             helper = undefined;
 
-        var o3D = new THREE.Object3D();
-        o3D.position.copy(center);
-        o3D.lookAt(normal);
-        o3D.translateZ(maxHeight*0.5);
-        o3D.translateY(delta);
-        
-        var child = new THREE.Object3D();
-        
-        o3D.add(child);
-        
-        var max = new THREE.Vector3(width*0.5,height*0.5,maxHeight*0.5);
-        var min = new THREE.Vector3(-width*0.5,-height*0.5,-maxHeight*0.5);   
-        
+        obb.position.copy(center);
+        obb.lookAt(normal);
+        obb.translateZ(maxHeight*0.5);
+        obb.translateY(delta);
 
-        var obb = new THREE.OBB(min,max,o3D,helper);
-
+        obb.update();
         return obb;
        
     };
     
-
     return BoudingBox;
     
 });
