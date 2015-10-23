@@ -38,6 +38,9 @@ define('Core/Commander/Providers/IoDriver_XBIL',['Core/Commander/Providers/IoDri
                 var byteArray = new Float32Array(arrayBuffer);
                 var size = 256*256;
                 var rgbaData = new Float32Array( 4 * size );
+                
+                var max = - 1000000;
+                var min =   1000000;
                                 
                 //var mcolor  = 1.0;
                 var mcolor  = Math.random();
@@ -54,13 +57,24 @@ define('Core/Commander/Providers/IoDriver_XBIL',['Core/Commander/Providers/IoDri
                    }
                    else
                    {
+                        var h = byteArray[i];
+                        
+                        max = Math.max(max,h);
+                        min = Math.min(min,h);
+                       
                         rgbaData[i * 4  + 3] = 1.0;
-                        rgbaData[i * 4  + 2] = Math.floor(byteArray[i])/2500.0;
-                        rgbaData[i * 4  + 1] = Math.floor(byteArray[i])/2500.0;
-                        rgbaData[i * 4  + 0] = Math.floor(byteArray[i])/2500.0;
+                        rgbaData[i * 4  + 2] = Math.floor(h)/2500.0;
+                        rgbaData[i * 4  + 1] = Math.floor(h)/2500.0;
+                        rgbaData[i * 4  + 0] = Math.floor(h)/2500.0;
                    }
                    
                 }
+//                if(max !== - 1000000)
+//                {
+//                    console.log(max);
+//                    console.log(min);
+//                    console.log('-----------------');
+//                }
 
                 //var texture = new THREE.DataTexture(rgbaData,256,256,THREE.RGBAFormat,THREE.FloatType);
 

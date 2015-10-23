@@ -25,6 +25,7 @@ define('Renderer/Camera',['Scene/Node','THREE'], function(Node, THREE){
         this.preSSE     = this.width * (2.0 * Math.tan(this.HFOV * 0.5));
         
         this.cameraHelper  = debug  ? new THREE.CameraHelper( this.camera3D ) : undefined;
+        this.frustum       = new THREE.Frustum();
 
     }
  
@@ -46,19 +47,19 @@ define('Renderer/Camera',['Scene/Node','THREE'], function(Node, THREE){
 
     };
    
-    Camera.prototype.SSE = function(node){
+    Camera.prototype.SSE = function(node)
+    {
         
         var distance = this.camera3D.position.distanceTo(node.center());
         
         var geometricError = (17 - node.level)/400.0;
         
-        
-        
         return this.preSSE * (geometricError/distance);
 
     };
     
-    Camera.prototype.update = function(){
+    Camera.prototype.update = function()
+    {
                     
         var vector = new THREE.Vector3( 0, 0, 1 );
 
@@ -68,6 +69,27 @@ define('Renderer/Camera',['Scene/Node','THREE'], function(Node, THREE){
 
     };
     
+    Camera.prototype.setPosition = function(position)
+    {                    
+        this.camera3D.position.copy(position);
+    };
+    
+    Camera.prototype.setRotation = function(rotation)
+    {                            
+        this.camera3D.quaternion.copy(rotation);
+    };
+    
+    Camera.prototype.getFrustum = function()
+    {
+                    
+        this.camera3D.updateMatrix(); 
+        this.camera3D.updateMatrixWorld(); 
+        this.camera3D.matrixWorldInverse.getInverse( this.camera3D.matrixWorld );
+        this.frustum.setFromMatrix( new THREE.Matrix4().multiplyMatrices( this.camera3D.projectionMatrix, this.camera3D.matrixWorldInverse));             
+ 
+        return this.frustum;
+    };
+       
     return Camera;
     
 });

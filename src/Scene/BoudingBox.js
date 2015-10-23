@@ -89,35 +89,20 @@ define('Scene/BoudingBox',['Core/defaultValue','Core/Math/MathExtented','Core/Ma
                 minV.min(cardin3DPlane[i]);
         }
        
-        var width       = Math.abs(maxV.z - minV.z);
-        var height      = Math.abs(maxV.x - minV.x);               
-        var delta       = height * 0.5 - Math.abs(cardin3DPlane[5].x);
-        var max         = new THREE.Vector3(width*0.5,height*0.5,maxHeight*0.5);
-        var min         = new THREE.Vector3(-width*0.5,-height*0.5,-maxHeight*0.5);   
-        var obb         = new THREE.OBB(min,max);
-        
-        var helper;
-        if(false)
-        {
-            helper          = new THREE.Mesh();
-            var geometry    = new THREE.BoxGeometry(width,height,maxHeight);        
-            var material    = new THREE.MeshBasicMaterial( {color : 0xff0000,wireframe : true} );
-            var bbox3D      = new THREE.Mesh( geometry, material );
-            bbox3D.position.copy(center);
-            bbox3D.lookAt(normal);
-            bbox3D.translateZ(maxHeight*0.5);
-            bbox3D.translateY(delta);       
-            helper.add(bbox3D);
-        }
-        else
-            helper = undefined;
+        maxHeight   = maxHeight*0.5;       
+        var width   = Math.abs(maxV.z - minV.z)*0.5;
+        var height  = Math.abs(maxV.x - minV.x)*0.5;               
+        var delta   = height - Math.abs(cardin3DPlane[5].x);
+        var max     = new THREE.Vector3(width,height,maxHeight);
+        var min     = new THREE.Vector3(-width,-height,-maxHeight);
+        var obb     = new THREE.OBB(min,max);
 
         obb.position.copy(center);
         obb.lookAt(normal);
-        obb.translateZ(maxHeight*0.5);
+        obb.translateZ(maxHeight);
         obb.translateY(delta);
-
         obb.update();
+        
         return obb;
        
     };
