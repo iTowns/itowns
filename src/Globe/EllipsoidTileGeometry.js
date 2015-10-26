@@ -8,7 +8,7 @@
 
 define('Globe/EllipsoidTileGeometry',['THREE','Core/defaultValue','Scene/BoudingBox','Core/Math/Ellipsoid','Core/Geographic/CoordCarto'], function(THREE,defaultValue,BoudingBox,Ellipsoid,CoordCarto){
 
-    function EllipsoidTileGeometry(bbox){
+    function EllipsoidTileGeometry(bbox,VS,PS){
         //Constructor
         THREE.BufferGeometry.call( this );
         
@@ -167,6 +167,9 @@ define('Globe/EllipsoidTileGeometry',['THREE','Core/defaultValue','Scene/Bouding
         this.addAttribute( 'position',  new THREE.BufferAttribute( bufferVertex, 3 ) );
         this.addAttribute( 'normal',    new THREE.BufferAttribute( bufferNormal, 3 ) );
         this.addAttribute( 'uv',        new THREE.BufferAttribute( bufferUV, 2) );
+        
+     //   this.addAttribute( 'vertexShader',        new THREE.BufferAttribute( VS, 1) );
+     //   this.addAttribute( 'fragmentShader',        new THREE.BufferAttribute( PS, 1) );
 
     }
 

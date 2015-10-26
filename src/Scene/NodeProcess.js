@@ -50,7 +50,7 @@ define('Scene/NodeProcess',['THREE','Renderer/Camera'], function(THREE,Camera){
         return camera.SSE(node) > 1.0;            
     };
     
-    NodeProcess.prototype.frustumCullingOO = function(node,camera)        
+    NodeProcess.prototype.frustumCullingOBB = function(node,camera)        
     {        
         var obb     = node.geometry.OBB;
         var quadInv = obb.quadInverse().clone();            

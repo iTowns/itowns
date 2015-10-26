@@ -32,6 +32,9 @@ define('Core/Math/MathExtented',[], function(){
     */
     MathExt.PI_OV_TWO = Math.PI * 0.5;
     
+    
+     MathExt.PI_OV_FOUR = Math.PI * 0.25;
+    
     /**
     * pi*2
     *
@@ -39,6 +42,8 @@ define('Core/Math/MathExtented',[], function(){
     * @constant
     */
     MathExt.TWO_PI  = Math.PI * 2.0;
+    
+    MathExt.INV_TWO_PI  = 1.0/MathExt.TWO_PI;
     
     MathExt.LOG_TWO = Math.log(2.0);
     

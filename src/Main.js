@@ -11,12 +11,18 @@ requirejs.config({
     baseUrl: 'src/',
     paths : {
        
+        'text'          : "ThirdParty/text",
         'THREE'         : "https://rawgit.com/mrdoob/three.js/master/build/three.min"  ,
-        'when'          : 'ThirdParty/when',
+        'when'          : 'ThirdParty/when',        
         'OrbitControls' : "Renderer/Three/OrbitControls",
         'StarGeometry'  : "Renderer/ThreeExtented/StarGeometry",
         'OBB'           : "Renderer/ThreeExtented/OBB",
         'OBBHelper'     : "Renderer/ThreeExtented/OBBHelper"
+        
+    },
+    
+    bundles: {
+        'primary': ['main', 'text']
     },
 	
 	
