@@ -93,7 +93,7 @@ define('Scene/BoudingBox',['Core/defaultValue','Core/Math/MathExtented','Core/Ma
         var width   = Math.abs(maxV.z - minV.z)*0.5;
         var height  = Math.abs(maxV.x - minV.x)*0.5;               
         var delta   = height - Math.abs(cardin3DPlane[5].x);
-        var max     = new THREE.Vector3(width,height,maxHeight);
+        var max     = new THREE.Vector3( width, height, maxHeight);
         var min     = new THREE.Vector3(-width,-height,-maxHeight);
         var obb     = new THREE.OBB(min,max);
 

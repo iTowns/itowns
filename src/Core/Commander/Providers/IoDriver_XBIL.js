@@ -44,7 +44,7 @@ define('Core/Commander/Providers/IoDriver_XBIL',['Core/Commander/Providers/IoDri
                                 
                 //var mcolor  = 1.0;
                 var mcolor  = Math.random();
-
+ 
                 for (var i = 0; i < byteArray.byteLength; i++) 
                 {
                    if(byteArray[i] === -99999.0 || byteArray[i] === undefined )

@@ -11,12 +11,13 @@
  * @param {type} BoudingBox
  * @param {type} defaultValue
  * @param {type} THREE
+ * @param {type} Material
  * @returns {EllipsoidTileMesh_L10.EllipsoidTileMesh}
  */
-define('Globe/EllipsoidTileMesh',['Renderer/NodeMesh','Globe/EllipsoidTileGeometry','Scene/BoudingBox','Core/defaultValue','THREE'], function(NodeMesh,EllipsoidTileGeometry,BoudingBox,defaultValue,THREE){
+define('Globe/EllipsoidTileMesh',['Renderer/NodeMesh','Globe/EllipsoidTileGeometry','Scene/BoudingBox','Core/defaultValue','THREE','Renderer/Material'], function(NodeMesh,EllipsoidTileGeometry,BoudingBox,defaultValue,THREE,Material){
  
 
-    function EllipsoidTileMesh(bbox){
+    function EllipsoidTileMesh(bbox,VS,PS){
         //Constructor
         NodeMesh.call( this );
         
@@ -26,7 +27,9 @@ define('Globe/EllipsoidTileMesh',['Renderer/NodeMesh','Globe/EllipsoidTileGeomet
         this.geometry   = new EllipsoidTileGeometry(bbox);
         this.geometry.computeBoundingSphere();
         
-        this.material   = new THREE.MeshBasicMaterial( {color: 0xffffff, wireframe: true}); 
+        this.tMat        = new Material(VS,PS);
+        
+        this.material   = this.tMat.shader;//new THREE.MeshBasicMaterial( {color: 0xffffff, wireframe: false}); 
         this.dot        = 0;
     }
 
@@ -48,11 +51,9 @@ define('Globe/EllipsoidTileMesh',['Renderer/NodeMesh','Globe/EllipsoidTileGeomet
     };
     
     EllipsoidTileMesh.prototype.setTexture = function(texture)
-    { 
-        this.material.map = texture;        
-        this.material.needsUpdate = true;
-    };
-    
+    {         
+        this.tMat.setTexture(texture);        
+    };    
     
     EllipsoidTileMesh.prototype.normals = function()
     { 

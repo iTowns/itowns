@@ -16,8 +16,7 @@ define('Scene/BrowseTree',['Globe/EllipsoidTileMesh','THREE','OBBHelper','Scene/
     }
     
     BrowseTree.prototype.processNode = function(node,camera)
-    {
-        
+    {        
         if(node instanceof EllipsoidTileMesh)
         {            
             node.visible = false;
@@ -25,7 +24,7 @@ define('Scene/BrowseTree',['Globe/EllipsoidTileMesh','THREE','OBBHelper','Scene/
             this.nodeProcess.backFaceCulling(node,camera);
             
             if(node.visible)
-                this.nodeProcess.frustumCullingOO(node,camera);          
+                this.nodeProcess.frustumCullingOBB(node,camera);          
                                                 
             return node.visible;
         }        
@@ -60,18 +59,18 @@ define('Scene/BrowseTree',['Globe/EllipsoidTileMesh','THREE','OBBHelper','Scene/
         {                
             if(this.oneNode === 7)
             {                    
-                //this.scene.scene3D().add(new THREE.OBBHelper(node.geometry.OBB));                                
+                this.scene.scene3D().add(new THREE.OBBHelper(node.geometry.OBB));                                
             }
             this.oneNode++;
         }
     };
     
-    BrowseTree.prototype.addBBoxHelper = function(node){
+    BrowseTree.prototype.addOBBoxHelper = function(node){
              
         var bboxH = this.bBoxHelper(node);
             
         for(var i = 0;i<node.children.length;i++)
-                this.addBBoxHelper(node.children[i]);
+                this.addOBBoxHelper(node.children[i]);
             
         return bboxH;
 

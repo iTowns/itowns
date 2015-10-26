@@ -8,9 +8,11 @@
  * 
  * @param {type} Layer
  * @param {type} BoudingBox
+ * @param {type} when
+ * @param {type} Material
  * @returns {Quadtree_L10.Quadtree}
  */
-define('Scene/Quadtree',['Scene/Layer','Scene/BoudingBox','when','THREE'], function(Layer,BoudingBox,when,THREE){
+define('Scene/Quadtree',['Scene/Layer','Scene/BoudingBox','when','Renderer/Material','text!Renderer/Shader/GlobeVS.glsl','text!Renderer/Shader/GlobePS.glsl'], function(Layer,BoudingBox,when,Material,GlobeVS,GlobePS){
 
     function Quad(bbox)
     {
@@ -38,14 +40,19 @@ define('Scene/Quadtree',['Scene/Layer','Scene/BoudingBox','when','THREE'], funct
         
         this.schemeTile       = schemeTile;
         this.tileType         = tileType;
+        //this.material = new Material(GlobeVS,GlobePS);
         
+        //console.log(this.material);
         for (var i = 0; i < this.schemeTile.rootCount(); i++)
         {
             this.add(this.createTile(this.schemeTile.getRoot(i)));    
             this.subdivide(this.children[i]);
-            this.subdivideChildren(this.children[i]);
-                        
+            this.subdivideChildren(this.children[i]);                        
         }
+        
+        //this.VS = 
+       
+        
     }
     
     Quadtree.prototype = Object.create( Layer.prototype );
@@ -81,7 +88,7 @@ define('Scene/Quadtree',['Scene/Layer','Scene/BoudingBox','when','THREE'], funct
     {
         var cooWMTS = this.projection.WGS84toWMTS(bbox);       
         
-        var tile    = new this.tileType(bbox);        
+        var tile    = new this.tileType(bbox,GlobeVS,GlobePS);        
         tile.level  = cooWMTS.zoom;
         
         this.interCommand.getTile(cooWMTS).then(function(texture)
@@ -90,6 +97,7 @@ define('Scene/Quadtree',['Scene/Layer','Scene/BoudingBox','when','THREE'], funct
 
         }.bind(tile)); 
         
+       
         return tile;
     };    
         
@@ -122,12 +130,11 @@ define('Scene/Quadtree',['Scene/Layer','Scene/BoudingBox','when','THREE'], funct
     
     Quadtree.prototype.subdivideChildren = function(node)
     {
-        if(node.level === 3)
+        if(node.level === 4)
             return;
         for (var i = 0 ;i<node.children.length;i++)
         {
-            this.subdivide(node.children[i]);
-            
+            this.subdivide(node.children[i]);            
             //this.subdivideChildren(node.children[i]);
         }
     };

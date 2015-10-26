@@ -31,8 +31,7 @@ define('Scene/Scene',['Renderer/c3DEngine','Globe/Star','Globe/Globe','Renderer/
         this.browserScene   = new BrowseTree(this);
         this.gfxEngine.renderScene();
         
-        
-        this.browserScene.addBBoxHelper(this.nodes[0].terrain);
+        //this.browserScene.addOBBoxHelper(this.nodes[0].terrain);
     }
 
     Scene.prototype.constructor = Scene;
