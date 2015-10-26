@@ -20,7 +20,57 @@ define('Core/Geographic/Projection',['Core/Geographic/CoordWMTS','Core/Math/Math
         //TODO: Implement Me 
 
     };
+    
+    Projection.prototype.WGS84ToY = function(latitude){
+        
+        return 0.5 - Math.log(Math.tan(MathExt.PI_OV_FOUR+latitude*0.5))*MathExt.INV_TWO_PI;
 
+    };
+    
+    Projection.prototype.WGS84LatitudeClamp = function(latitude){
+        
+        var min = -68.1389  / 180 * Math.PI;
+        var max =  80       / 180 * Math.PI;
+
+        latitude = Math.max(min,latitude);
+        latitude = Math.min(max,latitude);
+
+        return latitude;
+
+    };
+
+    Projection.prototype.WMTS_WGS84ToWMTS_PM = function(cWMTS,bbox){
+        
+        var wmtsBox = [];
+        var level   = cWMTS.zoom + 1;               
+        var nbRow   = Math.pow(2,level);
+        var sizeRow = 1 / nbRow;
+        
+        var y0  = WGS84ToY(WGS84LatitudeClamp(bbox.minCarto.latitude));
+        var y1  = WGS84ToY(WGS84LatitudeClamp(bbox.maxCarto.latitude));
+        
+        var min_Row,max_Row;
+        
+        if(y0 < y1)
+        {        
+            min_Row = Math.floor( y0/ sizeRow);
+            max_Row = Math.ceil ( y1/ sizeRow);
+        }
+        else
+        {
+            min_Row = Math.floor( y1/ sizeRow);
+            max_Row = Math.ceil ( y0/ sizeRow);
+        }
+               
+        var minCol = cWMTS.row * 2;
+        var maxCol = minCol + 1;
+        
+        wmtsBox.push(new CoordWMTS(level,min_Row,minCol));
+        wmtsBox.push(new CoordWMTS(level,max_Row,maxCol));          
+        
+        return wmtsBox;
+
+    };
 
     /**
     * @param x
