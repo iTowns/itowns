@@ -14,9 +14,10 @@ define('Renderer/Material',['THREE'], function(THREE){
         
         this.Textures.push(new THREE.Texture());
         
-        this.uniforms  = {
-                        
-            dTextures:      { type: "tv", value: this.Textures }
+        this.uniforms  = 
+        {                        
+            dTextures       : { type: "tv", value: this.Textures },
+            nbTextures      : { type: "f" , value: 0.0 }
         };
        
         this.shader = new THREE.ShaderMaterial( {
@@ -30,16 +31,13 @@ define('Renderer/Material',['THREE'], function(THREE){
     };
     
     Material.prototype.setTexture = function(texture)
-    { 
-        
-        this.Textures[0] = texture;
-        
-        this.uniforms.dTextures.value = this.tMat.Textures;
-        
-        this.shader.needsUpdate = true;
+    {         
+        this.Textures[0]                = texture;        
+        this.uniforms.dTextures.value   = this.Textures;        
+        this.uniforms.nbTextures.value  = 1.0;        
+        this.shader.needsUpdate         = true;
     };
     
-   
     return Material;
 });
   
