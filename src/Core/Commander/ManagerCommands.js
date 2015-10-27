@@ -36,9 +36,14 @@ define('Core/Commander/ManagerCommands',
      * @param {type} coWMTS
      * @returns {ManagerCommands_L7.ManagerCommands.prototype@arr;providers@call;getTile}
      */
-    ManagerCommands.prototype.getTile = function(coWMTS){
+    ManagerCommands.prototype.getTextureBil = function(coWMTS){
         
-        return this.providers[0].getTile(coWMTS);
+        return this.providers[0].getTextureBil(coWMTS);
+    };
+    
+    ManagerCommands.prototype.getTextureOrtho = function(coWMTS){
+        
+        return this.providers[0].getTextureOrtho(coWMTS);
     };
 
     /**

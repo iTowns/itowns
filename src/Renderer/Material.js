@@ -10,14 +10,20 @@ define('Renderer/Material',['THREE'], function(THREE){
        
     var  Material = function (sourceVS,sourcePS){
        
-        this.Textures = [];
+        this.Textures_00 = [];
         
-        this.Textures.push(new THREE.Texture());
+        this.Textures_00.push(new THREE.Texture());
+        
+        this.Textures_01 = [];        
+        this.Textures_01.push(new THREE.Texture());
+        
         
         this.uniforms  = 
         {                        
-            dTextures       : { type: "tv", value: this.Textures },
-            nbTextures      : { type: "f" , value: 0.0 }
+            dTextures_00       : { type: "tv", value: this.Textures_00 },
+            dTextures_01       : { type: "tv", value: this.Textures_01 },
+            nbTextures_00         : { type: "f" , value: 0.0 },
+            nbTextures_01         : { type: "f" , value: 0.0 }
         };
        
         this.shader = new THREE.ShaderMaterial( {
@@ -30,11 +36,22 @@ define('Renderer/Material',['THREE'], function(THREE){
         
     };
     
-    Material.prototype.setTexture = function(texture)
+    Material.prototype.setTexture = function(texture,layer,id)
     {         
-        this.Textures[0]                = texture;        
-        this.uniforms.dTextures.value   = this.Textures;        
-        this.uniforms.nbTextures.value  = 1.0;        
+        if(layer === 0)
+        {
+            this.Textures_00[0]                = texture;        
+            this.uniforms.dTextures_00.value   = this.Textures_00;        
+            this.uniforms.nbTextures_00.value  = 1.0;        
+         
+        }
+        else
+        {
+            this.Textures_01[id]               = texture;        
+            this.uniforms.dTextures_01.value   = this.Textures_01;        
+            this.uniforms.nbTextures_01.value  = this.Textures_01.length;                 
+        }
+            
         this.shader.needsUpdate         = true;
     };
     

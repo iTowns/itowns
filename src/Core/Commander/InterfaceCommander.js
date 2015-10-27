@@ -32,9 +32,14 @@ define('Core/Commander/InterfaceCommander',['Core/Commander/ManagerCommands'], f
         this._builderCommand();
     };
     
-    InterfaceCommander.prototype.getTile = function(coWMTS){
+    InterfaceCommander.prototype.getTextureBil = function(coWMTS){
         //TODO: Implement Me 
-        return this.managerCommands.getTile(coWMTS);
+        return this.managerCommands.getTextureBil(coWMTS);
+    };
+    
+    InterfaceCommander.prototype.getTextureOrtho = function(coWMTS){
+        //TODO: Implement Me 
+        return this.managerCommands.getTextureOrtho(coWMTS);
     };
 
     return InterfaceCommander;

@@ -91,14 +91,23 @@ define('Scene/Quadtree',['Scene/Layer','Scene/BoudingBox','when','Renderer/Mater
         var tile    = new this.tileType(bbox,GlobeVS,GlobePS);        
         tile.level  = cooWMTS.zoom;
         
-        this.interCommand.getTile(cooWMTS).then(function(texture)
+        this.interCommand.getTextureBil(cooWMTS).then(function(texture)
         {   
-            this.setTexture(texture);
+            this.setTextureTerrain(texture);
             
             return this;
 
         }.bind(tile)).then(function(tile)
-        {                
+        {                            
+            var uu  = this.projection.WMTS_WGS84ToWMTS_PM(cooWMTS,bbox);
+            var id = 0;
+            
+            this.interCommand.getTextureOrtho(uu[id]).then(function(texture)
+            {     
+                //console.log(id);
+                //this.setTextureOrtho(texture,0);
+               // 
+            }.bind(tile));
             
         }.bind(this)); 
         
