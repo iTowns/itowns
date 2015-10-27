@@ -17,17 +17,15 @@
 define('Globe/EllipsoidTileMesh',['Renderer/NodeMesh','Globe/EllipsoidTileGeometry','Scene/BoudingBox','Core/defaultValue','THREE','Renderer/Material'], function(NodeMesh,EllipsoidTileGeometry,BoudingBox,defaultValue,THREE,Material){
  
 
-    function EllipsoidTileMesh(bbox,VS,PS){
+    function EllipsoidTileMesh(bbox,VS,PS,zoom){
         //Constructor
         NodeMesh.call( this );
         
         this.showHelper = true;
         
         this.bbox       = defaultValue(bbox,new BoudingBox());
-        this.geometry   = new EllipsoidTileGeometry(bbox);
-        this.geometry.computeBoundingSphere();
-        
-        this.tMat        = new Material(VS,PS);
+        this.geometry   = new EllipsoidTileGeometry(bbox);               
+        this.tMat       = new Material(VS,PS,bbox,zoom);
         
         this.material   = this.tMat.shader;//new THREE.MeshBasicMaterial( {color: 0xffffff, wireframe: false}); 
         this.dot        = 0;

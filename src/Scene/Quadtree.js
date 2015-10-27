@@ -12,7 +12,13 @@
  * @param {type} Material
  * @returns {Quadtree_L10.Quadtree}
  */
-define('Scene/Quadtree',['Scene/Layer','Scene/BoudingBox','when','Renderer/Material','text!Renderer/Shader/GlobeVS.glsl','text!Renderer/Shader/GlobePS.glsl'], function(Layer,BoudingBox,when,Material,GlobeVS,GlobePS){
+define('Scene/Quadtree',[
+        'Scene/Layer',
+        'Scene/BoudingBox',
+        'when',
+        'Core/Geographic/CoordWMTS',
+        'text!Renderer/Shader/GlobeVS.glsl',
+        'text!Renderer/Shader/GlobePS.glsl'], function(Layer,BoudingBox,when,CoordWMTS,GlobeVS,GlobePS){
 
     function Quad(bbox)
     {
@@ -51,8 +57,7 @@ define('Scene/Quadtree',['Scene/Layer','Scene/BoudingBox','when','Renderer/Mater
         }
         
         //this.VS = 
-       
-        
+               
     }
     
     Quadtree.prototype = Object.create( Layer.prototype );
@@ -88,7 +93,7 @@ define('Scene/Quadtree',['Scene/Layer','Scene/BoudingBox','when','Renderer/Mater
     {
         var cooWMTS = this.projection.WGS84toWMTS(bbox);       
         
-        var tile    = new this.tileType(bbox,GlobeVS,GlobePS);        
+        var tile    = new this.tileType(bbox,GlobeVS,GlobePS,cooWMTS.zoom);        
         tile.level  = cooWMTS.zoom;
         
         this.interCommand.getTextureBil(cooWMTS).then(function(texture)
@@ -99,15 +104,26 @@ define('Scene/Quadtree',['Scene/Layer','Scene/BoudingBox','when','Renderer/Mater
 
         }.bind(tile)).then(function(tile)
         {                            
-            var uu  = this.projection.WMTS_WGS84ToWMTS_PM(cooWMTS,bbox);
-            var id = 0;
-            
-            this.interCommand.getTextureOrtho(uu[id]).then(function(texture)
-            {     
-                //console.log(id);
-                //this.setTextureOrtho(texture,0);
-               // 
-            }.bind(tile));
+            if(cooWMTS.zoom === 2)
+            {
+                var box  = this.projection.WMTS_WGS84ToWMTS_PM(cooWMTS,bbox);                        
+                var id = 0;
+
+                for (var col = box[0].col; col < box[1].col + 1 ; col++)
+                    for (var row = box[0].row; row < box[1].row + 1; row++)
+                    {
+
+                        var coo = new CoordWMTS(box[0].zoom,row,col);
+
+                        this.interCommand.getTextureOrtho(coo).then(function(texture)
+                        {     
+                            //
+                            this.setTextureOrtho(texture,id);
+
+                        }.bind(tile));
+                        id++;
+                    }                       
+            }
             
         }.bind(this)); 
         

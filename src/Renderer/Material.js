@@ -8,7 +8,7 @@
 define('Renderer/Material',['THREE'], function(THREE){
     
        
-    var  Material = function (sourceVS,sourcePS){
+    var  Material = function (sourceVS,sourcePS,bbox,zoom){
        
         this.Textures_00 = [];
         
@@ -20,10 +20,13 @@ define('Renderer/Material',['THREE'], function(THREE){
         
         this.uniforms  = 
         {                        
-            dTextures_00       : { type: "tv", value: this.Textures_00 },
-            dTextures_01       : { type: "tv", value: this.Textures_01 },
-            nbTextures_00         : { type: "f" , value: 0.0 },
-            nbTextures_01         : { type: "f" , value: 0.0 }
+            dTextures_00    : { type: "tv", value: this.Textures_00 },
+            dTextures_01    : { type: "tv", value: this.Textures_01 },
+            nbTextures_00   : { type: "f" , value: 0.0 },
+            nbTextures_01   : { type: "f" , value: 0.0 },
+            bLongitude      : { type: "v2", value: new THREE.Vector2(bbox.minCarto.longitude,bbox.maxCarto.longitude)}, 
+            bLatitude       : { type: "v2", value: new THREE.Vector2(bbox.minCarto.latitude,bbox.maxCarto.latitude)},
+            zoom            : { type: "f" , value: zoom }
         };
        
         this.shader = new THREE.ShaderMaterial( {
