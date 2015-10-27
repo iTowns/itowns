@@ -93,9 +93,14 @@ define('Scene/Quadtree',['Scene/Layer','Scene/BoudingBox','when','Renderer/Mater
         
         this.interCommand.getTile(cooWMTS).then(function(texture)
         {   
-            this.setTexture(texture);             
+            this.setTexture(texture);
+            
+            return this;
 
-        }.bind(tile)); 
+        }.bind(tile)).then(function(tile)
+        {                
+            
+        }.bind(this)); 
         
        
         return tile;

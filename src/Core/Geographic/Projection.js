@@ -40,14 +40,14 @@ define('Core/Geographic/Projection',['Core/Geographic/CoordWMTS','Core/Math/Math
     };
 
     Projection.prototype.WMTS_WGS84ToWMTS_PM = function(cWMTS,bbox){
-        
+
         var wmtsBox = [];
         var level   = cWMTS.zoom + 1;               
         var nbRow   = Math.pow(2,level);
         var sizeRow = 1 / nbRow;
         
-        var y0  = WGS84ToY(WGS84LatitudeClamp(bbox.minCarto.latitude));
-        var y1  = WGS84ToY(WGS84LatitudeClamp(bbox.maxCarto.latitude));
+        var y0  = this.WGS84ToY(this.WGS84LatitudeClamp(bbox.minCarto.latitude));
+        var y1  = this.WGS84ToY(this.WGS84LatitudeClamp(bbox.maxCarto.latitude));
         
         var min_Row,max_Row;
         
@@ -66,8 +66,8 @@ define('Core/Geographic/Projection',['Core/Geographic/CoordWMTS','Core/Math/Math
         var maxCol = minCol + 1;
         
         wmtsBox.push(new CoordWMTS(level,min_Row,minCol));
-        wmtsBox.push(new CoordWMTS(level,max_Row,maxCol));          
-        
+        wmtsBox.push(new CoordWMTS(level,max_Row,maxCol));  
+                       
         return wmtsBox;
 
     };
