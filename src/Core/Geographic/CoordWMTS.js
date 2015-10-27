@@ -11,18 +11,19 @@
  */
 define('Core/Geographic/CoordWMTS',['Core/defaultValue'], function(defaultValue){
 
+
     /**
      * 
      * @param {type} zoom
-     * @param {type} x
-     * @param {type} y
+     * @param {type} row
+     * @param {type} col
      * @returns {CoordWMTS_L12.CoordWMTS}
      */
-    function CoordWMTS(zoom,x,y)
+    function CoordWMTS(zoom,row,col)
     {
         this.zoom   = defaultValue(zoom,0);
-        this.row    = defaultValue(x,0);
-        this.col    = defaultValue(y,0);
+        this.row    = defaultValue(row,0);
+        this.col    = defaultValue(col,0);
     }
     
     return CoordWMTS;

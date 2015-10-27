@@ -55,7 +55,7 @@ define('Core/Geographic/Projection',['Core/Geographic/CoordWMTS','Core/Math/Math
         var y0  = this.WGS84ToY(this.WGS84LatitudeClamp(bbox.minCarto.latitude));
         var y1  = this.WGS84ToY(this.WGS84LatitudeClamp(bbox.maxCarto.latitude));
         
-        var min_Row,max_Row,minFra,maxFra,min,max,yMax,ymin;
+        var minRow,maxRow,minFra,maxFra,min,max,yMax,ymin;
         
         yMax = Math.max(y0,y1);
         yMin = Math.min(y0,y1);
@@ -63,19 +63,19 @@ define('Core/Geographic/Projection',['Core/Geographic/CoordWMTS','Core/Math/Math
         min     = yMin/ sizeRow;
         max     = yMax/ sizeRow;            
             
-        min_Row = Math.floor(min);
-        max_Row = Math.ceil (max);
+        minRow = Math.floor(min);
+        maxRow = Math.ceil (max);
 
-        minFra  = Math.abs(yMin - min_Row * sizeRow);
-        maxFra  = Math.abs(yMax - max_Row * sizeRow);
+        minFra  = Math.abs(yMin - minRow * sizeRow);
+        maxFra  = Math.abs(yMax - maxRow * sizeRow);
 
         //console.log(minFra + '|' + maxFra);
 
-        var minCol = cWMTS.row * 2;
-        var maxCol = minCol + 1;
+        var minCol = cWMTS.col;
+        var maxCol = minCol;
         
-        wmtsBox.push(new CoordWMTS(level,min_Row,minCol));
-        wmtsBox.push(new CoordWMTS(level,max_Row,maxCol));  
+        wmtsBox.push(new CoordWMTS(level,minRow,minCol));
+        wmtsBox.push(new CoordWMTS(level,maxRow,maxCol));  
                        
         return wmtsBox;
 

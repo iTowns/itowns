@@ -15,7 +15,7 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera','when'], 
             throw new Error("Cannot instantiate more than one c3DEngine");
         } 
 
-        this.debug      = true;
+        this.debug      = false;
         this.scene      = scene;
         this.scene3D    = new THREE.Scene();       
         this.renderer   = new THREE.WebGLRenderer( { antialias: true,alpha: true } );
@@ -24,7 +24,7 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera','when'], 
         
         this.renderer.setPixelRatio( window.devicePixelRatio );
         this.renderer.setSize(window.innerWidth, window.innerHeight );        
-        this.renderer.setClearColor( 0x122852 );
+        this.renderer.setClearColor( 0x081022 );
         this.renderer.autoClear = false;
         
         document.body.appendChild( this.renderer.domElement );
