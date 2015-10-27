@@ -4,7 +4,12 @@
 * Description: Cette classe singleton gère les requetes/Commandes  de la scène. Ces commandes peuvent etre synchrone ou asynchrone. Elle permet d'executer, de prioriser  et d'annuler les commandes de la pile. Les commandes executées sont placées dans une autre file d'attente.
 */
 
-define('Core/Commander/ManagerCommands',['Core/Commander/Providers/WMTS_Provider','Core/Commander/Interfaces/EventsManager'], function(WMTS_Provider,EventsManager){
+define('Core/Commander/ManagerCommands',
+        [   'Core/Commander/Providers/WMTS_Provider',
+            'Core/Commander/Interfaces/EventsManager'], 
+        function(
+                WMTS_Provider,
+                EventsManager){
 
     var instanceCommandManager = null;
     
@@ -14,10 +19,10 @@ define('Core/Commander/ManagerCommands',['Core/Commander/Providers/WMTS_Provider
             throw new Error("Cannot instantiate more than one ManagerCommands");
         } 
         this.queueAsync = null;
-        this.queueSync = null;
-        this.loadQueue = null;
-        this.providers = [];
-        this.history = null;        
+        this.queueSync  = null;
+        this.loadQueue  = null;
+        this.providers  = [];
+        this.history    = null;        
         this.providers.push(new WMTS_Provider());
    
         this.eventsManager = new EventsManager();
@@ -26,15 +31,14 @@ define('Core/Commander/ManagerCommands',['Core/Commander/Providers/WMTS_Provider
 
     ManagerCommands.prototype.constructor = ManagerCommands;
 
-
     /**
      * 
      * @param {type} coWMTS
      * @returns {ManagerCommands_L7.ManagerCommands.prototype@arr;providers@call;getTile}
      */
     ManagerCommands.prototype.getTile = function(coWMTS){
-        //TODO: Implement Me 
-        return this.providers[0].getTile(coWMTS.zoom,coWMTS.row,coWMTS.col);
+        
+        return this.providers[0].getTile(coWMTS);
     };
 
     /**

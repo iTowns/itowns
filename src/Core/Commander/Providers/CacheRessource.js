@@ -4,32 +4,46 @@
 * Description: Cette classe singleton est un cache des ressources et services
 */
 
-function CacheRessource(){
-    //Constructor
+define('Core/Commander/Providers/CacheRessource',[], function(){
+ 
+    var instanceCache = null;
 
-    this.cacheObjects = null;
-    this._maximumSize = null;
+    function CacheRessource(){
+        //Constructor
 
-}
+        this.cacheObjects = [];
+        this._maximumSize = null;
+
+    }
+
+    /**
+    * @param url
+    */
+    CacheRessource.prototype.getRessource = function(url){
+        //TODO: Implement Me 
+        
+        return this.cacheObjects[url];
+
+    };
+    
+    CacheRessource.prototype.addRessource = function(url,ressource){
+        
+        this.cacheObjects[url] = ressource;
+        
+    };
 
 
-/**
-* @param url
-*/
-CacheRessource.prototype.getRessource = function(url){
-    //TODO: Implement Me 
+    /**
+    * @param id
+    */
+    CacheRessource.prototype.getRessourceByID = function(id){
+        //TODO: Implement Me 
 
-};
+    };
 
+    return function(){
+        instanceCache = instanceCache || new CacheRessource();
+        return instanceCache;
+    };
 
-/**
-* @param id
-*/
-CacheRessource.prototype.getRessourceByID = function(id){
-    //TODO: Implement Me 
-
-};
-
-
-
-module.exports = {CacheRessource:CacheRessource};
+});

@@ -5,7 +5,19 @@
 */
 
 
-define('Core/Commander/Providers/WMTS_Provider',['Core/Commander/Providers/Provider','Core/Commander/Providers/IoDriver_XBIL','THREE'], function(Provider,IoDriver_XBIL,THREE){
+define('Core/Commander/Providers/WMTS_Provider',[
+            'Core/Commander/Providers/Provider',
+            'Core/Commander/Providers/IoDriver_XBIL',
+            'when',
+            'THREE',
+            'Core/Commander/Providers/CacheRessource'], 
+        function(
+                Provider,
+                IoDriver_XBIL,
+                when,
+                THREE,
+                
+                CacheRessource){
 
 
     function WMTS_Provider()
@@ -13,14 +25,14 @@ define('Core/Commander/Providers/WMTS_Provider',['Core/Commander/Providers/Provi
         //Constructor
  
         Provider.call( this,new IoDriver_XBIL());
-  
+        this.cache         = CacheRessource();
     }
 
     WMTS_Provider.prototype = Object.create( Provider.prototype );
 
     WMTS_Provider.prototype.constructor = WMTS_Provider;
     
-    WMTS_Provider.prototype.url = function(zoom,x,y)
+    WMTS_Provider.prototype.url = function(coWMTS)
     {
         
         var key    = "wmybzw30d6zg563hjlq8eeqb";
@@ -30,11 +42,11 @@ define('Core/Commander/Providers/WMTS_Provider',['Core/Commander/Providers/Provi
         var url = "http://wxs.ign.fr/" + key + "/geoportail/wmts?LAYER="+ layer +
             "&FORMAT=image/x-bil;bits=32&SERVICE=WMTS&VERSION=1.0.0"+
             "&REQUEST=GetTile&STYLE=normal&TILEMATRIXSET=PM"+
-            "&TILEMATRIX="+zoom+"&TILEROW="+x+"&TILECOL="+y;
+            "&TILEMATRIX="+coWMTS.zoom+"&TILEROW="+coWMTS.row+"&TILECOL="+coWMTS.col;
         return url;
     };
             
-    WMTS_Provider.prototype.urlOrtho = function(zoom,x,y)
+    WMTS_Provider.prototype.urlOrtho = function(coWMTS)
     {
         var key    = "i9dpl8xge3jk0a0taex1qrhd";
         
@@ -43,20 +55,33 @@ define('Core/Commander/Providers/WMTS_Provider',['Core/Commander/Providers/Provi
         var url = "http://wxs.ign.fr/" + key + "/geoportail/wmts?LAYER="+ layer +
             "&FORMAT=image/jpeg&SERVICE=WMTS&VERSION=1.0.0"+
             "&REQUEST=GetTile&STYLE=normal&TILEMATRIXSET=PM"+
-            "&TILEMATRIX="+zoom+"&TILEROW="+y+"&TILECOL="+x;
+            "&TILEMATRIX="+coWMTS.zoom+"&TILEROW="+coWMTS.row+"&TILECOL="+coWMTS.col;
         return url;
     };
         
-    WMTS_Provider.prototype.getTile = function(zoom,x,y)
+    WMTS_Provider.prototype.getTile = function(coWMTS)
     {
-        return this._IoDriver.read(this.url(zoom,x,y)).then(function(buffer)
+        var url = this.url(coWMTS);
+        
+        var textureCache = this.cache.addRessource(url);
+        
+        if(textureCache !== undefined)
+        {
+            textureCache.needsUpdate = true;
+            return when(textureCache);
+        }
+        
+        return this._IoDriver.read(url).then(function(buffer)
             {
+                                
                 var texture = new THREE.DataTexture(buffer,256,256,THREE.RGBAFormat,THREE.FloatType);
+                
+                this.cache.addRessource(url,texture);                                
                 
                 texture.needsUpdate = true;
                 
                 return texture;
-            }
+            }.bind(this)
         );
     };
 
