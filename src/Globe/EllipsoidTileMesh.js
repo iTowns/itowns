@@ -50,10 +50,16 @@ define('Globe/EllipsoidTileMesh',['Renderer/NodeMesh','Globe/EllipsoidTileGeomet
         }
     };
     
-    EllipsoidTileMesh.prototype.setTexture = function(texture)
+    EllipsoidTileMesh.prototype.setTextureTerrain = function(texture)
     {         
-        this.tMat.setTexture(texture);        
-    };    
+        this.tMat.setTexture(texture,0);        
+    };   
+    
+    EllipsoidTileMesh.prototype.setTextureOrtho = function(texture,id)
+    {         
+        id = id === undefined ? 0 : id;
+        this.tMat.setTexture(texture,1,id);        
+    };   
     
     EllipsoidTileMesh.prototype.normals = function()
     { 

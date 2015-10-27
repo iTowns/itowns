@@ -15,14 +15,12 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera','when'], 
             throw new Error("Cannot instantiate more than one c3DEngine");
         } 
 
-        this.debug      = false;
+        this.debug      = true;
         this.scene      = scene;
         this.scene3D    = new THREE.Scene();       
         this.renderer   = new THREE.WebGLRenderer( { antialias: true,alpha: true } );
         this.width      = this.debug ? window.innerWidth * 0.5 : window.innerWidth;
         
-        var axisHelper = new THREE.AxisHelper( 7 );
-        this.scene3D.add( axisHelper );
         
         this.renderer.setPixelRatio( window.devicePixelRatio );
         this.renderer.setSize(window.innerWidth, window.innerHeight );        
@@ -46,6 +44,8 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera','when'], 
             this.camDebug.position.y =  10;            
             this.camDebug.lookAt(new THREE.Vector3(0,0,0));
             this.scene3D.add(this.camera.camHelper());
+            var axisHelper = new THREE.AxisHelper( 8 );
+            this.scene3D.add( axisHelper );
         }
                             
         this.renderScene = function(){
@@ -62,11 +62,9 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera','when'], 
                 this.camera.camHelper().visible = true;
                 this.renderer.setViewport( this.width, 0, this.width, window.innerHeight );
                 this.renderer.render( this.scene3D, this.camDebug);
-                this.camera.camHelper().visible = false;
-                
+                this.camera.camHelper().visible = false;                
             }
             
-
         }.bind(this);
                  
         this.controls.addEventListener( 'change', this.renderScene );

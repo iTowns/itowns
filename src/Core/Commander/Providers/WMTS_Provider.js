@@ -26,6 +26,9 @@ define('Core/Commander/Providers/WMTS_Provider',[
  
         Provider.call( this,new IoDriver_XBIL());
         this.cache         = CacheRessource();
+        
+        this.loader = new THREE.TextureLoader();        
+        this.loader.crossOrigin = '';
     }
 
     WMTS_Provider.prototype = Object.create( Provider.prototype );
@@ -59,11 +62,11 @@ define('Core/Commander/Providers/WMTS_Provider',[
         return url;
     };
         
-    WMTS_Provider.prototype.getTile = function(coWMTS)
+    WMTS_Provider.prototype.getTextureBil = function(coWMTS)
     {
         var url = this.url(coWMTS);
         
-        var textureCache = this.cache.addRessource(url);
+        var textureCache = this.cache.getRessource(url);
         
         if(textureCache !== undefined)
         {
@@ -85,6 +88,25 @@ define('Core/Commander/Providers/WMTS_Provider',[
         );
     };
 
+    WMTS_Provider.prototype.getTextureOrtho = function(coWMTS)
+    {
+                
+        var url = this.urlOrtho(coWMTS);        
+        var textureCache = this.cache.getRessource(url);
+        
+        if(textureCache !== undefined)
+        {            
+            textureCache.needsUpdate = true;            
+            return when(textureCache);
+        }
+        
+        var texture = this.loader.load(url);
+        texture.needsUpdate = true;
+        
+        this.cache.addRessource(url,texture);
+        
+        return when(texture);
+    };
 
     return WMTS_Provider;
     
