@@ -1,9 +1,22 @@
+uniform sampler2D  dTextures_00[1];
+
 varying vec2 vUv;
+varying vec3 vNormal;
 
 void main() {
 
         vUv = uv;
 
-        gl_Position = projectionMatrix * modelViewMatrix * vec4( position ,1.0 );
+        vec3 dv = texture2D( dTextures_00[0], vUv ).xyz;
+
+        vNormal     = normalize( position );
+
+        float df    = dv.x *0.05    ;
+                        
+        vec3 displacedPosition = position +  vNormal  * df;
+
+        //vec3 displacedPosition = position +  vNormal  * df;
+
+        gl_Position = projectionMatrix * modelViewMatrix * vec4( displacedPosition ,1.0 );
 
 }
