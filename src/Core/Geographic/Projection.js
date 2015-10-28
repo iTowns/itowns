@@ -76,10 +76,7 @@ define('Core/Geographic/Projection',['Core/Geographic/CoordWMTS','Core/Math/Math
         var maxCol = minCol;
         
         wmtsBox.push(new CoordWMTS(level,minRow,minCol));
-        wmtsBox.push(new CoordWMTS(level,maxRow,maxCol));  
-        
-       // console.log(cWMTS.row);
-       // console.log(minRow + ' --> ' + maxRow);
+        wmtsBox.push(new CoordWMTS(level,maxRow,maxCol));         
                        
         return wmtsBox;
 

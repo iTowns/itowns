@@ -20,7 +20,7 @@ define('Globe/EllipsoidTileGeometry',['THREE','Core/defaultValue','Scene/Bouding
         
         //var ellipsoid       = new Ellipsoid(6, 6, 6);
         
-        var nSeg            = 16;       
+        var nSeg            = 256;       
         var nVertex         = (nSeg+1)*(nSeg+1); // correct pour uniquement les vertex
         var triangles       = (nSeg)*(nSeg); // correct pour uniquement les vertex
         
