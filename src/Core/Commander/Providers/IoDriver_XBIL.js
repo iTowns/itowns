@@ -42,8 +42,8 @@ define('Core/Commander/Providers/IoDriver_XBIL',['Core/Commander/Providers/IoDri
                 var max = - 1000000;
                 var min =   1000000;
                                 
-                //var mcolor  = 1.0;
-                var mcolor  = Math.random();
+                var mcolor  = 0.0;
+                //var mcolor  = Math.random();
  
                 for (var i = 0; i < byteArray.byteLength; i++) 
                 {
