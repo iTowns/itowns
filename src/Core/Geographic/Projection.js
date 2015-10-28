@@ -29,8 +29,9 @@ define('Core/Geographic/Projection',['Core/Geographic/CoordWMTS','Core/Math/Math
     
     Projection.prototype.WGS84LatitudeClamp = function(latitude){
         
-        var min = -68.1389  / 180 * Math.PI;
-        var max =  80       / 180 * Math.PI;
+        //var min = -68.1389  / 180 * Math.PI;
+        var min = -86  / 180 * Math.PI;
+        var max =  84  / 180 * Math.PI;
 
         latitude = Math.max(min,latitude);
         latitude = Math.min(max,latitude);
@@ -50,32 +51,35 @@ define('Core/Geographic/Projection',['Core/Geographic/CoordWMTS','Core/Math/Math
         var wmtsBox = [];
         var level   = cWMTS.zoom + 1;               
         var nbRow   = Math.pow(2,level);
-        var sizeRow = 1 / nbRow;
+                
+        //var sY      = this.WGS84ToY(this.WGS84LatitudeClamp(-Math.PI*0.5)) - this.WGS84ToY(this.WGS84LatitudeClamp(Math.PI*0.5));
+        var sizeRow = 1.0 / nbRow;
+                
+        var yMin  = this.WGS84ToY(this.WGS84LatitudeClamp(bbox.maxCarto.latitude));
+        var yMax  = this.WGS84ToY(this.WGS84LatitudeClamp(bbox.minCarto.latitude));
         
-        var y0  = this.WGS84ToY(this.WGS84LatitudeClamp(bbox.minCarto.latitude));
-        var y1  = this.WGS84ToY(this.WGS84LatitudeClamp(bbox.maxCarto.latitude));
-        
-        var minRow,maxRow,minFra,maxFra,min,max,yMax,ymin;
-        
-        yMax = Math.max(y0,y1);
-        yMin = Math.min(y0,y1);
-              
+        var minRow,maxRow,minFra,maxFra,min,max;
+
         min     = yMin/ sizeRow;
         max     = yMax/ sizeRow;            
             
-        minRow = Math.floor(min);
-        maxRow = Math.ceil (max);
+        minRow  = Math.floor(min);
+        maxRow  = Math.floor(max);
+        
+        if(max - maxRow === 0.0)
+            maxRow--;       
 
         minFra  = Math.abs(yMin - minRow * sizeRow);
         maxFra  = Math.abs(yMax - maxRow * sizeRow);
-
-        //console.log(minFra + '|' + maxFra);
 
         var minCol = cWMTS.col;
         var maxCol = minCol;
         
         wmtsBox.push(new CoordWMTS(level,minRow,minCol));
         wmtsBox.push(new CoordWMTS(level,maxRow,maxCol));  
+        
+       // console.log(cWMTS.row);
+       // console.log(minRow + ' --> ' + maxRow);
                        
         return wmtsBox;
 

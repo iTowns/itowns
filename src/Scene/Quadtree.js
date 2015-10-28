@@ -108,26 +108,22 @@ define('Scene/Quadtree',[
             {
                 var box  = this.projection.WMTS_WGS84ToWMTS_PM(cooWMTS,bbox);                        
                 var id = 0;
-
-                for (var col = box[0].col; col < box[1].col + 1 ; col++)
-                    for (var row = box[0].row; row < box[1].row + 1; row++)
-                    {
-
-                        var coo = new CoordWMTS(box[0].zoom,row,col);
-
-                        this.interCommand.getTextureOrtho(coo).then(function(texture)
-                        {     
-                            //
-                            this.setTextureOrtho(texture,id);
-
-                        }.bind(tile));
-                        id++;
-                    }                       
+                var col = box[0].col;
+                                
+                for (var row = box[0].row; row < box[1].row + 1; row++)
+                {
+                    var coo = new CoordWMTS(box[0].zoom,row,col);
+                    this.interCommand.getTextureOrtho(coo).then(function(texture)
+                    {                             
+                        this.setTextureOrtho(texture,id);
+                        
+                    }.bind(tile));
+                    id++;
+                }  
             }
             
         }.bind(this)); 
         
-       
         return tile;
     };    
         
