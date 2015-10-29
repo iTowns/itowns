@@ -40,24 +40,19 @@ define('Scene/Quadtree',[
         return subdiv;
     };
 
-    function Quadtree(tileType,schemeTile){
-        
+    function Quadtree(tileType,schemeTile)
+    {        
         Layer.call( this);
         
         this.schemeTile       = schemeTile;
         this.tileType         = tileType;
-        //this.material = new Material(GlobeVS,GlobePS);
-        
-        //console.log(this.material);
+
         for (var i = 0; i < this.schemeTile.rootCount(); i++)
         {
             this.add(this.createTile(this.schemeTile.getRoot(i)));    
             this.subdivide(this.children[i]);
             this.subdivideChildren(this.children[i]);                        
-        }
-        
-        //this.VS = 
-               
+        }               
     }
     
     Quadtree.prototype = Object.create( Layer.prototype );
@@ -156,12 +151,12 @@ define('Scene/Quadtree',[
     
     Quadtree.prototype.subdivideChildren = function(node)
     {
-        if(node.level === 4)
+        if(node.level === 3)
             return;
         for (var i = 0 ;i<node.children.length;i++)
         {
             this.subdivide(node.children[i]);            
-            //this.subdivideChildren(node.children[i]);
+           //this.subdivideChildren(node.children[i]);
         }
     };
     

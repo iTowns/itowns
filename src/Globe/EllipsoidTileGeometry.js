@@ -20,7 +20,7 @@ define('Globe/EllipsoidTileGeometry',['THREE','Core/defaultValue','Scene/Bouding
         
         //var ellipsoid       = new Ellipsoid(6, 6, 6);
         
-        var nSeg            = 256;       
+        var nSeg            = 128;       
         var nVertex         = (nSeg+1)*(nSeg+1); // correct pour uniquement les vertex
         var triangles       = (nSeg)*(nSeg); // correct pour uniquement les vertex
         
@@ -34,7 +34,7 @@ define('Globe/EllipsoidTileGeometry',['THREE','Core/defaultValue','Scene/Bouding
         
         widthSegments       = Math.max( 2, Math.floor( widthSegments ) || 2 );
         heightSegments      = Math.max( 2, Math.floor( heightSegments ) || 2 );
-        
+//        
 //        widthSegments       = 1;
 //        heightSegments      = 1;
 

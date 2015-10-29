@@ -1,11 +1,20 @@
 uniform sampler2D   dTextures_00[1];
-uniform sampler2D   dTextures_01[15];
+uniform sampler2D   dTextures_01[4];
 uniform float       nbTextures_00;
 uniform float       nbTextures_01;
 uniform vec2        bLongitude; 
 uniform vec2        bLatitude;
+uniform float       periArcLati;
+uniform float       y0;
 uniform float       zoom;
 varying vec2        vUv;
+
+const float PI          = 3.14159265359;
+const float INV_TWO_PI  = 1.0 / (2.0*PI);
+const float PI2         = 1.57079632679;
+const float PI4         = 0.78539816339;
+const float poleSud     = -82.0 / 180.0 * PI;
+const float poleNord    =  84.0 / 180.0 * PI;
 
 float clampLat(float latitude)
 {
@@ -19,65 +28,33 @@ float clampLat(float latitude)
     return latitude;
 }
 
-void main() {    
+void main() {
     
-    if(nbTextures_00 > 0.0)
-        if(nbTextures_01  == 0.0)
-            gl_FragColor = texture2D( dTextures_00[0], vUv);
-        else
-        {            
-            float PI    = 3.14159265359;
-            float INV_TWO_PI= 1.0 / (2.0*PI);
-            float PI2   = 1.57079632679;
-            float PI4   = 0.78539816339;
+    float latitude  = bLatitude.x + periArcLati*(1.0-vUv.y);
+    float degree    = (latitude) / PI * 180.0;
+
+    if(latitude < poleSud )
+        gl_FragColor = vec4( 0.85, 0.85, 0.91, 1.0);
+    else if(latitude > poleNord)
+        gl_FragColor = vec4( 0.04, 0.23, 0.35, 1.0);
+    else
+        {                           
             vec2 uvO ;
-             
-            uvO.x       = vUv.x;   
-
+            uvO.x           = vUv.x;
             float nbRow     = pow(2.0,zoom + 1.0);
-            float arcLat    = PI / nbRow;
-            float arcTiLat  = abs(bLatitude.y - bLatitude.x);
-            float latitude  = bLatitude.x + arcTiLat*(1.0-vUv.y);
-            float y         = 0.5 - log(tan(PI4 + clampLat(latitude)*0.5))* INV_TWO_PI;
-            float sy        = 0.5 - log(tan(PI4 + clampLat(bLatitude.y)*0.5))*INV_TWO_PI;
-            float tY        = 1.0 / nbRow;
-            uvO.y           = 1.0 - mod(y,tY)*nbRow;
-            float idStart   = floor(sy * nbRow);
-            float idRow     = floor( y * nbRow);
-
+            float y         = 0.5 - log(tan(PI4 + (latitude)*0.5))* INV_TWO_PI;
+            uvO.y           = 1.0 - mod(y,1.0/ nbRow)*nbRow;
+            float idStart   = floor( y0 * nbRow);
+            float idRow     = floor( y  * nbRow);
             int   idd       = int(idRow - idStart);
             vec4  ortho     = vec4( 1.0,0.0,0.0, 1.0);
 
             for (int x = 0; x < 15; x++)
-            { 
                 if (x == idd )
-                {
-                    ortho  = texture2D( dTextures_01[x], uvO );                    
- 
-                }
-            }       
+                    ortho  = texture2D( dTextures_01[x], uvO );
 
-            //float debug =  idRow / (nbRow -1.0);
-            //float debug =  float(idd) / (nbTextures_01) ;
-            //vec4 color  = vec4( debug,debug,debug, 1.0);
             vec4 eleva  = texture2D( dTextures_00[0], vUv);
-            //gl_FragColor = eleva ;  
-            //gl_FragColor = color + eleva * 0.3333;
             gl_FragColor = ortho +  vec4( eleva.x *1.5,0.0,0.0, 1.0);
-            //gl_FragColor = ortho ;
-            //gl_FragColor = color;
 
-            float degree = (latitude) / PI * 180.0;
-
-            if(degree < -82.0 )
-                gl_FragColor = vec4( 0.85, 0.85, 0.91, 1.0);
-//                gl_FragColor = vec4( 0.0, 1.0, 0.0, 1.0);
-            else if(degree > 84.0)
-                gl_FragColor = vec4( 0.04, 0.23, 0.35, 1.0);
-                //gl_FragColor = vec4( 0.0, 1.0, 0.0, 1.0);                        
-        }           
-    else 
-        gl_FragColor = vec4( 0.2, 0.5, 1.0, 1.0);
-
-        
+        }                   
 }
