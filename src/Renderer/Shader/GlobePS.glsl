@@ -54,7 +54,14 @@ void main() {
                     ortho  = texture2D( dTextures_01[x], uvO );
 
             vec4 eleva  = texture2D( dTextures_00[0], vUv);
-            gl_FragColor = ortho +  vec4( eleva.x *1.5,0.0,0.0, 1.0);
+            gl_FragColor = ortho; //+  vec4( eleva.x *1.5,0.0,0.0, 1.0);
+            
+            /*
+            if(eleva.x == 0.0)
+                gl_FragColor = vec4( 0.5, 0.5, 0.5, 1.0);
+            else
+                gl_FragColor = eleva*2.0;
+            */
 
         }                   
 }

@@ -14,7 +14,6 @@ define('Scene/Scene',['Renderer/c3DEngine','Globe/Star','Globe/Globe','Renderer/
         if(instanceScene !== null){
             throw new Error("Cannot instantiate more than one Scene");
         } 
-
         
         this.nodes          = [];            
         this.cameras        = null;        
@@ -56,16 +55,17 @@ define('Scene/Scene',['Renderer/c3DEngine','Globe/Star','Globe/Globe','Renderer/
     Scene.prototype.sceneProcess = function(){
         
         if(this.nodes[0] !== undefined  && this.currentCamera !== undefined )
-        {
-            this.browserScene.browse(this.nodes[0].terrain,this.currentCamera);
+        {                        
+            this.browserScene.browse(this.nodes[0].terrain,this.currentCamera,true);
+            this.gfxEngine.renderScene();
         } 
         
     };
     
     Scene.prototype.realtimeSceneProcess = function(){        
         if(this.nodes[0] !== undefined  && this.currentCamera !== undefined )
-        {
-            this.browserScene.browse(this.nodes[0].terrain,this.currentCamera);
+        {            
+            this.browserScene.browse(this.nodes[0].terrain,this.currentCamera,false);
         }                
     };
     
@@ -78,7 +78,7 @@ define('Scene/Scene',['Renderer/c3DEngine','Globe/Star','Globe/Globe','Renderer/
 
     Scene.prototype.wait = function(){
         
-        var waitTime = 250;                
+        var waitTime = 500;                
         
         this.realtimeSceneProcess();
         

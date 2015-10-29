@@ -63,22 +63,16 @@ define('Core/Commander/Providers/IoDriver_XBIL',['Core/Commander/Providers/IoDri
                         min = Math.min(min,h);
                        
                         rgbaData[i * 4  + 3] = 1.0;
-                        rgbaData[i * 4  + 2] = Math.floor(h)/2500.0;
-                        rgbaData[i * 4  + 1] = Math.floor(h)/2500.0;
-                        rgbaData[i * 4  + 0] = Math.floor(h)/2500.0;
+                        rgbaData[i * 4  + 2] = Math.floor(h)/5000.0;
+                        rgbaData[i * 4  + 1] = Math.floor(h)/5000.0;
+                        rgbaData[i * 4  + 0] = Math.floor(h)/5000.0;
                    }
                    
                 }
 //                if(max !== - 1000000)
 //                {
-//                    console.log(max);
-//                    console.log(min);
-//                    console.log('-----------------');
 //                }
 
-                //var texture = new THREE.DataTexture(rgbaData,256,256,THREE.RGBAFormat,THREE.FloatType);
-
-                //texture.needsUpdate = true;
                 deferred.resolve(rgbaData);
             }                                
         };

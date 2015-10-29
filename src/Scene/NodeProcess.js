@@ -46,7 +46,7 @@ define('Scene/NodeProcess',['THREE','Renderer/Camera'], function(THREE,Camera){
     };
     
     NodeProcess.prototype.SSE = function(node,camera)
-    {                                
+    {                                        
         return camera.SSE(node) > 1.0;            
     };
     

@@ -14,6 +14,8 @@ define('Renderer/NodeMesh',['Scene/Node','THREE'], function(Node, THREE){
 
         Node.call( this );
         THREE.Mesh.call( this );
+        
+        this.sse = true;
     };
 
     NodeMesh.prototype = Object.create( THREE.Mesh.prototype );
