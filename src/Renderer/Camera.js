@@ -50,11 +50,18 @@ define('Renderer/Camera',['Scene/Node','THREE'], function(Node, THREE){
     Camera.prototype.SSE = function(node)
     {
         
-        var distance = this.camera3D.position.distanceTo(node.center());
+        var distance = this.camera3D.position.distanceTo(node.center())*100000;
         
-        var geometricError = (17 - node.level)/400.0;
+        var levelMax = 11;
         
-        return this.preSSE * (geometricError/distance);
+        var t   = Math.pow(2,levelMax - node.level);
+        
+        //var geometricError  = 8.0*t; //--> debug
+        var geometricError  = 2.0*t;
+        
+        var SSE = this.preSSE * (geometricError/distance);
+        console.log(SSE);
+        return SSE;
 
     };
     
@@ -67,6 +74,8 @@ define('Renderer/Camera',['Scene/Node','THREE'], function(Node, THREE){
         
         this.frustum.setFromMatrix( new THREE.Matrix4().multiplyMatrices( this.camera3D.projectionMatrix, this.camera3D.matrixWorldInverse));
 
+        
+        
     };
     
     Camera.prototype.setPosition = function(position)

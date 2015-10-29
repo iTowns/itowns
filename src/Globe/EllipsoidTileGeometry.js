@@ -8,7 +8,7 @@
 
 define('Globe/EllipsoidTileGeometry',['THREE','Core/defaultValue','Scene/BoudingBox','Core/Math/Ellipsoid','Core/Geographic/CoordCarto'], function(THREE,defaultValue,BoudingBox,Ellipsoid,CoordCarto){
 
-    function EllipsoidTileGeometry(bbox,VS,PS){
+    function EllipsoidTileGeometry(bbox){
         //Constructor
         THREE.BufferGeometry.call( this );
         

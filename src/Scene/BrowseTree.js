@@ -12,10 +12,10 @@ define('Scene/BrowseTree',['Globe/EllipsoidTileMesh','THREE','OBBHelper','Scene/
         this.oneNode    = 0;
         this.scene      = scene;       
         this.nodeProcess= new NodeProcess(this.scene.currentCamera.camera3D);
-        
+        this.tree       = undefined;
     }
     
-    BrowseTree.prototype.processNode = function(node,camera)
+    BrowseTree.prototype.processNode = function(node,camera,other)
     {        
         if(node instanceof EllipsoidTileMesh)
         {            
@@ -25,7 +25,16 @@ define('Scene/BrowseTree',['Globe/EllipsoidTileMesh','THREE','OBBHelper','Scene/
             
             if(node.visible)
                 this.nodeProcess.frustumCullingOBB(node,camera);          
-                                                
+            
+            if(node.visible && other)
+                if(this.nodeProcess.SSE(node,camera) && node.material.visible === true)
+                {
+                    //console.log('SSE');
+                    
+                    this.tree.subdivide(node);
+                    
+                }
+            
             return node.visible;
         }        
         
@@ -38,18 +47,19 @@ define('Scene/BrowseTree',['Globe/EllipsoidTileMesh','THREE','OBBHelper','Scene/
      * @param {type} camera
      * @returns {undefined}
      */
-    BrowseTree.prototype.browse = function(tree, camera){
+    BrowseTree.prototype.browse = function(tree, camera,other){
  
+        this.tree = tree;
         for(var i = 0;i<tree.children.length;i++)
-            this._browse(tree.children[i],camera);
+            this._browse(tree.children[i],camera,other);
 
     };
     
-    BrowseTree.prototype._browse = function(node, camera){
+    BrowseTree.prototype._browse = function(node, camera,other){
              
-        if(this.processNode(node,camera))       
+        if(this.processNode(node,camera,other))       
             for(var i = 0;i<node.children.length;i++)
-                this._browse(node.children[i],camera);
+                this._browse(node.children[i],camera,other);
 
     };
     

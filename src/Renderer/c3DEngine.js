@@ -36,7 +36,7 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera','when'], 
         
         this.controls = new THREE.OrbitControls( this.camera.camera3D,this.renderer.domElement );
         this.initControls();        
-        this.camDebug = this.debug ? new THREE.PerspectiveCamera( 30, this.camera.ratio, 0.1, 1000 ) : undefined;
+        this.camDebug = this.debug ? new THREE.PerspectiveCamera( 30, this.camera.ratio, 0.1, 1000) : undefined;
         
         if(this.debug)
         {
@@ -51,6 +51,20 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera','when'], 
         this.renderScene = function(){
             
             this.camera.update();
+            if(this.camera.position().length () < 8.0 && this.controls.zoomSpeed === 1.0)
+            {
+                this.controls.zoomSpeed     = 0.1;
+                this.controls.rotateSpeed   = 0.1;
+                this.controls.update();
+            }
+            else if(this.camera.position().length () >= 8.0 && this.controls.zoomSpeed === 0.1) 
+            {
+                this.controls.zoomSpeed     = 1.0;
+                this.controls.rotateSpeed   = 0.8;
+                this.controls.update();
+            }
+            
+            
             this.scene.wait();
             this.renderer.clear();
             

@@ -12,7 +12,7 @@ void main() {
         // TODO calculer la vrai normal...
         vNormal     = normalize( position );
 
-        float df    = dv.x *0.025    ;
+        float df    = dv.x *0.01    ;
                         
         vec3 displacedPosition = position +  vNormal  * df;
 

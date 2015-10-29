@@ -99,7 +99,7 @@ define('Scene/Quadtree',[
 
         }.bind(tile)).then(function(tile)
         {                            
-            if(cooWMTS.zoom === 2)
+            if(cooWMTS.zoom >= 2)
             {
                 var box  = this.projection.WMTS_WGS84ToWMTS_PM(cooWMTS,bbox);                        
                 var id = 0;
@@ -129,6 +129,18 @@ define('Scene/Quadtree',[
     */
     Quadtree.prototype.subdivide = function(node)
     {
+        if(node.level >= 11)
+            return;        
+        
+        node.material.visible = false;
+        
+        if(node.childrenCount() !== 0)
+        {
+            for (var i = 0 ;i<node.childrenCount();i++)
+                node.children[i].visible = true;
+                            
+            return;
+        }    
         var quad = new Quad(node.bbox);
         /*
         return when.all([        
@@ -146,7 +158,7 @@ define('Scene/Quadtree',[
         node.add(this.createTile(quad.southWest));
         node.add(this.createTile(quad.southEast));
           
-        node.material.visible = false;
+        
     };
     
     Quadtree.prototype.subdivideChildren = function(node)
