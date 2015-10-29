@@ -5,19 +5,29 @@
  */
 
 
-define('Renderer/Material',['THREE'], function(THREE){
+define('Renderer/Material',['THREE','Core/Math/MathExtented'], function(THREE,MathExt){
     
+    // TODO Temp
+    WGS84LatitudeClamp = function(latitude){
+        
+        //var min = -68.1389  / 180 * Math.PI;
+        var min = -86  / 180 * Math.PI;
+        var max =  84  / 180 * Math.PI;
+
+        latitude = Math.max(min,latitude);
+        latitude = Math.min(max,latitude);
+
+        return latitude;
+
+    };
        
     var  Material = function (sourceVS,sourcePS,bbox,zoom){
        
-        this.Textures_00 = [];
-        
-        this.Textures_00.push(new THREE.Texture());
-        
+        this.Textures_00 = [];        
+        this.Textures_00.push(new THREE.Texture());        
         this.Textures_01 = [];        
         this.Textures_01.push(new THREE.Texture());
-        
-        
+                
         this.uniforms  = 
         {                        
             dTextures_00    : { type: "tv", value: this.Textures_00 },
@@ -26,6 +36,8 @@ define('Renderer/Material',['THREE'], function(THREE){
             nbTextures_01   : { type: "f" , value: 0.0 },
             bLongitude      : { type: "v2", value: new THREE.Vector2(bbox.minCarto.longitude,bbox.maxCarto.longitude)}, 
             bLatitude       : { type: "v2", value: new THREE.Vector2(bbox.minCarto.latitude,bbox.maxCarto.latitude)},
+            periArcLati     : { type: "f" , value: Math.abs(bbox.maxCarto.latitude - bbox.minCarto.latitude)},
+            y0              : { type: "f" , value: 0.5 - Math.log(Math.tan(MathExt.PI_OV_FOUR + WGS84LatitudeClamp(bbox.maxCarto.latitude)*0.5))*MathExt.INV_TWO_PI},
             zoom            : { type: "f" , value: zoom }
         };
        
@@ -36,6 +48,8 @@ define('Renderer/Material',['THREE'], function(THREE){
             fragmentShader  : sourcePS
 
          });
+         
+         this.shader.wireframe = false;
         
     };
     

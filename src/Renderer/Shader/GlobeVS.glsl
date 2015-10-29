@@ -9,13 +9,12 @@ void main() {
 
         vec3 dv = texture2D( dTextures_00[0], vUv ).xyz;
 
+        // TODO calculer la vrai normal...
         vNormal     = normalize( position );
 
-        float df    = dv.x *0.05    ;
+        float df    = dv.x *0.025    ;
                         
         vec3 displacedPosition = position +  vNormal  * df;
-
-        //vec3 displacedPosition = position +  vNormal  * df;
 
         gl_Position = projectionMatrix * modelViewMatrix * vec4( displacedPosition ,1.0 );
 
