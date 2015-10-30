@@ -27,7 +27,7 @@ define('Scene/Scene',['Renderer/c3DEngine','Globe/Star','Globe/Globe','Renderer/
         this.gfxEngine.scene  = this;
         this.currentCamera    = this.gfxEngine.camera;
 
-        this.browserScene   = new BrowseTree(this);
+        this.browserScene     = new BrowseTree(this);
         this.gfxEngine.renderScene();
         
         //this.browserScene.addOBBoxHelper(this.nodes[0].terrain);

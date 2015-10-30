@@ -60,7 +60,7 @@ define('Renderer/Camera',['Scene/Node','THREE'], function(Node, THREE){
         var geometricError  = 2.0*t;
         
         var SSE = this.preSSE * (geometricError/distance);
-        console.log(SSE);
+        //console.log(SSE);
         return SSE;
 
     };

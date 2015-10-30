@@ -27,13 +27,14 @@ define('Scene/BrowseTree',['Globe/EllipsoidTileMesh','THREE','OBBHelper','Scene/
                 this.nodeProcess.frustumCullingOBB(node,camera);          
             
             if(node.visible && other)
-                if(this.nodeProcess.SSE(node,camera) && node.material.visible === true)
+            {
+                var sse = this.nodeProcess.SSE(node,camera);
+                if(sse && node.material.visible === true)
                 {
-                    //console.log('SSE');
-                    
                     this.tree.subdivide(node);
                     
                 }
+            }
             
             return node.visible;
         }        
