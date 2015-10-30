@@ -55,13 +55,13 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera','when'], 
             {
                 this.controls.zoomSpeed     = 0.1;
                 this.controls.rotateSpeed   = 0.1;
-                this.controls.update();
+                //this.controls.update();
             }
             else if(this.camera.position().length () >= 8.0 && this.controls.zoomSpeed === 0.1) 
             {
                 this.controls.zoomSpeed     = 1.0;
                 this.controls.rotateSpeed   = 0.8;
-                this.controls.update();
+                //this.controls.update();
             }
             
             
