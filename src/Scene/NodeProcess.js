@@ -143,6 +143,11 @@ define('Scene/NodeProcess',['Scene/BoudingBox','Renderer/Camera','Core/Math/Math
       }
       
       node.visible = isVisible;
+//      if(isVisible === false)
+//          node.tMat.setDebug(1);
+//      else
+//          node.tMat.setDebug(0);
+      
       
       return node.visible;
       

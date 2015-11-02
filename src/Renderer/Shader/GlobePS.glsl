@@ -9,17 +9,21 @@ const float poleSud     = -82.0 / 180.0 * PI;
 const float poleNord    =  84.0 / 180.0 * PI;
 
 uniform sampler2D   dTextures_01[TEX_UNITS];
-uniform float       nbTextures_00;
-uniform float       nbTextures_01;
+uniform int         nbTextures_00;
+uniform int         nbTextures_01;
 uniform vec2        bLongitude; 
 uniform vec2        bLatitude;
 uniform float       periArcLati;
 uniform float       y0;
 uniform float       zoom;
+uniform int         debug;
 varying vec2        vUv;
 
 void main() {
     
+
+    
+
     float latitude  = bLatitude.x + periArcLati*(1.0-vUv.y);
    
     
@@ -45,11 +49,11 @@ void main() {
             int   idd       = int(idRow - idStart);
             vec4  ortho     = vec4( 0.04, 0.23, 0.35, 1.0);
 
-            float iddf      = float(idd);
+            //float iddf      = float(idd);
 
-            if(iddf >= nbTextures_01 || idd >= TEX_UNITS )
+            if(idd >= nbTextures_01 || idd >= TEX_UNITS )
             {
-                idd = int(nbTextures_01-1.0);
+                idd = nbTextures_01-1;
                 uvO.y = 0.0;
             }
             else if(idd < 0)
@@ -64,7 +68,10 @@ void main() {
 
             gl_FragColor = ortho;
 
-         }                   
+         }      
+
+         if(debug > 0)
+            gl_FragColor = vec4( 1.0, 0.0, 0.0, 1.0);
 }
 
 /*
