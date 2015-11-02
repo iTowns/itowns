@@ -32,13 +32,15 @@ define('Renderer/Material',['THREE','Core/Math/MathExtented'], function(THREE,Ma
         {                        
             dTextures_00    : { type: "tv", value: this.Textures_00 },
             dTextures_01    : { type: "tv", value: this.Textures_01 },
-            nbTextures_00   : { type: "f" , value: 0.0 },
-            nbTextures_01   : { type: "f" , value: 0.0 },
+            nbTextures_00   : { type: "i" , value: 0 },
+            nbTextures_01   : { type: "i" , value: 0 },
             bLongitude      : { type: "v2", value: new THREE.Vector2(bbox.minCarto.longitude,bbox.maxCarto.longitude)}, 
             bLatitude       : { type: "v2", value: new THREE.Vector2(bbox.minCarto.latitude,bbox.maxCarto.latitude)},
             periArcLati     : { type: "f" , value: Math.abs(bbox.maxCarto.latitude - bbox.minCarto.latitude)},
             y0              : { type: "f" , value: 0.5 - Math.log(Math.tan(MathExt.PI_OV_FOUR + WGS84LatitudeClamp(bbox.maxCarto.latitude)*0.5))*MathExt.INV_TWO_PI},
-            zoom            : { type: "f" , value: zoom }
+            zoom            : { type: "f" , value: zoom },
+            debug           : { type: "i" , value: false }
+            
         };
        
         this.shader = new THREE.ShaderMaterial( {
@@ -71,6 +73,13 @@ define('Renderer/Material',['THREE','Core/Math/MathExtented'], function(THREE,Ma
             
         this.shader.needsUpdate         = true;
     };
+    
+    Material.prototype.setDebug = function(debug_value)
+    {
+        this.uniforms.debug.value   = debug_value;
+        this.shader.needsUpdate     = true;
+    };
+    
     
     return Material;
 });
