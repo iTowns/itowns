@@ -14,6 +14,8 @@ THREE.OBB = function (min,max)
     
     this.quaInv = this.quaternion.clone().inverse();
     
+    this.pointsWorld ;
+    
 };
 
 THREE.OBB.prototype = Object.create( THREE.Object3D.prototype );
@@ -25,6 +27,8 @@ THREE.OBB.prototype.update = function(){
     this.updateMatrixWorld(); 
     
     this.quaInv = this.quaternion.clone().inverse();
+    
+    this.pointsWorld = this.cPointsWorld(this.points());
 };
 
 
@@ -55,6 +59,17 @@ THREE.OBB.prototype.points = function(){
     points[ 6 ].set( this.box3D.max.x, this.box3D.max.y, this.box3D.min.z );
     points[ 7 ].set( this.box3D.max.x, this.box3D.max.y, this.box3D.max.z );
 
+    return points;
+};
+
+THREE.OBB.prototype.cPointsWorld = function(points){
+
+    var m = this.matrixWorld;
+
+    for (var i = 0, max = points.length; i < max; i++) {
+        points[ i ].applyMatrix4(m);
+    }
+        
     return points;
 
 };

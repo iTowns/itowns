@@ -39,41 +39,46 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
 
                 if(node.visible)
                 {
-                    this.nodeProcess.frustumCullingOBB(node,camera);          
-
+                    this.nodeProcess.frustumCullingOBB(node,camera);
+                    
+                    
                     if(node.visible )
                     {
-                        var sse = this.nodeProcess.SSE(node,camera);
+                        this.nodeProcess.horizonCulling(node,camera);
                         
-                        if(node.parent.material !== undefined && node.parent.material.visible === true)
+                        
+                        if(node.visible )
                         {
-                            node.visible = false;
-                            return false;
+                            var sse = this.nodeProcess.SSE(node,camera);
+
+                            if(node.parent.material !== undefined && node.parent.material.visible === true)
+                            {
+                                node.visible = false;
+                                return false;
+                            }
+
+
+                            if(other && sse && node.material.visible === true)
+                            {   
+                                this.tree.subdivide(node);
+                            }
+                            else if(!sse && node.level >= 2 && node.material.visible === false)
+                            {
+
+                                node.material.visible = true;
+
+                                if(node.childrenCount() !== 0)
+                                    for(var i = 0;i<node.children.length;i++)
+                                    {               
+                                        //console.log("invisible");
+                                        node.children[i].visible = false;
+                                           //node.children[i].traverse(this.invisible);
+                                    }
+
+                                return false;                            
+                            }
+
                         }
-                            
-
-                        if(other && sse && node.material.visible === true)
-                        {   
-                            //console.log("up " + node.level);
-                            this.tree.subdivide(node);
-                        }
-                        else if(!sse && node.level >= 2 && node.material.visible === false)
-                        {
-                            //console.log("down");
-
-                            node.material.visible = true;
-
-                            if(node.childrenCount() !== 0)
-                                for(var i = 0;i<node.children.length;i++)
-                                {               
-                                    //console.log("invisible");
-                                    node.children[i].visible = false;
-                                       //node.children[i].traverse(this.invisible);
-                                }
-
-                            return false;                            
-                        }
-
                     }
                 }
             }
@@ -93,6 +98,7 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
     BrowseTree.prototype.browse = function(tree, camera,other){
  
         this.tree = tree;
+        this.nodeProcess.preHorizonCulling(camera);
         for(var i = 0;i<tree.children.length;i++)
             this._browse(tree.children[i],camera,other);
 
