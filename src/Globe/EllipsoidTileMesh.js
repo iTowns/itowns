@@ -79,6 +79,11 @@ define('Globe/EllipsoidTileMesh',['Renderer/NodeMesh','Globe/EllipsoidTileGeomet
         return this.geometry.center;
     };
     
+    EllipsoidTileMesh.prototype.OBB = function()
+    { 
+        return this.geometry.OBB;
+    };
+    
     return EllipsoidTileMesh;
     
 });
