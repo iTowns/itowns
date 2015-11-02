@@ -23,9 +23,9 @@ void main() {
     float latitude  = bLatitude.x + periArcLati*(1.0-vUv.y);
    
     
-    float sLine = 0.002;
+    float sLine = 0.0015;
     if(vUv.x < sLine || vUv.x > 1.0 - sLine || vUv.y < sLine || vUv.y > 1.0 - sLine)
-        gl_FragColor = vec4( 0.0, 0.8, 1.0, 1.0);
+        gl_FragColor = vec4( 0.4, 0.8, 1.0, 1.0);
     else if(latitude < poleSud )
         gl_FragColor = vec4( 0.85, 0.85, 0.91, 1.0);
     else

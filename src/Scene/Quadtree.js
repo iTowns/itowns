@@ -129,7 +129,7 @@ define('Scene/Quadtree',[
     */
     Quadtree.prototype.subdivide = function(node)
     {
-        if(node.level >= 8)
+        if(node.level >= 11)
             return;        
         
         node.material.visible = false;

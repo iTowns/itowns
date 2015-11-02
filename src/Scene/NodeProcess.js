@@ -79,6 +79,44 @@ define('Scene/NodeProcess',['Scene/BoudingBox','Renderer/Camera','Core/Math/Math
         return node.visible;
     };
     
+    NodeProcess.prototype.horizonCulling = function(node,camera)        
+    {
+        
+        var cameraPosition = camera.position();
+        
+        var rX = 6.378137;
+        var rY = 6.3567523142451793;
+        var rZ = 6.378137;
+        
+        // Vector CV
+        var cvX = cameraPosition.x / rX;
+        var cvY = cameraPosition.y / rY;
+        var cvZ = cameraPosition.z / rZ;
+
+        var vhMagnitudeSquared = cvX * cvX + cvY * cvY + cvZ * cvZ - 1.0;
+       
+        var position;
+
+        // Target position, transformed to scaled space
+        var tX = position.x / rX;
+        var tY = position.y / rY;
+        var tZ = position.z / rZ;
+
+        // Vector VT
+        var vtX = tX - cvX;
+        var vtY = tY - cvY;
+        var vtZ = tZ - cvZ;
+        var vtMagnitudeSquared = vtX * vtX + vtY * vtY + vtZ * vtZ;
+
+        // VT dot VC is the inverse of VT dot CV
+        var vtDotVc = -(vtX * cvX + vtY * cvY + vtZ * cvZ);
+
+        var isOccluded = vtDotVc > vhMagnitudeSquared &&
+                         vtDotVc * vtDotVc / vtMagnitudeSquared > vhMagnitudeSquared;
+                 
+        return isOccluded;
+
+    };
 
     return NodeProcess;
 

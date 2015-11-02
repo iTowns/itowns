@@ -78,7 +78,7 @@ define('Scene/Scene',['Renderer/c3DEngine','Globe/Star','Globe/Globe','Renderer/
 
     Scene.prototype.wait = function(){
         
-        var waitTime = 500;                
+        var waitTime = 250;                
         
         this.realtimeSceneProcess();
         

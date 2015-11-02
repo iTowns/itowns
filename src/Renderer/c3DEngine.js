@@ -15,7 +15,7 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera','when'], 
             throw new Error("Cannot instantiate more than one c3DEngine");
         } 
 
-        this.debug      = true;
+        this.debug      = false;
         this.scene      = scene;
         this.scene3D    = new THREE.Scene();       
         this.renderer   = new THREE.WebGLRenderer( { antialias: true,alpha: true } );
