@@ -37,6 +37,15 @@ define('Scene/BoudingBox',['Core/defaultValue','Core/Math/MathExtented','Core/Ma
 
     };
     
+    BoudingBox.prototype.intersect = function(bbox)
+    {
+        return !(this.minCarto.longitude >= bbox.maxCarto.longitude
+        || this.maxCarto.longitude <= bbox.minCarto.longitude
+        || this.minCarto.latitude >= bbox.maxCarto.latitude
+        || this.maxCarto.latitude <= bbox.minCarto.latitude);
+
+    };
+    
     
     BoudingBox.prototype.get3DBBox = function(ellipsoid,normal,center){
        

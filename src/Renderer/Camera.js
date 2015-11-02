@@ -56,8 +56,8 @@ define('Renderer/Camera',['Scene/Node','THREE'], function(Node, THREE){
         
         var t   = Math.pow(2,levelMax - node.level);
         
-        //var geometricError  = 8.0*t; //--> debug
-        var geometricError  = 2.0*t;
+        var geometricError  = 8.0*t; //--> debug
+        //var geometricError  = 2.0*t;
         
         var SSE = this.preSSE * (geometricError/distance);
         //console.log(SSE);
