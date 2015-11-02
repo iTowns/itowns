@@ -12,7 +12,7 @@ requirejs.config({
     paths : {
        
         'text'          : "ThirdParty/text",
-        'THREE'         : "https://rawgit.com/mrdoob/three.js/master/build/three.min"  ,
+        'THREE'         : "https://rawgit.com/mrdoob/three.js/master/build/three.min",
         'when'          : 'ThirdParty/when',        
         'OrbitControls' : "Renderer/Three/OrbitControls",
         'StarGeometry'  : "Renderer/ThreeExtented/StarGeometry",
@@ -23,8 +23,7 @@ requirejs.config({
     
     bundles: {
         'primary': ['main', 'text']
-    },
-	
+    },	
 	
     shim: {
         

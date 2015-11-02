@@ -4,7 +4,7 @@
 * Description: BrowseTree parcourt un arbre de Node. Lors du parcours un ou plusieur NodeProcess peut etre appliqué sur certains Node.
 */
 
-define('Scene/BrowseTree',['Globe/EllipsoidTileMesh','THREE','OBBHelper','Scene/NodeProcess','Renderer/Camera'], function(EllipsoidTileMesh,THREE,OBBHelper,NodeProcess,camera){
+define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'], function(THREE,EllipsoidTileMesh,NodeProcess){
 
     function BrowseTree(scene){
         //Constructor
@@ -15,24 +15,66 @@ define('Scene/BrowseTree',['Globe/EllipsoidTileMesh','THREE','OBBHelper','Scene/
         this.tree       = undefined;
     }
     
+    /**
+     * 
+     * @param {type} node
+     * @returns {undefined}
+     */
+    BrowseTree.prototype.invisible= function(node)
+    {
+        //console.log('ssss');
+        node.visible = false;
+    };
+    
     BrowseTree.prototype.processNode = function(node,camera,other)
     {        
         if(node instanceof EllipsoidTileMesh)
         {            
             node.visible = false;
             
-            this.nodeProcess.backFaceCulling(node,camera);
             
-            if(node.visible)
-                this.nodeProcess.frustumCullingOBB(node,camera);          
-            
-            if(node.visible && other)
+            //if(this.nodeProcess.frustumBB(node,camera))
             {
-                var sse = this.nodeProcess.SSE(node,camera);
-                if(sse && node.material.visible === true)
+                this.nodeProcess.backFaceCulling(node,camera);
+
+                if(node.visible)
                 {
-                    this.tree.subdivide(node);
-                    
+                    this.nodeProcess.frustumCullingOBB(node,camera);          
+
+                    if(node.visible )
+                    {
+                        var sse = this.nodeProcess.SSE(node,camera);
+                        
+                        if(node.parent.material !== undefined && node.parent.material.visible === true)
+                        {
+                            node.visible = false;
+                            return false;
+                        }
+                            
+
+                        if(other && sse && node.material.visible === true)
+                        {   
+                            //console.log("up " + node.level);
+                            this.tree.subdivide(node);
+                        }
+                        else if(!sse && node.level >= 2 && node.material.visible === false)
+                        {
+                            //console.log("down");
+
+                            node.material.visible = true;
+
+                            if(node.childrenCount() !== 0)
+                                for(var i = 0;i<node.children.length;i++)
+                                {               
+                                    //console.log("invisible");
+                                    node.children[i].visible = false;
+                                       //node.children[i].traverse(this.invisible);
+                                }
+
+                            return false;                            
+                        }
+
+                    }
                 }
             }
             

@@ -4,14 +4,15 @@
 * Description: NodeProcess effectue une opération sur un Node.
 */
 
-define('Scene/NodeProcess',['THREE','Renderer/Camera'], function(THREE,Camera){
+define('Scene/NodeProcess',['Scene/BoudingBox','Renderer/Camera','Core/Math/MathExtented'], function(BoudingBox,Camera,MathExt){
 
 
     function NodeProcess(camera3D){
         //Constructor
-        this.camera = new Camera();
-        
+        this.camera = new Camera();        
         this.camera.camera3D  = camera3D.clone();
+        
+        this.bbox = new BoudingBox(MathExt.PI_OV_TWO+MathExt.PI_OV_FOUR,MathExt.PI+MathExt.PI_OV_FOUR,0,MathExt.PI_OV_TWO);
     }
 
     NodeProcess.prototype.backFaceCulling = function(node,camera)
@@ -62,6 +63,20 @@ define('Scene/NodeProcess',['THREE','Renderer/Camera'], function(THREE,Camera){
         
         return node.visible;
         
+    };
+    
+    /**
+     * 
+     * @param {type} node
+     * @param {type} camera
+     * @returns {unresolved}
+     */
+    NodeProcess.prototype.frustumBB = function(node,camera)        
+    { 
+        
+        node.visible = node.bbox.intersect(this.bbox);
+        
+        return node.visible;
     };
     
 
