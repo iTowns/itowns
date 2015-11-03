@@ -4,7 +4,7 @@
 * Description: NodeProcess effectue une opération sur un Node.
 */
 
-define('Scene/NodeProcess',['Scene/BoudingBox','Renderer/Camera','Core/Math/MathExtented'], function(BoudingBox,Camera,MathExt){
+define('Scene/NodeProcess',['Scene/BoudingBox','Renderer/Camera','Core/Math/MathExtented','THREE'], function(BoudingBox,Camera,MathExt,THREE){
 
 
     function NodeProcess(camera3D){
@@ -14,14 +14,10 @@ define('Scene/NodeProcess',['Scene/BoudingBox','Renderer/Camera','Core/Math/Math
         
         this.bbox = new BoudingBox(MathExt.PI_OV_TWO+MathExt.PI_OV_FOUR,MathExt.PI+MathExt.PI_OV_FOUR,0,MathExt.PI_OV_TWO);
         
-        this.vhMagnitudeSquared = 1.0;        
-        this.rX = 6.378137;
-        this.rY = 6.3567523142451793;
-        this.rZ = 6.378137;
+        this.vhMagnitudeSquared = 1.0;  
         
-        this.cvX = 0.0;
-        this.cvY = 0.0;
-        this.cvZ = 0.0;
+        this.r  = new THREE.Vector3(6.378137,6.3567523142451793,6.378137);
+        this.cV  = new THREE.Vector3();
         
     }
 
@@ -91,40 +87,28 @@ define('Scene/NodeProcess',['Scene/BoudingBox','Renderer/Camera','Core/Math/Math
     
     NodeProcess.prototype.preHorizonCulling = function(camera)
     {
-        var cameraPosition = camera.position();
+ 
+        this.cV  = MathExt.divideVectors(camera.position(),this.r);
         
-        // Vector CV
-        this.cvX = cameraPosition.x / this.rX;
-        this.cvY = cameraPosition.y / this.rY;
-        this.cvZ = cameraPosition.z / this.rZ;
-
-        this.vhMagnitudeSquared = this.cvX * this.cvX + this.cvY * this.cvY + this.cvZ * this.cvZ - 1.0;
-        
-        //console.log(this.vhMagnitudeSquared);
+        this.vhMagnitudeSquared = MathExt.lenghtSquared(this.cV) - 1.0;
+  
     };
     
     NodeProcess.prototype.pointHorizonCulling = function(point)
     {
-        var position = point;
-
         
-
-        // Target position, transformed to scaled space
-        var tX = position.x / this.rX;
-        var tY = position.y / this.rY;
-        var tZ = position.z / this.rZ;
+        var t = MathExt.divideVectors(point,this.r);
 
         // Vector VT
-        var vtX = tX - this.cvX;
-        var vtY = tY - this.cvY;
-        var vtZ = tZ - this.cvZ;
-        var vtMagnitudeSquared = vtX * vtX + vtY * vtY + vtZ * vtZ;
+        var vT = new THREE.Vector3();
+        vT.subVectors(t,this.cV);
+        
+        var vtMagnitudeSquared = MathExt.lenghtSquared(vT);
 
-        // VT dot VC is the inverse of VT dot CV
-        var vtDotVc = -(vtX * this.cvX + vtY * this.cvY + vtZ * this.cvZ);
+        var dot = - vT.dot(this.cV);
 
-        var isOccluded = vtDotVc > this.vhMagnitudeSquared &&
-                         vtDotVc * vtDotVc / vtMagnitudeSquared > this.vhMagnitudeSquared;
+        var isOccluded = dot > this.vhMagnitudeSquared &&
+                         dot * dot / vtMagnitudeSquared > this.vhMagnitudeSquared;
                  
         return isOccluded;
     };
@@ -132,8 +116,6 @@ define('Scene/NodeProcess',['Scene/BoudingBox','Renderer/Camera','Core/Math/Math
     NodeProcess.prototype.horizonCulling = function(node)
     {
       var points = node.OBB().pointsWorld;
-      
-      //console.log(points);
       
       var isVisible = false;
       for (var i = 0, max = points.length; i < max; i++) 
@@ -147,7 +129,7 @@ define('Scene/NodeProcess',['Scene/BoudingBox','Renderer/Camera','Core/Math/Math
 //          node.tMat.setDebug(1);
 //      else
 //          node.tMat.setDebug(0);
-      
+//      
       
       return node.visible;
       
