@@ -63,9 +63,9 @@ define('Core/Commander/Providers/IoDriver_XBIL',['Core/Commander/Providers/IoDri
                         min = Math.min(min,h);
                        
                         rgbaData[i * 4  + 3] = 1.0;
-                        rgbaData[i * 4  + 2] = Math.floor(h)/5000.0;
-                        rgbaData[i * 4  + 1] = Math.floor(h)/5000.0;
-                        rgbaData[i * 4  + 0] = Math.floor(h)/5000.0;
+                        rgbaData[i * 4  + 2] = Math.floor(h)*0.000001;
+                        rgbaData[i * 4  + 1] = Math.floor(h)*0.000001;
+                        rgbaData[i * 4  + 0] = Math.floor(h)*0.000001;
                    }
                    
                 }
