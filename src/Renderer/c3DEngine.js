@@ -4,7 +4,7 @@
 * Description: 3DEngine est l'interface avec le framework webGL.
 */
 
-define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera','when'], function(THREE,OrbitControls,Camera,when){
+define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera','when','text!Renderer/Shader/GlowPS.glsl','text!Renderer/Shader/GlowVS.glsl'], function(THREE,OrbitControls,Camera,when,GlowPS,GlowVS){
 
     var instance3DEngine = null;
 
@@ -37,6 +37,27 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera','when'], 
         this.controls = new THREE.OrbitControls( this.camera.camera3D,this.renderer.domElement );
         this.initControls();        
         this.camDebug = this.debug ? new THREE.PerspectiveCamera( 30, this.camera.ratio, 0.1, 1000) : undefined;
+        
+        
+        // Glow ° Start
+        var material = new THREE.ShaderMaterial( {
+	
+            vertexShader    : GlowVS,
+            fragmentShader: GlowPS,
+            side: THREE.BackSide,
+            blending: THREE.AdditiveBlending,
+            transparent: true
+
+        } );
+        
+        
+        var geometry = new THREE.SphereGeometry( 7.3, 64, 64 );
+        var sphere = new THREE.Mesh( geometry, material );
+        this.scene3D.add( sphere );
+        // Glow ° End
+        
+        
+        //this.scene3D.fog = new THREE.Fog( 0xffffff );
         
         if(this.debug)
         {
