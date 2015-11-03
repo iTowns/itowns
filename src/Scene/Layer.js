@@ -8,11 +8,11 @@
 
 define('Scene/Layer',['Scene/Node','Core/Commander/InterfaceCommander','Core/Geographic/Projection'], function(Node,InterfaceCommander,Projection){
 
-    function Layer(){
+    function Layer(type){
         //Constructor
 
         Node.call( this );
-        this.interCommand   = new InterfaceCommander();
+        this.interCommand   = new InterfaceCommander(type);
         this.descriManager  = null;
         this.projection     = new Projection();
                        
@@ -21,8 +21,7 @@ define('Scene/Layer',['Scene/Node','Core/Commander/InterfaceCommander','Core/Geo
     Layer.prototype = Object.create( Node.prototype );
 
     Layer.prototype.constructor = Layer;
-       
-  
+         
     return Layer;
     
 });

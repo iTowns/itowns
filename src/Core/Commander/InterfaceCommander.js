@@ -6,11 +6,13 @@
 
 define('Core/Commander/InterfaceCommander',['Core/Commander/ManagerCommands'], function(ManagerCommands){
 
-    function InterfaceCommander(managerCom,buildCommand){
+    function InterfaceCommander(type){
         //Constructor
 
         this.managerCommands = ManagerCommands();
-        this.builderCommand  = buildCommand;
+        //this.builderCommand  = buildCommand;
+        
+        this.type     = type;
 
     }
 
@@ -41,6 +43,12 @@ define('Core/Commander/InterfaceCommander',['Core/Commander/ManagerCommands'], f
         //TODO: Implement Me 
         return this.managerCommands.getTextureOrtho(coWMTS);
     };
+    
+    InterfaceCommander.prototype.getTile = function(bbox,level)
+    {
+        return this.managerCommands.getTile(type,bbox,level);
+    };
+    
 
     return InterfaceCommander;
     

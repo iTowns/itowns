@@ -30,12 +30,14 @@ void main() {
     float sLine = 0.0015;
     if(vUv.x < sLine || vUv.x > 1.0 - sLine || vUv.y < sLine || vUv.y > 1.0 - sLine)
         gl_FragColor = vec4( 0.4, 0.8, 1.0, 1.0);
-    else if(latitude < poleSud )
+    else 
+    */
+
+
+    if(latitude < poleSud )
         gl_FragColor = vec4( 0.85, 0.85, 0.91, 1.0);
     else
-    */
     
-
     if(latitude > poleNord)
         gl_FragColor = vec4( 0.04, 0.23, 0.35, 1.0);
     else
@@ -50,17 +52,16 @@ void main() {
             int   idd       = int(idRow - idStart);
             vec4  ortho     = vec4( 0.04, 0.23, 0.35, 1.0);
 
-            //float iddf      = float(idd);
-
-            if(idd >= nbTextures_01 || idd >= TEX_UNITS )
+        
+            if(idd >= nbTextures_01)
             {
-                idd = nbTextures_01-1;
-                uvO.y = 0.0;
+                idd     = nbTextures_01-1;
+                uvO.y   = 0.0;
             }
             else if(idd < 0)
             {
-                idd = 0;
-                uvO.y = 1.0;
+                idd     = 0;
+                uvO.y   = 1.0;
             }
 
             for (int x = 0; x < TEX_UNITS; x++)

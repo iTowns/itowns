@@ -45,6 +45,11 @@ define('Core/Commander/ManagerCommands',
         
         return this.providers[0].getTextureOrtho(coWMTS);
     };
+    
+    ManagerCommands.prototype.getTile = function(bbox,level)
+    {
+        //return this.getTile(type,bbox,level);
+    };
 
     /**
     */
