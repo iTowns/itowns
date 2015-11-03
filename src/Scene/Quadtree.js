@@ -13,39 +13,19 @@
  * @returns {Quadtree_L10.Quadtree}
  */
 define('Scene/Quadtree',[
-        'Scene/Layer',
-        'Scene/BoudingBox',
-        'when',
+        'Scene/Layer',                
         'Core/Geographic/CoordWMTS',
+        'Core/Geographic/Quad',
         'text!Renderer/Shader/GlobeVS.glsl',
-        'text!Renderer/Shader/GlobePS.glsl'], function(Layer,BoudingBox,when,CoordWMTS,GlobeVS,GlobePS){
-
-    function Quad(bbox)
-    {
-        this.northWest = new BoudingBox(bbox.minCarto.longitude,bbox.center.x,bbox.center.y,bbox.maxCarto.latitude,bbox.center);
-        this.northEast = new BoudingBox(bbox.center.x,bbox.maxCarto.longitude,bbox.center.y,bbox.maxCarto.latitude,bbox.center);
-        this.southWest = new BoudingBox(bbox.minCarto.longitude,bbox.center.x,bbox.minCarto.latitude,bbox.center.y,bbox.center);
-        this.southEast = new BoudingBox(bbox.center.x,bbox.maxCarto.longitude,bbox.minCarto.latitude,bbox.center.y,bbox.center);
-    }
+        'text!Renderer/Shader/GlobePS.glsl'], function(Layer,CoordWMTS,Quad,GlobeVS,GlobePS){
     
-    Quad.prototype.array = function()
-    {
-        var subdiv = [];
-        
-        subdiv.push(this.northWest);
-        subdiv.push(this.northEast);
-        subdiv.push(this.southWest);
-        subdiv.push(this.southEast);        
-        
-        return subdiv;
-    };
 
-    function Quadtree(tileType,schemeTile)
+    function Quadtree(type,schemeTile)
     {        
-        Layer.call( this);
+        Layer.call( this,type);
         
         this.schemeTile       = schemeTile;
-        this.tileType         = tileType;
+        this.tileType         = type;
 
         for (var i = 0; i < this.schemeTile.rootCount(); i++)
         {
