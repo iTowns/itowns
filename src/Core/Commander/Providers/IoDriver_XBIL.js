@@ -35,45 +35,23 @@ define('Core/Commander/Providers/IoDriver_XBIL',['Core/Commander/Providers/IoDri
 
             if (arrayBuffer) {
 
-                var byteArray = new Float32Array(arrayBuffer);
-                var size = 256*256;
-                var rgbaData = new Float32Array( 4 * size );
+                var floatArray = new Float32Array(arrayBuffer);
+
                 
-                var max = - 1000000;
-                var min =   1000000;
+//                var max = - 1000000;
+//                var min =   1000000;
                                 
                 var mcolor  = 0.0;
                 //var mcolor  = Math.random();
  
-                for (var i = 0; i < byteArray.byteLength; i++) 
+                for (var i = 0; i < floatArray.byteLength; i++) 
                 {
-                   if(byteArray[i] === -99999.0 || byteArray[i] === undefined )
-                   {
-                        rgbaData[i * 4  + 3] = 1.0;
-                        rgbaData[i * 4  + 2] = mcolor;
-                        rgbaData[i * 4  + 1] = mcolor;
-                        rgbaData[i * 4  + 0] = mcolor;
-                   //     byteArray[i] = 0.0;                  
-                   }
-                   else
-                   {
-                        var h = byteArray[i];
+                   if(floatArray[i] === -99999.0 || floatArray[i] === undefined )
                         
-                        max = Math.max(max,h);
-                        min = Math.min(min,h);
-                       
-                        rgbaData[i * 4  + 3] = 1.0;
-                        rgbaData[i * 4  + 2] = Math.floor(h)*0.000001;
-                        rgbaData[i * 4  + 1] = Math.floor(h)*0.000001;
-                        rgbaData[i * 4  + 0] = Math.floor(h)*0.000001;
-                   }
-                   
+                        floatArray[i ] = mcolor;                   
                 }
-//                if(max !== - 1000000)
-//                {
-//                }
 
-                deferred.resolve(rgbaData);
+                deferred.resolve(floatArray);
             }                                
         };
 

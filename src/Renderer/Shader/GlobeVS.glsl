@@ -6,15 +6,12 @@ varying vec3 vNormal;
 void main() {
 
         vUv = uv;
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
-        vec3 dv = texture2D( dTextures_00[0], vUv ).xyz;
 
-        // TODO calculer la vrai normal...
+        float dv = texture2D( dTextures_00[0], vUv ).w*0.000001;
+
         vNormal     = normalize( position );
-
-        float df    = dv.x;
-                                                                                                                                                                                                                                                                                                                                                
-        vec3 displacedPosition = position +  vNormal  * df;
+                                                                                                                                                                                                                                                                                                                                      
+        vec3 displacedPosition = position +  vNormal  * dv;
 
         gl_Position = projectionMatrix * modelViewMatrix * vec4( displacedPosition ,1.0 );
 
