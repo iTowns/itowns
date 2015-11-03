@@ -26,6 +26,7 @@ define('Renderer/Camera',['Scene/Node','THREE'], function(Node, THREE){
         
         this.cameraHelper  = debug  ? new THREE.CameraHelper( this.camera3D ) : undefined;
         this.frustum       = new THREE.Frustum();
+        this.SSEFactor     = debug ? 8.0 : 2.0;
 
     }
  
@@ -55,9 +56,8 @@ define('Renderer/Camera',['Scene/Node','THREE'], function(Node, THREE){
         var levelMax = 11;
         
         var t   = Math.pow(2,levelMax - node.level);
-        
-        var geometricError  = 8.0*t; //--> debug
-        //var geometricError  = 2.0*t;
+
+        var geometricError  = this.SSEFactor*t;
         
         var SSE = this.preSSE * (geometricError/distance);
         //console.log(SSE);

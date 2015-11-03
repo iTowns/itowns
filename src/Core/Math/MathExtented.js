@@ -5,7 +5,7 @@
  */
 
 
-define('Core/Math/MathExtented',[], function(){
+define('Core/Math/MathExtented',['THREE'], function(THREE){
 
     /**
      * Math functions.
@@ -46,6 +46,19 @@ define('Core/Math/MathExtented',[], function(){
     MathExt.INV_TWO_PI  = 1.0/MathExt.TWO_PI;
     
     MathExt.LOG_TWO = Math.log(2.0);
+    
+    MathExt.divideVectors = function(u,v)
+    {          
+        var w = new THREE.Vector3(u.x/v.x,u.y/v.y,u.z/v.z);
+        
+        return w;
+    };
+    
+    MathExt.lenghtSquared = function(u)
+    {          
+                
+        return u.x * u.x + u.y * u.y + u.z * u.z;
+    };
     
     return MathExt;
     
