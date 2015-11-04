@@ -48,13 +48,19 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera','when'], 
         this.renderScene = function(){
             
             this.camera.update();
-            if(this.camera.position().length () < 8.0 && this.controls.zoomSpeed === 1.0)
+            var len  = this.camera.position().length ();
+            if( len < 8.0 /*&& this.controls.zoomSpeed === 1.0*/)
             {
-                this.controls.zoomSpeed     = 0.1;
-                this.controls.rotateSpeed   = 0.05; 
+                var t = Math.pow(Math.cos((8.0 - len)/ (8.0 - 6.378137) * Math.PI * 0.5),1.5);
+                
+                
+                this.controls.zoomSpeed     = t;
+                
+                //console.log(this.controls.zoomSpeed);
+                this.controls.rotateSpeed   = 0.8 *t; 
                         
             }
-            else if(this.camera.position().length () >= 8.0 && this.controls.zoomSpeed === 0.1) 
+            else if(len >= 8.0 && this.controls.zoomSpeed !== 1.0) 
             {
                 this.controls.zoomSpeed     = 1.0;
                 this.controls.rotateSpeed   = 0.8;        
