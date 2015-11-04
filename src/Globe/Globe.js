@@ -4,21 +4,21 @@
 * Description: Le globe est le noeud du globe (node) principale.
 */
 
-define('Globe/Globe',['Scene/Node','Scene/Layer','Scene/Quadtree','Scene/SchemeTile','Core/Math/MathExtented','Globe/EllipsoidTileMesh'], function(Node,Layer,Quadtree,SchemeTile,MathExt,EllipsoidTileMesh){
+define('Globe/Globe',['Scene/Node','Scene/Quadtree','Scene/SchemeTile','Core/Math/MathExtented','Globe/EllipsoidTileMesh','Globe/Atmosphere'], function(Node,Quadtree,SchemeTile,MathExt,EllipsoidTileMesh,Atmosphere){
 
     function Globe(){
         //Constructor
 
         Node.call( this );
         
-        this.layers = [];
+        this.terrain    = new Quadtree(EllipsoidTileMesh,this.SchemeTileWMTS(2));        
+        this.atmosphere = new Atmosphere();
         
-        this.terrain = new Quadtree(EllipsoidTileMesh,this.SchemeTileWMTS(2));
-        
-        //this.layers.push(this.terrain);
+        this.add(this.terrain);
+        this.add(this.atmosphere);
     }
 
-    Globe.prototype = Object.create( Globe.prototype );
+    Globe.prototype = Object.create( Node.prototype );
 
     Globe.prototype.constructor = Globe;
 

@@ -4,7 +4,7 @@
 * Description: 3DEngine est l'interface avec le framework webGL.
 */
 
-define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera','when','text!Renderer/Shader/GlowPS.glsl','text!Renderer/Shader/GlowVS.glsl'], function(THREE,OrbitControls,Camera,when,GlowPS,GlowVS){
+define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera','when'], function(THREE,OrbitControls,Camera,when){
 
     var instance3DEngine = null;
 
@@ -21,43 +21,19 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera','when','t
         this.renderer   = new THREE.WebGLRenderer( { antialias: true,alpha: true } );
         this.width      = this.debug ? window.innerWidth * 0.5 : window.innerWidth;
         
-        
         this.renderer.setPixelRatio( window.devicePixelRatio );
         this.renderer.setSize(window.innerWidth, window.innerHeight );        
-        this.renderer.setClearColor( 0x081022 );
+        this.renderer.setClearColor( 0x030508 );
         this.renderer.autoClear = false;
         
         document.body.appendChild( this.renderer.domElement );
         
-        this.camera = new Camera(this.width,window.innerHeight,this.debug);
-        
+        this.camera     = new Camera(this.width,window.innerHeight,this.debug);        
         this.camera.camera3D.position.z = 30;      
-        this.scene3D.add(this.camera.camera3D);
-        
-        this.controls = new THREE.OrbitControls( this.camera.camera3D,this.renderer.domElement );
+        this.scene3D.add(this.camera.camera3D);        
+        this.controls   = new THREE.OrbitControls( this.camera.camera3D,this.renderer.domElement );
         this.initControls();        
-        this.camDebug = this.debug ? new THREE.PerspectiveCamera( 30, this.camera.ratio, 0.1, 1000) : undefined;
-        
-        
-        // Glow ° Start
-        var material = new THREE.ShaderMaterial( {
-	
-            vertexShader    : GlowVS,
-            fragmentShader: GlowPS,
-            side: THREE.BackSide,
-            blending: THREE.AdditiveBlending,
-            transparent: true
-
-        } );
-        
-        
-        var geometry = new THREE.SphereGeometry( 7.3, 64, 64 );
-        var sphere = new THREE.Mesh( geometry, material );
-        this.scene3D.add( sphere );
-        // Glow ° End
-        
-        
-        //this.scene3D.fog = new THREE.Fog( 0xffffff );
+        this.camDebug   = this.debug ? new THREE.PerspectiveCamera( 30, this.camera.ratio, 0.1, 1000) : undefined;               
         
         if(this.debug)
         {
@@ -76,12 +52,12 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera','when','t
             {
                 this.controls.zoomSpeed     = 0.1;
                 this.controls.rotateSpeed   = 0.05; 
-                
+                        
             }
             else if(this.camera.position().length () >= 8.0 && this.controls.zoomSpeed === 0.1) 
             {
                 this.controls.zoomSpeed     = 1.0;
-                this.controls.rotateSpeed   = 0.8;
+                this.controls.rotateSpeed   = 0.8;        
                 
             }
             
