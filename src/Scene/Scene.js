@@ -24,7 +24,7 @@ define('Scene/Scene',['Renderer/c3DEngine','Globe/Star','Globe/Globe','Renderer/
         this.add(new Globe());
         this.add(new Star());                   
         
-        this.gfxEngine.scene  = this;
+      //  this.gfxEngine.scene  = this;
         this.currentCamera    = this.gfxEngine.camera;
 
         this.browserScene     = new BrowseTree(this);
@@ -76,6 +76,9 @@ define('Scene/Scene',['Renderer/c3DEngine','Globe/Star','Globe/Globe','Renderer/
        
     };
 
+
+
+    
     Scene.prototype.wait = function(){
         
         var waitTime = 250;                
@@ -128,6 +131,7 @@ define('Scene/Scene',['Renderer/c3DEngine','Globe/Star','Globe/Globe','Renderer/
                 this.gfxEngine.add3DScene(meshs[i]);
             
             this.gfxEngine.add3DScene(layer.atmosphere);
+            this.gfxEngine.add3DScene(layer.atmosphereIN);
         }
     };
 
