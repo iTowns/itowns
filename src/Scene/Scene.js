@@ -19,18 +19,9 @@ define('Scene/Scene',['Renderer/c3DEngine','Globe/Star','Globe/Globe','Renderer/
         this.cameras        = null;        
         this.selectNodes    = null;      
         this.managerCommand = ManagerCommands();
-        this.gfxEngine      = c3DEngine(this);                
-                
-        this.add(new Globe());
-        this.add(new Star());                   
-        
-      //  this.gfxEngine.scene  = this;
-        this.currentCamera    = this.gfxEngine.camera;
+        this.gfxEngine      = c3DEngine();                       
+        this.browserScene   = new BrowseTree(this);
 
-        this.browserScene     = new BrowseTree(this);
-        this.gfxEngine.renderScene();
-        
-        //this.browserScene.addOBBoxHelper(this.nodes[0].terrain);
     }
 
     Scene.prototype.constructor = Scene;
@@ -39,6 +30,22 @@ define('Scene/Scene',['Renderer/c3DEngine','Globe/Star','Globe/Globe','Renderer/
     Scene.prototype.updateCommand = function(){
         //TODO: Implement Me 
 
+    };
+    
+    
+    Scene.prototype.currentCamera = function(){
+        return this.gfxEngine.camera ;
+
+    };
+    
+    Scene.prototype.init = function()
+    {
+     
+        this.gfxEngine.init(this);
+        this.add(new Globe());
+        this.add(new Star()); 
+        this.gfxEngine.renderScene();
+        
     };
 
     /**
@@ -54,9 +61,9 @@ define('Scene/Scene',['Renderer/c3DEngine','Globe/Star','Globe/Globe','Renderer/
      */
     Scene.prototype.sceneProcess = function(){
         
-        if(this.nodes[0] !== undefined  && this.currentCamera !== undefined )
+        if(this.nodes[0] !== undefined  && this.currentCamera() !== undefined )
         {                        
-            this.browserScene.browse(this.nodes[0].terrain,this.currentCamera,true);
+            this.browserScene.browse(this.nodes[0].terrain,this.currentCamera(),true);
             this.gfxEngine.renderScene();
         } 
         
@@ -65,7 +72,7 @@ define('Scene/Scene',['Renderer/c3DEngine','Globe/Star','Globe/Globe','Renderer/
     Scene.prototype.realtimeSceneProcess = function(){        
         if(this.nodes[0] !== undefined  && this.currentCamera !== undefined )
         {            
-            this.browserScene.browse(this.nodes[0].terrain,this.currentCamera,false);
+            this.browserScene.browse(this.nodes[0].terrain,this.currentCamera(),false);
         }                
     };
     
@@ -75,9 +82,6 @@ define('Scene/Scene',['Renderer/c3DEngine','Globe/Star','Globe/Globe','Renderer/
         //TODO: Implement Me 
        
     };
-
-
-
     
     Scene.prototype.wait = function(){
         

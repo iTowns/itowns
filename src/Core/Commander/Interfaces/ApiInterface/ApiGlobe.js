@@ -44,7 +44,11 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe',['Core/Commander/Interf
     //TODO: Normalement la création de scene ne doit pas etre ici....
     // à deplacer plus tard
     
-        return Scene();
+        var scene = Scene();
+      
+        scene.init();
+    
+        return scene;
 
     };
     
