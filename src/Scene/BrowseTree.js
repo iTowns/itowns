@@ -11,7 +11,7 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
   
         this.oneNode    = 0;
         this.scene      = scene;       
-        this.nodeProcess= new NodeProcess(this.scene.currentCamera.camera3D);
+        this.nodeProcess= new NodeProcess(this.scene.currentCamera().camera3D);
         this.tree       = undefined;
     }
     
