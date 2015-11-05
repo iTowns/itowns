@@ -54,7 +54,8 @@ define('Core/Commander/Providers/WMTS_Provider',[
         var key    = "i9dpl8xge3jk0a0taex1qrhd";
         
         var layer  = "ORTHOIMAGERY.ORTHOPHOTOS";
-        
+        //var layer  = "GEOGRAPHICALGRIDSYSTEMS.MAPS";
+                
         var url = "http://wxs.ign.fr/" + key + "/geoportail/wmts?LAYER="+ layer +
             "&FORMAT=image/jpeg&SERVICE=WMTS&VERSION=1.0.0"+
             "&REQUEST=GetTile&STYLE=normal&TILEMATRIXSET=PM"+
@@ -95,12 +96,13 @@ define('Core/Commander/Providers/WMTS_Provider',[
         
         if(textureCache !== undefined)
         {            
-            textureCache.needsUpdate = true;            
+            //textureCache.needsUpdate = true;            
             return when(textureCache);
         }
         
         var texture = this.loader.load(url);
-        texture.needsUpdate = true;
+        
+        //texture.needsUpdate = true;
         
         this.cache.addRessource(url,texture);
         

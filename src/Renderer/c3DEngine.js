@@ -37,7 +37,7 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera','when'], 
         
         if(this.debug)
         {
-            this.camDebug.position.x = -40;
+            this.camDebug.position.x = -10;
             this.camDebug.position.y =  10;            
             this.camDebug.lookAt(new THREE.Vector3(0,0,0));
             this.scene3D.add(this.camera.camHelper());
