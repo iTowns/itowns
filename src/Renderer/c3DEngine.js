@@ -20,15 +20,14 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera','when'], 
         this.scene3D    = new THREE.Scene();       
         this.renderer   = new THREE.WebGLRenderer( { antialias: true,alpha: true } );
         this.width      = this.debug ? window.innerWidth * 0.5 : window.innerWidth;
-        
+        this.height     = window.innerHeight;
         this.renderer.setPixelRatio( window.devicePixelRatio );
         this.renderer.setSize(window.innerWidth, window.innerHeight );        
         this.renderer.setClearColor( 0x030508 );
         this.renderer.autoClear = false;
         
         document.body.appendChild( this.renderer.domElement );
-        
-        this.camera     = new Camera(this.width,window.innerHeight,this.debug);        
+        this.camera     = new Camera(this.width, window.innerHeight, this.debug);        
         this.camera.camera3D.position.z = 30;      
         this.scene3D.add(this.camera.camera3D);        
         this.controls   = new THREE.OrbitControls( this.camera.camera3D,this.renderer.domElement );
@@ -88,6 +87,7 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera','when'], 
         this.renderScene();
                         
     }
+    
 
     /**
     */
@@ -143,6 +143,19 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera','when'], 
         //TODO: Implement Me 
 
     };
+    
+    
+
+     c3DEngine.prototype.getWindowSize = function(){
+         
+         return new THREE.Vector2(this.width, this.height);
+     };
+     
+     c3DEngine.prototype.getRenderer = function(){
+         
+         return this.renderer;
+     }
+         
 
     return function(scene){
         instance3DEngine = instance3DEngine || new c3DEngine(scene);
