@@ -53,15 +53,9 @@ define('Renderer/Camera',['Scene/Node','THREE'], function(Node, THREE){
         
         this.ratio      = width/height;     
         this.camera3D.aspect = this.ratio;
-        this.camera3D.updateProjectionMatrix();
-        
-        if(this.cameraHelper !== undefined)
-        {
-            
-        }
+        this.camera3D.updateProjectionMatrix();      
 
-    };
-    
+    };    
    
     Camera.prototype.SSE = function(node)
     {
