@@ -10,7 +10,8 @@ define('Globe/Atmosphere',['Renderer/NodeMesh','THREE','text!Renderer/Shader/Glo
     function Atmosphere(){
         
         NodeMesh.call( this );
-        this.uniforms  = 
+        
+        this.uniformsOut  = 
         {                        
             atmoIN  : { type: "i" , value: 0 },
             screenSize: {type: "v2", value: new THREE.Vector2(window.innerWidth,window.innerHeight)} // Should be updated on screen resize...
@@ -18,7 +19,7 @@ define('Globe/Atmosphere',['Renderer/NodeMesh','THREE','text!Renderer/Shader/Glo
         
         this.material = new THREE.ShaderMaterial( {
 	
-            uniforms        : this.uniforms,
+            uniforms        : this.uniformsOut,
             vertexShader    : GlowVS,
             fragmentShader  : GlowFS,
             side            : THREE.BackSide,
@@ -27,9 +28,30 @@ define('Globe/Atmosphere',['Renderer/NodeMesh','THREE','text!Renderer/Shader/Glo
 
         } );
                 
-        this.geometry = new THREE.SphereGeometry( 7.3, 64, 64 );
+        this.geometry       = new THREE.SphereGeometry( 7.3, 64, 64 );
         
-       // this.add(new THREE.Mesh(new THREE.SphereGeometry(6.3, 32, 32 ), new THREE.MeshBasicMaterial({color : 0x4B683A})));
+        this.uniformsIn  = 
+        {                        
+            atmoIN  : { type: "i" , value: 1 },
+            screenSize: {type: "v2", value: new THREE.Vector2(window.innerWidth,window.innerHeight)} // Should be updated on screen resize...
+        };
+        
+        var materialAtmoIn = new THREE.ShaderMaterial( {
+	
+            uniforms        : this.uniformsIn,
+            vertexShader    : GlowVS,
+            fragmentShader  : GlowFS,
+            side            : THREE.FrontSide,
+            blending        : THREE.AdditiveBlending,
+            transparent     : true
+
+        } );
+        
+        var atmosphereIN    = new THREE.Mesh(new THREE.SphereGeometry( 6.4, 64, 64 ),materialAtmoIn);
+        
+        this.add(atmosphereIN);
+        
+        this.add(new THREE.Mesh(new THREE.SphereGeometry(6.3, 32, 32 ), new THREE.MeshBasicMaterial({color : 0x4B683A})));
         
     }
     
