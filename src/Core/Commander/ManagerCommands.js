@@ -59,10 +59,11 @@ define('Core/Commander/ManagerCommands',
       
         this.countRequest--;
         
-        if(this.countRequest === 0)                    
+        if(this.countRequest <= 0)                    
+        {
+            this.countRequest = 0;
             this.scene.gfxEngine.update();
-        
-        
+        }                
     };
 
     /**
