@@ -59,6 +59,16 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera','when'], 
             
         }.bind(this);
         
+        
+        this.onWindowResize = function(){
+
+            this.width      = this.debug ? window.innerWidth * 0.5 : window.innerWidth;
+            this.height     = window.innerHeight;
+            this.camera.resize(this.width,this.height);
+            this.renderer.setSize( window.innerWidth, window.innerHeight );
+            this.renderScene();
+        }.bind(this);
+        
                              
     };
     
@@ -67,8 +77,7 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera','when'], 
         this.camera     = new Camera(this.width, this.height, this.debug);        
         this.camera.camera3D.position.z = 30;      
         this.scene3D.add(this.camera.camera3D);
-        
-        
+                
         if(this.debug)
         {
             this.camDebug   = new THREE.PerspectiveCamera( 30, this.camera.ratio, 0.1, 1000) ;
@@ -91,11 +100,16 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera','when'], 
         document.body.appendChild( this.renderer.domElement );
     };
         
+    
+
+    
+        
     c3DEngine.prototype.init = function(scene){
         
         this.scene  = scene;
         this.initRenderer();        
         this.initControls();
+        window.addEventListener( 'resize', this.onWindowResize, false );
         this.controls.addEventListener( 'change', this.update );
         
     };
