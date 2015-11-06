@@ -41,9 +41,10 @@ define('Scene/Scene',['Renderer/c3DEngine','Globe/Star','Globe/Globe','Renderer/
     Scene.prototype.init = function()
     {
      
-        this.gfxEngine.init(this);
+        this.gfxEngine.init(this);        
         this.add(new Globe());
         this.add(new Star()); 
+        this.managerCommand.scene = this;        
         this.gfxEngine.renderScene();
         
     };

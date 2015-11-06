@@ -4,21 +4,62 @@
 * Description: Cette classe est une file d'attente.
 */
 
-function Queue(){
-    //Constructor
 
-    this._queue = null;
+define('Core/Commander/Queue',
+        [ ], 
+        function(){
 
-}
+    function Queue(criteria, heapType) {
+        this.criteria = criteria;
+        this.length = 0;
+        this.queue = [];       
+        this.isMax = !!heapType;
+        if ( heapType !== 0 && heapType !== 1 ){
+            console.log( heapType + " not supported.");
+        }        
+    }
+    
+    Queue.prototype.insert = function (value) {
+        
+        
+        if (!value.hasOwnProperty(this.criteria)) {
+            console.log(value);
+            console.log("Cannot insert " + value + " because it does not have a property by the name of " + this.criteria + ".");
+        }
+        this.queue.push(value);
+        this.length++;
+ 
+    };
+ 
+    Queue.prototype.evaluate = function (self, target) {
+                 
+        if (this.isMax) {
+            return (this.queue[self][this.criteria] > this.queue[target][this.criteria]);
+        } else {
+            return (this.queue[self][this.criteria] < this.queue[target][this.criteria]);
+        }
+    };
+    
+    Queue.prototype.sort = function()
+    {
+        return this.queue.sort(function (a, b)
+        {
+            if (a.priority > b.priority) {
+              return 1;
+            }
+            if (a.priority < b.priority) {
+              return -1;
+            }
+            // a must be equal to b
+            return 0;
+        });
+        
+        
+    };
+ 
+    return Queue;
+
+});
 
 
-/**
-*/
-Queue.prototype.sort = function(){
-    //TODO: Implement Me 
 
-};
-
-
-
-module.exports = {Queue:Queue};

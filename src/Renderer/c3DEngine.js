@@ -33,17 +33,12 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera','when'], 
             var axisHelper = new THREE.AxisHelper( 8 );
             this.scene3D.add( axisHelper );
         }
-                          
+                        
         this.renderScene = function(){
-            
-            this.camera.update();
-            this.updateControl();
-            
-            this.scene.wait();
-            this.renderer.clear();
-            
+                                    
+            this.renderer.clear();            
             this.renderer.setViewport( 0, 0, this.width, this.height );
-            this.renderer.render( this.scene3D, this.camera.camera3D);
+            this.renderer.render( this.scene3D, this.camera.camera3D);                       
             
             if(this.debug)
             {
@@ -54,6 +49,16 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera','when'], 
             }
             
         }.bind(this);
+        
+        this.update = function()
+        {
+            this.camera.update();
+            this.updateControl();            
+            this.scene.wait();
+            this.renderScene();
+            
+        }.bind(this);
+        
                              
     };
     
@@ -91,7 +96,7 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera','when'], 
         this.scene  = scene;
         this.initRenderer();        
         this.initControls();
-        this.controls.addEventListener( 'change', this.renderScene );
+        this.controls.addEventListener( 'change', this.update );
         
     };
         

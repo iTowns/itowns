@@ -10,9 +10,8 @@ define('Core/Commander/InterfaceCommander',['Core/Commander/ManagerCommands'], f
         //Constructor
 
         this.managerCommands = ManagerCommands();
-        //this.builderCommand  = buildCommand;
-        
-        this.type     = type;
+        //this.builderCommand  = buildCommand;        
+        this.type     = type;                
 
     }
 
@@ -47,6 +46,17 @@ define('Core/Commander/InterfaceCommander',['Core/Commander/ManagerCommands'], f
     InterfaceCommander.prototype.getTile = function(bbox,level)
     {
         return this.managerCommands.getTile(type,bbox,level);
+    };
+    
+
+    
+    InterfaceCommander.prototype.requestDec = function()
+    {
+      
+        this.managerCommands.requestDec();
+        
+        //console.log(this.managerCommands.countRequest);
+        
     };
     
 

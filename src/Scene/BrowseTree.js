@@ -102,6 +102,10 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
         for(var i = 0;i<tree.children.length;i++)
             this._browse(tree.children[i],camera,other);
 
+        if(other)
+        {
+            //console.log(this.tree.interCommand.managerCommands.queueAsync.sort());
+        }
     };
     
     BrowseTree.prototype._browse = function(node, camera,other){

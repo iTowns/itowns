@@ -78,21 +78,27 @@ define('Scene/Quadtree',[
             return this;
 
         }.bind(tile)).then(function(tile)
-        {                            
+        {      
+            this.interCommand.requestDec();                        
+            
             if(cooWMTS.zoom >= 2)
             {
                 var box  = this.projection.WMTS_WGS84ToWMTS_PM(cooWMTS,bbox);                        
                 var id = 0;
                 var col = box[0].col;
-                                
+                                                               
                 for (var row = box[0].row; row < box[1].row + 1; row++)
                 {
                     var coo = new CoordWMTS(box[0].zoom,row,col);
-                    this.interCommand.getTextureOrtho(coo).then(function(texture)
-                    {                             
-                        this.setTextureOrtho(texture,id);
-                        
-                    }.bind(tile));
+                    this.interCommand.getTextureOrtho(coo).then
+                    (
+                        function(texture)
+                        {                             
+                            this.setTextureOrtho(texture,id);
+
+                        }.bind(tile)
+                    ).then( function(){this.interCommand.requestDec();}.bind(this));
+                    
                     id++;
                 }  
             }
