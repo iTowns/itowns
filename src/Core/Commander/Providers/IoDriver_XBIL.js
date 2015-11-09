@@ -44,14 +44,20 @@ define('Core/Commander/Providers/IoDriver_XBIL',['Core/Commander/Providers/IoDri
                 var mcolor  = 0.0;
                 //var mcolor  = Math.random();
  
+                var isEmpty = true;
+ 
                 for (var i = 0; i < floatArray.byteLength; i++) 
                 {
-                   if(floatArray[i] === -99999.0 || floatArray[i] === undefined )
-                        
-                        floatArray[i ] = mcolor;                   
+                   if(floatArray[i] === -99999.0 || floatArray[i] === undefined )                        
+                        floatArray[i] = mcolor;
+                   else if (isEmpty === true)
+                      isEmpty = false;
                 }
 
-                deferred.resolve(floatArray);
+                if(isEmpty)
+                    deferred.resolve(new Float32Array(1));
+                else
+                    deferred.resolve(floatArray);
             }                                
         };
 

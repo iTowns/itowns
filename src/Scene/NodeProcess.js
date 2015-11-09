@@ -16,7 +16,7 @@ define('Scene/NodeProcess',['Scene/BoudingBox','Renderer/Camera','Core/Math/Math
         
         this.vhMagnitudeSquared = 1.0;  
         
-        this.r  = new THREE.Vector3(6.378137,6.3567523142451793,6.378137);
+        this.r  = new THREE.Vector3(6378137,6356752.3142451793,6378137);
         this.cV  = new THREE.Vector3();
         
     }
@@ -33,9 +33,11 @@ define('Scene/NodeProcess',['Scene/BoudingBox','Renderer/Camera','Core/Math/Math
                 node.visible    = true;                
                 return true;
             }
-        };
+        };              
+      
+      node.visible = true;
         
-        return node.visible;
+       return node.visible;
               
     };
     

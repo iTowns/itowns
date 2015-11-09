@@ -35,18 +35,16 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
             
             //if(this.nodeProcess.frustumBB(node,camera))
             {
-                this.nodeProcess.backFaceCulling(node,camera);
+                //this.nodeProcess.backFaceCulling(node,camera);
 
-                if(node.visible)
+                //if(node.visible)
                 {
                     this.nodeProcess.frustumCullingOBB(node,camera);
-                    
-                    
+                                        
                     if(node.visible )
                     {
                         this.nodeProcess.horizonCulling(node,camera);
-                        
-                        
+                                                
                         if(node.visible )
                         {
                             var sse = this.nodeProcess.SSE(node,camera);

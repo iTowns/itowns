@@ -76,8 +76,14 @@ define('Core/Commander/Providers/WMTS_Provider',[
         }
         
         return this._IoDriver.read(url).then(function(buffer)
-            {                                                
-                var texture = new THREE.DataTexture(buffer,256,256,THREE.AlphaFormat,THREE.FloatType);
+            {                        
+                var texture;
+                
+                if(buffer.byteLength > 1 )
+                    texture = new THREE.DataTexture(buffer,256,256,THREE.AlphaFormat,THREE.FloatType);
+                else
+                    texture = new THREE.DataTexture(buffer,1,1,THREE.AlphaFormat,THREE.FloatType);                
+                
                 
                 this.cache.addRessource(url,texture);                                
                 
