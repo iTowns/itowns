@@ -55,7 +55,7 @@ define('Core/Commander/Providers/IoDriver_XBIL',['Core/Commander/Providers/IoDri
                 }
 
                 if(isEmpty)
-                    deferred.resolve(new Float32Array(1));
+                    deferred.resolve(undefined);
                 else
                     deferred.resolve(floatArray);
             }                                

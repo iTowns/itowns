@@ -26,8 +26,6 @@ define('Renderer/Camera',['Scene/Node','THREE'], function(Node, THREE){
         
         this.cameraHelper  = debug  ? new THREE.CameraHelper( this.camera3D ) : undefined;
         this.frustum       = new THREE.Frustum();
-        this.SSEFactor     = debug ? 8.0 : 2.0;
-
     }
  
     Camera.prototype = Object.create( Node.prototype );
@@ -44,8 +42,7 @@ define('Renderer/Camera',['Scene/Node','THREE'], function(Node, THREE){
     
     Camera.prototype.camHelper = function(){
         
-        return this.cameraHelper;
-        
+        return this.cameraHelper;        
 
     };
     

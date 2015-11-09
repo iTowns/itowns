@@ -8,6 +8,7 @@ const float PI4         = 0.78539816339;
 const float poleSud     = -82.0 / 180.0 * PI;
 const float poleNord    =  84.0 / 180.0 * PI;
 
+uniform sampler2D   dTextures_00[1];
 uniform sampler2D   dTextures_01[TEX_UNITS];
 uniform int         nbTextures_00;
 uniform int         nbTextures_01;
@@ -67,10 +68,16 @@ void main() {
 
             gl_FragColor = ortho;
 
+           // if(nbTextures_00 > 0)
+           //     gl_FragColor = texture2D( dTextures_00[0], vUv ) /5000.0;
+           
+
          }      
 
          if(debug > 0)
             gl_FragColor = vec4( 1.0, 0.0, 0.0, 1.0);
+
+        
 }
 
 /*

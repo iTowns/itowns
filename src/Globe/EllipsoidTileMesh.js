@@ -50,7 +50,7 @@ define('Globe/EllipsoidTileMesh',['Renderer/NodeMesh','Globe/EllipsoidTileGeomet
     
     EllipsoidTileMesh.prototype.setTextureTerrain = function(texture)
     {         
-        this.tMat.setTexture(texture,0);        
+        this.tMat.setTexture(texture,0);      
     };   
     
     EllipsoidTileMesh.prototype.setTextureOrtho = function(texture,id)
