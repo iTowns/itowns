@@ -43,7 +43,7 @@ define('Scene/Scene',['Renderer/c3DEngine','Globe/Star','Globe/Globe','Renderer/
      
         this.gfxEngine.init(this);        
         this.add(new Globe());
-        this.add(new Star()); 
+        //this.add(new Star()); 
         this.managerCommand.scene = this;        
         this.gfxEngine.renderScene();
         
@@ -135,7 +135,7 @@ define('Scene/Scene',['Renderer/c3DEngine','Globe/Star','Globe/Globe','Renderer/
             for (var i = 0;i<meshs.length;i++)                            
                 this.gfxEngine.add3DScene(meshs[i]);
             
-            this.gfxEngine.add3DScene(layer.atmosphere);            
+            //this.gfxEngine.add3DScene(layer.atmosphere);            
         }
     };
 

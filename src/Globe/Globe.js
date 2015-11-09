@@ -12,10 +12,10 @@ define('Globe/Globe',['Scene/Node','Scene/Quadtree','Scene/SchemeTile','Core/Mat
         Node.call( this );
         
         this.terrain    = new Quadtree(EllipsoidTileMesh,this.SchemeTileWMTS(2));        
-        this.atmosphere = new Atmosphere();        
+        //this.atmosphere = new Atmosphere();        
         
         this.add(this.terrain);
-        this.add(this.atmosphere);        
+        //this.add(this.atmosphere);        
     }
 
     Globe.prototype = Object.create( Node.prototype );

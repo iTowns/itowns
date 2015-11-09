@@ -14,7 +14,7 @@ define('Renderer/Camera',['Scene/Node','THREE'], function(Node, THREE){
                 
         this.ratio      = width/height;                
         this.FOV        = 30;
-        this.camera3D   = new THREE.PerspectiveCamera( 30, this.ratio, 0.005, 500 );
+        this.camera3D   = new THREE.PerspectiveCamera( 30, this.ratio, 1.0, 50000000 );
         this.direction  = new THREE.Vector3();        
         this.frustum    = new THREE.Frustum();
         this.width      = width;
@@ -62,16 +62,16 @@ define('Renderer/Camera',['Scene/Node','THREE'], function(Node, THREE){
         
         var boundingSphere = node.geometry.boundingSphere;
         
-        var distance = Math.max(0.0,(this.camera3D.position.distanceTo(boundingSphere.center) - boundingSphere.radius)*100000);
+        var distance = Math.max(0.0,(this.camera3D.position.distanceTo(boundingSphere.center) - boundingSphere.radius));
         
-        var levelMax = 11;
+        var levelMax = 15;
         
-        var t   = Math.pow(2,levelMax - node.level);
+        var t   = Math.pow(2,levelMax- node.level);
 
-        var geometricError  = this.SSEFactor*t;
+        var geometricError  = t;
         
         var SSE = this.preSSE * (geometricError/distance);
-        //console.log(SSE);
+       
         return SSE;
 
     };

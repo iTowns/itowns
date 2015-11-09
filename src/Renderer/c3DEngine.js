@@ -75,14 +75,14 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera','when'], 
     c3DEngine.prototype.initCamera = function()
     {
         this.camera     = new Camera(this.width, this.height, this.debug);        
-        this.camera.camera3D.position.z = 30;      
+        this.camera.camera3D.position.z = 30000000;      
         this.scene3D.add(this.camera.camera3D);
                 
         if(this.debug)
         {
-            this.camDebug   = new THREE.PerspectiveCamera( 30, this.camera.ratio, 0.1, 1000) ;
-            this.camDebug.position.x = -10;
-            this.camDebug.position.y =  10;            
+            this.camDebug   = new THREE.PerspectiveCamera( 30, this.camera.ratio, 1, 1000000000) ;
+            this.camDebug.position.x = -10000000;
+            this.camDebug.position.y =  10000000;            
             this.camDebug.lookAt(new THREE.Vector3(0,0,0));
             this.scene3D.add(this.camera.camHelper());                        
         }
@@ -91,7 +91,7 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera','when'], 
     
     c3DEngine.prototype.initRenderer = function()
     {
-        this.renderer   = new THREE.WebGLRenderer( { antialias: true,alpha: true } );
+        this.renderer   = new THREE.WebGLRenderer( { antialias: true,alpha: true,logarithmicDepthBuffer : true } );
         this.renderer.setPixelRatio( window.devicePixelRatio );
         this.renderer.setSize(window.innerWidth, window.innerHeight );        
         this.renderer.setClearColor( 0x030508 );
@@ -118,13 +118,13 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera','when'], 
     {
         var len  = this.camera.position().length ();
                 
-        if( len < 8.0 )
+        if( len < 8000000 )
         {
-            var t = Math.pow(Math.cos((8.0 - len)/ (8.0 - 6.378137) * Math.PI * 0.5),1.5);                
+            var t = Math.pow(Math.cos((8000000 - len)/ (8000000 - 6378137) * Math.PI * 0.5),1.5);                
             this.controls.zoomSpeed     = t;
             this.controls.rotateSpeed   = 0.8 *t;                         
         }
-        else if(len >= 8.0 && this.controls.zoomSpeed !== 1.0) 
+        else if(len >= 8000000 && this.controls.zoomSpeed !== 1.0) 
         {
             this.controls.zoomSpeed     = 1.0;
             this.controls.rotateSpeed   = 0.8;                
@@ -148,8 +148,8 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera','when'], 
         this.controls.noPan         = false;
         this.controls.rotateSpeed   = 0.8;
         this.controls.zoomSpeed     = 1.0;
-        this.controls.minDistance   = 1.0;
-        this.controls.maxDistance   = 200.0;        
+        this.controls.minDistance   = 500000;
+        this.controls.maxDistance   = 200000000.0;        
         this.controls.update();
     };
     

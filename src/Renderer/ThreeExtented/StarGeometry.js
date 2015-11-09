@@ -14,9 +14,9 @@ THREE.StarGeometry = function ( )
     for ( var i = 0; i < 10000; i ++ ) {
 
         var vertex = new THREE.Vector3();
-        vertex.x = THREE.Math.randFloatSpread( 2000 );
-        vertex.y = THREE.Math.randFloatSpread( 2000 );
-        vertex.z = THREE.Math.randFloatSpread( 2000 );
+        vertex.x = THREE.Math.randFloatSpread( 20000000000 );
+        vertex.y = THREE.Math.randFloatSpread( 20000000000 );
+        vertex.z = THREE.Math.randFloatSpread( 20000000000 );
 
         this.vertices.push( vertex );
 

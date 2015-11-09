@@ -16,7 +16,7 @@ define('Globe/EllipsoidTileGeometry',['THREE','Core/defaultValue','Scene/Bouding
 
 	var radius = 6.3567523142451793; 
 
-        var ellipsoid       = new Ellipsoid(6.378137, 6.378137, 6.3567523142451793);
+        var ellipsoid       = new Ellipsoid(6378137, 6378137, 6356752.3142451793);
         
         //var ellipsoid       = new Ellipsoid(6, 6, 6);
         
