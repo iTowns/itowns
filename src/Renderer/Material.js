@@ -59,10 +59,15 @@ define('Renderer/Material',['THREE','Core/Math/MathExtented'], function(THREE,Ma
     {         
         if(layer === 0)
         {
-            this.Textures_00[0]                = texture;        
-            this.uniforms.dTextures_00.value   = this.Textures_00;        
-            this.uniforms.nbTextures_00.value  = 1.0;        
-         
+            if(texture !== -1)    
+            {
+                console.log(texture);
+                this.Textures_00[0]                = texture;        
+                this.uniforms.dTextures_00.value   = this.Textures_00;        
+                this.uniforms.nbTextures_00.value  = 1.0;                
+                //console.log("add texture terrain");
+            }        
+            
         }
         else
         {

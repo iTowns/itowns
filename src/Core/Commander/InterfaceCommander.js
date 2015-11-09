@@ -4,7 +4,7 @@
 * Description: Cette Classe construit une commande. Cette Command ensuite pousser dans une file d'attente.
 */
 
-define('Core/Commander/InterfaceCommander',['Core/Commander/ManagerCommands'], function(ManagerCommands){
+define('Core/Commander/InterfaceCommander',['Core/Commander/ManagerCommands','Core/Commander/Command'], function(ManagerCommands,Command){
 
     function InterfaceCommander(type){
         //Constructor
@@ -45,10 +45,11 @@ define('Core/Commander/InterfaceCommander',['Core/Commander/ManagerCommands'], f
     
     InterfaceCommander.prototype.getTile = function(bbox,level)
     {
+        
+        console.log("Command");
         return this.managerCommands.getTile(type,bbox,level);
     };
     
-
     
     InterfaceCommander.prototype.requestDec = function()
     {
