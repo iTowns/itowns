@@ -19,7 +19,8 @@ define('Scene/Node',[], function(){
         this.description    = null;
         this.id             = null;
         this.saveState      = null;
-        this.level          = 0;        
+        this.level          = 0;
+        this.screenSpaceError = 0.0;
 
     }
 
