@@ -7,7 +7,7 @@ void main() {
 
         vUv = uv;
 
-        float dv = texture2D( dTextures_00[0], vUv ).w*0.000001;
+        float dv = texture2D( dTextures_00[0], vUv ).w;
 
         vNormal     = normalize( position );
                                                                                                                                                                                                                                                                                                                                       

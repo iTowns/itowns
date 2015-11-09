@@ -14,7 +14,7 @@ define('Renderer/Camera',['Scene/Node','THREE'], function(Node, THREE){
                 
         this.ratio      = width/height;                
         this.FOV        = 30;
-        this.camera3D   = new THREE.PerspectiveCamera( 30, this.ratio, 1.0, 50000000 );
+        this.camera3D   = new THREE.PerspectiveCamera( 30, this.ratio, 5000, 50000000 );
         this.direction  = new THREE.Vector3();        
         this.frustum    = new THREE.Frustum();
         this.width      = width;
@@ -22,7 +22,7 @@ define('Renderer/Camera',['Scene/Node','THREE'], function(Node, THREE){
         
         var radAngle    = this.FOV * Math.PI / 180;
         this.HFOV       = 2.0 * Math.atan(Math.tan(radAngle*0.5) * this.ratio);        
-        this.preSSE     = this.width * (2.0 * Math.tan(this.HFOV * 0.5));
+        this.preSSE     = this.height * (2.0 * Math.tan(this.HFOV * 0.5));
         
         this.cameraHelper  = debug  ? new THREE.CameraHelper( this.camera3D ) : undefined;
         this.frustum       = new THREE.Frustum();
@@ -64,7 +64,7 @@ define('Renderer/Camera',['Scene/Node','THREE'], function(Node, THREE){
         
         var distance = Math.max(0.0,(this.camera3D.position.distanceTo(boundingSphere.center) - boundingSphere.radius));
         
-        var levelMax = 15;
+        var levelMax = 16;
         
         var t   = Math.pow(2,levelMax- node.level);
 
@@ -77,15 +77,12 @@ define('Renderer/Camera',['Scene/Node','THREE'], function(Node, THREE){
     };
     
     Camera.prototype.update = function()
-    {
-                    
+    {                    
         var vector = new THREE.Vector3( 0, 0, 1 );
 
         this.direction = vector.applyQuaternion( this.camera3D.quaternion );
         
-        this.frustum.setFromMatrix( new THREE.Matrix4().multiplyMatrices( this.camera3D.projectionMatrix, this.camera3D.matrixWorldInverse));
-
-        
+        this.frustum.setFromMatrix( new THREE.Matrix4().multiplyMatrices( this.camera3D.projectionMatrix, this.camera3D.matrixWorldInverse));        
         
     };
     
