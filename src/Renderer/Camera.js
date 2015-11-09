@@ -60,7 +60,9 @@ define('Renderer/Camera',['Scene/Node','THREE'], function(Node, THREE){
     Camera.prototype.SSE = function(node)
     {
         
-        var distance = this.camera3D.position.distanceTo(node.center())*100000;
+        var boundingSphere = node.geometry.boundingSphere;
+        
+        var distance = Math.max(0.0,(this.camera3D.position.distanceTo(boundingSphere.center) - boundingSphere.radius)*100000);
         
         var levelMax = 11;
         

@@ -167,7 +167,7 @@ define('Globe/EllipsoidTileGeometry',['THREE','Core/defaultValue','Scene/Bouding
         this.addAttribute( 'normal',    new THREE.BufferAttribute( bufferNormal, 3 ) );
         this.addAttribute( 'uv',        new THREE.BufferAttribute( bufferUV, 2) );
         
-        // TODO inutile?
+        // ---> for SSE
         this.computeBoundingSphere();
         
     }
