@@ -34,7 +34,7 @@ define('Core/Commander/ManagerCommands',
         } 
         this.queueAsync = new Queue('priority',1);
         this.queueSync  = null;
-        this.loadQueue  = null;
+        this.loadQueue  = [];
         this.providers  = [];
         this.history    = null;        
         this.providers.push(new WMTS_Provider());        
@@ -46,6 +46,21 @@ define('Core/Commander/ManagerCommands',
     }        
 
     ManagerCommands.prototype.constructor = ManagerCommands;
+
+    ManagerCommands.prototype.addCommand = function(command)
+    {      
+            /*     
+        if(this.queueAsync.length > 10)
+        {
+            //console.log(this.queueAsync.sort());
+            this.queueAsync.queue.slice(0,9);
+            this.queueAsync.length-=10;
+            
+        }
+        
+        this.queueAsync.insert(command);        
+        */
+    };
 
     ManagerCommands.prototype.requestInc = function()
     {

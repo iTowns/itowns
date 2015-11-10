@@ -10,19 +10,20 @@ define('Core/Commander/Command',[], function(){
     function Command(){
         //Constructor
 
-        this.name = null;
-        this.property = null;
-        this.state = null;
+        this.name       = null;
+        this.priority   = Math.floor((Math.random()*100));
+        this.state      = null;
         this.inParallel = null;
-        this.inBuffers = null;
+        this.inBuffers  = null;
         this.outBuffers = null;
-        this.paramsFunction = null;
+        this.paramsFunction = [];
         this.processFunction = null;
         this.async = null;
         this.force = null;
         this.type = null;
         this.addInHistory = null;
         this.source = null;
+        this.requester =  null;
 
     }
 

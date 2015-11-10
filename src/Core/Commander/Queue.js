@@ -10,10 +10,12 @@ define('Core/Commander/Queue',
         function(){
 
     function Queue(criteria, heapType) {
-        this.criteria = criteria;
-        this.length = 0;
-        this.queue = [];       
-        this.isMax = !!heapType;
+        
+        this.criteria   = criteria;                
+        this.length     = 0;
+        this.queue      = [];       
+        this.isMax      = !!heapType;
+        
         if ( heapType !== 0 && heapType !== 1 ){
             console.log( heapType + " not supported.");
         }        
@@ -42,19 +44,21 @@ define('Core/Commander/Queue',
     
     Queue.prototype.sort = function()
     {
-        return this.queue.sort(function (a, b)
+        this.queue = this.queue.sort(function (a, b)
         {
-            if (a.priority > b.priority) {
+            
+            if (a[this.criteria] > b[this.criteria]) {
               return 1;
             }
-            if (a.priority < b.priority) {
+            if (a[this.criteria] < b[this.criteria]) {
               return -1;
             }
             // a must be equal to b
             return 0;
-        });
+        }.bind(this));
         
-        
+        return this.queue;
+                
     };
  
     return Queue;

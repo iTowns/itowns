@@ -7,8 +7,6 @@ var NodeProvider = require('NodeProvider');
 
 function Object3DProvider(){
     //Constructor
-
-
 }
 
 Object3DProvider.prototype = new NodeProvider();

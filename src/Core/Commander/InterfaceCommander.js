@@ -43,11 +43,19 @@ define('Core/Commander/InterfaceCommander',['Core/Commander/ManagerCommands','Co
         return this.managerCommands.getTextureOrtho(coWMTS);
     };
     
-    InterfaceCommander.prototype.getTile = function(bbox,level)
+    InterfaceCommander.prototype.getTile = function(bbox,cooWMTS,parent)
     {
+        //console.log(this.type);
         
-        console.log("Command");
-        return this.managerCommands.getTile(type,bbox,level);
+        var command = new Command();        
+        command.type        = this.type;
+        command.requester   = parent;        
+        command.paramsFunction.push(bbox);
+        command.paramsFunction.push(cooWMTS);        
+        this.managerCommands.addCommand(command);
+        
+        //console.log("Command " +  cooWMTS.zoom + " " +   cooWMTS.row + " " + cooWMTS.col );
+        //return this.managerCommands.getTile(type,bbox,level);
     };
     
     

@@ -64,9 +64,14 @@ define('Scene/Quadtree',[
         return node.children[3];
     };    
     
-    Quadtree.prototype.createTile = function(bbox)
+    Quadtree.prototype.createTile = function(bbox,parent)
     {
-        var cooWMTS = this.projection.WGS84toWMTS(bbox);       
+        var cooWMTS = this.projection.WGS84toWMTS(bbox);
+        
+        
+        //-------------------------
+        this.interCommand.getTile(bbox,cooWMTS,parent);
+        //-------------------------                        
         
         var tile    = new this.tileType(bbox,GlobeVS,GlobePS,cooWMTS.zoom);        
         tile.level  = cooWMTS.zoom;
@@ -139,10 +144,10 @@ define('Scene/Quadtree',[
         });
         */
        
-        node.add(this.createTile(quad.northWest));
-        node.add(this.createTile(quad.northEast));
-        node.add(this.createTile(quad.southWest));
-        node.add(this.createTile(quad.southEast));
+        node.add(this.createTile(quad.northWest,node));
+        node.add(this.createTile(quad.northEast,node));
+        node.add(this.createTile(quad.southWest,node));
+        node.add(this.createTile(quad.southEast,node));
           
         
     };

@@ -23,7 +23,7 @@ define('Globe/EllipsoidTileMesh',['Renderer/NodeMesh','Globe/EllipsoidTileGeomet
         
         this.showHelper = true;
         
-        this.bbox       = defaultValue(bbox,new BoudingBox());
+        this.bbox       = defaultValue(bbox,new BoudingBox());        
         this.geometry   = new EllipsoidTileGeometry(bbox);               
         this.tMat       = new Material(VS,PS,bbox,zoom);
         

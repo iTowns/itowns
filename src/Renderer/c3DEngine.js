@@ -14,6 +14,8 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera','when'], 
         if(instance3DEngine !== null){
             throw new Error("Cannot instantiate more than one c3DEngine");
         } 
+        
+        THREE.ShaderChunk[ "logdepthbuf_pars_vertex" ];
 
         this.debug      = false;
         this.scene      = undefined;
