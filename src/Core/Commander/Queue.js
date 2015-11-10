@@ -10,15 +10,29 @@ define('Core/Commander/Queue',
         function(){
 
     function Queue(criteria, heapType) {
+        this.criteria = criteria;
+        this.length = 0;
+        this.queue = [];
         
-        this.criteria   = criteria;                
-        this.length     = 0;
-        this.queue      = [];       
-        this.isMax      = !!heapType;
-        
+        this.isMax = !!heapType;
         if ( heapType !== 0 && heapType !== 1 ){
             console.log( heapType + " not supported.");
-        }        
+        }
+        /*
+        console.log(this.isMax );
+        
+        var isMax = false;
+
+        //Constructor
+        if (heapType===0) {
+            isMax = true;
+        } else if (heapType===1) {
+            isMax = false;
+        } else {
+            throw heapType + " not supported.";
+        }
+        
+        console.log(isMax );*/
     }
     
     Queue.prototype.insert = function (value) {
@@ -30,37 +44,88 @@ define('Core/Commander/Queue',
         }
         this.queue.push(value);
         this.length++;
- 
+        this.bubbleUp(this.length - 1);
     };
- 
+    
+    Queue.prototype.getHighestPriorityElement = function () {
+        return this.queue[0];
+    };
+    Queue.prototype.shiftHighestPriorityElement = function () {
+        if (length < 0)
+        {
+            console.log("There are no more elements in your priority queue") ;
+        }
+        var oldRoot = this.queue[0];
+        var newRoot = this.queue.pop();
+        this.length--;
+        this.queue[0] = newRoot;
+        this.swapUntilQueueIsCorrect(0);
+        return oldRoot;
+    };
+    Queue.prototype.bubbleUp = function (index) {
+        if (index === 0) {
+            return;
+        }
+        var parent = this.getParentOf(index);
+        
+        if(parent === - 1 )
+        {
+            parent = 0;
+            console.log(this.queue);            
+            console.log("-----");
+        }
+        
+        if (this.evaluate(index, parent)) {
+            this.swap(index, parent);
+            this.bubbleUp(parent);
+        } else {
+            return;
+        }
+    };
+    Queue.prototype.swapUntilQueueIsCorrect = function (value) {
+        var left = this.getLeftOf(value),
+            right = this.getRightOf(value);
+
+        if (this.evaluate(left, value)) {
+            this.swap(value, left);
+            this.swapUntilQueueIsCorrect(left);
+        } else if (this.evaluate(right, value)) {
+            this.swap(value, right);
+            this.swapUntilQueueIsCorrect(right);
+        } else if (value === 0) {
+            return;
+        } else {
+            this.swapUntilQueueIsCorrect(0);
+        }
+    };
+    Queue.prototype.swap = function (self, target) {
+        var placeHolder = this.queue[self];
+        this.queue[self] = this.queue[target];
+        this.queue[target] = placeHolder;
+    };
     Queue.prototype.evaluate = function (self, target) {
                  
+        if (this.queue[target] === undefined || this.queue[self] === undefined) {
+            return false;
+        }
         if (this.isMax) {
             return (this.queue[self][this.criteria] > this.queue[target][this.criteria]);
         } else {
             return (this.queue[self][this.criteria] < this.queue[target][this.criteria]);
         }
     };
-    
-    Queue.prototype.sort = function()
-    {
-        this.queue = this.queue.sort(function (a, b)
-        {
-            
-            if (a[this.criteria] > b[this.criteria]) {
-              return 1;
-            }
-            if (a[this.criteria] < b[this.criteria]) {
-              return -1;
-            }
-            // a must be equal to b
-            return 0;
-        }.bind(this));
-        
-        return this.queue;
-                
+    Queue.prototype.getParentOf = function (index) {
+        return Math.floor(index / 2) - 1;
     };
- 
+    Queue.prototype.getLeftOf = function (index) {
+        return index * 2 + 1;
+    };
+    Queue.prototype.getRightOf = function (index) {
+        return index * 2 + 2;
+    };
+    Queue.MAX_HEAP = 0;
+    Queue.MIN_HEAP = 1;
+
     return Queue;
 
 });
