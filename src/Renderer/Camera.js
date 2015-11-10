@@ -68,6 +68,8 @@ define('Renderer/Camera',['Scene/Node','THREE'], function(Node, THREE){
         var geometricError  = t;
         
         var SSE = this.preSSE * (geometricError/distance);
+        
+        node.sse = SSE;
        
         return SSE;
 

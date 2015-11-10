@@ -29,7 +29,7 @@ define('Scene/Quadtree',[
 
         for (var i = 0; i < this.schemeTile.rootCount(); i++)
         {
-            this.add(this.createTile(this.schemeTile.getRoot(i)));    
+            this.add(this.createTile(this.schemeTile.getRoot(i),this));    
             this.subdivide(this.children[i]);
             this.subdivideChildren(this.children[i]);                        
         }               
@@ -70,7 +70,9 @@ define('Scene/Quadtree',[
         
         
         //-------------------------
-        this.interCommand.getTile(bbox,cooWMTS,parent);
+        
+            this.interCommand.getTile(bbox,cooWMTS,parent,this.projection);
+
         //-------------------------                        
         
         var tile    = new this.tileType(bbox,GlobeVS,GlobePS,cooWMTS.zoom);        
@@ -78,6 +80,7 @@ define('Scene/Quadtree',[
         
         this.interCommand.getTextureBil(cooWMTS).then(function(texture)
         {   
+            
             this.setTextureTerrain(texture);
             
             return this;
@@ -111,6 +114,7 @@ define('Scene/Quadtree',[
         }.bind(this)); 
         
         return tile;
+        
     };    
         
    /**

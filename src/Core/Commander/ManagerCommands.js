@@ -14,34 +14,38 @@
 define('Core/Commander/ManagerCommands',
         [   'Core/Commander/Providers/WMTS_Provider',
             'Core/Commander/Interfaces/EventsManager',
-            'Core/Commander/Queue'], 
+            'PriorityQueue',
+            'Core/Commander/Command',
+            'text!Renderer/Shader/GlobeVS.glsl',
+            'text!Renderer/Shader/GlobePS.glsl',
+            'Core/Geographic/CoordWMTS'            
+        ], 
         function(
                 WMTS_Provider,
                 EventsManager,
-                Queue){
+                PriorityQueue,
+                Command,
+                GlobeVS,
+                GlobePS,
+                CoordWMTS){
 
-    var instanceCommandManager = null;
-    
-    var command  = function(pro)
-    {
-        this.priority = pro;        
-    };
+    var instanceCommandManager = null;   
     
     function ManagerCommands(){
         //Constructor
         if(instanceCommandManager !== null){
             throw new Error("Cannot instantiate more than one ManagerCommands");
         } 
-        this.queueAsync = new Queue('priority',1);
-        this.queueSync  = null;
-        this.loadQueue  = [];
-        this.providers  = [];
-        this.history    = null;        
-        this.providers.push(new WMTS_Provider());        
-        this.countRequest  = 0;   
-        this.eventsManager = new EventsManager();
         
-        this.scene         = undefined;
+        this.queueAsync     = new PriorityQueue({ comparator: function(a, b) { return b.priority - a.priority; }});        
+        this.queueSync      = null;
+        this.loadQueue      = [];
+        this.providers      = [];
+        this.history        = null;        
+        this.providers.push(new WMTS_Provider());        
+        this.countRequest   = 0;   
+        this.eventsManager  = new EventsManager();       
+        this.scene          = undefined;
         
     }        
 
@@ -49,17 +53,75 @@ define('Core/Commander/ManagerCommands',
 
     ManagerCommands.prototype.addCommand = function(command)
     {      
-            /*     
-        if(this.queueAsync.length > 10)
+                
+        this.queueAsync.queue(command);
+     
+        if(this.queueAsync.length > 8 )
         {
-            //console.log(this.queueAsync.sort());
-            this.queueAsync.queue.slice(0,9);
-            this.queueAsync.length-=10;
+            this.runAllCommands();
+        }            
+    };
+    
+    ManagerCommands.prototype.runAllCommands = function()
+    {  
+        return;
+        while (this.queueAsync.length > 0)
+        {
+            //console.log(this.queueAsync.dequeue().priority);
             
+            var command = this.queueAsync.dequeue();
+            
+            var bbox    = command.paramsFunction[0];
+            var cooWMTS = command.paramsFunction[1];            
+            var projection = command.paramsFunction[2];
+            var parent  = command.requester;
+            var tile    = new command.type(bbox,GlobeVS,GlobePS,cooWMTS.zoom);        
+            tile.level  = cooWMTS.zoom;
+
+            this.getTextureBil(cooWMTS).then(function(texture)
+            {   
+                this.setTextureTerrain(texture);                
+                return this;
+
+            }.bind(tile)).then(function(tile)
+            {      
+                
+                if(cooWMTS.zoom >= 2)
+                {
+                    
+                    var box  = projection.WMTS_WGS84ToWMTS_PM(cooWMTS,bbox); // 
+                      
+                    var id = 0;
+                    var col = box[0].col;
+                    
+                    for (var row = box[0].row; row < box[1].row + 1; row++)
+                    {                                                                        
+                        var coo = new CoordWMTS(box[0].zoom,row,col);
+                        
+                        this.getTextureOrtho(coo).then
+                        (
+                            function(texture)
+                            {                             
+                                                
+                                this.setTextureOrtho(texture,id);
+                                 
+                                return this;
+
+                            }.bind(tile)
+                        ).then( function(tile)
+                        {
+                            parent.add(tile);
+                        }.bind(this)
+                        );
+
+                        id++;
+                        
+                    }  
+                }
+
+            }.bind(this)); 
         }
-        
-        this.queueAsync.insert(command);        
-        */
+//        console.log('----------------');
     };
 
     ManagerCommands.prototype.requestInc = function()
@@ -86,14 +148,15 @@ define('Core/Commander/ManagerCommands',
      * @param {type} coWMTS
      * @returns {ManagerCommands_L7.ManagerCommands.prototype@arr;providers@call;getTile}
      */
-    ManagerCommands.prototype.getTextureBil = function(coWMTS){
+    ManagerCommands.prototype.getTextureBil = function(cooWMTS){
         
         //var co = new command(Math.floor((Math.random()*100)));        
         //this.queueAsync.insert(co);
-        
+      
+
         this.requestInc();
-        
-        return this.providers[0].getTextureBil(coWMTS);
+        return this.providers[0].getTextureBil(cooWMTS);
+
     };
     
     ManagerCommands.prototype.getTextureOrtho = function(coWMTS){

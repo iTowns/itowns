@@ -11,7 +11,7 @@ define('Core/Commander/Command',[], function(){
         //Constructor
 
         this.name       = null;
-        this.priority   = Math.floor((Math.random()*100));
+        this.priority   = 0.0;//Math.floor((Math.random()*100));
         this.state      = null;
         this.inParallel = null;
         this.inBuffers  = null;
