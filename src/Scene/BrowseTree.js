@@ -37,7 +37,7 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
             {
                 //this.nodeProcess.backFaceCulling(node,camera);
 
-                //if(node.visible)
+                if(node.loaded)
                 {
                     this.nodeProcess.frustumCullingOBB(node,camera);
                                         
@@ -67,10 +67,8 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
 
                                 if(node.childrenCount() !== 0)
                                     for(var i = 0;i<node.children.length;i++)
-                                    {               
-                                        //console.log("invisible");
-                                        node.children[i].visible = false;
-                                           //node.children[i].traverse(this.invisible);
+                                    {                                                       
+                                        node.children[i].visible = false;                                        
                                     }
 
                                 return false;                            

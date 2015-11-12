@@ -32,9 +32,11 @@ define('Core/Commander/Providers/tileGlobeProvider',[
         var parent  = command.requester;
         var tile    = new command.type(bbox,cooWMTS);     
 
+        tile.visible = false;
+        
         parent.add(tile);
-
-        this.providerWMTS.getTextureBil(cooWMTS).then(function(texture)
+        
+        return this.providerWMTS.getTextureBil(cooWMTS).then(function(texture)
         {   
                         
             this.setTextureTerrain(texture);                
@@ -43,8 +45,7 @@ define('Core/Commander/Providers/tileGlobeProvider',[
         }.bind(tile)).then(function(tile)
         {                      
             if(cooWMTS.zoom >= 2)
-            {
-            
+            {            
                 var box  = this.projection.WMTS_WGS84ToWMTS_PM(tile.cooWMTS,tile.bbox); // 
                 
                 var id = 0;
@@ -66,13 +67,27 @@ define('Core/Commander/Providers/tileGlobeProvider',[
                         }.bind(tile)
                     ).then( function(tile)
                     {
-
+                      tile.loaded = true;
+                      if(tile.parent.childrenLoaded())
+                      {
+                          tile.parent.wait = false;                          
+                      }
+                      
                     }.bind(this)
                     );
 
                     id++;
 
                 }  
+            }
+            else
+            {
+                tile.loaded = true;
+                if(tile.parent.childrenLoaded())
+                {
+                    tile.parent.wait = false;                    
+                }
+                
             }
 
         }.bind(this)); 
