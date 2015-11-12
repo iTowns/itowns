@@ -58,7 +58,7 @@ define('Renderer/Camera',['Scene/Node','THREE'], function(Node, THREE){
     {
         
         var boundingSphere = node.geometry.boundingSphere;
-        
+                
         var distance = Math.max(0.0,(this.camera3D.position.distanceTo(boundingSphere.center) - boundingSphere.radius));
         
         var levelMax = 16;

@@ -47,6 +47,9 @@ define('Core/Commander/InterfaceCommander',['Core/Commander/ManagerCommands','Co
     {
         //console.log(this.type);
         
+        //var tile    = new this.type(bbox,cooWMTS.zoom);
+        //tile.visible = false;
+        
         var command = new Command();        
         command.type        = this.type;
         command.requester   = parent;        
@@ -54,8 +57,10 @@ define('Core/Commander/InterfaceCommander',['Core/Commander/ManagerCommands','Co
         command.paramsFunction.push(cooWMTS);
         command.paramsFunction.push(projection);
         command.priority = parent.sse === undefined ? 0 : Math.floor(parent.sse * 1000) * parent.level;
-
+        //command.nodeDesti = tile;
         this.managerCommands.addCommand(command);
+        
+        //return tile;
 
     };
     
