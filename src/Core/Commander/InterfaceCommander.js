@@ -9,8 +9,7 @@ define('Core/Commander/InterfaceCommander',['Core/Commander/ManagerCommands','Co
     function InterfaceCommander(type){
         //Constructor
 
-        this.managerCommands = ManagerCommands();
-        //this.builderCommand  = buildCommand;        
+        this.managerCommands = ManagerCommands();      
         this.type     = type;                
 
     }
@@ -43,37 +42,21 @@ define('Core/Commander/InterfaceCommander',['Core/Commander/ManagerCommands','Co
         return this.managerCommands.getTextureOrtho(coWMTS);
     };
     
-    InterfaceCommander.prototype.getTile = function(bbox,cooWMTS,parent,projection)
+    InterfaceCommander.prototype.getTile = function(bbox,parent)
     {
-        //console.log(this.type);
-        
-        //var tile    = new this.type(bbox,cooWMTS.zoom);
-        //tile.visible = false;
-        
+       
         var command = new Command();        
         command.type        = this.type;
         command.requester   = parent;        
         command.paramsFunction.push(bbox);
-        command.paramsFunction.push(cooWMTS);
-        command.paramsFunction.push(projection);
-        command.priority = parent.sse === undefined ? 0 : Math.floor(parent.sse * 1000) * parent.level;
-        //command.nodeDesti = tile;
-        this.managerCommands.addCommand(command);
         
-        //return tile;
+        command.priority = parent.sse === undefined ? 0 : Math.floor(parent.sse * 1000) * parent.level;
+
+        this.managerCommands.addCommand(command);
+
 
     };
-    
-    
-    InterfaceCommander.prototype.requestDec = function()
-    {
-      
-        this.managerCommands.requestDec();
-        
-        //console.log(this.managerCommands.countRequest);
-        
-    };
-    
+   
 
     return InterfaceCommander;
     
