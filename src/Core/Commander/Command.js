@@ -23,8 +23,7 @@ define('Core/Commander/Command',[], function(){
         this.type       = null;
         this.addInHistory = null;
         this.source     = null;
-        this.requester  = null;
-        this.nodeDesti  = null;
+        this.requester  = null;        
 
     }
 
