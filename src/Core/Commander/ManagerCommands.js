@@ -52,11 +52,10 @@ define('Core/Commander/ManagerCommands',
     ManagerCommands.prototype.constructor = ManagerCommands;
 
     ManagerCommands.prototype.addCommand = function(command)
-    {      
-                
+    {                      
         this.queueAsync.queue(command);
      
-        if(this.queueAsync.length > 8 )
+        if(this.queueAsync.length > 16 )
         {
             this.runAllCommands();
         }            
@@ -64,33 +63,35 @@ define('Core/Commander/ManagerCommands',
     
     ManagerCommands.prototype.runAllCommands = function()
     {  
-        return;
         while (this.queueAsync.length > 0)
         {
-            //console.log(this.queueAsync.dequeue().priority);
+            //
             
             var command = this.queueAsync.dequeue();
+            
+            //console.log(command.priority);
             
             var bbox    = command.paramsFunction[0];
             var cooWMTS = command.paramsFunction[1];            
             var projection = command.paramsFunction[2];
             var parent  = command.requester;
-            var tile    = new command.type(bbox,GlobeVS,GlobePS,cooWMTS.zoom);        
-            tile.level  = cooWMTS.zoom;
-
+            var tile    = new command.type(bbox,cooWMTS);     
+            
+            parent.add(tile);
+         
             this.getTextureBil(cooWMTS).then(function(texture)
             {   
                 this.setTextureTerrain(texture);                
                 return this;
 
             }.bind(tile)).then(function(tile)
-            {      
-                
+            {                      
                 if(cooWMTS.zoom >= 2)
                 {
                     
-                    var box  = projection.WMTS_WGS84ToWMTS_PM(cooWMTS,bbox); // 
+                    var box  = projection.WMTS_WGS84ToWMTS_PM(tile.cooWMTS,tile.bbox); // 
                       
+                    //console.log(box);
                     var id = 0;
                     var col = box[0].col;
                     
@@ -110,7 +111,11 @@ define('Core/Commander/ManagerCommands',
                             }.bind(tile)
                         ).then( function(tile)
                         {
-                            parent.add(tile);
+                            //if(tile.parent.childrenCount() > 4)
+                            //    console.log("finished");
+                            
+                            //console.log(parent);
+                            //parent.add(tile);
                         }.bind(this)
                         );
 

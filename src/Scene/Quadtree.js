@@ -29,10 +29,21 @@ define('Scene/Quadtree',[
 
         for (var i = 0; i < this.schemeTile.rootCount(); i++)
         {
-            this.add(this.createTile(this.schemeTile.getRoot(i),this));    
+        
+            this.createTile(this.schemeTile.getRoot(i),this);                        
+            
+        }                       
+        
+        this.interCommand.managerCommands.runAllCommands();
+        
+        for (var i = 0; i < this.schemeTile.rootCount(); i++)
+        {
             this.subdivide(this.children[i]);
-            this.subdivideChildren(this.children[i]);                        
-        }               
+            
+            this.interCommand.managerCommands.runAllCommands();
+            
+            this.subdivideChildren(this.children[i]);
+        }
     }
     
     Quadtree.prototype = Object.create( Layer.prototype );
@@ -71,11 +82,13 @@ define('Scene/Quadtree',[
         
         //-------------------------
         
-            this.interCommand.getTile(bbox,cooWMTS,parent,this.projection);
+        this.interCommand.getTile(bbox,cooWMTS,parent,this.projection);
 
         //-------------------------                        
+        /*
+        var tile    = new this.tileType(bbox,GlobeVS,GlobePS,cooWMTS.zoom);    
         
-        var tile    = new this.tileType(bbox,GlobeVS,GlobePS,cooWMTS.zoom);        
+        tile.buildGeometry();
         tile.level  = cooWMTS.zoom;
         
         this.interCommand.getTextureBil(cooWMTS).then(function(texture)
@@ -114,6 +127,7 @@ define('Scene/Quadtree',[
         }.bind(this)); 
         
         return tile;
+        */
         
     };    
         
@@ -127,7 +141,8 @@ define('Scene/Quadtree',[
         if(node.level >= 11)
             return;        
         
-        node.material.visible = false;
+        node.material.visible   = false;
+        //node.wait               = true;
         
         if(node.childrenCount() !== 0)
         {
@@ -148,12 +163,17 @@ define('Scene/Quadtree',[
         });
         */
        
-        node.add(this.createTile(quad.northWest,node));
-        node.add(this.createTile(quad.northEast,node));
-        node.add(this.createTile(quad.southWest,node));
-        node.add(this.createTile(quad.southEast,node));
-          
+//        node.add(this.createTile(quad.northWest,node));
+//        node.add(this.createTile(quad.northEast,node));
+//        node.add(this.createTile(quad.southWest,node));
+//        node.add(this.createTile(quad.southEast,node));
+       
         
+        this.createTile(quad.northWest,node);
+        this.createTile(quad.northEast,node);
+        this.createTile(quad.southWest,node);
+        this.createTile(quad.southEast,node);
+                  
     };
     
     Quadtree.prototype.subdivideChildren = function(node)
