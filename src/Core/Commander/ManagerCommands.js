@@ -48,18 +48,26 @@ define('Core/Commander/ManagerCommands',
     {                      
         this.queueAsync.queue(command);
      
-        if(this.queueAsync.length > 16 )
+        if(this.queueAsync.length > 32 )
         {
-            this.runAllCommands();            
+            this.runAllCommands();              
         }            
     };
     
     ManagerCommands.prototype.runAllCommands = function()
     {  
-        while (this.queueAsync.length > 0)
+        if(this.queueAsync.length === 0)
+            return;
+        
+        this.providers[0].get(this.queueAsync.dequeue()).then(function()
         {            
-            this.providers[0].get(this.queueAsync.dequeue());           
-        }
+            if(this.queueAsync.length === 0)
+               this.scene.updateScene3D();
+            else                            
+               this.runAllCommands();            
+            
+        }.bind(this));           
+                
     };
 
     /**
@@ -81,7 +89,8 @@ define('Core/Commander/ManagerCommands',
     */
     ManagerCommands.prototype.process = function(){
         //TODO: Implement Me 
-        this.scene.updateScene3D();
+        if(this.scene !== undefined)
+            this.scene.renderScene3D();
     };
 
 

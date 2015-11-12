@@ -80,8 +80,8 @@ define('Scene/Scene',['Renderer/c3DEngine','Globe/Star','Globe/Globe','Renderer/
     /**
     */
     Scene.prototype.updateScene3D = function(){
-        //TODO: Implement Me 
-       
+        
+       this.gfxEngine.update();
     };
     
     Scene.prototype.wait = function(){

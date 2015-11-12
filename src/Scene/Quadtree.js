@@ -85,20 +85,22 @@ define('Scene/Quadtree',[
     */
     Quadtree.prototype.subdivide = function(node)
     {
-        if(node.level >= 11)
+        if(node.level >= 11  || node.wait === true )
             return;        
-        
-        node.material.visible   = false;
-        //node.wait               = true;
-        
-        if(node.childrenCount() !== 0)
+             
+        if(node.childrenCount() !== 0)                
         {
+                        
             for (var i = 0 ;i<node.childrenCount();i++)
                 node.children[i].visible = true;
-                            
+            
+            node.material.visible   = false;
+            
             return;
         }    
-        var quad = new Quad(node.bbox);      
+        
+        node.wait   = true;
+        var quad    = new Quad(node.bbox);      
         this.createTile(quad.northWest,node);
         this.createTile(quad.northEast,node);
         this.createTile(quad.southWest,node);
