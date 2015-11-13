@@ -17,7 +17,7 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera','when'], 
         
         THREE.ShaderChunk[ "logdepthbuf_pars_vertex" ];
 
-        this.debug      = true;
+        this.debug      = false;
         this.scene      = undefined;
         this.scene3D    = new THREE.Scene();               
         this.width      = this.debug ? window.innerWidth * 0.5 : window.innerWidth;
