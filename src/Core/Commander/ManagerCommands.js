@@ -15,12 +15,14 @@
 define('Core/Commander/ManagerCommands',
         [   'Core/Commander/Providers/tileGlobeProvider',
             'Core/Commander/Interfaces/EventsManager',
-            'PriorityQueue'            
+            'PriorityQueue',
+            'when'
         ], 
         function(
                 tileGlobeProvider,
                 EventsManager,
-                PriorityQueue
+                PriorityQueue,
+                when
         ){
 
     var instanceCommandManager = null;   
@@ -54,20 +56,23 @@ define('Core/Commander/ManagerCommands',
         }            
     };
     
+    ManagerCommands.prototype.init = function(scene)
+    {
+        this.scene = scene;        
+    };
+    
     ManagerCommands.prototype.runAllCommands = function()
     {  
         if(this.queueAsync.length === 0)
-        {
-            return  this.process();
+        {                       
+            return this.process();
         }
         
-        this.providers[0].get(this.queueAsync.dequeue()).then(function()
+        return this.providers[0].get(this.queueAsync.dequeue()).then(function()
         {            
-            this.scene.updateScene3D(); // ---> trop bourrin            
-            this.runAllCommands();            
-                        
+            this.runAllCommands();                                                
         }.bind(this));           
-                
+               
     };
 
     /**
