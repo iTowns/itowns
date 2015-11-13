@@ -19,6 +19,7 @@ define('Core/Commander/Providers/tileGlobeProvider',[
         //Constructor
        this.projection      = new Projection();
        this.providerWMTS    = new WMTS_Provider();
+       
         
     }        
 
@@ -39,7 +40,7 @@ define('Core/Commander/Providers/tileGlobeProvider',[
         return this.providerWMTS.getTextureBil(cooWMTS).then(function(texture)
         {   
                         
-            this.setTextureTerrain(texture);                
+            this.setTextureTerrain(texture); 
             return this;
 
         }.bind(tile)).then(function(tile)
@@ -60,18 +61,25 @@ define('Core/Commander/Providers/tileGlobeProvider',[
                         function(texture)
                         {                             
                           
+                            
+                            
                             this.setTextureOrtho(texture,id);
+                            
 
                             return this;
 
                         }.bind(tile)
                     ).then( function(tile)
                     {
-                      tile.loaded = true;
-                      if(tile.parent.childrenLoaded())
-                      {
-                          tile.parent.wait = false;                          
-                      }
+                       tile.loaded = true;
+                        var node = tile.parent;
+
+                        if(node.childrenLoaded() && node.wait === true)
+                        {
+                          tile.parent.wait = false;                  
+
+                        }                          
+                     
                       
                     }.bind(this)
                     );
@@ -83,11 +91,13 @@ define('Core/Commander/Providers/tileGlobeProvider',[
             else
             {
                 tile.loaded = true;
-                if(tile.parent.childrenLoaded())
+                var node = tile.parent;
+
+                if(node.childrenLoaded() && node.wait === true)
                 {
-                    tile.parent.wait = false;                    
-                }
-                
+                  tile.parent.wait = false;                  
+
+                }                
             }
 
         }.bind(this)); 

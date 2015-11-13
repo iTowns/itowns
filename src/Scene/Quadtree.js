@@ -24,10 +24,8 @@ define('Scene/Quadtree',[
         this.tileType         = type;
 
         for (var i = 0; i < this.schemeTile.rootCount(); i++)
-        {
-        
-            this.createTile(this.schemeTile.getRoot(i),this);                        
-            
+        {        
+            this.createTile(this.schemeTile.getRoot(i),this);            
         }                       
         
         this.interCommand.managerCommands.runAllCommands();
@@ -88,7 +86,7 @@ define('Scene/Quadtree',[
         if(node.level >= 11  || node.wait === true )
             return;        
              
-        if(node.childrenCount() !== 0)                
+        if(node.childrenCount() !== 0 && node.wait === false)                
         {
                         
             for (var i = 0 ;i<node.childrenCount();i++)

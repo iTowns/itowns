@@ -65,8 +65,8 @@ define('Core/Commander/Providers/WMTS_Provider',[
         
     WMTS_Provider.prototype.getTextureBil = function(coWMTS)
     {
-        
-        var url = this.url(coWMTS);
+                        
+        var url = this.url(coWMTS);            
         
         var textureCache = this.cache.getRessource(url);
         
@@ -77,11 +77,11 @@ define('Core/Commander/Providers/WMTS_Provider',[
             return when(textureCache);
         }
         
-        if(coWMTS.zoom < 2)
+        if(coWMTS.zoom <= 2)
         {
             var texture = -1;
             this.cache.addRessource(url,texture);
-            when(texture);
+            return when(texture);
         }
         
         return this._IoDriver.read(url).then(function(buffer)

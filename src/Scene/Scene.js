@@ -44,8 +44,8 @@ define('Scene/Scene',['Renderer/c3DEngine','Globe/Star','Globe/Globe','Renderer/
         this.gfxEngine.init(this);        
         this.add(new Globe());
         //this.add(new Star()); 
-        this.managerCommand.scene = this;        
-        this.gfxEngine.renderScene();
+        this.managerCommand.init(this);        
+        this.gfxEngine.update();
         
     };
 
@@ -65,7 +65,7 @@ define('Scene/Scene',['Renderer/c3DEngine','Globe/Star','Globe/Globe','Renderer/
         if(this.nodes[0] !== undefined  && this.currentCamera() !== undefined )
         {                        
             this.browserScene.browse(this.nodes[0].terrain,this.currentCamera(),true);
-            //this.gfxEngine.update(); // TODO --> replace by renderScene
+            this.gfxEngine.update(); // TODO --> replace by renderScene            
         } 
         
     };
