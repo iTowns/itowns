@@ -58,7 +58,8 @@ define('Core/Commander/ManagerCommands',
     
     ManagerCommands.prototype.init = function(scene)
     {
-        this.scene = scene;        
+        this.scene = scene;     
+        this.providers[0].renderer = this.scene.gfxEngine;
     };
     
     ManagerCommands.prototype.runAllCommands = function()

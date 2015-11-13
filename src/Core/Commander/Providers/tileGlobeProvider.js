@@ -19,8 +19,8 @@ define('Core/Commander/Providers/tileGlobeProvider',[
         //Constructor
        this.projection      = new Projection();
        this.providerWMTS    = new WMTS_Provider();
-       
-        
+       this.renderer        = undefined;
+               
     }        
 
     tileGlobeProvider.prototype.constructor = tileGlobeProvider;
@@ -37,10 +37,10 @@ define('Core/Commander/Providers/tileGlobeProvider',[
         
         parent.add(tile);
         
-        return this.providerWMTS.getTextureBil(cooWMTS).then(function(texture)
-        {   
-                        
-            this.setTextureTerrain(texture); 
+        return this.providerWMTS.getTextureBil(cooWMTS).then(function(result)
+        {                           
+            this.setTextureTerrain(result === - 1 ?  -1 : result.texture);
+            
             return this;
 
         }.bind(tile)).then(function(tile)
@@ -59,24 +59,31 @@ define('Core/Commander/Providers/tileGlobeProvider',[
                     this.providerWMTS.getTextureOrtho(coo).then
                     (
                         function(texture)
-                        {                             
-                          
-                            
-                            
-                            this.setTextureOrtho(texture,id);
-                            
+                        {                                                                                                               
+                            this.setTextureOrtho(texture,id);                            
 
                             return this;
 
                         }.bind(tile)
                     ).then( function(tile)
                     {
-                       tile.loaded = true;
+                        tile.loaded = true;
                         var node = tile.parent;
-
+                        
+                        
                         if(node.childrenLoaded() && node.wait === true)
                         {
-                          tile.parent.wait = false;                  
+                            
+                            
+//                            for (var i = 0 ;i<node.childrenCount();i++)
+//                            {
+//                                node.children[i].visible = true;
+//                                
+//                            }
+//                            
+//                            node.material.visible   = false;
+                            
+                            tile.parent.wait = false;                  
 
                         }                          
                      
@@ -95,8 +102,7 @@ define('Core/Commander/Providers/tileGlobeProvider',[
 
                 if(node.childrenLoaded() && node.wait === true)
                 {
-                  tile.parent.wait = false;                  
-
+                    tile.parent.wait = false;                  
                 }                
             }
 

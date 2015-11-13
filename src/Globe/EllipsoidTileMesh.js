@@ -27,7 +27,7 @@ define('Globe/EllipsoidTileMesh',['Renderer/NodeMesh','Globe/EllipsoidTileGeomet
         this.cooWMTS    = cooWMTS;
         this.bbox       = defaultValue(bbox,new BoudingBox());        
         this.geometry   = new EllipsoidTileGeometry(bbox);               
-        this.tMat       = new Material(GlobeVS,GlobePS,bbox,cooWMTS.zoom);
+        this.tMat       = new Material(GlobeVS,GlobePS,bbox,cooWMTS.zoom);                
         
         this.material   = this.tMat.shader;//new THREE.MeshBasicMaterial( {color: 0xffffff, wireframe: false}); 
         this.dot        = 0;
@@ -48,12 +48,17 @@ define('Globe/EllipsoidTileMesh',['Renderer/NodeMesh','Globe/EllipsoidTileGeomet
             tileMesh.level = sublevel;
 
         }
-    };        
+    };
     
     EllipsoidTileMesh.prototype.setTextureTerrain = function(texture)
     {         
         this.tMat.setTexture(texture,0);      
-    };   
+    };
+    
+    EllipsoidTileMesh.prototype.setAltitude = function(min,max)
+    {         
+        this.bbox.setAltitude(min,max);
+    };    
     
     EllipsoidTileMesh.prototype.setTextureOrtho = function(texture,id)
     {         
