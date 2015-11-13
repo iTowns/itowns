@@ -50,22 +50,22 @@ define('Core/Commander/ManagerCommands',
      
         if(this.queueAsync.length > 32 )
         {
-            this.runAllCommands();              
+            this.runAllCommands();          
         }            
     };
     
     ManagerCommands.prototype.runAllCommands = function()
     {  
         if(this.queueAsync.length === 0)
-            return;
+        {
+            return  this.process();
+        }
         
         this.providers[0].get(this.queueAsync.dequeue()).then(function()
         {            
-            if(this.queueAsync.length === 0)
-               this.scene.updateScene3D();
-            else                            
-               this.runAllCommands();            
-            
+            this.scene.updateScene3D(); // ---> trop bourrin            
+            this.runAllCommands();            
+                        
         }.bind(this));           
                 
     };
