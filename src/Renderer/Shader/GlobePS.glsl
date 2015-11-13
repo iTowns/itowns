@@ -40,37 +40,46 @@ void main() {
         gl_FragColor = vec4( 0.04, 0.23, 0.35, 1.0);
     else
         {                           
-            vec2 uvO ;
-            uvO.x           = vUv.x;
-            float nbRow     = pow(2.0,zoom + 1.0);
-            float y         = 0.5 - log(tan(PI4 + (latitude)*0.5))* INV_TWO_PI;
-            uvO.y           = 1.0 - mod(y,1.0/ nbRow)*nbRow;
-            float idStart   = floor( y0 * nbRow);
-            float idRow     = floor( y  * nbRow);
-            int   idd       = int(idRow - idStart);
-            vec4  ortho     = vec4( 0.04, 0.23, 0.35, 1.0);
-
-        
-            if(idd >= nbTextures_01)
+            
+            //if(nbTextures_01 == 0)
+            //    gl_FragColor = vec4( 0.85, 0.85, 0.00, 1.0);
+            //else
             {
-                idd     = nbTextures_01-1;
-                uvO.y   = 0.0;
-            }
-            else if(idd < 0)
-            {
-                idd     = 0;
-                uvO.y   = 1.0;
-            }
+                vec2 uvO ;
+                uvO.x           = vUv.x;
+                float nbRow     = pow(2.0,zoom + 1.0);
+                float y         = 0.5 - log(tan(PI4 + (latitude)*0.5))* INV_TWO_PI;
+                uvO.y           = 1.0 - mod(y,1.0/ nbRow)*nbRow;
+                float idStart   = floor( y0 * nbRow);
+                float idRow     = floor( y  * nbRow);
+                int   idd       = int(idRow - idStart);
+                vec4  ortho     = vec4( 0.04, 0.23, 0.35, 1.0);
 
-            for (int x = 0; x < TEX_UNITS; x++)
-                if (x == idd)
-                    ortho  = texture2D( dTextures_01[x], uvO );
 
-            gl_FragColor = ortho;
+                if(idd >= nbTextures_01)
+                {
+                    idd     = nbTextures_01-1;
+                    uvO.y   = 0.0;
+                }
+                else if(idd < 0)
+                {
+                    idd     = 0;
+                    uvO.y   = 1.0;
+                }
 
-           // if(nbTextures_00 > 0)
-           //     gl_FragColor = texture2D( dTextures_00[0], vUv ) /5000.0;
-           
+                
+                for (int x = 0; x < TEX_UNITS; x++)
+                    if (x == idd)
+                    {                        
+                        ortho  = texture2D( dTextures_01[x], uvO );
+                        break;
+                    }   
+
+                gl_FragColor = ortho;
+
+               // if(nbTextures_00 > 0)
+               //     gl_FragColor = texture2D( dTextures_00[0], vUv ) /5000.0;
+           }
 
          }      
 

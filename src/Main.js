@@ -60,7 +60,7 @@ requirejs.config({
 requirejs(['Core/Commander/Interfaces/ApiInterface/ApiGlobe'], 
     function(ApiGlobe) 
     {
-          
+        
         ApiGlobe.CreateSceneGlobe();
         
     }
