@@ -37,6 +37,14 @@ define('Scene/BoudingBox',['Core/defaultValue','Core/Math/MathExtented','Core/Ma
 
     };
     
+    BoudingBox.prototype.setAltitude = function(min,max){
+       
+        this.minCarto.altitude = min;
+        this.maxCarto.altitude = max;
+
+    };
+    
+    
     BoudingBox.prototype.intersect = function(bbox)
     {
         return !(this.minCarto.longitude >= bbox.maxCarto.longitude

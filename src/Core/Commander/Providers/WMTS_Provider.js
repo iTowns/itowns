@@ -84,21 +84,21 @@ define('Core/Commander/Providers/WMTS_Provider',[
             return when(texture);
         }
         
-        return this._IoDriver.read(url).then(function(buffer)
-            {                        
-                var texture;
-                
-                if(buffer === undefined)
-                    texture = -1;
+        return this._IoDriver.read(url).then(function(result)
+            {                                                        
+                if(result !== undefined)
+                {                    
+                    result.texture = new THREE.DataTexture(result.floatArray,256,256,THREE.AlphaFormat,THREE.FloatType);                
+                    result.texture.needsUpdate = true;
+                    this.cache.addRessource(url,result);
+                    return result;
+                }
                 else
                 {
-                    texture = new THREE.DataTexture(buffer,256,256,THREE.AlphaFormat,THREE.FloatType);                
-                    texture.needsUpdate = true;
+                    var texture = -1;
+                    this.cache.addRessource(url,texture);
+                    return texture;
                 }
-                
-                this.cache.addRessource(url,texture);
-                
-                return texture;
             }.bind(this)
         );
     };
