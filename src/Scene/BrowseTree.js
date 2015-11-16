@@ -37,7 +37,7 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
             {
                 //this.nodeProcess.backFaceCulling(node,camera);
 
-                //if(node.visible)
+                if(node.loaded)
                 {
                     this.nodeProcess.frustumCullingOBB(node,camera);
                                         
@@ -47,7 +47,7 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
                                                 
                         if(node.visible )
                         {
-                            var sse = this.nodeProcess.SSE(node,camera);
+                            
 
                             if(node.parent.material !== undefined && node.parent.material.visible === true)
                             {
@@ -55,7 +55,8 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
                                 return false;
                             }
 
-
+                            var sse = this.nodeProcess.SSE(node,camera);
+                            
                             if(other && sse && node.material.visible === true)
                             {   
                                 this.tree.subdivide(node);
@@ -67,15 +68,12 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
 
                                 if(node.childrenCount() !== 0)
                                     for(var i = 0;i<node.children.length;i++)
-                                    {               
-                                        //console.log("invisible");
-                                        node.children[i].visible = false;
-                                           //node.children[i].traverse(this.invisible);
+                                    {                                                       
+                                        node.children[i].visible = false;                                        
                                     }
 
                                 return false;                            
                             }
-
                         }
                     }
                 }
@@ -100,9 +98,9 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
         for(var i = 0;i<tree.children.length;i++)
             this._browse(tree.children[i],camera,other);
 
-        if(other)
+        //if(other)
         {
-            //console.log(this.tree.interCommand.managerCommands.queueAsync.sort());
+            this.tree.interCommand.managerCommands.runAllCommands();
         }
     };
     

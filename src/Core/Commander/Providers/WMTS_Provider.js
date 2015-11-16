@@ -65,40 +65,40 @@ define('Core/Commander/Providers/WMTS_Provider',[
         
     WMTS_Provider.prototype.getTextureBil = function(coWMTS)
     {
-        
-        var url = this.url(coWMTS);
+                        
+        var url = this.url(coWMTS);            
         
         var textureCache = this.cache.getRessource(url);
         
         if(textureCache !== undefined)
         {
-            if (textureCache !== -1)
-                textureCache.needsUpdate = true;
+//            if (textureCache !== -1)
+//                textureCache.needsUpdate = true;
             return when(textureCache);
         }
         
-        if(coWMTS.zoom < 2)
+        if(coWMTS.zoom <= 2)
         {
             var texture = -1;
             this.cache.addRessource(url,texture);
-            when(texture);
+            return when(texture);
         }
         
-        return this._IoDriver.read(url).then(function(buffer)
-            {                        
-                var texture;
-                
-                if(buffer === undefined)
-                    texture = -1;
+        return this._IoDriver.read(url).then(function(result)
+            {                                                        
+                if(result !== undefined)
+                {                    
+                    result.texture = new THREE.DataTexture(result.floatArray,256,256,THREE.AlphaFormat,THREE.FloatType);                
+                    //result.texture.needsUpdate = true;
+                    this.cache.addRessource(url,result);
+                    return result;
+                }
                 else
                 {
-                    texture = new THREE.DataTexture(buffer,256,256,THREE.AlphaFormat,THREE.FloatType);                
-                    texture.needsUpdate = true;
+                    var texture = -1;
+                    this.cache.addRessource(url,texture);
+                    return texture;
                 }
-                
-                this.cache.addRessource(url,texture);
-                
-                return texture;
             }.bind(this)
         );
     };
@@ -110,14 +110,12 @@ define('Core/Commander/Providers/WMTS_Provider',[
         var textureCache = this.cache.getRessource(url);
         
         if(textureCache !== undefined)
-        {            
-            //textureCache.needsUpdate = true;            
+        {                       
             return when(textureCache);
         }
         
         var texture = this.loader.load(url);
-        
-        //texture.needsUpdate = true;
+        texture.needsUpdate = false;
         
         this.cache.addRessource(url,texture);
         
