@@ -18,12 +18,12 @@ define('Core/Commander/Command',[], function(){
         this.outBuffers = null;
         this.paramsFunction = [];
         this.processFunction = null;
-        this.async = null;
-        this.force = null;
-        this.type = null;
+        this.async      = null;
+        this.force      = null;
+        this.type       = null;
         this.addInHistory = null;
-        this.source = null;
-        this.requester =  null;
+        this.source     = null;
+        this.requester  = null;        
 
     }
 

@@ -6,6 +6,16 @@
 
 define('Core/Commander/Providers/IoDriver_XBIL',['Core/Commander/Providers/IoDriver','when'], function(IoDriver,when){
 
+
+    var portableXBIL = function(buffer)
+    {
+        this.floatArray = new Float32Array(buffer);
+        this.max = - 1000000;
+        this.min =   1000000;
+        this.texture = -1;
+    };
+
+
     function IoDriver_XBIL(){
         //Constructor
         IoDriver.call( this );
@@ -32,32 +42,35 @@ define('Core/Commander/Providers/IoDriver_XBIL',['Core/Commander/Providers/IoDri
         {
 
             var arrayBuffer = this.response; 
-
+  
             if (arrayBuffer) {
 
-                var floatArray = new Float32Array(arrayBuffer);
-
-                
+//                var floatArray = new Float32Array(arrayBuffer);                
 //                var max = - 1000000;
 //                var min =   1000000;
+                
+                var result = new portableXBIL(arrayBuffer);
                                 
                 var mcolor  = 0.0;
                 //var mcolor  = Math.random();
  
-                var isEmpty = true;
  
-                for (var i = 0; i < floatArray.byteLength; i++) 
+                for (var i = 0; i < result.floatArray.byteLength; i++) 
                 {
-                   if(floatArray[i] === -99999.0 || floatArray[i] === undefined )                        
-                        floatArray[i] = mcolor;
-                   else if (isEmpty === true)
-                      isEmpty = false;
+                   var val = result.floatArray[i];
+                   if(val === -99999.0 || val === undefined )                        
+                        result.floatArray[i] = mcolor;                   
+                   else
+                   {
+                        result.max = Math.max(result.max,val);
+                        result.min = Math.min(result.min,val);
+                   }                        
                 }
 
-                if(isEmpty)
-                    deferred.resolve(undefined);
-                else
-                    deferred.resolve(floatArray);
+                if(result.min === 1000000)
+                    return deferred.resolve(undefined);
+
+                deferred.resolve(result);
             }                                
         };
 

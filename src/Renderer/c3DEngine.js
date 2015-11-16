@@ -49,6 +49,7 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera','when'], 
                 this.renderer.render( this.scene3D, this.camDebug);
                 this.camera.camHelper().visible = false;                
             }
+            //console.log("renderer");
             
         }.bind(this);
         
@@ -58,6 +59,7 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera','when'], 
             this.updateControl();            
             this.scene.wait();
             this.renderScene();
+            
             
         }.bind(this);
         
@@ -131,8 +133,7 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera','when'], 
             this.controls.zoomSpeed     = 1.0;
             this.controls.rotateSpeed   = 0.8;                
         }   
-    };
-       
+    };       
        
     /**
     */
