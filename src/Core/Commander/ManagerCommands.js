@@ -65,15 +65,16 @@ define('Core/Commander/ManagerCommands',
     ManagerCommands.prototype.runAllCommands = function()
     {  
         if(this.queueAsync.length === 0)
-        {                 
+        {    
+            this.process();
             return ;
         }
         
         return this.providers[0].get(this.queueAsync.dequeue()).then(function()
         {            
-            this.runAllCommands();                                                
-        }.bind(this));           
-               
+            this.runAllCommands();
+                       
+        }.bind(this));                         
     };
 
     /**
