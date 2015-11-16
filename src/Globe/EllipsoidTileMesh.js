@@ -14,7 +14,13 @@
  * @param {type} Material
  * @returns {EllipsoidTileMesh_L10.EllipsoidTileMesh}
  */
-define('Globe/EllipsoidTileMesh',['Renderer/NodeMesh','Globe/EllipsoidTileGeometry','Scene/BoudingBox','Core/defaultValue','THREE','Renderer/Material','text!Renderer/Shader/GlobeVS.glsl',
+define('Globe/EllipsoidTileMesh',[
+    'Renderer/NodeMesh',
+    'Globe/EllipsoidTileGeometry',
+    'Scene/BoudingBox',
+    'Core/defaultValue',
+    'THREE',
+    'Renderer/Material','text!Renderer/Shader/GlobeVS.glsl',
         'text!Renderer/Shader/GlobePS.glsl'], function(NodeMesh,EllipsoidTileGeometry,BoudingBox,defaultValue,THREE,Material,GlobeVS,GlobePS){
  
 
@@ -28,7 +34,7 @@ define('Globe/EllipsoidTileMesh',['Renderer/NodeMesh','Globe/EllipsoidTileGeomet
         this.bbox       = defaultValue(bbox,new BoudingBox());        
         this.geometry   = new EllipsoidTileGeometry(bbox);               
         this.tMat       = new Material(GlobeVS,GlobePS,bbox,cooWMTS.zoom);                
-        
+        this.orthoNeed  = 10;
         this.material   = this.tMat.shader;//new THREE.MeshBasicMaterial( {color: 0xffffff, wireframe: false}); 
         this.dot        = 0;
     }

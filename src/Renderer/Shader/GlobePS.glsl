@@ -76,24 +76,22 @@ void main() {
                     }   
 
                 gl_FragColor = ortho;
-
-               // if(nbTextures_00 > 0)
-               //     gl_FragColor = texture2D( dTextures_00[0], vUv ) /5000.0;
+               
            }
 
          }      
 
          if(debug > 0)
             gl_FragColor = vec4( 1.0, 0.0, 0.0, 1.0);
-
-        
-}
-
 /*
-vec4 eleva  = texture2D( dTextures_00[0], vUv);
-gl_FragColor = ortho + vec4( eleva.x *1.5,0.0,0.0, 1.0);                        
-if(eleva.x == 0.0)
-  gl_FragColor = vec4( 0.5, 0.5, 0.5, 1.0);
-else
-    gl_FragColor = eleva*2.0;
+         if(nbTextures_00 > 0)
+        {
+                    float dv = texture2D( dTextures_00[0], vUv ).w /3000.0;
+                    gl_FragColor = vec4( dv, dv, dv, 1.0);
+        }
+        else
+            gl_FragColor = vec4( 1.0, 0.0, 0.0, 1.0);
+        }
 */
+
+}

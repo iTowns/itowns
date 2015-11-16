@@ -133,8 +133,7 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera','when'], 
             this.controls.zoomSpeed     = 1.0;
             this.controls.rotateSpeed   = 0.8;                
         }   
-    };
-       
+    };       
        
     /**
     */

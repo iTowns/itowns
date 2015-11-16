@@ -51,6 +51,8 @@ define('Core/Commander/Providers/tileGlobeProvider',[
                 
                 var id = 0;
                 var col = box[0].col;
+                
+                tile.orthoNeed = box[1].row + 1 - box[0].row;
 
                 for (var row = box[0].row; row < box[1].row + 1; row++)
                 {                                                                        
@@ -67,25 +69,17 @@ define('Core/Commander/Providers/tileGlobeProvider',[
                         }.bind(tile)
                     ).then( function(tile)
                     {
-                        tile.loaded = true;
-                        var node = tile.parent;
-                        
-                        
-                        if(node.childrenLoaded() && node.wait === true)
-                        {
+                        if(tile.orthoNeed === tile.tMat.Textures_01.length)
+                        {   
+                            tile.loaded = true;
+                            tile.tMat.update();
+                            var parent = tile.parent;
                             
-                            
-//                            for (var i = 0 ;i<node.childrenCount();i++)
-//                            {
-//                                node.children[i].visible = true;
-//                                
-//                            }
-//                            
-//                            node.material.visible   = false;
-                            
-                            tile.parent.wait = false;                  
-
-                        }                          
+                            if(parent.childrenLoaded() && parent.wait === true)
+                            {                                
+                                parent.wait = false;                  
+                            }
+                        }
                      
                       
                     }.bind(this)
@@ -98,11 +92,14 @@ define('Core/Commander/Providers/tileGlobeProvider',[
             else
             {
                 tile.loaded = true;
-                var node = tile.parent;
+                
+                tile.tMat.update();
+                
+                var parent = tile.parent;
 
-                if(node.childrenLoaded() && node.wait === true)
+                if(parent.childrenLoaded() && parent.wait === true)
                 {
-                    tile.parent.wait = false;                  
+                    parent.wait = false;                  
                 }                
             }
 

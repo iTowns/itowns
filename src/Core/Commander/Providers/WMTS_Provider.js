@@ -72,8 +72,8 @@ define('Core/Commander/Providers/WMTS_Provider',[
         
         if(textureCache !== undefined)
         {
-            if (textureCache !== -1)
-                textureCache.needsUpdate = true;
+//            if (textureCache !== -1)
+//                textureCache.needsUpdate = true;
             return when(textureCache);
         }
         
@@ -89,7 +89,7 @@ define('Core/Commander/Providers/WMTS_Provider',[
                 if(result !== undefined)
                 {                    
                     result.texture = new THREE.DataTexture(result.floatArray,256,256,THREE.AlphaFormat,THREE.FloatType);                
-                    result.texture.needsUpdate = true;
+                    //result.texture.needsUpdate = true;
                     this.cache.addRessource(url,result);
                     return result;
                 }
@@ -110,14 +110,12 @@ define('Core/Commander/Providers/WMTS_Provider',[
         var textureCache = this.cache.getRessource(url);
         
         if(textureCache !== undefined)
-        {            
-            //textureCache.needsUpdate = true;            
+        {                       
             return when(textureCache);
         }
         
         var texture = this.loader.load(url);
-        
-        //texture.needsUpdate = true;
+        texture.needsUpdate = false;
         
         this.cache.addRessource(url,texture);
         
