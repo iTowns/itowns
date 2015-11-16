@@ -70,15 +70,28 @@ define('Renderer/Material',['THREE','Core/Math/MathExtented'], function(THREE,Ma
             this.uniforms.nbTextures_01.value  = this.Textures_01.length;                 
         }            
         
-        this.shader.needsUpdate         = true;
+        //this.shader.needsUpdate         = true;
     };
     
     Material.prototype.setDebug = function(debug_value)
     {
         this.uniforms.debug.value   = debug_value;
-        this.shader.needsUpdate     = true;
+        //this.shader.needsUpdate     = true;
     };
     
+    
+    Material.prototype.update = function()    
+    {
+        this.shader.needsUpdate         = true;
+//        
+        for (var i = 0, max = this.Textures_00.length; i < max; i++) 
+            this.Textures_00[i].needsUpdate = true;
+        
+        for (var i = 0, max = this.Textures_01.length; i < max; i++) 
+            this.Textures_01[i].needsUpdate = true;
+        
+        
+    };
     
     return Material;
 });

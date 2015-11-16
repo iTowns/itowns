@@ -85,12 +85,18 @@ define('Scene/Quadtree',[
     {
         if(node.level >= 11  || node.wait === true )
             return;        
-             
+        
+                     
         if(node.childrenCount() !== 0 && node.wait === false)                
         {
                         
             for (var i = 0 ;i<node.childrenCount();i++)
+            {
+                
                 node.children[i].visible = true;
+
+                //node.children[i].tMat.update();
+            }
             
             node.material.visible   = false;
             

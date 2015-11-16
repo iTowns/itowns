@@ -65,8 +65,8 @@ define('Core/Commander/ManagerCommands',
     ManagerCommands.prototype.runAllCommands = function()
     {  
         if(this.queueAsync.length === 0)
-        {                       
-            return this.process();
+        {                 
+            return ;
         }
         
         return this.providers[0].get(this.queueAsync.dequeue()).then(function()
