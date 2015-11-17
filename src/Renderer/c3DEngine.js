@@ -48,8 +48,7 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera','when'], 
                 this.renderer.setViewport( this.width, 0, this.width, this.height );
                 this.renderer.render( this.scene3D, this.camDebug);
                 this.camera.camHelper().visible = false;                
-            }
-            //console.log("renderer");
+            }            
             
         }.bind(this);
         
@@ -104,10 +103,7 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera','when'], 
         document.body.appendChild( this.renderer.domElement );
     };
         
-    
-
-    
-        
+      
     c3DEngine.prototype.init = function(scene){
         
         this.scene  = scene;

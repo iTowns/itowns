@@ -58,19 +58,20 @@ define('Core/Commander/Providers/tileGlobeProvider',[
                 {                                                                        
                     var coo = new CoordWMTS(box[0].zoom,row,col);
 
-                    this.providerWMTS.getTextureOrtho(coo).then
+                    this.providerWMTS.getTextureOrtho(coo,id).then
                     (
-                        function(texture)
-                        {                                                                                                               
-                            this.setTextureOrtho(texture,id);                            
+                        function(result)
+                        {                          
+                                                        
+                            this.setTextureOrtho(result.texture,result.id);                            
 
                             return this;
 
                         }.bind(tile)
                     ).then( function(tile)
-                    {
+                    {                        
                         if(tile.orthoNeed === tile.tMat.Textures_01.length)
-                        {   
+                        {                               
                             tile.loaded = true;
                             tile.tMat.update();
                             var parent = tile.parent;
@@ -79,14 +80,11 @@ define('Core/Commander/Providers/tileGlobeProvider',[
                             {                                
                                 parent.wait = false;                  
                             }
-                        }
-                     
-                      
+                        }                                           
                     }.bind(this)
                     );
 
                     id++;
-
                 }  
             }
             else
