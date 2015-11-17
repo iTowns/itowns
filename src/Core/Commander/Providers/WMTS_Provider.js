@@ -115,7 +115,7 @@ define('Core/Commander/Providers/WMTS_Provider',[
         }
         
         var texture = this.loader.load(url);
-        texture.needsUpdate = false;
+        //texture.needsUpdate = false;
         
         this.cache.addRessource(url,texture);
         
