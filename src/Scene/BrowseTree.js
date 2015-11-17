@@ -21,8 +21,7 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
      * @returns {undefined}
      */
     BrowseTree.prototype.invisible= function(node)
-    {
-        //console.log('ssss');
+    {        
         node.visible = false;
     };
     
