@@ -1,4 +1,4 @@
-/*
+
 #ifdef USE_LOGDEPTHBUF
 
     #ifdef USE_LOGDEPTHBUF_EXT
@@ -12,7 +12,7 @@
 #endif
 
 #define EPSILON 1e-6
-*/
+
 
 uniform int atmoIN;
 varying float intensity;
@@ -21,17 +21,17 @@ vec3 normalCAMES;
 
 void main() 
 {
-    normalES = normalize( normalMatrix * normal );
+    normalES    = normalize( normalMatrix * normal );
     normalCAMES = normalize( normalMatrix * cameraPosition );
 
     if(atmoIN == 0)
-        intensity = pow( 0.55 - dot(normalES, normalCAMES), 4. ); 
+        intensity = pow(0.666 - dot(normalES, normalCAMES), 4. ); 
       else
         intensity = pow( 1.  - dot(normalES, normalCAMES), 0.8 );
 
-    gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+    gl_Position = projectionMatrix * modelViewMatrix * vec4( position,  1.0 );
 
-    /*
+    
     #ifdef USE_LOGDEPTHBUF
 
         gl_Position.z = log2(max( EPSILON, gl_Position.w + 1.0 )) * logDepthBufFC;
@@ -47,7 +47,7 @@ void main()
         #endif
 
     #endif
-    */
+    
 }
 
 

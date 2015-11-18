@@ -24,11 +24,12 @@ define('Globe/Atmosphere',['Renderer/NodeMesh','THREE','text!Renderer/Shader/Glo
             fragmentShader  : GlowFS,
             side            : THREE.BackSide,
             blending        : THREE.AdditiveBlending,
-            transparent     : true
+            transparent     : true,
+            wireframe       : false
 
         } );
                 
-        this.geometry       = new THREE.SphereGeometry( 7300000, 64, 64 );
+        this.geometry       = new THREE.SphereGeometry( 7300000, 128, 128 );
         
         this.uniformsIn  = 
         {                        
@@ -47,11 +48,11 @@ define('Globe/Atmosphere',['Renderer/NodeMesh','THREE','text!Renderer/Shader/Glo
 
         } );
         
-        var atmosphereIN    = new THREE.Mesh(new THREE.SphereGeometry( 6400000, 64, 64 ),materialAtmoIn);
+       var atmosphereIN    = new THREE.Mesh(new THREE.SphereGeometry( 6400000, 64, 64 ),materialAtmoIn);
         
-        this.add(atmosphereIN);
+       this.add(atmosphereIN);
         
-        this.add(new THREE.Mesh(new THREE.SphereGeometry(6300000, 32, 32 ), new THREE.MeshBasicMaterial({color : 0x4B683A})));
+       this.add(new THREE.Mesh(new THREE.SphereGeometry(6300000, 32, 32 ), new THREE.MeshBasicMaterial({color : 0x4B683A})));
         
     }
     

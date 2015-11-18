@@ -52,7 +52,7 @@ define('Core/Commander/ManagerCommands',
         this.queueAsync.queue(command);        
         this.nbRequest++;
      
-//        if(this.queueAsync.length > 32 )
+//        if(this.queueAsync.length > 8 )
 //        {
 //            this.runAllCommands();          
 //        }            
@@ -80,7 +80,7 @@ define('Core/Commander/ManagerCommands',
             if(this.nbRequest === 0)
             {                
                 this.scene.updateScene3D();
-            }
+            }                            
            
         }.bind(this));                         
     };

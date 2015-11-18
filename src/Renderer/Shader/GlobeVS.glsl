@@ -1,4 +1,4 @@
-/*
+
 #ifdef USE_LOGDEPTHBUF
     
     #define EPSILON 1e-6
@@ -11,7 +11,7 @@
     uniform float logDepthBufFC;
 
 #endif
-*/
+
 uniform sampler2D  dTextures_00[1];
 uniform int        nbTextures_00;
 
@@ -42,7 +42,7 @@ void main() {
         else
             gl_Position = projectionMatrix * modelViewMatrix * vec4( position ,1.0 );
 
-        /*
+        
         #ifdef USE_LOGDEPTHBUF
 
             gl_Position.z = log2(max( EPSILON, gl_Position.w + 1.0 )) * logDepthBufFC;
@@ -58,5 +58,5 @@ void main() {
             #endif
 
         #endif
-        */
+        
 }   
