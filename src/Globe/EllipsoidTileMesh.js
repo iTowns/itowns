@@ -24,7 +24,7 @@ define('Globe/EllipsoidTileMesh',[
         'text!Renderer/Shader/GlobePS.glsl'], function(NodeMesh,EllipsoidTileGeometry,BoudingBox,defaultValue,THREE,Material,GlobeVS,GlobePS){
  
 
-    function EllipsoidTileMesh(bbox,cooWMTS){
+    function EllipsoidTileMesh(bbox,cooWMTS,ellipsoid){
         //Constructor
         NodeMesh.call( this );
         
@@ -32,7 +32,15 @@ define('Globe/EllipsoidTileMesh',[
         this.level      = cooWMTS.zoom;
         this.cooWMTS    = cooWMTS;
         this.bbox       = defaultValue(bbox,new BoudingBox());        
-        this.geometry   = new EllipsoidTileGeometry(bbox);               
+        
+        var precision   = 8;
+        
+        if(this.level > 8)
+            precision   = 32;
+        else if (this.level > 6)
+            precision   = 16;
+        
+        this.geometry   = new EllipsoidTileGeometry(bbox,precision,ellipsoid);               
         this.tMat       = new Material(GlobeVS,GlobePS,bbox,cooWMTS.zoom);                
         this.orthoNeed  = 10;
         this.material   = this.tMat.shader;//new THREE.MeshBasicMaterial( {color: 0xffffff, wireframe: false}); 

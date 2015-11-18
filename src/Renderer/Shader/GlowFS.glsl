@@ -3,7 +3,7 @@ uniform int atmoIN;
 uniform vec2 screenSize;
 varying float intensity;
 
-vec4 glowColor = vec4(0.45, 0.74, 1. ,1.);
+vec4 glowColor = vec4(0.45, 0.74, 1. ,1.0);
 
 void main() 
 {

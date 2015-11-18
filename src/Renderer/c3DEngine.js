@@ -38,6 +38,7 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera','when'], 
                         
         this.renderScene = function(){
                                     
+            this.updateRenderer();
             this.renderer.clear();            
             this.renderer.setViewport( 0, 0, this.width, this.height );
             this.renderer.render( this.scene3D, this.camera.camera3D);                       
@@ -70,8 +71,7 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera','when'], 
             this.camera.resize(this.width,this.height);
             this.renderer.setSize( window.innerWidth, window.innerHeight );
             this.renderScene();
-        }.bind(this);
-        
+        }.bind(this);        
                              
     };
     
@@ -88,13 +88,12 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera','when'], 
             this.camDebug.position.y =  10000000;            
             this.camDebug.lookAt(new THREE.Vector3(0,0,0));
             this.scene3D.add(this.camera.camHelper());                        
-        }
-        
+        }        
     };
     
     c3DEngine.prototype.initRenderer = function()
     {
-        this.renderer   = new THREE.WebGLRenderer( { antialias: true,alpha: true,logarithmicDepthBuffer : true } );
+        this.renderer   = new THREE.WebGLRenderer( { antialias: true,alpha: true,logarithmicDepthBuffer : false } );
         this.renderer.setPixelRatio( window.devicePixelRatio );
         this.renderer.setSize(window.innerWidth, window.innerHeight );        
         this.renderer.setClearColor( 0x030508 );
@@ -121,7 +120,7 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera','when'], 
         if( len < 8000000 )
         {
             var t = Math.pow(Math.cos((8000000 - len)/ (8000000 - 6378137) * Math.PI * 0.5),1.5);                
-            this.controls.zoomSpeed     = t;
+            this.controls.zoomSpeed     = t*2.0;
             this.controls.rotateSpeed   = 0.8 *t;                         
         }
         else if(len >= 8000000 && this.controls.zoomSpeed !== 1.0) 
@@ -129,7 +128,23 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera','when'], 
             this.controls.zoomSpeed     = 1.0;
             this.controls.rotateSpeed   = 0.8;                
         }   
-    };       
+    };  
+    
+    c3DEngine.prototype.updateRenderer = function()
+    {
+//        var len  = this.camera.position().length ();
+//        
+//        if( len < 8000000 )
+//        {
+//            var t = 1.0 - Math.pow(Math.cos((8000000 - len)/ (8000000 - 6378137) * Math.PI * 0.5),1.5);
+//            var spaceColor = new THREE.Color(0.45, 0.74, 1.0).multiplyScalar(t);
+//            this.renderer.setClearColor( spaceColor.getHex());
+//        }
+//        else
+//        {
+//            this.renderer.setClearColor( 0x030508 );
+//        }            
+    };
        
     /**
     */
@@ -164,22 +179,15 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera','when'], 
     };
 
     /**
-    */
+     * 
+     * @param {type} object
+     * @returns {undefined}
+     */    
     c3DEngine.prototype.add3DScene = function(object){
         
         this.scene3D.add(object);                
 
-    };    
-    
-    c3DEngine.prototype.add3Cube = function(texture){
-         
-        var geometry = new THREE.BoxGeometry( 1, 1, 1 );                        
-        var material = new THREE.MeshBasicMaterial( {color: 0xffffff, map: texture} );
-        var cube     = new THREE.Mesh( geometry, material );   
-                
-        this.scene3D.add(cube);
-        
-    };
+    };        
 
     /**
     */
@@ -188,17 +196,15 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera','when'], 
 
     };
     
-    
+    c3DEngine.prototype.getWindowSize = function(){
 
-     c3DEngine.prototype.getWindowSize = function(){
-         
-         return new THREE.Vector2(this.width, this.height);
-     };
-     
-     c3DEngine.prototype.getRenderer = function(){
-         
-         return this.renderer;
-     }
+        return new THREE.Vector2(this.width, this.height);
+    };
+
+    c3DEngine.prototype.getRenderer = function(){
+
+        return this.renderer;
+    };
          
 
     return function(scene){
