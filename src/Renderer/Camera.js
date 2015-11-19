@@ -22,14 +22,14 @@ define('Renderer/Camera',['Scene/Node','THREE'], function(Node, THREE){
         this.Hypotenuse = Math.sqrt(this.width*this.width + this.height*this.height);
         
         var radAngle    = this.FOV * Math.PI / 180;
-        this.HFOV       = 2.0 * Math.atan(Math.tan(radAngle*0.5) * this.ratio); 
+        this.HFOV       = 2.0 * Math.atan(Math.tan(radAngle*0.5) / this.ratio); // surement faux       
         
-        //this.HYFOV      = 2.0 * Math.atan(Math.tan(radAngle*0.5) * this.width / this.Hypotenuse); 
+        this.HYFOV      = 2.0 * Math.atan(Math.tan(radAngle*0.5) * this.Hypotenuse  / this.width );         
+        //console.log(this.HFOV/ (Math.PI / 180) + "" + this.HYFOV / (Math.PI / 180));                
         
-        //console.log(this.HFOV + "---" + this.HYFOV);
+        //this.preSSE     = this.height * (2.0 * Math.tan(this.HFOV * 0.5));
         
-        
-        this.preSSE     = this.height * (2.0 * Math.tan(this.HFOV * 0.5));
+        this.preSSE     = this.Hypotenuse * (2.0 * Math.tan(this.HYFOV * 0.5));
         
         this.cameraHelper  = debug  ? new THREE.CameraHelper( this.camera3D ) : undefined;
         this.frustum       = new THREE.Frustum();
@@ -55,8 +55,20 @@ define('Renderer/Camera',['Scene/Node','THREE'], function(Node, THREE){
     
     Camera.prototype.resize = function(width,height){
         
-        this.ratio      = width/height;     
+        this.width      = width;
+        this.height     = height;
+        this.ratio      = width/height;  
+        
+        this.Hypotenuse = Math.sqrt(this.width*this.width + this.height*this.height);
+        
+        var radAngle    = this.FOV * Math.PI / 180;        
+        
+        this.HYFOV      = 2.0 * Math.atan(Math.tan(radAngle*0.5) * this.Hypotenuse / this.width );  
+        
+        this.preSSE     = this.Hypotenuse * (2.0 * Math.tan(this.HYFOV * 0.5));
+        
         this.camera3D.aspect = this.ratio;
+        
         this.camera3D.updateProjectionMatrix();      
 
     };    
