@@ -83,7 +83,7 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera','when'], 
                 
         if(this.debug)
         {
-            this.camDebug   = new THREE.PerspectiveCamera( 30, this.camera.ratio, 1, 1000000000) ;
+            this.camDebug   = new THREE.PerspectiveCamera( 30, this.camera.ratio, 10000, 50000000) ;
             this.camDebug.position.x = -10000000;
             this.camDebug.position.y =  10000000;            
             this.camDebug.lookAt(new THREE.Vector3(0,0,0));
@@ -93,7 +93,7 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera','when'], 
     
     c3DEngine.prototype.initRenderer = function()
     {
-        this.renderer   = new THREE.WebGLRenderer( { antialias: true,alpha: true,logarithmicDepthBuffer : false } );
+        this.renderer   = new THREE.WebGLRenderer( { antialias: true,alpha: true,logarithmicDepthBuffer : true } );
         this.renderer.setPixelRatio( window.devicePixelRatio );
         this.renderer.setSize(window.innerWidth, window.innerHeight );        
         this.renderer.setClearColor( 0x030508 );
@@ -163,7 +163,7 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera','when'], 
         this.controls.rotateSpeed   = 0.8;
         this.controls.zoomSpeed     = 1.0;
         this.controls.minDistance   = 500000;
-        this.controls.maxDistance   = 200000000.0;        
+        this.controls.maxDistance   = 100000000.0;        
         this.controls.update();
     };
     

@@ -1,3 +1,16 @@
+#ifdef USE_LOGDEPTHBUF
+
+	uniform float logDepthBufFC;
+
+	#ifdef USE_LOGDEPTHBUF_EXT
+
+		#extension GL_EXT_frag_depth : enable
+		varying float vFragDepth;
+
+	#endif
+
+#endif
+
 //uniform sampler2D   dTextures_00[1];
 
 const int   TEX_UNITS   = 8;
@@ -22,6 +35,12 @@ varying vec2        vUv;
 
 void main() {
  
+    #if defined(USE_LOGDEPTHBUF) && defined(USE_LOGDEPTHBUF_EXT)
+
+	gl_FragDepthEXT = log2(vFragDepth) * logDepthBufFC * 0.5;
+
+    #endif
+
     float latitude  = bLatitude.x + periArcLati*(1.0-vUv.y);
    
     /*
@@ -79,19 +98,21 @@ void main() {
                
            }
 
-         }      
+              
 
          if(debug > 0)
             gl_FragColor = vec4( 1.0, 0.0, 0.0, 1.0);
-/*
+                /*
          if(nbTextures_00 > 0)
         {
                     float dv = texture2D( dTextures_00[0], vUv ).w /3000.0;
                     gl_FragColor = vec4( dv, dv, dv, 1.0);
         }
         else
+        {   
             gl_FragColor = vec4( 1.0, 0.0, 0.0, 1.0);
         }
-*/
+        */
 
+        } 
 }

@@ -53,7 +53,8 @@ define('Core/Commander/Providers/WMTS_Provider',[
             
     WMTS_Provider.prototype.urlOrtho = function(coWMTS)
     {
-        var key    = "i9dpl8xge3jk0a0taex1qrhd";
+        var key    = "i9dpl8xge3jk0a0taex1qrhd"; 
+        //var key    = "va5orxd0pgzvq3jxutqfuy0b"; clef pro
         
         var layer  = "ORTHOIMAGERY.ORTHOPHOTOS";
         //var layer  = "GEOGRAPHICALGRIDSYSTEMS.MAPS";
