@@ -4,7 +4,7 @@
 
     #ifdef USE_LOGDEPTHBUF_EXT
 
-        #extension GL_EXT_frag_depth : enable
+        //#extension GL_EXT_frag_depth : enable
         varying float vFragDepth;
 
     #endif
