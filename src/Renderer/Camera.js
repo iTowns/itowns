@@ -19,9 +19,16 @@ define('Renderer/Camera',['Scene/Node','THREE'], function(Node, THREE){
         this.frustum    = new THREE.Frustum();
         this.width      = width;
         this.height     = height;
+        this.Hypotenuse = Math.sqrt(this.width*this.width + this.height*this.height);
         
         var radAngle    = this.FOV * Math.PI / 180;
-        this.HFOV       = 2.0 * Math.atan(Math.tan(radAngle*0.5) * this.ratio);        
+        this.HFOV       = 2.0 * Math.atan(Math.tan(radAngle*0.5) * this.ratio); 
+        
+        //this.HYFOV      = 2.0 * Math.atan(Math.tan(radAngle*0.5) * this.width / this.Hypotenuse); 
+        
+        //console.log(this.HFOV + "---" + this.HYFOV);
+        
+        
         this.preSSE     = this.height * (2.0 * Math.tan(this.HFOV * 0.5));
         
         this.cameraHelper  = debug  ? new THREE.CameraHelper( this.camera3D ) : undefined;
