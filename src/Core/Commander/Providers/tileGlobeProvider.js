@@ -4,6 +4,16 @@
  * and open the template in the editor.
  */
 
+/*
+ * A Faire
+ * Les tuiles de longitude identique ont le maillage et ne demande pas 1 seule calcul pour la génération du maillage
+ * 
+ * 
+ * 
+ * 
+ */
+
+
 
 define('Core/Commander/Providers/tileGlobeProvider',[                        
             'Core/Geographic/Projection',
@@ -34,7 +44,7 @@ define('Core/Commander/Providers/tileGlobeProvider',[
         var cooWMTS = this.projection.WGS84toWMTS(bbox);        
         
         var parent  = command.requester;
-        var tile    = new command.type(bbox,cooWMTS,this.ellipsoid);     
+        var tile    = new command.type(bbox,cooWMTS,this.ellipsoid);                
 
         tile.visible = false;
         
