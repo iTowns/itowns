@@ -4,22 +4,35 @@
  * and open the template in the editor.
  */
 
+/*
+ * A Faire
+ * Les tuiles de longitude identique ont le maillage et ne demande pas 1 seule calcul pour la génération du maillage
+ * 
+ * 
+ * 
+ * 
+ */
+
+
 
 define('Core/Commander/Providers/tileGlobeProvider',[                        
             'Core/Geographic/Projection',
             'Core/Commander/Providers/WMTS_Provider',
-            'Core/Geographic/CoordWMTS'
+            'Core/Geographic/CoordWMTS',
+            'Core/Math/Ellipsoid'
             ],
              function(
                 Projection,
                 WMTS_Provider,
-                CoordWMTS){
+                CoordWMTS,
+                Ellipsoid){
                    
     function tileGlobeProvider(){
         //Constructor
        this.projection      = new Projection();
        this.providerWMTS    = new WMTS_Provider();
        this.renderer        = undefined;
+       this.ellipsoid       = new Ellipsoid(6378137, 6378137, 6356752.3142451793);
                
     }        
 
@@ -31,7 +44,7 @@ define('Core/Commander/Providers/tileGlobeProvider',[
         var cooWMTS = this.projection.WGS84toWMTS(bbox);        
         
         var parent  = command.requester;
-        var tile    = new command.type(bbox,cooWMTS);     
+        var tile    = new command.type(bbox,cooWMTS,this.ellipsoid);                
 
         tile.visible = false;
         
@@ -58,19 +71,20 @@ define('Core/Commander/Providers/tileGlobeProvider',[
                 {                                                                        
                     var coo = new CoordWMTS(box[0].zoom,row,col);
 
-                    this.providerWMTS.getTextureOrtho(coo).then
+                    this.providerWMTS.getTextureOrtho(coo,id).then
                     (
-                        function(texture)
-                        {                                                                                                               
-                            this.setTextureOrtho(texture,id);                            
+                        function(result)
+                        {                          
+                                                        
+                            this.setTextureOrtho(result.texture,result.id);                            
 
                             return this;
 
                         }.bind(tile)
                     ).then( function(tile)
-                    {
+                    {                        
                         if(tile.orthoNeed === tile.tMat.Textures_01.length)
-                        {   
+                        {                               
                             tile.loaded = true;
                             tile.tMat.update();
                             var parent = tile.parent;
@@ -79,14 +93,11 @@ define('Core/Commander/Providers/tileGlobeProvider',[
                             {                                
                                 parent.wait = false;                  
                             }
-                        }
-                     
-                      
+                        }                                           
                     }.bind(this)
                     );
 
                     id++;
-
                 }  
             }
             else

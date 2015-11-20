@@ -41,6 +41,7 @@ define('Core/Commander/ManagerCommands',
         this.providers.push(new tileGlobeProvider());         
         this.eventsManager  = new EventsManager();       
         this.scene          = undefined;
+        this.nbRequest      = -2;
         
     }        
 
@@ -48,12 +49,13 @@ define('Core/Commander/ManagerCommands',
 
     ManagerCommands.prototype.addCommand = function(command)
     {                      
-        this.queueAsync.queue(command);
+        this.queueAsync.queue(command);        
+        this.nbRequest++;
      
-        if(this.queueAsync.length > 32 )
-        {
-            this.runAllCommands();          
-        }            
+//        if(this.queueAsync.length > 8 )
+//        {
+//            this.runAllCommands();          
+//        }            
     };
     
     ManagerCommands.prototype.init = function(scene)
@@ -65,15 +67,22 @@ define('Core/Commander/ManagerCommands',
     ManagerCommands.prototype.runAllCommands = function()
     {  
         if(this.queueAsync.length === 0)
-        {                 
-            return ;
+        {    
+            this.process();
+            return when();
         }
         
         return this.providers[0].get(this.queueAsync.dequeue()).then(function()
-        {            
-            this.runAllCommands();                                                
-        }.bind(this));           
-               
+        {           
+            
+            this.runAllCommands();
+            this.nbRequest--;            
+            if(this.nbRequest === 0)
+            {                
+                this.scene.updateScene3D();
+            }                            
+           
+        }.bind(this));                         
     };
 
     /**

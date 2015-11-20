@@ -8,7 +8,7 @@
 
 define('Globe/EllipsoidTileGeometry',['THREE','Core/defaultValue','Scene/BoudingBox','Core/Math/Ellipsoid','Core/Geographic/CoordCarto'], function(THREE,defaultValue,BoudingBox,Ellipsoid,CoordCarto){
 
-    function EllipsoidTileGeometry(bbox){
+    function EllipsoidTileGeometry(bbox,segment,pellipsoid){
         //Constructor
         THREE.BufferGeometry.call( this );
         
@@ -16,11 +16,9 @@ define('Globe/EllipsoidTileGeometry',['THREE','Core/defaultValue','Scene/Bouding
 
 	var radius = 6.3567523142451793; 
 
-        var ellipsoid       = new Ellipsoid(6378137, 6378137, 6356752.3142451793);
+        var ellipsoid       = defaultValue(pellipsoid,new Ellipsoid(6378137, 6378137, 6356752.3142451793));         
         
-        //var ellipsoid       = new Ellipsoid(6, 6, 6);
-        
-        var nSeg            = 32;       
+        var nSeg            = defaultValue(segment,32);       
         var nVertex         = (nSeg+1)*(nSeg+1); // correct pour uniquement les vertex
         var triangles       = (nSeg)*(nSeg); // correct pour uniquement les vertex
         
