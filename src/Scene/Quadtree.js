@@ -95,8 +95,7 @@ define('Scene/Quadtree',[
         this.createTile(quad.southEast,node);
                   
     };
-    
-    
+        
     Quadtree.prototype.update = function(node)
     {
         if(node.level >= 11  || node.wait === true )
