@@ -84,7 +84,7 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera','when'], 
                 
         if(this.debug)
         {
-            this.camDebug   = new THREE.PerspectiveCamera( 30, this.camera.ratio, 1, 1000000000) ;
+            this.camDebug   = new THREE.PerspectiveCamera( 30, this.camera.ratio, 1, 10000000000) ;
             this.camDebug.position.x = -10000000;
             this.camDebug.position.y =  10000000;            
             this.camDebug.lookAt(new THREE.Vector3(0,0,0));
