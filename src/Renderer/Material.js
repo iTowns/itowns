@@ -65,12 +65,14 @@ define('Renderer/Material',['THREE','Core/Math/MathExtented'], function(THREE,Ma
         }
         else
         {
+            
             this.Textures_01[id]               = texture;        
             this.uniforms.dTextures_01.value   = this.Textures_01;        
             this.uniforms.nbTextures_01.value  = this.Textures_01.length;                 
+            
         }            
         
-        //this.shader.needsUpdate         = true;
+        
     };
     
     Material.prototype.setDebug = function(debug_value)
@@ -82,13 +84,15 @@ define('Renderer/Material',['THREE','Core/Math/MathExtented'], function(THREE,Ma
     
     Material.prototype.update = function()    
     {
-        this.shader.needsUpdate         = true;
-//        
+        this.shader.needsUpdate         = true;               
+        
         for (var i = 0, max = this.Textures_00.length; i < max; i++) 
-            this.Textures_00[i].needsUpdate = true;
+            if(this.Textures_00[i].image !== undefined)
+                this.Textures_00[i].needsUpdate = true;
         
         for (var i = 0, max = this.Textures_01.length; i < max; i++) 
-            this.Textures_01[i].needsUpdate = true;
+            if(this.Textures_01[i].image !== undefined)
+                this.Textures_01[i].needsUpdate = true;
         
         
     };

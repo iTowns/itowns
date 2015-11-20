@@ -21,8 +21,7 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
      * @returns {undefined}
      */
     BrowseTree.prototype.invisible= function(node)
-    {
-        //console.log('ssss');
+    {        
         node.visible = false;
     };
     
@@ -32,53 +31,46 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
         {            
             node.visible = false;
             
-            
-            //if(this.nodeProcess.frustumBB(node,camera))
+            if(node.loaded)
             {
-                //this.nodeProcess.backFaceCulling(node,camera);
+                this.nodeProcess.frustumCullingOBB(node,camera);
 
-                if(node.loaded)
+                if(node.visible )
                 {
-                    this.nodeProcess.frustumCullingOBB(node,camera);
-                                        
+                    this.nodeProcess.horizonCulling(node,camera);
+
                     if(node.visible )
                     {
-                        this.nodeProcess.horizonCulling(node,camera);
-                                                
-                        if(node.visible )
+
+                        if(node.parent.material !== undefined && node.parent.material.visible === true)
                         {
-                            
-
-                            if(node.parent.material !== undefined && node.parent.material.visible === true)
-                            {
-                                node.visible = false;
-                                return false;
-                            }
-
-                            var sse = this.nodeProcess.SSE(node,camera);
-                            
-                            if(other && sse && node.material.visible === true)
-                            {   
-                                this.tree.subdivide(node);
-                            }
-                            else if(!sse && node.level >= 2 && node.material.visible === false)
-                            {
-
-                                node.material.visible = true;
-
-                                if(node.childrenCount() !== 0)
-                                    for(var i = 0;i<node.children.length;i++)
-                                    {                                                       
-                                        node.children[i].visible = false;                                        
-                                    }
-
-                                return false;                            
-                            }
+                            node.visible = false;
+                            return false;
                         }
+
+                        var sse = this.nodeProcess.SSE(node,camera);
+
+                        if(other && sse && node.material.visible === true)
+                        {   
+                            this.tree.subdivide(node);
+                        }                            
+                        else if(!sse && node.level >= 2 && node.material.visible === false)
+                        {
+
+                            node.material.visible = true;
+
+                            if(node.childrenCount() !== 0)
+                                for(var i = 0;i<node.children.length;i++)
+                                {                                                       
+                                    node.children[i].visible = false;                                        
+                                }
+
+                            return false;                            
+                        }                                
                     }
                 }
             }
-            
+                        
             return node.visible;
         }        
         
