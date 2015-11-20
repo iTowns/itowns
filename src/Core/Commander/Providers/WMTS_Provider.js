@@ -26,11 +26,9 @@ define('Core/Commander/Providers/WMTS_Provider',[
         //Constructor
  
         Provider.call( this,new IoDriver_XBIL());
-        this.cache         = CacheRessource();
-        
+        this.cache         = CacheRessource();        
         this.ioDriverImage = new IoDriver_Image();
-        this.loader = new THREE.TextureLoader();        
-        this.loader.crossOrigin = '';
+
     }
 
     WMTS_Provider.prototype = Object.create( Provider.prototype );
@@ -40,9 +38,10 @@ define('Core/Commander/Providers/WMTS_Provider',[
     WMTS_Provider.prototype.url = function(coWMTS)
     {
         
-        var key    = "wmybzw30d6zg563hjlq8eeqb";
+        //var key    = "wmybzw30d6zg563hjlq8eeqb";
+        var key    = "va5orxd0pgzvq3jxutqfuy0b"; // clef pro
         
-        var layer  = "ELEVATION.ELEVATIONGRIDCOVERAGE";        
+        var layer  = coWMTS.zoom > 11 ? "ELEVATION.ELEVATIONGRIDCOVERAGE.HIGHRES" : "ELEVATION.ELEVATIONGRIDCOVERAGE";        
         
         var url = "http://wxs.ign.fr/" + key + "/geoportail/wmts?LAYER="+ layer +
             "&FORMAT=image/x-bil;bits=32&SERVICE=WMTS&VERSION=1.0.0"+
@@ -53,8 +52,8 @@ define('Core/Commander/Providers/WMTS_Provider',[
             
     WMTS_Provider.prototype.urlOrtho = function(coWMTS)
     {
-        var key    = "i9dpl8xge3jk0a0taex1qrhd"; 
-        //var key    = "va5orxd0pgzvq3jxutqfuy0b"; clef pro
+        //var key    = "i9dpl8xge3jk0a0taex1qrhd"; 
+        var key    = "va5orxd0pgzvq3jxutqfuy0b"; // clef pro
         
         var layer  = "ORTHOIMAGERY.ORTHOPHOTOS";
         //var layer  = "GEOGRAPHICALGRIDSYSTEMS.MAPS";
