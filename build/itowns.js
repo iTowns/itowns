@@ -3335,6 +3335,16 @@ define('Core/Commander/Providers/IoDriver_XBIL',['Core/Commander/Providers/IoDri
     };
 
 
+
+    var portableXBIL = function(buffer)
+    {
+        this.floatArray = new Float32Array(buffer);
+        this.max = - 1000000;
+        this.min =   1000000;
+        this.texture = -1;
+    };
+
+
     function IoDriver_XBIL(){
         //Constructor
         IoDriver.call( this );
@@ -3654,187 +3664,6 @@ define('Core/Commander/Providers/WMTS_Provider',[
     return WMTS_Provider;
     
 });
-/**
-* Generated On: 2015-10-5
-* Class: Ellipsoid
-* Description: Classe mathématique de  l'ellispoide
-*/
-
-
-
-define('Core/Math/Ellipsoid',['Core/Math/MathExtented','THREE'], function(MathExt,THREE){
-
-    function Ellipsoid(x,y,z)
-    {
-        //Constructor
-
-        this.rayon_1 = x;
-        this.rayon_2 = y;
-        this.rayon_3 = z;
-
-
-        this._radiiSquared = new THREE.Vector3(x*x,y*y,z*z);
-    }
-    
-    //var cartographicToCartesianNormal   = new THREE.Vector3();
-    //var cartographicToCartesianK        = new THREE.Vector3();
-    
-    Ellipsoid.prototype.geodeticSurfaceNormalCartographic = function(coordCarto) {
-    
-        var longitude   = coordCarto.longitude;
-        var latitude    = coordCarto.latitude;
-        var cosLatitude = Math.cos(latitude);
-
-        var x = cosLatitude * Math.cos(-longitude);
-        var z = cosLatitude * Math.sin(-longitude);
-        var y = Math.sin(latitude);
-        
-        
-        var    result = new THREE.Vector3(x,y,z);
-
-        return result.normalize();
-
-
-    };
-    
-    
-    Ellipsoid.prototype.cartographicToCartesian = function(coordCarto) 
-    {
-        
-        //var n;
-        var k = new THREE.Vector3();
-        var n = this.geodeticSurfaceNormalCartographic(coordCarto);
-     
-        k.multiplyVectors(this._radiiSquared, n);
-               
-        var gamma = Math.sqrt(n.dot(k));        
-               
-        k.divideScalar( gamma);
-        
-        //n.multiplyScalar(coordCarto.altitude);
-        
-        n.multiplyScalar(0.0);
-        
-        return k.add( n);
-    };
-    
-    Ellipsoid.prototype.cartographicToCartesianArray = function(coordCartoArray) 
-    {
-        
-        var cartesianArray = [];
-        for ( var i = 0; i < coordCartoArray.length; i++ )
-        {
-            cartesianArray.push(this.cartographicToCartesian(coordCartoArray[i]));
-        }
-        
-        return cartesianArray;
-       
-    };
-    
-    return Ellipsoid;
-
-});
-
-/* 
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
-/*
- * A Faire
- * Les tuiles de longitude identique ont le maillage et ne demande pas 1 seule calcul pour la génération du maillage
- * 
- * 
- * 
- * 
- */
-
-
-
-define('Core/Commander/Providers/tileGlobeProvider',[                        
-            'Core/Geographic/Projection',
-            'Core/Commander/Providers/WMTS_Provider',
-            'Core/Geographic/CoordWMTS',
-            'Core/Math/Ellipsoid'
-            ],
-             function(
-                Projection,
-                WMTS_Provider,
-                CoordWMTS,
-                Ellipsoid){
-                   
-    function tileGlobeProvider(){
-        //Constructor
-       this.projection      = new Projection();
-       this.providerWMTS    = new WMTS_Provider();
-       this.renderer        = undefined;
-       this.ellipsoid       = new Ellipsoid(6378137, 6378137, 6356752.3142451793);
-               
-    }        
-
-    tileGlobeProvider.prototype.constructor = tileGlobeProvider;
-    
-    tileGlobeProvider.prototype.get = function(command)
-    {  
-        var bbox    = command.paramsFunction[0];
-        var cooWMTS = this.projection.WGS84toWMTS(bbox);        
-        
-        var parent  = command.requester;
-        var tile    = new command.type(bbox,cooWMTS,this.ellipsoid);                
-
-        tile.visible = false;
-        
-        parent.add(tile);
-        
-        return this.providerWMTS.getTextureBil(cooWMTS).then(function(result)
-        {                           
-            this.setTextureTerrain(result === - 1 ?  -1 : result.texture);
-            
-            return this;
-
-        }.bind(tile)).then(function(tile)
-        {                      
-            if(cooWMTS.zoom >= 2)
-            {            
-                var box  = this.projection.WMTS_WGS84ToWMTS_PM(tile.cooWMTS,tile.bbox); // 
-                
-                var id = 0;
-                var col = box[0].col;
-                
-                tile.orthoNeed = box[1].row + 1 - box[0].row;
-
-                for (var row = box[0].row; row < box[1].row + 1; row++)
-                {                                                                        
-                    var coo = new CoordWMTS(box[0].zoom,row,col);
-
-                    this.providerWMTS.getTextureOrtho(coo,id).then
-                    (
-                        function(result)
-                        {                          
-                                                        
-                            this.setTextureOrtho(result.texture,result.id);                            
-
-                            return this;
-
-                        }.bind(tile)
-                    ).then( function(tile)
-                    {                        
-                        if(tile.orthoNeed === tile.tMat.Textures_01.length)
-                        {                               
-                            tile.loaded = true;
-                            tile.tMat.update();
-                            var parent = tile.parent;
-                            
-                            if(parent.childrenLoaded() && parent.wait === true)
-                            {                                
-                                parent.wait = false;                  
-                            }
-                        }                                           
-                    }.bind(this)
-                    );
-
-                    id++;
                 }  
             }
             else
@@ -3902,48 +3731,6 @@ define('Core/Commander/ManagerCommands',
         this.providers.push(new tileGlobeProvider());         
         this.eventsManager  = new EventsManager();       
         this.scene          = undefined;
-        this.nbRequest      = -2;
-        
-    }        
-
-    ManagerCommands.prototype.constructor = ManagerCommands;
-
-    ManagerCommands.prototype.addCommand = function(command)
-    {                      
-        this.queueAsync.queue(command);        
-        this.nbRequest++;
-     
-//        if(this.queueAsync.length > 8 )
-//        {
-//            this.runAllCommands();          
-//        }            
-    };
-    
-    ManagerCommands.prototype.init = function(scene)
-    {
-        this.scene = scene;     
-        this.providers[0].renderer = this.scene.gfxEngine;
-    };
-    
-    ManagerCommands.prototype.runAllCommands = function()
-    {  
-        if(this.queueAsync.length === 0)
-        {    
-            this.process();
-            return when();
-        }
-        
-        return this.providers[0].get(this.queueAsync.dequeue()).then(function()
-        {           
-            
-            this.runAllCommands();
-            this.nbRequest--;            
-            if(this.nbRequest === 0)
-            {                
-                this.scene.updateScene3D();
-            }                            
-           
-        }.bind(this));                         
     };
 
     /**
@@ -4032,6 +3819,914 @@ define('Core/Commander/Command',[], function(){
 
     return Command;
 });
+/**
+* Generated On: 2015-10-5
+* Class: InterfaceCommander
+* Description: Cette Classe construit une commande. Cette Command ensuite pousser dans une file d'attente.
+*/
+
+define('Core/Commander/InterfaceCommander',['Core/Commander/ManagerCommands','Core/Commander/Command'], function(ManagerCommands,Command){
+
+    function InterfaceCommander(type){
+        //Constructor
+
+        this.managerCommands = ManagerCommands();      
+        this.type     = type;                
+
+    }
+
+    InterfaceCommander.prototype.constructor = InterfaceCommander;
+
+    /**
+    * @param com {[object Object]} 
+    */
+    InterfaceCommander.prototype.request = function(com){
+        //TODO: Implement Me 
+
+    };
+ 
+    /**
+    * @return  {[object Object]} 
+    */
+    InterfaceCommander.prototype.buildCommand = function(){
+        //TODO: Implement Me 
+        this._builderCommand();
+    };
+    
+    InterfaceCommander.prototype.getTextureBil = function(coWMTS){
+        //TODO: Implement Me 
+        return this.managerCommands.getTextureBil(coWMTS);
+    };
+    
+    InterfaceCommander.prototype.getTextureOrtho = function(coWMTS){
+        //TODO: Implement Me 
+        return this.managerCommands.getTextureOrtho(coWMTS);
+    };
+    
+    InterfaceCommander.prototype.getTile = function(bbox,parent)
+    {
+       
+        var command = new Command();        
+        command.type        = this.type;
+        command.requester   = parent;        
+        command.paramsFunction.push(bbox);
+        
+        command.priority = parent.sse === undefined ? 0 : Math.floor(parent.sse * 1000) * parent.level;
+
+        this.managerCommands.addCommand(command);
+
+
+    };
+   
+
+    return InterfaceCommander;
+    
+});
+/**
+* Generated On: 2015-10-5
+* Class: Layer
+* Description: Le layer est une couche de données. Cette couche peut etre des images ou de l'information 3D. Les requètes de cette couche sont acheminées par une interfaceCommander.
+* 
+*/
+
+
+define('Scene/Layer',['Scene/Node','Core/Commander/InterfaceCommander','Core/Geographic/Projection'], function(Node,InterfaceCommander,Projection){
+
+    function Layer(type){
+        //Constructor
+
+        Node.call( this );
+        this.interCommand   = new InterfaceCommander(type);
+        this.descriManager  = null;
+        this.projection     = new Projection();
+                       
+    }
+       
+    Layer.prototype = Object.create( Node.prototype );
+
+    Layer.prototype.constructor = Layer;
+         
+    return Layer;
+    
+});
+
+
+/* 
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+
+define('Core/Math/Point2D',['Core/defaultValue'], function(defaultValue){
+
+    function Point2D(x,y){
+        //Constructor
+
+        this.x  = defaultValue(x,0);
+        this.y  = defaultValue(y,0);
+
+    }
+
+    return Point2D;
+    
+});
+/**
+* Generated On: 2015-10-5
+* Class: CoordCarto
+* Description: Coordonées cartographiques
+*/
+/**
+ * 
+ * @param {type} defaultValue
+ * @returns {CoordCarto_L9.CoordCarto}
+ */
+define('Core/Geographic/CoordCarto',['Core/defaultValue'], function(defaultValue){
+
+
+    function CoordCarto(longitude,latitude,altitude)
+    {
+        this.longitude  = defaultValue(longitude,0);
+        this.latitude   = defaultValue(latitude,0);
+        this.altitude   = defaultValue(altitude,0);
+    }
+    
+    return CoordCarto;
+});
+/* 
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+
+/* global THREE */
+
+THREE.OBB = function (min,max)
+{
+    THREE.Object3D.call( this);    
+    this.box3D = new THREE.Box3(min,max);     
+    
+    this.quaInv = this.quaternion.clone().inverse();
+    
+    this.pointsWorld ;
+    
+};
+
+THREE.OBB.prototype = Object.create( THREE.Object3D.prototype );
+THREE.OBB.prototype.constructor = THREE.OBB;
+
+THREE.OBB.prototype.update = function(){
+
+    this.updateMatrix(); 
+    this.updateMatrixWorld(); 
+    
+    this.quaInv = this.quaternion.clone().inverse();
+    
+    this.pointsWorld = this.cPointsWorld(this.points());
+};
+
+
+THREE.OBB.prototype.quadInverse = function(){
+
+    return this.quaInv;
+};
+
+THREE.OBB.prototype.points = function(){
+
+    var points = [
+                    new THREE.Vector3(),
+                    new THREE.Vector3(),
+                    new THREE.Vector3(),
+                    new THREE.Vector3(),
+                    new THREE.Vector3(),
+                    new THREE.Vector3(),
+                    new THREE.Vector3(),
+                    new THREE.Vector3()
+		];
+
+    points[ 0 ].set( this.box3D.min.x, this.box3D.min.y, this.box3D.min.z );
+    points[ 1 ].set( this.box3D.min.x, this.box3D.min.y, this.box3D.max.z );
+    points[ 2 ].set( this.box3D.min.x, this.box3D.max.y, this.box3D.min.z );
+    points[ 3 ].set( this.box3D.min.x, this.box3D.max.y, this.box3D.max.z );
+    points[ 4 ].set( this.box3D.max.x, this.box3D.min.y, this.box3D.min.z );
+    points[ 5 ].set( this.box3D.max.x, this.box3D.min.y, this.box3D.max.z );
+    points[ 6 ].set( this.box3D.max.x, this.box3D.max.y, this.box3D.min.z );
+    points[ 7 ].set( this.box3D.max.x, this.box3D.max.y, this.box3D.max.z );
+
+    return points;
+};
+
+THREE.OBB.prototype.cPointsWorld = function(points){
+
+    var m = this.matrixWorld;
+
+    for (var i = 0, max = points.length; i < max; i++) {
+        points[ i ].applyMatrix4(m);
+    }
+        
+    return points;
+
+};
+define("OBB", ["THREE"], function(){});
+
+/**
+* Generated On: 2015-10-5
+* Class: BoudingBox
+* Description: BoundingBox délimite une zone de l'espace. Cette zone est défnie  par des coordonées cartographiques.
+*/
+
+define('Scene/BoudingBox',['Core/defaultValue','Core/Math/MathExtented','Core/Math/Point2D','Core/Geographic/CoordCarto','THREE','OBB'], function(defaultValue,MathExt,Point2D,CoordCarto,THREE,OBB){
+
+    function BoudingBox(minLongitude,maxLongitude, minLatitude ,maxLatitude ,parentCenter,minAltitude ,maxAltitude){
+        //Constructor
+        
+        this.minCarto       = new CoordCarto(defaultValue(minLongitude,0),defaultValue(minLatitude,-MathExt.PI_OV_TWO),defaultValue(minAltitude,-10000));
+        this.maxCarto       = new CoordCarto(defaultValue(maxLongitude,MathExt.TWO_PI),defaultValue(maxLatitude,MathExt.PI_OV_TWO),defaultValue(maxAltitude,10000));
+        
+        this.dimension      = new Point2D(Math.abs(this.maxCarto.longitude-this.minCarto.longitude),Math.abs(this.maxCarto.latitude-this.minCarto.latitude));        
+        this.halfDimension  = new Point2D(this.dimension.x * 0.5,this.dimension.y * 0.5);
+        this.center         = new Point2D(this.minCarto.longitude + this.halfDimension.x,this.minCarto.latitude + this.halfDimension.y);
+        //this.relativeCenter = parentCenter === undefined ? this.center : new Point2D(this.center.x - parentCenter.x,this.center.y - parentCenter.y);
+        this.size           = Math.sqrt(this.dimension.x * this.dimension.x + this.dimension.y * this.dimension.y);
+        
+    }
+
+    /**
+    * @documentation: Retourne True si le point est dans la zone
+    *
+    * @param point {[object Object]} 
+    */
+    BoudingBox.prototype.isInside = function(point){
+        //TODO: Implement Me 
+
+    };
+    
+    BoudingBox.prototype.set = function(center,halfDimension){
+       
+       this.halfDimension  = halfDimension;        
+       this.center         = center;
+
+    };
+    
+    BoudingBox.prototype.setAltitude = function(min,max){
+       
+        this.minCarto.altitude = min;
+        this.maxCarto.altitude = max;
+
+    };
+    
+    
+    BoudingBox.prototype.intersect = function(bbox)
+    {
+        return !(this.minCarto.longitude >= bbox.maxCarto.longitude
+        || this.maxCarto.longitude <= bbox.minCarto.longitude
+        || this.minCarto.latitude >= bbox.maxCarto.latitude
+        || this.maxCarto.latitude <= bbox.minCarto.latitude);
+
+    };
+    
+    
+    BoudingBox.prototype.get3DBBox = function(ellipsoid,normal,center){
+       
+        var cardinals       = [];
+        
+        var phiStart        = this.minCarto.longitude ;
+        var phiLength       = this.dimension.x;
+
+        var thetaStart      = this.minCarto.latitude ;
+        var thetaLength     = this.dimension.y;
+        
+        //      0---1---2
+        //      |       |
+        //      7       3
+        //      |       |
+        //      6---5---4
+        
+        cardinals.push(new CoordCarto(phiStart                        , thetaStart    ,0));
+        cardinals.push(new CoordCarto(phiStart + this.halfDimension.x , thetaStart    ,0));
+        cardinals.push(new CoordCarto(phiStart + phiLength            , thetaStart    ,0));
+        cardinals.push(new CoordCarto(phiStart + phiLength            , thetaStart + this.halfDimension.y,0));        
+        cardinals.push(new CoordCarto(phiStart + phiLength            , thetaStart + thetaLength  ,0));
+        cardinals.push(new CoordCarto(phiStart + this.halfDimension.x , thetaStart + thetaLength  ,0));        
+        cardinals.push(new CoordCarto(phiStart                        , thetaStart + thetaLength  ,0));
+        cardinals.push(new CoordCarto(phiStart                        , thetaStart + this.halfDimension.y,0));
+        
+        var cardinals3D     = [];                 
+        var cardin3DPlane   = [];
+        
+        var maxV            = new THREE.Vector3(-1000,-1000,-1000);
+        var minV            = new THREE.Vector3(1000,1000,1000);        
+        var maxHeight       = 0;        
+        var planeZ          = new THREE.Quaternion();
+        var qRotY           = new THREE.Quaternion();
+        var vec             = new THREE.Vector3();
+        var tangentPlane    = new THREE.Plane(normal);
+        
+        planeZ.setFromUnitVectors(normal,new THREE.Vector3(0,1,0));        
+        qRotY.setFromAxisAngle( new THREE.Vector3( 0, 1, 0 ), -this.center.x );        
+        qRotY.multiply(planeZ);
+        
+        for ( var i = 0; i < cardinals.length; i++ )
+        {
+                cardinals3D.push(ellipsoid.cartographicToCartesian(cardinals[i]));
+                cardin3DPlane.push(tangentPlane.projectPoint(cardinals3D[i]));
+                vec.subVectors(cardinals3D[i],center);
+                maxHeight    = Math.max(maxHeight,cardin3DPlane[i].distanceTo(vec));                    
+                cardin3DPlane[i].applyQuaternion( qRotY );
+                maxV.max(cardin3DPlane[i]);
+                minV.min(cardin3DPlane[i]);
+        }
+       
+        maxHeight   = maxHeight*0.5;       
+        var width   = Math.abs(maxV.z - minV.z)*0.5;
+        var height  = Math.abs(maxV.x - minV.x)*0.5;               
+        var delta   = height - Math.abs(cardin3DPlane[5].x);
+        var max     = new THREE.Vector3( width, height, maxHeight);
+        var min     = new THREE.Vector3(-width,-height,-maxHeight);
+        var obb     = new THREE.OBB(min,max);
+
+        obb.position.copy(center);
+        obb.lookAt(normal);
+        obb.translateZ(maxHeight);
+        obb.translateY(delta);
+        obb.update();
+        
+        return obb;
+       
+    };
+    
+    return BoudingBox;
+    
+});
+/* 
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+define('Core/Geographic/Quad',['Scene/BoudingBox'], function(BoudingBox)
+{
+    function Quad(bbox)
+    {
+        this.northWest = new BoudingBox(bbox.minCarto.longitude,bbox.center.x,bbox.center.y,bbox.maxCarto.latitude,bbox.center);
+        this.northEast = new BoudingBox(bbox.center.x,bbox.maxCarto.longitude,bbox.center.y,bbox.maxCarto.latitude,bbox.center);
+        this.southWest = new BoudingBox(bbox.minCarto.longitude,bbox.center.x,bbox.minCarto.latitude,bbox.center.y,bbox.center);
+        this.southEast = new BoudingBox(bbox.center.x,bbox.maxCarto.longitude,bbox.minCarto.latitude,bbox.center.y,bbox.center);
+    }
+    
+    Quad.prototype.array = function()
+    {
+        var subdiv = [];
+        
+        subdiv.push(this.northWest);
+        subdiv.push(this.northEast);
+        subdiv.push(this.southWest);
+        subdiv.push(this.southEast);        
+        
+        return subdiv;
+    };
+    
+    return Quad;
+    
+});
+
+/**
+* Generated On: 2015-10-5
+* Class: Quadtree
+* Description: Structure de données spatiales possedant jusqu'à 4 Nodes
+*/
+
+/**
+ * 
+ * @param {type} Layer
+ * @param {type} Quad
+ * @returns {Quadtree_L13.Quadtree}
+ */
+define('Scene/Quadtree',[
+        'Scene/Layer',                        
+        'Core/Geographic/Quad'
+        ], function(Layer,Quad){
+    
+
+    function Quadtree(type,schemeTile)
+    {        
+        Layer.call( this,type);
+        
+        this.schemeTile       = schemeTile;
+        this.tileType         = type;
+
+        for (var i = 0; i < this.schemeTile.rootCount(); i++)
+        {        
+            this.createTile(this.schemeTile.getRoot(i),this);            
+        }                       
+        
+        this.interCommand.managerCommands.runAllCommands();
+        
+        for (var i = 0; i < this.schemeTile.rootCount(); i++)
+        {
+            this.subdivide(this.children[i]);
+            
+            this.interCommand.managerCommands.runAllCommands();
+            
+            this.subdivideChildren(this.children[i]);
+        }
+    }
+    
+    Quadtree.prototype = Object.create( Layer.prototype );
+
+    Quadtree.prototype.constructor = Quadtree;
+    
+    Quadtree.prototype.getMesh = function(){
+               
+        return this.children;
+    };
+      
+    Quadtree.prototype.northWest = function(node)
+    {
+        return node.children[0];
+    };
+    
+    Quadtree.prototype.northEast = function(node)
+    {
+        return node.children[1];
+    };
+    
+    Quadtree.prototype.southWest = function(node)
+    {
+        return node.children[2];
+    };
+    
+    Quadtree.prototype.southEast = function(node)
+    {
+        return node.children[3];
+    };    
+    
+    Quadtree.prototype.createTile = function(bbox,parent)
+    {
+              
+        this.interCommand.getTile(bbox,parent);
+        
+    };    
+        
+   /**
+    * return 4 equals subdivisions of the bouding box
+    * @param {type} node
+    * @returns {Array} four bounding box
+    */
+    Quadtree.prototype.subdivide = function(node)
+    {
+        if(node.level >= 11  || node.wait === true )
+            return;        
+        
+                     
+        if(node.childrenCount() !== 0 && node.wait === false)                
+        {
+                        
+            for (var i = 0 ;i<node.childrenCount();i++)
+            {
+                
+                node.children[i].visible = true;
+
+                //node.children[i].tMat.update();
+            }
+            
+            node.material.visible   = false;
+            
+            return;
+        }    
+        
+        node.wait   = true;
+        var quad    = new Quad(node.bbox);      
+        this.createTile(quad.northWest,node);
+        this.createTile(quad.northEast,node);
+        this.createTile(quad.southWest,node);
+        this.createTile(quad.southEast,node);
+                  
+    };
+    
+    Quadtree.prototype.subdivideChildren = function(node)
+    {
+        if(node.level === 3)
+            return;
+        for (var i = 0 ;i<node.children.length;i++)
+        {
+            this.subdivide(node.children[i]);            
+           //this.subdivideChildren(node.children[i]);
+        }
+    };
+    
+    return Quadtree;
+
+});
+/**
+* Generated On: 2015-10-5
+* Class: SchemeTile
+* Description: Cette classe décrit un découpage spatiale. 
+*/
+
+
+define('Scene/SchemeTile',['Scene/BoudingBox'], function(BoudingBox){
+
+    function SchemeTile(){
+        //Constructor
+
+        this.maximumChildren    = 4;
+        this.schemeBB           = [];
+           
+    }
+    /**
+     * 
+     * @param {type} minLo
+     * @param {type} maxLo
+     * @param {type} minLa
+     * @param {type} maxLa
+     * @returns {SchemeTile_L8.SchemeTile.prototype@pro;schemeBB@call;push}
+     */
+     
+    SchemeTile.prototype.add = function(minLo,maxLo,minLa,maxLa)
+    {
+        return this.schemeBB.push(new BoudingBox(minLo,maxLo,minLa,maxLa));
+    };
+    
+    
+    SchemeTile.prototype.rootCount = function()
+    {
+        return this.schemeBB.length;
+    };
+    
+    SchemeTile.prototype.getRoot = function(id)
+    {        
+        return this.schemeBB[id];
+    };
+    
+
+    return SchemeTile;
+    
+});
+/**
+* Generated On: 2015-10-5
+* Class: Ellipsoid
+* Description: Classe mathématique de  l'ellispoide
+*/
+
+
+
+define('Core/Math/Ellipsoid',['Core/Math/MathExtented','THREE'], function(MathExt,THREE){
+
+    function Ellipsoid(x,y,z)
+    {
+        //Constructor
+
+        this.rayon_1 = x;
+        this.rayon_2 = y;
+        this.rayon_3 = z;
+
+
+        this._radiiSquared = new THREE.Vector3(x*x,y*y,z*z);
+    }
+    
+    //var cartographicToCartesianNormal   = new THREE.Vector3();
+    //var cartographicToCartesianK        = new THREE.Vector3();
+    
+    Ellipsoid.prototype.geodeticSurfaceNormalCartographic = function(coordCarto) {
+    
+        var longitude   = coordCarto.longitude;
+        var latitude    = coordCarto.latitude;
+        var cosLatitude = Math.cos(latitude);
+
+        var x = cosLatitude * Math.cos(-longitude);
+        var z = cosLatitude * Math.sin(-longitude);
+        var y = Math.sin(latitude);
+        
+        
+        var    result = new THREE.Vector3(x,y,z);
+
+        return result.normalize();
+
+
+    };
+    
+    
+    Ellipsoid.prototype.cartographicToCartesian = function(coordCarto) 
+    {
+        
+        //var n;
+        var k = new THREE.Vector3();
+        var n = this.geodeticSurfaceNormalCartographic(coordCarto);
+     
+        k.multiplyVectors(this._radiiSquared, n);
+               
+        var gamma = Math.sqrt(n.dot(k));        
+               
+        k.divideScalar( gamma);
+        
+        //n.multiplyScalar(coordCarto.altitude);
+        
+        n.multiplyScalar(0.0);
+        
+        return k.add( n);
+    };
+    
+    Ellipsoid.prototype.cartographicToCartesianArray = function(coordCartoArray) 
+    {
+        
+        var cartesianArray = [];
+        for ( var i = 0; i < coordCartoArray.length; i++ )
+        {
+            cartesianArray.push(this.cartographicToCartesian(coordCartoArray[i]));
+        }
+        
+        return cartesianArray;
+       
+    };
+    
+    return Ellipsoid;
+
+});
+
+/* global Uint16Array, Uint32Array */
+
+/**
+* Generated On: 2015-10-5
+* Class: EllipsoidTileGeometry
+* Description: Tuile géométrique. Buffer des vertex et des faces
+*/
+
+define('Globe/EllipsoidTileGeometry',['THREE','Core/defaultValue','Scene/BoudingBox','Core/Math/Ellipsoid','Core/Geographic/CoordCarto'], function(THREE,defaultValue,BoudingBox,Ellipsoid,CoordCarto){
+
+    function EllipsoidTileGeometry(bbox){
+        //Constructor
+        THREE.BufferGeometry.call( this );
+        
+        bbox = defaultValue(bbox,new BoudingBox());
+
+	var radius = 6.3567523142451793; 
+
+        var ellipsoid       = new Ellipsoid(6378137, 6378137, 6356752.3142451793);
+        
+        //var ellipsoid       = new Ellipsoid(6, 6, 6);
+        
+        var nSeg            = 32;       
+        var nVertex         = (nSeg+1)*(nSeg+1); // correct pour uniquement les vertex
+        var triangles       = (nSeg)*(nSeg); // correct pour uniquement les vertex
+        
+        var widthSegments   = nSeg;
+        var heightSegments  = nSeg;
+        
+        var bufferVertex    = new Float32Array(nVertex * 3);
+        var bufferIndex     = new Uint32Array( triangles * 3 * 2);       
+        var bufferNormal    = new Float32Array( nVertex * 3);
+        var bufferUV        = new Float32Array( nVertex * 3);
+        
+        widthSegments       = Math.max( 2, Math.floor( widthSegments ) || 2 );
+        heightSegments      = Math.max( 2, Math.floor( heightSegments ) || 2 );
+//        
+//        widthSegments       = 1;
+//        heightSegments      = 1;
+
+        var phiStart        = bbox.minCarto.longitude ;
+        var phiLength       = bbox.dimension.x;
+
+        var thetaStart      = bbox.minCarto.latitude ;
+        var thetaLength     = bbox.dimension.y;
+        
+        //-----------
+        this.normals        = [];
+        this.HeightPoints    = [];
+        
+        this.carto2Normal = function(phi,theta)
+        {                           
+            return ellipsoid.geodeticSurfaceNormalCartographic(new CoordCarto( phi, theta,0));                
+        };
+        
+        this.normals.push(this.carto2Normal(phiStart, thetaStart));
+        this.normals.push(this.carto2Normal(phiStart + phiLength, thetaStart+ thetaLength));
+        this.normals.push(this.carto2Normal(phiStart, thetaStart+ thetaLength));
+        this.normals.push(this.carto2Normal(phiStart + phiLength, thetaStart));
+        
+        this.HeightPoints.push(ellipsoid.cartographicToCartesian(new CoordCarto(phiStart                        , thetaStart    ,0)));
+        this.HeightPoints.push(ellipsoid.cartographicToCartesian(new CoordCarto(phiStart + bbox.halfDimension.x , thetaStart    ,0)));
+        this.HeightPoints.push(ellipsoid.cartographicToCartesian(new CoordCarto(phiStart + phiLength            , thetaStart    ,0)));
+        this.HeightPoints.push(ellipsoid.cartographicToCartesian(new CoordCarto(phiStart + phiLength            , thetaStart + bbox.halfDimension.y,0)));        
+        this.HeightPoints.push(ellipsoid.cartographicToCartesian(new CoordCarto(phiStart + phiLength            , thetaStart + thetaLength  ,0)));
+        this.HeightPoints.push(ellipsoid.cartographicToCartesian(new CoordCarto(phiStart + bbox.halfDimension.x , thetaStart + thetaLength  ,0)));        
+        this.HeightPoints.push(ellipsoid.cartographicToCartesian(new CoordCarto(phiStart                        , thetaStart + thetaLength  ,0)));
+        this.HeightPoints.push(ellipsoid.cartographicToCartesian(new CoordCarto(phiStart                        , thetaStart + bbox.halfDimension.y,0)));
+        
+      
+        this.normal = this.carto2Normal(bbox.center.x,bbox.center.y);        
+        var ccarto  = new CoordCarto(bbox.center.x,bbox.center.y,0);        
+        
+        this.center = ellipsoid.cartographicToCartesian(ccarto) ;   
+        this.OBB    = bbox.get3DBBox(ellipsoid,this.normal,this.center);
+        
+        //--------
+    
+        var idVertex        = 0;
+        var x, y, verticees = [], uvs = [];
+
+        this.vertices = [];
+
+        for ( y = 0; y <= heightSegments; y ++ ) 
+        {
+
+            var verticesRow = [];
+            var uvsRow = [];
+
+            for ( x = 0; x <= widthSegments; x ++ ) 
+            {
+
+                    var u = x / widthSegments;
+                    var v = y / heightSegments;
+
+                    var longi   = phiStart      + u * phiLength;
+                    var lati    = thetaStart    + v * thetaLength;
+
+                    var vertex = ellipsoid.cartographicToCartesian(new CoordCarto(longi,lati,0)) ;                                                         
+                    var id3     = idVertex*3 ;
+                    
+                    bufferVertex[id3+ 0] = vertex.x;
+                    bufferVertex[id3+ 1] = vertex.y;
+                    bufferVertex[id3+ 2] = vertex.z;
+
+                    var normal = vertex.clone().normalize();
+
+                    bufferNormal[id3+ 0] = normal.x;
+                    bufferNormal[id3+ 1] = normal.y;
+                    bufferNormal[id3+ 2] = normal.z;      
+
+                    if ( Math.abs( vertex.y) === radius) {
+
+                          u = u + 1 / (2* widthSegments );
+
+
+                    } else if ( Math.abs( vertex.y) === radius ) {
+
+                          u = u + 1 / (2* widthSegments );
+
+                    } 
+
+                    bufferUV[idVertex*2 + 0] = u;
+                    bufferUV[idVertex*2 + 1] = 1-v;
+                    idVertex ++;
+
+                    this.vertices.push(vertex);                
+                    verticesRow.push( this.vertices.length - 1 );
+                    uvsRow.push( new THREE.Vector2( u, 1-v ));
+            }
+
+            verticees.push( verticesRow );
+            uvs.push( uvsRow );
+
+        }
+
+        function bufferize(va,vb,vc,idVertex) 
+        {
+            bufferIndex[idVertex+ 0] = va;
+            bufferIndex[idVertex+ 1] = vb;
+            bufferIndex[idVertex+ 2] = vc;                               
+        }
+
+        idVertex = 0;
+
+        for ( y = 0; y < heightSegments; y ++ ) {
+
+              for ( x = 0; x < widthSegments; x ++ ) {
+
+                    var v1 = verticees[ y ][ x + 1 ];
+                    var v2 = verticees[ y ][ x ];
+                    var v3 = verticees[ y + 1 ][ x ];
+                    var v4 = verticees[ y + 1 ][ x + 1 ];
+
+                    bufferize(v4,v2,v1,idVertex);
+                    
+                    idVertex +=3;
+
+                    bufferize(v4,v3,v2,idVertex);
+                    
+                    idVertex +=3;
+                }
+        }
+        
+        this.setIndex( new THREE.BufferAttribute( bufferIndex, 1 ) );
+        this.addAttribute( 'position',  new THREE.BufferAttribute( bufferVertex, 3 ) );
+        this.addAttribute( 'normal',    new THREE.BufferAttribute( bufferNormal, 3 ) );
+        this.addAttribute( 'uv',        new THREE.BufferAttribute( bufferUV, 2) );
+        
+        // ---> for SSE
+        this.computeBoundingSphere();
+        
+    }
+
+    EllipsoidTileGeometry.prototype = Object.create( THREE.BufferGeometry.prototype );
+
+    EllipsoidTileGeometry.prototype.constructor = EllipsoidTileGeometry;
+
+    return EllipsoidTileGeometry;
+    
+});
+/* 
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+
+define('Renderer/Material',['THREE','Core/Math/MathExtented'], function(THREE,MathExt){
+    
+    // TODO Temp
+    WGS84LatitudeClamp = function(latitude){
+        
+        //var min = -68.1389  / 180 * Math.PI;
+        var min = -86  / 180 * Math.PI;
+        var max =  84  / 180 * Math.PI;
+
+        latitude = Math.max(min,latitude);
+        latitude = Math.min(max,latitude);
+
+        return latitude;
+
+    };
+       
+    var  Material = function (sourceVS,sourcePS,bbox,zoom){
+       
+        this.Textures_00 = [];        
+        this.Textures_00.push(new THREE.Texture());        
+        this.Textures_01 = [];        
+        this.Textures_01.push(new THREE.Texture());
+                
+        this.uniforms  = 
+        {                        
+            dTextures_00    : { type: "tv", value: this.Textures_00 },
+            dTextures_01    : { type: "tv", value: this.Textures_01 },
+            nbTextures_00   : { type: "i" , value: 0 },
+            nbTextures_01   : { type: "i" , value: 0 },
+            bLongitude      : { type: "v2", value: new THREE.Vector2(bbox.minCarto.longitude,bbox.maxCarto.longitude)}, 
+            bLatitude       : { type: "v2", value: new THREE.Vector2(bbox.minCarto.latitude,bbox.maxCarto.latitude)},
+            periArcLati     : { type: "f" , value: Math.abs(bbox.maxCarto.latitude - bbox.minCarto.latitude)},
+            y0              : { type: "f" , value: 0.5 - Math.log(Math.tan(MathExt.PI_OV_FOUR + WGS84LatitudeClamp(bbox.maxCarto.latitude)*0.5))*MathExt.INV_TWO_PI},
+            zoom            : { type: "f" , value: zoom },
+            debug           : { type: "i" , value: false }
+            
+        };
+       
+        this.shader = new THREE.ShaderMaterial( {
+
+            uniforms        : this.uniforms,
+            vertexShader    : sourceVS,
+            fragmentShader  : sourcePS
+
+         });
+         
+         this.shader.wireframe = false;
+        
+    };
+    
+    Material.prototype.setTexture = function(texture,layer,id)
+    {         
+        if(layer === 0 && texture !== -1)
+        {
+            this.Textures_00[0]                = texture;        
+            this.uniforms.dTextures_00.value   = this.Textures_00;        
+            this.uniforms.nbTextures_00.value  = 1.0;                                           
+        }
+        else
+        {
+            this.Textures_01[id]               = texture;        
+            this.uniforms.dTextures_01.value   = this.Textures_01;        
+            this.uniforms.nbTextures_01.value  = this.Textures_01.length;                 
+        }            
+        
+        //this.shader.needsUpdate         = true;
+    };
+    
+    Material.prototype.setDebug = function(debug_value)
+    {
+        this.uniforms.debug.value   = debug_value;
+        //this.shader.needsUpdate     = true;
+    };
+    
+    
+    Material.prototype.update = function()    
+    {
+        this.shader.needsUpdate         = true;
+//        
+        for (var i = 0, max = this.Textures_00.length; i < max; i++) 
+            this.Textures_00[i].needsUpdate = true;
+        
+        for (var i = 0, max = this.Textures_01.length; i < max; i++) 
+            this.Textures_01[i].needsUpdate = true;
+        
+        
+    };
+    
+    return Material;
+});
+  
+  
+
+
 /**
 * Generated On: 2015-10-5
 * Class: InterfaceCommander
@@ -5263,10 +5958,189 @@ define('text',['module'], function (module) {
 });
 
 
-define('text!Renderer/Shader/GlobeVS.glsl',[],function () { return '\r\n#ifdef USE_LOGDEPTHBUF\r\n    \r\n    #define EPSILON 1e-6\r\n    #ifdef USE_LOGDEPTHBUF_EXT\r\n\r\n        varying float vFragDepth;\r\n\r\n    #endif\r\n\r\n    uniform float logDepthBufFC;\r\n\r\n#endif\r\n\r\nuniform sampler2D  dTextures_00[1];\r\nuniform int        nbTextures_00;\r\n\r\nvarying vec2 vUv;\r\nvarying vec3 vNormal;\r\n\r\n\r\n\r\nvoid main() {\r\n\r\n        vUv = uv;\r\n        \r\n        //vUv.x = floor(uv.x * 20.0) /20.0;\r\n        //vUv.y = floor(uv.y * 20.0) /20.0;\r\n                \r\n\r\n        if(nbTextures_00 > 0)\r\n        {\r\n            float dv = texture2D( dTextures_00[0], vUv ).w;\r\n\r\n            vNormal  = normalize( position );\r\n\r\n            //vec3 displacedPosition = position +  vNormal  * dv *10.0;\r\n            vec3 displacedPosition = position +  vNormal  * dv ;\r\n\r\n            gl_Position = projectionMatrix * modelViewMatrix * vec4( displacedPosition ,1.0 );\r\n        }\r\n        else\r\n            gl_Position = projectionMatrix * modelViewMatrix * vec4( position ,1.0 );\r\n\r\n        \r\n        #ifdef USE_LOGDEPTHBUF\r\n\r\n            gl_Position.z = log2(max( EPSILON, gl_Position.w + 1.0 )) * logDepthBufFC;\r\n\r\n            #ifdef USE_LOGDEPTHBUF_EXT\r\n\r\n                vFragDepth = 1.0 + gl_Position.w;\r\n\r\n            #else\r\n\r\n                gl_Position.z = (gl_Position.z - 1.0) * gl_Position.w;\r\n\r\n            #endif\r\n\r\n        #endif\r\n        \r\n}   ';});
+/**
+* Generated On: 2015-10-5
+* Class: Ellipsoid
+* Description: Classe mathématique de  l'ellispoide
+*/
 
 
-define('text!Renderer/Shader/GlobeFS.glsl',[],function () { return '#ifdef USE_LOGDEPTHBUF\r\n\r\n\tuniform float logDepthBufFC;\r\n\r\n\t#ifdef USE_LOGDEPTHBUF_EXT\r\n\r\n\t\t//#extension GL_EXT_frag_depth : enable\r\n\t\tvarying float vFragDepth;\r\n\r\n\t#endif\r\n\r\n#endif\r\n\r\n//uniform sampler2D   dTextures_00[1];\r\n\r\nconst int   TEX_UNITS   = 8;\r\nconst float PI          = 3.14159265359;\r\nconst float INV_TWO_PI  = 1.0 / (2.0*PI);\r\nconst float PI2         = 1.57079632679;\r\nconst float PI4         = 0.78539816339;\r\nconst float poleSud     = -82.0 / 180.0 * PI;\r\nconst float poleNord    =  84.0 / 180.0 * PI;\r\n\r\nuniform sampler2D   dTextures_00[1];\r\nuniform sampler2D   dTextures_01[TEX_UNITS];\r\nuniform int         nbTextures_00;\r\nuniform int         nbTextures_01;\r\nuniform vec2        bLongitude; \r\nuniform vec2        bLatitude;\r\nuniform float       periArcLati;\r\nuniform float       y0;\r\nuniform float       zoom;\r\nuniform int         debug;\r\nvarying vec2        vUv;\r\n\r\nvoid main() {\r\n \r\n    #if defined(USE_LOGDEPTHBUF) && defined(USE_LOGDEPTHBUF_EXT)\r\n\r\n\tgl_FragDepthEXT = log2(vFragDepth) * logDepthBufFC * 0.5;\r\n\r\n    #endif\r\n\r\n    float latitude  = bLatitude.x + periArcLati*(1.0-vUv.y);\r\n   \r\n    /*\r\n    float sLine = 0.0015;\r\n    if(vUv.x < sLine || vUv.x > 1.0 - sLine || vUv.y < sLine || vUv.y > 1.0 - sLine)\r\n        gl_FragColor = vec4( 1.0, 0.0, 0.0, 1.0);\r\n    else \r\n    */\r\n    \r\n\r\n    if(latitude < poleSud )\r\n        gl_FragColor = vec4( 0.85, 0.85, 0.91, 1.0);\r\n    else\r\n    \r\n    if(latitude > poleNord)\r\n        gl_FragColor = vec4( 0.04, 0.23, 0.35, 1.0);\r\n    else\r\n        {                           \r\n            \r\n            //if(nbTextures_01 == 0)\r\n            //    gl_FragColor = vec4( 0.85, 0.85, 0.00, 1.0);\r\n            //else\r\n            {\r\n                vec2 uvO ;\r\n                uvO.x           = vUv.x;\r\n                float nbRow     = pow(2.0,zoom + 1.0);\r\n                float y         = 0.5 - log(tan(PI4 + (latitude)*0.5))* INV_TWO_PI;\r\n                uvO.y           = 1.0 - mod(y,1.0/ nbRow)*nbRow;\r\n                float idStart   = floor( y0 * nbRow);\r\n                float idRow     = floor( y  * nbRow);\r\n                int   idd       = int(idRow - idStart);\r\n                vec4  ortho     = vec4( 0.04, 0.23, 0.35, 1.0);\r\n\r\n\r\n                if(idd >= nbTextures_01)\r\n                {\r\n                    idd     = nbTextures_01-1;\r\n                    uvO.y   = 0.0;\r\n                }\r\n                else if(idd < 0)\r\n                {\r\n                    idd     = 0;\r\n                    uvO.y   = 1.0;\r\n                }\r\n\r\n                \r\n                for (int x = 0; x < TEX_UNITS; x++)\r\n                    if (x == idd)\r\n                    {                        \r\n                        ortho  = texture2D( dTextures_01[x], uvO );\r\n                        break;\r\n                    }   \r\n\r\n                gl_FragColor = ortho;\r\n               \r\n           }\r\n\r\n              \r\n\r\n         if(debug > 0)\r\n            gl_FragColor = vec4( 1.0, 0.0, 0.0, 1.0);\r\n                /*\r\n         if(nbTextures_00 > 0)\r\n        {\r\n                    float dv = texture2D( dTextures_00[0], vUv ).w /3000.0;\r\n                    gl_FragColor = vec4( dv, dv, dv, 1.0);\r\n        }\r\n        else\r\n        {   \r\n            gl_FragColor = vec4( 1.0, 0.0, 0.0, 1.0);\r\n        }\r\n        */\r\n\r\n        } \r\n}';});
+
+define('Core/Math/Ellipsoid',['Core/Math/MathExtented','THREE'], function(MathExt,THREE){
+
+    function Ellipsoid(x,y,z)
+    {
+        //Constructor
+
+        this.rayon_1 = x;
+        this.rayon_2 = y;
+        this.rayon_3 = z;
+
+
+        this._radiiSquared = new THREE.Vector3(x*x,y*y,z*z);
+    }
+    
+    //var cartographicToCartesianNormal   = new THREE.Vector3();
+    //var cartographicToCartesianK        = new THREE.Vector3();
+    
+    Ellipsoid.prototype.geodeticSurfaceNormalCartographic = function(coordCarto) {
+    
+        var longitude   = coordCarto.longitude;
+        var latitude    = coordCarto.latitude;
+        var cosLatitude = Math.cos(latitude);
+
+        var x = cosLatitude * Math.cos(-longitude);
+        var z = cosLatitude * Math.sin(-longitude);
+        var y = Math.sin(latitude);
+        
+        
+        var    result = new THREE.Vector3(x,y,z);
+
+        return result.normalize();
+
+
+    };
+    
+    
+    Ellipsoid.prototype.cartographicToCartesian = function(coordCarto) 
+    {
+        
+        //var n;
+        var k = new THREE.Vector3();
+        var n = this.geodeticSurfaceNormalCartographic(coordCarto);
+     
+        k.multiplyVectors(this._radiiSquared, n);
+               
+        var gamma = Math.sqrt(n.dot(k));        
+               
+        k.divideScalar( gamma);
+        
+        //n.multiplyScalar(coordCarto.altitude);
+        
+        n.multiplyScalar(0.0);
+        
+        return k.add( n);
+    };
+    
+    Ellipsoid.prototype.cartographicToCartesianArray = function(coordCartoArray) 
+    {
+        
+        var cartesianArray = [];
+        for ( var i = 0; i < coordCartoArray.length; i++ )
+        {
+            cartesianArray.push(this.cartographicToCartesian(coordCartoArray[i]));
+        }
+        
+        return cartesianArray;
+       
+    };
+    
+    return Ellipsoid;
+
+});
+
+/* 
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+/*
+ * A Faire
+ * Les tuiles de longitude identique ont le maillage et ne demande pas 1 seule calcul pour la génération du maillage
+ * 
+ * 
+ * 
+ * 
+ */
+
+
+
+define('Core/Commander/Providers/tileGlobeProvider',[                        
+            'Core/Geographic/Projection',
+            'Core/Commander/Providers/WMTS_Provider',
+            'Core/Geographic/CoordWMTS',
+            'Core/Math/Ellipsoid'
+            ],
+             function(
+                Projection,
+                WMTS_Provider,
+                CoordWMTS,
+                Ellipsoid){
+                   
+    function tileGlobeProvider(){
+        //Constructor
+       this.projection      = new Projection();
+       this.providerWMTS    = new WMTS_Provider();
+       this.renderer        = undefined;
+       this.ellipsoid       = new Ellipsoid(6378137, 6378137, 6356752.3142451793);
+               
+    }        
+
+    tileGlobeProvider.prototype.constructor = tileGlobeProvider;
+    
+    tileGlobeProvider.prototype.get = function(command)
+    {  
+        var bbox    = command.paramsFunction[0];
+        var cooWMTS = this.projection.WGS84toWMTS(bbox);        
+        
+        var parent  = command.requester;
+        var tile    = new command.type(bbox,cooWMTS,this.ellipsoid);                
+
+        tile.visible = false;
+        
+        parent.add(tile);
+        
+        return this.providerWMTS.getTextureBil(cooWMTS).then(function(result)
+        {                           
+            this.setTextureTerrain(result === - 1 ?  -1 : result.texture);
+            
+            return this;
+
+        }.bind(tile)).then(function(tile)
+        {                      
+            if(cooWMTS.zoom >= 2)
+            {            
+                var box  = this.projection.WMTS_WGS84ToWMTS_PM(tile.cooWMTS,tile.bbox); // 
+                
+                var id = 0;
+                var col = box[0].col;
+                
+                tile.orthoNeed = box[1].row + 1 - box[0].row;
+
+                for (var row = box[0].row; row < box[1].row + 1; row++)
+                {                                                                        
+                    var coo = new CoordWMTS(box[0].zoom,row,col);
+
+                    this.providerWMTS.getTextureOrtho(coo,id).then
+                    (
+                        function(result)
+                        {                          
+                                                        
+                            this.setTextureOrtho(result.texture,result.id);                            
+
+                            return this;
+
+                        }.bind(tile)
+                    ).then( function(tile)
+                    {                        
+                        if(tile.orthoNeed === tile.tMat.Textures_01.length)
+                        {                               
+                            tile.loaded = true;
+                            tile.tMat.update();
+                            var parent = tile.parent;
+                            
+                            if(parent.childrenLoaded() && parent.wait === true)
+                            {                                
+                                parent.wait = false;                  
+                            }
+                        }                                           
+                    }.bind(this)
+                    );
+
+                    id++;
+
+
 
 /**
 * Generated On: 2015-10-5
@@ -5291,10 +6165,8 @@ define('Globe/EllipsoidTileMesh',[
     'Core/defaultValue',
     'THREE',
     'Renderer/Material','text!Renderer/Shader/GlobeVS.glsl',
-        'text!Renderer/Shader/GlobeFS.glsl'], function(NodeMesh,EllipsoidTileGeometry,BoudingBox,defaultValue,THREE,Material,GlobeVS,GlobeFS){
  
 
-    function EllipsoidTileMesh(bbox,cooWMTS,ellipsoid){
         //Constructor
         NodeMesh.call( this );
         
@@ -5302,16 +6174,6 @@ define('Globe/EllipsoidTileMesh',[
         this.level      = cooWMTS.zoom;
         this.cooWMTS    = cooWMTS;
         this.bbox       = defaultValue(bbox,new BoudingBox());        
-        
-        var precision   = 8;
-        
-        if(this.level > 8)
-            precision   = 32;
-        else if (this.level > 6)
-            precision   = 16;
-        
-        this.geometry   = new EllipsoidTileGeometry(bbox,precision,ellipsoid);               
-        this.tMat       = new Material(GlobeVS,GlobeFS,bbox,cooWMTS.zoom);                
         this.orthoNeed  = 10;
         this.material   = this.tMat.shader;//new THREE.MeshBasicMaterial( {color: 0xffffff, wireframe: false}); 
         this.dot        = 0;
@@ -5709,7 +6571,6 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
             {
                 this.nodeProcess.frustumCullingOBB(node,camera);
 
-                if(node.visible )
                 {
                     this.nodeProcess.horizonCulling(node,camera);
 
@@ -5718,8 +6579,6 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
 
                         if(node.parent.material !== undefined && node.parent.material.visible === true)
                         {
-                            node.visible = false;
-                            return false;
                         }
 
                         var sse = this.nodeProcess.SSE(node,camera);
@@ -5870,8 +6729,48 @@ define('Scene/Scene',['Renderer/c3DEngine','Globe/Star','Globe/Globe','Renderer/
         if(this.nodes[0] !== undefined  && this.currentCamera() !== undefined )
         {                        
             this.browserScene.browse(this.nodes[0].terrain,this.currentCamera(),true);
-            //this.updateScene3D(); // TODO --> replace by renderScene3D            
-            this.renderScene3D();
+        this.nbRequest      = -2;
+        
+    }        
+
+    ManagerCommands.prototype.constructor = ManagerCommands;
+
+    ManagerCommands.prototype.addCommand = function(command)
+    {                      
+        this.queueAsync.queue(command);        
+        this.nbRequest++;
+     
+//        if(this.queueAsync.length > 8 )
+//        {
+//            this.runAllCommands();          
+//        }            
+    };
+    
+    ManagerCommands.prototype.init = function(scene)
+    {
+        this.scene = scene;     
+        this.providers[0].renderer = this.scene.gfxEngine;
+    };
+    
+    ManagerCommands.prototype.runAllCommands = function()
+    {  
+        if(this.queueAsync.length === 0)
+        {    
+            this.process();
+            return when();
+        }
+        
+        return this.providers[0].get(this.queueAsync.dequeue()).then(function()
+        {           
+            
+            this.runAllCommands();
+            this.nbRequest--;            
+            if(this.nbRequest === 0)
+            {                
+                this.scene.updateScene3D();
+            }                            
+           
+        }.bind(this));                         
         } 
         
     };
