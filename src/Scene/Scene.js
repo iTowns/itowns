@@ -136,7 +136,9 @@ define('Scene/Scene',['Renderer/c3DEngine','Globe/Star','Globe/Globe','Renderer/
             for (var i = 0;i<meshs.length;i++)                            
                 this.gfxEngine.add3DScene(meshs[i]);
             
-            this.gfxEngine.add3DScene(layer.atmosphere);            
+            if(layer.atmosphere !== undefined)
+                this.gfxEngine.add3DScene(layer.atmosphere);            
+
         }
     };
 
