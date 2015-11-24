@@ -35,6 +35,12 @@ define('Core/Commander/Providers/WMTS_Provider',[
 
     WMTS_Provider.prototype.constructor = WMTS_Provider;
     
+    
+    /**
+     * Return url wmts MNT
+     * @param {type} coWMTS : coord WMTS
+     * @returns {Object@call;create.url.url|String}
+     */
     WMTS_Provider.prototype.url = function(coWMTS)
     {
         
@@ -50,6 +56,11 @@ define('Core/Commander/Providers/WMTS_Provider',[
         return url;
     };
             
+    /**
+     * Return url wmts orthophoto
+     * @param {type} coWMTS
+     * @returns {Object@call;create.urlOrtho.url|String}
+     */
     WMTS_Provider.prototype.urlOrtho = function(coWMTS)
     {
         //var key    = "i9dpl8xge3jk0a0taex1qrhd"; 
@@ -65,6 +76,11 @@ define('Core/Commander/Providers/WMTS_Provider',[
         return url;
     };
         
+    /**
+     * return texture float alpha THREE.js of MNT 
+     * @param {type} coWMTS : coord WMTS
+     * @returns {WMTS_Provider_L15.WMTS_Provider.prototype@pro;_IoDriver@call;read@call;then}
+     */
     WMTS_Provider.prototype.getTextureBil = function(coWMTS)
     {
                         
@@ -106,6 +122,13 @@ define('Core/Commander/Providers/WMTS_Provider',[
         );
     };
 
+    /**
+     * Return texture RGBA THREE.js of orthophoto
+     * TODO : RGBA --> RGB remove alpha canal
+     * @param {type} coWMTS
+     * @param {type} id
+     * @returns {WMTS_Provider_L15.WMTS_Provider.prototype@pro;ioDriverImage@call;read@call;then}
+     */
     WMTS_Provider.prototype.getTextureOrtho = function(coWMTS,id)
     {
         

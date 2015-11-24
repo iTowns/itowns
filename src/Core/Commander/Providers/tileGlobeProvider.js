@@ -29,9 +29,9 @@ define('Core/Commander/Providers/tileGlobeProvider',[
                    
     function tileGlobeProvider(){
         //Constructor
+       
        this.projection      = new Projection();
-       this.providerWMTS    = new WMTS_Provider();
-       this.renderer        = undefined;
+       this.providerWMTS    = new WMTS_Provider();       
        this.ellipsoid       = new Ellipsoid(6378137, 6378137, 6356752.3142451793);
                
     }        

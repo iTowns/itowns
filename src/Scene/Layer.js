@@ -12,6 +12,7 @@ define('Scene/Layer',['Scene/Node','Core/Commander/InterfaceCommander','Core/Geo
         //Constructor
 
         Node.call( this );
+        // Requeter
         this.interCommand   = new InterfaceCommander(type);
         this.descriManager  = null;
         this.projection     = new Projection();

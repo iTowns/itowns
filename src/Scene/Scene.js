@@ -33,11 +33,19 @@ define('Scene/Scene',['Renderer/c3DEngine','Globe/Star','Globe/Globe','Renderer/
     };
     
     
+    /**
+     * @documentation: return current camera 
+     * @returns {Scene_L7.Scene.gfxEngine.camera}
+     */
     Scene.prototype.currentCamera = function(){
         return this.gfxEngine.camera ;
 
     };
     
+    /**
+     * @documentation: initialisation scene 
+     * @returns {undefined}
+     */
     Scene.prototype.init = function()
     {
      
@@ -57,7 +65,7 @@ define('Scene/Scene',['Renderer/c3DEngine','Globe/Star','Globe/Globe','Renderer/
     };
 
     /**
-     * 
+     * @documentation: 
      * @returns {undefined}
      */
     Scene.prototype.sceneProcess = function(){

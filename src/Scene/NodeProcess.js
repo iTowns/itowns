@@ -16,11 +16,17 @@ define('Scene/NodeProcess',['Scene/BoudingBox','Renderer/Camera','Core/Math/Math
         
         this.vhMagnitudeSquared = 1.0;  
         
-        this.r  = new THREE.Vector3(6378137,6356752.3142451793,6378137);
-        this.cV  = new THREE.Vector3();
+        this.r      = new THREE.Vector3(6378137,6356752.3142451793,6378137);
+        this.cV    = new THREE.Vector3();
         
     }
 
+/**
+ * @documentation: Apply backface culling on node, change visibility; return true if the node is visible
+ * @param {type} node   : node to cull
+ * @param {type} camera : camera for the culling
+ * @returns {Boolean}
+ */
     NodeProcess.prototype.backFaceCulling = function(node,camera)
     {
         var normal  = camera.direction;
@@ -41,12 +47,18 @@ define('Scene/NodeProcess',['Scene/BoudingBox','Renderer/Camera','Core/Math/Math
               
     };
     
+    
     NodeProcess.prototype.setCamera = function(camera)
     {        
         this.camera = camera;
     };
     
-    
+    /**
+     * @documentation: Cull node with frustrum
+     * @param {type} node   : node to cull
+     * @param {type} camera : camera for culling
+     * @returns {unresolved}
+     */
     NodeProcess.prototype.frustumCulling = function(node,camera)
     {        
         var frustum = camera.frustum;
@@ -54,11 +66,23 @@ define('Scene/NodeProcess',['Scene/BoudingBox','Renderer/Camera','Core/Math/Math
         return frustum.intersectsObject(node);   
     };
     
+    /**
+     * @documentation: Compute screen space error of node in function of camera
+     * @param {type} node
+     * @param {type} camera
+     * @returns {Boolean}
+     */
     NodeProcess.prototype.SSE = function(node,camera)
     {                                        
         return camera.SSE(node) > 1.0;            
     };
     
+    /**
+    * @documentation: Cull node with frustrum and oriented bounding box of node
+     * @param {type} node
+     * @param {type} camera
+     * @returns {NodeProcess_L7.NodeProcess.prototype.frustumCullingOBB.node@pro;camera@call;getFrustum@call;intersectsBox}
+     */
     NodeProcess.prototype.frustumCullingOBB = function(node,camera)        
     {        
         var obb     = node.geometry.OBB;
@@ -74,7 +98,7 @@ define('Scene/NodeProcess',['Scene/BoudingBox','Renderer/Camera','Core/Math/Math
     };
     
     /**
-     * 
+     * @documentation: Cull node with frustrum and the bounding box of node
      * @param {type} node
      * @param {type} camera
      * @returns {unresolved}
@@ -87,6 +111,11 @@ define('Scene/NodeProcess',['Scene/BoudingBox','Renderer/Camera','Core/Math/Math
         return node.visible;
     };
     
+    /**
+     * @documentation:pre calcul for horizon culling
+     * @param {type} camera
+     * @returns {undefined}
+     */
     NodeProcess.prototype.preHorizonCulling = function(camera)
     {
  
@@ -96,6 +125,11 @@ define('Scene/NodeProcess',['Scene/BoudingBox','Renderer/Camera','Core/Math/Math
   
     };
     
+    /**
+     * @documentation: return true if point is occuled by horizon 
+     * @param {type} point
+     * @returns {Boolean}
+     */
     NodeProcess.prototype.pointHorizonCulling = function(point)
     {
         
@@ -115,6 +149,11 @@ define('Scene/NodeProcess',['Scene/BoudingBox','Renderer/Camera','Core/Math/Math
         return isOccluded;
     };
     
+    /**
+     * @documentation: cull node with horizon 
+     * @param {type} node
+     * @returns {Boolean}
+     */
     NodeProcess.prototype.horizonCulling = function(node)
     {
       var points = node.OBB().pointsWorld;
