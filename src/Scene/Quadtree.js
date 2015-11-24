@@ -11,7 +11,7 @@
  * @returns {Quadtree_L13.Quadtree}
  */
 define('Scene/Quadtree',[
-        'Scene/Layer',                        
+        'Scene/Layer',
         'Core/Geographic/Quad'
         ], function(Layer,Quad){
     
@@ -21,23 +21,24 @@ define('Scene/Quadtree',[
         Layer.call( this,type);
         
         this.schemeTile       = schemeTile;
-        this.tileType         = type;
+        this.tileType         = type;        
 
         for (var i = 0; i < this.schemeTile.rootCount(); i++)
         {        
-            this.createTile(this.schemeTile.getRoot(i),this);            
-        }                       
+            this.createTile(this.schemeTile.getRoot(i),this);
+        }                 
         
         this.interCommand.managerCommands.runAllCommands();
         
+                
         for (var i = 0; i < this.schemeTile.rootCount(); i++)
         {
             this.subdivide(this.children[i]);
             
-            this.interCommand.managerCommands.runAllCommands();
-            
+            this.interCommand.managerCommands.runAllCommands();            
             this.subdivideChildren(this.children[i]);
         }
+        
     }
     
     Quadtree.prototype = Object.create( Layer.prototype );

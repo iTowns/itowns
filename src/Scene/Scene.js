@@ -134,19 +134,22 @@ define('Scene/Scene',['Renderer/c3DEngine','Globe/Star','Globe/Globe','Renderer/
         
         this.nodes.push(layer);
         
-        if(layer instanceof NodeMesh)            
-            
+        if(layer instanceof NodeMesh)      
+        {            
             this.gfxEngine.add3DScene(layer);
-
+        }
         else if(layer instanceof Globe)            
-        {
-            var meshs = layer.getMesh();
-            for (var i = 0;i<meshs.length;i++)                            
-                this.gfxEngine.add3DScene(meshs[i]);
+        {                        
+            for (var i = 0;i<layer.childrenCount();i++)
             
-            if(layer.atmosphere !== undefined)
-                this.gfxEngine.add3DScene(layer.atmosphere);            
-
+                if(layer.children[i].getMesh() instanceof Array)
+                {
+                    var meshs = layer.children[i].getMesh();
+                    for (var j = 0;j<meshs.length;j++)                            
+                        this.gfxEngine.add3DScene(meshs[j]);                    
+                }
+                else                                 
+                        this.gfxEngine.add3DScene(layer.children[i].getMesh());                    
         }
     };
 
