@@ -77,7 +77,7 @@ define('Scene/Quadtree',[
     };    
         
    /**
-    * return 4 equals subdivisions of the bouding box
+    * @documentation: subdivise node if necessary
     * @param {type} node
     * @returns {Array} four bounding box
     */
@@ -95,19 +95,21 @@ define('Scene/Quadtree',[
         this.createTile(quad.southEast,node);
                   
     };
-        
+    
+    /**
+     * @documentation: update node 
+     * @param {type} node
+     * @returns {Boolean}
+     */
     Quadtree.prototype.update = function(node)
     {
         if(node.level >= 11  || node.wait === true )
             return false;        
-        
-                     
+                             
         if(node.childrenCount() !== 0 && node.wait === false)                
-        {
-                        
+        {                        
             for (var i = 0 ;i<node.childrenCount();i++)
-            {
-                
+            {                
                 node.children[i].visible = true;                
             }
             
@@ -119,7 +121,11 @@ define('Scene/Quadtree',[
         return true;
     };
     
-    
+    /**
+     * @documentation: subdivide children
+     * @param {type} node : node to subdivide
+     * @returns {undefined}
+     */        
     Quadtree.prototype.subdivideChildren = function(node)
     {
         if(node.level === 3)

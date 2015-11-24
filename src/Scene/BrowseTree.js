@@ -25,7 +25,14 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
         node.visible = false;
     };
     
-    BrowseTree.prototype.processNode = function(node,camera,other)
+    /**
+     * @documentation: Process to apply to each node
+     * @param {type} node   : node current to apply process
+     * @param {type} camera : current camera needed to process
+     * @param {type} optional  : optional process
+     * @returns {Boolean}
+     */
+    BrowseTree.prototype.processNode = function(node,camera,optional)
     {        
         if(node instanceof EllipsoidTileMesh)
         {            
@@ -50,7 +57,7 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
 
                         var sse = this.nodeProcess.SSE(node,camera);
 
-                        if(other && sse && node.material.visible === true)
+                        if(optional && sse && node.material.visible === true)
                         {   
                             this.tree.subdivide(node);
                         }                            
@@ -78,32 +85,46 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
     };
 
     /**
-     * 
-     * @param {type} tree
-     * @param {type} camera
+     * @documentation: Initiate traverse tree 
+     * @param {type} tree       : tree 
+     * @param {type} camera     : current camera
+     * @param {type} optional   : optional process
      * @returns {undefined}
      */
-    BrowseTree.prototype.browse = function(tree, camera,other){
+    BrowseTree.prototype.browse = function(tree, camera,optional){
  
         this.tree = tree;
         this.nodeProcess.preHorizonCulling(camera);
         for(var i = 0;i<tree.children.length;i++)
-            this._browse(tree.children[i],camera,other);
+            this._browse(tree.children[i],camera,optional);
 
-        //if(other)
+        //if(optional)
         {
             this.tree.interCommand.managerCommands.runAllCommands();
         }
     };
     
-    BrowseTree.prototype._browse = function(node, camera,other){
+    /**
+     * @documentation: Recursive traverse tree
+     * @param {type} node       : current node     
+     * @param {type} camera     : current camera
+     * @param {type} optional   : optional process
+     * @returns {undefined}
+     */
+    BrowseTree.prototype._browse = function(node, camera,optional){
              
-        if(this.processNode(node,camera,other))       
+        if(this.processNode(node,camera,optional))       
             for(var i = 0;i<node.children.length;i++)
-                this._browse(node.children[i],camera,other);
+                this._browse(node.children[i],camera,optional);
 
     };
     
+    /**
+     * TODO : to delete
+     * @documentation:add oriented bouding box of node in scene
+     * @param {type} node
+     * @returns {undefined}
+     */
     BrowseTree.prototype.bBoxHelper = function(node)
     {          
         if(node instanceof EllipsoidTileMesh && node.level < 4  && node.noChild())
@@ -116,6 +137,11 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
         }
     };
     
+    /**
+     * TODO : to delete 
+     * @param {type} node
+     * @returns {BrowseTree_L7.BrowseTree.prototype.addOBBoxHelper.bboxH}
+     */
     BrowseTree.prototype.addOBBoxHelper = function(node){
              
         var bboxH = this.bBoxHelper(node);

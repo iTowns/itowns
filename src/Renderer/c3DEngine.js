@@ -76,6 +76,10 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera'], functio
                              
     };
     
+    /**
+     * Intialisation camera and debug camera
+     * @returns {undefined}
+     */
     c3DEngine.prototype.initCamera = function()
     {
         this.camera     = new Camera(this.width, this.height, this.debug);        
@@ -93,6 +97,11 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera'], functio
         }        
     };
     
+    
+    /**
+     * Initialisation renderer THREE.js
+     * @returns {undefined}
+     */
     c3DEngine.prototype.initRenderer = function()
     {
         this.renderer   = new THREE.WebGLRenderer( { antialias: true,alpha: true,logarithmicDepthBuffer : true } );
@@ -104,7 +113,12 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera'], functio
         document.body.appendChild( this.renderer.domElement );
     };
         
-      
+    
+    /**
+     * initialisation 3DEngine
+     * @param {type} scene
+     * @returns {undefined}
+     */
     c3DEngine.prototype.init = function(scene){
         
         this.scene  = scene;
@@ -115,6 +129,11 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera'], functio
         
     };
         
+    /**
+     * TODO : temporaire
+     * update control parameter in function of distance of globe
+     * @returns {undefined}
+     */
     c3DEngine.prototype.updateControl = function()
     {
         var len  = this.camera.position().length ();
@@ -155,6 +174,10 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera'], functio
 
     };
     
+    /**
+     * Initialisation of controls camera
+     * @returns {undefined}
+     */
     c3DEngine.prototype.initControls = function(){
         
         this.controls   = new THREE.OrbitControls( this.camera.camera3D,this.renderer.domElement );
@@ -170,7 +193,7 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera'], functio
     };
     
     /**
-     * 
+     * TODO : to delete
      * @param {type} mesh
      * @param {type} texture
      * @returns {undefined}
@@ -181,7 +204,7 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera'], functio
     };
 
     /**
-     * 
+     * add nodeMesh in scene 3D
      * @param {type} object
      * @returns {undefined}
      */    
@@ -198,11 +221,18 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera'], functio
 
     };
     
+    /*
+     * return 
+     */
     c3DEngine.prototype.getWindowSize = function(){
 
         return new THREE.Vector2(this.width, this.height);
     };
 
+    /**
+     * return renderer THREE.js
+     * @returns {undefined|c3DEngine_L7.THREE.WebGLRenderer}
+     */
     c3DEngine.prototype.getRenderer = function(){
 
         return this.renderer;

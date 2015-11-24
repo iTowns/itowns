@@ -4,8 +4,29 @@
 * Description: BoundingBox délimite une zone de l'espace. Cette zone est défnie  par des coordonées cartographiques.
 */
 
+/**
+ * 
+ * @param {type} defaultValue
+ * @param {type} MathExt
+ * @param {type} Point2D
+ * @param {type} CoordCarto
+ * @param {type} THREE
+ * @param {type} OBB
+ * @returns {BoudingBox_L10.BoudingBox}
+ */
 define('Scene/BoudingBox',['Core/defaultValue','Core/Math/MathExtented','Core/Math/Point2D','Core/Geographic/CoordCarto','THREE','OBB'], function(defaultValue,MathExt,Point2D,CoordCarto,THREE,OBB){
 
+    /**
+     * 
+     * @param {type} minLongitude : longitude minimum
+     * @param {type} maxLongitude : longitude maximum
+     * @param {type} minLatitude  : latitude minimum 
+     * @param {type} maxLatitude  : latitude maximum 
+     * @param {type} parentCenter : center parent
+     * @param {type} minAltitude  : altitude minimum
+     * @param {type} maxAltitude  : altitude maximum  
+     * @returns {BoudingBox_L7.BoudingBox}
+     */
     function BoudingBox(minLongitude,maxLongitude, minLatitude ,maxLatitude ,parentCenter,minAltitude ,maxAltitude){
         //Constructor
         
@@ -21,7 +42,7 @@ define('Scene/BoudingBox',['Core/defaultValue','Core/Math/MathExtented','Core/Ma
     }
 
     /**
-    * @documentation: Retourne True si le point est dans la zone
+    * @documentation: Retourne True if point is inside the bounding box
     *
     * @param point {[object Object]} 
     */
@@ -30,6 +51,12 @@ define('Scene/BoudingBox',['Core/defaultValue','Core/Math/MathExtented','Core/Ma
 
     };
     
+    /**
+     * @documentation: Set the bounding box with the center of the box and the half dimension of the box
+     * @param {type} center : center of the box
+     * @param {type} halfDimension : half dimension of box
+     * @returns {undefined}
+     */
     BoudingBox.prototype.set = function(center,halfDimension){
        
        this.halfDimension  = halfDimension;        
@@ -37,14 +64,24 @@ define('Scene/BoudingBox',['Core/defaultValue','Core/Math/MathExtented','Core/Ma
 
     };
     
+    /**
+     * @documentation: Set altitude of bounding box
+     * @param {type} min : minimum altitude
+     * @param {type} max : maximum altitude
+     * @returns {undefined}
+     */
     BoudingBox.prototype.setAltitude = function(min,max){
        
         this.minCarto.altitude = min;
         this.maxCarto.altitude = max;
 
     };
-    
-    
+        
+    /**
+     * @documentation: Return true if this bounding box intersect with the bouding box parameter
+     * @param {type} bbox
+     * @returns {Boolean}
+     */
     BoudingBox.prototype.intersect = function(bbox)
     {
         return !(this.minCarto.longitude >= bbox.maxCarto.longitude
@@ -54,7 +91,13 @@ define('Scene/BoudingBox',['Core/defaultValue','Core/Math/MathExtented','Core/Ma
 
     };
     
-    
+    /**
+     * @documentation:Compute the bounding box of a tile oriented ellipsoidal bounded by the bounding box
+     * @param {type} ellipsoid
+     * @param {type} normal
+     * @param {type} center
+     * @returns {BoudingBox_L7.THREE.OBB}
+     */
     BoudingBox.prototype.get3DBBox = function(ellipsoid,normal,center){
        
         var cardinals       = [];
