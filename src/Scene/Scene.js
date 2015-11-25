@@ -39,7 +39,6 @@ define('Scene/Scene',['Renderer/c3DEngine','Globe/Star','Globe/Globe','Renderer/
      */
     Scene.prototype.currentCamera = function(){
         return this.gfxEngine.camera ;
-
     };
     
     /**
@@ -134,7 +133,7 @@ define('Scene/Scene',['Renderer/c3DEngine','Globe/Star','Globe/Globe','Renderer/
         
         this.nodes.push(node);                
         
-        this.gfxEngine.add3DScene(node);
+        this.gfxEngine.add3DScene(node.getMesh());
     };
 
     /**
