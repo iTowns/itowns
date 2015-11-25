@@ -5,18 +5,18 @@
 */
 
 define('Globe/Globe',[
-    'Scene/Node',
+    'Scene/Layer',
     'Scene/Quadtree',
     'Scene/SchemeTile',
     'Core/Math/MathExtented',
     'Globe/EllipsoidTileMesh',
     'Globe/Atmosphere',
-    'Core/System/Capabalities'], function(Node,Quadtree,SchemeTile,MathExt,EllipsoidTileMesh,Atmosphere,Capabalities){
+    'Core/System/Capabalities'], function(Layer,Quadtree,SchemeTile,MathExt,EllipsoidTileMesh,Atmosphere,Capabalities){
 
     function Globe(){
         //Constructor
 
-        Node.call( this );
+        Layer.call( this );
         
         var caps    = new Capabalities();       
         this.NOIE   = !caps.isInternetExplorer()  ;
@@ -30,7 +30,7 @@ define('Globe/Globe',[
             this.add(this.atmosphere);        
     }
 
-    Globe.prototype = Object.create( Node.prototype );
+    Globe.prototype = Object.create( Layer.prototype );
 
     Globe.prototype.constructor = Globe;
 
@@ -41,13 +41,7 @@ define('Globe/Globe',[
     Globe.prototype.QuadTreeToMesh = function(){
         //TODO: Implement Me 
 
-    };
-    
-    Globe.prototype.getMesh = function(){
-        
-        return this.terrain.getMesh();
-        
-    };
+    };     
 
     /**
     * @documentation: Rafrachi les matériaux en fonction du quadTree ORTHO

@@ -4,7 +4,7 @@
 * Description: La Scene est l'instance principale du client. Elle est le chef orchestre de l'application.
 */
 
-define('Scene/Scene',['Renderer/c3DEngine','Globe/Star','Globe/Globe','Renderer/NodeMesh','Core/Commander/ManagerCommands','Scene/BrowseTree'], function(c3DEngine,Star,Globe,NodeMesh,ManagerCommands,BrowseTree){
+define('Scene/Scene',['Renderer/c3DEngine','Globe/Star','Globe/Globe','Renderer/NodeMesh','Core/Commander/ManagerCommands','Scene/BrowseTree','Scene/Layer'], function(c3DEngine,Star,Globe,NodeMesh,ManagerCommands,BrowseTree,Layer){
  
     var instanceScene = null;
 
@@ -129,28 +129,12 @@ define('Scene/Scene',['Renderer/c3DEngine','Globe/Star','Globe/Globe','Renderer/
     *
     * @param layer {[object Object]} 
     */
-    Scene.prototype.add = function(layer){
+    Scene.prototype.add = function(node){
         //TODO: Implement Me 
         
-        this.nodes.push(layer);
+        this.nodes.push(node);                
         
-        if(layer instanceof NodeMesh)      
-        {            
-            this.gfxEngine.add3DScene(layer);
-        }
-        else if(layer instanceof Globe)            
-        {                        
-            for (var i = 0;i<layer.childrenCount();i++)
-            
-                if(layer.children[i].getMesh() instanceof Array)
-                {
-                    var meshs = layer.children[i].getMesh();
-                    for (var j = 0;j<meshs.length;j++)                            
-                        this.gfxEngine.add3DScene(meshs[j]);                    
-                }
-                else                                 
-                        this.gfxEngine.add3DScene(layer.children[i].getMesh());                    
-        }
+        this.gfxEngine.add3DScene(node);
     };
 
     /**

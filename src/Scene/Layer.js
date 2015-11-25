@@ -6,7 +6,11 @@
 */
 
 
-define('Scene/Layer',['Scene/Node','Core/Commander/InterfaceCommander','Core/Geographic/Projection'], function(Node,InterfaceCommander,Projection){
+define('Scene/Layer',[
+    'Scene/Node',
+    'Core/Commander/InterfaceCommander',
+    'Core/Geographic/Projection',
+    'Renderer/NodeMesh'], function(Node,InterfaceCommander,Projection,NodeMesh){
 
     function Layer(type){
         //Constructor
@@ -22,6 +26,26 @@ define('Scene/Layer',['Scene/Node','Core/Commander/InterfaceCommander','Core/Geo
     Layer.prototype = Object.create( Node.prototype );
 
     Layer.prototype.constructor = Layer;
+    
+    Layer.prototype.getMesh = function()
+    {
+        var meshs = [];
+                                
+        for (var i = 0; i < this.children.length; i++)
+        {
+            var node = this.children[i];
+            
+            if(node instanceof NodeMesh)            
+                meshs.push(node);            
+            else if(node instanceof Layer)
+            {                                
+                meshs = meshs.concat(node.getMesh());
+            }
+        }
+        
+        return meshs;
+                
+    };
          
     return Layer;
     

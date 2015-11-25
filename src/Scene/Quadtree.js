@@ -45,11 +45,6 @@ define('Scene/Quadtree',[
 
     Quadtree.prototype.constructor = Quadtree;
     
-    Quadtree.prototype.getMesh = function(){
-               
-        return this.children;
-    };
-      
     Quadtree.prototype.northWest = function(node)
     {
         return node.children[0];

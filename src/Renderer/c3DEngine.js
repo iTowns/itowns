@@ -4,7 +4,7 @@
 * Description: 3DEngine est l'interface avec le framework webGL.
 */
 
-define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera'], function(THREE,OrbitControls,Camera){
+define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera','Scene/Layer','Renderer/NodeMesh'], function(THREE,OrbitControls,Camera,Layer,NodeMesh){
 
     var instance3DEngine = null;
 
@@ -208,10 +208,20 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera'], functio
      * @param {type} object
      * @returns {undefined}
      */    
-    c3DEngine.prototype.add3DScene = function(object){
+    c3DEngine.prototype.add3DScene = function(node){
         
-        this.scene3D.add(object);                
-
+        //this.scene3D.add(object);                
+        if(node instanceof NodeMesh)      
+        {            
+            this.scene3D.add(node);
+        }
+        else if(node instanceof Layer)      
+        {
+            var meshs = node.getMesh();
+            for (var j = 0;j<meshs.length;j++)                            
+                this.scene3D.add(meshs[j]);             
+        }  
+        
     };        
 
     /**
