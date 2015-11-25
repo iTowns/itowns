@@ -45,7 +45,7 @@ define('Core/Commander/Providers/WMTS_Provider',[
     {
         
         //var key    = "wmybzw30d6zg563hjlq8eeqb";
-        var key    = "va5orxd0pgzvq3jxutqfuy0b"; // clef pro
+        var key    = coWMTS.zoom > 11 ? "va5orxd0pgzvq3jxutqfuy0b" : "wmybzw30d6zg563hjlq8eeqb"; // clef pro va5orxd0pgzvq3jxutqfuy0b
         
         var layer  = coWMTS.zoom > 11 ? "ELEVATION.ELEVATIONGRIDCOVERAGE.HIGHRES" : "ELEVATION.ELEVATIONGRIDCOVERAGE";        
         
@@ -63,8 +63,8 @@ define('Core/Commander/Providers/WMTS_Provider',[
      */
     WMTS_Provider.prototype.urlOrtho = function(coWMTS)
     {
-        //var key    = "i9dpl8xge3jk0a0taex1qrhd"; 
-        var key    = "va5orxd0pgzvq3jxutqfuy0b"; // clef pro
+        var key    = "i9dpl8xge3jk0a0taex1qrhd"; 
+        //var key    = "va5orxd0pgzvq3jxutqfuy0b"; // clef pro
         
         var layer  = "ORTHOIMAGERY.ORTHOPHOTOS";
         //var layer  = "GEOGRAPHICALGRIDSYSTEMS.MAPS";
