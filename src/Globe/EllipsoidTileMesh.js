@@ -20,10 +20,11 @@ define('Globe/EllipsoidTileMesh',[
     'Scene/BoudingBox',
     'Core/defaultValue',
     'THREE',
-    'Renderer/Material','text!Renderer/Shader/GlobeVS.glsl',
-        'text!Renderer/Shader/GlobeFS.glsl'], function(NodeMesh,EllipsoidTileGeometry,BoudingBox,defaultValue,THREE,Material,GlobeVS,GlobeFS){
+    'Renderer/Material',
+    'Core/Geographic/CoordCarto',
+    'text!Renderer/Shader/GlobeVS.glsl',
+    'text!Renderer/Shader/GlobeFS.glsl'], function(NodeMesh,EllipsoidTileGeometry,BoudingBox,defaultValue,THREE,Material,CoordCarto,GlobeVS,GlobeFS){
  
-
     function EllipsoidTileMesh(bbox,cooWMTS,ellipsoid,parent){
         //Constructor
         NodeMesh.call( this );
@@ -35,7 +36,6 @@ define('Globe/EllipsoidTileMesh',[
         
         var precision   = 8;
         
-        
         if(this.level > 11)
             precision   = 128;
         else if(this.level > 8)
@@ -45,26 +45,23 @@ define('Globe/EllipsoidTileMesh',[
         
         var levelMax = 16;
         
-        this.geometricError  = Math.pow(2,levelMax- this.level);
+        this.geometricError  = Math.pow(2,levelMax- this.level);        
+        this.geometry        = new EllipsoidTileGeometry(bbox,precision,ellipsoid);             
+        var parentPosition   = defaultValue(parent.absoluteCenter,new THREE.Vector3());        
+        var ccarto           = new CoordCarto(bbox.center.x,bbox.center.y,0);                
         
-        this.geometry   = new EllipsoidTileGeometry(bbox,precision,ellipsoid);
-             
-        var posParent   = new THREE.Vector3();
+        // TODO modif ver world coord de three.js
+        this.absoluteCenter  = ellipsoid.cartographicToCartesian(ccarto) ;   
+       
+        this.position.subVectors(this.absoluteCenter,parentPosition);
         
-        if(parent.geometry !== undefined)        
-            posParent = parent.geometry.center;
         
-        var center    = new THREE.Vector3().subVectors(this.geometry.center,posParent);
-        
-        this.position.copy(center);
-        
-        this.absCenterSphere = new THREE.Vector3().addVectors(this.geometry.boundingSphere.center,this.geometry.center);
-        
-        //this.geometry.boundingSphere.center.add(this.geometry.center);
-        
+        // TODO ??? 
+        this.absCenterSphere = new THREE.Vector3().addVectors(this.geometry.boundingSphere.center,this.absoluteCenter);
+               
         this.tMat       = new Material(GlobeVS,GlobeFS,bbox,cooWMTS.zoom);                
         this.orthoNeed  = 10;
-        this.material   = this.tMat.shader;//new THREE.MeshBasicMaterial( {color: 0xffffff, wireframe: false}); 
+        this.material   = this.tMat.shader;
         this.dot        = 0;
     }
 

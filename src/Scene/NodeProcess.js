@@ -85,7 +85,8 @@ define('Scene/NodeProcess',['Scene/BoudingBox','Renderer/Camera','Core/Math/Math
      */
     NodeProcess.prototype.frustumCullingOBB = function(node,camera)        
     {        
-        var obb     = node.geometry.OBB;
+        //var center  = node.absoluteCenter;
+        var obb     = node.OBB();
         var quadInv = obb.quadInverse().clone();            
 
         this.camera.setPosition(obb.worldToLocal(camera.position().clone()));
@@ -157,7 +158,7 @@ define('Scene/NodeProcess',['Scene/BoudingBox','Renderer/Camera','Core/Math/Math
     NodeProcess.prototype.horizonCulling = function(node)
     {
       var points = node.OBB().pointsWorld;
-      
+      var center  = node.absoluteCenter;
       var isVisible = false;
       for (var i = 0, max = points.length; i < max; i++) 
       {          
