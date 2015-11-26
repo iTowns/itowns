@@ -33,7 +33,7 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera'], functio
                        
         if(this.debug)
         {
-            var axisHelper = new THREE.AxisHelper( 8 );
+            var axisHelper = new THREE.AxisHelper( 8000000 );
             this.scene3D.add( axisHelper );
         }
                         
@@ -90,8 +90,8 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera'], functio
         {
 
             this.camDebug   = new THREE.PerspectiveCamera( 30, this.camera.ratio, 1, 10000000000) ;
-            this.camDebug.position.x = -10000000;
-            this.camDebug.position.y =  10000000;            
+            this.camDebug.position.x = -30000000;
+            //this.camDebug.position.y =  10000000;            
             this.camDebug.lookAt(new THREE.Vector3(0,0,0));
             this.scene3D.add(this.camera.camHelper());                        
         }        

@@ -4,7 +4,7 @@
 * Description: BrowseTree parcourt un arbre de Node. Lors du parcours un ou plusieur NodeProcess peut etre appliqué sur certains Node.
 */
 
-define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'], function(THREE,EllipsoidTileMesh,NodeProcess){
+define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess','OBBHelper'], function(THREE,EllipsoidTileMesh,NodeProcess,OBBHelper){
 
     function BrowseTree(scene){
         //Constructor
@@ -59,6 +59,7 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
 
                         if(optional && sse && node.material.visible === true)
                         {   
+                            //console.log(node.sse);
                             this.tree.subdivide(node);
                         }                            
                         else if(!sse && node.level >= 2 && node.material.visible === false)
@@ -127,9 +128,11 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
      */
     BrowseTree.prototype.bBoxHelper = function(node)
     {          
-        if(node instanceof EllipsoidTileMesh && node.level < 4  && node.noChild())
+        if(node instanceof EllipsoidTileMesh && node.level > 1  )
         {                
-            if(this.oneNode === 7)
+            
+            //console.log(node);
+            if(this.oneNode === 10 )
             {                    
                 this.scene.scene3D().add(new THREE.OBBHelper(node.geometry.OBB));                                
             }

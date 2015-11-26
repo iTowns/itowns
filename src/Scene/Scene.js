@@ -21,6 +21,8 @@ define('Scene/Scene',['Renderer/c3DEngine','Globe/Star','Globe/Globe','Renderer/
         this.managerCommand = ManagerCommands();
         this.gfxEngine      = c3DEngine();                       
         this.browserScene   = new BrowseTree(this);
+        
+        
 
     }
 
@@ -50,7 +52,7 @@ define('Scene/Scene',['Renderer/c3DEngine','Globe/Star','Globe/Globe','Renderer/
      
         this.gfxEngine.init(this);        
         this.add(new Globe());
-        //this.add(new Star()); 
+        //this.add(new Star());         
         this.managerCommand.init(this);        
         this.gfxEngine.update();
         
