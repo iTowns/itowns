@@ -21,15 +21,13 @@ define('Core/Commander/Providers/tileGlobeProvider',[
             'Core/Geographic/Projection',
             'Core/Commander/Providers/WMTS_Provider',
             'Core/Geographic/CoordWMTS',
-            'Core/Math/Ellipsoid',
-            'OBBHelper'
+            'Core/Math/Ellipsoid'            
             ],
              function(
                 Projection,
                 WMTS_Provider,
                 CoordWMTS,
-                Ellipsoid,
-                OBBHelper){
+                Ellipsoid){
                    
     function tileGlobeProvider(){
         //Constructor
@@ -37,6 +35,7 @@ define('Core/Commander/Providers/tileGlobeProvider',[
        this.projection      = new Projection();
        this.providerWMTS    = new WMTS_Provider();       
        this.ellipsoid       = new Ellipsoid(6378137, 6378137, 6356752.3142451793);
+       //this.cacheGeometry   = [[]];
                
     }        
 
@@ -48,7 +47,11 @@ define('Core/Commander/Providers/tileGlobeProvider',[
         var cooWMTS = this.projection.WGS84toWMTS(bbox);        
         
         var parent  = command.requester;
-        var tile    = new command.type(bbox,cooWMTS,this.ellipsoid,parent);      
+        
+        //var geometryCache = undefined;        
+        //if()
+        
+        var tile    = new command.type(bbox,cooWMTS,this.ellipsoid,parent);
         
         tile.visible = false;
         

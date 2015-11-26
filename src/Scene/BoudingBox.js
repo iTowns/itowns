@@ -98,9 +98,11 @@ define('Scene/BoudingBox',['Core/defaultValue','Core/Math/MathExtented','Core/Ma
      * @param {type} center
      * @returns {BoudingBox_L7.THREE.OBB}
      */
-    BoudingBox.prototype.get3DBBox = function(ellipsoid,normal,center){
+    BoudingBox.prototype.get3DBBox = function(ellipsoid,center){
        
         var cardinals       = [];
+        
+        var normal          = center.clone().normalize();
         
         var phiStart        = this.minCarto.longitude ;
         var phiLength       = this.dimension.x;
@@ -159,6 +161,7 @@ define('Scene/BoudingBox',['Core/defaultValue','Core/Math/MathExtented','Core/Ma
 
         obb.position.copy(center);
         obb.lookAt(normal);
+        //obb.position.set(0,0,0);
         obb.translateZ(maxHeight);
         obb.translateY(delta);
         obb.update();
