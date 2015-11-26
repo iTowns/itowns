@@ -32,12 +32,13 @@ void main() {
         {
             float dv = texture2D( dTextures_00[0], vUv ).w;
 
-            vNormal  = normalize( position );
+            vNormal  = normal;//normalize( position );
 
             //vec3 displacedPosition = position +  vNormal  * dv *10.0;
             vec3 displacedPosition = position +  vNormal  * dv ;
 
             gl_Position = projectionMatrix * modelViewMatrix * vec4( displacedPosition ,1.0 );
+
         }
         else
             gl_Position = projectionMatrix * modelViewMatrix * vec4( position ,1.0 );

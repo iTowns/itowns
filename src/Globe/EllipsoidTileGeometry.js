@@ -51,20 +51,19 @@ define('Globe/EllipsoidTileGeometry',['THREE','Core/defaultValue','Scene/Bouding
             return ellipsoid.geodeticSurfaceNormalCartographic(new CoordCarto( phi, theta,0));                
         };
         
-        this.normals.push(this.carto2Normal(phiStart, thetaStart));
-        this.normals.push(this.carto2Normal(phiStart + phiLength, thetaStart+ thetaLength));
-        this.normals.push(this.carto2Normal(phiStart, thetaStart+ thetaLength));
-        this.normals.push(this.carto2Normal(phiStart + phiLength, thetaStart));
+//        this.normals.push(this.carto2Normal(phiStart, thetaStart));
+//        this.normals.push(this.carto2Normal(phiStart + phiLength, thetaStart+ thetaLength));
+//        this.normals.push(this.carto2Normal(phiStart, thetaStart+ thetaLength));
+//        this.normals.push(this.carto2Normal(phiStart + phiLength, thetaStart));
         
-        this.HeightPoints.push(ellipsoid.cartographicToCartesian(new CoordCarto(phiStart                        , thetaStart    ,0)));
-        this.HeightPoints.push(ellipsoid.cartographicToCartesian(new CoordCarto(phiStart + bbox.halfDimension.x , thetaStart    ,0)));
-        this.HeightPoints.push(ellipsoid.cartographicToCartesian(new CoordCarto(phiStart + phiLength            , thetaStart    ,0)));
-        this.HeightPoints.push(ellipsoid.cartographicToCartesian(new CoordCarto(phiStart + phiLength            , thetaStart + bbox.halfDimension.y,0)));        
-        this.HeightPoints.push(ellipsoid.cartographicToCartesian(new CoordCarto(phiStart + phiLength            , thetaStart + thetaLength  ,0)));
-        this.HeightPoints.push(ellipsoid.cartographicToCartesian(new CoordCarto(phiStart + bbox.halfDimension.x , thetaStart + thetaLength  ,0)));        
-        this.HeightPoints.push(ellipsoid.cartographicToCartesian(new CoordCarto(phiStart                        , thetaStart + thetaLength  ,0)));
-        this.HeightPoints.push(ellipsoid.cartographicToCartesian(new CoordCarto(phiStart                        , thetaStart + bbox.halfDimension.y,0)));
-        
+//        this.HeightPoints.push(ellipsoid.cartographicToCartesian(new CoordCarto(phiStart                        , thetaStart    ,0)));
+//        this.HeightPoints.push(ellipsoid.cartographicToCartesian(new CoordCarto(phiStart + bbox.halfDimension.x , thetaStart    ,0)));
+//        this.HeightPoints.push(ellipsoid.cartographicToCartesian(new CoordCarto(phiStart + phiLength            , thetaStart    ,0)));
+//        this.HeightPoints.push(ellipsoid.cartographicToCartesian(new CoordCarto(phiStart + phiLength            , thetaStart + bbox.halfDimension.y,0)));        
+//        this.HeightPoints.push(ellipsoid.cartographicToCartesian(new CoordCarto(phiStart + phiLength            , thetaStart + thetaLength  ,0)));
+//        this.HeightPoints.push(ellipsoid.cartographicToCartesian(new CoordCarto(phiStart + bbox.halfDimension.x , thetaStart + thetaLength  ,0)));        
+//        this.HeightPoints.push(ellipsoid.cartographicToCartesian(new CoordCarto(phiStart                        , thetaStart + thetaLength  ,0)));
+//        this.HeightPoints.push(ellipsoid.cartographicToCartesian(new CoordCarto(phiStart                        , thetaStart + bbox.halfDimension.y,0)));        
       
         this.normal = this.carto2Normal(bbox.center.x,bbox.center.y);        
         var ccarto  = new CoordCarto(bbox.center.x,bbox.center.y,0);        
@@ -94,12 +93,19 @@ define('Globe/EllipsoidTileGeometry',['THREE','Core/defaultValue','Scene/Bouding
                     var longi   = phiStart      + u * phiLength;
                     var lati    = thetaStart    + v * thetaLength;
 
-                    var vertex = ellipsoid.cartographicToCartesian(new CoordCarto(longi,lati,0)) ;                                                         
+                    var vertex = ellipsoid.cartographicToCartesian(new CoordCarto(longi,lati,0));
+                    
+                    
+                    
                     var id3     = idVertex*3 ;
                     
-                    bufferVertex[id3+ 0] = vertex.x;
-                    bufferVertex[id3+ 1] = vertex.y;
-                    bufferVertex[id3+ 2] = vertex.z;
+                    bufferVertex[id3+ 0] = vertex.x - this.center.x;
+                    bufferVertex[id3+ 1] = vertex.y - this.center.y;
+                    bufferVertex[id3+ 2] = vertex.z - this.center.z;
+//                    
+//                     bufferVertex[id3+ 0] = vertex.x ;
+//                    bufferVertex[id3+ 1] = vertex.y ;
+//                    bufferVertex[id3+ 2] = vertex.z ;
 
                     var normal = vertex.clone().normalize();
 
@@ -167,6 +173,8 @@ define('Globe/EllipsoidTileGeometry',['THREE','Core/defaultValue','Scene/Bouding
         
         // ---> for SSE
         this.computeBoundingSphere();
+        
+         
         
     }
 

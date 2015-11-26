@@ -15,17 +15,21 @@
 
 
 
+/* global THREE */
+
 define('Core/Commander/Providers/tileGlobeProvider',[                        
             'Core/Geographic/Projection',
             'Core/Commander/Providers/WMTS_Provider',
             'Core/Geographic/CoordWMTS',
-            'Core/Math/Ellipsoid'
+            'Core/Math/Ellipsoid',
+            'OBBHelper'
             ],
              function(
                 Projection,
                 WMTS_Provider,
                 CoordWMTS,
-                Ellipsoid){
+                Ellipsoid,
+                OBBHelper){
                    
     function tileGlobeProvider(){
         //Constructor
@@ -44,8 +48,8 @@ define('Core/Commander/Providers/tileGlobeProvider',[
         var cooWMTS = this.projection.WGS84toWMTS(bbox);        
         
         var parent  = command.requester;
-        var tile    = new command.type(bbox,cooWMTS,this.ellipsoid);                
-
+        var tile    = new command.type(bbox,cooWMTS,this.ellipsoid,parent);      
+        
         tile.visible = false;
         
         parent.add(tile);
