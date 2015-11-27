@@ -114,6 +114,7 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
      */
     BrowseTree.prototype._browse = function(node, camera,optional){
              
+        //this.bBoxHelper(node);
         if(this.processNode(node,camera,optional))       
             for(var i = 0;i<node.children.length;i++)
                 this._browse(node.children[i],camera,optional);
@@ -128,13 +129,16 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
      */
     BrowseTree.prototype.bBoxHelper = function(node)
     {          
-        if(node instanceof EllipsoidTileMesh && node.level > 1  )
+        if(node instanceof EllipsoidTileMesh && node.level === 2  )
         {                
             
             //console.log(node);
-            if(this.oneNode === 10 )
+            if(this.oneNode === 22 )
             {                    
-                this.scene.scene3D().add(new THREE.OBBHelper(node.geometry.OBB));                                
+                var obb = new THREE.OBBHelper(node.geometry.OBB);
+                var l       = node.absoluteCenter.length();
+                obb.translateZ(l);
+                this.scene.scene3D().add(obb);           
             }
             this.oneNode++;
         }
