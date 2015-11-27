@@ -159,10 +159,10 @@ define('Scene/BoudingBox',['Core/defaultValue','Core/Math/MathExtented','Core/Ma
         var min     = new THREE.Vector3(-width,-height,-maxHeight);
         var obb     = new THREE.OBB(min,max);
 
-        obb.position.copy(center);
-        obb.lookAt(normal);
-        //obb.position.set(0,0,0);
-        obb.translateZ(maxHeight);
+        //var l  = center.length();
+        //obb.position.copy(center);                
+        obb.lookAt(normal);        
+        obb.translateZ(-maxHeight);
         obb.translateY(delta);
         obb.update();
         

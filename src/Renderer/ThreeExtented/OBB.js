@@ -24,13 +24,12 @@ THREE.OBB.prototype.constructor = THREE.OBB;
 THREE.OBB.prototype.update = function(){
 
     this.updateMatrix(); 
-    this.updateMatrixWorld(); 
+    this.updateMatrixWorld();
     
     this.quaInv = this.quaternion.clone().inverse();
     
     this.pointsWorld = this.cPointsWorld(this.points());
 };
-
 
 THREE.OBB.prototype.quadInverse = function(){
 

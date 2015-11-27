@@ -85,13 +85,23 @@ define('Scene/NodeProcess',['Scene/BoudingBox','Renderer/Camera','Core/Math/Math
      */
     NodeProcess.prototype.frustumCullingOBB = function(node,camera)        
     {        
-        //var center  = node.absoluteCenter;
-        var obb     = node.OBB();
-        var quadInv = obb.quadInverse().clone();            
 
+        var obb     = node.OBB();
+        var l       = node.absoluteCenter.length();
+        obb.translateZ(l);
+        obb.update();
+        //console.log(node.rotation);
+        
+        var quadInv = obb.quadInverse().clone();      
+
+        // position in local space
         this.camera.setPosition(obb.worldToLocal(camera.position().clone()));
+        // rotation in local space
         this.camera.setRotation(quadInv.multiply(camera.camera3D.quaternion));
         
+        obb.translateZ(-l);
+        obb.update();
+                
         node.visible = this.camera.getFrustum().intersectsBox(obb.box3D);
         
         return node.visible;
@@ -157,12 +167,12 @@ define('Scene/NodeProcess',['Scene/BoudingBox','Renderer/Camera','Core/Math/Math
      */
     NodeProcess.prototype.horizonCulling = function(node)
     {
-      var points = node.OBB().pointsWorld;
-      var center  = node.absoluteCenter;
+      var points    = node.OBB().pointsWorld;
+      var center    = node.absoluteCenter;
       var isVisible = false;
       for (var i = 0, max = points.length; i < max; i++) 
       {          
-            if(!this.pointHorizonCulling(points[i]))
+            if(!this.pointHorizonCulling(points[i].add(center)))
                 isVisible = true;            
       }
       
