@@ -20,14 +20,21 @@
 define('Core/Commander/Providers/tileGlobeProvider',[                        
             'Core/Geographic/Projection',
             'Core/Commander/Providers/WMTS_Provider',
+            'Globe/EllipsoidTileGeometry',
             'Core/Geographic/CoordWMTS',
-            'Core/Math/Ellipsoid'            
+            'Core/Math/Ellipsoid',
+            'Core/defaultValue',
+            'Scene/BoudingBox'
             ],
              function(
                 Projection,
                 WMTS_Provider,
+                EllipsoidTileGeometry,
                 CoordWMTS,
-                Ellipsoid){
+                Ellipsoid,
+                defaultValue,
+                BoudingBox
+                ){
                    
     function tileGlobeProvider(){
         //Constructor
@@ -35,7 +42,7 @@ define('Core/Commander/Providers/tileGlobeProvider',[
        this.projection      = new Projection();
        this.providerWMTS    = new WMTS_Provider();       
        this.ellipsoid       = new Ellipsoid(6378137, 6378137, 6356752.3142451793);
-       //this.cacheGeometry   = [[]];
+       this.cacheGeometry   = [];
                
     }        
 
@@ -48,14 +55,59 @@ define('Core/Commander/Providers/tileGlobeProvider',[
         
         var parent  = command.requester;
         
-        //var geometryCache = undefined;        
-        //if()
+        var geometryCache   = undefined;
+        var n               = Math.pow(2,cooWMTS.zoom+1);       
+        var part            = Math.PI * 2.0 / n;
         
-        var tile    = new command.type(bbox,cooWMTS,this.ellipsoid,parent);
+        if(this.cacheGeometry[cooWMTS.zoom] !== undefined && this.cacheGeometry[cooWMTS.zoom][cooWMTS.row] !== undefined)
+        {            
+                geometryCache = this.cacheGeometry[cooWMTS.zoom][cooWMTS.row];                
+        }
+        else
+        {
+            if(this.cacheGeometry[cooWMTS.zoom] === undefined)
+                this.cacheGeometry[cooWMTS.zoom] = new Array() ;
+           
+            var precision   = 8;
         
+            if(this.level > 11)
+                precision   = 64;
+            else if(this.level > 8)
+                precision   = 32;
+            else if (this.level > 6)
+                precision   = 16;
+            
+                        
+            var rootBBox    = new BoudingBox(0,part,bbox.minCarto.latitude, bbox.maxCarto.latitude );
+            
+            geometryCache   = new EllipsoidTileGeometry(rootBBox,precision,this.ellipsoid);
+            this.cacheGeometry[cooWMTS.zoom][cooWMTS.row] = geometryCache;    
+                
+        }
+        
+        var tile    = new command.type(bbox,cooWMTS,this.ellipsoid,parent/*,geometryCache*/);
+   
+        var translate   = new THREE.Vector3();
+        var position    = new THREE.Vector3();
+        var quatParent  = new THREE.Quaternion();
+        var scale       = new THREE.Vector3();
+                
+        if(parent.worldToLocal !== undefined )
+        {
+            
+            parent.updateMatrixWorld();
+            
+            parent.matrixWorld.decompose( position, quatParent, scale );            
+            
+            translate = parent.worldToLocal(tile.absoluteCenter.clone());
+        }
+   
+        //tile.rotation.set ( 0, (cooWMTS.col%2)* part, 0 );
+        tile.position.copy(translate);
+                
         tile.visible = false;
         
-        parent.add(tile);
+        parent.add(tile);        
         
         return this.providerWMTS.getTextureBil(cooWMTS).then(function(result)
         {                           
