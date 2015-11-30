@@ -83,7 +83,7 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera'], functio
     c3DEngine.prototype.initCamera = function()
     {
         this.camera     = new Camera(this.width, this.height, this.debug);        
-        this.camera.camera3D.position.z = 30000000;      
+        this.camera.camera3D.position.z = 40000000;      
         this.scene3D.add(this.camera.camera3D);
                 
         if(this.debug)
