@@ -9,20 +9,24 @@
  * @param {type} tileGlobeProvider
  * @param {type} EventsManager
  * @param {type} PriorityQueue
+ * @param {type} when
+ * @param {type} EllipsoidTileMesh
  * @returns {Function}
  */
-
 define('Core/Commander/ManagerCommands',
-        [   'Core/Commander/Providers/tileGlobeProvider',
+        [               
+            'Core/Commander/Providers/tileGlobeProvider',
             'Core/Commander/Interfaces/EventsManager',
             'PriorityQueue',
-            'when'
+            'when',
+            'Globe/EllipsoidTileMesh'
         ], 
         function(
                 tileGlobeProvider,
                 EventsManager,
                 PriorityQueue,
-                when
+                when,
+                EllipsoidTileMesh
         ){
 
     var instanceCommandManager = null;   
@@ -38,11 +42,11 @@ define('Core/Commander/ManagerCommands',
         this.loadQueue      = [];
         this.providers      = [];
         this.history        = null;               
-        this.providers.push(new tileGlobeProvider());         
+        //        
         this.eventsManager  = new EventsManager();       
         this.scene          = undefined;
-        this.nbRequest      = -2;
-        
+        this.nbRequest      = -3; // TODO why???
+
     }        
 
     ManagerCommands.prototype.constructor = ManagerCommands;
@@ -60,10 +64,17 @@ define('Core/Commander/ManagerCommands',
     
     ManagerCommands.prototype.init = function(scene)
     {
-        this.scene = scene;     
-        this.providers[0].renderer = this.scene.gfxEngine;
+        this.scene = scene;       
     };
     
+    ManagerCommands.prototype.createProvider = function(type,param)
+    {               
+        if(type === EllipsoidTileMesh)
+        {           
+            this.providers.push(new tileGlobeProvider(param));
+        }
+    };
+        
     ManagerCommands.prototype.runAllCommands = function()
     {  
         if(this.queueAsync.length === 0)
@@ -76,9 +87,10 @@ define('Core/Commander/ManagerCommands',
         {           
             
             this.runAllCommands();
-            this.nbRequest--;            
+            this.nbRequest--;
+            
             if(this.nbRequest === 0)
-            {                
+            {                                
                 this.scene.updateScene3D();
             }                            
            

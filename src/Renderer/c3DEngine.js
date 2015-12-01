@@ -24,19 +24,15 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera'], functio
         this.width      = this.debug ? window.innerWidth * 0.5 : window.innerWidth;
         this.height     = window.innerHeight;
         
-        this.renderer   = undefined ;
-        this.controls   = undefined ;                
+        this.renderer   = undefined;
+        this.controls   = undefined;                
         this.camera     = undefined;
         this.camDebug   = undefined;
+        this.size       = 1.0;
+        
         
         this.initCamera();
                        
-        if(this.debug)
-        {
-            var axisHelper = new THREE.AxisHelper( 8000000 );
-            this.scene3D.add( axisHelper );
-        }
-                        
         this.renderScene = function(){
                                     
             this.updateRenderer();
@@ -60,16 +56,21 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera'], functio
             this.updateControl();            
             this.scene.wait();
             this.renderScene();
-            
-            
+                        
         }.bind(this);
-        
-        
+                
         this.onWindowResize = function(){
 
             this.width      = this.debug ? window.innerWidth * 0.5 : window.innerWidth;
             this.height     = window.innerHeight;
             this.camera.resize(this.width,this.height);
+            
+            if(this.camDebug)
+            {
+                this.camDebug.aspect = this.camera.ratio;        
+                this.camDebug.updateProjectionMatrix(); 
+            }   
+                        
             this.renderer.setSize( window.innerWidth, window.innerHeight );
             this.renderScene();
         }.bind(this);        
@@ -83,17 +84,13 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera'], functio
     c3DEngine.prototype.initCamera = function()
     {
         this.camera     = new Camera(this.width, this.height, this.debug);        
-        this.camera.camera3D.position.z = 30000000;      
+            
         this.scene3D.add(this.camera.camera3D);
                 
         if(this.debug)
         {
-
-            this.camDebug   = new THREE.PerspectiveCamera( 30, this.camera.ratio, 1, 10000000000) ;
-            this.camDebug.position.x = -30000000;
-            //this.camDebug.position.y =  10000000;            
-            this.camDebug.lookAt(new THREE.Vector3(0,0,0));
-            this.scene3D.add(this.camera.camHelper());                        
+            this.camDebug   = new THREE.PerspectiveCamera( 30, this.camera.ratio, 1) ;                                
+                             
         }        
     };
     
@@ -119,11 +116,31 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera'], functio
      * @param {type} scene
      * @returns {undefined}
      */
-    c3DEngine.prototype.init = function(scene){
+    c3DEngine.prototype.init = function(scene,position){
         
         this.scene  = scene;
+        this.size    = this.scene.size().x;
+        
+        this.camera.setPosition(position);
+        
+         // if near < 15 --> bug no camera helper
+        this.camera.camera3D.near = 0.000002352 * this.size;
+        this.camera.camera3D.far  = this.size * 80;
+        this.camera.camera3D.updateProjectionMatrix();
+        
+        if(this.debug)
+        {
+            this.camDebug.position.x = -this.size * 8;
+            this.camDebug.lookAt(new THREE.Vector3(0,0,0));
+            this.camDebug.far = this.size * 1500;
+            this.camDebug.updateProjectionMatrix(); 
+            this.scene3D.add(this.camera.camHelper());              
+            var axisHelper = new THREE.AxisHelper( this.size*1.33 );
+            this.scene3D.add( axisHelper );
+        }
+        
         this.initRenderer();        
-        this.initControls();
+        this.initControls(this.size);
         window.addEventListener( 'resize', this.onWindowResize, false );
         this.controls.addEventListener( 'change', this.update );
         
@@ -137,14 +154,15 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera'], functio
     c3DEngine.prototype.updateControl = function()
     {
         var len  = this.camera.position().length ();
-                
-        if( len < 8000000 )
+        var lim  = this.size*1.3;
+                        
+        if( len < lim )
         {
-            var t = Math.pow(Math.cos((8000000 - len)/ (8000000 - 6378137) * Math.PI * 0.5),1.5);                
+            var t = Math.pow(Math.cos((lim - len)/ (lim - this.size) * Math.PI * 0.5),1.5);                
             this.controls.zoomSpeed     = t*2.0;
             this.controls.rotateSpeed   = 0.8 *t;                         
         }
-        else if(len >= 8000000 && this.controls.zoomSpeed !== 1.0) 
+        else if(len >= lim && this.controls.zoomSpeed !== 1.0) 
         {
             this.controls.zoomSpeed     = 1.0;
             this.controls.rotateSpeed   = 0.8;                
@@ -175,10 +193,12 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera'], functio
     };
     
     /**
-     * Initialisation of controls camera
+     * @documentation Initialisation of controls camera
+     * @param {type} size
      * @returns {undefined}
      */
-    c3DEngine.prototype.initControls = function(){
+
+    c3DEngine.prototype.initControls = function(size){
         
         this.controls   = new THREE.OrbitControls( this.camera.camera3D,this.renderer.domElement );
         
@@ -187,8 +207,8 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera'], functio
         this.controls.noPan         = false;
         this.controls.rotateSpeed   = 0.8;
         this.controls.zoomSpeed     = 1.0;
-        this.controls.minDistance   = 500000;
-        this.controls.maxDistance   = 100000000.0;        
+        this.controls.minDistance   = size *  0.1;
+        this.controls.maxDistance   = size * 16.0;        
         this.controls.update();
     };
     
@@ -210,11 +230,12 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera'], functio
      */    
     c3DEngine.prototype.add3DScene = function(node){
            
-        if(Array.isArray(node))        
-        {            
-            this.scene3D.add.apply(this.scene3D,node);
-        }
+        if(Array.isArray(node))                       
+        
+            this.scene3D.add.apply(this.scene3D,node);        
+        
         else
+            
             this.scene3D.add(node);
         
     };        

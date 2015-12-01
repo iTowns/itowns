@@ -40,6 +40,8 @@ define('Globe/EllipsoidTileGeometry',[
 
         var phiStart        = bbox.minCarto.longitude ;
         var phiLength       = bbox.dimension.x;
+        
+        this.cLongi         = bbox.center.x;
 
         var thetaStart      = bbox.minCarto.latitude ;
         var thetaLength     = bbox.dimension.y;
@@ -92,7 +94,7 @@ define('Globe/EllipsoidTileGeometry',[
                     var vertex = ellipsoid.cartographicToCartesian(new CoordCarto(longi,lati,0));
                    
                     var id3     = idVertex*3 ;
-                    
+//                    
                     bufferVertex[id3+ 0] = vertex.x - center.x;
                     bufferVertex[id3+ 1] = vertex.y - center.y;
                     bufferVertex[id3+ 2] = vertex.z - center.z;

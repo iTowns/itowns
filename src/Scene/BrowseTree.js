@@ -4,14 +4,14 @@
 * Description: BrowseTree parcourt un arbre de Node. Lors du parcours un ou plusieur NodeProcess peut etre appliqué sur certains Node.
 */
 
-define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess','OBBHelper'], function(THREE,EllipsoidTileMesh,NodeProcess,OBBHelper){
+define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess','OBBHelper'], function(THREE,EllipsoidTileMesh){
 
     function BrowseTree(scene){
         //Constructor
   
         this.oneNode    = 0;
-        this.scene      = scene;       
-        this.nodeProcess= new NodeProcess(this.scene.currentCamera().camera3D);
+        this.scene      = scene;        
+        this.nodeProcess= undefined;
         this.tree       = undefined;
     }
     
@@ -25,6 +25,11 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
         node.visible = false;
     };
     
+    BrowseTree.prototype.addNodeProcess= function(nodeProcess)
+    {        
+        this.nodeProcess = nodeProcess;
+    };
+   
     /**
      * @documentation: Process to apply to each node
      * @param {type} node   : node current to apply process
@@ -114,6 +119,7 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
      */
     BrowseTree.prototype._browse = function(node, camera,optional){
              
+        //this.bBoxHelper(node);
         if(this.processNode(node,camera,optional))       
             for(var i = 0;i<node.children.length;i++)
                 this._browse(node.children[i],camera,optional);
@@ -128,13 +134,16 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
      */
     BrowseTree.prototype.bBoxHelper = function(node)
     {          
-        if(node instanceof EllipsoidTileMesh && node.level > 1  )
+        if(node instanceof EllipsoidTileMesh && node.level === 2  )
         {                
             
             //console.log(node);
-            if(this.oneNode === 10 )
+            if(this.oneNode === 22 )
             {                    
-                this.scene.scene3D().add(new THREE.OBBHelper(node.geometry.OBB));                                
+                var obb = new THREE.OBBHelper(node.geometry.OBB);
+                var l       = node.absoluteCenter.length();
+                obb.translateZ(l);
+                this.scene.scene3D().add(obb);           
             }
             this.oneNode++;
         }

@@ -6,12 +6,14 @@
 
 define('Core/Commander/InterfaceCommander',['Core/Commander/ManagerCommands','Core/Commander/Command'], function(ManagerCommands,Command){
 
-    function InterfaceCommander(type){
+    function InterfaceCommander(type,param){
         //Constructor
 
-        this.managerCommands = ManagerCommands();      
-        this.type     = type;                
-
+        this.managerCommands = ManagerCommands();        
+        this.type     = type;               
+        
+        this.managerCommands.createProvider(this.type,param);
+        
     }
 
     InterfaceCommander.prototype.constructor = InterfaceCommander;
@@ -23,6 +25,8 @@ define('Core/Commander/InterfaceCommander',['Core/Commander/ManagerCommands','Co
         //TODO: Implement Me 
 
     };
+    
+    
  
     /**
     * @return  {[object Object]} 
@@ -53,7 +57,6 @@ define('Core/Commander/InterfaceCommander',['Core/Commander/ManagerCommands','Co
         command.priority = parent.sse === undefined ? 0 : Math.floor(parent.sse * 1000) * parent.level;
 
         this.managerCommands.addCommand(command);
-
 
     };
    
