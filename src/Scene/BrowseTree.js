@@ -4,14 +4,14 @@
 * Description: BrowseTree parcourt un arbre de Node. Lors du parcours un ou plusieur NodeProcess peut etre appliqué sur certains Node.
 */
 
-define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess','OBBHelper'], function(THREE,EllipsoidTileMesh,NodeProcess,OBBHelper){
+define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess','OBBHelper'], function(THREE,EllipsoidTileMesh){
 
     function BrowseTree(scene){
         //Constructor
   
         this.oneNode    = 0;
-        this.scene      = scene;       
-        this.nodeProcess= new NodeProcess(this.scene.currentCamera().camera3D);
+        this.scene      = scene;        
+        this.nodeProcess= undefined;
         this.tree       = undefined;
     }
     
@@ -25,6 +25,11 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
         node.visible = false;
     };
     
+    BrowseTree.prototype.addNodeProcess= function(nodeProcess)
+    {        
+        this.nodeProcess = nodeProcess;
+    };
+   
     /**
      * @documentation: Process to apply to each node
      * @param {type} node   : node current to apply process

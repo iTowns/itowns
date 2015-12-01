@@ -4,20 +4,20 @@
 * Description: NodeProcess effectue une opération sur un Node.
 */
 
-define('Scene/NodeProcess',['Scene/BoudingBox','Renderer/Camera','Core/Math/MathExtented','THREE'], function(BoudingBox,Camera,MathExt,THREE){
+define('Scene/NodeProcess',['Scene/BoudingBox','Renderer/Camera','Core/Math/MathExtented','THREE','Core/defaultValue'], function(BoudingBox,Camera,MathExt,THREE,defaultValue){
 
 
-    function NodeProcess(camera3D){
+    function NodeProcess(camera3D,size,bbox){
         //Constructor
         this.camera = new Camera();        
         this.camera.camera3D  = camera3D.clone();
         
-        this.bbox = new BoudingBox(MathExt.PI_OV_TWO+MathExt.PI_OV_FOUR,MathExt.PI+MathExt.PI_OV_FOUR,0,MathExt.PI_OV_TWO);
+        this.bbox   = defaultValue(bbox,new BoudingBox(MathExt.PI_OV_TWO+MathExt.PI_OV_FOUR,MathExt.PI+MathExt.PI_OV_FOUR,0,MathExt.PI_OV_TWO));
         
         this.vhMagnitudeSquared = 1.0;  
         
-        this.r      = new THREE.Vector3(6378137,6356752.3142451793,6378137);
-        this.cV    = new THREE.Vector3();
+        this.r      = defaultValue(size,new THREE.Vector3());
+        this.cV     = new THREE.Vector3();
         
     }
 
@@ -41,9 +41,9 @@ define('Scene/NodeProcess',['Scene/BoudingBox','Renderer/Camera','Core/Math/Math
             }
         };              
       
-      node.visible = true;
+        node.visible = true;
         
-       return node.visible;
+        return node.visible;
               
     };
     

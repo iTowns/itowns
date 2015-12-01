@@ -6,22 +6,18 @@
 
 
 
-define('Core/Math/Ellipsoid',['Core/Math/MathExtented','THREE'], function(MathExt,THREE){
+define('Core/Math/Ellipsoid',['Core/Math/MathExtented','THREE','Core/defaultValue'], function(MathExt,THREE,defaultValue){
 
-    function Ellipsoid(x,y,z)
+    function Ellipsoid(size)
     {
         //Constructor
 
-        this.rayon_1 = x;
-        this.rayon_2 = y;
-        this.rayon_3 = z;
+        this.rayon_1 = size.x;
+        this.rayon_2 = size.y;
+        this.rayon_3 = size.z;
 
-
-        this._radiiSquared = new THREE.Vector3(x*x,y*y,z*z);
+        this._radiiSquared = new THREE.Vector3(size.x*size.x,size.y*size.y,size.z*size.z);
     }
-    
-    //var cartographicToCartesianNormal   = new THREE.Vector3();
-    //var cartographicToCartesianK        = new THREE.Vector3();
     
     Ellipsoid.prototype.geodeticSurfaceNormalCartographic = function(coordCarto) {
     
@@ -32,13 +28,20 @@ define('Core/Math/Ellipsoid',['Core/Math/MathExtented','THREE'], function(MathEx
         var x = cosLatitude * Math.cos(-longitude);
         var z = cosLatitude * Math.sin(-longitude);
         var y = Math.sin(latitude);
-        
-        
+                
         var    result = new THREE.Vector3(x,y,z);
 
         return result.normalize();
 
+    };
+    
+    Ellipsoid.prototype.setSize = function(size)
+    {
+        this.rayon_1 = size.x;
+        this.rayon_2 = size.y;
+        this.rayon_3 = size.z;
 
+        this._radiiSquared = new THREE.Vector3(size.x*size.x,size.y*size.y,size.z*size.z);
     };
     
     

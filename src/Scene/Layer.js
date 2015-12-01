@@ -5,19 +5,26 @@
 * 
 */
 
-
+/**
+ * 
+ * @param {type} Node
+ * @param {type} InterfaceCommander
+ * @param {type} Projection
+ * @param {type} NodeMesh
+ * @returns {Layer_L15.Layer}
+ */
 define('Scene/Layer',[
     'Scene/Node',
     'Core/Commander/InterfaceCommander',
     'Core/Geographic/Projection',
     'Renderer/NodeMesh'], function(Node,InterfaceCommander,Projection,NodeMesh){
 
-    function Layer(type){
+    function Layer(type,param){
         //Constructor
 
         Node.call( this );
         // Requeter
-        this.interCommand   = new InterfaceCommander(type);
+        this.interCommand   = new InterfaceCommander(type,param);
         this.descriManager  = null;
         this.projection     = new Projection();
                        

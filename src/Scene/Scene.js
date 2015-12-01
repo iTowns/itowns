@@ -4,7 +4,20 @@
 * Description: La Scene est l'instance principale du client. Elle est le chef orchestre de l'application.
 */
 
-define('Scene/Scene',['Renderer/c3DEngine','Globe/Star','Globe/Globe','Renderer/NodeMesh','Core/Commander/ManagerCommands','Scene/BrowseTree','Scene/Layer'], function(c3DEngine,Star,Globe,NodeMesh,ManagerCommands,BrowseTree,Layer){
+/**
+ * 
+ * @param {type} c3DEngine
+ * @param {type} Globe
+ * @param {type} ManagerCommands
+ * @param {type} BrowseTree
+ * @returns {Function}
+ */
+define('Scene/Scene',[
+    'Renderer/c3DEngine',    
+    'Globe/Globe',
+    'Core/Commander/ManagerCommands',
+    'Scene/BrowseTree',
+    'Scene/NodeProcess'], function(c3DEngine,Globe,ManagerCommands,BrowseTree,NodeProcess){
  
     var instanceScene = null;
 
@@ -46,14 +59,13 @@ define('Scene/Scene',['Renderer/c3DEngine','Globe/Star','Globe/Globe','Renderer/
      * @returns {undefined}
      */
     Scene.prototype.init = function()
-    {
-     
-        this.gfxEngine.init(this);        
-        this.add(new Globe());
-        //this.add(new Star());         
-        this.managerCommand.init(this);        
-        this.gfxEngine.update();
-        
+    {     
+        this.gfxEngine.init(this);       
+        this.managerCommand.init(this);
+        var globe = new Globe(); 
+        this.add(globe);
+        this.browserScene.addNodeProcess(new NodeProcess(this.currentCamera().camera3D,globe.size));
+        this.gfxEngine.update();        
     };
 
     /**
