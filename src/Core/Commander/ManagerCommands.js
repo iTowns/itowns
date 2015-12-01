@@ -45,7 +45,7 @@ define('Core/Commander/ManagerCommands',
         //        
         this.eventsManager  = new EventsManager();       
         this.scene          = undefined;
-        this.nbRequest      = -2;
+        this.nbRequest      = -3; // TODO why???
 
     }        
 
@@ -87,9 +87,10 @@ define('Core/Commander/ManagerCommands',
         {           
             
             this.runAllCommands();
-            this.nbRequest--;            
+            this.nbRequest--;
+            console.log(this.nbRequest);
             if(this.nbRequest === 0)
-            {                
+            {                                
                 this.scene.updateScene3D();
             }                            
            
