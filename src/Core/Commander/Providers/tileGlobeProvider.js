@@ -36,12 +36,12 @@ define('Core/Commander/Providers/tileGlobeProvider',[
                 BoudingBox
                 ){
                    
-    function tileGlobeProvider(){
+    function tileGlobeProvider(size){
         //Constructor
        
        this.projection      = new Projection();
        this.providerWMTS    = new WMTS_Provider();       
-       this.ellipsoid       = new Ellipsoid(6378137, 6378137, 6356752.3142451793);
+       this.ellipsoid       = new Ellipsoid(size);       
        this.cacheGeometry   = [];
                
     }        

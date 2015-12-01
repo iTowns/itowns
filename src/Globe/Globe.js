@@ -5,43 +5,39 @@
 */
 
 define('Globe/Globe',[
+    'Core/defaultValue',
     'Scene/Layer',
     'Scene/Quadtree',
     'Scene/SchemeTile',
     'Core/Math/MathExtented',
     'Globe/EllipsoidTileMesh',
     'Globe/Atmosphere',
-    'Core/System/Capabalities'], function(Layer,Quadtree,SchemeTile,MathExt,EllipsoidTileMesh,Atmosphere,Capabalities){
+    'Core/System/Capabalities',
+    'THREE'], function(defaultValue,Layer,Quadtree,SchemeTile,MathExt,EllipsoidTileMesh,Atmosphere,Capabalities,THREE){
 
-    function Globe(){
+    function Globe(scale){
         //Constructor
 
-        Layer.call( this );
+        Layer.call( this );        
         
+        scale       = defaultValue(scale,1.0);
         var caps    = new Capabalities();       
         this.NOIE   = !caps.isInternetExplorer()  ;
         
-        this.terrain    = new Quadtree(EllipsoidTileMesh,this.SchemeTileWMTS(2)) ;        
-        this.atmosphere = this.NOIE ? new Atmosphere() : undefined;        
         
+        this.size       = new THREE.Vector3(6378137, 6378137, 6356752.3142451793).multiplyScalar(scale);
+        this.terrain    = new Quadtree(EllipsoidTileMesh,this.SchemeTileWMTS(2),this.size) ;        
+        this.atmosphere = this.NOIE ? new Atmosphere() : undefined;
+                
         this.add(this.terrain);
-        
         if(this.atmosphere !== undefined)
-            this.add(this.atmosphere);        
+            this.add(this.atmosphere);
+        
     }
 
     Globe.prototype = Object.create( Layer.prototype );
 
     Globe.prototype.constructor = Globe;
-
-    /**
-    * @documentation: Gère les interactions entre les QuadTree.
-    *
-    */
-    Globe.prototype.QuadTreeToMesh = function(){
-        //TODO: Implement Me 
-
-    };     
 
     /**
     * @documentation: Rafrachi les matériaux en fonction du quadTree ORTHO
