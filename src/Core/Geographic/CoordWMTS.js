@@ -26,5 +26,12 @@ define('Core/Geographic/CoordWMTS',['Core/defaultValue'], function(defaultValue)
         this.col    = defaultValue(col,0);
     }
     
+    CoordWMTS.prototype.constructor = CoordWMTS;
+    
+    CoordWMTS.prototype.clone = function()
+    {
+        return new CoordWMTS(this.zoom,this.row,this.col);
+    };
+    
     return CoordWMTS;
 });

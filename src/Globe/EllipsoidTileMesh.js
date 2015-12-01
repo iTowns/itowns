@@ -25,9 +25,11 @@ define('Globe/EllipsoidTileMesh',[
     'text!Renderer/Shader/GlobeVS.glsl',
     'text!Renderer/Shader/GlobeFS.glsl'], function(NodeMesh,EllipsoidTileGeometry,BoudingBox,defaultValue,THREE,Material,CoordCarto,GlobeVS,GlobeFS){
  
-    function EllipsoidTileMesh(bbox,cooWMTS,ellipsoid,parent){
+    function EllipsoidTileMesh(bbox,cooWMTS,ellipsoid,parent,geometryCache){
         //Constructor
         NodeMesh.call( this );
+        
+        
         
         this.showHelper = true;
         this.level      = cooWMTS.zoom;
@@ -46,15 +48,17 @@ define('Globe/EllipsoidTileMesh',[
         var levelMax = 16;
         
         this.geometricError  = Math.pow(2,levelMax- this.level);        
-        this.geometry        = new EllipsoidTileGeometry(bbox,precision,ellipsoid);             
+        this.geometry        = defaultValue(geometryCache,new EllipsoidTileGeometry(bbox,precision,ellipsoid));             
         var parentPosition   = defaultValue(parent.absoluteCenter,new THREE.Vector3());        
         var ccarto           = new CoordCarto(bbox.center.x,bbox.center.y,0);                
         
-        // TODO modif ver world coord de three.js
+        // TODO modif ver world coord de three.js 
         this.absoluteCenter  = ellipsoid.cartographicToCartesian(ccarto) ;   
        
-        this.position.subVectors(this.absoluteCenter,parentPosition);
         
+                // TODO : à mettre dans le provider
+        //this.position.subVectors(this.absoluteCenter,parentPosition);
+
         
         // TODO ??? 
         this.absCenterSphere = new THREE.Vector3().addVectors(this.geometry.boundingSphere.center,this.absoluteCenter);
@@ -69,18 +73,18 @@ define('Globe/EllipsoidTileMesh',[
 
     EllipsoidTileMesh.prototype.constructor = EllipsoidTileMesh;
             
-    EllipsoidTileMesh.prototype.subdivise = function(subBBox)
-    {        
-        var sublevel = this.level + 1;
-        for(var i = 0;i< subBBox.length;i++)
-        {
-            var tileMesh        = new EllipsoidTileMesh(subBBox[i]);
-            tileMesh.position.set(tileMesh.bbox.center.x-this.bbox.center.x,tileMesh.bbox.center.y-this.bbox.center.y,0);
-            this.add(tileMesh);
-            tileMesh.level = sublevel;
-
-        }
-    };
+//    EllipsoidTileMesh.prototype.subdivise = function(subBBox)
+//    {        
+//        var sublevel = this.level + 1;
+//        for(var i = 0;i< subBBox.length;i++)
+//        {
+//            var tileMesh        = new EllipsoidTileMesh(subBBox[i]);
+//            tileMesh.position.set(tileMesh.bbox.center.x-this.bbox.center.x,tileMesh.bbox.center.y-this.bbox.center.y,0);
+//            this.add(tileMesh);
+//            tileMesh.level = sublevel;
+//
+//        }
+//    };
     
     EllipsoidTileMesh.prototype.setTextureTerrain = function(texture)
     {         

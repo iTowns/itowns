@@ -4,7 +4,21 @@
 * Description: La Scene est l'instance principale du client. Elle est le chef orchestre de l'application.
 */
 
-define('Scene/Scene',['Renderer/c3DEngine','Globe/Star','Globe/Globe','Renderer/NodeMesh','Core/Commander/ManagerCommands','Scene/BrowseTree','Scene/Layer'], function(c3DEngine,Star,Globe,NodeMesh,ManagerCommands,BrowseTree,Layer){
+/**
+ * 
+ * @param {type} c3DEngine
+ * @param {type} Globe
+ * @param {type} ManagerCommands
+ * @param {type} BrowseTree
+ * @returns {Function}
+ */
+define('Scene/Scene',[    
+    'Renderer/c3DEngine',    
+    'Globe/Globe',
+    'Core/Commander/ManagerCommands',
+    'Scene/BrowseTree',
+    'Scene/NodeProcess',
+    'Core/Geographic/CoordCarto'], function(c3DEngine,Globe,ManagerCommands,BrowseTree,NodeProcess,CoordCarto){
  
     var instanceScene = null;
 
@@ -20,8 +34,12 @@ define('Scene/Scene',['Renderer/c3DEngine','Globe/Star','Globe/Globe','Renderer/
         this.selectNodes    = null;      
         this.managerCommand = ManagerCommands();
         this.gfxEngine      = c3DEngine();                       
+<<<<<<< HEAD
         this.browserScene   = new BrowseTree(this);
 
+=======
+        this.browserScene   = new BrowseTree(this);        
+>>>>>>> origin/master
 
     }
 
@@ -47,14 +65,21 @@ define('Scene/Scene',['Renderer/c3DEngine','Globe/Star','Globe/Globe','Renderer/
      * @returns {undefined}
      */
     Scene.prototype.init = function()
-    {
-     
-        this.gfxEngine.init(this);        
-        this.add(new Globe());
-        //this.add(new Star());         
-        this.managerCommand.init(this);        
-        this.gfxEngine.update();
+    {                    
+        this.managerCommand.init(this);
+        var globe = new Globe(); 
+        this.add(globe);
         
+        var position    = globe.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(2.33,48.87,25000000));
+                       
+        this.gfxEngine.init(this,position);
+        this.browserScene.addNodeProcess(new NodeProcess(this.currentCamera().camera3D,globe.size));
+        this.gfxEngine.update();        
+    };
+    
+    Scene.prototype.size = function()
+    {
+        return this.nodes[0].size;
     };
 
     /**

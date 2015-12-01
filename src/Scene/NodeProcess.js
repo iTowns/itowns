@@ -4,20 +4,20 @@
 * Description: NodeProcess effectue une opération sur un Node.
 */
 
-define('Scene/NodeProcess',['Scene/BoudingBox','Renderer/Camera','Core/Math/MathExtented','THREE'], function(BoudingBox,Camera,MathExt,THREE){
+define('Scene/NodeProcess',['Scene/BoudingBox','Renderer/Camera','Core/Math/MathExtented','THREE','Core/defaultValue'], function(BoudingBox,Camera,MathExt,THREE,defaultValue){
 
 
-    function NodeProcess(camera3D){
+    function NodeProcess(camera3D,size,bbox){
         //Constructor
         this.camera = new Camera();        
         this.camera.camera3D  = camera3D.clone();
         
-        this.bbox = new BoudingBox(MathExt.PI_OV_TWO+MathExt.PI_OV_FOUR,MathExt.PI+MathExt.PI_OV_FOUR,0,MathExt.PI_OV_TWO);
+        this.bbox   = defaultValue(bbox,new BoudingBox(MathExt.PI_OV_TWO+MathExt.PI_OV_FOUR,MathExt.PI+MathExt.PI_OV_FOUR,0,MathExt.PI_OV_TWO));
         
         this.vhMagnitudeSquared = 1.0;  
         
-        this.r      = new THREE.Vector3(6378137,6356752.3142451793,6378137);
-        this.cV    = new THREE.Vector3();
+        this.r      = defaultValue(size,new THREE.Vector3());
+        this.cV     = new THREE.Vector3();
         
     }
 
@@ -41,9 +41,9 @@ define('Scene/NodeProcess',['Scene/BoudingBox','Renderer/Camera','Core/Math/Math
             }
         };              
       
-      node.visible = true;
+        node.visible = true;
         
-       return node.visible;
+        return node.visible;
               
     };
     
@@ -85,13 +85,23 @@ define('Scene/NodeProcess',['Scene/BoudingBox','Renderer/Camera','Core/Math/Math
      */
     NodeProcess.prototype.frustumCullingOBB = function(node,camera)        
     {        
-        //var center  = node.absoluteCenter;
-        var obb     = node.OBB();
-        var quadInv = obb.quadInverse().clone();            
 
+        var obb     = node.OBB();
+        var l       = node.absoluteCenter.length();
+        obb.translateZ(l);
+        obb.update();
+        //console.log(node.rotation);
+        
+        var quadInv = obb.quadInverse().clone();      
+
+        // position in local space
         this.camera.setPosition(obb.worldToLocal(camera.position().clone()));
+        // rotation in local space
         this.camera.setRotation(quadInv.multiply(camera.camera3D.quaternion));
         
+        obb.translateZ(-l);
+        obb.update();
+                
         node.visible = this.camera.getFrustum().intersectsBox(obb.box3D);
         
         return node.visible;
@@ -157,12 +167,12 @@ define('Scene/NodeProcess',['Scene/BoudingBox','Renderer/Camera','Core/Math/Math
      */
     NodeProcess.prototype.horizonCulling = function(node)
     {
-      var points = node.OBB().pointsWorld;
-      var center  = node.absoluteCenter;
+      var points    = node.OBB().pointsWorld;
+      var center    = node.absoluteCenter;
       var isVisible = false;
       for (var i = 0, max = points.length; i < max; i++) 
       {          
-            if(!this.pointHorizonCulling(points[i]))
+            if(!this.pointHorizonCulling(points[i].add(center)))
                 isVisible = true;            
       }
       

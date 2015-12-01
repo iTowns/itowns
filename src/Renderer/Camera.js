@@ -15,7 +15,7 @@ define('Renderer/Camera',['Scene/Node','THREE'], function(Node, THREE){
         this.ratio      = width/height;                
         this.FOV        = 30;
 
-        this.camera3D   = new THREE.PerspectiveCamera( 30, this.ratio, 15, 500000000 ); // if near < 15 --> bug no camera helper
+        this.camera3D   = new THREE.PerspectiveCamera( 30, this.ratio);
 
         this.direction  = new THREE.Vector3();        
         this.frustum    = new THREE.Frustum();
