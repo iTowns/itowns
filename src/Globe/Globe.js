@@ -23,8 +23,7 @@ define('Globe/Globe',[
         scale       = defaultValue(scale,1.0);
         var caps    = new Capabalities();       
         this.NOIE   = !caps.isInternetExplorer()  ;
-        
-        
+                
         this.size       = new THREE.Vector3(6378137, 6378137, 6356752.3142451793).multiplyScalar(scale);
         this.terrain    = new Quadtree(EllipsoidTileMesh,this.SchemeTileWMTS(2),this.size) ;        
         this.atmosphere = this.NOIE ? new Atmosphere(this.size) : undefined;
@@ -58,6 +57,11 @@ define('Globe/Globe',[
             return schemeT;
         }
 
+    };
+    
+    Globe.prototype.ellipsoid = function()
+    {
+        return this.terrain.interCommand.managerCommands.providers[0].ellipsoid;
     };
     
     return Globe;

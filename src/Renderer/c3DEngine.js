@@ -116,11 +116,12 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera'], functio
      * @param {type} scene
      * @returns {undefined}
      */
-    c3DEngine.prototype.init = function(scene){
+    c3DEngine.prototype.init = function(scene,position){
         
         this.scene  = scene;
         this.size    = this.scene.size().x;
-        this.camera.camera3D.position.z = this.size * 7;
+        
+        this.camera.setPosition(position);
         
          // if near < 15 --> bug no camera helper
         this.camera.camera3D.near = 0.000002352 * this.size;

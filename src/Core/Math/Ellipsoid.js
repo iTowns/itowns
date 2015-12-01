@@ -58,9 +58,9 @@ define('Core/Math/Ellipsoid',['Core/Math/MathExtented','THREE','Core/defaultValu
                
         k.divideScalar( gamma);
         
-        //n.multiplyScalar(coordCarto.altitude);
+        n.multiplyScalar(coordCarto.altitude);
         
-        n.multiplyScalar(0.0);
+        //n.multiplyScalar(0.0);
         
         return k.add( n);
     };
