@@ -21,8 +21,7 @@ define('Scene/Scene',['Renderer/c3DEngine','Globe/Star','Globe/Globe','Renderer/
         this.managerCommand = ManagerCommands();
         this.gfxEngine      = c3DEngine();                       
         this.browserScene   = new BrowseTree(this);
-        
-        
+
 
     }
 
