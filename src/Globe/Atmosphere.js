@@ -7,7 +7,7 @@
 
 define('Globe/Atmosphere',['Renderer/NodeMesh','THREE','text!Renderer/Shader/GlowFS.glsl','text!Renderer/Shader/GlowVS.glsl'], function(NodeMesh,THREE,GlowFS,GlowVS){
 
-    function Atmosphere(){
+    function Atmosphere(size){
         
         NodeMesh.call( this );
         
@@ -29,7 +29,7 @@ define('Globe/Atmosphere',['Renderer/NodeMesh','THREE','text!Renderer/Shader/Glo
 
         } );
                 
-        this.geometry       = new THREE.SphereGeometry( 7300000, 128, 128 );
+        this.geometry       = new THREE.SphereGeometry( size.x * 1.14 , 128, 128 );
         
         this.uniformsIn  = 
         {                        
@@ -48,11 +48,11 @@ define('Globe/Atmosphere',['Renderer/NodeMesh','THREE','text!Renderer/Shader/Glo
 
         } );
         
-       var atmosphereIN    = new THREE.Mesh(new THREE.SphereGeometry( 6400000, 64, 64 ),materialAtmoIn);
+       var atmosphereIN    = new THREE.Mesh(new THREE.SphereGeometry( size.x * 1.01, 64, 64 ),materialAtmoIn);
         
        this.add(atmosphereIN);
         
-       this.add(new THREE.Mesh(new THREE.SphereGeometry(6300000, 32, 32 ), new THREE.MeshBasicMaterial({color : 0x4B683A})));
+       this.add(new THREE.Mesh(new THREE.SphereGeometry(size.x * 0.98, 32, 32 ), new THREE.MeshBasicMaterial({color : 0x4B683A})));
        
        
 //       var imageLoad = new THREE.ImageLoader();

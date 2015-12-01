@@ -60,12 +60,18 @@ define('Scene/Scene',[
      */
     Scene.prototype.init = function()
     {     
-        this.gfxEngine.init(this);       
+               
         this.managerCommand.init(this);
         var globe = new Globe(); 
         this.add(globe);
+        this.gfxEngine.init(this);
         this.browserScene.addNodeProcess(new NodeProcess(this.currentCamera().camera3D,globe.size));
         this.gfxEngine.update();        
+    };
+    
+    Scene.prototype.size = function()
+    {
+        return this.nodes[0].size;
     };
 
     /**
