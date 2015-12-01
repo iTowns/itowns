@@ -12,12 +12,13 @@
  * @param {type} BrowseTree
  * @returns {Function}
  */
-define('Scene/Scene',[
+define('Scene/Scene',[    
     'Renderer/c3DEngine',    
     'Globe/Globe',
     'Core/Commander/ManagerCommands',
     'Scene/BrowseTree',
-    'Scene/NodeProcess'], function(c3DEngine,Globe,ManagerCommands,BrowseTree,NodeProcess){
+    'Scene/NodeProcess',
+    'Core/Geographic/CoordCarto'], function(c3DEngine,Globe,ManagerCommands,BrowseTree,NodeProcess,CoordCarto){
  
     var instanceScene = null;
 
@@ -59,12 +60,14 @@ define('Scene/Scene',[
      * @returns {undefined}
      */
     Scene.prototype.init = function()
-    {     
-               
+    {                    
         this.managerCommand.init(this);
         var globe = new Globe(); 
         this.add(globe);
-        this.gfxEngine.init(this);
+        
+        var position    = globe.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(2.33,48.87,20000000));
+                       
+        this.gfxEngine.init(this,position);
         this.browserScene.addNodeProcess(new NodeProcess(this.currentCamera().camera3D,globe.size));
         this.gfxEngine.update();        
     };
