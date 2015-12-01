@@ -88,7 +88,7 @@ define('Core/Commander/ManagerCommands',
             
             this.runAllCommands();
             this.nbRequest--;
-            console.log(this.nbRequest);
+            
             if(this.nbRequest === 0)
             {                                
                 this.scene.updateScene3D();
