@@ -29,8 +29,7 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera'], functio
         this.camera     = undefined;
         this.camDebug   = undefined;
         this.size       = 1.0;
-        
-        
+                
         this.initCamera();
                        
         this.renderScene = function(){

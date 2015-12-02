@@ -19,7 +19,8 @@ define('Core/System/Capabalities',[], function(){
     */
     Capabalities.prototype.getSystemCapabilities = function(){
         //TODO: Implement Me 
-
+        var memory = window.performance.memory;
+        console.log(  memory.totalJSHeapSize/(1024*1024) +   '/' + memory.jsHeapSizeLimit/(1024*1024));
     };
 
 
