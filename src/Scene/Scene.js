@@ -18,7 +18,8 @@ define('Scene/Scene',[
     'Core/Commander/ManagerCommands',
     'Scene/BrowseTree',
     'Scene/NodeProcess',
-    'Core/Geographic/CoordCarto'], function(c3DEngine,Globe,ManagerCommands,BrowseTree,NodeProcess,CoordCarto){
+    'Core/Geographic/CoordCarto',
+    'Core/System/Capabalities'], function(c3DEngine,Globe,ManagerCommands,BrowseTree,NodeProcess,CoordCarto,Capabalities){
  
     var instanceScene = null;
 
@@ -34,7 +35,8 @@ define('Scene/Scene',[
         this.selectNodes    = null;      
         this.managerCommand = ManagerCommands();
         this.gfxEngine      = c3DEngine();                       
-        this.browserScene   = new BrowseTree(this);        
+        this.browserScene   = new BrowseTree(this);
+        this.cap            = new Capabalities();
 
     }
 
@@ -69,7 +71,9 @@ define('Scene/Scene',[
                        
         this.gfxEngine.init(this,position);
         this.browserScene.addNodeProcess(new NodeProcess(this.currentCamera().camera3D,globe.size));
-        this.gfxEngine.update();        
+        this.gfxEngine.update();
+        
+        
     };
     
     Scene.prototype.size = function()
@@ -94,7 +98,7 @@ define('Scene/Scene',[
         {                        
             this.browserScene.browse(this.nodes[0].terrain,this.currentCamera(),true);
             //this.updateScene3D(); // TODO --> replace by renderScene3D            
-            this.renderScene3D();
+            this.renderScene3D();            
         } 
         
     };
