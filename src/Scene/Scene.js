@@ -24,12 +24,10 @@ define('Scene/Scene',[
     var instanceScene = null;
 
     function Scene(){
-        //Constructor
-        
+        //Constructor        
         if(instanceScene !== null){
             throw new Error("Cannot instantiate more than one Scene");
-        } 
-        
+        }         
         this.nodes          = [];            
         this.cameras        = null;        
         this.selectNodes    = null;      
@@ -46,8 +44,7 @@ define('Scene/Scene',[
     Scene.prototype.updateCommand = function(){
         //TODO: Implement Me 
 
-    };
-    
+    };    
     
     /**
      * @documentation: return current camera 
