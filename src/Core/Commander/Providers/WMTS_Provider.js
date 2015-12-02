@@ -97,11 +97,15 @@ define('Core/Commander/Providers/WMTS_Provider',[
             return when(textureCache);
         }
         
-        if(coWMTS.zoom <= 2)
+        if(coWMTS.zoom <= 2 )
         {
             var texture = -1;
             this.cache.addRessource(url,texture);
             return when(texture);
+        }
+        else if(coWMTS.zoom > 14)
+        {
+            return when(-2);
         }
         
         return this._IoDriver.read(url).then(function(result)
