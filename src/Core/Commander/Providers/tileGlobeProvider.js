@@ -59,6 +59,7 @@ define('Core/Commander/Providers/tileGlobeProvider',[
         var n               = Math.pow(2,cooWMTS.zoom+1);       
         var part            = Math.PI * 2.0 / n;
         
+        /*
         if(this.cacheGeometry[cooWMTS.zoom] !== undefined && this.cacheGeometry[cooWMTS.zoom][cooWMTS.row] !== undefined)
         {            
                 geometryCache = this.cacheGeometry[cooWMTS.zoom][cooWMTS.row];                
@@ -80,10 +81,10 @@ define('Core/Commander/Providers/tileGlobeProvider',[
                         
             var rootBBox    = new BoudingBox(0,part,bbox.minCarto.latitude, bbox.maxCarto.latitude );
             
-            geometryCache   = new EllipsoidTileGeometry(rootBBox,precision,this.ellipsoid);
+            geometryCache   = new EllipsoidTileGeometry(rootBBox,precision,this.ellipsoid,cooWMTS.zoom);
             this.cacheGeometry[cooWMTS.zoom][cooWMTS.row] = geometryCache;    
                 
-        }
+        }*/
         
         var tile    = new command.type(bbox,cooWMTS,this.ellipsoid,parent/*,geometryCache*/);
    
@@ -136,7 +137,8 @@ define('Core/Commander/Providers/tileGlobeProvider',[
                 var col = box[0].col;
                 
                 tile.orthoNeed = box[1].row + 1 - box[0].row;
-
+                
+               
                 for (var row = box[0].row; row < box[1].row + 1; row++)
                 {                                                                        
                     var coo = new CoordWMTS(box[0].zoom,row,col);

@@ -70,8 +70,7 @@ define('Renderer/Material',['THREE','Core/Math/MathExtented'], function(THREE,Ma
             this.uniforms.dTextures_01.value   = this.Textures_01;        
             this.uniforms.nbTextures_01.value  = this.Textures_01.length;                 
             
-        }            
-        
+        }                    
         
     };
     
