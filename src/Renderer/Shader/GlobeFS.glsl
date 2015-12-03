@@ -50,8 +50,7 @@ void main() {
         gl_FragColor = vec4( 1.0, 0.0, 0.0, 1.0);
     else 
     */
-    
-    
+        
     if(latitude < poleSud )
         gl_FragColor = vec4( 0.85, 0.85, 0.91, 1.0);
     else
@@ -59,41 +58,31 @@ void main() {
     if(latitude > poleNord)
         gl_FragColor = vec4( 0.04, 0.23, 0.35, 1.0);
     else
-        {                           
-            
-            //if(nbTextures_01 == 0)
-            //    gl_FragColor = vec4( 0.85, 0.85, 0.00, 1.0);
-            //else
-            {
-                vec2 uvO ;
-                uvO.x           = vUv.x;
-                float y         = vUv2;
-                int idd         = int(floor(y));
-                uvO.y           = y - float(idd);
-                                
-                idd             = nbTextures_01 - idd - 1;
+    {                           
+        vec2 uvO ;
+        uvO.x           = vUv.x;
+        float y         = vUv2;
+        int idd         = int(floor(y));
+        uvO.y           = y - float(idd);
+        idd             = nbTextures_01 - idd - 1;
 
-                gl_FragColor    = vec4( 0.04, 0.23, 0.35, 1.0);
+        if(nbTextures_01 == idd)
+        {
+            idd     = nbTextures_01 - 1 ;
+            uvO.y   = 0.0;
+        }    
+         
+        gl_FragColor    = vec4( 0.04, 0.23, 0.35, 1.0);
 
-                for (int x = 0; x < TEX_UNITS; x++)
-                    if (x == idd)
-                    {                        
-                        gl_FragColor  = texture2D( dTextures_01[x], uvO );
-                        break;
-                    }   
-
-                 /* 
-                float deb = 0.0;
-                if(nbTextures_01 == 4)
-                    deb = 1.0;
-                */
-           }
-
-             
+        for (int x = 0; x < TEX_UNITS; x++)
+            if (x == idd)
+            {                        
+                gl_FragColor  = texture2D( dTextures_01[x], uvO );
+                break;
+            }
+    }
 
          if(debug > 0)
             gl_FragColor = vec4( 1.0, 0.0, 0.0, 1.0);
 
-
-        } 
-}
+} 

@@ -26,7 +26,7 @@ define('Globe/Globe',[
                 
         this.size       = new THREE.Vector3(6378137, 6378137, 6356752.3142451793).multiplyScalar(scale);
         this.terrain    = new Quadtree(EllipsoidTileMesh,this.SchemeTileWMTS(2),this.size) ;        
-        //this.atmosphere = this.NOIE ? new Atmosphere(this.size) : undefined;
+        this.atmosphere = this.NOIE ? new Atmosphere(this.size) : undefined;
                 
         this.add(this.terrain);
         if(this.atmosphere !== undefined)
