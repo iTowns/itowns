@@ -21,6 +21,7 @@ const float PI4         = 0.78539816339;
 uniform sampler2D  dTextures_00[1];
 uniform int        nbTextures_00;
 uniform vec2       bLatitude;
+uniform vec3       pitScale;
 uniform float      periArcLati;
 uniform float      zoom;
 
@@ -28,10 +29,11 @@ varying vec2    vUv;
 varying float   vUv2;
 varying vec3    vNormal;
 
-
 void main() {
 
+        //
         vUv     = uv;
+        //vUv     = vec2(vUv.x*pitScale.z + pitScale.x,vUv.y*pitScale.z + pitScale.y);
         vUv2    = uv2;
 
         //vUv.x = floor(uv.x * 20.0) /20.0;
@@ -39,7 +41,9 @@ void main() {
 
         if(nbTextures_00 > 0)
         {
-            float dv = texture2D( dTextures_00[0], vUv ).w;
+            vec2 vVv  = vec2(vUv.x*pitScale.z + pitScale.x,vUv.y*pitScale.z + pitScale.y);
+                
+            float dv = texture2D( dTextures_00[0], vVv ).w;
 
             vNormal  = normal;//normalize( position );
 

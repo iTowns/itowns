@@ -98,7 +98,7 @@ define('Scene/Quadtree',[
      */
     Quadtree.prototype.update = function(node)
     {
-        if(node.level >= 19  || node.wait === true )
+        if(node.level > 18  || node.wait === true )
             return false;        
                              
         if(node.childrenCount() !== 0 && node.wait === false)                

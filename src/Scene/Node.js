@@ -65,7 +65,16 @@ define('Scene/Node',[], function(){
         //TODO: Implement Me 
 
     };
-
+    
+    /**
+     * 
+     * @param {type} level
+     * @returns {undefined}
+     */
+    Node.prototype.getParentLevel = function(level)
+    {
+        return (this.parent.level === level) ? this.parent : this.parent.getParentLevel(level);
+    };
 
     /**
     * @documentation: Méthode qui créer un memento de l'état de Node avant modification.

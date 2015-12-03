@@ -38,7 +38,9 @@ define('Globe/EllipsoidTileMesh',[
         
         var precision   = 8;
         
-        if(this.level > 11)
+        if (this.level > 15)
+            precision   = 64;
+        else if(this.level > 11)
             precision   = 128;
         else if(this.level > 8)
             precision   = 32;
@@ -86,9 +88,9 @@ define('Globe/EllipsoidTileMesh',[
 //        }
 //    };
     
-    EllipsoidTileMesh.prototype.setTextureTerrain = function(texture)
+    EllipsoidTileMesh.prototype.setTextureTerrain = function(texture,pitScale)
     {         
-        this.tMat.setTexture(texture,0);      
+        this.tMat.setTexture(texture,0,0,pitScale);      
     };
     
     EllipsoidTileMesh.prototype.setAltitude = function(min,max)
