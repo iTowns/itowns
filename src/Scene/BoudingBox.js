@@ -51,6 +51,14 @@ define('Scene/BoudingBox',['Core/defaultValue','Core/Math/MathExtented','Core/Ma
 
     };
     
+    BoudingBox.prototype.pitScale = function(bbox)
+    {
+        var pitX    = Math.abs(bbox.minCarto.longitude  - this.minCarto.longitude ) / this.dimension.x;
+        var pitY    = Math.abs(bbox.maxCarto.latitude   - this.maxCarto.latitude  ) / this.dimension.y;
+        var scale   = bbox.dimension.x / this.dimension.x ;
+        return new THREE.Vector3(pitX,pitY,scale);
+    };
+    
     /**
      * @documentation: Set the bounding box with the center of the box and the half dimension of the box
      * @param {type} center : center of the box

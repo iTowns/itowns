@@ -113,17 +113,20 @@ define('Core/Commander/Providers/tileGlobeProvider',[
         return this.providerWMTS.getTextureBil(cooWMTS).then(function(result)
         {              
             var texture;
-            
+            var pitScale;
             if(result === - 1)
                 texture = -1;
             else if(result === - 2)
             {
-                texture = -1;
+                var parentBil   = this.getParentLevel(14);                                
+                pitScale        = parentBil.bbox.pitScale(tile.bbox);                
+                texture         = parentBil.tMat.Textures_00[0];
+                
             }
             else
                 texture = result.texture;
                 
-            this.setTextureTerrain(texture);
+            this.setTextureTerrain(texture,pitScale);
             
             return this;
 

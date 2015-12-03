@@ -9,8 +9,7 @@ define('Renderer/Material',['THREE','Core/Math/MathExtented'], function(THREE,Ma
     
     // TODO Temp
     WGS84LatitudeClamp = function(latitude){
-        
-        //var min = -68.1389  / 180 * Math.PI;
+                
         var min = -86  / 180 * Math.PI;
         var max =  84  / 180 * Math.PI;
 
@@ -36,6 +35,7 @@ define('Renderer/Material',['THREE','Core/Math/MathExtented'], function(THREE,Ma
             nbTextures_01   : { type: "i" , value: 0 },
             bLongitude      : { type: "v2", value: new THREE.Vector2(bbox.minCarto.longitude,bbox.maxCarto.longitude)}, 
             bLatitude       : { type: "v2", value: new THREE.Vector2(bbox.minCarto.latitude,bbox.maxCarto.latitude)},
+            pitScale        : { type: "v3", value: new THREE.Vector3(0.0,0.0,1.0)},
             periArcLati     : { type: "f" , value: Math.abs(bbox.maxCarto.latitude - bbox.minCarto.latitude)},
             y0              : { type: "f" , value: 0.5 - Math.log(Math.tan(MathExt.PI_OV_FOUR + WGS84LatitudeClamp(bbox.maxCarto.latitude)*0.5))*MathExt.INV_TWO_PI},
             zoom            : { type: "f" , value: zoom },
@@ -55,23 +55,22 @@ define('Renderer/Material',['THREE','Core/Math/MathExtented'], function(THREE,Ma
         
     };
     
-    Material.prototype.setTexture = function(texture,layer,id)
+    Material.prototype.setTexture = function(texture,layer,id,pitScale)
     {         
         if(layer === 0 && texture !== -1)
         {
-            this.Textures_00[0]                = texture;        
-            this.uniforms.dTextures_00.value   = this.Textures_00;        
-            this.uniforms.nbTextures_00.value  = 1.0;                                           
+            this.Textures_00[0]                 = texture;        
+            this.uniforms.dTextures_00.value    = this.Textures_00;        
+            this.uniforms.nbTextures_00.value   = 1.0;
+            if(pitScale)
+                this.uniforms.pitScale.value    = pitScale;
         }
         else
-        {
-            
-            this.Textures_01[id]               = texture;        
-            this.uniforms.dTextures_01.value   = this.Textures_01;        
-            this.uniforms.nbTextures_01.value  = this.Textures_01.length;                 
-            
-        }                    
-        
+        {            
+            this.Textures_01[id]                = texture;        
+            this.uniforms.dTextures_01.value    = this.Textures_01;        
+            this.uniforms.nbTextures_01.value   = this.Textures_01.length;                             
+        }                            
     };
     
     Material.prototype.setDebug = function(debug_value)

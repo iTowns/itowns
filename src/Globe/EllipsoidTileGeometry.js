@@ -95,19 +95,6 @@ define('Globe/EllipsoidTileGeometry',[
         var start       = (st1%(sizeTexture));
         
         var st = st1 - start;
-//        
-//        if(isNaN(st))
-//        {
-//            console.log('---');
-//            console.log('nb row : '+  nbRow);
-//            console.log('zoom : '+  zoom);
-//            console.log('start : '+  start);
-//            console.log('sizeTexture : '+  sizeTexture);
-//            console.log('st : '+  st1);
-//           
-//        }
-        
-        // console.log('st : '+  st +  '/' + thetaStart + ' ' + start + ' ' + sizeTexture);
 
         for ( y = 0; y <= heightSegments; y ++ ) 
         {
@@ -148,33 +135,20 @@ define('Globe/EllipsoidTileGeometry',[
                     bufferNormal[id3+ 0] = normal.x;
                     bufferNormal[id3+ 1] = normal.y;
                     bufferNormal[id3+ 2] = normal.z;      
-/*
-                    if ( Math.abs( vertex.y) === radius) {
 
-                          u = u + 1 / (2* widthSegments );
-
-
-                    } else if ( Math.abs( vertex.y) === radius ) {
-
-                          u = u + 1 / (2* widthSegments );
-
-                    } 
-*/
                     bufferUV[idVertex*2 + 0] = u;
                     bufferUV[idVertex*2 + 1] = 1-v;
                     
-                    bufferUV2[idVertex]      = t;                         
-                    
+                    bufferUV2[idVertex]      = t;                                             
                     
                     idVertex ++;
 
                     this.vertices.push(vertex);                
                     verticesRow.push( this.vertices.length - 1 );
-                    //uvsRow.push( new THREE.Vector2( u, 1-v ));
+                    
             }
 
-            verticees.push( verticesRow );
-            //uvs.push( uvsRow );
+            verticees.push( verticesRow );            
 
         }
 

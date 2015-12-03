@@ -45,7 +45,7 @@ void main() {
     float latitude  = bLatitude.x + periArcLati*(1.0-vUv.y);
    
     /*
-    float sLine = 0.0015;
+    float sLine = 0.0115;
     if(vUv.x < sLine || vUv.x > 1.0 - sLine || vUv.y < sLine || vUv.y > 1.0 - sLine)
         gl_FragColor = vec4( 1.0, 0.0, 0.0, 1.0);
     else 
@@ -80,6 +80,9 @@ void main() {
                 gl_FragColor  = texture2D( dTextures_01[x], uvO );
                 break;
             }
+
+        //float deb       = vUv.y;
+        //gl_FragColor    = vec4( deb, deb, deb, 1.0);
     }
 
          if(debug > 0)
