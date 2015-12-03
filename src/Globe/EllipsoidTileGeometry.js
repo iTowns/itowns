@@ -108,9 +108,7 @@ define('Globe/EllipsoidTileGeometry',[
 //        }
         
         // console.log('st : '+  st +  '/' + thetaStart + ' ' + start + ' ' + sizeTexture);
-//        if(zoom === 2)
-//            console.log('--------------------');
-        
+
         for ( y = 0; y <= heightSegments; y ++ ) 
         {
 
@@ -125,10 +123,7 @@ define('Globe/EllipsoidTileGeometry',[
                     
             if(!isFinite(t))
                 t = 0;
-            
-//            if(zoom === 2)
-//                console.log(t + ' / ' + lati);
-            
+                        
             for ( x = 0; x <= widthSegments; x ++ ) 
             {
 
