@@ -12,21 +12,30 @@
 
 #endif
 
+attribute float uv2;
+
+const float PI          = 3.14159265359;
+const float INV_TWO_PI  = 1.0 / (2.0*PI);
+const float PI4         = 0.78539816339;
+
 uniform sampler2D  dTextures_00[1];
 uniform int        nbTextures_00;
+uniform vec2       bLatitude;
+uniform float      periArcLati;
+uniform float      zoom;
 
-varying vec2 vUv;
-varying vec3 vNormal;
-
+varying vec2    vUv;
+varying float   vUv2;
+varying vec3    vNormal;
 
 
 void main() {
 
-        vUv = uv;
-        
+        vUv     = uv;
+        vUv2    = uv2;
+
         //vUv.x = floor(uv.x * 20.0) /20.0;
         //vUv.y = floor(uv.y * 20.0) /20.0;
-                
 
         if(nbTextures_00 > 0)
         {

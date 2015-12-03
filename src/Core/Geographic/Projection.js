@@ -58,7 +58,7 @@ define('Core/Geographic/Projection',['Core/Geographic/CoordWMTS','Core/Math/Math
         var yMin  = this.WGS84ToY(this.WGS84LatitudeClamp(bbox.maxCarto.latitude));
         var yMax  = this.WGS84ToY(this.WGS84LatitudeClamp(bbox.minCarto.latitude));
         
-        var minRow,maxRow,minFra,maxFra,min,max;
+        var minRow,maxRow,min,max;
 
         min     = yMin/ sizeRow;
         max     = yMax/ sizeRow;            
@@ -66,12 +66,9 @@ define('Core/Geographic/Projection',['Core/Geographic/CoordWMTS','Core/Math/Math
         minRow  = Math.floor(min);
         maxRow  = Math.floor(max);
         
-        if(max - maxRow === 0.0)
+        if(max - maxRow === 0.0 || maxRow === nbRow)        
             maxRow--;       
-
-        minFra  = Math.abs(yMin - minRow * sizeRow);
-        maxFra  = Math.abs(yMax - maxRow * sizeRow);
-
+        
         var minCol = cWMTS.col;
         var maxCol = minCol;
         
@@ -93,7 +90,6 @@ define('Core/Geographic/Projection',['Core/Geographic/CoordWMTS','Core/Math/Math
     
     Projection.prototype.WGS84toWMTS = function(bbox){
         
-
         var zoom    = Math.floor(Math.log(MathExt.PI / bbox.dimension.y )/MathExt.LOG_TWO + 0.5);
         
         var nY      = Math.pow(2,zoom);

@@ -48,7 +48,7 @@ define('Globe/EllipsoidTileMesh',[
         var levelMax = 16;
         
         this.geometricError  = Math.pow(2,levelMax- this.level);        
-        this.geometry        = defaultValue(geometryCache,new EllipsoidTileGeometry(bbox,precision,ellipsoid));             
+        this.geometry        = defaultValue(geometryCache,new EllipsoidTileGeometry(bbox,precision,ellipsoid,this.level));             
         var parentPosition   = defaultValue(parent.absoluteCenter,new THREE.Vector3());        
         var ccarto           = new CoordCarto(bbox.center.x,bbox.center.y,0);                
         
