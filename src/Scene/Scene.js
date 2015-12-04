@@ -33,8 +33,13 @@ define('Scene/Scene',[
         this.selectNodes    = null;      
         this.managerCommand = ManagerCommands();
         this.gfxEngine      = c3DEngine();                       
+
+
+        this.browserScene   = new BrowseTree(this);
+
         this.browserScene   = new BrowseTree(this);
         this.cap            = new Capabalities();
+
 
     }
 
