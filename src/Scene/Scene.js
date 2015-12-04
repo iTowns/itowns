@@ -34,12 +34,8 @@ define('Scene/Scene',[
         this.selectNodes    = null;      
         this.managerCommand = ManagerCommands();
         this.gfxEngine      = c3DEngine();                       
-<<<<<<< HEAD
-        this.browserScene   = new BrowseTree(this);
 
-=======
-        this.browserScene   = new BrowseTree(this);        
->>>>>>> origin/master
+        this.browserScene   = new BrowseTree(this);
 
     }
 
