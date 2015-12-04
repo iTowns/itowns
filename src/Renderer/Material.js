@@ -39,6 +39,7 @@ define('Renderer/Material',['THREE','Core/Math/MathExtented'], function(THREE,Ma
             periArcLati     : { type: "f" , value: Math.abs(bbox.maxCarto.latitude - bbox.minCarto.latitude)},
             y0              : { type: "f" , value: 0.5 - Math.log(Math.tan(MathExt.PI_OV_FOUR + WGS84LatitudeClamp(bbox.maxCarto.latitude)*0.5))*MathExt.INV_TWO_PI},
             zoom            : { type: "f" , value: zoom },
+            mVPMatRTC       : { type: "m4", value: new THREE.Matrix4()},
             debug           : { type: "i" , value: false }
             
         };

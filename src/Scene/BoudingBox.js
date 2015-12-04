@@ -14,7 +14,13 @@
  * @param {type} OBB
  * @returns {BoudingBox_L10.BoudingBox}
  */
-define('Scene/BoudingBox',['Core/defaultValue','Core/Math/MathExtented','Core/Math/Point2D','Core/Geographic/CoordCarto','THREE','OBB'], function(defaultValue,MathExt,Point2D,CoordCarto,THREE,OBB){
+define('Scene/BoudingBox',[
+    'Core/defaultValue',
+    'Core/Math/MathExtented',
+    'Core/Math/Point2D',
+    'Core/Geographic/CoordCarto',
+    'THREE',
+    'OBB'], function(defaultValue,MathExt,Point2D,CoordCarto,THREE,OBB){
 
     /**
      * 

@@ -71,6 +71,9 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
                         {
 
                             node.material.visible = true;
+                            
+                
+                            this.RTC(node,camera);
 
                             if(node.childrenCount() !== 0)
                                 for(var i = 0;i<node.children.length;i++)
@@ -83,13 +86,43 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
                     }
                 }
             }
+
+            if(node.visible)
+                this.RTC(node,camera);
                         
             return node.visible;
         }        
         
         return true;
     };
+    
+    
+    BrowseTree.prototype.RTC = function(node,camera)
+    {
+        node.updateMatrixWorld();
+        
+        var matrixWorld     = new THREE.Matrix4();
+        
+        var modelViewMatrix = new THREE.Matrix4().multiplyMatrices(camera.viewMatrix(),matrixWorld);        
+        //var center          = node.position;//node.matrixWorld.getPosition();
+        
+        //var centerParent    = node.parent ? new THREE.Vector3().setFromMatrixPosition(node.parent.matrixWorld) : new THREE.Vector3();
+        
+        //var center          = new THREE.Vector3().setFromMatrixPosition (node.matrixWorld) - centerParent;
+        //
+        //var center          = node.absoluteCenter - node.parent.absoluteCenter;
+        
+        var center          = node.absoluteCenter;
+        var centerEye       = new THREE.Vector4(center.x,center.y,center.z, 1.0).applyMatrix4(camera.viewMatrix()) ;
+        
+        var mvc             = modelViewMatrix.clone().setPosition(centerEye);        
+        var mVPMatRTC       = new THREE.Matrix4().multiplyMatrices(camera.camera3D.projectionMatrix,mvc);
+        
+        node.tMat.uniforms.mVPMatRTC.value = mVPMatRTC;        
 
+        //node.tMat.shader.needsUpdate         = true;   // TODO : needed?
+        
+    };
     /**
      * @documentation: Initiate traverse tree 
      * @param {type} tree       : tree 
