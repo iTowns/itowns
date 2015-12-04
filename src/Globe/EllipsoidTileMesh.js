@@ -38,7 +38,9 @@ define('Globe/EllipsoidTileMesh',[
         
         var precision   = 8;
         
-        if(this.level > 11)
+        if (this.level > 15)
+            precision   = 64;
+        else if(this.level > 11)
             precision   = 128;
         else if(this.level > 8)
             precision   = 32;
@@ -48,18 +50,12 @@ define('Globe/EllipsoidTileMesh',[
         var levelMax = 16;
         
         this.geometricError  = Math.pow(2,levelMax- this.level);        
-        this.geometry        = defaultValue(geometryCache,new EllipsoidTileGeometry(bbox,precision,ellipsoid));             
-        var parentPosition   = defaultValue(parent.absoluteCenter,new THREE.Vector3());        
+        this.geometry        = defaultValue(geometryCache,new EllipsoidTileGeometry(bbox,precision,ellipsoid,this.level));       
         var ccarto           = new CoordCarto(bbox.center.x,bbox.center.y,0);                
         
         // TODO modif ver world coord de three.js 
         this.absoluteCenter  = ellipsoid.cartographicToCartesian(ccarto) ;   
        
-        
-                // TODO : à mettre dans le provider
-        //this.position.subVectors(this.absoluteCenter,parentPosition);
-
-        
         // TODO ??? 
         this.absCenterSphere = new THREE.Vector3().addVectors(this.geometry.boundingSphere.center,this.absoluteCenter);
                
@@ -67,6 +63,7 @@ define('Globe/EllipsoidTileMesh',[
         this.orthoNeed  = 10;
         this.material   = this.tMat.shader;
         this.dot        = 0;
+        this.frustumCulled = false;
     }
 
     EllipsoidTileMesh.prototype = Object.create( NodeMesh.prototype );
@@ -86,9 +83,9 @@ define('Globe/EllipsoidTileMesh',[
 //        }
 //    };
     
-    EllipsoidTileMesh.prototype.setTextureTerrain = function(texture)
+    EllipsoidTileMesh.prototype.setTextureTerrain = function(texture,pitScale)
     {         
-        this.tMat.setTexture(texture,0);      
+        this.tMat.setTexture(texture,0,0,pitScale);      
     };
     
     EllipsoidTileMesh.prototype.setAltitude = function(min,max)

@@ -18,24 +18,28 @@ define('Scene/Scene',[
     'Core/Commander/ManagerCommands',
     'Scene/BrowseTree',
     'Scene/NodeProcess',
-    'Core/Geographic/CoordCarto'], function(c3DEngine,Globe,ManagerCommands,BrowseTree,NodeProcess,CoordCarto){
+    'Core/Geographic/CoordCarto',
+    'Core/System/Capabalities'], function(c3DEngine,Globe,ManagerCommands,BrowseTree,NodeProcess,CoordCarto,Capabalities){
  
     var instanceScene = null;
 
     function Scene(){
-        //Constructor
-        
+        //Constructor        
         if(instanceScene !== null){
             throw new Error("Cannot instantiate more than one Scene");
-        } 
-        
+        }         
         this.nodes          = [];            
         this.cameras        = null;        
         this.selectNodes    = null;      
         this.managerCommand = ManagerCommands();
         this.gfxEngine      = c3DEngine();                       
+<<<<<<< HEAD
 
         this.browserScene   = new BrowseTree(this);
+=======
+        this.browserScene   = new BrowseTree(this);
+        this.cap            = new Capabalities();
+>>>>>>> origin/master
 
     }
 
@@ -45,8 +49,12 @@ define('Scene/Scene',[
     Scene.prototype.updateCommand = function(){
         //TODO: Implement Me 
 
-    };
+    };    
     
+    Scene.prototype.updateCommand = function(){
+        //TODO: Implement Me 
+    };    
+        
     
     /**
      * @documentation: return current camera 
@@ -66,11 +74,14 @@ define('Scene/Scene',[
         var globe = new Globe(); 
         this.add(globe);
         
-        var position    = globe.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(2.33,48.87,25000000));
+        var position    = globe.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(2.33,48.87,25000000));        
+        //var position    = globe.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(0,48.87,25000000));
                        
         this.gfxEngine.init(this,position);
         this.browserScene.addNodeProcess(new NodeProcess(this.currentCamera().camera3D,globe.size));
-        this.gfxEngine.update();        
+        this.gfxEngine.update();
+        
+        
     };
     
     Scene.prototype.size = function()
@@ -95,7 +106,7 @@ define('Scene/Scene',[
         {                        
             this.browserScene.browse(this.nodes[0].terrain,this.currentCamera(),true);
             //this.updateScene3D(); // TODO --> replace by renderScene3D            
-            this.renderScene3D();
+            this.renderScene3D();            
         } 
         
     };
