@@ -24,6 +24,7 @@ uniform vec2       bLatitude;
 uniform vec3       pitScale;
 uniform float      periArcLati;
 uniform float      zoom;
+uniform mat4       mVPMatRTC;
 
 varying vec2    vUv;
 varying float   vUv2;
@@ -50,11 +51,14 @@ void main() {
             //vec3 displacedPosition = position +  vNormal  * dv *10.0;
             vec3 displacedPosition = position +  vNormal  * dv ;
 
-            gl_Position = projectionMatrix * modelViewMatrix * vec4( displacedPosition ,1.0 );
-
+            //gl_Position = projectionMatrix * modelViewMatrix * vec4( displacedPosition ,1.0 );
+            
+            gl_Position = mVPMatRTC * vec4( displacedPosition ,1.0 );
+            //gl_Position = mVPMatRTC * vec4( position ,1.0 );
         }
         else
-            gl_Position = projectionMatrix * modelViewMatrix * vec4( position ,1.0 );
+            //gl_Position = projectionMatrix * modelViewMatrix * vec4( position ,1.0 );
+            gl_Position = mVPMatRTC * vec4( position ,1.0 );
 
         
         #ifdef USE_LOGDEPTHBUF

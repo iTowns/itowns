@@ -63,6 +63,7 @@ define('Globe/EllipsoidTileMesh',[
         this.orthoNeed  = 10;
         this.material   = this.tMat.shader;
         this.dot        = 0;
+        this.frustumCulled = false;
     }
 
     EllipsoidTileMesh.prototype = Object.create( NodeMesh.prototype );

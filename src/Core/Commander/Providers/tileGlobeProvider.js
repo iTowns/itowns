@@ -42,7 +42,7 @@ define('Core/Commander/Providers/tileGlobeProvider',[
        this.projection      = new Projection();
        this.providerWMTS    = new WMTS_Provider();       
        this.ellipsoid       = new Ellipsoid(size);       
-       this.cacheGeometry   = [];
+       this.cacheGeometry   = [];       
                
     }        
 
@@ -108,12 +108,14 @@ define('Core/Commander/Providers/tileGlobeProvider',[
                 
         tile.visible = false;
         
-        parent.add(tile);        
+        parent.add(tile);      
+        
         
         return this.providerWMTS.getTextureBil(cooWMTS).then(function(result)
         {              
             var texture;
             var pitScale;
+            
             if(result === - 1)
                 texture = -1;
             else if(result === - 2)
@@ -121,11 +123,16 @@ define('Core/Commander/Providers/tileGlobeProvider',[
                 var parentBil   = this.getParentLevel(14);                                
                 pitScale        = parentBil.bbox.pitScale(tile.bbox);                
                 texture         = parentBil.tMat.Textures_00[0];
-                
+                this.bbox.setAltitude(parentBil.bbox.minCarto.altitude,parentBil.bbox.maxCarto.altitude);
+                this.geometry.OBB.addHeight(this.bbox);
             }
             else
+            {
                 texture = result.texture;
-                
+                this.bbox.setAltitude(result.min,result.max);
+                this.geometry.OBB.addHeight(this.bbox);
+            }                         
+            
             this.setTextureTerrain(texture,pitScale);
             
             return this;
