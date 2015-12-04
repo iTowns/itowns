@@ -64,7 +64,9 @@ define('Scene/Scene',[
         var globe = new Globe(); 
         this.add(globe);
         
-        var position    = globe.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(2.33,48.87,25000000));
+        //var position    = globe.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(2.33,48.87,25000000));
+        
+        var position    = globe.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(0,48.87,25000000));
                        
         this.gfxEngine.init(this,position);
         this.browserScene.addNodeProcess(new NodeProcess(this.currentCamera().camera3D,globe.size));

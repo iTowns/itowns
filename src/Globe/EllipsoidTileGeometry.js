@@ -12,18 +12,22 @@ define('Globe/EllipsoidTileGeometry',[
     'Scene/BoudingBox',
     'Core/Math/Ellipsoid',
     'Core/Geographic/CoordCarto',
-    'Core/Math/MathExtented'
+    'Core/Math/MathExtented',
+    'Core/System/JavaTools'
     ], function(
         THREE,
         defaultValue,
         BoudingBox,
         Ellipsoid,
         CoordCarto,
-        MathExt){
+        MathExt,
+        JavaTools){
 
     function EllipsoidTileGeometry(bbox,segment,pellipsoid,zoom){
         //Constructor
         THREE.BufferGeometry.call( this );
+        
+        var javToo          = new JavaTools();
         
         var nbRow           = Math.pow(2.0,zoom + 1.0 );
         
@@ -81,11 +85,9 @@ define('Globe/EllipsoidTileGeometry',[
         this.OBB    = bbox.get3DBBox(ellipsoid,center);
         
         var idVertex        = 0;
-        var x, y, verticees = [];//, uvs = [];
+        var x, y, vertices  = [];
 
-        this.vertices = [];
-        
-        var st1          = 0.5 + Math.log(Math.tan(MathExt.PI_OV_FOUR + thetaStart*0.5))* MathExt.INV_TWO_PI;
+        var st1             = 0.5 + Math.log(Math.tan(MathExt.PI_OV_FOUR + thetaStart*0.5))* MathExt.INV_TWO_PI;
         
         if(!isFinite(st1))
             st1 = 0;
@@ -100,13 +102,10 @@ define('Globe/EllipsoidTileGeometry',[
         {
 
             var verticesRow = [];
-            //var uvsRow  = [];
-            //var uvsRow2 = [];
-            
-            var v = y / heightSegments;
-            var lati    = thetaStart    + v * thetaLength;
-            
-            var t = ((0.5 + Math.log(Math.tan(MathExt.PI_OV_FOUR + lati*0.5))* MathExt.INV_TWO_PI) - st) * nbRow;
+
+            var v       = y / heightSegments;
+            var lati    = thetaStart    + v * thetaLength;           
+            var t       = ((0.5 + Math.log(Math.tan(MathExt.PI_OV_FOUR + lati*0.5))* MathExt.INV_TWO_PI) - st) * nbRow;
                     
             if(!isFinite(t))
                 t = 0;
@@ -142,13 +141,12 @@ define('Globe/EllipsoidTileGeometry',[
                     bufferUV2[idVertex]      = t;                                             
                     
                     idVertex ++;
-
-                    this.vertices.push(vertex);                
-                    verticesRow.push( this.vertices.length - 1 );
+                                  
+                    verticesRow.push( idVertex - 1 );
                     
             }
 
-            verticees.push( verticesRow );            
+            vertices.push( verticesRow );          
 
         }
 
@@ -165,10 +163,10 @@ define('Globe/EllipsoidTileGeometry',[
 
               for ( x = 0; x < widthSegments; x ++ ) {
 
-                    var v1 = verticees[ y ][ x + 1 ];
-                    var v2 = verticees[ y ][ x ];
-                    var v3 = verticees[ y + 1 ][ x ];
-                    var v4 = verticees[ y + 1 ][ x + 1 ];
+                    var v1 = vertices[ y ][ x + 1 ];
+                    var v2 = vertices[ y ][ x ];
+                    var v3 = vertices[ y + 1 ][ x ];
+                    var v4 = vertices[ y + 1 ][ x + 1 ];
 
                     bufferize(v4,v2,v1,idVertex);
                     
@@ -190,6 +188,15 @@ define('Globe/EllipsoidTileGeometry',[
         
         // ---> for SSE
         this.computeBoundingSphere();
+        
+        javToo.freeArray(vertices);
+        
+        // TODO how free typedArray
+        bufferVertex    = null;
+        bufferIndex     = null;       
+        bufferNormal    = null;
+        bufferUV        = null;
+        bufferUV2       = null;
         
     }
 

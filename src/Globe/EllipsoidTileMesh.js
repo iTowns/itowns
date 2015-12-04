@@ -50,18 +50,12 @@ define('Globe/EllipsoidTileMesh',[
         var levelMax = 16;
         
         this.geometricError  = Math.pow(2,levelMax- this.level);        
-        this.geometry        = defaultValue(geometryCache,new EllipsoidTileGeometry(bbox,precision,ellipsoid,this.level));             
-        var parentPosition   = defaultValue(parent.absoluteCenter,new THREE.Vector3());        
+        this.geometry        = defaultValue(geometryCache,new EllipsoidTileGeometry(bbox,precision,ellipsoid,this.level));       
         var ccarto           = new CoordCarto(bbox.center.x,bbox.center.y,0);                
         
         // TODO modif ver world coord de three.js 
         this.absoluteCenter  = ellipsoid.cartographicToCartesian(ccarto) ;   
        
-        
-                // TODO : à mettre dans le provider
-        //this.position.subVectors(this.absoluteCenter,parentPosition);
-
-        
         // TODO ??? 
         this.absCenterSphere = new THREE.Vector3().addVectors(this.geometry.boundingSphere.center,this.absoluteCenter);
                
