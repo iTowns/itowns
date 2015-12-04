@@ -98,29 +98,20 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
     
     
     BrowseTree.prototype.RTC = function(node,camera)
-    {
-        node.updateMatrixWorld();
-        
-        var matrixWorld     = new THREE.Matrix4();
-        
-        var modelViewMatrix = new THREE.Matrix4().multiplyMatrices(camera.viewMatrix(),matrixWorld);        
-        //var center          = node.position;//node.matrixWorld.getPosition();
-        
-        //var centerParent    = node.parent ? new THREE.Vector3().setFromMatrixPosition(node.parent.matrixWorld) : new THREE.Vector3();
-        
-        //var center          = new THREE.Vector3().setFromMatrixPosition (node.matrixWorld) - centerParent;
-        //
-        //var center          = node.absoluteCenter - node.parent.absoluteCenter;
-        
+    {        
+        var matrixWorld     = new THREE.Matrix4();        
+        var modelViewMatrix = new THREE.Matrix4().multiplyMatrices(camera.viewMatrix(),matrixWorld);           
         var center          = node.absoluteCenter;
-        var centerEye       = new THREE.Vector4(center.x,center.y,center.z, 1.0).applyMatrix4(camera.viewMatrix()) ;
-        
+        var centerEye       = new THREE.Vector4(center.x,center.y,center.z, 1.0).applyMatrix4(camera.viewMatrix()) ;        
         var mvc             = modelViewMatrix.clone().setPosition(centerEye);        
         var mVPMatRTC       = new THREE.Matrix4().multiplyMatrices(camera.camera3D.projectionMatrix,mvc);
         
-        node.tMat.uniforms.mVPMatRTC.value = mVPMatRTC;        
-
-        //node.tMat.shader.needsUpdate         = true;   // TODO : needed?
+        node.tMat.uniforms.mVPMatRTC.value = mVPMatRTC;
+        
+        //                
+        
+//        var mVPMatRTY       = new THREE.Matrix4();
+//        node.tMat.uniforms.mVPMatRTY.value = mVPMatRTY;
         
     };
     /**
