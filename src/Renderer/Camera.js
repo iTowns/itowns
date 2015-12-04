@@ -50,6 +50,11 @@ define('Renderer/Camera',['Scene/Node','THREE'], function(Node, THREE){
 
     };
     
+    Camera.prototype.viewMatrix = function(){
+        
+        return this.camera3D.matrixWorldInverse;        
+    };
+    
     Camera.prototype.resize = function(width,height){
         
         this.width      = width;

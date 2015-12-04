@@ -11,15 +11,27 @@ define('Globe/EllipsoidTileGeometry',[
     'Core/defaultValue',
     'Scene/BoudingBox',
     'Core/Math/Ellipsoid',
-    'Core/Geographic/CoordCarto'], function(THREE,defaultValue,BoudingBox,Ellipsoid,CoordCarto){
+    'Core/Geographic/CoordCarto',
+    'Core/Math/MathExtented',
+    'Core/System/JavaTools'
+    ], function(
+        THREE,
+        defaultValue,
+        BoudingBox,
+        Ellipsoid,
+        CoordCarto,
+        MathExt,
+        JavaTools){
 
-    function EllipsoidTileGeometry(bbox,segment,pellipsoid){
+    function EllipsoidTileGeometry(bbox,segment,pellipsoid,zoom){
         //Constructor
         THREE.BufferGeometry.call( this );
         
+        var javToo          = new JavaTools();
+        
+        var nbRow           = Math.pow(2.0,zoom + 1.0 );
+        
         bbox = defaultValue(bbox,new BoudingBox());
-
-	var radius = 6.3567523142451793; 
 
         var ellipsoid       = defaultValue(pellipsoid,new Ellipsoid(6378137, 6378137, 6356752.3142451793));         
         
@@ -33,7 +45,8 @@ define('Globe/EllipsoidTileGeometry',[
         var bufferVertex    = new Float32Array(nVertex * 3);
         var bufferIndex     = new Uint32Array( triangles * 3 * 2);       
         var bufferNormal    = new Float32Array( nVertex * 3);
-        var bufferUV        = new Float32Array( nVertex * 3);
+        var bufferUV        = new Float32Array( nVertex * 2);
+        var bufferUV2       = new Float32Array( nVertex);
         
         widthSegments       = Math.max( 2, Math.floor( widthSegments ) || 2 );
         heightSegments      = Math.max( 2, Math.floor( heightSegments ) || 2 );
@@ -72,24 +85,37 @@ define('Globe/EllipsoidTileGeometry',[
         this.OBB    = bbox.get3DBBox(ellipsoid,center);
         
         var idVertex        = 0;
-        var x, y, verticees = [], uvs = [];
+        var x, y, vertices  = [];
 
-        this.vertices = [];
+        var st1             = 0.5 + Math.log(Math.tan(MathExt.PI_OV_FOUR + thetaStart*0.5))* MathExt.INV_TWO_PI;
+        
+        if(!isFinite(st1))
+            st1 = 0;
+       
+        var sizeTexture = 1.0 / nbRow;
+        
+        var start       = (st1%(sizeTexture));
+        
+        var st = st1 - start;
 
         for ( y = 0; y <= heightSegments; y ++ ) 
         {
 
             var verticesRow = [];
-            var uvsRow = [];
 
+            var v       = y / heightSegments;
+            var lati    = thetaStart    + v * thetaLength;           
+            var t       = ((0.5 + Math.log(Math.tan(MathExt.PI_OV_FOUR + lati*0.5))* MathExt.INV_TWO_PI) - st) * nbRow;
+                    
+            if(!isFinite(t))
+                t = 0;
+                        
             for ( x = 0; x <= widthSegments; x ++ ) 
             {
 
                     var u = x / widthSegments;
-                    var v = y / heightSegments;
-
-                    var longi   = phiStart      + u * phiLength;
-                    var lati    = thetaStart    + v * thetaLength;
+                    
+                    var longi   = phiStart      + u * phiLength;                    
 
                     var vertex = ellipsoid.cartographicToCartesian(new CoordCarto(longi,lati,0));
                    
@@ -99,7 +125,7 @@ define('Globe/EllipsoidTileGeometry',[
                     bufferVertex[id3+ 1] = vertex.y - center.y;
                     bufferVertex[id3+ 2] = vertex.z - center.z;
 //                    
-//                     bufferVertex[id3+ 0] = vertex.x ;
+//                    bufferVertex[id3+ 0] = vertex.x ;
 //                    bufferVertex[id3+ 1] = vertex.y ;
 //                    bufferVertex[id3+ 2] = vertex.z ;
 
@@ -109,28 +135,18 @@ define('Globe/EllipsoidTileGeometry',[
                     bufferNormal[id3+ 1] = normal.y;
                     bufferNormal[id3+ 2] = normal.z;      
 
-                    if ( Math.abs( vertex.y) === radius) {
-
-                          u = u + 1 / (2* widthSegments );
-
-
-                    } else if ( Math.abs( vertex.y) === radius ) {
-
-                          u = u + 1 / (2* widthSegments );
-
-                    } 
-
                     bufferUV[idVertex*2 + 0] = u;
                     bufferUV[idVertex*2 + 1] = 1-v;
+                    
+                    bufferUV2[idVertex]      = t;                                             
+                    
                     idVertex ++;
-
-                    this.vertices.push(vertex);                
-                    verticesRow.push( this.vertices.length - 1 );
-                    uvsRow.push( new THREE.Vector2( u, 1-v ));
+                                  
+                    verticesRow.push( idVertex - 1 );
+                    
             }
 
-            verticees.push( verticesRow );
-            uvs.push( uvsRow );
+            vertices.push( verticesRow );          
 
         }
 
@@ -147,10 +163,10 @@ define('Globe/EllipsoidTileGeometry',[
 
               for ( x = 0; x < widthSegments; x ++ ) {
 
-                    var v1 = verticees[ y ][ x + 1 ];
-                    var v2 = verticees[ y ][ x ];
-                    var v3 = verticees[ y + 1 ][ x ];
-                    var v4 = verticees[ y + 1 ][ x + 1 ];
+                    var v1 = vertices[ y ][ x + 1 ];
+                    var v2 = vertices[ y ][ x ];
+                    var v3 = vertices[ y + 1 ][ x ];
+                    var v4 = vertices[ y + 1 ][ x + 1 ];
 
                     bufferize(v4,v2,v1,idVertex);
                     
@@ -162,13 +178,25 @@ define('Globe/EllipsoidTileGeometry',[
                 }
         }
         
+        // TODO : free array
+        
         this.setIndex( new THREE.BufferAttribute( bufferIndex, 1 ) );
         this.addAttribute( 'position',  new THREE.BufferAttribute( bufferVertex, 3 ) );
         this.addAttribute( 'normal',    new THREE.BufferAttribute( bufferNormal, 3 ) );
         this.addAttribute( 'uv',        new THREE.BufferAttribute( bufferUV, 2) );
+        this.addAttribute( 'uv2',       new THREE.BufferAttribute( bufferUV2, 1) );
         
         // ---> for SSE
         this.computeBoundingSphere();
+        
+        javToo.freeArray(vertices);
+        
+        // TODO how free typedArray
+        bufferVertex    = null;
+        bufferIndex     = null;       
+        bufferNormal    = null;
+        bufferUV        = null;
+        bufferUV2       = null;
         
     }
 

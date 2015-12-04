@@ -42,7 +42,7 @@ define('Core/Commander/Providers/tileGlobeProvider',[
        this.projection      = new Projection();
        this.providerWMTS    = new WMTS_Provider();       
        this.ellipsoid       = new Ellipsoid(size);       
-       this.cacheGeometry   = [];
+       this.cacheGeometry   = [];       
                
     }        
 
@@ -59,6 +59,7 @@ define('Core/Commander/Providers/tileGlobeProvider',[
         var n               = Math.pow(2,cooWMTS.zoom+1);       
         var part            = Math.PI * 2.0 / n;
         
+        /*
         if(this.cacheGeometry[cooWMTS.zoom] !== undefined && this.cacheGeometry[cooWMTS.zoom][cooWMTS.row] !== undefined)
         {            
                 geometryCache = this.cacheGeometry[cooWMTS.zoom][cooWMTS.row];                
@@ -80,10 +81,10 @@ define('Core/Commander/Providers/tileGlobeProvider',[
                         
             var rootBBox    = new BoudingBox(0,part,bbox.minCarto.latitude, bbox.maxCarto.latitude );
             
-            geometryCache   = new EllipsoidTileGeometry(rootBBox,precision,this.ellipsoid);
+            geometryCache   = new EllipsoidTileGeometry(rootBBox,precision,this.ellipsoid,cooWMTS.zoom);
             this.cacheGeometry[cooWMTS.zoom][cooWMTS.row] = geometryCache;    
                 
-        }
+        }*/
         
         var tile    = new command.type(bbox,cooWMTS,this.ellipsoid,parent/*,geometryCache*/);
    
@@ -107,11 +108,32 @@ define('Core/Commander/Providers/tileGlobeProvider',[
                 
         tile.visible = false;
         
-        parent.add(tile);        
+        parent.add(tile);      
+        
         
         return this.providerWMTS.getTextureBil(cooWMTS).then(function(result)
-        {                           
-            this.setTextureTerrain(result === - 1 ?  -1 : result.texture);
+        {              
+            var texture;
+            var pitScale;
+            
+            if(result === - 1)
+                texture = -1;
+            else if(result === - 2)
+            {
+                var parentBil   = this.getParentLevel(14);                                
+                pitScale        = parentBil.bbox.pitScale(tile.bbox);                
+                texture         = parentBil.tMat.Textures_00[0];
+                this.bbox.setAltitude(parentBil.bbox.minCarto.altitude,parentBil.bbox.maxCarto.altitude);
+                this.geometry.OBB.addHeight(this.bbox);
+            }
+            else
+            {
+                texture = result.texture;
+                this.bbox.setAltitude(result.min,result.max);
+                this.geometry.OBB.addHeight(this.bbox);
+            }                         
+            
+            this.setTextureTerrain(texture,pitScale);
             
             return this;
 
@@ -125,7 +147,8 @@ define('Core/Commander/Providers/tileGlobeProvider',[
                 var col = box[0].col;
                 
                 tile.orthoNeed = box[1].row + 1 - box[0].row;
-
+                
+               
                 for (var row = box[0].row; row < box[1].row + 1; row++)
                 {                                                                        
                     var coo = new CoordWMTS(box[0].zoom,row,col);

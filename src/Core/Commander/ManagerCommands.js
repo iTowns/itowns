@@ -70,7 +70,7 @@ define('Core/Commander/ManagerCommands',
     ManagerCommands.prototype.createProvider = function(type,param)
     {               
         if(type === EllipsoidTileMesh)
-        {           
+        {                       
             this.providers.push(new tileGlobeProvider(param));
         }
     };
