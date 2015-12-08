@@ -88,8 +88,7 @@ define('Renderer/Material',['THREE','Core/Math/MathExtented'], function(THREE,Ma
         for (var i = 0, max = this.Textures_01.length; i < max; i++) 
             if(this.Textures_01[i].image !== undefined)
                 this.Textures_01[i].needsUpdate = true;
-        
-        
+                
     };
     
     return Material;

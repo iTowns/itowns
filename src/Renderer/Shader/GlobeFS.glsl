@@ -78,11 +78,9 @@ void main() {
                 break;
             }
 
-        //float deb       = vUv.y;
-        //gl_FragColor    = vec4( deb, deb, deb, 1.0);
     }
 
-         if(debug > 0)
-            gl_FragColor = vec4( 1.0, 0.0, 0.0, 1.0);
+        if(debug > 0)
+           gl_FragColor = vec4( 1.0, 0.0, 0.0, 1.0);
 
 } 
