@@ -74,13 +74,13 @@ define('Scene/Scene',[
         this.add(globe);
         
         var position    = globe.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(2.33,48.87,25000000));        
+        //var target      = globe.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(2.33,48.87,0));
         //var position    = globe.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(0,48.87,25000000));
                        
         this.gfxEngine.init(this,position);
         this.browserScene.addNodeProcess(new NodeProcess(this.currentCamera().camera3D,globe.size));
         this.gfxEngine.update();
-        
-        
+                
     };
     
     Scene.prototype.size = function()
