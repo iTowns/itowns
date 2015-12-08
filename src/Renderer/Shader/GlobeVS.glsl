@@ -20,10 +20,9 @@ const float PI4         = 0.78539816339;
 
 uniform sampler2D  dTextures_00[1];
 uniform int        nbTextures_00;
-uniform vec2       bLatitude;
+uniform int        RTC;
 uniform vec3       pitScale;
 uniform float      periArcLati;
-uniform float      zoom;
 uniform mat4       mVPMatRTC;
 
 varying vec2    vUv;
@@ -46,18 +45,19 @@ void main() {
                 
             float dv = texture2D( dTextures_00[0], vVv ).w;
 
-            vNormal  = normal;//normalize( position );
+            vNormal  = normal;
 
-            //vec3 displacedPosition = position +  vNormal  * dv *10.0;
             vec3 displacedPosition = position +  vNormal  * dv ;
-
-            //gl_Position = projectionMatrix * modelViewMatrix * vec4( displacedPosition ,1.0 );
             
-            gl_Position = mVPMatRTC * vec4( displacedPosition ,1.0 );
-            //gl_Position = mVPMatRTC * vec4( position ,1.0 );
+            if(RTC == 0)
+                gl_Position = projectionMatrix * modelViewMatrix * vec4( displacedPosition ,1.0 );
+            else            
+                gl_Position = mVPMatRTC * vec4( displacedPosition ,1.0 );
+ 
         }
+        else if(RTC == 0)
+            gl_Position = projectionMatrix * modelViewMatrix * vec4( position ,1.0 );
         else
-            //gl_Position = projectionMatrix * modelViewMatrix * vec4( position ,1.0 );
             gl_Position = mVPMatRTC * vec4( position ,1.0 );
 
         
