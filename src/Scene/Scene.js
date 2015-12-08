@@ -33,13 +33,8 @@ define('Scene/Scene',[
         this.selectNodes    = null;      
         this.managerCommand = ManagerCommands();
         this.gfxEngine      = c3DEngine();                       
-
-
-        this.browserScene   = new BrowseTree(this);
-
         this.browserScene   = new BrowseTree(this);
         this.cap            = new Capabalities();
-
 
     }
 
@@ -54,14 +49,18 @@ define('Scene/Scene',[
     Scene.prototype.updateCommand = function(){
         //TODO: Implement Me 
     };    
-        
-    
+ 
     /**
      * @documentation: return current camera 
      * @returns {Scene_L7.Scene.gfxEngine.camera}
      */
     Scene.prototype.currentCamera = function(){
         return this.gfxEngine.camera ;
+    };
+    
+    Scene.prototype.updateCamera = function()
+    {
+        this.browserScene.NodeProcess().updateCamera(this.gfxEngine.camera);
     };
     
     /**
