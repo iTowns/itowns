@@ -64,6 +64,8 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera'], functio
             this.height     = window.innerHeight;
             this.camera.resize(this.width,this.height);
             
+            this.scene.updateCamera();
+            
             if(this.camDebug)
             {
                 this.camDebug.aspect = this.camera.ratio;        
@@ -71,6 +73,7 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera'], functio
             }   
                         
             this.renderer.setSize( window.innerWidth, window.innerHeight );
+            this.update();
             this.renderScene();
         }.bind(this);        
                              

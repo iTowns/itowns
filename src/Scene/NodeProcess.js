@@ -47,10 +47,9 @@ define('Scene/NodeProcess',['Scene/BoudingBox','Renderer/Camera','Core/Math/Math
               
     };
     
-    
-    NodeProcess.prototype.setCamera = function(camera)
+    NodeProcess.prototype.updateCamera = function(camera)
     {        
-        this.camera = camera;
+        this.camera.camera3D  = camera.camera3D.clone();
     };
     
     /**

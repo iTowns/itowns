@@ -29,6 +29,11 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
     {        
         this.nodeProcess = nodeProcess;
     };
+    
+    BrowseTree.prototype.NodeProcess= function()
+    {        
+        return this.nodeProcess;
+    };
    
     /**
      * @documentation: Process to apply to each node
@@ -55,7 +60,7 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
                     {
 
                         if(node.parent.material !== undefined && node.parent.material.visible === true)
-                        {
+                        {                                     
                             node.visible = false;
                             return false;
                         }
@@ -71,8 +76,7 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
                         {
 
                             node.material.visible = true;
-                            
-                
+                                            
                             this.RTC(node,camera);
 
                             if(node.childrenCount() !== 0)
@@ -106,13 +110,31 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
         var mvc             = modelViewMatrix.clone().setPosition(centerEye);        
         var mVPMatRTC       = new THREE.Matrix4().multiplyMatrices(camera.camera3D.projectionMatrix,mvc);
         
+//        camera = camera.camera3D;
+//        var center          = new THREE.Vector3();
+//        var matrixWorld     = new THREE.Matrix4();   
+//
+//        var cameraMatrixWorld           = camera.matrixWorld;
+//
+//        var cameraWorldPosition         = new THREE.Vector3().setFromMatrixPosition(cameraMatrixWorld);
+//
+//        var positionCameraNode          = new THREE.Vector3().subVectors(cameraWorldPosition,node.absoluteCenter);
+//
+//        var cameraMatrixWorldCentered   = camera.matrixWorld.clone().setPosition(positionCameraNode);
+//
+//        var cameraMatrixWorldInverse    = new THREE.Matrix4();
+//
+//        cameraMatrixWorldInverse.getInverse(cameraMatrixWorldCentered);
+//
+//        var modelViewMatrix = new THREE.Matrix4().multiplyMatrices(cameraMatrixWorldInverse,matrixWorld);           
+//
+//        var centerEye       = new THREE.Vector4(center.x,center.y,center.z, 1.0).applyMatrix4(cameraMatrixWorldInverse) ;                        
+//
+//        var mvc             = modelViewMatrix.clone().setPosition(centerEye);        
+//        var mVPMatRTC       = new THREE.Matrix4().multiplyMatrices(camera.projectionMatrix,mvc);
+        
         node.tMat.uniforms.mVPMatRTC.value = mVPMatRTC;
-        
-        //                
-        
-//        var mVPMatRTY       = new THREE.Matrix4();
-//        node.tMat.uniforms.mVPMatRTY.value = mVPMatRTY;
-        
+
     };
     /**
      * @documentation: Initiate traverse tree 
