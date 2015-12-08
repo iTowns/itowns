@@ -209,6 +209,7 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera'], functio
         this.controls.minDistance   = size *  0.1;
         this.controls.maxDistance   = size * 16.0;    
         this.controls.keyPanSpeed   = 1.0;
+        this.controls.keyPanSpeed   = 1.0;
         this.controls.update();
     };
     

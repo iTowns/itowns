@@ -37,9 +37,20 @@ THREE.OBB.prototype.quadInverse = function(){
 };
 
 THREE.OBB.prototype.addHeight = function(bbox)
-{
+{    
+
     this.box3D.min.z += bbox.minCarto.altitude;
     this.box3D.max.z += bbox.maxCarto.altitude;
+    /*
+    var nHalfSize   = Math.abs(this.box3D.min.z + this.box3D.max.z)*0.5;
+    
+    var translaZ    = this.box3D.min.z + nHalfSize;
+    
+    this.box3D.min.z = -nHalfSize;
+    this.box3D.max.z =  nHalfSize;
+    
+    this.translateZ(translaZ);
+    */
 };
 
 THREE.OBB.prototype.points = function(){

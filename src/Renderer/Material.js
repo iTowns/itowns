@@ -20,7 +20,7 @@ define('Renderer/Material',['THREE','Core/Math/MathExtented'], function(THREE,Ma
 
     };
        
-    var  Material = function (sourceVS,sourcePS,bbox,zoom){
+    var  Material = function (sourceVS,sourcePS,bbox){
        
         this.Textures_00 = [];        
         this.Textures_00.push(new THREE.Texture());        
@@ -31,14 +31,12 @@ define('Renderer/Material',['THREE','Core/Math/MathExtented'], function(THREE,Ma
         {                        
             dTextures_00    : { type: "tv", value: this.Textures_00 },
             dTextures_01    : { type: "tv", value: this.Textures_01 },
+            RTC             : { type: "i" , value: 1 },
             nbTextures_00   : { type: "i" , value: 0 },
-            nbTextures_01   : { type: "i" , value: 0 },
-            bLongitude      : { type: "v2", value: new THREE.Vector2(bbox.minCarto.longitude,bbox.maxCarto.longitude)}, 
-            bLatitude       : { type: "v2", value: new THREE.Vector2(bbox.minCarto.latitude,bbox.maxCarto.latitude)},
+            nbTextures_01   : { type: "i" , value: 0 },            
+            bLatitude       : { type: "f",  value: bbox.minCarto.latitude},
             pitScale        : { type: "v3", value: new THREE.Vector3(0.0,0.0,1.0)},
-            periArcLati     : { type: "f" , value: Math.abs(bbox.maxCarto.latitude - bbox.minCarto.latitude)},
-            y0              : { type: "f" , value: 0.5 - Math.log(Math.tan(MathExt.PI_OV_FOUR + WGS84LatitudeClamp(bbox.maxCarto.latitude)*0.5))*MathExt.INV_TWO_PI},
-            zoom            : { type: "f" , value: zoom },
+            periArcLati     : { type: "f" , value: Math.abs(bbox.maxCarto.latitude - bbox.minCarto.latitude)},            
             mVPMatRTC       : { type: "m4", value: new THREE.Matrix4()},
             debug           : { type: "i" , value: false }
             
@@ -76,10 +74,8 @@ define('Renderer/Material',['THREE','Core/Math/MathExtented'], function(THREE,Ma
     
     Material.prototype.setDebug = function(debug_value)
     {
-        this.uniforms.debug.value   = debug_value;
-        //this.shader.needsUpdate     = true;
+        this.uniforms.debug.value   = debug_value;        
     };
-    
     
     Material.prototype.update = function()    
     {

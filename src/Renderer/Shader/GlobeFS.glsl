@@ -25,11 +25,8 @@ uniform sampler2D   dTextures_00[1];
 uniform sampler2D   dTextures_01[TEX_UNITS];
 uniform int         nbTextures_00;
 uniform int         nbTextures_01;
-uniform vec2        bLongitude; 
-uniform vec2        bLatitude;
+uniform float       bLatitude;
 uniform float       periArcLati;
-uniform float       y0;
-uniform float       zoom;
 uniform int         debug;
 varying vec2        vUv;
 varying float       vUv2;
@@ -42,7 +39,7 @@ void main() {
 
     #endif
 
-    float latitude  = bLatitude.x + periArcLati*(1.0-vUv.y);
+    float latitude  = bLatitude + periArcLati*(1.0-vUv.y);
    
     /*
     float sLine = 0.0015;
@@ -50,8 +47,7 @@ void main() {
         gl_FragColor = vec4( 1.0, 0.0, 0.0, 1.0);
     else 
     */
-    
-        
+            
     if(latitude < poleSud )
         gl_FragColor = vec4( 0.85, 0.85, 0.91, 1.0);
     else

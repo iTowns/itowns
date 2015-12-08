@@ -114,7 +114,7 @@ define('Core/Commander/Providers/tileGlobeProvider',[
         return this.providerWMTS.getTextureBil(cooWMTS).then(function(result)
         {              
             var texture;
-            var pitScale;
+            var pitScale;                        
             
             if(result === - 1)
                 texture = -1;
@@ -123,12 +123,14 @@ define('Core/Commander/Providers/tileGlobeProvider',[
                 var parentBil   = this.getParentLevel(14);                                
                 pitScale        = parentBil.bbox.pitScale(tile.bbox);                
                 texture         = parentBil.tMat.Textures_00[0];
+                // TODO recentrer la bouding box
                 this.bbox.setAltitude(parentBil.bbox.minCarto.altitude,parentBil.bbox.maxCarto.altitude);
                 this.geometry.OBB.addHeight(this.bbox);
             }
             else
             {
                 texture = result.texture;
+                // TODO recentrer la bouding box
                 this.bbox.setAltitude(result.min,result.max);
                 this.geometry.OBB.addHeight(this.bbox);
             }                         
