@@ -59,18 +59,24 @@ define('Renderer/Material',['THREE','Core/System/JavaTools'], function(THREE,Jav
         this.shader.dispose();
         
         for (var i = 0, max = this.Textures_00.length; i < max; i++)        
-            this.Textures_00[i].dispose();
+        {
+            if(this.Textures_00[i] instanceof THREE.Texture)                
+                this.Textures_00[i].dispose();
+        }
             
-        for (var i = 0, max = this.Textures_01.length; i < max; i++) 
-            this.Textures_01[i].dispose();
+        for (var i = 0, max = this.Textures_01.length; i < max; i++)
+        {
+            if(this.Textures_01[i] instanceof THREE.Texture)
+                this.Textures_01[i].dispose();
+        }
         
         var jT = new JavaTools();
         
         jT.freeArray(this.Textures_00);
         jT.freeArray(this.Textures_01);
         
-        jT.freeArray(this.uniforms.dTextures_00);
-        jT.freeArray(this.uniforms.dTextures_01);
+        jT.freeArray(this.uniforms.dTextures_00.value);
+        jT.freeArray(this.uniforms.dTextures_01.value);
                 
     };
     

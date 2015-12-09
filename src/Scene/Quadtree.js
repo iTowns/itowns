@@ -38,6 +38,8 @@ define('Scene/Quadtree',[
             this.subdivideChildren(this.children[i]);
         }
         
+        this.nbNodes = 0;
+        
     }
     
     Quadtree.prototype = Object.create( Layer.prototype );

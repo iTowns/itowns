@@ -24,7 +24,7 @@ define('Core/Commander/Providers/tileGlobeProvider',[
             'Core/Geographic/CoordWMTS',
             'Core/Math/Ellipsoid',
             'Core/defaultValue',
-            'Scene/BoudingBox'
+            'Scene/BoudingBox'                        
             ],
              function(
                 Projection,
@@ -42,7 +42,8 @@ define('Core/Commander/Providers/tileGlobeProvider',[
        this.projection      = new Projection();
        this.providerWMTS    = new WMTS_Provider();       
        this.ellipsoid       = new Ellipsoid(size);       
-       this.cacheGeometry   = [];       
+       this.cacheGeometry   = [];
+       this.tree            = null;
                
     }        
 
@@ -108,9 +109,16 @@ define('Core/Commander/Providers/tileGlobeProvider',[
                 
         tile.visible = false;
         
-        parent.add(tile);      
+        parent.add(tile);
         
+        if(parent.tileType && this.tree === null)
+        {
+            this.tree = parent;
+            //console.log(parent);
+        }
         
+        this.tree.nbNodes++;
+                
         return this.providerWMTS.getTextureBil(cooWMTS).then(function(result)
         {              
             var texture;
@@ -149,8 +157,7 @@ define('Core/Commander/Providers/tileGlobeProvider',[
                 var col = box[0].col;
                 
                 tile.orthoNeed = box[1].row + 1 - box[0].row;
-                
-               
+                               
                 for (var row = box[0].row; row < box[1].row + 1; row++)
                 {                                                                        
                     var coo = new CoordWMTS(box[0].zoom,row,col);
