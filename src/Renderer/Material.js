@@ -5,7 +5,7 @@
  */
 
 
-define('Renderer/Material',['THREE','Core/Math/MathExtented'], function(THREE,MathExt){
+define('Renderer/Material',['THREE','Core/System/JavaTools'], function(THREE,JavaTools){
     
     // TODO Temp
     WGS84LatitudeClamp = function(latitude){
@@ -52,6 +52,26 @@ define('Renderer/Material',['THREE','Core/Math/MathExtented'], function(THREE,Ma
          
          this.shader.wireframe = false;
         
+    };
+    
+    Material.prototype.dispose = function()
+    {         
+        this.shader.dispose();
+        
+        for (var i = 0, max = this.Textures_00.length; i < max; i++)        
+            this.Textures_00[i].dispose();
+            
+        for (var i = 0, max = this.Textures_01.length; i < max; i++) 
+            this.Textures_01[i].dispose();
+        
+        var jT = new JavaTools();
+        
+        jT.freeArray(this.Textures_00);
+        jT.freeArray(this.Textures_01);
+        
+        jT.freeArray(this.uniforms.dTextures_00);
+        jT.freeArray(this.uniforms.dTextures_01);
+                
     };
     
     Material.prototype.setTexture = function(texture,layer,id,pitScale)

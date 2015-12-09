@@ -29,8 +29,6 @@ define('Globe/EllipsoidTileMesh',[
         //Constructor
         NodeMesh.call( this );
         
-        
-        
         this.showHelper = true;
         this.level      = cooWMTS.zoom;
         this.cooWMTS    = cooWMTS;
@@ -63,25 +61,23 @@ define('Globe/EllipsoidTileMesh',[
         this.orthoNeed  = 10;
         this.material   = this.tMat.shader;
         this.dot        = 0;
-        this.frustumCulled = false;
+        this.frustumCulled = false;        
+        this.timeInvisible = 0;
     }
 
     EllipsoidTileMesh.prototype = Object.create( NodeMesh.prototype );
 
     EllipsoidTileMesh.prototype.constructor = EllipsoidTileMesh;
             
-//    EllipsoidTileMesh.prototype.subdivise = function(subBBox)
-//    {        
-//        var sublevel = this.level + 1;
-//        for(var i = 0;i< subBBox.length;i++)
-//        {
-//            var tileMesh        = new EllipsoidTileMesh(subBBox[i]);
-//            tileMesh.position.set(tileMesh.bbox.center.x-this.bbox.center.x,tileMesh.bbox.center.y-this.bbox.center.y,0);
-//            this.add(tileMesh);
-//            tileMesh.level = sublevel;
-//
-//        }
-//    };
+    EllipsoidTileMesh.prototype.dispose = function()
+    {          
+        // TODO à mettre dans node mesh
+        this.tMat.dispose();
+        this.geometry.dispose();
+        this.material = null;
+        
+    };
+
     
     EllipsoidTileMesh.prototype.setTextureTerrain = function(texture,pitScale)
     {         
