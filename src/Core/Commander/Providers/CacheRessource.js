@@ -22,13 +22,14 @@ define('Core/Commander/Providers/CacheRessource',[], function(){
     CacheRessource.prototype.getRessource = function(url){
         //TODO: Implement Me 
         
+        return undefined;
         return this.cacheObjects[url];
 
     };
     
     CacheRessource.prototype.addRessource = function(url,ressource){
         
-        this.cacheObjects[url] = ressource;
+        //this.cacheObjects[url] = ressource;
         
     };
 

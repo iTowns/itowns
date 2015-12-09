@@ -65,7 +65,10 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
                         {                                     
                             node.visible = false;
                             if (node.timeInvisible === 0)
-                                node.timeInvisible = this.date.getTime();
+                            {
+                                node.timeInvisible = new Date().getTime();
+                                //console.log(node.timeInvisible);
+                            }
                             return false;
                         }
 
@@ -101,7 +104,11 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
                 node.timeInvisible = 0;
             }
             else if (node.timeInvisible === 0)
-                node.timeInvisible = this.date.getTime();
+            {
+                
+                node.timeInvisible = new Date().getTime();
+                //console.log(node.timeInvisible);
+            }
                                         
             return node.visible;
         }        
@@ -162,6 +169,7 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
         //if(optional)
         {
             this.tree.interCommand.managerCommands.runAllCommands();
+            
         }
     };
     
@@ -178,32 +186,40 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
         if(this.processNode(node,camera,optional))       
             for(var i = 0;i<node.children.length;i++)
                 this._browse(node.children[i],camera,optional);
-//        else if(optional)
-//            _clean(node,node.level + 2);
+//        else
+//            this._clean(node,node.level );
 
     };
     
     BrowseTree.prototype._clean = function(node,level)
     {
+        if( node.children.length === 0)
+            return true;
+        
         var childrenCleaned = 0;
         for(var i = 0;i<node.children.length;i++)
         {
             var child = node.children[i];
-            if(this._clean(child,level) && (child.timeInvisible - this.date.getTime()) > 10000 && child.level >= 3 && child.level >= level)
+            
+            //console.log(this.date.getTime() - child.timeInvisible);
+            if(this._clean(child,level) && (new Date().getTime() - child.timeInvisible) > 2000 && child.level >= 3 && child.level >= level && child.children.length ===0)
                 childrenCleaned++;                        
         }
         
-        if(childrenCleaned === 4)
-        {
-            for(var i = 0;i <node.children.length;i++)
+        if(childrenCleaned === 4 )
+        {            
+            
+            while(node.children.length>0)
             {
-                var child = node.children[i];
-                node.dispose();
-                node.parent.remove(node);
+                var child = node.children[0];
+                
+                child.dispose();
+                node.remove(child);
+                this.tree.nbNodes--;
             }
+            node.material.visible = true;
             return true;
-        }
-        else
+        }else         
             return false;
         
     };
