@@ -13,6 +13,8 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
         this.scene      = scene;        
         this.nodeProcess= undefined;
         this.tree       = undefined;
+        this.date       = new Date();        
+
     }
     
     /**
@@ -62,6 +64,8 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
                         if(node.parent.material !== undefined && node.parent.material.visible === true)
                         {                                     
                             node.visible = false;
+                            if (node.timeInvisible === 0)
+                                node.timeInvisible = this.date.getTime();
                             return false;
                         }
 
@@ -92,8 +96,13 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
             }
 
             if(node.visible)
+            {
                 this.RTC(node,camera);
-                        
+                node.timeInvisible = 0;
+            }
+            else if (node.timeInvisible === 0)
+                node.timeInvisible = this.date.getTime();
+                                        
             return node.visible;
         }        
         
@@ -169,7 +178,34 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
         if(this.processNode(node,camera,optional))       
             for(var i = 0;i<node.children.length;i++)
                 this._browse(node.children[i],camera,optional);
+//        else if(optional)
+//            _clean(node,node.level + 2);
 
+    };
+    
+    BrowseTree.prototype._clean = function(node,level)
+    {
+        var childrenCleaned = 0;
+        for(var i = 0;i<node.children.length;i++)
+        {
+            var child = node.children[i];
+            if(this._clean(child,level) && (child.timeInvisible - this.date.getTime()) > 10000 && child.level >= 3 && child.level >= level)
+                childrenCleaned++;                        
+        }
+        
+        if(childrenCleaned === 4)
+        {
+            for(var i = 0;i <node.children.length;i++)
+            {
+                var child = node.children[i];
+                node.dispose();
+                node.parent.remove(node);
+            }
+            return true;
+        }
+        else
+            return false;
+        
     };
     
     /**

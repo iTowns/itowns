@@ -203,6 +203,11 @@ define('Globe/EllipsoidTileGeometry',[
     EllipsoidTileGeometry.prototype = Object.create( THREE.BufferGeometry.prototype );
 
     EllipsoidTileGeometry.prototype.constructor = EllipsoidTileGeometry;
+    
+    EllipsoidTileGeometry.prototype.dispose = function()
+    {
+        
+    };
 
     return EllipsoidTileGeometry;
     
