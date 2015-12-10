@@ -9,6 +9,7 @@ define('Core/Commander/Providers/WMTS_Provider',[
             'Core/Commander/Providers/Provider',
             'Core/Commander/Providers/IoDriver_XBIL',
             'Core/Commander/Providers/IoDriver_Image',
+            'Core/Commander/Providers/IoDriverXML',
             'when',
             'THREE',
             'Core/Commander/Providers/CacheRessource'], 
@@ -16,6 +17,7 @@ define('Core/Commander/Providers/WMTS_Provider',[
                 Provider,
                 IoDriver_XBIL,
                 IoDriver_Image,
+                IoDriverXML,
                 when,
                 THREE,                
                 CacheRessource){
@@ -28,7 +30,18 @@ define('Core/Commander/Providers/WMTS_Provider',[
         Provider.call( this,new IoDriver_XBIL());
         this.cache         = CacheRessource();        
         this.ioDriverImage = new IoDriver_Image();
-
+        //this.ioDriverXML = new IoDriverXML();
+                
+        //var url = 'http://wxs.ign.fr/j2bfkv9whnqpq04zpzlfz2ge/vecteurtuile3d/BATI3D/BU.Building.kml';
+        
+        //var url = 'http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/vecteurtuile3d/BATI3D/BU.Building.kml';
+        
+//        this.ioDriverXML.read(url).then(function(result)
+//        {
+//            
+//            console.log(result);
+//            
+//        });
     }
 
     WMTS_Provider.prototype = Object.create( Provider.prototype );
