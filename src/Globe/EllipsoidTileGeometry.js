@@ -204,11 +204,6 @@ define('Globe/EllipsoidTileGeometry',[
 
     EllipsoidTileGeometry.prototype.constructor = EllipsoidTileGeometry;
     
-    EllipsoidTileGeometry.prototype.dispose = function()
-    {
-        
-    };
-
     return EllipsoidTileGeometry;
     
 });

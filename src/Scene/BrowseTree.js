@@ -13,7 +13,7 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
         this.scene      = scene;        
         this.nodeProcess= undefined;
         this.tree       = undefined;
-        this.date       = new Date();        
+        this.date       = new Date();          
 
     }
     
@@ -170,6 +170,10 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
         {
             this.tree.interCommand.managerCommands.runAllCommands();
             
+            //console.log(this.tree.nbNodes);
+            
+            //console.log(this.scene.gfxEngine.renderer);
+            
         }
     };
     
@@ -187,7 +191,7 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
             for(var i = 0;i<node.children.length;i++)
                 this._browse(node.children[i],camera,optional);
 //        else
-//            this._clean(node,node.level );
+//            this._clean(node,node.level +2);
 
     };
     
@@ -202,7 +206,7 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
             var child = node.children[i];
             
             //console.log(this.date.getTime() - child.timeInvisible);
-            if(this._clean(child,level) && (new Date().getTime() - child.timeInvisible) > 2000 && child.level >= 3 && child.level >= level && child.children.length ===0)
+            if(this._clean(child,level) && (new Date().getTime() - child.timeInvisible) > 2000 && child.level > 2 && child.level >= level && child.children.length ===0)
                 childrenCleaned++;                        
         }
         
@@ -212,9 +216,8 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
             while(node.children.length>0)
             {
                 var child = node.children[0];
-                
-                child.dispose();
                 node.remove(child);
+                child.dispose();                
                 this.tree.nbNodes--;
             }
             node.material.visible = true;
