@@ -72,12 +72,12 @@ define('Globe/EllipsoidTileMesh',[
     EllipsoidTileMesh.prototype.dispose = function()
     {          
         // TODO à mettre dans node mesh
-        this.tMat.dispose();
-        this.geometry.dispose();
+        this.tMat.dispose();       
+        this.geometry.dispose();                    
+        this.geometry = null;       
         this.material = null;
         
     };
-
     
     EllipsoidTileMesh.prototype.setTextureTerrain = function(texture,pitScale)
     {         
