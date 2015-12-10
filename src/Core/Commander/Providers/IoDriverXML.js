@@ -25,13 +25,12 @@ define('Core/Commander/Providers/IoDriverXML',['Core/Commander/Providers/IoDrive
 
         var xhr = new XMLHttpRequest();
   
-        xhr.open("GET", url,true);
+        xhr.open("GET", url,true);                
         
-        //xhr.withCredentials = true;
+        xhr.withCredentials = true;
         
-        //xhr.responseType = "document";
-         xhr.responseType = "arraybuffer";
-        
+        xhr.responseType = "document";
+          
         xhr.crossOrigin  = '';
 
         xhr.onload = function () 
