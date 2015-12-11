@@ -34,16 +34,18 @@ define('Globe/EllipsoidTileMesh',[
         this.cooWMTS    = cooWMTS;
         this.bbox       = defaultValue(bbox,new BoudingBox());        
         
-        var precision   = 8;
+        var precision   = 16;
         
-        if (this.level > 15)
-            precision   = 64;
-        else if(this.level > 11)
-            precision   = 128;
-        else if(this.level > 8)
+        if (this.level > 14)
             precision   = 32;
-        else if (this.level > 6)
-            precision   = 16;
+//        if (this.level > 15)
+//            precision   = 64;
+//        else if(this.level > 11)
+//            precision   = 64;
+//        else if(this.level > 8)
+//            precision   = 32;
+//        else if (this.level > 6)
+//            precision   = 16;
         
         var levelMax = 16;
         
