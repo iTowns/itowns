@@ -55,9 +55,10 @@ define('Core/Commander/InterfaceCommander',['Core/Commander/ManagerCommands','Co
         command.paramsFunction.push(bbox);
         
         command.priority = parent.sse === undefined ? 1 : Math.floor(parent.visible ? parent.sse * 10000 : 1.0) *  (parent.visible ? Math.abs(19 - parent.level) : Math.abs(parent.level) ) *10000;
+        
+        //command.priority = parent.sse === undefined ? 1 : Math.floor(parent.visible && parent.material.visible ? parent.sse * 100000 : 1.0);
 
         this.managerCommands.addCommand(command);
-
     };
    
 

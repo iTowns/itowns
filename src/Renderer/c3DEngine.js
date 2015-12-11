@@ -162,12 +162,16 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera'], functio
         {
             var t = Math.pow(Math.cos((lim - len)/ (lim - this.size) * Math.PI * 0.5),1.5);                
             this.controls.zoomSpeed     = t*2.0;
-            this.controls.rotateSpeed   = 0.8 *t;                         
+            this.controls.rotateSpeed   = 0.8 *t;    
+            var color = new THREE.Color( 0x03a5f8 );
+            
+            this.renderer.setClearColor( color.multiplyScalar(1.0-t) );
         }
         else if(len >= lim && this.controls.zoomSpeed !== 1.0) 
         {
             this.controls.zoomSpeed     = 1.0;
-            this.controls.rotateSpeed   = 0.8;                
+            this.controls.rotateSpeed   = 0.8;
+            this.renderer.setClearColor( 0x030508 );
         }   
     };  
     
