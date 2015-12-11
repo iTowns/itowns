@@ -49,11 +49,11 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera'], functio
             
         }.bind(this);
         
-        this.update = function()
+        this.update = function(run)
         {
             this.camera.update();
             this.updateControl();            
-            this.scene.wait();
+            this.scene.wait(run);
             this.renderScene();
                         
         }.bind(this);

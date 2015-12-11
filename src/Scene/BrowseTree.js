@@ -74,12 +74,12 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
 
                         var sse = this.nodeProcess.SSE(node,camera);
 
-                        if(optional && sse && node.material.visible === true)
+                        if(optional && sse && node.material.visible === true && node.wait === false)
                         {   
                             //console.log(node.sse);
                             this.tree.subdivide(node);
                         }                            
-                        else if(!sse && node.level >= 2 && node.material.visible === false)
+                        else if(!sse && node.level >= 2 && node.material.visible === false && node.wait === false)
                         {
 
                             node.material.visible = true;
@@ -167,16 +167,6 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
         this.nodeProcess.preHorizonCulling(camera);
         for(var i = 0;i<tree.children.length;i++)
             this._browse(tree.children[i],camera,optional);
-
-        //if(optional)
-        {
-            this.tree.interCommand.managerCommands.runAllCommands();
-            
-            //console.log(this.tree.nbNodes);
-            
-            //console.log(this.scene.gfxEngine.renderer);
-            
-        }
     };
     
     /**

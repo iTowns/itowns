@@ -99,12 +99,16 @@ define('Scene/Scene',[
      * @documentation: 
      * @returns {undefined}
      */
-    Scene.prototype.sceneProcess = function(){
+    Scene.prototype.sceneProcess = function(run){
         
         if(this.nodes[0] !== undefined  && this.currentCamera() !== undefined )
         {                        
             this.browserScene.browse(this.nodes[0].terrain,this.currentCamera(),true);
-            //this.updateScene3D(); // TODO --> replace by renderScene3D            
+            //this.updateScene3D(); // TODO --> replace by renderScene3D     
+            
+            if(run)
+                this.managerCommand.runAllCommands();
+            
             this.renderScene3D();            
         } 
         
@@ -119,25 +123,30 @@ define('Scene/Scene',[
     
     /**
     */
-    Scene.prototype.updateScene3D = function(){
-        
-       this.gfxEngine.update();
+    Scene.prototype.updateScene3D = function(run){
+                
+       this.gfxEngine.update(run);
     };
     
-    Scene.prototype.wait = function(){
+    Scene.prototype.wait = function(run){
         
-        var waitTime = 250;                
+        var waitTime = 100;
         
-        this.realtimeSceneProcess();
+        if(run === undefined)
+            run = true;
+        else if(run === false)
+            this.sceneProcess();
+        else
+            this.realtimeSceneProcess();
         
         if(this.timer === null)
         { 
-            this.timer = window.setTimeout(this.sceneProcess.bind(this),waitTime); 
+            this.timer = window.setTimeout(this.sceneProcess.bind(this),waitTime,run); 
         }
         else
         {
             window.clearInterval(this.timer);
-            this.timer = window.setTimeout(this.sceneProcess.bind(this),waitTime); 
+            this.timer = window.setTimeout(this.sceneProcess.bind(this),waitTime,run); 
         }
         
     };
