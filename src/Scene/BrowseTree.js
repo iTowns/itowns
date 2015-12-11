@@ -52,48 +52,51 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
             
             if(node.loaded)
             {
-                this.nodeProcess.frustumCullingOBB(node,camera);
-
-                if(node.visible )
-                {
-                    this.nodeProcess.horizonCulling(node,camera);
+                //if(this.nodeProcess.frustumBB(node,camera))
+                {    
+                    this.nodeProcess.frustumCullingOBB(node,camera);
 
                     if(node.visible )
                     {
+                        this.nodeProcess.horizonCulling(node,camera);
 
-                        if(node.parent.material !== undefined && node.parent.material.visible === true)
-                        {                                     
-                            node.visible = false;
-                            if (node.timeInvisible === 0)
-                            {
-                                node.timeInvisible = new Date().getTime();
-                                //console.log(node.timeInvisible);
-                            }
-                            return false;
-                        }
-
-                        var sse = this.nodeProcess.SSE(node,camera);
-
-                        if(optional && sse && node.material.visible === true && node.wait === false)
-                        {   
-                            //console.log(node.sse);
-                            this.tree.subdivide(node);
-                        }                            
-                        else if(!sse && node.level >= 2 && node.material.visible === false && node.wait === false)
+                        if(node.visible )
                         {
 
-                            node.material.visible = true;
-                                            
-                            this.RTC(node,camera);
-
-                            if(node.childrenCount() !== 0)
-                                for(var i = 0;i<node.children.length;i++)
-                                {                                                       
-                                    node.children[i].visible = false;                                        
+                            if(node.parent.material !== undefined && node.parent.material.visible === true)
+                            {                                     
+                                node.visible = false;
+                                if (node.timeInvisible === 0)
+                                {
+                                    node.timeInvisible = new Date().getTime();
+                                    //console.log(node.timeInvisible);
                                 }
+                                return false;
+                            }
 
-                            return false;                            
-                        }                                
+                            var sse = this.nodeProcess.SSE(node,camera);
+
+                            if(optional && sse && node.material.visible === true && node.wait === false)
+                            {   
+                                //console.log(node.sse);
+                                this.tree.subdivide(node);
+                            }                            
+                            else if(!sse && node.level >= 2 && node.material.visible === false && node.wait === false)
+                            {
+
+                                node.material.visible = true;
+
+                                this.RTC(node,camera);
+
+                                if(node.childrenCount() !== 0)
+                                    for(var i = 0;i<node.children.length;i++)
+                                    {                                                       
+                                        node.children[i].visible = false;                                        
+                                    }
+
+                                return false;                            
+                            }                                
+                        }
                     }
                 }
             }
