@@ -42,10 +42,8 @@ define('Core/Commander/ManagerCommands',
         this.loadQueue      = [];
         this.providers      = [];
         this.history        = null;               
-        //        
         this.eventsManager  = new EventsManager();       
         this.scene          = undefined;
-        this.nbRequest      = -3; // TODO why???
 
     }        
 
@@ -53,13 +51,7 @@ define('Core/Commander/ManagerCommands',
 
     ManagerCommands.prototype.addCommand = function(command)
     {                      
-        this.queueAsync.queue(command);        
-        this.nbRequest++;
-     
-//        if(this.queueAsync.length > 8 )
-//        {
-//            this.runAllCommands();          
-//        }            
+        this.queueAsync.queue(command);                
     };
     
     ManagerCommands.prototype.init = function(scene)
@@ -78,22 +70,20 @@ define('Core/Commander/ManagerCommands',
     ManagerCommands.prototype.runAllCommands = function()
     {  
         if(this.queueAsync.length === 0)
-        {    
-            this.process();
-            return when();
-        }
+            return;
         
         return this.providers[0].get(this.queueAsync.dequeue()).then(function()
-        {           
+        {              
+            if(this.queueAsync.length%2 === 0)            
+                
+                this.scene.updateScene3D(false);
             
-            this.runAllCommands();
-            this.nbRequest--;
             
-            if(this.nbRequest === 0)
-            {                                
+            this.runAllCommands();            
+            
+            if(this.queueAsync.length === 0)
                 this.scene.updateScene3D();
-            }                            
-           
+                                                   
         }.bind(this));                         
     };
 

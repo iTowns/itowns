@@ -63,6 +63,7 @@ define('Globe/EllipsoidTileMesh',[
         this.dot        = 0;
         this.frustumCulled = false;        
         this.timeInvisible = 0;
+        this.maxChildren     = 4;
     }
 
     EllipsoidTileMesh.prototype = Object.create( NodeMesh.prototype );
@@ -152,7 +153,7 @@ define('Globe/EllipsoidTileMesh',[
             this.tMat.update();
             var parent = this.parent;
 
-            if(parent.childrenLoaded() && parent.wait === true)
+            if(parent.childrenLoaded())
             {                                
                 parent.wait = false;                  
             }

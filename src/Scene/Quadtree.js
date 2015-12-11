@@ -36,9 +36,7 @@ define('Scene/Quadtree',[
             
             this.interCommand.managerCommands.runAllCommands();            
             this.subdivideChildren(this.children[i]);
-        }
-        
-        this.nbNodes = 0;
+        }        
         
     }
     
@@ -103,17 +101,23 @@ define('Scene/Quadtree',[
         if(node.level > 18  || node.wait === true )
             return false;        
                              
-        if(node.childrenCount() !== 0 && node.wait === false)                
+                             
+        if(node.childrenCount() > 0 &&  node.wait === false )                
         {                        
+            //console.log(node.childrenCount());
             for (var i = 0 ;i<node.childrenCount();i++)
             {                
                 node.children[i].visible = true;                
             }
-            
-            node.material.visible   = false;
+           
+            if(node.childrenCount() === 4 && node.childrenLoaded())
+                node.material.visible   = false;
+            else
+                node.material.visible   = true;
             
             return false;
-        }       
+        }
+       
         
         return true;
     };
