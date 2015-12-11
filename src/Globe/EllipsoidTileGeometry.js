@@ -36,8 +36,8 @@ define('Globe/EllipsoidTileGeometry',[
         var ellipsoid       = defaultValue(pellipsoid,new Ellipsoid(6378137, 6378137, 6356752.3142451793));         
         
         var nSeg            = defaultValue(segment,32);       
-        var nVertex         = (nSeg+1)*(nSeg+1); // correct pour uniquement les vertex
-        var triangles       = (nSeg)*(nSeg); // correct pour uniquement les vertex
+        var nVertex         = (nSeg+1)*(nSeg+1) + 4 * (nSeg-1); // correct pour uniquement les vertex
+        var triangles       = (nSeg)*(nSeg)     + 8 * (nSeg-1); // correct pour uniquement les vertex
         
         var widthSegments   = nSeg;
         var heightSegments  = nSeg;
@@ -85,7 +85,7 @@ define('Globe/EllipsoidTileGeometry',[
         this.OBB    = bbox.get3DBBox(ellipsoid,this.center);
         
         var idVertex        = 0;
-        var x, y, vertices  = [];
+        var x, y, vertices  = [], skirt = [],skirtEnd = [];
 
         var st1             = 0.5 + Math.log(Math.tan(MathExt.PI_OV_FOUR + thetaStart*0.5))* MathExt.INV_TWO_PI;
         
@@ -124,12 +124,13 @@ define('Globe/EllipsoidTileGeometry',[
                     bufferVertex[id3+ 0] = vertex.x - this.center.x;
                     bufferVertex[id3+ 1] = vertex.y - this.center.y;
                     bufferVertex[id3+ 2] = vertex.z - this.center.z;
-//                    
+                    
+                                      
 //                    bufferVertex[id3+ 0] = vertex.x ;
 //                    bufferVertex[id3+ 1] = vertex.y ;
 //                    bufferVertex[id3+ 2] = vertex.z ;
 
-                    var normal = vertex.clone().normalize();
+                    var normal = vertex.clone().normalize();                                        
 
                     bufferNormal[id3+ 0] = normal.x;
                     bufferNormal[id3+ 1] = normal.y;
@@ -138,17 +139,31 @@ define('Globe/EllipsoidTileGeometry',[
                     bufferUV[idVertex*2 + 0] = u;
                     bufferUV[idVertex*2 + 1] = 1-v;
                     
-                    bufferUV2[idVertex]      = t;                                             
+                    bufferUV2[idVertex]      = t;                                  
+                    
+                    if(y !== 0 && y !== heightSegments)
+                        if(x === widthSegments  )
+                            skirt.push(idVertex);
+                        else if(x === 0 )
+                           skirtEnd.push(idVertex);
+                    
+                    verticesRow.push( idVertex );
                     
                     idVertex ++;
-                                  
-                    verticesRow.push( idVertex - 1 );
                     
             }
 
-            vertices.push( verticesRow );          
-
+            vertices.push( verticesRow ); 
+            
+            if(y===0)
+               skirt = skirt.concat(verticesRow);
+            else if(y===heightSegments)
+               skirt = skirt.concat(verticesRow.slice().reverse());
+           
         }
+        
+        skirt = skirt.concat(skirtEnd.reverse());
+        //console.log(skirt);
 
         function bufferize(va,vb,vc,idVertex) 
         {
@@ -157,7 +172,7 @@ define('Globe/EllipsoidTileGeometry',[
             bufferIndex[idVertex+ 2] = vc;                               
         }
 
-        idVertex = 0;
+        var idVertex2 = 0;
 
         for ( y = 0; y < heightSegments; y ++ ) {
 
@@ -168,14 +183,53 @@ define('Globe/EllipsoidTileGeometry',[
                     var v3 = vertices[ y + 1 ][ x ];
                     var v4 = vertices[ y + 1 ][ x + 1 ];
 
-                    bufferize(v4,v2,v1,idVertex);
+                    bufferize(v4,v2,v1,idVertex2);
                     
-                    idVertex +=3;
+                    idVertex2 +=3;
 
-                    bufferize(v4,v3,v2,idVertex);
+                    bufferize(v4,v3,v2,idVertex2);
                     
-                    idVertex +=3;
+                    idVertex2 +=3;
                 }
+        }
+        
+        for ( i = 0; i < skirt.length - 5; i ++ ) 
+        {
+           
+            var id = skirt[i];
+            var id3     = idVertex*3;
+            var id23    = id*3;
+//                    
+            var r = 100000;
+            bufferVertex[id3+ 0] = bufferVertex[id23+ 0] - bufferNormal[id23+ 0] * r;
+            bufferVertex[id3+ 1] = bufferVertex[id23+ 1] - bufferNormal[id23+ 1] * r;
+            bufferVertex[id3+ 2] = bufferVertex[id23+ 2] - bufferNormal[id23+ 2] * r;
+            
+            bufferNormal[id3+ 0] = bufferNormal[id23+ 0];
+            bufferNormal[id3+ 1] = bufferNormal[id23+ 1];
+            bufferNormal[id3+ 2] = bufferNormal[id23+ 2];
+            
+            bufferUV[idVertex*2 + 0] = bufferUV[id*2 + 0];
+            bufferUV[idVertex*2 + 1] = bufferUV[id*2 + 1];
+            bufferUV2[idVertex]      = bufferUV2[id]; 
+            
+            var v1 = id;
+            var v2 = idVertex;
+            var v3 = idVertex+1;
+            var v4 = skirt[(i+1)%skirt.length];
+            
+            //bufferize(v4,v2,v1,idVertex2);
+            
+            bufferize(v1,v2,v3,idVertex2);
+                    
+            idVertex2 +=3;
+
+            bufferize(v1,v3,v4,idVertex2);
+
+            idVertex2 +=3;
+            
+            idVertex++;
+            
         }
         
         // TODO : free array
