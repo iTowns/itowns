@@ -80,9 +80,9 @@ define('Globe/EllipsoidTileGeometry',[
 //        this.HeightPoints.push(ellipsoid.cartographicToCartesian(new CoordCarto(phiStart                        , thetaStart + bbox.halfDimension.y,0)));        
      
         var ccarto  = new CoordCarto(bbox.center.x,bbox.center.y,0);               
-        var center  = ellipsoid.cartographicToCartesian(ccarto);
+        this.center  = ellipsoid.cartographicToCartesian(ccarto);
         
-        this.OBB    = bbox.get3DBBox(ellipsoid,center);
+        this.OBB    = bbox.get3DBBox(ellipsoid,this.center);
         
         var idVertex        = 0;
         var x, y, vertices  = [];
@@ -121,9 +121,9 @@ define('Globe/EllipsoidTileGeometry',[
                    
                     var id3     = idVertex*3 ;
 //                    
-                    bufferVertex[id3+ 0] = vertex.x - center.x;
-                    bufferVertex[id3+ 1] = vertex.y - center.y;
-                    bufferVertex[id3+ 2] = vertex.z - center.z;
+                    bufferVertex[id3+ 0] = vertex.x - this.center.x;
+                    bufferVertex[id3+ 1] = vertex.y - this.center.y;
+                    bufferVertex[id3+ 2] = vertex.z - this.center.z;
 //                    
 //                    bufferVertex[id3+ 0] = vertex.x ;
 //                    bufferVertex[id3+ 1] = vertex.y ;
