@@ -128,7 +128,9 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
 //        
         camera = camera.camera3D;
         var center          = new THREE.Vector3();
-        var matrixWorld     = new THREE.Matrix4();   
+        //var matrixWorld     = new THREE.Matrix4();
+        
+        var matrixWorld     = node.matrixWorld;
 
         var cameraMatrixWorld           = camera.matrixWorld;
 

@@ -58,7 +58,7 @@ define('Globe/EllipsoidTileMesh',[
         this.absCenterSphere = new THREE.Vector3().addVectors(this.geometry.boundingSphere.center,this.absoluteCenter);
                
         this.tMat       = new Material(GlobeVS,GlobeFS,bbox,cooWMTS.zoom);                
-        this.orthoNeed  = 10;
+        this.orthoNeed  = 1;
         this.material   = this.tMat.shader;
         this.dot        = 0;
         this.frustumCulled = false;        
@@ -79,8 +79,30 @@ define('Globe/EllipsoidTileMesh',[
         
     };
     
-    EllipsoidTileMesh.prototype.setTextureTerrain = function(texture,pitScale)
+    EllipsoidTileMesh.prototype.setTerrain = function(terrain)
     {         
+        var texture;
+        var pitScale;                        
+
+        if(terrain === - 1)
+            texture = -1;
+        else if(terrain === - 2)
+        {
+            var parentBil   = this.getParentLevel(14);                                
+            pitScale        = parentBil.bbox.pitScale(this.bbox);                
+            texture         = parentBil.tMat.Textures_00[0];
+            // TODO recentrer la bouding box
+            this.bbox.setAltitude(parentBil.bbox.minCarto.altitude,parentBil.bbox.maxCarto.altitude);
+            this.geometry.OBB.addHeight(this.bbox);
+        }
+        else
+        {
+            texture = terrain.texture;
+            // TODO recentrer la bouding box
+            this.bbox.setAltitude(terrain.min,terrain.max);
+            this.geometry.OBB.addHeight(this.bbox);
+        }                         
+        
         this.tMat.setTexture(texture,0,0,pitScale);      
     };
     
@@ -92,7 +114,8 @@ define('Globe/EllipsoidTileMesh',[
     EllipsoidTileMesh.prototype.setTextureOrtho = function(texture,id)
     {         
         id = id === undefined ? 0 : id;
-        this.tMat.setTexture(texture,1,id);        
+        this.tMat.setTexture(texture,1,id); 
+        this.checkOrtho();
     };   
     
     EllipsoidTileMesh.prototype.normals = function()
@@ -119,6 +142,24 @@ define('Globe/EllipsoidTileMesh',[
     { 
         return this.geometry.OBB;
     };
+    
+    EllipsoidTileMesh.prototype.checkOrtho = function()
+    { 
+        
+        if(this.orthoNeed === this.tMat.Textures_01.length) 
+        {                               
+            this.loaded = true;
+            this.tMat.update();
+            var parent = this.parent;
+
+            if(parent.childrenLoaded() && parent.wait === true)
+            {                                
+                parent.wait = false;                  
+            }
+        }                             
+    };
+    
+    
     
     return EllipsoidTileMesh;
     

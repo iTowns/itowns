@@ -85,11 +85,12 @@ define('Scene/NodeProcess',['Scene/BoudingBox','Renderer/Camera','Core/Math/Math
     NodeProcess.prototype.frustumCullingOBB = function(node,camera)        
     {        
 
-        var obb     = node.OBB();
+        var obb     = node.OBB();               
+        
         var l       = node.absoluteCenter.length();
+        
         obb.translateZ(l);
         obb.update();
-        //console.log(node.rotation);
         
         var quadInv = obb.quadInverse().clone();      
 
@@ -99,6 +100,7 @@ define('Scene/NodeProcess',['Scene/BoudingBox','Renderer/Camera','Core/Math/Math
         this.camera.setRotation(quadInv.multiply(camera.camera3D.quaternion));
         
         obb.translateZ(-l);
+        
         obb.update();
                 
         node.visible = this.camera.getFrustum().intersectsBox(obb.box3D);
