@@ -131,7 +131,7 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera'], functio
         
         if(this.debug)
         {
-            var pos = position.clone().multiplyScalar(0.5);
+            //var pos = position.clone().multiplyScalar(0.25);
             
             
             this.camDebug.position.x = -this.size * 8;
