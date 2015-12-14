@@ -63,13 +63,21 @@ define('Globe/EllipsoidTileGeometry',[
         {                           
             return ellipsoid.geodeticSurfaceNormalCartographic(new CoordCarto( phi, theta,0));                
         };
-
+        
+//        this.tops        = [];
+//        this.tops.push(ellipsoid.cartographicToCartesian(new CoordCarto(phiStart, thetaStart,0)));
+//        this.tops.push(ellipsoid.cartographicToCartesian(new CoordCarto(phiStart + phiLength, thetaStart+ thetaLength,0)));
+//        this.tops.push(ellipsoid.cartographicToCartesian(new CoordCarto(phiStart, thetaStart+ thetaLength,0)));
+//        this.tops.push(ellipsoid.cartographicToCartesian(new CoordCarto(phiStart + phiLength, thetaStart,0)));   
+//
 //        this.normals        = [];
-//        this.HeightPoints    = [];        
+//
 //        this.normals.push(this.carto2Normal(phiStart, thetaStart));
 //        this.normals.push(this.carto2Normal(phiStart + phiLength, thetaStart+ thetaLength));
 //        this.normals.push(this.carto2Normal(phiStart, thetaStart+ thetaLength));
 //        this.normals.push(this.carto2Normal(phiStart + phiLength, thetaStart));        
+
+//        this.HeightPoints    = [];                
 //        this.HeightPoints.push(ellipsoid.cartographicToCartesian(new CoordCarto(phiStart                        , thetaStart    ,0)));
 //        this.HeightPoints.push(ellipsoid.cartographicToCartesian(new CoordCarto(phiStart + bbox.halfDimension.x , thetaStart    ,0)));
 //        this.HeightPoints.push(ellipsoid.cartographicToCartesian(new CoordCarto(phiStart + phiLength            , thetaStart    ,0)));

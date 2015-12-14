@@ -49,8 +49,10 @@ THREE.OBB.prototype.addHeight = function(bbox)
 
     this.box3D.min.z += bbox.minCarto.altitude;
     this.box3D.max.z += bbox.maxCarto.altitude;
-    /*
-    var nHalfSize   = Math.abs(this.box3D.min.z + this.box3D.max.z)*0.5;
+    
+    // TODO à vérifier --->
+    
+    var nHalfSize   = Math.abs(this.box3D.min.z - this.box3D.max.z)*0.5;
     
     var translaZ    = this.box3D.min.z + nHalfSize;
     
@@ -58,7 +60,10 @@ THREE.OBB.prototype.addHeight = function(bbox)
     this.box3D.max.z =  nHalfSize;
     
     this.translateZ(translaZ);
-    */
+    
+    this.update(); 
+    
+    // TODO <---- à vérifier 
 };
 
 THREE.OBB.prototype.points = function(){

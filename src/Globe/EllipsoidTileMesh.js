@@ -57,7 +57,7 @@ define('Globe/EllipsoidTileMesh',[
         this.absoluteCenter  = ellipsoid.cartographicToCartesian(ccarto) ;   
        
         // TODO ??? 
-        this.absCenterSphere = new THREE.Vector3().addVectors(this.geometry.boundingSphere.center,this.absoluteCenter);
+        this.centerSphere = new THREE.Vector3().addVectors(this.geometry.boundingSphere.center,this.absoluteCenter);
                
         this.tMat       = new Material(GlobeVS,GlobeFS,bbox,cooWMTS.zoom);                
         this.orthoNeed  = 1;
@@ -86,8 +86,7 @@ define('Globe/EllipsoidTileMesh',[
     {         
         this.tMat.uniforms.RTC.value  = rtc;
     };
-    
-    
+        
     EllipsoidTileMesh.prototype.setTerrain = function(terrain)
     {         
         var texture;
@@ -115,8 +114,21 @@ define('Globe/EllipsoidTileMesh',[
     
     EllipsoidTileMesh.prototype.setAltitude = function(min,max)
     {         
-        this.bbox.setAltitude(min,max);
+        this.bbox.setAltitude(min,max);        
         this.geometry.OBB.addHeight(this.bbox);
+        // TODO compute center new center sphere and radius
+        
+        /*
+        if(max > 0)
+        for ( t = 0; t <= this.geometry.tops.length; t ++ ) 
+        {
+            var top = this.geometry.tops[t];
+            var elevation = top.clone().normalize().multiplyScalar(max);            
+            this.geometry.tops[t].add(elevation);
+            
+        }
+        */
+        
     };    
     
     EllipsoidTileMesh.prototype.setTextureOrtho = function(texture,id)
