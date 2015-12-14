@@ -124,10 +124,8 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera'], functio
         
         this.camera.setPosition(position);
         
-         // if near < 15 --> bug no camera helper
-        this.camera.camera3D.near = 1000;//Math.max(15.0,0.000002352 * this.size);
-        
-        
+        // if near is too small --> bug no camera helper
+        this.camera.camera3D.near = this.size * 2.333;//Math.max(15.0,0.000002352 * this.size);
         this.camera.camera3D.far  = this.size * 80;
         this.camera.camera3D.updateProjectionMatrix();
         
@@ -144,8 +142,7 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera'], functio
             this.scene3D.add( axisHelper );
         }
         
-        this.camera.camera3D.near = Math.max(15.0,0.000002352 * this.size);
-                        
+        this.camera.camera3D.near = Math.max(15.0,0.000002352 * this.size);                        
         this.camera.camera3D.updateProjectionMatrix();
         
         this.initRenderer();        
