@@ -85,10 +85,8 @@ define('Renderer/Camera',['Scene/Node','THREE'], function(Node, THREE){
     {
         
         var boundingSphere = node.geometry.boundingSphere;    
-                                        
-        //var center = 
-                        
-        var distance = Math.max(0.0,(this.camera3D.position.distanceTo(node.absCenterSphere) - boundingSphere.radius));                
+               
+        var distance = Math.max(0.0,(this.camera3D.position.distanceTo(node.centerSphere) - boundingSphere.radius));                
         
         var SSE = this.preSSE * (node.geometricError/distance);
         

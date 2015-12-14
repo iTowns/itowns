@@ -18,7 +18,7 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera'], functio
         THREE.ShaderChunk[ "logdepthbuf_pars_vertex" ];
 
         this.debug      = false;
-        this.debug      = true;
+        //this.debug      = true;
         this.scene      = undefined;
         this.scene3D    = new THREE.Scene();               
         this.width      = this.debug ? window.innerWidth * 0.5 : window.innerWidth;
@@ -131,7 +131,11 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera'], functio
         
         if(this.debug)
         {
+            var pos = position.clone().multiplyScalar(0.5);
+            
+            
             this.camDebug.position.x = -this.size * 8;
+            //this.camDebug.position.copy(pos);
             this.camDebug.lookAt(new THREE.Vector3(0,0,0));
             this.camDebug.near = this.size* 0.1;
             this.camDebug.far  = this.size * 10;
@@ -143,8 +147,7 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera'], functio
         }
         
         this.camera.camera3D.near = Math.max(15.0,0.000002352 * this.size);                        
-        this.camera.camera3D.updateProjectionMatrix();
-        
+        this.camera.camera3D.updateProjectionMatrix();        
         this.initRenderer();        
         this.initControls(this.size);
         

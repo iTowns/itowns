@@ -53,6 +53,7 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
             if(node.loaded)
             {
                 //if(this.nodeProcess.frustumBB(node,camera))
+                //if(this.nodeProcess.backFaceCulling(node,camera))
                 {    
                     this.nodeProcess.frustumCullingOBB(node,camera);
 

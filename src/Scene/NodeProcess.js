@@ -168,21 +168,39 @@ define('Scene/NodeProcess',['Scene/BoudingBox','Renderer/Camera','Core/Math/Math
      */
     NodeProcess.prototype.horizonCulling = function(node)
     {
+      
+      // horizonCulling Oriented bounding box
       var points    = node.OBB().pointsWorld;
       var center    = node.absoluteCenter;
       var isVisible = false;
       for (var i = 0, max = points.length; i < max; i++) 
       {          
             if(!this.pointHorizonCulling(points[i].add(center)))
+            {
                 isVisible = true;            
+                break;
+            }
       }
+      
+     /*
+      var points    = node.geometry.tops;      
+      var isVisible = false;
+      for (var i = 0, max = points.length; i < max; i++) 
+      {                    
+            if(!this.pointHorizonCulling(points[i]))
+            {
+                isVisible = true;
+                break;
+            }
+      }
+      */
       
       node.visible = isVisible;
 //      if(isVisible === false)
 //          node.tMat.setDebug(1);
 //      else
 //          node.tMat.setDebug(0);
-//      
+//   
       
       return node.visible;
       
