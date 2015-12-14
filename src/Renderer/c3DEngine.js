@@ -18,7 +18,7 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera'], functio
         THREE.ShaderChunk[ "logdepthbuf_pars_vertex" ];
 
         this.debug      = false;
-        //this.debug      = true;
+        this.debug      = true;
         this.scene      = undefined;
         this.scene3D    = new THREE.Scene();               
         this.width      = this.debug ? window.innerWidth * 0.5 : window.innerWidth;
@@ -33,18 +33,19 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera'], functio
         this.initCamera();
                        
         this.renderScene = function(){
-                                    
-            this.updateRenderer();
+                                                
             this.renderer.clear();            
             this.renderer.setViewport( 0, 0, this.width, this.height );
             this.renderer.render( this.scene3D, this.camera.camera3D);                       
             
             if(this.debug)
             {
-                this.camera.camHelper().visible = true;
+                this.setRTC(1);
+                this.camera.camHelper().visible = true;                
                 this.renderer.setViewport( this.width, 0, this.width, this.height );
-                this.renderer.render( this.scene3D, this.camDebug);
+                this.renderer.render( this.scene3D, this.camDebug);                
                 this.camera.camHelper().visible = false;                
+                this.setRTC(0);
             }            
             
         }.bind(this);
@@ -91,7 +92,7 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera'], functio
                 
         if(this.debug)
         {
-            this.camDebug   = new THREE.PerspectiveCamera( 30, this.camera.ratio, 1) ;                                
+            this.camDebug   = new THREE.PerspectiveCamera( 30, this.camera.ratio) ;                                
                              
         }        
     };
@@ -124,7 +125,9 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera'], functio
         this.camera.setPosition(position);
         
          // if near < 15 --> bug no camera helper
-        this.camera.camera3D.near = 0.000002352 * this.size;
+        this.camera.camera3D.near = 1000;//Math.max(15.0,0.000002352 * this.size);
+        
+        
         this.camera.camera3D.far  = this.size * 80;
         this.camera.camera3D.updateProjectionMatrix();
         
@@ -132,12 +135,18 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera'], functio
         {
             this.camDebug.position.x = -this.size * 8;
             this.camDebug.lookAt(new THREE.Vector3(0,0,0));
-            this.camDebug.far = this.size * 1500;
+            this.camDebug.near = this.size* 0.1;
+            this.camDebug.far  = this.size * 10;
             this.camDebug.updateProjectionMatrix(); 
+            this.camera.createCamHelper();
             this.scene3D.add(this.camera.camHelper());              
             var axisHelper = new THREE.AxisHelper( this.size*1.33 );
             this.scene3D.add( axisHelper );
         }
+        
+        this.camera.camera3D.near = Math.max(15.0,0.000002352 * this.size);
+                        
+        this.camera.camera3D.updateProjectionMatrix();
         
         this.initRenderer();        
         this.initControls(this.size);
@@ -163,7 +172,7 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera'], functio
             var t = Math.pow(Math.cos((lim - len)/ (lim - this.size) * Math.PI * 0.5),1.5);                
             this.controls.zoomSpeed     = t*2.0;
             this.controls.rotateSpeed   = 0.8 *t;    
-            var color = new THREE.Color( 0x03a5f8 );
+            var color = new THREE.Color( 0x53b5f8 );
             
             this.renderer.setClearColor( color.multiplyScalar(1.0-t) );
         }
@@ -173,22 +182,31 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera'], functio
             this.controls.rotateSpeed   = 0.8;
             this.renderer.setClearColor( 0x030508 );
         }   
-    };  
+    };
     
-    c3DEngine.prototype.updateRenderer = function()
+    c3DEngine.prototype.setRTC = function(rtc)
     {
-//        var len  = this.camera.position().length ();
-//        
-//        if( len < 8000000 )
-//        {
-//            var t = 1.0 - Math.pow(Math.cos((8000000 - len)/ (8000000 - 6378137) * Math.PI * 0.5),1.5);
-//            var spaceColor = new THREE.Color(0.45, 0.74, 1.0).multiplyScalar(t);
-//            this.renderer.setClearColor( spaceColor.getHex());
-//        }
-//        else
-//        {
-//            this.renderer.setClearColor( 0x030508 );
-//        }            
+         for (var x = 0; x < this.scene3D.children.length; x++)
+         {
+             var node = this.scene3D.children[x];
+             
+             if(node.setRTC)
+                if(rtc === 0)
+                    node.traverseVisible(this.rtcOn);
+                else
+                    node.traverseVisible(this.rtcOff);
+         }
+        
+    };
+    
+    c3DEngine.prototype.rtcOn = function(obj3D)
+    {
+          obj3D.setRTC(1);
+    };
+    
+    c3DEngine.prototype.rtcOff = function(obj3D)
+    {
+          obj3D.setRTC(0);
     };
        
     /**

@@ -82,28 +82,32 @@ define('Globe/EllipsoidTileMesh',[
         
     };
     
+    EllipsoidTileMesh.prototype.setRTC = function(rtc)
+    {         
+        this.tMat.uniforms.RTC.value  = rtc;
+    };
+    
+    
     EllipsoidTileMesh.prototype.setTerrain = function(terrain)
     {         
         var texture;
         var pitScale;                        
 
-        if(terrain === - 1)
+        if(terrain      === - 1)
             texture = -1;
         else if(terrain === - 2)
         {
             var parentBil   = this.getParentLevel(14);                                
             pitScale        = parentBil.bbox.pitScale(this.bbox);                
             texture         = parentBil.tMat.Textures_00[0];
-            // TODO recentrer la bouding box
-            this.bbox.setAltitude(parentBil.bbox.minCarto.altitude,parentBil.bbox.maxCarto.altitude);
-            this.geometry.OBB.addHeight(this.bbox);
+            
+            this.setAltitude(parentBil.bbox.minCarto.altitude,parentBil.bbox.maxCarto.altitude);
+            
         }
         else
         {
-            texture = terrain.texture;
-            // TODO recentrer la bouding box
-            this.bbox.setAltitude(terrain.min,terrain.max);
-            this.geometry.OBB.addHeight(this.bbox);
+            texture = terrain.texture;            
+            this.setAltitude(terrain.min,terrain.max);            
         }                         
         
         this.tMat.setTexture(texture,0,0,pitScale);      
@@ -112,6 +116,7 @@ define('Globe/EllipsoidTileMesh',[
     EllipsoidTileMesh.prototype.setAltitude = function(min,max)
     {         
         this.bbox.setAltitude(min,max);
+        this.geometry.OBB.addHeight(this.bbox);
     };    
     
     EllipsoidTileMesh.prototype.setTextureOrtho = function(texture,id)

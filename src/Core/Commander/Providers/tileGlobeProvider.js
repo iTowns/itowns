@@ -97,6 +97,15 @@ define('Core/Commander/Providers/tileGlobeProvider',[
             tile.updateMatrixWorld();
         }
         
+        var translate   = new THREE.Vector3();
+             
+        if(parent.worldToLocal !== undefined )                
+            translate = parent.worldToLocal(tile.absoluteCenter.clone());
+           
+        
+        tile.position.copy(translate);
+        
+        
         tile.visible = false;
         
         parent.add(tile);
