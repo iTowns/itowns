@@ -28,7 +28,7 @@ define('Renderer/Camera',['Scene/Node','THREE'], function(Node, THREE){
         this.HYFOV      = 2.0 * Math.atan(Math.tan(radAngle*0.5) * this.Hypotenuse  / this.width );                
         this.preSSE     = this.Hypotenuse * (2.0 * Math.tan(this.HYFOV * 0.5));
         
-        this.cameraHelper  = debug  ? new THREE.CameraHelper( this.camera3D ) : undefined;
+        this.cameraHelper  = undefined;//debug  ? new THREE.CameraHelper( this.camera3D ) : undefined;
         this.frustum       = new THREE.Frustum();
     }
  
@@ -47,6 +47,12 @@ define('Renderer/Camera',['Scene/Node','THREE'], function(Node, THREE){
     Camera.prototype.camHelper = function(){
         
         return this.cameraHelper;        
+
+    };
+    
+    Camera.prototype.createCamHelper = function(){
+        
+        this.cameraHelper  = new THREE.CameraHelper( this.camera3D );      
 
     };
     
@@ -99,7 +105,7 @@ define('Renderer/Camera',['Scene/Node','THREE'], function(Node, THREE){
         this.direction = vector.applyQuaternion( this.camera3D.quaternion );
         
         this.frustum.setFromMatrix( new THREE.Matrix4().multiplyMatrices( this.camera3D.projectionMatrix, this.camera3D.matrixWorldInverse));        
-        
+     
     };
     
     Camera.prototype.setPosition = function(position)
