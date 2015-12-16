@@ -200,15 +200,19 @@ define('Globe/EllipsoidTileGeometry',[
                 }
         }
 
-        var start = idVertex;
+        var start   = idVertex;
+        var rmax    = 10000;
+        var r       = Math.max(rmax,Math.pow(rmax,1/zoom)) ;
+        
+        r =  isFinite(r) ? r : rmax;
+        
         for ( i = 0; i < skirt.length ; i ++ ) 
         {
            
             var id    = skirt[i];
             var id3   = idVertex*3;
             var id23  = id*3;                   
-            var r = 100000;
-            
+                   
             bufferVertex[id3+ 0] = bufferVertex[id23+ 0] - bufferNormal[id23+ 0] * r;
             bufferVertex[id3+ 1] = bufferVertex[id23+ 1] - bufferNormal[id23+ 1] * r;
             bufferVertex[id3+ 2] = bufferVertex[id23+ 2] - bufferNormal[id23+ 2] * r;

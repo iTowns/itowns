@@ -14,17 +14,18 @@
  * @returns {Layer_L15.Layer}
  */
 define('Scene/Layer',[
+    'THREE',
     'Scene/Node',
     'Core/Commander/InterfaceCommander',
     'Core/Geographic/Projection',
-    'Renderer/NodeMesh'], function(Node,InterfaceCommander,Projection,NodeMesh){
+    'Renderer/NodeMesh'], function(THREE,Node,InterfaceCommander,Projection,NodeMesh){
 
     function Layer(type,param){
         //Constructor
 
         Node.call( this );
         // Requeter
-        this.interCommand   = new InterfaceCommander(type,param);
+        this.interCommand   = type !== undefined ? new InterfaceCommander(type,param) : undefined;
         this.descriManager  = null;
         this.projection     = new Projection();
                        
@@ -41,12 +42,15 @@ define('Scene/Layer',[
         for (var i = 0; i < this.children.length; i++)
         {
             var node = this.children[i];
+                     
             
-            if(node instanceof NodeMesh)            
+            if(node instanceof NodeMesh || node instanceof THREE.Mesh)            
                 meshs.push(node);            
             else if(node instanceof Layer)
             {                                
                 meshs = meshs.concat(node.getMesh());
+                
+                
             }
         }
         

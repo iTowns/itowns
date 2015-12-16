@@ -55,6 +55,10 @@ THREE.GlobeControls = function ( object, domElement ) {
 	// Range is 0 to Math.PI radians.
 	this.minPolarAngle = 0; // radians
 	this.maxPolarAngle = Math.PI; // radians
+        
+        this.radius = null;
+        this.theta  = null;
+        this.phi    = null;
 
 	// How far you can orbit horizontally, upper and lower limits.
 	// If set, must be a sub-interval of the interval [ - Math.PI, Math.PI ].
@@ -65,13 +69,15 @@ THREE.GlobeControls = function ( object, domElement ) {
 	this.noKeys = false;
 
 	// The four arrow keys
-	this.keys = { LEFT: 37, UP: 38, RIGHT: 39, BOTTOM: 40 };
+	this.keys = { LEFT: 37, UP: 38, RIGHT: 39, BOTTOM: 40, SPACE:32};
 
 	// Mouse buttons
 	this.mouseButtons = { ORBIT: THREE.MOUSE.LEFT, ZOOM: THREE.MOUSE.MIDDLE, PAN: THREE.MOUSE.RIGHT };
 
 	////////////
 	// internals
+
+        var space = false;
 
 	var scope = this;
 
@@ -92,8 +98,8 @@ THREE.GlobeControls = function ( object, domElement ) {
 	var dollyEnd = new THREE.Vector2();
 	var dollyDelta = new THREE.Vector2();
 
-	var theta;
-	var phi;
+	var theta   = null;
+	var phi     = null;
 	var phiDelta = 0;
 	var thetaDelta = 0;
 	var scale = 1;
@@ -259,23 +265,36 @@ THREE.GlobeControls = function ( object, domElement ) {
 		}
 
 	};
+        
+        
+        this.updateTarget = function () 
+        {
+            if(!space)
+            {
+                this.target = new THREE.Vector3();
+                //this.object.lookAt( this.target );
+            }
+            else
+            {
+                var target = this.object.position.clone().setLength(10);
+
+                this.target  = new THREE.Vector3().subVectors(this.object.position,target);                                
+
+                this.object.lookAt( this.target );
+            }
+        };
+        
 
 	this.update = function () {
 
 		var position = this.object.position;
 
-		offset.copy( position ).sub( this.target );
+		//
 
-		// rotate offset to "y-axis-is-up" space
-		offset.applyQuaternion( quat );
-
+		
 		// angle from z-axis around y-axis
 
-		theta = Math.atan2( offset.x, offset.z );
-
-		// angle from y-axis
-
-		phi = Math.atan2( Math.sqrt( offset.x * offset.x + offset.z * offset.z ), offset.y );
+		
 
 		if ( this.autoRotate && state === STATE.NONE ) {
 
@@ -283,9 +302,27 @@ THREE.GlobeControls = function ( object, domElement ) {
 
 		}
 
-		theta += thetaDelta;
-		phi += phiDelta;
+                if(theta === null)
+                {
+                    
+                    offset.copy( position ).sub( this.target );
+                    // rotate offset to "y-axis-is-up" space
+                    offset.applyQuaternion( quat );
 
+                    theta = Math.atan2( offset.x, offset.z );
+                    phi = Math.atan2( Math.sqrt( offset.x * offset.x + offset.z * offset.z ), offset.y );
+                    theta += thetaDelta;
+                    phi += phiDelta;
+             
+                }
+                else if(!space)
+                {//offset.applyQuaternion( quat );
+
+                    theta  += thetaDelta;
+                    phi    += phiDelta;
+                }
+                
+                 
 		// restrict theta to be between desired limits
 		theta = Math.max( this.minAzimuthAngle, Math.min( this.maxAzimuthAngle, theta ) );
 
@@ -295,24 +332,65 @@ THREE.GlobeControls = function ( object, domElement ) {
 		// restrict phi to be betwee EPS and PI-EPS
 		phi = Math.max( EPS, Math.min( Math.PI - EPS, phi ) );
 
-		var radius = offset.length() * scale;
+		var radius;
+                
+                if(this.radius === null )
+                {
+                    radius = offset.length() * scale;
+                    this.radius = radius;
+                }
+                else
+                    this.radius *= scale;
+                
+                this.radius = Math.max( this.minDistance, Math.min( this.maxDistance, this.radius ) );
+                
+                radius = this.radius;
+                
+                
 
 		// restrict radius to be between desired limits
-		radius = Math.max( this.minDistance, Math.min( this.maxDistance, radius ) );
+		//radius = Math.max( this.minDistance, Math.min( this.maxDistance, radius ) );
+                
 
 		// move target to panned location
 		this.target.add( pan );
 
-		offset.x = radius * Math.sin( phi ) * Math.sin( theta );
-		offset.y = radius * Math.cos( phi );
-		offset.z = radius * Math.sin( phi ) * Math.cos( theta );
+            
+                if(!space)
+                {
+                    offset.x = radius * Math.sin( phi ) * Math.sin( theta );
+                    offset.y = radius * Math.cos( phi );
+                    offset.z = radius * Math.sin( phi ) * Math.cos( theta );
 
-		// rotate offset back to "camera-up-vector-is-up" space
-		offset.applyQuaternion( quatInverse );
+                    // rotate offset back to "camera-up-vector-is-up" space
+                    //offset.applyQuaternion( quatInverse );
 
-		position.copy( this.target ).add( offset );
+                    position.copy( this.target ).add( offset );
 
-		this.object.lookAt( this.target );
+
+                    this.object.lookAt( this.target );
+                }
+                else
+                {
+//                    var delta = new THREE.Vector3(thetaDelta,-phiDelta,0);//.applyMatrix4(this.object.matrixWorld);
+//                    
+//                    this.object.translateX(delta.x);
+//                    this.object.translateY(delta.y);
+//                    this.object.translateZ(delta.z);
+                   
+                    
+                    this.object.translateX(thetaDelta);
+                    this.object.translateY(-phiDelta);
+                     //this.object.lookAt( this.target );
+                    
+                     //this.object.updateMatrix ();
+
+                     //this.object.updateMatrixWorld ( );
+                     
+                }
+                
+                
+                
 
 		thetaDelta = 0;
 		phiDelta = 0;
@@ -322,17 +400,17 @@ THREE.GlobeControls = function ( object, domElement ) {
 		// update condition is:
 		// min(camera displacement, camera rotation in radians)^2 > EPS
 		// using small-angle approximation cos(x/2) = 1 - x^2 / 8
-
+/*
 		if ( lastPosition.distanceToSquared( this.object.position ) > EPS
 		    || 8 * (1 - lastQuaternion.dot(this.object.quaternion)) > EPS ) {
-
+*/
 			this.dispatchEvent( changeEvent );
 
-			lastPosition.copy( this.object.position );
-			lastQuaternion.copy (this.object.quaternion );
-
+			//lastPosition.copy( this.object.position );
+			//lastQuaternion.copy (this.object.quaternion );
+/*
 		}
-
+*/
 	};
 
 
@@ -359,7 +437,7 @@ THREE.GlobeControls = function ( object, domElement ) {
 
 	this.getAzimuthalAngle = function () {
 
-		return theta
+		return theta;
 
 	};
 
@@ -402,6 +480,7 @@ THREE.GlobeControls = function ( object, domElement ) {
 			panStart.set( event.clientX, event.clientY );
 
 		}
+                
 
 		if ( state !== STATE.NONE ) {
 			document.addEventListener( 'mousemove', onMouseMove, false );
@@ -427,10 +506,23 @@ THREE.GlobeControls = function ( object, domElement ) {
 			rotateDelta.subVectors( rotateEnd, rotateStart );
 
 			// rotating across whole screen goes 360 degrees around
-			scope.rotateLeft( 2 * Math.PI * rotateDelta.x / element.clientWidth * scope.rotateSpeed );
+                        if(!space)
+                        {
+                            scope.rotateLeft( 2 * Math.PI * rotateDelta.x / element.clientWidth * scope.rotateSpeed  );                                                
 
 			// rotating up and down along whole screen attempts to go 360, but limited to 180
-			scope.rotateUp( 2 * Math.PI * rotateDelta.y / element.clientHeight * scope.rotateSpeed );
+                            scope.rotateUp( 2 * Math.PI * rotateDelta.y / element.clientHeight * scope.rotateSpeed );
+                        }
+                        else
+                        {
+                            
+                            
+                            scope.rotateLeft( rotateDelta.x / 20);                                                
+
+			// rotating up and down along whole screen attempts to go 360, but limited to 180
+                            scope.rotateUp(   rotateDelta.y / 20);
+                        }
+                                                
 
 			rotateStart.copy( rotateEnd );
 
@@ -541,6 +633,11 @@ THREE.GlobeControls = function ( object, domElement ) {
 				scope.pan( - scope.keyPanSpeed, 0 );
 				scope.update();
 				break;
+                        case scope.keys.SPACE:
+                                space = !space;     
+                                scope.updateTarget();
+                                scope.update();
+                                break;
 
 		}
 

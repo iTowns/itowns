@@ -4,7 +4,7 @@
 * Description: 3DEngine est l'interface avec le framework webGL.
 */
 
-define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera'], function(THREE,OrbitControls,Camera){
+define('Renderer/c3DEngine',['THREE','OrbitControls','GlobeControls','Renderer/Camera'], function(THREE,OrbitControls,GlobeControls,Camera){
 
     var instance3DEngine = null;
 
@@ -224,7 +224,8 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera'], functio
 
     c3DEngine.prototype.initControls = function(size){
         
-        this.controls   = new THREE.OrbitControls( this.camera.camera3D,this.renderer.domElement );
+        this.controls   = new THREE.OrbitControls( this.camera.camera3D,this.renderer.domElement );        
+        //this.controls   = new THREE.GlobeControls( this.camera.camera3D,this.renderer.domElement );
         
         this.controls.target        = new THREE.Vector3(0,0,0);
         this.controls.damping       = 0.1;
@@ -234,7 +235,7 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera'], functio
         this.controls.minDistance   = size *  0.1;        
         this.controls.maxDistance   = size * 16.0;    
         this.controls.keyPanSpeed   = 1.0;
-        this.controls.keyPanSpeed   = 0.001;
+        this.controls.keyPanSpeed   = 0.0001;
         this.controls.update();
     };
     
