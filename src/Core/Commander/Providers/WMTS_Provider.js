@@ -34,12 +34,11 @@ define('Core/Commander/Providers/WMTS_Provider',[
                 
         //var url = 'http://wxs.ign.fr/j2bfkv9whnqpq04zpzlfz2ge/vecteurtuile3d/BATI3D/BU.Building.kml';
         
-        var url = 'http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/vecteurtuile3d/BATI3D/BU.Building.kml';
-        
+//        var url = 'http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/vecteurtuile3d/BATI3D/BU.Building.kml';
+//               
 //        this.ioDriverXML.read(url).then(function(result)
 //        {
 //            
-//            console.log(result);
 //            
 //        });
     }

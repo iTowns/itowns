@@ -16,6 +16,7 @@ requirejs.config({
         'PriorityQueue' : "ThirdParty/PriorityQueue",
         'when'          : 'ThirdParty/when',        
         'OrbitControls' : "Renderer/Three/OrbitControls",
+        'GlobeControls' : "Renderer/ThreeExtented/GlobeControls",
         'FlyControls'   : "Renderer/Three/FlyControls",
         'StarGeometry'  : "Renderer/ThreeExtented/StarGeometry",
         'OBB'           : "Renderer/ThreeExtented/OBB",
@@ -41,7 +42,10 @@ requirejs.config({
         },
         OrbitControls: {
             deps: ['THREE']
-        },        
+        },
+        GlobeControls: {
+            deps: ['THREE']
+        },   
         FlyControls: {
             deps: ['THREE']
         },

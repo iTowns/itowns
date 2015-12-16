@@ -50,8 +50,8 @@ define('Renderer/Material',['THREE','Core/System/JavaTools'], function(THREE,Jav
 
          });
          
-         this.shader.wireframe = false;
-         //this.shader.wireframe = true;
+        this.shader.wireframe = false;
+        //this.shader.wireframe = true;
     };
     
     Material.prototype.dispose = function()
