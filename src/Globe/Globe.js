@@ -32,12 +32,11 @@ define('Globe/Globe',[
         //this.atmosphere = this.NOIE ? new Atmosphere(this.size) : undefined;
         
         /*
-        this.meshs      = new Layer();
-        
+        this.meshs      = new Layer();        
         var material = new THREE.ShaderMaterial( {
-
 	uniforms: {
-		mVPMatRTC       : { type: "m4", value: new THREE.Matrix4()}                
+		mVPMatRTC       : { type: "m4", value: new THREE.Matrix4()} ,
+                RTC             : { type: "i" , value: 1 }
             },
             vertexShader    : SimpleVS,
             fragmentShader  : SimpleFS,
@@ -45,10 +44,11 @@ define('Globe/Globe',[
             
         } );
        
-        var geometry = new THREE.SphereGeometry( 20, 32, 32 );
+        var geometry = new THREE.SphereGeometry( 5, 32, 32 );
        
         var sphere   = new THREE.Mesh( geometry, material );
-        var position = this.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(2.33,48.87,30));
+        var position = this.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(2.33,48.87,35));
+        sphere.frustumCulled = false;
         sphere.position.copy(position);
         this.meshs.add( sphere );
         */        

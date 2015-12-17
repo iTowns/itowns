@@ -102,7 +102,7 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
                 }
             }
 
-            if(node.visible)
+            if(node.visible &&  node.material.visible === true)
             {
                 this.RTC(node,camera);
                 node.timeInvisible = 0;
@@ -123,13 +123,24 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
     
     BrowseTree.prototype.RTC = function(node,camera)
     {        
+        
+///-------------------------------------------------------        
+//        var matrixWorld     = new THREE.Matrix4();//.setPosition(node.absoluteCenter);        
+//        var modelViewMatrix = new THREE.Matrix4().multiplyMatrices(camera.viewMatrix(),matrixWorld);           
+//        var center          = node.absoluteCenter;
+//        var centerEye       = new THREE.Vector4(center.x,center.y,center.z, 1.0).applyMatrix4(camera.viewMatrix());        
+//        var mvc             = modelViewMatrix.clone().setPosition(centerEye);        
+//        var mVPMatRTC       = new THREE.Matrix4().multiplyMatrices(camera.camera3D.projectionMatrix,mvc);
+//                
+///-------------------------------------------------------        
 //        var matrixWorld     = new THREE.Matrix4();        
 //        var modelViewMatrix = new THREE.Matrix4().multiplyMatrices(camera.viewMatrix(),matrixWorld);           
 //        var center          = node.absoluteCenter;
 //        var centerEye       = new THREE.Vector4(center.x,center.y,center.z, 1.0).applyMatrix4(camera.viewMatrix()) ;        
 //        var mvc             = modelViewMatrix.clone().setPosition(centerEye);        
 //        var mVPMatRTC       = new THREE.Matrix4().multiplyMatrices(camera.camera3D.projectionMatrix,mvc);
-//        
+        
+///-------------------------------------------------------        
         camera = camera.camera3D;
         var center                      = new THREE.Vector3();
         //var matrixWorld     = new THREE.Matrix4();
@@ -150,8 +161,8 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
 
         var modelViewMatrix = new THREE.Matrix4().multiplyMatrices(cameraMatrixWorldInverse,matrixWorld);           
 
-        var centerEye       = new THREE.Vector4(center.x,center.y,center.z, 1.0).applyMatrix4(cameraMatrixWorldInverse) ;                        
-
+        var centerEye       = new THREE.Vector4(center.x,center.y,center.z, 1.0).applyMatrix4(cameraMatrixWorldInverse) ;     
+        
         var mvc             = modelViewMatrix.clone().setPosition(centerEye);        
         var mVPMatRTC       = new THREE.Matrix4().multiplyMatrices(camera.projectionMatrix,mvc);
         

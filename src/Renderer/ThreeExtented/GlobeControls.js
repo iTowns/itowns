@@ -276,11 +276,16 @@ THREE.GlobeControls = function ( object, domElement ) {
             }
             else
             {
-                var target = this.object.position.clone().setLength(10);
+                var target = this.object.position.clone().setLength(2);
 
                 this.target  = new THREE.Vector3().subVectors(this.object.position,target);                                
 
                 this.object.lookAt( this.target );
+                
+//                this.object.rotation.x = 0.0;
+//                this.object.rotation.y = 0.0;
+//                this.object.rotation.z = 0.0;
+                
             }
         };
         
@@ -367,26 +372,28 @@ THREE.GlobeControls = function ( object, domElement ) {
 
                     position.copy( this.target ).add( offset );
 
-
                     this.object.lookAt( this.target );
                 }
                 else
                 {
 //                    var delta = new THREE.Vector3(thetaDelta,-phiDelta,0);//.applyMatrix4(this.object.matrixWorld);
 //                    
-//                    this.object.translateX(delta.x);
-//                    this.object.translateY(delta.y);
+                    //this.object.position.z += thetaDelta;
+                    this.object.position.x += -phiDelta / 1000;
+                    
 //                    this.object.translateZ(delta.z);
                    
                     
-                    this.object.translateX(thetaDelta);
-                    this.object.translateY(-phiDelta);
-                     //this.object.lookAt( this.target );
+                    //this.object.translateX(thetaDelta);               
+                    //this.object.translateY(-phiDelta);
                     
-                     //this.object.updateMatrix ();
-
-                     //this.object.updateMatrixWorld ( );
-                     
+                    //console.log(this.object.position.x,this.object.position.y,this.object.position.z);
+                    
+                    //console.log(this.object.position.x);
+                    
+                    //this.object.lookAt( this.target );
+                                                         
+                    //this.object.matrixWorldInverse.getInverse( this.camera3D.matrixWorld );
                 }
                 
                 
@@ -413,6 +420,9 @@ THREE.GlobeControls = function ( object, domElement ) {
 */
 	};
 
+        this.getSpace = function () {
+            return space;
+        }
 
 	this.reset = function () {
 
@@ -517,10 +527,10 @@ THREE.GlobeControls = function ( object, domElement ) {
                         {
                             
                             
-                            scope.rotateLeft( rotateDelta.x / 20);                                                
-
+                            scope.rotateLeft( rotateDelta.x );
+                          
 			// rotating up and down along whole screen attempts to go 360, but limited to 180
-                            scope.rotateUp(   rotateDelta.y / 20);
+                            scope.rotateUp(   rotateDelta.y );
                         }
                                                 
 
