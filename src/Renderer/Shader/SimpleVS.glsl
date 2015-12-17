@@ -12,12 +12,16 @@
 #endif
 
 uniform mat4       mVPMatRTC;
+uniform int        RTC;
 
 void main() 
 {
 
-    gl_Position = mVPMatRTC * vec4( position ,1.0 );
-
+  if(RTC == 0)
+        gl_Position = projectionMatrix * modelViewMatrix * vec4( position,  1.0 );
+  else
+        gl_Position = mVPMatRTC * vec4( position ,1.0 );
+    
 
     #ifdef USE_LOGDEPTHBUF
 

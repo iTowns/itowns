@@ -201,7 +201,7 @@ define('Globe/EllipsoidTileGeometry',[
         }
 
         var start   = idVertex;
-        var rmax    = 10000;
+        var rmax    = 100;
         var r       = Math.max(rmax,Math.pow(rmax,1/zoom)) ;
         
         r =  isFinite(r) ? r : rmax;

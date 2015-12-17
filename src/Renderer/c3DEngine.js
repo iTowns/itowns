@@ -33,19 +33,19 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','GlobeControls','Renderer/C
         this.initCamera();
                        
         this.renderScene = function(){
-                                                
+                                                 
             this.renderer.clear();            
-            this.renderer.setViewport( 0, 0, this.width, this.height );
+            this.renderer.setViewport( 0, 0, this.width, this.height );            
             this.renderer.render( this.scene3D, this.camera.camera3D);                       
             
             if(this.debug)
             {
-                this.setRTC(1);
+                this.setRTC(0);                
                 this.camera.camHelper().visible = true;                
                 this.renderer.setViewport( this.width, 0, this.width, this.height );
                 this.renderer.render( this.scene3D, this.camDebug);                
                 this.camera.camHelper().visible = false;                
-                this.setRTC(0);
+                this.setRTC(1);
             }            
             
         }.bind(this);
@@ -131,11 +131,15 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','GlobeControls','Renderer/C
         
         if(this.debug)
         {
-            //var pos = position.clone().multiplyScalar(0.25);
+            //var pos = position.clone().multiplyScalar(0.203275);
+            var pos = position.clone().multiplyScalar(  0.203269);
+           // var pos = position.clone().multiplyScalar(0.2033);
             
+            //var pos = position.clone().multiplyScalar(  1.000001);
+            //var pos = position.clone().multiplyScalar(  1.00001);
             
-            this.camDebug.position.x = -this.size * 8;
-            //this.camDebug.position.copy(pos);
+            //this.camDebug.position.x = -this.size * 8;
+            this.camDebug.position.copy(pos);
             this.camDebug.lookAt(new THREE.Vector3(0,0,0));
             this.camDebug.near = this.size* 0.1;
             this.camDebug.far  = this.size * 10;
@@ -166,22 +170,22 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','GlobeControls','Renderer/C
     {
         var len  = this.camera.position().length ();
         var lim  = this.size*1.3;
-                        
-        if( len < lim )
-        {
-            var t = Math.pow(Math.cos((lim - len)/ (lim - this.size) * Math.PI * 0.5),1.5);                
-            this.controls.zoomSpeed     = t*2.0;
-            this.controls.rotateSpeed   = 0.8 *t;    
-            var color = new THREE.Color( 0x53b5f8 );
             
-            this.renderer.setClearColor( color.multiplyScalar(1.0-t) );
-        }
-        else if(len >= lim && this.controls.zoomSpeed !== 1.0) 
-        {
-            this.controls.zoomSpeed     = 1.0;
-            this.controls.rotateSpeed   = 0.8;
-            this.renderer.setClearColor( 0x030508 );
-        }   
+            if( len < lim )
+            {
+                var t = Math.pow(Math.cos((lim - len)/ (lim - this.size) * Math.PI * 0.5),1.5);                
+                this.controls.zoomSpeed     = t*2.0;
+                this.controls.rotateSpeed   = 0.8 *t;    
+                var color = new THREE.Color( 0x53b5f8 );
+
+                this.renderer.setClearColor( color.multiplyScalar(1.0-t) );
+            }
+            else if(len >= lim && this.controls.zoomSpeed !== 1.0) 
+            {
+                this.controls.zoomSpeed     = 1.0;
+                this.controls.rotateSpeed   = 0.8;
+                this.renderer.setClearColor( 0x030508 );
+            }
     };
     
     c3DEngine.prototype.setRTC = function(rtc)
@@ -190,11 +194,15 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','GlobeControls','Renderer/C
          {
              var node = this.scene3D.children[x];
              
-             if(node.setRTC)
-                if(rtc === 0)
-                    node.traverseVisible(this.rtcOn);
-                else
-                    node.traverseVisible(this.rtcOff);
+             if(node.setRTC)                
+                node.traverseVisible(rtc === 1 ? this.rtcOn.bind(this) : this.rtcOff.bind(this));
+                
+             if (node.material && node.material.uniforms && node.material.uniforms.RTC.value !== rtc )
+             {
+                
+                    node.material.uniforms.RTC.value = rtc;                    
+                //    node.material.needsUpdate = true;
+             }
          }
         
     };
