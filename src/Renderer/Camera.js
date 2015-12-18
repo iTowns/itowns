@@ -16,6 +16,8 @@ define('Renderer/Camera',['Scene/Node','THREE'], function(Node, THREE){
         this.FOV        = 30;
 
         this.camera3D   = new THREE.PerspectiveCamera( 30, this.ratio);
+        this.camera3D.matrixAutoUpdate     = false;
+        this.camera3D.rotationAutoUpdate   = false;
 
         this.direction  = new THREE.Vector3();        
         this.frustum    = new THREE.Frustum();
@@ -78,7 +80,7 @@ define('Renderer/Camera',['Scene/Node','THREE'], function(Node, THREE){
         this.camera3D.aspect = this.ratio;
         
         this.camera3D.updateProjectionMatrix();      
-
+        
     };    
    
     Camera.prototype.SSE = function(node)

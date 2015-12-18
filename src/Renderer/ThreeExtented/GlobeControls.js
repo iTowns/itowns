@@ -59,7 +59,7 @@ THREE.GlobeControls = function ( object, domElement ) {
         this.radius = null;
         this.theta  = null;
         this.phi    = null;
-
+        
 	// How far you can orbit horizontally, upper and lower limits.
 	// If set, must be a sub-interval of the interval [ - Math.PI, Math.PI ].
 	this.minAzimuthAngle = - Infinity; // radians
@@ -292,6 +292,16 @@ THREE.GlobeControls = function ( object, domElement ) {
 
 	this.update = function () {
 
+                if(this.stopUpdate)
+                {
+                    console.log("eject");
+                    thetaDelta = 0;
+                    phiDelta = 0;
+                    scale = 1;
+                    pan.set( 0, 0, 0 );
+                    return;
+                }
+
 		var position = this.object.position;
 
 		//
@@ -407,17 +417,17 @@ THREE.GlobeControls = function ( object, domElement ) {
 		// update condition is:
 		// min(camera displacement, camera rotation in radians)^2 > EPS
 		// using small-angle approximation cos(x/2) = 1 - x^2 / 8
-/*
+
 		if ( lastPosition.distanceToSquared( this.object.position ) > EPS
 		    || 8 * (1 - lastQuaternion.dot(this.object.quaternion)) > EPS ) {
-*/
+
 			this.dispatchEvent( changeEvent );
 
-			//lastPosition.copy( this.object.position );
-			//lastQuaternion.copy (this.object.quaternion );
-/*
+			lastPosition.copy( this.object.position );
+			lastQuaternion.copy (this.object.quaternion );
+
 		}
-*/
+
 	};
 
         this.getSpace = function () {

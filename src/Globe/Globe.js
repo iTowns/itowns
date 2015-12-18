@@ -44,14 +44,15 @@ define('Globe/Globe',[
             
         } );
        
-        var geometry = new THREE.SphereGeometry( 5, 32, 32 );
+        var geometry = new THREE.SphereGeometry( 20, 32, 32 );
        
         var sphere   = new THREE.Mesh( geometry, material );
         var position = this.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(2.33,48.87,35));
         sphere.frustumCulled = false;
         sphere.position.copy(position);
         this.meshs.add( sphere );
-        */        
+        */
+       
         this.add(this.terrain);        
         
         //this.add(this.meshs);

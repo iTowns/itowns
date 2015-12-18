@@ -13,8 +13,8 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
         this.scene      = scene;        
         this.nodeProcess= undefined;
         this.tree       = undefined;
-        this.date       = new Date();          
-
+        this.date       = new Date();    
+        
     }
     
     /**
@@ -70,7 +70,7 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
                                 if (node.timeInvisible === 0)
                                 {
                                     node.timeInvisible = new Date().getTime();
-                                    //console.log(node.timeInvisible);
+
                                 }
                                 return false;
                             }
@@ -78,8 +78,7 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
                             var sse = this.nodeProcess.SSE(node,camera);
 
                             if(optional && sse && node.material.visible === true && node.wait === false)
-                            {   
-                                //console.log(node.sse);
+                            {                                   
                                 this.tree.subdivide(node);
                             }                            
                             else if(!sse && node.level >= 2 && node.material.visible === false && node.wait === false)
@@ -87,7 +86,7 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
 
                                 node.material.visible = true;
 
-                                this.RTC(node,camera);
+                                node.setMatrixRTC(this.getRTCMatrix(node.absoluteCenter,camera));
 
                                 if(node.childrenCount() !== 0)
                                     for(var i = 0;i<node.children.length;i++)
@@ -102,16 +101,14 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
                 }
             }
 
-            if(node.visible &&  node.material.visible === true)
+            if(node.visible  && node.material.visible === true)
             {
-                this.RTC(node,camera);
+                node.setMatrixRTC(this.getRTCMatrix(node.absoluteCenter,camera));
                 node.timeInvisible = 0;
             }
             else if (node.timeInvisible === 0)
-            {
-                
-                node.timeInvisible = new Date().getTime();
-                //console.log(node.timeInvisible);
+            {                
+                node.timeInvisible = new Date().getTime();             
             }
                                         
             return node.visible;
@@ -119,91 +116,19 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
         
         return true;
     };
-    
-    
-    BrowseTree.prototype.RTC = function(node,camera)
-    {        
         
-///-------------------------------------------------------        
-//        var matrixWorld     = new THREE.Matrix4();//.setPosition(node.absoluteCenter);        
-//        var modelViewMatrix = new THREE.Matrix4().multiplyMatrices(camera.viewMatrix(),matrixWorld);           
-//        var center          = node.absoluteCenter;
-//        var centerEye       = new THREE.Vector4(center.x,center.y,center.z, 1.0).applyMatrix4(camera.viewMatrix());        
-//        var mvc             = modelViewMatrix.clone().setPosition(centerEye);        
-//        var mVPMatRTC       = new THREE.Matrix4().multiplyMatrices(camera.camera3D.projectionMatrix,mvc);
-//                
-///-------------------------------------------------------        
-//        var matrixWorld     = new THREE.Matrix4();        
-//        var modelViewMatrix = new THREE.Matrix4().multiplyMatrices(camera.viewMatrix(),matrixWorld);           
-//        var center          = node.absoluteCenter;
-//        var centerEye       = new THREE.Vector4(center.x,center.y,center.z, 1.0).applyMatrix4(camera.viewMatrix()) ;        
-//        var mvc             = modelViewMatrix.clone().setPosition(centerEye);        
-//        var mVPMatRTC       = new THREE.Matrix4().multiplyMatrices(camera.camera3D.projectionMatrix,mvc);
-        
-///-------------------------------------------------------        
-        camera = camera.camera3D;
-        var center                      = new THREE.Vector3();
-        //var matrixWorld     = new THREE.Matrix4();
-        
-        var matrixWorld                 = node.matrixWorld;
-
-        var cameraMatrixWorld           = camera.matrixWorld;
-
-        var cameraWorldPosition         = new THREE.Vector3().setFromMatrixPosition(cameraMatrixWorld);                
-
-        var positionCameraNode          = new THREE.Vector3().subVectors(cameraWorldPosition,node.absoluteCenter);
-
-        var cameraMatrixWorldCentered   = camera.matrixWorld.clone().setPosition(positionCameraNode);
-
-        var cameraMatrixWorldInverse    = new THREE.Matrix4();
-
-        cameraMatrixWorldInverse.getInverse(cameraMatrixWorldCentered);
-
-        var modelViewMatrix = new THREE.Matrix4().multiplyMatrices(cameraMatrixWorldInverse,matrixWorld);           
-
-        var centerEye       = new THREE.Vector4(center.x,center.y,center.z, 1.0).applyMatrix4(cameraMatrixWorldInverse) ;     
-        
-        var mvc             = modelViewMatrix.clone().setPosition(centerEye);        
-        var mVPMatRTC       = new THREE.Matrix4().multiplyMatrices(camera.projectionMatrix,mvc);
-        
-        node.tMat.uniforms.mVPMatRTC.value = mVPMatRTC;
+    BrowseTree.prototype.getRTCMatrix = function(center,camera)
+    {               
+        var position    = new THREE.Vector3().subVectors(camera.camera3D.position,center);
+        var quaternion  = new THREE.Quaternion().copy(camera.camera3D.quaternion);        
+        var matrix      = new THREE.Matrix4().compose(position,quaternion,new THREE.Vector3(1,1,1));
+        var matrixInv   = new THREE.Matrix4().getInverse(matrix);       
+        var centerEye   = new THREE.Vector4().applyMatrix4(matrixInv) ;                        
+        var mvc         = matrixInv.setPosition(centerEye);      
+        return            new THREE.Matrix4().multiplyMatrices(camera.camera3D.projectionMatrix,mvc);
 
     };
-    
-    BrowseTree.prototype.getRTC = function(node,camera)
-    { 
         
-        camera = camera.camera3D;
-        var center                      = new THREE.Vector3();
-        //var matrixWorld     = new THREE.Matrix4();
-        
-        var matrixWorld                 = node.matrixWorld;
-
-        var cameraMatrixWorld           = camera.matrixWorld;
-
-        var cameraWorldPosition         = new THREE.Vector3().setFromMatrixPosition(cameraMatrixWorld);                
-
-        var positionCameraNode          = new THREE.Vector3().subVectors(cameraWorldPosition,node.position);
-
-        var cameraMatrixWorldCentered   = camera.matrixWorld.clone().setPosition(positionCameraNode);
-
-        var cameraMatrixWorldInverse    = new THREE.Matrix4();
-
-        cameraMatrixWorldInverse.getInverse(cameraMatrixWorldCentered);
-
-        var modelViewMatrix = new THREE.Matrix4().multiplyMatrices(cameraMatrixWorldInverse,matrixWorld);           
-
-        var centerEye       = new THREE.Vector4(center.x,center.y,center.z, 1.0).applyMatrix4(cameraMatrixWorldInverse) ;                        
-
-        var mvc             = modelViewMatrix.clone().setPosition(centerEye);        
-        
-        return new THREE.Matrix4().multiplyMatrices(camera.projectionMatrix,mvc);
-                
-    };
-    
-    
-    
-    
     /**
      * @documentation: Initiate traverse tree 
      * @param {type} tree       : tree 
@@ -214,6 +139,10 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
     BrowseTree.prototype.browse = function(tree, camera,optional){
  
         this.tree = tree;
+        camera.camera3D.updateMatrix();
+        camera.camera3D.updateMatrixWorld(true);
+        camera.camera3D.matrixWorldInverse.getInverse(camera.camera3D.matrixWorld);        
+        
         this.nodeProcess.preHorizonCulling(camera);
         for(var i = 0;i<tree.children.length;i++)
             this._browse(tree.children[i],camera,optional);

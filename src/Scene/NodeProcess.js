@@ -49,7 +49,8 @@ define('Scene/NodeProcess',['Scene/BoudingBox','Renderer/Camera','Core/Math/Math
     
     NodeProcess.prototype.updateCamera = function(camera)
     {        
-        this.camera.camera3D  = camera.camera3D.clone();
+        this.camera = new Camera(camera.width,camera.height);                
+        this.camera.camera3D  = camera.camera3D.clone();        
     };
     
     /**
@@ -105,7 +106,7 @@ define('Scene/NodeProcess',['Scene/BoudingBox','Renderer/Camera','Core/Math/Math
                 
         node.visible = this.camera.getFrustum().intersectsBox(obb.box3D);
         
-        return node.visible;
+        return true;// node.visible;
         
     };
     

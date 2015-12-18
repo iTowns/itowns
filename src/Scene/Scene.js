@@ -118,10 +118,12 @@ define('Scene/Scene',[
     Scene.prototype.realtimeSceneProcess = function(){        
         if(this.nodes[0] !== undefined  && this.currentCamera !== undefined )
         {            
-            //var node = this.nodes[0].meshs.children[0];                        
-            //node.material.uniforms.mVPMatRTC.value = this.browserScene.getRTC(node,this.currentCamera());
-            
+//            var node = this.nodes[0].meshs.children[0];                        
+//            node.material.uniforms.mVPMatRTC.value = this.browserScene.getRTCMatrix(node.position,this.currentCamera());
+//           
             this.browserScene.browse(this.nodes[0].terrain,this.currentCamera(),false);
+            
+          
         }                
     };
     

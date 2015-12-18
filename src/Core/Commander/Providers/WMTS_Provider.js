@@ -124,7 +124,10 @@ define('Core/Commander/Providers/WMTS_Provider',[
             {                                                        
                 if(result !== undefined)
                 {                    
-                    result.texture = new THREE.DataTexture(result.floatArray,256,256,THREE.AlphaFormat,THREE.FloatType);                
+                    result.texture = new THREE.DataTexture(result.floatArray,256,256,THREE.AlphaFormat,THREE.FloatType);   
+                    result.texture.generateMipmaps  = false;
+                    result.texture.magFilter        = THREE.LinearFilter;
+                    result.texture.minFilter        = THREE.LinearFilter;
                     //result.texture.needsUpdate = true;
                                         
                     this.cache.addRessource(url,result);
@@ -168,7 +171,11 @@ define('Core/Commander/Providers/WMTS_Provider',[
         return this.ioDriverImage.read(url).then(function(image)
         {
             
-            result.texture= new THREE.Texture(image);
+            result.texture= new THREE.Texture(image);            
+            result.texture.generateMipmaps  = false;
+            result.texture.magFilter        = THREE.LinearFilter;
+            result.texture.minFilter        = THREE.LinearFilter;
+            result.texture.anisotropy       = 16;
                         
             this.cache.addRessource(url,result.texture);
             return result;
