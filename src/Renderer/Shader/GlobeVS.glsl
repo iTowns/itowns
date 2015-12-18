@@ -64,7 +64,7 @@ void main() {
         #ifdef USE_LOGDEPTHBUF
 
             gl_Position.z = log2(max( EPSILON, gl_Position.w + 1.0 )) * logDepthBufFC;
-
+            
             #ifdef USE_LOGDEPTHBUF_EXT
 
                 vFragDepth = 1.0 + gl_Position.w;
@@ -76,5 +76,5 @@ void main() {
             #endif
 
         #endif
-        
+
 }   

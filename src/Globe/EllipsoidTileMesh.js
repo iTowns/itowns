@@ -86,6 +86,11 @@ define('Globe/EllipsoidTileMesh',[
         this.tMat.uniforms.RTC.value        = enable;
     };
     
+     EllipsoidTileMesh.prototype.setFog = function(fog)
+    {         
+        this.tMat.uniforms.distanceFog.value        = fog;
+    };
+    
     EllipsoidTileMesh.prototype.setMatrixRTC = function(rtc)
     {         
         this.tMat.uniforms.mVPMatRTC.value  = rtc;

@@ -38,6 +38,7 @@ define('Renderer/Material',['THREE','Core/System/JavaTools'], function(THREE,Jav
             pitScale        : { type: "v3", value: new THREE.Vector3(0.0,0.0,1.0)},
             periArcLati     : { type: "f" , value: Math.abs(bbox.maxCarto.latitude - bbox.minCarto.latitude)},            
             mVPMatRTC       : { type: "m4", value: new THREE.Matrix4()},
+            distanceFog     : { type: "f",  value: 1000000000.0},
             debug           : { type: "i" , value: false }
             
         };

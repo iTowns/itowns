@@ -13,7 +13,9 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
         this.scene      = scene;        
         this.nodeProcess= undefined;
         this.tree       = undefined;
-        this.date       = new Date();    
+        this.date       = new Date(); 
+        this.fogDistance = 1000000000.0;        
+        this.mfogDistance= 1000000000.0;
         
     }
     
@@ -86,7 +88,10 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
 
                                 node.material.visible = true;
 
+
                                 node.setMatrixRTC(this.getRTCMatrix(node.absoluteCenter,camera));
+                                node.setFog(this.fogDistance);
+                                
 
                                 if(node.childrenCount() !== 0)
                                     for(var i = 0;i<node.children.length;i++)
@@ -104,6 +109,7 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
             if(node.visible  && node.material.visible === true)
             {
                 node.setMatrixRTC(this.getRTCMatrix(node.absoluteCenter,camera));
+                node.setFog(this.fogDistance);
                 node.timeInvisible = 0;
             }
             else if (node.timeInvisible === 0)
@@ -141,7 +147,13 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
         this.tree = tree;
         camera.camera3D.updateMatrix();
         camera.camera3D.updateMatrixWorld(true);
-        camera.camera3D.matrixWorldInverse.getInverse(camera.camera3D.matrixWorld);        
+        camera.camera3D.matrixWorldInverse.getInverse(camera.camera3D.matrixWorld);      
+        
+        var distance = camera.camera3D.position.length();
+        
+        
+        this.fogDistance = this.mfogDistance * Math.pow((distance-6300000)/25000000,1.6);
+               
         
         this.nodeProcess.preHorizonCulling(camera);
         for(var i = 0;i<tree.children.length;i++)
