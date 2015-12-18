@@ -11,6 +11,8 @@
 
 #endif
 
+
+
 //uniform sampler2D   dTextures_00[1];
 
 const int   TEX_UNITS   = 8;
@@ -27,6 +29,7 @@ uniform int         nbTextures_00;
 uniform int         nbTextures_01;
 uniform float       bLatitude;
 uniform float       periArcLati;
+uniform float       distanceFog;
 uniform int         debug;
 varying vec2        vUv;
 varying float       vUv2;
@@ -70,10 +73,20 @@ void main() {
          
         gl_FragColor    = vec4( 0.04, 0.23, 0.35, 1.0);
 
+        float depth = gl_FragDepthEXT / gl_FragCoord.w;
+        //float distanceFog = 600000.0;
+        //float fog = (distanceFog-depth)/distanceFog; // linear fog
+
+        float fog = 1.0/(exp(depth/distanceFog)); 
+
+        vec4 fogColor = vec4( 0.76, 0.85, 1.0, 1.0); 
+
         for (int x = 0; x < TEX_UNITS; x++)
             if (x == idd)
             {                        
-                gl_FragColor  = texture2D( dTextures_01[x], uvO );
+                gl_FragColor  = texture2D( dTextures_01[x], uvO ) ;
+
+                gl_FragColor = mix(fogColor, gl_FragColor, fog );
                 break;
             }
 

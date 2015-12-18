@@ -176,7 +176,7 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','GlobeControls','Renderer/C
                 var t = Math.pow(Math.cos((lim - len)/ (lim - this.size) * Math.PI * 0.5),1.5);                
                 this.controls.zoomSpeed     = t*2.0;
                 this.controls.rotateSpeed   = 0.8 *t;    
-                var color = new THREE.Color( 0x53b5f8 );
+                var color = new THREE.Color( 0x93d5f8 );
 
                 this.renderer.setClearColor( color.multiplyScalar(1.0-t) );
             }
