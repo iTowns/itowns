@@ -78,13 +78,17 @@ define('Globe/EllipsoidTileMesh',[
         this.tMat.dispose();       
         this.geometry.dispose();                    
         this.geometry = null;       
-        this.material = null;
-        
+        this.material = null;        
     };
     
-    EllipsoidTileMesh.prototype.setRTC = function(rtc)
+    EllipsoidTileMesh.prototype.setRTC = function(enable)
     {         
-        this.tMat.uniforms.RTC.value  = rtc;
+        this.tMat.uniforms.RTC.value        = enable;
+    };
+    
+    EllipsoidTileMesh.prototype.setMatrixRTC = function(rtc)
+    {         
+        this.tMat.uniforms.mVPMatRTC.value  = rtc;
     };
         
     EllipsoidTileMesh.prototype.setTerrain = function(terrain)

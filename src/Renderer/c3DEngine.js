@@ -33,7 +33,7 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','GlobeControls','Renderer/C
         this.initCamera();
                        
         this.renderScene = function(){
-                                                 
+                         
             this.renderer.clear();            
             this.renderer.setViewport( 0, 0, this.width, this.height );            
             this.renderer.render( this.scene3D, this.camera.camera3D);                       
@@ -132,14 +132,14 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','GlobeControls','Renderer/C
         if(this.debug)
         {
             //var pos = position.clone().multiplyScalar(0.203275);
-            var pos = position.clone().multiplyScalar(  0.203269);
+            //var pos = position.clone().multiplyScalar(  0.203269);
            // var pos = position.clone().multiplyScalar(0.2033);
             
             //var pos = position.clone().multiplyScalar(  1.000001);
             //var pos = position.clone().multiplyScalar(  1.00001);
             
-            //this.camDebug.position.x = -this.size * 8;
-            this.camDebug.position.copy(pos);
+            this.camDebug.position.x = -this.size * 6;
+            //this.camDebug.position.copy(pos);
             this.camDebug.lookAt(new THREE.Vector3(0,0,0));
             this.camDebug.near = this.size* 0.1;
             this.camDebug.far  = this.size * 10;
