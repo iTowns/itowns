@@ -72,7 +72,7 @@ define('Core/Commander/ManagerCommands',
         if(this.queueAsync.length === 0)
             return;
         
-        return this.providers[0].get(this.queueAsync.dequeue()).then(function()
+        return this.providers[0].get(this.deQueue()).then(function()
         {              
             if(this.queueAsync.length%2 === 0)            
                 
@@ -85,6 +85,25 @@ define('Core/Commander/ManagerCommands',
                 this.scene.updateScene3D();
                                                    
         }.bind(this));                         
+    };
+    
+    /**
+    */
+    ManagerCommands.prototype.deQueue = function()        
+    {        
+        
+        //console.log(this.queueAsync.length);
+        
+//        var com = this.queueAsync.peek();
+//                        
+//        if(com.requester.visible === false )
+//            
+//            console.log(com.requester);
+        
+        var command = this.queueAsync.dequeue();
+        
+        
+        return command;
     };
 
     /**
@@ -117,7 +136,6 @@ define('Core/Commander/ManagerCommands',
         //TODO: Implement Me 
 
     };
-
 
     /**
     * @param object

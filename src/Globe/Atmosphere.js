@@ -48,7 +48,7 @@ define('Globe/Atmosphere',['Renderer/NodeMesh','THREE','text!Renderer/Shader/Glo
 
         } );
         
-       var atmosphereIN    = new THREE.Mesh(new THREE.SphereGeometry( size.x * 1.01, 64, 64 ),materialAtmoIn);
+       var atmosphereIN    = new THREE.Mesh(new THREE.SphereGeometry( size.x * 1.002, 64, 64 ),materialAtmoIn);
         
        this.add(atmosphereIN);
         
