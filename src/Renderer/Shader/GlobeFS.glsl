@@ -84,12 +84,11 @@ void main() {
         for (int x = 0; x < TEX_UNITS; x++)
             if (x == idd)
             {                        
-                gl_FragColor  = texture2D( dTextures_01[x], uvO ) ;
+                vec4 diffuseColor  = texture2D( dTextures_01[x], uvO ) ;
 
-                gl_FragColor = mix(fogColor, gl_FragColor, fog );
+                gl_FragColor = mix(fogColor, diffuseColor, fog );
                 break;
             }
-
     }
 
         if(debug > 0)
