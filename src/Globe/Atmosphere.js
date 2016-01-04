@@ -51,9 +51,6 @@ define('Globe/Atmosphere',['Renderer/NodeMesh','THREE','text!Renderer/Shader/Glo
        var atmosphereIN    = new THREE.Mesh(new THREE.SphereGeometry( size.x * 1.002, 64, 64 ),materialAtmoIn);
         
        this.add(atmosphereIN);
-        
-       this.add(new THREE.Mesh(new THREE.SphereGeometry(size.x * 0.98, 32, 32 ), new THREE.MeshBasicMaterial({color : 0x4B683A})));
-       
        
 //       var imageLoad = new THREE.ImageLoader();
 //       
@@ -67,7 +64,6 @@ define('Globe/Atmosphere',['Renderer/NodeMesh','THREE','text!Renderer/Shader/Glo
 //        });
 //        
 //        this.add(new THREE.Mesh(new THREE.SphereGeometry(12000000, 32, 32 ), skyMat));
-        
         
     }
     

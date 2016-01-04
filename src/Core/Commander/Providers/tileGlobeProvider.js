@@ -85,7 +85,10 @@ define('Core/Commander/Providers/tileGlobeProvider',[
     
     tileGlobeProvider.prototype.get = function(command)
     {  
-                
+
+        if(command === undefined)
+            return;
+        
         var bbox        = command.paramsFunction[0];
         var cooWMTS     = this.projection.WGS84toWMTS(bbox);                
         var parent      = command.requester;        
