@@ -25,7 +25,7 @@ define('Globe/EllipsoidTileMesh',[
     'text!Renderer/Shader/GlobeVS.glsl',
     'text!Renderer/Shader/GlobeFS.glsl'], function(NodeMesh,EllipsoidTileGeometry,BoudingBox,defaultValue,THREE,Material,CoordCarto,GlobeVS,GlobeFS){
  
-    function EllipsoidTileMesh(bbox,cooWMTS,ellipsoid,parent,geometryCache){
+    function EllipsoidTileMesh(bbox,cooWMTS,ellipsoid,geometryCache){
         //Constructor
         NodeMesh.call( this );
         

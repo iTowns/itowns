@@ -51,13 +51,13 @@ define('Core/Commander/Providers/tileGlobeProvider',[
     
     tileGlobeProvider.prototype.getGeometry = function(bbox,cooWMTS)
     {
-        var geoCach   = undefined;
+        var geometry  = undefined;
         var n         = Math.pow(2,cooWMTS.zoom+1);       
         var part      = Math.PI * 2.0 / n;
         
         if(this.cacheGeometry[cooWMTS.zoom] !== undefined && this.cacheGeometry[cooWMTS.zoom][cooWMTS.row] !== undefined)
         {            
-                geoCach = this.cacheGeometry[cooWMTS.zoom][cooWMTS.row];                
+                geometry = this.cacheGeometry[cooWMTS.zoom][cooWMTS.row];                
         }
         else
         {
@@ -75,23 +75,24 @@ define('Core/Commander/Providers/tileGlobeProvider',[
                                     
             var rootBBox    = new BoudingBox(0,part+part*0.01,bbox.minCarto.latitude, bbox.maxCarto.latitude );
             
-            geoCach   = new EllipsoidTileGeometry(rootBBox,precision,this.ellipsoid,cooWMTS.zoom);
-            this.cacheGeometry[cooWMTS.zoom][cooWMTS.row] = geoCach;    
+            geometry   = new EllipsoidTileGeometry(rootBBox,precision,this.ellipsoid,cooWMTS.zoom);
+            this.cacheGeometry[cooWMTS.zoom][cooWMTS.row] = geometry;    
                 
         }
         
-        return geoCach;
+        return geometry;
     };
     
     tileGlobeProvider.prototype.get = function(command)
     {  
-        var bbox    = command.paramsFunction[0];
-        var cooWMTS = this.projection.WGS84toWMTS(bbox);                
-        var parent  = command.requester;        
-        var geoCach = undefined; //getGeometry(bbox,cooWMTS);       
-        var tile    = new command.type(bbox,cooWMTS,this.ellipsoid,parent/*,geoCach*/);
-        
-        if(geoCach)
+                
+        var bbox        = command.paramsFunction[0];
+        var cooWMTS     = this.projection.WGS84toWMTS(bbox);                
+        var parent      = command.requester;        
+        var geometry    = undefined; //getGeometry(bbox,cooWMTS);       
+        var tile        = new command.type(bbox,cooWMTS,this.ellipsoid,geometry);
+            
+        if(geometry)
         {
             tile.rotation.set ( 0, (cooWMTS.col%2)* (Math.PI * 2.0 / Math.pow(2,cooWMTS.zoom+1)), 0 );
             tile.updateMatrixWorld();
