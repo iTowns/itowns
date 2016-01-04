@@ -30,36 +30,25 @@ varying float   vUv2;
 varying vec3    vNormal;
 
 void main() {
-
-        //
-        vUv     = uv;
-        //vUv     = vec2(vUv.x*pitScale.z + pitScale.x,vUv.y*pitScale.z + pitScale.y);
+        
+        vUv     = uv;        
         vUv2    = uv2;
 
-        //vUv.x = floor(uv.x * 20.0) /20.0;
-        //vUv.y = floor(uv.y * 20.0) /20.0;
+        vec4 vPosition;
 
         if(nbTextures_00 > 0)
         {
-            vec2 vVv  = vec2(vUv.x*pitScale.z + pitScale.x,vUv.y*pitScale.z + pitScale.y);
-                
-            float dv = texture2D( dTextures_00[0], vVv ).w;
-
-            vNormal  = normal;
-
-            vec3 displacedPosition = position +  vNormal  * dv ;
-            
-            if(RTC == 0)
-                gl_Position = projectionMatrix * modelViewMatrix * vec4( displacedPosition ,1.0 );
-            else            
-                gl_Position = mVPMatRTC * vec4( displacedPosition ,1.0 );
- 
+            vec2    vVv = vec2(vUv.x*pitScale.z + pitScale.x,vUv.y*pitScale.z + pitScale.y);                
+            float   dv  = texture2D( dTextures_00[0], vVv ).w;
+            vNormal     = normal;
+            vPosition   = vec4( position +  vNormal  * dv ,1.0 );            
         }
-        else if(RTC == 0)
-            gl_Position = projectionMatrix * modelViewMatrix * vec4( position ,1.0 );
         else
-            gl_Position = mVPMatRTC * vec4( position ,1.0 );
+            vPosition = vec4( position ,1.0 );
 
+        mat4 projModelViewMatrix = (RTC == 0) ? projectionMatrix * modelViewMatrix : mVPMatRTC;
+
+        gl_Position = projModelViewMatrix * vPosition;
         
         #ifdef USE_LOGDEPTHBUF
 
