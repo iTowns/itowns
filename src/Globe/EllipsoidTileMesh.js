@@ -47,7 +47,7 @@ define('Globe/EllipsoidTileMesh',[
 //        else if (this.level > 6)
 //            precision   = 16;
         
-        var levelMax = 16;
+        var levelMax = 18;
         
         this.geometricError  = Math.pow(2,levelMax- this.level);        
         this.geometry        = defaultValue(geometryCache,new EllipsoidTileGeometry(bbox,precision,ellipsoid,this.level));       
