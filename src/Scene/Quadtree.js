@@ -100,8 +100,7 @@ define('Scene/Quadtree',[
     {
         if(node.level > 18  || node.wait === true )
             return false;        
-                             
-                             
+                                                          
         if(node.childrenCount() > 0 &&  node.wait === false )                
         {                        
             //console.log(node.childrenCount());
