@@ -74,7 +74,7 @@ define('Scene/NodeProcess',['Scene/BoudingBox','Renderer/Camera','Core/Math/Math
      */
     NodeProcess.prototype.SSE = function(node,camera)
     {                                        
-        return camera.SSE(node) > 1.0;            
+        return camera.SSE(node) > 3.0;            
     };
     
     /**

@@ -76,7 +76,9 @@ define('Core/Commander/Providers/IoDriver_XBIL',['Core/Commander/Providers/IoDri
 
         xhr.onerror = function(){
 
-            deferred.reject(Error("Error IoDriver_XBIL"));
+            console.log('error bil');
+            deferred.resolve(undefined);
+            //deferred.reject(Error("Error IoDriver_XBIL"));
 
         };
 
