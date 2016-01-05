@@ -52,6 +52,11 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
         {            
             node.visible = false;
             
+            if(node.helper !== undefined && node.helper.parent === null)           
+                this.scene.scene3D().add(node.helper);                      
+            if(node.helper !== undefined)            
+                node.helper.material.visible = false;
+                        
             if(node.loaded)
             {
                 //if(this.nodeProcess.frustumBB(node,camera))
@@ -69,10 +74,13 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
                             if(node.parent.material !== undefined && node.parent.material.visible === true)
                             {                                     
                                 node.visible = false;
-                                if (node.timeInvisible === 0)
+                                
+                                if(node.helper !== undefined) 
+                                    node.helper.material.visible = false;
+                                
+                                if(node.timeInvisible === 0)
                                 {
                                     node.timeInvisible = new Date().getTime();
-
                                 }
                                 return false;
                             }
@@ -96,7 +104,9 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
                                 if(node.childrenCount() !== 0)
                                     for(var i = 0;i<node.children.length;i++)
                                     {                                                       
-                                        node.children[i].visible = false;                                        
+                                        node.children[i].visible = false;
+                                        if(node.children[i].helper !== undefined)
+                                            node.children[i].helper.material.visible = false;
                                     }
 
                                 return false;                            
@@ -110,12 +120,15 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
             {
                 node.setMatrixRTC(this.getRTCMatrix(node.absoluteCenter,camera));
                 node.setFog(this.fogDistance);
-                node.timeInvisible = 0;
+                node.timeInvisible = 0;                               
             }
             else if (node.timeInvisible === 0)
             {                
                 node.timeInvisible = new Date().getTime();             
             }
+            
+            if(node.helper !== undefined) 
+                    node.helper.material.visible = node.visible && node.material.visible;
                                         
             return node.visible;
         }        
@@ -150,11 +163,9 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
         camera.camera3D.matrixWorldInverse.getInverse(camera.camera3D.matrixWorld);      
         
         var distance = camera.camera3D.position.length();
-        
-        
+                
         this.fogDistance = this.mfogDistance * Math.pow((distance-6300000)/25000000,1.6);
-               
-        
+                       
         this.nodeProcess.preHorizonCulling(camera);
         for(var i = 0;i<tree.children.length;i++)
             this._browse(tree.children[i],camera,optional);
@@ -218,18 +229,13 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
      */
     BrowseTree.prototype.bBoxHelper = function(node)
     {          
-        if(node instanceof EllipsoidTileMesh && node.level === 2  )
+        if(node instanceof EllipsoidTileMesh && node.level > 2  )
         {                
+            var obb     = new THREE.OBBHelper(node.geometry.OBB);
+            obb.visible = false;
             
-            //console.log(node);
-            if(this.oneNode === 22 )
-            {                    
-                var obb = new THREE.OBBHelper(node.geometry.OBB);
-                var l       = node.absoluteCenter.length();
-                obb.translateZ(l);
-                this.scene.scene3D().add(obb);           
-            }
-            this.oneNode++;
+            obb.translateZ(node.absoluteCenter.length());
+            this.scene.scene3D().add(obb);           
         }
     };
     
