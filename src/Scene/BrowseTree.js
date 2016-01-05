@@ -53,10 +53,10 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
             node.visible = false;
             
             if(node.helper !== undefined && node.helper.parent === null)           
-                this.scene.scene3D().add(node.helper);                      
-            if(node.helper !== undefined)            
-                node.helper.material.visible = false;
-                        
+                this.scene.scene3D().add(node.helper);
+
+            node.showHelper(false);
+
             if(node.loaded)
             {
                 //if(this.nodeProcess.frustumBB(node,camera))
@@ -73,10 +73,8 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
 
                             if(node.parent.material !== undefined && node.parent.material.visible === true)
                             {                                     
-                                node.visible = false;
-                                
-                                if(node.helper !== undefined) 
-                                    node.helper.material.visible = false;
+                                node.visible = false;                                
+                                node.showHelper(false);
                                 
                                 if(node.timeInvisible === 0)
                                 {
@@ -95,18 +93,15 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
                             {
 
                                 node.material.visible = true;
-
-
+                                node.showHelper(true);
                                 node.setMatrixRTC(this.getRTCMatrix(node.absoluteCenter,camera));
                                 node.setFog(this.fogDistance);
-                                
 
                                 if(node.childrenCount() !== 0)
                                     for(var i = 0;i<node.children.length;i++)
                                     {                                                       
                                         node.children[i].visible = false;
-                                        if(node.children[i].helper !== undefined)
-                                            node.children[i].helper.material.visible = false;
+                                        node.children[i].showHelper(false);                                                                              
                                     }
 
                                 return false;                            
@@ -126,9 +121,8 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
             {                
                 node.timeInvisible = new Date().getTime();             
             }
-            
-            if(node.helper !== undefined) 
-                    node.helper.material.visible = node.visible && node.material.visible;
+                        
+            node.showHelper(node.visible && node.material.visible);                                
                                         
             return node.visible;
         }        

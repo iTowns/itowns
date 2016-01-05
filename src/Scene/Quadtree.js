@@ -106,19 +106,16 @@ define('Scene/Quadtree',[
             //console.log(node.childrenCount());
             for (var i = 0 ;i<node.childrenCount();i++)
             {                
-                node.children[i].visible = true;
-                
-                if(node.children[i].helper !== undefined)
-                    node.children[i].helper.visible = true;
+                node.children[i].visible = true;                                
+                node.children[i].showHelper(true);
             }
            
             if(node.childrenCount() === 4 && node.childrenLoaded())            
                 node.material.visible   = false;            
             else
                 node.material.visible   = true;
-            
-            if(node.helper !== undefined)
-                node.helper.material.visible      = node.material.visible;
+                        
+            node.showHelper(node.material.visible);
                         
             return false;
         }

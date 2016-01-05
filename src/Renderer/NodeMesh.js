@@ -25,6 +25,12 @@ define('Renderer/NodeMesh',['Scene/Node','THREE'], function(Node, THREE){
 
     NodeMesh.prototype.constructor = NodeMesh;
     
+    NodeMesh.prototype.showHelper = function(show)
+    {
+        if(this.helper !== undefined)
+            this.helper.material.visible = show;
+    };
+    
     Node.extend(NodeMesh);
     
     return NodeMesh;

@@ -29,8 +29,7 @@ define('Globe/EllipsoidTileMesh',[
     function EllipsoidTileMesh(bbox,cooWMTS,ellipsoid,geometryCache){
         //Constructor
         NodeMesh.call( this );
-        
-        this.showHelper = true;
+                
         this.level      = cooWMTS.zoom;
         this.cooWMTS    = cooWMTS;
         this.bbox       = defaultValue(bbox,new BoudingBox());        
@@ -68,9 +67,11 @@ define('Globe/EllipsoidTileMesh',[
         this.timeInvisible = 0;
         this.maxChildren   = 4;
         
-        //if(this.level > 2)
-        //this.helper        = new THREE.OBBHelper(this.geometry.OBB);
-        //this.helper.translateZ(this.absoluteCenter.length());
+//        if(this.level > 2)
+//        {
+//            this.helper        = new THREE.OBBHelper(this.geometry.OBB);
+//            this.helper.translateZ(this.absoluteCenter.length());
+//        }
     }
 
     EllipsoidTileMesh.prototype = Object.create( NodeMesh.prototype );
