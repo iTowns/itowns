@@ -23,7 +23,8 @@ define('Globe/EllipsoidTileMesh',[
     'Renderer/Material',
     'Core/Geographic/CoordCarto',
     'text!Renderer/Shader/GlobeVS.glsl',
-    'text!Renderer/Shader/GlobeFS.glsl'], function(NodeMesh,EllipsoidTileGeometry,BoudingBox,defaultValue,THREE,Material,CoordCarto,GlobeVS,GlobeFS){
+    'text!Renderer/Shader/GlobeFS.glsl',
+    'OBBHelper'], function(NodeMesh,EllipsoidTileGeometry,BoudingBox,defaultValue,THREE,Material,CoordCarto,GlobeVS,GlobeFS,OBBHelper){
  
     function EllipsoidTileMesh(bbox,cooWMTS,ellipsoid,geometryCache){
         //Constructor
@@ -65,7 +66,11 @@ define('Globe/EllipsoidTileMesh',[
         this.dot        = 0;
         this.frustumCulled = false;        
         this.timeInvisible = 0;
-        this.maxChildren     = 4;
+        this.maxChildren   = 4;
+        
+        //if(this.level > 2)
+        //this.helper        = new THREE.OBBHelper(this.geometry.OBB);
+        //this.helper.translateZ(this.absoluteCenter.length());
     }
 
     EllipsoidTileMesh.prototype = Object.create( NodeMesh.prototype );
@@ -125,6 +130,13 @@ define('Globe/EllipsoidTileMesh',[
     {         
         this.bbox.setAltitude(min,max);        
         this.geometry.OBB.addHeight(this.bbox);
+        
+        if( this.helper !== undefined )
+        {                        
+            this.helper.update(this.geometry.OBB);
+            this.helper.translateZ(this.absoluteCenter.length());
+        }
+//        
         // TODO compute center new center sphere and radius
         
         /*
