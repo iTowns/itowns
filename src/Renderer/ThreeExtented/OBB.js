@@ -47,7 +47,9 @@ THREE.OBB.prototype.quadInverse = function(){
 THREE.OBB.prototype.addHeight = function(bbox)
 {    
 
-    this.box3D.min.z += bbox.minCarto.altitude;
+    var depth = Math.abs(this.box3D.min.z - this.box3D.max.z);
+// 
+    this.box3D.min.z += bbox.minCarto.altitude; 
     this.box3D.max.z += bbox.maxCarto.altitude;
     
     // TODO à vérifier --->
@@ -60,6 +62,8 @@ THREE.OBB.prototype.addHeight = function(bbox)
     this.translateZ(translaZ);
     
     this.update(); 
+    
+    return new THREE.Vector2(nHalfSize  - depth * 0.5,translaZ);
     
     // TODO <---- à vérifier 
 };

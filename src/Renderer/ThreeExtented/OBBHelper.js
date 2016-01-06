@@ -17,7 +17,10 @@ THREE.OBBHelper = function (OBB)
                 
     this.geometry    = new THREE.BoxGeometry(lX,lY,lZ);        
     var color        = new THREE.Color(Math.random(),Math.random(),Math.random());
+    
     this.material    = new THREE.MeshBasicMaterial( {color : color.getHex(),wireframe : true} );
+    
+    //this.material    = new THREE.LineBasicMaterial( {color : color.getHex()} );
     
     this.position.copy(OBB.position);    
     this.rotation.copy(OBB.rotation);

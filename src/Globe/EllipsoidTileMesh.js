@@ -24,7 +24,8 @@ define('Globe/EllipsoidTileMesh',[
     'Core/Geographic/CoordCarto',
     'text!Renderer/Shader/GlobeVS.glsl',
     'text!Renderer/Shader/GlobeFS.glsl',
-    'OBBHelper'], function(NodeMesh,EllipsoidTileGeometry,BoudingBox,defaultValue,THREE,Material,CoordCarto,GlobeVS,GlobeFS,OBBHelper){
+    'OBBHelper',
+    'SphereHelper'], function(NodeMesh,EllipsoidTileGeometry,BoudingBox,defaultValue,THREE,Material,CoordCarto,GlobeVS,GlobeFS,OBBHelper,SphereHelper){
  
     function EllipsoidTileMesh(bbox,cooWMTS,ellipsoid,geometryCache){
         //Constructor
@@ -36,8 +37,8 @@ define('Globe/EllipsoidTileMesh',[
         
         var precision   = 16;
         
-        if (this.level > 14)
-            precision   = 32;
+       // if (this.level > 14)
+         //   precision   = 32;
 //        if (this.level > 15)
 //            precision   = 64;
 //        else if(this.level > 11)
@@ -49,12 +50,12 @@ define('Globe/EllipsoidTileMesh',[
         
         var levelMax = 18;
         
-        this.geometricError  = Math.pow(2,levelMax- this.level);        
+        this.geometricError  = Math.pow(2,(levelMax - this.level));        
         this.geometry        = defaultValue(geometryCache,new EllipsoidTileGeometry(bbox,precision,ellipsoid,this.level));       
         var ccarto           = new CoordCarto(bbox.center.x,bbox.center.y,0);                
         
         // TODO modif ver world coord de three.js 
-        this.absoluteCenter  = ellipsoid.cartographicToCartesian(ccarto) ;   
+        this.absoluteCenter         = ellipsoid.cartographicToCartesian(ccarto);
        
         // TODO ??? 
         this.centerSphere = new THREE.Vector3().addVectors(this.geometry.boundingSphere.center,this.absoluteCenter);
@@ -67,11 +68,24 @@ define('Globe/EllipsoidTileMesh',[
         this.timeInvisible = 0;
         this.maxChildren   = 4;
         
-//        if(this.level > 2)
-//        {
-//            this.helper        = new THREE.OBBHelper(this.geometry.OBB);
-//            this.helper.translateZ(this.absoluteCenter.length());
-//        }
+        var showHelper = true;
+        showHelper = false;
+        
+        if(showHelper && this.level > 2)
+        {
+            
+            //this.helper  = new THREE.SphereHelper(this.geometry.boundingSphere.radius);
+            this.helper  = new THREE.OBBHelper(this.geometry.OBB);
+            
+            if(this.helper instanceof THREE.SphereHelper)
+                         
+                this.helper.position.add(this.absoluteCenter);            
+            
+            else if(this.helper instanceof THREE.OBBHelper)
+            
+                this.helper.translateZ(this.absoluteCenter.length());
+            
+        }
     }
 
     EllipsoidTileMesh.prototype = Object.create( NodeMesh.prototype );
@@ -130,27 +144,24 @@ define('Globe/EllipsoidTileMesh',[
     EllipsoidTileMesh.prototype.setAltitude = function(min,max)
     {         
         this.bbox.setAltitude(min,max);        
-        this.geometry.OBB.addHeight(this.bbox);
+        var delta = this.geometry.OBB.addHeight(this.bbox);
+        var trans = this.absoluteCenter.clone().setLength(delta.y);
         
-        if( this.helper !== undefined )
-        {                        
+        var radius = this.geometry.boundingSphere.radius;
+        
+        this.geometry.boundingSphere.radius = Math.sqrt(delta.x*delta.x + radius*radius);
+        this.centerSphere.add(trans);
+        
+        if(this.helper instanceof THREE.OBBHelper)
+        {
             this.helper.update(this.geometry.OBB);
             this.helper.translateZ(this.absoluteCenter.length());
         }
-//        
-        // TODO compute center new center sphere and radius
-        
-        /*
-        if(max > 0)
-        for ( t = 0; t <= this.geometry.tops.length; t ++ ) 
+        else if(this.helper instanceof THREE.SphereHelper)
         {
-            var top = this.geometry.tops[t];
-            var elevation = top.clone().normalize().multiplyScalar(max);            
-            this.geometry.tops[t].add(elevation);
-            
-        }
-        */
-        
+            this.helper.update(this.geometry.boundingSphere.radius);
+            this.helper.position.add(trans);
+        }       
     };    
     
     EllipsoidTileMesh.prototype.setTextureOrtho = function(texture,id)

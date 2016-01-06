@@ -88,7 +88,7 @@ define('Scene/Quadtree',[
         this.createTile(quad.northEast,node);
         this.createTile(quad.southWest,node);
         this.createTile(quad.southEast,node);
-                  
+
     };
     
     /**
@@ -98,9 +98,10 @@ define('Scene/Quadtree',[
      */
     Quadtree.prototype.update = function(node)
     {
-        if(node.level > 18  || node.wait === true )
-            return false;        
-                                                          
+        if(node.level > 17  || node.wait === true )
+            return false;
+        
+                                       
         if(node.childrenCount() > 0 &&  node.wait === false )                
         {                        
             //console.log(node.childrenCount());

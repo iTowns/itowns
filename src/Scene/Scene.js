@@ -28,7 +28,7 @@ define('Scene/Scene',[
         if(instanceScene !== null){
             throw new Error("Cannot instantiate more than one Scene");
         }         
-        this.nodes          = [];            
+        this.layers          = [];            
         this.cameras        = null;        
         this.selectNodes    = null;      
         this.managerCommand = ManagerCommands();
@@ -85,7 +85,7 @@ define('Scene/Scene',[
     
     Scene.prototype.size = function()
     {
-        return this.nodes[0].size;
+        return this.layers[0].size;
     };
 
     /**
@@ -101,10 +101,10 @@ define('Scene/Scene',[
      */
     Scene.prototype.sceneProcess = function(run){
         
-        if(this.nodes[0] !== undefined  && this.currentCamera() !== undefined )
+        if(this.layers[0] !== undefined  && this.currentCamera() !== undefined )
         {                        
         
-            this.browserScene.browse(this.nodes[0].terrain,this.currentCamera(),true);
+            this.browserScene.browse(this.layers[0].terrain,this.currentCamera(),true);
             //this.updateScene3D(); // TODO --> replace by renderScene3D     
             
             if(run)
@@ -116,12 +116,14 @@ define('Scene/Scene',[
     };
     
     Scene.prototype.realtimeSceneProcess = function(){        
-        if(this.nodes[0] !== undefined  && this.currentCamera !== undefined )
+        if(this.layers[0] !== undefined  && this.currentCamera !== undefined )
         {            
-//            var node = this.nodes[0].meshs.children[0];                        
+            
+            //TODO  compute RTC for all layer and  nodes
+//            var node = this.layers[0].meshs.children[0];                        
 //            node.material.uniforms.mVPMatRTC.value = this.browserScene.getRTCMatrix(node.position,this.currentCamera());
 //           
-            this.browserScene.browse(this.nodes[0].terrain,this.currentCamera(),false);
+            this.browserScene.browse(this.layers[0].terrain,this.currentCamera(),false);
             
           
         }                
@@ -178,7 +180,7 @@ define('Scene/Scene',[
     Scene.prototype.add = function(node){
         //TODO: Implement Me 
         
-        this.nodes.push(node);                
+        this.layers.push(node);                
         
         this.gfxEngine.add3DScene(node.getMesh());
     };
@@ -195,9 +197,9 @@ define('Scene/Scene',[
 
 
     /**
-    * @param nodes {[object Object]} 
+    * @param layers {[object Object]} 
     */
-    Scene.prototype.select = function(nodes){
+    Scene.prototype.select = function(layers){
         //TODO: Implement Me 
 
     };
