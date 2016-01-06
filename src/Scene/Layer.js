@@ -48,9 +48,7 @@ define('Scene/Layer',[
                 meshs.push(node);            
             else if(node instanceof Layer)
             {                                
-                meshs = meshs.concat(node.getMesh());
-                
-                
+                meshs = meshs.concat(node.getMesh());                                
             }
         }
         

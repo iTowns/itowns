@@ -20,7 +20,8 @@ requirejs.config({
         'FlyControls'   : "Renderer/Three/FlyControls",
         'StarGeometry'  : "Renderer/ThreeExtented/StarGeometry",
         'OBB'           : "Renderer/ThreeExtented/OBB",
-        'OBBHelper'     : "Renderer/ThreeExtented/OBBHelper"
+        'OBBHelper'     : "Renderer/ThreeExtented/OBBHelper",
+        'SphereHelper'  : "Renderer/ThreeExtented/SphereHelper"
         
     },
   /*
@@ -56,6 +57,9 @@ requirejs.config({
             deps: ['THREE']
         },        
         OBBHelper: {
+            deps: ['THREE']
+        },        
+        SphereHelper: {
             deps: ['THREE']
         }
 

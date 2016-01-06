@@ -53,8 +53,7 @@ define('Globe/Globe',[
         this.meshs.add( sphere );
         */
        
-        this.add(this.terrain);        
-        
+        this.add(this.terrain);                
         //this.add(this.meshs);
         
         if(this.atmosphere !== undefined)

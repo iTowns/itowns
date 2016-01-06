@@ -6,7 +6,8 @@
 
 define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess','OBBHelper'], function(THREE,EllipsoidTileMesh){
 
-    function BrowseTree(scene){
+    function BrowseTree(scene)
+    {
         //Constructor
   
         this.oneNode    = 0;
@@ -83,7 +84,7 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
                                 return false;
                             }
 
-                            var sse = this.nodeProcess.SSE(node,camera);
+                            var sse = this.nodeProcess.SSE(node,camera);                                                        
 
                             if(optional && sse && node.material.visible === true && node.wait === false)
                             {                                   
@@ -130,8 +131,9 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
         return true;
     };
         
-    BrowseTree.prototype.getRTCMatrix = function(center,camera)
+    BrowseTree.prototype.getRTCMatrix = function(center,camera)    
     {               
+        // TODO gerer orientation et echelle de l'objet
         var position    = new THREE.Vector3().subVectors(camera.camera3D.position,center);
         var quaternion  = new THREE.Quaternion().copy(camera.camera3D.quaternion);        
         var matrix      = new THREE.Matrix4().compose(position,quaternion,new THREE.Vector3(1,1,1));
@@ -149,7 +151,8 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
      * @param {type} optional   : optional process
      * @returns {undefined}
      */
-    BrowseTree.prototype.browse = function(tree, camera,optional){
+    BrowseTree.prototype.browse = function(tree, camera,optional)
+    {
  
         this.tree = tree;
         camera.camera3D.updateMatrix();
