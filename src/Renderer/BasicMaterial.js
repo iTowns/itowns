@@ -6,38 +6,38 @@
 
 
 define('Renderer/BasicMaterial',
-    [   'THREE',        
-        'Core/System/JavaTools',
+    [   'THREE',
+        'Core/defaultValue',
         'text!Renderer/Shader/SimpleVS.glsl',
         'text!Renderer/Shader/SimpleFS.glsl'], function(
             THREE,
-            JavaTools,
+            defaultValue,            
             SimpleVS,
             SimpleFS)
     {
         
-        function BasicMaterial(){
+        function BasicMaterial(color){
             //Constructor
             
             THREE.ShaderMaterial.call( this );
             
+            this.vertexShader    = SimpleVS;
+            this.fragmentShader  = SimpleFS;
+            
             this.uniforms  = 
             {                        
-                color           : { type: "v3", value: new THREE.Color() },
+                diffuseColor    : { type: "c", value: defaultValue(color,new THREE.Color()) },
                 RTC             : { type: "i" , value: 1 },
                 mVPMatRTC       : { type: "m4", value: new THREE.Matrix4()},
                 distanceFog     : { type: "f" , value: 1000000000.0},
                 debug           : { type: "i" , value: false }
 
-            };
-            
-            this.vertexShader    = SimpleVS;
-            this.fragmentShader  = SimpleFS;
-               
+            };  
         }        
+        
         BasicMaterial.prototype = Object.create( THREE.ShaderMaterial.prototype );
         BasicMaterial.prototype.constructor = BasicMaterial;
-        
+      
         BasicMaterial.prototype.setRTC = function(RTC)
         {
             this.uniforms.RTC.value   = RTC;        

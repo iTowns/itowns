@@ -27,7 +27,7 @@ void main()
     #endif
 
     float orientedintensity  = intensity * (screenSize.x - gl_FragCoord.x)/(screenSize.x/2.);
-    gl_FragColor = glowColor * orientedintensity;
+        gl_FragColor = glowColor * orientedintensity;
 
 }
 

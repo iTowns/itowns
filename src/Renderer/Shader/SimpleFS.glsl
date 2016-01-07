@@ -11,6 +11,8 @@
 
 #endif
 
+uniform vec3 diffuseColor;
+
 void main() {
  
     #if defined(USE_LOGDEPTHBUF) && defined(USE_LOGDEPTHBUF_EXT)
@@ -19,5 +21,5 @@ void main() {
 
     #endif
 
-    gl_FragColor = vec4( 1.0, 0.0, 0.0, 1.0);
+    gl_FragColor = vec4(diffuseColor,1.0);
 }
