@@ -20,12 +20,10 @@ define('Globe/EllipsoidTileMesh',[
     'Scene/BoudingBox',
     'Core/defaultValue',
     'THREE',
-    'Renderer/Material',
-    'Core/Geographic/CoordCarto',
-    'text!Renderer/Shader/GlobeVS.glsl',
-    'text!Renderer/Shader/GlobeFS.glsl',
+    'Renderer/GlobeMaterial',
+    'Core/Geographic/CoordCarto',   
     'OBBHelper',
-    'SphereHelper'], function(NodeMesh,EllipsoidTileGeometry,BoudingBox,defaultValue,THREE,Material,CoordCarto,GlobeVS,GlobeFS,OBBHelper,SphereHelper){
+    'SphereHelper'], function(NodeMesh,EllipsoidTileGeometry,BoudingBox,defaultValue,THREE,GlobeMaterial,CoordCarto,OBBHelper,SphereHelper){
  
     function EllipsoidTileMesh(bbox,cooWMTS,ellipsoid,geometryCache){
         //Constructor
@@ -35,18 +33,7 @@ define('Globe/EllipsoidTileMesh',[
         this.cooWMTS    = cooWMTS;
         this.bbox       = defaultValue(bbox,new BoudingBox());        
         
-        var precision   = 16;
-        
-       // if (this.level > 14)
-         //   precision   = 32;
-//        if (this.level > 15)
-//            precision   = 64;
-//        else if(this.level > 11)
-//            precision   = 64;
-//        else if(this.level > 8)
-//            precision   = 32;
-//        else if (this.level > 6)
-//            precision   = 16;
+        var precision   = 16;       
         
         var levelMax = 18;
         
@@ -60,9 +47,9 @@ define('Globe/EllipsoidTileMesh',[
         // TODO ??? 
         this.centerSphere = new THREE.Vector3().addVectors(this.geometry.boundingSphere.center,this.absoluteCenter);
                
-        this.tMat       = new Material(GlobeVS,GlobeFS,bbox,cooWMTS.zoom);                
+        this.tMat       = new GlobeMaterial(bbox);                
         this.orthoNeed  = 1;
-        this.material   = this.tMat.shader;
+        //this.material   = this.tMat.shader;
         this.dot        = 0;
         this.frustumCulled = false;        
         this.timeInvisible = 0;
@@ -112,8 +99,8 @@ define('Globe/EllipsoidTileMesh',[
     };
     
     EllipsoidTileMesh.prototype.setMatrixRTC = function(rtc)
-    {         
-        this.tMat.uniforms.mVPMatRTC.value  = rtc;
+    {                 
+        this.tMat.setMatrixRTC(rtc);
     };
         
     EllipsoidTileMesh.prototype.setTerrain = function(terrain)
@@ -201,8 +188,10 @@ define('Globe/EllipsoidTileMesh',[
         
         if(this.orthoNeed === this.tMat.Textures_01.length) 
         {                               
-            this.loaded = true;
+            this.loaded = true; 
             this.tMat.update();
+            this.material   = this.tMat.shader;
+            
             var parent = this.parent;
 
             if(parent.childrenLoaded())
@@ -211,8 +200,6 @@ define('Globe/EllipsoidTileMesh',[
             }
         }                             
     };
-    
-    
     
     return EllipsoidTileMesh;
     
