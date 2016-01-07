@@ -105,11 +105,9 @@ define('Core/Commander/Providers/tileGlobeProvider',[
              
         if(parent.worldToLocal !== undefined )                
             translate = parent.worldToLocal(tile.absoluteCenter.clone());
-           
-        
+                   
         tile.position.copy(translate);
-        
-        
+                
         tile.visible = false;
         
         parent.add(tile);
@@ -122,13 +120,10 @@ define('Core/Commander/Providers/tileGlobeProvider',[
 
         }.bind(tile)).then(function(tile)
         {                      
-            if(cooWMTS.zoom >= 2)
-                
+            if(cooWMTS.zoom >= 2)                
                 this.getOrthoImages(tile);
- 
             else
-                            
-               tile.checkOrtho();
+                tile.checkOrtho();
                            
         }.bind(this)); 
     };
