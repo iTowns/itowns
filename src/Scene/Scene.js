@@ -18,8 +18,10 @@ define('Scene/Scene',[
     'Core/Commander/ManagerCommands',
     'Scene/BrowseTree',
     'Scene/NodeProcess',
+    'Scene/Quadtree',
+    'Scene/Layer',
     'Core/Geographic/CoordCarto',
-    'Core/System/Capabalities'], function(c3DEngine,Globe,ManagerCommands,BrowseTree,NodeProcess,CoordCarto,Capabalities){
+    'Core/System/Capabalities'], function(c3DEngine,Globe,ManagerCommands,BrowseTree,NodeProcess,Quadtree,Layer,CoordCarto,Capabalities){
  
     var instanceScene = null;
 
@@ -105,7 +107,6 @@ define('Scene/Scene',[
         {                        
         
             this.browserScene.browse(this.layers[0].terrain,this.currentCamera(),true);
-            //this.updateScene3D(); // TODO --> replace by renderScene3D     
             
             if(run)
                 this.managerCommand.runAllCommands();
@@ -116,17 +117,27 @@ define('Scene/Scene',[
     };
     
     Scene.prototype.realtimeSceneProcess = function(){        
-        if(this.layers[0] !== undefined  && this.currentCamera !== undefined )
-        {            
-            
-            //TODO  compute RTC for all layer and  nodes
-//            var node = this.layers[0].meshs.children[0];                        
-//            node.material.uniforms.mVPMatRTC.value = this.browserScene.getRTCMatrix(node.position,this.currentCamera());
-//           
-            this.browserScene.browse(this.layers[0].terrain,this.currentCamera(),false);
-            
-          
-        }                
+        
+        if(this.currentCamera !== undefined )
+            for(var l = 0; l <  this.layers.length;l++)
+            {                            
+                var layer = this.layers[l];
+                
+                for(var sl = 0; sl <  layer.children.length;sl++)
+                {
+                   var sLayer = layer.children[sl];
+                   
+                   if(sLayer instanceof Quadtree)
+                        this.browserScene.browse(sLayer,this.currentCamera(),false);
+                   else if(sLayer instanceof Layer)
+                        for(var c = 0; c <  sLayer.children.length; c++)
+                        {
+                            var node = sLayer.children[c];
+                            node.material.setMatrixRTC(this.browserScene.getRTCMatrix(node.position,this.currentCamera()));
+                        }
+                }
+                
+            }                
     };
     
     /**

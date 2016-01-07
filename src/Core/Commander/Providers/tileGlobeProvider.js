@@ -17,7 +17,8 @@
 
 /* global THREE */
 
-define('Core/Commander/Providers/tileGlobeProvider',[                        
+define('Core/Commander/Providers/tileGlobeProvider',[
+            'when',
             'Core/Geographic/Projection',
             'Core/Commander/Providers/WMTS_Provider',
             'Globe/EllipsoidTileGeometry',
@@ -27,6 +28,7 @@ define('Core/Commander/Providers/tileGlobeProvider',[
             'Scene/BoudingBox'                        
             ],
              function(
+                when,
                 Projection,
                 WMTS_Provider,
                 EllipsoidTileGeometry,
@@ -64,15 +66,7 @@ define('Core/Commander/Providers/tileGlobeProvider',[
             if(this.cacheGeometry[cooWMTS.zoom] === undefined)
                 this.cacheGeometry[cooWMTS.zoom] = new Array() ;
            
-            var precision   = 32;
-        
-            if(this.level > 11)
-                precision   = 64;
-            else if(this.level > 8)
-                precision   = 32;
-            else if (this.level > 6)
-                precision   = 32;
-                                    
+            var precision   = 16;                                            
             var rootBBox    = new BoudingBox(0,part+part*0.01,bbox.minCarto.latitude, bbox.maxCarto.latitude );
             
             geometry   = new EllipsoidTileGeometry(rootBBox,precision,this.ellipsoid,cooWMTS.zoom);
@@ -87,7 +81,7 @@ define('Core/Commander/Providers/tileGlobeProvider',[
     {  
 
         if(command === undefined)
-            return;
+            return when();
         
         var bbox        = command.paramsFunction[0];
         var cooWMTS     = this.projection.WGS84toWMTS(bbox);                

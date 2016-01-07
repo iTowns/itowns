@@ -14,9 +14,8 @@ define('Globe/Globe',[
     'Globe/Atmosphere',
     'Core/System/Capabalities',
     'Core/Geographic/CoordCarto',
-    'text!Renderer/Shader/SimpleFS.glsl',
-    'text!Renderer/Shader/SimpleVS.glsl',
-    'THREE'], function(defaultValue,Layer,Quadtree,SchemeTile,MathExt,EllipsoidTileMesh,Atmosphere,Capabalities,CoordCarto,SimpleFS,SimpleVS,THREE){
+    'Renderer/BasicMaterial',
+    'THREE'], function(defaultValue,Layer,Quadtree,SchemeTile,MathExt,EllipsoidTileMesh,Atmosphere,Capabalities,CoordCarto,BasicMaterial,THREE){
 
     function Globe(scale){
         //Constructor
@@ -27,34 +26,23 @@ define('Globe/Globe',[
         var caps    = new Capabalities();       
         this.NOIE   = !caps.isInternetExplorer()  ;
                 
-        this.size       = new THREE.Vector3(6378137, 6378137, 6378137/*6356752.3142451793*/).multiplyScalar(scale);
+        this.size       = new THREE.Vector3(6378137, 6378137, 6356752.3142451793).multiplyScalar(scale);
         this.terrain    = new Quadtree(EllipsoidTileMesh,this.SchemeTileWMTS(2),this.size) ;        
         this.atmosphere = this.NOIE ? new Atmosphere(this.size) : undefined;
         
-        /*
-        this.meshs      = new Layer();        
-        var material = new THREE.ShaderMaterial( {
-	uniforms: {
-		mVPMatRTC       : { type: "m4", value: new THREE.Matrix4()} ,
-                RTC             : { type: "i" , value: 1 }
-            },
-            vertexShader    : SimpleVS,
-            fragmentShader  : SimpleFS,
-            wireframe       : true
-            
-        } );
-       
-        var geometry = new THREE.SphereGeometry( 20, 32, 32 );
-       
-        var sphere   = new THREE.Mesh( geometry, material );
-        var position = this.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(2.33,48.87,35));
-        sphere.frustumCulled = false;
-        sphere.position.copy(position);
-        this.meshs.add( sphere );
-        */
-       
+        this.batiments  = new Layer();        
+        var material    = new BasicMaterial(new THREE.Color(1,0,1));               
+ 
+        var geometry    = new THREE.BoxGeometry(30, 30, 40,3,3,3);       
+        var batiment    = new THREE.Mesh( geometry, material );
+        var position    = this.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(2.33,48.87,35));
+        batiment.frustumCulled  = false;
+        material.wireframe      = true;
+        batiment.position.copy(position);
+        this.batiments.add( batiment );
+        
         this.add(this.terrain);                
-        //this.add(this.meshs);
+        this.add(this.batiments);
         
         if(this.atmosphere !== undefined)
             this.add(this.atmosphere);
