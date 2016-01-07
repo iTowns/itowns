@@ -6,33 +6,48 @@
 
 
 define('Renderer/GlobeMaterial',
-    [   'THREE',        
+    [   'THREE',
+        'Renderer/BasicMaterial',
         'Core/System/JavaTools',
         'text!Renderer/Shader/GlobeVS.glsl',
         'text!Renderer/Shader/GlobeFS.glsl'], function(
             THREE,
+            BasicMaterial,
             JavaTools,
             GlobeVS,
             GlobeFS){
     
-    var  Material = function (bbox){
+    var  GlobeMaterial = function (bbox){
+        
+        BasicMaterial.call( this );
        
         this.Textures_00    = []; 
         this.Textures_00.push(new THREE.Texture()); 
         this.Textures_01    = [];        
         this.Textures_01.push(new THREE.Texture());
         
-        this.bbox           = bbox;
-        this.pitScale       = new THREE.Vector3(0.0,0.0,1.0);
+        this.vertexShader    = GlobeVS;
+        this.fragmentShader  = GlobeFS;
+                      
+        this.uniforms.dTextures_00    = {type: "tv", value: this.Textures_00} ;
+        this.uniforms.dTextures_01    = {type: "tv", value: this.Textures_01} ;
+        this.uniforms.nbTextures_00   = {type: "i" , value: 0} ;
+        this.uniforms.nbTextures_01   = {type: "i" , value: 0} ;            
+        this.uniforms.bLatitude       = {type: "f",  value: bbox.minCarto.latitude};
+        this.uniforms.pitScale        = {type: "v3", value: new THREE.Vector3(0.0,0.0,1.0)};
+        this.uniforms.periArcLati     = {type: "f" , value: Math.abs(bbox.maxCarto.latitude - bbox.minCarto.latitude)};            
+
+        this.wireframe = false;
+        //this.wireframe = true;
    
     };
     
-    Material.prototype.dispose = function()
+    GlobeMaterial.prototype = Object.create( BasicMaterial.prototype );
+    GlobeMaterial.prototype.constructor = GlobeMaterial;
+    
+    GlobeMaterial.prototype.dispose = function()
     {         
-        if(this.shader === undefined)
-            return;
-        
-        this.shader.dispose();
+        this.dispatchEvent( { type: 'dispose' } );
         
         for (var i = 0, max = this.Textures_00.length; i < max; i++)        
         {
@@ -56,32 +71,25 @@ define('Renderer/GlobeMaterial',
                 
     };
     
-    Material.prototype.setTexture = function(texture,layer,id,pitScale)
+    GlobeMaterial.prototype.setTexture = function(texture,layer,id,pitScale)
     {         
         if(layer === 0 && texture !== -1)
         {
-            this.Textures_00[0] = texture;                  
+            this.Textures_00[0]                 = texture;        
+            this.uniforms.dTextures_00.value    = this.Textures_00;        
+            this.uniforms.nbTextures_00.value   = 1.0;
             if(pitScale)
-                this.pitScale   = pitScale;           
+                this.uniforms.pitScale.value  = pitScale;           
         }
         else
         {            
-            this.Textures_01[id] = texture;                                              
+            this.Textures_01[id]                = texture;        
+            this.uniforms.dTextures_01.value    = this.Textures_01;        
+            this.uniforms.nbTextures_01.value   = this.Textures_01.length;                             
         }                            
     };
     
-    Material.prototype.setDebug = function(debug_value)
-    {
-        this.uniforms.debug.value   = debug_value;        
-    };
-    
-    Material.prototype.setMatrixRTC = function(rtc)
-    {
-        if(this.uniforms)
-            this.uniforms.mVPMatRTC.value  = rtc;    
-    };
-    
-    Material.prototype.update = function()    
+    GlobeMaterial.prototype.update = function()    
     {
       
         for (var i = 0, max = this.Textures_00.length; i < max; i++) 
@@ -92,36 +100,9 @@ define('Renderer/GlobeMaterial',
             if(this.Textures_01[i].image !== undefined)
                 this.Textures_01[i].needsUpdate = true;
                 
-        
-        this.uniforms  = 
-        {                        
-            dTextures_00    : { type: "tv", value: this.Textures_00 },
-            dTextures_01    : { type: "tv", value: this.Textures_01 },
-            RTC             : { type: "i" , value: 1 },
-            nbTextures_00   : { type: "i" , value: 1 },
-            nbTextures_01   : { type: "i" , value: this.Textures_01.length },            
-            bLatitude       : { type: "f",  value: this.bbox.minCarto.latitude},
-            pitScale        : { type: "v3", value: this.pitScale},
-            periArcLati     : { type: "f" , value: Math.abs(this.bbox.maxCarto.latitude - this.bbox.minCarto.latitude)},            
-            mVPMatRTC       : { type: "m4", value: new THREE.Matrix4()},
-            distanceFog     : { type: "f",  value: 1000000000.0},
-            debug           : { type: "i" , value: false }
-            
-        };
-        
-        this.shader = new THREE.ShaderMaterial( {
-
-            uniforms        : this.uniforms,
-            vertexShader    : GlobeVS,
-            fragmentShader  : GlobeFS
-
-        });
-        
-        this.shader.wireframe = false;
-        //this.shader.wireframe = true;
     };
     
-    return Material;
+    return GlobeMaterial;
 });
   
   

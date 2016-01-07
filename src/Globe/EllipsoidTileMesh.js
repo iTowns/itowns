@@ -46,10 +46,9 @@ define('Globe/EllipsoidTileMesh',[
        
         // TODO ??? 
         this.centerSphere = new THREE.Vector3().addVectors(this.geometry.boundingSphere.center,this.absoluteCenter);
-               
-        this.tMat       = new GlobeMaterial(bbox);                
+                       
         this.orthoNeed  = 1;
-        //this.material   = this.tMat.shader;
+        this.material   = new GlobeMaterial(bbox);
         this.dot        = 0;
         this.frustumCulled = false;        
         this.timeInvisible = 0;
@@ -82,27 +81,25 @@ define('Globe/EllipsoidTileMesh',[
     EllipsoidTileMesh.prototype.dispose = function()
     {          
         // TODO à mettre dans node mesh
-        this.tMat.dispose();       
+        this.material.dispose();       
         this.geometry.dispose();                    
         this.geometry = null;       
         this.material = null;        
     };
     
     EllipsoidTileMesh.prototype.setRTC = function(enable)
-    {   
-        if(this.tMat.uniforms)
-            this.tMat.uniforms.RTC.value        = enable;
+    {           
+        this.material.setRTC(enable);
     };
     
      EllipsoidTileMesh.prototype.setFog = function(fog)
-    {         
-        if(this.tMat.uniforms)
-            this.tMat.uniforms.distanceFog.value = fog;
+    {                 
+        this.material.setFogDistance(fog);
     };
     
     EllipsoidTileMesh.prototype.setMatrixRTC = function(rtc)
     {                 
-        this.tMat.setMatrixRTC(rtc);
+        this.material.setMatrixRTC(rtc);
     };
         
     EllipsoidTileMesh.prototype.setTerrain = function(terrain)
@@ -116,7 +113,7 @@ define('Globe/EllipsoidTileMesh',[
         {
             var parentBil   = this.getParentLevel(14);                                
             pitScale        = parentBil.bbox.pitScale(this.bbox);                
-            texture         = parentBil.tMat.Textures_00[0];
+            texture         = parentBil.material.Textures_00[0];
             
             this.setAltitude(parentBil.bbox.minCarto.altitude,parentBil.bbox.maxCarto.altitude);
             
@@ -127,7 +124,7 @@ define('Globe/EllipsoidTileMesh',[
             this.setAltitude(terrain.min,terrain.max);            
         }                         
         
-        this.tMat.setTexture(texture,0,0,pitScale);      
+        this.material.setTexture(texture,0,0,pitScale);      
     };
     
     EllipsoidTileMesh.prototype.setAltitude = function(min,max)
@@ -156,7 +153,7 @@ define('Globe/EllipsoidTileMesh',[
     EllipsoidTileMesh.prototype.setTextureOrtho = function(texture,id)
     {         
         id = id === undefined ? 0 : id;
-        this.tMat.setTexture(texture,1,id);
+        this.material.setTexture(texture,1,id);
         this.checkOrtho();
     };   
     
@@ -188,11 +185,11 @@ define('Globe/EllipsoidTileMesh',[
     EllipsoidTileMesh.prototype.checkOrtho = function()
     { 
         
-        if(this.orthoNeed === this.tMat.Textures_01.length) 
+        if(this.orthoNeed === this.material.Textures_01.length) 
         {                               
             this.loaded = true; 
-            this.tMat.update();
-            this.material   = this.tMat.shader;
+            this.material.update();
+            
             
             var parent = this.parent;
 
