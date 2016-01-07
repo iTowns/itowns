@@ -90,7 +90,7 @@ define('Scene/Quadtree',[
         this.createTile(quad.southEast,node);
 
     };
-    
+
     /**
      * @documentation: update node 
      * @param {type} node
@@ -100,8 +100,7 @@ define('Scene/Quadtree',[
     {
         if(node.level > 17  || node.wait === true )
             return false;
-        
-                                       
+
         if(node.childrenCount() > 0 &&  node.wait === false )                
         {                        
             //console.log(node.childrenCount());
@@ -110,18 +109,17 @@ define('Scene/Quadtree',[
                 node.children[i].visible = true;                                
                 node.children[i].showHelper(true);
             }
-           
+
             if(node.childrenCount() === 4 && node.childrenLoaded())            
                 node.material.visible   = false;            
             else
                 node.material.visible   = true;
-                        
+
             node.showHelper(node.material.visible);
-                        
+
             return false;
         }
-       
-        
+
         return true;
     };
     
