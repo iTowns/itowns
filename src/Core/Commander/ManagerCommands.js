@@ -69,6 +69,7 @@ define('Core/Commander/ManagerCommands',
         
     ManagerCommands.prototype.runAllCommands = function()
     {  
+        //console.log(this.queueAsync.length);
         if(this.queueAsync.length === 0)
             return;
         
@@ -77,7 +78,6 @@ define('Core/Commander/ManagerCommands',
             if(this.queueAsync.length%2 === 0)            
                 
                 this.scene.updateScene3D(false);
-            
             
             this.runAllCommands();            
             

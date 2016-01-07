@@ -89,13 +89,15 @@ define('Globe/EllipsoidTileMesh',[
     };
     
     EllipsoidTileMesh.prototype.setRTC = function(enable)
-    {         
-        this.tMat.uniforms.RTC.value        = enable;
+    {   
+        if(this.tMat.uniforms)
+            this.tMat.uniforms.RTC.value        = enable;
     };
     
      EllipsoidTileMesh.prototype.setFog = function(fog)
     {         
-        this.tMat.uniforms.distanceFog.value        = fog;
+        if(this.tMat.uniforms)
+            this.tMat.uniforms.distanceFog.value = fog;
     };
     
     EllipsoidTileMesh.prototype.setMatrixRTC = function(rtc)
@@ -154,7 +156,7 @@ define('Globe/EllipsoidTileMesh',[
     EllipsoidTileMesh.prototype.setTextureOrtho = function(texture,id)
     {         
         id = id === undefined ? 0 : id;
-        this.tMat.setTexture(texture,1,id); 
+        this.tMat.setTexture(texture,1,id);
         this.checkOrtho();
     };   
     

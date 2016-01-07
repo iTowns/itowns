@@ -97,7 +97,7 @@ define('Core/Commander/Providers/WMTS_Provider',[
      */
     WMTS_Provider.prototype.getTextureBil = function(coWMTS)
     {
-                        
+       
         var url = this.url(coWMTS);            
         
         var textureCache = this.cache.getRessource(url);
