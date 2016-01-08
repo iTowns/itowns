@@ -20,15 +20,6 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
         
     }
     
-    /**
-     * 
-     * @param {type} node
-     * @returns {undefined}
-     */
-    BrowseTree.prototype.invisible= function(node)
-    {        
-        node.visible = false;
-    };
     
     BrowseTree.prototype.addNodeProcess= function(nodeProcess)
     {        
@@ -51,84 +42,51 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
     {        
         if(node instanceof EllipsoidTileMesh)
         {            
-            node.visible = false;
             
             if(node.helper !== undefined && node.helper.parent === null)           
                 this.scene.scene3D().add(node.helper);
 
-            node.showHelper(false);
-
-            if(node.loaded)
+            node.setVisibility(false);
+                 
+            if(node.loaded && this.nodeProcess.frustumCullingOBB(node,camera))
             {
-                //if(this.nodeProcess.frustumBB(node,camera))
-                //if(this.nodeProcess.backFaceCulling(node,camera))
-                {    
-                    this.nodeProcess.frustumCullingOBB(node,camera);
+                if(this.nodeProcess.horizonCulling(node,camera))
+                {
+                    if(node.parent.material !== undefined && node.parent.material.visible === true)
+                        
+                        return node.setVisibility(false);
+                    
+                    var sse = this.nodeProcess.SSE(node,camera);                                                        
 
-                    if(node.visible )
+                    if(optional && sse && node.material.visible === true && node.wait === false)
+                                                       
+                        this.tree.subdivide(node);
+                                                
+                    else if(!sse && node.level >= 2 && node.material.visible === false && node.wait === false)
                     {
-                        this.nodeProcess.horizonCulling(node,camera);
 
-                        if(node.visible )
-                        {
+                        node.setMaterialVisibility(true);
+                        this.uniformsProcess(node,camera);                      
+                        node.setChildrenVisibility(false);
 
-                            if(node.parent.material !== undefined && node.parent.material.visible === true)
-                            {                                     
-                                node.visible = false;                                
-                                node.showHelper(false);
-                                
-                                if(node.timeInvisible === 0)
-                                {
-                                    node.timeInvisible = new Date().getTime();
-                                }
-                                return false;
-                            }
-
-                            var sse = this.nodeProcess.SSE(node,camera);                                                        
-
-                            if(optional && sse && node.material.visible === true && node.wait === false)
-                            {                                   
-                                this.tree.subdivide(node);
-                            }                            
-                            else if(!sse && node.level >= 2 && node.material.visible === false && node.wait === false)
-                            {
-
-                                node.material.visible = true;
-                                node.showHelper(true);
-                                node.setMatrixRTC(this.getRTCMatrix(node.absoluteCenter,camera));
-                                node.setFog(this.fogDistance);
-
-                                if(node.childrenCount() !== 0)
-                                    for(var i = 0;i<node.children.length;i++)
-                                    {                                                       
-                                        node.children[i].visible = false;
-                                        node.children[i].showHelper(false);                                                                              
-                                    }
-
-                                return false;                            
-                            }                                
-                        }
-                    }
+                        return false;                            
+                    }                                
                 }
             }
 
-            if(node.visible  && node.material.visible === true)
-            {
-                node.setMatrixRTC(this.getRTCMatrix(node.absoluteCenter,camera));
-                node.setFog(this.fogDistance);
-                node.timeInvisible = 0;                               
-            }
-            else if (node.timeInvisible === 0)
-            {                
-                node.timeInvisible = new Date().getTime();             
-            }
-                        
-            node.showHelper(node.visible && node.material.visible);                                
-                                        
+            if(node.visible  && node.material.visible)
+                this.uniformsProcess(node,camera);  
+                                   
             return node.visible;
-        }        
+        }
         
         return true;
+    };
+    
+    BrowseTree.prototype.uniformsProcess = function(node,camera)
+    {
+        node.setMatrixRTC(this.getRTCMatrix(node.absoluteCenter,camera));
+        node.setFog(this.fogDistance);        
     };
         
     BrowseTree.prototype.getRTCMatrix = function(center,camera)    

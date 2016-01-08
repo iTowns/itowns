@@ -19,7 +19,7 @@ define('Globe/Globe',[
 
     function Globe(scale){
         //Constructor
-
+        
         Layer.call( this );        
         
         scale       = defaultValue(scale,1.0);
