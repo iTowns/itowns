@@ -31,28 +31,25 @@ define('Globe/EllipsoidTileMesh',[
                 
         this.level      = cooWMTS.zoom;
         this.cooWMTS    = cooWMTS;
-        this.bbox       = defaultValue(bbox,new BoudingBox());        
+        this.bbox       = defaultValue(bbox,new BoudingBox());               
+        var precision   = 16;               
+        var levelMax    = 18;
         
-        var precision   = 16;       
-        
-        var levelMax = 18;
-        
-        this.geometricError  = Math.pow(2,(levelMax - this.level));        
-        this.geometry        = defaultValue(geometryCache,new EllipsoidTileGeometry(bbox,precision,ellipsoid,this.level));       
-        var ccarto           = new CoordCarto(bbox.center.x,bbox.center.y,0);                
+        this.geometricError = Math.pow(2,(levelMax - this.level));        
+        this.geometry       = defaultValue(geometryCache,new EllipsoidTileGeometry(bbox,precision,ellipsoid,this.level));       
+        var ccarto          = new CoordCarto(bbox.center.x,bbox.center.y,0);                
         
         // TODO modif ver world coord de three.js 
-        this.absoluteCenter         = ellipsoid.cartographicToCartesian(ccarto);
+        this.absoluteCenter = ellipsoid.cartographicToCartesian(ccarto);
        
         // TODO ??? 
-        this.centerSphere = new THREE.Vector3().addVectors(this.geometry.boundingSphere.center,this.absoluteCenter);
-                       
-        this.orthoNeed  = 1;
-        this.material   = new GlobeMaterial(bbox);
-        this.dot        = 0;
-        this.frustumCulled = false;        
-        this.timeInvisible = 0;
-        this.maxChildren   = 4;
+        this.centerSphere   = new THREE.Vector3().addVectors(this.geometry.boundingSphere.center,this.absoluteCenter);                       
+        this.orthoNeed      = 1;
+        this.material       = new GlobeMaterial(bbox);
+        this.dot            = 0;
+        this.frustumCulled  = false;        
+        this.timeInvisible  = 0;
+        this.maxChildren    = 4;
         
         var showHelper = true;
         //showHelper = false;
@@ -61,7 +58,11 @@ define('Globe/EllipsoidTileMesh',[
         {
             
             //this.helper  = new THREE.SphereHelper(this.geometry.boundingSphere.radius);
-            this.helper  = new THREE.OBBHelper(this.geometry.OBB);
+            
+            //var text = 'z(' + this.level.toString() + '),r(' + cooWMTS.row + '),c(' + cooWMTS.col + ')';
+            var text = this.level.toString();
+            
+            this.helper  = new THREE.OBBHelper(this.geometry.OBB,text);
             
             if(this.helper instanceof THREE.SphereHelper)
                          

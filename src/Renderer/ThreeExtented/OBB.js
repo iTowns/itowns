@@ -31,14 +31,6 @@ THREE.OBB.prototype.update = function(){
     this.pointsWorld = this.cPointsWorld(this.points());
 };
 
-//THREE.OBB.prototype.clone = function(){
-//
-//    var obb = THREE.OBB();
-//    
-//    return obb;
-//    
-//};
-
 THREE.OBB.prototype.quadInverse = function(){
 
     return this.quaInv;
