@@ -18,6 +18,8 @@ requirejs.config({
         'OrbitControls' : "Renderer/Three/OrbitControls",
         'GlobeControls' : "Renderer/ThreeExtented/GlobeControls",
         'FlyControls'   : "Renderer/Three/FlyControls",
+        'FontUtils'     : "Renderer/Three/FontUtils",
+        'FontOptimer'   : "Renderer/Three/optimer_regular",
         'StarGeometry'  : "Renderer/ThreeExtented/StarGeometry",
         'OBB'           : "Renderer/ThreeExtented/OBB",
         'OBBHelper'     : "Renderer/ThreeExtented/OBBHelper",
@@ -50,6 +52,12 @@ requirejs.config({
         FlyControls: {
             deps: ['THREE']
         },
+        FontUtils: {
+            deps: ['THREE']
+        },
+        FontOptimer: {
+            deps: ['THREE']
+        },
         StarGeometry: {
             deps: ['THREE']
         },
@@ -57,7 +65,7 @@ requirejs.config({
             deps: ['THREE']
         },        
         OBBHelper: {
-            deps: ['THREE']
+            deps: ['THREE','FontUtils','FontOptimer']
         },        
         SphereHelper: {
             deps: ['THREE']

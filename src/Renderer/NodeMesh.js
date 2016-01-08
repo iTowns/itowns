@@ -42,7 +42,7 @@ define('Renderer/NodeMesh',['Scene/Node','THREE'], function(Node, THREE){
     {        
         this.material.visible = show;
         if(this.helper !== undefined)
-            this.helper.material.visible = show;
+            this.helper.setMaterialVisibility(show);
         
     };
     
