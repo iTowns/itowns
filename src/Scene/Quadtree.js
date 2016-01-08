@@ -104,19 +104,9 @@ define('Scene/Quadtree',[
         if(node.childrenCount() > 0 &&  node.wait === false )                
         {                        
             //console.log(node.childrenCount());
-            for (var i = 0 ;i<node.childrenCount();i++)
-            {                
-                node.children[i].visible = true;                                
-                node.children[i].showHelper(true);
-            }
-
-            if(node.childrenCount() === 4 && node.childrenLoaded())            
-                node.material.visible   = false;            
-            else
-                node.material.visible   = true;
-
-            node.showHelper(node.material.visible);
-
+            
+            node.setChildrenVisibility(true);
+            node.setMaterialVisibility(!(node.childrenCount() === 4 && node.childrenLoaded()));
             return false;
         }
 

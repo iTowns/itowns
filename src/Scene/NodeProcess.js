@@ -41,7 +41,7 @@ define('Scene/NodeProcess',['Scene/BoudingBox','Renderer/Camera','Core/Math/Math
             }
         };              
       
-        node.visible = true;
+        //??node.visible = true;
         
         return node.visible;
               
@@ -104,9 +104,7 @@ define('Scene/NodeProcess',['Scene/BoudingBox','Renderer/Camera','Core/Math/Math
         
         obb.update();
                 
-        node.visible = this.camera.getFrustum().intersectsBox(obb.box3D);
-        
-        return true;// node.visible;
+        return node.setVisibility(this.camera.getFrustum().intersectsBox(obb.box3D));
         
     };
     
@@ -119,9 +117,8 @@ define('Scene/NodeProcess',['Scene/BoudingBox','Renderer/Camera','Core/Math/Math
     NodeProcess.prototype.frustumBB = function(node,camera)        
     { 
         
-        node.visible = node.bbox.intersect(this.bbox);
-        
-        return node.visible;
+        return node.setVisibility(node.bbox.intersect(this.bbox));
+       
     };
     
     /**
@@ -196,14 +193,12 @@ define('Scene/NodeProcess',['Scene/BoudingBox','Renderer/Camera','Core/Math/Math
       }
       */
       
-      node.visible = isVisible;
+      return node.setVisibility(isVisible);
 //      if(isVisible === false)
 //          node.tMat.setDebug(1);
 //      else
 //          node.tMat.setDebug(0);
 //   
-      
-      return node.visible;
       
     };
 

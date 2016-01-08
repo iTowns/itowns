@@ -102,7 +102,7 @@ define('Core/Commander/Providers/tileGlobeProvider',[
                    
         tile.position.copy(translate);
                 
-        tile.visible = false;
+        tile.setVisibility(false);
         
         parent.add(tile);
                         
