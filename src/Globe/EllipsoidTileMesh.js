@@ -52,7 +52,7 @@ define('Globe/EllipsoidTileMesh',[
         this.maxChildren    = 4;
         
         var showHelper = true;
-        //showHelper = false;
+        showHelper = false;
         
         if(showHelper && this.level > 2)
         {

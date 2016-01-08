@@ -119,9 +119,9 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
         
         var distance = camera.camera3D.position.length();
                 
-        this.fogDistance = this.mfogDistance * Math.pow((distance-6300000)/25000000,1.6);
-                       
+        this.fogDistance = this.mfogDistance * Math.pow((distance-6300000)/25000000,1.6);                       
         this.nodeProcess.preHorizonCulling(camera);
+        
         for(var i = 0;i<tree.children.length;i++)
             this._browse(tree.children[i],camera,optional);
     };

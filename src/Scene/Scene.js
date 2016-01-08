@@ -103,6 +103,8 @@ define('Scene/Scene',[
      */
     Scene.prototype.sceneProcess = function(run){
         
+        //console.log(this.managerCommand.queueAsync.length);
+        
         if(this.layers[0] !== undefined  && this.currentCamera() !== undefined )
         {                        
         
