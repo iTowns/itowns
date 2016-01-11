@@ -18,7 +18,7 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','GlobeControls','Renderer/C
         THREE.ShaderChunk[ "logdepthbuf_pars_vertex" ];
 
         this.debug      = false;
-        //this.debug      = true;
+        this.debug      = true;
         this.scene      = undefined;
         this.scene3D    = new THREE.Scene();               
         this.width      = this.debug ? window.innerWidth * 0.5 : window.innerWidth;
@@ -196,13 +196,6 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','GlobeControls','Renderer/C
              
              if(node.setRTC)                
                 node.traverseVisible(rtc === 1 ? this.rtcOn.bind(this) : this.rtcOff.bind(this));
-                
-             if (node.material && node.material.uniforms && node.material.uniforms.RTC.value !== rtc )
-             {
-                
-                    node.material.uniforms.RTC.value = rtc;                    
-                //    node.material.needsUpdate = true;
-             }
          }
         
     };
