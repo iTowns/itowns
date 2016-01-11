@@ -98,7 +98,8 @@ define('Scene/Scene',[
     };
 
     /**
-     * @documentation: 
+     * 
+     * @param {type} run
      * @returns {undefined}
      */
     Scene.prototype.sceneProcess = function(run){
