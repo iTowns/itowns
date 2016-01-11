@@ -25,6 +25,7 @@ const float poleNord    =  84.0 / 180.0 * PI;
 
 uniform sampler2D   dTextures_00[1];
 uniform sampler2D   dTextures_01[TEX_UNITS];
+uniform int         RTC;
 uniform int         nbTextures_00;
 uniform int         nbTextures_01;
 uniform float       bLatitude;
@@ -48,7 +49,7 @@ void main() {
     float sLine = 0.0015;
     if(vUv.x < sLine || vUv.x > 1.0 - sLine || vUv.y < sLine || vUv.y > 1.0 - sLine)
         gl_FragColor = vec4( 1.0, 0.0, 0.0, 1.0);
-    else               
+    else                   
     */
     if(latitude < poleSud )
         gl_FragColor = vec4( 0.85, 0.85, 0.91, 1.0);
@@ -85,8 +86,11 @@ void main() {
             if (x == idd)
             {                        
                 vec4 diffuseColor  = texture2D( dTextures_01[x], uvO ) ;
+                if(RTC == 1)
+                    gl_FragColor = mix(fogColor, diffuseColor, fog );
+                else
+                    gl_FragColor = diffuseColor;
 
-                gl_FragColor = mix(fogColor, diffuseColor, fog );
                 break;
             }
     }
