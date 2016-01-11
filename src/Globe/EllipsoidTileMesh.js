@@ -54,7 +54,7 @@ define('Globe/EllipsoidTileMesh',[
         var showHelper = true;
         showHelper = false;
         
-        if(showHelper && this.level > 2)
+        if(showHelper && this.level >= 2)
         {
             
             //this.helper  = new THREE.SphereHelper(this.geometry.boundingSphere.radius);

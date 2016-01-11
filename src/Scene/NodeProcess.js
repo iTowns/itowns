@@ -173,7 +173,9 @@ define('Scene/NodeProcess',['Scene/BoudingBox','Renderer/Camera','Core/Math/Math
       var isVisible = false;
       for (var i = 0, max = points.length; i < max; i++) 
       {          
-            if(!this.pointHorizonCulling(points[i].add(center)))
+            var point = points[i].add(center);
+            
+            if(!this.pointHorizonCulling(point))
             {
                 isVisible = true;            
                 break;
@@ -201,6 +203,7 @@ define('Scene/NodeProcess',['Scene/BoudingBox','Renderer/Camera','Core/Math/Math
 //   
       
     };
+
 
     return NodeProcess;
 
