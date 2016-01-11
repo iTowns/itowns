@@ -83,6 +83,14 @@ define('Globe/Globe',[
 
     };
     
+    Globe.prototype.showAtmosphere = function(show)
+    {
+         if(this.atmosphere !== undefined)
+             this.atmosphere.visible = show;
+
+    };
+    
+    
     Globe.prototype.ellipsoid = function()
     {
         return this.terrain.interCommand.managerCommands.providers[0].ellipsoid;

@@ -4,7 +4,7 @@
 * Description: 3DEngine est l'interface avec le framework webGL.
 */
 
-define('Renderer/c3DEngine',['THREE','OrbitControls','GlobeControls','Renderer/Camera'], function(THREE,OrbitControls,GlobeControls,Camera){
+define('Renderer/c3DEngine',['THREE','OrbitControls','GlobeControls','Renderer/Camera','Globe/Atmosphere'], function(THREE,OrbitControls,GlobeControls,Camera,Atmosphere){
 
     var instance3DEngine = null;
 
@@ -126,7 +126,7 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','GlobeControls','Renderer/C
         
         // if near is too small --> bug no camera helper
         this.camera.camera3D.near = this.size * 2.333;//Math.max(15.0,0.000002352 * this.size);
-        this.camera.camera3D.far  = this.size * 80;
+        this.camera.camera3D.far  = this.size * 10;
         this.camera.camera3D.updateProjectionMatrix();
         
         if(this.debug)
@@ -196,6 +196,11 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','GlobeControls','Renderer/C
              
              if(node.setRTC)                
                 node.traverseVisible(rtc === 1 ? this.rtcOn.bind(this) : this.rtcOff.bind(this));
+             if(node instanceof Atmosphere)
+             {                 
+                node.visible  = (rtc === 1);
+             }
+                
          }
         
     };
