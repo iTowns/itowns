@@ -158,15 +158,9 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
                 childrenCleaned++;                        
         }
         
-        if(childrenCleaned === 4 )
-        {                        
-            while(node.children.length>0)
-            {
-                var child = node.children[0];
-                node.remove(child);
-                child.dispose();              
-            }
-            node.material.visible = true;
+        if(childrenCleaned === node.children.length)
+        {                         
+            node.disposeChildren();
             return true;
         }else         
             return false;
