@@ -139,12 +139,12 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
         if(this.processNode(node,camera,optional))       
             for(var i = 0;i<node.children.length;i++)
                 this._browse(node.children[i],camera,optional);
-//        else
-//            this._clean(node,node.level +2);
+        else
+            this._clean(node,node.level +2,camera);
 
     };
     
-    BrowseTree.prototype._clean = function(node,level)
+    BrowseTree.prototype._clean = function(node,level,camera)
     {
         if( node.children.length === 0)
             return true;
@@ -154,20 +154,17 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
         {
             var child = node.children[i];
             
-            //console.log(this.date.getTime() - child.timeInvisible);
-            if(this._clean(child,level) && (new Date().getTime() - child.timeInvisible) > 2000 && child.level > 2 && child.level >= level && child.children.length ===0)
+            if(this._clean(child,level,camera) && ((child.level >= level && child.children.length ===0 && !this.nodeProcess.SSE(child,camera)) || node.level ===2 )) 
                 childrenCleaned++;                        
         }
         
         if(childrenCleaned === 4 )
-        {            
-            
+        {                        
             while(node.children.length>0)
             {
                 var child = node.children[0];
                 node.remove(child);
-                child.dispose();                
-                this.tree.nbNodes--;
+                child.dispose();              
             }
             node.material.visible = true;
             return true;
