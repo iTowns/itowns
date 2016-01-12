@@ -11,6 +11,8 @@
 
 #endif
 
+
+
 //uniform sampler2D   dTextures_00[1];
 
 const int   TEX_UNITS   = 8;
@@ -33,6 +35,8 @@ uniform int         debug;
 varying vec2        vUv;
 varying float       vUv2;
 
+//#define BORDERLINE
+
 void main() {
  
     #if defined(USE_LOGDEPTHBUF) && defined(USE_LOGDEPTHBUF_EXT)
@@ -43,12 +47,12 @@ void main() {
 
     float latitude  = bLatitude + periArcLati*(1.0-vUv.y);
    
-    /*
+    #if defined(BORDERLINE)
     float sLine = 0.002;
     if(vUv.x < sLine || vUv.x > 1.0 - sLine || vUv.y < sLine || vUv.y > 1.0 - sLine)
         gl_FragColor = vec4( 1.0, 0.0, 0.0, 1.0);
-    else                   
-    */
+    else                       
+    #endif
     if(latitude < poleSud )
         gl_FragColor = vec4( 0.85, 0.85, 0.91, 1.0);
     else

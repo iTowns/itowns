@@ -19,6 +19,7 @@ define('Core/Commander/ManagerCommands',
             'Core/Commander/Interfaces/EventsManager',
             'PriorityQueue',
             'when',
+            'parallel',
             'Globe/EllipsoidTileMesh'
         ], 
         function(
@@ -26,6 +27,7 @@ define('Core/Commander/ManagerCommands',
                 EventsManager,
                 PriorityQueue,
                 when,
+                parallel,
                 EllipsoidTileMesh
         ){
 
@@ -69,29 +71,41 @@ define('Core/Commander/ManagerCommands',
         
     ManagerCommands.prototype.runAllCommands = function()
     {  
-        //console.log(this.queueAsync.length);
+       
         if(this.queueAsync.length === 0)
+
             return;
-        
-        return this.providers[0].get(this.deQueue()).then(function()
-        {              
-            if(this.queueAsync.length%2 === 0)            
-                
-                this.scene.updateScene3D(false);
+          
+        return when.all(this.arrayDeQueue(8)).then(function()
+        {                       
+//            this.scene.updateScene3D();            
+            this.runAllCommands();  
             
-            this.runAllCommands();            
-            
-            if(this.queueAsync.length === 0)
-                this.scene.updateScene3D();
                                                    
-        }.bind(this));                         
+        }.bind(this)); 
+        
+//                            
+    };
+    
+    ManagerCommands.prototype.arrayDeQueue = function(number) 
+    {
+        var nT = number === undefined ?  this.queueAsync.length : number;
+        
+        var arrayTasks = [];
+        
+        while(this.queueAsync.length > 0 &&  arrayTasks.length < nT)   
+        {
+            arrayTasks.push(this.providers[0].get(this.deQueue()));
+        }
+        
+        return arrayTasks;
     };
     
     /**
     */
     ManagerCommands.prototype.deQueue = function()        
     {        
-      
+        
         while(this.queueAsync.length > 0 )        
         {
             var com     = this.queueAsync.peek();
@@ -131,16 +145,6 @@ define('Core/Commander/ManagerCommands',
         //TODO: Implement Me 
         this.eventsManager.wait();
     };
-
-
-    /**
-    */
-    ManagerCommands.prototype.process = function(){
-        //TODO: Implement Me 
-        if(this.scene !== undefined)
-            this.scene.renderScene3D();
-    };
-
 
     /**
     */

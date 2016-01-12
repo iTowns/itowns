@@ -106,7 +106,7 @@ define('Core/Commander/Providers/tileGlobeProvider',[
         
         parent.add(tile);
                         
-        return this.providerWMTS.getTextureBil(cooWMTS).then(function(terrain)
+        return this.providerWMTS.getTextureBil(tile.useParent() ? undefined : cooWMTS).then(function(terrain)
         {                                      
             this.setTerrain(terrain);
             

@@ -14,7 +14,8 @@ requirejs.config({
         'text'          : "ThirdParty/text",
         'THREE'         : "https://rawgit.com/mrdoob/three.js/master/build/three.min",
         'PriorityQueue' : "ThirdParty/PriorityQueue",
-        'when'          : 'ThirdParty/when',        
+        'when'          : 'ThirdParty/when',
+        'parallel'          : 'ThirdParty/parallel',        
         'OrbitControls' : "Renderer/Three/OrbitControls",
         'GlobeControls' : "Renderer/ThreeExtented/GlobeControls",
         'FlyControls'   : "Renderer/Three/FlyControls",
@@ -42,6 +43,9 @@ requirejs.config({
         },
         when: {            
             exports: 'when'
+        },
+        parallel: {            
+            deps: ['when']
         },
         OrbitControls: {
             deps: ['THREE']
