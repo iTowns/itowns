@@ -97,7 +97,7 @@ define('Renderer/GlobeMaterial',
                 this.Textures_00[i].needsUpdate = true;
         
         for (var i = 0, max = this.Textures_01.length; i < max; i++) 
-            if(this.Textures_01[i].image !== undefined)
+            if(this.Textures_01[i] && this.Textures_01[i].image !== undefined)
                 this.Textures_01[i].needsUpdate = true;
                 
     };
