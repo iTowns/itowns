@@ -68,14 +68,14 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
                         node.setMaterialVisibility(true);
                         this.uniformsProcess(node,camera);                      
                         node.setChildrenVisibility(false);
-
+                        
                         return false;                            
                     }                                
                 }
             }
 
             if(node.visible  && node.material.visible)
-                this.uniformsProcess(node,camera);  
+                this.uniformsProcess(node,camera);                       
                                    
             return node.visible;
         }
@@ -153,8 +153,8 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
         for(var i = 0;i<node.children.length;i++)
         {
             var child = node.children[i];
-            
-            if(this._clean(child,level,camera) && ((child.level >= level && child.children.length ===0 && !this.nodeProcess.SSE(child,camera)) || node.level ===2 )) 
+            // TODO node.wait === true ---> delete child and switch to node.wait = false
+            if(this._clean(child,level,camera) && ((child.level >= level && child.children.length ===0 && !this.nodeProcess.SSE(child,camera) && !node.wait ) || node.level ===2 )) 
                 childrenCleaned++;                        
         }
         
