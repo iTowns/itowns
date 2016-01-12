@@ -12,8 +12,8 @@ requirejs.config({
     paths : {
        
         'text'          : "ThirdParty/text",
-        'THREE'         : "https://rawgit.com/mrdoob/three.js/master/build/three.min",
-        //'THREE'         : "https://rawgit.com/mrdoob/three.js/dev/build/three.min",
+        //'THREE'         : "https://rawgit.com/mrdoob/three.js/master/build/three.min",
+        'THREE'         : "https://rawgit.com/mrdoob/three.js/dev/build/three.min",
         'PriorityQueue' : "ThirdParty/PriorityQueue",
         'when'          : 'ThirdParty/when',
         'parallel'          : 'ThirdParty/parallel',        
