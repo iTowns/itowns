@@ -51,6 +51,19 @@ define('Globe/EllipsoidTileMesh',[
         this.timeInvisible  = 0;
         this.maxChildren    = 4;
         
+        var  groupTerrain   = [14,11,7,3];        
+        this.levelTerrain   = this.level;
+               
+        for (var i = 0; i < groupTerrain.length;i++)
+        {
+            var gLev = groupTerrain[i];
+            if(this.level >= gLev)
+            {
+                this.levelTerrain = gLev;
+                break;
+            }
+        }
+       
         var showHelper = true;
         showHelper = false;
         
@@ -60,7 +73,7 @@ define('Globe/EllipsoidTileMesh',[
             //this.helper  = new THREE.SphereHelper(this.geometry.boundingSphere.radius);
             
             //var text = 'z(' + this.level.toString() + '),r(' + cooWMTS.row + '),c(' + cooWMTS.col + ')';
-            var text = this.level.toString();
+            var text = (this.level + 1).toString();
             
             this.helper  = new THREE.OBBHelper(this.geometry.OBB,text);
             
@@ -87,6 +100,11 @@ define('Globe/EllipsoidTileMesh',[
         this.geometry = null;       
         this.material = null;        
     };
+     
+    EllipsoidTileMesh.prototype.useParent = function()
+    {
+        return this.level !== this.levelTerrain;
+    };
     
     EllipsoidTileMesh.prototype.setRTC = function(enable)
     {           
@@ -102,6 +120,11 @@ define('Globe/EllipsoidTileMesh',[
     {                 
         this.material.setMatrixRTC(rtc);
     };
+    
+    EllipsoidTileMesh.prototype.groupLevel = function()
+    {                 
+        
+    };
         
     EllipsoidTileMesh.prototype.setTerrain = function(terrain)
     {         
@@ -112,7 +135,7 @@ define('Globe/EllipsoidTileMesh',[
             texture = -1;
         else if(terrain === - 2)
         {
-            var parentBil   = this.getParentLevel(14);                                
+            var parentBil   = this.getParentLevel(this.levelTerrain);                                
             pitScale        = parentBil.bbox.pitScale(this.bbox);                
             texture         = parentBil.material.Textures_00[0];
             

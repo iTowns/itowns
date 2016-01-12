@@ -114,7 +114,8 @@ define('Scene/Scene',[
             if(run)
                 this.managerCommand.runAllCommands();
             
-            this.renderScene3D();            
+            //this.renderScene3D();            
+            this.updateScene3D();            
         } 
         
     };
@@ -152,7 +153,7 @@ define('Scene/Scene',[
     
     Scene.prototype.wait = function(run){
         
-        var waitTime = 100;
+        var waitTime = 20;
         
         if(run === undefined)
             run = true;
@@ -171,6 +172,7 @@ define('Scene/Scene',[
             this.timer = window.setTimeout(this.sceneProcess.bind(this),waitTime,run); 
         }
         
+   
     };
 
     /**

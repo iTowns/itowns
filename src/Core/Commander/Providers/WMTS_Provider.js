@@ -55,12 +55,7 @@ define('Core/Commander/Providers/WMTS_Provider',[
      */
     WMTS_Provider.prototype.url = function(coWMTS)
     {
-        
-        //var key    = "wmybzw30d6zg563hjlq8eeqb";
-        //var key    = coWMTS.zoom > 11 ? "va5orxd0pgzvq3jxutqfuy0b" : "wmybzw30d6zg563hjlq8eeqb"; // clef pro va5orxd0pgzvq3jxutqfuy0b
-        
-        var key    = "va5orxd0pgzvq3jxutqfuy0b";
-        
+        var key    = "va5orxd0pgzvq3jxutqfuy0b";        
         var layer  = coWMTS.zoom > 11 ? "ELEVATION.ELEVATIONGRIDCOVERAGE.HIGHRES" : "ELEVATION.ELEVATIONGRIDCOVERAGE";        
         
         var url = "http://wxs.ign.fr/" + key + "/geoportail/wmts?LAYER="+ layer +
@@ -77,9 +72,8 @@ define('Core/Commander/Providers/WMTS_Provider',[
      */
     WMTS_Provider.prototype.urlOrtho = function(coWMTS)
     {
-        //var key    = "i9dpl8xge3jk0a0taex1qrhd"; 
-        var key    = "va5orxd0pgzvq3jxutqfuy0b"; // clef pro
         
+        var key    = "va5orxd0pgzvq3jxutqfuy0b";         
         var layer  = "ORTHOIMAGERY.ORTHOPHOTOS";
         //var layer  = "GEOGRAPHICALGRIDSYSTEMS.MAPS";
                 
@@ -97,28 +91,22 @@ define('Core/Commander/Providers/WMTS_Provider',[
      */
     WMTS_Provider.prototype.getTextureBil = function(coWMTS)
     {
-       //return when(-1);
+        
+        if(coWMTS === undefined)
+            return when(-2);
        
         var url = this.url(coWMTS);            
         
         var textureCache = this.cache.getRessource(url);
         
         if(textureCache !== undefined)
-        {
-//            if (textureCache !== -1)
-//                textureCache.needsUpdate = true;
             return when(textureCache);
-        }
         
         if(coWMTS.zoom <= 2 )
         {
             var texture = -1;
             this.cache.addRessource(url,texture);
             return when(texture);
-        }
-        else if(coWMTS.zoom > 14)
-        {
-            return when(-2);
         }
         
         return this._IoDriver.read(url).then(function(result)
@@ -128,9 +116,7 @@ define('Core/Commander/Providers/WMTS_Provider',[
                     result.texture = new THREE.DataTexture(result.floatArray,256,256,THREE.AlphaFormat,THREE.FloatType);   
                     result.texture.generateMipmaps  = false;
                     result.texture.magFilter        = THREE.LinearFilter;
-                    result.texture.minFilter        = THREE.LinearFilter;
-                    //result.texture.needsUpdate = true;
-                                        
+                    result.texture.minFilter        = THREE.LinearFilter;                                    
                     this.cache.addRessource(url,result);
                     return result;
                 }

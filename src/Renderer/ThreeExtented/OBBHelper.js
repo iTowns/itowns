@@ -47,7 +47,7 @@ THREE.OBBHelper = function (OBB,text)
         
     this.textMesh.translateX(-sizeX*0.45);
     this.textMesh.translateY(-sizeY*0.45);
-    this.textMesh.translateZ(sizeZ*0.5);
+    this.textMesh.translateZ(sizeZ*0.52);
     
     this.add(this.textMesh);
             
