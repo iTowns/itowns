@@ -116,6 +116,17 @@ define('Globe/EllipsoidTileMesh',[
          this.material.visible = true;
     };
     
+    EllipsoidTileMesh.prototype.incoherent = function()
+    {
+        var nChildren = this.children.length;
+        
+        if(nChildren > 0 && nChildren < this.maxChildren)
+            console.log('incoherent');
+        
+        if(nChildren > 0  && nChildren < this.maxChildren && this.wait === true)
+            console.log('incoherent');
+    };
+    
     EllipsoidTileMesh.prototype.useParent = function()
     {
         return this.level !== this.levelTerrain;
