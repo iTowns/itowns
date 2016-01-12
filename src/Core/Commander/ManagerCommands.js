@@ -79,12 +79,9 @@ define('Core/Commander/ManagerCommands',
         return when.all(this.arrayDeQueue(8)).then(function()
         {                       
 //            this.scene.updateScene3D();            
-            this.runAllCommands();  
-            
+            this.runAllCommands();              
                                                    
-        }.bind(this)); 
-        
-//                            
+        }.bind(this));                                    
     };
     
     ManagerCommands.prototype.arrayDeQueue = function(number) 

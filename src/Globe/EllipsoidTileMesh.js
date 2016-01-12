@@ -100,7 +100,22 @@ define('Globe/EllipsoidTileMesh',[
         this.geometry = null;       
         this.material = null;        
     };
-     
+    
+    /**
+    * 
+
+     * @returns {undefined}     */
+    EllipsoidTileMesh.prototype.disposeChildren = function()
+    {
+        while(this.children.length>0)
+        {
+            var child = this.children[0];
+            this.remove(child);
+            child.dispose();              
+        }
+         this.material.visible = true;
+    };
+    
     EllipsoidTileMesh.prototype.useParent = function()
     {
         return this.level !== this.levelTerrain;
