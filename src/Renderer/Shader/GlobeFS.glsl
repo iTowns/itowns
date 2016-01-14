@@ -26,6 +26,9 @@ const float poleNord    =  84.0 / 180.0 * PI;
 uniform sampler2D   dTextures_00[1];
 uniform sampler2D   dTextures_01[TEX_UNITS];
 uniform int         RTC;
+uniform int         ddepth;
+uniform float       dfar;
+uniform float       dnear;
 uniform int         nbTextures_00;
 uniform int         nbTextures_01;
 uniform float       bLatitude;
@@ -47,6 +50,13 @@ void main() {
 
     float latitude  = bLatitude + periArcLati*(1.0-vUv.y);
    
+    if(ddepth == 1)   
+    {
+        float depth = gl_FragDepthEXT / gl_FragCoord.w;  
+        float color = 1.0-(depth - dnear)/dfar; 
+        gl_FragColor = vec4( color, color, color, 1.0);
+
+    }else
     #if defined(BORDERLINE)
     float sLine = 0.002;
     if(vUv.x < sLine || vUv.x > 1.0 - sLine || vUv.y < sLine || vUv.y > 1.0 - sLine)

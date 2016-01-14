@@ -75,7 +75,7 @@ define('Core/Commander/Providers/WMTS_Provider',[
         
         var key    = "va5orxd0pgzvq3jxutqfuy0b";         
         var layer  = "ORTHOIMAGERY.ORTHOPHOTOS";
-        //var layer  = "GEOGRAPHICALGRIDSYSTEMS.MAPS";
+        //layer  = "GEOGRAPHICALGRIDSYSTEMS.MAPS";
                 
         var url = "http://wxs.ign.fr/" + key + "/geoportail/wmts?LAYER="+ layer +
             "&FORMAT=image/jpeg&SERVICE=WMTS&VERSION=1.0.0"+

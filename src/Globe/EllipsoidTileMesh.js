@@ -137,6 +137,11 @@ define('Globe/EllipsoidTileMesh',[
         this.material.setRTC(enable);
     };
     
+    EllipsoidTileMesh.prototype.setDepth = function(enable,near,far)
+    {           
+        this.material.setDepth(enable,near,far);
+    };
+    
      EllipsoidTileMesh.prototype.setFog = function(fog)
     {                 
         this.material.setFogDistance(fog);

@@ -35,7 +35,10 @@ define('Renderer/GlobeMaterial',
         this.uniforms.nbTextures_01   = {type: "i" , value: 0} ;            
         this.uniforms.bLatitude       = {type: "f",  value: bbox.minCarto.latitude};
         this.uniforms.pitScale        = {type: "v3", value: new THREE.Vector3(0.0,0.0,1.0)};
-        this.uniforms.periArcLati     = {type: "f" , value: Math.abs(bbox.maxCarto.latitude - bbox.minCarto.latitude)};            
+        this.uniforms.periArcLati     = {type: "f" , value: Math.abs(bbox.maxCarto.latitude - bbox.minCarto.latitude)};
+        this.uniforms.ddepth          = {type: "i" , value: 0} ;
+        this.uniforms.dfar            = {type: "f" , value: 0} ;
+        this.uniforms.dnear           = {type: "f" , value: 0} ;
 
         this.wireframe = false;
         //this.wireframe = true;
@@ -100,6 +103,17 @@ define('Renderer/GlobeMaterial',
             if(this.Textures_01[i] && this.Textures_01[i].image !== undefined)
                 this.Textures_01[i].needsUpdate = true;
                 
+    };
+    
+    BasicMaterial.prototype.setDepth = function(enable,near,far)
+    {
+        this.uniforms.ddepth.value = enable;
+        
+        if(near)
+            this.uniforms.dnear.value = near;
+        
+        if(far)
+            this.uniforms.dfar.value = far;
     };
     
     return GlobeMaterial;
