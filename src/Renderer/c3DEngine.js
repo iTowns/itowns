@@ -4,7 +4,7 @@
 * Description: 3DEngine est l'interface avec le framework webGL.
 */
 
-define('Renderer/c3DEngine',['THREE','OrbitControls','GlobeControls','Renderer/Camera','Globe/Atmosphere'], function(THREE,OrbitControls,GlobeControls,Camera,Atmosphere){
+define('Renderer/c3DEngine',['THREE','OrbitControls','GlobeControls','Renderer/Camera','Globe/Atmosphere','Renderer/DepthMaterial'], function(THREE,OrbitControls,GlobeControls,Camera,Atmosphere,DepthMaterial){
 
     var instance3DEngine = null;
 
@@ -29,11 +29,28 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','GlobeControls','Renderer/C
         this.camera     = undefined;
         this.camDebug   = undefined;
         this.size       = 1.0;
+        this.dnear      = 0.0;
+        this.dfar       = 0.0;
+        
+        
+        this.cc         = 0;
                 
         this.initCamera();
                        
         this.renderScene = function(){
                          
+            this.cc++;
+                        
+            if(this.cc === 400 && false)
+            {
+                this.setDepth(1);
+                var buffer  = this.renderTobuffer(0,0,this.width, this.height);                
+                var image   = this.bufferToImage(buffer,this.width, this.height);
+                this.setDepth(0);
+                
+            }
+           
+            
             this.renderer.clear();            
             this.renderer.setViewport( 0, 0, this.width, this.height );            
             this.renderer.render( this.scene3D, this.camera.camera3D);                       
@@ -204,6 +221,26 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','GlobeControls','Renderer/C
         
     };
     
+    c3DEngine.prototype.setDepth = function(depth)
+    {        
+        var l = this.camera.position().length ();
+        this.dnear = Math.abs(l - this.size)*0.8;
+        this.dfar  = Math.sqrt(l*l - this.size*this.size) - this.dnear;
+        //console.log(this.dnear  + '/' + this.dfar);
+        for (var x = 0; x < this.scene3D.children.length; x++)
+        {
+            var node = this.scene3D.children[x];
+            
+            if(node.setDepth)         
+            {              
+               node.traverseVisible(depth === 1 ? this.depthOn.bind(this) : this.depthOff.bind(this));
+            }
+            else if(node instanceof Atmosphere)                          
+               node.visible  = (depth === 0);
+
+        }        
+    };
+    
     c3DEngine.prototype.rtcOn = function(obj3D)
     {
           obj3D.setRTC(1);
@@ -213,7 +250,18 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','GlobeControls','Renderer/C
     {
           obj3D.setRTC(0);
     };
-       
+    
+    c3DEngine.prototype.depthOn = function(obj3D)
+    {
+        
+        obj3D.setDepth(1,this.dnear,this.dfar);
+    };
+    
+    c3DEngine.prototype.depthOff = function(obj3D)
+    {
+        obj3D.setDepth(0);
+    };
+        
     /**
     */
     c3DEngine.prototype.style2Engine = function(){
@@ -229,8 +277,8 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','GlobeControls','Renderer/C
 
     c3DEngine.prototype.initControls = function(size){
         
-        this.controls   = new THREE.OrbitControls( this.camera.camera3D,this.renderer.domElement );        
-        //this.controls   = new THREE.GlobeControls( this.camera.camera3D,this.renderer.domElement );
+        //this.controls   = new THREE.OrbitControls( this.camera.camera3D,this.renderer.domElement );        
+        this.controls   = new THREE.GlobeControls( this.camera.camera3D,this.renderer.domElement );
         
         this.controls.target        = new THREE.Vector3(0,0,0);
         this.controls.damping       = 0.1;
@@ -295,6 +343,81 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','GlobeControls','Renderer/C
 
         return this.renderer;
     };
+           
+    c3DEngine.prototype.renderTobuffer = function(x,y, width, height) {
+        
+        
+        // TODO Deallocate render texture
+        var pickingTexture = new THREE.WebGLRenderTarget( width, height );
+        pickingTexture.texture.minFilter        = THREE.LinearFilter;
+        pickingTexture.texture.generateMipmaps  = false;
+        //pickingTexture.stencilBuffer            = false;
+        //pickingTexture.depthBuffer              = true;
+        //console.log('pickingTexture');
+        this.renderer.clear();            
+        this.renderer.setViewport( x, y, width, height );
+        this.renderer.render( this.scene3D, this.camera.camera3D, pickingTexture ,true);
+   
+        var pixelBuffer = new Uint8Array( width * height * 4 );
+	
+	this.renderer.readRenderTargetPixels(pickingTexture, x,y, width, height , pixelBuffer);
+        
+        return pixelBuffer;
+    };
+    
+    c3DEngine.prototype.bufferToImage = function(pixelBuffer, width, height) {
+        
+        var canvas = document.createElement("canvas");
+        var ctx = canvas.getContext("2d");
+
+        // size the canvas to your desired image
+        canvas.width    = width;
+        canvas.height   = height;
+        
+        var imgData = ctx.getImageData(0, 0, width, height);
+        imgData.data.set(pixelBuffer);
+
+        ctx.putImageData(imgData, 0, 0);
+
+        // create a new img object
+        var image = new Image();
+
+        // set the img.src to the canvas data url
+        image.src = canvas.toDataURL();
+        
+        return image;
+        
+    };
+    
+    /*
+    function createImageFromTexture(gl, texture, width, height) {
+    // Create a framebuffer backed by the texture
+    var framebuffer = gl.createFramebuffer();
+    gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+
+    // Read the contents of the framebuffer
+    var data = new Uint8Array(width * height * 4);
+    gl.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, data);
+
+    gl.deleteFramebuffer(framebuffer);
+
+    // Create a 2D canvas to store the result 
+    var canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    var context = canvas.getContext('2d');
+
+    // Copy the pixels to a 2D canvas
+    var imageData = context.createImageData(width, height);
+    imageData.data.set(data);
+    context.putImageData(imageData, 0, 0);
+
+    var img = new Image();
+    img.src = canvas.toDataURL();
+    return img;
+}
+     */
          
 
     return function(scene){

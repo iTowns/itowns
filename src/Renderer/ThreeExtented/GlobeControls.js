@@ -481,7 +481,7 @@ THREE.GlobeControls = function ( object, domElement ) {
 		if ( event.button === scope.mouseButtons.ORBIT ) {
 			if ( scope.noRotate === true ) return;
 
-			state = STATE.ROTATE;
+			state = STATE.ROTATE;                       
 
 			rotateStart.set( event.clientX, event.clientY );
 

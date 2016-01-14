@@ -16,7 +16,7 @@ requirejs.config({
         'THREE'         : "https://rawgit.com/mrdoob/three.js/dev/build/three.min",
         'PriorityQueue' : "ThirdParty/PriorityQueue",
         'when'          : 'ThirdParty/when',
-        'parallel'          : 'ThirdParty/parallel',        
+        'parallel'      : 'ThirdParty/parallel',        
         'OrbitControls' : "Renderer/Three/OrbitControls",
         'GlobeControls' : "Renderer/ThreeExtented/GlobeControls",
         'FlyControls'   : "Renderer/Three/FlyControls",

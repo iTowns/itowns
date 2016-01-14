@@ -119,7 +119,8 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
         
         var distance = camera.camera3D.position.length();
                 
-        this.fogDistance = this.mfogDistance * Math.pow((distance-6300000)/25000000,1.6);                       
+        this.fogDistance = this.mfogDistance * Math.pow((distance-6300000)/25000000,1.6);                
+        
         this.nodeProcess.preHorizonCulling(camera);
         
         for(var i = 0;i<tree.children.length;i++)
@@ -165,40 +166,6 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
         }else         
             return false;
         
-    };
-    
-    /**
-     * TODO : to delete
-     * @documentation:add oriented bouding box of node in scene
-     * @param {type} node
-     * @returns {undefined}
-     */
-    BrowseTree.prototype.bBoxHelper = function(node)
-    {          
-        if(node instanceof EllipsoidTileMesh && node.level > 2  )
-        {                
-            var obb     = new THREE.OBBHelper(node.geometry.OBB);
-            obb.visible = false;
-            
-            obb.translateZ(node.absoluteCenter.length());
-            this.scene.scene3D().add(obb);           
-        }
-    };
-    
-    /**
-     * TODO : to delete 
-     * @param {type} node
-     * @returns {BrowseTree_L7.BrowseTree.prototype.addOBBoxHelper.bboxH}
-     */
-    BrowseTree.prototype.addOBBoxHelper = function(node){
-             
-        var bboxH = this.bBoxHelper(node);
-            
-        for(var i = 0;i<node.children.length;i++)
-                this.addOBBoxHelper(node.children[i]);
-            
-        return bboxH;
-
     };
     
     return BrowseTree;
