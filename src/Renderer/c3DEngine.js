@@ -4,7 +4,21 @@
 * Description: 3DEngine est l'interface avec le framework webGL.
 */
 
-define('Renderer/c3DEngine',['THREE','OrbitControls','GlobeControls','Renderer/Camera','Globe/Atmosphere','Renderer/DepthMaterial'], function(THREE,OrbitControls,GlobeControls,Camera,Atmosphere,DepthMaterial){
+define('Renderer/c3DEngine',[
+    'THREE',
+    'OrbitControls',
+    'GlobeControls',
+    'Renderer/Camera',
+    'Globe/Atmosphere',
+    'Renderer/DepthMaterial',
+    'Renderer/BasicMaterial'], function(
+        THREE,
+        OrbitControls,
+        GlobeControls,
+        Camera,
+        Atmosphere,
+        DepthMaterial,
+        BasicMaterial){
 
     var instance3DEngine = null;
 
@@ -32,24 +46,48 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','GlobeControls','Renderer/C
         this.dnear      = 0.0;
         this.dfar       = 0.0;
         
-        
-        this.cc         = 0;
-                
         this.initCamera();
-                       
+        
+        var material    = new BasicMaterial(new THREE.Color(1,0,0));        
+        var geometry    = new THREE.SphereGeometry(1);  
+        
+        this.dummy      = new THREE.Mesh( geometry, material );        
+        this.dummy.material.setRTC(0);
+        
+        this.scene3D.add(this.dummy);
+
+        this.pickingTexture = new THREE.WebGLRenderTarget( this.width, this.height );
+        this.pickingTexture.texture.minFilter        = THREE.LinearFilter;
+        this.pickingTexture.texture.generateMipmaps  = false;
+        this.pickingTexture.texture.type             = THREE.FloatType;        
+        this.pickingTexture.depthBuffer              = true;
+          
         this.renderScene = function(){
-                         
-            this.cc++;
-                        
-            if(this.cc === 400 && false)
+                  
+            if(this.controls.click)
             {
+                
+                this.camera.camera3D.updateMatrixWorld(true);
                 this.setDepth(1);
-                var buffer  = this.renderTobuffer(0,0,this.width, this.height);                
-                var image   = this.bufferToImage(buffer,this.width, this.height);
+                this.controls.click = false;
+                this.dummy.visible  = false;  
+                //var ellipsoid = this.scene.layers[0].ellipsoid();
+                
+                var buffer      = this.renderTobuffer(this.controls.pointClick.x,this.height -  this.controls.pointClick.y,1,1);     
+                var glslPosition = new THREE.Vector3(buffer[0],buffer[1],buffer[2]);                                 
+                this.camera.camera3D.matrixWorldInverse.getInverse(this.camera.camera3D.matrixWorldInverse);            
+                var worldPosition = glslPosition.applyMatrix4( this.camera.camera3D.matrixWorldInverse); 
+              
+                this.dummy.position.copy(worldPosition);                
+                var size = worldPosition.sub(this.camera.camera3D.position).length()/600;                
+                this.dummy.scale.copy(new THREE.Vector3(size,size,size));
+                this.dummy.updateMatrix();
+                this.dummy.updateMatrixWorld();                
+              
                 this.setDepth(0);
+                this.dummy.visible  = true;
                 
             }
-           
             
             this.renderer.clear();            
             this.renderer.setViewport( 0, 0, this.width, this.height );            
@@ -142,6 +180,8 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','GlobeControls','Renderer/C
         
         this.camera.setPosition(position);
         
+        //this.camera.setPosition(new THREE.Vector3());
+        
         // if near is too small --> bug no camera helper
         this.camera.camera3D.near = this.size * 2.333;//Math.max(15.0,0.000002352 * this.size);
         this.camera.camera3D.far  = this.size * 10;
@@ -223,10 +263,7 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','GlobeControls','Renderer/C
     
     c3DEngine.prototype.setDepth = function(depth)
     {        
-        var l = this.camera.position().length ();
-        this.dnear = Math.abs(l - this.size)*0.8;
-        this.dfar  = Math.sqrt(l*l - this.size*this.size) - this.dnear;
-        //console.log(this.dnear  + '/' + this.dfar);
+
         for (var x = 0; x < this.scene3D.children.length; x++)
         {
             var node = this.scene3D.children[x];
@@ -254,7 +291,7 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','GlobeControls','Renderer/C
     c3DEngine.prototype.depthOn = function(obj3D)
     {
         
-        obj3D.setDepth(1,this.dnear,this.dfar);
+        obj3D.setDepth(1);
     };
     
     c3DEngine.prototype.depthOff = function(obj3D)
@@ -348,19 +385,14 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','GlobeControls','Renderer/C
         
         
         // TODO Deallocate render texture
-        var pickingTexture = new THREE.WebGLRenderTarget( width, height );
-        pickingTexture.texture.minFilter        = THREE.LinearFilter;
-        pickingTexture.texture.generateMipmaps  = false;
-        //pickingTexture.stencilBuffer            = false;
-        //pickingTexture.depthBuffer              = true;
-        //console.log('pickingTexture');
+    
         this.renderer.clear();            
-        this.renderer.setViewport( x, y, width, height );
-        this.renderer.render( this.scene3D, this.camera.camera3D, pickingTexture ,true);
+        this.renderer.setViewport( 0, 0, this.width, this.height );
+        this.renderer.render( this.scene3D, this.camera.camera3D, this.pickingTexture );
    
-        var pixelBuffer = new Uint8Array( width * height * 4 );
+        var pixelBuffer = new Float32Array( width * height * 4 );
 	
-	this.renderer.readRenderTargetPixels(pickingTexture, x,y, width, height , pixelBuffer);
+	this.renderer.readRenderTargetPixels(this.pickingTexture, x,y, width, height , pixelBuffer);
         
         return pixelBuffer;
     };
@@ -418,7 +450,8 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','GlobeControls','Renderer/C
     return img;
 }
      */
-         
+    
+    
 
     return function(scene){
         instance3DEngine = instance3DEngine || new c3DEngine(scene);

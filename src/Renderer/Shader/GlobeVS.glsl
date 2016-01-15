@@ -24,10 +24,12 @@ uniform int        RTC;
 uniform vec3       pitScale;
 uniform float      periArcLati;
 uniform mat4       mVPMatRTC;
+uniform int        cVertexPos;
 
 varying vec2    vUv;
 varying float   vUv2;
 varying vec3    vNormal;
+varying vec4    pos;
 
 void main() {
         
@@ -46,10 +48,13 @@ void main() {
         else
             vPosition = vec4( position ,1.0 );
 
+        if(cVertexPos == 1)
+            pos = modelViewMatrix * vPosition;
+
         mat4 projModelViewMatrix = (RTC == 0) ? projectionMatrix * modelViewMatrix : mVPMatRTC;
 
         gl_Position = projModelViewMatrix * vPosition;
-        
+                
         #ifdef USE_LOGDEPTHBUF
 
             gl_Position.z = log2(max( EPSILON, gl_Position.w + 1.0 )) * logDepthBufFC;
@@ -66,4 +71,5 @@ void main() {
 
         #endif
 
+        
 }   

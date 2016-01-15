@@ -97,11 +97,12 @@ define('Core/Commander/Providers/tileGlobeProvider',[
         
         var translate   = new THREE.Vector3();
              
-        if(parent.worldToLocal !== undefined )                
-            translate = parent.worldToLocal(tile.absoluteCenter.clone());
+        if(parent.worldToLocal)                
+            translate = parent.worldToLocal(tile.absoluteCenter.clone());                    
                    
-        tile.position.copy(translate);
-                
+        tile.position.copy(translate);        
+        tile.updateMatrixWorld();
+
         tile.setVisibility(false);
         
         parent.add(tile);
