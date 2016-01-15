@@ -60,6 +60,10 @@ THREE.GlobeControls = function ( object, domElement ) {
         this.theta  = null;
         this.phi    = null;
         
+        this.pointClick = new THREE.Vector2();
+        this.click      = false;
+        
+        
 	// How far you can orbit horizontally, upper and lower limits.
 	// If set, must be a sub-interval of the interval [ - Math.PI, Math.PI ].
 	this.minAzimuthAngle = - Infinity; // radians
@@ -432,7 +436,7 @@ THREE.GlobeControls = function ( object, domElement ) {
 
         this.getSpace = function () {
             return space;
-        }
+        };
 
 	this.reset = function () {
 
@@ -484,6 +488,15 @@ THREE.GlobeControls = function ( object, domElement ) {
 			state = STATE.ROTATE;                       
 
 			rotateStart.set( event.clientX, event.clientY );
+                        
+                        if(!scope.click)
+                        {
+                            scope.pointClick.x = event.clientX;
+                            scope.pointClick.y = event.clientY;
+                        
+                            scope.click        = true;
+                        }
+                        
 
 		} else if ( event.button === scope.mouseButtons.ZOOM ) {
 			if ( scope.noZoom === true ) return;
