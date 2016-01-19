@@ -24,7 +24,7 @@ define('Renderer/GlobeMaterial',
         this.Textures_00    = []; 
         this.Textures_00.push(new THREE.Texture()); 
         this.Textures_01    = [];        
-        this.Textures_01.push(new THREE.Texture());
+        //this.Textures_01.push(new THREE.Texture());
         
         this.vertexShader    = GlobeVS;
         this.fragmentShader  = GlobeFS;
@@ -102,6 +102,19 @@ define('Renderer/GlobeMaterial',
                 this.Textures_01[i].needsUpdate = true;
                 
     };
+    
+    GlobeMaterial.prototype.CheekNeedsUpdate = function()    
+    {
+        for (var i = 0, max = this.Textures_01.length; i < max; i++) 
+            if(this.Textures_01[i] && this.Textures_01[i].image !== undefined)
+            {
+                if(this.Textures_01[i].needsUpdate === true)
+                    return false;
+            }
+            
+        return true;    
+    };
+    
     
     GlobeMaterial.prototype.setPickingRender = function(enable)
     {

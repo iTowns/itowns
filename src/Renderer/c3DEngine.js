@@ -66,8 +66,8 @@ define('Renderer/c3DEngine',[
                   
             if(this.controls.click)
             {                                          
-                this.picking(this.controls.pointClick);                
-                this.controls.click = false;
+                this.controls.setPointGlobe(this.picking(this.controls.pointClick));                
+                this.controls.click      = false;                
             }
             
             this.renderer.clear();            
@@ -305,8 +305,8 @@ define('Renderer/c3DEngine',[
         this.controls.zoomSpeed     = 1.0;
         this.controls.minDistance   = size * 0.1;        
         this.controls.maxDistance   = size * 8.0;    
-        this.controls.keyPanSpeed   = 1.0;
-        this.controls.keyPanSpeed   = 0.0001;
+        //this.controls.keyPanSpeed   = 1.0;
+        this.controls.keyPanSpeed   = 0.01;
         this.controls.update();
     };
     
@@ -404,17 +404,18 @@ define('Renderer/c3DEngine',[
     {
     
         this.setPickingRender(1);        
-        this.dummy.visible  = false;  
-
+        this.dummy.visible  = false;          
+        this.camera.camera3D.updateMatrixWorld();
+        
         var buffer          = this.renderTobuffer(point.x,this.height -  point.y,1,1);     
         var glslPosition    = new THREE.Vector3().fromArray(buffer);      
 
         this.scene.selectNodeId(buffer[3]);
-
+        
         var worldPosition = glslPosition.applyMatrix4( this.camera.camera3D.matrixWorld); 
 
         this.dummy.position.copy(worldPosition);                
-        var size = worldPosition.sub(this.camera.camera3D.position).length()/200;                
+        var size = worldPosition.clone().sub(this.camera.camera3D.position).length()/200;                
         this.dummy.scale.copy(new THREE.Vector3(size,size,size));                
         this.dummy.lookAt(new THREE.Vector3());
         var quaternion = new THREE.Quaternion();
@@ -426,10 +427,10 @@ define('Renderer/c3DEngine',[
 
         this.setPickingRender(0);
         this.dummy.visible  = true;
+        
+        return worldPosition;
                 
     };
- 
-    
 
     return function(scene){
         instance3DEngine = instance3DEngine || new c3DEngine(scene);

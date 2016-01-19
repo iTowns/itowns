@@ -98,13 +98,13 @@ define('Scene/Quadtree',[
      */
     Quadtree.prototype.update = function(node)
     {
-        if(node.level > 17  || node.wait === true )
+        //TODO debug freeze 
+//        if(node.level > 17  || (node.wait === true && node.childrenCount() === 4))
+        if(node.level > 17  || node.wait === true)
             return false;
 
         if(node.childrenCount() > 0 &&  node.wait === false )                
-        {                        
-            //console.log(node.childrenCount());
-            
+        {                                              
             node.setChildrenVisibility(true);
             node.setMaterialVisibility(!(node.childrenCount() === 4 && node.childrenLoaded()));
             return false;

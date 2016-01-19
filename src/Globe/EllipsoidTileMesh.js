@@ -47,11 +47,10 @@ define('Globe/EllipsoidTileMesh',[
        
         // TODO ??? 
         this.centerSphere   = new THREE.Vector3().addVectors(this.geometry.boundingSphere.center,this.absoluteCenter);                       
-        this.orthoNeed      = 1;
+        this.orthoNeed      = 0;
         this.material       = new GlobeMaterial(bbox,id);
         this.dot            = 0;
         this.frustumCulled  = false;        
-        this.timeInvisible  = 0;
         this.maxChildren    = 4;
         
         var  groupTerrain   = [14,11,7,3];        
@@ -248,18 +247,18 @@ define('Globe/EllipsoidTileMesh',[
     EllipsoidTileMesh.prototype.checkOrtho = function()
     { 
         
-        if(this.orthoNeed === this.material.Textures_01.length) 
-        {                               
+        if(this.orthoNeed === this.material.Textures_01.length || this.level < 2) 
+        {                          
+            
             this.loaded = true; 
             this.material.update();
-            
-            
+                        
             var parent = this.parent;
 
             if(parent.childrenLoaded())
             {                                
                 parent.wait = false;                  
-            }
+            }            
         }                             
     };
     
