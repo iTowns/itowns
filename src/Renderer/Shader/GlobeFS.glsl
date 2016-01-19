@@ -11,10 +11,6 @@
 
 #endif
 
-
-
-//uniform sampler2D   dTextures_00[1];
-
 const int   TEX_UNITS   = 8;
 const float PI          = 3.14159265359;
 const float INV_TWO_PI  = 1.0 / (2.0*PI);
@@ -26,15 +22,15 @@ const float poleNord    =  84.0 / 180.0 * PI;
 uniform sampler2D   dTextures_00[1];
 uniform sampler2D   dTextures_01[TEX_UNITS];
 uniform int         RTC;
-uniform int         cVertexPos;
+uniform int         selected;
+uniform int         uuid;
+uniform int         pickingRender;
 uniform int         nbTextures_00;
 uniform int         nbTextures_01;
-uniform float       bLatitude;
-uniform float       periArcLati;
 uniform float       distanceFog;
 uniform int         debug;
-varying vec2        vUv;
-varying float       vUv2;
+varying vec2        vUv_0;
+varying float       vUv_1;
 varying vec4        pos;
 
 //#define BORDERLINE
@@ -42,7 +38,7 @@ varying vec4        pos;
 #if defined(BORDERLINE)
 const float sLine = 0.002;
 #endif
-
+const float borderS = 0.007;
 void main() {
  
     #if defined(USE_LOGDEPTHBUF) && defined(USE_LOGDEPTHBUF_EXT)
@@ -51,33 +47,27 @@ void main() {
 
     #endif
 
-    float latitude  = bLatitude + periArcLati*(1.0-vUv.y);
-   
-    if(cVertexPos == 1)   
+    if(pickingRender == 1)   
     {  
-        gl_FragColor = pos;
+        gl_FragColor =vec4(pos.x,pos.y,pos.z,uuid);
+
         #if defined(BORDERLINE)    
-        if(vUv.x < sLine || vUv.x > 1.0 - sLine || vUv.y < sLine || vUv.y > 1.0 - sLine)
-            gl_FragColor = vec4( 1.0, 0.0, 0.0, 1.0);
-                         
+                
         #endif
        
     }else
     #if defined(BORDERLINE)    
-    if(vUv.x < sLine || vUv.x > 1.0 - sLine || vUv.y < sLine || vUv.y > 1.0 - sLine)
+    if(vUv_0.x < sLine || vUv_0.x > 1.0 - sLine || vUv_0.y < sLine || vUv_0.y > 1.0 - sLine)
         gl_FragColor = vec4( 1.0, 0.0, 0.0, 1.0);
     else                       
     #endif
-    if(latitude < poleSud )
-        gl_FragColor = vec4( 0.85, 0.85, 0.91, 1.0);
-    else    
-    if(latitude > poleNord)
-        gl_FragColor = vec4( 0.04, 0.23, 0.35, 1.0);
+    if(selected == 1 && (vUv_0.x < borderS || vUv_0.x > 1.0 - borderS || vUv_0.y < borderS || vUv_0.y > 1.0 - borderS))
+        gl_FragColor = vec4( 1.0, 0.3, 0.0, 1.0);
     else
     {                           
         vec2 uvO ;
-        uvO.x           = vUv.x;
-        float y         = vUv2;
+        uvO.x           = vUv_0.x;
+        float y         = vUv_1;
         int idd         = int(floor(y));
         uvO.y           = y - float(idd);
         idd             = nbTextures_01 - idd - 1;
@@ -96,7 +86,6 @@ void main() {
         //float fog = (distanceFog-depth)/distanceFog; // linear fog
 
         float fog = 1.0/(exp(depth/distanceFog)); 
-
          
         #else
         float fog = 0.0; 

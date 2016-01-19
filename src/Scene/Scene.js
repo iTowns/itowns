@@ -219,6 +219,13 @@ define('Scene/Scene',[
         //TODO: Implement Me 
 
     };
+    
+    Scene.prototype.selectNodeId = function(id)
+    {
+    
+        this.browserScene.selectNodeId = id;
+
+    };
 
     return function(){
         instanceScene = instanceScene || new Scene();

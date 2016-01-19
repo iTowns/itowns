@@ -25,13 +25,16 @@ define('Globe/EllipsoidTileMesh',[
     'OBBHelper',
     'SphereHelper'], function(NodeMesh,EllipsoidTileGeometry,BoudingBox,defaultValue,THREE,GlobeMaterial,CoordCarto,OBBHelper,SphereHelper){
  
-    function EllipsoidTileMesh(bbox,cooWMTS,ellipsoid,geometryCache){
+    function EllipsoidTileMesh(bbox,cooWMTS,ellipsoid,id,geometryCache){
         //Constructor
         NodeMesh.call( this );
+                
                 
         this.level      = cooWMTS.zoom;
         this.cooWMTS    = cooWMTS;
         this.bbox       = defaultValue(bbox,new BoudingBox());               
+        this.id         = id;
+        
         var precision   = 16;               
         var levelMax    = 18;
         
@@ -45,7 +48,7 @@ define('Globe/EllipsoidTileMesh',[
         // TODO ??? 
         this.centerSphere   = new THREE.Vector3().addVectors(this.geometry.boundingSphere.center,this.absoluteCenter);                       
         this.orthoNeed      = 1;
-        this.material       = new GlobeMaterial(bbox);
+        this.material       = new GlobeMaterial(bbox,id);
         this.dot            = 0;
         this.frustumCulled  = false;        
         this.timeInvisible  = 0;
@@ -137,9 +140,9 @@ define('Globe/EllipsoidTileMesh',[
         this.material.setRTC(enable);
     };
     
-    EllipsoidTileMesh.prototype.setDepth = function(enable,near,far)
+    EllipsoidTileMesh.prototype.setPickingRender = function(enable,near,far)
     {           
-        this.material.setDepth(enable,near,far);
+        this.material.setPickingRender(enable,near,far);
     };
     
      EllipsoidTileMesh.prototype.setFog = function(fog)
@@ -152,9 +155,14 @@ define('Globe/EllipsoidTileMesh',[
         this.material.setMatrixRTC(rtc);
     };
     
-    EllipsoidTileMesh.prototype.groupLevel = function()
+    EllipsoidTileMesh.prototype.setDebug = function(enable)
     {                 
-        
+        this.material.setDebug(enable);
+    };
+    
+    EllipsoidTileMesh.prototype.setSelected = function(select)
+    {                 
+        this.material.setSelected(select);        
     };
         
     EllipsoidTileMesh.prototype.setTerrain = function(terrain)

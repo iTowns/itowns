@@ -58,7 +58,7 @@ define('Renderer/Camera',['Scene/Node','THREE'], function(Node, THREE){
 
     };
     
-    Camera.prototype.viewMatrix = function(){
+    Camera.prototype.matrixWorldInverse = function(){
         
         return this.camera3D.matrixWorldInverse;        
     };

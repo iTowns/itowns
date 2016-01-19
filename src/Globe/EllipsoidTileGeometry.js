@@ -252,8 +252,8 @@ define('Globe/EllipsoidTileGeometry',[
         this.setIndex( new THREE.BufferAttribute( bufferIndex, 1 ) );
         this.addAttribute( 'position',  new THREE.BufferAttribute( bufferVertex, 3 ) );
         this.addAttribute( 'normal',    new THREE.BufferAttribute( bufferNormal, 3 ) );
-        this.addAttribute( 'uv',        new THREE.BufferAttribute( bufferUV, 2) );
-        this.addAttribute( 'uv2',       new THREE.BufferAttribute( bufferUV2, 1) );
+        this.addAttribute( 'uv',      new THREE.BufferAttribute( bufferUV, 2) );
+        this.addAttribute( 'uv1',      new THREE.BufferAttribute( bufferUV2, 1) );
         
         // ---> for SSE
         this.computeBoundingSphere();

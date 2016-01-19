@@ -12,35 +12,35 @@
 
 #endif
 
-attribute float uv2;
+attribute float     uv1;
 
 const float PI          = 3.14159265359;
 const float INV_TWO_PI  = 1.0 / (2.0*PI);
 const float PI4         = 0.78539816339;
 
-uniform sampler2D  dTextures_00[1];
-uniform int        nbTextures_00;
-uniform int        RTC;
-uniform vec3       pitScale;
-uniform float      periArcLati;
-uniform mat4       mVPMatRTC;
-uniform int        cVertexPos;
+uniform sampler2D   dTextures_00[1];
+uniform int         nbTextures_00;
+uniform int         RTC;
+uniform vec3        pitScale;
+uniform float       periArcLati;
+uniform mat4        mVPMatRTC;
+uniform int         pickingRender;
 
-varying vec2    vUv;
-varying float   vUv2;
-varying vec3    vNormal;
-varying vec4    pos;
+varying vec2        vUv_0;
+varying float       vUv_1;
+varying vec3        vNormal;
+varying vec4        pos;
 
 void main() {
         
-        vUv     = uv;        
-        vUv2    = uv2;
+        vUv_0    = uv;        
+        vUv_1    = uv1;
 
         vec4 vPosition;
 
         if(nbTextures_00 > 0)
         {
-            vec2    vVv = vec2(vUv.x*pitScale.z + pitScale.x,vUv.y*pitScale.z + pitScale.y);                
+            vec2    vVv = vec2(vUv_0.x*pitScale.z + pitScale.x,vUv_0.y*pitScale.z + pitScale.y);                
             float   dv  = texture2D( dTextures_00[0], vVv ).w;
             vNormal     = normal;
             vPosition   = vec4( position +  vNormal  * dv ,1.0 );            
@@ -48,7 +48,7 @@ void main() {
         else
             vPosition = vec4( position ,1.0 );
 
-        if(cVertexPos == 1)
+        if(pickingRender == 1)
             pos = modelViewMatrix * vPosition;
 
         mat4 projModelViewMatrix = (RTC == 0) ? projectionMatrix * modelViewMatrix : mVPMatRTC;
@@ -70,6 +70,5 @@ void main() {
             #endif
 
         #endif
-
         
 }   

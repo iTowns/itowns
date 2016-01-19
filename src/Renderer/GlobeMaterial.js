@@ -17,7 +17,7 @@ define('Renderer/GlobeMaterial',
             GlobeVS,
             GlobeFS){
     
-    var  GlobeMaterial = function (bbox){
+    var  GlobeMaterial = function (bbox,id){
         
         BasicMaterial.call( this );
        
@@ -32,11 +32,11 @@ define('Renderer/GlobeMaterial',
         this.uniforms.dTextures_00    = {type: "tv", value: this.Textures_00} ;
         this.uniforms.dTextures_01    = {type: "tv", value: this.Textures_01} ;
         this.uniforms.nbTextures_00   = {type: "i" , value: 0} ;
-        this.uniforms.nbTextures_01   = {type: "i" , value: 0} ;            
-        this.uniforms.bLatitude       = {type: "f",  value: bbox.minCarto.latitude};
-        this.uniforms.pitScale        = {type: "v3", value: new THREE.Vector3(0.0,0.0,1.0)};
-        this.uniforms.periArcLati     = {type: "f" , value: Math.abs(bbox.maxCarto.latitude - bbox.minCarto.latitude)};
-        this.uniforms.cVertexPos          = {type: "i" , value: 0} ;
+        this.uniforms.nbTextures_01   = {type: "i" , value: 0} ;                    
+        this.uniforms.pitScale        = {type: "v3", value: new THREE.Vector3(0.0,0.0,1.0)};        
+        this.uniforms.pickingRender   = {type: "i" , value: 0} ;
+
+        this.setUuid(id);
 
         this.wireframe = false;
         //this.wireframe = true;
@@ -103,11 +103,12 @@ define('Renderer/GlobeMaterial',
                 
     };
     
-    BasicMaterial.prototype.setDepth = function(enable)
+    GlobeMaterial.prototype.setPickingRender = function(enable)
     {
-        this.uniforms.cVertexPos.value = enable;
+        this.uniforms.pickingRender.value = enable;
 
     };
+    
     
     return GlobeMaterial;
 });
