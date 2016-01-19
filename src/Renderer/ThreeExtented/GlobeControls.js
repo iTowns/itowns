@@ -61,6 +61,8 @@ THREE.GlobeControls = function ( object, domElement ) {
         this.phi    = null;
         
         this.pointClick = new THREE.Vector2();
+        var pointGlobe       = new THREE.Vector3();
+        var rayonPointGlobe  = 0;
         this.click      = false;
         
         
@@ -132,6 +134,92 @@ THREE.GlobeControls = function ( object, domElement ) {
 	var changeEvent = { type: 'change' };
 	var startEvent = { type: 'start' };
 	var endEvent = { type: 'end' };
+                
+	this.setPointGlobe = function ( point ) 
+        {          
+            pointGlobe.copy(point);
+            rayonPointGlobe = pointGlobe.length();            
+        };
+        
+        this.intersectSphere = function ( ray )   
+        {
+
+           var origin = ray.origin;
+           var d = ray.direction;
+           var c = new THREE.Vector3();
+           var r = rayonPointGlobe;
+           var intersection = new THREE.Vector3();
+
+           var vpc = new THREE.Vector3().subVectors(c,origin);  // this is the vector from p to c
+
+           var length = vpc.length();
+
+           if ((vpc.dot(d)) < 0)
+           { // when the sphere is behind the origin p
+                       // note that this case may be dismissed if it is 
+                       // considered that p is outside the sphere 	
+               if (length > r) 
+
+                       intersection =  undefined;  // there is no intersection
+
+               else if (length === r)
+
+                       intersection.copy(origin);
+
+               else // occurs when p is inside the sphere
+               {
+
+                       var pc = ray.closestPointToPoint(c);  ///projection of c on the line
+                       // distance from pc to i1
+
+                       var lpcc = new THREE.Vector3().subVectors(pc,c).length();
+                       //var dist = Math.sqrt(radius * radius - |pc - c|^2);
+                       //var di1 = dist - |pc - p|;
+
+                       var dist = Math.sqrt(radius * radius - lpcc*lpcc);
+                       var di1 = dist - lpcc;
+                       intersection.addVectors(origin,d.setLength(di1));
+               }
+           }
+
+           else // center of sphere projects on the ray
+           {
+
+               var pc = ray.closestPointToPoint(c);  ///projection of c on the line
+               var lpcc = new THREE.Vector3().subVectors(pc,c).length();
+               if (lpcc > r)               
+               {
+
+                       intersection = undefined;// there is no intersection
+               }
+               else 
+               { 
+
+
+                        var lpcc = new THREE.Vector3().subVectors(pc,c).length();
+                       // distance from pc to i1
+                       var dist = Math.sqrt(radius * radius - lpcc*lpcc);
+
+                       var di1;
+
+
+
+                       if (length > r) // origin is outside sphere	
+
+                               di1 = lpcc - dist ;
+
+                       else // origin is inside sphere
+
+                               di1 = lpcc + dist ;
+
+                       intersection.addVectors(origin,d.setLength(di1));
+               }
+           }
+
+           return intersection;
+           
+       };
+
 
 	this.rotateLeft = function ( angle ) {
 
