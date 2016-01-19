@@ -65,10 +65,14 @@ define('Renderer/c3DEngine',[
         this.renderScene = function(){
                   
             if(this.controls.click)
-            {                                          
-                this.controls.setPointGlobe(this.picking(this.controls.pointClick));                
+            {                                   
+                
+                var position = this.picking(this.controls.pointClick);
+                this.updateDummy(position);
+                this.controls.setPointGlobe(position);                
                 this.controls.click      = false;                
             }
+           
             
             this.renderer.clear();            
             this.renderer.setViewport( 0, 0, this.width, this.height );            
@@ -414,8 +418,17 @@ define('Renderer/c3DEngine',[
         
         var worldPosition = glslPosition.applyMatrix4( this.camera.camera3D.matrixWorld); 
 
-        this.dummy.position.copy(worldPosition);                
-        var size = worldPosition.clone().sub(this.camera.camera3D.position).length()/200;                
+        this.setPickingRender(0);
+        this.dummy.visible  = true;
+        
+        return worldPosition;
+                
+    };
+    
+    c3DEngine.prototype.updateDummy = function(position) 
+    {
+        this.dummy.position.copy(position);                
+        var size = position.clone().sub(this.camera.camera3D.position).length()/200;                
         this.dummy.scale.copy(new THREE.Vector3(size,size,size));                
         this.dummy.lookAt(new THREE.Vector3());
         var quaternion = new THREE.Quaternion();
@@ -423,13 +436,7 @@ define('Renderer/c3DEngine',[
         this.dummy.quaternion.multiply(quaternion);
         this.dummy.translateY(size);
         this.dummy.updateMatrix();
-        this.dummy.updateMatrixWorld();                
-
-        this.setPickingRender(0);
-        this.dummy.visible  = true;
-        
-        return worldPosition;
-                
+        this.dummy.updateMatrixWorld();          
     };
 
     return function(scene){
