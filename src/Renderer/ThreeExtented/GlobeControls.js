@@ -63,8 +63,9 @@ THREE.GlobeControls = function ( object, domElement ) {
         this.pointClick = new THREE.Vector2();
         var pointGlobe       = new THREE.Vector3();
         var rayonPointGlobe  = 0;
+        var raycaster   = new THREE.Raycaster();
         this.click      = false;
-        
+        this.intersection = new THREE.Vector3();
         
 	// How far you can orbit horizontally, upper and lower limits.
 	// If set, must be a sub-interval of the interval [ - Math.PI, Math.PI ].
@@ -110,6 +111,8 @@ THREE.GlobeControls = function ( object, domElement ) {
 	var thetaDelta = 0;
 	var scale = 1;
 	var pan = new THREE.Vector3();
+        
+        
 
 	var lastPosition = new THREE.Vector3();
 	var lastQuaternion = new THREE.Quaternion();
@@ -176,7 +179,7 @@ THREE.GlobeControls = function ( object, domElement ) {
                        //var dist = Math.sqrt(radius * radius - |pc - c|^2);
                        //var di1 = dist - |pc - p|;
 
-                       var dist = Math.sqrt(radius * radius - lpcc*lpcc);
+                       var dist = Math.sqrt(r * r - lpcc*lpcc);
                        var di1 = dist - lpcc;
                        intersection.addVectors(origin,d.setLength(di1));
                }
@@ -198,11 +201,9 @@ THREE.GlobeControls = function ( object, domElement ) {
 
                         var lpcc = new THREE.Vector3().subVectors(pc,c).length();
                        // distance from pc to i1
-                       var dist = Math.sqrt(radius * radius - lpcc*lpcc);
+                       var dist = Math.sqrt(r * r - lpcc*lpcc);
 
                        var di1;
-
-
 
                        if (length > r) // origin is outside sphere	
 
@@ -633,6 +634,21 @@ THREE.GlobeControls = function ( object, domElement ) {
 
 			// rotating up and down along whole screen attempts to go 360, but limited to 180
                             scope.rotateUp( 2 * Math.PI * rotateDelta.y / element.clientHeight * scope.rotateSpeed );
+                            
+                            
+                            var mouse = new THREE.Vector2();
+
+                            mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+                            mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;		
+                            
+                            raycaster.setFromCamera( mouse, scope.object)
+                            var ray = raycaster.ray;
+                            
+                            scope.intersection = scope.intersectSphere(ray);
+                            //console.log(intersection  );
+                            //console.log(mouse);
+                            
+                            
                         }
                         else
                         {
