@@ -48,7 +48,7 @@ define('Renderer/NodeMesh',['Scene/Node','THREE'], function(Node, THREE){
     
     NodeMesh.prototype.setChildrenVisibility = function(show)
     {        
-        for(var i = 0;i<this.children.length;i++)                                                                                   
+        for(var i = 0;i<this.children.length;i++)           
             this.children[i].setVisibility(show);        
     };
     

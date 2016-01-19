@@ -17,6 +17,9 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
         this.date       = new Date(); 
         this.fogDistance = 1000000000.0;        
         this.mfogDistance= 1000000000.0;
+        this.visibleNodes= 0;
+        this.selectNodeId   = -1;
+        this.selectNode     = null;
         
     }
     
@@ -47,15 +50,16 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
                 this.scene.scene3D().add(node.helper);
 
             node.setVisibility(false);
+            node.setSelected(false);
                  
             if(node.loaded && this.nodeProcess.frustumCullingOBB(node,camera))
             {
                 if(this.nodeProcess.horizonCulling(node,camera))
                 {
                     if(node.parent.material !== undefined && node.parent.material.visible === true)
-                        
-                        return node.setVisibility(false);
                     
+                        return node.setVisibility(false);
+                                        
                     var sse = this.nodeProcess.SSE(node,camera);                                                        
 
                     if(optional && sse && node.material.visible === true && node.wait === false)
@@ -65,7 +69,7 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
                     else if(!sse && node.level >= 2 && node.material.visible === false && node.wait === false)
                     {
 
-                        node.setMaterialVisibility(true);
+                        node.setMaterialVisibility(true);                        
                         this.uniformsProcess(node,camera);                      
                         node.setChildrenVisibility(false);
                         
@@ -76,16 +80,27 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
 
             if(node.visible  && node.material.visible)
                 this.uniformsProcess(node,camera);                       
-                                   
+            
             return node.visible;
         }
         
         return true;
     };
     
+    
     BrowseTree.prototype.uniformsProcess = function(node,camera)
     {
         node.setMatrixRTC(this.getRTCMatrix(node.absoluteCenter,camera));
+        if(node.id === this.selectNodeId)
+        {
+            node.setSelected( node.visible && node.material.visible);
+            if(this.selectNode !== node)
+            {
+                this.selectNode = node;
+                console.log(node);
+            }            
+        }
+        
         node.setFog(this.fogDistance);        
     };
         

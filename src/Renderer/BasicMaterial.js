@@ -30,7 +30,9 @@ define('Renderer/BasicMaterial',
                 RTC             : { type: "i" , value: 1 },
                 mVPMatRTC       : { type: "m4", value: new THREE.Matrix4()},
                 distanceFog     : { type: "f" , value: 1000000000.0},
-                debug           : { type: "i" , value: false }
+                uuid            : { type: "i" , value: 0},
+                debug           : { type: "i" , value: false },
+                selected        : { type: "i" , value: false }
 
             };  
         }        
@@ -52,10 +54,19 @@ define('Renderer/BasicMaterial',
         {
             this.uniforms.mVPMatRTC.value  = rtc;    
         };
-        
+        BasicMaterial.prototype.setUuid = function(uuid)
+        {
+            this.uniforms.uuid.value  = uuid;    
+        };
+       
         BasicMaterial.prototype.setFogDistance = function(df)
         {
             this.uniforms.distanceFog.value  = df;    
+        };
+        
+        BasicMaterial.prototype.setSelected = function(selected)
+        {
+            this.uniforms.selected.value  = selected;    
         };
         
         return BasicMaterial;

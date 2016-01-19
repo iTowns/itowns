@@ -48,10 +48,10 @@ define('Renderer/c3DEngine',[
         
         this.initCamera();
         
-        var material    = new BasicMaterial(new THREE.Color(1,0,0));        
-        var geometry    = new THREE.SphereGeometry(1);  
-        
+        var material    = new BasicMaterial(new THREE.Color(1,0,0));                       
+        var geometry    = new THREE.CylinderGeometry(0.6, 0.01,2,32);          
         this.dummy      = new THREE.Mesh( geometry, material );        
+        
         this.dummy.material.setRTC(0);
         
         this.scene3D.add(this.dummy);
@@ -65,28 +65,9 @@ define('Renderer/c3DEngine',[
         this.renderScene = function(){
                   
             if(this.controls.click)
-            {
-                
-                this.camera.camera3D.updateMatrixWorld(true);
-                this.setDepth(1);
+            {                                          
+                this.picking(this.controls.pointClick);                
                 this.controls.click = false;
-                this.dummy.visible  = false;  
-                //var ellipsoid = this.scene.layers[0].ellipsoid();
-                
-                var buffer      = this.renderTobuffer(this.controls.pointClick.x,this.height -  this.controls.pointClick.y,1,1);     
-                var glslPosition = new THREE.Vector3(buffer[0],buffer[1],buffer[2]);                                 
-                this.camera.camera3D.matrixWorldInverse.getInverse(this.camera.camera3D.matrixWorldInverse);            
-                var worldPosition = glslPosition.applyMatrix4( this.camera.camera3D.matrixWorldInverse); 
-              
-                this.dummy.position.copy(worldPosition);                
-                var size = worldPosition.sub(this.camera.camera3D.position).length()/600;                
-                this.dummy.scale.copy(new THREE.Vector3(size,size,size));
-                this.dummy.updateMatrix();
-                this.dummy.updateMatrixWorld();                
-              
-                this.setDepth(0);
-                this.dummy.visible  = true;
-                
             }
             
             this.renderer.clear();            
@@ -261,14 +242,14 @@ define('Renderer/c3DEngine',[
         
     };
     
-    c3DEngine.prototype.setDepth = function(depth)
+    c3DEngine.prototype.setPickingRender = function(depth)
     {        
 
         for (var x = 0; x < this.scene3D.children.length; x++)
         {
             var node = this.scene3D.children[x];
             
-            if(node.setDepth)         
+            if(node.setPickingRender)         
             {              
                node.traverseVisible(depth === 1 ? this.depthOn.bind(this) : this.depthOff.bind(this));
             }
@@ -291,12 +272,12 @@ define('Renderer/c3DEngine',[
     c3DEngine.prototype.depthOn = function(obj3D)
     {
         
-        obj3D.setDepth(1);
+        obj3D.setPickingRender(1);
     };
     
     c3DEngine.prototype.depthOff = function(obj3D)
     {
-        obj3D.setDepth(0);
+        obj3D.setPickingRender(0);
     };
         
     /**
@@ -382,10 +363,8 @@ define('Renderer/c3DEngine',[
     };
            
     c3DEngine.prototype.renderTobuffer = function(x,y, width, height) {
-        
-        
-        // TODO Deallocate render texture
-    
+                
+        // TODO Deallocate render texture    
         this.renderer.clear();            
         this.renderer.setViewport( 0, 0, this.width, this.height );
         this.renderer.render( this.scene3D, this.camera.camera3D, this.pickingTexture );
@@ -421,36 +400,35 @@ define('Renderer/c3DEngine',[
         
     };
     
-    /*
-    function createImageFromTexture(gl, texture, width, height) {
-    // Create a framebuffer backed by the texture
-    var framebuffer = gl.createFramebuffer();
-    gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
-    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
-
-    // Read the contents of the framebuffer
-    var data = new Uint8Array(width * height * 4);
-    gl.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, data);
-
-    gl.deleteFramebuffer(framebuffer);
-
-    // Create a 2D canvas to store the result 
-    var canvas = document.createElement('canvas');
-    canvas.width = width;
-    canvas.height = height;
-    var context = canvas.getContext('2d');
-
-    // Copy the pixels to a 2D canvas
-    var imageData = context.createImageData(width, height);
-    imageData.data.set(data);
-    context.putImageData(imageData, 0, 0);
-
-    var img = new Image();
-    img.src = canvas.toDataURL();
-    return img;
-}
-     */
+    c3DEngine.prototype.picking = function(point) 
+    {
     
+        this.setPickingRender(1);        
+        this.dummy.visible  = false;  
+
+        var buffer          = this.renderTobuffer(point.x,this.height -  point.y,1,1);     
+        var glslPosition    = new THREE.Vector3().fromArray(buffer);      
+
+        this.scene.selectNodeId(buffer[3]);
+
+        var worldPosition = glslPosition.applyMatrix4( this.camera.camera3D.matrixWorld); 
+
+        this.dummy.position.copy(worldPosition);                
+        var size = worldPosition.sub(this.camera.camera3D.position).length()/200;                
+        this.dummy.scale.copy(new THREE.Vector3(size,size,size));                
+        this.dummy.lookAt(new THREE.Vector3());
+        var quaternion = new THREE.Quaternion();
+        quaternion.setFromAxisAngle( new THREE.Vector3( 1, 0, 0 ), -Math.PI / 2 );
+        this.dummy.quaternion.multiply(quaternion);
+        this.dummy.translateY(size);
+        this.dummy.updateMatrix();
+        this.dummy.updateMatrixWorld();                
+
+        this.setPickingRender(0);
+        this.dummy.visible  = true;
+                
+    };
+ 
     
 
     return function(scene){

@@ -46,6 +46,8 @@ define('Core/Commander/Providers/tileGlobeProvider',[
        this.ellipsoid       = new Ellipsoid(size);       
        this.cacheGeometry   = [];
        this.tree            = null;
+       
+       this.nNode           = 0;
                
     }        
 
@@ -87,8 +89,8 @@ define('Core/Commander/Providers/tileGlobeProvider',[
         var cooWMTS     = this.projection.WGS84toWMTS(bbox);                
         var parent      = command.requester;        
         var geometry    = undefined; //getGeometry(bbox,cooWMTS);       
-        var tile        = new command.type(bbox,cooWMTS,this.ellipsoid,geometry);
-            
+        var tile        = new command.type(bbox,cooWMTS,this.ellipsoid,this.nNode++,geometry);        
+        
         if(geometry)
         {
             tile.rotation.set ( 0, (cooWMTS.col%2)* (Math.PI * 2.0 / Math.pow(2,cooWMTS.zoom+1)), 0 );
