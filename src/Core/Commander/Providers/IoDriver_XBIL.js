@@ -58,7 +58,9 @@ define('Core/Commander/Providers/IoDriver_XBIL',['Core/Commander/Providers/IoDri
                 for (var i = 0; i < result.floatArray.byteLength; i++) 
                 {
                    var val = result.floatArray[i];
-                   if(val === -99999.0 || val === undefined )                        
+                   //  TODO debug a voir avec le geoportail
+                   //if(val === -99999.0 || val === undefined )                        
+                   if(val < - 10.0 || val === undefined )                        
                         result.floatArray[i] = mcolor;                   
                    else
                    {
