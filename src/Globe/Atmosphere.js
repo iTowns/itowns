@@ -54,13 +54,10 @@ define('Globe/Atmosphere',['Renderer/NodeMesh','THREE','text!Renderer/Shader/Glo
               
     }
     
-    
-    
     Atmosphere.prototype = Object.create( NodeMesh.prototype );
     
-    Atmosphere.prototype.constructor = Atmosphere;
+    Atmosphere.prototype.constructor = Atmosphere;    
    
-
     return Atmosphere;
 
 });

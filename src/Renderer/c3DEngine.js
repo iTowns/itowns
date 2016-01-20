@@ -220,7 +220,7 @@ define('Renderer/c3DEngine',[
                 this.renderer.setClearColor( 0x030508 );
             }
     };
-    
+     
     c3DEngine.prototype.enableRTC = function(enable)
     {
          for (var x = 0; x < this.scene3D.children.length; x++)
@@ -229,7 +229,7 @@ define('Renderer/c3DEngine',[
              
              if(node.enableRTC)                
                 node.traverseVisible(enable ? this.rtcOn.bind(this) : this.rtcOff.bind(this));
-             else if(node instanceof Atmosphere)                          
+             else                      
                 node.visible  = enable;
              
          }
@@ -238,18 +238,14 @@ define('Renderer/c3DEngine',[
     
     c3DEngine.prototype.enablePickingRender = function(enable)
     {        
-
         for (var x = 0; x < this.scene3D.children.length; x++)
         {
             var node = this.scene3D.children[x];
             
-            if(node.enablePickingRender)                 
-            {                              
+            if(node.enablePickingRender)                             
                node.traverseVisible(enable? this.pickingOn.bind(this) : this.pickingOff.bind(this));
-            }
-            else if(node instanceof Atmosphere)                          
-               node.visible  = (!enable);
-
+            else
+               node.visible = !enable;        
         }        
     };
     
@@ -260,7 +256,7 @@ define('Renderer/c3DEngine',[
     
     c3DEngine.prototype.rtcOff = function(obj3D)
     {
-          obj3D.enableRTC(false);
+        obj3D.enableRTC(false);
     };
     
     c3DEngine.prototype.pickingOn = function(obj3D)
