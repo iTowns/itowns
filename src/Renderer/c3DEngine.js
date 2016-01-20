@@ -21,6 +21,7 @@ define('Renderer/c3DEngine',[
         BasicMaterial){
 
     var instance3DEngine = null;
+    var RENDER =  {FINAL : 0,PICKING : 1};
 
     function c3DEngine(){
         //Constructor
@@ -45,6 +46,7 @@ define('Renderer/c3DEngine',[
         this.size       = 1.0;
         this.dnear      = 0.0;
         this.dfar       = 0.0;
+        this.stateRender = RENDER.FINAL;
         
         this.initCamera();
         
@@ -52,7 +54,7 @@ define('Renderer/c3DEngine',[
         var geometry    = new THREE.CylinderGeometry(0.6, 0.01,2,32);          
         this.dummy      = new THREE.Mesh( geometry, material );        
         
-        this.dummy.material.setRTC(0);
+        this.dummy.material.enableRTC(false);
         
         this.scene3D.add(this.dummy);
 
@@ -65,14 +67,12 @@ define('Renderer/c3DEngine',[
         this.renderScene = function(){
                   
             if(this.controls.click)
-            {                                   
-                
+            {                                                   
                 var position = this.picking(this.controls.pointClick);
                 this.updateDummy(position);
                 this.controls.setPointGlobe(position);                
                 this.controls.click      = false;                
             }
-           
             
             this.renderer.clear();            
             this.renderer.setViewport( 0, 0, this.width, this.height );            
@@ -80,12 +80,12 @@ define('Renderer/c3DEngine',[
             
             if(this.debug)
             {
-                this.setRTC(0);                
+                this.enableRTC(false);                
                 this.camera.camHelper().visible = true;                
                 this.renderer.setViewport( this.width, 0, this.width, this.height );
                 this.renderer.render( this.scene3D, this.camDebug);                
                 this.camera.camHelper().visible = false;                
-                this.setRTC(1);
+                this.enableRTC(true);
             }            
             
         }.bind(this);
@@ -162,27 +162,17 @@ define('Renderer/c3DEngine',[
         
         this.scene  = scene;
         this.size    = this.scene.size().x;
-        
         this.camera.setPosition(position);
-        
-        //this.camera.setPosition(new THREE.Vector3());
-        
+      
         // if near is too small --> bug no camera helper
-        this.camera.camera3D.near = this.size * 2.333;//Math.max(15.0,0.000002352 * this.size);
+        this.camera.camera3D.near = this.size * 2.333;
         this.camera.camera3D.far  = this.size * 10;
         this.camera.camera3D.updateProjectionMatrix();
         
         if(this.debug)
         {
-            //var pos = position.clone().multiplyScalar(0.203275);
-            //var pos = position.clone().multiplyScalar(  0.203269);
-           // var pos = position.clone().multiplyScalar(0.2033);
-            
-            //var pos = position.clone().multiplyScalar(  1.000001);
-            //var pos = position.clone().multiplyScalar(  1.00001);
             
             this.camDebug.position.x = -this.size * 6;
-            //this.camDebug.position.copy(pos);
             this.camDebug.lookAt(new THREE.Vector3(0,0,0));
             this.camDebug.near = this.size* 0.1;
             this.camDebug.far  = this.size * 10;
@@ -231,57 +221,56 @@ define('Renderer/c3DEngine',[
             }
     };
     
-    c3DEngine.prototype.setRTC = function(rtc)
+    c3DEngine.prototype.enableRTC = function(enable)
     {
          for (var x = 0; x < this.scene3D.children.length; x++)
          {
              var node = this.scene3D.children[x];
              
-             if(node.setRTC)                
-                node.traverseVisible(rtc === 1 ? this.rtcOn.bind(this) : this.rtcOff.bind(this));
+             if(node.enableRTC)                
+                node.traverseVisible(enable ? this.rtcOn.bind(this) : this.rtcOff.bind(this));
              else if(node instanceof Atmosphere)                          
-                node.visible  = (rtc === 1);
+                node.visible  = enable;
              
          }
         
     };
     
-    c3DEngine.prototype.setPickingRender = function(depth)
+    c3DEngine.prototype.enablePickingRender = function(enable)
     {        
 
         for (var x = 0; x < this.scene3D.children.length; x++)
         {
             var node = this.scene3D.children[x];
             
-            if(node.setPickingRender)         
-            {              
-               node.traverseVisible(depth === 1 ? this.depthOn.bind(this) : this.depthOff.bind(this));
+            if(node.enablePickingRender)                 
+            {                              
+               node.traverseVisible(enable? this.pickingOn.bind(this) : this.pickingOff.bind(this));
             }
             else if(node instanceof Atmosphere)                          
-               node.visible  = (depth === 0);
+               node.visible  = (!enable);
 
         }        
     };
     
     c3DEngine.prototype.rtcOn = function(obj3D)
     {
-          obj3D.setRTC(1);
+          obj3D.enableRTC(true);
     };
     
     c3DEngine.prototype.rtcOff = function(obj3D)
     {
-          obj3D.setRTC(0);
+          obj3D.enableRTC(false);
     };
     
-    c3DEngine.prototype.depthOn = function(obj3D)
-    {
-        
-        obj3D.setPickingRender(1);
+    c3DEngine.prototype.pickingOn = function(obj3D)
+    {        
+        obj3D.enablePickingRender(true);
     };
     
-    c3DEngine.prototype.depthOff = function(obj3D)
+    c3DEngine.prototype.pickingOff = function(obj3D)
     {
-        obj3D.setPickingRender(0);
+        obj3D.enablePickingRender(false);
     };
         
     /**
@@ -365,16 +354,39 @@ define('Renderer/c3DEngine',[
 
         return this.renderer;
     };
+    
+    c3DEngine.prototype.setStateRender = function(stateRender)
+    {
+        if(this.stateRender !== stateRender)
+        {
+            this.stateRender = stateRender;
+            
+            switch(this.stateRender) 
+            {
+                case RENDER.FINAL:
+                    this.enablePickingRender(false);
+                    break;
+                case RENDER.PICKING:
+                    this.enablePickingRender(true);
+                    break;
+                default:
+                    this.stateRender = RENDER.FINAL;
+                    this.enablePickingRender(false);
+            }             
+        }
+    };
            
-    c3DEngine.prototype.renderTobuffer = function(x,y, width, height) {
+    c3DEngine.prototype.renderTobuffer = function(x,y, width, height,mode) {
                 
-        // TODO Deallocate render texture    
+        // TODO Deallocate render texture
+        var originalState = this.stateRender;
+        this.setStateRender(mode);
         this.renderer.clear();            
         this.renderer.setViewport( 0, 0, this.width, this.height );
         this.renderer.render( this.scene3D, this.camera.camera3D, this.pickingTexture );
-   
-        var pixelBuffer = new Float32Array( width * height * 4 );
-	
+        this.setStateRender(originalState);
+        
+        var pixelBuffer = new Float32Array( width * height * 4 );	
 	this.renderer.readRenderTargetPixels(this.pickingTexture, x,y, width, height , pixelBuffer);
         
         return pixelBuffer;
@@ -404,23 +416,23 @@ define('Renderer/c3DEngine',[
         
     };
     
-    c3DEngine.prototype.picking = function(point) 
+    /**
+    * 
+     * @param {type} mouse : mouse position on screen in pixel
+     * @returns THREE.Vector3 position cartesien in world space 
+     **/
+    c3DEngine.prototype.picking = function(mouse) 
     {
-    
-        this.setPickingRender(1);        
-        this.dummy.visible  = false;          
         this.camera.camera3D.updateMatrixWorld();
         
-        var buffer          = this.renderTobuffer(point.x,this.height -  point.y,1,1);     
-        var glslPosition    = new THREE.Vector3().fromArray(buffer);      
+        this.dummy.visible  = false;        
+        var buffer          = this.renderTobuffer(mouse.x,this.height - mouse.y,1,1,RENDER.PICKING);        
+        this.dummy.visible  = true;
 
-        this.scene.selectNodeId(buffer[3]);
-        
+        var glslPosition    = new THREE.Vector3().fromArray(buffer);              
+        this.scene.selectNodeId(buffer[3]);        
         var worldPosition = glslPosition.applyMatrix4( this.camera.camera3D.matrixWorld); 
 
-        this.setPickingRender(0);
-        this.dummy.visible  = true;
-        
         return worldPosition;
                 
     };
@@ -428,12 +440,10 @@ define('Renderer/c3DEngine',[
     c3DEngine.prototype.updateDummy = function(position) 
     {
         this.dummy.position.copy(position);                
-        var size = position.clone().sub(this.camera.camera3D.position).length()/200;                
+        var size = position.clone().sub(this.camera.position()).length()/200; // TODO distance                
         this.dummy.scale.copy(new THREE.Vector3(size,size,size));                
         this.dummy.lookAt(new THREE.Vector3());
-        var quaternion = new THREE.Quaternion();
-        quaternion.setFromAxisAngle( new THREE.Vector3( 1, 0, 0 ), -Math.PI / 2 );
-        this.dummy.quaternion.multiply(quaternion);
+        this.dummy.quaternion.multiply(new THREE.Quaternion().setFromAxisAngle( new THREE.Vector3( 1, 0, 0 ), -Math.PI / 2 ));
         this.dummy.translateY(size);
         this.dummy.updateMatrix();
         this.dummy.updateMatrixWorld();          

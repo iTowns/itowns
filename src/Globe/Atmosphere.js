@@ -51,20 +51,7 @@ define('Globe/Atmosphere',['Renderer/NodeMesh','THREE','text!Renderer/Shader/Glo
        var atmosphereIN    = new THREE.Mesh(new THREE.SphereGeometry( size.x * 1.002, 64, 64 ),materialAtmoIn);
         
        this.add(atmosphereIN);
-       
-//       var imageLoad = new THREE.ImageLoader();
-//       
-//       var skyMap = imageLoad.load('src/Globe/image/sky.jpg');
-//       
-//       var skyMat = new THREE.MeshBasicMaterial( {
-//
-//            side    : THREE.BackSide,
-//            map     : skyMap,
-//            color : 0xFF683A
-//        });
-//        
-//        this.add(new THREE.Mesh(new THREE.SphereGeometry(12000000, 32, 32 ), skyMat));
-        
+              
     }
     
     

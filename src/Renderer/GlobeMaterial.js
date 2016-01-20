@@ -24,8 +24,7 @@ define('Renderer/GlobeMaterial',
         this.Textures_00    = []; 
         this.Textures_00.push(new THREE.Texture()); 
         this.Textures_01    = [];        
-        //this.Textures_01.push(new THREE.Texture());
-        
+  
         this.vertexShader    = GlobeVS;
         this.fragmentShader  = GlobeFS;
                       
@@ -114,14 +113,12 @@ define('Renderer/GlobeMaterial',
             
         return true;    
     };
-    
-    
-    GlobeMaterial.prototype.setPickingRender = function(enable)
+        
+    GlobeMaterial.prototype.enablePickingRender = function(enable)
     {
-        this.uniforms.pickingRender.value = enable;
+        this.uniforms.pickingRender.value = enable === true ? 1 : 0;
 
     };
-    
     
     return GlobeMaterial;
 });
