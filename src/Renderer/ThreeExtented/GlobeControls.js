@@ -635,7 +635,7 @@ THREE.GlobeControls = function ( object, domElement ) {
 			// rotating up and down along whole screen attempts to go 360, but limited to 180
                             scope.rotateUp( 2 * Math.PI * rotateDelta.y / element.clientHeight * scope.rotateSpeed );
                             
-                            
+                            /*
                             var mouse = new THREE.Vector2();
 
                             mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
@@ -645,6 +645,7 @@ THREE.GlobeControls = function ( object, domElement ) {
                             var ray = raycaster.ray;
                             
                             scope.intersection = scope.intersectSphere(ray);
+                            */
                             //console.log(intersection  );
                             //console.log(mouse);
                             

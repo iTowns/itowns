@@ -134,14 +134,14 @@ define('Globe/EllipsoidTileMesh',[
         return this.level !== this.levelTerrain;
     };
     
-    EllipsoidTileMesh.prototype.setRTC = function(enable)
+    EllipsoidTileMesh.prototype.enableRTC = function(enable)
     {           
-        this.material.setRTC(enable);
+        this.material.enableRTC(enable);
     };
     
-    EllipsoidTileMesh.prototype.setPickingRender = function(enable,near,far)
+    EllipsoidTileMesh.prototype.enablePickingRender = function(enable)
     {           
-        this.material.setPickingRender(enable,near,far);
+        this.material.enablePickingRender(enable);
     };
     
      EllipsoidTileMesh.prototype.setFog = function(fog)

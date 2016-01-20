@@ -40,9 +40,9 @@ define('Renderer/BasicMaterial',
         BasicMaterial.prototype = Object.create( THREE.ShaderMaterial.prototype );
         BasicMaterial.prototype.constructor = BasicMaterial;
       
-        BasicMaterial.prototype.setRTC = function(RTC)
+        BasicMaterial.prototype.enableRTC = function(enable)
         {
-            this.uniforms.RTC.value   = RTC;        
+            this.uniforms.RTC.value   = enable === true ? 1 : 0;        
         };
                 
         BasicMaterial.prototype.setDebug = function(debug_value)
