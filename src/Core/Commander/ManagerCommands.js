@@ -11,6 +11,8 @@
  * @param {type} PriorityQueue
  * @param {type} when
  * @param {type} EllipsoidTileMesh
+ * @param {type} CoordCarto
+ * @param {type} THREE
  * @returns {Function}
  */
 define('Core/Commander/ManagerCommands',
@@ -19,14 +21,18 @@ define('Core/Commander/ManagerCommands',
             'Core/Commander/Interfaces/EventsManager',
             'PriorityQueue',
             'when',
-            'Globe/EllipsoidTileMesh'
+            'Globe/EllipsoidTileMesh',
+            'Core/Geographic/CoordCarto',
+            'THREE'
         ], 
         function(
                 tileGlobeProvider,
                 EventsManager,
                 PriorityQueue,
                 when,
-                EllipsoidTileMesh
+                EllipsoidTileMesh,
+                CoordCarto,
+                THREE
         ){
 
     var instanceCommandManager = null;   
@@ -72,6 +78,18 @@ define('Core/Commander/ManagerCommands',
         if(type === EllipsoidTileMesh)
         {                       
             this.providers.push(new tileGlobeProvider(param));
+            
+            this.providers[0].providerKML.loadTestCollada().then(function (result){
+
+                var child = result.scene.children[0].children[0].children[0];
+                var position = this.providers[0].ellipsoid.cartographicToCartesian(new CoordCarto().setFromDegreeGeo(2.33,48.87,/*25000000 - 100*/50));                                
+                child.position.copy(position);
+                child.updateMatrix();
+                child.frustumCulled = false; 
+                
+                this.scene.gfxEngine.scene3D.add(child);
+ 
+            }.bind(this));
         }
     };
         

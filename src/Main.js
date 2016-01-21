@@ -19,8 +19,9 @@ requirejs.config({
         'FlyControls'   : "Renderer/Three/FlyControls",
         'StarGeometry'  : "Renderer/ThreeExtented/StarGeometry",
         'OBB'           : "Renderer/ThreeExtented/OBB",
-        'OBBHelper'     : "Renderer/ThreeExtented/OBBHelper"
-        
+        'OBBHelper'     : "Renderer/ThreeExtented/OBBHelper",
+        'JSZip'         : "Renderer/ThreeExtented/jszip.min",
+        'ColladaLoader' : "Renderer/ThreeExtented/ColladaLoader"        
     },
   /*
     bundles: {
@@ -33,6 +34,9 @@ requirejs.config({
         THREE: {            
             exports: 'THREE'
         },
+        JSZip: {            
+            exports: 'JSZip'
+        },        
         PriorityQueue: {            
             exports: 'PriorityQueue'
         },
@@ -53,8 +57,10 @@ requirejs.config({
         },        
         OBBHelper: {
             deps: ['THREE']
+        },
+        ColladaLoader: {
+            deps: ['THREE']
         }
-
     },
     
     waitSeconds : 30

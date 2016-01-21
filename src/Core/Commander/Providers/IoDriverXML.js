@@ -26,9 +26,7 @@ define('Core/Commander/Providers/IoDriverXML',['Core/Commander/Providers/IoDrive
         var xhr = new XMLHttpRequest();
   
         xhr.open("GET", url,true);                
-        
-        xhr.withCredentials = true;
-        
+         
         xhr.responseType = "document";
           
         xhr.crossOrigin  = '';
