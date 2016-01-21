@@ -50,13 +50,17 @@ define('Renderer/c3DEngine',[
         
         this.initCamera();
         
-        var material    = new BasicMaterial(new THREE.Color(1,0,0));                       
+        var material    = new BasicMaterial(new THREE.Color(1,0,0)); 
+        var material2   = new BasicMaterial(new THREE.Color(0,0,1)); 
         var geometry    = new THREE.CylinderGeometry(0.6, 0.01,2,32);          
-        this.dummy      = new THREE.Mesh( geometry, material );        
+        this.dummy      = new THREE.Mesh( geometry, material );                      
+        this.dummy2     = new THREE.Mesh( geometry, material2 );
         
+        this.dummy2.material.enableRTC(false);
         this.dummy.material.enableRTC(false);
         
         this.scene3D.add(this.dummy);
+        this.scene3D.add(this.dummy2);
 
         this.pickingTexture = new THREE.WebGLRenderTarget( this.width, this.height );
         this.pickingTexture.texture.minFilter        = THREE.LinearFilter;
@@ -69,9 +73,13 @@ define('Renderer/c3DEngine',[
             if(this.controls.click)
             {                                                   
                 var position = this.picking(this.controls.pointClick);
-                this.updateDummy(position);
+                this.updateDummy(position,this.dummy);
                 this.controls.setPointGlobe(position);                
                 this.controls.click      = false;                
+            }
+            else
+            {
+                this.updateDummy(this.controls.intersection,this.dummy2);
             }
             
             this.renderer.clear();            
@@ -433,16 +441,16 @@ define('Renderer/c3DEngine',[
                 
     };
     
-    c3DEngine.prototype.updateDummy = function(position) 
+    c3DEngine.prototype.updateDummy = function(position,dummy) 
     {
-        this.dummy.position.copy(position);                
+        dummy.position.copy(position);                
         var size = position.clone().sub(this.camera.position()).length()/200; // TODO distance                
-        this.dummy.scale.copy(new THREE.Vector3(size,size,size));                
-        this.dummy.lookAt(new THREE.Vector3());
-        this.dummy.quaternion.multiply(new THREE.Quaternion().setFromAxisAngle( new THREE.Vector3( 1, 0, 0 ), -Math.PI / 2 ));
-        this.dummy.translateY(size);
-        this.dummy.updateMatrix();
-        this.dummy.updateMatrixWorld();          
+        dummy.scale.copy(new THREE.Vector3(size,size,size));                
+        dummy.lookAt(new THREE.Vector3());
+        dummy.quaternion.multiply(new THREE.Quaternion().setFromAxisAngle( new THREE.Vector3( 1, 0, 0 ), -Math.PI / 2 ));
+        dummy.translateY(size);
+        dummy.updateMatrix();
+        dummy.updateMatrixWorld();          
     };
 
     return function(scene){

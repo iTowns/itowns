@@ -365,7 +365,7 @@ THREE.OrbitControls = function ( object, domElement ) {
 
 	this.getAzimuthalAngle = function () {
 
-		return theta
+		return theta;
 
 	};
 
