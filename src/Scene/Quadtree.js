@@ -36,9 +36,7 @@ define('Scene/Quadtree',[
             
             this.interCommand.managerCommands.runAllCommands();            
             this.subdivideChildren(this.children[i]);
-        }
-        
-        this.nbNodes = 0;
+        }        
         
     }
     
@@ -90,9 +88,9 @@ define('Scene/Quadtree',[
         this.createTile(quad.northEast,node);
         this.createTile(quad.southWest,node);
         this.createTile(quad.southEast,node);
-                  
+
     };
-    
+
     /**
      * @documentation: update node 
      * @param {type} node
@@ -100,21 +98,18 @@ define('Scene/Quadtree',[
      */
     Quadtree.prototype.update = function(node)
     {
-        if(node.level > 18  || node.wait === true )
-            return false;        
-                             
-        if(node.childrenCount() !== 0 && node.wait === false)                
-        {                        
-            for (var i = 0 ;i<node.childrenCount();i++)
-            {                
-                node.children[i].visible = true;                
-            }
-            
-            node.material.visible   = false;
-            
+        //TODO debug freeze 
+//        if(node.level > 17  || (node.wait === true && node.childrenCount() === 4))
+        if(node.level > 17  || node.wait === true)
             return false;
-        }       
-        
+
+        if(node.childrenCount() > 0 &&  node.wait === false )                
+        {                                              
+            node.setChildrenVisibility(true);
+            node.setMaterialVisibility(!(node.childrenCount() === 4 && node.childrenLoaded()));
+            return false;
+        }
+
         return true;
     };
     

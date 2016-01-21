@@ -20,49 +20,74 @@ define('Globe/EllipsoidTileMesh',[
     'Scene/BoudingBox',
     'Core/defaultValue',
     'THREE',
-    'Renderer/Material',
-    'Core/Geographic/CoordCarto',
-    'text!Renderer/Shader/GlobeVS.glsl',
-    'text!Renderer/Shader/GlobeFS.glsl'], function(NodeMesh,EllipsoidTileGeometry,BoudingBox,defaultValue,THREE,Material,CoordCarto,GlobeVS,GlobeFS){
+    'Renderer/GlobeMaterial',
+    'Core/Geographic/CoordCarto',   
+    'OBBHelper',
+    'SphereHelper'], function(NodeMesh,EllipsoidTileGeometry,BoudingBox,defaultValue,THREE,GlobeMaterial,CoordCarto,OBBHelper,SphereHelper){
  
-    function EllipsoidTileMesh(bbox,cooWMTS,ellipsoid,parent,geometryCache){
+    function EllipsoidTileMesh(bbox,cooWMTS,ellipsoid,id,geometryCache){
         //Constructor
         NodeMesh.call( this );
-        
-        this.showHelper = true;
+                
+                
         this.level      = cooWMTS.zoom;
         this.cooWMTS    = cooWMTS;
-        this.bbox       = defaultValue(bbox,new BoudingBox());        
+        this.bbox       = defaultValue(bbox,new BoudingBox());               
+        this.id         = id;
         
-        var precision   = 8;
+        var precision   = 16;               
+        var levelMax    = 18;
         
-        if (this.level > 15)
-            precision   = 64;
-        else if(this.level > 11)
-            precision   = 128;
-        else if(this.level > 8)
-            precision   = 32;
-        else if (this.level > 6)
-            precision   = 16;
-        
-        var levelMax = 16;
-        
-        this.geometricError  = Math.pow(2,levelMax- this.level);        
-        this.geometry        = defaultValue(geometryCache,new EllipsoidTileGeometry(bbox,precision,ellipsoid,this.level));       
-        var ccarto           = new CoordCarto(bbox.center.x,bbox.center.y,0);                
+        this.geometricError = Math.pow(2,(levelMax - this.level));        
+        this.geometry       = defaultValue(geometryCache,new EllipsoidTileGeometry(bbox,precision,ellipsoid,this.level));       
+        var ccarto          = new CoordCarto(bbox.center.x,bbox.center.y,0);                
         
         // TODO modif ver world coord de three.js 
-        this.absoluteCenter  = ellipsoid.cartographicToCartesian(ccarto) ;   
+        this.absoluteCenter = ellipsoid.cartographicToCartesian(ccarto);
        
         // TODO ??? 
-        this.absCenterSphere = new THREE.Vector3().addVectors(this.geometry.boundingSphere.center,this.absoluteCenter);
+        this.centerSphere   = new THREE.Vector3().addVectors(this.geometry.boundingSphere.center,this.absoluteCenter);                       
+        this.orthoNeed      = 0;
+        this.material       = new GlobeMaterial(bbox,id);
+        this.dot            = 0;
+        this.frustumCulled  = false;        
+        this.maxChildren    = 4;
+        
+        var  groupTerrain   = [14,11,7,3];        
+        this.levelTerrain   = this.level;
                
-        this.tMat       = new Material(GlobeVS,GlobeFS,bbox,cooWMTS.zoom);                
-        this.orthoNeed  = 10;
-        this.material   = this.tMat.shader;
-        this.dot        = 0;
-        this.frustumCulled = false;        
-        this.timeInvisible = 0;
+        for (var i = 0; i < groupTerrain.length;i++)
+        {
+            var gLev = groupTerrain[i];
+            if(this.level >= gLev)
+            {
+                this.levelTerrain = gLev;
+                break;
+            }
+        }
+       
+        var showHelper = true;
+        showHelper = false;
+        
+        if(showHelper && this.level >= 2)
+        {
+            
+            //this.helper  = new THREE.SphereHelper(this.geometry.boundingSphere.radius);
+            
+            //var text = 'z(' + this.level.toString() + '),r(' + cooWMTS.row + '),c(' + cooWMTS.col + ')';
+            var text = (this.level + 1).toString();
+            
+            this.helper  = new THREE.OBBHelper(this.geometry.OBB,text);
+            
+            if(this.helper instanceof THREE.SphereHelper)
+                         
+                this.helper.position.add(this.absoluteCenter);            
+            
+            else if(this.helper instanceof THREE.OBBHelper)
+            
+                this.helper.translateZ(this.absoluteCenter.length());
+            
+        }
     }
 
     EllipsoidTileMesh.prototype = Object.create( NodeMesh.prototype );
@@ -72,27 +97,126 @@ define('Globe/EllipsoidTileMesh',[
     EllipsoidTileMesh.prototype.dispose = function()
     {          
         // TODO à mettre dans node mesh
-        this.tMat.dispose();
-        this.geometry.dispose();
-        this.material = null;
-        
+        this.material.dispose();       
+        this.geometry.dispose();                    
+        this.geometry = null;       
+        this.material = null;        
     };
-
     
-    EllipsoidTileMesh.prototype.setTextureTerrain = function(texture,pitScale)
+    /**
+    * 
+
+     * @returns {undefined}     */
+    EllipsoidTileMesh.prototype.disposeChildren = function()
+    {
+        while(this.children.length>0)
+        {
+            var child = this.children[0];
+            this.remove(child);
+            child.dispose();              
+        }
+         this.material.visible = true;
+    };
+    
+    EllipsoidTileMesh.prototype.incoherent = function()
+    {
+        var nChildren = this.children.length;
+        
+        if(nChildren > 0 && nChildren < this.maxChildren)
+            console.log('incoherent');
+        
+        if(nChildren > 0  && nChildren < this.maxChildren && this.wait === true)
+            console.log('incoherent');
+    };
+    
+    EllipsoidTileMesh.prototype.useParent = function()
+    {
+        return this.level !== this.levelTerrain;
+    };
+    
+    EllipsoidTileMesh.prototype.enableRTC = function(enable)
+    {           
+        this.material.enableRTC(enable);
+    };
+    
+    EllipsoidTileMesh.prototype.enablePickingRender = function(enable)
+    {           
+        this.material.enablePickingRender(enable);
+    };
+    
+     EllipsoidTileMesh.prototype.setFog = function(fog)
+    {                 
+        this.material.setFogDistance(fog);
+    };
+    
+    EllipsoidTileMesh.prototype.setMatrixRTC = function(rtc)
+    {                 
+        this.material.setMatrixRTC(rtc);
+    };
+    
+    EllipsoidTileMesh.prototype.setDebug = function(enable)
+    {                 
+        this.material.setDebug(enable);
+    };
+    
+    EllipsoidTileMesh.prototype.setSelected = function(select)
+    {                 
+        this.material.setSelected(select);        
+    };
+        
+    EllipsoidTileMesh.prototype.setTerrain = function(terrain)
     {         
-        this.tMat.setTexture(texture,0,0,pitScale);      
+        var texture;
+        var pitScale;                        
+
+        if(terrain      === - 1)
+            texture = -1;
+        else if(terrain === - 2)
+        {
+            var parentBil   = this.getParentLevel(this.levelTerrain);                                
+            pitScale        = parentBil.bbox.pitScale(this.bbox);                
+            texture         = parentBil.material.Textures_00[0];
+            
+            this.setAltitude(parentBil.bbox.minCarto.altitude,parentBil.bbox.maxCarto.altitude);
+            
+        }
+        else
+        {
+            texture = terrain.texture;            
+            this.setAltitude(terrain.min,terrain.max);            
+        }                         
+        
+        this.material.setTexture(texture,0,0,pitScale);      
     };
     
     EllipsoidTileMesh.prototype.setAltitude = function(min,max)
     {         
-        this.bbox.setAltitude(min,max);
+        this.bbox.setAltitude(min,max);        
+        var delta = this.geometry.OBB.addHeight(this.bbox);
+        var trans = this.absoluteCenter.clone().setLength(delta.y);
+        
+        var radius = this.geometry.boundingSphere.radius;
+        
+        this.geometry.boundingSphere.radius = Math.sqrt(delta.x*delta.x + radius*radius);
+        this.centerSphere.add(trans);
+        
+        if(this.helper instanceof THREE.OBBHelper)
+        {
+            this.helper.update(this.geometry.OBB);
+            this.helper.translateZ(this.absoluteCenter.length());
+        }
+        else if(this.helper instanceof THREE.SphereHelper)
+        {
+            this.helper.update(this.geometry.boundingSphere.radius);
+            this.helper.position.add(trans);
+        }       
     };    
     
     EllipsoidTileMesh.prototype.setTextureOrtho = function(texture,id)
     {         
         id = id === undefined ? 0 : id;
-        this.tMat.setTexture(texture,1,id);        
+        this.material.setTexture(texture,1,id);
+        this.checkOrtho();
     };   
     
     EllipsoidTileMesh.prototype.normals = function()
@@ -118,6 +242,24 @@ define('Globe/EllipsoidTileMesh',[
     EllipsoidTileMesh.prototype.OBB = function()
     { 
         return this.geometry.OBB;
+    };
+    
+    EllipsoidTileMesh.prototype.checkOrtho = function()
+    { 
+        
+        if(this.orthoNeed === this.material.Textures_01.length || this.level < 2) 
+        {                          
+            
+            this.loaded = true; 
+            this.material.update();
+                        
+            var parent = this.parent;
+
+            if(parent.childrenLoaded())
+            {                                
+                parent.wait = false;                  
+            }            
+        }                             
     };
     
     return EllipsoidTileMesh;

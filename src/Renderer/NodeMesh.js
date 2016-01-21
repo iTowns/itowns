@@ -17,11 +17,40 @@ define('Renderer/NodeMesh',['Scene/Node','THREE'], function(Node, THREE){
         
         this.sse    = 0.0;
         this.wait   = false;
+        this.helper = undefined;
+        
     };
 
     NodeMesh.prototype = Object.create( THREE.Mesh.prototype );
 
     NodeMesh.prototype.constructor = NodeMesh;
+    
+    NodeMesh.prototype.showHelper = function(show)
+    {
+        if(this.helper !== undefined)        
+            this.helper.visible = show;                   
+    };
+    
+    NodeMesh.prototype.setVisibility = function(show)
+    {        
+        this.visible = show;
+        this.showHelper(show);
+        return show;
+    };
+    
+    NodeMesh.prototype.setMaterialVisibility = function(show)
+    {        
+        this.material.visible = show;
+        if(this.helper !== undefined)
+            this.helper.setMaterialVisibility(show);
+        
+    };
+    
+    NodeMesh.prototype.setChildrenVisibility = function(show)
+    {        
+        for(var i = 0;i<this.children.length;i++)           
+            this.children[i].setVisibility(show);        
+    };
     
     Node.extend(NodeMesh);
     

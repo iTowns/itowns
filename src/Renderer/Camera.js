@@ -16,6 +16,8 @@ define('Renderer/Camera',['Scene/Node','THREE'], function(Node, THREE){
         this.FOV        = 30;
 
         this.camera3D   = new THREE.PerspectiveCamera( 30, this.ratio);
+        this.camera3D.matrixAutoUpdate     = false;
+        this.camera3D.rotationAutoUpdate   = false;
 
         this.direction  = new THREE.Vector3();        
         this.frustum    = new THREE.Frustum();
@@ -28,7 +30,7 @@ define('Renderer/Camera',['Scene/Node','THREE'], function(Node, THREE){
         this.HYFOV      = 2.0 * Math.atan(Math.tan(radAngle*0.5) * this.Hypotenuse  / this.width );                
         this.preSSE     = this.Hypotenuse * (2.0 * Math.tan(this.HYFOV * 0.5));
         
-        this.cameraHelper  = debug  ? new THREE.CameraHelper( this.camera3D ) : undefined;
+        this.cameraHelper  = undefined;//debug  ? new THREE.CameraHelper( this.camera3D ) : undefined;
         this.frustum       = new THREE.Frustum();
     }
  
@@ -50,7 +52,13 @@ define('Renderer/Camera',['Scene/Node','THREE'], function(Node, THREE){
 
     };
     
-    Camera.prototype.viewMatrix = function(){
+    Camera.prototype.createCamHelper = function(){
+        
+        this.cameraHelper  = new THREE.CameraHelper( this.camera3D );      
+
+    };
+    
+    Camera.prototype.matrixWorldInverse = function(){
         
         return this.camera3D.matrixWorldInverse;        
     };
@@ -72,17 +80,15 @@ define('Renderer/Camera',['Scene/Node','THREE'], function(Node, THREE){
         this.camera3D.aspect = this.ratio;
         
         this.camera3D.updateProjectionMatrix();      
-
+        
     };    
    
     Camera.prototype.SSE = function(node)
     {
         
         var boundingSphere = node.geometry.boundingSphere;    
-                                        
-        //var center = 
-                        
-        var distance = Math.max(0.0,(this.camera3D.position.distanceTo(node.absCenterSphere) - boundingSphere.radius));                
+               
+        var distance = Math.max(0.0,(this.camera3D.position.distanceTo(node.centerSphere) - boundingSphere.radius));                
         
         var SSE = this.preSSE * (node.geometricError/distance);
         
@@ -99,7 +105,7 @@ define('Renderer/Camera',['Scene/Node','THREE'], function(Node, THREE){
         this.direction = vector.applyQuaternion( this.camera3D.quaternion );
         
         this.frustum.setFromMatrix( new THREE.Matrix4().multiplyMatrices( this.camera3D.projectionMatrix, this.camera3D.matrixWorldInverse));        
-        
+     
     };
     
     Camera.prototype.setPosition = function(position)

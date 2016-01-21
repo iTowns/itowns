@@ -58,7 +58,9 @@ define('Core/Commander/Providers/IoDriver_XBIL',['Core/Commander/Providers/IoDri
                 for (var i = 0; i < result.floatArray.byteLength; i++) 
                 {
                    var val = result.floatArray[i];
-                   if(val === -99999.0 || val === undefined )                        
+                   //  TODO debug a voir avec le geoportail
+                   //if(val === -99999.0 || val === undefined )                        
+                   if(val < - 10.0 || val === undefined )                        
                         result.floatArray[i] = mcolor;                   
                    else
                    {
@@ -76,7 +78,9 @@ define('Core/Commander/Providers/IoDriver_XBIL',['Core/Commander/Providers/IoDri
 
         xhr.onerror = function(){
 
-            deferred.reject(Error("Error IoDriver_XBIL"));
+            //console.log('error bil');
+            deferred.resolve(undefined);
+            //deferred.reject(Error("Error IoDriver_XBIL"));
 
         };
 

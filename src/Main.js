@@ -12,16 +12,23 @@ requirejs.config({
     paths : {
        
         'text'          : "ThirdParty/text",
-        'THREE'         : "https://rawgit.com/mrdoob/three.js/master/build/three.min",
+        //'THREE'         : "https://rawgit.com/mrdoob/three.js/master/build/three.min",
+        'THREE'         : "https://rawgit.com/mrdoob/three.js/dev/build/three.min",
         'PriorityQueue' : "ThirdParty/PriorityQueue",
-        'when'          : 'ThirdParty/when',        
+        'when'          : 'ThirdParty/when',
+        'parallel'      : 'ThirdParty/parallel',        
         'OrbitControls' : "Renderer/Three/OrbitControls",
+        'GlobeControls' : "Renderer/ThreeExtented/GlobeControls",
         'FlyControls'   : "Renderer/Three/FlyControls",
+        'FontUtils'     : "Renderer/Three/FontUtils",
+        'FontOptimer'   : "Renderer/Three/optimer_regular",
         'StarGeometry'  : "Renderer/ThreeExtented/StarGeometry",
         'OBB'           : "Renderer/ThreeExtented/OBB",
         'OBBHelper'     : "Renderer/ThreeExtented/OBBHelper",
         'JSZip'         : "Renderer/ThreeExtented/jszip.min",
-        'ColladaLoader' : "Renderer/ThreeExtented/ColladaLoader"        
+        'ColladaLoader' : "Renderer/ThreeExtented/ColladaLoader",        
+        'SphereHelper'  : "Renderer/ThreeExtented/SphereHelper"
+        
     },
   /*
     bundles: {
@@ -43,10 +50,22 @@ requirejs.config({
         when: {            
             exports: 'when'
         },
+        parallel: {            
+            deps: ['when']
+        },
         OrbitControls: {
             deps: ['THREE']
-        },        
+        },
+        GlobeControls: {
+            deps: ['THREE']
+        },   
         FlyControls: {
+            deps: ['THREE']
+        },
+        FontUtils: {
+            deps: ['THREE']
+        },
+        FontOptimer: {
             deps: ['THREE']
         },
         StarGeometry: {
@@ -56,6 +75,9 @@ requirejs.config({
             deps: ['THREE']
         },        
         OBBHelper: {
+            deps: ['THREE','FontUtils','FontOptimer']
+        },        
+        SphereHelper: {
             deps: ['THREE']
         },
         ColladaLoader: {
