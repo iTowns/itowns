@@ -6,26 +6,23 @@
 
 define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess','OBBHelper'], function(THREE,EllipsoidTileMesh){
 
-    function BrowseTree(scene){
+    function BrowseTree(scene)
+    {
         //Constructor
   
         this.oneNode    = 0;
         this.scene      = scene;        
         this.nodeProcess= undefined;
         this.tree       = undefined;
-        this.date       = new Date();        
-
+        this.date       = new Date(); 
+        this.fogDistance = 1000000000.0;        
+        this.mfogDistance= 1000000000.0;
+        this.visibleNodes= 0;
+        this.selectNodeId   = -1;
+        this.selectNode     = null;
+        
     }
     
-    /**
-     * 
-     * @param {type} node
-     * @returns {undefined}
-     */
-    BrowseTree.prototype.invisible= function(node)
-    {        
-        node.visible = false;
-    };
     
     BrowseTree.prototype.addNodeProcess= function(nodeProcess)
     {        
@@ -48,110 +45,78 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
     {        
         if(node instanceof EllipsoidTileMesh)
         {            
-            node.visible = false;
             
-            if(node.loaded)
+            if(node.helper !== undefined && node.helper.parent === null)           
+                this.scene.scene3D().add(node.helper);
+
+            node.setVisibility(false);
+            node.setSelected(false);
+                 
+            if(node.loaded && this.nodeProcess.frustumCullingOBB(node,camera))
             {
-                this.nodeProcess.frustumCullingOBB(node,camera);
-
-                if(node.visible )
+                if(this.nodeProcess.horizonCulling(node,camera))
                 {
-                    this.nodeProcess.horizonCulling(node,camera);
+                    if(node.parent.material !== undefined && node.parent.material.visible === true)
+                    
+                        return node.setVisibility(false);
+                                        
+                    var sse = this.nodeProcess.SSE(node,camera);                                                        
 
-                    if(node.visible )
+                    if(optional && sse && node.material.visible === true && node.wait === false)
+                                                       
+                        this.tree.subdivide(node);
+                                                
+                    else if(!sse && node.level >= 2 && node.material.visible === false && node.wait === false)
                     {
 
-                        if(node.parent.material !== undefined && node.parent.material.visible === true)
-                        {                                     
-                            node.visible = false;
-                            if (node.timeInvisible === 0)
-                            {
-                                node.timeInvisible = new Date().getTime();
-                                //console.log(node.timeInvisible);
-                            }
-                            return false;
-                        }
-
-                        var sse = this.nodeProcess.SSE(node,camera);
-
-                        if(optional && sse && node.material.visible === true)
-                        {   
-                            //console.log(node.sse);
-                            this.tree.subdivide(node);
-                        }                            
-                        else if(!sse && node.level >= 2 && node.material.visible === false)
-                        {
-
-                            node.material.visible = true;
-                                            
-                            this.RTC(node,camera);
-
-                            if(node.childrenCount() !== 0)
-                                for(var i = 0;i<node.children.length;i++)
-                                {                                                       
-                                    node.children[i].visible = false;                                        
-                                }
-
-                            return false;                            
-                        }                                
-                    }
+                        node.setMaterialVisibility(true);                        
+                        this.uniformsProcess(node,camera);                      
+                        node.setChildrenVisibility(false);
+                        
+                        return false;                            
+                    }                                
                 }
             }
 
-            if(node.visible)
-            {
-                this.RTC(node,camera);
-                node.timeInvisible = 0;
-            }
-            else if (node.timeInvisible === 0)
-            {
-                
-                node.timeInvisible = new Date().getTime();
-                //console.log(node.timeInvisible);
-            }
-                                        
+            if(node.visible  && node.material.visible)
+                this.uniformsProcess(node,camera);                       
+            
             return node.visible;
-        }        
+        }
         
         return true;
     };
     
     
-    BrowseTree.prototype.RTC = function(node,camera)
-    {        
-//        var matrixWorld     = new THREE.Matrix4();        
-//        var modelViewMatrix = new THREE.Matrix4().multiplyMatrices(camera.viewMatrix(),matrixWorld);           
-//        var center          = node.absoluteCenter;
-//        var centerEye       = new THREE.Vector4(center.x,center.y,center.z, 1.0).applyMatrix4(camera.viewMatrix()) ;        
-//        var mvc             = modelViewMatrix.clone().setPosition(centerEye);        
-//        var mVPMatRTC       = new THREE.Matrix4().multiplyMatrices(camera.camera3D.projectionMatrix,mvc);
-//        
-        camera = camera.camera3D;
-        var center          = new THREE.Vector3();
-        var matrixWorld     = new THREE.Matrix4();   
-
-        var cameraMatrixWorld           = camera.matrixWorld;
-
-        var cameraWorldPosition         = new THREE.Vector3().setFromMatrixPosition(cameraMatrixWorld);
-
-        var positionCameraNode          = new THREE.Vector3().subVectors(cameraWorldPosition,node.absoluteCenter);
-
-        var cameraMatrixWorldCentered   = camera.matrixWorld.clone().setPosition(positionCameraNode);
-
-        var cameraMatrixWorldInverse    = new THREE.Matrix4();
-
-        cameraMatrixWorldInverse.getInverse(cameraMatrixWorldCentered);
-
-        var modelViewMatrix = new THREE.Matrix4().multiplyMatrices(cameraMatrixWorldInverse,matrixWorld);           
-
-        var centerEye       = new THREE.Vector4(center.x,center.y,center.z, 1.0).applyMatrix4(cameraMatrixWorldInverse) ;                        
-
-        var mvc             = modelViewMatrix.clone().setPosition(centerEye);        
-        var mVPMatRTC       = new THREE.Matrix4().multiplyMatrices(camera.projectionMatrix,mvc);
+    BrowseTree.prototype.uniformsProcess = function(node,camera)
+    {
+        node.setMatrixRTC(this.getRTCMatrix(node.absoluteCenter,camera));
+        if(node.id === this.selectNodeId)
+        {
+            node.setSelected( node.visible && node.material.visible);
+            if(this.selectNode !== node)
+            {
+                this.selectNode = node;
+                console.log(node);
+            }            
+        }
         
-        node.tMat.uniforms.mVPMatRTC.value = mVPMatRTC;
+        node.setFog(this.fogDistance);        
+    };
+        
+    BrowseTree.prototype.getRTCMatrix = function(center,camera)    
+    {               
+        // TODO gerer orientation et echelle de l'objet
+        var position    = new THREE.Vector3().subVectors(camera.camera3D.position,center);
+        var quaternion  = new THREE.Quaternion().copy(camera.camera3D.quaternion);        
+        var matrix      = new THREE.Matrix4().compose(position,quaternion,new THREE.Vector3(1,1,1));
+        var matrixInv   = new THREE.Matrix4().getInverse(matrix);       
+        var centerEye   = new THREE.Vector4().applyMatrix4(matrixInv) ;                        
+        var mvc         = matrixInv.setPosition(centerEye);      
+        return            new THREE.Matrix4().multiplyMatrices(camera.camera3D.projectionMatrix,mvc);
 
     };
+        
     /**
      * @documentation: Initiate traverse tree 
      * @param {type} tree       : tree 
@@ -159,18 +124,22 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
      * @param {type} optional   : optional process
      * @returns {undefined}
      */
-    BrowseTree.prototype.browse = function(tree, camera,optional){
+    BrowseTree.prototype.browse = function(tree, camera,optional)
+    {
  
         this.tree = tree;
+        camera.camera3D.updateMatrix();
+        camera.camera3D.updateMatrixWorld(true);
+        camera.camera3D.matrixWorldInverse.getInverse(camera.camera3D.matrixWorld);      
+        
+        var distance = camera.camera3D.position.length();
+                
+        this.fogDistance = this.mfogDistance * Math.pow((distance-6300000)/25000000,1.6);                
+        
         this.nodeProcess.preHorizonCulling(camera);
+        
         for(var i = 0;i<tree.children.length;i++)
             this._browse(tree.children[i],camera,optional);
-
-        //if(optional)
-        {
-            this.tree.interCommand.managerCommands.runAllCommands();
-            
-        }
     };
     
     /**
@@ -186,12 +155,12 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
         if(this.processNode(node,camera,optional))       
             for(var i = 0;i<node.children.length;i++)
                 this._browse(node.children[i],camera,optional);
-//        else
-//            this._clean(node,node.level );
+        else
+            this._clean(node,node.level +2,camera);
 
     };
     
-    BrowseTree.prototype._clean = function(node,level)
+    BrowseTree.prototype._clean = function(node,level,camera)
     {
         if( node.children.length === 0)
             return true;
@@ -200,67 +169,18 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
         for(var i = 0;i<node.children.length;i++)
         {
             var child = node.children[i];
-            
-            //console.log(this.date.getTime() - child.timeInvisible);
-            if(this._clean(child,level) && (new Date().getTime() - child.timeInvisible) > 2000 && child.level >= 3 && child.level >= level && child.children.length ===0)
+            // TODO node.wait === true ---> delete child and switch to node.wait = false
+            if(this._clean(child,level,camera) && ((child.level >= level && child.children.length ===0 && !this.nodeProcess.SSE(child,camera) && !node.wait ) || node.level ===2 )) 
                 childrenCleaned++;                        
         }
         
-        if(childrenCleaned === 4 )
-        {            
-            
-            while(node.children.length>0)
-            {
-                var child = node.children[0];
-                
-                child.dispose();
-                node.remove(child);
-                this.tree.nbNodes--;
-            }
-            node.material.visible = true;
+        if(childrenCleaned === node.children.length)
+        {                         
+            node.disposeChildren();
             return true;
         }else         
             return false;
         
-    };
-    
-    /**
-     * TODO : to delete
-     * @documentation:add oriented bouding box of node in scene
-     * @param {type} node
-     * @returns {undefined}
-     */
-    BrowseTree.prototype.bBoxHelper = function(node)
-    {          
-        if(node instanceof EllipsoidTileMesh && node.level === 2  )
-        {                
-            
-            //console.log(node);
-            if(this.oneNode === 22 )
-            {                    
-                var obb = new THREE.OBBHelper(node.geometry.OBB);
-                var l       = node.absoluteCenter.length();
-                obb.translateZ(l);
-                this.scene.scene3D().add(obb);           
-            }
-            this.oneNode++;
-        }
-    };
-    
-    /**
-     * TODO : to delete 
-     * @param {type} node
-     * @returns {BrowseTree_L7.BrowseTree.prototype.addOBBoxHelper.bboxH}
-     */
-    BrowseTree.prototype.addOBBoxHelper = function(node){
-             
-        var bboxH = this.bBoxHelper(node);
-            
-        for(var i = 0;i<node.children.length;i++)
-                this.addOBBoxHelper(node.children[i]);
-            
-        return bboxH;
-
     };
     
     return BrowseTree;

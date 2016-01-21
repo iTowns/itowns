@@ -4,7 +4,7 @@
 * Description: Le globe est le noeud du globe (node) principale.
 */
 
-define('Globe/Globe',[
+define('Globe/Globe',[    
     'Core/defaultValue',
     'Scene/Layer',
     'Scene/Quadtree',
@@ -13,11 +13,13 @@ define('Globe/Globe',[
     'Globe/EllipsoidTileMesh',
     'Globe/Atmosphere',
     'Core/System/Capabalities',
-    'THREE'], function(defaultValue,Layer,Quadtree,SchemeTile,MathExt,EllipsoidTileMesh,Atmosphere,Capabalities,THREE){
+    'Core/Geographic/CoordCarto',
+    'Renderer/BasicMaterial',
+    'THREE'], function(defaultValue,Layer,Quadtree,SchemeTile,MathExt,EllipsoidTileMesh,Atmosphere,Capabalities,CoordCarto,BasicMaterial,THREE){
 
     function Globe(scale){
         //Constructor
-
+        
         Layer.call( this );        
         
         scale       = defaultValue(scale,1.0);
@@ -26,9 +28,31 @@ define('Globe/Globe',[
                 
         this.size       = new THREE.Vector3(6378137, 6378137, 6356752.3142451793).multiplyScalar(scale);
         this.terrain    = new Quadtree(EllipsoidTileMesh,this.SchemeTileWMTS(2),this.size) ;        
-        //this.atmosphere = this.NOIE ? new Atmosphere(this.size) : undefined;
-                
-        this.add(this.terrain);
+        this.atmosphere = this.NOIE ? new Atmosphere(this.size) : undefined;
+        
+        this.batiments  = new Layer();
+        
+        var material    = new BasicMaterial(new THREE.Color(1,0,1));
+        var geometry    = new THREE.BoxGeometry(30, 30, 40,3,3,3);       
+        var batiment    = new THREE.Mesh( geometry, material );
+        var position    = this.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(2.33,48.87,35));
+        batiment.frustumCulled  = false;
+        material.wireframe      = true;
+        batiment.position.copy(position);
+   
+        var material2    = new BasicMaterial(new THREE.Color(1,0.5,1));        
+        var batiment2    = new THREE.Mesh( geometry, material2 );
+        var position2    = this.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(2.331,48.87,35));
+        batiment2.frustumCulled  = false;
+        material2.wireframe      = true;
+        batiment2.position.copy(position2);
+        
+//        this.batiments.add( batiment );
+//        this.batiments.add( batiment2 );
+        
+        this.add(this.terrain);                
+        this.add(this.batiments);
+        
         if(this.atmosphere !== undefined)
             this.add(this.atmosphere);
         
@@ -58,6 +82,14 @@ define('Globe/Globe',[
         }
 
     };
+    
+    Globe.prototype.showAtmosphere = function(show)
+    {
+         if(this.atmosphere !== undefined)
+             this.atmosphere.visible = show;
+
+    };
+    
     
     Globe.prototype.ellipsoid = function()
     {

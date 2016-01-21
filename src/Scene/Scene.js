@@ -18,8 +18,10 @@ define('Scene/Scene',[
     'Core/Commander/ManagerCommands',
     'Scene/BrowseTree',
     'Scene/NodeProcess',
+    'Scene/Quadtree',
+    'Scene/Layer',
     'Core/Geographic/CoordCarto',
-    'Core/System/Capabalities'], function(c3DEngine,Globe,ManagerCommands,BrowseTree,NodeProcess,CoordCarto,Capabalities){
+    'Core/System/Capabalities'], function(c3DEngine,Globe,ManagerCommands,BrowseTree,NodeProcess,Quadtree,Layer,CoordCarto,Capabalities){
  
     var instanceScene = null;
 
@@ -28,7 +30,7 @@ define('Scene/Scene',[
         if(instanceScene !== null){
             throw new Error("Cannot instantiate more than one Scene");
         }         
-        this.nodes          = [];            
+        this.layers          = [];            
         this.cameras        = null;        
         this.selectNodes    = null;      
         this.managerCommand = ManagerCommands();
@@ -85,7 +87,7 @@ define('Scene/Scene',[
     
     Scene.prototype.size = function()
     {
-        return this.nodes[0].size;
+        return this.layers[0].size;
     };
 
     /**
@@ -96,50 +98,81 @@ define('Scene/Scene',[
     };
 
     /**
-     * @documentation: 
+     * 
+     * @param {type} run
      * @returns {undefined}
      */
-    Scene.prototype.sceneProcess = function(){
+    Scene.prototype.sceneProcess = function(run){
         
-        if(this.nodes[0] !== undefined  && this.currentCamera() !== undefined )
+        //console.log(this.managerCommand.queueAsync.length);
+        
+        if(this.layers[0] !== undefined  && this.currentCamera() !== undefined )
         {                        
-            this.browserScene.browse(this.nodes[0].terrain,this.currentCamera(),true);
-            //this.updateScene3D(); // TODO --> replace by renderScene3D            
-            this.renderScene3D();            
+        
+            this.browserScene.browse(this.layers[0].terrain,this.currentCamera(),true);
+            
+            if(run)
+                this.managerCommand.runAllCommands();
+            
+            //this.renderScene3D();            
+            this.updateScene3D();            
         } 
         
     };
     
     Scene.prototype.realtimeSceneProcess = function(){        
-        if(this.nodes[0] !== undefined  && this.currentCamera !== undefined )
-        {            
-            this.browserScene.browse(this.nodes[0].terrain,this.currentCamera(),false);
-        }                
+        
+        if(this.currentCamera !== undefined )
+            for(var l = 0; l <  this.layers.length;l++)
+            {                            
+                var layer = this.layers[l];
+                
+                for(var sl = 0; sl <  layer.children.length;sl++)
+                {
+                   var sLayer = layer.children[sl];
+                   
+                   if(sLayer instanceof Quadtree)
+                        this.browserScene.browse(sLayer,this.currentCamera(),false);
+                   else if(sLayer instanceof Layer)
+                        for(var c = 0; c <  sLayer.children.length; c++)
+                        {
+                            var node = sLayer.children[c];
+                            node.material.setMatrixRTC(this.browserScene.getRTCMatrix(node.position,this.currentCamera()));
+                        }
+                }
+                
+            }                
     };
     
     /**
     */
-    Scene.prototype.updateScene3D = function(){
-        
-       this.gfxEngine.update();
+    Scene.prototype.updateScene3D = function(run){
+                
+       this.gfxEngine.update(run);
     };
     
-    Scene.prototype.wait = function(){
+    Scene.prototype.wait = function(run){
         
-        var waitTime = 250;                
+        var waitTime = 20;
         
-        this.realtimeSceneProcess();
+        if(run === undefined)
+            run = true;
+        else if(run === false)
+            this.sceneProcess();
+        else
+            this.realtimeSceneProcess();
         
         if(this.timer === null)
         { 
-            this.timer = window.setTimeout(this.sceneProcess.bind(this),waitTime); 
+            this.timer = window.setTimeout(this.sceneProcess.bind(this),waitTime,run); 
         }
         else
         {
             window.clearInterval(this.timer);
-            this.timer = window.setTimeout(this.sceneProcess.bind(this),waitTime); 
+            this.timer = window.setTimeout(this.sceneProcess.bind(this),waitTime,run); 
         }
         
+   
     };
 
     /**
@@ -163,7 +196,7 @@ define('Scene/Scene',[
     Scene.prototype.add = function(node){
         //TODO: Implement Me 
         
-        this.nodes.push(node);                
+        this.layers.push(node);                
         
         this.gfxEngine.add3DScene(node.getMesh());
     };
@@ -180,10 +213,17 @@ define('Scene/Scene',[
 
 
     /**
-    * @param nodes {[object Object]} 
+    * @param layers {[object Object]} 
     */
-    Scene.prototype.select = function(nodes){
+    Scene.prototype.select = function(layers){
         //TODO: Implement Me 
+
+    };
+    
+    Scene.prototype.selectNodeId = function(id)
+    {
+    
+        this.browserScene.selectNodeId = id;
 
     };
 

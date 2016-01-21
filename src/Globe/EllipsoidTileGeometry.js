@@ -36,8 +36,8 @@ define('Globe/EllipsoidTileGeometry',[
         var ellipsoid       = defaultValue(pellipsoid,new Ellipsoid(6378137, 6378137, 6356752.3142451793));         
         
         var nSeg            = defaultValue(segment,32);       
-        var nVertex         = (nSeg+1)*(nSeg+1); // correct pour uniquement les vertex
-        var triangles       = (nSeg)*(nSeg); // correct pour uniquement les vertex
+        var nVertex         = (nSeg+1)*(nSeg+1) + 8 * (nSeg-1); // correct pour uniquement les vertex
+        var triangles       = (nSeg)*(nSeg)     + 16 * (nSeg-1); // correct pour uniquement les vertex
         
         var widthSegments   = nSeg;
         var heightSegments  = nSeg;
@@ -63,13 +63,21 @@ define('Globe/EllipsoidTileGeometry',[
         {                           
             return ellipsoid.geodeticSurfaceNormalCartographic(new CoordCarto( phi, theta,0));                
         };
-
+        
+//        this.tops        = [];
+//        this.tops.push(ellipsoid.cartographicToCartesian(new CoordCarto(phiStart, thetaStart,0)));
+//        this.tops.push(ellipsoid.cartographicToCartesian(new CoordCarto(phiStart + phiLength, thetaStart+ thetaLength,0)));
+//        this.tops.push(ellipsoid.cartographicToCartesian(new CoordCarto(phiStart, thetaStart+ thetaLength,0)));
+//        this.tops.push(ellipsoid.cartographicToCartesian(new CoordCarto(phiStart + phiLength, thetaStart,0)));   
+//
 //        this.normals        = [];
-//        this.HeightPoints    = [];        
+//
 //        this.normals.push(this.carto2Normal(phiStart, thetaStart));
 //        this.normals.push(this.carto2Normal(phiStart + phiLength, thetaStart+ thetaLength));
 //        this.normals.push(this.carto2Normal(phiStart, thetaStart+ thetaLength));
 //        this.normals.push(this.carto2Normal(phiStart + phiLength, thetaStart));        
+
+//        this.HeightPoints    = [];                
 //        this.HeightPoints.push(ellipsoid.cartographicToCartesian(new CoordCarto(phiStart                        , thetaStart    ,0)));
 //        this.HeightPoints.push(ellipsoid.cartographicToCartesian(new CoordCarto(phiStart + bbox.halfDimension.x , thetaStart    ,0)));
 //        this.HeightPoints.push(ellipsoid.cartographicToCartesian(new CoordCarto(phiStart + phiLength            , thetaStart    ,0)));
@@ -80,12 +88,12 @@ define('Globe/EllipsoidTileGeometry',[
 //        this.HeightPoints.push(ellipsoid.cartographicToCartesian(new CoordCarto(phiStart                        , thetaStart + bbox.halfDimension.y,0)));        
      
         var ccarto  = new CoordCarto(bbox.center.x,bbox.center.y,0);               
-        var center  = ellipsoid.cartographicToCartesian(ccarto);
+        this.center  = ellipsoid.cartographicToCartesian(ccarto);
         
-        this.OBB    = bbox.get3DBBox(ellipsoid,center);
+        this.OBB    = bbox.get3DBBox(ellipsoid,this.center);
         
         var idVertex        = 0;
-        var x, y, vertices  = [];
+        var x, y, vertices  = [], skirt = [],skirtEnd = [];
 
         var st1             = 0.5 + Math.log(Math.tan(MathExt.PI_OV_FOUR + thetaStart*0.5))* MathExt.INV_TWO_PI;
         
@@ -121,15 +129,16 @@ define('Globe/EllipsoidTileGeometry',[
                    
                     var id3     = idVertex*3 ;
 //                    
-                    bufferVertex[id3+ 0] = vertex.x - center.x;
-                    bufferVertex[id3+ 1] = vertex.y - center.y;
-                    bufferVertex[id3+ 2] = vertex.z - center.z;
-//                    
+                    bufferVertex[id3+ 0] = vertex.x - this.center.x;
+                    bufferVertex[id3+ 1] = vertex.y - this.center.y;
+                    bufferVertex[id3+ 2] = vertex.z - this.center.z;
+                    
+                                      
 //                    bufferVertex[id3+ 0] = vertex.x ;
 //                    bufferVertex[id3+ 1] = vertex.y ;
 //                    bufferVertex[id3+ 2] = vertex.z ;
 
-                    var normal = vertex.clone().normalize();
+                    var normal = vertex.clone().normalize();                                        
 
                     bufferNormal[id3+ 0] = normal.x;
                     bufferNormal[id3+ 1] = normal.y;
@@ -138,17 +147,30 @@ define('Globe/EllipsoidTileGeometry',[
                     bufferUV[idVertex*2 + 0] = u;
                     bufferUV[idVertex*2 + 1] = 1-v;
                     
-                    bufferUV2[idVertex]      = t;                                             
+                    bufferUV2[idVertex]      = t;                                  
+                    
+                    if(y !== 0 && y !== heightSegments)
+                        if(x === widthSegments  )
+                           skirt.push(idVertex);
+                        else if(x === 0 )
+                           skirtEnd.push(idVertex);
+                    
+                    verticesRow.push( idVertex );
                     
                     idVertex ++;
-                                  
-                    verticesRow.push( idVertex - 1 );
                     
             }
 
-            vertices.push( verticesRow );          
-
+            vertices.push( verticesRow ); 
+            
+            if(y===0)
+               skirt = skirt.concat(verticesRow);
+            else if(y===heightSegments)
+               skirt = skirt.concat(verticesRow.slice().reverse());
+           
         }
+    
+        skirt = skirt.concat(skirtEnd.reverse());
 
         function bufferize(va,vb,vc,idVertex) 
         {
@@ -157,7 +179,7 @@ define('Globe/EllipsoidTileGeometry',[
             bufferIndex[idVertex+ 2] = vc;                               
         }
 
-        idVertex = 0;
+        var idVertex2 = 0;
 
         for ( y = 0; y < heightSegments; y ++ ) {
 
@@ -168,14 +190,61 @@ define('Globe/EllipsoidTileGeometry',[
                     var v3 = vertices[ y + 1 ][ x ];
                     var v4 = vertices[ y + 1 ][ x + 1 ];
 
-                    bufferize(v4,v2,v1,idVertex);
+                    bufferize(v4,v2,v1,idVertex2);
                     
-                    idVertex +=3;
+                    idVertex2 +=3;
 
-                    bufferize(v4,v3,v2,idVertex);
+                    bufferize(v4,v3,v2,idVertex2);
                     
-                    idVertex +=3;
+                    idVertex2 +=3;
                 }
+        }
+
+        var start   = idVertex;
+        var rmax    = 5000;
+        var r       = Math.max(rmax,Math.pow(rmax,1/zoom)) ;
+        
+        r =  isFinite(r) ? r : rmax;
+        
+        for ( i = 0; i < skirt.length ; i ++ ) 
+        {
+           
+            var id    = skirt[i];
+            var id3   = idVertex*3;
+            var id23  = id*3;                   
+                   
+            bufferVertex[id3+ 0] = bufferVertex[id23+ 0] - bufferNormal[id23+ 0] * r;
+            bufferVertex[id3+ 1] = bufferVertex[id23+ 1] - bufferNormal[id23+ 1] * r;
+            bufferVertex[id3+ 2] = bufferVertex[id23+ 2] - bufferNormal[id23+ 2] * r;
+            
+            bufferNormal[id3+ 0] = bufferNormal[id23+ 0];
+            bufferNormal[id3+ 1] = bufferNormal[id23+ 1];
+            bufferNormal[id3+ 2] = bufferNormal[id23+ 2];
+            
+            bufferUV[idVertex*2 + 0] = bufferUV[id*2 + 0];
+            bufferUV[idVertex*2 + 1] = bufferUV[id*2 + 1];
+            bufferUV2[idVertex]      = bufferUV2[id]; 
+            
+            var idf = (i+1)%skirt.length;
+            
+            var v1 = id;
+            var v2 = idVertex;
+            var v3 = idVertex+1;
+            var v4 = skirt[idf];
+            
+            if(idf === 0)
+                v3 = start;
+            
+            bufferize(v1,v2,v3,idVertex2);
+
+            idVertex2 +=3;
+
+            bufferize(v1,v3,v4,idVertex2);
+
+            idVertex2 +=3;
+
+            idVertex++;
+            
         }
         
         // TODO : free array
@@ -183,8 +252,8 @@ define('Globe/EllipsoidTileGeometry',[
         this.setIndex( new THREE.BufferAttribute( bufferIndex, 1 ) );
         this.addAttribute( 'position',  new THREE.BufferAttribute( bufferVertex, 3 ) );
         this.addAttribute( 'normal',    new THREE.BufferAttribute( bufferNormal, 3 ) );
-        this.addAttribute( 'uv',        new THREE.BufferAttribute( bufferUV, 2) );
-        this.addAttribute( 'uv2',       new THREE.BufferAttribute( bufferUV2, 1) );
+        this.addAttribute( 'uv',      new THREE.BufferAttribute( bufferUV, 2) );
+        this.addAttribute( 'uv1',      new THREE.BufferAttribute( bufferUV2, 1) );
         
         // ---> for SSE
         this.computeBoundingSphere();
@@ -204,11 +273,6 @@ define('Globe/EllipsoidTileGeometry',[
 
     EllipsoidTileGeometry.prototype.constructor = EllipsoidTileGeometry;
     
-    EllipsoidTileGeometry.prototype.dispose = function()
-    {
-        
-    };
-
     return EllipsoidTileGeometry;
     
 });

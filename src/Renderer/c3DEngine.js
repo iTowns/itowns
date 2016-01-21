@@ -4,9 +4,24 @@
 * Description: 3DEngine est l'interface avec le framework webGL.
 */
 
-define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera'], function(THREE,OrbitControls,Camera){
+define('Renderer/c3DEngine',[
+    'THREE',
+    'OrbitControls',
+    'GlobeControls',
+    'Renderer/Camera',
+    'Globe/Atmosphere',
+    'Renderer/DepthMaterial',
+    'Renderer/BasicMaterial'], function(
+        THREE,
+        OrbitControls,
+        GlobeControls,
+        Camera,
+        Atmosphere,
+        DepthMaterial,
+        BasicMaterial){
 
     var instance3DEngine = null;
+    var RENDER =  {FINAL : 0,PICKING : 1};
 
     function c3DEngine(){
         //Constructor
@@ -29,31 +44,57 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera'], functio
         this.camera     = undefined;
         this.camDebug   = undefined;
         this.size       = 1.0;
-                
+        this.dnear      = 0.0;
+        this.dfar       = 0.0;
+        this.stateRender = RENDER.FINAL;
+        
         this.initCamera();
-                       
+        
+        var material    = new BasicMaterial(new THREE.Color(1,0,0));                       
+        var geometry    = new THREE.CylinderGeometry(0.6, 0.01,2,32);          
+        this.dummy      = new THREE.Mesh( geometry, material );        
+        
+        this.dummy.material.enableRTC(false);
+        
+        this.scene3D.add(this.dummy);
+
+        this.pickingTexture = new THREE.WebGLRenderTarget( this.width, this.height );
+        this.pickingTexture.texture.minFilter        = THREE.LinearFilter;
+        this.pickingTexture.texture.generateMipmaps  = false;
+        this.pickingTexture.texture.type             = THREE.FloatType;        
+        this.pickingTexture.depthBuffer              = true;
+          
         this.renderScene = function(){
-                                    
-            this.updateRenderer();
+                  
+            if(this.controls.click)
+            {                                                   
+                var position = this.picking(this.controls.pointClick);
+                this.updateDummy(position);
+                this.controls.setPointGlobe(position);                
+                this.controls.click      = false;                
+            }
+            
             this.renderer.clear();            
-            this.renderer.setViewport( 0, 0, this.width, this.height );
+            this.renderer.setViewport( 0, 0, this.width, this.height );            
             this.renderer.render( this.scene3D, this.camera.camera3D);                       
             
             if(this.debug)
             {
-                this.camera.camHelper().visible = true;
+                this.enableRTC(false);                
+                this.camera.camHelper().visible = true;                
                 this.renderer.setViewport( this.width, 0, this.width, this.height );
-                this.renderer.render( this.scene3D, this.camDebug);
+                this.renderer.render( this.scene3D, this.camDebug);                
                 this.camera.camHelper().visible = false;                
+                this.enableRTC(true);
             }            
             
         }.bind(this);
         
-        this.update = function()
+        this.update = function(run)
         {
             this.camera.update();
             this.updateControl();            
-            this.scene.wait();
+            this.scene.wait(run);
             this.renderScene();
                         
         }.bind(this);
@@ -91,7 +132,7 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera'], functio
                 
         if(this.debug)
         {
-            this.camDebug   = new THREE.PerspectiveCamera( 30, this.camera.ratio, 1) ;                                
+            this.camDebug   = new THREE.PerspectiveCamera( 30, this.camera.ratio) ;                                
                              
         }        
     };
@@ -112,33 +153,38 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera'], functio
     };
     
     /**
-     * initialisation 3DEngine
+     * 
      * @param {type} scene
+     * @param {type} position
      * @returns {undefined}
      */
     c3DEngine.prototype.init = function(scene,position){
         
         this.scene  = scene;
         this.size    = this.scene.size().x;
-        
         this.camera.setPosition(position);
-        
-         // if near < 15 --> bug no camera helper
-        this.camera.camera3D.near = 0.000002352 * this.size;
-        this.camera.camera3D.far  = this.size * 80;
+      
+        // if near is too small --> bug no camera helper
+        this.camera.camera3D.near = this.size * 2.333;
+        this.camera.camera3D.far  = this.size * 10;
         this.camera.camera3D.updateProjectionMatrix();
         
         if(this.debug)
         {
-            this.camDebug.position.x = -this.size * 8;
+            
+            this.camDebug.position.x = -this.size * 6;
             this.camDebug.lookAt(new THREE.Vector3(0,0,0));
-            this.camDebug.far = this.size * 1500;
+            this.camDebug.near = this.size* 0.1;
+            this.camDebug.far  = this.size * 10;
             this.camDebug.updateProjectionMatrix(); 
+            this.camera.createCamHelper();
             this.scene3D.add(this.camera.camHelper());              
             var axisHelper = new THREE.AxisHelper( this.size*1.33 );
             this.scene3D.add( axisHelper );
         }
         
+        this.camera.camera3D.near = Math.max(15.0,0.000002352 * this.size);                        
+        this.camera.camera3D.updateProjectionMatrix();        
         this.initRenderer();        
         this.initControls(this.size);
         
@@ -157,36 +203,72 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera'], functio
     {
         var len  = this.camera.position().length ();
         var lim  = this.size*1.3;
-                        
-        if( len < lim )
-        {
-            var t = Math.pow(Math.cos((lim - len)/ (lim - this.size) * Math.PI * 0.5),1.5);                
-            this.controls.zoomSpeed     = t*2.0;
-            this.controls.rotateSpeed   = 0.8 *t;                         
-        }
-        else if(len >= lim && this.controls.zoomSpeed !== 1.0) 
-        {
-            this.controls.zoomSpeed     = 1.0;
-            this.controls.rotateSpeed   = 0.8;                
-        }   
-    };  
-    
-    c3DEngine.prototype.updateRenderer = function()
-    {
-//        var len  = this.camera.position().length ();
-//        
-//        if( len < 8000000 )
-//        {
-//            var t = 1.0 - Math.pow(Math.cos((8000000 - len)/ (8000000 - 6378137) * Math.PI * 0.5),1.5);
-//            var spaceColor = new THREE.Color(0.45, 0.74, 1.0).multiplyScalar(t);
-//            this.renderer.setClearColor( spaceColor.getHex());
-//        }
-//        else
-//        {
-//            this.renderer.setClearColor( 0x030508 );
-//        }            
+            
+            if( len < lim )
+            {
+                var t = Math.pow(Math.cos((lim - len)/ (lim - this.size) * Math.PI * 0.5),1.5);                
+                this.controls.zoomSpeed     = t*2.0;
+                this.controls.rotateSpeed   = 0.8 *t;    
+                var color = new THREE.Color( 0x93d5f8 );
+
+                this.renderer.setClearColor( color.multiplyScalar(1.0-t) );
+            }
+            else if(len >= lim && this.controls.zoomSpeed !== 1.0) 
+            {
+                this.controls.zoomSpeed     = 1.0;
+                this.controls.rotateSpeed   = 0.8;
+                this.renderer.setClearColor( 0x030508 );
+            }
     };
-       
+     
+    c3DEngine.prototype.enableRTC = function(enable)
+    {
+         for (var x = 0; x < this.scene3D.children.length; x++)
+         {
+             var node = this.scene3D.children[x];
+             
+             if(node.enableRTC)                
+                node.traverseVisible(enable ? this.rtcOn.bind(this) : this.rtcOff.bind(this));
+             else                      
+                node.visible  = enable;
+             
+         }
+        
+    };
+    
+    c3DEngine.prototype.enablePickingRender = function(enable)
+    {        
+        for (var x = 0; x < this.scene3D.children.length; x++)
+        {
+            var node = this.scene3D.children[x];
+            
+            if(node.enablePickingRender)                             
+               node.traverseVisible(enable? this.pickingOn.bind(this) : this.pickingOff.bind(this));
+            else
+               node.visible = !enable;        
+        }        
+    };
+    
+    c3DEngine.prototype.rtcOn = function(obj3D)
+    {
+          obj3D.enableRTC(true);
+    };
+    
+    c3DEngine.prototype.rtcOff = function(obj3D)
+    {
+        obj3D.enableRTC(false);
+    };
+    
+    c3DEngine.prototype.pickingOn = function(obj3D)
+    {        
+        obj3D.enablePickingRender(true);
+    };
+    
+    c3DEngine.prototype.pickingOff = function(obj3D)
+    {
+        obj3D.enablePickingRender(false);
+    };
+        
     /**
     */
     c3DEngine.prototype.style2Engine = function(){
@@ -202,17 +284,18 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera'], functio
 
     c3DEngine.prototype.initControls = function(size){
         
-        this.controls   = new THREE.OrbitControls( this.camera.camera3D,this.renderer.domElement );
+        //this.controls   = new THREE.OrbitControls( this.camera.camera3D,this.renderer.domElement );        
+        this.controls   = new THREE.GlobeControls( this.camera.camera3D,this.renderer.domElement );
         
         this.controls.target        = new THREE.Vector3(0,0,0);
         this.controls.damping       = 0.1;
         this.controls.noPan         = false;
         this.controls.rotateSpeed   = 0.8;
         this.controls.zoomSpeed     = 1.0;
-        this.controls.minDistance   = size *  0.1;        
-        this.controls.maxDistance   = size * 16.0;    
-        this.controls.keyPanSpeed   = 1.0;
-        this.controls.keyPanSpeed   = 0.001;
+        this.controls.minDistance   = size * 0.1;        
+        this.controls.maxDistance   = size * 8.0;    
+        //this.controls.keyPanSpeed   = 1.0;
+        this.controls.keyPanSpeed   = 0.01;
         this.controls.update();
     };
     
@@ -267,7 +350,100 @@ define('Renderer/c3DEngine',['THREE','OrbitControls','Renderer/Camera'], functio
 
         return this.renderer;
     };
-         
+    
+    c3DEngine.prototype.setStateRender = function(stateRender)
+    {
+        if(this.stateRender !== stateRender)
+        {
+            this.stateRender = stateRender;
+            
+            switch(this.stateRender) 
+            {
+                case RENDER.FINAL:
+                    this.enablePickingRender(false);
+                    break;
+                case RENDER.PICKING:
+                    this.enablePickingRender(true);
+                    break;
+                default:
+                    this.stateRender = RENDER.FINAL;
+                    this.enablePickingRender(false);
+            }             
+        }
+    };
+           
+    c3DEngine.prototype.renderTobuffer = function(x,y, width, height,mode) {
+                
+        // TODO Deallocate render texture
+        var originalState = this.stateRender;
+        this.setStateRender(mode);
+        this.renderer.clear();            
+        this.renderer.setViewport( 0, 0, this.width, this.height );
+        this.renderer.render( this.scene3D, this.camera.camera3D, this.pickingTexture );
+        this.setStateRender(originalState);
+        
+        var pixelBuffer = new Float32Array( width * height * 4 );	
+	this.renderer.readRenderTargetPixels(this.pickingTexture, x,y, width, height , pixelBuffer);
+        
+        return pixelBuffer;
+    };
+    
+    c3DEngine.prototype.bufferToImage = function(pixelBuffer, width, height) {
+        
+        var canvas = document.createElement("canvas");
+        var ctx = canvas.getContext("2d");
+
+        // size the canvas to your desired image
+        canvas.width    = width;
+        canvas.height   = height;
+        
+        var imgData = ctx.getImageData(0, 0, width, height);
+        imgData.data.set(pixelBuffer);
+
+        ctx.putImageData(imgData, 0, 0);
+
+        // create a new img object
+        var image = new Image();
+
+        // set the img.src to the canvas data url
+        image.src = canvas.toDataURL();
+        
+        return image;
+        
+    };
+    
+    /**
+    * 
+     * @param {type} mouse : mouse position on screen in pixel
+     * @returns THREE.Vector3 position cartesien in world space 
+     **/
+    c3DEngine.prototype.picking = function(mouse) 
+    {
+        this.camera.camera3D.updateMatrixWorld();
+        
+        this.dummy.visible  = false;        
+        var buffer          = this.renderTobuffer(mouse.x,this.height - mouse.y,1,1,RENDER.PICKING);        
+        this.dummy.visible  = true;
+
+        var glslPosition    = new THREE.Vector3().fromArray(buffer);              
+        this.scene.selectNodeId(buffer[3]);        
+        var worldPosition = glslPosition.applyMatrix4( this.camera.camera3D.matrixWorld); 
+
+        return worldPosition;
+                
+    };
+    
+    c3DEngine.prototype.updateDummy = function(position) 
+    {
+        this.dummy.position.copy(position);                
+        var size = position.clone().sub(this.camera.position()).length()/200; // TODO distance                
+        this.dummy.scale.copy(new THREE.Vector3(size,size,size));                
+        this.dummy.lookAt(new THREE.Vector3());
+        this.dummy.quaternion.multiply(new THREE.Quaternion().setFromAxisAngle( new THREE.Vector3( 1, 0, 0 ), -Math.PI / 2 ));
+        this.dummy.translateY(size);
+        this.dummy.updateMatrix();
+        this.dummy.updateMatrixWorld();          
+    };
 
     return function(scene){
         instance3DEngine = instance3DEngine || new c3DEngine(scene);

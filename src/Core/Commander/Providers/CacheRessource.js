@@ -29,7 +29,7 @@ define('Core/Commander/Providers/CacheRessource',[], function(){
     
     CacheRessource.prototype.addRessource = function(url,ressource){
         
-        //this.cacheObjects[url] = ressource;
+        this.cacheObjects[url] = ressource;
         
     };
 

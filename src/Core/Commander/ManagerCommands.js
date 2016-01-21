@@ -48,10 +48,8 @@ define('Core/Commander/ManagerCommands',
         this.loadQueue      = [];
         this.providers      = [];
         this.history        = null;               
-        //        
         this.eventsManager  = new EventsManager();       
         this.scene          = undefined;
-        this.nbRequest      = -3; // TODO why???
 
     }        
 
@@ -59,13 +57,7 @@ define('Core/Commander/ManagerCommands',
 
     ManagerCommands.prototype.addCommand = function(command)
     {                      
-        this.queueAsync.queue(command);        
-        this.nbRequest++;
-     
-//        if(this.queueAsync.length > 8 )
-//        {
-//            this.runAllCommands();          
-//        }            
+        this.queueAsync.queue(command);                
     };
     
     ManagerCommands.prototype.init = function(scene)
@@ -95,24 +87,62 @@ define('Core/Commander/ManagerCommands',
         
     ManagerCommands.prototype.runAllCommands = function()
     {  
+       
         if(this.queueAsync.length === 0)
-        {    
-            this.process();
-            return when();
+
+            return;
+          
+        return when.all(this.arrayDeQueue(8)).then(function()
+        {                       
+//            this.scene.updateScene3D();            
+            this.runAllCommands();              
+                                                   
+        }.bind(this));                                    
+    };
+    
+    ManagerCommands.prototype.arrayDeQueue = function(number) 
+    {
+        var nT = number === undefined ?  this.queueAsync.length : number;
+        
+        var arrayTasks = [];
+        
+        while(this.queueAsync.length > 0 &&  arrayTasks.length < nT)   
+        {
+            arrayTasks.push(this.providers[0].get(this.deQueue()));
         }
         
-        return this.providers[0].get(this.queueAsync.dequeue()).then(function()
-        {           
-            
-            this.runAllCommands();
-            this.nbRequest--;
-            
-            if(this.nbRequest === 0)
-            {                                
-                this.scene.updateScene3D();
-            }                            
-           
-        }.bind(this));                         
+        return arrayTasks;
+    };
+    
+    /**
+    */
+    ManagerCommands.prototype.deQueue = function()        
+    {        
+        
+        while(this.queueAsync.length > 0 )        
+        {
+            var com     = this.queueAsync.peek();
+            var parent  = com.requester;
+
+            if(parent.visible === false && parent.level >= 2)      
+            {
+
+                while(parent.children.length > 0 )
+                {
+                    var child = parent.children[0];
+                    child.dispose();
+                    parent.remove(child);
+                }
+                parent.wait     = false;
+                parent.false    = false;               
+                this.queueAsync.dequeue();   
+            }
+            else                        
+                return this.queueAsync.dequeue();
+                        
+        }
+        
+        return undefined;
     };
 
     /**
@@ -129,23 +159,12 @@ define('Core/Commander/ManagerCommands',
         this.eventsManager.wait();
     };
 
-
-    /**
-    */
-    ManagerCommands.prototype.process = function(){
-        //TODO: Implement Me 
-        if(this.scene !== undefined)
-            this.scene.renderScene3D();
-    };
-
-
     /**
     */
     ManagerCommands.prototype.forecast = function(){
         //TODO: Implement Me 
 
     };
-
 
     /**
     * @param object

@@ -17,7 +17,8 @@
 
 /* global THREE */
 
-define('Core/Commander/Providers/tileGlobeProvider',[                        
+define('Core/Commander/Providers/tileGlobeProvider',[
+            'when',
             'Core/Geographic/Projection',
             'Core/Commander/Providers/WMTS_Provider',
             'Core/Commander/Providers/KML_Provider',
@@ -28,6 +29,7 @@ define('Core/Commander/Providers/tileGlobeProvider',[
             'Scene/BoudingBox'                        
             ],
              function(
+                when,
                 Projection,
                 WMTS_Provider,
                 KML_Provider,
@@ -47,171 +49,108 @@ define('Core/Commander/Providers/tileGlobeProvider',[
        this.ellipsoid       = new Ellipsoid(size);       
        this.cacheGeometry   = [];
        this.tree            = null;
+       
+       this.nNode           = 0;
                
     }        
 
     tileGlobeProvider.prototype.constructor = tileGlobeProvider;
     
-    tileGlobeProvider.prototype.get = function(command)
-    {  
-        var bbox    = command.paramsFunction[0];
-        var cooWMTS = this.projection.WGS84toWMTS(bbox);        
+    tileGlobeProvider.prototype.getGeometry = function(bbox,cooWMTS)
+    {
+        var geometry  = undefined;
+        var n         = Math.pow(2,cooWMTS.zoom+1);       
+        var part      = Math.PI * 2.0 / n;
         
-        var parent  = command.requester;
-        
-        var geometryCache   = undefined;
-        var n               = Math.pow(2,cooWMTS.zoom+1);       
-        var part            = Math.PI * 2.0 / n;
-        
-        /*
         if(this.cacheGeometry[cooWMTS.zoom] !== undefined && this.cacheGeometry[cooWMTS.zoom][cooWMTS.row] !== undefined)
         {            
-                geometryCache = this.cacheGeometry[cooWMTS.zoom][cooWMTS.row];                
+                geometry = this.cacheGeometry[cooWMTS.zoom][cooWMTS.row];                
         }
         else
         {
             if(this.cacheGeometry[cooWMTS.zoom] === undefined)
                 this.cacheGeometry[cooWMTS.zoom] = new Array() ;
            
-            var precision   = 8;
-        
-            if(this.level > 11)
-                precision   = 64;
-            else if(this.level > 8)
-                precision   = 32;
-            else if (this.level > 6)
-                precision   = 16;
+            var precision   = 16;                                            
+            var rootBBox    = new BoudingBox(0,part+part*0.01,bbox.minCarto.latitude, bbox.maxCarto.latitude );
             
-                        
-            var rootBBox    = new BoudingBox(0,part,bbox.minCarto.latitude, bbox.maxCarto.latitude );
-            
-            geometryCache   = new EllipsoidTileGeometry(rootBBox,precision,this.ellipsoid,cooWMTS.zoom);
-            this.cacheGeometry[cooWMTS.zoom][cooWMTS.row] = geometryCache;    
+            geometry   = new EllipsoidTileGeometry(rootBBox,precision,this.ellipsoid,cooWMTS.zoom);
+            this.cacheGeometry[cooWMTS.zoom][cooWMTS.row] = geometry;    
                 
-        }*/
-        
-        var tile    = new command.type(bbox,cooWMTS,this.ellipsoid,parent/*,geometryCache*/);
-   
-        var translate   = new THREE.Vector3();
-        var position    = new THREE.Vector3();
-        var quatParent  = new THREE.Quaternion();
-        var scale       = new THREE.Vector3();
-                
-        if(parent.worldToLocal !== undefined )
-        {
-            
-            parent.updateMatrixWorld();
-            
-            parent.matrixWorld.decompose( position, quatParent, scale );            
-            
-            translate = parent.worldToLocal(tile.absoluteCenter.clone());
         }
-   
-        //tile.rotation.set ( 0, (cooWMTS.col%2)* part, 0 );
-        tile.position.copy(translate);
-                
-        tile.visible = false;
+        
+        return geometry;
+    };
+    
+    tileGlobeProvider.prototype.get = function(command)
+    {  
+
+        if(command === undefined)
+            return when();
+        
+        var bbox        = command.paramsFunction[0];
+        var cooWMTS     = this.projection.WGS84toWMTS(bbox);                
+        var parent      = command.requester;        
+        var geometry    = undefined; //getGeometry(bbox,cooWMTS);       
+        var tile        = new command.type(bbox,cooWMTS,this.ellipsoid,this.nNode++,geometry);        
+        
+        if(geometry)
+        {
+            tile.rotation.set ( 0, (cooWMTS.col%2)* (Math.PI * 2.0 / Math.pow(2,cooWMTS.zoom+1)), 0 );
+            tile.updateMatrixWorld();
+        }
+        
+        var translate   = new THREE.Vector3();
+             
+        if(parent.worldToLocal)                
+            translate = parent.worldToLocal(tile.absoluteCenter.clone());                    
+                   
+        tile.position.copy(translate);        
+        tile.updateMatrixWorld();
+
+        tile.setVisibility(false);
         
         parent.add(tile);
-        
-        if(parent.tileType && this.tree === null)
-        {
-            this.tree = parent;
-            //console.log(parent);
-        }
-        
-        this.tree.nbNodes++;
-                
-        return this.providerWMTS.getTextureBil(cooWMTS).then(function(result)
-        {              
-            var texture;
-            var pitScale;                        
-            
-            if(result === - 1)
-                texture = -1;
-            else if(result === - 2)
-            {
-                var parentBil   = this.getParentLevel(14);                                
-                pitScale        = parentBil.bbox.pitScale(tile.bbox);                
-                texture         = parentBil.tMat.Textures_00[0];
-                // TODO recentrer la bouding box
-                this.bbox.setAltitude(parentBil.bbox.minCarto.altitude,parentBil.bbox.maxCarto.altitude);
-                this.geometry.OBB.addHeight(this.bbox);
-            }
-            else
-            {
-                texture = result.texture;
-                // TODO recentrer la bouding box
-                this.bbox.setAltitude(result.min,result.max);
-                this.geometry.OBB.addHeight(this.bbox);
-            }                         
-            
-            this.setTextureTerrain(texture,pitScale);
+                        
+        return this.providerWMTS.getTextureBil(tile.useParent() ? undefined : cooWMTS).then(function(terrain)
+        {                                      
+            this.setTerrain(terrain);
             
             return this;
 
         }.bind(tile)).then(function(tile)
         {                      
-            if(cooWMTS.zoom >= 2)
-            {            
-                var box  = this.projection.WMTS_WGS84ToWMTS_PM(tile.cooWMTS,tile.bbox); // 
-                
-                var id = 0;
-                var col = box[0].col;
-                
-                tile.orthoNeed = box[1].row + 1 - box[0].row;
-                               
-                for (var row = box[0].row; row < box[1].row + 1; row++)
-                {                                                                        
-                    var coo = new CoordWMTS(box[0].zoom,row,col);
-
-                    this.providerWMTS.getTextureOrtho(coo,id).then
-                    (
-                        function(result)
-                        {                          
-                                                        
-                            this.setTextureOrtho(result.texture,result.id);                            
-
-                            return this;
-
-                        }.bind(tile)
-                    ).then( function(tile)
-                    {                        
-                        if(tile.orthoNeed === tile.tMat.Textures_01.length)
-                        {                               
-                            tile.loaded = true;
-                            tile.tMat.update();
-                            var parent = tile.parent;
-                            
-                            if(parent.childrenLoaded() && parent.wait === true)
-                            {                                
-                                parent.wait = false;                  
-                            }
-                        }                                           
-                    }.bind(this)
-                    );
-
-                    id++;
-                }  
-            }
+            if(cooWMTS.zoom >= 2)                
+                this.getOrthoImages(tile);
             else
-            {
-                tile.loaded = true;
-                
-                tile.tMat.update();
-                
-                var parent = tile.parent;
-
-                if(parent.childrenLoaded() && parent.wait === true)
-                {
-                    parent.wait = false;                  
-                }                
-            }
-
+                tile.checkOrtho();
+                           
         }.bind(this)); 
     };
-          
-                
+    
+    tileGlobeProvider.prototype.getOrthoImages = function(tile)
+    {         
+        var box        = this.projection.WMTS_WGS84ToWMTS_PM(tile.cooWMTS,tile.bbox); // 
+        var id         = 0;
+        var col        = box[0].col;                
+        tile.orthoNeed = box[1].row + 1 - box[0].row;
+
+        for (var row = box[0].row; row < box[1].row + 1; row++)
+        {                                                                        
+            this.providerWMTS.getTextureOrtho(new CoordWMTS(box[0].zoom,row,col),id).then
+            (
+                function(result)
+                {                                                                                  
+                    this.setTextureOrtho(result.texture,result.id);                                                     
+
+                }.bind(tile)
+            );
+
+            id++;
+        }  
+        
+    };
+                          
     return tileGlobeProvider;                
                  
 });

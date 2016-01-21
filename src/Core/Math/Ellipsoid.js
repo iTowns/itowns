@@ -15,6 +15,8 @@ define('Core/Math/Ellipsoid',['Core/Math/MathExtented','THREE','Core/defaultValu
         this.rayon_1 = size.x;
         this.rayon_2 = size.y;
         this.rayon_3 = size.z;
+        
+        this.size    = size;
 
         this._radiiSquared = new THREE.Vector3(size.x*size.x,size.y*size.y,size.z*size.z);
     }
@@ -77,6 +79,70 @@ define('Core/Math/Ellipsoid',['Core/Math/MathExtented','THREE','Core/defaultValu
         return cartesianArray;
        
     };
+    
+    Ellipsoid.prototype.intersection = function(ray) 
+    {
+    
+       var EPSILON  = 0.0001;
+       var O_C  = ray.origin;
+       var dir  = ray.direction;
+      //normalizeVector( dir );
+
+       var a =
+               ((dir.x*dir.x)/(this.size.x*this.size.x))
+             + ((dir.y*dir.y)/(this.size.y*this.size.y))
+             + ((dir.z*dir.z)/(this.size.z*this.size.z));
+     
+       var b =
+               ((2*O_C.x*dir.x)/(this.size.x*this.size.x))
+             + ((2*O_C.y*dir.y)/(this.size.y*this.size.y))
+             + ((2*O_C.z*dir.z)/(this.size.z*this.size.z));
+       var c =
+               ((O_C.x*O_C.x)/(this.size.x*this.size.x))
+             + ((O_C.y*O_C.y)/(this.size.y*this.size.y))
+             + ((O_C.z*O_C.z)/(this.size.z*this.size.z))
+             - 1;
+
+       var d = ((b*b)-(4*a*c));
+       if ( d<0 || a===0 || b===0 || c===0 )
+          return false;
+
+       d = Math.sqrt(d);
+
+       var t1 = (-b+d)/(2*a);
+       var t2 = (-b-d)/(2*a);
+
+       if( t1<=EPSILON && t2<=EPSILON ) return false; // both intersections are behind the ray origin
+       var back = (t1<=EPSILON || t2<=EPSILON); // If only one intersection (t>0) then we are inside the ellipsoid and the intersection is at the back of the ellipsoid
+       var t=0;
+       if( t1<=EPSILON )
+          t = t2;
+       else
+          if( t2<=EPSILON )
+             t = t1;
+          else
+             t=(t1<t2) ? t1 : t2;
+
+       if( t<EPSILON ) return false; // Too close to intersection
+
+       var inter = new THREE.Vector3();
+               
+       inter.addVectors(ray.origin, dir.clone().setLength(t));
+       
+       return inter;
+       
+       /*
+       var normal = intersection.clone();//-ellipsoid.center;
+       normal.x = 2*normal.x/(this.size.x*this.size.x);
+       normal.y = 2*normal.y/(this.size.y*this.size.y);
+       normal.z = 2*normal.z/(this.size.z*this.size.z);
+
+       //normal.w = 0.f;
+       normal *= (back) ? -1.f : 1.f;
+       normalizeVector(normal);
+       */
+    };
+    
     
     return Ellipsoid;
 

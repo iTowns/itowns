@@ -26,8 +26,6 @@ define('Core/Commander/InterfaceCommander',['Core/Commander/ManagerCommands','Co
 
     };
     
-    
- 
     /**
     * @return  {[object Object]} 
     */
@@ -49,15 +47,16 @@ define('Core/Commander/InterfaceCommander',['Core/Commander/ManagerCommands','Co
     InterfaceCommander.prototype.getTile = function(bbox,parent)
     {
        
-        var command = new Command();        
+        var command         = new Command();        
         command.type        = this.type;
         command.requester   = parent;        
         command.paramsFunction.push(bbox);
         
-        command.priority = parent.sse === undefined ? 0 : Math.floor(parent.sse * 1000) * parent.level;
+        //command.priority = parent.sse === undefined ? 1 : Math.floor(parent.visible ? parent.sse * 10000 : 1.0) *  (parent.visible ? Math.abs(19 - parent.level) : Math.abs(parent.level) ) *10000;
+        
+        command.priority = parent.sse === undefined ? 1 : Math.floor(parent.visible && parent.material.visible ? parent.sse * parent.sse * 100000 : 1.0);
 
         this.managerCommands.addCommand(command);
-
     };
    
 
