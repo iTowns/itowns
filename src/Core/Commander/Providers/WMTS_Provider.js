@@ -31,23 +31,14 @@ define('Core/Commander/Providers/WMTS_Provider',[
         this.cache         = CacheRessource();        
         this.ioDriverImage = new IoDriver_Image();
         this.ioDriverXML = new IoDriverXML();
-                
-        //var url = 'http://wxs.ign.fr/j2bfkv9whnqpq04zpzlfz2ge/vecteurtuile3d/BATI3D/BU.Building.kml';
-        
-//        var url = 'http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/vecteurtuile3d/BATI3D/BU.Building.kml';
-//               
-//        this.ioDriverXML.read(url).then(function(result)
-//        {
-//            
-//            
-//        });
-    }
+       
+  }
 
     WMTS_Provider.prototype = Object.create( Provider.prototype );
 
     WMTS_Provider.prototype.constructor = WMTS_Provider;
     
-    
+  
     /**
      * Return url wmts MNT
      * @param {type} coWMTS : coord WMTS
@@ -139,7 +130,7 @@ define('Core/Commander/Providers/WMTS_Provider',[
      */
     WMTS_Provider.prototype.getTextureOrtho = function(coWMTS,id)
     {
-        
+         
         var pack = function(i)
         {
             this.texture;
@@ -168,9 +159,9 @@ define('Core/Commander/Providers/WMTS_Provider',[
             return result;
             
         }.bind(this));
-
+        
     };
-
+    
     return WMTS_Provider;
     
 });

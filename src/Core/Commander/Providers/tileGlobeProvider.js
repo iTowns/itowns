@@ -21,6 +21,7 @@ define('Core/Commander/Providers/tileGlobeProvider',[
             'when',
             'Core/Geographic/Projection',
             'Core/Commander/Providers/WMTS_Provider',
+            'Core/Commander/Providers/KML_Provider',
             'Globe/EllipsoidTileGeometry',
             'Core/Geographic/CoordWMTS',
             'Core/Math/Ellipsoid',
@@ -31,6 +32,7 @@ define('Core/Commander/Providers/tileGlobeProvider',[
                 when,
                 Projection,
                 WMTS_Provider,
+                KML_Provider,
                 EllipsoidTileGeometry,
                 CoordWMTS,
                 Ellipsoid,
@@ -42,7 +44,8 @@ define('Core/Commander/Providers/tileGlobeProvider',[
         //Constructor
        
        this.projection      = new Projection();
-       this.providerWMTS    = new WMTS_Provider();       
+       this.providerWMTS    = new WMTS_Provider();
+       this.providerKML     = new KML_Provider();
        this.ellipsoid       = new Ellipsoid(size);       
        this.cacheGeometry   = [];
        this.tree            = null;

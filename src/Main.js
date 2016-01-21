@@ -25,6 +25,8 @@ requirejs.config({
         'StarGeometry'  : "Renderer/ThreeExtented/StarGeometry",
         'OBB'           : "Renderer/ThreeExtented/OBB",
         'OBBHelper'     : "Renderer/ThreeExtented/OBBHelper",
+        'JSZip'         : "Renderer/ThreeExtented/jszip.min",
+        'ColladaLoader' : "Renderer/ThreeExtented/ColladaLoader",        
         'SphereHelper'  : "Renderer/ThreeExtented/SphereHelper"
         
     },
@@ -39,6 +41,9 @@ requirejs.config({
         THREE: {            
             exports: 'THREE'
         },
+        JSZip: {            
+            exports: 'JSZip'
+        },        
         PriorityQueue: {            
             exports: 'PriorityQueue'
         },
@@ -74,8 +79,10 @@ requirejs.config({
         },        
         SphereHelper: {
             deps: ['THREE']
+        },
+        ColladaLoader: {
+            deps: ['THREE']
         }
-
     },
     
     waitSeconds : 30
