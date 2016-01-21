@@ -97,7 +97,7 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
             if(this.selectNode !== node)
             {
                 this.selectNode = node;
-                console.log(node);
+                //console.log(node);
             }            
         }
         

@@ -12,6 +12,8 @@
 THREE.GlobeControls = function ( object, domElement ) {
 
 	this.object = object;
+        
+        this.cloneObject = object.clone();
 	this.domElement = ( domElement !== undefined ) ? domElement : document;
 
 	// API
@@ -76,7 +78,7 @@ THREE.GlobeControls = function ( object, domElement ) {
 	this.noKeys = false;
 
 	// The four arrow keys
-	this.keys = { LEFT: 37, UP: 38, RIGHT: 39, BOTTOM: 40, SPACE:32};
+	this.keys = { LEFT: 37, UP: 38, RIGHT: 39, BOTTOM: 40, SPACE:32,CTRL:17};
 
 	// Mouse buttons
 	this.mouseButtons = { ORBIT: THREE.MOUSE.LEFT, ZOOM: THREE.MOUSE.MIDDLE, PAN: THREE.MOUSE.RIGHT };
@@ -111,13 +113,11 @@ THREE.GlobeControls = function ( object, domElement ) {
 	var thetaDelta = 0;
 	var scale = 1;
 	var pan = new THREE.Vector3();
-        
-        
-
+ 
 	var lastPosition = new THREE.Vector3();
 	var lastQuaternion = new THREE.Quaternion();
 
-	var STATE = { NONE : -1, ROTATE : 0, DOLLY : 1, PAN : 2, TOUCH_ROTATE : 3, TOUCH_DOLLY : 4, TOUCH_PAN : 5 };
+	var STATE = { NONE : -1, ROTATE : 0, DOLLY : 1, PAN : 2, TOUCH_ROTATE : 3, TOUCH_DOLLY : 4, TOUCH_PAN : 5,TOUCH_INTER : 6 };
 
 	var state = STATE.NONE;
 
@@ -141,86 +141,36 @@ THREE.GlobeControls = function ( object, domElement ) {
 	this.setPointGlobe = function ( point ) 
         {          
             pointGlobe.copy(point);
+            var s = scope.toSpherical(point);                        
             rayonPointGlobe = pointGlobe.length();            
         };
         
         this.intersectSphere = function ( ray )   
         {
-
-           var origin = ray.origin;
-           var d = ray.direction;
-           var c = new THREE.Vector3();
-           var r = rayonPointGlobe;
-           var intersection = new THREE.Vector3();
-
-           var vpc = new THREE.Vector3().subVectors(c,origin);  // this is the vector from p to c
-
-           var length = vpc.length();
-
-           if ((vpc.dot(d)) < 0)
-           { // when the sphere is behind the origin p
-                       // note that this case may be dismissed if it is 
-                       // considered that p is outside the sphere 	
-               if (length > r) 
-
-                       intersection =  undefined;  // there is no intersection
-
-               else if (length === r)
-
-                       intersection.copy(origin);
-
-               else // occurs when p is inside the sphere
-               {
-
-                       var pc = ray.closestPointToPoint(c);  ///projection of c on the line
-                       // distance from pc to i1
-
-                       var lpcc = new THREE.Vector3().subVectors(pc,c).length();
-                       //var dist = Math.sqrt(radius * radius - |pc - c|^2);
-                       //var di1 = dist - |pc - p|;
-
-                       var dist = Math.sqrt(r * r - lpcc*lpcc);
-                       var di1 = dist - lpcc;
-                       intersection.addVectors(origin,d.setLength(di1));
-               }
-           }
-
-           else // center of sphere projects on the ray
-           {
-
-               var pc = ray.closestPointToPoint(c);  ///projection of c on the line
-               var lpcc = new THREE.Vector3().subVectors(pc,c).length();
-               if (lpcc > r)               
-               {
-
-                       intersection = undefined;// there is no intersection
-               }
-               else 
-               { 
-
-
-                        var lpcc = new THREE.Vector3().subVectors(pc,c).length();
-                       // distance from pc to i1
-                       var dist = Math.sqrt(r * r - lpcc*lpcc);
-
-                       var di1;
-
-                       if (length > r) // origin is outside sphere	
-
-                               di1 = lpcc - dist ;
-
-                       else // origin is inside sphere
-
-                               di1 = lpcc + dist ;
-
-                       intersection.addVectors(origin,d.setLength(di1));
-               }
-           }
-
-           return intersection;
+           var c    = new THREE.Vector3(); 
+           var pc   = ray.closestPointToPoint(c);
+           var r    = rayonPointGlobe;           
+           var a    = pc.length();
            
+           if(a>r)
+              return new THREE.Vector3();
+           
+           var d    = ray.direction.clone();                      
+           var b    = Math.sqrt(r*r -a*a);
+           
+           d.negate().setLength(b);
+           
+           return new THREE.Vector3().addVectors(pc,d);
+      
        };
-
+       
+        this.toSpherical = function ( point )   
+        {        
+            var tt = Math.atan2( point.x, point.z );                       
+            var pp = Math.atan2( Math.sqrt( point.x * point.x + point.z * point.z ), point.y );
+                        
+            return new THREE.Vector2(tt,pp);
+        };
 
 	this.rotateLeft = function ( angle ) {
 
@@ -385,141 +335,81 @@ THREE.GlobeControls = function ( object, domElement ) {
 
 	this.update = function () {
 
-                if(this.stopUpdate)
-                {
-                    console.log("eject");
-                    thetaDelta = 0;
-                    phiDelta = 0;
-                    scale = 1;
-                    pan.set( 0, 0, 0 );
-                    return;
-                }
-
-		var position = this.object.position;
-
-		//
-
-		
-		// angle from z-axis around y-axis
-
-		
-
-		if ( this.autoRotate && state === STATE.NONE ) {
-
-			this.rotateLeft( getAutoRotationAngle() );
-
-		}
-
-                if(theta === null)
-                {
-                    
-                    offset.copy( position ).sub( this.target );
-                    // rotate offset to "y-axis-is-up" space
-                    offset.applyQuaternion( quat );
-
-                    theta = Math.atan2( offset.x, offset.z );
-                    phi = Math.atan2( Math.sqrt( offset.x * offset.x + offset.z * offset.z ), offset.y );
-                    theta += thetaDelta;
-                    phi += phiDelta;
-             
-                }
-                else if(!space)
-                {//offset.applyQuaternion( quat );
-
-                    theta  += thetaDelta;
-                    phi    += phiDelta;
-                }
-                
-                 
-		// restrict theta to be between desired limits
-		theta = Math.max( this.minAzimuthAngle, Math.min( this.maxAzimuthAngle, theta ) );
-
-		// restrict phi to be between desired limits
-		phi = Math.max( this.minPolarAngle, Math.min( this.maxPolarAngle, phi ) );
-
-		// restrict phi to be betwee EPS and PI-EPS
-		phi = Math.max( EPS, Math.min( Math.PI - EPS, phi ) );
-
-		var radius;
-                
-                if(this.radius === null )
-                {
-                    radius = offset.length() * scale;
-                    this.radius = radius;
-                }
-                else
-                    this.radius *= scale;
-                
-                this.radius = Math.max( this.minDistance, Math.min( this.maxDistance, this.radius ) );
-                
-                radius = this.radius;
-                
-                
-
-		// restrict radius to be between desired limits
-		//radius = Math.max( this.minDistance, Math.min( this.maxDistance, radius ) );
-                
-
-		// move target to panned location
-		this.target.add( pan );
-
+            //var position = ( state === STATE.TOUCH_INTER ) ? this.cloneObject.position : this.object.position;
             
-                if(!space)
-                {
-                    offset.x = radius * Math.sin( phi ) * Math.sin( theta );
-                    offset.y = radius * Math.cos( phi );
-                    offset.z = radius * Math.sin( phi ) * Math.cos( theta );
+            //var position = this.cloneObject.position;
+            
+            var position =  this.object.position;
 
-                    // rotate offset back to "camera-up-vector-is-up" space
-                    //offset.applyQuaternion( quatInverse );
+            offset.copy( position ).sub( this.target );
 
-                    position.copy( this.target ).add( offset );
+            // rotate offset to "y-axis-is-up" space
+            offset.applyQuaternion( quat );
 
-                    this.object.lookAt( this.target );
-                }
-                else
-                {
-//                    var delta = new THREE.Vector3(thetaDelta,-phiDelta,0);//.applyMatrix4(this.object.matrixWorld);
-//                    
-                    //this.object.position.z += thetaDelta;
-                    this.object.position.x += -phiDelta / 1000;
-                    
-//                    this.object.translateZ(delta.z);
-                   
-                    
-                    //this.object.translateX(thetaDelta);               
-                    //this.object.translateY(-phiDelta);
-                    
-                    //console.log(this.object.position.x,this.object.position.y,this.object.position.z);
-                    
-                    //console.log(this.object.position.x);
-                    
-                    //this.object.lookAt( this.target );
-                                                         
-                    //this.object.matrixWorldInverse.getInverse( this.camera3D.matrixWorld );
-                }
-                
-                
-                
+            // angle from z-axis around y-axis
 
-		thetaDelta = 0;
-		phiDelta = 0;
-		scale = 1;
-		pan.set( 0, 0, 0 );
+            theta = Math.atan2( offset.x, offset.z );
 
-		// update condition is:
-		// min(camera displacement, camera rotation in radians)^2 > EPS
-		// using small-angle approximation cos(x/2) = 1 - x^2 / 8
+            // angle from y-axis
 
-		if ( lastPosition.distanceToSquared( this.object.position ) > EPS
-		    || 8 * (1 - lastQuaternion.dot(this.object.quaternion)) > EPS ) {
+            phi = Math.atan2( Math.sqrt( offset.x * offset.x + offset.z * offset.z ), offset.y );
 
-			this.dispatchEvent( changeEvent );
+            if ( this.autoRotate && state === STATE.NONE ) {
 
-			lastPosition.copy( this.object.position );
-			lastQuaternion.copy (this.object.quaternion );
+                    this.rotateLeft( getAutoRotationAngle() );
 
-		}
+            }
+  
+            theta += thetaDelta;
+            phi += phiDelta;
+
+
+            // restrict theta to be between desired limits
+            theta = Math.max( this.minAzimuthAngle, Math.min( this.maxAzimuthAngle, theta ) );
+
+            // restrict phi to be between desired limits
+            phi = Math.max( this.minPolarAngle, Math.min( this.maxPolarAngle, phi ) );
+
+            // restrict phi to be betwee EPS and PI-EPS
+            phi = Math.max( EPS, Math.min( Math.PI - EPS, phi ) );
+
+            var radius = offset.length() * scale;
+
+            // restrict radius to be between desired limits
+            radius = Math.max( this.minDistance, Math.min( this.maxDistance, radius ) );
+
+            // move target to panned location
+            this.target.add( pan );
+
+            offset.x = radius * Math.sin( phi ) * Math.sin( theta );
+            offset.y = radius * Math.cos( phi );
+            offset.z = radius * Math.sin( phi ) * Math.cos( theta );
+
+            // rotate offset back to "camera-up-vector-is-up" space
+            offset.applyQuaternion( quatInverse );
+
+            this.object.position.copy( this.target ).add( offset );
+
+            this.object.lookAt( this.target );
+
+            thetaDelta = 0;
+            phiDelta = 0;
+            scale = 1;
+            pan.set( 0, 0, 0 );
+
+            // update condition is:
+            // min(camera displacement, camera rotation in radians)^2 > EPS
+            // using small-angle approximation cos(x/2) = 1 - x^2 / 8
+
+            if ( lastPosition.distanceToSquared( this.object.position ) > EPS
+                || 8 * (1 - lastQuaternion.dot(this.object.quaternion)) > EPS ) {
+
+                    this.dispatchEvent( changeEvent );
+
+                    lastPosition.copy( this.object.position );
+                    lastQuaternion.copy (this.object.quaternion );
+
+            }
 
 	};
 
@@ -582,7 +472,7 @@ THREE.GlobeControls = function ( object, domElement ) {
                         {
                             scope.pointClick.x = event.clientX;
                             scope.pointClick.y = event.clientY;
-                        
+                            scope.cloneObject  = scope.object.clone();
                             scope.click        = true;
                         }
                         
@@ -619,7 +509,7 @@ THREE.GlobeControls = function ( object, domElement ) {
 		event.preventDefault();
 
 		var element = scope.domElement === document ? scope.domElement.body : scope.domElement;
-
+                                
 		if ( state === STATE.ROTATE ) {
 
 			if ( scope.noRotate === true ) return;
@@ -634,22 +524,7 @@ THREE.GlobeControls = function ( object, domElement ) {
 
 			// rotating up and down along whole screen attempts to go 360, but limited to 180
                             scope.rotateUp( 2 * Math.PI * rotateDelta.y / element.clientHeight * scope.rotateSpeed );
-                            
-                            /*
-                            var mouse = new THREE.Vector2();
-
-                            mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-                            mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;		
-                            
-                            raycaster.setFromCamera( mouse, scope.object)
-                            var ray = raycaster.ray;
-                            
-                            scope.intersection = scope.intersectSphere(ray);
-                            */
-                            //console.log(intersection  );
-                            //console.log(mouse);
-                            
-                            
+        
                         }
                         else
                         {
@@ -695,6 +570,26 @@ THREE.GlobeControls = function ( object, domElement ) {
 			panStart.copy( panEnd );
 
 		}
+                else if ( state === STATE.TOUCH_INTER ) {
+                    
+                            var mouse = new THREE.Vector2();
+
+                            mouse.x =   ( event.clientX / window.innerWidth )   * 2 - 1;
+                            mouse.y = - ( event.clientY / window.innerHeight )  * 2 + 1;		
+                            
+                            raycaster.setFromCamera( mouse, scope.cloneObject);
+                            var ray = raycaster.ray;
+                            
+                            scope.intersection = scope.intersectSphere(ray);
+                            
+                            var a  = scope.toSpherical(pointGlobe);
+                            var b  = scope.toSpherical(scope.intersection);
+                            
+                            thetaDelta  = (a.x-b.x);
+                            phiDelta    = (a.y-b.y);
+                            
+                            console.log(thetaDelta +'/' + phiDelta);
+                }
 
 		if ( state !== STATE.NONE ) scope.update();
 
@@ -775,6 +670,9 @@ THREE.GlobeControls = function ( object, domElement ) {
                                 space = !space;     
                                 scope.updateTarget();
                                 scope.update();
+                                break;
+                        case scope.keys.CTRL:
+                                state = STATE.TOUCH_INTER;
                                 break;
 
 		}
