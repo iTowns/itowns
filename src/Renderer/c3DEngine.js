@@ -33,7 +33,7 @@ define('Renderer/c3DEngine',[
         THREE.ShaderChunk[ "logdepthbuf_pars_vertex" ];
 
         this.debug      = false;
-        //this.debug      = true;
+       // this.debug      = true;
         this.scene      = undefined;
         this.scene3D    = new THREE.Scene();               
         this.width      = this.debug ? window.innerWidth * 0.5 : window.innerWidth;
@@ -82,15 +82,13 @@ define('Renderer/c3DEngine',[
                 this.updateDummy(this.controls.intersection,this.dummy2);
             }
             
-            this.renderer.clear();            
-            this.renderer.setViewport( 0, 0, this.width, this.height );            
+            this.renderer.clear();                      
             this.renderer.render( this.scene3D, this.camera.camera3D);                       
             
             if(this.debug)
             {
                 this.enableRTC(false);                
                 this.camera.camHelper().visible = true;                
-                this.renderer.setViewport( this.width, 0, this.width, this.height );
                 this.renderer.render( this.scene3D, this.camDebug);                
                 this.camera.camHelper().visible = false;                
                 this.enableRTC(true);
@@ -151,7 +149,7 @@ define('Renderer/c3DEngine',[
      */
     c3DEngine.prototype.initRenderer = function()
     {
-        this.renderer   = new THREE.WebGLRenderer( { antialias: true,alpha: true,logarithmicDepthBuffer : true } );
+        this.renderer   = new THREE.WebGLRenderer( { antialias: true, alpha: true, logarithmicDepthBuffer: true } );
         this.renderer.setPixelRatio( window.devicePixelRatio );
         this.renderer.setSize(window.innerWidth, window.innerHeight );        
         this.renderer.setClearColor( 0x030508 );
