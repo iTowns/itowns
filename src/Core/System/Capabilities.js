@@ -1,12 +1,12 @@
 /**
 * Generated On: 2015-10-5
-* Class: Capabalities
+* Class: Capabilities
 */
 
-define('Core/System/Capabalities',[], function(){
+define('Core/System/Capabilities',[], function(){
 
 
-    function Capabalities(){
+    function Capabilities(){
         //Constructor
 
         this._systemCap = null;
@@ -17,7 +17,7 @@ define('Core/System/Capabalities',[], function(){
 
     /**
     */
-    Capabalities.prototype.getSystemCapabilities = function(){
+    Capabilities.prototype.getSystemCapabilities = function(){
         //TODO: Implement Me 
         var memory = window.performance.memory;
         console.log(  memory.totalJSHeapSize/(1024*1024) +   '/' + memory.jsHeapSizeLimit/(1024*1024));
@@ -26,7 +26,7 @@ define('Core/System/Capabalities',[], function(){
 
     /**
     */
-    Capabalities.prototype.getGpuCapabilities = function(){
+    Capabilities.prototype.getGpuCapabilities = function(){
         //TODO: Implement Me 
 
     };
@@ -34,19 +34,19 @@ define('Core/System/Capabalities',[], function(){
 
     /**
     */
-    Capabalities.prototype.ioFile = function(){
+    Capabilities.prototype.ioFile = function(){
         //TODO: Implement Me 
 
     };
 
-    Capabalities.prototype.isInternetExplorer = function()    
+    Capabilities.prototype.isInternetExplorer = function()    
     {
 
         return /*@cc_on!@*/false || !!document.documentMode;
 
     };  
     /*
-    Capabalities.prototype.checkVersion = function()
+    Capabilities.prototype.checkVersion = function()
     {
       var msg = "You're not using Internet Explorer.";
       var ver = getInternetExplorerVersion();
@@ -61,5 +61,5 @@ define('Core/System/Capabalities',[], function(){
       alert( msg );
     };
    */
-    return Capabalities;
+    return Capabilities;
 });

@@ -12,10 +12,10 @@ define('Globe/Globe',[
     'Core/Math/MathExtented',
     'Globe/EllipsoidTileMesh',
     'Globe/Atmosphere',
-    'Core/System/Capabalities',
+    'Core/System/Capabilities',
     'Core/Geographic/CoordCarto',
     'Renderer/BasicMaterial',
-    'THREE'], function(defaultValue,Layer,Quadtree,SchemeTile,MathExt,EllipsoidTileMesh,Atmosphere,Capabalities,CoordCarto,BasicMaterial,THREE){
+    'THREE'], function(defaultValue,Layer,Quadtree,SchemeTile,MathExt,EllipsoidTileMesh,Atmosphere,Capabilities,CoordCarto,BasicMaterial,THREE){
 
     function Globe(scale){
         //Constructor
@@ -23,7 +23,7 @@ define('Globe/Globe',[
         Layer.call( this );        
         
         scale       = defaultValue(scale,1.0);
-        var caps    = new Capabalities();       
+        var caps    = new Capabilities();       
         this.NOIE   = !caps.isInternetExplorer()  ;
                 
         this.size       = new THREE.Vector3(6378137, 6378137, 6356752.3142451793).multiplyScalar(scale);
