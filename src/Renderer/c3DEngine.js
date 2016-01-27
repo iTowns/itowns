@@ -74,8 +74,31 @@ define('Renderer/c3DEngine',[
             {                          
                 var position = this.picking(this.controls.pointClickOnScreen);
                 this.placeDummy(this.dummy,position);
-                this.controls.setPointGlobe(position);              
-                //this.controls.click      = false;                
+                this.controls.setPointGlobe(position);    
+                /*
+                var p       = position.clone();
+                p.x         = -position.x;
+                p.y         = position.z;
+                p.z         = position.y;
+               
+                var R       = p.length();
+                var a       = 6378137;
+                var b       = 6356752.3142451793;
+                var e       = Math.sqrt((a*a - b*b)/(a*a));
+                var f       = 1 - Math.sqrt(1 - e*e);
+                var rsqXY   = Math.sqrt(p.x*p.x + p.y*p.y);
+                
+                var theta   = Math.atan2(p.y,p.x);
+                var nu      = Math.atan(p.z/rsqXY*((1-f)+ e*e*a/R));
+               
+                var sinu    = Math.sin(nu);
+                var cosu    = Math.cos(nu);
+            
+                var phi     = Math.atan((p.z*(1-f) + e*e*a*sinu*sinu*sinu)/((1-f)*(rsqXY - e*e*a*cosu*cosu*cosu)));
+                
+                var h       = (rsqXY*Math.cos(phi)) + p.z*Math.sin(phi) - a * Math.sqrt(1-e*e*Math.sin(phi)*Math.sin(phi));
+                */
+                //console.log(theta + ' ' + phi + ' ' + h );               
             }
             else
             {
@@ -191,6 +214,11 @@ define('Renderer/c3DEngine',[
             this.scene3D.add( axisHelper );
         }
         
+        
+        
+//        var axisHelper = new THREE.AxisHelper( this.size*1.33 );
+//        this.scene3D.add( axisHelper );
+         
         this.camera.camera3D.near = Math.max(15.0,0.000002352 * this.size);                        
         this.camera.camera3D.updateProjectionMatrix();        
         this.initRenderer();        
@@ -214,7 +242,7 @@ define('Renderer/c3DEngine',[
             
             if( len < lim )
             {
-                var t = Math.pow(Math.cos((lim - len)/ (lim - this.size) * Math.PI * 0.5),1.5);                
+                var t = Math.pow(Math.cos((lim - len)/ (lim - this.size*0.9981) * Math.PI * 0.5),1.5);                
                 this.controls.zoomSpeed     = t*2.0;
                 this.controls.rotateSpeed   = 0.8 *t;    
                 var color = new THREE.Color( 0x93d5f8 );
