@@ -1,5 +1,5 @@
 
-/*global THREE, console */
+/*global THREE, console, Infinity */
 
 // This set of controls performs orbiting, dollying (zooming), and panning. It maintains
 // the "up" direction as +Y, unlike the TrackballControls. Touch on tablet and phones is
@@ -62,12 +62,12 @@ THREE.GlobeControls = function ( object, domElement ) {
         this.theta  = null;
         this.phi    = null;
         
-        this.pointClick = new THREE.Vector2();
-        var pointGlobe       = new THREE.Vector3();
-        var rayonPointGlobe  = 0;
+        this.pointClickOnScreen = new THREE.Vector2();
+        var pickOnGlobe   = new THREE.Vector3();
+        var rayonPointGlobe     = 0;
         var raycaster   = new THREE.Raycaster();
         this.click      = false;
-        this.intersection = new THREE.Vector3();
+        this.pickOnSphere = new THREE.Vector3();
         
 	// How far you can orbit horizontally, upper and lower limits.
 	// If set, must be a sub-interval of the interval [ - Math.PI, Math.PI ].
@@ -140,9 +140,16 @@ THREE.GlobeControls = function ( object, domElement ) {
                 
 	this.setPointGlobe = function ( point ) 
         {          
-            pointGlobe.copy(point);
-            var s = scope.toSpherical(point);                        
-            rayonPointGlobe = pointGlobe.length();            
+            
+            if(point === undefined)
+                pickOnGlobe = undefined;
+            else
+            {
+                pickOnGlobe = new THREE.Vector3();
+                pickOnGlobe.copy(point);
+                //var s = scope.toSpherical(point);                        
+                rayonPointGlobe = pickOnGlobe.length();            
+            }
         };
         
         this.intersectSphere = function ( ray )   
@@ -166,10 +173,11 @@ THREE.GlobeControls = function ( object, domElement ) {
        
         this.toSpherical = function ( point )   
         {        
-            var tt = Math.atan2( point.x, point.z );                       
-            var pp = Math.atan2( Math.sqrt( point.x * point.x + point.z * point.z ), point.y );
-                        
-            return new THREE.Vector2(tt,pp);
+            var pTheta  = Math.atan2( point.x, point.z );
+            var pPhi    = Math.atan2( Math.sqrt( point.x * point.x + point.z * point.z ), point.y );
+
+            return new THREE.Vector2(pTheta,pPhi);
+            
         };
 
 	this.rotateLeft = function ( angle ) {
@@ -335,11 +343,18 @@ THREE.GlobeControls = function ( object, domElement ) {
 
 	this.update = function () {
 
-            //var position = ( state === STATE.TOUCH_INTER ) ? this.cloneObject.position : this.object.position;
+            if(pickOnGlobe === undefined)
+            {                
+                thetaDelta  = 0;
+                phiDelta    = 0;
+                return;
+            }
+            
+            var position = ( state === STATE.TOUCH_INTER ) ? this.cloneObject.position : this.object.position;
             
             //var position = this.cloneObject.position;
             
-            var position =  this.object.position;
+            //var position =  this.object.position;
 
             offset.copy( position ).sub( this.target );
 
@@ -464,16 +479,18 @@ THREE.GlobeControls = function ( object, domElement ) {
 		if ( event.button === scope.mouseButtons.ORBIT ) {
 			if ( scope.noRotate === true ) return;
 
-			state = STATE.ROTATE;                       
+			//state = STATE.ROTATE;  
+                        state = STATE.TOUCH_INTER;  
 
 			rotateStart.set( event.clientX, event.clientY );
                         
                         if(!scope.click)
                         {
-                            scope.pointClick.x = event.clientX;
-                            scope.pointClick.y = event.clientY;
-                            scope.cloneObject  = scope.object.clone();
-                            scope.click        = true;
+                            scope.setPointGlobe(undefined); 
+                            scope.pointClickOnScreen.x = event.clientX;
+                            scope.pointClickOnScreen.y = event.clientY;
+                            scope.cloneObject          = scope.object.clone();
+                            scope.click                = true;
                         }
                         
 
@@ -572,23 +589,36 @@ THREE.GlobeControls = function ( object, domElement ) {
 		}
                 else if ( state === STATE.TOUCH_INTER ) {
                     
-                            var mouse = new THREE.Vector2();
+                    
+                            if(pickOnGlobe === undefined)
+                            {
+                                thetaDelta = 0.0;
+                                phiDelta   = 0.0;
+                            }
+                            else
+                            {                                
+                                var mouse   = new THREE.Vector2();
+  
+                                mouse.x =   ( event.clientX / window.innerWidth )   * 2 - 1;
+                                mouse.y = - ( event.clientY / window.innerHeight )  * 2 + 1;		
+  
+                                raycaster.setFromCamera( mouse, scope.cloneObject);
+                                var ray = raycaster.ray;
 
-                            mouse.x =   ( event.clientX / window.innerWidth )   * 2 - 1;
-                            mouse.y = - ( event.clientY / window.innerHeight )  * 2 + 1;		
-                            
-                            raycaster.setFromCamera( mouse, scope.cloneObject);
-                            var ray = raycaster.ray;
-                            
-                            scope.intersection = scope.intersectSphere(ray);
-                            
-                            var a  = scope.toSpherical(pointGlobe);
-                            var b  = scope.toSpherical(scope.intersection);
-                            
-                            thetaDelta  = (a.x-b.x);
-                            phiDelta    = (a.y-b.y);
-                            
-                            console.log(thetaDelta +'/' + phiDelta);
+                                scope.pickOnSphere = scope.intersectSphere(ray);
+
+                                var centerGlobeCam = new THREE.Vector3().applyMatrix4(scope.cloneObject.matrixWorldInverse);                                   
+                                var pickOnGlobeCam = pickOnGlobe.clone().applyMatrix4(scope.cloneObject.matrixWorldInverse).sub(centerGlobeCam);
+                                var pickOnSpherCam = scope.pickOnSphere.clone().applyMatrix4(scope.cloneObject.matrixWorldInverse).sub(centerGlobeCam);
+                                
+                                var a  = scope.toSpherical(pickOnGlobeCam);
+                                var b  = scope.toSpherical(pickOnSpherCam);                                
+                                var c  = scope.toSpherical(pickOnGlobe);
+                               
+                                phiDelta   =  (a.y - b.y);
+                                thetaDelta =  (a.x - b.x)/(Math.cos(Math.PI * 0.5 - c.y));
+
+                            }
                 }
 
 		if ( state !== STATE.NONE ) scope.update();

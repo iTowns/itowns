@@ -71,15 +71,16 @@ define('Renderer/c3DEngine',[
         this.renderScene = function(){
                   
             if(this.controls.click)
-            {                                                   
-                var position = this.picking(this.controls.pointClick);
-                this.updateDummy(position,this.dummy);
-                this.controls.setPointGlobe(position);                
+            {             
+                //this.controls.update();                
+                var position = this.picking(this.controls.pointClickOnScreen);
+                this.placeDummy(this.dummy,position);
+                this.controls.setPointGlobe(position);              
                 this.controls.click      = false;                
             }
             else
             {
-                this.updateDummy(this.controls.intersection,this.dummy2);
+                this.placeDummy(this.dummy2,this.controls.pickOnSphere);
             }
             
             this.renderer.clear();            
@@ -441,7 +442,7 @@ define('Renderer/c3DEngine',[
                 
     };
     
-    c3DEngine.prototype.updateDummy = function(position,dummy) 
+    c3DEngine.prototype.placeDummy = function(dummy,position) 
     {
         dummy.position.copy(position);                
         var size = position.clone().sub(this.camera.position()).length()/200; // TODO distance                
