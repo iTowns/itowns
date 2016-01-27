@@ -66,7 +66,6 @@ THREE.GlobeControls = function ( object, domElement ) {
         var pickOnGlobe   = new THREE.Vector3();
         var rayonPointGlobe     = 0;
         var raycaster   = new THREE.Raycaster();
-        this.click      = false;
         this.pickOnSphere = new THREE.Vector3();
         
 	// How far you can orbit horizontally, upper and lower limits.
@@ -137,17 +136,20 @@ THREE.GlobeControls = function ( object, domElement ) {
 	var changeEvent = { type: 'change' };
 	var startEvent = { type: 'start' };
 	var endEvent = { type: 'end' };
-                
+          
+    
+        this.getPointGlobe = function ()         
+        { 
+            return pickOnGlobe;
+        };
+        
 	this.setPointGlobe = function ( point ) 
-        {          
-            
+        {                      
             if(point === undefined)
                 pickOnGlobe = undefined;
             else
             {
-                pickOnGlobe = new THREE.Vector3();
-                pickOnGlobe.copy(point);
-                //var s = scope.toSpherical(point);                        
+                pickOnGlobe = new THREE.Vector3().copy(point);                  
                 rayonPointGlobe = pickOnGlobe.length();            
             }
         };
@@ -484,13 +486,12 @@ THREE.GlobeControls = function ( object, domElement ) {
 
 			rotateStart.set( event.clientX, event.clientY );
                         
-                        if(!scope.click)
+                        if(pickOnGlobe !== undefined)
                         {
                             scope.setPointGlobe(undefined); 
                             scope.pointClickOnScreen.x = event.clientX;
                             scope.pointClickOnScreen.y = event.clientY;
-                            scope.cloneObject          = scope.object.clone();
-                            scope.click                = true;
+                            scope.cloneObject          = scope.object.clone();                            
                         }
                         
 

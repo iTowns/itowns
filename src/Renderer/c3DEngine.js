@@ -70,13 +70,12 @@ define('Renderer/c3DEngine',[
           
         this.renderScene = function(){
                   
-            if(this.controls.click)
-            {             
-                //this.controls.update();                
+            if(this.controls.getPointGlobe() === undefined)
+            {                          
                 var position = this.picking(this.controls.pointClickOnScreen);
                 this.placeDummy(this.dummy,position);
                 this.controls.setPointGlobe(position);              
-                this.controls.click      = false;                
+                //this.controls.click      = false;                
             }
             else
             {
