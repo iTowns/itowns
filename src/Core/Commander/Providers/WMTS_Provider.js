@@ -149,7 +149,7 @@ define('Core/Commander/Providers/WMTS_Provider',[
         return this.ioDriverImage.read(url).then(function(image)
         {
             
-            result.texture= new THREE.Texture(image);            
+            result.texture = new THREE.Texture(image);          
             result.texture.generateMipmaps  = false;
             result.texture.magFilter        = THREE.LinearFilter;
             result.texture.minFilter        = THREE.LinearFilter;

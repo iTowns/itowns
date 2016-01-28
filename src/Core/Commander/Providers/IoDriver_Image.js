@@ -21,7 +21,7 @@ define('Core/Commander/Providers/IoDriver_Image',['Core/Commander/Providers/IoDr
     {
        
         var deferred = when.defer();        
-        var image = document.createElement( 'img' );
+        var image = new Image();
 
         image.addEventListener( 'load', function ( event ) {
 
