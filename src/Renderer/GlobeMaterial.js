@@ -36,7 +36,7 @@ define('Renderer/GlobeMaterial',
         this.uniforms.pickingRender   = {type: "i" , value: 0} ;
 
         this.setUuid(id);
-
+        this.nbTextures = 0;
         this.wireframe = false;
         //this.wireframe = true;
    
@@ -47,6 +47,7 @@ define('Renderer/GlobeMaterial',
     
     GlobeMaterial.prototype.dispose = function()
     {         
+        
         this.dispatchEvent( { type: 'dispose' } );
         
         for (var i = 0, max = this.Textures_00.length; i < max; i++)        
@@ -68,7 +69,7 @@ define('Renderer/GlobeMaterial',
         
         jT.freeArray(this.uniforms.dTextures_00.value);
         jT.freeArray(this.uniforms.dTextures_01.value);
-                
+                 this.nbTextures = 0;
     };
     
     GlobeMaterial.prototype.setTexture = function(texture,layer,id,pitScale)
@@ -82,20 +83,22 @@ define('Renderer/GlobeMaterial',
                 this.uniforms.pitScale.value  = pitScale;           
         }
         else
-        {            
-            this.Textures_01[id]                = texture;        
-            this.uniforms.dTextures_01.value    = this.Textures_01;        
-            this.uniforms.nbTextures_01.value   = this.Textures_01.length;                             
+        {     
+            this.nbTextures++;
+            this.Textures_01[id]                = texture;   // BEWARE: array [] -> size: 0; array [10]="wao" -> size: 11
+            this.uniforms.dTextures_01.value    = this.Textures_01;         // Re-affect all the array each time a new texture is received -> NOT GOOD
+            this.uniforms.nbTextures_01.value   = this.Textures_01.length;  //this.nbTextures;// this.Textures_01.length;
         }                            
     };
     
     GlobeMaterial.prototype.update = function()    
     {
-      
+        // Elevation
         for (var i = 0, max = this.Textures_00.length; i < max; i++) 
             if(this.Textures_00[i].image !== undefined)
                 this.Textures_00[i].needsUpdate = true;
         
+        // Image texture (ortho, carto...)
         for (var i = 0, max = this.Textures_01.length; i < max; i++) 
             if(this.Textures_01[i] && this.Textures_01[i].image !== undefined)
                 this.Textures_01[i].needsUpdate = true;
