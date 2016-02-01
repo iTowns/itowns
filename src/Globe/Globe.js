@@ -32,23 +32,23 @@ define('Globe/Globe',[
         
         this.batiments  = new Layer();
         
-        var material    = new BasicMaterial(new THREE.Color(1,0,1));
-        var geometry    = new THREE.BoxGeometry(30, 30, 40,3,3,3);       
+        var material    = new BasicMaterial(new THREE.Color(1,0,0));
+        var geometry    = new THREE.SphereGeometry(200);       
         var batiment    = new THREE.Mesh( geometry, material );
-        var position    = this.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(2.33,48.87,35));
+        var position    = this.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(-48.87,0,200));
         batiment.frustumCulled  = false;
-        material.wireframe      = true;
+        //material.wireframe      = true;
         batiment.position.copy(position);
    
         var material2    = new BasicMaterial(new THREE.Color(1,0.5,1));        
         var batiment2    = new THREE.Mesh( geometry, material2 );
-        var position2    = this.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(2.331,48.87,35));
+        var position2    = this.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(-48.87,0,100));
         batiment2.frustumCulled  = false;
         material2.wireframe      = true;
         batiment2.position.copy(position2);
         
-//        this.batiments.add( batiment );
-//        this.batiments.add( batiment2 );
+        //this.batiments.add( batiment );        
+        //this.batiments.add( batiment2 );
         
         this.add(this.terrain);                
         this.add(this.batiments);
