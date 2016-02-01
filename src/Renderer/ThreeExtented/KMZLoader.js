@@ -5,12 +5,23 @@
 /* global THREE */
 
 //var JSZip = require("C:/Users/vcoindet/Documents/NetBeansProjects/itownsV1/src/Renderer/ThreeExtented/jszip.min");
-define('Renderer/ThreeExtented/KMZLoader',['Renderer/ThreeExtented/jszip.min', 'THREE','Renderer/ThreeExtented/ColladaLoader','when'], function (JSZip, THREE,ColladaLoader, when){
+define('Renderer/ThreeExtented/KMZLoader',
+            ['Renderer/ThreeExtented/jszip.min', 
+                'THREE',
+                'Renderer/ThreeExtented/ColladaLoader',
+                'Core/Commander/Providers/IoDriverXML',
+                'when'], 
+            function (
+                    JSZip, 
+                    THREE,
+                    ColladaLoader,
+                    IoDriverXML,
+                    when){
     
     function KMZLoader (  ) {
 
-
-        
+        this.colladaLoader = new THREE.ColladaLoader();               
+        this.colladaLoader.options.convertUpAxis = true;
     };
     
     KMZLoader.prototype = Object.create( KMZLoader.prototype );
@@ -29,15 +40,27 @@ define('Renderer/ThreeExtented/KMZLoader',['Renderer/ThreeExtented/jszip.min', '
             xhr.responseType = "arraybuffer";
 
             xhr.crossOrigin  = '';
+            
+            var scopeLoader = this.colladaLoader;
 
             xhr.onload = function () 
             {
+                
+                    console.log(this);
                     var zip = new JSZip( this.response );
                     var collada = undefined;
                     for ( var name in zip.files ) {
-                         if ( name.toLowerCase().substr( - 4 ) ===  '.dae' ) {                           
-                            collada = new THREE.ColladaLoader().parse( zip.file( name ).asText() );
-                         } 
+                        console.log(name);
+                        if ( name.toLowerCase().substr( - 4 ) ===  '.dae' ) {                           
+                           collada = scopeLoader.parse( zip.file( name ).asText() );
+                        }
+                        else if (name.toLowerCase().substr( - 7 ) ===  'doc.kml'){
+                           console.log('kml found');
+                           /*return this.ioDriverXML.read('doc.kml').then(function(result)
+                           {
+                               console.log(result);
+                           });*/
+                        }
                     }
                     
                     deferred.resolve(collada);
