@@ -248,7 +248,7 @@ define('Globe/EllipsoidTileMesh',[
     
     EllipsoidTileMesh.prototype.checkOrtho = function()
     { 
-        console.log("this.orthoNeed",this.orthoNeed);
+        
         if(this.orthoNeed === this.material.nbTextures || this.level < 2) 
         {                          
             
