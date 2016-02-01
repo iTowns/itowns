@@ -75,8 +75,8 @@ define('Core/Commander/ManagerCommands',
 
                 var child       = result.scene.children[0];
 
-                var position    = this.providers[0].ellipsoid.cartographicToCartesian(new CoordCarto().setFromDegreeGeo(-3.49250000000001,48.8775,3));                
-                var normal      = this.providers[0].ellipsoid.geodeticSurfaceNormalCartographic(new CoordCarto().setFromDegreeGeo(-3.49250000000001,48.8775,0));
+                var position    = this.providers[0].ellipsoid.cartographicToCartesian(new CoordCarto().setFromDegreeGeo(48.8775,-3.49250000000001,3));                
+                var normal      = this.providers[0].ellipsoid.geodeticSurfaceNormalCartographic(new CoordCarto().setFromDegreeGeo(48.8775,-3.49250000000001,0));
                 
                 var quaternion  = new THREE.Quaternion();
                 quaternion.setFromAxisAngle( new THREE.Vector3(1, 0 ,0 ), Math.PI/2 );

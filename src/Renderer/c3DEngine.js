@@ -33,7 +33,7 @@ define('Renderer/c3DEngine',[
         THREE.ShaderChunk[ "logdepthbuf_pars_vertex" ];
 
         this.debug      = false;
-        //this.debug      = true;
+       // this.debug      = true;
         this.scene      = undefined;
         this.scene3D    = new THREE.Scene();               
         this.width      = this.debug ? window.innerWidth * 0.5 : window.innerWidth;
@@ -69,6 +69,9 @@ define('Renderer/c3DEngine',[
         this.pickingTexture.depthBuffer              = true;
           
         this.renderScene = function(){
+                 
+                 
+            if(this.controls instanceof THREE.GlobeControls)
                   
             if(this.controls.click)
             {                                                   
@@ -106,18 +109,49 @@ define('Renderer/c3DEngine',[
             }
             else
             {
-                this.updateDummy(this.controls.intersection,this.dummy2);
+                if(this.controls.getPointGlobe() === undefined)
+                {                          
+                    var position = this.picking(this.controls.pointClickOnScreen);
+                    this.placeDummy(this.dummy,position);
+                    this.controls.setPointGlobe(position);    
+
+                    var p       = position.clone();
+                    p.x         = -position.x;
+                    p.y         = position.z;
+                    p.z         = position.y;
+
+                    var R       = p.length();
+                    var a       = 6378137;
+                    var b       = 6356752.3142451793;
+                    var e       = Math.sqrt((a*a - b*b)/(a*a));
+                    var f       = 1 - Math.sqrt(1 - e*e);
+                    var rsqXY   = Math.sqrt(p.x*p.x + p.y*p.y);
+
+                    var theta   = Math.atan2(p.y,p.x);
+                    var nu      = Math.atan(p.z/rsqXY*((1-f)+ e*e*a/R));
+
+                    var sinu    = Math.sin(nu);
+                    var cosu    = Math.cos(nu);
+
+                    var phi     = Math.atan((p.z*(1-f) + e*e*a*sinu*sinu*sinu)/((1-f)*(rsqXY - e*e*a*cosu*cosu*cosu)));
+
+                    var h       = (rsqXY*Math.cos(phi)) + p.z*Math.sin(phi) - a * Math.sqrt(1-e*e*Math.sin(phi)*Math.sin(phi));
+
+                    //console.log(theta + ' ' + phi + ' ' + h );               
+                }
+                else
+                {
+                    this.placeDummy(this.dummy2,this.controls.globeTarget.position);
+                }
             }
             
-            this.renderer.clear();            
-            this.renderer.setViewport( 0, 0, this.width, this.height );            
+            this.renderer.clear();                      
             this.renderer.render( this.scene3D, this.camera.camera3D);                       
             
             if(this.debug)
             {
                 this.enableRTC(false);                
                 this.camera.camHelper().visible = true;                
-                this.renderer.setViewport( this.width, 0, this.width, this.height );
                 this.renderer.render( this.scene3D, this.camDebug);                
                 this.camera.camHelper().visible = false;                
                 this.enableRTC(true);
@@ -162,8 +196,9 @@ define('Renderer/c3DEngine',[
     c3DEngine.prototype.initCamera = function()
     {
         this.camera     = new Camera(this.width, this.height, this.debug);        
-            
-        this.scene3D.add(this.camera.camera3D);
+           
+        if(this.controls instanceof THREE.OrbitControls)
+            this.scene3D.add(this.camera.camera3D);
                 
         if(this.debug)
         {
@@ -178,7 +213,7 @@ define('Renderer/c3DEngine',[
      */
     c3DEngine.prototype.initRenderer = function()
     {
-        this.renderer   = new THREE.WebGLRenderer( { antialias: true,alpha: true,logarithmicDepthBuffer : true } );
+        this.renderer   = new THREE.WebGLRenderer( { antialias: true, alpha: true, logarithmicDepthBuffer: true } );
         this.renderer.setPixelRatio( window.devicePixelRatio );
         this.renderer.setSize(window.innerWidth, window.innerHeight );        
         this.renderer.setClearColor( 0x030508 );
@@ -202,7 +237,8 @@ define('Renderer/c3DEngine',[
         // if near is too small --> bug no camera helper
         this.camera.camera3D.near = this.size * 2.333;
         this.camera.camera3D.far  = this.size * 10;
-        this.camera.camera3D.updateProjectionMatrix();
+        this.camera.camera3D.updateProjectionMatrix();        
+        this.camera.camera3D.updateMatrixWorld ( true );
         
         if(this.debug)
         {
@@ -218,6 +254,12 @@ define('Renderer/c3DEngine',[
             this.scene3D.add( axisHelper );
         }
         
+        if(this.controls instanceof THREE.GlobeControls)
+        {
+            var axisHelper = new THREE.AxisHelper( this.size*1.33 );
+            this.scene3D.add( axisHelper );
+        }
+         
         this.camera.camera3D.near = Math.max(15.0,0.000002352 * this.size);                        
         this.camera.camera3D.updateProjectionMatrix();        
         this.initRenderer();        
@@ -241,9 +283,12 @@ define('Renderer/c3DEngine',[
             
             if( len < lim )
             {
-                var t = Math.pow(Math.cos((lim - len)/ (lim - this.size) * Math.PI * 0.5),1.5);                
-                this.controls.zoomSpeed     = t*2.0;
-                this.controls.rotateSpeed   = 0.8 *t;    
+                var t = Math.pow(Math.cos((lim - len)/ (lim - this.size*0.9981) * Math.PI * 0.5),1.5);                
+                if(this.controls instanceof THREE.OrbitControls)
+                {
+                    this.controls.zoomSpeed     = t*2.0;
+                    this.controls.rotateSpeed   = 0.8 *t;    
+                }
                 var color = new THREE.Color( 0x93d5f8 );
 
                 this.renderer.setClearColor( color.multiplyScalar(1.0-t) );
@@ -251,7 +296,7 @@ define('Renderer/c3DEngine',[
             else if(len >= lim && this.controls.zoomSpeed !== 1.0) 
             {
                 this.controls.zoomSpeed     = 1.0;
-                this.controls.rotateSpeed   = 0.8;
+                this.controls.rotateSpeed   = 1.0;
                 this.renderer.setClearColor( 0x030508 );
             }
     };
@@ -319,8 +364,8 @@ define('Renderer/c3DEngine',[
 
     c3DEngine.prototype.initControls = function(size){
         
-        //this.controls   = new THREE.OrbitControls( this.camera.camera3D,this.renderer.domElement );        
-        this.controls   = new THREE.GlobeControls( this.camera.camera3D,this.renderer.domElement );
+        this.controls   = new THREE.OrbitControls( this.camera.camera3D,this.renderer.domElement );        
+        //this.controls   = new THREE.GlobeControls( this.camera.camera3D,this.renderer.domElement,this );
         
         this.controls.target        = new THREE.Vector3(0,0,0);
         this.controls.damping       = 0.1;
@@ -454,6 +499,9 @@ define('Renderer/c3DEngine',[
      **/
     c3DEngine.prototype.picking = function(mouse) 
     {
+        if(mouse === undefined)
+            mouse = new THREE.Vector2(Math.floor(this.width/2),Math.floor(this.height/2));
+         
         this.camera.camera3D.updateMatrixWorld();
         
         this.dummy.visible  = false;        
@@ -461,14 +509,14 @@ define('Renderer/c3DEngine',[
         this.dummy.visible  = true;
 
         var glslPosition    = new THREE.Vector3().fromArray(buffer);              
-        this.scene.selectNodeId(buffer[3]);        
+        //this.scene.selectNodeId(buffer[3]);        
         var worldPosition = glslPosition.applyMatrix4( this.camera.camera3D.matrixWorld); 
 
         return worldPosition;
                 
     };
     
-    c3DEngine.prototype.updateDummy = function(position,dummy) 
+    c3DEngine.prototype.placeDummy = function(dummy,position) 
     {
         dummy.position.copy(position);                
         var size = position.clone().sub(this.camera.position()).length()/200; // TODO distance                

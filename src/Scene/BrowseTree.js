@@ -56,6 +56,7 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
             {
                 if(this.nodeProcess.horizonCulling(node,camera))
                 {
+                    
                     if(node.parent.material !== undefined && node.parent.material.visible === true)
                     
                         return node.setVisibility(false);

@@ -22,13 +22,12 @@ define('Core/Geographic/CoordCarto',['Core/defaultValue'], function(defaultValue
     
     CoordCarto.prototype.setFromDegreeGeo = function(longitude,latitude,altitude)
     {
-        this.longitude  = defaultValue(longitude * Math.PI / 180 + Math.PI,0);
-        this.latitude   = defaultValue(latitude  * Math.PI / 180,0);
+        this.longitude  = defaultValue(latitude  * Math.PI / 180,0);
+        this.latitude   = defaultValue(-longitude * Math.PI / 180 + Math.PI,0);
         this.altitude   = defaultValue(altitude,0);
         
         return this;
     };
-    
     
     return CoordCarto;
 });
