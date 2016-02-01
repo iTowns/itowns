@@ -98,6 +98,7 @@ define('Scene/Quadtree',[
      */
     Quadtree.prototype.update = function(node)
     {
+
         //TODO debug freeze 
 //        if(node.level > 17  || (node.wait === true && node.childrenCount() === 4))
         if(node.level > 17  || node.wait === true)
@@ -105,8 +106,14 @@ define('Scene/Quadtree',[
 
         if(node.childrenCount() > 0 &&  node.wait === false )                
         {                                              
-            node.setChildrenVisibility(true);
+            // node.setChildrenVisibility(true);    // Useless
             node.setMaterialVisibility(!(node.childrenCount() === 4 && node.childrenLoaded()));
+            /*
+            if(node.material.nbTextures === node.material.Textures_01.length){
+                node.setChildrenVisibility(true);
+            }
+             */
+            
             return false;
         }
 

@@ -35,6 +35,7 @@ define('Scene/Layer',[
 
     Layer.prototype.constructor = Layer;
     
+    // Should be plural as it return an array of meshes
     Layer.prototype.getMesh = function()
     {
         var meshs = [];
