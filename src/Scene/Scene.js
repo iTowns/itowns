@@ -75,7 +75,8 @@ define('Scene/Scene',[
         var globe = new Globe(); 
         this.add(globe);
         
-        var position    = globe.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(2.33,48.87,25000000));        
+        //var position    = globe.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(2.33,,25000000));
+        var position    = globe.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(48.7,2.33,25000000));        
         //var target      = globe.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(2.33,48.87,0));
         //var position    = globe.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(0,48.87,25000000));
                        
@@ -145,7 +146,10 @@ define('Scene/Scene',[
     };
     
     /**
-    */
+     * 
+     * @param {type} run
+     * @returns {undefined}
+     */    
     Scene.prototype.updateScene3D = function(run){
                 
        this.gfxEngine.update(run);
@@ -191,7 +195,7 @@ define('Scene/Scene',[
     /**
     * @documentation: Ajoute des Layers dans la scène.
     *
-    * @param layer {[object Object]} 
+    * @param node {[object Object]} 
     */
     Scene.prototype.add = function(node){
         //TODO: Implement Me 
