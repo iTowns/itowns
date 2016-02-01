@@ -62,7 +62,6 @@ define('Core/Commander/Providers/KML_Provider',[
 
             var kml = [];                    
             kml = result.getElementsByTagName("href");
-            //console.log(kml.length);
             
             for (i=0; i<kml.length; i++){
                 
@@ -79,10 +78,10 @@ define('Core/Commander/Providers/KML_Provider',[
                 //console.log(coords[i,1], coords[i,2], coords[i,3], coords[i,4]);
                 
                 //get min and max LodPixel of each tile
-                /*var min_max_2 = [];
-                min_max_2[j,1] = result_1.getElementsByTagName("minLodPixels")[j].childNodes[0].nodeValue;
-                min_max_2[j,2] = result_1.getElementsByTagName("maxLodPixels")[j].childNodes[0].nodeValue;
-                console.log("minLodPixels = " + min_max_2[j,1] + "; maxLodPixels = " + min_max_2[j,2]);*/ 
+                var min_max_lod = [];
+                min_max_lod[i,1] = result.getElementsByTagName("minLodPixels")[i].childNodes[0].nodeValue;
+                //min_max_lod[i,2] = result.getElementsByTagName("maxLodPixels")[i].childNodes[0].nodeValue;
+                console.log("minLodPixels = " + min_max_lod[i,1] /*+ "; maxLodPixels = " + min_max_lod[i,2]*/);
 
                 //Next level : Get the next KML actual position's coords
                 if ( url_href[i].toLowerCase().substr( - 4 ) ===  '.kml' && north < coords[i,1] && south > coords[i,2]  && east < coords[i,3] && west > coords[i,4]){                    
@@ -93,11 +92,11 @@ define('Core/Commander/Providers/KML_Provider',[
                     
                 }
                 //Next level : Get the next KMZ actual position's coords
-                else if (url_href[i].toLowerCase().substr( - 4 ) ===  '.kmz'){
-
+                else if (url_href[i].toLowerCase().substr( - 4 ) ===  '.kmz' && min_max_lod[i,1] === '192'){
+                    console.log(window.innerHeight);
                     var url_href_kmz = [];
                     url_href_kmz[i] = url + kml[i].childNodes[0].nodeValue.replace("../../", "");
-                    //console.log(url_href_kmz[i]);
+                    console.log(url_href_kmz[i]);
                     
                     return this.kmzLoader.load(url_href_kmz[i]);
                 }
@@ -107,7 +106,7 @@ define('Core/Commander/Providers/KML_Provider',[
 
     };
  
-    KML_Provider.prototype.getUrlCollada = function(north, south, east, west)
+    KML_Provider.prototype.getUrlCollada = function(/*north, south, east, west*/)
     {
        
         var deferred = when.defer();
@@ -124,15 +123,13 @@ define('Core/Commander/Providers/KML_Provider',[
 
             //for (i=0; i<kml_0.length; i++){
               //  url_href_1[i] = 'http://wxs.ign.fr/' + key + '/vecteurtuile3d/BATI3D/' + kml_0[i].childNodes[0].nodeValue.replace("./", "");
-                url_href_1 = 'http://wxs.ign.fr/' + key + '/vecteurtuile3d/BATI3D/FXX/TREE/0/0_000_000.kml';
-                //console.log(url_href_1[i]);   
+                url_href_1 = 'http://wxs.ign.fr/' + key + '/vecteurtuile3d/BATI3D/FXX/TREE/0/0_000_000.kml'; 
                 this.parseKML(url_href_1).then(function(result)
                 {
  
                     deferred.resolve(result);
                     
                 });
-                
                 
             //Couper ici pour récupérer algo    
             //}
