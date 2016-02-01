@@ -217,6 +217,8 @@ define('Globe/EllipsoidTileMesh',[
         id = id === undefined ? 0 : id;
         this.material.setTexture(texture,1,id);
         this.checkOrtho();
+      //  if(this.material.nbTextures === this.material.Textures_01.length)
+        //   this.visible = false;
     };   
     
     EllipsoidTileMesh.prototype.normals = function()
@@ -246,8 +248,8 @@ define('Globe/EllipsoidTileMesh',[
     
     EllipsoidTileMesh.prototype.checkOrtho = function()
     { 
-        
-        if(this.orthoNeed === this.material.Textures_01.length || this.level < 2) 
+        console.log("this.orthoNeed",this.orthoNeed);
+        if(this.orthoNeed === this.material.nbTextures || this.level < 2) 
         {                          
             
             this.loaded = true; 

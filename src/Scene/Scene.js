@@ -21,7 +21,7 @@ define('Scene/Scene',[
     'Scene/Quadtree',
     'Scene/Layer',
     'Core/Geographic/CoordCarto',
-    'Core/System/Capabalities'], function(c3DEngine,Globe,ManagerCommands,BrowseTree,NodeProcess,Quadtree,Layer,CoordCarto,Capabalities){
+    'Core/System/Capabilities'], function(c3DEngine,Globe,ManagerCommands,BrowseTree,NodeProcess,Quadtree,Layer,CoordCarto,Capabilities){
  
     var instanceScene = null;
 
@@ -36,7 +36,7 @@ define('Scene/Scene',[
         this.managerCommand = ManagerCommands();
         this.gfxEngine      = c3DEngine();                       
         this.browserScene   = new BrowseTree(this);
-        this.cap            = new Capabalities();
+        this.cap            = new Capabilities();
 
     }
 
