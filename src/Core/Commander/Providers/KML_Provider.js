@@ -81,7 +81,7 @@ define('Core/Commander/Providers/KML_Provider',[
                 var min_max_lod = [];
                 min_max_lod[i,1] = result.getElementsByTagName("minLodPixels")[i].childNodes[0].nodeValue;
                 //min_max_lod[i,2] = result.getElementsByTagName("maxLodPixels")[i].childNodes[0].nodeValue;
-                console.log("minLodPixels = " + min_max_lod[i,1] /*+ "; maxLodPixels = " + min_max_lod[i,2]*/);
+                //console.log("minLodPixels = " + min_max_lod[i,1] /*+ "; maxLodPixels = " + min_max_lod[i,2]*/);
 
                 //Next level : Get the next KML actual position's coords
                 if ( url_href[i].toLowerCase().substr( - 4 ) ===  '.kml' && north < coords[i,1] && south > coords[i,2]  && east < coords[i,3] && west > coords[i,4]){                    
@@ -93,10 +93,10 @@ define('Core/Commander/Providers/KML_Provider',[
                 }
                 //Next level : Get the next KMZ actual position's coords
                 else if (url_href[i].toLowerCase().substr( - 4 ) ===  '.kmz' && min_max_lod[i,1] === '192'){
-                    console.log(window.innerHeight);
+                    //console.log(window.innerHeight);
                     var url_href_kmz = [];
                     url_href_kmz[i] = url + kml[i].childNodes[0].nodeValue.replace("../../", "");
-                    console.log(url_href_kmz[i]);
+                    //console.log(url_href_kmz[i]);
                     
                     return this.kmzLoader.load(url_href_kmz[i]);
                 }
