@@ -72,49 +72,14 @@ define('Renderer/c3DEngine',[
                  
                  
             if(this.controls instanceof THREE.GlobeControls)
-                  
-            if(this.controls.click)
-            {                                                   
-                var position = this.picking(this.controls.pointClick);
-                this.updateDummy(position,this.dummy);
-                this.controls.setPointGlobe(position);   
-                
-                //console.log(position);
-                
-                var p       = position.clone();
-                p.x         = -position.x;
-                p.y         = position.z;
-                p.z         = position.y;
-                
-                var R       = p.length();
-                var a       = 6378137;
-                var b       = 6356752.314245179497563967;
-                var e       = Math.sqrt((a*a - b*b)/(a*a));
-                var f       = 1 - Math.sqrt(1 - e*e);
-                var rsqXY   = Math.sqrt(p.x*p.x + p.y*p.y);
-                
-                var theta   = Math.atan2(p.y,p.x);
-                var nu      = Math.atan(p.z/rsqXY*((1-f)+ e*e*a/R));
-               
-                var sinu    = Math.sin(nu);
-                var cosu    = Math.cos(nu);
-            
-                var phi     = Math.atan((p.z*(1-f) + e*e*a*sinu*sinu*sinu)/((1-f)*(rsqXY - e*e*a*cosu*cosu*cosu)));
-                
-                var h       = (rsqXY*Math.cos(phi)) + p.z*Math.sin(phi) - a * Math.sqrt(1-e*e*Math.sin(phi)*Math.sin(phi));
-                
-                console.log(theta + ' ' + phi + ' ' + h );
-                
-                this.controls.click      = false;                
-            }
-            else
-            {
+            {                  
                 if(this.controls.getPointGlobe() === undefined)
-                {                          
-                    var position = this.picking(this.controls.pointClickOnScreen);
+                {
+                                          
+                    var position = this.picking(this.controls.pointClickOnScreen/*,this.scene*/);
                     this.placeDummy(this.dummy,position);
                     this.controls.setPointGlobe(position);    
-
+                        /*
                     var p       = position.clone();
                     p.x         = -position.x;
                     p.y         = position.z;
@@ -136,7 +101,7 @@ define('Renderer/c3DEngine',[
                     var phi     = Math.atan((p.z*(1-f) + e*e*a*sinu*sinu*sinu)/((1-f)*(rsqXY - e*e*a*cosu*cosu*cosu)));
 
                     var h       = (rsqXY*Math.cos(phi)) + p.z*Math.sin(phi) - a * Math.sqrt(1-e*e*Math.sin(phi)*Math.sin(phi));
-
+                      */  
                     //console.log(theta + ' ' + phi + ' ' + h );               
                 }
                 else
@@ -501,7 +466,7 @@ define('Renderer/c3DEngine',[
      * @param {type} mouse : mouse position on screen in pixel
      * @returns THREE.Vector3 position cartesien in world space 
      **/
-    c3DEngine.prototype.picking = function(mouse) 
+    c3DEngine.prototype.picking = function(mouse,scene) 
     {
         if(mouse === undefined)
             mouse = new THREE.Vector2(Math.floor(this.width/2),Math.floor(this.height/2));
@@ -513,7 +478,10 @@ define('Renderer/c3DEngine',[
         this.dummy.visible  = true;
 
         var glslPosition    = new THREE.Vector3().fromArray(buffer);              
-        //this.scene.selectNodeId(buffer[3]);        
+        
+        if(scene)
+            scene.selectNodeId(buffer[3]);
+        
         var worldPosition = glslPosition.applyMatrix4( this.camera.camera3D.matrixWorld); 
 
         return worldPosition;

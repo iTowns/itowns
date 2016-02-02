@@ -76,18 +76,16 @@ define('Renderer/GlobeMaterial',
     {         
         if(layer === 0 && texture !== -1)
         {
-            this.Textures_00[0]                 = texture;        
-            this.uniforms.dTextures_00.value    = this.Textures_00;        
-            this.uniforms.nbTextures_00.value   = 1.0;
+            this.Textures_00[0]                 = texture;  
+            this.nbTextures++;
+            
             if(pitScale)
                 this.uniforms.pitScale.value  = pitScale;           
         }
         else
-        {     
+        {                
+            this.Textures_01[id]                = texture;   // BEWARE: array [] -> size: 0; array [10]="wao" -> size: 11            
             this.nbTextures++;
-            this.Textures_01[id]                = texture;   // BEWARE: array [] -> size: 0; array [10]="wao" -> size: 11
-            this.uniforms.dTextures_01.value    = this.Textures_01;         // Re-affect all the array each time a new texture is received -> NOT GOOD
-            this.uniforms.nbTextures_01.value   = this.Textures_01.length;  //this.nbTextures;// this.Textures_01.length;
         }                            
     };
     
@@ -98,10 +96,16 @@ define('Renderer/GlobeMaterial',
             if(this.Textures_00[i].image !== undefined)
                 this.Textures_00[i].needsUpdate = true;
         
+        this.uniforms.dTextures_00.value    = this.Textures_00;        
+        this.uniforms.nbTextures_00.value   = 1.0;
+        
         // Image texture (ortho, carto...)
         for (var i = 0, max = this.Textures_01.length; i < max; i++) 
             if(this.Textures_01[i] && this.Textures_01[i].image !== undefined)
                 this.Textures_01[i].needsUpdate = true;
+        
+        this.uniforms.dTextures_01.value    = this.Textures_01;         // Re-affect all the array each time a new texture is received -> NOT GOOD
+        this.uniforms.nbTextures_01.value   = this.Textures_01.length;;//this.nbTextures;// this.Textures_01.length;
                 
     };
     

@@ -118,17 +118,6 @@ define('Globe/EllipsoidTileMesh',[
          this.material.visible = true;
     };
     
-    EllipsoidTileMesh.prototype.incoherent = function()
-    {
-        var nChildren = this.children.length;
-        
-        if(nChildren > 0 && nChildren < this.maxChildren)
-            console.log('incoherent');
-        
-        if(nChildren > 0  && nChildren < this.maxChildren && this.wait === true)
-            console.log('incoherent');
-    };
-    
     EllipsoidTileMesh.prototype.useParent = function()
     {
         return this.level !== this.levelTerrain;
@@ -249,7 +238,7 @@ define('Globe/EllipsoidTileMesh',[
     EllipsoidTileMesh.prototype.checkOrtho = function()
     { 
         
-        if(this.orthoNeed === this.material.nbTextures || this.level < 2) 
+        if(this.orthoNeed+1 === this.material.nbTextures || this.level < 2) 
         {                          
             
             this.loaded = true; 
@@ -257,7 +246,7 @@ define('Globe/EllipsoidTileMesh',[
                         
             var parent = this.parent;
 
-            if(parent.childrenLoaded())
+            if(parent !== null && parent.childrenLoaded())
             {                                
                 parent.wait = false;                  
             }            
