@@ -33,7 +33,7 @@ define('Renderer/c3DEngine',[
         THREE.ShaderChunk[ "logdepthbuf_pars_vertex" ];
 
         this.debug      = false;
-       // this.debug      = true;
+        //this.debug      = true;
         this.scene      = undefined;
         this.scene3D    = new THREE.Scene();               
         this.width      = this.debug ? window.innerWidth * 0.5 : window.innerWidth;
@@ -110,16 +110,20 @@ define('Renderer/c3DEngine',[
                 }
             }
             
-            this.renderer.clear();                      
+            this.renderer.clear();
+            
+            this.renderer.setViewport( 0, 0, this.width, this.height );
             this.renderer.render( this.scene3D, this.camera.camera3D);                       
             
             if(this.debug)
             {
-                this.enableRTC(false);                
-                this.camera.camHelper().visible = true;                
-                this.renderer.render( this.scene3D, this.camDebug);                
-                this.camera.camHelper().visible = false;                
+                
+                this.enableRTC(false);                                
+                this.camera.camHelper().visible = true;
+                this.renderer.setViewport( this.width, 0, this.width, this.height );
+                this.renderer.render( this.scene3D, this.camDebug);                                
                 this.enableRTC(true);
+                this.camera.camHelper().visible = false;                
             }            
             
         }.bind(this);
@@ -329,8 +333,8 @@ define('Renderer/c3DEngine',[
 
     c3DEngine.prototype.initControls = function(size){
         
-        this.controls   = new THREE.OrbitControls( this.camera.camera3D,this.renderer.domElement );        
-        //this.controls   = new THREE.GlobeControls( this.camera.camera3D,this.renderer.domElement,this );
+        //this.controls   = new THREE.OrbitControls( this.camera.camera3D,this.renderer.domElement );        
+        this.controls   = new THREE.GlobeControls( this.camera.camera3D,this.renderer.domElement,this );
         
         this.controls.target        = new THREE.Vector3(0,0,0);
         this.controls.damping       = 0.1;
