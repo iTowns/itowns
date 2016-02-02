@@ -122,7 +122,7 @@ define('Scene/Scene',[
             if(run)
                 this.managerCommand.runAllCommands();
             
-            //this.renderScene3D();            
+            //this.renderScene3D();  
             this.updateScene3D();            
         } 
         
