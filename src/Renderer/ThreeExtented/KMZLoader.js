@@ -46,16 +46,16 @@ define('Renderer/ThreeExtented/KMZLoader',
             xhr.onload = function () 
             {
                 
-                    console.log(this);
+                    //console.log(this);
                     var zip = new JSZip( this.response );
                     var collada = undefined;
                     for ( var name in zip.files ) {
-                        console.log(name);
+                        //console.log(name);
                         if ( name.toLowerCase().substr( - 4 ) ===  '.dae' ) {                           
                            collada = scopeLoader.parse( zip.file( name ).asText() );
                         }
                         else if (name.toLowerCase().substr( - 7 ) ===  'doc.kml'){
-                           console.log('kml found');
+                           //console.log('kml found');
                            /*return this.ioDriverXML.read('doc.kml').then(function(result)
                            {
                                console.log(result);
