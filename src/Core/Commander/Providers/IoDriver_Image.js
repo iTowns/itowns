@@ -35,8 +35,11 @@ define('Core/Commander/Providers/IoDriver_Image',['Core/Commander/Providers/IoDr
 
 
         image.addEventListener( 'error', function ( event ) {
-
-            deferred.reject(Error("Error IoDriver_Image"));        
+            
+            
+            //TODO bug il faut tester quand l'image n'existe pas 
+            deferred.resolve(this);
+            //deferred.reject(Error("Error IoDriver_Image"));        
 
         }, false );
 
