@@ -117,7 +117,7 @@ define(['THREE'], function(THREE) {
 		},
 
 		parse: function( text ) {
-                        
+
 			COLLADA = new DOMParser().parseFromString( text, 'application/xml' );
 
 			this.parseAsset();
