@@ -23,9 +23,9 @@ define('Renderer/ThreeExtented/KMZLoader',
     function KMZLoader (  ) {
 
         this.colladaLoader = new THREE.ColladaLoader();               
-        this.colladaLoader.options.convertUpAxis = true;
-        
+        this.colladaLoader.options.convertUpAxis = true;        
         this.ioDriverXML = new IoDriverXML();
+        this.cache       = [];
     };
     
     KMZLoader.prototype = Object.create( KMZLoader.prototype );

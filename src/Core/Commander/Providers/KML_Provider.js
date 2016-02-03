@@ -27,18 +27,21 @@ define('Core/Commander/Providers/KML_Provider',[
         //Constructor
         this.ellipsoid   = ellipsoid;
         this.ioDriverXML = new IoDriverXML();
-        this.kmzLoader   = new KMZLoader();                      
-  }
+        this.kmzLoader   = new KMZLoader();        
+    }
 
     KML_Provider.prototype = Object.create( Provider.prototype );
 
     KML_Provider.prototype.constructor = KML_Provider;
     
+    KML_Provider.prototype.loadKMZCenterInBBox = function(bbox)
+    {
+        
+    };
     
     KML_Provider.prototype.loadKMZ = function(longitude,latitude)
     {   
-        
-       
+               
         return this.getUrlCollada(longitude,latitude).then(function(result){
             
                 var child       = result.scene.children[0];
@@ -73,9 +76,12 @@ define('Core/Commander/Providers/KML_Provider',[
         var east = -3.4900000000000046;
         var west = -3.4940000000000044;*/
         var north = latitude;
-        var south = latitude + 0.005;
+        var south = latitude;
         var east  = longitude;
-        var west  = longitude + 0.005;
+        var west  = longitude;
+        
+       // console.log(longitude + ' '  + latitude);
+        
         var key = 'j2bfkv9whnqpq04zpzlfz2ge'; 
         var url = 'http://wxs.ign.fr/' + key + '/vecteurtuile3d/BATI3D/' + 'FXX/';
         return this.ioDriverXML.read(urlFile).then(function(result)
@@ -106,7 +112,7 @@ define('Core/Commander/Providers/KML_Provider',[
                 //console.log("minLodPixels = " + min_max_lod[i,1] /*+ "; maxLodPixels = " + min_max_lod[i,2]*/);
 
                 //Next level : Get the next KML actual position's coords
-                if ( url_href[i].toLowerCase().substr( - 4 ) ===  '.kml' && north < coords[i,1] && south > coords[i,2]  && east < coords[i,3] && west > coords[i,4]){                    
+                if ( url_href[i].toLowerCase().substr( - 4 ) ===  '.kml' && north < coords[i,1] && south >= coords[i,2]  && east < coords[i,3] && west >= coords[i,4]){                    
                     //console.log(coords[i,1], coords[i,2], coords[i,3], coords[i,4]);
                     //console.log(url_href[i].toLowerCase().substr( - 4 ));
                     //sssconsole.log(url_href[i]);
@@ -114,11 +120,11 @@ define('Core/Commander/Providers/KML_Provider',[
                     
                 }
                 //Next level : Get the next KMZ actual position's coords
-                else if (url_href[i].toLowerCase().substr( - 4 ) ===  '.kmz' && north < coords[i,1] && south > coords[i,2]  && east < coords[i,3] && west > coords[i,4]){
+                else if (url_href[i].toLowerCase().substr( - 4 ) ===  '.kmz' && north < coords[i,1] && south >= coords[i,2]  && east < coords[i,3] && west >= coords[i,4]){
                     //console.log(window.innerHeight);
                     var url_href_kmz = [];
                     url_href_kmz[i] = url + kml[i].childNodes[0].nodeValue.replace("../../", "");
-                    console.log(url_href_kmz[i]);
+                    //console.log(url_href_kmz[i]);
                     
                     
                     return this.kmzLoader.load(url_href_kmz[i]);

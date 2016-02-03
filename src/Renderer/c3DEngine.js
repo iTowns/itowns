@@ -79,7 +79,7 @@ define('Renderer/c3DEngine',[
                     var position = this.picking(this.controls.pointClickOnScreen/*,this.scene*/);
                     this.placeDummy(this.dummy,position);
                     this.controls.setPointGlobe(position);    
-                    /*    
+                    /*   
                     var p       = position.clone();
                     p.x         = -position.x;
                     p.y         = position.z;
@@ -102,7 +102,8 @@ define('Renderer/c3DEngine',[
 
                     var h       = (rsqXY*Math.cos(phi)) + p.z*Math.sin(phi) - a * Math.sqrt(1-e*e*Math.sin(phi)*Math.sin(phi));
                       
-                    console.log(theta / Math.PI*180 + ' ' + phi / Math.PI*180 + ' ' + h );   */            
+                    console.log(theta / Math.PI*180 + ' ' + phi / Math.PI*180 + ' ' + h );
+                    */
                 }
                 else
                 {
