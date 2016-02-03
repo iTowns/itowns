@@ -1,6 +1,6 @@
 /**
 * Generated On: 2015-10-5
-* Class: BoudingBox
+* Class: BoundingBox
 * Description: BoundingBox délimite une zone de l'espace. Cette zone est défnie  par des coordonées cartographiques.
 */
 
@@ -12,9 +12,9 @@
  * @param {type} CoordCarto
  * @param {type} THREE
  * @param {type} OBB
- * @returns {BoudingBox_L10.BoudingBox}
+ * @returns {BoundingBox_L10.BoundingBox}
  */
-define('Scene/BoudingBox',[
+define('Scene/BoundingBox',[
     'Core/defaultValue',
     'Core/Math/MathExtented',
     'Core/Math/Point2D',
@@ -31,9 +31,9 @@ define('Scene/BoudingBox',[
      * @param {type} parentCenter : center parent
      * @param {type} minAltitude  : altitude minimum
      * @param {type} maxAltitude  : altitude maximum  
-     * @returns {BoudingBox_L7.BoudingBox}
+     * @returns {BoundingBox_L7.BoundingBox}
      */
-    function BoudingBox(minLongitude,maxLongitude, minLatitude ,maxLatitude ,parentCenter,minAltitude ,maxAltitude){
+    function BoundingBox(minLongitude,maxLongitude, minLatitude ,maxLatitude ,parentCenter,minAltitude ,maxAltitude){
         //Constructor
         
         this.minCarto       = new CoordCarto(defaultValue(minLongitude,0),defaultValue(minLatitude,-MathExt.PI_OV_TWO),defaultValue(minAltitude,-10000));
@@ -52,12 +52,12 @@ define('Scene/BoudingBox',[
     *
     * @param point {[object Object]} 
     */
-    BoudingBox.prototype.isInside = function(point){
+    BoundingBox.prototype.isInside = function(point){
         //TODO: Implement Me 
 
     };
     
-    BoudingBox.prototype.pitScale = function(bbox)
+    BoundingBox.prototype.pitScale = function(bbox)
     {
         var pitX    = Math.abs(bbox.minCarto.longitude  - this.minCarto.longitude ) / this.dimension.x;
         var pitY    = Math.abs(bbox.maxCarto.latitude   - this.maxCarto.latitude  ) / this.dimension.y;
@@ -71,7 +71,7 @@ define('Scene/BoudingBox',[
      * @param {type} halfDimension : half dimension of box
      * @returns {undefined}
      */
-    BoudingBox.prototype.set = function(center,halfDimension){
+    BoundingBox.prototype.set = function(center,halfDimension){
        
        this.halfDimension  = halfDimension;        
        this.center         = center;
@@ -84,7 +84,7 @@ define('Scene/BoudingBox',[
      * @param {type} max : maximum altitude
      * @returns {undefined}
      */
-    BoudingBox.prototype.setAltitude = function(min,max){
+    BoundingBox.prototype.setAltitude = function(min,max){
        
         this.minCarto.altitude = min;
         this.maxCarto.altitude = max;
@@ -96,7 +96,7 @@ define('Scene/BoudingBox',[
      * @param {type} bbox
      * @returns {Boolean}
      */
-    BoudingBox.prototype.intersect = function(bbox)
+    BoundingBox.prototype.intersect = function(bbox)
     {
         return !(this.minCarto.longitude >= bbox.maxCarto.longitude
         || this.maxCarto.longitude <= bbox.minCarto.longitude
@@ -110,9 +110,9 @@ define('Scene/BoudingBox',[
      * @param {type} ellipsoid
      * @param {type} normal
      * @param {type} center
-     * @returns {BoudingBox_L7.THREE.OBB}
+     * @returns {BoundingBox_L7.THREE.OBB}
      */
-    BoudingBox.prototype.get3DBBox = function(ellipsoid,center){
+    BoundingBox.prototype.get3DBBox = function(ellipsoid,center){
        
         var cardinals       = [];
         
@@ -184,6 +184,6 @@ define('Scene/BoudingBox',[
        
     };
     
-    return BoudingBox;
+    return BoundingBox;
     
 });
