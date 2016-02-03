@@ -11,12 +11,9 @@
 
 THREE.GlobeControls = function ( object, domElement,engine ) {
 
-	this.object = object;        
-        this.cloneObject = object.clone();
-        
-        this.dummyObject = new THREE.Object3D();
-        
-        
+	this.object         = object;        
+        this.cloneObject    = object.clone();
+      
 	this.domElement = ( domElement !== undefined ) ? domElement : document;
 
 	// API
@@ -414,7 +411,7 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
             }
             else
             {                
-                offset.copy(this.globeTarget.worldToLocal(position));
+                offset.copy(this.globeTarget.worldToLocal(position.clone()));
             }
           
             //if(state !== STATE.MOVE_GLOBE)
@@ -436,7 +433,7 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
             }
             else
             {
-                this.object.position.copy( this.globeTarget.localToWorld(offset)); 
+                this.object.position.copy( this.globeTarget.localToWorld(offset.clone())); 
                 
             }
                 
@@ -461,9 +458,6 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
                     lastQuaternion.copy (this.object.quaternion );
 
             }
-            
-
-
 	};
 
         this.getSpace = function () {
@@ -645,7 +639,12 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
                                 var mouse   = new THREE.Vector2();
   
                                 mouse.x =   ( event.clientX / window.innerWidth )   * 2 - 1;
-                                mouse.y = - ( event.clientY / window.innerHeight )  * 2 + 1;		
+                                mouse.y = - ( event.clientY / window.innerHeight )  * 2 + 1;	
+  
+//                                var matrix = scope.globeTarget.matrixWorld.clone();                                
+//                                matrix.setPosition(new THREE.Vector3());                              
+//                                matrix.getInverse(matrix);  
+//                                console.log(matrix);
   
                                 raycaster.setFromCamera( mouse, scope.cloneObject);
                                 var ray = raycaster.ray;
@@ -681,6 +680,7 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
                                 
                 computeTarget(scope.engine.picking());
                 scope.engine.renderScene(); // TODO debug to remove white screen, but why?
+                
                                 
 	}
 
@@ -722,7 +722,15 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
         function onKeyUp( event ) {
             
             if ( scope.enabled === false || scope.noKeys === true || scope.noPan === true ) return;
-                scope.keyCtrl = false;  
+            
+            if(scope.keyCtrl)   
+            {
+                computeVectorUp();
+                rotateTarget();
+                              
+            }
+            
+            scope.keyCtrl = false;  
         }
 
 	function onKeyDown( event ) {
@@ -757,12 +765,12 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
                                 scope.updateTarget();
                                 scope.update();
                                 break;
-                        case scope.keys.CTRL:                                                                
+                        case scope.keys.CTRL:       
+                                computeVectorUp();
                                 scope.keyCtrl = true;
                                 break;
 
 		}
-
 	}
 
 	function touchstart( event ) {
@@ -900,21 +908,28 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
 
 	}
         
+        function computeVectorUp() 
+        {
+            var vectorUp = scope.globeTarget.position.clone().normalize();            
+            scope.object.up.copy(vectorUp);
+        
+        }
+        
+        function rotateTarget()
+        {                
+            var position = scope.globeTarget.worldToLocal(scope.object.position.clone());                                
+            var angle    = Math.atan2(position.x,position.z);                                
+            scope.globeTarget.quaternion.multiply(new THREE.Quaternion().setFromAxisAngle( new THREE.Vector3( 0, 1, 0 ), angle ));
+        }
         
         function computeTarget(position) {
             
-            scope.globeTarget.position.copy(position);
-            
-            scope.globeTarget.lookAt(position.clone().multiplyScalar( 2 ));            
-            
+            scope.globeTarget.position.copy(position);            
+            scope.globeTarget.lookAt(position.clone().multiplyScalar( 2 ));                        
             scope.globeTarget.quaternion.multiply( new THREE.Quaternion().setFromAxisAngle( new THREE.Vector3( 1, 0, 0 ), Math.PI / 2 ));
             scope.globeTarget.updateMatrixWorld();
-            
+            rotateTarget();
             /*
-            var vectorUp = scope.globeTarget.position.clone().normalize();
-            
-            scope.object.up.copy(vectorUp);
-           
             quat = new THREE.Quaternion().setFromUnitVectors( scope.object.up,vectorUp );
             quatInverse = quat.clone().inverse();
             
@@ -945,7 +960,7 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
         computeTarget(this.intersectSphere(ray));        
         this.engine.scene3D.add(this.globeTarget);
         
-        var axisHelper = new THREE.AxisHelper( 500000 );
+        var axisHelper = new THREE.AxisHelper( 50000 );
         this.globeTarget.add( axisHelper );
         
 };

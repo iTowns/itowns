@@ -108,17 +108,22 @@ define('Core/Commander/ManagerCommands',
         
     ManagerCommands.prototype.runAllCommands = function()
     {  
-       
+        //return when(0);
         if(this.queueAsync.length === 0)
-
-            return;
+        {            
+            return when(0);
+        }
           
-        return when.all(this.arrayDeQueue(8)).then(function()
+        return when.all(this.arrayDeQueue(16))
+        .then(function()
         {                       
-//            this.scene.updateScene3D();            
-            this.runAllCommands();              
+            //this.scene.updateScene3D();    
+               
+            if(this.queueAsync.length > 0)   
+                return this.runAllCommands();              
                                                    
-        }.bind(this));                                    
+        }.bind(this));    
+         
     };
     
     ManagerCommands.prototype.arrayDeQueue = function(number) 

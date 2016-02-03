@@ -79,7 +79,7 @@ define('Scene/Scene',[
         
         //var position    = globe.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(2.33,48.87,25000000));        
         //
-        var position    = globe.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(48.8875,2.34749999999999,20000));        
+        var position    = globe.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(48.8775,-3.49250000000001,25000000));        
 
         //var position    = globe.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(2.33,,25000000));
         //var position    = globe.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(48.7,2.33,25000000));        
@@ -122,7 +122,7 @@ define('Scene/Scene',[
             if(run)
                 this.managerCommand.runAllCommands();
             
-            //this.renderScene3D();            
+            //this.renderScene3D();  
             this.updateScene3D();            
         } 
         
