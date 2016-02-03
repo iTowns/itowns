@@ -71,11 +71,9 @@ define('Core/Commander/ManagerCommands',
         {                       
             this.providers.push(new tileGlobeProvider(param));
             
-            var latitude  = 48.844975;
-            //var latitude  = 2.34749999999999;
-            
-            var  longitude = 2.385785;
-            
+            var latitude    = 48.850077; 
+            var  longitude  = 2.384618;
+                
             this.providers[0].providerKML.loadKMZ(longitude, latitude).then(function (result){
 
                 
