@@ -22,10 +22,10 @@ define('Core/Commander/Providers/KML_Provider',[
                 ){
 
 
-    function KML_Provider()
+    function KML_Provider(ellipsoid)
     {
         //Constructor
-        
+        this.ellipsoid   = ellipsoid;
         this.ioDriverXML = new IoDriverXML();
         this.kmzLoader   = new KMZLoader();                      
   }
@@ -35,13 +35,30 @@ define('Core/Commander/Providers/KML_Provider',[
     KML_Provider.prototype.constructor = KML_Provider;
     
     
-    KML_Provider.prototype.loadTestCollada = function(longitude,latitude)
+    KML_Provider.prototype.loadKMZ = function(longitude,latitude)
     {   
         
        
         return this.getUrlCollada(longitude,latitude).then(function(result){
             
-               return result;
+                var child       = result.scene.children[0];
+               
+                var coorCarto   = result.coorCarto;
+
+                var position    = this.ellipsoid.cartographicToCartesian(coorCarto);   
+                coorCarto.altitude = 0;        
+                var normal      = this.ellipsoid.geodeticSurfaceNormalCartographic(coorCarto);
+
+                var quaternion  = new THREE.Quaternion();
+                quaternion.setFromAxisAngle( new THREE.Vector3(1, 0 ,0 ), Math.PI/2 );
+                
+                child.lookAt(new THREE.Vector3().addVectors ( position, normal ));
+                child.quaternion.multiply(quaternion );                
+                child.position.copy(position);
+                child.updateMatrix();
+                child.frustumCulled = false; 
+            
+                return child;
 
         }.bind(this)); 
        
@@ -56,9 +73,9 @@ define('Core/Commander/Providers/KML_Provider',[
         var east = -3.4900000000000046;
         var west = -3.4940000000000044;*/
         var north = latitude;
-        var south = latitude;
+        var south = latitude + 0.005;
         var east  = longitude;
-        var west  = longitude;
+        var west  = longitude + 0.005;
         var key = 'j2bfkv9whnqpq04zpzlfz2ge'; 
         var url = 'http://wxs.ign.fr/' + key + '/vecteurtuile3d/BATI3D/' + 'FXX/';
         return this.ioDriverXML.read(urlFile).then(function(result)
@@ -97,10 +114,11 @@ define('Core/Commander/Providers/KML_Provider',[
                     
                 }
                 //Next level : Get the next KMZ actual position's coords
-                else if (url_href[i].toLowerCase().substr( - 4 ) ===  '.kmz' && min_max_lod[i,1] === '192'){
+                else if (url_href[i].toLowerCase().substr( - 4 ) ===  '.kmz' && north < coords[i,1] && south > coords[i,2]  && east < coords[i,3] && west > coords[i,4]){
                     //console.log(window.innerHeight);
                     var url_href_kmz = [];
                     url_href_kmz[i] = url + kml[i].childNodes[0].nodeValue.replace("../../", "");
+                    console.log(url_href_kmz[i]);
                     
                     
                     return this.kmzLoader.load(url_href_kmz[i]);
