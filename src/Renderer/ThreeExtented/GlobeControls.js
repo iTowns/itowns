@@ -640,17 +640,19 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
   
                                 mouse.x =   ( event.clientX / window.innerWidth )   * 2 - 1;
                                 mouse.y = - ( event.clientY / window.innerHeight )  * 2 + 1;	
-  
-//                                var matrix = scope.globeTarget.matrixWorld.clone();                                
-//                                matrix.setPosition(new THREE.Vector3());                              
-//                                matrix.getInverse(matrix);  
-//                                console.log(matrix);
-  
+
                                 raycaster.setFromCamera( mouse, scope.cloneObject);
                                 var ray = raycaster.ray;
-
+                                    
+                               // var target = scope.globeTarget.clone();                                
+                               // target.position.copy(new THREE.Vector3());
+                                
+                               // target.updateMatrixWorld();
+                                
+                               // console.log(target.worldToLocal(scope.cloneObject.position.clone()));
+                                
                                 scope.pickOnSphere = scope.intersectSphere(ray);
-
+                                
                                 var centerGlobeCam = new THREE.Vector3().applyMatrix4(scope.cloneObject.matrixWorldInverse);                                   
                                 var pickOnGlobeCam = pickOnGlobe.clone().applyMatrix4(scope.cloneObject.matrixWorldInverse).sub(centerGlobeCam);
                                 var pickOnSpherCam = scope.pickOnSphere.clone().applyMatrix4(scope.cloneObject.matrixWorldInverse).sub(centerGlobeCam);
@@ -679,8 +681,7 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
 		state = STATE.NONE;
                                 
                 computeTarget(scope.engine.picking());
-                scope.engine.renderScene(); // TODO debug to remove white screen, but why?
-                
+                scope.engine.renderScene(); // TODO debug to remove white screen, but why?                
                                 
 	}
 
@@ -919,7 +920,19 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
         {                
             var position = scope.globeTarget.worldToLocal(scope.object.position.clone());                                
             var angle    = Math.atan2(position.x,position.z);                                
-            scope.globeTarget.quaternion.multiply(new THREE.Quaternion().setFromAxisAngle( new THREE.Vector3( 0, 1, 0 ), angle ));
+            
+            scope.globeTarget.quaternion.multiply(new THREE.Quaternion().setFromAxisAngle( new THREE.Vector3( 0, 1, 0 ), angle ));            
+            scope.globeTarget.updateMatrixWorld();
+            
+            /*
+            position = scope.globeTarget.worldToLocal(scope.object.position.clone());                                
+            angle    = Math.atan2(position.z,position.y); 
+            
+            scope.globeTarget.quaternion.multiply(new THREE.Quaternion().setFromAxisAngle( new THREE.Vector3( 1, 0, 0 ), angle  - Math.PI * 0.5));   
+            */
+            //TODO revient à prendre le repère caméra.... à tester
+            
+            
         }
         
         function computeTarget(position) {
@@ -931,10 +944,8 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
             rotateTarget();
             /*
             quat = new THREE.Quaternion().setFromUnitVectors( scope.object.up,vectorUp );
-            quatInverse = quat.clone().inverse();
-            
-            */
-            
+            quatInverse = quat.clone().inverse();            
+            */            
 	}
 
 	this.domElement.addEventListener( 'contextmenu', function ( event ) { event.preventDefault(); }, false );
@@ -960,7 +971,7 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
         computeTarget(this.intersectSphere(ray));        
         this.engine.scene3D.add(this.globeTarget);
         
-        var axisHelper = new THREE.AxisHelper( 50000 );
+        var axisHelper = new THREE.AxisHelper( 500000 );
         this.globeTarget.add( axisHelper );
         
 };
