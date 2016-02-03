@@ -650,6 +650,9 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
                                // target.updateMatrixWorld();
                                 
                                // console.log(target.worldToLocal(scope.cloneObject.position.clone()));
+                               
+                               
+                                // Dans le repère monde
                                 
                                 scope.pickOnSphere = scope.intersectSphere(ray);
                                 
@@ -663,7 +666,27 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
                                
                                 phiDelta   =  (a.y - b.y);
                                 thetaDelta =  (a.x - b.x)/(Math.cos(Math.PI * 0.5 - c.y));
-
+                                // Fin de la procédure du repère monde
+                                
+                                // Dans le repère monde
+                                /*
+                                scope.globeTarget.worldToLocal()
+                                
+                                ray.origin
+                                
+                                scope.pickOnSphere = scope.intersectSphere(ray);
+                                
+                                var centerGlobeCam = new THREE.Vector3().applyMatrix4(scope.cloneObject.matrixWorldInverse);                                   
+                                var pickOnGlobeCam = pickOnGlobe.clone().applyMatrix4(scope.cloneObject.matrixWorldInverse).sub(centerGlobeCam);
+                                var pickOnSpherCam = scope.pickOnSphere.clone().applyMatrix4(scope.cloneObject.matrixWorldInverse).sub(centerGlobeCam);
+                                
+                                var a  = scope.toSpherical(pickOnGlobeCam);
+                                var b  = scope.toSpherical(pickOnSpherCam);                                
+                                var c  = scope.toSpherical(pickOnGlobe);
+                               
+                                phiDelta   =  (a.y - b.y);
+                                thetaDelta =  (a.x - b.x)/(Math.cos(Math.PI * 0.5 - c.y));
+                                */
                             }
                 }
 
@@ -924,12 +947,12 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
             scope.globeTarget.quaternion.multiply(new THREE.Quaternion().setFromAxisAngle( new THREE.Vector3( 0, 1, 0 ), angle ));            
             scope.globeTarget.updateMatrixWorld();
             
-            /*
+            
             position = scope.globeTarget.worldToLocal(scope.object.position.clone());                                
             angle    = Math.atan2(position.z,position.y); 
             
             scope.globeTarget.quaternion.multiply(new THREE.Quaternion().setFromAxisAngle( new THREE.Vector3( 1, 0, 0 ), angle  - Math.PI * 0.5));   
-            */
+            
             //TODO revient à prendre le repère caméra.... à tester
             
             
