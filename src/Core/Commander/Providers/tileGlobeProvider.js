@@ -45,8 +45,9 @@ define('Core/Commander/Providers/tileGlobeProvider',[
        
        this.projection      = new Projection();
        this.providerWMTS    = new WMTS_Provider();
-       this.providerKML     = new KML_Provider();
-       this.ellipsoid       = new Ellipsoid(size);       
+       
+       this.ellipsoid       = new Ellipsoid(size); 
+       this.providerKML     = new KML_Provider(this.ellipsoid);
        this.cacheGeometry   = [];
        this.tree            = null;
        
@@ -124,7 +125,18 @@ define('Core/Commander/Providers/tileGlobeProvider',[
                 this.getOrthoImages(tile);
             else
                 tile.checkOrtho();
+            
+            return tile;
                            
+        }.bind(this)).then(function(tile)
+        {
+            /*
+            if(tile.level === 18)
+            {
+                this.providerKML
+                console.log(tile.bbox);
+            }
+            */
         }.bind(this)); 
     };
     
