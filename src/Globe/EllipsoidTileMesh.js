@@ -8,7 +8,7 @@
  * 
  * @param {type} NodeMesh
  * @param {type} EllipsoidTileGeometry
- * @param {type} BoudingBox
+ * @param {type} BoundingBox
  * @param {type} defaultValue
  * @param {type} THREE
  * @param {type} Material
@@ -17,13 +17,13 @@
 define('Globe/EllipsoidTileMesh',[
     'Renderer/NodeMesh',
     'Globe/EllipsoidTileGeometry',
-    'Scene/BoudingBox',
+    'Scene/BoundingBox',
     'Core/defaultValue',
     'THREE',
     'Renderer/GlobeMaterial',
     'Core/Geographic/CoordCarto',   
     'OBBHelper',
-    'SphereHelper'], function(NodeMesh,EllipsoidTileGeometry,BoudingBox,defaultValue,THREE,GlobeMaterial,CoordCarto,OBBHelper,SphereHelper){
+    'SphereHelper'], function(NodeMesh,EllipsoidTileGeometry,BoundingBox,defaultValue,THREE,GlobeMaterial,CoordCarto,OBBHelper,SphereHelper){
  
     function EllipsoidTileMesh(bbox,cooWMTS,ellipsoid,id,geometryCache){
         //Constructor
@@ -32,7 +32,7 @@ define('Globe/EllipsoidTileMesh',[
                 
         this.level      = cooWMTS.zoom;
         this.cooWMTS    = cooWMTS;
-        this.bbox       = defaultValue(bbox,new BoudingBox());               
+        this.bbox       = defaultValue(bbox,new BoundingBox());               
         this.id         = id;
         
         var precision   = 16;               
