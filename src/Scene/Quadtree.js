@@ -16,9 +16,9 @@ define('Scene/Quadtree',[
         ], function(Layer,Quad){
     
 
-    function Quadtree(type,schemeTile,size)
+    function Quadtree(type,schemeTile,param)
     {        
-        Layer.call( this,type,size);
+        Layer.call( this,type,param);
         
         this.schemeTile       = schemeTile;
         this.tileType         = type;

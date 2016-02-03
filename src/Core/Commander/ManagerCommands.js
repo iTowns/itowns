@@ -22,6 +22,7 @@ define('Core/Commander/ManagerCommands',
             'PriorityQueue',
             'when',
             'Globe/EllipsoidTileMesh',
+            'Flat/TileMesh',
             'Core/Geographic/CoordCarto',
             'THREE'
         ], 
@@ -31,6 +32,7 @@ define('Core/Commander/ManagerCommands',
                 PriorityQueue,
                 when,
                 EllipsoidTileMesh,
+                FlatTileMesh,
                 CoordCarto,
                 THREE
         ){
@@ -89,6 +91,10 @@ define('Core/Commander/ManagerCommands',
                 this.scene.gfxEngine.scene3D.add(child);
  
             }.bind(this));
+        }
+        else if(type === FlatTileMesh)
+        {
+            this.providers.push(new FlatTileProvider(param.srid));
         }
     };
         
