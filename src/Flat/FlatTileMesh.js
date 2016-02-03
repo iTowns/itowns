@@ -16,22 +16,23 @@
  */
 define('Flat/FlatTileMesh',[
     'Renderer/NodeMesh',
-    'Globe/EllipsoidTileGeometry',
+    'Flat/FlatTileGeometry',
     'Scene/BoudingBox',
     'Core/defaultValue',
     'THREE',
     'Renderer/GlobeMaterial',
-    'Core/Geographic/CoordCarto',   
+    'Core/Math/MathExtented',
     'OBBHelper',
-    'SphereHelper'], function(NodeMesh,EllipsoidTileGeometry,BoudingBox,defaultValue,THREE,GlobeMaterial,CoordCarto,OBBHelper,SphereHelper){
+    'SphereHelper'], function(NodeMesh,FlatTileGeometry,BoudingBox,defaultValue,THREE,GlobeMaterial,MathExt,OBBHelper,SphereHelper){
  
-    function FlatTileMesh(bbox,cooWMTS,ellipsoid,id,geometryCache){
+    function FlatTileMesh(bbox,id){
         //Constructor
         NodeMesh.call( this );
                 
                 
-        this.level      = cooWMTS.zoom;
-        this.cooWMTS    = cooWMTS;
+        this.level      =  Math.floor(Math.log(10000 / bbox.dimension.y )/MathExt.LOG_TWO + 0.5);
+        console.log("level", this.level);
+
         this.bbox       = defaultValue(bbox,new BoudingBox());               
         this.id         = id;
         
@@ -39,16 +40,15 @@ define('Flat/FlatTileMesh',[
         var levelMax    = 18;
         
         this.geometricError = Math.pow(2,(levelMax - this.level));        
-        this.geometry       = defaultValue(geometryCache,new EllipsoidTileGeometry(bbox,precision,ellipsoid,this.level));       
-        var ccarto          = new CoordCarto(bbox.center.x,bbox.center.y,0);                
+        this.geometry       = new FlatTileGeometry(bbox,precision,this.level);       
         
         // TODO modif ver world coord de three.js 
-        this.absoluteCenter = ellipsoid.cartographicToCartesian(ccarto);
+        this.absoluteCenter = bbox.center;
        
         // TODO ??? 
-        this.centerSphere   = new THREE.Vector3().addVectors(this.geometry.boundingSphere.center,this.absoluteCenter);                       
+        this.centerSphere   = new THREE.Vector3().addVectors(this.geometry.boundingSphere.center, this.absoluteCenter);                       
         this.orthoNeed      = 0;
-        this.material       = new GlobeMaterial(bbox,id);
+        this.material       = new BasicMaterial(new THREE.Color());
         this.dot            = 0;
         this.frustumCulled  = false;        
         this.maxChildren    = 4;
@@ -153,30 +153,6 @@ define('Flat/FlatTileMesh',[
         this.material.setSelected(select);        
     };
         
-    FlatTileMesh.prototype.setTerrain = function(terrain)
-    {         
-        var texture;
-        var pitScale;                        
-
-        if(terrain      === - 1)
-            texture = -1;
-        else if(terrain === - 2)
-        {
-            var parentBil   = this.getParentLevel(this.levelTerrain);                                
-            pitScale        = parentBil.bbox.pitScale(this.bbox);                
-            texture         = parentBil.material.Textures_00[0];
-            
-            this.setAltitude(parentBil.bbox.minCarto.altitude,parentBil.bbox.maxCarto.altitude);
-            
-        }
-        else
-        {
-            texture = terrain.texture;            
-            this.setAltitude(terrain.min,terrain.max);            
-        }                         
-        
-        this.material.setTexture(texture,0,0,pitScale);      
-    };
     
     FlatTileMesh.prototype.setAltitude = function(min,max)
     {         

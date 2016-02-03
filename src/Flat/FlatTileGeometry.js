@@ -23,7 +23,7 @@ define('Flat/FlatTileGeometry',[
         MathExt,
         JavaTools){
 
-    function FlatTileGeometry(bbox,segment,pellipsoid,zoom){
+    function FlatTileGeometry(bbox,segment,zoom){
         //Constructor
         THREE.BufferGeometry.call( this );
         
@@ -33,8 +33,6 @@ define('Flat/FlatTileGeometry',[
         
         bbox = defaultValue(bbox,new BoudingBox());
 
-        var ellipsoid       = defaultValue(pellipsoid,new Ellipsoid(6378137, 6378137, 6356752.3142451793));         
-        
         var nSeg            = defaultValue(segment,32);       
         var nVertex         = (nSeg+1)*(nSeg+1) + 8 * (nSeg-1); // correct pour uniquement les vertex
         var triangles       = (nSeg)*(nSeg)     + 16 * (nSeg-1); // correct pour uniquement les vertex
@@ -64,33 +62,13 @@ define('Flat/FlatTileGeometry',[
             return ellipsoid.geodeticSurfaceNormalCartographic(new CoordCarto( phi, theta,0));                
         };
         
-//        this.tops        = [];
-//        this.tops.push(ellipsoid.cartographicToCartesian(new CoordCarto(phiStart, thetaStart,0)));
-//        this.tops.push(ellipsoid.cartographicToCartesian(new CoordCarto(phiStart + phiLength, thetaStart+ thetaLength,0)));
-//        this.tops.push(ellipsoid.cartographicToCartesian(new CoordCarto(phiStart, thetaStart+ thetaLength,0)));
-//        this.tops.push(ellipsoid.cartographicToCartesian(new CoordCarto(phiStart + phiLength, thetaStart,0)));   
-//
-//        this.normals        = [];
-//
-//        this.normals.push(this.carto2Normal(phiStart, thetaStart));
-//        this.normals.push(this.carto2Normal(phiStart + phiLength, thetaStart+ thetaLength));
-//        this.normals.push(this.carto2Normal(phiStart, thetaStart+ thetaLength));
-//        this.normals.push(this.carto2Normal(phiStart + phiLength, thetaStart));        
-
-//        this.HeightPoints    = [];                
-//        this.HeightPoints.push(ellipsoid.cartographicToCartesian(new CoordCarto(phiStart                        , thetaStart    ,0)));
-//        this.HeightPoints.push(ellipsoid.cartographicToCartesian(new CoordCarto(phiStart + bbox.halfDimension.x , thetaStart    ,0)));
-//        this.HeightPoints.push(ellipsoid.cartographicToCartesian(new CoordCarto(phiStart + phiLength            , thetaStart    ,0)));
-//        this.HeightPoints.push(ellipsoid.cartographicToCartesian(new CoordCarto(phiStart + phiLength            , thetaStart + bbox.halfDimension.y,0)));        
-//        this.HeightPoints.push(ellipsoid.cartographicToCartesian(new CoordCarto(phiStart + phiLength            , thetaStart + thetaLength  ,0)));
-//        this.HeightPoints.push(ellipsoid.cartographicToCartesian(new CoordCarto(phiStart + bbox.halfDimension.x , thetaStart + thetaLength  ,0)));        
-//        this.HeightPoints.push(ellipsoid.cartographicToCartesian(new CoordCarto(phiStart                        , thetaStart + thetaLength  ,0)));
-//        this.HeightPoints.push(ellipsoid.cartographicToCartesian(new CoordCarto(phiStart                        , thetaStart + bbox.halfDimension.y,0)));        
-     
-        var ccarto  = new CoordCarto(bbox.center.x,bbox.center.y,0);               
-        this.center  = ellipsoid.cartographicToCartesian(ccarto);
+        this.center  = bbox.center;
         
-        this.OBB    = bbox.get3DBBox(ellipsoid,this.center);
+        var maxHeight = 10.; // /!\ HACK
+        var width = bbox.maxLo - bbox.minLo;
+        var max     = new THREE.Vector3(bbox.maxLo, bbox.maxLa, maxHeight);
+        var min     = new THREE.Vector3(bbox.minLo, bbox.minLa,-maxHeight);
+        this.OBB     = new THREE.OBB(min,max);
         
         var idVertex        = 0;
         var x, y, vertices  = [], skirt = [],skirtEnd = [];
@@ -125,7 +103,7 @@ define('Flat/FlatTileGeometry',[
                     
                     var longi   = phiStart      + u * phiLength;                    
 
-                    var vertex = ellipsoid.cartographicToCartesian(new CoordCarto(longi,lati,0));
+                    var vertex = longi,lati,0;
                    
                     var id3     = idVertex*3 ;
 //                    

@@ -46,22 +46,17 @@ define('Core/Commander/Providers/FlatTileProvider',[
     
     FlatTileProvider.prototype.get = function(command)
     {  
-        debugger;
-
         if(command === undefined)
             return when();
         
         var bbox        = command.paramsFunction[0];
+        console.log("bbox", bbox);
+
+        debugger;
         var cooWMTS     = this.projection.WGS84toWMTS(bbox);                
         var parent      = command.requester;        
         var geometry    = undefined; //getGeometry(bbox,cooWMTS);       
-        var tile        = new command.type(bbox,cooWMTS,this.ellipsoid,this.nNode++,geometry);        
-        
-        if(geometry)
-        {
-            tile.rotation.set ( 0, (cooWMTS.col%2)* (Math.PI * 2.0 / Math.pow(2,cooWMTS.zoom+1)), 0 );
-            tile.updateMatrixWorld();
-        }
+        var tile        = new command.type(bbox,this.nNode++,geometry);        
         
         var translate   = new THREE.Vector3();
              
@@ -75,20 +70,7 @@ define('Core/Commander/Providers/FlatTileProvider',[
         
         parent.add(tile);
                         
-        return this.providerWMTS.getTextureBil(tile.useParent() ? undefined : cooWMTS).then(function(terrain)
-        {                                      
-            this.setTerrain(terrain);
-            
-            return this;
-
-        }.bind(tile)).then(function(tile)
-        {                      
-            if(cooWMTS.zoom >= 2)                
-                this.getOrthoImages(tile);
-            else
-                tile.checkOrtho();
-                           
-        }.bind(this)); 
+        return tile;
     };
     
     FlatTileProvider.prototype.getOrthoImages = function(tile)
