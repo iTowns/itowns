@@ -10,14 +10,14 @@ define('Core/Commander/Providers/KML_Provider',[
             'Core/Commander/Providers/IoDriverXML',
             'when',
             'THREE',
-            'Scene/BoudingBox',
+            'Scene/BoundingBox',
             'Renderer/ThreeExtented/KMZLoader'], 
         function(
                 Provider,
                 IoDriverXML,
                 when,
                 THREE,                
-                BoudingBox,
+                BoundingBox,
                 KMZLoader
                 ){
 
