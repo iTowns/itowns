@@ -26,7 +26,7 @@ define('Core/Commander/Providers/tileGlobeProvider',[
             'Core/Geographic/CoordWMTS',
             'Core/Math/Ellipsoid',
             'Core/defaultValue',
-            'Scene/BoudingBox'                        
+            'Scene/BoundingBox'                        
             ],
              function(
                 when,
@@ -37,7 +37,7 @@ define('Core/Commander/Providers/tileGlobeProvider',[
                 CoordWMTS,
                 Ellipsoid,
                 defaultValue,
-                BoudingBox
+                BoundingBox
                 ){
                    
     function tileGlobeProvider(size){
@@ -73,7 +73,7 @@ define('Core/Commander/Providers/tileGlobeProvider',[
                 this.cacheGeometry[cooWMTS.zoom] = new Array() ;
            
             var precision   = 16;                                            
-            var rootBBox    = new BoudingBox(0,part+part*0.01,bbox.minCarto.latitude, bbox.maxCarto.latitude );
+            var rootBBox    = new BoundingBox(0,part+part*0.01,bbox.minCarto.latitude, bbox.maxCarto.latitude );
             
             geometry   = new EllipsoidTileGeometry(rootBBox,precision,this.ellipsoid,cooWMTS.zoom);
             this.cacheGeometry[cooWMTS.zoom][cooWMTS.row] = geometry;    

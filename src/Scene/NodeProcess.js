@@ -4,7 +4,7 @@
 * Description: NodeProcess effectue une opération sur un Node.
 */
 
-define('Scene/NodeProcess',['Scene/BoudingBox','Renderer/Camera','Core/Math/MathExtented','THREE','Core/defaultValue'], function(BoudingBox,Camera,MathExt,THREE,defaultValue){
+define('Scene/NodeProcess',['Scene/BoundingBox','Renderer/Camera','Core/Math/MathExtented','THREE','Core/defaultValue'], function(BoundingBox,Camera,MathExt,THREE,defaultValue){
 
 
     function NodeProcess(camera3D,size,bbox){
@@ -12,7 +12,7 @@ define('Scene/NodeProcess',['Scene/BoudingBox','Renderer/Camera','Core/Math/Math
         this.camera = new Camera();        
         this.camera.camera3D  = camera3D.clone();
         
-        this.bbox   = defaultValue(bbox,new BoudingBox(MathExt.PI_OV_TWO+MathExt.PI_OV_FOUR,MathExt.PI+MathExt.PI_OV_FOUR,0,MathExt.PI_OV_TWO));
+        this.bbox   = defaultValue(bbox,new BoundingBox(MathExt.PI_OV_TWO+MathExt.PI_OV_FOUR,MathExt.PI+MathExt.PI_OV_FOUR,0,MathExt.PI_OV_TWO));
         
         this.vhMagnitudeSquared = 1.0;  
         
