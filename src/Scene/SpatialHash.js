@@ -13,18 +13,18 @@ function SpatialHash(){
 
 
 /**
-* @param boudingBox
+* @param boundingBox
 */
-SpatialHash.prototype.hash = function(boudingBox){
+SpatialHash.prototype.hash = function(boundingBox){
     //TODO: Implement Me 
 
 };
 
 
 /**
-* @param boudingBoxs
+* @param boundingBoxs
 */
-SpatialHash.prototype.hashNode = function(boudingBoxs){
+SpatialHash.prototype.hashNode = function(boundingBoxs){
     //TODO: Implement Me 
 
 };

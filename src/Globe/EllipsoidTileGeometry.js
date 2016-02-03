@@ -9,7 +9,7 @@
 define('Globe/EllipsoidTileGeometry',[
     'THREE',
     'Core/defaultValue',
-    'Scene/BoudingBox',
+    'Scene/BoundingBox',
     'Core/Math/Ellipsoid',
     'Core/Geographic/CoordCarto',
     'Core/Math/MathExtented',
@@ -17,7 +17,7 @@ define('Globe/EllipsoidTileGeometry',[
     ], function(
         THREE,
         defaultValue,
-        BoudingBox,
+        BoundingBox,
         Ellipsoid,
         CoordCarto,
         MathExt,
@@ -31,7 +31,7 @@ define('Globe/EllipsoidTileGeometry',[
         
         var nbRow           = Math.pow(2.0,zoom + 1.0 );
         
-        bbox = defaultValue(bbox,new BoudingBox());
+        bbox = defaultValue(bbox,new BoundingBox());
 
         var ellipsoid       = defaultValue(pellipsoid,new Ellipsoid(6378137, 6378137, 6356752.3142451793));         
         
