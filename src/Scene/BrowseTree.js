@@ -63,7 +63,7 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
                                         
                     var sse = this.nodeProcess.SSE(node,camera);                                                        
 
-                    if(optional && sse && node.material.visible === true && node.wait === false)
+                    if(optional && (sse || node.level < 2) && node.material.visible === true && node.wait === false)
                                                        
                         this.tree.subdivide(node);
                                                 
