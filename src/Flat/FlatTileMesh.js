@@ -1,6 +1,6 @@
 /**
 * Generated On: 2015-10-5
-* Class: EllipsoidTileMesh
+* Class: FlatTileMesh
 * Description: Tuile de maillage, noeud du quadtree MNT. Le Materiel est issus du QuadTree ORTHO.
 */
 
@@ -12,9 +12,9 @@
  * @param {type} defaultValue
  * @param {type} THREE
  * @param {type} Material
- * @returns {EllipsoidTileMesh_L10.EllipsoidTileMesh}
+ * @returns {EllipsoidTileMesh_L10.FlatTileMesh}
  */
-define('Globe/EllipsoidTileMesh',[
+define('Flat/FlatTileMesh',[
     'Renderer/NodeMesh',
     'Globe/EllipsoidTileGeometry',
     'Scene/BoudingBox',
@@ -25,7 +25,7 @@ define('Globe/EllipsoidTileMesh',[
     'OBBHelper',
     'SphereHelper'], function(NodeMesh,EllipsoidTileGeometry,BoudingBox,defaultValue,THREE,GlobeMaterial,CoordCarto,OBBHelper,SphereHelper){
  
-    function EllipsoidTileMesh(bbox,cooWMTS,ellipsoid,id,geometryCache){
+    function FlatTileMesh(bbox,cooWMTS,ellipsoid,id,geometryCache){
         //Constructor
         NodeMesh.call( this );
                 
@@ -90,11 +90,11 @@ define('Globe/EllipsoidTileMesh',[
         }
     }
 
-    EllipsoidTileMesh.prototype = Object.create( NodeMesh.prototype );
+    FlatTileMesh.prototype = Object.create( NodeMesh.prototype );
 
-    EllipsoidTileMesh.prototype.constructor = EllipsoidTileMesh;
+    FlatTileMesh.prototype.constructor = FlatTileMesh;
             
-    EllipsoidTileMesh.prototype.dispose = function()
+    FlatTileMesh.prototype.dispose = function()
     {          
         // TODO à mettre dans node mesh
         this.material.dispose();       
@@ -107,7 +107,7 @@ define('Globe/EllipsoidTileMesh',[
     * 
 
      * @returns {undefined}     */
-    EllipsoidTileMesh.prototype.disposeChildren = function()
+    FlatTileMesh.prototype.disposeChildren = function()
     {
         while(this.children.length>0)
         {
@@ -118,42 +118,42 @@ define('Globe/EllipsoidTileMesh',[
          this.material.visible = true;
     };
     
-    EllipsoidTileMesh.prototype.useParent = function()
+    FlatTileMesh.prototype.useParent = function()
     {
         return this.level !== this.levelTerrain;
     };
     
-    EllipsoidTileMesh.prototype.enableRTC = function(enable)
+    FlatTileMesh.prototype.enableRTC = function(enable)
     {           
         this.material.enableRTC(enable);
     };
     
-    EllipsoidTileMesh.prototype.enablePickingRender = function(enable)
+    FlatTileMesh.prototype.enablePickingRender = function(enable)
     {           
         this.material.enablePickingRender(enable);
     };
     
-     EllipsoidTileMesh.prototype.setFog = function(fog)
+     FlatTileMesh.prototype.setFog = function(fog)
     {                 
         this.material.setFogDistance(fog);
     };
     
-    EllipsoidTileMesh.prototype.setMatrixRTC = function(rtc)
+    FlatTileMesh.prototype.setMatrixRTC = function(rtc)
     {                 
         this.material.setMatrixRTC(rtc);
     };
     
-    EllipsoidTileMesh.prototype.setDebug = function(enable)
+    FlatTileMesh.prototype.setDebug = function(enable)
     {                 
         this.material.setDebug(enable);
     };
     
-    EllipsoidTileMesh.prototype.setSelected = function(select)
+    FlatTileMesh.prototype.setSelected = function(select)
     {                 
         this.material.setSelected(select);        
     };
         
-    EllipsoidTileMesh.prototype.setTerrain = function(terrain)
+    FlatTileMesh.prototype.setTerrain = function(terrain)
     {         
         var texture;
         var pitScale;                        
@@ -178,7 +178,7 @@ define('Globe/EllipsoidTileMesh',[
         this.material.setTexture(texture,0,0,pitScale);      
     };
     
-    EllipsoidTileMesh.prototype.setAltitude = function(min,max)
+    FlatTileMesh.prototype.setAltitude = function(min,max)
     {         
         this.bbox.setAltitude(min,max);        
         var delta = this.geometry.OBB.addHeight(this.bbox);
@@ -201,7 +201,7 @@ define('Globe/EllipsoidTileMesh',[
         }       
     };    
     
-    EllipsoidTileMesh.prototype.setTextureOrtho = function(texture,id)
+    FlatTileMesh.prototype.setTextureOrtho = function(texture,id)
     {         
         id = id === undefined ? 0 : id;
         this.material.setTexture(texture,1,id);
@@ -210,32 +210,32 @@ define('Globe/EllipsoidTileMesh',[
         //   this.visible = false;
     };   
     
-    EllipsoidTileMesh.prototype.normals = function()
+    FlatTileMesh.prototype.normals = function()
     { 
         return this.geometry.normals;
     };
     
-     EllipsoidTileMesh.prototype.fourCorners = function()
+     FlatTileMesh.prototype.fourCorners = function()
     { 
         return this.geometry.fourCorners;
     };
     
-    EllipsoidTileMesh.prototype.normal = function()
+    FlatTileMesh.prototype.normal = function()
     { 
         return this.geometry.normal;
     };
     
-    EllipsoidTileMesh.prototype.center = function()
+    FlatTileMesh.prototype.center = function()
     { 
         return this.geometry.center;
     };
     
-    EllipsoidTileMesh.prototype.OBB = function()
+    FlatTileMesh.prototype.OBB = function()
     { 
         return this.geometry.OBB;
     };
     
-    EllipsoidTileMesh.prototype.checkOrtho = function()
+    FlatTileMesh.prototype.checkOrtho = function()
     { 
 
       
@@ -255,6 +255,6 @@ define('Globe/EllipsoidTileMesh',[
         }                             
     };
     
-    return EllipsoidTileMesh;
+    return FlatTileMesh;
     
 });

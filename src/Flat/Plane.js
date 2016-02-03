@@ -18,14 +18,15 @@ define('Flat/Plane',[
     'THREE'], function(defaultValue,Layer,Quadtree,SchemeTile,MathExt,FlatTileMesh,Atmosphere,Capabilities,CoordCarto,BasicMaterial,THREE){
 
     /*
+     * Ctor
+     *
      * @param {string} srid the proj4 string (or alias e.g. "EPSG:2154")
      */
     function Plane(srid, extent){
-        //Constructor
         
-        Layer.call( this, {srid:srid} );  //TODO Layer should take srid as input      
+        Layer.call( this, Plane, {srid:srid} );  //TODO Layer should take srid as input      
         
-        this.terrain = new Quadtree(FlatTileMesh, this.SchemeTile(extent)) ;        
+        this.terrain = new Quadtree(FlatTileMesh, this.SchemeTile(extent), {srid:srid}) ;        
         
         this.add(this.terrain);                
         this.add(this.batiments);

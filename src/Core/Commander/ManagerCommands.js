@@ -18,16 +18,18 @@
 define('Core/Commander/ManagerCommands',
         [               
             'Core/Commander/Providers/tileGlobeProvider',
+            'Core/Commander/Providers/FlatTileProvider',
             'Core/Commander/Interfaces/EventsManager',
             'PriorityQueue',
             'when',
             'Globe/EllipsoidTileMesh',
-            'Flat/TileMesh',
+            'Flat/FlatTileMesh',
             'Core/Geographic/CoordCarto',
             'THREE'
         ], 
         function(
                 tileGlobeProvider,
+                FlatTileProvider,
                 EventsManager,
                 PriorityQueue,
                 when,
@@ -94,7 +96,9 @@ define('Core/Commander/ManagerCommands',
         }
         else if(type === FlatTileMesh)
         {
+            console.log("create", type, param);
             this.providers.push(new FlatTileProvider(param.srid));
+            console.log("created");
         }
     };
         

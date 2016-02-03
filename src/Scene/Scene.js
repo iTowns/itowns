@@ -74,6 +74,7 @@ define('Scene/Scene',[
     {                    
         this.managerCommand.init(this);
         
+        var flat = true;
         if (flat)
         {
             var srid = "EPSG:2154";

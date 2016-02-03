@@ -12,7 +12,9 @@ define('Core/Commander/InterfaceCommander',['Core/Commander/ManagerCommands','Co
         this.managerCommands = ManagerCommands();        
         this.type     = type;               
         
+        console.log("InterfaceCommander 1");
         this.managerCommands.createProvider(this.type,param);
+        console.log("InterfaceCommander 2");
         
     }
 
