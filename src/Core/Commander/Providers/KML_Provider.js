@@ -101,7 +101,7 @@ define('Core/Commander/Providers/KML_Provider',[
                     //console.log(window.innerHeight);
                     var url_href_kmz = [];
                     url_href_kmz[i] = url + kml[i].childNodes[0].nodeValue.replace("../../", "");
-  
+                    
                     
                     return this.kmzLoader.load(url_href_kmz[i]);
                 }
