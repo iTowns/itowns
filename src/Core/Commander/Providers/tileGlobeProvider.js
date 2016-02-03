@@ -134,8 +134,7 @@ define('Core/Commander/Providers/tileGlobeProvider',[
         var id         = 0;
         var col        = box[0].col;                
         tile.orthoNeed = box[1].row + 1 - box[0].row;
-       // console.log("ORTHONEEDED",tile.orthoNeed);
-
+     
         for (var row = box[0].row; row < box[1].row + 1; row++)
         {                                                                        
             this.providerWMTS.getTextureOrtho(new CoordWMTS(box[0].zoom,row,col),id).then

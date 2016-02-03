@@ -3,7 +3,7 @@
 <img src="http://www.itowns.fr/images/logo-itowns2XS.png" />
 </p>
 
-# iTowns V1
+# iTowns V2
 ## WebGL Globe
 ###
     Virtual globe visualisation
