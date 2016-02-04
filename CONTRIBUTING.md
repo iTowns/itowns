@@ -93,7 +93,7 @@ Code quality matters. Here are some advices to read before submitting a Pull Req
    * Verify that all tests pass, and write new tests with excellent code coverage for new code.  Follow the [Testing Guide](TESTING.md).
    * If you added new identifiers to the iTowns API :
       * Update [CHANGES.md](CHANGES.md) .
-      * Include reference documentation with code examples.  Follow the [Documentation Guide](DOCUMENTATION_GUIDE.md).
+      * Include reference documentation with code examples.
       * If your change adds significant features, provide a demo.
    * If you added third-party libraries, including new version of existing libraries, update [LICENSE.md](LICENSE.md).  Mention it in [CHANGES.md](CHANGES.md).  If you plan to add a third-party library, start a new thread on the [iTowns dev mailing list](https://lists.osgeo.org/mailman/listinfo/itowns-dev) first.
 
