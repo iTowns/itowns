@@ -105,15 +105,31 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
         node.setFog(this.fogDistance);        
     };
         
-    BrowseTree.prototype.getRTCMatrix = function(center,camera)    
+    BrowseTree.prototype.getRTCMatrix = function(center,camera,node)    
     {               
-        // TODO gerer orientation et echelle de l'objet
-        
-        
+        // TODO gerer orientation et echelle de l'objet        
+//        var position    = new THREE.Vector3().subVectors(camera.camera3D.position,center);
+//        var quaternion  = new THREE.Quaternion().copy(camera.camera3D.quaternion);       
+//        var matrix      = new THREE.Matrix4().compose(position,quaternion,new THREE.Vector3(1,1,1));
+//        var matrixInv   = new THREE.Matrix4().getInverse(matrix);  
+//        var centerEye   = new THREE.Vector4().applyMatrix4(matrixInv) ;                        
+//        var mvc         = matrixInv.setPosition(centerEye);      
+//        return            new THREE.Matrix4().multiplyMatrices(camera.camera3D.projectionMatrix,mvc);
+
         var position    = new THREE.Vector3().subVectors(camera.camera3D.position,center);
-        var quaternion  = new THREE.Quaternion().copy(camera.camera3D.quaternion);        
+        var quaternion  = new THREE.Quaternion().copy(camera.camera3D.quaternion);       
+
+        
         var matrix      = new THREE.Matrix4().compose(position,quaternion,new THREE.Vector3(1,1,1));
-        var matrixInv   = new THREE.Matrix4().getInverse(matrix);       
+        var matrixInv   = new THREE.Matrix4().getInverse(matrix);
+        
+        if(node)
+        {
+            var model = node.matrixWorld.clone().setPosition(new THREE.Vector3());
+            matrixInv.multiply(model);
+            
+        }
+        
         var centerEye   = new THREE.Vector4().applyMatrix4(matrixInv) ;                        
         var mvc         = matrixInv.setPosition(centerEye);      
         return            new THREE.Matrix4().multiplyMatrices(camera.camera3D.projectionMatrix,mvc);

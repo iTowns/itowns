@@ -141,12 +141,11 @@ define('Core/Commander/Providers/tileGlobeProvider',[
                 this.providerKML.loadKMZ(longitude, latitude).then(function (collada){
 
                     if(tile.content.children.indexOf(collada) === -1)
-                    {
-                        console.log('add collada');
+                    
+                     
                         tile.content.add(collada);
-                    }
-                    else
-                        console.log('already');
+                   
+
 
                 }.bind(this));
                 
