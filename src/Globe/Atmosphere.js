@@ -29,7 +29,7 @@ define('Globe/Atmosphere',['Renderer/NodeMesh','THREE','text!Renderer/Shader/Glo
 
         } );
                 
-        this.geometry       = new THREE.SphereGeometry( size.x * 1.14 , 128, 128 );
+        this.geometry = (new THREE.SphereGeometry(1.14 , 128, 128)).scale(size.x, size.y, size.z)
         
         this.uniformsIn  = 
         {                        
@@ -48,7 +48,7 @@ define('Globe/Atmosphere',['Renderer/NodeMesh','THREE','text!Renderer/Shader/Glo
 
         } );
         
-       var atmosphereIN    = new THREE.Mesh(new THREE.SphereGeometry( size.x * 1.002, 64, 64 ),materialAtmoIn);
+       var atmosphereIN    = new THREE.Mesh((new THREE.SphereGeometry( 1.002, 64, 64 )).scale(size.x, size.y, size.z),materialAtmoIn);
         
        this.add(atmosphereIN);
               
