@@ -56,7 +56,7 @@ See the [Build Guide](BUILDING.md) for how to build and run iTowns on your syste
 
 We welcome pull requests with great interest.  We try to promptly review them, provide feedback, and merge.  Following the tips in this guide will help your pull request be merged quickly.
 
-> If you plan to make a major change, please start a new thread on the [iTowns mailing list TODO](TODO) first. Major code change need to be submitted to the PSC trough an *iTowns Enhancement Proposal*. See the [PSC](https://github.com/iTowns/itowns-project/blob/master/PSC.md) document for the (simple) process.  Pull requests for small features and bug fixes can generally just be opened without discussion on the list nor iEP.
+> If you plan to make a major change, please start a new thread on the [iTowns mailing list](https://lists.osgeo.org/mailman/listinfo/itowns-dev) first. Major code change need to be submitted to the PSC trough an *iTowns Enhancement Proposal*. See the [PSC](https://github.com/iTowns/itowns-project/blob/master/PSC.md) document for the (simple) process.  Pull requests for small features and bug fixes can generally just be opened without discussion on the list nor iEP.
 
 ## IP
 
@@ -76,9 +76,9 @@ Code quality matters. Here are some advices to read before submitting a Pull Req
    * Once you are done making new commits to address feedback, add a comment to the pull request such as `"this is ready"` since GitHub doesn't notify us about commits.
 * Code and tests
    * Follow the [Coding Guide](CODING.md).
-   * Verify your code passes [JSHint](http://www.jshint.com/).  Run JSHint for all of Cesium with `npm run jsHint` or automatically run JSHint when files are saved with `npm run jsHint-watch`.  See the [Build Guide](BUILDING.md). TODO : adapt for iTowns
+   * Verify your code passes [JSHint](http://www.jshint.com/).  See the [Build Guide](BUILDING.md). 
    * Verify that all tests pass, and write new tests with excellent code coverage for new code.  Follow the [Testing Guide](TESTING.md).
-   * If you added new identifiers to the iTowns API:
+   * If you added new identifiers to the iTowns API :
       * Update [CHANGES.md](CHANGES.md) .
       * Include reference documentation with code examples.  Follow the [Documentation Guide](DOCUMENTATION_GUIDE.md).
       * If your change adds significant features, provide a demo.
@@ -86,4 +86,5 @@ Code quality matters. Here are some advices to read before submitting a Pull Req
 
 ## Resources
 
-This CONTRIBUTING documentation has been inspired by the Cesium Contributing doc : https://github.com/AnalyticalGraphicsInc/cesium/blob/master/CONTRIBUTING.md
+This CONTRIBUTING documentation has been inspired by the Cesium Contributing doc : 
+* https://github.com/AnalyticalGraphicsInc/cesium/blob/master/CONTRIBUTING.md
