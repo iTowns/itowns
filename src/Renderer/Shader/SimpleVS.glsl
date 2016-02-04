@@ -13,6 +13,7 @@
 
 uniform mat4       mVPMatRTC;
 uniform int        RTC;
+varying float      ZY;
 
 void main() 
 {
@@ -22,6 +23,7 @@ void main()
   else
         gl_Position = mVPMatRTC * vec4( position ,1.0 );
     
+    ZY= position.y / 100.0;
 
     #ifdef USE_LOGDEPTHBUF
 

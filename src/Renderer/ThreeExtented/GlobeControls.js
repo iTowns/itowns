@@ -994,8 +994,8 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
         computeTarget(this.intersectSphere(ray));        
         this.engine.scene3D.add(this.globeTarget);
         
-        var axisHelper = new THREE.AxisHelper( 500000 );
-        this.globeTarget.add( axisHelper );
+        //var axisHelper = new THREE.AxisHelper( 500000 );
+        //this.globeTarget.add( axisHelper );
         
 };
 

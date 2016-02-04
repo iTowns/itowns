@@ -77,8 +77,7 @@ define('Core/Commander/Providers/KML_Provider',[
                     }
                 };
 
-
-                //child.traverse(changeMaterial);
+                child.traverse(changeMaterial);
           
                 return child;
 

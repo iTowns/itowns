@@ -37,6 +37,8 @@ define('Scene/Scene',[
         this.gfxEngine      = c3DEngine();                       
         this.browserScene   = new BrowseTree(this);
         this.cap            = new Capabilities();
+        
+        this.rtc            ;     
 
     }
 
@@ -144,13 +146,24 @@ define('Scene/Scene',[
                    else if(sLayer instanceof Layer)
                    {
                        
-//                        var root = sLayer.children[0]
-//                        for(var c = 0; c <  root.children.length; c++)
-//                        {
-//                            var node = root.children[c];
-//                            if(node.material)
-//                                node.material.setMatrixRTC(this.browserScene.getRTCMatrix(node.position,this.currentCamera()));
-//                        }
+                        var root = sLayer.children[0];
+                        for(var c = 0; c <  root.children.length; c++)
+                        {
+                            var node = root.children[c];
+    
+                            this.rtc = this.browserScene.getRTCMatrix(node.position,this.currentCamera(),node);
+
+                            var cRTC = function(obj)
+                            {
+                                 if(obj.material && obj.material.setMatrixRTC)
+                                    obj.material.setMatrixRTC(this.rtc);
+                                
+                            }.bind(this);
+
+                            node.traverse(cRTC);
+
+                            
+                        }
                     }
                 }                
             }                
