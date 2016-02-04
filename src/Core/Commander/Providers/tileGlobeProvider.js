@@ -111,6 +111,8 @@ define('Core/Commander/Providers/tileGlobeProvider',[
 
         tile.setVisibility(false);
         
+        tile.content = parent.content;
+        
         parent.add(tile);
                         
         return this.providerWMTS.getTextureBil(tile.useParent() ? undefined : cooWMTS).then(function(terrain)
@@ -130,13 +132,26 @@ define('Core/Commander/Providers/tileGlobeProvider',[
                            
         }.bind(this)).then(function(tile)
         {
-            /*
-            if(tile.level === 18)
+            
+            if(tile.level  === 15 )
             {
-                this.providerKML
-                console.log(tile.bbox);
+                var longitude   = tile.bbox.center.x / Math.PI * 180 - 180;
+                var latitude    = tile.bbox.center.y / Math.PI * 180;
+
+                this.providerKML.loadKMZ(longitude, latitude).then(function (collada){
+
+                    if(tile.content.children.indexOf(collada) === -1)
+                    {
+                        console.log('add collada');
+                        tile.content.add(collada);
+                    }
+                    else
+                        console.log('already');
+
+                }.bind(this));
+                
             }
-            */
+            
         }.bind(this)); 
     };
     

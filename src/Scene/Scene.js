@@ -142,13 +142,17 @@ define('Scene/Scene',[
                    if(sLayer instanceof Quadtree)
                         this.browserScene.browse(sLayer,this.currentCamera(),false);
                    else if(sLayer instanceof Layer)
-                        for(var c = 0; c <  sLayer.children.length; c++)
-                        {
-                            var node = sLayer.children[c];
-                            node.material.setMatrixRTC(this.browserScene.getRTCMatrix(node.position,this.currentCamera()));
-                        }
-                }
-                
+                   {
+                       
+//                        var root = sLayer.children[0]
+//                        for(var c = 0; c <  root.children.length; c++)
+//                        {
+//                            var node = root.children[c];
+//                            if(node.material)
+//                                node.material.setMatrixRTC(this.browserScene.getRTCMatrix(node.position,this.currentCamera()));
+//                        }
+                    }
+                }                
             }                
     };
     

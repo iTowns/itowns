@@ -108,6 +108,8 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
     BrowseTree.prototype.getRTCMatrix = function(center,camera)    
     {               
         // TODO gerer orientation et echelle de l'objet
+        
+        
         var position    = new THREE.Vector3().subVectors(camera.camera3D.position,center);
         var quaternion  = new THREE.Quaternion().copy(camera.camera3D.quaternion);        
         var matrix      = new THREE.Matrix4().compose(position,quaternion,new THREE.Vector3(1,1,1));
