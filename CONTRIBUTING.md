@@ -6,7 +6,7 @@ There are various ways of contributing to the project :
 * [getting started contributing](#getting-started-contributing)
 * [opening a pull request](#opening-a-pull-request)
 
-# Submitting an Issue
+## Submitting an Issue
 
 If you have a question, do not submit an issue; instead, use the iTowns Mailing lists. There is a user mailing list and a developer mailing list. 
 
@@ -32,7 +32,7 @@ If a related issue does not exist, submit a new one.  Please be concise and incl
 * The exact version of iTowns.  Did this work in a previous version ? Be sure to submit your issue to the right version issue tracker ( V1 / V2 )
 * Ideas for how to fix or workaround the issue. Also mention if you are willing to help fix it.  If so, the iTowns team can often provide guidance and the issue may get fixed more quickly with your help.
 
-# Getting Started Contributing
+## Getting Started Contributing
 
 Everyone is welcome to contribute to iTowns !
 
@@ -52,11 +52,24 @@ For ideas for iTowns code contributions, see:
 
 See the [Build Guide](BUILDING.md) for how to build and run iTowns on your system.
 
-# Opening a Pull Request
+## Opening a Pull Request
 
 We welcome pull requests with great interest.  We try to promptly review them, provide feedback, and merge.  Following the tips in this guide will help your pull request be merged quickly.
 
 > If you plan to make a major change, please start a new thread on the [iTowns mailing list](https://lists.osgeo.org/mailman/listinfo/itowns-dev) first. Major code change need to be submitted to the PSC trough an *iTowns Enhancement Proposal*. See the [PSC](https://github.com/iTowns/itowns-project/blob/master/PSC.md) document for the (simple) process.  Pull requests for small features and bug fixes can generally just be opened without discussion on the list nor iEP.
+
+## Advices for commiters
+
+If you have commit access to iTowns, please try to follow these rules :
+
+* Do not commit directly in master, work in branches
+* Create branches on main repo if you want to collaborate on medium/long term dev effort
+* Fork the project and work on a branch in your fork otherwise
+* Create Pull Requests on GitHub to merge your branches
+* Review code from other's PR, give advices on how to improve their code
+* Ping other people or teams to ask them reviewing your PR ( @githubuser )
+* Write meaningful commit messages
+* Keep the git history clean, rebase your work when necessary
 
 ## IP
 
