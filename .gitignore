@@ -1,1 +1,8 @@
 /nbproject/private/
+
+# Temp files
+*swp
+*~
+
+# Junk files
+.directory
