@@ -23,14 +23,11 @@ define('Scene/Layer',[
     function Layer(type, param){
         //Constructor
 
-        console.log("ctor Layer");
         Node.call( this );
-        console.log("Layer inherit from node", type);
         // Requeter
         this.interCommand   = type !== undefined 
                             ? new InterfaceCommander(type,param) 
                             : undefined;
-        console.log("Layer interCommand", this.interCommand);
         this.descriManager  = null;
         this.projection     = new Projection();
                        

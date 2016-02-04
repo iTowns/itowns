@@ -18,9 +18,7 @@ define('Scene/Quadtree',[
 
     function Quadtree(type,schemeTile,param)
     {        
-        console.log("ctor Quadtree", type, param);
         Layer.call( this,type,param);
-        console.log("Quadtree inherit Layer");
         
         this.schemeTile       = schemeTile;
         this.tileType         = type;

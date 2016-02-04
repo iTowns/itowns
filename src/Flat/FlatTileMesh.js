@@ -20,10 +20,10 @@ define('Flat/FlatTileMesh',[
     'Scene/BoudingBox',
     'Core/defaultValue',
     'THREE',
-    'Renderer/GlobeMaterial',
+    'Renderer/BasicMaterial',
     'Core/Math/MathExtented',
     'OBBHelper',
-    'SphereHelper'], function(NodeMesh,FlatTileGeometry,BoudingBox,defaultValue,THREE,GlobeMaterial,MathExt,OBBHelper,SphereHelper){
+    'SphereHelper'], function(NodeMesh,FlatTileGeometry,BoudingBox,defaultValue,THREE,BasicMaterial,MathExt,OBBHelper,SphereHelper){
  
     function FlatTileMesh(bbox,id){
         //Constructor
@@ -31,7 +31,6 @@ define('Flat/FlatTileMesh',[
                 
                 
         this.level      =  Math.floor(Math.log(10000 / bbox.dimension.y )/MathExt.LOG_TWO + 0.5);
-        console.log("level", this.level);
 
         this.bbox       = defaultValue(bbox,new BoudingBox());               
         this.id         = id;
@@ -43,15 +42,18 @@ define('Flat/FlatTileMesh',[
         this.geometry       = new FlatTileGeometry(bbox,precision,this.level);       
         
         // TODO modif ver world coord de three.js 
-        this.absoluteCenter = bbox.center;
+        this.absoluteCenter = new THREE.Vector3(bbox.center.x, bbox.center.y, 0);
        
         // TODO ??? 
         this.centerSphere   = new THREE.Vector3().addVectors(this.geometry.boundingSphere.center, this.absoluteCenter);                       
         this.orthoNeed      = 0;
-        this.material       = new BasicMaterial(new THREE.Color());
+        this.material       = new BasicMaterial(new THREE.Color(1,0,1));
         this.dot            = 0;
         this.frustumCulled  = false;        
         this.maxChildren    = 4;
+
+        // /!\ TEMP FOR TEST
+        this.loaded = true;
         
         var  groupTerrain   = [14,11,7,3];        
         this.levelTerrain   = this.level;

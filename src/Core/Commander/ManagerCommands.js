@@ -96,9 +96,7 @@ define('Core/Commander/ManagerCommands',
         }
         else if(type === FlatTileMesh)
         {
-            console.log("create", type, param);
             this.providers.push(new FlatTileProvider(param.srid));
-            console.log("created");
         }
     };
         

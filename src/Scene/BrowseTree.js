@@ -4,7 +4,8 @@
 * Description: BrowseTree parcourt un arbre de Node. Lors du parcours un ou plusieur NodeProcess peut etre appliqué sur certains Node.
 */
 
-define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess','OBBHelper'], function(THREE,EllipsoidTileMesh){
+define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Flat/FlatTileMesh','Scene/NodeProcess','OBBHelper'], 
+    function(THREE,EllipsoidTileMesh,FlatTileMesh){
 
     function BrowseTree(scene)
     {
@@ -27,7 +28,7 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
     BrowseTree.prototype.addNodeProcess= function(nodeProcess)
     {        
         this.nodeProcess = nodeProcess;
-    };
+    };  
     
     BrowseTree.prototype.NodeProcess= function()
     {        
@@ -43,7 +44,7 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
      */
     BrowseTree.prototype.processNode = function(node,camera,optional)
     {        
-        if(node instanceof EllipsoidTileMesh)
+        if(node instanceof EllipsoidTileMesh || node instanceof FlatTileMesh)
         {            
             
             if(node.helper !== undefined && node.helper.parent === null)           
@@ -54,7 +55,7 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
                  
             if(node.loaded && this.nodeProcess.frustumCullingOBB(node,camera))
             {
-                if(this.nodeProcess.horizonCulling(node,camera))
+                if(true || this.nodeProcess.horizonCulling(node,camera))
                 {
                     
                     if(node.parent.material !== undefined && node.parent.material.visible === true)
@@ -78,6 +79,7 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
                     }                                
                 }
             }
+
 
             if(node.visible  && node.material.visible)
                 this.uniformsProcess(node,camera);                       

@@ -50,9 +50,7 @@ define('Core/Commander/Providers/FlatTileProvider',[
             return when();
         
         var bbox        = command.paramsFunction[0];
-        console.log("bbox", bbox);
 
-        debugger;
         var cooWMTS     = this.projection.WGS84toWMTS(bbox);                
         var parent      = command.requester;        
         var geometry    = undefined; //getGeometry(bbox,cooWMTS);       

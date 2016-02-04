@@ -10,7 +10,6 @@ define('Flat/FlatTileGeometry',[
     'THREE',
     'Core/defaultValue',
     'Scene/BoudingBox',
-    'Core/Math/Ellipsoid',
     'Core/Geographic/CoordCarto',
     'Core/Math/MathExtented',
     'Core/System/JavaTools'
@@ -18,7 +17,6 @@ define('Flat/FlatTileGeometry',[
         THREE,
         defaultValue,
         BoudingBox,
-        Ellipsoid,
         CoordCarto,
         MathExt,
         JavaTools){
@@ -56,19 +54,19 @@ define('Flat/FlatTileGeometry',[
 
         var thetaStart      = bbox.minCarto.latitude ;
         var thetaLength     = bbox.dimension.y;
-                
-        this.carto2Normal = function(phi,theta)
-        {                           
-            return ellipsoid.geodeticSurfaceNormalCartographic(new CoordCarto( phi, theta,0));                
-        };
         
         this.center  = bbox.center;
         
         var maxHeight = 10.; // /!\ HACK
         var width = bbox.maxLo - bbox.minLo;
-        var max     = new THREE.Vector3(bbox.maxLo, bbox.maxLa, maxHeight);
-        var min     = new THREE.Vector3(bbox.minLo, bbox.minLa,-maxHeight);
+        var max     = new THREE.Vector3(bbox.maxCarto.longitude, bbox.maxCarto.latitude, maxHeight);
+        var min     = new THREE.Vector3(bbox.minCarto.longitude, bbox.minCarto.latitude,-maxHeight);
         this.OBB     = new THREE.OBB(min,max);
+
+        var xStart = - (max.x - min.x) / 2;
+        var yStart = - (max.y - min.y) / 2;
+        var deltaX = (max.x - min.x) / widthSegments;
+        var deltaY = (max.y - min.y) / heightSegments;
         
         var idVertex        = 0;
         var x, y, vertices  = [], skirt = [],skirtEnd = [];
@@ -88,54 +86,49 @@ define('Flat/FlatTileGeometry',[
         {
 
             var verticesRow = [];
+            var v = y / heightSegments;
 
-            var v       = y / heightSegments;
-            var lati    = thetaStart    + v * thetaLength;           
-            var t       = ((0.5 + Math.log(Math.tan(MathExt.PI_OV_FOUR + lati*0.5))* MathExt.INV_TWO_PI) - st) * nbRow;
+            var posY    = yStart + y * deltaY;
+            //var lati    = thetaStart    + v * thetaLength;           
+            //var t       = ((0.5 + Math.log(Math.tan(MathExt.PI_OV_FOUR + lati*0.5))* MathExt.INV_TWO_PI) - st) * nbRow;
                     
-            if(!isFinite(t))
-                t = 0;
+            //if(!isFinite(t))
+            //    t = 0;
                         
             for ( x = 0; x <= widthSegments; x ++ ) 
             {
+                var posX = xStart + x * deltaX;
 
-                    var u = x / widthSegments;
-                    
-                    var longi   = phiStart      + u * phiLength;                    
+                var u = x / widthSegments;
+                
+                var longi   = phiStart      + u * phiLength;                    
 
-                    var vertex = longi,lati,0;
-                   
-                    var id3     = idVertex*3 ;
-//                    
-                    bufferVertex[id3+ 0] = vertex.x - this.center.x;
-                    bufferVertex[id3+ 1] = vertex.y - this.center.y;
-                    bufferVertex[id3+ 2] = vertex.z - this.center.z;
-                    
-                                      
-//                    bufferVertex[id3+ 0] = vertex.x ;
-//                    bufferVertex[id3+ 1] = vertex.y ;
-//                    bufferVertex[id3+ 2] = vertex.z ;
+               
+                var id3     = idVertex*3 ;
+         
+                bufferVertex[id3+ 0] = posX - this.center.x;
+                bufferVertex[id3+ 1] = posY - this.center.y;
+                bufferVertex[id3+ 2] = 0;
+            
 
-                    var normal = vertex.clone().normalize();                                        
+                bufferNormal[id3+ 0] = 0;
+                bufferNormal[id3+ 1] = 0;
+                bufferNormal[id3+ 2] = 1;      
 
-                    bufferNormal[id3+ 0] = normal.x;
-                    bufferNormal[id3+ 1] = normal.y;
-                    bufferNormal[id3+ 2] = normal.z;      
-
-                    bufferUV[idVertex*2 + 0] = u;
-                    bufferUV[idVertex*2 + 1] = 1-v;
-                    
-                    bufferUV2[idVertex]      = t;                                  
-                    
-                    if(y !== 0 && y !== heightSegments)
-                        if(x === widthSegments  )
-                           skirt.push(idVertex);
-                        else if(x === 0 )
-                           skirtEnd.push(idVertex);
-                    
-                    verticesRow.push( idVertex );
-                    
-                    idVertex ++;
+                bufferUV[idVertex*2 + 0] = u;
+                bufferUV[idVertex*2 + 1] = 1-v;
+                
+                bufferUV2[idVertex]      = 1;//t;                                  
+                
+                if(y !== 0 && y !== heightSegments)
+                    if(x === widthSegments  )
+                       skirt.push(idVertex);
+                    else if(x === 0 )
+                       skirtEnd.push(idVertex);
+                
+                verticesRow.push( idVertex );
+                
+                idVertex ++;
                     
             }
 
@@ -183,6 +176,9 @@ define('Flat/FlatTileGeometry',[
         var r       = Math.max(rmax,Math.pow(rmax,1/zoom)) ;
         
         r =  isFinite(r) ? r : rmax;
+
+        // /!\ temp : no skirt
+        skirt = [];
         
         for ( i = 0; i < skirt.length ; i ++ ) 
         {
@@ -226,7 +222,7 @@ define('Flat/FlatTileGeometry',[
         }
         
         // TODO : free array
-        
+
         this.setIndex( new THREE.BufferAttribute( bufferIndex, 1 ) );
         this.addAttribute( 'position',  new THREE.BufferAttribute( bufferVertex, 3 ) );
         this.addAttribute( 'normal',    new THREE.BufferAttribute( bufferNormal, 3 ) );
@@ -244,6 +240,7 @@ define('Flat/FlatTileGeometry',[
         bufferNormal    = null;
         bufferUV        = null;
         bufferUV2       = null;
+
         
     }
 

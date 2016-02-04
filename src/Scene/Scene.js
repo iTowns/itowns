@@ -78,7 +78,10 @@ define('Scene/Scene',[
         if (flat)
         {
             var srid = "EPSG:2154";
-            var plane = new Plane(srid, {xmin:649000, xmax:619000, ymin:6840000, ymax:6850000}); 
+            var plane = new Plane(srid, {xmin:-1000, xmax:1000, ymin:-1000, ymax:1000}); 
+            //var plane = new Plane(srid, {xmin:649000, xmax:619000, ymin:6840000, ymax:6850000}); 
+            plane.size = new THREE.Vector3(637.8137, 635.6752, 637.8137);
+            this.add(plane);
             var position = new THREE.Vector3(649000, 6840000, 5);
             this.gfxEngine.init(this, position);
             this.browserScene.addNodeProcess(new NodeProcess(this.currentCamera().camera3D));

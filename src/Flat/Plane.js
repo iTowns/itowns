@@ -28,8 +28,7 @@ define('Flat/Plane',[
         
         this.terrain = new Quadtree(FlatTileMesh, this.SchemeTile(extent), {srid:srid}) ;        
         
-        this.add(this.terrain);                
-        this.add(this.batiments);
+        this.add(this.terrain);
         
     }
 
