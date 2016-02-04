@@ -60,7 +60,7 @@ define('Renderer/ThreeExtented/KMZLoader',
                         }
                         else if (name.toLowerCase().substr( - 4 ) ===  '.kml'){
                             
-                            var parser = new DOMParser()
+                            var parser = new DOMParser();
                             var doc = parser.parseFromString(zip.file( name ).asText(), "text/xml");
                             
                             
@@ -72,7 +72,7 @@ define('Renderer/ThreeExtented/KMZLoader',
                                   
                         }
                     }
-                    
+                                    
                     collada.coorCarto = coordCarto;
                     
                     deferred.resolve(collada);

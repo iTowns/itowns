@@ -16,10 +16,12 @@ define('Scene/Quadtree',[
         ], function(Layer,Quad){
     
 
-    function Quadtree(type,schemeTile,size)
+    function Quadtree(type,schemeTile,size,link)
     {        
         Layer.call( this,type,size);
         
+        
+        this.content          = link;
         this.schemeTile       = schemeTile;
         this.tileType         = type;
         
@@ -28,7 +30,7 @@ define('Scene/Quadtree',[
             this.createTile(this.schemeTile.getRoot(i),this);
         }                 
  
-        this.interCommand.managerCommands.runAllCommands().then(function(result)
+        this.interCommand.managerCommands.runAllCommands().then(function()
         {
                                       
             for (var i = 0; i < this.schemeTile.rootCount(); i++)
@@ -36,8 +38,7 @@ define('Scene/Quadtree',[
                 this.subdivide(this.children[i]);
 
                 this.interCommand.managerCommands.runAllCommands().then(function()
-                {           
-                    
+                {                               
                     this.subdivideChildren(this.children[i]);
                     
                 }.bind(this)

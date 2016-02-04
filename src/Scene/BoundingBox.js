@@ -54,6 +54,15 @@ define('Scene/BoundingBox',[
     */
     BoundingBox.prototype.isInside = function(point){
         //TODO: Implement Me 
+        
+        return point.x <= this.maxCarto.longitude && point.x >= this.minCarto.longitude  && point.y <= this.maxCarto.latitude && point.y >= this.minCarto.latitude;
+
+    };
+    
+    BoundingBox.prototype.BBoxIsInside = function(bbox){
+        //TODO: Implement Me 
+        
+        return bbox.maxCarto.longitude <= this.maxCarto.longitude && bbox.minCarto.longitude >= this.minCarto.longitude  && bbox.maxCarto.latitude<= this.maxCarto.latitude && bbox.minCarto.latitude >= this.minCarto.latitude;
 
     };
     
