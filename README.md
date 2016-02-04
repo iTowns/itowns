@@ -10,30 +10,37 @@
 iTowns is a web framework written in Javascript/WebGL for visualisation of 3D geographic data allowing precise measurements in 3D.
 Its first purpose was the visualisation of street view images and terrestrial lidar point cloud. It has then been extended to handle more data types.
 
+The V2 of iTowns Open Source is a refactoring of [iTowns V1](https://github.com/iTowns/itowns)
+
 This version includes a globe visualization mode.
+
+![iTowns screenshot](http://www.itowns.fr/videos/screenshotGIT.jpg)
 
 ## Supported data types
 
 - Aerial photography 
 - DTM
 - Buildings
-    
-![iTowns screenshot](http://www.itowns.fr/videos/screenshotGIT.jpg)
-
-The V2 of iTowns Open Source is a refactoring of [iTowns V1](https://github.com/iTowns/itowns)
 
 ## In Progress
 
-    - Coding main classes
-    - Documentation
-    - Tutorial / Examples
+- Coding main classes
+- Documentation
+- Tutorial / Examples
+
+Latest changes can be found in [CHANGES.md](CHANGES.md)
 
 ## Licence
 
-iTowns V1 is dual-licenced under Cecill-B V1 and MIT.
+iTowns V2 is dual-licenced under Cecill-B V1.0 and MIT.
 Incorporated libraries are published under their original licences.
 
 See [LICENSE.md](LICENSE.md) for more information.
+
+## Contributors
+
+iTowns has received contributions from people listed in [CONTRIBUTORS.md](CONTRIBUTORS.md).
+If you are interested in contributing to iTowns, please read [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Support
 
