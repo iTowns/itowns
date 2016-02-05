@@ -22,7 +22,6 @@ define('Core/Commander/Providers/tileGlobeProvider',[
             'Core/Geographic/Projection',
             'Core/Commander/Providers/WMTS_Provider',
             'Core/Commander/Providers/KML_Provider',
-            'Core/Commander/Providers/OrientedImages_Provider',
             'Globe/EllipsoidTileGeometry',
             'Core/Geographic/CoordWMTS',
             'Core/Math/Ellipsoid',
@@ -34,7 +33,6 @@ define('Core/Commander/Providers/tileGlobeProvider',[
                 Projection,
                 WMTS_Provider,
                 KML_Provider,
-                OrientedImages_Provider,
                 EllipsoidTileGeometry,
                 CoordWMTS,
                 Ellipsoid,
@@ -49,14 +47,10 @@ define('Core/Commander/Providers/tileGlobeProvider',[
        this.providerWMTS    = new WMTS_Provider();
        this.ellipsoid       = new Ellipsoid(size);       
        this.providerKML     = new KML_Provider(this.ellipsoid);
-       this.providerOrientedImages = new OrientedImages_Provider();
        this.cacheGeometry   = [];
        this.tree            = null;
        this.nNode           = 0;
-       
-       // Test ImageOriented
-       this.providerOrientedImages.getOrientedImageMetaData("aaa",{});
-               
+     
     }        
 
     tileGlobeProvider.prototype.constructor = tileGlobeProvider;
