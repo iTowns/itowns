@@ -59,8 +59,8 @@ define('Renderer/c3DEngine',[
         this.dummy2.material.enableRTC(false);
         this.dummy.material.enableRTC(false);
         
-        this.scene3D.add(this.dummy);
-        this.scene3D.add(this.dummy2);
+//        this.scene3D.add(this.dummy);
+//        this.scene3D.add(this.dummy2);
 
         this.pickingTexture = new THREE.WebGLRenderTarget( this.width, this.height );
         this.pickingTexture.texture.minFilter        = THREE.LinearFilter;
