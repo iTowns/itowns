@@ -50,8 +50,7 @@ define('Core/Commander/Providers/KML_Provider',[
                
         return this.getUrlCollada(longitude,latitude).then(function(result){
             
-                var child       = result.scene.children[0];
-               
+                var child       = result.scene.children[0];               
                 var coorCarto   = result.coorCarto;
 
                 var position    = this.ellipsoid.cartographicToCartesian(coorCarto);   
@@ -65,8 +64,7 @@ define('Core/Commander/Providers/KML_Provider',[
                 child.quaternion.multiply(quaternion );                
                 child.position.copy(position);
 
-                child.updateMatrix();
-                //child.frustumCulled = false;                 
+                child.updateMatrix();                
                 child.visible = false; 
                                                 
                 var changeMaterial = function(object3D)
@@ -84,122 +82,7 @@ define('Core/Commander/Providers/KML_Provider',[
         }.bind(this)); 
        
     };
-    
-    KML_Provider.prototype.getValueByName = function(document,name)
-    {
-        return document.getElementsByTagName(name)[i].childNodes[0].nodeValue;
-    };
-    
-    KML_Provider.prototype.getKMLByBox = function(urlFile, bbox)
-    {  
-        
-        /*var longitude = 48.87;
-        var south = 48.875;
-        var east = -3.4900000000000046;
-        var west = -3.4940000000000044;*/
-//        var north = latitude;
-//        var south = latitude;
-//        var east  = longitude;
-//        var west  = longitude;
-        
-
-        
-        var key = 'j2bfkv9whnqpq04zpzlfz2ge'; 
-        var url = 'http://wxs.ign.fr/' + key + '/vecteurtuile3d/BATI3D/' + 'FXX/';
-        return this.ioDriverXML.read(urlFile).then(function(result)
-        {
-            //console.log(result);
-            //console.log(kml);
-
-            var kml = [];                    
-            kml = result.getElementsByTagName("href");
-            
-            for (i=0; i<kml.length; i++){
-                
-                var url_href = [];
-                url_href[i] = url + "TREE/" + kml[i].childNodes[0].nodeValue.replace("../", "");
-                //console.log(url_href[i]);
-                
-                //get tile's coords
-                var coords = [];
-               
-               
-               
-                coords[i,1] = Number(result.getElementsByTagName("north")[i].childNodes[0].nodeValue);
-                coords[i,2] = Number(result.getElementsByTagName("south")[i].childNodes[0].nodeValue);
-                coords[i,3] = Number(result.getElementsByTagName("east")[i].childNodes[0].nodeValue);
-                coords[i,4] = Number(result.getElementsByTagName("west")[i].childNodes[0].nodeValue);
-                
-                var max = new CoordCarto().setFromDegreeGeo(coords[i,4],coords[i,2]);
-                var min = new CoordCarto().setFromDegreeGeo(coords[i,3],coords[i,1]);
-                
-                
-                // TODO attention enorme probleme entre longitude et latitude
-                
-                var kmlBox = new BoundingBox(min.latitude,max.latitude,max.longitude,min.longitude); 
-                
-                //console.log(coords[i,1], coords[i,2], coords[i,3], coords[i,4]);
-                
-                //get min and max LodPixel of each tile
-                var min_max_lod = [];
-                min_max_lod[i,1] = result.getElementsByTagName("minLodPixels")[i].childNodes[0].nodeValue;
-                //min_max_lod[i,2] = result.getElementsByTagName("maxLodPixels")[i].childNodes[0].nodeValue;
-                //console.log("minLodPixels = " + min_max_lod[i,1] /*+ "; maxLodPixels = " + min_max_lod[i,2]*/);
-
-                //Next level : Get the next KML actual position's coords
-                //console.log('-------------------------');
-                //console.log(kmlBox.minCarto.longitude +'->'+kmlBox.maxCarto.longitude);
-                //console.log(bbox.minCarto.longitude +'->'+bbox.maxCarto.longitude);
-                
-                //console.log(kmlBox.minCarto.latitude +'->'+kmlBox.maxCarto.latitude);
-                //console.log(bbox.minCarto.latitude +'->'+bbox.maxCarto.latitude);
-                //console.log(bbox);
-                
-               // if ( url_href[i].toLowerCase().substr( - 4 ) ===  '.kml' && (kmlBox.intersect(bbox) || kmlBox.BBoxIsInside(bbox))){                    
-                if ( url_href[i].toLowerCase().substr( - 4 ) ===  '.kml' && (kmlBox.isInside(bbox.center))){                    
-                    //console.log(coords[i,1], coords[i,2], coords[i,3], coords[i,4]);
-                    //console.log(url_href[i].toLowerCase().substr( - 4 ));
-                    console.log(url_href[i]);
-                    return this.getKMLByBox(url_href[i],bbox);
-                    
-                }
-                //Next level : Get the next KMZ actual position's coords
-                else if (url_href[i].toLowerCase().substr( - 4 ) ===  '.kmz' && kmlBox.isInside(bbox.center)){
-                    //console.log(window.innerHeight);
-                    var url_href_kmz = [];
-                    url_href_kmz[i] = url + kml[i].childNodes[0].nodeValue.replace("../../", "");
-                    
-                    
-                    console.log(url_href_kmz[i]);
-                    
-                    if(this.cache[url_href_kmz[i]])
-                    {
-                        console.log('get from cache');
-                        return when(this.cache[url_href_kmz[i]]);
-                    }
-                    else
-                    {
-                        console.log('rrr');
-                        return this.kmzLoader.load(url_href_kmz[i]).then(
-                        function(result){
-                           
-                            console.log(url_href_kmz[i]);
-                           
-                            this.cache[url_href_kmz[i]] = result;
-                            
-                            console.log(this.cache[url_href_kmz[i]]);
-                            return result;
-                        }.bind(this)
-                        );
-                    }
-                }
-            }
-            
-        }.bind(this));
-
-    };
-         
-    
+       
     KML_Provider.prototype.parseKML = function(urlFile, longitude, latitude)
     {  
         
@@ -211,83 +94,73 @@ define('Core/Commander/Providers/KML_Provider',[
         var south = latitude;
         var east  = longitude;
         var west  = longitude;
-        
-       // console.log(longitude + ' '  + latitude);
-        
         var key = 'j2bfkv9whnqpq04zpzlfz2ge'; 
         var url = 'http://wxs.ign.fr/' + key + '/vecteurtuile3d/BATI3D/' + 'FXX/';
         return this.ioDriverXML.read(urlFile).then(function(result)
         {
             //console.log(result);
             
-
-            var kml = [];                    
-            kml = result.getElementsByTagName("href");
-            //console.log(kml);
-            for (i=0; i<kml.length; i++){
+            var NetworkLink = [];
+            NetworkLink = result.getElementsByTagName("NetworkLink");
+            
+            for (i=0; i<NetworkLink.length; i++){
                 
-                var url_href = [];
-                url_href[i] = url + "TREE/" + kml[i].childNodes[0].nodeValue.replace("../", "");
-                //console.log(url_href[i]);
-                
-                //get tile's coords
                 var coords = [];
-                coords[i,1] = Number(result.getElementsByTagName("north")[i].childNodes[0].nodeValue);
-                coords[i,2] = Number(result.getElementsByTagName("south")[i].childNodes[0].nodeValue);
-                coords[i,3] = Number(result.getElementsByTagName("east")[i].childNodes[0].nodeValue);
-                coords[i,4] = Number(result.getElementsByTagName("west")[i].childNodes[0].nodeValue);
+                coords[i,1] = NetworkLink[i].getElementsByTagName("north")[0].childNodes[0].nodeValue;
+                coords[i,2] = NetworkLink[i].getElementsByTagName("south")[0].childNodes[0].nodeValue;
+                coords[i,3] = NetworkLink[i].getElementsByTagName("east")[0].childNodes[0].nodeValue;
+                coords[i,4] = NetworkLink[i].getElementsByTagName("west")[0].childNodes[0].nodeValue;
                 //console.log(coords[i,1], coords[i,2], coords[i,3], coords[i,4]);
                 
-                //get min and max LodPixel of each tile
-                var min_max_lod = [];
-                min_max_lod[i,1] = result.getElementsByTagName("minLodPixels")[i].childNodes[0].nodeValue;
-                //min_max_lod[i,2] = result.getElementsByTagName("maxLodPixels")[i].childNodes[0].nodeValue;
-                //console.log("minLodPixels = " + min_max_lod[i,1] /*+ "; maxLodPixels = " + min_max_lod[i,2]*/);
+                if (north < coords[i,1] && south > coords[i,2]  && east < coords[i,3] && west > coords[i,4]){
 
-                //Next level : Get the next KML actual position's coords
-                if ( url_href[i].toLowerCase().substr( - 4 ) ===  '.kml' && north < coords[i,1] && south >= coords[i,2]  && east < coords[i,3] && west >= coords[i,4]){                    
-                    //console.log(coords[i,1], coords[i,2], coords[i,3], coords[i,4]);
-                    //console.log(url_href[i].toLowerCase().substr( - 4 ));
-                    //sssconsole.log(url_href[i]);
-                    return this.parseKML(url_href[i], longitude, latitude);
-                    
-                }
-                //Next level : Get the next KMZ actual position's coords
-                else if (url_href[i].toLowerCase().substr( - 4 ) ===  '.kmz' && north < coords[i,1] && south >= coords[i,2]  && east < coords[i,3] && west >= coords[i,4]){
-                    //console.log(window.innerHeight);
-                    var url_href_kmz = [];
-                    url_href_kmz[i] = url + kml[i].childNodes[0].nodeValue.replace("../../", "");
-                    //console.log(url_href_kmz[i]);
-                    
+                    var href = [];
+                    href[i] = url + "TREE/" + NetworkLink[i].getElementsByTagName("href")[0].childNodes[0].nodeValue.replace("../", "");
+                    //console.log(href[i]);
 
-                    
-                    if(this.cache[url_href_kmz[i]])
-                    {
-                        //console.log('get from cache');
-                        return when(this.cache[url_href_kmz[i]]);
+                    if ( href[i].toLowerCase().substr( - 4 ) ===  '.kml'){                    
+
+                        //console.log(coords[i,1], coords[i,2], coords[i,3], coords[i,4]);
+                        //console.log(href[i]);
+                        return this.parseKML(href[i], longitude, latitude);
+
                     }
-                    else
+                    //Next level : Get the next KMZ actual position's coords
+                    else if (href[i].toLowerCase().substr( - 4 ) ===  '.kmz')
                     {
+
+                        var url_kmz = [];
+                        url_kmz[i] = url + NetworkLink[i].getElementsByTagName("href")[0].childNodes[0].nodeValue.replace("../../", "");
+                        //console.log(url_kmz[i]);
+
+                        if(this.cache[url_kmz[i]])
+                        {
+                            //console.log('get from cache');
+                            return when(this.cache[url_kmz[i]]);
+                        }
+                        else
+                        {                        
+                        return this.kmzLoader.load(url_kmz[i]).then(
+                            function(result){
+
+                                this.cache[url_kmz[i]] = result;
+
+                                return result;
+                            }.bind(this));
                         
-                        return this.kmzLoader.load(url_href_kmz[i]).then(
-                        function(result){
-                   
-                            this.cache[url_href_kmz[i]] = result;
-
-                            return result;
-                        }.bind(this)
-                        );
+                        }
                     }
                 }
-            }
+            }            
             
         }.bind(this));
 
-    };
- 
+    };  
+
+
     KML_Provider.prototype.getUrlCollada = function(longitude,latitude)
     {
-       
+        
         var deferred = when.defer();
         //var url = 'http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/vecteurtuile3d/BATI3D/BU.Building.kml';
         
@@ -316,47 +189,10 @@ define('Core/Commander/Providers/KML_Provider',[
         
         return deferred;
     }; 
-    
-    
-     KML_Provider.prototype.getByBBoxUrlCollada = function(bbox)
-    {
-       
-        var deferred = when.defer();
-        //var url = 'http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/vecteurtuile3d/BATI3D/BU.Building.kml';
-        
-        this.ioDriverXML.read('http://wxs.ign.fr/j2bfkv9whnqpq04zpzlfz2ge/vecteurtuile3d/BATI3D/BU.Building.kml').then(function(result_0)
-        {
-            
-            // get href's node value
-            var kml_0 = result_0.getElementsByTagName("href");
-            var url_href_1;// = [];
-            var key = 'j2bfkv9whnqpq04zpzlfz2ge';
-
-            //for (i=0; i<kml_0.length; i++){
-              //  url_href_1[i] = 'http://wxs.ign.fr/' + key + '/vecteurtuile3d/BATI3D/' + kml_0[i].childNodes[0].nodeValue.replace("./", "");
-                url_href_1 = 'http://wxs.ign.fr/' + key + '/vecteurtuile3d/BATI3D/FXX/TREE/0/0_000_000.kml'; 
-                this.getKMLByBox(url_href_1,bbox).then(function(result)
-                {
- 
-                    deferred.resolve(result);
-                    
-                });
                 
-            //Couper ici pour récupérer algo    
-            //}
-            
-        }.bind(this));
-        
-        return deferred;
-    };
-    
     return KML_Provider;
     
-});  
-                
-                
-                
-                
+});                  
                 //If France
 //                if (url_href_1[i] === 'http://wxs.ign.fr/' + key + '/vecteurtuile3d/BATI3D/FXX/TREE/0/0_000_000.kml'){
 //                    //this.ParseKML(url_href_1[i]);

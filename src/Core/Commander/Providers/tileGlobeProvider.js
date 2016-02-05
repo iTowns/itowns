@@ -138,6 +138,7 @@ define('Core/Commander/Providers/tileGlobeProvider',[
         {
             
             if(tile.level  === 16 && false )
+            //if(tile.level  === 16  )
             {
                 var longitude   = tile.bbox.center.x / Math.PI * 180 - 180;
                 var latitude    = tile.bbox.center.y / Math.PI * 180;
