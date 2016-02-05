@@ -71,7 +71,7 @@ define('Core/Commander/ManagerCommands',
         {                       
             this.providers.push(new tileGlobeProvider(param));
             
-            var latitude  = 48.844975;
+            var latitude  = 48.854975;
             //var latitude  = 2.34749999999999;
             
             var  longitude = 2.385785;
