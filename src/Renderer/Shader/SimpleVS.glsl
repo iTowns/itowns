@@ -13,7 +13,8 @@
 
 uniform mat4       mVPMatRTC;
 uniform int        RTC;
-varying float      ZY;
+varying float      light;
+const vec3 dir =  normalize(vec3(1.0,1.0,0.5));
 
 void main() 
 {
@@ -22,8 +23,10 @@ void main()
         gl_Position = projectionMatrix * modelViewMatrix * vec4( position,  1.0 );
   else
         gl_Position = mVPMatRTC * vec4( position ,1.0 );
+
+    float h  = max(0.05,(1.0 - min(position.y / 50.0,1.0)));
     
-    ZY= position.y / 100.0;
+    light    =   h / max(0.25,dot(dir,normal));
 
     #ifdef USE_LOGDEPTHBUF
 

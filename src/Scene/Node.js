@@ -16,6 +16,7 @@ define('Scene/Node',[], function(){
         this.bbox           = null;
         this.url            = null;
         this.content        = null;
+        this.link           = null;
         this.description    = null;
         this.id             = null;
         this.saveState      = null;
