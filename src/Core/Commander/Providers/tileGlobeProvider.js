@@ -115,7 +115,7 @@ define('Core/Commander/Providers/tileGlobeProvider',[
 
         tile.setVisibility(false);
         
-        tile.content = parent.content;
+        tile.link = parent.link;
         
         parent.add(tile);
                         
@@ -137,20 +137,18 @@ define('Core/Commander/Providers/tileGlobeProvider',[
         }.bind(this)).then(function(tile)
         {
             
-            if(tile.level  === 15 )
+            if(tile.level  === 16 && false )
             {
                 var longitude   = tile.bbox.center.x / Math.PI * 180 - 180;
                 var latitude    = tile.bbox.center.y / Math.PI * 180;
 
                 this.providerKML.loadKMZ(longitude, latitude).then(function (collada){
 
-                    if(tile.content.children.indexOf(collada) === -1)
-                    
-                     
-                        tile.content.add(collada);
-                   
-
-
+                    if(tile.link.children.indexOf(collada) === -1)
+                    {                                         
+                        tile.link.add(collada);
+                        tile.content = collada;
+                    }
                 }.bind(this));
                 
             }

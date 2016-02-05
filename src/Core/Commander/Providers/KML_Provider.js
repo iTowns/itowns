@@ -32,8 +32,7 @@ define('Core/Commander/Providers/KML_Provider',[
         //Constructor
         this.ellipsoid   = ellipsoid;
         this.ioDriverXML = new IoDriverXML();
-        this.kmzLoader   = new KMZLoader();
-        
+        this.kmzLoader   = new KMZLoader();        
         this.cache       = [];
     }
 
@@ -67,7 +66,8 @@ define('Core/Commander/Providers/KML_Provider',[
                 child.position.copy(position);
 
                 child.updateMatrix();
-                child.frustumCulled = false; 
+                //child.frustumCulled = false;                 
+                child.visible = false; 
                                                 
                 var changeMaterial = function(object3D)
                 {

@@ -21,7 +21,7 @@ define('Scene/Quadtree',[
         Layer.call( this,type,size);
         
         
-        this.content          = link;
+        this.link             = link;
         this.schemeTile       = schemeTile;
         this.tileType         = type;
         
