@@ -55,14 +55,18 @@ define('Renderer/ThreeExtented/KMZLoader',
                     var coordCarto = undefined;
                     for ( var name in zip.files ) {
                         //console.log(name);
-                        if ( name.toLowerCase().substr( - 4 ) ===  '.dae' ) {                           
-                           collada = scopeLoader.parse( zip.file( name ).asText() );
+                        if ( name.toLowerCase().substr( - 4 ) ===  '.dae' ) {
+                            collada = scopeLoader.parse( zip.file( name ).asText() );
                         }
                         else if (name.toLowerCase().substr( - 4 ) ===  '.kml'){
                             
-                            var parser = new DOMParser()
+                            var parser = new DOMParser();
                             var doc = parser.parseFromString(zip.file( name ).asText(), "text/xml");
                             
+                            /*var parser2 = new DOMParser();
+                            var doc2 = parser2.parseFromString(zip.file( 'C:/Users/adminloc/Downloads/53_52.kmz' ).asText(), "text/xml");
+                            console.log(doc2);*/
+       
                             
                             var longitude = Number(doc.getElementsByTagName("longitude")[0].childNodes[0].nodeValue);
                             var latitude = Number(doc.getElementsByTagName("latitude")[0].childNodes[0].nodeValue);
