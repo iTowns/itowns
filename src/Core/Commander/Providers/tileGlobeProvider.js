@@ -131,22 +131,22 @@ define('Core/Commander/Providers/tileGlobeProvider',[
         }.bind(this)).then(function(tile)
         {
             
-            if(tile.level  === 16 && false )
-            //if(tile.level  === 16  )
-            {
-                var longitude   = tile.bbox.center.x / Math.PI * 180 - 180;
-                var latitude    = tile.bbox.center.y / Math.PI * 180;
-
-                this.providerKML.loadKMZ(longitude, latitude).then(function (collada){
-
-                    if(tile.link.children.indexOf(collada) === -1)
-                    {                                         
-                        tile.link.add(collada);
-                        tile.content = collada;
-                    }
-                }.bind(this));
-                
-            }
+//            if(false )
+//            if(tile.level  === 16  )
+//            {
+//                var longitude   = tile.bbox.center.x / Math.PI * 180 - 180;
+//                var latitude    = tile.bbox.center.y / Math.PI * 180;
+//
+//                this.providerKML.loadKMZ(longitude, latitude).then(function (collada){
+//
+//                    if(tile.link.children.indexOf(collada) === -1)
+//                    {                                         
+//                        tile.link.add(collada);
+//                        tile.content = collada;
+//                    }
+//                }.bind(this));
+//                
+//            }
             
         }.bind(this)); 
     };
