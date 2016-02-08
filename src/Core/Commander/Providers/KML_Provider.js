@@ -106,13 +106,13 @@ define('Core/Commander/Providers/KML_Provider',[
             for (i=0; i<NetworkLink.length; i++){
                 
                 var coords = [];
-                coords[i,1] = NetworkLink[i].getElementsByTagName("north")[0].childNodes[0].nodeValue;
-                coords[i,2] = NetworkLink[i].getElementsByTagName("south")[0].childNodes[0].nodeValue;
-                coords[i,3] = NetworkLink[i].getElementsByTagName("east")[0].childNodes[0].nodeValue;
-                coords[i,4] = NetworkLink[i].getElementsByTagName("west")[0].childNodes[0].nodeValue;
+                coords[0] = NetworkLink[i].getElementsByTagName("north")[0].childNodes[0].nodeValue;
+                coords[1] = NetworkLink[i].getElementsByTagName("south")[0].childNodes[0].nodeValue;
+                coords[2] = NetworkLink[i].getElementsByTagName("east")[0].childNodes[0].nodeValue;
+                coords[3] = NetworkLink[i].getElementsByTagName("west")[0].childNodes[0].nodeValue;
                 //console.log(coords[i,1], coords[i,2], coords[i,3], coords[i,4]);
                 
-                if (north < coords[i,1] && south > coords[i,2]  && east < coords[i,3] && west > coords[i,4]){
+                if (north < coords[0] && south > coords[1]  && east < coords[2] && west > coords[3]){
 
                     var href = [];
                     href[i] = url + "TREE/" + NetworkLink[i].getElementsByTagName("href")[0].childNodes[0].nodeValue.replace("../", "");
