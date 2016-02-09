@@ -67,6 +67,8 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
         this.mainAxis         = new THREE.Object3D();
         
         this.cameraDummy          = new THREE.Object3D();
+        this.localPhi = 0;
+        this.localTheta = 0;
         
         this.pointClickOnScreen = new THREE.Vector2();
         var pickOnGlobe       = new THREE.Vector3();
@@ -84,13 +86,15 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
 	this.noKeys = false;
 
 	// The four arrow keys
-	this.keys = { LEFT: 37, UP: 38, RIGHT: 39, BOTTOM: 40, SPACE:32,CTRL:17};
+	this.keys = { LEFT: 37, UP: 38, RIGHT: 39, BOTTOM: 40, SPACE:32, CTRL:17, SHIFT:16};
 
 	// Mouse buttons
 	this.mouseButtons = { ORBIT: THREE.MOUSE.LEFT, ZOOM: THREE.MOUSE.MIDDLE, PAN: THREE.MOUSE.RIGHT };
         
+        this.globeTargetX = new THREE.Vector3(1000,1000,1000);
         
         this.keyCtrl = false;
+        this.keyShift = false;
 	////////////
 	// internals
         
@@ -126,7 +130,7 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
 	var lastPosition = new THREE.Vector3();
 	var lastQuaternion = new THREE.Quaternion();
 
-	var STATE = { NONE : -1, ROTATE : 0, DOLLY : 1, PAN : 2, TOUCH_ROTATE : 3, TOUCH_DOLLY : 4, TOUCH_PAN : 5,MOVE_GLOBE : 6 };
+	var STATE = { NONE : -1, ROTATE : 0, DOLLY : 1, PAN : 2, TOUCH_ROTATE : 3, TOUCH_DOLLY : 4, TOUCH_PAN : 5,MOVE_GLOBE : 6, ROTATEONITSELF : 7 };
 
 	var state = STATE.NONE;
   
@@ -437,8 +441,8 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
                 this.mainAxis.lookAt(this.cloneMain.localToWorld(offset));
                 
             }
-            else
-            {
+            else if(state !== STATE.ROTATEONITSELF)  
+            { 
                 this.cameraDummy.position.copy( offset.clone());
                 this.cameraDummy.lookAt(new THREE.Vector3());
             }
@@ -446,8 +450,43 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
             this.object.position.copy(this.cameraDummy.localToWorld(new THREE.Vector3()));            
             this.object.lookAt(this.globeTarget.localToWorld(new THREE.Vector3()));
             this.object.updateMatrixWorld(true);
-            //computeVectorUp();
+     
                         
+                
+            if(state === STATE.ROTATEONITSELF)  {
+             
+             
+                this.localPhi += phiDelta;
+                this.localTheta += thetaDelta;
+                
+                var cameraPos = this.object.position;
+      
+                var normal = cameraPos.clone().normalize();
+                var quaternion  = new THREE.Quaternion();
+                quaternion.setFromAxisAngle( new THREE.Vector3(1, 0 ,0 ), Math.PI/2 );
+
+                var child = new THREE.Object3D();
+                var localTarget = new THREE.Vector3().addVectors ( cameraPos.clone(), normal );
+                child.lookAt(localTarget);
+                child.quaternion.multiply(quaternion );                
+                child.updateMatrix();
+
+                var quaternionTHETA = new THREE.Quaternion();
+                quaternionTHETA.setFromAxisAngle( new THREE.Vector3( 0, 1, 0 ), this.localTheta );
+                child.quaternion.multiply(quaternionTHETA);
+                
+                var quaternionPHI = new THREE.Quaternion();
+                quaternionPHI.setFromAxisAngle( new THREE.Vector3( 1, 0, 0 ), this.localPhi );
+                child.quaternion.multiply(quaternionPHI);
+  
+                var rotationALL = new THREE.Euler().setFromQuaternion( child.quaternion);//, eulerOrder ); 
+                
+                this.object.rotation.set(rotationALL.x,rotationALL.y,rotationALL.z);
+                
+            }
+            //else
+              //   this.object.lookAt( offGT );   // Usual CASE (not rotating around camera axe)
+
             thetaDelta = 0;
             phiDelta = 0;
             scale = 1;
@@ -519,7 +558,19 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
 		if ( event.button === scope.mouseButtons.ORBIT ) {
 			if ( scope.noRotate === true ) return;
 
-                        state = scope.keyCtrl ? STATE.ROTATE : STATE.MOVE_GLOBE;  
+                        if(scope.keyCtrl)
+                        {
+                            state = STATE.ROTATE;  
+                        }else
+                            if(scope.keyShift)
+                        {
+                            state = STATE.ROTATEONITSELF;  
+                        }
+                        else{                                                        
+                            computeTarget(scope.engine.picking());
+                            scope.engine.renderScene(); // TODO debug to remove white screen, but why?                            
+                            state = STATE.MOVE_GLOBE;
+                        }
                             
 			rotateStart.set( event.clientX, event.clientY );
                         
@@ -597,7 +648,18 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
 
 			rotateStart.copy( rotateEnd );
 
-		} else if ( state === STATE.DOLLY ) {
+		} else if ( state === STATE.ROTATEONITSELF ) {   
+                    
+                    if ( scope.noRotate === true ) return;
+                   
+                    rotateEnd.set( event.clientX, event.clientY );
+		    rotateDelta.subVectors( rotateEnd, rotateStart );
+                    
+                    scope.rotateLeft( 2 * Math.PI * rotateDelta.x / element.clientWidth * scope.rotateSpeed  );                                                
+                    scope.rotateUp( 2 * Math.PI * rotateDelta.y / element.clientHeight * scope.rotateSpeed );
+                    rotateStart.copy( rotateEnd );       
+                    
+                }else if ( state === STATE.DOLLY ) {
 
 			if ( scope.noZoom === true ) return;
 
@@ -732,7 +794,15 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
                               
             }
             
+            if(scope.keyShift)   
+            {
+                computeVectorUp();
+                rotateTarget();
+                              
+            }
+            
             scope.keyCtrl = false;  
+            scope.keyShift = false;
         }
 
 	function onKeyDown( event ) {
@@ -740,6 +810,7 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
 
 		if ( scope.enabled === false || scope.noKeys === true || scope.noPan === true ) return;
                 scope.keyCtrl = false;
+                scope.keyShift = false;
                 
 		switch ( event.keyCode ) {
 
@@ -770,6 +841,10 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
                         case scope.keys.CTRL:       
                                 computeVectorUp();
                                 scope.keyCtrl = true;
+                                break;
+                        case scope.keys.SHIFT:       
+                                computeVectorUp();
+                                scope.keyShift = true;
                                 break;
 
 		}
@@ -907,6 +982,7 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
 		scope.dispatchEvent( endEvent );
 		state = STATE.NONE;                
                 scope.keyCtrl = false;
+                scope.keyShift = false;
 
 	}
         

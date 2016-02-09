@@ -138,9 +138,11 @@ define('Core/Commander/Providers/tileGlobeProvider',[
 //                var latitude    = tile.bbox.center.y / Math.PI * 180;
 //
 //                this.providerKML.loadKMZ(longitude, latitude).then(function (collada){
-//
-//                    if(tile.link.children.indexOf(collada) === -1)
-//                    {                                         
+//                    
+//                    
+//                    if(collada && tile.link.children.indexOf(collada) === -1)
+//                    {         
+//                        //console.log(collada);
 //                        tile.link.add(collada);
 //                        tile.content = collada;
 //                    }
