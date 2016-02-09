@@ -46,8 +46,6 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe',['Core/Commander/Interf
     
         var scene = Scene();
       
-        scene.init();
-    
         return scene;
 
     };

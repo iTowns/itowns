@@ -19,6 +19,7 @@ define('Core/Commander/ManagerCommands',
         [               
             'Core/Commander/Providers/tileGlobeProvider',
             'Core/Commander/Interfaces/EventsManager',
+            'Core/System/System/die',
             'PriorityQueue',
             'when',
             'Globe/EllipsoidTileMesh',
@@ -28,6 +29,7 @@ define('Core/Commander/ManagerCommands',
         function(
                 tileGlobeProvider,
                 EventsManager,
+                die,
                 PriorityQueue,
                 when,
                 EllipsoidTileMesh,
@@ -35,13 +37,14 @@ define('Core/Commander/ManagerCommands',
                 THREE
         ){
 
-    var instanceCommandManager = null;   
-    
-    function ManagerCommands(){
+    var ManagerCommands = function(scene){
         //Constructor
-        if(instanceCommandManager !== null){
-            throw new Error("Cannot instantiate more than one ManagerCommands");
-        } 
+        if (ManagerCommands.prototype._instance) {
+            !scene|| die("Attempt to re-instantiate ManagerCommands");
+            return ManagerCommands.prototype._instance;
+        }
+
+        ManagerCommands.prototype._instance = this;
         
         this.queueAsync     = new PriorityQueue({ comparator: function(a, b) { return b.priority - a.priority; }});        
         this.queueSync      = null;
@@ -49,20 +52,12 @@ define('Core/Commander/ManagerCommands',
         this.providers      = [];
         this.history        = null;               
         this.eventsManager  = new EventsManager();       
-        this.scene          = undefined;
-
+        this.scene = scene || die("Cannot instantiate ManagerCommands without scene");       
     }        
-
-    ManagerCommands.prototype.constructor = ManagerCommands;
-
+    
     ManagerCommands.prototype.addCommand = function(command)
     {                      
         this.queueAsync.queue(command);                
-    };
-    
-    ManagerCommands.prototype.init = function(scene)
-    {
-        this.scene = scene;       
     };
     
     ManagerCommands.prototype.createProvider = function(type,param)
@@ -178,10 +173,6 @@ define('Core/Commander/ManagerCommands',
         //TODO: Implement Me 
 
     };
-
-    return function(){
-        instanceCommandManager = instanceCommandManager || new ManagerCommands();
-        return instanceCommandManager;
-    };
     
+    return ManagerCommands;
 });

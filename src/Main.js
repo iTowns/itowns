@@ -88,7 +88,6 @@ requirejs.config({
     waitSeconds : 30
 });
 
-
 requirejs(['Core/Commander/Interfaces/ApiInterface/ApiGlobe'], 
     function(ApiGlobe) 
     {

@@ -6,6 +6,7 @@
 
 define('Renderer/c3DEngine',[
     'THREE',
+    'Core/System/System/die',
     'OrbitControls',
     'GlobeControls',
     'Renderer/Camera',
@@ -13,6 +14,7 @@ define('Renderer/c3DEngine',[
     'Renderer/DepthMaterial',
     'Renderer/BasicMaterial'], function(
         THREE,
+        die,
         OrbitControls,
         GlobeControls,
         Camera,
@@ -20,54 +22,93 @@ define('Renderer/c3DEngine',[
         DepthMaterial,
         BasicMaterial){
 
-    var instance3DEngine = null;
     var RENDER =  {FINAL : 0,PICKING : 1};
 
-    function c3DEngine(){
+    function c3DEngine(scene, position){
         //Constructor
-        
-        if(instance3DEngine !== null){
-            throw new Error("Cannot instantiate more than one c3DEngine");
-        } 
-        
+
+        if(c3DEngine.prototype._instance){
+            (!scene && !position) || die("Attempt to re-instantiate c3DEngine");
+            return c3DEngine.prototype._instance;
+        }
+
+        c3DEngine.prototype._instance = this;
+
         THREE.ShaderChunk[ "logdepthbuf_pars_vertex" ];
 
         this.debug      = false;
         //this.debug      = true;
-        this.scene      = undefined;
-        this.scene3D    = new THREE.Scene();               
+        this.scene3D    = new THREE.Scene();
         this.width      = this.debug ? window.innerWidth * 0.5 : window.innerWidth;
         this.height     = window.innerHeight;
-        
+
         this.renderer   = undefined;
-        this.controls   = undefined;                
+        this.controls   = undefined;
         this.camera     = undefined;
         this.camDebug   = undefined;
         this.size       = 1.0;
         this.dnear      = 0.0;
         this.dfar       = 0.0;
         this.stateRender = RENDER.FINAL;
-        
+
         this.initCamera();
-        
-        var material    = new BasicMaterial(new THREE.Color(1,0,0)); 
-        var material2   = new BasicMaterial(new THREE.Color(0,0,1)); 
-        var geometry    = new THREE.CylinderGeometry(0.6, 0.01,2,32);          
-        this.dummy      = new THREE.Mesh( geometry, material );                      
+
+        var material    = new BasicMaterial(new THREE.Color(1,0,0));
+        var material2   = new BasicMaterial(new THREE.Color(0,0,1));
+        var geometry    = new THREE.CylinderGeometry(0.6, 0.01,2,32);
+        this.dummy      = new THREE.Mesh( geometry, material );
         this.dummy2     = new THREE.Mesh( geometry, material2 );
-        
+
         this.dummy2.material.enableRTC(false);
         this.dummy.material.enableRTC(false);
-        
+
         this.scene3D.add(this.dummy);
         this.scene3D.add(this.dummy2);
 
         this.pickingTexture = new THREE.WebGLRenderTarget( this.width, this.height );
         this.pickingTexture.texture.minFilter        = THREE.LinearFilter;
         this.pickingTexture.texture.generateMipmaps  = false;
-        this.pickingTexture.texture.type             = THREE.FloatType;        
+        this.pickingTexture.texture.type             = THREE.FloatType;
         this.pickingTexture.depthBuffer              = true;
-          
+
+        this.scene  = scene || die("cannot instatiate c3DEngine without scene");
+        this.size    = this.scene.size().x;
+        this.camera.setPosition(position || die("cannot instatiate c3DEngine without position"));
+
+        // if near is too small --> bug no camera helper
+        this.camera.camera3D.near = this.size * 2.333;
+        this.camera.camera3D.far  = this.size * 10;
+        this.camera.camera3D.updateProjectionMatrix();
+        this.camera.camera3D.updateMatrixWorld ( true );
+
+        if(this.debug)
+        {
+
+            this.camDebug.position.x = -this.size * 6;
+            this.camDebug.lookAt(new THREE.Vector3(0,0,0));
+            this.camDebug.near = this.size* 0.1;
+            this.camDebug.far  = this.size * 10;
+            this.camDebug.updateProjectionMatrix();
+            this.camera.createCamHelper();
+            this.scene3D.add(this.camera.camHelper());
+            var axisHelper = new THREE.AxisHelper( this.size*1.33 );
+            this.scene3D.add( axisHelper );
+        }
+
+        if(this.controls instanceof THREE.GlobeControls)
+        {
+            var axisHelper = new THREE.AxisHelper( this.size*1.33 );
+            this.scene3D.add( axisHelper );
+        }
+
+        this.camera.camera3D.near = Math.max(15.0,0.000002352 * this.size);
+        this.camera.camera3D.updateProjectionMatrix();
+        this.initRenderer();
+        this.initControls(this.size);
+
+        //this.controls.target        = target;        
+        window.addEventListener( 'resize', this.onWindowResize, false );
+        this.controls.addEventListener( 'change', this.update );
         this.renderScene = function(){
                  
                  
@@ -199,44 +240,6 @@ define('Renderer/c3DEngine',[
      */
     c3DEngine.prototype.init = function(scene,position){
         
-        this.scene  = scene;
-        this.size    = this.scene.size().x;
-        this.camera.setPosition(position);
-      
-        // if near is too small --> bug no camera helper
-        this.camera.camera3D.near = this.size * 2.333;
-        this.camera.camera3D.far  = this.size * 10;
-        this.camera.camera3D.updateProjectionMatrix();        
-        this.camera.camera3D.updateMatrixWorld ( true );
-        
-        if(this.debug)
-        {
-            
-            this.camDebug.position.x = -this.size * 6;
-            this.camDebug.lookAt(new THREE.Vector3(0,0,0));
-            this.camDebug.near = this.size* 0.1;
-            this.camDebug.far  = this.size * 10;
-            this.camDebug.updateProjectionMatrix(); 
-            this.camera.createCamHelper();
-            this.scene3D.add(this.camera.camHelper());              
-            var axisHelper = new THREE.AxisHelper( this.size*1.33 );
-            this.scene3D.add( axisHelper );
-        }
-        
-        if(this.controls instanceof THREE.GlobeControls)
-        {
-            var axisHelper = new THREE.AxisHelper( this.size*1.33 );
-            this.scene3D.add( axisHelper );
-        }
-         
-        this.camera.camera3D.near = Math.max(15.0,0.000002352 * this.size);                        
-        this.camera.camera3D.updateProjectionMatrix();        
-        this.initRenderer();        
-        this.initControls(this.size);
-        
-        //this.controls.target        = target;        
-        window.addEventListener( 'resize', this.onWindowResize, false );
-        this.controls.addEventListener( 'change', this.update );
         
     };
         
@@ -504,9 +507,6 @@ define('Renderer/c3DEngine',[
         dummy.updateMatrixWorld();          
     };
 
-    return function(scene){
-        instance3DEngine = instance3DEngine || new c3DEngine(scene);
-        return instance3DEngine;
-    };    
+    return c3DEngine;
 
 });

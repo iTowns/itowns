@@ -21,26 +21,51 @@ define('Scene/Scene',[
     'Scene/Quadtree',
     'Scene/Layer',
     'Core/Geographic/CoordCarto',
-    'Core/System/Capabilities'], function(c3DEngine,Globe,ManagerCommands,BrowseTree,NodeProcess,Quadtree,Layer,CoordCarto,Capabilities){
+    'Core/System/Capabilities'], function(
+        c3DEngine,
+        Globe,
+        ManagerCommands,
+        BrowseTree,
+        NodeProcess,
+        Quadtree,
+        Layer,
+        CoordCarto,
+        Capabilities){
  
-    var instanceScene = null;
-
     function Scene(){
         //Constructor        
-        if(instanceScene !== null){
-            throw new Error("Cannot instantiate more than one Scene");
+        if(Scene.prototype._instance){
+            return Scene.prototype._instance;
         }         
+        
+        Scene.prototype._instance = this;
+
+        var position    = globe.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(48.88,2.3465,2000000));        
+
         this.layers          = [];            
         this.cameras        = null;        
         this.selectNodes    = null;      
-        this.managerCommand = ManagerCommands();
-        this.gfxEngine      = c3DEngine();                       
+        this.managerCommand = new ManagerCommands(this);
+        this.gfxEngine      = new c3DEngine(this, position);                       
         this.browserScene   = new BrowseTree(this);
         this.cap            = new Capabilities();
 
+        var globe = new Globe(); 
+        this.add(globe);
+        
+        //var position    = globe.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(2.33,48.87,25000000));        
+        //
+
+        //var position    = globe.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(2.33,,25000000));
+        //var position    = globe.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(48.7,2.33,25000000));        
+
+        //var target      = globe.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(2.33,48.87,0));
+        //var position    = globe.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(0,48.87,25000000));
+                       
+        this.browserScene.addNodeProcess(new NodeProcess(this.currentCamera().camera3D,globe.size));
+        this.gfxEngine.update();
     }
 
-    Scene.prototype.constructor = Scene;
     /**
     */
     Scene.prototype.updateCommand = function(){
@@ -63,34 +88,6 @@ define('Scene/Scene',[
     Scene.prototype.updateCamera = function()
     {
         this.browserScene.NodeProcess().updateCamera(this.gfxEngine.camera);
-    };
-    
-    /**
-     * @documentation: initialisation scene 
-     * @returns {undefined}
-     */
-    Scene.prototype.init = function()
-    {                    
-        this.managerCommand.init(this);
-        var globe = new Globe(); 
-        this.add(globe);
-        
-
-        
-        //var position    = globe.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(2.33,48.87,25000000));        
-        //
-        var position    = globe.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(48.88,2.3465,2000000));        
-
-        //var position    = globe.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(2.33,,25000000));
-        //var position    = globe.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(48.7,2.33,25000000));        
-
-        //var target      = globe.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(2.33,48.87,0));
-        //var position    = globe.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(0,48.87,25000000));
-                       
-        this.gfxEngine.init(this,position);
-        this.browserScene.addNodeProcess(new NodeProcess(this.currentCamera().camera3D,globe.size));
-        this.gfxEngine.update();
-                
     };
     
     Scene.prototype.size = function()
@@ -238,10 +235,7 @@ define('Scene/Scene',[
 
     };
 
-    return function(){
-        instanceScene = instanceScene || new Scene();
-        return instanceScene;
-    };
+    return Scene;
 
 });
 
