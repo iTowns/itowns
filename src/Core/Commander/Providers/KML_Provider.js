@@ -136,7 +136,7 @@ define('Core/Commander/Providers/KML_Provider',[
                     {
 
                         var url_kmz = url + NetworkLink[i].getElementsByTagName("href")[0].childNodes[0].nodeValue.replace("../../", "");
-                        //var url_kmz = "http://localhost:8383/itownsV1/kmz/BT_000092.kmz";
+                        //url_kmz = "http://localhost:8383/kmz/BT_000092.kmz";
 
                         if(this.cache[url_kmz])
                         {
