@@ -33,23 +33,23 @@ define('Renderer/ThreeExtented/KMZLoader',
     KMZLoader.prototype.constructor = KMZLoader;
     
     KMZLoader.prototype.load = function(url){
- 
-                              
+
+                
             var deferred = when.defer();
 
             var xhr = new XMLHttpRequest();
 
-            xhr.open("GET", url,true);                
-
+            xhr.open("GET", url,true);
+            
             xhr.responseType = "arraybuffer";
 
             xhr.crossOrigin  = '';
             
             var scopeLoader = this.colladaLoader;
-
+           
             xhr.onload = function () 
             {
-                
+                    
                     var zip = new JSZip( this.response );
                     var collada = undefined;
                     var coordCarto = undefined;
@@ -63,11 +63,6 @@ define('Renderer/ThreeExtented/KMZLoader',
                             var parser = new DOMParser();
                             var doc = parser.parseFromString(zip.file( name ).asText(), "text/xml");
                             
-                            /*var parser2 = new DOMParser();
-                            var doc2 = parser2.parseFromString(zip.file( 'C:/Users/adminloc/Downloads/53_52.kmz' ).asText(), "text/xml");
-                            console.log(doc2);*/
-       
-                            
                             var longitude = Number(doc.getElementsByTagName("longitude")[0].childNodes[0].nodeValue);
                             var latitude = Number(doc.getElementsByTagName("latitude")[0].childNodes[0].nodeValue);
                             var altitude = Number(doc.getElementsByTagName("altitude")[0].childNodes[0].nodeValue);
@@ -78,7 +73,7 @@ define('Renderer/ThreeExtented/KMZLoader',
                     }
                                     
                     collada.coorCarto = coordCarto;
-                    
+                   
                     deferred.resolve(collada);
                      
             };
