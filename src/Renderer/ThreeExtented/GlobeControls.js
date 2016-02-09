@@ -64,6 +64,9 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
         this.theta  = null;
         this.phi    = null;
         
+        this.localPhi = 0;
+        this.localTheta = 0;
+        
         this.pointClickOnScreen = new THREE.Vector2();
         var pickOnGlobe       = new THREE.Vector3();
         var rayonPointGlobe   = 6378137;
@@ -80,13 +83,15 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
 	this.noKeys = false;
 
 	// The four arrow keys
-	this.keys = { LEFT: 37, UP: 38, RIGHT: 39, BOTTOM: 40, SPACE:32,CTRL:17};
+	this.keys = { LEFT: 37, UP: 38, RIGHT: 39, BOTTOM: 40, SPACE:32, CTRL:17, SHIFT:16};
 
 	// Mouse buttons
 	this.mouseButtons = { ORBIT: THREE.MOUSE.LEFT, ZOOM: THREE.MOUSE.MIDDLE, PAN: THREE.MOUSE.RIGHT };
         
+        this.globeTargetX = new THREE.Vector3(1000,1000,1000);
         
         this.keyCtrl = false;
+        this.keyShift = false;
 	////////////
 	// internals
         
@@ -122,7 +127,7 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
 	var lastPosition = new THREE.Vector3();
 	var lastQuaternion = new THREE.Quaternion();
 
-	var STATE = { NONE : -1, ROTATE : 0, DOLLY : 1, PAN : 2, TOUCH_ROTATE : 3, TOUCH_DOLLY : 4, TOUCH_PAN : 5,MOVE_GLOBE : 6 };
+	var STATE = { NONE : -1, ROTATE : 0, DOLLY : 1, PAN : 2, TOUCH_ROTATE : 3, TOUCH_DOLLY : 4, TOUCH_PAN : 5,MOVE_GLOBE : 6, ROTATEONITSELF : 7 };
 
 	var state = STATE.NONE;
   
@@ -349,6 +354,7 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
                 
             }
         };
+        
         this.rot = function (point,lscale)         
         {
             
@@ -431,15 +437,45 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
                 this.rot(offGT,1);
                 this.object.position.copy(offset);            
             }
-            else
-            {
+            else if(state !== STATE.ROTATEONITSELF)  
+            { 
                 this.object.position.copy( this.globeTarget.localToWorld(offset.clone())); 
                 
             }
                 
-            
-            this.object.lookAt( offGT );
-            
+            if(state === STATE.ROTATEONITSELF)  {
+             
+             
+                this.localPhi += phiDelta;
+                this.localTheta += thetaDelta;
+                
+                var cameraPos = this.object.position;
+      
+                var normal = cameraPos.clone().normalize();
+                var quaternion  = new THREE.Quaternion();
+                quaternion.setFromAxisAngle( new THREE.Vector3(1, 0 ,0 ), Math.PI/2 );
+
+                var child = new THREE.Object3D();
+                var localTarget = new THREE.Vector3().addVectors ( cameraPos.clone(), normal );
+                child.lookAt(localTarget);
+                child.quaternion.multiply(quaternion );                
+                child.updateMatrix();
+
+                var quaternionTHETA = new THREE.Quaternion();
+                quaternionTHETA.setFromAxisAngle( new THREE.Vector3( 0, 1, 0 ), this.localTheta );
+                child.quaternion.multiply(quaternionTHETA);
+                
+                var quaternionPHI = new THREE.Quaternion();
+                quaternionPHI.setFromAxisAngle( new THREE.Vector3( 1, 0, 0 ), this.localPhi );
+                child.quaternion.multiply(quaternionPHI);
+  
+                var rotationALL = new THREE.Euler().setFromQuaternion( child.quaternion);//, eulerOrder ); 
+                
+                this.object.rotation.set(rotationALL.x,rotationALL.y,rotationALL.z);
+                
+            }else
+                 this.object.lookAt( offGT );   // Usual CASE (not rotating around camera axe)
+
             thetaDelta = 0;
             phiDelta = 0;
             scale = 1;
@@ -513,8 +549,11 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
 
                         if(scope.keyCtrl)
                         {
-                            ;
                             state = STATE.ROTATE;  
+                        }else
+                            if(scope.keyShift)
+                        {
+                            state = STATE.ROTATEONITSELF;  
                         }
                         else{                                                        
                             computeTarget(scope.engine.picking());
@@ -595,7 +634,18 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
 
 			rotateStart.copy( rotateEnd );
 
-		} else if ( state === STATE.DOLLY ) {
+		} else if ( state === STATE.ROTATEONITSELF ) {   
+                    
+                    if ( scope.noRotate === true ) return;
+                   
+                    rotateEnd.set( event.clientX, event.clientY );
+		    rotateDelta.subVectors( rotateEnd, rotateStart );
+                    
+                    scope.rotateLeft( 2 * Math.PI * rotateDelta.x / element.clientWidth * scope.rotateSpeed  );                                                
+                    scope.rotateUp( 2 * Math.PI * rotateDelta.y / element.clientHeight * scope.rotateSpeed );
+                    rotateStart.copy( rotateEnd );       
+                    
+                }else if ( state === STATE.DOLLY ) {
 
 			if ( scope.noZoom === true ) return;
 
@@ -650,9 +700,6 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
                                // target.updateMatrixWorld();
                                 
                                // console.log(target.worldToLocal(scope.cloneObject.position.clone()));
-                               
-                               
-                                // Dans le repère monde
                                 
                                 scope.pickOnSphere = scope.intersectSphere(ray);
                                 
@@ -666,27 +713,7 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
                                
                                 phiDelta   =  (a.y - b.y);
                                 thetaDelta =  (a.x - b.x)/(Math.cos(Math.PI * 0.5 - c.y));
-                                // Fin de la procédure du repère monde
-                                
-                                // Dans le repère monde
-                                /*
-                                scope.globeTarget.worldToLocal()
-                                
-                                ray.origin
-                                
-                                scope.pickOnSphere = scope.intersectSphere(ray);
-                                
-                                var centerGlobeCam = new THREE.Vector3().applyMatrix4(scope.cloneObject.matrixWorldInverse);                                   
-                                var pickOnGlobeCam = pickOnGlobe.clone().applyMatrix4(scope.cloneObject.matrixWorldInverse).sub(centerGlobeCam);
-                                var pickOnSpherCam = scope.pickOnSphere.clone().applyMatrix4(scope.cloneObject.matrixWorldInverse).sub(centerGlobeCam);
-                                
-                                var a  = scope.toSpherical(pickOnGlobeCam);
-                                var b  = scope.toSpherical(pickOnSpherCam);                                
-                                var c  = scope.toSpherical(pickOnGlobe);
-                               
-                                phiDelta   =  (a.y - b.y);
-                                thetaDelta =  (a.x - b.x)/(Math.cos(Math.PI * 0.5 - c.y));
-                                */
+
                             }
                 }
 
@@ -754,7 +781,15 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
                               
             }
             
+            if(scope.keyShift)   
+            {
+                computeVectorUp();
+                rotateTarget();
+                              
+            }
+            
             scope.keyCtrl = false;  
+            scope.keyShift = false;
         }
 
 	function onKeyDown( event ) {
@@ -762,6 +797,7 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
 
 		if ( scope.enabled === false || scope.noKeys === true || scope.noPan === true ) return;
                 scope.keyCtrl = false;
+                scope.keyShift = false;
                 
 		switch ( event.keyCode ) {
 
@@ -792,6 +828,10 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
                         case scope.keys.CTRL:       
                                 computeVectorUp();
                                 scope.keyCtrl = true;
+                                break;
+                        case scope.keys.SHIFT:       
+                                computeVectorUp();
+                                scope.keyShift = true;
                                 break;
 
 		}
@@ -929,6 +969,7 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
 		scope.dispatchEvent( endEvent );
 		state = STATE.NONE;                
                 scope.keyCtrl = false;
+                scope.keyShift = false;
 
 	}
         
@@ -947,12 +988,12 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
             scope.globeTarget.quaternion.multiply(new THREE.Quaternion().setFromAxisAngle( new THREE.Vector3( 0, 1, 0 ), angle ));            
             scope.globeTarget.updateMatrixWorld();
             
-            
+            /*
             position = scope.globeTarget.worldToLocal(scope.object.position.clone());                                
             angle    = Math.atan2(position.z,position.y); 
             
             scope.globeTarget.quaternion.multiply(new THREE.Quaternion().setFromAxisAngle( new THREE.Vector3( 1, 0, 0 ), angle  - Math.PI * 0.5));   
-            
+            */
             //TODO revient à prendre le repère caméra.... à tester
             
             
@@ -994,8 +1035,8 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
         computeTarget(this.intersectSphere(ray));        
         this.engine.scene3D.add(this.globeTarget);
         
-        //var axisHelper = new THREE.AxisHelper( 500000 );
-        //this.globeTarget.add( axisHelper );
+     //   var axisHelper = new THREE.AxisHelper( 500000 );
+     //  this.globeTarget.add( axisHelper );
         
 };
 
