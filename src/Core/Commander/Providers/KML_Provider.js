@@ -49,10 +49,12 @@ define('Core/Commander/Providers/KML_Provider',[
     {   
                
         return this.getUrlCollada(longitude,latitude).then(function(result){
-            
+          
+                if(result === undefined)
+                    return undefined;
+                                
                 var child       = result.scene.children[0];               
                 var coorCarto   = result.coorCarto;
-
                 var position    = this.ellipsoid.cartographicToCartesian(coorCarto);   
                 coorCarto.altitude = 0;        
                 var normal      = this.ellipsoid.geodeticSurfaceNormalCartographic(coorCarto);
@@ -69,20 +71,24 @@ define('Core/Commander/Providers/KML_Provider',[
                                                 
                 var changeMaterial = function(object3D)
                 {
-                    if(object3D.material)
+                    
+                    if(object3D.material instanceof THREE.MultiMaterial)
                     {
                         object3D.material = new BasicMaterial(object3D.material.materials[0].color);
                     }
+                    else if(object3D.material)
+                        object3D.material = new BasicMaterial(object3D.material.color);
                 };
+                
 
-                child.traverse(changeMaterial);
-          
+                child.traverse(changeMaterial);                          
+                
                 return child;
 
         }.bind(this)); 
        
     };
-       
+    
     KML_Provider.prototype.parseKML = function(urlFile, longitude, latitude)
     {  
         
@@ -106,13 +112,13 @@ define('Core/Commander/Providers/KML_Provider',[
             for (i=0; i<NetworkLink.length; i++){
                 
                 var coords = [];
-                coords[i,1] = NetworkLink[i].getElementsByTagName("north")[0].childNodes[0].nodeValue;
-                coords[i,2] = NetworkLink[i].getElementsByTagName("south")[0].childNodes[0].nodeValue;
-                coords[i,3] = NetworkLink[i].getElementsByTagName("east")[0].childNodes[0].nodeValue;
-                coords[i,4] = NetworkLink[i].getElementsByTagName("west")[0].childNodes[0].nodeValue;
-                //console.log(coords[i,1], coords[i,2], coords[i,3], coords[i,4]);
+                coords[0] = NetworkLink[i].getElementsByTagName("north")[0].childNodes[0].nodeValue;
+                coords[1] = NetworkLink[i].getElementsByTagName("south")[0].childNodes[0].nodeValue;
+                coords[2] = NetworkLink[i].getElementsByTagName("east")[0].childNodes[0].nodeValue;
+                coords[3] = NetworkLink[i].getElementsByTagName("west")[0].childNodes[0].nodeValue;
+                //console.log(coords[1], coords[2], coords[3], coords[4]);
                 
-                if (north < coords[i,1] && south > coords[i,2]  && east < coords[i,3] && west > coords[i,4]){
+                if (north < coords[0] && south > coords[1]  && east < coords[2] && west > coords[3]){
 
                     var href = [];
                     href[i] = url + "TREE/" + NetworkLink[i].getElementsByTagName("href")[0].childNodes[0].nodeValue.replace("../", "");
@@ -129,22 +135,22 @@ define('Core/Commander/Providers/KML_Provider',[
                     else if (href[i].toLowerCase().substr( - 4 ) ===  '.kmz')
                     {
 
-                        var url_kmz = [];
-                        url_kmz[i] = url + NetworkLink[i].getElementsByTagName("href")[0].childNodes[0].nodeValue.replace("../../", "");
-                        //console.log(url_kmz[i]);
+                        var url_kmz = url + NetworkLink[i].getElementsByTagName("href")[0].childNodes[0].nodeValue.replace("../../", "");
+                        //url_kmz = "http://localhost:8383/kmz/BT_000092.kmz";
 
-                        if(this.cache[url_kmz[i]])
+                        if(this.cache[url_kmz])
                         {
                             //console.log('get from cache');
-                            return when(this.cache[url_kmz[i]]);
+                            return when(this.cache[url_kmz]);
                         }
                         else
                         {                        
-                        return this.kmzLoader.load(url_kmz[i]).then(
+                        return this.kmzLoader.load(url_kmz).then(
                             function(result){
 
-                                this.cache[url_kmz[i]] = result;
-
+                               
+                                this.cache[url_kmz] = result;
+                                
                                 return result;
                             }.bind(this));
                         
@@ -176,8 +182,7 @@ define('Core/Commander/Providers/KML_Provider',[
               //  url_href_1[i] = 'http://wxs.ign.fr/' + key + '/vecteurtuile3d/BATI3D/' + kml_0[i].childNodes[0].nodeValue.replace("./", "");
                 url_href_1 = 'http://wxs.ign.fr/' + key + '/vecteurtuile3d/BATI3D/FXX/TREE/0/0_000_000.kml'; 
                 this.parseKML(url_href_1,longitude,latitude).then(function(result)
-                {
- 
+                {                    
                     deferred.resolve(result);
                     
                 });
