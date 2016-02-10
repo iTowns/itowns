@@ -449,9 +449,9 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
                                         
             this.object.position.copy(this.cameraDummy.localToWorld(new THREE.Vector3()));            
             this.object.lookAt(this.globeTarget.localToWorld(new THREE.Vector3()));
-            this.object.updateMatrixWorld(true);
-     
-                        
+                    
+            
+            //this.object.updateMatrixWorld(true);
                 
             if(state === STATE.ROTATEONITSELF)  {
              
@@ -484,9 +484,7 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
                 this.object.rotation.set(rotationALL.x,rotationALL.y,rotationALL.z);
                 
             }
-            //else
-              //   this.object.lookAt( offGT );   // Usual CASE (not rotating around camera axe)
-
+ 
             thetaDelta = 0;
             phiDelta = 0;
             scale = 1;
@@ -561,14 +559,13 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
                         if(scope.keyCtrl)
                         {
                             state = STATE.ROTATE;  
-                        }else
-                            if(scope.keyShift)
+                            
+                        }else if(scope.keyShift)
                         {
                             state = STATE.ROTATEONITSELF;  
                         }
-                        else{                                                        
-                            computeTarget(scope.engine.picking());
-                            scope.engine.renderScene(); // TODO debug to remove white screen, but why?                            
+                        else
+                        {                                                                              
                             state = STATE.MOVE_GLOBE;
                         }
                             
@@ -691,8 +688,7 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
 
 		}
                 else if ( state === STATE.MOVE_GLOBE ) {
-                    
-                    
+                                        
                             if(pickOnGlobe === undefined)
                             {
                                 thetaDelta = 0.0;
@@ -738,14 +734,12 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
 		scope.dispatchEvent( endEvent );
 		state = STATE.NONE;
                                
-                               
                 scope.update();
                 
                 computeTarget(scope.engine.picking());
                 rotateTarget();
                 scope.engine.renderScene(); // TODO debug to remove white screen, but why?                                  
-               
-                                                      
+                                                                     
 	}
 
 	function onMouseWheel( event ) {
@@ -1001,10 +995,10 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
             var angle    = Math.atan2(position.x,position.z);                                
 
             scope.globeTarget.quaternion.multiply(new THREE.Quaternion().setFromAxisAngle( new THREE.Vector3( 0, 1, 0 ), angle ));
-            scope.globeTarget.updateMatrixWorld();
+            //scope.globeTarget.updateMatrixWorld();
             scope.cameraDummy.position.copy(scope.globeTarget.worldToLocal(scope.object.position.clone()));            
             scope.cameraDummy.lookAt(new THREE.Vector3());
-            scope.cameraDummy.updateMatrixWorld();
+            //scope.cameraDummy.updateMatrixWorld();
             
         }
         
