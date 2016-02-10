@@ -45,15 +45,16 @@ define('Flat/FlatTileMesh',[
         this.absoluteCenter = new THREE.Vector3(bbox.center.x, bbox.center.y, 0);
        
         // TODO ??? 
-        this.centerSphere   = new THREE.Vector3().addVectors(this.geometry.boundingSphere.center, this.absoluteCenter);                       
+        this.centerSphere   = new THREE.Vector3().addVectors(this.geometry.boundingSphere.center, this.absoluteCenter);
         this.orthoNeed      = 0;
-        this.material       = new BasicMaterial(new THREE.Color(1,0,1));
+        this.material       = new BasicMaterial(new THREE.Color(0.8,0.8,Math.random()));
         this.dot            = 0;
         this.frustumCulled  = false;        
         this.maxChildren    = 4;
 
         // /!\ TEMP FOR TEST
         this.loaded = true;
+        this.wait = false;
         
         var  groupTerrain   = [14,11,7,3];        
         this.levelTerrain   = this.level;
@@ -216,8 +217,8 @@ define('Flat/FlatTileMesh',[
     FlatTileMesh.prototype.checkOrtho = function()
     { 
 
-      
-        if(this.orthoNeed+1 === this.material.nbTextures || this.level < 2) 
+        // TODO : restore condition
+        //if(this.orthoNeed+1 === this.material.nbTextures || this.level < 2) 
 
         {                          
             

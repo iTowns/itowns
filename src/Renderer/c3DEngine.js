@@ -208,6 +208,7 @@ define('Renderer/c3DEngine',[
         this.camera.camera3D.far  = this.size * 10;
         this.camera.camera3D.updateProjectionMatrix();        
         this.camera.camera3D.updateMatrixWorld ( true );
+
         
         if(this.debug)
         {
@@ -233,6 +234,11 @@ define('Renderer/c3DEngine',[
         this.camera.camera3D.updateProjectionMatrix();        
         this.initRenderer();        
         this.initControls(this.size);
+
+        // test
+        this.camera.setPosition(new THREE.Vector3(0,0,1000));
+        this.camera.camera3D.lookAt(new THREE.Vector3(this.camera.position.x,this.camera.position.y,0));
+        // /test
         
         //this.controls.target        = target;        
         window.addEventListener( 'resize', this.onWindowResize, false );
@@ -333,8 +339,8 @@ define('Renderer/c3DEngine',[
 
     c3DEngine.prototype.initControls = function(size){
         
-        //this.controls   = new THREE.OrbitControls( this.camera.camera3D,this.renderer.domElement );        
-        this.controls   = new THREE.GlobeControls( this.camera.camera3D,this.renderer.domElement,this );
+        this.controls   = new THREE.OrbitControls( this.camera.camera3D,this.renderer.domElement );        
+        //this.controls   = new THREE.GlobeControls( this.camera.camera3D,this.renderer.domElement,this );
         
         this.controls.target        = new THREE.Vector3(0,0,0);
         this.controls.damping       = 0.1;

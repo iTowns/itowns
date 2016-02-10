@@ -55,7 +55,7 @@ define('Flat/FlatTileGeometry',[
         var thetaStart      = bbox.minCarto.latitude ;
         var thetaLength     = bbox.dimension.y;
         
-        this.center  = bbox.center;
+        this.center  = new THREE.Vector3();
         
         var maxHeight = 10.; // /!\ HACK
         var width = bbox.maxLo - bbox.minLo;
@@ -176,9 +176,6 @@ define('Flat/FlatTileGeometry',[
         var r       = Math.max(rmax,Math.pow(rmax,1/zoom)) ;
         
         r =  isFinite(r) ? r : rmax;
-
-        // /!\ temp : no skirt
-        skirt = [];
         
         for ( i = 0; i < skirt.length ; i ++ ) 
         {

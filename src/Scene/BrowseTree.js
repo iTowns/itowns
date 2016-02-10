@@ -55,18 +55,18 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Flat/FlatTileMesh'
                  
             if(node.loaded && this.nodeProcess.frustumCullingOBB(node,camera))
             {
-                if(true || this.nodeProcess.horizonCulling(node,camera))
+                if(node instanceof FlatTileMesh || this.nodeProcess.horizonCulling(node,camera))
                 {
                     
                     if(node.parent.material !== undefined && node.parent.material.visible === true)
                     
                         return node.setVisibility(false);
                                         
-                    var sse = this.nodeProcess.SSE(node,camera);                                                        
+                    var sse = this.nodeProcess.SSE(node,camera);
 
-                    if(optional && sse && node.material.visible === true && node.wait === false)
-                                                       
+                    if(optional && sse && node.material.visible === true && node.wait === false) {
                         this.tree.subdivide(node);
+                    }
                                                 
                     else if(!sse && node.level >= 2 && node.material.visible === false && node.wait === false)
                     {

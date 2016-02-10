@@ -11,11 +11,10 @@ define('Flat/Plane',[
     'Scene/SchemeTile',
     'Core/Math/MathExtented',
     'Flat/FlatTileMesh',
-    'Flat/Atmosphere',
     'Core/System/Capabilities',
     'Core/Geographic/CoordCarto',
     'Renderer/BasicMaterial',
-    'THREE'], function(defaultValue,Layer,Quadtree,SchemeTile,MathExt,FlatTileMesh,Atmosphere,Capabilities,CoordCarto,BasicMaterial,THREE){
+    'THREE'], function(defaultValue,Layer,Quadtree,SchemeTile,MathExt,FlatTileMesh,Capabilities,CoordCarto,BasicMaterial,THREE){
 
     /*
      * Ctor

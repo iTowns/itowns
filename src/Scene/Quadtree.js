@@ -90,7 +90,8 @@ define('Scene/Quadtree',[
         if(!this.update(node))
             return;
         
-        node.wait   = true;
+        // TODO: restore
+        //node.wait   = true;
         var quad    = new Quad(node.bbox);      
         this.createTile(quad.northWest,node);
         this.createTile(quad.northEast,node);
@@ -109,7 +110,7 @@ define('Scene/Quadtree',[
 
         //TODO debug freeze 
 //        if(node.level > 17  || (node.wait === true && node.childrenCount() === 4))
-        if(node.level > 17  || node.wait === true)
+        if(node.level > /*17*/7  || node.wait === true)
             return false;
 
         if(node.childrenCount() > 0 &&  node.wait === false )                
