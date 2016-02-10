@@ -64,9 +64,6 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
         this.theta  = null;
         this.phi    = null;
         
-        this.mainAxis         = new THREE.Object3D();
-        
-        this.cameraDummy          = new THREE.Object3D();
         this.localPhi = 0;
         this.localTheta = 0;
         
@@ -358,7 +355,6 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
             }
         };
         
-        
         this.rot = function (point,lscale)         
         {
             
@@ -413,14 +409,15 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
                 return;
             }
             
+            var position = ( state === STATE.MOVE_GLOBE ) ? this.cloneObject.position : this.object.position;                    
+            
             if(state === STATE.MOVE_GLOBE)
             {                
-                
-                offset.copy( this.cloneTarget.position.clone() );
+                offset.copy( position );
             }
             else
             {                
-                offset.copy(this.cameraDummy.position);
+                offset.copy(this.globeTarget.worldToLocal(position.clone()));
             }
           
             //if(state !== STATE.MOVE_GLOBE)
@@ -433,25 +430,18 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
              //   offset.applyQuaternion( quatInverse );   
             
             
-            //var offGT = this.globeTarget.position.clone();   
+            var offGT = this.globeTarget.position.clone();   
              
             if(state === STATE.MOVE_GLOBE)                
             {           
-
-                this.mainAxis.lookAt(this.cloneMain.localToWorld(offset));
-                
+                this.rot(offGT,1);
+                this.object.position.copy(offset);            
             }
             else if(state !== STATE.ROTATEONITSELF)  
             { 
-                this.cameraDummy.position.copy( offset.clone());
-                this.cameraDummy.lookAt(new THREE.Vector3());
+                this.object.position.copy( this.globeTarget.localToWorld(offset.clone())); 
+                
             }
-                                        
-            this.object.position.copy(this.cameraDummy.localToWorld(new THREE.Vector3()));            
-            this.object.lookAt(this.globeTarget.localToWorld(new THREE.Vector3()));
-                    
-            
-            //this.object.updateMatrixWorld(true);
                 
             if(state === STATE.ROTATEONITSELF)  {
              
@@ -483,8 +473,9 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
                 
                 this.object.rotation.set(rotationALL.x,rotationALL.y,rotationALL.z);
                 
-            }
- 
+            }else
+                 this.object.lookAt( offGT );   // Usual CASE (not rotating around camera axe)
+
             thetaDelta = 0;
             phiDelta = 0;
             scale = 1;
@@ -559,13 +550,14 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
                         if(scope.keyCtrl)
                         {
                             state = STATE.ROTATE;  
-                            
-                        }else if(scope.keyShift)
+                        }else
+                            if(scope.keyShift)
                         {
                             state = STATE.ROTATEONITSELF;  
                         }
-                        else
-                        {                                                                              
+                        else{                                                        
+                            computeTarget(scope.engine.picking());
+                            scope.engine.renderScene(); // TODO debug to remove white screen, but why?                            
                             state = STATE.MOVE_GLOBE;
                         }
                             
@@ -576,10 +568,7 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
                             scope.setPointGlobe(undefined); 
                             scope.pointClickOnScreen.x = event.clientX;
                             scope.pointClickOnScreen.y = event.clientY;
-                            scope.cloneObject          = scope.object.clone();        
-                            scope.cloneTarget          = scope.globeTarget.clone();
-                            scope.cloneMain            = scope.mainAxis.clone();
-                            
+                            scope.cloneObject          = scope.object.clone();                            
                         }
                         
 
@@ -688,7 +677,8 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
 
 		}
                 else if ( state === STATE.MOVE_GLOBE ) {
-                                        
+                    
+                    
                             if(pickOnGlobe === undefined)
                             {
                                 thetaDelta = 0.0;
@@ -703,21 +693,18 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
 
                                 raycaster.setFromCamera( mouse, scope.cloneObject);
                                 var ray = raycaster.ray;
- 
-                                ray.origin = scope.cloneMain.worldToLocal(ray.origin);                                
-                                ray.direction = scope.cloneMain.worldToLocal(ray.direction);
-                    
+                                
                                 scope.pickOnSphere = scope.intersectSphere(ray);
-                
-                                var pickOnGlobeCam = scope.cloneMain.worldToLocal(pickOnGlobe.clone());
-                                var pickOnSpherCam = scope.pickOnSphere.clone();
 
+                                var pickOnGlobeCam = pickOnGlobe.clone();
+                                var pickOnSpherCam = scope.pickOnSphere.clone();
+                                
                                 var a  = scope.toSpherical(pickOnGlobeCam);
                                 var b  = scope.toSpherical(pickOnSpherCam);                                
-
+                               
                                 thetaDelta =  (a.x - b.x);
                                 phiDelta   =  (a.y - b.y);
-                                
+
                             }
                 }
 
@@ -733,13 +720,10 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
 		document.removeEventListener( 'mouseup', onMouseUp, false );
 		scope.dispatchEvent( endEvent );
 		state = STATE.NONE;
-                               
-                scope.update();
-                
+                                
                 computeTarget(scope.engine.picking());
-                rotateTarget();
-                scope.engine.renderScene(); // TODO debug to remove white screen, but why?                                  
-                                                                     
+                scope.engine.renderScene(); // TODO debug to remove white screen, but why?                
+                                
 	}
 
 	function onMouseWheel( event ) {
@@ -982,42 +966,37 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
         
         function computeVectorUp() 
         {
-            //var vectorUp = scope.globeTarget.position.clone().normalize();            
-            var vectorUp = scope.globeTarget.localToWorld(new THREE.Vector3(0,1,0));            
+            var vectorUp = scope.globeTarget.position.clone().normalize();            
             scope.object.up.copy(vectorUp);
         
         }
         
         function rotateTarget()
-        {   
-            
+        {                
             var position = scope.globeTarget.worldToLocal(scope.object.position.clone());                                
             var angle    = Math.atan2(position.x,position.z);                                
-
-            scope.globeTarget.quaternion.multiply(new THREE.Quaternion().setFromAxisAngle( new THREE.Vector3( 0, 1, 0 ), angle ));
-            //scope.globeTarget.updateMatrixWorld();
-            scope.cameraDummy.position.copy(scope.globeTarget.worldToLocal(scope.object.position.clone()));            
-            scope.cameraDummy.lookAt(new THREE.Vector3());
-            //scope.cameraDummy.updateMatrixWorld();
+            
+            scope.globeTarget.quaternion.multiply(new THREE.Quaternion().setFromAxisAngle( new THREE.Vector3( 0, 1, 0 ), angle ));            
+            scope.globeTarget.updateMatrixWorld();
+            
+            /*
+            position = scope.globeTarget.worldToLocal(scope.object.position.clone());                                
+            angle    = Math.atan2(position.z,position.y); 
+            
+            scope.globeTarget.quaternion.multiply(new THREE.Quaternion().setFromAxisAngle( new THREE.Vector3( 1, 0, 0 ), angle  - Math.PI * 0.5));   
+            */
+            //TODO revient à prendre le repère caméra.... à tester
+            
             
         }
         
         function computeTarget(position) {
             
-            
-            scope.mainAxis.lookAt(position); 
-            //scope.mainAxis.updateMatrixWorld();
-            
-            //scope.globeTarget.lookAt(new THREE.Vector3(  ));                        
-            //scope.globeTarget.quaternion.multiply( new THREE.Quaternion().setFromAxisAngle( new THREE.Vector3( 1, 0, 0 ), Math.PI / 2 ));
-            scope.globeTarget.position.z = position.length();
-            
-//            scope.globeTarget.position.copy(position);            
-//            scope.globeTarget.lookAt(position.clone().multiplyScalar( 2 ));                        
-//            scope.globeTarget.quaternion.multiply( new THREE.Quaternion().setFromAxisAngle( new THREE.Vector3( 1, 0, 0 ), Math.PI / 2 ));
-//            scope.globeTarget.updateMatrixWorld();
-            
-            //rotateTarget();
+            scope.globeTarget.position.copy(position);            
+            scope.globeTarget.lookAt(position.clone().multiplyScalar( 2 ));                        
+            scope.globeTarget.quaternion.multiply( new THREE.Quaternion().setFromAxisAngle( new THREE.Vector3( 1, 0, 0 ), Math.PI / 2 ));
+            scope.globeTarget.updateMatrixWorld();
+            rotateTarget();
             /*
             quat = new THREE.Quaternion().setFromUnitVectors( scope.object.up,vectorUp );
             quatInverse = quat.clone().inverse();            
@@ -1038,37 +1017,18 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
 
 	// force an update at start
         
-        this.globeTarget = new THREE.Object3D();        
-	//this.update();    
+        this.globeTarget = new THREE.Object3D();
         
+
+	this.update();    
         var ray = new THREE.Ray(this.object.position,this.object.position.clone().normalize().negate());
     
-        var target = this.intersectSphere(ray);
+        computeTarget(this.intersectSphere(ray));        
+        this.engine.scene3D.add(this.globeTarget);
         
-        var distanceCamera = this.object.position.length();
-        this.engine.scene3D.add(this.mainAxis);
+     //   var axisHelper = new THREE.AxisHelper( 500000 );
+     //  this.globeTarget.add( axisHelper );
         
-        this.mainAxis.lookAt(target);        
-        this.mainAxis.add(this.globeTarget);  
-        
-        this.globeTarget.add(this.cameraDummy);
-        
-        this.globeTarget.position.z    = target.length();          
-
-        this.globeTarget.quaternion.multiply( new THREE.Quaternion().setFromAxisAngle( new THREE.Vector3( 1, 0, 0 ), Math.PI / 2 ));
-        
-        this.cameraDummy.position.y = Math.abs(distanceCamera - target.length());                              
-        this.cameraDummy.lookAt(new THREE.Vector3());
-        
-        this.cloneTarget = this.globeTarget.clone();
-        this.cloneMain   = this.mainAxis.clone();
-                  
-        //this.globeTarget.add( new THREE.AxisHelper( 1000000 ) );
-        //this.mainAxis.add( new THREE.AxisHelper( 10000000 ) );
-        //this.cameraDummy.add(new THREE.AxisHelper( 1000000 ));
-                        
-        this.update();                
-        this.engine.renderScene();
 };
 
 THREE.GlobeControls.prototype = Object.create( THREE.EventDispatcher.prototype );
