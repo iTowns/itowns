@@ -121,6 +121,8 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
 	var phi     = null;
 	var phiDelta = 0;
 	var thetaDelta = 0;
+        var quatGlobe  = new THREE.Quaternion();                                
+        
 	var scale = 1;
 	var pan = new THREE.Vector3();
  
@@ -188,8 +190,8 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
       
         this.toSpherical = function ( point )   
         {        
-            var pTheta  = Math.atan2( point.x, point.z );
-            var pPhi    = Math.atan2( Math.sqrt( point.x * point.x + point.z * point.z ), point.y );
+            var pTheta  =  Math.atan2( point.x, point.z );
+            var pPhi    =  Math.atan2( Math.sqrt( point.x * point.x + point.z * point.z ),point.y  );
 
             return new THREE.Vector2(pTheta,pPhi);
             
@@ -372,7 +374,7 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
                     this.rotateLeft( getAutoRotationAngle() );
 
             }
-  
+            
             theta += thetaDelta;
             phi += phiDelta;
 
@@ -381,11 +383,18 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
 
             // restrict phi to be between desired limits
             phi = Math.max( this.minPolarAngle, Math.min( this.maxPolarAngle, phi ) );
-
+            var radius = point.length() * lscale;
+//            
+//            var lim     = 6370000;
+//            var lim2    = 3000000;
+//                                    
+//            if(radius> lim)
+//                phi     *= Math.max(1 - (radius - lim)/lim2,0);                
+                
             // restrict phi to be betwee EPS and PI-EPS
             phi = Math.max( EPS, Math.min( Math.PI - EPS, phi ) );
 
-            var radius = point.length() * lscale;
+            
 
             // restrict radius to be between desired limits
             radius = Math.max( this.minDistance, Math.min( this.maxDistance, radius ) );
@@ -396,7 +405,6 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
             point.x = radius * Math.sin( phi ) * Math.sin( theta );
             point.y = radius * Math.cos( phi );
             point.z = radius * Math.sin( phi ) * Math.cos( theta );
-
            
         };
         
@@ -419,32 +427,30 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
             {                
                 offset.copy(this.globeTarget.worldToLocal(position.clone()));
             }
-          
-            //if(state !== STATE.MOVE_GLOBE)
-           //     offset.applyQuaternion( quat );
-            
-            this.rot(offset,scale);
-            // rotate point back to "camera-up-vector-is-up" space
-            
-            //if(state !== STATE.MOVE_GLOBE)
-             //   offset.applyQuaternion( quatInverse );   
-            
             
             var offGT = this.globeTarget.position.clone();   
              
             if(state === STATE.MOVE_GLOBE)                
             {           
-                this.rot(offGT,1);
-                this.object.position.copy(offset);            
+                
+                offGT.applyQuaternion(quatGlobe);
+                this.object.position.copy(offset.applyQuaternion(quatGlobe));                  
+                //this.object.up.copy(this.object.position.clone().normalize()); 
+                
             }
             else if(state !== STATE.ROTATEONITSELF)  
-            { 
+            {            
+                
+                //offset.applyQuaternion( quat );            
+                this.rot(offset,scale);
+                // rotate point back to "camera-up-vector-is-up" space                
+                //offset.applyQuaternion( quatInverse );   
+                
                 this.object.position.copy( this.globeTarget.localToWorld(offset.clone())); 
                 
             }
                 
             if(state === STATE.ROTATEONITSELF)  {
-             
              
                 this.localPhi += phiDelta;
                 this.localTheta += thetaDelta;
@@ -469,12 +475,16 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
                 quaternionPHI.setFromAxisAngle( new THREE.Vector3( 1, 0, 0 ), this.localPhi );
                 child.quaternion.multiply(quaternionPHI);
   
-                var rotationALL = new THREE.Euler().setFromQuaternion( child.quaternion);//, eulerOrder ); 
-                
-                this.object.rotation.set(rotationALL.x,rotationALL.y,rotationALL.z);
+                this.object.quaternion.copy(child.quaternion);
                 
             }else
-                 this.object.lookAt( offGT );   // Usual CASE (not rotating around camera axe)
+            {
+                
+                
+                this.object.lookAt( offGT );   // Usual CASE (not rotating around camera axe)  
+                
+                
+            }
 
             thetaDelta = 0;
             phiDelta = 0;
@@ -691,20 +701,10 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
                                 mouse.x =   ( event.clientX / window.innerWidth )   * 2 - 1;
                                 mouse.y = - ( event.clientY / window.innerHeight )  * 2 + 1;	
 
-                                raycaster.setFromCamera( mouse, scope.cloneObject);
-                                var ray = raycaster.ray;
+                                raycaster.setFromCamera( mouse, scope.cloneObject);                                                            
                                 
-                                scope.pickOnSphere = scope.intersectSphere(ray);
-
-                                var pickOnGlobeCam = pickOnGlobe.clone();
-                                var pickOnSpherCam = scope.pickOnSphere.clone();
-                                
-                                var a  = scope.toSpherical(pickOnGlobeCam);
-                                var b  = scope.toSpherical(pickOnSpherCam);                                
+                                quatGlobe.setFromUnitVectors(scope.intersectSphere(raycaster.ray).normalize(), pickOnGlobe.clone().normalize());                                
                                
-                                thetaDelta =  (a.x - b.x);
-                                phiDelta   =  (a.y - b.y);
-
                             }
                 }
 
@@ -1019,6 +1019,8 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
         
         this.globeTarget = new THREE.Object3D();
         
+        thetaDelta = 0;
+        phiDelta = 0;
 
 	this.update();    
         var ray = new THREE.Ray(this.object.position,this.object.position.clone().normalize().negate());
