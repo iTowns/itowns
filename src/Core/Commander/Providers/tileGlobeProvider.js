@@ -131,7 +131,6 @@ define('Core/Commander/Providers/tileGlobeProvider',[
         }.bind(this)).then(function(tile)
         {
             
-//            if(false )
 //            if(tile.level  === 16  )
 //            {
 //                var longitude   = tile.bbox.center.x / Math.PI * 180 - 180;
@@ -141,8 +140,7 @@ define('Core/Commander/Providers/tileGlobeProvider',[
 //                    
 //                    
 //                    if(collada && tile.link.children.indexOf(collada) === -1)
-//                    {         
-//                        //console.log(collada);
+//                    {                                 
 //                        tile.link.add(collada);
 //                        tile.content = collada;
 //                    }

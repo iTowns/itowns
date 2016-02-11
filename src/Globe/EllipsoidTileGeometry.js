@@ -33,7 +33,7 @@ define('Globe/EllipsoidTileGeometry',[
         
         bbox = defaultValue(bbox,new BoundingBox());
 
-        var ellipsoid       = defaultValue(pellipsoid,new Ellipsoid(6378137, 6378137, 6356752.3142451793));         
+        var ellipsoid       = defaultValue(pellipsoid,new Ellipsoid(6378137, 6356752.3142451793,6378137));         
         
         var nSeg            = defaultValue(segment,32);       
         var nVertex         = (nSeg+1)*(nSeg+1) + 8 * (nSeg-1); // correct pour uniquement les vertex
