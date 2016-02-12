@@ -169,8 +169,7 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
         
         this.intersectSphere = function ( ray )   
         {
-            
-         
+                     
            var c    = new THREE.Vector3(); 
            var pc   = ray.closestPointToPoint(c);
            var r    = rayonPointGlobe;           
@@ -434,8 +433,10 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
             {           
                 
                 offGT.applyQuaternion(quatGlobe);
-                this.object.position.copy(offset.applyQuaternion(quatGlobe));                  
-                //this.object.up.copy(this.object.position.clone().normalize()); 
+                
+                this.moveTarget.copy(offGT);
+                this.object.position.copy(offset.applyQuaternion(quatGlobe));                                  
+                this.object.up.copy(offGT.clone().normalize());
                 
             }
             else if(state !== STATE.ROTATEONITSELF)  
@@ -446,8 +447,8 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
                 // rotate point back to "camera-up-vector-is-up" space                
                 //offset.applyQuaternion( quatInverse );   
                 
-                this.object.position.copy( this.globeTarget.localToWorld(offset.clone())); 
-                
+                this.object.position.copy( this.globeTarget.localToWorld(offset.clone()));                                 
+                    
             }
                 
             if(state === STATE.ROTATEONITSELF)  {
@@ -560,14 +561,12 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
                         if(scope.keyCtrl)
                         {
                             state = STATE.ROTATE;  
-                        }else
-                            if(scope.keyShift)
+                        }else if(scope.keyShift)
                         {
                             state = STATE.ROTATEONITSELF;  
                         }
                         else{                                                        
-                            computeTarget(scope.engine.picking());
-                            scope.engine.renderScene(); // TODO debug to remove white screen, but why?                            
+                            
                             state = STATE.MOVE_GLOBE;
                         }
                             
@@ -696,15 +695,23 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
                             }
                             else
                             {                                
-                                var mouse   = new THREE.Vector2();
-  
-                                mouse.x =   ( event.clientX / window.innerWidth )   * 2 - 1;
-                                mouse.y = - ( event.clientY / window.innerHeight )  * 2 + 1;	
-
-                                raycaster.setFromCamera( mouse, scope.cloneObject);                                                            
                                 
-                                quatGlobe.setFromUnitVectors(scope.intersectSphere(raycaster.ray).normalize(), pickOnGlobe.clone().normalize());                                
-                               
+                                if( scope.pointClickOnScreen.x !== event.clientX ||
+                                    scope.pointClickOnScreen.y !== event.clientY)
+                                {
+                                    var mouse   = new THREE.Vector2();
+
+                                    mouse.x =   ( event.clientX / window.innerWidth )   * 2 - 1;
+                                    mouse.y = - ( event.clientY / window.innerHeight )  * 2 + 1;	
+
+                                    raycaster.setFromCamera( mouse, scope.cloneObject);                                                            
+
+                                    var intersection = scope.intersectSphere(raycaster.ray);
+
+                                    quatGlobe.setFromUnitVectors(intersection.normalize(), pickOnGlobe.clone().normalize());
+                                }
+                                else
+                                    quatGlobe = new THREE.Quaternion();
                             }
                 }
 
@@ -719,10 +726,14 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
 		document.removeEventListener( 'mousemove', onMouseMove, false );
 		document.removeEventListener( 'mouseup', onMouseUp, false );
 		scope.dispatchEvent( endEvent );
+                
+                if(state === STATE.MOVE_GLOBE)
+                    computeTarget();
+                
 		state = STATE.NONE;
                                 
-                computeTarget(scope.engine.picking());
-                scope.engine.renderScene(); // TODO debug to remove white screen, but why?                
+                
+                //scope.engine.renderScene(); // TODO debug to remove white screen, but why?                
                                 
 	}
 
@@ -990,10 +1001,10 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
             
         }
         
-        function computeTarget(position) {
+        function computeTarget() {
             
-            scope.globeTarget.position.copy(position);            
-            scope.globeTarget.lookAt(position.clone().multiplyScalar( 2 ));                        
+            scope.globeTarget.position.copy(scope.moveTarget);            
+            scope.globeTarget.lookAt(scope.moveTarget.clone().multiplyScalar( 2 ));                        
             scope.globeTarget.quaternion.multiply( new THREE.Quaternion().setFromAxisAngle( new THREE.Vector3( 1, 0, 0 ), Math.PI / 2 ));
             scope.globeTarget.updateMatrixWorld();
             rotateTarget();
@@ -1018,18 +1029,20 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
 	// force an update at start
         
         this.globeTarget = new THREE.Object3D();
-        
+        this.moveTarget  = new THREE.Vector3();
         thetaDelta = 0;
         phiDelta = 0;
 
 	this.update();    
         var ray = new THREE.Ray(this.object.position,this.object.position.clone().normalize().negate());
-    
-        computeTarget(this.intersectSphere(ray));        
+        
+        this.moveTarget  = this.intersectSphere(ray);
+        computeTarget();
+        
+        this.update();
         this.engine.scene3D.add(this.globeTarget);
         
-     //   var axisHelper = new THREE.AxisHelper( 500000 );
-     //  this.globeTarget.add( axisHelper );
+        this.globeTarget.add( new THREE.AxisHelper( 500000 ));
         
 };
 

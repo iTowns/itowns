@@ -350,7 +350,7 @@ define('Renderer/c3DEngine',[
         this.controls.maxDistance   = size * 8.0;    
         //this.controls.keyPanSpeed   = 1.0;
         this.controls.keyPanSpeed   = 0.01;
-        this.controls.update();
+        //this.controls.update();
     };
     
     /**
