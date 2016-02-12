@@ -47,7 +47,7 @@ define('Renderer/c3DEngine',[
         this.dnear      = 0.0;
         this.dfar       = 0.0;
         this.stateRender = RENDER.FINAL;
-        this.positionBuffer;
+        this.positionBuffer = null;
         
         this.initCamera();
         
@@ -484,12 +484,16 @@ define('Renderer/c3DEngine',[
         this.dummy.visible  = false; 
         this.positionBuffer = this.renderTobuffer(0,0,this.width,this.height,RENDER.PICKING);
         this.dummy.visible  = true; 
-        this.renderScene(); // TODO debug to remove white screen, but why?                
-        
+        this.renderScene(); // TODO debug to remove white screen, but why?    
+                        
     };
     
-    c3DEngine.prototype.pickingInPositionBuffer = function(mouse,scene) 
+    c3DEngine.prototype.pickingInPositionBuffer = function(mouse,scene)     
     {
+        
+        if(this.positionBuffer === null)
+            this.updatePositionBuffer();
+        
         if(mouse === undefined)
             mouse = new THREE.Vector2(Math.floor(this.width/2),Math.floor(this.height/2));
         
