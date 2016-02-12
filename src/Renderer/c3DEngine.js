@@ -47,6 +47,7 @@ define('Renderer/c3DEngine',[
         this.dnear      = 0.0;
         this.dfar       = 0.0;
         this.stateRender = RENDER.FINAL;
+        this.positionBuffer;
         
         this.initCamera();
         
@@ -70,16 +71,20 @@ define('Renderer/c3DEngine',[
           
         this.renderScene = function(){
                  
-                 
+            /*     
             if(this.controls instanceof THREE.GlobeControls)
             {                  
                 if(this.controls.getPointGlobe() === undefined)
                 {
                                           
-                    var position = this.picking(this.controls.pointClickOnScreen/*,this.scene*/);
+                    //var position = this.picking(this.controls.pointClickOnScreen,this.scene);
+                    
+                    // TODO Attention c'est nouvelle technique demande un rafraichissment
+                    var position = this.pickingInPositionBuffer(this.controls.pointClickOnScreen,this.scene);
+                    
                     this.placeDummy(this.dummy,position);
                     this.controls.setPointGlobe(position);    
-                    /*   
+                     
                     var p       = position.clone();
                     p.x         = -position.x;
                     p.y         = position.z;
@@ -103,13 +108,14 @@ define('Renderer/c3DEngine',[
                     var h       = (rsqXY*Math.cos(phi)) + p.z*Math.sin(phi) - a * Math.sqrt(1-e*e*Math.sin(phi)*Math.sin(phi));
                       
                     console.log(theta / Math.PI*180 + ' ' + phi / Math.PI*180 + ' ' + h );
-                    */
+                    
                 }
                 else
                 {
                     this.placeDummy(this.dummy2,this.controls.globeTarget.position);
                 }
             }
+            */
             
             this.renderer.clear();
             
@@ -425,7 +431,13 @@ define('Renderer/c3DEngine',[
             }             
         }
     };
-           
+    
+    c3DEngine.prototype.updatePositionBuffer = function() 
+    {
+        
+    
+    };
+    
     c3DEngine.prototype.renderTobuffer = function(x,y, width, height,mode) {
                 
         // TODO Deallocate render texture
@@ -466,6 +478,36 @@ define('Renderer/c3DEngine',[
         
     };
     
+    c3DEngine.prototype.updatePositionBuffer = function() 
+    {
+        this.camera.camera3D.updateMatrixWorld();
+        this.dummy.visible  = false; 
+        this.positionBuffer = this.renderTobuffer(0,0,this.width,this.height,RENDER.PICKING);
+        this.dummy.visible  = true; 
+        this.renderScene(); // TODO debug to remove white screen, but why?                
+        
+    };
+    
+    c3DEngine.prototype.pickingInPositionBuffer = function(mouse,scene) 
+    {
+        if(mouse === undefined)
+            mouse = new THREE.Vector2(Math.floor(this.width/2),Math.floor(this.height/2));
+        
+        var coord = new THREE.Vector2(mouse.x,this.height - mouse.y);
+        
+        var i   = (coord.y * this.width + coord.x) * 4;
+        
+        if(scene)
+            scene.selectNodeId(this.positionBuffer[i+3]);
+        
+        var glslPosition    = new THREE.Vector3(this.positionBuffer[i+0],this.positionBuffer[i+1],this.positionBuffer[i+2]);              
+        
+        var worldPosition = glslPosition.applyMatrix4( this.camera.camera3D.matrixWorld); 
+
+        return worldPosition;
+        
+    };
+        
     /**
     * 
      * @param {type} mouse : mouse position on screen in pixel
