@@ -25,7 +25,7 @@ If you cannot find any information on your problem in the archive, you can start
 If you think you've found a bug in iTowns, first search the [itowns issues](https://github.com/iTowns/itowns2/issues).  If an issue already exists, please add a comment expressing your interest and any additional information. This helps prioritize issues.
 
 If a related issue does not exist, submit a new one.  Please be concise and include as much of the following information as is relevant :
-* Sample datato to reproduce the issue
+* Sample data to reproduce the issue
 * Screenshot, video or animated .gif if appropriate (try [LICEcap](http://www.cockos.com/licecap/)). Screenshots are particularly useful for exceptions and rendering artifacts.  If it is a rendering artifact, also include the output of [webglreport.com](http://webglreport.com/) for the computer you have the problem on.
 * Link to the thread if this was discussed on the iTowns mailing list or elsewhere.
 * Your operating system and version, browser and version, and video card.  Are they all up-to-date?  Is the issue specific to one of them ?
