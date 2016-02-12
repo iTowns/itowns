@@ -157,14 +157,20 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
         };
         
 	this.setPointGlobe = function ( point ) 
-        {                      
-            if(point === undefined)
-                pickOnGlobe = undefined;
-            else
-            {
-                pickOnGlobe = new THREE.Vector3().copy(point);                  
-                rayonPointGlobe = pickOnGlobe.length();            
-            }
+        {                                  
+                                    
+            rayonPointGlobe = point.length();
+            
+            var mouse   = new THREE.Vector2();
+                       
+            mouse.x =   ( this.pointClickOnScreen.x / window.innerWidth )   * 2 - 1;
+            mouse.y = - ( this.pointClickOnScreen.y / window.innerHeight )  * 2 + 1;	
+
+            raycaster.setFromCamera( mouse, this.cloneObject);                                                            
+
+            var intersection = this.intersectSphere(raycaster.ray);
+            
+            pickOnGlobe.copy(intersection);
         };
         
         this.intersectSphere = function ( ray )   
@@ -190,7 +196,7 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
         this.toSpherical = function ( point )   
         {        
             var pTheta  =  Math.atan2( point.x, point.z );
-            var pPhi    =  Math.atan2( Math.sqrt( point.x * point.x + point.z * point.z ),point.y  );
+            var pPhi    =  Math.atan2( Math.sqrt( point.x * point.x + point.z * point.z ),point.y );
 
             return new THREE.Vector2(pTheta,pPhi);
             
@@ -408,13 +414,7 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
         };
         
 	this.update = function () {
-
-            if(pickOnGlobe === undefined)
-            {                
-                thetaDelta  = 0;
-                phiDelta    = 0;
-                return;
-            }
+           
             
             var position = ( state === STATE.MOVE_GLOBE ) ? this.cloneObject.position : this.object.position;                    
             
@@ -487,6 +487,7 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
                 
             }
 
+            quatGlobe = new THREE.Quaternion();
             thetaDelta = 0;
             phiDelta = 0;
             scale = 1;
@@ -555,6 +556,8 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
 		if ( scope.enabled === false ) return;
 		event.preventDefault();
 
+                quatGlobe = new THREE.Quaternion();
+
 		if ( event.button === scope.mouseButtons.ORBIT ) {
 			if ( scope.noRotate === true ) return;
 
@@ -568,18 +571,17 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
                         else{                                                        
                             
                             state = STATE.MOVE_GLOBE;
+                            
+                            scope.object.updateMatrixWorld()
+                            scope.cloneObject          = scope.object.clone(); 
+                            scope.pointClickOnScreen.x = event.clientX;
+                            scope.pointClickOnScreen.y = event.clientY;
+                            scope.setPointGlobe(scope.engine.pickingInPositionBuffer(scope.pointClickOnScreen));
+                            
                         }
                             
 			rotateStart.set( event.clientX, event.clientY );
-                        
-                        if(pickOnGlobe !== undefined)
-                        {
-                            scope.setPointGlobe(undefined); 
-                            scope.pointClickOnScreen.x = event.clientX;
-                            scope.pointClickOnScreen.y = event.clientY;
-                            scope.cloneObject          = scope.object.clone();                            
-                        }
-                        
+                                                
 
 		} else if ( event.button === scope.mouseButtons.ZOOM ) {
 			if ( scope.noZoom === true ) return;
@@ -688,19 +690,19 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
                 else if ( state === STATE.MOVE_GLOBE ) {
                     
                     
-                            if(pickOnGlobe === undefined)
-                            {
-                                thetaDelta = 0.0;
-                                phiDelta   = 0.0;
-                            }
-                            else
-                            {                                
-                                
-                                if( scope.pointClickOnScreen.x !== event.clientX ||
-                                    scope.pointClickOnScreen.y !== event.clientY)
-                                {
+//                            if(pickOnGlobe === undefined)
+//                            {
+//                                thetaDelta = 0.0;
+//                                phiDelta   = 0.0;
+//                            }
+//                            else
+//                            {                                
+//                                
+//                                if( scope.pointClickOnScreen.x !== event.clientX ||
+//                                    scope.pointClickOnScreen.y !== event.clientY)
+//                                {
                                     var mouse   = new THREE.Vector2();
-
+                                                                          
                                     mouse.x =   ( event.clientX / window.innerWidth )   * 2 - 1;
                                     mouse.y = - ( event.clientY / window.innerHeight )  * 2 + 1;	
 
@@ -709,10 +711,12 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
                                     var intersection = scope.intersectSphere(raycaster.ray);
 
                                     quatGlobe.setFromUnitVectors(intersection.normalize(), pickOnGlobe.clone().normalize());
-                                }
-                                else
-                                    quatGlobe = new THREE.Quaternion();
-                            }
+                                    
+                                    //console.log(quatGlobe);
+//                                }
+//                                else
+//                                    quatGlobe = new THREE.Quaternion();
+                            //}
                 }
 
 		if ( state !== STATE.NONE ) scope.update();
@@ -726,15 +730,19 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
 		document.removeEventListener( 'mousemove', onMouseMove, false );
 		document.removeEventListener( 'mouseup', onMouseUp, false );
 		scope.dispatchEvent( endEvent );
+                 
+                scope.engine.updatePositionBuffer();                    
+                var positionTarget = scope.engine.pickingInPositionBuffer();                                
+                var distanceTarget = positionTarget.distanceTo(scope.object.position);
                 
-                if(state === STATE.MOVE_GLOBE)
-                    computeTarget();
+                scope.object.worldToLocal(scope.moveTarget);
+                scope.moveTarget.setLength(distanceTarget);
+                scope.object.localToWorld(scope.moveTarget);
+                
+                computeTarget();
                 
 		state = STATE.NONE;
-                                
-                
-                //scope.engine.renderScene(); // TODO debug to remove white screen, but why?                
-                                
+                scope.update();
 	}
 
 	function onMouseWheel( event ) {
@@ -1042,8 +1050,8 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
         this.update();
         this.engine.scene3D.add(this.globeTarget);
         
-        this.globeTarget.add( new THREE.AxisHelper( 500000 ));
-        
+        //this.globeTarget.add( new THREE.AxisHelper( 500000 ));
+        this.engine.updatePositionBuffer();
 };
 
 THREE.GlobeControls.prototype = Object.create( THREE.EventDispatcher.prototype );
