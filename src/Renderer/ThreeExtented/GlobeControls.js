@@ -433,8 +433,7 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
             if(state === STATE.MOVE_GLOBE)                
             {           
                 
-                offGT.applyQuaternion(quatGlobe);
-                
+                offGT.applyQuaternion(quatGlobe);                
                 this.moveTarget.copy(offGT);
                 this.object.position.copy(offset.applyQuaternion(quatGlobe));                   
                 this.object.up.copy(offGT.clone().normalize());
@@ -622,7 +621,7 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
 
 		var element = scope.domElement === document ? scope.domElement.body : scope.domElement;
                                 
-		if ( state === STATE.ROTATE ) {
+		if ( state === STATE.ROTATE  || state === STATE.ROTATEONITSELF ) {
 
 			if ( scope.noRotate === true ) return;
 
@@ -640,8 +639,7 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
                         }
                         else
                         {
-                            
-                            
+                                                        
                             scope.rotateLeft( rotateDelta.x );
                           
 			// rotating up and down along whole screen attempts to go 360, but limited to 180
@@ -651,18 +649,8 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
 
 			rotateStart.copy( rotateEnd );
 
-		} else if ( state === STATE.ROTATEONITSELF ) {   
-                    
-                    if ( scope.noRotate === true ) return;
-                   
-                    rotateEnd.set( event.clientX, event.clientY );
-		    rotateDelta.subVectors( rotateEnd, rotateStart );
-                    
-                    scope.rotateLeft( 2 * Math.PI * rotateDelta.x / element.clientWidth * scope.rotateSpeed  );                                                
-                    scope.rotateUp( 2 * Math.PI * rotateDelta.y / element.clientHeight * scope.rotateSpeed );
-                    rotateStart.copy( rotateEnd );       
-                    
-                }else if ( state === STATE.DOLLY ) {
+		}                        
+                else if ( state === STATE.DOLLY ) {
 
 			if ( scope.noZoom === true ) return;
 
@@ -1029,11 +1017,12 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
         this.update();
         
         state = STATE.ROTATE;
-  
-        // TODO enorme bidouille
-        thetaDelta = theta - 1.0;
+
+        // TODO à Simplifier
+
         this.update();
-        
+        thetaDelta = -theta;        
+        this.update();       
         state = STATE.NONE;
         
         this.engine.scene3D.add(this.globeTarget);     
