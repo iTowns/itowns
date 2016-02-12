@@ -34,7 +34,10 @@ define('Core/Commander/Providers/FlatTileProvider',[
        
        this.srid = srid;
        this.projection      = new Projection();
-       this.providerWMS    = new WMS_Provider({url:"http://localhost/mapcache", layer:"ortho", format:"image/jpeg", srs:"EPSG:3946"});    // TODO: remove hard-coded values
+       this.providerWMS     = new WMS_Provider({url:"https://download.data.grandlyon.com/wms/grandlyon",
+                                               layer:"Ortho2009_vue_ensemble_16cm_CC46",
+                                               format:"image/jpeg",
+                                               srs:"EPSG:3946"});    // TODO: remove hard-coded values
        this.cacheGeometry   = [];
        this.tree            = null;
        

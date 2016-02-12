@@ -77,7 +77,7 @@ define('Scene/Scene',[
         var flat = true;
         if (flat)
         {
-            var srid = "EPSG:2154";
+            var srid = "EPSG:3946";
             var plane = new Plane(srid, {xmin:1847500, xmax:1849500, ymin:5171000, ymax:5173000}); 
             plane.size = new THREE.Vector3(63.78137, 63.56752, 63.78137);
             this.add(plane);

@@ -36,7 +36,7 @@ define('Core/Commander/Providers/WMS_Provider',[
         //Constructor
  
         Provider.call( this,new IoDriver_XBIL());
-        //this.cache         = CacheRessource();        
+        this.cache         = CacheRessource();        
         this.ioDriverImage = new IoDriver_Image();
         this.ioDriverXML = new IoDriverXML();
 
@@ -44,6 +44,8 @@ define('Core/Commander/Providers/WMS_Provider',[
         this.layer = options.layer;
         this.format = defaultValue(options.format,"image/jpeg");
         this.srs = options.srs;
+        this.width = defaultValue(options.width, 256);
+        this.height = defaultValue(options.height, 256);
   }
 
     WMS_Provider.prototype = Object.create( Provider.prototype );
@@ -62,7 +64,7 @@ define('Core/Commander/Providers/WMS_Provider',[
             "&SERVICE=WMS&VERSION=1.1.1" + "&REQUEST=GetMap&BBOX=" + 
             bbox.minCarto.longitude + "," + bbox.minCarto.latitude + "," +
             bbox.maxCarto.longitude + "," + bbox.maxCarto.latitude +
-            "&WIDTH=256&HEIGHT=256&SRS=" + this.srs;
+            "&WIDTH=" + this.width + "&HEIGHT=" + this.height + "&SRS=" + this.srs;
         return url;
     };
 
@@ -79,10 +81,10 @@ define('Core/Commander/Providers/WMS_Provider',[
        
         var url = this.url(bbox);            
         
-        //var textureCache = this.cache.getRessource(url);
+        var textureCache = this.cache.getRessource(url);
         
-        /*if(textureCache !== undefined)
-            return when(textureCache);*/
+        if(textureCache !== undefined)
+            return when(textureCache);
         return this.ioDriverImage.read(url).then(function(image)
         {
             var result = {};
@@ -92,7 +94,7 @@ define('Core/Commander/Providers/WMS_Provider',[
             result.texture.minFilter        = THREE.LinearFilter;
             result.texture.anisotropy       = 16;
                         
-            //this.cache.addRessource(url,result.texture);
+            this.cache.addRessource(url,result.texture);
             return result.texture;
             
         }.bind(this));
