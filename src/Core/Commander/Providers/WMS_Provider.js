@@ -1,0 +1,103 @@
+/**
+* Generated On: 2015-10-5
+* Class: WMS_Provider
+* Description: Provides data from a WMS stream
+*/
+
+
+define('Core/Commander/Providers/WMS_Provider',[
+            'Core/Commander/Providers/Provider',
+            'Core/Commander/Providers/IoDriver_XBIL',
+            'Core/Commander/Providers/IoDriver_Image',
+            'Core/Commander/Providers/IoDriverXML',
+            'when',
+            'Core/defaultValue',
+            'THREE',
+            'Core/Commander/Providers/CacheRessource'], 
+        function(
+                Provider,
+                IoDriver_XBIL,
+                IoDriver_Image,
+                IoDriverXML,
+                when,
+                defaultValue,
+                THREE,                
+                CacheRessource){
+
+    /**
+     * Return url wmts MNT
+     * @param {String} options.url: service base url
+     * @param {String} options.layer: requested data layer
+     * @param {String} options.format: image format (default: format/jpeg)
+     * @returns {Object@call;create.url.url|String}
+     */
+    function WMS_Provider(options)
+    {
+        //Constructor
+ 
+        Provider.call( this,new IoDriver_XBIL());
+        //this.cache         = CacheRessource();        
+        this.ioDriverImage = new IoDriver_Image();
+        this.ioDriverXML = new IoDriverXML();
+
+        this.baseUrl = options.url;
+        this.layer = options.layer;
+        this.format = defaultValue(options.format,"image/jpeg");
+        this.srs = options.srs;
+  }
+
+    WMS_Provider.prototype = Object.create( Provider.prototype );
+
+    WMS_Provider.prototype.constructor = WMS_Provider;
+    
+  
+    /**
+     * Returns the url for a WMS query with the specified bounding box
+     * @param {BoundingBox} bbox: requested bounding box
+     * @returns {Object@call;create.url.url|String}
+     */
+    WMS_Provider.prototype.url = function(bbox)
+    {
+        var url = this.baseUrl + "?LAYERS="+ this.layer + "&FORMAT=" + this.format +
+            "&SERVICE=WMS&VERSION=1.1.1" + "&REQUEST=GetMap&BBOX=" + 
+            bbox.minCarto.longitude + "," + bbox.minCarto.latitude + "," +
+            bbox.maxCarto.longitude + "," + bbox.maxCarto.latitude +
+            "&WIDTH=256&HEIGHT=256&SRS=" + this.srs;
+        return url;
+    };
+
+    /**
+     * Returns a texture from the WMS stream with the specified bounding box 
+     * @param {BoundingBox} bbox: requested bounding box
+     * @returns {WMS_Provider_L15.WMS_Provider.prototype@pro;_IoDriver@call;read@call;then}
+     */
+    WMS_Provider.prototype.getTexture = function(bbox)
+    {
+        
+        if(bbox === undefined)
+            return when(-2);
+       
+        var url = this.url(bbox);            
+        
+        //var textureCache = this.cache.getRessource(url);
+        
+        /*if(textureCache !== undefined)
+            return when(textureCache);*/
+        return this.ioDriverImage.read(url).then(function(image)
+        {
+            var result = {};
+            result.texture = new THREE.Texture(image);          
+            result.texture.generateMipmaps  = false;
+            result.texture.magFilter        = THREE.LinearFilter;
+            result.texture.minFilter        = THREE.LinearFilter;
+            result.texture.anisotropy       = 16;
+                        
+            //this.cache.addRessource(url,result.texture);
+            return result.texture;
+            
+        }.bind(this));
+    };
+    
+    return WMS_Provider;
+    
+});

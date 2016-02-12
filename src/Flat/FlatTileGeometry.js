@@ -61,7 +61,13 @@ define('Flat/FlatTileGeometry',[
         var width = bbox.maxLo - bbox.minLo;
         var max     = new THREE.Vector3(bbox.maxCarto.longitude, bbox.maxCarto.latitude, maxHeight);
         var min     = new THREE.Vector3(bbox.minCarto.longitude, bbox.minCarto.latitude,-maxHeight);
-        this.OBB     = new THREE.OBB(min,max);
+        //this.OBB     = new THREE.OBB(min,max);
+        this.OBB     = new THREE.OBB(new THREE.Vector3(-(max.x - min.x)/2,-(max.y - min.y)/2,-maxHeight),new THREE.Vector3((max.x - min.x)/2,(max.y - min.y)/2,maxHeight));
+        this.OBB.lookAt(new THREE.Vector3(0,0,1));        
+        this.OBB.translateX((max.x + min.x)/2);
+        this.OBB.translateY((max.y + min.y)/2);
+        this.OBB.update();
+        
 
         var xStart = - (max.x - min.x) / 2;
         var yStart = - (max.y - min.y) / 2;
@@ -116,7 +122,7 @@ define('Flat/FlatTileGeometry',[
                 bufferNormal[id3+ 2] = 1;      
 
                 bufferUV[idVertex*2 + 0] = u;
-                bufferUV[idVertex*2 + 1] = 1-v;
+                bufferUV[idVertex*2 + 1] = v;
                 
                 bufferUV2[idVertex]      = 1;//t;                                  
                 

@@ -25,7 +25,7 @@ define('Flat/Plane',[
         
         Layer.call( this, Plane, {srid:srid} );  //TODO Layer should take srid as input      
         
-        this.terrain = new Quadtree(FlatTileMesh, this.SchemeTile(extent), {srid:srid}) ;        
+        this.terrain = new Quadtree(FlatTileMesh, this.SchemeTile(extent), {srid:srid});
         
         this.add(this.terrain);
         

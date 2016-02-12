@@ -78,12 +78,11 @@ define('Scene/Scene',[
         if (flat)
         {
             var srid = "EPSG:2154";
-            var plane = new Plane(srid, {xmin:-100, xmax:100, ymin:-100, ymax:100}); 
-            //var plane = new Plane(srid, {xmin:649000, xmax:619000, ymin:6840000, ymax:6850000}); 
+            var plane = new Plane(srid, {xmin:1847500, xmax:1849500, ymin:5171000, ymax:5173000}); 
             plane.size = new THREE.Vector3(63.78137, 63.56752, 63.78137);
             this.add(plane);
-            var position = new THREE.Vector3(649000, 6840000, 5);
-            this.gfxEngine.init(this, position);
+            var position = new THREE.Vector3(1848500, 5172000, 300);
+            this.gfxEngine.init(this, position,flat);
             this.browserScene.addNodeProcess(new NodeProcess(this.currentCamera().camera3D));
             this.gfxEngine.update();
         }
@@ -101,7 +100,7 @@ define('Scene/Scene',[
 
             //var target      = globe.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(2.33,48.87,0));
             //var position    = globe.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(0,48.87,25000000));
-            this.gfxEngine.init(this,position);
+            this.gfxEngine.init(this,position,flat);
             this.browserScene.addNodeProcess(new NodeProcess(this.currentCamera().camera3D,globe.size));
             this.gfxEngine.update();
         }

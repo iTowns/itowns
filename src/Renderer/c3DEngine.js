@@ -193,11 +193,12 @@ define('Renderer/c3DEngine',[
     
     /**
      * 
-     * @param {type} scene
-     * @param {type} position
+     * @param {Scene} scene
+     * @param {THREE.Vector3} position
+     * @param {Boolean} flat
      * @returns {undefined}
      */
-    c3DEngine.prototype.init = function(scene,position){
+    c3DEngine.prototype.init = function(scene,position,flat){
         
         this.scene  = scene;
         this.size    = this.scene.size().x;
@@ -232,13 +233,13 @@ define('Renderer/c3DEngine',[
          
         this.camera.camera3D.near = Math.max(15.0,0.000002352 * this.size);                        
         this.camera.camera3D.updateProjectionMatrix();        
-        this.initRenderer();        
-        this.initControls(this.size);
-
-        // test
-        this.camera.setPosition(new THREE.Vector3(0,0,1000));
-        this.camera.camera3D.lookAt(new THREE.Vector3(this.camera.position.x,this.camera.position.y,0));
-        // /test
+        this.initRenderer();
+        if(flat) {
+            this.camera.camera3D.lookAt(new THREE.Vector3(this.camera.position.x,this.camera.position.y,0));
+            this.initControls2D(new THREE.Vector3(position.x, position.y, 0));
+        } else {
+            this.initControls(this.size);
+        }
         
         //this.controls.target        = target;        
         window.addEventListener( 'resize', this.onWindowResize, false );
@@ -339,8 +340,8 @@ define('Renderer/c3DEngine',[
 
     c3DEngine.prototype.initControls = function(size){
         
-        this.controls   = new THREE.OrbitControls( this.camera.camera3D,this.renderer.domElement );        
-        //this.controls   = new THREE.GlobeControls( this.camera.camera3D,this.renderer.domElement,this );
+        //this.controls   = new THREE.OrbitControls( this.camera.camera3D,this.renderer.domElement );        
+        this.controls   = new THREE.GlobeControls( this.camera.camera3D,this.renderer.domElement,this );
         
         this.controls.target        = new THREE.Vector3(0,0,0);
         this.controls.damping       = 0.1;
@@ -353,6 +354,23 @@ define('Renderer/c3DEngine',[
             this.controls.minDistance   = 30;        
         
         this.controls.maxDistance   = size * 8.0;    
+        //this.controls.keyPanSpeed   = 1.0;
+        this.controls.keyPanSpeed   = 0.01;
+        this.controls.update();
+    };
+
+    c3DEngine.prototype.initControls2D = function(origin){
+        
+        this.controls   = new THREE.OrbitControls( this.camera.camera3D,this.renderer.domElement );
+        
+        this.controls.target        = origin;
+        this.controls.damping       = 0.1;
+        this.controls.noPan         = false;
+        this.controls.rotateSpeed   = 0.8;
+        this.controls.zoomSpeed     = 1.0;
+        this.controls.minDistance   = 30;
+        
+        this.controls.maxDistance   = 1000;
         //this.controls.keyPanSpeed   = 1.0;
         this.controls.keyPanSpeed   = 0.01;
         this.controls.update();

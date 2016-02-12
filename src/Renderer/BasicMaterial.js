@@ -9,11 +9,15 @@ define('Renderer/BasicMaterial',
     [   'THREE',
         'Core/defaultValue',
         'text!Renderer/Shader/SimpleVS.glsl',
-        'text!Renderer/Shader/SimpleFS.glsl'], function(
+        'text!Renderer/Shader/SimpleFS.glsl',
+        'text!Renderer/Shader/SimpleTextureVS.glsl',
+        'text!Renderer/Shader/SimpleTextureFS.glsl'], function(
             THREE,
             defaultValue,            
             SimpleVS,
-            SimpleFS)
+            SimpleFS,
+            SimpleVTS,
+            SimpleFTS)
     {
         
         function BasicMaterial(color){
@@ -67,6 +71,18 @@ define('Renderer/BasicMaterial',
         BasicMaterial.prototype.setSelected = function(selected)
         {
             this.uniforms.selected.value  = selected;    
+        };
+
+        BasicMaterial.prototype.setTexture = function(texture)
+        {
+            this.uniforms.texture = {
+                type: "t",
+                value: texture
+            };
+            texture.needsUpdate = true;
+            this.vertexShader    = SimpleVTS;
+            this.fragmentShader  = SimpleFTS;
+            this.needsUpdate = true;
         };
         
         return BasicMaterial;

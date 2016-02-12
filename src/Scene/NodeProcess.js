@@ -88,7 +88,7 @@ define('Scene/NodeProcess',['Scene/BoudingBox','Renderer/Camera','Core/Math/Math
 
         var obb     = node.OBB();               
         
-        var l       = node.absoluteCenter.length();
+        var l       = 0 * node.absoluteCenter.length();
         
         obb.translateZ(l);
         obb.update();

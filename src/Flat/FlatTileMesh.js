@@ -47,7 +47,7 @@ define('Flat/FlatTileMesh',[
         // TODO ??? 
         this.centerSphere   = new THREE.Vector3().addVectors(this.geometry.boundingSphere.center, this.absoluteCenter);
         this.orthoNeed      = 0;
-        this.material       = new BasicMaterial(new THREE.Color(0.8,0.8,Math.random()));
+        this.material       = new BasicMaterial(new THREE.Color(0.8,0.8,0.8));
         this.dot            = 0;
         this.frustumCulled  = false;        
         this.maxChildren    = 4;

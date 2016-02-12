@@ -9,7 +9,7 @@
 define('Core/Commander/Providers/FlatTileProvider',[
             'when',
             'Core/Geographic/Projection',
-            'Core/Commander/Providers/WMTS_Provider',
+            'Core/Commander/Providers/WMS_Provider',
             'Flat/FlatTileGeometry',
             'Core/Geographic/CoordWMTS',
             'Core/Math/Ellipsoid',
@@ -19,7 +19,7 @@ define('Core/Commander/Providers/FlatTileProvider',[
              function(
                 when,
                 Projection,
-                WMTS_Provider,
+                WMS_Provider,
                 FlatTileGeometry,
                 CoordWMTS,
                 Ellipsoid,
@@ -34,7 +34,7 @@ define('Core/Commander/Providers/FlatTileProvider',[
        
        this.srid = srid;
        this.projection      = new Projection();
-       this.providerWMTS    = new WMTS_Provider();
+       this.providerWMS    = new WMS_Provider({url:"http://localhost/mapcache", layer:"ortho", format:"image/jpeg", srs:"EPSG:3946"});    // TODO: remove hard-coded values
        this.cacheGeometry   = [];
        this.tree            = null;
        
@@ -67,7 +67,22 @@ define('Core/Commander/Providers/FlatTileProvider',[
         tile.setVisibility(false);
         
         parent.add(tile);
-                        
+
+
+        return this.providerWMS.getTexture(bbox)./*then(function(terrain)
+        {                                      
+            this.setTerrain(terrain);
+            
+            return this;
+
+        }.bind(tile)).*/then(function(image)
+        {                     
+            //if(cooWMTS.zoom >= 2)                
+                this.setTextureOrtho(image);  
+            //else
+            //    tile.checkOrtho();
+                           
+        }.bind(tile)); 
         return tile;
     };
     
