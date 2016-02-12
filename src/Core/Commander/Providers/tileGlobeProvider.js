@@ -45,6 +45,7 @@ define('Core/Commander/Providers/tileGlobeProvider',[
        
        this.projection      = new Projection();
        this.providerWMTS    = new WMTS_Provider();
+       //this.providerWMS     = new WMS_Provider();
        this.ellipsoid       = new Ellipsoid(size);       
        this.providerKML     = new KML_Provider(this.ellipsoid);
        this.cacheGeometry   = [];
