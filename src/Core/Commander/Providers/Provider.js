@@ -1,7 +1,7 @@
 /**
 * Generated On: 2015-10-5
 * Class: Provider
-* Description: Cette classe générique permet de fournir des données distantes ou locales, des Nodes ou des services.
+* Description: Generic class to serve data, local or distant, nodes and services.
 */
 
 define('Core/Commander/Providers/Provider',[], function(){

@@ -5,7 +5,7 @@
 */
 
 
-define('Scene/SchemeTile',['Scene/BoudingBox'], function(BoudingBox){
+define('Scene/SchemeTile',['Scene/BoundingBox'], function(BoundingBox){
 
     function SchemeTile(){
         //Constructor
@@ -25,7 +25,7 @@ define('Scene/SchemeTile',['Scene/BoudingBox'], function(BoudingBox){
      
     SchemeTile.prototype.add = function(minLo,maxLo,minLa,maxLa)
     {
-        return this.schemeBB.push(new BoudingBox(minLo,maxLo,minLa,maxLa));
+        return this.schemeBB.push(new BoundingBox(minLo,maxLo,minLa,maxLa));
     };
     
     

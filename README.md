@@ -4,19 +4,50 @@
 </p>
 
 # iTowns V2
-## WebGL Globe
-###
-    Virtual globe visualisation
-    - Aerial photography 
-    - DTM
-    - Buildings
 
-    
-![iTowns screenshot](http://www.itowns.fr/videos/itownsV1GIT.jpg)
+## What is it?
 
-### In Progress
-    - Coding the main classes
-    - Documentation
-    - Tutorial/Examples
+iTowns is a web framework written in Javascript/WebGL for visualisation of 3D geographic data allowing precise measurements in 3D.
+Its first purpose was the visualisation of street view images and terrestrial lidar point cloud. It has then been extended to handle more data types.
 
-### 2016: Integration of street level data
+The V2 of iTowns Open Source is a refactoring of [iTowns V1](https://github.com/iTowns/itowns)
+
+This version includes a globe visualization mode.
+
+![iTowns screenshot](http://www.itowns.fr/videos/screenshotGIT.jpg)
+
+## Supported data types
+
+- Aerial photography 
+- DTM
+- Buildings
+
+## In Progress
+
+- Coding main classes
+- Documentation
+- Tutorial / Examples
+
+Latest changes can be found in [CHANGES.md](CHANGES.md)
+
+## Licence
+
+iTowns V2 is dual-licenced under Cecill-B V1.0 and MIT.
+Incorporated libraries are published under their original licences.
+
+See [LICENSE.md](LICENSE.md) for more information.
+
+## Contributors
+
+iTowns has received contributions from people listed in [CONTRIBUTORS.md](CONTRIBUTORS.md).
+If you are interested in contributing to iTowns, please read [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## Support
+
+iTowns is an original work from French IGN, MATIS research laboratory.
+It has been funded through various research programs involving the French National Research Agency, Cap Digital, UPMC, Mines ParisTec, CNRS, LCPC.
+
+iTowns is currently maintained by IGN ( http://www.ign.fr ) and Oslandia ( http://www.oslandia.com )
+
+![IGN Logo](https://raw.githubusercontent.com/iTowns/itowns/master/images/IGN_logo_2012.png)
+![Oslandia Logo](https://raw.githubusercontent.com/iTowns/itowns/master/images/Oslandia_logo.png)

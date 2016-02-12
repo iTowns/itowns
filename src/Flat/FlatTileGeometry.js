@@ -9,14 +9,14 @@
 define('Flat/FlatTileGeometry',[
     'THREE',
     'Core/defaultValue',
-    'Scene/BoudingBox',
+    'Scene/BoundingBox',
     'Core/Geographic/CoordCarto',
     'Core/Math/MathExtented',
     'Core/System/JavaTools'
     ], function(
         THREE,
         defaultValue,
-        BoudingBox,
+        BoundingBox,
         CoordCarto,
         MathExt,
         JavaTools){
@@ -29,7 +29,7 @@ define('Flat/FlatTileGeometry',[
         
         var nbRow           = Math.pow(2.0,zoom + 1.0 );
         
-        bbox = defaultValue(bbox,new BoudingBox());
+        bbox = defaultValue(bbox,new BoundingBox());
 
         var nSeg            = defaultValue(segment,32);       
         var nVertex         = (nSeg+1)*(nSeg+1) + 8 * (nSeg-1); // correct pour uniquement les vertex
@@ -61,7 +61,7 @@ define('Flat/FlatTileGeometry',[
         var width = bbox.maxLo - bbox.minLo;
         var max     = new THREE.Vector3(bbox.maxCarto.longitude, bbox.maxCarto.latitude, maxHeight);
         var min     = new THREE.Vector3(bbox.minCarto.longitude, bbox.minCarto.latitude,-maxHeight);
-        //this.OBB     = new THREE.OBB(min,max);
+        
         this.OBB     = new THREE.OBB(new THREE.Vector3(-(max.x - min.x)/2,-(max.y - min.y)/2,-maxHeight),new THREE.Vector3((max.x - min.x)/2,(max.y - min.y)/2,maxHeight));
         this.OBB.lookAt(new THREE.Vector3(0,0,1));        
         this.OBB.translateX((max.x + min.x)/2);

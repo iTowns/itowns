@@ -12,6 +12,7 @@
 #endif
 
 uniform vec3 diffuseColor;
+varying float      light;
 
 void main() {
  
@@ -21,5 +22,7 @@ void main() {
 
     #endif
 
-    gl_FragColor = vec4(diffuseColor,1.0);
+    vec4 color    =  vec4( diffuseColor / light,1.0) ;
+
+    gl_FragColor = color;
 }

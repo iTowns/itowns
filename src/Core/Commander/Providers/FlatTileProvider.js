@@ -14,7 +14,7 @@ define('Core/Commander/Providers/FlatTileProvider',[
             'Core/Geographic/CoordWMTS',
             'Core/Math/Ellipsoid',
             'Core/defaultValue',
-            'Scene/BoudingBox'                        
+            'Scene/BoundingBox'                        
             ],
              function(
                 when,
@@ -24,7 +24,7 @@ define('Core/Commander/Providers/FlatTileProvider',[
                 CoordWMTS,
                 Ellipsoid,
                 defaultValue,
-                BoudingBox
+                BoundingBox
                 ){
                    
     function FlatTileProvider(srid){

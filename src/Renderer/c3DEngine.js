@@ -59,8 +59,8 @@ define('Renderer/c3DEngine',[
         this.dummy2.material.enableRTC(false);
         this.dummy.material.enableRTC(false);
         
-        this.scene3D.add(this.dummy);
-        this.scene3D.add(this.dummy2);
+//        this.scene3D.add(this.dummy);
+//        this.scene3D.add(this.dummy2);
 
         this.pickingTexture = new THREE.WebGLRenderTarget( this.width, this.height );
         this.pickingTexture.texture.minFilter        = THREE.LinearFilter;
@@ -79,7 +79,7 @@ define('Renderer/c3DEngine',[
                     var position = this.picking(this.controls.pointClickOnScreen/*,this.scene*/);
                     this.placeDummy(this.dummy,position);
                     this.controls.setPointGlobe(position);    
-                        /*
+                    /*   
                     var p       = position.clone();
                     p.x         = -position.x;
                     p.y         = position.z;
@@ -101,8 +101,9 @@ define('Renderer/c3DEngine',[
                     var phi     = Math.atan((p.z*(1-f) + e*e*a*sinu*sinu*sinu)/((1-f)*(rsqXY - e*e*a*cosu*cosu*cosu)));
 
                     var h       = (rsqXY*Math.cos(phi)) + p.z*Math.sin(phi) - a * Math.sqrt(1-e*e*Math.sin(phi)*Math.sin(phi));
-                      */  
-                    //console.log(theta + ' ' + phi + ' ' + h );               
+                      
+                    console.log(theta / Math.PI*180 + ' ' + phi / Math.PI*180 + ' ' + h );
+                    */
                 }
                 else
                 {

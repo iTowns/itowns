@@ -27,22 +27,26 @@ define('Globe/Globe',[
         this.NOIE   = !caps.isInternetExplorer()  ;
                 
         this.size       = new THREE.Vector3(6378137, 6356752.3142451793, 6378137).multiplyScalar(scale);
-        this.terrain    = new Quadtree(EllipsoidTileMesh,this.SchemeTileWMTS(2),this.size) ;        
-        this.atmosphere = this.NOIE ? new Atmosphere(this.size) : undefined;
-        
         this.batiments  = new Layer();
         
+        var kml         = new THREE.Mesh();
+        this.batiments.add(kml);
+        
+        this.terrain    = new Quadtree(EllipsoidTileMesh,this.SchemeTileWMTS(2),this.size,kml) ;        
+        this.atmosphere = this.NOIE ? new Atmosphere(this.size) : undefined;
+   
         var material    = new BasicMaterial(new THREE.Color(1,0,0));
         var geometry    = new THREE.SphereGeometry(200);       
         var batiment    = new THREE.Mesh( geometry, material );
-        var position    = this.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(-48.87,0,200));
+        var position    = this.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(48.87,0,200));
         batiment.frustumCulled  = false;
         //material.wireframe      = true;
         batiment.position.copy(position);
    
-        var material2    = new BasicMaterial(new THREE.Color(1,0.5,1));        
+        var material2    = new BasicMaterial(new THREE.Color(1,0.5,1));  
+        material2.visible = false;
         var batiment2    = new THREE.Mesh( geometry, material2 );
-        var position2    = this.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(-48.87,0,100));
+        var position2    = this.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(48.87,0.001,100));
         batiment2.frustumCulled  = false;
         material2.wireframe      = true;
         batiment2.position.copy(position2);

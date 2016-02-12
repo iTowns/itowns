@@ -8,7 +8,7 @@
  * 
  * @param {type} NodeMesh
  * @param {type} EllipsoidTileGeometry
- * @param {type} BoudingBox
+ * @param {type} BoundingBox
  * @param {type} defaultValue
  * @param {type} THREE
  * @param {type} Material
@@ -17,13 +17,13 @@
 define('Flat/FlatTileMesh',[
     'Renderer/NodeMesh',
     'Flat/FlatTileGeometry',
-    'Scene/BoudingBox',
+    'Scene/BoundingBox',
     'Core/defaultValue',
     'THREE',
     'Renderer/BasicMaterial',
     'Core/Math/MathExtented',
     'OBBHelper',
-    'SphereHelper'], function(NodeMesh,FlatTileGeometry,BoudingBox,defaultValue,THREE,BasicMaterial,MathExt,OBBHelper,SphereHelper){
+    'SphereHelper'], function(NodeMesh,FlatTileGeometry,BoundingBox,defaultValue,THREE,BasicMaterial,MathExt,OBBHelper,SphereHelper){
  
     function FlatTileMesh(bbox,id){
         //Constructor
@@ -32,7 +32,7 @@ define('Flat/FlatTileMesh',[
                 
         this.level      =  Math.floor(Math.log(10000 / bbox.dimension.y )/MathExt.LOG_TWO + 0.5);
 
-        this.bbox       = defaultValue(bbox,new BoudingBox());               
+        this.bbox       = defaultValue(bbox,new BoundingBox());               
         this.id         = id;
         
         var precision   = 16;               
@@ -51,10 +51,6 @@ define('Flat/FlatTileMesh',[
         this.dot            = 0;
         this.frustumCulled  = false;        
         this.maxChildren    = 4;
-
-        // /!\ TEMP FOR TEST
-        this.loaded = true;
-        this.wait = false;
         
         var  groupTerrain   = [14,11,7,3];        
         this.levelTerrain   = this.level;

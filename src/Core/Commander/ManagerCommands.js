@@ -75,24 +75,15 @@ define('Core/Commander/ManagerCommands',
         {                       
             this.providers.push(new tileGlobeProvider(param));
             
-            this.providers[0].providerKML.loadTestCollada().then(function (result){
-
-                var child       = result.scene.children[0];
-
-                var position    = this.providers[0].ellipsoid.cartographicToCartesian(new CoordCarto().setFromDegreeGeo(48.8775,-3.49250000000001,3));                
-                var normal      = this.providers[0].ellipsoid.geodeticSurfaceNormalCartographic(new CoordCarto().setFromDegreeGeo(48.8775,-3.49250000000001,0));
-                
-                var quaternion  = new THREE.Quaternion();
-                quaternion.setFromAxisAngle( new THREE.Vector3(1, 0 ,0 ), Math.PI/2 );
-                
-                child.lookAt(new THREE.Vector3().addVectors ( position, normal ));
-                child.quaternion.multiply(quaternion );                
-                child.position.copy(position);
-                child.updateMatrix();
-                child.frustumCulled = false; 
-                this.scene.gfxEngine.scene3D.add(child);
- 
-            }.bind(this));
+//            var latitude    = 48.850077; 
+//            var  longitude  = 2.384618;
+//                
+//            this.providers[0].providerKML.loadKMZ(longitude, latitude).then(function (result){
+//
+//                
+//                this.scene.gfxEngine.scene3D.add(result);
+// 
+//            }.bind(this));
         }
         else if(type === FlatTileMesh)
         {

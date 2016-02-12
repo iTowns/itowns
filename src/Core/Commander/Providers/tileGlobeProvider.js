@@ -26,7 +26,7 @@ define('Core/Commander/Providers/tileGlobeProvider',[
             'Core/Geographic/CoordWMTS',
             'Core/Math/Ellipsoid',
             'Core/defaultValue',
-            'Scene/BoudingBox'                        
+            'Scene/BoundingBox'                        
             ],
              function(
                 when,
@@ -37,7 +37,7 @@ define('Core/Commander/Providers/tileGlobeProvider',[
                 CoordWMTS,
                 Ellipsoid,
                 defaultValue,
-                BoudingBox
+                BoundingBox
                 ){
                    
     function tileGlobeProvider(size){
@@ -45,13 +45,12 @@ define('Core/Commander/Providers/tileGlobeProvider',[
        
        this.projection      = new Projection();
        this.providerWMTS    = new WMTS_Provider();
-       this.providerKML     = new KML_Provider();
        this.ellipsoid       = new Ellipsoid(size);       
+       this.providerKML     = new KML_Provider(this.ellipsoid);
        this.cacheGeometry   = [];
        this.tree            = null;
-       
        this.nNode           = 0;
-               
+     
     }        
 
     tileGlobeProvider.prototype.constructor = tileGlobeProvider;
@@ -72,7 +71,7 @@ define('Core/Commander/Providers/tileGlobeProvider',[
                 this.cacheGeometry[cooWMTS.zoom] = new Array() ;
            
             var precision   = 16;                                            
-            var rootBBox    = new BoudingBox(0,part+part*0.01,bbox.minCarto.latitude, bbox.maxCarto.latitude );
+            var rootBBox    = new BoundingBox(0,part+part*0.01,bbox.minCarto.latitude, bbox.maxCarto.latitude );
             
             geometry   = new EllipsoidTileGeometry(rootBBox,precision,this.ellipsoid,cooWMTS.zoom);
             this.cacheGeometry[cooWMTS.zoom][cooWMTS.row] = geometry;    
@@ -110,6 +109,8 @@ define('Core/Commander/Providers/tileGlobeProvider',[
 
         tile.setVisibility(false);
         
+        tile.link = parent.link;
+        
         parent.add(tile);
                         
         return this.providerWMTS.getTextureBil(tile.useParent() ? undefined : cooWMTS).then(function(terrain)
@@ -124,7 +125,31 @@ define('Core/Commander/Providers/tileGlobeProvider',[
                 this.getOrthoImages(tile);
             else
                 tile.checkOrtho();
+            
+            return tile;
                            
+        }.bind(this)).then(function(tile)
+        {
+            
+//            if(false )
+//            if(tile.level  === 16  )
+//            {
+//                var longitude   = tile.bbox.center.x / Math.PI * 180 - 180;
+//                var latitude    = tile.bbox.center.y / Math.PI * 180;
+//
+//                this.providerKML.loadKMZ(longitude, latitude).then(function (collada){
+//                    
+//                    
+//                    if(collada && tile.link.children.indexOf(collada) === -1)
+//                    {         
+//                        //console.log(collada);
+//                        tile.link.add(collada);
+//                        tile.content = collada;
+//                    }
+//                }.bind(this));
+//                
+//            }
+            
         }.bind(this)); 
     };
     

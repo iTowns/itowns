@@ -117,7 +117,7 @@ define(['THREE'], function(THREE) {
 		},
 
 		parse: function( text ) {
-                        
+
 			COLLADA = new DOMParser().parseFromString( text, 'application/xml' );
 
 			this.parseAsset();
@@ -2062,6 +2062,7 @@ define(['THREE'], function(THREE) {
 
 					} else {
 
+                                                // TODO Mettre false pour les collada d'antoine
 						geom.calcNormals = true;
 
 					}
@@ -2122,9 +2123,21 @@ define(['THREE'], function(THREE) {
 
 				} else if ( vcount === 4 ) {
 
-					faces.push( new THREE.Face3( vs[ 0 ], vs[ 1 ], vs[ 3 ], [ ns[ 0 ].clone(), ns[ 1 ].clone(), ns[ 3 ].clone() ], cs.length ? [ cs[ 0 ], cs[ 1 ], cs[ 3 ]] : new THREE.Color() ) );
+                                        // TODO Collada Antoine
+                                        //if(ns.length)
+                                        {
+                                            faces.push( new THREE.Face3( vs[ 0 ], vs[ 1 ], vs[ 3 ], [ ns[ 0 ].clone(), ns[ 1 ].clone(), ns[ 3 ].clone() ], cs.length ? [ cs[ 0 ], cs[ 1 ], cs[ 3 ]] : new THREE.Color() ) );
 
-					faces.push( new THREE.Face3( vs[ 1 ], vs[ 2 ], vs[ 3 ], [ ns[ 1 ].clone(), ns[ 2 ].clone(), ns[ 3 ].clone() ], cs.length ? [ cs[ 1 ], cs[ 2 ], cs[ 3 ]] : new THREE.Color() ) );
+                                            faces.push( new THREE.Face3( vs[ 1 ], vs[ 2 ], vs[ 3 ], [ ns[ 1 ].clone(), ns[ 2 ].clone(), ns[ 3 ].clone() ], cs.length ? [ cs[ 1 ], cs[ 2 ], cs[ 3 ]] : new THREE.Color() ) );
+                                        }
+                                        /*
+                                        else
+                                        {
+                                            faces.push( new THREE.Face3( vs[ 0 ], vs[ 1 ], vs[ 3 ], [ 0,0,0], cs.length ? [ cs[ 0 ], cs[ 1 ], cs[ 3 ]] : new THREE.Color() ) );
+
+                                            faces.push( new THREE.Face3( vs[ 1 ], vs[ 2 ], vs[ 3 ], [ 0,0,0], cs.length ? [ cs[ 1 ], cs[ 2 ], cs[ 3 ]] : new THREE.Color() ) );
+                                        }
+                                        */
 
 				} else if ( vcount > 4 && options.subdivideFaces ) {
 

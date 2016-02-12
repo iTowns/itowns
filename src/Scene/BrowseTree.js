@@ -22,7 +22,7 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Flat/FlatTileMesh'
         this.selectNodeId   = -1;
         this.selectNode     = null;
         
-    }
+    };
     
     
     BrowseTree.prototype.addNodeProcess= function(nodeProcess)
@@ -58,13 +58,13 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Flat/FlatTileMesh'
                 if(node instanceof FlatTileMesh || this.nodeProcess.horizonCulling(node,camera))
                 {
                     
-                    if(node.parent.material !== undefined && node.parent.material.visible === true)
-                    
+                    if(node.parent.material !== undefined && node.parent.material.visible === true) {                    
                         return node.setVisibility(false);
+                    }
                                         
                     var sse = this.nodeProcess.SSE(node,camera);
 
-                    if(optional && sse && node.material.visible === true && node.wait === false) {
+                    if(optional && (sse || node.level < 2) && node.material.visible === true && node.wait === false) {
                         this.tree.subdivide(node);
                     }
                                                 
@@ -81,8 +81,9 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Flat/FlatTileMesh'
             }
 
 
-            if(node.visible  && node.material.visible)
+            if(node.visible  && node.material.visible) {
                 this.uniformsProcess(node,camera);                       
+            }
             
             return node.visible;
         }
@@ -107,13 +108,31 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Flat/FlatTileMesh'
         node.setFog(this.fogDistance);        
     };
         
-    BrowseTree.prototype.getRTCMatrix = function(center,camera)    
+    BrowseTree.prototype.getRTCMatrix = function(center,camera,node)    
     {               
-        // TODO gerer orientation et echelle de l'objet
+        // TODO gerer orientation et echelle de l'objet        
+//        var position    = new THREE.Vector3().subVectors(camera.camera3D.position,center);
+//        var quaternion  = new THREE.Quaternion().copy(camera.camera3D.quaternion);       
+//        var matrix      = new THREE.Matrix4().compose(position,quaternion,new THREE.Vector3(1,1,1));
+//        var matrixInv   = new THREE.Matrix4().getInverse(matrix);  
+//        var centerEye   = new THREE.Vector4().applyMatrix4(matrixInv) ;                        
+//        var mvc         = matrixInv.setPosition(centerEye);      
+//        return            new THREE.Matrix4().multiplyMatrices(camera.camera3D.projectionMatrix,mvc);
+
         var position    = new THREE.Vector3().subVectors(camera.camera3D.position,center);
-        var quaternion  = new THREE.Quaternion().copy(camera.camera3D.quaternion);        
+        var quaternion  = new THREE.Quaternion().copy(camera.camera3D.quaternion);       
+
+        
         var matrix      = new THREE.Matrix4().compose(position,quaternion,new THREE.Vector3(1,1,1));
-        var matrixInv   = new THREE.Matrix4().getInverse(matrix);       
+        var matrixInv   = new THREE.Matrix4().getInverse(matrix);
+        
+        if(node)
+        {
+            var model = node.matrixWorld.clone().setPosition(new THREE.Vector3());
+            matrixInv.multiply(model);
+            
+        }
+        
         var centerEye   = new THREE.Vector4().applyMatrix4(matrixInv) ;                        
         var mvc         = matrixInv.setPosition(centerEye);      
         return            new THREE.Matrix4().multiplyMatrices(camera.camera3D.projectionMatrix,mvc);
