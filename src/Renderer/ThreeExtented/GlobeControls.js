@@ -57,7 +57,8 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
 
 	// How far you can orbit vertically, upper and lower limits.
 	// Range is 0 to Math.PI radians.
-	this.minPolarAngle = 0; // radians
+        // TODO ATTENTION trick pas correct minPolarAngle = 0.01
+	this.minPolarAngle = 0.01; // radians
 	this.maxPolarAngle = Math.PI; // radians
         
         this.radius = null;
@@ -159,6 +160,7 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
 	this.setPointGlobe = function ( point ) 
         {                                  
                                     
+                                    
             rayonPointGlobe = point.length();
             
             var mouse   = new THREE.Vector2();
@@ -171,6 +173,7 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
             var intersection = this.intersectSphere(raycaster.ray);
             
             pickOnGlobe.copy(intersection);
+                        
         };
         
         this.intersectSphere = function ( ray )   
@@ -399,8 +402,6 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
             // restrict phi to be betwee EPS and PI-EPS
             phi = Math.max( EPS, Math.min( Math.PI - EPS, phi ) );
 
-            
-
             // restrict radius to be between desired limits
             radius = Math.max( this.minDistance, Math.min( this.maxDistance, radius ) );
 
@@ -435,7 +436,7 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
                 offGT.applyQuaternion(quatGlobe);
                 
                 this.moveTarget.copy(offGT);
-                this.object.position.copy(offset.applyQuaternion(quatGlobe));                                  
+                this.object.position.copy(offset.applyQuaternion(quatGlobe));                   
                 this.object.up.copy(offGT.clone().normalize());
                 
             }
@@ -478,19 +479,21 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
   
                 this.object.quaternion.copy(child.quaternion);
                 
+                this.object.updateMatrixWorld();
+                
+                //this.moveTarget.copy(this.object.localToWorld(new THREE.Vector3( 0, 0, 1 )));
+                
             }else
             {
-                
-                
+                                
                 this.object.lookAt( offGT );   // Usual CASE (not rotating around camera axe)  
-                
-                
+                                
             }
 
-            quatGlobe = new THREE.Quaternion();
-            thetaDelta = 0;
-            phiDelta = 0;
-            scale = 1;
+            quatGlobe.set(0,0,0,1);
+            thetaDelta  = 0;
+            phiDelta    = 0;
+            scale       = 1;
             pan.set( 0, 0, 0 );
 
             // update condition is:
@@ -556,7 +559,7 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
 		if ( scope.enabled === false ) return;
 		event.preventDefault();
 
-                quatGlobe = new THREE.Quaternion();
+                quatGlobe.set(0,0,0,1);
 
 		if ( event.button === scope.mouseButtons.ORBIT ) {
 			if ( scope.noRotate === true ) return;
@@ -572,11 +575,14 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
                             
                             state = STATE.MOVE_GLOBE;
                             
-                            scope.object.updateMatrixWorld()
+                            scope.object.updateMatrixWorld();
                             scope.cloneObject          = scope.object.clone(); 
                             scope.pointClickOnScreen.x = event.clientX;
                             scope.pointClickOnScreen.y = event.clientY;
-                            scope.setPointGlobe(scope.engine.pickingInPositionBuffer(scope.pointClickOnScreen));
+                            
+                            var point = scope.engine.pickingInPositionBuffer(scope.pointClickOnScreen);
+                            
+                            scope.setPointGlobe(point);
                             
                         }
                             
@@ -689,34 +695,19 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
 		}
                 else if ( state === STATE.MOVE_GLOBE ) {
                     
+                    var mouse   = new THREE.Vector2();
+
+                    mouse.x =   ( event.clientX / window.innerWidth )   * 2 - 1;
+                    mouse.y = - ( event.clientY / window.innerHeight )  * 2 + 1;	
+
+                    raycaster.setFromCamera( mouse, scope.cloneObject);                                                            
+
+                    var intersection = scope.intersectSphere(raycaster.ray);
+
+                    quatGlobe.setFromUnitVectors(intersection.normalize(), pickOnGlobe.clone().normalize());
                     
-//                            if(pickOnGlobe === undefined)
-//                            {
-//                                thetaDelta = 0.0;
-//                                phiDelta   = 0.0;
-//                            }
-//                            else
-//                            {                                
-//                                
-//                                if( scope.pointClickOnScreen.x !== event.clientX ||
-//                                    scope.pointClickOnScreen.y !== event.clientY)
-//                                {
-                                    var mouse   = new THREE.Vector2();
-                                                                          
-                                    mouse.x =   ( event.clientX / window.innerWidth )   * 2 - 1;
-                                    mouse.y = - ( event.clientY / window.innerHeight )  * 2 + 1;	
+                    //console.log(pickOnGlobe);
 
-                                    raycaster.setFromCamera( mouse, scope.cloneObject);                                                            
-
-                                    var intersection = scope.intersectSphere(raycaster.ray);
-
-                                    quatGlobe.setFromUnitVectors(intersection.normalize(), pickOnGlobe.clone().normalize());
-                                    
-                                    //console.log(quatGlobe);
-//                                }
-//                                else
-//                                    quatGlobe = new THREE.Quaternion();
-                            //}
                 }
 
 		if ( state !== STATE.NONE ) scope.update();
@@ -784,20 +775,6 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
             
             if ( scope.enabled === false || scope.noKeys === true || scope.noPan === true ) return;
             
-            if(scope.keyCtrl)   
-            {
-                computeVectorUp();
-                rotateTarget();
-                              
-            }
-            
-            if(scope.keyShift)   
-            {
-                computeVectorUp();
-                rotateTarget();
-                              
-            }
-            
             scope.keyCtrl = false;  
             scope.keyShift = false;
         }
@@ -836,11 +813,11 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
                                 scope.update();
                                 break;
                         case scope.keys.CTRL:       
-                                computeVectorUp();
+                                //computeVectorUp();
                                 scope.keyCtrl = true;
                                 break;
                         case scope.keys.SHIFT:       
-                                computeVectorUp();
+                                //computeVectorUp();
                                 scope.keyShift = true;
                                 break;
 
@@ -1015,7 +992,7 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
             scope.globeTarget.lookAt(scope.moveTarget.clone().multiplyScalar( 2 ));                        
             scope.globeTarget.quaternion.multiply( new THREE.Quaternion().setFromAxisAngle( new THREE.Vector3( 1, 0, 0 ), Math.PI / 2 ));
             scope.globeTarget.updateMatrixWorld();
-            rotateTarget();
+            //rotateTarget();
             /*
             quat = new THREE.Quaternion().setFromUnitVectors( scope.object.up,vectorUp );
             quatInverse = quat.clone().inverse();            
@@ -1042,16 +1019,26 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
         phiDelta = 0;
 
 	this.update();    
+        
         var ray = new THREE.Ray(this.object.position,this.object.position.clone().normalize().negate());
         
         this.moveTarget  = this.intersectSphere(ray);
         computeTarget();
-        
+                
+        state = STATE.MOVE_GLOBE;
         this.update();
-        this.engine.scene3D.add(this.globeTarget);
         
+        state = STATE.ROTATE;
+  
+        // TODO enorme bidouille
+        thetaDelta = theta - 1.0;
+        this.update();
+        
+        state = STATE.NONE;
+        
+        this.engine.scene3D.add(this.globeTarget);     
         //this.globeTarget.add( new THREE.AxisHelper( 500000 ));
-        this.engine.updatePositionBuffer();
+        
 };
 
 THREE.GlobeControls.prototype = Object.create( THREE.EventDispatcher.prototype );
