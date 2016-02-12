@@ -12,10 +12,13 @@ define('Globe/Globe',[
     'Core/Math/MathExtented',
     'Globe/EllipsoidTileMesh',
     'Globe/Atmosphere',
+    'Globe/Clouds',
     'Core/System/Capabilities',
     'Core/Geographic/CoordCarto',
     'Renderer/BasicMaterial',
-    'THREE'], function(defaultValue,Layer,Quadtree,SchemeTile,MathExt,EllipsoidTileMesh,Atmosphere,Capabilities,CoordCarto,BasicMaterial,THREE){
+    'THREE'], function(defaultValue, Layer, Quadtree, SchemeTile, MathExt,
+                       EllipsoidTileMesh, Atmosphere, Clouds, Capabilities,
+                       CoordCarto, BasicMaterial, THREE){
 
     function Globe(scale){
         //Constructor
@@ -34,6 +37,7 @@ define('Globe/Globe',[
         
         this.terrain    = new Quadtree(EllipsoidTileMesh,this.SchemeTileWMTS(2),this.size,kml) ;        
         this.atmosphere = this.NOIE ? new Atmosphere(this.size) : undefined;
+    //    this.clouds     = new Clouds();
    
         var material    = new BasicMaterial(new THREE.Color(1,0,0));
         var geometry    = new THREE.SphereGeometry(200);       
@@ -59,6 +63,9 @@ define('Globe/Globe',[
         
         if(this.atmosphere !== undefined)
             this.add(this.atmosphere);
+        
+        if(this.clouds!== undefined)
+            this.add(this.clouds.sphereCloud);
         
     }
 
