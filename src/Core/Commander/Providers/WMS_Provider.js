@@ -1,7 +1,7 @@
 /**
 * Generated On: 2015-10-5
 * Class: WMS_Provider
-* Description: Fournisseur de données à travers un flux WMS
+* Description: Provides data from a WMS stream
 */
 
 
@@ -11,6 +11,7 @@ define('Core/Commander/Providers/WMS_Provider',[
             'Core/Commander/Providers/IoDriver_Image',
             'Core/Commander/Providers/IoDriverXML',
             'when',
+            'Core/defaultValue',
             'THREE',
             'Core/Commander/Providers/CacheRessource'], 
         function(
@@ -19,11 +20,18 @@ define('Core/Commander/Providers/WMS_Provider',[
                 IoDriver_Image,
                 IoDriverXML,
                 when,
+                defaultValue,
                 THREE,                
                 CacheRessource){
 
-
-    function WMS_Provider()
+    /**
+     * Return url wmts MNT
+     * @param {String} options.url: service base url
+     * @param {String} options.layer: requested data layer
+     * @param {String} options.format: image format (default: format/jpeg)
+     * @returns {Object@call;create.url.url|String}
+     */
+    function WMS_Provider(options)
     {
         //Constructor
  
@@ -31,14 +39,35 @@ define('Core/Commander/Providers/WMS_Provider',[
         this.cache         = CacheRessource();        
         this.ioDriverImage = new IoDriver_Image();
         this.ioDriverXML = new IoDriverXML();
-       
+
+        this.baseUrl = options.url || "";
+        this.layer = options.layer || "";
+        this.format = defaultValue(options.format,"image/jpeg");
+        this.srs = options.srs || "";;
+        this.width = defaultValue(options.width, 256);
+        this.height = defaultValue(options.height, 256);
   }
 
     WMS_Provider.prototype = Object.create( Provider.prototype );
+
     WMS_Provider.prototype.constructor = WMS_Provider;
     
   
-
+    /**
+     * Returns the url for a WMS query with the specified bounding box
+     * @param {BoundingBox} bbox: requested bounding box
+     * @returns {Object@call;create.url.url|String}
+     */
+    WMS_Provider.prototype.url = function(bbox)
+    {
+        var url = this.baseUrl + "?LAYERS="+ this.layer + "&FORMAT=" + this.format +
+            "&SERVICE=WMS&VERSION=1.1.1" + "&REQUEST=GetMap&BBOX=" + 
+            bbox.minCarto.longitude + "," + bbox.minCarto.latitude + "," +
+            bbox.maxCarto.longitude + "," + bbox.maxCarto.latitude +
+            "&WIDTH=" + this.width + "&HEIGHT=" + this.height + "&SRS=" + this.srs;
+        return url;
+    };
+    
                
     /**
      * Return url wms IR coverage
@@ -47,7 +76,7 @@ define('Core/Commander/Providers/WMS_Provider',[
      * @param {type} coWMS
      * @returns {Object@call;create.urlOrtho.url|String}
      */
-    WMS_Provider.prototype.urlOrtho = function(coWMS)
+    WMS_Provider.prototype.urlGlobalIR = function(coWMS)
     {
         var latBound  = coWMS.latBound || new THREE.Vector2(-85,85);
         var longBound = coWMS.longBound || new THREE.Vector2(-178,178);
@@ -60,7 +89,8 @@ define('Core/Commander/Providers/WMS_Provider',[
         // URL for all globe  IR imagery   
         var url = urlBaseService + latBound.x+","+longBound.x+","+latBound.y+","+longBound.y+
                   "&width="+width +"&height="+height;
-                
+         
+        
         //"http://realearth.ssec.wisc.edu/api/image?products=globalir_20160212_080000&"+
         //"x="+coWMS.col+"&y="+coWMS.row+"&z=" + coWMS.zoom;
         return url;
@@ -69,46 +99,37 @@ define('Core/Commander/Providers/WMS_Provider',[
     };
     
 
-  
+
     /**
-     * Return texture RGBA THREE.js of orthophoto
-     * TODO : RGBA --> RGB remove alpha canal
-     * @param {type} coWMS
-     * @param {type} id
-     * @returns {WMS_Provider_L15.WMS_Provider.prototype@pro;ioDriverImage@call;read@call;then}
+     * Returns a texture from the WMS stream with the specified bounding box 
+     * @param {BoundingBox} bbox: requested bounding box
+     * @returns {WMS_Provider_L15.WMS_Provider.prototype@pro;_IoDriver@call;read@call;then}
      */
-    WMS_Provider.prototype.getTextureOrtho = function(coWMS,id)
+    WMS_Provider.prototype.getTexture = function(bbox)
     {
-         
-        var pack = function(i)
-        {
-            this.texture;
-            this.id      = i;
-        };
         
-        var result = new pack(id);
+        if(bbox === undefined)
+            return when(-2);
+       
+        var url = this.url(bbox);            
         
-        var url = this.urlOrtho(coWMS);        
-        result.texture  = this.cache.getRessource(url);
+        var textureCache = this.cache.getRessource(url);
         
-        if(result.texture !== undefined)
-        {                        
-            return when(result);
-        }        
+        if(textureCache !== undefined)
+            return when(textureCache);
         return this.ioDriverImage.read(url).then(function(image)
         {
-            
+            var result = {};
             result.texture = new THREE.Texture(image);          
             result.texture.generateMipmaps  = false;
             result.texture.magFilter        = THREE.LinearFilter;
             result.texture.minFilter        = THREE.LinearFilter;
             result.texture.anisotropy       = 16;
-            console.log("result.texture.anisotropy  ", result.texture, image);
+                        
             this.cache.addRessource(url,result.texture);
-            return result;
+            return result.texture;
             
         }.bind(this));
-        
     };
     
     return WMS_Provider;
