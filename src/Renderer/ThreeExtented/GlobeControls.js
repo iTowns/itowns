@@ -70,6 +70,8 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
         
         this.pointClickOnScreen = new THREE.Vector2();
         var pickOnGlobe       = new THREE.Vector3();
+        var pickOnGlobeNorm   = new THREE.Vector3();
+        
         var rayonPointGlobe   = 6378137;
         var raycaster         = new THREE.Raycaster();
 
@@ -150,16 +152,14 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
 	var changeEvent = { type: 'change' };
 	var startEvent = { type: 'start' };
 	var endEvent = { type: 'end' };
-          
-    
+              
         this.getPointGlobe = function ()         
         { 
             return pickOnGlobe;
         };
         
-	this.setPointGlobe = function ( point ) 
+        this.setPointGlobe = function ( point ) 
         {                                  
-                                    
                                     
             rayonPointGlobe = point.length();
             
@@ -173,6 +173,8 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
             var intersection = this.intersectSphere(raycaster.ray);
             
             pickOnGlobe.copy(intersection);
+            
+            pickOnGlobeNorm = pickOnGlobe.clone().normalize();
                         
         };
         
@@ -185,14 +187,20 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
            var a    = pc.length();
            
            if(a>r)
-              return new THREE.Vector3();
+              return undefined;// new THREE.Vector3();
            
-           var d    = ray.direction.clone();                      
-           var b    = Math.sqrt(r*r -a*a);
            
-           d.negate().setLength(b);
+           if(ray.origin.length() > rayonPointGlobe)
+           {
+                var d    = ray.direction.clone();
+                var b    = Math.sqrt(r*r - a*a);
+                d.setLength(b);
+
+                return new THREE.Vector3().subVectors(pc,d);                
+            }
            
-           return new THREE.Vector3().addVectors(pc,d);
+           else
+                return undefined;
       
        };
       
@@ -392,13 +400,7 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
             // restrict phi to be between desired limits
             phi = Math.max( this.minPolarAngle, Math.min( this.maxPolarAngle, phi ) );
             var radius = point.length() * lscale;
-//            
-//            var lim     = 6370000;
-//            var lim2    = 3000000;
-//                                    
-//            if(radius> lim)
-//                phi     *= Math.max(1 - (radius - lim)/lim2,0);                
-                
+           
             // restrict phi to be betwee EPS and PI-EPS
             phi = Math.max( EPS, Math.min( Math.PI - EPS, phi ) );
 
@@ -693,10 +695,10 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
 
                     var intersection = scope.intersectSphere(raycaster.ray);
 
-                    quatGlobe.setFromUnitVectors(intersection.normalize(), pickOnGlobe.clone().normalize());
+                    if(intersection)
                     
-                    //console.log(pickOnGlobe);
-
+                        quatGlobe.setFromUnitVectors(intersection.normalize(), pickOnGlobeNorm);            
+                    
                 }
 
 		if ( state !== STATE.NONE ) scope.update();
