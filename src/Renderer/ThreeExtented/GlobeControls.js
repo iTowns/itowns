@@ -64,19 +64,14 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
         this.radius = null;
         this.theta  = null;
         this.phi    = null;
-        
-        this.localPhi = 0;
-        this.localTheta = 0;
-        
-        this.pointClickOnScreen = new THREE.Vector2();
+
+        this.ptScreenClick    = new THREE.Vector2();
         var pickOnGlobe       = new THREE.Vector3();
         var pickOnGlobeNorm   = new THREE.Vector3();
         
         var rayonPointGlobe   = 6378137;
         var raycaster         = new THREE.Raycaster();
 
-        this.pickOnSphere = new THREE.Vector3();
-        
 	// How far you can orbit horizontally, upper and lower limits.
 	// If set, must be a sub-interval of the interval [ - Math.PI, Math.PI ].
 	this.minAzimuthAngle = - Infinity; // radians
@@ -165,8 +160,8 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
             
             var mouse   = new THREE.Vector2();
                        
-            mouse.x =   ( this.pointClickOnScreen.x / window.innerWidth )   * 2 - 1;
-            mouse.y = - ( this.pointClickOnScreen.y / window.innerHeight )  * 2 + 1;	
+            mouse.x =   ( this.ptScreenClick.x / window.innerWidth )   * 2 - 1;
+            mouse.y = - ( this.ptScreenClick.y / window.innerHeight )  * 2 + 1;	
 
             raycaster.setFromCamera( mouse, this.cloneObject);                                                            
 
@@ -454,41 +449,19 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
             }
                 
             if(state === STATE.ROTATEONITSELF)  {
-             
-                this.localPhi += phiDelta;
-                this.localTheta += thetaDelta;
-                
-                var cameraPos = this.object.position;
-      
-                var normal = cameraPos.clone().normalize();
-                var quaternion  = new THREE.Quaternion();
-                quaternion.setFromAxisAngle( new THREE.Vector3(1, 0 ,0 ), Math.PI/2 );
-
-                var child = new THREE.Object3D();
-                var localTarget = new THREE.Vector3().addVectors ( cameraPos.clone(), normal );
-                child.lookAt(localTarget);
-                child.quaternion.multiply(quaternion );                
-                child.updateMatrix();
-
-                var quaternionTHETA = new THREE.Quaternion();
-                quaternionTHETA.setFromAxisAngle( new THREE.Vector3( 0, 1, 0 ), this.localTheta );
-                child.quaternion.multiply(quaternionTHETA);
-                
-                var quaternionPHI = new THREE.Quaternion();
-                quaternionPHI.setFromAxisAngle( new THREE.Vector3( 1, 0, 0 ), this.localPhi );
-                child.quaternion.multiply(quaternionPHI);
-  
-                this.object.quaternion.copy(child.quaternion);
-                
-                this.object.updateMatrixWorld();
-                
-                //this.moveTarget.copy(this.object.localToWorld(new THREE.Vector3( 0, 0, 1 )));
+                             
+                this.object.worldToLocal(this.moveTarget);                
+                var normal      = this.object.position.clone().normalize().applyQuaternion(this.object.quaternion.clone().inverse());                 
+                var quaternion  = new THREE.Quaternion().setFromAxisAngle( normal,  thetaDelta);
+                quaternion.multiply(new THREE.Quaternion().setFromAxisAngle( new THREE.Vector3( 1, 0, 0 ), phiDelta ));                
+                this.moveTarget.applyQuaternion(quaternion);                
+                this.object.localToWorld(this.moveTarget);                                
+                this.object.up.copy(this.moveTarget.clone().normalize());                             
+                this.object.lookAt(this.moveTarget);                
                 
             }else
-            {
-                                
-                this.object.lookAt( offGT );   // Usual CASE (not rotating around camera axe)  
-                                
+            {                                
+                this.object.lookAt( offGT );   // Usual CASE (not rotating around camera axe)                                  
             }
 
             quatGlobe.set(0,0,0,1);
@@ -578,10 +551,10 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
                             
                             scope.object.updateMatrixWorld();
                             scope.cloneObject          = scope.object.clone(); 
-                            scope.pointClickOnScreen.x = event.clientX;
-                            scope.pointClickOnScreen.y = event.clientY;
+                            scope.ptScreenClick.x = event.clientX;
+                            scope.ptScreenClick.y = event.clientY;
                             
-                            var point = scope.engine.getPickingPosition(scope.pointClickOnScreen);
+                            var point = scope.engine.getPickingPosition(scope.ptScreenClick);
                             
                             scope.engine.renderScene();
                             scope.setPointGlobe(point);
