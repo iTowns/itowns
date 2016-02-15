@@ -456,7 +456,7 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
                 quaternion.multiply(new THREE.Quaternion().setFromAxisAngle( new THREE.Vector3( 1, 0, 0 ), phiDelta ));                
                 this.moveTarget.applyQuaternion(quaternion);                
                 this.object.localToWorld(this.moveTarget);                                
-                this.object.up.copy(this.moveTarget.clone().normalize());                             
+                this.object.up.copy(this.moveTarget.clone().normalize());           
                 this.object.lookAt(this.moveTarget);                
                 
             }else
