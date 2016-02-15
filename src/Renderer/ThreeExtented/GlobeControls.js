@@ -579,8 +579,9 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
                             scope.pointClickOnScreen.x = event.clientX;
                             scope.pointClickOnScreen.y = event.clientY;
                             
-                            var point = scope.engine.pickingInPositionBuffer(scope.pointClickOnScreen);
+                            var point = scope.engine.getPickingPosition(scope.pointClickOnScreen);
                             
+                            scope.engine.renderScene();
                             scope.setPointGlobe(point);
                             
                         }

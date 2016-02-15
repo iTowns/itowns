@@ -510,9 +510,10 @@ define('Renderer/c3DEngine',[
     /**
     * 
      * @param {type} mouse : mouse position on screen in pixel
-     * @returns THREE.Vector3 position cartesien in world space 
-     **/
-    c3DEngine.prototype.picking = function(mouse,scene) 
+     * @param {type} scene     
+     * @returns THREE.Vector3 position cartesien in world space
+     * */
+    c3DEngine.prototype.getPickingPosition = function(mouse,scene) 
     {
         if(mouse === undefined)
             mouse = new THREE.Vector2(Math.floor(this.width/2),Math.floor(this.height/2));
