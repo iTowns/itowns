@@ -40,10 +40,10 @@ define('Core/Commander/Providers/WMS_Provider',[
         this.ioDriverImage = new IoDriver_Image();
         this.ioDriverXML = new IoDriverXML();
 
-        this.baseUrl = options.url;
-        this.layer = options.layer;
+        this.baseUrl = defaultValue(options.url,"");
+        this.layer = defaultValue(options.layer,"");
         this.format = defaultValue(options.format,"image/jpeg");
-        this.srs = options.srs;
+        this.srs = defaultValue(options.srs,"");
         this.width = defaultValue(options.width, 256);
         this.height = defaultValue(options.height, 256);
   }
@@ -67,6 +67,38 @@ define('Core/Commander/Providers/WMS_Provider',[
             "&WIDTH=" + this.width + "&HEIGHT=" + this.height + "&SRS=" + this.srs;
         return url;
     };
+    
+               
+    /**
+     * Return url wms IR coverage
+     * ex url: http://realearth.ssec.wisc.edu/api/image?products=globalir&bounds=-85,-178,85,178&width=1024&height=512
+     * We can also specify time of coverage image like &time=2016-02-12+10:42
+     * @param {type} coWMS
+     * @returns {Object@call;create.urlOrtho.url|String}
+     */
+    WMS_Provider.prototype.urlGlobalIR = function(coWMS)
+    {
+        var latBound  = coWMS.latBound || new THREE.Vector2(-85,85);
+        var longBound = coWMS.longBound || new THREE.Vector2(-178,178);
+        
+        var width  = coWMS.width || 1024;
+        var height = coWMS.height || 512;
+        
+        var urlBaseService = "http://realearth.ssec.wisc.edu/api/image?products=globalir&bounds=";
+  
+        // URL for all globe  IR imagery   
+        var url = urlBaseService + latBound.x+","+longBound.x+","+latBound.y+","+longBound.y+
+                  "&width="+width +"&height="+height;
+         
+        
+        //"http://realearth.ssec.wisc.edu/api/image?products=globalir_20160212_080000&"+
+        //"x="+coWMS.col+"&y="+coWMS.row+"&z=" + coWMS.zoom;
+        return url;
+       
+
+    };
+    
+
 
     /**
      * Returns a texture from the WMS stream with the specified bounding box 

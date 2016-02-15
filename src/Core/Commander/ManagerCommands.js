@@ -75,6 +75,8 @@ define('Core/Commander/ManagerCommands',
         {                       
             this.providers.push(new tileGlobeProvider(param));
             
+//            this.providers[0].providerWMS.loadClouds();
+            
 //            var latitude    = 48.850077; 
 //            var  longitude  = 2.384618;
 //                
