@@ -26,7 +26,8 @@ define('Globe/Clouds',['Renderer/NodeMesh',
         {                        
            diffuse: { type: "t" , value: 
                        this.loader.load("http://realearth.ssec.wisc.edu/api/image?products=globalir&bounds=-85,-178,85,178&width=256&height=128") 
-            }
+            },
+           time:    { type: "f", value:0.}
         };
         
        
@@ -57,17 +58,25 @@ define('Globe/Clouds',['Renderer/NodeMesh',
       
         var coWMS = {latBound:  new THREE.Vector2(-85,85),
                      longBound: new THREE.Vector2(-178,178),
-                     width:     8192,
-                     height:    4096 };
+                     width:     2048,
+                     height:    1024 };
                  
 
         var url = this.providerWMS.urlGlobalIR(coWMS, 0);
         this.loader.load(url, function ( texture ) {
 	    this.material.uniforms.diffuse.value = texture;
             this.material.uniforms.diffuse.needsUpdate = true;
+            this.animate();
         }.bind(this));
 
         
+       
+    };
+   
+    Clouds.prototype.animate = function(){
+        
+        this.material.uniforms.time.value += 0.01;
+        requestAnimationFrame(this.animate.bind(this));
     };
    
     return Clouds;
