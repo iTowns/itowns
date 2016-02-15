@@ -37,7 +37,7 @@ define('Globe/Globe',[
         
         this.terrain    = new Quadtree(EllipsoidTileMesh,this.SchemeTileWMTS(2),this.size,kml) ;        
         this.atmosphere = this.NOIE ? new Atmosphere(this.size) : undefined;
-    //    this.clouds     = new Clouds();
+      //  this.clouds     = new Clouds();
    
         var material    = new BasicMaterial(new THREE.Color(1,0,0));
         var geometry    = new THREE.SphereGeometry(200);       
@@ -65,7 +65,7 @@ define('Globe/Globe',[
             this.add(this.atmosphere);
         
         if(this.clouds!== undefined)
-            this.add(this.clouds.sphereCloud);
+            this.add(this.clouds);
         
     }
 
