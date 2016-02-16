@@ -285,8 +285,8 @@ define('Renderer/c3DEngine',[
              
              if(node.enableRTC)                
                 node.traverseVisible(enable ? this.rtcOn.bind(this) : this.rtcOff.bind(this));
-             else                      
-                node.visible  = enable;
+       /*      else                      
+                node.visible  = enable;*/
              
          }
         
@@ -299,9 +299,9 @@ define('Renderer/c3DEngine',[
             var node = this.scene3D.children[x];
             
             if(node.enablePickingRender)                             
-               node.traverseVisible(enable? this.pickingOn.bind(this) : this.pickingOff.bind(this));
+               node.traverseVisible( enable ? this.pickingOn.bind(this) : this.pickingOff.bind(this));
             else
-               node.visible = !enable;        
+               node.visible = !enable && node.superVisibility; // (To keep specified value from menu for ex)     
         }        
     };
     
@@ -520,7 +520,8 @@ define('Renderer/c3DEngine',[
          
         this.camera.camera3D.updateMatrixWorld();
         
-        this.dummy.visible  = false;        
+        this.dummy.visible  = false; 
+        
         var buffer          = this.renderTobuffer(mouse.x,this.height - mouse.y,1,1,RENDER.PICKING);        
         this.dummy.visible  = true;
 
