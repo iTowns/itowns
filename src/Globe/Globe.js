@@ -37,7 +37,7 @@ define('Globe/Globe',[
         
         this.terrain    = new Quadtree(EllipsoidTileMesh,this.SchemeTileWMTS(2),this.size,kml) ;        
         this.atmosphere = this.NOIE ? new Atmosphere(this.size) : undefined;
-       // this.clouds     = new Clouds();
+        this.clouds     = new Clouds();
    
         var material    = new BasicMaterial(new THREE.Color(1,0,0));
         var geometry    = new THREE.SphereGeometry(200);       
@@ -64,9 +64,8 @@ define('Globe/Globe',[
         if(this.atmosphere !== undefined)
             this.add(this.atmosphere);
         
-        if(this.clouds!== undefined)
-            this.add(this.clouds);
-        
+        this.add(this.clouds);
+       
     }
 
     Globe.prototype = Object.create( Layer.prototype );
@@ -74,7 +73,7 @@ define('Globe/Globe',[
     Globe.prototype.constructor = Globe;
 
     /**
-    * @documentation: Rafrachi les matÃ©riaux en fonction du quadTree ORTHO
+    * @documentation: Rafrachi les matériaux en fonction du quadTree ORTHO
     *
     */
     Globe.prototype.QuadTreeToMaterial = function(){
@@ -100,12 +99,22 @@ define('Globe/Globe',[
              this.atmosphere.visible = show;
 
     };
+       
+    Globe.prototype.showClouds = function(show){
+        
+        if(this.clouds.live === false && show){
+           this.clouds.generate();
+        }
+        this.clouds.visible = show;
+        this.clouds.superVisibility = show;
+    };
     
     
     Globe.prototype.ellipsoid = function()
     {
         return this.terrain.interCommand.managerCommands.providers[0].ellipsoid;
     };
+
     
     return Globe;
     

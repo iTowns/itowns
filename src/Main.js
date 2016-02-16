@@ -89,11 +89,17 @@ requirejs.config({
 });
 
 
-requirejs(['Core/Commander/Interfaces/ApiInterface/ApiGlobe'], 
+
+define(['Core/Commander/Interfaces/ApiInterface/ApiGlobe'], 
     function(ApiGlobe) 
     {
-       
-        ApiGlobe.CreateSceneGlobe();
+        // browser execution or not ?
+        var scope = typeof window !== "undefined" ? window : {};
+        var itowns = scope.itowns || {
+            viewer: ApiGlobe
+        };
+        scope.itowns= itowns ;
+        return scope.itowns ;
         
     }
 );
