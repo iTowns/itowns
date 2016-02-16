@@ -698,26 +698,7 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
         }
         
         
-        function inerty()
-        {
-            
-                scope.time -= 2;
-                
-                if(scope.time <= 0)
-                {
-                   quatGlobe.set(0,0,0,1);
-                   scope.time = 0;
-                   newTarget(); 
-                   //state = STATE.NONE;
-                   //console.log('stp');
-                   return;
-                }
-                scope.update();
-                scope.object.updateMatrixWorld();
-                scope.engine.renderScene();
-                //console.log(scope.time);
-                return inerty();
-        }
+
 
 	function onMouseUp( /* event */ ) {
 
@@ -729,17 +710,7 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
                  
                 newTarget();
                 state = STATE.NONE;
-            
-//                if(state === STATE.MOVE_GLOBE)
-//                {
-//                    quatGlobe.multiply(quatGlobe);
-//                    scope.time   = timeStart;
-//                    inerty();
-//                }
-//                else
-//                    state = STATE.NONE;
-
-                //scope.update(); // TODO verifier s'il y faut pas faire un update()
+                            
 	}
 
 	function onMouseWheel( event ) {
