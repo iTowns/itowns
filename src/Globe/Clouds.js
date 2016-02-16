@@ -14,8 +14,7 @@ define('Globe/Clouds',['Renderer/NodeMesh',
 
     function Clouds(size){
         
-        NodeMesh.call( this );
-        this.superVisibility = false;
+        NodeMesh.call( this );        
         
         this.providerWMS = new WMS_Provider({});
         this.loader = new THREE.TextureLoader();

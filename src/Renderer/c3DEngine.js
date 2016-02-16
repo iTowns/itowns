@@ -254,7 +254,7 @@ define('Renderer/c3DEngine',[
             if(node.enablePickingRender)                             
                node.traverseVisible( enable ? this.pickingOn.bind(this) : this.pickingOff.bind(this));
             else
-               node.visible = !enable && node.superVisibility; // (To keep specified value from menu for ex)     
+               node.visible = !enable;
         }        
     };
     
