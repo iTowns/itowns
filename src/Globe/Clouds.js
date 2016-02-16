@@ -16,62 +16,36 @@ define('Globe/Clouds',['Renderer/NodeMesh',
         
         NodeMesh.call( this );
         
-        this.providerWMS = new WMS_Provider();
-        this.sphereCloud = null;
-
-        //this.sphereCloud = this.generate();
+        this.providerWMS = new WMS_Provider({});
+        this.loader = new THREE.TextureLoader();
+        this.loader.crossOrigin = '';
         
-        var loader = new THREE.TextureLoader();
-        loader.crossOrigin = '';
+        this.geometry       = new THREE.SphereGeometry( 6400000, 96, 96 ); 
         
         this.uniforms  = 
         {                        
-            atmoIN  : { type: "i" , value: 0 },
-            screenSize: {type: "v2", value: new THREE.Vector2(window.innerWidth,window.innerHeight)}, // Should be updated on screen resize...
-            diffuse: { type: "t" , value: 
-                       loader.load("http://realearth.ssec.wisc.edu/api/image?products=globalir&bounds=-85,-178,85,178&width=1024&height=512") 
-            }
+           diffuse: { type: "t" , value: 
+                       this.loader.load("http://realearth.ssec.wisc.edu/api/image?products=globalir&bounds=-85,-178,85,178&width=256&height=128") 
+            },
+           time:    { type: "f", value:0.}
         };
+        
        
         this.material = new THREE.ShaderMaterial( {
 	
             uniforms        : this.uniforms,
             vertexShader    : CloudsVS,
             fragmentShader  : CloudsFS,
-          //  side            : THREE.BackSide,
-          //  blending        : THREE.AdditiveBlending,
+         //   blending        : THREE.AdditiveBlending,
             transparent     : true,
             wireframe       : false
 
         } );
         
+        this.rotation.y += Math.PI;
         
         this.generate();
-    /*            
-        this.geometry       = new THREE.SphereGeometry( size.x * 1.14 , 128, 128 );
-        
-        this.uniformsIn  = 
-        {                        
-            atmoIN  : { type: "i" , value: 1 },
-            screenSize: {type: "v2", value: new THREE.Vector2(window.innerWidth,window.innerHeight)} // Should be updated on screen resize...
-        };
-        
-        var materialAtmoIn = new THREE.ShaderMaterial( {
-	
-            uniforms        : this.uniformsIn,
-            vertexShader    : GlowVS,
-            fragmentShader  : GlowFS,
-            side            : THREE.FrontSide,
-            blending        : THREE.AdditiveBlending,
-            transparent     : true
-
-        } );
-        
-  
-       var atmosphereIN    = new THREE.Mesh(new THREE.SphereGeometry( size.x * 1.002, 64, 64 ),materialAtmoIn);
-        
-       this.add(atmosphereIN);
-              */
+   
     }
     
     Clouds.prototype = Object.create( NodeMesh.prototype );
@@ -84,42 +58,25 @@ define('Globe/Clouds',['Renderer/NodeMesh',
       
         var coWMS = {latBound:  new THREE.Vector2(-85,85),
                      longBound: new THREE.Vector2(-178,178),
-                     width:     1024,
-                     height:    512 };
+                     width:     2048,
+                     height:    1024 };
                  
-        var geometry = new THREE.SphereGeometry( 6490000, 32, 32 ); 
-  /*      var mat = new THREE.MeshBasicMaterial(); 
-        var url = "http://realearth.ssec.wisc.edu/api/image?products=globalir&bounds=-85,-178,85,178&width=2048&height=1024 ";//this.providerWMS.getTextureOrtho(coWMS,0);//"http://realearth.ssec.wisc.edu/api/image?products=globalir_20160211_170000&x=0&y=0&z=0&format=image/jpg";
-        var loader = new THREE.TextureLoader();
-        loader.crossOrigin = '';
-        var texture = loader.load(url); //offset
-       // texture.offset = 0
-        var material = new THREE.MeshBasicMaterial( {map: texture, transparent: true, opacity:0.75});//this.providerWMS.getTextureOrtho(coWMS,0)) } );
- */       this.sphereCloud = new THREE.Mesh( geometry, this.material); //material);//erial );
-        this.sphereCloud.rotation.y += Math.PI;
-      //  this.add(this.sphereCloud); 
-      //  gfxEngine.scene3D.add(this.sphereCloud);
-                    
-                    
-                    
-     /*               
-        this.providerWMS.getTextureOrtho(coWMS,0).then
-            (
-                function(result)
-                {                                                             
-                    console.log(result);
-                    var geometry = new THREE.SphereGeometry( 8000000, 32, 32 );
-                    //var material = new THREE.MeshBasicMaterial( {map: result.texture} );
-                    var material = new THREE.MeshBasicMaterial( {map: new THREE.TextureLoader().load( Clouds.providerWMS.getTextureOrtho(coWMS,0)) } );
-                    this.sphereCloud = new THREE.Mesh( geometry, material );
-                    this.add(this.sphereCloud); 
-                    gfxEngine.scene3D.add(this.sphereCloud);
-                    return sphereCloud;
 
-                }.bind(this)
-            );
-    */
+        var url = this.providerWMS.urlGlobalIR(coWMS, 0);
+        this.loader.load(url, function ( texture ) {
+	    this.material.uniforms.diffuse.value = texture;
+            this.material.uniforms.diffuse.needsUpdate = true;
+            this.animate();
+        }.bind(this));
+
         
+       
+    };
+   
+    Clouds.prototype.animate = function(){
+        
+        this.material.uniforms.time.value += 0.01;
+        requestAnimationFrame(this.animate.bind(this));
     };
    
     return Clouds;
