@@ -466,10 +466,10 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
             }else
             {                                
                 this.object.lookAt( offGT );   // Usual CASE (not rotating around camera axe)  
-                this.object.updateMatrixWorld();
+                ;
             }
 
-            //quatGlobe.set(0,0,0,1);
+            quatGlobe.set(0,0,0,1);
             thetaDelta  = 0;
             phiDelta    = 0;
             scale       = 1;
@@ -482,7 +482,7 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
             if ( lastPosition.distanceToSquared( this.object.position ) > EPS
                 || 8 * (1 - lastQuaternion.dot(this.object.quaternion)) > EPS ) {
 
-                    //this.dispatchEvent( changeEvent );
+                    this.dispatchEvent( changeEvent );
 
                     lastPosition.copy( this.object.position );
                     lastQuaternion.copy (this.object.quaternion );
