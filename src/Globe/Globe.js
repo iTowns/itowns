@@ -62,9 +62,12 @@ define('Globe/Globe',[
         this.add(this.batiments);
         
         if(this.atmosphere !== undefined)
+        {
+            this.atmosphere.add(this.clouds);
             this.add(this.atmosphere);
+        }
         
-        this.add(this.clouds);
+        //this.add(new THREE.Object3D().add());
        
     }
 
@@ -106,7 +109,7 @@ define('Globe/Globe',[
            this.clouds.generate();
         }
         this.clouds.visible = show;
-        this.clouds.superVisibility = show;
+        
     };
     
     
