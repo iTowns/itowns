@@ -33,23 +33,23 @@ define('Renderer/NodeMesh',['Scene/Node','THREE'], function(Node, THREE){
     
     NodeMesh.prototype.setVisibility = function(show)
     {        
-        this.visible = show;
+        this.visible = show && !this.superVisibility;
         this.showHelper(show);
         
         if(this.content !== null )
-            this.content.visible = show;
+            this.content.visible = show && !this.superVisibility;
         
         return show;
     };
     
     NodeMesh.prototype.setMaterialVisibility = function(show)
     {        
-        this.material.visible = show;
+        this.material.visible = show && !this.superVisibility;
         if(this.helper !== undefined)
             this.helper.setMaterialVisibility(show);
         
         if(this.content !== null && show)
-            this.content.visible = true;
+            this.content.visible = true && !this.superVisibility;
         
     };
     
