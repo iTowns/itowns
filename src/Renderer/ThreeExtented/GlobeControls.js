@@ -64,6 +64,10 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
         this.radius = null;
         this.theta  = null;
         this.phi    = null;
+        
+        this.time   = 0;
+        var timeStart = 500;
+        
 
         this.ptScreenClick    = new THREE.Vector2();
         var pickOnGlobe       = new THREE.Vector3();
@@ -429,7 +433,7 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
              
             if(state === STATE.MOVE_GLOBE)                
             {           
-                
+                //console.log('rr');
                 offGT.applyQuaternion(quatGlobe);                
                 this.moveTarget.copy(offGT);
                 this.object.position.copy(offset.applyQuaternion(quatGlobe));                   
@@ -461,10 +465,11 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
                 
             }else
             {                                
-                this.object.lookAt( offGT );   // Usual CASE (not rotating around camera axe)                                  
+                this.object.lookAt( offGT );   // Usual CASE (not rotating around camera axe)  
+                this.object.updateMatrixWorld();
             }
 
-            quatGlobe.set(0,0,0,1);
+            //quatGlobe.set(0,0,0,1);
             thetaDelta  = 0;
             phiDelta    = 0;
             scale       = 1;
@@ -477,7 +482,7 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
             if ( lastPosition.distanceToSquared( this.object.position ) > EPS
                 || 8 * (1 - lastQuaternion.dot(this.object.quaternion)) > EPS ) {
 
-                    this.dispatchEvent( changeEvent );
+                    //this.dispatchEvent( changeEvent );
 
                     lastPosition.copy( this.object.position );
                     lastQuaternion.copy (this.object.quaternion );
@@ -677,6 +682,42 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
 		if ( state !== STATE.NONE ) scope.update();
 
 	}
+        
+        function newTarget()
+        {
+            // Update target camera {START}                                
+                scope.engine.updatePositionBuffer();                                    
+                var positionTarget = scope.engine.pickingInPositionBuffer();                                
+                var distanceTarget = positionTarget.distanceTo(scope.object.position);
+                
+                scope.object.worldToLocal(scope.moveTarget);
+                scope.moveTarget.setLength(distanceTarget);
+                scope.object.localToWorld(scope.moveTarget);                
+                computeTarget();
+                // Update target camera  {END}
+        }
+        
+        
+        function inerty()
+        {
+            
+                scope.time -= 2;
+                
+                if(scope.time <= 0)
+                {
+                   quatGlobe.set(0,0,0,1);
+                   scope.time = 0;
+                   newTarget(); 
+                   //state = STATE.NONE;
+                   //console.log('stp');
+                   return;
+                }
+                scope.update();
+                scope.object.updateMatrixWorld();
+                scope.engine.renderScene();
+                //console.log(scope.time);
+                return inerty();
+        }
 
 	function onMouseUp( /* event */ ) {
 
@@ -686,18 +727,19 @@ THREE.GlobeControls = function ( object, domElement,engine ) {
 		document.removeEventListener( 'mouseup', onMouseUp, false );
 		scope.dispatchEvent( endEvent );
                  
-                scope.engine.updatePositionBuffer();                    
-                var positionTarget = scope.engine.pickingInPositionBuffer();                                
-                var distanceTarget = positionTarget.distanceTo(scope.object.position);
-                
-                scope.object.worldToLocal(scope.moveTarget);
-                scope.moveTarget.setLength(distanceTarget);
-                scope.object.localToWorld(scope.moveTarget);
-                
-                computeTarget();
-                
-		state = STATE.NONE;
-                scope.update();
+                newTarget();
+                state = STATE.NONE;
+            
+//                if(state === STATE.MOVE_GLOBE)
+//                {
+//                    quatGlobe.multiply(quatGlobe);
+//                    scope.time   = timeStart;
+//                    inerty();
+//                }
+//                else
+//                    state = STATE.NONE;
+
+                //scope.update(); // TODO verifier s'il y faut pas faire un update()
 	}
 
 	function onMouseWheel( event ) {
