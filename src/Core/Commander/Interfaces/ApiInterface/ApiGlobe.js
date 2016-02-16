@@ -10,6 +10,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe',['Core/Commander/Interf
     function ApiGlobe(){
         //Constructor
 
+        this.scene = null;
         this.commandsTree = null;
 
     };        
@@ -40,16 +41,20 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe',['Core/Commander/Interf
 
     };
     
-    ApiGlobe.CreateSceneGlobe = function(){
-    //TODO: Normalement la création de scene ne doit pas etre ici....
-    // à deplacer plus tard
+    ApiGlobe.createSceneGlobe = function(pos){
+    //TODO: Normalement la creation de scene ne doit pas etre ici....
+    // A� deplacer plus tard
     
-        var scene = Scene();
-      
-        scene.init();
+        this.scene = Scene();
+        this.scene.init(pos);
     
-        return scene;
+        return this.scene;
 
+    };
+    
+    ApiGlobe.showClouds = function(value){
+
+           this.scene.layers[0].showClouds(value);
     };
     
     return ApiGlobe;

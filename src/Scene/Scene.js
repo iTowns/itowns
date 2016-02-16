@@ -71,7 +71,7 @@ define('Scene/Scene',[
      * @documentation: initialisation scene 
      * @returns {undefined}
      */
-    Scene.prototype.init = function()
+    Scene.prototype.init = function(pos)
     {                    
         this.managerCommand.init(this);
         var globe = new Globe(); 
@@ -81,7 +81,7 @@ define('Scene/Scene',[
         
         //var position    = globe.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(2.33,48.87,25000000));        
         //
-        var position    = globe.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(48.88,2.3465,25000000));        
+        var position    = globe.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(pos.lat, pos.lon, pos.alt));        
 
         //var position    = globe.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(2.33,,25000000));
         //var position    = globe.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(48.7,2.33,25000000));        

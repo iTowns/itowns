@@ -15,11 +15,13 @@ define('Globe/Clouds',['Renderer/NodeMesh',
     function Clouds(size){
         
         NodeMesh.call( this );
+        this.superVisibility = false;
         
         this.providerWMS = new WMS_Provider({});
         this.loader = new THREE.TextureLoader();
         this.loader.crossOrigin = '';
-        
+        this.live = false;
+               
         this.geometry       = new THREE.SphereGeometry( 6400000, 96, 96 ); 
         
         this.uniforms  = 
@@ -44,8 +46,11 @@ define('Globe/Clouds',['Renderer/NodeMesh',
         
         this.rotation.y += Math.PI;
         
-        this.generate();
-   
+        //this.generate();
+        
+        this.visible = false;
+        
+        
     }
     
     Clouds.prototype = Object.create( NodeMesh.prototype );
@@ -55,7 +60,7 @@ define('Globe/Clouds',['Renderer/NodeMesh',
     
     Clouds.prototype.generate = function(){
       
-      
+        this.live = true;
         var coWMS = {latBound:  new THREE.Vector2(-85,85),
                      longBound: new THREE.Vector2(-178,178),
                      width:     2048,
