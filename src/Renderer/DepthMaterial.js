@@ -9,8 +9,8 @@ define('Renderer/DepthMaterial',
     [   'THREE',
         'Renderer/BasicMaterial',
         'Core/System/JavaTools',
-        'text!Renderer/Shader/DepthVS.glsl',
-        'text!Renderer/Shader/DepthFS.glsl'], function(
+        'Renderer/Shader/DepthVS.glsl',
+        'Renderer/Shader/DepthFS.glsl'], function(
             THREE,
             BasicMaterial,
             JavaTools,

@@ -5,9 +5,8 @@
  */
 
 
-/* global THREE */
+define('Globe/Star',['Renderer/NodeMesh','StarGeometry','three'], function(NodeMesh,StarGeometry,THREE){
 
-define('Globe/Star',['Renderer/NodeMesh','StarGeometry'], function(NodeMesh,StarGeometry){
   
    
     var  Star = function (){

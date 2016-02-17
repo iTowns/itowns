@@ -5,7 +5,7 @@
  */
 
 
-/* global THREE */
+var THREE = require('three');
 
 THREE.OBB = function (min,max)
 {
