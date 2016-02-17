@@ -1,11 +1,11 @@
 /**
-* Generated On: 2015-10-5
-* Class: IoDriverPly
-*/
+ * Generated On: 2015-10-5
+ * Class: IoDriverPly
+ */
 
 var IoDriver = require('IoDriver');
 
-function IoDriverPly(){
+function IoDriverPly() {
     //Constructor
 
 
@@ -14,4 +14,6 @@ function IoDriverPly(){
 IoDriverPly.prototype = new IoDriver();
 
 
-module.exports = {IoDriverPly:IoDriverPly};
+module.exports = {
+    IoDriverPly: IoDriverPly
+};

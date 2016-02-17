@@ -5,23 +5,24 @@
  */
 
 
-/* global THREE */
+var THREE = require('three');
 
-THREE.SphereHelper = function (radius)
-{
+THREE.SphereHelper = function(radius) {
     THREE.Mesh.call(this);
-  
-    this.geometry    = new THREE.SphereGeometry(radius,8,8);        
-    var color        = new THREE.Color(Math.random(),Math.random(),Math.random());
-    this.material    = new THREE.MeshBasicMaterial( {color : color.getHex(),wireframe : true} );
-        
+
+    this.geometry = new THREE.SphereGeometry(radius, 8, 8);
+    var color = new THREE.Color(Math.random(), Math.random(), Math.random());
+    this.material = new THREE.MeshBasicMaterial({
+        color: color.getHex(),
+        wireframe: true
+    });
+
 };
 
-THREE.SphereHelper.prototype = Object.create( THREE.Mesh.prototype );
+THREE.SphereHelper.prototype = Object.create(THREE.Mesh.prototype);
 THREE.SphereHelper.prototype.constructor = THREE.SphereHelper;
 
-THREE.SphereHelper.prototype.update = function (radius)
-{                
-    this.geometry.dispose();    
-    this.geometry  = new THREE.SphereGeometry(radius,8,8);
+THREE.SphereHelper.prototype.update = function(radius) {
+    this.geometry.dispose();
+    this.geometry = new THREE.SphereGeometry(radius, 8, 8);
 };

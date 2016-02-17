@@ -1,11 +1,11 @@
 /**
-* Generated On: 2015-10-5
-* Class: IoDriverglTF
-*/
+ * Generated On: 2015-10-5
+ * Class: IoDriverglTF
+ */
 
 var IoDriver = require('IoDriver');
 
-function IoDriverglTF(){
+function IoDriverglTF() {
     //Constructor
 
 
@@ -14,4 +14,6 @@ function IoDriverglTF(){
 IoDriverglTF.prototype = new IoDriver();
 
 
-module.exports = {IoDriverglTF:IoDriverglTF};
+module.exports = {
+    IoDriverglTF: IoDriverglTF
+};

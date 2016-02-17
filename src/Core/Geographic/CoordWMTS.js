@@ -1,15 +1,15 @@
 /**
-* Generated On: 2015-10-5
-* Class: CoordCarto
-* Description: Coordonées cartographiques
-*/
+ * Generated On: 2015-10-5
+ * Class: CoordCarto
+ * Description: Coordonées cartographiques
+ */
 
 /**
  * 
  * @param {type} defaultValue
  * @returns {CoordWMTS_L10.CoordWMTS}
  */
-define('Core/Geographic/CoordWMTS',['Core/defaultValue'], function(defaultValue){
+define('Core/Geographic/CoordWMTS', ['Core/defaultValue'], function(defaultValue) {
 
 
     /**
@@ -19,19 +19,17 @@ define('Core/Geographic/CoordWMTS',['Core/defaultValue'], function(defaultValue)
      * @param {type} col
      * @returns {CoordWMTS_L12.CoordWMTS}
      */
-    function CoordWMTS(zoom,row,col)
-    {
-        this.zoom   = defaultValue(zoom,0);
-        this.row    = defaultValue(row,0);
-        this.col    = defaultValue(col,0);
+    function CoordWMTS(zoom, row, col) {
+        this.zoom = defaultValue(zoom, 0);
+        this.row = defaultValue(row, 0);
+        this.col = defaultValue(col, 0);
     }
-    
+
     CoordWMTS.prototype.constructor = CoordWMTS;
-    
-    CoordWMTS.prototype.clone = function()
-    {
-        return new CoordWMTS(this.zoom,this.row,this.col);
+
+    CoordWMTS.prototype.clone = function() {
+        return new CoordWMTS(this.zoom, this.row, this.col);
     };
-    
+
     return CoordWMTS;
 });

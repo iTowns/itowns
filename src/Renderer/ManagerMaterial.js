@@ -1,10 +1,10 @@
 /**
-* Generated On: 2015-10-5
-* Class: ManagerMaterial
-* Description: Factory de material
-*/
+ * Generated On: 2015-10-5
+ * Class: ManagerMaterial
+ * Description: Factory de material
+ */
 
-function ManagerMaterial(){
+function ManagerMaterial() {
     //Constructor
 
     this._shaders = null;
@@ -14,4 +14,6 @@ function ManagerMaterial(){
 
 
 
-module.exports = {ManagerMaterial:ManagerMaterial};
+module.exports = {
+    ManagerMaterial: ManagerMaterial
+};

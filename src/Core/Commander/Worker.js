@@ -1,9 +1,9 @@
 /**
-* Generated On: 2015-10-5
-* Class: Worker
-*/
+ * Generated On: 2015-10-5
+ * Class: Worker
+ */
 
-function Worker(){
+function Worker() {
     //Constructor
 
 
@@ -11,4 +11,6 @@ function Worker(){
 
 
 
-module.exports = {Worker:Worker};
+module.exports = {
+    Worker: Worker
+};

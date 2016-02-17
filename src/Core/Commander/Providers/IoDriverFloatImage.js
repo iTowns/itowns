@@ -1,11 +1,11 @@
 /**
-* Generated On: 2015-10-5
-* Class: IoDriverFloatImage
-*/
+ * Generated On: 2015-10-5
+ * Class: IoDriverFloatImage
+ */
 
 var IoDriver = require('IoDriver');
 
-function IoDriverFloatImage(){
+function IoDriverFloatImage() {
     //Constructor
 
 
@@ -14,4 +14,6 @@ function IoDriverFloatImage(){
 IoDriverFloatImage.prototype = new IoDriver();
 
 
-module.exports = {IoDriverFloatImage:IoDriverFloatImage};
+module.exports = {
+    IoDriverFloatImage: IoDriverFloatImage
+};
