@@ -35,9 +35,9 @@ define('Scene/Scene', [
         this.cameras = null;
         this.selectNodes = null;
         this.managerCommand = ManagerCommands();
-        this.gfxEngine      = c3DEngine();                       
-        this.browserScene   = new BrowseTree(this);
-        this.cap            = new Capabilities();
+        this.gfxEngine = c3DEngine();
+        this.browserScene = new BrowseTree(this);
+        this.cap = new Capabilities();
     }
 
     Scene.prototype.constructor = Scene;
@@ -123,51 +123,46 @@ define('Scene/Scene', [
         
     };
     
-    Scene.prototype.realtimeSceneProcess = function(){        
-        
-        if(this.currentCamera !== undefined )
-            for(var l = 0; l <  this.layers.length;l++)
-            {                             
-                var layer = this.layers[l];
-                
-                for(var sl = 0; sl <  layer.children.length;sl++)
-                {
-                   var sLayer = layer.children[sl];
-                   
-                   if(sLayer instanceof Quadtree)
-                        this.browserScene.browse(sLayer,this.currentCamera(),false);
-                   else if(sLayer instanceof Layer)
-                       this.browserScene.updateLayer(sLayer);                       
+    Scene.prototype.realtimeSceneProcess = function() {
 
-                }                
-            }                
+        if (this.currentCamera !== undefined)
+            for (var l = 0; l < this.layers.length; l++) {
+                var layer = this.layers[l];
+
+                for (var sl = 0; sl < layer.children.length; sl++) {
+                    var sLayer = layer.children[sl];
+
+                    if (sLayer instanceof Quadtree)
+                        this.browserScene.browse(sLayer, this.currentCamera(), false);
+                    else if (sLayer instanceof Layer)
+                        this.browserScene.updateLayer(sLayer);
+
+                }
+            }
     };
 
     /**
      * 
      * @returns {undefined}
-     */  
-    Scene.prototype.updateScene3D = function(){
-                
-       this.gfxEngine.update();
+     */
+    Scene.prototype.updateScene3D = function() {
+
+        this.gfxEngine.update();
     };
-    
-    Scene.prototype.wait = function(){
-        
+
+    Scene.prototype.wait = function() {
+
         var waitTime = 20;
 
         this.realtimeSceneProcess();
-        
-        if(this.timer === null)
-        { 
-            this.timer = window.setTimeout(this.sceneProcess.bind(this),waitTime); 
-        }
-        else
-        {
+
+        if (this.timer === null) {
+            this.timer = window.setTimeout(this.sceneProcess.bind(this), waitTime);
+        } else {
             window.clearInterval(this.timer);
-            this.timer = window.setTimeout(this.sceneProcess.bind(this),waitTime); 
+            this.timer = window.setTimeout(this.sceneProcess.bind(this), waitTime);
         }
-           
+
     };
 
     /**

@@ -64,8 +64,8 @@ define('Globe/EllipsoidTileMesh', [
                 break;
             }
         }
-       
-       
+
+
         //  TODO : Attention ne marche plus car les helpers ne sont plus ajouter à la scene
         /*
         var showHelper = true;

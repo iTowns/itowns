@@ -90,11 +90,10 @@ define('Renderer/c3DEngine', [
             }
 
         }.bind(this);
-        
-        this.update = function()
-        {
+
+        this.update = function() {
             this.camera.update();
-            this.updateControl();            
+            this.updateControl();
             this.scene.wait();
             this.renderScene();
 
@@ -225,20 +224,18 @@ define('Renderer/c3DEngine', [
             this.renderer.setClearColor(0x030508);
         }
     };
-     
-    c3DEngine.prototype.enableRTC = function(enable)
-    {
-         for (var x = 0; x < this.scene3D.children.length; x++)
-         {
-             var node = this.scene3D.children[x];
-             
-             if(node.enableRTC)                
+
+    c3DEngine.prototype.enableRTC = function(enable) {
+        for (var x = 0; x < this.scene3D.children.length; x++) {
+            var node = this.scene3D.children[x];
+
+            if (node.enableRTC)
                 node.traverseVisible(enable ? this.rtcOn.bind(this) : this.rtcOff.bind(this));
-             else                      
-                node.visible  = enable;
-             
-         }
-        
+            else
+                node.visible = enable;
+
+        }
+
     };
 
     c3DEngine.prototype.enablePickingRender = function(enable) {
