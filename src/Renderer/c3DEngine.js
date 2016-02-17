@@ -117,7 +117,7 @@ define('Renderer/c3DEngine', [
             this.renderScene();
         }.bind(this);
 
-    };
+    }
 
     /**
      * Intialisation camera and debug camera
