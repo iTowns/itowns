@@ -8,19 +8,19 @@ define('Scene/BrowseTree', ['THREE', 'Globe/EllipsoidTileMesh', 'Scene/NodeProce
 
     function BrowseTree(scene) {
         //Constructor
-  
-        this.oneNode    = 0;
-        this.scene      = scene;        
-        this.nodeProcess= undefined;
-        this.tree       = undefined;
-        this.date       = new Date(); 
-        this.fogDistance = 1000000000.0;        
-        this.mfogDistance= 1000000000.0;
-        this.visibleNodes= 0;
-        this.selectNodeId   = -1;
-        this.selectNode     = null;
-        this.cachedRTC      = null;
-        
+
+        this.oneNode = 0;
+        this.scene = scene;
+        this.nodeProcess = undefined;
+        this.tree = undefined;
+        this.date = new Date();
+        this.fogDistance = 1000000000.0;
+        this.mfogDistance = 1000000000.0;
+        this.visibleNodes = 0;
+        this.selectNodeId = -1;
+        this.selectNode = null;
+        this.cachedRTC = null;
+
     }
 
 
@@ -39,10 +39,8 @@ define('Scene/BrowseTree', ['THREE', 'Globe/EllipsoidTileMesh', 'Scene/NodeProce
      * @param {type} optional  : optional process
      * @returns {Boolean}
      */
-    BrowseTree.prototype.processNode = function(node,camera,optional)
-    {        
-        if(node instanceof EllipsoidTileMesh)
-        {            
+    BrowseTree.prototype.processNode = function(node, camera, optional) {
+        if (node instanceof EllipsoidTileMesh) {
 
             node.setVisibility(false);
             node.setSelected(false);
@@ -184,21 +182,18 @@ define('Scene/BrowseTree', ['THREE', 'Globe/EllipsoidTileMesh', 'Scene/NodeProce
             return false;
 
     };
-    
-    
-    BrowseTree.prototype.updateLayer = function(layer)
-    {
-               
+
+
+    BrowseTree.prototype.updateLayer = function(layer) {
+
         var root = layer.children[0];
-        for(var c = 0; c <  root.children.length; c++)
-        {
+        for (var c = 0; c < root.children.length; c++) {
             var node = root.children[c];
 
-            this.rtc = this.getRTCMatrix(node.position,this.scene.currentCamera(),node);
+            this.rtc = this.getRTCMatrix(node.position, this.scene.currentCamera(), node);
 
-            var cRTC = function(obj)
-            {
-                 if(obj.material && obj.material.setMatrixRTC)
+            var cRTC = function(obj) {
+                if (obj.material && obj.material.setMatrixRTC)
                     obj.material.setMatrixRTC(this.rtc);
 
             }.bind(this);
@@ -207,6 +202,6 @@ define('Scene/BrowseTree', ['THREE', 'Globe/EllipsoidTileMesh', 'Scene/NodeProce
 
         }
     };
-        
+
     return BrowseTree;
 });
