@@ -69,19 +69,7 @@ define('Core/Commander/ManagerCommands',
     {               
         if(type === EllipsoidTileMesh)
         {                       
-            this.providers.push(new tileGlobeProvider(param));
-            
-//            this.providers[0].providerWMS.loadClouds();
-            
-//            var latitude    = 48.850077; 
-//            var  longitude  = 2.384618;
-//                
-//            this.providers[0].providerKML.loadKMZ(longitude, latitude).then(function (result){
-//
-//                
-//                this.scene.gfxEngine.scene3D.add(result);
-// 
-//            }.bind(this));
+            this.providers.push(new tileGlobeProvider(param));            
         }
     };
         
