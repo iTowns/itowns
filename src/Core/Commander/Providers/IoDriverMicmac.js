@@ -1,11 +1,11 @@
 /**
-* Generated On: 2015-10-5
-* Class: IoDriverMicmac
-*/
+ * Generated On: 2015-10-5
+ * Class: IoDriverMicmac
+ */
 
 var IoDriver = require('IoDriver');
 
-function IoDriverMicmac(){
+function IoDriverMicmac() {
     //Constructor
 
 
@@ -14,12 +14,14 @@ function IoDriverMicmac(){
 IoDriverMicmac.prototype = new IoDriver();
 
 /**
-*/
-IoDriverMicmac.prototype.loadOrientation = function(){
+ */
+IoDriverMicmac.prototype.loadOrientation = function() {
     //TODO: Implement Me 
 
 };
 
 
 
-module.exports = {IoDriverMicmac:IoDriverMicmac};
+module.exports = {
+    IoDriverMicmac: IoDriverMicmac
+};

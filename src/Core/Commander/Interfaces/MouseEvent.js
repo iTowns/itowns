@@ -1,12 +1,12 @@
 /**
-* Generated On: 2015-10-5
-* Class: MouseEvent
-* Description: Evènement souris
-*/
+ * Generated On: 2015-10-5
+ * Class: MouseEvent
+ * Description: Evènement souris
+ */
 
 var Event = require('Event');
 
-function MouseEvent(){
+function MouseEvent() {
     //Constructor
 
 
@@ -15,4 +15,6 @@ function MouseEvent(){
 MouseEvent.prototype = new Event();
 
 
-module.exports = {MouseEvent:MouseEvent};
+module.exports = {
+    MouseEvent: MouseEvent
+};

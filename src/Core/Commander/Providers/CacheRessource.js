@@ -1,14 +1,14 @@
 /**
-* Generated On: 2015-10-5
-* Class: CacheRessource
-* Description: Cette classe singleton est un cache des ressources et services
-*/
+ * Generated On: 2015-10-5
+ * Class: CacheRessource
+ * Description: Cette classe singleton est un cache des ressources et services
+ */
 
-define('Core/Commander/Providers/CacheRessource',[], function(){
- 
+define('Core/Commander/Providers/CacheRessource', [], function() {
+
     var instanceCache = null;
 
-    function CacheRessource(){
+    function CacheRessource() {
         //Constructor
 
         this.cacheObjects = [];
@@ -17,32 +17,32 @@ define('Core/Commander/Providers/CacheRessource',[], function(){
     }
 
     /**
-    * @param url
-    */
-    CacheRessource.prototype.getRessource = function(url){
+     * @param url
+     */
+    CacheRessource.prototype.getRessource = function(url) {
         //TODO: Implement Me 
-        
+
         return undefined;
         return this.cacheObjects[url];
 
     };
-    
-    CacheRessource.prototype.addRessource = function(url,ressource){
-        
+
+    CacheRessource.prototype.addRessource = function(url, ressource) {
+
         this.cacheObjects[url] = ressource;
-        
+
     };
 
 
     /**
-    * @param id
-    */
-    CacheRessource.prototype.getRessourceByID = function(id){
+     * @param id
+     */
+    CacheRessource.prototype.getRessourceByID = function(id) {
         //TODO: Implement Me 
 
     };
 
-    return function(){
+    return function() {
         instanceCache = instanceCache || new CacheRessource();
         return instanceCache;
     };

@@ -1,9 +1,9 @@
 /**
-* Generated On: 2015-10-5
-* Class: MessageError
-*/
+ * Generated On: 2015-10-5
+ * Class: MessageError
+ */
 
-function MessageError(){
+function MessageError() {
     //Constructor
 
 
@@ -11,4 +11,6 @@ function MessageError(){
 
 
 
-module.exports = {MessageError:MessageError};
+module.exports = {
+    MessageError: MessageError
+};

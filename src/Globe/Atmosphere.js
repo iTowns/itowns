@@ -5,59 +5,69 @@
  */
 
 
-define('Globe/Atmosphere',['Renderer/NodeMesh','THREE','Renderer/Shader/GlowFS.glsl','Renderer/Shader/GlowVS.glsl'], function(NodeMesh,THREE,GlowFS,GlowVS){
+define('Globe/Atmosphere', ['Renderer/NodeMesh', 'THREE', 'Renderer/Shader/GlowFS.glsl', 'Renderer/Shader/GlowVS.glsl'], function(NodeMesh, THREE, GlowFS, GlowVS) {
 
-    function Atmosphere(size){
-        
-        NodeMesh.call( this );
-        
-        this.uniformsOut  = 
-        {                        
-            atmoIN  : { type: "i" , value: 0 },
-            screenSize: {type: "v2", value: new THREE.Vector2(window.innerWidth,window.innerHeight)} // Should be updated on screen resize...
+    function Atmosphere(size) {
+
+        NodeMesh.call(this);
+
+        this.uniformsOut = {
+            atmoIN: {
+                type: "i",
+                value: 0
+            },
+            screenSize: {
+                type: "v2",
+                value: new THREE.Vector2(window.innerWidth, window.innerHeight)
+            } // Should be updated on screen resize...
         };
-        
-        this.material = new THREE.ShaderMaterial( {
-	
-            uniforms        : this.uniformsOut,
-            vertexShader    : GlowVS,
-            fragmentShader  : GlowFS,
-            side            : THREE.BackSide,
-            blending        : THREE.AdditiveBlending,
-            transparent     : true,
-            wireframe       : false
 
-        } );
-                
-        this.geometry       = new THREE.SphereGeometry( size.x * 1.14 , 128, 128 );
-        
-        this.uniformsIn  = 
-        {                        
-            atmoIN  : { type: "i" , value: 1 },
-            screenSize: {type: "v2", value: new THREE.Vector2(window.innerWidth,window.innerHeight)} // Should be updated on screen resize...
+        this.material = new THREE.ShaderMaterial({
+
+            uniforms: this.uniformsOut,
+            vertexShader: GlowVS,
+            fragmentShader: GlowFS,
+            side: THREE.BackSide,
+            blending: THREE.AdditiveBlending,
+            transparent: true,
+            wireframe: false
+
+        });
+
+        this.geometry = new THREE.SphereGeometry(size.x * 1.14, 128, 128);
+
+        this.uniformsIn = {
+            atmoIN: {
+                type: "i",
+                value: 1
+            },
+            screenSize: {
+                type: "v2",
+                value: new THREE.Vector2(window.innerWidth, window.innerHeight)
+            } // Should be updated on screen resize...
         };
-        
-        var materialAtmoIn = new THREE.ShaderMaterial( {
-	
-            uniforms        : this.uniformsIn,
-            vertexShader    : GlowVS,
-            fragmentShader  : GlowFS,
-            side            : THREE.FrontSide,
-            blending        : THREE.AdditiveBlending,
-            transparent     : true
 
-        } );
-        
-       var atmosphereIN    = new THREE.Mesh(new THREE.SphereGeometry( size.x * 1.002, 64, 64 ),materialAtmoIn);
-        
-       this.add(atmosphereIN);
-              
+        var materialAtmoIn = new THREE.ShaderMaterial({
+
+            uniforms: this.uniformsIn,
+            vertexShader: GlowVS,
+            fragmentShader: GlowFS,
+            side: THREE.FrontSide,
+            blending: THREE.AdditiveBlending,
+            transparent: true
+
+        });
+
+        var atmosphereIN = new THREE.Mesh(new THREE.SphereGeometry(size.x * 1.002, 64, 64), materialAtmoIn);
+
+        this.add(atmosphereIN);
+
     }
-    
-    Atmosphere.prototype = Object.create( NodeMesh.prototype );
-    
-    Atmosphere.prototype.constructor = Atmosphere;    
-   
+
+    Atmosphere.prototype = Object.create(NodeMesh.prototype);
+
+    Atmosphere.prototype.constructor = Atmosphere;
+
     return Atmosphere;
 
 });

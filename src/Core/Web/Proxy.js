@@ -1,10 +1,10 @@
 /**
-* Generated On: 2015-10-5
-* Class: Proxy
-* Description: Outils de Proxy
-*/
+ * Generated On: 2015-10-5
+ * Class: Proxy
+ * Description: Outils de Proxy
+ */
 
-function Proxy(){
+function Proxy() {
     //Constructor
 
 
@@ -12,4 +12,6 @@ function Proxy(){
 
 
 
-module.exports = {Proxy:Proxy};
+module.exports = {
+    Proxy: Proxy
+};

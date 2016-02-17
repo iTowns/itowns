@@ -5,35 +5,32 @@
  */
 
 
-define('Renderer/DepthMaterial',
-    [   'THREE',
-        'Renderer/BasicMaterial',
-        'Core/System/JavaTools',
-        'Renderer/Shader/DepthVS.glsl',
-        'Renderer/Shader/DepthFS.glsl'], function(
-            THREE,
-            BasicMaterial,
-            JavaTools,
-            DepthVS,
-            DepthFS){
-    
-    var  DepthMaterial = function (){
-        
-        BasicMaterial.call( this );
-       
-        this.vertexShader    = DepthVS;
-        this.fragmentShader  = DepthFS;
-                         
+define('Renderer/DepthMaterial', ['THREE',
+    'Renderer/BasicMaterial',
+    'Core/System/JavaTools',
+    'Renderer/Shader/DepthVS.glsl',
+    'Renderer/Shader/DepthFS.glsl'
+], function(
+    THREE,
+    BasicMaterial,
+    JavaTools,
+    DepthVS,
+    DepthFS) {
+
+    var DepthMaterial = function() {
+
+        BasicMaterial.call(this);
+
+        this.vertexShader = DepthVS;
+        this.fragmentShader = DepthFS;
+
         this.wireframe = false;
         //this.wireframe = true;
-   
+
     };
-    
-    DepthMaterial.prototype = Object.create( BasicMaterial.prototype );
+
+    DepthMaterial.prototype = Object.create(BasicMaterial.prototype);
     DepthMaterial.prototype.constructor = DepthMaterial;
-    
+
     return DepthMaterial;
 });
-  
-  
-

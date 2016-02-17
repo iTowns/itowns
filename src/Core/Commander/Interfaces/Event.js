@@ -1,10 +1,10 @@
 /**
-* Generated On: 2015-10-5
-* Class: Event
-* Description: Cette classe gère un type d'évènement.
-*/
+ * Generated On: 2015-10-5
+ * Class: Event
+ * Description: Cette classe gère un type d'évènement.
+ */
 
-function Event(){
+function Event() {
     //Constructor
 
     this.events = null;
@@ -13,20 +13,22 @@ function Event(){
 
 
 /**
-*/
-Event.prototype.toString = function(){
+ */
+Event.prototype.toString = function() {
     //TODO: Implement Me 
 
 };
 
 
 /**
-*/
-Event.prototype.xmlToEvents = function(){
+ */
+Event.prototype.xmlToEvents = function() {
     //TODO: Implement Me 
 
 };
 
 
 
-module.exports = {Event:Event};
+module.exports = {
+    Event: Event
+};
