@@ -1,4 +1,4 @@
-// var Cartography = require('Cartogaphy');
+// import Cartography from 'Cartogaphy';
 
 /**
  * Tools used by iTOWNS modules

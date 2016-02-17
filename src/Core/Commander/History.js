@@ -48,6 +48,6 @@ History.prototype.delete = function(id) {
 
 
 
-module.exports = {
-    History: History
+export {
+    History
 };

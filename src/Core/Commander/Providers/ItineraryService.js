@@ -4,7 +4,7 @@
  * Description: Service de calcul d'itinéraire
  */
 
-var Service = require('Service');
+import Service from 'Service';
 
 function ItineraryService() {
     //Constructor
@@ -15,6 +15,6 @@ function ItineraryService() {
 ItineraryService.prototype = new Service();
 
 
-module.exports = {
-    ItineraryService: ItineraryService
+export {
+    ItineraryService
 };

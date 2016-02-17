@@ -3,7 +3,7 @@
  * Class: IoDriverBati3D
  */
 
-var IoDriver = require('IoDriver');
+import IoDriver from 'IoDriver';
 
 function IoDriverBati3D() {
     //Constructor
@@ -14,6 +14,6 @@ function IoDriverBati3D() {
 IoDriverBati3D.prototype = new IoDriver();
 
 
-module.exports = {
-    IoDriverBati3D: IoDriverBati3D
+export {
+    IoDriverBati3D
 };

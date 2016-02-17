@@ -5,7 +5,7 @@
  */
 
 
-var THREE = require('three');
+import THREE from 'three';
 
 THREE.SphereHelper = function(radius) {
     THREE.Mesh.call(this);

@@ -12,6 +12,6 @@ function XMLHttpRequester() {
 
 
 
-module.exports = {
-    XMLHttpRequester: XMLHttpRequester
+export {
+    XMLHttpRequester
 };

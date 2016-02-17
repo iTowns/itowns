@@ -4,7 +4,7 @@
  * Description: Determine les NodeMeshs cachés par l'horizon du Globe.
  */
 
-var NodeProcess = require('NodeProcess');
+import NodeProcess from 'NodeProcess';
 
 function HorizonCulling() {
     //Constructor
@@ -15,6 +15,6 @@ function HorizonCulling() {
 HorizonCulling.prototype = new NodeProcess();
 
 
-module.exports = {
-    HorizonCulling: HorizonCulling
+export {
+    HorizonCulling
 };

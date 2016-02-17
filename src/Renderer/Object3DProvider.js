@@ -3,7 +3,7 @@
  * Class: Object3DProvider
  */
 
-var NodeProvider = require('NodeProvider');
+import NodeProvider from 'NodeProvider';
 
 function Object3DProvider() {
     //Constructor
@@ -12,6 +12,6 @@ function Object3DProvider() {
 Object3DProvider.prototype = new NodeProvider();
 
 
-module.exports = {
-    Object3DProvider: Object3DProvider
+export {
+    Object3DProvider
 };

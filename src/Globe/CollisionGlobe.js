@@ -5,7 +5,7 @@
  * 
  */
 
-var NodeProcess = require('NodeProcess');
+import NodeProcess from 'NodeProcess';
 
 function CollisionGlobe() {
     //Constructor
@@ -25,6 +25,6 @@ CollisionGlobe.prototype.update = function(camera) {
 
 
 
-module.exports = {
-    CollisionGlobe: CollisionGlobe
+export {
+    CollisionGlobe
 };

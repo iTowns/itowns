@@ -39,6 +39,6 @@ SpatialHash.prototype.buildRoot = function() {
 
 
 
-module.exports = {
-    SpatialHash: SpatialHash
+export {
+    SpatialHash
 };

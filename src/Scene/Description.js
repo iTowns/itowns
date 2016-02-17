@@ -13,6 +13,6 @@ function Description() {
 
 
 
-module.exports = {
-    Description: Description
+export {
+    Description
 };
