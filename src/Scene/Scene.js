@@ -149,9 +149,8 @@ define('Scene/Scene',[
     
     /**
      * 
-     * @param {type} run
      * @returns {undefined}
-     */    
+     */  
     Scene.prototype.updateScene3D = function(){
                 
        this.gfxEngine.update();
