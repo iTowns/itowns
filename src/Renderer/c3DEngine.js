@@ -88,11 +88,11 @@ define('Renderer/c3DEngine',[
             
         }.bind(this);
         
-        this.update = function(run)
+        this.update = function()
         {
             this.camera.update();
             this.updateControl();            
-            this.scene.wait(run);
+            this.scene.wait();
             this.renderScene();
                         
         }.bind(this);

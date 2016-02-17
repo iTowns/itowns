@@ -120,12 +120,13 @@ define('Scene/Scene',[
         {                        
         
             this.browserScene.browse(this.layers[0].terrain,this.currentCamera(),true);
-            
-            if(run)
-                this.managerCommand.runAllCommands();
+                        
+            this.managerCommand.runAllCommands();
             
             //this.renderScene3D();  
+           
             this.updateScene3D();            
+           
         } 
         
     };
@@ -174,33 +175,27 @@ define('Scene/Scene',[
      * @param {type} run
      * @returns {undefined}
      */    
-    Scene.prototype.updateScene3D = function(run){
+    Scene.prototype.updateScene3D = function(){
                 
-       this.gfxEngine.update(run);
+       this.gfxEngine.update();
     };
     
-    Scene.prototype.wait = function(run){
+    Scene.prototype.wait = function(){
         
         var waitTime = 20;
-        
-        if(run === undefined)
-            run = true;
-        else if(run === false)
-            this.sceneProcess();
-        else
-            this.realtimeSceneProcess();
+
+        this.realtimeSceneProcess();
         
         if(this.timer === null)
         { 
-            this.timer = window.setTimeout(this.sceneProcess.bind(this),waitTime,run); 
+            this.timer = window.setTimeout(this.sceneProcess.bind(this),waitTime); 
         }
         else
         {
             window.clearInterval(this.timer);
-            this.timer = window.setTimeout(this.sceneProcess.bind(this),waitTime,run); 
+            this.timer = window.setTimeout(this.sceneProcess.bind(this),waitTime); 
         }
-        
-   
+           
     };
 
     /**
