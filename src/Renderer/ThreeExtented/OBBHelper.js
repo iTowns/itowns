@@ -6,8 +6,6 @@
 
 
 var THREE = require('three');
-require('three/examples/js/utils/FontUtils');
-require('Renderer/Three/optimer_regular');
 
 THREE.OBBHelper = function(OBB, text) {
     var indices = new Uint16Array([0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 6, 6, 7, 7, 4, 0, 4, 1, 5, 2, 6, 3, 7]);
@@ -43,7 +41,7 @@ THREE.OBBHelper = function(OBB, text) {
         curveSegments: 0
     };
 
-    var textShapes = THREE.FontUtils.generateShapes(text, parameters);
+    var textShapes = THREE.Font.generateShapes(text, parameters);
     //var geoShape    = new THREE.ShapeGeometry(textShapes);//new THREE.SphereGeometry(500000)
 
     var extrudeSettings = {
