@@ -5,12 +5,8 @@
  */
 
 
-define('Core/defaultValue', [], function() {
+var defaultValue = function(value, def) {
+    return value === undefined ? def : value;
+};
 
-    var defaultValue = function(value, def) {
-        return value === undefined ? def : value;
-    };
-
-    return defaultValue;
-
-});
+export default defaultValue;

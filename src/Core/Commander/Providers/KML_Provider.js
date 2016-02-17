@@ -5,184 +5,170 @@
  */
 
 
-define('Core/Commander/Providers/KML_Provider', [
-        'Core/Commander/Providers/Provider',
-        'Core/Commander/Providers/IoDriverXML',
-        'when',
-        'THREE',
-        'Scene/BoundingBox',
-        'Renderer/ThreeExtented/KMZLoader',
-        'Core/Geographic/CoordCarto',
-        'Renderer/BasicMaterial'
-    ],
-    function(
-        Provider,
-        IoDriverXML,
-        when,
-        THREE,
-        BoundingBox,
-        KMZLoader,
-        CoordCarto,
-        BasicMaterial
-    ) {
+import Provider from 'Core/Commander/Providers/Provider';
+import IoDriverXML from 'Core/Commander/Providers/IoDriverXML';
+import when from 'when';
+import THREE from 'THREE';
+import BoundingBox from 'Scene/BoundingBox';
+import KMZLoader from 'Renderer/ThreeExtented/KMZLoader';
+import CoordCarto from 'Core/Geographic/CoordCarto';
+import BasicMaterial from 'Renderer/BasicMaterial';
 
 
-        function KML_Provider(ellipsoid) {
-            //Constructor
-            this.ellipsoid = ellipsoid;
-            this.ioDriverXML = new IoDriverXML();
-            this.kmzLoader = new KMZLoader();
-            this.cache = [];
-        }
+function KML_Provider(ellipsoid) {
+    //Constructor
+    this.ellipsoid = ellipsoid;
+    this.ioDriverXML = new IoDriverXML();
+    this.kmzLoader = new KMZLoader();
+    this.cache = [];
+}
 
-        KML_Provider.prototype = Object.create(Provider.prototype);
+KML_Provider.prototype = Object.create(Provider.prototype);
 
-        KML_Provider.prototype.constructor = KML_Provider;
+KML_Provider.prototype.constructor = KML_Provider;
 
-        KML_Provider.prototype.loadKMZCenterInBBox = function(bbox) {
+KML_Provider.prototype.loadKMZCenterInBBox = function(bbox) {
 
+};
+
+KML_Provider.prototype.loadKMZ = function(longitude, latitude) {
+
+    return this.getUrlCollada(longitude, latitude).then(function(result) {
+
+        if (result === undefined)
+            return undefined;
+
+        var child = result.scene.children[0];
+        var coorCarto = result.coorCarto;
+        var position = this.ellipsoid.cartographicToCartesian(coorCarto);
+        coorCarto.altitude = 0;
+        var normal = this.ellipsoid.geodeticSurfaceNormalCartographic(coorCarto);
+
+        var quaternion = new THREE.Quaternion();
+        quaternion.setFromAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI / 2);
+
+        child.lookAt(new THREE.Vector3().addVectors(position, normal));
+        child.quaternion.multiply(quaternion);
+        child.position.copy(position);
+
+        child.updateMatrix();
+        child.visible = false;
+
+        var changeMaterial = function(object3D) {
+
+            if (object3D.material instanceof THREE.MultiMaterial) {
+                object3D.material = new BasicMaterial(object3D.material.materials[0].color);
+            } else if (object3D.material)
+                object3D.material = new BasicMaterial(object3D.material.color);
         };
 
-        KML_Provider.prototype.loadKMZ = function(longitude, latitude) {
 
-            return this.getUrlCollada(longitude, latitude).then(function(result) {
+        child.traverse(changeMaterial);
 
-                if (result === undefined)
-                    return undefined;
+        return child;
 
-                var child = result.scene.children[0];
-                var coorCarto = result.coorCarto;
-                var position = this.ellipsoid.cartographicToCartesian(coorCarto);
-                coorCarto.altitude = 0;
-                var normal = this.ellipsoid.geodeticSurfaceNormalCartographic(coorCarto);
+    }.bind(this));
 
-                var quaternion = new THREE.Quaternion();
-                quaternion.setFromAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI / 2);
+};
 
-                child.lookAt(new THREE.Vector3().addVectors(position, normal));
-                child.quaternion.multiply(quaternion);
-                child.position.copy(position);
+KML_Provider.prototype.parseKML = function(urlFile, longitude, latitude) {
 
-                child.updateMatrix();
-                child.visible = false;
+    /*var longitude = 48.87;
+    var south = 48.875;
+    var east = -3.4900000000000046;
+    var west = -3.4940000000000044;*/
+    var north = latitude;
+    var south = latitude;
+    var east = longitude;
+    var west = longitude;
+    var key = 'j2bfkv9whnqpq04zpzlfz2ge';
+    var url = 'http://wxs.ign.fr/' + key + '/vecteurtuile3d/BATI3D/' + 'FXX/';
+    return this.ioDriverXML.read(urlFile).then(function(result) {
+        //console.log(result);
 
-                var changeMaterial = function(object3D) {
+        var NetworkLink = [];
+        NetworkLink = result.getElementsByTagName("NetworkLink");
 
-                    if (object3D.material instanceof THREE.MultiMaterial) {
-                        object3D.material = new BasicMaterial(object3D.material.materials[0].color);
-                    } else if (object3D.material)
-                        object3D.material = new BasicMaterial(object3D.material.color);
-                };
+        for (i = 0; i < NetworkLink.length; i++) {
 
+            var coords = [];
+            coords[0] = NetworkLink[i].getElementsByTagName("north")[0].childNodes[0].nodeValue;
+            coords[1] = NetworkLink[i].getElementsByTagName("south")[0].childNodes[0].nodeValue;
+            coords[2] = NetworkLink[i].getElementsByTagName("east")[0].childNodes[0].nodeValue;
+            coords[3] = NetworkLink[i].getElementsByTagName("west")[0].childNodes[0].nodeValue;
+            //console.log(coords[1], coords[2], coords[3], coords[4]);
 
-                child.traverse(changeMaterial);
+            if (north < coords[0] && south > coords[1] && east < coords[2] && west > coords[3]) {
 
-                return child;
+                var href = [];
+                href[i] = url + "TREE/" + NetworkLink[i].getElementsByTagName("href")[0].childNodes[0].nodeValue.replace("../", "");
+                //console.log(href[i]);
 
-            }.bind(this));
+                if (href[i].toLowerCase().substr(-4) === '.kml') {
 
-        };
+                    //console.log(coords[i,1], coords[i,2], coords[i,3], coords[i,4]);
+                    //console.log(href[i]);
+                    return this.parseKML(href[i], longitude, latitude);
 
-        KML_Provider.prototype.parseKML = function(urlFile, longitude, latitude) {
+                }
+                //Next level : Get the next KMZ actual position's coords
+                else if (href[i].toLowerCase().substr(-4) === '.kmz') {
 
-            /*var longitude = 48.87;
-            var south = 48.875;
-            var east = -3.4900000000000046;
-            var west = -3.4940000000000044;*/
-            var north = latitude;
-            var south = latitude;
-            var east = longitude;
-            var west = longitude;
-            var key = 'j2bfkv9whnqpq04zpzlfz2ge';
-            var url = 'http://wxs.ign.fr/' + key + '/vecteurtuile3d/BATI3D/' + 'FXX/';
-            return this.ioDriverXML.read(urlFile).then(function(result) {
-                //console.log(result);
+                    var url_kmz = url + NetworkLink[i].getElementsByTagName("href")[0].childNodes[0].nodeValue.replace("../../", "");
+                    //url_kmz = "http://localhost:8383/kmz/BT_000092.kmz";
 
-                var NetworkLink = [];
-                NetworkLink = result.getElementsByTagName("NetworkLink");
-
-                for (i = 0; i < NetworkLink.length; i++) {
-
-                    var coords = [];
-                    coords[0] = NetworkLink[i].getElementsByTagName("north")[0].childNodes[0].nodeValue;
-                    coords[1] = NetworkLink[i].getElementsByTagName("south")[0].childNodes[0].nodeValue;
-                    coords[2] = NetworkLink[i].getElementsByTagName("east")[0].childNodes[0].nodeValue;
-                    coords[3] = NetworkLink[i].getElementsByTagName("west")[0].childNodes[0].nodeValue;
-                    //console.log(coords[1], coords[2], coords[3], coords[4]);
-
-                    if (north < coords[0] && south > coords[1] && east < coords[2] && west > coords[3]) {
-
-                        var href = [];
-                        href[i] = url + "TREE/" + NetworkLink[i].getElementsByTagName("href")[0].childNodes[0].nodeValue.replace("../", "");
-                        //console.log(href[i]);
-
-                        if (href[i].toLowerCase().substr(-4) === '.kml') {
-
-                            //console.log(coords[i,1], coords[i,2], coords[i,3], coords[i,4]);
-                            //console.log(href[i]);
-                            return this.parseKML(href[i], longitude, latitude);
-
-                        }
-                        //Next level : Get the next KMZ actual position's coords
-                        else if (href[i].toLowerCase().substr(-4) === '.kmz') {
-
-                            var url_kmz = url + NetworkLink[i].getElementsByTagName("href")[0].childNodes[0].nodeValue.replace("../../", "");
-                            //url_kmz = "http://localhost:8383/kmz/BT_000092.kmz";
-
-                            if (this.cache[url_kmz]) {
-                                //console.log('get from cache');
-                                return when(this.cache[url_kmz]);
-                            } else {
-                                return this.kmzLoader.load(url_kmz).then(
-                                    function(result) {
+                    if (this.cache[url_kmz]) {
+                        //console.log('get from cache');
+                        return when(this.cache[url_kmz]);
+                    } else {
+                        return this.kmzLoader.load(url_kmz).then(
+                            function(result) {
 
 
-                                        this.cache[url_kmz] = result;
+                                this.cache[url_kmz] = result;
 
-                                        return result;
-                                    }.bind(this));
+                                return result;
+                            }.bind(this));
 
-                            }
-                        }
                     }
                 }
+            }
+        }
 
-            }.bind(this));
+    }.bind(this));
 
-        };
+};
 
 
-        KML_Provider.prototype.getUrlCollada = function(longitude, latitude) {
+KML_Provider.prototype.getUrlCollada = function(longitude, latitude) {
 
-            var deferred = when.defer();
-            //var url = 'http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/vecteurtuile3d/BATI3D/BU.Building.kml';
+    var deferred = when.defer();
+    //var url = 'http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/vecteurtuile3d/BATI3D/BU.Building.kml';
 
-            this.ioDriverXML.read('http://wxs.ign.fr/j2bfkv9whnqpq04zpzlfz2ge/vecteurtuile3d/BATI3D/BU.Building.kml').then(function(result_0) {
+    this.ioDriverXML.read('http://wxs.ign.fr/j2bfkv9whnqpq04zpzlfz2ge/vecteurtuile3d/BATI3D/BU.Building.kml').then(function(result_0) {
 
-                // get href's node value
-                var kml_0 = result_0.getElementsByTagName("href");
-                var url_href_1; // = [];
-                var key = 'j2bfkv9whnqpq04zpzlfz2ge';
+        // get href's node value
+        var kml_0 = result_0.getElementsByTagName("href");
+        var url_href_1; // = [];
+        var key = 'j2bfkv9whnqpq04zpzlfz2ge';
 
-                //for (i=0; i<kml_0.length; i++){
-                //  url_href_1[i] = 'http://wxs.ign.fr/' + key + '/vecteurtuile3d/BATI3D/' + kml_0[i].childNodes[0].nodeValue.replace("./", "");
-                url_href_1 = 'http://wxs.ign.fr/' + key + '/vecteurtuile3d/BATI3D/FXX/TREE/0/0_000_000.kml';
-                this.parseKML(url_href_1, longitude, latitude).then(function(result) {
-                    deferred.resolve(result);
+        //for (i=0; i<kml_0.length; i++){
+        //  url_href_1[i] = 'http://wxs.ign.fr/' + key + '/vecteurtuile3d/BATI3D/' + kml_0[i].childNodes[0].nodeValue.replace("./", "");
+        url_href_1 = 'http://wxs.ign.fr/' + key + '/vecteurtuile3d/BATI3D/FXX/TREE/0/0_000_000.kml';
+        this.parseKML(url_href_1, longitude, latitude).then(function(result) {
+            deferred.resolve(result);
 
-                });
+        });
 
-                //Couper ici pour récupérer algo    
-                //}
+        //Couper ici pour récupérer algo    
+        //}
 
-            }.bind(this));
+    }.bind(this));
 
-            return deferred;
-        };
+    return deferred;
+};
 
-        return KML_Provider;
-
-    });
+export default KML_Provider;
 //If France
 //                if (url_href_1[i] === 'http://wxs.ign.fr/' + key + '/vecteurtuile3d/BATI3D/FXX/TREE/0/0_000_000.kml'){
 //                    //this.ParseKML(url_href_1[i]);

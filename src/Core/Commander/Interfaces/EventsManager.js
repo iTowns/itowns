@@ -6,42 +6,38 @@
 
 
 
-define('Core/Commander/Interfaces/EventsManager', [], function() {
+function EventsManager() {
+    //Constructor
 
-    function EventsManager() {
-        //Constructor
-
-        this.commands = null;
-        this.events = null;
-        this.timer = null;
+    this.commands = null;
+    this.events = null;
+    this.timer = null;
 
 
+}
+
+/**
+ * @param pevent {[object Object]} 
+ * @param com {[object Object]} 
+ */
+EventsManager.prototype.connect = function(pevent, com) {
+    //TODO: Implement Me 
+
+};
+
+EventsManager.prototype.command = function() {
+
+};
+
+EventsManager.prototype.wait = function() {
+    var waitTime = 250;
+    if (this.timer === null) {
+        this.timer = window.setTimeout(this.command, waitTime);
+    } else {
+        window.clearInterval(this.timer);
+        this.timer = window.setTimeout(this.command, waitTime);
     }
 
-    /**
-     * @param pevent {[object Object]} 
-     * @param com {[object Object]} 
-     */
-    EventsManager.prototype.connect = function(pevent, com) {
-        //TODO: Implement Me 
+};
 
-    };
-
-    EventsManager.prototype.command = function() {
-
-    };
-
-    EventsManager.prototype.wait = function() {
-        var waitTime = 250;
-        if (this.timer === null) {
-            this.timer = window.setTimeout(this.command, waitTime);
-        } else {
-            window.clearInterval(this.timer);
-            this.timer = window.setTimeout(this.command, waitTime);
-        }
-
-    };
-
-    return EventsManager;
-
-});
+export default EventsManager;

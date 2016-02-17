@@ -4,15 +4,13 @@
  * and open the template in the editor.
  */
 
-define(['Core/Commander/Interfaces/ApiInterface/ApiGlobe'],
-    function(ApiGlobe) {
-        // browser execution or not ?
-        var scope = typeof window !== "undefined" ? window : {};
-        var itowns = scope.itowns || {
-            viewer: ApiGlobe
-        };
-        scope.itowns = itowns;
-        return scope.itowns;
+import ApiGlobe from 'Core/Commander/Interfaces/ApiInterface/ApiGlobe';
 
-    }
-);
+// browser execution or not ?
+var scope = typeof window !== "undefined" ? window : {};
+var itowns = scope.itowns || {
+    viewer: ApiGlobe
+};
+scope.itowns = itowns;
+
+export default scope.itowns;
