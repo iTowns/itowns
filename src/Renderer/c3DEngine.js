@@ -238,8 +238,8 @@ define('Renderer/c3DEngine',[
              
              if(node.enableRTC)                
                 node.traverseVisible(enable ? this.rtcOn.bind(this) : this.rtcOff.bind(this));
-       /*      else                      
-                node.visible  = enable;*/
+             else                      
+                node.visible  = enable;
              
          }
         
