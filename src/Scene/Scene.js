@@ -72,8 +72,6 @@ define('Scene/Scene', [
         this.managerCommand.init(this);
         var globe = new Globe();
         this.add(globe);
- console.log('eee');
-
 
         //var position    = globe.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(2.33,48.87,25000000));        
         //
@@ -129,7 +127,7 @@ define('Scene/Scene', [
         
         if(this.currentCamera !== undefined )
             for(var l = 0; l <  this.layers.length;l++)
-            {                            
+            {                             
                 var layer = this.layers[l];
                 
                 for(var sl = 0; sl <  layer.children.length;sl++)
