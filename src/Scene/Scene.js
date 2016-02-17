@@ -35,9 +35,9 @@ define('Scene/Scene', [
         this.cameras = null;
         this.selectNodes = null;
         this.managerCommand = ManagerCommands();
-        this.gfxEngine      = c3DEngine();                       
-        this.browserScene   = new BrowseTree(this);
-        this.cap            = new Capabilities();
+        this.gfxEngine = c3DEngine();
+        this.browserScene = new BrowseTree(this);
+        this.cap = new Capabilities();
     }
 
     Scene.prototype.constructor = Scene;
@@ -72,7 +72,7 @@ define('Scene/Scene', [
         this.managerCommand.init(this);
         var globe = new Globe();
         this.add(globe);
- console.log('eee');
+        console.log('eee');
 
 
         //var position    = globe.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(2.33,48.87,25000000));        
@@ -107,69 +107,63 @@ define('Scene/Scene', [
      * @param {type} run
      * @returns {undefined}
      */
-    Scene.prototype.sceneProcess = function(run){
-        
-        //console.log(this.managerCommand.queueAsync.length);
-        
-        if(this.layers[0] !== undefined  && this.currentCamera() !== undefined )
-        {                        
-        
-            this.browserScene.browse(this.layers[0].terrain,this.currentCamera(),true);
-                        
-            this.managerCommand.runAllCommands();
-            
-            //this.renderScene3D();             
-            this.updateScene3D();            
-           
-        } 
-        
-    };
-    
-    Scene.prototype.realtimeSceneProcess = function(){        
-        
-        if(this.currentCamera !== undefined )
-            for(var l = 0; l <  this.layers.length;l++)
-            {                            
-                var layer = this.layers[l];
-                
-                for(var sl = 0; sl <  layer.children.length;sl++)
-                {
-                   var sLayer = layer.children[sl];
-                   
-                   if(sLayer instanceof Quadtree)
-                        this.browserScene.browse(sLayer,this.currentCamera(),false);
-                   else if(sLayer instanceof Layer)
-                       this.browserScene.updateLayer(sLayer);                       
+    Scene.prototype.sceneProcess = function(run) {
 
-                }                
-            }                
+        //console.log(this.managerCommand.queueAsync.length);
+
+        if (this.layers[0] !== undefined && this.currentCamera() !== undefined) {
+
+            this.browserScene.browse(this.layers[0].terrain, this.currentCamera(), true);
+
+            this.managerCommand.runAllCommands();
+
+            //this.renderScene3D();             
+            this.updateScene3D();
+
+        }
+
+    };
+
+    Scene.prototype.realtimeSceneProcess = function() {
+
+        if (this.currentCamera !== undefined)
+            for (var l = 0; l < this.layers.length; l++) {
+                var layer = this.layers[l];
+
+                for (var sl = 0; sl < layer.children.length; sl++) {
+                    var sLayer = layer.children[sl];
+
+                    if (sLayer instanceof Quadtree)
+                        this.browserScene.browse(sLayer, this.currentCamera(), false);
+                    else if (sLayer instanceof Layer)
+                        this.browserScene.updateLayer(sLayer);
+
+                }
+            }
     };
 
     /**
      * 
      * @returns {undefined}
-     */  
-    Scene.prototype.updateScene3D = function(){
-                
-       this.gfxEngine.update();
+     */
+    Scene.prototype.updateScene3D = function() {
+
+        this.gfxEngine.update();
     };
-    
-    Scene.prototype.wait = function(){
-        
+
+    Scene.prototype.wait = function() {
+
         var waitTime = 20;
 
         this.realtimeSceneProcess();
-        
-        if(this.timer === null)
-        { 
-            this.timer = window.setTimeout(this.sceneProcess.bind(this),waitTime); 
-        }
-        else
-        {
+
+        if (this.timer === null) {
+            this.timer = window.setTimeout(this.sceneProcess.bind(this), waitTime);
+        } else {
             window.clearInterval(this.timer);
-            this.timer = window.setTimeout(this.sceneProcess.bind(this),waitTime); 
+            this.timer = window.setTimeout(this.sceneProcess.bind(this), waitTime);
         }
-           
+
     };
 
     /**
