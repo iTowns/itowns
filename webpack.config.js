@@ -11,6 +11,16 @@ module.exports = {
     umdNamedDefine: true
   },
   module: {
+    preLoaders: [
+      {
+        test: /\.js$/,
+        include: [
+          path.resolve(__dirname, 'src'),
+          path.resolve(__dirname, 'test')
+        ],
+        loader: 'eslint'
+      }
+    ],
     loaders: [
       {
         test: /\.glsl$/,
