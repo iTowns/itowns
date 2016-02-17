@@ -15,8 +15,6 @@
 
 
 
-/* global THREE */
-
 define('Core/Commander/Providers/tileGlobeProvider',[
             'when',
             'Core/Geographic/Projection',
@@ -26,7 +24,8 @@ define('Core/Commander/Providers/tileGlobeProvider',[
             'Core/Geographic/CoordWMTS',
             'Core/Math/Ellipsoid',
             'Core/defaultValue',
-            'Scene/BoundingBox'                        
+            'Scene/BoundingBox',
+            'three'
             ],
              function(
                 when,
@@ -37,7 +36,8 @@ define('Core/Commander/Providers/tileGlobeProvider',[
                 CoordWMTS,
                 Ellipsoid,
                 defaultValue,
-                BoundingBox
+                BoundingBox,
+                THREE
                 ){
                    
     function tileGlobeProvider(size){

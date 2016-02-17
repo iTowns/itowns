@@ -5,7 +5,7 @@
  */
 
 
-/* global THREE */
+var THREE = require('three');
 
 THREE.StarGeometry = function ( )
 {
