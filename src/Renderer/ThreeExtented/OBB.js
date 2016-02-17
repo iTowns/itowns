@@ -5,7 +5,7 @@
  */
 
 
-var THREE = require('three');
+import THREE from 'three';
 
 THREE.OBB = function(min, max) {
     THREE.Object3D.call(this);

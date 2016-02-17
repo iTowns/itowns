@@ -14,6 +14,6 @@ function ManagerMaterial() {
 
 
 
-module.exports = {
-    ManagerMaterial: ManagerMaterial
+export {
+    ManagerMaterial
 };

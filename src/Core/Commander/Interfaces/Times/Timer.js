@@ -44,6 +44,6 @@ Timer.prototype.pause = function() {
 
 
 
-module.exports = {
-    Timer: Timer
+export {
+    Timer
 };

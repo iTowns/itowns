@@ -3,7 +3,7 @@
  * Class: IoDriverLydarCloud
  */
 
-var IoDriver = require('IoDriver');
+import IoDriver from 'IoDriver';
 
 function IoDriverLydarCloud() {
     //Constructor
@@ -14,6 +14,6 @@ function IoDriverLydarCloud() {
 IoDriverLydarCloud.prototype = new IoDriver();
 
 
-module.exports = {
-    IoDriverLydarCloud: IoDriverLydarCloud
+export {
+    IoDriverLydarCloud
 };

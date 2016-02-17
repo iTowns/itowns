@@ -23,6 +23,6 @@ Memento.prototype.memento = function(object) {
 
 
 
-module.exports = {
-    Memento: Memento
+export {
+    Memento
 };

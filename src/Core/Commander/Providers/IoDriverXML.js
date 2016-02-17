@@ -5,49 +5,48 @@
  */
 
 
-define('Core/Commander/Providers/IoDriverXML', ['Core/Commander/Providers/IoDriver', 'when'], function(IoDriver, when) {
+import IoDriver from 'Core/Commander/Providers/IoDriver';
+import when from 'when';
 
 
-    function IoDriverXML() {
-        //Constructor
-        IoDriver.call(this);
+function IoDriverXML() {
+    //Constructor
+    IoDriver.call(this);
 
-    }
+}
 
-    IoDriverXML.prototype = Object.create(IoDriver.prototype);
+IoDriverXML.prototype = Object.create(IoDriver.prototype);
 
-    IoDriverXML.prototype.constructor = IoDriverXML;
+IoDriverXML.prototype.constructor = IoDriverXML;
 
-    IoDriverXML.prototype.read = function(url) {
+IoDriverXML.prototype.read = function(url) {
 
-        var deferred = when.defer();
+    var deferred = when.defer();
 
-        var xhr = new XMLHttpRequest();
+    var xhr = new XMLHttpRequest();
 
-        xhr.open("GET", url, true);
+    xhr.open("GET", url, true);
 
-        xhr.responseType = "document";
+    xhr.responseType = "document";
 
-        xhr.crossOrigin = '';
+    xhr.crossOrigin = '';
 
-        xhr.onload = function() {
-            deferred.resolve(this.response);
-
-        };
-
-        xhr.onerror = function() {
-
-            deferred.reject(Error("Error IoDriverXML"));
-
-        };
-
-        xhr.send(null);
-
-        return deferred;
-
+    xhr.onload = function() {
+        deferred.resolve(this.response);
 
     };
 
-    return IoDriverXML;
+    xhr.onerror = function() {
 
-});
+        deferred.reject(Error("Error IoDriverXML"));
+
+    };
+
+    xhr.send(null);
+
+    return deferred;
+
+
+};
+
+export default IoDriverXML;

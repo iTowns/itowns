@@ -1,62 +1,61 @@
 /**
  * Generated On: 2015-10-5
  * Class: ApiGlobe
- * Description: Classe faÃ§ade pour attaquer les fonctionnalitÃ©s du code.
+ * Description: Classe façade pour attaquer les fonctionnalités du code.
  */
 
 
-define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', ['Core/Commander/Interfaces/EventsManager', 'Scene/Scene'], function(EventsManager, Scene) {
+import EventsManager from 'Core/Commander/Interfaces/EventsManager';
+import Scene from 'Scene/Scene';
 
-    function ApiGlobe() {
-        //Constructor
+function ApiGlobe() {
+    //Constructor
 
-        this.scene = null;
-        this.commandsTree = null;
+    this.scene = null;
+    this.commandsTree = null;
 
-    };
+};
 
-    ApiGlobe.prototype = new EventsManager();
+ApiGlobe.prototype = new EventsManager();
 
-    /**
-     * @param Command
-     */
-    ApiGlobe.prototype.add = function(Command) {
-        //TODO: Implement Me 
+/**
+ * @param Command
+ */
+ApiGlobe.prototype.add = function(Command) {
+    //TODO: Implement Me 
 
-    };
+};
 
 
-    /**
-     * @param commandTemplate
-     */
-    ApiGlobe.prototype.createCommand = function(commandTemplate) {
-        //TODO: Implement Me 
+/**
+ * @param commandTemplate
+ */
+ApiGlobe.prototype.createCommand = function(commandTemplate) {
+    //TODO: Implement Me 
 
-    };
+};
 
-    /**
-     */
-    ApiGlobe.prototype.execute = function() {
-        //TODO: Implement Me 
+/**
+ */
+ApiGlobe.prototype.execute = function() {
+    //TODO: Implement Me 
 
-    };
+};
 
-    ApiGlobe.createSceneGlobe = function(pos) {
-        //TODO: Normalement la creation de scene ne doit pas etre ici....
-        // Aï¿½ deplacer plus tard
+ApiGlobe.createSceneGlobe = function(pos) {
+    //TODO: Normalement la creation de scene ne doit pas etre ici....
+    // A  deplacer plus tard
 
-        this.scene = Scene();
-        this.scene.init(pos);
+    this.scene = Scene();
+    this.scene.init(pos);
 
-        return this.scene;
+    return this.scene;
 
-    };
+};
 
-    ApiGlobe.showClouds = function(value) {
+ApiGlobe.showClouds = function(value) {
 
-        this.scene.layers[0].showClouds(value);
-    };
+    this.scene.layers[0].showClouds(value);
+};
 
-    return ApiGlobe;
-
-});
+export default ApiGlobe;

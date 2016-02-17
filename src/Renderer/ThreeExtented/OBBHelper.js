@@ -5,9 +5,9 @@
  */
 
 
-var THREE = require('three');
-require('three/examples/js/utils/FontUtils');
-require('Renderer/Three/optimer_regular');
+import THREE from 'three';
+import 'three/examples/js/utils/FontUtils';
+import 'Renderer/Three/optimer_regular';
 
 THREE.OBBHelper = function(OBB, text) {
     var indices = new Uint16Array([0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 6, 6, 7, 7, 4, 0, 4, 1, 5, 2, 6, 3, 7]);

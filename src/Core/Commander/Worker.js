@@ -11,6 +11,6 @@ function Worker() {
 
 
 
-module.exports = {
-    Worker: Worker
+export {
+    Worker
 };

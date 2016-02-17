@@ -23,6 +23,6 @@ Trigger.prototype.executeChildrenCommand = function() {
 
 
 
-module.exports = {
-    Trigger: Trigger
+export {
+    Trigger
 };

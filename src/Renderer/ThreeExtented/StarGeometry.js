@@ -5,7 +5,7 @@
  */
 
 
-var THREE = require('three');
+import THREE from 'three';
 
 THREE.StarGeometry = function() {
     THREE.Geometry.call(this);

@@ -4,7 +4,7 @@
  * Description: Factory/Provider de Nodes
  */
 
-var Provider = require('Provider');
+import Provider from 'Provider';
 
 function NodeProvider() {
     //Constructor
@@ -24,6 +24,6 @@ NodeProvider.prototype.createObject = function(type) {
 
 
 
-module.exports = {
-    NodeProvider: NodeProvider
+export {
+    NodeProvider
 };

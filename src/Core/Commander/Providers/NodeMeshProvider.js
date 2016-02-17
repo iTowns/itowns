@@ -4,7 +4,7 @@
  * Description: Factory/Provider NodeMesh
  */
 
-var NodeProvider = require('NodeProvider');
+import NodeProvider from 'NodeProvider';
 
 function NodeMeshProvider() {
     //Constructor
@@ -15,6 +15,6 @@ function NodeMeshProvider() {
 NodeMeshProvider.prototype = new NodeProvider();
 
 
-module.exports = {
-    NodeMeshProvider: NodeMeshProvider
+export {
+    NodeMeshProvider
 };
