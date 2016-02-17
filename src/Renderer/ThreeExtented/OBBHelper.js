@@ -5,7 +5,9 @@
  */
 
 
-/* global THREE */
+var THREE = require('three');
+require('three/examples/js/utils/FontUtils');
+require('Renderer/Three/optimer_regular');
 
 THREE.OBBHelper = function (OBB,text)
 {
