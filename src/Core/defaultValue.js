@@ -5,12 +5,12 @@
  */
 
 
-define('Core/defaultValue',[], function(){
+define('Core/defaultValue', [], function() {
 
-   var defaultValue = function(value, def) {
+    var defaultValue = function(value, def) {
         return value === undefined ? def : value;
     };
 
     return defaultValue;
-    
+
 });

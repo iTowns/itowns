@@ -18,16 +18,13 @@ and open the template in the editor.
             }
         </style>
         <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">        
-        <script src="src/ThirdParty/require.js">      </script>
-        <script src="src/ThirdParty/dat.gui.min.js">  </script>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="src/ThirdParty/dat.gui.min.js"></script>
     </head>
-    
     <body>
+        <script src="dist/itowns2.js"> </script>
         <script type="text/javascript">  
 
-            require(['src/Main'], function() {
-                
                var initCenter = { lon:2.3465, lat: 48.88, alt: 25000000};
 
                // iTowns namespace defined here
@@ -44,8 +41,6 @@ and open the template in the editor.
                gui.add(text, 'CloudsIR').onChange(function(newValue) {
 			itowns.viewer.showClouds(newValue);
                });
-                  
-            });
             
         </script>     
     </body>

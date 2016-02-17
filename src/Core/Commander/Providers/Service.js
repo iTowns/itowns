@@ -1,12 +1,12 @@
 /**
-* Generated On: 2015-10-5
-* Class: Service
-* Description: Service distant ou locaux.
-*/
+ * Generated On: 2015-10-5
+ * Class: Service
+ * Description: Service distant ou locaux.
+ */
 
 var Provider = require('Provider');
 
-function Service(){
+function Service() {
     //Constructor
 
 
@@ -15,4 +15,6 @@ function Service(){
 Service.prototype = new Provider();
 
 
-module.exports = {Service:Service};
+module.exports = {
+    Service: Service
+};

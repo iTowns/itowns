@@ -1,10 +1,10 @@
 /**
-* Generated On: 2015-10-5
-* Class: Url
-* Description: Outils pour les Urls
-*/
+ * Generated On: 2015-10-5
+ * Class: Url
+ * Description: Outils pour les Urls
+ */
 
-function Url(){
+function Url() {
     //Constructor
 
     this.url = null;
@@ -13,4 +13,6 @@ function Url(){
 
 
 
-module.exports = {Url:Url};
+module.exports = {
+    Url: Url
+};

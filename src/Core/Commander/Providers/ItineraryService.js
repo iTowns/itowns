@@ -1,12 +1,12 @@
 /**
-* Generated On: 2015-10-5
-* Class: ItineraryService
-* Description: Service de calcul d'itinéraire
-*/
+ * Generated On: 2015-10-5
+ * Class: ItineraryService
+ * Description: Service de calcul d'itinéraire
+ */
 
 var Service = require('Service');
 
-function ItineraryService(){
+function ItineraryService() {
     //Constructor
 
 
@@ -15,4 +15,6 @@ function ItineraryService(){
 ItineraryService.prototype = new Service();
 
 
-module.exports = {ItineraryService:ItineraryService};
+module.exports = {
+    ItineraryService: ItineraryService
+};

@@ -1,10 +1,10 @@
 /**
-* Generated On: 2015-10-5
-* Class: Timer
-* Description: Cette classe gère est un compteur temporelle.
-*/
+ * Generated On: 2015-10-5
+ * Class: Timer
+ * Description: Cette classe gère est un compteur temporelle.
+ */
 
-function Timer(){
+function Timer() {
     //Constructor
 
 
@@ -12,36 +12,38 @@ function Timer(){
 
 
 /**
-*/
-Timer.prototype.getTime = function(){
+ */
+Timer.prototype.getTime = function() {
     //TODO: Implement Me 
 
 };
 
 
 /**
-*/
-Timer.prototype.stop = function(){
+ */
+Timer.prototype.stop = function() {
     //TODO: Implement Me 
 
 };
 
 
 /**
-*/
-Timer.prototype.start = function(){
+ */
+Timer.prototype.start = function() {
     //TODO: Implement Me 
 
 };
 
 
 /**
-*/
-Timer.prototype.pause = function(){
+ */
+Timer.prototype.pause = function() {
     //TODO: Implement Me 
 
 };
 
 
 
-module.exports = {Timer:Timer};
+module.exports = {
+    Timer: Timer
+};

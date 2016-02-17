@@ -1,10 +1,10 @@
 /**
-* Generated On: 2015-10-5
-* Class: DescriptionManager
-* Description: Cette classe singleton traduit la description du Node, Layer, Map en contenu pour le Renderer.
-*/
+ * Generated On: 2015-10-5
+ * Class: DescriptionManager
+ * Description: Cette classe singleton traduit la description du Node, Layer, Map en contenu pour le Renderer.
+ */
 
-function DescriptionManager(){
+function DescriptionManager() {
     //Constructor
 
 
@@ -12,12 +12,14 @@ function DescriptionManager(){
 
 
 /**
-*/
-DescriptionManager.prototype.descriptionToContent = function(){
+ */
+DescriptionManager.prototype.descriptionToContent = function() {
     //TODO: Implement Me 
 
 };
 
 
 
-module.exports = {DescriptionManager:DescriptionManager};
+module.exports = {
+    DescriptionManager: DescriptionManager
+};

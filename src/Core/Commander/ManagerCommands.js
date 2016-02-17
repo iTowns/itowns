@@ -1,8 +1,8 @@
 /**
-* Generated On: 2015-10-5
-* Class: ManagerCommands
-* Description: Cette classe singleton gère les requetes/Commandes  de la scène. Ces commandes peuvent etre synchrone ou asynchrone. Elle permet d'executer, de prioriser  et d'annuler les commandes de la pile. Les commandes executées sont placées dans une autre file d'attente.
-*/
+ * Generated On: 2015-10-5
+ * Class: ManagerCommands
+ * Description: Cette classe singleton gère les requetes/Commandes  de la scène. Ces commandes peuvent etre synchrone ou asynchrone. Elle permet d'executer, de prioriser  et d'annuler les commandes de la pile. Les commandes executées sont placées dans une autre file d'attente.
+ */
 
 /**
  * 
@@ -15,34 +15,33 @@
  * @param {type} THREE
  * @returns {Function}
  */
-define('Core/Commander/ManagerCommands',
-        [               
-            'Core/Commander/Providers/tileGlobeProvider',
-            'Core/Commander/Interfaces/EventsManager',
-            'PriorityQueue',
-            'when',
-            'Globe/EllipsoidTileMesh',
-            'Core/Geographic/CoordCarto',
-            'THREE'
-        ], 
-        function(
-                tileGlobeProvider,
-                EventsManager,
-                PriorityQueue,
-                when,
-                EllipsoidTileMesh,
-                CoordCarto,
-                THREE
-        ){
+define('Core/Commander/ManagerCommands', [
+        'Core/Commander/Providers/tileGlobeProvider',
+        'Core/Commander/Interfaces/EventsManager',
+        'PriorityQueue',
+        'when',
+        'Globe/EllipsoidTileMesh',
+        'Core/Geographic/CoordCarto',
+        'THREE'
+    ],
+    function(
+        tileGlobeProvider,
+        EventsManager,
+        PriorityQueue,
+        when,
+        EllipsoidTileMesh,
+        CoordCarto,
+        THREE
+    ) {
 
-    var instanceCommandManager = null;   
-    
+    var instanceCommandManager = null;
+
     function ManagerCommands(){
         //Constructor
         if(instanceCommandManager !== null){
             throw new Error("Cannot instantiate more than one ManagerCommands");
-        } 
-        
+        }        
+
         this.queueAsync     = new PriorityQueue({ comparator: function(a, b) { return b.priority - a.priority; }});        
         this.queueSync      = null;
         this.loadQueue      = [];
@@ -124,45 +123,45 @@ define('Core/Commander/ManagerCommands',
                 this.queueAsync.dequeue();   
             }
             else                        
-                return this.queueAsync.dequeue();
-                        
-        }
-        
-        return undefined;
-    };
+                    return this.queueAsync.dequeue();
 
-    /**
-    */
-    ManagerCommands.prototype.removeCanceled = function(){
-        //TODO: Implement Me 
+            }
 
-    };
-    
-    /**
-    */
-    ManagerCommands.prototype.wait = function(){
-        //TODO: Implement Me 
-        this.eventsManager.wait();
-    };
+            return undefined;
+        };
 
-    /**
-    */
-    ManagerCommands.prototype.forecast = function(){
-        //TODO: Implement Me 
+        /**
+         */
+        ManagerCommands.prototype.removeCanceled = function() {
+            //TODO: Implement Me 
 
-    };
+        };
 
-    /**
-    * @param object
-    */
-    ManagerCommands.prototype.addInHistory = function(object){
-        //TODO: Implement Me 
+        /**
+         */
+        ManagerCommands.prototype.wait = function() {
+            //TODO: Implement Me 
+            this.eventsManager.wait();
+        };
 
-    };
+        /**
+         */
+        ManagerCommands.prototype.forecast = function() {
+            //TODO: Implement Me 
 
-    return function(){
-        instanceCommandManager = instanceCommandManager || new ManagerCommands();
-        return instanceCommandManager;
-    };
-    
-});
+        };
+
+        /**
+         * @param object
+         */
+        ManagerCommands.prototype.addInHistory = function(object) {
+            //TODO: Implement Me 
+
+        };
+
+        return function() {
+            instanceCommandManager = instanceCommandManager || new ManagerCommands();
+            return instanceCommandManager;
+        };
+
+    });

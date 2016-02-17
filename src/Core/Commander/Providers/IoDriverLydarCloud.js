@@ -1,11 +1,11 @@
 /**
-* Generated On: 2015-10-5
-* Class: IoDriverLydarCloud
-*/
+ * Generated On: 2015-10-5
+ * Class: IoDriverLydarCloud
+ */
 
 var IoDriver = require('IoDriver');
 
-function IoDriverLydarCloud(){
+function IoDriverLydarCloud() {
     //Constructor
 
 
@@ -14,4 +14,6 @@ function IoDriverLydarCloud(){
 IoDriverLydarCloud.prototype = new IoDriver();
 
 
-module.exports = {IoDriverLydarCloud:IoDriverLydarCloud};
+module.exports = {
+    IoDriverLydarCloud: IoDriverLydarCloud
+};

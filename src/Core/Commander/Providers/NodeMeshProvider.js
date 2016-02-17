@@ -1,12 +1,12 @@
 /**
-* Generated On: 2015-10-5
-* Class: NodeMeshProvider
-* Description: Factory/Provider NodeMesh
-*/
+ * Generated On: 2015-10-5
+ * Class: NodeMeshProvider
+ * Description: Factory/Provider NodeMesh
+ */
 
 var NodeProvider = require('NodeProvider');
 
-function NodeMeshProvider(){
+function NodeMeshProvider() {
     //Constructor
 
 
@@ -15,4 +15,6 @@ function NodeMeshProvider(){
 NodeMeshProvider.prototype = new NodeProvider();
 
 
-module.exports = {NodeMeshProvider:NodeMeshProvider};
+module.exports = {
+    NodeMeshProvider: NodeMeshProvider
+};
