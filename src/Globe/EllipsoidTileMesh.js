@@ -66,6 +66,9 @@ define('Globe/EllipsoidTileMesh',[
             }
         }
        
+       
+        //  TODO : Attention ne marche plus car les helpers ne sont plus ajouter à la scene
+        /*
         var showHelper = true;
         showHelper = false;
         
@@ -88,6 +91,7 @@ define('Globe/EllipsoidTileMesh',[
                 this.helper.translateZ(this.absoluteCenter.length());
             
         }
+        */
     }
 
     EllipsoidTileMesh.prototype = Object.create( NodeMesh.prototype );

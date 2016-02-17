@@ -45,9 +45,6 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
     {        
         if(node instanceof EllipsoidTileMesh)
         {            
-            
-            if(node.helper !== undefined && node.helper.parent === null)           
-                this.scene.scene3D().add(node.helper);
 
             node.setVisibility(false);
             node.setSelected(false);
