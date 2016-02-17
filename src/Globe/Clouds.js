@@ -9,8 +9,8 @@ define('Globe/Clouds',['Renderer/NodeMesh',
                        'THREE',
                        'Renderer/c3DEngine',
                        'Core/Commander/Providers/WMS_Provider',
-                       'text!Renderer/Shader/CloudsFS.glsl',
-                       'text!Renderer/Shader/CloudsVS.glsl'], function(NodeMesh, THREE, gfxEngine, WMS_Provider, CloudsFS, CloudsVS){
+                       'Renderer/Shader/CloudsFS.glsl',
+                       'Renderer/Shader/CloudsVS.glsl'], function(NodeMesh, THREE, gfxEngine, WMS_Provider, CloudsFS, CloudsVS){
 
     function Clouds(size){
         

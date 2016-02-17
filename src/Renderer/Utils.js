@@ -1,3 +1,5 @@
+// var Cartography = require('Cartogaphy');
+
 define([], function () {
     
     /**
@@ -1245,7 +1247,7 @@ define([], function () {
       getSunPositionInScene: function(date,lat,lon){
           
             if(lat == undefined){
-                var currentPosWGS84 = require("Cartography").convertCoordVec3(require("Cartography").getCurrentPosition(),"EPSG:2154", "CRS:84"); 
+                var currentPosWGS84 = Cartography.convertCoordVec3(Cartography.getCurrentPosition(),"EPSG:2154", "CRS:84"); 
                 lat = currentPosWGS84.z;
                 lon = currentPosWGS84.x;
             }

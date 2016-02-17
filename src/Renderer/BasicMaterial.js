@@ -8,8 +8,8 @@
 define('Renderer/BasicMaterial',
     [   'THREE',
         'Core/defaultValue',
-        'text!Renderer/Shader/SimpleVS.glsl',
-        'text!Renderer/Shader/SimpleFS.glsl'], function(
+        'Renderer/Shader/SimpleVS.glsl',
+        'Renderer/Shader/SimpleFS.glsl'], function(
             THREE,
             defaultValue,            
             SimpleVS,

@@ -9,8 +9,8 @@ define('Renderer/GlobeMaterial',
     [   'THREE',
         'Renderer/BasicMaterial',
         'Core/System/JavaTools',
-        'text!Renderer/Shader/GlobeVS.glsl',
-        'text!Renderer/Shader/GlobeFS.glsl'], function(
+        'Renderer/Shader/GlobeVS.glsl',
+        'Renderer/Shader/GlobeFS.glsl'], function(
             THREE,
             BasicMaterial,
             JavaTools,

@@ -15,6 +15,10 @@ iTowns is managed on the GitHub platform. You should start with [creating a GitH
       * `git config --global pull.rebase preserve` - when pulling remote changes, rebase your local changes on top of the remote changes, to avoid unnecessary merge commits.
       * `git config --global fetch.prune true` - when fetching remote changes, remove any remote branches that no longer exist on the remote.
 
+### Node.js
+
+iTowns uses NPM as the build tool. If you haven't already, install Node.js: https://nodejs.org/
+
 ## Get the code
 
 * Have commit access to iTowns 2 ?
@@ -29,7 +33,17 @@ iTowns is managed on the GitHub platform. You should start with [creating a GitH
 
 ## Build the code
 
-The build system for iTowns 2 is under construction.
+* Download dependencies: `npm install`
+* Run the dev server:
+   * `npm start` (you can change the port: `npm start -- --port 3000`)
+   * Open `http://localhost:8080/`
+   * Make changes in the code, the browser will automatically reload on save
+* Build iTowns to produce a single independent script:
+   * `npm run build`
+   * The script and its source-maps are generated into the `dist/` folder
+   * You can run the built script to verify it works OK:
+      * `python -m SimpleHTTPServer 8080` (change the port at your convenience)
+      * Open `http://localhost:8080/`
 
 ## Contribute back
 

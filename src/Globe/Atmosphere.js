@@ -5,7 +5,7 @@
  */
 
 
-define('Globe/Atmosphere',['Renderer/NodeMesh','THREE','text!Renderer/Shader/GlowFS.glsl','text!Renderer/Shader/GlowVS.glsl'], function(NodeMesh,THREE,GlowFS,GlowVS){
+define('Globe/Atmosphere',['Renderer/NodeMesh','THREE','Renderer/Shader/GlowFS.glsl','Renderer/Shader/GlowVS.glsl'], function(NodeMesh,THREE,GlowFS,GlowVS){
 
     function Atmosphere(size){
         
