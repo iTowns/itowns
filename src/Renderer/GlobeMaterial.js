@@ -117,7 +117,7 @@ define('Renderer/GlobeMaterial', ['THREE',
                 this.Textures_01[i].needsUpdate = true;
 
         this.uniforms.dTextures_01.value = this.Textures_01; // Re-affect all the array each time a new texture is received -> NOT GOOD
-        this.uniforms.nbTextures_01.value = this.Textures_01.length;; //this.nbTextures;// this.Textures_01.length;
+        this.uniforms.nbTextures_01.value = this.Textures_01.length; //this.nbTextures;// this.Textures_01.length;
 
     };
 
