@@ -26,6 +26,7 @@
     "when": "^1.7.1"
   },
   "devDependencies": {
+    "js-beautify": "^1.6.2",
     "raw-loader": "^0.5.1",
     "webpack": "^1.12.12",
     "webpack-dev-server": "^1.14.1"

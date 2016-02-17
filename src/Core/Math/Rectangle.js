@@ -1,9 +1,9 @@
 /**
-* Generated On: 2015-10-5
-* Class: Rectangle
-*/
+ * Generated On: 2015-10-5
+ * Class: Rectangle
+ */
 
-function Rectangle(){
+function Rectangle() {
     //Constructor
 
 
@@ -11,4 +11,6 @@ function Rectangle(){
 
 
 
-module.exports = {Rectangle:Rectangle};
+module.exports = {
+    Rectangle: Rectangle
+};

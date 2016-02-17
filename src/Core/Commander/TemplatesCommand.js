@@ -1,10 +1,10 @@
 /**
-* Generated On: 2015-10-5
-* Class: TemplatesCommand
-* Description: Cette classe est une commande métier.
-*/
+ * Generated On: 2015-10-5
+ * Class: TemplatesCommand
+ * Description: Cette classe est une commande métier.
+ */
 
-function TemplatesCommand(){
+function TemplatesCommand() {
     //Constructor
 
     this.commands = null;
@@ -13,20 +13,22 @@ function TemplatesCommand(){
 
 
 /**
-*/
-TemplatesCommand.prototype.xmlToCommands = function(){
+ */
+TemplatesCommand.prototype.xmlToCommands = function() {
     //TODO: Implement Me 
 
 };
 
 
 /**
-*/
-TemplatesCommand.prototype.specifiesCommand = function(){
+ */
+TemplatesCommand.prototype.specifiesCommand = function() {
     //TODO: Implement Me 
 
 };
 
 
 
-module.exports = {TemplatesCommand:TemplatesCommand};
+module.exports = {
+    TemplatesCommand: TemplatesCommand
+};

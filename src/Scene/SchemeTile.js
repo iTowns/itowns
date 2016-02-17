@@ -1,18 +1,18 @@
 /**
-* Generated On: 2015-10-5
-* Class: SchemeTile
-* Description: Cette classe décrit un découpage spatiale. 
-*/
+ * Generated On: 2015-10-5
+ * Class: SchemeTile
+ * Description: Cette classe décrit un découpage spatiale. 
+ */
 
 
-define('Scene/SchemeTile',['Scene/BoundingBox'], function(BoundingBox){
+define('Scene/SchemeTile', ['Scene/BoundingBox'], function(BoundingBox) {
 
-    function SchemeTile(){
+    function SchemeTile() {
         //Constructor
 
-        this.maximumChildren    = 4;
-        this.schemeBB           = [];
-           
+        this.maximumChildren = 4;
+        this.schemeBB = [];
+
     }
     /**
      * 
@@ -22,24 +22,21 @@ define('Scene/SchemeTile',['Scene/BoundingBox'], function(BoundingBox){
      * @param {type} maxLa
      * @returns {SchemeTile_L8.SchemeTile.prototype@pro;schemeBB@call;push}
      */
-     
-    SchemeTile.prototype.add = function(minLo,maxLo,minLa,maxLa)
-    {
-        return this.schemeBB.push(new BoundingBox(minLo,maxLo,minLa,maxLa));
+
+    SchemeTile.prototype.add = function(minLo, maxLo, minLa, maxLa) {
+        return this.schemeBB.push(new BoundingBox(minLo, maxLo, minLa, maxLa));
     };
-    
-    
-    SchemeTile.prototype.rootCount = function()
-    {
+
+
+    SchemeTile.prototype.rootCount = function() {
         return this.schemeBB.length;
     };
-    
-    SchemeTile.prototype.getRoot = function(id)
-    {        
+
+    SchemeTile.prototype.getRoot = function(id) {
         return this.schemeBB[id];
     };
-    
+
 
     return SchemeTile;
-    
+
 });

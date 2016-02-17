@@ -1,12 +1,12 @@
 /**
-* Generated On: 2015-10-5
-* Class: Style
-* Description: Description du style du Node. Le style et contenue sont les deux éléments permettant de convertir le Node pour le moteur graphique.
-*/
+ * Generated On: 2015-10-5
+ * Class: Style
+ * Description: Description du style du Node. Le style et contenue sont les deux éléments permettant de convertir le Node pour le moteur graphique.
+ */
 
 var Description = require('Description');
 
-function Style(){
+function Style() {
     //Constructor
 
     this.color = null;
@@ -17,4 +17,6 @@ function Style(){
 Style.prototype = new Description();
 
 
-module.exports = {Style:Style};
+module.exports = {
+    Style: Style
+};

@@ -5,27 +5,24 @@
  */
 
 
-define('Core/System/JavaTools',[], function(){
+define('Core/System/JavaTools', [], function() {
 
 
-    function JavaTools()
-    {
+    function JavaTools() {
         //Constructor
 
     }
 
     JavaTools.prototype.constructor = JavaTools;
-    
-    JavaTools.prototype.freeArray = function(sourceArray)
-    {
+
+    JavaTools.prototype.freeArray = function(sourceArray) {
         var arr = sourceArray.slice();
 
         while (arr.length > 0) {
-          arr.pop();
+            arr.pop();
         }
     };
-    
+
     return JavaTools;
-    
+
 });
-    

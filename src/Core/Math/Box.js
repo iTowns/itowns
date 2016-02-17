@@ -1,9 +1,9 @@
 /**
-* Generated On: 2015-10-5
-* Class: Box
-*/
+ * Generated On: 2015-10-5
+ * Class: Box
+ */
 
-function Box(){
+function Box() {
     //Constructor
 
 
@@ -11,4 +11,6 @@ function Box(){
 
 
 
-module.exports = {Box:Box};
+module.exports = {
+    Box: Box
+};

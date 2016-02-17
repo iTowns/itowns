@@ -1,9 +1,9 @@
 /**
-* Generated On: 2015-10-5
-* Class: GenericBufferObject
-*/
+ * Generated On: 2015-10-5
+ * Class: GenericBufferObject
+ */
 
-function GenericBufferObject(){
+function GenericBufferObject() {
     //Constructor
 
     this.vertexBuffer = null;
@@ -12,12 +12,14 @@ function GenericBufferObject(){
 
 
 /**
-*/
-GenericBufferObject.prototype.computeVertex = function(){
+ */
+GenericBufferObject.prototype.computeVertex = function() {
     //TODO: Implement Me 
 
 };
 
 
 
-module.exports = {GenericBufferObject:GenericBufferObject};
+module.exports = {
+    GenericBufferObject: GenericBufferObject
+};
