@@ -20,6 +20,7 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
         this.visibleNodes= 0;
         this.selectNodeId   = -1;
         this.selectNode     = null;
+        this.cachedRTC      = null;
         
     }
     
@@ -199,5 +200,28 @@ define('Scene/BrowseTree',['THREE','Globe/EllipsoidTileMesh','Scene/NodeProcess'
         
     };
     
+    
+    BrowseTree.prototype.updateLayer = function(layer)
+    {
+               
+        var root = layer.children[0];
+        for(var c = 0; c <  root.children.length; c++)
+        {
+            var node = root.children[c];
+
+            this.rtc = this.getRTCMatrix(node.position,this.scene.currentCamera(),node);
+
+            var cRTC = function(obj)
+            {
+                 if(obj.material && obj.material.setMatrixRTC)
+                    obj.material.setMatrixRTC(this.rtc);
+
+            }.bind(this);
+
+            node.traverse(cRTC);
+
+        }
+    };
+        
     return BrowseTree;
 });
