@@ -484,6 +484,8 @@ define('Renderer/c3DEngine', [
     };
 
     c3DEngine.prototype.cartesianToGeo = function(position) {
+        
+        // TODO move to core
         var p = position.clone();
         p.x = -position.x;
         p.y = position.z;
@@ -507,6 +509,32 @@ define('Renderer/c3DEngine', [
         var h = (rsqXY * Math.cos(phi)) + p.z * Math.sin(phi) - a * Math.sqrt(1 - e * e * Math.sin(phi) * Math.sin(phi));
 
         console.log(theta / Math.PI * 180 + ' ' + phi / Math.PI * 180 + ' ' + h);
+    };
+    
+    c3DEngine.prototype.getRTCMatrixFromCenter = function(center, camera ) {
+       
+        var position    = new THREE.Vector3().subVectors(camera.camera3D.position,center);
+        var quaternion  = new THREE.Quaternion().copy(camera.camera3D.quaternion);       
+        var matrix      = new THREE.Matrix4().compose(position,quaternion,new THREE.Vector3(1,1,1));
+        var matrixInv   = new THREE.Matrix4().getInverse(matrix);  
+        var centerEye   = new THREE.Vector4().applyMatrix4(matrixInv) ;                        
+        var mvc         = matrixInv.setPosition(centerEye);      
+        return            new THREE.Matrix4().multiplyMatrices(camera.camera3D.projectionMatrix,mvc);
+    };
+    
+    c3DEngine.prototype.getRTCMatrixFromNode = function(node, camera) {
+
+        var camera3D = camera.camera3D;  
+        var position = new THREE.Vector3().subVectors(camera3D.position, node.position);
+        var quaternion = new THREE.Quaternion().copy(camera3D.quaternion);
+        var matrix = new THREE.Matrix4().compose(position, quaternion, new THREE.Vector3(1, 1, 1));
+        var matrixInv = new THREE.Matrix4().getInverse(matrix);
+        var model = node.matrixWorld.clone().setPosition(new THREE.Vector3());
+        matrixInv.multiply(model);
+
+        var centerEye = new THREE.Vector4().applyMatrix4(matrixInv);
+        var mvc = matrixInv.setPosition(centerEye);
+        return new THREE.Matrix4().multiplyMatrices(camera3D.projectionMatrix, mvc);
     };
 
     return function(scene) {

@@ -36,7 +36,7 @@ define('Scene/Scene', [
         this.selectNodes = null;
         this.managerCommand = ManagerCommands();
         this.gfxEngine = c3DEngine();
-        this.browserScene = new BrowseTree(this);
+        this.browserScene = new BrowseTree(this.gfxEngine);
         this.cap = new Capabilities();
     }
 
@@ -71,7 +71,8 @@ define('Scene/Scene', [
     Scene.prototype.init = function(pos) {
         this.managerCommand.init(this);
         var globe = new Globe();
-        this.add(globe); 
+        this.add(globe);
+
         //var position    = globe.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(2.33,48.87,25000000));        
         //
         var position = globe.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(pos.lat, pos.lon, pos.alt));
@@ -104,23 +105,24 @@ define('Scene/Scene', [
      * @param {type} run
      * @returns {undefined}
      */
-    Scene.prototype.sceneProcess = function(run) {
-
+    Scene.prototype.sceneProcess = function(run){
+        
         //console.log(this.managerCommand.queueAsync.length);
-
-        if (this.layers[0] !== undefined && this.currentCamera() !== undefined) {
-
-            this.browserScene.browse(this.layers[0].terrain, this.currentCamera(), true);
-
+        
+        if(this.layers[0] !== undefined  && this.currentCamera() !== undefined )
+        {                        
+        
+            this.browserScene.browse(this.layers[0].terrain,this.currentCamera(),true);
+                        
             this.managerCommand.runAllCommands();
-
+            
             //this.renderScene3D();             
-            this.updateScene3D();
-
-        }
-
+            this.updateScene3D();            
+           
+        } 
+        
     };
-
+    
     Scene.prototype.realtimeSceneProcess = function() {
 
         if (this.currentCamera !== undefined)
@@ -133,7 +135,7 @@ define('Scene/Scene', [
                     if (sLayer instanceof Quadtree)
                         this.browserScene.browse(sLayer, this.currentCamera(), false);
                     else if (sLayer instanceof Layer)
-                        this.browserScene.updateLayer(sLayer);
+                        this.browserScene.updateLayer(sLayer,this.currentCamera());
 
                 }
             }
