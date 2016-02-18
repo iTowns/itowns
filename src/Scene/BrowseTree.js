@@ -48,8 +48,9 @@ define('Scene/BrowseTree', ['Globe/EllipsoidTileMesh'], function( EllipsoidTileM
             if (node.loaded && this.nodeProcess.frustumCullingOBB(node, camera)) {
                 if (this.nodeProcess.horizonCulling(node, camera)) {
 
+                    // TODO remove maybe not necessary
                     if (node.parent.material !== undefined && node.parent.material.visible === true)
-
+                        
                         return node.setVisibility(false);
 
                     var sse = this.nodeProcess.SSE(node, camera);
