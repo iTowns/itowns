@@ -33,7 +33,7 @@ define('Core/Commander/Providers/WMTS_Provider', [
             this.ioDriverXML = new IoDriverXML();
             
             this.baseUrl = options.url || "http://wxs.ign.fr/";
-            this.layer = options.layer || "ORTHOIMAGERY.ORTHOPHOTOS";
+            this.layer   = options.layer || "ORTHOIMAGERY.ORTHOPHOTOS";
 
         }
 

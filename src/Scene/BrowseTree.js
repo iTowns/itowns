@@ -156,13 +156,13 @@ define('Scene/BrowseTree', ['Globe/EllipsoidTileMesh', 'THREE'], function( Ellip
 
     };
     
-    BrowseTree.prototype.updateNodeMaterial = function(){
+    BrowseTree.prototype.updateNodeMaterial = function(WMTSProvider){
         
         var loader = new THREE.TextureLoader();
         loader.crossOrigin = '';
         
         for(var a = 0; a< this.tree.children.length; ++a ){
-            var root = this.tree.children[a]; console.log("root.children.length",root.children.length);
+            var root = this.tree.children[a];
             for (var c = 0; c < root.children.length; c++) {
 
                var node = root.children[c];
@@ -171,30 +171,33 @@ define('Scene/BrowseTree', ['Globe/EllipsoidTileMesh', 'THREE'], function( Ellip
                    // if (obj.material.Textures_01 ){//&& !obj.visible){
                          for (var i=0; i< obj.material.Textures_01.length; ++i){
 
-                            // console.log(obj.material.Textures_01[i]);
-                             var url = obj.material.Textures_01[i].url; //TILEMATRIX=3&TILEROW=5&TILECOL=0
-                             if(url){ console.log(url);
+                              var url = obj.material.Textures_01[i].url; 
+                              var x,y,z,urlWMTS;
+                              if(url){
                                  if(url.indexOf("geoportail")>0){
                                     var indexTILEMATRIX = url.indexOf("TILEMATRIX=");
                                     var indexTILEROW    = url.indexOf("&TILEROW=");
                                     var indexTILECOL    = url.indexOf("&TILECOL=");
-                                   //  console.log(url);
-                                    var z = url.substring(indexTILEMATRIX + 11,indexTILEROW);
-                                    var x = url.substring(indexTILEROW + 9,indexTILECOL);
-                                    var y = url.substring(indexTILECOL + 9);
-                                    console.log(z, x , y);
-                                    //http://a.basemaps.cartocdn.com/dark_all/4/6/1.png
-                                    var newURL = "http://a.basemaps.cartocdn.com/dark_all/"+z+"/"+y+"/"+x+".png";
-                                    url = newURL;
-                                    obj.material.Textures_01[i] = loader.load(newURL);
+                                    z = url.substring(indexTILEMATRIX + 11,indexTILEROW);
+                                    x = url.substring(indexTILEROW + 9,indexTILECOL);
+                                    y = url.substring(indexTILECOL + 9);
+                                    urlWMTS = "http://a.basemaps.cartocdn.com/dark_all/"+z+"/"+y+"/"+x+".png";
+                                }else{
+                                    var urlArray = url.split("/");
+                                    z = urlArray[4];
+                                    x = urlArray[5];
+                                    y = urlArray[6].split(".")[0];
+                                    var coWMTS = {zoom:z, row:y, col:x};
+                                    urlWMTS = WMTSProvider.urlOrtho(coWMTS);
+                                }
+                                if( url.indexOf(WMTSProvider.baseUrl) <0){  // We need to update texture
+                                    var newTexture = loader.load(urlWMTS);
+                                        newTexture.url = urlWMTS;
+                                        obj.material.Textures_01[i] = newTexture;
                                 }
                              }
-
                          }
-
-                //    }
                 }.bind(this);
-
                 node.traverse(lookMaterial);
             }
         }
