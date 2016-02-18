@@ -162,9 +162,9 @@ define('Scene/BrowseTree', ['Globe/EllipsoidTileMesh'], function( EllipsoidTileM
             var node = root.children[c];
 
             this.cachedRTC = this.gfxEngine.getRTCMatrixFromNode(node, camera);                        
-
+            
             var cRTC = function(obj) {
-                                
+                
                 if (obj.material && obj.material.setMatrixRTC)
                     obj.material.setMatrixRTC(this.cachedRTC);
 
