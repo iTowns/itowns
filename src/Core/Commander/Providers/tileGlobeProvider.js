@@ -88,12 +88,11 @@ define('Core/Commander/Providers/tileGlobeProvider', [
 
                 return this.providerKML.loadKMZ(longitude, latitude).then(function (collada){
 
-
                     if(collada && tile.link.children.indexOf(collada) === -1)
-                    {                                 
-                        tile.link.add(collada);
-                        tile.content = collada;
-                    }
+                        {                                 
+                            tile.link.add(collada);
+                            tile.content = collada;
+                        }
                 }.bind(this));
             }
         };

@@ -82,14 +82,14 @@ define('Core/Commander/ManagerCommands', [
                 return when(0);
             }
 
-            return when.all(this.arrayDeQueue(4))
+            return when.all(this.arrayDeQueue(8))
                 .then(function() {
                     
-                    
-//                    if (this.queueAsync.length === 0)     
-//                        this.scene.sceneProcess();
-//                    this.scene.updateScene3D();
-                    return this.runAllCommands();
+                // TODO problem with auto refresh    
+                // if (this.queueAsync.length === 0)     
+                //this.scene.sceneProcess();
+                //this.scene.updateScene3D();
+                return this.runAllCommands();
                 
                 }.bind(this));
 
