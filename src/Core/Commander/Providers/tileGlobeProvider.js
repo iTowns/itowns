@@ -44,7 +44,7 @@ define('Core/Commander/Providers/tileGlobeProvider', [
             //Constructor
 
             this.projection = new Projection();
-            this.providerWMTS = new WMTS_Provider();
+            this.providerWMTS = new WMTS_Provider({});//{url:"http://a.basemaps.cartocdn.com/",layer:"dark_all/"});
             //this.providerWMS     = new WMS_Provider();
             this.ellipsoid = new Ellipsoid(size);
             this.providerKML = new KML_Provider(this.ellipsoid);

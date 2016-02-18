@@ -4,7 +4,7 @@
  * Description: BrowseTree parcourt un arbre de Node. Lors du parcours un ou plusieur NodeProcess peut etre appliqué sur certains Node.
  */
 
-define('Scene/BrowseTree', ['Globe/EllipsoidTileMesh'], function( EllipsoidTileMesh) {
+define('Scene/BrowseTree', ['Globe/EllipsoidTileMesh', 'THREE'], function( EllipsoidTileMesh, THREE) {
 
     function BrowseTree(engine) {
         //Constructor
@@ -50,7 +50,7 @@ define('Scene/BrowseTree', ['Globe/EllipsoidTileMesh'], function( EllipsoidTileM
 
                     if (node.parent.material !== undefined && node.parent.material.visible === true)
 
-                        return node.setVisibility(false);
+                    { return node.setVisibility(false); }
 
                     var sse = this.nodeProcess.SSE(node, camera);
 
@@ -63,6 +63,7 @@ define('Scene/BrowseTree', ['Globe/EllipsoidTileMesh'], function( EllipsoidTileM
                         node.setMaterialVisibility(true);
                         this.uniformsProcess(node, camera);
                         node.setChildrenVisibility(false);
+                        
 
                         return false;
                     }
@@ -153,6 +154,50 @@ define('Scene/BrowseTree', ['Globe/EllipsoidTileMesh'], function( EllipsoidTileM
         } else
             return false;
 
+    };
+    
+    BrowseTree.prototype.updateNodeMaterial = function(){
+        
+        var loader = new THREE.TextureLoader();
+        loader.crossOrigin = '';
+        
+        for(var a = 0; a< this.tree.children.length; ++a ){
+            var root = this.tree.children[a]; console.log("root.children.length",root.children.length);
+            for (var c = 0; c < root.children.length; c++) {
+
+               var node = root.children[c];
+
+               var lookMaterial = function(obj) {
+                   // if (obj.material.Textures_01 ){//&& !obj.visible){
+                         for (var i=0; i< obj.material.Textures_01.length; ++i){
+
+                            // console.log(obj.material.Textures_01[i]);
+                             var url = obj.material.Textures_01[i].url; //TILEMATRIX=3&TILEROW=5&TILECOL=0
+                             if(url){ console.log(url);
+                                 if(url.indexOf("geoportail")>0){
+                                    var indexTILEMATRIX = url.indexOf("TILEMATRIX=");
+                                    var indexTILEROW    = url.indexOf("&TILEROW=");
+                                    var indexTILECOL    = url.indexOf("&TILECOL=");
+                                   //  console.log(url);
+                                    var z = url.substring(indexTILEMATRIX + 11,indexTILEROW);
+                                    var x = url.substring(indexTILEROW + 9,indexTILECOL);
+                                    var y = url.substring(indexTILECOL + 9);
+                                    console.log(z, x , y);
+                                    //http://a.basemaps.cartocdn.com/dark_all/4/6/1.png
+                                    var newURL = "http://a.basemaps.cartocdn.com/dark_all/"+z+"/"+y+"/"+x+".png";
+                                    url = newURL;
+                                    obj.material.Textures_01[i] = loader.load(newURL);
+                                }
+                             }
+
+                         }
+
+                //    }
+                }.bind(this);
+
+                node.traverse(lookMaterial);
+            }
+        }
     };
 
     BrowseTree.prototype.updateLayer = function(layer,camera) {

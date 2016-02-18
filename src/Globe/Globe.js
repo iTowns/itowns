@@ -83,6 +83,10 @@ define('Globe/Globe', [
         //TODO: Implement Me 
 
     };
+    
+    Globe.prototype.updateQuadtree = function(){
+        this.terrain = new Quadtree(EllipsoidTileMesh, this.SchemeTileWMTS(2), this.size, false);
+    }
 
     Globe.prototype.SchemeTileWMTS = function(type) {
         //TODO: Implement Me 
