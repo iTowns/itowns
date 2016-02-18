@@ -32,6 +32,7 @@ define('Globe/Globe', [
 
         this.size = new THREE.Vector3(6378137, 6356752.3142451793, 6378137).multiplyScalar(scale);
         this.batiments = new Layer();
+        this.layerWGS84Zup = new Layer();
 
         var kml = new THREE.Mesh();
         this.batiments.add(kml);
@@ -41,7 +42,7 @@ define('Globe/Globe', [
         this.clouds = new Clouds();
 
         var material = new BasicMaterial(new THREE.Color(1, 0, 0));
-        var geometry = new THREE.SphereGeometry(200);
+        var geometry = new THREE.SphereGeometry(2);
         var batiment = new THREE.Mesh(geometry, material);
         var position = this.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(48.87, 0, 200));
         batiment.frustumCulled = false;
@@ -56,19 +57,25 @@ define('Globe/Globe', [
         material2.wireframe = true;
         batiment2.position.copy(position2);
 
-        //this.batiments.add( batiment );        
-        //this.batiments.add( batiment2 );
-
+//        this.batiments.add( batiment );        
+//        this.batiments.add( batiment2 );
+        var zUp = new THREE.Object3D();
+        
+        zUp.quaternion.multiply(new THREE.Quaternion().setFromAxisAngle( new THREE.Vector3( 1, 0, 0 ), -Math.PI / 2 ));
+        zUp.quaternion.multiply(new THREE.Quaternion().setFromAxisAngle( new THREE.Vector3( 0, 0, 1 ),  Math.PI ));
+        
+        //zUp.add(new THREE.AxisHelper( 10000000 ));
+        
+        this.layerWGS84Zup.add(zUp);
+        
         this.add(this.terrain);
         this.add(this.batiments);
-
+        this.add(this.layerWGS84Zup);
+       
         if (this.atmosphere !== undefined) {
             this.atmosphere.add(this.clouds);
             this.add(this.atmosphere);
-        }
-
-        //this.add(new THREE.Object3D().add());
-
+        }        
     }
 
     Globe.prototype = Object.create(Layer.prototype);
