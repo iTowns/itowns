@@ -21,7 +21,7 @@ module.exports = {
         loader: 'raw'
       },
       {
-        test: /node_modules\/three\/examples\/.*\.js$/,
+        test: /node_modules[\\/]three[\\/]examples[\\/].*\.js$/,
         loader: 'imports',
         query: {
             'THREE': 'three'
