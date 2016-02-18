@@ -4,13 +4,13 @@
  * Description: BrowseTree parcourt un arbre de Node. Lors du parcours un ou plusieur NodeProcess peut etre appliqué sur certains Node.
  */
 
-define('Scene/BrowseTree', ['THREE', 'Globe/EllipsoidTileMesh', 'Scene/NodeProcess', 'OBBHelper'], function(THREE, EllipsoidTileMesh) {
+define('Scene/BrowseTree', ['Globe/EllipsoidTileMesh'], function( EllipsoidTileMesh) {
 
-    function BrowseTree(scene) {
+    function BrowseTree(engine) {
         //Constructor
 
         this.oneNode = 0;
-        this.scene = scene;
+        this.gfxEngine = engine;
         this.nodeProcess = undefined;
         this.tree = undefined;
         this.date = new Date();
@@ -80,7 +80,8 @@ define('Scene/BrowseTree', ['THREE', 'Globe/EllipsoidTileMesh', 'Scene/NodeProce
 
 
     BrowseTree.prototype.uniformsProcess = function(node, camera) {
-        node.setMatrixRTC(this.getRTCMatrix(node.absoluteCenter, camera));
+        node.setMatrixRTC(this.gfxEngine.getRTCMatrixFromCenter(node.absoluteCenter, camera));
+        
         if (node.id === this.selectNodeId) {
             node.setSelected(node.visible && node.material.visible);
             if (this.selectNode !== node) {
@@ -90,35 +91,6 @@ define('Scene/BrowseTree', ['THREE', 'Globe/EllipsoidTileMesh', 'Scene/NodeProce
         }
 
         node.setFog(this.fogDistance);
-    };
-
-    BrowseTree.prototype.getRTCMatrix = function(center, camera, node) {
-        // TODO gerer orientation et echelle de l'objet        
-        //        var position    = new THREE.Vector3().subVectors(camera.camera3D.position,center);
-        //        var quaternion  = new THREE.Quaternion().copy(camera.camera3D.quaternion);       
-        //        var matrix      = new THREE.Matrix4().compose(position,quaternion,new THREE.Vector3(1,1,1));
-        //        var matrixInv   = new THREE.Matrix4().getInverse(matrix);  
-        //        var centerEye   = new THREE.Vector4().applyMatrix4(matrixInv) ;                        
-        //        var mvc         = matrixInv.setPosition(centerEye);      
-        //        return            new THREE.Matrix4().multiplyMatrices(camera.camera3D.projectionMatrix,mvc);
-
-        var position = new THREE.Vector3().subVectors(camera.camera3D.position, center);
-        var quaternion = new THREE.Quaternion().copy(camera.camera3D.quaternion);
-
-
-        var matrix = new THREE.Matrix4().compose(position, quaternion, new THREE.Vector3(1, 1, 1));
-        var matrixInv = new THREE.Matrix4().getInverse(matrix);
-
-        if (node) {
-            var model = node.matrixWorld.clone().setPosition(new THREE.Vector3());
-            matrixInv.multiply(model);
-
-        }
-
-        var centerEye = new THREE.Vector4().applyMatrix4(matrixInv);
-        var mvc = matrixInv.setPosition(centerEye);
-        return new THREE.Matrix4().multiplyMatrices(camera.camera3D.projectionMatrix, mvc);
-
     };
 
     /**
@@ -131,12 +103,13 @@ define('Scene/BrowseTree', ['THREE', 'Globe/EllipsoidTileMesh', 'Scene/NodeProce
     BrowseTree.prototype.browse = function(tree, camera, optional) {
 
         this.tree = tree;
+        
+        // TODO move to camera class
         camera.camera3D.updateMatrix();
         camera.camera3D.updateMatrixWorld(true);
         camera.camera3D.matrixWorldInverse.getInverse(camera.camera3D.matrixWorld);
-
         var distance = camera.camera3D.position.length();
-
+        // <---        
         this.fogDistance = this.mfogDistance * Math.pow((distance - 6300000) / 25000000, 1.6);
 
         this.nodeProcess.preHorizonCulling(camera);
@@ -153,8 +126,7 @@ define('Scene/BrowseTree', ['THREE', 'Globe/EllipsoidTileMesh', 'Scene/NodeProce
      * @returns {undefined}
      */
     BrowseTree.prototype._browse = function(node, camera, optional) {
-
-        //this.bBoxHelper(node);
+        
         if (this.processNode(node, camera, optional))
             for (var i = 0; i < node.children.length; i++)
                 this._browse(node.children[i], camera, optional);
@@ -183,23 +155,21 @@ define('Scene/BrowseTree', ['THREE', 'Globe/EllipsoidTileMesh', 'Scene/NodeProce
 
     };
 
-
-    BrowseTree.prototype.updateLayer = function(layer) {
+    BrowseTree.prototype.updateLayer = function(layer,camera) {
 
         var root = layer.children[0];
         for (var c = 0; c < root.children.length; c++) {
             var node = root.children[c];
 
-            this.rtc = this.getRTCMatrix(node.position, this.scene.currentCamera(), node);
+            this.cachedRTC = this.gfxEngine.getRTCMatrixFromNode(node, camera);                        
 
             var cRTC = function(obj) {
                 if (obj.material && obj.material.setMatrixRTC)
-                    obj.material.setMatrixRTC(this.rtc);
+                    obj.material.setMatrixRTC(this.cachedRTC);
 
             }.bind(this);
 
             node.traverse(cRTC);
-
         }
     };
 
