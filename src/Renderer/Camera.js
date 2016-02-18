@@ -104,7 +104,20 @@ define('Renderer/Camera', ['Scene/Node', 'THREE'], function(Node, THREE) {
         this.frustum.setFromMatrix(new THREE.Matrix4().multiplyMatrices(this.camera3D.projectionMatrix, this.camera3D.matrixWorldInverse));
 
     };
-
+    
+    Camera.prototype.updateMatrixWorld = function() 
+    {
+        this.camera3D.updateMatrix();
+        this.camera3D.updateMatrixWorld(true);
+        this.camera3D.matrixWorldInverse.getInverse(this.camera3D.matrixWorld);
+        
+    };
+    
+    Camera.prototype.getDistanceFromOrigin = function() 
+    {
+        return this.camera3D.position.length();
+    };
+    
     Camera.prototype.setPosition = function(position) {
         this.camera3D.position.copy(position);
     };

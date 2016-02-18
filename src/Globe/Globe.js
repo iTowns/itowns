@@ -34,7 +34,7 @@ define('Globe/Globe', [
         this.batiments = new Layer();
         this.layerWGS84Zup = new Layer();
 
-        var kml = new THREE.Mesh();
+        var kml = new THREE.Object3D();
         this.batiments.add(kml);
 
         this.terrain = new Quadtree(EllipsoidTileMesh, this.SchemeTileWMTS(2), this.size, kml);
@@ -42,11 +42,11 @@ define('Globe/Globe', [
         this.clouds = new Clouds();
 
         var material = new BasicMaterial(new THREE.Color(1, 0, 0));
-        var geometry = new THREE.SphereGeometry(2);
+        var geometry = new THREE.SphereGeometry(100);
         var batiment = new THREE.Mesh(geometry, material);
         var position = this.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(48.87, 0, 200));
         batiment.frustumCulled = false;
-        //material.wireframe      = true;
+        material.wireframe      = true;
         batiment.position.copy(position);
 
         var material2 = new BasicMaterial(new THREE.Color(1, 0.5, 1));
@@ -57,20 +57,21 @@ define('Globe/Globe', [
         material2.wireframe = true;
         batiment2.position.copy(position2);
 
-//        this.batiments.add( batiment );        
-//        this.batiments.add( batiment2 );
+        //kml.add( batiment );        
+        //kml.add( batiment2 );
+        
         var zUp = new THREE.Object3D();
         
         zUp.quaternion.multiply(new THREE.Quaternion().setFromAxisAngle( new THREE.Vector3( 1, 0, 0 ), -Math.PI / 2 ));
         zUp.quaternion.multiply(new THREE.Quaternion().setFromAxisAngle( new THREE.Vector3( 0, 0, 1 ),  Math.PI ));
         
-        //zUp.add(new THREE.AxisHelper( 10000000 ));
+        zUp.add(new THREE.AxisHelper( 10000000 ));
         
         this.layerWGS84Zup.add(zUp);
         
         this.add(this.terrain);
         this.add(this.batiments);
-        this.add(this.layerWGS84Zup);
+        //this.add(this.layerWGS84Zup);
        
         if (this.atmosphere !== undefined) {
             this.atmosphere.add(this.clouds);
