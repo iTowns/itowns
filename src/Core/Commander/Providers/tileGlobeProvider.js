@@ -83,7 +83,7 @@ define('Core/Commander/Providers/tileGlobeProvider', [
             if (command === undefined)
                 return when();
 
-            var bbox = command.paramsFunction[0];
+            var bbox = command.paramsFunction.bbox;
             var cooWMTS = this.projection.WGS84toWMTS(bbox);
             var parent = command.requester;
             var geometry = undefined; //getGeometry(bbox,cooWMTS);       

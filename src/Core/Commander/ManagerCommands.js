@@ -16,7 +16,6 @@
  * @returns {Function}
  */
 define('Core/Commander/ManagerCommands', [
-        'Core/Commander/Providers/tileGlobeProvider',
         'Core/Commander/Interfaces/EventsManager',
         'PriorityQueue',
         'when',
@@ -25,7 +24,6 @@ define('Core/Commander/ManagerCommands', [
         'THREE'
     ],
     function(
-        tileGlobeProvider,
         EventsManager,
         PriorityQueue,
         when,
@@ -49,7 +47,7 @@ define('Core/Commander/ManagerCommands', [
             });
             this.queueSync = null;
             this.loadQueue = [];
-            this.providers = [];
+            this.providerMap = {};
             this.history = null;
             this.eventsManager = new EventsManager();
             this.scene = undefined;
@@ -66,11 +64,15 @@ define('Core/Commander/ManagerCommands', [
             this.scene = scene;
         };
 
-        ManagerCommands.prototype.createProvider = function(type, param) {
+        ManagerCommands.prototype.addLayer = function(layer, provider) {
+            this.providerMap[layer] = provider;
+        };
+
+        /*ManagerCommands.prototype.createProvider = function(type, param) {
             if (type === EllipsoidTileMesh) {
                 this.providers.push(new tileGlobeProvider(param));
             }
-        };
+        };*/
 
         ManagerCommands.prototype.runAllCommands = function() {
             if (this.queueAsync.length === 0)
@@ -89,7 +91,8 @@ define('Core/Commander/ManagerCommands', [
             var arrayTasks = [];
 
             while (this.queueAsync.length > 0 && arrayTasks.length < nT) {
-                arrayTasks.push(this.providers[0].get(this.deQueue()));
+                var command = this.deQueue();
+                arrayTasks.push(this.providerMap[command.layer].get(command));
             }
 
             return arrayTasks;
