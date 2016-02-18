@@ -186,7 +186,7 @@ define('Scene/Scene', [
     Scene.prototype.add = function(node) {
         //TODO: Implement Me 
 
-        this.layers.push(node);
+        this.layers.push(node);        
 
         this.gfxEngine.add3DScene(node.getMesh());
     };

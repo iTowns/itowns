@@ -44,7 +44,7 @@ define('Scene/Layer', [
             var node = this.children[i];
 
 
-            if (node instanceof NodeMesh || node instanceof THREE.Mesh)
+            if (node instanceof NodeMesh || node instanceof THREE.Mesh || node instanceof THREE.Object3D)
                 meshs.push(node);
             else if (node instanceof Layer) {
                 meshs = meshs.concat(node.getMesh());
