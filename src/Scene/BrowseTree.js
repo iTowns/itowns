@@ -103,14 +103,10 @@ define('Scene/BrowseTree', ['Globe/EllipsoidTileMesh'], function( EllipsoidTileM
     BrowseTree.prototype.browse = function(tree, camera, optional) {
 
         this.tree = tree;
+               
+        camera.updateMatrixWorld();
         
-        // TODO move to camera class
-        camera.camera3D.updateMatrix();
-        camera.camera3D.updateMatrixWorld(true);
-        camera.camera3D.matrixWorldInverse.getInverse(camera.camera3D.matrixWorld);
-        var distance = camera.camera3D.position.length();
-        // <---        
-        this.fogDistance = this.mfogDistance * Math.pow((distance - 6300000) / 25000000, 1.6);
+        this.fogDistance = this.mfogDistance * Math.pow((camera.getDistanceFromOrigin() - 6300000) / 25000000, 1.6);
 
         this.nodeProcess.preHorizonCulling(camera);
 
@@ -162,9 +158,9 @@ define('Scene/BrowseTree', ['Globe/EllipsoidTileMesh'], function( EllipsoidTileM
             var node = root.children[c];
 
             this.cachedRTC = this.gfxEngine.getRTCMatrixFromNode(node, camera);                        
-
+            
             var cRTC = function(obj) {
-                                
+                
                 if (obj.material && obj.material.setMatrixRTC)
                     obj.material.setMatrixRTC(this.cachedRTC);
 
