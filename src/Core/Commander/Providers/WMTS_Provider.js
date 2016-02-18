@@ -24,13 +24,16 @@ define('Core/Commander/Providers/WMTS_Provider', [
         CacheRessource) {
 
 
-        function WMTS_Provider() {
+        function WMTS_Provider(options) {
             //Constructor
-
+            
             Provider.call(this, new IoDriver_XBIL());
             this.cache = CacheRessource();
             this.ioDriverImage = new IoDriver_Image();
             this.ioDriverXML = new IoDriverXML();
+            
+            this.baseUrl = options.url || "http://wxs.ign.fr/";
+            this.layer = options.layer || "ORTHOIMAGERY.ORTHOPHOTOS";
 
         }
 
@@ -63,15 +66,21 @@ define('Core/Commander/Providers/WMTS_Provider', [
         WMTS_Provider.prototype.urlOrtho = function(coWMTS) {
 
             var key = "va5orxd0pgzvq3jxutqfuy0b";
-            var layer = "ORTHOIMAGERY.ORTHOPHOTOS";
-            //layer  = "GEOGRAPHICALGRIDSYSTEMS.MAPS";
+            //var layer = "ORTHOIMAGERY.ORTHOPHOTOS";
+            var url;
 
-            var url = "http://wxs.ign.fr/" + key + "/geoportail/wmts?LAYER=" + layer +
-                "&FORMAT=image/jpeg&SERVICE=WMTS&VERSION=1.0.0" +
-                "&REQUEST=GetTile&STYLE=normal&TILEMATRIXSET=PM" +
-                "&TILEMATRIX=" + coWMTS.zoom + "&TILEROW=" + coWMTS.row + "&TILECOL=" + coWMTS.col;
-            return url;
+            if(this.baseUrl === "http://wxs.ign.fr/")      // Geoportal WMS structure
+                url = this.baseUrl + key + "/geoportail/wmts?LAYER=" + this.layer +
+                    "&FORMAT=image/jpeg&SERVICE=WMTS&VERSION=1.0.0" +
+                    "&REQUEST=GetTile&STYLE=normal&TILEMATRIXSET=PM" +
+                    "&TILEMATRIX=" + coWMTS.zoom + "&TILEROW=" + coWMTS.row + "&TILECOL=" + coWMTS.col;
+            else                                           // CartoDB WMS structure
+               url = this.baseUrl + this.layer +
+                     coWMTS.zoom + "/" + coWMTS.col + "/" + coWMTS.row +".png";  // (z/x/y)
+                
+            return url; //this.urlOrthoDarkMatter(coWMTS); //url;
         };
+        
 
         /**
          * return texture float alpha THREE.js of MNT 
@@ -141,6 +150,7 @@ define('Core/Commander/Providers/WMTS_Provider', [
                 result.texture.magFilter = THREE.LinearFilter;
                 result.texture.minFilter = THREE.LinearFilter;
                 result.texture.anisotropy = 16;
+                result.texture.url = url; 
 
                 this.cache.addRessource(url, result.texture);
                 return result;

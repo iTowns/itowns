@@ -33,14 +33,21 @@ and open the template in the editor.
                // THIS IS AN EXAMPLE OF INTERFACE TO INTERACT WITH ITOWNS            
                var Menu = function() {
                    this.CloudsIR = false;
+                   this.Layer = null;
                };
 
                var text = new Menu();
                var gui = new dat.GUI();
                gui.close();
+               // Choose from accepted values
+               
+               gui.add(text, 'Layer', [ 'OrthoGeoportail', 'DarkMatterOSM' ] ).onChange(function(newValue) {
+			itowns.viewer.setLayerAtLevel(newValue,0);  // set layer at level n (0 -> top)
+               });
                gui.add(text, 'CloudsIR').onChange(function(newValue) {
 			itowns.viewer.showClouds(newValue);
                });
+               
             
         </script>     
     </body>
