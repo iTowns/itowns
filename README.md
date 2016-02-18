@@ -14,7 +14,7 @@ The V2 of iTowns Open Source is a refactoring of [iTowns V1](https://github.com/
 
 This version includes a globe visualization mode.
 
-![iTowns screenshot](http://www.itowns.fr/videos/screenshotGIT.jpg)
+![iTowns screenshot](http://www.itowns.fr/videos/itowns2.jpg)
 
 ## Supported data types
 
