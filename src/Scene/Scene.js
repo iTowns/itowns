@@ -115,8 +115,8 @@ define('Scene/Scene', [
                         
             this.managerCommand.runAllCommands();
             
-            this.renderScene3D();                
-            //this.updateScene3D();                       
+            //this.renderScene3D();                
+            this.updateScene3D();                       
         } 
         
     };
@@ -150,7 +150,7 @@ define('Scene/Scene', [
 
     Scene.prototype.wait = function() {
 
-        var waitTime = 10;
+        var waitTime = 0;
 
         this.realtimeSceneProcess();
 

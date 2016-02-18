@@ -85,8 +85,10 @@ define('Core/Commander/ManagerCommands', [
             return when.all(this.arrayDeQueue(4))
                 .then(function() {
                     
-                    this.scene.sceneProcess();
                     
+//                    if (this.queueAsync.length === 0)     
+//                        this.scene.sceneProcess();
+//                    this.scene.updateScene3D();
                     return this.runAllCommands();
                 
                 }.bind(this));
