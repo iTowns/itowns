@@ -76,25 +76,37 @@ define('Core/Commander/ManagerCommands', [
         };
 
         ManagerCommands.prototype.runAllCommands = function() {
+            
             if (this.queueAsync.length === 0)
+            {                
                 return when(0);
+            }
 
-            return when.all(this.arrayDeQueue(16))
+            return when.all(this.arrayDeQueue(4))
                 .then(function() {
-                        return this.runAllCommands();
+                    
+                    this.scene.sceneProcess();
+                    
+                    return this.runAllCommands();
+                
                 }.bind(this));
 
         };
 
         ManagerCommands.prototype.arrayDeQueue = function(number) {
+            
             var nT = number === undefined ? this.queueAsync.length : number;
 
             var arrayTasks = [];
 
             while (this.queueAsync.length > 0 && arrayTasks.length < nT)
             {
-                var command = this.deQueue();                
-                arrayTasks.push(command.provider.executeCommand(command));
+
+                var command = this.deQueue();   
+
+                // TODO why somes commands are undefined
+                if(command)
+                    arrayTasks.push(command.provider.executeCommand(command));                                
             }
 
             return arrayTasks;
