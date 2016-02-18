@@ -12,8 +12,9 @@
  */
 define('Scene/Quadtree', [
     'Scene/Layer',
-    'Core/Geographic/Quad'
-], function(Layer, Quad) {
+    'Core/Geographic/Quad',
+    'Renderer/NodeMesh'
+], function(Layer, Quad, NodeMesh) {
 
 
     function Quadtree(type, schemeTile, size, link) {
@@ -23,12 +24,14 @@ define('Scene/Quadtree', [
         this.link = link;
         this.schemeTile = schemeTile;
         this.tileType = type;
+        this.root = new NodeMesh();
+        this.add(this.root);
 
         for (var i = 0; i < this.schemeTile.rootCount(); i++) {
-            this.createTile(this.schemeTile.getRoot(i), this);
+            this.createTile(this.schemeTile.getRoot(i), this.root);
         }
 
-        this.interCommand.managerCommands.runAllCommands().then(function() {
+        /*this.interCommand.managerCommands.runAllCommands().then(function() {
 
             for (var i = 0; i < this.schemeTile.rootCount(); i++) {
                 this.subdivide(this.children[i]);
@@ -39,7 +42,7 @@ define('Scene/Quadtree', [
                 }.bind(this));
             }
 
-        }.bind(this));
+        }.bind(this));*/
 
     }
 
@@ -65,7 +68,7 @@ define('Scene/Quadtree', [
 
     Quadtree.prototype.createTile = function(bbox, parent) {
 
-        this.interCommand.getTile(bbox, parent);
+        this.interCommand.getTile({bbox: bbox}, parent, this);
 
     };
 

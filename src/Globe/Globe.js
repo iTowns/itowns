@@ -10,6 +10,7 @@ define('Globe/Globe', [
     'Scene/Quadtree',
     'Scene/SchemeTile',
     'Core/Math/MathExtented',
+    'Core/Math/Ellipsoid',
     'Globe/EllipsoidTileMesh',
     'Globe/Atmosphere',
     'Globe/Clouds',
@@ -18,7 +19,7 @@ define('Globe/Globe', [
     'Renderer/BasicMaterial',
     'THREE'
 ], function(defaultValue, Layer, Quadtree, SchemeTile, MathExt,
-    EllipsoidTileMesh, Atmosphere, Clouds, Capabilities,
+    Ellipsoid, EllipsoidTileMesh, Atmosphere, Clouds, Capabilities,
     CoordCarto, BasicMaterial, THREE) {
 
     function Globe(scale) {
@@ -31,6 +32,7 @@ define('Globe/Globe', [
         this.NOIE = !caps.isInternetExplorer();
 
         this.size = new THREE.Vector3(6378137, 6356752.3142451793, 6378137).multiplyScalar(scale);
+        this.ellipsoid = new Ellipsoid(this.size);
         this.batiments = new Layer();
 
         var kml = new THREE.Mesh();
@@ -43,7 +45,7 @@ define('Globe/Globe', [
         var material = new BasicMaterial(new THREE.Color(1, 0, 0));
         var geometry = new THREE.SphereGeometry(200);
         var batiment = new THREE.Mesh(geometry, material);
-        var position = this.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(48.87, 0, 200));
+        var position = this.ellipsoid.cartographicToCartesian(new CoordCarto().setFromDegreeGeo(48.87, 0, 200));
         batiment.frustumCulled = false;
         //material.wireframe      = true;
         batiment.position.copy(position);
@@ -51,7 +53,7 @@ define('Globe/Globe', [
         var material2 = new BasicMaterial(new THREE.Color(1, 0.5, 1));
         material2.visible = false;
         var batiment2 = new THREE.Mesh(geometry, material2);
-        var position2 = this.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(48.87, 0.001, 100));
+        var position2 = this.ellipsoid.cartographicToCartesian(new CoordCarto().setFromDegreeGeo(48.87, 0.001, 100));
         batiment2.frustumCulled = false;
         material2.wireframe = true;
         batiment2.position.copy(position2);
@@ -111,9 +113,9 @@ define('Globe/Globe', [
     };
 
 
-    Globe.prototype.ellipsoid = function() {
+    /*Globe.prototype.ellipsoid = function() {
         return this.terrain.interCommand.managerCommands.providers[0].ellipsoid;
-    };
+    };*/
 
 
     return Globe;
