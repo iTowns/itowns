@@ -36,7 +36,7 @@ define('Scene/Scene', [
         this.selectNodes = null;
         this.managerCommand = ManagerCommands();
         this.gfxEngine = c3DEngine();
-        this.browserScene = new BrowseTree(this);
+        this.browserScene = new BrowseTree(this.gfxEngine);
         this.cap = new Capabilities();
     }
 
@@ -135,7 +135,7 @@ define('Scene/Scene', [
                     if (sLayer instanceof Quadtree)
                         this.browserScene.browse(sLayer, this.currentCamera(), false);
                     else if (sLayer instanceof Layer)
-                        this.browserScene.updateLayer(sLayer);
+                        this.browserScene.updateLayer(sLayer,this.currentCamera());
 
                 }
             }
