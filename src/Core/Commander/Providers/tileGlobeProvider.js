@@ -78,7 +78,7 @@ define('Core/Commander/Providers/tileGlobeProvider', [
             return geometry;
         };
 
-        tileGlobeProvider.prototype.get = function(command) {
+        tileGlobeProvider.prototype.executeCommand = function(command) {
 
             if (command === undefined)
                 return when();
