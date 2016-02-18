@@ -119,8 +119,9 @@ define('Globe/Globe', [
     };
 
 
-    Globe.prototype.ellipsoid = function() {
-        return this.terrain.interCommand.managerCommands.providers[0].ellipsoid;
+    Globe.prototype.ellipsoid = function() 
+    {        
+        return this.terrain.interCommand.provider.ellipsoid;
     };
 
 

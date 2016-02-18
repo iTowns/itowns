@@ -68,7 +68,10 @@ define('Core/Commander/ManagerCommands', [
 
         ManagerCommands.prototype.createProvider = function(type, param) {
             if (type === EllipsoidTileMesh) {
-                this.providers.push(new tileGlobeProvider(param));
+                var provider = new tileGlobeProvider(param);
+                // TODO Remove providers in manager command
+                this.providers.push(provider);
+                return provider;
             }
         };
 
@@ -88,8 +91,10 @@ define('Core/Commander/ManagerCommands', [
 
             var arrayTasks = [];
 
-            while (this.queueAsync.length > 0 && arrayTasks.length < nT) {
-                arrayTasks.push(this.providers[0].get(this.deQueue()));
+            while (this.queueAsync.length > 0 && arrayTasks.length < nT)
+            {
+                var command = this.deQueue();                
+                arrayTasks.push(command.provider.executeCommand(command));
             }
 
             return arrayTasks;
