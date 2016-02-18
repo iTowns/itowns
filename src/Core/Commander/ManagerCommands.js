@@ -78,7 +78,7 @@ define('Core/Commander/ManagerCommands', [
 
             return when.all(this.arrayDeQueue(16))
                 .then(function() {
-                    return this.runAllCommands();
+                        return this.runAllCommands();
                 }.bind(this));
 
         };

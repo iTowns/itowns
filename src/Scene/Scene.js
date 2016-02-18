@@ -105,7 +105,7 @@ define('Scene/Scene', [
      * @param {type} run
      * @returns {undefined}
      */
-    Scene.prototype.sceneProcess = function(run){
+    Scene.prototype.sceneProcess = function(){
         
         //console.log(this.managerCommand.queueAsync.length);
         

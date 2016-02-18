@@ -122,7 +122,7 @@ define('Core/Commander/Providers/tileGlobeProvider', [
                 return tile;
 
             }.bind(this)).then(function(tile) {
-
+                
 //                if(tile.level  === 16  )
 //                {
 //                    var longitude   = tile.bbox.center.x / Math.PI * 180 - 180;

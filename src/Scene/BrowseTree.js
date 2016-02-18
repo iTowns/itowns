@@ -54,18 +54,19 @@ define('Scene/BrowseTree', ['Globe/EllipsoidTileMesh'], function( EllipsoidTileM
 
                     var sse = this.nodeProcess.SSE(node, camera);
 
-                    if (optional && (sse || node.level < 2) && node.material.visible === true && node.wait === false)
+                    if(!node.wait)
+                        if (optional && (sse || node.level < 2) && node.material.visible)
 
-                        this.tree.subdivide(node);
+                            this.tree.subdivide(node);
 
-                    else if (!sse && node.level >= 2 && node.material.visible === false && node.wait === false) {
+                        else if (!sse && node.level >= 2 && !node.material.visible ) {
 
-                        node.setMaterialVisibility(true);
-                        this.uniformsProcess(node, camera);
-                        node.setChildrenVisibility(false);
+                            node.setMaterialVisibility(true);
+                            this.uniformsProcess(node, camera);
+                            node.setChildrenVisibility(false);
 
-                        return false;
-                    }
+                            return false;
+                        }
                 }
             }
 
