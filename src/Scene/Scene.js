@@ -150,7 +150,7 @@ define('Scene/Scene', [
 
     Scene.prototype.wait = function() {
 
-        var waitTime = 0;
+        var waitTime = 20;
 
         this.realtimeSceneProcess();
 
