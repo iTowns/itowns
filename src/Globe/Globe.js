@@ -42,11 +42,11 @@ define('Globe/Globe', [
         this.clouds = new Clouds();
 
         var material = new BasicMaterial(new THREE.Color(1, 0, 0));
-        var geometry = new THREE.SphereGeometry(20000);
+        var geometry = new THREE.SphereGeometry(100);
         var batiment = new THREE.Mesh(geometry, material);
         var position = this.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(48.87, 0, 200));
         batiment.frustumCulled = false;
-        //material.wireframe      = true;
+        material.wireframe      = true;
         batiment.position.copy(position);
 
         var material2 = new BasicMaterial(new THREE.Color(1, 0.5, 1));
