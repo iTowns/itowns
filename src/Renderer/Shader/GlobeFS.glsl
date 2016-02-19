@@ -33,7 +33,7 @@ varying vec2        vUv_0;
 varying float       vUv_1;
 varying vec4        pos;
 
-#define BORDERLINE
+//#define BORDERLINE
 
 #if defined(BORDERLINE)
 const float sLine = 0.002;
