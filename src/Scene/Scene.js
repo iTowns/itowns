@@ -113,7 +113,7 @@ define('Scene/Scene', [
         
             this.browserScene.browse(this.layers[0].terrain,this.currentCamera(),true);
                         
-            this.managerCommand.runAllCommands();
+            this.managerCommand.runAllCommands();//.then(function(){this.updateScene3D()}.bind(this));
             
             //this.renderScene3D();                
             this.updateScene3D();                       
