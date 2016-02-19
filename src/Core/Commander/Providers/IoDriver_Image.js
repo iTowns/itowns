@@ -18,35 +18,36 @@ define('Core/Commander/Providers/IoDriver_Image', ['Core/Commander/Providers/IoD
     IoDriver_Image.prototype.constructor = IoDriver_Image;
 
     IoDriver_Image.prototype.read = function(url) {
+        
+        // TODO new Promise is supported?       
+        //return  when.promise(function(resolve, reject, notify) 
+        return new Promise(function(resolve, reject) 
+        {
+   
+            var image = new Image();
+ 
+            image.addEventListener('load', function(event) {
 
-        var deferred = when.defer();
-        var image = new Image();
+                resolve(this);
 
-        image.addEventListener('load', function(event) {
+            }, false);
 
-            deferred.resolve(this);
+            image.addEventListener('progress', function(event) {
 
-        }, false);
-
-        image.addEventListener('progress', function(event) {
-
-        }, false);
+            }, false);
 
 
-        image.addEventListener('error', function(event) {
+            image.addEventListener('error', function(event) {
 
+                //TODO bug il faut tester quand l'image n'existe pas 
+                resolve(this);
+                //reject(Error("Error IoDriver_Image"));        
 
-            //TODO bug il faut tester quand l'image n'existe pas 
-            deferred.resolve(this);
-            //deferred.reject(Error("Error IoDriver_Image"));        
+            }, false);
 
-        }, false);
-
-        image.crossOrigin = '';
-        image.src = url;
-
-        return deferred;
-
+            image.crossOrigin = '';
+            image.src = url;
+        });
     };
 
     return IoDriver_Image;
