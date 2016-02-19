@@ -103,7 +103,6 @@ define('Scene/BrowseTree', ['Globe/EllipsoidTileMesh', 'THREE'], function( Ellip
      * @returns {undefined}
      */
     BrowseTree.prototype.browse = function(tree, camera, optional) {
-
         this.tree = tree;
                
         camera.updateMatrixWorld();

@@ -53,7 +53,7 @@ define('Core/Commander/ManagerCommands', [
             this.history = null;
             this.eventsManager = new EventsManager();
             this.scene = undefined;
-
+  
         }
 
         ManagerCommands.prototype.constructor = ManagerCommands;
@@ -82,16 +82,18 @@ define('Core/Commander/ManagerCommands', [
                 return when(0);
             }
 
-            return when.all(this.arrayDeQueue(8))
+            return when.all(this.arrayDeQueue(4))
                 .then(function() {
-                    
-                // TODO problem with auto refresh    
-                //if (this.queueAsync.length === 0)     
-                //this.scene.sceneProcess();
-                //this.scene.updateScene3D();
-                    return this.runAllCommands();
                 
-                }.bind(this));//.then(function(){this.scene.updateScene3D();}.bind(this));
+                if (this.queueAsync.length === 0)
+                {
+                    //this.scene.updateScene3D();
+                   this.scene.wait();                                      
+                }
+                
+                return this.runAllCommands();
+                
+                }.bind(this));
 
         };
 
