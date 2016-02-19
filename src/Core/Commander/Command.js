@@ -24,6 +24,7 @@ define('Core/Commander/Command', [], function() {
         this.addInHistory = null;
         this.source = null;
         this.requester = null;
+        this.provider = null;
 
     }
 

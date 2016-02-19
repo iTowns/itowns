@@ -69,25 +69,25 @@ define('Scene/Scene', [
      * @returns {undefined}
      */
     Scene.prototype.init = function(pos) {
+        
         this.managerCommand.init(this);
         var globe = new Globe();
         this.add(globe);
 
         //var position    = globe.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(2.33,48.87,25000000));        
-        //
         var position = globe.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(pos.lat, pos.lon, pos.alt));
-
-        //var position    = globe.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(2.33,,25000000));
-        //var position    = globe.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(48.7,2.33,25000000));        
-
-        //var target      = globe.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(2.33,48.87,0));
-        //var position    = globe.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(0,48.87,25000000));
-
+        
         this.gfxEngine.init(this, position);
         this.browserScene.addNodeProcess(new NodeProcess(this.currentCamera().camera3D, globe.size));
         this.gfxEngine.update();
 
     };
+    
+    Scene.prototype.reInit = function(pos){
+        var globe = new Globe();
+        this.add(globe);
+        
+    }
 
     Scene.prototype.size = function() {
         return this.layers[0].size;
@@ -102,10 +102,9 @@ define('Scene/Scene', [
 
     /**
      * 
-     * @param {type} run
      * @returns {undefined}
-     */
-    Scene.prototype.sceneProcess = function(run){
+     */   
+    Scene.prototype.sceneProcess = function(){
         
         //console.log(this.managerCommand.queueAsync.length);
         
@@ -114,11 +113,10 @@ define('Scene/Scene', [
         
             this.browserScene.browse(this.layers[0].terrain,this.currentCamera(),true);
                         
-            this.managerCommand.runAllCommands();
+            this.managerCommand.runAllCommands();//.then(function(){this.updateScene3D()}.bind(this));
             
-            //this.renderScene3D();             
-            this.updateScene3D();            
-           
+            //this.renderScene3D();                
+            this.updateScene3D();                       
         } 
         
     };
@@ -190,7 +188,7 @@ define('Scene/Scene', [
 
         this.gfxEngine.add3DScene(node.getMesh());
     };
-
+  
     /**
      * @documentation: Retire des layers de la scène
      *
