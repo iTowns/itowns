@@ -31,6 +31,7 @@ define('Globe/Globe', [
         this.NOIE = !caps.isInternetExplorer();
 
         this.size = new THREE.Vector3(6378137, 6356752.3142451793, 6378137).multiplyScalar(scale);
+        var exen = 6356752.3142451793/6378137;
         this.batiments = new Layer();
         this.layerWGS84Zup = new Layer();
 
@@ -42,11 +43,20 @@ define('Globe/Globe', [
         this.clouds = new Clouds();
 
         var material = new BasicMaterial(new THREE.Color(1, 0, 0));
-        var geometry = new THREE.SphereGeometry(100);
+        
+        var geometry = new THREE.SphereGeometry(5);
         var batiment = new THREE.Mesh(geometry, material);
-        var position = this.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(48.87, 0, 200));
+        var position = this.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(48.87, 0, 200));        
+        
+        position = new THREE.Vector3(4201215.424138484,171429.945145441,4779294.873914789);
+        
+        // http://www.apsalin.com/convert-geodetic-to-cartesian.aspx
+        // 48.846931,2.337219,50
+        position = new THREE.Vector3(4201801.65418896,171495.727885073,4779411.45896233);
+        
+        
         batiment.frustumCulled = false;
-        material.wireframe      = true;
+        //material.wireframe      = true;
         batiment.position.copy(position);
 
         var material2 = new BasicMaterial(new THREE.Color(1, 0.5, 1));
@@ -65,9 +75,9 @@ define('Globe/Globe', [
         zUp.quaternion.multiply(new THREE.Quaternion().setFromAxisAngle( new THREE.Vector3( 1, 0, 0 ), -Math.PI / 2 ));
         zUp.quaternion.multiply(new THREE.Quaternion().setFromAxisAngle( new THREE.Vector3( 0, 0, 1 ),  Math.PI ));
         
-        zUp.add(new THREE.AxisHelper( 10000000 ));
-        
         this.layerWGS84Zup.add(zUp);
+        zUp.add(new THREE.AxisHelper( 10000000 ));        
+        zUp.add(batiment);
         
         this.add(this.terrain);
         this.add(this.batiments);
