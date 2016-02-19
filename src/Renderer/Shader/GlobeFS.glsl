@@ -20,7 +20,7 @@ const float poleSud     = -82.0 / 180.0 * PI;
 const float poleNord    =  84.0 / 180.0 * PI;
 
 uniform sampler2D   dTextures_00[1];
-uniform sampler2D   dTextures_01[8];
+uniform sampler2D   dTextures_01[TEX_UNITS];
 uniform int         RTC;
 uniform int         selected;
 uniform int         uuid;
@@ -40,31 +40,31 @@ const float sLine = 0.002;
 #endif
 const float borderS = 0.007;
 void main() {
- 
+
     #if defined(USE_LOGDEPTHBUF) && defined(USE_LOGDEPTHBUF_EXT)
 
 	gl_FragDepthEXT = log2(vFragDepth) * logDepthBufFC * 0.5;
 
     #endif
 
-    if(pickingRender == 1)   
-    {  
+    if(pickingRender == 1)
+    {
         gl_FragColor =vec4(pos.x,pos.y,pos.z,uuid);
 
-        #if defined(BORDERLINE)    
-                
+        #if defined(BORDERLINE)
+
         #endif
-       
+
     }else
-    #if defined(BORDERLINE)    
+    #if defined(BORDERLINE)
     if(vUv_0.x < sLine || vUv_0.x > 1.0 - sLine || vUv_0.y < sLine || vUv_0.y > 1.0 - sLine)
         gl_FragColor = vec4( 1.0, 0.0, 0.0, 1.0);
-    else                       
+    else
     #endif
     if(selected == 1 && (vUv_0.x < borderS || vUv_0.x > 1.0 - borderS || vUv_0.y < borderS || vUv_0.y > 1.0 - borderS))
         gl_FragColor = vec4( 1.0, 0.3, 0.0, 1.0);
     else
-    {                           
+    {
         vec2 uvO ;
         uvO.x           = vUv_0.x;
         float y         = vUv_1;
@@ -76,8 +76,8 @@ void main() {
         {
             idd     = nbTextures_01 - 1 ;
             uvO.y   = 0.0;
-        }    
-         
+        }
+
         #if defined(USE_LOGDEPTHBUF) && defined(USE_LOGDEPTHBUF_EXT)
         gl_FragColor    = vec4( 0.04, 0.23, 0.35, 1.0);
 
@@ -85,18 +85,30 @@ void main() {
         //float distanceFog = 600000.0;
         //float fog = (distanceFog-depth)/distanceFog; // linear fog
 
-        float fog = 1.0/(exp(depth/distanceFog)); 
-         
+        float fog = 1.0/(exp(depth/distanceFog));
+
         #else
-        float fog = 0.0; 
+        float fog = 0.0;
         #endif
 
         vec4 fogColor = vec4( 0.76, 0.85, 1.0, 1.0);
 
         for (int x = 0; x < TEX_UNITS; x++)
             if (x == idd)
-            {                        
-                vec4 diffuseColor  = texture2D( dTextures_01[x], uvO ) ;
+            {
+                vec4 diffuseColor;
+                // GLSL 1.30 only accepts constant expressions when indexing into arrays,
+                // so we have to resort to an if/else cascade.
+                if (x == 0) diffuseColor = texture2D(dTextures_01[0], uvO);
+                else if (x == 1) diffuseColor = texture2D(dTextures_01[1], uvO);
+                else if (x == 2) diffuseColor = texture2D(dTextures_01[2], uvO);
+                else if (x == 3) diffuseColor = texture2D(dTextures_01[3], uvO);
+                else if (x == 4) diffuseColor = texture2D(dTextures_01[4], uvO);
+                else if (x == 5) diffuseColor = texture2D(dTextures_01[5], uvO);
+                else if (x == 6) diffuseColor = texture2D(dTextures_01[6], uvO);
+                else if (x == 7) diffuseColor = texture2D(dTextures_01[7], uvO);
+                else
+                    discard;
                 if(RTC == 1)
                     gl_FragColor = mix(fogColor, diffuseColor, fog );
                 else
@@ -109,6 +121,4 @@ void main() {
     if(debug > 0)
        gl_FragColor = vec4( 1.0, 1.0, 0.0, 1.0);
 
-} 
-
-
+}
