@@ -153,31 +153,26 @@ define('Core/Commander/Providers/KML_Provider', [
 
 
         KML_Provider.prototype.getUrlCollada = function(longitude, latitude) {
+            
+            return new Promise(function(resolve, reject)         
+            {  
+                this.ioDriverXML.read('http://wxs.ign.fr/j2bfkv9whnqpq04zpzlfz2ge/vecteurtuile3d/BATI3D/BU.Building.kml').then(function(result_0) {
 
-            var deferred = when.defer();
-            //var url = 'http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/vecteurtuile3d/BATI3D/BU.Building.kml';
+                    // get href's node value
+                    var kml_0 = result_0.getElementsByTagName("href");
+                    var url_href_1; 
+                    var key = 'j2bfkv9whnqpq04zpzlfz2ge';
 
-            this.ioDriverXML.read('http://wxs.ign.fr/j2bfkv9whnqpq04zpzlfz2ge/vecteurtuile3d/BATI3D/BU.Building.kml').then(function(result_0) {
+                    url_href_1 = 'http://wxs.ign.fr/' + key + '/vecteurtuile3d/BATI3D/FXX/TREE/0/0_000_000.kml';
+                    
+                    this.parseKML(url_href_1, longitude, latitude).then(function(result){
+                        
+                        resolve(result);
 
-                // get href's node value
-                var kml_0 = result_0.getElementsByTagName("href");
-                var url_href_1; // = [];
-                var key = 'j2bfkv9whnqpq04zpzlfz2ge';
-
-                //for (i=0; i<kml_0.length; i++){
-                //  url_href_1[i] = 'http://wxs.ign.fr/' + key + '/vecteurtuile3d/BATI3D/' + kml_0[i].childNodes[0].nodeValue.replace("./", "");
-                url_href_1 = 'http://wxs.ign.fr/' + key + '/vecteurtuile3d/BATI3D/FXX/TREE/0/0_000_000.kml';
-                this.parseKML(url_href_1, longitude, latitude).then(function(result) {
-                    deferred.resolve(result);
-
-                });
-
-                //Couper ici pour récupérer algo    
-                //}
-
-            }.bind(this));
-
-            return deferred;
+                    });
+            
+                }.bind(this));            
+            }.bind(this));        
         };
 
         return KML_Provider;
