@@ -19,32 +19,32 @@ define('Core/Commander/Providers/IoDriverXML', ['Core/Commander/Providers/IoDriv
     IoDriverXML.prototype.constructor = IoDriverXML;
 
     IoDriverXML.prototype.read = function(url) {
+        
+        
+        //return when.promise(function(resolve, reject, notify) 
+        return new Promise(function(resolve, reject)         
+        {            
+            var xhr = new XMLHttpRequest();
 
-        var deferred = when.defer();
+            xhr.open("GET", url, true);
 
-        var xhr = new XMLHttpRequest();
+            xhr.responseType = "document";
 
-        xhr.open("GET", url, true);
+            xhr.crossOrigin = '';
 
-        xhr.responseType = "document";
+            xhr.onload = function() {
+                resolve(this.response);
 
-        xhr.crossOrigin = '';
+            };
 
-        xhr.onload = function() {
-            deferred.resolve(this.response);
+            xhr.onerror = function() {
 
-        };
+                reject(Error("Error IoDriverXML"));
 
-        xhr.onerror = function() {
+            };
 
-            deferred.reject(Error("Error IoDriverXML"));
-
-        };
-
-        xhr.send(null);
-
-        return deferred;
-
+            xhr.send(null);
+        });
 
     };
 
