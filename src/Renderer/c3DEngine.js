@@ -11,8 +11,7 @@ define('Renderer/c3DEngine', [
     'Renderer/Camera',
     'Globe/Atmosphere',
     'Renderer/DepthMaterial',
-    'Renderer/BasicMaterial',
-    'Core/Commander/Providers/PotreeProvider',
+    'Renderer/BasicMaterial'
 ], function(
     THREE,
     OrbitControls,
@@ -20,8 +19,7 @@ define('Renderer/c3DEngine', [
     Camera,
     Atmosphere,
     DepthMaterial,
-    BasicMaterial,
-    PotreeProvider) {
+    BasicMaterial) {
 
     var instance3DEngine = null;
     var RENDER = {
@@ -75,13 +73,7 @@ define('Renderer/c3DEngine', [
         this.pickingTexture.texture.type = THREE.FloatType;
         this.pickingTexture.depthBuffer = true;
 
-		this.potreeProvider = new PotreeProvider(this.scene3D);
-
         this.renderScene = function() {
-
-			if(this.potreeProvider.getPotree()){
-                this.potreeProvider.getPotree().update(this.camera.camera3D, this.renderer);
-            }
 
             this.renderer.clear();
             this.renderer.setViewport(0, 0, this.width, this.height);
@@ -96,9 +88,6 @@ define('Renderer/c3DEngine', [
                 this.enableRTC(true);
                 this.camera.camHelper().visible = false;
             }
-            
-            //Potree
-            this.renderer.clearDepth();
 
         }.bind(this);
 
