@@ -82,12 +82,6 @@ define('Scene/Scene', [
         this.gfxEngine.update();
 
     };
-    
-    Scene.prototype.reInit = function(pos){
-        var globe = new Globe();
-        this.add(globe);
-        
-    }
 
     Scene.prototype.size = function() {
         return this.layers[0].size;
@@ -115,8 +109,9 @@ define('Scene/Scene', [
                         
             this.managerCommand.runAllCommands();//.then(function(){this.updateScene3D()}.bind(this));
             
-            //this.renderScene3D();                
-            this.updateScene3D();                       
+            this.renderScene3D();                
+            //this.updateScene3D(); 
+                
         } 
         
     };
