@@ -93,29 +93,26 @@ void main() {
 
         vec4 fogColor = vec4( 0.76, 0.85, 1.0, 1.0);
 
-        for (int x = 0; x < TEX_UNITS; x++)
-            if (x == idd)
-            {
-                vec4 diffuseColor;
-                // GLSL 1.30 only accepts constant expressions when indexing into arrays,
-                // so we have to resort to an if/else cascade.
-                if (x == 0) diffuseColor = texture2D(dTextures_01[0], uvO);
-                else if (x == 1) diffuseColor = texture2D(dTextures_01[1], uvO);
-                else if (x == 2) diffuseColor = texture2D(dTextures_01[2], uvO);
-                else if (x == 3) diffuseColor = texture2D(dTextures_01[3], uvO);
-                else if (x == 4) diffuseColor = texture2D(dTextures_01[4], uvO);
-                else if (x == 5) diffuseColor = texture2D(dTextures_01[5], uvO);
-                else if (x == 6) diffuseColor = texture2D(dTextures_01[6], uvO);
-                else if (x == 7) diffuseColor = texture2D(dTextures_01[7], uvO);
-                else
-                    discard;
-                if(RTC == 1)
-                    gl_FragColor = mix(fogColor, diffuseColor, fog );
-                else
-                    gl_FragColor = diffuseColor;
-
-                break;
-            }
+        if (0 <= idd && idd < TEX_UNITS)
+        {
+            vec4 diffuseColor;
+            // GLSL 1.30 only accepts constant expressions when indexing into arrays,
+            // so we have to resort to an if/else cascade.
+            if (idd == 0) diffuseColor = texture2D(dTextures_01[0], uvO);
+            else if (idd == 1) diffuseColor = texture2D(dTextures_01[1], uvO);
+            else if (idd == 2) diffuseColor = texture2D(dTextures_01[2], uvO);
+            else if (idd == 3) diffuseColor = texture2D(dTextures_01[3], uvO);
+            else if (idd == 4) diffuseColor = texture2D(dTextures_01[4], uvO);
+            else if (idd == 5) diffuseColor = texture2D(dTextures_01[5], uvO);
+            else if (idd == 6) diffuseColor = texture2D(dTextures_01[6], uvO);
+            else if (idd == 7) diffuseColor = texture2D(dTextures_01[7], uvO);
+            else
+                discard;
+            if(RTC == 1)
+                gl_FragColor = mix(fogColor, diffuseColor, fog );
+            else
+                gl_FragColor = diffuseColor;
+        }
     }
 
     if(debug > 0)
