@@ -24,11 +24,12 @@ define('Scene/Quadtree', [
         this.link = link;
         this.schemeTile = schemeTile;
         this.tileType = type;
-        this.root = new NodeMesh();
-        this.add(this.root);
+        var rootNode = new NodeMesh();
+        rootNode.enablePickingRender = function() { return true;};
+        this.add(rootNode);
 
         for (var i = 0; i < this.schemeTile.rootCount(); i++) {
-            this.createTile(this.schemeTile.getRoot(i), this.root);
+            this.createTile(this.schemeTile.getRoot(i), rootNode);
         }
 
         /*this.interCommand.managerCommands.runAllCommands().then(function() {
