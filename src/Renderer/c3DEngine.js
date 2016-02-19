@@ -324,6 +324,13 @@ define('Renderer/c3DEngine', [
             this.scene3D.add(node);
 
     };
+    
+
+    c3DEngine.prototype.removeAll = function() {
+
+           this.scene3D.children = [];
+
+    };
 
     /**
      */

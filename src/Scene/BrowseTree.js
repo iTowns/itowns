@@ -4,7 +4,7 @@
  * Description: BrowseTree parcourt un arbre de Node. Lors du parcours un ou plusieur NodeProcess peut etre appliqué sur certains Node.
  */
 
-define('Scene/BrowseTree', ['Globe/EllipsoidTileMesh'], function( EllipsoidTileMesh) {
+define('Scene/BrowseTree', ['Globe/EllipsoidTileMesh', 'THREE'], function( EllipsoidTileMesh, THREE) {
 
     function BrowseTree(engine) {
         //Constructor
@@ -50,8 +50,8 @@ define('Scene/BrowseTree', ['Globe/EllipsoidTileMesh'], function( EllipsoidTileM
 
                     // TODO remove maybe not necessary
                     if (node.parent.material !== undefined && node.parent.material.visible === true)
-                        
-                        return node.setVisibility(false);
+
+                    { return node.setVisibility(false); }
 
                     var sse = this.nodeProcess.SSE(node, camera);
 
@@ -151,6 +151,53 @@ define('Scene/BrowseTree', ['Globe/EllipsoidTileMesh'], function( EllipsoidTileM
         } else
             return false;
 
+    };
+    
+    BrowseTree.prototype.updateNodeMaterial = function(WMTSProvider){
+        
+        var loader = new THREE.TextureLoader();
+        loader.crossOrigin = '';
+        
+        for(var a = 0; a< this.tree.children.length; ++a ){
+            var root = this.tree.children[a];
+            for (var c = 0; c < root.children.length; c++) {
+
+               var node = root.children[c];
+
+               var lookMaterial = function(obj) {
+                   // if (obj.material.Textures_01 ){//&& !obj.visible){
+                         for (var i=0; i< obj.material.Textures_01.length; ++i){
+
+                              var url = obj.material.Textures_01[i].url; 
+                              var x,y,z,urlWMTS;
+                              if(url){
+                                 if(url.indexOf("geoportail")>0){
+                                    var indexTILEMATRIX = url.indexOf("TILEMATRIX=");
+                                    var indexTILEROW    = url.indexOf("&TILEROW=");
+                                    var indexTILECOL    = url.indexOf("&TILECOL=");
+                                    z = url.substring(indexTILEMATRIX + 11,indexTILEROW);
+                                    x = url.substring(indexTILEROW + 9,indexTILECOL);
+                                    y = url.substring(indexTILECOL + 9);
+                                    urlWMTS = "http://a.basemaps.cartocdn.com/dark_all/"+z+"/"+y+"/"+x+".png";
+                                }else{
+                                    var urlArray = url.split("/");
+                                    z = urlArray[4];
+                                    x = urlArray[5];
+                                    y = urlArray[6].split(".")[0];
+                                    var coWMTS = {zoom:z, row:y, col:x};
+                                    urlWMTS = WMTSProvider.urlOrtho(coWMTS);
+                                }
+                                if( url.indexOf(WMTSProvider.baseUrl) <0){  // We need to update texture
+                                    var newTexture = loader.load(urlWMTS);
+                                        newTexture.url = urlWMTS;
+                                        obj.material.Textures_01[i] = newTexture;
+                                }
+                             }
+                         }
+                }.bind(this);
+                node.traverse(lookMaterial);
+            }
+        }
     };
 
     BrowseTree.prototype.updateLayer = function(layer,camera) {
