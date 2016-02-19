@@ -40,6 +40,8 @@ define('Core/Commander/Providers/PotreeProvider',[
         
         potreeInstance.add(pointcloud);
         
+        console.log(potreeInstance)
+        
         sceneInstance.add(potreeInstance);       
         
 	});
@@ -48,7 +50,9 @@ define('Core/Commander/Providers/PotreeProvider',[
 
     
     PotreeProvider.prototype.getPotree = function() {
-        return potreeInstance.children[0];
+		if(potreeInstance)
+			return potreeInstance.children[0];
+		else return undefined;	
     };
     
     return PotreeProvider;
