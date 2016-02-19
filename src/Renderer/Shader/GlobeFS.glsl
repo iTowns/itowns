@@ -95,7 +95,7 @@ void main() {
 
         if (0 <= idd && idd < TEX_UNITS)
         {
-            vec4 diffuseColor;
+            vec4 diffuseColor = vec4(0.0,0.0,0.0,0.0);
             // GLSL 1.30 only accepts constant expressions when indexing into arrays,
             // so we have to resort to an if/else cascade.
             if (idd == 0) diffuseColor = texture2D(dTextures_01[0], uvO);
