@@ -20,7 +20,7 @@ const float poleSud     = -82.0 / 180.0 * PI;
 const float poleNord    =  84.0 / 180.0 * PI;
 
 uniform sampler2D   dTextures_00[1];
-uniform sampler2D   dTextures_01[TEX_UNITS];
+uniform sampler2D   dTextures_01[8];
 uniform int         RTC;
 uniform int         selected;
 uniform int         uuid;
