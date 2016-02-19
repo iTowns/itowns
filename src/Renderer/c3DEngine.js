@@ -74,7 +74,7 @@ define('Renderer/c3DEngine', [
         this.pickingTexture.depthBuffer = true;
 
         this.renderScene = function() {
-            
+
             this.renderer.clear();
             this.renderer.setViewport(0, 0, this.width, this.height);
             this.renderer.render(this.scene3D, this.camera.camera3D);

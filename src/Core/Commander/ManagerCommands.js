@@ -86,12 +86,12 @@ define('Core/Commander/ManagerCommands', [
                 .then(function() {
                     
                 // TODO problem with auto refresh    
-                // if (this.queueAsync.length === 0)     
+                //if (this.queueAsync.length === 0)     
                 //this.scene.sceneProcess();
                 //this.scene.updateScene3D();
-                return this.runAllCommands();
+                    return this.runAllCommands();
                 
-                }.bind(this));
+                }.bind(this));//.then(function(){this.scene.updateScene3D();}.bind(this));
 
         };
 
