@@ -44,7 +44,7 @@ define('Core/Commander/Providers/tileGlobeProvider', [
             //Constructor
 
             this.projection = new Projection();
-            this.providerWMTS = new WMTS_Provider();
+            this.providerWMTS = new WMTS_Provider({});//{url:"http://a.basemaps.cartocdn.com/",layer:"dark_all/"});
             //this.providerWMS     = new WMS_Provider();
             this.ellipsoid = new Ellipsoid(size);
             this.providerKML = new KML_Provider(this.ellipsoid);
@@ -77,11 +77,27 @@ define('Core/Commander/Providers/tileGlobeProvider', [
 
             return geometry;
         };
+        
+        tileGlobeProvider.prototype.getKML= function(tile)
+        {
+            return;
+            if(tile.level  === 16  )
+            {
+                var longitude   = tile.bbox.center.x / Math.PI * 180 - 180;
+                var latitude    = tile.bbox.center.y / Math.PI * 180;
 
-        tileGlobeProvider.prototype.get = function(command) {
+                return this.providerKML.loadKMZ(longitude, latitude).then(function (collada){
 
-            if (command === undefined)
-                return when();
+                    if(collada && tile.link.children.indexOf(collada) === -1)
+                        {                                 
+                            tile.link.add(collada);
+                            tile.content = collada;
+                        }
+                }.bind(this));
+            }
+        };
+
+        tileGlobeProvider.prototype.executeCommand = function(command) {
 
             var bbox = command.paramsFunction[0];
             var cooWMTS = this.projection.WGS84toWMTS(bbox);
@@ -114,52 +130,45 @@ define('Core/Commander/Providers/tileGlobeProvider', [
                 return this;
 
             }.bind(tile)).then(function(tile) {
-                if (cooWMTS.zoom >= 2)
-                    this.getOrthoImages(tile);
-                else
-                    tile.checkOrtho();
-
-                return tile;
-
-            }.bind(this)).then(function(tile) {
-
-//                if(tile.level  === 16  )
-//                {
-//                    var longitude   = tile.bbox.center.x / Math.PI * 180 - 180;
-//                    var latitude    = tile.bbox.center.y / Math.PI * 180;
-//
-//                    this.providerKML.loadKMZ(longitude, latitude).then(function (collada){
-//
-//
-//                        if(collada && tile.link.children.indexOf(collada) === -1)
-//                        {                                 
-//                            tile.link.add(collada);
-//                            tile.content = collada;
-//                        }
-//                    }.bind(this));
-//
-//                }
-
+                
+                return this.getOrthoImages(tile).then(function(result)
+                {                                            
+                    this.getKML(result[0]);                        
+                }.bind(this));
+                
             }.bind(this));
         };
 
         tileGlobeProvider.prototype.getOrthoImages = function(tile) {
-            var box = this.projection.WMTS_WGS84ToWMTS_PM(tile.cooWMTS, tile.bbox); // 
-            var id = 0;
-            var col = box[0].col;
-            tile.orthoNeed = box[1].row + 1 - box[0].row;
+            
+            var promises = [];
+            
+            if (tile.cooWMTS.zoom >= 2)
+            {
+                var box = this.projection.WMTS_WGS84ToWMTS_PM(tile.cooWMTS, tile.bbox); // 
+                var id = 0;
+                var col = box[0].col;
+                tile.orthoNeed = box[1].row + 1 - box[0].row;
 
-            for (var row = box[0].row; row < box[1].row + 1; row++) {
-                this.providerWMTS.getTextureOrtho(new CoordWMTS(box[0].zoom, row, col), id).then(
-                    function(result) {
-                        this.setTextureOrtho(result.texture, result.id);
+                for (var row = box[0].row; row < box[1].row + 1; row++) {
+                    promises.push(this.providerWMTS.getTextureOrtho(new CoordWMTS(box[0].zoom, row, col), id).then(
+                        function(result) {
+                            this.setTextureOrtho(result.texture, result.id); 
+                            return this;
+                        }.bind(tile)
+                    ));
 
-                    }.bind(tile)
-                );
+                    id++;
+                }
 
-                id++;
+                return when.all(promises);
             }
-
+            else
+            {
+                tile.checkOrtho();
+                promises.push(when(tile));
+                return when.all(promises);
+            }
         };
 
         return tileGlobeProvider;

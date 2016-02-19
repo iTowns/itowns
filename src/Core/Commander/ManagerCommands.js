@@ -68,28 +68,47 @@ define('Core/Commander/ManagerCommands', [
 
         ManagerCommands.prototype.createProvider = function(type, param) {
             if (type === EllipsoidTileMesh) {
-                this.providers.push(new tileGlobeProvider(param));
+                var provider = new tileGlobeProvider(param);
+                // TODO Remove providers in manager command
+                this.providers.push(provider);
+                return provider;
             }
         };
 
         ManagerCommands.prototype.runAllCommands = function() {
+            
             if (this.queueAsync.length === 0)
+            {                
                 return when(0);
+            }
 
-            return when.all(this.arrayDeQueue(16))
+            return when.all(this.arrayDeQueue(8))
                 .then(function() {
+                    
+                // TODO problem with auto refresh    
+                //if (this.queueAsync.length === 0)     
+                //this.scene.sceneProcess();
+                //this.scene.updateScene3D();
                     return this.runAllCommands();
-                }.bind(this));
+                
+                }.bind(this));//.then(function(){this.scene.updateScene3D();}.bind(this));
 
         };
 
         ManagerCommands.prototype.arrayDeQueue = function(number) {
+            
             var nT = number === undefined ? this.queueAsync.length : number;
 
             var arrayTasks = [];
 
-            while (this.queueAsync.length > 0 && arrayTasks.length < nT) {
-                arrayTasks.push(this.providers[0].get(this.deQueue()));
+            while (this.queueAsync.length > 0 && arrayTasks.length < nT)
+            {
+
+                var command = this.deQueue();   
+
+                // TODO why somes commands are undefined
+                if(command)
+                    arrayTasks.push(command.provider.executeCommand(command));                                
             }
 
             return arrayTasks;

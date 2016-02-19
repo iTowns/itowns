@@ -335,6 +335,13 @@ define('Renderer/c3DEngine', [
             this.scene3D.add(node);
 
     };
+    
+
+    c3DEngine.prototype.removeAll = function() {
+
+           this.scene3D.children = [];
+
+    };
 
     /**
      */
@@ -536,7 +543,9 @@ define('Renderer/c3DEngine', [
     c3DEngine.prototype.getRTCMatrixFromNode = function(node, camera) {
 
         var camera3D = camera.camera3D;  
-        var position = new THREE.Vector3().subVectors(camera3D.position, node.position);
+        //var position = new THREE.Vector3().subVectors(camera3D.position, node.position);        
+        var positionWorld = new THREE.Vector3().setFromMatrixPosition(node.matrixWorld);        
+        var position = new THREE.Vector3().subVectors(camera3D.position, positionWorld);
         var quaternion = new THREE.Quaternion().copy(camera3D.quaternion);
         var matrix = new THREE.Matrix4().compose(position, quaternion, new THREE.Vector3(1, 1, 1));
         var matrixInv = new THREE.Matrix4().getInverse(matrix);

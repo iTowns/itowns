@@ -12,7 +12,7 @@ define('Core/Commander/InterfaceCommander', ['Core/Commander/ManagerCommands', '
         this.managerCommands = ManagerCommands();
         this.type = type;
 
-        this.managerCommands.createProvider(this.type, param);
+        this.provider = this.managerCommands.createProvider(this.type, param);
 
     }
 
@@ -34,22 +34,14 @@ define('Core/Commander/InterfaceCommander', ['Core/Commander/ManagerCommands', '
         this._builderCommand();
     };
 
-    InterfaceCommander.prototype.getTextureBil = function(coWMTS) {
-        //TODO: Implement Me 
-        return this.managerCommands.getTextureBil(coWMTS);
-    };
-
-    InterfaceCommander.prototype.getTextureOrtho = function(coWMTS) {
-        //TODO: Implement Me 
-        return this.managerCommands.getTextureOrtho(coWMTS);
-    };
-
     InterfaceCommander.prototype.getTile = function(bbox, parent) {
 
         var command = new Command();
         command.type = this.type;
         command.requester = parent;
         command.paramsFunction.push(bbox);
+        
+        command.provider = this.provider;
 
         //command.priority = parent.sse === undefined ? 1 : Math.floor(parent.visible ? parent.sse * 10000 : 1.0) *  (parent.visible ? Math.abs(19 - parent.level) : Math.abs(parent.level) ) *10000;
 

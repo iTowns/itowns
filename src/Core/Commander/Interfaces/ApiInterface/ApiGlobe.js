@@ -5,7 +5,15 @@
  */
 
 
-define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', ['Core/Commander/Interfaces/EventsManager', 'Scene/Scene'], function(EventsManager, Scene) {
+define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
+       'Core/Commander/Interfaces/EventsManager',
+       'Scene/Scene',
+       'Globe/Globe',
+       'Core/Commander/Providers/WMTS_Provider'], function(
+           EventsManager, 
+           Scene,
+           Globe,
+           WMTS_Provider) {
 
     function ApiGlobe() {
         //Constructor
@@ -50,6 +58,13 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', ['Core/Commander/Inter
 
         return this.scene;
 
+    };
+    
+    ApiGlobe.setLayerAtLevel = function(baseurl,layer,level) {
+ 
+        var wmtsProvider = new WMTS_Provider({url:baseurl, layer:layer});
+        this.scene.managerCommand.providers[0].providerWMTS = wmtsProvider;
+        this.scene.browserScene.updateNodeMaterial(wmtsProvider);
     };
 
     ApiGlobe.showClouds = function(value) {
