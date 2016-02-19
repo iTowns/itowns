@@ -74,6 +74,17 @@ define('Globe/Globe', [
         
         zUp.quaternion.multiply(new THREE.Quaternion().setFromAxisAngle( new THREE.Vector3( 1, 0, 0 ), -Math.PI / 2 ));
         zUp.quaternion.multiply(new THREE.Quaternion().setFromAxisAngle( new THREE.Vector3( 0, 0, 1 ),  Math.PI ));
+
+			
+        zUp.add(new THREE.AxisHelper( 10000000 ));
+        
+        //var bottomLeft 		= new THREE.Vector3 (4201215.424138484, 171429.945145441, 4779294.873914789);
+        //var bottomLeft 		= new THREE.Vector3 (4201908.754146676, 172123.27515363298, 4779988.203922981);
+        //var geometry = new THREE.SphereGeometry( 100, 32, 32 );
+		//var material = new THREE.MeshBasicMaterial( {color: 0xffff00} );
+		//var sphere = new THREE.Mesh( geometry, material );
+		//sphere.position.copy(bottomLeft);
+        //zUp.add(sphere);
         
         this.layerWGS84Zup.add(zUp);
         zUp.add(new THREE.AxisHelper( 10000000 ));        
@@ -81,7 +92,7 @@ define('Globe/Globe', [
         
         this.add(this.terrain);
         this.add(this.batiments);
-        //this.add(this.layerWGS84Zup);
+        this.add(this.layerWGS84Zup);
        
         if (this.atmosphere !== undefined) {
             this.atmosphere.add(this.clouds);
