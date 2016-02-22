@@ -28,8 +28,10 @@ uniform int         pickingRender;
 
 varying vec2        vUv_0;
 varying float       vUv_1;
+varying vec2        vVv;
 varying vec3        vNormal;
 varying vec4        pos;
+varying float        dv;
 
 void main() {
         
@@ -40,8 +42,8 @@ void main() {
 
         if(nbTextures_00 > 0)
         {
-            vec2    vVv = vec2(vUv_0.x*pitScale.z + pitScale.x,vUv_0.y*pitScale.z + pitScale.y);                
-            float   dv  = texture2D( dTextures_00[0], vVv ).w;
+                    vVv = vec2(vUv_0.x*pitScale.z + pitScale.x,vUv_0.y*pitScale.z + pitScale.y);                
+                    dv  = texture2D( dTextures_00[0], vVv ).w;
             vNormal     = normal;
             vPosition   = vec4( position +  vNormal  * dv ,1.0 );            
         }

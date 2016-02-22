@@ -21,6 +21,7 @@ const float poleNord    =  84.0 / 180.0 * PI;
 
 uniform sampler2D   dTextures_00[1];
 uniform sampler2D   dTextures_01[TEX_UNITS];
+uniform sampler2D   textureNoise;
 uniform int         RTC;
 uniform int         selected;
 uniform int         uuid;
@@ -29,9 +30,17 @@ uniform int         nbTextures_00;
 uniform int         nbTextures_01;
 uniform float       distanceFog;
 uniform int         debug;
+uniform float       time;
+uniform int         animateWater;
+uniform float       waterHeight; // above ellipsoid
 varying vec2        vUv_0;
 varying float       vUv_1;
+varying vec2        vVv;
+varying vec3        vNormal;
 varying vec4        pos;
+varying float        dv;
+
+vec3 lightPosition = vec3(10000000.,10000000.,10000000.);
 
 //#define BORDERLINE
 
@@ -39,6 +48,26 @@ varying vec4        pos;
 const float sLine = 0.002;
 #endif
 const float borderS = 0.007;
+
+
+// GLSL 1.30 only accepts constant expressions when indexing into arrays,
+// so we have to resort to an if/else cascade.
+vec4 colorAtIdUv(int id, vec2 uv){
+
+    vec4 diffuseColor;
+         if (id == 0) diffuseColor = texture2D(dTextures_01[0], uv);
+    else if (id == 1) diffuseColor = texture2D(dTextures_01[1], uv);
+    else if (id == 2) diffuseColor = texture2D(dTextures_01[2], uv);
+    else if (id == 3) diffuseColor = texture2D(dTextures_01[3], uv);
+    else if (id == 4) diffuseColor = texture2D(dTextures_01[4], uv);
+    else if (id == 5) diffuseColor = texture2D(dTextures_01[5], uv);
+    else if (id == 6) diffuseColor = texture2D(dTextures_01[6], uv);
+    else if (id == 7) diffuseColor = texture2D(dTextures_01[7], uv);
+    else discard;
+        
+    return diffuseColor;            
+}
+
 void main() {
 
     #if defined(USE_LOGDEPTHBUF) && defined(USE_LOGDEPTHBUF_EXT)
@@ -92,30 +121,68 @@ void main() {
         #endif
 
         vec4 fogColor = vec4( 0.76, 0.85, 1.0, 1.0);
+        vec4 diffuseColor;
 
         if (0 <= idd && idd < TEX_UNITS)
         {
-            vec4 diffuseColor;
-            // GLSL 1.30 only accepts constant expressions when indexing into arrays,
-            // so we have to resort to an if/else cascade.
-            if (idd == 0) diffuseColor = texture2D(dTextures_01[0], uvO);
-            else if (idd == 1) diffuseColor = texture2D(dTextures_01[1], uvO);
-            else if (idd == 2) diffuseColor = texture2D(dTextures_01[2], uvO);
-            else if (idd == 3) diffuseColor = texture2D(dTextures_01[3], uvO);
-            else if (idd == 4) diffuseColor = texture2D(dTextures_01[4], uvO);
-            else if (idd == 5) diffuseColor = texture2D(dTextures_01[5], uvO);
-            else if (idd == 6) diffuseColor = texture2D(dTextures_01[6], uvO);
-            else if (idd == 7) diffuseColor = texture2D(dTextures_01[7], uvO);
-            else
-                discard;
+            diffuseColor = colorAtIdUv(idd,uvO);
             if(RTC == 1)
                 gl_FragColor = mix(fogColor, diffuseColor, fog );
             else
                 gl_FragColor = diffuseColor;
         }
+
+        if (animateWater ==1){
+
+            //    if(diffuseColor.b> diffuseColor.r && diffuseColor.b> diffuseColor.g || diffuseColor.a  == 0. ||
+            //      diffuseColor.r == 1. && diffuseColor.g == 1. && diffuseColor.b == 1.) {   // Water
+            
+            float dv2  = texture2D(dTextures_00[0], vVv).w;
+            if(dv2 <= waterHeight){  //Alti
+
+                float speed = 0.4;
+                float noiseScale = 0.5;
+                float orignalCoef = 0.6;
+
+                vec2 uvTime =  uvO + vec2( -0.1, .1 ) * mod(time * speed, 1.);	
+                vec4 noiseColor = texture2D( textureNoise, uvTime );
+                vec2 uvNoise = uvO + noiseScale * uvO * vec2(noiseColor.r, noiseColor.b ); 
+
+                vec4 color = texture2D( textureNoise, uvNoise); 
+                float l = (max(color.r,max(color.g,color.b)) + min(color.r,min(color.g,color.b))) / 2.;
+                l *= l*1.5;
+                if(diffuseColor.r == 1. && diffuseColor.g ==1. && diffuseColor.b ==1.) 
+                    orignalCoef = -0.1;
+
+                gl_FragColor =  gl_FragColor * orignalCoef + (1.- orignalCoef) * (texture2D( textureNoise, uvO ) * l + texture2D( textureNoise, uvO ) * 0.5);
+
+
+                // Specular reflection on water
+                // lightPosition = vec3( pos.xyz +  vNormal.xyz  * 1000.);
+                vec3 lightDirection = normalize(lightPosition - pos.xyz);
+                vec3 normal = normalize(vNormal);
+                float materialShininess = 4.;
+                float specularLightWeighting = 0.0;
+
+                vec3 eyeDirection = normalize(cameraPosition - pos.xyz);
+                vec3 reflectionDirection = reflect(-lightDirection, normal);
+                specularLightWeighting = pow(max(dot(reflectionDirection, eyeDirection), 0.0), materialShininess);
+
+                //    gl_FragColor.rgb *= (1. + specularLightWeighting);
+
+                    /*
+                                            vec2 cPos = -1.0 + 2.0 * uvO;
+                                            float cLength = length(cPos);
+
+                                            vec2 uv = uvO +(cPos/cLength)*cos(cLength*12.0-time*4.0)*0.03;
+                                            vec3 col = texture2D(textureNoise,uv).xyz;
+
+                                            gl_FragColor = vec4(col,1.0);
+                    */
+            }
     }
 
     if(debug > 0)
        gl_FragColor = vec4( 1.0, 1.0, 0.0, 1.0);
-
+   }
 }

@@ -7,26 +7,31 @@
 
 define('Renderer/GlobeMaterial', ['THREE',
     'Renderer/BasicMaterial',
+    'Renderer/c3DEngine',
     'Core/System/JavaTools',
     'Renderer/Shader/GlobeVS.glsl',
     'Renderer/Shader/GlobeFS.glsl'
 ], function(
     THREE,
     BasicMaterial,
+    gfxEngine,
     JavaTools,
     GlobeVS,
     GlobeFS) {
 
-    var GlobeMaterial = function(bbox, id) {
+    var GlobeMaterial = function(bbox, id, waterHeight) {
 
         BasicMaterial.call(this);
 
         this.Textures_00 = [];
         this.Textures_00.push(new THREE.Texture());
         this.Textures_01 = [];
+        this.textureNoise = new THREE.TextureLoader().load("/data/textures/reflection.jpg"); 
 
         this.vertexShader = GlobeVS;
         this.fragmentShader = GlobeFS;
+        
+        this.animateWater = gfxEngine().animationOn;
 
         this.uniforms.dTextures_00 = {
             type: "tv",
@@ -52,12 +57,27 @@ define('Renderer/GlobeMaterial', ['THREE',
             type: "i",
             value: 0
         };
+        this.uniforms.time = {
+            type: "f",
+            value: gfxEngine().time
+        };
+        this.uniforms.textureNoise = {
+            type: "t",
+            value: this.textureNoise
+        };
+        this.uniforms.animateWater = {
+            type: "i",
+            value: this.animateWater
+        };
+        this.uniforms.waterHeight = {
+            type: "f",
+            value: waterHeight
+        };
 
         this.setUuid(id);
         this.nbTextures = 0;
         this.wireframe = false;
         //this.wireframe = true;
-
     };
 
     GlobeMaterial.prototype = Object.create(BasicMaterial.prototype);
@@ -135,6 +155,7 @@ define('Renderer/GlobeMaterial', ['THREE',
         this.uniforms.pickingRender.value = enable === true ? 1 : 0;
 
     };
+    
 
     return GlobeMaterial;
 });

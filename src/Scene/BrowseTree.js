@@ -156,6 +156,26 @@ define('Scene/BrowseTree', ['Globe/EllipsoidTileMesh', 'THREE'], function( Ellip
 
     };
     
+    /*
+     * @documentation: Recursive traverse tree to update a material specific uniform
+     * @returns {undefined}
+     */
+    BrowseTree.prototype.updateMaterialUniform = function(uniformName, value){
+        
+    
+         for(var a = 0; a< this.tree.children.length; ++a ){
+             var root = this.tree.children[a];
+             for (var c = 0; c < root.children.length; c++) {
+
+               var node = root.children[c];
+               var lookMaterial = function(obj) {
+                   obj.material.uniforms[uniformName].value = value;
+               }.bind(this);
+               node.traverse(lookMaterial);
+           }
+         }
+    };
+    
     BrowseTree.prototype.updateNodeMaterial = function(WMTSProvider){
         
         var loader = new THREE.TextureLoader();

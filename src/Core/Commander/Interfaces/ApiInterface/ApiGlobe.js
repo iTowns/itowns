@@ -66,12 +66,25 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         this.scene.managerCommand.providers[0].providerWMTS = wmtsProvider;
         this.scene.browserScene.updateNodeMaterial(wmtsProvider);
     };
-
+    
     ApiGlobe.showClouds = function(value) {
 
         this.scene.layers[0].showClouds(value);
     };
+    
+    ApiGlobe.showAnimatedWater = function(value) {
 
+        var val = value === true ? 1 : 0;
+        this.scene.gfxEngine.setAnimationOn(val);
+        this.scene.browserScene.updateMaterialUniform('animateWater', val);
+    };
+    
+    ApiGlobe.setSeaLevel = function(value){
+
+        this.scene.layers[0].setSeaLevel(value);
+        this.scene.browserScene.updateMaterialUniform('waterHeight', value);
+    };
+    
     return ApiGlobe;
 
 });

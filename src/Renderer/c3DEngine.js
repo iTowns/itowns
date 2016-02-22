@@ -52,7 +52,10 @@ define('Renderer/c3DEngine', [
         this.dfar = 0.0;
         this.stateRender = RENDER.FINAL;
         this.positionBuffer = null;
-
+        this.time = 0.;  // Global time iterator use for any animation
+        this.reqAF = null; // reference the animation frame to cancel it
+        this.animationOn = false;
+        if(this.animationOn) this.animateTime();
         this.initCamera();
 
         var material = new BasicMaterial(new THREE.Color(1, 0, 0));
@@ -542,6 +545,23 @@ define('Renderer/c3DEngine', [
         var centerEye = new THREE.Vector4().applyMatrix4(matrixInv);
         var mvc = matrixInv.setPosition(centerEye);
         return new THREE.Matrix4().multiplyMatrices(camera3D.projectionMatrix, mvc);
+    };
+    
+    c3DEngine.prototype.setAnimationOn = function(bool){
+        
+        this.animationOn = bool;
+        if(this.animationOn) this.animateTime();
+          else
+               window.cancelAnimationFrame(this.reqAF);
+    };
+    
+    // Todo: should move to the main rendering function with its own refresh
+    c3DEngine.prototype.animateTime = function() {
+
+        this.time += 0.01;
+        if(this.scene)
+            this.scene.browserScene.updateMaterialUniform('time',this.time);
+        this.reqAF = requestAnimationFrame(this.animateTime.bind(this));
     };
 
     return function(scene) {

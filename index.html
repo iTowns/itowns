@@ -32,8 +32,11 @@ and open the template in the editor.
 
                // THIS IS AN EXAMPLE OF INTERFACE TO INTERACT WITH ITOWNS            
                var Menu = function() {
-                   this.CloudsIR = false;
                    this.Layer = "OrthoGeoportail";
+                   this.CloudsIR = false;
+                   this.AnimateWater = false;
+                   this.SeaLevel = 0.05;
+                   
                };
 
                var text = new Menu();
@@ -58,6 +61,12 @@ and open the template in the editor.
                gui.add(text, 'CloudsIR').onChange(function(newValue) {
 			itowns.viewer.showClouds(newValue);
                });
+               gui.add(text, 'AnimateWater').onChange(function(newValue) {
+			itowns.viewer.showAnimatedWater(newValue);
+               });
+               gui.add(text, 'SeaLevel', 0.05, 50).onChange(function(newValue) {
+			itowns.viewer.setSeaLevel(newValue);
+               });;
                
             
         </script>     

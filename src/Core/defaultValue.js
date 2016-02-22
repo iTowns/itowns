@@ -11,6 +11,8 @@ define('Core/defaultValue', [], function() {
         return value === undefined ? def : value;
     };
 
+    defaultValue.waterHeight = 0.05;
+    
     return defaultValue;
 
 });

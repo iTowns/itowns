@@ -45,11 +45,12 @@ define('Globe/EllipsoidTileMesh', [
 
         // TODO modif ver world coord de three.js 
         this.absoluteCenter = ellipsoid.cartographicToCartesian(ccarto);
+        this.waterHeight = defaultValue.waterHeight;
 
         // TODO ??? 
         this.centerSphere = new THREE.Vector3().addVectors(this.geometry.boundingSphere.center, this.absoluteCenter);
         this.orthoNeed = 0;
-        this.material = new GlobeMaterial(bbox, id);
+        this.material = new GlobeMaterial(bbox, id, this.waterHeight);
         this.dot = 0;
         this.frustumCulled = false;
         this.maxChildren = 4;

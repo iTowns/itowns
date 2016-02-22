@@ -36,9 +36,11 @@ define('Globe/Globe', [
         var kml = new THREE.Mesh();
         this.batiments.add(kml);
 
+        this.waterHeight = 0.;
         this.terrain = new Quadtree(EllipsoidTileMesh, this.SchemeTileWMTS(2), this.size, kml);
         this.atmosphere = this.NOIE ? new Atmosphere(this.size) : undefined;
         this.clouds = new Clouds();
+        
 
         var material = new BasicMaterial(new THREE.Color(1, 0, 0));
         var geometry = new THREE.SphereGeometry(200);
@@ -113,7 +115,11 @@ define('Globe/Globe', [
         this.clouds.visible = show;
 
     };
-
+    
+     Globe.prototype.setSeaLevel = function(val){
+         defaultValue.waterHeight = val;
+        // EllipsoidTileMesh.waterHeight = val;
+    };
 
     Globe.prototype.ellipsoid = function() {
         return this.terrain.interCommand.managerCommands.providers[0].ellipsoid;
