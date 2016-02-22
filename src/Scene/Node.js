@@ -141,7 +141,7 @@ define('Scene/Node', [], function() {
             if (protoName !== "add" && protoName !== "remove") {
                 childClass.prototype[protoName] = Node.prototype[p];
             }
-        };
+        }
 
     };
 
