@@ -147,13 +147,16 @@ void main() {
                 vec2 uvTime =  uvO + vec2( -0.1, .1 ) * mod(time * speed, 1.);	
                 vec4 noiseColor = texture2D( textureNoise, uvTime );
                 vec2 uvNoise = uvO + noiseScale * uvO * vec2(noiseColor.r, noiseColor.b ); 
+                float coefDistCam = (length(cameraPosition.xyz) - 6400000.) / 400000.;
 
                 vec4 color = texture2D( textureNoise, uvNoise); 
                 float l = (max(color.r,max(color.g,color.b)) + min(color.r,min(color.g,color.b))) / 2.;
                 l *= l*1.5;
-                if(diffuseColor.r == 1. && diffuseColor.g ==1. && diffuseColor.b ==1.) 
-                    orignalCoef = -0.1;
 
+                
+                orignalCoef = clamp(coefDistCam, 0.4,1.)  ; 
+                if(diffuseColor.r == 1. && diffuseColor.g ==1. && diffuseColor.b ==1.) 
+                    orignalCoef = -0.1; 
                 gl_FragColor =  gl_FragColor * orignalCoef + (1.- orignalCoef) * (texture2D( textureNoise, uvO ) * l + texture2D( textureNoise, uvO ) * 0.5);
 
 
