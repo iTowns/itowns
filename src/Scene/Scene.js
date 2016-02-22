@@ -16,13 +16,14 @@ define('Scene/Scene', [
     'Renderer/c3DEngine',
     'Globe/Globe',
     'Core/Commander/ManagerCommands',
+    'Core/Commander/Providers/tileGlobeProvider',
     'Scene/BrowseTree',
     'Scene/NodeProcess',
     'Scene/Quadtree',
     'Scene/Layer',
     'Core/Geographic/CoordCarto',
     'Core/System/Capabilities'
-], function(c3DEngine, Globe, ManagerCommands, BrowseTree, NodeProcess, Quadtree, Layer, CoordCarto, Capabilities) {
+], function(c3DEngine, Globe, ManagerCommands, tileGlobeProvider, BrowseTree, NodeProcess, Quadtree, Layer, CoordCarto, Capabilities) {
 
     var instanceScene = null;
 
@@ -73,10 +74,18 @@ define('Scene/Scene', [
         this.managerCommand.init(this);
         var globe = new Globe();
         this.add(globe);
+        this.managerCommand.addLayer(globe.terrain, new tileGlobeProvider(globe.size));
 
         //var position    = globe.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(2.33,48.87,25000000));        
-        var position = globe.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(pos.lat, pos.lon, pos.alt));
-        
+        //
+        var position = globe.ellipsoid.cartographicToCartesian(new CoordCarto().setFromDegreeGeo(pos.lat, pos.lon, pos.alt));
+
+        //var position    = globe.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(2.33,,25000000));
+        //var position    = globe.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(48.7,2.33,25000000));        
+
+        //var target      = globe.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(2.33,48.87,0));
+        //var position    = globe.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(0,48.87,25000000));
+
         this.gfxEngine.init(this, position);
         this.browserScene.addNodeProcess(new NodeProcess(this.currentCamera().camera3D, globe.size));
         this.gfxEngine.update();

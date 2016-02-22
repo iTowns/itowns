@@ -99,7 +99,7 @@ define('Core/Commander/Providers/tileGlobeProvider', [
 
         tileGlobeProvider.prototype.executeCommand = function(command) {
 
-            var bbox = command.paramsFunction[0];
+            var bbox = command.paramsFunction.bbox;
             var cooWMTS = this.projection.WGS84toWMTS(bbox);
             var parent = command.requester;
             var geometry = undefined; //getGeometry(bbox,cooWMTS);       
