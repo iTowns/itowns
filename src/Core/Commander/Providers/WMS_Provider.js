@@ -43,7 +43,7 @@ define('Core/Commander/Providers/WMS_Provider', [
             this.baseUrl = options.url || "";
             this.layer = options.layer || "";
             this.format = defaultValue(options.format, "image/jpeg");
-            this.srs = options.srs || "";;
+            this.srs = options.srs || "";
             this.width = defaultValue(options.width, 256);
             this.height = defaultValue(options.height, 256);
         }

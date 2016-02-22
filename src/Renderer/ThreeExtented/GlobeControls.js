@@ -474,7 +474,6 @@ THREE.GlobeControls = function(object, domElement, engine) {
 
         } else {
             this.object.lookAt(offGT); // Usual CASE (not rotating around camera axe)  
-            ;
         }
 
         quatGlobe.set(0, 0, 0, 1);

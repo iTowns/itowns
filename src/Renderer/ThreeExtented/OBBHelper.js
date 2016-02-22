@@ -47,7 +47,6 @@ THREE.OBBHelper = function(OBB, text) {
     var extrudeSettings = {
         amount: sizeZ * 0.001,
         bevelEnabled: false,
-        steps: 0,
         curveSegments: 0,
         steps: 0
     };
