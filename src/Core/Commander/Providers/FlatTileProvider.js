@@ -14,7 +14,8 @@ define('Core/Commander/Providers/FlatTileProvider',[
             'Core/Geographic/CoordWMTS',
             'Core/Math/Ellipsoid',
             'Core/defaultValue',
-            'Scene/BoundingBox'                        
+            'Scene/BoundingBox'    ,
+            'THREE'                    
             ],
              function(
                 when,
@@ -24,7 +25,8 @@ define('Core/Commander/Providers/FlatTileProvider',[
                 CoordWMTS,
                 Ellipsoid,
                 defaultValue,
-                BoundingBox
+                BoundingBox,
+                THREE
                 ){
                    
     function FlatTileProvider(srid){
@@ -47,14 +49,14 @@ define('Core/Commander/Providers/FlatTileProvider',[
 
     FlatTileProvider.prototype.constructor = FlatTileProvider;
     
-    FlatTileProvider.prototype.get = function(command)
+    FlatTileProvider.prototype.executeCommand = function(command)
     {  
         if(command === undefined)
             return when();
         
-        var bbox        = command.paramsFunction[0];
+        var bbox        = command.paramsFunction.bbox;
 
-        var cooWMTS     = this.projection.WGS84toWMTS(bbox);                
+        //var cooWMTS     = this.projection.WGS84toWMTS(bbox);                
         var parent      = command.requester;        
         var geometry    = undefined; //getGeometry(bbox,cooWMTS);       
         var tile        = new command.type(bbox,this.nNode++,geometry);        
@@ -86,7 +88,7 @@ define('Core/Commander/Providers/FlatTileProvider',[
             //    tile.checkOrtho();
                            
         }.bind(tile)); 
-        return tile;
+        //return tile;
     };
     
     FlatTileProvider.prototype.getOrthoImages = function(tile)
@@ -98,8 +100,7 @@ define('Core/Commander/Providers/FlatTileProvider',[
      
         for (var row = box[0].row; row < box[1].row + 1; row++)
         {                                                                        
-            this.providerWMTS.getTextureOrtho(new CoordWMTS(box[0].zoom,row,col),id).then
-            (
+            this.providerWMTS.getTextureOrtho(new CoordWMTS(box[0].zoom,row,col),id).then(
                 function(result)
                 {                                                                                  
                     this.setTextureOrtho(result.texture,result.id);                                                     

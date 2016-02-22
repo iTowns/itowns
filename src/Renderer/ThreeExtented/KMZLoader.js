@@ -5,91 +5,89 @@
 /* global THREE */
 
 //var JSZip = require("C:/Users/vcoindet/Documents/NetBeansProjects/itownsV1/src/Renderer/ThreeExtented/jszip.min");
-define('Renderer/ThreeExtented/KMZLoader',
-            ['Renderer/ThreeExtented/jszip.min', 
-                'THREE',
-                'Renderer/ThreeExtented/ColladaLoader',
-                'Core/Commander/Providers/IoDriverXML',
-                'Core/Geographic/CoordCarto',
-                'when'], 
-            function (
-                    JSZip, 
-                    THREE,
-                    ColladaLoader,
-                    IoDriverXML,
-                    CoordCarto,
-                    when){
-    
-    function KMZLoader (  ) {
+define('Renderer/ThreeExtented/KMZLoader', ['Renderer/ThreeExtented/jszip.min',
+        'THREE',
+        'Renderer/ThreeExtented/ColladaLoader',
+        'Core/Commander/Providers/IoDriverXML',
+        'Core/Geographic/CoordCarto',
+        'when'
+    ],
+    function(
+        JSZip,
+        THREE,
+        ColladaLoader,
+        IoDriverXML,
+        CoordCarto,
+        when) {
 
-        this.colladaLoader = new THREE.ColladaLoader();               
-        this.colladaLoader.options.convertUpAxis = true;        
-        this.ioDriverXML = new IoDriverXML();
-        this.cache       = [];
-    };
-    
-    KMZLoader.prototype = Object.create( KMZLoader.prototype );
+        function KMZLoader() {
 
-    KMZLoader.prototype.constructor = KMZLoader;
-    
-    KMZLoader.prototype.load = function(url){
+            this.colladaLoader = new THREE.ColladaLoader();
+            this.colladaLoader.options.convertUpAxis = true;
+            this.ioDriverXML = new IoDriverXML();
+            this.cache = [];
+        }
 
-                
-            var deferred = when.defer();
+        KMZLoader.prototype = Object.create(KMZLoader.prototype);
 
-            var xhr = new XMLHttpRequest();
+        KMZLoader.prototype.constructor = KMZLoader;
 
-            xhr.open("GET", url,true);
-            
-            xhr.responseType = "arraybuffer";
+        KMZLoader.prototype.load = function(url) {
 
-            xhr.crossOrigin  = '';
-            
-            var scopeLoader = this.colladaLoader;
-           
-            xhr.onload = function () 
-            {
-                    
-                    var zip = new JSZip( this.response );
+            return new Promise(function(resolve, reject)         
+            {   
+
+                var xhr = new XMLHttpRequest();
+
+                xhr.open("GET", url, true);
+
+                xhr.responseType = "arraybuffer";
+
+                xhr.crossOrigin = '';
+
+                var scopeLoader = this.colladaLoader;
+
+                xhr.onload = function() {
+
+                    var zip = new JSZip(this.response);
                     var collada = undefined;
                     var coordCarto = undefined;
-                    for ( var name in zip.files ) {
+                    for (var name in zip.files) {
                         //console.log(name);
-                        if ( name.toLowerCase().substr( - 4 ) ===  '.dae' ) {
-                            collada = scopeLoader.parse( zip.file( name ).asText() );
-                        }
-                        else if (name.toLowerCase().substr( - 4 ) ===  '.kml'){
-                            
+                        if (name.toLowerCase().substr(-4) === '.dae') {
+                            collada = scopeLoader.parse(zip.file(name).asText());
+                        } else if (name.toLowerCase().substr(-4) === '.kml') {
+
                             var parser = new DOMParser();
-                            var doc = parser.parseFromString(zip.file( name ).asText(), "text/xml");
-                            
+                            var doc = parser.parseFromString(zip.file(name).asText(), "text/xml");
+
                             var longitude = Number(doc.getElementsByTagName("longitude")[0].childNodes[0].nodeValue);
                             var latitude = Number(doc.getElementsByTagName("latitude")[0].childNodes[0].nodeValue);
                             var altitude = Number(doc.getElementsByTagName("altitude")[0].childNodes[0].nodeValue);
-                            
-                            coordCarto = new CoordCarto().setFromDegreeGeo(latitude,longitude,altitude);
-                                  
+
+                            coordCarto = new CoordCarto().setFromDegreeGeo(latitude, longitude, altitude);
+
                         }
                     }
-                                    
+
                     collada.coorCarto = coordCarto;
-                   
-                    deferred.resolve(collada);
-                     
-            };
 
-            xhr.onerror = function(){
+                    resolve(collada);
 
-                deferred.reject(Error("Error KMZLoader"));
+                };
 
-            };
+                xhr.onerror = function() {
 
-            xhr.send(null);    
+                    reject(Error("Error KMZLoader"));
 
-            return deferred;
+                };
 
-    };
+                xhr.send(null);
 
-    return KMZLoader;
-    
-});
+            }.bind(this));
+
+        };
+
+        return KMZLoader;
+
+    });

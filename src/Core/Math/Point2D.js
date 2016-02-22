@@ -5,16 +5,16 @@
  */
 
 
-define('Core/Math/Point2D',['Core/defaultValue'], function(defaultValue){
+define('Core/Math/Point2D', ['Core/defaultValue'], function(defaultValue) {
 
-    function Point2D(x,y){
+    function Point2D(x, y) {
         //Constructor
 
-        this.x  = defaultValue(x,0);
-        this.y  = defaultValue(y,0);
+        this.x = defaultValue(x, 0);
+        this.y = defaultValue(y, 0);
 
     }
 
     return Point2D;
-    
+
 });

@@ -18,8 +18,48 @@ and open the template in the editor.
             }
         </style>
         <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">        
-        <script data-main="src/Main.js" src="src/ThirdParty/require.js"> </script>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.5.1/dat.gui.min.js"></script>
     </head>
+    <body>
+        <script src="dist/itowns2.js"> </script>
+        <script type="text/javascript">  
 
+               var initCenter = { lon:2.3465, lat: 48.88, alt: 25000000};
+
+               // iTowns namespace defined here
+               itowns.viewer.createSceneGlobe(initCenter) ;
+
+               // THIS IS AN EXAMPLE OF INTERFACE TO INTERACT WITH ITOWNS            
+               var Menu = function() {
+                   this.CloudsIR = false;
+                   this.Layer = "OrthoGeoportail";
+               };
+
+               var text = new Menu();
+               var gui = new dat.GUI();
+               gui.close();
+
+               gui.add(text, 'Layer', [ 'OrthoGeoportail', 'DarkMatterOSM' ] ).onChange(function(newValue) {
+                   
+                        var layer, baseUrl;
+                        switch(newValue){
+                            case "OrthoGeoportail": layer   = "ORTHOIMAGERY.ORTHOPHOTOS"; 
+                                                    baseUrl = "http://wxs.ign.fr/";
+                                                    break;
+                                                    
+                            case "DarkMatterOSM"  : layer   = "dark_all/";
+                                                    baseUrl = "http://a.basemaps.cartocdn.com/";
+                                                    break;
+                        }
+			itowns.viewer.setLayerAtLevel(baseUrl,layer,0);  // set layer at level n (0 -> top)
+               });
+               
+               gui.add(text, 'CloudsIR').onChange(function(newValue) {
+			itowns.viewer.showClouds(newValue);
+               });
+               
+            
+        </script>     
+    </body>
 </html>

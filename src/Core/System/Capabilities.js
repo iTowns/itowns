@@ -1,12 +1,12 @@
 /**
-* Generated On: 2015-10-5
-* Class: Capabilities
-*/
+ * Generated On: 2015-10-5
+ * Class: Capabilities
+ */
 
-define('Core/System/Capabilities',[], function(){
+define('Core/System/Capabilities', [], function() {
 
 
-    function Capabilities(){
+    function Capabilities() {
         //Constructor
 
         this._systemCap = null;
@@ -16,35 +16,34 @@ define('Core/System/Capabilities',[], function(){
 
 
     /**
-    */
-    Capabilities.prototype.getSystemCapabilities = function(){
+     */
+    Capabilities.prototype.getSystemCapabilities = function() {
         //TODO: Implement Me 
         var memory = window.performance.memory;
-        console.log(  memory.totalJSHeapSize/(1024*1024) +   '/' + memory.jsHeapSizeLimit/(1024*1024));
+        console.log(memory.totalJSHeapSize / (1024 * 1024) + '/' + memory.jsHeapSizeLimit / (1024 * 1024));
     };
 
 
     /**
-    */
-    Capabilities.prototype.getGpuCapabilities = function(){
+     */
+    Capabilities.prototype.getGpuCapabilities = function() {
         //TODO: Implement Me 
 
     };
 
 
     /**
-    */
-    Capabilities.prototype.ioFile = function(){
+     */
+    Capabilities.prototype.ioFile = function() {
         //TODO: Implement Me 
 
     };
 
-    Capabilities.prototype.isInternetExplorer = function()    
-    {
+    Capabilities.prototype.isInternetExplorer = function() {
 
-        return /*@cc_on!@*/false || !!document.documentMode;
+        return /*@cc_on!@*/ false || !!document.documentMode;
 
-    };  
+    };
     /*
     Capabilities.prototype.checkVersion = function()
     {

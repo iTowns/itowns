@@ -1,11 +1,11 @@
 /**
-* Generated On: 2015-10-5
-* Class: IoDriverCameraStereoPolis
-*/
+ * Generated On: 2015-10-5
+ * Class: IoDriverCameraStereoPolis
+ */
 
 var IoDriver = require('IoDriver');
 
-function IoDriverCameraStereoPolis(){
+function IoDriverCameraStereoPolis() {
     //Constructor
 
 
@@ -14,4 +14,6 @@ function IoDriverCameraStereoPolis(){
 IoDriverCameraStereoPolis.prototype = new IoDriver();
 
 
-module.exports = {IoDriverCameraStereoPolis:IoDriverCameraStereoPolis};
+module.exports = {
+    IoDriverCameraStereoPolis: IoDriverCameraStereoPolis
+};

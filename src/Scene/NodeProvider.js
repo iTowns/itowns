@@ -1,12 +1,12 @@
 /**
-* Generated On: 2015-10-5
-* Class: NodeProvider
-* Description: Factory/Provider de Nodes
-*/
+ * Generated On: 2015-10-5
+ * Class: NodeProvider
+ * Description: Factory/Provider de Nodes
+ */
 
 var Provider = require('Provider');
 
-function NodeProvider(){
+function NodeProvider() {
     //Constructor
 
 
@@ -15,13 +15,15 @@ function NodeProvider(){
 NodeProvider.prototype = new Provider();
 
 /**
-* @param type {int} 
-*/
-NodeProvider.prototype.createObject = function(type){
+ * @param type {int} 
+ */
+NodeProvider.prototype.createObject = function(type) {
     //TODO: Implement Me 
 
 };
 
 
 
-module.exports = {NodeProvider:NodeProvider};
+module.exports = {
+    NodeProvider: NodeProvider
+};

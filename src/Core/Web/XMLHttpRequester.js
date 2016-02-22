@@ -1,10 +1,10 @@
 /**
-* Generated On: 2015-10-5
-* Class: XMLHttpRequester
-* Description: Classe de requête 
-*/
+ * Generated On: 2015-10-5
+ * Class: XMLHttpRequester
+ * Description: Classe de requête 
+ */
 
-function XMLHttpRequester(){
+function XMLHttpRequester() {
     //Constructor
 
 
@@ -12,4 +12,6 @@ function XMLHttpRequester(){
 
 
 
-module.exports = {XMLHttpRequester:XMLHttpRequester};
+module.exports = {
+    XMLHttpRequester: XMLHttpRequester
+};
