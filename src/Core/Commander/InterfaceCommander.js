@@ -11,10 +11,7 @@ define('Core/Commander/InterfaceCommander', ['Core/Commander/ManagerCommands', '
 
         this.managerCommands = ManagerCommands();
         this.type = type;
-
-        //this.provider = this.managerCommands.createProvider(this.type, param);
-        //this.managerCommands.createProvider(this.type, param);
-
+  
     }
 
     InterfaceCommander.prototype.constructor = InterfaceCommander;
@@ -35,7 +32,7 @@ define('Core/Commander/InterfaceCommander', ['Core/Commander/ManagerCommands', '
         this._builderCommand();
     };
 
-    InterfaceCommander.prototype.getTile = function(parameters, parent, layer) {
+    InterfaceCommander.prototype.request = function(parameters, parent, layer) {
 
         var command = new Command();
         command.type = this.type;

@@ -32,19 +32,6 @@ define('Scene/Quadtree', [
             this.createTile(this.schemeTile.getRoot(i), rootNode);
         }
 
-        /*this.interCommand.managerCommands.runAllCommands().then(function() {
-
-            for (var i = 0; i < this.schemeTile.rootCount(); i++) {
-                this.subdivide(this.children[i]);
-
-                this.interCommand.managerCommands.runAllCommands().then(function() {
-                    this.subdivideChildren(this.children[i]);
-
-                }.bind(this));
-            }
-
-        }.bind(this));*/
-
     }
 
     Quadtree.prototype = Object.create(Layer.prototype);
@@ -69,7 +56,7 @@ define('Scene/Quadtree', [
 
     Quadtree.prototype.createTile = function(bbox, parent) {
 
-        this.interCommand.getTile({bbox: bbox}, parent, this);
+        this.interCommand.request({bbox: bbox}, parent, this);
 
     };
 
@@ -105,15 +92,8 @@ define('Scene/Quadtree', [
             return false;
 
         if (node.childrenCount() > 0 && node.wait === false) {
-            //node.setChildrenVisibility(true);    // Useless
+
             node.setMaterialVisibility(!(node.childrenCount() === 4 && node.childrenLoaded()));
-
-            /*
-            if(node.material.nbTextures === node.material.Textures_01.length){
-                node.setChildrenVisibility(true);
-            }
-            */
-
 
             return false;
         }

@@ -68,16 +68,6 @@ define('Core/Commander/ManagerCommands', [
             this.providerMap[layer] = provider;
         };
 
-        /*
-        ManagerCommands.prototype.createProvider = function(type, param) {
-            if (type === EllipsoidTileMesh) {
-                var provider = new tileGlobeProvider(param);
-                // TODO Remove providers in manager command
-                this.providers.push(provider);
-                return provider;
-            }
-        };*/
-
         ManagerCommands.prototype.runAllCommands = function() {
             
             if (this.queueAsync.length === 0)
