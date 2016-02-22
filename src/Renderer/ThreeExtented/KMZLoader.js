@@ -26,7 +26,7 @@ define('Renderer/ThreeExtented/KMZLoader', ['Renderer/ThreeExtented/jszip.min',
             this.colladaLoader.options.convertUpAxis = true;
             this.ioDriverXML = new IoDriverXML();
             this.cache = [];
-        };
+        }
 
         KMZLoader.prototype = Object.create(KMZLoader.prototype);
 

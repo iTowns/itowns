@@ -23,7 +23,7 @@ define('Core/Commander/Providers/CacheRessource', [], function() {
         //TODO: Implement Me 
 
         return undefined;
-        return this.cacheObjects[url];
+        //return this.cacheObjects[url];
 
     };
 

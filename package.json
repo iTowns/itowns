@@ -4,7 +4,7 @@
   "description": "A JS/WebGL framework for 3D geospatial data visualization",
   "main": "dist/itowns2.js",
   "scripts": {
-    "lint": "eslint src/**/*.js test/**/*.js",
+    "lint": "eslint \"src/**/*.js\" \"test/**/*.js\"",
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "webpack -p",
     "start": "webpack-dev-server -d --inline --hot"
