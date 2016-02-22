@@ -36,7 +36,7 @@ define('Scene/NodeProcess', ['Scene/BoundingBox', 'Renderer/Camera', 'Core/Math/
                 node.visible = true;
                 return true;
             }
-        };
+        }
 
         //??node.visible = true;
 
