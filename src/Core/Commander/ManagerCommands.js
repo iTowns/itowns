@@ -16,7 +16,6 @@
  * @returns {Function}
  */
 define('Core/Commander/ManagerCommands', [
-        'Core/Commander/Providers/tileGlobeProvider',
         'Core/Commander/Interfaces/EventsManager',
         'PriorityQueue',
         'when',
@@ -25,7 +24,6 @@ define('Core/Commander/ManagerCommands', [
         'THREE'
     ],
     function(
-        tileGlobeProvider,
         EventsManager,
         PriorityQueue,
         when,
@@ -49,7 +47,7 @@ define('Core/Commander/ManagerCommands', [
             });
             this.queueSync = null;
             this.loadQueue = [];
-            this.providers = [];
+            this.providerMap = {};
             this.history = null;
             this.eventsManager = new EventsManager();
             this.scene = undefined;
@@ -66,6 +64,11 @@ define('Core/Commander/ManagerCommands', [
             this.scene = scene;
         };
 
+        ManagerCommands.prototype.addLayer = function(layer, provider) {
+            this.providerMap[layer] = provider;
+        };
+
+        /*
         ManagerCommands.prototype.createProvider = function(type, param) {
             if (type === EllipsoidTileMesh) {
                 var provider = new tileGlobeProvider(param);
@@ -73,7 +76,7 @@ define('Core/Commander/ManagerCommands', [
                 this.providers.push(provider);
                 return provider;
             }
-        };
+        };*/
 
         ManagerCommands.prototype.runAllCommands = function() {
             
@@ -98,19 +101,13 @@ define('Core/Commander/ManagerCommands', [
         };
 
         ManagerCommands.prototype.arrayDeQueue = function(number) {
-            
             var nT = number === undefined ? this.queueAsync.length : number;
 
             var arrayTasks = [];
 
-            while (this.queueAsync.length > 0 && arrayTasks.length < nT)
-            {
-
+            while (this.queueAsync.length > 0 && arrayTasks.length < nT) {
                 var command = this.deQueue();   
-
-                // TODO why somes commands are undefined
-                if(command)
-                    arrayTasks.push(command.provider.executeCommand(command));                                
+                arrayTasks.push(this.providerMap[command.layer].executeCommand(command));
             }
 
             return arrayTasks;

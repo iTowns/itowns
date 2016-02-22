@@ -10,6 +10,7 @@ define('Globe/Globe', [
     'Scene/Quadtree',
     'Scene/SchemeTile',
     'Core/Math/MathExtented',
+    'Core/Math/Ellipsoid',
     'Globe/EllipsoidTileMesh',
     'Globe/Atmosphere',
     'Globe/Clouds',
@@ -18,7 +19,7 @@ define('Globe/Globe', [
     'Renderer/BasicMaterial',
     'THREE'
 ], function(defaultValue, Layer, Quadtree, SchemeTile, MathExt,
-    EllipsoidTileMesh, Atmosphere, Clouds, Capabilities,
+    Ellipsoid, EllipsoidTileMesh, Atmosphere, Clouds, Capabilities,
     CoordCarto, BasicMaterial, THREE) {
 
     function Globe(scale) {
@@ -31,6 +32,7 @@ define('Globe/Globe', [
         this.NOIE = !caps.isInternetExplorer();
 
         this.size = new THREE.Vector3(6378137, 6356752.3142451793, 6378137).multiplyScalar(scale);
+        this.ellipsoid = new Ellipsoid(this.size);
         var exen = 6356752.3142451793/6378137;
         this.batiments = new Layer();
         this.layerWGS84Zup = new Layer();
@@ -46,7 +48,8 @@ define('Globe/Globe', [
         
         var geometry = new THREE.SphereGeometry(5);
         var batiment = new THREE.Mesh(geometry, material);
-        var position = this.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(48.87, 0, 200));        
+
+        var position = this.ellipsoid.cartographicToCartesian(new CoordCarto().setFromDegreeGeo(48.87, 0, 200));        
         
         position = new THREE.Vector3(4201215.424138484,171429.945145441,4779294.873914789);
         
@@ -55,6 +58,13 @@ define('Globe/Globe', [
         position = new THREE.Vector3(4201801.65418896,171495.727885073,4779411.45896233);
         
         
+
+        var position = this.ellipsoid.cartographicToCartesian(new CoordCarto().setFromDegreeGeo(48.87, 0, 200));
+
+
+
+
+
         batiment.frustumCulled = false;
         //material.wireframe      = true;
         batiment.position.copy(position);
@@ -62,7 +72,7 @@ define('Globe/Globe', [
         var material2 = new BasicMaterial(new THREE.Color(1, 0.5, 1));
         material2.visible = false;
         var batiment2 = new THREE.Mesh(geometry, material2);
-        var position2 = this.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(48.87, 0.001, 100));
+        var position2 = this.ellipsoid.cartographicToCartesian(new CoordCarto().setFromDegreeGeo(48.87, 0.001, 100));
         batiment2.frustumCulled = false;
         material2.wireframe = true;
         batiment2.position.copy(position2);
@@ -104,7 +114,7 @@ define('Globe/Globe', [
     
     Globe.prototype.updateQuadtree = function(){
         this.terrain = new Quadtree(EllipsoidTileMesh, this.SchemeTileWMTS(2), this.size, false);
-    }
+    };
 
     Globe.prototype.SchemeTileWMTS = function(type) {
         //TODO: Implement Me 
@@ -129,14 +139,13 @@ define('Globe/Globe', [
             this.clouds.generate();
         }
         this.clouds.visible = show;
-
     };
 
+    /*Globe.prototype.ellipsoid = function() {
+        return this.terrain.interCommand.managerCommands.providers[0].ellipsoid;
+    };*/
 
-    Globe.prototype.ellipsoid = function() 
-    {        
-        return this.terrain.interCommand.provider.ellipsoid;
-    };
+
 
 
     return Globe;

@@ -47,18 +47,15 @@ define('Scene/BrowseTree', ['Globe/EllipsoidTileMesh', 'THREE'], function( Ellip
 
             if (node.loaded && this.nodeProcess.frustumCullingOBB(node, camera)) {
                 if (this.nodeProcess.horizonCulling(node, camera)) {
-
-                    // TODO remove maybe not necessary
-                    if (node.parent.material !== undefined && node.parent.material.visible === true)
+                    if (node.parent instanceof EllipsoidTileMesh && node.parent !== null && node.parent.material !== undefined && node.parent.material.visible === true)
 
                     { return node.setVisibility(false); }
 
                     var sse = this.nodeProcess.SSE(node, camera);
 
-                    if(!node.wait)
-                        if (optional && (sse || node.level < 2) && node.material.visible)
-
-                            this.tree.subdivide(node);
+                    if (optional && (sse || node.level < 2) && node.material.visible === true && node.wait === false) {
+                        this.tree.subdivide(node);
+                    }
 
                         else if (!sse && node.level >= 2 && !node.material.visible ) {
 
