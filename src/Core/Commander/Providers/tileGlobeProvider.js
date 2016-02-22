@@ -80,21 +80,21 @@ define('Core/Commander/Providers/tileGlobeProvider', [
         
         tileGlobeProvider.prototype.getKML= function(tile)
         {
-            return;
-            if(tile.level  === 16  )
-            {
-                var longitude   = tile.bbox.center.x / Math.PI * 180 - 180;
-                var latitude    = tile.bbox.center.y / Math.PI * 180;
-
-                return this.providerKML.loadKMZ(longitude, latitude).then(function (collada){
-
-                    if(collada && tile.link.children.indexOf(collada) === -1)
-                        {                                 
-                            tile.link.add(collada);
-                            tile.content = collada;
-                        }
-                }.bind(this));
-            }
+            
+//            if(tile.level  === 16  )
+//            {
+//                var longitude   = tile.bbox.center.x / Math.PI * 180 - 180;
+//                var latitude    = tile.bbox.center.y / Math.PI * 180;
+//
+//                return this.providerKML.loadKMZ(longitude, latitude).then(function (collada){
+//
+//                    if(collada && tile.link.children.indexOf(collada) === -1)
+//                        {                                 
+//                            tile.link.add(collada);
+//                            tile.content = collada;
+//                        }
+//                }.bind(this));
+//            }
         };
 
         tileGlobeProvider.prototype.executeCommand = function(command) {
