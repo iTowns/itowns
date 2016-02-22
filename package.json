@@ -5,7 +5,7 @@
   "main": "dist/itowns2.js",
   "scripts": {
     "lint": "eslint \"src/**/*.js\" \"test/**/*.js\"",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "npm run lint && npm run build",
     "build": "webpack -p",
     "start": "webpack-dev-server -d --inline --hot"
   },
