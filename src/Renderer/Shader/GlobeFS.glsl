@@ -173,6 +173,7 @@ void main() {
 
                 //    gl_FragColor.rgb *= (1. + specularLightWeighting);
 
+               
                     /*
                                             vec2 cPos = -1.0 + 2.0 * uvO;
                                             float cLength = length(cPos);
@@ -183,6 +184,7 @@ void main() {
                                             gl_FragColor = vec4(col,1.0);
                     */
             }
+ if(diffuseColor.r == 1. && diffuseColor.g == 1. && diffuseColor.b == 1. || diffuseColor.a  == 0.) gl_FragColor = vec4(.5,0.,0.,1.);
     }
 
     if(debug > 0)
