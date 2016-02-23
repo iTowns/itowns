@@ -130,14 +130,15 @@ define('Core/Commander/Providers/WMTS_Provider', [
          * @param {type} id
          * @returns {WMTS_Provider_L15.WMTS_Provider.prototype@pro;ioDriverImage@call;read@call;then}
          */
-        WMTS_Provider.prototype.getTextureOrtho = function(coWMTS, id) {
+        WMTS_Provider.prototype.getTextureOrtho = function(coWMTS, id,pitch) {
 
-            var pack = function(i) {
+            var pack = function(i,pitch) {
                 this.texture;
                 this.id = i;
+                this.pitch = pitch;
             };
 
-            var result = new pack(id);
+            var result = new pack(id,pitch);
 
             var url = this.urlOrtho(coWMTS);
             result.texture = this.cache.getRessource(url);

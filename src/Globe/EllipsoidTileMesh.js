@@ -155,7 +155,6 @@ define('Globe/EllipsoidTileMesh', [
             var parentBil = this.getParentLevel(this.levelTerrain);
             pitScale = parentBil.bbox.pitScale(this.bbox);
             texture = parentBil.material.Textures_00[0];
-
             this.setAltitude(parentBil.bbox.minCarto.altitude, parentBil.bbox.maxCarto.altitude);
 
         } else {
@@ -185,12 +184,10 @@ define('Globe/EllipsoidTileMesh', [
         }
     };
 
-    EllipsoidTileMesh.prototype.setTextureOrtho = function(texture, id) {
+    EllipsoidTileMesh.prototype.setTextureOrtho = function(texture, id,pitch) {
         id = id === undefined ? 0 : id;
-        this.material.setTexture(texture, 1, id);
+        this.material.setTexture(texture, 1, id,pitch);
         this.checkOrtho();
-        //  if(this.material.nbTextures === this.material.Textures_01.length)
-        //   this.visible = false;
     };
 
     EllipsoidTileMesh.prototype.normals = function() {

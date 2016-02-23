@@ -149,14 +149,22 @@ define('Core/Commander/Providers/tileGlobeProvider', [
                 var id = 0;
                 var col = box[0].col;
                 tile.orthoNeed = box[1].row + 1 - box[0].row;
-                
+               // console.log('cooWMTS');
                 for (var row = box[0].row; row < box[1].row + 1; row++) {
                     var cooWMTS = new CoordWMTS(box[0].zoom, row, col);
-                                        
-                    //this.projection.WMTS_WGS84Parent(cooWMTS,2);
-                    promises.push(this.providerWMTS.getTextureOrtho(cooWMTS, id).then(
-                        function(result) {
-                            this.setTextureOrtho(result.texture, result.id); 
+                    
+                    var pitch = new THREE.Vector3(0.0,0.0,1.0);
+                    /*
+                    if(box[0].zoom > 3)
+                    {                        
+                        cooWMTS = this.projection.WMTS_WGS84Parent(cooWMTS,tile.levelTerrain,pitch);                        
+                    }
+                    */
+                    
+                    promises.push(this.providerWMTS.getTextureOrtho(cooWMTS,id,pitch).then(
+                        function(result){       
+                                    
+                            this.setTextureOrtho(result.texture, result.id,result.pitch); 
                             return this;
                         }.bind(tile)
                     ));

@@ -57,14 +57,8 @@ define('Globe/Globe', [
         // 48.846931,2.337219,50
         position = new THREE.Vector3(4201801.65418896,171495.727885073,4779411.45896233);
         
-        
-
         var position = this.ellipsoid.cartographicToCartesian(new CoordCarto().setFromDegreeGeo(48.87, 0, 200));
-
-
-
-
-
+        
         batiment.frustumCulled = false;
         //material.wireframe      = true;
         batiment.position.copy(position);
