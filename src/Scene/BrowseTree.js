@@ -126,7 +126,7 @@ define('Scene/BrowseTree', ['Globe/EllipsoidTileMesh', 'THREE'], function( Ellip
                 this._browse(node.children[i], camera, optional);
         else
             this._clean(node, node.level + 2, camera);
-
+        
     };
 
     BrowseTree.prototype._clean = function(node, level, camera) {
