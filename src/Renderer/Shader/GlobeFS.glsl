@@ -134,57 +134,28 @@ void main() {
 
         if (animateWater ==1){
 
-            //    if(diffuseColor.b> diffuseColor.r && diffuseColor.b> diffuseColor.g || diffuseColor.a  == 0. ||
-            //      diffuseColor.r == 1. && diffuseColor.g == 1. && diffuseColor.b == 1.) {   // Water
-            
-            float dv2  = texture2D(dTextures_00[0], vVv).w;
-            if(dv2 <= waterHeight){  //Alti
+            float dv2  = texture2D(dTextures_00[0], vVv).w; 
+            if(dv2 <= waterHeight || /*(diffuseColor.r >= .9 && diffuseColor.g >= .9 && diffuseColor.b >= .9*/ diffuseColor.a  <= 0.6){  //Alti
 
-                float speed = 0.4;
-                float noiseScale = 0.5;
+                float speed = 0.55;
+                float noiseScale = 0.9;
                 float orignalCoef = 0.6;
 
                 vec2 uvTime =  uvO + vec2( -0.1, .1 ) * mod(time * speed, 1.);	
                 vec4 noiseColor = texture2D( textureNoise, uvTime );
                 vec2 uvNoise = uvO + noiseScale * uvO * vec2(noiseColor.r, noiseColor.b ); 
-                float coefDistCam = (length(cameraPosition.xyz) - 6400000.) / 400000.;
+                float coefDistCam = (length(cameraPosition.xyz) - 6300000.) / 200000.;
 
                 vec4 color = texture2D( textureNoise, uvNoise); 
                 float l = (max(color.r,max(color.g,color.b)) + min(color.r,min(color.g,color.b))) / 2.;
                 l *= l*1.5;
 
-                
-                orignalCoef = clamp(coefDistCam, 0.4,1.)  ; 
-                if(diffuseColor.r == 1. && diffuseColor.g ==1. && diffuseColor.b ==1.) 
-                    orignalCoef = -0.1; 
+                orignalCoef = clamp(coefDistCam, 0.45, 1.)  ; 
+                if((diffuseColor.r >= .9 && diffuseColor.g >= .9 && diffuseColor.b >= .9 || diffuseColor.a  <= 0.6)&& coefDistCam <1.)// if(diffuseColor.r == 1. && diffuseColor.g ==1. && diffuseColor.b ==1.) 
+                     orignalCoef = 0.; 
                 gl_FragColor =  gl_FragColor * orignalCoef + (1.- orignalCoef) * (texture2D( textureNoise, uvO ) * l + texture2D( textureNoise, uvO ) * 0.5);
-
-
-                // Specular reflection on water
-                // lightPosition = vec3( pos.xyz +  vNormal.xyz  * 1000.);
-                vec3 lightDirection = normalize(lightPosition - pos.xyz);
-                vec3 normal = normalize(vNormal);
-                float materialShininess = 4.;
-                float specularLightWeighting = 0.0;
-
-                vec3 eyeDirection = normalize(cameraPosition - pos.xyz);
-                vec3 reflectionDirection = reflect(-lightDirection, normal);
-                specularLightWeighting = pow(max(dot(reflectionDirection, eyeDirection), 0.0), materialShininess);
-
-                //    gl_FragColor.rgb *= (1. + specularLightWeighting);
-
-               
-                    /*
-                                            vec2 cPos = -1.0 + 2.0 * uvO;
-                                            float cLength = length(cPos);
-
-                                            vec2 uv = uvO +(cPos/cLength)*cos(cLength*12.0-time*4.0)*0.03;
-                                            vec3 col = texture2D(textureNoise,uv).xyz;
-
-                                            gl_FragColor = vec4(col,1.0);
-                    */
             }
- if(diffuseColor.r == 1. && diffuseColor.g == 1. && diffuseColor.b == 1. || diffuseColor.a  == 0.) gl_FragColor = vec4(.5,0.,0.,1.);
+        //if(diffuseColor.r >= .9 && diffuseColor.g >= .9 && diffuseColor.b >= .9 || diffuseColor.a  <= 0.6) gl_FragColor = vec4(.5,0.,0.,1.);
     }
 
     if(debug > 0)
