@@ -39,6 +39,26 @@ varying vec4        pos;
 const float sLine = 0.002;
 #endif
 const float borderS = 0.007;
+
+
+// GLSL 1.30 only accepts constant expressions when indexing into arrays,
+// so we have to resort to an if/else cascade.
+vec4 colorAtIdUv(int id, vec2 uv){
+
+    vec4 diffuseColor;
+         if (id == 0) diffuseColor = texture2D(dTextures_01[0], uv);
+    else if (id == 1) diffuseColor = texture2D(dTextures_01[1], uv);
+    else if (id == 2) diffuseColor = texture2D(dTextures_01[2], uv);
+    else if (id == 3) diffuseColor = texture2D(dTextures_01[3], uv);
+    else if (id == 4) diffuseColor = texture2D(dTextures_01[4], uv);
+    else if (id == 5) diffuseColor = texture2D(dTextures_01[5], uv);
+    else if (id == 6) diffuseColor = texture2D(dTextures_01[6], uv);
+    else if (id == 7) diffuseColor = texture2D(dTextures_01[7], uv);
+    else              diffuseColor = vec4(0.0,0.0,0.0,0.0);
+        
+    return diffuseColor;            
+}
+
 void main() {
 
     #if defined(USE_LOGDEPTHBUF) && defined(USE_LOGDEPTHBUF_EXT)
@@ -82,9 +102,6 @@ void main() {
         gl_FragColor    = vec4( 0.04, 0.23, 0.35, 1.0);
 
         float depth = gl_FragDepthEXT / gl_FragCoord.w;
-        //float distanceFog = 600000.0;
-        //float fog = (distanceFog-depth)/distanceFog; // linear fog
-
         float fog = 1.0/(exp(depth/distanceFog));
 
         #else
@@ -95,19 +112,7 @@ void main() {
 
         if (0 <= idd && idd < TEX_UNITS)
         {
-            vec4 diffuseColor = vec4(0.0,0.0,0.0,0.0);
-            // GLSL 1.30 only accepts constant expressions when indexing into arrays,
-            // so we have to resort to an if/else cascade.
-            if (idd == 0) diffuseColor = texture2D(dTextures_01[0], uvO);
-            else if (idd == 1) diffuseColor = texture2D(dTextures_01[1], uvO);
-            else if (idd == 2) diffuseColor = texture2D(dTextures_01[2], uvO);
-            else if (idd == 3) diffuseColor = texture2D(dTextures_01[3], uvO);
-            else if (idd == 4) diffuseColor = texture2D(dTextures_01[4], uvO);
-            else if (idd == 5) diffuseColor = texture2D(dTextures_01[5], uvO);
-            else if (idd == 6) diffuseColor = texture2D(dTextures_01[6], uvO);
-            else if (idd == 7) diffuseColor = texture2D(dTextures_01[7], uvO);
-            else
-                discard;
+            vec4 diffuseColor = colorAtIdUv(idd, uvO);
             if(RTC == 1)
                 gl_FragColor = mix(fogColor, diffuseColor, fog );
             else
