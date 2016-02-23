@@ -88,8 +88,11 @@ define('Renderer/Camera', ['Scene/Node', 'THREE'], function(Node, THREE) {
 
         var distance = Math.max(0.0, (this.camera3D.position.distanceTo(node.centerSphere) - boundingSphere.radius));
 
-        var SSE = this.preSSE * (node.geometricError / distance);
+        // Added small oblique weight (distance is not enough, tile orientation is needed for sse)
+        var dotProduct = Math.abs(this.camera3D.getWorldDirection().dot(node.centerSphere.clone().normalize()));
 
+        var SSE = Math.sqrt(dotProduct) * this.preSSE * (node.geometricError / distance);
+ 
         node.sse = SSE;
 
         return SSE;
