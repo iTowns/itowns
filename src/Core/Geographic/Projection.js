@@ -87,6 +87,8 @@ define('Core/Geographic/Projection', ['Core/Geographic/CoordWMTS', 'Core/Math/Ma
 
         var r = ( cWMTS.row - (cWMTS.row%diff)) / diff;
         var c = ( cWMTS.col - (cWMTS.col%diff)) / diff;
+        
+        return new CoordWMTS(levelParent, r, c);
                     
         //console.log( '[' + cWMTS.zoom + '|' + cWMTS.row + '|' + cWMTS.col + ']' + '->' +  '[' + levelParent + '|' + r + '|' + c + ']' );
                     
