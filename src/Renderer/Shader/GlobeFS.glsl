@@ -21,6 +21,7 @@ const float poleNord    =  84.0 / 180.0 * PI;
 
 uniform sampler2D   dTextures_00[1];
 uniform sampler2D   dTextures_01[TEX_UNITS];
+uniform vec3        pitScale2[TEX_UNITS];
 uniform int         RTC;
 uniform int         selected;
 uniform int         uuid;
@@ -34,6 +35,15 @@ varying float       vUv_1;
 varying vec4        pos;
 
 //#define BORDERLINE
+
+vec2    pitUV(vec2 uvIn, vec3 pit)
+{     
+    vec2  uv;
+    uv.x = uvIn.x* pit.z + pit.x;
+    uv.y = 1.0 -( (1.0 - uvIn.y) * pit.z + pit.y);
+    
+    return uv;
+}
 
 #if defined(BORDERLINE)
 const float sLine = 0.002;
@@ -92,16 +102,37 @@ void main() {
         #endif
 
         vec4 fogColor = vec4( 0.76, 0.85, 1.0, 1.0);
+        float memoY = uvO.y;
 
         if (0 <= idd && idd < TEX_UNITS)
         {
             vec4 diffuseColor = vec4(0.0,0.0,0.0,0.0);
             // GLSL 1.30 only accepts constant expressions when indexing into arrays,
             // so we have to resort to an if/else cascade.
-            if (idd == 0) diffuseColor = texture2D(dTextures_01[0], uvO);
-            else if (idd == 1) diffuseColor = texture2D(dTextures_01[1], uvO);
-            else if (idd == 2) diffuseColor = texture2D(dTextures_01[2], uvO);
-            else if (idd == 3) diffuseColor = texture2D(dTextures_01[3], uvO);
+            if (idd == 0)
+            {
+                vec3 pit = pitScale2[0];                
+                uvO = pitUV(uvO,pit);                                
+                diffuseColor = texture2D(dTextures_01[0], uvO);
+            }       
+            else if (idd == 1) 
+            {
+                vec3 pit = pitScale2[1];                
+                uvO = pitUV(uvO,pit);               
+                diffuseColor = texture2D(dTextures_01[1], uvO);
+            }
+            else if (idd == 2) 
+            {
+                vec3 pit = pitScale2[2];                
+                uvO = pitUV(uvO,pit);
+                diffuseColor = texture2D(dTextures_01[2], uvO);
+            }
+            else if (idd == 3)
+            {
+                vec3 pit = pitScale2[3];                
+                uvO = pitUV(uvO,pit);
+                diffuseColor = texture2D(dTextures_01[3], uvO);
+            }
             else if (idd == 4) diffuseColor = texture2D(dTextures_01[4], uvO);
             else if (idd == 5) diffuseColor = texture2D(dTextures_01[5], uvO);
             else if (idd == 6) diffuseColor = texture2D(dTextures_01[6], uvO);
@@ -109,9 +140,14 @@ void main() {
             else
                 discard;
             if(RTC == 1)
+            {
                 gl_FragColor = mix(fogColor, diffuseColor, fog );
+            }
             else
+            {
                 gl_FragColor = diffuseColor;
+                
+            }
         }
     }
 

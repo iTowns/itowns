@@ -79,19 +79,22 @@ define('Core/Geographic/Projection', ['Core/Geographic/CoordWMTS', 'Core/Math/Ma
 
     };
     
-    Projection.prototype.WMTS_WGS84Parent = function(cWMTS, levelParent) 
+    Projection.prototype.WMTS_WGS84Parent = function(cWMTS, levelParent, pitch) 
     {
         
         var diffLevel = cWMTS.zoom  - levelParent;
         var diff = Math.pow(2,diffLevel);
+        var invDiff = 1/diff;
 
-        var r = ( cWMTS.row - (cWMTS.row%diff)) / diff;
-        var c = ( cWMTS.col - (cWMTS.col%diff)) / diff;
+        var r = ( cWMTS.row - (cWMTS.row%diff)) * invDiff;
+        var c = ( cWMTS.col - (cWMTS.col%diff)) * invDiff;
+        
+        pitch.x = cWMTS.col * invDiff - c;        
+        pitch.y = cWMTS.row * invDiff - r;         
+        pitch.z = invDiff;                
         
         return new CoordWMTS(levelParent, r, c);
-                    
-        //console.log( '[' + cWMTS.zoom + '|' + cWMTS.row + '|' + cWMTS.col + ']' + '->' +  '[' + levelParent + '|' + r + '|' + c + ']' );
-                    
+        
     };
 
 

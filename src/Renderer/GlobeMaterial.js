@@ -27,6 +27,8 @@ define('Renderer/GlobeMaterial', ['THREE',
 
         this.vertexShader = GlobeVS;
         this.fragmentShader = GlobeFS;
+        
+        this.pitScale2 = [];
 
         this.uniforms.dTextures_00 = {
             type: "tv",
@@ -47,6 +49,10 @@ define('Renderer/GlobeMaterial', ['THREE',
         this.uniforms.pitScale = {
             type: "v3",
             value: new THREE.Vector3(0.0, 0.0, 1.0)
+        };
+        this.uniforms.pitScale2 = {
+            type: "v3v",
+            value: this.pitScale2
         };
         this.uniforms.pickingRender = {
             type: "i",
@@ -97,7 +103,13 @@ define('Renderer/GlobeMaterial', ['THREE',
             if (pitScale)
                 this.uniforms.pitScale.value = pitScale;
         } else {
-            this.Textures_01[id] = texture; // BEWARE: array [] -> size: 0; array [10]="wao" -> size: 11            
+            this.Textures_01[id] = texture; // BEWARE: array [] -> size: 0; array [10]="wao" -> size: 11   
+            if(pitScale)
+            {              
+                this.pitScale2[id] = pitScale;                                     
+            }
+            else
+                this.pitScale2[id] = new THREE.Vector3(0.0,0.0,1.0); 
             this.nbTextures++;
         }
     };
