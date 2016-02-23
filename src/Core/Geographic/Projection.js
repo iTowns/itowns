@@ -78,6 +78,20 @@ define('Core/Geographic/Projection', ['Core/Geographic/CoordWMTS', 'Core/Math/Ma
         return wmtsBox;
 
     };
+    
+    Projection.prototype.WMTS_WGS84Parent = function(cWMTS, levelParent) 
+    {
+        
+        var diffLevel = cWMTS.zoom  - levelParent;
+        var diff = Math.pow(2,diffLevel);
+
+        var r = ( cWMTS.row - (cWMTS.row%diff)) / diff;
+        var c = ( cWMTS.col - (cWMTS.col%diff)) / diff;
+                    
+        //console.log( '[' + cWMTS.zoom + '|' + cWMTS.row + '|' + cWMTS.col + ']' + '->' +  '[' + levelParent + '|' + r + '|' + c + ']' );
+                    
+    };
+
 
     /**
      * @param x
