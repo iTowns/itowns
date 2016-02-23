@@ -149,9 +149,12 @@ define('Core/Commander/Providers/tileGlobeProvider', [
                 var id = 0;
                 var col = box[0].col;
                 tile.orthoNeed = box[1].row + 1 - box[0].row;
-
+                
                 for (var row = box[0].row; row < box[1].row + 1; row++) {
-                    promises.push(this.providerWMTS.getTextureOrtho(new CoordWMTS(box[0].zoom, row, col), id).then(
+                    var cooWMTS = new CoordWMTS(box[0].zoom, row, col);
+                                        
+                    //this.projection.WMTS_WGS84Parent(cooWMTS,2);
+                    promises.push(this.providerWMTS.getTextureOrtho(cooWMTS, id).then(
                         function(result) {
                             this.setTextureOrtho(result.texture, result.id); 
                             return this;

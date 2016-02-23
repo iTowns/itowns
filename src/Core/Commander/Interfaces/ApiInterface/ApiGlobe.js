@@ -63,8 +63,9 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
     ApiGlobe.setLayerAtLevel = function(baseurl,layer,level) {
  
         var wmtsProvider = new WMTS_Provider({url:baseurl, layer:layer});
-        this.scene.managerCommand.providers[0].providerWMTS = wmtsProvider;
+        this.scene.managerCommand.providerMap[this.scene.layers[0].terrain].providerWMTS = wmtsProvider;
         this.scene.browserScene.updateNodeMaterial(wmtsProvider);
+        this.scene.renderScene3D();
     };
 
     ApiGlobe.showClouds = function(value) {
