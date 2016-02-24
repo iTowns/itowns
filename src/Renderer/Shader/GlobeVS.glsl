@@ -41,7 +41,7 @@ void main() {
         if(nbTextures_00 > 0)
         {
             vec2    vVv = vec2(vUv_0.x*pitScale.z + pitScale.x,vUv_0.y*pitScale.z + pitScale.y);                
-            float   dv  = texture2D( dTextures_00[0], vVv ).w;
+            float   dv  = max(texture2D( dTextures_00[0], vVv ).w, 0.);
             vNormal     = normal;
             vPosition   = vec4( position +  vNormal  * dv ,1.0 );            
         }
