@@ -49,6 +49,24 @@ vec2    pitUV(vec2 uvIn, vec3 pit)
 const float sLine = 0.002;
 #endif
 const float borderS = 0.007;
+
+// GLSL 1.30 only accepts constant expressions when indexing into arrays,
+// so we have to resort to an if/else cascade.
+
+vec4 colorAtIdUv(int id, vec2 uv){
+    
+    if (id == 0) return texture2D(dTextures_01[0],  pitUV(uv,pitScale2[0]));
+    else if (id == 1) return texture2D(dTextures_01[1],  pitUV(uv,pitScale2[1]));
+    else if (id == 2) return texture2D(dTextures_01[2],  pitUV(uv,pitScale2[2]));          
+    else if (id == 3) return texture2D(dTextures_01[3],  pitUV(uv,pitScale2[3]));           
+    else if (id == 4) return texture2D(dTextures_01[4],  pitUV(uv,pitScale2[4]));           
+    else if (id == 5) return texture2D(dTextures_01[5],  pitUV(uv,pitScale2[5]));
+    else if (id == 5) return texture2D(dTextures_01[6],  pitUV(uv,pitScale2[6]));
+    else if (id == 5) return texture2D(dTextures_01[7],  pitUV(uv,pitScale2[7]));
+    else return vec4(0.0,0.0,0.0,0.0);        
+    
+}
+
 void main() {
 
     #if defined(USE_LOGDEPTHBUF) && defined(USE_LOGDEPTHBUF_EXT)
@@ -92,9 +110,6 @@ void main() {
         gl_FragColor    = vec4( 0.04, 0.23, 0.35, 1.0);
 
         float depth = gl_FragDepthEXT / gl_FragCoord.w;
-        //float distanceFog = 600000.0;
-        //float fog = (distanceFog-depth)/distanceFog; // linear fog
-
         float fog = 1.0/(exp(depth/distanceFog));
 
         #else
@@ -106,39 +121,7 @@ void main() {
 
         if (0 <= idd && idd < TEX_UNITS)
         {
-            vec4 diffuseColor = vec4(0.0,0.0,0.0,0.0);
-            // GLSL 1.30 only accepts constant expressions when indexing into arrays,
-            // so we have to resort to an if/else cascade.
-            if (idd == 0)
-            {
-                vec3 pit = pitScale2[0];                
-                uvO = pitUV(uvO,pit);                                
-                diffuseColor = texture2D(dTextures_01[0], uvO);
-            }       
-            else if (idd == 1) 
-            {
-                vec3 pit = pitScale2[1];                
-                uvO = pitUV(uvO,pit);               
-                diffuseColor = texture2D(dTextures_01[1], uvO);
-            }
-            else if (idd == 2) 
-            {
-                vec3 pit = pitScale2[2];                
-                uvO = pitUV(uvO,pit);
-                diffuseColor = texture2D(dTextures_01[2], uvO);
-            }
-            else if (idd == 3)
-            {
-                vec3 pit = pitScale2[3];                
-                uvO = pitUV(uvO,pit);
-                diffuseColor = texture2D(dTextures_01[3], uvO);
-            }
-            else if (idd == 4) diffuseColor = texture2D(dTextures_01[4], uvO);
-            else if (idd == 5) diffuseColor = texture2D(dTextures_01[5], uvO);
-            else if (idd == 6) diffuseColor = texture2D(dTextures_01[6], uvO);
-            else if (idd == 7) diffuseColor = texture2D(dTextures_01[7], uvO);
-            else
-                discard;
+            vec4 diffuseColor = colorAtIdUv(idd, uvO);
             if(RTC == 1)
             {
                 gl_FragColor = mix(fogColor, diffuseColor, fog );
