@@ -25,7 +25,7 @@ define('Core/Commander/Providers/IoDriver_XBIL', ['Core/Commander/Providers/IoDr
 
     IoDriver_XBIL.prototype.constructor = IoDriver_XBIL;
 
-    IoDriver_XBIL.prototype.read = function(url) {
+   IoDriver_XBIL.prototype.read = function(url) {
 
         // TODO new Promise is supported?
   
@@ -42,33 +42,17 @@ define('Core/Commander/Providers/IoDriver_XBIL', ['Core/Commander/Providers/IoDr
             xhr.onload = function() {
 
                 var arrayBuffer = this.response;
+
                 if (arrayBuffer) {
 
                     var result = new portableXBIL(arrayBuffer);
-                    // Parse all elevation tile to get min and max. (super heavy but realtime and precise)
-               /*     
-                    for (var i = 0; i < result.floatArray.byteLength/2; i++) {
-                        
-                        var val = result.floatArray[i];
-                        //  TODO debug a voir avec le geoportail
-                        //if(val === -99999.0 || val === undefined )                        
-                   //     if (val < -10.0 || val === undefined)
-                    //        result.floatArray[i] = mcolor;
-                   //     else {
-                          if(!val === undefined ){
-                             result.max = Math.max(result.max, val);
-                             result.min = Math.min(result.min, val);
-                         
+                    // Compute min max using subampling
+                    for (var i = 0; i < result.floatArray.byteLength; i+=64) {
+                        var val = result.floatArray[i];                   
+                        if (val > -10.0 && val !== undefined){
+                            result.max = Math.max(result.max, val);
+                            result.min = Math.min(result.min, val);
                         }
-                    }
-                */     
-                    // Fast compute of unprecise min max using subsampling
-                    for (var i = 0; i < result.floatArray.byteLength; i+=32) {
-                         var val = result.floatArray[i];
-                         if(val>-99999){
-                             result.max = Math.max(result.max, val);
-                             result.min = Math.min(result.min, val);
-                         }
                     }
                     if (result.min === 1000000)
                         return resolve(undefined);
@@ -79,10 +63,7 @@ define('Core/Commander/Providers/IoDriver_XBIL', ['Core/Commander/Providers/IoDr
 
             xhr.onerror = function() {
 
-                //console.log('error bil');
                 resolve(undefined);
-                //reject(Error("Error IoDriver_XBIL"));
-
             };
 
             xhr.send(null);
