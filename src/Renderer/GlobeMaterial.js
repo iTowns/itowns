@@ -103,13 +103,8 @@ define('Renderer/GlobeMaterial', ['THREE',
             if (pitScale)
                 this.uniforms.pitScale.value = pitScale;
         } else {
-            this.Textures_01[id] = texture; // BEWARE: array [] -> size: 0; array [10]="wao" -> size: 11   
-            if(pitScale)
-            {              
-                this.pitScale2[id] = pitScale;                                     
-            }
-            else
-                this.pitScale2[id] = new THREE.Vector3(0.0,0.0,1.0); 
+            this.Textures_01[id] = texture; // BEWARE: array [] -> size: 0; array [10]="wao" -> size: 11                
+            this.pitScale2[id] = pitScale ? pitScale : new THREE.Vector3(0.0,0.0,1.0);                                             
             this.nbTextures++;
         }
     };
@@ -147,6 +142,13 @@ define('Renderer/GlobeMaterial', ['THREE',
         this.uniforms.pickingRender.value = enable === true ? 1 : 0;
 
     };
+    
+    GlobeMaterial.prototype.isSubscaleDiffuse = function() {
+      
+        return (this.pitScale2[0].z < 1.0);
+        
+    };
+    
 
     return GlobeMaterial;
 });

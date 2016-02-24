@@ -161,6 +161,8 @@ define('Core/Commander/Providers/tileGlobeProvider', [
                     }
                     */
                     
+                    
+                    
                     promises.push(this.providerWMTS.getTextureOrtho(cooWMTS,id,pitch).then(
                         function(result){       
                                     
