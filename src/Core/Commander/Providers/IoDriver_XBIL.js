@@ -42,31 +42,34 @@ define('Core/Commander/Providers/IoDriver_XBIL', ['Core/Commander/Providers/IoDr
             xhr.onload = function() {
 
                 var arrayBuffer = this.response;
-
                 if (arrayBuffer) {
 
-                    //                var floatArray = new Float32Array(arrayBuffer);                
-                    //                var max = - 1000000;
-                    //                var min =   1000000;
-
                     var result = new portableXBIL(arrayBuffer);
-
-                    var mcolor = 0.0;
-                    //var mcolor  = Math.random();
-
-
-                    for (var i = 0; i < result.floatArray.byteLength; i++) {
+                    // Parse all elevation tile to get min and max. (super heavy but realtime and precise)
+               /*     
+                    for (var i = 0; i < result.floatArray.byteLength/2; i++) {
+                        
                         var val = result.floatArray[i];
                         //  TODO debug a voir avec le geoportail
                         //if(val === -99999.0 || val === undefined )                        
-                        if (val < -10.0 || val === undefined)
-                            result.floatArray[i] = mcolor;
-                        else {
-                            result.max = Math.max(result.max, val);
-                            result.min = Math.min(result.min, val);
+                   //     if (val < -10.0 || val === undefined)
+                    //        result.floatArray[i] = mcolor;
+                   //     else {
+                          if(!val === undefined ){
+                             result.max = Math.max(result.max, val);
+                             result.min = Math.min(result.min, val);
+                         
                         }
                     }
-
+                */     
+                    // Fast compute of unprecise min max using subsampling
+                    for (var i = 0; i < result.floatArray.byteLength; i+=32) {
+                         var val = result.floatArray[i];
+                         if(val>-99999){
+                             result.max = Math.max(result.max, val);
+                             result.min = Math.min(result.min, val);
+                         }
+                    }
                     if (result.min === 1000000)
                         return resolve(undefined);
 
