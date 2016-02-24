@@ -66,9 +66,8 @@ define('Scene/BrowseTree', ['Globe/EllipsoidTileMesh', 'THREE'], function( Ellip
                     }
                     else
                     if(optional && !sse && node.material.isSubscaleDiffuse() && node.visible && node.material.visible && node.wait === false)
-                    {
-                        //console.log('subscale');
-                         this.tree.reloadSubLayer(node,1);
+                    {                        
+                        this.tree.reloadSubLayer(node,1);
                     }
                 }
             }

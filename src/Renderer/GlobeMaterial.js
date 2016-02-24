@@ -48,7 +48,7 @@ define('Renderer/GlobeMaterial', ['THREE',
         };
         this.uniforms.pitScale = {
             type: "v3",
-            value: new THREE.Vector3(0.0, 0.0, 1.0)
+            value: new THREE.Vector3(0.0, 0.0, 0.0)
         };
         this.uniforms.pitScale2 = {
             type: "v3v",
@@ -151,7 +151,7 @@ define('Renderer/GlobeMaterial', ['THREE',
     
     GlobeMaterial.prototype.isSubscaleElevation = function() {
       
-        return (this.pitScale.z < 1.0);
+        return (this.uniforms.pitScale.value.z < 1.0);
         
     };
     

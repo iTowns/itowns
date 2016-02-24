@@ -123,8 +123,15 @@ define('Core/Commander/Providers/tileGlobeProvider', [
             tile.link = parent.link;
 
             parent.add(tile);
+            
+//            if(cooWMTS.zoom > 3 )
+//                cooWMTS =  new CoordWMTS(-1, 0, 0);
+//            else
+//                cooWMTS =  tile.useParent() ? undefined : cooWMTS;
 
             return this.providerWMTS.getTextureBil(tile.useParent() ? undefined : cooWMTS).then(function(terrain) {
+            //return this.providerWMTS.getTextureBil(cooWMTS).then(function(terrain){
+                
                 this.setTerrain(terrain);
 
                 return this;
@@ -155,11 +162,8 @@ define('Core/Commander/Providers/tileGlobeProvider', [
                     
                     var pitch = new THREE.Vector3(0.0,0.0,1.0);
                     
-                    if(box[0].zoom > 3)
-                    {                        
-                        
+                    if(box[0].zoom > 3)                                                                  
                         cooWMTS = this.projection.WMTS_WGS84Parent(cooWMTS,tile.getLevelOrthoParent(),pitch);                        
-                    }
                     
                     promises.push(this.providerWMTS.getTextureOrtho(cooWMTS,id,pitch).then(
                         function(result){       
