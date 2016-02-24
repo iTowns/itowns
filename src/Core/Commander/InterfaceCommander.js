@@ -48,14 +48,14 @@ define('Core/Commander/InterfaceCommander', ['Core/Commander/ManagerCommands', '
     };
     
     
-    InterfaceCommander.prototype.requestOrtho = function(parameters, parent, layer) {
+    InterfaceCommander.prototype.requestOrtho = function( node , layer) {
 
         var command = new Command();
-        command.type = this.type;
-        command.requester = parent;
-        command.paramsFunction = parameters;
+        //command.type = this.type;
+        command.requester = node;
+        //command.paramsFunction = parameters;
         command.layer = layer; 
-        command.priority = parent.sse ? Math.floor(parent.visible && parent.material.visible ? parent.sse * parent.sse * 100000 : 1.0) : 1.0;
+        command.priority = node.sse ? Math.floor(node.visible && node.material.visible ? node.sse * node.sse * 100000 : 1.0) : 1.0;
 
         this.managerCommands.addCommand(command);
     };

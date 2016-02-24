@@ -67,6 +67,10 @@ define('Core/Commander/ManagerCommands', [
         ManagerCommands.prototype.addLayer = function(layer, provider) {
             this.providerMap[layer.layerId] = provider;
         };
+        
+        ManagerCommands.prototype.getProvider = function(layer) {
+            return this.providerMap[layer.layerId];
+        };
 
         ManagerCommands.prototype.runAllCommands = function() {
             
@@ -80,8 +84,8 @@ define('Core/Commander/ManagerCommands', [
                 
                 //if (this.queueAsync.length === 0) // --> probleme car la pile de requete est moins rafraichie et donc le chargement est plus long
                 {
-                    //this.scene.updateScene3D();
-                   this.scene.wait();                                      
+                    this.scene.updateScene3D();
+                   //this.scene.wait();                                      
                 }
                 
                 return this.runAllCommands();

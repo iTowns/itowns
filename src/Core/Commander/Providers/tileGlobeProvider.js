@@ -154,14 +154,12 @@ define('Core/Commander/Providers/tileGlobeProvider', [
                     var cooWMTS = new CoordWMTS(box[0].zoom, row, col);
                     
                     var pitch = new THREE.Vector3(0.0,0.0,1.0);
-                    /*
+                    
                     if(box[0].zoom > 3)
                     {                        
-                        cooWMTS = this.projection.WMTS_WGS84Parent(cooWMTS,tile.levelTerrain,pitch);                        
+                        
+                        cooWMTS = this.projection.WMTS_WGS84Parent(cooWMTS,tile.getLevelOrthoParent(),pitch);                        
                     }
-                    */
-                    
-                    
                     
                     promises.push(this.providerWMTS.getTextureOrtho(cooWMTS,id,pitch).then(
                         function(result){       

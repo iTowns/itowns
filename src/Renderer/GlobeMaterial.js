@@ -149,6 +149,12 @@ define('Renderer/GlobeMaterial', ['THREE',
         
     };
     
+    GlobeMaterial.prototype.isSubscaleElevation = function() {
+      
+        return (this.pitScale.z < 1.0);
+        
+    };
+    
 
     return GlobeMaterial;
 });

@@ -41,6 +41,10 @@ define('Globe/Globe', [
         this.batiments.add(kml);
 
         this.terrain = new Quadtree(EllipsoidTileMesh, this.SchemeTileWMTS(2), this.size, kml);
+        this.colorTerrain = new Layer();
+        
+        this.terrain.add(this.colorTerrain);
+        
         this.atmosphere = this.NOIE ? new Atmosphere(this.size) : undefined;
         this.clouds = new Clouds();
 

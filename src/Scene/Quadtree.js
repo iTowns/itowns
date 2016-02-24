@@ -78,6 +78,12 @@ define('Scene/Quadtree', [
         this.createTile(quad.southEast, node);
 
     };
+    
+    Quadtree.prototype.reloadSubLayer = function(node,id) {
+                
+        this.interCommand.requestOrtho( node, this.children[id]);
+        
+    };
 
     /**
      * @documentation: update node 
