@@ -75,6 +75,8 @@ define('Scene/Scene', [
         var globe = new Globe();
         this.add(globe);
         this.managerCommand.addLayer(globe.terrain, new tileGlobeProvider(globe.size));
+        this.managerCommand.addLayer(globe.colorTerrain,this.managerCommand.getProvider(globe.terrain).providerWMTS);
+        
 
         //var position    = globe.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(2.33,48.87,25000000));        
         //
@@ -118,8 +120,8 @@ define('Scene/Scene', [
                         
             this.managerCommand.runAllCommands();//.then(function(){this.updateScene3D()}.bind(this));
             
-            this.renderScene3D();                
-            //this.updateScene3D(); 
+            //this.renderScene3D();                
+            this.updateScene3D(); 
                 
         } 
         

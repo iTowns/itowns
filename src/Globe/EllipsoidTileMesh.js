@@ -209,17 +209,24 @@ define('Globe/EllipsoidTileMesh', [
     EllipsoidTileMesh.prototype.OBB = function() {
         return this.geometry.OBB;
     };
+    
+    EllipsoidTileMesh.prototype.getLevelOrthoParent = function() 
+    {
+         return !this.parent.material.isSubscaleDiffuse() ? this.parent.level+1 : this.parent.getLevelOrthoParent();
+    };
+    
+    EllipsoidTileMesh.prototype.getLevelElevationParent = function() 
+    {
+         return !this.parent.material.isSubscaleElevation() ? this.parent.level : this.parent.getLevelOrthoParent();
+    };
 
     EllipsoidTileMesh.prototype.checkOrtho = function() {
 
-
-        if (this.orthoNeed + 1 === this.material.nbTextures || this.level < 2)
-
-        {
+        if (this.orthoNeed + 1 === this.material.nbTextures || this.level < 2){
 
             this.loaded = true;
             this.material.update();
-
+            
             var parent = this.parent;
 
             if (parent !== null && parent.childrenLoaded()) {
