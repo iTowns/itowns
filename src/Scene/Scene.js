@@ -154,9 +154,9 @@ define('Scene/Scene', [
         this.gfxEngine.update();
     };
 
-    Scene.prototype.wait = function() {
+    Scene.prototype.wait = function(timeWait) {
 
-        var waitTime = 20;
+        var waitTime = timeWait ?timeWait: 20;
 
         this.realtimeSceneProcess();
 

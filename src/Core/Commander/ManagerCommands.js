@@ -74,18 +74,23 @@ define('Core/Commander/ManagerCommands', [
 
         ManagerCommands.prototype.runAllCommands = function() {
             
+            var size = this.queueAsync.length;
+                               
             if (this.queueAsync.length === 0)
             {                
                 return when(0);
             }
-
+           
+            //size = Math.max(1,Math.floor(size/4));
+           
             return when.all(this.arrayDeQueue(8))
                 .then(function() {
                 
                 //if (this.queueAsync.length === 0) // --> probleme car la pile de requete est moins rafraichie et donc le chargement est plus long
                 {
                     //this.scene.updateScene3D();
-                   this.scene.wait();                                      
+                   this.scene.wait(1);                                      
+                   //this.scene.sceneProcess();
                 }
                 
                 return this.runAllCommands();

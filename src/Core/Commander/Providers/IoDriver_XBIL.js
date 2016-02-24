@@ -25,7 +25,7 @@ define('Core/Commander/Providers/IoDriver_XBIL', ['Core/Commander/Providers/IoDr
 
     IoDriver_XBIL.prototype.constructor = IoDriver_XBIL;
 
-    IoDriver_XBIL.prototype.read = function(url) {
+   IoDriver_XBIL.prototype.read = function(url) {
 
         // TODO new Promise is supported?
   
@@ -45,28 +45,15 @@ define('Core/Commander/Providers/IoDriver_XBIL', ['Core/Commander/Providers/IoDr
 
                 if (arrayBuffer) {
 
-                    //                var floatArray = new Float32Array(arrayBuffer);                
-                    //                var max = - 1000000;
-                    //                var min =   1000000;
-
                     var result = new portableXBIL(arrayBuffer);
-
-                    var mcolor = 0.0;
-                    //var mcolor  = Math.random();
-
-
-                    for (var i = 0; i < result.floatArray.byteLength; i++) {
-                        var val = result.floatArray[i];
-                        //  TODO debug a voir avec le geoportail
-                        //if(val === -99999.0 || val === undefined )                        
-                        if (val < -10.0 || val === undefined)
-                            result.floatArray[i] = mcolor;
-                        else {
+                    // Compute min max using subampling
+                    for (var i = 0; i < result.floatArray.byteLength; i+=64) {
+                        var val = result.floatArray[i];                   
+                        if (val > -10.0 && val !== undefined){
                             result.max = Math.max(result.max, val);
                             result.min = Math.min(result.min, val);
                         }
                     }
-
                     if (result.min === 1000000)
                         return resolve(undefined);
 
@@ -76,10 +63,7 @@ define('Core/Commander/Providers/IoDriver_XBIL', ['Core/Commander/Providers/IoDr
 
             xhr.onerror = function() {
 
-                //console.log('error bil');
                 resolve(undefined);
-                //reject(Error("Error IoDriver_XBIL"));
-
             };
 
             xhr.send(null);
