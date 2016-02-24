@@ -92,10 +92,13 @@ define('Core/Commander/Providers/WMTS_Provider', [
          * @returns {WMTS_Provider_L15.WMTS_Provider.prototype@pro;_IoDriver@call;read@call;then}
          */
         WMTS_Provider.prototype.getTextureBil = function(coWMTS) {
-
-            if (coWMTS === undefined)
+             
+            if (coWMTS === undefined)                
                 return when(-2);
-
+             
+            if (coWMTS.zoom === -1)                                
+                return when(-3);
+            
             var url = this.url(coWMTS);
 
             var textureCache = this.cache.getRessource(url);
@@ -109,9 +112,7 @@ define('Core/Commander/Providers/WMTS_Provider', [
                 return when(texture);
             }
 
-            return this._IoDriver.read(url).then(function(result) {
-                
-                
+            return this._IoDriver.read(url).then(function(result) {                                
                 if (result !== undefined) {
                     result.texture = new THREE.DataTexture(result.floatArray, 256, 256, THREE.AlphaFormat, THREE.FloatType);
                     result.texture.generateMipmaps = false;
@@ -178,9 +179,12 @@ define('Core/Commander/Providers/WMTS_Provider', [
 
            var promises = [];
 
+
            if (tile.cooWMTS.zoom >= 2)
            {
-               this.loaded = false;
+               //tile.loaded = false;               
+               if(tile.material === null) // TODO WHy -> dispose??
+                   return;
                tile.material.nbTextures = 1;
                var box = this.projection.WMTS_WGS84ToWMTS_PM(tile.cooWMTS, tile.bbox); // 
                var id = 0;

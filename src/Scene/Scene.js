@@ -120,8 +120,8 @@ define('Scene/Scene', [
                         
             this.managerCommand.runAllCommands();//.then(function(){this.updateScene3D()}.bind(this));
             
-            //this.renderScene3D();                
-            this.updateScene3D(); 
+            this.renderScene3D();                
+            //this.updateScene3D(); 
                 
         } 
         
