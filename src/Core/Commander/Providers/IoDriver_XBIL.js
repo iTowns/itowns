@@ -24,8 +24,30 @@ define('Core/Commander/Providers/IoDriver_XBIL', ['Core/Commander/Providers/IoDr
     IoDriver_XBIL.prototype = Object.create(IoDriver.prototype);
 
     IoDriver_XBIL.prototype.constructor = IoDriver_XBIL;
+    
+    IoDriver_XBIL.prototype.parse = function(buffer) {
+        
+        if (buffer){
 
-   IoDriver_XBIL.prototype.read = function(url) {
+            var result = new portableXBIL(buffer);
+            // Compute min max using subampling
+            for (var i = 0; i < result.floatArray.byteLength; i+=64) {
+                var val = result.floatArray[i];                   
+                if (val > -10.0 && val !== undefined){
+                    result.max = Math.max(result.max, val);
+                    result.min = Math.min(result.min, val);
+                }
+            }
+            if (result.min === 1000000)
+                return undefined;
+
+            return result;
+        }
+        else
+            return undefined;
+    };
+
+    IoDriver_XBIL.prototype.read = function(url) {
 
         // TODO new Promise is supported?
   
@@ -37,28 +59,13 @@ define('Core/Commander/Providers/IoDriver_XBIL', ['Core/Commander/Providers/IoDr
             xhr.open("GET", url, true);
 
             xhr.responseType = "arraybuffer";
-            xhr.crossOrigin = '';
+            xhr.crossOrigin = '';          
+            xhr["parse"] = this.parse;
 
             xhr.onload = function() {
-
-                var arrayBuffer = this.response;
-
-                if (arrayBuffer) {
-
-                    var result = new portableXBIL(arrayBuffer);
-                    // Compute min max using subampling
-                    for (var i = 0; i < result.floatArray.byteLength; i+=64) {
-                        var val = result.floatArray[i];                   
-                        if (val > -10.0 && val !== undefined){
-                            result.max = Math.max(result.max, val);
-                            result.min = Math.min(result.min, val);
-                        }
-                    }
-                    if (result.min === 1000000)
-                        return resolve(undefined);
-
-                    resolve(result);
-                }
+                 
+                resolve(this.parse(this.response));
+              
             };
 
             xhr.onerror = function() {
@@ -68,7 +75,7 @@ define('Core/Commander/Providers/IoDriver_XBIL', ['Core/Commander/Providers/IoDr
 
             xhr.send(null);
 
-        });
+        }.bind(this));
 
 
     };
