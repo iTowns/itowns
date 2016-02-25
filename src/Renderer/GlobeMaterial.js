@@ -7,12 +7,14 @@
 
 define('Renderer/GlobeMaterial', ['THREE',
     'Renderer/BasicMaterial',
+    'Renderer/c3DEngine',
     'Core/System/JavaTools',
     'Renderer/Shader/GlobeVS.glsl',
     'Renderer/Shader/GlobeFS.glsl'
 ], function(
     THREE,
     BasicMaterial,
+    gfxEngine,
     JavaTools,
     GlobeVS,
     GlobeFS) {
@@ -53,8 +55,8 @@ define('Renderer/GlobeMaterial', ['THREE',
             value: 0
         };
         this.uniforms.lightingOn = {
-                type: "i",
-                value: 1
+             type: "i",
+             value: gfxEngine().lightingOn
         },
         this.uniforms.lightPosition = {
             type: "v3",
@@ -143,6 +145,10 @@ define('Renderer/GlobeMaterial', ['THREE',
         this.uniforms.pickingRender.value = enable === true ? 1 : 0;
 
     };
+    
+    GlobeMaterial.prototype.setLightingOn = function (enable){
+        this.uniforms.lightingOn.value = enable === true ? 1 : 0;
+    }
 
     return GlobeMaterial;
 });

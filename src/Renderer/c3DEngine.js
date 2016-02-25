@@ -52,6 +52,7 @@ define('Renderer/c3DEngine', [
         this.dfar = 0.0;
         this.stateRender = RENDER.FINAL;
         this.positionBuffer = null;
+        this.lightingOn = false; 
 
         this.initCamera();
 
@@ -544,6 +545,10 @@ define('Renderer/c3DEngine', [
         var centerEye = new THREE.Vector4().applyMatrix4(matrixInv);
         var mvc = matrixInv.setPosition(centerEye);
         return new THREE.Matrix4().multiplyMatrices(camera3D.projectionMatrix, mvc);
+    };
+    
+    c3DEngine.prototype.setLightingOn = function(value){
+        this.lightingOn = value;
     };
 
     return function(scene) {

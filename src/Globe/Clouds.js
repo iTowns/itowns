@@ -35,7 +35,7 @@ define('Globe/Clouds', ['Renderer/NodeMesh',
             },
             lightingOn: {
                 type: "i",
-                value: 1
+                value: 0
             },
             lightPosition: {
                 type: "v3",
@@ -96,6 +96,10 @@ define('Globe/Clouds', ['Renderer/NodeMesh',
         this.material.uniforms.time.value += 0.01;
         requestAnimationFrame(this.animate.bind(this));
     };
+    
+    Clouds.prototype.setLightingOn = function(enable){
+         this.material.uniforms.lightingOn.value = enable === true ? 1 : 0;
+    }
 
     return Clouds;
 

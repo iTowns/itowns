@@ -219,21 +219,7 @@ define('Globe/Atmosphere', ['Renderer/NodeMesh', 'THREE', 'Renderer/c3DEngine','
         this.atmosphereOUT.visible = !this.realistic;
         this.atmosphereIN.visible  = !this.realistic;
         this.ground.mesh.visible   = this.realistic;
-        this.sky.mesh.visible      = this.realistic;
-        /*
-        if(this.realistic){
-            this.atmosphereOUT.visible = false;
-            this.atmosphereIN.visible  = false;
-            this.add(this.ground.mesh);
-            this.add(this.sky.mesh);
-        }else{
-            this.atmosphereOUT.visible = true;
-            this.atmosphereIN.visible  = true;
-            this.remove(this.ground.mesh);
-            this.remove(this.sky.mesh);
-        }
-*/
-        
+        this.sky.mesh.visible      = this.realistic; 
     };
     
 

@@ -74,7 +74,9 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
     
     ApiGlobe.setRealisticLightingOn = function(value) {
 
+        this.scene.gfxEngine.setLightingOn(value);
         this.scene.layers[0].setRealisticLightingOn(value);
+        this.scene.browserScene.updateMaterialUniform("lightingOn",value);
     };
 
     return ApiGlobe;
