@@ -30,7 +30,9 @@ define('Globe/EllipsoidTileMesh', [
         //Constructor
         NodeMesh.call(this);
 
-
+        this.matrixAutoUpdate = false;
+        this.rotationAutoUpdate = false;
+        
         this.level = cooWMTS.zoom;
         this.cooWMTS = cooWMTS;
         this.bbox = defaultValue(bbox, new BoundingBox());

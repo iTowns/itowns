@@ -249,11 +249,11 @@ define('Renderer/c3DEngine', [
         }
     };
 
-    c3DEngine.prototype.rtcOn = function(obj3D) {
+    c3DEngine.prototype.rtcOn = function(obj3D) {        
         obj3D.enableRTC(true);
     };
 
-    c3DEngine.prototype.rtcOff = function(obj3D) {
+    c3DEngine.prototype.rtcOff = function(obj3D) {        
         obj3D.enableRTC(false);
     };
 

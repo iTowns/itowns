@@ -74,7 +74,7 @@ define('Core/Commander/ManagerCommands', [
                 return when(0);
             }
             
-            return when.all(this.arrayDeQueue(16))
+            return when.all(this.arrayDeQueue(8))
                 .then(function() {
                                 
                 this.scene.wait(1); 
