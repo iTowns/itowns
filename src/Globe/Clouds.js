@@ -33,6 +33,10 @@ define('Globe/Clouds', ['Renderer/NodeMesh',
                 type: "f",
                 value: 0.
             },
+            lightingOn: {
+                type: "i",
+                value: 1
+            },
             lightPosition: {
                 type: "v3",
                 value: new THREE.Vector3(-0.5, 0.0, 1.0)
