@@ -111,9 +111,14 @@ define('Scene/BrowseTree', ['Globe/EllipsoidTileMesh', 'THREE'], function( Ellip
         this.fogDistance = this.mfogDistance * Math.pow((camera.getDistanceFromOrigin() - 6300000) / 25000000, 1.6);
 
         this.nodeProcess.preHorizonCulling(camera);
+        
+        var subdivise = optional === 1;
+        var clean = optional === 2;
+
+      
 
         for (var i = 0; i < tree.children.length; i++)
-            this._browse(tree.children[i], camera, optional);
+            this._browse(tree.children[i], camera, subdivise,clean);
     };
 
     /**
@@ -123,13 +128,13 @@ define('Scene/BrowseTree', ['Globe/EllipsoidTileMesh', 'THREE'], function( Ellip
      * @param {type} optional   : optional process
      * @returns {undefined}
      */
-    BrowseTree.prototype._browse = function(node, camera, optional) {
+    BrowseTree.prototype._browse = function(node, camera, optional,clean) {
         
         if (this.processNode(node, camera, optional))
             for (var i = 0; i < node.children.length; i++)
                 this._browse(node.children[i], camera, optional);
-        else
-            this._clean(node, node.level + 2, camera);
+        else if(clean)              
+            this._clean(node, node.level + 3, camera);
         
     };
 

@@ -6,30 +6,20 @@
 
 /**
  * 
- * @param {type} tileGlobeProvider
  * @param {type} EventsManager
  * @param {type} PriorityQueue
  * @param {type} when
- * @param {type} EllipsoidTileMesh
- * @param {type} CoordCarto
- * @param {type} THREE
  * @returns {Function}
  */
 define('Core/Commander/ManagerCommands', [
         'Core/Commander/Interfaces/EventsManager',
         'PriorityQueue',
-        'when',
-        'Globe/EllipsoidTileMesh',
-        'Core/Geographic/CoordCarto',
-        'THREE'
+        'when'
     ],
     function(
         EventsManager,
         PriorityQueue,
-        when,
-        EllipsoidTileMesh,
-        CoordCarto,
-        THREE
+        when
     ) {
 
         var instanceCommandManager = null;
@@ -71,27 +61,24 @@ define('Core/Commander/ManagerCommands', [
         ManagerCommands.prototype.getProvider = function(layer) {
             return this.providerMap[layer.layerId];
         };
+        
+        ManagerCommands.prototype.commandsLength = function() {
+            return this.queueAsync.length;
+        };
 
         ManagerCommands.prototype.runAllCommands = function() {
             
-            var size = this.queueAsync.length;
                                
-            if (this.queueAsync.length === 0)
-            {                
+            if (this.commandsLength() === 0)
+            {                                
                 return when(0);
             }
-           
-            //size = Math.max(1,Math.floor(size/4));
-           
-            return when.all(this.arrayDeQueue(8))
+            
+            return when.all(this.arrayDeQueue(16))
                 .then(function() {
-                
-                //if (this.queueAsync.length === 0) // --> probleme car la pile de requete est moins rafraichie et donc le chargement est plus long
-                {
-                    //this.scene.updateScene3D();
-                   this.scene.wait(1);                                      
-                   //this.scene.sceneProcess();
-                }
+                                
+                this.scene.wait(1); 
+                //this.scene.renderScene3D();                     
                 
                 return this.runAllCommands();
                 
