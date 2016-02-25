@@ -100,7 +100,7 @@ define('Globe/Atmosphere', ['Renderer/NodeMesh', 'THREE', 'Renderer/c3DEngine','
         var uniforms = {
           v3LightPosition: {
             type: "v3",
-            value: new THREE.Vector3(1, 0, 1).normalize() 
+            value: new THREE.Vector3(-0.5, 0, 1).normalize() 
           },
           v3InvWavelength: {
             type: "v3",
@@ -203,7 +203,11 @@ define('Globe/Atmosphere', ['Renderer/NodeMesh', 'THREE', 'Renderer/c3DEngine','
             uniforms: uniforms,
             vertexShader: groundVS,
             fragmentShader: groundFS ,
-           // blending: THREE.AdditiveBlending,
+    /*        blending : THREE[ blending ],
+            blendSrc : THREE[ blendSrc ],
+	    blendDst : THREE[ blendDst ],
+            blendEquation : THREE.AddEquation*/
+            blending: THREE.AdditiveBlending,
             transparent: true,
             depthTest: false,
             depthWrite: false 

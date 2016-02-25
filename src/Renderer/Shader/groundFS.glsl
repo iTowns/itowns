@@ -18,6 +18,6 @@ void main (void)
 	//vec3 day = diffuseTex * c0;
 	//vec3 night = fNightScale * diffuseNightTex * diffuseNightTex * diffuseNightTex * (1.0 - c0);
 
-	gl_FragColor = vec4(c1, 1.0 - c0/2.) ;//+ vec4(day + night, 1.0); //vec4(1.,0.,0.,0.5);//
+	gl_FragColor = vec4(c1, 1.0 - c0/4.) ;//+ vec4(day + night, 1.0); //vec4(1.,0.,0.,0.5);//
 
 }
