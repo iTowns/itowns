@@ -145,6 +145,8 @@ define('Globe/Globe', [
     Globe.prototype.setRealisticLightingOn = function(bool) {
 
         this.atmosphere.setRealisticOn(bool);
+        this.clouds.setLightingOn(bool);
+        
     };
 
     /*Globe.prototype.ellipsoid = function() {
