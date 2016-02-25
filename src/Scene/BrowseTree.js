@@ -89,7 +89,7 @@ define('Scene/BrowseTree', ['Globe/EllipsoidTileMesh', 'THREE'], function( Ellip
             node.setSelected(node.visible && node.material.visible);
             if (this.selectNode !== node) {
                 this.selectNode = node;
-                console.log(node);
+                //console.log(node);
             }
         }
 

@@ -163,12 +163,16 @@ define('Globe/EllipsoidTileMesh', [
             var parentBil = this.getParentLevel(this.levelTerrain);
             pitScale = parentBil.bbox.pitScale(this.bbox);
             texture = parentBil.material.Textures_00[0];
+            //
+            
+            
+            
+            
             this.setAltitude(parentBil.bbox.minCarto.altitude, parentBil.bbox.maxCarto.altitude);
         } 
         else if (terrain === -3) {
             
-            var parentBil = this.getLevelElevationParent();
-            //console.log(parentBil);
+            var parentBil = this.getLevelElevationParent();            
             pitScale = parentBil.bbox.pitScale(this.bbox);
             texture = parentBil.material.Textures_00[0];            
             this.setAltitude(parentBil.bbox.minCarto.altitude, parentBil.bbox.maxCarto.altitude);

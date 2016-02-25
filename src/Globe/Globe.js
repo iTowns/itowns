@@ -33,7 +33,7 @@ define('Globe/Globe', [
 
         this.size = new THREE.Vector3(6378137, 6356752.3142451793, 6378137).multiplyScalar(scale);
         this.ellipsoid = new Ellipsoid(this.size);
-        var exen = 6356752.3142451793/6378137;
+        
         this.batiments = new Layer();
         this.layerWGS84Zup = new Layer();
 
@@ -61,7 +61,7 @@ define('Globe/Globe', [
         // 48.846931,2.337219,50
         position = new THREE.Vector3(4201801.65418896,171495.727885073,4779411.45896233);
         
-        var position = this.ellipsoid.cartographicToCartesian(new CoordCarto().setFromDegreeGeo(48.87, 0, 200));
+        //position = this.ellipsoid.cartographicToCartesian(new CoordCarto().setFromDegreeGeo(48.87, 0, 200));
         
         batiment.frustumCulled = false;
         //material.wireframe      = true;

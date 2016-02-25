@@ -1,4 +1,4 @@
-/* global Uint16Array, Uint32Array */
+/* global  Uint32Array */
 
 /**
  * Generated On: 2015-10-5
@@ -198,16 +198,16 @@ define('Globe/EllipsoidTileGeometry', [
             }
         }
 
-        var start = idVertex;
+        start = idVertex;
         var rmax = 5000;
         var r = Math.max(rmax, Math.pow(rmax, 1 / zoom));
 
         r = isFinite(r) ? r : rmax;
 
-        for (i = 0; i < skirt.length; i++) {
+        for (var i = 0; i < skirt.length; i++) {
 
             var id = skirt[i];
-            var id_m3 = idVertex * 3;
+            id_m3 = idVertex * 3;
             var id2_m3 = id * 3;
 
             bufferVertex[id_m3 + 0] = bufferVertex[id2_m3 + 0] - bufferNormal[id2_m3 + 0] * r;
@@ -224,10 +224,10 @@ define('Globe/EllipsoidTileGeometry', [
 
             var idf = (i + 1) % skirt.length;
 
-            var v1 = id;
-            var v2 = idVertex;
-            var v3 = idVertex + 1;
-            var v4 = skirt[idf];
+            v1 = id;
+            v2 = idVertex;
+            v3 = idVertex + 1;
+            v4 = skirt[idf];
 
             if (idf === 0)
                 v3 = start;

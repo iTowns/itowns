@@ -2,7 +2,7 @@
  * @author mrdoob / http://mrdoob.com/
  */
 
-/* global THREE */
+
 
 //var JSZip = require("C:/Users/vcoindet/Documents/NetBeansProjects/itownsV1/src/Renderer/ThreeExtented/jszip.min");
 define('Renderer/ThreeExtented/KMZLoader', ['Renderer/ThreeExtented/jszip.min',

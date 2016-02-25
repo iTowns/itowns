@@ -101,7 +101,7 @@ define('Core/Commander/Providers/KML_Provider', [
                 var NetworkLink = [];
                 NetworkLink = result.getElementsByTagName("NetworkLink");
 
-                for (i = 0; i < NetworkLink.length; i++) {
+                for (var i = 0; i < NetworkLink.length; i++) {
 
                     var coords = [];
                     coords[0] = NetworkLink[i].getElementsByTagName("north")[0].childNodes[0].nodeValue;

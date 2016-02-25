@@ -21,7 +21,7 @@ const float poleNord    =  84.0 / 180.0 * PI;
 
 uniform sampler2D   dTextures_00[1];
 uniform sampler2D   dTextures_01[TEX_UNITS];
-uniform vec3        pitScale2[TEX_UNITS];
+uniform vec3        pitScale_L01[TEX_UNITS];
 uniform int         RTC;
 uniform int         selected;
 uniform int         uuid;
@@ -55,14 +55,14 @@ const float borderS = 0.007;
 
 vec4 colorAtIdUv(int id, vec2 uv){
     
-    if (id == 0) return texture2D(dTextures_01[0],  pitUV(uv,pitScale2[0]));
-    else if (id == 1) return texture2D(dTextures_01[1],  pitUV(uv,pitScale2[1]));
-    else if (id == 2) return texture2D(dTextures_01[2],  pitUV(uv,pitScale2[2]));          
-    else if (id == 3) return texture2D(dTextures_01[3],  pitUV(uv,pitScale2[3]));           
-    else if (id == 4) return texture2D(dTextures_01[4],  pitUV(uv,pitScale2[4]));           
-    else if (id == 5) return texture2D(dTextures_01[5],  pitUV(uv,pitScale2[5]));
-    else if (id == 5) return texture2D(dTextures_01[6],  pitUV(uv,pitScale2[6]));
-    else if (id == 5) return texture2D(dTextures_01[7],  pitUV(uv,pitScale2[7]));
+    if (id == 0) return texture2D(dTextures_01[0],  pitUV(uv,pitScale_L01[0]));
+    else if (id == 1) return texture2D(dTextures_01[1],  pitUV(uv,pitScale_L01[1]));
+    else if (id == 2) return texture2D(dTextures_01[2],  pitUV(uv,pitScale_L01[2]));          
+    else if (id == 3) return texture2D(dTextures_01[3],  pitUV(uv,pitScale_L01[3]));           
+    else if (id == 4) return texture2D(dTextures_01[4],  pitUV(uv,pitScale_L01[4]));           
+    else if (id == 5) return texture2D(dTextures_01[5],  pitUV(uv,pitScale_L01[5]));
+    else if (id == 5) return texture2D(dTextures_01[6],  pitUV(uv,pitScale_L01[6]));
+    else if (id == 5) return texture2D(dTextures_01[7],  pitUV(uv,pitScale_L01[7]));
     else return vec4(0.0,0.0,0.0,0.0);        
     
 }

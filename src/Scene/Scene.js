@@ -209,7 +209,7 @@ define('Scene/Scene', [
      *
      * @param layer {[object Object]} 
      */
-    Scene.prototype.remove = function(layer) {
+    Scene.prototype.remove = function(/*layer*/) {
         //TODO: Implement Me 
 
     };
@@ -218,7 +218,7 @@ define('Scene/Scene', [
     /**
      * @param layers {[object Object]} 
      */
-    Scene.prototype.select = function(layers) {
+    Scene.prototype.select = function(/*layers*/) {
         //TODO: Implement Me 
 
     };
