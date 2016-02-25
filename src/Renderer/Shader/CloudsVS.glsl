@@ -13,16 +13,20 @@
 
 #define EPSILON 1e-6
 
-
+uniform vec3        lightPosition;
 varying vec2  vUv;
+varying vec3 vNormal;
+varying vec3 pos;
 vec3 normalES;
 vec3 normalCAMES;
+
 
 void main() 
 {
     
     vUv = uv;
-
+    vNormal = normal;
+    pos = position;
     gl_Position = projectionMatrix * modelViewMatrix * vec4( position,  1.0 );
 
     
