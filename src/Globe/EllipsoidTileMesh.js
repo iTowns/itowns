@@ -26,7 +26,7 @@ define('Globe/EllipsoidTileMesh', [
     'SphereHelper'
 ], function(NodeMesh, EllipsoidTileGeometry, BoundingBox, defaultValue, THREE, GlobeMaterial, CoordCarto, OBBHelper, SphereHelper) {
 
-    function EllipsoidTileMesh(bbox, cooWMTS, ellipsoid, id, geometryCache) {
+    function EllipsoidTileMesh(bbox, cooWMTS, ellipsoid, id, geometryCache,link) {
         //Constructor
         NodeMesh.call(this);
 
@@ -37,6 +37,7 @@ define('Globe/EllipsoidTileMesh', [
         this.cooWMTS = cooWMTS;
         this.bbox = defaultValue(bbox, new BoundingBox());
         this.id = id;
+        this.link = link;
 
         var precision = 16;
         var levelMax = 18;
@@ -69,11 +70,13 @@ define('Globe/EllipsoidTileMesh', [
 
 
         //  TODO : Attention ne marche plus car les helpers ne sont plus ajouter à la scene
-        /*
+        
         var showHelper = true;
         showHelper = false;
 
         if (showHelper && this.level >= 2) {
+            
+            // TODO Dispose HELPER!!!
 
             //this.helper  = new THREE.SphereHelper(this.geometry.boundingSphere.radius);
 
@@ -89,9 +92,12 @@ define('Globe/EllipsoidTileMesh', [
             else if (this.helper instanceof THREE.OBBHelper)
 
                 this.helper.translateZ(this.absoluteCenter.length());
+                        
+            if(this.helper)
+                this.link.add(this.helper);
 
         }
-        */
+        
     }
 
     EllipsoidTileMesh.prototype = Object.create(NodeMesh.prototype);
