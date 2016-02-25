@@ -28,7 +28,7 @@ define('Renderer/GlobeMaterial', ['THREE',
         this.vertexShader = GlobeVS;
         this.fragmentShader = GlobeFS;
         
-        this.pitScale2 = [];
+        this.pitScale_L01 = [];
 
         this.uniforms.dTextures_00 = {
             type: "tv",
@@ -46,13 +46,13 @@ define('Renderer/GlobeMaterial', ['THREE',
             type: "i",
             value: 0
         };
-        this.uniforms.pitScale = {
+        this.uniforms.pitScale_L00 = {
             type: "v3",
             value: new THREE.Vector3(0.0, 0.0, 0.0)
         };
-        this.uniforms.pitScale2 = {
+        this.uniforms.pitScale_L01 = {
             type: "v3v",
-            value: this.pitScale2
+            value: this.pitScale_L01
         };
         this.uniforms.pickingRender = {
             type: "i",
@@ -80,7 +80,7 @@ define('Renderer/GlobeMaterial', ['THREE',
                 this.Textures_00[i].dispose();
         }
 
-        for (var i = 0, max = this.Textures_01.length; i < max; i++) {
+        for (i = 0, max = this.Textures_01.length; i < max; i++) {
             if (this.Textures_01[i] instanceof THREE.Texture)
                 this.Textures_01[i].dispose();
         }
@@ -101,10 +101,10 @@ define('Renderer/GlobeMaterial', ['THREE',
             this.nbTextures++;
 
             if (pitScale)
-                this.uniforms.pitScale.value = pitScale;
+                this.uniforms.pitScale_L00.value = pitScale;
         } else {
             this.Textures_01[id] = texture; // BEWARE: array [] -> size: 0; array [10]="wao" -> size: 11                
-            this.pitScale2[id] = pitScale ? pitScale : new THREE.Vector3(0.0,0.0,1.0);                                             
+            this.pitScale_L01[id] = pitScale ? pitScale : new THREE.Vector3(0.0,0.0,1.0);                                             
             this.nbTextures++;
         }
     };
@@ -145,13 +145,13 @@ define('Renderer/GlobeMaterial', ['THREE',
     
     GlobeMaterial.prototype.isSubscaleDiffuse = function() {
       
-        return (this.pitScale2[0].z < 1.0);
+        return (this.pitScale_L01[0].z < 1.0);
         
     };
     
     GlobeMaterial.prototype.isSubscaleElevation = function() {
       
-        return (this.uniforms.pitScale.value.z < 1.0);
+        return (this.uniforms.pitScale_L00.value.z < 1.0);
         
     };
     
