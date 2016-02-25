@@ -114,8 +114,9 @@ define('Scene/BrowseTree', ['Globe/EllipsoidTileMesh', 'THREE'], function( Ellip
         
         var subdivise = optional === 1;
         var clean = optional === 2;
-
-      
+        
+//        if(clean)
+//            console.log('clean');
 
         for (var i = 0; i < tree.children.length; i++)
             this._browse(tree.children[i], camera, subdivise,clean);

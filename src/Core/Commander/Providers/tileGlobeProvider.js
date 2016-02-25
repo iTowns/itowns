@@ -115,14 +115,16 @@ define('Core/Commander/Providers/tileGlobeProvider', [
             if (parent.worldToLocal)
                 translate = parent.worldToLocal(tile.absoluteCenter.clone());
 
-            tile.position.copy(translate);
-            tile.updateMatrixWorld();
+            tile.position.copy(translate);            
+            //tile.updateMatrixWorld();
 
             tile.setVisibility(false);
 
             tile.link = parent.link;
 
             parent.add(tile);
+            
+            tile.updateMatrix();
             
 //            if(cooWMTS.zoom > 3 )
 //                cooWMTS =  new CoordWMTS(-1, 0, 0);
