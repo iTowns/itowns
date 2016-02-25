@@ -30,6 +30,8 @@ uniform int         nbTextures_01;
 uniform float       distanceFog;
 uniform int         debug;
 uniform vec3        lightPosition;
+uniform int lightingOn;
+
 varying vec2        vUv_0;
 varying float       vUv_1;
 varying vec3        vNormal;
@@ -122,9 +124,10 @@ void main() {
                 gl_FragColor = diffuseColor;
         }
 
-        // Add lighting
-        float light = dot(vNormal, lightPosition); //normalize(pos.xyz)
-        gl_FragColor.rgb *= light;
+        if(lightingOn == 1){   // Add lighting
+            float light = dot(vNormal, lightPosition); //normalize(pos.xyz)
+            gl_FragColor.rgb *= light;
+        }
     }
 
     if(debug > 0)

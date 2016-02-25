@@ -52,6 +52,10 @@ define('Renderer/GlobeMaterial', ['THREE',
             type: "i",
             value: 0
         };
+        this.uniforms.lightingOn = {
+                type: "i",
+                value: 1
+        },
         this.uniforms.lightPosition = {
             type: "v3",
             value: new THREE.Vector3(-0.5, 0.0, 1.0)

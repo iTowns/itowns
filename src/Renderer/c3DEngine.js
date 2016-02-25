@@ -207,7 +207,7 @@ define('Renderer/c3DEngine', [
      */
     c3DEngine.prototype.updateControl = function() {
         var len = this.camera.position().length();
-        var lim = this.size * 1.3;
+        var lim = this.size * 1.1;
 
         if (len < lim) {
             var t = Math.pow(Math.cos((lim - len) / (lim - this.size * 0.9981) * Math.PI * 0.5), 1.5);
