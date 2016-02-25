@@ -7,6 +7,9 @@
 
 var THREE = require('three');
 
+// TODO regler le probleme glsl
+var fontJS = require('./fonts/optimer_regular.glsl');
+
 THREE.OBBHelper = function(OBB, text) {
     var indices = new Uint16Array([0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 6, 6, 7, 7, 4, 0, 4, 1, 5, 2, 6, 3, 7]);
     var positions = new Float32Array(8 * 3);
@@ -34,7 +37,20 @@ THREE.OBBHelper = function(OBB, text) {
     var sizeX = max.x - min.x;
     var sizeY = max.y - min.y;
     var sizeZ = max.z - min.z;
+ 
+    // TODO mettre la creation de la font plus haut    
+    var font = new THREE.Font( JSON.parse( fontJS.substring( 65, fontJS.length - 2 )));
+    
+    var geometry = new THREE.TextGeometry( text, {
 
+					font: font,
+					size: sizeX * 0.0666,
+					height:sizeZ * 0.001,
+					curveSegments: 1
+
+				});
+
+/*
     var parameters = {
         font: "optimer",
         size: sizeX * 0.0666,
@@ -52,8 +68,8 @@ THREE.OBBHelper = function(OBB, text) {
     };
 
     var geoShape = new THREE.ExtrudeGeometry(textShapes, extrudeSettings);
-
-    this.textMesh = new THREE.Mesh(geoShape, new THREE.MeshBasicMaterial({
+*/
+    this.textMesh = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({
         color: new THREE.Color(1, 0, 0),
         side: THREE.DoubleSide
     }));

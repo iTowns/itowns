@@ -25,6 +25,9 @@ define('Scene/Quadtree', [
         this.schemeTile = schemeTile;
         this.tileType = type;
         var rootNode = new NodeMesh();
+        
+        rootNode.link = this.link;
+        
         rootNode.enablePickingRender = function() { return true;};
         this.add(rootNode);
 

@@ -78,9 +78,8 @@ define('Core/Commander/Providers/tileGlobeProvider', [
             return geometry;
         };
         
-        tileGlobeProvider.prototype.getKML= function(tile)
-        {
-            
+        tileGlobeProvider.prototype.getKML= function(/*tile*/)
+        {            
 //            if(tile.level  === 16  )
 //            {
 //                var longitude   = tile.bbox.center.x / Math.PI * 180 - 180;
@@ -103,7 +102,7 @@ define('Core/Commander/Providers/tileGlobeProvider', [
             var cooWMTS = this.projection.WGS84toWMTS(bbox);
             var parent = command.requester;
             var geometry = undefined; //getGeometry(bbox,cooWMTS);       
-            var tile = new command.type(bbox, cooWMTS, this.ellipsoid, this.nNode++, geometry);
+            var tile = new command.type(bbox, cooWMTS, this.ellipsoid, this.nNode++, geometry,parent.link);
 
             if (geometry) {
                 tile.rotation.set(0, (cooWMTS.col % 2) * (Math.PI * 2.0 / Math.pow(2, cooWMTS.zoom + 1)), 0);
@@ -116,15 +115,13 @@ define('Core/Commander/Providers/tileGlobeProvider', [
                 translate = parent.worldToLocal(tile.absoluteCenter.clone());
 
             tile.position.copy(translate);            
-            //tile.updateMatrixWorld();
 
             tile.setVisibility(false);
-
-            tile.link = parent.link;
 
             parent.add(tile);
             
             tile.updateMatrix();
+            tile.updateMatrixWorld(); // TODO peut pas necessaire
             
 //            if(cooWMTS.zoom > 3 )
 //                cooWMTS =  new CoordWMTS(-1, 0, 0);
