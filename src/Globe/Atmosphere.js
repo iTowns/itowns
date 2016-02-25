@@ -65,9 +65,6 @@ define('Globe/Atmosphere', ['Renderer/NodeMesh', 'THREE', 'Renderer/c3DEngine','
 
       //  this.add(atmosphereIN);
         
-        
-
-
 /*
         var atmosphere = {
           Kr: 0.0025,
@@ -87,27 +84,23 @@ define('Globe/Atmosphere', ['Renderer/NodeMesh', 'THREE', 'Renderer/c3DEngine','
           Km: 0.0010,
           ESun: 20.0,
           g: -0.950,
-          innerRadius: 6500000,
-          outerRadius: 6800000,
+          innerRadius: 6400000,
+          outerRadius: 6700000,
           wavelength: [0.650, 0.570, 0.475],
-          scaleDepth: 0.15,
+          scaleDepth: 0.25,
           mieScaleDepth: 0.1
         };
         
-        var diffuse = null;//THREE.ImageUtils.loadTexture('io3.jpg');
-
-        var diffuseNight = null;//THREE.ImageUtils.loadTexture('io3.jpg');
-
-        var maxAnisotropy = 4;//gfxEngine.renderer.getMaxAnisotropy();
-
-      //  diffuse.anisotropy = maxAnisotropy;
-
-     //   diffuseNight.anisotropy = maxAnisotropy;
+        var diffuse = null; //THREE.ImageUtils.loadTexture('io3.jpg');
+        var diffuseNight = null; //THREE.ImageUtils.loadTexture('io3.jpg');
+        var maxAnisotropy = 4; //gfxEngine.renderer.getMaxAnisotropy();
+       //  diffuse.anisotropy = maxAnisotropy;
+       //   diffuseNight.anisotropy = maxAnisotropy;
 
         var uniforms = {
           v3LightPosition: {
             type: "v3",
-            value: new THREE.Vector3(80000000, 0, 80000000).normalize()
+            value: new THREE.Vector3(1, 0, 1).normalize() 
           },
           v3InvWavelength: {
             type: "v3",
@@ -210,7 +203,7 @@ define('Globe/Atmosphere', ['Renderer/NodeMesh', 'THREE', 'Renderer/c3DEngine','
             uniforms: uniforms,
             vertexShader: groundVS,
             fragmentShader: groundFS ,
-          //  blending: THREE.AdditiveBlending,
+           // blending: THREE.AdditiveBlending,
             transparent: true,
             depthTest: false,
             depthWrite: false 
@@ -235,11 +228,8 @@ define('Globe/Atmosphere', ['Renderer/NodeMesh', 'THREE', 'Renderer/c3DEngine','
         this.add(sky.mesh);
 
         var c = null;
-
         var f = 0;
-
         var g = 0;
-
     }
 
     Atmosphere.prototype = Object.create(NodeMesh.prototype);

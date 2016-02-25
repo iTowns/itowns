@@ -24,8 +24,7 @@ void main (void)
 	float fCos = dot(v3LightPos, v3Direction) / length(v3Direction);
 	float fCos2 = fCos * fCos;
 
-	vec3 color =	getRayleighPhase(fCos2) * c0 +
-					getMiePhase(fCos, fCos2, g, g2) * c1;
+	vec3 color =getRayleighPhase(fCos2) * c0 + getMiePhase(fCos, fCos2, g, g2) * c1;
 
  	gl_FragColor = vec4(color, 1.0);
 	gl_FragColor.a = gl_FragColor.b;
