@@ -52,6 +52,7 @@ define('Renderer/c3DEngine', [
         this.dfar = 0.0;
         this.stateRender = RENDER.FINAL;
         this.positionBuffer = null;
+        this.lightingOn = false; 
 
         this.initCamera();
 
@@ -207,7 +208,7 @@ define('Renderer/c3DEngine', [
      */
     c3DEngine.prototype.updateControl = function() {
         var len = this.camera.position().length();
-        var lim = this.size * 1.3;
+        var lim = this.size * 1.1;
 
         if (len < lim) {
             var t = Math.pow(Math.cos((lim - len) / (lim - this.size * 0.9981) * Math.PI * 0.5), 1.5);
@@ -544,6 +545,10 @@ define('Renderer/c3DEngine', [
         var centerEye = new THREE.Vector4().applyMatrix4(matrixInv);
         var mvc = matrixInv.setPosition(centerEye);
         return new THREE.Matrix4().multiplyMatrices(camera3D.projectionMatrix, mvc);
+    };
+    
+    c3DEngine.prototype.setLightingOn = function(value){
+        this.lightingOn = value;
     };
 
     return function(scene) {
