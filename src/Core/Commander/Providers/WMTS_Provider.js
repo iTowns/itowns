@@ -122,6 +122,9 @@ define('Core/Commander/Providers/WMTS_Provider', [
 
             return this._IoDriver.read(url).then(function(result) {                                
                 if (result !== undefined) {
+                    
+                    //if(this.cache.getRessource(url)) // NOTE : not necessary
+                      
                     result.texture = this.getTextureFloat(result.floatArray);
                     result.texture.generateMipmaps = false;
                     result.texture.magFilter = THREE.LinearFilter;
@@ -160,15 +163,23 @@ define('Core/Commander/Providers/WMTS_Provider', [
                 return when(result);
             }
             return this.ioDriverImage.read(url).then(function(image) {
+                
+                
+                var texture = this.cache.getRessource(image.src);
+                
+                if(texture)                
+                    result.texture = texture;                                
+                else
+                {
+                    result.texture = new THREE.Texture(image);
+                    result.texture.generateMipmaps = false;
+                    result.texture.magFilter = THREE.LinearFilter;
+                    result.texture.minFilter = THREE.LinearFilter;
+                    result.texture.anisotropy = 16;
+                    result.texture.url = url; 
 
-                result.texture = new THREE.Texture(image);
-                result.texture.generateMipmaps = false;
-                result.texture.magFilter = THREE.LinearFilter;
-                result.texture.minFilter = THREE.LinearFilter;
-                result.texture.anisotropy = 16;
-                result.texture.url = url; 
-
-                this.cache.addRessource(url, result.texture);
+                    this.cache.addRessource(url, result.texture);
+                }
                 return result;
 
             }.bind(this));
