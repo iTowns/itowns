@@ -25,6 +25,8 @@ uniform vec3        pitScale;
 uniform float       periArcLati;
 uniform mat4        mVPMatRTC;
 uniform int         pickingRender;
+uniform int         animateWater;
+uniform float       waterHeight; // above ellipsoid
 
 varying vec2        vUv_0;
 varying float       vUv_1;
@@ -45,7 +47,14 @@ void main() {
                     vVv = vec2(vUv_0.x*pitScale.z + pitScale.x,vUv_0.y*pitScale.z + pitScale.y);                
                     dv  = texture2D( dTextures_00[0], vVv ).w;
             vNormal     = normal;
-            vPosition   = vec4( position +  vNormal  * dv ,1.0 );            
+            vPosition   = vec4( position +  vNormal  * dv ,1.0 );   
+
+            // TODO separate animateWater and enableSea
+            if (animateWater==1) { // If animateWater, water surface appears
+                if (dv <= waterHeight) {
+                    vPosition   = vec4( position +  vNormal * waterHeight ,1.0 );
+                }
+            }
         }
         else
             vPosition = vec4( position ,1.0 );

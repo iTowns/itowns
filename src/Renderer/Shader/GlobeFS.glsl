@@ -136,14 +136,21 @@ void main() {
 
             float dv2  = texture2D(dTextures_00[0], vVv).w; 
             if(dv2 <= waterHeight || /*(diffuseColor.r >= .9 && diffuseColor.g >= .9 && diffuseColor.b >= .9*/ diffuseColor.a  <= 0.6){  //Alti
-
+                // TEMP : generate great waves based on meteo and streams
                 float speed = 0.55;
                 float noiseScale = 0.9;
                 float orignalCoef = 0.6;
 
-                vec2 uvTime =  uvO + vec2( -0.1, .1 ) * mod(time * speed, 1.);	
+                //vec2 uvTime =  uvO + vec2( -0.1, .1 ) * mod(time * speed, 1.);	
+                vec2 uvTime =  uvO + vec2( -0.1, .1 ) * vec2(mod(time * speed, 10.),mod(time * speed, 10.));
+                uvTime = vec2(1. - mod(uvTime.x,1.),1. - mod(uvTime.y,1.));
+
                 vec4 noiseColor = texture2D( textureNoise, uvTime );
                 vec2 uvNoise = uvO + noiseScale * uvO * vec2(noiseColor.r, noiseColor.b ); 
+                uvNoise = vec2(1. - mod(uvNoise.x,1.),1. - mod(uvNoise.y,1.));
+                
+                // TODO take a good texture
+
                 float coefDistCam = (length(cameraPosition.xyz) - 6300000.) / 200000.;
 
                 vec4 color = texture2D( textureNoise, uvNoise); 
@@ -155,10 +162,10 @@ void main() {
                      orignalCoef = 0.; 
                 gl_FragColor =  gl_FragColor * orignalCoef + (1.- orignalCoef) * (texture2D( textureNoise, uvO ) * l + texture2D( textureNoise, uvO ) * 0.5);
             }
-        //if(diffuseColor.r >= .9 && diffuseColor.g >= .9 && diffuseColor.b >= .9 || diffuseColor.a  <= 0.6) gl_FragColor = vec4(.5,0.,0.,1.);
-    }
+            //if(diffuseColor.r >= .9 && diffuseColor.g >= .9 && diffuseColor.b >= .9 || diffuseColor.a  <= 0.6) gl_FragColor = vec4(.5,0.,0.,1.);
+        }
 
-    if(debug > 0)
-       gl_FragColor = vec4( 1.0, 1.0, 0.0, 1.0);
+        if(debug > 0)
+            gl_FragColor = vec4( 1.0, 1.0, 0.0, 1.0);
    }
 }

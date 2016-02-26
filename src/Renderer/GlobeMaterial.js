@@ -26,7 +26,8 @@ define('Renderer/GlobeMaterial', ['THREE',
         this.Textures_00 = [];
         this.Textures_00.push(new THREE.Texture());
         this.Textures_01 = [];
-        this.textureNoise = new THREE.TextureLoader().load("/data/textures/reflection.jpg"); 
+        //this.textureNoise = new THREE.TextureLoader().load("data/textures/reflection.jpg"); 
+        this.textureNoise = new THREE.TextureLoader().load("data/textures/water/water512.jpg"); 
 
         this.vertexShader = GlobeVS;
         this.fragmentShader = GlobeFS;
