@@ -37,6 +37,7 @@ define('Scene/Scene', [
         this.layers = [];
         this.cameras = null;
         this.selectNodes = null;
+        this.time = 0;
         this.managerCommand = ManagerCommands();
         this.gfxEngine = c3DEngine();
         this.browserScene = new BrowseTree(this.gfxEngine);
@@ -225,7 +226,7 @@ define('Scene/Scene', [
         if(pos)
             this.lightingPos = pos;
         else{
-             var coSun = CoordStars.getSunPositionInScene(this.layers[0].ellipsoid, new Date().getTime() + 3600000 * 2, 0, 0); //48.85, 2.35);
+             var coSun = CoordStars.getSunPositionInScene(this.layers[0].ellipsoid, new Date().getTime(), 0, 0); //48.85, 2.35);
              this.lightingPos = coSun;
              console.log(coSun);
         }
@@ -234,6 +235,23 @@ define('Scene/Scene', [
         
         this.browserScene.updateMaterialUniform("lightPosition", this.lightingPos.clone().normalize());
         this.layers[0].updateLightingPos(this.lightingPos);
+     };
+     
+     Scene.prototype.animateTime = function(){
+         
+         this.time += .004;
+
+            var nHours= this.time;
+            var coSun= CoordStars.getSunPositionInScene(this.layers[0].ellipsoid, new Date().getTime() + 3600000 * nHours, 0, 0);
+            this.lightingPos = coSun;
+            //console.log(coSun);
+            this.browserScene.updateMaterialUniform("lightPosition", this.lightingPos.clone().normalize());
+            this.layers[0].updateLightingPos(this.lightingPos);
+            this.gfxEngine.renderScene();
+
+
+         requestAnimationFrame(this.animateTime.bind(this));
+
      };
 
     return function() {

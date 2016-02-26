@@ -15,6 +15,7 @@ define('Globe/Atmosphere', ['Renderer/NodeMesh', 'THREE', 'Renderer/c3DEngine','
         NodeMesh.call(this);
 
         this.realistic = false;
+        this.sphereSun = null;
         
         this.uniformsOut = {
             atmoIN: {
@@ -207,6 +208,10 @@ define('Globe/Atmosphere', ['Renderer/NodeMesh', 'THREE', 'Renderer/c3DEngine','
         this.sky.mesh.visible = false;
         this.add(this.ground.mesh);
         this.add(this.sky.mesh);
+        
+        this.sphereSun = new THREE.Mesh((new THREE.SphereGeometry( 1000000,32,32 )), new THREE.MeshBasicMaterial());
+        this.sphereSun.position.copy(defaultValue.lightingPos);
+        this.add(this.sphereSun);
 
     }
 
@@ -220,19 +225,15 @@ define('Globe/Atmosphere', ['Renderer/NodeMesh', 'THREE', 'Renderer/c3DEngine','
         this.atmosphereIN.visible  = !this.realistic;
         this.ground.mesh.visible   = this.realistic;
         this.sky.mesh.visible      = this.realistic; 
-        
-        if(this.realistic){
-             var sphereSun = new THREE.Mesh((new THREE.SphereGeometry( 1000000,32,32 )), new THREE.MeshBasicMaterial());
-             sphereSun.position.copy(defaultValue.lightingPos);
-             this.add(sphereSun);
-            
-        }
+        this.sphereSun.visible      = this.realistic; 
+
     };
     
     Atmosphere.prototype.updateLightingPos = function(pos){
         
         this.ground.material.uniforms.v3LightPosition.value = pos.clone().normalize();
         this.sky.material.uniforms.v3LightPosition.value = pos.clone().normalize();
+        this.sphereSun.position.copy(pos);
     };
     
 
