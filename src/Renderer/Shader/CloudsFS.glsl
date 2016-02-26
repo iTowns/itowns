@@ -11,11 +11,13 @@
 
 #endif
 
-
+uniform vec3 lightPosition;
 uniform sampler2D diffuse;
 uniform float time;
+uniform int lightingOn;
 varying vec2  vUv;
-
+varying vec3 pos;
+varying vec3 vNormal;
 
 float speed = 0.01;
 float noiseScale = 0.005;
@@ -44,5 +46,9 @@ void main()
 
     gl_FragColor.a = min(time * min( coefDistCam, 1.2) , 1.) * (vUv.y <= 0.75 ? l : (1. - ((vUv.y - 0.75) / 0.25)) * l  );
 
+    if(lightingOn == 1){   // Add lighting
+        float light = dot(vNormal, lightPosition); //normalize(pos.xyz)
+        gl_FragColor.a *= -light;
+    }
 }
 
