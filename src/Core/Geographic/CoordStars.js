@@ -87,22 +87,12 @@ function(CoordCarto) {
       getSunPositionInScene: function(ellipsoid, date,lat,lon){
 
             var sun = CoordStars.getSunPosition()(date,lat,lon);
-            var coSunCarto = ellipsoid.cartographicToCartesian(new CoordCarto(sun.azimuth, 0, 0));
+            var dayMilliSec = 24 * 3600000;
+
+            var longitude = sun.ascension + ((date % dayMilliSec) / dayMilliSec) * -360 + 180;  // cause midday
+            var coSunCarto = ellipsoid.cartographicToCartesian(new CoordCarto().setFromDegreeGeo(0, longitude, 1000000));
             
             return coSunCarto; 
-      /*
-            var length = 10000000 ; // distance of the sun from the earth
-            var direction={x:0,y:0};
-            
-
-          //  console.log(sun);
-            direction.x = Math.sin(sun.azimuth)   * length;
-            direction.y = Math.cos(sun.azimuth)   * length;
-            var realalti = Math.sin(sun.altitude) * length;
-
-            //console.log(direction, realalti);
-
-        */
       }
        
        

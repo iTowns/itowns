@@ -85,13 +85,11 @@ define('Renderer/Camera', ['Scene/Node', 'THREE'], function(Node, THREE) {
     Camera.prototype.SSE = function(node) {
 
         var boundingSphere = node.geometry.boundingSphere;
-
         var distance = Math.max(0.0, (this.camera3D.position.distanceTo(node.centerSphere) - boundingSphere.radius));
-
         // Added small oblique weight (distance is not enough, tile orientation is needed)
         var altiW = node.bbox.maxCarto.altitude === 10000 ? 0. : node.bbox.maxCarto.altitude / 10000.;
         var dotProductW = Math.min(altiW + Math.abs(this.camera3D.getWorldDirection().dot(node.centerSphere.clone().normalize())), 1.);
-
+        if(this.camera3D.position.length() > 6463300) dotProductW = 1;
         var SSE = Math.sqrt(dotProductW) * this.preSSE * (node.geometricError / distance);
  
         node.sse = SSE;
