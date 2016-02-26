@@ -20,9 +20,11 @@ define('Globe/EllipsoidTileMesh', [
     'Scene/BoundingBox',
     'Core/defaultValue',
     'THREE',
+    'OBBHelper',
+    'SphereHelper',
     'Renderer/GlobeMaterial',
     'Core/Geographic/CoordCarto'
-], function(NodeMesh, EllipsoidTileGeometry, BoundingBox, defaultValue, THREE, GlobeMaterial, CoordCarto) {
+], function(NodeMesh, EllipsoidTileGeometry, BoundingBox, defaultValue, THREE, OBBHelper, SphereHelper, GlobeMaterial, CoordCarto) {
 
     function EllipsoidTileMesh(bbox, cooWMTS, ellipsoid, id, geometryCache,link) {
         //Constructor
