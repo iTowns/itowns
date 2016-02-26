@@ -148,6 +148,12 @@ define('Globe/Globe', [
         this.clouds.setLightingOn(bool);
         
     };
+    
+    Globe.prototype.updateLightingPos = function(pos) {
+
+        this.atmosphere.updateLightingPos(pos);
+        this.clouds.updateLightingPos(pos);
+    };
 
     /*Globe.prototype.ellipsoid = function() {
         return this.terrain.interCommand.managerCommands.providers[0].ellipsoid;

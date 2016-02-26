@@ -5,11 +5,11 @@
  */
 
 
-define('Globe/Atmosphere', ['Renderer/NodeMesh', 'THREE', 'Renderer/c3DEngine','Renderer/Shader/skyFS.glsl',
+define('Globe/Atmosphere', ['Renderer/NodeMesh', 'THREE', 'Renderer/c3DEngine','Core/defaultValue','Renderer/Shader/skyFS.glsl',
     'Renderer/Shader/skyVS.glsl','Renderer/Shader/groundFS.glsl', 'Renderer/Shader/groundVS.glsl'
     ,'Renderer/Shader/GlowFS.glsl', 'Renderer/Shader/GlowVS.glsl'],
-     function(NodeMesh, THREE, gfxEngine, skyFS, skyVS, groundFS, groundVS, GlowFS, GlowVS) {
-
+     function(NodeMesh, THREE, gfxEngine, defaultValue, skyFS, skyVS, groundFS, groundVS, GlowFS, GlowVS) {
+ 
     function Atmosphere(size) {
 
         NodeMesh.call(this);
@@ -85,7 +85,7 @@ define('Globe/Atmosphere', ['Renderer/NodeMesh', 'THREE', 'Renderer/c3DEngine','
         var uniforms = {
           v3LightPosition: {
             type: "v3",
-            value: new THREE.Vector3(-0.5, 0, 1).normalize() 
+            value: defaultValue.lightingPos.clone().normalize()
           },
           v3InvWavelength: {
             type: "v3",
@@ -220,6 +220,19 @@ define('Globe/Atmosphere', ['Renderer/NodeMesh', 'THREE', 'Renderer/c3DEngine','
         this.atmosphereIN.visible  = !this.realistic;
         this.ground.mesh.visible   = this.realistic;
         this.sky.mesh.visible      = this.realistic; 
+        
+        if(this.realistic){
+             var sphereSun = new THREE.Mesh((new THREE.SphereGeometry( 1000000,32,32 )), new THREE.MeshBasicMaterial());
+             sphereSun.position.copy(defaultValue.lightingPos);
+             this.add(sphereSun);
+            
+        }
+    };
+    
+    Atmosphere.prototype.updateLightingPos = function(pos){
+        
+        this.ground.material.uniforms.v3LightPosition.value = pos.clone().normalize();
+        this.sky.material.uniforms.v3LightPosition.value = pos.clone().normalize();
     };
     
 

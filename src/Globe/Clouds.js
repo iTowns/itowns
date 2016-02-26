@@ -8,10 +8,11 @@
 define('Globe/Clouds', ['Renderer/NodeMesh',
     'THREE',
     'Renderer/c3DEngine',
+    'Core/defaultValue',
     'Core/Commander/Providers/WMS_Provider',
     'Renderer/Shader/CloudsFS.glsl',
     'Renderer/Shader/CloudsVS.glsl'
-], function(NodeMesh, THREE, gfxEngine, WMS_Provider, CloudsFS, CloudsVS) {
+], function(NodeMesh, THREE, gfxEngine, defaultValue, WMS_Provider, CloudsFS, CloudsVS) {
 
     function Clouds(size) {
 
@@ -39,7 +40,7 @@ define('Globe/Clouds', ['Renderer/NodeMesh',
             },
             lightPosition: {
                 type: "v3",
-                value: new THREE.Vector3(-0.5, 0.0, 1.0)
+                value: defaultValue.lightingPos.clone().normalize()
             }
         };
 
@@ -99,7 +100,12 @@ define('Globe/Clouds', ['Renderer/NodeMesh',
     
     Clouds.prototype.setLightingOn = function(enable){
          this.material.uniforms.lightingOn.value = enable === true ? 1 : 0;
-    }
+    };
+    
+    Clouds.prototype.updateLightingPos = function(pos){
+        
+         this.material.uniforms.lightPosition.value = pos.clone().normalize();
+    };
 
     return Clouds;
 

@@ -13,7 +13,7 @@
 
 #define EPSILON 1e-6
 
-uniform vec3        lightPosition;
+uniform vec3  lightPosition;
 varying vec2  vUv;
 varying vec3 vNormal;
 varying vec3 pos;

@@ -7,6 +7,7 @@
 
 define('Renderer/GlobeMaterial', ['THREE',
     'Renderer/BasicMaterial',
+    'Core/defaultValue',
     'Renderer/c3DEngine',
     'Core/System/JavaTools',
     'Renderer/Shader/GlobeVS.glsl',
@@ -14,6 +15,7 @@ define('Renderer/GlobeMaterial', ['THREE',
 ], function(
     THREE,
     BasicMaterial,
+    defaultValue,
     gfxEngine,
     JavaTools,
     GlobeVS,
@@ -60,7 +62,7 @@ define('Renderer/GlobeMaterial', ['THREE',
         },
         this.uniforms.lightPosition = {
             type: "v3",
-            value: new THREE.Vector3(-0.5, 0.0, 1.0)
+            value: defaultValue.lightingPos.clone().normalize()
         };
 
         this.setUuid(id);
