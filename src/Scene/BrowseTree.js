@@ -148,12 +148,12 @@ define('Scene/BrowseTree', ['Globe/EllipsoidTileMesh', 'THREE'], function( Ellip
         for (var i = 0; i < node.children.length; i++) {
             var child = node.children[i];
             // TODO node.wait === true ---> delete child and switch to node.wait = false
-            if (this._clean(child, level, camera) && ((child.level >= level && child.children.length === 0 && !this.nodeProcess.SSE(child, camera) && !node.wait) || node.level === 2))
+            if (this._clean(child, level, camera) && ((child.level >= level && child.children.length === 0 /*&& !this.nodeProcess.SSE(child, camera)*/ && !node.wait) || node.level === 2))
                 childrenCleaned++;
         }
 
         if (childrenCleaned === node.children.length) {
-            
+            //console.log('clean');
             node.disposeChildren();
             return true;
         } else

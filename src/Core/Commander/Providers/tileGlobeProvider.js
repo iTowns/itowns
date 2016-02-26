@@ -40,11 +40,11 @@ define('Core/Commander/Providers/tileGlobeProvider', [
         THREE
     ) {
 
-        function tileGlobeProvider(size) {
+        function tileGlobeProvider(size,supportGLInspector) {
             //Constructor
 
             this.projection = new Projection();
-            this.providerWMTS = new WMTS_Provider({});//{url:"http://a.basemaps.cartocdn.com/",layer:"dark_all/"});
+            this.providerWMTS = new WMTS_Provider({support : supportGLInspector});//{url:"http://a.basemaps.cartocdn.com/",layer:"dark_all/"});
             //this.providerWMS     = new WMS_Provider();
             this.ellipsoid = new Ellipsoid(size);
             this.providerKML = new KML_Provider(this.ellipsoid);
