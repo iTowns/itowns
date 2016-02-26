@@ -122,7 +122,7 @@ define('Core/Commander/Providers/WMTS_Provider', [
 
             return this._IoDriver.read(url).then(function(result) {                                
                 if (result !== undefined) {
-                    result.texture = this.getTextureFloat(result.floatArray);//new THREE.Texture();//new THREE.DataTexture(result.floatArray, 256, 256, THREE.AlphaFormat, THREE.FloatType);
+                    result.texture = this.getTextureFloat(result.floatArray);
                     result.texture.generateMipmaps = false;
                     result.texture.magFilter = THREE.LinearFilter;
                     result.texture.minFilter = THREE.LinearFilter;
