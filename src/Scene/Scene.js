@@ -20,10 +20,12 @@ define('Scene/Scene', [
     'Scene/BrowseTree',
     'Scene/NodeProcess',
     'Scene/Quadtree',
+    'Core/Geographic/CoordStars',
+    'Core/defaultValue',
     'Scene/Layer',
     'Core/Geographic/CoordCarto',
     'Core/System/Capabilities'
-], function(c3DEngine, Globe, ManagerCommands, tileGlobeProvider, BrowseTree, NodeProcess, Quadtree, Layer, CoordCarto, Capabilities) {
+], function(c3DEngine, Globe, ManagerCommands, tileGlobeProvider, BrowseTree, NodeProcess, Quadtree, CoordStars, defaultValue, Layer, CoordCarto, Capabilities) {
 
     var instanceScene = null;
 
@@ -217,6 +219,22 @@ define('Scene/Scene', [
         this.browserScene.selectNodeId = id;
 
     };
+    
+     Scene.prototype.setLightingPos = function(pos){
+         
+        if(pos)
+            this.lightingPos = pos;
+        else{
+             var coSun = CoordStars.getSunPositionInScene(this.layers[0].ellipsoid, new Date().getTime() + 3600000 * 2, 0, 0); //48.85, 2.35);
+             this.lightingPos = coSun;
+             console.log(coSun);
+        }
+        
+        defaultValue.lightingPos = this.lightingPos;
+        
+        this.browserScene.updateMaterialUniform("lightPosition", this.lightingPos.clone().normalize());
+        this.layers[0].updateLightingPos(this.lightingPos);
+     };
 
     return function() {
         instanceScene = instanceScene || new Scene();
