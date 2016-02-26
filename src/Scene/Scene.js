@@ -40,7 +40,9 @@ define('Scene/Scene', [
         this.cameras = null;
         this.selectNodes = null;
         this.managerCommand = ManagerCommands();
-        this.gfxEngine = c3DEngine();
+        
+        this.supportGLInspector = false;
+        this.gfxEngine = c3DEngine(this.supportGLInspector);
         this.browserScene = new BrowseTree(this.gfxEngine);
         this.cap = new Capabilities();
     }
@@ -76,7 +78,7 @@ define('Scene/Scene', [
     Scene.prototype.init = function(pos) {
         
         this.managerCommand.init(this);
-        var globe = new Globe();
+        var globe = new Globe(this.supportGLInspector);
         this.add(globe);
         this.managerCommand.addLayer(globe.terrain, new tileGlobeProvider(globe.size));
         this.managerCommand.addLayer(globe.colorTerrain,this.managerCommand.getProvider(globe.terrain).providerWMTS);
