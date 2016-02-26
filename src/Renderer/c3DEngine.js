@@ -5,21 +5,21 @@
  */
 
 define('Renderer/c3DEngine', [
-    'THREE',
-    'OrbitControls',
+    'THREE',    
     'GlobeControls',
     'Renderer/Camera',
     'Globe/Atmosphere',
     'Renderer/DepthMaterial',
-    'Renderer/BasicMaterial'
+    'Renderer/BasicMaterial',
+    'Core/Geographic/CoordCarto'
 ], function(
-    THREE,
-    OrbitControls,
+    THREE,    
     GlobeControls,
     Camera,
     Atmosphere,
     DepthMaterial,
-    BasicMaterial) {
+    BasicMaterial,
+    CoordCarto) {
 
     var instance3DEngine = null;
     var RENDER = {
@@ -124,10 +124,8 @@ define('Renderer/c3DEngine', [
      * @returns {undefined}
      */
     c3DEngine.prototype.initCamera = function() {
+        
         this.camera = new Camera(this.width, this.height, this.debug);
-
-        if (this.controls instanceof THREE.OrbitControls)
-            this.scene3D.add(this.camera.camera3D);
 
         if (this.debug) {
             this.camDebug = new THREE.PerspectiveCamera(30, this.camera.ratio);
@@ -184,11 +182,6 @@ define('Renderer/c3DEngine', [
             this.scene3D.add(axisHelper);
         }
 
-        if (this.controls instanceof THREE.GlobeControls) {
-            var axisHelper = new THREE.AxisHelper(this.size * 1.33);
-            this.scene3D.add(axisHelper);
-        }
-
         this.camera.camera3D.near = Math.max(15.0, 0.000002352 * this.size);
         this.camera.camera3D.updateProjectionMatrix();
         this.initRenderer();
@@ -210,19 +203,11 @@ define('Renderer/c3DEngine', [
         var lim = this.size * 1.3;
 
         if (len < lim) {
-            var t = Math.pow(Math.cos((lim - len) / (lim - this.size * 0.9981) * Math.PI * 0.5), 1.5);
-            if (this.controls instanceof THREE.OrbitControls) {
-                this.controls.zoomSpeed = t * 2.0;
-                this.controls.rotateSpeed = 0.8 * t;
-            }
+            var t = Math.pow(Math.cos((lim - len) / (lim - this.size * 0.9981) * Math.PI * 0.5), 1.5);           
             var color = new THREE.Color(0x93d5f8);
-
             this.renderer.setClearColor(color.multiplyScalar(1.0 - t));
-        } else if (len >= lim && this.controls.zoomSpeed !== 1.0) {
-            this.controls.zoomSpeed = 1.0;
-            this.controls.rotateSpeed = 1.0;
-            this.renderer.setClearColor(0x030508);
-        }
+        } else if (len >= lim ) 
+            this.renderer.setClearColor(0x030508);        
     };
 
     c3DEngine.prototype.enableRTC = function(enable) {
@@ -515,7 +500,8 @@ define('Renderer/c3DEngine', [
 
         var h = (rsqXY * Math.cos(phi)) + p.z * Math.sin(phi) - a * Math.sqrt(1 - e * e * Math.sin(phi) * Math.sin(phi));
 
-        console.log(theta / Math.PI * 180 + ' ' + phi / Math.PI * 180 + ' ' + h);
+        return CoordCarto(theta,phi,h);
+        //console.log(theta / Math.PI * 180 + ' ' + phi / Math.PI * 180 + ' ' + h);
     };
     
     c3DEngine.prototype.getRTCMatrixFromCenter = function(center, camera ) {

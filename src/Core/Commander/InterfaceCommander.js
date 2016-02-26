@@ -6,7 +6,7 @@
 
 define('Core/Commander/InterfaceCommander', ['Core/Commander/ManagerCommands', 'Core/Commander/Command'], function(ManagerCommands, Command) {
 
-    function InterfaceCommander(type, param) {
+    function InterfaceCommander(type) {
         //Constructor
 
         this.managerCommands = ManagerCommands();
@@ -19,7 +19,7 @@ define('Core/Commander/InterfaceCommander', ['Core/Commander/ManagerCommands', '
     /**
      * @param com {[object Object]} 
      */
-    InterfaceCommander.prototype.request = function(com) {
+    InterfaceCommander.prototype.request = function(/*com*/) {
         //TODO: Implement Me 
 
     };

@@ -1,7 +1,7 @@
 /**
  * @author mrdoob / http://mrdoob.com/
  */
-
+/* global Promise*/
 
 
 //var JSZip = require("C:/Users/vcoindet/Documents/NetBeansProjects/itownsV1/src/Renderer/ThreeExtented/jszip.min");
@@ -9,16 +9,16 @@ define('Renderer/ThreeExtented/KMZLoader', ['Renderer/ThreeExtented/jszip.min',
         'THREE',
         'Renderer/ThreeExtented/ColladaLoader',
         'Core/Commander/Providers/IoDriverXML',
-        'Core/Geographic/CoordCarto',
-        'when'
+        'Core/Geographic/CoordCarto'/*,
+        'when'*/
     ],
     function(
         JSZip,
         THREE,
         ColladaLoader,
         IoDriverXML,
-        CoordCarto,
-        when) {
+        CoordCarto/*,
+        when*/) {
 
         function KMZLoader() {
 

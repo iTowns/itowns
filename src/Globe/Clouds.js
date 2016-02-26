@@ -13,7 +13,7 @@ define('Globe/Clouds', ['Renderer/NodeMesh',
     'Renderer/Shader/CloudsVS.glsl'
 ], function(NodeMesh, THREE, gfxEngine, WMS_Provider, CloudsFS, CloudsVS) {
 
-    function Clouds(size) {
+    function Clouds(/*size*/) {
 
         NodeMesh.call(this);
 

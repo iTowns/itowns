@@ -16,7 +16,7 @@ define('Core/Geographic/Projection', ['Core/Geographic/CoordWMTS', 'Core/Math/Ma
      * @param x
      * @param y
      */
-    Projection.prototype.WGS84ToPM = function(x, y) {
+    Projection.prototype.WGS84ToPM = function(/*x, y*/) {
         //TODO: Implement Me 
 
     };
@@ -102,7 +102,7 @@ define('Core/Geographic/Projection', ['Core/Geographic/CoordWMTS', 'Core/Math/Ma
      * @param x
      * @param y
      */
-    Projection.prototype.PMToWGS84 = function(x, y) {
+    Projection.prototype.PMToWGS84 = function(/*x, y*/) {
         //TODO: Implement Me 
 
     };
@@ -128,7 +128,7 @@ define('Core/Geographic/Projection', ['Core/Geographic/CoordWMTS', 'Core/Math/Ma
      * @param longi
      * @param lati
      */
-    Projection.prototype.geoToPM = function(longi, lati) {
+    Projection.prototype.geoToPM = function(/*longi, lati*/) {
         //TODO: Implement Me 
 
     };
@@ -138,7 +138,7 @@ define('Core/Geographic/Projection', ['Core/Geographic/CoordWMTS', 'Core/Math/Ma
      * @param longi
      * @param lati
      */
-    Projection.prototype.geoToWGS84 = function(longi, lati) {
+    Projection.prototype.geoToWGS84 = function(/*longi, lati*/) {
         //TODO: Implement Me 
 
     };

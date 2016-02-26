@@ -65,7 +65,7 @@ THREE.GlobeControls = function(object, domElement, engine) {
     this.phi = null;
 
     this.time = 0;
-    var timeStart = 500;
+    //var timeStart = 500;
 
 
     this.ptScreenClick = new THREE.Vector2();
@@ -164,8 +164,8 @@ THREE.GlobeControls = function(object, domElement, engine) {
 
     // so camera.up is the orbit axis
 
-    var quat = new THREE.Quaternion().setFromUnitVectors(object.up, new THREE.Vector3(0, 1, 0));
-    var quatInverse = quat.clone().inverse();
+    //var quat = new THREE.Quaternion().setFromUnitVectors(object.up, new THREE.Vector3(0, 1, 0));
+    //var quatInverse = quat.clone().inverse();
 
     // events
 
@@ -311,7 +311,7 @@ THREE.GlobeControls = function(object, domElement, engine) {
         } else {
 
             // camera neither orthographic or perspective
-            console.warn('WARNING: GlobeControls.js encountered an unknown camera type - pan disabled.');
+            //console.warn('WARNING: GlobeControls.js encountered an unknown camera type - pan disabled.');
 
         }
 
@@ -337,7 +337,7 @@ THREE.GlobeControls = function(object, domElement, engine) {
 
         } else {
 
-            console.warn('WARNING: GlobeControls.js encountered an unknown camera type - dolly/zoom disabled.');
+            //console.warn('WARNING: GlobeControls.js encountered an unknown camera type - dolly/zoom disabled.');
 
         }
 
@@ -363,7 +363,7 @@ THREE.GlobeControls = function(object, domElement, engine) {
 
         } else {
 
-            console.warn('WARNING: GlobeControls.js encountered an unknown camera type - dolly/zoom disabled.');
+            //console.warn('WARNING: GlobeControls.js encountered an unknown camera type - dolly/zoom disabled.');
 
         }
 
@@ -745,7 +745,7 @@ THREE.GlobeControls = function(object, domElement, engine) {
 
     }
 
-    function onKeyUp(event) {
+    function onKeyUp(/*event*/) {
 
         if (scope.enabled === false || scope.noKeys === true || scope.noPan === true) return;
 
@@ -933,7 +933,7 @@ THREE.GlobeControls = function(object, domElement, engine) {
         scope.keyShift = false;
 
     }
-
+/*
     function computeVectorUp() {
         var vectorUp = scope.globeTarget.position.clone().normalize();
         scope.object.up.copy(vectorUp);
@@ -947,17 +947,17 @@ THREE.GlobeControls = function(object, domElement, engine) {
         scope.globeTarget.quaternion.multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), angle));
         scope.globeTarget.updateMatrixWorld();
 
-        /*
-        position = scope.globeTarget.worldToLocal(scope.object.position.clone());                                
-        angle    = Math.atan2(position.z,position.y); 
-            
-        scope.globeTarget.quaternion.multiply(new THREE.Quaternion().setFromAxisAngle( new THREE.Vector3( 1, 0, 0 ), angle  - Math.PI * 0.5));   
-        */
+//        
+//        position = scope.globeTarget.worldToLocal(scope.object.position.clone());                                
+//        angle    = Math.atan2(position.z,position.y); 
+//            
+//        scope.globeTarget.quaternion.multiply(new THREE.Quaternion().setFromAxisAngle( new THREE.Vector3( 1, 0, 0 ), angle  - Math.PI * 0.5));   
+        
         //TODO revient à prendre le repère caméra.... à tester
 
 
     }
-
+*/
     function computeTarget() {
 
         scope.globeTarget.position.copy(scope.moveTarget);

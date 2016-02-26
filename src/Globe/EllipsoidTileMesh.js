@@ -21,10 +21,8 @@ define('Globe/EllipsoidTileMesh', [
     'Core/defaultValue',
     'THREE',
     'Renderer/GlobeMaterial',
-    'Core/Geographic/CoordCarto',
-    'OBBHelper',
-    'SphereHelper'
-], function(NodeMesh, EllipsoidTileGeometry, BoundingBox, defaultValue, THREE, GlobeMaterial, CoordCarto, OBBHelper, SphereHelper) {
+    'Core/Geographic/CoordCarto'
+], function(NodeMesh, EllipsoidTileGeometry, BoundingBox, defaultValue, THREE, GlobeMaterial, CoordCarto) {
 
     function EllipsoidTileMesh(bbox, cooWMTS, ellipsoid, id, geometryCache,link) {
         //Constructor
@@ -68,23 +66,19 @@ define('Globe/EllipsoidTileMesh', [
             }
         }
 
-
-        //  TODO : Attention ne marche plus car les helpers ne sont plus ajouter à la scene
-        
         var showHelper = true;
         showHelper = false;
 
         if (showHelper && this.level >= 2) {
             
             // TODO Dispose HELPER!!!
-
-            //this.helper  = new THREE.SphereHelper(this.geometry.boundingSphere.radius);
-
-            //var text = 'z(' + this.level.toString() + '),r(' + cooWMTS.row + '),c(' + cooWMTS.col + ')';
             var text = (this.level + 1).toString();
 
-            this.helper = new THREE.OBBHelper(this.geometry.OBB, text);
-
+            if(showHelper)
+                this.helper = new THREE.OBBHelper(this.geometry.OBB, text);
+            else
+                this.helper  = new THREE.SphereHelper(this.geometry.boundingSphere.radius);
+            
             if (this.helper instanceof THREE.SphereHelper)
 
                 this.helper.position.add(this.absoluteCenter);
@@ -156,23 +150,50 @@ define('Globe/EllipsoidTileMesh', [
     EllipsoidTileMesh.prototype.setTerrain = function(terrain) {
         var texture;
         var pitScale;
-  
+        var parentBil;
+        
         if (terrain === -1)
             texture = -1;
         else if (terrain === -2) {
-            var parentBil = this.getParentLevel(this.levelTerrain);
+            parentBil = this.getParentLevel(this.levelTerrain);
             pitScale = parentBil.bbox.pitScale(this.bbox);
             texture = parentBil.material.Textures_00[0];
             //
+            var max = parentBil.bbox.maxCarto.altitude;
+            var min = parentBil.bbox.minCarto.altitude;
             
+            if(this.level > 14 && (max - min) > 100)
+            {
+                var image = this.parent.material.Textures_00[0].image;
+                var buffer = image.data;
+                
+                var size = Math.floor(pitScale.z * image.width);                
+                var xs = Math.floor(pitScale.x * image.width);
+                var ys = Math.floor(pitScale.y * image.width);
+                                
+                max = -1000000;
+                min =  1000000;
+                
+                var inc = Math.max(Math.floor(size/8),2);
+                              
+                for (var y  = ys; y <  ys + size; y+=inc){                    
+                    var pit = y * image.width;
+                    for (var x = xs; x < xs +size; x+=inc) {                    
+                        var val = buffer[pit + x];  
+                        if (val > -10.0 && val !== undefined){
+                            max = Math.max(max, val);
+                            min = Math.min(min, val);
+                        }                        
+                    }
+                }
+            }
             
+            this.setAltitude(min, max);
             
-            
-            this.setAltitude(parentBil.bbox.minCarto.altitude, parentBil.bbox.maxCarto.altitude);
         } 
         else if (terrain === -3) {
             
-            var parentBil = this.getLevelElevationParent();            
+            parentBil = this.getLevelElevationParent();            
             pitScale = parentBil.bbox.pitScale(this.bbox);
             texture = parentBil.material.Textures_00[0];            
             this.setAltitude(parentBil.bbox.minCarto.altitude, parentBil.bbox.maxCarto.altitude);

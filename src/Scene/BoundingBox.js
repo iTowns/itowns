@@ -21,7 +21,7 @@ define('Scene/BoundingBox', [
     'Core/Geographic/CoordCarto',
     'THREE',
     'OBB'
-], function(defaultValue, MathExt, Point2D, CoordCarto, THREE, OBB) {
+], function(defaultValue, MathExt, Point2D, CoordCarto, THREE,OBB) {
 
     /**
      * 

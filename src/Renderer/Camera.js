@@ -30,7 +30,7 @@ define('Renderer/Camera', ['Scene/Node', 'THREE'], function(Node, THREE) {
         this.HYFOV = 2.0 * Math.atan(Math.tan(radAngle * 0.5) * this.Hypotenuse / this.width);
         this.preSSE = this.Hypotenuse * (2.0 * Math.tan(this.HYFOV * 0.5));
 
-        this.cameraHelper = undefined; //debug  ? new THREE.CameraHelper( this.camera3D ) : undefined;
+        this.cameraHelper = debug  ? new THREE.CameraHelper( this.camera3D ) : undefined;
     }
 
     Camera.prototype = Object.create(Node.prototype);

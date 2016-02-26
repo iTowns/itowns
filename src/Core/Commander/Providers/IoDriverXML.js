@@ -3,9 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
+/* global Promise*/
 
-
-define('Core/Commander/Providers/IoDriverXML', ['Core/Commander/Providers/IoDriver', 'when'], function(IoDriver, when) {
+define('Core/Commander/Providers/IoDriverXML', ['Core/Commander/Providers/IoDriver'], function(IoDriver) {
 
 
     function IoDriverXML() {

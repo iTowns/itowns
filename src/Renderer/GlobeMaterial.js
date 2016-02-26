@@ -119,7 +119,7 @@ define('Renderer/GlobeMaterial', ['THREE',
         this.uniforms.nbTextures_00.value = 1.0;
 
         // Image texture (ortho, carto...)
-        for (var i = 0, max = this.Textures_01.length; i < max; i++)
+        for (i = 0, max = this.Textures_01.length; i < max; i++)
             if (this.Textures_01[i] && this.Textures_01[i].image !== undefined)
                 this.Textures_01[i].needsUpdate = true;
 

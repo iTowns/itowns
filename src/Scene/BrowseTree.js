@@ -85,11 +85,12 @@ define('Scene/BrowseTree', ['Globe/EllipsoidTileMesh', 'THREE'], function( Ellip
     BrowseTree.prototype.uniformsProcess = function(node, camera) {
         node.setMatrixRTC(this.gfxEngine.getRTCMatrixFromCenter(node.absoluteCenter, camera));
         
+        // TODO à mettre en option
         if (node.id === this.selectNodeId) {
             node.setSelected(node.visible && node.material.visible);
             if (this.selectNode !== node) {
                 this.selectNode = node;
-                //console.log(node);
+                // console.info(node);
             }
         }
 
@@ -135,7 +136,7 @@ define('Scene/BrowseTree', ['Globe/EllipsoidTileMesh', 'THREE'], function( Ellip
             for (var i = 0; i < node.children.length; i++)
                 this._browse(node.children[i], camera, optional);
         else if(clean)              
-            this._clean(node, node.level + 3, camera);
+            this._clean(node, node.level + 2, camera);
         
     };
 
