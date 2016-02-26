@@ -134,7 +134,7 @@ define('Scene/BrowseTree', ['Globe/EllipsoidTileMesh', 'THREE'], function( Ellip
         
         if (this.processNode(node, camera, optional))
             for (var i = 0; i < node.children.length; i++)
-                this._browse(node.children[i], camera, optional);
+                this._browse(node.children[i], camera, optional,clean);
         else if(clean)              
             this._clean(node, node.level + 2, camera);
         
@@ -153,6 +153,7 @@ define('Scene/BrowseTree', ['Globe/EllipsoidTileMesh', 'THREE'], function( Ellip
         }
 
         if (childrenCleaned === node.children.length) {
+            
             node.disposeChildren();
             return true;
         } else
