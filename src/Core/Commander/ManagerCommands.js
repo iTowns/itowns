@@ -150,7 +150,7 @@ define('Core/Commander/ManagerCommands', [
         /**
          * @param object
          */
-        ManagerCommands.prototype.addInHistory = function(object) {
+        ManagerCommands.prototype.addInHistory = function(/*object*/) {
             //TODO: Implement Me 
 
         };

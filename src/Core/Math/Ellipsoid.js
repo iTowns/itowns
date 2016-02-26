@@ -6,7 +6,7 @@
 
 
 
-define('Core/Math/Ellipsoid', ['Core/Math/MathExtented', 'THREE', 'Core/defaultValue'], function(MathExt, THREE, defaultValue) {
+define('Core/Math/Ellipsoid', ['Core/Math/MathExtented', 'THREE'], function(MathExt, THREE) {
 
     function Ellipsoid(size) {
         //Constructor
@@ -100,7 +100,7 @@ define('Core/Math/Ellipsoid', ['Core/Math/MathExtented', 'THREE', 'Core/defaultV
         var t2 = (-b - d) / (2 * a);
 
         if (t1 <= EPSILON && t2 <= EPSILON) return false; // both intersections are behind the ray origin
-        var back = (t1 <= EPSILON || t2 <= EPSILON); // If only one intersection (t>0) then we are inside the ellipsoid and the intersection is at the back of the ellipsoid
+        //var back = (t1 <= EPSILON || t2 <= EPSILON); // If only one intersection (t>0) then we are inside the ellipsoid and the intersection is at the back of the ellipsoid
         var t = 0;
         if (t1 <= EPSILON)
             t = t2;

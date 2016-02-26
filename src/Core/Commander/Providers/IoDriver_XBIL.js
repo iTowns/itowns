@@ -2,9 +2,9 @@
  * Generated On: 2015-10-5
  * Class: IoDriver_XBIL
  */
+/* global Promise*/
 
-
-define('Core/Commander/Providers/IoDriver_XBIL', ['Core/Commander/Providers/IoDriver', 'when'], function(IoDriver, when) {
+define('Core/Commander/Providers/IoDriver_XBIL', ['Core/Commander/Providers/IoDriver'], function(IoDriver) {
 
 
     var portableXBIL = function(buffer) {
@@ -72,7 +72,7 @@ define('Core/Commander/Providers/IoDriver_XBIL', ['Core/Commander/Providers/IoDr
             return undefined;
     };
     
-    IoDriver_XBIL.prototype.parseMinMax = function(result,start,length) {
+    IoDriver_XBIL.prototype.parseMinMax = function(result/*,start,length*/) {
         
         for (var i = 0; i < result.floatArray.length; i++) {
             var val = result.floatArray[i];                   
@@ -88,7 +88,7 @@ define('Core/Commander/Providers/IoDriver_XBIL', ['Core/Commander/Providers/IoDr
         // TODO new Promise is supported?
   
         //return when.promise(function(resolve, reject) 
-        return new Promise(function(resolve, reject) 
+        return new Promise(function(resolve/*, reject*/) 
         {
             var xhr = new XMLHttpRequest();
 
@@ -99,7 +99,7 @@ define('Core/Commander/Providers/IoDriver_XBIL', ['Core/Commander/Providers/IoDr
             xhr["parseXBil"] = this.parseXBil;
 
             xhr.onload = function() {
-                 
+                                  
                 resolve(this.parseXBil(this.response));
               
             };

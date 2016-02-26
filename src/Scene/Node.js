@@ -77,7 +77,7 @@ define('Scene/Node', [], function() {
 
     /**
      * @documentation: Méthode qui créer un memento de l'état de Node avant modification.
-     *
+     *param
      * @return  {[object Object]} 
      */
     Node.prototype.hydrate = function() {
@@ -91,7 +91,7 @@ define('Scene/Node', [], function() {
      *
      * @param mem {[object Object]} 
      */
-    Node.prototype.dehydrate = function(mem) {
+    Node.prototype.dehydrate = function(/*mem*/) {
         //TODO: Implement Me 
 
     };
@@ -111,7 +111,7 @@ define('Scene/Node', [], function() {
      *
      * @param child {[object Object]} 
      */
-    Node.prototype.remove = function(child) {
+    Node.prototype.remove = function(/*child*/) {
         //TODO: Implement Me 
 
     };

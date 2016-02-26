@@ -78,22 +78,22 @@ define('Core/Commander/Providers/tileGlobeProvider', [
             return geometry;
         };
         
-        tileGlobeProvider.prototype.getKML= function(/*tile*/)
-        {            
-//            if(tile.level  === 16  )
-//            {
-//                var longitude   = tile.bbox.center.x / Math.PI * 180 - 180;
-//                var latitude    = tile.bbox.center.y / Math.PI * 180;
-//
-//                return this.providerKML.loadKMZ(longitude, latitude).then(function (collada){
-//
-//                    if(collada && tile.link.children.indexOf(collada) === -1)
-//                        {                                 
-//                            tile.link.add(collada);
-//                            tile.content = collada;
-//                        }
-//                }.bind(this));
-//            }
+       // tileGlobeProvider.prototype.getKML= function(){
+        tileGlobeProvider.prototype.getKML= function(tile){
+            if(tile.level  === 16  )
+            {
+                var longitude   = tile.bbox.center.x / Math.PI * 180 - 180;
+                var latitude    = tile.bbox.center.y / Math.PI * 180;
+
+                return this.providerKML.loadKMZ(longitude, latitude).then(function (collada){
+
+                    if(collada && tile.link.children.indexOf(collada) === -1)
+                        {                                 
+                            tile.link.add(collada);
+                            tile.content = collada;
+                        }
+                }.bind(this));
+            }
         };
 
         tileGlobeProvider.prototype.executeCommand = function(command) {
@@ -131,15 +131,16 @@ define('Core/Commander/Providers/tileGlobeProvider', [
             return this.providerWMTS.getTextureBil(tile.useParent() ? undefined : cooWMTS).then(function(terrain) {
             //return this.providerWMTS.getTextureBil(cooWMTS).then(function(terrain){
                 
+                                    
                 this.setTerrain(terrain);
 
                 return this;
 
             }.bind(tile)).then(function(tile) {
                 
-                return this.getOrthoImages(tile).then(function(result)
+                return this.getOrthoImages(tile).then(function()
                 {                                            
-                    this.getKML(result[0]);                        
+                    //this.getKML(result[0]);                        
                 }.bind(this));
                 
             }.bind(this));
@@ -165,8 +166,7 @@ define('Core/Commander/Providers/tileGlobeProvider', [
                         cooWMTS = this.projection.WMTS_WGS84Parent(cooWMTS,tile.getLevelOrthoParent(),pitch);                        
                     
                     promises.push(this.providerWMTS.getTextureOrtho(cooWMTS,id,pitch).then(
-                        function(result){       
-                                    
+                        function(result){                   
                             this.setTextureOrtho(result.texture, result.id,result.pitch); 
                             return this;
                         }.bind(tile)

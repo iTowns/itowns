@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
+/* global Uint16Array*/
 
 var THREE = require('three');
 
@@ -41,7 +41,7 @@ THREE.OBBHelper = function(OBB, text) {
     // TODO mettre la creation de la font plus haut    
     var font = new THREE.Font( JSON.parse( fontJS.substring( 65, fontJS.length - 2 )));
     
-    var geometry = new THREE.TextGeometry( text, {
+    var geometryText = new THREE.TextGeometry( text, {
 
 					font: font,
 					size: sizeX * 0.0666,
@@ -50,26 +50,7 @@ THREE.OBBHelper = function(OBB, text) {
 
 				});
 
-/*
-    var parameters = {
-        font: "optimer",
-        size: sizeX * 0.0666,
-        curveSegments: 0
-    };
-
-    var textShapes = THREE.Font.generateShapes(text, parameters);
-    //var geoShape    = new THREE.ShapeGeometry(textShapes);//new THREE.SphereGeometry(500000)
-
-    var extrudeSettings = {
-        amount: sizeZ * 0.001,
-        bevelEnabled: false,
-        curveSegments: 0,
-        steps: 0
-    };
-
-    var geoShape = new THREE.ExtrudeGeometry(textShapes, extrudeSettings);
-*/
-    this.textMesh = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({
+    this.textMesh = new THREE.Mesh(geometryText, new THREE.MeshBasicMaterial({
         color: new THREE.Color(1, 0, 0),
         side: THREE.DoubleSide
     }));
