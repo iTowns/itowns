@@ -138,6 +138,14 @@ define('Globe/Globe', [
         }
         this.clouds.visible = show;
     };
+    
+         
+    Globe.prototype.setRealisticLightingOn = function(bool) {
+
+        this.atmosphere.setRealisticOn(bool);
+        this.clouds.setLightingOn(bool);
+        
+    };
 
     /*Globe.prototype.ellipsoid = function() {
         return this.terrain.interCommand.managerCommands.providers[0].ellipsoid;

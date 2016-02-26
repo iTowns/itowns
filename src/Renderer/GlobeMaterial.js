@@ -7,12 +7,14 @@
 
 define('Renderer/GlobeMaterial', ['THREE',
     'Renderer/BasicMaterial',
+    'Renderer/c3DEngine',
     'Core/System/JavaTools',
     'Renderer/Shader/GlobeVS.glsl',
     'Renderer/Shader/GlobeFS.glsl'
 ], function(
     THREE,
     BasicMaterial,
+    gfxEngine,
     JavaTools,
     GlobeVS,
     GlobeFS) {
@@ -57,6 +59,14 @@ define('Renderer/GlobeMaterial', ['THREE',
         this.uniforms.pickingRender = {
             type: "i",
             value: 0
+        };
+        this.uniforms.lightingOn = {
+             type: "i",
+             value: gfxEngine().lightingOn
+        },
+        this.uniforms.lightPosition = {
+            type: "v3",
+            value: new THREE.Vector3(-0.5, 0.0, 1.0)
         };
 
         this.setUuid(id);
@@ -143,6 +153,9 @@ define('Renderer/GlobeMaterial', ['THREE',
 
     };
     
+    GlobeMaterial.prototype.setLightingOn = function (enable){
+        this.uniforms.lightingOn.value = enable === true ? 1 : 0;
+    }
     GlobeMaterial.prototype.isSubscaleDiffuse = function() {
       
         return (this.pitScale_L01[0].z < 1.0);
