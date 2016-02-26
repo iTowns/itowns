@@ -27,7 +27,7 @@ define('Renderer/c3DEngine', [
         PICKING: 1
     };
 
-    function c3DEngine() {
+    function c3DEngine(supportGLInspector) {
         //Constructor
 
         if (instance3DEngine !== null) {
@@ -35,6 +35,9 @@ define('Renderer/c3DEngine', [
         }
 
         THREE.ShaderChunk["logdepthbuf_pars_vertex"];
+
+        this.supportGLInspector = supportGLInspector;
+        //this.supportGLInspector = false;
 
         this.debug = false;
         //this.debug      = true;
@@ -142,7 +145,7 @@ define('Renderer/c3DEngine', [
         this.renderer = new THREE.WebGLRenderer({
             antialias: true,
             alpha: true,
-            logarithmicDepthBuffer: true
+            logarithmicDepthBuffer: this.supportGLInspector ? false : true
         });
         this.renderer.setPixelRatio(window.devicePixelRatio);
         this.renderer.setSize(window.innerWidth, window.innerHeight);

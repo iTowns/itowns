@@ -20,10 +20,13 @@ void main() {
     #if defined(USE_LOGDEPTHBUF) && defined(USE_LOGDEPTHBUF_EXT)
 
 	gl_FragDepthEXT = log2(vFragDepth) * logDepthBufFC * 0.5;
+        float depth = gl_FragDepthEXT / gl_FragCoord.w;
 
+    #else
+        float depth =  gl_FragCoord.w;
     #endif
 
-        float depth = gl_FragDepthEXT / gl_FragCoord.w;
+        
         float distanceFog = 150000.0;
         float fog = (distanceFog-depth)/distanceFog; // linear fog
         

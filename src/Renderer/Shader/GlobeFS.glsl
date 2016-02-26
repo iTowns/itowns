@@ -111,14 +111,16 @@ void main() {
             uvO.y   = 0.0;
         }
 
-        #if defined(USE_LOGDEPTHBUF) && defined(USE_LOGDEPTHBUF_EXT)
         gl_FragColor    = vec4( 0.04, 0.23, 0.35, 1.0);
+        #if defined(USE_LOGDEPTHBUF) && defined(USE_LOGDEPTHBUF_EXT)
+        
 
         float depth = gl_FragDepthEXT / gl_FragCoord.w;
         float fog = 1.0/(exp(depth/distanceFog));
 
         #else
-        float fog = 0.0;
+        
+        float fog = 1.0;
         #endif
 
         vec4 fogColor = vec4( 0.76, 0.85, 1.0, 1.0);
