@@ -34,6 +34,7 @@ and open the template in the editor.
                var Menu = function() {
                    this.CloudsIR = false;
                    this.RealisticLighting = false;
+                   this.AnimateTime = false;
                    this.Layer = "OrthoGeoportail";
                };
 
@@ -62,6 +63,10 @@ and open the template in the editor.
                
                gui.add(text, 'RealisticLighting').onChange(function(newValue) {
 			itowns.viewer.setRealisticLightingOn(newValue);
+               });
+               
+               gui.add(text, 'AnimateTime').onChange(function(newValue) {
+			itowns.viewer.animateTime(newValue);
                });
                
             

@@ -262,10 +262,7 @@ define('Globe/Atmosphere', ['Renderer/NodeMesh', 'THREE', 'Core/defaultValue','R
         this.lensFlare.add( textureFlare3, 70, 0.7,  THREE.AdditiveBlending );
         this.lensFlare.add( textureFlare3, 120, 0.9, THREE.AdditiveBlending );
         this.lensFlare.add( textureFlare3, 70, 1.0,  THREE.AdditiveBlending );
-        // lensFlare.customUpdateCallback = lensFlareUpdateCallback;
-       // this.lensFlare.position.set( x, y, z );
         this.add( this.lensFlare );
-        //this.lensFlare.frustumCulled = false;
 
     }
 
