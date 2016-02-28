@@ -5,10 +5,10 @@
  */
 
 
-define('Globe/Atmosphere', ['Renderer/NodeMesh', 'THREE', 'Renderer/c3DEngine','Core/defaultValue','Renderer/Shader/skyFS.glsl',
+define('Globe/Atmosphere', ['Renderer/NodeMesh', 'THREE', 'Core/defaultValue','Renderer/Shader/skyFS.glsl',
     'Renderer/Shader/skyVS.glsl','Renderer/Shader/groundFS.glsl', 'Renderer/Shader/groundVS.glsl'
-    ,'Renderer/Shader/GlowFS.glsl', 'Renderer/Shader/GlowVS.glsl'],
-     function(NodeMesh, THREE, gfxEngine, defaultValue, skyFS, skyVS, groundFS, groundVS, GlowFS, GlowVS) {
+    ,'Renderer/Shader/GlowFS.glsl', 'Renderer/Shader/GlowVS.glsl', 'Globe/SkyShader'],
+     function(NodeMesh, THREE,  defaultValue, skyFS, skyVS, groundFS, groundVS, GlowFS, GlowVS, SkyShader) {
  
     function Atmosphere(size) {
 
@@ -191,7 +191,7 @@ define('Globe/Atmosphere', ['Renderer/NodeMesh', 'THREE', 'Renderer/c3DEngine','
         this.ground.mesh = new THREE.Mesh(this.ground.geometry, this.ground.material);
         
         this.sky = {
-          geometry: new THREE.SphereGeometry(atmosphere.outerRadius, 500, 500),
+          geometry: new THREE.SphereGeometry(atmosphere.outerRadius, 196, 196),
           material: new THREE.ShaderMaterial({
             uniforms: uniforms,
             vertexShader: skyVS,
@@ -208,10 +208,65 @@ define('Globe/Atmosphere', ['Renderer/NodeMesh', 'THREE', 'Renderer/c3DEngine','
         this.sky.mesh.visible = false;
         this.add(this.ground.mesh);
         this.add(this.sky.mesh);
-        
+    /*    
         this.sphereSun = new THREE.Mesh((new THREE.SphereGeometry( 1000000,32,32 )), new THREE.MeshBasicMaterial());
         this.sphereSun.position.copy(defaultValue.lightingPos);
         this.add(this.sphereSun);
+        
+    */    
+        
+        this.skyDome = new THREE.Sky;
+        // It needs to know the normal of center of dome and the position
+        
+        this.skyDome.mesh.position.copy(new THREE.Vector3(-4201473.649639964, 4779598.400567288, 172421.13524106223));
+	var normal = new THREE.Vector3(-0.657479193529107, 0.7529894373157877, 0.02698179695959324);
+        this.add(this.skyDome.mesh);
+        
+        var effectController  = {
+                turbidity: 10,
+                reileigh: 2,
+                mieCoefficient: 0.005,
+                mieDirectionalG: 0.8,
+                luminance: 1,
+                inclination: 0.49, // elevation / inclination
+                azimuth: 0.25, // Facing front,
+                sun: ! true
+        };
+
+        var uniforms = this.skyDome.uniforms;
+        uniforms.turbidity.value = effectController.turbidity;
+        uniforms.reileigh.value = effectController.reileigh;
+        uniforms.luminance.value = effectController.luminance;
+        uniforms.mieCoefficient.value = effectController.mieCoefficient;
+        uniforms.mieDirectionalG.value = effectController.mieDirectionalG;
+        uniforms.up.value = normal;
+        
+        
+        // LensFlare
+
+        var textureLoader = new THREE.TextureLoader();
+        var textureFlare0 = textureLoader.load( "data/textures/lensflare/lensflare0.png" );
+        var textureFlare2 = textureLoader.load( "data/textures/lensflare/lensflare2.png" );
+        var textureFlare3 = textureLoader.load( "data/textures/lensflare/lensflare3.png" );
+        var h = 0.55, s= 0.9,l=0.5;
+    //    var x=10000000, y=10000000, z=0;
+        var flareColor = new THREE.Color( 0xffffff );
+        flareColor.setHSL( h, s, l + 0.5 );
+
+        this.lensFlare = new THREE.LensFlare( textureFlare0, 700, 0.0, THREE.AdditiveBlending, flareColor );
+        this.lensFlare.add( textureFlare2, 512, 0.0, THREE.AdditiveBlending );
+        this.lensFlare.add( textureFlare2, 512, 0.0, THREE.AdditiveBlending );
+        this.lensFlare.add( textureFlare2, 512, 0.0, THREE.AdditiveBlending );
+        this.lensFlare.add( textureFlare3, 60, 0.6,  THREE.AdditiveBlending );
+        this.lensFlare.add( textureFlare3, 70, 0.7,  THREE.AdditiveBlending );
+        this.lensFlare.add( textureFlare3, 120, 0.9, THREE.AdditiveBlending );
+        this.lensFlare.add( textureFlare3, 70, 1.0,  THREE.AdditiveBlending );
+        // lensFlare.customUpdateCallback = lensFlareUpdateCallback;
+       // this.lensFlare.position.set( x, y, z );
+        this.add( this.lensFlare );
+
+        
+
 
     }
 
@@ -225,7 +280,9 @@ define('Globe/Atmosphere', ['Renderer/NodeMesh', 'THREE', 'Renderer/c3DEngine','
         this.atmosphereIN.visible  = !this.realistic;
         this.ground.mesh.visible   = this.realistic;
         this.sky.mesh.visible      = this.realistic; 
-        this.sphereSun.visible      = this.realistic; 
+        // this.sphereSun.visible     = this.realistic; 
+        this.skyDome.mesh.visible  = this.realistic;
+        this.lensFlare.visible     = this.realistic;
 
     };
     
@@ -233,7 +290,9 @@ define('Globe/Atmosphere', ['Renderer/NodeMesh', 'THREE', 'Renderer/c3DEngine','
         
         this.ground.material.uniforms.v3LightPosition.value = pos.clone().normalize();
         this.sky.material.uniforms.v3LightPosition.value = pos.clone().normalize();
-        this.sphereSun.position.copy(pos);
+        //  this.sphereSun.position.copy(pos);
+        this.skyDome.uniforms.sunPosition.value.copy(pos);
+        this.lensFlare.position.copy(pos);
     };
     
 

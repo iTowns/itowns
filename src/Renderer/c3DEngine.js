@@ -168,7 +168,7 @@ define('Renderer/c3DEngine', [
 
         // if near is too small --> bug no camera helper
         this.camera.camera3D.near = this.size * 2.333;
-        this.camera.camera3D.far = this.size * 10;
+        this.camera.camera3D.far = this.size * 20;
         this.camera.camera3D.updateProjectionMatrix();
         this.camera.camera3D.updateMatrixWorld(true);
 
