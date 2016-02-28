@@ -82,9 +82,14 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
       //  this.scene.animateTime();
     };
     
-     ApiGlobe.animateTime = function(value) {
+    ApiGlobe.animateTime = function(value) {
 
         this.scene.animateTime(value);
+    };
+    
+    ApiGlobe.orbit = function(value) {
+
+        this.scene.orbit(value);
     };
 
     return ApiGlobe;
