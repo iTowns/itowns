@@ -78,12 +78,13 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         this.scene.gfxEngine.setLightingOn(value);
         this.scene.layers[0].setRealisticLightingOn(value);
         this.scene.browserScene.updateMaterialUniform("lightingOn",value);
+        this.scene.gfxEngine.renderScene();
       //  this.scene.animateTime();
     };
     
-     ApiGlobe.animateTime = function() {
+     ApiGlobe.animateTime = function(value) {
 
-        this.scene.animateTime();
+        this.scene.animateTime(value);
     };
 
     return ApiGlobe;

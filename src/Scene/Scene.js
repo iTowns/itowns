@@ -38,6 +38,7 @@ define('Scene/Scene', [
         this.cameras = null;
         this.selectNodes = null;
         this.time = 0;
+        this.rAF = null;
         this.managerCommand = ManagerCommands();
         this.gfxEngine = c3DEngine();
         this.browserScene = new BrowseTree(this.gfxEngine);
@@ -228,7 +229,6 @@ define('Scene/Scene', [
         else{
              var coSun = CoordStars.getSunPositionInScene(this.layers[0].ellipsoid, new Date().getTime(), 0, 0); //48.85, 2.35);
              this.lightingPos = coSun;
-             console.log(coSun);
         }
         
         defaultValue.lightingPos = this.lightingPos;
@@ -237,21 +237,24 @@ define('Scene/Scene', [
         this.layers[0].updateLightingPos(this.lightingPos);
      };
      
-     Scene.prototype.animateTime = function(){
+     Scene.prototype.animateTime = function(value){
          
-         this.time += .004;
+        if(value){ 
+            this.time += .004;
 
-            var nHours= this.time;
-            var coSun= CoordStars.getSunPositionInScene(this.layers[0].ellipsoid, new Date().getTime() + 3600000 * nHours, 0, 0);
-            this.lightingPos = coSun;
-            //console.log(coSun);
-            this.browserScene.updateMaterialUniform("lightPosition", this.lightingPos.clone().normalize());
-            this.layers[0].updateLightingPos(this.lightingPos);
-            this.gfxEngine.renderScene();
+            if(this.time % 0.04){
 
-
-         requestAnimationFrame(this.animateTime.bind(this));
-
+                var nHours= this.time;
+                var coSun= CoordStars.getSunPositionInScene(this.layers[0].ellipsoid, new Date().getTime() + 3600000 * nHours, 0, 0);
+                this.lightingPos = coSun;
+                this.browserScene.updateMaterialUniform("lightPosition", this.lightingPos.clone().normalize());
+                this.layers[0].updateLightingPos(this.lightingPos);
+                this.gfxEngine.renderScene();
+             } 
+             this.rAF = requestAnimationFrame(this.animateTime.bind(this));
+             
+        } else 
+              window.cancelAnimationFrame(this.rAF);
      };
 
     return function() {
