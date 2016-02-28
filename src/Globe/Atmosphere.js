@@ -218,8 +218,11 @@ define('Globe/Atmosphere', ['Renderer/NodeMesh', 'THREE', 'Core/defaultValue','R
         this.skyDome = new THREE.Sky;
         // It needs to know the normal of center of dome and the position
         
-        this.skyDome.mesh.position.copy(new THREE.Vector3(-4201473.649639964, 4779598.400567288, 172421.13524106223));
-	var normal = new THREE.Vector3(-0.657479193529107, 0.7529894373157877, 0.02698179695959324);
+    //    this.skyDome.mesh.position.copy(new THREE.Vector3(-4201473.649639964, 4779598.400567288, 172421.13524106223));
+	//var normal = new THREE.Vector3(-0.657479193529107, 0.7529894373157877, 0.02698179695959324);
+        this.skyDome.mesh.frustumCulled = false;
+        this.skyDome.mesh.material.transparent = true;
+        this.skyDome.mesh.visible = false;
         this.add(this.skyDome.mesh);
         
         var effectController  = {
@@ -239,7 +242,7 @@ define('Globe/Atmosphere', ['Renderer/NodeMesh', 'THREE', 'Core/defaultValue','R
         uniforms.luminance.value = effectController.luminance;
         uniforms.mieCoefficient.value = effectController.mieCoefficient;
         uniforms.mieDirectionalG.value = effectController.mieDirectionalG;
-        uniforms.up.value = normal;
+        uniforms.up.value = new THREE.Vector3(); // no more necessary, estimate normal from cam..
         
         
         // LensFlare
@@ -248,7 +251,7 @@ define('Globe/Atmosphere', ['Renderer/NodeMesh', 'THREE', 'Core/defaultValue','R
         var textureFlare0 = textureLoader.load( "data/textures/lensflare/lensflare0.png" );
         var textureFlare2 = textureLoader.load( "data/textures/lensflare/lensflare2.png" );
         var textureFlare3 = textureLoader.load( "data/textures/lensflare/lensflare3.png" );
-        var h = 0.55, s= 0.9,l=0.5;
+        var h = 0.55, s= 0.9, l=0.5;
     //    var x=10000000, y=10000000, z=0;
         var flareColor = new THREE.Color( 0xffffff );
         flareColor.setHSL( h, s, l + 0.5 );
@@ -266,7 +269,7 @@ define('Globe/Atmosphere', ['Renderer/NodeMesh', 'THREE', 'Core/defaultValue','R
         this.add( this.lensFlare );
 
         
-
+        this.lensFlare.frustumCulled = false;
 
     }
 

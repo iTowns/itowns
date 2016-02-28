@@ -36,10 +36,10 @@ THREE.ShaderLib[ 'sky' ] = {
 
 		"void main() {",
 
-			"vec4 worldPosition = modelMatrix *  vec4( position, 1.0 );",
+			"vec4 worldPosition = modelMatrix *  vec4( cameraPosition + position, 1.0 );",
 			"vWorldPosition = worldPosition.xyz;",
 
-			"gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );",
+			"gl_Position = projectionMatrix * modelViewMatrix * vec4( cameraPosition + position, 1.0 );",
 
 		"}"
 
@@ -87,7 +87,8 @@ THREE.ShaderLib[ 'sky' ] = {
 		"const float rayleighZenithLength = 8.4E3;",
 		"const float mieZenithLength = 1.25E3;",
 		//"const vec3 up = vec3(0.0, 1.0, 0.0);",
-
+                "vec3 up2 = normalize(cameraPosition.xyz);",
+                
 		"const float EE = 1000.0;",
 		"const float sunAngularDiameterCos = 0.999956676946448443553574619906976478926848692873900859324;",
 		"// 66 arc seconds -> degrees, and the cosine of that",
@@ -161,7 +162,7 @@ THREE.ShaderLib[ 'sky' ] = {
 
 			"vec3 sunDirection = normalize(sunPosition);",
 
-			"float sunE = sunIntensity(dot(sunDirection, up));",
+			"float sunE = sunIntensity(dot(sunDirection, up2));",
 
 			"// extinction (absorbtion + out scattering) ",
 			"// rayleigh coefficients",
@@ -174,7 +175,7 @@ THREE.ShaderLib[ 'sky' ] = {
 
 			"// optical length",
 			"// cutoff angle at 90 to avoid singularity in next formula.",
-			"float zenithAngle = acos(max(0.0, dot(up, normalize(vWorldPosition - cameraPos))));",
+			"float zenithAngle = acos(max(0.0, dot(up2, normalize(vWorldPosition - cameraPos))));",
 			"float sR = rayleighZenithLength / (cos(zenithAngle) + 0.15 * pow(93.885 - ((zenithAngle * 180.0) / pi), -1.253));",
 			"float sM = mieZenithLength / (cos(zenithAngle) + 0.15 * pow(93.885 - ((zenithAngle * 180.0) / pi), -1.253));",
 
@@ -194,7 +195,7 @@ THREE.ShaderLib[ 'sky' ] = {
 
 
 			"vec3 Lin = pow(sunE * ((betaRTheta + betaMTheta) / (betaR + betaM)) * (1.0 - Fex),vec3(1.5));",
-			"Lin *= mix(vec3(1.0),pow(sunE * ((betaRTheta + betaMTheta) / (betaR + betaM)) * Fex,vec3(1.0/2.0)),clamp(pow(1.0-dot(up, sunDirection),5.0),0.0,1.0));",
+			"Lin *= mix(vec3(1.0),pow(sunE * ((betaRTheta + betaMTheta) / (betaR + betaM)) * Fex,vec3(1.0/2.0)),clamp(pow(1.0-dot(up2, sunDirection),5.0),0.0,1.0));",
 
 			"//nightsky",
 			"vec3 direction = normalize(vWorldPosition - cameraPos);",
@@ -231,7 +232,7 @@ THREE.ShaderLib[ 'sky' ] = {
 
 			"gl_FragColor.rgb = retColor;",
 
-			"gl_FragColor.a = 1.0;",
+			"gl_FragColor.a = 1. - ( (length(cameraPosition) - 6400000.) / 1000.);",
 		"}"
 
 	].join( "\n" )
