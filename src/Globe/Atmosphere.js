@@ -216,14 +216,12 @@ define('Globe/Atmosphere', ['Renderer/NodeMesh', 'THREE', 'Core/defaultValue','R
     */    
         
         this.skyDome = new THREE.Sky;
-        // It needs to know the normal of center of dome and the position
-        
-    //    this.skyDome.mesh.position.copy(new THREE.Vector3(-4201473.649639964, 4779598.400567288, 172421.13524106223));
-	//var normal = new THREE.Vector3(-0.657479193529107, 0.7529894373157877, 0.02698179695959324);
         this.skyDome.mesh.frustumCulled = false;
         this.skyDome.mesh.material.transparent = true;
         this.skyDome.mesh.visible = false;
+        this.skyDome.mesh.material.depthWrite = false;
         this.add(this.skyDome.mesh);
+        
         
         var effectController  = {
                 turbidity: 10,
@@ -267,9 +265,7 @@ define('Globe/Atmosphere', ['Renderer/NodeMesh', 'THREE', 'Core/defaultValue','R
         // lensFlare.customUpdateCallback = lensFlareUpdateCallback;
        // this.lensFlare.position.set( x, y, z );
         this.add( this.lensFlare );
-
-        
-        this.lensFlare.frustumCulled = false;
+        //this.lensFlare.frustumCulled = false;
 
     }
 
