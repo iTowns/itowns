@@ -226,7 +226,7 @@ define('Scene/Scene', [
         if(pos)
             this.lightingPos = pos;
         else{
-             var coSun = CoordStars.getSunPositionInScene(this.layers[0].ellipsoid, new Date().getTime(), 0, 0); //48.85, 2.35);
+             var coSun = CoordStars.getSunPositionInScene(this.layers[0].ellipsoid, new Date().getTime() + 3600000 * 7, 0, 0); //48.85, 2.35);
              this.lightingPos = coSun;
              console.log(coSun);
         }
