@@ -38,6 +38,7 @@ define('Scene/Scene', [
         this.cameras = null;
         this.selectNodes = null;
         this.time = 0;
+        this.orbitOn = false;
         this.rAF = null;
         this.managerCommand = ManagerCommands();
         this.gfxEngine = c3DEngine();
@@ -237,6 +238,7 @@ define('Scene/Scene', [
         this.layers[0].updateLightingPos(this.lightingPos);
      };
      
+     // Should be moved in time module: A single loop update registered object every n millisec
      Scene.prototype.animateTime = function(value){
          
         if(value){ 
@@ -248,14 +250,29 @@ define('Scene/Scene', [
                 var coSun= CoordStars.getSunPositionInScene(this.layers[0].ellipsoid, new Date().getTime() + 3600000 * nHours, 0, 0);
                 this.lightingPos = coSun;
                 this.browserScene.updateMaterialUniform("lightPosition", this.lightingPos.clone().normalize());
-                this.layers[0].updateLightingPos(this.lightingPos);
-                this.gfxEngine.renderScene();
+                this.layers[0].updateLightingPos(this.lightingPos); 
+                if (this.orbitOn){
+                     var p = this.gfxEngine.camera.camera3D.position;
+                     var r = Math.sqrt(p.z * p.z + p.x * p.x);
+                     var alpha = Math.atan2(p.z, p.x) + 0.0001;
+                     p.x = r * Math.cos(alpha);
+                     p.z = r * Math.sin(alpha);
+                }
+
+                this.gfxEngine.update();
+               // this.gfxEngine.renderScene();
              } 
              this.rAF = requestAnimationFrame(this.animateTime.bind(this));
              
         } else 
               window.cancelAnimationFrame(this.rAF);
      };
+     
+     Scene.prototype.orbit = function(value) {
+         
+         //this.gfxEngine.controls = null;
+         this.orbitOn = value;
+    };
 
     return function() {
         instanceScene = instanceScene || new Scene();

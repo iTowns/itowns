@@ -35,6 +35,7 @@ and open the template in the editor.
                    this.CloudsIR = false;
                    this.RealisticLighting = false;
                    this.AnimateTime = false;
+                   this.Orbit = false;
                    this.Layer = "OrthoGeoportail";
                };
 
@@ -67,6 +68,9 @@ and open the template in the editor.
                
                gui.add(text, 'AnimateTime').onChange(function(newValue) {
 			itowns.viewer.animateTime(newValue);
+               });
+               gui.add(text, 'Orbit').onChange(function(newValue) {
+			itowns.viewer.orbit(newValue);
                });
                
             
