@@ -81,10 +81,10 @@ define('Scene/Scene', [
         this.managerCommand.init(this);
         var globe = new Globe(this.supportGLInspector);
         this.add(globe);
-        this.managerCommand.addLayer(globe.terrain, new tileGlobeProvider(globe.size,this.supportGLInspector));
-        this.managerCommand.addLayer(globe.colorTerrain,this.managerCommand.getProvider(globe.terrain).providerWMTS);
+        this.managerCommand.addLayer(globe.meshTerrain, new tileGlobeProvider(globe.size,this.supportGLInspector));
+        this.managerCommand.addLayer(globe.colorTerrain,this.managerCommand.getProvider(globe.meshTerrain).providerWMTS);
+        this.managerCommand.addLayer(globe.elevationTerrain,this.managerCommand.getProvider(globe.meshTerrain).providerWMTS);
         
-
         //var position    = globe.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(2.33,48.87,25000000));        
         //
         var position = globe.ellipsoid.cartographicToCartesian(new CoordCarto().setFromDegreeGeo(pos.lat, pos.lon, pos.alt));
@@ -124,15 +124,15 @@ define('Scene/Scene', [
         if(this.layers[0] !== undefined  && this.currentCamera() !== undefined )
         {                        
         
-            this.browserScene.browse(this.layers[0].terrain,this.currentCamera(),SUBDIVISE);
+            this.browserScene.browse(this.layers[0].meshTerrain,this.currentCamera(),SUBDIVISE);
                         
             this.managerCommand.runAllCommands().then(function()
                 {                   
                     if (this.managerCommand.commandsLength() === 0)
                     {                        
-                        this.browserScene.browse(this.layers[0].terrain,this.currentCamera(),SUBDIVISE);
+                        this.browserScene.browse(this.layers[0].meshTerrain,this.currentCamera(),SUBDIVISE);
                         if (this.managerCommand.commandsLength() === 0)                            
-                            this.browserScene.browse(this.layers[0].terrain,this.currentCamera(),CLEAN);
+                            this.browserScene.browse(this.layers[0].meshTerrain,this.currentCamera(),CLEAN);
                     }
                     
                 }.bind(this));

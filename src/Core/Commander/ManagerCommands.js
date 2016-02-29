@@ -96,8 +96,8 @@ define('Core/Commander/ManagerCommands', [
 
             while (this.queueAsync.length > 0 && arrayTasks.length < nT) {
                 var command = this.deQueue();   
-                if(command)
-                    arrayTasks.push(this.providerMap[command.layer.layerId].executeCommand(command));
+                if(command)                     
+                    arrayTasks.push(this.providerMap[command.layer.layerId].executeCommand(command));                
             }
 
             return arrayTasks;

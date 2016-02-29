@@ -50,7 +50,7 @@ define('Renderer/GlobeMaterial', ['THREE',
         };
         this.uniforms.pitScale_L00 = {
             type: "v3",
-            value: new THREE.Vector3(0.0, 0.0, 1.0)
+            value: new THREE.Vector3(0.0, 0.0, 0.0)
         };
         this.uniforms.pitScale_L01 = {
             type: "v3v",
@@ -109,7 +109,7 @@ define('Renderer/GlobeMaterial', ['THREE',
         if (layer === 0 && texture !== -1) {
             this.Textures_00[0] = texture;
             this.nbTextures++;
-
+            
             if (pitScale)
                 this.uniforms.pitScale_L00.value = pitScale;
         } else {
@@ -192,8 +192,8 @@ define('Renderer/GlobeMaterial', ['THREE',
         
         if(this.pitScale_L01[0].z < 1.0)
             return 1;
-        else if(this.uniforms.pitScale_L00.value.z < 1.0  ) 
-            return 0;
+//        else if(this.uniforms.pitScale_L00.value.z < 1.0  ) 
+//            return 0;
         
         return undefined;
         

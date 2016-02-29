@@ -40,10 +40,14 @@ define('Globe/Globe', [
         var kml = new THREE.Object3D();
         this.batiments.add(kml);
 
-        this.terrain = new Quadtree(EllipsoidTileMesh, this.SchemeTileWMTS(2), this.size, kml);
+        this.meshTerrain = new Quadtree(EllipsoidTileMesh, this.SchemeTileWMTS(2), this.size, kml);
+        
+        this.elevationTerrain = new Layer();
         this.colorTerrain = new Layer();
         
-        this.terrain.add(this.colorTerrain);
+        
+        this.meshTerrain.add(this.elevationTerrain);
+        this.meshTerrain.add(this.colorTerrain);
         
         this.atmosphere = this.NOIE ? new Atmosphere(this.size) : undefined;
         this.clouds = new Clouds();
@@ -87,7 +91,7 @@ define('Globe/Globe', [
         zUp.add(new THREE.AxisHelper( 10000000 ));        
         zUp.add(batiment);
         
-        this.add(this.terrain);
+        this.add(this.meshTerrain);
         this.add(this.batiments);
         //this.add(this.layerWGS84Zup);
        
@@ -111,7 +115,7 @@ define('Globe/Globe', [
     };
     
     Globe.prototype.updateQuadtree = function(){
-        this.terrain = new Quadtree(EllipsoidTileMesh, this.SchemeTileWMTS(2), this.size, false);
+        this.meshTerrain = new Quadtree(EllipsoidTileMesh, this.SchemeTileWMTS(2), this.size, false);
     };
 
     Globe.prototype.SchemeTileWMTS = function(type) {
@@ -148,7 +152,7 @@ define('Globe/Globe', [
     };
 
     /*Globe.prototype.ellipsoid = function() {
-        return this.terrain.interCommand.managerCommands.providers[0].ellipsoid;
+        return this.meshTerrain.interCommand.managerCommands.providers[0].ellipsoid;
     };*/
 
 

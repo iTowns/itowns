@@ -157,6 +157,8 @@ define('Globe/EllipsoidTileMesh', [
         if (terrain === -1)
             texture = -1;
         else if (terrain === -2) {
+            
+            //console.log(-2);
             parentBil = this.getParentLevel(this.levelTerrain);
             pitScale = parentBil.bbox.pitScale(this.bbox);
             texture = parentBil.material.Textures_00[0];
@@ -195,7 +197,11 @@ define('Globe/EllipsoidTileMesh', [
         } 
         else if (terrain === -3) {
             
-            parentBil = this.getLevelElevationParent();            
+            
+            
+            parentBil = this.getLevelElevationParent();      
+            
+            //console.log(parentBil);
             pitScale = parentBil.bbox.pitScale(this.bbox);
             texture = parentBil.material.Textures_00[0];
             //
@@ -233,11 +239,14 @@ define('Globe/EllipsoidTileMesh', [
                                 
             if(max === -1000000)
                 max = 0;
+            
+            //console.log('load elevation parent end');
                 
             this.setAltitude(min, max);
 
         } else {
-            texture = terrain.texture;
+                        
+            texture = terrain.texture;            
             pitScale = new THREE.Vector3(0,0,1);
             this.setAltitude(terrain.min, terrain.max);
         }
@@ -308,7 +317,7 @@ define('Globe/EllipsoidTileMesh', [
     EllipsoidTileMesh.prototype.getLevelElevationParent = function() 
     {        
         if( this.level === 3 )        
-            return this;
+            return this;       
         
         return !this.parent.material.isSubscaleElevation() ? this.parent : this.parent.getLevelElevationParent();
     };

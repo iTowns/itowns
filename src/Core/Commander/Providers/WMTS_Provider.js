@@ -91,8 +91,7 @@ define('Core/Commander/Providers/WMTS_Provider', [
                      coWMTS.zoom + "/" + coWMTS.col + "/" + coWMTS.row +".png";  // (z/x/y)
                 
             return url; //this.urlOrthoDarkMatter(coWMTS); //url;
-        };
-        
+        };        
 
         /**
          * return texture float alpha THREE.js of MNT 
@@ -123,13 +122,14 @@ define('Core/Commander/Providers/WMTS_Provider', [
             return this._IoDriver.read(url).then(function(result) {                                
                 if (result !== undefined) {
                     
-                    //if(this.cache.getRessource(url)) // NOTE : not necessary
+                    //TODO USE CACHE HERE ???
                       
                     result.texture = this.getTextureFloat(result.floatArray);
                     result.texture.generateMipmaps = false;
                     result.texture.magFilter = THREE.LinearFilter;
                     result.texture.minFilter = THREE.LinearFilter;
                     this.cache.addRessource(url, result);
+     
                     return result;
                 } else {
                     var texture = -1;
@@ -162,8 +162,7 @@ define('Core/Commander/Providers/WMTS_Provider', [
                 return when(result);
             }
             return this.ioDriverImage.read(url).then(function(image) {
-                
-                
+                                
                 var texture = this.cache.getRessource(image.src);
                 
                 if(texture)                
@@ -186,12 +185,53 @@ define('Core/Commander/Providers/WMTS_Provider', [
         };
         
         WMTS_Provider.prototype.executeCommand = function(command){
-            
-            return this.getOrthoImages(command.requester).then(function(result)
-            {       
-                this.setTexturesLayer(result,1);                        
-                this.material.update();
-            }.bind(command.requester));
+                                                
+            if(command.paramsFunction.subLayer === 1)
+            {
+                return this.getOrthoImages(command.requester).then(function(result)
+                {                           
+                    this.setTexturesLayer(result,1);                        
+                    this.material.update();
+                }.bind(command.requester));
+            }
+            /*
+            else //if (command.paramsFunction.subLayer === 0)
+            {
+               return; 
+                var tile = command.requester;
+                
+                //var cooWMTS =  tile.useParent() ? undefined : this.cooWMTS;
+                
+                //if(tile.useParent())
+                {
+                    var parent = tile.getLevelElevationParent();
+                    
+                    //console.log(parent);
+                        
+                    if(!parent.material.isSubscaledLayer(0))
+                    {
+                        
+                        return this.getTextureBil(parent.cooWMTS).then(function(terrain)
+                        {
+                            //console.log(terrain);
+                            this.setTerrain(terrain);
+                            this.material.update();
+                            
+                        }.bind(parent)).then(function()
+                        {
+                            this.setTerrain(-2);
+                            this.material.update();
+                                
+                        }.bind(tile));                            
+                                             
+                    }
+                    else
+                    {
+                        tile.setTerrain(-2);
+                        tile.material.update();
+                    }
+                }
+            }*/
             
         };
         
