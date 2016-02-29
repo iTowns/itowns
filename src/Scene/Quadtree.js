@@ -86,14 +86,11 @@ define('Scene/Quadtree', [
                 
         var id = node.material.getSubscaledLayer();
         
-        if(id === 1)
-        {
-            
-            this.interCommand.requestOrtho( node, this.children[id]);
+        if(id !== undefined)
+        {            
+            this.interCommand.request({subLayer : id}, node, this.children[id+1]);
         }
-//        else if (id === 0)
-//            console.log('reload MNT');
-//        
+                    
     };
 
     /**
