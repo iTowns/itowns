@@ -82,10 +82,18 @@ define('Scene/Quadtree', [
 
     };
     
-    Quadtree.prototype.reloadSubLayer = function(node,id) {
+    Quadtree.prototype.reloadSubscaledLayer = function(node) {
                 
-        this.interCommand.requestOrtho( node, this.children[id]);
+        var id = node.material.getSubscaledLayer();
         
+        if(id === 1)
+        {
+            
+            this.interCommand.requestOrtho( node, this.children[id]);
+        }
+//        else if (id === 0)
+//            console.log('reload MNT');
+//        
     };
 
     /**
