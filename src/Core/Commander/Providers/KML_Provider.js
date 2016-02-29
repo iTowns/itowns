@@ -3,7 +3,7 @@
  * Class: KML_Provider
  * Description: Parseur de KML jusqu'à obtention du collada
  */
-
+/* global Promise*/
 
 define('Core/Commander/Providers/KML_Provider', [
         'Core/Commander/Providers/Provider',
@@ -39,7 +39,7 @@ define('Core/Commander/Providers/KML_Provider', [
 
         KML_Provider.prototype.constructor = KML_Provider;
 
-        KML_Provider.prototype.loadKMZCenterInBBox = function(bbox) {
+        KML_Provider.prototype.loadKMZCenterInBBox = function(/*bbox*/) {
 
         };
 
@@ -50,34 +50,38 @@ define('Core/Commander/Providers/KML_Provider', [
                 if (result === undefined)
                     return undefined;
 
-                var child = result.scene.children[0];
-                var coorCarto = result.coorCarto;
-                var position = this.ellipsoid.cartographicToCartesian(coorCarto);
-                coorCarto.altitude = 0;
-                var normal = this.ellipsoid.geodeticSurfaceNormalCartographic(coorCarto);
+                if(result.scene.children[0])
+                {
+                    var child = result.scene.children[0];
+                    var coorCarto = result.coorCarto;
+                    var position = this.ellipsoid.cartographicToCartesian(coorCarto);
+                    coorCarto.altitude = 0;
+                    var normal = this.ellipsoid.geodeticSurfaceNormalCartographic(coorCarto);
 
-                var quaternion = new THREE.Quaternion();
-                quaternion.setFromAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI / 2);
+                    var quaternion = new THREE.Quaternion();
+                    quaternion.setFromAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI / 2);
 
-                child.lookAt(new THREE.Vector3().addVectors(position, normal));
-                child.quaternion.multiply(quaternion);
-                child.position.copy(position);
+                    child.lookAt(new THREE.Vector3().addVectors(position, normal));
+                    child.quaternion.multiply(quaternion);
+                    child.position.copy(position);
 
-                child.updateMatrix();
-                child.visible = false;
+                    child.updateMatrix();
+                    child.visible = false;
 
-                var changeMaterial = function(object3D) {
+                    var changeMaterial = function(object3D) {
 
-                    if (object3D.material instanceof THREE.MultiMaterial) {
-                        object3D.material = new BasicMaterial(object3D.material.materials[0].color);
-                    } else if (object3D.material)
-                        object3D.material = new BasicMaterial(object3D.material.color);
-                };
+                        if (object3D.material instanceof THREE.MultiMaterial) {
+                            object3D.material = new BasicMaterial(object3D.material.materials[0].color);
+                        } else if (object3D.material)
+                            object3D.material = new BasicMaterial(object3D.material.color);
+                    };
 
 
-                child.traverse(changeMaterial);
+                    child.traverse(changeMaterial);
 
-                return child;
+                    return child;
+                }
+                return undefined;
 
             }.bind(this));
 
@@ -101,7 +105,7 @@ define('Core/Commander/Providers/KML_Provider', [
                 var NetworkLink = [];
                 NetworkLink = result.getElementsByTagName("NetworkLink");
 
-                for (i = 0; i < NetworkLink.length; i++) {
+                for (var i = 0; i < NetworkLink.length; i++) {
 
                     var coords = [];
                     coords[0] = NetworkLink[i].getElementsByTagName("north")[0].childNodes[0].nodeValue;
@@ -154,12 +158,12 @@ define('Core/Commander/Providers/KML_Provider', [
 
         KML_Provider.prototype.getUrlCollada = function(longitude, latitude) {
             
-            return new Promise(function(resolve, reject)         
+            return new Promise(function(resolve/*, reject*/)         
             {  
-                this.ioDriverXML.read('http://wxs.ign.fr/j2bfkv9whnqpq04zpzlfz2ge/vecteurtuile3d/BATI3D/BU.Building.kml').then(function(result_0) {
+                this.ioDriverXML.read('http://wxs.ign.fr/j2bfkv9whnqpq04zpzlfz2ge/vecteurtuile3d/BATI3D/BU.Building.kml').then(function(/*result_0*/) {
 
                     // get href's node value
-                    var kml_0 = result_0.getElementsByTagName("href");
+                    //var kml_0 = result_0.getElementsByTagName("href");
                     var url_href_1; 
                     var key = 'j2bfkv9whnqpq04zpzlfz2ge';
 

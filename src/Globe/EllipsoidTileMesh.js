@@ -20,21 +20,24 @@ define('Globe/EllipsoidTileMesh', [
     'Scene/BoundingBox',
     'Core/defaultValue',
     'THREE',
-    'Renderer/GlobeMaterial',
-    'Core/Geographic/CoordCarto',
     'OBBHelper',
-    'SphereHelper'
-], function(NodeMesh, EllipsoidTileGeometry, BoundingBox, defaultValue, THREE, GlobeMaterial, CoordCarto, OBBHelper, SphereHelper) {
+    'SphereHelper',
+    'Renderer/GlobeMaterial',
+    'Core/Geographic/CoordCarto'
+], function(NodeMesh, EllipsoidTileGeometry, BoundingBox, defaultValue, THREE, OBBHelper, SphereHelper, GlobeMaterial, CoordCarto) {
 
-    function EllipsoidTileMesh(bbox, cooWMTS, ellipsoid, id, geometryCache) {
+    function EllipsoidTileMesh(bbox, cooWMTS, ellipsoid, id, geometryCache,link) {
         //Constructor
         NodeMesh.call(this);
 
-
+        this.matrixAutoUpdate = false;
+        this.rotationAutoUpdate = false;
+        
         this.level = cooWMTS.zoom;
         this.cooWMTS = cooWMTS;
         this.bbox = defaultValue(bbox, new BoundingBox());
         this.id = id;
+        this.link = link;
 
         var precision = 16;
         var levelMax = 18;
@@ -65,21 +68,19 @@ define('Globe/EllipsoidTileMesh', [
             }
         }
 
-
-        //  TODO : Attention ne marche plus car les helpers ne sont plus ajouter à la scene
-        /*
         var showHelper = true;
         showHelper = false;
 
         if (showHelper && this.level >= 2) {
-
-            //this.helper  = new THREE.SphereHelper(this.geometry.boundingSphere.radius);
-
-            //var text = 'z(' + this.level.toString() + '),r(' + cooWMTS.row + '),c(' + cooWMTS.col + ')';
+            
+            // TODO Dispose HELPER!!!
             var text = (this.level + 1).toString();
 
-            this.helper = new THREE.OBBHelper(this.geometry.OBB, text);
-
+            if(showHelper)
+                this.helper = new THREE.OBBHelper(this.geometry.OBB, text);
+            else
+                this.helper  = new THREE.SphereHelper(this.geometry.boundingSphere.radius);
+            
             if (this.helper instanceof THREE.SphereHelper)
 
                 this.helper.position.add(this.absoluteCenter);
@@ -87,9 +88,12 @@ define('Globe/EllipsoidTileMesh', [
             else if (this.helper instanceof THREE.OBBHelper)
 
                 this.helper.translateZ(this.absoluteCenter.length());
+                        
+            if(this.helper)
+                this.link.add(this.helper);
 
         }
-        */
+        
     }
 
     EllipsoidTileMesh.prototype = Object.create(NodeMesh.prototype);
@@ -148,18 +152,57 @@ define('Globe/EllipsoidTileMesh', [
     EllipsoidTileMesh.prototype.setTerrain = function(terrain) {
         var texture;
         var pitScale;
-
+        var parentBil;
+        
         if (terrain === -1)
             texture = -1;
         else if (terrain === -2) {
-            var parentBil = this.getParentLevel(this.levelTerrain);
+            parentBil = this.getParentLevel(this.levelTerrain);
             pitScale = parentBil.bbox.pitScale(this.bbox);
             texture = parentBil.material.Textures_00[0];
-
+            //
+            var max = parentBil.bbox.maxCarto.altitude;
+            var min = parentBil.bbox.minCarto.altitude;
+            
+            if(this.level > 14 && (max - min) > 100)
+            {
+                var image = this.parent.material.Textures_00[0].image;
+                var buffer = image.data;
+                
+                var size = Math.floor(pitScale.z * image.width);                
+                var xs = Math.floor(pitScale.x * image.width);
+                var ys = Math.floor(pitScale.y * image.width);
+                                
+                max = -1000000;
+                min =  1000000;
+                
+                var inc = Math.max(Math.floor(size/8),2);
+                              
+                for (var y  = ys; y <  ys + size; y+=inc){                    
+                    var pit = y * image.width;
+                    for (var x = xs; x < xs +size; x+=inc) {                    
+                        var val = buffer[pit + x];  
+                        if (val > -10.0 && val !== undefined){
+                            max = Math.max(max, val);
+                            min = Math.min(min, val);
+                        }                        
+                    }
+                }
+            }
+            
+            this.setAltitude(min, max);
+            
+        } 
+        else if (terrain === -3) {
+            
+            parentBil = this.getLevelElevationParent();            
+            pitScale = parentBil.bbox.pitScale(this.bbox);
+            texture = parentBil.material.Textures_00[0];            
             this.setAltitude(parentBil.bbox.minCarto.altitude, parentBil.bbox.maxCarto.altitude);
 
         } else {
             texture = terrain.texture;
+            pitScale = new THREE.Vector3(0,0,1);
             this.setAltitude(terrain.min, terrain.max);
         }
 
@@ -185,12 +228,10 @@ define('Globe/EllipsoidTileMesh', [
         }
     };
 
-    EllipsoidTileMesh.prototype.setTextureOrtho = function(texture, id) {
+    EllipsoidTileMesh.prototype.setTextureOrtho = function(texture, id,pitch) {
         id = id === undefined ? 0 : id;
-        this.material.setTexture(texture, 1, id);
+        this.material.setTexture(texture, 1, id,pitch);
         this.checkOrtho();
-        //  if(this.material.nbTextures === this.material.Textures_01.length)
-        //   this.visible = false;
     };
 
     EllipsoidTileMesh.prototype.normals = function() {
@@ -212,17 +253,29 @@ define('Globe/EllipsoidTileMesh', [
     EllipsoidTileMesh.prototype.OBB = function() {
         return this.geometry.OBB;
     };
+    
+    EllipsoidTileMesh.prototype.getLevelOrthoParent = function() 
+    {
+         return !this.parent.material.isSubscaleDiffuse() ? this.parent.level+1 : this.parent.getLevelOrthoParent();
+    };
+    
+    EllipsoidTileMesh.prototype.getLevelElevationParent = function() 
+    {        
+        if( this.level === 3 )
+        {            
+            return this;
+        }
+        
+        return !this.parent.material.isSubscaleElevation() ? this.parent : this.parent.getLevelElevationParent();
+    };
 
     EllipsoidTileMesh.prototype.checkOrtho = function() {
 
-
-        if (this.orthoNeed + 1 === this.material.nbTextures || this.level < 2)
-
-        {
+        if (this.orthoNeed + 1 === this.material.nbTextures || this.level < 2){
 
             this.loaded = true;
             this.material.update();
-
+            
             var parent = this.parent;
 
             if (parent !== null && parent.childrenLoaded()) {

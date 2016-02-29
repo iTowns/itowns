@@ -1,4 +1,4 @@
-/* global Uint16Array, Uint32Array */
+/* global  Uint32Array */
 
 /**
  * Generated On: 2015-10-5
@@ -126,22 +126,22 @@ define('Globe/EllipsoidTileGeometry', [
 
                 var vertex = ellipsoid.cartographicToCartesian(new CoordCarto(longi, lati, 0));
 
-                var id3 = idVertex * 3;
+                var id_m3 = idVertex * 3;
                 //                    
-                bufferVertex[id3 + 0] = vertex.x - this.center.x;
-                bufferVertex[id3 + 1] = vertex.y - this.center.y;
-                bufferVertex[id3 + 2] = vertex.z - this.center.z;
+                bufferVertex[id_m3 + 0] = vertex.x - this.center.x;
+                bufferVertex[id_m3 + 1] = vertex.y - this.center.y;
+                bufferVertex[id_m3 + 2] = vertex.z - this.center.z;
 
 
-                //                    bufferVertex[id3+ 0] = vertex.x ;
-                //                    bufferVertex[id3+ 1] = vertex.y ;
-                //                    bufferVertex[id3+ 2] = vertex.z ;
+                //                    bufferVertex[id_m3+ 0] = vertex.x ;
+                //                    bufferVertex[id_m3+ 1] = vertex.y ;
+                //                    bufferVertex[id_m3+ 2] = vertex.z ;
 
                 var normal = vertex.clone().normalize();
 
-                bufferNormal[id3 + 0] = normal.x;
-                bufferNormal[id3 + 1] = normal.y;
-                bufferNormal[id3 + 2] = normal.z;
+                bufferNormal[id_m3 + 0] = normal.x;
+                bufferNormal[id_m3 + 1] = normal.y;
+                bufferNormal[id_m3 + 2] = normal.z;
 
                 bufferUV[idVertex * 2 + 0] = u;
                 bufferUV[idVertex * 2 + 1] = 1 - v;
@@ -198,25 +198,25 @@ define('Globe/EllipsoidTileGeometry', [
             }
         }
 
-        var start = idVertex;
+        start = idVertex;
         var rmax = 5000;
         var r = Math.max(rmax, Math.pow(rmax, 1 / zoom));
 
         r = isFinite(r) ? r : rmax;
 
-        for (i = 0; i < skirt.length; i++) {
+        for (var i = 0; i < skirt.length; i++) {
 
             var id = skirt[i];
-            var id3 = idVertex * 3;
-            var id23 = id * 3;
+            id_m3 = idVertex * 3;
+            var id2_m3 = id * 3;
 
-            bufferVertex[id3 + 0] = bufferVertex[id23 + 0] - bufferNormal[id23 + 0] * r;
-            bufferVertex[id3 + 1] = bufferVertex[id23 + 1] - bufferNormal[id23 + 1] * r;
-            bufferVertex[id3 + 2] = bufferVertex[id23 + 2] - bufferNormal[id23 + 2] * r;
+            bufferVertex[id_m3 + 0] = bufferVertex[id2_m3 + 0] - bufferNormal[id2_m3 + 0] * r;
+            bufferVertex[id_m3 + 1] = bufferVertex[id2_m3 + 1] - bufferNormal[id2_m3 + 1] * r;
+            bufferVertex[id_m3 + 2] = bufferVertex[id2_m3 + 2] - bufferNormal[id2_m3 + 2] * r;
 
-            bufferNormal[id3 + 0] = bufferNormal[id23 + 0];
-            bufferNormal[id3 + 1] = bufferNormal[id23 + 1];
-            bufferNormal[id3 + 2] = bufferNormal[id23 + 2];
+            bufferNormal[id_m3 + 0] = bufferNormal[id2_m3 + 0];
+            bufferNormal[id_m3 + 1] = bufferNormal[id2_m3 + 1];
+            bufferNormal[id_m3 + 2] = bufferNormal[id2_m3 + 2];
 
             bufferUV[idVertex * 2 + 0] = bufferUV[id * 2 + 0];
             bufferUV[idVertex * 2 + 1] = bufferUV[id * 2 + 1];
@@ -224,10 +224,10 @@ define('Globe/EllipsoidTileGeometry', [
 
             var idf = (i + 1) % skirt.length;
 
-            var v1 = id;
-            var v2 = idVertex;
-            var v3 = idVertex + 1;
-            var v4 = skirt[idf];
+            v1 = id;
+            v2 = idVertex;
+            v3 = idVertex + 1;
+            v4 = skirt[idf];
 
             if (idf === 0)
                 v3 = start;

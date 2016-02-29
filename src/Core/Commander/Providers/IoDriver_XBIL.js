@@ -2,9 +2,9 @@
  * Generated On: 2015-10-5
  * Class: IoDriver_XBIL
  */
+/* global Promise*/
 
-
-define('Core/Commander/Providers/IoDriver_XBIL', ['Core/Commander/Providers/IoDriver', 'when'], function(IoDriver, when) {
+define('Core/Commander/Providers/IoDriver_XBIL', ['Core/Commander/Providers/IoDriver'], function(IoDriver) {
 
 
     var portableXBIL = function(buffer) {
@@ -24,67 +24,94 @@ define('Core/Commander/Providers/IoDriver_XBIL', ['Core/Commander/Providers/IoDr
     IoDriver_XBIL.prototype = Object.create(IoDriver.prototype);
 
     IoDriver_XBIL.prototype.constructor = IoDriver_XBIL;
+    
+    IoDriver_XBIL.prototype.parseXBil = function(buffer) {
+        
+//        var parseMinMax = function(result,start,length) {
+//                   
+//            for (var i = start; i <  length; i++) {
+//                var val = result.floatArray[i];                   
+//                if (val > -10.0 && val !== undefined){
+//                    result.max = Math.max(result.max, val);
+//                    result.min = Math.min(result.min, val);
+//                }
+//            }            
+//        };        
+        
+        if (buffer){
 
+            var result = new portableXBIL(buffer);
+            // Compute min max using subampling
+            //console.log(result.floatArray.length);
+            for (var i = 0; i < result.floatArray.length; i+=16) {
+                var val = result.floatArray[i];                   
+                if (val > -10.0 && val !== undefined){
+                    result.max = Math.max(result.max, val);
+                    result.min = Math.min(result.min, val);
+                }
+            }
+            
+            /*
+            var subSize = result.floatArray.length/64;
+            
+            var arrayP = [];
+            
+            for (var i = 0; i < result.floatArray.length; i+= subSize )
+            {
+                arrayP.push(when(parseMinMax(result,i,subSize)));
+            }
+            
+            when.all(arrayP);
+            */
+            if (result.min === 1000000)
+                return undefined;
+
+            return result;
+        }
+        else
+            return undefined;
+    };
+    
+    IoDriver_XBIL.prototype.parseMinMax = function(result/*,start,length*/) {
+        
+        for (var i = 0; i < result.floatArray.length; i++) {
+            var val = result.floatArray[i];                   
+            if (val > -10.0 && val !== undefined){
+                result.max = Math.max(result.max, val);
+                result.min = Math.min(result.min, val);
+            }
+        }        
+    };
+    
     IoDriver_XBIL.prototype.read = function(url) {
 
         // TODO new Promise is supported?
   
         //return when.promise(function(resolve, reject) 
-        return new Promise(function(resolve, reject) 
+        return new Promise(function(resolve/*, reject*/) 
         {
             var xhr = new XMLHttpRequest();
 
             xhr.open("GET", url, true);
 
             xhr.responseType = "arraybuffer";
-            xhr.crossOrigin = '';
+            xhr.crossOrigin = '';          
+            xhr["parseXBil"] = this.parseXBil;
 
             xhr.onload = function() {
-
-                var arrayBuffer = this.response;
-
-                if (arrayBuffer) {
-
-                    //                var floatArray = new Float32Array(arrayBuffer);                
-                    //                var max = - 1000000;
-                    //                var min =   1000000;
-
-                    var result = new portableXBIL(arrayBuffer);
-
-                    var mcolor = 0.0;
-                    //var mcolor  = Math.random();
-
-
-                    for (var i = 0; i < result.floatArray.byteLength; i++) {
-                        var val = result.floatArray[i];
-                        //  TODO debug a voir avec le geoportail
-                        //if(val === -99999.0 || val === undefined )                        
-                        if (val < -10.0 || val === undefined)
-                            result.floatArray[i] = mcolor;
-                        else {
-                            result.max = Math.max(result.max, val);
-                            result.min = Math.min(result.min, val);
-                        }
-                    }
-
-                    if (result.min === 1000000)
-                        return resolve(undefined);
-
-                    resolve(result);
-                }
+                                  
+                resolve(this.parseXBil(this.response));
+              
             };
 
             xhr.onerror = function() {
 
-                //console.log('error bil');
                 resolve(undefined);
-                //reject(Error("Error IoDriver_XBIL"));
-
             };
 
             xhr.send(null);
 
-        });
+        }.bind(this));
 
 
     };

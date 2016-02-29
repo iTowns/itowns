@@ -16,7 +16,7 @@ define('Core/Geographic/Projection', ['Core/Geographic/CoordWMTS', 'Core/Math/Ma
      * @param x
      * @param y
      */
-    Projection.prototype.WGS84ToPM = function(x, y) {
+    Projection.prototype.WGS84ToPM = function(/*x, y*/) {
         //TODO: Implement Me 
 
     };
@@ -78,12 +78,31 @@ define('Core/Geographic/Projection', ['Core/Geographic/CoordWMTS', 'Core/Math/Ma
         return wmtsBox;
 
     };
+    
+    Projection.prototype.WMTS_WGS84Parent = function(cWMTS, levelParent, pitch) 
+    {
+        
+        var diffLevel = cWMTS.zoom  - levelParent;
+        var diff = Math.pow(2,diffLevel);
+        var invDiff = 1/diff;
+
+        var r = ( cWMTS.row - (cWMTS.row%diff)) * invDiff;
+        var c = ( cWMTS.col - (cWMTS.col%diff)) * invDiff;
+        
+        pitch.x = cWMTS.col * invDiff - c;        
+        pitch.y = cWMTS.row * invDiff - r;         
+        pitch.z = invDiff;                
+        
+        return new CoordWMTS(levelParent, r, c);
+        
+    };
+
 
     /**
      * @param x
      * @param y
      */
-    Projection.prototype.PMToWGS84 = function(x, y) {
+    Projection.prototype.PMToWGS84 = function(/*x, y*/) {
         //TODO: Implement Me 
 
     };
@@ -109,7 +128,7 @@ define('Core/Geographic/Projection', ['Core/Geographic/CoordWMTS', 'Core/Math/Ma
      * @param longi
      * @param lati
      */
-    Projection.prototype.geoToPM = function(longi, lati) {
+    Projection.prototype.geoToPM = function(/*longi, lati*/) {
         //TODO: Implement Me 
 
     };
@@ -119,7 +138,7 @@ define('Core/Geographic/Projection', ['Core/Geographic/CoordWMTS', 'Core/Math/Ma
      * @param longi
      * @param lati
      */
-    Projection.prototype.geoToWGS84 = function(longi, lati) {
+    Projection.prototype.geoToWGS84 = function(/*longi, lati*/) {
         //TODO: Implement Me 
 
     };

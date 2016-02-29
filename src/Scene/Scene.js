@@ -28,6 +28,10 @@ define('Scene/Scene', [
 ], function(c3DEngine, Globe, Plane, ManagerCommands, tileGlobeProvider, FlatTileProvider, BrowseTree, NodeProcess, Quadtree, Layer, CoordCarto, Capabilities) {
 
     var instanceScene = null;
+    
+    var NO_SUBDIVISE = 0;
+    var SUBDIVISE = 1;
+    var CLEAN = 2;
 
     function Scene() {
         //Constructor        
@@ -38,7 +42,10 @@ define('Scene/Scene', [
         this.cameras = null;
         this.selectNodes = null;
         this.managerCommand = ManagerCommands();
-        this.gfxEngine = c3DEngine();
+        
+        this.supportGLInspector = false;
+        //this.supportGLInspector = true;
+        this.gfxEngine = c3DEngine(this.supportGLInspector);
         this.browserScene = new BrowseTree(this.gfxEngine);
         this.cap = new Capabilities();
     }
@@ -75,7 +82,7 @@ define('Scene/Scene', [
         
         this.managerCommand.init(this);
         
-        var flat = true;
+        var flat = false;
         if (flat) {
             var srid = "EPSG:3946";
             var plane = new Plane(srid, {xmin:1847500, xmax:1849500, ymin:5171000, ymax:5173000}); 
@@ -88,9 +95,11 @@ define('Scene/Scene', [
             this.gfxEngine.update();
         }
         else {
-            var globe = new Globe();
+            var globe = new Globe(this.supportGLInspector);
             this.add(globe);
-            this.managerCommand.addLayer(globe.terrain, new tileGlobeProvider(globe.size));
+            this.managerCommand.addLayer(globe.terrain, new tileGlobeProvider(globe.size,this.supportGLInspector));
+            this.managerCommand.addLayer(globe.colorTerrain,this.managerCommand.getProvider(globe.terrain).providerWMTS);
+        
 
             //var position    = globe.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(2.33,48.87,25000000));        
             //
@@ -123,23 +132,28 @@ define('Scene/Scene', [
      * 
      * @returns {undefined}
      */   
-    Scene.prototype.sceneProcess = function(){
-        
-        //console.log(this.managerCommand.queueAsync.length);
-        
+    Scene.prototype.sceneProcess = function(){        
         if(this.layers[0] !== undefined  && this.currentCamera() !== undefined )
         {                        
         
-            this.browserScene.browse(this.layers[0].terrain,this.currentCamera(),true);
+            this.browserScene.browse(this.layers[0].terrain,this.currentCamera(),SUBDIVISE);
                         
-            this.managerCommand.runAllCommands();//.then(function(){this.updateScene3D()}.bind(this));
+            this.managerCommand.runAllCommands().then(function()
+                {                   
+                    if (this.managerCommand.commandsLength() === 0)
+                    {                        
+                        this.browserScene.browse(this.layers[0].terrain,this.currentCamera(),SUBDIVISE);
+                        if (this.managerCommand.commandsLength() === 0)                            
+                            this.browserScene.browse(this.layers[0].terrain,this.currentCamera(),CLEAN);
+                    }
+                    
+                }.bind(this));
             
             this.renderScene3D();                
-            //this.updateScene3D(); 
-                
-        } 
-        
+            //this.updateScene3D();                 
+        }         
     };
+
     
     Scene.prototype.realtimeSceneProcess = function() {
 
@@ -151,7 +165,7 @@ define('Scene/Scene', [
                     var sLayer = layer.children[sl];
 
                     if (sLayer instanceof Quadtree)
-                        this.browserScene.browse(sLayer, this.currentCamera(), false);
+                        this.browserScene.browse(sLayer, this.currentCamera(), NO_SUBDIVISE);
                     else if (sLayer instanceof Layer)
                         this.browserScene.updateLayer(sLayer,this.currentCamera());
 
@@ -168,9 +182,9 @@ define('Scene/Scene', [
         this.gfxEngine.update();
     };
 
-    Scene.prototype.wait = function() {
+    Scene.prototype.wait = function(timeWait) {
 
-        var waitTime = 20;
+        var waitTime = timeWait ? timeWait: 20;
 
         this.realtimeSceneProcess();
 
@@ -214,7 +228,7 @@ define('Scene/Scene', [
      *
      * @param layer {[object Object]} 
      */
-    Scene.prototype.remove = function(layer) {
+    Scene.prototype.remove = function(/*layer*/) {
         //TODO: Implement Me 
 
     };
@@ -223,7 +237,7 @@ define('Scene/Scene', [
     /**
      * @param layers {[object Object]} 
      */
-    Scene.prototype.select = function(layers) {
+    Scene.prototype.select = function(/*layers*/) {
         //TODO: Implement Me 
 
     };

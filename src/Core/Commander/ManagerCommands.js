@@ -6,30 +6,20 @@
 
 /**
  * 
- * @param {type} tileGlobeProvider
  * @param {type} EventsManager
  * @param {type} PriorityQueue
  * @param {type} when
- * @param {type} EllipsoidTileMesh
- * @param {type} CoordCarto
- * @param {type} THREE
  * @returns {Function}
  */
 define('Core/Commander/ManagerCommands', [
         'Core/Commander/Interfaces/EventsManager',
         'PriorityQueue',
-        'when',
-        'Globe/EllipsoidTileMesh',
-        'Core/Geographic/CoordCarto',
-        'THREE'
+        'when'
     ],
     function(
         EventsManager,
         PriorityQueue,
-        when,
-        EllipsoidTileMesh,
-        CoordCarto,
-        THREE
+        when
     ) {
 
         var instanceCommandManager = null;
@@ -65,24 +55,30 @@ define('Core/Commander/ManagerCommands', [
         };
 
         ManagerCommands.prototype.addLayer = function(layer, provider) {
-            this.providerMap[layer] = provider;
+            this.providerMap[layer.layerId] = provider;
+        };
+        
+        ManagerCommands.prototype.getProvider = function(layer) {
+            return this.providerMap[layer.layerId];
+        };
+        
+        ManagerCommands.prototype.commandsLength = function() {
+            return this.queueAsync.length;
         };
 
         ManagerCommands.prototype.runAllCommands = function() {
             
-            if (this.queueAsync.length === 0)
-            {                
+                               
+            if (this.commandsLength() === 0)
+            {                                
                 return when(0);
             }
-
-            return when.all(this.arrayDeQueue(4))
+            
+            return when.all(this.arrayDeQueue(8))
                 .then(function() {
-                
-                if (this.queueAsync.length === 0)
-                {
-                    //this.scene.updateScene3D();
-                   this.scene.wait();                                      
-                }
+                                
+                this.scene.wait(1); 
+                //this.scene.renderScene3D();                     
                 
                 return this.runAllCommands();
                 
@@ -96,8 +92,9 @@ define('Core/Commander/ManagerCommands', [
             var arrayTasks = [];
 
             while (this.queueAsync.length > 0 && arrayTasks.length < nT) {
-                var command = this.deQueue();
-                arrayTasks.push(this.providerMap[command.layer].executeCommand(command));
+                var command = this.deQueue();   
+                if(command)
+                    arrayTasks.push(this.providerMap[command.layer.layerId].executeCommand(command));
             }
 
             return arrayTasks;
@@ -153,7 +150,7 @@ define('Core/Commander/ManagerCommands', [
         /**
          * @param object
          */
-        ManagerCommands.prototype.addInHistory = function(object) {
+        ManagerCommands.prototype.addInHistory = function(/*object*/) {
             //TODO: Implement Me 
 
         };

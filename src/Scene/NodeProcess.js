@@ -107,7 +107,7 @@ define('Scene/NodeProcess', ['Scene/BoundingBox', 'Renderer/Camera', 'Core/Math/
      * @param {type} camera
      * @returns {unresolved}
      */
-    NodeProcess.prototype.frustumBB = function(node, camera) {
+    NodeProcess.prototype.frustumBB = function(node/*, camera*/) {
 
         return node.setVisibility(node.bbox.intersect(this.bbox));
 

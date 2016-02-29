@@ -25,6 +25,9 @@ define('Scene/Quadtree', [
         this.schemeTile = schemeTile;
         this.tileType = type;
         var rootNode = new NodeMesh();
+        
+        rootNode.link = this.link;
+        
         rootNode.enablePickingRender = function() { return true;};
         this.add(rootNode);
 
@@ -77,6 +80,12 @@ define('Scene/Quadtree', [
         this.createTile(quad.southWest, node);
         this.createTile(quad.southEast, node);
 
+    };
+    
+    Quadtree.prototype.reloadSubLayer = function(node,id) {
+                
+        this.interCommand.requestOrtho( node, this.children[id]);
+        
     };
 
     /**

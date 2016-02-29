@@ -7,6 +7,8 @@
 
 define('Core/Commander/Providers/WMTS_Provider', [
         'Core/Commander/Providers/Provider',
+        'Core/Geographic/Projection',
+        'Core/Geographic/CoordWMTS',
         'Core/Commander/Providers/IoDriver_XBIL',
         'Core/Commander/Providers/IoDriver_Image',
         'Core/Commander/Providers/IoDriverXML',
@@ -16,6 +18,8 @@ define('Core/Commander/Providers/WMTS_Provider', [
     ],
     function(
         Provider,
+        Projection,
+        CoordWMTS,
         IoDriver_XBIL,
         IoDriver_Image,
         IoDriverXML,
@@ -31,9 +35,17 @@ define('Core/Commander/Providers/WMTS_Provider', [
             this.cache = CacheRessource();
             this.ioDriverImage = new IoDriver_Image();
             this.ioDriverXML = new IoDriverXML();
-            
+            this.projection = new Projection();
             this.baseUrl = options.url || "http://wxs.ign.fr/";
             this.layer   = options.layer || "ORTHOIMAGERY.ORTHOPHOTOS";
+            this.support = options.support || false;
+            
+            this.getTextureFloat;
+            
+            if(this.support)
+                this.getTextureFloat = function(){return new THREE.Texture();};
+            else
+                this.getTextureFloat = function(buffer){return new THREE.DataTexture(buffer, 256, 256, THREE.AlphaFormat, THREE.FloatType);};
 
         }
 
@@ -88,10 +100,13 @@ define('Core/Commander/Providers/WMTS_Provider', [
          * @returns {WMTS_Provider_L15.WMTS_Provider.prototype@pro;_IoDriver@call;read@call;then}
          */
         WMTS_Provider.prototype.getTextureBil = function(coWMTS) {
-
-            if (coWMTS === undefined)
+             
+            if (coWMTS === undefined)                
                 return when(-2);
-
+             
+            if (coWMTS.zoom === -1)                                
+                return when(-3);
+            
             var url = this.url(coWMTS);
 
             var textureCache = this.cache.getRessource(url);
@@ -105,11 +120,12 @@ define('Core/Commander/Providers/WMTS_Provider', [
                 return when(texture);
             }
 
-            return this._IoDriver.read(url).then(function(result) {
-                
-                
+            return this._IoDriver.read(url).then(function(result) {                                
                 if (result !== undefined) {
-                    result.texture = new THREE.DataTexture(result.floatArray, 256, 256, THREE.AlphaFormat, THREE.FloatType);
+                    
+                    //if(this.cache.getRessource(url)) // NOTE : not necessary
+                      
+                    result.texture = this.getTextureFloat(result.floatArray);
                     result.texture.generateMipmaps = false;
                     result.texture.magFilter = THREE.LinearFilter;
                     result.texture.minFilter = THREE.LinearFilter;
@@ -130,14 +146,15 @@ define('Core/Commander/Providers/WMTS_Provider', [
          * @param {type} id
          * @returns {WMTS_Provider_L15.WMTS_Provider.prototype@pro;ioDriverImage@call;read@call;then}
          */
-        WMTS_Provider.prototype.getTextureOrtho = function(coWMTS, id) {
+        WMTS_Provider.prototype.getTextureOrtho = function(coWMTS, id,pitch) {
 
-            var pack = function(i) {
+            var pack = function(i,pitch) {
                 this.texture;
                 this.id = i;
+                this.pitch = pitch;
             };
 
-            var result = new pack(id);
+            var result = new pack(id,pitch);
 
             var url = this.urlOrtho(coWMTS);
             result.texture = this.cache.getRessource(url);
@@ -146,21 +163,80 @@ define('Core/Commander/Providers/WMTS_Provider', [
                 return when(result);
             }
             return this.ioDriverImage.read(url).then(function(image) {
+                
+                
+                var texture = this.cache.getRessource(image.src);
+                
+                if(texture)                
+                    result.texture = texture;                                
+                else
+                {
+                    result.texture = new THREE.Texture(image);
+                    result.texture.generateMipmaps = false;
+                    result.texture.magFilter = THREE.LinearFilter;
+                    result.texture.minFilter = THREE.LinearFilter;
+                    result.texture.anisotropy = 16;
+                    result.texture.url = url; 
 
-                result.texture = new THREE.Texture(image);
-                result.texture.generateMipmaps = false;
-                result.texture.magFilter = THREE.LinearFilter;
-                result.texture.minFilter = THREE.LinearFilter;
-                result.texture.anisotropy = 16;
-                result.texture.url = url; 
-
-                this.cache.addRessource(url, result.texture);
+                    this.cache.addRessource(url, result.texture);
+                }
                 return result;
 
             }.bind(this));
 
         };
+        
+        WMTS_Provider.prototype.executeCommand = function(command){
+            
+            //console.log(command.requester);
+               // console.log('reload child');
+            return this.getOrthoImages(command.requester);
+            
+        };
+        
+        WMTS_Provider.prototype.getOrthoImages = function(tile) {
 
-        return WMTS_Provider;
+           var promises = [];
+
+
+           if (tile.cooWMTS.zoom >= 2)
+           {
+               //tile.loaded = false;               
+               if(tile.material === null) // TODO WHy -> dispose??
+                   return;
+               tile.material.nbTextures = 1;
+               var box = this.projection.WMTS_WGS84ToWMTS_PM(tile.cooWMTS, tile.bbox); // 
+               var id = 0;
+               var col = box[0].col;
+               tile.orthoNeed = box[1].row + 1 - box[0].row;
+
+               for (var row = box[0].row; row < box[1].row + 1; row++) {
+                   var cooWMTS = new CoordWMTS(box[0].zoom, row, col);
+
+                   var pitch = new THREE.Vector3(0.0,0.0,1.0);
+     
+                   promises.push(this.getTextureOrtho(cooWMTS,id,pitch).then(
+                       function(result){       
+                           
+                           this.setTextureOrtho(result.texture, result.id,result.pitch);                           
+                           this.material.update();
+                           return this;
+                       }.bind(tile)
+                   ));
+
+                   id++;
+               }
+               
+               return when.all(promises);
+           }
+           else
+           {
+               tile.checkOrtho();
+               promises.push(when(tile));
+               return when.all(promises);
+           }
+       };
+
+       return WMTS_Provider;
 
     });

@@ -22,18 +22,18 @@ define('Globe/Globe', [
     Ellipsoid, EllipsoidTileMesh, Atmosphere, Clouds, Capabilities,
     CoordCarto, BasicMaterial, THREE) {
 
-    function Globe(scale) {
+    function Globe(supportGLInspector) {
         //Constructor
 
         Layer.call(this);
 
-        scale = defaultValue(scale, 1.0);
+        var scale = defaultValue(scale, 1.0);
         var caps = new Capabilities();
         this.NOIE = !caps.isInternetExplorer();
-
+        this.supportGLInspector = supportGLInspector;
         this.size = new THREE.Vector3(6378137, 6356752.3142451793, 6378137).multiplyScalar(scale);
         this.ellipsoid = new Ellipsoid(this.size);
-        var exen = 6356752.3142451793/6378137;
+        
         this.batiments = new Layer();
         this.layerWGS84Zup = new Layer();
 
@@ -41,6 +41,10 @@ define('Globe/Globe', [
         this.batiments.add(kml);
 
         this.terrain = new Quadtree(EllipsoidTileMesh, this.SchemeTileWMTS(2), this.size, kml);
+        this.colorTerrain = new Layer();
+        
+        this.terrain.add(this.colorTerrain);
+        
         this.atmosphere = this.NOIE ? new Atmosphere(this.size) : undefined;
         this.clouds = new Clouds();
 
@@ -57,14 +61,8 @@ define('Globe/Globe', [
         // 48.846931,2.337219,50
         position = new THREE.Vector3(4201801.65418896,171495.727885073,4779411.45896233);
         
+        //position = this.ellipsoid.cartographicToCartesian(new CoordCarto().setFromDegreeGeo(48.87, 0, 200));
         
-
-        var position = this.ellipsoid.cartographicToCartesian(new CoordCarto().setFromDegreeGeo(48.87, 0, 200));
-
-
-
-
-
         batiment.frustumCulled = false;
         //material.wireframe      = true;
         batiment.position.copy(position);
@@ -93,7 +91,7 @@ define('Globe/Globe', [
         this.add(this.batiments);
         //this.add(this.layerWGS84Zup);
        
-        if (this.atmosphere !== undefined) {
+        if (this.atmosphere !== undefined && !this.supportGLInspector) {
             this.atmosphere.add(this.clouds);
             this.add(this.atmosphere);
         }        
@@ -139,6 +137,14 @@ define('Globe/Globe', [
             this.clouds.generate();
         }
         this.clouds.visible = show;
+    };
+    
+         
+    Globe.prototype.setRealisticLightingOn = function(bool) {
+
+        this.atmosphere.setRealisticOn(bool);
+        this.clouds.setLightingOn(bool);
+        
     };
 
     /*Globe.prototype.ellipsoid = function() {

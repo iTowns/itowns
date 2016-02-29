@@ -5,21 +5,23 @@
  */
 
 define('Renderer/c3DEngine', [
-    'THREE',
-    'OrbitControls',
+    'THREE',    
     'GlobeControls',
+    'Renderer/ThreeExtented/OrbitControls',
     'Renderer/Camera',
     'Globe/Atmosphere',
     'Renderer/DepthMaterial',
-    'Renderer/BasicMaterial'
+    'Renderer/BasicMaterial',
+    'Core/Geographic/CoordCarto'
 ], function(
-    THREE,
-    OrbitControls,
+    THREE,    
     GlobeControls,
+    OrbitControls,
     Camera,
     Atmosphere,
     DepthMaterial,
-    BasicMaterial) {
+    BasicMaterial,
+    CoordCarto) {
 
     var instance3DEngine = null;
     var RENDER = {
@@ -27,7 +29,7 @@ define('Renderer/c3DEngine', [
         PICKING: 1
     };
 
-    function c3DEngine() {
+    function c3DEngine(supportGLInspector) {
         //Constructor
 
         if (instance3DEngine !== null) {
@@ -35,6 +37,9 @@ define('Renderer/c3DEngine', [
         }
 
         THREE.ShaderChunk["logdepthbuf_pars_vertex"];
+
+        this.supportGLInspector = supportGLInspector;
+        //this.supportGLInspector = false;
 
         this.debug = false;
         //this.debug      = true;
@@ -52,6 +57,7 @@ define('Renderer/c3DEngine', [
         this.dfar = 0.0;
         this.stateRender = RENDER.FINAL;
         this.positionBuffer = null;
+        this.lightingOn = false; 
 
         this.initCamera();
 
@@ -124,10 +130,8 @@ define('Renderer/c3DEngine', [
      * @returns {undefined}
      */
     c3DEngine.prototype.initCamera = function() {
+        
         this.camera = new Camera(this.width, this.height, this.debug);
-
-        if (this.controls instanceof THREE.OrbitControls)
-            this.scene3D.add(this.camera.camera3D);
 
         if (this.debug) {
             this.camDebug = new THREE.PerspectiveCamera(30, this.camera.ratio);
@@ -143,7 +147,7 @@ define('Renderer/c3DEngine', [
         this.renderer = new THREE.WebGLRenderer({
             antialias: true,
             alpha: true,
-            logarithmicDepthBuffer: true
+            logarithmicDepthBuffer: this.supportGLInspector ? false : true
         });
         this.renderer.setPixelRatio(window.devicePixelRatio);
         this.renderer.setSize(window.innerWidth, window.innerHeight);
@@ -189,9 +193,9 @@ define('Renderer/c3DEngine', [
             var axisHelper = new THREE.AxisHelper(this.size * 1.33);
             this.scene3D.add(axisHelper);
         }
-         
+
         this.camera.camera3D.near = Math.max(15.0,0.000002352 * this.size);                        
-        this.camera.camera3D.updateProjectionMatrix();        
+        this.camera.camera3D.updateProjectionMatrix();
         this.initRenderer();
         if(flat) {
             this.camera.camera3D.lookAt(new THREE.Vector3(this.camera.position.x,this.camera.position.y,0));
@@ -213,22 +217,14 @@ define('Renderer/c3DEngine', [
      */
     c3DEngine.prototype.updateControl = function() {
         var len = this.camera.position().length();
-        var lim = this.size * 1.3;
+        var lim = this.size * 1.1;
 
         if (len < lim) {
-            var t = Math.pow(Math.cos((lim - len) / (lim - this.size * 0.9981) * Math.PI * 0.5), 1.5);
-            if (this.controls instanceof THREE.OrbitControls) {
-                this.controls.zoomSpeed = t * 2.0;
-                this.controls.rotateSpeed = 0.8 * t;
-            }
+            var t = Math.pow(Math.cos((lim - len) / (lim - this.size * 0.9981) * Math.PI * 0.5), 1.5);           
             var color = new THREE.Color(0x93d5f8);
-
             this.renderer.setClearColor(color.multiplyScalar(1.0 - t));
-        } else if (len >= lim && this.controls.zoomSpeed !== 1.0) {
-            this.controls.zoomSpeed = 1.0;
-            this.controls.rotateSpeed = 1.0;
-            this.renderer.setClearColor(0x030508);
-        }
+        } else if (len >= lim ) 
+            this.renderer.setClearColor(0x030508);        
     };
 
     c3DEngine.prototype.enableRTC = function(enable) {
@@ -255,11 +251,11 @@ define('Renderer/c3DEngine', [
         }
     };
 
-    c3DEngine.prototype.rtcOn = function(obj3D) {
+    c3DEngine.prototype.rtcOn = function(obj3D) {        
         obj3D.enableRTC(true);
     };
 
-    c3DEngine.prototype.rtcOff = function(obj3D) {
+    c3DEngine.prototype.rtcOff = function(obj3D) {        
         obj3D.enableRTC(false);
     };
 
@@ -538,7 +534,8 @@ define('Renderer/c3DEngine', [
 
         var h = (rsqXY * Math.cos(phi)) + p.z * Math.sin(phi) - a * Math.sqrt(1 - e * e * Math.sin(phi) * Math.sin(phi));
 
-        console.log(theta / Math.PI * 180 + ' ' + phi / Math.PI * 180 + ' ' + h);
+        return CoordCarto(theta,phi,h);
+        //console.log(theta / Math.PI * 180 + ' ' + phi / Math.PI * 180 + ' ' + h);
     };
     
     c3DEngine.prototype.getRTCMatrixFromCenter = function(center, camera ) {
@@ -567,6 +564,10 @@ define('Renderer/c3DEngine', [
         var centerEye = new THREE.Vector4().applyMatrix4(matrixInv);
         var mvc = matrixInv.setPosition(centerEye);
         return new THREE.Matrix4().multiplyMatrices(camera3D.projectionMatrix, mvc);
+    };
+    
+    c3DEngine.prototype.setLightingOn = function(value){
+        this.lightingOn = value;
     };
 
     return function(scene) {

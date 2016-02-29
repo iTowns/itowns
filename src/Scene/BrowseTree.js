@@ -101,15 +101,19 @@ define('Scene/BrowseTree', ['Globe/EllipsoidTileMesh','Flat/FlatTileMesh','THREE
                     if (optional && (sse || node.level < 2) && node.material.visible === true && node.wait === false) {
                         this.tree.subdivide(node);
                     }
+                    else if (!sse && node.level >= 2 && !node.material.visible ) {
+                                                
+                        node.setMaterialVisibility(true);
+                        this.uniformsProcess(node, camera);
+                        node.setChildrenVisibility(false);
 
-                        else if (!sse && node.level >= 2 && !node.material.visible ) {
-
-                            node.setMaterialVisibility(true);
-                            this.uniformsProcess(node, camera);
-                            node.setChildrenVisibility(false);
-
-                            return false;
-                        }
+                        return false;
+                    }
+                    else
+                    if(optional && !sse && node.material.isSubscaleDiffuse() && node.visible && node.material.visible && node.wait === false)
+                    {                        
+                        this.tree.reloadSubLayer(node,1);
+                    }
                 }
             }
 
@@ -126,11 +130,12 @@ define('Scene/BrowseTree', ['Globe/EllipsoidTileMesh','Flat/FlatTileMesh','THREE
     BrowseTree.prototype.uniformsProcess = function(node, camera) {
         node.setMatrixRTC(this.gfxEngine.getRTCMatrixFromCenter(node.absoluteCenter, camera));
         
+        // TODO à mettre en option
         if (node.id === this.selectNodeId) {
             node.setSelected(node.visible && node.material.visible);
             if (this.selectNode !== node) {
                 this.selectNode = node;
-                console.log(node);
+                // console.info(node);
             }
         }
 
@@ -152,9 +157,15 @@ define('Scene/BrowseTree', ['Globe/EllipsoidTileMesh','Flat/FlatTileMesh','THREE
         this.fogDistance = this.mfogDistance * Math.pow((camera.getDistanceFromOrigin() - 6300000) / 25000000, 1.6);
 
         this.nodeProcess.preHorizonCulling(camera);
+        
+        var subdivise = optional === 1;
+        var clean = optional === 2;
+        
+//        if(clean)
+//            console.log('clean');
 
         for (var i = 0; i < tree.children.length; i++)
-            this._browse(tree.children[i], camera, optional);
+            this._browse(tree.children[i], camera, subdivise,clean);
     };
 
     /**
@@ -164,14 +175,14 @@ define('Scene/BrowseTree', ['Globe/EllipsoidTileMesh','Flat/FlatTileMesh','THREE
      * @param {type} optional   : optional process
      * @returns {undefined}
      */
-    BrowseTree.prototype._browse = function(node, camera, optional) {
+    BrowseTree.prototype._browse = function(node, camera, optional,clean) {
         
         if (this.processNode(node, camera, optional))
             for (var i = 0; i < node.children.length; i++)
-                this._browse(node.children[i], camera, optional);
-        else
+                this._browse(node.children[i], camera, optional,clean);
+        else if(clean)              
             this._clean(node, node.level + 2, camera);
-
+        
     };
 
     BrowseTree.prototype._clean = function(node, level, camera) {
@@ -187,11 +198,32 @@ define('Scene/BrowseTree', ['Globe/EllipsoidTileMesh','Flat/FlatTileMesh','THREE
         }
 
         if (childrenCleaned === node.children.length) {
+            //console.log('clean');
             node.disposeChildren();
             return true;
         } else
             return false;
 
+    };
+    
+     /*
+     * @documentation: Recursive traverse tree to update a material specific uniform
+     * @returns {undefined}
+     */
+    BrowseTree.prototype.updateMaterialUniform = function(uniformName, value){
+        
+    
+         for(var a = 0; a< this.tree.children.length; ++a ){
+             var root = this.tree.children[a];
+             for (var c = 0; c < root.children.length; c++) {
+
+               var node = root.children[c];
+               var lookMaterial = function(obj) {
+                   obj.material.uniforms[uniformName].value = value;
+               }.bind(this);
+               node.traverse(lookMaterial);
+           }
+         }
     };
     
     BrowseTree.prototype.updateNodeMaterial = function(WMTSProvider){

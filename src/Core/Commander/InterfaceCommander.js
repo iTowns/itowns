@@ -6,7 +6,7 @@
 
 define('Core/Commander/InterfaceCommander', ['Core/Commander/ManagerCommands', 'Core/Commander/Command'], function(ManagerCommands, Command) {
 
-    function InterfaceCommander(type, param) {
+    function InterfaceCommander(type) {
         //Constructor
 
         this.managerCommands = ManagerCommands();
@@ -19,7 +19,7 @@ define('Core/Commander/InterfaceCommander', ['Core/Commander/ManagerCommands', '
     /**
      * @param com {[object Object]} 
      */
-    InterfaceCommander.prototype.request = function(com) {
+    InterfaceCommander.prototype.request = function(/*com*/) {
         //TODO: Implement Me 
 
     };
@@ -42,7 +42,20 @@ define('Core/Commander/InterfaceCommander', ['Core/Commander/ManagerCommands', '
 
         //command.priority = parent.sse === undefined ? 1 : Math.floor(parent.visible ? parent.sse * 10000 : 1.0) *  (parent.visible ? Math.abs(19 - parent.level) : Math.abs(parent.level) ) *10000;
 
-        command.priority = parent.sse === undefined ? 1 : Math.floor(parent.visible && parent.material.visible ? parent.sse * parent.sse * 100000 : 1.0);
+        command.priority = parent.sse ? Math.floor(parent.visible && parent.material.visible ? parent.sse * parent.sse * 100000 : 1.0) : 1.0;
+
+        this.managerCommands.addCommand(command);
+    };
+    
+    
+    InterfaceCommander.prototype.requestOrtho = function( node , layer) {
+
+        var command = new Command();
+        //command.type = this.type;
+        command.requester = node;
+        //command.paramsFunction = parameters;
+        command.layer = layer; 
+        command.priority = node.sse ? Math.floor(node.visible && node.material.visible ? node.sse * node.sse * 100000 : 1.0) : 1.0;
 
         this.managerCommands.addCommand(command);
     };

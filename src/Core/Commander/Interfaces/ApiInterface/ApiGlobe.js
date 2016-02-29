@@ -28,7 +28,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
     /**
      * @param Command
      */
-    ApiGlobe.prototype.add = function(Command) {
+    ApiGlobe.prototype.add = function(/*Command*/) {
         //TODO: Implement Me 
 
     };
@@ -37,7 +37,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
     /**
      * @param commandTemplate
      */
-    ApiGlobe.prototype.createCommand = function(commandTemplate) {
+    ApiGlobe.prototype.createCommand = function(/*commandTemplate*/) {
         //TODO: Implement Me 
 
     };
@@ -60,16 +60,24 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
 
     };
     
-    ApiGlobe.setLayerAtLevel = function(baseurl,layer,level) {
+    ApiGlobe.setLayerAtLevel = function(baseurl,layer/*,level*/) {
  
         var wmtsProvider = new WMTS_Provider({url:baseurl, layer:layer});
-        this.scene.managerCommand.providers[0].providerWMTS = wmtsProvider;
+        this.scene.managerCommand.providerMap[this.scene.layers[0].terrain.layerId].providerWMTS = wmtsProvider;
         this.scene.browserScene.updateNodeMaterial(wmtsProvider);
+        this.scene.renderScene3D();
     };
 
     ApiGlobe.showClouds = function(value) {
 
         this.scene.layers[0].showClouds(value);
+    };
+    
+    ApiGlobe.setRealisticLightingOn = function(value) {
+
+        this.scene.gfxEngine.setLightingOn(value);
+        this.scene.layers[0].setRealisticLightingOn(value);
+        this.scene.browserScene.updateMaterialUniform("lightingOn",value);
     };
 
     return ApiGlobe;

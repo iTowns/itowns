@@ -44,15 +44,14 @@ module.exports = {
     extensions: ['', '.js'],
     alias: {
       THREE:         'three',
-      PriorityQueue: 'js-priority-queue',
-      'Renderer/ThreeExtented/jszip.min': 'jszip',
-      'Renderer/ThreeExtented/ColladaLoader': 'ColladaLoader',
-      ColladaLoader: 'three/examples/js/loaders/ColladaLoader',
-      OrbitControls: 'three/examples/js/controls/OrbitControls',
-      GlobeControls: 'Renderer/ThreeExtented/GlobeControls',
       OBB:           'Renderer/ThreeExtented/OBB',
       OBBHelper:     'Renderer/ThreeExtented/OBBHelper',
       SphereHelper:  'Renderer/ThreeExtented/SphereHelper',
+      PriorityQueue: 'js-priority-queue',
+      'Renderer/ThreeExtented/jszip.min': 'jszip',
+      'Renderer/ThreeExtented/ColladaLoader': 'ColladaLoader',
+      ColladaLoader: 'three/examples/js/loaders/ColladaLoader',      
+      GlobeControls: 'Renderer/ThreeExtented/GlobeControls',
       StarGeometry:  'Renderer/ThreeExtented/StarGeometry'
     }
   },
