@@ -146,15 +146,14 @@ define('Core/Commander/Providers/WMTS_Provider', [
          * @param {type} id
          * @returns {WMTS_Provider_L15.WMTS_Provider.prototype@pro;ioDriverImage@call;read@call;then}
          */
-        WMTS_Provider.prototype.getTextureOrtho = function(coWMTS, id,pitch) {
+        WMTS_Provider.prototype.getTextureOrtho = function(coWMTS, pitch) {
 
-            var pack = function(i,pitch) {
-                this.texture;
-                this.id = i;
+            var pack = function(pitch) {
+                this.texture;                
                 this.pitch = pitch;
             };
 
-            var result = new pack(id,pitch);
+            var result = new pack(pitch);
 
             var url = this.urlOrtho(coWMTS);
             result.texture = this.cache.getRessource(url);
@@ -190,7 +189,11 @@ define('Core/Commander/Providers/WMTS_Provider', [
             
             //console.log(command.requester);
                // console.log('reload child');
-            return this.getOrthoImages(command.requester);
+            return this.getOrthoImages(command.requester).then(function(result)
+            {       
+                        this.setTexturesLayer(result);                        
+            this.material.update();
+            }.bind(command.requester));
             
         };
         
@@ -198,43 +201,31 @@ define('Core/Commander/Providers/WMTS_Provider', [
 
            var promises = [];
 
-
            if (tile.cooWMTS.zoom >= 2)
            {
-               //tile.loaded = false;               
+               
                if(tile.material === null) // TODO WHy -> dispose??
-                   return;
+                   return;               
                tile.material.nbTextures = 1;
                var box = this.projection.WMTS_WGS84ToWMTS_PM(tile.cooWMTS, tile.bbox); // 
-               var id = 0;
                var col = box[0].col;
                tile.orthoNeed = box[1].row + 1 - box[0].row;
 
                for (var row = box[0].row; row < box[1].row + 1; row++) {
+                   
                    var cooWMTS = new CoordWMTS(box[0].zoom, row, col);
-
                    var pitch = new THREE.Vector3(0.0,0.0,1.0);
      
-                   promises.push(this.getTextureOrtho(cooWMTS,id,pitch).then(
-                       function(result){       
-                           
-                           this.setTextureOrtho(result.texture, result.id,result.pitch);                           
-                           this.material.update();
-                           return this;
-                       }.bind(tile)
-                   ));
+                   promises.push(this.getTextureOrtho(cooWMTS,pitch));
 
-                   id++;
                }
                
                return when.all(promises);
            }
            else
-           {
+           
                tile.checkOrtho();
-               promises.push(when(tile));
-               return when.all(promises);
-           }
+                        
        };
 
        return WMTS_Provider;

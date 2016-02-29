@@ -97,7 +97,11 @@ define('Scene/Scene', [
 
         this.gfxEngine.init(this, position);
         this.browserScene.addNodeProcess(new NodeProcess(this.currentCamera().camera3D, globe.size));
-        this.gfxEngine.update();
+        //this.gfxEngine.update();
+        // TODO OULALA ???
+        this.sceneProcess();
+        this.sceneProcess();
+        this.sceneProcess();
 
     };
 

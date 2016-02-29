@@ -130,18 +130,18 @@ define('Core/Commander/Providers/tileGlobeProvider', [
 
             return this.providerWMTS.getTextureBil(tile.useParent() ? undefined : cooWMTS).then(function(terrain) {
             //return this.providerWMTS.getTextureBil(cooWMTS).then(function(terrain){
-                
-                                    
+                                                    
                 this.setTerrain(terrain);
 
                 return this;
 
             }.bind(tile)).then(function(tile) {
                 
-                return this.getOrthoImages(tile).then(function()
-                {                                            
-                    //this.getKML(result[0]);                        
-                }.bind(this));
+                return this.getOrthoImages(tile).then(function(result)
+                {       
+                        this.setTexturesLayer(result);                        
+                                           
+                }.bind(tile));
                 
             }.bind(this));
         };
@@ -152,11 +152,9 @@ define('Core/Commander/Providers/tileGlobeProvider', [
             
             if (tile.cooWMTS.zoom >= 2)
             {
-                var box = this.projection.WMTS_WGS84ToWMTS_PM(tile.cooWMTS, tile.bbox); // 
-                var id = 0;
+                var box = this.projection.WMTS_WGS84ToWMTS_PM(tile.cooWMTS, tile.bbox); //                 
                 var col = box[0].col;
-                tile.orthoNeed = box[1].row + 1 - box[0].row;
-               // console.log('cooWMTS');
+                tile.orthoNeed = box[1].row + 1 - box[0].row;               
                 for (var row = box[0].row; row < box[1].row + 1; row++) {
                     var cooWMTS = new CoordWMTS(box[0].zoom, row, col);
                     
@@ -165,24 +163,15 @@ define('Core/Commander/Providers/tileGlobeProvider', [
                     if(box[0].zoom > 3)                                                                  
                         cooWMTS = this.projection.WMTS_WGS84Parent(cooWMTS,tile.getLevelOrthoParent(),pitch);                        
                     
-                    promises.push(this.providerWMTS.getTextureOrtho(cooWMTS,id,pitch).then(
-                        function(result){                   
-                            this.setTextureOrtho(result.texture, result.id,result.pitch); 
-                            return this;
-                        }.bind(tile)
-                    ));
-
-                    id++;
+                     promises.push(this.providerWMTS.getTextureOrtho(cooWMTS,pitch));
+                 
                 }
 
                 return when.all(promises);
             }
-            else
-            {
+            else            
                 tile.checkOrtho();
-                promises.push(when(tile));
-                return when.all(promises);
-            }
+            
         };
 
         return tileGlobeProvider;
