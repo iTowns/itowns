@@ -118,6 +118,26 @@ define('Renderer/GlobeMaterial', ['THREE',
             this.nbTextures++;
         }
     };
+    
+    GlobeMaterial.prototype.setTexturesLayer = function(textures, layer){
+        
+        for (var i = 0, max = textures.length; i < max; i++) {
+                    
+            if (layer === 0 && textures !== -1) {
+                this.Textures_00[i] = textures[i].texture;
+                
+                if (textures[i].pitch)
+                    this.uniforms.pitScale_L00.value = textures[i].pitch;
+            } else {
+                this.Textures_01[i] = textures[i].texture; // BEWARE: array [] -> size: 0; array [10]="wao" -> size: 11                
+                this.pitScale_L01[i] = textures[i].pitch ? textures[i].pitch : new THREE.Vector3(0.0,0.0,1.0);                                                             
+            }
+        }
+        
+        this.nbTextures+= textures.length;
+    };
+    
+    
 
     GlobeMaterial.prototype.update = function() {
         // Elevation

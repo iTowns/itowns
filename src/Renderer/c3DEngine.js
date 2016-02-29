@@ -276,7 +276,7 @@ define('Renderer/c3DEngine', [
         this.controls.damping = 0.1;
         this.controls.noPan = false;
         this.controls.rotateSpeed = 0.8;
-        this.controls.zoomSpeed = 1.0;
+        this.controls.zoomSpeed = 2.0;
         this.controls.minDistance = 30;
         this.controls.maxDistance = size * 8.0;
         this.controls.keyPanSpeed = 0.01;
