@@ -79,10 +79,10 @@ define('Scene/NodeProcess', ['Scene/BoundingBox', 'Renderer/Camera', 'Core/Math/
      */
     NodeProcess.prototype.frustumCullingOBB = function(node, camera) {
 
-        var obb = node.OBB();
-
-        var l = node.absoluteCenter.length();
-
+        var obb     = node.OBB();               
+        
+        var l       = 0 * node.absoluteCenter.length(); // TODO : is this really necessary? (note : bugs on plane mode if not 0)
+        
         obb.translateZ(l);
         obb.update();
 

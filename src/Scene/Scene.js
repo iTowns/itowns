@@ -15,15 +15,17 @@
 define('Scene/Scene', [
     'Renderer/c3DEngine',
     'Globe/Globe',
+    'Flat/Plane',
     'Core/Commander/ManagerCommands',
     'Core/Commander/Providers/tileGlobeProvider',
+    'Core/Commander/Providers/FlatTileProvider',
     'Scene/BrowseTree',
     'Scene/NodeProcess',
     'Scene/Quadtree',
     'Scene/Layer',
     'Core/Geographic/CoordCarto',
     'Core/System/Capabilities'
-], function(c3DEngine, Globe, ManagerCommands, tileGlobeProvider, BrowseTree, NodeProcess, Quadtree, Layer, CoordCarto, Capabilities) {
+], function(c3DEngine, Globe, Plane, ManagerCommands, tileGlobeProvider, FlatTileProvider, BrowseTree, NodeProcess, Quadtree, Layer, CoordCarto, Capabilities) {
 
     var instanceScene = null;
     
@@ -79,26 +81,40 @@ define('Scene/Scene', [
     Scene.prototype.init = function(pos) {
         
         this.managerCommand.init(this);
-        var globe = new Globe(this.supportGLInspector);
-        this.add(globe);
-        this.managerCommand.addLayer(globe.terrain, new tileGlobeProvider(globe.size,this.supportGLInspector));
-        this.managerCommand.addLayer(globe.colorTerrain,this.managerCommand.getProvider(globe.terrain).providerWMTS);
+        
+        var flat = false;
+        if (flat) {
+            var srid = "EPSG:3946";
+            var plane = new Plane(srid, {xmin:1847500, xmax:1849500, ymin:5171000, ymax:5173000}); 
+            plane.size = {x:63.78137, y:63.78137, z:63.78137};//new THREE.Vector3(63.78137, 63.56752, 63.78137);
+            this.add(plane);
+            this.managerCommand.addLayer(plane.terrain, new FlatTileProvider(srid));
+            var position = {x:1848500, y:5172000, z:300};//new THREE.Vector3(1848500, 5172000, 300);
+            this.gfxEngine.init(this, position,flat);
+            this.browserScene.addNodeProcess(new NodeProcess(this.currentCamera().camera3D));
+            this.gfxEngine.update();
+        }
+        else {
+            var globe = new Globe(this.supportGLInspector);
+            this.add(globe);
+            this.managerCommand.addLayer(globe.terrain, new tileGlobeProvider(globe.size,this.supportGLInspector));
+            this.managerCommand.addLayer(globe.colorTerrain,this.managerCommand.getProvider(globe.terrain).providerWMTS);
         
 
-        //var position    = globe.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(2.33,48.87,25000000));        
-        //
-        var position = globe.ellipsoid.cartographicToCartesian(new CoordCarto().setFromDegreeGeo(pos.lat, pos.lon, pos.alt));
+            //var position    = globe.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(2.33,48.87,25000000));        
+            //
+            var position = globe.ellipsoid.cartographicToCartesian(new CoordCarto().setFromDegreeGeo(pos.lat, pos.lon, pos.alt));
 
-        //var position    = globe.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(2.33,,25000000));
-        //var position    = globe.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(48.7,2.33,25000000));        
+            //var position    = globe.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(2.33,,25000000));
+            //var position    = globe.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(48.7,2.33,25000000));        
 
-        //var target      = globe.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(2.33,48.87,0));
-        //var position    = globe.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(0,48.87,25000000));
+            //var target      = globe.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(2.33,48.87,0));
+            //var position    = globe.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(0,48.87,25000000));
 
-        this.gfxEngine.init(this, position);
-        this.browserScene.addNodeProcess(new NodeProcess(this.currentCamera().camera3D, globe.size));
-        this.gfxEngine.update();
-
+            this.gfxEngine.init(this, position);
+            this.browserScene.addNodeProcess(new NodeProcess(this.currentCamera().camera3D, globe.size));
+            this.gfxEngine.update();
+        }
     };
 
     Scene.prototype.size = function() {

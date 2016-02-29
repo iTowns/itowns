@@ -4,7 +4,7 @@
  * Description: BrowseTree parcourt un arbre de Node. Lors du parcours un ou plusieur NodeProcess peut etre appliqué sur certains Node.
  */
 
-define('Scene/BrowseTree', ['Globe/EllipsoidTileMesh', 'THREE'], function( EllipsoidTileMesh, THREE) {
+define('Scene/BrowseTree', ['Globe/EllipsoidTileMesh','Flat/FlatTileMesh','THREE'], function(EllipsoidTileMesh,FlatTileMesh,THREE) {
 
     function BrowseTree(engine) {
         //Constructor
@@ -39,15 +39,60 @@ define('Scene/BrowseTree', ['Globe/EllipsoidTileMesh', 'THREE'], function( Ellip
      * @param {type} optional  : optional process
      * @returns {Boolean}
      */
+/*<<<<<<< HEAD
+    BrowseTree.prototype.processNode = function(node,camera,optional)
+    {        
+        if(node instanceof EllipsoidTileMesh || node instanceof FlatTileMesh)
+        {            
+            
+            if(node.helper !== undefined && node.helper.parent === null)           
+                this.scene.scene3D().add(node.helper);
+
+            node.setVisibility(false);
+            node.setSelected(false);
+                 
+            if(node.loaded && this.nodeProcess.frustumCullingOBB(node,camera))
+            {
+                if(node instanceof FlatTileMesh || this.nodeProcess.horizonCulling(node,camera))
+                {
+                    
+                    if(node.parent.material !== undefined && node.parent.material.visible === true) {                    
+                        return node.setVisibility(false);
+                    }
+                                        
+                    var sse = this.nodeProcess.SSE(node,camera);
+
+                    if(optional && (sse || node.level < 2) && node.material.visible === true && node.wait === false) {
+                        this.tree.subdivide(node);
+                    }
+                                                
+                    else if(!sse && node.level >= 2 && node.material.visible === false && node.wait === false)
+                    {
+
+                        node.setMaterialVisibility(true);                        
+                        this.uniformsProcess(node,camera);                      
+                        node.setChildrenVisibility(false);
+                        
+                        return false;                            
+                    }                                
+                }
+            }
+
+
+            if(node.visible  && node.material.visible) {
+                this.uniformsProcess(node,camera);                       
+            }
+            
+=======*/
     BrowseTree.prototype.processNode = function(node, camera, optional) {
-        if (node instanceof EllipsoidTileMesh) {
+        if (node instanceof EllipsoidTileMesh || node instanceof FlatTileMesh) {
 
             node.setVisibility(false);
             node.setSelected(false);
 
             if (node.loaded && this.nodeProcess.frustumCullingOBB(node, camera)) {
-                if (this.nodeProcess.horizonCulling(node, camera)) {
-                    if (node.parent instanceof EllipsoidTileMesh && node.parent !== null && node.parent.material !== undefined && node.parent.material.visible === true)
+                if (node instanceof FlatTileMesh || this.nodeProcess.horizonCulling(node, camera)) {
+                    if ((node.parent instanceof EllipsoidTileMesh || node.parent instanceof FlatTileMesh) && node.parent !== null && node.parent.material !== undefined && node.parent.material.visible === true)
 
                     { return node.setVisibility(false); }
 
