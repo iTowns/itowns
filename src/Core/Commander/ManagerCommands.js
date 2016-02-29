@@ -76,9 +76,9 @@ define('Core/Commander/ManagerCommands', [
             
             return when.all(this.arrayDeQueue(8))
                 .then(function() {
-                                
-                this.scene.wait(1); 
-                //this.scene.renderScene3D();                     
+                        
+                if (this.commandsLength() <= 8)
+                    this.scene.wait(1); 
                 
                 return this.runAllCommands();
                 

@@ -53,8 +53,12 @@ define('Scene/BrowseTree', ['Globe/EllipsoidTileMesh', 'THREE'], function( Ellip
 
                     var sse = this.nodeProcess.SSE(node, camera);
 
-                    if (optional && (sse || node.level < 2) && node.material.visible === true && node.wait === false) {
-                        this.tree.subdivide(node);
+                    if(optional && node.material.visible&& !node.wait )
+                    {
+                        if (sse || node.level < 2)  
+                            this.tree.subdivide(node);
+                        else if(!sse && node.material.isSubscaleDiffuse())
+                            this.tree.reloadSubLayer(node,1);                        
                     }
                     else if (!sse && node.level >= 2 && !node.material.visible ) {
                                                 
@@ -63,12 +67,7 @@ define('Scene/BrowseTree', ['Globe/EllipsoidTileMesh', 'THREE'], function( Ellip
                         node.setChildrenVisibility(false);
 
                         return false;
-                    }
-                    else
-                    if(optional && !sse && node.material.isSubscaleDiffuse() && node.visible && node.material.visible && node.wait === false)
-                    {                        
-                        this.tree.reloadSubLayer(node,1);
-                    }
+                    }                    
                 }
             }
 
