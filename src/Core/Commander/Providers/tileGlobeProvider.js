@@ -123,23 +123,26 @@ define('Core/Commander/Providers/tileGlobeProvider', [
             tile.updateMatrix();
             tile.updateMatrixWorld(); // TODO peut pas necessaire
             
-//            if(cooWMTS.zoom > 3 )
-//                cooWMTS =  new CoordWMTS(-1, 0, 0);
-//            else
-//                cooWMTS =  tile.useParent() ? undefined : cooWMTS;
+            if(cooWMTS.zoom > 3 )
+                cooWMTS =  new CoordWMTS(-1, 0, 0);
+            else
+                cooWMTS =  tile.useParent() ? undefined : cooWMTS;
 
-            return this.providerWMTS.getTextureBil(tile.useParent() ? undefined : cooWMTS).then(function(terrain) {
-            //return this.providerWMTS.getTextureBil(cooWMTS).then(function(terrain){
-                                                    
+            //return this.providerWMTS.getTextureBil(tile.useParent() ? undefined : cooWMTS).then(function(terrain) {
+            return this.providerWMTS.getTextureBil(cooWMTS).then(function(terrain){
+                                           
+                   
                 this.setTerrain(terrain);
 
                 return this;
 
             }.bind(tile)).then(function(tile) {
                 
+               
                 return this.getOrthoImages(tile).then(function(result)
                 {       
-                        this.setTexturesLayer(result);                        
+                        
+                    this.setTexturesLayer(result,1);                        
                                            
                 }.bind(tile));
                 
@@ -147,26 +150,27 @@ define('Core/Commander/Providers/tileGlobeProvider', [
         };
 
         tileGlobeProvider.prototype.getOrthoImages = function(tile) {
-            
-            var promises = [];
-            
+                         
             if (tile.cooWMTS.zoom >= 2)
             {
+                var promises = [];
                 var box = this.projection.WMTS_WGS84ToWMTS_PM(tile.cooWMTS, tile.bbox); //                 
                 var col = box[0].col;
                 tile.orthoNeed = box[1].row + 1 - box[0].row;               
+                
                 for (var row = box[0].row; row < box[1].row + 1; row++) {
-                    var cooWMTS = new CoordWMTS(box[0].zoom, row, col);
-                    
+                
+                       
+                    var cooWMTS = new CoordWMTS(box[0].zoom, row, col);                    
                     var pitch = new THREE.Vector3(0.0,0.0,1.0);
                     
                     if(box[0].zoom > 3)                                                                  
-                        cooWMTS = this.projection.WMTS_WGS84Parent(cooWMTS,tile.getLevelOrthoParent(),pitch);                        
-                    
-                     promises.push(this.providerWMTS.getTextureOrtho(cooWMTS,pitch));
+                        cooWMTS = this.projection.WMTS_WGS84Parent(cooWMTS,tile.getLevelOrthoParent(),pitch);    
+                                                            
+                    promises.push(this.providerWMTS.getTextureOrtho(cooWMTS,pitch));
                  
                 }
-
+                  
                 return when.all(promises);
             }
             else            

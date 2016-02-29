@@ -50,7 +50,7 @@ define('Renderer/GlobeMaterial', ['THREE',
         };
         this.uniforms.pitScale_L00 = {
             type: "v3",
-            value: new THREE.Vector3(0.0, 0.0, 0.0)
+            value: new THREE.Vector3(0.0, 0.0, 1.0)
         };
         this.uniforms.pitScale_L01 = {
             type: "v3v",
@@ -175,10 +175,27 @@ define('Renderer/GlobeMaterial', ['THREE',
     
     GlobeMaterial.prototype.setLightingOn = function (enable){
         this.uniforms.lightingOn.value = enable === true ? 1 : 0;
-    }
-    GlobeMaterial.prototype.isSubscaleDiffuse = function() {
+    };
+    
+    GlobeMaterial.prototype.isSubscaledLayer = function(id) {
       
-        return (this.pitScale_L01[0].z < 1.0);
+        if(id === 1 )
+            return this.pitScale_L01[0].z < 1.0;
+        else if(id === 0 )
+            return this.uniforms.pitScale_L00.value.z < 1.0;
+      
+        return false;
+        
+    };
+    
+    GlobeMaterial.prototype.getSubscaledLayer = function() {
+        
+        if(this.pitScale_L01[0].z < 1.0)
+            return 1;
+        else if(this.uniforms.pitScale_L00.value.z < 1.0  ) 
+            return 0;
+        
+        return undefined;
         
     };
     

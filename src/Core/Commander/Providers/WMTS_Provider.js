@@ -187,12 +187,10 @@ define('Core/Commander/Providers/WMTS_Provider', [
         
         WMTS_Provider.prototype.executeCommand = function(command){
             
-            //console.log(command.requester);
-               // console.log('reload child');
             return this.getOrthoImages(command.requester).then(function(result)
             {       
-                        this.setTexturesLayer(result);                        
-            this.material.update();
+                this.setTexturesLayer(result,1);                        
+                this.material.update();
             }.bind(command.requester));
             
         };
