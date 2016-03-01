@@ -105,7 +105,7 @@ define('Renderer/GlobeMaterial', ['THREE',
         this.nbTextures = 0;
     };
 
-    GlobeMaterial.prototype.setTexture = function(texture, layer, id, pitScale) {
+    GlobeMaterial.prototype.setTexture = function(texture, layer, slot, pitScale) {
         if (layer === 0 && texture !== -1) {
             this.Textures_00[0] = texture;
             this.nbTextures++;
@@ -113,8 +113,8 @@ define('Renderer/GlobeMaterial', ['THREE',
             if (pitScale)
                 this.uniforms.pitScale_L00.value = pitScale;
         } else {
-            this.Textures_01[id] = texture; // BEWARE: array [] -> size: 0; array [10]="wao" -> size: 11                
-            this.pitScale_L01[id] = pitScale ? pitScale : new THREE.Vector3(0.0,0.0,1.0);                                             
+            this.Textures_01[slot] = texture; // BEWARE: array [] -> size: 0; array [10]="wao" -> size: 11                
+            this.pitScale_L01[slot] = pitScale ? pitScale : new THREE.Vector3(0.0,0.0,1.0);                                             
             this.nbTextures++;
         }
     };
