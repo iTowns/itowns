@@ -296,7 +296,17 @@ define('Globe/EllipsoidTileMesh', [
                 return this.currentLevelLayers[l_COLOR] < this.level + 1;
         
         return false;        
-    };    
+    }; 
+    
+    EllipsoidTileMesh.prototype.getDownScaledLayer = function()     
+    {
+        if(this.downScaledLayer(l_COLOR))
+            return l_COLOR;
+        else if(this.downScaledLayer(l_ELEVATION))
+            return l_ELEVATION;
+        else
+            return undefined;
+    };
 
     EllipsoidTileMesh.prototype.normals = function() {
         return this.geometry.normals;
