@@ -242,16 +242,16 @@ define('Scene/Scene', [
      Scene.prototype.animateTime = function(value){
          
         if(value){ 
-            this.time += .004;
+            this.time += 1.1;
 
-            if(this.time % 0.04){
+            if( this.time){
 
-                var nHours= this.time;
-                var coSun= CoordStars.getSunPositionInScene(this.layers[0].ellipsoid, new Date().getTime() + 3600000 * nHours, 0, 0);
+                var nMilliSeconds = this.time;
+                var coSun= CoordStars.getSunPositionInScene(this.layers[0].ellipsoid, new Date().getTime() + 3.6 * nMilliSeconds, 0, 0);
                 this.lightingPos = coSun;
                 this.browserScene.updateMaterialUniform("lightPosition", this.lightingPos.clone().normalize());
                 this.layers[0].updateLightingPos(this.lightingPos); 
-                if (this.orbitOn){
+                if (this.orbitOn){  // ISS orbit is 0.0667 degree per second -> every 60th of sec: 0.00111;
                      var p = this.gfxEngine.camera.camera3D.position;
                      var r = Math.sqrt(p.z * p.z + p.x * p.x);
                      var alpha = Math.atan2(p.z, p.x) + 0.0001;
