@@ -58,7 +58,7 @@ define('Scene/BrowseTree', ['Globe/EllipsoidTileMesh', 'THREE'], function( Ellip
                         if (sse || node.level < 2)                                                     
                             this.tree.subdivide(node);                        
                         else if(!sse)
-                            this.tree.reloadSubscaledLayer(node);            
+                            this.tree.reloadDownScaledLayer(node);            
                         
                     }
                     else if (!sse && node.level >= 2 && !node.material.visible ) {
