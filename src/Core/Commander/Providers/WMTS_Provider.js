@@ -128,6 +128,12 @@ define('Core/Commander/Providers/WMTS_Provider', [
                     result.texture.generateMipmaps = false;
                     result.texture.magFilter = THREE.LinearFilter;
                     result.texture.minFilter = THREE.LinearFilter;
+                    
+                    
+                    // TODO ATTENTION verifier le context
+                    result.level = coWMTS.zoom;
+                    
+                    
                     this.cache.addRessource(url, result);
      
                     return result;
@@ -175,6 +181,7 @@ define('Core/Commander/Providers/WMTS_Provider', [
                     result.texture.minFilter = THREE.LinearFilter;
                     result.texture.anisotropy = 16;
                     result.texture.url = url; 
+                    result.texture['level'] = coWMTS.zoom;
 
                     this.cache.addRessource(url, result.texture);
                 }

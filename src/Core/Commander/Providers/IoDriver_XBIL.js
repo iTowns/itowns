@@ -12,6 +12,7 @@ define('Core/Commander/Providers/IoDriver_XBIL', ['Core/Commander/Providers/IoDr
         this.max = -1000000;
         this.min = 1000000;
         this.texture = -1;
+        this.level = -1;
     };
 
 

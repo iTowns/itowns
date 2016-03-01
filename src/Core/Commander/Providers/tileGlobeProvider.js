@@ -115,9 +115,8 @@ define('Core/Commander/Providers/tileGlobeProvider', [
                 translate = parent.worldToLocal(tile.absoluteCenter.clone());
 
             tile.position.copy(translate);            
-
             tile.setVisibility(false);
-
+  
             parent.add(tile);
             
             tile.updateMatrix();
@@ -128,7 +127,8 @@ define('Core/Commander/Providers/tileGlobeProvider', [
                 cooWMTS =  new CoordWMTS(-1, 0, 0);
             else
                 cooWMTS =  tile.useParent() ? undefined : cooWMTS;
-                */
+            */
+           
             return this.providerWMTS.getTextureBil(tile.useParent() ? undefined : cooWMTS).then(function(terrain) {
             //return this.providerWMTS.getTextureBil(cooWMTS).then(function(terrain){
                                                            
@@ -137,8 +137,7 @@ define('Core/Commander/Providers/tileGlobeProvider', [
                 return this;
 
             }.bind(tile)).then(function(tile) {
-                
-               
+                               
                 return this.getOrthoImages(tile).then(function(result)
                 {                               
                     this.setTexturesLayer(result,1);                        

@@ -25,7 +25,11 @@ define('Globe/EllipsoidTileMesh', [
     'Renderer/GlobeMaterial',
     'Core/Geographic/CoordCarto'
 ], function(NodeMesh, EllipsoidTileGeometry, BoundingBox, defaultValue, THREE, OBBHelper, SphereHelper, GlobeMaterial, CoordCarto) {
-
+    
+    var groupTerrain = [14, 11, 7, 3];   
+    var l_ELEVATION = 0;
+    var l_COLOR = 1;
+    
     function EllipsoidTileMesh(bbox, cooWMTS, ellipsoid, id, geometryCache,link) {
         //Constructor
         NodeMesh.call(this);
@@ -57,7 +61,7 @@ define('Globe/EllipsoidTileMesh', [
         this.frustumCulled = false;
         this.maxChildren = 4;
 
-        var groupTerrain = [14, 11, 7, 3];
+        
         this.levelTerrain = this.level;
 
         for (var i = 0; i < groupTerrain.length; i++) {
@@ -70,7 +74,10 @@ define('Globe/EllipsoidTileMesh', [
         
         // Layer
         
-        this.layerLevel = [];
+     
+        this.currentLevelLayers =[];
+        this.currentLevelLayers[l_ELEVATION] = -1;
+        this.currentLevelLayers[l_COLOR] = -1;
         
         //
 
@@ -154,8 +161,7 @@ define('Globe/EllipsoidTileMesh', [
     EllipsoidTileMesh.prototype.setSelected = function(select) {
         this.material.setSelected(select);
     };
-    
-    
+        
     EllipsoidTileMesh.prototype.parseBufferElevation = function(image,minMax,pitScale) {
       
             //var image = this.parent.material.Textures_00[0].image;
@@ -179,15 +185,13 @@ define('Globe/EllipsoidTileMesh', [
                         minMax.x = Math.min( minMax.x, val);
                     }                        
                 }
-            }
-        
+            }        
     };
     
-
     EllipsoidTileMesh.prototype.setTerrain = function(terrain) {
         var texture;
         var pitScale;
-        var parentBil;
+        var ancestor;
         var image;
         var minMax = new THREE.Vector2();
         
@@ -195,11 +199,11 @@ define('Globe/EllipsoidTileMesh', [
             texture = -1;
         else if (terrain === -2) {
                         
-            parentBil = this.getParentLevel(this.levelTerrain);
-            pitScale = parentBil.bbox.pitScale(this.bbox);
-            texture = parentBil.material.Textures_00[0];            
-            minMax.y = parentBil.bbox.maxCarto.altitude;
-            minMax.x = parentBil.bbox.minCarto.altitude;
+            ancestor = this.getParentLevel(this.levelTerrain);
+            pitScale = ancestor.bbox.pitScale(this.bbox);
+            texture = ancestor.material.Textures_00[0];            
+            minMax.y = ancestor.bbox.maxCarto.altitude;
+            minMax.x = ancestor.bbox.minCarto.altitude;
             
             if(this.level > 14 && (minMax.y - minMax.x) > 100)
             {                
@@ -209,13 +213,13 @@ define('Globe/EllipsoidTileMesh', [
             }
             
             this.setAltitude(minMax.x, minMax.y);
-            
+            this.currentLevelLayers[l_ELEVATION] = ancestor.level;
         } 
         else if (terrain === -3) {
             
-            parentBil = this.getLevelElevationParent();                              
-            pitScale = parentBil.bbox.pitScale(this.bbox);
-            texture = parentBil.material.Textures_00[0];
+            ancestor = this.getLevelElevationParent();                              
+            pitScale = ancestor.bbox.pitScale(this.bbox);
+            texture = ancestor.material.Textures_00[0];
             // TODO Verifier si c'est le bon parent??
             image = this.parent.material.Textures_00[0].image;                
             this.parseBufferElevation(image,minMax,pitScale);
@@ -227,14 +231,16 @@ define('Globe/EllipsoidTileMesh', [
                 minMax.y = 0;
                            
             this.setAltitude(minMax.x, minMax.y);
+            this.currentLevelLayers[l_ELEVATION] = ancestor.level;
 
         } else {
                         
             texture = terrain.texture;            
             pitScale = new THREE.Vector3(0,0,1);
             this.setAltitude(terrain.min, terrain.max);
+            this.currentLevelLayers[l_ELEVATION] = terrain.level;
         }
-
+      
         this.material.setTexture(texture, 0, 0, pitScale);
     };
 
@@ -259,7 +265,8 @@ define('Globe/EllipsoidTileMesh', [
 
     EllipsoidTileMesh.prototype.setTextureOrtho = function(texture, id,pitch) {
         id = id === undefined ? 0 : id;
-        this.material.setTexture(texture, 1, id,pitch);
+        this.material.setTexture(texture, 1, id,pitch);        
+        this.currentLevelLayers[l_COLOR].level = texture.level;
         this.checkOrtho();
     };
     
@@ -269,9 +276,27 @@ define('Globe/EllipsoidTileMesh', [
             return;
         
         this.material.setTexturesLayer(textures, id);
+        
+        this.currentLevelLayers[l_COLOR] = textures[0].level;
                 
         this.checkOrtho();
     };
+        
+    EllipsoidTileMesh.prototype.downScaledLayer = function(id)
+    {
+        if(id === l_ELEVATION)
+            if(this.level < 3)
+                return false;
+            else                
+                return this.currentLevelLayers[l_ELEVATION] < this.levelTerrain ;
+        else if(id === l_COLOR)
+            if(this.level < 2)
+                return false;
+            else  
+                return this.currentLevelLayers[l_COLOR] < this.level + 1;
+        
+        return false;        
+    };    
 
     EllipsoidTileMesh.prototype.normals = function() {
         return this.geometry.normals;
@@ -301,7 +326,7 @@ define('Globe/EllipsoidTileMesh', [
     EllipsoidTileMesh.prototype.getLevelElevationParent = function() 
     {        
         if( this.level === 3 )        
-            return this;       
+            return this;
         
         return !this.parent.material.isSubscaleElevation() ? this.parent : this.parent.getLevelElevationParent();
     };
