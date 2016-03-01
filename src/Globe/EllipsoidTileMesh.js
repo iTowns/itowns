@@ -67,6 +67,12 @@ define('Globe/EllipsoidTileMesh', [
                 break;
             }
         }
+        
+        // Layer
+        
+        this.layerLevel = [];
+        
+        //
 
         var showHelper = true;
         showHelper = false;
@@ -148,101 +154,79 @@ define('Globe/EllipsoidTileMesh', [
     EllipsoidTileMesh.prototype.setSelected = function(select) {
         this.material.setSelected(select);
     };
+    
+    
+    EllipsoidTileMesh.prototype.parseBufferElevation = function(image,minMax,pitScale) {
+      
+            //var image = this.parent.material.Textures_00[0].image;
+            var buffer = image.data;
+
+            var size = Math.floor(pitScale.z * image.width);                
+            var xs = Math.floor(pitScale.x * image.width);
+            var ys = Math.floor(pitScale.y * image.width);
+
+            minMax.y = -1000000;
+            minMax.x =  1000000;
+
+            var inc = Math.max(Math.floor(size/8),2);
+
+            for (var y  = ys; y <  ys + size; y+=inc){                    
+                var pit = y * image.width;
+                for (var x = xs; x < xs +size; x+=inc) {                    
+                    var val = buffer[pit + x];  
+                    if (val > -10.0 && val !== undefined){
+                        minMax.y = Math.max(minMax.y, val);
+                        minMax.x = Math.min( minMax.x, val);
+                    }                        
+                }
+            }
+        
+    };
+    
 
     EllipsoidTileMesh.prototype.setTerrain = function(terrain) {
         var texture;
         var pitScale;
         var parentBil;
+        var image;
+        var minMax = new THREE.Vector2();
         
         if (terrain === -1)
             texture = -1;
         else if (terrain === -2) {
-            
-            //console.log(-2);
+                        
             parentBil = this.getParentLevel(this.levelTerrain);
             pitScale = parentBil.bbox.pitScale(this.bbox);
-            texture = parentBil.material.Textures_00[0];
-            //
-            var max = parentBil.bbox.maxCarto.altitude;
-            var min = parentBil.bbox.minCarto.altitude;
+            texture = parentBil.material.Textures_00[0];            
+            minMax.y = parentBil.bbox.maxCarto.altitude;
+            minMax.x = parentBil.bbox.minCarto.altitude;
             
-            if(this.level > 14 && (max - min) > 100)
-            {
-                var image = this.parent.material.Textures_00[0].image;
-                var buffer = image.data;
-                
-                var size = Math.floor(pitScale.z * image.width);                
-                var xs = Math.floor(pitScale.x * image.width);
-                var ys = Math.floor(pitScale.y * image.width);
-                                
-                max = -1000000;
-                min =  1000000;
-                
-                var inc = Math.max(Math.floor(size/8),2);
-                              
-                for (var y  = ys; y <  ys + size; y+=inc){                    
-                    var pit = y * image.width;
-                    for (var x = xs; x < xs +size; x+=inc) {                    
-                        var val = buffer[pit + x];  
-                        if (val > -10.0 && val !== undefined){
-                            max = Math.max(max, val);
-                            min = Math.min(min, val);
-                        }                        
-                    }
-                }
+            if(this.level > 14 && (minMax.y - minMax.x) > 100)
+            {                
+                // TODO Verifier si c'est le bon parent??
+                image = this.parent.material.Textures_00[0].image;                
+                this.parseBufferElevation(image,minMax,pitScale);                               
             }
             
-            this.setAltitude(min, max);
+            this.setAltitude(minMax.x, minMax.y);
             
         } 
         else if (terrain === -3) {
             
-            
-            
-            parentBil = this.getLevelElevationParent();      
-            
-            //console.log(parentBil);
+            parentBil = this.getLevelElevationParent();                              
             pitScale = parentBil.bbox.pitScale(this.bbox);
             texture = parentBil.material.Textures_00[0];
-            //
-//            var max = parentBil.bbox.maxCarto.altitude;
-//            var min = parentBil.bbox.minCarto.altitude;
+            // TODO Verifier si c'est le bon parent??
+            image = this.parent.material.Textures_00[0].image;                
+            this.parseBufferElevation(image,minMax,pitScale);
             
-            //if(this.level > 14 && (max - min) > 100)
-            {
-                var image = this.parent.material.Textures_00[0].image;
-                var buffer = image.data;
-               
-                var size = Math.floor(pitScale.z * image.width);                
-                var xs = Math.floor(pitScale.x * image.width);
-                var ys = Math.floor(pitScale.y * image.width);
+            if(minMax.x === 1000000)
+                minMax.x = 0;
                                 
-                var max = -1000000;
-                var min =  1000000;
-                
-                var inc = Math.max(Math.floor(size/8),2);
-                              
-                for (var y  = ys; y <  ys + size; y+=inc){                    
-                    var pit = y * image.width;
-                    for (var x = xs; x < xs +size; x+=inc) {                    
-                        var val = buffer[pit + x];  
-                        if (val > -10.0 && val !== undefined){
-                            max = Math.max(max, val);
-                            min = Math.min(min, val);
-                        }                        
-                    }
-                }
-            }
-            
-            if(min === 1000000)
-                min = 0;
-                                
-            if(max === -1000000)
-                max = 0;
-            
-            //console.log('load elevation parent end');
-                
-            this.setAltitude(min, max);
+            if(minMax.y === -1000000)
+                minMax.y = 0;
+                           
+            this.setAltitude(minMax.x, minMax.y);
 
         } else {
                         
