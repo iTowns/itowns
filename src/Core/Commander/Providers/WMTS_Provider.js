@@ -184,8 +184,8 @@ define('Core/Commander/Providers/WMTS_Provider', [
 
         };
         
-        WMTS_Provider.prototype.executeCommand = function(command){
-                                                
+        WMTS_Provider.prototype.executeCommand = function(command){                        
+           
             if(command.paramsFunction.subLayer === 1)
             {
                 return this.getOrthoImages(command.requester).then(function(result)
@@ -193,11 +193,12 @@ define('Core/Commander/Providers/WMTS_Provider', [
                     this.setTexturesLayer(result,1);                        
                     this.material.update();
                 }.bind(command.requester));
-            }
+            }    
             /*
-            else //if (command.paramsFunction.subLayer === 0)
+            else if (command.paramsFunction.subLayer === 0 && command.requester.level > 3)
             {
-               return; 
+                   
+            
                 var tile = command.requester;
                 
                 //var cooWMTS =  tile.useParent() ? undefined : this.cooWMTS;
@@ -206,14 +207,16 @@ define('Core/Commander/Providers/WMTS_Provider', [
                 {
                     var parent = tile.getLevelElevationParent();
                     
-                    //console.log(parent);
+                    //console.log(tile.level +' ---> ' + parent.level);
                         
-                    if(!parent.material.isSubscaledLayer(0))
+                    if(!parent.material.isSubscaledLayer(0) && parent.material.Textures_00[0].image)
                     {
+                        
+                            console.log(parent.material);
                         
                         return this.getTextureBil(parent.cooWMTS).then(function(terrain)
                         {
-                            //console.log(terrain);
+                            console.log('parent not loaded');
                             this.setTerrain(terrain);
                             this.material.update();
                             
@@ -222,17 +225,17 @@ define('Core/Commander/Providers/WMTS_Provider', [
                             this.setTerrain(-2);
                             this.material.update();
                                 
-                        }.bind(tile));                            
-                                             
+                        }.bind(tile));                                                                         
                     }
                     else
                     {
+                        console.log('parent  loaded');
                         tile.setTerrain(-2);
                         tile.material.update();
                     }
                 }
-            }*/
-            
+            }
+            */
         };
         
         WMTS_Provider.prototype.getOrthoImages = function(tile) {

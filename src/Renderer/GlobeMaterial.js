@@ -158,15 +158,6 @@ define('Renderer/GlobeMaterial', ['THREE',
 
     };
 
-    GlobeMaterial.prototype.CheekNeedsUpdate = function() {
-        for (var i = 0, max = this.Textures_01.length; i < max; i++)
-            if (this.Textures_01[i] && this.Textures_01[i].image !== undefined) {
-                if (this.Textures_01[i].needsUpdate === true)
-                    return false;
-            }
-
-        return true;
-    };
 
     GlobeMaterial.prototype.enablePickingRender = function(enable) {
         this.uniforms.pickingRender.value = enable === true ? 1 : 0;
@@ -192,8 +183,8 @@ define('Renderer/GlobeMaterial', ['THREE',
         
         if(this.pitScale_L01[0].z < 1.0)
             return 1;
-//        else if(this.uniforms.pitScale_L00.value.z < 1.0  ) 
-//            return 0;
+        else if(this.uniforms.pitScale_L00.value.z < 1.0  ) 
+            return 0;
         
         return undefined;
         
