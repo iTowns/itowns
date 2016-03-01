@@ -53,7 +53,7 @@ define('Scene/BrowseTree', ['Globe/EllipsoidTileMesh', 'THREE'], function( Ellip
 
                     var sse = this.nodeProcess.SSE(node, camera);
 
-                    if(optional && node.material.visible&& !node.wait )
+                    if(optional && node.material.visible && !node.wait )
                     {
                         if (sse || node.level < 2)                                                     
                             this.tree.subdivide(node);                        
