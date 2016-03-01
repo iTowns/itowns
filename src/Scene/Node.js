@@ -72,6 +72,12 @@ define('Scene/Node', [], function() {
      * @returns {undefined}
      */
     Node.prototype.getParentLevel = function(level) {
+        
+        var functionToCheck = this.parent.getParentLevel;
+              
+        if(!functionToCheck || !(typeof(functionToCheck) === 'function') && (this.parent.level !== level))
+            return undefined;
+        
         return (this.parent.level === level) ? this.parent : this.parent.getParentLevel(level);
     };
 

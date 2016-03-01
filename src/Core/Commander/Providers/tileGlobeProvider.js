@@ -122,15 +122,14 @@ define('Core/Commander/Providers/tileGlobeProvider', [
             tile.updateMatrix();
             tile.updateMatrixWorld(); // TODO peut pas necessaire
             
-            
+//            
 //            if(cooWMTS.zoom > 3 )
 //                cooWMTS =  new CoordWMTS(-1, 0, 0);
 //            else
 //                cooWMTS =  tile.useParent() ? undefined : cooWMTS;
-//            
-           
+//                       
             return this.providerWMTS.getTextureBil(tile.useParent() ? undefined : cooWMTS).then(function(terrain) {
-            //return this.providerWMTS.getTextureBil(cooWMTS).then(function(terrain){
+           // return this.providerWMTS.getTextureBil(cooWMTS).then(function(terrain){
                                                            
                 this.setTerrain(terrain);
 
