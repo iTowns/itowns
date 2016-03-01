@@ -84,13 +84,10 @@ define('Scene/Quadtree', [
     
     Quadtree.prototype.reloadDownScaledLayer = function(node) {
                 
-        var id = node.material.getSubscaledLayer();
-        // var id = node.getDownScaledLayer();
-        
-       // console.log(id);
-        
-        if(id !== undefined)
-        {            
+        var id = node.getDownScaledLayer();
+
+        if(id !== undefined)                
+        {                        
             this.interCommand.request({subLayer : id}, node, this.children[id+1]);
         }
                     

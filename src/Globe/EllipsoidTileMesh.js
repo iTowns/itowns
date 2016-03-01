@@ -79,6 +79,8 @@ define('Globe/EllipsoidTileMesh', [
         this.currentLevelLayers[l_ELEVATION] = -1;
         this.currentLevelLayers[l_COLOR] = -1;
         
+        
+        
         //
 
         var showHelper = true;
@@ -196,9 +198,13 @@ define('Globe/EllipsoidTileMesh', [
         var minMax = new THREE.Vector2();
         
         if (terrain === -1)
+        {
             texture = -1;
+            this.currentLevelLayers[l_ELEVATION] = -2;
+        }
         else if (terrain === -2) {
-                        
+            
+            
             ancestor = this.getParentLevel(this.levelTerrain);
             pitScale = ancestor.bbox.pitScale(this.bbox);
             texture = ancestor.material.Textures_00[0];            
@@ -212,8 +218,10 @@ define('Globe/EllipsoidTileMesh', [
                 this.parseBufferElevation(image,minMax,pitScale);                               
             }
             
+            
             this.setAltitude(minMax.x, minMax.y);
-            this.currentLevelLayers[l_ELEVATION] = ancestor.level;
+            this.currentLevelLayers[l_ELEVATION] = ancestor.currentLevelLayers[l_ELEVATION];
+                        
         } 
         else if (terrain === -3) {
             
@@ -231,14 +239,18 @@ define('Globe/EllipsoidTileMesh', [
                 minMax.y = 0;
                            
             this.setAltitude(minMax.x, minMax.y);
-            this.currentLevelLayers[l_ELEVATION] = ancestor.level;
+            
+            this.currentLevelLayers[l_ELEVATION] = ancestor.currentLevelLayers[l_ELEVATION];
+            
 
         } else {
                         
+            
             texture = terrain.texture;            
             pitScale = new THREE.Vector3(0,0,1);
             this.setAltitude(terrain.min, terrain.max);
-            this.currentLevelLayers[l_ELEVATION] = terrain.level;
+            this.currentLevelLayers[l_ELEVATION] = terrain.level;            
+            
         }
       
         this.material.setTexture(texture, 0, 0, pitScale);
@@ -265,8 +277,9 @@ define('Globe/EllipsoidTileMesh', [
 
     EllipsoidTileMesh.prototype.setTextureOrtho = function(texture, id,pitch) {
         id = id === undefined ? 0 : id;
-        this.material.setTexture(texture, 1, id,pitch);        
-        this.currentLevelLayers[l_COLOR].level = texture.level;
+        this.material.setTexture(texture, 1, id,pitch);   
+                
+        this.currentLevelLayers[l_COLOR] = texture.level;
         this.checkOrtho();
     };
     
@@ -277,23 +290,23 @@ define('Globe/EllipsoidTileMesh', [
         
         this.material.setTexturesLayer(textures, id);
         
-        this.currentLevelLayers[l_COLOR] = textures[0].level;
-                
+        this.currentLevelLayers[l_COLOR] = textures[0].texture.level;
+        
         this.checkOrtho();
     };
         
     EllipsoidTileMesh.prototype.downScaledLayer = function(id)
     {
         if(id === l_ELEVATION)
-            if(this.level < 3)
+            if(this.level < 3 || this.currentLevelLayers[l_ELEVATION] === -2)
                 return false;
-            else                
-                return this.currentLevelLayers[l_ELEVATION] < this.levelTerrain ;
+            else                                
+                return this.currentLevelLayers[l_ELEVATION] < this.levelTerrain ;                        
         else if(id === l_COLOR)
             if(this.level < 2)
                 return false;
-            else  
-                return this.currentLevelLayers[l_COLOR] < this.level + 1;
+            else              
+                return this.currentLevelLayers[l_COLOR] < this.level + 1;            
         
         return false;        
     }; 
