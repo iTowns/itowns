@@ -120,7 +120,7 @@ define('Core/Commander/Providers/tileGlobeProvider', [
             parent.add(tile);
             
             tile.updateMatrix();
-            tile.updateMatrixWorld(); // TODO peut pas necessaire
+//            tile.updateMatrixWorld(); // TODO peut pas necessaire
             
 //            if(cooWMTS.zoom > 3 )
 //                cooWMTS =  undefined;            
