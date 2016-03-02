@@ -19,7 +19,7 @@ define('Renderer/GlobeMaterial', ['THREE',
     GlobeVS,
     GlobeFS) {
 
-    var GlobeMaterial = function(bbox, id) {
+    var GlobeMaterial = function(id) {
 
         BasicMaterial.call(this);
 
