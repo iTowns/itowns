@@ -23,7 +23,6 @@ define('Scene/BrowseTree', ['Globe/EllipsoidTileMesh', 'THREE'], function( Ellip
 
     }
 
-
     BrowseTree.prototype.addNodeProcess = function(nodeProcess) {
         this.nodeProcess = nodeProcess;
     };

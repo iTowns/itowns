@@ -122,14 +122,16 @@ define('Core/Commander/Providers/tileGlobeProvider', [
             tile.updateMatrix();
             tile.updateMatrixWorld(); // TODO peut pas necessaire
             
-//            
-//            if(cooWMTS.zoom > 3 )
-//                cooWMTS =  new CoordWMTS(-1, 0, 0);
-//            else
-//                cooWMTS =  tile.useParent() ? undefined : cooWMTS;
-//                       
+            /*
+            if(cooWMTS.zoom > 3 )
+                cooWMTS =  new CoordWMTS(-1, 0, 0);
+            else
+                cooWMTS =  tile.useParent() ? undefined : cooWMTS;
+                       
+            return this.providerWMTS.getTextureBil(cooWMTS).then(function(terrain){
+                        */
             return this.providerWMTS.getTextureBil(tile.useParent() ? undefined : cooWMTS).then(function(terrain) {
-           // return this.providerWMTS.getTextureBil(cooWMTS).then(function(terrain){
+            
                                                            
                 this.setTerrain(terrain);
 
@@ -156,16 +158,17 @@ define('Core/Commander/Providers/tileGlobeProvider', [
                 tile.orthoNeed = box[1].row + 1 - box[0].row;               
                 
                 for (var row = box[0].row; row < box[1].row + 1; row++) {
-                
-                       
+                                       
                     var cooWMTS = new CoordWMTS(box[0].zoom, row, col);                    
                     var pitch = new THREE.Vector3(0.0,0.0,1.0);
                     
-                    if(box[0].zoom > 3)                                                                  
-                        cooWMTS = this.projection.WMTS_WGS84Parent(cooWMTS,tile.getLevelOrthoParent(),pitch);    
+                    if(box[0].zoom > 3)   
+                    {
+                        var levelParent = tile.getParentNotDownScaled(1).level + 1;                        
+                        cooWMTS = this.projection.WMTS_WGS84Parent(cooWMTS,levelParent,pitch);
+                    }
                                                             
-                    promises.push(this.providerWMTS.getTextureOrtho(cooWMTS,pitch));
-                 
+                    promises.push(this.providerWMTS.getTextureOrtho(cooWMTS,pitch));                 
                 }
                   
                 return when.all(promises);
