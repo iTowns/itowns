@@ -50,18 +50,16 @@ define('Globe/EllipsoidTileMesh', [
         this.geometry = defaultValue(geometryCache, new EllipsoidTileGeometry(bbox, precision, ellipsoid, this.level));
         var ccarto = new CoordCarto(bbox.center.x, bbox.center.y, 0);
 
-        // TODO modif ver world coord de three.js 
+        // TODO Try to remove this.absoluteCenter
         this.absoluteCenter = ellipsoid.cartographicToCartesian(ccarto);
 
-        // TODO ??? 
+        // TODO Question in next line ???
         this.centerSphere = new THREE.Vector3().addVectors(this.geometry.boundingSphere.center, this.absoluteCenter);
         this.orthoNeed = 0;
-        this.material = new GlobeMaterial(bbox, id);
+        this.material = new GlobeMaterial(id);
         this.dot = 0;
         this.frustumCulled = false;
         this.maxChildren = 4;
-
-        
         this.levelTerrain = this.level;
 
         for (var i = 0; i < groupTerrain.length; i++) {
@@ -72,17 +70,11 @@ define('Globe/EllipsoidTileMesh', [
             }
         }
         
-        // Layer
-        
-     
+        // Layer        
         this.currentLevelLayers =[];
         this.currentLevelLayers[l_ELEVATION] = -1;
         this.currentLevelLayers[l_COLOR] = -1;
-        
-        
-        
-        //
-
+                
         var showHelper = true;
         showHelper = false;
 
@@ -228,12 +220,10 @@ define('Globe/EllipsoidTileMesh', [
 
         } else {
                         
-            //console.log(this.level);
             texture = terrain.texture;            
             pitScale = new THREE.Vector3(0,0,1);
             this.setAltitude(terrain.min, terrain.max);
-            this.currentLevelLayers[l_ELEVATION] = terrain.level;            
-            
+            this.currentLevelLayers[l_ELEVATION] = terrain.level;                        
         }
       
         this.material.setTexture(texture, 0, 0, pitScale);
@@ -328,14 +318,6 @@ define('Globe/EllipsoidTileMesh', [
     {
         return !this.parent.downScaledLayer(layer) ? this.parent : this.parent.getParentNotDownScaled(layer);
     };
-    
-//    EllipsoidTileMesh.prototype.getLevelElevationParent = function() 
-//    {        
-//        if( this.level === 3 )        
-//            return this;
-//        
-//        return !this.parent.material.isSubscaleElevation() ? this.parent : this.parent.getLevelElevationParent();
-//    };
 
     EllipsoidTileMesh.prototype.checkOrtho = function() {
         
