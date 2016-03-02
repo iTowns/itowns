@@ -242,7 +242,7 @@ define('Scene/Scene', [
      Scene.prototype.animateTime = function(value){
          
         if(value){ 
-            this.time += 1.1;
+            this.time += 4000;
 
             if( this.time){
 
