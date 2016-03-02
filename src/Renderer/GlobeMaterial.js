@@ -138,7 +138,6 @@ define('Renderer/GlobeMaterial', ['THREE',
     };
     
     
-
     GlobeMaterial.prototype.update = function() {
         // Elevation
         for (var i = 0, max = this.Textures_00.length; i < max; i++)
@@ -158,7 +157,6 @@ define('Renderer/GlobeMaterial', ['THREE',
 
     };
 
-
     GlobeMaterial.prototype.enablePickingRender = function(enable) {
         this.uniforms.pickingRender.value = enable === true ? 1 : 0;
 
@@ -167,35 +165,6 @@ define('Renderer/GlobeMaterial', ['THREE',
     GlobeMaterial.prototype.setLightingOn = function (enable){
         this.uniforms.lightingOn.value = enable === true ? 1 : 0;
     };
-    
-    GlobeMaterial.prototype.isSubscaledLayer = function(id) {
-      
-        if(id === 1 )
-            return this.pitScale_L01[0].z < 1.0;
-        else if(id === 0 )
-            return this.uniforms.pitScale_L00.value.z < 1.0;
-      
-        return false;
-        
-    };
-    
-    GlobeMaterial.prototype.getSubscaledLayer = function() {
-        
-        if(this.pitScale_L01[0].z < 1.0)
-            return 1;
-        else if(this.uniforms.pitScale_L00.value.z < 1.0  ) 
-            return 0;
-        
-        return undefined;
-        
-    };
-    
-    GlobeMaterial.prototype.isSubscaleElevation = function() {
-      
-        return (this.uniforms.pitScale_L00.value.z < 1.0);
-        
-    };
-    
 
     return GlobeMaterial;
 });

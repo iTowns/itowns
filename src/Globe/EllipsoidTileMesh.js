@@ -341,9 +341,9 @@ define('Globe/EllipsoidTileMesh', [
         return this.geometry.OBB;
     };
     
-    EllipsoidTileMesh.prototype.getLevelOrthoParent = function() 
+    EllipsoidTileMesh.prototype.getParentNotDownScaled = function(layer) 
     {
-         return !this.parent.material.isSubscaledLayer(1) ? this.parent.level+1 : this.parent.getLevelOrthoParent();
+        return !this.parent.downScaledLayer(layer) ? this.parent : this.parent.getParentNotDownScaled(layer);
     };
     
     EllipsoidTileMesh.prototype.getLevelElevationParent = function() 
