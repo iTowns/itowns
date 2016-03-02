@@ -11,8 +11,11 @@
  * @param {type} BoundingBox
  * @param {type} defaultValue
  * @param {type} THREE
- * @param {type} Material
- * @returns {EllipsoidTileMesh_L10.EllipsoidTileMesh}
+ * @param {type} OBBHelper
+ * @param {type} SphereHelper
+ * @param {type} GlobeMaterial
+ * @param {type} CoordCarto
+ * @returns {EllipsoidTileMesh_L20.EllipsoidTileMesh}
  */
 define('Globe/EllipsoidTileMesh', [
     'Renderer/NodeMesh',
@@ -179,7 +182,13 @@ define('Globe/EllipsoidTileMesh', [
                         minMax.x = Math.min( minMax.x, val);
                     }                        
                 }
-            }        
+            }     
+            
+            if(minMax.x === 1000000)
+                minMax.x = 0;
+                                
+            if(minMax.y === -1000000)
+                minMax.y = 0; 
     };
     
     EllipsoidTileMesh.prototype.setTerrain = function(terrain) {
@@ -189,8 +198,8 @@ define('Globe/EllipsoidTileMesh', [
         var image;
         var minMax = new THREE.Vector2();
         
-        if (terrain === -1)
-        {
+        if (terrain === -1){
+            
             texture = -1;
             this.currentLevelLayers[l_ELEVATION] = -2;
         }
@@ -206,18 +215,11 @@ define('Globe/EllipsoidTileMesh', [
             minMax.x = ancestor.bbox.minCarto.altitude;
             
             this.parseBufferElevation(image,minMax,pitScale);
-            
-            if(minMax.x === 1000000)
-                minMax.x = 0;
-                                
-            if(minMax.y === -1000000)
-                minMax.y = 0;                       
-                           
+ 
             this.setAltitude(minMax.x, minMax.y);
             
             this.currentLevelLayers[l_ELEVATION] = ancestor.currentLevelLayers[l_ELEVATION];
             
-
         } else {
                         
             texture = terrain.texture;            
@@ -230,22 +232,22 @@ define('Globe/EllipsoidTileMesh', [
     };
 
     EllipsoidTileMesh.prototype.setAltitude = function(min, max) {
-        this.bbox.setAltitude(min, max);
-        var delta = this.geometry.OBB.addHeight(this.bbox);
-        var trans = this.absoluteCenter.clone().setLength(delta.y);
+            this.bbox.setAltitude(min, max);
+            var delta = this.geometry.OBB.addHeight(this.bbox);
+            var trans = this.absoluteCenter.clone().setLength(delta.y);
 
-        var radius = this.geometry.boundingSphere.radius;
+            var radius = this.geometry.boundingSphere.radius;
 
-        this.geometry.boundingSphere.radius = Math.sqrt(delta.x * delta.x + radius * radius);
-        this.centerSphere.add(trans);
+            this.geometry.boundingSphere.radius = Math.sqrt(delta.x * delta.x + radius * radius);
+            this.centerSphere.add(trans);
 
-        if (this.helper instanceof THREE.OBBHelper) {
-            this.helper.update(this.geometry.OBB);
-            this.helper.translateZ(this.absoluteCenter.length());
-        } else if (this.helper instanceof THREE.SphereHelper) {
-            this.helper.update(this.geometry.boundingSphere.radius);
-            this.helper.position.add(trans);
-        }
+            if (this.helper instanceof THREE.OBBHelper) {
+                this.helper.update(this.geometry.OBB);
+                this.helper.translateZ(this.absoluteCenter.length());
+            } else if (this.helper instanceof THREE.SphereHelper) {
+                this.helper.update(this.geometry.boundingSphere.radius);
+                this.helper.position.add(trans);
+            }
     };
 
     EllipsoidTileMesh.prototype.setTextureOrtho = function(texture, id,pitch) {
