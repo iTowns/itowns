@@ -107,7 +107,10 @@ define('Scene/Quadtree', [
 
         if (node.childrenCount() > 0 && node.wait === false) {
 
-            node.setMaterialVisibility(!(node.childrenCount() === 4 && node.childrenLoaded()));
+            //node.setMaterialVisibility(!(node.childrenCount() === 4 && node.childrenLoaded()));
+            //  RQ node.childrenCount() === 4 est toujours vérifier
+            
+            node.setMaterialVisibility(!node.childrenLoaded());
 
             return false;
         }
