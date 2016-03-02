@@ -202,7 +202,7 @@ define('Globe/EllipsoidTileMesh', [
             texture = -1;
             this.currentLevelLayers[l_ELEVATION] = -2;
         }
-        else if (terrain === -3 || terrain === -2) {
+        else if (terrain === -2) {
                         
             var levelAncestor = this.getParentNotDownScaled(l_ELEVATION).currentLevelLayers[l_ELEVATION];                        
             ancestor = this.getParentLevel(levelAncestor);            
@@ -219,12 +219,12 @@ define('Globe/EllipsoidTileMesh', [
                 minMax.x = 0;
                                 
             if(minMax.y === -1000000)
-                minMax.y = 0;
+                minMax.y = 0;                       
                            
             this.setAltitude(minMax.x, minMax.y);
             
             this.currentLevelLayers[l_ELEVATION] = ancestor.currentLevelLayers[l_ELEVATION];
-            //console.log(this.level + ' -> ' + ancestor.level + ' cur : ' + this.currentLevelLayers[l_ELEVATION] );
+            
 
         } else {
                         

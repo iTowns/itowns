@@ -103,9 +103,6 @@ define('Core/Commander/Providers/WMTS_Provider', [
             if (coWMTS === undefined)                
                 return when(-2);
              
-            if (coWMTS.zoom === -1)                                
-                return when(-3);
-            
             var url = this.url(coWMTS);
 
             var textureCache = this.cache.getRessource(url);
@@ -127,8 +124,7 @@ define('Core/Commander/Providers/WMTS_Provider', [
                     result.texture = this.getTextureFloat(result.floatArray);
                     result.texture.generateMipmaps = false;
                     result.texture.magFilter = THREE.LinearFilter;
-                    result.texture.minFilter = THREE.LinearFilter;
-                    
+                    result.texture.minFilter = THREE.LinearFilter;                    
                     
                     // TODO ATTENTION verifier le context
                     result.level = coWMTS.zoom;
