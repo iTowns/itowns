@@ -13,7 +13,8 @@ define('Globe/EllipsoidTileGeometry', [
     'Core/Math/Ellipsoid',
     'Core/Geographic/CoordCarto',
     'Core/Math/MathExtented',
-    'Core/System/JavaTools'
+    'Core/System/JavaTools',
+    'Core/Commander/Providers/CacheRessource'
 ], function(
     THREE,
     defaultValue,
@@ -21,75 +22,91 @@ define('Globe/EllipsoidTileGeometry', [
     Ellipsoid,
     CoordCarto,
     MathExt,
-    JavaTools) {
+    JavaTools,
+    CacheRessource) {
+
+    var cache = CacheRessource();
+
+    function Buffers(nSegment)
+    {                
+        
+        this.bufIndex = null;
+        this.bufPosition = null;
+        this.bufNormal = null;
+        this.bufUV = null;
+        this.bufUV2 = null;        
+        
+        var cBuff = cache.getRessource(nSegment);
+        
+        if(cBuff)
+        {
+            this.bufIndex = cBuff.bufIndex;
+            this.bufUV = cBuff.bufUV;            
+        }        
+    }
 
     function EllipsoidTileGeometry(bbox, segment, pellipsoid, zoom) {
         //Constructor
         THREE.BufferGeometry.call(this);
 
+        var ellipsoid = defaultValue(pellipsoid, new Ellipsoid(6378137, 6356752.3142451793, 6378137));
+
+        bbox = defaultValue(bbox, new BoundingBox());
+        this.center = ellipsoid.cartographicToCartesian(new CoordCarto(bbox.center.x, bbox.center.y, 0));
+        this.OBB = bbox.get3DBBox(ellipsoid, this.center);
+                
+        // TODO : free array
+        
+        var buffers = this.computeBuffers(bbox,segment,ellipsoid,zoom);
+
+        this.setIndex(buffers.bufIndex);
+        this.addAttribute('position', buffers.bufPosition);
+        this.addAttribute('normal', buffers.bufNormal);
+        this.addAttribute('uv', buffers.bufUV);
+        this.addAttribute('uv1', buffers.bufUV2);
+        
+        buffers.bufPosition = null;
+        buffers.bufNormal= null;        
+        buffers.bufUV2 = null;
+        
+        if(!cache.getRessource(segment))         
+            cache.addRessource(segment, buffers);
+         
+        // ---> for SSE
+        this.computeBoundingSphere();
+
+    }
+        
+
+    EllipsoidTileGeometry.prototype = Object.create(THREE.BufferGeometry.prototype);
+
+    EllipsoidTileGeometry.prototype.constructor = EllipsoidTileGeometry;
+    
+    EllipsoidTileGeometry.prototype.computeBuffers = function(bbox,segment,ellipsoid,zoom) 
+    {
         var javToo = new JavaTools();
 
         var nbRow = Math.pow(2.0, zoom + 1.0);
-
-        bbox = defaultValue(bbox, new BoundingBox());
-
-        var ellipsoid = defaultValue(pellipsoid, new Ellipsoid(6378137, 6356752.3142451793, 6378137));
-
+        
+        var buffers = new Buffers(segment);
+        
         var nSeg = defaultValue(segment, 32);
         var nVertex = (nSeg + 1) * (nSeg + 1) + 8 * (nSeg - 1); // correct pour uniquement les vertex
         var triangles = (nSeg) * (nSeg) + 16 * (nSeg - 1); // correct pour uniquement les vertex
 
-        var widthSegments = nSeg;
-        var heightSegments = nSeg;
-
         var bufferVertex = new Float32Array(nVertex * 3);
-        var bufferIndex = new Uint32Array(triangles * 3 * 2);
+        var bufferIndex = buffers.bufIndex === null ? new Uint32Array(triangles * 3 * 2) : null;
         var bufferNormal = new Float32Array(nVertex * 3);
-        var bufferUV = new Float32Array(nVertex * 2);
+        var bufferUV = buffers.bufUV === null ? new Float32Array(nVertex * 2) : null;
         var bufferUV2 = new Float32Array(nVertex);
 
-        widthSegments = Math.max(2, Math.floor(widthSegments) || 2);
-        heightSegments = Math.max(2, Math.floor(heightSegments) || 2);
+        var widthSegments = Math.max(2, Math.floor(nSeg) || 2);
+        var heightSegments = Math.max(2, Math.floor(nSeg) || 2);
 
         var phiStart = bbox.minCarto.longitude;
         var phiLength = bbox.dimension.x;
-
-        this.cLongi = bbox.center.x;
-
         var thetaStart = bbox.minCarto.latitude;
         var thetaLength = bbox.dimension.y;
-
-        this.carto2Normal = function(phi, theta) {
-            return ellipsoid.geodeticSurfaceNormalCartographic(new CoordCarto(phi, theta, 0));
-        };
-
-        //        this.tops        = [];
-        //        this.tops.push(ellipsoid.cartographicToCartesian(new CoordCarto(phiStart, thetaStart,0)));
-        //        this.tops.push(ellipsoid.cartographicToCartesian(new CoordCarto(phiStart + phiLength, thetaStart+ thetaLength,0)));
-        //        this.tops.push(ellipsoid.cartographicToCartesian(new CoordCarto(phiStart, thetaStart+ thetaLength,0)));
-        //        this.tops.push(ellipsoid.cartographicToCartesian(new CoordCarto(phiStart + phiLength, thetaStart,0)));   
-        //
-        //        this.normals        = [];
-        //
-        //        this.normals.push(this.carto2Normal(phiStart, thetaStart));
-        //        this.normals.push(this.carto2Normal(phiStart + phiLength, thetaStart+ thetaLength));
-        //        this.normals.push(this.carto2Normal(phiStart, thetaStart+ thetaLength));
-        //        this.normals.push(this.carto2Normal(phiStart + phiLength, thetaStart));        
-
-        //        this.HeightPoints    = [];                
-        //        this.HeightPoints.push(ellipsoid.cartographicToCartesian(new CoordCarto(phiStart                        , thetaStart    ,0)));
-        //        this.HeightPoints.push(ellipsoid.cartographicToCartesian(new CoordCarto(phiStart + bbox.halfDimension.x , thetaStart    ,0)));
-        //        this.HeightPoints.push(ellipsoid.cartographicToCartesian(new CoordCarto(phiStart + phiLength            , thetaStart    ,0)));
-        //        this.HeightPoints.push(ellipsoid.cartographicToCartesian(new CoordCarto(phiStart + phiLength            , thetaStart + bbox.halfDimension.y,0)));        
-        //        this.HeightPoints.push(ellipsoid.cartographicToCartesian(new CoordCarto(phiStart + phiLength            , thetaStart + thetaLength  ,0)));
-        //        this.HeightPoints.push(ellipsoid.cartographicToCartesian(new CoordCarto(phiStart + bbox.halfDimension.x , thetaStart + thetaLength  ,0)));        
-        //        this.HeightPoints.push(ellipsoid.cartographicToCartesian(new CoordCarto(phiStart                        , thetaStart + thetaLength  ,0)));
-        //        this.HeightPoints.push(ellipsoid.cartographicToCartesian(new CoordCarto(phiStart                        , thetaStart + bbox.halfDimension.y,0)));        
-
-        var ccarto = new CoordCarto(bbox.center.x, bbox.center.y, 0);
-        this.center = ellipsoid.cartographicToCartesian(ccarto);
-
-        this.OBB = bbox.get3DBBox(ellipsoid, this.center);
 
         var idVertex = 0;
         var x, y, vertices = [],
@@ -143,8 +160,11 @@ define('Globe/EllipsoidTileGeometry', [
                 bufferNormal[id_m3 + 1] = normal.y;
                 bufferNormal[id_m3 + 2] = normal.z;
 
-                bufferUV[idVertex * 2 + 0] = u;
-                bufferUV[idVertex * 2 + 1] = 1 - v;
+                if(buffers.bufUV === null) 
+                {
+                    bufferUV[idVertex * 2 + 0] = u;
+                    bufferUV[idVertex * 2 + 1] = 1 - v;
+                }
 
                 bufferUV2[idVertex] = t;
 
@@ -175,34 +195,44 @@ define('Globe/EllipsoidTileGeometry', [
             bufferIndex[idVertex + 0] = va;
             bufferIndex[idVertex + 1] = vb;
             bufferIndex[idVertex + 2] = vc;
+            return idVertex+3;
         }
-
+  
         var idVertex2 = 0;
+        
+        if(buffers.bufIndex === null)   
+            for (y = 0; y < heightSegments; y++) {
 
-        for (y = 0; y < heightSegments; y++) {
+                for (x = 0; x < widthSegments; x++) {
 
-            for (x = 0; x < widthSegments; x++) {
+                    var v1 = vertices[y][x + 1];
+                    var v2 = vertices[y][x];
+                    var v3 = vertices[y + 1][x];
+                    var v4 = vertices[y + 1][x + 1];
 
-                var v1 = vertices[y][x + 1];
-                var v2 = vertices[y][x];
-                var v3 = vertices[y + 1][x];
-                var v4 = vertices[y + 1][x + 1];
+                    idVertex2 = bufferize(v4, v2, v1, idVertex2);
+                    idVertex2 = bufferize(v4, v3, v2, idVertex2);
 
-                bufferize(v4, v2, v1, idVertex2);
-
-                idVertex2 += 3;
-
-                bufferize(v4, v3, v2, idVertex2);
-
-                idVertex2 += 3;
+                }
             }
-        }
 
         start = idVertex;
         var rmax = 5000;
         var r = Math.max(rmax, Math.pow(rmax, 1 / zoom));
 
         r = isFinite(r) ? r : rmax;
+        
+        var buildIndexSkirt;
+        
+        if(buffers.bufIndex === null)
+            buildIndexSkirt = function(id,v1,v2,v3,v4)
+            {
+                id = bufferize(v1, v2, v3, id);
+                id = bufferize(v1, v3, v4, id);                
+                return id;
+            };
+        else 
+            buildIndexSkirt = function(){};
 
         for (var i = 0; i < skirt.length; i++) {
 
@@ -218,8 +248,12 @@ define('Globe/EllipsoidTileGeometry', [
             bufferNormal[id_m3 + 1] = bufferNormal[id2_m3 + 1];
             bufferNormal[id_m3 + 2] = bufferNormal[id2_m3 + 2];
 
-            bufferUV[idVertex * 2 + 0] = bufferUV[id * 2 + 0];
-            bufferUV[idVertex * 2 + 1] = bufferUV[id * 2 + 1];
+            if(buffers.bufUV === null) 
+            {
+                bufferUV[idVertex * 2 + 0] = bufferUV[id * 2 + 0];
+                bufferUV[idVertex * 2 + 1] = bufferUV[id * 2 + 1];
+            }
+            
             bufferUV2[idVertex] = bufferUV2[id];
 
             var idf = (i + 1) % skirt.length;
@@ -232,43 +266,32 @@ define('Globe/EllipsoidTileGeometry', [
             if (idf === 0)
                 v3 = start;
 
-            bufferize(v1, v2, v3, idVertex2);
-
-            idVertex2 += 3;
-
-            bufferize(v1, v3, v4, idVertex2);
-
-            idVertex2 += 3;
+            idVertex2 = buildIndexSkirt (idVertex2,v1,v2,v3,v4);
 
             idVertex++;
 
         }
-
-        // TODO : free array
-
-        this.setIndex(new THREE.BufferAttribute(bufferIndex, 1));
-        this.addAttribute('position', new THREE.BufferAttribute(bufferVertex, 3));
-        this.addAttribute('normal', new THREE.BufferAttribute(bufferNormal, 3));
-        this.addAttribute('uv', new THREE.BufferAttribute(bufferUV, 2));
-        this.addAttribute('uv1', new THREE.BufferAttribute(bufferUV2, 1));
-
-        // ---> for SSE
-        this.computeBoundingSphere();
-
+         // TODO : free array
+         
+        if(buffers.bufIndex === null)            
+            buffers.bufIndex = new THREE.BufferAttribute(bufferIndex, 1);        
+        buffers.bufPosition = new THREE.BufferAttribute(bufferVertex, 3);
+        buffers.bufNormal= new THREE.BufferAttribute(bufferNormal, 3);
+        if(buffers.bufUV === null)            
+            buffers.bufUV = new THREE.BufferAttribute(bufferUV, 2);
+        buffers.bufUV2 = new THREE.BufferAttribute(bufferUV2, 1);
+     
         javToo.freeArray(vertices);
 
-        // TODO how free typedArray
         bufferVertex = null;
         bufferIndex = null;
         bufferNormal = null;
         bufferUV = null;
         bufferUV2 = null;
-
-    }
-
-    EllipsoidTileGeometry.prototype = Object.create(THREE.BufferGeometry.prototype);
-
-    EllipsoidTileGeometry.prototype.constructor = EllipsoidTileGeometry;
+        
+        return buffers;
+        
+    };
 
     return EllipsoidTileGeometry;
 
