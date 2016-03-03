@@ -58,6 +58,9 @@ define('Globe/EllipsoidTileMesh', [
 
         // TODO Question in next line ???
         this.centerSphere = new THREE.Vector3().addVectors(this.geometry.boundingSphere.center, this.absoluteCenter);
+        
+        this.oSphere = new THREE.Sphere(this.centerSphere.clone(),this.geometry.boundingSphere.radius);
+        
         this.orthoNeed = 0;
         this.material = new GlobeMaterial(id);
         this.dot = 0;
@@ -160,37 +163,34 @@ define('Globe/EllipsoidTileMesh', [
     };
         
     EllipsoidTileMesh.prototype.parseBufferElevation = function(image,minMax,pitScale) {
-      
-            //var image = this.parent.material.Textures_00[0].image;
-            var buffer = image.data;
 
-            var size = Math.floor(pitScale.z * image.width);                
-            var xs = Math.floor(pitScale.x * image.width);
-            var ys = Math.floor(pitScale.y * image.width);
+        var buffer = image.data;
 
-            minMax.y = -1000000;
-            minMax.x =  1000000;
+        var size = Math.floor(pitScale.z * image.width);                
+        var xs = Math.floor(pitScale.x * image.width);
+        var ys = Math.floor(pitScale.y * image.width);
 
-            var inc = Math.max(Math.floor(size/8),2);
+        var oMinMax = minMax.clone();
 
-            for (var y  = ys; y <  ys + size; y+=inc){                    
-                var pit = y * image.width;
-                for (var x = xs; x < xs +size; x+=inc) {                    
-                    var val = buffer[pit + x];  
-                    if (val > -10.0 && val !== undefined){
-                        minMax.y = Math.max(minMax.y, val);
-                        minMax.x = Math.min( minMax.x, val);
-                    }                        
-                }
-            }     
-            
-            if(minMax.x === 1000000)
-                            
-                minMax.x = 0;
-            
-                                
-            if(minMax.y === -1000000)
-                minMax.y = 0; 
+        minMax.y = -1000000;
+        minMax.x =  1000000;
+
+        var inc = Math.max(Math.floor(size/8),2);
+
+        for (var y  = ys; y <  ys + size; y+=inc){                    
+            var pit = y * image.width;
+            for (var x = xs; x < xs +size; x+=inc) {                    
+                var val = buffer[pit + x];  
+                if (val > -10.0 && val !== undefined){
+                    minMax.y = Math.max(minMax.y, val);
+                    minMax.x = Math.min( minMax.x, val);
+                }                        
+            }
+        }     
+
+        if(minMax.x === 1000000 || minMax.y === -1000000)                            
+            minMax.copy(oMinMax);
+
     };
     
     EllipsoidTileMesh.prototype.setTerrain = function(terrain) {
@@ -209,6 +209,10 @@ define('Globe/EllipsoidTileMesh', [
                         
             var levelAncestor = this.getParentNotDownScaled(l_ELEVATION).currentLevelLayers[l_ELEVATION];                        
             ancestor = this.getParentLevel(levelAncestor);            
+            
+            if(ancestor === undefined) // TODO WHY ??
+                return;
+                            
             pitScale = ancestor.bbox.pitScale(this.bbox);
             texture = ancestor.material.Textures_00[0];            
             image = texture.image;
@@ -235,18 +239,17 @@ define('Globe/EllipsoidTileMesh', [
     };
 
     EllipsoidTileMesh.prototype.setAltitude = function(min, max) {
-                    
+    
+        if(Math.floor(min) !== Math.floor(this.bbox.minCarto.altitude) || Math.floor(max) !== Math.floor(this.bbox.maxCarto.altitude) )
+        {            
+
             this.bbox.setAltitude(min, max);            
-            
             var delta = this.geometry.OBB.addHeight(this.bbox);
-            
             var trans = this.absoluteCenter.clone().setLength(delta.y);
+
+            this.geometry.boundingSphere.radius = Math.sqrt(delta.x * delta.x + this.oSphere.radius * this.oSphere.radius); 
+            this.centerSphere = new THREE.Vector3().addVectors(this.oSphere.center,trans);
             
-            var radius = this.geometry.boundingSphere.radius;
-
-            this.geometry.boundingSphere.radius = Math.sqrt(delta.x * delta.x + radius * radius);
-            this.centerSphere.add(trans);
-
             if (this.helper instanceof THREE.OBBHelper) {
                 this.helper.update(this.geometry.OBB);
                 this.helper.translateZ(this.absoluteCenter.length());
@@ -254,6 +257,7 @@ define('Globe/EllipsoidTileMesh', [
                 this.helper.update(this.geometry.boundingSphere.radius);
                 this.helper.position.add(trans);
             }
+        }
     };
 
     EllipsoidTileMesh.prototype.setTextureOrtho = function(texture, id,pitch) {
