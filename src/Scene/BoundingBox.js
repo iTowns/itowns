@@ -37,8 +37,8 @@ define('Scene/BoundingBox', [
     function BoundingBox(minLongitude, maxLongitude, minLatitude, maxLatitude, parentCenter, minAltitude, maxAltitude) {
         //Constructor
 
-        this.minCarto = new CoordCarto(defaultValue(minLongitude, 0), defaultValue(minLatitude, -MathExt.PI_OV_TWO), defaultValue(minAltitude, -10000));
-        this.maxCarto = new CoordCarto(defaultValue(maxLongitude, MathExt.TWO_PI), defaultValue(maxLatitude, MathExt.PI_OV_TWO), defaultValue(maxAltitude, 10000));
+        this.minCarto = new CoordCarto(defaultValue(minLongitude, 0), defaultValue(minLatitude, -MathExt.PI_OV_TWO), defaultValue(minAltitude, 0));
+        this.maxCarto = new CoordCarto(defaultValue(maxLongitude, MathExt.TWO_PI), defaultValue(maxLatitude, MathExt.PI_OV_TWO), defaultValue(maxAltitude, 0));
 
         this.dimension = new Point2D(Math.abs(this.maxCarto.longitude - this.minCarto.longitude), Math.abs(this.maxCarto.latitude - this.minCarto.latitude));
         this.halfDimension = new Point2D(this.dimension.x * 0.5, this.dimension.y * 0.5);
@@ -175,15 +175,17 @@ define('Scene/BoundingBox', [
         var delta = height - Math.abs(cardin3DPlane[5].x);
         var max = new THREE.Vector3(width, height, maxHeight);
         var min = new THREE.Vector3(-width, -height, -maxHeight);
-        var obb = new THREE.OBB(min, max);
+        
+        var translate = new THREE.Vector3(0,delta,-maxHeight);
+        var obb = new THREE.OBB(min, max,normal,translate);
 
         //var l  = center.length();
         //obb.position.copy(center);                
-        obb.lookAt(normal);
-        obb.translateZ(-maxHeight);
-        obb.translateY(delta);
-        obb.update();
-
+//        obb.lookAt(normal);
+//        obb.translateZ(-maxHeight);
+//        obb.translateY(delta);
+//        obb.update();
+//        obb.oPosition = obb.position.clone();
         return obb;
 
     };
