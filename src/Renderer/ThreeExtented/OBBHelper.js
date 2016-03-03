@@ -23,29 +23,17 @@ THREE.OBBHelper = function(OBB, text) {
     THREE.LineSegments.call(this, geometry, new THREE.LineBasicMaterial({
         color: color.getHex()
     }));
-
-    if (OBB !== undefined)
-        this.update(OBB);
-
-    this.position.copy(OBB.position);
-    this.rotation.copy(OBB.rotation);
-
-    var box = OBB.box3D;
-    var min = box.min;
-    var max = box.max;
-
-    var sizeX = max.x - min.x;
-    var sizeY = max.y - min.y;
-    var sizeZ = max.z - min.z;
- 
+        
     // TODO mettre la creation de la font plus haut    
     var font = new THREE.Font( JSON.parse( fontJS.substring( 65, fontJS.length - 2 )));
     
+    var size = OBB.box3D.size();
+      
     var geometryText = new THREE.TextGeometry( text, {
 
 					font: font,
-					size: sizeX * 0.0666,
-					height:sizeZ * 0.001,
+					size: size.x * 0.0666,
+					height:size.z * 0.001,
 					curveSegments: 1
 
 				});
@@ -54,12 +42,11 @@ THREE.OBBHelper = function(OBB, text) {
         color: new THREE.Color(1, 0, 0),
         side: THREE.DoubleSide
     }));
-
-    this.textMesh.translateX(-sizeX * 0.45);
-    this.textMesh.translateY(-sizeY * 0.45);
-    this.textMesh.translateZ(sizeZ * 0.52);
-
+    
     this.add(this.textMesh);
+    
+    if (OBB !== undefined)
+        this.update(OBB);  
 
 };
 
@@ -105,17 +92,17 @@ THREE.OBBHelper.prototype.update = function(OBB) {
 
     position.needsUpdate = true;
 
-    this.position.copy(OBB.position);
+    this.position.copy(OBB.position);   
     this.rotation.copy(OBB.rotation);
+    this.updateMatrix();
+    this.updateMatrixWorld(true);
 
-    var sizeX = max.x - min.x;
-    var sizeY = max.y - min.y;
-    var sizeZ = max.z - min.z;
-
+    var size = OBB.box3D.size();
+    
     if (this.textMesh) {
-        this.textMesh.position.copy(new THREE.Vector3());
-        this.textMesh.translateX(-sizeX * 0.45);
-        this.textMesh.translateY(-sizeY * 0.45);
-        this.textMesh.translateZ(sizeZ * 0.5);
+        this.textMesh.position.set(0,0,0);
+        this.textMesh.translateX(-size.x * 0.45);
+        this.textMesh.translateY(-size.y * 0.45);
+        this.textMesh.translateZ(size.z * 0.5);
     }
 };

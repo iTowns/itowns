@@ -185,7 +185,9 @@ define('Globe/EllipsoidTileMesh', [
             }     
             
             if(minMax.x === 1000000)
+                            
                 minMax.x = 0;
+            
                                 
             if(minMax.y === -1000000)
                 minMax.y = 0; 
@@ -214,9 +216,10 @@ define('Globe/EllipsoidTileMesh', [
             minMax.y = ancestor.bbox.maxCarto.altitude;
             minMax.x = ancestor.bbox.minCarto.altitude;
             
-            this.parseBufferElevation(image,minMax,pitScale);
+            this.parseBufferElevation(image,minMax,pitScale);                        
  
-            this.setAltitude(minMax.x, minMax.y);
+            if(minMax.x !== 0 && minMax.y !== 0)
+                this.setAltitude(minMax.x, minMax.y);
             
             this.currentLevelLayers[l_ELEVATION] = ancestor.currentLevelLayers[l_ELEVATION];
             
@@ -228,14 +231,17 @@ define('Globe/EllipsoidTileMesh', [
             this.currentLevelLayers[l_ELEVATION] = terrain.level;                        
         }
       
-        this.material.setTexture(texture, 0, 0, pitScale);
+        this.material.setTexture(texture,l_ELEVATION, 0, pitScale);
     };
 
     EllipsoidTileMesh.prototype.setAltitude = function(min, max) {
-            this.bbox.setAltitude(min, max);
+                    
+            this.bbox.setAltitude(min, max);            
+            
             var delta = this.geometry.OBB.addHeight(this.bbox);
+            
             var trans = this.absoluteCenter.clone().setLength(delta.y);
-
+            
             var radius = this.geometry.boundingSphere.radius;
 
             this.geometry.boundingSphere.radius = Math.sqrt(delta.x * delta.x + radius * radius);
