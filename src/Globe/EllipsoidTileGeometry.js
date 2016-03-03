@@ -123,6 +123,15 @@ define('Globe/EllipsoidTileGeometry', [
         var start = (st1 % (sizeTexture));
 
         var st = st1 - start;
+        
+        var buildUV = function(){};
+         
+        if(buffers.bufUV === null) 
+            buildUV = function(u,v)
+            {
+                bufferUV[idVertex * 2 + 0] = u;
+                bufferUV[idVertex * 2 + 1] = 1 - v;
+            };
 
         for (y = 0; y <= heightSegments; y++) {
 
@@ -160,11 +169,7 @@ define('Globe/EllipsoidTileGeometry', [
                 bufferNormal[id_m3 + 1] = normal.y;
                 bufferNormal[id_m3 + 2] = normal.z;
 
-                if(buffers.bufUV === null) 
-                {
-                    bufferUV[idVertex * 2 + 0] = u;
-                    bufferUV[idVertex * 2 + 1] = 1 - v;
-                }
+                buildUV(u,v);
 
                 bufferUV2[idVertex] = t;
 
@@ -222,17 +227,25 @@ define('Globe/EllipsoidTileGeometry', [
 
         r = isFinite(r) ? r : rmax;
         
-        var buildIndexSkirt;
+        var buildIndexSkirt = function(){};
+        var buildUVSkirt = function(){};
+        
         
         if(buffers.bufIndex === null)
+        {
             buildIndexSkirt = function(id,v1,v2,v3,v4)
             {
                 id = bufferize(v1, v2, v3, id);
                 id = bufferize(v1, v3, v4, id);                
                 return id;
             };
-        else 
-            buildIndexSkirt = function(){};
+            
+            buildUVSkirt = function(){
+                bufferUV[idVertex * 2 + 0] = bufferUV[id * 2 + 0];
+                bufferUV[idVertex * 2 + 1] = bufferUV[id * 2 + 1];                
+            };
+        }
+    
 
         for (var i = 0; i < skirt.length; i++) {
 
@@ -247,12 +260,8 @@ define('Globe/EllipsoidTileGeometry', [
             bufferNormal[id_m3 + 0] = bufferNormal[id2_m3 + 0];
             bufferNormal[id_m3 + 1] = bufferNormal[id2_m3 + 1];
             bufferNormal[id_m3 + 2] = bufferNormal[id2_m3 + 2];
-
-            if(buffers.bufUV === null) 
-            {
-                bufferUV[idVertex * 2 + 0] = bufferUV[id * 2 + 0];
-                bufferUV[idVertex * 2 + 1] = bufferUV[id * 2 + 1];
-            }
+            
+            buildUVSkirt();
             
             bufferUV2[idVertex] = bufferUV2[id];
 
