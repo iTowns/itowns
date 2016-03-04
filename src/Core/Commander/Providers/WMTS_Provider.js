@@ -193,8 +193,11 @@ define('Core/Commander/Providers/WMTS_Provider', [
             
             if(command.paramsFunction.subLayer === 1)
             {
+                
                 return this.getOrthoImages(command.requester).then(function(result)
-                {                           
+                {             
+                    if(this.material === null) // TODO WHY??
+                        return;
                     this.setTexturesLayer(result,1);                        
                     this.material.update();
                 }.bind(command.requester));
@@ -211,11 +214,11 @@ define('Core/Commander/Providers/WMTS_Provider', [
                 
 
                 if(parent.downScaledLayer(0))
-                {
-                 
+                {                 
                     return this.getTextureBil(parent.cooWMTS).then(function(terrain)
                     {            
-                 
+                        if(this.material === null)
+                            return;
                         this.setTerrain(terrain);
                         this.material.update();
 
@@ -223,6 +226,8 @@ define('Core/Commander/Providers/WMTS_Provider', [
                     {
                         if(this.downScaledLayer(0))
                         {
+                            if(this.material === null)
+                                return;
                             this.setTerrain(-2);
                             this.material.update();
                         }
