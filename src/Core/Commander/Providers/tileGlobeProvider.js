@@ -166,8 +166,11 @@ define('Core/Commander/Providers/tileGlobeProvider', [
                   
                 return when.all(promises);
             }
-            else            
+            else 
+            {
                 tile.checkOrtho();
+                return when();
+            }
             
         };
 
