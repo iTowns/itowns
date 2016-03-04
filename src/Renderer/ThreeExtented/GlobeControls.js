@@ -372,19 +372,13 @@ THREE.GlobeControls = function(object, domElement, engine) {
 
     this.updateTarget = function() {
         if (!space) {
-            this.target = new THREE.Vector3();
-            //this.object.lookAt( this.target );
+            this.target = new THREE.Vector3();            
         } else {
             var target = this.object.position.clone().setLength(2);
 
             this.target = new THREE.Vector3().subVectors(this.object.position, target);
 
             this.object.lookAt(this.target);
-
-            //                this.object.rotation.x = 0.0;
-            //                this.object.rotation.y = 0.0;
-            //                this.object.rotation.z = 0.0;
-
         }
     };
 
@@ -683,8 +677,9 @@ THREE.GlobeControls = function(object, domElement, engine) {
 
     function newTarget() {
         // Update target camera {START}                                
-        scope.engine.updatePositionBuffer();
-        var positionTarget = scope.engine.pickingInPositionBuffer();
+        
+        var positionTarget = scope.engine.getPickingPosition();
+        scope.engine.renderScene();
         var distanceTarget = positionTarget.distanceTo(scope.object.position);
 
         scope.object.worldToLocal(scope.moveTarget);

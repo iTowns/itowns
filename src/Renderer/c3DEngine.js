@@ -375,8 +375,12 @@ define('Renderer/c3DEngine', [
         this.setStateRender(mode);
         this.renderer.clear();
         this.renderer.setViewport(0, 0, this.width, this.height);
+//        this.renderer.setViewport(x, y, width, height); 
+//        this.renderer.setScissorTest ( true ); // TODO no change time with setScissorTest
         this.renderer.render(this.scene3D, this.camera.camera3D, this.pickingTexture);
+        //this.renderer.setScissorTest ( false);
         this.setStateRender(originalState);
+       
 
         var pixelBuffer = new Float32Array(width * height * 4);
         this.renderer.readRenderTargetPixels(this.pickingTexture, x, y, width, height, pixelBuffer);
@@ -446,7 +450,8 @@ define('Renderer/c3DEngine', [
      * @param {type} scene     
      * @returns THREE.Vector3 position cartesien in world space
      * */
-    c3DEngine.prototype.getPickingPosition = function(mouse, scene) {
+    c3DEngine.prototype.getPickingPosition = function(mouse, scene) {                
+        
         if (mouse === undefined)
             mouse = new THREE.Vector2(Math.floor(this.width / 2), Math.floor(this.height / 2));
 
