@@ -363,25 +363,20 @@ define('Renderer/c3DEngine', [
         }
     };
 
-    c3DEngine.prototype.updatePositionBuffer = function() {
-
-
-    };
-
     c3DEngine.prototype.renderTobuffer = function(x, y, width, height, mode) {
 
         // TODO Deallocate render texture
         var originalState = this.stateRender;
         this.setStateRender(mode);
         this.renderer.clear();
-        this.renderer.setViewport(0, 0, this.width, this.height);
-//        this.renderer.setViewport(x, y, width, height); 
-//        this.renderer.setScissorTest ( true ); // TODO no change time with setScissorTest
+       // this.renderer.setViewport(0, 0, this.width, this.height);
+        this.renderer.setViewport(x, y, width, height); 
+        //this.renderer.setScissor(x, y, width, height); 
+        //this.renderer.setScissorTest ( true ); // TODO no change time with setScissorTest
         this.renderer.render(this.scene3D, this.camera.camera3D, this.pickingTexture);
         //this.renderer.setScissorTest ( false);
         this.setStateRender(originalState);
        
-
         var pixelBuffer = new Float32Array(width * height * 4);
         this.renderer.readRenderTargetPixels(this.pickingTexture, x, y, width, height, pixelBuffer);
 
