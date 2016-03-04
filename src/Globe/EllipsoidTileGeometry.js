@@ -41,7 +41,7 @@ define('Globe/EllipsoidTileGeometry', [
         if(cBuff)
         {
             this.bufIndex = cBuff.bufIndex;
-            this.bufUV_0 = cBuff.bufUV;            
+            this.bufUV_0 = cBuff.bufUV_0;            
         }        
     }
 
@@ -67,7 +67,7 @@ define('Globe/EllipsoidTileGeometry', [
         
         buffersAtt.bufPosition = null;
         buffersAtt.bufNormal= null;        
-        buffersAtt.bufUV2 = null;
+        buffersAtt.bufUV_1 = null;
         
         if(!cache.getRessource(segment))         
             cache.addRessource(segment, buffersAtt);
@@ -83,6 +83,7 @@ define('Globe/EllipsoidTileGeometry', [
     
     EllipsoidTileGeometry.prototype.computeBuffers = function(bbox,segment,ellipsoid,zoom) 
     {
+                
         var javToo = new JavaTools();
 
         var nbRow = Math.pow(2.0, zoom + 1.0);
