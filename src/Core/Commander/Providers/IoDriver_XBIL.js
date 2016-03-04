@@ -40,7 +40,7 @@ define('Core/Commander/Providers/IoDriver_XBIL', ['Core/Commander/Providers/IoDr
 //        };        
         
         if (buffer){
-
+            
             var result = new portableXBIL(buffer);
             // Compute min max using subampling            
             for (var i = 0; i < result.floatArray.length; i+=16) {
@@ -63,9 +63,9 @@ define('Core/Commander/Providers/IoDriver_XBIL', ['Core/Commander/Providers/IoDr
             
             when.all(arrayP);
             */
-            if (result.min === 1000000)
+            if (result.max === -1000000)                           
                 return undefined;
-
+            
             return result;
         }
         else
@@ -100,12 +100,15 @@ define('Core/Commander/Providers/IoDriver_XBIL', ['Core/Commander/Providers/IoDr
 
             xhr.onload = function() {
                                   
+                //console.log(this.response);
+                
                 resolve(this.parseXBil(this.response));
               
             };
 
             xhr.onerror = function() {
 
+                console.log('error');
                 resolve(undefined);
             };
 
