@@ -144,6 +144,8 @@ define('Globe/EllipsoidTileGeometry', [
 
             if (!isFinite(t))
                 t = 0;
+            
+            //buffers.uv_1.fill(t, idVertex,idVertex  + widthSegments + 1); // TODO Semble plus long
 
             for (x = 0; x <= widthSegments; x++) {
 
