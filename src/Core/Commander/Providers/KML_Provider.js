@@ -100,8 +100,7 @@ define('Core/Commander/Providers/KML_Provider', [
             var key = 'j2bfkv9whnqpq04zpzlfz2ge';
             var url = 'http://wxs.ign.fr/' + key + '/vecteurtuile3d/BATI3D/' + 'FXX/';
             return this.ioDriverXML.read(urlFile).then(function(result) {
-                //console.log(result);
-
+                
                 var NetworkLink = [];
                 NetworkLink = result.getElementsByTagName("NetworkLink");
 
@@ -112,18 +111,15 @@ define('Core/Commander/Providers/KML_Provider', [
                     coords[1] = NetworkLink[i].getElementsByTagName("south")[0].childNodes[0].nodeValue;
                     coords[2] = NetworkLink[i].getElementsByTagName("east")[0].childNodes[0].nodeValue;
                     coords[3] = NetworkLink[i].getElementsByTagName("west")[0].childNodes[0].nodeValue;
-                    //console.log(coords[1], coords[2], coords[3], coords[4]);
+                
 
                     if (north < coords[0] && south > coords[1] && east < coords[2] && west > coords[3]) {
 
                         var href = [];
                         href[i] = url + "TREE/" + NetworkLink[i].getElementsByTagName("href")[0].childNodes[0].nodeValue.replace("../", "");
-                        //console.log(href[i]);
-
+                
                         if (href[i].toLowerCase().substr(-4) === '.kml') {
 
-                            //console.log(coords[i,1], coords[i,2], coords[i,3], coords[i,4]);
-                            //console.log(href[i]);
                             return this.parseKML(href[i], longitude, latitude);
 
                         }
@@ -134,7 +130,7 @@ define('Core/Commander/Providers/KML_Provider', [
                             //url_kmz = "http://localhost:8383/kmz/BT_000092.kmz";
 
                             if (this.cache[url_kmz]) {
-                                //console.log('get from cache');
+                
                                 return when(this.cache[url_kmz]);
                             } else {
                                 return this.kmzLoader.load(url_kmz).then(

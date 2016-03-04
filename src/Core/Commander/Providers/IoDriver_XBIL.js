@@ -42,8 +42,7 @@ define('Core/Commander/Providers/IoDriver_XBIL', ['Core/Commander/Providers/IoDr
         if (buffer){
 
             var result = new portableXBIL(buffer);
-            // Compute min max using subampling
-            //console.log(result.floatArray.length);
+            // Compute min max using subampling            
             for (var i = 0; i < result.floatArray.length; i+=16) {
                 var val = result.floatArray[i];                   
                 if (val > -10.0 && val !== undefined){
