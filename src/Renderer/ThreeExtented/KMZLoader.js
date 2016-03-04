@@ -53,7 +53,7 @@ define('Renderer/ThreeExtented/KMZLoader', ['Renderer/ThreeExtented/jszip.min',
                     var collada = undefined;
                     var coordCarto = undefined;
                     for (var name in zip.files) {
-                        //console.log(name);
+                        
                         if (name.toLowerCase().substr(-4) === '.dae') {
                             collada = scopeLoader.parse(zip.file(name).asText());
                         } else if (name.toLowerCase().substr(-4) === '.kml') {

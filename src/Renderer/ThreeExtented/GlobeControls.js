@@ -438,7 +438,7 @@ THREE.GlobeControls = function(object, domElement, engine) {
         var offGT = this.globeTarget.position.clone();
 
         if (state === STATE.MOVE_GLOBE) {
-            //console.log('rr');
+            
             offGT.applyQuaternion(quatGlobe);
             this.moveTarget.copy(offGT);
             this.object.position.copy(offset.applyQuaternion(quatGlobe));
@@ -556,7 +556,9 @@ THREE.GlobeControls = function(object, domElement, engine) {
                 scope.ptScreenClick.x = event.clientX;
                 scope.ptScreenClick.y = event.clientY;
 
+                
                 var point = scope.engine.getPickingPosition(scope.ptScreenClick);
+                //var point = scope.engine.getPickingPosition(scope.ptScreenClick,scope.engine.scene);
 
                 scope.engine.renderScene();
                 scope.setPointGlobe(point);

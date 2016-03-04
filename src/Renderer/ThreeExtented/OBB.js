@@ -68,8 +68,7 @@ THREE.OBB.prototype.addHeight = function(bbox) {
     var translaZ = this.box3D.min.z + nHalfSize;
     this.box3D.min.z = -nHalfSize;
     this.box3D.max.z = nHalfSize;
-    
-    //console.log(this.position);
+        
     this.position.copy(this.oPosition);
 //    this.updateMatrix();
 //    this.updateMatrixWorld(true);
