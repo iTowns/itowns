@@ -107,8 +107,7 @@ define('Core/Commander/Providers/IoDriver_XBIL', ['Core/Commander/Providers/IoDr
             };
 
             xhr.onerror = function() {
-
-                console.log('error');
+                
                 resolve(undefined);
             };
 

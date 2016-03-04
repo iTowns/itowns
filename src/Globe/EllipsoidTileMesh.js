@@ -262,7 +262,7 @@ define('Globe/EllipsoidTileMesh', [
 
     EllipsoidTileMesh.prototype.setTextureOrtho = function(texture, id,pitch) {
         id = id === undefined ? 0 : id;
-        this.material.setTexture(texture, 1, id,pitch);   
+        this.material.setTexture(texture, l_COLOR, id,pitch);   
                 
         this.currentLevelLayers[l_COLOR] = texture.level;
         this.checkOrtho();

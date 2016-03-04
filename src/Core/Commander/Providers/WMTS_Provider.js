@@ -212,7 +212,6 @@ define('Core/Commander/Providers/WMTS_Provider', [
                 if(parent === undefined)
                     return;
                 
-
                 if(parent.downScaledLayer(0))
                 {                 
                     return this.getTextureBil(parent.cooWMTS).then(function(terrain)
@@ -247,15 +246,13 @@ define('Core/Commander/Providers/WMTS_Provider', [
            var promises = [];
 
            if (tile.cooWMTS.zoom >= 2)
-           {
-               
+           {              
                if(tile.material === null) // TODO WHy -> dispose??
-                   return;               
-               tile.material.nbTextures = 1;
+                   return;                              
                var box = this.projection.WMTS_WGS84ToWMTS_PM(tile.cooWMTS, tile.bbox); // 
                var col = box[0].col;
-               tile.orthoNeed = box[1].row + 1 - box[0].row;
-
+               tile.material.nbTextures = 1;
+               
                for (var row = box[0].row; row < box[1].row + 1; row++) {
                    
                    var cooWMTS = new CoordWMTS(box[0].zoom, row, col);
@@ -267,9 +264,11 @@ define('Core/Commander/Providers/WMTS_Provider', [
                
                return when.all(promises);
            }
-           else
-           
-               tile.checkOrtho();
+           else 
+           {
+                tile.checkOrtho();
+                return when();
+           }
                         
        };
 
