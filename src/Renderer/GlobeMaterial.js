@@ -19,6 +19,8 @@ define('Renderer/GlobeMaterial', ['THREE',
     GlobeVS,
     GlobeFS) {
 
+    //var emptyTexture = new THREE.Texture();
+
     var GlobeMaterial = function(id) {
 
         BasicMaterial.call(this);
@@ -106,17 +108,19 @@ define('Renderer/GlobeMaterial', ['THREE',
     };
 
     GlobeMaterial.prototype.setTexture = function(texture, layer, slot, pitScale) {
-        if (layer === 0 && texture !== -1) {
-            this.Textures_00[0] = texture;
-            this.nbTextures++;
-            
-            if (pitScale)
-                this.uniforms.pitScale_L00.value = pitScale;
-        } else {
-            this.Textures_01[slot] = texture; // BEWARE: array [] -> size: 0; array [10]="wao" -> size: 11                
-            this.pitScale_L01[slot] = pitScale ? pitScale : new THREE.Vector3(0.0,0.0,1.0);                                             
-            this.nbTextures++;
-        }
+ 
+            // BUG #59
+            if (layer === 0 && texture !== -1) {
+                this.Textures_00[0] = texture;                
+                this.nbTextures++;
+                if (pitScale)
+                    this.uniforms.pitScale_L00.value = pitScale;
+            } else {
+                this.Textures_01[slot] = texture; // BEWARE: array [] -> size: 0; array [10]="wao" -> size: 11                 
+                this.pitScale_L01[slot] = pitScale ? pitScale : new THREE.Vector3(0.0,0.0,1.0);                                             
+                this.nbTextures++;
+            }
+ 
     };
     
     GlobeMaterial.prototype.setTexturesLayer = function(textures, layer){
@@ -130,7 +134,8 @@ define('Renderer/GlobeMaterial', ['THREE',
                     this.uniforms.pitScale_L00.value = textures[i].pitch;
             } else {
                 this.Textures_01[i] = textures[i].texture; // BEWARE: array [] -> size: 0; array [10]="wao" -> size: 11                
-                this.pitScale_L01[i] = textures[i].pitch ? textures[i].pitch : new THREE.Vector3(0.0,0.0,1.0);                                                             
+                this.pitScale_L01[i] = textures[i].pitch ? textures[i].pitch : new THREE.Vector3(0.0,0.0,1.0);                                                                             
+                
             }
         }
         
