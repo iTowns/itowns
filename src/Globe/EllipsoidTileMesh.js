@@ -270,7 +270,7 @@ define('Globe/EllipsoidTileMesh', [
     
     EllipsoidTileMesh.prototype.setTexturesLayer = function(textures,id){
         
-        if(!textures)
+        if(!textures || this.material === null)
             return;
         
         this.material.setTexturesLayer(textures, id);

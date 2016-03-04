@@ -24,7 +24,8 @@
     "jszip": "^2.5.0",
     "paralleljs": "^0.2.1",
     "three": "^0.74.0",
-    "when": "^1.7.1"
+    "when": "^3.7.7",
+    "simd": "^2.0.0"     
   },
   "devDependencies": {
     "eslint": "^2.1.0",
