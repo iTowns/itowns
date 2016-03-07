@@ -194,38 +194,38 @@ define('Globe/EllipsoidTileMesh', [
     };
     
     EllipsoidTileMesh.prototype.setTerrain = function(terrain) {
-        var texture;
+        var texture = undefined;
         var pitScale;
         var ancestor;
         var image;
         var minMax = new THREE.Vector2();
         
-        if (terrain === -1){
-            
-            texture = undefined;
+        if (terrain === -1){ // No texture
+                        
             this.currentLevelLayers[l_ELEVATION] = -2;
         }
-        else if (terrain === -2) {
+        else if (terrain === -2) {// get ancestor texture
                         
             var levelAncestor = this.getParentNotDownScaled(l_ELEVATION).currentLevelLayers[l_ELEVATION];                        
             ancestor = this.getParentLevel(levelAncestor);            
             
-            if(ancestor === undefined) // TODO WHY ??
-                return;
+            if(ancestor) // TODO WHY -> because levelAncestor === -2
+            {                
                             
-            pitScale = ancestor.bbox.pitScale(this.bbox);
-            texture = ancestor.material.Textures_00[0];            
-            image = texture.image;
-            
-            minMax.y = ancestor.bbox.maxCarto.altitude;
-            minMax.x = ancestor.bbox.minCarto.altitude;
-            
-            this.parseBufferElevation(image,minMax,pitScale);                        
- 
-            if(minMax.x !== 0 && minMax.y !== 0)
-                this.setAltitude(minMax.x, minMax.y);
-            
-            this.currentLevelLayers[l_ELEVATION] = ancestor.currentLevelLayers[l_ELEVATION];
+                pitScale = ancestor.bbox.pitScale(this.bbox);
+                texture = ancestor.material.Textures_00[0];            
+                image = texture.image;
+
+                minMax.y = ancestor.bbox.maxCarto.altitude;
+                minMax.x = ancestor.bbox.minCarto.altitude;
+
+                this.parseBufferElevation(image,minMax,pitScale);                        
+
+                if(minMax.x !== 0 && minMax.y !== 0)
+                    this.setAltitude(minMax.x, minMax.y);
+
+                this.currentLevelLayers[l_ELEVATION] = ancestor.currentLevelLayers[l_ELEVATION];
+            }
             
         } else {
                         

@@ -110,9 +110,7 @@ define('Renderer/GlobeMaterial', ['THREE',
     };
 
     GlobeMaterial.prototype.setTexture = function(texture, layer, slot, pitScale) {
- 
-            // BUG #59
-            
+                         
             if (layer === 0 ) {
                 this.Textures_00[0] = texture ? texture : emptyTexture ;                
                 this.nbTextures++;

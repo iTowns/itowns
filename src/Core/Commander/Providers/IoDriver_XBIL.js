@@ -86,36 +86,33 @@ define('Core/Commander/Providers/IoDriver_XBIL', ['Core/Commander/Providers/IoDr
     IoDriver_XBIL.prototype.read = function(url) {
 
         // TODO new Promise is supported?
-  
+
         //return when.promise(function(resolve, reject) 
         return new Promise(function(resolve/*, reject*/) 
         {
             var xhr = new XMLHttpRequest();
-
-            xhr.open("GET", url, true);
-
+            
             xhr.responseType = "arraybuffer";
             xhr.crossOrigin = '';          
             xhr["parseXBil"] = this.parseXBil;
-
+               
             xhr.onload = function() {
-                                  
-                //console.log(this.response);
-                
+                                                  
                 resolve(this.parseXBil(this.response));
-              
-            };
-
+                              
+            };            
+                       
             xhr.onerror = function() {
                 
                 resolve(undefined);
-            };
-
-            xhr.send(null);
+                
+                this.abort();
+            };            
+            
+            xhr.open("GET", url, true);
+            xhr.send(null);           
 
         }.bind(this));
-
-
     };
 
 
