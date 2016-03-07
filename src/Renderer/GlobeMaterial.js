@@ -33,8 +33,12 @@ define('Renderer/GlobeMaterial', ['THREE',
         this.vertexShader = GlobeVS;
         this.fragmentShader = GlobeFS;
         
-        this.pitScale_L01 = [];
-        this.pitScale_L01.push(new THREE.Vector3(0.0, 0.0, 0.0));
+        this.pitScale = [];
+        this.pitScale[0] = new Array();
+        this.pitScale[1] = new Array();
+                
+        this.pitScale[0].push(new THREE.Vector3(0.0, 0.0, 0.0));
+        this.pitScale[1].push(new THREE.Vector3(0.0, 0.0, 0.0));
 
         this.uniforms.dTextures_00 = {
             type: "tv",
@@ -53,12 +57,12 @@ define('Renderer/GlobeMaterial', ['THREE',
             value: 0
         };
         this.uniforms.pitScale_L00 = {
-            type: "v3",
-            value: new THREE.Vector3(0.0, 0.0, 0.0)
+            type: "v3v",
+            value: this.pitScale[0]
         };
         this.uniforms.pitScale_L01 = {
             type: "v3v",
-            value: this.pitScale_L01
+            value: this.pitScale[1]
         };
         this.uniforms.pickingRender = {
             type: "i",
@@ -122,7 +126,7 @@ define('Renderer/GlobeMaterial', ['THREE',
                 
                 this.uniforms.nbTextures_00.value = 1;
                 if (pitScale)
-                    this.uniforms.pitScale_L00.value = pitScale;
+                    this.pitScale[layer][slot] = pitScale;
             } else if (layer === 0 ){
                                 
                 if(this.Textures_01[slot] === undefined || this.Textures_01[slot].image === undefined)
@@ -136,7 +140,7 @@ define('Renderer/GlobeMaterial', ['THREE',
                 else
                     this.Textures_01[slot] = emptyTexture;
                 
-                this.pitScale_L01[slot] = pitScale ? pitScale : new THREE.Vector3(0.0,0.0,1.0);                                             
+                this.pitScale[layer][slot] = pitScale ? pitScale : new THREE.Vector3(0.0,0.0,1.0);                                             
                 
             }
     };
@@ -160,7 +164,7 @@ define('Renderer/GlobeMaterial', ['THREE',
                         this.uniforms.nbTextures_01.value += 1 ;
                 
                     this.Textures_01[i] = textures[i].texture ? textures[i].texture : emptyTexture; // BEWARE: array [] -> size: 0; array [10]="wao" -> size: 11                
-                    this.pitScale_L01[i] = textures[i].pitch ? textures[i].pitch : new THREE.Vector3(0.0,0.0,1.0);                       
+                    this.pitScale[layer][i] = textures[i].pitch ? textures[i].pitch : new THREE.Vector3(0.0,0.0,1.0);                       
                     this.Textures_01[i].needsUpdate = true;
                 }
             }   
