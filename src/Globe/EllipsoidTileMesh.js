@@ -13,7 +13,7 @@
  * @param {type} THREE
  * @param {type} OBBHelper
  * @param {type} SphereHelper
- * @param {type} GlobeMaterial
+ * @param {type} LayeredMaterial
  * @param {type} CoordCarto
  * @returns {EllipsoidTileMesh_L20.EllipsoidTileMesh}
  */
@@ -25,9 +25,9 @@ define('Globe/EllipsoidTileMesh', [
     'THREE',
     'OBBHelper',
     'SphereHelper',
-    'Renderer/GlobeMaterial',
+    'Renderer/LayeredMaterial',
     'Core/Geographic/CoordCarto'
-], function(NodeMesh, EllipsoidTileGeometry, BoundingBox, defaultValue, THREE, OBBHelper, SphereHelper, GlobeMaterial, CoordCarto) {
+], function(NodeMesh, EllipsoidTileGeometry, BoundingBox, defaultValue, THREE, OBBHelper, SphereHelper, LayeredMaterial, CoordCarto) {
     
     var groupTerrain = [14, 11, 7, 3];   
     var l_ELEVATION = 0;
@@ -62,7 +62,7 @@ define('Globe/EllipsoidTileMesh', [
         this.oSphere = new THREE.Sphere(this.centerSphere.clone(),this.geometry.boundingSphere.radius);
         
         this.orthoNeed = 0;        
-        this.material = new GlobeMaterial(id);
+        this.material = new LayeredMaterial(id);
         this.dot = 0;
         this.frustumCulled = false;
         this.maxChildren = 4;
@@ -213,7 +213,7 @@ define('Globe/EllipsoidTileMesh', [
             {                
                             
                 pitScale = ancestor.bbox.pitScale(this.bbox);
-                texture = ancestor.material.Textures_00[0];            
+                texture = ancestor.material.Textures[l_ELEVATION][0];            
                 image = texture.image;
 
                 minMax.y = ancestor.bbox.maxCarto.altitude;

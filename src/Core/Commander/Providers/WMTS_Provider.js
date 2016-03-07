@@ -45,7 +45,13 @@ define('Core/Commander/Providers/WMTS_Provider', [
             if(this.support)
                 this.getTextureFloat = function(){return new THREE.Texture();};
             else
-                this.getTextureFloat = function(buffer){return new THREE.DataTexture(buffer, 256, 256, THREE.AlphaFormat, THREE.FloatType);};
+                this.getTextureFloat = function(buffer){
+                    
+                    var texture = new THREE.DataTexture(buffer, 256, 256, THREE.AlphaFormat, THREE.FloatType);
+                    texture.needsUpdate = true;
+                    return texture;
+                
+                };
 
         }
 
@@ -172,6 +178,7 @@ define('Core/Commander/Providers/WMTS_Provider', [
                 else
                 {
                     result.texture = new THREE.Texture(image);
+                    result.texture.needsUpdate = true;
                     result.texture.generateMipmaps = false;
                     result.texture.magFilter = THREE.LinearFilter;
                     result.texture.minFilter = THREE.LinearFilter;
