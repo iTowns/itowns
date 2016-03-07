@@ -192,14 +192,12 @@ define('Core/Commander/Providers/WMTS_Provider', [
            
             
             if(command.paramsFunction.subLayer === 1)
-            {
-                
+            {         
                 return this.getOrthoImages(command.requester).then(function(result)
                 {             
                     if(this.material === null) // TODO WHY??
                         return;
-                    this.setTexturesLayer(result,1);                        
-                    this.material.update();
+                    this.setTexturesLayer(result,1);                                            
                 }.bind(command.requester));
             }                
             else if (command.paramsFunction.subLayer === 0)
@@ -219,24 +217,21 @@ define('Core/Commander/Providers/WMTS_Provider', [
                         if(this.material === null)
                             return;
                         this.setTerrain(terrain);
-                        this.material.update();
-
+                       
                     }.bind(parent)).then(function()
                     {
                         if(this.downScaledLayer(0))
                         {
                             if(this.material === null)
                                 return;
-                            this.setTerrain(-2);
-                            this.material.update();
+                            this.setTerrain(-2);                            
                         }
 
                     }.bind(tile));                                                                         
                 }
                 else
                 {            
-                    tile.setTerrain(-2);
-                    tile.material.update();
+                    tile.setTerrain(-2);                    
                 }
             }           
         };
