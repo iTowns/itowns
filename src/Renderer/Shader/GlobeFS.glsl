@@ -26,8 +26,7 @@ uniform int         RTC;
 uniform int         selected;
 uniform int         uuid;
 uniform int         pickingRender;
-uniform int         nbTextures_00;
-uniform int         nbTextures_01;
+uniform int         nbTextures[8];
 uniform float       distanceFog;
 uniform int         debug;
 uniform vec3        lightPosition;
@@ -103,11 +102,11 @@ void main() {
         float y         = vUv_1;
         int idd         = int(floor(y));
         uvO.y           = y - float(idd);
-        idd             = nbTextures_01 - idd - 1;
+        idd             = nbTextures[1] - idd - 1; // TODO l'inversion des textures peut etre retirer
 
-        if(nbTextures_01 == idd)
+        if(nbTextures[1] == idd)
         {
-            idd     = nbTextures_01 - 1 ;
+            idd     = nbTextures[1] - 1 ;
             uvO.y   = 0.0;
         }
 
