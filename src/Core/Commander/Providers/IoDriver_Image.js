@@ -25,9 +25,9 @@ define('Core/Commander/Providers/IoDriver_Image', ['Core/Commander/Providers/IoD
         {
    
             var image = new Image();
- 
+            
             image.addEventListener('load', function(/*event*/) {
-
+                
                 resolve(this);
 
             }, false);
@@ -38,15 +38,15 @@ define('Core/Commander/Providers/IoDriver_Image', ['Core/Commander/Providers/IoD
 
 
             image.addEventListener('error', function(/*event*/) {
-
-                //TODO bug il faut tester quand l'image n'existe pas 
-                resolve(this);
-                //reject(Error("Error IoDriver_Image"));        
-
-            }, false);
+                
+                this.src = '';
+                resolve(undefined);
+                
+            }.bind(this), false);
 
             image.crossOrigin = '';
             image.src = url;
+                        
         });
     };
 
