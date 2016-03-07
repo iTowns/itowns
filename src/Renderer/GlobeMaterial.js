@@ -19,20 +19,22 @@ define('Renderer/GlobeMaterial', ['THREE',
     GlobeVS,
     GlobeFS) {
 
-    //var emptyTexture = new THREE.Texture();
+    var emptyTexture = new THREE.Texture();
 
     var GlobeMaterial = function(id) {
 
         BasicMaterial.call(this);
 
         this.Textures_00 = [];
-        this.Textures_00.push(new THREE.Texture());
+        this.Textures_00.push(emptyTexture);
         this.Textures_01 = [];
+        this.Textures_01.push(emptyTexture);
 
         this.vertexShader = GlobeVS;
         this.fragmentShader = GlobeFS;
         
         this.pitScale_L01 = [];
+        this.pitScale_L01.push(new THREE.Vector3(0.0, 0.0, 0.0));
 
         this.uniforms.dTextures_00 = {
             type: "tv",
@@ -110,13 +112,14 @@ define('Renderer/GlobeMaterial', ['THREE',
     GlobeMaterial.prototype.setTexture = function(texture, layer, slot, pitScale) {
  
             // BUG #59
-            if (layer === 0 && texture !== -1) {
-                this.Textures_00[0] = texture;                
+            
+            if (layer === 0 ) {
+                this.Textures_00[0] = texture ? texture : emptyTexture ;                
                 this.nbTextures++;
                 if (pitScale)
                     this.uniforms.pitScale_L00.value = pitScale;
-            } else {
-                this.Textures_01[slot] = texture; // BEWARE: array [] -> size: 0; array [10]="wao" -> size: 11                 
+            } else if (layer === 0 ){
+                this.Textures_01[slot] = texture ? texture : emptyTexture; // BEWARE: array [] -> size: 0; array [10]="wao" -> size: 11                 
                 this.pitScale_L01[slot] = pitScale ? pitScale : new THREE.Vector3(0.0,0.0,1.0);                                             
                 this.nbTextures++;
             }
@@ -124,19 +127,23 @@ define('Renderer/GlobeMaterial', ['THREE',
     };
     
     GlobeMaterial.prototype.setTexturesLayer = function(textures, layer){
-        
+                        
         for (var i = 0, max = textures.length; i < max; i++) {
-                    
-            if (layer === 0 && textures !== -1) {
-                this.Textures_00[i] = textures[i].texture;
-                
-                if (textures[i].pitch)
-                    this.uniforms.pitScale_L00.value = textures[i].pitch;
-            } else {
-                this.Textures_01[i] = textures[i].texture; // BEWARE: array [] -> size: 0; array [10]="wao" -> size: 11                
-                this.pitScale_L01[i] = textures[i].pitch ? textures[i].pitch : new THREE.Vector3(0.0,0.0,1.0);                                                                             
-                
-            }
+            
+            if(textures[i])
+            {                    
+                if (layer === 0) {
+                    this.Textures_00[i] = textures[i].texture ? textures[i].texture : emptyTexture;                    
+
+                    if (textures[i].pitch)
+                        this.uniforms.pitScale_L00.value = textures[i].pitch;
+                }
+                else if (layer === 1 )
+                {
+                    this.Textures_01[i] = textures[i].texture ? textures[i].texture : emptyTexture; // BEWARE: array [] -> size: 0; array [10]="wao" -> size: 11                
+                    this.pitScale_L01[i] = textures[i].pitch ? textures[i].pitch : new THREE.Vector3(0.0,0.0,1.0);                                                                             
+                }
+            }   
         }
         
         this.nbTextures+= textures.length;
@@ -144,21 +151,28 @@ define('Renderer/GlobeMaterial', ['THREE',
     
     
     GlobeMaterial.prototype.update = function() {
-        // Elevation
+        
+        var nTexture = 0;
+        // Layer 0 -> elevatio
         for (var i = 0, max = this.Textures_00.length; i < max; i++)
-            if (this.Textures_00[i].image !== undefined)
+            if (this.Textures_00[i] && this.Textures_00[i].image)
+            {             
+                nTexture++;
                 this.Textures_00[i].needsUpdate = true;
-
-        this.uniforms.dTextures_00.value = this.Textures_00;
-        this.uniforms.nbTextures_00.value = 1.0;
-
-        // Image texture (ortho, carto...)
+            }
+       
+        this.uniforms.nbTextures_00.value = nTexture;
+        
+        // Layer 1 -> Image texture (ortho, carto...)
+        nTexture = 0;
         for (i = 0, max = this.Textures_01.length; i < max; i++)
-            if (this.Textures_01[i] && this.Textures_01[i].image !== undefined)
+            if (this.Textures_01[i] && this.Textures_01[i].image)
+            {
+                nTexture++;
                 this.Textures_01[i].needsUpdate = true;
-
-        this.uniforms.dTextures_01.value = this.Textures_01; // Re-affect all the array each time a new texture is received -> NOT GOOD
-        this.uniforms.nbTextures_01.value = this.Textures_01.length; //this.nbTextures;// this.Textures_01.length;
+            }
+      
+        this.uniforms.nbTextures_01.value = nTexture++; //this.nbTextures;// this.Textures_01.length;
 
     };
 
