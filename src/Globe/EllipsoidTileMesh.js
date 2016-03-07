@@ -61,7 +61,7 @@ define('Globe/EllipsoidTileMesh', [
         
         this.oSphere = new THREE.Sphere(this.centerSphere.clone(),this.geometry.boundingSphere.radius);
         
-        this.orthoNeed = 0;
+        this.orthoNeed = 0;        
         this.material = new GlobeMaterial(id);
         this.dot = 0;
         this.frustumCulled = false;
@@ -202,7 +202,7 @@ define('Globe/EllipsoidTileMesh', [
         
         if (terrain === -1){
             
-            texture = -1;
+            texture = undefined;
             this.currentLevelLayers[l_ELEVATION] = -2;
         }
         else if (terrain === -2) {
@@ -262,6 +262,7 @@ define('Globe/EllipsoidTileMesh', [
 
     EllipsoidTileMesh.prototype.setTextureOrtho = function(texture, id,pitch) {
         id = id === undefined ? 0 : id;
+        id = texture === -1 ? undefined: texture; // TODO remove this, place undefined before
         this.material.setTexture(texture, l_COLOR, id,pitch);   
                 
         this.currentLevelLayers[l_COLOR] = texture.level;
