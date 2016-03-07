@@ -336,11 +336,10 @@ define('Globe/EllipsoidTileMesh', [
         
         // TODO remove this function
 
-        if (this.orthoNeed + 1 === this.material.nbTextures || this.level < 2){
+        if (this.orthoNeed + 1 === this.material.getNbTextures() || this.level < 2){
 
-            this.loaded = true;
-            this.material.update();
-                      
+            this.loaded = true;   
+                  
             var parent = this.parent;
 
             if (parent !== null && parent.childrenLoaded()) {
