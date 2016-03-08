@@ -110,13 +110,6 @@ define('Scene/Scene', [
     };
 
     /**
-     */
-    Scene.prototype.updateCamera = function() {
-        //TODO: Implement Me 
-
-    };
-
-    /**
      * 
      * @returns {undefined}
      */   
