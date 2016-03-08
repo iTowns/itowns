@@ -56,10 +56,6 @@ define('Scene/Scene', [
 
     };
 
-    Scene.prototype.updateCommand = function() {
-        //TODO: Implement Me 
-    };
-
     /**
      * @documentation: return current camera 
      * @returns {Scene_L7.Scene.gfxEngine.camera}
