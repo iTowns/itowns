@@ -32,16 +32,15 @@ define('Renderer/LayeredMaterial', ['THREE',
         this.Textures = [];
         this.pitScale = [];
         this.nbTextures = [];
-        
-        for (var l = 0; l < nbLayer; l++) {
             
-            this.Textures[l] = new Array();
-            this.pitScale[l] = new Array();
-            this.Textures[l].push(emptyTexture);
-            this.pitScale[l].push(new THREE.Vector3(0.0, 0.0, 0.0));
-            this.nbTextures[l]=0;
+        // Uniform three js needs no empty array        
+        for (var l = 0; l < nbLayer; l++) {            
+            
+            this.Textures[l] = [emptyTexture];
+            this.pitScale[l] = [new THREE.Vector3(0.0, 0.0, 0.0)];
+            this.nbTextures[l] = 0;
         }
-
+        
         this.uniforms.dTextures_00 = {
             type: "tv",
             value: this.Textures[0]

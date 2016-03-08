@@ -107,8 +107,7 @@ define('Renderer/c3DEngine', [
 
             this.width = this.debug ? window.innerWidth * 0.5 : window.innerWidth;
             this.height = window.innerHeight;
-            this.camera.resize(this.width, this.height);
-
+            this.camera.resize(this.width, this.height);            
             this.scene.updateCamera();
 
             if (this.camDebug) {
@@ -116,9 +115,10 @@ define('Renderer/c3DEngine', [
                 this.camDebug.updateProjectionMatrix();
             }
 
-            this.renderer.setSize(window.innerWidth, window.innerHeight);
+            this.pickingTexture.setSize ( this.width, this.height );
+            this.renderer.setSize( this.width, this.height);
             this.update();
-            this.renderScene();
+            
         }.bind(this);
 
     }
@@ -458,11 +458,14 @@ define('Renderer/c3DEngine', [
         this.dummy.visible = true;
 
         var glslPosition = new THREE.Vector3().fromArray(buffer);
-
+        
         if (scene)
             scene.selectNodeId(buffer[3]);
 
         var worldPosition = glslPosition.applyMatrix4(this.camera.camera3D.matrixWorld);
+        
+        if(worldPosition.length()> 10000000)
+            return undefined; 
 
         return worldPosition;
 
