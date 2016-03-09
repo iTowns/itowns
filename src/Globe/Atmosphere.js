@@ -20,11 +20,7 @@ define('Globe/Atmosphere', ['Renderer/NodeMesh', 'THREE', 'Renderer/c3DEngine','
             atmoIN: {
                 type: "i",
                 value: 0
-            },
-            screenSize: {
-                type: "v2",
-                value: new THREE.Vector2(window.innerWidth, window.innerHeight)
-            } // Should be updated on screen resize...
+            }
         };
 
        var material = new THREE.ShaderMaterial({
@@ -190,7 +186,7 @@ define('Globe/Atmosphere', ['Renderer/NodeMesh', 'THREE', 'Renderer/c3DEngine','
         this.ground.mesh = new THREE.Mesh(this.ground.geometry, this.ground.material);
         
         this.sky = {
-          geometry: new THREE.SphereGeometry(atmosphere.outerRadius, 500, 500),
+          geometry: new THREE.SphereGeometry(atmosphere.outerRadius, 196, 196),
           material: new THREE.ShaderMaterial({
             uniforms: uniforms,
             vertexShader: skyVS,
