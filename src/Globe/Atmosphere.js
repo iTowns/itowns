@@ -43,11 +43,7 @@ define('Globe/Atmosphere', ['Renderer/NodeMesh', 'THREE', 'Renderer/c3DEngine','
             atmoIN: {
                 type: "i",
                 value: 1
-            },
-            screenSize: {
-                type: "v2",
-                value: new THREE.Vector2(window.innerWidth, window.innerHeight)
-            } // Should be updated on screen resize...
+            }
         };
 
         var materialAtmoIn = new THREE.ShaderMaterial({
