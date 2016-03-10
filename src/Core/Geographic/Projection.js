@@ -27,6 +27,12 @@ define('Core/Geographic/Projection', ['Core/Geographic/CoordWMTS', 'Core/Math/Ma
 
     };
 
+    Projection.prototype.WGS84ToOneSubY = function(latitude) {
+
+        return 0.5 + Math.log(Math.tan(MathExt.PI_OV_FOUR + latitude * 0.5)) * MathExt.INV_TWO_PI;
+
+    }; 
+
     Projection.prototype.WGS84LatitudeClamp = function(latitude) {
 
         //var min = -68.1389  / 180 * Math.PI;

@@ -1,3 +1,4 @@
+"use strict";
 /* global  Uint32Array */
 
 /**
@@ -23,10 +24,13 @@ define('Globe/EllipsoidTileGeometry', [
     CoordCarto,
     MathExt,
     JavaTools,
-    CacheRessource) {
+    CacheRessource
+    ) {
 
-    var cache = CacheRessource();
-
+    "use strict";
+    var cache = CacheRessource(); // TODO /!\ singleton
+    
+    
     function Buffers(nSegment)
     {                
         
@@ -84,10 +88,7 @@ define('Globe/EllipsoidTileGeometry', [
     
     EllipsoidTileGeometry.prototype.computeBuffers = function(bbox,segment,ellipsoid,zoom) 
     {
-        var javToo = new JavaTools();
-
-        var nbRow = Math.pow(2.0, zoom + 1.0);
-        
+        var javToo = new JavaTools();        
         var buffersAttrib = new Buffers(segment);
         var buffers = new Buffers();
         
@@ -98,63 +99,51 @@ define('Globe/EllipsoidTileGeometry', [
         buffers.position = new Float32Array(nVertex * 3);
         buffers.bufferIndex = buffersAttrib.index === null ? new Uint32Array(triangles * 3 * 2) : null;
         buffers.normal = new Float32Array(nVertex * 3);
-        buffers.bufferUV = buffersAttrib.uv_0 === null ? new Float32Array(nVertex * 2) : null;
+        buffers.uv_0 = buffersAttrib.uv_0 === null ? new Float32Array(nVertex * 2) : null;
         buffers.uv_1 = new Float32Array(nVertex);
 
         var widthSegments = Math.max(2, Math.floor(nSeg) || 2);
         var heightSegments = Math.max(2, Math.floor(nSeg) || 2);
-
-        var phiStart = bbox.minCarto.longitude;
-        var phiLength = bbox.dimension.x;
-        var thetaStart = bbox.minCarto.latitude;
-        var thetaLength = bbox.dimension.y;
-
+        
         var idVertex = 0;
         var x, y, vertices = [],
             skirt = [],
             skirtEnd = [];
+        var u,v;
 
-        var st1 = 0.5 + Math.log(Math.tan(MathExt.PI_OV_FOUR + thetaStart * 0.5)) * MathExt.INV_TWO_PI;
+        var projUV = ellipsoid.getProjectionUV();
 
-        if (!isFinite(st1))
-            st1 = 0;
+        var nbRow = Math.pow(2.0, zoom + 1.0);
 
-        var sizeTexture = 1.0 / nbRow;
+        var deltaUV_1 = ellipsoid.getDUV1(bbox,nbRow);
 
-        var start = (st1 % (sizeTexture));
-
-        var st = st1 - start;
-        
         var buildUV = function(){};
          
         if(buffersAttrib.uv_0 === null) 
             buildUV = function(u,v)
             {
-                buffers.bufferUV[idVertex * 2 + 0] = u;
-                buffers.bufferUV[idVertex * 2 + 1] = 1 - v;
+                buffers.uv_0[idVertex * 2 + 0] = u;
+                buffers.uv_0[idVertex * 2 + 1] = 1 - v;
             };
 
         for (y = 0; y <= heightSegments; y++) {
 
             var verticesRow = [];
 
-            var v = y / heightSegments;
-            var lati = thetaStart + v * thetaLength;
-            var t = ((0.5 + Math.log(Math.tan(MathExt.PI_OV_FOUR + lati * 0.5)) * MathExt.INV_TWO_PI) - st) * nbRow;
+            v = y / heightSegments;
 
-            if (!isFinite(t))
-                t = 0;
-            
-            //buffers.uv_1.fill(t, idVertex,idVertex  + widthSegments + 1); // TODO Semble plus long
+            ellipsoid.vProjection(v,projUV,bbox);
 
+            var t = ellipsoid.getUV1(projUV,nbRow) - deltaUV_1;
+           
             for (x = 0; x <= widthSegments; x++) {
 
-                var u = x / widthSegments;
+                u = x / widthSegments;
 
-                var longi = phiStart + u * phiLength;
-
-                var vertex = ellipsoid.cartographicToCartesian(new CoordCarto(longi, lati, 0));
-
+                ellipsoid.uProjection(u,projUV,bbox);
+                
+                var vertex = ellipsoid.projectionToVertexPosition(projUV);
+                
                 var id_m3 = idVertex * 3;
                 //                    
                 buffers.position[id_m3 + 0] = vertex.x - this.center.x;
@@ -219,7 +208,7 @@ define('Globe/EllipsoidTileGeometry', [
                 }
             }
 
-        start = idVertex;
+        var iStart = idVertex;
         var rmax = 5000;
         var r = Math.max(rmax, Math.pow(rmax, 1 / zoom));
 
@@ -239,8 +228,8 @@ define('Globe/EllipsoidTileGeometry', [
             };
             
             buildUVSkirt = function(){
-                buffers.bufferUV[idVertex * 2 + 0] = buffers.bufferUV[id * 2 + 0];
-                buffers.bufferUV[idVertex * 2 + 1] = buffers.bufferUV[id * 2 + 1];                
+                buffers.uv_0[idVertex * 2 + 0] = buffers.uv_0[id * 2 + 0];
+                buffers.uv_0[idVertex * 2 + 1] = buffers.uv_0[id * 2 + 1];                
             };
         }
     
@@ -271,7 +260,7 @@ define('Globe/EllipsoidTileGeometry', [
             v4 = skirt[idf];
 
             if (idf === 0)
-                v3 = start;
+                v3 = iStart;
 
             idVertex2 = buildIndexSkirt (idVertex2,v1,v2,v3,v4);
 
@@ -285,7 +274,7 @@ define('Globe/EllipsoidTileGeometry', [
         buffersAttrib.position = new THREE.BufferAttribute(buffers.position, 3);
         buffersAttrib.normal= new THREE.BufferAttribute(buffers.normal, 3);
         if(buffersAttrib.uv_0 === null)            
-            buffersAttrib.uv_0 = new THREE.BufferAttribute(buffers.bufferUV, 2);
+            buffersAttrib.uv_0 = new THREE.BufferAttribute(buffers.uv_0, 2);
         buffersAttrib.uv_1 = new THREE.BufferAttribute(buffers.uv_1, 1);
      
         javToo.freeArray(vertices);
@@ -293,7 +282,7 @@ define('Globe/EllipsoidTileGeometry', [
         buffers.position = null;
         buffers.bufferIndex = null;
         buffers.normal = null;
-        buffers.bufferUV = null;
+        buffers.uv_0 = null;
         buffers.uv_1 = null;
         
         return buffersAttrib;
