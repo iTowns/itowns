@@ -17,13 +17,15 @@ define('Scene/Scene', [
     'Globe/Globe',
     'Core/Commander/ManagerCommands',
     'Core/Commander/Providers/tileGlobeProvider',
+    'Core/Commander/Providers/BuildingBox_Provider',
     'Scene/BrowseTree',
     'Scene/NodeProcess',
     'Scene/Quadtree',
     'Scene/Layer',
     'Core/Geographic/CoordCarto',
     'Core/System/Capabilities'
-], function(c3DEngine, Globe, ManagerCommands, tileGlobeProvider, BrowseTree, NodeProcess, Quadtree, Layer, CoordCarto, Capabilities) {
+], function(c3DEngine, Globe, ManagerCommands, tileGlobeProvider, BuildingBox_Provider,
+            BrowseTree, NodeProcess, Quadtree, Layer, CoordCarto, Capabilities) {
 
     var instanceScene = null;
     
@@ -234,6 +236,23 @@ define('Scene/Scene', [
 
         this.browserScene.selectNodeId = id;
 
+    };
+    
+    Scene.prototype.setStreetLevelImageryOn = function(value){
+
+        if(value){
+            var bbox = {minCarto:{longitude:2.325,latitude:48.855}, maxCarto: {longitude:2.335,latitude:48.865}};
+            var options = {url:"http://wxs.ign.fr/72hpsel8j8nhb5qgdh07gcyp/geoportail/wfs?",
+                           typename:"BDTOPO_BDD_WLD_WGS84G:bati_remarquable,BDTOPO_BDD_WLD_WGS84G:bati_indifferencie",
+                           bbox: bbox,
+                           epsgCode: 4326
+                           };
+                
+            var buildingBox_Provider = new BuildingBox_Provider(options);
+            buildingBox_Provider.getData(bbox);
+            
+        }
+               
     };
 
     return function() {
