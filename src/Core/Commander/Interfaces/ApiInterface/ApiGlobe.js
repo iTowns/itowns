@@ -79,6 +79,11 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         this.scene.layers[0].setRealisticLightingOn(value);
         this.scene.browserScene.updateMaterialUniform("lightingOn",value ? 1:0);
     }; 
+    
+    ApiGlobe.setStreetLevelImageryOn = function(value){
+        
+        this.scene.setStreetLevelImageryOn(value);
+    }
 
     return ApiGlobe;
 
