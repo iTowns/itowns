@@ -24,6 +24,8 @@ define('Scene/Quadtree', [
         this.link = link;
         this.schemeTile = schemeTile;
         this.tileType = type;
+        this.minLevel = 2;
+        this.maxLevel = 17;
         var rootNode = new NodeMesh();
         
         rootNode.link = this.link;
@@ -32,7 +34,7 @@ define('Scene/Quadtree', [
         this.add(rootNode);
 
         for (var i = 0; i < this.schemeTile.rootCount(); i++) {
-            this.createTile(this.schemeTile.getRoot(i), rootNode);
+            this.requestNewTile(this.schemeTile.getRoot(i), rootNode);
         }
 
     }
@@ -57,7 +59,7 @@ define('Scene/Quadtree', [
         return node.children[3];
     };
 
-    Quadtree.prototype.createTile = function(bbox, parent) {
+    Quadtree.prototype.requestNewTile = function(bbox, parent) {
 
         this.interCommand.request({bbox: bbox}, parent, this);
 
@@ -68,21 +70,27 @@ define('Scene/Quadtree', [
      * @param {type} node
      * @returns {Array} four bounding box
      */
-    Quadtree.prototype.subdivide = function(node) {
+    Quadtree.prototype.up = function(node) {
 
         if (!this.update(node))
             return;
 
         node.wait = true;
         var quad = new Quad(node.bbox);
-        this.createTile(quad.northWest, node);
-        this.createTile(quad.northEast, node);
-        this.createTile(quad.southWest, node);
-        this.createTile(quad.southEast, node);
+        this.requestNewTile(quad.northWest, node);
+        this.requestNewTile(quad.northEast, node);
+        this.requestNewTile(quad.southWest, node);
+        this.requestNewTile(quad.southEast, node);
 
     };
+
+    Quadtree.prototype.down = function(node)
+    {
+        node.setMaterialVisibility(true);        
+        node.setChildrenVisibility(false);
+    }
     
-    Quadtree.prototype.reloadDownScaledLayer = function(node) {
+    Quadtree.prototype.upSubLayer = function(node) {
                 
         var id = node.getDownScaledLayer();
 
@@ -100,36 +108,17 @@ define('Scene/Quadtree', [
      */
     Quadtree.prototype.update = function(node) {
 
-        //TODO debug freeze 
-        //        if(node.level > 17  || (node.wait === true && node.childrenCount() === 4))
-        if (node.level > 17 || node.wait === true)
+        if (node.level > this.maxLevel || node.wait === true)
             return false;
 
         if (node.childrenCount() > 0 && node.wait === false) {
 
-            //node.setMaterialVisibility(!(node.childrenCount() === 4 && node.childrenLoaded()));
-            //  RQ node.childrenCount() === 4 est toujours vérifier
-            
             node.setMaterialVisibility(!node.childrenLoaded());
 
             return false;
         }
 
         return true;
-    };
-
-    /**
-     * @documentation: subdivide children
-     * @param {type} node : node to subdivide
-     * @returns {undefined}
-     */
-    Quadtree.prototype.subdivideChildren = function(node) {
-        if (node.level === 3)
-            return;
-        for (var i = 0; i < node.children.length; i++) {
-            this.subdivide(node.children[i]);
-            //this.subdivideChildren(node.children[i]);
-        }
     };
 
     return Quadtree;
