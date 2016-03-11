@@ -7,11 +7,9 @@
 
 
 define('Core/Math/Ellipsoid',
-     ['Core/Math/MathExtented','Core/Geographic/CoordCarto','THREE',     
-    'Core/Geographic/Projection'], function(MathExt,CoordCarto, THREE,Projection) {
+     ['Core/Math/MathExtented','Core/Geographic/CoordCarto','THREE'],
+      function(MathExt,CoordCarto, THREE) {
     
-    var projectionTools = new Projection();
-
     function Ellipsoid(size) {
         //Constructor
 
@@ -133,50 +131,6 @@ define('Core/Math/Ellipsoid',
         normalizeVector(normal);
         */
     }; 
-
-    Ellipsoid.prototype.projectionToVertexPosition = function(projection)
-    {
-        return this.cartographicToCartesian(projection);
-    };
-
-    Ellipsoid.prototype.uProjection = function(u,projection,bbox)
-    {
-        projection.longitude = bbox.minCarto.longitude + u * bbox.dimension.x;
-    };
-
-    Ellipsoid.prototype.vProjection = function(v,projection,bbox)
-    {
-        projection.latitude = bbox.minCarto.latitude + v * bbox.dimension.y;
-    };
-
-    Ellipsoid.prototype.getProjectionUV = function()
-    {
-        return new CoordCarto();
-    };
-
-    Ellipsoid.prototype.getUV1 = function(projection,nbRow)
-    {
-        var t =  projectionTools.WGS84ToOneSubY(projection.latitude)*nbRow;
-
-        if (!isFinite(t))
-            t = 0;
-
-        return t;
-    };
-
-    Ellipsoid.prototype.getDUV1 = function(bbox,nbRow)
-    {
-        var st1 = projectionTools.WGS84ToOneSubY(bbox.minCarto.latitude); 
-
-        if (!isFinite(st1))
-            st1 = 0;        
-        
-        var sizeTexture = 1.0 / nbRow;
-        
-        var start = (st1 % (sizeTexture));
-        
-        return (st1 - start)*nbRow;
-    };
 
     return Ellipsoid;
 
