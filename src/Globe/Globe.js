@@ -11,7 +11,7 @@ define('Globe/Globe', [
     'Scene/SchemeTile',
     'Core/Math/MathExtented',
     'Core/Math/Ellipsoid',
-    'Globe/EllipsoidTileMesh',
+    'Globe/TileMesh',
     'Globe/Atmosphere',
     'Globe/Clouds',
     'Core/System/Capabilities',
@@ -19,7 +19,7 @@ define('Globe/Globe', [
     'Renderer/BasicMaterial',
     'THREE'
 ], function(defaultValue, Layer, Quadtree, SchemeTile, MathExt,
-    Ellipsoid, EllipsoidTileMesh, Atmosphere, Clouds, Capabilities,
+    Ellipsoid, TileMesh, Atmosphere, Clouds, Capabilities,
     CoordCarto, BasicMaterial, THREE) {
 
     function Globe(supportGLInspector) {
@@ -40,7 +40,7 @@ define('Globe/Globe', [
         var kml = new THREE.Object3D();
         this.batiments.add(kml);
 
-        this.meshTerrain = new Quadtree(EllipsoidTileMesh, this.SchemeTileWMTS(2), this.size, kml);
+        this.meshTerrain = new Quadtree(TileMesh, this.SchemeTileWMTS(2), this.size, kml);
         
         this.elevationTerrain = new Layer();
         this.colorTerrain = new Layer();
@@ -115,7 +115,7 @@ define('Globe/Globe', [
     };
     
     Globe.prototype.updateQuadtree = function(){
-        this.meshTerrain = new Quadtree(EllipsoidTileMesh, this.SchemeTileWMTS(2), this.size, false);
+        this.meshTerrain = new Quadtree(TileMesh, this.SchemeTileWMTS(2), this.size, false);
     };
 
     Globe.prototype.SchemeTileWMTS = function(type) {
