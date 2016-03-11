@@ -80,8 +80,7 @@ define('Core/Commander/ManagerCommands', [
                 //if (this.commandsLength() <= 8)                                                
                     this.scene.wait(1); 
                 //else
-                //    this.scene.renderScene3D(); 
-                
+                //    this.scene.renderScene3D();                     
                 
                 return this.runAllCommands();
                 

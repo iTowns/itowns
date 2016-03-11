@@ -227,6 +227,8 @@ define('Globe/TileMesh', [
 
                 this.currentLevelLayers[l_ELEVATION] = ancestor.currentLevelLayers[l_ELEVATION];
             }
+            else
+                this.currentLevelLayers[l_ELEVATION] = -2; // TODO /!\ debug but why
             
         } else {
                         
@@ -285,10 +287,11 @@ define('Globe/TileMesh', [
     TileMesh.prototype.downScaledLayer = function(id)
     {
         if(id === l_ELEVATION)
-            if(this.level < 3 || this.currentLevelLayers[l_ELEVATION] === -2)
+            if(this.level <= 3 || this.currentLevelLayers[l_ELEVATION] === -2)            
                 return false;
-            else                                
+            else                                            
                 return this.currentLevelLayers[l_ELEVATION] < this.levelTerrain ;                        
+            
         else if(id === l_COLOR)
             if(this.level < 2)
                 return false;

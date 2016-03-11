@@ -75,7 +75,8 @@ define('Renderer/LayeredMaterial', ['THREE',
         };
 
         this.setUuid(id);        
-        this.wireframe = false;        
+        this.wireframe = false;
+        //this.wireframe = true;
 
     };
 
