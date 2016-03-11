@@ -247,9 +247,14 @@ define('Scene/Scene', [
                            bbox: bbox,
                            epsgCode: 4326
                            };
-                
-            var buildingBox_Provider = new BuildingBox_Provider(options);
-            buildingBox_Provider.getData(bbox);
+                           
+            var optionsPLU = {url:"http://172.16.1.122:8080/geoserver/urban_planning/ows?",
+                            typename: "urban_planning:generatedbuildings&maxFeatures=50",
+                            bbox: {minCarto:{longitude:0,latitude:40}, maxCarto: {longitude:20,latitude:50}},
+                            epsgCode: 4326
+                            };   
+            var buildingBox_Provider = new BuildingBox_Provider(optionsPLU);
+            buildingBox_Provider.getData(optionsPLU.bbox);
             
         }
                

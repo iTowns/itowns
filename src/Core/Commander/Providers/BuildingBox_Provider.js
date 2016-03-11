@@ -80,18 +80,7 @@ define('Core/Commander/Providers/BuildingBox_Provider',[
         
         return url;
     };
-  
-
-    /*
-                return this.providerKML.loadKMZ(longitude, latitude).then(function (collada){
-
-                    if(collada && tile.link.children.indexOf(collada) === -1)
-                        {                                 
-                            tile.link.add(collada);
-                            tile.content = collada;
-            */
-                  
-            
+         
     BuildingBox_Provider.prototype.getData = function(bbox){
         
        var deferred = when.defer(); 
@@ -195,22 +184,22 @@ define('Core/Commander/Providers/BuildingBox_Provider',[
         
         _geometry.computeFaceNormals();  // WARNING : VERY IMPORTANT WHILE WORKING WITH RAY CASTING ON CUSTOM MESH
         geometry.computeFaceNormals();
-        /*
+        
             var matLambert = new THREE.MeshBasicMaterial({color: 0xffffff, transparent: true, opacity: 0.8});
             var _currentMeshForRoof  = new THREE.Mesh(_geometry, matLambert);// //geometryClickToGo,mat);
             gfxEngine().add3DScene(_currentMeshForRoof);
-        */
+        
         
         // Test if we return brute geometry or if we use local pivot (for RTC)
         var firstPos = new THREE.Vector3();
-        if(this.rtcOn){
+ /*       if(this.rtcOn){
             firstPos = _geometry.vertices[0].clone();
             // create pivot from 1st pos vertex
             for(var i = 0; i< _geometry.vertices.length ; ++i){
                     _geometry.vertices[i].sub(firstPos);
             }
         }
-           //deferred.resolve({geometry:_geometry, pivot: firstPos});
+     */      //deferred.resolve({geometry:_geometry, pivot: firstPos});
            
         return {geometry:_geometry, pivot: firstPos};
         
