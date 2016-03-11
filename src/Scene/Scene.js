@@ -221,7 +221,7 @@ define('Scene/Scene', [
 
     Scene.prototype.selectNodeId = function(id) {
 
-        this.browserScene.selectNodeId = id;
+        this.browserScene.selectedNodeId = id;
 
     };
 
