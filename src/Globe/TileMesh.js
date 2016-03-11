@@ -1,13 +1,13 @@
 /**
  * Generated On: 2015-10-5
- * Class: EllipsoidTileMesh
+ * Class: TileMesh
  * Description: Tuile de maillage, noeud du quadtree MNT. Le Materiel est issus du QuadTree ORTHO.
  */
 
 /**
  * 
  * @param {type} NodeMesh
- * @param {type} EllipsoidTileGeometry
+ * @param {type} TileGeometry
  * @param {type} BoundingBox
  * @param {type} defaultValue
  * @param {type} THREE
@@ -15,25 +15,24 @@
  * @param {type} SphereHelper
  * @param {type} LayeredMaterial
  * @param {type} CoordCarto
- * @returns {EllipsoidTileMesh_L20.EllipsoidTileMesh}
+ * @returns {EllipsoidTileMesh_L20.TileMesh}
  */
-define('Globe/EllipsoidTileMesh', [
+define('Globe/TileMesh', [
     'Renderer/NodeMesh',
-    'Globe/EllipsoidTileGeometry',
+    'Globe/TileGeometry',
     'Scene/BoundingBox',
     'Core/defaultValue',
     'THREE',
     'OBBHelper',
     'SphereHelper',
-    'Renderer/LayeredMaterial',
-    'Core/Geographic/CoordCarto'
-], function(NodeMesh, EllipsoidTileGeometry, BoundingBox, defaultValue, THREE, OBBHelper, SphereHelper, LayeredMaterial, CoordCarto) {
+    'Renderer/LayeredMaterial'
+], function(NodeMesh, TileGeometry, BoundingBox, defaultValue, THREE, OBBHelper, SphereHelper, LayeredMaterial) {
     
     var groupTerrain = [14, 11, 7, 3];   
     var l_ELEVATION = 0;
     var l_COLOR = 1;
     
-    function EllipsoidTileMesh(bbox, cooWMTS, ellipsoid, id, geometryCache,link) {
+    function TileMesh(bbox, cooWMTS, builder, id, geometryCache,link) {
         //Constructor
         NodeMesh.call(this);
 
@@ -50,11 +49,13 @@ define('Globe/EllipsoidTileMesh', [
         var levelMax = 18;
 
         this.geometricError = Math.pow(2, (levelMax - this.level));
-        this.geometry = defaultValue(geometryCache, new EllipsoidTileGeometry(bbox, precision, ellipsoid, this.level));
-        var ccarto = new CoordCarto(bbox.center.x, bbox.center.y, 0);
 
+        var params = {bbox:this.bbox,zoom:cooWMTS.zoom,segment:precision,center3D:null,projected:null}
+
+        this.geometry = defaultValue(geometryCache, new TileGeometry(params, builder));
+    
         // TODO Try to remove this.absoluteCenter
-        this.absoluteCenter = ellipsoid.cartographicToCartesian(ccarto);
+        this.absoluteCenter = params.center3D;
 
         // TODO Question in next line ???
         this.centerSphere = new THREE.Vector3().addVectors(this.geometry.boundingSphere.center, this.absoluteCenter);
@@ -109,11 +110,11 @@ define('Globe/EllipsoidTileMesh', [
         
     }
 
-    EllipsoidTileMesh.prototype = Object.create(NodeMesh.prototype);
+    TileMesh.prototype = Object.create(NodeMesh.prototype);
 
-    EllipsoidTileMesh.prototype.constructor = EllipsoidTileMesh;
+    TileMesh.prototype.constructor = TileMesh;
 
-    EllipsoidTileMesh.prototype.dispose = function() {
+    TileMesh.prototype.dispose = function() {
         // TODO à mettre dans node mesh
         this.material.dispose();
         this.geometry.dispose();
@@ -125,7 +126,7 @@ define('Globe/EllipsoidTileMesh', [
     * 
 
      * @returns {undefined}     */
-    EllipsoidTileMesh.prototype.disposeChildren = function() {
+    TileMesh.prototype.disposeChildren = function() {
         while (this.children.length > 0) {
             var child = this.children[0];
             this.remove(child);
@@ -134,35 +135,35 @@ define('Globe/EllipsoidTileMesh', [
         this.material.visible = true;
     };
 
-    EllipsoidTileMesh.prototype.useParent = function() {
+    TileMesh.prototype.useParent = function() {
         return this.level !== this.levelTerrain;
     };
 
-    EllipsoidTileMesh.prototype.enableRTC = function(enable) {
+    TileMesh.prototype.enableRTC = function(enable) {
         this.material.enableRTC(enable);
     };
 
-    EllipsoidTileMesh.prototype.enablePickingRender = function(enable) {
+    TileMesh.prototype.enablePickingRender = function(enable) {
         this.material.enablePickingRender(enable);
     };
 
-    EllipsoidTileMesh.prototype.setFog = function(fog) {
+    TileMesh.prototype.setFog = function(fog) {
         this.material.setFogDistance(fog);
     };
 
-    EllipsoidTileMesh.prototype.setMatrixRTC = function(rtc) {
+    TileMesh.prototype.setMatrixRTC = function(rtc) {
         this.material.setMatrixRTC(rtc);
     };
 
-    EllipsoidTileMesh.prototype.setDebug = function(enable) {
+    TileMesh.prototype.setDebug = function(enable) {
         this.material.setDebug(enable);
     };
 
-    EllipsoidTileMesh.prototype.setSelected = function(select) {
+    TileMesh.prototype.setSelected = function(select) {
         this.material.setSelected(select);
     };
         
-    EllipsoidTileMesh.prototype.parseBufferElevation = function(image,minMax,pitScale) {
+    TileMesh.prototype.parseBufferElevation = function(image,minMax,pitScale) {
 
         var buffer = image.data;
 
@@ -193,7 +194,7 @@ define('Globe/EllipsoidTileMesh', [
 
     };
     
-    EllipsoidTileMesh.prototype.setTerrain = function(terrain) {
+    TileMesh.prototype.setTerrain = function(terrain) {
         var texture = undefined;
         var pitScale;
         var ancestor;
@@ -238,7 +239,7 @@ define('Globe/EllipsoidTileMesh', [
         this.material.setTexture(texture,l_ELEVATION, 0, pitScale);
     };
 
-    EllipsoidTileMesh.prototype.setAltitude = function(min, max) {
+    TileMesh.prototype.setAltitude = function(min, max) {
     
         if(Math.floor(min) !== Math.floor(this.bbox.minCarto.altitude) || Math.floor(max) !== Math.floor(this.bbox.maxCarto.altitude) )
         {            
@@ -260,7 +261,7 @@ define('Globe/EllipsoidTileMesh', [
         }
     };
 
-    EllipsoidTileMesh.prototype.setTextureOrtho = function(texture, id,pitch) {
+    TileMesh.prototype.setTextureOrtho = function(texture, id,pitch) {
         id = id === undefined ? 0 : id;
         id = texture === -1 ? undefined: texture; // TODO remove this, place undefined before
         this.material.setTexture(texture, l_COLOR, id,pitch);   
@@ -269,7 +270,7 @@ define('Globe/EllipsoidTileMesh', [
         this.checkOrtho();
     };
     
-    EllipsoidTileMesh.prototype.setTexturesLayer = function(textures,id){
+    TileMesh.prototype.setTexturesLayer = function(textures,id){
         
         if(!textures || this.material === null)
             return;
@@ -281,7 +282,7 @@ define('Globe/EllipsoidTileMesh', [
         this.checkOrtho();
     };
         
-    EllipsoidTileMesh.prototype.downScaledLayer = function(id)
+    TileMesh.prototype.downScaledLayer = function(id)
     {
         if(id === l_ELEVATION)
             if(this.level < 3 || this.currentLevelLayers[l_ELEVATION] === -2)
@@ -297,7 +298,7 @@ define('Globe/EllipsoidTileMesh', [
         return false;        
     }; 
     
-    EllipsoidTileMesh.prototype.getDownScaledLayer = function()     
+    TileMesh.prototype.getDownScaledLayer = function()     
     {
         if(this.downScaledLayer(l_COLOR))
             return l_COLOR;
@@ -307,32 +308,32 @@ define('Globe/EllipsoidTileMesh', [
             return undefined;
     };
 
-    EllipsoidTileMesh.prototype.normals = function() {
+    TileMesh.prototype.normals = function() {
         return this.geometry.normals;
     };
 
-    EllipsoidTileMesh.prototype.fourCorners = function() {
+    TileMesh.prototype.fourCorners = function() {
         return this.geometry.fourCorners;
     };
 
-    EllipsoidTileMesh.prototype.normal = function() {
+    TileMesh.prototype.normal = function() {
         return this.geometry.normal;
     };
 
-    EllipsoidTileMesh.prototype.center = function() {
+    TileMesh.prototype.center = function() {
         return this.geometry.center;
     };
 
-    EllipsoidTileMesh.prototype.OBB = function() {
+    TileMesh.prototype.OBB = function() {
         return this.geometry.OBB;
     };
     
-    EllipsoidTileMesh.prototype.getParentNotDownScaled = function(layer) 
+    TileMesh.prototype.getParentNotDownScaled = function(layer) 
     {
         return !this.parent.downScaledLayer(layer) ? this.parent : this.parent.getParentNotDownScaled(layer);
     };
 
-    EllipsoidTileMesh.prototype.checkOrtho = function() {
+    TileMesh.prototype.checkOrtho = function() {
         
         // TODO remove this function
 
@@ -348,6 +349,6 @@ define('Globe/EllipsoidTileMesh', [
         }
     };
 
-    return EllipsoidTileMesh;
+    return TileMesh;
 
 });
