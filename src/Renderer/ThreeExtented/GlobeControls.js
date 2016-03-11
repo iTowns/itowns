@@ -68,9 +68,14 @@ THREE.GlobeControls = function(object, domElement, engine) {
     //var timeStart = 500;
 
 
+
+
     this.ptScreenClick = new THREE.Vector2();
     var pickOnGlobe = new THREE.Vector3();
     var pickOnGlobeNorm = new THREE.Vector3();
+
+    var selectMode = false;
+    //selectMode = true;
 
     var rayonPointGlobe = 6378137;
     var raycaster = new THREE.Raycaster();
@@ -107,6 +112,8 @@ THREE.GlobeControls = function(object, domElement, engine) {
     this.keyShift = false;
     ////////////
     // internals
+
+
 
 
     var space = false;
@@ -555,10 +562,8 @@ THREE.GlobeControls = function(object, domElement, engine) {
                 scope.cloneObject = scope.object.clone();
                 scope.ptScreenClick.x = event.clientX;
                 scope.ptScreenClick.y = event.clientY;
-
-                
-                var point = scope.engine.getPickingPosition(scope.ptScreenClick);
-                //var point = scope.engine.getPickingPosition(scope.ptScreenClick,scope.engine.scene);
+                            
+                var point = scope.engine.getPickingPosition(scope.ptScreenClick,selectMode ? scope.engine.scene : undefined);
 
                 scope.engine.renderScene();
                 if(point)
