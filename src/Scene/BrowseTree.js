@@ -17,9 +17,17 @@ define('Scene/BrowseTree', ['Globe/TileMesh', 'THREE'], function( TileMesh, THRE
         this.fogDistance = 1000000000.0;
         this.mfogDistance = 1000000000.0;
         this.visibleNodes = 0;
-        this.selectNodeId = -1;
-        this.selectNode = null;
+        this.selectedNodeId = -1;
+        this.selectedNode = null;
         this.cachedRTC = null;
+
+        this.selectNode = function(){};
+
+        var selectMode = false;
+        //selectMode = true;
+
+        if(selectMode)
+            this.selectNode = function(node){this._selectNode(node);};
 
     }
 
@@ -35,10 +43,10 @@ define('Scene/BrowseTree', ['Globe/TileMesh', 'THREE'], function( TileMesh, THRE
      * @documentation: Process to apply to each node
      * @param {type} node   : node current to apply process
      * @param {type} camera : current camera needed to process
-     * @param {type} optional  : optional process
+     * @param {type} enableUp  : optional process
      * @returns {Boolean}
      */
-    BrowseTree.prototype.processNode = function(node, camera, optional) {
+    BrowseTree.prototype.processNode = function(node, camera, enableUp) {
         if (node instanceof TileMesh) {
 
             node.setVisibility(false);
@@ -52,22 +60,20 @@ define('Scene/BrowseTree', ['Globe/TileMesh', 'THREE'], function( TileMesh, THRE
 
                     var sse = this.nodeProcess.SSE(node, camera);
 
-                    if(optional && node.material.visible && !node.wait )
+                    if(enableUp && node.material.visible && !node.wait )
                     {
-                        if (sse || node.level < 2)                                                     
-                            this.tree.subdivide(node);                        
+                        if (sse || node.level < this.tree.minLevel)                                                     
+                            this.tree.up(node);                        
                         else if(!sse)
-                            this.tree.reloadDownScaledLayer(node);            
-                        
+                            this.tree.upSubLayer(node);                                                             
                     }
-                    else if (!sse && node.level >= 2 && !node.material.visible ) {
+                    else if (!sse && node.level >= this.tree.minLevel && !node.material.visible ) {
                                                 
-                        node.setMaterialVisibility(true);
+                        this.tree.down(node);                                                                   
                         this.uniformsProcess(node, camera);
-                        node.setChildrenVisibility(false);
-
+                        
                         return false;
-                    }                    
+                    }   
                 }
             }
 
@@ -82,18 +88,23 @@ define('Scene/BrowseTree', ['Globe/TileMesh', 'THREE'], function( TileMesh, THRE
 
 
     BrowseTree.prototype.uniformsProcess = function(node, camera) {
+
         node.setMatrixRTC(this.gfxEngine.getRTCMatrixFromCenter(node.absoluteCenter, camera));
+        node.setFog(this.fogDistance);
+
+        this.selectNode(node);
         
-        // TODO à mettre en option
-        if (node.id === this.selectNodeId) {
+    };
+
+    BrowseTree.prototype._selectNode = function(node)
+    {            
+        if (node.id === this.selectedNodeId) {
             node.setSelected(node.visible && node.material.visible);
-            if (this.selectNode !== node) {
-                this.selectNode = node;
+            if (this.selectedNode !== node) {
+                this.selectedNode = node;
                 //console.info(node);
             }
         }
-
-        node.setFog(this.fogDistance);
     };
 
     /**
