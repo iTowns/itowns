@@ -62,12 +62,12 @@ define('Scene/BrowseTree', ['Globe/TileMesh', 'THREE'], function( TileMesh, THRE
 
                     if(enableUp && node.material.visible && !node.wait )
                     {
-                        if (sse || node.level < this.tree.minLevel)                                                     
+                        if (sse)                                                     
                             this.tree.up(node);                        
-                        else if(!sse)
-                            this.tree.upSubLayer(node);                                                             
+                        else 
+                            this.tree.upSubLayer(node);                        
                     }
-                    else if (!sse && node.level >= this.tree.minLevel && !node.material.visible ) {
+                    else if (!sse && !node.material.visible ) {
                                                 
                         this.tree.down(node);                                                                   
                         this.uniformsProcess(node, camera);
@@ -115,6 +115,8 @@ define('Scene/BrowseTree', ['Globe/TileMesh', 'THREE'], function( TileMesh, THRE
      * @returns {undefined}
      */
     BrowseTree.prototype.browse = function(tree, camera, optional) {
+
+        this.nodeVisible = 0;
         this.tree = tree;
                
         camera.updateMatrixWorld();
@@ -128,6 +130,7 @@ define('Scene/BrowseTree', ['Globe/TileMesh', 'THREE'], function( TileMesh, THRE
 
         for (var i = 0; i < tree.children.length; i++)
             this._browse(tree.children[i], camera, subdivise,clean);
+
     };
 
     /**
