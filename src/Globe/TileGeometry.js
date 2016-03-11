@@ -1,32 +1,30 @@
+"use strict";
 /* global  Uint32Array */
 
 /**
  * Generated On: 2015-10-5
- * Class: EllipsoidTileGeometry
+ * Class: TileGeometry
  * Description: Tuile géométrique. Buffer des vertex et des faces
  */
 
-define('Globe/EllipsoidTileGeometry', [
+define('Globe/TileGeometry', [
     'THREE',
     'Core/defaultValue',
-    'Scene/BoundingBox',
-    'Core/Math/Ellipsoid',
-    'Core/Geographic/CoordCarto',
     'Core/Math/MathExtented',
     'Core/System/JavaTools',
     'Core/Commander/Providers/CacheRessource'
 ], function(
     THREE,
     defaultValue,
-    BoundingBox,
-    Ellipsoid,
-    CoordCarto,
     MathExt,
     JavaTools,
-    CacheRessource) {
+    CacheRessource
+    ) {
 
-    var cache = CacheRessource();
-
+    "use strict";
+    var cache = CacheRessource(); // TODO /!\ singleton
+    
+    
     function Buffers(nSegment)
     {                
         
@@ -45,19 +43,16 @@ define('Globe/EllipsoidTileGeometry', [
         }        
     }
 
-    function EllipsoidTileGeometry(bbox, segment, pellipsoid, zoom) {
+    function TileGeometry(params, builder) {
         //Constructor
         THREE.BufferGeometry.call(this);
-
-        var ellipsoid = defaultValue(pellipsoid, new Ellipsoid(6378137, 6356752.3142451793, 6378137));
-
-        bbox = defaultValue(bbox, new BoundingBox());
-        this.center = ellipsoid.cartographicToCartesian(new CoordCarto(bbox.center.x, bbox.center.y, 0));
-        this.OBB = bbox.get3DBBox(ellipsoid, this.center);
+        
+        this.center = builder.Center(params);
+        this.OBB = builder.OBB(params);
                 
         // TODO : free array
         
-        var buffersAttrib = this.computeBuffers(bbox,segment,ellipsoid,zoom);
+        var buffersAttrib = this.computeBuffers(params,builder);
 
         this.setIndex(buffersAttrib.index);
         this.addAttribute('position', buffersAttrib.position);
@@ -69,8 +64,8 @@ define('Globe/EllipsoidTileGeometry', [
         buffersAttrib.normal= null;        
         buffersAttrib.uv_1 = null;
         
-        if(!cache.getRessource(segment))         
-            cache.addRessource(segment, buffersAttrib);
+        if(!cache.getRessource(params.segment))         
+            cache.addRessource(params.segment, buffersAttrib);
          
         // ---> for SSE
         this.computeBoundingSphere();
@@ -78,98 +73,85 @@ define('Globe/EllipsoidTileGeometry', [
     }
         
 
-    EllipsoidTileGeometry.prototype = Object.create(THREE.BufferGeometry.prototype);
+    TileGeometry.prototype = Object.create(THREE.BufferGeometry.prototype);
 
-    EllipsoidTileGeometry.prototype.constructor = EllipsoidTileGeometry;
+    TileGeometry.prototype.constructor = TileGeometry;
     
-    EllipsoidTileGeometry.prototype.computeBuffers = function(bbox,segment,ellipsoid,zoom) 
+    TileGeometry.prototype.computeBuffers = function(params,builder) 
     {
-        var javToo = new JavaTools();
-
-        var nbRow = Math.pow(2.0, zoom + 1.0);
-        
-        var buffersAttrib = new Buffers(segment);
+        var javToo = new JavaTools();        
+        var buffersAttrib = new Buffers(params.segment);
         var buffers = new Buffers();
         
-        var nSeg = defaultValue(segment, 32);
+        var nSeg = defaultValue(params.segment, 32);
         var nVertex = (nSeg + 1) * (nSeg + 1) + 8 * (nSeg - 1); // correct pour uniquement les vertex
         var triangles = (nSeg) * (nSeg) + 16 * (nSeg - 1); // correct pour uniquement les vertex
 
         buffers.position = new Float32Array(nVertex * 3);
         buffers.bufferIndex = buffersAttrib.index === null ? new Uint32Array(triangles * 3 * 2) : null;
         buffers.normal = new Float32Array(nVertex * 3);
-        buffers.bufferUV = buffersAttrib.uv_0 === null ? new Float32Array(nVertex * 2) : null;
+        buffers.uv_0 = buffersAttrib.uv_0 === null ? new Float32Array(nVertex * 2) : null;
         buffers.uv_1 = new Float32Array(nVertex);
 
         var widthSegments = Math.max(2, Math.floor(nSeg) || 2);
         var heightSegments = Math.max(2, Math.floor(nSeg) || 2);
-
-        var phiStart = bbox.minCarto.longitude;
-        var phiLength = bbox.dimension.x;
-        var thetaStart = bbox.minCarto.latitude;
-        var thetaLength = bbox.dimension.y;
-
+        
         var idVertex = 0;
         var x, y, vertices = [],
             skirt = [],
             skirtEnd = [];
+        var u,v;
 
-        var st1 = 0.5 + Math.log(Math.tan(MathExt.PI_OV_FOUR + thetaStart * 0.5)) * MathExt.INV_TWO_PI;
+        builder.Prepare(params);
 
-        if (!isFinite(st1))
-            st1 = 0;
-
-        var sizeTexture = 1.0 / nbRow;
-
-        var start = (st1 % (sizeTexture));
-
-        var st = st1 - start;
-        
-        var buildUV = function(){};
+        var UV_0 = function(){};
+        var UV_1 = function(){};
          
         if(buffersAttrib.uv_0 === null) 
-            buildUV = function(u,v)
+            UV_0 = function(u,v)
             {
-                buffers.bufferUV[idVertex * 2 + 0] = u;
-                buffers.bufferUV[idVertex * 2 + 1] = 1 - v;
+                buffers.uv_0[idVertex * 2 + 0] = u;
+                buffers.uv_0[idVertex * 2 + 1] = 1 - v;
+            };
+
+        if(buffersAttrib.uv_1 === null && builder.getUV_1)
+            UV_1 = function(u)
+            {
+                buffers.uv_1[idVertex] = u;
             };
 
         for (y = 0; y <= heightSegments; y++) {
 
             var verticesRow = [];
 
-            var v = y / heightSegments;
-            var lati = thetaStart + v * thetaLength;
-            var t = ((0.5 + Math.log(Math.tan(MathExt.PI_OV_FOUR + lati * 0.5)) * MathExt.INV_TWO_PI) - st) * nbRow;
+            v = y / heightSegments;
 
-            if (!isFinite(t))
-                t = 0;
-            
-            //buffers.uv_1.fill(t, idVertex,idVertex  + widthSegments + 1); // TODO Semble plus long
+            builder.vProjecte(v,params);
 
+            var uv_1 = builder.getUV_1(params);
+           
             for (x = 0; x <= widthSegments; x++) {
 
-                var u = x / widthSegments;
+                u = x / widthSegments;
 
-                var longi = phiStart + u * phiLength;
-
-                var vertex = ellipsoid.cartographicToCartesian(new CoordCarto(longi, lati, 0));
-
+                builder.uProjecte(u,params);
+                
+                var vertex = builder.VertexPosition(params);
+                
                 var id_m3 = idVertex * 3;
                 //                    
                 buffers.position[id_m3 + 0] = vertex.x - this.center.x;
                 buffers.position[id_m3 + 1] = vertex.y - this.center.y;
                 buffers.position[id_m3 + 2] = vertex.z - this.center.z;
 
-                var normal = vertex.clone().normalize();
+                var normal = builder.VertexNormal(params);
 
                 buffers.normal[id_m3 + 0] = normal.x;
                 buffers.normal[id_m3 + 1] = normal.y;
                 buffers.normal[id_m3 + 2] = normal.z;
 
-                buildUV(u,v);
-
-                buffers.uv_1[idVertex] = t;
+                UV_0(u,v);
+                UV_1(uv_1);
 
                 if (y !== 0 && y !== heightSegments)
                     if (x === widthSegments)
@@ -219,9 +201,9 @@ define('Globe/EllipsoidTileGeometry', [
                 }
             }
 
-        start = idVertex;
+        var iStart = idVertex;
         var rmax = 5000;
-        var r = Math.max(rmax, Math.pow(rmax, 1 / zoom));
+        var r = Math.max(rmax, Math.pow(rmax, 1 / params.zoom));
 
         r = isFinite(r) ? r : rmax;
         
@@ -239,8 +221,8 @@ define('Globe/EllipsoidTileGeometry', [
             };
             
             buildUVSkirt = function(){
-                buffers.bufferUV[idVertex * 2 + 0] = buffers.bufferUV[id * 2 + 0];
-                buffers.bufferUV[idVertex * 2 + 1] = buffers.bufferUV[id * 2 + 1];                
+                buffers.uv_0[idVertex * 2 + 0] = buffers.uv_0[id * 2 + 0];
+                buffers.uv_0[idVertex * 2 + 1] = buffers.uv_0[id * 2 + 1];                
             };
         }
     
@@ -271,7 +253,7 @@ define('Globe/EllipsoidTileGeometry', [
             v4 = skirt[idf];
 
             if (idf === 0)
-                v3 = start;
+                v3 = iStart;
 
             idVertex2 = buildIndexSkirt (idVertex2,v1,v2,v3,v4);
 
@@ -285,7 +267,7 @@ define('Globe/EllipsoidTileGeometry', [
         buffersAttrib.position = new THREE.BufferAttribute(buffers.position, 3);
         buffersAttrib.normal= new THREE.BufferAttribute(buffers.normal, 3);
         if(buffersAttrib.uv_0 === null)            
-            buffersAttrib.uv_0 = new THREE.BufferAttribute(buffers.bufferUV, 2);
+            buffersAttrib.uv_0 = new THREE.BufferAttribute(buffers.uv_0, 2);
         buffersAttrib.uv_1 = new THREE.BufferAttribute(buffers.uv_1, 1);
      
         javToo.freeArray(vertices);
@@ -293,13 +275,13 @@ define('Globe/EllipsoidTileGeometry', [
         buffers.position = null;
         buffers.bufferIndex = null;
         buffers.normal = null;
-        buffers.bufferUV = null;
+        buffers.uv_0 = null;
         buffers.uv_1 = null;
         
         return buffersAttrib;
         
     };
 
-    return EllipsoidTileGeometry;
+    return TileGeometry;
 
 });

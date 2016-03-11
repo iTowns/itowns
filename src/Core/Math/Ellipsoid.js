@@ -6,8 +6,10 @@
 
 
 
-define('Core/Math/Ellipsoid', ['Core/Math/MathExtented', 'THREE'], function(MathExt, THREE) {
-
+define('Core/Math/Ellipsoid',
+     ['Core/Math/MathExtented','Core/Geographic/CoordCarto','THREE'],
+      function(MathExt,CoordCarto, THREE) {
+    
     function Ellipsoid(size) {
         //Constructor
 
@@ -128,8 +130,7 @@ define('Core/Math/Ellipsoid', ['Core/Math/MathExtented', 'THREE'], function(Math
         normal *= (back) ? -1.f : 1.f;
         normalizeVector(normal);
         */
-    };
-
+    }; 
 
     return Ellipsoid;
 

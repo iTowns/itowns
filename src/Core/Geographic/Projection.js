@@ -12,20 +12,17 @@ define('Core/Geographic/Projection', ['Core/Geographic/CoordWMTS', 'Core/Math/Ma
 
     }
 
-    /**
-     * @param x
-     * @param y
-     */
-    Projection.prototype.WGS84ToPM = function(/*x, y*/) {
-        //TODO: Implement Me 
-
-    };
-
     Projection.prototype.WGS84ToY = function(latitude) {
 
         return 0.5 - Math.log(Math.tan(MathExt.PI_OV_FOUR + latitude * 0.5)) * MathExt.INV_TWO_PI;
 
     };
+
+    Projection.prototype.WGS84ToOneSubY = function(latitude) {
+
+        return 0.5 + Math.log(Math.tan(MathExt.PI_OV_FOUR + latitude * 0.5)) * MathExt.INV_TWO_PI;
+
+    }; 
 
     Projection.prototype.WGS84LatitudeClamp = function(latitude) {
 
@@ -44,7 +41,7 @@ define('Core/Geographic/Projection', ['Core/Geographic/CoordWMTS', 'Core/Math/Ma
      * 
      * @param {type} cWMTS
      * @param {type} bbox
-     * @returns {Array}
+     * @returns {Array} coord WMTS array in pseudo mercator
      */
     Projection.prototype.WMTS_WGS84ToWMTS_PM = function(cWMTS, bbox) {
 
@@ -97,16 +94,6 @@ define('Core/Geographic/Projection', ['Core/Geographic/CoordWMTS', 'Core/Math/Ma
         
     };
 
-
-    /**
-     * @param x
-     * @param y
-     */
-    Projection.prototype.PMToWGS84 = function(/*x, y*/) {
-        //TODO: Implement Me 
-
-    };
-
     Projection.prototype.WGS84toWMTS = function(bbox) {
 
         var zoom = Math.floor(Math.log(MathExt.PI / bbox.dimension.y) / MathExt.LOG_TWO + 0.5);
@@ -123,24 +110,14 @@ define('Core/Geographic/Projection', ['Core/Geographic/CoordWMTS', 'Core/Math/Ma
         return new CoordWMTS(zoom, row, col);
     };
 
-
-    /**
-     * @param longi
-     * @param lati
-     */
-    Projection.prototype.geoToPM = function(/*longi, lati*/) {
-        //TODO: Implement Me 
-
+    Projection.prototype.UnitaryToLongitudeWGS84 = function(u,projection,bbox)
+    {
+        projection.longitude = bbox.minCarto.longitude + u * bbox.dimension.x;
     };
 
-
-    /**
-     * @param longi
-     * @param lati
-     */
-    Projection.prototype.geoToWGS84 = function(/*longi, lati*/) {
-        //TODO: Implement Me 
-
+    Projection.prototype.UnitaryToLatitudeWGS84 = function(v,projection,bbox)
+    {
+        projection.latitude = bbox.minCarto.latitude + v * bbox.dimension.y;
     };
 
     return Projection;

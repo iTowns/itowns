@@ -4,7 +4,7 @@
  * Description: BrowseTree parcourt un arbre de Node. Lors du parcours un ou plusieur NodeProcess peut etre appliqué sur certains Node.
  */
 
-define('Scene/BrowseTree', ['Globe/EllipsoidTileMesh', 'THREE'], function( EllipsoidTileMesh, THREE) {
+define('Scene/BrowseTree', ['Globe/TileMesh', 'THREE'], function( TileMesh, THREE) {
 
     function BrowseTree(engine) {
         //Constructor
@@ -39,14 +39,14 @@ define('Scene/BrowseTree', ['Globe/EllipsoidTileMesh', 'THREE'], function( Ellip
      * @returns {Boolean}
      */
     BrowseTree.prototype.processNode = function(node, camera, optional) {
-        if (node instanceof EllipsoidTileMesh) {
+        if (node instanceof TileMesh) {
 
             node.setVisibility(false);
             node.setSelected(false);
 
             if (node.loaded && this.nodeProcess.frustumCullingOBB(node, camera)) {
                 if (this.nodeProcess.horizonCulling(node, camera)) {
-                    if (node.parent instanceof EllipsoidTileMesh && node.parent !== null && node.parent.material !== undefined && node.parent.material.visible === true)
+                    if (node.parent instanceof TileMesh && node.parent !== null && node.parent.material !== undefined && node.parent.material.visible === true)
 
                     { return node.setVisibility(false); }
 
