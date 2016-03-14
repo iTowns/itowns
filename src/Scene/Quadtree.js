@@ -27,6 +27,8 @@ define('Scene/Quadtree', [
         this.minLevel = 2;
         this.maxLevel = 17;
         var rootNode = new NodeMesh();
+
+        rootNode.material.visible = false;            
         
         rootNode.link = this.link;
         
@@ -108,12 +110,11 @@ define('Scene/Quadtree', [
      */
     Quadtree.prototype.update = function(node) {
 
-        if (node.level > this.maxLevel || node.wait === true)
+        if (node.level > this.maxLevel)
             return false;
-
-        if (node.childrenCount() > 0 && node.wait === false) {
-
-            node.setMaterialVisibility(!node.childrenLoaded());
+        else if (node.childrenCount() > 0 ) {
+                
+            node.setMaterialVisibility(false);                
 
             return false;
         }
