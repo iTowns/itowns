@@ -234,7 +234,13 @@ define('Renderer/c3DEngine', [
             if (node.enablePickingRender)
                 node.traverseVisible(enable ? this.pickingOn.bind(this) : this.pickingOff.bind(this));
             else
-                node.visible = !enable;
+            {
+                if(node.layer){            
+                    node.visible = !enable ? node.layer.visible : false;
+                }
+                else
+                    node.visible = !enable;
+            }
         }
     };
 

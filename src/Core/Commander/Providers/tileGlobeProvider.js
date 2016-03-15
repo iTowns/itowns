@@ -86,7 +86,8 @@ define('Core/Commander/Providers/tileGlobeProvider', [
         
        // tileGlobeProvider.prototype.getKML= function(){
         tileGlobeProvider.prototype.getKML= function(tile){
-            if(tile.level  === 16  )
+
+            if(tile.link.layer.visible && tile.level  === 16)
             {
                 var longitude   = tile.bbox.center.x / Math.PI * 180 - 180;
                 var latitude    = tile.bbox.center.y / Math.PI * 180;
@@ -109,7 +110,6 @@ define('Core/Commander/Providers/tileGlobeProvider', [
             var parent = command.requester;
             var geometry = undefined; //getGeometry(bbox,cooWMTS);       
 
-
             var tile = new command.type(bbox, cooWMTS, this.builder, this.nNode++, geometry,parent.link);
 
             if (geometry) {
@@ -131,8 +131,8 @@ define('Core/Commander/Providers/tileGlobeProvider', [
             
             if(cooWMTS.zoom > 3 )
                 cooWMTS =  undefined;            
+
             return this.providerWMTS.getTextureBil(cooWMTS).then(function(terrain){                        
-//            return this.providerWMTS.getTextureBil(tile.useParent() ? undefined : cooWMTS).then(function(terrain) {
                                                                        
                 this.setTerrain(terrain);
 
@@ -143,8 +143,13 @@ define('Core/Commander/Providers/tileGlobeProvider', [
                 return this.getOrthoImages(tile).then(function(result)
                 {                               
                     this.setTexturesLayer(result,1);                        
-                                           
-                }.bind(tile));
+                    
+                    return this;
+
+                }.bind(tile)).then(function(tile)
+                {  
+                    this.getKML(tile);
+                }.bind(this));
                 
             }.bind(this));
         };

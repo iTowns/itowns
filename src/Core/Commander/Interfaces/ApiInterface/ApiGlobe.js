@@ -78,7 +78,13 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         this.scene.gfxEngine.setLightingOn(value);
         this.scene.layers[0].setRealisticLightingOn(value);
         this.scene.browserScene.updateMaterialUniform("lightingOn",value ? 1:0);
-    }; 
+    };
+
+    ApiGlobe.showKML = function(value) {
+        
+        this.scene.layers[0].showKML(value);
+        this.scene.renderScene3D();
+    };
 
     return ApiGlobe;
 

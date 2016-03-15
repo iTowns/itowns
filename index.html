@@ -34,6 +34,7 @@ and open the template in the editor.
                var Menu = function() {
                    this.CloudsIR = false;
                    this.RealisticLighting = false;
+                   this.KML = false;
                    this.Layer = "OrthoGeoportail";
                };
 
@@ -57,11 +58,15 @@ and open the template in the editor.
                });
                
                gui.add(text, 'CloudsIR').onChange(function(newValue) {
-			itowns.viewer.showClouds(newValue);
+			           itowns.viewer.showClouds(newValue);
                });
                
                gui.add(text, 'RealisticLighting').onChange(function(newValue) {
-			itowns.viewer.setRealisticLightingOn(newValue);
+			           itowns.viewer.setRealisticLightingOn(newValue);
+               });
+
+               gui.add(text, 'KML').onChange(function(newValue) {
+                  itowns.viewer.showKML(newValue);
                });
                
             
