@@ -25,6 +25,9 @@ define('Renderer/NodeMesh', ['Scene/Node', 'THREE'], function(Node, THREE) {
 
     NodeMesh.prototype.constructor = NodeMesh;
 
+    NodeMesh.prototype.enableRTC = function() {
+    };
+
     NodeMesh.prototype.showHelper = function(show) {
         if (this.helper !== undefined)
             this.helper.visible = show;

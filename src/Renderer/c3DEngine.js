@@ -218,7 +218,7 @@ define('Renderer/c3DEngine', [
         for (var x = 0; x < this.scene3D.children.length; x++) {
             var node = this.scene3D.children[x];
 
-            if (node.enableRTC)
+            if (node.enableRTC && !(node instanceof Atmosphere))
                 node.traverseVisible(enable ? this.rtcOn.bind(this) : this.rtcOff.bind(this));
             else
                 node.visible = enable;
@@ -240,10 +240,13 @@ define('Renderer/c3DEngine', [
 
     c3DEngine.prototype.rtcOn = function(obj3D) {        
         obj3D.enableRTC(true);
+        obj3D.matrixAutoUpdate = false;
     };
 
     c3DEngine.prototype.rtcOff = function(obj3D) {        
         obj3D.enableRTC(false);
+        obj3D.matrixWorldNeedsUpdate = true;
+        obj3D.matrixAutoUpdate = true;
     };
 
     c3DEngine.prototype.pickingOn = function(obj3D) {
