@@ -121,6 +121,12 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         //console.log(this.getCenter());
     };
 
+    ApiGlobe.prototype.showKML = function(value) {
+        
+        this.scene.layers[0].showKML(value);
+        this.scene.renderScene3D();
+    };
+
     return ApiGlobe;
 
 });

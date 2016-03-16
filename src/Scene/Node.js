@@ -24,6 +24,9 @@ define('Scene/Node', [], function() {
         this.screenSpaceError = 0.0;
         this.loaded = false;
         this.wait = false;
+        this.visible = true;
+        this.layer = null;
+
 
     }
 
@@ -110,6 +113,8 @@ define('Scene/Node', [], function() {
     Node.prototype.add = function(child) {
         //TODO: Implement Me 
         this.children.push(child);
+
+        child.layer = this;
     };
 
     /**
