@@ -10,16 +10,14 @@ define('Renderer/c3DEngine', [
     'Renderer/Camera',
     'Globe/Atmosphere',
     'Renderer/DepthMaterial',
-    'Renderer/BasicMaterial',
-    'Core/Geographic/CoordCarto'
+    'Renderer/BasicMaterial'
 ], function(
     THREE,    
     GlobeControls,
     Camera,
     Atmosphere,
     DepthMaterial,
-    BasicMaterial,
-    CoordCarto) {
+    BasicMaterial) {
 
     var instance3DEngine = null;
     var RENDER = {
@@ -293,7 +291,7 @@ define('Renderer/c3DEngine', [
         this.controls.minDistance = 30;
         this.controls.maxDistance = size * 8.0;
         this.controls.keyPanSpeed = 0.01;
-
+        
     };
 
     /**
@@ -493,35 +491,6 @@ define('Renderer/c3DEngine', [
         dummy.translateY(size);
         dummy.updateMatrix();
         dummy.updateMatrixWorld();
-    };
-
-    c3DEngine.prototype.cartesianToGeo = function(position) {
-        
-        // TODO move to core
-        var p = position.clone();
-        p.x = -position.x;
-        p.y = position.z;
-        p.z = position.y;
-
-        var R = p.length();
-        var a = 6378137;
-        var b = 6356752.3142451793;
-        var e = Math.sqrt((a * a - b * b) / (a * a));
-        var f = 1 - Math.sqrt(1 - e * e);
-        var rsqXY = Math.sqrt(p.x * p.x + p.y * p.y);
-
-        var theta = Math.atan2(p.y, p.x);
-        var nu = Math.atan(p.z / rsqXY * ((1 - f) + e * e * a / R));
-
-        var sinu = Math.sin(nu);
-        var cosu = Math.cos(nu);
-
-        var phi = Math.atan((p.z * (1 - f) + e * e * a * sinu * sinu * sinu) / ((1 - f) * (rsqXY - e * e * a * cosu * cosu * cosu)));
-
-        var h = (rsqXY * Math.cos(phi)) + p.z * Math.sin(phi) - a * Math.sqrt(1 - e * e * Math.sin(phi) * Math.sin(phi));
-
-        return CoordCarto(theta,phi,h);
-        //console.log(theta / Math.PI * 180 + ' ' + phi / Math.PI * 180 + ' ' + h);
     };
     
     c3DEngine.prototype.getRTCMatrixFromCenter = function(center, camera ) {
