@@ -87,8 +87,9 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
     
     ApiGlobe.prototype.getCameraOrientation = function () {
         
-//        var cam = this.scene.currentControlCamera();
-//        return cam.object.quaternion;
+        var tiltCam = this.scene.currentControlCamera().getTiltCamera();
+        var headingCam = this.scene.currentControlCamera().getHeadingCamera();
+        return [tiltCam, headingCam];
     };
     
     ApiGlobe.prototype.getCameraLocation = function () {
@@ -118,7 +119,9 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
     };
     
     ApiGlobe.prototype.launchCommandApi = function () {
-        //console.log(this.getCenter());
+//        console.log(this.getCenter());
+//        console.log(this.getCameraLocation());
+//        console.log(this.getCameraOrientation());
     };
 
     ApiGlobe.prototype.showKML = function(value) {
