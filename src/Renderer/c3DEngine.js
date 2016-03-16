@@ -85,10 +85,25 @@ define('Renderer/c3DEngine', [
 
                 this.enableRTC(false);
                 this.camera.camHelper().visible = true;
-                var position =  this.camera.position().clone();
-                position.setLength(position.length()*1.3);
-                this.camDebug.position.copy(position);                
-                this.camDebug.lookAt(this.controls.moveTarget);
+
+                var target = this.controls.moveTarget;
+                var position = this.camera.position();
+
+                var posDebug = new THREE.Vector3().subVectors(position,target);
+
+                posDebug.setLength(posDebug.length()*2.0);
+
+                posDebug.add(target);
+
+                posDebug.setLength((posDebug.length() - this.size) * 3.0 + this.size);
+
+
+                // var length = (position.length() - this.size) * 1.3 + this.size;
+                // position.setLength(length);
+                
+
+                this.camDebug.position.copy(posDebug);                
+                this.camDebug.lookAt(target);
                 this.renderer.setViewport(this.width, 0, this.width, this.height);
                 this.renderer.render(this.scene3D, this.camDebug);
                 this.enableRTC(true);
