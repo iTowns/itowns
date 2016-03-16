@@ -14,18 +14,22 @@
  */
 define('Scene/Scene', [
     'Renderer/c3DEngine',
+    'three',
     'Globe/Globe',
     'Core/Commander/ManagerCommands',
     'Core/Commander/Providers/tileGlobeProvider',
     'Core/Commander/Providers/BuildingBox_Provider',
+    'Core/Commander/Providers/PanoramicProvider',
+    'Renderer/PanoramicMesh',
     'Scene/BrowseTree',
     'Scene/NodeProcess',
     'Scene/Quadtree',
     'Scene/Layer',
     'Core/Geographic/CoordCarto',
     'Core/System/Capabilities'
-], function(c3DEngine, Globe, ManagerCommands, tileGlobeProvider, BuildingBox_Provider,
-            BrowseTree, NodeProcess, Quadtree, Layer, CoordCarto, Capabilities) {
+], function(c3DEngine, THREE, Globe, ManagerCommands, tileGlobeProvider, BuildingBox_Provider,
+            PanoramicProvider, PanoramicMesh, BrowseTree, NodeProcess, Quadtree, Layer, CoordCarto,
+            Capabilities) {
 
     var instanceScene = null;
     
@@ -241,21 +245,49 @@ define('Scene/Scene', [
     Scene.prototype.setStreetLevelImageryOn = function(value){
 
         if(value){
-            var bbox = {minCarto:{longitude:2.325,latitude:48.855}, maxCarto: {longitude:2.335,latitude:48.865}};
-            var options = {url:"http://wxs.ign.fr/72hpsel8j8nhb5qgdh07gcyp/geoportail/wfs?",
-                           typename:"BDTOPO_BDD_WLD_WGS84G:bati_remarquable,BDTOPO_BDD_WLD_WGS84G:bati_indifferencie",
-                           bbox: bbox,
-                           epsgCode: 4326
-                           };
-                           
-            var optionsPLU = {url:"http://172.16.1.122:8080/geoserver/urban_planning/ows?",
-                            typename: "urban_planning:generatedbuildings&maxFeatures=50",
-                            bbox: {minCarto:{longitude:0,latitude:40}, maxCarto: {longitude:20,latitude:50}},
-                            epsgCode: 4326
-                            };   
-            var buildingBox_Provider = new BuildingBox_Provider(optionsPLU);
-            buildingBox_Provider.getData(optionsPLU.bbox);
-            
+
+             var imagesOption = {
+             // HTTP access to itowns sample datasets
+              //url : "../{lod}/images/{YYMMDD}/Paris-{YYMMDD}_0740-{cam.cam}-00001_{pano.pano:07}.jpg",
+              url : "../{lod}/images/{YYMMDD2}/Paris-{YYMMDD2}_0740-{cam.cam}-00001_{splitIt}.jpg",
+              lods : ['itowns-sample-data'],//['itowns-sample-data-small', 'itowns-sample-data'],
+                /*
+                // IIP server access    
+                    website   : "your.website.com",
+                    path    : "your/path",
+                    url : "http://{website}/cgi-bin/iipsrv.fcgi?FIF=/{path}/{YYMMDD}/Paris-{YYMMDD}_0740-{cam.id}-00001_{pano.id:07}.jp2&WID={lod.w}&QLT={lod.q}&CVT=JPEG",
+                    lods : [{w:32,q:50},{w:256,q:80},{w:2048,q:80}],
+                */    
+              cam       : "../dist/itowns-sample-data/cameraCalibration.json",
+              pano      : "../dist/itowns-sample-data/panoramicsMetaData.json",
+              buildings : "../dist/itowns-sample-data/buildingFootprint.json",
+              DTM       : "../dist/itowns-sample-data/dtm.json",
+              YYMMDD2 : function() {  //"filename":"Paris-140616_0740-00-00001_0000500"
+                return this.pano.filename.match("-(.*?)_")[1];
+              },
+              splitIt : function(){
+                  return this.pano.filename.split("_")[2];
+              },
+              YYMMDD : function() {
+                var d = new Date(this.pano.date);
+                return (""+d.getUTCFullYear()).slice(-2) + ("0"+(d.getUTCMonth()+1)).slice(-2) + ("0" + d.getUTCDate()).slice(-2);
+              },
+              UTCOffset : 15,
+              seconds : function() {
+                var d = new Date(this.pano.date);
+                return (d.getUTCHours()*60 + d.getUTCMinutes())*60+d.getUTCSeconds()-this.UTCOffset;
+              },
+              visible: true
+            };             
+
+
+            var panoramicProvider = new PanoramicProvider(imagesOption);
+
+            var projectiveMesh = panoramicProvider.getTextureProjectiveMesh(2.33,48.85,1000).then(function(data){
+
+               this.gfxEngine.add3DScene(data);              
+            }.bind(this));
+
         }
                
     };

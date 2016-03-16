@@ -6,8 +6,12 @@
 * and its projective camera information.
 */
 
-define (['Renderer/c3DEngine','three','Ori','Shader', 'PanoramicProvider','url'],
-        function (graphicEngine, THREE, Ori, Shader, PanoramicProvider, url) {
+define (['Renderer/c3DEngine','three','Renderer/ThreeExtented/threeExt','MobileMapping/Ori',
+         'Core/Commander/Providers/PanoramicProvider','MobileMapping/Shader','url',
+         'string_format', 'when', 'Core/Math/Ellipsoid', 'Core/Geographic/CoordCarto'],
+        function (graphicEngine, THREE, threeExt, Ori, 
+        PanoramicProvider, Shader, url, string_format,
+        when, Ellipsoid, CoordCarto) {
 
         window.requestAnimSelectionAlpha = (function(){
             return  window.requestAnimationFrame || 
@@ -24,15 +28,33 @@ define (['Renderer/c3DEngine','three','Ori','Shader', 'PanoramicProvider','url']
         var _initiated = false;
         var _alpha = 1;
         var _infos = {};
+        var ellipsoid  = new Ellipsoid(new THREE.Vector3(6378137, 6356752.3142451793, 6378137));
 
         var ProjectiveTexturingMaterial = {
 
-            init: function(infos){
+            init: function(infos, panoInfo){
+                
+                var deferred = when.defer();
+                
+                if(!_initiated){
                     _infos = infos;
                     _infos.lods = _infos.lods || [undefined];
                     _infos.targetNbPanoramics = _infos.targetNbPanoramics || 2;
                     _initiated = true;
+                    
+                    Ori.init(infos).then(function(data){
+                        console.log("ORI IS INITIATED");
+                        this.createShaderMat(panoInfo,new THREE.Matrix3());
+                        deferred.resolve(_shaderMat);
+                        
+                    }.bind(this));
+                } else{
+                    deferred.resolve(_shaderMat);
+                }
+                
+                return deferred.promise;
             },
+            
 
             isInitiated: function(){
                     return _initiated;
@@ -67,7 +89,7 @@ define (['Renderer/c3DEngine','three','Ori','Shader', 'PanoramicProvider','url']
             // throttle down the number of panoramics to meet the gl.MAX_* constraints
             nbPanoramics: function(){ 
                     var N = this.nbImages();
-                    var gl = graphicEngine.getRenderer().getContext();
+                    var gl = graphicEngine().getRenderer().getContext();
                     var M = this.nbMasks();
                     var maxVaryingVec = gl.getParameter(gl.MAX_VARYING_VECTORS);
                     var maxTextureImageUnits = gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS);
@@ -82,22 +104,28 @@ define (['Renderer/c3DEngine','three','Ori','Shader', 'PanoramicProvider','url']
             },
 
             loadTexture: function(src,infos,onload,data){
+                    
                     src = src.format(infos);
                     var img = new Image(); 
                     img.crossOrigin = 'anonymous';
                     img.onload = function () { 	
-                            var tex = new THREE.Texture(this,THREE.UVMapping, 
-                                    THREE.RepeatWrapping, THREE.RepeatWrapping, THREE.LinearFilter,THREE.LinearFilter,THREE.RGBFormat);
-                            tex.needsUpdate = true;
-                            tex.flipY = false;
-                            onload(tex,data);
+                        var tex = new THREE.Texture(this,THREE.UVMapping, 
+                                THREE.RepeatWrapping, THREE.RepeatWrapping, THREE.LinearFilter, THREE.LinearFilter, THREE.RGBFormat);
+                        tex.needsUpdate = true;
+                        tex.flipY = false;
+                        onload(tex,data);
                     }
-                    var baseUrl = PanoramicProvider.getMetaDataSensorURL();
+                    var baseUrl = "../dist/itowns-sample-data/cameraCalibration.json"; //_infos.url;//PanoramicProvider.getMetaDataSensorURL();
                     img.src = url.resolve(baseUrl,src);
+                    console.log(src,'aaaa',img.src);
             },
 
             createShaderMat: function(panoInfo,rot){  
                 
+                var posPanoWGS84 = new CoordCarto().setFromDegreeGeo(panoInfo.latitude, panoInfo.longitude, panoInfo.altitude);
+                var posPanoCartesian = ellipsoid.cartographicToCartesian(posPanoWGS84);
+                console.log("posPanoCartesian: ",posPanoCartesian);
+
                 var N = this.nbImages();
                 var P = this.nbPanoramics();
                 var uniforms = {
@@ -116,7 +144,7 @@ define (['Renderer/c3DEngine','three','Ori','Shader', 'PanoramicProvider','url']
                     
                     var mat = Ori.getMatrix(i).clone();
                     var mvpp = (new THREE.Matrix3().multiplyMatrices(rot,mat)).transpose();
-                    var trans = Ori.getSommet(i).clone().applyMatrix3(rot);
+                    var trans = /*posPanoCartesian +*/ Ori.getSommet(i).clone().applyMatrix3(rot);
                     var m = -1;
                     if(!_infos.noMask && Ori.getMask(i)) {
                             m = uniforms.mask.value.length;
@@ -132,11 +160,11 @@ define (['Renderer/c3DEngine','three','Ori','Shader', 'PanoramicProvider','url']
                             var j = i+N*pano;
                             uniforms.size.value[j] = Ori.getSize(i);
                             uniforms.alpha.value[j] = _alpha*(1-pano);
-                            uniforms.mvpp.value[j]=mvpp;
-                            uniforms.translation.value[j]=trans;
+                            uniforms.mvpp.value[j] = mvpp;
+                            uniforms.translation.value[j] = trans;
                             uniforms.texture.value[j] = null;
-                            idmask[j]=m;
-                            iddist[j]=d;
+                            idmask[j] = m;
+                            iddist[j] = d;
                     }
                 }
                     
@@ -145,14 +173,17 @@ define (['Renderer/c3DEngine','three','Ori','Shader', 'PanoramicProvider','url']
                         uniforms:     	uniforms,
                         vertexShader:   Shader.shaderTextureProjectiveVS(P*N),
                         fragmentShader: Shader.shaderTextureProjectiveFS(P*N,idmask,iddist),
-                        side: THREE.BackSide,   
-                        transparent:true
+                        side: THREE.DoubleSide, //THREE.BackSide,   
+                        transparent: true,
+                        depthTest: false,
+                        depthWrite: false 
                 });
 
                 _infos.pano = panoInfo;
                 _infos.lod = _infos.lods[0];
                 for (var i=0; i<N; ++i) {
                         _infos.cam  = Ori.sensors[i].infos;
+                        console.log(_infos.cam, _infos.pano);
                         var m= idmask[i];
                         if(m>=0) {
                                 this.loadTexture(Ori.getMask(i), {}, function(tex,m) { 	
@@ -163,7 +194,7 @@ define (['Renderer/c3DEngine','three','Ori','Shader', 'PanoramicProvider','url']
                                 _shaderMat.uniforms.texture.value[i] = tex;
                         }, i);
                 }
-            this.changePanoTextureAfterloading(panoInfo,null,rot,1);
+            this.changePanoTextureAfterloading(panoInfo, posPanoCartesian, rot, 1);
             
             return _shaderMat;
         },
@@ -188,7 +219,7 @@ define (['Renderer/c3DEngine','three','Ori','Shader', 'PanoramicProvider','url']
             
             this.todo = [];
             _infos.pano = panoInfo;
-            this.translation=translation || new THREE.Vector3();
+            this.translation = translation || new THREE.Vector3();
             this.rotation=rotation || new THREE.Matrix3();
             for (var l=lod||0; l< _infos.lods.length; ++l)
                 for (var i=0; i< Ori.sensors.length; ++i)
@@ -233,11 +264,16 @@ define (['Renderer/c3DEngine','three','Ori','Shader', 'PanoramicProvider','url']
                 }
             });
             
-        }
+        },
         
+        
+        getShaderMat: function(){
+            return _shaderMat;
+        }
 
-    }
-    return ProjectiveTexturingMaterial
+    };
+    return ProjectiveTexturingMaterial;
+    
    }
 )
 
