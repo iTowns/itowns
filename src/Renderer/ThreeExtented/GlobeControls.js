@@ -67,9 +67,6 @@ THREE.GlobeControls = function(object, domElement, engine) {
     this.time = 0;
     //var timeStart = 500;
 
-
-
-
     this.ptScreenClick = new THREE.Vector2();
     var pickOnGlobe = new THREE.Vector3();
     var pickOnGlobeNorm = new THREE.Vector3();
@@ -697,9 +694,6 @@ THREE.GlobeControls = function(object, domElement, engine) {
         // Update target camera  {END}
     }
 
-
-
-
     function onMouseUp( /* event */ ) {
 
         if (scope.enabled === false) return;
@@ -936,42 +930,14 @@ THREE.GlobeControls = function(object, domElement, engine) {
         scope.keyShift = false;
 
     }
-/*
-    function computeVectorUp() {
-        var vectorUp = scope.globeTarget.position.clone().normalize();
-        scope.object.up.copy(vectorUp);
 
-    }
-
-    function rotateTarget() {
-        var position = scope.globeTarget.worldToLocal(scope.object.position.clone());
-        var angle = Math.atan2(position.x, position.z);
-
-        scope.globeTarget.quaternion.multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), angle));
-        scope.globeTarget.updateMatrixWorld();
-
-//        
-//        position = scope.globeTarget.worldToLocal(scope.object.position.clone());                                
-//        angle    = Math.atan2(position.z,position.y); 
-//            
-//        scope.globeTarget.quaternion.multiply(new THREE.Quaternion().setFromAxisAngle( new THREE.Vector3( 1, 0, 0 ), angle  - Math.PI * 0.5));   
-        
-        //TODO revient à prendre le repère caméra.... à tester
-
-
-    }
-*/
-    function computeTarget() {
+    function computeTarget() { // Compute the new target center position
 
         scope.globeTarget.position.copy(scope.moveTarget);
         scope.globeTarget.lookAt(scope.moveTarget.clone().multiplyScalar(2));
         scope.globeTarget.quaternion.multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI / 2));
         scope.globeTarget.updateMatrixWorld();
-        //rotateTarget();
-        /*
-        quat = new THREE.Quaternion().setFromUnitVectors( scope.object.up,vectorUp );
-        quatInverse = quat.clone().inverse();            
-        */
+
     }
 
     this.domElement.addEventListener('contextmenu', function(event) {
