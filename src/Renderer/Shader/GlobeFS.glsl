@@ -50,7 +50,7 @@ vec2    pitUV(vec2 uvIn, vec3 pit)
 }
 
 #if defined(BORDERLINE)
-const float sLine = 0.002;
+const float sLine = 0.005;
 #endif
 const float borderS = 0.007;
 
