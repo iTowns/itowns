@@ -40,11 +40,14 @@ define('Globe/Globe', [
         var kml = new THREE.Object3D();
         this.batiments.add(kml);
 
+        this.batiments.visible = false;
+
+        kml.visible = false;
+
         this.meshTerrain = new Quadtree(TileMesh, this.SchemeTileWMTS(2), this.size, kml);
         
         this.elevationTerrain = new Layer();
         this.colorTerrain = new Layer();
-        
         
         this.meshTerrain.add(this.elevationTerrain);
         this.meshTerrain.add(this.colorTerrain);
@@ -142,6 +145,13 @@ define('Globe/Globe', [
         }
         this.clouds.visible = show;
     };
+
+    Globe.prototype.showKML = function(show) {
+
+        this.batiments.visible = show;
+
+        this.batiments.children[0].visible = show;
+    };
     
          
     Globe.prototype.setRealisticLightingOn = function(bool) {
@@ -150,13 +160,6 @@ define('Globe/Globe', [
         this.clouds.setLightingOn(bool);
         
     };
-
-    /*Globe.prototype.ellipsoid = function() {
-        return this.meshTerrain.interCommand.managerCommands.providers[0].ellipsoid;
-    };*/
-
-
-
 
     return Globe;
 

@@ -47,43 +47,38 @@ define('Scene/BrowseTree', ['Globe/TileMesh', 'THREE'], function( TileMesh, THRE
      * @returns {Boolean}
      */
     BrowseTree.prototype.processNode = function(node, camera, enableUp) {
-        if (node instanceof TileMesh) {
+        
+        node.setVisibility(false);
+        node.setSelected(false);
 
-            node.setVisibility(false);
-            node.setSelected(false);
+        if(node.parent !== null && node.parent.material.visible)
+            return false;
 
-            if (node.loaded && this.nodeProcess.frustumCullingOBB(node, camera)) {
-                if (this.nodeProcess.horizonCulling(node, camera)) {
-                    if (node.parent instanceof TileMesh && node.parent !== null && node.parent.material !== undefined && node.parent.material.visible === true)
+        if (this.nodeProcess.frustumCullingOBB(node, camera)) {
+            if (this.nodeProcess.horizonCulling(node, camera)) {
 
-                    { return node.setVisibility(false); }
+                var sse = this.nodeProcess.SSE(node, camera);
 
-                    var sse = this.nodeProcess.SSE(node, camera);
-
-                    if(enableUp && node.material.visible && !node.wait )
-                    {
-                        if (sse)                                                     
-                            this.tree.up(node);                        
-                        else 
-                            this.tree.upSubLayer(node);                        
-                    }
-                    else if (!sse && !node.material.visible ) {
-                                                
-                        this.tree.down(node);                                                                   
-                        this.uniformsProcess(node, camera);
-                        
-                        return false;
-                    }   
+                if(enableUp && node.material.visible && !node.wait )
+                {
+                    if (sse) 
+                        // request level up 
+                        this.tree.up(node);                        
+                    else 
+                        // request level up other quadtree
+                        this.tree.upSubLayer(node);                        
+                }
+                else if (!sse) {
+                    // request level down
+                    this.tree.down(node);
                 }
             }
-
-            if (node.visible && node.material.visible)
-                this.uniformsProcess(node, camera);
-
-            return node.visible;
         }
 
-        return true;
+        if (node.isVisible())
+            this.uniformsProcess(node, camera);
+
+        return !node.material.visible && !node.wait;       
     };
 
 
@@ -128,8 +123,12 @@ define('Scene/BrowseTree', ['Globe/TileMesh', 'THREE'], function( TileMesh, THRE
         var subdivise = optional === 1;
         var clean = optional === 2;
 
-        for (var i = 0; i < tree.children.length; i++)
-            this._browse(tree.children[i], camera, subdivise,clean);
+        var rootNode = tree.children[0];
+
+        for (var i = 0; i < rootNode.children.length; i++)
+            this._browse(rootNode.children[i], camera, subdivise,clean);
+
+        
 
     };
 
