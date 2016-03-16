@@ -38,7 +38,7 @@ varying vec3        vNormal;
 varying vec4        pos;
 
 
-// #define BORDERLINE
+//#define BORDERLINE
 
 vec2    pitUV(vec2 uvIn, vec3 pit)
 {     
@@ -50,7 +50,7 @@ vec2    pitUV(vec2 uvIn, vec3 pit)
 }
 
 #if defined(BORDERLINE)
-const float sLine = 0.004;
+const float sLine = 0.005;
 #endif
 const float borderS = 0.007;
 

@@ -213,7 +213,7 @@ define('Globe/Atmosphere', ['Renderer/NodeMesh', 'THREE', 'Renderer/c3DEngine','
     Atmosphere.prototype.setRealisticOn = function(bool){
         
         this.realistic = bool;
-        this.atmosphereOUT.visible = !this.realistic;
+        this.material.visible = !this.realistic;
         this.atmosphereIN.visible  = !this.realistic;
         this.ground.mesh.visible   = this.realistic;
         this.sky.mesh.visible      = this.realistic; 
