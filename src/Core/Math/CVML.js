@@ -244,11 +244,11 @@ define(function () {
         return a.x * b.x + a.y * b.y;
     };
 
-	Point.prototype.distanceTo = function(v){
-		var dx = this.x - v.x;
-		var dy = this.y - v.y;
-	    return Math.sqrt(dx * dx + dy * dy);
-	}
+    Point.prototype.distanceTo = function(v){
+        var dx = this.x - v.x;
+        var dy = this.y - v.y;
+        return Math.sqrt(dx * dx + dy * dy);
+    };
 	
     //---------Edge
     /**
@@ -2130,7 +2130,7 @@ define(function () {
                 // accumulation of right hand gtransformations
                 for (i=n-1; i != -1; i+= -1)
                 {	
-                        if (g != 0.0);
+                        if (g != 0.0)
                         {
                                 h= g*u[i][i+1];
                                 for (j=l; j < n; j++) 

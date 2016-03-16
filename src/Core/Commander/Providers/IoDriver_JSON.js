@@ -30,7 +30,7 @@ define('Core/Commander/Providers/IoDriver_JSON', ['Core/Commander/Providers/IoDr
 
             xhr.onload = function() {
                 //resolve(this.response);
-                resolve(JSON.parse(this.response));
+                resolve(JSON.parse(this.response));  // limited to 1000...
             };
 
             xhr.onerror = function() {
