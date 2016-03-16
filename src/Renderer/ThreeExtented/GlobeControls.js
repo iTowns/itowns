@@ -694,9 +694,6 @@ THREE.GlobeControls = function(object, domElement, engine) {
         // Update target camera  {END}
     }
 
-
-
-
     function onMouseUp( /* event */ ) {
 
         if (scope.enabled === false) return;

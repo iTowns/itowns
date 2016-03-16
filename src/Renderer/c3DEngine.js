@@ -40,7 +40,7 @@ define('Renderer/c3DEngine', [
         //this.supportGLInspector = false;
 
         this.debug = false;
-        //this.debug      = true;
+        //this.debug = true;
         this.scene = undefined;
         this.scene3D = new THREE.Scene();
         this.width = this.debug ? window.innerWidth * 0.5 : window.innerWidth;
@@ -87,6 +87,10 @@ define('Renderer/c3DEngine', [
 
                 this.enableRTC(false);
                 this.camera.camHelper().visible = true;
+                var position =  this.camera.position().clone();
+                position.setLength(position.length()*1.3);
+                this.camDebug.position.copy(position);                
+                this.camDebug.lookAt(this.controls.moveTarget);
                 this.renderer.setViewport(this.width, 0, this.width, this.height);
                 this.renderer.render(this.scene3D, this.camDebug);
                 this.enableRTC(true);
