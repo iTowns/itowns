@@ -4,7 +4,7 @@
  * Description: Outils de projections cartographiques et de convertion
  */
 
-define('Core/Geographic/Projection', ['Core/Geographic/CoordWMTS', 'Core/Math/MathExtented'], function(CoordWMTS, MathExt) {
+define('Core/Geographic/Projection', ['Core/Geographic/CoordWMTS', 'Core/Math/MathExtented', 'Core/Geographic/CoordCarto'], function(CoordWMTS, MathExt, CoordCarto) {
 
 
     function Projection() {
@@ -120,6 +120,37 @@ define('Core/Geographic/Projection', ['Core/Geographic/CoordWMTS', 'Core/Math/Ma
         projection.latitude = bbox.minCarto.latitude + v * bbox.dimension.y;
     };
 
+    Projection.prototype.cartesianToGeo = function(position) {
+        
+        // TODO move to core
+        var p = position.clone();
+        p.x = -position.x;
+        p.y = position.z;
+        p.z = position.y;
+
+        var R = p.length();
+        var a = 6378137;
+        var b = 6356752.3142451793;
+        var e = Math.sqrt((a * a - b * b) / (a * a));
+        var f = 1 - Math.sqrt(1 - e * e);
+        var rsqXY = Math.sqrt(p.x * p.x + p.y * p.y);
+
+        var theta = Math.atan2(p.y, p.x);
+        var nu = Math.atan(p.z / rsqXY * ((1 - f) + e * e * a / R));
+
+        var sinu = Math.sin(nu);
+        var cosu = Math.cos(nu);
+
+        var phi = Math.atan((p.z * (1 - f) + e * e * a * sinu * sinu * sinu) / ((1 - f) * (rsqXY - e * e * a * cosu * cosu * cosu)));
+
+        var h = (rsqXY * Math.cos(phi)) + p.z * Math.sin(phi) - a * Math.sqrt(1 - e * e * Math.sin(phi) * Math.sin(phi));
+        
+        var coord = new CoordCarto(theta,phi,h);
+        
+        return coord;
+        //console.log(theta / Math.PI * 180 + ' ' + phi / Math.PI * 180 + ' ' + h);
+    };
+    
     return Projection;
 
 });
