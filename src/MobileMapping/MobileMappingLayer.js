@@ -19,7 +19,9 @@ define('MobileMapping/MobileMappingLayer', [
         this.panoramicMesh = panoramicMesh;
         this.name = "MobileMappingLayer";
         
-        this.add(this.panoramicMesh);
+        var m = new THREE.Mesh();
+        m.add(this.panoramicMesh);   // Add as a son to not conflict for depth rendering
+        this.add(m);
     
     }
 
