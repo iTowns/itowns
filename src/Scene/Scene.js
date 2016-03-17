@@ -280,10 +280,8 @@ define('Scene/Scene', [
               visible: true
             };             
 
-
             var panoramicProvider = new PanoramicProvider(imagesOption);
-
-            var projectiveMesh = panoramicProvider.getTextureProjectiveMesh(2.33,48.85,1000).then(function(data){
+            var projectiveMesh = panoramicProvider.getTextureProjectiveMesh(2.3348138,48.8506030,1000).then(function(data){
                 //data.material.transparent = true;
                this.gfxEngine.add3DScene(data);              
             }.bind(this));

@@ -78,16 +78,35 @@ define (['Renderer/c3DEngine','three','Renderer/ThreeExtented/threeExt','MobileM
             
             getCameraFrameRotation: function(panoInfo){
 
-             var matRotation = Ori.computeMatOriFromHeadingPitchRoll(
-                                        panoInfo.heading,
-                                        panoInfo.pitch,
-                                        panoInfo.roll
-                                    );
-             
-             // Then correct with position on ellipsoid     
-              
-              
-             return matRotation;               
+               var matRotation = Ori.computeMatOriFromHeadingPitchRoll(
+                                           panoInfo.heading,
+                                           panoInfo.pitch,
+                                           panoInfo.roll
+                                       );
+
+               // Then correct with position on ellipsoid     
+               // Orientation on normal    
+               var posPanoWGS84 = new CoordCarto().setFromDegreeGeo(panoInfo.latitude, panoInfo.longitude, panoInfo.altitude);
+               var posPanoCartesian = ellipsoid.cartographicToCartesian(posPanoWGS84);
+
+               var normal      = ellipsoid.geodeticSurfaceNormalCartographic(posPanoWGS84);
+               var quaternion  = new THREE.Quaternion();
+               quaternion.setFromAxisAngle( new THREE.Vector3(1, 0 ,0 ), Math.PI/2 );
+
+               var child = new THREE.Object3D();
+               var localTarget = new THREE.Vector3().addVectors (posPanoCartesian.clone(), normal );
+               child.lookAt(localTarget);
+               child.quaternion.multiply(quaternion );                
+               //child.position.copy(posCartesien.clone());
+               child.updateMatrix();
+               console.log("matrice originale", matRotation,"MAtrice normale",child.matrix, "normal vec", normal );
+               
+               var c = child.matrix;//.elements;
+               var m3 = new THREE.Matrix3().fromMatrix4(c);
+               console.log(m3);
+               var matRotationOnGlobe = new THREE.Matrix3().multiplyMatrices(matRotation.clone(), m3);//child.matrix);
+
+               return matRotationOnGlobe;               
                             
             },
 
@@ -136,15 +155,14 @@ define (['Renderer/c3DEngine','three','Renderer/ThreeExtented/threeExt','MobileM
                     }
                     var baseUrl = "../dist/itowns-sample-data/cameraCalibration.json"; //_infos.url;//PanoramicProvider.getMetaDataSensorURL();
                     img.src = url.resolve(baseUrl,src);
-                    console.log(src,'aaaa',img.src);
             },
 
             createShaderMat: function(panoInfo,rot){  
                 
                 var posPanoWGS84 = new CoordCarto().setFromDegreeGeo(panoInfo.latitude, panoInfo.longitude, panoInfo.altitude);
                 var posPanoCartesian = ellipsoid.cartographicToCartesian(posPanoWGS84);
-                console.log("posPanoCartesian: ",posPanoCartesian);
-                var spherePosPano = new THREE.Mesh( new THREE.SphereGeometry( 2., 16, 16 ), new THREE.MeshBasicMaterial({side: THREE.DoubleSide, color:0xff00ff}));
+                //console.log("posPanoCartesian: ",posPanoCartesian);
+                var spherePosPano = new THREE.Mesh( new THREE.SphereGeometry( 0.5, 12, 12 ), new THREE.MeshBasicMaterial({side: THREE.DoubleSide, color:0xff00ff}));
                 spherePosPano.position.copy(posPanoCartesian);
                 graphicEngine().add3DScene(spherePosPano);
 
@@ -205,7 +223,6 @@ define (['Renderer/c3DEngine','three','Renderer/ThreeExtented/threeExt','MobileM
                 _infos.lod = _infos.lods[0];
                 for (var i=0; i<N; ++i) {
                         _infos.cam  = Ori.sensors[i].infos;
-                        console.log(_infos.cam, _infos.pano);
                         var m= idmask[i];
                         if(m>=0) {
                                 this.loadTexture(Ori.getMask(i), {}, function(tex,m) { 	
