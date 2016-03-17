@@ -44,11 +44,14 @@ define (['Renderer/c3DEngine','three','Renderer/ThreeExtented/threeExt','MobileM
                     
                     Ori.init(infos).then(function(data){
                         console.log("ORI IS INITIATED");
-                        this.createShaderMat(panoInfo,new THREE.Matrix3());
+                        // compute Camera Frame Rotation
+                        var matRotationFrame = this.getCameraFrameRotation(panoInfo);
+                        this.createShaderMat(panoInfo, matRotationFrame);
                         deferred.resolve(_shaderMat);
                         
                     }.bind(this));
                 } else{
+                    // update shaderMat
                     deferred.resolve(_shaderMat);
                 }
                 
@@ -70,6 +73,22 @@ define (['Renderer/c3DEngine','three','Renderer/ThreeExtented/threeExt','MobileM
                             if(_alpha>1) _alpha=1;
                             requestAnimSelectionAlpha(this.tweenGeneralOpacityUp.bind(this));
                     }
+            },
+            
+            
+            getCameraFrameRotation: function(panoInfo){
+
+             var matRotation = Ori.computeMatOriFromHeadingPitchRoll(
+                                        panoInfo.heading,
+                                        panoInfo.pitch,
+                                        panoInfo.roll
+                                    );
+             
+             // Then correct with position on ellipsoid     
+              
+              
+             return matRotation;               
+                            
             },
 
 
@@ -125,6 +144,9 @@ define (['Renderer/c3DEngine','three','Renderer/ThreeExtented/threeExt','MobileM
                 var posPanoWGS84 = new CoordCarto().setFromDegreeGeo(panoInfo.latitude, panoInfo.longitude, panoInfo.altitude);
                 var posPanoCartesian = ellipsoid.cartographicToCartesian(posPanoWGS84);
                 console.log("posPanoCartesian: ",posPanoCartesian);
+                var spherePosPano = new THREE.Mesh( new THREE.SphereGeometry( 2., 16, 16 ), new THREE.MeshBasicMaterial({side: THREE.DoubleSide, color:0xff00ff}));
+                spherePosPano.position.copy(posPanoCartesian);
+                graphicEngine().add3DScene(spherePosPano);
 
                 var N = this.nbImages();
                 var P = this.nbPanoramics();
@@ -144,7 +166,7 @@ define (['Renderer/c3DEngine','three','Renderer/ThreeExtented/threeExt','MobileM
                     
                     var mat = Ori.getMatrix(i).clone();
                     var mvpp = (new THREE.Matrix3().multiplyMatrices(rot,mat)).transpose();
-                    var trans = /*posPanoCartesian +*/ Ori.getSommet(i).clone().applyMatrix3(rot);
+                    var trans = posPanoCartesian.add( Ori.getSommet(i).clone().applyMatrix3(rot) );
                     var m = -1;
                     if(!_infos.noMask && Ori.getMask(i)) {
                             m = uniforms.mask.value.length;
@@ -174,9 +196,9 @@ define (['Renderer/c3DEngine','three','Renderer/ThreeExtented/threeExt','MobileM
                         vertexShader:   Shader.shaderTextureProjectiveVS(P*N),
                         fragmentShader: Shader.shaderTextureProjectiveFS(P*N,idmask,iddist),
                         side: THREE.DoubleSide, //THREE.BackSide,   
-                        transparent: true,
-                        depthTest: false,
-                        depthWrite: false 
+                        transparent: true
+                       // depthTest: false
+                        //depthWrite: false 
                 });
 
                 _infos.pano = panoInfo;

@@ -113,7 +113,7 @@ define('Core/Commander/Providers/BuildingBox_Provider',[
         for( var r = 0; r < features.length; r++){
 
             var hauteur       = (features[r].properties.hauteur + suppHeight) || 0;
-            var z_min         = features[r].properties.z_min;  // altitude_ground // force altitude ground
+            var z_min         = altitude_ground; //features[r].properties.z_min;  // altitude_ground // force altitude ground
             var polygon       = features[r].geometry.coordinates[0][0];
 
             if(polygon.length > 2){
