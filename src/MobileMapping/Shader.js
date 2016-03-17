@@ -97,8 +97,21 @@ define ( 'MobileMapping/Shader', [],function () {
              },
             
     shaderTextureProjectiveVS : function(N) { return [
+    
         "#ifdef GL_ES",
         "precision  highp float;",
+        "#endif",
+        "#ifdef USE_LOGDEPTHBUF",
+
+            "#define EPSILON 1e-6",
+            "#ifdef USE_LOGDEPTHBUF_EXT",
+
+                "varying float vFragDepth;",
+
+           " #endif",
+
+            "uniform float logDepthBufFC;",
+
         "#endif",
         "#define N "+N,
 
@@ -109,6 +122,22 @@ define ( 'MobileMapping/Shader', [],function () {
         "void main() {",
         "    for(int i=0; i<N; ++i) v_texcoord[i] = mvpp[i] * (position-translation[i]);",
         "    gl_Position  =  projectionMatrix *  modelViewMatrix * vec4(position,1.);",
+        
+        "#ifdef USE_LOGDEPTHBUF",
+
+        "    gl_Position.z = log2(max( EPSILON, gl_Position.w + 1.0 )) * logDepthBufFC;",
+            
+        "    #ifdef USE_LOGDEPTHBUF_EXT",
+
+         "       vFragDepth = 1.0 + gl_Position.w;",
+
+        "    #else",
+
+         "       gl_Position.z = (gl_Position.z - 1.0) * gl_Position.w;",
+
+       "     #endif",
+
+      "  #endif",
         "}"
     ].join('\n');},
     
@@ -153,6 +182,18 @@ define ( 'MobileMapping/Shader', [],function () {
         "#ifdef GL_ES",
         "precision  highp float;",
         "#endif",
+        "#ifdef USE_LOGDEPTHBUF",
+
+            "#define EPSILON 1e-6",
+            "#ifdef USE_LOGDEPTHBUF_EXT",
+
+                "varying float vFragDepth;",
+
+        " #endif",
+
+        "uniform float logDepthBufFC;",
+
+        "#endif",
         "#define M "+M,
         "#define D "+D,
         "#define N "+N,
@@ -185,6 +226,11 @@ define ( 'MobileMapping/Shader', [],function () {
 
       " void main(void)",
       " { ",
+      " #if defined(USE_LOGDEPTHBUF) && defined(USE_LOGDEPTHBUF_EXT)",
+
+      "        gl_FragDepthEXT = log2(vFragDepth) * logDepthBufFC * 0.5;",
+
+      "      #endif",
       "  vec4 color  = vec4(0.);",
       "  vec4 color0 = vec4(0.);",
       "  int blend = 0;",

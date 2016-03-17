@@ -119,12 +119,10 @@
     
     PanoramicProvider.prototype.getTextureMaterial = function(panoInfo){
         
-        
         return ProjectiveTexturingMaterial.init(_options, panoInfo);  // Initialize itself Ori
-    //    ProjectiveTexturingMaterial.createShaderMat(_options);
         
-        //return ProjectiveTexturingMaterial.getShaderMat();
-        
+        // ProjectiveTexturingMaterial.createShaderMat(_options);
+        // return ProjectiveTexturingMaterial.getShaderMat();  
     };
     
     
