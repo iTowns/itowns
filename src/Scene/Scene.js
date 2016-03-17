@@ -26,10 +26,12 @@ define('Scene/Scene', [
     'Scene/Quadtree',
     'Scene/Layer',
     'Core/Geographic/CoordCarto',
-    'Core/System/Capabilities'
+    'Core/System/Capabilities',
+    'MobileMapping/MobileMappingLayer'
+    
 ], function(c3DEngine, THREE, Globe, ManagerCommands, tileGlobeProvider, BuildingBox_Provider,
             PanoramicProvider, PanoramicMesh, BrowseTree, NodeProcess, Quadtree, Layer, CoordCarto,
-            Capabilities) {
+            Capabilities, MobileMappingLayer) {
 
     var instanceScene = null;
     
@@ -126,12 +128,15 @@ define('Scene/Scene', [
      * 
      * @returns {undefined}
      */   
-    Scene.prototype.sceneProcess = function(){        
+    Scene.prototype.sceneProcess = function(){ 
+        console.log(this.layers);
         if(this.layers[0] !== undefined  && this.currentCamera() !== undefined )
         {                        
         
             this.browserScene.browse(this.layers[0].meshTerrain,this.currentCamera(),SUBDIVISE);
-                        
+             
+            if(this.layers[1] !== undefined) this.browserScene.browse(this.layers[1],this.currentCamera());    //MobileMappingLayer
+                      
             this.managerCommand.runAllCommands().then(function()
                 {                   
                     if (this.managerCommand.commandsLength() === 0)
@@ -281,9 +286,12 @@ define('Scene/Scene', [
             };             
 
             var panoramicProvider = new PanoramicProvider(imagesOption);
-            var projectiveMesh = panoramicProvider.getTextureProjectiveMesh(2.3348138,48.8506030,1000).then(function(data){
-                //data.material.transparent = true;
-               this.gfxEngine.add3DScene(data);              
+            var mobileMappingLayer;
+            var projectiveMesh = panoramicProvider.getTextureProjectiveMesh(2.3348138,48.8506030,1000).then(function(projMesh){
+              // this.gfxEngine.add3DScene(data);
+                mobileMappingLayer = new MobileMappingLayer(projMesh);
+                this.add(mobileMappingLayer);
+               //this.add(projMesh);
             }.bind(this));
 
         }
