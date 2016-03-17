@@ -129,14 +129,10 @@ define('Scene/Scene', [
      * @returns {undefined}
      */   
     Scene.prototype.sceneProcess = function(){ 
-        console.log(this.layers);
         if(this.layers[0] !== undefined  && this.currentCamera() !== undefined )
         {                        
         
-            this.browserScene.browse(this.layers[0].meshTerrain,this.currentCamera(),SUBDIVISE);
-             
-            if(this.layers[1] !== undefined) this.browserScene.browse(this.layers[1],this.currentCamera());    //MobileMappingLayer
-                      
+            this.browserScene.browse(this.layers[0].meshTerrain,this.currentCamera(),SUBDIVISE);         
             this.managerCommand.runAllCommands().then(function()
                 {                   
                     if (this.managerCommand.commandsLength() === 0)
@@ -157,6 +153,7 @@ define('Scene/Scene', [
     Scene.prototype.realtimeSceneProcess = function() {
 
         if (this.currentCamera !== undefined)
+            if(this.layers[1] !== undefined) this.browserScene.browse(this.layers[1],this.currentCamera());  // temp //MobileMappingLayer
             for (var l = 0; l < this.layers.length; l++) {
                 var layer = this.layers[l];
 
@@ -288,10 +285,20 @@ define('Scene/Scene', [
             var panoramicProvider = new PanoramicProvider(imagesOption);
             var mobileMappingLayer;
             var projectiveMesh = panoramicProvider.getTextureProjectiveMesh(2.3348138,48.8506030,1000).then(function(projMesh){
-              // this.gfxEngine.add3DScene(data);
+
                 mobileMappingLayer = new MobileMappingLayer(projMesh);
+                
                 this.add(mobileMappingLayer);
-               //this.add(projMesh);
+                /*
+                var layer = new Layer();
+                layer.add(mobileMappingLayer);
+                this.add(layer);
+                */
+           /*     var m = new THREE.Mesh();
+                m.add(mobileMappingLayer);
+                this.add(m);
+           */
+
             }.bind(this));
 
         }
