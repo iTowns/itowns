@@ -93,6 +93,15 @@ define(['three'],function(THREE){
 			return this;
 
 		};
+                
+                THREE.Matrix3.prototype.fromMatrix4 =  function( m ) {
+                    
+                    //var out = this.elements;
+                    var c = m.elements;
+                    
+                    return new THREE.Matrix3().set(c[0],c[4],c[8], c[1],c[5],c[9], c[2],c[6],c[10]);
+                    
+                };
 
 
 });

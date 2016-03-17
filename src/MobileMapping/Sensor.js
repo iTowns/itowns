@@ -24,7 +24,7 @@ define ('MobileMapping/Sensor',['three'], function (THREE) {
 
         // change conventions
         this.orientation = infos.orientation;
-        this._itownsWay = new THREE.Matrix3().set(0, 1, 0,
+        this._itownsWay = new THREE.Matrix3().set(0, -1, 0,
                                              0, 0,-1,
                                              1, 0, 0);
                                            
@@ -97,7 +97,7 @@ define ('MobileMapping/Sensor',['three'], function (THREE) {
        
     Sensor.prototype.cardan_cubic_roots = function(a,b,c,d){
        
-          // http://fr.wikipedia.org/wiki/MÃ©thode_de_Cardan  Thanks Bredif
+          // http://fr.wikipedia.org/wiki/Methode_de_Cardan  Thanks Bredif
         cardan_cubic_roots =  function(a,b,c,d){
             
             if(a===0) return this.quadratic_roots(b,c,d);
