@@ -205,16 +205,14 @@ define('Core/Commander/Providers/BuildingBox_Provider',[
 
         // Test if we return brute geometry or if we use local pivot (for RTC)
         var firstPos = new THREE.Vector3();
- /*       if(this.rtcOn){
+        if(this.rtcOn){
             firstPos = _geometry.vertices[0].clone();
             // create pivot from 1st pos vertex
             for(var i = 0; i< _geometry.vertices.length ; ++i){
                     _geometry.vertices[i].sub(firstPos);
             }
         }
-     */      //deferred.resolve({geometry:_geometry, pivot: firstPos});
-           
-         //deferred.resolve({geometry:_geometry, pivot: firstPos});
+
          this.geometry = _geometry;
          this.pivot = firstPos;
          

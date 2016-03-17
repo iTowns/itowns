@@ -75,6 +75,16 @@ define('Scene/BrowseTree', ['Globe/EllipsoidTileMesh', 'THREE'], function( Ellip
                 this.uniformsProcess(node, camera);
 
             return node.visible;
+        }else if (node.name === "terrestrialMesh"){
+
+            //console.log("process terrestrial");
+          //  node.setVisibility(false);
+          //  node.setSelected(false);
+            node.setMaterialVisibility(true);
+            this.uniformsProcess(node, camera);
+
+            return false;
+
         }
 
         return true;
@@ -82,8 +92,8 @@ define('Scene/BrowseTree', ['Globe/EllipsoidTileMesh', 'THREE'], function( Ellip
 
 
     BrowseTree.prototype.uniformsProcess = function(node, camera) {
+        //console.log(node);
         node.setMatrixRTC(this.gfxEngine.getRTCMatrixFromCenter(node.absoluteCenter, camera));
-        
         // TODO à mettre en option
         if (node.id === this.selectNodeId) {
             node.setSelected(node.visible && node.material.visible);
@@ -104,6 +114,7 @@ define('Scene/BrowseTree', ['Globe/EllipsoidTileMesh', 'THREE'], function( Ellip
      * @returns {undefined}
      */
     BrowseTree.prototype.browse = function(tree, camera, optional) {
+        
         this.tree = tree;
                
         camera.updateMatrixWorld();
@@ -228,11 +239,10 @@ define('Scene/BrowseTree', ['Globe/EllipsoidTileMesh', 'THREE'], function( Ellip
         var root = layer.children[0];
         for (var c = 0; c < root.children.length; c++) {
             var node = root.children[c];
-
+            
             this.cachedRTC = this.gfxEngine.getRTCMatrixFromNode(node, camera);                        
             
             var cRTC = function(obj) {
-                
                 if (obj.material && obj.material.setMatrixRTC)
                     obj.material.setMatrixRTC(this.cachedRTC);
 

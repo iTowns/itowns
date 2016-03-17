@@ -32,7 +32,7 @@ define (['Renderer/c3DEngine','three','Renderer/ThreeExtented/threeExt','MobileM
 
         var ProjectiveTexturingMaterial = {
 
-            init: function(infos, panoInfo){
+            init: function(infos, panoInfo, pivot){
                 
                 var deferred = when.defer();
                 
@@ -46,7 +46,7 @@ define (['Renderer/c3DEngine','three','Renderer/ThreeExtented/threeExt','MobileM
                         console.log("ORI IS INITIATED");
                         // compute Camera Frame Rotation
                         var matRotationFrame = this.getCameraFrameRotation(panoInfo);
-                        this.createShaderMat(panoInfo, matRotationFrame);
+                        this.createShaderMat(panoInfo, matRotationFrame, pivot);
                         deferred.resolve(_shaderMat);
                         
                     }.bind(this));
@@ -99,11 +99,11 @@ define (['Renderer/c3DEngine','three','Renderer/ThreeExtented/threeExt','MobileM
                child.quaternion.multiply(quaternion );                
                //child.position.copy(posCartesien.clone());
                child.updateMatrix();
-               console.log("matrice originale", matRotation,"MAtrice normale",child.matrix, "normal vec", normal );
+               //console.log("matrice originale", matRotation,"MAtrice normale",child.matrix, "normal vec", normal );
                
                var c = child.matrix;//.elements;
                var m3 = new THREE.Matrix3().fromMatrix4(c);
-               console.log(m3);
+               //console.log(m3);
                var matRotationOnGlobe = new THREE.Matrix3().multiplyMatrices(matRotation.clone(), m3);//child.matrix);
 
                return matRotationOnGlobe;               
@@ -157,7 +157,7 @@ define (['Renderer/c3DEngine','three','Renderer/ThreeExtented/threeExt','MobileM
                     img.src = url.resolve(baseUrl,src);
             },
 
-            createShaderMat: function(panoInfo,rot){  
+            createShaderMat: function(panoInfo, rot, pivot){  
                 
                 var posPanoWGS84 = new CoordCarto().setFromDegreeGeo(panoInfo.latitude, panoInfo.longitude, panoInfo.altitude);
                 var posPanoCartesian = ellipsoid.cartographicToCartesian(posPanoWGS84);
@@ -165,10 +165,14 @@ define (['Renderer/c3DEngine','three','Renderer/ThreeExtented/threeExt','MobileM
                 var spherePosPano = new THREE.Mesh( new THREE.SphereGeometry( 0.5, 12, 12 ), new THREE.MeshBasicMaterial({side: THREE.DoubleSide, color:0xff00ff}));
                 spherePosPano.position.copy(posPanoCartesian);
                 graphicEngine().add3DScene(spherePosPano);
-
+                
+                var posPiv = posPanoCartesian.clone().sub(pivot);
+                var posFrameWithPivot = new THREE.Vector4(posPiv.x, posPiv.y, posPiv.z, 1.);
                 var N = this.nbImages();
                 var P = this.nbPanoramics();
                 var uniforms = {
+                        RTC         : {type: "i", value: 1},
+                        mVPMatRTC   : {type: "m4", value: new THREE.Matrix4()},
                         distortion  : {type:'v4v',value:[]},
                         pps         : {type:'v2v',value:[]},
                         size        : {type:'v2v',value:[]},
@@ -184,7 +188,7 @@ define (['Renderer/c3DEngine','three','Renderer/ThreeExtented/threeExt','MobileM
                     
                     var mat = Ori.getMatrix(i).clone();
                     var mvpp = (new THREE.Matrix3().multiplyMatrices(rot,mat)).transpose();
-                    var trans = posPanoCartesian.add( Ori.getSommet(i).clone().applyMatrix3(rot) );
+                    var trans = posFrameWithPivot.add( Ori.getSommet(i).clone().applyMatrix3(rot) );
                     var m = -1;
                     if(!_infos.noMask && Ori.getMask(i)) {
                             m = uniforms.mask.value.length;
@@ -233,11 +237,12 @@ define (['Renderer/c3DEngine','three','Renderer/ThreeExtented/threeExt','MobileM
                                 _shaderMat.uniforms.texture.value[i] = tex;
                         }, i);
                 }
-            this.changePanoTextureAfterloading(panoInfo, posPanoCartesian, rot, 1);
+            this.changePanoTextureAfterloading(panoInfo, posFrameWithPivot, rot, 1);
             
             return _shaderMat;
         },
-            
+              
+
             
         tweenIndiceTime: function (i){
             

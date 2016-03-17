@@ -115,13 +115,17 @@ define ( 'MobileMapping/Shader', [],function () {
         "#endif",
         "#define N "+N,
 
+        "uniform int RTC;",
+        "uniform mat4 mVPMatRTC;",
         "uniform mat3 mvpp[N];",
         "uniform vec3 translation[N];",
         "varying vec3 v_texcoord[N];",
-
+        "vec4 pos;",
         "void main() {",
+        "    pos =  vec4(position,1.);",
         "    for(int i=0; i<N; ++i) v_texcoord[i] = mvpp[i] * (position-translation[i]);",
-        "    gl_Position  =  projectionMatrix *  modelViewMatrix * vec4(position,1.);",
+        "    mat4 projModelViewMatrix = (RTC == 0) ? projectionMatrix * modelViewMatrix : mVPMatRTC;",
+        "    gl_Position  =  projModelViewMatrix * pos;",
         
         "#ifdef USE_LOGDEPTHBUF",
 

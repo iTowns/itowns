@@ -12,14 +12,16 @@
         'Core/Commander/Providers/Provider',
         'Core/Commander/Providers/BuildingBox_Provider',
         'Renderer/ProjectiveTexturingMaterial',
-        'MobileMapping/GeometryProj'], function ( 
+        'MobileMapping/GeometryProj',
+        'Renderer/PanoramicMesh'], function ( 
             
     THREE,
     when,
     Provider,
     BuildingBox_Provider,
     ProjectiveTexturingMaterial,
-    GeometryProj) {
+    GeometryProj,
+    PanoramicMesh) {
     
         
     var _options = null,
@@ -117,9 +119,9 @@
     
     
     
-    PanoramicProvider.prototype.getTextureMaterial = function(panoInfo){
+    PanoramicProvider.prototype.getTextureMaterial = function(panoInfo, pivot){
         
-        return ProjectiveTexturingMaterial.init(_options, panoInfo);  // Initialize itself Ori
+        return ProjectiveTexturingMaterial.init(_options, panoInfo, pivot);  // Initialize itself Ori
         
         // ProjectiveTexturingMaterial.createShaderMat(_options);
         // return ProjectiveTexturingMaterial.getShaderMat();  
@@ -144,7 +146,7 @@
         var deferred = when.defer();   
         buildingBox_Provider.getData(options.bbox).then(function(){
             
-            deferred.resolve(buildingBox_Provider.geometry); 
+            deferred.resolve({geometry: buildingBox_Provider.geometry, pivot:buildingBox_Provider.pivot}); 
         }.bind(this));
         
         return deferred.promise; 
@@ -159,18 +161,21 @@
         
         var deferred = when.defer();
         var that = this;
-        this.getMetaDataFromPos(longitude, latitude, distance).then(function(panoInfo){
+        this.getMetaDataFromPos(longitude, latitude, distance).then(function(panoInfo){             // Get METADATA PANO
             
             console.log("panoInfo", panoInfo);
-            that.getGeometry(panoInfo[0].longitude, panoInfo[0].latitude).then(function(data){
+            that.getGeometry(panoInfo[0].longitude, panoInfo[0].latitude).then(function(data){      // GET GEOMETRY
 
-                that.geometry = data; //console.log(that.geometry);
+                that.geometry = data.geometry; //console.log(that.geometry);
+                that.absoluteCenter = data.pivot; // pivot in fact here, not absoluteCenter 
                 
-                that.getTextureMaterial(panoInfo[0]).then(function(shaderMaterial){
+                that.getTextureMaterial(panoInfo[0], that.absoluteCenter).then(function(shaderMaterial){                 // GET MATERIAL 
                  
                     that.material = shaderMaterial; //new THREE.MeshBasicMaterial({color: 0xffffff, transparent: true, opacity: 0.8}); 
-                    that.projectiveTexturedMesh = new THREE.Mesh(that.geometry, that.material);
-                    deferred.resolve(that.projectiveTexturedMesh);
+                    //that.projectiveTexturedMesh = new THREE.Mesh(that.geometry, that.material);
+                    var panoramicMesh = new PanoramicMesh(that.geometry, that.material, that.absoluteCenter);
+                    //panoramicMesh.name = "terrestrialMesh";
+                    deferred.resolve(panoramicMesh);
                 })
 
             }.bind(that));
