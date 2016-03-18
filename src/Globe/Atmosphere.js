@@ -15,7 +15,8 @@ define('Globe/Atmosphere', ['Renderer/NodeMesh', 'THREE', 'Renderer/c3DEngine','
         NodeMesh.call(this);
 
         this.realistic = false;
-        
+
+       
         this.uniformsOut = {
             atmoIN: {
                 type: "i",
