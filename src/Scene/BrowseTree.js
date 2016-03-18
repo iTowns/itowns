@@ -48,10 +48,16 @@ define('Scene/BrowseTree', ['Globe/TileMesh', 'THREE'], function( TileMesh, THRE
      */
     BrowseTree.prototype.processNode = function(node, camera, enableUp) {
         
-        node.setVisibility(false);
-        node.setSelected(false);
+        if(node.name === "terrestrialMesh"){    // TEMP
+            node.setMaterialVisibility(true);
+            this.uniformsProcess(node, camera);
+            return true;
+        }
+        
+        node.setVisibility(false);  // Necessary??
+        node.setSelected(false);    // Necessary??
 
-        if(node.parent !== null && node.parent.material.visible)
+        if(node.parent !== null && node.parent.material.visible )
             return false;
 
         if (this.nodeProcess.frustumCullingOBB(node, camera)) {
@@ -74,7 +80,7 @@ define('Scene/BrowseTree', ['Globe/TileMesh', 'THREE'], function( TileMesh, THRE
                 }
             }
         }
-
+       
         if (node.isVisible())
             this.uniformsProcess(node, camera);
 

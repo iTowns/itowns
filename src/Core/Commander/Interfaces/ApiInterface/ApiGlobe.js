@@ -85,6 +85,12 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         this.scene.browserScene.updateMaterialUniform("lightingOn",value ? 1:0);
     }; 
     
+
+    ApiGlobe.prototype.setStreetLevelImageryOn = function(value){
+        
+        this.scene.setStreetLevelImageryOn(value);
+    }
+
     ApiGlobe.prototype.getCameraOrientation = function () {
         
 //        var cam = this.scene.currentControlCamera();
@@ -126,6 +132,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         this.scene.layers[0].showKML(value);
         this.scene.renderScene3D();
     };
+
 
     return ApiGlobe;
 
