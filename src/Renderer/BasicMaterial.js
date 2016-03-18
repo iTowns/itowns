@@ -51,6 +51,10 @@ define('Renderer/BasicMaterial', ['THREE',
             selected: {
                 type: "i",
                 value: false
+            },
+            lightOn: {
+                type: "i",
+                value: true
             }
 
         };

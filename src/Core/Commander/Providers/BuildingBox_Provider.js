@@ -44,8 +44,9 @@ define('Core/Commander/Providers/BuildingBox_Provider',[
        // this.cache         = CacheRessource();        
        this.WFS_Provider  = new WFS_Provider(options);
        this.geometry      = null;
+       this.geometryRoof  = null;
        this.pivot         = null;
-       this.roadOn        = false;
+       this.roadOn        = true;
        this.rtcOn         = true;
 
     }
@@ -81,7 +82,7 @@ define('Core/Commander/Providers/BuildingBox_Provider',[
         return url;
     };
          
-    BuildingBox_Provider.prototype.getData = function(bbox){
+    BuildingBox_Provider.prototype.getData = function(bbox, altitude){
      /*   
        var deferred = when.defer(); 
        deferred = this.WFS_Provider.getData(bbox).then(function(data){this.generateMesh(data,bbox);}.bind(this));
@@ -91,7 +92,7 @@ define('Core/Commander/Providers/BuildingBox_Provider',[
         var deferred = when.defer();
         this.WFS_Provider.getData(bbox).then(function(data){
             
-            this.generateMesh(data,bbox); console.log(data);
+            this.generateMesh(data, bbox, altitude); // console.log(data);
             deferred.resolve(this.geometry); 
         }.bind(this));
         return deferred.promise; 
@@ -99,7 +100,7 @@ define('Core/Commander/Providers/BuildingBox_Provider',[
       // return this.WFS_Provider.getData(bbox).then(function(data){this.generateMesh(data,bbox);}.bind(this));
     };        
             
-    BuildingBox_Provider.prototype.generateMesh = function(elements, bbox){
+    BuildingBox_Provider.prototype.generateMesh = function(elements, bbox, altitude){
                
         //console.log(elements);
         
@@ -108,7 +109,8 @@ define('Core/Commander/Providers/BuildingBox_Provider',[
         var suppHeight = 10;   // So we don't cut the roof
         var ellipsoid  = new Ellipsoid(new THREE.Vector3(6378137, 6356752.3142451793, 6378137)); 
         var features = elements.features;
-        var altitude_ground  = 35;
+        var altitude_ground  = altitude - 1.5; //35;  // truck height
+        //var cPano = new CoordCarto().setFromDegreeGeo(p1.x  ,p1.z, z_min );
         
         for( var r = 0; r < features.length; r++){
 
@@ -211,12 +213,16 @@ define('Core/Commander/Providers/BuildingBox_Provider',[
             for(var i = 0; i< _geometry.vertices.length ; ++i){
                     _geometry.vertices[i].sub(firstPos);
             }
+            for(var i = 0; i< geometry.vertices.length ; ++i){
+                    geometry.vertices[i].sub(firstPos);
+            }
         }
 
          this.geometry = _geometry;
          this.pivot = firstPos;
+         this.geometryRoof = geometry;
          
-         return {geometry:_geometry, pivot: firstPos};
+         return {geometry:_geometry, pivot: firstPos, geometryRoof: geometry};
         
     };
     
@@ -224,8 +230,9 @@ define('Core/Commander/Providers/BuildingBox_Provider',[
     BuildingBox_Provider.prototype.addRoad = function(geometry, bbox, altitude_road, ellipsoid){
              
          // Version using SIMPLE PLANE ROAD for Click and Go
-         var roadWidth  = bbox.maxCarto.longitude - bbox.minCarto.longitude ;
-         var roadHeight = bbox.maxCarto.latitude  -  bbox.minCarto.latitude;
+         var ratio = 0.2;
+         var roadWidth  = (bbox.maxCarto.longitude - bbox.minCarto.longitude) * ratio;
+         var roadHeight = (bbox.maxCarto.latitude  -  bbox.minCarto.latitude) * ratio;
          var pos = new THREE.Vector3((bbox.minCarto.latitude + bbox.maxCarto.latitude)/2,
                                       altitude_road,
                                      (bbox.minCarto.longitude + bbox.maxCarto.longitude)/2 );//48.8505774,  altitude_sol, 2.3348124);

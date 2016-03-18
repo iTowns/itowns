@@ -7,10 +7,11 @@
 
 
 
-define('Renderer/PanoramicMesh', ['THREE', 'Renderer/ProjectiveTexturingMaterial','MobileMapping/GeometryProj','Renderer/NodeMesh'], 
+define('Renderer/PanoramicMesh', ['THREE', 'Renderer/ProjectiveTexturingMaterial','Renderer/BasicMaterial', 'MobileMapping/GeometryProj','Renderer/NodeMesh'], 
 function(
         THREE,
         ProjectiveTexturingMaterial,
+        BasicMaterial,
         GeometryProj,
         NodeMesh
         ) {
@@ -28,7 +29,6 @@ function(
         this.absoluteCenter = absC;
         this.position.copy(this.absoluteCenter);
         this.name = "terrestrialMesh";
-        
         
         this.frustumCulled = false;
 
@@ -52,7 +52,7 @@ function(
     };
     
     PanoramicMesh.prototype.setMatrixRTC = function(rtc) {
-        //this.material.setMatrixRTC(rtc);
+      //  console.log(this.material);
         this.material.uniforms.mVPMatRTC.value = rtc;
     };
     

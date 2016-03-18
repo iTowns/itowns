@@ -77,14 +77,10 @@ define('Scene/BrowseTree', ['Globe/EllipsoidTileMesh', 'THREE'], function( Ellip
             return node.visible;
         }else if (node.name === "terrestrialMesh"){
 
-            //console.log("process terrestrial");
-          //  node.setVisibility(false);
-          //  node.setSelected(false);
             node.setMaterialVisibility(true);
             this.uniformsProcess(node, camera);
 
-            return false;
-
+            return true;
         }
 
         return true;
@@ -92,7 +88,7 @@ define('Scene/BrowseTree', ['Globe/EllipsoidTileMesh', 'THREE'], function( Ellip
 
 
     BrowseTree.prototype.uniformsProcess = function(node, camera) {
-        //console.log(node);
+        
         node.setMatrixRTC(this.gfxEngine.getRTCMatrixFromCenter(node.absoluteCenter, camera));
         // TODO à mettre en option
         if (node.id === this.selectNodeId) {
