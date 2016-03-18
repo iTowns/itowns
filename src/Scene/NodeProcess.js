@@ -61,15 +61,21 @@ define('Scene/NodeProcess', ['Scene/BoundingBox', 'Renderer/Camera', 'Core/Math/
         return frustum.intersectsObject(node);
     };
 
+    NodeProcess.prototype.checkSSE = function(node, camera) {
+
+        return camera.SSE(node) > 6.0 || node.level <= 2;
+
+    };
+
     /**
      * @documentation: Compute screen space error of node in function of camera
      * @param {type} node
      * @param {type} camera
      * @returns {Boolean}
      */
-     NodeProcess.prototype.SSE = function(node, camera, params) {
+    NodeProcess.prototype.SSE = function(node, camera, params) {
 
-        var sse = camera.SSE(node) > 6.0 || node.level <= 2;
+        var sse = this.checkSSE(node, camera)
 
         if(params.withUp && node.material.visible && !node.wait )
         {
