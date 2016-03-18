@@ -282,25 +282,24 @@ define('Scene/Scene', [
               visible: true
             };             
 
-            var panoramicProvider = new PanoramicProvider(imagesOption);
-            var mobileMappingLayer;
-            var projectiveMesh = panoramicProvider.getTextureProjectiveMesh(2.3348138,48.8506030,1000).then(function(projMesh){
+            if(this.layers[1]) {
+                this.layers[1].panoramicMesh.visible = true;
+                this.updateScene3D();
+            }  
+            else{
+                // Create and add the MobileMappingLayer with Panoramic imagery
+                var panoramicProvider = new PanoramicProvider(imagesOption);
+                var mobileMappingLayer;
+                var projectiveMesh = panoramicProvider.getTextureProjectiveMesh(2.3348138,48.8506030,1000).then(function(projMesh){
+                    mobileMappingLayer = new MobileMappingLayer(projMesh);               
+                    this.add(mobileMappingLayer);
+                    this.updateScene3D();
+                    }.bind(this));
+            }
 
-                mobileMappingLayer = new MobileMappingLayer(projMesh);
-                
-                this.add(mobileMappingLayer);
-                /*
-                var layer = new Layer();
-                layer.add(mobileMappingLayer);
-                this.add(layer);
-                */
-           /*     var m = new THREE.Mesh();
-                m.add(mobileMappingLayer);
-                this.add(m);
-           */
-
-            }.bind(this));
-
+        }else{
+            this.layers[1].panoramicMesh.visible = false; // mobileMappingLayer
+             this.updateScene3D();
         }
                
     };
