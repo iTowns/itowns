@@ -9,21 +9,26 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
        'Core/Commander/Interfaces/EventsManager',
        'Scene/Scene',
        'Globe/Globe',
-       'Core/Commander/Providers/WMTS_Provider'], function(
+       'Core/Commander/Providers/WMTS_Provider',
+       'Core/Geographic/Projection'], function(
            EventsManager, 
            Scene,
            Globe,
-           WMTS_Provider) {
+           WMTS_Provider,
+           Projection) {
 
     function ApiGlobe() {
         //Constructor
 
         this.scene = null;
         this.commandsTree = null;
+        this.projection = new Projection();
 
     }
 
-    ApiGlobe.prototype = new EventsManager();
+
+    ApiGlobe.prototype.constructor = ApiGlobe;
+    
 
     /**
      * @param Command
@@ -49,7 +54,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
 
     };
 
-    ApiGlobe.createSceneGlobe = function(pos) {
+    ApiGlobe.prototype.createSceneGlobe = function(pos) {
         //TODO: Normalement la creation de scene ne doit pas etre ici....
         // A� deplacer plus tard
 
@@ -60,7 +65,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
 
     };
     
-    ApiGlobe.setLayerAtLevel = function(baseurl,layer/*,level*/) {
+    ApiGlobe.prototype.setLayerAtLevel = function(baseurl,layer/*,level*/) {
  
         var wmtsProvider = new WMTS_Provider({url:baseurl, layer:layer});
         this.scene.managerCommand.providerMap[this.scene.layers[0].meshTerrain.layerId].providerWMTS = wmtsProvider;
@@ -68,22 +73,66 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         this.scene.renderScene3D();
     };
 
-    ApiGlobe.showClouds = function(value) {
+    ApiGlobe.prototype.showClouds = function(value) {
 
         this.scene.layers[0].showClouds(value);
     };
     
-    ApiGlobe.setRealisticLightingOn = function(value) {
+    ApiGlobe.prototype.setRealisticLightingOn = function(value) {
 
         this.scene.gfxEngine.setLightingOn(value);
         this.scene.layers[0].setRealisticLightingOn(value);
         this.scene.browserScene.updateMaterialUniform("lightingOn",value ? 1:0);
     }; 
     
+
     ApiGlobe.setStreetLevelImageryOn = function(value){
         
         this.scene.setStreetLevelImageryOn(value);
     }
+
+    ApiGlobe.prototype.getCameraOrientation = function () {
+        
+//        var cam = this.scene.currentControlCamera();
+//        return cam.object.quaternion;
+    };
+    
+    ApiGlobe.prototype.getCameraLocation = function () {
+        
+        var cam = this.scene.currentCamera();
+        return this.projection.cartesianToGeo(cam.camera3D.position);
+    };
+    
+    ApiGlobe.prototype.getCenter = function () {
+        
+        var controlCam = this.scene.currentControlCamera();       
+        return this.projection.cartesianToGeo(controlCam.globeTarget.position);
+    };
+    
+    
+    
+    ApiGlobe.prototype.setCenter = function (/*position*/) {
+        //TODO: Implement Me 
+    };
+    
+    ApiGlobe.prototype.setCameraOrientation = function (/*param,pDisableAnimationopt*/) {
+        //TODO: Implement Me 
+    };
+    
+    ApiGlobe.prototype.pickPosition = function () {
+        //TODO: Implement Me 
+    };
+    
+    ApiGlobe.prototype.launchCommandApi = function () {
+        //console.log(this.getCenter());
+    };
+
+    ApiGlobe.prototype.showKML = function(value) {
+        
+        this.scene.layers[0].showKML(value);
+        this.scene.renderScene3D();
+    };
+
 
     return ApiGlobe;
 

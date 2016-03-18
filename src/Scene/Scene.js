@@ -64,16 +64,16 @@ define('Scene/Scene', [
 
     };
 
-    Scene.prototype.updateCommand = function() {
-        //TODO: Implement Me 
-    };
-
     /**
      * @documentation: return current camera 
      * @returns {Scene_L7.Scene.gfxEngine.camera}
      */
-    Scene.prototype.currentCamera = function() {
+    Scene.prototype.currentCamera = function() {        
         return this.gfxEngine.camera;
+    };
+    
+    Scene.prototype.currentControlCamera = function() {
+        return this.gfxEngine.controls;
     };
 
     Scene.prototype.updateCamera = function() {
@@ -115,13 +115,6 @@ define('Scene/Scene', [
 
     Scene.prototype.size = function() {
         return this.layers[0].size;
-    };
-
-    /**
-     */
-    Scene.prototype.updateCamera = function() {
-        //TODO: Implement Me 
-
     };
 
     /**
@@ -240,7 +233,7 @@ define('Scene/Scene', [
 
     Scene.prototype.selectNodeId = function(id) {
 
-        this.browserScene.selectNodeId = id;
+        this.browserScene.selectedNodeId = id;
 
     };
     

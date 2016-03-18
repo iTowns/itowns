@@ -34,8 +34,15 @@ and open the template in the editor.
                var Menu = function() {
                    this.CloudsIR = false;
                    this.RealisticLighting = false;
+<<<<<<< HEAD
                    this.StreetLevelImagery = false;
+=======
+                   this.KML = false;
+>>>>>>> refs/remotes/origin/master
                    this.Layer = "OrthoGeoportail";
+                   this.api = function(){  
+                        itowns.viewer.launchCommandApi();
+                   };
                };
 
                var text = new Menu(); 
@@ -58,12 +65,18 @@ and open the template in the editor.
                });
                
                gui.add(text, 'CloudsIR').onChange(function(newValue) {
-			itowns.viewer.showClouds(newValue);
+			           itowns.viewer.showClouds(newValue);
                });
                
                gui.add(text, 'RealisticLighting').onChange(function(newValue) {
-			itowns.viewer.setRealisticLightingOn(newValue);
+			           itowns.viewer.setRealisticLightingOn(newValue);
                });
+
+               gui.add(text, 'KML').onChange(function(newValue) {
+                  itowns.viewer.showKML(newValue);
+               });
+               
+               gui.add(text, 'api');
                
                gui.add(text, 'StreetLevelImagery').onChange(function(newValue) {
 			itowns.viewer.setStreetLevelImageryOn(newValue);

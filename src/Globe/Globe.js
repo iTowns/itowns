@@ -11,7 +11,7 @@ define('Globe/Globe', [
     'Scene/SchemeTile',
     'Core/Math/MathExtented',
     'Core/Math/Ellipsoid',
-    'Globe/EllipsoidTileMesh',
+    'Globe/TileMesh',
     'Globe/Atmosphere',
     'Globe/Clouds',
     'Core/System/Capabilities',
@@ -19,7 +19,7 @@ define('Globe/Globe', [
     'Renderer/BasicMaterial',
     'THREE'
 ], function(defaultValue, Layer, Quadtree, SchemeTile, MathExt,
-    Ellipsoid, EllipsoidTileMesh, Atmosphere, Clouds, Capabilities,
+    Ellipsoid, TileMesh, Atmosphere, Clouds, Capabilities,
     CoordCarto, BasicMaterial, THREE) {
 
     function Globe(supportGLInspector) {
@@ -40,11 +40,14 @@ define('Globe/Globe', [
         var kml = new THREE.Object3D();
         this.batiments.add(kml);
 
-        this.meshTerrain = new Quadtree(EllipsoidTileMesh, this.SchemeTileWMTS(2), this.size, kml);
+        this.batiments.visible = false;
+
+        kml.visible = false;
+
+        this.meshTerrain = new Quadtree(TileMesh, this.SchemeTileWMTS(2), this.size, kml);
         
         this.elevationTerrain = new Layer();
         this.colorTerrain = new Layer();
-        
         
         this.meshTerrain.add(this.elevationTerrain);
         this.meshTerrain.add(this.colorTerrain);
@@ -115,7 +118,7 @@ define('Globe/Globe', [
     };
     
     Globe.prototype.updateQuadtree = function(){
-        this.meshTerrain = new Quadtree(EllipsoidTileMesh, this.SchemeTileWMTS(2), this.size, false);
+        this.meshTerrain = new Quadtree(TileMesh, this.SchemeTileWMTS(2), this.size, false);
     };
 
     Globe.prototype.SchemeTileWMTS = function(type) {
@@ -142,6 +145,13 @@ define('Globe/Globe', [
         }
         this.clouds.visible = show;
     };
+
+    Globe.prototype.showKML = function(show) {
+
+        this.batiments.visible = show;
+
+        this.batiments.children[0].visible = show;
+    };
     
          
     Globe.prototype.setRealisticLightingOn = function(bool) {
@@ -150,13 +160,6 @@ define('Globe/Globe', [
         this.clouds.setLightingOn(bool);
         
     };
-
-    /*Globe.prototype.ellipsoid = function() {
-        return this.meshTerrain.interCommand.managerCommands.providers[0].ellipsoid;
-    };*/
-
-
-
 
     return Globe;
 
