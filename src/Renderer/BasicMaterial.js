@@ -51,6 +51,10 @@ define('Renderer/BasicMaterial', ['THREE',
             selected: {
                 type: "i",
                 value: false
+            },
+            lightOn: {
+                type: "i",
+                value: true
             }
 
         };
@@ -70,6 +74,7 @@ define('Renderer/BasicMaterial', ['THREE',
     BasicMaterial.prototype.setMatrixRTC = function(rtc) {
         this.uniforms.mVPMatRTC.value = rtc;
     };
+    
     BasicMaterial.prototype.setUuid = function(uuid) {
         this.uniforms.uuid.value = uuid;
     };
