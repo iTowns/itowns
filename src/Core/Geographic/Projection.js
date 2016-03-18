@@ -4,7 +4,7 @@
  * Description: Outils de projections cartographiques et de convertion
  */
 
-define('Core/Geographic/Projection', ['Core/Geographic/CoordWMTS', 'Core/Math/MathExtented'], function(CoordWMTS, MathExt) {
+define('Core/Geographic/Projection', ['Core/Geographic/CoordWMTS', 'Core/Math/MathExtented', 'Core/Geographic/CoordCarto'], function(CoordWMTS, MathExt, CoordCarto) {
 
 
     function Projection() {
@@ -12,20 +12,17 @@ define('Core/Geographic/Projection', ['Core/Geographic/CoordWMTS', 'Core/Math/Ma
 
     }
 
-    /**
-     * @param x
-     * @param y
-     */
-    Projection.prototype.WGS84ToPM = function(/*x, y*/) {
-        //TODO: Implement Me 
-
-    };
-
     Projection.prototype.WGS84ToY = function(latitude) {
 
         return 0.5 - Math.log(Math.tan(MathExt.PI_OV_FOUR + latitude * 0.5)) * MathExt.INV_TWO_PI;
 
     };
+
+    Projection.prototype.WGS84ToOneSubY = function(latitude) {
+
+        return 0.5 + Math.log(Math.tan(MathExt.PI_OV_FOUR + latitude * 0.5)) * MathExt.INV_TWO_PI;
+
+    }; 
 
     Projection.prototype.WGS84LatitudeClamp = function(latitude) {
 
@@ -44,7 +41,7 @@ define('Core/Geographic/Projection', ['Core/Geographic/CoordWMTS', 'Core/Math/Ma
      * 
      * @param {type} cWMTS
      * @param {type} bbox
-     * @returns {Array}
+     * @returns {Array} coord WMTS array in pseudo mercator
      */
     Projection.prototype.WMTS_WGS84ToWMTS_PM = function(cWMTS, bbox) {
 
@@ -97,16 +94,6 @@ define('Core/Geographic/Projection', ['Core/Geographic/CoordWMTS', 'Core/Math/Ma
         
     };
 
-
-    /**
-     * @param x
-     * @param y
-     */
-    Projection.prototype.PMToWGS84 = function(/*x, y*/) {
-        //TODO: Implement Me 
-
-    };
-
     Projection.prototype.WGS84toWMTS = function(bbox) {
 
         var zoom = Math.floor(Math.log(MathExt.PI / bbox.dimension.y) / MathExt.LOG_TWO + 0.5);
@@ -123,26 +110,47 @@ define('Core/Geographic/Projection', ['Core/Geographic/CoordWMTS', 'Core/Math/Ma
         return new CoordWMTS(zoom, row, col);
     };
 
-
-    /**
-     * @param longi
-     * @param lati
-     */
-    Projection.prototype.geoToPM = function(/*longi, lati*/) {
-        //TODO: Implement Me 
-
+    Projection.prototype.UnitaryToLongitudeWGS84 = function(u,projection,bbox)
+    {
+        projection.longitude = bbox.minCarto.longitude + u * bbox.dimension.x;
     };
 
-
-    /**
-     * @param longi
-     * @param lati
-     */
-    Projection.prototype.geoToWGS84 = function(/*longi, lati*/) {
-        //TODO: Implement Me 
-
+    Projection.prototype.UnitaryToLatitudeWGS84 = function(v,projection,bbox)
+    {
+        projection.latitude = bbox.minCarto.latitude + v * bbox.dimension.y;
     };
 
+    Projection.prototype.cartesianToGeo = function(position) {
+        
+        // TODO move to core
+        var p = position.clone();
+        p.x = -position.x;
+        p.y = position.z;
+        p.z = position.y;
+
+        var R = p.length();
+        var a = 6378137;
+        var b = 6356752.3142451793;
+        var e = Math.sqrt((a * a - b * b) / (a * a));
+        var f = 1 - Math.sqrt(1 - e * e);
+        var rsqXY = Math.sqrt(p.x * p.x + p.y * p.y);
+
+        var theta = Math.atan2(p.y, p.x);
+        var nu = Math.atan(p.z / rsqXY * ((1 - f) + e * e * a / R));
+
+        var sinu = Math.sin(nu);
+        var cosu = Math.cos(nu);
+
+        var phi = Math.atan((p.z * (1 - f) + e * e * a * sinu * sinu * sinu) / ((1 - f) * (rsqXY - e * e * a * cosu * cosu * cosu)));
+
+        var h = (rsqXY * Math.cos(phi)) + p.z * Math.sin(phi) - a * Math.sqrt(1 - e * e * Math.sin(phi) * Math.sin(phi));
+        
+        var coord = new CoordCarto(theta,phi,h);
+        
+        return coord;
+        //console.log(theta / Math.PI * 180 + ' ' + phi / Math.PI * 180 + ' ' + h);
+    };
+    
     return Projection;
 
 });

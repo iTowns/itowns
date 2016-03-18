@@ -20,11 +20,7 @@ define('Globe/Atmosphere', ['Renderer/NodeMesh', 'THREE', 'Renderer/c3DEngine','
             atmoIN: {
                 type: "i",
                 value: 0
-            },
-            screenSize: {
-                type: "v2",
-                value: new THREE.Vector2(window.innerWidth, window.innerHeight)
-            } // Should be updated on screen resize...
+            }
         };
 
        var material = new THREE.ShaderMaterial({
@@ -40,18 +36,19 @@ define('Globe/Atmosphere', ['Renderer/NodeMesh', 'THREE', 'Renderer/c3DEngine','
         });
 
         var geometry = (new THREE.SphereGeometry(1.14 , 128, 128)).scale(size.x, size.y, size.z);
-        this.atmosphereOUT    = new THREE.Mesh(geometry,material);
-        this.add(this.atmosphereOUT);
+
+
+        this.geometry = geometry;
+        this.material = material;
+
+        //this.atmosphereOUT    = new THREE.Mesh(geometry,material);
+        //this.add(this.atmosphereOUT);
 
         this.uniformsIn = {
             atmoIN: {
                 type: "i",
                 value: 1
-            },
-            screenSize: {
-                type: "v2",
-                value: new THREE.Vector2(window.innerWidth, window.innerHeight)
-            } // Should be updated on screen resize...
+            }
         };
 
         var materialAtmoIn = new THREE.ShaderMaterial({
@@ -190,7 +187,7 @@ define('Globe/Atmosphere', ['Renderer/NodeMesh', 'THREE', 'Renderer/c3DEngine','
         this.ground.mesh = new THREE.Mesh(this.ground.geometry, this.ground.material);
         
         this.sky = {
-          geometry: new THREE.SphereGeometry(atmosphere.outerRadius, 500, 500),
+          geometry: new THREE.SphereGeometry(atmosphere.outerRadius, 196, 196),
           material: new THREE.ShaderMaterial({
             uniforms: uniforms,
             vertexShader: skyVS,
@@ -201,8 +198,7 @@ define('Globe/Atmosphere', ['Renderer/NodeMesh', 'THREE', 'Renderer/c3DEngine','
         this.sky.mesh = new THREE.Mesh(this.sky.geometry, this.sky.material);
         this.sky.material.side = THREE.BackSide;
         this.sky.material.transparent = true;
-        
-        
+                
         this.ground.mesh.visible = false;
         this.sky.mesh.visible = false;
         this.add(this.ground.mesh);
@@ -216,7 +212,7 @@ define('Globe/Atmosphere', ['Renderer/NodeMesh', 'THREE', 'Renderer/c3DEngine','
     Atmosphere.prototype.setRealisticOn = function(bool){
         
         this.realistic = bool;
-        this.atmosphereOUT.visible = !this.realistic;
+        this.material.visible = !this.realistic;
         this.atmosphereIN.visible  = !this.realistic;
         this.ground.mesh.visible   = this.realistic;
         this.sky.mesh.visible      = this.realistic; 

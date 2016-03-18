@@ -10,16 +10,14 @@ define('Renderer/c3DEngine', [
     'Renderer/Camera',
     'Globe/Atmosphere',
     'Renderer/DepthMaterial',
-    'Renderer/BasicMaterial',
-    'Core/Geographic/CoordCarto'
+    'Renderer/BasicMaterial'
 ], function(
     THREE,    
     GlobeControls,
     Camera,
     Atmosphere,
     DepthMaterial,
-    BasicMaterial,
-    CoordCarto) {
+    BasicMaterial) {
 
     var instance3DEngine = null;
     var RENDER = {
@@ -40,7 +38,7 @@ define('Renderer/c3DEngine', [
         //this.supportGLInspector = false;
 
         this.debug = false;
-        //this.debug      = true;
+        //this.debug = true;
         this.scene = undefined;
         this.scene3D = new THREE.Scene();
         this.width = this.debug ? window.innerWidth * 0.5 : window.innerWidth;
@@ -87,6 +85,25 @@ define('Renderer/c3DEngine', [
 
                 this.enableRTC(false);
                 this.camera.camHelper().visible = true;
+
+                var target = this.controls.moveTarget;
+                var position = this.camera.position();
+
+                var posDebug = new THREE.Vector3().subVectors(position,target);
+
+                posDebug.setLength(posDebug.length()*2.0);
+
+                posDebug.add(target);
+
+                posDebug.setLength((posDebug.length() - this.size) * 3.0 + this.size);
+
+
+                // var length = (position.length() - this.size) * 1.3 + this.size;
+                // position.setLength(length);
+                
+
+                this.camDebug.position.copy(posDebug);                
+                this.camDebug.lookAt(target);
                 this.renderer.setViewport(this.width, 0, this.width, this.height);
                 this.renderer.render(this.scene3D, this.camDebug);
                 this.enableRTC(true);
@@ -107,8 +124,7 @@ define('Renderer/c3DEngine', [
 
             this.width = this.debug ? window.innerWidth * 0.5 : window.innerWidth;
             this.height = window.innerHeight;
-            this.camera.resize(this.width, this.height);
-
+            this.camera.resize(this.width, this.height);            
             this.scene.updateCamera();
 
             if (this.camDebug) {
@@ -116,9 +132,10 @@ define('Renderer/c3DEngine', [
                 this.camDebug.updateProjectionMatrix();
             }
 
-            this.renderer.setSize(window.innerWidth, window.innerHeight);
+            this.pickingTexture.setSize ( this.width, this.height );
+            this.renderer.setSize( this.width, this.height);
             this.update();
-            this.renderScene();
+            
         }.bind(this);
 
     }
@@ -218,7 +235,7 @@ define('Renderer/c3DEngine', [
         for (var x = 0; x < this.scene3D.children.length; x++) {
             var node = this.scene3D.children[x];
 
-            if (node.enableRTC)
+            if (node.enableRTC && !(node instanceof Atmosphere))
                 node.traverseVisible(enable ? this.rtcOn.bind(this) : this.rtcOff.bind(this));
             else
                 node.visible = enable;
@@ -234,16 +251,25 @@ define('Renderer/c3DEngine', [
             if (node.enablePickingRender)
                 node.traverseVisible(enable ? this.pickingOn.bind(this) : this.pickingOff.bind(this));
             else
-                node.visible = !enable;
+            {
+                if(node.layer){            
+                    node.visible = !enable ? node.layer.visible : false;
+                }
+                else
+                    node.visible = !enable;
+            }
         }
     };
 
     c3DEngine.prototype.rtcOn = function(obj3D) {        
         obj3D.enableRTC(true);
+        obj3D.matrixAutoUpdate = false;
     };
 
     c3DEngine.prototype.rtcOff = function(obj3D) {        
         obj3D.enableRTC(false);
+        obj3D.matrixWorldNeedsUpdate = true;
+        obj3D.matrixAutoUpdate = true;
     };
 
     c3DEngine.prototype.pickingOn = function(obj3D) {
@@ -280,7 +306,7 @@ define('Renderer/c3DEngine', [
         this.controls.minDistance = 30;
         this.controls.maxDistance = size * 8.0;
         this.controls.keyPanSpeed = 0.01;
-
+        
     };
 
     /**
@@ -458,11 +484,14 @@ define('Renderer/c3DEngine', [
         this.dummy.visible = true;
 
         var glslPosition = new THREE.Vector3().fromArray(buffer);
-
+        
         if (scene)
             scene.selectNodeId(buffer[3]);
 
         var worldPosition = glslPosition.applyMatrix4(this.camera.camera3D.matrixWorld);
+        
+        if(worldPosition.length()> 10000000)
+            return undefined; 
 
         return worldPosition;
 
@@ -477,35 +506,6 @@ define('Renderer/c3DEngine', [
         dummy.translateY(size);
         dummy.updateMatrix();
         dummy.updateMatrixWorld();
-    };
-
-    c3DEngine.prototype.cartesianToGeo = function(position) {
-        
-        // TODO move to core
-        var p = position.clone();
-        p.x = -position.x;
-        p.y = position.z;
-        p.z = position.y;
-
-        var R = p.length();
-        var a = 6378137;
-        var b = 6356752.3142451793;
-        var e = Math.sqrt((a * a - b * b) / (a * a));
-        var f = 1 - Math.sqrt(1 - e * e);
-        var rsqXY = Math.sqrt(p.x * p.x + p.y * p.y);
-
-        var theta = Math.atan2(p.y, p.x);
-        var nu = Math.atan(p.z / rsqXY * ((1 - f) + e * e * a / R));
-
-        var sinu = Math.sin(nu);
-        var cosu = Math.cos(nu);
-
-        var phi = Math.atan((p.z * (1 - f) + e * e * a * sinu * sinu * sinu) / ((1 - f) * (rsqXY - e * e * a * cosu * cosu * cosu)));
-
-        var h = (rsqXY * Math.cos(phi)) + p.z * Math.sin(phi) - a * Math.sqrt(1 - e * e * Math.sin(phi) * Math.sin(phi));
-
-        return CoordCarto(theta,phi,h);
-        //console.log(theta / Math.PI * 180 + ' ' + phi / Math.PI * 180 + ' ' + h);
     };
     
     c3DEngine.prototype.getRTCMatrixFromCenter = function(center, camera ) {

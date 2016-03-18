@@ -4,7 +4,7 @@
  * Description: BrowseTree parcourt un arbre de Node. Lors du parcours un ou plusieur NodeProcess peut etre appliqué sur certains Node.
  */
 
-define('Scene/BrowseTree', ['Globe/EllipsoidTileMesh', 'THREE'], function( EllipsoidTileMesh, THREE) {
+define('Scene/BrowseTree', ['Globe/TileMesh', 'THREE'], function( TileMesh, THREE) {
 
     function BrowseTree(engine) {
         //Constructor
@@ -17,9 +17,17 @@ define('Scene/BrowseTree', ['Globe/EllipsoidTileMesh', 'THREE'], function( Ellip
         this.fogDistance = 1000000000.0;
         this.mfogDistance = 1000000000.0;
         this.visibleNodes = 0;
-        this.selectNodeId = -1;
-        this.selectNode = null;
+        this.selectedNodeId = -1;
+        this.selectedNode = null;
         this.cachedRTC = null;
+
+        this.selectNode = function(){};
+
+        var selectMode = false;
+        //selectMode = true;
+
+        if(selectMode)
+            this.selectNode = function(node){this._selectNode(node);};
 
     }
 
@@ -35,71 +43,63 @@ define('Scene/BrowseTree', ['Globe/EllipsoidTileMesh', 'THREE'], function( Ellip
      * @documentation: Process to apply to each node
      * @param {type} node   : node current to apply process
      * @param {type} camera : current camera needed to process
-     * @param {type} optional  : optional process
+     * @param {type} enableUp  : optional process
      * @returns {Boolean}
      */
-    BrowseTree.prototype.processNode = function(node, camera, optional) {
-        if (node instanceof EllipsoidTileMesh) {
+    BrowseTree.prototype.processNode = function(node, camera, enableUp) {
+        
+        node.setVisibility(false);
+        node.setSelected(false);
 
-            node.setVisibility(false);
-            node.setSelected(false);
+        if(node.parent !== null && node.parent.material.visible)
+            return false;
 
-            if (node.loaded && this.nodeProcess.frustumCullingOBB(node, camera)) {
-                if (this.nodeProcess.horizonCulling(node, camera)) {
-                    if (node.parent instanceof EllipsoidTileMesh && node.parent !== null && node.parent.material !== undefined && node.parent.material.visible === true)
+        if (this.nodeProcess.frustumCullingOBB(node, camera)) {
+            if (this.nodeProcess.horizonCulling(node, camera)) {
 
-                    { return node.setVisibility(false); }
+                var sse = this.nodeProcess.SSE(node, camera);
 
-                    var sse = this.nodeProcess.SSE(node, camera);
-
-                    if(optional && node.material.visible && !node.wait )
-                    {
-                        if (sse || node.level < 2)                                                     
-                            this.tree.subdivide(node);                        
-                        else if(!sse)
-                            this.tree.reloadDownScaledLayer(node);            
-                        
-                    }
-                    else if (!sse && node.level >= 2 && !node.material.visible ) {
-                                                
-                        node.setMaterialVisibility(true);
-                        this.uniformsProcess(node, camera);
-                        node.setChildrenVisibility(false);
-
-                        return false;
-                    }                    
+                if(enableUp && node.material.visible && !node.wait )
+                {
+                    if (sse) 
+                        // request level up 
+                        this.tree.up(node);                        
+                    else 
+                        // request level up other quadtree
+                        this.tree.upSubLayer(node);                        
+                }
+                else if (!sse) {
+                    // request level down
+                    this.tree.down(node);
                 }
             }
-
-            if (node.visible && node.material.visible)
-                this.uniformsProcess(node, camera);
-
-            return node.visible;
-        }else if (node.name === "terrestrialMesh"){
-
-            node.setMaterialVisibility(true);
-            this.uniformsProcess(node, camera);
-
-            return true;
         }
 
-        return true;
+        if (node.isVisible())
+            this.uniformsProcess(node, camera);
+
+        return !node.material.visible && !node.wait;       
     };
 
 
     BrowseTree.prototype.uniformsProcess = function(node, camera) {
-        
+
         node.setMatrixRTC(this.gfxEngine.getRTCMatrixFromCenter(node.absoluteCenter, camera));
-        // TODO à mettre en option
-        if (node.id === this.selectNodeId) {
+        node.setFog(this.fogDistance);
+
+        this.selectNode(node);
+        
+    };
+
+    BrowseTree.prototype._selectNode = function(node)
+    {            
+        if (node.id === this.selectedNodeId) {
             node.setSelected(node.visible && node.material.visible);
-            if (this.selectNode !== node) {
-                this.selectNode = node;
+            if (this.selectedNode !== node) {
+                this.selectedNode = node;
                 //console.info(node);
             }
         }
-
-        node.setFog(this.fogDistance);
     };
 
     /**
@@ -110,7 +110,8 @@ define('Scene/BrowseTree', ['Globe/EllipsoidTileMesh', 'THREE'], function( Ellip
      * @returns {undefined}
      */
     BrowseTree.prototype.browse = function(tree, camera, optional) {
-        
+
+        this.nodeVisible = 0;
         this.tree = tree;
                
         camera.updateMatrixWorld();
@@ -122,8 +123,13 @@ define('Scene/BrowseTree', ['Globe/EllipsoidTileMesh', 'THREE'], function( Ellip
         var subdivise = optional === 1;
         var clean = optional === 2;
 
-        for (var i = 0; i < tree.children.length; i++)
-            this._browse(tree.children[i], camera, subdivise,clean);
+        var rootNode = tree.children[0];
+
+        for (var i = 0; i < rootNode.children.length; i++)
+            this._browse(rootNode.children[i], camera, subdivise,clean);
+
+        
+
     };
 
     /**
@@ -235,10 +241,11 @@ define('Scene/BrowseTree', ['Globe/EllipsoidTileMesh', 'THREE'], function( Ellip
         var root = layer.children[0];
         for (var c = 0; c < root.children.length; c++) {
             var node = root.children[c];
-            
+
             this.cachedRTC = this.gfxEngine.getRTCMatrixFromNode(node, camera);                        
             
             var cRTC = function(obj) {
+                
                 if (obj.material && obj.material.setMatrixRTC)
                     obj.material.setMatrixRTC(this.cachedRTC);
 

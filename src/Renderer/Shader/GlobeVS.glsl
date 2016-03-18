@@ -19,9 +19,9 @@ const float INV_TWO_PI  = 1.0 / (2.0*PI);
 const float PI4         = 0.78539816339;
 
 uniform sampler2D   dTextures_00[1];
-uniform int         nbTextures_00;
+uniform vec3        pitScale_L00[1];
+uniform int         nbTextures[8];
 uniform int         RTC;
-uniform vec3        pitScale_L00;
 uniform float       periArcLati;
 uniform mat4        mVPMatRTC;
 uniform int         pickingRender;
@@ -38,9 +38,9 @@ void main() {
 
         vec4 vPosition;
 
-        if(nbTextures_00 > 0)
+        if(nbTextures[0] > 0)
         {
-            vec2    vVv = vec2(vUv_0.x*pitScale_L00.z + pitScale_L00.x,vUv_0.y*pitScale_L00.z + pitScale_L00.y);                
+            vec2    vVv = vec2(vUv_0.x*pitScale_L00[0].z + pitScale_L00[0].x,vUv_0.y*pitScale_L00[0].z + pitScale_L00[0].y);                
             float   dv  = max(texture2D( dTextures_00[0], vVv ).w, 0.);
             vNormal     = normal;
             vPosition   = vec4( position +  vNormal  * dv ,1.0 );            
