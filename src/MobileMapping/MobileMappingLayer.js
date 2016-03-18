@@ -22,10 +22,10 @@ define('MobileMapping/MobileMappingLayer', [
         
         this.panoramicMesh = null; 
         this.name = "MobileMappingLayer";
-        
         this.mainMesh = new THREE.Mesh();
-        //m.add(this.panoramicMesh);   // Add as a son to not conflict for depth rendering
         this.add(this.mainMesh);
+        
+        this.panoramicProvider = null;
         
         window.addEventListener('mousedown', onMouseDown, false);
     
@@ -41,7 +41,8 @@ define('MobileMapping/MobileMappingLayer', [
         var pos = gfxEngine().controls.getPointGlobe();
         var posWGS84 = new Projection().cartesianToGeo(pos);
         console.log("position clicked: ",pos, "wgs, longitude:", posWGS84.longitude/ Math.PI * 180, "   '",posWGS84.latitude/ Math.PI * 180, "  alti:", posWGS84.altitude);
-       /* 
+       
+        /* 
         // Check closest pano and go
         var projectiveMesh = panoramicProvider.getTextureProjectiveMesh(2.3348138,48.8506030,1000).then(function(projMesh){
                     mobileMappingLayer = new MobileMappingLayer(projMesh);               
@@ -59,9 +60,9 @@ define('MobileMapping/MobileMappingLayer', [
         var imagesOptions =  imageOpt || this.getDefaultOptions();
         console.log(this.defaultOptions);
         // Create and add the MobileMappingLayer with Panoramic imagery
-        var panoramicProvider = new PanoramicProvider(imagesOptions);
+        this.panoramicProvider = new PanoramicProvider(imagesOptions);
         
-        panoramicProvider.getTextureProjectiveMesh(2.3348138,48.8506030,1000).then(function(projMesh){
+        this.panoramicProvider.getTextureProjectiveMesh(2.3348138,48.8506030,1000).then(function(projMesh){
             
             this.panoramicMesh   = projMesh;
             this.mainMesh.add(this.panoramicMesh);

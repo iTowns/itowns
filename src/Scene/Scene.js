@@ -19,8 +19,6 @@ define('Scene/Scene', [
     'Core/Commander/ManagerCommands',
     'Core/Commander/Providers/tileGlobeProvider',
     'Core/Commander/Providers/BuildingBox_Provider',
-    'Core/Commander/Providers/PanoramicProvider',
-    'Renderer/PanoramicMesh',
     'Scene/BrowseTree',
     'Scene/NodeProcess',
     'Scene/Quadtree',
@@ -30,7 +28,7 @@ define('Scene/Scene', [
     'MobileMapping/MobileMappingLayer'
     
 ], function(c3DEngine, THREE, Globe, ManagerCommands, tileGlobeProvider, BuildingBox_Provider,
-            PanoramicProvider, PanoramicMesh, BrowseTree, NodeProcess, Quadtree, Layer, CoordCarto,
+            BrowseTree, NodeProcess, Quadtree, Layer, CoordCarto,
             Capabilities, MobileMappingLayer) {
 
     var instanceScene = null;
