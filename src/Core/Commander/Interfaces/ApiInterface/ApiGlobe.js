@@ -86,7 +86,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
     }; 
     
 
-    ApiGlobe.setStreetLevelImageryOn = function(value){
+    ApiGlobe.prototype.setStreetLevelImageryOn = function(value){
         
         this.scene.setStreetLevelImageryOn(value);
     }
