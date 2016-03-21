@@ -85,6 +85,11 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         this.scene.browserScene.updateMaterialUniform("lightingOn",value ? 1:0);
     }; 
     
+    /**
+    * Gets orientation angles of the current camera, in degrees.
+    * @constructor
+    */
+    
     ApiGlobe.prototype.getCameraOrientation = function () {
         
         var tiltCam = this.scene.currentControlCamera().getTiltCamera();
@@ -92,11 +97,21 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         return [tiltCam, headingCam];
     };
     
+    /**
+    * Get the camera location projected on the ground in lat,lon.
+    * @constructor
+    */
+    
     ApiGlobe.prototype.getCameraLocation = function () {
         
         var cam = this.scene.currentCamera();
         return this.projection.cartesianToGeo(cam.camera3D.position);
     };
+    
+    /**
+    * Gets the coordinates of the current central point on screen.
+    * @constructor
+    */
     
     ApiGlobe.prototype.getCenter = function () {
         
@@ -104,7 +119,11 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         return this.projection.cartesianToGeo(controlCam.globeTarget.position);
     };
     
-    
+    /**
+    * Moves the central point on screen to specific coordinates.
+    * @constructor
+    * @param {Position} position - The position on the map.
+    */
     
     ApiGlobe.prototype.setCenter = function (/*position*/) {
         //TODO: Implement Me 
@@ -116,6 +135,8 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
     
     ApiGlobe.prototype.pickPosition = function () {
         //TODO: Implement Me 
+        
+        
     };
     
     ApiGlobe.prototype.launchCommandApi = function () {
