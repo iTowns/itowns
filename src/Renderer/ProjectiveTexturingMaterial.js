@@ -189,7 +189,7 @@ define (['Renderer/c3DEngine','three','Renderer/ThreeExtented/threeExt','MobileM
                     
                     var mat = Ori.getMatrix(i).clone();
                     var mvpp = (new THREE.Matrix3().multiplyMatrices(rot,mat)).transpose();
-                    var trans = posFrameWithPivot.add( Ori.getSommet(i).clone().applyMatrix3(rot) );
+                    var trans = posFrameWithPivot.clone().add( Ori.getSommet(i).clone().applyMatrix3(rot) );
                     var m = -1;
                     if(!_infos.noMask && Ori.getMask(i)) {
                             m = uniforms.mask.value.length;
