@@ -99,28 +99,19 @@ define('Scene/NodeProcess', ['Scene/BoundingBox', 'Renderer/Camera', 'Core/Math/
      * @param {type} camera
      * @returns {NodeProcess_L7.NodeProcess.prototype.frustumCullingOBB.node@pro;camera@call;getFrustum@call;intersectsBox}
      */
-    NodeProcess.prototype.frustumCullingOBB = function(node, camera) {
+    
+    var quaternion = new THREE.Quaternion();
 
-        var obb = node.OBB();
-
-        var l = node.absoluteCenter.length();
-
-        obb.translateZ(l);
-        obb.update();
-
-        var quadInv = obb.quadInverse().clone();
-
-        // position in local space
-        this.camera.setPosition(obb.worldToLocal(camera.position().clone()));
+    NodeProcess.prototype.frustumCullingOBB = function(node, camera) {      
+        //position in local space
+        var position = node.OBB().worldToLocal(camera.position().clone());
+        position.z -= node.distance;
+        this.camera.setPosition(position);
         // rotation in local space
-        this.camera.setRotation(quadInv.multiply(camera.camera3D.quaternion));
+        quaternion.multiplyQuaternions( node.OBB().quadInverse(), camera.camera3D.quaternion);
+        this.camera.setRotation(quaternion);
 
-        obb.translateZ(-l);
-
-        obb.update();
-
-        return node.setVisibility(this.camera.getFrustum().intersectsBox(obb.box3D));
-
+        return node.setVisibility(this.camera.getFrustum().intersectsBox(node.OBB().box3D));
     };
 
     /**
