@@ -10,10 +10,13 @@ define('MobileMapping/MobileMappingLayer', [
     'Renderer/PanoramicMesh',
     'Renderer/c3DEngine',
     'Core/Geographic/Projection',
-    'Core/Commander/Providers/PanoramicProvider'
+    'Core/Commander/Providers/PanoramicProvider',
+    'Core/Math/Ellipsoid',
+    'Core/Geographic/CoordCarto'
     
     
-], function(Layer, THREE, PanoramicMesh, gfxEngine, Projection, PanoramicProvider) {
+], function(Layer, THREE, PanoramicMesh, gfxEngine, Projection,
+            PanoramicProvider, Ellipsoid, CoordCarto) {
 
     function MobileMappingLayer() {
         //Constructor
@@ -27,32 +30,41 @@ define('MobileMapping/MobileMappingLayer', [
         
         this.panoramicProvider = null;
         
-        window.addEventListener('mousedown', onMouseDown, false);
-    
+        this.domElement = document;
+       // this.domElement.addEventListener('mousedown', onMouseDown, false).bind(this);
+        window.addEventListener('mousedown', function(event){ if (event.button === 2) {this.updateData();}}.bind(this), false);
         
     }
+    
+    var scope = this;
 
     MobileMappingLayer.prototype = Object.create(Layer.prototype);
     MobileMappingLayer.prototype.constructor = MobileMappingLayer;
 
-    
-    function onMouseDown(){
+
+
+    MobileMappingLayer.prototype.updateData = function(){
         
         var pos = gfxEngine().controls.getPointGlobe();
         var posWGS84 = new Projection().cartesianToGeo(pos);
-        console.log("position clicked: ",pos, "wgs, longitude:", posWGS84.longitude/ Math.PI * 180, "   '",posWGS84.latitude/ Math.PI * 180, "  alti:", posWGS84.altitude);
-       
-        /* 
-        // Check closest pano and go
-        var projectiveMesh = panoramicProvider.getTextureProjectiveMesh(2.3348138,48.8506030,1000).then(function(projMesh){
-                    mobileMappingLayer = new MobileMappingLayer(projMesh);               
-                    this.add(mobileMappingLayer);
-                    this.updateScene3D();
-                    }.bind(this));
+        var lonDeg = posWGS84.longitude / Math.PI * 180;
+        var latDeg = posWGS84.latitude  / Math.PI * 180;
         
-        gfxEngine().camera.camera3D.position.set( pos.x, pos.y, pos.z);
-        */
-    }
+        console.log("position clicked: ",pos, "wgs, longitude:", posWGS84.longitude/ Math.PI * 180, "   '",posWGS84.latitude/ Math.PI * 180, "  alti:", posWGS84.altitude);
+
+        this.panoramicProvider.updateMaterialImages(lonDeg, latDeg, 1000).then(function(panoInfo){
+            
+            // Move camera to new pos
+            var panoInfo = panoInfo; //this.panoramicProvider.panoInfo;
+            var ellipsoid  = new Ellipsoid(new THREE.Vector3(6378137, 6356752.3142451793, 6378137));  // Should be computed elsewhere 
+            var posPanoWGS84 = new CoordCarto().setFromDegreeGeo(panoInfo.latitude, panoInfo.longitude, panoInfo.altitude);
+            var posPanoCartesian = ellipsoid.cartographicToCartesian(posPanoWGS84);
+            
+            this.moveCameraToScanPosition(posPanoCartesian);
+            
+        }.bind(this));
+       
+    };
     
     
     MobileMappingLayer.prototype.initiatePanoramic = function(imageOpt){
@@ -66,14 +78,42 @@ define('MobileMapping/MobileMappingLayer', [
             
             this.panoramicMesh   = projMesh;
             this.mainMesh.add(this.panoramicMesh);
-            //  this.updateScene3D();
+            gfxEngine().renderScene(); 
+            
+            // Move camera to panoramic center
+            var panoInfo = this.panoramicProvider.panoInfo;
+            var ellipsoid  = new Ellipsoid(new THREE.Vector3(6378137, 6356752.3142451793, 6378137));  // Should be computed elsewhere 
+            var posPanoWGS84 = new CoordCarto().setFromDegreeGeo(panoInfo.latitude, panoInfo.longitude, panoInfo.altitude);
+            var posPanoCartesian = ellipsoid.cartographicToCartesian(posPanoWGS84);
+            
+            this.moveCameraToScanPosition(posPanoCartesian);
+
         }.bind(this));
     };
     
     
+    MobileMappingLayer.prototype.moveCameraToScanPosition = function(pos, lastPos){
+        
+       var speedMove = 0.1; 
+       var currentPos = gfxEngine().camera.camera3D.position.clone();
+
+       var posx = currentPos.x + (pos.x - currentPos.x) * speedMove;
+       var posy = currentPos.y + (pos.y - currentPos.y) * speedMove;
+       var posz = currentPos.z + (pos.z - currentPos.z) * speedMove;
+       
+       gfxEngine().camera.camera3D.position.set( posx, posy, posz);
+       gfxEngine().update();
+       var vCurrent = new THREE.Vector3(posx, posy, posz);
+       //requestAnimSelectionAlpha(OrientedImages_Provider.smoothTransition(pos,new THREE.Vector3(posx, posy, posz)));
+       
+       if(vCurrent.distanceTo(pos) > 0.2)
+          setTimeout(function(){this.moveCameraToScanPosition(pos, vCurrent);}.bind(this), 20);
+        
+    };
+    
     MobileMappingLayer.prototype.getDefaultOptions = function(){
-              
-        return {
+             
+        var o = {
          // HTTP access to itowns sample datasets
           //url : "../{lod}/images/{YYMMDD}/Paris-{YYMMDD}_0740-{cam.cam}-00001_{pano.pano:07}.jpg",
           url : "../{lod}/images/{YYMMDD2}/Paris-{YYMMDD2}_0740-{cam.cam}-00001_{splitIt}.jpg",
@@ -90,10 +130,11 @@ define('MobileMapping/MobileMappingLayer', [
           buildings : "../dist/itowns-sample-data/buildingFootprint.json",
           DTM       : "../dist/itowns-sample-data/dtm.json",
           YYMMDD2 : function() {  //"filename":"Paris-140616_0740-00-00001_0000500"
+             // console.log(this);
             return this.pano.filename.match("-(.*?)_")[1];
           },
           splitIt : function(){
-              return this.pano.filename.split("_")[2];
+            return this.pano.filename.split("_")[2];
           },
           YYMMDD : function() {
             var d = new Date(this.pano.date);
@@ -105,14 +146,13 @@ define('MobileMapping/MobileMappingLayer', [
             return (d.getUTCHours()*60 + d.getUTCMinutes())*60+d.getUTCSeconds()-this.UTCOffset;
           },
           visible: true
-        };     
+        };   
+        
+        
+        return o;
      };
     
-
-
-
-                
-                
+            
     return MobileMappingLayer;
 
 });
