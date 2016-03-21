@@ -32,7 +32,7 @@ define('Globe/TileMesh', [
     var l_ELEVATION = 0;
     var l_COLOR = 1;
     
-    function TileMesh(bbox, cooWMTS, builder, id, geometryCache,link) {
+    function TileMesh(bbox, cooWMTS, builder, id, geometryCache,link,center) {
         //Constructor
         NodeMesh.call(this);
 
@@ -53,14 +53,13 @@ define('Globe/TileMesh', [
         var params = {bbox:this.bbox,zoom:cooWMTS.zoom,segment:precision,center3D:null,projected:null}
 
         this.geometry = defaultValue(geometryCache, new TileGeometry(params, builder));
-    
-        // TODO Try to remove this.absoluteCenter
-        this.absoluteCenter = params.center3D;
-        this.distance = this.absoluteCenter.length();
+        this.normal = params.center3D.clone().normalize();
 
+        center.copy(params.center3D);
+        this.distance = params.center3D.length();
 
         // TODO Question in next line ???
-        this.centerSphere = new THREE.Vector3().addVectors(this.geometry.boundingSphere.center, this.absoluteCenter);
+        this.centerSphere = new THREE.Vector3().addVectors(this.geometry.boundingSphere.center, params.center3D);
         
         this.oSphere = new THREE.Sphere(this.centerSphere.clone(),this.geometry.boundingSphere.radius);
         
@@ -99,11 +98,11 @@ define('Globe/TileMesh', [
             
             if (this.helper instanceof THREE.SphereHelper)
 
-                this.helper.position.add(this.absoluteCenter);
-
+                this.helper.position.add(params.center3D);
+            
             else if (this.helper instanceof THREE.OBBHelper)
 
-                this.helper.translateZ(this.absoluteCenter.length());
+                this.helper.translateZ(this.distance);
                         
             if(this.helper)
                 this.link.add(this.helper);
@@ -250,14 +249,15 @@ define('Globe/TileMesh', [
 
             this.bbox.setAltitude(min, max);            
             var delta = this.geometry.OBB.addHeight(this.bbox);
-            var trans = this.absoluteCenter.clone().setLength(delta.y);
+
+            var trans = this.normal.clone().setLength(delta.y);
 
             this.geometry.boundingSphere.radius = Math.sqrt(delta.x * delta.x + this.oSphere.radius * this.oSphere.radius); 
             this.centerSphere = new THREE.Vector3().addVectors(this.oSphere.center,trans);
             
             if (this.helper instanceof THREE.OBBHelper) {
                 this.helper.update(this.geometry.OBB);
-                this.helper.translateZ(this.absoluteCenter.length());
+                this.helper.translateZ(this.distance);
             } else if (this.helper instanceof THREE.SphereHelper) {
                 this.helper.update(this.geometry.boundingSphere.radius);
                 this.helper.position.add(trans);

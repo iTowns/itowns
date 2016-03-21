@@ -167,11 +167,13 @@ define('Scene/NodeProcess', ['Scene/BoundingBox', 'Renderer/Camera', 'Core/Math/
      * @param {type} node
      * @returns {Boolean}
      */
+    var center = new THREE.Vector3();
+
     NodeProcess.prototype.horizonCulling = function(node) {
 
         // horizonCulling Oriented bounding box
         var points = node.OBB().pointsWorld;
-        var center = node.absoluteCenter;
+        center.setFromMatrixPosition(node.matrixWorld);
         var isVisible = false;
         for (var i = 0, max = points.length; i < max; i++) {
             var point = points[i].add(center);

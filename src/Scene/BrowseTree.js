@@ -71,9 +71,11 @@ define('Scene/BrowseTree', ['Globe/TileMesh', 'THREE'], function( TileMesh, THRE
     };
 
 
+    var positionWorld = new THREE.Vector3();
+
     BrowseTree.prototype.uniformsProcess = function(node, camera) {
 
-        node.setMatrixRTC(this.gfxEngine.getRTCMatrixFromCenter(node.absoluteCenter, camera));
+        node.setMatrixRTC(this.gfxEngine.getRTCMatrixFromCenter(positionWorld.setFromMatrixPosition(node.matrixWorld), camera));
         node.setFog(this.fogDistance);
 
         this.selectNode(node);
