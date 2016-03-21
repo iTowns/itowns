@@ -63,7 +63,7 @@ define('Globe/TileMesh', [
         
         this.oSphere = new THREE.Sphere(this.centerSphere.clone(),this.geometry.boundingSphere.radius);
         
-        this.orthoNeed = 0;        
+        this.texturesNeeded = 0;        
         this.material = new LayeredMaterial(id);
         this.dot = 0;
         this.frustumCulled = false;
@@ -338,19 +338,17 @@ define('Globe/TileMesh', [
         return !this.parent.downScaledLayer(layer) ? this.parent : this.parent.getParentNotDownScaled(layer);
     };
 
+    TileMesh.prototype.allTexturesAreLoaded = function(){
+        return this.texturesNeeded === this.material.nbLoadedTextures();
+    };
+
     TileMesh.prototype.checkOrtho = function() {
         
         // TODO remove this function
 
-        if (this.orthoNeed + 1 === this.material.getNbTextures() || this.level < 2){
-
-            this.loaded = true;   
-                  
-            var parent = this.parent;
-
-            if (parent !== null && parent.childrenLoaded()) {
-                parent.wait = false;
-            }
+        if (this.allTexturesAreLoaded() || this.level < 2){
+            this.loaded = true;
+            this.parent.childrenLoaded();
         }
     };
 

@@ -128,8 +128,12 @@ define('Core/Commander/Providers/tileGlobeProvider', [
             tile.updateMatrixWorld();
             
             if(cooWMTS.zoom > 3 )
-                cooWMTS =  undefined;            
+            {
+                cooWMTS =  undefined;
+            }
 
+            tile.texturesNeeded =+ 1;
+            
             return this.providerWMTS.getTextureBil(cooWMTS).then(function(terrain){                        
                                                                        
                 this.setTerrain(terrain);
@@ -159,7 +163,7 @@ define('Core/Commander/Providers/tileGlobeProvider', [
                 var promises = [];
                 var box = this.projection.WMTS_WGS84ToWMTS_PM(tile.cooWMTS, tile.bbox); //                 
                 var col = box[0].col;
-                tile.orthoNeed = box[1].row + 1 - box[0].row;               
+                tile.texturesNeeded += box[1].row + 1 - box[0].row;               
                 
                 for (var row = box[0].row; row < box[1].row + 1; row++) {
                                        

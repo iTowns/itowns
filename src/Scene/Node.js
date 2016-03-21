@@ -50,15 +50,17 @@ define('Scene/Node', [], function() {
 
     Node.prototype.childrenLoaded = function() {
 
+        if(!this.wait && this.childrenCount() > 0)
+            return true;
+
         for (var i = 0, max = this.children.length; i < max; i++) {
             if (this.children[i].loaded === false)
                 return false;
         }
 
+        this.wait = false;
         return true;
     };
-
-
 
     /**
      * @documentation: Rafraichi le Node si le contenu ou  le style a été modifié.
