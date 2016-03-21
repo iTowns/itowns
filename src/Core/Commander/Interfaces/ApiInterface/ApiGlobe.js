@@ -111,6 +111,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
     /**
     * Gets the coordinates of the current central point on screen.
     * @constructor
+    * @return {Position} postion
     */
     
     ApiGlobe.prototype.getCenter = function () {
@@ -133,16 +134,39 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         //TODO: Implement Me 
     };
     
-    ApiGlobe.prototype.pickPosition = function () {
-        //TODO: Implement Me 
+    /**
+    * Pick a position on the globe at the given position.
+    * @constructor
+    * @param {Number | MouseEvent} x|event - The x-position inside the Globe element or a mouse event.
+    * @param {number | undefined} y - The y-position inside the Globe element.
+    * @return {Position} postion
+    */    
+    ApiGlobe.prototype.pickPosition = function (mouse,y) {
         
+        if(mouse)
+            if(mouse.clientX)
+            {
+                mouse.x = mouse.clientX;
+                mouse.y = mouse.clientY;            
+            }
+            else            
+            {
+                mouse.x = mouse;
+                mouse.y = y;            
+            }
+            
+        var pickedPosition = this.scene.getPickPosition(mouse);
         
+        this.scene.renderScene3D();
+        
+        return this.projection.cartesianToGeo(pickedPosition);
     };
     
     ApiGlobe.prototype.launchCommandApi = function () {
 //        console.log(this.getCenter());
 //        console.log(this.getCameraLocation());
 //        console.log(this.getCameraOrientation());
+ //       console.log(this.pickPosition());
     };
 
     ApiGlobe.prototype.showKML = function(value) {
