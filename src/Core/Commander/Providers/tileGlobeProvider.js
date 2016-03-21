@@ -133,7 +133,7 @@ define('Core/Commander/Providers/tileGlobeProvider', [
             }
 
             tile.texturesNeeded =+ 1;
-            
+
             return this.providerWMTS.getTextureBil(cooWMTS).then(function(terrain){                        
                                                                        
                 this.setTerrain(terrain);
@@ -181,11 +181,9 @@ define('Core/Commander/Providers/tileGlobeProvider', [
                   
                 return when.all(promises);
             }
-            else 
-            {
-                tile.checkOrtho();
-                return when();
-            }
+            else             
+                
+                return when();            
             
         };
 
