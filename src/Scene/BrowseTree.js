@@ -46,35 +46,24 @@ define('Scene/BrowseTree', ['Globe/TileMesh', 'THREE'], function( TileMesh, THRE
      * @param {type} enableUp  : optional process
      * @returns {Boolean}
      */
-    BrowseTree.prototype.processNode = function(node, camera, enableUp) {
+    BrowseTree.prototype.processNode = function(node, camera, params) {
         
+        if(node.name === "terrestrialMesh"){    // TEMP
+            node.setMaterialVisibility(true);
+            this.uniformsProcess(node, camera);
+            return true;
+        }
+
         node.setVisibility(false);
         node.setSelected(false);
 
-        if(node.parent !== null && node.parent.material.visible)
+        if(node.parent.material.visible)
             return false;
 
-        if (this.nodeProcess.frustumCullingOBB(node, camera)) {
-            if (this.nodeProcess.horizonCulling(node, camera)) {
-
-                var sse = this.nodeProcess.SSE(node, camera);
-
-                if(enableUp && node.material.visible && !node.wait )
-                {
-                    if (sse) 
-                        // request level up 
-                        this.tree.up(node);                        
-                    else 
-                        // request level up other quadtree
-                        this.tree.upSubLayer(node);                        
-                }
-                else if (!sse) {
-                    // request level down
-                    this.tree.down(node);
-                }
-            }
-        }
-
+        if (this.nodeProcess.frustumCullingOBB(node, camera))
+            if (this.nodeProcess.horizonCulling(node, camera))
+                this.nodeProcess.SSE(node, camera,params);            
+            
         if (node.isVisible())
             this.uniformsProcess(node, camera);
 
@@ -141,7 +130,7 @@ define('Scene/BrowseTree', ['Globe/TileMesh', 'THREE'], function( TileMesh, THRE
      */
     BrowseTree.prototype._browse = function(node, camera, optional,clean) {
         
-        if (this.processNode(node, camera, optional))
+        if (this.processNode(node, camera, {withUp : optional, tree : this.tree}))
             for (var i = 0; i < node.children.length; i++)
                 this._browse(node.children[i], camera, optional,clean);
         else if(clean)              
@@ -157,7 +146,7 @@ define('Scene/BrowseTree', ['Globe/TileMesh', 'THREE'], function( TileMesh, THRE
         for (var i = 0; i < node.children.length; i++) {
             var child = node.children[i];
             // TODO node.wait === true ---> delete child and switch to node.wait = false
-            if (this._clean(child, level, camera) && ((child.level >= level && child.children.length === 0 && !this.nodeProcess.SSE(child, camera) && !node.wait) || node.level === 2))
+            if (this._clean(child, level, camera) && ((child.level >= level && child.children.length === 0 && !this.nodeProcess.checkSSE(child, camera) && !node.wait) || node.level === 2))
                 childrenCleaned++;
         }
 
