@@ -415,7 +415,7 @@ THREE.GlobeControls = function(object, domElement, engine) {
 
         // restrict phi to be betwee EPS and PI-EPS
         phi = Math.max(EPS, Math.min(Math.PI - EPS, phi));
-
+        
         // restrict radius to be between desired limits
         radius = Math.max(this.minDistance, Math.min(this.maxDistance, radius));
 
@@ -425,7 +425,17 @@ THREE.GlobeControls = function(object, domElement, engine) {
         point.x = radius * Math.sin(phi) * Math.sin(theta);
         point.y = radius * Math.cos(phi);
         point.z = radius * Math.sin(phi) * Math.cos(theta);
+        
+        //console.log(theta + ' - ' + phi);
 
+    };
+    
+    this.getTiltCamera = function (){
+        return phi * 180/Math.PI;
+    };
+    
+    this.getHeadingCamera = function (){
+        return theta * 180/Math.PI;
     };
 
     this.update = function() {
@@ -937,7 +947,7 @@ THREE.GlobeControls = function(object, domElement, engine) {
         scope.globeTarget.lookAt(scope.moveTarget.clone().multiplyScalar(2));
         scope.globeTarget.quaternion.multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI / 2));
         scope.globeTarget.updateMatrixWorld();
-
+        
     }
 
     this.domElement.addEventListener('contextmenu', function(event) {
@@ -979,7 +989,7 @@ THREE.GlobeControls = function(object, domElement, engine) {
     thetaDelta = -theta;
     this.update();
     state = STATE.NONE;
-
+    
     this.engine.scene3D.add(this.globeTarget);
     //this.globeTarget.add( new THREE.AxisHelper( 500000 ));
 
