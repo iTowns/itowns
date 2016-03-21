@@ -85,11 +85,16 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         this.scene.browserScene.updateMaterialUniform("lightingOn",value ? 1:0);
     }; 
     
-    /**
+
+    ApiGlobe.prototype.setStreetLevelImageryOn = function(value){
+        
+        this.scene.setStreetLevelImageryOn(value);
+    }
+
+     /**
     * Gets orientation angles of the current camera, in degrees.
     * @constructor
     */
-    
     ApiGlobe.prototype.getCameraOrientation = function () {
         
         var tiltCam = this.scene.currentControlCamera().getTiltCamera();
@@ -150,6 +155,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         this.scene.layers[0].showKML(value);
         this.scene.renderScene3D();
     };
+
 
     return ApiGlobe;
 

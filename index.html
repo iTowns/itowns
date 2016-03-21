@@ -34,7 +34,11 @@ and open the template in the editor.
                var Menu = function() {
                    this.CloudsIR = false;
                    this.RealisticLighting = false;
+
+                   this.StreetLevelImagery = false;
+
                    this.KML = false;
+
                    this.Layer = "OrthoGeoportail";
                    this.api = function(){  
                         itowns.viewer.launchCommandApi();
@@ -73,6 +77,10 @@ and open the template in the editor.
                });
                
                gui.add(text, 'api');
+               
+               gui.add(text, 'StreetLevelImagery').onChange(function(newValue) {
+			itowns.viewer.setStreetLevelImageryOn(newValue);
+               });
                
             
         </script>     
