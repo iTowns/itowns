@@ -262,16 +262,13 @@ define('Core/Commander/Providers/WMTS_Provider', [
      
                    promises.push(this.getTextureOrtho(cooWMTS,pitch));
 
-               }
+                }
                
-               return when.all(promises);
+                return when.all(promises);
            }
-           else 
-           {
-                tile.checkOrtho();
+           else                     
                 return when();
-           }
-                        
+                    
        };
 
        return WMTS_Provider;

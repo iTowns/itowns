@@ -271,19 +271,22 @@ define('Globe/TileMesh', [
         this.material.setTexture(texture, l_COLOR, id,pitch);   
                 
         this.currentLevelLayers[l_COLOR] = texture.level;
-        this.checkOrtho();
+        this.loadingCheck();
     };
     
     TileMesh.prototype.setTexturesLayer = function(textures,id){
         
         if(!textures || this.material === null)
+        {
+            this.loadingCheck();
             return;
+        }
         
         this.material.setTexturesLayer(textures, id);
         
         this.currentLevelLayers[l_COLOR] = textures[0].texture.level;
         
-        this.checkOrtho();
+        this.loadingCheck();
     };
         
     TileMesh.prototype.downScaledLayer = function(id)
@@ -342,14 +345,13 @@ define('Globe/TileMesh', [
         return this.texturesNeeded === this.material.nbLoadedTextures();
     };
 
-    TileMesh.prototype.checkOrtho = function() {
-        
-        // TODO remove this function
-
-        if (this.allTexturesAreLoaded() || this.level < 2){
+    TileMesh.prototype.loadingCheck = function() {
+               
+        if (this.allTexturesAreLoaded())
+        {
             this.loaded = true;
-            this.parent.childrenLoaded();
-        }
+            this.parent.childrenLoaded();           
+        }        
     };
 
     return TileMesh;
