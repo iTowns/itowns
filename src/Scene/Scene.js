@@ -14,16 +14,24 @@
  */
 define('Scene/Scene', [
     'Renderer/c3DEngine',
+    'three',
     'Globe/Globe',
     'Core/Commander/ManagerCommands',
     'Core/Commander/Providers/tileGlobeProvider',
+    'Core/Commander/Providers/BuildingBox_Provider',
+    'Core/Commander/Providers/PanoramicProvider',
+    'Renderer/PanoramicMesh',
     'Scene/BrowseTree',
     'Scene/NodeProcess',
     'Scene/Quadtree',
     'Scene/Layer',
     'Core/Geographic/CoordCarto',
-    'Core/System/Capabilities'
-], function(c3DEngine, Globe, ManagerCommands, tileGlobeProvider, BrowseTree, NodeProcess, Quadtree, Layer, CoordCarto, Capabilities) {
+    'Core/System/Capabilities',
+    'MobileMapping/MobileMappingLayer'
+    
+], function(c3DEngine, THREE, Globe, ManagerCommands, tileGlobeProvider, BuildingBox_Provider,
+            PanoramicProvider, PanoramicMesh, BrowseTree, NodeProcess, Quadtree, Layer, CoordCarto,
+            Capabilities, MobileMappingLayer) {
 
     var instanceScene = null;
     
@@ -96,13 +104,8 @@ define('Scene/Scene', [
         //var position    = globe.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(0,48.87,25000000));
 
         this.gfxEngine.init(this, position);
-        this.browserScene.addNodeProcess(new NodeProcess(this.currentCamera().camera3D, globe.size));
-        //this.gfxEngine.update();
-        // TODO OULALA ???
+        this.browserScene.addNodeProcess(new NodeProcess(this.currentCamera().camera3D, globe.size));            
         this.sceneProcess();
-        this.sceneProcess();
-        this.sceneProcess();
-
     };
 
     Scene.prototype.size = function() {
@@ -113,12 +116,11 @@ define('Scene/Scene', [
      * 
      * @returns {undefined}
      */   
-    Scene.prototype.sceneProcess = function(){        
+    Scene.prototype.sceneProcess = function(){ 
         if(this.layers[0] !== undefined  && this.currentCamera() !== undefined )
         {                        
         
-            this.browserScene.browse(this.layers[0].meshTerrain,this.currentCamera(),SUBDIVISE);
-                        
+            this.browserScene.browse(this.layers[0].meshTerrain,this.currentCamera(),SUBDIVISE);         
             this.managerCommand.runAllCommands().then(function()
                 {                   
                     if (this.managerCommand.commandsLength() === 0)
@@ -139,6 +141,7 @@ define('Scene/Scene', [
     Scene.prototype.realtimeSceneProcess = function() {
 
         if (this.currentCamera !== undefined)
+            if(this.layers[1] !== undefined) this.browserScene.browse(this.layers[1],this.currentCamera());  // temp //MobileMappingLayer
             for (var l = 0; l < this.layers.length; l++) {
                 var layer = this.layers[l];
 
@@ -227,6 +230,66 @@ define('Scene/Scene', [
 
         this.browserScene.selectedNodeId = id;
 
+    };
+    
+    Scene.prototype.setStreetLevelImageryOn = function(value){
+
+        if(value){
+
+             var imagesOption = {
+             // HTTP access to itowns sample datasets
+              //url : "../{lod}/images/{YYMMDD}/Paris-{YYMMDD}_0740-{cam.cam}-00001_{pano.pano:07}.jpg",
+              url : "../{lod}/images/{YYMMDD2}/Paris-{YYMMDD2}_0740-{cam.cam}-00001_{splitIt}.jpg",
+              lods : ['itowns-sample-data'],//['itowns-sample-data-small', 'itowns-sample-data'],
+                /*
+                // IIP server access    
+                    website   : "your.website.com",
+                    path    : "your/path",
+                    url : "http://{website}/cgi-bin/iipsrv.fcgi?FIF=/{path}/{YYMMDD}/Paris-{YYMMDD}_0740-{cam.id}-00001_{pano.id:07}.jp2&WID={lod.w}&QLT={lod.q}&CVT=JPEG",
+                    lods : [{w:32,q:50},{w:256,q:80},{w:2048,q:80}],
+                */    
+              cam       : "../dist/itowns-sample-data/cameraCalibration.json",
+              pano      : "../dist/itowns-sample-data/panoramicsMetaData.json",
+              buildings : "../dist/itowns-sample-data/buildingFootprint.json",
+              DTM       : "../dist/itowns-sample-data/dtm.json",
+              YYMMDD2 : function() {  //"filename":"Paris-140616_0740-00-00001_0000500"
+                return this.pano.filename.match("-(.*?)_")[1];
+              },
+              splitIt : function(){
+                  return this.pano.filename.split("_")[2];
+              },
+              YYMMDD : function() {
+                var d = new Date(this.pano.date);
+                return (""+d.getUTCFullYear()).slice(-2) + ("0"+(d.getUTCMonth()+1)).slice(-2) + ("0" + d.getUTCDate()).slice(-2);
+              },
+              UTCOffset : 15,
+              seconds : function() {
+                var d = new Date(this.pano.date);
+                return (d.getUTCHours()*60 + d.getUTCMinutes())*60+d.getUTCSeconds()-this.UTCOffset;
+              },
+              visible: true
+            };             
+
+            if(this.layers[1]) {
+                this.layers[1].panoramicMesh.visible = true;
+                this.updateScene3D();
+            }  
+            else{
+                // Create and add the MobileMappingLayer with Panoramic imagery
+                var panoramicProvider = new PanoramicProvider(imagesOption);
+                var mobileMappingLayer;
+                var projectiveMesh = panoramicProvider.getTextureProjectiveMesh(2.3348138,48.8506030,1000).then(function(projMesh){
+                    mobileMappingLayer = new MobileMappingLayer(projMesh);               
+                    this.add(mobileMappingLayer);
+                    this.updateScene3D();
+                    }.bind(this));
+            }
+
+        }else{
+            this.layers[1].panoramicMesh.visible = false; // mobileMappingLayer
+             this.updateScene3D();
+        }
+               
     };
 
     return function() {
