@@ -41,9 +41,12 @@
             _urlImage = options.url;
             _urlCam   = options.cam;
         }
-        
+        this.panoInfo = null;
         this.geometry = null;
-        this.material = null;
+        this.material = null;                
+        this.absoluteCenter = null; // pivot in fact here, not absoluteCenter 
+        this.geometryRoof = null;
+        this.panoramicMesh = null;
         this.projectiveTexturedMesh = null;
         
     }
@@ -68,8 +71,9 @@
      */    
     PanoramicProvider.prototype.getMetaDataFromPos = function(longitude, latitude, distance){
         
+        var that = this;
         if(!_panoramicsMetaData){
-            var that = this;
+            
             var requestURL = _urlPano;    // TODO : string_format
             return new Promise(function(resolve, reject) {
 
@@ -116,6 +120,7 @@
             var dist = Math.sqrt( (p.longitude - longitude) * (p.longitude - longitude) + (p.latitude - latitude) * (p.latitude - latitude) );
             if(dist< distMin) {indiceClosest = i; distMin = dist;}
         }
+        this.panoInfo = _panoramicsMetaData[indiceClosest];
         return [_panoramicsMetaData[indiceClosest]];
     };
     
@@ -127,9 +132,13 @@
         
         // ProjectiveTexturingMaterial.createShaderMat(_options);
         // return ProjectiveTexturingMaterial.getShaderMat();  
+    }; 
+   
+    
+    PanoramicProvider.prototype.updateTextureMaterial = function(panoInfo, pivot){
+        
+        ProjectiveTexturingMaterial.updateUniforms(panoInfo, pivot);
     };
-    
-    
 
 
     PanoramicProvider.prototype.getGeometry = function(longitude, latitude, altitude){
@@ -176,18 +185,18 @@
                  
                     that.material = shaderMaterial; //new THREE.MeshBasicMaterial({color: 0xffffff, transparent: true, opacity: 0.8}); 
                     //that.projectiveTexturedMesh = new THREE.Mesh(that.geometry, that.material);
-                    var panoramicMesh = new PanoramicMesh(that.geometry, that.material, that.absoluteCenter);
+                    that.panoramicMesh = new PanoramicMesh(that.geometry, that.material, that.absoluteCenter);
                     var roofMesh = new PanoramicMesh(that.geometryRoof, new BasicMaterial(new THREE.Color( 0xdddddd )), that.absoluteCenter);
                     roofMesh.material.side =  THREE.DoubleSide;
                     roofMesh.material.transparent  = true;
                     roofMesh.material.visible = true;
                     roofMesh.material.uniforms.lightOn.value = false;
 
-                    panoramicMesh.add(roofMesh);
+                    that.panoramicMesh.add(roofMesh);
                                        
-                    console.log(panoramicMesh);
+                    console.log(that.panoramicMesh);
                     console.log(roofMesh);
-                    deferred.resolve(panoramicMesh);
+                    deferred.resolve(that.panoramicMesh);
                     
                 })
 
@@ -196,6 +205,23 @@
         });
         return deferred.promise;
     };
+    
+    // Update existing panoramic mesh with new images look for the closest to parameters position
+    PanoramicProvider.prototype.updateMaterialImages = function(longitude, latitude, distance){
+        
+      var deferred = when.defer();
+      var that = this;
+      this.getMetaDataFromPos(longitude, latitude, distance).then(function(panoInfo){             // Get METADATA PANO
+          
+          deferred.resolve(panoInfo[0]);
+          that.updateTextureMaterial(panoInfo[0], that.absoluteCenter);
+          
+         
+          
+      });
+      return deferred.promise;
+    };
+            
 
     PanoramicProvider.prototype.getUrlImageFile = function(){
         return _urlImage;

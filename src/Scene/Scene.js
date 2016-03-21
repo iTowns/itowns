@@ -19,6 +19,8 @@ define('Scene/Scene', [
     'Core/Commander/ManagerCommands',
     'Core/Commander/Providers/tileGlobeProvider',
     'Core/Commander/Providers/BuildingBox_Provider',
+    'Core/Commander/Providers/PanoramicProvider',
+    'Renderer/PanoramicMesh',
     'Scene/BrowseTree',
     'Scene/NodeProcess',
     'Scene/Quadtree',
@@ -28,7 +30,7 @@ define('Scene/Scene', [
     'MobileMapping/MobileMappingLayer'
     
 ], function(c3DEngine, THREE, Globe, ManagerCommands, tileGlobeProvider, BuildingBox_Provider,
-            BrowseTree, NodeProcess, Quadtree, Layer, CoordCarto,
+            PanoramicProvider, PanoramicMesh, BrowseTree, NodeProcess, Quadtree, Layer, CoordCarto,
             Capabilities, MobileMappingLayer) {
 
     var instanceScene = null;
@@ -240,18 +242,17 @@ define('Scene/Scene', [
          if(value){
                if(this.layers[1]) {
                 this.layers[1].panoramicMesh.visible = true;
-                this.updateScene3D();
             }else{
 
                 var mobileMappingLayer = new MobileMappingLayer();   
                 mobileMappingLayer.initiatePanoramic();
                 this.add(mobileMappingLayer);
-                this.updateScene3D();
             }
         }else{
             this.layers[1].panoramicMesh.visible = false; // mobileMappingLayer
-            this.updateScene3D();
         }
+        
+        this.updateScene3D();
     };
     
 
