@@ -108,7 +108,7 @@ define('MobileMapping/MobileMappingLayer', [
        
        if(vCurrent.distanceTo(pos) > 0.2)
           setTimeout(function(){this.moveCameraToScanPosition(pos, vCurrent);}.bind(this), 20);
-        
+       
     };
     
     MobileMappingLayer.prototype.getDefaultOptions = function(){
