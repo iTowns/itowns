@@ -91,11 +91,21 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         this.scene.setStreetLevelImageryOn(value);
     }
 
+     /**
+    * Gets orientation angles of the current camera, in degrees.
+    * @constructor
+    */
     ApiGlobe.prototype.getCameraOrientation = function () {
         
-//        var cam = this.scene.currentControlCamera();
-//        return cam.object.quaternion;
+        var tiltCam = this.scene.currentControlCamera().getTiltCamera();
+        var headingCam = this.scene.currentControlCamera().getHeadingCamera();
+        return [tiltCam, headingCam];
     };
+    
+    /**
+    * Get the camera location projected on the ground in lat,lon.
+    * @constructor
+    */
     
     ApiGlobe.prototype.getCameraLocation = function () {
         
@@ -103,13 +113,22 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         return this.projection.cartesianToGeo(cam.camera3D.position);
     };
     
+    /**
+    * Gets the coordinates of the current central point on screen.
+    * @constructor
+    */
+    
     ApiGlobe.prototype.getCenter = function () {
         
         var controlCam = this.scene.currentControlCamera();       
         return this.projection.cartesianToGeo(controlCam.globeTarget.position);
     };
     
-    
+    /**
+    * Moves the central point on screen to specific coordinates.
+    * @constructor
+    * @param {Position} position - The position on the map.
+    */
     
     ApiGlobe.prototype.setCenter = function (/*position*/) {
         //TODO: Implement Me 
@@ -121,10 +140,14 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
     
     ApiGlobe.prototype.pickPosition = function () {
         //TODO: Implement Me 
+        
+        
     };
     
     ApiGlobe.prototype.launchCommandApi = function () {
-        //console.log(this.getCenter());
+//        console.log(this.getCenter());
+//        console.log(this.getCameraLocation());
+//        console.log(this.getCameraOrientation());
     };
 
     ApiGlobe.prototype.showKML = function(value) {

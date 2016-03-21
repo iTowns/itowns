@@ -104,13 +104,8 @@ define('Scene/Scene', [
         //var position    = globe.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(0,48.87,25000000));
 
         this.gfxEngine.init(this, position);
-        this.browserScene.addNodeProcess(new NodeProcess(this.currentCamera().camera3D, globe.size));
-        //this.gfxEngine.update();
-        // TODO OULALA ???
+        this.browserScene.addNodeProcess(new NodeProcess(this.currentCamera().camera3D, globe.size));            
         this.sceneProcess();
-        this.sceneProcess();
-        this.sceneProcess();
-
     };
 
     Scene.prototype.size = function() {
