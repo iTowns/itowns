@@ -292,8 +292,6 @@ define('Renderer/c3DEngine', [
         this.controls.maxDistance = size * 8.0;
         this.controls.keyPanSpeed = 0.01;
         
-        console.log(this.controls);
-        
     };
 
     /**
@@ -483,7 +481,7 @@ define('Renderer/c3DEngine', [
         return worldPosition;
 
     };
-
+    
     c3DEngine.prototype.placeDummy = function(dummy, position) {
         dummy.position.copy(position);
         var size = position.clone().sub(this.camera.position()).length() / 200; // TODO distance                
