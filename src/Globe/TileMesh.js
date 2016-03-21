@@ -56,6 +56,8 @@ define('Globe/TileMesh', [
     
         // TODO Try to remove this.absoluteCenter
         this.absoluteCenter = params.center3D;
+        this.distance = this.absoluteCenter.length();
+
 
         // TODO Question in next line ???
         this.centerSphere = new THREE.Vector3().addVectors(this.geometry.boundingSphere.center, this.absoluteCenter);
