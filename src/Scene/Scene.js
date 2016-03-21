@@ -68,6 +68,10 @@ define('Scene/Scene', [
         return this.gfxEngine.controls;
     };
 
+    Scene.prototype.getPickPosition = function (mouse){
+        return this.gfxEngine.getPickingPosition(mouse);
+    };
+
     Scene.prototype.updateCamera = function() {
         this.browserScene.NodeProcess().updateCamera(this.gfxEngine.camera);
     };
