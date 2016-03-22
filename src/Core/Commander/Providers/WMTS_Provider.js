@@ -202,8 +202,6 @@ define('Core/Commander/Providers/WMTS_Provider', [
             {         
                 return this.getOrthoImages(command.requester).then(function(result)
                 {             
-                    if(this.material === null) // TODO WHY??
-                        return;
                     this.setTexturesLayer(result,1);                                            
                 }.bind(command.requester));
             }                
@@ -212,27 +210,19 @@ define('Core/Commander/Providers/WMTS_Provider', [
                 
                 var tile = command.requester;
                 
-                var parent = tile.level === tile.levelTerrain ? tile : tile.getParentLevel(tile.levelTerrain);
-                
-                if(parent === undefined)
-                    return;
+                var parent = tile.level === tile.levelTerrain ? tile : tile.getParentLevel(tile.levelTerrain);                
                 
                 if(parent.downScaledLayer(0))
                 {                 
                     return this.getTextureBil(parent.cooWMTS).then(function(terrain)
                     {            
-                        if(this.material === null)
-                            return;
                         this.setTerrain(terrain);
                        
                     }.bind(parent)).then(function()
                     {
                         if(this.downScaledLayer(0))
-                        {
-                            if(this.material === null)
-                                return;
-                            this.setTerrain(-2);                            
-                        }
+
+                            this.setTerrain(-2);
 
                     }.bind(tile));                                                                         
                 }
@@ -262,16 +252,13 @@ define('Core/Commander/Providers/WMTS_Provider', [
      
                    promises.push(this.getTextureOrtho(cooWMTS,pitch));
 
-               }
+                }
                
-               return when.all(promises);
+                return when.all(promises);
            }
-           else 
-           {
-                tile.checkOrtho();
+           else                     
                 return when();
-           }
-                        
+                    
        };
 
        return WMTS_Provider;

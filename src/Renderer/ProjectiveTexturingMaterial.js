@@ -13,13 +13,13 @@ define (['Renderer/c3DEngine','three','Renderer/ThreeExtented/threeExt','MobileM
         PanoramicProvider, Shader, url, string_format,
         when, Ellipsoid, CoordCarto) {
 
-        window.requestAnimSelectionAlpha = (function(){
+       window.requestAnimSelectionAlpha = (function(){
             return  window.requestAnimationFrame || 
             window.webkitRequestAnimationFrame   || 
             window.mozRequestAnimationFrame      || 
             window.oRequestAnimationFrame        || 
             window.msRequestAnimationFrame       || 
-            function(callback, element){
+            function(callback){
                 window.setTimeout(callback, 1000 / 60);
             };
         })();
@@ -42,8 +42,8 @@ define (['Renderer/c3DEngine','three','Renderer/ThreeExtented/threeExt','MobileM
                     _infos.targetNbPanoramics = _infos.targetNbPanoramics || 2;
                     _initiated = true;
                     
-                    Ori.init(infos).then(function(data){
-                        console.log("ORI IS INITIATED");
+                    Ori.init(infos).then(function(){
+                        //console.log("ORI IS INITIATED");
                         // compute Camera Frame Rotation
                         var matRotationFrame = this.getCameraFrameRotation(panoInfo);
                         this.createShaderMat(panoInfo, matRotationFrame, pivot);
@@ -71,7 +71,7 @@ define (['Renderer/c3DEngine','three','Renderer/ThreeExtented/threeExt','MobileM
                     if(_alpha<1){
                             _alpha += ((_alpha+0.01))*0.04;
                             if(_alpha>1) _alpha=1;
-                            requestAnimSelectionAlpha(this.tweenGeneralOpacityUp.bind(this));
+                            window.requestAnimSelectionAlpha(this.tweenGeneralOpacityUp.bind(this));
                     }
             },
             
@@ -133,16 +133,17 @@ define (['Renderer/c3DEngine','three','Renderer/ThreeExtented/threeExt','MobileM
                     var maxTextureImageUnits = gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS);
                     var maxNbPanoramics = Math.floor(Math.min(maxVaryingVec,(maxTextureImageUnits-M))/N);
                     var P = Math.min(_infos.targetNbPanoramics,maxNbPanoramics);
-                    console.log("Masks : ", M);
+              /*       console.log("Masks : ", M);
                     console.log("Images per panoramic  : ", N );
                     console.log("Panoramics : ", P ," displayed /",_infos.targetNbPanoramics, " targeted");
                     console.log("Varyings : ", (N*P) ," used /",maxVaryingVec, " available");
                     console.log("Texture units : ", (M+N*P) ," used /",maxTextureImageUnits," available");
-                    return P;
+               */     return P;
             },
 
             loadTexture: function(src,infos,onload,data){
                     
+                   // console.log("src: ",src,"  infos: ",infos);
                     src = src.format(infos);
                     var img = new Image(); 
                     img.crossOrigin = 'anonymous';
@@ -188,7 +189,7 @@ define (['Renderer/c3DEngine','three','Renderer/ThreeExtented/threeExt','MobileM
                     
                     var mat = Ori.getMatrix(i).clone();
                     var mvpp = (new THREE.Matrix3().multiplyMatrices(rot,mat)).transpose();
-                    var trans = posFrameWithPivot.add( Ori.getSommet(i).clone().applyMatrix3(rot) );
+                    var trans = posFrameWithPivot.clone().add( Ori.getSommet(i).clone().applyMatrix3(rot) );
                     var m = -1;
                     if(!_infos.noMask && Ori.getMask(i)) {
                             m = uniforms.mask.value.length;
@@ -225,9 +226,9 @@ define (['Renderer/c3DEngine','three','Renderer/ThreeExtented/threeExt','MobileM
 
                 _infos.pano = panoInfo;
                 _infos.lod = _infos.lods[0];
-                for (var i=0; i<N; ++i) {
+                for ( i=0; i<N; ++i) {
                         _infos.cam  = Ori.sensors[i].infos;
-                        var m= idmask[i];
+                        m= idmask[i];
                         if(m>=0) {
                                 this.loadTexture(Ori.getMask(i), {}, function(tex,m) { 	
                                         _shaderMat.uniforms.mask.value[m] = tex; 
@@ -242,11 +243,23 @@ define (['Renderer/c3DEngine','three','Renderer/ThreeExtented/threeExt','MobileM
             return _shaderMat;
         },
               
-
+        updateUniforms: function(panoInfo, pivot){
+            
+            var matRotationFrame = this.getCameraFrameRotation(panoInfo);
+            
+            // compute translation
+                var posPanoWGS84 = new CoordCarto().setFromDegreeGeo(panoInfo.latitude, panoInfo.longitude, panoInfo.altitude);
+                var posPanoCartesian = ellipsoid.cartographicToCartesian(posPanoWGS84);
+                var posPiv = posPanoCartesian.clone().sub(pivot);
+                var posFrameWithPivot = new THREE.Vector4(posPiv.x, posPiv.y, posPiv.z, 1.);
+                
+            this.changePanoTextureAfterloading(panoInfo, posFrameWithPivot, matRotationFrame, 0);
+        },
             
         tweenIndiceTime: function (i){
             
             var alpha = _shaderMat.uniforms.alpha.value[i];
+            graphicEngine().renderScene();  // TEMP CAUSE NO GLOBAL RENDERING LOOP
             if(alpha<1){
                 var j = i + this.nbImages();
                 alpha += 0.03;
@@ -254,12 +267,13 @@ define (['Renderer/c3DEngine','three','Renderer/ThreeExtented/threeExt','MobileM
                 _shaderMat.uniforms.alpha.value[i] = _alpha*alpha;
                 _shaderMat.uniforms.alpha.value[j] = _alpha*(1-alpha);
                 var that = this;
-                requestAnimSelectionAlpha(function() { that.tweenIndiceTime(i); });                			
+                window.requestAnimSelectionAlpha(function() { that.tweenIndiceTime(i); });                			
             }	
         },
         
             
         changePanoTextureAfterloading: function (panoInfo,translation,rotation,lod){
+            
             
             this.todo = [];
             _infos.pano = panoInfo;
@@ -285,10 +299,10 @@ define (['Renderer/c3DEngine','three','Renderer/ThreeExtented/threeExt','MobileM
             this.loadTexture(_infos.url, _infos, function(tex) { 
                 
                 var mat = Ori.getMatrix(i).clone();
-                var mvpp = (new THREE.Matrix3().multiplyMatrices( that.rotation,mat )).transpose();
+                var mvpp = (new THREE.Matrix3().multiplyMatrices(that.rotation, mat)).transpose();
                 var trans = Ori.getSommet(i).clone().applyMatrix3(that.rotation);
                 var j = i + that.nbImages();
-                if(lod == 0 && j<_shaderMat.uniforms.mvpp.value.length) {
+                if(lod === 0 && j<_shaderMat.uniforms.mvpp.value.length) {
                     _shaderMat.uniforms.mvpp.value[j] = _shaderMat.uniforms.mvpp.value[i];
                     _shaderMat.uniforms.translation.value[j] = _shaderMat.uniforms.translation.value[i];
                     _shaderMat.uniforms.texture.value[j] =_shaderMat.uniforms.texture.value[i];

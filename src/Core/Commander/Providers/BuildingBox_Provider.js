@@ -68,7 +68,7 @@ define('Core/Commander/Providers/BuildingBox_Provider',[
         
         var key    = "72hpsel8j8nhb5qgdh07gcyp";
      
-        var layer  = "BDTOPO_BDD_WLD_WGS84G:bati_remarquable,BDTOPO_BDD_WLD_WGS84G:bati_indifferencie"
+        //var layer  = "BDTOPO_BDD_WLD_WGS84G:bati_remarquable,BDTOPO_BDD_WLD_WGS84G:bati_indifferencie"
         var serviceVersionRequestLayer = "service=WFS&version=2.0.0&REQUEST=GetFeature&typeName=BDTOPO_BDD_WLD_WGS84G:bati_remarquable,BDTOPO_BDD_WLD_WGS84G:bati_indifferencie"
                         
         var bottomLeft = new THREE.Vector2(longitude - radius, latitude - radius);
@@ -213,7 +213,7 @@ define('Core/Commander/Providers/BuildingBox_Provider',[
             for(var i = 0; i< _geometry.vertices.length ; ++i){
                     _geometry.vertices[i].sub(firstPos);
             }
-            for(var i = 0; i< geometry.vertices.length ; ++i){
+            for( i = 0; i< geometry.vertices.length ; ++i){
                     geometry.vertices[i].sub(firstPos);
             }
         }

@@ -103,6 +103,8 @@ define('Core/Commander/Providers/tileGlobeProvider', [
             }
         };
 
+        var center = new THREE.Vector3();
+
         tileGlobeProvider.prototype.executeCommand = function(command) {
 
             var bbox = command.paramsFunction.bbox;
@@ -110,27 +112,27 @@ define('Core/Commander/Providers/tileGlobeProvider', [
             var parent = command.requester;
             var geometry = undefined; //getGeometry(bbox,cooWMTS);       
 
-            var tile = new command.type(bbox, cooWMTS, this.builder, this.nNode++, geometry,parent.link);
+            var tile = new command.type(bbox, cooWMTS, this.builder, this.nNode++, geometry,parent.link,center);
 
             if (geometry) {
-                tile.rotation.set(0, (cooWMTS.col % 2) * (Math.PI * 2.0 / Math.pow(2, cooWMTS.zoom + 1)), 0);
-                tile.updateMatrixWorld();
+                tile.rotation.set(0, (cooWMTS.col % 2) * (Math.PI * 2.0 / Math.pow(2, cooWMTS.zoom + 1)), 0);            
             }
 
-            var translate = new THREE.Vector3();
+            parent.worldToLocal(center);
 
-            if (parent.worldToLocal)
-                translate = parent.worldToLocal(tile.absoluteCenter.clone());
-
-            tile.position.copy(translate);            
+            tile.position.copy(center);          
             tile.setVisibility(false);
   
             parent.add(tile);
             tile.updateMatrix();
-
+            tile.updateMatrixWorld();
             
             if(cooWMTS.zoom > 3 )
-                cooWMTS =  undefined;            
+            {
+                cooWMTS =  undefined;
+            }
+
+            tile.texturesNeeded =+ 1;
 
             return this.providerWMTS.getTextureBil(cooWMTS).then(function(terrain){                        
                                                                        
@@ -161,7 +163,7 @@ define('Core/Commander/Providers/tileGlobeProvider', [
                 var promises = [];
                 var box = this.projection.WMTS_WGS84ToWMTS_PM(tile.cooWMTS, tile.bbox); //                 
                 var col = box[0].col;
-                tile.orthoNeed = box[1].row + 1 - box[0].row;               
+                tile.texturesNeeded += box[1].row + 1 - box[0].row;               
                 
                 for (var row = box[0].row; row < box[1].row + 1; row++) {
                                        
@@ -179,11 +181,9 @@ define('Core/Commander/Providers/tileGlobeProvider', [
                   
                 return when.all(promises);
             }
-            else 
-            {
-                tile.checkOrtho();
-                return when();
-            }
+            else             
+                
+                return when();            
             
         };
 
