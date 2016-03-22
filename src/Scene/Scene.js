@@ -60,11 +60,11 @@ define('Scene/Scene', [
      * @documentation: return current camera 
      * @returns {Scene_L7.Scene.gfxEngine.camera}
      */
-    Scene.prototype.currentCamera = function() {        
+    Scene.prototype.currentCamera = function() {          
         return this.gfxEngine.camera;
     };
     
-    Scene.prototype.currentControlCamera = function() {
+    Scene.prototype.currentControlCamera = function() {        
         return this.gfxEngine.controls;
     };
 
