@@ -37,6 +37,10 @@ module.exports = {
             'THREE': 'three'
         }
       }
+    ],
+    noParse: [
+            /js-priority-queue[\\\/]file\.js$/,
+            path.join(__dirname, "node_modules", "js-priority-queue")
     ]
   },
   resolve: {
