@@ -210,25 +210,25 @@ define('Core/Commander/Providers/WMTS_Provider', [
                 
                 var tile = command.requester;
                 
-                var parent = tile.level === tile.levelTerrain ? tile : tile.getParentLevel(tile.levelTerrain);                
+                var parent = tile.level === tile.levelElevation ? tile : tile.getParentLevel(tile.levelElevation);                
                 
                 if(parent.downScaledLayer(0))
                 {                 
                     return this.getTextureBil(parent.cooWMTS).then(function(terrain)
                     {            
-                        this.setTerrain(terrain);
+                        this.setTextureElevation(terrain);
                        
                     }.bind(parent)).then(function()
                     {
                         if(this.downScaledLayer(0))
 
-                            this.setTerrain(-2);
+                            this.setTextureElevation(-2);
 
                     }.bind(tile));                                                                         
                 }
                 else
                 {            
-                    tile.setTerrain(-2);                    
+                    tile.setTextureElevation(-2);                    
                 }
             }           
         };
