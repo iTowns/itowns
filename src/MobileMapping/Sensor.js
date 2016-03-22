@@ -8,7 +8,7 @@
 define ('MobileMapping/Sensor',['three'], function (THREE) { 
 
 
-    Sensor = function (infos){
+  var  Sensor = function (infos){
         this.infos = infos;
         this.position = new THREE.Vector3().fromArray( infos.position );
         this.rotation = new THREE.Matrix3().fromArray( infos.rotation );
@@ -39,6 +39,7 @@ define ('MobileMapping/Sensor',['three'], function (THREE) {
         this.rotation = this.getMatOrientationTotal();
         this.position.applyMatrix3(this._itownsWay);
      };
+     
 
 
      Sensor.prototype.getDistortion_r2max = function(disto){
@@ -98,9 +99,9 @@ define ('MobileMapping/Sensor',['three'], function (THREE) {
     Sensor.prototype.cardan_cubic_roots = function(a,b,c,d){
        
           // http://fr.wikipedia.org/wiki/Methode_de_Cardan  Thanks Bredif
-        cardan_cubic_roots =  function(a,b,c,d){
+       var cardan_cubic_roots =  function(a,b,c,d){
             
-            if(a===0) return this.quadratic_roots(b,c,d);
+            if(a===0) return quadratic_roots(b,c,d);
             var vt=-b/(3*a);
             var a2 = a*a;
             var b2 = b*b;
@@ -110,7 +111,7 @@ define ('MobileMapping/Sensor',['three'], function (THREE) {
             var q=b3/(a3*13.5)+d/a-b*c/(3*a2);
             if(p===0)
             {
-                    var x = this.cubic_root(-q)+vt;
+                    var x = cubic_root(-q)+vt;
                     return [x,x,x];
             }
             var p3_4_27=p*p*p*4/27;
@@ -119,8 +120,8 @@ define ('MobileMapping/Sensor',['three'], function (THREE) {
             if(del > 0)
             {
                     var sqrt_del=Math.sqrt(del);
-                    var u=this.cubic_root((-q+sqrt_del)/2);
-                    var v=this.cubic_root((-q-sqrt_del)/2);
+                    var u=cubic_root((-q+sqrt_del)/2);
+                    var v=cubic_root((-q-sqrt_del)/2);
                     return [u+v+vt];
             }
             else if (del===0)
@@ -142,7 +143,7 @@ define ('MobileMapping/Sensor',['three'], function (THREE) {
             }
         };
 
-        quadratic_roots = function(a,b,c){
+      var  quadratic_roots = function(a,b,c){
                 var delta = b*b-4*a*c;
                 if(delta<0) return [];
                 var x0 = -b/(2*a);
@@ -151,12 +152,12 @@ define ('MobileMapping/Sensor',['three'], function (THREE) {
                 return [x0-sqr_delta_2a,x0+sqr_delta_2a];
         };
 
-        sgn = function(x) {
+     var   sgn = function(x) {
             return (x>0) - (x< 0); 
         };
 
-        cubic_root = function(x) {
-            return this.sgn(x)*Math.pow(Math.abs(x),1/3); 
+     var   cubic_root = function(x) {
+            return sgn(x)*Math.pow(Math.abs(x),1/3); 
         };
 
         return cardan_cubic_roots(a,b,c,d);

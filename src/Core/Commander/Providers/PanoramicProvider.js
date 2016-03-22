@@ -103,14 +103,14 @@
         }else{          // Trajectory file already loaded
 
                  var closestPano = that.getClosestPanoInMemory(longitude, latitude, distance);
-                 return new Promise(function(resolve, reject) {resolve(closestPano);});
+                 return new Promise(function(resolve) {resolve(closestPano);});
         }
     };
 
         
 
     // USING MEMORISED TAB or JSON ORI
-    PanoramicProvider.prototype.getClosestPanoInMemory = function(longitude, latitude, distance){
+    PanoramicProvider.prototype.getClosestPanoInMemory = function(longitude, latitude){
 
         var indiceClosest = 0;
         var distMin = 99999;
@@ -145,7 +145,7 @@
 
         var w = 0.003; 
         var bbox = {minCarto:{longitude:longitude - w, latitude:latitude - w}, maxCarto: {longitude:longitude + w, latitude:latitude + w}};
-        console.log(bbox);
+        //console.log(bbox);
         var options = options || {url:"http://wxs.ign.fr/72hpsel8j8nhb5qgdh07gcyp/geoportail/wfs?",
                        typename:"BDTOPO_BDD_WLD_WGS84G:bati_remarquable,BDTOPO_BDD_WLD_WGS84G:bati_indifferencie",
                        bbox: bbox,
@@ -174,7 +174,7 @@
         var that = this;
         this.getMetaDataFromPos(longitude, latitude, distance).then(function(panoInfo){             // Get METADATA PANO
             
-            console.log("panoInfo", panoInfo);
+           // console.log("panoInfo", panoInfo);
             that.getGeometry(panoInfo[0].longitude, panoInfo[0].latitude, panoInfo[0].altitude).then(function(data){      // GET GEOMETRY
 
                 that.geometry = data.geometry; 
@@ -194,8 +194,8 @@
 
                     that.panoramicMesh.add(roofMesh);
                                        
-                    console.log(that.panoramicMesh);
-                    console.log(roofMesh);
+                   // console.log(that.panoramicMesh);
+                   // console.log(roofMesh);
                     deferred.resolve(that.panoramicMesh);
                     
                 })

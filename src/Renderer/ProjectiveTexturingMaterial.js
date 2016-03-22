@@ -13,13 +13,13 @@ define (['Renderer/c3DEngine','three','Renderer/ThreeExtented/threeExt','MobileM
         PanoramicProvider, Shader, url, string_format,
         when, Ellipsoid, CoordCarto) {
 
-        window.requestAnimSelectionAlpha = (function(){
+       window.requestAnimSelectionAlpha = (function(){
             return  window.requestAnimationFrame || 
             window.webkitRequestAnimationFrame   || 
             window.mozRequestAnimationFrame      || 
             window.oRequestAnimationFrame        || 
             window.msRequestAnimationFrame       || 
-            function(callback, element){
+            function(callback){
                 window.setTimeout(callback, 1000 / 60);
             };
         })();
@@ -42,8 +42,8 @@ define (['Renderer/c3DEngine','three','Renderer/ThreeExtented/threeExt','MobileM
                     _infos.targetNbPanoramics = _infos.targetNbPanoramics || 2;
                     _initiated = true;
                     
-                    Ori.init(infos).then(function(data){
-                        console.log("ORI IS INITIATED");
+                    Ori.init(infos).then(function(){
+                        //console.log("ORI IS INITIATED");
                         // compute Camera Frame Rotation
                         var matRotationFrame = this.getCameraFrameRotation(panoInfo);
                         this.createShaderMat(panoInfo, matRotationFrame, pivot);
@@ -71,7 +71,7 @@ define (['Renderer/c3DEngine','three','Renderer/ThreeExtented/threeExt','MobileM
                     if(_alpha<1){
                             _alpha += ((_alpha+0.01))*0.04;
                             if(_alpha>1) _alpha=1;
-                            requestAnimSelectionAlpha(this.tweenGeneralOpacityUp.bind(this));
+                            window.requestAnimSelectionAlpha(this.tweenGeneralOpacityUp.bind(this));
                     }
             },
             
@@ -133,12 +133,12 @@ define (['Renderer/c3DEngine','three','Renderer/ThreeExtented/threeExt','MobileM
                     var maxTextureImageUnits = gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS);
                     var maxNbPanoramics = Math.floor(Math.min(maxVaryingVec,(maxTextureImageUnits-M))/N);
                     var P = Math.min(_infos.targetNbPanoramics,maxNbPanoramics);
-                    console.log("Masks : ", M);
+              /*       console.log("Masks : ", M);
                     console.log("Images per panoramic  : ", N );
                     console.log("Panoramics : ", P ," displayed /",_infos.targetNbPanoramics, " targeted");
                     console.log("Varyings : ", (N*P) ," used /",maxVaryingVec, " available");
                     console.log("Texture units : ", (M+N*P) ," used /",maxTextureImageUnits," available");
-                    return P;
+               */     return P;
             },
 
             loadTexture: function(src,infos,onload,data){
@@ -226,9 +226,9 @@ define (['Renderer/c3DEngine','three','Renderer/ThreeExtented/threeExt','MobileM
 
                 _infos.pano = panoInfo;
                 _infos.lod = _infos.lods[0];
-                for (var i=0; i<N; ++i) {
+                for ( i=0; i<N; ++i) {
                         _infos.cam  = Ori.sensors[i].infos;
-                        var m= idmask[i];
+                        m= idmask[i];
                         if(m>=0) {
                                 this.loadTexture(Ori.getMask(i), {}, function(tex,m) { 	
                                         _shaderMat.uniforms.mask.value[m] = tex; 
@@ -267,7 +267,7 @@ define (['Renderer/c3DEngine','three','Renderer/ThreeExtented/threeExt','MobileM
                 _shaderMat.uniforms.alpha.value[i] = _alpha*alpha;
                 _shaderMat.uniforms.alpha.value[j] = _alpha*(1-alpha);
                 var that = this;
-                requestAnimSelectionAlpha(function() { that.tweenIndiceTime(i); });                			
+                window.requestAnimSelectionAlpha(function() { that.tweenIndiceTime(i); });                			
             }	
         },
         
