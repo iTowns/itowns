@@ -5,7 +5,10 @@
  * @author alexandre devaux IGN
  * @requires ThreeJS
  * 
- */ 
+ */
+
+/* global Promise*/
+
  define ('Core/Commander/Providers/PanoramicProvider',
        ['three',
         'when',
