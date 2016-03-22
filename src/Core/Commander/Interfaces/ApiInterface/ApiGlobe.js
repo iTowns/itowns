@@ -111,13 +111,14 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
     
     ApiGlobe.prototype.getCameraLocation = function () {
         
-        var cam = this.scene.currentCamera();
-        return this.projection.cartesianToGeo(cam.camera3D.position);
+        var cam = this.scene.currentCamera().camera3D;
+        return this.projection.cartesianToGeo(cam.position);
     };
     
     /**
     * Gets the coordinates of the current central point on screen.
     * @constructor
+    * @return {Position} postion
     */
     
     ApiGlobe.prototype.getCenter = function () {
@@ -140,16 +141,106 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         //TODO: Implement Me 
     };
     
-    ApiGlobe.prototype.pickPosition = function () {
-        //TODO: Implement Me 
+    /**
+    * Pick a position on the globe at the given position.
+    * @constructor
+    * @param {Number | MouseEvent} x|event - The x-position inside the Globe element or a mouse event.
+    * @param {number | undefined} y - The y-position inside the Globe element.
+    * @return {Position} postion
+    */    
+    ApiGlobe.prototype.pickPosition = function (mouse,y) {
         
+        if(mouse)
+            if(mouse.clientX)
+            {
+                mouse.x = mouse.clientX;
+                mouse.y = mouse.clientY;            
+            }
+            else            
+            {
+                mouse.x = mouse;
+                mouse.y = y;            
+            }
+            
+        var pickedPosition = this.scene.getPickPosition(mouse);
         
+        this.scene.renderScene3D();
+        
+        return this.projection.cartesianToGeo(pickedPosition);
     };
+    
+    /**
+    * Get the tilt.
+    * @constructor
+    * @return {Angle} number - The angle of the rotation in degrees.
+    */  
+    
+    ApiGlobe.prototype.getTilt = function (){
+        
+        var tiltCam = this.scene.currentControlCamera().getTilt();
+        return tiltCam;
+    };
+    
+    /**
+    * Get the rotation.
+    * @constructor
+    * @return {Angle} number - The angle of the rotation in degrees.
+    */  
+    
+    ApiGlobe.prototype.getHeading = function (){
+        
+        var headingCam = this.scene.currentControlCamera().getHeading();
+        return headingCam;
+    };
+    
+    /**
+    * Get the "range", i.e. distance in meters of the camera from the center.
+    * @constructor
+    * @return {Number} number 
+    */  
+    
+    ApiGlobe.prototype.getRange = function (){
+                
+        var controlCam = this.scene.currentControlCamera();               
+        var center = controlCam.globeTarget.position;
+        var camPosition = this.scene.currentCamera().position();        
+        var range = center.distanceTo(camPosition);        
+        return range;
+    };
+    
+    /**
+    * Change the tilt.
+    * @constructor
+    * @param {Angle} Number - The angle.
+    * @param {Boolean} [pDisableAnimation] - Used to force the non use of animation if its enable.
+    */  
+    
+    ApiGlobe.prototype.setTilt = function (tilt/*, bool*/) {
+        
+        this.scene.currentControlCamera().setTilt(tilt);
+    };
+    
+    /**
+    * Change the tilt.
+    * @constructor
+    * @param {Angle} Number - The angle.
+    * @param {Boolean} [pDisableAnimation] - Used to force the non use of animation if its enable.
+    */ 
+    
+//    ApiGlobe.prototype.setHeading = function (heading, bool){
+//        
+//        var headingCamRad = this.scene.currentControlCamera().getHeadingRad();
+//    };
     
     ApiGlobe.prototype.launchCommandApi = function () {
 //        console.log(this.getCenter());
 //        console.log(this.getCameraLocation());
 //        console.log(this.getCameraOrientation());
+//        console.log(this.pickPosition());
+//        console.log(this.getTilt());
+//        console.log(this.getHeading());
+//        console.log(this.getRange());
+        this.setTilt(45);
     };
 
     ApiGlobe.prototype.showKML = function(value) {
