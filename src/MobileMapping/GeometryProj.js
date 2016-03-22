@@ -20,7 +20,7 @@ function(THREE ) {
     
 
     GeometryProj.prototype.useParent = function() {
-        return this.level !== this.levelTerrain;
+        return this.level !== this.levelElevation;
     };
 
     GeometryProj.prototype.enableRTC = function(enable) {
