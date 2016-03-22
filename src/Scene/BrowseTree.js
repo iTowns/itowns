@@ -48,6 +48,12 @@ define('Scene/BrowseTree', ['Globe/TileMesh', 'THREE'], function( TileMesh, THRE
      */
     BrowseTree.prototype.processNode = function(node, camera, params) {
         
+        if(node.name === "terrestrialMesh"){    // TEMP
+            node.setMaterialVisibility(true);
+            this.uniformsProcess(node, camera);
+            return true;
+        }
+
         node.setVisibility(false);
         node.setSelected(false);
 
@@ -65,9 +71,11 @@ define('Scene/BrowseTree', ['Globe/TileMesh', 'THREE'], function( TileMesh, THRE
     };
 
 
+    var positionWorld = new THREE.Vector3();
+
     BrowseTree.prototype.uniformsProcess = function(node, camera) {
 
-        node.setMatrixRTC(this.gfxEngine.getRTCMatrixFromCenter(node.absoluteCenter, camera));
+        node.setMatrixRTC(this.gfxEngine.getRTCMatrixFromCenter(positionWorld.setFromMatrixPosition(node.matrixWorld), camera));
         node.setFog(this.fogDistance);
 
         this.selectNode(node);
@@ -140,7 +148,7 @@ define('Scene/BrowseTree', ['Globe/TileMesh', 'THREE'], function( TileMesh, THRE
         for (var i = 0; i < node.children.length; i++) {
             var child = node.children[i];
             // TODO node.wait === true ---> delete child and switch to node.wait = false
-            if (this._clean(child, level, camera) && ((child.level >= level && child.children.length === 0 && !this.nodeProcess.SSE(child, camera) && !node.wait) || node.level === 2))
+            if (this._clean(child, level, camera) && ((child.level >= level && child.children.length === 0 && !this.nodeProcess.checkSSE(child, camera) && !node.wait) || node.level === 2))
                 childrenCleaned++;
         }
 
@@ -183,11 +191,11 @@ define('Scene/BrowseTree', ['Globe/TileMesh', 'THREE'], function( TileMesh, THRE
 
                var node = root.children[c];
 
-               var lookMaterial = function(obj) {
+               var lookMaterial = function(obj) {obj.material.Textures[1]
                    // if (obj.material.Textures_01 ){//&& !obj.visible){
-                         for (var i=0; i< obj.material.Textures_01.length; ++i){
+                         for (var i=0; i< obj.material.Textures[1].length; ++i){
 
-                              var url = obj.material.Textures_01[i].url; 
+                              var url = obj.material.Textures[1][i].url; 
                               var x,y,z,urlWMTS;
                               if(url){
                                  if(url.indexOf("geoportail")>0){
@@ -209,7 +217,7 @@ define('Scene/BrowseTree', ['Globe/TileMesh', 'THREE'], function( TileMesh, THRE
                                 if( url.indexOf(WMTSProvider.baseUrl) <0){  // We need to update texture
                                     var newTexture = loader.load(urlWMTS);
                                         newTexture.url = urlWMTS;
-                                        obj.material.Textures_01[i] = newTexture;
+                                        obj.material.Textures[1][i] = newTexture;
                                 }
                              }
                          }

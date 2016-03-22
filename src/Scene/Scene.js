@@ -14,16 +14,24 @@
  */
 define('Scene/Scene', [
     'Renderer/c3DEngine',
+    'three',
     'Globe/Globe',
     'Core/Commander/ManagerCommands',
     'Core/Commander/Providers/tileGlobeProvider',
+    'Core/Commander/Providers/BuildingBox_Provider',
+    'Core/Commander/Providers/PanoramicProvider',
+    'Renderer/PanoramicMesh',
     'Scene/BrowseTree',
     'Scene/NodeProcess',
     'Scene/Quadtree',
     'Scene/Layer',
     'Core/Geographic/CoordCarto',
-    'Core/System/Capabilities'
-], function(c3DEngine, Globe, ManagerCommands, tileGlobeProvider, BrowseTree, NodeProcess, Quadtree, Layer, CoordCarto, Capabilities) {
+    'Core/System/Capabilities',
+    'MobileMapping/MobileMappingLayer'
+    
+], function(c3DEngine, THREE, Globe, ManagerCommands, tileGlobeProvider, BuildingBox_Provider,
+            PanoramicProvider, PanoramicMesh, BrowseTree, NodeProcess, Quadtree, Layer, CoordCarto,
+            Capabilities, MobileMappingLayer) {
 
     var instanceScene = null;
     
@@ -100,13 +108,8 @@ define('Scene/Scene', [
         //var position    = globe.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(0,48.87,25000000));
 
         this.gfxEngine.init(this, position);
-        this.browserScene.addNodeProcess(new NodeProcess(this.currentCamera().camera3D, globe.size));
-        //this.gfxEngine.update();
-        // TODO OULALA ???
+        this.browserScene.addNodeProcess(new NodeProcess(this.currentCamera().camera3D, globe.size));            
         this.sceneProcess();
-        this.sceneProcess();
-        this.sceneProcess();
-
     };
 
     Scene.prototype.size = function() {
@@ -117,12 +120,11 @@ define('Scene/Scene', [
      * 
      * @returns {undefined}
      */   
-    Scene.prototype.sceneProcess = function(){        
+    Scene.prototype.sceneProcess = function(){ 
         if(this.layers[0] !== undefined  && this.currentCamera() !== undefined )
         {                        
         
-            this.browserScene.browse(this.layers[0].meshTerrain,this.currentCamera(),SUBDIVISE);
-                        
+            this.browserScene.browse(this.layers[0].meshTerrain,this.currentCamera(),SUBDIVISE);         
             this.managerCommand.runAllCommands().then(function()
                 {                   
                     if (this.managerCommand.commandsLength() === 0)
@@ -143,6 +145,7 @@ define('Scene/Scene', [
     Scene.prototype.realtimeSceneProcess = function() {
 
         if (this.currentCamera !== undefined)
+            if(this.layers[1] !== undefined) this.browserScene.browse(this.layers[1],this.currentCamera());  // temp //MobileMappingLayer
             for (var l = 0; l < this.layers.length; l++) {
                 var layer = this.layers[l];
 
@@ -232,6 +235,25 @@ define('Scene/Scene', [
         this.browserScene.selectedNodeId = id;
 
     };
+    
+    Scene.prototype.setStreetLevelImageryOn = function(value){
+        
+         if(value){
+               if(this.layers[1]) {
+                this.layers[1].panoramicMesh.visible = true;
+            }else{
+
+                var mobileMappingLayer = new MobileMappingLayer();   
+                mobileMappingLayer.initiatePanoramic();
+                this.add(mobileMappingLayer);
+            }
+        }else{
+            this.layers[1].panoramicMesh.visible = false; // mobileMappingLayer
+        }
+        
+        this.updateScene3D();
+    };
+    
 
     return function() {
         instanceScene = instanceScene || new Scene();
