@@ -5,9 +5,8 @@
 
 
 define('MobileMapping/GeometryProj', [
-    'THREE',
-    'Core/Commander/Providers/BuildingBox_Provider'],
-function(THREE, BuildingBox_Provider ) {
+    'THREE'],
+function(THREE ) {
 
     function GeometryProj() {
         //Constructor
