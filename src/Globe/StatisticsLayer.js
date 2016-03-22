@@ -36,10 +36,14 @@ define('Globe/StatisticsLayer', [ 'Scene/Layer', 'THREE', 'Renderer/c3DEngine',
     // n is position of data in array (will be associatif soon)
     StatisticsLayer.prototype.showData = function(name){
         
-        this.statsCollection_Provider.getData(this.dataUrl[name].url).then(function(mesh){
+        this.statsCollection_Provider.getData(this.dataUrl[name]).then(function(mesh){
             
             this.statisticsMesh = mesh;
-            this.mainMesh.add(this.statisticsMesh);
+            if(this.mainMesh.children.length === 0)
+                this.mainMesh.add(this.statisticsMesh);
+            else{
+                this.mainMesh.children[0] = this.statisticsMesh;
+            }
             gfxEngine().renderScene(); 
             
         }.bind(this));

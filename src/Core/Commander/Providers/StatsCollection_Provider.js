@@ -67,7 +67,7 @@ define('Core/Commander/Providers/StatsCollection_Provider',[
         this.ioDriver_JSON.read(prop.url).then(function(results){
             //console.log(results);
             
-            this.generateBins(results);
+            this.generateBins(results, prop);
             
             deferred.resolve(this.meshBins);
         }.bind(this));
@@ -76,13 +76,13 @@ define('Core/Commander/Providers/StatsCollection_Provider',[
     };    
     
     
-    StatsCollection_Provider.prototype.generateBins = function(data){
+    StatsCollection_Provider.prototype.generateBins = function(data, prop){
          
             this.geometryBins = new THREE.Geometry();
             var axis = new THREE.Vector3(0, 0, 1);
             //Math.random() * 0xffffff
             
-            for(var i = 0; i < data.length; i+=3){
+            for(var i = 0; i < data.length; i+= prop.nbAttributes){
                 // lon  lat value
                // console.log(data[i]);
                 var lon   = data[i];
@@ -98,7 +98,7 @@ define('Core/Commander/Providers/StatsCollection_Provider',[
                 
                 var cube = new THREE.Mesh( geometry, material );
                 for(var j = 0; j< cube.geometry.faces.length; ++j)
-                    cube.geometry.faces[j].color.setHSL(0.5+value/3, 0.6+value/3, 0.4);//setHex(new THREE.Color().setHSL(value, value, 0.5).getHex());
+                    cube.geometry.faces[j].color.setHSL(0.5+value/2, 0.6+value/2, 0.4);//setHex(new THREE.Color().setHSL(value, value, 0.5).getHex());
                 
                 cube.position.copy(posPanoCartesian);
                 cube.quaternion.setFromUnitVectors(axis, posPanoCartesian.normalize());
