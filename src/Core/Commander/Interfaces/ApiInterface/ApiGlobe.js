@@ -104,8 +104,8 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
     
     ApiGlobe.prototype.getCameraLocation = function () {
         
-        var cam = this.scene.currentCamera();
-        return this.projection.cartesianToGeo(cam.camera3D.position);
+        var cam = this.scene.currentCamera().camera3D;
+        return this.projection.cartesianToGeo(cam.position);
     };
     
     /**
@@ -162,11 +162,53 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         return this.projection.cartesianToGeo(pickedPosition);
     };
     
+    /**
+    * Get the tilt.
+    * @constructor
+    * @return {Angle} number - The angle of the rotation in degrees.
+    */  
+    
+    ApiGlobe.prototype.getTilt = function (){
+        
+        var tiltCam = this.scene.currentControlCamera().getTiltCamera();
+        return tiltCam;
+    };
+    
+    /**
+    * Get the rotation.
+    * @constructor
+    * @return {Angle} number - The angle of the rotation in degrees.
+    */  
+    
+    ApiGlobe.prototype.getHeading = function (){
+        
+        var headingCam = this.scene.currentControlCamera().getHeadingCamera();
+        return headingCam;
+    };
+    
+    /**
+    * Get the "range", i.e. distance in meters of the camera from the center.
+    * @constructor
+    * @return {Number} number 
+    */  
+    
+    ApiGlobe.prototype.getRange = function (){
+                
+        var controlCam = this.scene.currentControlCamera();               
+        var center = controlCam.globeTarget.position;
+        var camPosition = this.scene.currentCamera().position();        
+        var range = center.distanceTo(camPosition);        
+        return range;
+    };
+    
     ApiGlobe.prototype.launchCommandApi = function () {
 //        console.log(this.getCenter());
-//        console.log(this.getCameraLocation());
+      //  console.log(this.getCameraLocation());
 //        console.log(this.getCameraOrientation());
  //       console.log(this.pickPosition());
+//        console.log(this.getTilt());
+//        console.log(this.getHeading());
+        //console.log(this.getRange());
     };
 
     ApiGlobe.prototype.showKML = function(value) {
