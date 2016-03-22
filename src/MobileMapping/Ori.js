@@ -34,12 +34,12 @@ define('MobileMapping/Ori',['three','MobileMapping/Sensor', 'when'],
             that.handleDBData(data);
             deferred.resolve(this.initiated); 
           } else { 
-              console.log("error loading MetaDataSensorURL");
+            //  console.log("error loading MetaDataSensorURL");
           }
         };
 
         request.onerror = function() {
-          console.log("error loading MetaDataSensorURL");
+          //console.log("error loading MetaDataSensorURL");
         };
 
         request.send();
@@ -50,7 +50,7 @@ define('MobileMapping/Ori',['three','MobileMapping/Sensor', 'when'],
         for (var i =0; i< data.length; ++i)  // For all DB sensor info we create sensor object
           this.sensors.push(new Sensor(data[i]));
         this.initiated = true;
-        console.log('Orientation module is loaded');
+       // console.log('Orientation module is loaded');
       },
 
       // Global orientation matrix of the vehicule

@@ -54,7 +54,7 @@ define ( 'MobileMapping/Shader', [],function () {
                      //all shader files have been loaded
                      if (loadedShaders === that.shaderNum) {
                          that.loaded = true;
-                         console.log("Shaders are loaded");
+                        // console.log("Shaders are loaded");
                      }
                  }
 
@@ -68,14 +68,14 @@ define ( 'MobileMapping/Shader', [],function () {
                     request.onload = function() {
                       if (request.status >= 200 && request.status < 400) {
                         // Success!
-                        var resp = partialLoading(request.responseText,currentShaderURL.substr(currentShaderURL.lastIndexOf('/')+1));
+                         partialLoading(request.responseText,currentShaderURL.substr(currentShaderURL.lastIndexOf('/')+1));
                       } else {
-                          console.error("Unable to load shader from file" + currentShaderURL);
+                          //console.error("Unable to load shader from file" + currentShaderURL);
                       }
                     };
 
                     request.onerror = function() {
-                        console.error("no  connection, Unable to load shader from file" + currentShaderURL);
+                        //console.error("no  connection, Unable to load shader from file" + currentShaderURL);
                     };
 
                     request.send();
@@ -152,11 +152,11 @@ define ( 'MobileMapping/Shader', [],function () {
       for(var i=0;i<idmask.length;++i) 
         if(M<=idmask[i]) M=idmask[i]+1;
       var D = 0;
-      for(var i=0;i<iddisto.length;++i) 
+      for( i=0;i<iddisto.length;++i) 
         if(D<=iddisto[i]) D=iddisto[i]+1;
 
       var mainLoop = "";
-      for(var i=0; i<N; ++i) {
+      for( i=0; i<N; ++i) {
         var m = idmask[i];
         var d = iddisto[i];
         mainLoop +=  [
