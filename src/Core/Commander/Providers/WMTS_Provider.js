@@ -239,8 +239,7 @@ define('Core/Commander/Providers/WMTS_Provider', [
 
            if (tile.cooWMTS.zoom >= 2)
            {              
-               if(tile.material === null) // TODO WHy -> dispose??
-                   return;                              
+
                var box = this.projection.WMTS_WGS84ToWMTS_PM(tile.cooWMTS, tile.bbox); // 
                var col = box[0].col;
                tile.material.nbTextures = 1;
