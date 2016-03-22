@@ -158,9 +158,9 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         this.scene.renderScene3D();
     };
     
-     ApiGlobe.prototype.setStat = function(value){
+     ApiGlobe.prototype.setStat = function(value, arrayStats ){
          
-        this.scene.setStat(value);
+        this.scene.setStat(value, arrayStats);
      };
 
 

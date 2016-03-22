@@ -13,10 +13,11 @@ define('Globe/StatisticsLayer', [ 'Scene/Layer', 'THREE', 'Renderer/c3DEngine',
 
         Layer.call(this);
        
-        this.statisticsMesh = null; 
+        this.statisticsMesh = new THREE.Mesh(); 
         this.name = "StatisticsLayer";
         this.mainMesh = new THREE.Mesh();
         this.add(this.mainMesh);
+      //  this.mainMesh.add(this.statisticsMesh);
         
         this.statsCollection_Provider = new StatsCollection_Provider();
         this.dataUrl = [];  
@@ -26,15 +27,16 @@ define('Globe/StatisticsLayer', [ 'Scene/Layer', 'THREE', 'Renderer/c3DEngine',
     StatisticsLayer.prototype.constructor = StatisticsLayer;
 
 
-    StatisticsLayer.prototype.addDataUrl = function(url){
+    StatisticsLayer.prototype.addDataUrl = function(name, url){
         
-        this.dataUrl.push(url);
+        //this.dataUrl.push(url);
+        this.dataUrl[name] = url;
     };
     
     // n is position of data in array (will be associatif soon)
-    StatisticsLayer.prototype.showData = function(n){
+    StatisticsLayer.prototype.showData = function(name){
         
-        this.statsCollection_Provider.getData(this.dataUrl[n]).then(function(mesh){
+        this.statsCollection_Provider.getData(this.dataUrl[name]).then(function(mesh){
             
             this.statisticsMesh = mesh;
             this.mainMesh.add(this.statisticsMesh);

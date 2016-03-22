@@ -252,18 +252,26 @@ define('Scene/Scene', [
     };
     
     
-    Scene.prototype.setStat = function(value){
+    Scene.prototype.setStat = function(value, arrayStats){
     
-        console.log("setStat", value);
-        var statisticsLayer = new StatisticsLayer();
-        statisticsLayer.addDataUrl("../dist/stats/" + value + ".json");
-        statisticsLayer.showData(0);
-        this.add(statisticsLayer);
-        
+        if( this.statisticsLayer === undefined){   // Register all layer name with associated url
+            
+            this.statisticsLayer = new StatisticsLayer();
+            for(var i=0; i< arrayStats.length; ++i){
+                this.statisticsLayer.addDataUrl(arrayStats[i], "../dist/stats/" + arrayStats[i] + ".json");
+            }
+            
+            console.log("setStat", value);
+            this.statisticsLayer.showData(value);
+            this.add(this.statisticsLayer);
+        }else{
+            this.statisticsLayer.showData(value);
+        }
+
     };
 
     return function() {
-        instanceScene = instanceScene || new Scene();
+        instanceScene = instanceScene || new Scene(); 
         return instanceScene;
     };
 
