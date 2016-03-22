@@ -71,9 +71,11 @@ define('Scene/BrowseTree', ['Globe/TileMesh', 'THREE'], function( TileMesh, THRE
     };
 
 
+    var positionWorld = new THREE.Vector3();
+
     BrowseTree.prototype.uniformsProcess = function(node, camera) {
 
-        node.setMatrixRTC(this.gfxEngine.getRTCMatrixFromCenter(node.absoluteCenter, camera));
+        node.setMatrixRTC(this.gfxEngine.getRTCMatrixFromCenter(positionWorld.setFromMatrixPosition(node.matrixWorld), camera));
         node.setFog(this.fogDistance);
 
         this.selectNode(node);
@@ -189,11 +191,11 @@ define('Scene/BrowseTree', ['Globe/TileMesh', 'THREE'], function( TileMesh, THRE
 
                var node = root.children[c];
 
-               var lookMaterial = function(obj) {
+               var lookMaterial = function(obj) {obj.material.Textures[1]
                    // if (obj.material.Textures_01 ){//&& !obj.visible){
-                         for (var i=0; i< obj.material.Textures_01.length; ++i){
+                         for (var i=0; i< obj.material.Textures[1].length; ++i){
 
-                              var url = obj.material.Textures_01[i].url; 
+                              var url = obj.material.Textures[1][i].url; 
                               var x,y,z,urlWMTS;
                               if(url){
                                  if(url.indexOf("geoportail")>0){
@@ -215,7 +217,7 @@ define('Scene/BrowseTree', ['Globe/TileMesh', 'THREE'], function( TileMesh, THRE
                                 if( url.indexOf(WMTSProvider.baseUrl) <0){  // We need to update texture
                                     var newTexture = loader.load(urlWMTS);
                                         newTexture.url = urlWMTS;
-                                        obj.material.Textures_01[i] = newTexture;
+                                        obj.material.Textures[1][i] = newTexture;
                                 }
                              }
                          }

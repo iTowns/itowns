@@ -32,7 +32,7 @@ define('Globe/TileMesh', [
     var l_ELEVATION = 0;
     var l_COLOR = 1;
     
-    function TileMesh(bbox, cooWMTS, builder, id, geometryCache,link) {
+    function TileMesh(bbox, cooWMTS, builder, id, geometryCache,link,center) {
         //Constructor
         NodeMesh.call(this);
 
@@ -53,18 +53,17 @@ define('Globe/TileMesh', [
         var params = {bbox:this.bbox,zoom:cooWMTS.zoom,segment:precision,center3D:null,projected:null}
 
         this.geometry = defaultValue(geometryCache, new TileGeometry(params, builder));
-    
-        // TODO Try to remove this.absoluteCenter
-        this.absoluteCenter = params.center3D;
-        this.distance = this.absoluteCenter.length();
+        this.normal = params.center3D.clone().normalize();
 
+        center.copy(params.center3D);
+        this.distance = params.center3D.length();
 
         // TODO Question in next line ???
-        this.centerSphere = new THREE.Vector3().addVectors(this.geometry.boundingSphere.center, this.absoluteCenter);
+        this.centerSphere = new THREE.Vector3().addVectors(this.geometry.boundingSphere.center, params.center3D);
         
         this.oSphere = new THREE.Sphere(this.centerSphere.clone(),this.geometry.boundingSphere.radius);
         
-        this.orthoNeed = 0;        
+        this.texturesNeeded = 0;        
         this.material = new LayeredMaterial(id);
         this.dot = 0;
         this.frustumCulled = false;
@@ -99,11 +98,11 @@ define('Globe/TileMesh', [
             
             if (this.helper instanceof THREE.SphereHelper)
 
-                this.helper.position.add(this.absoluteCenter);
-
+                this.helper.position.add(params.center3D);
+            
             else if (this.helper instanceof THREE.OBBHelper)
 
-                this.helper.translateZ(this.absoluteCenter.length());
+                this.helper.translateZ(this.distance);
                         
             if(this.helper)
                 this.link.add(this.helper);
@@ -250,14 +249,15 @@ define('Globe/TileMesh', [
 
             this.bbox.setAltitude(min, max);            
             var delta = this.geometry.OBB.addHeight(this.bbox);
-            var trans = this.absoluteCenter.clone().setLength(delta.y);
+
+            var trans = this.normal.clone().setLength(delta.y);
 
             this.geometry.boundingSphere.radius = Math.sqrt(delta.x * delta.x + this.oSphere.radius * this.oSphere.radius); 
             this.centerSphere = new THREE.Vector3().addVectors(this.oSphere.center,trans);
             
             if (this.helper instanceof THREE.OBBHelper) {
                 this.helper.update(this.geometry.OBB);
-                this.helper.translateZ(this.absoluteCenter.length());
+                this.helper.translateZ(this.distance);
             } else if (this.helper instanceof THREE.SphereHelper) {
                 this.helper.update(this.geometry.boundingSphere.radius);
                 this.helper.position.add(trans);
@@ -271,19 +271,22 @@ define('Globe/TileMesh', [
         this.material.setTexture(texture, l_COLOR, id,pitch);   
                 
         this.currentLevelLayers[l_COLOR] = texture.level;
-        this.checkOrtho();
+        this.loadingCheck();
     };
     
     TileMesh.prototype.setTexturesLayer = function(textures,id){
         
         if(!textures || this.material === null)
+        {
+            this.loadingCheck();
             return;
+        }
         
         this.material.setTexturesLayer(textures, id);
         
         this.currentLevelLayers[l_COLOR] = textures[0].texture.level;
         
-        this.checkOrtho();
+        this.loadingCheck();
     };
         
     TileMesh.prototype.downScaledLayer = function(id)
@@ -338,20 +341,17 @@ define('Globe/TileMesh', [
         return !this.parent.downScaledLayer(layer) ? this.parent : this.parent.getParentNotDownScaled(layer);
     };
 
-    TileMesh.prototype.checkOrtho = function() {
-        
-        // TODO remove this function
+    TileMesh.prototype.allTexturesAreLoaded = function(){
+        return this.texturesNeeded === this.material.nbLoadedTextures();
+    };
 
-        if (this.orthoNeed + 1 === this.material.getNbTextures() || this.level < 2){
-
-            this.loaded = true;   
-                  
-            var parent = this.parent;
-
-            if (parent !== null && parent.childrenLoaded()) {
-                parent.wait = false;
-            }
-        }
+    TileMesh.prototype.loadingCheck = function() {
+               
+        if (this.allTexturesAreLoaded())
+        {
+            this.loaded = true;
+            this.parent.childrenLoaded();           
+        }        
     };
 
     return TileMesh;

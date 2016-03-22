@@ -103,7 +103,7 @@ define('Renderer/LayeredMaterial', ['THREE',
         jT.freeArray(this.uniforms.dTextures_01.value);        
     };
     
-    LayeredMaterial.prototype.getNbTextures = function() {
+    LayeredMaterial.prototype.nbLoadedTextures = function() {
         
         return this.nbTextures[0] + this.nbTextures[1];
     };
