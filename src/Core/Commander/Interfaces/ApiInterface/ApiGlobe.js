@@ -157,6 +157,11 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         this.scene.layers[0].showKML(value);
         this.scene.renderScene3D();
     };
+    
+     ApiGlobe.prototype.setStat = function(value){
+         
+        this.scene.setStat(value);
+     };
 
 
     return ApiGlobe;

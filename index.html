@@ -40,6 +40,8 @@ and open the template in the editor.
                    this.KML = false;
 
                    this.Layer = "OrthoGeoportail";
+                   
+                   this.Statistics = "treecover";
                    this.api = function(){  
                         itowns.viewer.launchCommandApi();
                    };
@@ -79,7 +81,11 @@ and open the template in the editor.
                gui.add(text, 'api');
                
                gui.add(text, 'StreetLevelImagery').onChange(function(newValue) {
-			itowns.viewer.setStreetLevelImageryOn(newValue);
+                    itowns.viewer.setStreetLevelImageryOn(newValue);
+               });
+               
+               gui.add(text, 'Statistics', [ 'treeCover', 'rankUniversity' ] ).onChange(function(newValue) {
+                    itowns.viewer.setStat(newValue);  
                });
                
             

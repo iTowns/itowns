@@ -27,11 +27,12 @@ define('Scene/Scene', [
     'Scene/Layer',
     'Core/Geographic/CoordCarto',
     'Core/System/Capabilities',
-    'MobileMapping/MobileMappingLayer'
+    'MobileMapping/MobileMappingLayer',
+    'Globe/StatisticsLayer'
     
 ], function(c3DEngine, THREE, Globe, ManagerCommands, tileGlobeProvider, BuildingBox_Provider,
             PanoramicProvider, PanoramicMesh, BrowseTree, NodeProcess, Quadtree, Layer, CoordCarto,
-            Capabilities, MobileMappingLayer) {
+            Capabilities, MobileMappingLayer, StatisticsLayer) {
 
     var instanceScene = null;
     
@@ -250,6 +251,16 @@ define('Scene/Scene', [
         this.updateScene3D();
     };
     
+    
+    Scene.prototype.setStat = function(value){
+    
+        console.log("setStat", value);
+        var statisticsLayer = new StatisticsLayer();
+        statisticsLayer.addDataUrl("../dist/stats/" + value + ".json");
+        statisticsLayer.showData(0);
+        this.add(statisticsLayer);
+        
+    };
 
     return function() {
         instanceScene = instanceScene || new Scene();

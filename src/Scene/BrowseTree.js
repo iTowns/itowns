@@ -48,6 +48,8 @@ define('Scene/BrowseTree', ['Globe/TileMesh', 'THREE'], function( TileMesh, THRE
      */
     BrowseTree.prototype.processNode = function(node, camera, params) {
         
+        if(node.name === "statisticsMesh") return true;
+        
         if(node.name === "terrestrialMesh"){    // TEMP
             node.setMaterialVisibility(true);
             this.uniformsProcess(node, camera);
