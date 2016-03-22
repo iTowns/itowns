@@ -59,12 +59,12 @@ define('Core/Commander/Providers/StatsCollection_Provider',[
     };
 
     
-    StatsCollection_Provider.prototype.getData = function(url){
+    StatsCollection_Provider.prototype.getData = function(prop){
 
         //var url = this.url(bbox);            
         //return this.ioDriver_JSON.read(url);
         var deferred = when.defer();
-        this.ioDriver_JSON.read(url).then(function(results){
+        this.ioDriver_JSON.read(prop.url).then(function(results){
             //console.log(results);
             
             this.generateBins(results);

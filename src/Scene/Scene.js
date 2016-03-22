@@ -252,13 +252,13 @@ define('Scene/Scene', [
     };
     
     
-    Scene.prototype.setStat = function(value, arrayStats){
+    Scene.prototype.setStat = function(value, arrayStats, arrayNbAttributesPerClass){
     
         if( this.statisticsLayer === undefined){   // Register all layer name with associated url
             
             this.statisticsLayer = new StatisticsLayer();
             for(var i=0; i< arrayStats.length; ++i){
-                this.statisticsLayer.addDataUrl(arrayStats[i], "../dist/stats/" + arrayStats[i] + ".json");
+                this.statisticsLayer.addDataUrl(arrayStats[i], {url: "../dist/stats/" + arrayStats[i] + ".json", nbAttributes: arrayNbAttributesPerClass[i]});
             }
             
             console.log("setStat", value);

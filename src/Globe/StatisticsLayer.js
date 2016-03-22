@@ -27,16 +27,16 @@ define('Globe/StatisticsLayer', [ 'Scene/Layer', 'THREE', 'Renderer/c3DEngine',
     StatisticsLayer.prototype.constructor = StatisticsLayer;
 
 
-    StatisticsLayer.prototype.addDataUrl = function(name, url){
+    StatisticsLayer.prototype.addDataUrl = function(name, properties){
         
         //this.dataUrl.push(url);
-        this.dataUrl[name] = url;
+        this.dataUrl[name] = properties;
     };
     
     // n is position of data in array (will be associatif soon)
     StatisticsLayer.prototype.showData = function(name){
         
-        this.statsCollection_Provider.getData(this.dataUrl[name]).then(function(mesh){
+        this.statsCollection_Provider.getData(this.dataUrl[name].url).then(function(mesh){
             
             this.statisticsMesh = mesh;
             this.mainMesh.add(this.statisticsMesh);

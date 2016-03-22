@@ -85,8 +85,9 @@ and open the template in the editor.
                });
                
                var arrayStats = [ 'treeCover', 'rankUniversity' ];
+               var arrayNbAttributesPerClass = [4,3];
                gui.add(text, 'Statistics', arrayStats ).onChange(function(newValue) {
-                    itowns.viewer.setStat(newValue, arrayStats);  
+                    itowns.viewer.setStat(newValue, arrayStats, arrayNbAttributesPerClass);  
                });
                
             

@@ -1,7 +1,7 @@
 /**
  * Generated On: 2015-10-5
  * Class: ApiGlobe
- * Description: Classe faÃ§ade pour attaquer les fonctionnalitÃ©s du code.
+ * Description: Classe façade pour attaquer les fonctionnalités du code.
  */
 
 
@@ -56,7 +56,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
 
     ApiGlobe.prototype.createSceneGlobe = function(pos) {
         //TODO: Normalement la creation de scene ne doit pas etre ici....
-        // Aï¿½ deplacer plus tard
+        // A? deplacer plus tard
 
         this.scene = Scene();
         this.scene.init(pos);
@@ -158,9 +158,9 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         this.scene.renderScene3D();
     };
     
-     ApiGlobe.prototype.setStat = function(value, arrayStats ){
+     ApiGlobe.prototype.setStat = function(value, arrayStats, arrayNbAttributesPerClass ){
          
-        this.scene.setStat(value, arrayStats);
+        this.scene.setStat(value, arrayStats, arrayNbAttributesPerClass);
      };
 
 
