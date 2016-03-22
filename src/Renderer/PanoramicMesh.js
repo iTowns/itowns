@@ -32,7 +32,7 @@ function(
         
         this.frustumCulled = false;
 
-        console.log("this.absoluteCenter",this.absoluteCenter);
+       // console.log("this.absoluteCenter",this.absoluteCenter);
     };
 
     PanoramicMesh.prototype = Object.create(NodeMesh.prototype);
@@ -60,19 +60,19 @@ function(
     //    return this.level !== this.levelTerrain;
     };
 
-    PanoramicMesh.prototype.enableRTC = function(enable) {
+    PanoramicMesh.prototype.enableRTC = function() {
       //  this.material.enableRTC(enable);
     };
 
-    PanoramicMesh.prototype.enablePickingRender = function(enable) {
+    PanoramicMesh.prototype.enablePickingRender = function() {
       //  this.material.enablePickingRender(enable);
     };
 
-    PanoramicMesh.prototype.setFog = function(fog) {
+    PanoramicMesh.prototype.setFog = function() {
       //  this.material.setFogDistance(fog);
     };
     
-    PanoramicMesh.prototype.setSelected = function(select) {
+    PanoramicMesh.prototype.setSelected = function() {
       //  this.material.setSelected(select);
     };
     

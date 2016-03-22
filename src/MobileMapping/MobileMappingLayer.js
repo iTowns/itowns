@@ -36,7 +36,6 @@ define('MobileMapping/MobileMappingLayer', [
         
     }
     
-    var scope = this;
 
     MobileMappingLayer.prototype = Object.create(Layer.prototype);
     MobileMappingLayer.prototype.constructor = MobileMappingLayer;
@@ -50,12 +49,12 @@ define('MobileMapping/MobileMappingLayer', [
         var lonDeg = posWGS84.longitude / Math.PI * 180;
         var latDeg = posWGS84.latitude  / Math.PI * 180;
         
-        console.log("position clicked: ",pos, "wgs, longitude:", posWGS84.longitude/ Math.PI * 180, "   '",posWGS84.latitude/ Math.PI * 180, "  alti:", posWGS84.altitude);
+       // console.log("position clicked: ",pos, "wgs, longitude:", posWGS84.longitude/ Math.PI * 180, "   '",posWGS84.latitude/ Math.PI * 180, "  alti:", posWGS84.altitude);
 
         this.panoramicProvider.updateMaterialImages(lonDeg, latDeg, 1000).then(function(panoInfo){
             
             // Move camera to new pos
-            var panoInfo = panoInfo; //this.panoramicProvider.panoInfo;
+         //   var panoInfo = panoInfo; //this.panoramicProvider.panoInfo;
             var ellipsoid  = new Ellipsoid(new THREE.Vector3(6378137, 6356752.3142451793, 6378137));  // Should be computed elsewhere 
             var posPanoWGS84 = new CoordCarto().setFromDegreeGeo(panoInfo.latitude, panoInfo.longitude, panoInfo.altitude);
             var posPanoCartesian = ellipsoid.cartographicToCartesian(posPanoWGS84);
@@ -70,7 +69,7 @@ define('MobileMapping/MobileMappingLayer', [
     MobileMappingLayer.prototype.initiatePanoramic = function(imageOpt){
         
         var imagesOptions =  imageOpt || this.getDefaultOptions();
-        console.log(this.defaultOptions);
+        // console.log(this.defaultOptions);
         // Create and add the MobileMappingLayer with Panoramic imagery
         this.panoramicProvider = new PanoramicProvider(imagesOptions);
         
@@ -92,7 +91,7 @@ define('MobileMapping/MobileMappingLayer', [
     };
     
     
-    MobileMappingLayer.prototype.moveCameraToScanPosition = function(pos, lastPos){
+    MobileMappingLayer.prototype.moveCameraToScanPosition = function(pos){
         
        var speedMove = 0.1; 
        var currentPos = gfxEngine().camera.camera3D.position.clone();
