@@ -769,14 +769,14 @@ define(function () {
 
         /* jshint boss:true */
         if (x < node.value) {
-            while (node = node.prev) {
+            while (node === node.prev) {
                 if (x >= node.value) {
                     this.search_node_ = node;
                     return node;
                 }
             }
         } else {
-            while (node = node.next) {
+            while (node === node.next) {
                 if (x < node.value) {
                     this.search_node_ = node.prev;
                     return node.prev;
@@ -805,13 +805,13 @@ define(function () {
             }
         } else if (px < nx) {
             /* jshint boss:true */
-            while (node = node.prev) {
+            while (node === node.prev) {
                 if (point === node.point) {
                     break;
                 }
             }
         } else {
-            while (node = node.next) {
+            while (node === node.next) {
                 if (point === node.point) {
                     break;
                 }
@@ -1035,7 +1035,7 @@ define(function () {
         tail.prev = middle;
     };
 
-    SweepContext.prototype.removeNode = function(node) {
+    SweepContext.prototype.removeNode = function(/*node*/) {
         // do nothing
         /* jshint unused:false */
     };
@@ -1066,7 +1066,7 @@ define(function () {
         // Cf. issues # 57, 65 and 69.
         var triangles = [triangle], t, i;
         /* jshint boss:true */
-        while (t = triangles.pop()) {
+        while (t === triangles.pop()) {
             if (!t.isInterior()) {
                 t.setInterior(true);
                 this.triangles_.push(t);
@@ -1963,7 +1963,7 @@ define(function () {
         };
         
         CVML.transpose = function(A) {
-            var ret = [], n = A.length, i,j,Ai;
+            var ret = [], /*n = A.length,*/ i,j,Ai;
             for(i in A) {
                 if(!(A.hasOwnProperty(i))) continue;
                 Ai = A[i];
@@ -2316,7 +2316,7 @@ define(function () {
                 return {U:u,S:q,V:v};
         };
         CVML.dotMMsmall = function(x,y) {
-            var i,j,k,p,q,r,ret,foo,bar,woo,i0,k0,p0,r0;
+            var i,j,k,p,q,r,ret,foo,bar,woo,i0;//,k0,p0,r0;
             p = x.length; q = y.length; r = y[0].length;
             ret = Array(p);
             for(i=p-1;i>=0;i--) {
@@ -2348,7 +2348,7 @@ define(function () {
             var gc = CVML._getCol, p = y.length, v = Array(p);
             var m = x.length, n = y[0].length, A = new Array(m), xj;
             var VV = CVML.dotVV;
-            var i,j,k,z;
+            var i,j;//k,z;
             --p;
             --m;
             for(i=m;i!==-1;--i) A[i] = Array(n);
@@ -2356,7 +2356,7 @@ define(function () {
             for(i=n;i!==-1;--i) {
                 gc(y,i,v);
                 for(j=m;j!==-1;--j) {
-                    z=0;
+                    //z=0;
                     xj = x[j];
                     A[j][i] = VV(xj,v);
                 }
@@ -2365,14 +2365,14 @@ define(function () {
         };
 
         CVML.dotMV = function (x,y) {
-            var p = x.length, q = y.length,i;
+            var p = x.length;//, q = y.length,i;
             var ret = Array(p), dotVV = CVML.dotVV;
-            for(i=p-1;i>=0;i--) { ret[i] = dotVV(x[i],y); }
+            for(var i=p-1;i>=0;i--) { ret[i] = dotVV(x[i],y); }
             return ret;
         };
 
         CVML.dotVM = function (x,y) {
-            var i,j,k,p,q,r,ret,foo,bar,woo,i0,k0,p0,r0,s1,s2,s3,baz,accum;
+            var /*i,*/j,k,p,q,/*r,*/ret,/*foo,bar,*/woo,i0/*,k0,p0,r0,s1,s2,s3,baz,accum*/;
             p = x.length; q = y[0].length;
             ret = Array(q);
             for(k=q-1;k>=0;k--) {
