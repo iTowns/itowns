@@ -98,7 +98,7 @@ THREE.GlobeControls = function(object, domElement, engine) {
 
     // Mouse buttons
     this.mouseButtons = {
-        ORBIT: THREE.MOUSE.LEFT,
+        PANORAMIC: THREE.MOUSE.LEFT,
         ZOOM: THREE.MOUSE.MIDDLE,
         PAN: THREE.MOUSE.RIGHT
     };
@@ -148,14 +148,14 @@ THREE.GlobeControls = function(object, domElement, engine) {
 
     var STATE = {
         NONE: -1,
-        ROTATE: 0,
+        ORBIT: 0,
         DOLLY: 1,
         PAN: 2,
         TOUCH_ROTATE: 3,
         TOUCH_DOLLY: 4,
         TOUCH_PAN: 5,
         MOVE_GLOBE: 6,
-        ROTATEONITSELF: 7
+        PANORAMIC: 7
     };
 
     var state = STATE.NONE;
@@ -403,9 +403,9 @@ THREE.GlobeControls = function(object, domElement, engine) {
 
         }
 
-        theta += thetaDelta;
+        theta += thetaDelta;                
         phi += phiDelta;
-
+        
         // restrict theta to be between desired limits
         theta = Math.max(this.minAzimuthAngle, Math.min(this.maxAzimuthAngle, theta));
 
@@ -430,14 +430,30 @@ THREE.GlobeControls = function(object, domElement, engine) {
 
     };
     
-    this.getTiltCamera = function (){
+    this.getTilt = function (){
         return phi * 180/Math.PI;
     };
     
-    this.getHeadingCamera = function (){
+    this.getHeading = function (){
         return theta * 180/Math.PI;
     };
-
+    
+    this.getTiltRad = function (){
+        return phi;
+    };
+    
+    this.setTilt = function(tilt)
+    {                
+        phiDelta = (tilt * Math.PI / 180 - this.getTiltRad());        
+        state = STATE.ORBIT;
+        this.update();                
+        state = STATE.NONE;        
+    };
+    
+    this.getHeadingRad = function (){
+        return theta;
+    };
+ 
     this.update = function() {
 
 
@@ -458,7 +474,7 @@ THREE.GlobeControls = function(object, domElement, engine) {
             this.object.position.copy(offset.applyQuaternion(quatGlobe));
             this.object.up.copy(offGT.clone().normalize());
 
-        } else if (state !== STATE.ROTATEONITSELF) {
+        } else if (state !== STATE.PANORAMIC) {
 
             //offset.applyQuaternion( quat );            
             this.rot(offset, scale);
@@ -469,7 +485,7 @@ THREE.GlobeControls = function(object, domElement, engine) {
 
         }
 
-        if (state === STATE.ROTATEONITSELF) {
+        if (state === STATE.PANORAMIC) {
 
             this.object.worldToLocal(this.moveTarget);
             var normal = this.object.position.clone().normalize().applyQuaternion(this.object.quaternion.clone().inverse());
@@ -554,13 +570,13 @@ THREE.GlobeControls = function(object, domElement, engine) {
 
         quatGlobe.set(0, 0, 0, 1);
 
-        if (event.button === scope.mouseButtons.ORBIT) {
+        if (event.button === scope.mouseButtons.PANORAMIC) {
             if (scope.noRotate === true) return;
 
             if (scope.keyCtrl) {
-                state = STATE.ROTATE;
+                state = STATE.ORBIT;
             } else if (scope.keyShift) {
-                state = STATE.ROTATEONITSELF;
+                state = STATE.PANORAMIC;
             } else {
 
                 state = STATE.MOVE_GLOBE;
@@ -614,7 +630,7 @@ THREE.GlobeControls = function(object, domElement, engine) {
 
         var element = scope.domElement === document ? scope.domElement.body : scope.domElement;
 
-        if (state === STATE.ROTATE || state === STATE.ROTATEONITSELF) {
+        if (state === STATE.ORBIT || state === STATE.PANORAMIC) {
 
             if (scope.noRotate === true) return;
 
@@ -981,7 +997,7 @@ THREE.GlobeControls = function(object, domElement, engine) {
     state = STATE.MOVE_GLOBE;
     this.update();
 
-    state = STATE.ROTATE;
+    state = STATE.ORBIT;
 
     // TODO à Simplifier
 

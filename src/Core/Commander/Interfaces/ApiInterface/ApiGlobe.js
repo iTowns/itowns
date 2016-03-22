@@ -170,7 +170,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
     
     ApiGlobe.prototype.getTilt = function (){
         
-        var tiltCam = this.scene.currentControlCamera().getTiltCamera();
+        var tiltCam = this.scene.currentControlCamera().getTilt();
         return tiltCam;
     };
     
@@ -182,7 +182,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
     
     ApiGlobe.prototype.getHeading = function (){
         
-        var headingCam = this.scene.currentControlCamera().getHeadingCamera();
+        var headingCam = this.scene.currentControlCamera().getHeading();
         return headingCam;
     };
     
@@ -201,14 +201,39 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         return range;
     };
     
+    /**
+    * Change the tilt.
+    * @constructor
+    * @param {Angle} Number - The angle.
+    * @param {Boolean} [pDisableAnimation] - Used to force the non use of animation if its enable.
+    */  
+    
+    ApiGlobe.prototype.setTilt = function (tilt/*, bool*/) {
+        
+        this.scene.currentControlCamera().setTilt(tilt);
+    };
+    
+    /**
+    * Change the tilt.
+    * @constructor
+    * @param {Angle} Number - The angle.
+    * @param {Boolean} [pDisableAnimation] - Used to force the non use of animation if its enable.
+    */ 
+    
+//    ApiGlobe.prototype.setHeading = function (heading, bool){
+//        
+//        var headingCamRad = this.scene.currentControlCamera().getHeadingRad();
+//    };
+    
     ApiGlobe.prototype.launchCommandApi = function () {
 //        console.log(this.getCenter());
-      //  console.log(this.getCameraLocation());
+//        console.log(this.getCameraLocation());
 //        console.log(this.getCameraOrientation());
- //       console.log(this.pickPosition());
+//        console.log(this.pickPosition());
 //        console.log(this.getTilt());
 //        console.log(this.getHeading());
-        //console.log(this.getRange());
+//        console.log(this.getRange());
+        this.setTilt(45);
     };
 
     ApiGlobe.prototype.showKML = function(value) {
