@@ -14,11 +14,9 @@
  */
 define('Scene/Scene', [
     'Renderer/c3DEngine',
-    'three',
     'Globe/Globe',
     'Core/Commander/ManagerCommands',
-    'Core/Commander/Providers/tileGlobeProvider',
-    'Core/Commander/Providers/BuildingBox_Provider',
+    'Core/Commander/Providers/tileGlobeProvider',    
     'Core/Commander/Providers/PanoramicProvider',
     'Renderer/PanoramicMesh',
     'Scene/BrowseTree',
@@ -29,7 +27,7 @@ define('Scene/Scene', [
     'Core/System/Capabilities',
     'MobileMapping/MobileMappingLayer'
     
-], function(c3DEngine, THREE, Globe, ManagerCommands, tileGlobeProvider, BuildingBox_Provider,
+], function(c3DEngine, Globe, ManagerCommands, tileGlobeProvider, 
             PanoramicProvider, PanoramicMesh, BrowseTree, NodeProcess, Quadtree, Layer, CoordCarto,
             Capabilities, MobileMappingLayer) {
 
@@ -107,7 +105,7 @@ define('Scene/Scene', [
         
         this.gfxEngine.init(this, position);
         this.browserScene.addNodeProcess(new NodeProcess(this.currentCamera().camera3D, globe.size));            
-        this.sceneProcess();
+        this.quadTreeRequest(globe.meshTerrain);
     };
 
     Scene.prototype.size = function() {
@@ -118,27 +116,23 @@ define('Scene/Scene', [
      * 
      * @returns {undefined}
      */   
-    Scene.prototype.sceneProcess = function(){ 
-        if(this.layers[0] !== undefined  && this.currentCamera() !== undefined )
-        {                        
-        
-            this.browserScene.browse(this.layers[0].meshTerrain,this.currentCamera(),SUBDIVISE);         
-            this.managerCommand.runAllCommands().then(function()
-                {                   
-                    if (this.managerCommand.commandsLength() === 0)
-                    {                        
-                        this.browserScene.browse(this.layers[0].meshTerrain,this.currentCamera(),SUBDIVISE);
-                        if (this.managerCommand.commandsLength() === 0)                            
-                            this.browserScene.browse(this.layers[0].meshTerrain,this.currentCamera(),CLEAN);
-                    }
-                    
-                }.bind(this));
-            
-            this.renderScene3D();                
-            //this.updateScene3D();                 
-        }         
-    };
+    Scene.prototype.quadTreeRequest = function(quadtree){
 
+        this.browserScene.browse(quadtree,this.currentCamera(),SUBDIVISE);         
+        this.managerCommand.runAllCommands().then(function()
+            {                   
+                if (this.managerCommand.isFree())
+                {                        
+                    this.browserScene.browse(quadtree,this.currentCamera(),SUBDIVISE);
+                    if (this.managerCommand.isFree())                            
+                        this.browserScene.browse(quadtree,this.currentCamera(),CLEAN);
+                }
+                
+            }.bind(this));
+        
+        this.renderScene3D();
+        
+    };
     
     Scene.prototype.realtimeSceneProcess = function() {
 
@@ -147,8 +141,6 @@ define('Scene/Scene', [
 
             for (var sl = 0; sl < layer.children.length; sl++) {
                 var sLayer = layer.children[sl];
-
-
                 
                 if (sLayer instanceof Quadtree)
                     this.browserScene.browse(sLayer, this.currentCamera(), NO_SUBDIVISE);
@@ -175,14 +167,10 @@ define('Scene/Scene', [
         var waitTime = timeWait ? timeWait: 20;
 
         this.realtimeSceneProcess();
-
-        if (this.timer === null) {
-            this.timer = window.setTimeout(this.sceneProcess.bind(this), waitTime);
-        } else {
-            window.clearInterval(this.timer);
-            this.timer = window.setTimeout(this.sceneProcess.bind(this), waitTime);
-        }
-
+            
+        window.clearInterval(this.timer);
+        
+        this.timer = window.setTimeout(this.quadTreeRequest.bind(this), waitTime,this.layers[0].meshTerrain);
     };
 
     /**
@@ -203,8 +191,7 @@ define('Scene/Scene', [
      *
      * @param node {[object Object]} 
      */
-    Scene.prototype.add = function(node) {
-        //TODO: Implement Me 
+    Scene.prototype.add = function(node) {        
 
         this.layers.push(node);        
 
