@@ -38,6 +38,7 @@ define('Core/Commander/Providers/WMTS_Provider', [
             this.projection = new Projection();
             this.baseUrl = options.url || "http://wxs.ign.fr/";
             this.layer   = options.layer || "ORTHOIMAGERY.ORTHOPHOTOS";
+            //this.layer = "GEOGRAPHICALGRIDSYSTEMS.MAPS";
             this.support = options.support || false;
             
             this.getTextureFloat;
@@ -210,25 +211,25 @@ define('Core/Commander/Providers/WMTS_Provider', [
                 
                 var tile = command.requester;
                 
-                var parent = tile.level === tile.levelTerrain ? tile : tile.getParentLevel(tile.levelTerrain);                
+                var parent = tile.level === tile.levelElevation ? tile : tile.getParentLevel(tile.levelElevation);                
                 
                 if(parent.downScaledLayer(0))
                 {                 
                     return this.getTextureBil(parent.cooWMTS).then(function(terrain)
                     {            
-                        this.setTerrain(terrain);
+                        this.setTextureElevation(terrain);
                        
                     }.bind(parent)).then(function()
                     {
                         if(this.downScaledLayer(0))
 
-                            this.setTerrain(-2);
+                            this.setTextureElevation(-2);
 
                     }.bind(tile));                                                                         
                 }
                 else
                 {            
-                    tile.setTerrain(-2);                    
+                    tile.setTextureElevation(-2);                    
                 }
             }           
         };
@@ -239,8 +240,7 @@ define('Core/Commander/Providers/WMTS_Provider', [
 
            if (tile.cooWMTS.zoom >= 2)
            {              
-               if(tile.material === null) // TODO WHy -> dispose??
-                   return;                              
+
                var box = this.projection.WMTS_WGS84ToWMTS_PM(tile.cooWMTS, tile.bbox); // 
                var col = box[0].col;
                tile.material.nbTextures = 1;

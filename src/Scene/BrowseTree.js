@@ -46,7 +46,7 @@ define('Scene/BrowseTree', ['Globe/TileMesh', 'THREE'], function( TileMesh, THRE
      * @param {type} enableUp  : optional process
      * @returns {Boolean}
      */
-    BrowseTree.prototype.processNode = function(node, camera, params) {
+    BrowseTree.prototype.processNodeQuadtree = function(node, camera, params) {
         
         if(node.name === "terrestrialMesh"){    // TEMP
             node.setMaterialVisibility(true);
@@ -119,8 +119,7 @@ define('Scene/BrowseTree', ['Globe/TileMesh', 'THREE'], function( TileMesh, THRE
         for (var i = 0; i < rootNode.children.length; i++)
             this._browse(rootNode.children[i], camera, subdivise,clean);
 
-        
-
+    
     };
 
     /**
@@ -132,7 +131,7 @@ define('Scene/BrowseTree', ['Globe/TileMesh', 'THREE'], function( TileMesh, THRE
      */
     BrowseTree.prototype._browse = function(node, camera, optional,clean) {
         
-        if (this.processNode(node, camera, {withUp : optional, tree : this.tree}))
+        if (this.processNodeQuadtree(node, camera, {withUp : optional, tree : this.tree}))
             for (var i = 0; i < node.children.length; i++)
                 this._browse(node.children[i], camera, optional,clean);
         else if(clean)              

@@ -93,7 +93,7 @@ define('Scene/BoundingBox', [
      * @param {type} max : maximum altitude
      * @returns {undefined}
      */
-    BoundingBox.prototype.setAltitude = function(min, max) {
+    BoundingBox.prototype.setBBoxZ = function(min, max) {
 
         this.minCarto.altitude = min;
         this.maxCarto.altitude = max;

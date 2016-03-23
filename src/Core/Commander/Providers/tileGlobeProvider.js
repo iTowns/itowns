@@ -42,8 +42,6 @@ define('Core/Commander/Providers/tileGlobeProvider', [
         THREE
     ) {
 
-
-
         function tileGlobeProvider(size,supportGLInspector) {
             //Constructor
 
@@ -136,7 +134,7 @@ define('Core/Commander/Providers/tileGlobeProvider', [
 
             return this.providerWMTS.getTextureBil(cooWMTS).then(function(terrain){                        
                                                                        
-                this.setTerrain(terrain);
+                this.setTextureElevation(terrain);
 
                 return this;
 
