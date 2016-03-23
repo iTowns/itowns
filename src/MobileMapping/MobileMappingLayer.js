@@ -115,7 +115,7 @@ define('MobileMapping/MobileMappingLayer', [
         var o = {
          // HTTP access to itowns sample datasets
           //url : "../{lod}/images/{YYMMDD}/Paris-{YYMMDD}_0740-{cam.cam}-00001_{pano.pano:07}.jpg",
-          url : "../{lod}/images/{YYMMDD2}/Paris-{YYMMDD2}_0740-{cam.cam}-00001_{splitIt}.jpg",
+          url : "../{lod}/images/{YYMMDD2}/Paris-{YYMMDD2}_0740-{cam.id}-00001_{splitIt}.jpg",
           lods : ['itowns-sample-data'],//['itowns-sample-data-small', 'itowns-sample-data'],
             /*
             // IIP server access    
