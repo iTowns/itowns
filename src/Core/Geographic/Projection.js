@@ -121,8 +121,7 @@ define('Core/Geographic/Projection', ['Core/Geographic/CoordWMTS', 'Core/Math/Ma
     };
 
     Projection.prototype.cartesianToGeo = function(position) {
-        
-        // TODO move to core
+                
         var p = position.clone();
         p.x = -position.x;
         p.y = position.z;

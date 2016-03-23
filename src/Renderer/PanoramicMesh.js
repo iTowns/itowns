@@ -57,7 +57,7 @@ function(
     };
     
     PanoramicMesh.prototype.useParent = function() {
-    //    return this.level !== this.levelTerrain;
+    //    return this.level !== this.levelElevation;
     };
 
     PanoramicMesh.prototype.enableRTC = function() {
