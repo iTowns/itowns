@@ -66,6 +66,10 @@ define('Core/Commander/ManagerCommands', [
             return this.queueAsync.length;
         };
 
+        ManagerCommands.prototype.isFree = function() {
+            return this.commandsLength()===0;
+        };
+
         ManagerCommands.prototype.runAllCommands = function() {
             
                                
