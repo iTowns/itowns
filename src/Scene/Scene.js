@@ -91,22 +91,15 @@ define('Scene/Scene', [
     Scene.prototype.init = function(pos) {
         
         this.managerCommand.init(this);
-        var globe = new Globe(this.supportGLInspector);
+        var globe = new Globe(this.supportGLInspector);        
+
         this.add(globe);
         this.managerCommand.addLayer(globe.meshTerrain, new tileGlobeProvider(globe.size,this.supportGLInspector));
         this.managerCommand.addLayer(globe.colorTerrain,this.managerCommand.getProvider(globe.meshTerrain).providerWMTS);
         this.managerCommand.addLayer(globe.elevationTerrain,this.managerCommand.getProvider(globe.meshTerrain).providerWMTS);
-        
-        //var position    = globe.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(2.33,48.87,25000000));        
-        //
+              
         var position = globe.ellipsoid.cartographicToCartesian(new CoordCarto().setFromDegreeGeo(pos.lat, pos.lon, pos.alt));
-
-        //var position    = globe.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(2.33,,25000000));
-        //var position    = globe.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(48.7,2.33,25000000));        
-
-        //var target      = globe.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(2.33,48.87,0));
-        //var position    = globe.ellipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(0,48.87,25000000));
-
+        
         this.gfxEngine.init(this, position);
         this.browserScene.addNodeProcess(new NodeProcess(this.currentCamera().camera3D, globe.size));            
         this.sceneProcess();
@@ -144,21 +137,23 @@ define('Scene/Scene', [
     
     Scene.prototype.realtimeSceneProcess = function() {
 
-        if (this.currentCamera !== undefined)
-            if(this.layers[1] !== undefined) this.browserScene.browse(this.layers[1],this.currentCamera());  // temp //MobileMappingLayer
-            for (var l = 0; l < this.layers.length; l++) {
-                var layer = this.layers[l];
+        for (var l = 0; l < this.layers.length; l++) {
+            var layer = this.layers[l];
 
-                for (var sl = 0; sl < layer.children.length; sl++) {
-                    var sLayer = layer.children[sl];
+            for (var sl = 0; sl < layer.children.length; sl++) {
+                var sLayer = layer.children[sl];
 
-                    if (sLayer instanceof Quadtree)
-                        this.browserScene.browse(sLayer, this.currentCamera(), NO_SUBDIVISE);
-                    else if (sLayer instanceof Layer)
-                        this.browserScene.updateLayer(sLayer,this.currentCamera());
 
-                }
+                
+                if (sLayer instanceof Quadtree)
+                    this.browserScene.browse(sLayer, this.currentCamera(), NO_SUBDIVISE);
+                else if (sLayer instanceof MobileMappingLayer)
+                    this.browserScene.updateMobileMappingLayer(sLayer,this.currentCamera());
+                else if (sLayer instanceof Layer)
+                    this.browserScene.updateLayer(sLayer,this.currentCamera());
+
             }
+        }
     };
 
     /**
@@ -239,16 +234,25 @@ define('Scene/Scene', [
     Scene.prototype.setStreetLevelImageryOn = function(value){
         
          if(value){
-               if(this.layers[1]) {
-                this.layers[1].panoramicMesh.visible = true;
+            if(this.layers[1]) {
+
+                this.layers[1].visible = true;
+                this.layers[1].children[0].visible = true;
+
             }else{
 
                 var mobileMappingLayer = new MobileMappingLayer();   
                 mobileMappingLayer.initiatePanoramic();
-                this.add(mobileMappingLayer);
+
+                var immersive = new Layer();
+
+                immersive.add(mobileMappingLayer)
+                this.add(immersive);                
             }
-        }else{
-            this.layers[1].panoramicMesh.visible = false; // mobileMappingLayer
+        }else
+        {
+            this.layers[1].visible = false;
+            this.layers[1].children[0].visible = false; // mobileMappingLayer
         }
         
         this.updateScene3D();
