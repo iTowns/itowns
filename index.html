@@ -84,8 +84,8 @@ and open the template in the editor.
                     itowns.viewer.setStreetLevelImageryOn(newValue);
                });
                
-               var arrayStats = [ 'treeCover', 'rankUniversity' ];
-               var arrayNbAttributesPerClass = [4,3];
+               var arrayStats = [ 'treeCover', 'rankUniversity', 'dataParis' ];
+               var arrayNbAttributesPerClass = [4,3,10];
                gui.add(text, 'Statistics', arrayStats ).onChange(function(newValue) {
                     itowns.viewer.setStat(newValue, arrayStats, arrayNbAttributesPerClass);  
                });
