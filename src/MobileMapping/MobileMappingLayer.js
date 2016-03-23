@@ -25,7 +25,7 @@ define('MobileMapping/MobileMappingLayer', [
         
         this.panoramicMesh = null; 
         this.name = "MobileMappingLayer";
-        this.mainMesh = new THREE.Mesh();
+        this.mainMesh = new THREE.Object3D();
         this.add(this.mainMesh);
         
         this.panoramicProvider = null;
