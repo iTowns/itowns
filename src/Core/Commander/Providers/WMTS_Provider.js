@@ -38,6 +38,7 @@ define('Core/Commander/Providers/WMTS_Provider', [
             this.projection = new Projection();
             this.baseUrl = options.url || "http://wxs.ign.fr/";
             this.layer   = options.layer || "ORTHOIMAGERY.ORTHOPHOTOS";
+            //this.layer = "GEOGRAPHICALGRIDSYSTEMS.MAPS";
             this.support = options.support || false;
             
             this.getTextureFloat;

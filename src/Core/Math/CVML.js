@@ -769,14 +769,14 @@ define(function () {
 
         /* jshint boss:true */
         if (x < node.value) {
-            while (node === node.prev) {
+            while ((node = node.prev) !== null) {
                 if (x >= node.value) {
                     this.search_node_ = node;
                     return node;
                 }
             }
         } else {
-            while (node === node.next) {
+            while ((node = node.next) != null) {
                 if (x < node.value) {
                     this.search_node_ = node.prev;
                     return node.prev;
@@ -805,13 +805,13 @@ define(function () {
             }
         } else if (px < nx) {
             /* jshint boss:true */
-            while (node === node.prev) {
+            while ((node = node.prev)!== null) {
                 if (point === node.point) {
                     break;
                 }
             }
         } else {
-            while (node === node.next) {
+            while ((node = node.next)!== null) {
                 if (point === node.point) {
                     break;
                 }
@@ -1066,7 +1066,9 @@ define(function () {
         // Cf. issues # 57, 65 and 69.
         var triangles = [triangle], t, i;
         /* jshint boss:true */
-        while (t === triangles.pop()) {
+
+        t = triangles.pop()
+        while (t)  {
             if (!t.isInterior()) {
                 t.setInterior(true);
                 this.triangles_.push(t);
@@ -1076,6 +1078,7 @@ define(function () {
                     }
                 }
             }
+            t = triangles.pop();
         }
     };
 
