@@ -13,21 +13,33 @@ define('Scene/BrowseTree', ['Globe/TileMesh', 'THREE'], function( TileMesh, THRE
         this.gfxEngine = engine;
         this.nodeProcess = undefined;
         this.tree = undefined;
-        this.date = new Date();
         this.fogDistance = 1000000000.0;
         this.mfogDistance = 1000000000.0;
-        this.visibleNodes = 0;
         this.selectedNodeId = -1;
         this.selectedNode = null;
         this.cachedRTC = null;
 
         this.selectNode = function(){};
 
-        var selectMode = false;
-        //selectMode = true;
+        this._resetQuadtreeNode;
 
-        if(selectMode)
+        this.selectMode = false;
+        //this.selectMode = true;
+
+        if(this.selectMode)
+        {
             this.selectNode = function(node){this._selectNode(node);};
+            this._resetQuadtreeNode = function(node)
+            {
+                node.setVisibility(false);
+                node.setSelected(false);
+            };
+        }
+        else
+            this._resetQuadtreeNode = function(node)
+            {
+                node.setVisibility(false);                
+            };
 
     }
 
@@ -39,6 +51,10 @@ define('Scene/BrowseTree', ['Globe/TileMesh', 'THREE'], function( TileMesh, THRE
         return this.nodeProcess;
     };
 
+    BrowseTree.prototype.resetQuadtreeNode = function(node){
+        this._resetQuadtreeNode(node);
+    };
+
     /**
      * @documentation: Process to apply to each node
      * @param {type} node   : node current to apply process
@@ -46,17 +62,17 @@ define('Scene/BrowseTree', ['Globe/TileMesh', 'THREE'], function( TileMesh, THRE
      * @param {type} enableUp  : optional process
      * @returns {Boolean}
      */
-    BrowseTree.prototype.processNodeQuadtree = function(node, camera, params) {
-        
+    BrowseTree.prototype.processQuadtreeNode = function(node, camera, params)
+    {
+       
         if(node.name === "terrestrialMesh"){    // TEMP
             node.setMaterialVisibility(true);
             this.uniformsProcess(node, camera);
             return true;
         }
 
-        node.setVisibility(false);
-        node.setSelected(false);
-
+        this.resetQuadtreeNode(node);
+        
         if(node.parent.material.visible)
             return false;
 
@@ -68,19 +84,24 @@ define('Scene/BrowseTree', ['Globe/TileMesh', 'THREE'], function( TileMesh, THRE
             this.uniformsProcess(node, camera);
 
         return !node.material.visible && !node.wait;       
+    
     };
 
+    BrowseTree.prototype.uniformsProcess = function()
+    {
 
-    var positionWorld = new THREE.Vector3();
+        var positionWorld = new THREE.Vector3();
+   
+        return function(node, camera) {
 
-    BrowseTree.prototype.uniformsProcess = function(node, camera) {
+            node.setMatrixRTC(this.gfxEngine.getRTCMatrixFromCenter(positionWorld.setFromMatrixPosition(node.matrixWorld), camera));
+            node.setFog(this.fogDistance);
 
-        node.setMatrixRTC(this.gfxEngine.getRTCMatrixFromCenter(positionWorld.setFromMatrixPosition(node.matrixWorld), camera));
-        node.setFog(this.fogDistance);
-
-        this.selectNode(node);
+            this.selectNode(node);
         
-    };
+        };
+
+    }();
 
     BrowseTree.prototype._selectNode = function(node)
     {            
@@ -131,7 +152,7 @@ define('Scene/BrowseTree', ['Globe/TileMesh', 'THREE'], function( TileMesh, THRE
      */
     BrowseTree.prototype._browse = function(node, camera, optional,clean) {
         
-        if (this.processNodeQuadtree(node, camera, {withUp : optional, tree : this.tree}))
+        if (this.processQuadtreeNode(node, camera, {withUp : optional, tree : this.tree}))
             for (var i = 0; i < node.children.length; i++)
                 this._browse(node.children[i], camera, optional,clean);
         else if(clean)              
