@@ -442,6 +442,10 @@ THREE.GlobeControls = function(object, domElement, engine) {
         return phi;
     };
     
+    this.getHeadingRad = function (){
+        return theta;
+    };
+
     this.setTilt = function(tilt)
     {                
         phiDelta = (tilt * Math.PI / 180 - this.getTiltRad());        
@@ -450,10 +454,15 @@ THREE.GlobeControls = function(object, domElement, engine) {
         state = STATE.NONE;        
     };
     
-    this.getHeadingRad = function (){
-        return theta;
+    this.setHeading = function(heading)
+    {                
+        thetaDelta = (heading * Math.PI / 180 - this.getHeadingRad());        
+        state = STATE.ORBIT;
+        this.update();                
+        state = STATE.NONE;        
     };
- 
+    
+    
     this.update = function() {
 
 

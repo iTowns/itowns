@@ -80,10 +80,15 @@ define('Scene/Scene', [
         return this.gfxEngine.getPickingPosition(mouse);
     };
 
+    Scene.prototype.getGlobe = function(){
+        var globe = new Globe();
+        return globe.ellipsoid;
+    }
+
     Scene.prototype.updateCamera = function() {
         this.browserScene.NodeProcess().updateCamera(this.gfxEngine.camera);
     };
-
+    
     /**
      * @documentation: initialisation scene 
      * @returns {undefined}
