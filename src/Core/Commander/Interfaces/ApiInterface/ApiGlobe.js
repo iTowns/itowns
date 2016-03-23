@@ -219,7 +219,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         
         this.scene.currentControlCamera().setTilt(tilt);
     };
-    
+        
     /**
     * Change the tilt.
     * @constructor
@@ -227,10 +227,44 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
     * @param {Boolean} [pDisableAnimation] - Used to force the non use of animation if its enable.
     */ 
     
-//    ApiGlobe.prototype.setHeading = function (heading, bool){
-//        
-//        var headingCamRad = this.scene.currentControlCamera().getHeadingRad();
-//    };
+    ApiGlobe.prototype.setHeading = function (heading/*, bool*/){
+        
+        this.scene.currentControlCamera().setHeading(heading);
+    };
+    
+    /**
+    * Resets camera tilt.
+    * @constructor
+    * @param {Boolean} [pDisableAnimation] - Used to force the non use of animation if its enable.
+    */ 
+    
+    ApiGlobe.prototype.resetTilt = function (/*bool*/) {
+        
+        this.scene.currentControlCamera().setTilt(0);
+    };
+    
+    /**
+    * Resets camera heading. 
+    * @constructor
+    * @param {Boolean} [pDisableAnimation] - Used to force the non use of animation if its enable.
+    */ 
+    
+    ApiGlobe.prototype.resetHeading = function (/*bool*/) {
+        
+        this.scene.currentControlCamera().setHeading(0);
+    };
+    
+    /**
+    * Return the distance in meter between two geographic position.
+    * @constructor
+    * @param {Position} First - Position.
+    * @param {Position} Second - Position.
+    */ 
+    
+    ApiGlobe.prototype.computeDistance = function(p1,p2){
+        
+        this.scene.getGlobe().computeDistance(p1,p2);
+    };
     
     ApiGlobe.prototype.launchCommandApi = function () {
 //        console.log(this.getCenter());
@@ -240,7 +274,11 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
 //        console.log(this.getTilt());
 //        console.log(this.getHeading());
 //        console.log(this.getRange());
-        this.setTilt(45);
+//        this.setTilt(45);
+//        this.setHeading(180);
+//        this.resetTilt();
+//        this.resetHeading();
+//        this.computeDistance(p1, p2);
     };
 
     ApiGlobe.prototype.showKML = function(value) {
