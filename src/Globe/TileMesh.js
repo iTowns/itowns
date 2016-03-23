@@ -28,7 +28,7 @@ define('Globe/TileMesh', [
     'Renderer/LayeredMaterial'
 ], function(NodeMesh, TileGeometry, BoundingBox, defaultValue, THREE, OBBHelper, SphereHelper, LayeredMaterial) {
     
-    var groupTerrain = [14, 11, 7, 3];   
+    var groupelevation = [14, 11, 7, 3];   
     var l_ELEVATION = 0;
     var l_COLOR = 1;
     
@@ -58,7 +58,7 @@ define('Globe/TileMesh', [
         center.copy(params.center3D);
         this.distance = params.center3D.length();
 
-        // TODO Question in next line ???
+        // TODO Why move sphere center 
         this.centerSphere = new THREE.Vector3().addVectors(this.geometry.boundingSphere.center, params.center3D);
         
         this.oSphere = new THREE.Sphere(this.centerSphere.clone(),this.geometry.boundingSphere.radius);
@@ -68,12 +68,12 @@ define('Globe/TileMesh', [
         this.dot = 0;
         this.frustumCulled = false;
         this.maxChildren = 4;
-        this.levelTerrain = this.level;
+        this.levelElevation = this.level;
 
-        for (var i = 0; i < groupTerrain.length; i++) {
-            var gLev = groupTerrain[i];
+        for (var i = 0; i < groupelevation.length; i++) {
+            var gLev = groupelevation[i];
             if (this.level >= gLev) {
-                this.levelTerrain = gLev;
+                this.levelElevation = gLev;
                 break;
             }
         }
@@ -137,7 +137,7 @@ define('Globe/TileMesh', [
     };
 
     TileMesh.prototype.useParent = function() {
-        return this.level !== this.levelTerrain;
+        return this.level !== this.levelElevation;
     };
 
     TileMesh.prototype.enableRTC = function(enable) {
@@ -195,18 +195,18 @@ define('Globe/TileMesh', [
 
     };
     
-    TileMesh.prototype.setTerrain = function(terrain) {
+    TileMesh.prototype.setTextureElevation = function(elevation) {
         var texture = undefined;
         var pitScale;
         var ancestor;
         var image;
         var minMax = new THREE.Vector2();
         
-        if (terrain === -1){ // No texture
+        if (elevation === -1){ // No texture
                         
             this.currentLevelLayers[l_ELEVATION] = -2;
         }
-        else if (terrain === -2) {// get ancestor texture
+        else if (elevation === -2) {// get ancestor texture
                         
             var levelAncestor = this.getParentNotDownScaled(l_ELEVATION).currentLevelLayers[l_ELEVATION];                        
             ancestor = this.getParentLevel(levelAncestor);            
@@ -224,7 +224,7 @@ define('Globe/TileMesh', [
                 this.parseBufferElevation(image,minMax,pitScale);                        
 
                 if(minMax.x !== 0 && minMax.y !== 0)
-                    this.setAltitude(minMax.x, minMax.y);
+                    this.setBBoxZ(minMax.x, minMax.y);
 
                 this.currentLevelLayers[l_ELEVATION] = ancestor.currentLevelLayers[l_ELEVATION];
             }
@@ -233,21 +233,21 @@ define('Globe/TileMesh', [
             
         } else {
                         
-            texture = terrain.texture;            
+            texture = elevation.texture;            
             pitScale = new THREE.Vector3(0,0,1);
-            this.setAltitude(terrain.min, terrain.max);
-            this.currentLevelLayers[l_ELEVATION] = terrain.level;                        
+            this.setBBoxZ(elevation.min, elevation.max);
+            this.currentLevelLayers[l_ELEVATION] = elevation.level;                        
         }
       
         this.material.setTexture(texture,l_ELEVATION, 0, pitScale);
     };
 
-    TileMesh.prototype.setAltitude = function(min, max) {
+    TileMesh.prototype.setBBoxZ = function(min, max) {
     
         if(Math.floor(min) !== Math.floor(this.bbox.minCarto.altitude) || Math.floor(max) !== Math.floor(this.bbox.maxCarto.altitude) )
         {            
 
-            this.bbox.setAltitude(min, max);            
+            this.bbox.setBBoxZ(min, max);            
             var delta = this.geometry.OBB.addHeight(this.bbox);
 
             var trans = this.normal.clone().setLength(delta.y);
@@ -263,15 +263,6 @@ define('Globe/TileMesh', [
                 this.helper.position.add(trans);
             }
         }
-    };
-
-    TileMesh.prototype.setTextureOrtho = function(texture, id,pitch) {
-        id = id === undefined ? 0 : id;
-        id = texture === -1 ? undefined: texture; // TODO remove this, place undefined before
-        this.material.setTexture(texture, l_COLOR, id,pitch);   
-                
-        this.currentLevelLayers[l_COLOR] = texture.level;
-        this.loadingCheck();
     };
     
     TileMesh.prototype.setTexturesLayer = function(textures,id){
@@ -295,7 +286,7 @@ define('Globe/TileMesh', [
             if(this.level <= 3 || this.currentLevelLayers[l_ELEVATION] === -2)            
                 return false;
             else                                            
-                return this.currentLevelLayers[l_ELEVATION] < this.levelTerrain ;                        
+                return this.currentLevelLayers[l_ELEVATION] < this.levelElevation ;                        
             
         else if(id === l_COLOR)
             if(this.level < 2)
