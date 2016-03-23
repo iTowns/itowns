@@ -65,11 +65,11 @@ define('Scene/BrowseTree', ['Globe/TileMesh', 'THREE'], function( TileMesh, THRE
     BrowseTree.prototype.processQuadtreeNode = function(node, camera, params)
     {
        
-        if(node.name === "terrestrialMesh"){    // TEMP
-            node.setMaterialVisibility(true);
-            this.uniformsProcess(node, camera);
-            return true;
-        }
+        // if(node.name === "terrestrialMesh"){    // TEMP
+        //     node.setMaterialVisibility(true);
+        //     this.uniformsProcess(node, camera);
+        //     return true;
+        // }
 
         this.resetQuadtreeNode(node);
         
@@ -249,7 +249,11 @@ define('Scene/BrowseTree', ['Globe/TileMesh', 'THREE'], function( TileMesh, THRE
 
     BrowseTree.prototype.updateLayer = function(layer,camera) {
 
+        if(!layer.visible)
+            return;
+
         var root = layer.children[0];
+
         for (var c = 0; c < root.children.length; c++) {
             var node = root.children[c];
 
@@ -263,6 +267,21 @@ define('Scene/BrowseTree', ['Globe/TileMesh', 'THREE'], function( TileMesh, THRE
             }.bind(this);
 
             node.traverse(cRTC);
+        }
+    };
+
+    BrowseTree.prototype.updateMobileMappingLayer = function(layer,camera) {
+
+        if(!layer.visible)
+            return;
+
+        var root = layer.children[0];
+
+        for (var c = 0; c < root.children.length; c++) {
+            
+            var node = root.children[c];
+            node.setMatrixRTC(this.gfxEngine.getRTCMatrixFromCenter(node.absoluteCenter, camera));
+            
         }
     };
 
