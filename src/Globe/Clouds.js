@@ -72,6 +72,7 @@ define('Globe/Clouds', ['Renderer/NodeMesh',
 
     Clouds.prototype.generate = function(satelliteAnimation) {
 
+        this.satelliteAnimation = satelliteAnimation;
         if(!satelliteAnimation){   
             this.live = true;
             var coWMS = {
@@ -113,7 +114,7 @@ define('Globe/Clouds', ['Renderer/NodeMesh',
 
     Clouds.prototype.animate = function() {
 
-        this.material.uniforms.time.value += 0.01;
+        if(!this.satelliteAnimation) this.material.uniforms.time.value += 0.01;
         requestAnimationFrame(this.animate.bind(this));
     };
     

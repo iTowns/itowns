@@ -51,4 +51,3 @@ void main()
         gl_FragColor.a *= -light;
     }
 }
-
