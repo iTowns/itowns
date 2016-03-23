@@ -18,10 +18,14 @@ and open the template in the editor.
             }
         </style>
         <meta charset="UTF-8">
+
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.5.1/dat.gui.min.js"></script>
     </head>
     <body>
+        <video id="video" autoplay loop style="display:none">
+		<source src="data/textures/video/cloudsShort.mp4" type='video/mp4; codecs="avc1.42E01E, mp4a.40.2"'>
+	</video>
         <script src="dist/itowns2.js"> </script>
         <script type="text/javascript">  
 
@@ -33,6 +37,7 @@ and open the template in the editor.
                // THIS IS AN EXAMPLE OF INTERFACE TO INTERACT WITH ITOWNS            
                var Menu = function() {
                    this.CloudsIR = false;
+                   this.SatelliteAnimation = false;
                    this.RealisticLighting = false;
                    this.AnimateTime = false;
                    this.Orbit = false;
@@ -59,7 +64,11 @@ and open the template in the editor.
                });
                
                gui.add(text, 'CloudsIR').onChange(function(newValue) {
-			itowns.viewer.showClouds(newValue);
+			itowns.viewer.showClouds(newValue, false);
+               });
+               
+               gui.add(text, 'SatelliteAnimation').onChange(function(newValue) {
+			itowns.viewer.showClouds(true, newValue);
                });
                
                gui.add(text, 'RealisticLighting').onChange(function(newValue) {

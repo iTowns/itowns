@@ -67,9 +67,9 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         this.scene.browserScene.updateNodeMaterial(wmtsProvider);
     };
 
-    ApiGlobe.showClouds = function(value) {
+    ApiGlobe.showClouds = function(value, satelliteAnimation) {
 
-        this.scene.layers[0].showClouds(value);
+        this.scene.layers[0].showClouds(value, satelliteAnimation);
     };
     
     ApiGlobe.setRealisticLightingOn = function(value) {

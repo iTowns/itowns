@@ -22,7 +22,8 @@ define('Globe/Clouds', ['Renderer/NodeMesh',
         this.loader = new THREE.TextureLoader();
         this.loader.crossOrigin = '';
         this.live = false;
-
+        this.satelliteAnimation = true;
+        this.texture = null;
         this.geometry = new THREE.SphereGeometry(6400000, 96, 96);
 
         this.uniforms = {
@@ -66,31 +67,49 @@ define('Globe/Clouds', ['Renderer/NodeMesh',
     }
 
     Clouds.prototype = Object.create(NodeMesh.prototype);
-
     Clouds.prototype.constructor = Clouds;
 
 
-    Clouds.prototype.generate = function() {
+    Clouds.prototype.generate = function(satelliteAnimation) {
 
-        this.live = true;
-        var coWMS = {
-            latBound: new THREE.Vector2(-85, 85),
-            longBound: new THREE.Vector2(-178, 178),
-            width: 2048,
-            height: 1024
-        };
+        if(!satelliteAnimation){   
+            this.live = true;
+            var coWMS = {
+                latBound: new THREE.Vector2(-85, 85),
+                longBound: new THREE.Vector2(-178, 178),
+                width: 2048,
+                height: 1024
+            };
 
+            var url = this.providerWMS.urlGlobalIR(coWMS, 0);
+            this.loader.load(url, function(texture) {
+                this.material.blending = THREE.NormalBlending;
+                this.material.uniforms.diffuse.value = texture;
+                this.material.uniforms.diffuse.needsUpdate = true;
+                this.animate();
+            }.bind(this));
 
-        var url = this.providerWMS.urlGlobalIR(coWMS, 0);
-        this.loader.load(url, function(texture) {
-            this.material.uniforms.diffuse.value = texture;
+        }else{
+            
+            this.live = true;
+            var video = document.getElementById( 'video' );
+
+            this.texture = new THREE.VideoTexture( video );
+            this.texture.minFilter = THREE.LinearFilter;
+            this.texture.magFilter = THREE.LinearFilter;
+            this.texture.format    = THREE.RGBFormat;
+
+            // this.material = new THREE.MeshBasicMaterial( { color: 0xffffff, map: this.texture});//, transparent : true, opacity:0.8});
+            this.material.blending = THREE.AdditiveBlending;
+            this.material.uniforms.diffuse.value = this.texture;
             this.material.uniforms.diffuse.needsUpdate = true;
             this.animate();
-        }.bind(this));
 
-
-
+        }
+        
     };
+    
+   
 
     Clouds.prototype.animate = function() {
 
