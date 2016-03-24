@@ -22,7 +22,7 @@ define('Globe/Globe', [
     Ellipsoid, TileMesh, Atmosphere, Clouds, Capabilities,
     CoordCarto, BasicMaterial, THREE) {
 
-    function Globe(supportGLInspector) {
+    function Globe(gLDebug) {
         //Constructor
 
         Layer.call(this);
@@ -30,7 +30,7 @@ define('Globe/Globe', [
         var scale = defaultValue(scale, 1.0);
         var caps = new Capabilities();
         this.NOIE = !caps.isInternetExplorer();
-        this.supportGLInspector = supportGLInspector;
+        this.gLDebug = gLDebug;
         this.size = new THREE.Vector3(6378137, 6356752.3142451793, 6378137).multiplyScalar(scale);
         this.ellipsoid = new Ellipsoid(this.size);
         
@@ -98,7 +98,7 @@ define('Globe/Globe', [
         this.add(this.batiments);
         //this.add(this.layerWGS84Zup);
        
-        if (this.atmosphere !== undefined && !this.supportGLInspector) {
+        if (this.atmosphere !== undefined && !this.gLDebug) {
             this.atmosphere.add(this.clouds);
             this.add(this.atmosphere);
         }        

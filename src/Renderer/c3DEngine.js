@@ -19,34 +19,32 @@ define('Renderer/c3DEngine', [
     DepthMaterial,
     BasicMaterial) {
 
-    var instance3DEngine = null;
+    
     var RENDER = {
         FINAL: 0,
         PICKING: 1
     };
 
-    function c3DEngine(supportGLInspector) {
+    function c3DEngine(scene, positionCamera, debugMode, gLDebug) {
         //Constructor
 
-        if (instance3DEngine !== null) {
-            throw new Error("Cannot instantiate more than one c3DEngine");
+
+        if(c3DEngine.prototype._instance){
+            if(scene || positionCamera)
+                throw new Error("Attempt to re-instantiate c3DEngine");
+            return c3DEngine.prototype._instance;
         }
+
+        c3DEngine.prototype._instance = this;        
 
         THREE.ShaderChunk["logdepthbuf_pars_vertex"];
 
-        this.supportGLInspector = supportGLInspector;
-        //this.supportGLInspector = false;
+        this.gLDebug = gLDebug;
 
-        this.debug = false;
-        //this.debug = true;
-        this.scene = undefined;
+        this.debug = debugMode;    
         this.scene3D = new THREE.Scene();
         this.width = this.debug ? window.innerWidth * 0.5 : window.innerWidth;
         this.height = window.innerHeight;
-
-        this.renderer = undefined;
-        this.controls = undefined;
-        this.camera = undefined;
         this.camDebug = undefined;
         this.size = 1.0;
         this.dnear = 0.0;
@@ -55,7 +53,12 @@ define('Renderer/c3DEngine', [
         this.positionBuffer = null;
         this.lightingOn = false; 
 
-        this.initCamera();
+        this.camera = new Camera(this.width, this.height, this.debug);
+
+        if (this.debug) {
+            this.camDebug = new THREE.PerspectiveCamera(30, this.camera.ratio);
+
+        }
 
         var material = new BasicMaterial(new THREE.Color(1, 0, 0));
         var material2 = new BasicMaterial(new THREE.Color(0, 0, 1));
@@ -138,54 +141,16 @@ define('Renderer/c3DEngine', [
             
         }.bind(this);
 
-    }
-
-    /**
-     * Intialisation camera and debug camera
-     * @returns {undefined}
-     */
-    c3DEngine.prototype.initCamera = function() {
-        
-        this.camera = new Camera(this.width, this.height, this.debug);
-
-        if (this.debug) {
-            this.camDebug = new THREE.PerspectiveCamera(30, this.camera.ratio);
-
-        }
-    };
-
-    /**
-     * Initialisation renderer THREE.js
-     * @returns {undefined}
-     */
-    c3DEngine.prototype.initRenderer = function() {
-        this.renderer = new THREE.WebGLRenderer({
-            antialias: true,
-            alpha: true,
-            logarithmicDepthBuffer: this.supportGLInspector ? false : true
-        });
-        this.renderer.setPixelRatio(window.devicePixelRatio);
-        this.renderer.setSize(window.innerWidth, window.innerHeight);
-        this.renderer.setClearColor(0x030508);
-        this.renderer.autoClear = false;
-
-        document.body.appendChild(this.renderer.domElement);
-    };
-
-    /**
-     * 
-     * @param {type} scene
-     * @param {type} position
-     * @returns {undefined}
-     */
-    c3DEngine.prototype.init = function(scene, position) {
 
         this.scene = scene;
-        this.size = this.scene.size().x;
-        this.camera.setPosition(position);
+        this.size = this.scene.size.x;
 
-        // if near is too small --> bug no camera helper
-        this.camera.camera3D.near = this.size * 2.333;
+        
+        //
+        // init camera
+        // 
+        this.camera.setPosition(positionCamera);
+        this.camera.camera3D.near = this.size * 2.333; // if near is too small --> bug no camera helper
         this.camera.camera3D.far = this.size * 10;
         this.camera.camera3D.updateProjectionMatrix();
         this.camera.camera3D.updateMatrixWorld(true);
@@ -205,14 +170,37 @@ define('Renderer/c3DEngine', [
 
         this.camera.camera3D.near = Math.max(15.0, 0.000002352 * this.size);
         this.camera.camera3D.updateProjectionMatrix();
-        this.initRenderer();
-        this.initControls(this.size);
-
-        //this.controls.target        = target;        
+        
+        //
+        // Create renderer
+        //        
+        this.renderer = new THREE.WebGLRenderer({
+            antialias: true,
+            alpha: true,
+            logarithmicDepthBuffer: this.gLDebug ? false : true
+        });
+        this.renderer.setPixelRatio(window.devicePixelRatio);
+        this.renderer.setSize(window.innerWidth, window.innerHeight);
+        this.renderer.setClearColor(0x030508);
+        this.renderer.autoClear = false;
+        document.body.appendChild(this.renderer.domElement);
+    
+        //
+        // Create Control
+        //
+        this.controls = new THREE.GlobeControls(this.camera.camera3D, this.renderer.domElement, this);
+        this.controls.target = new THREE.Vector3(0, 0, 0);
+        this.controls.damping = 0.1;
+        this.controls.noPan = false;
+        this.controls.rotateSpeed = 0.8;
+        this.controls.zoomSpeed = 2.0;
+        this.controls.minDistance = 30;
+        this.controls.maxDistance = this.size * 8.0;
+        this.controls.keyPanSpeed = 0.01;
+        
         window.addEventListener('resize', this.onWindowResize, false);
         this.controls.addEventListener('change', this.update);
-
-    };
+    }
 
     /**
      * TODO : temporaire
@@ -285,28 +273,6 @@ define('Renderer/c3DEngine', [
     c3DEngine.prototype.style2Engine = function() {
         //TODO: Implement Me 
 
-    };
-
-    /**
-     * @documentation Initialisation of controls camera
-     * @param {type} size
-     * @returns {undefined}
-     */
-
-    c3DEngine.prototype.initControls = function(size) {
-
-        //this.controls   = new THREE.OrbitControls( this.camera.camera3D,this.renderer.domElement );        
-        this.controls = new THREE.GlobeControls(this.camera.camera3D, this.renderer.domElement, this);
-
-        this.controls.target = new THREE.Vector3(0, 0, 0);
-        this.controls.damping = 0.1;
-        this.controls.noPan = false;
-        this.controls.rotateSpeed = 0.8;
-        this.controls.zoomSpeed = 2.0;
-        this.controls.minDistance = 30;
-        this.controls.maxDistance = size * 8.0;
-        this.controls.keyPanSpeed = 0.01;
-                
     };
 
     /**
@@ -540,9 +506,6 @@ define('Renderer/c3DEngine', [
         this.lightingOn = value;
     };
 
-    return function(scene) {
-        instance3DEngine = instance3DEngine || new c3DEngine(scene);
-        return instance3DEngine;
-    };
+    return c3DEngine;
 
 });

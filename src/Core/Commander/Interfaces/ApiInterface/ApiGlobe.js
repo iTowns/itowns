@@ -54,12 +54,20 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
 
     };
 
-    ApiGlobe.prototype.createSceneGlobe = function(pos) {
-        //TODO: Normalement la creation de scene ne doit pas etre ici....
-        // A� deplacer plus tard
+    ApiGlobe.prototype.createSceneGlobe = function(coordCarto) {
+        // TODO: Normalement la creation de scene ne doit pas etre ici....
+        // Deplacer plus tard
 
-        this.scene = Scene();
-        this.scene.init(pos);
+        var gLDebug = false;
+        var debugMode = false;
+
+        //gLDebug = true;
+        //debugMode = true;
+
+        this.scene = new Scene(coordCarto,debugMode,gLDebug);
+        this.scene.add(new Globe(gLDebug));
+
+        
 
         return this.scene;
 

@@ -15,7 +15,7 @@
 
 
 
-define('Core/Commander/Providers/tileGlobeProvider', [
+define('Core/Commander/Providers/TileProvider', [
         'when',
         'Core/Geographic/Projection',
         'Core/Commander/Providers/WMTS_Provider',
@@ -42,11 +42,11 @@ define('Core/Commander/Providers/tileGlobeProvider', [
         THREE
     ) {
 
-        function tileGlobeProvider(size,supportGLInspector) {
+        function TileProvider(size,gLDebug) {
             //Constructor
 
             this.projection = new Projection();
-            this.providerWMTS = new WMTS_Provider({support : supportGLInspector});//{url:"http://a.basemaps.cartocdn.com/",layer:"dark_all/"});
+            this.providerWMTS = new WMTS_Provider({support : gLDebug});//{url:"http://a.basemaps.cartocdn.com/",layer:"dark_all/"});
             //this.providerWMS     = new WMS_Provider();
             this.ellipsoid = new Ellipsoid(size);
             this.providerKML = new KML_Provider(this.ellipsoid);
@@ -58,9 +58,9 @@ define('Core/Commander/Providers/tileGlobeProvider', [
 
         }
 
-        tileGlobeProvider.prototype.constructor = tileGlobeProvider;
+        TileProvider.prototype.constructor = TileProvider;
 
-        tileGlobeProvider.prototype.getGeometry = function(bbox, cooWMTS) {
+        TileProvider.prototype.getGeometry = function(bbox, cooWMTS) {
             var geometry = undefined;
             var n = Math.pow(2, cooWMTS.zoom + 1);
             var part = Math.PI * 2.0 / n;
@@ -82,8 +82,8 @@ define('Core/Commander/Providers/tileGlobeProvider', [
             return geometry;
         };
         
-       // tileGlobeProvider.prototype.getKML= function(){
-        tileGlobeProvider.prototype.getKML= function(tile){
+       // TileProvider.prototype.getKML= function(){
+        TileProvider.prototype.getKML= function(tile){
 
             if(tile.link.layer.visible && tile.level  === 16)
             {
@@ -103,7 +103,7 @@ define('Core/Commander/Providers/tileGlobeProvider', [
 
         var center = new THREE.Vector3();
 
-        tileGlobeProvider.prototype.executeCommand = function(command) {
+        TileProvider.prototype.executeCommand = function(command) {
 
             var bbox = command.paramsFunction.bbox;
             var cooWMTS = this.projection.WGS84toWMTS(bbox);
@@ -154,7 +154,7 @@ define('Core/Commander/Providers/tileGlobeProvider', [
             }.bind(this));
         };
 
-        tileGlobeProvider.prototype.getOrthoImages = function(tile) {
+        TileProvider.prototype.getOrthoImages = function(tile) {
                          
             if (tile.cooWMTS.zoom >= 2)
             {
@@ -185,6 +185,6 @@ define('Core/Commander/Providers/tileGlobeProvider', [
             
         };
 
-        return tileGlobeProvider;
+        return TileProvider;
 
     });

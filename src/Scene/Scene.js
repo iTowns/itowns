@@ -16,8 +16,9 @@ define('Scene/Scene', [
     'Renderer/c3DEngine',
     'Globe/Globe',
     'Core/Commander/ManagerCommands',
-    'Core/Commander/Providers/tileGlobeProvider',    
+    'Core/Commander/Providers/TileProvider',    
     'Core/Commander/Providers/PanoramicProvider',
+    'Core/Math/Ellipsoid',
     'Renderer/PanoramicMesh',
     'Scene/BrowseTree',
     'Scene/NodeProcess',
@@ -27,31 +28,36 @@ define('Scene/Scene', [
     'Core/System/Capabilities',
     'MobileMapping/MobileMappingLayer'
     
-], function(c3DEngine, Globe, ManagerCommands, tileGlobeProvider, 
-            PanoramicProvider, PanoramicMesh, BrowseTree, NodeProcess, Quadtree, Layer, CoordCarto,
+], function(c3DEngine, Globe, ManagerCommands, TileProvider, 
+            PanoramicProvider, Ellipsoid, PanoramicMesh, BrowseTree, NodeProcess, Quadtree, Layer, CoordCarto,
             Capabilities, MobileMappingLayer) {
 
-    var instanceScene = null;
-    
     var NO_SUBDIVISE = 0;
     var SUBDIVISE = 1;
     var CLEAN = 2;
 
-    function Scene() {
+    function Scene(coordCarto, debugMode,gLDebug) {
         //Constructor        
-        if (instanceScene !== null) {
-            throw new Error("Cannot instantiate more than one Scene");
-        }
+        if(Scene.prototype._instance){
+            return Scene.prototype._instance;
+        }         
+        
+        Scene.prototype._instance = this;
+
+        this.size = {x:6378137,y: 6356752.3142451793,z:6378137};
+
+        var positionCamera = new Ellipsoid(this.size).cartographicToCartesian(new CoordCarto().setFromDegreeGeo(coordCarto.lat, coordCarto.lon, coordCarto.alt));
+        
         this.layers = [];
         this.cameras = null;
         this.selectNodes = null;
-        this.managerCommand = ManagerCommands();
+        this.managerCommand = new ManagerCommands(this);
         
-        this.supportGLInspector = false;
-        //this.supportGLInspector = true;
-        this.gfxEngine = c3DEngine(this.supportGLInspector);
+        this.gLDebug = gLDebug;        
+        this.gfxEngine = new c3DEngine(this,positionCamera, debugMode,gLDebug);
         this.browserScene = new BrowseTree(this.gfxEngine);
         this.cap = new Capabilities();
+
     }
 
     Scene.prototype.constructor = Scene;
@@ -87,29 +93,9 @@ define('Scene/Scene', [
         this.browserScene.NodeProcess().updateCamera(this.gfxEngine.camera);
     };
     
-    /**
-     * @documentation: initialisation scene 
-     * @returns {undefined}
-     */
-    Scene.prototype.init = function(pos) {
-        
-        this.managerCommand.init(this);
-        var globe = new Globe(this.supportGLInspector);        
-
-        this.add(globe);
-        this.managerCommand.addLayer(globe.meshTerrain, new tileGlobeProvider(globe.size,this.supportGLInspector));
-        this.managerCommand.addLayer(globe.colorTerrain,this.managerCommand.getProvider(globe.meshTerrain).providerWMTS);
-        this.managerCommand.addLayer(globe.elevationTerrain,this.managerCommand.getProvider(globe.meshTerrain).providerWMTS);
-              
-        var position = globe.ellipsoid.cartographicToCartesian(new CoordCarto().setFromDegreeGeo(pos.lat, pos.lon, pos.alt));
-        
-        this.gfxEngine.init(this, position);
-        this.browserScene.addNodeProcess(new NodeProcess(this.currentCamera().camera3D, globe.size));            
-        this.quadTreeRequest(globe.meshTerrain);
-    };
 
     Scene.prototype.size = function() {
-        return this.layers[0].size;
+        return this.size;
     };
 
     /**
@@ -193,8 +179,15 @@ define('Scene/Scene', [
      */
     Scene.prototype.add = function(node) {        
 
-        this.layers.push(node);        
+        this.layers.push(node);  
 
+        if(node instanceof Globe)
+        {
+            this.managerCommand.addMapProvider(node);
+            this.browserScene.addNodeProcess(new NodeProcess(this.currentCamera().camera3D, node.size)); 
+            this.quadTreeRequest(node.meshTerrain);
+        }
+        
         this.gfxEngine.add3DScene(node.getMesh());
     };
   
@@ -250,10 +243,6 @@ define('Scene/Scene', [
         this.updateScene3D();
     };
     
-
-    return function() {
-        instanceScene = instanceScene || new Scene();
-        return instanceScene;
-    };
+    return Scene;
 
 });
