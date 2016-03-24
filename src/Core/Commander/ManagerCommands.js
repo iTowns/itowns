@@ -13,34 +13,48 @@
  */
 define('Core/Commander/ManagerCommands', [
         'Core/Commander/Interfaces/EventsManager',
+        'Globe/Globe',
+        'Core/Commander/Providers/TileProvider',
         'PriorityQueue',
         'when'
     ],
     function(
         EventsManager,
+        Globe,
+        TileProvider,
         PriorityQueue,
         when
     ) {
 
-        var instanceCommandManager = null;
-
-        function ManagerCommands() {
+        function ManagerCommands(scene) {
             //Constructor
-            if (instanceCommandManager !== null) {
-                throw new Error("Cannot instantiate more than one ManagerCommands");
+
+            if (ManagerCommands.prototype._instance) {
+        
+                if(scene) 
+                    throw new Error("Attempt to re-instantiate ManagerCommands"); 
+
+                return ManagerCommands.prototype._instance;
             }
+
+            ManagerCommands.prototype._instance = this;
 
             this.queueAsync = new PriorityQueue({
                 comparator: function(a, b) {
                     return b.priority - a.priority;
                 }
             });
+
             this.queueSync = null;
             this.loadQueue = [];
             this.providerMap = {};
             this.history = null;
             this.eventsManager = new EventsManager();
-            this.scene = undefined;
+
+            if(!scene)
+                throw new Error("Cannot instantiate ManagerCommands without scene");
+
+            this.scene = scene;
   
         }
 
@@ -50,12 +64,17 @@ define('Core/Commander/ManagerCommands', [
             this.queueAsync.queue(command);
         };
 
-        ManagerCommands.prototype.init = function(scene) {
-            this.scene = scene;
-        };
-
         ManagerCommands.prototype.addLayer = function(layer, provider) {
             this.providerMap[layer.layerId] = provider;
+        };
+
+        ManagerCommands.prototype.addMapProvider = function(map) {
+
+            var tileProvider = new TileProvider(map.size,map.gLDebug);
+            this.addLayer(map.meshTerrain,tileProvider);
+            this.addLayer(map.colorTerrain,tileProvider.providerWMTS);
+            this.addLayer(map.elevationTerrain,tileProvider.providerWMTS);
+
         };
         
         ManagerCommands.prototype.getProvider = function(layer) {
@@ -81,11 +100,10 @@ define('Core/Commander/ManagerCommands', [
             return when.all(this.arrayDeQueue(16))
                 .then(function() {
                         
-                //if (this.commandsLength() <= 8)                                                
+                // if (this.commandsLength() <= 8)                                                
                     this.scene.wait(1); 
-                //else
-                //    this.scene.renderScene3D();                     
-                
+                // else
+                //     this.scene.renderScene3D();                     
                 return this.runAllCommands();
                 
                 }.bind(this));
@@ -161,9 +179,6 @@ define('Core/Commander/ManagerCommands', [
 
         };
 
-        return function() {
-            instanceCommandManager = instanceCommandManager || new ManagerCommands();
-            return instanceCommandManager;
-        };
+        return ManagerCommands;
 
     });
