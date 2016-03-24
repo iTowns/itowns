@@ -16,7 +16,7 @@ define('Scene/Scene', [
     'Renderer/c3DEngine',
     'Globe/Globe',
     'Core/Commander/ManagerCommands',
-    'Core/Commander/Providers/tileGlobeProvider',    
+    'Core/Commander/Providers/TileProvider',    
     'Core/Commander/Providers/PanoramicProvider',
     'Renderer/PanoramicMesh',
     'Scene/BrowseTree',
@@ -27,31 +27,35 @@ define('Scene/Scene', [
     'Core/System/Capabilities',
     'MobileMapping/MobileMappingLayer'
     
-], function(c3DEngine, Globe, ManagerCommands, tileGlobeProvider, 
+], function(c3DEngine, Globe, ManagerCommands, TileProvider, 
             PanoramicProvider, PanoramicMesh, BrowseTree, NodeProcess, Quadtree, Layer, CoordCarto,
             Capabilities, MobileMappingLayer) {
 
-    var instanceScene = null;
+    //var instanceScene = null;
     
     var NO_SUBDIVISE = 0;
     var SUBDIVISE = 1;
     var CLEAN = 2;
 
-    function Scene() {
+    function Scene(supportGLInspector) {
         //Constructor        
-        if (instanceScene !== null) {
-            throw new Error("Cannot instantiate more than one Scene");
-        }
+
+        if(Scene.prototype._instance){
+            return Scene.prototype._instance;
+        }         
+        
+        Scene.prototype._instance = this;
+
         this.layers = [];
         this.cameras = null;
         this.selectNodes = null;
         this.managerCommand = new ManagerCommands(this);
         
-        this.supportGLInspector = false;
-        //this.supportGLInspector = true;
-        this.gfxEngine = c3DEngine(this.supportGLInspector);
+        this.supportGLInspector = supportGLInspector;        
+        this.gfxEngine = c3DEngine(supportGLInspector);
         this.browserScene = new BrowseTree(this.gfxEngine);
         this.cap = new Capabilities();
+
     }
 
     Scene.prototype.constructor = Scene;
@@ -87,26 +91,6 @@ define('Scene/Scene', [
         this.browserScene.NodeProcess().updateCamera(this.gfxEngine.camera);
     };
     
-    /**
-     * @documentation: initialisation scene 
-     * @returns {undefined}
-     */
-    Scene.prototype.init = function(pos) {
-        
-        //this.managerCommand.init(this);
-        var globe = new Globe(this.supportGLInspector);        
-
-        this.add(globe);
-        this.managerCommand.addLayer(globe.meshTerrain, new tileGlobeProvider(globe.size,this.supportGLInspector));
-        this.managerCommand.addLayer(globe.colorTerrain,this.managerCommand.getProvider(globe.meshTerrain).providerWMTS);
-        this.managerCommand.addLayer(globe.elevationTerrain,this.managerCommand.getProvider(globe.meshTerrain).providerWMTS);
-              
-        var position = globe.ellipsoid.cartographicToCartesian(new CoordCarto().setFromDegreeGeo(pos.lat, pos.lon, pos.alt));
-        
-        this.gfxEngine.init(this, position);
-        this.browserScene.addNodeProcess(new NodeProcess(this.currentCamera().camera3D, globe.size));            
-        this.quadTreeRequest(globe.meshTerrain);
-    };
 
     Scene.prototype.size = function() {
         return this.layers[0].size;
@@ -191,9 +175,21 @@ define('Scene/Scene', [
      *
      * @param node {[object Object]} 
      */
-    Scene.prototype.add = function(node) {        
+    Scene.prototype.add = function(node,coordCarto) {        
 
-        this.layers.push(node);        
+        this.layers.push(node);  
+
+        if(node instanceof Globe)
+        {
+            this.managerCommand.addMapProvider(node);
+
+            var position = node.ellipsoid.cartographicToCartesian(new CoordCarto().setFromDegreeGeo(coordCarto.lat, coordCarto.lon, coordCarto.alt));
+        
+            this.gfxEngine.init(this, position);
+            this.browserScene.addNodeProcess(new NodeProcess(this.currentCamera().camera3D, node.size)); 
+            this.quadTreeRequest(node.meshTerrain);
+        }
+        
 
         this.gfxEngine.add3DScene(node.getMesh());
     };
@@ -251,9 +247,6 @@ define('Scene/Scene', [
     };
     
 
-    return function() {
-        instanceScene = instanceScene || new Scene();
-        return instanceScene;
-    };
+    return Scene;
 
 });
