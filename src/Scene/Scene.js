@@ -177,7 +177,7 @@ define('Scene/Scene', [
      *
      * @param node {[object Object]} 
      */
-    Scene.prototype.add = function(node,coordCarto) {        
+    Scene.prototype.add = function(node) {        
 
         this.layers.push(node);  
 
