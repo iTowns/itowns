@@ -13,11 +13,12 @@ define('Core/Math/Ellipsoid',
     function Ellipsoid(size) {
         //Constructor
 
+
         this.rayon_1 = size.x;
         this.rayon_2 = size.y;
         this.rayon_3 = size.z;
 
-        this.size = size;
+        this.size = new THREE.Vector3(size.x,size.y,size.z);
 
         this._radiiSquared = new THREE.Vector3(size.x * size.x, size.y * size.y, size.z * size.z);
     }
