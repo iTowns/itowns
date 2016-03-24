@@ -35,7 +35,6 @@ define('Renderer/c3DEngine', [
         THREE.ShaderChunk["logdepthbuf_pars_vertex"];
 
         this.supportGLInspector = supportGLInspector;
-        //this.supportGLInspector = false;
 
         this.debug = false;
         //this.debug = true;
