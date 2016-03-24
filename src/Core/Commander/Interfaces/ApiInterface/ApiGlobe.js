@@ -67,6 +67,8 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         this.scene = new Scene(coordCarto,debugMode,gLDebug);
         this.scene.add(new Globe(gLDebug));
 
+        
+
         return this.scene;
 
     };
