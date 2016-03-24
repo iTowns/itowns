@@ -1001,7 +1001,6 @@ THREE.GlobeControls = function(object, domElement, engine) {
     var ray = new THREE.Ray(this.object.position, this.object.position.clone().normalize().negate());
 
     this.moveTarget = this.intersectSphere(ray);
-    computeTarget();
 
     state = STATE.MOVE_GLOBE;
     this.update();

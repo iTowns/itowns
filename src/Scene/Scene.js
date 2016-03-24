@@ -18,6 +18,7 @@ define('Scene/Scene', [
     'Core/Commander/ManagerCommands',
     'Core/Commander/Providers/TileProvider',    
     'Core/Commander/Providers/PanoramicProvider',
+    'Core/Math/Ellipsoid',
     'Renderer/PanoramicMesh',
     'Scene/BrowseTree',
     'Scene/NodeProcess',
@@ -28,31 +29,32 @@ define('Scene/Scene', [
     'MobileMapping/MobileMappingLayer'
     
 ], function(c3DEngine, Globe, ManagerCommands, TileProvider, 
-            PanoramicProvider, PanoramicMesh, BrowseTree, NodeProcess, Quadtree, Layer, CoordCarto,
+            PanoramicProvider, Ellipsoid, PanoramicMesh, BrowseTree, NodeProcess, Quadtree, Layer, CoordCarto,
             Capabilities, MobileMappingLayer) {
 
-    //var instanceScene = null;
-    
     var NO_SUBDIVISE = 0;
     var SUBDIVISE = 1;
     var CLEAN = 2;
 
-    function Scene(supportGLInspector) {
+    function Scene(coordCarto, debugMode,gLDebug) {
         //Constructor        
-
         if(Scene.prototype._instance){
             return Scene.prototype._instance;
         }         
         
         Scene.prototype._instance = this;
 
+        this.size = {x:6378137,y: 6356752.3142451793,z:6378137};
+
+        var positionCamera = new Ellipsoid(this.size).cartographicToCartesian(new CoordCarto().setFromDegreeGeo(coordCarto.lat, coordCarto.lon, coordCarto.alt));
+        
         this.layers = [];
         this.cameras = null;
         this.selectNodes = null;
         this.managerCommand = new ManagerCommands(this);
         
-        this.supportGLInspector = supportGLInspector;        
-        this.gfxEngine = c3DEngine(supportGLInspector);
+        this.gLDebug = gLDebug;        
+        this.gfxEngine = new c3DEngine(this,positionCamera, debugMode,gLDebug);
         this.browserScene = new BrowseTree(this.gfxEngine);
         this.cap = new Capabilities();
 
@@ -93,7 +95,7 @@ define('Scene/Scene', [
     
 
     Scene.prototype.size = function() {
-        return this.layers[0].size;
+        return this.size;
     };
 
     /**
@@ -182,15 +184,10 @@ define('Scene/Scene', [
         if(node instanceof Globe)
         {
             this.managerCommand.addMapProvider(node);
-
-            var position = node.ellipsoid.cartographicToCartesian(new CoordCarto().setFromDegreeGeo(coordCarto.lat, coordCarto.lon, coordCarto.alt));
-        
-            this.gfxEngine.init(this, position);
             this.browserScene.addNodeProcess(new NodeProcess(this.currentCamera().camera3D, node.size)); 
             this.quadTreeRequest(node.meshTerrain);
         }
         
-
         this.gfxEngine.add3DScene(node.getMesh());
     };
   
@@ -246,7 +243,6 @@ define('Scene/Scene', [
         this.updateScene3D();
     };
     
-
     return Scene;
 
 });
