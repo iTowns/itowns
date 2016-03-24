@@ -27,7 +27,9 @@ define('Core/Commander/ManagerCommands', [
 
             if (ManagerCommands.prototype._instance) {
         
-                !scene|| die("Attempt to re-instantiate ManagerCommands");        
+                if(scene) 
+                    throw new Error("Attempt to re-instantiate ManagerCommands"); 
+
                 return ManagerCommands.prototype._instance;
             }
 
@@ -44,7 +46,11 @@ define('Core/Commander/ManagerCommands', [
             this.providerMap = {};
             this.history = null;
             this.eventsManager = new EventsManager();
-            this.scene = scene || die("Cannot instantiate ManagerCommands without scene");
+
+            if(!scene)
+                throw new Error("Cannot instantiate ManagerCommands without scene");
+
+            this.scene = scene;
   
         }
 
