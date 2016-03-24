@@ -45,7 +45,7 @@ define('Scene/Scene', [
         this.layers = [];
         this.cameras = null;
         this.selectNodes = null;
-        this.managerCommand = ManagerCommands();
+        this.managerCommand = new ManagerCommands(this);
         
         this.supportGLInspector = false;
         //this.supportGLInspector = true;
@@ -93,7 +93,7 @@ define('Scene/Scene', [
      */
     Scene.prototype.init = function(pos) {
         
-        this.managerCommand.init(this);
+        //this.managerCommand.init(this);
         var globe = new Globe(this.supportGLInspector);        
 
         this.add(globe);

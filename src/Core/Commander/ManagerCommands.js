@@ -22,25 +22,29 @@ define('Core/Commander/ManagerCommands', [
         when
     ) {
 
-        var instanceCommandManager = null;
-
-        function ManagerCommands() {
+        function ManagerCommands(scene) {
             //Constructor
-            if (instanceCommandManager !== null) {
-                throw new Error("Cannot instantiate more than one ManagerCommands");
+
+            if (ManagerCommands.prototype._instance) {
+        
+                !scene|| die("Attempt to re-instantiate ManagerCommands");        
+                return ManagerCommands.prototype._instance;
             }
+
+            ManagerCommands.prototype._instance = this;
 
             this.queueAsync = new PriorityQueue({
                 comparator: function(a, b) {
                     return b.priority - a.priority;
                 }
             });
+
             this.queueSync = null;
             this.loadQueue = [];
             this.providerMap = {};
             this.history = null;
             this.eventsManager = new EventsManager();
-            this.scene = undefined;
+            this.scene = scene || die("Cannot instantiate ManagerCommands without scene");
   
         }
 
@@ -48,10 +52,6 @@ define('Core/Commander/ManagerCommands', [
 
         ManagerCommands.prototype.addCommand = function(command) {
             this.queueAsync.queue(command);
-        };
-
-        ManagerCommands.prototype.init = function(scene) {
-            this.scene = scene;
         };
 
         ManagerCommands.prototype.addLayer = function(layer, provider) {
@@ -81,11 +81,10 @@ define('Core/Commander/ManagerCommands', [
             return when.all(this.arrayDeQueue(16))
                 .then(function() {
                         
-                //if (this.commandsLength() <= 8)                                                
+                // if (this.commandsLength() <= 8)                                                
                     this.scene.wait(1); 
-                //else
-                //    this.scene.renderScene3D();                     
-                
+                // else
+                //     this.scene.renderScene3D();                     
                 return this.runAllCommands();
                 
                 }.bind(this));
@@ -161,9 +160,6 @@ define('Core/Commander/ManagerCommands', [
 
         };
 
-        return function() {
-            instanceCommandManager = instanceCommandManager || new ManagerCommands();
-            return instanceCommandManager;
-        };
+        return ManagerCommands;
 
     });
