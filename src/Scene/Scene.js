@@ -49,6 +49,8 @@ define('Scene/Scene', [
         var positionCamera = new Ellipsoid(this.size).cartographicToCartesian(new CoordCarto().setFromDegreeGeo(coordCarto.lat, coordCarto.lon, coordCarto.alt));
         
         this.layers = [];
+        this.map = null;
+
         this.cameras = null;
         this.selectNodes = null;
         this.managerCommand = ManagerCommands(this);
@@ -156,7 +158,7 @@ define('Scene/Scene', [
             
         window.clearInterval(this.timer);
         
-        this.timer = window.setTimeout(this.quadTreeRequest.bind(this), waitTime,this.layers[0].meshTerrain);
+        this.timer = window.setTimeout(this.quadTreeRequest.bind(this), waitTime,this.layers[0].tiles);
     };
 
     /**
@@ -182,15 +184,38 @@ define('Scene/Scene', [
         this.layers.push(node);  
 
         if(node instanceof Globe)
-        {
+        {            
+            this.map = node;
             this.managerCommand.addMapProvider(node);
             this.browserScene.addNodeProcess(new NodeProcess(this.currentCamera().camera3D, node.size)); 
-            this.quadTreeRequest(node.meshTerrain);
+            this.quadTreeRequest(node.tiles);
         }
         
         this.gfxEngine.add3DScene(node.getMesh());
     };
-  
+
+    Scene.prototype.addImageryLayer = function(/*layer*/) {
+        
+        var tileProvider = this.managerCommand.getProvider(this.getMap().tiles);
+
+        this.managerCommand.addLayer(this.getMap().colorTerrain,tileProvider.providerWMTS);
+
+    };
+
+     Scene.prototype.addElevationLayer = function(/*layer*/) {
+        
+        var tileProvider = this.managerCommand.getProvider(this.getMap().tiles);
+
+        this.managerCommand.addLayer(this.getMap().elevationTerrain,tileProvider.providerWMTS);
+
+    };
+
+
+    Scene.prototype.getMap = function()
+    {
+        return this.map;
+    };
+
     /**
      * @documentation: Retire des layers de la scène
      *

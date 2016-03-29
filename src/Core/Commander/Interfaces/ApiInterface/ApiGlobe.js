@@ -58,16 +58,40 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         // TODO: Normalement la creation de scene ne doit pas etre ici....
         // Deplacer plus tard
 
-        var gLDebug = false;
+        var gLDebug = false; // true to support GLInspector addon
         var debugMode = false;
 
-        //gLDebug = true;
+        //gLDebug = true; // true to support GLInspector addon
         //debugMode = true;
 
         this.scene = Scene(coordCarto,debugMode,gLDebug);
-        this.scene.add(new Globe(gLDebug));
 
-        
+        var map = new Globe(gLDebug);
+
+        this.scene.add(map);
+
+        this.scene.addImageryLayer({
+            protocol:   "wmts",
+            id:         "IGNPO",
+            url:        "http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/geoportail/wmts",
+            wmtsOptions: {
+                    name: "ORTHOIMAGERY.ORTHOPHOTOS",
+                    mimetype: "image/jpeg",
+                    tileMatrixSet: "WGS84G"               
+                }
+            });
+
+        this.scene.addElevationLayer({
+            protocol:   "wmts",
+            id:         "IGNPOE",
+            url:        "http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/geoportail/wmts",
+            wmtsOptions: {
+                    name: "ELEVATION.ELEVATIONGRIDCOVERAGE",
+                    mimetype: "image/x-bil",
+                    tileMatrixSet: "PM"               
+                }
+            });
+
         return this.scene;
 
     };
@@ -77,7 +101,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         var wmtsProvider = new WMTS_Provider({url:baseurl, layer:layer});
         this.scene.managerCommand.providerMap[4] = wmtsProvider;
         this.scene.managerCommand.providerMap[5] = wmtsProvider;
-        this.scene.managerCommand.providerMap[this.scene.layers[0].meshTerrain.layerId].providerWMTS = wmtsProvider;
+        this.scene.managerCommand.providerMap[this.scene.layers[0].tiles.layerId].providerWMTS = wmtsProvider;
         this.scene.browserScene.updateNodeMaterial(wmtsProvider);
         this.scene.renderScene3D();
     };

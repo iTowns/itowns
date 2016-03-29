@@ -66,8 +66,7 @@ define('Globe/TileMesh', [
         this.texturesNeeded = 0;        
         this.material = new LayeredMaterial(id);
         this.dot = 0;
-        this.frustumCulled = false;
-        this.maxChildren = 4;
+        this.frustumCulled = false;        
         this.levelElevation = this.level;
 
         for (var i = 0; i < groupelevation.length; i++) {
@@ -265,7 +264,7 @@ define('Globe/TileMesh', [
         }
     };
     
-    TileMesh.prototype.setTexturesLayer = function(textures,id){
+    TileMesh.prototype.setTexturesLayer = function(textures,idLayer){
         
         if(!textures || this.material === null)
         {
@@ -273,7 +272,7 @@ define('Globe/TileMesh', [
             return;
         }
         
-        this.material.setTexturesLayer(textures, id);
+        this.material.setTexturesLayer(textures, idLayer);
         
         this.currentLevelLayers[l_COLOR] = textures[0].texture.level;
         

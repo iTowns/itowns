@@ -44,13 +44,13 @@ define('Globe/Globe', [
 
         kml.visible = false;
 
-        this.meshTerrain = new Quadtree(TileMesh, this.SchemeTileWMTS(2), this.size, kml);
+        this.tiles = new Quadtree(TileMesh, this.SchemeTileWMTS(2), this.size, kml);
         
         this.elevationTerrain = new Layer();
         this.colorTerrain = new Layer();
         
-        this.meshTerrain.add(this.elevationTerrain);
-        this.meshTerrain.add(this.colorTerrain);
+        this.tiles.add(this.elevationTerrain);
+        this.tiles.add(this.colorTerrain);
         
         this.atmosphere = this.NOIE ? new Atmosphere(this.size) : undefined;
         this.clouds = new Clouds();
@@ -94,7 +94,7 @@ define('Globe/Globe', [
         zUp.add(new THREE.AxisHelper( 10000000 ));        
         zUp.add(batiment);
         
-        this.add(this.meshTerrain);
+        this.add(this.tiles);
         this.add(this.batiments);
         //this.add(this.layerWGS84Zup);
        
@@ -115,10 +115,6 @@ define('Globe/Globe', [
     Globe.prototype.QuadTreeToMaterial = function() {
         //TODO: Implement Me 
 
-    };
-    
-    Globe.prototype.updateQuadtree = function(){
-        this.meshTerrain = new Quadtree(TileMesh, this.SchemeTileWMTS(2), this.size, false);
     };
 
     Globe.prototype.SchemeTileWMTS = function(type) {
@@ -160,6 +156,8 @@ define('Globe/Globe', [
         this.clouds.setLightingOn(bool);
         
     };
+
+
 
     return Globe;
 
