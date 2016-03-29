@@ -32,17 +32,17 @@ define('Scene/Scene', [
             PanoramicProvider, Ellipsoid, PanoramicMesh, BrowseTree, NodeProcess, Quadtree, Layer, CoordCarto,
             Capabilities, MobileMappingLayer) {
 
+    var instanceScene = null;
+
     var NO_SUBDIVISE = 0;
     var SUBDIVISE = 1;
     var CLEAN = 2;
 
     function Scene(coordCarto, debugMode,gLDebug) {
-        //Constructor        
-        if(Scene.prototype._instance){
-            return Scene.prototype._instance;
-        }         
         
-        Scene.prototype._instance = this;
+        if (instanceScene !== null) {
+            throw new Error("Cannot instantiate more than one Scene");
+        }
 
         this.size = {x:6378137,y: 6356752.3142451793,z:6378137};
 
@@ -51,10 +51,10 @@ define('Scene/Scene', [
         this.layers = [];
         this.cameras = null;
         this.selectNodes = null;
-        this.managerCommand = new ManagerCommands(this);
+        this.managerCommand = ManagerCommands(this);
         
         this.gLDebug = gLDebug;        
-        this.gfxEngine = new c3DEngine(this,positionCamera, debugMode,gLDebug);
+        this.gfxEngine = c3DEngine(this,positionCamera, debugMode,gLDebug);
         this.browserScene = new BrowseTree(this.gfxEngine);
         this.cap = new Capabilities();
 
@@ -243,6 +243,9 @@ define('Scene/Scene', [
         this.updateScene3D();
     };
     
-    return Scene;
+    return function(coordCarto,debugMode,gLDebug) {
+        instanceScene = instanceScene || new Scene(coordCarto,debugMode,gLDebug);
+        return instanceScene;
+    };
 
 });

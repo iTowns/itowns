@@ -26,18 +26,13 @@ define('Core/Commander/ManagerCommands', [
         when
     ) {
 
+        var instanceCommandManager = null;
+
         function ManagerCommands(scene) {
             //Constructor
-
-            if (ManagerCommands.prototype._instance) {
-        
-                if(scene) 
-                    throw new Error("Attempt to re-instantiate ManagerCommands"); 
-
-                return ManagerCommands.prototype._instance;
+            if (instanceCommandManager !== null) {
+                throw new Error("Cannot instantiate more than one ManagerCommands");
             }
-
-            ManagerCommands.prototype._instance = this;
 
             this.queueAsync = new PriorityQueue({
                 comparator: function(a, b) {
@@ -179,6 +174,9 @@ define('Core/Commander/ManagerCommands', [
 
         };
 
-        return ManagerCommands;
+        return function(scene) {
+            instanceCommandManager = instanceCommandManager || new ManagerCommands(scene);
+            return instanceCommandManager;
+        };
 
     });
