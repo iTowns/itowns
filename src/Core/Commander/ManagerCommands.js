@@ -66,9 +66,7 @@ define('Core/Commander/ManagerCommands', [
         ManagerCommands.prototype.addMapProvider = function(map) {
 
             var tileProvider = new TileProvider(map.size,map.gLDebug);
-            this.addLayer(map.meshTerrain,tileProvider);
-            this.addLayer(map.colorTerrain,tileProvider.providerWMTS);
-            this.addLayer(map.elevationTerrain,tileProvider.providerWMTS);
+            this.addLayer(map.tiles,tileProvider);
 
         };
         
