@@ -194,17 +194,22 @@ define('Scene/Scene', [
         this.gfxEngine.add3DScene(node.getMesh());
     };
 
-    Scene.prototype.addImageryLayer = function(/*layer*/) {
+    Scene.prototype.addImageryLayer = function(layer) {
         
         var tileProvider = this.managerCommand.getProvider(this.getMap().tiles);
+
+        tileProvider.providerWMTS.addLayer(layer);
+
 
         this.managerCommand.addLayer(this.getMap().colorTerrain,tileProvider.providerWMTS);
 
     };
 
-     Scene.prototype.addElevationLayer = function(/*layer*/) {
+     Scene.prototype.addElevationLayer = function(layer) {
         
         var tileProvider = this.managerCommand.getProvider(this.getMap().tiles);
+
+        tileProvider.providerWMTS.addLayer(layer);
 
         this.managerCommand.addLayer(this.getMap().elevationTerrain,tileProvider.providerWMTS);
 

@@ -40,6 +40,9 @@ define('Core/Commander/Providers/WMTS_Provider', [
             this.layer   = options.layer || "ORTHOIMAGERY.ORTHOPHOTOS";
             //this.layer = "GEOGRAPHICALGRIDSYSTEMS.MAPS";
             this.support = options.support || false;
+
+
+            this.baseUrlMap = [];
             
             this.getTextureFloat;
             
@@ -60,21 +63,17 @@ define('Core/Commander/Providers/WMTS_Provider', [
 
         WMTS_Provider.prototype.constructor = WMTS_Provider;
 
+        WMTS_Provider.prototype.addLayer = function(layer) 
+        {
 
-        /**
-         * Return url wmts MNT
-         * @param {type} coWMTS : coord WMTS
-         * @returns {Object@call;create.url.url|String}
-         */
-        WMTS_Provider.prototype.url = function(coWMTS) {
-            var key = "va5orxd0pgzvq3jxutqfuy0b";
-            var layer = coWMTS.zoom > 11 ? "ELEVATION.ELEVATIONGRIDCOVERAGE.HIGHRES" : "ELEVATION.ELEVATIONGRIDCOVERAGE";
+            var newBaseUrl =  layer.url +  
+                "?LAYER=" + layer.wmtsOptions.name +
+                "&FORMAT=" +  layer.wmtsOptions.mimetype + 
+                "&SERVICE=WMTS&VERSION=1.0.0" +
+                "&REQUEST=GetTile&STYLE=normal&TILEMATRIXSET=" + layer.wmtsOptions.tileMatrixSet;
 
-            var url = "http://wxs.ign.fr/" + key + "/geoportail/wmts?LAYER=" + layer +
-                "&FORMAT=image/x-bil;bits=32&SERVICE=WMTS&VERSION=1.0.0" +
-                "&REQUEST=GetTile&STYLE=normal&TILEMATRIXSET=PM" +
-                "&TILEMATRIX=" + coWMTS.zoom + "&TILEROW=" + coWMTS.row + "&TILECOL=" + coWMTS.col;
-            return url;
+            this.baseUrlMap[layer.id] = newBaseUrl;
+
         };
 
         /**
@@ -82,22 +81,13 @@ define('Core/Commander/Providers/WMTS_Provider', [
          * @param {type} coWMTS
          * @returns {Object@call;create.urlOrtho.url|String}
          */
-        WMTS_Provider.prototype.urlOrtho = function(coWMTS) {
+        WMTS_Provider.prototype.url = function(coWMTS,layerId) {
 
-            var key = "va5orxd0pgzvq3jxutqfuy0b";
-            //var layer = "ORTHOIMAGERY.ORTHOPHOTOS";
-            var url;
 
-            if(this.baseUrl === "http://wxs.ign.fr/")      // Geoportal WMS structure
-                url = this.baseUrl + key + "/geoportail/wmts?LAYER=" + this.layer +
-                    "&FORMAT=image/jpeg&SERVICE=WMTS&VERSION=1.0.0" +
-                    "&REQUEST=GetTile&STYLE=normal&TILEMATRIXSET=PM" +
-                    "&TILEMATRIX=" + coWMTS.zoom + "&TILEROW=" + coWMTS.row + "&TILECOL=" + coWMTS.col;
-            else                                           // CartoDB WMS structure
-               url = this.baseUrl + this.layer +
-                     coWMTS.zoom + "/" + coWMTS.col + "/" + coWMTS.row +".png";  // (z/x/y)
-                
-            return url; //this.urlOrthoDarkMatter(coWMTS); //url;
+            var baseUrl =  this.baseUrlMap[layerId];
+
+            return baseUrl + "&TILEMATRIX=" + coWMTS.zoom + "&TILEROW=" + coWMTS.row + "&TILECOL=" + coWMTS.col;
+
         };        
 
         /**
@@ -105,12 +95,12 @@ define('Core/Commander/Providers/WMTS_Provider', [
          * @param {type} coWMTS : coord WMTS
          * @returns {WMTS_Provider_L15.WMTS_Provider.prototype@pro;_IoDriver@call;read@call;then}
          */
-        WMTS_Provider.prototype.getElevationTexture = function(coWMTS) {
+        WMTS_Provider.prototype.getElevationTexture = function(coWMTS,layerId) {
              
             if (coWMTS === undefined)                
                 return when(-2);
              
-            var url = this.url(coWMTS);
+            var url = this.url(coWMTS,layerId);
 
             var textureCache = this.cache.getRessource(url);
 
@@ -155,7 +145,7 @@ define('Core/Commander/Providers/WMTS_Provider', [
          * @param {type} id
          * @returns {WMTS_Provider_L15.WMTS_Provider.prototype@pro;ioDriverImage@call;read@call;then}
          */
-        WMTS_Provider.prototype.getTextureOrtho = function(coWMTS, pitch) {
+        WMTS_Provider.prototype.getTextureOrtho = function(coWMTS, pitch,layerId) {
 
             var pack = function(pitch) {
                 this.texture;                
@@ -164,7 +154,7 @@ define('Core/Commander/Providers/WMTS_Provider', [
 
             var result = new pack(pitch);
 
-            var url = this.urlOrtho(coWMTS);
+            var url = this.url(coWMTS,layerId);
             result.texture = this.cache.getRessource(url);
 
             if (result.texture !== undefined) {
@@ -215,7 +205,8 @@ define('Core/Commander/Providers/WMTS_Provider', [
                 
                 if(parent.downScaledLayer(0))
                 {                 
-                    return this.getElevationTexture(parent.cooWMTS).then(function(terrain)
+                    var layerId = parent.cooWMTS.zoom > 11 ? 'IGN_MNT_HIGHRES' : 'IGN_MNT';
+                    return this.getElevationTexture(parent.cooWMTS,layerId).then(function(terrain)
                     {            
                         this.setTextureElevation(terrain);
                        
@@ -250,7 +241,7 @@ define('Core/Commander/Providers/WMTS_Provider', [
                    var cooWMTS = new CoordWMTS(box[0].zoom, row, col);
                    var pitch = new THREE.Vector3(0.0,0.0,1.0);
      
-                   promises.push(this.getTextureOrtho(cooWMTS,pitch));
+                   promises.push(this.getTextureOrtho(cooWMTS,pitch,'IGNPO'));
 
                 }
                

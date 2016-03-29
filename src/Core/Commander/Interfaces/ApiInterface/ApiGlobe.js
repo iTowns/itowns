@@ -83,11 +83,22 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
 
         this.scene.addElevationLayer({
             protocol:   "wmts",
-            id:         "IGNPOE",
+            id:         "IGN_MNT",
             url:        "http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/geoportail/wmts",
             wmtsOptions: {
                     name: "ELEVATION.ELEVATIONGRIDCOVERAGE",
-                    mimetype: "image/x-bil",
+                    mimetype: "image/x-bil;bits=32",
+                    tileMatrixSet: "PM"               
+                }
+            });
+
+        this.scene.addElevationLayer({
+            protocol:   "wmts",
+            id:         "IGN_MNT_HIGHRES",
+            url:        "http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/geoportail/wmts",
+            wmtsOptions: {
+                    name: "ELEVATION.ELEVATIONGRIDCOVERAGE.HIGHRES",
+                    mimetype: "image/x-bil;bits=32",
                     tileMatrixSet: "PM"               
                 }
             });
