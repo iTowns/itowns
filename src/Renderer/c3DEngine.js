@@ -19,6 +19,7 @@ define('Renderer/c3DEngine', [
     DepthMaterial,
     BasicMaterial) {
 
+    var instance3DEngine = null;
     
     var RENDER = {
         FINAL: 0,
@@ -27,15 +28,10 @@ define('Renderer/c3DEngine', [
 
     function c3DEngine(scene, positionCamera, debugMode, gLDebug) {
         //Constructor
-
-
-        if(c3DEngine.prototype._instance){
-            if(scene || positionCamera)
-                throw new Error("Attempt to re-instantiate c3DEngine");
-            return c3DEngine.prototype._instance;
+    
+        if (instance3DEngine !== null) {
+            throw new Error("Cannot instantiate more than one c3DEngine");
         }
-
-        c3DEngine.prototype._instance = this;        
 
         THREE.ShaderChunk["logdepthbuf_pars_vertex"];
 
@@ -46,7 +42,7 @@ define('Renderer/c3DEngine', [
         this.width = this.debug ? window.innerWidth * 0.5 : window.innerWidth;
         this.height = window.innerHeight;
         this.camDebug = undefined;
-        this.size = 1.0;
+        //this.size = 1.0;
         this.dnear = 0.0;
         this.dfar = 0.0;
         this.stateRender = RENDER.FINAL;
@@ -95,15 +91,8 @@ define('Renderer/c3DEngine', [
                 var posDebug = new THREE.Vector3().subVectors(position,target);
 
                 posDebug.setLength(posDebug.length()*2.0);
-
                 posDebug.add(target);
-
                 posDebug.setLength((posDebug.length() - this.size) * 3.0 + this.size);
-
-
-                // var length = (position.length() - this.size) * 1.3 + this.size;
-                // position.setLength(length);
-                
 
                 this.camDebug.position.copy(posDebug);                
                 this.camDebug.lookAt(target);
@@ -506,6 +495,9 @@ define('Renderer/c3DEngine', [
         this.lightingOn = value;
     };
 
-    return c3DEngine;
+    return function(scene, positionCamera, debugMode, gLDebug) {
+        instance3DEngine = instance3DEngine || new c3DEngine(scene, positionCamera, debugMode, gLDebug);
+        return instance3DEngine;
+    };
 
 });

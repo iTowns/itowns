@@ -64,11 +64,10 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         //gLDebug = true;
         //debugMode = true;
 
-        this.scene = new Scene(coordCarto,debugMode,gLDebug);
+        this.scene = Scene(coordCarto,debugMode,gLDebug);
         this.scene.add(new Globe(gLDebug));
 
         
-
         return this.scene;
 
     };
