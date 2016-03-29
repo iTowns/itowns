@@ -239,6 +239,8 @@ define('Globe/TileMesh', [
         }
       
         this.material.setTexture(texture,l_ELEVATION, 0, pitScale);
+
+        this.loadingCheck();
     };
 
     TileMesh.prototype.setBBoxZ = function(min, max) {

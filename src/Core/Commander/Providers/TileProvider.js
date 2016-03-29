@@ -52,6 +52,10 @@ define('Core/Commander/Providers/TileProvider', [
             this.providerKML = new KML_Provider(this.ellipsoid);
             this.builder = new BuilderEllipsoidTile(this.ellipsoid,this.projection);
 
+
+            this.providerElevationTexture = this.providerWMTS;
+            this.providerColorTexture = this.providerWMTS;
+
             this.cacheGeometry = [];
             this.tree = null;
             this.nNode = 0;
@@ -125,36 +129,27 @@ define('Core/Commander/Providers/TileProvider', [
             tile.updateMatrix();
             tile.updateMatrixWorld();
             
-            if(cooWMTS.zoom > 3 )
-            {
+            if(cooWMTS.zoom > 3 )            
                 cooWMTS =  undefined;
-            }
-
+            
             tile.texturesNeeded =+ 1;
 
-            return this.providerWMTS.getTextureBil(cooWMTS).then(function(terrain){                        
-                                                                       
-                this.setTextureElevation(terrain);
+            return when.all([
 
-                return this;
+                    this.providerElevationTexture.getElevationTexture(cooWMTS).then(function(terrain){                        
+                                    
+                        this.setTextureElevation(terrain);}.bind(tile)),
 
-            }.bind(tile)).then(function(tile) {
-                               
-                return this.getOrthoImages(tile).then(function(result)
-                {                               
-                    this.setTexturesLayer(result,1);                        
-                    
-                    return this;
+                    this.getColorTextures(tile).then(function(colorTextures){
 
-                }.bind(tile)).then(function(tile)
-                {  
-                    this.getKML(tile);
-                }.bind(this));
-                
-            }.bind(this));
+                        this.setTexturesLayer(colorTextures,1);}.bind(tile))
+
+                    //,this.getKML(tile)
+
+                ]);            
         };
 
-        TileProvider.prototype.getOrthoImages = function(tile) {
+        TileProvider.prototype.getColorTextures = function(tile) {
                          
             if (tile.cooWMTS.zoom >= 2)
             {

@@ -105,7 +105,7 @@ define('Core/Commander/Providers/WMTS_Provider', [
          * @param {type} coWMTS : coord WMTS
          * @returns {WMTS_Provider_L15.WMTS_Provider.prototype@pro;_IoDriver@call;read@call;then}
          */
-        WMTS_Provider.prototype.getTextureBil = function(coWMTS) {
+        WMTS_Provider.prototype.getElevationTexture = function(coWMTS) {
              
             if (coWMTS === undefined)                
                 return when(-2);
@@ -201,7 +201,7 @@ define('Core/Commander/Providers/WMTS_Provider', [
             
             if(command.paramsFunction.subLayer === 1)
             {         
-                return this.getOrthoImages(command.requester).then(function(result)
+                return this.getColorTextures(command.requester).then(function(result)
                 {             
                     this.setTexturesLayer(result,1);                                            
                 }.bind(command.requester));
@@ -215,7 +215,7 @@ define('Core/Commander/Providers/WMTS_Provider', [
                 
                 if(parent.downScaledLayer(0))
                 {                 
-                    return this.getTextureBil(parent.cooWMTS).then(function(terrain)
+                    return this.getElevationTexture(parent.cooWMTS).then(function(terrain)
                     {            
                         this.setTextureElevation(terrain);
                        
@@ -234,7 +234,7 @@ define('Core/Commander/Providers/WMTS_Provider', [
             }           
         };
         
-        WMTS_Provider.prototype.getOrthoImages = function(tile) {
+        WMTS_Provider.prototype.getColorTextures = function(tile) {
 
            var promises = [];
 
