@@ -128,15 +128,18 @@ define('Core/Commander/Providers/TileProvider', [
             parent.add(tile);
             tile.updateMatrix();
             tile.updateMatrixWorld();
+
+            var layerId = cooWMTS.zoom > 11 ? 'IGN_MNT_HIGHRES' : 'IGN_MNT';
             
             if(cooWMTS.zoom > 3 )            
                 cooWMTS =  undefined;
             
             tile.texturesNeeded =+ 1;
 
+
             return when.all([
 
-                    this.providerElevationTexture.getElevationTexture(cooWMTS).then(function(terrain){                        
+                    this.providerElevationTexture.getElevationTexture(cooWMTS,layerId).then(function(terrain){                        
                                     
                         this.setTextureElevation(terrain);}.bind(tile)),
 
@@ -169,7 +172,7 @@ define('Core/Commander/Providers/TileProvider', [
                         cooWMTS = this.projection.WMTS_WGS84Parent(cooWMTS,levelParent,pitch);
                     }
                                                             
-                    promises.push(this.providerWMTS.getTextureOrtho(cooWMTS,pitch));                 
+                    promises.push(this.providerWMTS.getTextureOrtho(cooWMTS,pitch,'IGNPO'));                 
                 }
                   
                 return when.all(promises);
