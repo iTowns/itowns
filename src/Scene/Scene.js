@@ -32,29 +32,31 @@ define('Scene/Scene', [
             PanoramicProvider, Ellipsoid, PanoramicMesh, BrowseTree, NodeProcess, Quadtree, Layer, CoordCarto,
             Capabilities, MobileMappingLayer) {
 
+    var instanceScene = null;
+
     var NO_SUBDIVISE = 0;
     var SUBDIVISE = 1;
     var CLEAN = 2;
 
     function Scene(coordCarto, debugMode,gLDebug) {
-        //Constructor        
-        if(Scene.prototype._instance){
-            return Scene.prototype._instance;
-        }         
         
-        Scene.prototype._instance = this;
+        if (instanceScene !== null) {
+            throw new Error("Cannot instantiate more than one Scene");
+        }
 
         this.size = {x:6378137,y: 6356752.3142451793,z:6378137};
 
         var positionCamera = new Ellipsoid(this.size).cartographicToCartesian(new CoordCarto().setFromDegreeGeo(coordCarto.lat, coordCarto.lon, coordCarto.alt));
         
         this.layers = [];
+        this.map = null;
+
         this.cameras = null;
         this.selectNodes = null;
-        this.managerCommand = new ManagerCommands(this);
+        this.managerCommand = ManagerCommands(this);
         
         this.gLDebug = gLDebug;        
-        this.gfxEngine = new c3DEngine(this,positionCamera, debugMode,gLDebug);
+        this.gfxEngine = c3DEngine(this,positionCamera, debugMode,gLDebug);
         this.browserScene = new BrowseTree(this.gfxEngine);
         this.cap = new Capabilities();
 
@@ -76,7 +78,7 @@ define('Scene/Scene', [
         return this.gfxEngine.camera;
     };
     
-    Scene.prototype.currentControlCamera = function() {        
+    Scene.prototype.currentControls = function() {        
         return this.gfxEngine.controls;
     };
 
@@ -84,9 +86,8 @@ define('Scene/Scene', [
         return this.gfxEngine.getPickingPosition(mouse);
     };
 
-    Scene.prototype.getGlobe = function(){
-        var globe = new Globe();
-        return globe.ellipsoid;
+    Scene.prototype.getEllipsoid = function(){
+        return this.layers[0].ellipsoid;
     }
 
     Scene.prototype.updateCamera = function() {
@@ -156,7 +157,7 @@ define('Scene/Scene', [
             
         window.clearInterval(this.timer);
         
-        this.timer = window.setTimeout(this.quadTreeRequest.bind(this), waitTime,this.layers[0].meshTerrain);
+        this.timer = window.setTimeout(this.quadTreeRequest.bind(this), waitTime,this.layers[0].tiles);
     };
 
     /**
@@ -182,15 +183,43 @@ define('Scene/Scene', [
         this.layers.push(node);  
 
         if(node instanceof Globe)
-        {
+        {            
+            this.map = node;
             this.managerCommand.addMapProvider(node);
             this.browserScene.addNodeProcess(new NodeProcess(this.currentCamera().camera3D, node.size)); 
-            this.quadTreeRequest(node.meshTerrain);
+            this.quadTreeRequest(node.tiles);
         }
         
         this.gfxEngine.add3DScene(node.getMesh());
     };
-  
+
+    Scene.prototype.addImageryLayer = function(layer) {
+        
+        var tileProvider = this.managerCommand.getProvider(this.getMap().tiles);
+
+        tileProvider.providerWMTS.addLayer(layer);
+
+
+        this.managerCommand.addLayer(this.getMap().colorTerrain,tileProvider.providerWMTS);
+
+    };
+
+     Scene.prototype.addElevationLayer = function(layer) {
+        
+        var tileProvider = this.managerCommand.getProvider(this.getMap().tiles);
+
+        tileProvider.providerWMTS.addLayer(layer);
+
+        this.managerCommand.addLayer(this.getMap().elevationTerrain,tileProvider.providerWMTS);
+
+    };
+
+
+    Scene.prototype.getMap = function()
+    {
+        return this.map;
+    };
+
     /**
      * @documentation: Retire des layers de la scène
      *
@@ -243,6 +272,9 @@ define('Scene/Scene', [
         this.updateScene3D();
     };
     
-    return Scene;
+    return function(coordCarto,debugMode,gLDebug) {
+        instanceScene = instanceScene || new Scene(coordCarto,debugMode,gLDebug);
+        return instanceScene;
+    };
 
 });

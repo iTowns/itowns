@@ -26,18 +26,13 @@ define('Core/Commander/ManagerCommands', [
         when
     ) {
 
+        var instanceCommandManager = null;
+
         function ManagerCommands(scene) {
             //Constructor
-
-            if (ManagerCommands.prototype._instance) {
-        
-                if(scene) 
-                    throw new Error("Attempt to re-instantiate ManagerCommands"); 
-
-                return ManagerCommands.prototype._instance;
+            if (instanceCommandManager !== null) {
+                throw new Error("Cannot instantiate more than one ManagerCommands");
             }
-
-            ManagerCommands.prototype._instance = this;
 
             this.queueAsync = new PriorityQueue({
                 comparator: function(a, b) {
@@ -71,9 +66,7 @@ define('Core/Commander/ManagerCommands', [
         ManagerCommands.prototype.addMapProvider = function(map) {
 
             var tileProvider = new TileProvider(map.size,map.gLDebug);
-            this.addLayer(map.meshTerrain,tileProvider);
-            this.addLayer(map.colorTerrain,tileProvider.providerWMTS);
-            this.addLayer(map.elevationTerrain,tileProvider.providerWMTS);
+            this.addLayer(map.tiles,tileProvider);
 
         };
         
@@ -97,7 +90,7 @@ define('Core/Commander/ManagerCommands', [
                 return when(0);
             }
             
-            return when.all(this.arrayDeQueue(16))
+            return when.all(this.arrayDeQueue(8))
                 .then(function() {
                         
                 // if (this.commandsLength() <= 8)                                                
@@ -179,6 +172,9 @@ define('Core/Commander/ManagerCommands', [
 
         };
 
-        return ManagerCommands;
+        return function(scene) {
+            instanceCommandManager = instanceCommandManager || new ManagerCommands(scene);
+            return instanceCommandManager;
+        };
 
     });

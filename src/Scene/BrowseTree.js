@@ -232,7 +232,7 @@ define('Scene/BrowseTree', ['Globe/TileMesh', 'THREE'], function( TileMesh, THRE
                                     x = urlArray[5];
                                     y = urlArray[6].split(".")[0];
                                     var coWMTS = {zoom:z, row:y, col:x};
-                                    urlWMTS = WMTSProvider.urlOrtho(coWMTS);
+                                    urlWMTS = WMTSProvider.url(coWMTS,'IGNPO');
                                 }
                                 if( url.indexOf(WMTSProvider.baseUrl) <0){  // We need to update texture
                                     var newTexture = loader.load(urlWMTS);
