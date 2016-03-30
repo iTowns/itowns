@@ -441,8 +441,10 @@ THREE.GlobeControls = function(object, domElement, engine) {
     
     this.getRay = function(){
         
-        var direction = new THREE.Vector3(0,0,-1);        
+        var direction = new THREE.Vector3(0,0,1);        
         object.localToWorld(direction);
+        direction.sub(object.position).negate().normalize();
+
         
         return {origin:object.position,direction:direction};
         
