@@ -249,7 +249,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         
         var intersection = ellipsoid.intersection(ray);
         
-        var center = controlCam.globeTarget.position;
+        // var center = controlCam.globeTarget.position;
         var camPosition = this.scene.currentCamera().position();        
         // var range = center.distanceTo(camPosition);
         var range = intersection.distanceTo(camPosition);
@@ -346,7 +346,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
 //        console.log(this.pickPosition());
 //        console.log(this.getTilt());
 //        console.log(this.getHeading());
-       console.log(this.getRange());
+       // console.log(this.getRange());
 //        this.setTilt(45);
 //        this.setHeading(180);
 //        this.resetTilt();
