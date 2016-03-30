@@ -190,9 +190,8 @@ define('Core/Commander/Providers/WMTS_Provider', [
            
             
             if(command.paramsFunction.subLayer === 1)
-            {         
-                var colorlayerId = 'IGNPO';
-                return this.getColorTextures(command.requester,colorlayerId).then(function(result)
+            {                         
+                return this.getColorTextures(command.requester,command.paramsFunction.colorLayerId).then(function(result)
                 {             
                     this.setTexturesLayer(result,1);                                            
                 }.bind(command.requester));
@@ -206,7 +205,8 @@ define('Core/Commander/Providers/WMTS_Provider', [
                 
                 if(parent.downScaledLayer(0))
                 {                 
-                    var layerId = parent.cooWMTS.zoom > 11 ? 'IGN_MNT_HIGHRES' : 'IGN_MNT';
+                    var layerId = command.paramsFunction.elevationLayerId[parent.cooWMTS.zoom > 11 ? 1 : 0];
+                    
                     return this.getElevationTexture(parent.cooWMTS,layerId).then(function(terrain)
                     {            
                         this.setTextureElevation(terrain);

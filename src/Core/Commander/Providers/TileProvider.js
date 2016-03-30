@@ -131,9 +131,9 @@ define('Core/Commander/Providers/TileProvider', [
             tile.updateMatrix();
             tile.updateMatrixWorld();
 
-            var elevationlayerId = cooWMTS.zoom > 11 ? 'IGN_MNT_HIGHRES' : 'IGN_MNT';
-            var colorlayerId = 'IGNPO';
-            
+            var elevationlayerId = command.paramsFunction.elevationLayerId[cooWMTS.zoom > 11 ? 1 : 0];
+            var colorlayerId = command.paramsFunction.colorLayerId;
+
             if(cooWMTS.zoom > 3 )            
                 cooWMTS =  undefined;
             
