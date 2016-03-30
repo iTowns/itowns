@@ -112,6 +112,8 @@ define('Core/Commander/Providers/TileProvider', [
             var bbox = command.paramsFunction.bbox;
             var cooWMTS = this.projection.WGS84toWMTS(bbox);
             var parent = command.requester;
+
+            // build tile
             var geometry = undefined; //getGeometry(bbox,cooWMTS);       
 
             var tile = new command.type(bbox, cooWMTS, this.builder, this.nNode++, geometry,parent.link,center);
@@ -129,58 +131,27 @@ define('Core/Commander/Providers/TileProvider', [
             tile.updateMatrix();
             tile.updateMatrixWorld();
 
-            var layerId = cooWMTS.zoom > 11 ? 'IGN_MNT_HIGHRES' : 'IGN_MNT';
+            var elevationlayerId = cooWMTS.zoom > 11 ? 'IGN_MNT_HIGHRES' : 'IGN_MNT';
+            var colorlayerId = 'IGNPO';
             
             if(cooWMTS.zoom > 3 )            
                 cooWMTS =  undefined;
             
             tile.texturesNeeded =+ 1;
 
-
             return when.all([
 
-                    this.providerElevationTexture.getElevationTexture(cooWMTS,layerId).then(function(terrain){                        
+                    this.providerElevationTexture.getElevationTexture(cooWMTS,elevationlayerId).then(function(terrain){                        
                                     
                         this.setTextureElevation(terrain);}.bind(tile)),
 
-                    this.getColorTextures(tile).then(function(colorTextures){
+                    this.providerColorTexture.getColorTextures(tile,colorlayerId).then(function(colorTextures){
 
                         this.setTexturesLayer(colorTextures,1);}.bind(tile))
 
                     //,this.getKML(tile)
 
                 ]);            
-        };
-
-        TileProvider.prototype.getColorTextures = function(tile) {
-                         
-            if (tile.cooWMTS.zoom >= 2)
-            {
-                var promises = [];
-                var box = this.projection.WMTS_WGS84ToWMTS_PM(tile.cooWMTS, tile.bbox); //                 
-                var col = box[0].col;
-                tile.texturesNeeded += box[1].row + 1 - box[0].row;               
-                
-                for (var row = box[0].row; row < box[1].row + 1; row++) {
-                                       
-                    var cooWMTS = new CoordWMTS(box[0].zoom, row, col);                    
-                    var pitch = new THREE.Vector3(0.0,0.0,1.0);
-                    
-                    if(box[0].zoom > 3)   
-                    {
-                        var levelParent = tile.getParentNotDownScaled(1).level + 1;                        
-                        cooWMTS = this.projection.WMTS_WGS84Parent(cooWMTS,levelParent,pitch);
-                    }
-                                                            
-                    promises.push(this.providerWMTS.getTextureOrtho(cooWMTS,pitch,'IGNPO'));                 
-                }
-                  
-                return when.all(promises);
-            }
-            else             
-                
-                return when();            
-            
         };
 
         return TileProvider;
