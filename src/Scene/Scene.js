@@ -72,7 +72,7 @@ define('Scene/Scene', [
         return this.gfxEngine.camera;
     };
     
-    Scene.prototype.currentControlCamera = function() {        
+    Scene.prototype.currentControls = function() {        
         return this.gfxEngine.controls;
     };
 
@@ -80,9 +80,8 @@ define('Scene/Scene', [
         return this.gfxEngine.getPickingPosition(mouse);
     };
 
-    Scene.prototype.getGlobe = function(){
-        var globe = new Globe();
-        return globe.ellipsoid;
+    Scene.prototype.getEllipsoid = function(){
+        return this.layers[0].ellipsoid;
     }
 
     Scene.prototype.updateCamera = function() {
