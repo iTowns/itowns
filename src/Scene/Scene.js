@@ -5,7 +5,7 @@
  */
 
 /**
- * 
+ *
  * @param {type} c3DEngine
  * @param {type} Globe
  * @param {type} ManagerCommands
@@ -16,7 +16,7 @@ define('Scene/Scene', [
     'Renderer/c3DEngine',
     'Globe/Globe',
     'Core/Commander/ManagerCommands',
-    'Core/Commander/Providers/TileProvider',    
+    'Core/Commander/Providers/TileProvider',
     'Core/Commander/Providers/PanoramicProvider',
     'Core/Math/Ellipsoid',
     'Renderer/PanoramicMesh',
@@ -27,8 +27,8 @@ define('Scene/Scene', [
     'Core/Geographic/CoordCarto',
     'Core/System/Capabilities',
     'MobileMapping/MobileMappingLayer'
-    
-], function(c3DEngine, Globe, ManagerCommands, TileProvider, 
+
+], function(c3DEngine, Globe, ManagerCommands, TileProvider,
             PanoramicProvider, Ellipsoid, PanoramicMesh, BrowseTree, NodeProcess, Quadtree, Layer, CoordCarto,
             Capabilities, MobileMappingLayer) {
 
@@ -47,7 +47,7 @@ define('Scene/Scene', [
         this.size = {x:6378137,y: 6356752.3142451793,z:6378137};
 
         var positionCamera = new Ellipsoid(this.size).cartographicToCartesian(new CoordCarto().setFromDegreeGeo(coordCarto.lat, coordCarto.lon, coordCarto.alt));
-        
+
         this.layers = [];
         this.map = null;
 
@@ -66,15 +66,15 @@ define('Scene/Scene', [
     /**
      */
     Scene.prototype.updateCommand = function() {
-        //TODO: Implement Me 
+        //TODO: Implement Me
 
     };
 
     /**
-     * @documentation: return current camera 
+     * @documentation: return current camera
      * @returns {Scene_L7.Scene.gfxEngine.camera}
      */
-    Scene.prototype.currentCamera = function() {          
+    Scene.prototype.currentCamera = function() {
         return this.gfxEngine.camera;
     };
     
@@ -91,46 +91,49 @@ define('Scene/Scene', [
     }
 
     Scene.prototype.updateCamera = function() {
-        this.browserScene.NodeProcess().updateCamera(this.gfxEngine.camera);
+        for(var i = 0; i < this.layers.length; i++) {
+            this.layers[i].process.updateCamera(this.gfxEngine.camera);
+        }
     };
-    
+
 
     Scene.prototype.size = function() {
         return this.size;
     };
 
     /**
-     * 
+     *
      * @returns {undefined}
-     */   
-    Scene.prototype.quadTreeRequest = function(quadtree){
+     */
+    Scene.prototype.quadTreeRequest = function(quadtree, process){
 
-        this.browserScene.browse(quadtree,this.currentCamera(),SUBDIVISE);         
+        this.browserScene.browse(quadtree,this.currentCamera(), process, SUBDIVISE);
         this.managerCommand.runAllCommands().then(function()
-            {                   
+            {
                 if (this.managerCommand.isFree())
-                {                        
-                    this.browserScene.browse(quadtree,this.currentCamera(),SUBDIVISE);
-                    if (this.managerCommand.isFree())                            
-                        this.browserScene.browse(quadtree,this.currentCamera(),CLEAN);
+                {
+                    this.browserScene.browse(quadtree,this.currentCamera(), process, SUBDIVISE);
+                    if (this.managerCommand.isFree())
+                        this.browserScene.browse(quadtree,this.currentCamera(), process, CLEAN);
                 }
-                
+
             }.bind(this));
-        
+
         this.renderScene3D();
-        
+
     };
-    
+
     Scene.prototype.realtimeSceneProcess = function() {
 
         for (var l = 0; l < this.layers.length; l++) {
-            var layer = this.layers[l];
+            var layer = this.layers[l].node;
+            var process = this.layers[l].process;
 
             for (var sl = 0; sl < layer.children.length; sl++) {
                 var sLayer = layer.children[sl];
-                
+
                 if (sLayer instanceof Quadtree)
-                    this.browserScene.browse(sLayer, this.currentCamera(), NO_SUBDIVISE);
+                    this.browserScene.browse(sLayer, this.currentCamera(), process, NO_SUBDIVISE);
                 else if (sLayer instanceof MobileMappingLayer)
                     this.browserScene.updateMobileMappingLayer(sLayer,this.currentCamera());
                 else if (sLayer instanceof Layer)
@@ -141,7 +144,7 @@ define('Scene/Scene', [
     };
 
     /**
-     * 
+     *
      * @returns {undefined}
      */
     Scene.prototype.updateScene3D = function() {
@@ -154,10 +157,10 @@ define('Scene/Scene', [
         var waitTime = timeWait ? timeWait: 20;
 
         this.realtimeSceneProcess();
-            
+
         window.clearInterval(this.timer);
-        
-        this.timer = window.setTimeout(this.quadTreeRequest.bind(this), waitTime,this.layers[0].tiles);
+
+        this.timer = window.setTimeout(this.quadTreeRequest.bind(this), waitTime,this.layers[0].node.tiles, this.layers[0].process);
     };
 
     /**
@@ -176,20 +179,19 @@ define('Scene/Scene', [
     /**
      * @documentation: Ajoute des Layers dans la scène.
      *
-     * @param node {[object Object]} 
+     * @param node {[object Object]}
      */
-    Scene.prototype.add = function(node) {        
+    Scene.prototype.add = function(node, nodeProcess) {
 
-        this.layers.push(node);  
+        this.layers.push({node: node, process: nodeProcess});
 
         if(node instanceof Globe)
         {            
             this.map = node;
             this.managerCommand.addMapProvider(node);
-            this.browserScene.addNodeProcess(new NodeProcess(this.currentCamera().camera3D, node.size)); 
-            this.quadTreeRequest(node.tiles);
+            this.quadTreeRequest(node.tiles, nodeProcess);
         }
-        
+
         this.gfxEngine.add3DScene(node.getMesh());
     };
 
@@ -223,19 +225,19 @@ define('Scene/Scene', [
     /**
      * @documentation: Retire des layers de la scène
      *
-     * @param layer {[object Object]} 
+     * @param layer {[object Object]}
      */
     Scene.prototype.remove = function(/*layer*/) {
-        //TODO: Implement Me 
+        //TODO: Implement Me
 
     };
 
 
     /**
-     * @param layers {[object Object]} 
+     * @param layers {[object Object]}
      */
     Scene.prototype.select = function(/*layers*/) {
-        //TODO: Implement Me 
+        //TODO: Implement Me
 
     };
 
@@ -244,31 +246,31 @@ define('Scene/Scene', [
         this.browserScene.selectedNodeId = id;
 
     };
-    
+
     Scene.prototype.setStreetLevelImageryOn = function(value){
-        
+
          if(value){
             if(this.layers[1]) {
 
-                this.layers[1].visible = true;
-                this.layers[1].children[0].visible = true;
+                this.layers[1].node.visible = true;
+                this.layers[1].node.children[0].visible = true;
 
             }else{
 
-                var mobileMappingLayer = new MobileMappingLayer();   
+                var mobileMappingLayer = new MobileMappingLayer();
                 mobileMappingLayer.initiatePanoramic();
 
                 var immersive = new Layer();
 
                 immersive.add(mobileMappingLayer)
-                this.add(immersive);                
+                this.add(immersive);
             }
         }else
         {
-            this.layers[1].visible = false;
-            this.layers[1].children[0].visible = false; // mobileMappingLayer
+            this.layers[1].node.visible = false;
+            this.layers[1].node.children[0].visible = false; // mobileMappingLayer
         }
-        
+
         this.updateScene3D();
     };
     
