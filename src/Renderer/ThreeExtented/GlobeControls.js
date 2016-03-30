@@ -430,6 +430,24 @@ THREE.GlobeControls = function(object, domElement, engine) {
 
     };
     
+    this.setRange = function (pRange){
+        
+        scale = pRange / this.globeTarget.position.distanceTo(this.object.position);
+        state = STATE.ORBIT;
+        this.update();                
+        state = STATE.NONE; 
+        newTarget();
+    };
+    
+    this.getRay = function(){
+        
+        var direction = new THREE.Vector3(0,0,-1);        
+        object.localToWorld(direction);
+        
+        return {origin:object.position,direction:direction};
+        
+    };
+    
     this.getTilt = function (){
         return phi * 180/Math.PI;
     };
@@ -462,7 +480,15 @@ THREE.GlobeControls = function(object, domElement, engine) {
         state = STATE.NONE;        
     };
     
-    
+    this.setCenter = function(position){
+        
+        quatGlobe.setFromUnitVectors(this.globeTarget.position.clone().normalize(),position.normalize());
+        state = STATE.MOVE_GLOBE;
+        this.update();
+        state = STATE.NONE;
+        newTarget();
+    };
+
     this.update = function() {
 
 
