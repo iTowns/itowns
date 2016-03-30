@@ -64,7 +64,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         var debugMode = false;
 
         //gLDebug = true; // true to support GLInspector addon
-        //debugMode = true;
+        // debugMode = true;
 
         this.scene = Scene(coordCarto,debugMode,gLDebug);
 
@@ -243,15 +243,17 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
     
     ApiGlobe.prototype.getRange = function (){
                 
-//        var ellipsoid = this.scene.getEllipsoid();
-//        var ray = this.scene.currentControls().getRay();
-        
-//        console.log('inters',ellipsoid.intersection(ray));
-        
         var controlCam = this.scene.currentControls();               
+        var ellipsoid = this.scene.getEllipsoid();
+        var ray = controlCam.getRay();
+        
+        var intersection = ellipsoid.intersection(ray);
+        
         var center = controlCam.globeTarget.position;
         var camPosition = this.scene.currentCamera().position();        
-        var range = center.distanceTo(camPosition);        
+        // var range = center.distanceTo(camPosition);
+        var range = intersection.distanceTo(camPosition);
+
         return range;
     };
     
@@ -344,7 +346,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
 //        console.log(this.pickPosition());
 //        console.log(this.getTilt());
 //        console.log(this.getHeading());
-//        console.log(this.getRange());
+       console.log(this.getRange());
 //        this.setTilt(45);
 //        this.setHeading(180);
 //        this.resetTilt();
