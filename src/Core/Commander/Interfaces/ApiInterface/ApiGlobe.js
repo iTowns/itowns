@@ -8,13 +8,15 @@
 define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
        'Core/Commander/Interfaces/EventsManager',
        'Scene/Scene',
-       'Globe/Globe',
+       'Globe/Globe',      
        'Core/Commander/Providers/WMTS_Provider',
+       'Core/Geographic/CoordCarto',
        'Core/Geographic/Projection'], function(
            EventsManager, 
            Scene,
            Globe,
            WMTS_Provider,
+           CoordCarto,
            Projection) {
 
     function ApiGlobe() {
@@ -58,16 +60,50 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         // TODO: Normalement la creation de scene ne doit pas etre ici....
         // Deplacer plus tard
 
-        var gLDebug = false;
+        var gLDebug = false; // true to support GLInspector addon
         var debugMode = false;
 
-        //gLDebug = true;
-        //debugMode = true;
+        //gLDebug = true; // true to support GLInspector addon
+        // debugMode = true;
 
-        this.scene = new Scene(coordCarto,debugMode,gLDebug);
-        this.scene.add(new Globe(gLDebug));
+        this.scene = Scene(coordCarto,debugMode,gLDebug);
 
-        
+        var map = new Globe(gLDebug);
+
+        this.scene.add(map);
+
+        this.scene.addImageryLayer({
+            protocol:   "wmts",
+            id:         "IGNPO",
+            url:        "http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/geoportail/wmts",
+            wmtsOptions: {
+                    name: "ORTHOIMAGERY.ORTHOPHOTOS",
+                    mimetype: "image/jpeg",
+                    tileMatrixSet: "WGS84G"               
+                }
+            });
+
+        this.scene.addElevationLayer({
+            protocol:   "wmts",
+            id:         "IGN_MNT",
+            url:        "http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/geoportail/wmts",
+            wmtsOptions: {
+                    name: "ELEVATION.ELEVATIONGRIDCOVERAGE",
+                    mimetype: "image/x-bil;bits=32",
+                    tileMatrixSet: "PM"               
+                }
+            });
+
+        this.scene.addElevationLayer({
+            protocol:   "wmts",
+            id:         "IGN_MNT_HIGHRES",
+            url:        "http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/geoportail/wmts",
+            wmtsOptions: {
+                    name: "ELEVATION.ELEVATIONGRIDCOVERAGE.HIGHRES",
+                    mimetype: "image/x-bil;bits=32",
+                    tileMatrixSet: "PM"               
+                }
+            });
 
         return this.scene;
 
@@ -78,7 +114,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         var wmtsProvider = new WMTS_Provider({url:baseurl, layer:layer});
         this.scene.managerCommand.providerMap[4] = wmtsProvider;
         this.scene.managerCommand.providerMap[5] = wmtsProvider;
-        this.scene.managerCommand.providerMap[this.scene.layers[0].meshTerrain.layerId].providerWMTS = wmtsProvider;
+        this.scene.managerCommand.providerMap[this.scene.layers[0].tiles.layerId].providerWMTS = wmtsProvider;
         this.scene.browserScene.updateNodeMaterial(wmtsProvider);
         this.scene.renderScene3D();
     };
@@ -107,8 +143,8 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
     */
     ApiGlobe.prototype.getCameraOrientation = function () {
         
-        var tiltCam = this.scene.currentControlCamera().getTiltCamera();
-        var headingCam = this.scene.currentControlCamera().getHeadingCamera();
+        var tiltCam = this.scene.currentControls().getTiltCamera();
+        var headingCam = this.scene.currentControls().getHeadingCamera();
         return [tiltCam, headingCam];
     };
     
@@ -131,22 +167,20 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
     
     ApiGlobe.prototype.getCenter = function () {
         
-        var controlCam = this.scene.currentControlCamera();       
+        var controlCam = this.scene.currentControls();    
         return this.projection.cartesianToGeo(controlCam.globeTarget.position);
     };
     
     /**
-    * Moves the central point on screen to specific coordinates.
+    * Gets orientation angles of the current camera, in degrees.
     * @constructor
-    * @param {Position} position - The position on the map.
-    */
-    
-    ApiGlobe.prototype.setCenter = function (/*position*/) {
-        //TODO: Implement Me 
-    };
-    
-    ApiGlobe.prototype.setCameraOrientation = function (/*param,pDisableAnimationopt*/) {
-        //TODO: Implement Me 
+    * @param {Orientation} Param - The angle of the rotation in degrees.
+    */   
+      
+    ApiGlobe.prototype.setCameraOrientation = function (orientation /*param,pDisableAnimationopt*/) {
+        
+        this.setHeading(orientation.heading);
+        this.setTilt(orientation.tilt);
     };
     
     /**
@@ -185,7 +219,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
     
     ApiGlobe.prototype.getTilt = function (){
         
-        var tiltCam = this.scene.currentControlCamera().getTilt();
+        var tiltCam = this.scene.currentControls().getTilt();
         return tiltCam;
     };
     
@@ -197,7 +231,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
     
     ApiGlobe.prototype.getHeading = function (){
         
-        var headingCam = this.scene.currentControlCamera().getHeading();
+        var headingCam = this.scene.currentControls().getHeading();
         return headingCam;
     };
     
@@ -209,10 +243,17 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
     
     ApiGlobe.prototype.getRange = function (){
                 
-        var controlCam = this.scene.currentControlCamera();               
+        var controlCam = this.scene.currentControls();               
+        var ellipsoid = this.scene.getEllipsoid();
+        var ray = controlCam.getRay();
+        
+        var intersection = ellipsoid.intersection(ray);
+        
         var center = controlCam.globeTarget.position;
         var camPosition = this.scene.currentCamera().position();        
-        var range = center.distanceTo(camPosition);        
+        // var range = center.distanceTo(camPosition);
+        var range = intersection.distanceTo(camPosition);
+
         return range;
     };
     
@@ -225,7 +266,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
     
     ApiGlobe.prototype.setTilt = function (tilt/*, bool*/) {
         
-        this.scene.currentControlCamera().setTilt(tilt);
+        this.scene.currentControls().setTilt(tilt);
     };
         
     /**
@@ -237,7 +278,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
     
     ApiGlobe.prototype.setHeading = function (heading/*, bool*/){
         
-        this.scene.currentControlCamera().setHeading(heading);
+        this.scene.currentControls().setHeading(heading);
     };
     
     /**
@@ -248,7 +289,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
     
     ApiGlobe.prototype.resetTilt = function (/*bool*/) {
         
-        this.scene.currentControlCamera().setTilt(0);
+        this.scene.currentControls().setTilt(0);
     };
     
     /**
@@ -259,7 +300,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
     
     ApiGlobe.prototype.resetHeading = function (/*bool*/) {
         
-        this.scene.currentControlCamera().setHeading(0);
+        this.scene.currentControls().setHeading(0);
     };
     
     /**
@@ -270,8 +311,32 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
     */ 
     
     ApiGlobe.prototype.computeDistance = function(p1,p2){
+
+        this.scene.getEllipsoid().computeDistance(p1,p2);
+    };
+    
+    /**
+    * Moves the central point on screen to specific coordinates.
+    * @constructor
+    * @param {Position} position - The position on the map.
+    */
+    
+    ApiGlobe.prototype.setCenter = function (position) {
         
-        this.scene.getGlobe().computeDistance(p1,p2);
+        var position3D = this.scene.getEllipsoid().cartographicToCartesian(position);
+        this.scene.currentControls().setCenter(position3D); 
+    };
+    
+    /**
+    * Set the "range", i.e. distance in meters of the camera from the center.
+    * @constructor
+    * @param {Number} pRange - The camera altitude.
+    * @param {Boolean} [pDisableAnimation] - Used to force the non use of animation if its enable.
+    */ 
+    
+    ApiGlobe.prototype.setRange = function (pRange/*, bool*/){
+        
+        this.scene.currentControls().setRange(pRange);
     };
     
     ApiGlobe.prototype.launchCommandApi = function () {
@@ -281,13 +346,37 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
 //        console.log(this.pickPosition());
 //        console.log(this.getTilt());
 //        console.log(this.getHeading());
-//        console.log(this.getRange());
+       console.log(this.getRange());
 //        this.setTilt(45);
 //        this.setHeading(180);
 //        this.resetTilt();
 //        this.resetHeading();
-//        this.computeDistance(p1, p2);
+//        this.computeDistance(p1, p2); 
+//        
+//        var p = new CoordCarto(2.438544,49.8501392,0);
+//        this.setCenter(p);
+//        
+//        this.testTilt();
+//        this.testHeading();
+        //console.log("range 1  " + this.getRange());
+        //this.setRange(1000);
+//        console.log(this.getRange());
+//        this.setCameraOrientation({heading:45,tilt:30});
     };
+    
+//    ApiGlobe.prototype.testTilt = function (){
+//        this.setTilt(90);
+//        console.log(this.getTilt());
+//        this.resetTilt();
+//        console.log(this.getTilt());
+//    };
+//    
+//    ApiGlobe.prototype.testHeading = function (){
+//        this.setHeading(90);
+//        console.log(this.getHeading());
+//        this.resetHeading();
+//        console.log(this.getHeading());
+//    };
 
     ApiGlobe.prototype.showKML = function(value) {
         
