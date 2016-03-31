@@ -22,7 +22,7 @@ define('Core/Geographic/Projection', ['Core/Geographic/CoordWMTS', 'Core/Math/Ma
 
         return 0.5 + Math.log(Math.tan(MathExt.PI_OV_FOUR + latitude * 0.5)) * MathExt.INV_TWO_PI;
 
-    }; 
+    };
 
     Projection.prototype.WGS84LatitudeClamp = function(latitude) {
 
@@ -38,7 +38,7 @@ define('Core/Geographic/Projection', ['Core/Geographic/CoordWMTS', 'Core/Math/Ma
     };
 
     /**
-     * 
+     *
      * @param {type} cWMTS
      * @param {type} bbox
      * @returns {Array} coord WMTS array in pseudo mercator
@@ -75,23 +75,23 @@ define('Core/Geographic/Projection', ['Core/Geographic/CoordWMTS', 'Core/Math/Ma
         return wmtsBox;
 
     };
-    
-    Projection.prototype.WMTS_WGS84Parent = function(cWMTS, levelParent, pitch) 
+
+    Projection.prototype.WMTS_WGS84Parent = function(cWMTS, levelParent, pitch)
     {
-        
+
         var diffLevel = cWMTS.zoom  - levelParent;
         var diff = Math.pow(2,diffLevel);
         var invDiff = 1/diff;
 
         var r = ( cWMTS.row - (cWMTS.row%diff)) * invDiff;
         var c = ( cWMTS.col - (cWMTS.col%diff)) * invDiff;
-        
-        pitch.x = cWMTS.col * invDiff - c;        
-        pitch.y = cWMTS.row * invDiff - r;         
-        pitch.z = invDiff;                
-        
+
+        pitch.x = cWMTS.col * invDiff - c;
+        pitch.y = cWMTS.row * invDiff - r;
+        pitch.z = invDiff;
+
         return new CoordWMTS(levelParent, r, c);
-        
+
     };
 
     Projection.prototype.WGS84toWMTS = function(bbox) {
@@ -121,7 +121,7 @@ define('Core/Geographic/Projection', ['Core/Geographic/CoordWMTS', 'Core/Math/Ma
     };
 
     Projection.prototype.cartesianToGeo = function(position) {
-                
+
         var p = position.clone();
         p.x = -position.x;
         p.y = position.z;
@@ -143,13 +143,13 @@ define('Core/Geographic/Projection', ['Core/Geographic/CoordWMTS', 'Core/Math/Ma
         var phi = Math.atan((p.z * (1 - f) + e * e * a * sinu * sinu * sinu) / ((1 - f) * (rsqXY - e * e * a * cosu * cosu * cosu)));
 
         var h = (rsqXY * Math.cos(phi)) + p.z * Math.sin(phi) - a * Math.sqrt(1 - e * e * Math.sin(phi) * Math.sin(phi));
-        
+
         var coord = new CoordCarto(theta,phi,h);
-        
+
         return coord;
         //console.log(theta / Math.PI * 180 + ' ' + phi / Math.PI * 180 + ' ' + h);
     };
-    
+
     return Projection;
 
 });

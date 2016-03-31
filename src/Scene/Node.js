@@ -34,7 +34,7 @@ define('Scene/Node', [], function() {
     /**
      * @documentation: Retourne le nombre d'enfants du Node
      *
-     * @return  {int} 
+     * @return  {int}
      */
     Node.prototype.childrenCount = function() {
 
@@ -67,32 +67,32 @@ define('Scene/Node', [], function() {
      *
      */
     Node.prototype.update = function() {
-        //TODO: Implement Me 
+        //TODO: Implement Me
 
     };
 
     /**
-     * 
+     *
      * @param {type} level
      * @returns {undefined}
      */
     Node.prototype.getParentLevel = function(level) {
-        
+
         var functionToCheck = this.parent.getParentLevel;
-              
+
         if(!functionToCheck || !(typeof(functionToCheck) === 'function') && (this.parent.level !== level))
             return undefined;
-        
+
         return (this.parent.level === level) ? this.parent : this.parent.getParentLevel(level);
     };
 
     /**
      * @documentation: Méthode qui créer un memento de l'état de Node avant modification.
      *param
-     * @return  {[object Object]} 
+     * @return  {[object Object]}
      */
     Node.prototype.hydrate = function() {
-        //TODO: Implement Me 
+        //TODO: Implement Me
 
     };
 
@@ -100,20 +100,20 @@ define('Scene/Node', [], function() {
     /**
      * @documentation: Cette méthode modifie l'état du node en fonction d'un memento.
      *
-     * @param mem {[object Object]} 
+     * @param mem {[object Object]}
      */
     Node.prototype.dehydrate = function(/*mem*/) {
-        //TODO: Implement Me 
+        //TODO: Implement Me
 
     };
 
     /**
      * @documentation: Ajoute un enfant au Node.
      *
-     * @param child {[object Object]} 
+     * @param child {[object Object]}
      */
     Node.prototype.add = function(child) {
-        //TODO: Implement Me 
+        //TODO: Implement Me
         this.children.push(child);
 
         child.layer = this;
@@ -122,10 +122,10 @@ define('Scene/Node', [], function() {
     /**
      * @documentation: Retire un enfant au node.
      *
-     * @param child {[object Object]} 
+     * @param child {[object Object]}
      */
     Node.prototype.remove = function(/*child*/) {
-        //TODO: Implement Me 
+        //TODO: Implement Me
 
     };
 
@@ -133,7 +133,7 @@ define('Scene/Node', [], function() {
     /**
      * @documentation: Cette Méthode permet étendre un objet enfant des fonctions prototypes de Node.
      *
-     * @param childClass {Object} 
+     * @param childClass {Object}
      */
 
     Node.extend = function(childClass) {

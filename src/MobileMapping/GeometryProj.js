@@ -1,5 +1,5 @@
 /**
- * 
+ *
  * Class: GeometryProj
  */
 
@@ -17,7 +17,7 @@ function(THREE ) {
     GeometryProj.prototype.constructor = GeometryProj;
 
 
-    
+
 
     GeometryProj.prototype.useParent = function() {
         return this.level !== this.levelElevation;
@@ -46,7 +46,7 @@ function(THREE ) {
     GeometryProj.prototype.setSelected = function(select) {
         this.material.setSelected(select);
     };
-   
+
 
     return GeometryProj;
 

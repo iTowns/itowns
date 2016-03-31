@@ -21,7 +21,7 @@ define('Core/Commander/Providers/Provider', [], function() {
      * @param url
      */
     Provider.prototype.get = function(/*url*/) {
-        //TODO: Implement Me 
+        //TODO: Implement Me
 
     };
 
@@ -30,7 +30,7 @@ define('Core/Commander/Providers/Provider', [], function() {
      * @param url
      */
     Provider.prototype.getInCache = function(/*url*/) {
-        //TODO: Implement Me 
+        //TODO: Implement Me
 
     };
 

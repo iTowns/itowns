@@ -33,7 +33,7 @@ define('Core/Commander/Command', [], function() {
     /**
      */
     Command.prototype.instance = function() {
-        //TODO: Implement Me 
+        //TODO: Implement Me
 
     };
 

@@ -14,7 +14,7 @@ function DescriptionManager() {
 /**
  */
 DescriptionManager.prototype.descriptionToContent = function() {
-    //TODO: Implement Me 
+    //TODO: Implement Me
 
 };
 
