@@ -1,4 +1,4 @@
-/* 
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -7,10 +7,10 @@
 /*
  * A Faire
  * Les tuiles de longitude identique ont le maillage et ne demande pas 1 seule calcul pour la génération du maillage
- * 
- * 
- * 
- * 
+ *
+ *
+ *
+ *
  */
 
 
@@ -85,7 +85,7 @@ define('Core/Commander/Providers/TileProvider', [
 
             return geometry;
         };
-        
+
        // TileProvider.prototype.getKML= function(){
         TileProvider.prototype.getKML= function(tile){
 
@@ -97,7 +97,7 @@ define('Core/Commander/Providers/TileProvider', [
                 return this.providerKML.loadKMZ(longitude, latitude).then(function (collada){
 
                     if(collada && tile.link.children.indexOf(collada) === -1)
-                        {                                 
+                        {
                             tile.link.add(collada);
                             tile.content = collada;
                         }
@@ -114,19 +114,19 @@ define('Core/Commander/Providers/TileProvider', [
             var parent = command.requester;
 
             // build tile
-            var geometry = undefined; //getGeometry(bbox,cooWMTS);       
+            var geometry = undefined; //getGeometry(bbox,cooWMTS);
 
             var tile = new command.type(bbox, cooWMTS, this.builder, this.nNode++, geometry,parent.link,center);
 
             if (geometry) {
-                tile.rotation.set(0, (cooWMTS.col % 2) * (Math.PI * 2.0 / Math.pow(2, cooWMTS.zoom + 1)), 0);            
+                tile.rotation.set(0, (cooWMTS.col % 2) * (Math.PI * 2.0 / Math.pow(2, cooWMTS.zoom + 1)), 0);
             }
 
             parent.worldToLocal(center);
 
-            tile.position.copy(center);          
+            tile.position.copy(center);
             tile.setVisibility(false);
-  
+
             parent.add(tile);
             tile.updateMatrix();
             tile.updateMatrixWorld();
@@ -134,15 +134,15 @@ define('Core/Commander/Providers/TileProvider', [
             var elevationlayerId = command.paramsFunction.elevationLayerId[cooWMTS.zoom > 11 ? 1 : 0];
             var colorlayerId = command.paramsFunction.colorLayerId;
 
-            if(cooWMTS.zoom > 3 )            
+            if(cooWMTS.zoom > 3 )
                 cooWMTS =  undefined;
-            
+
             tile.texturesNeeded =+ 1;
 
             return when.all([
 
-                    this.providerElevationTexture.getElevationTexture(cooWMTS,elevationlayerId).then(function(terrain){                        
-                                    
+                    this.providerElevationTexture.getElevationTexture(cooWMTS,elevationlayerId).then(function(terrain){
+
                         this.setTextureElevation(terrain);}.bind(tile)),
 
                     this.providerColorTexture.getColorTextures(tile,colorlayerId).then(function(colorTextures){
@@ -151,7 +151,7 @@ define('Core/Commander/Providers/TileProvider', [
 
                     //,this.getKML(tile)
 
-                ]);            
+                ]);
         };
 
         return TileProvider;

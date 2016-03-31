@@ -16,7 +16,7 @@ IoDriverMicmac.prototype = new IoDriver();
 /**
  */
 IoDriverMicmac.prototype.loadOrientation = function() {
-    //TODO: Implement Me 
+    //TODO: Implement Me
 
 };
 

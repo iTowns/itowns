@@ -16,7 +16,7 @@ function History() {
 /**
  */
 History.prototype.undo = function() {
-    //TODO: Implement Me 
+    //TODO: Implement Me
 
 };
 
@@ -24,25 +24,25 @@ History.prototype.undo = function() {
 /**
  */
 History.prototype.redo = function() {
-    //TODO: Implement Me 
+    //TODO: Implement Me
 
 };
 
 
 /**
- * @param memento {[object Object]} 
+ * @param memento {[object Object]}
  */
 History.prototype.add = function(memento) {
-    //TODO: Implement Me 
+    //TODO: Implement Me
 
 };
 
 
 /**
- * @param id {int} 
+ * @param id {int}
  */
 History.prototype.delete = function(id) {
-    //TODO: Implement Me 
+    //TODO: Implement Me
 
 };
 

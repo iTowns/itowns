@@ -1,4 +1,4 @@
-/* 
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -96,7 +96,7 @@ define('Globe/Clouds', ['Renderer/NodeMesh',
         this.material.uniforms.time.value += 0.01;
         requestAnimationFrame(this.animate.bind(this));
     };
-    
+
     Clouds.prototype.setLightingOn = function(enable){
          this.material.uniforms.lightingOn.value = enable === true ? 1 : 0;
     }

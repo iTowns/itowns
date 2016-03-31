@@ -71,7 +71,7 @@ define('Scene/BrowseTree', ['Globe/TileMesh', 'THREE'], function( TileMesh, THRE
             return false;
 
         if(!process.isCulled(node, camera)) {
-            node.setVisibility(true);      
+            node.setVisibility(true);
             process.SSE(node, camera,params);
         }
 

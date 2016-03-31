@@ -9,7 +9,7 @@
 define('Core/Math/Ellipsoid',
      ['Core/Math/MathExtented','Core/Geographic/CoordCarto','THREE'],
       function(MathExt,CoordCarto, THREE) {
-    
+
     function Ellipsoid(size) {
         //Constructor
 
@@ -131,17 +131,17 @@ define('Core/Math/Ellipsoid',
         normal *= (back) ? -1.f : 1.f;
         normalizeVector(normal);
         */
-    }; 
+    };
 
     Ellipsoid.prototype.computeDistance = function(coordCarto1, coordCarto2){
-        
+
         var longitude1 = coordCarto1.longitude * Math.PI / 180;
         var latitude1 = coordCarto1.latitude * Math.PI / 180;
         var longitude2 = coordCarto2.longitude * Math.PI / 180;
         var latitude2 = coordCarto2.latitude * Math.PI / 180;
-        
+
         var distRad = Math.acos(Math.sin(latitude1)*Math.sin(latitude2) + Math.cos(latitude1)*Math.cos(latitude2)*Math.cos(longitude2 - longitude1));
-        
+
         var a = 6378137;
         var b = 6356752.3142451793;
         var e = Math.sqrt((a * a - b * b) / (a * a));

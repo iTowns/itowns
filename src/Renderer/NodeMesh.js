@@ -33,7 +33,7 @@ define('Renderer/NodeMesh', ['Scene/Node', 'THREE'], function(Node, THREE) {
             this.helper.visible = show;
     };
 
-    NodeMesh.prototype.isVisible = function() {    
+    NodeMesh.prototype.isVisible = function() {
 
         return this.visible && this.material.visible;
     };

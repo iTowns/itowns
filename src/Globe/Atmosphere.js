@@ -1,4 +1,4 @@
-/* 
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -16,7 +16,7 @@ define('Globe/Atmosphere', ['Renderer/NodeMesh', 'THREE', 'Renderer/c3DEngine','
 
         this.realistic = false;
 
-       
+
         this.uniformsOut = {
             atmoIN: {
                 type: "i",
@@ -78,12 +78,12 @@ define('Globe/Atmosphere', ['Renderer/NodeMesh', 'THREE', 'Renderer/c3DEngine','
           scaleDepth: 0.25,
           mieScaleDepth: 0.1
         };
-        
+
 
         var uniforms = {
           v3LightPosition: {
             type: "v3",
-            value: new THREE.Vector3(-0.5, 0, 1).normalize() 
+            value: new THREE.Vector3(-0.5, 0, 1).normalize()
           },
           v3InvWavelength: {
             type: "v3",
@@ -171,7 +171,7 @@ define('Globe/Atmosphere', ['Renderer/NodeMesh', 'THREE', 'Renderer/c3DEngine','
             value: 1
           }
         };
-        
+
         this.ground = {
             geometry: new THREE.SphereGeometry(atmosphere.innerRadius, 50, 50),
             material: new THREE.ShaderMaterial({
@@ -181,12 +181,12 @@ define('Globe/Atmosphere', ['Renderer/NodeMesh', 'THREE', 'Renderer/c3DEngine','
             blending: THREE.AdditiveBlending,
             transparent: true,
             depthTest: false,
-            depthWrite: false 
+            depthWrite: false
           })
         };
-        
+
         this.ground.mesh = new THREE.Mesh(this.ground.geometry, this.ground.material);
-        
+
         this.sky = {
           geometry: new THREE.SphereGeometry(atmosphere.outerRadius, 196, 196),
           material: new THREE.ShaderMaterial({
@@ -199,7 +199,7 @@ define('Globe/Atmosphere', ['Renderer/NodeMesh', 'THREE', 'Renderer/c3DEngine','
         this.sky.mesh = new THREE.Mesh(this.sky.geometry, this.sky.material);
         this.sky.material.side = THREE.BackSide;
         this.sky.material.transparent = true;
-                
+
         this.ground.mesh.visible = false;
         this.sky.mesh.visible = false;
         this.add(this.ground.mesh);
@@ -209,16 +209,16 @@ define('Globe/Atmosphere', ['Renderer/NodeMesh', 'THREE', 'Renderer/c3DEngine','
 
     Atmosphere.prototype = Object.create(NodeMesh.prototype);
     Atmosphere.prototype.constructor = Atmosphere;
-    
+
     Atmosphere.prototype.setRealisticOn = function(bool){
-        
+
         this.realistic = bool;
         this.material.visible = !this.realistic;
         this.atmosphereIN.visible  = !this.realistic;
         this.ground.mesh.visible   = this.realistic;
-        this.sky.mesh.visible      = this.realistic; 
+        this.sky.mesh.visible      = this.realistic;
     };
-    
+
 
     return Atmosphere;
 
