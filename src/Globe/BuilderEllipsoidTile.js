@@ -10,7 +10,7 @@ define('Globe/BuilderEllipsoidTile',
 	}
 
 	BuilderEllipsoidTile.prototype.constructor = BuilderEllipsoidTile;
-    
+
     // prepare params
     // init projected object -> params.projected
     BuilderEllipsoidTile.prototype.Prepare = function(params)
@@ -18,18 +18,18 @@ define('Globe/BuilderEllipsoidTile',
 
         params.nbRow = Math.pow(2.0, params.zoom + 1.0);
 
-        var st1 = this.projector.WGS84ToOneSubY(params.bbox.minCarto.latitude); 
+        var st1 = this.projector.WGS84ToOneSubY(params.bbox.minCarto.latitude);
 
         if (!isFinite(st1))
-            st1 = 0;        
-        
+            st1 = 0;
+
         var sizeTexture = 1.0 / params.nbRow;
-        
+
         var start = (st1 % (sizeTexture));
 
         params.deltaUV1 = (st1 - start)*params.nbRow;
-        
-        // /!\ init params.projected 
+
+        // /!\ init params.projected
         params.projected = new CoordCarto();
     };
 
@@ -50,7 +50,7 @@ define('Globe/BuilderEllipsoidTile',
 
     // get normal for last vertex
     BuilderEllipsoidTile.prototype.VertexNormal = function(params)
-    {        
+    {
         return params.cartesianPosition.clone().normalize();
     };
 
@@ -63,7 +63,7 @@ define('Globe/BuilderEllipsoidTile',
     // coord v tile to projected
     BuilderEllipsoidTile.prototype.vProjecte = function(v,params)
     {
-        this.projector.UnitaryToLatitudeWGS84(v,params.projected,params.bbox);    
+        this.projector.UnitaryToLatitudeWGS84(v,params.projected,params.bbox);
     };
 
     // Compute uv 1, if isn't defined the uv1 isn't computed
@@ -80,7 +80,7 @@ define('Globe/BuilderEllipsoidTile',
     // get oriented bounding box of tile
     BuilderEllipsoidTile.prototype.OBB = function(params)
     {
-        
+
         var cardinals = [];
 
         var normal = params.center3D.clone().normalize();
@@ -137,7 +137,7 @@ define('Globe/BuilderEllipsoidTile',
         var delta = height - Math.abs(cardin3DPlane[5].x);
         var max = new THREE.Vector3(width, height, maxHeight);
         var min = new THREE.Vector3(-width, -height, -maxHeight);
-        
+
         var translate = new THREE.Vector3(0,delta,-maxHeight);
         var obb = new THREE.OBB(min, max,normal,translate);
 

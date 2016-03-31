@@ -15,10 +15,10 @@ function NodeProvider() {
 NodeProvider.prototype = new Provider();
 
 /**
- * @param type {int} 
+ * @param type {int}
  */
 NodeProvider.prototype.createObject = function(type) {
-    //TODO: Implement Me 
+    //TODO: Implement Me
 
 };
 

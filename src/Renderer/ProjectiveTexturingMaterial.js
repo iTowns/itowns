@@ -1,7 +1,7 @@
 /**
-* 
+*
 * @author AD IGN
-* Class generating shaders for projective texturing of MULTIPLE IMAGES in a single shader. This class can be used 
+* Class generating shaders for projective texturing of MULTIPLE IMAGES in a single shader. This class can be used
 * to texture any mesh. We need to set the matrix of Orientation of the projector
 * and its projective camera information.
 */
@@ -9,16 +9,16 @@
 define (['Renderer/c3DEngine','three','Renderer/ThreeExtented/threeExt','MobileMapping/Ori',
          'Core/Commander/Providers/PanoramicProvider','MobileMapping/Shader','url',
          'string_format', 'when', 'Core/Math/Ellipsoid', 'Core/Geographic/CoordCarto'],
-        function (graphicEngine, THREE, threeExt, Ori, 
+        function (graphicEngine, THREE, threeExt, Ori,
         PanoramicProvider, Shader, url, string_format,
         when, Ellipsoid, CoordCarto) {
 
        window.requestAnimSelectionAlpha = (function(){
-            return  window.requestAnimationFrame || 
-            window.webkitRequestAnimationFrame   || 
-            window.mozRequestAnimationFrame      || 
-            window.oRequestAnimationFrame        || 
-            window.msRequestAnimationFrame       || 
+            return  window.requestAnimationFrame ||
+            window.webkitRequestAnimationFrame   ||
+            window.mozRequestAnimationFrame      ||
+            window.oRequestAnimationFrame        ||
+            window.msRequestAnimationFrame       ||
             function(callback){
                 window.setTimeout(callback, 1000 / 60);
             };
@@ -33,35 +33,35 @@ define (['Renderer/c3DEngine','three','Renderer/ThreeExtented/threeExt','MobileM
         var ProjectiveTexturingMaterial = {
 
             init: function(infos, panoInfo, pivot){
-                
+
                 var deferred = when.defer();
-                
+
                 if(!_initiated){
                     _infos = infos;
                     _infos.lods = _infos.lods || [undefined];
                     _infos.targetNbPanoramics = _infos.targetNbPanoramics || 2;
                     _initiated = true;
-                    
+
                     Ori.init(infos).then(function(){
                         //console.log("ORI IS INITIATED");
                         // compute Camera Frame Rotation
                         var matRotationFrame = this.getCameraFrameRotation(panoInfo);
                         this.createShaderMat(panoInfo, matRotationFrame, pivot);
                         deferred.resolve(_shaderMat);
-                        
+
                     }.bind(this));
                 } else{
                     // update shaderMat
                     deferred.resolve(_shaderMat);
                 }
-                
+
                 return deferred.promise;
             },
-            
+
 
             isInitiated: function(){
                     return _initiated;
-            },	
+            },
 
             setGeneralOpacity: function(value){
                     _alpha = value;
@@ -74,8 +74,8 @@ define (['Renderer/c3DEngine','three','Renderer/ThreeExtented/threeExt','MobileM
                             window.requestAnimSelectionAlpha(this.tweenGeneralOpacityUp.bind(this));
                     }
             },
-            
-            
+
+
             getCameraFrameRotation: function(panoInfo){
 
                var matRotation = Ori.computeMatOriFromHeadingPitchRoll(
@@ -84,8 +84,8 @@ define (['Renderer/c3DEngine','three','Renderer/ThreeExtented/threeExt','MobileM
                                            panoInfo.roll
                                        );
 
-               // Then correct with position on ellipsoid     
-               // Orientation on normal    
+               // Then correct with position on ellipsoid
+               // Orientation on normal
                var posPanoWGS84 = new CoordCarto().setFromDegreeGeo(panoInfo.latitude, panoInfo.longitude, panoInfo.altitude);
                var posPanoCartesian = ellipsoid.cartographicToCartesian(posPanoWGS84);
 
@@ -96,18 +96,18 @@ define (['Renderer/c3DEngine','three','Renderer/ThreeExtented/threeExt','MobileM
                var child = new THREE.Object3D();
                var localTarget = new THREE.Vector3().addVectors (posPanoCartesian.clone(), normal );
                child.lookAt(localTarget);
-               child.quaternion.multiply(quaternion );                
+               child.quaternion.multiply(quaternion );
                //child.position.copy(posCartesien.clone());
                child.updateMatrix();
                //console.log("matrice originale", matRotation,"MAtrice normale",child.matrix, "normal vec", normal );
-               
+
                var c = child.matrix;//.elements;
                var m3 = new THREE.Matrix3().fromMatrix4(c);
                //console.log(m3);
                var matRotationOnGlobe = new THREE.Matrix3().multiplyMatrices(matRotation.clone(), m3);//child.matrix);
 
-               return matRotationOnGlobe;               
-                            
+               return matRotationOnGlobe;
+
             },
 
 
@@ -125,7 +125,7 @@ define (['Renderer/c3DEngine','three','Renderer/ThreeExtented/threeExt','MobileM
             },
 
             // throttle down the number of panoramics to meet the gl.MAX_* constraints
-            nbPanoramics: function(){ 
+            nbPanoramics: function(){
                     var N = this.nbImages();
                     var gl = graphicEngine().getRenderer().getContext();
                     var M = this.nbMasks();
@@ -142,13 +142,13 @@ define (['Renderer/c3DEngine','three','Renderer/ThreeExtented/threeExt','MobileM
             },
 
             loadTexture: function(src,infos,onload,data){
-                    
+
                    // console.log("src: ",src,"  infos: ",infos);
                     src = src.format(infos);
-                    var img = new Image(); 
+                    var img = new Image();
                     img.crossOrigin = 'anonymous';
-                    img.onload = function () { 	
-                        var tex = new THREE.Texture(this,THREE.UVMapping, 
+                    img.onload = function () {
+                        var tex = new THREE.Texture(this,THREE.UVMapping,
                                 THREE.RepeatWrapping, THREE.RepeatWrapping, THREE.LinearFilter, THREE.LinearFilter, THREE.RGBFormat);
                         tex.needsUpdate = true;
                         tex.flipY = false;
@@ -158,15 +158,15 @@ define (['Renderer/c3DEngine','three','Renderer/ThreeExtented/threeExt','MobileM
                     img.src = url.resolve(baseUrl,src);
             },
 
-            createShaderMat: function(panoInfo, rot, pivot){  
-                
+            createShaderMat: function(panoInfo, rot, pivot){
+
                 var posPanoWGS84 = new CoordCarto().setFromDegreeGeo(panoInfo.latitude, panoInfo.longitude, panoInfo.altitude);
                 var posPanoCartesian = ellipsoid.cartographicToCartesian(posPanoWGS84);
                 //console.log("posPanoCartesian: ",posPanoCartesian);
                 var spherePosPano = new THREE.Mesh( new THREE.SphereGeometry( 0.5, 12, 12 ), new THREE.MeshBasicMaterial({side: THREE.DoubleSide, color:0xff00ff}));
                 spherePosPano.position.copy(posPanoCartesian);
                 graphicEngine().add3DScene(spherePosPano);
-                
+
                 var posPiv = posPanoCartesian.clone().sub(pivot);
                 var posFrameWithPivot = new THREE.Vector4(posPiv.x, posPiv.y, posPiv.z, 1.);
                 var N = this.nbImages();
@@ -186,7 +186,7 @@ define (['Renderer/c3DEngine','three','Renderer/ThreeExtented/threeExt','MobileM
                 var idmask = [];
                 var iddist = [];
                 for (var i=0; i<N; ++i){
-                    
+
                     var mat = Ori.getMatrix(i).clone();
                     var mvpp = (new THREE.Matrix3().multiplyMatrices(rot,mat)).transpose();
                     var trans = posFrameWithPivot.clone().add( Ori.getSommet(i).clone().applyMatrix3(rot) );
@@ -212,16 +212,16 @@ define (['Renderer/c3DEngine','three','Renderer/ThreeExtented/threeExt','MobileM
                             iddist[j] = d;
                     }
                 }
-                    
+
                 // create the shader material for Three
                 _shaderMat = new THREE.ShaderMaterial({
                         uniforms:     	uniforms,
                         vertexShader:   Shader.shaderTextureProjectiveVS(P*N),
                         fragmentShader: Shader.shaderTextureProjectiveFS(P*N,idmask,iddist),
-                        side: THREE.DoubleSide, //THREE.BackSide,   
+                        side: THREE.DoubleSide, //THREE.BackSide,
                         transparent: true
                        // depthTest: false
-                        //depthWrite: false 
+                        //depthWrite: false
                 });
 
                 _infos.pano = panoInfo;
@@ -230,34 +230,34 @@ define (['Renderer/c3DEngine','three','Renderer/ThreeExtented/threeExt','MobileM
                         _infos.cam  = Ori.sensors[i].infos;
                         m= idmask[i];
                         if(m>=0) {
-                                this.loadTexture(Ori.getMask(i), {}, function(tex,m) { 	
-                                        _shaderMat.uniforms.mask.value[m] = tex; 
+                                this.loadTexture(Ori.getMask(i), {}, function(tex,m) {
+                                        _shaderMat.uniforms.mask.value[m] = tex;
                                 }, m);
                         }
-                        this.loadTexture(_infos.url, _infos, function(tex,i) { 	
+                        this.loadTexture(_infos.url, _infos, function(tex,i) {
                                 _shaderMat.uniforms.texture.value[i] = tex;
                         }, i);
                 }
             this.changePanoTextureAfterloading(panoInfo, posFrameWithPivot, rot, 1);
-            
+
             return _shaderMat;
         },
-              
+
         updateUniforms: function(panoInfo, pivot){
-            
+
             var matRotationFrame = this.getCameraFrameRotation(panoInfo);
-            
+
             // compute translation
                 var posPanoWGS84 = new CoordCarto().setFromDegreeGeo(panoInfo.latitude, panoInfo.longitude, panoInfo.altitude);
                 var posPanoCartesian = ellipsoid.cartographicToCartesian(posPanoWGS84);
                 var posPiv = posPanoCartesian.clone().sub(pivot);
                 var posFrameWithPivot = new THREE.Vector4(posPiv.x, posPiv.y, posPiv.z, 1.);
-                
+
             this.changePanoTextureAfterloading(panoInfo, posFrameWithPivot, matRotationFrame, 0);
         },
-            
+
         tweenIndiceTime: function (i){
-            
+
             var alpha = _shaderMat.uniforms.alpha.value[i];
             graphicEngine().renderScene();  // TEMP CAUSE NO GLOBAL RENDERING LOOP
             if(alpha<1){
@@ -267,14 +267,14 @@ define (['Renderer/c3DEngine','three','Renderer/ThreeExtented/threeExt','MobileM
                 _shaderMat.uniforms.alpha.value[i] = _alpha*alpha;
                 _shaderMat.uniforms.alpha.value[j] = _alpha*(1-alpha);
                 var that = this;
-                window.requestAnimSelectionAlpha(function() { that.tweenIndiceTime(i); });                			
-            }	
+                window.requestAnimSelectionAlpha(function() { that.tweenIndiceTime(i); });
+            }
         },
-        
-            
+
+
         changePanoTextureAfterloading: function (panoInfo,translation,rotation,lod){
-            
-            
+
+
             this.todo = [];
             _infos.pano = panoInfo;
             this.translation = translation || new THREE.Vector3();
@@ -282,13 +282,13 @@ define (['Renderer/c3DEngine','three','Renderer/ThreeExtented/threeExt','MobileM
             for (var l=lod||0; l< _infos.lods.length; ++l)
                 for (var i=0; i< Ori.sensors.length; ++i)
                         this.todo.push({l:l,i:i});
-                
+
             this.chargeOneImageCam();
         },
-        
+
         // Load an Image(html) then use it as a texture. Wait loading before passing to the shader to avoid black effect
         chargeOneImageCam: function (){
-            
+
             if(this.todo.length==0) return;
             var todo = this.todo.shift();
             var i = todo.i;
@@ -296,8 +296,8 @@ define (['Renderer/c3DEngine','three','Renderer/ThreeExtented/threeExt','MobileM
             var that = this;
             _infos.cam = Ori.sensors[todo.i].infos;
             _infos.lod = _infos.lods[todo.l];
-            this.loadTexture(_infos.url, _infos, function(tex) { 
-                
+            this.loadTexture(_infos.url, _infos, function(tex) {
+
                 var mat = Ori.getMatrix(i).clone();
                 var mvpp = (new THREE.Matrix3().multiplyMatrices(that.rotation, mat)).transpose();
                 var trans = Ori.getSommet(i).clone().applyMatrix3(that.rotation);
@@ -314,24 +314,24 @@ define (['Renderer/c3DEngine','three','Renderer/ThreeExtented/threeExt','MobileM
                 _shaderMat.uniforms.mvpp.value[i] = mvpp;
                 _shaderMat.uniforms.translation.value[i] = that.translation.clone().add(trans);
                 _shaderMat.uniforms.texture.value[i] = tex;
-                
+
                 if(lod==0) {
                     that.chargeOneImageCam();
                 } else {
                     setTimeout(function(){that.chargeOneImageCam();},500);
                 }
             });
-            
+
         },
-        
-        
+
+
         getShaderMat: function(){
             return _shaderMat;
         }
 
     };
     return ProjectiveTexturingMaterial;
-    
+
    }
 )
 
