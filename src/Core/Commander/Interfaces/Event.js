@@ -15,7 +15,7 @@ function Event() {
 /**
  */
 Event.prototype.toString = function() {
-    //TODO: Implement Me 
+    //TODO: Implement Me
 
 };
 
@@ -23,7 +23,7 @@ Event.prototype.toString = function() {
 /**
  */
 Event.prototype.xmlToEvents = function() {
-    //TODO: Implement Me 
+    //TODO: Implement Me
 
 };
 

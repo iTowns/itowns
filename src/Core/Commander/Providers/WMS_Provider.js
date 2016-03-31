@@ -84,7 +84,7 @@ define('Core/Commander/Providers/WMS_Provider', [
 
             var urlBaseService = "http://realearth.ssec.wisc.edu/api/image?products=globalir&bounds=";
 
-            // URL for all globe  IR imagery   
+            // URL for all globe  IR imagery
             var url = urlBaseService + latBound.x + "," + longBound.x + "," + latBound.y + "," + longBound.y +
                 "&width=" + width + "&height=" + height;
 
@@ -99,7 +99,7 @@ define('Core/Commander/Providers/WMS_Provider', [
 
 
         /**
-         * Returns a texture from the WMS stream with the specified bounding box 
+         * Returns a texture from the WMS stream with the specified bounding box
          * @param {BoundingBox} bbox: requested bounding box
          * @returns {WMS_Provider_L15.WMS_Provider.prototype@pro;_IoDriver@call;read@call;then}
          */

@@ -5,7 +5,7 @@
  */
 
 /**
- * 
+ *
  * @param {type} defaultValue
  * @returns {CoordWMTS_L10.CoordWMTS}
  */
@@ -13,7 +13,7 @@ define('Core/Geographic/CoordWMTS', ['Core/defaultValue'], function(defaultValue
 
 
     /**
-     * 
+     *
      * @param {type} zoom
      * @param {type} row
      * @param {type} col

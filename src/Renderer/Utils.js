@@ -55,8 +55,8 @@ define([], function() {
 
         /**
          * Get the total offset (top, left) of DOM element, including his parents offset
-         * 
-         * @param {Object} element The DOM element 
+         *
+         * @param {Object} element The DOM element
          * @return : {Object} Object with properties top and left (calculated offset)
          */
         getOffset: function(element) {
@@ -126,7 +126,7 @@ define([], function() {
 
             // params.easting = params.easting || "655550.2";
             // params.northing = params.northing || "6866565.3";
-            // params.altitude = params.altitude || "0.0";    
+            // params.altitude = params.altitude || "0.0";
             return params;
         },
 
@@ -206,7 +206,7 @@ define([], function() {
         },
 
         /**
-         * Function that make the cam look at a special 3D (2D) point knowing his future position. 
+         * Function that make the cam look at a special 3D (2D) point knowing his future position.
          * x1,z1 target of intersection , x2 z2 position of cam after translation in center of pano.
          * @todo : Clean it (delete global var uses)
          */
@@ -280,7 +280,7 @@ define([], function() {
         /**
          * Convert 2D coordinates from screen space ranging from [0..window.innerWidth] in x and [0..window.innerHeight]
          * in y to Normalized Device Coordinates (NDC) ranging from [-1..1] in x and [-1..1] in y
-         * @return {Object} Converted point (x,y) 
+         * @return {Object} Converted point (x,y)
          */
         toNDC: function(x, y) {
             return {
@@ -292,7 +292,7 @@ define([], function() {
         /**
          * toNDC inverse function (i.e convert from NDC space to screen space)
          * @return {Object} Converted point (x,y)
-         * @see toNDC 
+         * @see toNDC
          */
         toScreenSpace: function(x, y) {
             return {
@@ -644,7 +644,7 @@ define([], function() {
 
         //----------Ray Casting------------------
         //modify from http://polyk.ivank.net
-        //cast a ray to edge of threejs poly linestring 
+        //cast a ray to edge of threejs poly linestring
         Raycast: function(p, la, x, y, dx, dy, isc) {
 
             var l = p.length;
@@ -653,7 +653,7 @@ define([], function() {
                 b1 = new _P(0, 0),
                 b2 = new _P(0, 0),
                 c = new _P(0, 0);
-            //ray line    
+            //ray line
             a1.x = x;
             a1.y = y;
             a2.x = x + dx;
@@ -707,7 +707,7 @@ define([], function() {
                 b1 = new _P(0, 0),
                 b2 = new _P(0, 0),
                 c = new _P(0, 0);
-            //ray line    
+            //ray line
             a1.x = v1.x;
             a1.y = v1.z;
             a2.x = v2.x;
@@ -802,7 +802,7 @@ define([], function() {
         },
 
         //project point on closest egde of poly
-        //note: p is poly linestring of threejs    
+        //note: p is poly linestring of threejs
         projectPointOnLine: function(p, pt) {
             var l = p.length;
             var a1 = new _P(0, 0),
@@ -889,7 +889,7 @@ define([], function() {
             }
         },
 
-        //slice poly into two parts, used this function to delete 
+        //slice poly into two parts, used this function to delete
         //artifacts from OpenData line string ray casting!
         slice: function(p, ax, ay, bx, by) {
             if (this.ContainsPoint(p, ax, ay) || this.ContainsPoint(p, bx, by)) return [p.slice(0)];
@@ -983,7 +983,7 @@ define([], function() {
             return (depth & 1) == 1;
         },
 
-        //px, py sont coords d'emprise du sol        
+        //px, py sont coords d'emprise du sol
         extractLineStringInsidePoly: function(px, py, l) {
             var lines = [];
             if (px.length !== py.length) {
@@ -1065,8 +1065,8 @@ define([], function() {
         },
 
         //this function returns commun point if two lines are intersected.
-        //it is different from Raycast* function where the point is located 
-        //from two vectors. 
+        //it is different from Raycast* function where the point is located
+        //from two vectors.
         getLineIntersection2: function(p1, p2, p3, p4) {
             var x1 = p1.x,
                 y1 = p1.y,
@@ -1160,7 +1160,7 @@ define([], function() {
                 b1 = new _P(0, 0),
                 b2 = new _P(0, 0),
                 I = new _P(0, 0);
-            //ray line    
+            //ray line
             a1.x = pt1.x;
             a1.y = pt1.z;
             a2.x = pt2.x;
@@ -1259,7 +1259,7 @@ define([], function() {
         },
 
 
-        // Return sun position with azimuth and altitude in rad       
+        // Return sun position with azimuth and altitude in rad
         getSunPosition: function() {
 
             var m = Math,

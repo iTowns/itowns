@@ -5,7 +5,7 @@
  */
 
 /**
- * 
+ *
  * @param {type} Layer
  * @param {type} Quad
  * @returns {Quadtree_L13.Quadtree}
@@ -28,10 +28,10 @@ define('Scene/Quadtree', [
         this.maxLevel = 17;
         var rootNode = new NodeMesh();
 
-        rootNode.material.visible = false;            
-        
+        rootNode.material.visible = false;
+
         rootNode.link = this.link;
-        
+
         rootNode.enablePickingRender = function() { return true;};
         this.add(rootNode);
 
@@ -93,24 +93,24 @@ define('Scene/Quadtree', [
 
     Quadtree.prototype.down = function(node)
     {
-        node.setMaterialVisibility(true);        
+        node.setMaterialVisibility(true);
         node.setChildrenVisibility(false);
     }
-    
+
     Quadtree.prototype.upSubLayer = function(node) {
-                
+
         var id = node.getDownScaledLayer();
 
-        if(id !== undefined)                
-        {                        
+        if(id !== undefined)
+        {
             var params = {subLayer : id,colorLayerId : this.colorLayerId,elevationLayerId : this.elevationLayerId};
             this.interCommand.request(params, node, this.children[id+1]);
         }
-                    
+
     };
 
     /**
-     * @documentation: update node 
+     * @documentation: update node
      * @param {type} node
      * @returns {Boolean}
      */
@@ -119,8 +119,8 @@ define('Scene/Quadtree', [
         if (node.level > this.maxLevel)
             return false;
         else if (node.childrenCount() > 0 ) {
-                
-            node.setMaterialVisibility(false);                
+
+            node.setMaterialVisibility(false);
 
             return false;
         }
