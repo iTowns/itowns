@@ -2,7 +2,7 @@
  * Generated On: 2015-10-5
  * Class: IoDriver_XBIL
  */
-/* global Promise*/
+/* global Promise Float32Array*/
 
 define('Core/Commander/Providers/IoDriver_XBIL', ['Core/Commander/Providers/IoDriver'], function(IoDriver) {
 

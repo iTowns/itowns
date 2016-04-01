@@ -4,6 +4,8 @@
  * Description: 3DEngine est l'interface avec le framework webGL.
  */
 
+ /* global Float32Array*/
+
 define('Renderer/c3DEngine', [
     'THREE',
     'GlobeControls',

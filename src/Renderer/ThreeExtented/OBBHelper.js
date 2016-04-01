@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-/* global Uint16Array*/
+/* global Uint16Array Float32Array*/
 
 var THREE = require('three');
 
