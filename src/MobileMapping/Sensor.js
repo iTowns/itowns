@@ -5,7 +5,7 @@
 */
 
 
-define ('MobileMapping/Sensor',['three'], function (THREE) { 
+define ('MobileMapping/Sensor',['three'], function (THREE) {
 
 
   var  Sensor = function (infos){
@@ -27,11 +27,11 @@ define ('MobileMapping/Sensor',['three'], function (THREE) {
         this._itownsWay = new THREE.Matrix3().set(0, -1, 0,
                                              0, 0,-1,
                                              1, 0, 0);
-                                           
+
         this.Photogram_JMM = new THREE.Matrix3().set(0, 0,-1,
                                                -1, 0, 0,
                                                 0, 1, 0);
-                                               
+
         this.photgramme_image = new THREE.Matrix3().set(1, 0, 0,
                                                   0,-1, 0,
                                                   0, 0,-1);
@@ -39,7 +39,7 @@ define ('MobileMapping/Sensor',['three'], function (THREE) {
         this.rotation = this.getMatOrientationTotal();
         this.position.applyMatrix3(this._itownsWay);
      };
-     
+
 
 
      Sensor.prototype.getDistortion_r2max = function(disto){
@@ -52,25 +52,25 @@ define ('MobileMapping/Sensor',['three'], function (THREE) {
             if(imax===-1) return Infinity; // no roots : all is valid !
             return roots[imax];
      };
-        
+
 
 
 // rotation * Photogram_JMM * getMatOrientationCapteur * photgramme_image
      Sensor.prototype.getMatOrientationTotal = function(){
-         
+
         var out = this.rotation.clone();
         out = new THREE.Matrix3().multiplyMatrices( out.clone(), this.Photogram_JMM.clone() );
-        
+
         out = new THREE.Matrix3().multiplyMatrices( out.clone(), this.getMatOrientationCapteur().clone());
         out = new THREE.Matrix3().multiplyMatrices( out.clone(), this.photgramme_image.clone());
 
-        out = new THREE.Matrix3().multiplyMatrices(this._itownsWay, out.clone());    
+        out = new THREE.Matrix3().multiplyMatrices(this._itownsWay, out.clone());
         return out;
-        
+
       };
-      
+
     Sensor.prototype.getMatOrientationCapteur =  function(){
-         
+
             var ori0 = new THREE.Matrix3().set( 0,-1, 0,
 						1, 0, 0,
 						0, 0, 1);
@@ -90,17 +90,17 @@ define ('MobileMapping/Sensor',['three'], function (THREE) {
             switch(this.orientation){
                 case 0: return ori0;
                 case 1: return ori1;
-                case 2: return ori2; 
-                case 3: return ori3; 
-            }                              
+                case 2: return ori2;
+                case 3: return ori3;
+            }
        };
-       
-       
+
+
     Sensor.prototype.cardan_cubic_roots = function(a,b,c,d){
-       
+
           // http://fr.wikipedia.org/wiki/Methode_de_Cardan  Thanks Bredif
        var cardan_cubic_roots =  function(a,b,c,d){
-            
+
             if(a===0) return quadratic_roots(b,c,d);
             var vt=-b/(3*a);
             var a2 = a*a;
@@ -153,16 +153,16 @@ define ('MobileMapping/Sensor',['three'], function (THREE) {
         };
 
      var   sgn = function(x) {
-            return (x>0) - (x< 0); 
+            return (x>0) - (x< 0);
         };
 
      var   cubic_root = function(x) {
-            return sgn(x)*Math.pow(Math.abs(x),1/3); 
+            return sgn(x)*Math.pow(Math.abs(x),1/3);
         };
 
         return cardan_cubic_roots(a,b,c,d);
     };
-       
+
     return Sensor;
 
 });

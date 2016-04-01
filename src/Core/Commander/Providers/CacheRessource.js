@@ -20,7 +20,7 @@ define('Core/Commander/Providers/CacheRessource', [], function() {
      * @param url
      */
     CacheRessource.prototype.getRessource = function(url) {
-        
+
         return this.cacheObjects[url];
 
     };
@@ -36,7 +36,7 @@ define('Core/Commander/Providers/CacheRessource', [], function() {
      * @param id
      */
     CacheRessource.prototype.getRessourceByID = function(/*id*/) {
-        //TODO: Implement Me 
+        //TODO: Implement Me
 
     };
 

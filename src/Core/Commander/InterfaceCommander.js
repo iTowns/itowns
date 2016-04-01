@@ -11,24 +11,24 @@ define('Core/Commander/InterfaceCommander', ['Core/Commander/ManagerCommands', '
 
         this.managerCommands = ManagerCommands();
         this.type = type;
-  
+
     }
 
     InterfaceCommander.prototype.constructor = InterfaceCommander;
 
     /**
-     * @param com {[object Object]} 
+     * @param com {[object Object]}
      */
     InterfaceCommander.prototype.request = function(/*com*/) {
-        //TODO: Implement Me 
+        //TODO: Implement Me
 
     };
 
     /**
-     * @return  {[object Object]} 
+     * @return  {[object Object]}
      */
     InterfaceCommander.prototype.buildCommand = function() {
-        //TODO: Implement Me 
+        //TODO: Implement Me
         this._builderCommand();
     };
 
@@ -45,7 +45,7 @@ define('Core/Commander/InterfaceCommander', ['Core/Commander/ManagerCommands', '
         command.priority = requester.sse ? Math.floor(requester.visible && requester.material.visible ? requester.sse * requester.sse * 100000 : 1.0) : 1.0;
 
         this.managerCommands.addCommand(command);
-    };    
+    };
 
 
     return InterfaceCommander;
