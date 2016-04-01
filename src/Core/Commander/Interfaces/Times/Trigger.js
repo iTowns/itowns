@@ -17,7 +17,7 @@ function Trigger() {
 /**
  */
 Trigger.prototype.executeChildrenCommand = function() {
-    //TODO: Implement Me 
+    //TODO: Implement Me
 
 };
 

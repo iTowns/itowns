@@ -1,4 +1,4 @@
-/* 
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -19,10 +19,10 @@ define('Core/Commander/Providers/IoDriver_JSON', ['Core/Commander/Providers/IoDr
     IoDriver_JSON.prototype.constructor = IoDriver_JSON;
 
     IoDriver_JSON.prototype.read = function(url) {
-        
 
-        return new Promise(function(resolve, reject)         
-        {            
+
+        return new Promise(function(resolve, reject)
+        {
             var xhr = new XMLHttpRequest();
             xhr.open("GET", url, true);
            // xhr.responseType = "document";

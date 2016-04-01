@@ -20,7 +20,7 @@ Timeline.prototype = new EventsManager();
  *
  */
 Timeline.prototype.update = function() {
-    //TODO: Implement Me 
+    //TODO: Implement Me
 
 };
 
