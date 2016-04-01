@@ -72,7 +72,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
 
         var map = new Globe(gLDebug);
 
-        this.scene.add(map, new NodeProcess(this.scene.currentCamera().camera3D, map.size));
+        this.scene.add(map);
 
         this.scene.addImageryLayer({
             protocol:   "wmts",
