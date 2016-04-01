@@ -188,7 +188,7 @@ define('Scene/Scene', [
             this.map = node;
             this.managerCommand.addMapProvider(node);
             nodeProcess = nodeProcess || new NodeProcess(this.currentCamera(), node.size);
-            this.quadTreeRequest(node.tiles, nodeProcess);
+            //this.quadTreeRequest(node.tiles, nodeProcess);
 
         }
 
@@ -201,7 +201,6 @@ define('Scene/Scene', [
         var tileProvider = this.managerCommand.getProvider(this.getMap().tiles);
 
         tileProvider.providerWMTS.addLayer(layer);
-
 
         this.managerCommand.addLayer(this.getMap().colorTerrain,tileProvider.providerWMTS);
 

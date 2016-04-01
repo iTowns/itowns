@@ -80,6 +80,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
             url:        "http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/geoportail/wmts",
             wmtsOptions: {
                     name: "ORTHOIMAGERY.ORTHOPHOTOS",
+                    //name: 'GEOGRAPHICALGRIDSYSTEMS.MAPS',
                     mimetype: "image/jpeg",
                     tileMatrixSet: "WGS84G"
                 }
@@ -89,10 +90,73 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
             protocol:   "wmts",
             id:         "IGN_MNT",
             url:        "http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/geoportail/wmts",
+            noDataValue : -99999,
             wmtsOptions: {
                     name: "ELEVATION.ELEVATIONGRIDCOVERAGE",
                     mimetype: "image/x-bil;bits=32",
-                    tileMatrixSet: "PM"
+                    tileMatrixSet: "PM",
+                    tileMatrixSetLimits: {
+                         // "2": {
+                         //    "minTileRow": 0,
+                         //    "maxTileRow": 2,
+                         //    "minTileCol": 2,
+                         //    "maxTileCol": 7
+                         //  },
+                          "3": {
+                            "minTileRow": 1,
+                            "maxTileRow": 5,
+                            "minTileCol": 5,
+                            "maxTileCol": 15
+                          },
+                          "4": {
+                            "minTileRow": 3,
+                            "maxTileRow": 10,
+                            "minTileCol": 10,
+                            "maxTileCol": 30
+                          },
+                          "5": {
+                            "minTileRow": 6,
+                            "maxTileRow": 20,
+                            "minTileCol": 20,
+                            "maxTileCol": 61
+                          },
+                          "6": {
+                            "minTileRow": 13,
+                            "maxTileRow": 40,
+                            "minTileCol": 41,
+                            "maxTileCol": 123
+                          },
+                          "7": {
+                            "minTileRow": 27,
+                            "maxTileRow": 80,
+                            "minTileCol": 82,
+                            "maxTileCol": 247
+                          },
+                          "8": {
+                            "minTileRow": 54,
+                            "maxTileRow": 160,
+                            "minTileCol": 164,
+                            "maxTileCol": 494
+                          },
+                          "9": {
+                            "minTileRow": 108,
+                            "maxTileRow": 321,
+                            "minTileCol": 329,
+                            "maxTileCol": 989
+                          },
+                          "10": {
+                            "minTileRow": 216,
+                            "maxTileRow": 642,
+                            "minTileCol": 659,
+                            "maxTileCol": 1979
+                          },
+                          "11": {
+                            "minTileRow": 432,
+                            "maxTileRow": 1285,
+                            "minTileCol": 1319,
+                            "maxTileCol": 3959
+                          }
+                        }
                 }
             });
 
@@ -100,12 +164,73 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
             protocol:   "wmts",
             id:         "IGN_MNT_HIGHRES",
             url:        "http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/geoportail/wmts",
+            noDataValue : -99999,
             wmtsOptions: {
                     name: "ELEVATION.ELEVATIONGRIDCOVERAGE.HIGHRES",
                     mimetype: "image/x-bil;bits=32",
-                    tileMatrixSet: "PM"
+                    tileMatrixSet: "PM",
+                    tileMatrixSetLimits: {
+                          "6": {
+                            "minTileRow": 13,
+                            "maxTileRow": 36,
+                            "minTileCol": 62,
+                            "maxTileCol": 80
+                          },
+                          "7": {
+                            "minTileRow": 27,
+                            "maxTileRow": 73,
+                            "minTileCol": 124,
+                            "maxTileCol": 160
+                          },
+                          "8": {
+                            "minTileRow": 55,
+                            "maxTileRow": 146,
+                            "minTileCol": 248,
+                            "maxTileCol": 320
+                          },
+                          "9": {
+                            "minTileRow": 110,
+                            "maxTileRow": 292,
+                            "minTileCol": 497,
+                            "maxTileCol": 640
+                          },
+                          "10": {
+                            "minTileRow": 221,
+                            "maxTileRow": 585,
+                            "minTileCol": 994,
+                            "maxTileCol": 1281
+                          },
+                          "11": {
+                            "minTileRow": 442,
+                            "maxTileRow": 1171,
+                            "minTileCol": 1989,
+                            "maxTileCol": 2563
+                          },
+                          "12": {
+                            "minTileRow": 885,
+                            "maxTileRow": 2343,
+                            "minTileCol": 3978,
+                            "maxTileCol": 5126
+                          },
+                          "13": {
+                            "minTileRow": 1770,
+                            "maxTileRow": 4687,
+                            "minTileCol": 7957,
+                            "maxTileCol": 10253
+                          },
+                          "14": {
+                            "minTileRow": 3540,
+                            "maxTileRow": 9375,
+                            "minTileCol": 15914,
+                            "maxTileCol": 20507
+                          }
+                        }
                 }
             });
+
+        //!\\ TEMP
+        this.scene.wait(0);
+        //!\\ TEMP
 
         return this.scene;
 

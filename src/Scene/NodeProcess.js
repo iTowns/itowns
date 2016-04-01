@@ -56,9 +56,7 @@ define('Scene/NodeProcess', ['Scene/BoundingBox', 'Renderer/Camera', 'Core/Math/
      * @return {Boolean}      the culling attempt's result
      */
     NodeProcess.prototype.isCulled = function(node, camera) {
-        return !( this.frustumCullingOBB(node, camera) &&
-            this.horizonCulling(node, camera) /*&&
-            this.checkSSE(node, camera,params)*/ );
+        return !( this.frustumCullingOBB(node, camera)&&this.horizonCulling(node, camera));
     };
 
     /**
