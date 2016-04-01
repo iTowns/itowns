@@ -183,15 +183,16 @@ define('Scene/Scene', [
      */
     Scene.prototype.add = function(node, nodeProcess) {
 
-        this.layers.push({node: node, process: nodeProcess});
-
         if(node instanceof Globe)
         {
             this.map = node;
             this.managerCommand.addMapProvider(node);
+            nodeProcess = nodeProcess || new NodeProcess(this.currentCamera(), node.size);
             this.quadTreeRequest(node.tiles, nodeProcess);
+
         }
 
+        this.layers.push({node: node, process: nodeProcess});
         this.gfxEngine.add3DScene(node.getMesh());
     };
 
