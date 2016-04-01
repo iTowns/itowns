@@ -445,6 +445,22 @@ define('Renderer/c3DEngine', [
         if (scene)
             scene.selectNodeId(buffer[3]);
 
+        /*
+        var raycaster = new THREE.Raycaster();
+        var mouse2 = new THREE.Vector2();
+
+        mouse2.x =   ( mouse.x / window.innerWidth ) * 2 - 1;
+        mouse2.y = - ( mouse.y / window.innerHeight ) * 2 + 1;
+
+        raycaster.setFromCamera(mouse2,this.camera.camera3D);
+
+        var ray = raycaster.ray;
+
+        console.log(ray.direction);
+
+        var depth = buffer[3];
+        */
+
         var worldPosition = glslPosition.applyMatrix4(this.camera.camera3D.matrixWorld);
 
         if(worldPosition.length()> 10000000)
