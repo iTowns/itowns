@@ -62,14 +62,22 @@ define('Core/Commander/Providers/WMTS_Provider', [
         WMTS_Provider.prototype.addLayer = function(layer)
         {
 
+            var options = layer.wmtsOptions;
             var newBaseUrl =  layer.url +
-                "?LAYER=" + layer.wmtsOptions.name +
-                "&FORMAT=" +  layer.wmtsOptions.mimetype +
-                "&SERVICE=WMTS&VERSION=1.0.0" +
-                "&REQUEST=GetTile&STYLE=normal&TILEMATRIXSET=" + layer.wmtsOptions.tileMatrixSet;
+                "?LAYER=" + options.name +
+                "&FORMAT=" +  options.mimetype +
+                "&SERVICE=WMTS" +
+                "&VERSION=1.0.0" +
+                "&REQUEST=GetTile&STYLE=normal&TILEMATRIXSET=" + options.tileMatrixSet;
 
-            this.layersWMTS[layer.id] = {baseUrl : newBaseUrl,tileMatrixSetLimits: layer.wmtsOptions.tileMatrixSetLimits};
+            var arrayLimits = Object.keys(options.tileMatrixSetLimits);
 
+            var size = arrayLimits.length;
+
+            var maxZoom = Number(arrayLimits[size-1]);
+            var minZoom = maxZoom - size + 1;
+
+            this.layersWMTS[layer.id] = {baseUrl : newBaseUrl,tileMatrixSetLimits: options.tileMatrixSetLimits,zoom:{min:minZoom,max:maxZoom}};
         };
 
         /**
