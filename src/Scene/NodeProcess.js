@@ -7,10 +7,10 @@
 define('Scene/NodeProcess', ['Scene/BoundingBox', 'Renderer/Camera', 'Core/Math/MathExtented', 'THREE', 'Core/defaultValue'], function(BoundingBox, Camera, MathExt, THREE, defaultValue) {
 
 
-    function NodeProcess(camera3D, size, bbox) {
+    function NodeProcess(camera, size, bbox) {
         //Constructor
         this.camera = new Camera();
-        this.camera.camera3D = camera3D.clone();
+        this.camera.camera3D = camera.camera3D.clone();
 
         this.bbox = defaultValue(bbox, new BoundingBox(MathExt.PI_OV_TWO + MathExt.PI_OV_FOUR, MathExt.PI + MathExt.PI_OV_FOUR, 0, MathExt.PI_OV_TWO));
 
@@ -56,9 +56,7 @@ define('Scene/NodeProcess', ['Scene/BoundingBox', 'Renderer/Camera', 'Core/Math/
      * @return {Boolean}      the culling attempt's result
      */
     NodeProcess.prototype.isCulled = function(node, camera) {
-        return !( this.frustumCullingOBB(node, camera) &&
-            this.horizonCulling(node, camera) /*&&
-            this.checkSSE(node, camera,params)*/ );
+        return !( this.frustumCullingOBB(node, camera)&&this.horizonCulling(node, camera));
     };
 
     /**
@@ -91,18 +89,18 @@ define('Scene/NodeProcess', ['Scene/BoundingBox', 'Renderer/Camera', 'Core/Math/
 
         if(params.withUp && node.material.visible && !node.wait )
         {
-            if (sse) 
-                // request level up 
-                params.tree.up(node);                        
-            else 
+            if (sse)
+                // request level up
+                params.tree.up(node);
+            else
                 // request level up other quadtree
-                params.tree.upSubLayer(node);                        
+                params.tree.upSubLayer(node);
         }
         else if (!sse) {
             // request level down
             params.tree.down(node);
         }
-                    
+
     };
 
     /**

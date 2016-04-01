@@ -14,10 +14,10 @@ function Memento() {
 
 
 /**
- * @param object {[object Object]} 
+ * @param object {[object Object]}
  */
 Memento.prototype.memento = function(object) {
-    //TODO: Implement Me 
+    //TODO: Implement Me
 
 };
 

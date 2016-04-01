@@ -5,7 +5,7 @@
  */
 
 /**
- * 
+ *
  * @param {type} defaultValue
  * @param {type} MathExt
  * @param {type} Point2D
@@ -24,14 +24,14 @@ define('Scene/BoundingBox', [
 ], function(defaultValue, MathExt, Point2D,THREE,OBB, CoordCarto ) {
 
     /**
-     * 
+     *
      * @param {type} minLongitude : longitude minimum
      * @param {type} maxLongitude : longitude maximum
-     * @param {type} minLatitude  : latitude minimum 
-     * @param {type} maxLatitude  : latitude maximum 
+     * @param {type} minLatitude  : latitude minimum
+     * @param {type} maxLatitude  : latitude maximum
      * @param {type} parentCenter : center parent
      * @param {type} minAltitude  : altitude minimum
-     * @param {type} maxAltitude  : altitude maximum  
+     * @param {type} maxAltitude  : altitude maximum
      * @returns {BoundingBox_L7.BoundingBox}
      */
     function BoundingBox(minLongitude, maxLongitude, minLatitude, maxLatitude, parentCenter, minAltitude, maxAltitude) {
@@ -51,17 +51,17 @@ define('Scene/BoundingBox', [
     /**
      * @documentation: Retourne True if point is inside the bounding box
      *
-     * @param point {[object Object]} 
+     * @param point {[object Object]}
      */
     BoundingBox.prototype.isInside = function(point) {
-        //TODO: Implement Me 
+        //TODO: Implement Me
 
         return point.x <= this.maxCarto.longitude && point.x >= this.minCarto.longitude && point.y <= this.maxCarto.latitude && point.y >= this.minCarto.latitude;
 
     };
 
     BoundingBox.prototype.BBoxIsInside = function(bbox) {
-        //TODO: Implement Me 
+        //TODO: Implement Me
 
         return bbox.maxCarto.longitude <= this.maxCarto.longitude && bbox.minCarto.longitude >= this.minCarto.longitude && bbox.maxCarto.latitude <= this.maxCarto.latitude && bbox.minCarto.latitude >= this.minCarto.latitude;
 
@@ -109,7 +109,7 @@ define('Scene/BoundingBox', [
         return !(this.minCarto.longitude >= bbox.maxCarto.longitude || this.maxCarto.longitude <= bbox.minCarto.longitude || this.minCarto.latitude >= bbox.maxCarto.latitude || this.maxCarto.latitude <= bbox.minCarto.latitude);
 
     };
-    
+
     return BoundingBox;
 
 });

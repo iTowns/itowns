@@ -1,4 +1,4 @@
-/* 
+/*
  * Computer vision and marchine learning tools
  * Quoc-Dinh dot Nguyen at IGN dot com
  */
@@ -6,16 +6,16 @@
 define(function () {
 
       var CVML = CVML || { REVISION: '1.0.0' };
-      
+
       CVML.epsilon = 2.220446049250313e-16;
       //Point
-      
+
       CVML.Point2D = function (x, y) {
                this.x = x;
                this.y = y;
       };
-      
-      
+
+
    var PointError = function (message, points) {
         this.name    = "PointError";
         this.points  = points = points || [];
@@ -145,7 +145,7 @@ define(function () {
         return this.x === p.x && this.y === p.y;
     };
 
-   
+
     /**
      * Negate a point component-wise and return the result as a new Point object.
      * @param   p   Point object.
@@ -212,7 +212,7 @@ define(function () {
 
     /**
      * Point pretty printing ex."(5;42)")
-     * @param   p   any "Point like" object with {x,y} 
+     * @param   p   any "Point like" object with {x,y}
      * @returns {String}
      */
     Point.toString = function(p) {
@@ -237,7 +237,7 @@ define(function () {
 
     /**
      * Peform the dot product on two vectors.
-     * @param   a,b   any "Point like" objects with {x,y} 
+     * @param   a,b   any "Point like" objects with {x,y}
      * @return The dot product (as a number).
      */
     Point.dot = function(a, b) {
@@ -249,7 +249,7 @@ define(function () {
         var dy = this.y - v.y;
         return Math.sqrt(dx * dx + dy * dy);
     };
-	
+
     //---------Edge
     /**
      * Represents a simple polygon's edge
@@ -285,7 +285,7 @@ define(function () {
      * quad-edge structures.
      * See: J. Shewchuk, "Triangle: Engineering a 2D Quality Mesh Generator and
      * Delaunay Triangulator", "Triangulations in CGAL"
-     * 
+     *
      * @param   a,b,c   any "Point like" objects with {x,y} (duck typing)
      */
     var Triangle = function(a, b, c) {
@@ -592,7 +592,7 @@ define(function () {
     };
 
     /**
-     * Returns the index of a point in the triangle. 
+     * Returns the index of a point in the triangle.
      * The point *must* be a reference to one of the triangle's vertices.
      * @param {Point} p Point object
      * @returns {Number} index 0, 1 or 2
@@ -649,7 +649,7 @@ define(function () {
     };
     Triangle.prototype.markConstrainedEdgeByPoints = function(p, q) {
         var points = this.points_;
-        // Here we are comparing point references, not values        
+        // Here we are comparing point references, not values
         if ((q === points[0] && p === points[1]) || (q === points[1] && p === points[0])) {
             this.constrained_edge[2] = true;
         } else if ((q === points[0] && p === points[2]) || (q === points[2] && p === points[0])) {
@@ -664,7 +664,7 @@ define(function () {
     var PI_2 = Math.PI / 2;
     var EPSILON = 1e-15;
 
-    /* 
+    /*
      * Inital triangle factor, seed triangle will extend 30% of
      * PointSet width to both left and right.
      */
@@ -847,12 +847,12 @@ define(function () {
         this.right = false;
     };
 
-    
+
     /**
      * Constructor for the triangulation context.
      * It accepts a simple polyline, which defines the constrained edges.
      * Possible options are:
-     *    cloneArrays:  if true, do a shallow copy of the Array parameters 
+     *    cloneArrays:  if true, do a shallow copy of the Array parameters
      *                  (contour, holes). Points inside arrays are never copied.
      *                  Default is false : keep a reference to the array arguments,
      *                  who will be modified in place.
@@ -866,7 +866,7 @@ define(function () {
         this.points_ = (options.cloneArrays ? contour.slice(0) : contour);
         this.edge_list = [];
 
-        // Bounding box of all points. Computed at the start of the triangulation, 
+        // Bounding box of all points. Computed at the start of the triangulation,
         // it is stored in case it is needed by the caller.
         this.pmin_ = this.pmax_ = null;
 
@@ -885,8 +885,8 @@ define(function () {
         this.edge_event = new EdgeEvent();
 
         this.initEdges(this.points_);
-        
-        
+
+
     };
 
 
@@ -938,7 +938,7 @@ define(function () {
     // Backward compatibility
     SweepContext.prototype.GetTriangles = SweepContext.prototype.getTriangles;
 
- 
+
     SweepContext.prototype.front = function() {
         return this.front_;
     };
@@ -1766,7 +1766,7 @@ define(function () {
     };
 
    var Delaunay = {
-        
+
         _PointError : PointError,
         _Point          : Point,
         _Triangle       : Triangle,
@@ -1775,23 +1775,23 @@ define(function () {
         // Backward compatibility
         _triangulate    : Sweep.triangulate,
         _sweep : {Triangulate: Sweep.triangulate}
-    
+
     };
-    
+
     CVML.newPoint = function(x,y){
         return new Delaunay._Point(x,y);
     };
-    
+
     CVML.TriangulatePoly = function(arr){
         var swctx = new Delaunay._SweepContext(arr);
             swctx.triangulate();
         return swctx.getTriangles();
     };
-    
+
     CVML.initSweepContext = function(arr){
         return new Delaunay._SweepContext(arr);
     };
-    
+
     //Line
     CVML.Line = function(a, b) { //y = ax + b
               this.a = a;
@@ -1802,7 +1802,7 @@ define(function () {
               this.a = line.a;
               this.b = line.b;
     };
-        
+
 
     CVML.RobustLineFitting = function (points, threshold) {
                             return new CVML.Ransac(new CVML.LineFitting(), points, threshold);
@@ -1810,12 +1810,12 @@ define(function () {
 
     CVML.LineFitting = function () {
 
-                            this.nbSampleNeeded = 2;	
+                            this.nbSampleNeeded = 2;
 
                             this.estimateModel = function(points, sample, model) {
                                     var counter = 0;
                                     for (var i in sample) {
-                                            _samplePoints[counter] = points[i];	
+                                            _samplePoints[counter] = points[i];
                                             counter++;
                                     }
 
@@ -1837,15 +1837,15 @@ define(function () {
 
                             var _points     = points;
                             var _threshold  = threshold;
-                            var _problem     = fittingProblem;	
+                            var _problem     = fittingProblem;
                             var _bestModel   = new CVML.Line(0, 0);
                             var _bestInliers = {};
                             var _bestScore   = 4294967295;
-    
-                            
+
+
                             var _currentModel   = new CVML.Line(1, 0);
                             var _nbIters        = nbIterations(0.99, 0.5, fittingProblem.nbSampleNeeded);
-                          
+
 
                             function nbIterations(ransacProba, outlierRatio, sampleSize) {
                                     return Math.ceil(Math.log(1-ransacProba) / Math.log(1-Math.pow(1-outlierRatio, sampleSize)));
@@ -1867,18 +1867,18 @@ define(function () {
                                     }
                             }
 
-                           
+
                            // this.next = function() {
                            for(var _iterationCounter = 0; _iterationCounter <_nbIters; _iterationCounter++)
                               {
-                                    
+
                                     var _currentInliers = [];
-                                    
+
                                     var score = 0;
                                     var sample = {};
                                     randomSample(_problem.nbSampleNeeded, _points.length, sample);
                                     _problem.estimateModel(_points, sample, _currentModel);
-                                   
+
                                     for (var j=0; j<_points.length; ++j) {
                                             var err = _problem.estimateError(_points, j, _currentModel);
                                             if (err > _threshold) {
@@ -1893,17 +1893,17 @@ define(function () {
                                             _bestModel.copy(_currentModel);
                                             _bestInliers  = _currentInliers;
                                             _bestScore   = score;
-                                            
+
                                     }
 
-                                       
+
                               }
                  return {model : _bestModel, inliers: _bestInliers, score : _bestScore};
-                                     
+
      };
- 
-        //This part use data structure of Matlab 
- 
+
+        //This part use data structure of Matlab
+
     CVML._dim = function _dim(x) {
                 var ret = [];
                 while(typeof x === "object") { ret.push(x.length); x = x[0]; }
@@ -1924,8 +1924,8 @@ define(function () {
                 return [x.length];
             }
             return [];
-        }; 
-        
+        };
+
         CVML.sdim = function(A,ret,k) {
             if(typeof ret === "undefined") { ret = []; }
             if(typeof A !== "object") return ret;
@@ -1952,7 +1952,7 @@ define(function () {
             }
             return ret;
         };
-        
+
         CVML.rep = function rep(s,v,k) {
             if(typeof k === "undefined") { k=0; }
             var n = s[k], ret = Array(n), i;
@@ -1964,7 +1964,7 @@ define(function () {
             for(i=n-1;i>=0;i--) { ret[i] = CVML.rep(s,v,k+1); }
             return ret;
         };
-        
+
         CVML.transpose = function(A) {
             var ret = [], /*n = A.length,*/ i,j,Ai;
             for(i in A) {
@@ -1986,7 +1986,7 @@ define(function () {
                 }
                 return svd.U[ind];
         };
-        
+
         CVML.maxVP = function(svd){
                 var ind = 0;
                 for(var i = 0; i < svd.S.length - 1; i++){
@@ -1994,26 +1994,26 @@ define(function () {
                 }
                 return svd.U[ind];
         };
-        
+
         CVML.subVec = function(vec,vec1){
             var ret = new Array(vec.length);
             if(vec.length === vec1.length){
-                for(var i = 0; i<vec.length ; i++) 
+                for(var i = 0; i<vec.length ; i++)
                             ret[i] = vec[i] - vec1[i];
-            }else return -1; 
+            }else return -1;
             return ret;
         };
 
         CVML.addVec = function(vec,vec1){
             var ret = new Array(vec.length);
             if(vec.length === vec1.length){
-                for(var i = 0; i<vec.length ; i++) 
+                for(var i = 0; i<vec.length ; i++)
                             ret[i] = vec[i] + vec1[i];
             }else return -1 ;
             return ret;
         };
 
-        
+
         CVML.dotMV = function(A,x) {
          var p = A.length, Ai, i,j;
          var ret = Array(p), accum;
@@ -2029,7 +2029,7 @@ define(function () {
          return ret;
         };
 
-        
+
         CVML.svd= function svd(A) {
                 var temp;
                 //Compute the thin SVD from G. H. Golub and C. Reinsch, Numer. Math. 14, 403-420 (1970)
@@ -2061,7 +2061,7 @@ define(function () {
                         b = Math.abs(b)
                         if (a > b)
                                 return a*Math.sqrt(1.0+(b*b/a/a))
-                        else if (b == 0.0) 
+                        else if (b == 0.0)
                                 return a
                         return b*Math.sqrt(1.0+(a*a/b/b))
                 }
@@ -2077,16 +2077,16 @@ define(function () {
                 var s= 0.0;
 
                 for (i=0; i < n; i++)
-                {	
+                {
                         e[i]= g;
                         s= 0.0;
                         l= i+1;
-                        for (j=i; j < m; j++) 
+                        for (j=i; j < m; j++)
                                 s += (u[j][i]*u[j][i]);
                         if (s <= tolerance)
                                 g= 0.0;
                         else
-                        {	
+                        {
                                 f= u[i][i];
                                 g= Math.sqrt(s);
                                 if (f >= 0.0) g= -g;
@@ -2095,21 +2095,21 @@ define(function () {
                                 for (j=l; j < n; j++)
                                 {
                                         s= 0.0;
-                                        for (k=i; k < m; k++) 
+                                        for (k=i; k < m; k++)
                                                 s += u[k][i]*u[k][j];
                                         f= s/h;
-                                        for (k=i; k < m; k++) 
+                                        for (k=i; k < m; k++)
                                                 u[k][j]+=f*u[k][i];
                                 }
                         }
                         q[i]= g;
                         s= 0.0;
-                        for (j=l; j < n; j++) 
+                        for (j=l; j < n; j++)
                                 s= s + u[i][j]*u[i][j];
                         if (s <= tolerance)
                                 g= 0.0;
                         else
-                        {	
+                        {
                                 f= u[i][i+1];
                                 g= Math.sqrt(s);
                                 if (f >= 0.0) g= -g;
@@ -2117,35 +2117,35 @@ define(function () {
                                 u[i][i+1] = f-g;
                                 for (j=l; j < n; j++) e[j]= u[i][j]/h;
                                 for (j=l; j < m; j++)
-                                {	
+                                {
                                         s=0.0;
-                                        for (k=l; k < n; k++) 
+                                        for (k=l; k < n; k++)
                                                 s += (u[j][k]*u[i][k]);
-                                        for (k=l; k < n; k++) 
+                                        for (k=l; k < n; k++)
                                                 u[j][k]+=s*e[k];
-                                }	
+                                }
                         }
                         y= Math.abs(q[i])+Math.abs(e[i]);
-                        if (y>x) 
+                        if (y>x)
                                 x=y;
                 }
 
                 // accumulation of right hand gtransformations
                 for (i=n-1; i != -1; i+= -1)
-                {	
+                {
                         if (g != 0.0)
                         {
                                 h= g*u[i][i+1];
-                                for (j=l; j < n; j++) 
+                                for (j=l; j < n; j++)
                                         v[j][i]=u[i][j]/h;
                                 for (j=l; j < n; j++)
-                                {	
+                                {
                                         s=0.0;
-                                        for (k=l; k < n; k++) 
+                                        for (k=l; k < n; k++)
                                                 s += u[i][k]*v[k][j];
-                                        for (k=l; k < n; k++) 
+                                        for (k=l; k < n; k++)
                                                 v[k][j]+=(s*v[k][i]);
-                                }	
+                                }
                         }
                         for (j=l; j < n; j++)
                         {
@@ -2159,10 +2159,10 @@ define(function () {
 
                 // accumulation of left hand transformations
                 for (i=n-1; i != -1; i+= -1)
-                {	
+                {
                         l= i+1;
                         g= q[i];
-                        for (j=l; j < n; j++) 
+                        for (j=l; j < n; j++)
                                 u[i][j] = 0;
                         if (g != 0.0)
                         {
@@ -2189,13 +2189,13 @@ define(function () {
                         {	// test f splitting
                                 var test_convergence = false
                                 for (l=k; l != -1; l+= -1)
-                                {	
+                                {
                                         if (Math.abs(e[l]) <= prec)
                                         {	test_convergence= true
-                                                break 
+                                                break
                                         }
                                         if (Math.abs(q[l-1]) <= prec)
-                                                break 
+                                                break
                                 }
                                 if (!test_convergence)
                                 {	// cancellation of e[l] if l>0
@@ -2203,7 +2203,7 @@ define(function () {
                                         s= 1.0;
                                         var l1= l-1;
                                         for (i =l; i<k+1; i++)
-                                        {	
+                                        {
                                                 f= s*e[i];
                                                 e[i]= c*e[i];
                                                 if (Math.abs(f) <= prec)
@@ -2214,13 +2214,13 @@ define(function () {
                                                 c= g/h;
                                                 s= -f/h;
                                                 for (j=0; j < m; j++)
-                                                {	
+                                                {
                                                         y= u[j][l1];
                                                         z= u[j][i];
                                                         u[j][l1] =  y*c+(z*s);
                                                         u[j][i] = -y*s+(z*c);
-                                                } 
-                                        }	
+                                                }
+                                        }
                                 }
                                 // test f convergence
                                 z= q[k];
@@ -2251,7 +2251,7 @@ define(function () {
                                 c= 1.0;
                                 s= 1.0;
                                 for (i=l+1; i< k+1; i++)
-                                {	
+                                {
                                         g= e[i];
                                         y= q[i];
                                         h= s*g;
@@ -2265,7 +2265,7 @@ define(function () {
                                         h= y*s;
                                         y= y*c;
                                         for (j=0; j < n; j++)
-                                        {	
+                                        {
                                                 x= v[j][i-1];
                                                 z= v[j][i];
                                                 v[j][i-1] = x*c+z*s;
@@ -2288,17 +2288,17 @@ define(function () {
                                 e[l]= 0.0;
                                 e[k]= f;
                                 q[k]= x;
-                        } 
+                        }
                 }
 
                 //vt= transpose(v)
                 //return (u,q,vt)
-                for (i=0;i<q.length; i++) 
+                for (i=0;i<q.length; i++)
                   if (q[i] < prec) q[i] = 0;
 
-                //sort eigenvalues	
+                //sort eigenvalues
                 for (i=0; i< n; i++)
-                {	 
+                {
                 //writeln(q)
                  for (j=i-1; j >= 0; j--)
                  {
@@ -2311,9 +2311,9 @@ define(function () {
                    for(k=0;k<u.length;k++) { temp = u[k][i]; u[k][i] = u[k][j]; u[k][j] = temp; }
                    for(k=0;k<v.length;k++) { temp = v[k][i]; v[k][i] = v[k][j]; v[k][j] = temp; }
 
-                   i = j;	   
+                   i = j;
                   }
-                 }	
+                 }
                 }
 
                 return {U:u,S:q,V:v};
@@ -2422,22 +2422,22 @@ define(function () {
                 var Ai = A[i];
                 for(var j = 0;j<Ai.length;j++)
                        Ai[j] = Ai[j]/m;
-                ret[i] = Ai;   
+                ret[i] = Ai;
             }
             return ret;
         };
-        
+
         //prends une matrice Nx3 and subtract to vector 3x1
         CVML.subMV = function(A,v){
-            if(A[0].length !== v.length) 
+            if(A[0].length !== v.length)
                  throw new Error('vector and matrice elements must have same length');
             var ret = new Array(A.length);
             for(var i=0;i<A.length;i++){
                 var Ai = A[i];//[x,y,z]
                 var elem = new Array(v.length);
                 for(var j =0;j<Ai.length;j++)
-                       elem[j] = Ai[j] - v[j]; 
-                ret[i] = elem;   
+                       elem[j] = Ai[j] - v[j];
+                ret[i] = elem;
             }
             return ret;
         };
@@ -2448,7 +2448,7 @@ define(function () {
                 var sigma  = CVML.div(CVML.dot(CVML.transpose(A_norm), A_norm), m);
                 return CVML.svd(sigma);//.U;
         };
-        
+
     return CVML;
 
 });

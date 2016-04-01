@@ -30,7 +30,7 @@ uniform int         nbTextures[8];
 uniform float       distanceFog;
 uniform int         debug;
 uniform vec3        lightPosition;
-uniform int lightingOn;
+uniform int         lightingOn;
 
 varying vec2        vUv_0;
 varying float       vUv_1;
@@ -65,8 +65,8 @@ vec4 colorAtIdUv(int id, vec2 uv){
     else if (id == 3) return texture2D(dTextures_01[3],  pitUV(uv,pitScale_L01[3]));           
     else if (id == 4) return texture2D(dTextures_01[4],  pitUV(uv,pitScale_L01[4]));           
     else if (id == 5) return texture2D(dTextures_01[5],  pitUV(uv,pitScale_L01[5]));
-    else if (id == 5) return texture2D(dTextures_01[6],  pitUV(uv,pitScale_L01[6]));
-    else if (id == 5) return texture2D(dTextures_01[7],  pitUV(uv,pitScale_L01[7]));
+    else if (id == 6) return texture2D(dTextures_01[6],  pitUV(uv,pitScale_L01[6]));
+    else if (id == 7) return texture2D(dTextures_01[7],  pitUV(uv,pitScale_L01[7]));
     else return vec4(0.0,0.0,0.0,0.0);        
     
 }
@@ -82,6 +82,7 @@ void main() {
     if(pickingRender == 1)
     {
         gl_FragColor =vec4(pos.x,pos.y,pos.z,uuid);
+        //gl_FragColor =vec4(pos.x,pos.y,pos.z,gl_FragDepthEXT / gl_FragCoord.w);
 
         #if defined(BORDERLINE)
 

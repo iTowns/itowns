@@ -1,7 +1,7 @@
 /**
  * Generated On: 2015-10-5
  * Class: SchemeTile
- * Description: Cette classe décrit un découpage spatiale. 
+ * Description: Cette classe décrit un découpage spatiale.
  */
 
 
@@ -15,7 +15,7 @@ define('Scene/SchemeTile', ['Scene/BoundingBox'], function(BoundingBox) {
 
     }
     /**
-     * 
+     *
      * @param {type} minLo
      * @param {type} maxLo
      * @param {type} minLa

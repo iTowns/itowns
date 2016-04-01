@@ -39,7 +39,7 @@ define('Scene/Scene', [
     var CLEAN = 2;
 
     function Scene(coordCarto, debugMode,gLDebug) {
-        
+
         if (instanceScene !== null) {
             throw new Error("Cannot instantiate more than one Scene");
         }
@@ -54,8 +54,8 @@ define('Scene/Scene', [
         this.cameras = null;
         this.selectNodes = null;
         this.managerCommand = ManagerCommands(this);
-        
-        this.gLDebug = gLDebug;        
+
+        this.gLDebug = gLDebug;
         this.gfxEngine = c3DEngine(this,positionCamera, debugMode,gLDebug);
         this.browserScene = new BrowseTree(this.gfxEngine);
         this.cap = new Capabilities();
@@ -77,8 +77,8 @@ define('Scene/Scene', [
     Scene.prototype.currentCamera = function() {
         return this.gfxEngine.camera;
     };
-    
-    Scene.prototype.currentControls = function() {        
+
+    Scene.prototype.currentControls = function() {
         return this.gfxEngine.controls;
     };
 
@@ -183,31 +183,31 @@ define('Scene/Scene', [
      */
     Scene.prototype.add = function(node, nodeProcess) {
 
-        this.layers.push({node: node, process: nodeProcess});
-
         if(node instanceof Globe)
-        {            
+        {
             this.map = node;
             this.managerCommand.addMapProvider(node);
-            this.quadTreeRequest(node.tiles, nodeProcess);
+            nodeProcess = nodeProcess || new NodeProcess(this.currentCamera(), node.size);
+            //this.quadTreeRequest(node.tiles, nodeProcess);
+
         }
 
+        this.layers.push({node: node, process: nodeProcess});
         this.gfxEngine.add3DScene(node.getMesh());
     };
 
     Scene.prototype.addImageryLayer = function(layer) {
-        
+
         var tileProvider = this.managerCommand.getProvider(this.getMap().tiles);
 
         tileProvider.providerWMTS.addLayer(layer);
-
 
         this.managerCommand.addLayer(this.getMap().colorTerrain,tileProvider.providerWMTS);
 
     };
 
-     Scene.prototype.addElevationLayer = function(layer) {
-        
+    Scene.prototype.addElevationLayer = function(layer) {
+
         var tileProvider = this.managerCommand.getProvider(this.getMap().tiles);
 
         tileProvider.providerWMTS.addLayer(layer);
@@ -249,7 +249,7 @@ define('Scene/Scene', [
 
     Scene.prototype.setStreetLevelImageryOn = function(value){
 
-         if(value){
+        if(value){
             if(this.layers[1]) {
 
                 this.layers[1].node.visible = true;
@@ -273,7 +273,7 @@ define('Scene/Scene', [
 
         this.updateScene3D();
     };
-    
+
     return function(coordCarto,debugMode,gLDebug) {
         instanceScene = instanceScene || new Scene(coordCarto,debugMode,gLDebug);
         return instanceScene;

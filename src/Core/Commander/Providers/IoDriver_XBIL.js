@@ -2,7 +2,7 @@
  * Generated On: 2015-10-5
  * Class: IoDriver_XBIL
  */
-/* global Promise*/
+/* global Promise Float32Array*/
 
 define('Core/Commander/Providers/IoDriver_XBIL', ['Core/Commander/Providers/IoDriver'], function(IoDriver) {
 
@@ -25,92 +25,92 @@ define('Core/Commander/Providers/IoDriver_XBIL', ['Core/Commander/Providers/IoDr
     IoDriver_XBIL.prototype = Object.create(IoDriver.prototype);
 
     IoDriver_XBIL.prototype.constructor = IoDriver_XBIL;
-    
+
     IoDriver_XBIL.prototype.parseXBil = function(buffer) {
-        
+
 //        var parseMinMax = function(result,start,length) {
-//                   
+//
 //            for (var i = start; i <  length; i++) {
-//                var val = result.floatArray[i];                   
+//                var val = result.floatArray[i];
 //                if (val > -10.0 && val !== undefined){
 //                    result.max = Math.max(result.max, val);
 //                    result.min = Math.min(result.min, val);
 //                }
-//            }            
-//        };        
-        
+//            }
+//        };
+
         if (buffer){
-            
+
             var result = new portableXBIL(buffer);
-            // Compute min max using subampling            
+            // Compute min max using subampling
             for (var i = 0; i < result.floatArray.length; i+=16) {
-                var val = result.floatArray[i];                   
+                var val = result.floatArray[i];
                 if (val > -10.0 && val !== undefined){
                     result.max = Math.max(result.max, val);
                     result.min = Math.min(result.min, val);
                 }
             }
-            
+
             /*
             var subSize = result.floatArray.length/64;
-            
+
             var arrayP = [];
-            
+
             for (var i = 0; i < result.floatArray.length; i+= subSize )
             {
                 arrayP.push(when(parseMinMax(result,i,subSize)));
             }
-            
+
             when.all(arrayP);
             */
-            if (result.max === -1000000)                           
+            if (result.max === -1000000)
                 return undefined;
-            
+
             return result;
         }
         else
             return undefined;
     };
-    
+
     IoDriver_XBIL.prototype.parseMinMax = function(result/*,start,length*/) {
-        
+
         for (var i = 0; i < result.floatArray.length; i++) {
-            var val = result.floatArray[i];                   
+            var val = result.floatArray[i];
             if (val > -10.0 && val !== undefined){
                 result.max = Math.max(result.max, val);
                 result.min = Math.min(result.min, val);
             }
-        }        
+        }
     };
-    
+
     IoDriver_XBIL.prototype.read = function(url) {
 
         // TODO new Promise is supported?
 
-        //return when.promise(function(resolve, reject) 
-        return new Promise(function(resolve/*, reject*/) 
+        //return when.promise(function(resolve, reject)
+        return new Promise(function(resolve/*, reject*/)
         {
             var xhr = new XMLHttpRequest();
-            
+
             xhr.responseType = "arraybuffer";
-            xhr.crossOrigin = '';          
+            xhr.crossOrigin = '';
             xhr["parseXBil"] = this.parseXBil;
-               
+
             xhr.onload = function() {
-                                                  
+
                 resolve(this.parseXBil(this.response));
-                              
-            };            
-                       
+
+            };
+
             xhr.onerror = function() {
-                
+
                 resolve(undefined);
-                
+
                 this.abort();
-            };            
-            
+            };
+
             xhr.open("GET", url, true);
-            xhr.send(null);           
+            xhr.send(null);
 
         }.bind(this));
     };

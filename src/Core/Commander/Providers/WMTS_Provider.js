@@ -30,31 +30,27 @@ define('Core/Commander/Providers/WMTS_Provider', [
 
         function WMTS_Provider(options) {
             //Constructor
-            
+
             Provider.call(this, new IoDriver_XBIL());
             this.cache = CacheRessource();
             this.ioDriverImage = new IoDriver_Image();
             this.ioDriverXML = new IoDriverXML();
             this.projection = new Projection();
-            this.baseUrl = options.url || "http://wxs.ign.fr/";
-            this.layer   = options.layer || "ORTHOIMAGERY.ORTHOPHOTOS";
-            //this.layer = "GEOGRAPHICALGRIDSYSTEMS.MAPS";
             this.support = options.support || false;
 
+            this.layersWMTS = [];
 
-            this.baseUrlMap = [];
-            
             this.getTextureFloat;
-            
+
             if(this.support)
                 this.getTextureFloat = function(){return new THREE.Texture();};
             else
                 this.getTextureFloat = function(buffer){
-                    
+
                     var texture = new THREE.DataTexture(buffer, 256, 256, THREE.AlphaFormat, THREE.FloatType);
                     texture.needsUpdate = true;
                     return texture;
-                
+
                 };
 
         }
@@ -63,17 +59,25 @@ define('Core/Commander/Providers/WMTS_Provider', [
 
         WMTS_Provider.prototype.constructor = WMTS_Provider;
 
-        WMTS_Provider.prototype.addLayer = function(layer) 
+        WMTS_Provider.prototype.addLayer = function(layer)
         {
 
-            var newBaseUrl =  layer.url +  
-                "?LAYER=" + layer.wmtsOptions.name +
-                "&FORMAT=" +  layer.wmtsOptions.mimetype + 
-                "&SERVICE=WMTS&VERSION=1.0.0" +
-                "&REQUEST=GetTile&STYLE=normal&TILEMATRIXSET=" + layer.wmtsOptions.tileMatrixSet;
+            var options = layer.wmtsOptions;
+            var newBaseUrl =  layer.url +
+                "?LAYER=" + options.name +
+                "&FORMAT=" +  options.mimetype +
+                "&SERVICE=WMTS" +
+                "&VERSION=1.0.0" +
+                "&REQUEST=GetTile&STYLE=normal&TILEMATRIXSET=" + options.tileMatrixSet;
 
-            this.baseUrlMap[layer.id] = newBaseUrl;
+            var arrayLimits = Object.keys(options.tileMatrixSetLimits);
 
+            var size = arrayLimits.length;
+
+            var maxZoom = Number(arrayLimits[size-1]);
+            var minZoom = maxZoom - size + 1;
+
+            this.layersWMTS[layer.id] = {baseUrl : newBaseUrl,tileMatrixSetLimits: options.tileMatrixSetLimits,zoom:{min:minZoom,max:maxZoom}};
         };
 
         /**
@@ -83,23 +87,22 @@ define('Core/Commander/Providers/WMTS_Provider', [
          */
         WMTS_Provider.prototype.url = function(coWMTS,layerId) {
 
-
-            var baseUrl =  this.baseUrlMap[layerId];
+            var baseUrl =  this.layersWMTS[layerId].baseUrl;
 
             return baseUrl + "&TILEMATRIX=" + coWMTS.zoom + "&TILEROW=" + coWMTS.row + "&TILECOL=" + coWMTS.col;
 
-        };        
+        };
 
         /**
-         * return texture float alpha THREE.js of MNT 
+         * return texture float alpha THREE.js of MNT
          * @param {type} coWMTS : coord WMTS
          * @returns {WMTS_Provider_L15.WMTS_Provider.prototype@pro;_IoDriver@call;read@call;then}
          */
         WMTS_Provider.prototype.getElevationTexture = function(coWMTS,layerId) {
-             
-            if (coWMTS === undefined)                
+
+            if (coWMTS === undefined)
                 return when(-2);
-             
+
             var url = this.url(coWMTS,layerId);
 
             var textureCache = this.cache.getRessource(url);
@@ -107,28 +110,29 @@ define('Core/Commander/Providers/WMTS_Provider', [
             if (textureCache !== undefined)
                 return when(textureCache);
 
-            if (coWMTS.zoom <= 2) {
+            var limits = this.layersWMTS[layerId].tileMatrixSetLimits[coWMTS.zoom];
+
+            if (!limits || !coWMTS.isInside(limits)) {
                 var texture = -1;
                 this.cache.addRessource(url, texture);
                 return when(texture);
             }
 
-            return this._IoDriver.read(url).then(function(result) {                                
+            return this._IoDriver.read(url).then(function(result) {
                 if (result !== undefined) {
-                    
+
                     //TODO USE CACHE HERE ???
-                      
+
                     result.texture = this.getTextureFloat(result.floatArray);
                     result.texture.generateMipmaps = false;
                     result.texture.magFilter = THREE.LinearFilter;
-                    result.texture.minFilter = THREE.LinearFilter;                    
-                    
+                    result.texture.minFilter = THREE.LinearFilter;
+
                     // TODO ATTENTION verifier le context
                     result.level = coWMTS.zoom;
-                    
-                    
+
                     this.cache.addRessource(url, result);
-     
+
                     return result;
                 } else {
                     var texture = -1;
@@ -148,7 +152,7 @@ define('Core/Commander/Providers/WMTS_Provider', [
         WMTS_Provider.prototype.getColorTexture = function(coWMTS, pitch,layerId) {
 
             var pack = function(pitch) {
-                this.texture;                
+                this.texture;
                 this.pitch = pitch;
             };
 
@@ -161,11 +165,11 @@ define('Core/Commander/Providers/WMTS_Provider', [
                 return when(result);
             }
             return this.ioDriverImage.read(url).then(function(image) {
-                                
+
                 var texture = this.cache.getRessource(image.src);
-                
-                if(texture)                
-                    result.texture = texture;                                
+
+                if(texture)
+                    result.texture = texture;
                 else
                 {
                     result.texture = new THREE.Texture(image);
@@ -174,68 +178,68 @@ define('Core/Commander/Providers/WMTS_Provider', [
                     result.texture.magFilter = THREE.LinearFilter;
                     result.texture.minFilter = THREE.LinearFilter;
                     result.texture.anisotropy = 16;
-                    result.texture.url = url; 
+                    result.texture.url = url;
                     result.texture['level'] = coWMTS.zoom;
-                
+
                     this.cache.addRessource(url, result.texture);
                 }
-                                        
+
                 return result;
 
             }.bind(this));
 
         };
-        
-        WMTS_Provider.prototype.executeCommand = function(command){                        
-           
-            
+
+        WMTS_Provider.prototype.executeCommand = function(command){
+
+
             if(command.paramsFunction.subLayer === 1)
-            {                         
+            {
                 return this.getColorTextures(command.requester,command.paramsFunction.colorLayerId).then(function(result)
-                {             
-                    this.setTexturesLayer(result,1);                                            
+                {
+                    this.setTexturesLayer(result,1);
                 }.bind(command.requester));
-            }                
+            }
             else if (command.paramsFunction.subLayer === 0)
             {
-                
+
                 var tile = command.requester;
-                
-                var parent = tile.level === tile.levelElevation ? tile : tile.getParentLevel(tile.levelElevation);                
-                
+
+                var parent = tile.level === tile.levelElevation ? tile : tile.getParentLevel(tile.levelElevation);
+
                 if(parent.downScaledLayer(0))
-                {                 
+                {
                     var layerId = command.paramsFunction.elevationLayerId[parent.cooWMTS.zoom > 11 ? 1 : 0];
-                    
+
                     return this.getElevationTexture(parent.cooWMTS,layerId).then(function(terrain)
-                    {            
+                    {
                         this.setTextureElevation(terrain);
-                       
+
                     }.bind(parent)).then(function()
                     {
                         if(this.downScaledLayer(0))
 
                             this.setTextureElevation(-2);
 
-                    }.bind(tile));                                                                         
+                    }.bind(tile));
                 }
                 else
-                {            
-                    tile.setTextureElevation(-2);                    
+                {
+                    tile.setTextureElevation(-2);
                 }
-            }           
+            }
         };
-        
+
         WMTS_Provider.prototype.getColorTextures = function(tile,layerId) {
 
 
            if (tile.cooWMTS.zoom >= 2)
-           {              
-            
+           {
+
                 var promises = [];
                 var lookAtAncestor = tile.currentLevelLayers[1] === -1;
 
-                var box = this.projection.WMTS_WGS84ToWMTS_PM(tile.cooWMTS, tile.bbox); // 
+                var box = this.projection.WMTS_WGS84ToWMTS_PM(tile.cooWMTS, tile.bbox); //
                 var col = box[0].col;
 
                 var colorTexturesNeeded = box[1].row + 1 - box[0].row;
@@ -246,13 +250,13 @@ define('Core/Commander/Providers/WMTS_Provider', [
                     tile.material.nbTextures -= colorTexturesNeeded;
 
                 for (var row = box[0].row; row < box[1].row + 1; row++) {
-                   
+
                    var cooWMTS = new CoordWMTS(box[0].zoom, row, col);
                    var pitch = new THREE.Vector3(0.0,0.0,1.0);
 
-                   if(lookAtAncestor && box[0].zoom > 3)   
-                   {                       
-                        var levelParent = tile.getParentNotDownScaled(1).level + 1;                        
+                   if(lookAtAncestor && box[0].zoom > 3)
+                   {
+                        var levelParent = tile.getParentNotDownScaled(1).level + 1;
                         cooWMTS = this.projection.WMTS_WGS84Parent(cooWMTS,levelParent,pitch);
                    }
 
@@ -262,9 +266,9 @@ define('Core/Commander/Providers/WMTS_Provider', [
 
                 return when.all(promises);
            }
-           else                     
+           else
                 return when();
-                    
+
        };
 
        return WMTS_Provider;
