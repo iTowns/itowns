@@ -36,13 +36,9 @@ define('Core/Commander/Providers/WMTS_Provider', [
             this.ioDriverImage = new IoDriver_Image();
             this.ioDriverXML = new IoDriverXML();
             this.projection = new Projection();
-            this.baseUrl = options.url || "http://wxs.ign.fr/";
-            this.layer   = options.layer || "ORTHOIMAGERY.ORTHOPHOTOS";
-            //this.layer = "GEOGRAPHICALGRIDSYSTEMS.MAPS";
             this.support = options.support || false;
 
-
-            this.baseUrlMap = [];
+            this.layersWMTS = [];
 
             this.getTextureFloat;
 
@@ -72,7 +68,7 @@ define('Core/Commander/Providers/WMTS_Provider', [
                 "&SERVICE=WMTS&VERSION=1.0.0" +
                 "&REQUEST=GetTile&STYLE=normal&TILEMATRIXSET=" + layer.wmtsOptions.tileMatrixSet;
 
-            this.baseUrlMap[layer.id] = newBaseUrl;
+            this.layersWMTS[layer.id] = {baseUrl : newBaseUrl,tileMatrixSetLimits: layer.wmtsOptions.tileMatrixSetLimits};
 
         };
 
@@ -83,8 +79,7 @@ define('Core/Commander/Providers/WMTS_Provider', [
          */
         WMTS_Provider.prototype.url = function(coWMTS,layerId) {
 
-
-            var baseUrl =  this.baseUrlMap[layerId];
+            var baseUrl =  this.layersWMTS[layerId].baseUrl;
 
             return baseUrl + "&TILEMATRIX=" + coWMTS.zoom + "&TILEROW=" + coWMTS.row + "&TILECOL=" + coWMTS.col;
 
@@ -107,7 +102,9 @@ define('Core/Commander/Providers/WMTS_Provider', [
             if (textureCache !== undefined)
                 return when(textureCache);
 
-            if (coWMTS.zoom <= 2) {
+            var limits = this.layersWMTS[layerId].tileMatrixSetLimits[coWMTS.zoom];
+
+            if (!limits || !coWMTS.isInside(limits)) {
                 var texture = -1;
                 this.cache.addRessource(url, texture);
                 return when(texture);
@@ -125,7 +122,6 @@ define('Core/Commander/Providers/WMTS_Provider', [
 
                     // TODO ATTENTION verifier le context
                     result.level = coWMTS.zoom;
-
 
                     this.cache.addRessource(url, result);
 
