@@ -1,4 +1,4 @@
-/* 
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -23,12 +23,12 @@ define('Core/Commander/Providers/BuildingBox_Provider',[
             'Renderer/c3DEngine',
             'Core/Math/Ellipsoid',
             'Core/Geographic/CoordCarto',
-            'Core/Math/CVML'], 
+            'Core/Math/CVML'],
         function(
                 Provider,
                 WFS_Provider,
                 when,
-                THREE,                
+                THREE,
                 CacheRessource,
                 gfxEngine,
                 Ellipsoid,
@@ -39,9 +39,9 @@ define('Core/Commander/Providers/BuildingBox_Provider',[
     function BuildingBox_Provider(options)
     {
         //Constructor
- 
+
        // Provider.call( this,new IoDriver_XBIL());
-       // this.cache         = CacheRessource();        
+       // this.cache         = CacheRessource();
        this.WFS_Provider  = new WFS_Provider(options);
        this.geometry      = null;
        this.geometryRoof  = null;
@@ -53,8 +53,8 @@ define('Core/Commander/Providers/BuildingBox_Provider',[
 
     BuildingBox_Provider.prototype = Object.create( Provider.prototype );
     BuildingBox_Provider.prototype.constructor = BuildingBox_Provider;
-    
-    
+
+
     /**
      * Return url wmts MNT
      * @param {type} coWMTS : coord WMTS
@@ -62,56 +62,56 @@ define('Core/Commander/Providers/BuildingBox_Provider',[
      */
     BuildingBox_Provider.prototype.url = function(longitude,latitude,radius)
     {
-        
+
         //var key    = "wmybzw30d6zg563hjlq8eeqb";
         //var key    = coWMTS.zoom > 11 ? "va5orxd0pgzvq3jxutqfuy0b" : "wmybzw30d6zg563hjlq8eeqb"; // clef pro va5orxd0pgzvq3jxutqfuy0b
-        
+
         var key    = "72hpsel8j8nhb5qgdh07gcyp";
-     
+
         //var layer  = "BDTOPO_BDD_WLD_WGS84G:bati_remarquable,BDTOPO_BDD_WLD_WGS84G:bati_indifferencie"
         var serviceVersionRequestLayer = "service=WFS&version=2.0.0&REQUEST=GetFeature&typeName=BDTOPO_BDD_WLD_WGS84G:bati_remarquable,BDTOPO_BDD_WLD_WGS84G:bati_indifferencie"
-                        
+
         var bottomLeft = new THREE.Vector2(longitude - radius, latitude - radius);
         var topRight   = new THREE.Vector2(longitude + radius, latitude + radius);
-                   
-   
+
+
         var url = "http://wxs.ign.fr/"+key+"/geoportail/wfs?"+serviceVersionRequestLayer+
                   "&bbox="+bottomLeft.x+","+bottomLeft.y+","+topRight.x+
                   ","+topRight.y+",epsg:4326&outputFormat=json";
-        
+
         return url;
     };
-         
+
     BuildingBox_Provider.prototype.getData = function(bbox, altitude){
-     /*   
-       var deferred = when.defer(); 
+     /*
+       var deferred = when.defer();
        deferred = this.WFS_Provider.getData(bbox).then(function(data){this.generateMesh(data,bbox);}.bind(this));
        return deferred;
      */
-    
+
         var deferred = when.defer();
         this.WFS_Provider.getData(bbox).then(function(data){
-            
+
             this.generateMesh(data, bbox, altitude); // console.log(data);
-            deferred.resolve(this.geometry); 
+            deferred.resolve(this.geometry);
         }.bind(this));
-        return deferred.promise; 
-        
+        return deferred.promise;
+
       // return this.WFS_Provider.getData(bbox).then(function(data){this.generateMesh(data,bbox);}.bind(this));
-    };        
-            
+    };
+
     BuildingBox_Provider.prototype.generateMesh = function(elements, bbox, altitude){
-               
+
         //console.log(elements);
-        
+
         var _geometry = new THREE.Geometry(); // for the walls
         var geometry = new THREE.Geometry();  // for the roof
         var suppHeight = 10;   // So we don't cut the roof
-        var ellipsoid  = new Ellipsoid(new THREE.Vector3(6378137, 6356752.3142451793, 6378137)); 
+        var ellipsoid  = new Ellipsoid(new THREE.Vector3(6378137, 6356752.3142451793, 6378137));
         var features = elements.features;
         var altitude_ground  = altitude - 1.5; //35;  // truck height
         //var cPano = new CoordCarto().setFromDegreeGeo(p1.x  ,p1.z, z_min );
-        
+
         for( var r = 0; r < features.length; r++){
 
             var hauteur       = (features[r].properties.hauteur + suppHeight) || 0;
@@ -164,7 +164,7 @@ define('Core/Commander/Providers/BuildingBox_Provider',[
            //var geometry = new THREE.Geometry();  // for the roof
            triangles.forEach(function(t) {
 
-               var pt1  = t.getPoint(0),  
+               var pt1  = t.getPoint(0),
                    pt2  = t.getPoint(1),
                    pt3  = t.getPoint(2);
 
@@ -173,15 +173,15 @@ define('Core/Commander/Providers/BuildingBox_Provider',[
                var coordCarto3 = new CoordCarto().setFromDegreeGeo(pt3.y ,pt3.x, z_min  + hauteur);
 
                var pgeo1 = ellipsoid.cartographicToCartesian(coordCarto1);//{longitude:p1.z, latitude:p1.x, altitude: 0});
-               var pgeo2 = ellipsoid.cartographicToCartesian(coordCarto2);   
-               var pgeo3 = ellipsoid.cartographicToCartesian(coordCarto3); 
+               var pgeo2 = ellipsoid.cartographicToCartesian(coordCarto2);
+               var pgeo3 = ellipsoid.cartographicToCartesian(coordCarto3);
 
                //var geometry = new THREE.Geometry();
                geometry.vertices.push(new THREE.Vector3(pgeo1.x, pgeo1.y, pgeo1.z));
                geometry.vertices.push(new THREE.Vector3(pgeo2.x, pgeo2.y, pgeo2.z));
                geometry.vertices.push(new THREE.Vector3(pgeo3.x, pgeo3.y, pgeo3.z));
 
-               var face = new THREE.Face3(            
+               var face = new THREE.Face3(
                                          geometry.vertices.length -3,
                                          geometry.vertices.length -2,
                                          geometry.vertices.length -1
@@ -189,16 +189,16 @@ define('Core/Commander/Providers/BuildingBox_Provider',[
                geometry.faces.push(face);
 
             });
-                
+
         }
-           
+
         if(this.roadOn)
             this.addRoad(_geometry, bbox, altitude_ground, ellipsoid);
-        
-        
+
+
         _geometry.computeFaceNormals();  // WARNING : VERY IMPORTANT WHILE WORKING WITH RAY CASTING ON CUSTOM MESH
         geometry.computeFaceNormals();
-        
+
         /*
             var matLambert = new THREE.MeshBasicMaterial({color: 0xffffff, transparent: true, opacity: 0.8});
             var _currentMeshForRoof  = new THREE.Mesh(_geometry, matLambert);// //geometryClickToGo,mat);
@@ -221,14 +221,14 @@ define('Core/Commander/Providers/BuildingBox_Provider',[
          this.geometry = _geometry;
          this.pivot = firstPos;
          this.geometryRoof = geometry;
-         
+
          return {geometry:_geometry, pivot: firstPos, geometryRoof: geometry};
-        
+
     };
-    
-    
+
+
     BuildingBox_Provider.prototype.addRoad = function(geometry, bbox, altitude_road, ellipsoid){
-             
+
          // Version using SIMPLE PLANE ROAD for Click and Go
          var ratio = 0.2;
          var roadWidth  = (bbox.maxCarto.longitude - bbox.minCarto.longitude) * ratio;
@@ -256,9 +256,9 @@ define('Core/Commander/Providers/BuildingBox_Provider',[
          geometry.faces.push( new THREE.Face3( len-4,len-3,len-2));
          geometry.faces.push( new THREE.Face3( len-4,len-2,len-1));
     };
-    
+
 
 
     return BuildingBox_Provider;
-    
+
 });

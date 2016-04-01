@@ -91,18 +91,18 @@ define('Scene/NodeProcess', ['Scene/BoundingBox', 'Renderer/Camera', 'Core/Math/
 
         if(params.withUp && node.material.visible && !node.wait )
         {
-            if (sse) 
-                // request level up 
-                params.tree.up(node);                        
-            else 
+            if (sse)
+                // request level up
+                params.tree.up(node);
+            else
                 // request level up other quadtree
-                params.tree.upSubLayer(node);                        
+                params.tree.upSubLayer(node);
         }
         else if (!sse) {
             // request level down
             params.tree.down(node);
         }
-                    
+
     };
 
     /**

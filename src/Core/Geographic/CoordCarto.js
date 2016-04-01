@@ -4,7 +4,7 @@
  * Description: Coordonées cartographiques
  */
 /**
- * 
+ *
  * @param {type} defaultValue
  * @returns {CoordCarto_L9.CoordCarto}
  */

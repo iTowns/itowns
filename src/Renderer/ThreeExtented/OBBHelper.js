@@ -1,4 +1,4 @@
-/* 
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -24,9 +24,9 @@ THREE.OBBHelper = function(OBB, text) {
     THREE.LineSegments.call(this, geometry, new THREE.LineBasicMaterial({
         color: color.getHex()
     }));
-        
+
     var size = OBB.box3D.size();
-      
+
     var geometryText = new THREE.TextGeometry( text, {
 
 					font: font,
@@ -40,11 +40,11 @@ THREE.OBBHelper = function(OBB, text) {
         color: new THREE.Color(1, 0, 0),
         side: THREE.DoubleSide
     }));
-    
+
     this.add(this.textMesh);
-    
+
     if (OBB !== undefined)
-        this.update(OBB);  
+        this.update(OBB);
 
 };
 
@@ -90,13 +90,13 @@ THREE.OBBHelper.prototype.update = function(OBB) {
 
     position.needsUpdate = true;
 
-    this.position.copy(OBB.position);   
+    this.position.copy(OBB.position);
     this.rotation.copy(OBB.rotation);
     this.updateMatrix();
     this.updateMatrixWorld(true);
 
     var size = OBB.box3D.size();
-    
+
     if (this.textMesh) {
         this.textMesh.position.set(0,0,0);
         this.textMesh.translateX(-size.x * 0.45);
