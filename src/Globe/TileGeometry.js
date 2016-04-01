@@ -6,7 +6,7 @@
  * Class: TileGeometry
  * Description: Tuile géométrique. Buffer des vertex et des faces
  */
-
+ /* global Float32Array*/
 define('Globe/TileGeometry', [
     'THREE',
     'Core/defaultValue',
