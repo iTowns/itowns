@@ -58,6 +58,28 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
 
     };
 
+    ApiGlobe.prototype.addImageryLayer = function(layer) {
+
+        var map = this.scene.getMap();
+        var manager = this.scene.managerCommand;
+        var providerWMTS = manager.getProvider(map.tiles).providerWMTS;
+
+        providerWMTS.addLayer(layer);
+        manager.addLayer(map.colorTerrain,providerWMTS);
+
+    };
+
+    ApiGlobe.prototype.addElevationLayer = function(layer) {
+
+        var map = this.scene.getMap();
+        var manager = this.scene.managerCommand;
+        var providerWMTS = manager.getProvider(map.tiles).providerWMTS;
+
+        providerWMTS.addLayer(layer);
+        manager.addLayer(map.elevationTerrain,providerWMTS);
+
+    };
+
     ApiGlobe.prototype.createSceneGlobe = function(coordCarto) {
         // TODO: Normalement la creation de scene ne doit pas etre ici....
         // Deplacer plus tard
@@ -74,7 +96,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
 
         this.scene.add(map);
 
-        this.scene.addImageryLayer({
+        this.addImageryLayer({
             protocol:   "wmts",
             id:         "IGNPO",
             url:        "http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/geoportail/wmts",
@@ -214,7 +236,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
                 }
             });
 
-        this.scene.addElevationLayer({
+        this.addElevationLayer({
             protocol:   "wmts",
             id:         "IGN_MNT",
             url:        "http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/geoportail/wmts",
@@ -288,7 +310,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
                 }
             });
 
-        this.scene.addElevationLayer({
+        this.addElevationLayer({
             protocol:   "wmts",
             id:         "IGN_MNT_HIGHRES",
             url:        "http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/geoportail/wmts",

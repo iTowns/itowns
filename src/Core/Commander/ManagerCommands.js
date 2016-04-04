@@ -90,7 +90,7 @@ define('Core/Commander/ManagerCommands', [
                 return when(0);
             }
 
-            return when.all(this.arrayDeQueue(8))
+            return when.all(this.arrayDeQueue(16))
                 .then(function() {
 
                 // if (this.commandsLength() <= 8)

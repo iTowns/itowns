@@ -37,8 +37,8 @@ define('Globe/BuilderEllipsoidTile',
     // get center tile in cartesian 3D
     BuilderEllipsoidTile.prototype.Center = function(params)
     {
-        params.center3D = this.ellipsoid.cartographicToCartesian(new CoordCarto(params.bbox.center.x, params.bbox.center.y, 0));
-        return params.center3D;
+        params.center = this.ellipsoid.cartographicToCartesian(new CoordCarto(params.bbox.center.x, params.bbox.center.y, 0));
+        return params.center;
     };
 
     // get position 3D cartesian
@@ -83,7 +83,7 @@ define('Globe/BuilderEllipsoidTile',
 
         var cardinals = [];
 
-        var normal = params.center3D.clone().normalize();
+        var normal = params.center.clone().normalize();
 
         var phiStart = params.bbox.minCarto.longitude;
         var phiLength = params.bbox.dimension.x;
@@ -124,7 +124,7 @@ define('Globe/BuilderEllipsoidTile',
         for (var i = 0; i < cardinals.length; i++) {
             cardinals3D.push(this.ellipsoid.cartographicToCartesian(cardinals[i]));
             cardin3DPlane.push(tangentPlane.projectPoint(cardinals3D[i]));
-            vec.subVectors(cardinals3D[i], params.center3D);
+            vec.subVectors(cardinals3D[i], params.center);
             maxHeight = Math.max(maxHeight, cardin3DPlane[i].distanceTo(vec));
             cardin3DPlane[i].applyQuaternion(qRotY);
             maxV.max(cardin3DPlane[i]);
