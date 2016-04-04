@@ -20,7 +20,6 @@ define('Scene/Quadtree', [
     function Quadtree(type, schemeTile, size, link) {
         Layer.call(this, type, size);
 
-
         this.link = link;
         this.schemeTile = schemeTile;
         this.tileType = type;
