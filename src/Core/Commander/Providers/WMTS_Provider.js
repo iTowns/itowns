@@ -209,9 +209,9 @@ define('Core/Commander/Providers/WMTS_Provider', [
 
                 if(parent.downScaledLayer(0))
                 {
-                    var layerId = command.paramsFunction.elevationLayerId[parent.cooWMTS.zoom > 11 ? 1 : 0];
+                    var layerId = command.paramsFunction.elevationLayerId[parent.tileCoord.zoom > 11 ? 1 : 0];
 
-                    return this.getElevationTexture(parent.cooWMTS,layerId).then(function(terrain)
+                    return this.getElevationTexture(parent.tileCoord,layerId).then(function(terrain)
                     {
                         this.setTextureElevation(terrain);
 
