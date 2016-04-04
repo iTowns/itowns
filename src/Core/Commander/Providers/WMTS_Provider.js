@@ -209,9 +209,9 @@ define('Core/Commander/Providers/WMTS_Provider', [
 
                 if(parent.downScaledLayer(0))
                 {
-                    var layerId = command.paramsFunction.elevationLayerId[parent.cooWMTS.zoom > 11 ? 1 : 0];
+                    var layerId = command.paramsFunction.elevationLayerId[parent.tileCoord.zoom > 11 ? 1 : 0];
 
-                    return this.getElevationTexture(parent.cooWMTS,layerId).then(function(terrain)
+                    return this.getElevationTexture(parent.tileCoord,layerId).then(function(terrain)
                     {
                         this.setTextureElevation(terrain);
 
@@ -233,13 +233,14 @@ define('Core/Commander/Providers/WMTS_Provider', [
         WMTS_Provider.prototype.getColorTextures = function(tile,layerId) {
 
 
-           if (tile.cooWMTS.zoom >= 2)
+           if (tile.level >= 2)
            {
 
                 var promises = [];
                 var lookAtAncestor = tile.currentLevelLayers[1] === -1;
 
-                var box = this.projection.WMTS_WGS84ToWMTS_PM(tile.cooWMTS, tile.bbox); //
+                // TODO not generic
+                var box = this.projection.WMTS_WGS84ToWMTS_PM(tile.tileCoord, tile.bbox); //
                 var col = box[0].col;
 
                 var colorTexturesNeeded = box[1].row + 1 - box[0].row;
