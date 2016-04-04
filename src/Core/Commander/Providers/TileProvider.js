@@ -25,8 +25,7 @@ define('Core/Commander/Providers/TileProvider', [
         'Core/Math/Ellipsoid',
         'Globe/BuilderEllipsoidTile',
         'Core/defaultValue',
-        'Scene/BoundingBox',
-        'three'
+        'Scene/BoundingBox'
     ],
     function(
         when,
@@ -38,8 +37,7 @@ define('Core/Commander/Providers/TileProvider', [
         Ellipsoid,
         BuilderEllipsoidTile,
         defaultValue,
-        BoundingBox,
-        THREE
+        BoundingBox
     ) {
 
         function TileProvider(size,gLDebug) {
@@ -105,43 +103,50 @@ define('Core/Commander/Providers/TileProvider', [
             }
         };
 
-        var center = new THREE.Vector3();
-
         TileProvider.prototype.executeCommand = function(command) {
 
             var bbox = command.paramsFunction.bbox;
-            var cooWMTS = this.projection.WGS84toWMTS(bbox);
+
+            // TODO not generic
+            var tileCoord = this.projection.WGS84toWMTS(bbox);
             var parent = command.requester;
 
             // build tile
-            var geometry = undefined; //getGeometry(bbox,cooWMTS);
+            var geometry = undefined; //getGeometry(bbox,tileCoord);
 
-            var tile = new command.type(bbox, cooWMTS, this.builder, this.nNode++, geometry,parent.link,center);
+            var params = {bbox:bbox,zoom:tileCoord.zoom,segment:16,center:null,projected:null}
+
+            var tile = new command.type(params,this.builder);
+
+            tile.tileCoord = tileCoord;
+            tile.material.setUuid(this.nNode++);
+            tile.link = parent.link;
+            tile.geometricError = Math.pow(2, (18 - tileCoord.zoom));
 
             if (geometry) {
-                tile.rotation.set(0, (cooWMTS.col % 2) * (Math.PI * 2.0 / Math.pow(2, cooWMTS.zoom + 1)), 0);
+                tile.rotation.set(0, (tileCoord.col % 2) * (Math.PI * 2.0 / Math.pow(2, tileCoord.zoom + 1)), 0);
             }
 
-            parent.worldToLocal(center);
+            parent.worldToLocal(params.center);
 
-            tile.position.copy(center);
+            tile.position.copy(params.center);
             tile.setVisibility(false);
 
             parent.add(tile);
             tile.updateMatrix();
             tile.updateMatrixWorld();
 
-            var elevationlayerId = command.paramsFunction.elevationLayerId[cooWMTS.zoom > 11 ? 1 : 0];
+            var elevationlayerId = command.paramsFunction.elevationLayerId[tileCoord.zoom > 11 ? 1 : 0];
             var colorlayerId = command.paramsFunction.colorLayerId;
 
-            if(cooWMTS.zoom > 3 )
-                cooWMTS =  undefined;
+            if(tileCoord.zoom > 3 )
+                tileCoord =  undefined;
 
             tile.texturesNeeded =+ 1;
 
             return when.all([
 
-                    this.providerElevationTexture.getElevationTexture(cooWMTS,elevationlayerId).then(function(terrain){
+                    this.providerElevationTexture.getElevationTexture(tileCoord,elevationlayerId).then(function(terrain){
 
                         this.setTextureElevation(terrain);}.bind(tile)),
 
