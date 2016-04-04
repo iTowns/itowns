@@ -32,43 +32,32 @@ define('Globe/TileMesh', [
     var l_ELEVATION = 0;
     var l_COLOR = 1;
 
-    function TileMesh(bbox, cooWMTS, builder, id, geometryCache,link,center) {
+    function TileMesh(params, builder, geometryCache) {
         //Constructor
         NodeMesh.call(this);
 
         this.matrixAutoUpdate = false;
         this.rotationAutoUpdate = false;
 
-        this.level = cooWMTS.zoom;
-        this.cooWMTS = cooWMTS;
-        this.bbox = defaultValue(bbox, new BoundingBox());
-        this.id = id;
-        this.link = link;
-
-        var precision = 16;
-        var levelMax = 18;
-
-        this.geometricError = Math.pow(2, (levelMax - this.level));
-
-        var params = {bbox:this.bbox,zoom:cooWMTS.zoom,segment:precision,center3D:null,projected:null}
+        this.level = params.zoom;
+        this.bbox = defaultValue(params.bbox, new BoundingBox());
 
         this.geometry = defaultValue(geometryCache, new TileGeometry(params, builder));
-        this.normal = params.center3D.clone().normalize();
+        this.normal = params.center.clone().normalize();
 
-        center.copy(params.center3D);
-        this.distance = params.center3D.length();
+        this.distance = params.center.length();
 
         // TODO Why move sphere center
-        this.centerSphere = new THREE.Vector3().addVectors(this.geometry.boundingSphere.center, params.center3D);
+        this.centerSphere = new THREE.Vector3().addVectors(this.geometry.boundingSphere.center, params.center);
 
         this.oSphere = new THREE.Sphere(this.centerSphere.clone(),this.geometry.boundingSphere.radius);
 
         this.texturesNeeded = 0;
-        this.material = new LayeredMaterial(id);
-        this.dot = 0;
+        this.material = new LayeredMaterial();
         this.frustumCulled = false;
         this.levelElevation = this.level;
 
+        // TODO not generic
         for (var i = 0; i < groupelevation.length; i++) {
             var gLev = groupelevation[i];
             if (this.level >= gLev) {
@@ -82,37 +71,37 @@ define('Globe/TileMesh', [
         this.currentLevelLayers[l_ELEVATION] = -1;
         this.currentLevelLayers[l_COLOR] = -1;
 
-        var showHelper = true;
-        showHelper = false;
-
-        if (showHelper && this.level >= 2) {
-
-            // TODO Dispose HELPER!!!
-            var text = (this.level + 1).toString();
-
-            if(showHelper)
-                this.helper = new THREE.OBBHelper(this.geometry.OBB, text);
-            else
-                this.helper  = new THREE.SphereHelper(this.geometry.boundingSphere.radius);
-
-            if (this.helper instanceof THREE.SphereHelper)
-
-                this.helper.position.add(params.center3D);
-
-            else if (this.helper instanceof THREE.OBBHelper)
-
-                this.helper.translateZ(this.distance);
-
-            if(this.helper)
-                this.link.add(this.helper);
-
-        }
-
     }
 
     TileMesh.prototype = Object.create(NodeMesh.prototype);
 
     TileMesh.prototype.constructor = TileMesh;
+
+    TileMesh.prototype.buildHelper = function() {
+
+        // TODO Dispose HELPER!!!
+        var text = (this.level + 1).toString();
+
+        var showHelperBox = true;
+
+        if(showHelperBox)
+            this.helper = new THREE.OBBHelper(this.geometry.OBB, text);
+        else
+            this.helper  = new THREE.SphereHelper(this.geometry.boundingSphere.radius);
+
+        if (this.helper instanceof THREE.SphereHelper)
+
+            this.helper.position.add(new THREE.Vector3().setFromMatrixPosition(this.matrixWorld));
+
+        else if (this.helper instanceof THREE.OBBHelper)
+
+            this.helper.translateZ(this.distance);
+
+        this.link.add(this.helper);
+
+    };
+
+
 
     TileMesh.prototype.dispose = function() {
         // TODO à mettre dans node mesh
@@ -228,7 +217,7 @@ define('Globe/TileMesh', [
                 this.currentLevelLayers[l_ELEVATION] = ancestor.currentLevelLayers[l_ELEVATION];
             }
             else
-                this.currentLevelLayers[l_ELEVATION] = -2; // TODO /!\ debug but why
+                this.currentLevelLayers[l_ELEVATION] = -2;
 
         } else {
 
