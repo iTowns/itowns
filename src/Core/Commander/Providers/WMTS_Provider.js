@@ -232,9 +232,10 @@ define('Core/Commander/Providers/WMTS_Provider', [
 
         WMTS_Provider.prototype.getColorTextures = function(tile,layerId) {
 
+            var layer = this.layersWMTS[layerId];
 
-           if (tile.level >= 2)
-           {
+            if (tile.level >= layer.zoom.min)
+            {
 
                 var promises = [];
                 var lookAtAncestor = tile.currentLevelLayers[1] === -1;
@@ -266,8 +267,8 @@ define('Core/Commander/Providers/WMTS_Provider', [
                 }
 
                 return when.all(promises);
-           }
-           else
+            }
+            else
                 return when();
 
        };
