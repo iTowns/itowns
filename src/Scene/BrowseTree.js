@@ -163,7 +163,8 @@ define('Scene/BrowseTree', ['Globe/TileMesh', 'THREE'], function( TileMesh, THRE
         for (var i = 0; i < node.children.length; i++) {
             var child = node.children[i];
             // TODO node.wait === true ---> delete child and switch to node.wait = false
-            if (this._clean(child, level, camera) && ((child.level >= level && child.children.length === 0 && !process.checkSSE(child, camera) && !node.wait) || node.level === 2))
+
+            if (this._clean(child, level,process, camera) && ((child.level >= level && child.children.length === 0 && !process.checkSSE(child, camera) && !node.wait) || node.level === 2))
                 childrenCleaned++;
         }
 
