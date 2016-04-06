@@ -623,7 +623,7 @@ THREE.GlobeControls = function(object, domElement, engine) {
                 scope.ptScreenClick.x = event.clientX;
                 scope.ptScreenClick.y = event.clientY;
 
-                var point = scope.engine.getPickingPosition(scope.ptScreenClick,selectMode ? scope.engine.scene : undefined);
+                var point = scope.engine.getPickingPositionFromDepth(scope.ptScreenClick,selectMode ? scope.engine.scene : undefined);
 
                 scope.engine.renderScene();
                 if(point)
@@ -746,7 +746,7 @@ THREE.GlobeControls = function(object, domElement, engine) {
     function newTarget() {
         // Update target camera {START}
 
-        var positionTarget = scope.engine.getPickingPosition();
+        var positionTarget = scope.engine.getPickingPositionFromDepth();
         scope.engine.renderScene();
         var distanceTarget = positionTarget.distanceTo(scope.object.position);
 

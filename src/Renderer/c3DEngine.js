@@ -4,7 +4,7 @@
  * Description: 3DEngine est l'interface avec le framework webGL.
  */
 
- /* global Float32Array*/
+ /* global Float32Array Float64Array*/
 
 define('Renderer/c3DEngine', [
     'THREE',
@@ -59,16 +59,19 @@ define('Renderer/c3DEngine', [
 
         var material = new BasicMaterial(new THREE.Color(1, 0, 0));
         var material2 = new BasicMaterial(new THREE.Color(0, 0, 1));
-        //var geometry = new THREE.CylinderGeometry(0.6, 0.01, 2, 32);
-        var geometry = new THREE.SphereGeometry(0.6);
-        this.dummy = new THREE.Mesh(geometry, material);
-        this.dummy2 = new THREE.Mesh(geometry, material2);
+        var geometry = new THREE.CylinderGeometry(0.6, 0.01, 2, 32);
+        //var geometry = new THREE.SphereGeometry(0.6);
+        this.dummy_01 = new THREE.Mesh(geometry, material);
+        this.dummy_02 = new THREE.Mesh(geometry, material2);
 
-        this.dummy2.material.enableRTC(false);
-        this.dummy.material.enableRTC(false);
+        this.dummy_02.material.enableRTC(false);
+        this.dummy_01.material.enableRTC(false);
 
-        this.scene3D.add(this.dummy);
-        this.scene3D.add(this.dummy2);
+        this.dummys = new THREE.Object3D();
+        this.dummys.add(this.dummy_01);
+        this.dummys.add(this.dummy_02);
+
+        this.scene3D.add(this.dummys);
 
         this.pickingTexture = new THREE.WebGLRenderTarget(this.width, this.height);
         this.pickingTexture.texture.minFilter = THREE.LinearFilter;
@@ -390,9 +393,9 @@ define('Renderer/c3DEngine', [
 
     c3DEngine.prototype.updatePositionBuffer = function() {
         this.camera.camera3D.updateMatrixWorld();
-        this.dummy.visible = false;
+        this.dummys.visible = false;
         this.positionBuffer = this.renderTobuffer(0, 0, this.width, this.height, RENDER.PICKING);
-        this.dummy.visible = true;
+        this.dummys.visible = true;
         this.renderScene(); // TODO debug to remove white screen, but why?
     };
 
@@ -434,49 +437,16 @@ define('Renderer/c3DEngine', [
 
         camera.updateMatrixWorld();
 
-        this.dummy.visible = false;
-        this.dummy2.visible = false;
+        this.dummys.visible = false;
         var buffer = this.renderTobuffer(mouse.x, this.height - mouse.y, 1, 1, RENDER.PICKING);
-        this.dummy.visible = true;
-        this.dummy2.visible = true;
+        this.dummys.visible = true;
 
         var glslPosition = new THREE.Vector3().fromArray(buffer);
 
         if (scene)
             scene.selectNodeId(buffer[3]);
 
-        // var raycaster = new THREE.Raycaster();
-        // var mouse2 = new THREE.Vector2();
-
-        // mouse2.x =   ( (mouse.x) / this.width  ) * 2 - 1;
-        // mouse2.y = - ( (mouse.y) / this.height ) * 2 + 1;
-
-        // raycaster.setFromCamera(mouse2,camera);
-
-        // var ray = raycaster.ray.clone();
-        // var position = camera.position.clone();
-
-        // ATTENTION DIRECTION FAUSSE ??!?!??!!!§§§
-        //var position = ray.origin.clone();
-
-        // mouse2.x = 0;
-        // mouse2.y = 0;
-
-        // raycaster.setFromCamera(mouse2,camera);
-
-        // var dirCam = raycaster.ray.direction;
-        // var angle = dirCam.angleTo(ray.direction);
-
-        // var depth = buffer[3] / Math.cos(angle);
-
-        // position.add(ray.direction.clone().setLength(depth));
-
-         var worldPosition = glslPosition.applyMatrix4(camera.matrixWorld);
-
-        // var direction = worldPosition.clone().sub(camera.position).normalize();
-
-        // this.placeDummy(this.dummy,worldPosition);
-        // this.placeDummy(this.dummy2,position);
+        var worldPosition = glslPosition.applyMatrix4(camera.matrixWorld);
 
         if(worldPosition.length()> 10000000)
             return undefined;
@@ -485,13 +455,69 @@ define('Renderer/c3DEngine', [
 
     };
 
+    c3DEngine.prototype.getPickingPositionFromDepth = function() {
+
+        var matrix = new THREE.Matrix4();
+        matrix.elements = new Float64Array(16); // /!\ WARNING Matrix JS are in Float32Array
+        var raycaster = new THREE.Raycaster();
+        var screen = new THREE.Vector2();
+        var pickWorldPosition = new THREE.Vector3();
+        var ray = new THREE.Ray();
+
+        return function getPickingPositionFromDepth(mouse/*, scene*/) {
+
+            if (mouse === undefined)
+                mouse = new THREE.Vector2(Math.floor(this.width / 2), Math.floor(this.height / 2));
+
+            var camera = this.camera.camera3D;
+
+            camera.updateMatrixWorld();
+
+            this.dummys.visible = false;
+            var buffer = this.renderTobuffer(mouse.x, this.height - mouse.y, 1, 1, RENDER.PICKING);
+            this.dummys.visible = true;
+
+            screen.x =   ( (mouse.x) / this.width  ) * 2 - 1;
+            screen.y = - ( (mouse.y) / this.height ) * 2 + 1;
+
+            camera.matrixWorld.setPosition(camera.position);
+
+            ray.origin.copy( camera.position );
+
+            ray.direction.set( screen.x, screen.y, 0.5 );
+            matrix.multiplyMatrices( camera.matrixWorld, matrix.getInverse( camera.projectionMatrix ) );
+            ray.direction.applyProjection( matrix );
+            ray.direction.sub( ray.origin );
+
+            screen.x = 0;
+            screen.y = 0;
+
+            raycaster.setFromCamera(screen,camera);
+
+            var dirCam = raycaster.ray.direction;
+            var angle = dirCam.angleTo(ray.direction);
+
+            var depth = buffer[3] / Math.cos(angle);
+
+            pickWorldPosition.addVectors(camera.position,ray.direction.setLength(depth));
+
+            //this.placeDummy(this.dummy_02,pickWorldPosition);
+
+            if(pickWorldPosition.length()> 10000000)
+                return undefined;
+
+            return pickWorldPosition;
+        };
+
+    }();
+
     c3DEngine.prototype.placeDummy = function(dummy, position) {
         dummy.position.copy(position);
         var size = position.clone().sub(this.camera.position()).length() / 200; // TODO distance
         dummy.scale.copy(new THREE.Vector3(size, size, size));
-        //dummy.lookAt(new THREE.Vector3());
-        //dummy.quaternion.multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), -Math.PI / 2));
-        //dummy.translateY(size);
+        dummy.lookAt(new THREE.Vector3());
+        dummy.quaternion.multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), -Math.PI / 2));
+        dummy.translateY(size);
         dummy.updateMatrix();
         dummy.updateMatrixWorld();
     };

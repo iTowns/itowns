@@ -4,6 +4,7 @@
  * Description: La camera scene, interface avec la camera du 3DEngine.
  */
 
+/* global Float64Array*/
 
 define('Renderer/Camera', ['Scene/Node', 'THREE'], function(Node, THREE) {
 
@@ -16,6 +17,9 @@ define('Renderer/Camera', ['Scene/Node', 'THREE'], function(Node, THREE) {
         this.FOV = 30;
 
         this.camera3D = new THREE.PerspectiveCamera(this.FOV, this.ratio);
+
+        this.camera3D.matrixWorld.elements = new Float64Array(16);
+
         this.camera3D.matrixAutoUpdate = false;
         this.camera3D.rotationAutoUpdate = false;
 
