@@ -84,7 +84,7 @@ define('Scene/Scene', [
     };
 
     Scene.prototype.getPickPosition = function (mouse){
-        return this.gfxEngine.getPickingPosition(mouse);
+        return this.gfxEngine.getPickingPositionFromDepth(mouse);
     };
 
     Scene.prototype.getEllipsoid = function(){
