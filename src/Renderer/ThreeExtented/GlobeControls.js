@@ -74,7 +74,7 @@ THREE.GlobeControls = function(object, domElement, engine) {
     var selectMode = false;
     //selectMode = true;
 
-    var rayonPointGlobe = 6378137;
+    var rayonPointGlobe = engine.size;
     var raycaster = new THREE.Raycaster();
 
     // How far you can orbit horizontally, upper and lower limits.
