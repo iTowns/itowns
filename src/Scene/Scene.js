@@ -44,6 +44,7 @@ define('Scene/Scene', [
             throw new Error("Cannot instantiate more than one Scene");
         }
 
+        // /!\ Doesn't work
         this.size = {x:6378137,y: 6356752.3142451793,z:6378137};
 
         var positionCamera = new Ellipsoid(this.size).cartographicToCartesian(new CoordCarto().setFromDegreeGeo(coordCarto.lat, coordCarto.lon, coordCarto.alt));

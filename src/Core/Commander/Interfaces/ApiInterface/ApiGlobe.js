@@ -88,11 +88,11 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         var debugMode = false;
 
         //gLDebug = true; // true to support GLInspector addon
-        // debugMode = true;
+        //debugMode = true;
 
         this.scene = Scene(coordCarto,debugMode,gLDebug);
 
-        var map = new Globe(gLDebug);
+        var map = new Globe(this.scene.size,gLDebug);
 
         this.scene.add(map);
 

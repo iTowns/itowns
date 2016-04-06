@@ -67,8 +67,8 @@ define('Renderer/c3DEngine', [
         this.dummy2.material.enableRTC(false);
         this.dummy.material.enableRTC(false);
 
-        // this.scene3D.add(this.dummy);
-        // this.scene3D.add(this.dummy2);
+        this.scene3D.add(this.dummy);
+        this.scene3D.add(this.dummy2);
 
         this.pickingTexture = new THREE.WebGLRenderTarget(this.width, this.height);
         this.pickingTexture.texture.minFilter = THREE.LinearFilter;
@@ -445,35 +445,38 @@ define('Renderer/c3DEngine', [
         if (scene)
             scene.selectNodeId(buffer[3]);
 
-        /*
-        var raycaster = new THREE.Raycaster();
-        var mouse2 = new THREE.Vector2();
+        // var raycaster = new THREE.Raycaster();
+        // var mouse2 = new THREE.Vector2();
 
-        mouse2.x =   ( mouse.x / this.width ) * 2 - 1;
-        mouse2.y = - ( mouse.y / this.height ) * 2 + 1;
+        // mouse2.x =   ( (mouse.x) / this.width  ) * 2 - 1;
+        // mouse2.y = - ( (mouse.y) / this.height ) * 2 + 1;
 
-        raycaster.setFromCamera(mouse2,camera);
+        // raycaster.setFromCamera(mouse2,camera);
 
-        var ray = raycaster.ray;
-        var depth = buffer[3];
-        var position = camera.position.clone();
+        // var ray = raycaster.ray.clone();
+        // var position = camera.position.clone();
 
-        ray.direction.setLength(depth)
+        // ATTENTION DIRECTION FAUSSE ??!?!??!!!§§§
+        //var position = ray.origin.clone();
 
-        ray.origin.add(ray.direction);
-        position.add(ray.direction);
+        // mouse2.x = 0;
+        // mouse2.y = 0;
 
+        // raycaster.setFromCamera(mouse2,camera);
 
-        //console.log(ray.origin,worldPosition);
+        // var dirCam = raycaster.ray.direction;
+        // var angle = dirCam.angleTo(ray.direction);
 
-        this.placeDummy(this.dummy,worldPosition);
+        // var depth = buffer[3] / Math.cos(angle);
 
-        this.placeDummy(this.dummy2,position);
+        // position.add(ray.direction.clone().setLength(depth));
 
-        console.log(camera.position.distanceTo(position)-camera.position.distanceTo(worldPosition));
-        */
+         var worldPosition = glslPosition.applyMatrix4(camera.matrixWorld);
 
-       var worldPosition = glslPosition.applyMatrix4(camera.matrixWorld);
+        // var direction = worldPosition.clone().sub(camera.position).normalize();
+
+        // this.placeDummy(this.dummy,worldPosition);
+        // this.placeDummy(this.dummy2,position);
 
         if(worldPosition.length()> 10000000)
             return undefined;
