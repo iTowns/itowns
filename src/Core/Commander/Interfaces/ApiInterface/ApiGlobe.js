@@ -88,11 +88,11 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         var debugMode = false;
 
         //gLDebug = true; // true to support GLInspector addon
-        // debugMode = true;
+        //debugMode = true;
 
         this.scene = Scene(coordCarto,debugMode,gLDebug);
 
-        var map = new Globe(gLDebug);
+        var map = new Globe(this.scene.size,gLDebug);
 
         this.scene.add(map);
 
@@ -106,7 +106,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
                     mimetype: "image/jpeg",
                     tileMatrixSet: "WGS84G",
                     tileMatrixSetLimits: {
-                        "0": {
+                       /* "0": {
                             "minTileRow": 0,
                             "maxTileRow": 1,
                             "minTileCol": 0,
@@ -117,7 +117,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
                             "maxTileRow": 2,
                             "minTileCol": 0,
                             "maxTileCol": 2
-                        },
+                        },*/
                         "2": {
                             "minTileRow": 0,
                             "maxTileRow": 4,

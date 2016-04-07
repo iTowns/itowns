@@ -1,6 +1,6 @@
 
 #ifdef USE_LOGDEPTHBUF
-    
+
     #define EPSILON 1e-6
     #ifdef USE_LOGDEPTHBUF_EXT
 
@@ -32,18 +32,18 @@ varying vec3        vNormal;
 varying vec4        pos;
 
 void main() {
-        
-        vUv_0    = uv;        
+
+        vUv_0    = uv;
         vUv_1    = uv1;
 
         vec4 vPosition;
 
         if(nbTextures[0] > 0)
         {
-            vec2    vVv = vec2(vUv_0.x*pitScale_L00[0].z + pitScale_L00[0].x,vUv_0.y*pitScale_L00[0].z + pitScale_L00[0].y);                
+            vec2    vVv = vec2(vUv_0.x*pitScale_L00[0].z + pitScale_L00[0].x,vUv_0.y*pitScale_L00[0].z + pitScale_L00[0].y);
             float   dv  = max(texture2D( dTextures_00[0], vVv ).w, 0.);
             vNormal     = normal;
-            vPosition   = vec4( position +  vNormal  * dv ,1.0 );            
+            vPosition   = vec4( position +  vNormal  * dv ,1.0 );
         }
         else
             vPosition = vec4( position ,1.0 );
@@ -54,11 +54,11 @@ void main() {
         mat4 projModelViewMatrix = (RTC == 0) ? projectionMatrix * modelViewMatrix : mVPMatRTC;
 
         gl_Position = projModelViewMatrix * vPosition;
-                
+
         #ifdef USE_LOGDEPTHBUF
 
             gl_Position.z = log2(max( EPSILON, gl_Position.w + 1.0 )) * logDepthBufFC;
-            
+
             #ifdef USE_LOGDEPTHBUF_EXT
 
                 vFragDepth = 1.0 + gl_Position.w;
@@ -70,5 +70,5 @@ void main() {
             #endif
 
         #endif
-        
-}   
+
+}

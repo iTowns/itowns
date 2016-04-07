@@ -4,22 +4,24 @@
  * Description: 3DEngine est l'interface avec le framework webGL.
  */
 
- /* global Float32Array*/
+ /* global Uint8Array Float64Array*/
 
 define('Renderer/c3DEngine', [
     'THREE',
     'GlobeControls',
     'Renderer/Camera',
-    'Globe/Atmosphere',
     'Renderer/DepthMaterial',
-    'Renderer/BasicMaterial'
+    'Renderer/BasicMaterial',
+    'Globe/Atmosphere',
+    'Core/System/Capabilities'
 ], function(
     THREE,
     GlobeControls,
     Camera,
-    Atmosphere,
     DepthMaterial,
-    BasicMaterial) {
+    BasicMaterial,
+    Atmosphere,
+    Capabilities) {
 
     var instance3DEngine = null;
 
@@ -37,6 +39,8 @@ define('Renderer/c3DEngine', [
 
         THREE.ShaderChunk["logdepthbuf_pars_vertex"];
 
+        var caps = new Capabilities();
+        var NOIE = !caps.isInternetExplorer();
         this.gLDebug = gLDebug;
 
         this.debug = debugMode;
@@ -44,7 +48,6 @@ define('Renderer/c3DEngine', [
         this.width = this.debug ? window.innerWidth * 0.5 : window.innerWidth;
         this.height = window.innerHeight;
         this.camDebug = undefined;
-        //this.size = 1.0;
         this.dnear = 0.0;
         this.dfar = 0.0;
         this.stateRender = RENDER.FINAL;
@@ -61,19 +64,22 @@ define('Renderer/c3DEngine', [
         var material = new BasicMaterial(new THREE.Color(1, 0, 0));
         var material2 = new BasicMaterial(new THREE.Color(0, 0, 1));
         var geometry = new THREE.CylinderGeometry(0.6, 0.01, 2, 32);
-        this.dummy = new THREE.Mesh(geometry, material);
-        this.dummy2 = new THREE.Mesh(geometry, material2);
+        //var geometry = new THREE.SphereGeometry(0.6);
+        this.dummy_01 = new THREE.Mesh(geometry, material);
+        this.dummy_02 = new THREE.Mesh(geometry, material2);
 
-        this.dummy2.material.enableRTC(false);
-        this.dummy.material.enableRTC(false);
+        this.dummy_02.material.enableRTC(false);
+        this.dummy_01.material.enableRTC(false);
 
-        //        this.scene3D.add(this.dummy);
-        //        this.scene3D.add(this.dummy2);
+        this.dummys = new THREE.Object3D();
+        this.dummys.add(this.dummy_01);
+        this.dummys.add(this.dummy_02);
+
+        this.scene3D.add(this.dummys);
 
         this.pickingTexture = new THREE.WebGLRenderTarget(this.width, this.height);
         this.pickingTexture.texture.minFilter = THREE.LinearFilter;
         this.pickingTexture.texture.generateMipmaps = false;
-        this.pickingTexture.texture.type = THREE.FloatType;
         this.pickingTexture.depthBuffer = true;
 
         this.renderScene = function() {
@@ -132,10 +138,8 @@ define('Renderer/c3DEngine', [
 
         }.bind(this);
 
-
         this.scene = scene;
         this.size = this.scene.size.x;
-
 
         //
         // init camera
@@ -168,7 +172,7 @@ define('Renderer/c3DEngine', [
         this.renderer = new THREE.WebGLRenderer({
             antialias: true,
             alpha: true,
-            logarithmicDepthBuffer: this.gLDebug ? false : true
+            logarithmicDepthBuffer: this.gLDebug || !NOIE ? false : true
         });
         this.renderer.setPixelRatio(window.devicePixelRatio);
         this.renderer.setSize(window.innerWidth, window.innerHeight);
@@ -360,7 +364,8 @@ define('Renderer/c3DEngine', [
         //this.renderer.setScissorTest ( false);
         this.setStateRender(originalState);
 
-        var pixelBuffer = new Float32Array(width * height * 4);
+        //var pixelBuffer = new Float32Array(width * height * 4);
+        var pixelBuffer = new Uint8Array( 4 );
         this.renderer.readRenderTargetPixels(this.pickingTexture, x, y, width, height, pixelBuffer);
 
         return pixelBuffer;
@@ -392,11 +397,10 @@ define('Renderer/c3DEngine', [
 
     c3DEngine.prototype.updatePositionBuffer = function() {
         this.camera.camera3D.updateMatrixWorld();
-        this.dummy.visible = false;
+        this.dummys.visible = false;
         this.positionBuffer = this.renderTobuffer(0, 0, this.width, this.height, RENDER.PICKING);
-        this.dummy.visible = true;
+        this.dummys.visible = true;
         this.renderScene(); // TODO debug to remove white screen, but why?
-
     };
 
     c3DEngine.prototype.pickingInPositionBuffer = function(mouse, scene) {
@@ -433,35 +437,20 @@ define('Renderer/c3DEngine', [
         if (mouse === undefined)
             mouse = new THREE.Vector2(Math.floor(this.width / 2), Math.floor(this.height / 2));
 
-        this.camera.camera3D.updateMatrixWorld();
+        var camera = this.camera.camera3D;
 
-        this.dummy.visible = false;
+        camera.updateMatrixWorld();
 
+        this.dummys.visible = false;
         var buffer = this.renderTobuffer(mouse.x, this.height - mouse.y, 1, 1, RENDER.PICKING);
-        this.dummy.visible = true;
+        this.dummys.visible = true;
 
         var glslPosition = new THREE.Vector3().fromArray(buffer);
 
         if (scene)
             scene.selectNodeId(buffer[3]);
 
-        /*
-        var raycaster = new THREE.Raycaster();
-        var mouse2 = new THREE.Vector2();
-
-        mouse2.x =   ( mouse.x / window.innerWidth ) * 2 - 1;
-        mouse2.y = - ( mouse.y / window.innerHeight ) * 2 + 1;
-
-        raycaster.setFromCamera(mouse2,this.camera.camera3D);
-
-        var ray = raycaster.ray;
-
-        console.log(ray.direction);
-
-        var depth = buffer[3];
-        */
-
-        var worldPosition = glslPosition.applyMatrix4(this.camera.camera3D.matrixWorld);
+        var worldPosition = glslPosition.applyMatrix4(camera.matrixWorld);
 
         if(worldPosition.length()> 10000000)
             return undefined;
@@ -469,6 +458,73 @@ define('Renderer/c3DEngine', [
         return worldPosition;
 
     };
+
+    c3DEngine.prototype.getPickingPositionFromDepth = function() {
+
+        var matrix = new THREE.Matrix4();
+        matrix.elements = new Float64Array(16); // /!\ WARNING Matrix JS are in Float32Array
+        var raycaster = new THREE.Raycaster();
+        var screen = new THREE.Vector2();
+        var pickWorldPosition = new THREE.Vector3();
+        var ray = new THREE.Ray();
+        var depthRGBA = new THREE.Vector4();
+
+        var  unpack1K  = function (color) {
+
+            var bitSh = new THREE.Vector4( 1.0/( 256.0 * 256.0 * 256.0 ),1.0/( 256.0 * 256.0 ), 1.0/256.0, 1.0 );
+            return bitSh.dot(color) * 100000000.0;
+        }
+
+        return function getPickingPositionFromDepth(mouse/*, scene*/) {
+
+            if (mouse === undefined)
+                mouse = new THREE.Vector2(Math.floor(this.width / 2), Math.floor(this.height / 2));
+
+            var camera = this.camera.camera3D;
+
+            camera.updateMatrixWorld();
+
+            this.dummys.visible = false;
+            var buffer = this.renderTobuffer(mouse.x, this.height - mouse.y, 1, 1, RENDER.PICKING);
+            this.dummys.visible = true;
+
+            screen.x =   ( (mouse.x) / this.width  ) * 2 - 1;
+            screen.y = - ( (mouse.y) / this.height ) * 2 + 1;
+
+            camera.matrixWorld.setPosition(camera.position);
+
+            // Origin
+            ray.origin.copy( camera.position );
+
+            // Direction
+            ray.direction.set( screen.x, screen.y, 0.5 );
+            // Unproject
+            matrix.multiplyMatrices( camera.matrixWorld, matrix.getInverse( camera.projectionMatrix ) );
+            ray.direction.applyProjection( matrix );
+            ray.direction.sub( ray.origin );
+
+            screen.x = 0;
+            screen.y = 0;
+
+            raycaster.setFromCamera(screen,camera);
+
+            var dirCam = raycaster.ray.direction;
+            var angle = dirCam.angleTo(ray.direction);
+
+            depthRGBA.fromArray(buffer).divideScalar(255.0);
+            var depth = unpack1K(depthRGBA) / Math.cos(angle);
+
+            pickWorldPosition.addVectors(camera.position,ray.direction.setLength(depth));
+
+            //this.placeDummy(this.dummy_02,pickWorldPosition);
+
+            if(pickWorldPosition.length()> 10000000)
+                return undefined;
+
+            return pickWorldPosition;
+        };
+
+    }();
 
     c3DEngine.prototype.placeDummy = function(dummy, position) {
         dummy.position.copy(position);
