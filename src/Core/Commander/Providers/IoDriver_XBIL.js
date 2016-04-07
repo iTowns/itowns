@@ -2,9 +2,9 @@
  * Generated On: 2015-10-5
  * Class: IoDriver_XBIL
  */
-/* global Promise Float32Array*/
+/* global Float32Array*/
 
-define('Core/Commander/Providers/IoDriver_XBIL', ['Core/Commander/Providers/IoDriver'], function(IoDriver) {
+define('Core/Commander/Providers/IoDriver_XBIL', ['Core/Commander/Providers/IoDriver','when'], function(IoDriver,when) {
 
 
     var portableXBIL = function(buffer) {
@@ -87,8 +87,8 @@ define('Core/Commander/Providers/IoDriver_XBIL', ['Core/Commander/Providers/IoDr
 
         // TODO new Promise is supported?
 
-        //return when.promise(function(resolve, reject)
-        return new Promise(function(resolve/*, reject*/)
+        return when.promise(function(resolve/*, reject*/)
+        //return new Promise(function(resolve/*, reject*/)
         {
             var xhr = new XMLHttpRequest();
 

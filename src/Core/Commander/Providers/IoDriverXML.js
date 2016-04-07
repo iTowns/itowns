@@ -3,9 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-/* global Promise*/
+/* global */
 
-define('Core/Commander/Providers/IoDriverXML', ['Core/Commander/Providers/IoDriver'], function(IoDriver) {
+define('Core/Commander/Providers/IoDriverXML', ['Core/Commander/Providers/IoDriver','when'], function(IoDriver,when) {
 
 
     function IoDriverXML() {
@@ -21,8 +21,8 @@ define('Core/Commander/Providers/IoDriverXML', ['Core/Commander/Providers/IoDriv
     IoDriverXML.prototype.read = function(url) {
 
 
-        //return when.promise(function(resolve, reject, notify)
-        return new Promise(function(resolve, reject)
+        return when.promise(function(resolve, reject)
+        //return new Promise(function(resolve, reject)
         {
             var xhr = new XMLHttpRequest();
 
