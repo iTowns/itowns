@@ -12,14 +12,16 @@ define('Renderer/c3DEngine', [
     'Renderer/Camera',
     'Renderer/DepthMaterial',
     'Renderer/BasicMaterial',
-    'Globe/Atmosphere'
+    'Globe/Atmosphere',
+    'Core/System/Capabilities'
 ], function(
     THREE,
     GlobeControls,
     Camera,
     DepthMaterial,
     BasicMaterial,
-    Atmosphere) {
+    Atmosphere,
+    Capabilities) {
 
     var instance3DEngine = null;
 
@@ -37,6 +39,8 @@ define('Renderer/c3DEngine', [
 
         THREE.ShaderChunk["logdepthbuf_pars_vertex"];
 
+        var caps = new Capabilities();
+        var NOIE = !caps.isInternetExplorer();
         this.gLDebug = gLDebug;
 
         this.debug = debugMode;
@@ -76,7 +80,6 @@ define('Renderer/c3DEngine', [
         this.pickingTexture = new THREE.WebGLRenderTarget(this.width, this.height);
         this.pickingTexture.texture.minFilter = THREE.LinearFilter;
         this.pickingTexture.texture.generateMipmaps = false;
-        //this.pickingTexture.texture.type = THREE.FloatType;
         this.pickingTexture.depthBuffer = true;
 
         this.renderScene = function() {
@@ -169,7 +172,7 @@ define('Renderer/c3DEngine', [
         this.renderer = new THREE.WebGLRenderer({
             antialias: true,
             alpha: true,
-            logarithmicDepthBuffer: this.gLDebug ? false : true
+            logarithmicDepthBuffer: this.gLDebug || !NOIE ? false : true
         });
         this.renderer.setPixelRatio(window.devicePixelRatio);
         this.renderer.setSize(window.innerWidth, window.innerHeight);
