@@ -52,7 +52,7 @@ void main() {
         {
             vec2    vVv = vec2(vUv_0.x*pitScale_L00[0].z + pitScale_L00[0].x,vUv_0.y*pitScale_L00[0].z + pitScale_L00[0].y);
 
-            #ifdef USE_LOGDEPTHBUF
+            #ifdef RGBA_ELEVATION
                 vec4 rgba = texture2D( dTextures_00[0], vVv ) * 255.0;
 
                 rgba.rgba = rgba.abgr;
