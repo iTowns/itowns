@@ -4,7 +4,7 @@
  * Description: 3DEngine est l'interface avec le framework webGL.
  */
 
- /* global Float32Array Float64Array*/
+ /* global Uint8Array Float64Array*/
 
 define('Renderer/c3DEngine', [
     'THREE',
@@ -76,7 +76,7 @@ define('Renderer/c3DEngine', [
         this.pickingTexture = new THREE.WebGLRenderTarget(this.width, this.height);
         this.pickingTexture.texture.minFilter = THREE.LinearFilter;
         this.pickingTexture.texture.generateMipmaps = false;
-        this.pickingTexture.texture.type = THREE.FloatType;
+        //this.pickingTexture.texture.type = THREE.FloatType;
         this.pickingTexture.depthBuffer = true;
 
         this.renderScene = function() {
@@ -361,7 +361,8 @@ define('Renderer/c3DEngine', [
         //this.renderer.setScissorTest ( false);
         this.setStateRender(originalState);
 
-        var pixelBuffer = new Float32Array(width * height * 4);
+        //var pixelBuffer = new Float32Array(width * height * 4);
+        var pixelBuffer = new Uint8Array( 4 );
         this.renderer.readRenderTargetPixels(this.pickingTexture, x, y, width, height, pixelBuffer);
 
         return pixelBuffer;
@@ -463,6 +464,13 @@ define('Renderer/c3DEngine', [
         var screen = new THREE.Vector2();
         var pickWorldPosition = new THREE.Vector3();
         var ray = new THREE.Ray();
+        var depthRGBA = new THREE.Vector4();
+
+        var  unpack1K  = function (color) {
+
+            var bitSh = new THREE.Vector4( 1.0/( 256.0 * 256.0 * 256.0 ),1.0/( 256.0 * 256.0 ), 1.0/256.0, 1.0 );
+            return bitSh.dot(color) * 100000000.0;
+        }
 
         return function getPickingPositionFromDepth(mouse/*, scene*/) {
 
@@ -482,9 +490,12 @@ define('Renderer/c3DEngine', [
 
             camera.matrixWorld.setPosition(camera.position);
 
+            // Origin
             ray.origin.copy( camera.position );
 
+            // Direction
             ray.direction.set( screen.x, screen.y, 0.5 );
+            // Unproject
             matrix.multiplyMatrices( camera.matrixWorld, matrix.getInverse( camera.projectionMatrix ) );
             ray.direction.applyProjection( matrix );
             ray.direction.sub( ray.origin );
@@ -497,7 +508,8 @@ define('Renderer/c3DEngine', [
             var dirCam = raycaster.ray.direction;
             var angle = dirCam.angleTo(ray.direction);
 
-            var depth = buffer[3] / Math.cos(angle);
+            depthRGBA.fromArray(buffer).divideScalar(255.0);
+            var depth = unpack1K(depthRGBA) / Math.cos(angle);
 
             pickWorldPosition.addVectors(camera.position,ray.direction.setLength(depth));
 

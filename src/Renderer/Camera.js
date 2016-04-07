@@ -18,6 +18,7 @@ define('Renderer/Camera', ['Scene/Node', 'THREE'], function(Node, THREE) {
 
         this.camera3D = new THREE.PerspectiveCamera(this.FOV, this.ratio);
 
+        // /!\ WARNING Matrix JS are in Float32Array
         this.camera3D.matrixWorld.elements = new Float64Array(16);
 
         this.camera3D.matrixAutoUpdate = false;
