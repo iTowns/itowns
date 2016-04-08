@@ -133,6 +133,12 @@ define('Core/Commander/Providers/WMTS_Provider', [
                     result.texture.magFilter = THREE.LinearFilter;
                     result.texture.minFilter = THREE.LinearFilter;
 
+                    // In RGBA elevation texture LinearFilter give some errors with nodata value.
+                    // need to rewrite sample function in shader
+                    //result.texture.magFilter = THREE.NearestFilter;
+                    //result.texture.minFilter = THREE.NearestFilter;
+
+
                     // TODO ATTENTION verifier le context
                     result.level = coWMTS.zoom;
 
