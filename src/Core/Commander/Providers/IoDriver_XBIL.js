@@ -93,7 +93,7 @@ define('Core/Commander/Providers/IoDriver_XBIL', ['Core/Commander/Providers/IoDr
             var xhr = new XMLHttpRequest();
 
 
-            //The responseType property cannot be set when the XMLHttpRequest is not async, that is, synchronous. 
+            //The responseType property cannot be set when the XMLHttpRequest is not async, that is, synchronous.
             //Setting the third parameter of open to false causes the request to be synchronous.
             //xhr.open("GET", url, false);
             xhr.responseType = "arraybuffer";
