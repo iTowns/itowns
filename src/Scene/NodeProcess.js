@@ -118,11 +118,10 @@ define('Scene/NodeProcess', ['Scene/BoundingBox', 'Renderer/Camera', 'Core/Math/
     NodeProcess.prototype.process = function(node, camera, params) {
         // When entering this function, the node is ALWAYS visible
         var interCommand = new InterfaceCommander();    // TODO: InterfaceCommander static class?
+        var updateType;
         if(node.level === 0) { // first nodes
-            if(!node.pending) {
-                interCommand.request({/*params*/}, node, params.tree); // TODO: change parameters
-                return false;
-            }
+            updateType = node.update();
+            interCommand.request({type: updateType}, node, params.tree); // TODO: change parameters
 
             node.setVisibility(node.loaded);
             node.setMaterialVisibility(node.loaded);
@@ -138,17 +137,17 @@ define('Scene/NodeProcess', ['Scene/BoundingBox', 'Renderer/Camera', 'Core/Math/
             var childrenReady = 0;
             for(var i = 0; i < node.children.length; i++) { // Display node if one or several children are not visible
                 var child = node.children[i];
-                if(!child.pending) {
-                    interCommand.request({/*params*/}, child, params.tree); // TODO: change parameters
-                } else {
-                    if(child.loaded && !this.isCulled(child,camera)) {  // If child is in camera vision, it must be loaded and have correct SSE to be displayed
-                        childrenVisible++;
-                        if(child.loaded && this.checkSSE(child, camera)) {
-                            childrenReady++;
-                        } else {
-                            child.setVisibility(false);
-                            child.setMaterialVisibility(false);
-                        }
+                updateType = child.update();
+
+                interCommand.request({type: updateType}, child, params.tree); // TODO: change parameters
+
+                if(child.loaded && !this.isCulled(child,camera)) {  // If child is in camera vision, it must be loaded and have correct SSE to be displayed
+                    childrenVisible++;
+                    if(child.loaded && this.checkSSE(child, camera)) {
+                        childrenReady++;
+                    } else {
+                        child.setVisibility(false);
+                        child.setMaterialVisibility(false);
                     }
                 }
             }

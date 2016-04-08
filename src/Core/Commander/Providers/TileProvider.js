@@ -106,62 +106,57 @@ define('Core/Commander/Providers/TileProvider', [
         TileProvider.prototype.executeCommand = function(command) {
 
             var tile = command.requester;//new command.type(params,this.builder);
-            var bbox = tile.bbox;
+            if(command.type === "geometry") {
+                var bbox = tile.bbox;
 
-            // TODO not generic
-            var tileCoord = this.projection.WGS84toWMTS(bbox);
-            var parent = tile.parent;
-            //var parent = command.requester;
+                // TODO not generic
+                var tileCoord = this.projection.WGS84toWMTS(bbox);
+                var parent = tile.parent;
+                //var parent = command.requester;
 
-            // build tile
-            var geometry = undefined; //getGeometry(bbox,tileCoord);
+                // build tile
+                var geometry; // = getGeometry(bbox,tileCoord);
 
-            var params = {bbox:bbox,zoom:tileCoord.zoom,segment:16,center:null,projected:null};
+                var params = {bbox:bbox,zoom:tileCoord.zoom,segment:16,center:null,projected:null};
 
 
-            tile.setGeometry(new TileGeometry(params, this.builder), params.center);   //TODO: use cache?
-            // set material too ?
+                tile.setGeometry(new TileGeometry(params, this.builder), params.center);   //TODO: use cache?
+                // set material too ?
 
-            tile.tileCoord = tileCoord;
-            tile.material.setUuid(this.nNode++);
-            tile.link = parent.link;
-            tile.geometricError = Math.pow(2, (18 - tileCoord.zoom));
+                tile.tileCoord = tileCoord;
+                tile.material.setUuid(this.nNode++);
+                tile.link = parent.link;
+                tile.geometricError = Math.pow(2, (18 - tileCoord.zoom));
 
-            if (geometry) {
-                tile.rotation.set(0, (tileCoord.col % 2) * (Math.PI * 2.0 / Math.pow(2, tileCoord.zoom + 1)), 0);
+                if (geometry) {
+                    tile.rotation.set(0, (tileCoord.col % 2) * (Math.PI * 2.0 / Math.pow(2, tileCoord.zoom + 1)), 0);
+                }
+
+                parent.worldToLocal(params.center);
+
+                tile.position.copy(params.center);
+                tile.setVisibility(false);
+
+                //parent.add(tile);
+                tile.updateMatrix();
+                tile.updateMatrixWorld();
+
+                //if(tileCoord.zoom > 3 )
+                    //tileCoord =  undefined;
+
+                tile.texturesNeeded =+ 1;
+            } else if(command.type === "elevation") {
+                var elevationlayerId = tile.tileCoord.zoom > 11 ? 'IGN_MNT_HIGHRES' : 'IGN_MNT';
+                this.providerElevationTexture.getElevationTexture(tile.tileCoord, elevationlayerId).then(function(terrain) {
+                    this.setTextureElevation(terrain);
+                }.bind(tile));
+
+            } else if(command.type === "imagery") {
+                var colorlayerId = 'IGNPO';
+                this.providerColorTexture.getColorTexture(tile.tileCoord,{x:0.0,y:0.0,z:1.0},colorlayerId).then(function(colorTextures) {
+                    this.setTexturesLayer([colorTextures],1);
+                }.bind(tile));
             }
-
-            parent.worldToLocal(params.center);
-
-            tile.position.copy(params.center);
-            tile.setVisibility(false);
-
-            //parent.add(tile);
-            tile.updateMatrix();
-            tile.updateMatrixWorld();
-
-            // TODO: TEMP
-            var elevationlayerId = tileCoord.zoom > 11 ? 'IGN_MNT_HIGHRES' : 'IGN_MNT';
-            var colorlayerId = 'IGNPO';
-
-            if(tileCoord.zoom > 3 )
-                tileCoord =  undefined;
-
-            tile.texturesNeeded =+ 1;
-
-            return when.all([
-
-                    this.providerElevationTexture.getElevationTexture(tileCoord,elevationlayerId).then(function(terrain){
-
-                        this.setTextureElevation(terrain);}.bind(tile)),
-
-                    this.providerColorTexture.getColorTextures(tile,colorlayerId).then(function(colorTextures){
-
-                        this.setTexturesLayer(colorTextures,1);}.bind(tile))
-
-                    //,this.getKML(tile)
-
-                ]);
         };
 
         return TileProvider;

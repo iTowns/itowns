@@ -57,6 +57,9 @@ define('Globe/TileMesh', [
         this.material = new LayeredMaterial();
         this.frustumCulled = false;
         this.levelElevation = this.level;
+        this.updateElevation = true;
+        this.updateImagery = true;
+        this.updateGeometry = true;
 
         // TODO not generic
         for (var i = 0; i < groupelevation.length; i++) {
@@ -154,6 +157,9 @@ define('Globe/TileMesh', [
     };
 
     TileMesh.prototype.setGeometry = function(geometry, center) {   // TODO: try to remove center
+        this.pending = false;
+        this.updateGeometry = false;
+
         this.geometry = geometry;
 
         this.normal = center.clone().normalize();
@@ -197,7 +203,9 @@ define('Globe/TileMesh', [
     };
 
     TileMesh.prototype.setTextureElevation = function(elevation) {
-        var texture = undefined;
+        this.pending = false;
+        this.updateElevation = false;
+        var texture;
         var pitScale;
         var ancestor;
         var image;
@@ -245,6 +253,23 @@ define('Globe/TileMesh', [
         this.loadingCheck();
     };
 
+    TileMesh.prototype.update = function () {
+        if(this.pending) {
+            return "none";
+        }
+        if(this.updateGeometry) {
+            return "geometry";
+        } else if(this.updateElevation) {
+            // TODO: use parent data while waiting?
+            return "elevation";
+        } else if(this.updateImagery) {
+            // TODO: use parent data while waiting?
+            return "imagery";
+        }
+
+        return "none";
+    };
+
     TileMesh.prototype.setBBoxZ = function(min, max) {
 
         if(Math.floor(min) !== Math.floor(this.bbox.minCarto.altitude) || Math.floor(max) !== Math.floor(this.bbox.maxCarto.altitude) )
@@ -269,6 +294,8 @@ define('Globe/TileMesh', [
     };
 
     TileMesh.prototype.setTexturesLayer = function(textures,idLayer){
+        this.pending = false;
+        this.updateImagery = false;
 
         if(!textures || this.material === null)
         {
