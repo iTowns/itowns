@@ -105,18 +105,22 @@ define('Core/Commander/Providers/TileProvider', [
 
         TileProvider.prototype.executeCommand = function(command) {
 
-            var bbox = command.paramsFunction.bbox;
+            var tile = command.requester;//new command.type(params,this.builder);
+            var bbox = tile.bbox;
 
             // TODO not generic
             var tileCoord = this.projection.WGS84toWMTS(bbox);
-            var parent = command.requester;
+            var parent = tile.parent;
+            //var parent = command.requester;
 
             // build tile
             var geometry = undefined; //getGeometry(bbox,tileCoord);
 
-            var params = {bbox:bbox,zoom:tileCoord.zoom,segment:16,center:null,projected:null}
+            var params = {bbox:bbox,zoom:tileCoord.zoom,segment:16,center:null,projected:null};
 
-            var tile = new command.type(params,this.builder);
+
+            tile.setGeometry(new TileGeometry(params, this.builder), params.center);   //TODO: use cache?
+            // set material too ?
 
             tile.tileCoord = tileCoord;
             tile.material.setUuid(this.nNode++);
@@ -132,12 +136,13 @@ define('Core/Commander/Providers/TileProvider', [
             tile.position.copy(params.center);
             tile.setVisibility(false);
 
-            parent.add(tile);
+            //parent.add(tile);
             tile.updateMatrix();
             tile.updateMatrixWorld();
 
-            var elevationlayerId = command.paramsFunction.elevationLayerId[tileCoord.zoom > 11 ? 1 : 0];
-            var colorlayerId = command.paramsFunction.colorLayerId;
+            // TODO: TEMP
+            var elevationlayerId = tileCoord.zoom > 11 ? 'IGN_MNT_HIGHRES' : 'IGN_MNT';
+            var colorlayerId = 'IGNPO';
 
             if(tileCoord.zoom > 3 )
                 tileCoord =  undefined;

@@ -70,13 +70,15 @@ define('Scene/BrowseTree', ['Globe/TileMesh', 'THREE'], function( TileMesh, THRE
         if(node.parent.material.visible)
             return false;
 
-        if(!process.isCulled(node, camera)) {
+        if(process.process(node, camera, params)) {
+            this.uniformsProcess(node, camera);
+        }
+        /*if(!process.isCulled(node, camera)) {
             node.setVisibility(true);
             process.SSE(node, camera,params);
             this.uniformsProcess(node, camera);
-        }
-
-        return !node.material.visible && !node.wait;
+        }*/
+        return !node.material.visible /*&& !node.wait*/;
 
     };
 
@@ -150,8 +152,8 @@ define('Scene/BrowseTree', ['Globe/TileMesh', 'THREE'], function( TileMesh, THRE
         if (this.processQuadtreeNode(node, camera, process, {withUp : optional, tree : this.tree}))
             for (var i = 0; i < node.children.length; i++)
                 this._browse(node.children[i], camera, process, optional,clean);
-        else if(clean)
-            this._clean(node, node.level + 2, process, camera);
+        /*else if(clean)
+            this._clean(node, node.level + 2, process, camera);*/
 
     };
 

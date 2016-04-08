@@ -34,13 +34,15 @@ define('Scene/Quadtree', [
 
         rootNode.enablePickingRender = function() { return true;};
         this.add(rootNode);
+        rootNode.level = -1;    // TODO: change
 
         // TEMP
         this.colorLayerId = 'IGNPO';
         this.elevationLayerId = ['IGN_MNT','IGN_MNT_HIGHRES'];
 
         for (var i = 0; i < this.schemeTile.rootCount(); i++) {
-            this.requestNewTile(this.schemeTile.getRoot(i), rootNode);
+            //this.requestNewTile(this.schemeTile.getRoot(i), rootNode);
+            this.createTile(this.schemeTile.getRoot(i), rootNode);
         }
     }
 
@@ -64,6 +66,15 @@ define('Scene/Quadtree', [
         return node.children[3];
     };
 
+    Quadtree.prototype.createTile = function(bbox, parent) {
+
+        var params = {bbox: bbox, level: parent.level + 1, colorLayerId : this.colorLayerId, elevationLayerId : this.elevationLayerId };
+
+        var tile = new this.tileType(params);
+        parent.add(tile);
+
+    };
+/*
     Quadtree.prototype.requestNewTile = function(bbox, parent) {
 
         var params = {bbox: bbox, colorLayerId : this.colorLayerId, elevationLayerId : this.elevationLayerId };
@@ -71,7 +82,7 @@ define('Scene/Quadtree', [
         this.interCommand.request(params, parent, this);
 
     };
-
+*/
     /**
      * @documentation: subdivise node if necessary
      * @param {type} node
@@ -83,11 +94,12 @@ define('Scene/Quadtree', [
             return;
 
         node.wait = true;
+        node.divided = true;
         var quad = new Quad(node.bbox);
-        this.requestNewTile(quad.northWest, node);
-        this.requestNewTile(quad.northEast, node);
-        this.requestNewTile(quad.southWest, node);
-        this.requestNewTile(quad.southEast, node);
+        this.createTile(quad.northWest, node);
+        this.createTile(quad.northEast, node);
+        this.createTile(quad.southWest, node);
+        this.createTile(quad.southEast, node);
 
     };
 
@@ -95,7 +107,7 @@ define('Scene/Quadtree', [
     {
         node.setMaterialVisibility(true);
         node.setChildrenVisibility(false);
-    }
+    };
 
     Quadtree.prototype.upSubLayer = function(node) {
 
@@ -104,7 +116,7 @@ define('Scene/Quadtree', [
         if(id !== undefined)
         {
             var params = {subLayer : id,colorLayerId : this.colorLayerId,elevationLayerId : this.elevationLayerId};
-            this.interCommand.request(params, node, this.children[id+1]);
+            //this.interCommand.request(params, node, this.children[id+1]); TODO
         }
 
     };

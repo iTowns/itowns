@@ -32,25 +32,26 @@ define('Globe/TileMesh', [
     var l_ELEVATION = 0;
     var l_COLOR = 1;
 
-    function TileMesh(params, builder, geometryCache) {
+    function TileMesh(params/*, builder, geometryCache*/) {
         //Constructor
         NodeMesh.call(this);
 
         this.matrixAutoUpdate = false;
         this.rotationAutoUpdate = false;
 
-        this.level = params.zoom;
+        //this.level = params.zoom;
+        this.level = params.level;  // TODO: maybe build full MTS coord?
         this.bbox = defaultValue(params.bbox, new BoundingBox());
 
-        this.geometry = defaultValue(geometryCache, new TileGeometry(params, builder));
-        this.normal = params.center.clone().normalize();
+        //this.geometry = defaultValue(geometryCache, new TileGeometry(params, builder));
+        //this.normal = params.center.clone().normalize();
 
-        this.distance = params.center.length();
+        //this.distance = params.center.length();
 
         // TODO Why move sphere center
-        this.centerSphere = new THREE.Vector3().addVectors(this.geometry.boundingSphere.center, params.center);
+        //this.centerSphere = new THREE.Vector3().addVectors(this.geometry.boundingSphere.center, params.center);
 
-        this.oSphere = new THREE.Sphere(this.centerSphere.clone(),this.geometry.boundingSphere.radius);
+        //this.oSphere = new THREE.Sphere(this.centerSphere.clone(),this.geometry.boundingSphere.radius);
 
         this.texturesNeeded = 0;
         this.material = new LayeredMaterial();
@@ -150,6 +151,18 @@ define('Globe/TileMesh', [
 
     TileMesh.prototype.setSelected = function(select) {
         this.material.setSelected(select);
+    };
+
+    TileMesh.prototype.setGeometry = function(geometry, center) {   // TODO: try to remove center
+        this.geometry = geometry;
+
+        this.normal = center.clone().normalize();
+
+        this.distance = center.length();
+        // TODO Why move sphere center
+        this.centerSphere = new THREE.Vector3().addVectors(this.geometry.boundingSphere.center, center);
+
+        this.oSphere = new THREE.Sphere(this.centerSphere.clone(),this.geometry.boundingSphere.radius);
     };
 
     TileMesh.prototype.parseBufferElevation = function(image,minMax,pitScale) {

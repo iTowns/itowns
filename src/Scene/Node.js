@@ -26,6 +26,8 @@ define('Scene/Node', [], function() {
         this.wait = false;
         this.visible = true;
         this.layer = null;
+        this.divided = false;
+        this.pending = false;
 
 
     }

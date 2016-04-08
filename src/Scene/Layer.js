@@ -26,7 +26,7 @@ define('Scene/Layer', [
 
         Node.call(this);
         // Requeter
-        this.interCommand = type !== undefined ? new InterfaceCommander(type, param) : undefined;
+        //this.interCommand = type !== undefined ? new InterfaceCommander(type, param) : undefined;
         this.descriManager = null;
         this.projection = new Projection();
         this.layerId = Layer.count++;

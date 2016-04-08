@@ -4,7 +4,7 @@
  * Description: NodeProcess effectue une opération sur un Node.
  */
 
-define('Scene/NodeProcess', ['Scene/BoundingBox', 'Renderer/Camera', 'Core/Math/MathExtented', 'THREE', 'Core/defaultValue'], function(BoundingBox, Camera, MathExt, THREE, defaultValue) {
+define('Scene/NodeProcess', ['Scene/BoundingBox', 'Renderer/Camera', 'Core/Math/MathExtented', 'Core/Commander/InterfaceCommander', 'THREE', 'Core/defaultValue'], function(BoundingBox, Camera, MathExt, InterfaceCommander, THREE, defaultValue) {
 
 
     function NodeProcess(camera, size, bbox) {
@@ -85,13 +85,21 @@ define('Scene/NodeProcess', ['Scene/BoundingBox', 'Renderer/Camera', 'Core/Math/
      */
     NodeProcess.prototype.SSE = function(node, camera, params) {
 
-        var sse = this.checkSSE(node, camera)
+        var sse = this.checkSSE(node, camera);
+        var interCommand = new InterfaceCommander();    // TODO: InterfaceCommander static class?
 
         if(params.withUp && node.material.visible && !node.wait )
         {
-            if (sse)
-                // request level up
-                params.tree.up(node);
+            if (sse) {
+                if(node.loaded) {
+                    if(!node.divided) {
+                        // request level up
+                        params.tree.up(node);
+                    }
+                } else if(!node.pending) {
+                    interCommand.request({/*params*/}, node); // TODO: change parameters
+                }
+            }
             else
                 // request level up other quadtree
                 params.tree.upSubLayer(node);
@@ -101,6 +109,62 @@ define('Scene/NodeProcess', ['Scene/BoundingBox', 'Renderer/Camera', 'Core/Math/
             params.tree.down(node);
         }
 
+    };
+
+    NodeProcess.prototype.isVisible = function(node, camera) {
+        return !this.isCulled(node, camera) && this.checkSSE(node, camera);
+    };
+
+    NodeProcess.prototype.process = function(node, camera, params) {
+        // When entering this function, the node is ALWAYS visible
+        var interCommand = new InterfaceCommander();    // TODO: InterfaceCommander static class?
+        if(node.level === 0) { // first nodes
+            if(!node.pending) {
+                interCommand.request({/*params*/}, node, params.tree); // TODO: change parameters
+                return false;
+            }
+
+            node.setVisibility(node.loaded);
+            node.setMaterialVisibility(node.loaded);
+            if(!node.loaded) {
+                return node.visible;
+            }
+        }
+
+        node.setVisibility(true);
+        node.setMaterialVisibility(false);
+        if(node.divided) {
+            var childrenVisible = 0;
+            var childrenReady = 0;
+            for(var i = 0; i < node.children.length; i++) { // Display node if one or several children are not visible
+                var child = node.children[i];
+                if(!child.pending) {
+                    interCommand.request({/*params*/}, child, params.tree); // TODO: change parameters
+                } else {
+                    if(child.loaded && !this.isCulled(child,camera)) {  // If child is in camera vision, it must be loaded and have correct SSE to be displayed
+                        childrenVisible++;
+                        if(child.loaded && this.checkSSE(child, camera)) {
+                            childrenReady++;
+                        } else {
+                            child.setVisibility(false);
+                            child.setMaterialVisibility(false);
+                        }
+                    }
+                }
+            }
+            if(childrenReady !== childrenVisible || childrenVisible === 0) {  // If not all visible children are ready, hide them and display current node
+                node.setMaterialVisibility(true);
+                for(i = 0; i < node.children.length; i++) {
+                    node.children[i].setVisibility(false);
+                    node.children[i].setMaterialVisibility(false);
+                }
+            }
+        } else {
+            params.tree.up(node);
+            node.setMaterialVisibility(true);
+        }
+
+        return node.visible;
     };
 
     /**

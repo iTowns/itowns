@@ -125,7 +125,7 @@ define('Core/Commander/ManagerCommands', [
                 var com = this.queueAsync.peek();
                 var parent = com.requester;
 
-                if (parent.visible === false && parent.level >= 2) {
+                /*if (parent.visible === false && parent.level >= 2) {
 
                     while (parent.children.length > 0) {
                         var child = parent.children[0];
@@ -135,7 +135,7 @@ define('Core/Commander/ManagerCommands', [
                     parent.wait = false;
                     parent.false = false;
                     this.queueAsync.dequeue();
-                } else
+                } else*/
                     return this.queueAsync.dequeue();
 
             }
