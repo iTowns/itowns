@@ -30,6 +30,63 @@ define('Renderer/c3DEngine', [
         PICKING: 1
     };
 
+    /*
+    var step = function(val,stepVal)
+    {
+        if(val<stepVal)
+            return 0.0;
+        else
+            return 1.0;
+
+    };
+
+    var exp2 = function(expo)
+    {
+        return Math.pow(2,expo);
+    };
+
+    function parseFloat2(str) {
+        var float = 0, sign, order, mantiss,exp,
+        int = 0, multi = 1;
+        if (/^0x/.exec(str)) {
+            int = parseInt(str,16);
+        }else{
+            for (var i = str.length -1; i >=0; i -= 1) {
+                if (str.charCodeAt(i)>255) {
+                    console.log('Wrong string parametr');
+                    return false;
+                }
+                int += str.charCodeAt(i) * multi;
+                multi *= 256;
+            }
+        }
+        sign = (int>>>31)?-1:1;
+        exp = (int >>> 23 & 0xff) - 127;
+        mantissa = ((int & 0x7fffff) + 0x800000).toString(2);
+        for (i=0; i<mantissa.length; i+=1){
+            float += parseInt(mantissa[i])? Math.pow(2,exp):0;
+            exp--;
+        }
+        return float*sign;
+    }
+
+    var decode32 = function(rgba) {
+        var Sign = 1.0 - step(128.0,rgba[0])*2.0;
+        var Exponent = 2.0 * (rgba[0]%128.0) + step(128.0,rgba[1]) - 127.0;
+        var Mantissa = (rgba[1]%128.0)*65536.0 + rgba[2]*256.0 +rgba[3] + parseFloat2(0x800000);
+        var Result =  Sign * exp2(Exponent) * (Mantissa * exp2(-23.0 ));
+        return Result;
+    };
+
+    var bf = new Float32Array([1256.211]);
+    var bui = new Uint8Array(bf.buffer);
+
+    var v = new THREE.Vector4().fromArray(bui);
+
+    v.set(v.w,v.z,v.y,v.x);
+
+    console.log(decode32(v.toArray()),parseFloat2(0x800000));
+    */
     function c3DEngine(scene, positionCamera, debugMode, gLDebug) {
         //Constructor
 
@@ -75,7 +132,7 @@ define('Renderer/c3DEngine', [
         this.dummys.add(this.dummy_01);
         this.dummys.add(this.dummy_02);
 
-        this.scene3D.add(this.dummys);
+        //this.scene3D.add(this.dummys);
 
         this.pickingTexture = new THREE.WebGLRenderTarget(this.width, this.height);
         this.pickingTexture.texture.minFilter = THREE.LinearFilter;

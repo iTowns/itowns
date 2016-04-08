@@ -47,7 +47,12 @@ define('Core/Commander/Providers/WMTS_Provider', [
             else
                 this.getTextureFloat = function(buffer){
 
+                    // Start float to RGBA uint8
+                    // var bufferUint = new Uint8Array(buffer.buffer);
+                    // var texture = new THREE.DataTexture(bufferUint, 256, 256);
+
                     var texture = new THREE.DataTexture(buffer, 256, 256, THREE.AlphaFormat, THREE.FloatType);
+
                     texture.needsUpdate = true;
                     return texture;
 

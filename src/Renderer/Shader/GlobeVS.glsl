@@ -31,6 +31,16 @@ varying float       vUv_1;
 varying vec3        vNormal;
 varying vec4        pos;
 
+highp float decode32(highp vec4 rgba) {
+    highp float Sign = 1.0 - step(128.0,rgba[0])*2.0;
+    highp float Exponent = 2.0 * mod(rgba[0],128.0) + step(128.0,rgba[1]) - 127.0;
+    highp float Mantissa = mod(rgba[1],128.0)*65536.0 + rgba[2]*256.0 +rgba[3] + float(0x800000);
+    highp float Result =  Sign * exp2(Exponent) * (Mantissa * exp2(-23.0 ));
+    return Result;
+}
+
+//#define RGBA_ELEVATION
+
 void main() {
 
         vUv_0    = uv;
@@ -41,7 +51,21 @@ void main() {
         if(nbTextures[0] > 0)
         {
             vec2    vVv = vec2(vUv_0.x*pitScale_L00[0].z + pitScale_L00[0].x,vUv_0.y*pitScale_L00[0].z + pitScale_L00[0].y);
-            float   dv  = max(texture2D( dTextures_00[0], vVv ).w, 0.);
+
+            #ifdef RGBA_ELEVATION
+                vec4 rgba = texture2D( dTextures_00[0], vVv ) * 255.0;
+
+                rgba.rgba = rgba.abgr;
+
+                float dv = max(decode32(rgba),0.0);
+
+                if(dv>5000.0)
+                    dv = 0.0;
+
+            #else
+                float   dv  = max(texture2D( dTextures_00[0], vVv ).w, 0.);
+            #endif
+
             vNormal     = normal;
             vPosition   = vec4( position +  vNormal  * dv ,1.0 );
         }
