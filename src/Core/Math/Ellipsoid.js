@@ -142,8 +142,8 @@ define('Core/Math/Ellipsoid',
         
         var distRad = Math.acos(Math.sin(latitude1)*Math.sin(latitude2) + Math.cos(latitude1)*Math.cos(latitude2)*Math.cos(longitude2 - longitude1));
         
-        var a = 6378137;
-        var b = 6356752.3142451793;
+        var a = this.rayon_1;
+        var b = this.rayon_2;
         var e = Math.sqrt((a * a - b * b) / (a * a));
         var latMoy = (latitude1 + latitude2) / 2;
         var rho = (a * (1 - e * e)) / Math.sqrt(1 - e * e * Math.sin(latMoy) * Math.sin(latMoy));
@@ -152,7 +152,8 @@ define('Core/Math/Ellipsoid',
         var distMeter = distRad * Math.sqrt(rho * N);
         return distMeter;
     };
-
+    
+    
     return Ellipsoid;
 
 });
