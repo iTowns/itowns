@@ -85,7 +85,7 @@ define('Core/Commander/Providers/IoDriver_XBIL', ['Core/Commander/Providers/IoDr
 
     IoDriver_XBIL.prototype.read = function(url) {
 
-        // TODO new Promise is supported?
+        // TODO new Promise is supported? not in IE
 
         return when.promise(function(resolve/*, reject*/)
         //return new Promise(function(resolve/*, reject*/)
