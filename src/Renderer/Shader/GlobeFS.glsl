@@ -30,7 +30,7 @@ uniform int         nbTextures[8];
 uniform float       distanceFog;
 uniform int         debug;
 uniform vec3        lightPosition;
-uniform int lightingOn;
+uniform int         lightingOn;
 
 varying vec2        vUv_0;
 varying float       vUv_1;
@@ -41,11 +41,11 @@ varying vec4        pos;
 //#define BORDERLINE
 
 vec2    pitUV(vec2 uvIn, vec3 pit)
-{     
+{
     vec2  uv;
     uv.x = uvIn.x* pit.z + pit.x;
     uv.y = 1.0 -( (1.0 - uvIn.y) * pit.z + pit.y);
-    
+
     return uv;
 }
 
@@ -58,33 +58,53 @@ const float borderS = 0.007;
 // so we have to resort to an if/else cascade.
 
 vec4 colorAtIdUv(int id, vec2 uv){
-    
+
     if (id == 0) return texture2D(dTextures_01[0],  pitUV(uv,pitScale_L01[0]));
     else if (id == 1) return texture2D(dTextures_01[1],  pitUV(uv,pitScale_L01[1]));
-    else if (id == 2) return texture2D(dTextures_01[2],  pitUV(uv,pitScale_L01[2]));          
-    else if (id == 3) return texture2D(dTextures_01[3],  pitUV(uv,pitScale_L01[3]));           
-    else if (id == 4) return texture2D(dTextures_01[4],  pitUV(uv,pitScale_L01[4]));           
+    else if (id == 2) return texture2D(dTextures_01[2],  pitUV(uv,pitScale_L01[2]));
+    else if (id == 3) return texture2D(dTextures_01[3],  pitUV(uv,pitScale_L01[3]));
+    else if (id == 4) return texture2D(dTextures_01[4],  pitUV(uv,pitScale_L01[4]));
     else if (id == 5) return texture2D(dTextures_01[5],  pitUV(uv,pitScale_L01[5]));
-    else if (id == 5) return texture2D(dTextures_01[6],  pitUV(uv,pitScale_L01[6]));
-    else if (id == 5) return texture2D(dTextures_01[7],  pitUV(uv,pitScale_L01[7]));
-    else return vec4(0.0,0.0,0.0,0.0);        
-    
+    else if (id == 6) return texture2D(dTextures_01[6],  pitUV(uv,pitScale_L01[6]));
+    else if (id == 7) return texture2D(dTextures_01[7],  pitUV(uv,pitScale_L01[7]));
+    else return vec4(0.0,0.0,0.0,0.0);
+
+}
+
+const vec4 bitSh = vec4( 256.0 * 256.0 * 256.0, 256.0 * 256.0, 256.0, 1.0 );
+const vec4 bitMsk = vec4( 0.0, 1.0 / 256.0, 1.0 / 256.0, 1.0 / 256.0 );
+
+vec4 pack1K ( float depth ) {
+    depth /= 100000000.0;
+    vec4 res = mod( depth * bitSh * vec4( 255 ), vec4( 256 ) ) / vec4( 255 );
+    res -= res.xxyz * bitMsk;
+    return res;
+}
+
+float unpack1K ( vec4 color ) {
+
+    const vec4 bitSh = vec4( 1.0 / ( 256.0 * 256.0 * 256.0 ), 1.0 / ( 256.0 * 256.0 ), 1.0 / 256.0, 1.0 );
+    return dot( color, bitSh ) * 100000000.0;
+
 }
 
 void main() {
 
     #if defined(USE_LOGDEPTHBUF) && defined(USE_LOGDEPTHBUF_EXT)
 
-	gl_FragDepthEXT = log2(vFragDepth) * logDepthBufFC * 0.5;
+	   gl_FragDepthEXT = log2(vFragDepth) * logDepthBufFC * 0.5;
 
     #endif
 
     if(pickingRender == 1)
     {
-        gl_FragColor =vec4(pos.x,pos.y,pos.z,uuid);
 
-        #if defined(BORDERLINE)
-
+        #if defined(USE_LOGDEPTHBUF) && defined(USE_LOGDEPTHBUF_EXT)
+            float z = 1.0/ gl_FragCoord.w ;
+            gl_FragColor = pack1K(z);
+        #else
+            float z = gl_FragCoord.z / gl_FragCoord.w;
+            gl_FragColor = pack1K(z);
         #endif
 
     }else
@@ -112,13 +132,13 @@ void main() {
 
         gl_FragColor    = vec4( 0.04, 0.23, 0.35, 1.0);
         #if defined(USE_LOGDEPTHBUF) && defined(USE_LOGDEPTHBUF_EXT)
-        
+
 
         float depth = gl_FragDepthEXT / gl_FragCoord.w;
         float fog = 1.0/(exp(depth/distanceFog));
 
         #else
-        
+
         float fog = 1.0;
         #endif
 
@@ -135,7 +155,7 @@ void main() {
             else
             {
                 gl_FragColor = diffuseColor;
-                
+
             }
         }
 

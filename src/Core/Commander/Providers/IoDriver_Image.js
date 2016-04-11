@@ -2,9 +2,9 @@
  * Generated On: 2015-10-5
  * Class: IoDriver_Image
  */
-/* global Promise*/
 
-define('Core/Commander/Providers/IoDriver_Image', ['Core/Commander/Providers/IoDriver'], function(IoDriver) {
+
+define('Core/Commander/Providers/IoDriver_Image', ['Core/Commander/Providers/IoDriver','when'], function(IoDriver,when) {
 
 
     function IoDriver_Image() {
@@ -18,16 +18,16 @@ define('Core/Commander/Providers/IoDriver_Image', ['Core/Commander/Providers/IoD
     IoDriver_Image.prototype.constructor = IoDriver_Image;
 
     IoDriver_Image.prototype.read = function(url) {
-        
-        // TODO new Promise is supported?       
-        //return  when.promise(function(resolve, reject, notify) 
-        return new Promise(function(resolve/*, reject*/) 
+
+        // TODO new Promise is supported?
+        return  when.promise(function(resolve/*, reject*/)
+        //return new Promise(function(resolve/*, reject*/)
         {
-   
+
             var image = new Image();
-            
+
             image.addEventListener('load', function(/*event*/) {
-                
+
                 resolve(this);
 
             }, false);
@@ -38,15 +38,15 @@ define('Core/Commander/Providers/IoDriver_Image', ['Core/Commander/Providers/IoD
 
 
             image.addEventListener('error', function(/*event*/) {
-                
+
                 this.src = '';
                 resolve(undefined);
-                
+
             }.bind(this), false);
 
             image.crossOrigin = '';
             image.src = url;
-                        
+
         });
     };
 

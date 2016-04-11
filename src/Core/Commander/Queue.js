@@ -19,7 +19,7 @@ define('Core/Commander/Queue', [],
             }
             /*
             console.log(this.isMax );
-        
+
             var isMax = false;
 
             //Constructor
@@ -30,7 +30,7 @@ define('Core/Commander/Queue', [],
             } else {
                 throw heapType + " not supported.";
             }
-        
+
             console.log(isMax );*/
         }
 

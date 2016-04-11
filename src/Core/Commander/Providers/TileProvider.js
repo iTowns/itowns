@@ -1,4 +1,4 @@
-/* 
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -7,10 +7,10 @@
 /*
  * A Faire
  * Les tuiles de longitude identique ont le maillage et ne demande pas 1 seule calcul pour la génération du maillage
- * 
- * 
- * 
- * 
+ *
+ *
+ *
+ *
  */
 
 
@@ -25,8 +25,7 @@ define('Core/Commander/Providers/TileProvider', [
         'Core/Math/Ellipsoid',
         'Globe/BuilderEllipsoidTile',
         'Core/defaultValue',
-        'Scene/BoundingBox',
-        'three'
+        'Scene/BoundingBox'
     ],
     function(
         when,
@@ -38,8 +37,7 @@ define('Core/Commander/Providers/TileProvider', [
         Ellipsoid,
         BuilderEllipsoidTile,
         defaultValue,
-        BoundingBox,
-        THREE
+        BoundingBox
     ) {
 
         function TileProvider(size,gLDebug) {
@@ -85,7 +83,7 @@ define('Core/Commander/Providers/TileProvider', [
 
             return geometry;
         };
-        
+
        // TileProvider.prototype.getKML= function(){
         TileProvider.prototype.getKML= function(tile){
 
@@ -97,7 +95,7 @@ define('Core/Commander/Providers/TileProvider', [
                 return this.providerKML.loadKMZ(longitude, latitude).then(function (collada){
 
                     if(collada && tile.link.children.indexOf(collada) === -1)
-                        {                                 
+                        {
                             tile.link.add(collada);
                             tile.content = collada;
                         }
@@ -105,82 +103,60 @@ define('Core/Commander/Providers/TileProvider', [
             }
         };
 
-        var center = new THREE.Vector3();
-
         TileProvider.prototype.executeCommand = function(command) {
 
             var bbox = command.paramsFunction.bbox;
-            var cooWMTS = this.projection.WGS84toWMTS(bbox);
-            var parent = command.requester;
-            var geometry = undefined; //getGeometry(bbox,cooWMTS);       
 
-            var tile = new command.type(bbox, cooWMTS, this.builder, this.nNode++, geometry,parent.link,center);
+            // TODO not generic
+            var tileCoord = this.projection.WGS84toWMTS(bbox);
+            var parent = command.requester;
+
+            // build tile
+            var geometry = undefined; //getGeometry(bbox,tileCoord);
+
+            var params = {bbox:bbox,zoom:tileCoord.zoom,segment:16,center:null,projected:null}
+
+            var tile = new command.type(params,this.builder);
+
+            tile.tileCoord = tileCoord;
+            tile.material.setUuid(this.nNode++);
+            tile.link = parent.link;
+            tile.geometricError = Math.pow(2, (18 - tileCoord.zoom));
 
             if (geometry) {
-                tile.rotation.set(0, (cooWMTS.col % 2) * (Math.PI * 2.0 / Math.pow(2, cooWMTS.zoom + 1)), 0);            
+                tile.rotation.set(0, (tileCoord.col % 2) * (Math.PI * 2.0 / Math.pow(2, tileCoord.zoom + 1)), 0);
             }
 
-            parent.worldToLocal(center);
+            parent.worldToLocal(params.center);
 
-            tile.position.copy(center);          
+            tile.position.copy(params.center);
             tile.setVisibility(false);
-  
+
             parent.add(tile);
             tile.updateMatrix();
             tile.updateMatrixWorld();
 
-            var layerId = cooWMTS.zoom > 11 ? 'IGN_MNT_HIGHRES' : 'IGN_MNT';
-            
-            if(cooWMTS.zoom > 3 )            
-                cooWMTS =  undefined;
-            
-            tile.texturesNeeded =+ 1;
+            var elevationlayerId = command.paramsFunction.layer.elevationLayerId[tileCoord.zoom > 11 ? 1 : 0];
+            var colorlayerId = command.paramsFunction.layer.colorLayerId;
 
+            if(tileCoord.zoom > 3 )
+                tileCoord =  undefined;
+
+            tile.texturesNeeded =+ 1;
 
             return when.all([
 
-                    this.providerElevationTexture.getElevationTexture(cooWMTS,layerId).then(function(terrain){                        
-                                    
+                    this.providerElevationTexture.getElevationTexture(tileCoord,elevationlayerId).then(function(terrain){
+
                         this.setTextureElevation(terrain);}.bind(tile)),
 
-                    this.getColorTextures(tile).then(function(colorTextures){
+                    this.providerColorTexture.getColorTextures(tile,colorlayerId).then(function(colorTextures){
 
                         this.setTexturesLayer(colorTextures,1);}.bind(tile))
 
                     //,this.getKML(tile)
 
-                ]);            
-        };
-
-        TileProvider.prototype.getColorTextures = function(tile) {
-                         
-            if (tile.cooWMTS.zoom >= 2)
-            {
-                var promises = [];
-                var box = this.projection.WMTS_WGS84ToWMTS_PM(tile.cooWMTS, tile.bbox); //                 
-                var col = box[0].col;
-                tile.texturesNeeded += box[1].row + 1 - box[0].row;               
-                
-                for (var row = box[0].row; row < box[1].row + 1; row++) {
-                                       
-                    var cooWMTS = new CoordWMTS(box[0].zoom, row, col);                    
-                    var pitch = new THREE.Vector3(0.0,0.0,1.0);
-                    
-                    if(box[0].zoom > 3)   
-                    {
-                        var levelParent = tile.getParentNotDownScaled(1).level + 1;                        
-                        cooWMTS = this.projection.WMTS_WGS84Parent(cooWMTS,levelParent,pitch);
-                    }
-                                                            
-                    promises.push(this.providerWMTS.getTextureOrtho(cooWMTS,pitch,'IGNPO'));                 
-                }
-                  
-                return when.all(promises);
-            }
-            else             
-                
-                return when();            
-            
+                ]);
         };
 
         return TileProvider;

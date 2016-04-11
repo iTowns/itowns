@@ -5,7 +5,7 @@
  */
 
 /**
- * 
+ *
  * @param {type} Layer
  * @param {type} Quad
  * @returns {Quadtree_L13.Quadtree}
@@ -20,7 +20,6 @@ define('Scene/Quadtree', [
     function Quadtree(type, schemeTile, size, link) {
         Layer.call(this, type, size);
 
-
         this.link = link;
         this.schemeTile = schemeTile;
         this.tileType = type;
@@ -28,17 +27,20 @@ define('Scene/Quadtree', [
         this.maxLevel = 17;
         var rootNode = new NodeMesh();
 
-        rootNode.material.visible = false;            
-        
+        rootNode.material.visible = false;
+
         rootNode.link = this.link;
-        
+
         rootNode.enablePickingRender = function() { return true;};
         this.add(rootNode);
+
+        // TEMP
+        this.colorLayerId = 'IGNPO';
+        this.elevationLayerId = ['IGN_MNT','IGN_MNT_HIGHRES'];
 
         for (var i = 0; i < this.schemeTile.rootCount(); i++) {
             this.requestNewTile(this.schemeTile.getRoot(i), rootNode);
         }
-
     }
 
     Quadtree.prototype = Object.create(Layer.prototype);
@@ -63,7 +65,9 @@ define('Scene/Quadtree', [
 
     Quadtree.prototype.requestNewTile = function(bbox, parent) {
 
-        this.interCommand.request({bbox: bbox}, parent, this);
+        var params = {bbox: bbox , layer : this };//, colorLayerId : this.colorLayerId, elevationLayerId : this.elevationLayerId };
+
+        this.interCommand.request(params, parent);
 
     };
 
@@ -88,23 +92,24 @@ define('Scene/Quadtree', [
 
     Quadtree.prototype.down = function(node)
     {
-        node.setMaterialVisibility(true);        
+        node.setMaterialVisibility(true);
         node.setChildrenVisibility(false);
     }
-    
+
     Quadtree.prototype.upSubLayer = function(node) {
-                
+
         var id = node.getDownScaledLayer();
 
-        if(id !== undefined)                
-        {                        
-            this.interCommand.request({subLayer : id}, node, this.children[id+1]);
+        if(id !== undefined)
+        {
+            var params = {subLayer : id, layer : this.children[id+1], colorLayerId : this.colorLayerId,elevationLayerId : this.elevationLayerId};
+            this.interCommand.request(params, node);
         }
-                    
+
     };
 
     /**
-     * @documentation: update node 
+     * @documentation: update node
      * @param {type} node
      * @returns {Boolean}
      */
@@ -113,8 +118,8 @@ define('Scene/Quadtree', [
         if (node.level > this.maxLevel)
             return false;
         else if (node.childrenCount() > 0 ) {
-                
-            node.setMaterialVisibility(false);                
+
+            node.setMaterialVisibility(false);
 
             return false;
         }

@@ -22,18 +22,17 @@ define('Globe/Globe', [
     Ellipsoid, TileMesh, Atmosphere, Clouds, Capabilities,
     CoordCarto, BasicMaterial, THREE) {
 
-    function Globe(gLDebug) {
+    function Globe(size,gLDebug) {
         //Constructor
 
         Layer.call(this);
 
-        var scale = defaultValue(scale, 1.0);
         var caps = new Capabilities();
         this.NOIE = !caps.isInternetExplorer();
         this.gLDebug = gLDebug;
-        this.size = new THREE.Vector3(6378137, 6356752.3142451793, 6378137).multiplyScalar(scale);
+        this.size = size;
         this.ellipsoid = new Ellipsoid(this.size);
-        
+
         this.batiments = new Layer();
         this.layerWGS84Zup = new Layer();
 
@@ -45,31 +44,31 @@ define('Globe/Globe', [
         kml.visible = false;
 
         this.tiles = new Quadtree(TileMesh, this.SchemeTileWMTS(2), this.size, kml);
-        
+
         this.elevationTerrain = new Layer();
         this.colorTerrain = new Layer();
-        
+
         this.tiles.add(this.elevationTerrain);
         this.tiles.add(this.colorTerrain);
-        
+
         this.atmosphere = this.NOIE ? new Atmosphere(this.size) : undefined;
         this.clouds = new Clouds();
 
         var material = new BasicMaterial(new THREE.Color(1, 0, 0));
-        
+
         var geometry = new THREE.SphereGeometry(5);
         var batiment = new THREE.Mesh(geometry, material);
 
-        var position = this.ellipsoid.cartographicToCartesian(new CoordCarto().setFromDegreeGeo(48.87, 0, 200));        
-        
+        var position = this.ellipsoid.cartographicToCartesian(new CoordCarto().setFromDegreeGeo(48.87, 0, 200));
+
         position = new THREE.Vector3(4201215.424138484,171429.945145441,4779294.873914789);
-        
+
         // http://www.apsalin.com/convert-geodetic-to-cartesian.aspx
         // 48.846931,2.337219,50
         position = new THREE.Vector3(4201801.65418896,171495.727885073,4779411.45896233);
-        
+
         //position = this.ellipsoid.cartographicToCartesian(new CoordCarto().setFromDegreeGeo(48.87, 0, 200));
-        
+
         batiment.frustumCulled = false;
         //material.wireframe      = true;
         batiment.position.copy(position);
@@ -82,26 +81,26 @@ define('Globe/Globe', [
         material2.wireframe = true;
         batiment2.position.copy(position2);
 
-        //kml.add( batiment );        
+        //kml.add( batiment );
         //kml.add( batiment2 );
-        
+
         var zUp = new THREE.Object3D();
-        
+
         zUp.quaternion.multiply(new THREE.Quaternion().setFromAxisAngle( new THREE.Vector3( 1, 0, 0 ), -Math.PI / 2 ));
         zUp.quaternion.multiply(new THREE.Quaternion().setFromAxisAngle( new THREE.Vector3( 0, 0, 1 ),  Math.PI ));
-        
+
         this.layerWGS84Zup.add(zUp);
-        zUp.add(new THREE.AxisHelper( 10000000 ));        
+        zUp.add(new THREE.AxisHelper( 10000000 ));
         zUp.add(batiment);
-        
+
         this.add(this.tiles);
         this.add(this.batiments);
         //this.add(this.layerWGS84Zup);
-       
+
         if (this.atmosphere !== undefined && !this.gLDebug) {
             this.atmosphere.add(this.clouds);
             this.add(this.atmosphere);
-        }        
+        }
     }
 
     Globe.prototype = Object.create(Layer.prototype);
@@ -113,12 +112,12 @@ define('Globe/Globe', [
      *
      */
     Globe.prototype.QuadTreeToMaterial = function() {
-        //TODO: Implement Me 
+        //TODO: Implement Me
 
     };
 
     Globe.prototype.SchemeTileWMTS = function(type) {
-        //TODO: Implement Me 
+        //TODO: Implement Me
         if (type === 2) {
             var schemeT = new SchemeTile();
             schemeT.add(0, MathExt.PI, -MathExt.PI_OV_TWO, MathExt.PI_OV_TWO);
@@ -148,13 +147,13 @@ define('Globe/Globe', [
 
         this.batiments.children[0].visible = show;
     };
-    
-         
+
+
     Globe.prototype.setRealisticLightingOn = function(bool) {
 
         this.atmosphere.setRealisticOn(bool);
         this.clouds.setLightingOn(bool);
-        
+
     };
 
 
