@@ -1,4 +1,4 @@
-/* 
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -21,26 +21,26 @@ define('Renderer/LayeredMaterial', ['THREE',
 
     var emptyTexture = new THREE.Texture();
     var nbLayer = 2;
-    
+
     var LayeredMaterial = function(id) {
 
         BasicMaterial.call(this);
-        
+
         this.vertexShader = GlobeVS;
         this.fragmentShader = GlobeFS;
 
         this.Textures = [];
         this.pitScale = [];
         this.nbTextures = [];
-            
-        // Uniform three js needs no empty array        
-        for (var l = 0; l < nbLayer; l++) {            
-            
+
+        // Uniform three js needs no empty array
+        for (var l = 0; l < nbLayer; l++) {
+
             this.Textures[l] = [emptyTexture];
             this.pitScale[l] = [new THREE.Vector3(0.0, 0.0, 0.0)];
             this.nbTextures[l] = 0;
         }
-        
+
         this.uniforms.dTextures_00 = {
             type: "tv",
             value: this.Textures[0]
@@ -74,7 +74,7 @@ define('Renderer/LayeredMaterial', ['THREE',
             value: new THREE.Vector3(-0.5, 0.0, 1.0)
         };
 
-        this.setUuid(id);        
+        this.setUuid(id || 0);
         this.wireframe = false;
         //this.wireframe = true;
 
@@ -88,53 +88,53 @@ define('Renderer/LayeredMaterial', ['THREE',
         this.dispatchEvent({
             type: 'dispose'
         });
-        
-        for (var l = 0; l < nbLayer; l++) 
-            for (var i = 0, max = this.Textures[l].length; i < max; i++) 
+
+        for (var l = 0; l < nbLayer; l++)
+            for (var i = 0, max = this.Textures[l].length; i < max; i++)
                 if (this.Textures[l][i] instanceof THREE.Texture)
                     this.Textures[l][i].dispose();
-       
+
         var jT = new JavaTools();
 
         jT.freeArray(this.Textures[0]);
         jT.freeArray(this.Textures[1]);
 
         jT.freeArray(this.uniforms.dTextures_00.value);
-        jT.freeArray(this.uniforms.dTextures_01.value);        
+        jT.freeArray(this.uniforms.dTextures_01.value);
     };
-    
+
     LayeredMaterial.prototype.nbLoadedTextures = function() {
-        
+
         return this.nbTextures[0] + this.nbTextures[1];
     };
-    
+
     LayeredMaterial.prototype.setTexture = function(texture, layer, slot, pitScale) {
-                         
-                                
+
+
         if(this.Textures[layer][slot] === undefined || this.Textures[layer][slot].image === undefined)
             this.nbTextures[layer] += 1 ;
 
-        this.Textures[layer][slot] = texture ? texture : emptyTexture; // BEWARE: array [] -> size: 0; array [10]="wao" -> size: 11  
+        this.Textures[layer][slot] = texture ? texture : emptyTexture; // BEWARE: array [] -> size: 0; array [10]="wao" -> size: 11
 
-        this.pitScale[layer][slot] = pitScale ? pitScale : new THREE.Vector3(0.0,0.0,1.0);                                             
+        this.pitScale[layer][slot] = pitScale ? pitScale : new THREE.Vector3(0.0,0.0,1.0);
 
     };
-    
+
     LayeredMaterial.prototype.setTexturesLayer = function(textures, layer){
-                        
+
         for (var i = 0, max = textures.length; i < max; i++) {
-            
+
             if(textures[i])
                 this.setTexture(textures[i].texture,layer,i,textures[i].pitch);
 
-        }                
-    };        
+        }
+    };
 
     LayeredMaterial.prototype.enablePickingRender = function(enable) {
         this.uniforms.pickingRender.value = enable === true ? 1 : 0;
 
     };
-    
+
     LayeredMaterial.prototype.setLightingOn = function (enable){
         this.uniforms.lightingOn.value = enable === true ? 1 : 0;
     };

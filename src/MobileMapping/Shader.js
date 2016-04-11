@@ -1,7 +1,7 @@
 define ( 'MobileMapping/Shader', [],function () {
-		
+
 	var Shader ={
-            
+
             shadersURL : null,//shadersURL;
             shaderNum : null,//shadersURL.length;
             shaders : {},
@@ -12,7 +12,7 @@ define ( 'MobileMapping/Shader', [],function () {
                           value: [] // an empty array
                     },
                     displacementy: {
-                          type: 'f', // a float	
+                          type: 'f', // a float
                           value: [] // an empty array
                     },
                     displacementz: {
@@ -36,14 +36,14 @@ define ( 'MobileMapping/Shader', [],function () {
                         alpha:{type:'f',value:0.5},
                         colortest:{type:'v3', value: {}},
                         nb_time:{type: 'i',value: 0}
-             },         
+             },
 
              init: function(shadersURL){
                  this.shadersURL = shadersURL;
                  this.shaderNum =  shadersURL.length;
              },
 
-             loadShaders : function() {              
+             loadShaders : function() {
                  var loadedShaders = 0;
                  var that = this;
 
@@ -59,7 +59,7 @@ define ( 'MobileMapping/Shader', [],function () {
                  }
 
                  for (var i=0; i < that.shaderNum; i++) {
-                     
+
                     var currentShaderURL = that.shadersURL[i];
 
                     var request = new XMLHttpRequest();
@@ -95,9 +95,9 @@ define ( 'MobileMapping/Shader', [],function () {
                     */
                  }
              },
-            
+
     shaderTextureProjectiveVS : function(N) { return [
-    
+
         "#ifdef GL_ES",
         "precision  highp float;",
         "#endif",
@@ -126,11 +126,11 @@ define ( 'MobileMapping/Shader', [],function () {
         "    for(int i=0; i<N; ++i) v_texcoord[i] = mvpp[i] * (position-translation[i]);",
         "    mat4 projModelViewMatrix = (RTC == 0) ? projectionMatrix * modelViewMatrix : mVPMatRTC;",
         "    gl_Position  =  projModelViewMatrix * pos;",
-        
+
         "#ifdef USE_LOGDEPTHBUF",
 
         "    gl_Position.z = log2(max( EPSILON, gl_Position.w + 1.0 )) * logDepthBufFC;",
-            
+
         "    #ifdef USE_LOGDEPTHBUF_EXT",
 
          "       vFragDepth = 1.0 + gl_Position.w;",
@@ -144,15 +144,15 @@ define ( 'MobileMapping/Shader', [],function () {
       "  #endif",
         "}"
     ].join('\n');},
-    
+
      shaderTextureProjectiveFS : function(N,idmask, iddisto) {
       idmask = idmask || [];
       iddisto = iddisto || [];
       var M = 0;
-      for(var i=0;i<idmask.length;++i) 
+      for(var i=0;i<idmask.length;++i)
         if(M<=idmask[i]) M=idmask[i]+1;
       var D = 0;
-      for( i=0;i<iddisto.length;++i) 
+      for( i=0;i<iddisto.length;++i)
         if(D<=iddisto[i]) D=iddisto[i]+1;
 
       var mainLoop = "";
@@ -182,7 +182,7 @@ define ( 'MobileMapping/Shader', [],function () {
       }
 
       return [
-         
+
         "#ifdef GL_ES",
         "precision  highp float;",
         "#endif",
@@ -201,7 +201,7 @@ define ( 'MobileMapping/Shader', [],function () {
         "#define M "+M,
         "#define D "+D,
         "#define N "+N,
-        
+
         "varying vec3      v_texcoord[N];",
         (M>0) ? "uniform sampler2D mask[M];" : "",
         "uniform sampler2D texture[N];",
@@ -238,20 +238,20 @@ define ( 'MobileMapping/Shader', [],function () {
       "  vec4 color  = vec4(0.);",
       "  vec4 color0 = vec4(0.);",
       "  int blend = 0;",
-      
+
       mainLoop,
-      
+
       "  if(color0.a>1.) color0 /= color0.a;",
       // if blending 2 images or more with sufficient opacity, return the normalized opaque color
       // else mix the alpha-weighted color with the non-alpha-weighted color
       "  gl_FragColor = (blend>1 && color.a>amin) ? color/color.a : color/amin+(1.-color.a/amin)*color0; //vec4(1.,0.,0.,1.); ",
-   "} "         
-     
+   "} "
+
     ].join('\n');},
-        
-         
+
+
        shaderLaserVS :   [
-          
+
       "    #ifdef GL_ES ",
       "    precision mediump float;",
       "    #endif ",
@@ -289,13 +289,13 @@ define ( 'MobileMapping/Shader', [],function () {
       "          colorpoint = color;",
 
       "      }"
-        
-       ],
-       
 
-       
+       ],
+
+
+
         shaderLaserFS :   [
-        
+
     "      #ifdef GL_ES ",
     "        precision mediump float;",
     "      #endif",
@@ -308,12 +308,12 @@ define ( 'MobileMapping/Shader', [],function () {
      "       {",
 
        "         gl_FragColor = vec4(colorpoint,alpha);",
- 
+
       "      }	"
 
-        
+
        ],
-       
+
          shaderBati3DVS :   [
 
             "#ifdef GL_ES",
@@ -336,9 +336,9 @@ define ( 'MobileMapping/Shader', [],function () {
                "   gl_Position  =  projectionMatrix *  modelViewMatrix * vec4( position, 1.0 );",
                "}"
          ],
-         
+
          shaderBati3DFS :   [
-             
+
            " #ifdef GL_ES ",
            " precision highp float;",
            " #endif",
@@ -384,16 +384,16 @@ define ( 'MobileMapping/Shader', [],function () {
            "               color.a = alpha;",
            "    gl_FragColor = color; //vec4(1.,1.,0.,1.);//texture2D(u_textures[0],uv);",
           " }"
-             
-             
+
+
          ]
-             
-             
-             
-             
-             
-             
+
+
+
+
+
+
          };
- 
-         return Shader;   
+
+         return Shader;
 });

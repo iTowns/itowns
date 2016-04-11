@@ -4,6 +4,7 @@
  * Description: La camera scene, interface avec la camera du 3DEngine.
  */
 
+/* global Float64Array*/
 
 define('Renderer/Camera', ['Scene/Node', 'THREE'], function(Node, THREE) {
 
@@ -16,6 +17,10 @@ define('Renderer/Camera', ['Scene/Node', 'THREE'], function(Node, THREE) {
         this.FOV = 30;
 
         this.camera3D = new THREE.PerspectiveCamera(this.FOV, this.ratio);
+
+        // /!\ WARNING Matrix JS are in Float32Array
+        this.camera3D.matrixWorld.elements = new Float64Array(16);
+
         this.camera3D.matrixAutoUpdate = false;
         this.camera3D.rotationAutoUpdate = false;
 
@@ -26,7 +31,7 @@ define('Renderer/Camera', ['Scene/Node', 'THREE'], function(Node, THREE) {
         this.Hypotenuse = Math.sqrt(this.width * this.width + this.height * this.height);
 
         var radAngle = this.FOV * Math.PI / 180;
-        this.HFOV = 2.0 * Math.atan(Math.tan(radAngle * 0.5) / this.ratio); // TODO surement faux               
+        this.HFOV = 2.0 * Math.atan(Math.tan(radAngle * 0.5) / this.ratio); // TODO surement faux
         this.HYFOV = 2.0 * Math.atan(Math.tan(radAngle * 0.5) * this.Hypotenuse / this.width);
         this.preSSE = this.Hypotenuse * (2.0 * Math.tan(this.HYFOV * 0.5));
 
@@ -94,7 +99,7 @@ define('Renderer/Camera', ['Scene/Node', 'THREE'], function(Node, THREE) {
 
         var SSE = Math.sqrt(dotProductW) * this.preSSE * (node.geometricError / distance);
         //var SSE = this.preSSE * (node.geometricError / distance);
- 
+
         node.sse = SSE;
 
         return SSE;
@@ -109,20 +114,20 @@ define('Renderer/Camera', ['Scene/Node', 'THREE'], function(Node, THREE) {
         this.frustum.setFromMatrix(new THREE.Matrix4().multiplyMatrices(this.camera3D.projectionMatrix, this.camera3D.matrixWorldInverse));
 
     };
-    
-    Camera.prototype.updateMatrixWorld = function() 
+
+    Camera.prototype.updateMatrixWorld = function()
     {
         this.camera3D.updateMatrix();
         this.camera3D.updateMatrixWorld(true);
         this.camera3D.matrixWorldInverse.getInverse(this.camera3D.matrixWorld);
-        
+
     };
-    
-    Camera.prototype.getDistanceFromOrigin = function() 
+
+    Camera.prototype.getDistanceFromOrigin = function()
     {
         return this.camera3D.position.length();
     };
-    
+
     Camera.prototype.setPosition = function(position) {
         this.camera3D.position.copy(position);
     };

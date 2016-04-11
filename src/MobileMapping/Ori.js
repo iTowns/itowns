@@ -1,6 +1,6 @@
 
 /**
-* 
+*
 * @author AD IGN
 * Class where we get the Extrinseque and Intrinseque parameters of the system. Camera (laser soon).
 * Next we will dynamically load configuration from server in case of changes
@@ -17,23 +17,23 @@ define('MobileMapping/Ori',['three','MobileMapping/Sensor', 'when'],
       sensors:[],
 
       init: function(options){
-          
-          
+
+
         var that = this;
         var baseUrl = options.cam;// PanoramicProvider.getMetaDataSensorURL();
 
         var deferred = when.defer();
-        
+
         var request = new XMLHttpRequest();
         request.open('GET', baseUrl, true);
 
         request.onload = function() {
           if (request.status >= 200 && request.status < 400) {
-              
+
             var data = JSON.parse(request.responseText);
             that.handleDBData(data);
-            deferred.resolve(this.initiated); 
-          } else { 
+            deferred.resolve(this.initiated);
+          } else {
             //  console.log("error loading MetaDataSensorURL");
           }
         };
@@ -43,7 +43,7 @@ define('MobileMapping/Ori',['three','MobileMapping/Sensor', 'when'],
         };
 
         request.send();
-        return deferred.promise; 
+        return deferred.promise;
       },
 
       handleDBData :function(data){
