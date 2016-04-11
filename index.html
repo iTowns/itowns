@@ -13,28 +13,15 @@ and open the template in the editor.
 	    body { margin: 0; overflow:hidden; height:100%}
             
             #viewerDiv {
-                
-                    margin : auto auto;
-                    text-align: center;
-                    
-                    width: 100%;
-                    height: 100%;
-                    /*margin-top: 50vh;
-                    transform: translateY(-50%);*/
-
+                margin : auto auto;
+                width: 100%;
+                height: 100%;
+                padding: 0;
+                /*margin-top: 50vh;
+                transform: translateY(-50%);*/
             }
-            #menuDiv {
-                    margin : auto auto;
-                    text-align: center;
-                    position: absolute;
-                    z-index: 10;
-                    margin-left:0px;
-                    top: 0px;
-            }
+            #menuDiv {position: absolute; top:0px; margin-left: 0px;}
             
-            .dg.a{
-                overflow-x: visible;
-            }
 
         </style>
         <meta charset="UTF-8">
@@ -50,7 +37,7 @@ and open the template in the editor.
 
                // iTowns namespace defined here
 
-               var viewerDiv = document.getElementById("viewerDiv");            
+               var viewerDiv = document.getElementById("viewerDiv");
                
                itowns.viewer.createSceneGlobe(initCenter, viewerDiv) ;
 
@@ -68,14 +55,13 @@ and open the template in the editor.
                         itowns.viewer.launchCommandApi();
                    };
                };
-
+               
                var text = new Menu(); 
-               var gui = new dat.GUI();
+               var gui = new dat.GUI( { autoPlace: false } );
                gui.domElement.id = 'menuDiv';
-               menuID = document.getElementById("menuDiv");
-               viewerDiv.appendChild(menuID);
+               viewerDiv.appendChild(gui.domElement);
                //gui.close();
-
+                       
                gui.add(text, 'Layer', [ 'OrthoGeoportail', 'DarkMatterOSM' ] ).onChange(function(newValue) {
                    
                         var layer, baseUrl;
