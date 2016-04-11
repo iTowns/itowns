@@ -17,14 +17,6 @@ define('Core/Commander/InterfaceCommander', ['Core/Commander/ManagerCommands', '
     InterfaceCommander.prototype.constructor = InterfaceCommander;
 
     /**
-     * @param com {[object Object]}
-     */
-    InterfaceCommander.prototype.request = function(/*com*/) {
-        //TODO: Implement Me
-
-    };
-
-    /**
      * @return  {[object Object]}
      */
     InterfaceCommander.prototype.buildCommand = function() {
@@ -32,13 +24,13 @@ define('Core/Commander/InterfaceCommander', ['Core/Commander/ManagerCommands', '
         this._builderCommand();
     };
 
-    InterfaceCommander.prototype.request = function(parameters, requester, layer) {
+    InterfaceCommander.prototype.request = function(parameters, requester) {
 
         var command = new Command();
         command.type = this.type;
         command.requester = requester;
         command.paramsFunction = parameters;
-        command.layer = layer;
+        command.layer = parameters.layer;
 
         //command.priority = parent.sse === undefined ? 1 : Math.floor(parent.visible ? parent.sse * 10000 : 1.0) *  (parent.visible ? Math.abs(19 - parent.level) : Math.abs(parent.level) ) *10000;
 

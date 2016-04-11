@@ -136,8 +136,8 @@ define('Core/Commander/Providers/TileProvider', [
             tile.updateMatrix();
             tile.updateMatrixWorld();
 
-            var elevationlayerId = command.paramsFunction.elevationLayerId[tileCoord.zoom > 11 ? 1 : 0];
-            var colorlayerId = command.paramsFunction.colorLayerId;
+            var elevationlayerId = command.paramsFunction.layer.elevationLayerId[tileCoord.zoom > 11 ? 1 : 0];
+            var colorlayerId = command.paramsFunction.layer.colorLayerId;
 
             if(tileCoord.zoom > 3 )
                 tileCoord =  undefined;

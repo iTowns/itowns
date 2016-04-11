@@ -289,9 +289,9 @@ define('Core/Commander/Providers/WMTS_Provider', [
             }
         };
 
-        WMTS_Provider.prototype.getColorTextures = function(tile,layerId) {
+        WMTS_Provider.prototype.getColorTextures = function(tile,layerWMTSId) {
 
-            var layer = this.layersWMTS[layerId];
+            var layer = this.layersWMTS[layerWMTSId];
 
             if (tile.level >= layer.zoom.min)
             {
@@ -321,7 +321,7 @@ define('Core/Commander/Providers/WMTS_Provider', [
                         cooWMTS = this.projection.WMTS_WGS84Parent(cooWMTS,levelParent,pitch);
                    }
 
-                   promises.push(this.getColorTexture(cooWMTS,pitch,layerId));
+                   promises.push(this.getColorTexture(cooWMTS,pitch,layerWMTSId));
 
                 }
 
