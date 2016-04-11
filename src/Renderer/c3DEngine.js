@@ -26,7 +26,7 @@ define('Renderer/c3DEngine', [
         PICKING: 1
     };
 
-    function c3DEngine(scene, positionCamera, debugMode, gLDebug) {
+    function c3DEngine(scene, positionCamera, viewerDiv, debugMode, gLDebug) {
         //Constructor
     
         if (instance3DEngine !== null) {
@@ -36,11 +36,11 @@ define('Renderer/c3DEngine', [
         THREE.ShaderChunk["logdepthbuf_pars_vertex"];
 
         this.gLDebug = gLDebug;
-
+        this.viewerDiv = viewerDiv;
         this.debug = debugMode;    
         this.scene3D = new THREE.Scene();
-        this.width = this.debug ? window.innerWidth * 0.5 : window.innerWidth;
-        this.height = window.innerHeight;
+        this.width = this.debug ? viewerDiv.clientWidth * 0.5 : viewerDiv.clientWidth;
+        this.height = viewerDiv.clientHeight;
         this.camDebug = undefined;
         //this.size = 1.0;
         this.dnear = 0.0;
@@ -114,8 +114,8 @@ define('Renderer/c3DEngine', [
 
         this.onWindowResize = function() {
 
-            this.width = this.debug ? window.innerWidth * 0.5 : window.innerWidth;
-            this.height = window.innerHeight;
+            this.width = this.debug ? this.viewerDiv.clientWidth * 0.5 : this.viewerDiv.clientWidth;
+            this.height = this.viewerDiv.clientHeight;
             this.camera.resize(this.width, this.height);            
             this.scene.updateCamera();
 
@@ -159,20 +159,30 @@ define('Renderer/c3DEngine', [
 
         this.camera.camera3D.near = Math.max(15.0, 0.000002352 * this.size);
         this.camera.camera3D.updateProjectionMatrix();
+
+        //
+        // Create canvas
+        // 
+
+        var canvas = document.createElement( 'canvas' );
+        canvas.id = 'canvasWebGL';
         
         //
         // Create renderer
-        //        
+        // 
+        
         this.renderer = new THREE.WebGLRenderer({
+            canvas: canvas,
             antialias: true,
             alpha: true,
             logarithmicDepthBuffer: this.gLDebug ? false : true
         });
-        this.renderer.setPixelRatio(window.devicePixelRatio);
-        this.renderer.setSize(window.innerWidth, window.innerHeight);
+        this.renderer.setPixelRatio(viewerDiv.devicePixelRatio);
+        this.renderer.setSize(viewerDiv.clientWidth, viewerDiv.clientHeight);
         this.renderer.setClearColor(0x030508);
         this.renderer.autoClear = false;
-        document.body.appendChild(this.renderer.domElement);
+        //this.viewerDiv.appendChild(canvas);
+        viewerDiv.appendChild(this.renderer.domElement);
     
         //
         // Create Control
@@ -187,7 +197,7 @@ define('Renderer/c3DEngine', [
         this.controls.maxDistance = this.size * 8.0;
         this.controls.keyPanSpeed = 0.01;
         
-        window.addEventListener('resize', this.onWindowResize, false);
+        viewerDiv.addEventListener('resize', this.onWindowResize, false);
         this.controls.addEventListener('change', this.update);
     }
 
@@ -358,7 +368,7 @@ define('Renderer/c3DEngine', [
         //this.renderer.setScissorTest ( false);
         this.setStateRender(originalState);
        
-        var pixelBuffer = new Float32Array(width * height * 4);
+        var pixelBuffer = new Float32Array(width * height * 4);        
         this.renderer.readRenderTargetPixels(this.pickingTexture, x, y, width, height, pixelBuffer);
 
         return pixelBuffer;
@@ -430,11 +440,10 @@ define('Renderer/c3DEngine', [
         
         if (mouse === undefined)
             mouse = new THREE.Vector2(Math.floor(this.width / 2), Math.floor(this.height / 2));
-
+            
         this.camera.camera3D.updateMatrixWorld();
 
-        this.dummy.visible = false;
-
+        this.dummy.visible = false;                     
         var buffer = this.renderTobuffer(mouse.x, this.height - mouse.y, 1, 1, RENDER.PICKING);
         this.dummy.visible = true;
 
@@ -442,12 +451,12 @@ define('Renderer/c3DEngine', [
         
         if (scene)
             scene.selectNodeId(buffer[3]);
-
+            
         var worldPosition = glslPosition.applyMatrix4(this.camera.camera3D.matrixWorld);
         
         if(worldPosition.length()> 10000000)
             return undefined; 
-
+        
         return worldPosition;
 
     };

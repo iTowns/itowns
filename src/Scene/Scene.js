@@ -38,7 +38,7 @@ define('Scene/Scene', [
     var SUBDIVISE = 1;
     var CLEAN = 2;
 
-    function Scene(coordCarto, debugMode,gLDebug) {
+    function Scene(coordCarto,viewerDiv, debugMode,gLDebug) {
         
         if (instanceScene !== null) {
             throw new Error("Cannot instantiate more than one Scene");
@@ -56,9 +56,10 @@ define('Scene/Scene', [
         this.managerCommand = ManagerCommands(this);
         
         this.gLDebug = gLDebug;        
-        this.gfxEngine = c3DEngine(this,positionCamera, debugMode,gLDebug);
+        this.gfxEngine = c3DEngine(this,positionCamera,viewerDiv, debugMode,gLDebug);
         this.browserScene = new BrowseTree(this.gfxEngine);
         this.cap = new Capabilities();
+        
 
     }
 
@@ -240,7 +241,7 @@ define('Scene/Scene', [
     };
 
     Scene.prototype.selectNodeId = function(id) {
-
+        
         this.browserScene.selectedNodeId = id;
 
     };

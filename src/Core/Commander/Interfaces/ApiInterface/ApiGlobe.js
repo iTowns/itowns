@@ -25,6 +25,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         this.scene = null;
         this.commandsTree = null;
         this.projection = new Projection();
+        this.viewerDiv = null;
 
     }
 
@@ -56,7 +57,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
 
     };
 
-    ApiGlobe.prototype.createSceneGlobe = function(coordCarto) {
+    ApiGlobe.prototype.createSceneGlobe = function(coordCarto, viewerDiv) {
         // TODO: Normalement la creation de scene ne doit pas etre ici....
         // Deplacer plus tard
 
@@ -66,7 +67,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         //gLDebug = true; // true to support GLInspector addon
         // debugMode = true;
 
-        this.scene = Scene(coordCarto,debugMode,gLDebug);
+        this.scene = Scene(coordCarto,viewerDiv,debugMode,gLDebug);
 
         var map = new Globe(gLDebug);
 
@@ -249,7 +250,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         
         var intersection = ellipsoid.intersection(ray);
         
-        var center = controlCam.globeTarget.position;
+//        var center = controlCam.globeTarget.position;
         var camPosition = this.scene.currentCamera().position();        
         // var range = center.distanceTo(camPosition);
         var range = intersection.distanceTo(camPosition);
@@ -338,7 +339,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         
         this.scene.currentControls().setRange(pRange);
     };
-    
+               
     ApiGlobe.prototype.launchCommandApi = function () {
 //        console.log(this.getCenter());
 //        console.log(this.getCameraLocation());
@@ -346,11 +347,13 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
 //        console.log(this.pickPosition());
 //        console.log(this.getTilt());
 //        console.log(this.getHeading());
-       console.log(this.getRange());
+//       console.log(this.getRange());
 //        this.setTilt(45);
 //        this.setHeading(180);
 //        this.resetTilt();
 //        this.resetHeading();
+//        var p1 = new CoordCarto(2.4347047,48.8472568,0);
+//        var p2 = new CoordCarto(2.4345599,48.8450221,0);
 //        this.computeDistance(p1, p2); 
 //        
 //        var p = new CoordCarto(2.438544,49.8501392,0);
@@ -365,7 +368,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
     };
     
 //    ApiGlobe.prototype.testTilt = function (){
-//        this.setTilt(90);
+//        this.setTilt(45);
 //        console.log(this.getTilt());
 //        this.resetTilt();
 //        console.log(this.getTilt());
