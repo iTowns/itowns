@@ -197,7 +197,7 @@ define('Renderer/c3DEngine', [
         this.controls.maxDistance = this.size * 8.0;
         this.controls.keyPanSpeed = 0.01;
         
-        viewerDiv.addEventListener('resize', this.onWindowResize, false);
+        window.addEventListener('resize', this.onWindowResize, false);
         this.controls.addEventListener('change', this.update);
     }
 
