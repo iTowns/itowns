@@ -34,10 +34,6 @@ define('Scene/Quadtree', [
         rootNode.enablePickingRender = function() { return true;};
         this.add(rootNode);
 
-        // TEMP
-        this.colorLayerId = 'IGNPO';
-        this.elevationLayerId = ['IGN_MNT','IGN_MNT_HIGHRES'];
-
         for (var i = 0; i < this.schemeTile.rootCount(); i++) {
             this.requestNewTile(this.schemeTile.getRoot(i), rootNode);
         }
@@ -65,7 +61,7 @@ define('Scene/Quadtree', [
 
     Quadtree.prototype.requestNewTile = function(bbox, parent) {
 
-        var params = {bbox: bbox , layer : this };
+        var params = {layer : this,bbox: bbox };
 
         this.interCommand.request(params, parent);
 
@@ -102,7 +98,7 @@ define('Scene/Quadtree', [
 
         if(id !== undefined)
         {
-            var params = {subLayer : id, layer : this.children[id+1], parentLayer : this };
+            var params = { layer : this.children[id+1], subLayer : id};
             this.interCommand.request(params, node);
         }
 
