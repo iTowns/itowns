@@ -65,7 +65,7 @@ define('Scene/Quadtree', [
 
     Quadtree.prototype.requestNewTile = function(bbox, parent) {
 
-        var params = {bbox: bbox , layer : this };//, colorLayerId : this.colorLayerId, elevationLayerId : this.elevationLayerId };
+        var params = {bbox: bbox , layer : this };
 
         this.interCommand.request(params, parent);
 
@@ -102,7 +102,7 @@ define('Scene/Quadtree', [
 
         if(id !== undefined)
         {
-            var params = {subLayer : id, layer : this.children[id+1], colorLayerId : this.colorLayerId,elevationLayerId : this.elevationLayerId};
+            var params = {subLayer : id, layer : this.children[id+1], parentLayer : this };
             this.interCommand.request(params, node);
         }
 
