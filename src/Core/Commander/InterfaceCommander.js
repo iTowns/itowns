@@ -32,13 +32,13 @@ define('Core/Commander/InterfaceCommander', ['Core/Commander/ManagerCommands', '
         this._builderCommand();
     };
 
-    InterfaceCommander.prototype.request = function(parameters, requester, layer) {
+    InterfaceCommander.prototype.request = function(type, requester, layer, parameters) {
 
-        if(parameters.type === undefined || parameters.type === "none") return;
+        if(type === undefined || type === "none") return;
 
         requester.pending = true;
         var command = new Command();
-        command.type = parameters.type;
+        command.type = type;
         command.requester = requester;
         command.paramsFunction = parameters;
         command.layer = layer;

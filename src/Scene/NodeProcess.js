@@ -121,7 +121,7 @@ define('Scene/NodeProcess', ['Scene/BoundingBox', 'Renderer/Camera', 'Core/Math/
         var updateType;
         if(node.level === 0) { // first nodes
             updateType = node.update();
-            interCommand.request({type: updateType}, node, params.tree); // TODO: change parameters
+            interCommand.request(updateType, node, params.tree, {});
 
             node.setVisibility(node.loaded);
             node.setMaterialVisibility(node.loaded);
@@ -140,7 +140,7 @@ define('Scene/NodeProcess', ['Scene/BoundingBox', 'Renderer/Camera', 'Core/Math/
                 var child = node.children[i];
                 updateType = child.update();
 
-                interCommand.request({type: updateType}, child, params.tree); // TODO: change parameters
+                interCommand.request(updateType, child, params.tree, {});
                 child.setVisibility(false);
                 child.setMaterialVisibility(false);
 
