@@ -17,14 +17,6 @@ define('Core/Commander/InterfaceCommander', ['Core/Commander/ManagerCommands', '
     InterfaceCommander.prototype.constructor = InterfaceCommander;
 
     /**
-     * @param com {[object Object]}
-     */
-    InterfaceCommander.prototype.request = function(/*com*/) {
-        //TODO: Implement Me
-
-    };
-
-    /**
      * @return  {[object Object]}
      */
     InterfaceCommander.prototype.buildCommand = function() {

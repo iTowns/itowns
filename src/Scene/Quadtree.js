@@ -20,7 +20,6 @@ define('Scene/Quadtree', [
     function Quadtree(type, schemeTile, size, link) {
         Layer.call(this, type, size);
 
-
         this.link = link;
         this.schemeTile = schemeTile;
         this.tileType = type;
@@ -67,7 +66,7 @@ define('Scene/Quadtree', [
 
     Quadtree.prototype.createTile = function(bbox, parent) {
 
-        var params = {bbox: bbox, level: parent.level + 1, colorLayerId : this.colorLayerId, elevationLayerId : this.elevationLayerId };
+        var params = {bbox: bbox, level: parent.level + 1};
 
         var tile = new this.tileType(params);
         parent.add(tile);

@@ -2,9 +2,9 @@
  * Generated On: 2015-10-5
  * Class: IoDriver_XBIL
  */
-/* global Promise Float32Array*/
+/* global Float32Array*/
 
-define('Core/Commander/Providers/IoDriver_XBIL', ['Core/Commander/Providers/IoDriver'], function(IoDriver) {
+define('Core/Commander/Providers/IoDriver_XBIL', ['Core/Commander/Providers/IoDriver','when'], function(IoDriver,when) {
 
 
     var portableXBIL = function(buffer) {
@@ -85,13 +85,17 @@ define('Core/Commander/Providers/IoDriver_XBIL', ['Core/Commander/Providers/IoDr
 
     IoDriver_XBIL.prototype.read = function(url) {
 
-        // TODO new Promise is supported?
+        // TODO new Promise is supported? not in IE
 
-        //return when.promise(function(resolve, reject)
-        return new Promise(function(resolve/*, reject*/)
+        return when.promise(function(resolve/*, reject*/)
+        //return new Promise(function(resolve/*, reject*/)
         {
             var xhr = new XMLHttpRequest();
 
+
+            //The responseType property cannot be set when the XMLHttpRequest is not async, that is, synchronous.
+            //Setting the third parameter of open to false causes the request to be synchronous.
+            //xhr.open("GET", url, false);
             xhr.responseType = "arraybuffer";
             xhr.crossOrigin = '';
             xhr["parseXBil"] = this.parseXBil;

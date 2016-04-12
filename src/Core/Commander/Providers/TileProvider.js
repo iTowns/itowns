@@ -155,7 +155,7 @@ define('Core/Commander/Providers/TileProvider', [
 
                 tile.texturesNeeded =+ 1;
             } else if(command.type === "elevation") {
-                var elevationlayerId = tile.tileCoord.zoom > 11 ? 'IGN_MNT_HIGHRES' : 'IGN_MNT';
+                var elevationlayerId = command.layer.elevationLayerId[tile.tileCoord.zoom > 11 ? 1 : 0];//tile.tileCoord.zoom > 11 ? 'IGN_MNT_HIGHRES' : 'IGN_MNT';
                 this.providerElevationTexture.getElevationTexture(tile.tileCoord, elevationlayerId).then(function(terrain) {
                     this.setTextureElevation(terrain);
                 }.bind(tile));
@@ -175,7 +175,7 @@ define('Core/Commander/Providers/TileProvider', [
                     pack.pitch = {x: 0, y: 0, z: 1};
                     this.setTexturesLayer([pack], 1);
                 }.bind(tile));
-                /*var colorlayerId = 'IGNPO';
+                /*var colorlayerId = command.paramsFunction.layer.colorLayerId;//'IGNPO';
                 this.providerColorTexture.getColorTexture(tile.tileCoord,{x:0.0,y:0.0,z:1.0},colorlayerId).then(function(colorTextures) {
                     this.setTexturesLayer([colorTextures],1);
                 }.bind(tile));*/

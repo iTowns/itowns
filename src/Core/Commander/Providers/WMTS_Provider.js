@@ -26,8 +26,56 @@ define('Core/Commander/Providers/WMTS_Provider', [
         when,
         THREE,
         CacheRessource) {
+/*
+        var step = function(val,stepVal)
+            {
+                if(val<stepVal)
+                    return 1.0;
+                else
+                    return 0.0;
 
+            };
 
+            var exp2 = function(expo)
+            {
+                return Math.pow(2,expo);
+            };
+
+            function parseFloat2(str) {
+                var float = 0, sign, order, mantiss,exp,
+                int = 0, multi = 1;
+                if (/^0x/.exec(str)) {
+                    int = parseInt(str,16);
+                }else{
+                    for (var i = str.length -1; i >=0; i -= 1) {
+                        if (str.charCodeAt(i)>255) {
+                            console.log('Wrong string parametr');
+                            return false;
+                        }
+                        int += str.charCodeAt(i) * multi;
+                        multi *= 256;
+                    }
+                }
+                sign = (int>>>31)?-1:1;
+                exp = (int >>> 23 & 0xff) - 127;
+                mantissa = ((int & 0x7fffff) + 0x800000).toString(2);
+                for (i=0; i<mantissa.length; i+=1){
+                    float += parseInt(mantissa[i])? Math.pow(2,exp):0;
+                    exp--;
+                }
+                return float*sign;
+        }
+
+        var decode32 = function(rgba) {
+            var Sign = 1.0 - step(128.0,rgba[0])*2.0;
+            var Exponent = 2.0 * (rgba[0]%128.0) + step(128.0,rgba[1]) - 127.0;
+            //console.log(Exponent);
+            var Mantissa = (rgba[1]%128.0)*65536.0 + rgba[2]*256.0 +rgba[3] + parseFloat2(0x800000);
+            console.log(parseFloat2(0x800000));
+            var Result =  Sign * exp2(Exponent) * (Mantissa * exp2(-23.0 ));
+            return Result;
+        };
+*/
         function WMTS_Provider(options) {
             //Constructor
 
@@ -47,7 +95,12 @@ define('Core/Commander/Providers/WMTS_Provider', [
             else
                 this.getTextureFloat = function(buffer){
 
+                    // Start float to RGBA uint8
+                    //var bufferUint = new Uint8Array(buffer.buffer);
+                    // var texture = new THREE.DataTexture(bufferUint, 256, 256);
+
                     var texture = new THREE.DataTexture(buffer, 256, 256, THREE.AlphaFormat, THREE.FloatType);
+
                     texture.needsUpdate = true;
                     return texture;
 
@@ -127,6 +180,12 @@ define('Core/Commander/Providers/WMTS_Provider', [
                     result.texture.generateMipmaps = false;
                     result.texture.magFilter = THREE.LinearFilter;
                     result.texture.minFilter = THREE.LinearFilter;
+
+                    // In RGBA elevation texture LinearFilter give some errors with nodata value.
+                    // need to rewrite sample function in shader
+                    //result.texture.magFilter = THREE.NearestFilter;
+                    //result.texture.minFilter = THREE.NearestFilter;
+
 
                     // TODO ATTENTION verifier le context
                     result.level = coWMTS.zoom;
@@ -232,11 +291,12 @@ define('Core/Commander/Providers/WMTS_Provider', [
             }
         };
 
-        WMTS_Provider.prototype.getColorTextures = function(tile,layerId) {
+        WMTS_Provider.prototype.getColorTextures = function(tile,layerWMTSId) {
 
+            var layer = this.layersWMTS[layerWMTSId];
 
-           if (tile.level >= 2)
-           {
+            if (tile.level >= layer.zoom.min)
+            {
 
                 var promises = [];
                 var lookAtAncestor = tile.currentLevelLayers[1] === -1;
@@ -263,13 +323,13 @@ define('Core/Commander/Providers/WMTS_Provider', [
                         cooWMTS = this.projection.WMTS_WGS84Parent(cooWMTS,levelParent,pitch);
                    }
 
-                   promises.push(this.getColorTexture(cooWMTS,pitch,layerId));
+                   promises.push(this.getColorTexture(cooWMTS,pitch,layerWMTSId));
 
                 }
 
                 return when.all(promises);
-           }
-           else
+            }
+            else
                 return when();
 
        };

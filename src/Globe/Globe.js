@@ -22,16 +22,15 @@ define('Globe/Globe', [
     Ellipsoid, TileMesh, Atmosphere, Clouds, Capabilities,
     CoordCarto, BasicMaterial, THREE) {
 
-    function Globe(gLDebug) {
+    function Globe(size,gLDebug) {
         //Constructor
 
         Layer.call(this);
 
-        var scale = defaultValue(scale, 1.0);
         var caps = new Capabilities();
         this.NOIE = !caps.isInternetExplorer();
         this.gLDebug = gLDebug;
-        this.size = new THREE.Vector3(6378137, 6356752.3142451793, 6378137).multiplyScalar(scale);
+        this.size = size;
         this.ellipsoid = new Ellipsoid(this.size);
 
         this.batiments = new Layer();
