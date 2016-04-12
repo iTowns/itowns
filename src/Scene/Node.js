@@ -23,7 +23,6 @@ define('Scene/Node', [], function() {
         this.level = 0;
         this.screenSpaceError = 0.0;
         this.loaded = false;
-        this.wait = false;
         this.visible = true;
         this.layer = null;
         this.divided = false;
@@ -49,20 +48,6 @@ define('Scene/Node', [], function() {
 
         return this.children.length === 0;
 
-    };
-
-    Node.prototype.childrenLoaded = function() {
-
-        if(!this.wait && this.childrenCount() > 0)
-            return true;
-
-        for (var i = 0, max = this.children.length; i < max; i++) {
-            if (this.children[i].loaded === false)
-                return false;
-        }
-
-        this.wait = false;
-        return true;
     };
 
     /**

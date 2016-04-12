@@ -40,7 +40,7 @@ define('Core/Commander/InterfaceCommander', ['Core/Commander/ManagerCommands', '
         var command = new Command();
         command.type = type;
         command.requester = requester;
-        command.paramsFunction = parameters;
+        command.parameters = parameters;
         command.layer = layer;
 
         //command.priority = parent.sse === undefined ? 1 : Math.floor(parent.visible ? parent.sse * 10000 : 1.0) *  (parent.visible ? Math.abs(19 - parent.level) : Math.abs(parent.level) ) *10000;

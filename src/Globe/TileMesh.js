@@ -375,7 +375,6 @@ define('Globe/TileMesh', [
         /*if (this.allTexturesAreLoaded())
         {
             //this.loaded = true;
-            //this.parent.childrenLoaded();
         }*/
     };
 

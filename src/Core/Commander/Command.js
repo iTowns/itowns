@@ -16,7 +16,7 @@ define('Core/Commander/Command', [], function() {
         this.inParallel = null;
         this.inBuffers = null;
         this.outBuffers = null;
-        this.paramsFunction = {};
+        this.parameters = {};
         this.processFunction = null;
         this.async = null;
         this.force = null;

@@ -34,14 +34,13 @@ define('Scene/Quadtree', [
 
         rootNode.enablePickingRender = function() { return true;};
         this.add(rootNode);
-        rootNode.level = -1;    // TODO: change
+        rootNode.level = -1;    // TODO: change?
 
         // TEMP
         this.colorLayerId = 'IGNPO';
         this.elevationLayerId = ['IGN_MNT','IGN_MNT_HIGHRES'];
 
         for (var i = 0; i < this.schemeTile.rootCount(); i++) {
-            //this.requestNewTile(this.schemeTile.getRoot(i), rootNode);
             this.createTile(this.schemeTile.getRoot(i), rootNode);
         }
     }
@@ -74,70 +73,23 @@ define('Scene/Quadtree', [
         parent.add(tile);
 
     };
-/*
-    Quadtree.prototype.requestNewTile = function(bbox, parent) {
 
-        var params = {bbox: bbox, colorLayerId : this.colorLayerId, elevationLayerId : this.elevationLayerId };
-
-        this.interCommand.request(params, parent, this);
-
-    };
-*/
     /**
-     * @documentation: subdivise node if necessary
+     * @documentation: subdivide node if necessary
      * @param {type} node
      * @returns {Array} four bounding box
      */
-    Quadtree.prototype.up = function(node) {
+    Quadtree.prototype.subdivide = function(node) {
 
-        /*if (!this.update(node))
-            return;*/
-
-        //node.wait = true;
         node.divided = true;
+        if(node.level >= this.maxLevel) return;
+
         var quad = new Quad(node.bbox);
         this.createTile(quad.northWest, node);
         this.createTile(quad.northEast, node);
         this.createTile(quad.southWest, node);
         this.createTile(quad.southEast, node);
 
-    };
-
-    Quadtree.prototype.down = function(node)
-    {
-        node.setMaterialVisibility(true);
-        node.setChildrenVisibility(false);
-    };
-
-    Quadtree.prototype.upSubLayer = function(node) {
-
-        var id = node.getDownScaledLayer();
-
-        if(id !== undefined)
-        {
-            var params = {subLayer : id,colorLayerId : this.colorLayerId,elevationLayerId : this.elevationLayerId};
-            //this.interCommand.request(params, node, this.children[id+1]); TODO
-        }
-
-    };
-
-    /**
-     * @documentation: update node
-     * @param {type} node
-     * @returns {Boolean}
-     */
-    Quadtree.prototype.update = function(node) {
-
-        if (node.level > this.maxLevel)
-            return false;
-        else if (node.childrenCount() > 0 ) {
-
-            //node.setMaterialVisibility(false);
-
-            return false;
-        }
-
-        return true;
     };
 
     return Quadtree;

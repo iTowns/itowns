@@ -19,6 +19,7 @@ define('Scene/NodeProcess', ['Scene/BoundingBox', 'Renderer/Camera', 'Core/Math/
         this.r = defaultValue(size, new THREE.Vector3());
         this.cV = new THREE.Vector3();
 
+        this.interCommand = new InterfaceCommander();    // TODO: InterfaceCommander static class?
     }
 
     /**
@@ -56,7 +57,7 @@ define('Scene/NodeProcess', ['Scene/BoundingBox', 'Renderer/Camera', 'Core/Math/
      * @return {Boolean}      the culling attempt's result
      */
     NodeProcess.prototype.isCulled = function(node, camera) {
-        return !( this.frustumCullingOBB(node, camera)&&this.horizonCulling(node, camera));
+        return !(this.frustumCullingOBB(node, camera) && this.horizonCulling(node, camera));
     };
 
     /**
@@ -77,56 +78,25 @@ define('Scene/NodeProcess', ['Scene/BoundingBox', 'Renderer/Camera', 'Core/Math/
 
     };
 
-    /**
-     * @documentation: Compute screen space error of node in function of camera
-     * @param {type} node
-     * @param {type} camera
-     * @returns {Boolean}
-     */
-    NodeProcess.prototype.SSE = function(node, camera, params) {
-
-        var sse = this.checkSSE(node, camera);
-        var interCommand = new InterfaceCommander();    // TODO: InterfaceCommander static class?
-
-        if(params.withUp && node.material.visible && !node.wait )
-        {
-            if (sse) {
-                if(node.loaded) {
-                    if(!node.divided) {
-                        // request level up
-                        params.tree.up(node);
-                    }
-                } else if(!node.pending) {
-                    interCommand.request({/*params*/}, node); // TODO: change parameters
-                }
-            }
-            else
-                // request level up other quadtree
-                params.tree.upSubLayer(node);
-        }
-        else if (!sse) {
-            // request level down
-            params.tree.down(node);
-        }
-
-    };
-
     NodeProcess.prototype.isVisible = function(node, camera) {
         return !this.isCulled(node, camera) && this.checkSSE(node, camera);
     };
 
+    NodeProcess.prototype.traverseChildren = function(node) {
+        return !node.material.visible;
+    };
+
     NodeProcess.prototype.process = function(node, camera, params) {
         // When entering this function, the node is ALWAYS visible
-        var interCommand = new InterfaceCommander();    // TODO: InterfaceCommander static class?
         var updateType;
         if(node.level === 0) { // first nodes
             updateType = node.update();
-            interCommand.request(updateType, node, params.tree, {});
+            this.interCommand.request(updateType, node, params.tree, {});
 
-            node.setVisibility(node.loaded);
-            node.setMaterialVisibility(node.loaded);
             if(!node.loaded) {
-                return false;
+                node.setVisibility(false);
+                node.setMaterialVisibility(false);
+                return;
             }
         }
 
@@ -140,7 +110,7 @@ define('Scene/NodeProcess', ['Scene/BoundingBox', 'Renderer/Camera', 'Core/Math/
                 var child = node.children[i];
                 updateType = child.update();
 
-                interCommand.request(updateType, child, params.tree, {});
+                this.interCommand.request(updateType, child, params.tree, {});
                 child.setVisibility(false);
                 child.setMaterialVisibility(false);
 
@@ -158,11 +128,9 @@ define('Scene/NodeProcess', ['Scene/BoundingBox', 'Renderer/Camera', 'Core/Math/
                 node.setMaterialVisibility(true);
             }
         } else {
-            params.tree.up(node);
+            params.tree.subdivide(node);
             node.setMaterialVisibility(true);
         }
-
-        return node.visible;
     };
 
     /**

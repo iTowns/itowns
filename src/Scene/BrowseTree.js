@@ -70,15 +70,12 @@ define('Scene/BrowseTree', ['Globe/TileMesh', 'THREE'], function( TileMesh, THRE
         if(node.parent.material.visible)
             return false;
 
-        if(process.process(node, camera, params)) {
+        process.process(node, camera, params);
+        if(node.visible) {
             this.uniformsProcess(node, camera);
         }
-        /*if(!process.isCulled(node, camera)) {
-            node.setVisibility(true);
-            process.SSE(node, camera,params);
-            this.uniformsProcess(node, camera);
-        }*/
-        return !node.material.visible /*&& !node.wait*/;
+
+        return process.traverseChildren(node);
 
     };
 
@@ -165,7 +162,7 @@ define('Scene/BrowseTree', ['Globe/TileMesh', 'THREE'], function( TileMesh, THRE
         for (var i = 0; i < node.children.length; i++) {
             var child = node.children[i];
             // TODO node.wait === true ---> delete child and switch to node.wait = false
-            if (this._clean(child, level, process, camera) && ((child.level >= level && child.children.length === 0 && !process.checkSSE(child, camera) && !node.wait) || node.level === 2))
+            if (this._clean(child, level, process, camera) && ((child.level >= level && child.children.length === 0 && !process.checkSSE(child, camera) /*&& !node.wait*/) || node.level === 2))
                 childrenCleaned++;
         }
 
