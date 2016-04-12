@@ -393,7 +393,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         var wmtsProvider = new WMTS_Provider({url:baseurl, layer:layer});
         this.scene.managerCommand.providerMap[4] = wmtsProvider;
         this.scene.managerCommand.providerMap[5] = wmtsProvider;
-        this.scene.managerCommand.providerMap[this.scene.layers[0].node.meshTerrain.layerId].providerWMTS = wmtsProvider;
+        this.scene.managerCommand.providerMap[this.scene.layers[0].node.meshTerrain.id].providerWMTS = wmtsProvider;
         this.scene.browserScene.updateNodeMaterial(wmtsProvider);
         this.scene.renderScene3D();
     };
