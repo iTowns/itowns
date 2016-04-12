@@ -126,7 +126,7 @@ define('Scene/NodeProcess', ['Scene/BoundingBox', 'Renderer/Camera', 'Core/Math/
             node.setVisibility(node.loaded);
             node.setMaterialVisibility(node.loaded);
             if(!node.loaded) {
-                return node.visible;
+                return false;
             }
         }
 
@@ -135,28 +135,27 @@ define('Scene/NodeProcess', ['Scene/BoundingBox', 'Renderer/Camera', 'Core/Math/
         if(node.divided) {
             var childrenVisible = 0;
             var childrenReady = 0;
-            for(var i = 0; i < node.children.length; i++) { // Display node if one or several children are not visible
+            var allChildrenCullable = true;
+            for(var i = 0; i < node.children.length; i++) { // Display node if all visible children are ready to be displayed
                 var child = node.children[i];
                 updateType = child.update();
 
                 interCommand.request({type: updateType}, child, params.tree); // TODO: change parameters
+                child.setVisibility(false);
+                child.setMaterialVisibility(false);
 
-                if(child.loaded && !this.isCulled(child,camera)) {  // If child is in camera vision, it must be loaded and have correct SSE to be displayed
+                if(!child.cullable) { // All tiles must be tested for culling before we can reliabaly decide to display the children
+                    allChildrenCullable = false;
+                }
+                if(child.cullable && !this.isCulled(child,camera)) {
                     childrenVisible++;
                     if(child.loaded && this.checkSSE(child, camera)) {
                         childrenReady++;
-                    } else {
-                        child.setVisibility(false);
-                        child.setMaterialVisibility(false);
                     }
                 }
             }
-            if(childrenReady !== childrenVisible || childrenVisible === 0) {  // If not all visible children are ready, hide them and display current node
+            if(!allChildrenCullable || childrenReady !== childrenVisible || childrenVisible === 0) {  // If not all visible children are ready, display current node
                 node.setMaterialVisibility(true);
-                for(i = 0; i < node.children.length; i++) {
-                    node.children[i].setVisibility(false);
-                    node.children[i].setMaterialVisibility(false);
-                }
             }
         } else {
             params.tree.up(node);

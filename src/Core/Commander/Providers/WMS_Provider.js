@@ -42,6 +42,7 @@ define('Core/Commander/Providers/WMS_Provider', [
 
             this.baseUrl = options.url || "";
             this.layer = options.layer || "";
+            this.style = options.style || "";
             this.format = defaultValue(options.format, "image/jpeg");
             this.srs = options.srs || "";
             this.width = defaultValue(options.width, 256);
@@ -63,7 +64,8 @@ define('Core/Commander/Providers/WMS_Provider', [
                 "&SERVICE=WMS&VERSION=1.1.1" + "&REQUEST=GetMap&BBOX=" +
                 bbox.minCarto.longitude + "," + bbox.minCarto.latitude + "," +
                 bbox.maxCarto.longitude + "," + bbox.maxCarto.latitude +
-                "&WIDTH=" + this.width + "&HEIGHT=" + this.height + "&SRS=" + this.srs;
+                "&WIDTH=" + this.width + "&HEIGHT=" + this.height + "&SRS=" + this.srs +
+                "&STYLES=";
             return url;
         };
 
@@ -121,6 +123,8 @@ define('Core/Commander/Providers/WMS_Provider', [
                 result.texture.magFilter = THREE.LinearFilter;
                 result.texture.minFilter = THREE.LinearFilter;
                 result.texture.anisotropy = 16;
+                result.texture.needsUpdate = true;
+                result.texture.url = url;
 
                 this.cache.addRessource(url, result.texture);
                 return result.texture;

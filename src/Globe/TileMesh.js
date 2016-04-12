@@ -159,6 +159,8 @@ define('Globe/TileMesh', [
     TileMesh.prototype.setGeometry = function(geometry, center) {   // TODO: try to remove center
         this.pending = false;
         this.updateGeometry = false;
+        this.cullable = true;
+        this.loadingCheck();
 
         this.geometry = geometry;
 
@@ -205,6 +207,7 @@ define('Globe/TileMesh', [
     TileMesh.prototype.setTextureElevation = function(elevation) {
         this.pending = false;
         this.updateElevation = false;
+        this.loadingCheck();
         var texture;
         var pitScale;
         var ancestor;
@@ -266,7 +269,6 @@ define('Globe/TileMesh', [
             // TODO: use parent data while waiting?
             return "imagery";
         }
-
         return "none";
     };
 
@@ -296,6 +298,7 @@ define('Globe/TileMesh', [
     TileMesh.prototype.setTexturesLayer = function(textures,idLayer){
         this.pending = false;
         this.updateImagery = false;
+        this.loadingCheck();
 
         if(!textures || this.material === null)
         {
@@ -368,11 +371,12 @@ define('Globe/TileMesh', [
 
     TileMesh.prototype.loadingCheck = function() {
 
-        if (this.allTexturesAreLoaded())
+        this.loaded = !this.updateImagery && !this.updateElevation && !this.updateGeometry;
+        /*if (this.allTexturesAreLoaded())
         {
-            this.loaded = true;
-            this.parent.childrenLoaded();
-        }
+            //this.loaded = true;
+            //this.parent.childrenLoaded();
+        }*/
     };
 
     return TileMesh;

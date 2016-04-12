@@ -90,10 +90,10 @@ define('Scene/Quadtree', [
      */
     Quadtree.prototype.up = function(node) {
 
-        if (!this.update(node))
-            return;
+        /*if (!this.update(node))
+            return;*/
 
-        node.wait = true;
+        //node.wait = true;
         node.divided = true;
         var quad = new Quad(node.bbox);
         this.createTile(quad.northWest, node);
@@ -132,7 +132,7 @@ define('Scene/Quadtree', [
             return false;
         else if (node.childrenCount() > 0 ) {
 
-            node.setMaterialVisibility(false);
+            //node.setMaterialVisibility(false);
 
             return false;
         }

@@ -28,6 +28,7 @@ define('Scene/Node', [], function() {
         this.layer = null;
         this.divided = false;
         this.pending = false;
+        this.cullable = false;
 
 
     }
