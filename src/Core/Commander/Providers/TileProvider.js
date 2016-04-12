@@ -136,8 +136,12 @@ define('Core/Commander/Providers/TileProvider', [
             tile.updateMatrix();
             tile.updateMatrixWorld();
 
-            var elevationlayerId = command.paramsFunction.layer.elevationLayerId[tileCoord.zoom > 11 ? 1 : 0];
-            var colorlayerId = command.paramsFunction.layer.colorLayerId;
+            // var elevationlayerId = command.paramsFunction.layer.elevationLayerId[tileCoord.zoom > 11 ? 1 : 0];
+            // var colorlayerId = command.paramsFunction.layer.colorLayerId;
+
+
+            var elevationlayerId = command.paramsFunction.layer.parent.elevationTerrain.services[tileCoord.zoom > 11 ? 1 : 0];
+            var colorlayerId = command.paramsFunction.layer.parent.colorTerrain.services[0];
 
             if(tileCoord.zoom > 3 )
                 tileCoord =  undefined;
