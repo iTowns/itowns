@@ -35,10 +35,6 @@ define('Scene/Quadtree', [
         this.add(rootNode);
         rootNode.level = -1;    // TODO: change?
 
-        // TEMP
-        this.colorLayerId = 'IGNPO';
-        this.elevationLayerId = ['IGN_MNT','IGN_MNT_HIGHRES'];
-
         for (var i = 0; i < this.schemeTile.rootCount(); i++) {
             this.createTile(this.schemeTile.getRoot(i), rootNode);
         }

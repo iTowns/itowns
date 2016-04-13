@@ -103,6 +103,7 @@ define('Scene/Node', [], function() {
     Node.prototype.add = function(child) {
         //TODO: Implement Me
         this.children.push(child);
+        child.parent = this;
 
         child.layer = this;
     };

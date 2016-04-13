@@ -155,7 +155,8 @@ define('Core/Commander/Providers/TileProvider', [
 
                 tile.texturesNeeded =+ 1;
             } else if(command.type === "elevation") {
-                var elevationlayerId = command.layer.elevationLayerId[tile.tileCoord.zoom > 11 ? 1 : 0];//tile.tileCoord.zoom > 11 ? 'IGN_MNT_HIGHRES' : 'IGN_MNT';
+                // TODO: remvoe hard-written values
+                var elevationlayerId = tile.tileCoord.zoom > 11 ? 'IGN_MNT_HIGHRES' : 'IGN_MNT';
                 this.providerElevationTexture.getElevationTexture(tile.tileCoord, elevationlayerId).then(function(terrain) {
                     this.setTextureElevation(terrain);
                 }.bind(tile));

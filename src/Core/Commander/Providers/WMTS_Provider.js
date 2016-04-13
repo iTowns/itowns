@@ -254,7 +254,8 @@ define('Core/Commander/Providers/WMTS_Provider', [
 
             if(command.paramsFunction.subLayer === 1)
             {
-                return this.getColorTextures(command.requester,command.paramsFunction.colorLayerId).then(function(result)
+
+                return this.getColorTextures(command.requester,command.paramsFunction.layer.services[0]).then(function(result)
                 {
                     this.setTexturesLayer(result,1);
                 }.bind(command.requester));
@@ -268,9 +269,7 @@ define('Core/Commander/Providers/WMTS_Provider', [
 
                 if(parent.downScaledLayer(0))
                 {
-                    //var layerId = command.paramsFunction.elevationLayerId[parent.tileCoord.zoom > 11 ? 1 : 0];
-                    // TODO: TEMP
-                    var layerId = parent.tileCoord.zoom > 11 ? 'IGN_MNT_HIGHRES' : 'IGN_MNT';
+                    var layerId = command.layer.services[parent.tileCoord.zoom > 11 ? 1 : 0];
 
                     return this.getElevationTexture(parent.tileCoord,layerId).then(function(terrain)
                     {

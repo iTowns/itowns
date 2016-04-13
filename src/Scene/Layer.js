@@ -29,7 +29,8 @@ define('Scene/Layer', [
         //this.interCommand = type !== undefined ? new InterfaceCommander(type, param) : undefined;
         this.descriManager = null;
         this.projection = new Projection();
-        this.layerId = Layer.count++;
+        this.id = Layer.count++;
+        this.services =[];
 
     }
 

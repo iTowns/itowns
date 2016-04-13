@@ -60,7 +60,7 @@ define('Core/Commander/ManagerCommands', [
         };
 
         ManagerCommands.prototype.addLayer = function(layer, provider) {
-            this.providerMap[layer.layerId] = provider;
+            this.providerMap[layer.id] = provider;
         };
 
         ManagerCommands.prototype.addMapProvider = function(map) {
@@ -71,7 +71,7 @@ define('Core/Commander/ManagerCommands', [
         };
 
         ManagerCommands.prototype.getProvider = function(layer) {
-            return this.providerMap[layer.layerId];
+            return this.providerMap[layer.id];
         };
 
         ManagerCommands.prototype.commandsLength = function() {
@@ -111,7 +111,7 @@ define('Core/Commander/ManagerCommands', [
             while (this.queueAsync.length > 0 && arrayTasks.length < nT) {
                 var command = this.deQueue();
                 if(command)
-                    arrayTasks.push(this.providerMap[command.layer.layerId].executeCommand(command));
+                    arrayTasks.push(this.providerMap[command.layer.id].executeCommand(command));
             }
 
             return arrayTasks;
