@@ -90,10 +90,10 @@ define('Scene/NodeProcess', ['Scene/BoundingBox', 'Renderer/Camera', 'Core/Math/
         // When entering this function, the node is ALWAYS visible
         var updateType;
         if(node.level === 0) { // first nodes
-            updateType = node.update();
+            updateType = node.getStatus();
             this.interCommand.request(updateType, node, params.tree, {});
 
-            if(!node.loaded) {
+            if(updateType != "ready") {
                 node.setVisibility(false);
                 node.setMaterialVisibility(false);
                 return;
@@ -102,13 +102,16 @@ define('Scene/NodeProcess', ['Scene/BoundingBox', 'Renderer/Camera', 'Core/Math/
 
         node.setVisibility(true);
         node.setMaterialVisibility(false);
-        if(node.divided) {
+        if(node.noChild()) {
+            params.tree.subdivide(node);
+            node.setMaterialVisibility(true);
+        } else {
             var childrenVisible = 0;
             var childrenReady = 0;
             var allChildrenCullable = true;
             for(var i = 0; i < node.children.length; i++) { // Display node if all visible children are ready to be displayed
                 var child = node.children[i];
-                updateType = child.update();
+                updateType = child.getStatus();
 
                 this.interCommand.request(updateType, child, params.tree, {});
                 child.setVisibility(false);
@@ -116,20 +119,18 @@ define('Scene/NodeProcess', ['Scene/BoundingBox', 'Renderer/Camera', 'Core/Math/
 
                 if(!child.cullable) { // All tiles must be tested for culling before we can reliabaly decide to display the children
                     allChildrenCullable = false;
-                }
-                if(child.cullable && !this.isCulled(child,camera)) {
-                    childrenVisible++;
-                    if(child.loaded && this.checkSSE(child, camera)) {
-                        childrenReady++;
+                } else {
+                    if (!this.isCulled(child,camera)) {
+                        childrenVisible++;
+                        if(updateType === "ready" && this.checkSSE(child, camera)) {
+                            childrenReady++;
+                        }
                     }
                 }
             }
             if(!allChildrenCullable || childrenReady !== childrenVisible || childrenVisible === 0) {  // If not all visible children are ready, display current node
                 node.setMaterialVisibility(true);
             }
-        } else {
-            params.tree.subdivide(node);
-            node.setMaterialVisibility(true);
         }
     };
 

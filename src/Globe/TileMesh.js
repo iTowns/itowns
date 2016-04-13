@@ -160,7 +160,7 @@ define('Globe/TileMesh', [
         this.pending = false;
         this.updateGeometry = false;
         this.cullable = true;
-        this.loadingCheck();
+
 
         this.geometry = geometry;
 
@@ -207,7 +207,7 @@ define('Globe/TileMesh', [
     TileMesh.prototype.setTextureElevation = function(elevation) {
         this.pending = false;
         this.updateElevation = false;
-        this.loadingCheck();
+
         var texture;
         var pitScale;
         var ancestor;
@@ -252,11 +252,9 @@ define('Globe/TileMesh', [
         }
 
         this.material.setTexture(texture,l_ELEVATION, 0, pitScale);
-
-        this.loadingCheck();
     };
 
-    TileMesh.prototype.update = function () {
+    TileMesh.prototype.getStatus = function () {
         if(this.pending) {
             return "none";
         }
@@ -269,7 +267,7 @@ define('Globe/TileMesh', [
             // TODO: use parent data while waiting?
             return "imagery";
         }
-        return "none";
+        return "ready";
     };
 
     TileMesh.prototype.setBBoxZ = function(min, max) {
@@ -298,19 +296,16 @@ define('Globe/TileMesh', [
     TileMesh.prototype.setTexturesLayer = function(textures,idLayer){
         this.pending = false;
         this.updateImagery = false;
-        this.loadingCheck();
+
 
         if(!textures || this.material === null)
         {
-            this.loadingCheck();
             return;
         }
 
         this.material.setTexturesLayer(textures, idLayer);
 
         this.currentLevelLayers[l_COLOR] = textures[0].texture.level;
-
-        this.loadingCheck();
     };
 
     TileMesh.prototype.downScaledLayer = function(id)
@@ -369,14 +364,14 @@ define('Globe/TileMesh', [
         return this.texturesNeeded === this.material.nbLoadedTextures();
     };
 
-    TileMesh.prototype.loadingCheck = function() {
+    //TileMesh.prototype.loadingCheck = function() {
 
-        this.loaded = !this.updateImagery && !this.updateElevation && !this.updateGeometry;
+        //this.loaded = !this.updateImagery && !this.updateElevation && !this.updateGeometry;
         /*if (this.allTexturesAreLoaded())
         {
             //this.loaded = true;
         }*/
-    };
+    //};
 
     return TileMesh;
 

@@ -72,11 +72,9 @@ define('Scene/Quadtree', [
     /**
      * @documentation: subdivide node if necessary
      * @param {type} node
-     * @returns {Array} four bounding box
      */
     Quadtree.prototype.subdivide = function(node) {
 
-        node.divided = true;
         if(node.level >= this.maxLevel) return;
 
         var quad = new Quad(node.bbox);

@@ -26,7 +26,7 @@ define('Core/Commander/InterfaceCommander', ['Core/Commander/ManagerCommands', '
 
     InterfaceCommander.prototype.request = function(type, requester, layer, parameters) {
 
-        if(type === undefined || type === "none") return;
+        if(type === undefined || type === "none" || type === "ready") return;
 
         requester.pending = true;
         var command = new Command();

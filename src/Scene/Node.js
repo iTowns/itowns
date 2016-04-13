@@ -22,10 +22,8 @@ define('Scene/Node', [], function() {
         this.saveState = null;
         this.level = 0;
         this.screenSpaceError = 0.0;
-        this.loaded = false;
         this.visible = true;
         this.layer = null;
-        this.divided = false;
         this.pending = false;
         this.cullable = false;
 
