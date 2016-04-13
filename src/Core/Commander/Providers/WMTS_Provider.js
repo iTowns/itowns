@@ -131,6 +131,7 @@ define('Core/Commander/Providers/WMTS_Provider', [
             var minZoom = maxZoom - size + 1;
 
             this.layersWMTS[layer.id] = {baseUrl : newBaseUrl,tileMatrixSetLimits: options.tileMatrixSetLimits,zoom:{min:minZoom,max:maxZoom}};
+
         };
 
         /**
@@ -144,6 +145,18 @@ define('Core/Commander/Providers/WMTS_Provider', [
 
             return baseUrl + "&TILEMATRIX=" + coWMTS.zoom + "&TILEROW=" + coWMTS.row + "&TILECOL=" + coWMTS.col;
 
+        };
+
+        WMTS_Provider.prototype.resolveService = function(services,zoom) {
+
+            for (var i = 0; i < services.length; i++) {
+
+                var service = services[i];
+                var layerWMTS = this.layersWMTS[service];
+
+                if(zoom >= layerWMTS.zoom.min && zoom <= layerWMTS.zoom.max )
+                    return service;
+            }
         };
 
         /**
@@ -251,27 +264,29 @@ define('Core/Commander/Providers/WMTS_Provider', [
 
         WMTS_Provider.prototype.executeCommand = function(command){
 
+            var service;
+            var destination = command.paramsFunction.layer.description.style.layerTile;
+            var tile = command.requester;
 
-            if(command.paramsFunction.subLayer === 1)
+            if(destination === 1)
             {
 
-                return this.getColorTextures(command.requester,command.paramsFunction.layer.services[0]).then(function(result)
+                service = this.resolveService(command.paramsFunction.layer.services,tile.level);
+                return this.getColorTextures(command.requester,service).then(function(result)
                 {
-                    this.setTexturesLayer(result,1);
+                    this.setTexturesLayer(result,destination);
                 }.bind(command.requester));
             }
-            else if (command.paramsFunction.subLayer === 0)
+            else if (destination === 0)
             {
-
-                var tile = command.requester;
-
-                var parent = tile.level === tile.levelElevation ? tile : tile.getParentLevel(tile.levelElevation);
+                parent = tile.level === tile.levelElevation ? tile : tile.getParentLevel(tile.levelElevation);
 
                 if(parent.downScaledLayer(0))
                 {
-                    var layerId = command.paramsFunction.layer.services[parent.tileCoord.zoom > 11 ? 1 : 0];
 
-                    return this.getElevationTexture(parent.tileCoord,layerId).then(function(terrain)
+                    service = this.resolveService(command.paramsFunction.layer.services,tile.level);
+
+                    return this.getElevationTexture(parent.tileCoord,service).then(function(terrain)
                     {
                         this.setTextureElevation(terrain);
 
