@@ -45,8 +45,12 @@ define('Globe/Globe', [
 
         this.tiles = new Quadtree(TileMesh, this.SchemeTileWMTS(2), this.size, kml);
 
+        // PROBLEM is not generic : elevationTerrain ,colorTerrain
         this.elevationTerrain = new Layer();
         this.colorTerrain = new Layer();
+
+        this.elevationTerrain.description = {style:{layerTile:0}};
+        this.colorTerrain.description = {style:{layerTile:1}};
 
         this.tiles.add(this.elevationTerrain);
         this.tiles.add(this.colorTerrain);

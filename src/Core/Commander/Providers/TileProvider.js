@@ -121,7 +121,6 @@ define('Core/Commander/Providers/TileProvider', [
                 // TODO not generic
                 var tileCoord = this.projection.WGS84toWMTS(bbox);
                 var parent = tile.parent;
-                //var parent = command.requester;
 
                 // build tile
                 var geometry; // = getGeometry(bbox,tileCoord);
@@ -129,7 +128,7 @@ define('Core/Commander/Providers/TileProvider', [
                 var params = {bbox:bbox,zoom:tileCoord.zoom,segment:16,center:null,projected:null};
 
 
-                tile.setGeometry(new TileGeometry(params, this.builder), params.center);   //TODO: use cache?
+                tile.setGeometry(new TileGeometry(params, this.builder));   //TODO: use cache?
                 // set material too ?
 
                 tile.tileCoord = tileCoord;
@@ -146,7 +145,6 @@ define('Core/Commander/Providers/TileProvider', [
                 tile.position.copy(params.center);
                 tile.setVisibility(false);
 
-                //parent.add(tile);
                 tile.updateMatrix();
                 tile.updateMatrixWorld();
 
@@ -184,10 +182,6 @@ define('Core/Commander/Providers/TileProvider', [
                 }.bind(tile));*/
             }
         };
-
-        /*var test = function (tile, f, callback) {
-
-        };*/
 
         return TileProvider;
 

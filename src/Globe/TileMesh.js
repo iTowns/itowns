@@ -32,26 +32,15 @@ define('Globe/TileMesh', [
     var l_ELEVATION = 0;
     var l_COLOR = 1;
 
-    function TileMesh(params/*, builder, geometryCache*/) {
+    function TileMesh(params) {
         //Constructor
         NodeMesh.call(this);
 
         this.matrixAutoUpdate = false;
         this.rotationAutoUpdate = false;
 
-        //this.level = params.zoom;
-        this.level = params.level;  // TODO: maybe build full MTS coord?
+        this.level = params.level;  // TODO: maybe build full WMTS coord?
         this.bbox = defaultValue(params.bbox, new BoundingBox());
-
-        //this.geometry = defaultValue(geometryCache, new TileGeometry(params, builder));
-        //this.normal = params.center.clone().normalize();
-
-        //this.distance = params.center.length();
-
-        // TODO Why move sphere center
-        //this.centerSphere = new THREE.Vector3().addVectors(this.geometry.boundingSphere.center, params.center);
-
-        //this.oSphere = new THREE.Sphere(this.centerSphere.clone(),this.geometry.boundingSphere.radius);
 
         this.texturesNeeded = 0;
         this.material = new LayeredMaterial();
@@ -156,7 +145,7 @@ define('Globe/TileMesh', [
         this.material.setSelected(select);
     };
 
-    TileMesh.prototype.setGeometry = function(geometry, center) {   // TODO: try to remove center
+    TileMesh.prototype.setGeometry = function(geometry) {
         this.pending = false;
         this.updateGeometry = false;
         this.cullable = true;
@@ -164,13 +153,13 @@ define('Globe/TileMesh', [
 
         this.geometry = geometry;
 
-        this.normal = center.clone().normalize();
+        this.normal = geometry.center.clone().normalize();
 
-        this.distance = center.length();
+        this.distance = geometry.center.length();
         // TODO Why move sphere center
-        this.centerSphere = new THREE.Vector3().addVectors(this.geometry.boundingSphere.center, center);
+        this.centerSphere = new THREE.Vector3().addVectors(geometry.boundingSphere.center, geometry.center);
 
-        this.oSphere = new THREE.Sphere(this.centerSphere.clone(),this.geometry.boundingSphere.radius);
+        this.oSphere = new THREE.Sphere(this.centerSphere.clone(), geometry.boundingSphere.radius);
     };
 
     TileMesh.prototype.parseBufferElevation = function(image,minMax,pitScale) {
@@ -363,15 +352,6 @@ define('Globe/TileMesh', [
     TileMesh.prototype.allTexturesAreLoaded = function(){
         return this.texturesNeeded === this.material.nbLoadedTextures();
     };
-
-    //TileMesh.prototype.loadingCheck = function() {
-
-        //this.loaded = !this.updateImagery && !this.updateElevation && !this.updateGeometry;
-        /*if (this.allTexturesAreLoaded())
-        {
-            //this.loaded = true;
-        }*/
-    //};
 
     return TileMesh;
 
