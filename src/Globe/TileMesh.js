@@ -113,6 +113,7 @@ define('Globe/TileMesh', [
         this.geometry.dispose();
         this.geometry = null;
         this.material = null;
+        this.disposed = true;
     };
 
     /**
@@ -125,7 +126,6 @@ define('Globe/TileMesh', [
             this.remove(child);
             child.dispose();
         }
-        this.material.visible = true;
     };
 
     TileMesh.prototype.useParent = function() {

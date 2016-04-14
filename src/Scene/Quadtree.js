@@ -34,6 +34,7 @@ define('Scene/Quadtree', [
         rootNode.enablePickingRender = function() { return true;};
         this.add(rootNode);
         rootNode.level = -1;    // TODO: change?
+        rootNode.parent = null;    // TODO temp
 
         for (var i = 0; i < this.schemeTile.rootCount(); i++) {
             this.createTile(this.schemeTile.getRoot(i), rootNode);

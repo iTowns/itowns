@@ -26,6 +26,7 @@ define('Scene/Node', [], function() {
         this.layer = null;
         this.pending = false;
         this.cullable = false;
+        this.disposed = false;
 
 
     }
@@ -103,7 +104,7 @@ define('Scene/Node', [], function() {
         this.children.push(child);
         child.parent = this;
 
-        child.layer = this;
+        child.layer = this; // TODO: uh, this doesn't seem right
     };
 
     /**
@@ -111,9 +112,11 @@ define('Scene/Node', [], function() {
      *
      * @param child {[object Object]}
      */
-    Node.prototype.remove = function(/*child*/) {
-        //TODO: Implement Me
-
+    Node.prototype.remove = function(child) {
+        var index = this.children.indexOf(child);
+        if(index !== -1) {
+            this.children.splice(index, 1);
+        }
     };
 
 
