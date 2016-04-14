@@ -599,7 +599,6 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
     */
 
     ApiGlobe.prototype.setCenter = function (position) {
-
         var position3D = this.scene.getEllipsoid().cartographicToCartesian(position);
         this.scene.currentControls().setCenter(position3D);
     };
@@ -632,8 +631,14 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
 //        var p2 = new CoordCarto(2.4345599,48.8450221,0);
 //        this.computeDistance(p1, p2);
 //
-//        var p = new CoordCarto(2.438544,49.8501392,0);
-//        this.setCenter(p);
+        //var p = new CoordCarto(-74.0059700 ,40.7142700,0); //NY
+
+        //var p = new CoordCarto().setFromDegreeGeo(coordCarto.lat, coordCarto.lon, coordCarto.alt))
+        var p = new CoordCarto().setFromDegreeGeo(40.7142700, -74.0059700, 0);
+
+        this.setCenter(p);
+//        var p2 = new CoordCarto(2.438544,49.8501392,0);
+//        this.setCenter(p2);
 //
 //        this.testTilt();
 //        this.testHeading();
