@@ -89,7 +89,7 @@ define('Scene/Scene', [
     };
 
     Scene.prototype.getEllipsoid = function(){
-        return this.layers[0].ellipsoid;
+        return this.layers[0].node.ellipsoid;
     }
 
     Scene.prototype.updateCamera = function() {

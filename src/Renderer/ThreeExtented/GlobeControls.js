@@ -201,6 +201,7 @@ THREE.GlobeControls = function(object, domElement, engine) {
 
         pickOnGlobe.copy(intersection);
 
+        // pick position on sphere
         pickOnGlobeNorm = pickOnGlobe.clone().normalize();
 
     };
@@ -483,11 +484,19 @@ THREE.GlobeControls = function(object, domElement, engine) {
 
     this.setCenter = function(position){
 
-        quatGlobe.setFromUnitVectors(this.globeTarget.position.clone().normalize(),position.normalize());
+        var center = this.globeTarget.position;
+        this.object.updateMatrixWorld();
+        this.cloneObject = this.object.clone();
+        this.ptScreenClick.x = this.domElement.width / 2;
+        this.ptScreenClick.y = this.domElement.height / 2;
+        this.setPointGlobe(center);
+        var vFrom = center.clone().normalize();
+        var vTo = position.normalize();
+        quatGlobe.setFromUnitVectors(vFrom,vTo);
         state = STATE.MOVE_GLOBE;
         this.update();
-        state = STATE.NONE;
         newTarget();
+        state = STATE.NONE;
     };
 
     this.update = function() {
@@ -504,7 +513,6 @@ THREE.GlobeControls = function(object, domElement, engine) {
         var offGT = this.globeTarget.position.clone();
 
         if (state === STATE.MOVE_GLOBE) {
-
             offGT.applyQuaternion(quatGlobe);
             this.moveTarget.copy(offGT);
             this.object.position.copy(offset.applyQuaternion(quatGlobe));
@@ -625,6 +633,8 @@ THREE.GlobeControls = function(object, domElement, engine) {
                 var point = scope.engine.getPickingPositionFromDepth(scope.ptScreenClick,selectMode ? scope.engine.scene : undefined);
 
                 scope.engine.renderScene();
+
+                // calcul de la sphere qui passe par ce point
                 if(point)
                     scope.setPointGlobe(point);
 
