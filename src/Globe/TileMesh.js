@@ -146,7 +146,6 @@ define('Globe/TileMesh', [
     };
 
     TileMesh.prototype.setGeometry = function(geometry) {
-        this.pending = false;
         this.updateGeometry = false;
         this.cullable = true;
 
@@ -194,7 +193,6 @@ define('Globe/TileMesh', [
     };
 
     TileMesh.prototype.setTextureElevation = function(elevation) {
-        this.pending = false;
         this.updateElevation = false;
 
         var texture;
@@ -244,9 +242,6 @@ define('Globe/TileMesh', [
     };
 
     TileMesh.prototype.getStatus = function () {
-        if(this.pending) {
-            return "none";
-        }
         if(this.updateGeometry) {
             return "geometry";
         } else if(this.updateElevation) {
@@ -283,7 +278,6 @@ define('Globe/TileMesh', [
     };
 
     TileMesh.prototype.setTexturesLayer = function(textures,idLayer){
-        this.pending = false;
         this.updateImagery = false;
 
 

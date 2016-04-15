@@ -110,8 +110,11 @@ define('Core/Commander/ManagerCommands', [
 
             while (this.queueAsync.length > 0 && arrayTasks.length < nT) {
                 var command = this.deQueue();
-                if(command)
-                    arrayTasks.push(this.providerMap[command.layer.id].executeCommand(command));
+                if(command) {
+                    var task = this.providerMap[command.layer.id].executeCommand(command);
+                    task = task.then(command.callback());
+                    arrayTasks.push(task);
+                }
             }
 
             return arrayTasks;

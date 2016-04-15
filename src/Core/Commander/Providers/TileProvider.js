@@ -152,10 +152,11 @@ define('Core/Commander/Providers/TileProvider', [
                     //tileCoord =  undefined;
 
                 tile.texturesNeeded =+ 1;
+                return when();
             } else if(command.type === "elevation") {
                 // TODO: remvoe hard-written values
                 var elevationlayerId = tile.tileCoord.zoom > 11 ? 'IGN_MNT_HIGHRES' : 'IGN_MNT';
-                this.providerElevationTexture.getElevationTexture(tile.tileCoord, elevationlayerId).then(function(terrain) {
+                return this.providerElevationTexture.getElevationTexture(tile.tileCoord, elevationlayerId).then(function(terrain) {
                     if(this.disposed) return;
                     this.setTextureElevation(terrain);
                 }.bind(tile));
@@ -168,7 +169,7 @@ define('Core/Commander/Providers/TileProvider', [
                 box.maxCarto.latitude = tile.bbox.maxCarto.latitude * 180 / 3.14;
                 box.minCarto.longitude -= 180;
                 box.maxCarto.longitude -= 180;
-                this.testWMS.getTexture(box).then(function(colorTexture) {
+                return this.testWMS.getTexture(box).then(function(colorTexture) {
                     if(this.disposed) return;
                     colorTexture.level = this.level;
                     var pack = {};

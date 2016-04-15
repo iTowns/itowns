@@ -26,7 +26,7 @@ define('Core/Commander/InterfaceCommander', ['Core/Commander/ManagerCommands', '
 
     InterfaceCommander.prototype.request = function(type, requester, layer, parameters) {
 
-        if(type === undefined || type === "none" || type === "ready") return;
+        if(requester.pending || type === undefined || type === "ready") return;
 
         requester.pending = true;
         var command = new Command();
@@ -34,6 +34,13 @@ define('Core/Commander/InterfaceCommander', ['Core/Commander/ManagerCommands', '
         command.requester = requester;
         command.parameters = parameters;
         command.layer = layer;
+        command.callback = function() {
+            if(parameters.callback) {
+                parameters.callback();
+            }
+            console.log(type);
+            requester.pending = false;
+        };
 
         //command.priority = parent.sse === undefined ? 1 : Math.floor(parent.visible ? parent.sse * 10000 : 1.0) *  (parent.visible ? Math.abs(19 - parent.level) : Math.abs(parent.level) ) *10000;
 
