@@ -60,13 +60,6 @@ define('Core/Commander/Providers/TileProvider', [
             this.tree = null;
             this.nNode = 0;
 
-            this.testWMS = new WMS_Provider({
-                url: "http://www.gebco.net/data_and_products/gebco_web_services/web_map_service/mapserv",
-                layer: "GEBCO_LATEST",
-                srs: "EPSG:4326",
-                format: "image/jpeg"
-            });
-
         }
 
         TileProvider.prototype.constructor = TileProvider;
@@ -148,13 +141,11 @@ define('Core/Commander/Providers/TileProvider', [
                 tile.updateMatrix();
                 tile.updateMatrixWorld();
 
-                //if(tileCoord.zoom > 3 )
-                    //tileCoord =  undefined;
-
                 tile.texturesNeeded =+ 1;
+
                 return when();
             } else if(command.type === "elevation") {
-                // TODO: remvoe hard-written values
+                // TODO: remove hard-written values
                 var elevationlayerId = tile.tileCoord.zoom > 11 ? 'IGN_MNT_HIGHRES' : 'IGN_MNT';
                 return this.providerElevationTexture.getElevationTexture(tile.tileCoord, elevationlayerId).then(function(terrain) {
                     if(this.disposed) return;
@@ -162,25 +153,11 @@ define('Core/Commander/Providers/TileProvider', [
                 }.bind(tile));
 
             } else if(command.type === "imagery") {
-                var box = {minCarto: {}, maxCarto: {}};
-                box.minCarto.longitude = tile.bbox.minCarto.longitude * 180 / 3.14;
-                box.minCarto.latitude = tile.bbox.minCarto.latitude * 180 / 3.14;
-                box.maxCarto.longitude = tile.bbox.maxCarto.longitude * 180 / 3.14;
-                box.maxCarto.latitude = tile.bbox.maxCarto.latitude * 180 / 3.14;
-                box.minCarto.longitude -= 180;
-                box.maxCarto.longitude -= 180;
-                return this.testWMS.getTexture(box).then(function(colorTexture) {
+                return this.providerWMTS.getColorTextures(tile,"IGNPO").then(function(result)
+                {
                     if(this.disposed) return;
-                    colorTexture.level = this.level;
-                    var pack = {};
-                    pack.texture = colorTexture;
-                    pack.pitch = {x: 0, y: 0, z: 1};
-                    this.setTexturesLayer([pack], 1);
+                    this.setTexturesLayer(result,1);
                 }.bind(tile));
-                /*var colorlayerId = command.paramsFunction.layer.colorLayerId;//'IGNPO';
-                this.providerColorTexture.getColorTexture(tile.tileCoord,{x:0.0,y:0.0,z:1.0},colorlayerId).then(function(colorTextures) {
-                    this.setTexturesLayer([colorTextures],1);
-                }.bind(tile));*/
             }
         };
 
