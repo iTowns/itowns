@@ -131,7 +131,7 @@ define('Core/Commander/ManagerCommands', [
                 if(!node || node.disposed) {
                     return;
                 } else if(node.parent.visible === false) {
-                    node.pending = false;
+                    com.callback();
                     return;
                 } else {
                     return com;

@@ -241,17 +241,26 @@ define('Globe/TileMesh', [
         this.material.setTexture(texture,l_ELEVATION, 0, pitScale);
     };
 
-    TileMesh.prototype.getStatus = function () {
-        if(this.updateGeometry) {
-            return "geometry";
-        } else if(this.updateElevation) {
-            // TODO: use parent data while waiting?
-            return "elevation";
-        } else if(this.updateImagery) {
-            // TODO: use parent data while waiting?
-            return "imagery";
+    TileMesh.prototype.getStatus = function() {
+        var status = [];
+        if(this.updateGeometry) {   // Need geometry before elevation or imagery
+            status.push("geometry");
+        } else {
+            if(this.updateElevation) {
+                // TODO: use parent data while waiting?
+                status.push("elevation");
+            }
+            if(this.updateImagery) {
+                // TODO: use parent data while waiting?
+                status.push("imagery");
+            }
         }
-        return "ready";
+        return status;
+    };
+
+    TileMesh.prototype.ready = function() {
+        // TODO: a tile can be ready even if a texture needs updating (e.g. when a texture has already been loaded but is outdated)
+        return !this.updateGeometry && !this.updateElevation && !this.updateImagery;
     };
 
     TileMesh.prototype.setBBoxZ = function(min, max) {

@@ -86,14 +86,20 @@ define('Scene/NodeProcess', ['Scene/BoundingBox', 'Renderer/Camera', 'Core/Math/
         return !node.material.visible;
     };
 
+    NodeProcess.prototype.createCommands = function(node, params) {
+        var status = node.getStatus();
+        for(var i = 0; i < status.length; i++) {
+            this.interCommand.request(status[i], node, params.tree, {});
+        }
+    };
+
     NodeProcess.prototype.process = function(node, camera, params) {
         // When entering this function, the node is ALWAYS visible
         var updateType;
         if(node.level === 0) { // first nodes
-            updateType = node.getStatus();
-            this.interCommand.request(updateType, node, params.tree, {});
+            this.createCommands(node, params);
 
-            if(updateType != "ready") {
+            if(!node.ready()) {
                 node.setVisibility(false);
                 node.setMaterialVisibility(false);
                 return;
@@ -111,9 +117,8 @@ define('Scene/NodeProcess', ['Scene/BoundingBox', 'Renderer/Camera', 'Core/Math/
             var allChildrenCullable = true;
             for(var i = 0; i < node.children.length; i++) { // Display node if all visible children are ready to be displayed
                 var child = node.children[i];
-                updateType = child.getStatus();
 
-                this.interCommand.request(updateType, child, params.tree, {});
+                this.createCommands(child, params);
                 child.setVisibility(false);
                 child.setMaterialVisibility(false);
 
@@ -122,7 +127,7 @@ define('Scene/NodeProcess', ['Scene/BoundingBox', 'Renderer/Camera', 'Core/Math/
                 } else {
                     if (!this.isCulled(child,camera)) {
                         childrenVisible++;
-                        if(updateType === "ready" && this.checkSSE(child, camera)) {
+                        if(child.ready() && this.checkSSE(child, camera)) {
                             childrenReady++;
                         }
                     }
