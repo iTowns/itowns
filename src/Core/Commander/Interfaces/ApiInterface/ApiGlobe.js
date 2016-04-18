@@ -65,7 +65,6 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         var providerWMTS = manager.getProvider(map.tiles).providerWMTS;
 
         providerWMTS.addLayer(layer);
-        manager.addLayer(map.colorTerrain,providerWMTS);
         map.colorTerrain.services.push(layer.id);
 
     };
@@ -77,7 +76,6 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         var providerWMTS = manager.getProvider(map.tiles).providerWMTS;
 
         providerWMTS.addLayer(layer);
-        manager.addLayer(map.elevationTerrain,providerWMTS);
         map.elevationTerrain.services.push(layer.id);
 
     };
