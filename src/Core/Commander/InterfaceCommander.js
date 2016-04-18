@@ -38,7 +38,6 @@ define('Core/Commander/InterfaceCommander', ['Core/Commander/ManagerCommands', '
             if(parameters.callback) {
                 parameters.callback();
             }
-            console.log(type);
             requester.pending = false;
         };
 
