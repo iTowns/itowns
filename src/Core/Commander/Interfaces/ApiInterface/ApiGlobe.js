@@ -27,6 +27,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         this.scene = null;
         this.commandsTree = null;
         this.projection = new Projection();
+        this.viewerDiv = null;
 
     }
 
@@ -58,6 +59,12 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
 
     };
 
+    /**
+    * Adds an imagery layer to the map. The layer id must be unique amongst all layers already inserted. The protocol rules which parameters are then needed for the function.
+    * @constructor
+    * @param {Layer} layer.
+    */
+
     ApiGlobe.prototype.addImageryLayer = function(layer) {
 
         var map = this.scene.getMap();
@@ -69,6 +76,13 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         map.colorTerrain.services.push(layer.id);
 
     };
+
+    /**
+    * Add an elevation layer to the map. Elevations layers are used to build the terrain, if there is some overlapped the best resolution is taken, if resolution is equals, the first one is used.
+    * The layer id must be unique amongst all layers already inserted. The protocol rules which parameters are then needed for the function
+    * @constructor
+    * @param {Layer} layer.
+    */
 
     ApiGlobe.prototype.addElevationLayer = function(layer) {
 
@@ -82,7 +96,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
 
     };
 
-    ApiGlobe.prototype.createSceneGlobe = function(coordCarto) {
+    ApiGlobe.prototype.createSceneGlobe = function(coordCarto, viewerDiv) {
         // TODO: Normalement la creation de scene ne doit pas etre ici....
         // Deplacer plus tard
 
@@ -92,7 +106,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         //gLDebug = true; // true to support GLInspector addon
         //debugMode = true;
 
-        this.scene = Scene(coordCarto,debugMode,gLDebug);
+        this.scene = Scene(coordCarto,viewerDiv,debugMode,gLDebug);
 
         var map = new Globe(this.scene.size,gLDebug);
 
@@ -527,7 +541,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
 
         var intersection = ellipsoid.intersection(ray);
 
-        // var center = controlCam.globeTarget.position;
+//        var center = controlCam.globeTarget.position;
         var camPosition = this.scene.currentCamera().position();
         // var range = center.distanceTo(camPosition);
         var range = intersection.distanceTo(camPosition);
@@ -600,9 +614,22 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
     */
 
     ApiGlobe.prototype.setCenter = function (position) {
-
         var position3D = this.scene.getEllipsoid().cartographicToCartesian(position);
         this.scene.currentControls().setCenter(position3D);
+    };
+
+    /**
+    * Moves the central point on screen to specific coordinates while changing the zoom and / or the orientation at the same time. Whenever the map center and zoom should be changed at the same time, or the map center and orientation, or the three of them, then setCenterAdvanced() should always be called instead of separate calls of setCenter(), setZoomLevel(), setZoomScale() or setCameraOrientation(). The level must be in the[getMinZoomLevel(), getMaxZoomLevel()] range.The scale must be a positive integer, as a zoom scale denominator integer, e.g. for 1 / 500 the value must be 500, not 0.002.Zoom level and scale can not be set at the same time. Orientation can select heading and tilt angles like setCameraOrientation(). The view flies to the desired coordinate, i.e.is not teleported instantly.
+    * @constructor
+    * @param {Position} pPosition - The position on the map.
+    * @param {Boolean} [pDisableAnimation] - Used to force the non use of animation if its enable.
+    */
+
+    ApiGlobe.prototype.setCenterAdvanced = function (pPosition/*, pDisableAnimationopt*/ ){
+        this.setCenter(pPosition.position);
+//        this.setRange(pPosition.range);
+        this.setHeading(pPosition.heading);
+        this.setTilt(pPosition.tilt);
     };
 
     /**
@@ -624,26 +651,35 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
 //        console.log(this.pickPosition());
 //        console.log(this.getTilt());
 //        console.log(this.getHeading());
-       // console.log(this.getRange());
+//       console.log(this.getRange());
 //        this.setTilt(45);
 //        this.setHeading(180);
 //        this.resetTilt();
 //        this.resetHeading();
+//        var p1 = new CoordCarto(2.4347047,48.8472568,0);
+//        var p2 = new CoordCarto(2.4345599,48.8450221,0);
 //        this.computeDistance(p1, p2);
 //
-//        var p = new CoordCarto(2.438544,49.8501392,0);
+        //var p = new CoordCarto(-74.0059700 ,40.7142700,0); //NY
+
+        //var p = new CoordCarto().setFromDegreeGeo(coordCarto.lat, coordCarto.lon, coordCarto.alt))
+//        var p = new CoordCarto().setFromDegreeGeo(40.7142700, -74.0059700, 0); //NY
+
 //        this.setCenter(p);
+//        var p2 = new CoordCarto().setFromDegreeGeo(48.8472568,2.4347047,0); //Paris
+//        this.setCenter(p2);
 //
 //        this.testTilt();
 //        this.testHeading();
         //console.log("range 1  " + this.getRange());
-        //this.setRange(1000);
+//        this.setRange(1000);
 //        console.log(this.getRange());
 //        this.setCameraOrientation({heading:45,tilt:30});
+//        this.setCenterAdvanced({position:p2, /*range:10000,*/ heading:180, tilt:70});
     };
 
 //    ApiGlobe.prototype.testTilt = function (){
-//        this.setTilt(90);
+//        this.setTilt(45);
 //        console.log(this.getTilt());
 //        this.resetTilt();
 //        console.log(this.getTilt());

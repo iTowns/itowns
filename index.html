@@ -8,27 +8,38 @@ and open the template in the editor.
     <head>
         <title>Globe</title>
         
-	<style>
-	    body { margin: 0; }
-            canvas { width: 100%; height: 100% }
-        </style>
-        <style type="text/css">
-            body {
-                overflow:hidden;
+	<style type="text/css">
+            html {height: 100%}
+	    body { margin: 0; overflow:hidden; height:100%}
+            
+            #viewerDiv {
+                margin : auto auto;
+                width: 100%;
+                height: 100%;
+                padding: 0;
+                /*margin-top: 50vh;
+                transform: translateY(-50%);*/
             }
+            #menuDiv {position: absolute; top:0px; margin-left: 0px;}
+            
+
         </style>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.5.1/dat.gui.min.js"></script>
     </head>
     <body>
+        <div id="viewerDiv"></div>
         <script src="dist/itowns2.js"> </script>
         <script type="text/javascript">  
 
                var initCenter = { lon:2.3465, lat: 48.88, alt: 25000000};
 
                // iTowns namespace defined here
-               itowns.viewer.createSceneGlobe(initCenter) ;
+
+               var viewerDiv = document.getElementById("viewerDiv");
+               
+               itowns.viewer.createSceneGlobe(initCenter, viewerDiv) ;
 
                // THIS IS AN EXAMPLE OF INTERFACE TO INTERACT WITH ITOWNS            
                var Menu = function() {
@@ -44,11 +55,13 @@ and open the template in the editor.
                         itowns.viewer.launchCommandApi();
                    };
                };
-
+               
                var text = new Menu(); 
-               var gui = new dat.GUI();
-               gui.close();
-
+               var gui = new dat.GUI( { autoPlace: false } );
+               gui.domElement.id = 'menuDiv';
+               viewerDiv.appendChild(gui.domElement);
+               //gui.close();
+                       
                gui.add(text, 'Layer', [ 'OrthoGeoportail', 'DarkMatterOSM' ] ).onChange(function(newValue) {
                    
                         var layer, baseUrl;
@@ -83,6 +96,6 @@ and open the template in the editor.
                });
                
             
-        </script>     
+        </script> 
     </body>
 </html>
