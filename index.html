@@ -7,11 +7,11 @@ and open the template in the editor.
 <html>
     <head>
         <title>Globe</title>
-        
+
 	<style type="text/css">
             html {height: 100%}
 	    body { margin: 0; overflow:hidden; height:100%}
-            
+
             #viewerDiv {
                 margin : auto auto;
                 width: 100%;
@@ -21,7 +21,7 @@ and open the template in the editor.
                 transform: translateY(-50%);*/
             }
             #menuDiv {position: absolute; top:0px; margin-left: 0px;}
-            
+
 
         </style>
         <meta charset="UTF-8">
@@ -31,17 +31,17 @@ and open the template in the editor.
     <body>
         <div id="viewerDiv"></div>
         <script src="dist/itowns2.js"> </script>
-        <script type="text/javascript">  
+        <script type="text/javascript">
 
                var initCenter = { lon:2.3465, lat: 48.88, alt: 25000000};
 
                // iTowns namespace defined here
 
                var viewerDiv = document.getElementById("viewerDiv");
-               
+
                itowns.viewer.createSceneGlobe(initCenter, viewerDiv) ;
 
-               // THIS IS AN EXAMPLE OF INTERFACE TO INTERACT WITH ITOWNS            
+               // THIS IS AN EXAMPLE OF INTERFACE TO INTERACT WITH ITOWNS
                var Menu = function() {
                    this.CloudsIR = false;
                    this.RealisticLighting = false;
@@ -51,36 +51,36 @@ and open the template in the editor.
                    this.KML = false;
 
                    this.Layer = "OrthoGeoportail";
-                   this.api = function(){  
+                   this.api = function(){
                         itowns.viewer.launchCommandApi();
                    };
                };
-               
-               var text = new Menu(); 
+
+               var text = new Menu();
                var gui = new dat.GUI( { autoPlace: false } );
                gui.domElement.id = 'menuDiv';
                viewerDiv.appendChild(gui.domElement);
-               //gui.close();
-                       
+               gui.close();
+
                gui.add(text, 'Layer', [ 'OrthoGeoportail', 'DarkMatterOSM' ] ).onChange(function(newValue) {
-                   
+
                         var layer, baseUrl;
                         switch(newValue){
-                            case "OrthoGeoportail": layer   = "ORTHOIMAGERY.ORTHOPHOTOS"; 
+                            case "OrthoGeoportail": layer   = "ORTHOIMAGERY.ORTHOPHOTOS";
                                                     baseUrl = "http://wxs.ign.fr/";
                                                     break;
-                                                    
+
                             case "DarkMatterOSM"  : layer   = "dark_all/";
                                                     baseUrl = "http://a.basemaps.cartocdn.com/";
                                                     break;
                         }
 			itowns.viewer.setLayerAtLevel(baseUrl,layer,0);  // set layer at level n (0 -> top)
                });
-               
+
                gui.add(text, 'CloudsIR').onChange(function(newValue) {
 			           itowns.viewer.showClouds(newValue);
                });
-               
+
                gui.add(text, 'RealisticLighting').onChange(function(newValue) {
 			           itowns.viewer.setRealisticLightingOn(newValue);
                });
@@ -88,14 +88,14 @@ and open the template in the editor.
                gui.add(text, 'KML').onChange(function(newValue) {
                   itowns.viewer.showKML(newValue);
                });
-               
+
                gui.add(text, 'api');
-               
+
                gui.add(text, 'StreetLevelImagery').onChange(function(newValue) {
 			itowns.viewer.setStreetLevelImageryOn(newValue);
                });
-               
-            
-        </script> 
+
+
+        </script>
     </body>
 </html>
