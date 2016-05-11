@@ -25,6 +25,11 @@ precision highp int;
 
 #endif
 
+// BUG CHROME 50 UBUNTU 16.04
+// runconformance/glsl/bugs/conditional-discard-in-loop.html
+// conformance/glsl/bugs/nested-loops-with-break-and-continue.html
+// Resolve CHROME unstable 52
+
 const int   TEX_UNITS   = 8;
 const float PI          = 3.14159265359;
 const float INV_TWO_PI  = 1.0 / (2.0*PI);
@@ -40,17 +45,17 @@ uniform vec3        pitScale_L01[TEX_UNITS];
 uniform int         pickingRender;
 uniform int         nbTextures[8];
 uniform float       distanceFog;
-// uniform int         RTC;
-// uniform int         selected;
-// uniform int         uuid;
-// uniform int         debug;
-// uniform vec3        lightPosition;
-// uniform int         lightingOn;
+uniform int         RTC;
+uniform int         selected;
+uniform int         uuid;
+uniform int         debug;
+uniform vec3        lightPosition;
+uniform int         lightingOn;
 
 varying vec2        vUv_0;
 varying float       vUv_1;
-// varying vec3        vNormal;
-// varying vec4        pos;
+varying vec3        vNormal;
+varying vec4        pos;
 
 
 //#define BORDERLINE
@@ -64,25 +69,29 @@ vec2    pitUV(vec2 uvIn, vec3 pit)
     return uv;
 }
 
-//#if defined(BORDERLINE)
-// const float sLine = 0.008;
-// #endif
-// const float borderS = 0.007;
+#if defined(BORDERLINE)
+    const float sLine = 0.008;
+#endif
+const float borderS = 0.007;
 
 // GLSL 1.30 only accepts constant expressions when indexing into arrays,
 // so we have to resort to an if/else cascade.
 
 vec4 colorAtIdUv(int id, vec2 uv){
 
-    if (id == 0) return texture2D(dTextures_01[0],  pitUV(uv,pitScale_L01[0]));
-    else if (id == 1) return texture2D(dTextures_01[1],  pitUV(uv,pitScale_L01[1]));
-    else if (id == 2) return texture2D(dTextures_01[2],  pitUV(uv,pitScale_L01[2]));
-     else if (id == 3) return texture2D(dTextures_01[3],  pitUV(uv,pitScale_L01[3]));
+    for (int i = 0; i < TEX_UNITS; ++i)
+        if(i == id)
+            return texture2D(dTextures_01[i],  pitUV(uv,pitScale_L01[i]));
+
+    // if (id == 0) return texture2D(dTextures_01[0],  pitUV(uv,pitScale_L01[0]));
+    // else if (id == 1) return texture2D(dTextures_01[1],  pitUV(uv,pitScale_L01[1]));
+    // else if (id == 2) return texture2D(dTextures_01[2],  pitUV(uv,pitScale_L01[2]));
+    // else if (id == 3) return texture2D(dTextures_01[3],  pitUV(uv,pitScale_L01[3]));
     // else if (id == 4) return texture2D(dTextures_01[4],  pitUV(uv,pitScale_L01[4]));
     // else if (id == 5) return texture2D(dTextures_01[5],  pitUV(uv,pitScale_L01[5]));
     // else if (id == 6) return texture2D(dTextures_01[6],  pitUV(uv,pitScale_L01[6]));
     // else if (id == 7) return texture2D(dTextures_01[7],  pitUV(uv,pitScale_L01[7]));
-    //else return vec4(0.0,0.0,0.0,0.0);
+    // else return vec4(0.0,0.0,0.0,0.0);
 
 }
 
@@ -123,14 +132,14 @@ void main() {
         #endif
 
     }else
-    // #if defined(BORDERLINE)
-     // if(vUv_0.x < sLine || vUv_0.x > 1.0 - sLine || vUv_0.y < sLine || vUv_0.y > 1.0 - sLine)
-     //     gl_FragColor = vec4( 1.0, 0.0, 0.0, 1.0);
-     // else
-    // #endif
-    // if(selected == 1 && (vUv_0.x < borderS || vUv_0.x > 1.0 - borderS || vUv_0.y < borderS || vUv_0.y > 1.0 - borderS))
-    //     gl_FragColor = vec4( 1.0, 0.3, 0.0, 1.0);
-    // else
+    #if defined(BORDERLINE)
+         if(vUv_0.x < sLine || vUv_0.x > 1.0 - sLine || vUv_0.y < sLine || vUv_0.y > 1.0 - sLine)
+             gl_FragColor = vec4( 1.0, 0.0, 0.0, 1.0);
+         else
+    #endif
+    if(selected == 1 && (vUv_0.x < borderS || vUv_0.x > 1.0 - borderS || vUv_0.y < borderS || vUv_0.y > 1.0 - borderS))
+        gl_FragColor = vec4( 1.0, 0.3, 0.0, 1.0);
+    else
     {
         vec2 uvO ;
         uvO.x           = vUv_0.x;
@@ -146,7 +155,6 @@ void main() {
             uvO.y   = 0.0;
         }
 
-
         gl_FragColor    = vec4( 0.04, 0.23, 0.35, 1.0);
 
         #if defined(USE_LOGDEPTHBUF) && defined(USE_LOGDEPTHBUF_EXT)
@@ -159,25 +167,25 @@ void main() {
 
         if (0 <= idd && idd < TEX_UNITS)
         {
-           // gl_FragColor = ;
-           // if(RTC == 1)
+           vec4 diffuseColor = colorAtIdUv(idd, uvO);
+            if(RTC == 1)
             {
-                gl_FragColor = mix(fogColor, colorAtIdUv(idd, uvO), fog );
+                gl_FragColor = mix(fogColor, diffuseColor, fog );
             }
-            // else
-            // {
-            //     gl_FragColor = diffuseColor;
+            else
+            {
+                 gl_FragColor = diffuseColor;
 
-            // }
+            }
         }
 
-        // if(lightingOn == 1){   // Add lighting
-        //     float light = dot(vNormal, lightPosition); //normalize(pos.xyz)
-        //     gl_FragColor.rgb *= light;
-        // }
+        if(lightingOn == 1){   // Add lighting
+            float light = dot(vNormal, lightPosition); //normalize(pos.xyz)
+            gl_FragColor.rgb *= light;
+        }
     }
 
-    // if(debug > 0)
-    //    gl_FragColor = vec4( 1.0, 1.0, 0.0, 1.0);
+    if(debug > 0)
+       gl_FragColor = vec4( 1.0, 1.0, 0.0, 1.0);
 
 }
