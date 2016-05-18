@@ -26,6 +26,7 @@ precision highp int;
 #endif
 
 // BUG CHROME 50 UBUNTU 16.04
+// Lose context on compiling shader with too many IF STATEMENT
 // runconformance/glsl/bugs/conditional-discard-in-loop.html
 // conformance/glsl/bugs/nested-loops-with-break-and-continue.html
 // Resolve CHROME unstable 52
@@ -34,12 +35,13 @@ const int   TEX_UNITS   = 8;
 const float PI          = 3.14159265359;
 const float INV_TWO_PI  = 1.0 / (2.0*PI);
 const float PI2         = 1.57079632679;
+
 const float PI4         = 0.78539816339;
 // const float poleSud     = -82.0 / 180.0 * PI;
 // const float poleNord    =  84.0 / 180.0 * PI;
 const vec4 fogColor = vec4( 0.76, 0.85, 1.0, 1.0);
 
-uniform sampler2D   dTextures_00[1];
+//uniform sampler2D   dTextures_00[TEX_UNITS];
 uniform sampler2D   dTextures_01[TEX_UNITS];
 uniform vec3        pitScale_L01[TEX_UNITS];
 uniform int         pickingRender;
@@ -77,11 +79,11 @@ const float borderS = 0.007;
 // GLSL 1.30 only accepts constant expressions when indexing into arrays,
 // so we have to resort to an if/else cascade.
 
-vec4 colorAtIdUv(int id, vec2 uv){
+vec4 colorAtIdUv(sampler2D dTextures[TEX_UNITS],int id, vec2 uv){
 
     for (int i = 0; i < TEX_UNITS; ++i)
         if(i == id)
-            return texture2D(dTextures_01[i],  pitUV(uv,pitScale_L01[i]));
+            return texture2D(dTextures[i],  pitUV(uv,pitScale_L01[i]));
 
     // if (id == 0) return texture2D(dTextures_01[0],  pitUV(uv,pitScale_L01[0]));
     // else if (id == 1) return texture2D(dTextures_01[1],  pitUV(uv,pitScale_L01[1]));
@@ -165,9 +167,9 @@ void main() {
             float fog = 1.0;
         #endif
 
-        if (0 <= idd && idd < TEX_UNITS)
+        if (0 <= idd && idd < nbTextures[1])
         {
-           vec4 diffuseColor = colorAtIdUv(idd, uvO);
+           vec4 diffuseColor = colorAtIdUv(dTextures_01,idd, uvO);
             if(RTC == 1)
             {
                 gl_FragColor = mix(fogColor, diffuseColor, fog );
