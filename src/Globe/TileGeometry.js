@@ -21,6 +21,7 @@ define('Globe/TileGeometry', [
     CacheRessource
     ) {
 
+    // TODO Why? it's not necessary
     "use strict";
     var cache = CacheRessource(); // TODO /!\ singleton
 
