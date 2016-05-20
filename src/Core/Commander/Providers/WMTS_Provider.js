@@ -271,8 +271,10 @@ define('Core/Commander/Providers/WMTS_Provider', [
             if(destination === 1)
             {
 
-                service = this.resolveService(command.paramsFunction.layer.services,tile.level);
-                return this.getColorTextures(command.requester,service).then(function(result)
+                //service = this.resolveService(command.paramsFunction.layer.services,tile.level);
+
+                //console.log(command.paramsFunction.layer.services);
+                return this.getColorTextures(command.requester,command.paramsFunction.layer.services).then(function(result)
                 {
                     this.setTexturesLayer(result,destination);
                 }.bind(command.requester));
@@ -307,42 +309,54 @@ define('Core/Commander/Providers/WMTS_Provider', [
 
         WMTS_Provider.prototype.getColorTextures = function(tile,layerWMTSId) {
 
-            var layer = this.layersWMTS[layerWMTSId];
+            var promises = [];
+            var nColorLayers = 0;
 
-            if (tile.level >= layer.zoom.min)
-            {
+            for (var i = 0; i < layerWMTSId.length; i++) {
 
-                var promises = [];
-                var lookAtAncestor = tile.currentLevelLayers[1] === -1;
+                var layer = this.layersWMTS[layerWMTSId[i]];
 
-                // TODO not generic
-                var box = this.projection.WMTS_WGS84ToWMTS_PM(tile.tileCoord, tile.bbox); //
-                var col = box[0].col;
+                //console.log(layer);
 
-                var colorTexturesNeeded = box[1].row + 1 - box[0].row;
+                if (tile.level >= layer.zoom.min)
+                {
 
-                if(lookAtAncestor)
-                    tile.texturesNeeded += colorTexturesNeeded;
-                else
-                    tile.material.nbTextures -= colorTexturesNeeded;
+                    var lookAtAncestor = tile.currentLevelLayers[1] === -1;
 
-                for (var row = box[0].row; row < box[1].row + 1; row++) {
+                    // TODO not generic
+                    var box = this.projection.WMTS_WGS84ToWMTS_PM(tile.tileCoord, tile.bbox); //
+                    var col = box[0].col;
 
-                   var cooWMTS = new CoordWMTS(box[0].zoom, row, col);
-                   var pitch = new THREE.Vector3(0.0,0.0,1.0);
+                    var colorTexturesNeeded = box[1].row + 1 - box[0].row;
 
-                   if(lookAtAncestor && box[0].zoom > 3)
-                   {
-                        var levelParent = tile.getParentNotDownScaled(1).level + 1;
-                        cooWMTS = this.projection.WMTS_WGS84Parent(cooWMTS,levelParent,pitch);
-                   }
+                    if(lookAtAncestor)
+                        tile.texturesNeeded += colorTexturesNeeded;
+                    else
+                        tile.material.nbTextures -= colorTexturesNeeded;
 
-                   promises.push(this.getColorTexture(cooWMTS,pitch,layerWMTSId));
+                    nColorLayers++;
 
+                    for (var row = box[0].row; row < box[1].row + 1; row++) {
+
+                       var cooWMTS = new CoordWMTS(box[0].zoom, row, col);
+                       var pitch = new THREE.Vector3(0.0,0.0,1.0);
+
+                       if(lookAtAncestor && box[0].zoom > 3)
+                       {
+                            var levelParent = tile.getParentNotDownScaled(1).level + 1;
+                            cooWMTS = this.projection.WMTS_WGS84Parent(cooWMTS,levelParent,pitch);
+                       }
+
+                       promises.push(this.getColorTexture(cooWMTS,pitch,layerWMTSId[i]));
+
+                    }
                 }
-
-                return when.all(promises);
             }
+
+            tile.material.uniforms.nColorLayer.value = nColorLayers;
+
+            if (promises.length)
+                return when.all(promises);
             else
                 return when();
 
