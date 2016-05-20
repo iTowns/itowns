@@ -86,7 +86,7 @@ define (['Renderer/c3DEngine','three','Renderer/ThreeExtented/threeExt','MobileM
 
                // Then correct with position on ellipsoid
                // Orientation on normal
-               var posPanoWGS84 = new CoordCarto().setFromDegreeGeo(panoInfo.latitude, panoInfo.longitude, panoInfo.altitude);
+               var posPanoWGS84 = new CoordCarto().setFromDegreeGeo(panoInfo.longitude, panoInfo.latitude, panoInfo.altitude);
                var posPanoCartesian = ellipsoid.cartographicToCartesian(posPanoWGS84);
 
                var normal      = ellipsoid.geodeticSurfaceNormalCartographic(posPanoWGS84);
@@ -160,7 +160,7 @@ define (['Renderer/c3DEngine','three','Renderer/ThreeExtented/threeExt','MobileM
 
             createShaderMat: function(panoInfo, rot, pivot){
 
-                var posPanoWGS84 = new CoordCarto().setFromDegreeGeo(panoInfo.latitude, panoInfo.longitude, panoInfo.altitude);
+                var posPanoWGS84 = new CoordCarto().setFromDegreeGeo(panoInfo.longitude, panoInfo.latitude, panoInfo.altitude);
                 var posPanoCartesian = ellipsoid.cartographicToCartesian(posPanoWGS84);
                 //console.log("posPanoCartesian: ",posPanoCartesian);
                 var spherePosPano = new THREE.Mesh( new THREE.SphereGeometry( 0.5, 12, 12 ), new THREE.MeshBasicMaterial({side: THREE.DoubleSide, color:0xff00ff}));
@@ -248,7 +248,7 @@ define (['Renderer/c3DEngine','three','Renderer/ThreeExtented/threeExt','MobileM
             var matRotationFrame = this.getCameraFrameRotation(panoInfo);
 
             // compute translation
-                var posPanoWGS84 = new CoordCarto().setFromDegreeGeo(panoInfo.latitude, panoInfo.longitude, panoInfo.altitude);
+                var posPanoWGS84 = new CoordCarto().setFromDegreeGeo(panoInfo.longitude, panoInfo.latitude, panoInfo.altitude);
                 var posPanoCartesian = ellipsoid.cartographicToCartesian(posPanoWGS84);
                 var posPiv = posPanoCartesian.clone().sub(pivot);
                 var posFrameWithPivot = new THREE.Vector4(posPiv.x, posPiv.y, posPiv.z, 1.);

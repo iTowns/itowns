@@ -62,7 +62,7 @@ and open the template in the editor.
                viewerDiv.appendChild(gui.domElement);
                //gui.close();
                        
-               gui.add(text, 'Layer', [ 'OrthoGeoportail', 'DarkMatterOSM' ] ).onChange(function(newValue) {
+               gui.add(text, 'Layer', [ 'OrthoGeoportail', 'DarkMatterOSM', 'OpenStreetMap' ] ).onChange(function(newValue) {
                    
                         var layer, baseUrl;
                         switch(newValue){
@@ -72,6 +72,9 @@ and open the template in the editor.
                                                     
                             case "DarkMatterOSM"  : layer   = "dark_all/";
                                                     baseUrl = "http://a.basemaps.cartocdn.com/";
+                                                    break;
+                            case "OpenStreetMap":   layer   = "osmfr"; 
+                                                    baseUrl = "http://tile.openstreetmap.fr/";
                                                     break;
                         }
 			itowns.viewer.setLayerAtLevel(baseUrl,layer,0);  // set layer at level n (0 -> top)
