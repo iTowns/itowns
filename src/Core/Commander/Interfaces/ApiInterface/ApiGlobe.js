@@ -150,6 +150,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         this.scene.gfxEngine.setLightingOn(value);
         this.scene.layers[0].node.setRealisticLightingOn(value);
         this.scene.browserScene.updateMaterialUniform("lightingOn",value ? 1:0);
+        this.scene.renderScene3D();
     };
 
     ApiGlobe.prototype.setStreetLevelImageryOn = function(value){

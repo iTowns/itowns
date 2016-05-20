@@ -32,6 +32,9 @@ define('Renderer/LayeredMaterial', ['THREE',
         this.Textures = [];
         this.pitScale = [];
         this.nbTextures = [];
+        this.paramLayers = [];
+
+        this.nColorLayer = 1;
 
         // Uniform three js needs no empty array
         for (var l = 0; l < nbLayer; l++) {
@@ -39,6 +42,7 @@ define('Renderer/LayeredMaterial', ['THREE',
             this.Textures[l] = [emptyTexture];
             this.pitScale[l] = [new THREE.Vector3(0.0, 0.0, 0.0)];
             this.nbTextures[l] = 0;
+            this.paramLayers[l] = new THREE.Vector2(0.0, 1.0);
         }
 
         this.uniforms.dTextures_00 = {
@@ -52,6 +56,14 @@ define('Renderer/LayeredMaterial', ['THREE',
         this.uniforms.nbTextures = {
             type: "iv1",
             value: this.nbTextures
+        };
+        this.uniforms.nColorLayer = {
+            type: "i",
+            value: this.nColorLayer
+        };
+        this.uniforms.paramLayers = {
+            type: "v2v",
+            value: this.paramLayers
         };
         this.uniforms.pitScale_L00 = {
             type: "v3v",

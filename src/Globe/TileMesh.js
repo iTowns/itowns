@@ -71,6 +71,9 @@ define('Globe/TileMesh', [
         this.currentLevelLayers[l_ELEVATION] = -1;
         this.currentLevelLayers[l_COLOR] = -1;
 
+        //this.layerElevation = {zoom:-1,services:}
+
+
     }
 
     TileMesh.prototype = Object.create(NodeMesh.prototype);
