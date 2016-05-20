@@ -131,7 +131,6 @@ define('Core/Commander/Providers/WMTS_Provider', [
             var minZoom = maxZoom - size + 1;
 
             this.layersWMTS[layer.id] = {baseUrl : newBaseUrl,tileMatrixSetLimits: options.tileMatrixSetLimits,zoom:{min:minZoom,max:maxZoom}};
-
         };
 
         /**

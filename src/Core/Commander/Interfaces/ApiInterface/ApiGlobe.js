@@ -25,10 +25,11 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         //Constructor
 
         this.scene = null;
+//        this.nodeProcess = null;
         this.commandsTree = null;
         this.projection = new Projection();
         this.viewerDiv = null;
-
+        this.globe = Globe;
     }
 
 
@@ -78,6 +79,36 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
     };
 
     /**
+    * Gets the minimum zoom level, i.e. level at which the view is the farthest from the ground.
+    * @constructor
+    * @param {id} id - The id of the layer.
+    */
+
+    ApiGlobe.prototype.getMinZoomLevel = function(id){
+        //console.log(this.addImageryLayer().id);
+        var map = this.scene.getMap();
+        var manager = this.scene.managerCommand;
+        var providerWMTS = manager.getProvider(map.tiles).providerWMTS;
+        var layerWMTS = providerWMTS.layersWMTS;
+        return layerWMTS[id].zoom.min;
+    };
+
+    /**
+    * Gets the maximun zoom level, i.e. level at which the view is the closest from the ground.
+    * @constructor
+    * @param {id} id - The id of the layer.
+    */
+
+    ApiGlobe.prototype.getMaxZoomLevel = function(id){
+        //console.log(this.addImageryLayer().id);
+        var map = this.scene.getMap();
+        var manager = this.scene.managerCommand;
+        var providerWMTS = manager.getProvider(map.tiles).providerWMTS;
+        var layerWMTS = providerWMTS.layersWMTS;
+        return layerWMTS[id].zoom.max;
+    };
+
+    /**
     * Add an elevation layer to the map. Elevations layers are used to build the terrain, if there is some overlapped the best resolution is taken, if resolution is equals, the first one is used.
     * The layer id must be unique amongst all layers already inserted. The protocol rules which parameters are then needed for the function
     * @constructor
@@ -109,7 +140,6 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         this.scene = Scene(coordCarto,viewerDiv,debugMode,gLDebug);
 
         var map = new Globe(this.scene.size,gLDebug);
-
         this.scene.add(map);
 
         this.addImageryLayer({
@@ -120,7 +150,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
                     name: "ORTHOIMAGERY.ORTHOPHOTOS",
                     //name: 'GEOGRAPHICALGRIDSYSTEMS.MAPS',
                     mimetype: "image/jpeg",
-                    tileMatrixSet: "WGS84G",
+                    tileMatrixSet: "PM",
                     tileMatrixSetLimits: {
                        /* "0": {
                             "minTileRow": 0,
@@ -260,7 +290,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
             wmtsOptions: {
                     name: "ELEVATION.ELEVATIONGRIDCOVERAGE",
                     mimetype: "image/x-bil;bits=32",
-                    tileMatrixSet: "PM",
+                    tileMatrixSet: "WGS84G",
                     tileMatrixSetLimits: {
                          // "2": {
                          //    "minTileRow": 0,
@@ -334,7 +364,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
             wmtsOptions: {
                     name: "ELEVATION.ELEVATIONGRIDCOVERAGE.HIGHRES",
                     mimetype: "image/x-bil;bits=32",
-                    tileMatrixSet: "PM",
+                    tileMatrixSet: "WGS84G",
                     tileMatrixSetLimits: {
                           "6": {
                             "minTileRow": 13,
@@ -446,7 +476,6 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
     */
 
     ApiGlobe.prototype.getCameraLocation = function () {
-
         var cam = this.scene.currentCamera().camera3D;
         return this.projection.cartesianToGeo(cam.position);
     };
@@ -534,7 +563,8 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
     */
 
     ApiGlobe.prototype.getRange = function (){
-
+//        console.log(this.scene.currentCamera());
+//        console.log(this.scene.layers[0].node);
         var controlCam = this.scene.currentControls();
         var ellipsoid = this.scene.getEllipsoid();
         var ray = controlCam.getRay();
@@ -644,10 +674,17 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         this.scene.currentControls().setRange(pRange);
     };
 
+    ApiGlobe.prototype.getZoomLevel = function (){
+        return this.scene.getZoomLevel();
+    };
+
     ApiGlobe.prototype.launchCommandApi = function () {
+//        console.log(this.getMinZoomLevel("IGNPO"));
+//        console.log(this.getMaxZoomLevel("IGN_MNT"));
 //        console.log(this.getCenter());
 //        console.log(this.getCameraLocation());
 //        console.log(this.getCameraOrientation());
+//        console.log(this.getZoomLevel());
 //        console.log(this.pickPosition());
 //        console.log(this.getTilt());
 //        console.log(this.getHeading());
@@ -662,11 +699,11 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
 //
         //var p = new CoordCarto(-74.0059700 ,40.7142700,0); //NY
 
-        //var p = new CoordCarto().setFromDegreeGeo(coordCarto.lat, coordCarto.lon, coordCarto.alt))
-//        var p = new CoordCarto().setFromDegreeGeo(40.7142700, -74.0059700, 0); //NY
-
+//        var p = new CoordCarto().setFromDegreeGeo(coordCarto.lon, coordCarto.lat, coordCarto.alt))
+//        var p = new CoordCarto().setFromDegreeGeo( -74.0059700, 40.7142700,0); //NY
+//
 //        this.setCenter(p);
-//        var p2 = new CoordCarto().setFromDegreeGeo(48.8472568,2.4347047,0); //Paris
+//        var p2 = new CoordCarto().setFromDegreeGeo(2.4347047,48.8472568,0); //Paris
 //        this.setCenter(p2);
 //
 //        this.testTilt();
