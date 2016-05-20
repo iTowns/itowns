@@ -110,6 +110,22 @@ define('Core/Geographic/Projection', ['Core/Geographic/CoordWMTS', 'Core/Math/Ma
         return new CoordWMTS(zoom, row, col);
     };
 
+    // TODO : only works for one WMTS tile scheme
+    Projection.prototype.WMTStoWGS84 = function(coord) {
+
+        var x1, x2, y1, y2;
+
+        var p = MathExt.PI / Math.pow(2, coord.zoom);
+        x1 = p * coord.col;
+        x2 = x1 + p;
+        y1 = p * coord.row - MathExt.PI_OV_TWO;
+        y2 = y1 + p;
+        y1 = - y1;
+        y2 = - y2;
+
+        return [x1, x2, y2, y1];
+    };
+
     Projection.prototype.UnitaryToLongitudeWGS84 = function(u,projection,bbox)
     {
         projection.longitude = bbox.minCarto.longitude + u * bbox.dimension.x;

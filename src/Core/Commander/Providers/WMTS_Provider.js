@@ -251,7 +251,10 @@ define('Core/Commander/Providers/WMTS_Provider', [
                     result.texture.minFilter = THREE.LinearFilter;
                     result.texture.anisotropy = 16;
                     result.texture.url = url;
-                    result.texture['level'] = coWMTS.zoom;
+                    result.texture.level = coWMTS.zoom;
+                    var box = this.projection.WMTStoWGS84(coWMTS);
+                    result.texture.coord = coWMTS;
+                    result.texture.box = new THREE.Box2(new THREE.Vector2(box[0], box[2]), new THREE.Vector2(box[1], box[3]));
 
                     this.cache.addRessource(url, result.texture);
                 }

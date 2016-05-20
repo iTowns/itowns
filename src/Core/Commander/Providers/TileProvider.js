@@ -143,6 +143,10 @@ define('Core/Commander/Providers/TileProvider', [
 
                 tile.texturesNeeded =+ 1;
 
+                if(tile.level !== 0) {
+                    tile.setTexturesFromParent();
+                }
+
                 return when();
             } else if(command.type === "elevation") {
                 // TODO: remove hard-written values

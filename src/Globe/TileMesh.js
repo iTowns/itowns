@@ -260,7 +260,7 @@ define('Globe/TileMesh', [
 
     TileMesh.prototype.ready = function() {
         // TODO: a tile can be ready even if a texture needs updating (e.g. when a texture has already been loaded but is outdated)
-        return !this.updateGeometry && !this.updateElevation && !this.updateImagery;
+        return !this.updateGeometry;// && !this.updateElevation && !this.updateImagery;
     };
 
     TileMesh.prototype.setBBoxZ = function(min, max) {
@@ -295,9 +295,31 @@ define('Globe/TileMesh', [
             return;
         }
 
+        this.material.nbTextures[0] = 0;
+        this.material.nbTextures[1] = 0;
         this.material.setTexturesLayer(textures, idLayer);
 
         this.currentLevelLayers[l_COLOR] = textures[0].texture.level;
+    };
+
+    TileMesh.prototype.setTexturesFromParent = function() {
+        var parent = this.getParentNotDownScaled(1);
+        if(parent && parent.material.nbTextures[1] !== 0) {
+            var textures = [];
+            for(var i = 0; i < parent.material.Textures[1].length; i++) {
+                var box = new THREE.Box2(new THREE.Vector2(this.bbox.minCarto.longitude, this.bbox.minCarto.latitude), new THREE.Vector2(this.bbox.maxCarto.longitude, this.bbox.maxCarto.latitude));
+                tex = parent.material.Textures[1][i];
+                box.intersect(tex.box);
+                if(!box.isEmpty()) {
+                    var ps = new THREE.Vector3();
+                    ps.z = tex.box.size().x / (this.bbox.maxCarto.longitude - this.bbox.minCarto.longitude);
+                    ps.x = (box.min.x - this.bbox.minCarto.longitude) / (this.bbox.maxCarto.longitude - this.bbox.minCarto.longitude);
+                    ps.y = (box.min.y - this.bbox.minCarto.latitude) / (this.bbox.maxCarto.latitude - this.bbox.minCarto.latitude);
+                    textures.push({texture: tex, pitch: ps});
+                }
+            }
+            this.material.setTexturesLayer(textures, 1);
+        }
     };
 
     TileMesh.prototype.downScaledLayer = function(id)
