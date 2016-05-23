@@ -425,6 +425,7 @@ and open the template in the editor.
                var Menu = function() {
                    this.CloudsIR = false;
                    this.Carte = false;
+                   this.RealisticLighting = false;
 
                    this.StreetLevelImagery = false;
 
@@ -440,7 +441,7 @@ and open the template in the editor.
                var gui = new dat.GUI( { autoPlace: false } );
                gui.domElement.id = 'menuDiv';
                viewerDiv.appendChild(gui.domElement);
-               gui.close();
+               // gui.close();
 
                gui.add(text, 'Layer', [ 'OrthoGeoportail', 'DarkMatterOSM' ] ).onChange(function(newValue) {
 
@@ -457,24 +458,29 @@ and open the template in the editor.
 			itowns.viewer.setLayerAtLevel(baseUrl,layer,0);  // set layer at level n (0 -> top)
                });
 
-               gui.add(text, 'CloudsIR').onChange(function(newValue) {
+                gui.add(text, 'CloudsIR').onChange(function(newValue) {
 			           itowns.viewer.showClouds(newValue);
-               });
+                });
 
-               //gui.add(text, 'RealisticLighting').onChange(function(newValue) {
-                gui.add(text, 'Carte').onChange(function(newValue) {
+                gui.add(text, 'RealisticLighting').onChange(function(newValue) {
+
 			           itowns.viewer.setRealisticLightingOn(newValue);
-               });
+                });
 
-               gui.add(text, 'KML').onChange(function(newValue) {
-                  itowns.viewer.showKML(newValue);
-               });
+                gui.add(text, 'Carte').onChange(function(newValue) {
 
-               gui.add(text, 'api');
+                       itowns.viewer.setLayerVisible("IGNPO1",newValue);
+                });
 
-               gui.add(text, 'StreetLevelImagery').onChange(function(newValue) {
-			itowns.viewer.setStreetLevelImageryOn(newValue);
-               });
+                gui.add(text, 'KML').onChange(function(newValue) {
+                    itowns.viewer.showKML(newValue);
+                });
+
+                gui.add(text, 'api');
+
+                gui.add(text, 'StreetLevelImagery').onChange(function(newValue) {
+			         itowns.viewer.setStreetLevelImageryOn(newValue);
+                });
 
 
         </script>

@@ -42,7 +42,7 @@ define('Renderer/LayeredMaterial', ['THREE',
             this.Textures[l] = [emptyTexture];
             this.pitScale[l] = [new THREE.Vector3(0.0, 0.0, 0.0)];
             this.nbTextures[l] = 0;
-            this.paramLayers[l] = new THREE.Vector2(0.0, 1.0);
+            this.paramLayers[l] = new THREE.Vector3(0.0, 1.0,1.0);
         }
 
         this.uniforms.dTextures_00 = {
@@ -61,8 +61,14 @@ define('Renderer/LayeredMaterial', ['THREE',
             type: "i",
             value: this.nColorLayer
         };
+
+        // PIT n Textures
+        // Projection
+        // Opacity
+
+
         this.uniforms.paramLayers = {
-            type: "v2v",
+            type: "v3v",
             value: this.paramLayers
         };
         this.uniforms.pitScale_L00 = {

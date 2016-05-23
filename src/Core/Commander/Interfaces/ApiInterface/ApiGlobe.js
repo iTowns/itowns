@@ -8,6 +8,7 @@
 define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
        'Core/Commander/Interfaces/EventsManager',
        'Scene/Scene',
+       'Scene/Layer',
        'Scene/NodeProcess',
        'Globe/Globe',
        'Core/Commander/Providers/WMTS_Provider',
@@ -15,6 +16,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
        'Core/Geographic/Projection'], function(
            EventsManager,
            Scene,
+           Layer,
            NodeProcess,
            Globe,
            WMTS_Provider,
@@ -30,7 +32,6 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         this.viewerDiv = null;
 
     }
-
 
     ApiGlobe.prototype.constructor = ApiGlobe;
 
@@ -74,6 +75,16 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         providerWMTS.addLayer(layer);
         manager.addLayer(map.colorTerrain,providerWMTS);
         map.colorTerrain.services.push(layer.id);
+
+        var subLayer = new Layer();
+
+        subLayer.services.push(layer.id);
+
+        var idLayerTile = map.colorTerrain.children.length + 1;
+
+        subLayer.description = {style:{layerTile:idLayerTile}};
+
+        map.colorTerrain.add(subLayer);
 
     };
 
@@ -150,6 +161,13 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         this.scene.gfxEngine.setLightingOn(value);
         this.scene.layers[0].node.setRealisticLightingOn(value);
         this.scene.browserScene.updateMaterialUniform("lightingOn",value ? 1:0);
+        this.scene.renderScene3D();
+    };
+
+    ApiGlobe.prototype.setLayerVisible = function(id,visible){
+
+        this.scene.getMap().setLayerVisible(id,visible);
+
         this.scene.renderScene3D();
     };
 

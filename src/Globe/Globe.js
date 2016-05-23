@@ -153,6 +153,19 @@ define('Globe/Globe', [
     };
 
 
+    Globe.prototype.setLayerVisible = function(id,visible){
+
+        for (var i = 0; i < this.colorTerrain.children.length; i++) {
+            var layer = this.colorTerrain.children[i];
+            if(layer.services[0] === id)
+            {
+                layer.visible = visible;
+
+                break;
+            }
+        }
+    };
+
     Globe.prototype.setRealisticLightingOn = function(bool) {
 
         this.atmosphere.setRealisticOn(bool);

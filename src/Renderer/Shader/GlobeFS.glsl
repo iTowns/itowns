@@ -45,12 +45,13 @@ const vec4 fogColor = vec4( 0.76, 0.85, 1.0, 1.0);
 uniform sampler2D   dTextures_01[TEX_UNITS];
 uniform vec3        pitScale_L01[TEX_UNITS];
 
-uniform vec2        paramLayers[8];
+uniform vec3        paramLayers[8];
 uniform int         pickingRender;
 uniform int         nbTextures[8];
 uniform float       distanceFog;
 uniform int         RTC;
 uniform int         selected;
+uniform int         layerVisible;
 
 uniform int         nColorLayer;
 uniform int         uuid;
@@ -101,7 +102,7 @@ vec4 colorAtIdUv(sampler2D dTextures[TEX_UNITS],int id, vec2 uv){
 }
 
 
- vec2 getParam(int id){
+ vec3 getParam(int id){
 
     for (int i = 0; i < 32; ++i)
          if(i == id)
@@ -180,15 +181,12 @@ void main() {
 
         if (0 <= idd && idd < nbTextures[1])
         {
-            //vec2 params = getParam(nColorLayer-1);
 
-            vec2 params = getParam(0);
+            vec3 params = getParam(0);
             int pit = int(params.x);
             vec4 diffuseColor = colorAtIdUv(dTextures_01,idd+pit, uvO);
 
-
-
-            if(nColorLayer>1 && lightingOn == 1)
+            if(nColorLayer>1 && layerVisible == 1)
             {
                 vec4 diffuseColor2 = colorAtIdUv(dTextures_01,idd+nbTextures[1]/nColorLayer, uvO);
 
@@ -216,10 +214,10 @@ void main() {
             }
         }
 
-        // if(lightingOn == 1){   // Add lighting
-        //     float light = dot(vNormal, lightPosition); //normalize(pos.xyz)
-        //     gl_FragColor.rgb *= light;
-        // }
+        if(lightingOn == 1){   // Add lighting
+            float light = dot(vNormal, lightPosition); //normalize(pos.xyz)
+            gl_FragColor.rgb *= light;
+        }
     }
 
     if(debug > 0)
