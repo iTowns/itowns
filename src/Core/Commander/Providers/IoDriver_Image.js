@@ -25,6 +25,7 @@ define('Core/Commander/Providers/IoDriver_Image', ['Core/Commander/Providers/IoD
         {
 
             var image = new Image();
+            resolve.image = image; // avoid image deletion by garbage collector
 
             image.addEventListener('load', function(/*event*/) {
 

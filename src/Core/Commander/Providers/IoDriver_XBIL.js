@@ -91,6 +91,7 @@ define('Core/Commander/Providers/IoDriver_XBIL', ['Core/Commander/Providers/IoDr
         //return new Promise(function(resolve/*, reject*/)
         {
             var xhr = new XMLHttpRequest();
+            resolve.xhr = xhr; // avoid deletion by garbage collector
 
 
             //The responseType property cannot be set when the XMLHttpRequest is not async, that is, synchronous.

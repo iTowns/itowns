@@ -83,7 +83,7 @@ define('Scene/NodeProcess', ['Scene/BoundingBox', 'Renderer/Camera', 'Core/Math/
     };
 
     NodeProcess.prototype.traverseChildren = function(node) {
-        return !node.material.visible;
+        return node.visible && !node.material.visible;
     };
 
     NodeProcess.prototype.createCommands = function(node, params) {
@@ -94,7 +94,6 @@ define('Scene/NodeProcess', ['Scene/BoundingBox', 'Renderer/Camera', 'Core/Math/
     };
 
     NodeProcess.prototype.process = function(node, camera, params) {
-        // When entering this function, the node is ALWAYS visible
         var updateType;
         if(node.level === 0) { // first nodes
             this.createCommands(node, params);
@@ -106,36 +105,39 @@ define('Scene/NodeProcess', ['Scene/BoundingBox', 'Renderer/Camera', 'Core/Math/
             }
         }
 
+        if(this.isCulled(node, camera)) {   // Hide when culled
+            node.setVisibility(false);
+            node.setMaterialVisibility(false);
+            return;
+        }
+
         node.setVisibility(true);
         node.setMaterialVisibility(false);
-        if(node.noChild()) {
-            params.tree.subdivide(node);
-            node.setMaterialVisibility(true);
-        } else {
-            var childrenVisible = 0;
-            var childrenReady = 0;
-            var allChildrenCullable = true;
-            for(var i = 0; i < node.children.length; i++) { // Display node if all visible children are ready to be displayed
-                var child = node.children[i];
 
+        var child;
+        var i;
+        for(i = 0; i < node.children.length; i++) { // Reset children
+            child = node.children[i];
+            child.setVisibility(false);
+            child.setMaterialVisibility(false);
+        }
+
+        var allChildrenReady = true;
+        var sse = this.checkSSE(node, camera);
+        if(sse) {   // Only bother with children if sse is good enough
+            if(node.noChild()) {
+                params.tree.subdivide(node);
+            }
+            for(i = 0; i < node.children.length; i++) { // Update children and check theirs readiness
+                child = node.children[i];
                 this.createCommands(child, params);
-                child.setVisibility(false);
-                child.setMaterialVisibility(false);
-
-                if(!child.cullable) { // All tiles must be tested for culling before we can reliabaly decide to display the children
-                    allChildrenCullable = false;
-                } else {
-                    if (!this.isCulled(child,camera)) {
-                        childrenVisible++;
-                        if(child.ready() && this.checkSSE(child, camera)) {
-                            childrenReady++;
-                        }
-                    }
+                if(!child.ready()) {
+                    allChildrenReady = false;
                 }
             }
-            if(!allChildrenCullable || childrenReady !== childrenVisible || childrenVisible === 0) {  // If not all visible children are ready, display current node
-                node.setMaterialVisibility(true);
-            }
+        }
+        if(!sse || !allChildrenReady) {  // Display if sse is not good enough or if children are not ready yet
+            node.setMaterialVisibility(true);
         }
     };
 

@@ -42,13 +42,12 @@ define('Globe/TileMesh', [
         this.level = params.level;  // TODO: maybe build full WMTS coord?
         this.bbox = defaultValue(params.bbox, new BoundingBox());
 
-        this.texturesNeeded = 0;
         this.material = new LayeredMaterial();
         this.frustumCulled = false;
         this.levelElevation = this.level;
-        this.updateElevation = true;
-        this.updateImagery = true;
-        this.updateGeometry = true;
+        this.hasGeometry = false;
+        this.hasElevation = false;
+        this.hasImagery = false;
 
         // TODO not generic
         for (var i = 0; i < groupelevation.length; i++) {
@@ -146,7 +145,7 @@ define('Globe/TileMesh', [
     };
 
     TileMesh.prototype.setGeometry = function(geometry) {
-        this.updateGeometry = false;
+        this.hasGeometry = true;
         this.cullable = true;
 
 
@@ -193,7 +192,7 @@ define('Globe/TileMesh', [
     };
 
     TileMesh.prototype.setTextureElevation = function(elevation) {
-        this.updateElevation = false;
+        this.hasElevation = true;
 
         var texture;
         var pitScale;
@@ -238,20 +237,19 @@ define('Globe/TileMesh', [
             this.currentLevelLayers[l_ELEVATION] = elevation.level;
         }
 
+        this.material.nbTextures[l_ELEVATION] = 0;  // TODO: move to material
         this.material.setTexture(texture,l_ELEVATION, 0, pitScale);
     };
 
     TileMesh.prototype.getStatus = function() {
         var status = [];
-        if(this.updateGeometry) {   // Need geometry before elevation or imagery
-            status.push("geometry");
+        if(!this.ready()) {   // Need geometry before elevation or imagery
+            status.push("geometry");    // TODO: should probably "init" since the provider gives geometry + downscaled textures
         } else {
-            if(this.updateElevation) {
-                // TODO: use parent data while waiting?
+            if(this.downScaledLayer(l_ELEVATION)) {
                 status.push("elevation");
             }
-            if(this.updateImagery) {
-                // TODO: use parent data while waiting?
+            if(this.downScaledLayer(l_COLOR)) {
                 status.push("imagery");
             }
         }
@@ -260,7 +258,7 @@ define('Globe/TileMesh', [
 
     TileMesh.prototype.ready = function() {
         // TODO: a tile can be ready even if a texture needs updating (e.g. when a texture has already been loaded but is outdated)
-        return !this.updateGeometry;// && !this.updateElevation && !this.updateImagery;
+        return this.hasGeometry && this.hasImagery && this.hasElevation;
     };
 
     TileMesh.prototype.setBBoxZ = function(min, max) {
@@ -287,16 +285,14 @@ define('Globe/TileMesh', [
     };
 
     TileMesh.prototype.setTexturesLayer = function(textures,idLayer){
-        this.updateImagery = false;
-
+        this.hasImagery = true;
 
         if(!textures || this.material === null)
         {
             return;
         }
 
-        this.material.nbTextures[0] = 0;
-        this.material.nbTextures[1] = 0;
+        this.material.nbTextures[l_COLOR] = 0;  // TODO: move to material
         this.material.setTexturesLayer(textures, idLayer);
 
         this.currentLevelLayers[l_COLOR] = textures[0].texture.level;
@@ -372,10 +368,6 @@ define('Globe/TileMesh', [
     TileMesh.prototype.getParentNotDownScaled = function(layer)
     {
         return !this.parent.downScaledLayer(layer) ? this.parent : this.parent.getParentNotDownScaled(layer);
-    };
-
-    TileMesh.prototype.allTexturesAreLoaded = function(){
-        return this.texturesNeeded === this.material.nbLoadedTextures();
     };
 
     return TileMesh;

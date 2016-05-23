@@ -324,13 +324,6 @@ define('Core/Commander/Providers/WMTS_Provider', [
 
                 var colorTexturesNeeded = box[1].row + 1 - box[0].row;
 
-                if(lookAtAncestor)
-                    tile.texturesNeeded += colorTexturesNeeded;
-                else
-                    tile.material.nbTextures -= colorTexturesNeeded;
-
-                // TODO: temporarily disabled texture upscaling
-                lookAtAncestor = false;
 
                 for (var row = box[0].row; row < box[1].row + 1; row++) {
 

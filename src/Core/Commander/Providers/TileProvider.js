@@ -107,13 +107,14 @@ define('Core/Commander/Providers/TileProvider', [
 
         TileProvider.prototype.executeCommand = function(command) {
 
-            var tile = command.requester;//new command.type(params,this.builder);
+            var tile = command.requester;
+            var parent = tile.parent;
+            var service;
             if(command.type === "geometry") {
                 var bbox = tile.bbox;
 
                 // TODO not generic
                 var tileCoord = this.projection.WGS84toWMTS(bbox);
-                var parent = tile.parent;
 
                 // build tile
                 var geometry; // = getGeometry(bbox,tileCoord);
@@ -141,27 +142,45 @@ define('Core/Commander/Providers/TileProvider', [
                 tile.updateMatrix();
                 tile.updateMatrixWorld();
 
-                tile.texturesNeeded =+ 1;
-
-                if(tile.level !== 0) {
-                    tile.setTexturesFromParent();
-                }
-
-                return when();
+                var elevationlayerId = tile.tileCoord.zoom > 11 ? 'IGN_MNT_HIGHRES' : 'IGN_MNT';
+                return when.all([
+                    this.providerElevationTexture.getElevationTexture(tileCoord, elevationlayerId).then(function(terrain) {
+                        if(this.disposed) return;
+                        this.setTextureElevation(terrain);
+                    }.bind(tile)),
+                    this.providerColorTexture.getColorTextures(tile,"IGNPO").then(function(colorTextures) {
+                        if(this.disposed) return;
+                        this.setTexturesLayer(colorTextures,1);
+                    }.bind(tile))
+                ]);
             } else if(command.type === "elevation") {
                 // TODO: remove hard-written values
-                var elevationlayerId = tile.tileCoord.zoom > 11 ? 'IGN_MNT_HIGHRES' : 'IGN_MNT';
-                return this.providerElevationTexture.getElevationTexture(tile.tileCoord, elevationlayerId).then(function(terrain) {
-                    if(this.disposed) return;
-                    this.setTextureElevation(terrain);
-                }.bind(tile));
+                parent = tile.level === tile.levelElevation ? tile : tile.getParentLevel(tile.levelElevation);
+
+
+                if(parent.downScaledLayer(0)) {
+                    service = tile.tileCoord.zoom > 11 ? 'IGN_MNT_HIGHRES' : 'IGN_MNT';
+
+                    return this.providerElevationTexture.getElevationTexture(parent.tileCoord,service).then(function(terrain) {
+                        if(this.disposed) return;
+                        this.setTextureElevation(terrain);
+                    }.bind(parent)).then(function() {
+                        if(this.disposed) return;
+                        if(this.downScaledLayer(0))
+                            this.setTextureElevation(-2);
+                    }.bind(tile));
+                }
+                else {
+                    tile.setTextureElevation(-2);
+                }
+                return when();
 
             } else if(command.type === "imagery") {
-                return this.providerWMTS.getColorTextures(tile,"IGNPO").then(function(result)
-                {
+                service = "IGNPO";
+                return this.providerColorTexture.getColorTextures(command.requester,service).then(function(result) {
                     if(this.disposed) return;
                     this.setTexturesLayer(result,1);
-                }.bind(tile));
+                }.bind(command.requester));
             }
         };
 

@@ -131,6 +131,7 @@ define('Core/Commander/ManagerCommands', [
                 if(!node || node.disposed) {
                     return;
                 } else if(node.parent.visible === false) {
+                    node.parent.disposeChildren();
                     com.callback();
                     return;
                 } else {
