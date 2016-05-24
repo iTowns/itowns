@@ -80,7 +80,13 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
 
         subLayer.services.push(layer.id);
 
-        var idLayerTile = map.colorTerrain.children.length + 1;
+        var idLayerTile = map.colorTerrain.children.length;
+
+        if(map.colorTerrain.children.length === 1)
+        {
+
+            subLayer.visible = false;
+        }
 
         subLayer.description = {style:{layerTile:idLayerTile}};
 
@@ -164,9 +170,20 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         this.scene.renderScene3D();
     };
 
-    ApiGlobe.prototype.setLayerVisible = function(id,visible){
+    ApiGlobe.prototype.setLayerVibility = function(id,visible){
 
-        this.scene.getMap().setLayerVisible(id,visible);
+
+
+        this.scene.getMap().setLayerVibility(id,visible);
+
+        this.scene.renderScene3D();
+    };
+
+     ApiGlobe.prototype.setLayerOpacity = function(id,visible){
+
+
+
+        this.scene.getMap().setLayerOpacity(id,visible);
 
         this.scene.renderScene3D();
     };
