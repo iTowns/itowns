@@ -42,7 +42,7 @@ define('Renderer/LayeredMaterial', ['THREE',
             this.Textures[l] = [emptyTexture];
             this.pitScale[l] = [new THREE.Vector3(0.0, 0.0, 0.0)];
             this.nbTextures[l] = 0;
-            this.paramLayers[l] = new THREE.Vector3(0.0, 1.0,1.0);
+            this.paramLayers[l] = new THREE.Vector4(0.0, 1.0,1.0,1.0);
         }
 
         this.uniforms.dTextures_00 = {
@@ -65,10 +65,10 @@ define('Renderer/LayeredMaterial', ['THREE',
         // PIT n Textures
         // Projection
         // Opacity
-
+        // Visible
 
         this.uniforms.paramLayers = {
-            type: "v3v",
+            type: "v4v",
             value: this.paramLayers
         };
         this.uniforms.pitScale_L00 = {
@@ -155,6 +155,22 @@ define('Renderer/LayeredMaterial', ['THREE',
 
     LayeredMaterial.prototype.setLightingOn = function (enable){
         this.uniforms.lightingOn.value = enable === true ? 1 : 0;
+    };
+
+    LayeredMaterial.prototype.setLayerOpacity = function (id,opacity){
+
+        if(this.paramLayers[id])
+        {
+            this.paramLayers[id].w = opacity;
+        }
+    };
+
+     LayeredMaterial.prototype.setLayerVibility = function (id,visible){
+
+        if(this.paramLayers[id])
+        {
+            this.paramLayers[id].z = visible ? 1 : 0;
+        }
     };
 
     return LayeredMaterial;

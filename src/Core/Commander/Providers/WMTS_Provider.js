@@ -355,6 +355,7 @@ define('Core/Commander/Providers/WMTS_Provider', [
 
             tile.material.uniforms.nColorLayer.value = nColorLayers;
 
+
             if (promises.length)
                 return when.all(promises);
             else

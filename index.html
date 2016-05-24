@@ -425,12 +425,10 @@ and open the template in the editor.
                var Menu = function() {
                    this.CloudsIR = false;
                    this.Carte = false;
+                   this.CarteOpacity = 1.0;
                    this.RealisticLighting = false;
-
                    this.StreetLevelImagery = false;
-
                    this.KML = false;
-
                    this.Layer = "OrthoGeoportail";
                    this.api = function(){
                         itowns.viewer.launchCommandApi();
@@ -455,7 +453,7 @@ and open the template in the editor.
                                                     baseUrl = "http://a.basemaps.cartocdn.com/";
                                                     break;
                         }
-			itowns.viewer.setLayerAtLevel(baseUrl,layer,0);  // set layer at level n (0 -> top)
+			             itowns.viewer.setLayerAtLevel(baseUrl,layer,0);  // set layer at level n (0 -> top)
                });
 
                 gui.add(text, 'CloudsIR').onChange(function(newValue) {
@@ -469,7 +467,14 @@ and open the template in the editor.
 
                 gui.add(text, 'Carte').onChange(function(newValue) {
 
-                       itowns.viewer.setLayerVisible("IGNPO1",newValue);
+                       itowns.viewer.setLayerVibility("IGNPO1",newValue ? 1 : 0);
+                });
+
+                gui.add(text, 'CarteOpacity', 0.0, 1.0).onChange(function(newValue) {
+
+
+                    var opacity = Math.max(0,Math.min(newValue,1.0));
+                    itowns.viewer.setLayerOpacity("IGNPO1",opacity);
                 });
 
                 gui.add(text, 'KML').onChange(function(newValue) {

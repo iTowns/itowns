@@ -152,14 +152,45 @@ define('Globe/Globe', [
         this.batiments.children[0].visible = show;
     };
 
+    Globe.prototype.setLayerOpacity = function(id,opacity){
 
-    Globe.prototype.setLayerVisible = function(id,visible){
+        for (var i = 0; i < this.colorTerrain.children.length; i++) {
+            var layer = this.colorTerrain.children[i];
+            if(layer.services[0] === id)
+            {
+                layer.opacity = opacity;
+                var idLtile = layer.description.style.layerTile;
+                var cO = function(object){
+
+                    if(object.material.setLayerOpacity)
+                        object.material.setLayerOpacity(idLtile,opacity);
+
+                };
+
+                this.tiles.children[0].traverse(cO);
+
+                break;
+            }
+        }
+    };
+
+
+    Globe.prototype.setLayerVibility = function(id,visible){
 
         for (var i = 0; i < this.colorTerrain.children.length; i++) {
             var layer = this.colorTerrain.children[i];
             if(layer.services[0] === id)
             {
                 layer.visible = visible;
+                var idLtile = layer.description.style.layerTile;
+                var cO = function(object){
+
+                    if(object.material.setLayerVibility)
+                        object.material.setLayerVibility(idLtile,visible);
+
+                };
+
+                this.tiles.children[0].traverse(cO);
 
                 break;
             }

@@ -17,6 +17,7 @@
 
 define('Core/Commander/Providers/TileProvider', [
         'when',
+        'THREE',
         'Core/Geographic/Projection',
         'Core/Commander/Providers/WMTS_Provider',
         'Core/Commander/Providers/KML_Provider',
@@ -29,6 +30,7 @@ define('Core/Commander/Providers/TileProvider', [
     ],
     function(
         when,
+        THREE,
         Projection,
         WMTS_Provider,
         KML_Provider,
@@ -139,6 +141,15 @@ define('Core/Commander/Providers/TileProvider', [
             // PROBLEM is not generic : elevationTerrain ,colorTerrain
             var elevationlayerId = command.paramsFunction.layer.parent.elevationTerrain.services[tileCoord.zoom > 11 ? 1 : 0];
             var colorServices = command.paramsFunction.layer.parent.colorTerrain.services;
+
+            var nColorL = colorServices.length;
+
+            if(nColorL>1 )
+            {
+                var layer = command.paramsFunction.layer.parent.colorTerrain.children[1];
+
+                tile.material.paramLayers[1] = new THREE.Vector4(0.0, 1.0,layer.visible ? 1 : 0,layer.opacity);
+            }
 
             if(tileCoord.zoom > 3 )
                 tileCoord =  undefined;
