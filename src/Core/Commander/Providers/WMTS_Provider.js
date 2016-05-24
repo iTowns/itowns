@@ -130,7 +130,7 @@ define('Core/Commander/Providers/WMTS_Provider', [
             var maxZoom = Number(arrayLimits[size-1]);
             var minZoom = maxZoom - size + 1;
 
-            this.layersWMTS[layer.id] = {baseUrl : newBaseUrl,tileMatrixSetLimits: options.tileMatrixSetLimits,zoom:{min:minZoom,max:maxZoom}};
+            this.layersWMTS[layer.id] = {baseUrl : newBaseUrl,tileMatrixSet:options.tileMatrixSet,tileMatrixSetLimits: options.tileMatrixSetLimits,zoom:{min:minZoom,max:maxZoom}};
 
         };
 
@@ -270,14 +270,10 @@ define('Core/Commander/Providers/WMTS_Provider', [
 
             if(destination === 1)
             {
-
-                //service = this.resolveService(command.paramsFunction.layer.services,tile.level);
-
-                //console.log(command.paramsFunction.layer.services);
-                return this.getColorTextures(command.requester,command.paramsFunction.layer.services).then(function(result)
+                return this.getColorTextures(tile,command.paramsFunction.layer.services).then(function(result)
                 {
                     this.setTexturesLayer(result,destination);
-                }.bind(command.requester));
+                }.bind(tile));
             }
             else if (destination === 0)
             {
@@ -307,6 +303,8 @@ define('Core/Commander/Providers/WMTS_Provider', [
             }
         };
 
+
+
         WMTS_Provider.prototype.getColorTextures = function(tile,layerWMTSId) {
 
             var promises = [];
@@ -324,7 +322,7 @@ define('Core/Commander/Providers/WMTS_Provider', [
                     var lookAtAncestor = tile.currentLevelLayers[1] === -1;
 
                     // TODO not generic
-                    var box = this.projection.WMTS_WGS84ToWMTS_PM(tile.tileCoord, tile.bbox); //
+                    var box = this.projection.getCoordWMTS_WGS84(tile, layer.tileMatrixSet); //
                     var col = box[0].col;
 
                     var colorTexturesNeeded = box[1].row + 1 - box[0].row;
@@ -354,7 +352,6 @@ define('Core/Commander/Providers/WMTS_Provider', [
             }
 
             tile.material.uniforms.nColorLayer.value = nColorLayers;
-
 
             if (promises.length)
                 return when.all(promises);

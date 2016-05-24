@@ -37,13 +37,23 @@ define('Core/Geographic/Projection', ['Core/Geographic/CoordWMTS', 'Core/Math/Ma
 
     };
 
+
+    Projection.prototype.getCoordWMTS_WGS84 = function(tile,tileMatrixSet) {
+
+        if(tileMatrixSet === 'PM')
+            return this.WMTS_PMToWMTS_WGS84(tile.tileCoord, tile.bbox);
+        else if(tileMatrixSet === 'WGS84G')
+            return [tile.tileCoord];
+    };
+
+
     /**
      *
      * @param {type} cWMTS
      * @param {type} bbox
      * @returns {Array} coord WMTS array in pseudo mercator
      */
-    Projection.prototype.WMTS_WGS84ToWMTS_PM = function(cWMTS, bbox) {
+    Projection.prototype.WMTS_PMToWMTS_WGS84 = function(cWMTS, bbox) {
 
         var wmtsBox = [];
         var level = cWMTS.zoom + 1;
