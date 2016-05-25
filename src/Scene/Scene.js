@@ -47,7 +47,7 @@ define('Scene/Scene', [
         // /!\ Doesn't work
         this.size = {x:6378137,y: 6356752.3142451793,z:6378137};
 
-        var positionCamera = new Ellipsoid(this.size).cartographicToCartesian(new CoordCarto().setFromDegreeGeo(coordCarto.lat, coordCarto.lon, coordCarto.alt));
+        var positionCamera = new Ellipsoid(this.size).cartographicToCartesian(new CoordCarto().setFromDegreeGeo(coordCarto.lon, coordCarto.lat, coordCarto.alt));
 
         this.layers = [];
         this.map = null;
@@ -97,7 +97,9 @@ define('Scene/Scene', [
             this.layers[i].process.updateCamera(this.gfxEngine.camera);
         }
     };
-
+    Scene.prototype.getZoomLevel = function(){
+        return this.selectNodes;
+    };
 
     Scene.prototype.size = function() {
         return this.size;
