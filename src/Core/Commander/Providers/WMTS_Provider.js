@@ -313,24 +313,18 @@ define('Core/Commander/Providers/WMTS_Provider', [
             for (var i = 0; i < layerWMTSId.length; i++) {
 
                 var layer = this.layersWMTS[layerWMTSId[i]];
+                var lookAtAncestor = tile.currentLevelLayers[1] === -1;
 
-                //console.log(layer);
-
-                if (tile.level >= layer.zoom.min)
+                if (tile.level >= layer.zoom.min && tile.level <= layer.zoom.max)
                 {
 
-                    var lookAtAncestor = tile.currentLevelLayers[1] === -1;
-
-                    // TODO not generic
-                    var box = this.projection.getCoordWMTS_WGS84(tile, layer.tileMatrixSet); //
+                    var levelParent = tile.getParentNotDownScaled(1).level + 1;
+                    var box = this.projection.getCoordWMTS_WGS84(tile, layer.tileMatrixSet);
                     var col = box[0].col;
-
                     var colorTexturesNeeded = box[1].row + 1 - box[0].row;
 
                     if(lookAtAncestor)
                         tile.texturesNeeded += colorTexturesNeeded;
-                    else
-                        tile.material.nbTextures -= colorTexturesNeeded;
 
                     nColorLayers++;
 
@@ -339,10 +333,10 @@ define('Core/Commander/Providers/WMTS_Provider', [
                        var cooWMTS = new CoordWMTS(box[0].zoom, row, col);
                        var pitch = new THREE.Vector3(0.0,0.0,1.0);
 
-                       if(lookAtAncestor && box[0].zoom > 3)
+                       if(lookAtAncestor)
                        {
-                            var levelParent = tile.getParentNotDownScaled(1).level + 1;
-                            cooWMTS = this.projection.WMTS_WGS84Parent(cooWMTS,levelParent,pitch);
+                            var zoom = levelParent < layer.zoom.min ? tile.level+1 : levelParent;
+                            cooWMTS = this.projection.WMTS_WGS84Parent(cooWMTS,zoom,pitch);
                        }
 
                        promises.push(this.getColorTexture(cooWMTS,pitch,layerWMTSId[i]));
