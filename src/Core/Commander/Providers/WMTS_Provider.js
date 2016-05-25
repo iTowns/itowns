@@ -321,10 +321,9 @@ define('Core/Commander/Providers/WMTS_Provider', [
                     var levelParent = tile.getParentNotDownScaled(1).level + 1;
                     var box = this.projection.getCoordWMTS_WGS84(tile, layer.tileMatrixSet);
                     var col = box[0].col;
-                    var colorTexturesNeeded = box[1].row + 1 - box[0].row;
 
                     if(lookAtAncestor)
-                        tile.texturesNeeded += colorTexturesNeeded;
+                        tile.texturesNeeded += box[1].row + 1 - box[0].row;
 
                     nColorLayers++;
 

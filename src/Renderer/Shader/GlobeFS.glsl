@@ -195,12 +195,16 @@ void main() {
                 vec4 params = getParam(1);
                 if(params.z == 1.0 && params.w > 0.0)
                     {
+
+
                         vec4 diffuseColor2 = colorAtIdUv(dTextures_01,idd+nbTextures[1]/nColorLayer, uvO);
 
 
-                        float lum = 1.0-diffuseColor2.r*diffuseColor2.r;
-                        diffuseColor2*= diffuseColor2*diffuseColor2;
+                        float a = (diffuseColor2.r + diffuseColor2.g + diffuseColor2.b)/3.0;
 
+                        float lum = 1.0-pow(a,2.5);
+
+                        diffuseColor2*= diffuseColor2*diffuseColor2;
                         diffuseColor = mix( diffuseColor,diffuseColor2, lum*getParam(1).w);
 
                         //diffuseColor = diffuseColor*(vv) + diffuseColor2*(1.0-vv);

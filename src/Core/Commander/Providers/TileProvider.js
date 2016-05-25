@@ -140,6 +140,7 @@ define('Core/Commander/Providers/TileProvider', [
             tile.updateMatrix();
             tile.updateMatrixWorld();
 
+
             // PROBLEM is not generic : elevationTerrain ,colorTerrain
             var elevationlayerId = command.paramsFunction.layer.parent.elevationTerrain.services[tileCoord.zoom > 11 ? 1 : 0];
             var colorServices = command.paramsFunction.layer.parent.colorTerrain.services;
