@@ -86,6 +86,7 @@ define('Core/Commander/Providers/TileProvider', [
             return geometry;
         };
 
+        // 52.0.2739.0 dev (64-bit)
        // TileProvider.prototype.getKML= function(){
         TileProvider.prototype.getKML= function(tile){
 
@@ -97,10 +98,11 @@ define('Core/Commander/Providers/TileProvider', [
                 return this.providerKML.loadKMZ(longitude, latitude).then(function (collada){
 
                     if(collada && tile.link.children.indexOf(collada) === -1)
-                        {
+                    {
                             tile.link.add(collada);
                             tile.content = collada;
-                        }
+                    }
+
                 }.bind(this));
             }
         };
@@ -166,7 +168,7 @@ define('Core/Commander/Providers/TileProvider', [
 
                         this.setTexturesLayer(colorTextures,1);}.bind(tile))
 
-                    //,this.getKML(tile)
+                    ,this.getKML(tile)
 
                 ];
 
