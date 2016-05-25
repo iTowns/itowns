@@ -63,7 +63,7 @@ define('Globe/Globe', [
         var geometry = new THREE.SphereGeometry(5);
         var batiment = new THREE.Mesh(geometry, material);
 
-        var position = this.ellipsoid.cartographicToCartesian(new CoordCarto().setFromDegreeGeo(48.87, 0, 200));
+        var position = this.ellipsoid.cartographicToCartesian(new CoordCarto().setFromDegreeGeo(0, 48.87, 200));
 
         position = new THREE.Vector3(4201215.424138484,171429.945145441,4779294.873914789);
 
@@ -80,7 +80,7 @@ define('Globe/Globe', [
         var material2 = new BasicMaterial(new THREE.Color(1, 0.5, 1));
         material2.visible = false;
         var batiment2 = new THREE.Mesh(geometry, material2);
-        var position2 = this.ellipsoid.cartographicToCartesian(new CoordCarto().setFromDegreeGeo(48.87, 0.001, 100));
+        var position2 = this.ellipsoid.cartographicToCartesian(new CoordCarto().setFromDegreeGeo(0.001, 48.87, 100));
         batiment2.frustumCulled = false;
         material2.wireframe = true;
         batiment2.position.copy(position2);
@@ -211,8 +211,6 @@ define('Globe/Globe', [
         this.clouds.setLightingOn(bool);
 
     };
-
-
 
     return Globe;
 

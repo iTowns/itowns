@@ -56,7 +56,7 @@ define('MobileMapping/MobileMappingLayer', [
             // Move camera to new pos
          //   var panoInfo = panoInfo; //this.panoramicProvider.panoInfo;
             var ellipsoid  = new Ellipsoid(new THREE.Vector3(6378137, 6356752.3142451793, 6378137));  // Should be computed elsewhere
-            var posPanoWGS84 = new CoordCarto().setFromDegreeGeo(panoInfo.latitude, panoInfo.longitude, panoInfo.altitude);
+            var posPanoWGS84 = new CoordCarto().setFromDegreeGeo(panoInfo.longitude, panoInfo.latitude, panoInfo.altitude);
             var posPanoCartesian = ellipsoid.cartographicToCartesian(posPanoWGS84);
 
             this.moveCameraToScanPosition(posPanoCartesian);
@@ -82,7 +82,7 @@ define('MobileMapping/MobileMappingLayer', [
             // Move camera to panoramic center
             var panoInfo = this.panoramicProvider.panoInfo;
             var ellipsoid  = new Ellipsoid(new THREE.Vector3(6378137, 6356752.3142451793, 6378137));  // Should be computed elsewhere
-            var posPanoWGS84 = new CoordCarto().setFromDegreeGeo(panoInfo.latitude, panoInfo.longitude, panoInfo.altitude);
+            var posPanoWGS84 = new CoordCarto().setFromDegreeGeo(panoInfo.longitude, panoInfo.latitude, panoInfo.altitude);
             var posPanoCartesian = ellipsoid.cartographicToCartesian(posPanoWGS84);
 
             this.moveCameraToScanPosition(posPanoCartesian);

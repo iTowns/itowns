@@ -89,9 +89,12 @@ define('Scene/NodeProcess', ['Scene/BoundingBox', 'Renderer/Camera', 'Core/Math/
 
         if(params.withUp && node.material.visible && !node.wait )
         {
-            if (sse)
+            if (sse){
                 // request level up
                 params.tree.up(node);
+//            console.log(node);
+//            console.log(node.tileCoord.zoom);
+            }
             else
                 // request level up other quadtree
                 params.tree.upSubLayer(node);
