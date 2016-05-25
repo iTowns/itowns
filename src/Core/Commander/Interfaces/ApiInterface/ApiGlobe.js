@@ -172,16 +172,12 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
 
     ApiGlobe.prototype.setLayerVibility = function(id,visible){
 
-
-
         this.scene.getMap().setLayerVibility(id,visible);
 
         this.scene.renderScene3D();
     };
 
-     ApiGlobe.prototype.setLayerOpacity = function(id,visible){
-
-
+    ApiGlobe.prototype.setLayerOpacity = function(id,visible){
 
         this.scene.getMap().setLayerOpacity(id,visible);
 

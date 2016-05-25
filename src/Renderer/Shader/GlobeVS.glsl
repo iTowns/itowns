@@ -6,7 +6,6 @@ precision highp int;
 #define SHADER_NAME ShaderMaterial
 #define VERTEX_TEXTURES
 
-
 #define USE_LOGDEPTHBUF
 #define USE_LOGDEPTHBUF_EXT
 
