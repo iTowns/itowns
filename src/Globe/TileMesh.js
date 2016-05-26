@@ -146,7 +146,6 @@ define('Globe/TileMesh', [
 
     TileMesh.prototype.setGeometry = function(geometry) {
         this.hasGeometry = true;
-        this.cullable = true;
 
 
         this.geometry = geometry;

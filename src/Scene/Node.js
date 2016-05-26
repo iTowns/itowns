@@ -24,7 +24,6 @@ define('Scene/Node', [], function() {
         this.screenSpaceError = 0.0;
         this.visible = true;
         this.layer = null;
-        this.cullable = false;
         this.disposed = false;
 
 
