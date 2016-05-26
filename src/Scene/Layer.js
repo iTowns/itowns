@@ -16,17 +16,15 @@
 define('Scene/Layer', [
     'THREE',
     'Scene/Node',
-    'Core/Commander/InterfaceCommander',
     'Core/Geographic/Projection',
     'Renderer/NodeMesh'
-], function(THREE, Node, InterfaceCommander, Projection, NodeMesh) {
+], function(THREE, Node, Projection, NodeMesh) {
 
     function Layer(type, param) {
         //Constructor
 
         Node.call(this);
         // Requeter
-        this.interCommand = type !== undefined ? new InterfaceCommander(type, param) : undefined;
         this.descriManager = null;
         this.projection = new Projection();
         this.id = Layer.count++;

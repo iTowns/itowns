@@ -16,7 +16,6 @@ define('Renderer/NodeMesh', ['Scene/Node', 'THREE'], function(Node, THREE) {
         THREE.Mesh.call(this);
 
         this.sse = 0.0;
-        this.wait = false;
         this.helper = undefined;
 
     };

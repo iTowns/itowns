@@ -110,8 +110,11 @@ define('Core/Commander/ManagerCommands', [
 
             while (this.queueAsync.length > 0 && arrayTasks.length < nT) {
                 var command = this.deQueue();
-                if(command)
-                    arrayTasks.push(this.providerMap[command.layer.id].executeCommand(command));
+                if(command) {
+                    var task = this.providerMap[command.layer.id].executeCommand(command);
+                    task = task.then(command.callback);
+                    arrayTasks.push(task);
+                }
             }
 
             return arrayTasks;
@@ -122,22 +125,18 @@ define('Core/Commander/ManagerCommands', [
         ManagerCommands.prototype.deQueue = function() {
 
             while (this.queueAsync.length > 0) {
-                var com = this.queueAsync.peek();
-                var parent = com.requester;
+                var com = this.queueAsync.dequeue();
+                var node = com.requester;
 
-                if (parent.visible === false && parent.level >= 2) {
-
-                    while (parent.children.length > 0) {
-                        var child = parent.children[0];
-                        child.dispose();
-                        parent.remove(child);
-                    }
-                    parent.wait = false;
-                    parent.false = false;
-                    this.queueAsync.dequeue();
-                } else
-                    return this.queueAsync.dequeue();
-
+                if(!node || node.disposed) {
+                    return;
+                } else if(node.parent.visible === false) {
+                    node.parent.disposeChildren();
+                    com.callback();
+                    return;
+                } else {
+                    return com;
+                }
             }
 
             return undefined;

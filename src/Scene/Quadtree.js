@@ -33,9 +33,11 @@ define('Scene/Quadtree', [
 
         rootNode.enablePickingRender = function() { return true;};
         this.add(rootNode);
+        rootNode.level = -1;    // TODO: change?
+        rootNode.parent = null;    // TODO temp
 
         for (var i = 0; i < this.schemeTile.rootCount(); i++) {
-            this.requestNewTile(this.schemeTile.getRoot(i), rootNode);
+            this.createTile(this.schemeTile.getRoot(i), rootNode);
         }
     }
 
@@ -59,68 +61,29 @@ define('Scene/Quadtree', [
         return node.children[3];
     };
 
-    Quadtree.prototype.requestNewTile = function(bbox, parent) {
+    Quadtree.prototype.createTile = function(bbox, parent) {
 
-        var params = {layer : this,bbox: bbox };
+        var params = {bbox: bbox, level: parent.level + 1};
 
-        this.interCommand.request(params, parent);
+        var tile = new this.tileType(params);
+        parent.add(tile);
 
     };
 
     /**
-     * @documentation: subdivise node if necessary
+     * @documentation: subdivide node if necessary
      * @param {type} node
-     * @returns {Array} four bounding box
      */
-    Quadtree.prototype.up = function(node) {
+    Quadtree.prototype.subdivide = function(node) {
 
-        if (!this.update(node))
-            return;
+        if(node.level >= this.maxLevel) return;
 
-        node.wait = true;
         var quad = new Quad(node.bbox);
-        this.requestNewTile(quad.northWest, node);
-        this.requestNewTile(quad.northEast, node);
-        this.requestNewTile(quad.southWest, node);
-        this.requestNewTile(quad.southEast, node);
+        this.createTile(quad.northWest, node);
+        this.createTile(quad.northEast, node);
+        this.createTile(quad.southWest, node);
+        this.createTile(quad.southEast, node);
 
-    };
-
-    Quadtree.prototype.down = function(node)
-    {
-        node.setMaterialVisibility(true);
-        node.setChildrenVisibility(false);
-    }
-
-    Quadtree.prototype.upSubLayer = function(node) {
-
-        var id = node.getDownScaledLayer();
-
-        if(id !== undefined)
-        {
-            var params = { layer : this.children[id+1], subLayer : id};
-            this.interCommand.request(params, node);
-        }
-
-    };
-
-    /**
-     * @documentation: update node
-     * @param {type} node
-     * @returns {Boolean}
-     */
-    Quadtree.prototype.update = function(node) {
-
-        if (node.level > this.maxLevel)
-            return false;
-        else if (node.childrenCount() > 0 ) {
-
-            node.setMaterialVisibility(false);
-
-            return false;
-        }
-
-        return true;
     };
 
     return Quadtree;

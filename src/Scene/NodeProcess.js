@@ -4,7 +4,7 @@
  * Description: NodeProcess effectue une opération sur un Node.
  */
 
-define('Scene/NodeProcess', ['Scene/BoundingBox', 'Renderer/Camera', 'Core/Math/MathExtented', 'THREE', 'Core/defaultValue'], function(BoundingBox, Camera, MathExt, THREE, defaultValue) {
+define('Scene/NodeProcess', ['Scene/BoundingBox', 'Renderer/Camera', 'Core/Math/MathExtented', 'Core/Commander/InterfaceCommander', 'THREE', 'Core/defaultValue'], function(BoundingBox, Camera, MathExt, InterfaceCommander, THREE, defaultValue) {
 
 
     function NodeProcess(camera, size, bbox) {
@@ -19,6 +19,7 @@ define('Scene/NodeProcess', ['Scene/BoundingBox', 'Renderer/Camera', 'Core/Math/
         this.r = defaultValue(size, new THREE.Vector3());
         this.cV = new THREE.Vector3();
 
+        this.interCommand = new InterfaceCommander();    // TODO: InterfaceCommander static class?
     }
 
     /**
@@ -56,7 +57,7 @@ define('Scene/NodeProcess', ['Scene/BoundingBox', 'Renderer/Camera', 'Core/Math/
      * @return {Boolean}      the culling attempt's result
      */
     NodeProcess.prototype.isCulled = function(node, camera) {
-        return !( this.frustumCullingOBB(node, camera)&&this.horizonCulling(node, camera));
+        return !(this.frustumCullingOBB(node, camera) && this.horizonCulling(node, camera));
     };
 
     /**
@@ -77,30 +78,67 @@ define('Scene/NodeProcess', ['Scene/BoundingBox', 'Renderer/Camera', 'Core/Math/
 
     };
 
-    /**
-     * @documentation: Compute screen space error of node in function of camera
-     * @param {type} node
-     * @param {type} camera
-     * @returns {Boolean}
-     */
-    NodeProcess.prototype.SSE = function(node, camera, params) {
+    NodeProcess.prototype.isVisible = function(node, camera) {
+        return !this.isCulled(node, camera) && this.checkSSE(node, camera);
+    };
 
-        var sse = this.checkSSE(node, camera)
+    NodeProcess.prototype.traverseChildren = function(node) {
+        return node.visible && !node.material.visible;
+    };
 
-        if(params.withUp && node.material.visible && !node.wait )
-        {
-            if (sse)
-                // request level up
-                params.tree.up(node);
-            else
-                // request level up other quadtree
-                params.tree.upSubLayer(node);
+    NodeProcess.prototype.createCommands = function(node, params) {
+        var status = node.getStatus();
+        for(var i = 0; i < status.length; i++) {
+            this.interCommand.request(status[i], node, params.tree, {});
         }
-        else if (!sse) {
-            // request level down
-            params.tree.down(node);
+    };
+
+    NodeProcess.prototype.process = function(node, camera, params) {
+        var updateType;
+        if(node.level === 0) { // first nodes
+            this.createCommands(node, params);
+
+            if(!node.ready()) {
+                node.setVisibility(false);
+                node.setMaterialVisibility(false);
+                return;
+            }
         }
 
+        if(this.isCulled(node, camera)) {   // Hide when culled
+            node.setVisibility(false);
+            node.setMaterialVisibility(false);
+            return;
+        }
+
+        node.setVisibility(true);
+        node.setMaterialVisibility(false);
+
+        var child;
+        var i;
+        for(i = 0; i < node.children.length; i++) { // Reset children
+            child = node.children[i];
+            child.setVisibility(false);
+            child.setMaterialVisibility(false);
+        }
+
+        var allChildrenReady = true;
+        var sse = this.checkSSE(node, camera);
+        if(sse) {   // Only bother with children if sse is good enough
+            if(node.noChild()) {
+                params.tree.subdivide(node);
+            }
+            for(i = 0; i < node.children.length; i++) { // Update children and check theirs readiness
+                child = node.children[i];
+                this.createCommands(child, params);
+                if(!child.ready()) {
+                    allChildrenReady = false;
+                }
+            }
+        }
+        if(!sse || !allChildrenReady) {  // Display if sse is not good enough or if children are not ready yet
+            node.setMaterialVisibility(true);
+        }
     };
 
     /**

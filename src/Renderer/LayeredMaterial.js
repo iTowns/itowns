@@ -37,7 +37,14 @@ define('Renderer/LayeredMaterial', ['THREE',
         for (var l = 0; l < nbLayer; l++) {
 
             this.Textures[l] = [emptyTexture];
-            this.pitScale[l] = [new THREE.Vector3(0.0, 0.0, 0.0)];
+            this.pitScale[l] = [new THREE.Vector3(0.0, 0.0, 0.0),
+                new THREE.Vector3(0.0, 0.0, 0.0),
+                new THREE.Vector3(0.0, 0.0, 0.0),
+                new THREE.Vector3(0.0, 0.0, 0.0),
+                new THREE.Vector3(0.0, 0.0, 0.0),
+                new THREE.Vector3(0.0, 0.0, 0.0),
+                new THREE.Vector3(0.0, 0.0, 0.0),
+                new THREE.Vector3(0.0, 0.0, 0.0)];
             this.nbTextures[l] = 0;
         }
 
@@ -68,7 +75,7 @@ define('Renderer/LayeredMaterial', ['THREE',
         this.uniforms.lightingOn = {
              type: "i",
              value: gfxEngine().lightingOn
-        },
+        };
         this.uniforms.lightPosition = {
             type: "v3",
             value: new THREE.Vector3(-0.5, 0.0, 1.0)
@@ -111,7 +118,7 @@ define('Renderer/LayeredMaterial', ['THREE',
     LayeredMaterial.prototype.setTexture = function(texture, layer, slot, pitScale) {
 
 
-        if(this.Textures[layer][slot] === undefined || this.Textures[layer][slot].image === undefined)
+        //if(this.Textures[layer][slot] === undefined || this.Textures[layer][slot].image === undefined)
             this.nbTextures[layer] += 1 ;
 
         this.Textures[layer][slot] = texture ? texture : emptyTexture; // BEWARE: array [] -> size: 0; array [10]="wao" -> size: 11

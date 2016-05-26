@@ -19,6 +19,7 @@ define('Core/Commander/Providers/TileProvider', [
         'when',
         'Core/Geographic/Projection',
         'Core/Commander/Providers/WMTS_Provider',
+        'Core/Commander/Providers/WMS_Provider',
         'Core/Commander/Providers/KML_Provider',
         'Globe/TileGeometry',
         'Core/Geographic/CoordWMTS',
@@ -31,6 +32,7 @@ define('Core/Commander/Providers/TileProvider', [
         when,
         Projection,
         WMTS_Provider,
+        WMS_Provider,
         KML_Provider,
         TileGeometry,
         CoordWMTS,
@@ -105,59 +107,81 @@ define('Core/Commander/Providers/TileProvider', [
 
         TileProvider.prototype.executeCommand = function(command) {
 
-            var bbox = command.paramsFunction.bbox;
+            var tile = command.requester;
+            var parent = tile.parent;
+            var service;
+            if(command.type === "geometry") {
+                var bbox = tile.bbox;
 
-            // TODO not generic
-            var tileCoord = this.projection.WGS84toWMTS(bbox);
-            var parent = command.requester;
+                // TODO not generic
+                var tileCoord = this.projection.WGS84toWMTS(bbox);
 
-            // build tile
-            var geometry = undefined; //getGeometry(bbox,tileCoord);
+                // build tile
+                var geometry; // = getGeometry(bbox,tileCoord);
 
-            var params = {bbox:bbox,zoom:tileCoord.zoom,segment:16,center:null,projected:null}
+                var params = {bbox:bbox,zoom:tileCoord.zoom,segment:16,center:null,projected:null};
 
-            var tile = new command.type(params,this.builder);
 
-            tile.tileCoord = tileCoord;
-            tile.material.setUuid(this.nNode++);
-            tile.link = parent.link;
-            tile.geometricError = Math.pow(2, (18 - tileCoord.zoom));
+                tile.setGeometry(new TileGeometry(params, this.builder));   //TODO: use cache?
+                // set material too ?
 
-            if (geometry) {
-                tile.rotation.set(0, (tileCoord.col % 2) * (Math.PI * 2.0 / Math.pow(2, tileCoord.zoom + 1)), 0);
-            }
+                tile.tileCoord = tileCoord;
+                tile.material.setUuid(this.nNode++);
+                tile.link = parent.link;
+                tile.geometricError = Math.pow(2, (18 - tileCoord.zoom));
 
-            parent.worldToLocal(params.center);
+                if (geometry) {
+                    tile.rotation.set(0, (tileCoord.col % 2) * (Math.PI * 2.0 / Math.pow(2, tileCoord.zoom + 1)), 0);
+                }
 
-            tile.position.copy(params.center);
-            tile.setVisibility(false);
+                parent.worldToLocal(params.center);
 
-            parent.add(tile);
-            tile.updateMatrix();
-            tile.updateMatrixWorld();
+                tile.position.copy(params.center);
+                tile.setVisibility(false);
 
-            // PROBLEM is not generic : elevationTerrain ,colorTerrain
-            var elevationlayerId = command.paramsFunction.layer.parent.elevationTerrain.services[tileCoord.zoom > 11 ? 1 : 0];
-            var colorlayerId = command.paramsFunction.layer.parent.colorTerrain.services[0];
+                tile.updateMatrix();
+                tile.updateMatrixWorld();
 
-            if(tileCoord.zoom > 3 )
-                tileCoord =  undefined;
-
-            tile.texturesNeeded =+ 1;
-
-            return when.all([
-
-                    this.providerElevationTexture.getElevationTexture(tileCoord,elevationlayerId).then(function(terrain){
-
-                        this.setTextureElevation(terrain);}.bind(tile)),
-
-                    this.providerColorTexture.getColorTextures(tile,colorlayerId).then(function(colorTextures){
-
-                        this.setTexturesLayer(colorTextures,1);}.bind(tile))
-
-                    //,this.getKML(tile)
-
+                var elevationlayerId = tile.tileCoord.zoom > 11 ? 'IGN_MNT_HIGHRES' : 'IGN_MNT';
+                return when.all([
+                    this.providerElevationTexture.getElevationTexture(tileCoord, elevationlayerId).then(function(terrain) {
+                        if(this.disposed) return;
+                        this.setTextureElevation(terrain);
+                    }.bind(tile)),
+                    this.providerColorTexture.getColorTextures(tile,"IGNPO").then(function(colorTextures) {
+                        if(this.disposed) return;
+                        this.setTexturesLayer(colorTextures,1);
+                    }.bind(tile))
                 ]);
+            } else if(command.type === "elevation") {
+                // TODO: remove hard-written values
+                parent = tile.level === tile.levelElevation ? tile : tile.getParentLevel(tile.levelElevation);
+
+
+                if(parent.downScaledLayer(0)) {
+                    service = tile.tileCoord.zoom > 11 ? 'IGN_MNT_HIGHRES' : 'IGN_MNT';
+
+                    return this.providerElevationTexture.getElevationTexture(parent.tileCoord,service).then(function(terrain) {
+                        if(this.disposed) return;
+                        this.setTextureElevation(terrain);
+                    }.bind(parent)).then(function() {
+                        if(this.disposed) return;
+                        if(this.downScaledLayer(0))
+                            this.setTextureElevation(-2);
+                    }.bind(tile));
+                }
+                else {
+                    tile.setTextureElevation(-2);
+                }
+                return when();
+
+            } else if(command.type === "imagery") {
+                service = "IGNPO";
+                return this.providerColorTexture.getColorTextures(command.requester,service).then(function(result) {
+                    if(this.disposed) return;
+                    this.setTexturesLayer(result,1);
+                }.bind(command.requester));
+            }
         };
 
         return TileProvider;

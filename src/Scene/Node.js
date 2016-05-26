@@ -22,10 +22,9 @@ define('Scene/Node', [], function() {
         this.saveState = null;
         this.level = 0;
         this.screenSpaceError = 0.0;
-        this.loaded = false;
-        this.wait = false;
         this.visible = true;
         this.layer = null;
+        this.disposed = false;
 
 
     }
@@ -46,20 +45,6 @@ define('Scene/Node', [], function() {
 
         return this.children.length === 0;
 
-    };
-
-    Node.prototype.childrenLoaded = function() {
-
-        if(!this.wait && this.childrenCount() > 0)
-            return true;
-
-        for (var i = 0, max = this.children.length; i < max; i++) {
-            if (this.children[i].loaded === false)
-                return false;
-        }
-
-        this.wait = false;
-        return true;
     };
 
     /**
@@ -117,7 +102,7 @@ define('Scene/Node', [], function() {
         this.children.push(child);
         child.parent = this;
 
-        child.layer = this;
+        child.layer = this; // TODO: uh, this doesn't seem right
     };
 
     /**
@@ -125,9 +110,11 @@ define('Scene/Node', [], function() {
      *
      * @param child {[object Object]}
      */
-    Node.prototype.remove = function(/*child*/) {
-        //TODO: Implement Me
-
+    Node.prototype.remove = function(child) {
+        var index = this.children.indexOf(child);
+        if(index !== -1) {
+            this.children.splice(index, 1);
+        }
     };
 
 

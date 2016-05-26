@@ -11,6 +11,7 @@ define('Core/Commander/InterfaceCommander', ['Core/Commander/ManagerCommands', '
 
         this.managerCommands = ManagerCommands();
         this.type = type;
+        this.pendingRequests = {};
 
     }
 
@@ -24,13 +25,28 @@ define('Core/Commander/InterfaceCommander', ['Core/Commander/ManagerCommands', '
         this._builderCommand();
     };
 
-    InterfaceCommander.prototype.request = function(parameters, requester) {
+    InterfaceCommander.prototype.request = function(type, requester, layer, parameters) {
+
+        if(type === undefined) return;
+
+        var key = requester.id + "." + type;
+        if(this.pendingRequests[key] !== undefined) return;
 
         var command = new Command();
-        command.type = this.type;
+        command.type = type;
         command.requester = requester;
-        command.paramsFunction = parameters;
-        command.layer = parameters.layer;
+        command.parameters = parameters;
+        command.layer = layer;
+
+        var that = this;
+        command.callback = function() {
+            if(parameters.callback) {
+                parameters.callback();
+            }
+            that.pendingRequests[key] = undefined;
+        };
+
+        this.pendingRequests[key] = command;
 
         //command.priority = parent.sse === undefined ? 1 : Math.floor(parent.visible ? parent.sse * 10000 : 1.0) *  (parent.visible ? Math.abs(19 - parent.level) : Math.abs(parent.level) ) *10000;
 
