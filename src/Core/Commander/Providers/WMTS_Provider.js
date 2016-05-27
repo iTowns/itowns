@@ -313,7 +313,7 @@ define('Core/Commander/Providers/WMTS_Provider', [
             for (var i = 0; i < layerWMTSId.length; i++) {
 
                 var layer = this.layersWMTS[layerWMTSId[i]];
-                var lookAtAncestor = tile.currentLevelLayers[1] === -1;
+                var lookAtAncestor = tile.material.getLevelLayerColor(1) === -1;
 
                 if (tile.level >= layer.zoom.min && tile.level <= layer.zoom.max)
                 {
