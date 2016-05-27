@@ -276,15 +276,12 @@ define('Globe/TileMesh', [
     TileMesh.prototype.downScaledLayer = function(id)
     {
         if(id === l_ELEVATION)
-            if(this.level <= 3 || this.currentLevelLayers[l_ELEVATION] === -2)
+            if(this.currentLevelLayers[l_ELEVATION] === -2)
                 return false;
             else
                 return this.currentLevelLayers[l_ELEVATION] < this.levelElevation ;
 
         else if(id === l_COLOR)
-            if(this.level < 2)
-                return false;
-            else
                 return this.currentLevelLayers[l_COLOR] < this.level + 1;
 
         return false;
@@ -322,7 +319,10 @@ define('Globe/TileMesh', [
 
     TileMesh.prototype.getParentNotDownScaled = function(layer)
     {
-        return !this.parent.downScaledLayer(layer) ? this.parent : this.parent.getParentNotDownScaled(layer);
+        if(this.parent.downScaledLayer)
+            return !this.parent.downScaledLayer(layer) ? this.parent : this.parent.getParentNotDownScaled(layer);
+        else
+            return null;
     };
 
     TileMesh.prototype.allTexturesAreLoaded = function(){
