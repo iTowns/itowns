@@ -318,7 +318,8 @@ define('Core/Commander/Providers/WMTS_Provider', [
                 if (tile.level >= layer.zoom.min && tile.level <= layer.zoom.max)
                 {
 
-                    var levelParent = tile.getParentNotDownScaled(1).level + 1;
+                    var ancestor = tile.getParentNotDownScaled(1) || tile ;
+                    var levelParent = (ancestor.level ) + 1;
                     var box = this.projection.getCoordWMTS_WGS84(tile, layer.tileMatrixSet);
                     var col = box[0].col;
 

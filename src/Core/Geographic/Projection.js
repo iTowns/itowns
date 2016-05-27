@@ -43,7 +43,7 @@ define('Core/Geographic/Projection', ['Core/Geographic/CoordWMTS', 'Core/Math/Ma
         if(tileMatrixSet === 'PM')
             return this.WMTS_PMToWMTS_WGS84(tile.tileCoord, tile.bbox);
         else if(tileMatrixSet === 'WGS84G')
-            return [tile.tileCoord];
+            return [tile.tileCoord,tile.tileCoord];
     };
 
 

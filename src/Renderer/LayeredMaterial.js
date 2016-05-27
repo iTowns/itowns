@@ -173,5 +173,11 @@ define('Renderer/LayeredMaterial', ['THREE',
         }
     };
 
+    LayeredMaterial.prototype.setNbLayersColor = function (n)
+    {
+        this.uniforms.nColorLayer.value = n;
+    };
+
+
     return LayeredMaterial;
 });
