@@ -328,6 +328,9 @@ define('Core/Commander/Providers/WMTS_Provider', [
                     var nbTex = box[1].row + 1 - box[0].row;
 
 
+                    if(layer.tileMatrixSet === 'PM')
+                        tile.material.nbTextures[2] = nbTex;
+
                     if(lookAtAncestor)
                         tile.texturesNeeded += nbTex;
 
@@ -336,7 +339,6 @@ define('Core/Commander/Providers/WMTS_Provider', [
 
                     nColorLayers++;
 
-
                     for (var row = box[0].row; row < box[1].row + 1; row++) {
 
                        var cooWMTS = new CoordWMTS(box[0].zoom, row, col);
@@ -344,7 +346,7 @@ define('Core/Commander/Providers/WMTS_Provider', [
 
                        if(lookAtAncestor)
                        {
-                            var zoom = levelParent < layer.zoom.min ? tile.level+1 : levelParent;
+                            var zoom = levelParent < layer.zoom.min ? tile.level+(layer.tileMatrixSet === 'PM' ? 1 : 0) : levelParent;
                             cooWMTS = this.projection.WMTS_WGS84Parent(cooWMTS,zoom,pitch);
                        }
 

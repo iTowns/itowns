@@ -163,7 +163,8 @@ void main() {
         float y         = vUv_1;
         int idd         = int(floor(y));
         uvO.y           = y - float(idd);
-        idd             = nbTextures[1]/nColorLayer - idd - 1; // TODO l'inversion des textures peut etre retirer
+        // TEMP nbTextures[2] nimber of textures PM
+        idd             = nbTextures[2] - idd - 1; // TODO l'inversion des textures peut etre retirer
 
 
         // if(nbTextures[1] == idd)
@@ -190,7 +191,30 @@ void main() {
 
             vec4 diffuseColor = colorAtIdUv(dTextures_01,idd, uvO);
 
-            if(nColorLayer>1)
+            //////////////////////
+            //!!!!!!!!!!!!!!!!!!!!!!
+
+            //Optimisation des uv1 peuvent copier pas lignes!!
+            //!!!!!!!!!!!!!!!!!!!!!!
+            //!!!!!!!!!!!!!!!!!!!!!!
+
+
+
+            if(nColorLayer==3)
+            {
+                vec4 params = getParam(2);
+                int pit = int(params.x);
+
+                vec2 uv2 = vec2(vUv_0.x,1.0-vUv_0.y) ;
+                vec4 diffuseColor2 = colorAtIdUv(dTextures_01,pit, uv2);
+
+                float a = (diffuseColor2.r + diffuseColor2.g + diffuseColor2.b)/3.0;
+                float lum = 1.0-pow(a,1.0);
+                diffuseColor = mix( diffuseColor,diffuseColor2, lum*getParam(1).w);
+
+
+            }
+            if(nColorLayer==3)
             {
                 vec4 params = getParam(1);
                 if(params.z == 1.0 && params.w > 0.0)
