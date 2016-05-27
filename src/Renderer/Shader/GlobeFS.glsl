@@ -166,11 +166,11 @@ void main() {
         idd             = nbTextures[1]/nColorLayer - idd - 1; // TODO l'inversion des textures peut etre retirer
 
 
-        if(nbTextures[1] == idd)
-        {
-            idd     = nbTextures[1] - 1 ;
-            uvO.y   = 0.0;
-        }
+        // if(nbTextures[1] == idd)
+        // {
+        //     idd     = nbTextures[1] - 1 ;
+        //     uvO.y   = 0.0;
+        // }
 
         gl_FragColor    = vec4( 0.04, 0.23, 0.35, 1.0);
 
@@ -196,12 +196,11 @@ void main() {
                 if(params.z == 1.0 && params.w > 0.0)
                     {
 
-
-                        vec4 diffuseColor2 = colorAtIdUv(dTextures_01,idd+nbTextures[1]/nColorLayer, uvO);
-
+                        vec4 params = getParam(1);
+                        int pit = int(params.x);
+                        vec4 diffuseColor2 = colorAtIdUv(dTextures_01,idd+pit, uvO);
 
                         float a = (diffuseColor2.r + diffuseColor2.g + diffuseColor2.b)/3.0;
-
                         float lum = 1.0-pow(a,2.5);
 
                         diffuseColor2*= diffuseColor2*diffuseColor2;
@@ -214,8 +213,8 @@ void main() {
             if(RTC == 1)
             {
                 //diffuseColor = vec4(diffuseColor.xyz,params.y*diffuseColor.w);
-                //gl_FragColor = mix(fogColor, diffuseColor, fog );
-                gl_FragColor = diffuseColor;
+                gl_FragColor = mix(fogColor, diffuseColor, fog );
+                //gl_FragColor = diffuseColor;
             }
             else
             {

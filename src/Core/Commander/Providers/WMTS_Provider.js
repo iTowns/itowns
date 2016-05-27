@@ -251,7 +251,8 @@ define('Core/Commander/Providers/WMTS_Provider', [
                     result.texture.minFilter = THREE.LinearFilter;
                     result.texture.anisotropy = 16;
                     result.texture.url = url;
-                    result.texture['level'] = coWMTS.zoom;
+                    result.texture.level = coWMTS.zoom;
+                   // result.texture.layerId = layerId;
 
                     this.cache.addRessource(url, result.texture);
                 }
@@ -309,6 +310,7 @@ define('Core/Commander/Providers/WMTS_Provider', [
 
             var promises = [];
             var nColorLayers = 0;
+            var nbTotalTex = 0;
 
             for (var i = 0; i < layerWMTSId.length; i++) {
 
@@ -323,10 +325,17 @@ define('Core/Commander/Providers/WMTS_Provider', [
                     var box = this.projection.getCoordWMTS_WGS84(tile, layer.tileMatrixSet);
                     var col = box[0].col;
 
+                    var nbTex = box[1].row + 1 - box[0].row;
+
+
                     if(lookAtAncestor)
-                        tile.texturesNeeded += box[1].row + 1 - box[0].row;
+                        tile.texturesNeeded += nbTex;
+
+                    tile.material.paramLayers[i].x = nbTotalTex;
+                    nbTotalTex += nbTex;
 
                     nColorLayers++;
+
 
                     for (var row = box[0].row; row < box[1].row + 1; row++) {
 

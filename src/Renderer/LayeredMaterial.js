@@ -22,6 +22,7 @@ define('Renderer/LayeredMaterial', ['THREE',
     var emptyTexture = new THREE.Texture();
 
     emptyTexture.level = -1;
+    //emptyTexture.layerId = null;
     var nbLayer = 2;
 
     var LayeredMaterial = function(id) {
@@ -35,6 +36,7 @@ define('Renderer/LayeredMaterial', ['THREE',
         this.pitScale = [];
         this.nbTextures = [];
         this.paramLayers = [];
+        //this.mapLayerColor = [];
 
         this.nColorLayer = 1;
 
@@ -134,8 +136,8 @@ define('Renderer/LayeredMaterial', ['THREE',
         if(this.Textures[layer][slot] === undefined || this.Textures[layer][slot].image === undefined)
             this.nbTextures[layer] += 1 ;
 
-        this.Textures[layer][slot] = texture ? texture : emptyTexture; // BEWARE: array [] -> size: 0; array [10]="wao" -> size: 11
-
+        // BEWARE: array [] -> size: 0; array [10]="wao" -> size: 11
+        this.Textures[layer][slot] = texture ? texture : emptyTexture;
         this.pitScale[layer][slot] = pitScale ? pitScale : new THREE.Vector3(0.0,0.0,1.0);
 
     };
