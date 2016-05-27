@@ -20,6 +20,8 @@ define('Renderer/LayeredMaterial', ['THREE',
     GlobeFS) {
 
     var emptyTexture = new THREE.Texture();
+
+    emptyTexture.level = -1;
     var nbLayer = 2;
 
     var LayeredMaterial = function(id) {
@@ -165,7 +167,7 @@ define('Renderer/LayeredMaterial', ['THREE',
         }
     };
 
-     LayeredMaterial.prototype.setLayerVibility = function (id,visible){
+    LayeredMaterial.prototype.setLayerVibility = function (id,visible){
 
         if(this.paramLayers[id])
         {
@@ -176,6 +178,14 @@ define('Renderer/LayeredMaterial', ['THREE',
     LayeredMaterial.prototype.setNbLayersColor = function (n)
     {
         this.uniforms.nColorLayer.value = n;
+    };
+
+    LayeredMaterial.prototype.getLevelLayerColor = function (id)
+    {
+
+        var level  = this.Textures[id][0].level;
+
+        return level;
     };
 
 
