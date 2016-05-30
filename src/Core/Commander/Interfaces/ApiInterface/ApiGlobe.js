@@ -700,7 +700,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         //var p = new CoordCarto(-74.0059700 ,40.7142700,0); //NY
 
 //        var p = new CoordCarto().setFromDegreeGeo(coordCarto.lon, coordCarto.lat, coordCarto.alt))
-//        var p = new CoordCarto().setFromDegreeGeo( -74.0059700, 40.7142700,0); //NY
+//        var p = new CoordCarto().setFromDegreeGeo(40.7142700,-74.0059700,0); //NY
 //
 //        this.setCenter(p);
 //        var p2 = new CoordCarto().setFromDegreeGeo(2.4347047,48.8472568,0); //Paris
