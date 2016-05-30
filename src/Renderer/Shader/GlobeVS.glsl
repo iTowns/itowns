@@ -1,3 +1,13 @@
+#version 100
+
+precision highp float;
+precision highp int;
+
+#define SHADER_NAME ShaderMaterial
+#define VERTEX_TEXTURES
+
+#define USE_LOGDEPTHBUF
+#define USE_LOGDEPTHBUF_EXT
 
 #ifdef USE_LOGDEPTHBUF
 
@@ -12,11 +22,16 @@
 
 #endif
 
-attribute float     uv1;
+
 
 const float PI          = 3.14159265359;
 const float INV_TWO_PI  = 1.0 / (2.0*PI);
 const float PI4         = 0.78539816339;
+
+attribute float     uv1;
+attribute vec2      uv;
+attribute vec3      position;
+attribute vec3      normal;
 
 uniform sampler2D   dTextures_00[1];
 uniform vec3        pitScale_L00[1];
@@ -25,6 +40,10 @@ uniform int         RTC;
 uniform float       periArcLati;
 uniform mat4        mVPMatRTC;
 uniform int         pickingRender;
+
+
+uniform mat4        projectionMatrix;
+uniform mat4        modelViewMatrix;
 
 varying vec2        vUv_0;
 varying float       vUv_1;
@@ -51,6 +70,7 @@ void main() {
         if(nbTextures[0] > 0)
         {
             vec2    vVv = vec2(vUv_0.x*pitScale_L00[0].z + pitScale_L00[0].x,vUv_0.y*pitScale_L00[0].z + pitScale_L00[0].y);
+
 
             #ifdef RGBA_ELEVATION
                 vec4 rgba = texture2D( dTextures_00[0], vVv ) * 255.0;

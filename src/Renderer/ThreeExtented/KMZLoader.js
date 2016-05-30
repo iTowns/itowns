@@ -65,7 +65,7 @@ define('Renderer/ThreeExtented/KMZLoader', ['Renderer/ThreeExtented/jszip.min',
                             var latitude = Number(doc.getElementsByTagName("latitude")[0].childNodes[0].nodeValue);
                             var altitude = Number(doc.getElementsByTagName("altitude")[0].childNodes[0].nodeValue);
 
-                            coordCarto = new CoordCarto().setFromDegreeGeo(latitude, longitude, altitude);
+                            coordCarto = new CoordCarto().setFromDegreeGeo(longitude,latitude, altitude);
 
                         }
                     }
