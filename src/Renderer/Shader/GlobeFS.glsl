@@ -135,7 +135,23 @@ void main() {
         if (animateWater ==1){
 
             float dv2  = texture2D(dTextures_00[0], vVv).w; 
+
+            if (dv2<=-10.) {
+                gl_FragColor = vec4(0.01,0.22,0.42,1.0);
+            }
+
             if(dv2 <= waterHeight || /*(diffuseColor.r >= .9 && diffuseColor.g >= .9 && diffuseColor.b >= .9*/ diffuseColor.a  <= 0.6){  //Alti
+                // Waterdepth
+                float waterDepth = waterHeight - dv2;
+                float x1 = 10.;
+                float x2 = 0.;
+                float a = (waterDepth-x1)/(x2-x1);
+                vec4 A = vec4(a,a,a,a);
+                vec4 y1 = vec4(0.01,0.22,0.42,1.0);
+                vec4 y2 = vec4(0.7,0.8,0.87,1.0);
+                vec4 y = y1 + (y2-y1) * A;
+                gl_FragColor = y;
+            
                 // TEMP : generate great waves based on meteo and streams
                 float speed = 0.55;
                 float noiseScale = 0.9;
