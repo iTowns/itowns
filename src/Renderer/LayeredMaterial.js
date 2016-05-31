@@ -25,6 +25,10 @@ define('Renderer/LayeredMaterial', ['THREE',
     //emptyTexture.layerId = null;
     var nbLayer = 2;
 
+    var vector = new THREE.Vector3(0.0, 0.0, 0.0);
+
+    var vector4 = new THREE.Vector4(0.0, 0.0, 0.0, 0.0);
+
     var LayeredMaterial = function(id) {
 
         BasicMaterial.call(this);
@@ -35,7 +39,7 @@ define('Renderer/LayeredMaterial', ['THREE',
         this.Textures = [];
         this.pitScale = [];
         this.nbTextures = [];
-        this.paramLayers = [];
+        //this.paramLayers = [];
         //this.mapLayerColor = [];
 
         this.nColorLayer = 1;
@@ -44,10 +48,11 @@ define('Renderer/LayeredMaterial', ['THREE',
         for (var l = 0; l < nbLayer; l++) {
 
             this.Textures[l] = [emptyTexture];
-            this.pitScale[l] = [new THREE.Vector3(0.0, 0.0, 0.0)];
+            this.pitScale[l] = [vector,vector,vector,vector,vector,vector,vector,vector];
             this.nbTextures[l] = 0;
-            this.paramLayers[l] = new THREE.Vector4(0.0, 1.0,1.0,1.0);
         }
+
+        this.paramLayers = [vector4,vector4,vector4,vector4,vector4,vector4,vector4,vector4];
 
         this.uniforms.dTextures_00 = {
             type: "tv",

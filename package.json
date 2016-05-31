@@ -23,7 +23,7 @@
     "js-priority-queue": "^0.1.5",
     "jszip": "^2.5.0",
     "paralleljs": "^0.2.1",
-    "three": "^0.75.0",
+    "three": "^0.77.0",
     "string_format": "^0.0.6",
     "when": "^3.7.7",
     "simd": "^2.0.0"
