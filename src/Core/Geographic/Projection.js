@@ -37,6 +37,42 @@ define('Core/Geographic/Projection', ['Core/Geographic/CoordWMTS', 'Core/Math/Ma
 
     };
 
+
+    Projection.prototype.getCoordWMTS_WGS84 = function(tileCoord, bbox,tileMatrixSet) {
+
+        if(tileMatrixSet === 'PM')
+            return this.WMTS_WGS84ToWMTS_PM(tileCoord, bbox);
+        else if(tileMatrixSet === 'WGS84G')
+            return [tileCoord,tileCoord];
+    };
+
+    Projection.prototype.getAllCoordsWMTS = function(tileCoord,bbox,tileMatrixSets) {
+
+        var tilesMT = [];
+
+        for(var key in tileMatrixSets)
+
+            tilesMT[key] = this.getCoordsWMTS(tileCoord,bbox, key);
+
+        return tilesMT;
+
+    };
+
+    Projection.prototype.getCoordsWMTS = function(tileCoord,bbox,tileMatrixSet)
+    {
+
+        var box = this.getCoordWMTS_WGS84(tileCoord,bbox, tileMatrixSet);
+        var tilesMT = [];
+
+        for (var row = box[0].row; row < box[1].row + 1; row++)
+
+            tilesMT.push(new CoordWMTS(box[0].zoom, row, box[0].col));
+
+
+        return tilesMT;
+    };
+
+
     /**
      *
      * @param {type} cWMTS

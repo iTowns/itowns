@@ -18,7 +18,7 @@ define('Renderer/BasicMaterial', ['THREE',
     function BasicMaterial(color) {
         //Constructor
 
-        THREE.ShaderMaterial.call(this);
+        THREE.RawShaderMaterial.call(this);
 
         this.vertexShader = SimpleVS;
         this.fragmentShader = SimpleFS;
@@ -60,7 +60,7 @@ define('Renderer/BasicMaterial', ['THREE',
         };
     }
 
-    BasicMaterial.prototype = Object.create(THREE.ShaderMaterial.prototype);
+    BasicMaterial.prototype = Object.create(THREE.RawShaderMaterial.prototype);
     BasicMaterial.prototype.constructor = BasicMaterial;
 
     BasicMaterial.prototype.enableRTC = function(enable) {

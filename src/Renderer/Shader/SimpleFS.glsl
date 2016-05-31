@@ -1,10 +1,22 @@
+#version 100
+
+#extension GL_EXT_frag_depth : enable
+
+#define SHADER_NAME simpleMaterial
+#define VERTEX_TEXTURES
+
+precision highp float;
+precision highp int;
+
+#define USE_LOGDEPTHBUF
+#define USE_LOGDEPTHBUF_EXT
+
 #ifdef USE_LOGDEPTHBUF
 
 	uniform float logDepthBufFC;
 
 	#ifdef USE_LOGDEPTHBUF_EXT
 
-		//#extension GL_EXT_frag_depth : enable
 		varying float vFragDepth;
 
 	#endif
@@ -16,7 +28,7 @@ uniform int  lightOn;
 varying float      light;
 
 void main() {
- 
+
     #if defined(USE_LOGDEPTHBUF) && defined(USE_LOGDEPTHBUF_EXT)
 
 	gl_FragDepthEXT = log2(vFragDepth) * logDepthBufFC * 0.5;

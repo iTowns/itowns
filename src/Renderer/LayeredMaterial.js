@@ -20,7 +20,14 @@ define('Renderer/LayeredMaterial', ['THREE',
     GlobeFS) {
 
     var emptyTexture = new THREE.Texture();
+
+    emptyTexture.level = -1;
+    //emptyTexture.layerId = null;
     var nbLayer = 2;
+
+    var vector = new THREE.Vector3(0.0, 0.0, 0.0);
+
+    var vector4 = new THREE.Vector4(0.0, 0.0, 0.0, 0.0);
 
     var LayeredMaterial = function(id) {
 
@@ -32,14 +39,20 @@ define('Renderer/LayeredMaterial', ['THREE',
         this.Textures = [];
         this.pitScale = [];
         this.nbTextures = [];
+        //this.paramLayers = [];
+        //this.mapLayerColor = [];
+
+        this.nColorLayer = 1;
 
         // Uniform three js needs no empty array
         for (var l = 0; l < nbLayer; l++) {
 
             this.Textures[l] = [emptyTexture];
-            this.pitScale[l] = [new THREE.Vector3(0.0, 0.0, 0.0)];
+            this.pitScale[l] = [vector,vector,vector,vector,vector,vector,vector,vector];
             this.nbTextures[l] = 0;
         }
+
+        this.paramLayers = [vector4,vector4,vector4,vector4,vector4,vector4,vector4,vector4];
 
         this.uniforms.dTextures_00 = {
             type: "tv",
@@ -52,6 +65,20 @@ define('Renderer/LayeredMaterial', ['THREE',
         this.uniforms.nbTextures = {
             type: "iv1",
             value: this.nbTextures
+        };
+        this.uniforms.nColorLayer = {
+            type: "i",
+            value: this.nColorLayer
+        };
+
+        // PIT n Textures
+        // Projection
+        // Opacity
+        // Visible
+
+        this.uniforms.paramLayers = {
+            type: "v4v",
+            value: this.paramLayers
         };
         this.uniforms.pitScale_L00 = {
             type: "v3v",
@@ -114,8 +141,8 @@ define('Renderer/LayeredMaterial', ['THREE',
         if(this.Textures[layer][slot] === undefined || this.Textures[layer][slot].image === undefined)
             this.nbTextures[layer] += 1 ;
 
-        this.Textures[layer][slot] = texture ? texture : emptyTexture; // BEWARE: array [] -> size: 0; array [10]="wao" -> size: 11
-
+        // BEWARE: array [] -> size: 0; array [10]="wao" -> size: 11
+        this.Textures[layer][slot] = texture ? texture : emptyTexture;
         this.pitScale[layer][slot] = pitScale ? pitScale : new THREE.Vector3(0.0,0.0,1.0);
 
     };
@@ -138,6 +165,36 @@ define('Renderer/LayeredMaterial', ['THREE',
     LayeredMaterial.prototype.setLightingOn = function (enable){
         this.uniforms.lightingOn.value = enable === true ? 1 : 0;
     };
+
+    LayeredMaterial.prototype.setLayerOpacity = function (id,opacity){
+
+        if(this.paramLayers[id])
+        {
+            this.paramLayers[id].w = opacity;
+        }
+    };
+
+    LayeredMaterial.prototype.setLayerVibility = function (id,visible){
+
+        if(this.paramLayers[id])
+        {
+            this.paramLayers[id].z = visible ? 1 : 0;
+        }
+    };
+
+    LayeredMaterial.prototype.setNbLayersColor = function (n)
+    {
+        this.uniforms.nColorLayer.value = n;
+    };
+
+    LayeredMaterial.prototype.getLevelLayerColor = function (id)
+    {
+
+        var level  = this.Textures[id][0].level;
+
+        return level;
+    };
+
 
     return LayeredMaterial;
 });

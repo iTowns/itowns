@@ -87,7 +87,9 @@ define('Renderer/c3DEngine', [
 
     console.log(decode32(v.toArray()),parseFloat2(0x800000));
     */
-    function c3DEngine(scene, positionCamera, debugMode, gLDebug) {
+
+    function c3DEngine(scene, positionCamera, viewerDiv, debugMode, gLDebug) {
+
         //Constructor
 
         if (instance3DEngine !== null) {
@@ -99,11 +101,11 @@ define('Renderer/c3DEngine', [
         var caps = new Capabilities();
         var NOIE = !caps.isInternetExplorer();
         this.gLDebug = gLDebug;
-
+        this.viewerDiv = viewerDiv;
         this.debug = debugMode;
         this.scene3D = new THREE.Scene();
-        this.width = this.debug ? window.innerWidth * 0.5 : window.innerWidth;
-        this.height = window.innerHeight;
+        this.width = this.debug ? viewerDiv.clientWidth * 0.5 : viewerDiv.clientWidth;
+        this.height = viewerDiv.clientHeight;
         this.camDebug = undefined;
         this.dnear = 0.0;
         this.dfar = 0.0;
@@ -179,8 +181,8 @@ define('Renderer/c3DEngine', [
 
         this.onWindowResize = function() {
 
-            this.width = this.debug ? window.innerWidth * 0.5 : window.innerWidth;
-            this.height = window.innerHeight;
+            this.width = this.debug ? this.viewerDiv.clientWidth * 0.5 : this.viewerDiv.clientWidth;
+            this.height = this.viewerDiv.clientHeight;
             this.camera.resize(this.width, this.height);
             this.scene.updateCamera();
 
@@ -224,18 +226,28 @@ define('Renderer/c3DEngine', [
         this.camera.camera3D.updateProjectionMatrix();
 
         //
+        // Create canvas
+        //
+
+        var canvas = document.createElement( 'canvas' );
+        canvas.id = 'canvasWebGL';
+
+        //
         // Create renderer
         //
+
         this.renderer = new THREE.WebGLRenderer({
+            canvas: canvas,
             antialias: true,
             alpha: true,
             logarithmicDepthBuffer: this.gLDebug || !NOIE ? false : true
         });
-        this.renderer.setPixelRatio(window.devicePixelRatio);
-        this.renderer.setSize(window.innerWidth, window.innerHeight);
+        this.renderer.setPixelRatio(viewerDiv.devicePixelRatio);
+        this.renderer.setSize(viewerDiv.clientWidth, viewerDiv.clientHeight);
         this.renderer.setClearColor(0x030508);
         this.renderer.autoClear = false;
-        document.body.appendChild(this.renderer.domElement);
+        //this.viewerDiv.appendChild(canvas);
+        viewerDiv.appendChild(this.renderer.domElement);
 
         //
         // Create Control

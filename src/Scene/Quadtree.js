@@ -27,6 +27,7 @@ define('Scene/Quadtree', [
         this.maxLevel = 17;
         var rootNode = new NodeMesh();
 
+        rootNode.frustumCulled = false
         rootNode.material.visible = false;
 
         rootNode.link = this.link;

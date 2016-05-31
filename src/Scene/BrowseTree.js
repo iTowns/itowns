@@ -189,9 +189,14 @@ define('Scene/BrowseTree', ['Globe/TileMesh', 'THREE'], function( TileMesh, THRE
 
                var node = root.children[c];
                var lookMaterial = function(obj) {
+
                    obj.material.uniforms[uniformName].value = value;
                }.bind(this);
+
+               if(node.traverse)
                node.traverse(lookMaterial);
+
+
            }
          }
     };

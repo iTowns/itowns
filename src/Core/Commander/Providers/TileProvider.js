@@ -17,6 +17,7 @@
 
 define('Core/Commander/Providers/TileProvider', [
         'when',
+        'THREE',
         'Core/Geographic/Projection',
         'Core/Commander/Providers/WMTS_Provider',
         'Core/Commander/Providers/KML_Provider',
@@ -29,6 +30,7 @@ define('Core/Commander/Providers/TileProvider', [
     ],
     function(
         when,
+        THREE,
         Projection,
         WMTS_Provider,
         KML_Provider,
@@ -84,6 +86,7 @@ define('Core/Commander/Providers/TileProvider', [
             return geometry;
         };
 
+        // 52.0.2739.0 dev (64-bit)
        // TileProvider.prototype.getKML= function(){
         TileProvider.prototype.getKML= function(tile){
 
@@ -95,10 +98,11 @@ define('Core/Commander/Providers/TileProvider', [
                 return this.providerKML.loadKMZ(longitude, latitude).then(function (collada){
 
                     if(collada && tile.link.children.indexOf(collada) === -1)
-                        {
+                    {
                             tile.link.add(collada);
                             tile.content = collada;
-                        }
+                    }
+
                 }.bind(this));
             }
         };
@@ -136,28 +140,41 @@ define('Core/Commander/Providers/TileProvider', [
             tile.updateMatrix();
             tile.updateMatrixWorld();
 
-            // PROBLEM is not generic : elevationTerrain ,colorTerrain
-            var elevationlayerId = command.paramsFunction.layer.parent.elevationTerrain.services[tileCoord.zoom > 11 ? 1 : 0];
-            var colorlayerId = command.paramsFunction.layer.parent.colorTerrain.services[0];
+            var map = command.paramsFunction.layer.parent;
+            var elevationServices = map.elevationTerrain.services;
+            var colorServices = map.colorTerrain.services;
 
-            if(tileCoord.zoom > 3 )
-                tileCoord =  undefined;
+            tile.WMTSs = [];
 
-            tile.texturesNeeded =+ 1;
+            for (var i = 0; i < colorServices.length; i++)
+            {
+                var layer = map.colorTerrain.children[i];
+                var tileMT = this.providerColorTexture.layersWMTS[colorServices[i]].tileMatrixSet;
 
-            return when.all([
+                if(!tile.WMTSs[tileMT])
+                    tile.WMTSs[tileMT] = this.projection.getCoordWMTS_WGS84(tile.tileCoord, tile.bbox,tileMT);
 
-                    this.providerElevationTexture.getElevationTexture(tileCoord,elevationlayerId).then(function(terrain){
+                tile.material.paramLayers[i] = new THREE.Vector4(0.0, 1.0,layer.visible ? 1 : 0,layer.opacity);
+            }
+
+            if(tile.WMTSs['PM'])
+                 tile.material.nbTextures[2] = tile.WMTSs['PM'][1].row - tile.WMTSs['PM'][0].row + 1;
+
+            var requests = [
+
+                    this.providerElevationTexture.getElevationTexture(tile,elevationServices).then(function(terrain){
 
                         this.setTextureElevation(terrain);}.bind(tile)),
 
-                    this.providerColorTexture.getColorTextures(tile,colorlayerId).then(function(colorTextures){
+                    this.providerColorTexture.getColorTextures(tile,colorServices).then(function(colorTextures){
 
                         this.setTexturesLayer(colorTextures,1);}.bind(tile))
 
-                    //,this.getKML(tile)
+                    ,this.getKML(tile)
 
-                ]);
+                ];
+
+            return when.all(requests);
         };
 
         return TileProvider;

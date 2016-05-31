@@ -67,9 +67,7 @@ define('Globe/TileMesh', [
         }
 
         // Layer
-        this.currentLevelLayers =[];
-        this.currentLevelLayers[l_ELEVATION] = -1;
-        this.currentLevelLayers[l_COLOR] = -1;
+        this.currentElevation = -1;
 
     }
 
@@ -100,8 +98,6 @@ define('Globe/TileMesh', [
         this.link.add(this.helper);
 
     };
-
-
 
     TileMesh.prototype.dispose = function() {
         // TODO à mettre dans node mesh
@@ -192,11 +188,11 @@ define('Globe/TileMesh', [
 
         if (elevation === -1){ // No texture
 
-            this.currentLevelLayers[l_ELEVATION] = -2;
+            this.currentElevation = -2;
         }
         else if (elevation === -2) {// get ancestor texture
 
-            var levelAncestor = this.getParentNotDownScaled(l_ELEVATION).currentLevelLayers[l_ELEVATION];
+            var levelAncestor = this.getParentNotDownScaled(l_ELEVATION).currentElevation;
             ancestor = this.getParentLevel(levelAncestor);
 
             if(ancestor) // TODO WHY -> because levelAncestor === -2
@@ -214,17 +210,17 @@ define('Globe/TileMesh', [
                 if(minMax.x !== 0 && minMax.y !== 0)
                     this.setBBoxZ(minMax.x, minMax.y);
 
-                this.currentLevelLayers[l_ELEVATION] = ancestor.currentLevelLayers[l_ELEVATION];
+                this.currentElevation = ancestor.currentElevation;
             }
             else
-                this.currentLevelLayers[l_ELEVATION] = -2;
+                this.currentElevation = -2;
 
         } else {
 
             texture = elevation.texture;
             pitScale = new THREE.Vector3(0,0,1);
             this.setBBoxZ(elevation.min, elevation.max);
-            this.currentLevelLayers[l_ELEVATION] = elevation.level;
+            this.currentElevation = elevation.level;
         }
 
         this.material.setTexture(texture,l_ELEVATION, 0, pitScale);
@@ -265,24 +261,19 @@ define('Globe/TileMesh', [
 
         this.material.setTexturesLayer(textures, idLayer);
 
-        this.currentLevelLayers[l_COLOR] = textures[0].texture.level;
-
         this.loadingCheck();
     };
 
     TileMesh.prototype.downScaledLayer = function(id)
     {
         if(id === l_ELEVATION)
-            if(this.level <= 3 || this.currentLevelLayers[l_ELEVATION] === -2)
+            if(this.currentElevation === -2)
                 return false;
             else
-                return this.currentLevelLayers[l_ELEVATION] < this.levelElevation ;
+                return this.currentElevation < this.levelElevation ;
 
         else if(id === l_COLOR)
-            if(this.level < 2)
-                return false;
-            else
-                return this.currentLevelLayers[l_COLOR] < this.level + 1;
+            return this.material.getLevelLayerColor(l_COLOR) < this.level + 1;
 
         return false;
     };
@@ -319,7 +310,10 @@ define('Globe/TileMesh', [
 
     TileMesh.prototype.getParentNotDownScaled = function(layer)
     {
-        return !this.parent.downScaledLayer(layer) ? this.parent : this.parent.getParentNotDownScaled(layer);
+        if(this.parent.downScaledLayer)
+            return !this.parent.downScaledLayer(layer) ? this.parent : this.parent.getParentNotDownScaled(layer);
+        else
+            return null;
     };
 
     TileMesh.prototype.allTexturesAreLoaded = function(){
