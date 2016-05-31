@@ -85,6 +85,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
 
         if(map.colorTerrain.children.length === 1)
         {
+
             subLayer.visible = false;
         }
 
@@ -92,12 +93,6 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
 
         map.colorTerrain.add(subLayer);
 
-        var MT = map.tiles.tileMatrixSet;
-
-        if(!MT[layer.wmtsOptions.tileMatrixSet])
-            MT[layer.wmtsOptions.tileMatrixSet] = 1;
-        else
-            MT[layer.wmtsOptions.tileMatrixSet]++;
     };
 
     /**
@@ -146,7 +141,6 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         providerWMTS.addLayer(layer);
         manager.addLayer(map.elevationTerrain,providerWMTS);
         map.elevationTerrain.services.push(layer.id);
-
 
     };
 

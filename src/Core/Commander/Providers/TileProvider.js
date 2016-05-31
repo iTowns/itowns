@@ -114,8 +114,6 @@ define('Core/Commander/Providers/TileProvider', [
             // TODO not generic
             var tileCoord = this.projection.WGS84toWMTS(bbox);
             var parent = command.requester;
-            var tiles = command.paramsFunction.layer;
-            var map = tiles.parent;
 
             // build tile
             var geometry = undefined; //getGeometry(bbox,tileCoord);
@@ -142,21 +140,27 @@ define('Core/Commander/Providers/TileProvider', [
             tile.updateMatrix();
             tile.updateMatrixWorld();
 
+
             // PROBLEM is not generic : elevationTerrain ,colorTerrain
-            var elevationlayerId = map.elevationTerrain.services[tileCoord.zoom > 11 ? 1 : 0];
-            var colorServices = map.colorTerrain.services;
+            var elevationlayerId = command.paramsFunction.layer.parent.elevationTerrain.services[tileCoord.zoom > 11 ? 1 : 0];
+            var colorServices = command.paramsFunction.layer.parent.colorTerrain.services;
 
-            var layer = map.colorTerrain.children[1];
-            tile.material.paramLayers[1] = new THREE.Vector4(0.0, 1.0,layer.visible ? 1 : 0,layer.opacity);
-            tile.material.paramLayers[2] = new THREE.Vector4(0.0, 1.0,1.0,1.0);
+            //var nColorL = colorServices.length;
 
-            tile.layer = tiles;
+            //if(nColorL==2 )
+            {
+                var layer = command.paramsFunction.layer.parent.colorTerrain.children[1];
+                tile.material.paramLayers[1] = new THREE.Vector4(0.0, 1.0,layer.visible ? 1 : 0,layer.opacity);
+                tile.material.paramLayers[2] = new THREE.Vector4(0.0, 1.0,1.0,1.0);
+
+               //var layer = command.paramsFunction.layer.parent.colorTerrain.children[2];
+
+            }
 
             //TEMP
             if(tileCoord.zoom > 3 )
                 tileCoord =  undefined;
 
-            //TEMP
             tile.texturesNeeded =+ 1;
 
             var requests = [
@@ -173,6 +177,13 @@ define('Core/Commander/Providers/TileProvider', [
 
                 ];
 
+            // if(tileCoord.zoom > 6)
+            // {
+            //     colorlayerId = command.paramsFunction.layer.parent.colorTerrain.services[0];
+            //     requests.push(
+            //         this.providerColorTexture.getColorTextures(tile,colorlayerId).then(function(colorTextures){
+            //             this.setTexturesLayer(colorTextures,2);}.bind(tile)));
+            // }
 
             return when.all(requests);
         };
