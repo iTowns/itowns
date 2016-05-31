@@ -304,24 +304,7 @@ define('Core/Commander/Providers/WMTS_Provider', [
             }
         };
 
-        WMTS_Provider.prototype.getCoordsWMTS = function(tileCoord,bbox,tileMatrixSets) {
 
-
-            var tilesMT = [];
-            for(var key in tileMatrixSets)
-            {
-                var box = this.projection.getCoordWMTS_WGS84(tileCoord,bbox, key);
-                tilesMT[key] = [];
-
-                for (var row = box[0].row; row < box[1].row + 1; row++)
-
-                    tilesMT[key].push(new CoordWMTS(box[0].zoom, row, box[0].col));
-
-            }
-
-            return tilesMT;
-
-        };
 
         WMTS_Provider.prototype.getColorTextures = function(tile,layerWMTSId) {
 
@@ -339,7 +322,7 @@ define('Core/Commander/Providers/WMTS_Provider', [
 
                     var ancestor = tile.getParentNotDownScaled(1) || tile ;
                     var levelParent = (ancestor.level ) + 1;
-                    var box = this.projection.getCoordWMTS_WGS84(tile.tileCoord,tile.bbox, layer.tileMatrixSet);
+                    var box = this.projection.getCoordWMTS_WGS84(tile, layer.tileMatrixSet);
                     var col = box[0].col;
 
                     var nbTex = box[1].row + 1 - box[0].row;
@@ -382,61 +365,6 @@ define('Core/Commander/Providers/WMTS_Provider', [
 
        };
 
-/*
-
-        WMTS_Provider.prototype.getColorTextures = function(tile,layerWMTSId) {
-
-            var promises = [];
-            var nColorLayers = 0;
-            var nbTotalTex = 0;
-            var lookAtAncestor = tile.material.getLevelLayerColor(1) < 0;
-            var tilesMT = this.projection.getAllCoordsWMTS(tile.tileCoord,tile.bbox,tile.layer.tileMatrixSet);
-
-            for (var i = 0; i < layerWMTSId.length; i++) {
-
-                var layer = this.layersWMTS[layerWMTSId[i]];
-
-                if (tile.level >= layer.zoom.min && tile.level <= layer.zoom.max)
-                {
-
-                    var zone = tilesMT[layer.tileMatrixSet];
-                    tile.material.paramLayers[i].x = nbTotalTex;
-                    nbTotalTex += zone.length;
-                    nColorLayers++;
-
-                    for(var c = 0; c < zone.length;c++)
-                    {
-                        var coordWMTS = zone[c];
-                        var pitch = new THREE.Vector3(0.0,0.0,1.0);
-
-                        if(lookAtAncestor)
-                        {
-                            var delta = layer.tileMatrixSet === 'PM' ? 1 : 0;
-                            var ancestor = tile.getParentNotDownScaled(1) || tile ;
-                            var levelParent = (ancestor.level ) + 1;
-                            var zoom = levelParent < layer.zoom.min ? tile.level+(layer.tileMatrixSet === 'PM' ? 1 : 0) : levelParent;
-
-                            coordWMTS = this.projection.WMTS_WGS84Parent(coordWMTS,zoom,pitch);
-                        }
-
-                        promises.push(this.getColorTexture(coordWMTS,pitch,layerWMTSId[i]));
-                    }
-                }
-            }
-
-            if(lookAtAncestor)
-                tile.texturesNeeded += nbTotalTex;
-
-            tile.material.nbTextures[2] = tilesMT['PM'] ? tilesMT['PM'].length : 0;
-            tile.material.uniforms.nColorLayer.value = nColorLayers;
-
-            if (promises.length)
-                return when.all(promises);
-            else
-                return when();
-
-       };
-*/
        return WMTS_Provider;
 
     });
