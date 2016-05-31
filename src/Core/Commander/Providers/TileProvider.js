@@ -149,11 +149,11 @@ define('Core/Commander/Providers/TileProvider', [
 
             //if(nColorL==2 )
             {
-                var layer = command.paramsFunction.layer.parent.colorTerrain.children[1];
-                tile.material.paramLayers[1] = new THREE.Vector4(0.0, 1.0,layer.visible ? 1 : 0,layer.opacity);
-                tile.material.paramLayers[2] = new THREE.Vector4(0.0, 1.0,1.0,1.0);
+               //  var layer = command.paramsFunction.layer.parent.colorTerrain.children[1];
+               //  tile.material.paramLayers[1] = new THREE.Vector4(0.0, 1.0,layer.visible ? 1 : 0,layer.opacity);
+               //  tile.material.paramLayers[2] = new THREE.Vector4(0.0, 1.0,1.0,1.0);
 
-               //var layer = command.paramsFunction.layer.parent.colorTerrain.children[2];
+               // //var layer = command.paramsFunction.layer.parent.colorTerrain.children[2];
 
             }
 
