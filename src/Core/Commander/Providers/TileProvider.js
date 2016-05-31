@@ -144,12 +144,21 @@ define('Core/Commander/Providers/TileProvider', [
             var elevationServices = map.elevationTerrain.services;
             var colorServices = map.colorTerrain.services;
 
+            tile.WMTSs = [];
 
             for (var i = 0; i < colorServices.length; i++)
             {
-                var layer = command.paramsFunction.layer.parent.colorTerrain.children[1];
+                var layer = this.providerColorTexture.layersWMTS[colorServices[i]];
+                var tileMT = layer.tileMatrixSet;
+
+                if(!tile.WMTSs[tileMT])
+                    tile.WMTSs[tileMT] = this.projection.getCoordWMTS_WGS84(tile.tileCoord, tile.bbox,tileMT);
+
                 tile.material.paramLayers[i] = new THREE.Vector4(0.0, 1.0,layer.visible ? 1 : 0,layer.opacity);
             }
+
+            if(tile.WMTSs['PM'])
+                 tile.material.nbTextures[2] = tile.WMTSs['PM'][1].row - tile.WMTSs['PM'][0].row + 1;
 
             var requests = [
 

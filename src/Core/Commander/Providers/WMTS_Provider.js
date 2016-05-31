@@ -299,8 +299,6 @@ define('Core/Commander/Providers/WMTS_Provider', [
                 if(parent.downScaledLayer(0))
                 {
 
-                    //service = this.resolveService(command.paramsFunction.layer.services,tile.level);
-
                     return this.getElevationTexture(parent,command.paramsFunction.layer.services).then(function(terrain)
                     {
                         this.setTextureElevation(terrain);
@@ -337,22 +335,13 @@ define('Core/Commander/Providers/WMTS_Provider', [
                 if (tile.level >= layer.zoom.min && tile.level <= layer.zoom.max)
                 {
 
-
-                    var box = this.projection.getCoordWMTS_WGS84(tile.tileCoord, tile.bbox,tileMT );
+                    var box = tile.WMTSs[tileMT];
                     var col = box[0].col;
                     var nbTex = box[1].row - box[0].row + 1;
-                    var delta = 0;
-
-                    if(tileMT === 'PM')
-                    {
-                        tile.material.nbTextures[2] = nbTex;
-                        delta = 1;
-                    }
+                    var delta = tileMT === 'PM' ? 1 : 0;
 
                     if(lookAtAncestor)
-                    {
                         tile.texturesNeeded += nbTex;
-                    }
 
                     tile.material.paramLayers[i].x = nbTotalTex;
                     nbTotalTex += nbTex;
