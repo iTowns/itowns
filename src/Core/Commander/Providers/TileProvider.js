@@ -148,8 +148,8 @@ define('Core/Commander/Providers/TileProvider', [
 
             for (var i = 0; i < colorServices.length; i++)
             {
-                var layer = this.providerColorTexture.layersWMTS[colorServices[i]];
-                var tileMT = layer.tileMatrixSet;
+                var layer = map.colorTerrain.children[i];
+                var tileMT = this.providerColorTexture.layersWMTS[colorServices[i]].tileMatrixSet;
 
                 if(!tile.WMTSs[tileMT])
                     tile.WMTSs[tileMT] = this.projection.getCoordWMTS_WGS84(tile.tileCoord, tile.bbox,tileMT);
