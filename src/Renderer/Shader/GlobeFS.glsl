@@ -214,7 +214,7 @@ void main() {
 
 
             }
-            if(nColorLayer==3)
+            if(nColorLayer==2)
             {
                 vec4 params = getParam(1);
                 if(params.z == 1.0 && params.w > 0.0)

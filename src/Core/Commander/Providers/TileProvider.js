@@ -145,13 +145,13 @@ define('Core/Commander/Providers/TileProvider', [
             var elevationlayerId = command.paramsFunction.layer.parent.elevationTerrain.services[tileCoord.zoom > 11 ? 1 : 0];
             var colorServices = command.paramsFunction.layer.parent.colorTerrain.services;
 
-            //var nColorL = colorServices.length;
+            var nColorL = colorServices.length;
 
-            //if(nColorL==2 )
+            if(nColorL > 1 )
             {
-               //  var layer = command.paramsFunction.layer.parent.colorTerrain.children[1];
-               //  tile.material.paramLayers[1] = new THREE.Vector4(0.0, 1.0,layer.visible ? 1 : 0,layer.opacity);
-               //  tile.material.paramLayers[2] = new THREE.Vector4(0.0, 1.0,1.0,1.0);
+               var layer = command.paramsFunction.layer.parent.colorTerrain.children[1];
+               tile.material.paramLayers[1] = new THREE.Vector4(0.0, 1.0,layer.visible ? 1 : 0,layer.opacity);
+               //tile.material.paramLayers[2] = new THREE.Vector4(0.0, 1.0,1.0,1.0);
 
                // //var layer = command.paramsFunction.layer.parent.colorTerrain.children[2];
 

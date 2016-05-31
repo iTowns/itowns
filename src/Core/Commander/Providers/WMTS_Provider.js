@@ -316,16 +316,17 @@ define('Core/Commander/Providers/WMTS_Provider', [
 
                 var layer = this.layersWMTS[layerWMTSId[i]];
                 var lookAtAncestor = tile.material.getLevelLayerColor(1) === -1;
+                var tileMT = layer.tileMatrixSet;
 
                 if (tile.level >= layer.zoom.min && tile.level <= layer.zoom.max)
                 {
 
-                    var box = this.projection.getCoordWMTS_WGS84(tile.tileCoord, tile.bbox, layer.tileMatrixSet);
+                    var box = this.projection.getCoordWMTS_WGS84(tile.tileCoord, tile.bbox,tileMT );
                     var col = box[0].col;
-                    var nbTex = box[1].row + 1 - box[0].row;
+                    var nbTex = box[1].row - box[0].row + 1;
                     var delta = 0;
 
-                    if(layer.tileMatrixSet === 'PM')
+                    if(tileMT === 'PM')
                     {
                         tile.material.nbTextures[2] = nbTex;
                         delta = 1;
@@ -336,7 +337,6 @@ define('Core/Commander/Providers/WMTS_Provider', [
 
                     tile.material.paramLayers[i].x = nbTotalTex;
                     nbTotalTex += nbTex;
-
                     nColorLayers++;
 
                     for (var row = box[0].row; row < box[1].row + 1; row++) {
