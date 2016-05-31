@@ -164,10 +164,26 @@ define('Core/Commander/Providers/WMTS_Provider', [
          * @param {type} coWMTS : coord WMTS
          * @returns {WMTS_Provider_L15.WMTS_Provider.prototype@pro;_IoDriver@call;read@call;then}
          */
-        WMTS_Provider.prototype.getElevationTexture = function(coWMTS,layerId) {
+        WMTS_Provider.prototype.getElevationTexture = function(tile,services) {
 
-            if (coWMTS === undefined)
+
+            tile.texturesNeeded =+ 1;
+
+            var layerId = services[0];
+            var layer = this.layersWMTS[layerId];
+
+            if(tile.level > layer.zoom.max)
+            {
+                layerId = services[1];
+                layer = this.layersWMTS[layerId];
+            }
+
+            // TEMP
+            if (tile.currentElevation === -1 && tile.level  > layer.zoom.min )
                 return when(-2);
+
+            var coWMTS = tile.tileCoord;
+
 
             var url = this.url(coWMTS,layerId);
 
@@ -176,7 +192,7 @@ define('Core/Commander/Providers/WMTS_Provider', [
             if (textureCache !== undefined)
                 return when(textureCache);
 
-            var limits = this.layersWMTS[layerId].tileMatrixSetLimits[coWMTS.zoom];
+            var limits = layer.tileMatrixSetLimits[coWMTS.zoom];
 
             if (!limits || !coWMTS.isInside(limits)) {
                 var texture = -1;
@@ -265,7 +281,7 @@ define('Core/Commander/Providers/WMTS_Provider', [
 
         WMTS_Provider.prototype.executeCommand = function(command){
 
-            var service;
+            //var service;
             var destination = command.paramsFunction.layer.description.style.layerTile;
             var tile = command.requester;
 
@@ -283,9 +299,9 @@ define('Core/Commander/Providers/WMTS_Provider', [
                 if(parent.downScaledLayer(0))
                 {
 
-                    service = this.resolveService(command.paramsFunction.layer.services,tile.level);
+                    //service = this.resolveService(command.paramsFunction.layer.services,tile.level);
 
-                    return this.getElevationTexture(parent.tileCoord,service).then(function(terrain)
+                    return this.getElevationTexture(parent,command.paramsFunction.layer.services).then(function(terrain)
                     {
                         this.setTextureElevation(terrain);
 
@@ -321,6 +337,7 @@ define('Core/Commander/Providers/WMTS_Provider', [
                 if (tile.level >= layer.zoom.min && tile.level <= layer.zoom.max)
                 {
 
+
                     var box = this.projection.getCoordWMTS_WGS84(tile.tileCoord, tile.bbox,tileMT );
                     var col = box[0].col;
                     var nbTex = box[1].row - box[0].row + 1;
@@ -333,7 +350,9 @@ define('Core/Commander/Providers/WMTS_Provider', [
                     }
 
                     if(lookAtAncestor)
+                    {
                         tile.texturesNeeded += nbTex;
+                    }
 
                     tile.material.paramLayers[i].x = nbTotalTex;
                     nbTotalTex += nbTex;
