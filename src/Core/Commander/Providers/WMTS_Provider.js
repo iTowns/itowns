@@ -320,16 +320,16 @@ define('Core/Commander/Providers/WMTS_Provider', [
                 if (tile.level >= layer.zoom.min && tile.level <= layer.zoom.max)
                 {
 
-                    var ancestor = tile.getParentNotDownScaled(1) || tile ;
-                    var levelParent = (ancestor.level ) + 1;
-                    var box = this.projection.getCoordWMTS_WGS84(tile, layer.tileMatrixSet);
+                    var box = this.projection.getCoordWMTS_WGS84(tile.tileCoord, tile.bbox, layer.tileMatrixSet);
                     var col = box[0].col;
-
                     var nbTex = box[1].row + 1 - box[0].row;
-
+                    var delta = 0;
 
                     if(layer.tileMatrixSet === 'PM')
+                    {
                         tile.material.nbTextures[2] = nbTex;
+                        delta = 1;
+                    }
 
                     if(lookAtAncestor)
                         tile.texturesNeeded += nbTex;
@@ -346,7 +346,8 @@ define('Core/Commander/Providers/WMTS_Provider', [
 
                        if(lookAtAncestor)
                        {
-                            var zoom = levelParent < layer.zoom.min ? tile.level+(layer.tileMatrixSet === 'PM' ? 1 : 0) : levelParent;
+                            var levelParent = (tile.getParentNotDownScaled(1) || tile).level;
+                            var zoom = (levelParent < layer.zoom.min ? tile.level : levelParent) + delta;
                             cooWMTS = this.projection.WMTS_WGS84Parent(cooWMTS,zoom,pitch);
                        }
 
