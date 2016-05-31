@@ -140,32 +140,20 @@ define('Core/Commander/Providers/TileProvider', [
             tile.updateMatrix();
             tile.updateMatrixWorld();
 
+            var map = command.paramsFunction.layer.parent;
+            var elevationServices = map.elevationTerrain.services;
+            var colorServices = map.colorTerrain.services;
 
-            // PROBLEM is not generic : elevationTerrain ,colorTerrain
-            var elevationlayerId = command.paramsFunction.layer.parent.elevationTerrain.services[tileCoord.zoom > 11 ? 1 : 0];
-            var colorServices = command.paramsFunction.layer.parent.colorTerrain.services;
 
-            var nColorL = colorServices.length;
-
-            if(nColorL > 1 )
+            for (var i = 0; i < colorServices.length; i++)
             {
-               var layer = command.paramsFunction.layer.parent.colorTerrain.children[1];
-               tile.material.paramLayers[1] = new THREE.Vector4(0.0, 1.0,layer.visible ? 1 : 0,layer.opacity);
-               //tile.material.paramLayers[2] = new THREE.Vector4(0.0, 1.0,1.0,1.0);
-
-               // //var layer = command.paramsFunction.layer.parent.colorTerrain.children[2];
-
+                var layer = command.paramsFunction.layer.parent.colorTerrain.children[1];
+                tile.material.paramLayers[i] = new THREE.Vector4(0.0, 1.0,layer.visible ? 1 : 0,layer.opacity);
             }
-
-            //TEMP
-            if(tileCoord.zoom > 3 )
-                tileCoord =  undefined;
-
-            tile.texturesNeeded =+ 1;
 
             var requests = [
 
-                    this.providerElevationTexture.getElevationTexture(tileCoord,elevationlayerId).then(function(terrain){
+                    this.providerElevationTexture.getElevationTexture(tile,elevationServices).then(function(terrain){
 
                         this.setTextureElevation(terrain);}.bind(tile)),
 
@@ -176,14 +164,6 @@ define('Core/Commander/Providers/TileProvider', [
                     ,this.getKML(tile)
 
                 ];
-
-            // if(tileCoord.zoom > 6)
-            // {
-            //     colorlayerId = command.paramsFunction.layer.parent.colorTerrain.services[0];
-            //     requests.push(
-            //         this.providerColorTexture.getColorTextures(tile,colorlayerId).then(function(colorTextures){
-            //             this.setTexturesLayer(colorTextures,2);}.bind(tile)));
-            // }
 
             return when.all(requests);
         };
