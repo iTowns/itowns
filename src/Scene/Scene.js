@@ -38,7 +38,7 @@ define('Scene/Scene', [
     var SUBDIVISE = 1;
     var CLEAN = 2;
 
-    function Scene(coordCarto, debugMode,gLDebug) {
+    function Scene(coordCarto,viewerDiv, debugMode,gLDebug) {
 
         if (instanceScene !== null) {
             throw new Error("Cannot instantiate more than one Scene");
@@ -47,7 +47,7 @@ define('Scene/Scene', [
         // /!\ Doesn't work
         this.size = {x:6378137,y: 6356752.3142451793,z:6378137};
 
-        var positionCamera = new Ellipsoid(this.size).cartographicToCartesian(new CoordCarto().setFromDegreeGeo(coordCarto.lat, coordCarto.lon, coordCarto.alt));
+        var positionCamera = new Ellipsoid(this.size).cartographicToCartesian(new CoordCarto().setFromDegreeGeo(coordCarto.lon, coordCarto.lat, coordCarto.alt));
 
         this.layers = [];
         this.map = null;
@@ -57,9 +57,10 @@ define('Scene/Scene', [
         this.managerCommand = ManagerCommands(this);
 
         this.gLDebug = gLDebug;
-        this.gfxEngine = c3DEngine(this,positionCamera, debugMode,gLDebug);
+        this.gfxEngine = c3DEngine(this,positionCamera,viewerDiv, debugMode,gLDebug);
         this.browserScene = new BrowseTree(this.gfxEngine);
         this.cap = new Capabilities();
+
 
     }
 
@@ -88,7 +89,7 @@ define('Scene/Scene', [
     };
 
     Scene.prototype.getEllipsoid = function(){
-        return this.layers[0].ellipsoid;
+        return this.layers[0].node.ellipsoid;
     }
 
     Scene.prototype.updateCamera = function() {
@@ -96,7 +97,9 @@ define('Scene/Scene', [
             this.layers[i].process.updateCamera(this.gfxEngine.camera);
         }
     };
-
+    Scene.prototype.getZoomLevel = function(){
+        return this.selectNodes;
+    };
 
     Scene.prototype.size = function() {
         return this.size;

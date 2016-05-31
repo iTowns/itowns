@@ -63,7 +63,7 @@ define('Globe/Globe', [
         var geometry = new THREE.SphereGeometry(5);
         var batiment = new THREE.Mesh(geometry, material);
 
-        var position = this.ellipsoid.cartographicToCartesian(new CoordCarto().setFromDegreeGeo(48.87, 0, 200));
+        var position = this.ellipsoid.cartographicToCartesian(new CoordCarto().setFromDegreeGeo(0, 48.87, 200));
 
         position = new THREE.Vector3(4201215.424138484,171429.945145441,4779294.873914789);
 
@@ -80,7 +80,7 @@ define('Globe/Globe', [
         var material2 = new BasicMaterial(new THREE.Color(1, 0.5, 1));
         material2.visible = false;
         var batiment2 = new THREE.Mesh(geometry, material2);
-        var position2 = this.ellipsoid.cartographicToCartesian(new CoordCarto().setFromDegreeGeo(48.87, 0.001, 100));
+        var position2 = this.ellipsoid.cartographicToCartesian(new CoordCarto().setFromDegreeGeo(0.001, 48.87, 100));
         batiment2.frustumCulled = false;
         material2.wireframe = true;
         batiment2.position.copy(position2);
@@ -152,6 +152,58 @@ define('Globe/Globe', [
         this.batiments.children[0].visible = show;
     };
 
+     Globe.prototype.getLayerColor = function(id){
+
+        for (var i = 0; i < this.colorTerrain.children.length; i++) {
+            var layer = this.colorTerrain.children[i];
+            if(layer.services[0] === id)
+                return layer;
+        }
+
+        return null;
+     }
+
+    Globe.prototype.setLayerOpacity = function(id,opacity){
+
+        var layer = this.getLayerColor(id);
+
+        if(layer)
+        {
+
+            layer.opacity = opacity;
+            var idLtile = layer.description.style.layerTile;
+            var cO = function(object){
+
+                if(object.material.setLayerOpacity)
+                    object.material.setLayerOpacity(idLtile,opacity);
+
+            };
+
+            this.tiles.children[0].traverse(cO);
+        }
+
+    };
+
+    Globe.prototype.setLayerVibility = function(id,visible){
+
+        var layer = this.getLayerColor(id);
+
+        if(layer)
+        {
+
+            layer.visible = visible;
+            var idLtile = layer.description.style.layerTile;
+            var cO = function(object){
+
+                if(object.material.setLayerVibility)
+                    object.material.setLayerVibility(idLtile,visible);
+
+            };
+
+            this.tiles.children[0].traverse(cO);
+        }
+
+    };
 
     Globe.prototype.setRealisticLightingOn = function(bool) {
 
@@ -159,8 +211,6 @@ define('Globe/Globe', [
         this.clouds.setLightingOn(bool);
 
     };
-
-
 
     return Globe;
 

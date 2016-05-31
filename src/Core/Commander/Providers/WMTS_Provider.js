@@ -130,7 +130,7 @@ define('Core/Commander/Providers/WMTS_Provider', [
             var maxZoom = Number(arrayLimits[size-1]);
             var minZoom = maxZoom - size + 1;
 
-            this.layersWMTS[layer.id] = {baseUrl : newBaseUrl,tileMatrixSetLimits: options.tileMatrixSetLimits,zoom:{min:minZoom,max:maxZoom}};
+            this.layersWMTS[layer.id] = {baseUrl : newBaseUrl,tileMatrixSet:options.tileMatrixSet,tileMatrixSetLimits: options.tileMatrixSetLimits,zoom:{min:minZoom,max:maxZoom}};
 
         };
 
@@ -164,10 +164,26 @@ define('Core/Commander/Providers/WMTS_Provider', [
          * @param {type} coWMTS : coord WMTS
          * @returns {WMTS_Provider_L15.WMTS_Provider.prototype@pro;_IoDriver@call;read@call;then}
          */
-        WMTS_Provider.prototype.getElevationTexture = function(coWMTS,layerId) {
+        WMTS_Provider.prototype.getElevationTexture = function(tile,services) {
 
-            if (coWMTS === undefined)
+
+            tile.texturesNeeded =+ 1;
+
+            var layerId = services[0];
+            var layer = this.layersWMTS[layerId];
+
+            if(tile.level > layer.zoom.max)
+            {
+                layerId = services[1];
+                layer = this.layersWMTS[layerId];
+            }
+
+            // TEMP
+            if (tile.currentElevation === -1 && tile.level  > layer.zoom.min )
                 return when(-2);
+
+            var coWMTS = tile.tileCoord;
+
 
             var url = this.url(coWMTS,layerId);
 
@@ -176,7 +192,7 @@ define('Core/Commander/Providers/WMTS_Provider', [
             if (textureCache !== undefined)
                 return when(textureCache);
 
-            var limits = this.layersWMTS[layerId].tileMatrixSetLimits[coWMTS.zoom];
+            var limits = layer.tileMatrixSetLimits[coWMTS.zoom];
 
             if (!limits || !coWMTS.isInside(limits)) {
                 var texture = -1;
@@ -251,7 +267,8 @@ define('Core/Commander/Providers/WMTS_Provider', [
                     result.texture.minFilter = THREE.LinearFilter;
                     result.texture.anisotropy = 16;
                     result.texture.url = url;
-                    result.texture['level'] = coWMTS.zoom;
+                    result.texture.level = coWMTS.zoom;
+                   // result.texture.layerId = layerId;
 
                     this.cache.addRessource(url, result.texture);
                 }
@@ -264,18 +281,16 @@ define('Core/Commander/Providers/WMTS_Provider', [
 
         WMTS_Provider.prototype.executeCommand = function(command){
 
-            var service;
+            //var service;
             var destination = command.paramsFunction.layer.description.style.layerTile;
             var tile = command.requester;
 
             if(destination === 1)
             {
-
-                service = this.resolveService(command.paramsFunction.layer.services,tile.level);
-                return this.getColorTextures(command.requester,service).then(function(result)
+                return this.getColorTextures(tile,command.paramsFunction.layer.services).then(function(result)
                 {
                     this.setTexturesLayer(result,destination);
-                }.bind(command.requester));
+                }.bind(tile));
             }
             else if (destination === 0)
             {
@@ -284,9 +299,7 @@ define('Core/Commander/Providers/WMTS_Provider', [
                 if(parent.downScaledLayer(0))
                 {
 
-                    service = this.resolveService(command.paramsFunction.layer.services,tile.level);
-
-                    return this.getElevationTexture(parent.tileCoord,service).then(function(terrain)
+                    return this.getElevationTexture(parent,command.paramsFunction.layer.services).then(function(terrain)
                     {
                         this.setTextureElevation(terrain);
 
@@ -305,44 +318,57 @@ define('Core/Commander/Providers/WMTS_Provider', [
             }
         };
 
+
+
         WMTS_Provider.prototype.getColorTextures = function(tile,layerWMTSId) {
 
-            var layer = this.layersWMTS[layerWMTSId];
+            var promises = [];
+            var nColorLayers = 0;
+            var nbTotalTex = 0;
 
-            if (tile.level >= layer.zoom.min)
-            {
+            for (var i = 0; i < layerWMTSId.length; i++) {
 
-                var promises = [];
-                var lookAtAncestor = tile.currentLevelLayers[1] === -1;
+                var layer = this.layersWMTS[layerWMTSId[i]];
+                var lookAtAncestor = tile.material.getLevelLayerColor(1) === -1;
+                var tileMT = layer.tileMatrixSet;
 
-                // TODO not generic
-                var box = this.projection.WMTS_WGS84ToWMTS_PM(tile.tileCoord, tile.bbox); //
-                var col = box[0].col;
+                if (tile.level >= layer.zoom.min && tile.level <= layer.zoom.max)
+                {
 
-                var colorTexturesNeeded = box[1].row + 1 - box[0].row;
+                    var box = tile.WMTSs[tileMT];
+                    var col = box[0].col;
+                    var nbTex = box[1].row - box[0].row + 1;
+                    var delta = tileMT === 'PM' ? 1 : 0;
 
-                if(lookAtAncestor)
-                    tile.texturesNeeded += colorTexturesNeeded;
-                else
-                    tile.material.nbTextures -= colorTexturesNeeded;
+                    if(lookAtAncestor)
+                        tile.texturesNeeded += nbTex;
 
-                for (var row = box[0].row; row < box[1].row + 1; row++) {
+                    tile.material.paramLayers[i].x = nbTotalTex;
+                    nbTotalTex += nbTex;
+                    nColorLayers++;
 
-                   var cooWMTS = new CoordWMTS(box[0].zoom, row, col);
-                   var pitch = new THREE.Vector3(0.0,0.0,1.0);
+                    for (var row = box[0].row; row < box[1].row + 1; row++) {
 
-                   if(lookAtAncestor && box[0].zoom > 3)
-                   {
-                        var levelParent = tile.getParentNotDownScaled(1).level + 1;
-                        cooWMTS = this.projection.WMTS_WGS84Parent(cooWMTS,levelParent,pitch);
-                   }
+                       var cooWMTS = new CoordWMTS(box[0].zoom, row, col);
+                       var pitch = new THREE.Vector3(0.0,0.0,1.0);
 
-                   promises.push(this.getColorTexture(cooWMTS,pitch,layerWMTSId));
+                       if(lookAtAncestor)
+                       {
+                            var levelParent = (tile.getParentNotDownScaled(1) || tile).level;
+                            var zoom = (levelParent < layer.zoom.min ? tile.level : levelParent) + delta;
+                            cooWMTS = this.projection.WMTS_WGS84Parent(cooWMTS,zoom,pitch);
+                       }
 
+                       promises.push(this.getColorTexture(cooWMTS,pitch,layerWMTSId[i]));
+
+                    }
                 }
-
-                return when.all(promises);
             }
+
+            tile.material.uniforms.nColorLayer.value = nColorLayers;
+
+            if (promises.length)
+                return when.all(promises);
             else
                 return when();
 
