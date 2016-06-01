@@ -47,7 +47,8 @@ define('Renderer/LayeredMaterial', ['THREE',
         // Uniform three js needs no empty array
         for (var l = 0; l < nbLayer; l++) {
 
-            this.Textures[l] = [emptyTexture];
+            // WARNING TODO prevent empty slot, but it's not the solution
+            this.Textures[l] = [emptyTexture,emptyTexture,emptyTexture,emptyTexture,emptyTexture,emptyTexture,emptyTexture,emptyTexture];
             this.pitScale[l] = [vector,vector,vector,vector,vector,vector,vector,vector];
             this.nbTextures[l] = 0;
         }
