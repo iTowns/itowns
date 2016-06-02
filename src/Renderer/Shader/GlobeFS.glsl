@@ -46,6 +46,7 @@ uniform sampler2D   dTextures_01[TEX_UNITS];
 uniform vec3        pitScale_L01[TEX_UNITS];
 
 uniform vec4        paramLayers[8];
+uniform vec2        paramBLayers[8];
 uniform int         pickingRender;
 uniform int         nbTextures[8];
 uniform float       distanceFog;
@@ -111,6 +112,15 @@ vec4 colorAtIdUv(sampler2D dTextures[TEX_UNITS],int id, vec2 uv){
              return paramLayers[i];
 
 }
+
+vec2 getParamB(int id){
+
+    for (int i = 0; i < 32; ++i)
+         if(i == id)
+             return paramBLayers[i];
+
+}
+
 
 const vec4 bitSh = vec4( 256.0 * 256.0 * 256.0, 256.0 * 256.0, 256.0, 1.0 );
 const vec4 bitMsk = vec4( 0.0, 1.0 / 256.0, 1.0 / 256.0, 1.0 / 256.0 );
@@ -187,58 +197,49 @@ void main() {
         if (0 <= idd && idd < nbTextures[1])
         {
 
-            vec4 params = getParam(0);
-            int pit = int(params.x);
-            bool projWGS84 = params.y == 0.0;
+            vec4 params;
+            vec2 paramsB;
+            int pit;
+            bool projWGS84;
+            vec4 diffuseColor;
 
-             vec4 diffuseColor = colorAtIdUv(dTextures_01, pit + (projWGS84 ? 0 : idd),projWGS84 ? uvWGS84 : uvPM);
+            // TODO Optimisation des uv1 peuvent copier pas lignes!!
 
-            //vec4 diffuseColor  = vec4( 0.0, uvWGS84.y, 0.0, 1.0);
-
-            //////////////////////
-            //!!!!!!!!!!!!!!!!!!!!!!
-            //Optimisation des uv1 peuvent copier pas lignes!!
-            //!!!!!!!!!!!!!!!!!!!!!!
-            //!!!!!!!!!!!!!!!!!!!!!!
-
-            if(nColorLayer>2)
+            for (int layer = 0; layer < 8; layer++)
             {
-                params = getParam(2);
-                pit = int(params.x);
-                projWGS84 = params.y == 0.0;
 
-                vec4 diffuseColor2 = colorAtIdUv(dTextures_01, pit + (projWGS84 ? 0 : idd),projWGS84 ? uvWGS84 : uvPM);
+                if(layer == nColorLayer)
+                    break;
 
-                float a = (diffuseColor2.r + diffuseColor2.g + diffuseColor2.b)/3.0;
-                float lum = 1.0-pow(a,1.0);
-                diffuseColor = mix( diffuseColor,diffuseColor2, lum*getParam(1).w);
-            }
+                params = getParam(layer);
+                paramsB = getParamB(layer);
 
-            if(nColorLayer>1)
-            {
-                vec4 params = getParam(1);
                 if(params.z == 1.0 && params.w > 0.0)
-                    {
+                {
 
-                        params = getParam(1);
                         pit = int(params.x);
                         projWGS84 = params.y == 0.0;
-
                         vec4 diffuseColor2 = colorAtIdUv(dTextures_01, pit + (projWGS84 ? 0 : idd),projWGS84 ? uvWGS84 : uvPM);
+                        float lum = 1.0;
 
-                        float a = (diffuseColor2.r + diffuseColor2.g + diffuseColor2.b)/3.0;
-                        float lum = 1.0-pow(a,2.5);
+                        if(paramsB.x > 0.0)
+                        {
+                            float a = (diffuseColor2.r + diffuseColor2.g + diffuseColor2.b)/3.0;
+                            lum = 1.0-pow(a,paramsB.x);
+                            if(paramsB.x > 1.0)
+                                diffuseColor2*= diffuseColor2*diffuseColor2;
+                        }
 
-                        diffuseColor2*= diffuseColor2*diffuseColor2;
-                        diffuseColor = mix( diffuseColor,diffuseColor2, lum*getParam(1).w);
-                    }
+                        diffuseColor = mix( diffuseColor,diffuseColor2, lum*params.w);
+                }
+
             }
 
             if(RTC == 1)
             {
                 //diffuseColor = vec4(diffuseColor.xyz,params.y*diffuseColor.w);
                 gl_FragColor = mix(fogColor, diffuseColor, fog );
-                gl_FragColor = diffuseColor;
+                //gl_FragColor = diffuseColor;
             }
             else
             {

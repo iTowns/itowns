@@ -130,7 +130,13 @@ define('Core/Commander/Providers/WMTS_Provider', [
             var maxZoom = Number(arrayLimits[size-1]);
             var minZoom = maxZoom - size + 1;
 
-            this.layersWMTS[layer.id] = {baseUrl : newBaseUrl,tileMatrixSet:options.tileMatrixSet,tileMatrixSetLimits: options.tileMatrixSetLimits,zoom:{min:minZoom,max:maxZoom}};
+            this.layersWMTS[layer.id] = {
+                baseUrl : newBaseUrl,
+                tileMatrixSet:options.tileMatrixSet,
+                tileMatrixSetLimits: options.tileMatrixSetLimits,
+                zoom:{min:minZoom,max:maxZoom},
+                fx : layer.fx || 0.0
+            };
 
         };
 
@@ -329,11 +335,11 @@ define('Core/Commander/Providers/WMTS_Provider', [
 
                 var layer = this.layersWMTS[layerWMTSId[i]];
                 var lookAtAncestor = tile.material.getLevelLayerColor(1) === -1;
-                var tileMT = layer.tileMatrixSet;
 
                 if (tile.level >= layer.zoom.min && tile.level <= layer.zoom.max)
                 {
 
+                    var tileMT = layer.tileMatrixSet;
                     var box = tile.WMTSs[tileMT];
                     var col = box[0].col;
                     var nbTex = box[1].row - box[0].row + 1;
@@ -344,6 +350,8 @@ define('Core/Commander/Providers/WMTS_Provider', [
 
                     tile.material.paramLayers[i].y = tileMT === 'PM' ? 1 : 0;
                     tile.material.paramLayers[i].x = nbTotalTex;
+                    tile.material.paramBLayers[i].x = layer.fx;
+
                     nbTotalTex += nbTex;
                     nColorLayers++;
 

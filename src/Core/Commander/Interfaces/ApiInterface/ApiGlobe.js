@@ -83,12 +83,6 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
 
         var idLayerTile = map.colorTerrain.children.length;
 
-        if(map.colorTerrain.children.length === 1)
-        {
-
-            subLayer.visible = false;
-        }
-
         subLayer.description = {style:{layerTile:idLayerTile}};
 
         map.colorTerrain.add(subLayer);
