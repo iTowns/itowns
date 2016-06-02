@@ -512,13 +512,20 @@ and open the template in the editor.
 
         itowns.viewer.update();
 
-        itowns.viewer.setLayerVibility("IGNPO1",false);
 
                // THIS IS AN EXAMPLE OF INTERFACE TO INTERACT WITH ITOWNS
                var Menu = function() {
                    this.CloudsIR = false;
+
+                   this.Ortho = true;
+                   this.OrthoOpacity = 1.0;
+
                    this.Carte = false;
                    this.CarteOpacity = 1.0;
+
+                   this.CRS = false;
+                   this.CRSOpacity = 1.0;
+
                    this.RealisticLighting = false;
                    this.StreetLevelImagery = false;
                    this.KML = false;
@@ -527,8 +534,12 @@ and open the template in the editor.
                         itowns.viewer.launchCommandApi();
                    };
                };
-
                var text = new Menu();
+
+               itowns.viewer.setLayerVibility("IGNPO",text.Ortho);
+               itowns.viewer.setLayerVibility("IGNPO1",text.Carte);
+               itowns.viewer.setLayerVibility("IGNPO2",text.CRS);
+
                var gui = new dat.GUI( { autoPlace: false } );
                gui.domElement.id = 'menuDiv';
                viewerDiv.appendChild(gui.domElement);
@@ -561,16 +572,41 @@ and open the template in the editor.
 			           itowns.viewer.setRealisticLightingOn(newValue);
                 });
 
+                gui.add(text, 'Ortho').onChange(function(newValue) {
+
+                       itowns.viewer.setLayerVibility("IGNPO",newValue);
+                });
+
+
                 gui.add(text, 'Carte').onChange(function(newValue) {
 
                        itowns.viewer.setLayerVibility("IGNPO1",newValue);
                 });
+
+                gui.add(text, 'CRS').onChange(function(newValue) {
+
+                       itowns.viewer.setLayerVibility("IGNPO2",newValue);
+                });
+
+                gui.add(text, 'OrthoOpacity', 0.0, 1.0).onChange(function(newValue) {
+
+
+                    var opacity = Math.max(0,Math.min(newValue,1.0));
+                    itowns.viewer.setLayerOpacity("IGNPO",opacity);
+                });
+
 
                 gui.add(text, 'CarteOpacity', 0.0, 1.0).onChange(function(newValue) {
 
 
                     var opacity = Math.max(0,Math.min(newValue,1.0));
                     itowns.viewer.setLayerOpacity("IGNPO1",opacity);
+                });
+
+                gui.add(text, 'CRSOpacity', 0.0, 1.0).onChange(function(newValue) {
+
+                    var opacity = Math.max(0,Math.min(newValue,1.0));
+                    itowns.viewer.setLayerOpacity("IGNPO2",opacity);
                 });
 
                 gui.add(text, 'KML').onChange(function(newValue) {
