@@ -201,7 +201,7 @@ void main() {
             vec2 paramsB;
             int pit;
             bool projWGS84;
-            vec4 diffuseColor;
+            vec4 diffuseColor =  vec4( 1.0, 1.0, 1.0, 1.0);
 
             // TODO Optimisation des uv1 peuvent copier pas lignes!!
 
