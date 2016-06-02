@@ -155,6 +155,8 @@ define('Core/Commander/Providers/TileProvider', [
                     tile.WMTSs[tileMT] = this.projection.getCoordWMTS_WGS84(tile.tileCoord, tile.bbox,tileMT);
 
                 tile.material.paramLayers[i] = new THREE.Vector4(0.0, 0.0,layer.visible ? 1 : 0,layer.opacity);
+
+                tile.material.paramBLayers[i] = new THREE.Vector2(0.0, 0.0);
             }
 
             if(tile.WMTSs['PM'])
