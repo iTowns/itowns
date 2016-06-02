@@ -26,7 +26,7 @@ define('Renderer/LayeredMaterial', ['THREE',
     var nbLayer = 2;
 
     var vector = new THREE.Vector3(0.0, 0.0, 0.0);
-
+    var vector2 = new THREE.Vector2(0.0, 0.0);
     var vector4 = new THREE.Vector4(0.0, 0.0, 0.0, 0.0);
 
     var LayeredMaterial = function(id) {
@@ -47,12 +47,14 @@ define('Renderer/LayeredMaterial', ['THREE',
         // Uniform three js needs no empty array
         for (var l = 0; l < nbLayer; l++) {
 
-            this.Textures[l] = [emptyTexture];
+            // WARNING TODO prevent empty slot, but it's not the solution
+            this.Textures[l] = [emptyTexture,emptyTexture,emptyTexture,emptyTexture,emptyTexture,emptyTexture,emptyTexture,emptyTexture];
             this.pitScale[l] = [vector,vector,vector,vector,vector,vector,vector,vector];
             this.nbTextures[l] = 0;
         }
 
         this.paramLayers = [vector4,vector4,vector4,vector4,vector4,vector4,vector4,vector4];
+        this.paramBLayers = [vector2,vector2,vector2,vector2,vector2,vector2,vector2,vector2];
 
         this.uniforms.dTextures_00 = {
             type: "tv",
@@ -80,6 +82,12 @@ define('Renderer/LayeredMaterial', ['THREE',
             type: "v4v",
             value: this.paramLayers
         };
+
+        this.uniforms.paramBLayers = {
+            type: "v2v",
+            value: this.paramBLayers
+        };
+
         this.uniforms.pitScale_L00 = {
             type: "v3v",
             value: this.pitScale[0]

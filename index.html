@@ -182,12 +182,98 @@ and open the template in the editor.
                     }
                 });
 
+                itowns.viewer.addImageryLayer({
+                protocol:   "wmts",
+                id:         "IGNPO2",
+                url:        "http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/geoportail/wmts",
+                fx :        1.0,
+                wmtsOptions: {
+                        name: 'ORTHOIMAGERY.ORTHOPHOTOS.CRS84',
+                        mimetype: "image/jpeg",
+                        tileMatrixSet: "WGS84G",
+                        tileMatrixSetLimits: {
 
+                            '6' : {
+                                'minTileRow' : 13,
+                                'maxTileRow' : 39,
+                                'minTileCol' : 0,
+                                'maxTileCol' : 83,
+                            },
+                            '7' : {
+                                'minTileRow' : 27,
+                                'maxTileRow' : 79,
+                                'minTileCol' : 1,
+                                'maxTileCol' : 167,
+                            },
+                            '8' : {
+                                'minTileRow' : 55,
+                                'maxTileRow' : 158,
+                                'minTileCol' : 2,
+                                'maxTileCol' : 335,
+                            },
+                            '9' : {
+                                'minTileRow' : 110,
+                                'maxTileRow' : 316,
+                                'minTileCol' : 5,
+                                'maxTileCol' : 670
+                            },
+                            '10' : {
+                                'minTileRow' : 221,
+                                'maxTileRow' : 633,
+                                'minTileCol' : 10,
+                                'maxTileCol' : 1341,
+                            },
+                            '11' : {
+                                'minTileRow' : 442,
+                                'maxTileRow' : 1267,
+                                'minTileCol' : 20,
+                                'maxTileCol' : 2683,
+                            },
+                            '12' : {
+                                'minTileRow' : 885,
+                                'maxTileRow' : 2534,
+                                'minTileCol' : 41,
+                                'maxTileCol' : 5366,
+                            },
+                            '13' : {
+                                'minTileRow' : 1770,
+                                'maxTileRow' : 5069,
+                                'minTileCol' : 82,
+                                'maxTileCol' : 10733,
+                            },
+                            '14' : {
+                                'minTileRow' : 3541,
+                                'maxTileRow' : 10139,
+                                'minTileCol' : 165,
+                                'maxTileCol' : 21467,
+                            },
+                            '15' : {
+                                'minTileRow' : 7082,
+                                'maxTileRow' : 20279,
+                                'minTileCol' : 330,
+                                'maxTileCol' : 42934,
+                            },
+                            '16' : {
+                                'minTileRow' : 14165,
+                                'maxTileRow' : 40559,
+                                'minTileCol' : 660,
+                                'maxTileCol' : 85868,
+                            },
+                            '17' : {
+                                'minTileRow' : 28330,
+                                'maxTileRow' : 81118,
+                                'minTileCol' : 1320,
+                                'maxTileCol' : 171736,
+                            }
+                        }
+                    }
+                });
 
                 itowns.viewer.addImageryLayer({
                 protocol:   "wmts",
                 id:         "IGNPO1",
                 url:        "http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/geoportail/wmts",
+                fx :        2.5,
                 wmtsOptions: {
                         //name:'GEOGRAPHICALGRIDSYSTEMS.MAPS',
                         // name: 'GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN-EXPRESS.ROUTIER',
@@ -195,6 +281,7 @@ and open the template in the editor.
                         //name: "GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN-EXPRESS.NIVEAUXGRIS",
                         //mimetype: "image/png",
                         mimetype: "image/jpeg",
+
                         tileMatrixSet: "PM",
                         tileMatrixSetLimits: {
                           '6' : {
@@ -279,91 +366,7 @@ and open the template in the editor.
                     }
                 });
 
-                itowns.viewer.addImageryLayer({
-                protocol:   "wmts",
-                id:         "IGNPO2",
-                url:        "http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/geoportail/wmts",
-                wmtsOptions: {
-                        name: 'ORTHOIMAGERY.ORTHOPHOTOS.CRS84',
-                        mimetype: "image/jpeg",
-                        tileMatrixSet: "WGS84G",
-                        tileMatrixSetLimits: {
 
-                            '6' : {
-                                'minTileRow' : 13,
-                                'maxTileRow' : 39,
-                                'minTileCol' : 0,
-                                'maxTileCol' : 83,
-                            },
-                            '7' : {
-                                'minTileRow' : 27,
-                                'maxTileRow' : 79,
-                                'minTileCol' : 1,
-                                'maxTileCol' : 167,
-                            },
-                            '8' : {
-                                'minTileRow' : 55,
-                                'maxTileRow' : 158,
-                                'minTileCol' : 2,
-                                'maxTileCol' : 335,
-                            },
-                            '9' : {
-                                'minTileRow' : 110,
-                                'maxTileRow' : 316,
-                                'minTileCol' : 5,
-                                'maxTileCol' : 670
-                            },
-                            '10' : {
-                                'minTileRow' : 221,
-                                'maxTileRow' : 633,
-                                'minTileCol' : 10,
-                                'maxTileCol' : 1341,
-                            },
-                            '11' : {
-                                'minTileRow' : 442,
-                                'maxTileRow' : 1267,
-                                'minTileCol' : 20,
-                                'maxTileCol' : 2683,
-                            },
-                            '12' : {
-                                'minTileRow' : 885,
-                                'maxTileRow' : 2534,
-                                'minTileCol' : 41,
-                                'maxTileCol' : 5366,
-                            },
-                            '13' : {
-                                'minTileRow' : 1770,
-                                'maxTileRow' : 5069,
-                                'minTileCol' : 82,
-                                'maxTileCol' : 10733,
-                            },
-                            '14' : {
-                                'minTileRow' : 3541,
-                                'maxTileRow' : 10139,
-                                'minTileCol' : 165,
-                                'maxTileCol' : 21467,
-                            },
-                            '15' : {
-                                'minTileRow' : 7082,
-                                'maxTileRow' : 20279,
-                                'minTileCol' : 330,
-                                'maxTileCol' : 42934,
-                            },
-                            '16' : {
-                                'minTileRow' : 14165,
-                                'maxTileRow' : 40559,
-                                'minTileCol' : 660,
-                                'maxTileCol' : 85868,
-                            },
-                            '17' : {
-                                'minTileRow' : 28330,
-                                'maxTileRow' : 81118,
-                                'minTileCol' : 1320,
-                                'maxTileCol' : 171736,
-                            }
-                        }
-                    }
-                });
 
         itowns.viewer.addElevationLayer({
             protocol:   "wmts",
@@ -509,11 +512,20 @@ and open the template in the editor.
 
         itowns.viewer.update();
 
+
                // THIS IS AN EXAMPLE OF INTERFACE TO INTERACT WITH ITOWNS
                var Menu = function() {
                    this.CloudsIR = false;
+
+                   this.Ortho = true;
+                   this.OrthoOpacity = 1.0;
+
                    this.Carte = false;
                    this.CarteOpacity = 1.0;
+
+                   this.CRS = false;
+                   this.CRSOpacity = 1.0;
+
                    this.RealisticLighting = false;
                    this.StreetLevelImagery = false;
                    this.KML = false;
@@ -522,8 +534,12 @@ and open the template in the editor.
                         itowns.viewer.launchCommandApi();
                    };
                };
-
                var text = new Menu();
+
+               itowns.viewer.setLayerVibility("IGNPO",text.Ortho);
+               itowns.viewer.setLayerVibility("IGNPO1",text.Carte);
+               itowns.viewer.setLayerVibility("IGNPO2",text.CRS);
+
                var gui = new dat.GUI( { autoPlace: false } );
                gui.domElement.id = 'menuDiv';
                viewerDiv.appendChild(gui.domElement);
@@ -556,16 +572,41 @@ and open the template in the editor.
 			           itowns.viewer.setRealisticLightingOn(newValue);
                 });
 
+                gui.add(text, 'Ortho').onChange(function(newValue) {
+
+                       itowns.viewer.setLayerVibility("IGNPO",newValue);
+                });
+
+
                 gui.add(text, 'Carte').onChange(function(newValue) {
 
                        itowns.viewer.setLayerVibility("IGNPO1",newValue);
                 });
+
+                gui.add(text, 'CRS').onChange(function(newValue) {
+
+                       itowns.viewer.setLayerVibility("IGNPO2",newValue);
+                });
+
+                gui.add(text, 'OrthoOpacity', 0.0, 1.0).onChange(function(newValue) {
+
+
+                    var opacity = Math.max(0,Math.min(newValue,1.0));
+                    itowns.viewer.setLayerOpacity("IGNPO",opacity);
+                });
+
 
                 gui.add(text, 'CarteOpacity', 0.0, 1.0).onChange(function(newValue) {
 
 
                     var opacity = Math.max(0,Math.min(newValue,1.0));
                     itowns.viewer.setLayerOpacity("IGNPO1",opacity);
+                });
+
+                gui.add(text, 'CRSOpacity', 0.0, 1.0).onChange(function(newValue) {
+
+                    var opacity = Math.max(0,Math.min(newValue,1.0));
+                    itowns.viewer.setLayerOpacity("IGNPO2",opacity);
                 });
 
                 gui.add(text, 'KML').onChange(function(newValue) {
