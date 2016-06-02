@@ -154,11 +154,16 @@ define('Core/Commander/Providers/TileProvider', [
                 if(!tile.WMTSs[tileMT])
                     tile.WMTSs[tileMT] = this.projection.getCoordWMTS_WGS84(tile.tileCoord, tile.bbox,tileMT);
 
-                tile.material.paramLayers[i] = new THREE.Vector4(0.0, 1.0,layer.visible ? 1 : 0,layer.opacity);
+                tile.material.paramLayers[i] = new THREE.Vector4(0.0, 0.0,layer.visible ? 1 : 0,layer.opacity);
             }
 
             if(tile.WMTSs['PM'])
-                 tile.material.nbTextures[2] = tile.WMTSs['PM'][1].row - tile.WMTSs['PM'][0].row + 1;
+                tile.material.nbTextures[2] = tile.WMTSs['PM'][1].row - tile.WMTSs['PM'][0].row + 1;
+            else
+            {
+                tile.material.nbTextures[2] = 1;
+                tile.delta = 0;
+            }
 
             var requests = [
 
