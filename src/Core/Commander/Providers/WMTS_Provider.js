@@ -106,11 +106,28 @@ define('Core/Commander/Providers/WMTS_Provider', [
 
                 };
 
+            var url = "http://a.basemaps.cartocdn.com/dark_all/%TILEMATRIX/%COL/%ROW.png";
+
+            this.customUrl(url,10,55,233);
+
         }
 
         WMTS_Provider.prototype = Object.create(Provider.prototype);
 
         WMTS_Provider.prototype.constructor = WMTS_Provider;
+
+
+        WMTS_Provider.prototype.customUrl = function(url,tilematrix,row,col)
+        {
+
+            url = url.replace('%TILEMATRIX',tilematrix.toString());
+            url = url.replace('%ROW',row.toString());
+            url = url.replace('%COL',col.toString());
+
+            //console.log(url);
+
+        };
+
 
         WMTS_Provider.prototype.addLayer = function(layer)
         {
