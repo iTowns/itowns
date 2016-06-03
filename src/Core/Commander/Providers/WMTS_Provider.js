@@ -120,11 +120,13 @@ define('Core/Commander/Providers/WMTS_Provider', [
         WMTS_Provider.prototype.customUrl = function(url,tilematrix,row,col)
         {
 
-            url = url.replace('%TILEMATRIX',tilematrix.toString());
-            url = url.replace('%ROW',row.toString());
-            url = url.replace('%COL',col.toString());
+            var urld = url.replace('%TILEMATRIX',tilematrix.toString());
+            urld = urld.replace('%ROW',row.toString());
+            urld = urld.replace('%COL',col.toString());
 
             //console.log(url);
+
+            return urld;
 
         };
 
@@ -132,28 +134,43 @@ define('Core/Commander/Providers/WMTS_Provider', [
         WMTS_Provider.prototype.addLayer = function(layer)
         {
 
-            var options = layer.wmtsOptions;
-            var newBaseUrl =  layer.url +
-                "?LAYER=" + options.name +
-                "&FORMAT=" +  options.mimetype +
-                "&SERVICE=WMTS" +
-                "&VERSION=1.0.0" +
-                "&REQUEST=GetTile&STYLE=normal&TILEMATRIXSET=" + options.tileMatrixSet;
+            if(layer.protocol === 'wmtsc')
+            {
+                 this.layersWMTS[layer.id] = {
+                    customUrl: layer.customUrl,
+                    tileMatrixSet:layer.wmtsOptions.tileMatrixSet,
+                    zoom:{min:6,max:20},
+                    fx : layer.fx || 0.0
+                };
 
-            var arrayLimits = Object.keys(options.tileMatrixSetLimits);
+            }
+            else
+            {
 
-            var size = arrayLimits.length;
+                var options = layer.wmtsOptions;
+                var newBaseUrl =  layer.url +
+                    "?LAYER=" + options.name +
+                    "&FORMAT=" +  options.mimetype +
+                    "&SERVICE=WMTS" +
+                    "&VERSION=1.0.0" +
+                    "&REQUEST=GetTile&STYLE=normal&TILEMATRIXSET=" + options.tileMatrixSet;
 
-            var maxZoom = Number(arrayLimits[size-1]);
-            var minZoom = maxZoom - size + 1;
+                var customUrl = newBaseUrl + "&TILEMATRIX=%TILEMATRIX&TILEROW=%ROW&TILECOL=%COL";
+                var arrayLimits = Object.keys(options.tileMatrixSetLimits);
 
-            this.layersWMTS[layer.id] = {
-                baseUrl : newBaseUrl,
-                tileMatrixSet:options.tileMatrixSet,
-                tileMatrixSetLimits: options.tileMatrixSetLimits,
-                zoom:{min:minZoom,max:maxZoom},
-                fx : layer.fx || 0.0
-            };
+                var size = arrayLimits.length;
+                var maxZoom = Number(arrayLimits[size-1]);
+                var minZoom = maxZoom - size + 1;
+
+                this.layersWMTS[layer.id] = {
+                    baseUrl : newBaseUrl,
+                    customUrl: customUrl,
+                    tileMatrixSet:options.tileMatrixSet,
+                    tileMatrixSetLimits: options.tileMatrixSetLimits || 'none',
+                    zoom:{min:minZoom,max:maxZoom},
+                    fx : layer.fx || 0.0
+                };
+            }
 
         };
 
@@ -164,9 +181,10 @@ define('Core/Commander/Providers/WMTS_Provider', [
          */
         WMTS_Provider.prototype.url = function(coWMTS,layerId) {
 
-            var baseUrl =  this.layersWMTS[layerId].baseUrl;
+            // var baseUrl =  this.layersWMTS[layerId].baseUrl;
+            // var t = baseUrl + "&TILEMATRIX=" + coWMTS.zoom + "&TILEROW=" + coWMTS.row + "&TILECOL=" + coWMTS.col;
 
-            return baseUrl + "&TILEMATRIX=" + coWMTS.zoom + "&TILEROW=" + coWMTS.row + "&TILECOL=" + coWMTS.col;
+            return this.customUrl(this.layersWMTS[layerId].customUrl,coWMTS.zoom, coWMTS.row,coWMTS.col);
 
         };
 
@@ -352,6 +370,9 @@ define('Core/Commander/Providers/WMTS_Provider', [
 
                 var layer = this.layersWMTS[layerWMTSId[i]];
                 var lookAtAncestor = tile.material.getLevelLayerColor(1) === -1;
+
+                //var limits = layer.tileMatrixSetLimits[tile.level];
+                //!coWMTS.isInside(limits)
 
                 if (tile.level >= layer.zoom.min && tile.level <= layer.zoom.max)
                 {
