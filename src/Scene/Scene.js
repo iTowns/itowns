@@ -33,7 +33,7 @@ define('Scene/Scene', [
             Capabilities, MobileMappingLayer) {
 
     var instanceScene = null;
-
+var event = new Event('build');
     var NO_SUBDIVISE = 0;
     var SUBDIVISE = 1;
     var CLEAN = 2;
@@ -117,8 +117,11 @@ define('Scene/Scene', [
                 if (this.managerCommand.isFree())
                 {
                     this.browserScene.browse(quadtree,this.currentCamera(), process, SUBDIVISE);
-                    if (this.managerCommand.isFree())
-                        this.browserScene.browse(quadtree,this.currentCamera(), process, CLEAN);
+                    if (this.managerCommand.isFree()){
+                        this.browserScene.browse(quadtree,this.currentCamera(), process, CLEAN)
+                        document.dispatchEvent(event);
+
+                    }
                 }
 
             }.bind(this));
