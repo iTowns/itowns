@@ -142,7 +142,6 @@ define('Core/Commander/Providers/WMTS_Provider', [
                     zoom:{min:6,max:20},
                     fx : layer.fx || 0.0
                 };
-
             }
             else
             {
@@ -155,16 +154,15 @@ define('Core/Commander/Providers/WMTS_Provider', [
                     "&VERSION=1.0.0" +
                     "&REQUEST=GetTile&STYLE=normal&TILEMATRIXSET=" + options.tileMatrixSet;
 
-                var customUrl = newBaseUrl + "&TILEMATRIX=%TILEMATRIX&TILEROW=%ROW&TILECOL=%COL";
+                newBaseUrl += "&TILEMATRIX=%TILEMATRIX&TILEROW=%ROW&TILECOL=%COL";
                 var arrayLimits = Object.keys(options.tileMatrixSetLimits);
 
                 var size = arrayLimits.length;
                 var maxZoom = Number(arrayLimits[size-1]);
                 var minZoom = maxZoom - size + 1;
-
                 this.layersWMTS[layer.id] = {
-                    baseUrl : newBaseUrl,
-                    customUrl: customUrl,
+                    customUrl: newBaseUrl,
+                    mimetype:options.mimetype,
                     tileMatrixSet:options.tileMatrixSet,
                     tileMatrixSetLimits: options.tileMatrixSetLimits || 'none',
                     zoom:{min:minZoom,max:maxZoom},

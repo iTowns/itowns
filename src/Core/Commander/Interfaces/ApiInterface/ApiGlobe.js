@@ -104,6 +104,16 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         return layerWMTS[id].zoom.min;
     };
 
+    ApiGlobe.prototype.getLayers = function(/*param*/){
+
+        var map = this.scene.getMap();
+        var manager = this.scene.managerCommand;
+        var providerWMTS = manager.getProvider(map.tiles).providerWMTS;
+        var layersWMTS = providerWMTS.layersWMTS;
+        return layersWMTS;
+
+    };
+
     /**
     * Gets the maximun zoom level, i.e. level at which the view is the closest from the ground.
     * @constructor
