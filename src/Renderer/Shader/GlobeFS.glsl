@@ -104,24 +104,6 @@ vec4 colorAtIdUv(sampler2D dTextures[TEX_UNITS],int id, vec2 uv){
 
 }
 
-
- vec4 getParam(int id){
-
-    for (int i = 0; i < 32; ++i)
-         if(i == id)
-             return paramLayers[i];
-
-}
-
-vec2 getParamB(int id){
-
-    for (int i = 0; i < 32; ++i)
-         if(i == id)
-             return paramBLayers[i];
-
-}
-
-
 const vec4 bitSh = vec4( 256.0 * 256.0 * 256.0, 256.0 * 256.0, 256.0, 1.0 );
 const vec4 bitMsk = vec4( 0.0, 1.0 / 256.0, 1.0 / 256.0, 1.0 / 256.0 );
 
@@ -131,7 +113,6 @@ vec4 pack1K ( float depth ) {
     res -= res.xxyz * bitMsk;
     return res;
 }
-
 
 vec4 getColor(vec4 baseColor ) {
 
