@@ -104,24 +104,6 @@ vec4 colorAtIdUv(sampler2D dTextures[TEX_UNITS],int id, vec2 uv){
 
 }
 
-
- vec4 getParam(int id){
-
-    for (int i = 0; i < 32; ++i)
-         if(i == id)
-             return paramLayers[i];
-
-}
-
-vec2 getParamB(int id){
-
-    for (int i = 0; i < 32; ++i)
-         if(i == id)
-             return paramBLayers[i];
-
-}
-
-
 const vec4 bitSh = vec4( 256.0 * 256.0 * 256.0, 256.0 * 256.0, 256.0, 1.0 );
 const vec4 bitMsk = vec4( 0.0, 1.0 / 256.0, 1.0 / 256.0, 1.0 / 256.0 );
 
@@ -130,6 +112,13 @@ vec4 pack1K ( float depth ) {
     vec4 res = mod( depth * bitSh * vec4( 255 ), vec4( 256 ) ) / vec4( 255 );
     res -= res.xxyz * bitMsk;
     return res;
+}
+
+vec4 getColor(vec4 baseColor ) {
+
+    vec4 color;
+    return color;
+
 }
 
 // float unpack1K ( vec4 color ) {
@@ -146,6 +135,10 @@ void main() {
 	   gl_FragDepthEXT = log2(vFragDepth) * logDepthBufFC * 0.5;
 
     #endif
+
+    gl_FragColor = vec4( 1.0, 0.3, 0.0, 1.0);
+
+
 
     if(pickingRender == 1)
     {
@@ -166,7 +159,7 @@ void main() {
     #endif
     if(selected == 1 && (vUv_0.x < borderS || vUv_0.x > 1.0 - borderS || vUv_0.y < borderS || vUv_0.y > 1.0 - borderS))
         gl_FragColor = vec4( 1.0, 0.3, 0.0, 1.0);
-    else
+   else
     {
         vec2 uvPM ;
         uvPM.x           = vUv_0.x;
@@ -207,12 +200,11 @@ void main() {
 
             for (int layer = 0; layer < 8; layer++)
             {
-
-                if(layer == nColorLayer)
+               if(layer == nColorLayer)
                     break;
 
-                params = getParam(layer);
-                paramsB = getParamB(layer);
+                params = paramLayers[layer];
+                paramsB = paramBLayers[layer];
 
                 if(params.z == 1.0 && params.w > 0.0)
                 {
@@ -225,7 +217,7 @@ void main() {
                         if(paramsB.x > 0.0)
                         {
                             float a = (diffuseColor2.r + diffuseColor2.g + diffuseColor2.b)/3.0;
-                            lum = 1.0-pow(a,paramsB.x);
+                            lum = 1.0-pow(abs(a),paramsB.x);
                             if(paramsB.x > 1.0)
                                 diffuseColor2*= diffuseColor2*diffuseColor2;
                         }
@@ -246,6 +238,7 @@ void main() {
                  gl_FragColor = diffuseColor;
 
             }
+
         }
 
         if(lightingOn == 1){   // Add lighting

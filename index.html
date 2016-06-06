@@ -32,7 +32,7 @@ and open the template in the editor.
         <div id="viewerDiv"></div>
         <script src="dist/itowns2.js"> </script>
         <script type="text/javascript">
-
+                
                var initCenter = { lon:2.3465, lat: 48.88, alt: 25000000};
 
                // iTowns namespace defined here
@@ -40,15 +40,15 @@ and open the template in the editor.
                var viewerDiv = document.getElementById("viewerDiv");
 
                itowns.viewer.createSceneGlobe(initCenter, viewerDiv) ;
-
+               //console.log(itowns.viewer.pickPosition());
+               
               itowns.viewer.addImageryLayer({
                 protocol:   "wmts",
-                id:         "IGNPO",
+                id:         "Ortho",
                 url:        "http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/geoportail/wmts",
                 wmtsOptions: {
                         //name:'GEOGRAPHICALGRIDSYSTEMS.MAPS',
                         name: "ORTHOIMAGERY.ORTHOPHOTOS",
-
                         mimetype: "image/jpeg",
                         tileMatrixSet: "PM",
                         tileMatrixSetLimits: {
@@ -184,7 +184,7 @@ and open the template in the editor.
 
                 itowns.viewer.addImageryLayer({
                 protocol:   "wmts",
-                id:         "IGNPO2",
+                id:         "OrthoCRS",
                 url:        "http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/geoportail/wmts",
                 fx :        1.0,
                 wmtsOptions: {
@@ -271,7 +271,7 @@ and open the template in the editor.
 
                 itowns.viewer.addImageryLayer({
                 protocol:   "wmts",
-                id:         "IGNPO1",
+                id:         "ScanEX",
                 url:        "http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/geoportail/wmts",
                 fx :        2.5,
                 wmtsOptions: {
@@ -365,6 +365,14 @@ and open the template in the editor.
                         }
                     }
                 });
+
+
+        // itowns.viewer.addImageryLayer({
+        //         protocol:   "wmtsc",
+        //         id:         "DARK",
+        //         customUrl:  "http://a.basemaps.cartocdn.com/dark_all/%TILEMATRIX/%COL/%ROW.png",
+        //         wmtsOptions: { tileMatrixSet: "PM"}
+        //     });
 
 
 
@@ -509,25 +517,16 @@ and open the template in the editor.
                         }
                 }
             });
-
+            
         itowns.viewer.update();
+        
 
 
                // THIS IS AN EXAMPLE OF INTERFACE TO INTERACT WITH ITOWNS
                var Menu = function() {
                    this.CloudsIR = false;
-
-                   this.Ortho = true;
-                   this.OrthoOpacity = 1.0;
-
-                   this.Carte = false;
-                   this.CarteOpacity = 1.0;
-
-                   this.CRS = false;
-                   this.CRSOpacity = 1.0;
-
                    this.RealisticLighting = false;
-                   this.StreetLevelImagery = false;
+                   //this.StreetLevelImagery = false;
                    this.KML = false;
                    this.Layer = "OrthoGeoportail";
                    this.api = function(){
@@ -536,32 +535,56 @@ and open the template in the editor.
                };
                var text = new Menu();
 
-               itowns.viewer.setLayerVibility("IGNPO",text.Ortho);
-               itowns.viewer.setLayerVibility("IGNPO1",text.Carte);
-               itowns.viewer.setLayerVibility("IGNPO2",text.CRS);
+
+
+
+               //  console.log(text);
+               // itowns.viewer.setLayerVibility("IGNPO",text.Ortho);
+               // itowns.viewer.setLayerVibility("IGNPO1",text.Carte);
+               // itowns.viewer.setLayerVibility("IGNPO2",text.CRS);
 
                var gui = new dat.GUI( { autoPlace: false } );
                gui.domElement.id = 'menuDiv';
                viewerDiv.appendChild(gui.domElement);
-               // gui.close();
 
-               gui.add(text, 'Layer', [ 'OrthoGeoportail', 'DarkMatterOSM' ] ).onChange(function(newValue) {
+                var layers = itowns.viewer.getLayers();
+                for(var id in layers)
+                {
+                    var idLayer = id;
 
-                        var layer, baseUrl;
-                        switch(newValue){
-                            case "OrthoGeoportail": layer   = "ORTHOIMAGERY.ORTHOPHOTOS";
-                                                    baseUrl = "http://wxs.ign.fr/";
-                                                    break;
+                    if(layers[id].mimetype != "image/x-bil;bits=32")
+                    {
 
-                            case "DarkMatterOSM"  : layer   = "dark_all/";
-                                                    baseUrl = "http://a.basemaps.cartocdn.com/";
-                                                    break;
-                            case "OpenStreetMap":   layer   = "osmfr";
-                                                    baseUrl = "http://tile.openstreetmap.fr/";
-                                                    break;
-                        }
-			             itowns.viewer.setLayerAtLevel(baseUrl,layer,0);  // set layer at level n (0 -> top)
-               });
+
+                        text[idLayer] = true;
+                        text[idLayer+'_Opacity'] = 1.0;
+
+                        var onchangeVisibily = function(id)
+                        {
+                            return function(newValue)
+                            {
+                                itowns.viewer.setLayerVibility(id,newValue);
+                            };
+
+                        }(idLayer);
+
+
+                        var onchangeOpacity = function(id)
+                        {
+                            return function(newValue) {
+
+                                var opacity = Math.max(0,Math.min(newValue,1.0));
+                                itowns.viewer.setLayerOpacity(id,opacity);
+
+                            };
+
+                        }(idLayer);
+
+                        gui.add(text, idLayer).onChange( onchangeVisibily).name(idLayer);
+                        gui.add(text, idLayer + '_Opacity').min(0.0).max(1.0).name(idLayer + ' opacity').onChange(onchangeOpacity);
+
+                    }
+                }
 
                 gui.add(text, 'CloudsIR').onChange(function(newValue) {
 			           itowns.viewer.showClouds(newValue);
@@ -572,54 +595,24 @@ and open the template in the editor.
 			           itowns.viewer.setRealisticLightingOn(newValue);
                 });
 
-                gui.add(text, 'Ortho').onChange(function(newValue) {
-
-                       itowns.viewer.setLayerVibility("IGNPO",newValue);
-                });
-
-
-                gui.add(text, 'Carte').onChange(function(newValue) {
-
-                       itowns.viewer.setLayerVibility("IGNPO1",newValue);
-                });
-
-                gui.add(text, 'CRS').onChange(function(newValue) {
-
-                       itowns.viewer.setLayerVibility("IGNPO2",newValue);
-                });
-
-                gui.add(text, 'OrthoOpacity', 0.0, 1.0).onChange(function(newValue) {
-
-
-                    var opacity = Math.max(0,Math.min(newValue,1.0));
-                    itowns.viewer.setLayerOpacity("IGNPO",opacity);
-                });
-
-
-                gui.add(text, 'CarteOpacity', 0.0, 1.0).onChange(function(newValue) {
-
-
-                    var opacity = Math.max(0,Math.min(newValue,1.0));
-                    itowns.viewer.setLayerOpacity("IGNPO1",opacity);
-                });
-
-                gui.add(text, 'CRSOpacity', 0.0, 1.0).onChange(function(newValue) {
-
-                    var opacity = Math.max(0,Math.min(newValue,1.0));
-                    itowns.viewer.setLayerOpacity("IGNPO2",opacity);
-                });
-
                 gui.add(text, 'KML').onChange(function(newValue) {
                     itowns.viewer.showKML(newValue);
                 });
 
-                gui.add(text, 'api');
+                //gui.add(text, 'Launch test api');
 
-                gui.add(text, 'StreetLevelImagery').onChange(function(newValue) {
-			         itowns.viewer.setStreetLevelImageryOn(newValue);
-                });
+            //     gui.add(text, 'StreetLevelImagery').onChange(function(newValue) {
+			         // itowns.viewer.setStreetLevelImageryOn(newValue);
+            //     });
 
+                document.addEventListener('loaded',function(){ 
+                    console.log("LOADED"); 
+                    //console.log(itowns.viewer.getMaxZoomLevel("IGNPO"));
+                    //console.log(itowns.viewer.getMinZoomLevel("IGN_MNT"));
+                    } , 
+                false);
 
+                //itowns.viewer.setCenter({lon:-74,lat:40,alt:0});
         </script>
     </body>
 </html>

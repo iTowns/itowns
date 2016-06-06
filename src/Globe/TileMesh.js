@@ -112,6 +112,11 @@ define('Globe/TileMesh', [
         this.material = null;
     };
 
+    TileMesh.prototype.setParamsColor = function(nbTexturesColor,paramsTextureColor) {
+
+        this.texturesNeeded += nbTexturesColor;
+        this.material.setParam(paramsTextureColor);
+    };
     /**
     *
 
@@ -319,6 +324,11 @@ define('Globe/TileMesh', [
             return !this.parent.downScaledLayer(layer) ? this.parent : this.parent.getParentNotDownScaled(layer);
         else
             return null;
+    };
+
+    TileMesh.prototype.getLevelNotDownScaled = function()
+    {
+        return (this.getParentNotDownScaled(1) || this).level;
     };
 
     TileMesh.prototype.allTexturesAreLoaded = function(){
