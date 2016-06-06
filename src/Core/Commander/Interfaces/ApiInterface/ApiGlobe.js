@@ -23,6 +23,10 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
            CoordCarto,
            Projection) {
 
+    var loaded = false;
+    var eventLoaded = new Event('loaded');
+
+
     function ApiGlobe() {
         //Constructor
 
@@ -36,6 +40,22 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
 
     ApiGlobe.prototype.constructor = ApiGlobe;
 
+
+    document.addEventListener('build', function(){
+
+        //        var event = new Event('empty');
+        //        document.addEventListener('empty', console.log('Your turn'));
+            if(loaded == false)
+            {
+
+                loaded = true;
+                document.dispatchEvent(eventLoaded);
+            }
+        }
+        , false);
+//    var event = new Event('empty');
+//    document.addEventListener('empty', console.log('Your turn'));
+//    document.dispatchEvent(event);
 
     /**
      * @param Command
@@ -230,8 +250,8 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
     */
     ApiGlobe.prototype.getCameraOrientation = function () {
 
-        var tiltCam = this.scene.currentControls().getTiltCamera();
-        var headingCam = this.scene.currentControls().getHeadingCamera();
+        var tiltCam = this.scene.currentControls().getTilt();
+        var headingCam = this.scene.currentControls().getHeading();
         return [tiltCam, headingCam];
     };
 
@@ -397,8 +417,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
     */
 
     ApiGlobe.prototype.computeDistance = function(p1,p2){
-
-        this.scene.getEllipsoid().computeDistance(p1,p2);
+        return this.scene.getEllipsoid().computeDistance(new CoordCarto().setFromDegreeGeo(p1.lon, p1.lat, p1.alt),new CoordCarto().setFromDegreeGeo(p2.lon, p2.lat, p2.alt));
     };
 
     /**
@@ -408,7 +427,8 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
     */
 
     ApiGlobe.prototype.setCenter = function (position) {
-        var position3D = this.scene.getEllipsoid().cartographicToCartesian(position);
+//        var position3D = this.scene.getEllipsoid().cartographicToCartesian(position);
+        var position3D = this.scene.getEllipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(position.lon, position.lat, position.alt));
         this.scene.currentControls().setCenter(position3D);
     };
 
@@ -421,7 +441,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
 
     ApiGlobe.prototype.setCenterAdvanced = function (pPosition/*, pDisableAnimationopt*/ ){
         this.setCenter(pPosition.position);
-//        this.setRange(pPosition.range);
+        this.setRange(pPosition.range);
         this.setHeading(pPosition.heading);
         this.setTilt(pPosition.tilt);
     };
@@ -459,17 +479,17 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
 //        this.resetHeading();
 //        var p1 = new CoordCarto(2.4347047,48.8472568,0);
 //        var p2 = new CoordCarto(2.4345599,48.8450221,0);
-//        this.computeDistance(p1, p2);
+//        console.log(this.computeDistance({lon:2.4347047,lat:48.8472568,alt:0},{lon:2.4345599,lat:48.8450221,alt:0}));
 //
         //var p = new CoordCarto(-74.0059700 ,40.7142700,0); //NY
 
 //        var p = new CoordCarto().setFromDegreeGeo(coordCarto.lon, coordCarto.lat, coordCarto.alt))
-//        var p = new CoordCarto().setFromDegreeGeo( -74.0059700, 40.7142700,0); //NY
+//        var p = new CoordCarto().setFromDegreeGeo(2,20,0); //NY
 //
 //        this.setCenter(p);
 //        var p2 = new CoordCarto().setFromDegreeGeo(2.4347047,48.8472568,0); //Paris
 //        this.setCenter(p2);
-//
+//        this.setCenter({lon:-74,lat:40, alt:0});
 //        this.testTilt();
 //        this.testHeading();
         //console.log("range 1  " + this.getRange());
