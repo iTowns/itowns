@@ -366,13 +366,18 @@ define('Core/Commander/Providers/WMTS_Provider', [
             var levelParent = tile.getLevelNotDownScaled();
             return (levelParent < layer.zoom.min ? tile.level : levelParent) + (layer.tileMatrixSet === 'PM' ? 1 : 0);
 
+        }
 
+        WMTS_Provider.prototype.tileInsideLimit = function(tile,layer) {
+
+            //var limits = layer.tileMatrixSetLimits[tile.level];
+            //!coWMTS.isInside(limits)
+            return tile.level >= layer.zoom.min && tile.level <= layer.zoom.max;
         }
 
         WMTS_Provider.prototype.getColorTextures = function(tile,layerWMTSId) {
 
             var promises = [];
-            var nbTotalTex = 0;
             var paramMaterial = [];
             var lookAtAncestor = tile.material.getLevelLayerColor(1) === -1;
 
@@ -380,19 +385,14 @@ define('Core/Commander/Providers/WMTS_Provider', [
 
                 var layer = this.layersWMTS[layerWMTSId[i]];
 
-                //var limits = layer.tileMatrixSetLimits[tile.level];
-                //!coWMTS.isInside(limits)
-
-                if (tile.level >= layer.zoom.min && tile.level <= layer.zoom.max)
+                if (this.tileInsideLimit(tile,layer))
                 {
+                    var bcoord = tile.WMTSs[layer.tileMatrixSet];
+                    paramMaterial.push({tileMT:layer.tileMatrixSet,pit:promises.length,fx:layer.fx});
 
-                    var box = tile.WMTSs[layer.tileMatrixSet];
-                    paramMaterial.push({tileMT:layer.tileMatrixSet,pit:nbTotalTex,fx:layer.fx});
-                    nbTotalTex += box[1].row - box[0].row + 1;
+                    for (var row = bcoord[0].row; row < bcoord[1].row + 1; row++) {
 
-                    for (var row = box[0].row; row < box[1].row + 1; row++) {
-
-                       var cooWMTS = new CoordWMTS(box[0].zoom, row, box[0].col);
+                       var cooWMTS = new CoordWMTS(bcoord[0].zoom, row, bcoord[0].col);
                        var pitch = new THREE.Vector3(0.0,0.0,1.0);
 
                        if(lookAtAncestor)
@@ -405,10 +405,7 @@ define('Core/Commander/Providers/WMTS_Provider', [
             }
 
             if (lookAtAncestor)
-            {
-                tile.texturesNeeded += nbTotalTex;
-                tile.material.setParam(paramMaterial,nbTotalTex);
-            }
+                tile.setParamsColor(promises.length,paramMaterial);
 
             if (promises.length)
                 return when.all(promises);
