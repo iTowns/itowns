@@ -44,12 +44,11 @@ and open the template in the editor.
                
               itowns.viewer.addImageryLayer({
                 protocol:   "wmts",
-                id:         "IGNPO",
+                id:         "Ortho",
                 url:        "http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/geoportail/wmts",
                 wmtsOptions: {
                         //name:'GEOGRAPHICALGRIDSYSTEMS.MAPS',
                         name: "ORTHOIMAGERY.ORTHOPHOTOS",
-
                         mimetype: "image/jpeg",
                         tileMatrixSet: "PM",
                         tileMatrixSetLimits: {
@@ -183,11 +182,98 @@ and open the template in the editor.
                     }
                 });
 
+                itowns.viewer.addImageryLayer({
+                protocol:   "wmts",
+                id:         "OrthoCRS",
+                url:        "http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/geoportail/wmts",
+                fx :        1.0,
+                wmtsOptions: {
+                        name: 'ORTHOIMAGERY.ORTHOPHOTOS.CRS84',
+                        mimetype: "image/jpeg",
+                        tileMatrixSet: "WGS84G",
+                        tileMatrixSetLimits: {
+
+                            '6' : {
+                                'minTileRow' : 13,
+                                'maxTileRow' : 39,
+                                'minTileCol' : 0,
+                                'maxTileCol' : 83,
+                            },
+                            '7' : {
+                                'minTileRow' : 27,
+                                'maxTileRow' : 79,
+                                'minTileCol' : 1,
+                                'maxTileCol' : 167,
+                            },
+                            '8' : {
+                                'minTileRow' : 55,
+                                'maxTileRow' : 158,
+                                'minTileCol' : 2,
+                                'maxTileCol' : 335,
+                            },
+                            '9' : {
+                                'minTileRow' : 110,
+                                'maxTileRow' : 316,
+                                'minTileCol' : 5,
+                                'maxTileCol' : 670
+                            },
+                            '10' : {
+                                'minTileRow' : 221,
+                                'maxTileRow' : 633,
+                                'minTileCol' : 10,
+                                'maxTileCol' : 1341,
+                            },
+                            '11' : {
+                                'minTileRow' : 442,
+                                'maxTileRow' : 1267,
+                                'minTileCol' : 20,
+                                'maxTileCol' : 2683,
+                            },
+                            '12' : {
+                                'minTileRow' : 885,
+                                'maxTileRow' : 2534,
+                                'minTileCol' : 41,
+                                'maxTileCol' : 5366,
+                            },
+                            '13' : {
+                                'minTileRow' : 1770,
+                                'maxTileRow' : 5069,
+                                'minTileCol' : 82,
+                                'maxTileCol' : 10733,
+                            },
+                            '14' : {
+                                'minTileRow' : 3541,
+                                'maxTileRow' : 10139,
+                                'minTileCol' : 165,
+                                'maxTileCol' : 21467,
+                            },
+                            '15' : {
+                                'minTileRow' : 7082,
+                                'maxTileRow' : 20279,
+                                'minTileCol' : 330,
+                                'maxTileCol' : 42934,
+                            },
+                            '16' : {
+                                'minTileRow' : 14165,
+                                'maxTileRow' : 40559,
+                                'minTileCol' : 660,
+                                'maxTileCol' : 85868,
+                            },
+                            '17' : {
+                                'minTileRow' : 28330,
+                                'maxTileRow' : 81118,
+                                'minTileCol' : 1320,
+                                'maxTileCol' : 171736,
+                            }
+                        }
+                    }
+                });
 
                 itowns.viewer.addImageryLayer({
                 protocol:   "wmts",
-                id:         "IGNPO1",
+                id:         "ScanEX",
                 url:        "http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/geoportail/wmts",
+                fx :        2.5,
                 wmtsOptions: {
                         //name:'GEOGRAPHICALGRIDSYSTEMS.MAPS',
                         // name: 'GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN-EXPRESS.ROUTIER',
@@ -195,6 +281,7 @@ and open the template in the editor.
                         //name: "GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN-EXPRESS.NIVEAUXGRIS",
                         //mimetype: "image/png",
                         mimetype: "image/jpeg",
+
                         tileMatrixSet: "PM",
                         tileMatrixSetLimits: {
                           '6' : {
@@ -280,91 +367,13 @@ and open the template in the editor.
                 });
 
 
-                itowns.viewer.addImageryLayer({
-                protocol:   "wmts",
-                id:         "IGNPO2",
-                url:        "http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/geoportail/wmts",
-                wmtsOptions: {
-                        name: 'ORTHOIMAGERY.ORTHOPHOTOS.CRS84',
-                        mimetype: "image/jpeg",
-                        tileMatrixSet: "WGS84G",
-                        tileMatrixSetLimits: {
+        // itowns.viewer.addImageryLayer({
+        //         protocol:   "wmtsc",
+        //         id:         "DARK",
+        //         customUrl:  "http://a.basemaps.cartocdn.com/dark_all/%TILEMATRIX/%COL/%ROW.png",
+        //         wmtsOptions: { tileMatrixSet: "PM"}
+        //     });
 
-                            '6' : {
-                                'minTileRow' : 13,
-                                'maxTileRow' : 39,
-                                'minTileCol' : 0,
-                                'maxTileCol' : 83,
-                            },
-                            '7' : {
-                                'minTileRow' : 27,
-                                'maxTileRow' : 79,
-                                'minTileCol' : 1,
-                                'maxTileCol' : 167,
-                            },
-                            '8' : {
-                                'minTileRow' : 55,
-                                'maxTileRow' : 158,
-                                'minTileCol' : 2,
-                                'maxTileCol' : 335,
-                            },
-                            '9' : {
-                                'minTileRow' : 110,
-                                'maxTileRow' : 316,
-                                'minTileCol' : 5,
-                                'maxTileCol' : 670
-                            },
-                            '10' : {
-                                'minTileRow' : 221,
-                                'maxTileRow' : 633,
-                                'minTileCol' : 10,
-                                'maxTileCol' : 1341,
-                            },
-                            '11' : {
-                                'minTileRow' : 442,
-                                'maxTileRow' : 1267,
-                                'minTileCol' : 20,
-                                'maxTileCol' : 2683,
-                            },
-                            '12' : {
-                                'minTileRow' : 885,
-                                'maxTileRow' : 2534,
-                                'minTileCol' : 41,
-                                'maxTileCol' : 5366,
-                            },
-                            '13' : {
-                                'minTileRow' : 1770,
-                                'maxTileRow' : 5069,
-                                'minTileCol' : 82,
-                                'maxTileCol' : 10733,
-                            },
-                            '14' : {
-                                'minTileRow' : 3541,
-                                'maxTileRow' : 10139,
-                                'minTileCol' : 165,
-                                'maxTileCol' : 21467,
-                            },
-                            '15' : {
-                                'minTileRow' : 7082,
-                                'maxTileRow' : 20279,
-                                'minTileCol' : 330,
-                                'maxTileCol' : 42934,
-                            },
-                            '16' : {
-                                'minTileRow' : 14165,
-                                'maxTileRow' : 40559,
-                                'minTileCol' : 660,
-                                'maxTileCol' : 85868,
-                            },
-                            '17' : {
-                                'minTileRow' : 28330,
-                                'maxTileRow' : 81118,
-                                'minTileCol' : 1320,
-                                'maxTileCol' : 171736,
-                            }
-                        }
-                    }
-                });
 
 
         itowns.viewer.addElevationLayer({
@@ -511,43 +520,71 @@ and open the template in the editor.
             
         itowns.viewer.update();
         
+
+
                // THIS IS AN EXAMPLE OF INTERFACE TO INTERACT WITH ITOWNS
                var Menu = function() {
                    this.CloudsIR = false;
-                   this.Carte = false;
-                   this.CarteOpacity = 1.0;
                    this.RealisticLighting = false;
-                   this.StreetLevelImagery = false;
+                   //this.StreetLevelImagery = false;
                    this.KML = false;
                    this.Layer = "OrthoGeoportail";
                    this.api = function(){
                         itowns.viewer.launchCommandApi();
                    };
                };
-
                var text = new Menu();
+
+
+
+
+               //  console.log(text);
+               // itowns.viewer.setLayerVibility("IGNPO",text.Ortho);
+               // itowns.viewer.setLayerVibility("IGNPO1",text.Carte);
+               // itowns.viewer.setLayerVibility("IGNPO2",text.CRS);
+
                var gui = new dat.GUI( { autoPlace: false } );
                gui.domElement.id = 'menuDiv';
                viewerDiv.appendChild(gui.domElement);
-               // gui.close();
 
-               gui.add(text, 'Layer', [ 'OrthoGeoportail', 'DarkMatterOSM' ] ).onChange(function(newValue) {
+                var layers = itowns.viewer.getLayers();
+                for(var id in layers)
+                {
+                    var idLayer = id;
 
-                        var layer, baseUrl;
-                        switch(newValue){
-                            case "OrthoGeoportail": layer   = "ORTHOIMAGERY.ORTHOPHOTOS";
-                                                    baseUrl = "http://wxs.ign.fr/";
-                                                    break;
+                    if(layers[id].mimetype != "image/x-bil;bits=32")
+                    {
 
-                            case "DarkMatterOSM"  : layer   = "dark_all/";
-                                                    baseUrl = "http://a.basemaps.cartocdn.com/";
-                                                    break;
-                            case "OpenStreetMap":   layer   = "osmfr";
-                                                    baseUrl = "http://tile.openstreetmap.fr/";
-                                                    break;
-                        }
-			             itowns.viewer.setLayerAtLevel(baseUrl,layer,0);  // set layer at level n (0 -> top)
-               });
+
+                        text[idLayer] = true;
+                        text[idLayer+'_Opacity'] = 1.0;
+
+                        var onchangeVisibily = function(id)
+                        {
+                            return function(newValue)
+                            {
+                                itowns.viewer.setLayerVibility(id,newValue);
+                            };
+
+                        }(idLayer);
+
+
+                        var onchangeOpacity = function(id)
+                        {
+                            return function(newValue) {
+
+                                var opacity = Math.max(0,Math.min(newValue,1.0));
+                                itowns.viewer.setLayerOpacity(id,opacity);
+
+                            };
+
+                        }(idLayer);
+
+                        gui.add(text, idLayer).onChange( onchangeVisibily).name(idLayer);
+                        gui.add(text, idLayer + '_Opacity').min(0.0).max(1.0).name(idLayer + ' opacity').onChange(onchangeOpacity);
+
+                    }
+                }
 
                 gui.add(text, 'CloudsIR').onChange(function(newValue) {
 			           itowns.viewer.showClouds(newValue);
@@ -558,32 +595,21 @@ and open the template in the editor.
 			           itowns.viewer.setRealisticLightingOn(newValue);
                 });
 
-                gui.add(text, 'Carte').onChange(function(newValue) {
-
-                       itowns.viewer.setLayerVibility("IGNPO1",newValue);
-                });
-
-                gui.add(text, 'CarteOpacity', 0.0, 1.0).onChange(function(newValue) {
-
-
-                    var opacity = Math.max(0,Math.min(newValue,1.0));
-                    itowns.viewer.setLayerOpacity("IGNPO1",opacity);
-                });
-
                 gui.add(text, 'KML').onChange(function(newValue) {
                     itowns.viewer.showKML(newValue);
                 });
 
-                gui.add(text, 'api');
+                //gui.add(text, 'Launch test api');
 
-                gui.add(text, 'StreetLevelImagery').onChange(function(newValue) {
-			         itowns.viewer.setStreetLevelImageryOn(newValue);
-                });
+            //     gui.add(text, 'StreetLevelImagery').onChange(function(newValue) {
+			         // itowns.viewer.setStreetLevelImageryOn(newValue);
+            //     });
 
                 document.addEventListener('loaded',function(){ 
                     console.log("LOADED"); 
-                    console.log(itowns.viewer.getMaxZoomLevel("IGNPO"));
-                    console.log(itowns.viewer.getMinZoomLevel("IGN_MNT"));} , 
+                    //console.log(itowns.viewer.getMaxZoomLevel("IGNPO"));
+                    //console.log(itowns.viewer.getMinZoomLevel("IGN_MNT"));
+                    } , 
                 false);
 
                 //itowns.viewer.setCenter({lon:-74,lat:40,alt:0});
