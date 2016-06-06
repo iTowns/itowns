@@ -57,6 +57,11 @@ define('Globe/TileMesh', [
         this.frustumCulled = false;
         this.levelElevation = this.level;
 
+
+        // TEMP
+
+        this.delta = 1;
+
         // TODO not generic
         for (var i = 0; i < groupelevation.length; i++) {
             var gLev = groupelevation[i];
@@ -99,8 +104,6 @@ define('Globe/TileMesh', [
 
     };
 
-
-
     TileMesh.prototype.dispose = function() {
         // TODO à mettre dans node mesh
         this.material.dispose();
@@ -109,6 +112,11 @@ define('Globe/TileMesh', [
         this.material = null;
     };
 
+    TileMesh.prototype.setParamsColor = function(nbTexturesColor,paramsTextureColor) {
+
+        this.texturesNeeded += nbTexturesColor;
+        this.material.setParam(paramsTextureColor);
+    };
     /**
     *
 
@@ -275,7 +283,7 @@ define('Globe/TileMesh', [
                 return this.currentElevation < this.levelElevation ;
 
         else if(id === l_COLOR)
-            return this.material.getLevelLayerColor(l_COLOR) < this.level + 1;
+            return this.material.getLevelLayerColor(l_COLOR) < this.level + this.delta;
 
         return false;
     };
@@ -316,6 +324,11 @@ define('Globe/TileMesh', [
             return !this.parent.downScaledLayer(layer) ? this.parent : this.parent.getParentNotDownScaled(layer);
         else
             return null;
+    };
+
+    TileMesh.prototype.getLevelNotDownScaled = function()
+    {
+        return (this.getParentNotDownScaled(1) || this).level;
     };
 
     TileMesh.prototype.allTexturesAreLoaded = function(){

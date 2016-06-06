@@ -103,12 +103,6 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
 
         var idLayerTile = map.colorTerrain.children.length;
 
-        if(map.colorTerrain.children.length === 1)
-        {
-
-            subLayer.visible = false;
-        }
-
         subLayer.description = {style:{layerTile:idLayerTile}};
 
         map.colorTerrain.add(subLayer);
@@ -128,6 +122,16 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         var providerWMTS = manager.getProvider(map.tiles).providerWMTS;
         var layerWMTS = providerWMTS.layersWMTS;
         return layerWMTS[id].zoom.min;
+    };
+
+    ApiGlobe.prototype.getLayers = function(/*param*/){
+
+        var map = this.scene.getMap();
+        var manager = this.scene.managerCommand;
+        var providerWMTS = manager.getProvider(map.tiles).providerWMTS;
+        var layersWMTS = providerWMTS.layersWMTS;
+        return layersWMTS;
+
     };
 
     /**
