@@ -321,6 +321,11 @@ define('Globe/TileMesh', [
             return null;
     };
 
+    TileMesh.prototype.getLevelNotDownScaled = function()
+    {
+        return (this.getParentNotDownScaled(1) || this).level;
+    };
+
     TileMesh.prototype.allTexturesAreLoaded = function(){
         return this.texturesNeeded === this.material.nbLoadedTextures();
     };
