@@ -112,6 +112,12 @@ define('Globe/TileMesh', [
         this.material = null;
     };
 
+
+    TileMesh.prototype.setParamsColor = function(nbTexturesColor,paramsTextureColor) {
+
+        this.texturesNeeded += nbTexturesColor;
+        this.material.setParam(paramsTextureColor);
+    };
     /**
     *
 
