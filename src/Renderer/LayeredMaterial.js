@@ -155,6 +155,17 @@ define('Renderer/LayeredMaterial', ['THREE',
 
     };
 
+    LayeredMaterial.prototype.setParam = function(param)
+    {
+        this.uniforms.nColorLayer.value = param.length;
+        for (var l = 0; l < param.length; l++)
+        {
+            this.paramLayers[l].y = param[l].tileMT  === 'PM' ? 1 : 0 ;
+            this.paramLayers[l].x = param[l].pit;
+            this.paramBLayers[l].x = param[l].fx;
+        }
+    }
+
     LayeredMaterial.prototype.setTexturesLayer = function(textures, layer){
 
         for (var i = 0, max = textures.length; i < max; i++) {
