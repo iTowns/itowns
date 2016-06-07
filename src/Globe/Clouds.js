@@ -1,4 +1,4 @@
-/* 
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -14,7 +14,7 @@ define('Globe/Clouds', ['Renderer/NodeMesh',
     'Renderer/Shader/CloudsVS.glsl'
 ], function(NodeMesh, THREE, gfxEngine, defaultValue, WMS_Provider, CloudsFS, CloudsVS) {
 
-    function Clouds(size) {
+    function Clouds(/*size*/) {
 
         NodeMesh.call(this);
 
@@ -73,7 +73,7 @@ define('Globe/Clouds', ['Renderer/NodeMesh',
     Clouds.prototype.generate = function(satelliteAnimation) {
 
         this.satelliteAnimation = satelliteAnimation;
-        if(!satelliteAnimation){   
+        if(!satelliteAnimation){
             this.live = true;
             var coWMS = {
                 latBound: new THREE.Vector2(-85, 85),
@@ -91,7 +91,7 @@ define('Globe/Clouds', ['Renderer/NodeMesh',
             }.bind(this));
 
         }else{
-            
+
             this.live = true;
             var video = document.getElementById( 'video' );
 
@@ -107,23 +107,23 @@ define('Globe/Clouds', ['Renderer/NodeMesh',
             this.animate();
 
         }
-        
+
     };
-    
-   
+
+
 
     Clouds.prototype.animate = function() {
 
         if(!this.satelliteAnimation) this.material.uniforms.time.value += 0.01;
         requestAnimationFrame(this.animate.bind(this));
     };
-    
+
     Clouds.prototype.setLightingOn = function(enable){
          this.material.uniforms.lightingOn.value = enable === true ? 1 : 0;
     };
-    
+
     Clouds.prototype.updateLightingPos = function(pos){
-        
+
          this.material.uniforms.lightPosition.value = pos.clone().normalize();
     };
 

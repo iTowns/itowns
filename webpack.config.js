@@ -1,5 +1,10 @@
 var path = require('path');
 
+
+// THREE js replace
+//"three": "^0.74.0" -> "three": "mrdoob/three.js#35a5994828da7cebc0d8442062f784b3f9e1f818",
+//                                               #idcommit
+
 module.exports = {
   entry: path.resolve(__dirname, 'src/Main.js'),
   devtool: 'source-map',
@@ -37,6 +42,10 @@ module.exports = {
             'THREE': 'three'
         }
       }
+    ],
+    noParse: [
+            /js-priority-queue[\\\/]file\.js$/,
+            path.join(__dirname, "node_modules", "js-priority-queue")
     ]
   },
   resolve: {
@@ -44,16 +53,16 @@ module.exports = {
     extensions: ['', '.js'],
     alias: {
       THREE:         'three',
+      OBB:           'Renderer/ThreeExtented/OBB',
+      OBBHelper:     'Renderer/ThreeExtented/OBBHelper',
+      SphereHelper:  'Renderer/ThreeExtented/SphereHelper',
       PriorityQueue: 'js-priority-queue',
       'Renderer/ThreeExtented/jszip.min': 'jszip',
       'Renderer/ThreeExtented/ColladaLoader': 'ColladaLoader',
       ColladaLoader: 'three/examples/js/loaders/ColladaLoader',
-      OrbitControls: 'three/examples/js/controls/OrbitControls',
       GlobeControls: 'Renderer/ThreeExtented/GlobeControls',
-      OBB:           'Renderer/ThreeExtented/OBB',
-      OBBHelper:     'Renderer/ThreeExtented/OBBHelper',
-      SphereHelper:  'Renderer/ThreeExtented/SphereHelper',
-      StarGeometry:  'Renderer/ThreeExtented/StarGeometry'
+      StarGeometry:  'Renderer/ThreeExtented/StarGeometry',
+      Sky:           'Globe/SkyShader'
     }
   },
   devServer: {

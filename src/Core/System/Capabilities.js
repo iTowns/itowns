@@ -18,16 +18,18 @@ define('Core/System/Capabilities', [], function() {
     /**
      */
     Capabilities.prototype.getSystemCapabilities = function() {
-        //TODO: Implement Me 
+        //TODO: Implement Me
+        /*
         var memory = window.performance.memory;
         console.log(memory.totalJSHeapSize / (1024 * 1024) + '/' + memory.jsHeapSizeLimit / (1024 * 1024));
+        */
     };
 
 
     /**
      */
     Capabilities.prototype.getGpuCapabilities = function() {
-        //TODO: Implement Me 
+        //TODO: Implement Me
 
     };
 
@@ -35,7 +37,7 @@ define('Core/System/Capabilities', [], function() {
     /**
      */
     Capabilities.prototype.ioFile = function() {
-        //TODO: Implement Me 
+        //TODO: Implement Me
 
     };
 
@@ -52,7 +54,7 @@ define('Core/System/Capabilities', [], function() {
 
       if ( ver > -1 )
       {
-        if ( ver >= 8.0 ) 
+        if ( ver >= 8.0 )
           msg = "You're using a recent copy of Internet Explorer.";
         else
           msg = "You should upgrade your copy of Internet Explorer.";

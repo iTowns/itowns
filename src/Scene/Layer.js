@@ -2,11 +2,11 @@
  * Generated On: 2015-10-5
  * Class: Layer
  * Description: Le layer est une couche de données. Cette couche peut etre des images ou de l'information 3D. Les requètes de cette couche sont acheminées par une interfaceCommander.
- * 
+ *
  */
 
 /**
- * 
+ *
  * @param {type} Node
  * @param {type} InterfaceCommander
  * @param {type} Projection
@@ -29,7 +29,8 @@ define('Scene/Layer', [
         this.interCommand = type !== undefined ? new InterfaceCommander(type, param) : undefined;
         this.descriManager = null;
         this.projection = new Projection();
-        this.layerId = Layer.count++;
+        this.id = Layer.count++;
+        this.services =[];
 
     }
 

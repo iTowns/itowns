@@ -21,15 +21,15 @@ vec3 normalES;
 vec3 normalCAMES;
 
 
-void main() 
+void main()
 {
-    
+
     vUv = uv;
     vNormal = normal;
     pos = position;
     gl_Position = projectionMatrix * modelViewMatrix * vec4( position,  1.0 );
 
-    
+
     #ifdef USE_LOGDEPTHBUF
 
         gl_Position.z = log2(max( EPSILON, gl_Position.w + 1.0 )) * logDepthBufFC;
@@ -45,7 +45,7 @@ void main()
         #endif
 
     #endif
-    
+
 }
 
 

@@ -11,7 +11,7 @@ varying vec2 vUv;
 
 void main (void)
 {
-	
+
 	//vec3 diffuseTex = texture2D( tDiffuse, vUv ).xyz;
 	//vec3 diffuseNightTex = texture2D( tDiffuseNight, vUv ).xyz;
 

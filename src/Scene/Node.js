@@ -24,6 +24,9 @@ define('Scene/Node', [], function() {
         this.screenSpaceError = 0.0;
         this.loaded = false;
         this.wait = false;
+        this.visible = true;
+        this.layer = null;
+
 
     }
 
@@ -31,7 +34,7 @@ define('Scene/Node', [], function() {
     /**
      * @documentation: Retourne le nombre d'enfants du Node
      *
-     * @return  {int} 
+     * @return  {int}
      */
     Node.prototype.childrenCount = function() {
 
@@ -47,41 +50,49 @@ define('Scene/Node', [], function() {
 
     Node.prototype.childrenLoaded = function() {
 
+        if(!this.wait && this.childrenCount() > 0)
+            return true;
+
         for (var i = 0, max = this.children.length; i < max; i++) {
             if (this.children[i].loaded === false)
                 return false;
         }
 
+        this.wait = false;
         return true;
     };
-
-
 
     /**
      * @documentation: Rafraichi le Node si le contenu ou  le style a été modifié.
      *
      */
     Node.prototype.update = function() {
-        //TODO: Implement Me 
+        //TODO: Implement Me
 
     };
 
     /**
-     * 
+     *
      * @param {type} level
      * @returns {undefined}
      */
     Node.prototype.getParentLevel = function(level) {
+
+        var functionToCheck = this.parent.getParentLevel;
+
+        if(!functionToCheck || !(typeof(functionToCheck) === 'function') && (this.parent.level !== level))
+            return undefined;
+
         return (this.parent.level === level) ? this.parent : this.parent.getParentLevel(level);
     };
 
     /**
      * @documentation: Méthode qui créer un memento de l'état de Node avant modification.
-     *
-     * @return  {[object Object]} 
+     *param
+     * @return  {[object Object]}
      */
     Node.prototype.hydrate = function() {
-        //TODO: Implement Me 
+        //TODO: Implement Me
 
     };
 
@@ -89,30 +100,33 @@ define('Scene/Node', [], function() {
     /**
      * @documentation: Cette méthode modifie l'état du node en fonction d'un memento.
      *
-     * @param mem {[object Object]} 
+     * @param mem {[object Object]}
      */
-    Node.prototype.dehydrate = function(mem) {
-        //TODO: Implement Me 
+    Node.prototype.dehydrate = function(/*mem*/) {
+        //TODO: Implement Me
 
     };
 
     /**
      * @documentation: Ajoute un enfant au Node.
      *
-     * @param child {[object Object]} 
+     * @param child {[object Object]}
      */
     Node.prototype.add = function(child) {
-        //TODO: Implement Me 
+        //TODO: Implement Me
         this.children.push(child);
+        child.parent = this;
+
+        child.layer = this;
     };
 
     /**
      * @documentation: Retire un enfant au node.
      *
-     * @param child {[object Object]} 
+     * @param child {[object Object]}
      */
-    Node.prototype.remove = function(child) {
-        //TODO: Implement Me 
+    Node.prototype.remove = function(/*child*/) {
+        //TODO: Implement Me
 
     };
 
@@ -120,7 +134,7 @@ define('Scene/Node', [], function() {
     /**
      * @documentation: Cette Méthode permet étendre un objet enfant des fonctions prototypes de Node.
      *
-     * @param childClass {Object} 
+     * @param childClass {Object}
      */
 
     Node.extend = function(childClass) {

@@ -7,10 +7,10 @@
 define('Scene/NodeProcess', ['Scene/BoundingBox', 'Renderer/Camera', 'Core/Math/MathExtented', 'THREE', 'Core/defaultValue'], function(BoundingBox, Camera, MathExt, THREE, defaultValue) {
 
 
-    function NodeProcess(camera3D, size, bbox) {
+    function NodeProcess(camera, size, bbox) {
         //Constructor
         this.camera = new Camera();
-        this.camera.camera3D = camera3D.clone();
+        this.camera.camera3D = camera.camera3D.clone();
 
         this.bbox = defaultValue(bbox, new BoundingBox(MathExt.PI_OV_TWO + MathExt.PI_OV_FOUR, MathExt.PI + MathExt.PI_OV_FOUR, 0, MathExt.PI_OV_TWO));
 
@@ -50,6 +50,16 @@ define('Scene/NodeProcess', ['Scene/BoundingBox', 'Renderer/Camera', 'Core/Math/
     };
 
     /**
+     * @documentation:
+     * @param  {type} node  : the node to try to cull
+     * @param  {type} camera: the camera used for culling
+     * @return {Boolean}      the culling attempt's result
+     */
+    NodeProcess.prototype.isCulled = function(node, camera) {
+        return !( this.frustumCullingOBB(node, camera)&&this.horizonCulling(node, camera));
+    };
+
+    /**
      * @documentation: Cull node with frustrum
      * @param {type} node   : node to cull
      * @param {type} camera : camera for culling
@@ -61,14 +71,37 @@ define('Scene/NodeProcess', ['Scene/BoundingBox', 'Renderer/Camera', 'Core/Math/
         return frustum.intersectsObject(node);
     };
 
+    NodeProcess.prototype.checkSSE = function(node, camera) {
+
+        return camera.SSE(node) > 6.0 || node.level <= 2;
+
+    };
+
     /**
      * @documentation: Compute screen space error of node in function of camera
      * @param {type} node
      * @param {type} camera
      * @returns {Boolean}
      */
-    NodeProcess.prototype.SSE = function(node, camera) {
-        return camera.SSE(node) > 6.0;
+    NodeProcess.prototype.SSE = function(node, camera, params) {
+
+        var sse = this.checkSSE(node, camera)
+
+        if(params.withUp && node.material.visible && !node.wait )
+        {
+            if (sse){
+                // request level up
+                params.tree.up(node);
+            }
+            else
+                // request level up other quadtree
+                params.tree.upSubLayer(node);
+        }
+        else if (!sse) {
+            // request level down
+            params.tree.down(node);
+        }
+
     };
 
     /**
@@ -77,28 +110,19 @@ define('Scene/NodeProcess', ['Scene/BoundingBox', 'Renderer/Camera', 'Core/Math/
      * @param {type} camera
      * @returns {NodeProcess_L7.NodeProcess.prototype.frustumCullingOBB.node@pro;camera@call;getFrustum@call;intersectsBox}
      */
+
+    var quaternion = new THREE.Quaternion();
+
     NodeProcess.prototype.frustumCullingOBB = function(node, camera) {
-
-        var obb = node.OBB();
-
-        var l = node.absoluteCenter.length();
-
-        obb.translateZ(l);
-        obb.update();
-
-        var quadInv = obb.quadInverse().clone();
-
-        // position in local space
-        this.camera.setPosition(obb.worldToLocal(camera.position().clone()));
+        //position in local space
+        var position = node.OBB().worldToLocal(camera.position().clone());
+        position.z -= node.distance;
+        this.camera.setPosition(position);
         // rotation in local space
-        this.camera.setRotation(quadInv.multiply(camera.camera3D.quaternion));
+        quaternion.multiplyQuaternions( node.OBB().quadInverse(), camera.camera3D.quaternion);
+        this.camera.setRotation(quaternion);
 
-        obb.translateZ(-l);
-
-        obb.update();
-
-        return node.setVisibility(this.camera.getFrustum().intersectsBox(obb.box3D));
-
+        return this.camera.getFrustum().intersectsBox(node.OBB().box3D);
     };
 
     /**
@@ -107,10 +131,18 @@ define('Scene/NodeProcess', ['Scene/BoundingBox', 'Renderer/Camera', 'Core/Math/
      * @param {type} camera
      * @returns {unresolved}
      */
-    NodeProcess.prototype.frustumBB = function(node, camera) {
+    NodeProcess.prototype.frustumBB = function(node/*, camera*/) {
 
-        return node.setVisibility(node.bbox.intersect(this.bbox));
+        return node.bbox.intersect(this.bbox);
 
+    };
+
+    /**
+     * @documentation: Pre-computing for the upcoming processes
+     * @param  {type} camera
+     */
+    NodeProcess.prototype.prepare = function(camera) {
+        this.preHorizonCulling(camera);
     };
 
     /**
@@ -127,7 +159,7 @@ define('Scene/NodeProcess', ['Scene/BoundingBox', 'Renderer/Camera', 'Core/Math/
     };
 
     /**
-     * @documentation: return true if point is occuled by horizon 
+     * @documentation: return true if point is occuled by horizon
      * @param {type} point
      * @returns {Boolean}
      */
@@ -150,15 +182,17 @@ define('Scene/NodeProcess', ['Scene/BoundingBox', 'Renderer/Camera', 'Core/Math/
     };
 
     /**
-     * @documentation: cull node with horizon 
+     * @documentation: cull node with horizon
      * @param {type} node
      * @returns {Boolean}
      */
+    var center = new THREE.Vector3();
+
     NodeProcess.prototype.horizonCulling = function(node) {
 
         // horizonCulling Oriented bounding box
         var points = node.OBB().pointsWorld;
-        var center = node.absoluteCenter;
+        center.setFromMatrixPosition(node.matrixWorld);
         var isVisible = false;
         for (var i = 0, max = points.length; i < max; i++) {
             var point = points[i].add(center);
@@ -170,10 +204,10 @@ define('Scene/NodeProcess', ['Scene/BoundingBox', 'Renderer/Camera', 'Core/Math/
         }
 
         /*
-         var points    = node.geometry.tops;      
+         var points    = node.geometry.tops;
          var isVisible = false;
-         for (var i = 0, max = points.length; i < max; i++) 
-         {                    
+         for (var i = 0, max = points.length; i < max; i++)
+         {
                if(!this.pointHorizonCulling(points[i]))
                {
                    isVisible = true;
@@ -182,12 +216,12 @@ define('Scene/NodeProcess', ['Scene/BoundingBox', 'Renderer/Camera', 'Core/Math/
          }
          */
 
-        return node.setVisibility(isVisible);
+        return isVisible;
         //      if(isVisible === false)
         //          node.tMat.setDebug(1);
         //      else
         //          node.tMat.setDebug(0);
-        //   
+        //
 
     };
 

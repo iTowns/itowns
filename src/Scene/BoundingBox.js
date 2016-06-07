@@ -5,7 +5,7 @@
  */
 
 /**
- * 
+ *
  * @param {type} defaultValue
  * @param {type} MathExt
  * @param {type} Point2D
@@ -18,27 +18,27 @@ define('Scene/BoundingBox', [
     'Core/defaultValue',
     'Core/Math/MathExtented',
     'Core/Math/Point2D',
-    'Core/Geographic/CoordCarto',
     'THREE',
-    'OBB'
-], function(defaultValue, MathExt, Point2D, CoordCarto, THREE, OBB) {
+    'OBB',
+    'Core/Geographic/CoordCarto'
+], function(defaultValue, MathExt, Point2D,THREE,OBB, CoordCarto ) {
 
     /**
-     * 
+     *
      * @param {type} minLongitude : longitude minimum
      * @param {type} maxLongitude : longitude maximum
-     * @param {type} minLatitude  : latitude minimum 
-     * @param {type} maxLatitude  : latitude maximum 
+     * @param {type} minLatitude  : latitude minimum
+     * @param {type} maxLatitude  : latitude maximum
      * @param {type} parentCenter : center parent
      * @param {type} minAltitude  : altitude minimum
-     * @param {type} maxAltitude  : altitude maximum  
+     * @param {type} maxAltitude  : altitude maximum
      * @returns {BoundingBox_L7.BoundingBox}
      */
     function BoundingBox(minLongitude, maxLongitude, minLatitude, maxLatitude, parentCenter, minAltitude, maxAltitude) {
         //Constructor
 
-        this.minCarto = new CoordCarto(defaultValue(minLongitude, 0), defaultValue(minLatitude, -MathExt.PI_OV_TWO), defaultValue(minAltitude, -10000));
-        this.maxCarto = new CoordCarto(defaultValue(maxLongitude, MathExt.TWO_PI), defaultValue(maxLatitude, MathExt.PI_OV_TWO), defaultValue(maxAltitude, 10000));
+        this.minCarto = new CoordCarto(defaultValue(minLongitude, 0), defaultValue(minLatitude, -MathExt.PI_OV_TWO), defaultValue(minAltitude, 0));
+        this.maxCarto = new CoordCarto(defaultValue(maxLongitude, MathExt.TWO_PI), defaultValue(maxLatitude, MathExt.PI_OV_TWO), defaultValue(maxAltitude, 0));
 
         this.dimension = new Point2D(Math.abs(this.maxCarto.longitude - this.minCarto.longitude), Math.abs(this.maxCarto.latitude - this.minCarto.latitude));
         this.halfDimension = new Point2D(this.dimension.x * 0.5, this.dimension.y * 0.5);
@@ -51,17 +51,17 @@ define('Scene/BoundingBox', [
     /**
      * @documentation: Retourne True if point is inside the bounding box
      *
-     * @param point {[object Object]} 
+     * @param point {[object Object]}
      */
     BoundingBox.prototype.isInside = function(point) {
-        //TODO: Implement Me 
+        //TODO: Implement Me
 
         return point.x <= this.maxCarto.longitude && point.x >= this.minCarto.longitude && point.y <= this.maxCarto.latitude && point.y >= this.minCarto.latitude;
 
     };
 
     BoundingBox.prototype.BBoxIsInside = function(bbox) {
-        //TODO: Implement Me 
+        //TODO: Implement Me
 
         return bbox.maxCarto.longitude <= this.maxCarto.longitude && bbox.minCarto.longitude >= this.minCarto.longitude && bbox.maxCarto.latitude <= this.maxCarto.latitude && bbox.minCarto.latitude >= this.minCarto.latitude;
 
@@ -93,7 +93,7 @@ define('Scene/BoundingBox', [
      * @param {type} max : maximum altitude
      * @returns {undefined}
      */
-    BoundingBox.prototype.setAltitude = function(min, max) {
+    BoundingBox.prototype.setBBoxZ = function(min, max) {
 
         this.minCarto.altitude = min;
         this.maxCarto.altitude = max;
@@ -107,84 +107,6 @@ define('Scene/BoundingBox', [
      */
     BoundingBox.prototype.intersect = function(bbox) {
         return !(this.minCarto.longitude >= bbox.maxCarto.longitude || this.maxCarto.longitude <= bbox.minCarto.longitude || this.minCarto.latitude >= bbox.maxCarto.latitude || this.maxCarto.latitude <= bbox.minCarto.latitude);
-
-    };
-
-    /**
-     * @documentation:Compute the bounding box of a tile oriented ellipsoidal bounded by the bounding box
-     * @param {type} ellipsoid
-     * @param {type} normal
-     * @param {type} center
-     * @returns {BoundingBox_L7.THREE.OBB}
-     */
-    BoundingBox.prototype.get3DBBox = function(ellipsoid, center) {
-
-        var cardinals = [];
-
-        var normal = center.clone().normalize();
-
-        var phiStart = this.minCarto.longitude;
-        var phiLength = this.dimension.x;
-
-        var thetaStart = this.minCarto.latitude;
-        var thetaLength = this.dimension.y;
-
-        //      0---1---2
-        //      |       |
-        //      7       3
-        //      |       |
-        //      6---5---4
-
-        cardinals.push(new CoordCarto(phiStart, thetaStart, 0));
-        cardinals.push(new CoordCarto(phiStart + this.halfDimension.x, thetaStart, 0));
-        cardinals.push(new CoordCarto(phiStart + phiLength, thetaStart, 0));
-        cardinals.push(new CoordCarto(phiStart + phiLength, thetaStart + this.halfDimension.y, 0));
-        cardinals.push(new CoordCarto(phiStart + phiLength, thetaStart + thetaLength, 0));
-        cardinals.push(new CoordCarto(phiStart + this.halfDimension.x, thetaStart + thetaLength, 0));
-        cardinals.push(new CoordCarto(phiStart, thetaStart + thetaLength, 0));
-        cardinals.push(new CoordCarto(phiStart, thetaStart + this.halfDimension.y, 0));
-
-        var cardinals3D = [];
-        var cardin3DPlane = [];
-
-        var maxV = new THREE.Vector3(-1000, -1000, -1000);
-        var minV = new THREE.Vector3(1000, 1000, 1000);
-        var maxHeight = 0;
-        var planeZ = new THREE.Quaternion();
-        var qRotY = new THREE.Quaternion();
-        var vec = new THREE.Vector3();
-        var tangentPlane = new THREE.Plane(normal);
-
-        planeZ.setFromUnitVectors(normal, new THREE.Vector3(0, 1, 0));
-        qRotY.setFromAxisAngle(new THREE.Vector3(0, 1, 0), -this.center.x);
-        qRotY.multiply(planeZ);
-
-        for (var i = 0; i < cardinals.length; i++) {
-            cardinals3D.push(ellipsoid.cartographicToCartesian(cardinals[i]));
-            cardin3DPlane.push(tangentPlane.projectPoint(cardinals3D[i]));
-            vec.subVectors(cardinals3D[i], center);
-            maxHeight = Math.max(maxHeight, cardin3DPlane[i].distanceTo(vec));
-            cardin3DPlane[i].applyQuaternion(qRotY);
-            maxV.max(cardin3DPlane[i]);
-            minV.min(cardin3DPlane[i]);
-        }
-
-        maxHeight = maxHeight * 0.5;
-        var width = Math.abs(maxV.z - minV.z) * 0.5;
-        var height = Math.abs(maxV.x - minV.x) * 0.5;
-        var delta = height - Math.abs(cardin3DPlane[5].x);
-        var max = new THREE.Vector3(width, height, maxHeight);
-        var min = new THREE.Vector3(-width, -height, -maxHeight);
-        var obb = new THREE.OBB(min, max);
-
-        //var l  = center.length();
-        //obb.position.copy(center);                
-        obb.lookAt(normal);
-        obb.translateZ(-maxHeight);
-        obb.translateY(delta);
-        obb.update();
-
-        return obb;
 
     };
 

@@ -5,36 +5,30 @@
  */
 
 /**
- * 
- * @param {type} tileGlobeProvider
+ *
  * @param {type} EventsManager
  * @param {type} PriorityQueue
  * @param {type} when
- * @param {type} EllipsoidTileMesh
- * @param {type} CoordCarto
- * @param {type} THREE
  * @returns {Function}
  */
 define('Core/Commander/ManagerCommands', [
         'Core/Commander/Interfaces/EventsManager',
+        'Globe/Globe',
+        'Core/Commander/Providers/TileProvider',
         'PriorityQueue',
-        'when',
-        'Globe/EllipsoidTileMesh',
-        'Core/Geographic/CoordCarto',
-        'THREE'
+        'when'
     ],
     function(
         EventsManager,
+        Globe,
+        TileProvider,
         PriorityQueue,
-        when,
-        EllipsoidTileMesh,
-        CoordCarto,
-        THREE
+        when
     ) {
 
         var instanceCommandManager = null;
 
-        function ManagerCommands() {
+        function ManagerCommands(scene) {
             //Constructor
             if (instanceCommandManager !== null) {
                 throw new Error("Cannot instantiate more than one ManagerCommands");
@@ -45,13 +39,18 @@ define('Core/Commander/ManagerCommands', [
                     return b.priority - a.priority;
                 }
             });
+
             this.queueSync = null;
             this.loadQueue = [];
             this.providerMap = {};
             this.history = null;
             this.eventsManager = new EventsManager();
-            this.scene = undefined;
-  
+
+            if(!scene)
+                throw new Error("Cannot instantiate ManagerCommands without scene");
+
+            this.scene = scene;
+
         }
 
         ManagerCommands.prototype.constructor = ManagerCommands;
@@ -60,32 +59,46 @@ define('Core/Commander/ManagerCommands', [
             this.queueAsync.queue(command);
         };
 
-        ManagerCommands.prototype.init = function(scene) {
-            this.scene = scene;
+        ManagerCommands.prototype.addLayer = function(layer, provider) {
+            this.providerMap[layer.id] = provider;
         };
 
-        ManagerCommands.prototype.addLayer = function(layer, provider) {
-            this.providerMap[layer.layerId] = provider;
+        ManagerCommands.prototype.addMapProvider = function(map) {
+
+            var tileProvider = new TileProvider(map.size,map.gLDebug);
+            this.addLayer(map.tiles,tileProvider);
+
+        };
+
+        ManagerCommands.prototype.getProvider = function(layer) {
+            return this.providerMap[layer.id];
+        };
+
+        ManagerCommands.prototype.commandsLength = function() {
+            return this.queueAsync.length;
+        };
+
+        ManagerCommands.prototype.isFree = function() {
+            return this.commandsLength()===0;
         };
 
         ManagerCommands.prototype.runAllCommands = function() {
-            
-            if (this.queueAsync.length === 0)
-            {                
+
+
+            if (this.commandsLength() === 0)
+            {
                 return when(0);
             }
 
-            return when.all(this.arrayDeQueue(4))
+            return when.all(this.arrayDeQueue(16))
                 .then(function() {
-                
-                //if (this.queueAsync.length === 0) // --> probleme car la pile de requete est moins rafraichie et donc le chargement est plus long
-                {
-                    //this.scene.updateScene3D();
-                   this.scene.wait();                                      
-                }
-                
+
+                // if (this.commandsLength() <= 16)
+                     this.scene.wait(1);
+                // else
+                //     this.scene.renderScene3D();
                 return this.runAllCommands();
-                
+
                 }.bind(this));
 
         };
@@ -96,9 +109,9 @@ define('Core/Commander/ManagerCommands', [
             var arrayTasks = [];
 
             while (this.queueAsync.length > 0 && arrayTasks.length < nT) {
-                var command = this.deQueue();   
+                var command = this.deQueue();
                 if(command)
-                    arrayTasks.push(this.providerMap[command.layer.layerId].executeCommand(command));
+                    arrayTasks.push(this.providerMap[command.layer.id].executeCommand(command));
             }
 
             return arrayTasks;
@@ -133,34 +146,34 @@ define('Core/Commander/ManagerCommands', [
         /**
          */
         ManagerCommands.prototype.removeCanceled = function() {
-            //TODO: Implement Me 
+            //TODO: Implement Me
 
         };
 
         /**
          */
         ManagerCommands.prototype.wait = function() {
-            //TODO: Implement Me 
+            //TODO: Implement Me
             this.eventsManager.wait();
         };
 
         /**
          */
         ManagerCommands.prototype.forecast = function() {
-            //TODO: Implement Me 
+            //TODO: Implement Me
 
         };
 
         /**
          * @param object
          */
-        ManagerCommands.prototype.addInHistory = function(object) {
-            //TODO: Implement Me 
+        ManagerCommands.prototype.addInHistory = function(/*object*/) {
+            //TODO: Implement Me
 
         };
 
-        return function() {
-            instanceCommandManager = instanceCommandManager || new ManagerCommands();
+        return function(scene) {
+            instanceCommandManager = instanceCommandManager || new ManagerCommands(scene);
             return instanceCommandManager;
         };
 
