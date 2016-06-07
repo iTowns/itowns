@@ -19,11 +19,11 @@ define('Core/Commander/Interfaces/EventsManager', [], function() {
     }
 
     /**
-     * @param pevent {[object Object]} 
-     * @param com {[object Object]} 
+     * @param pevent {[object Object]}
+     * @param com {[object Object]}
      */
-    EventsManager.prototype.connect = function(pevent, com) {
-        //TODO: Implement Me 
+    EventsManager.prototype.connect = function(/*pevent, com*/) {
+        //TODO: Implement Me
 
     };
 

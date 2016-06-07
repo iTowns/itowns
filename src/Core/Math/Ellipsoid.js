@@ -6,16 +6,19 @@
 
 
 
-define('Core/Math/Ellipsoid', ['Core/Math/MathExtented', 'THREE', 'Core/defaultValue'], function(MathExt, THREE, defaultValue) {
+define('Core/Math/Ellipsoid',
+     ['Core/Math/MathExtented','Core/Geographic/CoordCarto','THREE'],
+      function(MathExt,CoordCarto, THREE) {
 
     function Ellipsoid(size) {
         //Constructor
+
 
         this.rayon_1 = size.x;
         this.rayon_2 = size.y;
         this.rayon_3 = size.z;
 
-        this.size = size;
+        this.size = new THREE.Vector3(size.x,size.y,size.z);
 
         this._radiiSquared = new THREE.Vector3(size.x * size.x, size.y * size.y, size.z * size.z);
     }
@@ -100,7 +103,7 @@ define('Core/Math/Ellipsoid', ['Core/Math/MathExtented', 'THREE', 'Core/defaultV
         var t2 = (-b - d) / (2 * a);
 
         if (t1 <= EPSILON && t2 <= EPSILON) return false; // both intersections are behind the ray origin
-        var back = (t1 <= EPSILON || t2 <= EPSILON); // If only one intersection (t>0) then we are inside the ellipsoid and the intersection is at the back of the ellipsoid
+        //var back = (t1 <= EPSILON || t2 <= EPSILON); // If only one intersection (t>0) then we are inside the ellipsoid and the intersection is at the back of the ellipsoid
         var t = 0;
         if (t1 <= EPSILON)
             t = t2;
@@ -117,7 +120,6 @@ define('Core/Math/Ellipsoid', ['Core/Math/MathExtented', 'THREE', 'Core/defaultV
         inter.addVectors(ray.origin, dir.clone().setLength(t));
 
         return inter;
-
         /*
         var normal = intersection.clone();//-ellipsoid.center;
         normal.x = 2*normal.x/(this.size.x*this.size.x);
@@ -128,6 +130,26 @@ define('Core/Math/Ellipsoid', ['Core/Math/MathExtented', 'THREE', 'Core/defaultV
         normal *= (back) ? -1.f : 1.f;
         normalizeVector(normal);
         */
+    };
+
+    Ellipsoid.prototype.computeDistance = function(coordCarto1, coordCarto2){
+
+        var longitude1 = coordCarto1.longitude * Math.PI / 180;
+        var latitude1 = coordCarto1.latitude * Math.PI / 180;
+        var longitude2 = coordCarto2.longitude * Math.PI / 180;
+        var latitude2 = coordCarto2.latitude * Math.PI / 180;
+
+        var distRad = Math.acos(Math.sin(latitude1)*Math.sin(latitude2) + Math.cos(latitude1)*Math.cos(latitude2)*Math.cos(longitude2 - longitude1));
+
+        var a = this.rayon_1;
+        var b = this.rayon_2;
+        var e = Math.sqrt((a * a - b * b) / (a * a));
+        var latMoy = (latitude1 + latitude2) / 2;
+        var rho = (a * (1 - e * e)) / Math.sqrt(1 - e * e * Math.sin(latMoy) * Math.sin(latMoy));
+        var N = a / Math.sqrt(1 - e * e * Math.sin(latMoy) * Math.sin(latMoy));
+
+        var distMeter = distRad * Math.sqrt(rho * N);
+        return distMeter;
     };
 
 

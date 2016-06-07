@@ -1,4 +1,4 @@
-/* 
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -18,7 +18,7 @@ define('Renderer/BasicMaterial', ['THREE',
     function BasicMaterial(color) {
         //Constructor
 
-        THREE.ShaderMaterial.call(this);
+        THREE.RawShaderMaterial.call(this);
 
         this.vertexShader = SimpleVS;
         this.fragmentShader = SimpleFS;
@@ -51,12 +51,16 @@ define('Renderer/BasicMaterial', ['THREE',
             selected: {
                 type: "i",
                 value: false
+            },
+            lightOn: {
+                type: "i",
+                value: true
             }
 
         };
     }
 
-    BasicMaterial.prototype = Object.create(THREE.ShaderMaterial.prototype);
+    BasicMaterial.prototype = Object.create(THREE.RawShaderMaterial.prototype);
     BasicMaterial.prototype.constructor = BasicMaterial;
 
     BasicMaterial.prototype.enableRTC = function(enable) {
@@ -70,6 +74,7 @@ define('Renderer/BasicMaterial', ['THREE',
     BasicMaterial.prototype.setMatrixRTC = function(rtc) {
         this.uniforms.mVPMatRTC.value = rtc;
     };
+
     BasicMaterial.prototype.setUuid = function(uuid) {
         this.uniforms.uuid.value = uuid;
     };

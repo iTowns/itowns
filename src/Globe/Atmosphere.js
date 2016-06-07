@@ -1,22 +1,31 @@
-/* 
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
 
 
-define('Globe/Atmosphere', ['Renderer/NodeMesh', 'THREE', 'Core/defaultValue','Renderer/Shader/skyFS.glsl',
-    'Renderer/Shader/skyVS.glsl','Renderer/Shader/groundFS.glsl', 'Renderer/Shader/groundVS.glsl'
-    ,'Renderer/Shader/GlowFS.glsl', 'Renderer/Shader/GlowVS.glsl', 'Globe/SkyShader'],
-     function(NodeMesh, THREE,  defaultValue, skyFS, skyVS, groundFS, groundVS, GlowFS, GlowVS, SkyShader) {
- 
+define('Globe/Atmosphere', [
+  'Renderer/NodeMesh',
+  'THREE',
+  'Core/defaultValue',
+  'Globe/SkyShader',
+  'Renderer/Shader/skyFS.glsl',
+  'Renderer/Shader/skyVS.glsl',
+  'Renderer/Shader/groundFS.glsl',
+  'Renderer/Shader/groundVS.glsl',
+  'Renderer/Shader/GlowFS.glsl',
+  'Renderer/Shader/GlowVS.glsl'
+  ],
+  function(NodeMesh, THREE, defaultValue,Sky , skyFS, skyVS, groundFS, groundVS, GlowFS, GlowVS) {
+
     function Atmosphere(size) {
 
         NodeMesh.call(this);
 
         this.realistic = false;
         this.sphereSun = null;
-        
+
         this.uniformsOut = {
             atmoIN: {
                 type: "i",
@@ -41,8 +50,13 @@ define('Globe/Atmosphere', ['Renderer/NodeMesh', 'THREE', 'Core/defaultValue','R
         });
 
         var geometry = (new THREE.SphereGeometry(1.14 , 128, 128)).scale(size.x, size.y, size.z);
-        this.atmosphereOUT    = new THREE.Mesh(geometry,material);
-        this.add(this.atmosphereOUT);
+
+
+        this.geometry = geometry;
+        this.material = material;
+
+        //this.atmosphereOUT    = new THREE.Mesh(geometry,material);
+        //this.add(this.atmosphereOUT);
 
         this.uniformsIn = {
             atmoIN: {
@@ -81,9 +95,9 @@ define('Globe/Atmosphere', ['Renderer/NodeMesh', 'THREE', 'Core/defaultValue','R
           scaleDepth: 0.25,
           mieScaleDepth: 0.1
         };
-        
 
-        var uniforms = {
+
+        var uniformsSky = {
           v3LightPosition: {
             type: "v3",
             value: defaultValue.lightingPos.clone().normalize()
@@ -174,26 +188,26 @@ define('Globe/Atmosphere', ['Renderer/NodeMesh', 'THREE', 'Core/defaultValue','R
             value: 1
           }
         };
-        
+
         this.ground = {
             geometry: new THREE.SphereGeometry(atmosphere.innerRadius, 50, 50),
             material: new THREE.ShaderMaterial({
-            uniforms: uniforms,
+            uniforms: uniformsSky,
             vertexShader: groundVS,
             fragmentShader: groundFS ,
             blending: THREE.AdditiveBlending,
             transparent: true,
             depthTest: false,
-            depthWrite: false 
+            depthWrite: false
           })
         };
-        
+
         this.ground.mesh = new THREE.Mesh(this.ground.geometry, this.ground.material);
-        
+
         this.sky = {
           geometry: new THREE.SphereGeometry(atmosphere.outerRadius, 196, 196),
           material: new THREE.ShaderMaterial({
-            uniforms: uniforms,
+            uniforms: uniformsSky,
             vertexShader: skyVS,
             fragmentShader: skyFS
           })
@@ -202,27 +216,26 @@ define('Globe/Atmosphere', ['Renderer/NodeMesh', 'THREE', 'Core/defaultValue','R
         this.sky.mesh = new THREE.Mesh(this.sky.geometry, this.sky.material);
         this.sky.material.side = THREE.BackSide;
         this.sky.material.transparent = true;
-        
-        
+
         this.ground.mesh.visible = false;
         this.sky.mesh.visible = false;
         this.add(this.ground.mesh);
         this.add(this.sky.mesh);
-    /*    
+    /*
         this.sphereSun = new THREE.Mesh((new THREE.SphereGeometry( 1000000,32,32 )), new THREE.MeshBasicMaterial());
         this.sphereSun.position.copy(defaultValue.lightingPos);
         this.add(this.sphereSun);
-        
-    */    
-        
+
+    */
+
         this.skyDome = new THREE.Sky;
         this.skyDome.mesh.frustumCulled = false;
         this.skyDome.mesh.material.transparent = true;
         this.skyDome.mesh.visible = false;
         this.skyDome.mesh.material.depthWrite = false;
         this.add(this.skyDome.mesh);
-        
-        
+
+
         var effectController  = {
                 turbidity: 10,
                 reileigh: 2,
@@ -241,8 +254,8 @@ define('Globe/Atmosphere', ['Renderer/NodeMesh', 'THREE', 'Core/defaultValue','R
         uniforms.mieCoefficient.value = effectController.mieCoefficient;
         uniforms.mieDirectionalG.value = effectController.mieDirectionalG;
         uniforms.up.value = new THREE.Vector3(); // no more necessary, estimate normal from cam..
-        
-        
+
+
         // LensFlare
 
         var textureLoader = new THREE.TextureLoader();
@@ -268,29 +281,29 @@ define('Globe/Atmosphere', ['Renderer/NodeMesh', 'THREE', 'Core/defaultValue','R
 
     Atmosphere.prototype = Object.create(NodeMesh.prototype);
     Atmosphere.prototype.constructor = Atmosphere;
-    
+
     Atmosphere.prototype.setRealisticOn = function(bool){
-        
+
         this.realistic = bool;
-        this.atmosphereOUT.visible = !this.realistic;
+        this.material.visible = !this.realistic;
         this.atmosphereIN.visible  = !this.realistic;
         this.ground.mesh.visible   = this.realistic;
-        this.sky.mesh.visible      = this.realistic; 
-        // this.sphereSun.visible     = this.realistic; 
+        this.sky.mesh.visible      = this.realistic;
+        // this.sphereSun.visible     = this.realistic;
         this.skyDome.mesh.visible  = this.realistic;
         this.lensFlare.visible     = this.realistic;
 
     };
-    
+
     Atmosphere.prototype.updateLightingPos = function(pos){
-        
+
         this.ground.material.uniforms.v3LightPosition.value = pos.clone().normalize();
         this.sky.material.uniforms.v3LightPosition.value = pos.clone().normalize();
         //  this.sphereSun.position.copy(pos);
         this.skyDome.uniforms.sunPosition.value.copy(pos);
         this.lensFlare.position.copy(pos);
     };
-    
+
 
     return Atmosphere;
 

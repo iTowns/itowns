@@ -49,7 +49,7 @@ THREE.ShaderLib[ 'sky' ] = {
 
 		"uniform sampler2D skySampler;",
 		"uniform vec3 sunPosition;",
-                "uniform vec3 up;", 
+                "uniform vec3 up;",
 		"varying vec3 vWorldPosition;",
 
 		//"vec3 cameraPos = cameraPosition; //vec3(0., 0., 0.);",
@@ -87,8 +87,8 @@ THREE.ShaderLib[ 'sky' ] = {
 		"const float rayleighZenithLength = 8.4E3;",
 		"const float mieZenithLength = 1.25E3;",
 		//"const vec3 up = vec3(0.0, 1.0, 0.0);",
-                
-                
+
+
 		"const float EE = 1000.0;",
 		"const float sunAngularDiameterCos = 0.999956676946448443553574619906976478926848692873900859324;",
 		"// 66 arc seconds -> degrees, and the cosine of that",
@@ -157,7 +157,7 @@ THREE.ShaderLib[ 'sky' ] = {
 		"void main() ",
 		"{",
                         "vec3 up2 = normalize(cameraPosition.xyz);",
-                        
+
 			"float sunfade = 1.0-clamp(1.0-exp((sunPosition.y/450000.0)),0.0,1.0);",
 
 			"float reileighCoefficient = reileigh - (1.0* (1.0-sunfade));",
@@ -264,3 +264,4 @@ THREE.Sky = function () {
 };
 //THREE.Sky.prototype = Object.create(THREE.EventDispatcher.prototype);
 THREE.Sky.prototype.constructor = THREE.Sky;
+
