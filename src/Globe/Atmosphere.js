@@ -5,23 +5,36 @@
  */
 
 
-define('Globe/Atmosphere', ['Renderer/NodeMesh', 'THREE', 'Renderer/c3DEngine','Renderer/Shader/skyFS.glsl',
-    'Renderer/Shader/skyVS.glsl','Renderer/Shader/groundFS.glsl', 'Renderer/Shader/groundVS.glsl'
-    ,'Renderer/Shader/GlowFS.glsl', 'Renderer/Shader/GlowVS.glsl'],
-     function(NodeMesh, THREE, gfxEngine, skyFS, skyVS, groundFS, groundVS, GlowFS, GlowVS) {
+define('Globe/Atmosphere', [
+  'Renderer/NodeMesh',
+  'THREE',
+  'Core/defaultValue',
+  'Globe/SkyShader',
+  'Renderer/Shader/skyFS.glsl',
+  'Renderer/Shader/skyVS.glsl',
+  'Renderer/Shader/groundFS.glsl',
+  'Renderer/Shader/groundVS.glsl',
+  'Renderer/Shader/GlowFS.glsl',
+  'Renderer/Shader/GlowVS.glsl'
+  ],
+  function(NodeMesh, THREE, defaultValue,Sky , skyFS, skyVS, groundFS, groundVS, GlowFS, GlowVS) {
 
     function Atmosphere(size) {
 
         NodeMesh.call(this);
 
         this.realistic = false;
-
+        this.sphereSun = null;
 
         this.uniformsOut = {
             atmoIN: {
                 type: "i",
                 value: 0
-            }
+            },
+            screenSize: {
+                type: "v2",
+                value: new THREE.Vector2(window.innerWidth, window.innerHeight)
+            } // Should be updated on screen resize...
         };
 
        var material = new THREE.ShaderMaterial({
@@ -49,7 +62,11 @@ define('Globe/Atmosphere', ['Renderer/NodeMesh', 'THREE', 'Renderer/c3DEngine','
             atmoIN: {
                 type: "i",
                 value: 1
-            }
+            },
+            screenSize: {
+                type: "v2",
+                value: new THREE.Vector2(window.innerWidth, window.innerHeight)
+            } // Should be updated on screen resize...
         };
 
         var materialAtmoIn = new THREE.ShaderMaterial({
@@ -80,10 +97,10 @@ define('Globe/Atmosphere', ['Renderer/NodeMesh', 'THREE', 'Renderer/c3DEngine','
         };
 
 
-        var uniforms = {
+        var uniformsSky = {
           v3LightPosition: {
             type: "v3",
-            value: new THREE.Vector3(-0.5, 0, 1).normalize()
+            value: defaultValue.lightingPos.clone().normalize()
           },
           v3InvWavelength: {
             type: "v3",
@@ -91,11 +108,11 @@ define('Globe/Atmosphere', ['Renderer/NodeMesh', 'THREE', 'Renderer/c3DEngine','
           },
           fCameraHeight: {
             type: "f",
-            value: 0.
+            value: 0.0
           },
           fCameraHeight2: {
             type: "f",
-            value: 0.
+            value: 0.0
           },
           fInnerRadius: {
             type: "f",
@@ -160,28 +177,28 @@ define('Globe/Atmosphere', ['Renderer/NodeMesh', 'THREE', 'Renderer/c3DEngine','
 
           tDisplacement: {
             type: "t",
-            value: 0
+            value: new THREE.Texture()
           },
           tSkyboxDiffuse: {
             type: "t",
-            value: 0
+            value: new THREE.Texture()
           },
           fNightScale: {
             type: "f",
-            value: 1
+            value: 1.0
           }
         };
 
         this.ground = {
             geometry: new THREE.SphereGeometry(atmosphere.innerRadius, 50, 50),
             material: new THREE.ShaderMaterial({
-            uniforms: uniforms,
-            vertexShader: groundVS,
-            fragmentShader: groundFS ,
-            blending: THREE.AdditiveBlending,
-            transparent: true,
-            depthTest: false,
-            depthWrite: false
+              uniforms: uniformsSky,
+              vertexShader: groundVS,
+              fragmentShader: groundFS ,
+              blending: THREE.AdditiveBlending,
+              transparent: true,
+              depthTest: false,
+              depthWrite: false
           })
         };
 
@@ -190,7 +207,7 @@ define('Globe/Atmosphere', ['Renderer/NodeMesh', 'THREE', 'Renderer/c3DEngine','
         this.sky = {
           geometry: new THREE.SphereGeometry(atmosphere.outerRadius, 196, 196),
           material: new THREE.ShaderMaterial({
-            uniforms: uniforms,
+            uniforms: uniformsSky,
             vertexShader: skyVS,
             fragmentShader: skyFS
           })
@@ -204,6 +221,61 @@ define('Globe/Atmosphere', ['Renderer/NodeMesh', 'THREE', 'Renderer/c3DEngine','
         this.sky.mesh.visible = false;
         this.add(this.ground.mesh);
         this.add(this.sky.mesh);
+    /*
+        this.sphereSun = new THREE.Mesh((new THREE.SphereGeometry( 1000000,32,32 )), new THREE.MeshBasicMaterial());
+        this.sphereSun.position.copy(defaultValue.lightingPos);
+        this.add(this.sphereSun);
+
+    */
+
+        this.skyDome = new THREE.Sky;
+        this.skyDome.mesh.frustumCulled = false;
+        this.skyDome.mesh.material.transparent = true;
+        this.skyDome.mesh.visible = false;
+        this.skyDome.mesh.material.depthWrite = false;
+        this.add(this.skyDome.mesh);
+
+
+        var effectController  = {
+                turbidity: 10,
+                reileigh: 2,
+                mieCoefficient: 0.005,
+                mieDirectionalG: 0.8,
+                luminance: 1,
+                inclination: 0.49, // elevation / inclination
+                azimuth: 0.25, // Facing front,
+                sun: ! true
+        };
+
+        var uniforms = this.skyDome.uniforms;
+        uniforms.turbidity.value = effectController.turbidity;
+        uniforms.reileigh.value = effectController.reileigh;
+        uniforms.luminance.value = effectController.luminance;
+        uniforms.mieCoefficient.value = effectController.mieCoefficient;
+        uniforms.mieDirectionalG.value = effectController.mieDirectionalG;
+        uniforms.up.value = new THREE.Vector3(); // no more necessary, estimate normal from cam..
+
+
+        // LensFlare
+
+        var textureLoader = new THREE.TextureLoader();
+        var textureFlare0 = textureLoader.load( "data/textures/lensflare/lensflare0.png" );
+        var textureFlare2 = textureLoader.load( "data/textures/lensflare/lensflare2.png" );
+        var textureFlare3 = textureLoader.load( "data/textures/lensflare/lensflare3.png" );
+        var h = 0.55, s= 0.9, l=0.5;
+    //    var x=10000000, y=10000000, z=0;
+        var flareColor = new THREE.Color( 0xffffff );
+        flareColor.setHSL( h, s, l + 0.5 );
+
+        this.lensFlare = new THREE.LensFlare( textureFlare0, 700, 0.0, THREE.AdditiveBlending, flareColor );
+        this.lensFlare.add( textureFlare2, 512, 0.0, THREE.AdditiveBlending );
+        this.lensFlare.add( textureFlare2, 512, 0.0, THREE.AdditiveBlending );
+        this.lensFlare.add( textureFlare2, 512, 0.0, THREE.AdditiveBlending );
+        this.lensFlare.add( textureFlare3, 60, 0.6,  THREE.AdditiveBlending );
+        this.lensFlare.add( textureFlare3, 70, 0.7,  THREE.AdditiveBlending );
+        this.lensFlare.add( textureFlare3, 120, 0.9, THREE.AdditiveBlending );
+        this.lensFlare.add( textureFlare3, 70, 1.0,  THREE.AdditiveBlending );
+        this.add( this.lensFlare );
 
     }
 
@@ -217,6 +289,19 @@ define('Globe/Atmosphere', ['Renderer/NodeMesh', 'THREE', 'Renderer/c3DEngine','
         this.atmosphereIN.visible  = !this.realistic;
         this.ground.mesh.visible   = this.realistic;
         this.sky.mesh.visible      = this.realistic;
+        this.skyDome.mesh.visible  = this.realistic;
+        this.lensFlare.visible     = this.realistic;
+
+        // this.sphereSun.visible     = this.realistic;
+    };
+
+    Atmosphere.prototype.updateLightingPos = function(pos){
+
+        this.ground.material.uniforms.v3LightPosition.value = pos.clone().normalize();
+        this.sky.material.uniforms.v3LightPosition.value = pos.clone().normalize();
+        //  this.sphereSun.position.copy(pos);
+        this.skyDome.uniforms.sunPosition.value.copy(pos);
+        this.lensFlare.position.copy(pos);
     };
 
 

@@ -212,15 +212,17 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         this.scene.renderScene3D();
     };
 
-    ApiGlobe.prototype.showClouds = function(value) {
+    ApiGlobe.prototype.showClouds = function(value, satelliteAnimation) {
 
-        this.scene.layers[0].node.showClouds(value);
+        this.scene.getMap().showClouds(value, satelliteAnimation);
+        this.scene.renderScene3D();
     };
 
     ApiGlobe.prototype.setRealisticLightingOn = function(value) {
 
+        this.scene.setLightingPos();
         this.scene.gfxEngine.setLightingOn(value);
-        this.scene.layers[0].node.setRealisticLightingOn(value);
+        this.scene.getMap().setRealisticLightingOn(value);
         this.scene.browserScene.updateMaterialUniform("lightingOn",value ? 1:0);
         this.scene.renderScene3D();
     };
@@ -232,6 +234,15 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         this.scene.renderScene3D();
     };
 
+    ApiGlobe.prototype.animateTime = function(value) {
+
+        this.scene.animateTime(value);
+    };
+
+    ApiGlobe.prototype.orbit = function(value) {
+
+        this.scene.orbit(value);
+    };
     ApiGlobe.prototype.setLayerOpacity = function(id,visible){
 
         this.scene.getMap().setLayerOpacity(id,visible);
@@ -515,7 +526,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
 
     ApiGlobe.prototype.showKML = function(value) {
 
-        this.scene.layers[0].node.showKML(value);
+        this.scene.getMap().showKML(value);
         this.scene.renderScene3D();
     };
 
