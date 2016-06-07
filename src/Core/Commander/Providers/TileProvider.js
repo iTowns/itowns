@@ -156,13 +156,8 @@ define('Core/Commander/Providers/TileProvider', [
                 tile.material.paramBLayers[i] = new THREE.Vector2(0.0, 0.0);
             }
 
-            if(tile.WMTSs['PM'])
-                tile.material.nbTextures[2] = tile.WMTSs['PM'][1].row - tile.WMTSs['PM'][0].row + 1;
-            else
-            {
-                tile.material.nbTextures[2] = 1;
+            if(!tile.WMTSs['PM'])
                 tile.delta = 0;
-            }
 
             var requests = [
 

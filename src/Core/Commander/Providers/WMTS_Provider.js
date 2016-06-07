@@ -384,7 +384,9 @@ define('Core/Commander/Providers/WMTS_Provider', [
                     var bcoord = tile.WMTSs[layer.tileMatrixSet];
                     paramMaterial.push({tileMT:layer.tileMatrixSet,pit:promises.length,fx:layer.fx});
 
-                    for (var row = bcoord[0].row; row < bcoord[1].row + 1; row++) {
+
+                    // WARNING the direction textures is important
+                    for (var row = bcoord[1].row; row >=  bcoord[0].row; row--) {
 
                        var cooWMTS = new CoordWMTS(bcoord[0].zoom, row, bcoord[0].col);
                        var pitch = new THREE.Vector3(0.0,0.0,1.0);
