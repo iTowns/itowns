@@ -61,7 +61,8 @@ module.exports = {
       'Renderer/ThreeExtented/ColladaLoader': 'ColladaLoader',
       ColladaLoader: 'three/examples/js/loaders/ColladaLoader',
       GlobeControls: 'Renderer/ThreeExtented/GlobeControls',
-      StarGeometry:  'Renderer/ThreeExtented/StarGeometry'
+      StarGeometry:  'Renderer/ThreeExtented/StarGeometry',
+      Sky:           'Globe/SkyShader'
     }
   },
   devServer: {

@@ -242,7 +242,7 @@ void main() {
         }
 
         if(lightingOn == 1){   // Add lighting
-            float light = dot(vNormal, lightPosition); //normalize(pos.xyz)
+            float light = min(2. * dot(vNormal, lightPosition),1.); 
             gl_FragColor.rgb *= light;
         }
     }
