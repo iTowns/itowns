@@ -108,11 +108,11 @@ define('Globe/Atmosphere', [
           },
           fCameraHeight: {
             type: "f",
-            value: 0.
+            value: 0.0
           },
           fCameraHeight2: {
             type: "f",
-            value: 0.
+            value: 0.0
           },
           fInnerRadius: {
             type: "f",
@@ -177,28 +177,28 @@ define('Globe/Atmosphere', [
 
           tDisplacement: {
             type: "t",
-            value: 0
+            value: new THREE.Texture()
           },
           tSkyboxDiffuse: {
             type: "t",
-            value: 0
+            value: new THREE.Texture()
           },
           fNightScale: {
             type: "f",
-            value: 1
+            value: 1.0
           }
         };
 
         this.ground = {
             geometry: new THREE.SphereGeometry(atmosphere.innerRadius, 50, 50),
             material: new THREE.ShaderMaterial({
-            uniforms: uniformsSky,
-            vertexShader: groundVS,
-            fragmentShader: groundFS ,
-            blending: THREE.AdditiveBlending,
-            transparent: true,
-            depthTest: false,
-            depthWrite: false
+              uniforms: uniformsSky,
+              vertexShader: groundVS,
+              fragmentShader: groundFS ,
+              blending: THREE.AdditiveBlending,
+              transparent: true,
+              depthTest: false,
+              depthWrite: false
           })
         };
 
@@ -289,10 +289,10 @@ define('Globe/Atmosphere', [
         this.atmosphereIN.visible  = !this.realistic;
         this.ground.mesh.visible   = this.realistic;
         this.sky.mesh.visible      = this.realistic;
-        // this.sphereSun.visible     = this.realistic;
         this.skyDome.mesh.visible  = this.realistic;
         this.lensFlare.visible     = this.realistic;
 
+        // this.sphereSun.visible     = this.realistic;
     };
 
     Atmosphere.prototype.updateLightingPos = function(pos){

@@ -593,6 +593,8 @@ and open the template in the editor.
 
                 var f2 = gui.addFolder('Atmosphere');
 
+                f2.open();
+
                 f2.add(text, 'CloudsIR').onChange(function(newValue) {
                      itowns.viewer.showClouds(newValue);
                 });
