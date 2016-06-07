@@ -1,5 +1,10 @@
 var path = require('path');
 
+
+// THREE js replace
+//"three": "^0.74.0" -> "three": "mrdoob/three.js#35a5994828da7cebc0d8442062f784b3f9e1f818",
+//                                               #idcommit
+
 module.exports = {
   entry: path.resolve(__dirname, 'src/Main.js'),
   devtool: 'source-map',
@@ -54,7 +59,7 @@ module.exports = {
       PriorityQueue: 'js-priority-queue',
       'Renderer/ThreeExtented/jszip.min': 'jszip',
       'Renderer/ThreeExtented/ColladaLoader': 'ColladaLoader',
-      ColladaLoader: 'three/examples/js/loaders/ColladaLoader',      
+      ColladaLoader: 'three/examples/js/loaders/ColladaLoader',
       GlobeControls: 'Renderer/ThreeExtented/GlobeControls',
       StarGeometry:  'Renderer/ThreeExtented/StarGeometry'
     }

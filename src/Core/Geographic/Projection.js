@@ -245,7 +245,7 @@ define('Core/Geographic/Projection', ['Core/Geographic/CoordWMTS', 'Core/Math/Ma
             var x93 = x0+c*Math.exp(-1*n*gl)*Math.sin(n*(l-lc));
             var y93 = ys-c*Math.exp(-1*n*gl)*Math.cos(n*(l-lc));
 
-            //return {x93,y93};
+            //  return {x93,y93};
     }
 
 

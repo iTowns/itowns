@@ -32,7 +32,7 @@ and open the template in the editor.
         <div id="viewerDiv"></div>
         <script src="dist/itowns2.js"> </script>
         <script type="text/javascript">
-                
+
                var initCenter = { lon:2.3465, lat: 48.88, alt: 25000000};
 
                // iTowns namespace defined here
@@ -41,7 +41,7 @@ and open the template in the editor.
 
                itowns.viewer.createSceneGlobe(initCenter, viewerDiv) ;
                //console.log(itowns.viewer.pickPosition());
-               
+
               itowns.viewer.addImageryLayer({
                 protocol:   "wmts",
                 id:         "Ortho",
@@ -517,9 +517,9 @@ and open the template in the editor.
                         }
                 }
             });
-            
+
         itowns.viewer.update();
-        
+
 
 
                // THIS IS AN EXAMPLE OF INTERFACE TO INTERACT WITH ITOWNS
@@ -534,9 +534,6 @@ and open the template in the editor.
                    };
                };
                var text = new Menu();
-
-
-
 
                //  console.log(text);
                // itowns.viewer.setLayerVibility("IGNPO",text.Ortho);
@@ -581,7 +578,7 @@ and open the template in the editor.
                         }(idLayer);
 
                         gui.add(text, idLayer).onChange( onchangeVisibily).name(idLayer);
-                        gui.add(text, idLayer + '_Opacity').min(0.0).max(1.0).name(idLayer + ' opacity').onChange(onchangeOpacity);
+                        gui.add(text, idLayer + '_Opacity').min(0.0).max(1.0).name(' → Opacity').onChange(onchangeOpacity);
 
                     }
                 }
@@ -605,11 +602,11 @@ and open the template in the editor.
 			         // itowns.viewer.setStreetLevelImageryOn(newValue);
             //     });
 
-                document.addEventListener('loaded',function(){ 
-                    console.log("LOADED"); 
+                document.addEventListener('loaded',function(){
+                    console.log("LOADED");
                     //console.log(itowns.viewer.getMaxZoomLevel("IGNPO"));
                     //console.log(itowns.viewer.getMinZoomLevel("IGN_MNT"));
-                    } , 
+                    } ,
                 false);
 
                 //itowns.viewer.setCenter({lon:-74,lat:40,alt:0});
