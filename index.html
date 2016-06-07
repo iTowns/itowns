@@ -587,33 +587,36 @@ and open the template in the editor.
                     }
                 }
 
-                gui.add(text, 'KML').onChange(function(newValue) {
-                    itowns.viewer.showKML(newValue);
-                });
+                if(false)
+                {
+                    gui.add(text, 'KML').onChange(function(newValue) {
+                        itowns.viewer.showKML(newValue);
+                    });
 
-                var f2 = gui.addFolder('Atmosphere');
+                    var f2 = gui.addFolder('Atmosphere');
 
-                f2.open();
+                    f2.open();
 
-                f2.add(text, 'CloudsIR').onChange(function(newValue) {
-                     itowns.viewer.showClouds(newValue);
-                });
+                    f2.add(text, 'CloudsIR').onChange(function(newValue) {
+                         itowns.viewer.showClouds(newValue);
+                    });
 
-                f2.add(text, 'SatelliteAnimation').onChange(function(newValue) {
-                     itowns.viewer.showClouds(true, newValue);
-                });
+                    f2.add(text, 'SatelliteAnimation').onChange(function(newValue) {
+                         itowns.viewer.showClouds(true, newValue);
+                    });
 
-                f2.add(text, 'RealisticLighting').onChange(function(newValue) {
-                       itowns.viewer.setRealisticLightingOn(newValue);
-                });
+                    f2.add(text, 'RealisticLighting').onChange(function(newValue) {
+                           itowns.viewer.setRealisticLightingOn(newValue);
+                    });
 
-                f2.add(text, 'AnimateTime').onChange(function(newValue) {
-                    itowns.viewer.animateTime(newValue);
-                });
+                    f2.add(text, 'AnimateTime').onChange(function(newValue) {
+                        itowns.viewer.animateTime(newValue);
+                    });
 
-                f2.add(text, 'Orbit').onChange(function(newValue) {
-                    itowns.viewer.orbit(newValue);
-                });
+                    f2.add(text, 'Orbit').onChange(function(newValue) {
+                        itowns.viewer.orbit(newValue);
+                    });
+                }
 
 
                 //gui.add(text, 'Launch test api');
@@ -623,7 +626,7 @@ and open the template in the editor.
              //     });
 
                 document.addEventListener('loaded',function(){
-                    console.log("LOADED");
+                    console.log("Globe Loaded");
                     //console.log(itowns.viewer.getMaxZoomLevel("IGNPO"));
                     //console.log(itowns.viewer.getMinZoomLevel("IGN_MNT"));
                     //itowns.viewer.setCenter({lon:-74,lat:40,alt:0});
