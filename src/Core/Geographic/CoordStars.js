@@ -8,7 +8,7 @@ function(CoordCarto) {
 
 
     var CoordStars = {
-     
+
        getSunPosition:function() {
 
            var m = Math,
@@ -70,7 +70,7 @@ function(CoordCarto) {
                H = t-A;
 
              return {
-               EclipticLongitude:L,   
+               EclipticLongitude:L,
                declinaison: D,
                ascension: A,
                H: H,
@@ -81,7 +81,7 @@ function(CoordCarto) {
           };
 
        },
-       
+
        // Return scene coordinate ({x,y,z}) of sun
       getSunPositionInScene: function(ellipsoid, date,lat,lon){
 
@@ -92,11 +92,11 @@ function(CoordCarto) {
             var coSunCarto = ellipsoid.cartographicToCartesian(new CoordCarto().setFromDegreeGeo(0, longitude, 50000000));
           //  console.log(ellipsoid.cartographicToCartesian(new CoordCarto().setFromDegreeGeo(48.85, 2.35, 0)));
           //  console.log(ellipsoid.geodeticSurfaceNormalCartographic(new CoordCarto().setFromDegreeGeo(48.85, 2.35, 0)));
-            return coSunCarto; 
+            return coSunCarto;
       }
-       
-       
-  
+
+
+
     };
 
     return CoordStars;
