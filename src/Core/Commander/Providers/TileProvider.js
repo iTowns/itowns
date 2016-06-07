@@ -46,12 +46,10 @@ define('Core/Commander/Providers/TileProvider', [
             //Constructor
 
             this.projection = new Projection();
-            this.providerWMTS = new WMTS_Provider({support : gLDebug});//{url:"http://a.basemaps.cartocdn.com/",layer:"dark_all/"});
-            //this.providerWMS     = new WMS_Provider();
+            this.providerWMTS = new WMTS_Provider({support : gLDebug});
             this.ellipsoid = new Ellipsoid(size);
             this.providerKML = new KML_Provider(this.ellipsoid);
             this.builder = new BuilderEllipsoidTile(this.ellipsoid,this.projection);
-
 
             this.providerElevationTexture = this.providerWMTS;
             this.providerColorTexture = this.providerWMTS;

@@ -106,10 +106,6 @@ define('Core/Commander/Providers/WMTS_Provider', [
 
                 };
 
-            var url = "http://a.basemaps.cartocdn.com/dark_all/%TILEMATRIX/%COL/%ROW.png";
-
-            this.customUrl(url,10,55,233);
-
         }
 
         WMTS_Provider.prototype = Object.create(Provider.prototype);
