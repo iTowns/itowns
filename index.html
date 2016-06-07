@@ -538,13 +538,7 @@ and open the template in the editor.
                    };
                };
                var text = new Menu();
-
-               //  console.log(text);
-               // itowns.viewer.setLayerVibility("IGNPO",text.Ortho);
-               // itowns.viewer.setLayerVibility("IGNPO1",text.Carte);
-               // itowns.viewer.setLayerVibility("IGNPO2",text.CRS);
-
-               var gui = new dat.GUI( { autoPlace: false } );
+               var gui = new dat.GUI( { autoPlace: false});
                gui.domElement.id = 'menuDiv';
                viewerDiv.appendChild(gui.domElement);
 
@@ -587,12 +581,12 @@ and open the template in the editor.
                     }
                 }
 
+                gui.add(text, 'KML').onChange(function(newValue) {
+                    itowns.viewer.showKML(newValue);
+                });
+
                 if(false)
                 {
-                    gui.add(text, 'KML').onChange(function(newValue) {
-                        itowns.viewer.showKML(newValue);
-                    });
-
                     var f2 = gui.addFolder('Atmosphere');
 
                     f2.open();
@@ -618,12 +612,10 @@ and open the template in the editor.
                     });
                 }
 
-
                 //gui.add(text, 'Launch test api');
-
-             //gui.add(text, 'StreetLevelImagery').onChange(function(newValue) {
-			 // itowns.viewer.setStreetLevelImageryOn(newValue);
-             //     });
+                //gui.add(text, 'StreetLevelImagery').onChange(function(newValue) {
+			     // itowns.viewer.setStreetLevelImageryOn(newValue);
+                //     });
 
                 document.addEventListener('loaded',function(){
                     console.log("Globe Loaded");
