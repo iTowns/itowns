@@ -57,11 +57,6 @@ define('Globe/TileMesh', [
         this.frustumCulled = false;
         this.levelElevation = this.level;
 
-
-        // TEMP
-
-        this.delta = 1;
-
         // TODO not generic
         for (var i = 0; i < groupelevation.length; i++) {
             var gLev = groupelevation[i];
@@ -281,9 +276,8 @@ define('Globe/TileMesh', [
                 return false;
             else
                 return this.currentElevation < this.levelElevation ;
-
         else if(id === l_COLOR)
-            return this.material.getLevelLayerColor(l_COLOR) < this.level + this.delta;
+            return this.material.getLevelLayerColor(l_COLOR) < this.level + this.material.getDelta();
 
         return false;
     };
