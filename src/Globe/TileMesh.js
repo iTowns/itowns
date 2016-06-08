@@ -185,50 +185,47 @@ define('Globe/TileMesh', [
     };
 
     TileMesh.prototype.setTextureElevation = function(elevation) {
+        if (this.material === null) {
+            return;
+        }
+
         var texture = undefined;
         var pitScale;
-        var ancestor;
-        var image;
-        var minMax = new THREE.Vector2();
 
-        if (elevation === -1){ // No texture
-
+        if (elevation === -1) { // No texture
             this.currentElevation = -2;
-        }
-        else if (elevation === -2) {// get ancestor texture
-
+        } else if (elevation === -2) {// get ancestor texture
             var levelAncestor = this.getParentNotDownScaled(l_ELEVATION).currentElevation;
-            ancestor = this.getParentLevel(levelAncestor);
+            var ancestor = this.getParentLevel(levelAncestor);
+            var minMax = new THREE.Vector2();
 
-            if(ancestor) // TODO WHY -> because levelAncestor === -2
-            {
 
+            if (ancestor) { // TODO WHY -> because levelAncestor === -2
                 pitScale = ancestor.bbox.pitScale(this.bbox);
                 texture = ancestor.material.Textures[l_ELEVATION][0];
-                image = texture.image;
+                var image = texture.image;
 
                 minMax.y = ancestor.bbox.maxCarto.altitude;
                 minMax.x = ancestor.bbox.minCarto.altitude;
 
-                this.parseBufferElevation(image,minMax,pitScale);
+                this.parseBufferElevation(image, minMax, pitScale);
 
-                if(minMax.x !== 0 && minMax.y !== 0)
+                if (minMax.x !== 0 && minMax.y !== 0) {
                     this.setBBoxZ(minMax.x, minMax.y);
+                }
 
                 this.currentElevation = ancestor.currentElevation;
-            }
-            else
+            } else {
                 this.currentElevation = -2;
-
+            }
         } else {
-
             texture = elevation.texture;
             pitScale = new THREE.Vector3(0,0,1);
             this.setBBoxZ(elevation.min, elevation.max);
             this.currentElevation = elevation.level;
         }
 
-        this.material.setTexture(texture,l_ELEVATION, 0, pitScale);
+        this.material.setTexture(texture, l_ELEVATION, 0, pitScale);
 
         this.loadingCheck();
     };
@@ -257,15 +254,12 @@ define('Globe/TileMesh', [
     };
 
     TileMesh.prototype.setTexturesLayer = function(textures,idLayer){
-
-        if(!textures || this.material === null)
-        {
-            this.loadingCheck();
+        if (this.material === null) {
             return;
         }
-
-        this.material.setTexturesLayer(textures, idLayer);
-
+        if (textures) {
+            this.material.setTexturesLayer(textures, idLayer);
+        }
         this.loadingCheck();
     };
 
