@@ -48,10 +48,12 @@ define('Renderer/LayeredMaterial', ['THREE',
         for (var l = 0; l < nbLayer; l++) {
 
             // WARNING TODO prevent empty slot, but it's not the solution
-            this.Textures[l] = [emptyTexture,emptyTexture,emptyTexture,emptyTexture,emptyTexture,emptyTexture,emptyTexture,emptyTexture];
-            this.pitScale[l] = [vector,vector,vector,vector,vector,vector,vector,vector];
+            this.pitScale[l] = [vector,vector,vector,vector,vector,vector,vector,vector,vector,vector,vector,vector,vector,vector,vector,vector];
             this.nbTextures[l] = 0;
         }
+
+        this.Textures[0] = [emptyTexture];
+        this.Textures[1] = [emptyTexture,emptyTexture,emptyTexture,emptyTexture,emptyTexture,emptyTexture,emptyTexture,emptyTexture,emptyTexture,emptyTexture,emptyTexture,emptyTexture,emptyTexture,emptyTexture,emptyTexture,emptyTexture];
 
         this.paramLayers = [vector4,vector4,vector4,vector4,vector4,vector4,vector4,vector4];
         this.paramBLayers = [vector2,vector2,vector2,vector2,vector2,vector2,vector2,vector2];

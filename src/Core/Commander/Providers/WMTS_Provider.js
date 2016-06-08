@@ -135,7 +135,7 @@ define('Core/Commander/Providers/WMTS_Provider', [
                  this.layersWMTS[layer.id] = {
                     customUrl: layer.customUrl,
                     tileMatrixSet:layer.wmtsOptions.tileMatrixSet,
-                    zoom:{min:6,max:20},
+                    zoom:{min:2,max:20},
                     fx : layer.fx || 0.0
                 };
             }
