@@ -8,10 +8,11 @@
 define('Globe/Clouds', ['Renderer/NodeMesh',
     'THREE',
     'Renderer/c3DEngine',
+    'Core/defaultValue',
     'Core/Commander/Providers/WMS_Provider',
     'Renderer/Shader/CloudsFS.glsl',
     'Renderer/Shader/CloudsVS.glsl'
-], function(NodeMesh, THREE, gfxEngine, WMS_Provider, CloudsFS, CloudsVS) {
+], function(NodeMesh, THREE, gfxEngine, defaultValue, WMS_Provider, CloudsFS, CloudsVS) {
 
     function Clouds(/*size*/) {
 
@@ -21,7 +22,8 @@ define('Globe/Clouds', ['Renderer/NodeMesh',
         this.loader = new THREE.TextureLoader();
         this.loader.crossOrigin = '';
         this.live = false;
-
+        this.satelliteAnimation = true;
+        this.texture = null;
         this.geometry = new THREE.SphereGeometry(6400000, 96, 96);
 
         this.uniforms = {
@@ -39,7 +41,7 @@ define('Globe/Clouds', ['Renderer/NodeMesh',
             },
             lightPosition: {
                 type: "v3",
-                value: new THREE.Vector3(-0.5, 0.0, 1.0)
+                value: defaultValue.lightingPos.clone().normalize()
             }
         };
 
@@ -65,41 +67,65 @@ define('Globe/Clouds', ['Renderer/NodeMesh',
     }
 
     Clouds.prototype = Object.create(NodeMesh.prototype);
-
     Clouds.prototype.constructor = Clouds;
 
 
-    Clouds.prototype.generate = function() {
+    Clouds.prototype.generate = function(satelliteAnimation) {
 
-        this.live = true;
-        var coWMS = {
-            latBound: new THREE.Vector2(-85, 85),
-            longBound: new THREE.Vector2(-178, 178),
-            width: 2048,
-            height: 1024
-        };
+        this.satelliteAnimation = satelliteAnimation;
+        if(!satelliteAnimation){
+            this.live = true;
+            var coWMS = {
+                latBound: new THREE.Vector2(-85, 85),
+                longBound: new THREE.Vector2(-178, 178),
+                width: 2048,
+                height: 1024
+            };
 
+            var url = this.providerWMS.urlGlobalIR(coWMS, 0);
+            this.loader.load(url, function(texture) {
+                this.material.blending = THREE.NormalBlending;
+                this.material.uniforms.diffuse.value = texture;
+                this.material.uniforms.diffuse.needsUpdate = true;
+                this.animate();
+            }.bind(this));
 
-        var url = this.providerWMS.urlGlobalIR(coWMS, 0);
-        this.loader.load(url, function(texture) {
-            this.material.uniforms.diffuse.value = texture;
+        }else{
+
+            this.live = true;
+            var video = document.getElementById( 'video' );
+
+            this.texture = new THREE.VideoTexture( video );
+            this.texture.minFilter = THREE.LinearFilter;
+            this.texture.magFilter = THREE.LinearFilter;
+            this.texture.format    = THREE.RGBFormat;
+
+            // this.material = new THREE.MeshBasicMaterial( { color: 0xffffff, map: this.texture});//, transparent : true, opacity:0.8});
+            this.material.blending = THREE.AdditiveBlending;
+            this.material.uniforms.diffuse.value = this.texture;
             this.material.uniforms.diffuse.needsUpdate = true;
             this.animate();
-        }.bind(this));
 
-
+        }
 
     };
 
+
+
     Clouds.prototype.animate = function() {
 
-        this.material.uniforms.time.value += 0.01;
+        if(!this.satelliteAnimation) this.material.uniforms.time.value += 0.01;
         requestAnimationFrame(this.animate.bind(this));
     };
 
     Clouds.prototype.setLightingOn = function(enable){
          this.material.uniforms.lightingOn.value = enable === true ? 1 : 0;
-    }
+    };
+
+    Clouds.prototype.updateLightingPos = function(pos){
+
+         this.material.uniforms.lightPosition.value = pos.clone().normalize();
+    };
 
     return Clouds;
 
