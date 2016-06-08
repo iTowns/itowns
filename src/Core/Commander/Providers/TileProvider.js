@@ -46,12 +46,10 @@ define('Core/Commander/Providers/TileProvider', [
             //Constructor
 
             this.projection = new Projection();
-            this.providerWMTS = new WMTS_Provider({support : gLDebug});//{url:"http://a.basemaps.cartocdn.com/",layer:"dark_all/"});
-            //this.providerWMS     = new WMS_Provider();
+            this.providerWMTS = new WMTS_Provider({support : gLDebug});
             this.ellipsoid = new Ellipsoid(size);
             this.providerKML = new KML_Provider(this.ellipsoid);
             this.builder = new BuilderEllipsoidTile(this.ellipsoid,this.projection);
-
 
             this.providerElevationTexture = this.providerWMTS;
             this.providerColorTexture = this.providerWMTS;
@@ -156,14 +154,6 @@ define('Core/Commander/Providers/TileProvider', [
 
                 tile.material.paramLayers[i] = new THREE.Vector4(0.0, 0.0,layer.visible ? 1 : 0,layer.opacity);
                 tile.material.paramBLayers[i] = new THREE.Vector2(0.0, 0.0);
-            }
-
-            if(tile.WMTSs['PM'])
-                tile.material.nbTextures[2] = tile.WMTSs['PM'][1].row - tile.WMTSs['PM'][0].row + 1;
-            else
-            {
-                tile.material.nbTextures[2] = 1;
-                tile.delta = 0;
             }
 
             var requests = [

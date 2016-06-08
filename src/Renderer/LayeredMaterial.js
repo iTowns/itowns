@@ -160,7 +160,7 @@ define('Renderer/LayeredMaterial', ['THREE',
         this.uniforms.nColorLayer.value = param.length;
         for (var l = 0; l < param.length; l++)
         {
-            this.paramLayers[l].y = param[l].tileMT  === 'PM' ? 1 : 0 ;
+            this.paramLayers[l].y = param[l].tileMT  === 'PM' ? 1 : 0;
             this.paramLayers[l].x = param[l].pit;
             this.paramBLayers[l].x = param[l].fx;
         }
@@ -174,6 +174,16 @@ define('Renderer/LayeredMaterial', ['THREE',
                 this.setTexture(textures[i].texture,layer,i,textures[i].pitch);
 
         }
+    };
+
+    LayeredMaterial.prototype.getDelta = function()
+    {
+
+        if(this.paramLayers[0])
+            return this.paramLayers[0].y;
+        else
+            return 0;
+
     };
 
     LayeredMaterial.prototype.enablePickingRender = function(enable) {

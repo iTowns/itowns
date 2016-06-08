@@ -25,6 +25,7 @@ and open the template in the editor.
 
         </style>
         <meta charset="UTF-8">
+
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.5.1/dat.gui.min.js"></script>
     </head>
@@ -32,7 +33,7 @@ and open the template in the editor.
         <div id="viewerDiv"></div>
         <script src="dist/itowns2.js"> </script>
         <script type="text/javascript">
-                
+
                var initCenter = { lon:2.3465, lat: 48.88, alt: 25000000};
 
                // iTowns namespace defined here
@@ -41,7 +42,7 @@ and open the template in the editor.
 
                itowns.viewer.createSceneGlobe(initCenter, viewerDiv) ;
                //console.log(itowns.viewer.pickPosition());
-               
+
               itowns.viewer.addImageryLayer({
                 protocol:   "wmts",
                 id:         "Ortho",
@@ -517,33 +518,26 @@ and open the template in the editor.
                         }
                 }
             });
-            
+
         itowns.viewer.update();
-        
+
 
 
                // THIS IS AN EXAMPLE OF INTERFACE TO INTERACT WITH ITOWNS
                var Menu = function() {
                    this.CloudsIR = false;
+                   this.SatelliteAnimation = false;
                    this.RealisticLighting = false;
                    //this.StreetLevelImagery = false;
                    this.KML = false;
-                   this.Layer = "OrthoGeoportail";
+                   this.AnimateTime = false;
+                   this.Orbit = false;
                    this.api = function(){
                         itowns.viewer.launchCommandApi();
                    };
                };
                var text = new Menu();
-
-
-
-
-               //  console.log(text);
-               // itowns.viewer.setLayerVibility("IGNPO",text.Ortho);
-               // itowns.viewer.setLayerVibility("IGNPO1",text.Carte);
-               // itowns.viewer.setLayerVibility("IGNPO2",text.CRS);
-
-               var gui = new dat.GUI( { autoPlace: false } );
+               var gui = new dat.GUI( { autoPlace: false});
                gui.domElement.id = 'menuDiv';
                viewerDiv.appendChild(gui.domElement);
 
@@ -581,38 +575,55 @@ and open the template in the editor.
                         }(idLayer);
 
                         gui.add(text, idLayer).onChange( onchangeVisibily).name(idLayer);
-                        gui.add(text, idLayer + '_Opacity').min(0.0).max(1.0).name(idLayer + ' opacity').onChange(onchangeOpacity);
+                        gui.add(text, idLayer + '_Opacity').min(0.0).max(1.0).name(' → Opacity').onChange(onchangeOpacity);
 
                     }
                 }
-
-                gui.add(text, 'CloudsIR').onChange(function(newValue) {
-			           itowns.viewer.showClouds(newValue);
-                });
-
-                gui.add(text, 'RealisticLighting').onChange(function(newValue) {
-
-			           itowns.viewer.setRealisticLightingOn(newValue);
-                });
 
                 gui.add(text, 'KML').onChange(function(newValue) {
                     itowns.viewer.showKML(newValue);
                 });
 
+                if(false)
+                {
+                    var f2 = gui.addFolder('Atmosphere');
+
+                    f2.open();
+
+                    f2.add(text, 'CloudsIR').onChange(function(newValue) {
+                         itowns.viewer.showClouds(newValue);
+                    });
+
+                    f2.add(text, 'SatelliteAnimation').onChange(function(newValue) {
+                         itowns.viewer.showClouds(true, newValue);
+                    });
+
+                    f2.add(text, 'RealisticLighting').onChange(function(newValue) {
+                           itowns.viewer.setRealisticLightingOn(newValue);
+                    });
+
+                    f2.add(text, 'AnimateTime').onChange(function(newValue) {
+                        itowns.viewer.animateTime(newValue);
+                    });
+
+                    f2.add(text, 'Orbit').onChange(function(newValue) {
+                        itowns.viewer.orbit(newValue);
+                    });
+                }
+
                 //gui.add(text, 'Launch test api');
+                //gui.add(text, 'StreetLevelImagery').onChange(function(newValue) {
+			     // itowns.viewer.setStreetLevelImageryOn(newValue);
+                //     });
 
-            //     gui.add(text, 'StreetLevelImagery').onChange(function(newValue) {
-			         // itowns.viewer.setStreetLevelImageryOn(newValue);
-            //     });
-
-                document.addEventListener('loaded',function(){ 
-                    console.log("LOADED"); 
+                document.addEventListener('loaded',function(){
+                    console.log("Globe Loaded");
                     //console.log(itowns.viewer.getMaxZoomLevel("IGNPO"));
                     //console.log(itowns.viewer.getMinZoomLevel("IGN_MNT"));
-                    } , 
+                    //itowns.viewer.setCenter({lon:-74,lat:40,alt:0});
+                    } ,
                 false);
 
-                //itowns.viewer.setCenter({lon:-74,lat:40,alt:0});
         </script>
     </body>
 </html>
