@@ -156,9 +156,6 @@ define('Core/Commander/Providers/TileProvider', [
                 tile.material.paramBLayers[i] = new THREE.Vector2(0.0, 0.0);
             }
 
-            if(!tile.WMTSs['PM'])
-                tile.delta = 0;
-
             var requests = [
 
                     this.providerElevationTexture.getElevationTexture(tile,elevationServices).then(function(terrain){
