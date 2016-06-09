@@ -89,7 +89,7 @@ function(CoordCarto) {
             var dayMilliSec = 24 * 3600000;
 
             var longitude = sun.ascension + ((date % dayMilliSec) / dayMilliSec) * -360 + 180;  // cause midday
-            var coSunCarto = ellipsoid.cartographicToCartesian(new CoordCarto().setFromDegreeGeo(0, longitude, 50000000));
+            var coSunCarto = ellipsoid.cartographicToCartesian(new CoordCarto().setFromDegreeGeo(longitude, lat , 50000000));
           //  console.log(ellipsoid.cartographicToCartesian(new CoordCarto().setFromDegreeGeo(48.85, 2.35, 0)));
           //  console.log(ellipsoid.geodeticSurfaceNormalCartographic(new CoordCarto().setFromDegreeGeo(48.85, 2.35, 0)));
             return coSunCarto;
