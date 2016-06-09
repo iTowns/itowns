@@ -137,10 +137,10 @@ define('Globe/Globe', [
 
     };
 
-    Globe.prototype.showClouds = function(show) {
+    Globe.prototype.showClouds = function(show, satelliteAnimation) {
 
-        if (this.clouds.live === false && show) {
-            this.clouds.generate();
+        if (/*this.clouds.live === false && */show) {
+            this.clouds.generate(satelliteAnimation);
         }
         this.clouds.visible = show;
     };
@@ -150,6 +150,12 @@ define('Globe/Globe', [
         this.batiments.visible = show;
 
         this.batiments.children[0].visible = show;
+    };
+
+    Globe.prototype.updateLightingPos = function(pos) {
+
+        this.atmosphere.updateLightingPos(pos);
+        this.clouds.updateLightingPos(pos);
     };
 
      Globe.prototype.getLayerColor = function(id){

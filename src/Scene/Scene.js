@@ -23,17 +23,33 @@ define('Scene/Scene', [
     'Scene/BrowseTree',
     'Scene/NodeProcess',
     'Scene/Quadtree',
+    'Core/Geographic/CoordStars',
+    'Core/defaultValue',
     'Scene/Layer',
     'Core/Geographic/CoordCarto',
     'Core/System/Capabilities',
-    'MobileMapping/MobileMappingLayer'
+    'MobileMapping/MobileMappingLayer'],
 
-], function(c3DEngine, Globe, ManagerCommands, TileProvider,
-            PanoramicProvider, Ellipsoid, PanoramicMesh, BrowseTree, NodeProcess, Quadtree, Layer, CoordCarto,
-            Capabilities, MobileMappingLayer) {
+    function(
+        c3DEngine,
+        Globe,
+        ManagerCommands,
+        TileProvider,
+        PanoramicProvider,
+        Ellipsoid,
+        PanoramicMesh,
+        BrowseTree,
+        NodeProcess,
+        Quadtree,
+        CoordStars,
+        defaultValue,
+        Layer,
+        CoordCarto,
+        Capabilities,
+        MobileMappingLayer) {
 
     var instanceScene = null;
-var event = new Event('build');
+    var event = new Event('build');
     var NO_SUBDIVISE = 0;
     var SUBDIVISE = 1;
     var CLEAN = 2;
@@ -47,7 +63,7 @@ var event = new Event('build');
         // /!\ Doesn't work
         this.size = {x:6378137,y: 6356752.3142451793,z:6378137};
 
-        var positionCamera = new Ellipsoid(this.size).cartographicToCartesian(new CoordCarto().setFromDegreeGeo(coordCarto.lon, coordCarto.lat, coordCarto.alt));
+        var positionCamera = new Ellipsoid(this.size).cartographicToCartesian(new CoordCarto().setFromDegreeGeo(coordCarto.longitude, coordCarto.latitude, coordCarto.altitude));
 
         this.layers = [];
         this.map = null;
@@ -55,13 +71,16 @@ var event = new Event('build');
         this.cameras = null;
         this.selectNodes = null;
         this.managerCommand = ManagerCommands(this);
+        this.orbitOn = false;
 
         this.gLDebug = gLDebug;
         this.gfxEngine = c3DEngine(this,positionCamera,viewerDiv, debugMode,gLDebug);
         this.browserScene = new BrowseTree(this.gfxEngine);
         this.cap = new Capabilities();
 
-
+		this.time = 0;
+        this.orbitOn = false;
+        this.rAF = null;
     }
 
     Scene.prototype.constructor = Scene;
@@ -258,6 +277,57 @@ var event = new Event('build');
         }
 
         this.updateScene3D();
+    };
+
+     Scene.prototype.setLightingPos = function(pos){
+
+        if(pos)
+            this.lightingPos = pos;
+        else{
+             var coSun = CoordStars.getSunPositionInScene(this.getEllipsoid(), new Date().getTime(), 0, 0); //48.85, 2.35);
+             this.lightingPos = coSun;
+        }
+
+        defaultValue.lightingPos = this.lightingPos;
+
+        this.browserScene.updateMaterialUniform("lightPosition", this.lightingPos.clone().normalize());
+        this.layers[0].node.updateLightingPos(this.lightingPos);
+     };
+
+     // Should be moved in time module: A single loop update registered object every n millisec
+     Scene.prototype.animateTime = function(value){
+
+        if(value){
+            this.time += 4000;
+
+            if( this.time){
+
+                var nMilliSeconds = this.time;
+                var coSun= CoordStars.getSunPositionInScene(this.getEllipsoid(), new Date().getTime() + 3.6 * nMilliSeconds, 0, 0);
+                this.lightingPos = coSun;
+                this.browserScene.updateMaterialUniform("lightPosition", this.lightingPos.clone().normalize());
+                this.layers[0].node.updateLightingPos(this.lightingPos);
+                if (this.orbitOn){  // ISS orbit is 0.0667 degree per second -> every 60th of sec: 0.00111;
+                     var p = this.gfxEngine.camera.camera3D.position;
+                     var r = Math.sqrt(p.z * p.z + p.x * p.x);
+                     var alpha = Math.atan2(p.z, p.x) + 0.0001;
+                     p.x = r * Math.cos(alpha);
+                     p.z = r * Math.sin(alpha);
+                }
+
+                this.gfxEngine.update();
+               // this.gfxEngine.renderScene();
+             }
+             this.rAF = requestAnimationFrame(this.animateTime.bind(this));
+
+        } else
+              window.cancelAnimationFrame(this.rAF);
+     };
+
+    Scene.prototype.orbit = function(value) {
+
+         //this.gfxEngine.controls = null;
+         this.orbitOn = value;
     };
 
     return function(coordCarto,debugMode,gLDebug) {
