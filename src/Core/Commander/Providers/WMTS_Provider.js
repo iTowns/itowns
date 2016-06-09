@@ -120,12 +120,9 @@ define('Core/Commander/Providers/WMTS_Provider', [
             urld = urld.replace('%ROW',row.toString());
             urld = urld.replace('%COL',col.toString());
 
-            //console.log(url);
-
             return urld;
 
         };
-
 
         WMTS_Provider.prototype.addLayer = function(layer)
         {
@@ -174,9 +171,6 @@ define('Core/Commander/Providers/WMTS_Provider', [
          * @returns {Object@call;create.urlOrtho.url|String}
          */
         WMTS_Provider.prototype.url = function(coWMTS,layerId) {
-
-            // var baseUrl =  this.layersWMTS[layerId].baseUrl;
-            // var t = baseUrl + "&TILEMATRIX=" + coWMTS.zoom + "&TILEROW=" + coWMTS.row + "&TILECOL=" + coWMTS.col;
 
             return this.customUrl(this.layersWMTS[layerId].customUrl,coWMTS.zoom, coWMTS.row,coWMTS.col);
 
@@ -250,7 +244,6 @@ define('Core/Commander/Providers/WMTS_Provider', [
                     //result.texture.magFilter = THREE.NearestFilter;
                     //result.texture.minFilter = THREE.NearestFilter;
 
-
                     // TODO ATTENTION verifier le context
                     result.level = coWMTS.zoom;
 
@@ -274,14 +267,9 @@ define('Core/Commander/Providers/WMTS_Provider', [
          */
         WMTS_Provider.prototype.getColorTexture = function(coWMTS, pitch,layerId) {
 
-            var pack = function(pitch) {
-                this.texture;
-                this.pitch = pitch;
-            };
-
-            var result = new pack(pitch);
-
+            var result = {pitch:pitch};
             var url = this.url(coWMTS,layerId);
+
             result.texture = this.cache.getRessource(url);
 
             if (result.texture !== undefined) {
@@ -369,7 +357,7 @@ define('Core/Commander/Providers/WMTS_Provider', [
             return tile.level >= layer.zoom.min && tile.level <= layer.zoom.max;
         }
 
-        WMTS_Provider.prototype.getColorTextures = function(tile,layerWMTSId) {
+        WMTS_Provider.prototype.getColorTextures = function(tile,layerWMTSId,params) {
 
             var promises = [];
             var paramMaterial = [];
@@ -382,8 +370,9 @@ define('Core/Commander/Providers/WMTS_Provider', [
                 if (this.tileInsideLimit(tile,layer))
                 {
                     var bcoord = tile.WMTSs[layer.tileMatrixSet];
-                    paramMaterial.push({tileMT:layer.tileMatrixSet,pit:promises.length,fx:layer.fx});
 
+                    if(lookAtAncestor)
+                        paramMaterial.push({tileMT:layer.tileMatrixSet,pit:promises.length,visible:params[i].visible,opacity:params[i].opacity,fx:layer.fx});
 
                     // WARNING the direction textures is important
                     for (var row = bcoord[1].row; row >=  bcoord[0].row; row--) {

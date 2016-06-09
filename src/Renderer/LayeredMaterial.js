@@ -147,7 +147,6 @@ define('Renderer/LayeredMaterial', ['THREE',
 
     LayeredMaterial.prototype.setTexture = function(texture, layer, slot, pitScale) {
 
-
         if(this.Textures[layer][slot] === undefined || this.Textures[layer][slot].image === undefined)
             this.nbTextures[layer] += 1 ;
 
@@ -162,9 +161,8 @@ define('Renderer/LayeredMaterial', ['THREE',
         this.uniforms.nColorLayer.value = param.length;
         for (var l = 0; l < param.length; l++)
         {
-            this.paramLayers[l].y = param[l].tileMT  === 'PM' ? 1 : 0;
-            this.paramLayers[l].x = param[l].pit;
-            this.paramBLayers[l].x = param[l].fx;
+            this.paramLayers[l] = new THREE.Vector4(param[l].pit, param[l].tileMT  === 'PM' ? 1 : 0,param[l].visible,param[l].opacity);
+            this.paramBLayers[l] = new THREE.Vector2(param[l].fx, 0.0);
         }
     }
 
