@@ -47,8 +47,7 @@ void main()
     gl_FragColor.a = min(time * min( coefDistCam, 1.2) , 1.) * (vUv.y <= 0.75 ? l : (1. - ((vUv.y - 0.75) / 0.25)) * l  );
 
     if(lightingOn == 1){   // Add lighting
-        float light = dot(vNormal, lightPosition); //normalize(pos.xyz)
+        float light = min(2. * dot(vNormal, lightPosition),1.); //normalize(pos.xyz)
         gl_FragColor.a *= -light;
     }
 }
-
