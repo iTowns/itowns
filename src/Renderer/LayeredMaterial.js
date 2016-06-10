@@ -77,8 +77,8 @@ define('Renderer/LayeredMaterial', ['THREE',
 
         // PIT n Textures
         // Projection
-        // Opacity
         // Visible
+        // Opacity
 
         this.uniforms.paramLayers = {
             type: "v4v",
@@ -153,6 +153,25 @@ define('Renderer/LayeredMaterial', ['THREE',
         // BEWARE: array [] -> size: 0; array [10]="wao" -> size: 11
         this.Textures[layer][slot] = texture ? texture : emptyTexture;
         this.pitScale[layer][slot] = pitScale ? pitScale : new THREE.Vector3(0.0,0.0,1.0);
+
+        // TEMP
+        if(texture === null)
+        {
+            var l = this.getIdLayer(slot);
+            if(l)
+                this.paramLayers[l].z = 0;
+        }
+
+    };
+
+    LayeredMaterial.prototype.getIdLayer = function(slot)
+    {
+        for (var l = 0; l < this.paramLayers.length; l++)
+        {
+            if(slot===this.paramLayers[l].x)
+                return l;
+        }
+
 
     };
 
