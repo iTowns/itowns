@@ -221,13 +221,15 @@ define('Core/Commander/Providers/WMTS_Provider', [
             if (textureCache !== undefined)
                 return when(textureCache);
 
-            var limits = layer.tileMatrixSetLimits[coWMTS.zoom];
 
-            if (!limits || !coWMTS.isInside(limits)) {
-                var texture = -1;
-                this.cache.addRessource(url, texture);
-                return when(texture);
-            }
+            // bug #74
+            //var limits = layer.tileMatrixSetLimits[coWMTS.zoom];
+            // if (!limits || !coWMTS.isInside(limits)) {
+            //     var texture = -1;
+            //     this.cache.addRessource(url, texture);
+            //     return when(texture);
+            // }
+            // -> bug #74
 
             return this._IoDriver.read(url).then(function(result) {
                 if (result !== undefined) {
