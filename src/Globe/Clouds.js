@@ -29,7 +29,7 @@ define('Globe/Clouds', ['Renderer/NodeMesh',
         this.uniforms = {
             diffuse: {
                 type: "t",
-                value: this.loader.load("http://realearth.ssec.wisc.edu/api/image?products=globalir&bounds=-85,-178,85,178&width=256&height=128")
+                value: new THREE.Texture()//this.loader.load("http://realearth.ssec.wisc.edu/api/image?products=globalir&bounds=-85,-178,85,178&width=256&height=128")
             },
             time: {
                 type: "f",

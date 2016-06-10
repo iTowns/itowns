@@ -298,7 +298,12 @@ define('Core/Commander/Providers/WMTS_Provider', [
 
                 return result;
 
-            }.bind(this));
+            }.bind(this)).catch(function(/*reason*/) {
+                    //console.error('getColorTexture failed for url |', url, '| Reason:' + reason);
+                    result.texture = null;
+
+                    return result;
+                });
 
         };
 

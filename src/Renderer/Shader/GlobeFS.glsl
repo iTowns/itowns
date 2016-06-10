@@ -212,15 +212,17 @@ void main() {
 
                         if(paramsB.x > 0.0)
                         {
-                            // float b = 0.90;
-                            // vec4 dd = max(vec4(0.0,0.0,0.0,0.0),layerColor - b);
-                            // float a = (dd.r + dd.g + dd.b)/(3.0*(1.0-b));
-
-                            float a = (layerColor.r + layerColor.g + layerColor.b)/3.0;
+                            vec3 white = vec3(1.0,1.0,1.0);
+                            vec3 coul = vec3(layerColor.xyz);
+                            float a = 1.0 - length(coul-white);
+                            a =  max(a,0.05);
+                            if(paramsB.x > 2.0)
+                            {
+                                a = (layerColor.r + layerColor.g + layerColor.b)/3.0;
+                                layerColor*= layerColor*layerColor;
+                            }
 
                             lum = 1.0-pow(abs(a),paramsB.x);
-                            if(paramsB.x > 1.0)
-                                layerColor*= layerColor*layerColor;
                         }
 
                         diffuseColor = mix( diffuseColor,layerColor, lum*params.w);
