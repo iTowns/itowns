@@ -123,7 +123,6 @@ define('Globe/TileMesh', [
             this.remove(child);
             child.dispose();
         }
-        this.setDisplayed(true);
     };
 
     TileMesh.prototype.useParent = function() {
