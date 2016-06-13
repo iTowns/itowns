@@ -32,6 +32,7 @@ define('Scene/BrowseTree', ['Globe/TileMesh', 'THREE'], function( TileMesh, THRE
             this._resetQuadtreeNode = function(node)
             {
                 node.setVisibility(false);
+                node.setDisplayed(false);
                 node.setSelected(false);
             };
         }
@@ -39,6 +40,7 @@ define('Scene/BrowseTree', ['Globe/TileMesh', 'THREE'], function( TileMesh, THRE
             this._resetQuadtreeNode = function(node)
             {
                 node.setVisibility(false);
+                node.setDisplayed(false);
             };
 
     }
@@ -67,7 +69,7 @@ define('Scene/BrowseTree', ['Globe/TileMesh', 'THREE'], function( TileMesh, THRE
 
         this.resetQuadtreeNode(node);
 
-        if(node.parent.material.visible)
+        if(node.parent.isDisplayed())
             return false;
 
         if(!process.isCulled(node, camera)) {
@@ -76,7 +78,7 @@ define('Scene/BrowseTree', ['Globe/TileMesh', 'THREE'], function( TileMesh, THRE
             this.uniformsProcess(node, camera);
         }
 
-        return !node.material.visible && !node.wait;
+        return !node.isDisplayed() && !node.pendingSubdivision;
 
     };
 
@@ -116,8 +118,6 @@ define('Scene/BrowseTree', ['Globe/TileMesh', 'THREE'], function( TileMesh, THRE
      * @returns {undefined}
      */
     BrowseTree.prototype.browse = function(tree, camera, process, optional) {
-
-        this.nodeVisible = 0;
         this.tree = tree;
 
         camera.updateMatrixWorld();
@@ -162,9 +162,9 @@ define('Scene/BrowseTree', ['Globe/TileMesh', 'THREE'], function( TileMesh, THRE
         var childrenCleaned = 0;
         for (var i = 0; i < node.children.length; i++) {
             var child = node.children[i];
-            // TODO node.wait === true ---> delete child and switch to node.wait = false
+            // TODO node.pendingSubdivision === true ---> delete child and switch to node.pendingSubdivision = false
 
-            if (this._clean(child, level,process, camera) && ((child.level >= level && child.children.length === 0 && !process.checkSSE(child, camera) && !node.wait) || node.level === 2))
+            if (this._clean(child, level,process, camera) && ((child.level >= level && child.children.length === 0 && !process.checkSSE(child, camera) && !node.pendingSubdivision) || node.level === 2))
                 childrenCleaned++;
         }
 
