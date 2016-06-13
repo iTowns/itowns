@@ -49,7 +49,7 @@ define('Scene/Scene', [
         MobileMappingLayer) {
 
     var instanceScene = null;
-    var event = new Event('build');
+    var event = new Event('globe-builded');
     var NO_SUBDIVISE = 0;
     var SUBDIVISE = 1;
     var CLEAN = 2;
@@ -81,6 +81,8 @@ define('Scene/Scene', [
 		this.time = 0;
         this.orbitOn = false;
         this.rAF = null;
+
+        this.viewerDiv = viewerDiv;
     }
 
     Scene.prototype.constructor = Scene;
@@ -138,7 +140,7 @@ define('Scene/Scene', [
                     this.browserScene.browse(quadtree,this.currentCamera(), process, SUBDIVISE);
                     if (this.managerCommand.isFree()){
                         this.browserScene.browse(quadtree,this.currentCamera(), process, CLEAN)
-                        document.dispatchEvent(event);
+                        this.viewerDiv.dispatchEvent(event);
 
                     }
                 }

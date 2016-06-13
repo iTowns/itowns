@@ -24,8 +24,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
            Projection) {
 
     var loaded = false;
-    var eventLoaded = new Event('loaded');
-
+    var eventLoaded = new Event('globe-loaded');
 
     function ApiGlobe() {
         //Constructor
@@ -41,18 +40,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
     ApiGlobe.prototype.constructor = ApiGlobe;
 
 
-    document.addEventListener('build', function(){
 
-        //        var event = new Event('empty');
-        //        document.addEventListener('empty', console.log('Your turn'));
-            if(loaded == false)
-            {
-
-                loaded = true;
-                document.dispatchEvent(eventLoaded);
-            }
-        }
-        , false);
 //    var event = new Event('empty');
 //    document.addEventListener('empty', console.log('Your turn'));
 //    document.dispatchEvent(event);
@@ -173,6 +161,19 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
     ApiGlobe.prototype.createSceneGlobe = function(coordCarto, viewerDiv) {
         // TODO: Normalement la creation de scene ne doit pas etre ici....
         // Deplacer plus tard
+
+        viewerDiv.addEventListener('globe-builded', function(){
+
+        //        var event = new Event('empty');
+        //        document.addEventListener('empty', console.log('Your turn'));
+            if(loaded == false)
+            {
+
+                loaded = true;
+                viewerDiv.dispatchEvent(eventLoaded);
+            }
+        }
+        , false);
 
         var gLDebug = false; // true to support GLInspector addon
         var debugMode = false;
