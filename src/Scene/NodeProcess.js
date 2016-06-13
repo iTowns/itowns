@@ -87,7 +87,7 @@ define('Scene/NodeProcess', ['Scene/BoundingBox', 'Renderer/Camera', 'Core/Math/
 
         var sse = this.checkSSE(node, camera)
 
-        if(params.withUp && node.material.visible && !node.wait )
+        if(params.withUp && node.material.visible && !node.pendingSubdivision )
         {
             if (sse){
                 // request level up

@@ -68,6 +68,7 @@ define('Globe/TileMesh', [
 
         // Layer
         this.currentElevation = -1;
+        this.setDisplayed(false);
 
     }
 
@@ -122,7 +123,7 @@ define('Globe/TileMesh', [
             this.remove(child);
             child.dispose();
         }
-        this.material.visible = true;
+        this.setDisplayed(true);
     };
 
     TileMesh.prototype.useParent = function() {
