@@ -49,7 +49,7 @@ define('Scene/Scene', [
         MobileMappingLayer) {
 
     var instanceScene = null;
-    var event = new Event('build');
+    var event = new Event('globe-builded');
     var NO_SUBDIVISE = 0;
     var SUBDIVISE = 1;
     var CLEAN = 2;
@@ -63,7 +63,7 @@ define('Scene/Scene', [
         // /!\ Doesn't work
         this.size = {x:6378137,y: 6356752.3142451793,z:6378137};
 
-        var positionCamera = new Ellipsoid(this.size).cartographicToCartesian(new CoordCarto().setFromDegreeGeo(coordCarto.lon, coordCarto.lat, coordCarto.alt));
+        var positionCamera = new Ellipsoid(this.size).cartographicToCartesian(new CoordCarto().setFromDegreeGeo(coordCarto.longitude, coordCarto.latitude, coordCarto.altitude));
 
         this.layers = [];
         this.map = null;
@@ -81,6 +81,8 @@ define('Scene/Scene', [
 		this.time = 0;
         this.orbitOn = false;
         this.rAF = null;
+
+        this.viewerDiv = viewerDiv;
     }
 
     Scene.prototype.constructor = Scene;
@@ -138,7 +140,7 @@ define('Scene/Scene', [
                     this.browserScene.browse(quadtree,this.currentCamera(), process, SUBDIVISE);
                     if (this.managerCommand.isFree()){
                         this.browserScene.browse(quadtree,this.currentCamera(), process, CLEAN)
-                        document.dispatchEvent(event);
+                        this.viewerDiv.dispatchEvent(event);
 
                     }
                 }
@@ -284,7 +286,7 @@ define('Scene/Scene', [
         if(pos)
             this.lightingPos = pos;
         else{
-             var coSun = CoordStars.getSunPositionInScene(this.getEllipsoid(), new Date().getTime(), 0, 0); //48.85, 2.35);
+             var coSun = CoordStars.getSunPositionInScene(this.getEllipsoid(), new Date().getTime(),48.85, 2.35);
              this.lightingPos = coSun;
         }
 
