@@ -48,10 +48,12 @@ define('Renderer/LayeredMaterial', ['THREE',
         for (var l = 0; l < nbLayer; l++) {
 
             // WARNING TODO prevent empty slot, but it's not the solution
-            this.Textures[l] = [emptyTexture,emptyTexture,emptyTexture,emptyTexture,emptyTexture,emptyTexture,emptyTexture,emptyTexture];
-            this.pitScale[l] = [vector,vector,vector,vector,vector,vector,vector,vector];
+            this.pitScale[l] = [vector,vector,vector,vector,vector,vector,vector,vector,vector,vector,vector,vector,vector,vector,vector,vector];
             this.nbTextures[l] = 0;
         }
+
+        this.Textures[0] = [emptyTexture];
+        this.Textures[1] = [emptyTexture,emptyTexture,emptyTexture,emptyTexture,emptyTexture,emptyTexture,emptyTexture,emptyTexture,emptyTexture,emptyTexture,emptyTexture,emptyTexture,emptyTexture,emptyTexture,emptyTexture,emptyTexture];
 
         this.paramLayers = [vector4,vector4,vector4,vector4,vector4,vector4,vector4,vector4];
         this.paramBLayers = [vector2,vector2,vector2,vector2,vector2,vector2,vector2,vector2];
@@ -75,8 +77,8 @@ define('Renderer/LayeredMaterial', ['THREE',
 
         // PIT n Textures
         // Projection
-        // Opacity
         // Visible
+        // Opacity
 
         this.uniforms.paramLayers = {
             type: "v4v",
@@ -145,13 +147,31 @@ define('Renderer/LayeredMaterial', ['THREE',
 
     LayeredMaterial.prototype.setTexture = function(texture, layer, slot, pitScale) {
 
-
         if(this.Textures[layer][slot] === undefined || this.Textures[layer][slot].image === undefined)
             this.nbTextures[layer] += 1 ;
 
         // BEWARE: array [] -> size: 0; array [10]="wao" -> size: 11
         this.Textures[layer][slot] = texture ? texture : emptyTexture;
         this.pitScale[layer][slot] = pitScale ? pitScale : new THREE.Vector3(0.0,0.0,1.0);
+
+        // TEMP
+        if(texture === null)
+        {
+            var l = this.getIdLayer(slot);
+            if(l)
+                this.paramLayers[l].z = 0;
+        }
+
+    };
+
+    LayeredMaterial.prototype.getIdLayer = function(slot)
+    {
+        for (var l = 0; l < this.paramLayers.length; l++)
+        {
+            if(slot===this.paramLayers[l].x)
+                return l;
+        }
+
 
     };
 
@@ -160,9 +180,8 @@ define('Renderer/LayeredMaterial', ['THREE',
         this.uniforms.nColorLayer.value = param.length;
         for (var l = 0; l < param.length; l++)
         {
-            this.paramLayers[l].y = param[l].tileMT  === 'PM' ? 1 : 0 ;
-            this.paramLayers[l].x = param[l].pit;
-            this.paramBLayers[l].x = param[l].fx;
+            this.paramLayers[l] = new THREE.Vector4(param[l].pit, param[l].tileMT  === 'PM' ? 1 : 0,param[l].visible,param[l].opacity);
+            this.paramBLayers[l] = new THREE.Vector2(param[l].fx, 0.0);
         }
     }
 
@@ -174,6 +193,16 @@ define('Renderer/LayeredMaterial', ['THREE',
                 this.setTexture(textures[i].texture,layer,i,textures[i].pitch);
 
         }
+    };
+
+    LayeredMaterial.prototype.getDelta = function()
+    {
+
+        if(this.paramLayers[0])
+            return this.paramLayers[0].y;
+        else
+            return 0;
+
     };
 
     LayeredMaterial.prototype.enablePickingRender = function(enable) {

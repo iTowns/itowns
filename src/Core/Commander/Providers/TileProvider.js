@@ -144,6 +144,9 @@ define('Core/Commander/Providers/TileProvider', [
 
             tile.WMTSs = [];
 
+            // TODO passer mes layers colors?
+            var paramsColor = [];
+
             for (var i = 0; i < colorServices.length; i++)
             {
                 var layer = map.colorTerrain.children[i];
@@ -152,12 +155,8 @@ define('Core/Commander/Providers/TileProvider', [
                 if(!tile.WMTSs[tileMT])
                     tile.WMTSs[tileMT] = this.projection.getCoordWMTS_WGS84(tile.tileCoord, tile.bbox,tileMT);
 
-                tile.material.paramLayers[i] = new THREE.Vector4(0.0, 0.0,layer.visible ? 1 : 0,layer.opacity);
-                tile.material.paramBLayers[i] = new THREE.Vector2(0.0, 0.0);
+                 paramsColor[i] = {visible:layer.visible ? 1 : 0,opacity:layer.opacity || 1.0};
             }
-
-            if(!tile.WMTSs['PM'])
-                tile.delta = 0;
 
             var requests = [
 
@@ -165,7 +164,7 @@ define('Core/Commander/Providers/TileProvider', [
 
                         this.setTextureElevation(terrain);}.bind(tile)),
 
-                    this.providerColorTexture.getColorTextures(tile,colorServices).then(function(colorTextures){
+                    this.providerColorTexture.getColorTextures(tile,colorServices,paramsColor).then(function(colorTextures){
 
                         this.setTexturesLayer(colorTextures,1);}.bind(tile))
 
