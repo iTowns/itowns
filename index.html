@@ -34,7 +34,7 @@ and open the template in the editor.
         <script src="dist/itowns2.js"> </script>
         <script type="text/javascript">
 
-               var initCenter = { lon:2.3465, lat: 48.88, alt: 25000000};
+               var initCenter = { longitude:2.3465, latitude: 48.88, altitude: 25000000};
 
                // iTowns namespace defined here
 
@@ -616,12 +616,11 @@ and open the template in the editor.
 			     // itowns.viewer.setStreetLevelImageryOn(newValue);
                 //     });
 
-                document.addEventListener('loaded',function(){
+                viewerDiv.addEventListener('globe-loaded',function(){
                     console.log("Globe Loaded");
-                    //console.log(itowns.viewer.getMaxZoomLevel("IGNPO"));
-                    //console.log(itowns.viewer.getMinZoomLevel("IGN_MNT"));
-                    //itowns.viewer.setCenter({lon:-74,lat:40,alt:0});
-                    } ,
+                    //itowns.viewer.setCenter({longitude:-74,latitude:40,altitude:0});
+                    //console.log(itowns.viewer.getMaxZoomLevel("Ortho"));
+                } ,
                 false);
 
         </script>
