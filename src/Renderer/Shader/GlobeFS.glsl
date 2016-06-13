@@ -31,7 +31,7 @@ precision highp int;
 // conformance/glsl/bugs/nested-loops-with-break-and-continue.html
 // Resolve CHROME unstable 52
 
-const int   TEX_UNITS   = 8;
+const int   TEX_UNITS   = 16;
 const float PI          = 3.14159265359;
 const float INV_TWO_PI  = 1.0 / (2.0*PI);
 const float PI2         = 1.57079632679;
@@ -86,7 +86,7 @@ const float borderS = 0.007;
 // so we have to resort to an if/else cascade.
 
 
-vec4 colorAtIdUv(sampler2D dTextures[TEX_UNITS],int id, vec2 uv){
+vec4 colorAtIdUv(sampler2D dTextures[16],int id, vec2 uv){
 
     // for (int i = 0; i < TEX_UNITS; ++i)
     //     if(i == id)
@@ -100,6 +100,14 @@ vec4 colorAtIdUv(sampler2D dTextures[TEX_UNITS],int id, vec2 uv){
     else if (id == 5) return texture2D(dTextures[5],  pitUV(uv,pitScale_L01[5]));
     else if (id == 6) return texture2D(dTextures[6],  pitUV(uv,pitScale_L01[6]));
     else if (id == 7) return texture2D(dTextures[7],  pitUV(uv,pitScale_L01[7]));
+    else if (id == 8) return texture2D(dTextures[8],  pitUV(uv,pitScale_L01[8]));
+    else if (id == 9) return texture2D(dTextures[9],  pitUV(uv,pitScale_L01[9]));
+    else if (id == 10) return texture2D(dTextures[10],  pitUV(uv,pitScale_L01[10]));
+    else if (id == 11) return texture2D(dTextures[11],  pitUV(uv,pitScale_L01[11]));
+    else if (id == 12) return texture2D(dTextures[12],  pitUV(uv,pitScale_L01[12]));
+    else if (id == 13) return texture2D(dTextures[13],  pitUV(uv,pitScale_L01[13]));
+    else if (id == 14) return texture2D(dTextures[14],  pitUV(uv,pitScale_L01[14]));
+    else if (id == 15) return texture2D(dTextures[15],  pitUV(uv,pitScale_L01[15]));
     else return vec4(0.0,0.0,0.0,0.0);
 
 }
@@ -204,15 +212,17 @@ void main() {
 
                         if(paramsB.x > 0.0)
                         {
-                            // float b = 0.90;
-                            // vec4 dd = max(vec4(0.0,0.0,0.0,0.0),layerColor - b);
-                            // float a = (dd.r + dd.g + dd.b)/(3.0*(1.0-b));
-
-                            float a = (layerColor.r + layerColor.g + layerColor.b)/3.0;
+                            vec3 white = vec3(1.0,1.0,1.0);
+                            vec3 coul = vec3(layerColor.xyz);
+                            float a = 1.0 - length(coul-white);
+                            a =  max(a,0.05);
+                            if(paramsB.x > 2.0)
+                            {
+                                a = (layerColor.r + layerColor.g + layerColor.b)/3.0;
+                                layerColor*= layerColor*layerColor;
+                            }
 
                             lum = 1.0-pow(abs(a),paramsB.x);
-                            if(paramsB.x > 1.0)
-                                layerColor*= layerColor*layerColor;
                         }
 
                         diffuseColor = mix( diffuseColor,layerColor, lum*params.w);

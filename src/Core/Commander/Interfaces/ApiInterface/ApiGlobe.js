@@ -24,8 +24,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
            Projection) {
 
     var loaded = false;
-    var eventLoaded = new Event('loaded');
-
+    var eventLoaded = new Event('globe-loaded');
 
     function ApiGlobe() {
         //Constructor
@@ -41,18 +40,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
     ApiGlobe.prototype.constructor = ApiGlobe;
 
 
-    document.addEventListener('build', function(){
 
-        //        var event = new Event('empty');
-        //        document.addEventListener('empty', console.log('Your turn'));
-            if(loaded == false)
-            {
-
-                loaded = true;
-                document.dispatchEvent(eventLoaded);
-            }
-        }
-        , false);
 //    var event = new Event('empty');
 //    document.addEventListener('empty', console.log('Your turn'));
 //    document.dispatchEvent(event);
@@ -111,6 +99,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
 
     /**
     * Gets the minimum zoom level, i.e. level at which the view is the farthest from the ground.
+    * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/66r8ugq0/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
     * @constructor
     * @param {id} id - The id of the layer.
     */
@@ -136,6 +125,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
 
     /**
     * Gets the maximun zoom level, i.e. level at which the view is the closest from the ground.
+    * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/y1xcqv4s/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
     * @constructor
     * @param {id} id - The id of the layer.
     */
@@ -171,6 +161,19 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
     ApiGlobe.prototype.createSceneGlobe = function(coordCarto, viewerDiv) {
         // TODO: Normalement la creation de scene ne doit pas etre ici....
         // Deplacer plus tard
+
+        viewerDiv.addEventListener('globe-builded', function(){
+
+        //        var event = new Event('empty');
+        //        document.addEventListener('empty', console.log('Your turn'));
+            if(loaded == false)
+            {
+
+                loaded = true;
+                viewerDiv.dispatchEvent(eventLoaded);
+            }
+        }
+        , false);
 
         var gLDebug = false; // true to support GLInspector addon
         var debugMode = false;
@@ -257,6 +260,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
 
      /**
     * Gets orientation angles of the current camera, in degrees.
+    * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/okfj460p/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
     * @constructor
     */
     ApiGlobe.prototype.getCameraOrientation = function () {
@@ -268,6 +272,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
 
     /**
     * Get the camera location projected on the ground in lat,lon.
+    * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/mjv7ha02/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
     * @constructor
     */
 
@@ -278,6 +283,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
 
     /**
     * Gets the coordinates of the current central point on screen.
+    * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/4tjgnv7z/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
     * @constructor
     * @return {Position} postion
     */
@@ -290,6 +296,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
 
     /**
     * Gets orientation angles of the current camera, in degrees.
+    * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/9qr2mogh/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
     * @constructor
     * @param {Orientation} Param - The angle of the rotation in degrees.
     */
@@ -330,6 +337,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
 
     /**
     * Get the tilt.
+    * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/kcx0of9j/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
     * @constructor
     * @return {Angle} number - The angle of the rotation in degrees.
     */
@@ -341,7 +349,8 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
     };
 
     /**
-    * Get the rotation.
+    * Get the Heading.
+    * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/pxv1Lw16/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
     * @constructor
     * @return {Angle} number - The angle of the rotation in degrees.
     */
@@ -354,6 +363,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
 
     /**
     * Get the "range", i.e. distance in meters of the camera from the center.
+    * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/Lbt1vfek/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
     * @constructor
     * @return {Number} number
     */
@@ -376,6 +386,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
 
     /**
     * Change the tilt.
+    * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/p6t76zox/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
     * @constructor
     * @param {Angle} Number - The angle.
     * @param {Boolean} [pDisableAnimation] - Used to force the non use of animation if its enable.
@@ -387,7 +398,8 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
     };
 
     /**
-    * Change the tilt.
+    * Change the heading.
+    * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/rxe4xgxj/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
     * @constructor
     * @param {Angle} Number - The angle.
     * @param {Boolean} [pDisableAnimation] - Used to force the non use of animation if its enable.
@@ -422,29 +434,32 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
 
     /**
     * Return the distance in meter between two geographic position.
+    * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/0nLhws5u/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
     * @constructor
     * @param {Position} First - Position.
     * @param {Position} Second - Position.
     */
 
     ApiGlobe.prototype.computeDistance = function(p1,p2){
-        return this.scene.getEllipsoid().computeDistance(new CoordCarto().setFromDegreeGeo(p1.lon, p1.lat, p1.alt),new CoordCarto().setFromDegreeGeo(p2.lon, p2.lat, p2.alt));
+        return this.scene.getEllipsoid().computeDistance(new CoordCarto().setFromDegreeGeo(p1.longitude, p1.latitude, p1.altitude),new CoordCarto().setFromDegreeGeo(p2.longitude, p2.latitude, p2.altitude));
     };
 
     /**
     * Moves the central point on screen to specific coordinates.
+    * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/x06yhbq6/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
     * @constructor
     * @param {Position} position - The position on the map.
     */
 
     ApiGlobe.prototype.setCenter = function (position) {
 //        var position3D = this.scene.getEllipsoid().cartographicToCartesian(position);
-        var position3D = this.scene.getEllipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(position.lon, position.lat, position.alt));
+        var position3D = this.scene.getEllipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(position.longitude, position.latitude, position.altitude));
         this.scene.currentControls().setCenter(position3D);
     };
 
     /**
     * Moves the central point on screen to specific coordinates while changing the zoom and / or the orientation at the same time. Whenever the map center and zoom should be changed at the same time, or the map center and orientation, or the three of them, then setCenterAdvanced() should always be called instead of separate calls of setCenter(), setZoomLevel(), setZoomScale() or setCameraOrientation(). The level must be in the[getMinZoomLevel(), getMaxZoomLevel()] range.The scale must be a positive integer, as a zoom scale denominator integer, e.g. for 1 / 500 the value must be 500, not 0.002.Zoom level and scale can not be set at the same time. Orientation can select heading and tilt angles like setCameraOrientation(). The view flies to the desired coordinate, i.e.is not teleported instantly.
+    * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/7yk0mpn0/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
     * @constructor
     * @param {Position} pPosition - The position on the map.
     * @param {Boolean} [pDisableAnimation] - Used to force the non use of animation if its enable.
@@ -459,6 +474,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
 
     /**
     * Set the "range", i.e. distance in meters of the camera from the center.
+    * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/Lt3jL5pd/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
     * @constructor
     * @param {Number} pRange - The camera altitude.
     * @param {Boolean} [pDisableAnimation] - Used to force the non use of animation if its enable.
@@ -490,8 +506,8 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
 //        this.resetHeading();
 //        var p1 = new CoordCarto(2.4347047,48.8472568,0);
 //        var p2 = new CoordCarto(2.4345599,48.8450221,0);
-//        console.log(this.computeDistance({lon:2.4347047,lat:48.8472568,alt:0},{lon:2.4345599,lat:48.8450221,alt:0}));
-//
+//        console.log(this.computeDistance({longitude:2.4347047,latitude:48.8472568,altitude:0},{longitude:2.4345599,latitude:48.8450221,altitude:0}));
+
         //var p = new CoordCarto(-74.0059700 ,40.7142700,0); //NY
 
 //        var p = new CoordCarto().setFromDegreeGeo(coordCarto.lon, coordCarto.lat, coordCarto.alt))
