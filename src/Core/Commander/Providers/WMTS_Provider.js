@@ -368,6 +368,9 @@ define('Core/Commander/Providers/WMTS_Provider', [
 
             var promises = [];
             var paramMaterial = [];
+            if (tile.material === null) {
+                return when();
+            }
             // Request parent's texture if no texture at all
             var lookAtAncestor = tile.material.getLevelLayerColor(1) === -1;
 
