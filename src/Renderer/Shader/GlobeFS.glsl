@@ -1,8 +1,3 @@
-
-#version 100
-
-#extension GL_EXT_frag_depth : enable
-
 #define SHADER_NAME ShaderMaterial
 #define VERTEX_TEXTURES
 
@@ -31,7 +26,6 @@ precision highp int;
 // conformance/glsl/bugs/nested-loops-with-break-and-continue.html
 // Resolve CHROME unstable 52
 
-const int   TEX_UNITS   = 16;
 const float PI          = 3.14159265359;
 const float INV_TWO_PI  = 1.0 / (2.0*PI);
 const float PI2         = 1.57079632679;
@@ -86,7 +80,7 @@ const float borderS = 0.007;
 // so we have to resort to an if/else cascade.
 
 
-vec4 colorAtIdUv(sampler2D dTextures[16],int id, vec2 uv){
+vec4 colorAtIdUv(sampler2D dTextures[TEX_UNITS],int id, vec2 uv){
 
     // for (int i = 0; i < TEX_UNITS; ++i)
     //     if(i == id)
@@ -192,8 +186,6 @@ void main() {
             vec4 diffuseColor =  vec4( 1.0, 1.0, 1.0, 1.0);
 
             // TODO Optimisation des uv1 peuvent copier pas lignes!!
-
-
             for (int layer = 0; layer < 8; layer++)
             {
                if(layer == nColorLayer)

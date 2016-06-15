@@ -25,6 +25,7 @@ define('Renderer/LayeredMaterial', ['THREE',
     //emptyTexture.layerId = null;
     var nbLayer = 2;
 
+
     var vector = new THREE.Vector3(0.0, 0.0, 0.0);
     var vector2 = new THREE.Vector2(0.0, 0.0);
     var vector4 = new THREE.Vector4(0.0, 0.0, 0.0, 0.0);
@@ -33,8 +34,13 @@ define('Renderer/LayeredMaterial', ['THREE',
 
         BasicMaterial.call(this);
 
+        var maxTexturesUnits =  gfxEngine().glParams.maxTexturesUnits;
         this.vertexShader = GlobeVS;
-        this.fragmentShader = GlobeFS;
+
+        var customFS = '#extension GL_EXT_frag_depth : enable\n';
+        customFS += 'const int   TEX_UNITS   =' + (maxTexturesUnits-1).toString() + ';\n';
+
+        this.fragmentShader = customFS + GlobeFS;
 
         this.Textures = [];
         this.pitScale = [];
@@ -48,15 +54,15 @@ define('Renderer/LayeredMaterial', ['THREE',
         for (var l = 0; l < nbLayer; l++) {
 
             // WARNING TODO prevent empty slot, but it's not the solution
-            this.pitScale[l] = [vector,vector,vector,vector,vector,vector,vector,vector,vector,vector,vector,vector,vector,vector,vector,vector];
+            this.pitScale[l] = Array(maxTexturesUnits-1).fill(vector);
             this.nbTextures[l] = 0;
         }
 
         this.Textures[0] = [emptyTexture];
-        this.Textures[1] = [emptyTexture,emptyTexture,emptyTexture,emptyTexture,emptyTexture,emptyTexture,emptyTexture,emptyTexture,emptyTexture,emptyTexture,emptyTexture,emptyTexture,emptyTexture,emptyTexture,emptyTexture,emptyTexture];
+        this.Textures[1] = Array(maxTexturesUnits-1).fill(emptyTexture);
 
-        this.paramLayers = [vector4,vector4,vector4,vector4,vector4,vector4,vector4,vector4];
-        this.paramBLayers = [vector2,vector2,vector2,vector2,vector2,vector2,vector2,vector2];
+        this.paramLayers = Array(8).fill(vector4);
+        this.paramBLayers = Array(8).fill(vector2);
 
         this.uniforms.dTextures_00 = {
             type: "tv",
