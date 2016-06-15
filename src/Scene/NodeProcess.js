@@ -87,21 +87,22 @@ define('Scene/NodeProcess', ['Scene/BoundingBox', 'Renderer/Camera', 'Core/Math/
 
         var sse = this.checkSSE(node, camera)
 
-        if(params.withUp && node.material.visible && !node.wait )
-        {
-            if (sse){
+        if (sse) {
+            if (params.withUp) {
                 // request level up
                 params.tree.up(node);
             }
-            else
+            node.setDisplayed(
+                node.children.length === 0 ||
+                node.pendingSubdivision);
+        } else {
+            if (params.withUp) {
                 // request level up other quadtree
                 params.tree.upSubLayer(node);
-        }
-        else if (!sse) {
-            // request level down
+            }
+            // display node
             params.tree.down(node);
         }
-
     };
 
     /**
