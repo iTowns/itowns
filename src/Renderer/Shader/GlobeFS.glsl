@@ -1,8 +1,7 @@
 #define SHADER_NAME ShaderMaterial
 #define VERTEX_TEXTURES
 
-precision highp float;
-precision highp int;
+
 
 #define USE_LOGDEPTHBUF
 #define USE_LOGDEPTHBUF_EXT
@@ -59,18 +58,6 @@ varying float       vUv_1;
 varying vec3        vNormal;
 varying vec4        pos;
 
-
-//#define BORDERLINE
-
-vec2    pitUV(vec2 uvIn, vec3 pit)
-{
-    vec2  uv;
-    uv.x = uvIn.x* pit.z + pit.x;
-    uv.y = 1.0 -( (1.0 - uvIn.y) * pit.z + pit.y);
-
-    return uv;
-}
-
 #if defined(BORDERLINE)
     const float sLine = 0.008;
 #endif
@@ -79,7 +66,7 @@ const float borderS = 0.007;
 // GLSL 1.30 only accepts constant expressions when indexing into arrays,
 // so we have to resort to an if/else cascade.
 
-
+/*
 vec4 colorAtIdUv(sampler2D dTextures[TEX_UNITS],int id, vec2 uv){
 
     // for (int i = 0; i < TEX_UNITS; ++i)
@@ -105,6 +92,8 @@ vec4 colorAtIdUv(sampler2D dTextures[TEX_UNITS],int id, vec2 uv){
     else return vec4(0.0,0.0,0.0,0.0);
 
 }
+
+*/
 
 const vec4 bitSh = vec4( 256.0 * 256.0 * 256.0, 256.0 * 256.0, 256.0, 1.0 );
 const vec4 bitMsk = vec4( 0.0, 1.0 / 256.0, 1.0 / 256.0, 1.0 / 256.0 );
@@ -199,7 +188,7 @@ void main() {
 
                         pit = int(params.x);
                         projWGS84 = params.y == 0.0;
-                        vec4 layerColor = colorAtIdUv(dTextures_01, pit + (projWGS84 ? 0 : idd),projWGS84 ? uvWGS84 : uvPM);
+                        vec4 layerColor = colorAtIdUv(dTextures_01,pitScale_L01, pit + (projWGS84 ? 0 : idd),projWGS84 ? uvWGS84 : uvPM);
                         float lum = 1.0;
 
                         if(paramsB.x > 0.0)

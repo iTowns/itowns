@@ -10,25 +10,47 @@ define('Renderer/LayeredMaterial', ['THREE',
     'Renderer/c3DEngine',
     'Core/System/JavaTools',
     'Renderer/Shader/GlobeVS.glsl',
-    'Renderer/Shader/GlobeFS.glsl'
+    'Renderer/Shader/GlobeFS.glsl',
+    'Renderer/Shader/Chunk/pitUV.glsl'
 ], function(
     THREE,
     BasicMaterial,
     gfxEngine,
     JavaTools,
     GlobeVS,
-    GlobeFS) {
+    GlobeFS,
+    pitUV) {
 
     var emptyTexture = new THREE.Texture();
 
     emptyTexture.level = -1;
-    //emptyTexture.layerId = null;
     var nbLayer = 2;
-
-
     var vector = new THREE.Vector3(0.0, 0.0, 0.0);
     var vector2 = new THREE.Vector2(0.0, 0.0);
     var vector4 = new THREE.Vector4(0.0, 0.0, 0.0, 0.0);
+    var showBorderUV = false;
+
+    var fooTexture;
+
+    var getColorAtIdUv = function(nbTex)
+    {
+
+        if(!fooTexture)
+        {
+            fooTexture = 'vec4 colorAtIdUv(sampler2D dTextures[TEX_UNITS],vec3 pitScale[TEX_UNITS],int id, vec2 uv){\n';
+            fooTexture += ' if (id == 0) return texture2D(dTextures[0],  pitUV(uv,pitScale[0]));\n';
+
+            for (var l = 1; l < nbTex; l++) {
+
+                var sL = l.toString();
+                fooTexture +=  '    else if (id == '+sL+') return texture2D(dTextures['+sL+'],  pitUV(uv,pitScale['+sL+']));\n';
+            }
+
+            fooTexture +=  'else return vec4(0.0,0.0,0.0,0.0);}\n';
+        }
+
+        return fooTexture;
+    }
 
     var LayeredMaterial = function(id) {
 
@@ -38,7 +60,16 @@ define('Renderer/LayeredMaterial', ['THREE',
         this.vertexShader = GlobeVS;
 
         var customFS = '#extension GL_EXT_frag_depth : enable\n';
-        customFS += 'const int   TEX_UNITS   =' + (maxTexturesUnits-1).toString() + ';\n';
+        customFS +='precision highp float;\n';
+        customFS +='precision highp int;\n';
+        customFS += 'const int   TEX_UNITS   = ' + (maxTexturesUnits-1).toString() + ';\n';
+
+        customFS += pitUV;
+
+        if(showBorderUV)
+            customFS += '#define BORDERLINE\n';
+
+        customFS += getColorAtIdUv(16);
 
         this.fragmentShader = customFS + GlobeFS;
 
