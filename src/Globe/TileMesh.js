@@ -68,6 +68,7 @@ define('Globe/TileMesh', [
 
         // Layer
         this.currentElevation = -1;
+        this.setDisplayed(false);
 
     }
 
@@ -122,7 +123,6 @@ define('Globe/TileMesh', [
             this.remove(child);
             child.dispose();
         }
-        this.material.visible = true;
     };
 
     TileMesh.prototype.useParent = function() {
@@ -265,13 +265,15 @@ define('Globe/TileMesh', [
 
     TileMesh.prototype.downScaledLayer = function(id)
     {
-        if(id === l_ELEVATION)
-            if(this.currentElevation === -2)
+        if(id === l_ELEVATION) {
+            if(this.currentElevation === -2) {
                 return false;
-            else
+            } else {
                 return this.currentElevation < this.levelElevation ;
-        else if(id === l_COLOR)
+            }
+        } else if(id === l_COLOR) {
             return this.material.getLevelLayerColor(l_COLOR) < this.level + this.material.getDelta();
+        }
 
         return false;
     };
