@@ -262,8 +262,13 @@ define('Renderer/c3DEngine', [
         this.controls.maxDistance = this.size * 8.0;
         this.controls.keyPanSpeed = 0.01;
 
+        var gl = this.renderer.context;
+        var maxTexturesUnits =  gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS);
+        this.glParams = {maxTexturesUnits:maxTexturesUnits};
+
         window.addEventListener('resize', this.onWindowResize, false);
         this.controls.addEventListener('change', this.update);
+
     }
 
     /**
