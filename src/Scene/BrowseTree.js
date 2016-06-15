@@ -32,6 +32,7 @@ define('Scene/BrowseTree', ['Globe/TileMesh', 'THREE'], function( TileMesh, THRE
             this._resetQuadtreeNode = function(node)
             {
                 node.setVisibility(false);
+                node.setDisplayed(false);
                 node.setSelected(false);
             };
         }
@@ -39,6 +40,7 @@ define('Scene/BrowseTree', ['Globe/TileMesh', 'THREE'], function( TileMesh, THRE
             this._resetQuadtreeNode = function(node)
             {
                 node.setVisibility(false);
+                node.setDisplayed(false);
             };
 
     }
@@ -62,22 +64,26 @@ define('Scene/BrowseTree', ['Globe/TileMesh', 'THREE'], function( TileMesh, THRE
      * @param {type} enableUp  : optional process
      * @returns {Boolean}
      */
-    BrowseTree.prototype.processQuadtreeNode = function(node, camera, process, params)
+    BrowseTree.prototype.quadtreeNodeVisibilityUpdate = function(node, camera, process, params)
     {
+        var wasVisible = node.isVisible();
+        var isVisible = !process.isCulled(node, camera);
 
         this.resetQuadtreeNode(node);
+        node.setVisibility(isVisible);
 
-        if(node.parent.material.visible)
-            return false;
+        // Displayed if visible.
+        // process.SSE() can modify the displayed property if needed
+        // (e.g on subdivision)
+        node.setDisplayed(isVisible);
 
-        if(!process.isCulled(node, camera)) {
-            node.setVisibility(true);
-            process.SSE(node, camera,params);
+        if (isVisible) {
+            process.SSE(node, camera, params);
+
             this.uniformsProcess(node, camera);
         }
 
-        return !node.material.visible && !node.wait;
-
+        return wasVisible || isVisible;
     };
 
     BrowseTree.prototype.uniformsProcess = function()
@@ -116,8 +122,6 @@ define('Scene/BrowseTree', ['Globe/TileMesh', 'THREE'], function( TileMesh, THRE
      * @returns {undefined}
      */
     BrowseTree.prototype.browse = function(tree, camera, process, optional) {
-
-        this.nodeVisible = 0;
         this.tree = tree;
 
         camera.updateMatrixWorld();
@@ -126,14 +130,14 @@ define('Scene/BrowseTree', ['Globe/TileMesh', 'THREE'], function( TileMesh, THRE
 
         process.prepare(camera);
 
-        var subdivise = optional === 1;
-        var clean = optional === 2;
+        var action = (optional === 2) ? 'clean' : 'visibility_update';
+        var params = { tree: this.tree, withUp: (optional === 1) };
 
         var rootNode = tree.children[0];
 
-        for (var i = 0; i < rootNode.children.length; i++)
-            this._browse(rootNode.children[i], camera, process, subdivise, clean);
-
+        for (var i = 0; i < rootNode.children.length; i++) {
+            this._browse(rootNode.children[i], camera, process, action, params);
+        }
 
     };
 
@@ -145,35 +149,62 @@ define('Scene/BrowseTree', ['Globe/TileMesh', 'THREE'], function( TileMesh, THRE
      * @param {type} optional   : optional process
      * @returns {undefined}
      */
-    BrowseTree.prototype._browse = function(node, camera, process, optional, clean) {
-
-        if (this.processQuadtreeNode(node, camera, process, {withUp : optional, tree : this.tree}))
-            for (var i = 0; i < node.children.length; i++)
-                this._browse(node.children[i], camera, process, optional,clean);
-        else if(clean)
-            this._clean(node, node.level + 2, process, camera);
-
+    BrowseTree.prototype._browse = function(node, camera, process, action, params) {
+        switch (action) {
+            case 'visibility_update': {
+                if (this.quadtreeNodeVisibilityUpdate(node, camera, process, params)) {
+                    var child_action = node.isDisplayed() ? 'hide_all' : action;
+                    for (var i = 0; i < node.children.length; i++) {
+                        this._browse(node.children[i], camera, process, child_action, params);
+                    }
+                }
+            } break;
+            case 'hide_all': {
+                if (node.isVisible()) {
+                    this.resetQuadtreeNode(node);
+                    node.setVisibility(process.isCulled(node, camera));
+                    node.setDisplayed(false);
+                    for (var j = 0; j < node.children.length; j++) {
+                        this._browse(node.children[j], camera, process, action, params);
+                    }
+                }
+            } break;
+            case 'clean': {
+                this._clean(node, node.level + 2, process, camera);
+            } break;
+            default: {
+                //console.error('Unknown action ', action);
+            }
+        }
     };
 
     BrowseTree.prototype._clean = function(node, level, process, camera) {
-        if (node.children.length === 0)
-            return true;
+        var sse = process.checkSSE(node, camera);
 
-        var childrenCleaned = 0;
-        for (var i = 0; i < node.children.length; i++) {
-            var child = node.children[i];
-            // TODO node.wait === true ---> delete child and switch to node.wait = false
+        // recursively clean children
+        if (node.children.length > 0) {
+            var disposableChildrenCount = 0;
+            for (var i = 0; i < node.children.length; i++) {
+                if (this._clean(node.children[i], level, process, camera)) {
+                    disposableChildrenCount++;
+                }
+            }
 
-            if (this._clean(child, level,process, camera) && ((child.level >= level && child.children.length === 0 && !process.checkSSE(child, camera) && !node.wait) || node.level === 2))
-                childrenCleaned++;
+            // sse means we need to subdivide -> don't try to clean
+            if (disposableChildrenCount === node.children.length && !sse) {
+                // remove children and update visibility
+                node.disposeChildren();
+                node.setDisplayed(node.isVisible());
+            } else {
+                return false;
+            }
         }
 
-        if (childrenCleaned === node.children.length) {
-            node.disposeChildren();
-            return true;
-        } else
-            return false;
+        var cleanable =
+            (node.level >= level) &&
+            !sse;
 
+        return cleanable;
     };
 
      /*

@@ -74,31 +74,42 @@ define('Scene/Quadtree', [
      * @returns {Array} four bounding box
      */
     Quadtree.prototype.up = function(node) {
-
-        if (!this.update(node))
+        if (node.pendingSubdivision) {
             return;
+        }
+        if (!this.update(node)) {
+            return;
+        }
 
-        node.wait = true;
+        node.pendingSubdivision = true;
         var quad = new Quad(node.bbox);
         this.requestNewTile(quad.northWest, node);
         this.requestNewTile(quad.northEast, node);
         this.requestNewTile(quad.southWest, node);
         this.requestNewTile(quad.southEast, node);
 
+        node.setDisplayed(true);
     };
 
     Quadtree.prototype.down = function(node)
     {
-        node.setMaterialVisibility(true);
-        node.setChildrenVisibility(false);
+        for (var i = 0; i < this.children.length; i++) {
+            var child = this.children[i];
+            if (child instanceof NodeMesh) {
+                child.setDisplayed(false);
+            } else {
+                child.visible = false;
+            }
+        }
+
+        node.setDisplayed(true);
     }
 
     Quadtree.prototype.upSubLayer = function(node) {
 
         var id = node.getDownScaledLayer();
 
-        if(id !== undefined)
-        {
+        if(id !== undefined) {
             var params = { layer : this.children[id+1], subLayer : id};
             this.interCommand.request(params, node);
         }
@@ -115,9 +126,6 @@ define('Scene/Quadtree', [
         if (node.level > this.maxLevel)
             return false;
         else if (node.childrenCount() > 0 ) {
-
-            node.setMaterialVisibility(false);
-
             return false;
         }
 

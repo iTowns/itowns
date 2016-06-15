@@ -132,8 +132,7 @@ define('Core/Commander/ManagerCommands', [
                         child.dispose();
                         parent.remove(child);
                     }
-                    parent.wait = false;
-                    parent.false = false;
+                    parent.pendingSubdivision = false;
                     this.queueAsync.dequeue();
                 } else
                     return this.queueAsync.dequeue();

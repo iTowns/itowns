@@ -192,7 +192,7 @@
                     var roofMesh = new PanoramicMesh(that.geometryRoof, new BasicMaterial(new THREE.Color( 0xdddddd )), that.absoluteCenter);
                     roofMesh.material.side =  THREE.DoubleSide;
                     roofMesh.material.transparent  = true;
-                    roofMesh.material.visible = true;
+                    roofMesh.setDisplayed(true);
                     roofMesh.material.uniforms.lightOn.value = false;
 
                     that.panoramicMesh.add(roofMesh);
