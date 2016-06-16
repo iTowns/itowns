@@ -347,8 +347,12 @@ define('Globe/TileMesh', [
 
         if(id >= 0)
         {
+
+            var nbTextures = this.material.nbLoadedTextures();
+
             this.material.removeLayerColor(id);
             this.layersColor.splice(id,1);
+            this.texturesNeeded -= nbTextures - this.material.nbLoadedTextures();
         }
 
     };

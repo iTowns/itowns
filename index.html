@@ -533,9 +533,10 @@ and open the template in the editor.
                    this.AnimateTime = false;
                    this.Orbit = false;
                    this.api = function(){
-                        itowns.viewer.launchCommandApi();
+
                    };
                };
+
                var text = new Menu();
                var gui = new dat.GUI( { autoPlace: false});
                gui.domElement.id = 'menuDiv';
@@ -549,7 +550,6 @@ and open the template in the editor.
                     if(layers[id].mimetype != "image/x-bil;bits=32")
                     {
 
-
                         text[idLayer] = true;
                         text[idLayer+'_Opacity'] = 1.0;
 
@@ -561,7 +561,6 @@ and open the template in the editor.
                             };
 
                         }(idLayer);
-
 
                         var onchangeOpacity = function(id)
                         {
@@ -611,15 +610,44 @@ and open the template in the editor.
                     });
                 }
 
-                //gui.add(text, 'api').name('execute command');
+                var controller =  gui.add(text, 'api').name('execute command');
                 //gui.add(text, 'StreetLevelImagery').onChange(function(newValue) {
 			     // itowns.viewer.setStreetLevelImageryOn(newValue);
                 //     });
 
+
+                var removeLayer= function(nameLayer)
+                {
+
+                    itowns.viewer.removeImageryLayer(nameLayer);
+                    var controllerTodelete = [];
+
+                    for (var i in gui.__controllers) {
+
+                        var controller = gui.__controllers[i];
+
+                        if(controller.property === nameLayer || controller.property === nameLayer + '_Opacity')
+                            controllerTodelete.push(controller);
+                    }
+
+                    for (var i in controllerTodelete)
+                        gui.remove(controllerTodelete[i]);
+
+                }
+
+                controller.onChange(function(value) {
+                        removeLayer('ScanEX');
+                });
+
+
                 viewerDiv.addEventListener('globe-loaded',function(){
                     console.log("Globe Loaded");
                     //itowns.viewer.setCenter({longitude:-74,latitude:40,altitude:0});
-                    //console.log(itowns.viewer.getMaxZoomLevel("Ortho"));
+                } ,
+                false);
+
+                viewerDiv.addEventListener('Layer-removed',function(){
+                    console.log("Layer removed");
                 } ,
                 false);
 

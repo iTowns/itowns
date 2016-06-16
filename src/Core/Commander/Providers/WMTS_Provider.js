@@ -124,6 +124,13 @@ define('Core/Commander/Providers/WMTS_Provider', [
 
         };
 
+        WMTS_Provider.prototype.removeLayer = function(idLayer)
+        {
+            if(this.layersWMTS[idLayer])
+                this.layersWMTS[idLayer] = undefined;
+
+        }
+
         WMTS_Provider.prototype.addLayer = function(layer)
         {
 
