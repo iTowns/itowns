@@ -117,7 +117,6 @@ define('Globe/TileMesh', [
         for (var l = 0; l < paramsTextureColor.length; l++)
         {
             this.layersColor.push(paramsTextureColor[l].idLayer);
-
         }
     };
     /**
@@ -341,9 +340,15 @@ define('Globe/TileMesh', [
         }
     };
 
+    TileMesh.prototype.getIndexLayerColor = function(idLayer) {
+
+        return this.layersColor.indexOf(idLayer);
+
+    };
+
     TileMesh.prototype.removeLayerColor = function(idLayer) {
 
-        var id = this.layersColor.indexOf(idLayer);
+        var id = this.getIndexLayerColor(idLayer);
 
         if(id >= 0)
         {
