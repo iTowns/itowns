@@ -97,6 +97,18 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
 
     };
 
+    ApiGlobe.prototype.removeImageryLayer = function(/*id*/){
+
+        // var map = this.scene.getMap();
+        // var manager = this.scene.managerCommand;
+        // var providerWMTS = manager.getProvider(map.tiles).providerWMTS;
+
+        // this.scene.getMap().removeLayer(id);
+
+        this.scene.renderScene3D();
+
+    }
+
     /**
     * Gets the minimum zoom level, i.e. level at which the view is the farthest from the ground.
     * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/66r8ugq0/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
@@ -490,6 +502,9 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
     };
 
     ApiGlobe.prototype.launchCommandApi = function () {
+
+        this.removeImageryLayer('ScanEX');
+
 //        console.log(this.getMinZoomLevel("IGNPO"));
 //        console.log(this.getMaxZoomLevel("IGN_MNT"));
 //        console.log(this.getCenter());
