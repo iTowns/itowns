@@ -215,11 +215,9 @@ define('Globe/Globe', [
 
                 if(object.removeLayerColor)
                     object.removeLayerColor(id);
-
             };
 
             this.tiles.children[0].traverse(cO);
-
             var services = this.colorTerrain.services;
             var idService = services.indexOf(id);
 
