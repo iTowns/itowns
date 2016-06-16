@@ -269,7 +269,7 @@ and open the template in the editor.
                         }
                     }
                 });
-
+                /*
                 itowns.viewer.addImageryLayer({
                 protocol:   "wmts",
                 id:         "ScanEX",
@@ -366,7 +366,7 @@ and open the template in the editor.
                         }
                     }
                 });
-
+        */
 
         // itowns.viewer.addImageryLayer({
         //         protocol:   "wmtsc",
@@ -375,7 +375,13 @@ and open the template in the editor.
         //         wmtsOptions: { tileMatrixSet: "PM"}
         //     });
 
-
+        itowns.viewer.addImageryLayer({
+            protocol:   "wmtsc",
+            id:         "OPENSM",
+            customUrl:  'http://b.tile.openstreetmap.fr/osmfr/%TILEMATRIX/%COL/%ROW.png',
+            wmtsOptions: { tileMatrixSet: "PM"},
+            fx :        2.5,
+        });
 
         itowns.viewer.addElevationLayer({
             protocol:   "wmts",
