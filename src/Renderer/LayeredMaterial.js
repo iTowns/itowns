@@ -205,6 +205,11 @@ define('Renderer/LayeredMaterial', ['THREE',
 
         this.Textures[1].splice(startIdTexture,nbTextures);
         this.nColorLayer--;
+
+        for (var i = nIdLayer, max = this.paramLayers.length; i < max; i++)
+
+            this.paramLayers[i].x -= nbTextures;
+
     };
 
     LayeredMaterial.prototype.setTexture = function(texture, layer, slot, pitScale) {
