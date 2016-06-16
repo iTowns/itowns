@@ -616,12 +616,6 @@ and open the template in the editor.
                     });
                 }
 
-                var controller =  gui.add(text, 'api').name('execute command');
-                //gui.add(text, 'StreetLevelImagery').onChange(function(newValue) {
-			     // itowns.viewer.setStreetLevelImageryOn(newValue);
-                //     });
-
-
                 var removeLayer= function(nameLayer)
                 {
 
@@ -641,9 +635,12 @@ and open the template in the editor.
 
                 }
 
-                controller.onChange(function(value) {
-                        removeLayer('OPENSM');
-                });
+                //var controller =  gui.add(text, 'api').name('execute command');
+
+                if(controller)
+                    controller.onChange(function(value) {
+                            removeLayer('OPENSM');
+                    });
 
                 viewerDiv.addEventListener('globe-loaded',function(){
                     console.log("Globe Loaded");
@@ -655,6 +652,10 @@ and open the template in the editor.
                     console.log("Layer removed");
                 } ,
                 false);
+
+                // gui.add(text, 'StreetLevelImagery').onChange(function(newValue) {
+                //     itowns.viewer.setStreetLevelImageryOn(newValue);
+                // });
 
         </script>
     </body>
