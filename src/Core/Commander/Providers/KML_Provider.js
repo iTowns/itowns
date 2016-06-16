@@ -98,7 +98,7 @@ define('Core/Commander/Providers/KML_Provider', [
             var south = latitude;
             var east = longitude;
             var west = longitude;
-            var key = 'j2bfkv9whnqpq04zpzlfz2ge';
+            var key = 'va5orxd0pgzvq3jxutqfuy0b';
             var url = 'http://wxs.ign.fr/' + key + '/vecteurtuile3d/BATI3D/' + 'FXX/';
             return this.ioDriverXML.read(urlFile).then(function(result) {
 
@@ -157,12 +157,12 @@ define('Core/Commander/Providers/KML_Provider', [
 
             return new Promise(function(resolve/*, reject*/)
             {
-                this.ioDriverXML.read('http://wxs.ign.fr/j2bfkv9whnqpq04zpzlfz2ge/vecteurtuile3d/BATI3D/BU.Building.kml').then(function(/*result_0*/) {
+                this.ioDriverXML.read('http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/vecteurtuile3d/BATI3D/BU.Building.kml').then(function(/*result_0*/) {
 
                     // get href's node value
                     //var kml_0 = result_0.getElementsByTagName("href");
                     var url_href_1;
-                    var key = 'j2bfkv9whnqpq04zpzlfz2ge';
+                    var key = 'va5orxd0pgzvq3jxutqfuy0b';
 
                     url_href_1 = 'http://wxs.ign.fr/' + key + '/vecteurtuile3d/BATI3D/FXX/TREE/0/0_000_000.kml';
 
@@ -314,7 +314,7 @@ define('Core/Commander/Providers/KML_Provider', [
 
 /*
  //If Guadeloupe
-                if (url_href_1[i] === 'http://wxs.ign.fr/j2bfkv9whnqpq04zpzlfz2ge/vecteurtuile3d/BATI3D/GLP/TREE/0/0_00_00.kml'){
+                if (url_href_1[i] === 'http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/vecteurtuile3d/BATI3D/GLP/TREE/0/0_00_00.kml'){
 
                     this.ioDriverXML = new IoDriverXML();
                     this.ioDriverXML.read(url_href_1[i]).then(function(result_1)
@@ -398,7 +398,7 @@ define('Core/Commander/Providers/KML_Provider', [
                 }
 
                 //If Guyane
-                if (url_href_1[i] === 'http://wxs.ign.fr/j2bfkv9whnqpq04zpzlfz2ge/vecteurtuile3d/BATI3D/GUF/TREE/0/0_00_00.kml'){
+                if (url_href_1[i] === 'http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/vecteurtuile3d/BATI3D/GUF/TREE/0/0_00_00.kml'){
 
                     this.ioDriverXML = new IoDriverXML();
                     this.ioDriverXML.read(url_href_1[i]).then(function(result_1)
@@ -482,7 +482,7 @@ define('Core/Commander/Providers/KML_Provider', [
                 }
 
                 //If Martinique
-                if (url_href_1[i] === 'http://wxs.ign.fr/j2bfkv9whnqpq04zpzlfz2ge/vecteurtuile3d/BATI3D/MTQ/TREE/0/0_00_00.kml'){
+                if (url_href_1[i] === 'http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/vecteurtuile3d/BATI3D/MTQ/TREE/0/0_00_00.kml'){
 
                     this.ioDriverXML = new IoDriverXML();
                     this.ioDriverXML.read(url_href_1[i]).then(function(result_1)
@@ -566,7 +566,7 @@ define('Core/Commander/Providers/KML_Provider', [
                 }
 
                 //If Réunion
-                if (url_href_1[i] === 'http://wxs.ign.fr/j2bfkv9whnqpq04zpzlfz2ge/vecteurtuile3d/BATI3D/REU/TREE/0/0_00_00.kml'){
+                if (url_href_1[i] === 'http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/vecteurtuile3d/BATI3D/REU/TREE/0/0_00_00.kml'){
 
                     this.ioDriverXML = new IoDriverXML();
                     this.ioDriverXML.read(url_href_1[i]).then(function(result_1)
@@ -649,7 +649,7 @@ define('Core/Commander/Providers/KML_Provider', [
 
                 }
                 //If Saint-Pierre et Miquelon
-                if (url_href_1[i] === 'http://wxs.ign.fr/j2bfkv9whnqpq04zpzlfz2ge/vecteurtuile3d/BATI3D/SPM/TREE/0/0_00_00.kml'){
+                if (url_href_1[i] === 'http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/vecteurtuile3d/BATI3D/SPM/TREE/0/0_00_00.kml'){
 
                     this.ioDriverXML = new IoDriverXML();
                     this.ioDriverXML.read(url_href_1[i]).then(function(result_1)
