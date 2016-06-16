@@ -68,6 +68,7 @@ define('Globe/TileMesh', [
 
         // Layer
         this.currentElevation = -1;
+        this.layersColor = [];
         this.setDisplayed(false);
 
     }
@@ -112,6 +113,12 @@ define('Globe/TileMesh', [
 
         this.texturesNeeded += nbTexturesColor;
         this.material.setParam(paramsTextureColor);
+
+        for (var l = 0; l < paramsTextureColor.length; l++)
+        {
+            this.layersColor.push(paramsTextureColor[l].idLayer);
+
+        }
     };
     /**
     *
@@ -332,6 +339,18 @@ define('Globe/TileMesh', [
             this.loaded = true;
             this.parent.childrenLoaded();
         }
+    };
+
+    TileMesh.prototype.removeLayerColor = function(idLayer) {
+
+        var id = this.layersColor.indexOf(idLayer);
+
+        if(id >= 0)
+        {
+            this.material.removeLayerColor(id);
+            this.layersColor.splice(id,1);
+        }
+
     };
 
     return TileMesh;

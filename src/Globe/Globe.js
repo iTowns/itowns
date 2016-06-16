@@ -190,6 +190,20 @@ define('Globe/Globe', [
 
     };
 
+    Globe.prototype.removeLayer = function(id){
+
+
+        var cO = function(object){
+
+            if(object.removeLayerColor)
+                object.removeLayerColor(id);
+
+        };
+
+        this.tiles.children[0].traverse(cO);
+
+    };
+
     Globe.prototype.setLayerVibility = function(id,visible){
 
         var layer = this.getLayerColor(id);

@@ -383,7 +383,7 @@ define('Core/Commander/Providers/WMTS_Provider', [
                     var bcoord = tile.WMTSs[layer.tileMatrixSet];
 
                     if(lookAtAncestor)
-                        paramMaterial.push({tileMT:layer.tileMatrixSet,pit:promises.length,visible:params[i].visible,opacity:params[i].opacity,fx:layer.fx});
+                        paramMaterial.push({tileMT:layer.tileMatrixSet,pit:promises.length,visible:params[i].visible,opacity:params[i].opacity,fx:layer.fx,idLayer:layerWMTSId[i]});
 
                     // WARNING the direction textures is important
                     for (var row = bcoord[1].row; row >=  bcoord[0].row; row--) {
