@@ -99,7 +99,10 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
             this.getWMTSProvider().removeLayer(id);
             this.viewerDiv.dispatchEvent(eventLayerRemoved);
             this.scene.renderScene3D();
+            return true;
         }
+
+        return false;
     };
 
     /**
