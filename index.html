@@ -619,28 +619,32 @@ and open the template in the editor.
                 var removeLayer= function(nameLayer)
                 {
 
-                    itowns.viewer.removeImageryLayer(nameLayer);
-                    var controllerTodelete = [];
+                    if(itowns.viewer.removeImageryLayer(nameLayer))
+                    {
+                        var controllerTodelete = [];
 
-                    for (var i in gui.__controllers) {
+                        for (var i in gui.__controllers) {
 
-                        var controller = gui.__controllers[i];
+                            var controller = gui.__controllers[i];
 
-                        if(controller.property === nameLayer || controller.property === nameLayer + '_Opacity')
-                            controllerTodelete.push(controller);
+                            if(controller.property === nameLayer || controller.property === nameLayer + '_Opacity')
+                                controllerTodelete.push(controller);
+                        }
+
+                        for (var i in controllerTodelete)
+                            gui.remove(controllerTodelete[i]);
                     }
-
-                    for (var i in controllerTodelete)
-                        gui.remove(controllerTodelete[i]);
-
                 }
 
+                var controller;
                 //var controller =  gui.add(text, 'api').name('execute command');
 
                 if(controller)
+                {
                     controller.onChange(function(value) {
                             removeLayer('OPENSM');
                     });
+                }
 
                 viewerDiv.addEventListener('globe-loaded',function(){
                     console.log("Globe Loaded");
