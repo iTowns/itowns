@@ -190,18 +190,46 @@ define('Globe/Globe', [
 
     };
 
-    Globe.prototype.removeLayer = function(id){
+    Globe.prototype.addColorLayer = function(layerId){
 
+        this.colorTerrain.services.push(layerId);
 
-        var cO = function(object){
+        var subLayer = new Layer();
 
-            if(object.removeLayerColor)
-                object.removeLayerColor(id);
+        subLayer.services.push(layerId);
 
-        };
+        var idLayerTile = this.colorTerrain.children.length;
 
-        this.tiles.children[0].traverse(cO);
+        subLayer.description = {style:{layerTile:idLayerTile}};
 
+        this.colorTerrain.add(subLayer);
+    };
+
+    Globe.prototype.removeColorLayer = function(id){
+
+        var colorLayer = this.getLayerColor(id);
+
+        if(colorLayer)
+        {
+            var cO = function(object){
+
+                if(object.removeLayerColor)
+                    object.removeLayerColor(id);
+
+            };
+
+            this.tiles.children[0].traverse(cO);
+
+            var services = this.colorTerrain.services;
+            var idService = services.indexOf(id);
+
+            if(idService>-1)
+                services.splice(idService);
+
+            return true;
+        }
+
+        return false;
     };
 
     Globe.prototype.setLayerVibility = function(id,visible){

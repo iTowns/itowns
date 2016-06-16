@@ -193,6 +193,9 @@ define('Renderer/LayeredMaterial', ['THREE',
         var nbTextures = this.getNbColorTexturesLayer[nIdLayer];
 
         this.paramLayers.splice(nIdLayer,1);
+        this.paramBLayers.splice(nIdLayer,1);
+        this.paramLayers.push(vector4);
+        this.paramBLayers.push(vector2);
 
         for (var i = startIdTexture, max = startIdTexture + nbTextures; i < max; i++)
         {
@@ -201,6 +204,7 @@ define('Renderer/LayeredMaterial', ['THREE',
         }
 
         this.Textures[1].splice(startIdTexture,nbTextures);
+        this.nColorLayer--;
     };
 
     LayeredMaterial.prototype.setTexture = function(texture, layer, slot, pitScale) {

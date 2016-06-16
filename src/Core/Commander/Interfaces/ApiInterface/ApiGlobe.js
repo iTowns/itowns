@@ -25,6 +25,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
 
     var loaded = false;
     var eventLoaded = new Event('globe-loaded');
+    var eventLayerRemoved = new Event('Layer-removed');
 
     function ApiGlobe() {
         //Constructor
@@ -69,45 +70,37 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
 
     };
 
+    ApiGlobe.prototype.getWMTSProvider = function()
+    {
+        return this.scene.managerCommand.getProvider(this.scene.getMap().tiles).providerWMTS;
+    };
+
     /**
     * Adds an imagery layer to the map. The layer id must be unique amongst all layers already inserted. The protocol rules which parameters are then needed for the function.
     * @constructor
     * @param {Layer} layer.
     */
-
     ApiGlobe.prototype.addImageryLayer = function(layer) {
 
         var map = this.scene.getMap();
         var manager = this.scene.managerCommand;
-        var providerWMTS = manager.getProvider(map.tiles).providerWMTS;
+        var providerWMTS = this.getWMTSProvider();
 
         providerWMTS.addLayer(layer);
         manager.addLayer(map.colorTerrain,providerWMTS);
-        map.colorTerrain.services.push(layer.id);
-
-        var subLayer = new Layer();
-
-        subLayer.services.push(layer.id);
-
-        var idLayerTile = map.colorTerrain.children.length;
-
-        subLayer.description = {style:{layerTile:idLayerTile}};
-
-        map.colorTerrain.add(subLayer);
+        map.addColorLayer(layer.id)
 
     };
 
-    ApiGlobe.prototype.removeImageryLayer = function(/*id*/){
+    ApiGlobe.prototype.removeImageryLayer = function(id){
 
-        // var map = this.scene.getMap();
-        // var manager = this.scene.managerCommand;
-        // var providerWMTS = manager.getProvider(map.tiles).providerWMTS;
-
-        // this.scene.getMap().removeLayer(id);
-
-        this.scene.renderScene3D();
-
-    }
+        if(this.scene.getMap().removeColorLayer(id))
+        {
+            this.getWMTSProvider().removeLayer(id);
+            this.viewerDiv.dispatchEvent(eventLayerRemoved);
+            this.scene.renderScene3D();
+        }
+    };
 
     /**
     * Gets the minimum zoom level, i.e. level at which the view is the farthest from the ground.
@@ -173,6 +166,8 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
     ApiGlobe.prototype.createSceneGlobe = function(coordCarto, viewerDiv) {
         // TODO: Normalement la creation de scene ne doit pas etre ici....
         // Deplacer plus tard
+
+        this.viewerDiv = viewerDiv;
 
         viewerDiv.addEventListener('globe-builded', function(){
 
@@ -503,7 +498,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
 
     ApiGlobe.prototype.launchCommandApi = function () {
 
-        this.removeImageryLayer('ScanEX');
+        //this.removeImageryLayer('ScanEX');
 
 //        console.log(this.getMinZoomLevel("IGNPO"));
 //        console.log(this.getMaxZoomLevel("IGN_MNT"));
