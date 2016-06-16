@@ -177,11 +177,13 @@ define('Globe/Globe', [
         {
 
             layer.opacity = opacity;
-            var idLtile = layer.description.style.layerTile;
+            //var idLtile = layer.description.style.layerTile;
             var cO = function(object){
 
                 if(object.material.setLayerOpacity)
-                    object.material.setLayerOpacity(idLtile,opacity);
+                {
+                    object.material.setLayerOpacity(object.getIndexLayerColor(id),opacity);
+                }
 
             };
 
@@ -238,11 +240,11 @@ define('Globe/Globe', [
         {
 
             layer.visible = visible;
-            var idLtile = layer.description.style.layerTile;
+            //var idLtile = layer.description.style.layerTile;
             var cO = function(object){
 
                 if(object.material.setLayerVibility)
-                    object.material.setLayerVibility(idLtile,visible);
+                    object.material.setLayerVibility(object.getIndexLayerColor(id),visible);
 
             };
 
