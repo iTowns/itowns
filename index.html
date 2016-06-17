@@ -269,7 +269,7 @@ and open the template in the editor.
                         }
                     }
                 });
-                /*
+
                 itowns.viewer.addImageryLayer({
                 protocol:   "wmts",
                 id:         "ScanEX",
@@ -366,7 +366,7 @@ and open the template in the editor.
                         }
                     }
                 });
-        */
+
 
         // itowns.viewer.addImageryLayer({
         //         protocol:   "wmtsc",
@@ -375,13 +375,13 @@ and open the template in the editor.
         //         wmtsOptions: { tileMatrixSet: "PM"}
         //     });
 
-        itowns.viewer.addImageryLayer({
-            protocol:   "wmtsc",
-            id:         "OPENSM",
-            customUrl:  'http://b.tile.openstreetmap.fr/osmfr/%TILEMATRIX/%COL/%ROW.png',
-            wmtsOptions: { tileMatrixSet: "PM"},
-            fx :        2.5,
-        });
+        // itowns.viewer.addImageryLayer({
+        //     protocol:   "wmtsc",
+        //     id:         "OPENSM",
+        //     customUrl:  'http://b.tile.openstreetmap.fr/osmfr/%TILEMATRIX/%COL/%ROW.png',
+        //     wmtsOptions: { tileMatrixSet: "PM"},
+        //     fx :        2.5,
+        // });
 
         itowns.viewer.addElevationLayer({
             protocol:   "wmts",
@@ -538,9 +538,8 @@ and open the template in the editor.
                    this.KML = false;
                    this.AnimateTime = false;
                    this.Orbit = false;
-                   this.api = function(){
-
-                   };
+                   this.api = function(){};
+                   this.api2 = function(){};
                };
 
                var text = new Menu();
@@ -637,14 +636,27 @@ and open the template in the editor.
                 }
 
                 var controller;
-                //var controller =  gui.add(text, 'api').name('execute command');
+                // var controller = gui.add(text,'api').name('Up');
 
-                if(controller)
-                {
-                    controller.onChange(function(value) {
-                            removeLayer('OPENSM');
-                    });
-                }
+                // if(controller)
+                // {
+                //     controller.onChange(function(value) {
+                //             // removeLayer('OPENSM');
+                //             itowns.viewer.moveLayerUp('OrthoCRS');
+                //     });
+                // }
+
+
+                // controller = gui.add(text,'api2').name('down');
+
+
+                // if(controller)
+                // {
+                //     controller.onChange(function(value) {
+                //             // removeLayer('OPENSM');
+                //             itowns.viewer.moveLayerDown('OrthoCRS');
+                //     });
+                // }
 
                 viewerDiv.addEventListener('globe-loaded',function(){
                     console.log("Globe Loaded");
