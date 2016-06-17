@@ -112,6 +112,11 @@ define('Renderer/LayeredMaterial', ['THREE',
             value: this.nbTextures
         };
 
+        this.uniforms.layerSequence = {
+            type: "iv1",
+            value: [0,1,2,3,4,6,7,8]
+        };
+
         this.uniforms.nColorLayer = {
             type: "i",
             value: this.nColorLayer
@@ -206,9 +211,9 @@ define('Renderer/LayeredMaterial', ['THREE',
         this.Textures[1].splice(startIdTexture,nbTextures);
         this.nColorLayer--;
 
-        for (var i = nIdLayer, max = this.paramLayers.length; i < max; i++)
+        for (var j = nIdLayer, mx = this.paramLayers.length; j < mx; j++)
 
-            this.paramLayers[i].x -= nbTextures;
+            this.paramLayers[j].x -= nbTextures;
 
     };
 

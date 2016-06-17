@@ -40,8 +40,11 @@ uniform vec3        pitScale_L01[TEX_UNITS];
 
 uniform vec4        paramLayers[8];
 uniform vec2        paramBLayers[8];
+uniform int         layerSequence[8];
+
 uniform int         pickingRender;
 uniform int         nbTextures[8];
+
 uniform float       distanceFog;
 uniform int         RTC;
 uniform int         selected;
@@ -112,6 +115,25 @@ vec4 pack1K ( float depth ) {
 
 // }
 
+vec4 getParamLayers(int id)
+{
+
+    for (int layer = 0; layer < 8; layer++)
+        if(layer == id)
+            return paramLayers[layer];
+
+}
+
+vec2 getParamBLayers(int id)
+{
+
+    for (int layer = 0; layer < 8; layer++)
+        if(layer == id)
+            return paramBLayers[layer];
+
+}
+
+
 void main() {
 
     #if defined(USE_LOGDEPTHBUF) && defined(USE_LOGDEPTHBUF_EXT)
@@ -177,11 +199,13 @@ void main() {
             // TODO Optimisation des uv1 peuvent copier pas lignes!!
             for (int layer = 0; layer < 8; layer++)
             {
+
+
                if(layer == nColorLayer)
                     break;
 
-                params = paramLayers[layer];
-                paramsB = paramBLayers[layer];
+                params = getParamLayers(layerSequence[layer]);
+                paramsB = getParamBLayers(layerSequence[layer]);
 
                 if(params.z == 1.0 && params.w > 0.0)
                 {
