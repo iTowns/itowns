@@ -130,9 +130,7 @@ vec2 getParamBLayers(int id)
     for (int layer = 0; layer < 8; layer++)
         if(layer == id)
             return paramBLayers[layer];
-
 }
-
 
 void main() {
 

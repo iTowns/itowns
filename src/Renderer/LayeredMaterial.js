@@ -58,17 +58,19 @@ define('Renderer/LayeredMaterial', ['THREE',
         var maxTexturesUnits =  gfxEngine().glParams.maxTexturesUnits;
         this.vertexShader = GlobeVS;
 
+        var nbSamplers = Math.min(maxTexturesUnits-1,16-1);
+
         var customFS = '#extension GL_EXT_frag_depth : enable\n';
         customFS +='precision highp float;\n';
         customFS +='precision highp int;\n';
-        customFS +='const int   TEX_UNITS   = ' + (maxTexturesUnits-1).toString() + ';\n';
+        customFS +='const int   TEX_UNITS   = ' + nbSamplers.toString() + ';\n';
 
         customFS += pitUV;
 
         if(showBorderUV)
             customFS += '#define BORDERLINE\n';
 
-        customFS += getColorAtIdUv(16);
+        customFS += getColorAtIdUv(nbSamplers);
 
         this.fragmentShader = customFS + GlobeFS;
 
@@ -84,12 +86,12 @@ define('Renderer/LayeredMaterial', ['THREE',
         for (var l = 0; l < nbLayer; l++) {
 
             // WARNING TODO prevent empty slot, but it's not the solution
-            this.pitScale[l] = Array(maxTexturesUnits-1).fill(vector);
+            this.pitScale[l] = Array(nbSamplers).fill(vector);
             this.nbTextures[l] = 0;
         }
 
         this.Textures[0] = [emptyTexture];
-        this.Textures[1] = Array(maxTexturesUnits-1).fill(emptyTexture);
+        this.Textures[1] = Array(nbSamplers).fill(emptyTexture);
 
         this.paramLayers = Array(8).fill(vector4);
         this.paramBLayers = Array(8).fill(vector2);
