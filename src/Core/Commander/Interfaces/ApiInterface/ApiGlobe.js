@@ -92,6 +92,24 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
 
     };
 
+    ApiGlobe.prototype.moveLayerUp = function(layer){
+
+        this.scene.getMap().moveLayerUp(layer);
+        this.scene.renderScene3D();
+    };
+
+    ApiGlobe.prototype.moveLayerDown = function(layer){
+
+        this.scene.getMap().moveLayerDown(layer);
+        this.scene.renderScene3D();
+    };
+
+    ApiGlobe.prototype.moveLayerToIndex = function(layer,newId){
+
+        this.scene.getMap().moveLayerToIndex(layer,newId);
+        this.scene.renderScene3D();
+    };
+
     ApiGlobe.prototype.removeImageryLayer = function(id){
 
         if(this.scene.getMap().removeColorLayer(id))
@@ -243,7 +261,6 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
     ApiGlobe.prototype.setLayerVibility = function(id,visible){
 
         this.scene.getMap().setLayerVibility(id,visible);
-
         this.scene.renderScene3D();
     };
 
@@ -256,10 +273,10 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
 
         this.scene.orbit(value);
     };
+
     ApiGlobe.prototype.setLayerOpacity = function(id,visible){
 
         this.scene.getMap().setLayerOpacity(id,visible);
-
         this.scene.renderScene3D();
     };
 

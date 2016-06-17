@@ -194,6 +194,18 @@ define('Renderer/LayeredMaterial', ['THREE',
         return this.nbTextures[0] + this.nbTextures[1];
     };
 
+
+    LayeredMaterial.prototype.setSequence = function(newSequence) {
+
+        var sequence = this.uniforms.layerSequence.value;
+        var max = Math.min(newSequence.length,sequence.length);
+
+        for (var l = 0; l < max; l++)
+
+            sequence[l] = newSequence[l];
+
+    };
+
     LayeredMaterial.prototype.removeLayerColor = function(nIdLayer) {
 
         var startIdTexture = this.paramLayers[nIdLayer];

@@ -207,6 +207,39 @@ define('Globe/Globe', [
         this.colorTerrain.add(subLayer);
     };
 
+    Globe.prototype.moveLayerUp = function(id){
+
+        var colorLayer = this.getLayerColor(id);
+        var index = this.colorTerrain.children.indexOf(colorLayer);
+
+        if(index < this.colorTerrain.children.length-1)
+            this.moveLayerToIndex(id,index+1)
+    };
+
+    Globe.prototype.moveLayerDown = function(id){
+
+        var colorLayer = this.getLayerColor(id);
+        var index = this.colorTerrain.children.indexOf(colorLayer);
+
+        if(index > 0)
+            this.moveLayerToIndex(id,index-1)
+    };
+
+    Globe.prototype.moveLayerToIndex = function(layer,newId){
+
+        var index =  this.colorTerrain.children.indexOf(this.getLayerColor(layer));
+
+        this.colorTerrain.children.splice(newId,0,this.colorTerrain.children.splice(index,1)[0]);
+        this.colorTerrain.services.splice(newId,0,this.colorTerrain.services.splice(index,1)[0]);
+
+        var cO = function(object){
+            if(object.changeSequenceLayers)
+                object.changeSequenceLayers(this.colorTerrain.services);
+        }.bind(this);
+
+        this.tiles.children[0].traverse(cO);
+    };
+
     Globe.prototype.removeColorLayer = function(id){
 
         var colorLayer = this.getLayerColor(id);
@@ -240,6 +273,7 @@ define('Globe/Globe', [
         {
 
             layer.visible = visible;
+            // TODO remove layerTile
             //var idLtile = layer.description.style.layerTile;
             var cO = function(object){
 
