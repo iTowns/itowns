@@ -122,20 +122,21 @@ define('Core/Commander/ManagerCommands', [
         ManagerCommands.prototype.deQueue = function() {
 
             while (this.queueAsync.length > 0) {
-                var com = this.queueAsync.peek();
-                var parent = com.requester;
-
-                if (parent.visible === false && parent.level >= 2) {
-
-                    while (parent.children.length > 0) {
-                        var child = parent.children[0];
+                var cmd = this.queueAsync.peek();
+                var requester = cmd.requester;
+                if (requester.visible === false &&
+                    !cmd.cancellable &&
+                    requester.level >= 2) {
+                    while (requester.children.length > 0) {
+                        var child = requester.children[0];
                         child.dispose();
-                        parent.remove(child);
+                        requester.remove(child);
                     }
-                    parent.pendingSubdivision = false;
+
                     this.queueAsync.dequeue();
-                } else
+                } else {
                     return this.queueAsync.dequeue();
+                }
 
             }
 
