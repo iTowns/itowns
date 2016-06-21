@@ -384,7 +384,7 @@ define('Globe/TileMesh', [
 
         var newSequence,layer;
 
-        if(sequence.length !== this.layersColor)
+        if(sequence.length !== this.layersColor.length)
         {
             newSequence = sequence.slice(0);
             var max = newSequence.length;
