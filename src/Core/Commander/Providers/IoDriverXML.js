@@ -19,8 +19,8 @@ define('Core/Commander/Providers/IoDriverXML', ['Core/Commander/Providers/IoDriv
     IoDriverXML.prototype.constructor = IoDriverXML;
 
     IoDriverXML.prototype.read = function(url) {
-
-
+        // We don't use fetch here because there no direct
+        // equivalent to responseType="document"
         return new Promise(function(resolve, reject) {
             var xhr = new XMLHttpRequest();
 

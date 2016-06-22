@@ -3,7 +3,6 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-/* global Promise*/
 
 define('Core/Commander/Providers/IoDriver_JSON', ['Core/Commander/Providers/IoDriver'], function(IoDriver) {
 
@@ -19,27 +18,9 @@ define('Core/Commander/Providers/IoDriver_JSON', ['Core/Commander/Providers/IoDr
     IoDriver_JSON.prototype.constructor = IoDriver_JSON;
 
     IoDriver_JSON.prototype.read = function(url) {
-
-
-        return new Promise(function(resolve, reject)
-        {
-            var xhr = new XMLHttpRequest();
-            xhr.open("GET", url, true);
-           // xhr.responseType = "document";
-            xhr.crossOrigin = '';
-
-            xhr.onload = function() {
-                //resolve(this.response);
-                resolve(JSON.parse(this.response));  // limited to 1000...
-            };
-
-            xhr.onerror = function() {
-                reject(Error("Error IoDriver_JSON"));
-            };
-
-            xhr.send(null);
+        return fetch(url).then(function(response) {
+            return response.json();
         });
-
     };
 
     return IoDriver_JSON;
