@@ -27,7 +27,7 @@ define('Scene/Quadtree', [
         this.maxLevel = 17;
         var rootNode = new NodeMesh();
 
-        rootNode.frustumCulled = false
+        rootNode.frustumCulled = false;
         rootNode.material.visible = false;
 
         rootNode.link = this.link;
@@ -69,67 +69,18 @@ define('Scene/Quadtree', [
     };
 
     /**
-     * @documentation: subdivise node if necessary
+     * @documentation: returns bounding boxes of a node's quadtree subdivision
      * @param {type} node
-     * @returns {Array} four bounding box
+     * @returns {Array} an array of four bounding boxex
      */
-    Quadtree.prototype.up = function(node) {
-        if (node.pendingSubdivision) {
-            return;
-        }
-        if (!this.update(node)) {
-            return;
+    Quadtree.prototype.subdivide = function (node) {
+        if(node.pendingSubdivision || node.level > this.maxLevel){
+            return [];
         }
 
-        node.pendingSubdivision = true;
         var quad = new Quad(node.bbox);
-        this.requestNewTile(quad.northWest, node);
-        this.requestNewTile(quad.northEast, node);
-        this.requestNewTile(quad.southWest, node);
-        this.requestNewTile(quad.southEast, node);
 
-        node.setDisplayed(true);
-    };
-
-    Quadtree.prototype.down = function(node)
-    {
-        for (var i = 0; i < this.children.length; i++) {
-            var child = this.children[i];
-            if (child instanceof NodeMesh) {
-                child.setDisplayed(false);
-            } else {
-                child.visible = false;
-            }
-        }
-
-        node.setDisplayed(true);
-    }
-
-    Quadtree.prototype.upSubLayer = function(node) {
-
-        var id = node.getDownScaledLayer();
-
-        if(id !== undefined) {
-            var params = { layer : this.children[id+1], subLayer : id};
-            this.interCommand.request(params, node);
-        }
-
-    };
-
-    /**
-     * @documentation: update node
-     * @param {type} node
-     * @returns {Boolean}
-     */
-    Quadtree.prototype.update = function(node) {
-
-        if (node.level > this.maxLevel)
-            return false;
-        else if (node.childrenCount() > 0 ) {
-            return false;
-        }
-
-        return true;
+        return [quad.northWest, quad.northEast, quad.southWest, quad.southEast];
     };
 
     return Quadtree;
