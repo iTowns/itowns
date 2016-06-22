@@ -50,34 +50,10 @@ define('Core/Commander/Providers/IoDriver_XBIL', ['Core/Commander/Providers/IoDr
     };
 
     IoDriver_XBIL.prototype.read = function(url) {
-
-        return new Promise(function(resolve/*, reject*/) {
-            var xhr = new XMLHttpRequest();
-
-
-            //The responseType property cannot be set when the XMLHttpRequest is not async, that is, synchronous.
-            //Setting the third parameter of open to false causes the request to be synchronous.
-            //xhr.open("GET", url, false);
-            xhr.responseType = "arraybuffer";
-            xhr.crossOrigin = '';
-            xhr["parseXBil"] = this.parseXBil;
-
-            xhr.onload = function() {
-
-                resolve(this.parseXBil(this.response));
-
-            };
-
-            xhr.onerror = function() {
-
-                resolve(undefined);
-
-                this.abort();
-            };
-
-            xhr.open("GET", url, true);
-            xhr.send(null);
-
+        return fetch(url).then(function(response) {
+            return response.arrayBuffer();
+        }).then(function(buffer) {
+            return this.parseXBil(buffer);
         }.bind(this));
     };
 

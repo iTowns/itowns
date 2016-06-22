@@ -27,7 +27,8 @@
     "paralleljs": "^0.2.1",
     "simd": "^2.0.0",
     "string_format": "^0.0.6",
-    "three": "^0.77.0"
+    "three": "^0.77.0",
+    "whatwg-fetch": "^1.0.0"
   },
   "devDependencies": {
     "eslint": "^2.5.3",
