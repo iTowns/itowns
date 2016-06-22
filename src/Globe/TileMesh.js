@@ -404,7 +404,7 @@ define('Globe/TileMesh', [
         for (var l = 0; l < newSequence.length; l++)
         {
             var index = this.getIndexLayerColor(newSequence[l]);
-            this.layersColor[index].sequence = l;
+            //this.layersColor[index].sequence = l;
             sequenceMaterial[l] = index ;
         }
 
