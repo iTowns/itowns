@@ -4,7 +4,14 @@
  * Description: NodeProcess effectue une opération sur un Node.
  */
 
-define('Scene/NodeProcess', ['Scene/BoundingBox', 'Renderer/Camera', 'Core/Math/MathExtented', 'THREE', 'Core/defaultValue'], function(BoundingBox, Camera, MathExt, THREE, defaultValue) {
+define('Scene/NodeProcess',
+    ['Scene/BoundingBox',
+     'Renderer/Camera',
+     'Core/Math/MathExtented',
+     'Core/Commander/InterfaceCommander',
+     'THREE',
+     'Core/defaultValue'
+], function(BoundingBox, Camera, MathExt, InterfaceCommander, THREE, defaultValue) {
 
 
     function NodeProcess(camera, size, bbox) {
@@ -85,23 +92,45 @@ define('Scene/NodeProcess', ['Scene/BoundingBox', 'Renderer/Camera', 'Core/Math/
      */
     NodeProcess.prototype.SSE = function(node, camera, params) {
 
-        var sse = this.checkSSE(node, camera)
+        var sse = this.checkSSE(node, camera);
+        var args;
+        var i;
 
-        if (sse) {
+        if (sse) {  // SSE too big: display or load children
             if (params.withUp) {
                 // request level up
-                params.tree.up(node);
+                if(!node.pendingSubdivision && node.noChild()) {
+                    bboxes = params.tree.subdivide(node);
+                    node.pendingSubdivision = true;
+
+                    for(i = 0; i < bboxes.length; i++) {
+                        args = {layer: params.tree, bbox: bboxes[i]};
+                        params.tree.interCommand.request(args, node);
+                    }
+                }
             }
             node.setDisplayed(
                 node.children.length === 0 ||
                 node.pendingSubdivision);
-        } else {
+        } else {    // SSE good enough: display node and put it to the right scale if necessary
             if (params.withUp) {
-                // request level up other quadtree
-                params.tree.upSubLayer(node);
+                // find downscaled layer
+                var id = node.getDownScaledLayer();
+
+                if(id !== undefined) {
+                    // update downscaled layer to appropriate scale
+                    args = {layer : params.tree.children[id+1], subLayer : id};
+                    params.tree.interCommand.request(args, node);
+                }
             }
-            // display node
-            params.tree.down(node);
+
+            // display node and hide children
+            for (i = 0; i < node.children.length; i++) {
+                var child = node.children[i];
+                child.setDisplayed(false);
+            }
+
+            node.setDisplayed(true);
         }
     };
 
