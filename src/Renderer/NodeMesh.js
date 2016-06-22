@@ -43,8 +43,6 @@ define('Renderer/NodeMesh', ['Scene/Node', 'THREE'], function(Node, THREE) {
 
         if (this.content !== null)
             this.content.visible = show;
-
-        return show;
     };
 
     NodeMesh.prototype.setDisplayed = function(show) {
@@ -58,7 +56,7 @@ define('Renderer/NodeMesh', ['Scene/Node', 'THREE'], function(Node, THREE) {
 
     NodeMesh.prototype.isDisplayed = function() {
         return this.material.visible;
-    }
+    };
 
     Node.extend(NodeMesh);
 
