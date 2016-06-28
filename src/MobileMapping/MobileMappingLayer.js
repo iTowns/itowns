@@ -18,6 +18,11 @@ define('MobileMapping/MobileMappingLayer', [
 ], function(Layer, THREE, PanoramicMesh, gfxEngine, Projection,
             PanoramicProvider, Ellipsoid, CoordCarto) {
 
+    /**
+     * Layer for MobileMapping data. Up to now it is used for panoramic imagery
+     * It uses a Panoramic Provider 
+     * @returns {MobileMappingLayer_L18.MobileMappingLayer}
+     */
     function MobileMappingLayer() {
         //Constructor
 
@@ -40,30 +45,6 @@ define('MobileMapping/MobileMappingLayer', [
     MobileMappingLayer.prototype = Object.create(Layer.prototype);
     MobileMappingLayer.prototype.constructor = MobileMappingLayer;
 
-
-
-    MobileMappingLayer.prototype.updateData = function(){
-
-        var pos = gfxEngine().controls.getPointGlobe();
-        var posWGS84 = new Projection().cartesianToGeo(pos);
-        var lonDeg = posWGS84.longitude / Math.PI * 180;
-        var latDeg = posWGS84.latitude  / Math.PI * 180;
-
-       // console.log("position clicked: ",pos, "wgs, longitude:", posWGS84.longitude/ Math.PI * 180, "   '",posWGS84.latitude/ Math.PI * 180, "  alti:", posWGS84.altitude);
-
-        this.panoramicProvider.updateMaterialImages(lonDeg, latDeg, 1000).then(function(panoInfo){
-
-            // Move camera to new pos
-         //   var panoInfo = panoInfo; //this.panoramicProvider.panoInfo;
-            var ellipsoid  = new Ellipsoid(new THREE.Vector3(6378137, 6356752.3142451793, 6378137));  // Should be computed elsewhere
-            var posPanoWGS84 = new CoordCarto().setFromDegreeGeo(panoInfo.longitude, panoInfo.latitude, panoInfo.altitude);
-            var posPanoCartesian = ellipsoid.cartographicToCartesian(posPanoWGS84);
-
-            this.moveCameraToScanPosition(posPanoCartesian);
-
-        }.bind(this));
-
-    };
 
 
     MobileMappingLayer.prototype.initiatePanoramic = function(imageOpt){
@@ -91,6 +72,31 @@ define('MobileMapping/MobileMappingLayer', [
     };
 
 
+    MobileMappingLayer.prototype.updateData = function(){
+
+        var pos = gfxEngine().controls.getPointGlobe();
+        var posWGS84 = new Projection().cartesianToGeo(pos);
+        var lonDeg = posWGS84.longitude / Math.PI * 180;
+        var latDeg = posWGS84.latitude  / Math.PI * 180;
+
+        // console.log("position clicked: ",pos, "wgs, longitude:", posWGS84.longitude/ Math.PI * 180, "   '",posWGS84.latitude/ Math.PI * 180, "  alti:", posWGS84.altitude);
+
+        this.panoramicProvider.updateMaterialImages(lonDeg, latDeg, 1000).then(function(panoInfo){
+
+            // Move camera to new pos
+         //   var panoInfo = panoInfo; //this.panoramicProvider.panoInfo;
+            var ellipsoid  = new Ellipsoid(new THREE.Vector3(6378137, 6356752.3142451793, 6378137));  // Should be computed elsewhere
+            var posPanoWGS84 = new CoordCarto().setFromDegreeGeo(panoInfo.longitude, panoInfo.latitude, panoInfo.altitude);
+            var posPanoCartesian = ellipsoid.cartographicToCartesian(posPanoWGS84);
+
+            this.moveCameraToScanPosition(posPanoCartesian);
+
+        }.bind(this));
+
+    };
+
+
+
     MobileMappingLayer.prototype.moveCameraToScanPosition = function(pos){
 
        var speedMove = 0.1;
@@ -115,7 +121,7 @@ define('MobileMapping/MobileMappingLayer', [
         var o = {
          // HTTP access to itowns sample datasets
           //url : "../{lod}/images/{YYMMDD}/Paris-{YYMMDD}_0740-{cam.cam}-00001_{pano.pano:07}.jpg",
-          url : "../{lod}/images/{YYMMDD2}/Paris-{YYMMDD2}_0740-{cam.id}-00001_{splitIt}.jpg",
+          url : "../{lod}/images/{YYMMDD2}/Paris-{YYMMDD2}_0740-{cam.cam}-00001_{splitIt}.jpg",
           lods : ['itowns-sample-data'],//['itowns-sample-data-small', 'itowns-sample-data'],
             /*
             // IIP server access

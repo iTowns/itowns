@@ -528,7 +528,7 @@ and open the template in the editor.
                    this.CloudsIR = false;
                    this.SatelliteAnimation = false;
                    this.RealisticLighting = false;
-                   //this.StreetLevelImagery = false;
+                   this.StreetLevelImagery = false;
                    this.KML = false;
                    this.AnimateTime = false;
                    this.Orbit = false;
@@ -584,7 +584,7 @@ and open the template in the editor.
                     itowns.viewer.showKML(newValue);
                 });
 
-                if(false)
+                if(true)
                 {
                     var f2 = gui.addFolder('Atmosphere');
 
@@ -608,6 +608,11 @@ and open the template in the editor.
 
                     f2.add(text, 'Orbit').onChange(function(newValue) {
                         itowns.viewer.orbit(newValue);
+                    });
+                    
+
+                    f2.add(text, 'StreetLevelImagery').onChange(function(newValue) {
+			itowns.viewer.setStreetLevelImageryOn(newValue);
                     });
                 }
 

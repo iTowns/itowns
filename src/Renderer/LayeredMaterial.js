@@ -38,7 +38,7 @@ define('Renderer/LayeredMaterial', ['THREE',
         this.vertexShader = GlobeVS;
 
         var customFS = '#extension GL_EXT_frag_depth : enable\n';
-        customFS += 'const int   TEX_UNITS   =' + (maxTexturesUnits).toString() + ';\n';
+        customFS += 'const int   TEX_UNITS   =' + (maxTexturesUnits-1).toString() + ';\n';
 
         this.fragmentShader = customFS + GlobeFS;
 
@@ -54,12 +54,12 @@ define('Renderer/LayeredMaterial', ['THREE',
         for (var l = 0; l < nbLayer; l++) {
 
             // WARNING TODO prevent empty slot, but it's not the solution
-            this.pitScale[l] = Array(maxTexturesUnits).fill(vector);
+            this.pitScale[l] = Array(maxTexturesUnits -1 ).fill(vector);
             this.nbTextures[l] = 0;
         }
 
         this.Textures[0] = [emptyTexture];
-        this.Textures[1] = Array(maxTexturesUnits).fill(emptyTexture);
+        this.Textures[1] = Array(maxTexturesUnits -1 ).fill(emptyTexture);
 
         this.paramLayers = Array(8).fill(vector4);
         this.paramBLayers = Array(8).fill(vector2);

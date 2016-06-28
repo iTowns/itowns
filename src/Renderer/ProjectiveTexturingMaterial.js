@@ -143,8 +143,8 @@ define (['Renderer/c3DEngine','three','Renderer/ThreeExtented/threeExt','MobileM
 
             loadTexture: function(src,infos,onload,data){
 
-                   // console.log("src: ",src,"  infos: ",infos);
-                    src = src.format(infos);
+                    console.log("src: ",src,"  infos: ",infos);
+                    src = src.format(infos); console.log("src: ",src);
                     var img = new Image();
                     img.crossOrigin = 'anonymous';
                     img.onload = function () {
@@ -227,7 +227,7 @@ define (['Renderer/c3DEngine','three','Renderer/ThreeExtented/threeExt','MobileM
                 _infos.pano = panoInfo;
                 _infos.lod = _infos.lods[0];
                 for ( i=0; i<N; ++i) {
-                        _infos.cam  = Ori.sensors[i].infos;
+                        _infos.cam  = Ori.sensors[i].infos; console.log(_infos.cam);
                         m= idmask[i];
                         if(m>=0) {
                                 this.loadTexture(Ori.getMask(i), {}, function(tex,m) {
