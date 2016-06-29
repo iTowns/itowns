@@ -20,7 +20,7 @@ define('MobileMapping/MobileMappingLayer', [
 
     /**
      * Layer for MobileMapping data. Up to now it is used for panoramic imagery
-     * It uses a Panoramic Provider 
+     * It uses a Panoramic Provider
      * @returns {MobileMappingLayer_L18.MobileMappingLayer}
      */
     function MobileMappingLayer() {
