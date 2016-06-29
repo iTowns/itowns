@@ -62,6 +62,10 @@ define('Core/Commander/Providers/TileProvider', [
 
         TileProvider.prototype.constructor = TileProvider;
 
+        TileProvider.prototype.preprocessLayer = function(/*layer*/) {
+            /* no-op */
+        }
+
         TileProvider.prototype.getGeometry = function(bbox, cooWMTS) {
             var geometry = undefined;
             var n = Math.pow(2, cooWMTS.zoom + 1);

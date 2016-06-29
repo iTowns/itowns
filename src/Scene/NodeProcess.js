@@ -10,8 +10,9 @@ define('Scene/NodeProcess',
      'Core/Math/MathExtented',
      'Core/Commander/InterfaceCommander',
      'THREE',
-     'Core/defaultValue'
-], function(BoundingBox, Camera, MathExt, InterfaceCommander, THREE, defaultValue) {
+     'Core/defaultValue',
+     'Core/Geographic/Projection'
+], function(BoundingBox, Camera, MathExt, InterfaceCommander, THREE, defaultValue, Projection) {
 
 
     function NodeProcess(camera, size, bbox) {
@@ -25,7 +26,7 @@ define('Scene/NodeProcess',
 
         this.r = defaultValue(size, new THREE.Vector3());
         this.cV = new THREE.Vector3();
-
+        this.projection = new Projection();
     }
 
     /**
@@ -105,25 +106,21 @@ define('Scene/NodeProcess',
         var id = node.getDownScaledLayer();
 
         if(id !== undefined) {
-            // update downscaled layer to appropriate scale
-            var args = {layer : params.tree.children[id+1], subLayer : id};
-
             // prevent multiple command creation
             if(node.pendingLayers[id] === undefined) {
                 node.pendingLayers[id] = true;
 
-                params.tree.interCommand.request(args, node, refinementCommandCancellationFn).then(function(result) {
+                if (id === 0) {
+                    updateNodeElevation(params.tree, node).then(function() {
+                        node.pendingLayers[id] = undefined;
+                    });
+                } else if (id === 1) {
+                    updateNodeImagery(params.tree, node).then(function() {
+                        node.pendingLayers[id] = undefined;
+                    });
+                } else {
                     node.pendingLayers[id] = undefined;
-                    if (!result) {
-                        return;
-                    }
-
-                    if (id === 0) {
-                        node.setTextureElevation(result);
-                    } else if (id === 1) {
-                        node.setTexturesLayer(result, id);
-                    }
-                });
+                }
             }
         }
     };
@@ -134,6 +131,63 @@ define('Scene/NodeProcess',
             child.setDisplayed(false);
         }
     };
+
+    function updateNodeImagery(quadtree, node) {
+        var promises = [];
+
+        for (var i=0; i<quadtree.colorLayers.length; i++) {
+            var layer = quadtree.colorLayers[i];
+
+            if (layer.tileInsideLimit(node, layer)) {
+                var args = {layer: layer, destination: 1 };
+                promises.push(quadtree.interCommand.request(args, node, refinementCommandCancellationFn));
+            }
+        }
+
+        return Promise.all(promises).then(function(colorTextures) {
+            var textures = [];
+            for (var j=0; j<colorTextures.length; j++) {
+                textures = textures.concat(colorTextures[j]);
+            }
+            node.setTexturesLayer(textures, 1);
+            return node;
+        });
+    }
+
+    function updateNodeElevation(quadtree, node) {
+        // See TileMesh's groupelevation. Elevations level are mapped on 4 levels (14, 11, 7, 3).
+        // For instance, if tile.level is 12, it'll use levelElevation == 11.
+        // Here we only make sure that the tile with level == levelElevation == 11 has its elevation texture.
+        // Also see TileMesh.setTextureElevation
+        var tileNotDownscaled = (node.level === node.levelElevation) ?
+            node :
+            node.getParentLevel(node.levelElevation);
+
+
+        // If tileNotDownscaled's elevation texture is not ready yet, fetch it
+        if (tileNotDownscaled.downScaledLayer(0)) {
+            for (var i=0; i<quadtree.elevationLayers.length; i++) {
+                var layer = quadtree.elevationLayers[i];
+
+                if (layer.tileInsideLimit(tileNotDownscaled, layer)) {
+                    var args = {layer: layer, destination: 0 };
+
+                    return quadtree.interCommand.request(args, tileNotDownscaled, refinementCommandCancellationFn).then(function(terrain) {
+                        tileNotDownscaled.setTextureElevation(terrain);
+                        if (tileNotDownscaled != node) {
+                            node.setTextureElevation(-2);
+                        }
+                        return node;
+                    });
+                }
+                return Promise.resolve(node);
+            }
+        } else {
+            // TODO: check this
+            node.setTextureElevation(-2);
+            return Promise.resolve(node);
+        }
+    }
 
     /**
      * @documentation: Compute screen space error of node in function of camera
@@ -152,9 +206,9 @@ define('Scene/NodeProcess',
                 // request level up
                 this.subdivideNode(node, camera, params);
             }
+
             // Ideally we'd want to hide this node and display its children
             node.setDisplayed(!node.childrenLoaded());
-
         } else {    // SSE good enough: display node and put it to the right scale if necessary
             if (params.withUp) {
                 this.refineNodeLayers(node, camera, params);
