@@ -59,8 +59,8 @@ define('Core/Commander/ManagerCommands', [
             this.providers.push(provider);
         };
 
-        ManagerCommands.prototype.getProvider = function(layer) {
-            return this.providerMap[layer.id];
+        ManagerCommands.prototype.getProvidersForProtocol = function(protocol) {
+            return this.providers.filter(function(p) { return p.supports(protocol); });
         };
 
         ManagerCommands.prototype.commandsLength = function() {

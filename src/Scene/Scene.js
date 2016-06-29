@@ -214,7 +214,6 @@ define('Scene/Scene', [
         if(node instanceof Globe)
         {
             this.map = node;
-            this.managerCommand.addMapProvider(node);
             nodeProcess = nodeProcess || new NodeProcess(this.currentCamera(), node.size);
             //this.quadTreeRequest(node.tiles, nodeProcess);
 

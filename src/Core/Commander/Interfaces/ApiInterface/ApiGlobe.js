@@ -12,6 +12,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
        'Scene/NodeProcess',
        'Globe/Globe',
        'Core/Commander/Providers/WMTS_Provider',
+       'Core/Commander/Providers/TileProvider',
        'Core/Geographic/CoordCarto',
        'Core/Geographic/Projection'], function(
            EventsManager,
@@ -20,6 +21,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
            NodeProcess,
            Globe,
            WMTS_Provider,
+           TileProvider,
            CoordCarto,
            Projection) {
 
@@ -72,7 +74,6 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
 
     };
 
-
     ApiGlobe.prototype.getWMTSProvider = function()
     {
         var manager = this.scene.managerCommand;
@@ -81,19 +82,20 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         for (var i=0; i<providers.length; i++) {
             var provider = providers[i];
             if (provider.supports('wmts')) {
-                return provider);
+                return provider;
             }
         }
         return null;
     }
 
+    /* REMOVE ME: providers doesn't need to know about existing layers */
     ApiGlobe.prototype.registerLayer = function(layer) {
         var manager = this.scene.managerCommand;
         var providers = manager.providers;
 
         for (var i=0; i<providers.length; i++) {
             var provider = providers[i];
-            if (provider.supports(layer.protocol)) {
+            if (provider.supports(layer.protocol) && provider.addLayer) {
                 provider.addLayer(layer);
             }
         }
@@ -182,12 +184,10 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
     */
 
     ApiGlobe.prototype.getLayers = function(/*param*/){
-
-        var map = this.scene.getMap();
         var manager = this.scene.managerCommand;
-        var providerWMTS = manager.getProvider(map.tiles).providerWMTS;
-        var layersData = providerWMTS.layersData;
-        return layersData;
+        var wmtsProviders = manager.getProvidersForProtocol('wmts');
+        var layersWMTS = wmtsProviders[0].layersWMTS;
+        return layersWMTS;
 
     };
 
@@ -248,6 +248,12 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
 
         // Register all providers
         this.scene.managerCommand.addProvider(new WMTS_Provider({}));
+        this.scene.managerCommand.addProvider(new TileProvider(map.size, map.gLDebug));
+
+        this.registerLayer({
+            protocol: 'tile',
+            id:       'wgs84'
+        });
 
         //!\\ TEMP
         //this.scene.wait(0);

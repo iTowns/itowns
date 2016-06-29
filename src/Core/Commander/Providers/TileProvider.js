@@ -16,6 +16,7 @@
 
 
 define('Core/Commander/Providers/TileProvider', [
+        'Core/Commander/Providers/Provider',
         'THREE',
         'Core/Geographic/Projection',
         'Core/Commander/Providers/WMTS_Provider',
@@ -28,6 +29,7 @@ define('Core/Commander/Providers/TileProvider', [
         'Scene/BoundingBox'
     ],
     function(
+        Provider,
         THREE,
         Projection,
         WMTS_Provider,
@@ -42,6 +44,7 @@ define('Core/Commander/Providers/TileProvider', [
 
         function TileProvider(size,manager,gLDebug) {
             //Constructor
+            Provider.call(this, null);
 
             this.projection = new Projection();
             this.providerWMTS = new WMTS_Provider({support : gLDebug});
@@ -60,7 +63,13 @@ define('Core/Commander/Providers/TileProvider', [
 
         }
 
+        TileProvider.prototype = Object.create(Provider.prototype);
+
         TileProvider.prototype.constructor = TileProvider;
+
+        TileProvider.prototype.supports = function(protocol) {
+            return protocol === 'tile';
+        }
 
         TileProvider.prototype.getGeometry = function(bbox, cooWMTS) {
             var geometry = undefined;
