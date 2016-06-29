@@ -72,10 +72,32 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
 
     };
 
+
     ApiGlobe.prototype.getWMTSProvider = function()
     {
-        return this.scene.managerCommand.getProvider(this.scene.getMap().tiles).providerWMTS;
-    };
+        var manager = this.scene.managerCommand;
+        var providers = manager.providers;
+
+        for (var i=0; i<providers.length; i++) {
+            var provider = providers[i];
+            if (provider.supports('wmts')) {
+                return provider);
+            }
+        }
+        return null;
+    }
+
+    ApiGlobe.prototype.registerLayer = function(layer) {
+        var manager = this.scene.managerCommand;
+        var providers = manager.providers;
+
+        for (var i=0; i<providers.length; i++) {
+            var provider = providers[i];
+            if (provider.supports(layer.protocol)) {
+                provider.addLayer(layer);
+            }
+        }
+    }
 
     /**
     * This function adds an imagery layer to the scene. The layer id must be unique. The protocol rules wich parameters are then needed for the function.
@@ -83,19 +105,11 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
     * @param {Layer} layer.
     */
     ApiGlobe.prototype.addImageryLayer = function(layer) {
+        this.registerLayer(layer);
 
         var map = this.scene.getMap();
         var manager = this.scene.managerCommand;
-        var provider;
-
-        // get provider in function of provider
-        if(layer.protocol === 'wmts' || layer.protocol === 'wmtsc')
-            provider = this.getWMTSProvider();
-
-        provider.addLayer(layer);
-        var colorLayer = map.addColorLayer(layer.id)
-        manager.addLayer(colorLayer,provider);
-
+        map.colorTerrain.services.push(layer.id);
     };
 
     ApiGlobe.prototype.moveLayerUp = function(layer){
@@ -128,6 +142,21 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         }
 
         return false;
+    };
+
+
+    /**
+    * Add an elevation layer to the map. Elevations layers are used to build the terrain, if there is some overlapped the best resolution is taken, if resolution is equals, the first one is used.
+    * The layer id must be unique amongst all layers already inserted. The protocol rules which parameters are then needed for the function
+    * @constructor
+    * @param {Layer} layer.
+    */
+
+    ApiGlobe.prototype.addElevationLayer = function(layer) {
+        this.registerLayer(layer);
+
+        var map = this.scene.getMap();
+        map.elevationTerrain.services.push(layer.id);
     };
 
     /**
@@ -179,25 +208,6 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
     };
 
     /**
-    * Adds en elevation layer (MNT) to the scene. If there are some overlaps, the best resolution is taken.
-    * The layer id must be unique. The protocol rules wich parameters are then needed for the function.
-    * @constructor
-    * @param {Layer} layer.
-    */
-
-    ApiGlobe.prototype.addElevationLayer = function(layer) {
-
-        var map = this.scene.getMap();
-        var manager = this.scene.managerCommand;
-        var providerWMTS = manager.getProvider(map.tiles).providerWMTS;
-
-        providerWMTS.addLayer(layer);
-        manager.addLayer(map.elevationTerrain,providerWMTS);
-        map.elevationTerrain.services.push(layer.id);
-
-    };
-
-    /**
     * Creates the scene (the globe of iTowns).
     * The first parameter is the coordinates on wich the globe will be centered at the initialization.
     * The second one is the HTML div in wich the scene will be created.
@@ -234,6 +244,10 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         var map = new Globe(this.scene.size,gLDebug);
 
         this.scene.add(map);
+
+
+        // Register all providers
+        this.scene.managerCommand.addProvider(new WMTS_Provider({}));
 
         //!\\ TEMP
         //this.scene.wait(0);

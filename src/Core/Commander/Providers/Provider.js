@@ -26,6 +26,10 @@ define('Core/Commander/Providers/Provider', [], function() {
     };
 
 
+    Provider.prototype.supports = function(/*protocol*/) {
+        return false;
+    }
+
     /**
      * @param url
      */

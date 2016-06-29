@@ -37,7 +37,7 @@ define('Core/Commander/ManagerCommands', [
 
             this.queueSync = null;
             this.loadQueue = [];
-            this.providerMap = {};
+            this.providers = [];
             this.history = null;
             this.eventsManager = new EventsManager();
 
@@ -54,15 +54,9 @@ define('Core/Commander/ManagerCommands', [
             this.queueAsync.queue(command);
         };
 
-        ManagerCommands.prototype.addLayer = function(layer, provider) {
-            this.providerMap[layer.id] = provider;
-        };
 
-        ManagerCommands.prototype.addMapProvider = function(map) {
-
-            var tileProvider = new TileProvider(map.size,this,map.gLDebug);
-            this.addLayer(map.tiles,tileProvider);
-
+        ManagerCommands.prototype.addProvider = function(provider) {
+            this.providers.push(provider);
         };
 
         ManagerCommands.prototype.getProvider = function(layer) {
@@ -103,14 +97,17 @@ define('Core/Commander/ManagerCommands', [
 
             while (this.queueAsync.length > 0 && arrayTasks.length < nT) {
                 var command = this.deQueue();
-                if(command)
-                {
 
-                    // TEMP
+                if(command) {
+                    var layer = command.layer;
+                    for (var i=0; i<this.providers.length; i++) {
+                        var provider = this.providers[i];
 
-                    var providers = this.getProviders(command.layer);
-                    for (var i = 0; i < providers.length; i++)
-                        arrayTasks.push(providers[i].executeCommand(command));
+                        if (provider.supports(layer.protocol)) {
+                            arrayTasks.push(provider.executeCommand(command));
+                            break;
+                        }
+                    }
                 }
             }
 

@@ -60,6 +60,10 @@ define('Core/Commander/Providers/WMTS_Provider', [
 
         WMTS_Provider.prototype.constructor = WMTS_Provider;
 
+        WMTS_Provider.prototype.supports = function(protocol) {
+            return protocol === 'wmts' ||
+                protocol === 'wmtsc';
+        }
 
         WMTS_Provider.prototype.customUrl = function(url,tilematrix,row,col)
         {
