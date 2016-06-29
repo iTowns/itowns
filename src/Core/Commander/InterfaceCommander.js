@@ -4,7 +4,7 @@
  * Description: Cette Classe construit une commande. Cette Command ensuite pousser dans une file d'attente.
  */
 
-define('Core/Commander/InterfaceCommander', ['Core/Commander/ManagerCommands', 'Core/Commander/Command'], function(ManagerCommands, Command) {
+define('Core/Commander/InterfaceCommander', ['Core/Commander/ManagerCommands', 'Core/Commander/Command', 'when'], function(ManagerCommands, Command, when) {
 
     function InterfaceCommander(type) {
         //Constructor
@@ -32,11 +32,18 @@ define('Core/Commander/InterfaceCommander', ['Core/Commander/ManagerCommands', '
         command.paramsFunction = parameters;
         command.layer = parameters.layer;
 
+        command.promise = new when.promise(function(resolve, reject) {
+            command.resolve = resolve;
+            command.reject = reject;
+        });
+
         //command.priority = parent.sse === undefined ? 1 : Math.floor(parent.visible ? parent.sse * 10000 : 1.0) *  (parent.visible ? Math.abs(19 - parent.level) : Math.abs(parent.level) ) *10000;
 
         command.priority = requester.sse ? Math.floor(requester.isVisible() && requester.isDisplayed() ? requester.sse * requester.sse * 100000 : 1.0) : 1.0;
 
         this.managerCommands.addCommand(command);
+
+        return command.promise;
     };
 
 
