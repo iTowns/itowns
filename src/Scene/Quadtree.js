@@ -50,6 +50,8 @@ define('Scene/Quadtree', [
         this.tileType = type;
         this.minLevel = 2;
         this.maxLevel = 17;
+        this.colorLayers = [];
+        this.elevationLayers = [];
         var rootNode = new NodeMesh();
 
         rootNode.frustumCulled = false;
