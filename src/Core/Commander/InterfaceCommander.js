@@ -24,13 +24,14 @@ define('Core/Commander/InterfaceCommander', ['Core/Commander/ManagerCommands', '
         this._builderCommand();
     };
 
-    InterfaceCommander.prototype.request = function(parameters, requester) {
+    InterfaceCommander.prototype.request = function(parameters, requester, cancellable) {
 
         var command = new Command();
         command.type = this.type;
         command.requester = requester;
         command.paramsFunction = parameters;
         command.layer = parameters.layer;
+        command.cancellable = cancellable;
 
         //command.priority = parent.sse === undefined ? 1 : Math.floor(parent.visible ? parent.sse * 10000 : 1.0) *  (parent.visible ? Math.abs(19 - parent.level) : Math.abs(parent.level) ) *10000;
 

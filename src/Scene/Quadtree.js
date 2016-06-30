@@ -64,7 +64,7 @@ define('Scene/Quadtree', [
 
         var params = {layer : this,bbox: bbox };
 
-        this.interCommand.request(params, parent);
+        this.interCommand.request(params, parent, false);
 
     };
 
@@ -111,7 +111,7 @@ define('Scene/Quadtree', [
 
         if(id !== undefined) {
             var params = { layer : this.children[id+1], subLayer : id};
-            this.interCommand.request(params, node);
+            this.interCommand.request(params, node, true);
         }
 
     };
