@@ -272,40 +272,18 @@ define('Core/Commander/Providers/WMTS_Provider', [
         WMTS_Provider.prototype.executeCommand = function(command){
 
             //var service;
-            var destination = command.paramsFunction.layer.description.style.layerTile;
+            var destination = command.paramsFunction.destination;
             var tile = command.requester;
 
-            if(destination === 1)
-            {
-                return this.getColorTextures(tile,command.paramsFunction.layer.services).then(function(result)
-                {
+            if(destination === 1) {
+                return this.getColorTextures(tile, command.paramsFunction.layer.services).then(function(result) {
                     return command.resolve(result);
                 });
             }
-            else if (destination === 0)
-            {
-
-                parent = tile.level === tile.levelElevation ? tile : tile.getParentLevel(tile.levelElevation);
-
-                if(parent.downScaledLayer(0))
-                {
-
-                    return this.getElevationTexture(parent,command.paramsFunction.layer.services).then(function(terrain)
-                    {
-                        this.setTextureElevation(terrain);
-
-                    }.bind(parent)).then(function() {
-                        if(this.downScaledLayer(0))
-                            return command.resolve(-2);
-                        else
-                            return command.resolve(undefined);
-
-                    }.bind(tile));
-                }
-                else
-                {
-                    return command.resolve(-2);
-                }
+            else if (destination === 0) {
+                return this.getElevationTexture(tile, command.paramsFunction.layer.services).then(function(terrain) {
+                    command.resolve(terrain);
+                });
             }
         };
 

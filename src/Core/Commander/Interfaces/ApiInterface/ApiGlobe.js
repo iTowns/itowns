@@ -111,6 +111,8 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
 
         var map = this.scene.getMap();
         var manager = this.scene.managerCommand;
+
+        map.tiles.wmtsColorLayers.push(layer);
         map.colorTerrain.services.push(layer.id);
     };
 
@@ -158,6 +160,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         this.registerLayer(layer);
 
         var map = this.scene.getMap();
+        map.tiles.wmtsElevationLayers.push(layer);
         map.elevationTerrain.services.push(layer.id);
     };
 
@@ -247,13 +250,19 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
 
 
         // Register all providers
-        this.scene.managerCommand.addProvider(new WMTS_Provider({}));
-        this.scene.managerCommand.addProvider(new TileProvider(map.size, map.gLDebug));
+        this.scene.managerCommand.addProvider(new WMTS_Provider({support : map.gLDebug}));
+        this.scene.managerCommand.addProvider(new TileProvider(map.size));
 
-        this.registerLayer({
+        var wgs84TileLayer = {
             protocol: 'tile',
             id:       'wgs84'
-        });
+        };
+
+
+        this.registerLayer(wgs84TileLayer);
+        map.tiles.wgs84TileLayer = wgs84TileLayer;
+
+        map.tiles.init();
 
         //!\\ TEMP
         //this.scene.wait(0);

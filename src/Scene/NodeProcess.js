@@ -10,8 +10,10 @@ define('Scene/NodeProcess',
      'Core/Math/MathExtented',
      'Core/Commander/InterfaceCommander',
      'THREE',
-     'Core/defaultValue'
-], function(BoundingBox, Camera, MathExt, InterfaceCommander, THREE, defaultValue) {
+     'Core/defaultValue',
+     'Core/Geographic/Projection',
+     'when'
+], function(BoundingBox, Camera, MathExt, InterfaceCommander, THREE, defaultValue, Projection, when) {
 
 
     function NodeProcess(camera, size, bbox) {
@@ -25,7 +27,7 @@ define('Scene/NodeProcess',
 
         this.r = defaultValue(size, new THREE.Vector3());
         this.cV = new THREE.Vector3();
-
+        this.projection = new Projection();
     }
 
     /**
@@ -84,12 +86,39 @@ define('Scene/NodeProcess',
 
     NodeProcess.prototype.subdivideNode = function (node, camera, params) {
         if(!node.pendingSubdivision && node.noChild()) {
+            var projection = this.projection;
             var bboxes = params.tree.subdivideNode(node);
             node.pendingSubdivision = true;
 
-            for(var i = 0; i < bboxes.length; i++) {
-                var args = {layer: params.tree, bbox: bboxes[i]};
-                params.tree.interCommand.request(args, node);
+            for(i = 0; i < bboxes.length; i++) {
+                args = {layer: params.tree.wgs84TileLayer, bbox: bboxes[i]};
+                var quadtree = params.tree;
+
+                quadtree.interCommand.request(args, node).then(function(child) {
+                    var paramsColor = [];
+                    child.WMTSs = [];
+
+                    // update wmts
+                    for (var i = 0; i < quadtree.wmtsColorLayers.length; i++) {
+                        var layer = quadtree.wmtsColorLayers[i];
+                        var tileMT = layer.wmtsOptions.tileMatrixSet;
+
+                        if(!child.WMTSs[tileMT]) {
+                            child.WMTSs[tileMT] = projection.getCoordWMTS_WGS84(child.tileCoord, child.bbox, tileMT);
+                        }
+
+                        // TODO paramsColor[i] = {visible:layer.visible ? 1 : 0,opacity:layer.opacity || 1.0};
+                        paramsColor[i] = {visible:1,opacity:1.0};
+                    }
+
+                    // request imagery update
+                    updateNodeImagery(quadtree, child);
+
+                    // request elevation update
+                    updateNodeElevation(quadtree, child);
+
+                    return 0;
+                });
             }
         }
     };
@@ -104,20 +133,10 @@ define('Scene/NodeProcess',
         // find downscaled layer
         var id = node.getDownScaledLayer();
 
-        if(id !== undefined) {
-            // update downscaled layer to appropriate scale
-            var args = {layer : params.tree.children[id+1], subLayer : id};
-            params.tree.interCommand.request(args, node, commandCancellationFn).then(function(result) {
-                if (!result) {
-                    return;
-                }
-
-                if (id === 0) {
-                    node.setTextureElevation(result);
-                } else if (id === 1) {
-                    node.setTexturesLayer(result, id);
-                }
-            });
+        if (id === 0) {
+            updateNodeElevation(params.tree, node);
+        } else if (id === 1) {
+            updateNodeImagery(params.tree, node);
         }
     };
 
@@ -127,6 +146,61 @@ define('Scene/NodeProcess',
             child.setDisplayed(false);
         }
     };
+
+    function commandCancellationFn(cmd) {
+        // allow cancellation of the command if the node isn't visible anymore
+        return cmd.requester.visible === false && cmd.requester.level >= 2;
+    }
+
+    function updateNodeImagery(quadtree, node) {
+        var services = quadtree.wmtsColorLayers.map(function(layer) { return layer.id; });
+
+        var hackLayer = {
+            protocol: 'wmts',
+            services: services
+        };
+        var args = {layer: hackLayer, destination: 1 };
+
+        return quadtree.interCommand.request(args, node, commandCancellationFn).then(function(colorTextures) {
+                node.setTexturesLayer(colorTextures, 1);
+                return 0;
+            });
+    }
+
+    function updateNodeElevation(quadtree, tile) {
+        // See TileMesh's groupelevation. Elevations level are mapped on 4 levels (14, 11, 7, 3).
+        // For instance, if tile.level is 12, it'll use levelElevation == 11.
+        // Here we only make sure that the tile with level == levelElevation == 11 has its elevation texture.
+        // Also see TileMesh.setTextureElevation
+        var tileNotDownscaled = (tile.level === tile.levelElevation) ?
+            tile :
+            tile.getParentLevel(tile.levelElevation);
+
+
+        // If tileNotDownscaled's elevation texture is not ready yet, fetch it
+        if (tileNotDownscaled.downScaledLayer(0)) {
+            var services = quadtree.wmtsElevationLayers.map(function(layer) { return layer.id; });
+
+            var hackLayer = {
+                protocol: 'wmts',
+                services: services
+            };
+
+            var args = {layer: hackLayer, destination: 0};
+
+            return quadtree.interCommand.request(args, tileNotDownscaled, commandCancellationFn).then(function(terrain) {
+                    tileNotDownscaled.setTextureElevation(terrain);
+                    if (tileNotDownscaled != tile) {
+                        tile.setTextureElevation(-2);
+                    }
+                    return 0;
+                });
+        } else {
+            // TODO: check this
+            tile.setTextureElevation(-2);
+            return when();
+        }
+    }
 
     /**
      * @documentation: Compute screen space error of node in function of camera
@@ -145,9 +219,9 @@ define('Scene/NodeProcess',
                 // request level up
                 this.subdivideNode(node, camera, params);
             }
+
             // Ideally we'd want to hide this node and display its children
             node.setDisplayed(!node.childrenLoaded());
-
         } else {    // SSE good enough: display node and put it to the right scale if necessary
             if (params.withUp) {
                 this.refineNodeLayers(node, camera, params);
