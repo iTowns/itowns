@@ -111,7 +111,17 @@ define('Scene/Quadtree', [
 
         if(id !== undefined) {
             var params = { layer : this.children[id+1], subLayer : id};
-            this.interCommand.request(params, node);
+            this.interCommand.request(params, node).then(function(result) {
+                if (!result) {
+                    return;
+                }
+
+                if (id === 0) {
+                    node.setTextureElevation(result);
+                } else if (id === 1) {
+                    node.setTexturesLayer(result, id);
+                }
+            });
         }
 
     };
