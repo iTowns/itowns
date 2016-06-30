@@ -141,7 +141,7 @@ define('Core/Commander/Providers/TileProvider', [
             parent.worldToLocal(params.center);
 
             tile.position.copy(params.center);
-            tile.setVisibility(false);
+            tile.setVisibility(true);
 
             parent.add(tile);
             tile.updateMatrix();
