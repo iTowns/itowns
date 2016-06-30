@@ -89,8 +89,65 @@ define('Scene/NodeProcess',
             node.pendingSubdivision = true;
 
             for(var i = 0; i < bboxes.length; i++) {
-                var args = {layer: params.tree, bbox: bboxes[i]};
-                params.tree.interCommand.request(args, node);
+                var args = {layer: params.tree.wgs84TileLayer, bbox: bboxes[i]};
+                var quadtree = params.tree;
+
+                quadtree.interCommand.request(args, node).then(function(child) {
+                    var colorTextureCount = 0;
+                    var paramMaterial = [];
+                    var layer;
+                    var j;
+
+                    child.matrixSet = [];
+
+
+                    // update wmts
+                    for (j = 0; j < quadtree.colorLayers.length; j++) {
+                        layer = quadtree.colorLayers[j];
+                        var tileMatrixSet = layer.options.tileMatrixSet;
+
+                        if(!child.matrixSet[tileMatrixSet]) {
+                            child.matrixSet[tileMatrixSet] = this.projection.getCoordWMTS_WGS84(child.tileCoord, child.bbox, tileMatrixSet);
+                        }
+
+                        if (layer.tileInsideLimit(child, layer)) {
+
+                            var bcoord = child.matrixSet[tileMatrixSet];
+
+                            paramMaterial.push({
+                                tileMT: tileMatrixSet,
+                                layerTexturesOffset: colorTextureCount,
+                                visible: 1 /* FIXME */,
+                                opacity: 1.0 /* FIXME */,
+                                fx: layer.fx,
+                                idLayer: layer.id
+                            });
+
+                            colorTextureCount += bcoord[1].row - bcoord[0].row + 1;
+                        }
+                    }
+
+                    child.setColorLayerParameters(paramMaterial);
+                    child.texturesNeeded = colorTextureCount;
+
+
+                    for (j=0; j<quadtree.elevationLayers.length; j++) {
+                        layer = quadtree.elevationLayers[j];
+                        if (layer.tileInsideLimit(child, layer)) {
+                            // assume max 1 elevation layer
+                            child.texturesNeeded += 1;
+                            break;
+                        }
+                    }
+
+                    // request imagery update
+                    updateNodeImagery(quadtree, child);
+
+                    // request elevation update
+                    updateNodeElevation(quadtree, child);
+
+                    return 0;
+                }.bind(this));
             }
         }
     };
