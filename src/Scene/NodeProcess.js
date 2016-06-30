@@ -84,6 +84,36 @@ define('Scene/NodeProcess',
 
     };
 
+    NodeProcess.prototype.subdivide = function (node, camera, params) {
+        if(!node.pendingSubdivision && node.noChild()) {
+            bboxes = params.tree.subdivide(node);
+            node.pendingSubdivision = true;
+
+            for(i = 0; i < bboxes.length; i++) {
+                args = {layer: params.tree, bbox: bboxes[i]};
+                params.tree.interCommand.request(args, node);
+            }
+        }
+    };
+
+    NodeProcess.prototype.upscale = function (node, camera, params) {
+        // find downscaled layer
+        var id = node.getDownScaledLayer();
+
+        if(id !== undefined) {
+            // update downscaled layer to appropriate scale
+            args = {layer : params.tree.children[id+1], subLayer : id};
+            params.tree.interCommand.request(args, node);
+        }
+    };
+
+    NodeProcess.prototype.hideChildren = function(node) {
+        for (i = 0; i < node.children.length; i++) {
+            var child = node.children[i];
+            child.setDisplayed(false);
+        }
+    };
+
     /**
      * @documentation: Compute screen space error of node in function of camera
      * @param {type} node
@@ -99,37 +129,18 @@ define('Scene/NodeProcess',
         if (sse) {  // SSE too big: display or load children
             if (params.withUp) {
                 // request level up
-                if(!node.pendingSubdivision && node.noChild()) {
-                    bboxes = params.tree.subdivide(node);
-                    node.pendingSubdivision = true;
-
-                    for(i = 0; i < bboxes.length; i++) {
-                        args = {layer: params.tree, bbox: bboxes[i]};
-                        params.tree.interCommand.request(args, node);
-                    }
-                }
+                this.subdivide(node, camera, params);
             }
             node.setDisplayed(
                 node.children.length === 0 ||
                 node.pendingSubdivision);
         } else {    // SSE good enough: display node and put it to the right scale if necessary
             if (params.withUp) {
-                // find downscaled layer
-                var id = node.getDownScaledLayer();
-
-                if(id !== undefined) {
-                    // update downscaled layer to appropriate scale
-                    args = {layer : params.tree.children[id+1], subLayer : id};
-                    params.tree.interCommand.request(args, node);
-                }
+                this.upscale(node, camera, params);
             }
 
             // display node and hide children
-            for (i = 0; i < node.children.length; i++) {
-                var child = node.children[i];
-                child.setDisplayed(false);
-            }
-
+            this.hideChildren(node);
             node.setDisplayed(true);
         }
     };
