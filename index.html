@@ -540,6 +540,7 @@ and open the template in the editor.
                    this.Orbit = false;
                    this.api = function(){};
                    this.api2 = function(){};
+                   this.api3 = function(){};
                };
 
                var text = new Menu();
@@ -636,27 +637,34 @@ and open the template in the editor.
                 }
 
                 var controller;
-                // var controller = gui.add(text,'api').name('Up');
+                var layerIdCrs = 'OrthoCRS';
 
-                // if(controller)
-                // {
-                //     controller.onChange(function(value) {
-                //             // removeLayer('OPENSM');
-                //             itowns.viewer.moveLayerUp('OrthoCRS');
-                //     });
-                // }
+                var controller = gui.add(text,'api').name('Up');
 
+                if(controller)
+                {
+                    controller.onChange(function(value) {
+                        itowns.viewer.moveLayerUp(layerIdCrs);
+                    });
+                }
 
-                // controller = gui.add(text,'api2').name('down');
+                controller = gui.add(text,'api2').name('down');
 
+                if(controller)
+                {
+                    controller.onChange(function(value) {
+                        itowns.viewer.moveLayerDown(layerIdCrs);
+                    });
+                }
 
-                // if(controller)
-                // {
-                //     controller.onChange(function(value) {
-                //             // removeLayer('OPENSM');
-                //             itowns.viewer.moveLayerDown('OrthoCRS');
-                //     });
-                // }
+                controller = gui.add(text,'api3').name('Remove Layer');
+
+                if(controller)
+                {
+                    controller.onChange(function(value) {
+                        itowns.viewer.removeImageryLayer(layerIdCrs);
+                    });
+                }
 
                 viewerDiv.addEventListener('globe-loaded',function(){
                     console.log("Globe Loaded");
@@ -664,8 +672,8 @@ and open the template in the editor.
                 } ,
                 false);
 
-                viewerDiv.addEventListener('Layer-removed',function(){
-                    console.log("Layer removed");
+                viewerDiv.addEventListener('Layer-removed',function(event){
+                    console.log("Layer " + event.layer +  " removed");
                 } ,
                 false);
 

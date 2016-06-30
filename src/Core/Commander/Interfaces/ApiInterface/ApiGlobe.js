@@ -115,6 +115,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         if(this.scene.getMap().removeColorLayer(id))
         {
             this.getWMTSProvider().removeLayer(id);
+            eventLayerRemoved.layer = id;
             this.viewerDiv.dispatchEvent(eventLayerRemoved);
             this.scene.renderScene3D();
             return true;
@@ -214,8 +215,6 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         var map = new Globe(this.scene.size,gLDebug);
 
         this.scene.add(map);
-
-
 
         //!\\ TEMP
         //this.scene.wait(0);

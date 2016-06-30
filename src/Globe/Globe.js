@@ -257,7 +257,7 @@ define('Globe/Globe', [
             var idService = services.indexOf(id);
 
             if(idService>-1)
-                services.splice(idService);
+                services.splice(idService,1);
 
             return true;
         }

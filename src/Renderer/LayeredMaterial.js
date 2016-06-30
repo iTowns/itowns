@@ -208,8 +208,8 @@ define('Renderer/LayeredMaterial', ['THREE',
 
     LayeredMaterial.prototype.removeLayerColor = function(nIdLayer) {
 
-        var startIdTexture = this.paramLayers[nIdLayer];
-        var nbTextures = this.getNbColorTexturesLayer[nIdLayer];
+        var startIdTexture = this.paramLayers[nIdLayer].x;
+        var nbTextures = this.getNbColorTexturesLayer(nIdLayer);
 
         this.paramLayers.splice(nIdLayer,1);
         this.paramBLayers.splice(nIdLayer,1);
@@ -224,10 +224,29 @@ define('Renderer/LayeredMaterial', ['THREE',
 
         this.Textures[1].splice(startIdTexture,nbTextures);
         this.nColorLayer--;
+        this.uniforms.nColorLayer.value--;
 
         for (var j = nIdLayer, mx = this.paramLayers.length; j < mx; j++)
-
             this.paramLayers[j].x -= nbTextures;
+
+        // Rebuild sequence
+        var sequence = this.uniforms.layerSequence.value;
+        var limit = false;
+
+        for (var l = 0; l < this.uniforms.nColorLayer.value; l++)
+        {
+            if( limit || sequence[l] === nIdLayer )
+            {
+                limit = true;
+                sequence[l] = sequence[l+1];
+            }
+
+            if(sequence[l]>nIdLayer)
+                 sequence[l]--;
+        }
+
+        // fill the end's sequence
+        sequence[this.uniforms.nColorLayer.value] = this.uniforms.nColorLayer.value;
 
     };
 
