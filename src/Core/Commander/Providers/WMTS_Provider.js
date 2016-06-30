@@ -165,10 +165,6 @@ define('Core/Commander/Providers/WMTS_Provider', [
                 layer = this.layersData[layerId];
             }
 
-            // TEMP
-            if (tile.currentElevation === -1 && tile.level  > layer.zoom.min )
-                return Promise.resolve(-2);
-
             var coWMTS = tile.tileCoord;
 
 
