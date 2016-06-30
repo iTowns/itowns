@@ -94,22 +94,52 @@ define('Scene/NodeProcess',
                 args = {layer: params.tree.wgs84TileLayer, bbox: bboxes[i]};
                 var quadtree = params.tree;
 
+
                 quadtree.interCommand.request(args, node).then(function(child) {
-                    var paramsColor = [];
+                    var textureCount = 0;
+                    var paramMaterial = [];
+
                     child.WMTSs = [];
 
                     // update wmts
                     for (var i = 0; i < quadtree.wmtsColorLayers.length; i++) {
                         var layer = quadtree.wmtsColorLayers[i];
-                        var tileMT = layer.wmtsOptions.tileMatrixSet;
+                        var tileMatrixSet = layer.wmtsOptions.tileMatrixSet;
 
-                        if(!child.WMTSs[tileMT]) {
-                            child.WMTSs[tileMT] = projection.getCoordWMTS_WGS84(child.tileCoord, child.bbox, tileMT);
+                        if(!child.matrixSet[tileMatrixSet]) {
+                            child.matrixSet[tileMatrixSet] = projection.getCoordWMTS_WGS84(child.tileCoord, child.bbox, tileMatrixSet);
                         }
 
-                        // TODO paramsColor[i] = {visible:layer.visible ? 1 : 0,opacity:layer.opacity || 1.0};
-                        paramsColor[i] = {visible:1,opacity:1.0};
+                        if (provider.tileInsideLimit(child, layerData)) {
+
+                            var idProv = providersColor.indexOf(provider);
+                            if(idProv<0)
+                            {
+                                providersColor.push(provider);
+                                providerServices[providersColor.length-1] = [service];
+
+                            }
+                            else
+                                providerServices[idProv].push(service);
+
+                            var bcoord = child.matrixSet[tileMatrixSet];
+
+                            paramMaterial.push({
+                                tileMT: tileMatrixSet,
+                                pit: textureCount,
+                                visible: map.colorTerrain.children[i].visible ? 1 : 0,
+                                opacity: map.colorTerrain.children[i].opacity || 1.0,
+                                fx: layerData.fx,
+                                idLayer: colorServices[i]
+                            });
+
+                            textureCount += bcoord[1].row - bcoord[0].row + 1;
+                        }
                     }
+
+
+                    child.setColorLayerParameters(paramMaterial);
+                    child.texturesNeeded += textureCount;
 
                     // request imagery update
                     updateNodeImagery(quadtree, child);

@@ -19,8 +19,6 @@ define('Core/Commander/Providers/TileProvider', [
         'Core/Commander/Providers/Provider',
         'THREE',
         'Core/Geographic/Projection',
-        'Core/Commander/Providers/WMTS_Provider',
-        'Core/Commander/Providers/KML_Provider',
         'Globe/TileGeometry',
         'Core/Geographic/CoordWMTS',
         'Core/Math/Ellipsoid',
@@ -32,8 +30,6 @@ define('Core/Commander/Providers/TileProvider', [
         Provider,
         THREE,
         Projection,
-        WMTS_Provider,
-        KML_Provider,
         TileGeometry,
         CoordWMTS,
         Ellipsoid,
@@ -42,20 +38,13 @@ define('Core/Commander/Providers/TileProvider', [
         BoundingBox
     ) {
 
-        function TileProvider(size,manager,gLDebug) {
+        function TileProvider(size) {
             //Constructor
             Provider.call(this, null);
 
             this.projection = new Projection();
-            this.providerWMTS = new WMTS_Provider({support : gLDebug});
             this.ellipsoid = new Ellipsoid(size);
-            this.providerKML = new KML_Provider(this.ellipsoid);
             this.builder = new BuilderEllipsoidTile(this.ellipsoid,this.projection);
-
-            this.providerElevationTexture = this.providerWMTS;
-            this.providerColorTexture = this.providerWMTS;
-
-            this.manager = manager;
 
             this.cacheGeometry = [];
             this.tree = null;
@@ -93,26 +82,6 @@ define('Core/Commander/Providers/TileProvider', [
             return geometry;
         };
 
-        // 52.0.2739.0 dev (64-bit)
-       // TileProvider.prototype.getKML= function(){
-        TileProvider.prototype.getKML= function(tile){
-
-            if(tile.link.layer.visible && tile.level  === 16)
-            {
-                var longitude   = tile.bbox.center.x / Math.PI * 180 - 180;
-                var latitude    = tile.bbox.center.y / Math.PI * 180;
-
-                return this.providerKML.loadKMZ(longitude, latitude).then(function (collada){
-
-                    if(collada && tile.link.children.indexOf(collada) === -1)
-                    {
-                            tile.link.add(collada);
-                            tile.content = collada;
-                    }
-
-                }.bind(this));
-            }
-        };
 
         TileProvider.prototype.executeCommand = function(command) {
 
@@ -147,79 +116,7 @@ define('Core/Commander/Providers/TileProvider', [
             tile.updateMatrix();
             tile.updateMatrixWorld();
 
-            var map = command.paramsFunction.layer.parent;
-            var elevationServices = map.elevationTerrain.services;
-            var colorServices = map.colorTerrain.services;
-
-            tile.matrixSet = [];
-
-            // TODO passer mes layers colors?
-            var textureCount = 0;
-            var paramMaterial = [];
-            var providersColor = [];
-            var providerServices = [];
-
-            for (var i = 0; i < map.colorTerrain.children.length; i++)
-            {
-
-                var layerView = map.colorTerrain.children[i];
-				var provider = this.manager.getProvider(layerView);
-                var service = layerView.services[0];
-                var layerData = provider.layersData[service];
-                var tileMatrixSet = layerData.tileMatrixSet;
-
-                if(!tile.matrixSet[tileMatrixSet])
-                    tile.matrixSet[tileMatrixSet] = this.projection.getCoordWMTS_WGS84(tile.tileCoord, tile.bbox,tileMatrixSet);
-
-                // if you make specific things depending on provider
-                // if(provider instanceof WMTS_Provider)
-                //     console.log('is WMTS_Provider');
-
-                if (provider.tileInsideLimit(tile, layerData)) {
-
-                    var idProv = providersColor.indexOf(provider);
-                    if(idProv<0)
-                    {
-                        providersColor.push(provider);
-                        providerServices[providersColor.length-1] = [service];
-
-                    }
-                    else
-                        providerServices[idProv].push(service);
-
-                    var bcoord = tile.matrixSet[tileMatrixSet];
-
-                    paramMaterial.push({
-                        tileMT: tileMatrixSet,
-                        pit: textureCount,
-                        visible: map.colorTerrain.children[i].visible ? 1 : 0,
-                        opacity: map.colorTerrain.children[i].opacity || 1.0,
-                        fx: layerData.fx,
-                        idLayer: colorServices[i]
-                    });
-
-                    textureCount += bcoord[1].row - bcoord[0].row + 1;
-                }
-            }
-
-            tile.setColorLayerParameters(paramMaterial );
-            tile.texturesNeeded += textureCount;
-
-            var requests = [this.providerElevationTexture.getElevationTexture(tile,elevationServices).then(function(terrain){
-                            this.setTextureElevation(terrain);}.bind(tile))];
-
-            for (var key in providersColor)
-            {
-                requests.push(providersColor[key].getColorTextures(tile,providerServices[key]).then(function(colorTextures){
-
-                        this.setTexturesLayer(colorTextures,1);}.bind(tile)));
-            }
-
-            requests.push(this.getKML(tile));
-
-            return Promise.all(requests).then(function() {
-                return command.resolve(tile);
-            });
+            return command.resolve(tile);
         };
 
         return TileProvider;
