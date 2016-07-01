@@ -10,25 +10,46 @@ define('Renderer/LayeredMaterial', ['THREE',
     'Renderer/c3DEngine',
     'Core/System/JavaTools',
     'Renderer/Shader/GlobeVS.glsl',
-    'Renderer/Shader/GlobeFS.glsl'
+    'Renderer/Shader/GlobeFS.glsl',
+    'Renderer/Shader/Chunk/pitUV.glsl'
 ], function(
     THREE,
     BasicMaterial,
     gfxEngine,
     JavaTools,
     GlobeVS,
-    GlobeFS) {
+    GlobeFS,
+    pitUV) {
 
     var emptyTexture = new THREE.Texture();
 
     emptyTexture.level = -1;
-    //emptyTexture.layerId = null;
     var nbLayer = 2;
-
-
     var vector = new THREE.Vector3(0.0, 0.0, 0.0);
     var vector2 = new THREE.Vector2(0.0, 0.0);
     var vector4 = new THREE.Vector4(0.0, 0.0, 0.0, 0.0);
+    var showBorderUV = false;
+    var fooTexture;
+
+    var getColorAtIdUv = function(nbTex)
+    {
+
+        if(!fooTexture)
+        {
+            fooTexture = 'vec4 colorAtIdUv(sampler2D dTextures[TEX_UNITS],vec3 pitScale[TEX_UNITS],int id, vec2 uv){\n';
+            fooTexture += ' if (id == 0) return texture2D(dTextures[0],  pitUV(uv,pitScale[0]));\n';
+
+            for (var l = 1; l < nbTex; l++) {
+
+                var sL = l.toString();
+                fooTexture +=  '    else if (id == '+sL+') return texture2D(dTextures['+sL+'],  pitUV(uv,pitScale['+sL+']));\n';
+            }
+
+            fooTexture +=  'else return vec4(0.0,0.0,0.0,0.0);}\n';
+        }
+
+        return fooTexture;
+    }
 
     var LayeredMaterial = function(id) {
 
@@ -37,8 +58,19 @@ define('Renderer/LayeredMaterial', ['THREE',
         var maxTexturesUnits =  gfxEngine().glParams.maxTexturesUnits;
         this.vertexShader = GlobeVS;
 
+        var nbSamplers = Math.min(maxTexturesUnits-1,16-1);
+
         var customFS = '#extension GL_EXT_frag_depth : enable\n';
-        customFS += 'const int   TEX_UNITS   =' + (maxTexturesUnits-1).toString() + ';\n';
+        customFS +='precision highp float;\n';
+        customFS +='precision highp int;\n';
+        customFS +='const int   TEX_UNITS   = ' + nbSamplers.toString() + ';\n';
+
+        customFS += pitUV;
+
+        if(showBorderUV)
+            customFS += '#define BORDERLINE\n';
+
+        customFS += getColorAtIdUv(nbSamplers);
 
         this.fragmentShader = customFS + GlobeFS;
 
@@ -54,28 +86,39 @@ define('Renderer/LayeredMaterial', ['THREE',
         for (var l = 0; l < nbLayer; l++) {
 
             // WARNING TODO prevent empty slot, but it's not the solution
-            this.pitScale[l] = Array(maxTexturesUnits -1 ).fill(vector);
+            this.pitScale[l] = Array(nbSamplers).fill(vector);
             this.nbTextures[l] = 0;
         }
 
         this.Textures[0] = [emptyTexture];
-        this.Textures[1] = Array(maxTexturesUnits -1 ).fill(emptyTexture);
+        this.Textures[1] = Array(nbSamplers).fill(emptyTexture);
 
         this.paramLayers = Array(8).fill(vector4);
         this.paramBLayers = Array(8).fill(vector2);
 
+
+        // Elevation texture
         this.uniforms.dTextures_00 = {
             type: "tv",
             value: this.Textures[0]
         };
+
+        // Color texture
         this.uniforms.dTextures_01 = {
             type: "tv",
             value: this.Textures[1]
         };
+
         this.uniforms.nbTextures = {
             type: "iv1",
             value: this.nbTextures
         };
+
+        this.uniforms.layerSequence = {
+            type: "iv1",
+            value: [0,1,2,3,4,6,7,8]
+        };
+
         this.uniforms.nColorLayer = {
             type: "i",
             value: this.nColorLayer
@@ -151,6 +194,62 @@ define('Renderer/LayeredMaterial', ['THREE',
         return this.nbTextures[0] + this.nbTextures[1];
     };
 
+
+    LayeredMaterial.prototype.setSequence = function(newSequence) {
+
+        var sequence = this.uniforms.layerSequence.value;
+        var max = Math.min(newSequence.length,sequence.length);
+
+        for (var l = 0; l < max; l++)
+
+            sequence[l] = newSequence[l];
+
+    };
+
+    LayeredMaterial.prototype.removeLayerColor = function(nIdLayer) {
+
+        var startIdTexture = this.paramLayers[nIdLayer].x;
+        var nbTextures = this.getNbColorTexturesLayer(nIdLayer);
+
+        this.paramLayers.splice(nIdLayer,1);
+        this.paramBLayers.splice(nIdLayer,1);
+        this.paramLayers.push(vector4);
+        this.paramBLayers.push(vector2);
+
+        for (var i = startIdTexture, max = startIdTexture + nbTextures; i < max; i++)
+        {
+            if (this.Textures[1][i] instanceof THREE.Texture)
+                this.Textures[1][i].dispose();
+        }
+
+        this.Textures[1].splice(startIdTexture,nbTextures);
+        this.nColorLayer--;
+        this.uniforms.nColorLayer.value--;
+
+        for (var j = nIdLayer, mx = this.paramLayers.length; j < mx; j++)
+            this.paramLayers[j].x -= nbTextures;
+
+        // Rebuild sequence
+        var sequence = this.uniforms.layerSequence.value;
+        var limit = false;
+
+        for (var l = 0; l < this.uniforms.nColorLayer.value; l++)
+        {
+            if( limit || sequence[l] === nIdLayer )
+            {
+                limit = true;
+                sequence[l] = sequence[l+1];
+            }
+
+            if(sequence[l]>nIdLayer)
+                 sequence[l]--;
+        }
+
+        // fill the end's sequence
+        sequence[this.uniforms.nColorLayer.value] = this.uniforms.nColorLayer.value;
+
+    };
+
     LayeredMaterial.prototype.setTexture = function(texture, layer, slot, pitScale) {
 
         if(this.Textures[layer][slot] === undefined || this.Textures[layer][slot].image === undefined)
@@ -177,8 +276,11 @@ define('Renderer/LayeredMaterial', ['THREE',
             if(slot===this.paramLayers[l].x)
                 return l;
         }
+    };
 
-
+    LayeredMaterial.prototype.getNbColorTexturesLayer = function(idLayer)
+    {
+        return (this.paramLayers[idLayer+1].x  || this.nbTextures[1]) - (this.paramLayers[idLayer].x || 0);
     };
 
     LayeredMaterial.prototype.setParam = function(param)
@@ -189,7 +291,7 @@ define('Renderer/LayeredMaterial', ['THREE',
             this.paramLayers[l] = new THREE.Vector4(param[l].pit, param[l].tileMT  === 'PM' ? 1 : 0,param[l].visible,param[l].opacity);
             this.paramBLayers[l] = new THREE.Vector2(param[l].fx, 0.0);
         }
-    }
+    };
 
     LayeredMaterial.prototype.setTexturesLayer = function(textures, layer){
 

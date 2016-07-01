@@ -25,6 +25,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
 
     var loaded = false;
     var eventLoaded = new Event('globe-loaded');
+    var eventLayerRemoved = new Event('Layer-removed');
 
     function ApiGlobe() {
         //Constructor
@@ -69,32 +70,58 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
 
     };
 
+    ApiGlobe.prototype.getWMTSProvider = function()
+    {
+        return this.scene.managerCommand.getProvider(this.scene.getMap().tiles).providerWMTS;
+    };
+
     /**
     * Adds an imagery layer to the map. The layer id must be unique amongst all layers already inserted. The protocol rules which parameters are then needed for the function.
     * @constructor
     * @param {Layer} layer.
     */
-
     ApiGlobe.prototype.addImageryLayer = function(layer) {
 
         var map = this.scene.getMap();
         var manager = this.scene.managerCommand;
-        var providerWMTS = manager.getProvider(map.tiles).providerWMTS;
+        var providerWMTS = this.getWMTSProvider();
 
         providerWMTS.addLayer(layer);
         manager.addLayer(map.colorTerrain,providerWMTS);
-        map.colorTerrain.services.push(layer.id);
+        map.addColorLayer(layer.id)
 
-        var subLayer = new Layer();
+    };
 
-        subLayer.services.push(layer.id);
+    ApiGlobe.prototype.moveLayerUp = function(layer){
 
-        var idLayerTile = map.colorTerrain.children.length;
+        this.scene.getMap().moveLayerUp(layer);
+        this.scene.renderScene3D();
+    };
 
-        subLayer.description = {style:{layerTile:idLayerTile}};
+    ApiGlobe.prototype.moveLayerDown = function(layer){
 
-        map.colorTerrain.add(subLayer);
+        this.scene.getMap().moveLayerDown(layer);
+        this.scene.renderScene3D();
+    };
 
+    ApiGlobe.prototype.moveLayerToIndex = function(layer,newId){
+
+        this.scene.getMap().moveLayerToIndex(layer,newId);
+        this.scene.renderScene3D();
+    };
+
+    ApiGlobe.prototype.removeImageryLayer = function(id){
+
+        if(this.scene.getMap().removeColorLayer(id))
+        {
+            this.getWMTSProvider().removeLayer(id);
+            eventLayerRemoved.layer = id;
+            this.viewerDiv.dispatchEvent(eventLayerRemoved);
+            this.scene.renderScene3D();
+            return true;
+        }
+
+        return false;
     };
 
     /**
@@ -162,6 +189,8 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         // TODO: Normalement la creation de scene ne doit pas etre ici....
         // Deplacer plus tard
 
+        this.viewerDiv = viewerDiv;
+
         viewerDiv.addEventListener('globe-builded', function(){
 
         //        var event = new Event('empty');
@@ -187,8 +216,6 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
 
         this.scene.add(map);
 
-
-
         //!\\ TEMP
         //this.scene.wait(0);
         //!\\ TEMP
@@ -205,15 +232,15 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
 
     };
 
-    ApiGlobe.prototype.setLayerAtLevel = function(baseurl,layer/*,level*/) {
- // TODO CLEAN AND GENERIC
-        var wmtsProvider = new WMTS_Provider({url:baseurl, layer:layer});
-        this.scene.managerCommand.providerMap[4] = wmtsProvider;
-        this.scene.managerCommand.providerMap[5] = wmtsProvider;
-        this.scene.managerCommand.providerMap[this.scene.layers[0].node.meshTerrain.id].providerWMTS = wmtsProvider;
-        this.scene.browserScene.updateNodeMaterial(wmtsProvider);
-        this.scene.renderScene3D();
-    };
+    // ApiGlobe.prototype.setLayerAtLevel = function(baseurl,layer/*,level*/) {
+    //     // TODO CLEAN AND GENERIC
+    //     var wmtsProvider = new WMTS_Provider({url:baseurl, layer:layer});
+    //     this.scene.managerCommand.providerMap[4] = wmtsProvider;
+    //     this.scene.managerCommand.providerMap[5] = wmtsProvider;
+    //     this.scene.managerCommand.providerMap[this.scene.layers[0].node.meshTerrain.id].providerWMTS = wmtsProvider;
+    //     this.scene.browserScene.updateNodeMaterial(wmtsProvider);
+    //     this.scene.renderScene3D();
+    // };
 
     ApiGlobe.prototype.showClouds = function(value, satelliteAnimation) {
 
@@ -233,7 +260,6 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
     ApiGlobe.prototype.setLayerVibility = function(id,visible){
 
         this.scene.getMap().setLayerVibility(id,visible);
-
         this.scene.renderScene3D();
     };
 
@@ -246,10 +272,10 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
 
         this.scene.orbit(value);
     };
+
     ApiGlobe.prototype.setLayerOpacity = function(id,visible){
 
         this.scene.getMap().setLayerOpacity(id,visible);
-
         this.scene.renderScene3D();
     };
 
@@ -490,6 +516,9 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
     };
 
     ApiGlobe.prototype.launchCommandApi = function () {
+
+        //this.removeImageryLayer('ScanEX');
+
 //        console.log(this.getMinZoomLevel("IGNPO"));
 //        console.log(this.getMaxZoomLevel("IGN_MNT"));
 //        console.log(this.getCenter());

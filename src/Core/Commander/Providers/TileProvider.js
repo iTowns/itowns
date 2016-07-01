@@ -172,7 +172,9 @@ define('Core/Commander/Providers/TileProvider', [
 
                 ];
 
-            return when.all(requests);
+            return when.all(requests).then(function() {
+                return command.resolve(tile);
+            });
         };
 
         return TileProvider;
