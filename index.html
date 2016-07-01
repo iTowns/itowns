@@ -534,7 +534,7 @@ and open the template in the editor.
                    this.CloudsIR = false;
                    this.SatelliteAnimation = false;
                    this.RealisticLighting = false;
-                   //this.StreetLevelImagery = false;
+                   this.StreetLevelImagery = false;
                    this.KML = false;
                    this.AnimateTime = false;
                    this.Orbit = false;
@@ -614,6 +614,11 @@ and open the template in the editor.
                     f2.add(text, 'Orbit').onChange(function(newValue) {
                         itowns.viewer.orbit(newValue);
                     });
+
+
+                    f2.add(text, 'StreetLevelImagery').onChange(function(newValue) {
+			itowns.viewer.setStreetLevelImageryOn(newValue);
+                    });
                 }
 
                 var removeLayer= function(nameLayer)
@@ -639,32 +644,32 @@ and open the template in the editor.
                 var controller;
                 var layerIdCrs = 'OrthoCRS';
 
-                var controller = gui.add(text,'api').name('Up');
+                // var controller = gui.add(text,'api').name('Up');
 
-                if(controller)
-                {
-                    controller.onChange(function(value) {
-                        itowns.viewer.moveLayerUp(layerIdCrs);
-                    });
-                }
+                // if(controller)
+                // {
+                //     controller.onChange(function(value) {
+                //         itowns.viewer.moveLayerUp(layerIdCrs);
+                //     });
+                // }
 
-                controller = gui.add(text,'api2').name('down');
+                // controller = gui.add(text,'api2').name('down');
 
-                if(controller)
-                {
-                    controller.onChange(function(value) {
-                        itowns.viewer.moveLayerDown(layerIdCrs);
-                    });
-                }
+                // if(controller)
+                // {
+                //     controller.onChange(function(value) {
+                //         itowns.viewer.moveLayerDown(layerIdCrs);
+                //     });
+                // }
 
-                controller = gui.add(text,'api3').name('Remove Layer');
+                // controller = gui.add(text,'api3').name('Remove Layer');
 
-                if(controller)
-                {
-                    controller.onChange(function(value) {
-                        itowns.viewer.removeImageryLayer(layerIdCrs);
-                    });
-                }
+                // if(controller)
+                // {
+                //     controller.onChange(function(value) {
+                //         itowns.viewer.removeImageryLayer(layerIdCrs);
+                //     });
+                // }
 
                 viewerDiv.addEventListener('globe-loaded',function(){
                     console.log("Globe Loaded");

@@ -91,7 +91,7 @@ vec4 colorAtIdUv(sampler2D dTextures[TEX_UNITS],int id, vec2 uv){
     else if (id == 12) return texture2D(dTextures[12],  pitUV(uv,pitScale_L01[12]));
     else if (id == 13) return texture2D(dTextures[13],  pitUV(uv,pitScale_L01[13]));
     else if (id == 14) return texture2D(dTextures[14],  pitUV(uv,pitScale_L01[14]));
-    else if (id == 15) return texture2D(dTextures[15],  pitUV(uv,pitScale_L01[15]));
+    //else if (id == 15) return texture2D(dTextures[15],  pitUV(uv,pitScale_L01[15]));
     else return vec4(0.0,0.0,0.0,0.0);
 
 }

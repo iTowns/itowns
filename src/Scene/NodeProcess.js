@@ -103,7 +103,17 @@ define('Scene/NodeProcess',
         if(id !== undefined) {
             // update downscaled layer to appropriate scale
             var args = {layer : params.tree.children[id+1], subLayer : id};
-            params.tree.interCommand.request(args, node);
+            params.tree.interCommand.request(args, node).then(function(result) {
+                if (!result) {
+                    return;
+                }
+
+                if (id === 0) {
+                    node.setTextureElevation(result);
+                } else if (id === 1) {
+                    node.setTexturesLayer(result, id);
+                }
+            });
         }
     };
 

@@ -268,8 +268,7 @@ define('Scene/Scene', [
                 mobileMappingLayer.initiatePanoramic();
 
                 var immersive = new Layer();
-
-                immersive.add(mobileMappingLayer)
+                immersive.add(mobileMappingLayer);
                 this.add(immersive);
             }
         }else

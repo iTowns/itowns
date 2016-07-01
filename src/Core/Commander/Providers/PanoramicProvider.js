@@ -167,7 +167,7 @@
     };
 
 
-    // Manage 3 asynchronous functions
+    // Manages 3 asynchronous functions
     // - Get Pano closest to lon lat (panoramic metadata)
     // - Get sensors informations (camera calibration)
     // - Get Building boxes from WFS
@@ -201,7 +201,7 @@
                    // console.log(roofMesh);
                     deferred.resolve(that.panoramicMesh);
 
-                })
+                });
 
             }.bind(that));
 
