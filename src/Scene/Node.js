@@ -31,6 +31,14 @@ define('Scene/Node', [], function() {
     }
 
 
+    Node.prototype.setVisibility = function(show) {
+        this.visible = show;
+    };
+
+    Node.prototype.setDisplayed = function(/*show*/) {
+        // The default node has nothing to display
+    };
+
     /**
      * @documentation: Retourne le nombre d'enfants du Node
      *
@@ -152,7 +160,7 @@ define('Scene/Node', [], function() {
             var protoName = propName(Node.prototype, Node.prototype[p]);
 
 
-            if (protoName !== "add" && protoName !== "remove") {
+            if (protoName !== "add" && protoName !== "remove" & protoName !== "setVisibility" && protoName !== "setDisplayed") {
                 childClass.prototype[protoName] = Node.prototype[p];
             }
         }
