@@ -124,6 +124,13 @@ define('Core/Commander/Providers/WMTS_Provider', [
 
         };
 
+        WMTS_Provider.prototype.removeLayer = function(idLayer)
+        {
+            if(this.layersWMTS[idLayer])
+                this.layersWMTS[idLayer] = undefined;
+
+        }
+
         WMTS_Provider.prototype.addLayer = function(layer)
         {
 
@@ -319,8 +326,8 @@ define('Core/Commander/Providers/WMTS_Provider', [
             {
                 return this.getColorTextures(tile,command.paramsFunction.layer.services).then(function(result)
                 {
-                    this.setTexturesLayer(result,destination);
-                }.bind(tile));
+                    return command.resolve(result);
+                });
             }
             else if (destination === 0)
             {
@@ -334,17 +341,17 @@ define('Core/Commander/Providers/WMTS_Provider', [
                     {
                         this.setTextureElevation(terrain);
 
-                    }.bind(parent)).then(function()
-                    {
+                    }.bind(parent)).then(function() {
                         if(this.downScaledLayer(0))
-
-                            this.setTextureElevation(-2);
+                            return command.resolve(-2);
+                        else
+                            return command.resolve(undefined);
 
                     }.bind(tile));
                 }
                 else
                 {
-                    tile.setTextureElevation(-2);
+                    return command.resolve(-2);
                 }
             }
         };
@@ -383,7 +390,7 @@ define('Core/Commander/Providers/WMTS_Provider', [
                     var bcoord = tile.WMTSs[layer.tileMatrixSet];
 
                     if(lookAtAncestor)
-                        paramMaterial.push({tileMT:layer.tileMatrixSet,pit:promises.length,visible:params[i].visible,opacity:params[i].opacity,fx:layer.fx});
+                        paramMaterial.push({tileMT:layer.tileMatrixSet,pit:promises.length,visible:params[i].visible,opacity:params[i].opacity,fx:layer.fx,idLayer:layerWMTSId[i]});
 
                     // WARNING the direction textures is important
                     for (var row = bcoord[1].row; row >=  bcoord[0].row; row--) {

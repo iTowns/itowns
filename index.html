@@ -375,7 +375,13 @@ and open the template in the editor.
         //         wmtsOptions: { tileMatrixSet: "PM"}
         //     });
 
-
+        // itowns.viewer.addImageryLayer({
+        //     protocol:   "wmtsc",
+        //     id:         "OPENSM",
+        //     customUrl:  'http://b.tile.openstreetmap.fr/osmfr/%TILEMATRIX/%COL/%ROW.png',
+        //     wmtsOptions: { tileMatrixSet: "PM"},
+        //     fx :        2.5,
+        // });
 
         itowns.viewer.addElevationLayer({
             protocol:   "wmts",
@@ -532,10 +538,11 @@ and open the template in the editor.
                    this.KML = false;
                    this.AnimateTime = false;
                    this.Orbit = false;
-                   this.api = function(){
-                        itowns.viewer.launchCommandApi();
-                   };
+                   this.api = function(){};
+                   this.api2 = function(){};
+                   this.api3 = function(){};
                };
+
                var text = new Menu();
                var gui = new dat.GUI( { autoPlace: false});
                gui.domElement.id = 'menuDiv';
@@ -549,7 +556,6 @@ and open the template in the editor.
                     if(layers[id].mimetype != "image/x-bil;bits=32")
                     {
 
-
                         text[idLayer] = true;
                         text[idLayer+'_Opacity'] = 1.0;
 
@@ -561,7 +567,6 @@ and open the template in the editor.
                             };
 
                         }(idLayer);
-
 
                         var onchangeOpacity = function(id)
                         {
@@ -616,17 +621,70 @@ and open the template in the editor.
                     });
                 }
 
-                //gui.add(text, 'Launch test api');
-                //gui.add(text, 'StreetLevelImagery').onChange(function(newValue) {
-			     // itowns.viewer.setStreetLevelImageryOn(newValue);
+                var removeLayer= function(nameLayer)
+                {
+
+                    if(itowns.viewer.removeImageryLayer(nameLayer))
+                    {
+                        var controllerTodelete = [];
+
+                        for (var i in gui.__controllers) {
+
+                            var controller = gui.__controllers[i];
+
+                            if(controller.property === nameLayer || controller.property === nameLayer + '_Opacity')
+                                controllerTodelete.push(controller);
+                        }
+
+                        for (var i in controllerTodelete)
+                            gui.remove(controllerTodelete[i]);
+                    }
+                }
+
+                var controller;
+                var layerIdCrs = 'OrthoCRS';
+
+                // var controller = gui.add(text,'api').name('Up');
+
+                // if(controller)
+                // {
+                //     controller.onChange(function(value) {
+                //         itowns.viewer.moveLayerUp(layerIdCrs);
                 //     });
+                // }
+
+                // controller = gui.add(text,'api2').name('down');
+
+                // if(controller)
+                // {
+                //     controller.onChange(function(value) {
+                //         itowns.viewer.moveLayerDown(layerIdCrs);
+                //     });
+                // }
+
+                // controller = gui.add(text,'api3').name('Remove Layer');
+
+                // if(controller)
+                // {
+                //     controller.onChange(function(value) {
+                //         itowns.viewer.removeImageryLayer(layerIdCrs);
+                //     });
+                // }
 
                 viewerDiv.addEventListener('globe-loaded',function(){
                     console.log("Globe Loaded");
                     //itowns.viewer.setCenter({longitude:-74,latitude:40,altitude:0});
-                    //console.log(itowns.viewer.getMaxZoomLevel("Ortho"));
                 } ,
                 false);
+
+                viewerDiv.addEventListener('Layer-removed',function(event){
+                    console.log("Layer " + event.layer +  " removed");
+                } ,
+                false);
+
+                // gui.add(text, 'StreetLevelImagery').onChange(function(newValue) {
+                //     itowns.viewer.setStreetLevelImageryOn(newValue);
+                // });
 
         </script>
     </body>

@@ -177,17 +177,92 @@ define('Globe/Globe', [
         {
 
             layer.opacity = opacity;
-            var idLtile = layer.description.style.layerTile;
+            //var idLtile = layer.description.style.layerTile;
             var cO = function(object){
 
                 if(object.material.setLayerOpacity)
-                    object.material.setLayerOpacity(idLtile,opacity);
+                {
+                    object.material.setLayerOpacity(object.getIndexLayerColor(id),opacity);
+                }
 
             };
 
             this.tiles.children[0].traverse(cO);
         }
 
+    };
+
+    Globe.prototype.addColorLayer = function(layerId){
+
+        this.colorTerrain.services.push(layerId);
+
+        var subLayer = new Layer();
+
+        subLayer.services.push(layerId);
+
+        var idLayerTile = this.colorTerrain.children.length;
+
+        subLayer.description = {style:{layerTile:idLayerTile}};
+
+        this.colorTerrain.add(subLayer);
+    };
+
+    Globe.prototype.moveLayerUp = function(id){
+
+        var colorLayer = this.getLayerColor(id);
+        var index = this.colorTerrain.children.indexOf(colorLayer);
+
+        if(index < this.colorTerrain.children.length-1)
+            this.moveLayerToIndex(id,index+1)
+    };
+
+    Globe.prototype.moveLayerDown = function(id){
+
+        var colorLayer = this.getLayerColor(id);
+        var index = this.colorTerrain.children.indexOf(colorLayer);
+
+        if(index > 0)
+            this.moveLayerToIndex(id,index-1)
+    };
+
+    Globe.prototype.moveLayerToIndex = function(layer,newId){
+
+        var index =  this.colorTerrain.children.indexOf(this.getLayerColor(layer));
+
+        this.colorTerrain.children.splice(newId,0,this.colorTerrain.children.splice(index,1)[0]);
+        this.colorTerrain.services.splice(newId,0,this.colorTerrain.services.splice(index,1)[0]);
+
+        var cO = function(object){
+            if(object.changeSequenceLayers)
+                object.changeSequenceLayers(this.colorTerrain.services);
+        }.bind(this);
+
+        this.tiles.children[0].traverse(cO);
+    };
+
+    Globe.prototype.removeColorLayer = function(id){
+
+        var colorLayer = this.getLayerColor(id);
+
+        if(colorLayer)
+        {
+            var cO = function(object){
+
+                if(object.removeLayerColor)
+                    object.removeLayerColor(id);
+            };
+
+            this.tiles.children[0].traverse(cO);
+            var services = this.colorTerrain.services;
+            var idService = services.indexOf(id);
+
+            if(idService>-1)
+                services.splice(idService,1);
+
+            return true;
+        }
+
+        return false;
     };
 
     Globe.prototype.setLayerVibility = function(id,visible){
@@ -198,11 +273,12 @@ define('Globe/Globe', [
         {
 
             layer.visible = visible;
-            var idLtile = layer.description.style.layerTile;
+            // TODO remove layerTile
+            //var idLtile = layer.description.style.layerTile;
             var cO = function(object){
 
                 if(object.material.setLayerVibility)
-                    object.material.setLayerVibility(idLtile,visible);
+                    object.material.setLayerVibility(object.getIndexLayerColor(id),visible);
 
             };
 
