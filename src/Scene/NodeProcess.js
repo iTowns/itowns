@@ -4,7 +4,14 @@
  * Description: NodeProcess effectue une opération sur un Node.
  */
 
-define('Scene/NodeProcess', ['Scene/BoundingBox', 'Renderer/Camera', 'Core/Math/MathExtented', 'THREE', 'Core/defaultValue'], function(BoundingBox, Camera, MathExt, THREE, defaultValue) {
+define('Scene/NodeProcess',
+    ['Scene/BoundingBox',
+     'Renderer/Camera',
+     'Core/Math/MathExtented',
+     'Core/Commander/InterfaceCommander',
+     'THREE',
+     'Core/defaultValue'
+], function(BoundingBox, Camera, MathExt, InterfaceCommander, THREE, defaultValue) {
 
 
     function NodeProcess(camera, size, bbox) {
@@ -77,6 +84,36 @@ define('Scene/NodeProcess', ['Scene/BoundingBox', 'Renderer/Camera', 'Core/Math/
 
     };
 
+    NodeProcess.prototype.subdivideNode = function (node, camera, params) {
+        if(!node.pendingSubdivision && node.noChild()) {
+            var bboxes = params.tree.subdivideNode(node);
+            node.pendingSubdivision = true;
+
+            for(var i = 0; i < bboxes.length; i++) {
+                var args = {layer: params.tree, bbox: bboxes[i]};
+                params.tree.interCommand.request(args, node);
+            }
+        }
+    };
+
+    NodeProcess.prototype.refineNodeLayers = function (node, camera, params) {
+        // find downscaled layer
+        var id = node.getDownScaledLayer();
+
+        if(id !== undefined) {
+            // update downscaled layer to appropriate scale
+            var args = {layer : params.tree.children[id+1], subLayer : id};
+            params.tree.interCommand.request(args, node);
+        }
+    };
+
+    NodeProcess.prototype.hideNodeChildren = function(node) {
+        for (var i = 0; i < node.children.length; i++) {
+            var child = node.children[i];
+            child.setDisplayed(false);
+        }
+    };
+
     /**
      * @documentation: Compute screen space error of node in function of camera
      * @param {type} node
@@ -85,23 +122,24 @@ define('Scene/NodeProcess', ['Scene/BoundingBox', 'Renderer/Camera', 'Core/Math/
      */
     NodeProcess.prototype.SSE = function(node, camera, params) {
 
-        var sse = this.checkSSE(node, camera)
+        var sse = this.checkSSE(node, camera);
 
-        if (sse) {
+        if (sse) {  // SSE too big: display or load children
             if (params.withUp) {
                 // request level up
-                params.tree.up(node);
+                this.subdivideNode(node, camera, params);
             }
             node.setDisplayed(
                 node.children.length === 0 ||
                 node.pendingSubdivision);
-        } else {
+        } else {    // SSE good enough: display node and put it to the right scale if necessary
             if (params.withUp) {
-                // request level up other quadtree
-                params.tree.upSubLayer(node);
+                this.refineNodeLayers(node, camera, params);
             }
-            // display node
-            params.tree.down(node);
+
+            // display node and hide children
+            this.hideNodeChildren(node);
+            node.setDisplayed(true);
         }
     };
 
