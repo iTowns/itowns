@@ -162,7 +162,7 @@ define('Scene/BrowseTree', ['Globe/TileMesh', 'THREE'], function( TileMesh, THRE
             case 'hide_all': {
                 if (node.isVisible()) {
                     this.resetQuadtreeNode(node);
-                    node.setVisibility(process.isCulled(node, camera));
+                    node.setVisibility(!process.isCulled(node, camera));
                     node.setDisplayed(false);
                     for (var j = 0; j < node.children.length; j++) {
                         this._browse(node.children[j], camera, process, action, params);
