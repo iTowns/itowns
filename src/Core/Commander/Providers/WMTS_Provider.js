@@ -326,8 +326,8 @@ define('Core/Commander/Providers/WMTS_Provider', [
             {
                 return this.getColorTextures(tile,command.paramsFunction.layer.services).then(function(result)
                 {
-                    this.setTexturesLayer(result,destination);
-                }.bind(tile));
+                    return command.resolve(result);
+                });
             }
             else if (destination === 0)
             {
@@ -341,17 +341,17 @@ define('Core/Commander/Providers/WMTS_Provider', [
                     {
                         this.setTextureElevation(terrain);
 
-                    }.bind(parent)).then(function()
-                    {
+                    }.bind(parent)).then(function() {
                         if(this.downScaledLayer(0))
-
-                            this.setTextureElevation(-2);
+                            return command.resolve(-2);
+                        else
+                            return command.resolve(undefined);
 
                     }.bind(tile));
                 }
                 else
                 {
-                    tile.setTextureElevation(-2);
+                    return command.resolve(-2);
                 }
             }
         };
