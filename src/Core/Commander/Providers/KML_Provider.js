@@ -145,24 +145,17 @@ define('Core/Commander/Providers/KML_Provider', [
 
         KML_Provider.prototype.getUrlCollada = function(longitude, latitude) {
 
-            return new Promise(function(resolve/*, reject*/)
-            {
-                this.ioDriverXML.read('http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/vecteurtuile3d/BATI3D/BU.Building.kml').then(function(/*result_0*/) {
+            return this.ioDriverXML.read('http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/vecteurtuile3d/BATI3D/BU.Building.kml').then(function(/*result_0*/) {
 
-                    // get href's node value
-                    //var kml_0 = result_0.getElementsByTagName("href");
-                    var url_href_1;
-                    var key = 'va5orxd0pgzvq3jxutqfuy0b';
+                // get href's node value
+                //var kml_0 = result_0.getElementsByTagName("href");
+                var url_href_1;
+                var key = 'va5orxd0pgzvq3jxutqfuy0b';
 
-                    url_href_1 = 'http://wxs.ign.fr/' + key + '/vecteurtuile3d/BATI3D/FXX/TREE/0/0_000_000.kml';
+                url_href_1 = 'http://wxs.ign.fr/' + key + '/vecteurtuile3d/BATI3D/FXX/TREE/0/0_000_000.kml';
 
-                    this.parseKML(url_href_1, longitude, latitude).then(function(result){
+                return this.parseKML(url_href_1, longitude, latitude);
 
-                        resolve(result);
-
-                    });
-
-                }.bind(this));
             }.bind(this));
         };
 

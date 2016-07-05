@@ -169,13 +169,18 @@
 
         var that = this;
         return this.getMetaDataFromPos(longitude, latitude, distance).then(function(panoInfo){
-            return that.getGeometry(panoInfo[0].longitude, panoInfo[0].latitude, panoInfo[0].altitude).then(function(data){
-                that.geometry = data.geometry;
-                that.absoluteCenter = data.pivot; // pivot in fact here, not absoluteCenter
-                that.geometryRoof = data.roof;
+            return Promise.all([
+                that.getGeometry(panoInfo[0].longitude, panoInfo[0].latitude, panoInfo[0].altitude),
+                panoInfo[0]
+            ]);
+        }).then(function(result){
+            var data = result[0],
+                panoInfo0 = result[1];
+            that.geometry = data.geometry;
+            that.absoluteCenter = data.pivot; // pivot in fact here, not absoluteCenter
+            that.geometryRoof = data.roof;
 
-                return that.getTextureMaterial(panoInfo[0], that.absoluteCenter);
-            });
+            return that.getTextureMaterial(panoInfo0, that.absoluteCenter);
         }).then(function(shaderMaterial){
             that.material = shaderMaterial; //new THREE.MeshBasicMaterial({color: 0xffffff, transparent: true, opacity: 0.8});
             //that.projectiveTexturedMesh = new THREE.Mesh(that.geometry, that.material);
