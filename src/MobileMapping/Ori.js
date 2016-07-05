@@ -7,8 +7,8 @@
 * @Depends Sensor.js
 */
 
-define('MobileMapping/Ori',['three','MobileMapping/Sensor', 'when'],
-  function (THREE, Sensor, when) {
+define('MobileMapping/Ori',['three','MobileMapping/Sensor'],
+  function (THREE, Sensor) {
 
     var Ori = {
 
@@ -17,33 +17,28 @@ define('MobileMapping/Ori',['three','MobileMapping/Sensor', 'when'],
       sensors:[],
 
       init: function(options){
-
-
-        var that = this;
         var baseUrl = options.cam;// PanoramicProvider.getMetaDataSensorURL();
 
-        var deferred = when.defer();
+        return new Promise(function(resolve/*, reject*/) {
+            var request = new XMLHttpRequest();
+            request.open('GET', baseUrl, true);
 
-        var request = new XMLHttpRequest();
-        request.open('GET', baseUrl, true);
+            request.onload = function() {
+                if (request.status >= 200 && request.status < 400) {
+                    var data = JSON.parse(request.responseText);
+                    this.handleDBData(data);
+                    resolve(this.initiated);
+                } else {
+                    //  console.log("error loading MetaDataSensorURL");
+                }
+            };
 
-        request.onload = function() {
-          if (request.status >= 200 && request.status < 400) {
+            request.onerror = function() {
+                //console.log("error loading MetaDataSensorURL");
+            };
 
-            var data = JSON.parse(request.responseText);
-            that.handleDBData(data);
-            deferred.resolve(this.initiated);
-          } else {
-            //  console.log("error loading MetaDataSensorURL");
-          }
-        };
-
-        request.onerror = function() {
-          //console.log("error loading MetaDataSensorURL");
-        };
-
-        request.send();
-        return deferred.promise;
+            request.send();
+        }.bind(this));
       },
 
       handleDBData :function(data){

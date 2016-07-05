@@ -50,11 +50,11 @@ Parallel.js is published under MIT ( https://github.com/adambom/parallel.js/blob
 
 https://adambom.github.io/parallel.js/
 
-### when.js
+### ES6-Promise
 
-When.js is published under MIT.
+ES6-Promise is published under MIT.
 
-https://github.com/cujojs/when
+https://github.com/stefanpenner/es6-promise
 
 ### JSZip
 

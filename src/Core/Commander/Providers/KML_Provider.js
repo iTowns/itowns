@@ -8,7 +8,6 @@
 define('Core/Commander/Providers/KML_Provider', [
         'Core/Commander/Providers/Provider',
         'Core/Commander/Providers/IoDriverXML',
-        'when',
         'THREE',
         'Scene/BoundingBox',
         'Renderer/ThreeExtented/KMZLoader',
@@ -18,7 +17,6 @@ define('Core/Commander/Providers/KML_Provider', [
     function(
         Provider,
         IoDriverXML,
-        when,
         THREE,
         BoundingBox,
         KMZLoader,
@@ -130,9 +128,10 @@ define('Core/Commander/Providers/KML_Provider', [
                             var url_kmz = url + NetworkLink[i].getElementsByTagName("href")[0].childNodes[0].nodeValue.replace("../../", "");
                             //url_kmz = "http://localhost:8383/kmz/BT_000092.kmz";
 
+                            // TODO: this is not optimal: if the function is called before kmzLoader resolves, it'll load the file again.
                             if (this.cache[url_kmz]) {
 
-                                return when(this.cache[url_kmz]);
+                                return Promise.resolve(this.cache[url_kmz]);
                             } else {
                                 return this.kmzLoader.load(url_kmz).then(
                                     function(result) {

@@ -11,7 +11,6 @@
 
  define ('Core/Commander/Providers/PanoramicProvider',
        ['three',
-        'when',
         'Core/Commander/Providers/Provider',
         'Core/Commander/Providers/BuildingBox_Provider',
         'Renderer/ProjectiveTexturingMaterial',
@@ -20,7 +19,6 @@
         'Renderer/PanoramicMesh'], function (
 
     THREE,
-    when,
     Provider,
     BuildingBox_Provider,
     ProjectiveTexturingMaterial,
@@ -157,13 +155,9 @@
 
         var buildingBox_Provider = new BuildingBox_Provider(options);
 
-        var deferred = when.defer();
-        buildingBox_Provider.getData(options.bbox, altitude).then(function(){
-
-            deferred.resolve({geometry: buildingBox_Provider.geometry, pivot:buildingBox_Provider.pivot, roof: buildingBox_Provider.geometryRoof});
-        }.bind(this));
-
-        return deferred.promise;
+        return buildingBox_Provider.getData(options.bbox, altitude).then(function(){
+            return {geometry: buildingBox_Provider.geometry, pivot:buildingBox_Provider.pivot, roof: buildingBox_Provider.geometryRoof};
+        });
     };
 
 
@@ -173,56 +167,40 @@
     // - Get Building boxes from WFS
     PanoramicProvider.prototype.getTextureProjectiveMesh = function(longitude, latitude, distance){
 
-        var deferred = when.defer();
         var that = this;
-        this.getMetaDataFromPos(longitude, latitude, distance).then(function(panoInfo){             // Get METADATA PANO
-
-           // console.log("panoInfo", panoInfo);
-            that.getGeometry(panoInfo[0].longitude, panoInfo[0].latitude, panoInfo[0].altitude).then(function(data){      // GET GEOMETRY
-
+        return this.getMetaDataFromPos(longitude, latitude, distance).then(function(panoInfo){
+            return that.getGeometry(panoInfo[0].longitude, panoInfo[0].latitude, panoInfo[0].altitude).then(function(data){
                 that.geometry = data.geometry;
                 that.absoluteCenter = data.pivot; // pivot in fact here, not absoluteCenter
                 that.geometryRoof = data.roof;
 
-                that.getTextureMaterial(panoInfo[0], that.absoluteCenter).then(function(shaderMaterial){                 // GET MATERIAL
+                return that.getTextureMaterial(panoInfo[0], that.absoluteCenter);
+            });
+        }).then(function(shaderMaterial){
+            that.material = shaderMaterial; //new THREE.MeshBasicMaterial({color: 0xffffff, transparent: true, opacity: 0.8});
+            //that.projectiveTexturedMesh = new THREE.Mesh(that.geometry, that.material);
+            that.panoramicMesh = new PanoramicMesh(that.geometry, that.material, that.absoluteCenter);
+            var roofMesh = new PanoramicMesh(that.geometryRoof, new BasicMaterial(new THREE.Color( 0xdddddd )), that.absoluteCenter);
+            roofMesh.material.side =  THREE.DoubleSide;
+            roofMesh.material.transparent  = true;
+            roofMesh.setDisplayed(true);
+            roofMesh.material.uniforms.lightOn.value = false;
 
-                    that.material = shaderMaterial; //new THREE.MeshBasicMaterial({color: 0xffffff, transparent: true, opacity: 0.8});
-                    //that.projectiveTexturedMesh = new THREE.Mesh(that.geometry, that.material);
-                    that.panoramicMesh = new PanoramicMesh(that.geometry, that.material, that.absoluteCenter);
-                    var roofMesh = new PanoramicMesh(that.geometryRoof, new BasicMaterial(new THREE.Color( 0xdddddd )), that.absoluteCenter);
-                    roofMesh.material.side =  THREE.DoubleSide;
-                    roofMesh.material.transparent  = true;
-                    roofMesh.setDisplayed(true);
-                    roofMesh.material.uniforms.lightOn.value = false;
+            that.panoramicMesh.add(roofMesh);
 
-                    that.panoramicMesh.add(roofMesh);
-
-                   // console.log(that.panoramicMesh);
-                   // console.log(roofMesh);
-                    deferred.resolve(that.panoramicMesh);
-
-                });
-
-            }.bind(that));
-
+            // console.log(that.panoramicMesh);
+            // console.log(roofMesh);
+            return that.panoramicMesh;
         });
-        return deferred.promise;
     };
 
     // Update existing panoramic mesh with new images look for the closest to parameters position
     PanoramicProvider.prototype.updateMaterialImages = function(longitude, latitude, distance){
 
-      var deferred = when.defer();
-      var that = this;
-      this.getMetaDataFromPos(longitude, latitude, distance).then(function(panoInfo){             // Get METADATA PANO
-
-          deferred.resolve(panoInfo[0]);
-          that.updateTextureMaterial(panoInfo[0], that.absoluteCenter);
-
-
-
-      });
-      return deferred.promise;
+      return this.getMetaDataFromPos(longitude, latitude, distance).then(function(panoInfo){
+          this.updateTextureMaterial(panoInfo[0], this.absoluteCenter);
+          return panoInfo[0];
+      }.bind(this));
     };
 
 

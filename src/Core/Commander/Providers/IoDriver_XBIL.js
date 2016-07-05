@@ -4,7 +4,7 @@
  */
 /* global Float32Array*/
 
-define('Core/Commander/Providers/IoDriver_XBIL', ['Core/Commander/Providers/IoDriver','when'], function(IoDriver,when) {
+define('Core/Commander/Providers/IoDriver_XBIL', ['Core/Commander/Providers/IoDriver'], function(IoDriver) {
 
 
     var portableXBIL = function(buffer) {
@@ -28,17 +28,6 @@ define('Core/Commander/Providers/IoDriver_XBIL', ['Core/Commander/Providers/IoDr
 
     IoDriver_XBIL.prototype.parseXBil = function(buffer) {
 
-//        var parseMinMax = function(result,start,length) {
-//
-//            for (var i = start; i <  length; i++) {
-//                var val = result.floatArray[i];
-//                if (val > -10.0 && val !== undefined){
-//                    result.max = Math.max(result.max, val);
-//                    result.min = Math.min(result.min, val);
-//                }
-//            }
-//        };
-
         if (buffer){
 
             var result = new portableXBIL(buffer);
@@ -51,18 +40,6 @@ define('Core/Commander/Providers/IoDriver_XBIL', ['Core/Commander/Providers/IoDr
                 }
             }
 
-            /*
-            var subSize = result.floatArray.length/64;
-
-            var arrayP = [];
-
-            for (var i = 0; i < result.floatArray.length; i+= subSize )
-            {
-                arrayP.push(when(parseMinMax(result,i,subSize)));
-            }
-
-            when.all(arrayP);
-            */
             if (result.max === -1000000)
                 return undefined;
 
@@ -72,24 +49,9 @@ define('Core/Commander/Providers/IoDriver_XBIL', ['Core/Commander/Providers/IoDr
             return undefined;
     };
 
-    IoDriver_XBIL.prototype.parseMinMax = function(result/*,start,length*/) {
-
-        for (var i = 0; i < result.floatArray.length; i++) {
-            var val = result.floatArray[i];
-            if (val > -10.0 && val !== undefined){
-                result.max = Math.max(result.max, val);
-                result.min = Math.min(result.min, val);
-            }
-        }
-    };
-
     IoDriver_XBIL.prototype.read = function(url) {
 
-        // TODO new Promise is supported? not in IE
-
-        return when.promise(function(resolve/*, reject*/)
-        //return new Promise(function(resolve/*, reject*/)
-        {
+        return new Promise(function(resolve/*, reject*/) {
             var xhr = new XMLHttpRequest();
 
 
