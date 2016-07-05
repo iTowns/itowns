@@ -373,7 +373,6 @@ define('Core/Commander/Providers/WMTS_Provider', [
         WMTS_Provider.prototype.getColorTextures = function(tile,layerWMTSId) {
 
             var promises = [];
-            var paramMaterial = [];
             if (tile.material === null) {
                 return when();
             }
