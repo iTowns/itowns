@@ -104,6 +104,7 @@ define('Core/Commander/ManagerCommands', [
         };
 
         ManagerCommands.prototype.arrayDeQueue = function(number) {
+
             var nT = number === undefined ? this.queueAsync.length : number;
 
             var arrayTasks = [];
@@ -111,11 +112,44 @@ define('Core/Commander/ManagerCommands', [
             while (this.queueAsync.length > 0 && arrayTasks.length < nT) {
                 var command = this.deQueue();
                 if(command)
-                    arrayTasks.push(this.providerMap[command.layer.id].executeCommand(command));
+                {
+
+                    // TEMP
+
+                    var providers = this.getProviders(command.layer);
+                    for (var i = 0; i < providers.length; i++)
+                        arrayTasks.push(providers[i].executeCommand(command));
+                }
             }
 
             return arrayTasks;
         };
+
+        ManagerCommands.prototype.getProviders = function(layer)
+        {
+
+            // TEMP
+            var providers = [];
+            var provider = this.providerMap[layer.id];
+
+            if(!provider)
+            {
+                for(var key in layer.children)
+                {
+                    provider = this.providerMap[layer.children[key].id];
+
+                    if(providers.indexOf(provider) < 0)
+                        providers.push(provider);
+                }
+
+            }
+            else
+                providers.push(provider);
+
+            return providers;
+
+        }
+
 
         /**
          */

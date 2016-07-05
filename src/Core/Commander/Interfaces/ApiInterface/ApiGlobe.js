@@ -84,11 +84,14 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
 
         var map = this.scene.getMap();
         var manager = this.scene.managerCommand;
-        var providerWMTS = this.getWMTSProvider();
+        var provider;
 
-        providerWMTS.addLayer(layer);
-        manager.addLayer(map.colorTerrain,providerWMTS);
-        map.addColorLayer(layer.id)
+        if(layer.protocol === 'wmts')
+            provider = this.getWMTSProvider();
+
+        provider.addLayer(layer);
+        var colorLayer = map.addColorLayer(layer.id)
+        manager.addLayer(colorLayer,provider);
 
     };
 

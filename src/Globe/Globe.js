@@ -205,6 +205,8 @@ define('Globe/Globe', [
         subLayer.description = {style:{layerTile:idLayerTile}};
 
         this.colorTerrain.add(subLayer);
+
+        return subLayer;
     };
 
     Globe.prototype.moveLayerUp = function(id){
