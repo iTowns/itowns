@@ -179,7 +179,10 @@ define('Scene/BrowseTree', ['Globe/TileMesh', 'THREE'], function( TileMesh, THRE
     };
 
     BrowseTree.prototype._clean = function(node, level, process, camera) {
-        var sse = process.checkSSE(node, camera);
+        // update node's sse value
+        node.sse = camera.computeNodeSSE(node);
+
+        var sse = process.checkNodeSSE(node);
 
         // recursively clean children
         if (node.children.length > 0) {

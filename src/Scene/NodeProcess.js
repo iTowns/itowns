@@ -78,10 +78,8 @@ define('Scene/NodeProcess',
         return frustum.intersectsObject(node);
     };
 
-    NodeProcess.prototype.checkSSE = function(node, camera) {
-
-        return camera.SSE(node) > 6.0 || node.level <= 2;
-
+    NodeProcess.prototype.checkNodeSSE = function(node) {
+        return 6.0 < node.sse || node.level <= 2;
     };
 
     NodeProcess.prototype.subdivideNode = function (node, camera, params) {
@@ -137,8 +135,10 @@ define('Scene/NodeProcess',
      * @returns {Boolean}
      */
     NodeProcess.prototype.SSE = function(node, camera, params) {
+        // update node's sse value
+        node.sse = camera.computeNodeSSE(node);
 
-        var sse = this.checkSSE(node, camera);
+        var sse = this.checkNodeSSE(node);
 
         if (sse) {  // SSE too big: display or load children
             if (params.withUp) {
