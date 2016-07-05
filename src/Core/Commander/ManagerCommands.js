@@ -45,7 +45,7 @@ define('Core/Commander/ManagerCommands', [
                 throw new Error("Cannot instantiate ManagerCommands without scene");
 
             this.scene = scene;
-
+            this.counter = { run: 0, canceled: 0 };
         }
 
         ManagerCommands.prototype.constructor = ManagerCommands;
@@ -76,6 +76,7 @@ define('Core/Commander/ManagerCommands', [
 
             if (this.commandsLength() === 0)
             {
+                console.log('run', this.counter.run, 'canceled', this.counter.canceled);
                 return Promise.resolve(0);
             }
 
@@ -97,7 +98,6 @@ define('Core/Commander/ManagerCommands', [
 
             while (this.queueAsync.length > 0 && arrayTasks.length < nT) {
                 var command = this.deQueue();
-
                 if(command) {
                     var layer = command.layer;
                     for (var i=0; i<this.providers.length; i++) {
@@ -105,6 +105,7 @@ define('Core/Commander/ManagerCommands', [
 
                         if (provider.supports(layer.protocol)) {
                             arrayTasks.push(provider.executeCommand(command));
+                            this.counter.run++;
                             break;
                         }
                     }
@@ -155,10 +156,10 @@ define('Core/Commander/ManagerCommands', [
                     }
                     requester.pendingSubdivision = false;
                     this.queueAsync.dequeue();
+                    this.counter.canceled++;
                 } else {
                     return this.queueAsync.dequeue();
                 }
-
             }
 
             return undefined;

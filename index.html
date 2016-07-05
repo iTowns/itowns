@@ -21,6 +21,7 @@ and open the template in the editor.
                 transform: translateY(-50%);*/
             }
             #menuDiv {position: absolute; top:0px; margin-left: 0px;}
+            #debugDiv {position: absolute; top:0px; right: 0px; width: 300px; height: 300px;}
 
 
         </style>
@@ -28,9 +29,12 @@ and open the template in the editor.
 
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.5.1/dat.gui.min.js"></script>
+        <script src="http://canvasjs.com/assets/script/canvasjs.min.js"></script>
+
     </head>
     <body>
         <div id="viewerDiv"></div>
+        <div id="debugDiv"></div>
         <script src="dist/itowns2.js"> </script>
         <script type="text/javascript">
 
@@ -40,7 +44,7 @@ and open the template in the editor.
 
                var viewerDiv = document.getElementById("viewerDiv");
 
-               itowns.viewer.createSceneGlobe(initCenter, viewerDiv) ;
+               var scene = itowns.viewer.createSceneGlobe(initCenter, viewerDiv) ;
                //console.log(itowns.viewer.pickPosition());
 
               itowns.viewer.addImageryLayer({
@@ -698,6 +702,48 @@ and open the template in the editor.
                     //itowns.viewer.setRange(100000);
 
                     //itowns.viewer.setCenter({longitude:-74,latitude:40,altitude:0});
+
+                    var start = Date.now();
+
+                    var commandChart = new CanvasJS.Chart("debugDiv",
+                        {
+                          title:{
+                          text: "Commands"
+                          },
+                          data: [
+                          {
+                            type: "line",
+                            dataPoints: [ ]
+                          },
+                            {
+                            type: "line",
+                            dataPoints: [    ]
+                          },
+                            {
+                            type: "line",
+                            dataPoints: [    ]
+                          }
+                          ]
+                        });
+
+                    function updateDebugView(chart) {
+                        var manager = scene.managerCommand;
+                        var ts = (Date.now() - start) / 1000;
+
+                        chart.options.data[0].dataPoints.push({ x: ts, y: manager.counter.run });
+                        chart.options.data[1].dataPoints.push({x: ts, y: manager.counter.canceled});
+                        chart.options.data[2].dataPoints.push({x: ts, y: manager.counter.pending});
+
+                        while (chart.options.data[0].dataPoints.length > 60) {
+                            chart.options.data[0].dataPoints.shift();
+                            chart.options.data[1].dataPoints.shift();
+                            chart.options.data[2].dataPoints.shift();
+                        }
+                        chart.render();
+                        setTimeout(updateDebugView, 500, chart);
+                    }
+
+                    setTimeout(updateDebugView, 500, commandChart);
                 } ,
                 false);
 
