@@ -19,10 +19,26 @@ define('Scene/Quadtree', [
 
 
     function commandQueuePriorityFunction(cmd) {
-        var requester = cmd.requester;
-        return requester.sse ?
-            Math.floor(requester.isVisible() ? requester.sse * requester.sse * 100000 : 1.0) :
-            1.0;
+        var node = cmd.requester;
+
+        // We know that 'node' is visible because commands can only be
+        // issued for visible nodes.
+        //
+        // Prioritize subdivision request
+        if (cmd.layer instanceof Quadtree) {
+            return 10000;
+        } else {
+            if (!node.loaded) {
+                return 1000;
+            } else {
+                // TODO: this magic value comes from NodeProcess
+                if (6.0 < node.sse) {
+                    return 100;
+                } else {
+                    return 10;
+                }
+            }
+        }
     }
 
     function Quadtree(type, schemeTile, size, link) {
