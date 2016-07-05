@@ -385,7 +385,7 @@ define('Core/Commander/Providers/WMTS_Provider', [
                 var layer = this.layersWMTS[layerWMTSId[i]];
 
                 if (this.tileInsideLimit(tile,layer)) {
-                    var bcoord = tile.WMTSs[layer.tileMatrixSet];
+                    var bcoord = tile.matrixSet[layer.tileMatrixSet];
 
                     // WARNING the direction textures is important
                     for (var row = bcoord[1].row; row >=  bcoord[0].row; row--) {

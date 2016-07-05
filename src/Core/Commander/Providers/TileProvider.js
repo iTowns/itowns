@@ -144,7 +144,7 @@ define('Core/Commander/Providers/TileProvider', [
             var elevationServices = map.elevationTerrain.services;
             var colorServices = map.colorTerrain.services;
 
-            tile.WMTSs = [];
+            tile.matrixSet = [];
 
             // TODO passer mes layers colors?
             var textureCount = 0;
@@ -159,25 +159,31 @@ define('Core/Commander/Providers/TileProvider', [
 				var provider = this.manager.getProvider(layerView);
                 var service = layerView.services[0];
                 var layerService = provider.layersWMTS[service];
-                var tileMT = layerService.tileMatrixSet;
-                var idProv = providersColor.indexOf(provider);
+                var tileMatrixSet = layerService.tileMatrixSet;
 
-                if(idProv<0)
-                {
-                    providersColor.push(provider);
-                    providerServices[providersColor.length-1] = [service];
-                }
-                else
-                    providerServices[idProv].push(service);
+                if(!tile.matrixSet[tileMatrixSet])
+                    tile.matrixSet[tileMatrixSet] = this.projection.getCoordWMTS_WGS84(tile.tileCoord, tile.bbox,tileMatrixSet);
 
-                if(!tile.WMTSs[tileMT])
-                    tile.WMTSs[tileMT] = this.projection.getCoordWMTS_WGS84(tile.tileCoord, tile.bbox,tileMT);
+                // if you make specific things depending on provider
+                // if(provider instanceof WMTS_Provider)
+                //     console.log('is WMTS_Provider');
 
-                if (this.providerWMTS.tileInsideLimit(tile, layerService)) {
-                    var bcoord = tile.WMTSs[tileMT];
+                if (provider.tileInsideLimit(tile, layerService)) {
+
+                    var idProv = providersColor.indexOf(provider);
+                    if(idProv<0)
+                    {
+                        providersColor.push(provider);
+                        providerServices[providersColor.length-1] = [service];
+
+                    }
+                    else
+                        providerServices[idProv].push(service);
+
+                    var bcoord = tile.matrixSet[tileMatrixSet];
 
                     paramMaterial.push({
-                        tileMT: tileMT,
+                        tileMT: tileMatrixSet,
                         pit: textureCount,
                         visible: map.colorTerrain.children[i].visible ? 1 : 0,
                         opacity: map.colorTerrain.children[i].opacity || 1.0,
