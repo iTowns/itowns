@@ -147,19 +147,33 @@ define('Core/Commander/Providers/TileProvider', [
             tile.WMTSs = [];
 
             // TODO passer mes layers colors?
-            var paramMaterial = [];
             var textureCount = 0;
-            for (var i = 0; i < colorServices.length; i++)
-            {
-                var layer = this.providerColorTexture.layersWMTS[colorServices[i]];
-                var tileMT = layer.tileMatrixSet;
+            var paramMaterial = [];
+            var providersColor = [];
+            var providerServices = [];
 
-				//var provider = this.manager.getProvider(layer);
-                
+            for (var i = 0; i < map.colorTerrain.children.length; i++)
+            {
+
+                var layerView = map.colorTerrain.children[i];
+				var provider = this.manager.getProvider(layerView);
+                var service = layerView.services[0];
+                var layerService = provider.layersWMTS[service];
+                var tileMT = layerService.tileMatrixSet;
+                var idProv = providersColor.indexOf(provider);
+
+                if(idProv<0)
+                {
+                    providersColor.push(provider);
+                    providerServices[providersColor.length-1] = [service];
+                }
+                else
+                    providerServices[idProv].push(service);
+
                 if(!tile.WMTSs[tileMT])
                     tile.WMTSs[tileMT] = this.projection.getCoordWMTS_WGS84(tile.tileCoord, tile.bbox,tileMT);
 
-                if (this.providerWMTS.tileInsideLimit(tile, layer)) {
+                if (this.providerWMTS.tileInsideLimit(tile, layerService)) {
                     var bcoord = tile.WMTSs[tileMT];
 
                     paramMaterial.push({
@@ -167,7 +181,7 @@ define('Core/Commander/Providers/TileProvider', [
                         pit: textureCount,
                         visible: map.colorTerrain.children[i].visible ? 1 : 0,
                         opacity: map.colorTerrain.children[i].opacity || 1.0,
-                        fx: layer.fx,
+                        fx: layerService.fx,
                         idLayer: colorServices[i]
                     });
 
@@ -175,22 +189,20 @@ define('Core/Commander/Providers/TileProvider', [
                 }
             }
 
-            tile.setColorLayerParameters(paramMaterial);
+            tile.setColorLayerParameters(paramMaterial );
             tile.texturesNeeded += textureCount;
 
-            var requests = [
+            var requests = [this.providerElevationTexture.getElevationTexture(tile,elevationServices).then(function(terrain){
+                            this.setTextureElevation(terrain);}.bind(tile))];
 
-                    this.providerElevationTexture.getElevationTexture(tile,elevationServices).then(function(terrain){
+            for (var key in providersColor)
+            {
+                requests.push(providersColor[key].getColorTextures(tile,providerServices[key]).then(function(colorTextures){
 
-                        this.setTextureElevation(terrain);}.bind(tile)),
+                        this.setTexturesLayer(colorTextures,1);}.bind(tile)));
+            }
 
-                    this.providerColorTexture.getColorTextures(tile,colorServices).then(function(colorTextures){
-
-                        this.setTexturesLayer(colorTextures,1);}.bind(tile))
-
-                    ,this.getKML(tile)
-
-                ];
+            requests.push(this.getKML(tile));
 
             return when.all(requests).then(function() {
                 return command.resolve(tile);
