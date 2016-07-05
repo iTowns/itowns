@@ -25,7 +25,7 @@ define (['Renderer/c3DEngine','three','Renderer/ThreeExtented/threeExt','MobileM
         })();
 
         var _shaderMat = null;
-        var _initiated = false;
+        var _initPromise = null;
         var _alpha = 1;
         var _infos = {};
         var ellipsoid  = new Ellipsoid(new THREE.Vector3(6378137, 6356752.3142451793, 6378137));
@@ -33,30 +33,21 @@ define (['Renderer/c3DEngine','three','Renderer/ThreeExtented/threeExt','MobileM
         var ProjectiveTexturingMaterial = {
 
             init: function(infos, panoInfo, pivot){
-                // FIXME: this is not concurrency-safe
-                // If init is called a second time before Ori.init() resolves,
-                // then it will return a resolved promise of 'null'.
-                if(!_initiated){
-                    _infos = infos;
-                    _infos.lods = _infos.lods || [undefined];
-                    _infos.targetNbPanoramics = _infos.targetNbPanoramics || 2;
-                    _initiated = true;
-
-                    return Ori.init(infos).then(function(){
+                if (_initPromise == null) {
+                    _initPromise = Ori.init(infos).then(function() {
                         // compute Camera Frame Rotation
                         var matRotationFrame = this.getCameraFrameRotation(panoInfo);
                         this.createShaderMat(panoInfo, matRotationFrame, pivot);
                         return _shaderMat;
-                    }.bind(this));
-                } else{
-                    // update shaderMat
-                    return Promise.resolve(_shaderMat);
+                    })
                 }
+                return _initPromise;
             },
 
 
             isInitiated: function(){
-                    return _initiated;
+                // XXX: this only says whether this.init() has been called, not whether it has resolved!
+                return _initPromise != null;
             },
 
             setGeneralOpacity: function(value){
