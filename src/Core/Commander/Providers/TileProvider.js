@@ -42,7 +42,7 @@ define('Core/Commander/Providers/TileProvider', [
         BoundingBox
     ) {
 
-        function TileProvider(size,gLDebug) {
+        function TileProvider(size,manager,gLDebug) {
             //Constructor
 
             this.projection = new Projection();
@@ -53,6 +53,8 @@ define('Core/Commander/Providers/TileProvider', [
 
             this.providerElevationTexture = this.providerWMTS;
             this.providerColorTexture = this.providerWMTS;
+
+            this.manager = manager;
 
             this.cacheGeometry = [];
             this.tree = null;
@@ -150,6 +152,9 @@ define('Core/Commander/Providers/TileProvider', [
             for (var i = 0; i < colorServices.length; i++)
             {
                 var layer = map.colorTerrain.children[i];
+
+                //var provider = this.manager.getProvider(layer);
+
                 var tileMT = this.providerColorTexture.layersWMTS[colorServices[i]].tileMatrixSet;
 
                 if(!tile.WMTSs[tileMT])
