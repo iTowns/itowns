@@ -267,7 +267,7 @@ define('Globe/Globe', [
         return false;
     };
 
-    Globe.prototype.setLayerVibility = function(id,visible){
+    Globe.prototype.setLayerVisibility = function(id,visible){
 
         var layer = this.getLayerColor(id);
 
@@ -287,6 +287,30 @@ define('Globe/Globe', [
             this.tiles.children[0].traverse(cO);
         }
 
+    };
+
+    Globe.prototype.getZoomLevel = function(id){
+
+        var layer = this.getLayerColor(id);
+
+        if(layer)
+        {
+
+//            layer.visible = visible;
+            var cO = function(/*object*/){
+
+                var zoom = 0;
+                return function (object){
+                    if(object){
+                        zoom = Math.max(zoom,object.level);
+                    }
+                        return zoom;
+                };
+
+            }();
+            this.tiles.children[0].traverseVisible(cO);
+            return cO();
+        }
     };
 
     Globe.prototype.setRealisticLightingOn = function(bool) {
