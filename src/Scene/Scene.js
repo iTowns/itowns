@@ -49,7 +49,7 @@ define('Scene/Scene', [
         MobileMappingLayer) {
 
     var instanceScene = null;
-    var event = new Event('globe-builded');
+    var event = new Event('globe-built');
     var NO_SUBDIVISE = 0;
     var SUBDIVISE = 1;
     var CLEAN = 2;
@@ -118,9 +118,9 @@ define('Scene/Scene', [
             this.layers[i].process.updateCamera(this.gfxEngine.camera);
         }
     };
-    Scene.prototype.getZoomLevel = function(){
-        return this.selectNodes;
-    };
+//    Scene.prototype.getZoomLevel = function(){
+//        return this.selectNodes;
+//    };
 
     Scene.prototype.size = function() {
         return this.size;

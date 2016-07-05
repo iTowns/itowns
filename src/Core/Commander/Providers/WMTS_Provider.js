@@ -86,7 +86,7 @@ define('Core/Commander/Providers/WMTS_Provider', [
             this.projection = new Projection();
             this.support = options.support || false;
 
-            this.layersWMTS = [];
+            this.layersData = [];
 
             this.getTextureFloat;
 
@@ -126,8 +126,8 @@ define('Core/Commander/Providers/WMTS_Provider', [
 
         WMTS_Provider.prototype.removeLayer = function(idLayer)
         {
-            if(this.layersWMTS[idLayer])
-                this.layersWMTS[idLayer] = undefined;
+            if(this.layersData[idLayer])
+                this.layersData[idLayer] = undefined;
 
         }
 
@@ -136,7 +136,7 @@ define('Core/Commander/Providers/WMTS_Provider', [
 
             if(layer.protocol === 'wmtsc')
             {
-                 this.layersWMTS[layer.id] = {
+                 this.layersData[layer.id] = {
                     customUrl: layer.customUrl,
                     tileMatrixSet:layer.wmtsOptions.tileMatrixSet,
                     zoom:{min:2,max:20},
@@ -160,7 +160,7 @@ define('Core/Commander/Providers/WMTS_Provider', [
                 var size = arrayLimits.length;
                 var maxZoom = Number(arrayLimits[size-1]);
                 var minZoom = maxZoom - size + 1;
-                this.layersWMTS[layer.id] = {
+                this.layersData[layer.id] = {
                     customUrl: newBaseUrl,
                     mimetype:options.mimetype,
                     tileMatrixSet:options.tileMatrixSet,
@@ -179,7 +179,7 @@ define('Core/Commander/Providers/WMTS_Provider', [
          */
         WMTS_Provider.prototype.url = function(coWMTS,layerId) {
 
-            return this.customUrl(this.layersWMTS[layerId].customUrl,coWMTS.zoom, coWMTS.row,coWMTS.col);
+            return this.customUrl(this.layersData[layerId].customUrl,coWMTS.zoom, coWMTS.row,coWMTS.col);
 
         };
 
@@ -188,7 +188,7 @@ define('Core/Commander/Providers/WMTS_Provider', [
             for (var i = 0; i < services.length; i++) {
 
                 var service = services[i];
-                var layerWMTS = this.layersWMTS[service];
+                var layerWMTS = this.layersData[service];
 
                 if(zoom >= layerWMTS.zoom.min && zoom <= layerWMTS.zoom.max )
                     return service;
@@ -202,16 +202,15 @@ define('Core/Commander/Providers/WMTS_Provider', [
          */
         WMTS_Provider.prototype.getElevationTexture = function(tile,services) {
 
-
-            tile.texturesNeeded =+ 1;
+            tile.texturesNeeded += 1;
 
             var layerId = services[0];
-            var layer = this.layersWMTS[layerId];
+            var layer = this.layersData[layerId];
 
             if(tile.level > layer.zoom.max)
             {
                 layerId = services[1];
-                layer = this.layersWMTS[layerId];
+                layer = this.layersData[layerId];
             }
 
             // TEMP
@@ -371,10 +370,9 @@ define('Core/Commander/Providers/WMTS_Provider', [
             return tile.level >= layer.zoom.min && tile.level <= layer.zoom.max;
         }
 
-        WMTS_Provider.prototype.getColorTextures = function(tile,layerWMTSId,params) {
+        WMTS_Provider.prototype.getColorTextures = function(tile,layerWMTSId) {
 
             var promises = [];
-            var paramMaterial = [];
             if (tile.material === null) {
                 return when();
             }
@@ -383,14 +381,10 @@ define('Core/Commander/Providers/WMTS_Provider', [
 
             for (var i = 0; i < layerWMTSId.length; i++) {
 
-                var layer = this.layersWMTS[layerWMTSId[i]];
+                var layer = this.layersData[layerWMTSId[i]];
 
-                if (this.tileInsideLimit(tile,layer))
-                {
-                    var bcoord = tile.WMTSs[layer.tileMatrixSet];
-
-                    if(lookAtAncestor)
-                        paramMaterial.push({tileMT:layer.tileMatrixSet,pit:promises.length,visible:params[i].visible,opacity:params[i].opacity,fx:layer.fx,idLayer:layerWMTSId[i]});
+                if (this.tileInsideLimit(tile,layer)) {
+                    var bcoord = tile.matrixSet[layer.tileMatrixSet];
 
                     // WARNING the direction textures is important
                     for (var row = bcoord[1].row; row >=  bcoord[0].row; row--) {
@@ -398,17 +392,14 @@ define('Core/Commander/Providers/WMTS_Provider', [
                        var cooWMTS = new CoordWMTS(bcoord[0].zoom, row, bcoord[0].col);
                        var pitch = new THREE.Vector3(0.0,0.0,1.0);
 
-                       if(lookAtAncestor)
+                       if(lookAtAncestor) {
                             cooWMTS = this.projection.WMTS_WGS84Parent(cooWMTS,this.getZoomAncestor(tile,layer),pitch);
+                       }
 
                        promises.push(this.getColorTexture(cooWMTS,pitch,layerWMTSId[i]));
-
                     }
                 }
             }
-
-            if (lookAtAncestor)
-                tile.setParamsColor(promises.length,paramMaterial);
 
             if (promises.length)
                 return when.all(promises);
