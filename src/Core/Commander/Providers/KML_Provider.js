@@ -30,7 +30,7 @@ define('Core/Commander/Providers/KML_Provider', [
             this.ellipsoid = ellipsoid;
             this.ioDriverXML = new IoDriverXML();
             this.kmzLoader = new KMZLoader();
-            this.cache = [];
+            this.cache = new Map();
         }
 
         KML_Provider.prototype = Object.create(Provider.prototype);
@@ -128,21 +128,12 @@ define('Core/Commander/Providers/KML_Provider', [
                             var url_kmz = url + NetworkLink[i].getElementsByTagName("href")[0].childNodes[0].nodeValue.replace("../../", "");
                             //url_kmz = "http://localhost:8383/kmz/BT_000092.kmz";
 
-                            // TODO: this is not optimal: if the function is called before kmzLoader resolves, it'll load the file again.
-                            if (this.cache[url_kmz]) {
-
-                                return Promise.resolve(this.cache[url_kmz]);
-                            } else {
-                                return this.kmzLoader.load(url_kmz).then(
-                                    function(result) {
-
-
-                                        this.cache[url_kmz] = result;
-
-                                        return result;
-                                    }.bind(this));
-
+                            var p = this.cache[url_kmz];
+                            if (!p) {
+                                p = this.kmzLoader.load(url_kmz);
+                                this.cache[url_kmz] = p;
                             }
+                            return p;
                         }
                     }
                 }
