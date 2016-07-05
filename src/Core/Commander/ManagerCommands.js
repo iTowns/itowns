@@ -27,7 +27,11 @@ define('Core/Commander/ManagerCommands', [
 
             this.queueAsync = new PriorityQueue({
                 comparator: function(a, b) {
-                    return b.priority - a.priority;
+                    var cmp = b.priority - a.priority;
+                    // Prioritize recent commands
+                    if (cmp == 0) {
+                        return b.timestamp - a.timestamp;
+                    }
                 }
             });
 
