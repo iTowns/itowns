@@ -158,8 +158,8 @@ define('Core/Commander/Providers/TileProvider', [
                 var layerView = map.colorTerrain.children[i];
 				var provider = this.manager.getProvider(layerView);
                 var service = layerView.services[0];
-                var layerService = provider.layersWMTS[service];
-                var tileMatrixSet = layerService.tileMatrixSet;
+                var layerData = provider.layersData[service];
+                var tileMatrixSet = layerData.tileMatrixSet;
 
                 if(!tile.matrixSet[tileMatrixSet])
                     tile.matrixSet[tileMatrixSet] = this.projection.getCoordWMTS_WGS84(tile.tileCoord, tile.bbox,tileMatrixSet);
@@ -168,7 +168,7 @@ define('Core/Commander/Providers/TileProvider', [
                 // if(provider instanceof WMTS_Provider)
                 //     console.log('is WMTS_Provider');
 
-                if (provider.tileInsideLimit(tile, layerService)) {
+                if (provider.tileInsideLimit(tile, layerData)) {
 
                     var idProv = providersColor.indexOf(provider);
                     if(idProv<0)
@@ -187,7 +187,7 @@ define('Core/Commander/Providers/TileProvider', [
                         pit: textureCount,
                         visible: map.colorTerrain.children[i].visible ? 1 : 0,
                         opacity: map.colorTerrain.children[i].opacity || 1.0,
-                        fx: layerService.fx,
+                        fx: layerData.fx,
                         idLayer: colorServices[i]
                     });
 
