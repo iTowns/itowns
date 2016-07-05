@@ -27,6 +27,8 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
     var eventLoaded = new Event('globe-loaded');
     var eventLayerRemoved = new Event('Layer-removed');
 
+    var eventRange = new Event('rangeChanged');
+
     function ApiGlobe() {
         //Constructor
 
@@ -76,7 +78,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
     };
 
     /**
-    * Adds an imagery layer to the map. The layer id must be unique amongst all layers already inserted. The protocol rules which parameters are then needed for the function.
+    * This function adds an imagery layer to the scene. The layer id must be unique. The protocol rules wich parameters are then needed for the function.
     * @constructor
     * @param {Layer} layer.
     */
@@ -128,7 +130,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
     };
 
     /**
-    * Gets the minimum zoom level, i.e. level at which the view is the farthest from the ground.
+    * Gets the minimum zoom level of the chosen layer.
     * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/66r8ugq0/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
     * @constructor
     * @param {id} id - The id of the layer.
@@ -143,6 +145,12 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         return layerWMTS[id].zoom.min;
     };
 
+    /**
+    * Return the list of all layers in the scene in the order of how they are stacked on top of each other.
+    * @constructor
+    * @param {id} id - The id of the layer.
+    */
+
     ApiGlobe.prototype.getLayers = function(/*param*/){
 
         var map = this.scene.getMap();
@@ -154,7 +162,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
     };
 
     /**
-    * Gets the maximun zoom level, i.e. level at which the view is the closest from the ground.
+    * Gets the maximun zoom level of the chosen layer.
     * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/y1xcqv4s/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
     * @constructor
     * @param {id} id - The id of the layer.
@@ -170,8 +178,8 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
     };
 
     /**
-    * Add an elevation layer to the map. Elevations layers are used to build the terrain, if there is some overlapped the best resolution is taken, if resolution is equals, the first one is used.
-    * The layer id must be unique amongst all layers already inserted. The protocol rules which parameters are then needed for the function
+    * Adds en elevation layer (MNT) to the scene. If there are some overlaps, the best resolution is taken.
+    * The layer id must be unique. The protocol rules wich parameters are then needed for the function.
     * @constructor
     * @param {Layer} layer.
     */
@@ -188,16 +196,23 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
 
     };
 
+    /**
+    * Creates the scene (the globe of iTowns).
+    * The first parameter is the coordinates on wich the globe will be centered at the initialization.
+    * The second one is the HTML div in wich the scene will be created.
+    * @constructor
+    * @param {Coords} coords.
+    * @params {Div} string.
+    */
+
     ApiGlobe.prototype.createSceneGlobe = function(coordCarto, viewerDiv) {
         // TODO: Normalement la creation de scene ne doit pas etre ici....
         // Deplacer plus tard
 
         this.viewerDiv = viewerDiv;
 
-        viewerDiv.addEventListener('globe-builded', function(){
+        viewerDiv.addEventListener('globe-built', function(){
 
-        //        var event = new Event('empty');
-        //        document.addEventListener('empty', console.log('Your turn'));
             if(loaded == false)
             {
 
@@ -260,9 +275,17 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         this.scene.renderScene3D();
     };
 
-    ApiGlobe.prototype.setLayerVibility = function(id,visible){
+    /**
+    * Sets the visibility of a layer. If the layer is not visible in the scene, this function will no effect until the camera looks at the layer.
+    * @constructor
+    * @param {id} string.
+    * @params {visible} boolean.
+    */
 
-        this.scene.getMap().setLayerVibility(id,visible);
+    ApiGlobe.prototype.setLayerVisibility = function(id,visible){
+
+        this.scene.getMap().setLayerVisibility(id,visible);
+
         this.scene.renderScene3D();
     };
 
@@ -276,6 +299,13 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         this.scene.orbit(value);
     };
 
+    /**
+    * Sets the opacity of a layer. If the layer is not visible in the scene, this function will no effect until the layer becomes visible.
+    * @constructor
+    * @param {id} string.
+    * @params {visible} boolean.
+    */
+
     ApiGlobe.prototype.setLayerOpacity = function(id,visible){
 
         this.scene.getMap().setLayerOpacity(id,visible);
@@ -288,7 +318,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
     }
 
      /**
-    * Gets orientation angles of the current camera, in degrees.
+    * Returns the orientation angles of the current camera, in degrees.
     * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/okfj460p/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
     * @constructor
     */
@@ -300,7 +330,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
     };
 
     /**
-    * Get the camera location projected on the ground in lat,lon.
+    * Returns the camera location projected on the ground in lat,lon.
     * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/mjv7ha02/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
     * @constructor
     */
@@ -311,10 +341,10 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
     };
 
     /**
-    * Gets the coordinates of the current central point on screen.
+    * Retuns the coordinates of the central point on screen.
     * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/4tjgnv7z/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
     * @constructor
-    * @return {Position} postion
+    * @return {Position} position
     */
 
     ApiGlobe.prototype.getCenter = function () {
@@ -324,7 +354,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
     };
 
     /**
-    * Gets orientation angles of the current camera, in degrees.
+    * Sets orientation angles of the current camera, in degrees.
     * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/9qr2mogh/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
     * @constructor
     * @param {Orientation} Param - The angle of the rotation in degrees.
@@ -365,7 +395,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
     };
 
     /**
-    * Get the tilt.
+    * Returns the tilt in degrees.
     * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/kcx0of9j/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
     * @constructor
     * @return {Angle} number - The angle of the rotation in degrees.
@@ -378,7 +408,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
     };
 
     /**
-    * Get the Heading.
+    * Returns the heading in degrees.
     * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/pxv1Lw16/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
     * @constructor
     * @return {Angle} number - The angle of the rotation in degrees.
@@ -391,7 +421,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
     };
 
     /**
-    * Get the "range", i.e. distance in meters of the camera from the center.
+    * Returns the "range": the distance in meters between the camera and the current central point on the screen.
     * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/Lbt1vfek/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
     * @constructor
     * @return {Number} number
@@ -440,7 +470,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
     };
 
     /**
-    * Resets camera tilt.
+    * Resets camera tilt -> sets the tilt to 0°.
     * @constructor
     * @param {Boolean} [pDisableAnimation] - Used to force the non use of animation if its enable.
     */
@@ -451,7 +481,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
     };
 
     /**
-    * Resets camera heading.
+    * Resets camera heading -> sets the heading to 0°.
     * @constructor
     * @param {Boolean} [pDisableAnimation] - Used to force the non use of animation if its enable.
     */
@@ -462,7 +492,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
     };
 
     /**
-    * Return the distance in meter between two geographic position.
+    * Returns the distance in meter between two geographic positions.
     * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/0nLhws5u/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
     * @constructor
     * @param {Position} First - Position.
@@ -474,10 +504,10 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
     };
 
     /**
-    * Moves the central point on screen to specific coordinates.
+    * Changes the center of the scene on screen to the specified coordinates.
     * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/x06yhbq6/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
     * @constructor
-    * @param {Position} position - The position on the map.
+    * @param {Position} position - The position on the scene.
     */
 
     ApiGlobe.prototype.setCenter = function (position) {
@@ -487,10 +517,13 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
     };
 
     /**
-    * Moves the central point on screen to specific coordinates while changing the zoom and / or the orientation at the same time. Whenever the map center and zoom should be changed at the same time, or the map center and orientation, or the three of them, then setCenterAdvanced() should always be called instead of separate calls of setCenter(), setZoomLevel(), setZoomScale() or setCameraOrientation(). The level must be in the[getMinZoomLevel(), getMaxZoomLevel()] range.The scale must be a positive integer, as a zoom scale denominator integer, e.g. for 1 / 500 the value must be 500, not 0.002.Zoom level and scale can not be set at the same time. Orientation can select heading and tilt angles like setCameraOrientation(). The view flies to the desired coordinate, i.e.is not teleported instantly.
+    * Changes the center of the scene on screen to the specified coordinates.
+    * This function allows to change the central position, the zoom level, the range, the scale and the camera orientation at the same time.
+    * The level has to be between the [getMinZoomLevel(), getMaxZoomLevel()].
+    * The zoom level and the scale can't be set at the same time.
     * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/7yk0mpn0/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
     * @constructor
-    * @param {Position} pPosition - The position on the map.
+    * @param {Position} pPosition - The detailed position in the scene.
     * @param {Boolean} [pDisableAnimation] - Used to force the non use of animation if its enable.
     */
 
@@ -502,7 +535,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
     };
 
     /**
-    * Set the "range", i.e. distance in meters of the camera from the center.
+    * Sets the "range": the distance in meters between the camera and the current central point on the screen.
     * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/Lt3jL5pd/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
     * @constructor
     * @param {Number} pRange - The camera altitude.
@@ -510,12 +543,20 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
     */
 
     ApiGlobe.prototype.setRange = function (pRange/*, bool*/){
+        var viewerDiv = document.getElementById("viewerDiv");
 
         this.scene.currentControls().setRange(pRange);
+        viewerDiv.dispatchEvent(eventRange);
     };
 
-    ApiGlobe.prototype.getZoomLevel = function (){
-        return this.scene.getZoomLevel();
+    /**
+    * Returns the actual zoom level. The level will always be between the [getMinZoomLevel(), getMaxZoomLevel()].
+    * @constructor
+    * @param {Id} id - The id of a layer.
+    */
+
+    ApiGlobe.prototype.getZoomLevel = function (id){
+        return this.scene.getMap().getZoomLevel(id);
     };
 
     ApiGlobe.prototype.launchCommandApi = function () {
