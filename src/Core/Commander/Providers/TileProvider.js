@@ -147,21 +147,36 @@ define('Core/Commander/Providers/TileProvider', [
             tile.WMTSs = [];
 
             // TODO passer mes layers colors?
-            var paramsColor = [];
-
+            var paramMaterial = [];
+            var textureCount = 0;
             for (var i = 0; i < colorServices.length; i++)
             {
-                var layer = map.colorTerrain.children[i];
+                var layer = this.providerColorTexture.layersWMTS[colorServices[i]];
+                var tileMT = layer.tileMatrixSet;
 
-                //var provider = this.manager.getProvider(layer);
-
-                var tileMT = this.providerColorTexture.layersWMTS[colorServices[i]].tileMatrixSet;
-
+				//var provider = this.manager.getProvider(layer);
+                
                 if(!tile.WMTSs[tileMT])
                     tile.WMTSs[tileMT] = this.projection.getCoordWMTS_WGS84(tile.tileCoord, tile.bbox,tileMT);
 
-                 paramsColor[i] = {visible:layer.visible ? 1 : 0,opacity:layer.opacity || 1.0};
+                if (this.providerWMTS.tileInsideLimit(tile, layer)) {
+                    var bcoord = tile.WMTSs[tileMT];
+
+                    paramMaterial.push({
+                        tileMT: tileMT,
+                        pit: textureCount,
+                        visible: map.colorTerrain.children[i].visible ? 1 : 0,
+                        opacity: map.colorTerrain.children[i].opacity || 1.0,
+                        fx: layer.fx,
+                        idLayer: colorServices[i]
+                    });
+
+                    textureCount += bcoord[1].row - bcoord[0].row + 1;
+                }
             }
+
+            tile.setColorLayerParameters(paramMaterial);
+            tile.texturesNeeded += textureCount;
 
             var requests = [
 
@@ -169,7 +184,7 @@ define('Core/Commander/Providers/TileProvider', [
 
                         this.setTextureElevation(terrain);}.bind(tile)),
 
-                    this.providerColorTexture.getColorTextures(tile,colorServices,paramsColor).then(function(colorTextures){
+                    this.providerColorTexture.getColorTextures(tile,colorServices).then(function(colorTextures){
 
                         this.setTexturesLayer(colorTextures,1);}.bind(tile))
 

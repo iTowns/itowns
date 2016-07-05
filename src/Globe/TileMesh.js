@@ -109,13 +109,10 @@ define('Globe/TileMesh', [
         this.material = null;
     };
 
-    TileMesh.prototype.setParamsColor = function(nbTexturesColor,paramsTextureColor) {
-
-        this.texturesNeeded += nbTexturesColor;
+    TileMesh.prototype.setColorLayerParameters = function(paramsTextureColor) {
         this.material.setParam(paramsTextureColor);
 
-        for (var l = 0; l < paramsTextureColor.length; l++)
-        {
+        for (var l = 0; l < paramsTextureColor.length; l++) {
             this.layersColor.push(paramsTextureColor[l].idLayer);
         }
     };
