@@ -27,7 +27,7 @@ define('Scene/Quadtree', [
         this.maxLevel = 17;
         var rootNode = new NodeMesh();
 
-        rootNode.frustumCulled = false
+        rootNode.frustumCulled = false;
         rootNode.material.visible = false;
 
         rootNode.link = this.link;
@@ -69,59 +69,18 @@ define('Scene/Quadtree', [
     };
 
     /**
-     * @documentation: subdivise node if necessary
+     * @documentation: returns bounding boxes of a node's quadtree subdivision
      * @param {type} node
-     * @returns {Array} four bounding box
+     * @returns {Array} an array of four bounding boxex
      */
-    Quadtree.prototype.up = function(node) {
+    Quadtree.prototype.subdivideNode = function (node) {
+        if(node.pendingSubdivision || node.level > this.maxLevel){
+            return [];
+        }
 
-        if (!this.update(node))
-            return;
-
-        node.wait = true;
         var quad = new Quad(node.bbox);
-        this.requestNewTile(quad.northWest, node);
-        this.requestNewTile(quad.northEast, node);
-        this.requestNewTile(quad.southWest, node);
-        this.requestNewTile(quad.southEast, node);
 
-    };
-
-    Quadtree.prototype.down = function(node)
-    {
-        node.setMaterialVisibility(true);
-        node.setChildrenVisibility(false);
-    }
-
-    Quadtree.prototype.upSubLayer = function(node) {
-
-        var id = node.getDownScaledLayer();
-
-        if(id !== undefined)
-        {
-            var params = { layer : this.children[id+1], subLayer : id};
-            this.interCommand.request(params, node);
-        }
-
-    };
-
-    /**
-     * @documentation: update node
-     * @param {type} node
-     * @returns {Boolean}
-     */
-    Quadtree.prototype.update = function(node) {
-
-        if (node.level > this.maxLevel)
-            return false;
-        else if (node.childrenCount() > 0 ) {
-
-            node.setMaterialVisibility(false);
-
-            return false;
-        }
-
-        return true;
+        return [quad.northWest, quad.northEast, quad.southWest, quad.southEast];
     };
 
     return Quadtree;

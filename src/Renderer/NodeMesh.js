@@ -16,7 +16,7 @@ define('Renderer/NodeMesh', ['Scene/Node', 'THREE'], function(Node, THREE) {
         THREE.Mesh.call(this);
 
         this.sse = 0.0;
-        this.wait = false;
+        this.pendingSubdivision = false;
         this.helper = undefined;
 
     };
@@ -34,8 +34,7 @@ define('Renderer/NodeMesh', ['Scene/Node', 'THREE'], function(Node, THREE) {
     };
 
     NodeMesh.prototype.isVisible = function() {
-
-        return this.visible && this.material.visible;
+        return this.visible;
     };
 
     NodeMesh.prototype.setVisibility = function(show) {
@@ -44,23 +43,19 @@ define('Renderer/NodeMesh', ['Scene/Node', 'THREE'], function(Node, THREE) {
 
         if (this.content !== null)
             this.content.visible = show;
-
-        return show;
     };
 
-    NodeMesh.prototype.setMaterialVisibility = function(show) {
+    NodeMesh.prototype.setDisplayed = function(show) {
         this.material.visible = show;
         if (this.helper !== undefined)
             this.helper.setMaterialVisibility(show);
 
         if (this.content !== null && show)
             this.content.visible = true;
-
     };
 
-    NodeMesh.prototype.setChildrenVisibility = function(show) {
-        for (var i = 0; i < this.children.length; i++)
-            this.children[i].setVisibility(show);
+    NodeMesh.prototype.isDisplayed = function() {
+        return this.material.visible;
     };
 
     Node.extend(NodeMesh);

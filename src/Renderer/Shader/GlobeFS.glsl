@@ -1,13 +1,7 @@
-
-#version 100
-
-#extension GL_EXT_frag_depth : enable
-
 #define SHADER_NAME ShaderMaterial
 #define VERTEX_TEXTURES
 
-precision highp float;
-precision highp int;
+
 
 #define USE_LOGDEPTHBUF
 #define USE_LOGDEPTHBUF_EXT
@@ -31,7 +25,6 @@ precision highp int;
 // conformance/glsl/bugs/nested-loops-with-break-and-continue.html
 // Resolve CHROME unstable 52
 
-const int   TEX_UNITS   = 16;
 const float PI          = 3.14159265359;
 const float INV_TWO_PI  = 1.0 / (2.0*PI);
 const float PI2         = 1.57079632679;
@@ -47,8 +40,11 @@ uniform vec3        pitScale_L01[TEX_UNITS];
 
 uniform vec4        paramLayers[8];
 uniform vec2        paramBLayers[8];
+uniform int         layerSequence[8];
+
 uniform int         pickingRender;
 uniform int         nbTextures[8];
+
 uniform float       distanceFog;
 uniform int         RTC;
 uniform int         selected;
@@ -65,18 +61,6 @@ varying float       vUv_1;
 varying vec3        vNormal;
 varying vec4        pos;
 
-
-//#define BORDERLINE
-
-vec2    pitUV(vec2 uvIn, vec3 pit)
-{
-    vec2  uv;
-    uv.x = uvIn.x* pit.z + pit.x;
-    uv.y = 1.0 -( (1.0 - uvIn.y) * pit.z + pit.y);
-
-    return uv;
-}
-
 #if defined(BORDERLINE)
     const float sLine = 0.008;
 #endif
@@ -85,8 +69,8 @@ const float borderS = 0.007;
 // GLSL 1.30 only accepts constant expressions when indexing into arrays,
 // so we have to resort to an if/else cascade.
 
-
-vec4 colorAtIdUv(sampler2D dTextures[16],int id, vec2 uv){
+/*
+vec4 colorAtIdUv(sampler2D dTextures[TEX_UNITS],int id, vec2 uv){
 
     // for (int i = 0; i < TEX_UNITS; ++i)
     //     if(i == id)
@@ -107,10 +91,12 @@ vec4 colorAtIdUv(sampler2D dTextures[16],int id, vec2 uv){
     else if (id == 12) return texture2D(dTextures[12],  pitUV(uv,pitScale_L01[12]));
     else if (id == 13) return texture2D(dTextures[13],  pitUV(uv,pitScale_L01[13]));
     else if (id == 14) return texture2D(dTextures[14],  pitUV(uv,pitScale_L01[14]));
-    else if (id == 15) return texture2D(dTextures[15],  pitUV(uv,pitScale_L01[15]));
+    //else if (id == 15) return texture2D(dTextures[15],  pitUV(uv,pitScale_L01[15]));
     else return vec4(0.0,0.0,0.0,0.0);
 
 }
+
+*/
 
 const vec4 bitSh = vec4( 256.0 * 256.0 * 256.0, 256.0 * 256.0, 256.0, 1.0 );
 const vec4 bitMsk = vec4( 0.0, 1.0 / 256.0, 1.0 / 256.0, 1.0 / 256.0 );
@@ -128,6 +114,26 @@ vec4 pack1K ( float depth ) {
 //     return dot( color, bitSh ) * 100000000.0;
 
 // }
+
+vec4 getParamLayers(int id)
+{
+
+    for (int layer = 0; layer < 8; layer++)
+        if(layer == id)
+            return paramLayers[layer];
+
+    return vec4(0.0,0.0,0.0,0.0);
+}
+
+vec2 getParamBLayers(int id)
+{
+
+    for (int layer = 0; layer < 8; layer++)
+        if(layer == id)
+            return paramBLayers[layer];
+
+    return vec2(0.0,0.0);
+}
 
 void main() {
 
@@ -192,22 +198,22 @@ void main() {
             vec4 diffuseColor =  vec4( 1.0, 1.0, 1.0, 1.0);
 
             // TODO Optimisation des uv1 peuvent copier pas lignes!!
-
-
             for (int layer = 0; layer < 8; layer++)
             {
+
+
                if(layer == nColorLayer)
                     break;
 
-                params = paramLayers[layer];
-                paramsB = paramBLayers[layer];
+                params = getParamLayers(layerSequence[layer]);
+                paramsB = getParamBLayers(layerSequence[layer]);
 
                 if(params.z == 1.0 && params.w > 0.0)
                 {
 
                         pit = int(params.x);
                         projWGS84 = params.y == 0.0;
-                        vec4 layerColor = colorAtIdUv(dTextures_01, pit + (projWGS84 ? 0 : idd),projWGS84 ? uvWGS84 : uvPM);
+                        vec4 layerColor = colorAtIdUv(dTextures_01,pitScale_L01, pit + (projWGS84 ? 0 : idd),projWGS84 ? uvWGS84 : uvPM);
                         float lum = 1.0;
 
                         if(paramsB.x > 0.0)

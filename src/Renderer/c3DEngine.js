@@ -262,8 +262,20 @@ define('Renderer/c3DEngine', [
         this.controls.maxDistance = this.size * 8.0;
         this.controls.keyPanSpeed = 0.01;
 
+        var gl = this.renderer.context;
+        var maxTexturesUnits =  gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS);
+        var debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+        var vendor = gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL);
+        //var renderer = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
+
+        if(vendor.indexOf('mesa')>-1 || vendor.indexOf('Mesa')>-1)
+            maxTexturesUnits = Math.min(16,maxTexturesUnits);
+
+        this.glParams = {maxTexturesUnits:maxTexturesUnits};
+
         window.addEventListener('resize', this.onWindowResize, false);
         this.controls.addEventListener('change', this.update);
+
     }
 
     /**

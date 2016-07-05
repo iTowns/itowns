@@ -68,6 +68,8 @@ define('Globe/TileMesh', [
 
         // Layer
         this.currentElevation = -1;
+        this.layersColor = [];
+        this.setDisplayed(false);
 
     }
 
@@ -111,6 +113,11 @@ define('Globe/TileMesh', [
 
         this.texturesNeeded += nbTexturesColor;
         this.material.setParam(paramsTextureColor);
+
+        for (var l = 0; l < paramsTextureColor.length; l++)
+        {
+            this.layersColor.push(paramsTextureColor[l].idLayer);
+        }
     };
     /**
     *
@@ -122,7 +129,6 @@ define('Globe/TileMesh', [
             this.remove(child);
             child.dispose();
         }
-        this.material.visible = true;
     };
 
     TileMesh.prototype.useParent = function() {
@@ -265,13 +271,15 @@ define('Globe/TileMesh', [
 
     TileMesh.prototype.downScaledLayer = function(id)
     {
-        if(id === l_ELEVATION)
-            if(this.currentElevation === -2)
+        if(id === l_ELEVATION) {
+            if(this.currentElevation === -2) {
                 return false;
-            else
+            } else {
                 return this.currentElevation < this.levelElevation ;
-        else if(id === l_COLOR)
+            }
+        } else if(id === l_COLOR) {
             return this.material.getLevelLayerColor(l_COLOR) < this.level + this.material.getDelta();
+        }
 
         return false;
     };
@@ -330,6 +338,67 @@ define('Globe/TileMesh', [
             this.loaded = true;
             this.parent.childrenLoaded();
         }
+    };
+
+    TileMesh.prototype.getIndexLayerColor = function(idLayer) {
+
+        // for (var l = 0; l < this.layersColor.length; l++)
+        //     if(this.layersColor[l] === idLayer)
+        //         return l;
+
+        // return -1;
+
+        return this.layersColor.indexOf(idLayer);
+
+    };
+
+    TileMesh.prototype.removeLayerColor = function(idLayer) {
+
+        var id = this.getIndexLayerColor(idLayer);
+
+        if(id > -1)
+        {
+
+            this.layersColor.splice(id,1);
+            var nbTextures = this.material.nbLoadedTextures();
+            this.material.removeLayerColor(id);
+            this.texturesNeeded -= nbTextures - this.material.nbLoadedTextures();
+        }
+
+    };
+
+    TileMesh.prototype.changeSequenceLayers = function(sequence){
+
+        if(this.layersColor < 2)
+            return;
+
+        var newSequence,layer;
+
+        if(sequence.length !== this.layersColor.length)
+        {
+            newSequence = sequence.slice(0);
+            var max = newSequence.length;
+
+            for (var i = 0; i < max; i++)
+            {
+                layer =  newSequence[i];
+                if (layer && this.getIndexLayerColor(layer) === -1)
+                    newSequence.splice(i,1);
+            }
+        }
+        else
+            newSequence = sequence;
+
+        var sequenceMaterial = [];
+
+        for (var l = 0; l < newSequence.length; l++)
+        {
+            var index = this.getIndexLayerColor(newSequence[l]);
+            //this.layersColor[index].sequence = l;
+            sequenceMaterial[l] = index ;
+        }
+
+        this.material.setSequence(sequenceMaterial);
     };
 
     return TileMesh;

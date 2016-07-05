@@ -167,7 +167,7 @@
     };
 
 
-    // Manage 3 asynchronous functions
+    // Manages 3 asynchronous functions
     // - Get Pano closest to lon lat (panoramic metadata)
     // - Get sensors informations (camera calibration)
     // - Get Building boxes from WFS
@@ -192,7 +192,7 @@
                     var roofMesh = new PanoramicMesh(that.geometryRoof, new BasicMaterial(new THREE.Color( 0xdddddd )), that.absoluteCenter);
                     roofMesh.material.side =  THREE.DoubleSide;
                     roofMesh.material.transparent  = true;
-                    roofMesh.material.visible = true;
+                    roofMesh.setDisplayed(true);
                     roofMesh.material.uniforms.lightOn.value = false;
 
                     that.panoramicMesh.add(roofMesh);
@@ -201,7 +201,7 @@
                    // console.log(roofMesh);
                     deferred.resolve(that.panoramicMesh);
 
-                })
+                });
 
             }.bind(that));
 
