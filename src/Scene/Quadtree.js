@@ -12,14 +12,16 @@
  */
 define('Scene/Quadtree', [
     'Scene/Layer',
+    'Core/Commander/InterfaceCommander',
     'Core/Geographic/Quad',
     'Renderer/NodeMesh'
-], function(Layer, Quad, NodeMesh) {
+], function(Layer, InterfaceCommander, Quad, NodeMesh) {
 
 
     function Quadtree(type, schemeTile, size, link) {
-        Layer.call(this, type, size);
+        Layer.call(this);
 
+        this.interCommand = new InterfaceCommander(type);
         this.link = link;
         this.schemeTile = schemeTile;
         this.tileType = type;
