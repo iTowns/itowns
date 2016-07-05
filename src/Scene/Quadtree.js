@@ -18,10 +18,17 @@ define('Scene/Quadtree', [
 ], function(Layer, InterfaceCommander, Quad, NodeMesh) {
 
 
+    function commandQueuePriorityFunction(cmd) {
+        var requester = cmd.requester;
+        return requester.sse ?
+            Math.floor(requester.isVisible() ? requester.sse * requester.sse * 100000 : 1.0) :
+            1.0;
+    }
+
     function Quadtree(type, schemeTile, size, link) {
         Layer.call(this);
 
-        this.interCommand = new InterfaceCommander(type);
+        this.interCommand = new InterfaceCommander(type, commandQueuePriorityFunction);
         this.link = link;
         this.schemeTile = schemeTile;
         this.tileType = type;
