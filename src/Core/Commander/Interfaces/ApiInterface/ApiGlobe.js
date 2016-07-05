@@ -208,7 +208,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
 
         this.viewerDiv = viewerDiv;
 
-        viewerDiv.addEventListener('globe-builded', function(){
+        viewerDiv.addEventListener('globe-built', function(){
 
             if(loaded == false)
             {
