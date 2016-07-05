@@ -222,7 +222,7 @@ define('Renderer/LayeredMaterial', ['THREE',
         }
     };
 
-    LayeredMaterial.prototype.setLayerVibility = function (id,visible){
+    LayeredMaterial.prototype.setLayerVisibility = function (id,visible){
 
         if(this.paramLayers[id])
         {
