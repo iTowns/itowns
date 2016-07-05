@@ -10,6 +10,12 @@ define('Core/Commander/InterfaceCommander', ['Core/Commander/ManagerCommands', '
         this.managerCommands = ManagerCommands();
         this.priorityFunction = priorityFunction;
         this.type = type;
+
+        if (!Date.now) {
+            this.timestamp = function() { return new Date().getTime(); }
+        } else {
+            this.timestamp = Date.now;
+        }
     }
 
     InterfaceCommander.prototype.constructor = InterfaceCommander;
@@ -30,6 +36,7 @@ define('Core/Commander/InterfaceCommander', ['Core/Commander/ManagerCommands', '
         command.paramsFunction = parameters;
         command.layer = parameters.layer;
         command.earlyDropFunction = earlyDropFunction;
+        command.timestamp = this.timestamp();
 
         command.promise = new Promise(function(resolve, reject) {
             command.resolve = resolve;
