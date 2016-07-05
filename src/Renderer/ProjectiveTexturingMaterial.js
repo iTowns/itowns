@@ -8,10 +8,10 @@
 
 define (['Renderer/c3DEngine','three','Renderer/ThreeExtented/threeExt','MobileMapping/Ori',
          'Core/Commander/Providers/PanoramicProvider','MobileMapping/Shader','url',
-         'string_format', 'when', 'Core/Math/Ellipsoid', 'Core/Geographic/CoordCarto'],
+         'string_format', 'Core/Math/Ellipsoid', 'Core/Geographic/CoordCarto'],
         function (graphicEngine, THREE, threeExt, Ori,
         PanoramicProvider, Shader, url, string_format,
-        when, Ellipsoid, CoordCarto) {
+        Ellipsoid, CoordCarto) {
 
        window.requestAnimSelectionAlpha = (function(){
             return  window.requestAnimationFrame ||
@@ -33,29 +33,25 @@ define (['Renderer/c3DEngine','three','Renderer/ThreeExtented/threeExt','MobileM
         var ProjectiveTexturingMaterial = {
 
             init: function(infos, panoInfo, pivot){
-
-                var deferred = when.defer();
-
+                // FIXME: this is not concurrency-safe
+                // If init is called a second time before Ori.init() resolves,
+                // then it will return a resolved promise of 'null'.
                 if(!_initiated){
                     _infos = infos;
                     _infos.lods = _infos.lods || [undefined];
                     _infos.targetNbPanoramics = _infos.targetNbPanoramics || 2;
                     _initiated = true;
 
-                    Ori.init(infos).then(function(){
-                        //console.log("ORI IS INITIATED");
+                    return Ori.init(infos).then(function(){
                         // compute Camera Frame Rotation
                         var matRotationFrame = this.getCameraFrameRotation(panoInfo);
                         this.createShaderMat(panoInfo, matRotationFrame, pivot);
-                        deferred.resolve(_shaderMat);
-
+                        return _shaderMat;
                     }.bind(this));
                 } else{
                     // update shaderMat
-                    deferred.resolve(_shaderMat);
+                    return Promise.resolve(_shaderMat);
                 }
-
-                return deferred.promise;
             },
 
 

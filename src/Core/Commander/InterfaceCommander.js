@@ -4,7 +4,7 @@
  * Description: Cette Classe construit une commande. Cette Command ensuite pousser dans une file d'attente.
  */
 
-define('Core/Commander/InterfaceCommander', ['Core/Commander/ManagerCommands', 'Core/Commander/Command', 'when'], function(ManagerCommands, Command, when) {
+define('Core/Commander/InterfaceCommander', ['Core/Commander/ManagerCommands', 'Core/Commander/Command'], function(ManagerCommands, Command) {
 
     function InterfaceCommander(type) {
         //Constructor
@@ -33,7 +33,7 @@ define('Core/Commander/InterfaceCommander', ['Core/Commander/ManagerCommands', '
         command.layer = parameters.layer;
         command.earlyDropFunction = earlyDropFunction;
 
-        command.promise = new when.promise(function(resolve, reject) {
+        command.promise = new Promise(function(resolve, reject) {
             command.resolve = resolve;
             command.reject = reject;
         });

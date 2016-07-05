@@ -6,7 +6,7 @@ var path = require('path');
 //                                               #idcommit
 
 module.exports = {
-  entry: path.resolve(__dirname, 'src/Main.js'),
+  entry: [ 'es6-promise', path.resolve(__dirname, 'src/Main.js') ],
   devtool: 'source-map',
   output: {
     path: path.resolve(__dirname, 'dist'),

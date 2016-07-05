@@ -5,7 +5,7 @@
  */
 /* global */
 
-define('Core/Commander/Providers/IoDriverXML', ['Core/Commander/Providers/IoDriver','when'], function(IoDriver,when) {
+define('Core/Commander/Providers/IoDriverXML', ['Core/Commander/Providers/IoDriver'], function(IoDriver) {
 
 
     function IoDriverXML() {
@@ -21,9 +21,7 @@ define('Core/Commander/Providers/IoDriverXML', ['Core/Commander/Providers/IoDriv
     IoDriverXML.prototype.read = function(url) {
 
 
-        return when.promise(function(resolve, reject)
-        //return new Promise(function(resolve, reject)
-        {
+        return new Promise(function(resolve, reject) {
             var xhr = new XMLHttpRequest();
 
             xhr.open("GET", url, true);
