@@ -18,7 +18,7 @@ This version includes a globe visualization mode.
 
 ## Supported data types
 
-- Aerial photography 
+- Aerial photography
 - DTM
 - Buildings
 
@@ -41,6 +41,9 @@ See [LICENSE.md](LICENSE.md) for more information.
 
 iTowns has received contributions from people listed in [CONTRIBUTORS.md](CONTRIBUTORS.md).
 If you are interested in contributing to iTowns, please read [CONTRIBUTING.md](CONTRIBUTING.md).
+
+
+Choqueux Gérald
 
 ## Support
 
