@@ -35,7 +35,7 @@ iTowns uses NPM as the build tool. If you haven't already, install Node.js: http
 
 * Download dependencies: `npm install`
 * Run the dev server:
-   * `npm start` (you can change the port: `npm start -- --port 3000`)
+   * `npm start` (you can change the port: `npm start -- --port 3000` if you obtain an error message that is not related to the port being in use, please check that your npm version is >2.0 `npm --vesrion`)
    * Open `http://localhost:8080/`
    * Make changes in the code, the browser will automatically reload on save
 * Build iTowns to produce a single independent script:
