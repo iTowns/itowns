@@ -4,36 +4,31 @@
  * Description: Generic class to serve data, local or distant, nodes and services.
  */
 
-define('Core/Commander/Providers/Provider', [], function() {
+function Provider(iodriver) {
+    //Constructor
+
+    this.type = null;
+    this._IoDriver = iodriver;
+
+}
+
+Provider.prototype.constructor = Provider;
+
+/**
+ * @param url
+ */
+Provider.prototype.get = function( /*url*/ ) {
+    //TODO: Implement Me
+
+};
 
 
-    function Provider(iodriver) {
-        //Constructor
+/**
+ * @param url
+ */
+Provider.prototype.getInCache = function( /*url*/ ) {
+    //TODO: Implement Me
 
-        this.type = null;
-        this._IoDriver = iodriver;
+};
 
-    }
-
-    Provider.prototype.constructor = Provider;
-
-    /**
-     * @param url
-     */
-    Provider.prototype.get = function(/*url*/) {
-        //TODO: Implement Me
-
-    };
-
-
-    /**
-     * @param url
-     */
-    Provider.prototype.getInCache = function(/*url*/) {
-        //TODO: Implement Me
-
-    };
-
-    return Provider;
-
-});
+export default Provider;

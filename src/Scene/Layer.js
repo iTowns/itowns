@@ -13,52 +13,48 @@
  * @param {type} NodeMesh
  * @returns {Layer_L15.Layer}
  */
-define('Scene/Layer', [
-    'THREE',
-    'Scene/Node',
-    'Core/Commander/InterfaceCommander',
-    'Core/Geographic/Projection',
-    'Renderer/NodeMesh'
-], function(THREE, Node, InterfaceCommander, Projection, NodeMesh) {
+import THREE from 'THREE';
+import Node from 'Scene/Node';
+import InterfaceCommander from 'Core/Commander/InterfaceCommander';
+import Projection from 'Core/Geographic/Projection';
+import NodeMesh from 'Renderer/NodeMesh';
 
-    function Layer(type, param) {
-        //Constructor
+function Layer(type, param) {
+    //Constructor
 
-        Node.call(this);
-        // Requeter
-        this.interCommand = type !== undefined ? new InterfaceCommander(type, param) : undefined;
-        this.descriManager = null;
-        this.projection = new Projection();
-        this.id = Layer.count++;
-        this.services =[];
+    Node.call(this);
+    // Requeter
+    this.interCommand = type !== undefined ? new InterfaceCommander(type, param) : undefined;
+    this.descriManager = null;
+    this.projection = new Projection();
+    this.id = Layer.count++;
+    this.services = [];
 
+}
+
+Layer.count = 0;
+
+Layer.prototype = Object.create(Node.prototype);
+
+Layer.prototype.constructor = Layer;
+
+// Should be plural as it return an array of meshes
+Layer.prototype.getMesh = function() {
+    var meshs = [];
+
+    for (var i = 0; i < this.children.length; i++) {
+        var node = this.children[i];
+
+
+        if (node instanceof NodeMesh || node instanceof THREE.Mesh || node instanceof THREE.Object3D)
+            meshs.push(node);
+        else if (node instanceof Layer) {
+            meshs = meshs.concat(node.getMesh());
+        }
     }
 
-    Layer.count = 0;
+    return meshs;
 
-    Layer.prototype = Object.create(Node.prototype);
+};
 
-    Layer.prototype.constructor = Layer;
-
-    // Should be plural as it return an array of meshes
-    Layer.prototype.getMesh = function() {
-        var meshs = [];
-
-        for (var i = 0; i < this.children.length; i++) {
-            var node = this.children[i];
-
-
-            if (node instanceof NodeMesh || node instanceof THREE.Mesh || node instanceof THREE.Object3D)
-                meshs.push(node);
-            else if (node instanceof Layer) {
-                meshs = meshs.concat(node.getMesh());
-            }
-        }
-
-        return meshs;
-
-    };
-
-    return Layer;
-
-});
+export default Layer;

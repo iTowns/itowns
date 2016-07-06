@@ -11,203 +11,186 @@
  * @param {type} when
  * @returns {Function}
  */
-define('Core/Commander/ManagerCommands', [
-        'Core/Commander/Interfaces/EventsManager',
-        'Globe/Globe',
-        'Core/Commander/Providers/TileProvider',
-        'PriorityQueue',
-        'when'
-    ],
-    function(
-        EventsManager,
-        Globe,
-        TileProvider,
-        PriorityQueue,
-        when
-    ) {
+import EventsManager from 'Core/Commander/Interfaces/EventsManager';
+import Globe from 'Globe/Globe';
+import TileProvider from 'Core/Commander/Providers/TileProvider';
+import PriorityQueue from 'PriorityQueue';
+import when from 'when';
 
-        var instanceCommandManager = null;
+var instanceCommandManager = null;
 
-        function ManagerCommands(scene) {
-            //Constructor
-            if (instanceCommandManager !== null) {
-                throw new Error("Cannot instantiate more than one ManagerCommands");
-            }
+function ManagerCommands(scene) {
+    //Constructor
+    if (instanceCommandManager !== null) {
+        throw new Error("Cannot instantiate more than one ManagerCommands");
+    }
 
-            this.queueAsync = new PriorityQueue({
-                comparator: function(a, b) {
-                    return b.priority - a.priority;
-                }
-            });
-
-            this.queueSync = null;
-            this.loadQueue = [];
-            this.providerMap = {};
-            this.history = null;
-            this.eventsManager = new EventsManager();
-
-            if(!scene)
-                throw new Error("Cannot instantiate ManagerCommands without scene");
-
-            this.scene = scene;
-
+    this.queueAsync = new PriorityQueue({
+        comparator: function(a, b) {
+            return b.priority - a.priority;
         }
+    });
 
-        ManagerCommands.prototype.constructor = ManagerCommands;
+    this.queueSync = null;
+    this.loadQueue = [];
+    this.providerMap = {};
+    this.history = null;
+    this.eventsManager = new EventsManager();
 
-        ManagerCommands.prototype.addCommand = function(command) {
-            this.queueAsync.queue(command);
-        };
+    if (!scene)
+        throw new Error("Cannot instantiate ManagerCommands without scene");
 
-        ManagerCommands.prototype.addLayer = function(layer, provider) {
-            this.providerMap[layer.id] = provider;
-        };
+    this.scene = scene;
 
-        ManagerCommands.prototype.addMapProvider = function(map) {
+}
 
-            var tileProvider = new TileProvider(map.size,this,map.gLDebug);
-            this.addLayer(map.tiles,tileProvider);
+ManagerCommands.prototype.constructor = ManagerCommands;
 
-        };
+ManagerCommands.prototype.addCommand = function(command) {
+    this.queueAsync.queue(command);
+};
 
-        ManagerCommands.prototype.getProvider = function(layer) {
-            return this.providerMap[layer.id];
-        };
+ManagerCommands.prototype.addLayer = function(layer, provider) {
+    this.providerMap[layer.id] = provider;
+};
 
-        ManagerCommands.prototype.commandsLength = function() {
-            return this.queueAsync.length;
-        };
+ManagerCommands.prototype.addMapProvider = function(map) {
 
-        ManagerCommands.prototype.isFree = function() {
-            return this.commandsLength()===0;
-        };
+    var tileProvider = new TileProvider(map.size, this, map.gLDebug);
+    this.addLayer(map.tiles, tileProvider);
 
-        ManagerCommands.prototype.runAllCommands = function() {
+};
+
+ManagerCommands.prototype.getProvider = function(layer) {
+    return this.providerMap[layer.id];
+};
+
+ManagerCommands.prototype.commandsLength = function() {
+    return this.queueAsync.length;
+};
+
+ManagerCommands.prototype.isFree = function() {
+    return this.commandsLength() === 0;
+};
+
+ManagerCommands.prototype.runAllCommands = function() {
 
 
-            if (this.commandsLength() === 0)
-            {
-                return when(0);
-            }
+    if (this.commandsLength() === 0) {
+        return when(0);
+    }
 
-            return when.all(this.arrayDeQueue(16))
-                .then(function() {
+    return when.all(this.arrayDeQueue(16))
+        .then(function() {
 
-                // if (this.commandsLength() <= 16)
-                     this.scene.wait(1);
-                // else
-                //     this.scene.renderScene3D();
-                return this.runAllCommands();
+            // if (this.commandsLength() <= 16)
+            this.scene.wait(1);
+            // else
+            //     this.scene.renderScene3D();
+            return this.runAllCommands();
 
-                }.bind(this));
+        }.bind(this));
 
-        };
+};
 
-        ManagerCommands.prototype.arrayDeQueue = function(number) {
+ManagerCommands.prototype.arrayDeQueue = function(number) {
 
-            var nT = number === undefined ? this.queueAsync.length : number;
+    var nT = number === undefined ? this.queueAsync.length : number;
 
-            var arrayTasks = [];
+    var arrayTasks = [];
 
-            while (this.queueAsync.length > 0 && arrayTasks.length < nT) {
-                var command = this.deQueue();
-                if(command)
-                {
-
-                    // TEMP
-
-                    var providers = this.getProviders(command.layer);
-                    for (var i = 0; i < providers.length; i++)
-                        arrayTasks.push(providers[i].executeCommand(command));
-                }
-            }
-
-            return arrayTasks;
-        };
-
-        ManagerCommands.prototype.getProviders = function(layer)
-        {
+    while (this.queueAsync.length > 0 && arrayTasks.length < nT) {
+        var command = this.deQueue();
+        if (command) {
 
             // TEMP
-            var providers = [];
-            var provider = this.providerMap[layer.id];
 
-            if(!provider)
-            {
-                for(var key in layer.children)
-                {
-                    provider = this.providerMap[layer.children[key].id];
+            var providers = this.getProviders(command.layer);
+            for (var i = 0; i < providers.length; i++)
+                arrayTasks.push(providers[i].executeCommand(command));
+        }
+    }
 
-                    if(providers.indexOf(provider) < 0)
-                        providers.push(provider);
-                }
+    return arrayTasks;
+};
 
-            }
-            else
+ManagerCommands.prototype.getProviders = function(layer) {
+
+    // TEMP
+    var providers = [];
+    var provider = this.providerMap[layer.id];
+
+    if (!provider) {
+        for (var key in layer.children) {
+            provider = this.providerMap[layer.children[key].id];
+
+            if (providers.indexOf(provider) < 0)
                 providers.push(provider);
-
-            return providers;
-
         }
 
+    } else
+        providers.push(provider);
 
-        /**
-         */
-        ManagerCommands.prototype.deQueue = function() {
+    return providers;
 
-            while (this.queueAsync.length > 0) {
-                var com = this.queueAsync.peek();
-                var parent = com.requester;
+}
 
-                if (parent.visible === false && parent.level >= 2) {
 
-                    while (parent.children.length > 0) {
-                        var child = parent.children[0];
-                        child.dispose();
-                        parent.remove(child);
-                    }
-                    parent.pendingSubdivision = false;
-                    this.queueAsync.dequeue();
-                } else
-                    return this.queueAsync.dequeue();
+/**
+ */
+ManagerCommands.prototype.deQueue = function() {
 
+    while (this.queueAsync.length > 0) {
+        var com = this.queueAsync.peek();
+        var parent = com.requester;
+
+        if (parent.visible === false && parent.level >= 2) {
+
+            while (parent.children.length > 0) {
+                var child = parent.children[0];
+                child.dispose();
+                parent.remove(child);
             }
+            parent.pendingSubdivision = false;
+            this.queueAsync.dequeue();
+        } else
+            return this.queueAsync.dequeue();
 
-            return undefined;
-        };
+    }
 
-        /**
-         */
-        ManagerCommands.prototype.removeCanceled = function() {
-            //TODO: Implement Me
+    return undefined;
+};
 
-        };
+/**
+ */
+ManagerCommands.prototype.removeCanceled = function() {
+    //TODO: Implement Me
 
-        /**
-         */
-        ManagerCommands.prototype.wait = function() {
-            //TODO: Implement Me
-            this.eventsManager.wait();
-        };
+};
 
-        /**
-         */
-        ManagerCommands.prototype.forecast = function() {
-            //TODO: Implement Me
+/**
+ */
+ManagerCommands.prototype.wait = function() {
+    //TODO: Implement Me
+    this.eventsManager.wait();
+};
 
-        };
+/**
+ */
+ManagerCommands.prototype.forecast = function() {
+    //TODO: Implement Me
 
-        /**
-         * @param object
-         */
-        ManagerCommands.prototype.addInHistory = function(/*object*/) {
-            //TODO: Implement Me
+};
 
-        };
+/**
+ * @param object
+ */
+ManagerCommands.prototype.addInHistory = function( /*object*/ ) {
+    //TODO: Implement Me
 
-        return function(scene) {
-            instanceCommandManager = instanceCommandManager || new ManagerCommands(scene);
-            return instanceCommandManager;
-        };
+};
 
-    });
+export default function(scene) {
+    instanceCommandManager = instanceCommandManager || new ManagerCommands(scene);
+    return instanceCommandManager;
+}

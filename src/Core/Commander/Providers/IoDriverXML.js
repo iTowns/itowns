@@ -5,23 +5,24 @@
  */
 /* global */
 
-define('Core/Commander/Providers/IoDriverXML', ['Core/Commander/Providers/IoDriver','when'], function(IoDriver,when) {
+import IoDriver from 'Core/Commander/Providers/IoDriver';
+import when from 'when';
 
 
-    function IoDriverXML() {
-        //Constructor
-        IoDriver.call(this);
+function IoDriverXML() {
+    //Constructor
+    IoDriver.call(this);
 
-    }
+}
 
-    IoDriverXML.prototype = Object.create(IoDriver.prototype);
+IoDriverXML.prototype = Object.create(IoDriver.prototype);
 
-    IoDriverXML.prototype.constructor = IoDriverXML;
+IoDriverXML.prototype.constructor = IoDriverXML;
 
-    IoDriverXML.prototype.read = function(url) {
+IoDriverXML.prototype.read = function(url) {
 
 
-        return when.promise(function(resolve, reject)
+    return when.promise(function(resolve, reject)
         //return new Promise(function(resolve, reject)
         {
             var xhr = new XMLHttpRequest();
@@ -46,8 +47,6 @@ define('Core/Commander/Providers/IoDriverXML', ['Core/Commander/Providers/IoDriv
             xhr.send(null);
         });
 
-    };
+};
 
-    return IoDriverXML;
-
-});
+export default IoDriverXML;
