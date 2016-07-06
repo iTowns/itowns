@@ -88,7 +88,8 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         var manager = this.scene.managerCommand;
         var provider;
 
-        if(layer.protocol === 'wmts')
+        // get provider in function of provider
+        if(layer.protocol === 'wmts' || layer.protocol === 'wmtsc')
             provider = this.getWMTSProvider();
 
         provider.addLayer(layer);
