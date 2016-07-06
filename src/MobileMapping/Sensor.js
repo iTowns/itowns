@@ -5,7 +5,7 @@
 */
 
 
-define ('MobileMapping/Sensor',['three'], function (THREE) {
+define('MobileMapping/Sensor',['three'], function (THREE) {
 
 
   var  Sensor = function (infos){

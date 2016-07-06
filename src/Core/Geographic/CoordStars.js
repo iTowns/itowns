@@ -3,7 +3,7 @@
  * Class: CoordStars
  * Description: get coord of stars like earth...
  */
-define('Core/Geographic/CoordStars' ,['Core/Geographic/CoordCarto'],
+define('Core/Geographic/CoordStars', ['Core/Geographic/CoordCarto'],
 function(CoordCarto) {
 
 

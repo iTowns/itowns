@@ -9,7 +9,7 @@
 
 /* global Promise*/
 
- define ('Core/Commander/Providers/PanoramicProvider',
+define('Core/Commander/Providers/PanoramicProvider',
        ['three',
         'when',
         'Core/Commander/Providers/Provider',

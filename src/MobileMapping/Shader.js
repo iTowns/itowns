@@ -1,4 +1,4 @@
-define ( 'MobileMapping/Shader', [],function () {
+define('MobileMapping/Shader', [],function () {
 
 	var Shader ={
 

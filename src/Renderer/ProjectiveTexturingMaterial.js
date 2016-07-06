@@ -6,7 +6,7 @@
 * and its projective camera information.
 */
 
-define (['Renderer/c3DEngine','three','Renderer/ThreeExtented/threeExt','MobileMapping/Ori',
+define(['Renderer/c3DEngine','three','Renderer/ThreeExtented/threeExt','MobileMapping/Ori',
          'Core/Commander/Providers/PanoramicProvider','MobileMapping/Shader','url',
          'string_format', 'when', 'Core/Math/Ellipsoid', 'Core/Geographic/CoordCarto'],
         function (graphicEngine, THREE, threeExt, Ori,
