@@ -24,13 +24,14 @@ define('Core/Commander/InterfaceCommander', ['Core/Commander/ManagerCommands', '
         this._builderCommand();
     };
 
-    InterfaceCommander.prototype.request = function(parameters, requester) {
+    InterfaceCommander.prototype.request = function(parameters, requester, earlyDropFunction) {
 
         var command = new Command();
         command.type = this.type;
         command.requester = requester;
         command.paramsFunction = parameters;
         command.layer = parameters.layer;
+        command.earlyDropFunction = earlyDropFunction;
 
         command.promise = new when.promise(function(resolve, reject) {
             command.resolve = resolve;
