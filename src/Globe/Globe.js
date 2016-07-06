@@ -279,8 +279,8 @@ define('Globe/Globe', [
             //var idLtile = layer.description.style.layerTile;
             var cO = function(object){
 
-                if(object.material.setLayerVibility)
-                    object.material.setLayerVibility(object.getIndexLayerColor(id),visible);
+                if(object.material.setLayerVisibility)
+                    object.material.setLayerVisibility(object.getIndexLayerColor(id),visible);
 
             };
 
