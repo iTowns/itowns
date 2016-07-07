@@ -52,7 +52,7 @@ define('Globe/TileMesh', [
 
         this.oSphere = new THREE.Sphere(this.centerSphere.clone(),this.geometry.boundingSphere.radius);
 
-        this.texturesNeeded = 0;
+        this.texturesNeeded = 1000; /* invalid value */
         this.material = new LayeredMaterial();
         this.frustumCulled = false;
         this.levelElevation = this.level;

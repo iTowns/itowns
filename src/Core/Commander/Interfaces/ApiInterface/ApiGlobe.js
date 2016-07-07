@@ -110,7 +110,6 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         this.registerLayer(layer);
 
         var map = this.scene.getMap();
-        var manager = this.scene.managerCommand;
 
         map.tiles.wmtsColorLayers.push(layer);
         map.colorTerrain.services.push(layer.id);

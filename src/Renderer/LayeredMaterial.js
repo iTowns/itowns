@@ -28,7 +28,7 @@ define('Renderer/LayeredMaterial', ['THREE',
     var vector = new THREE.Vector3(0.0, 0.0, 0.0);
     var vector2 = new THREE.Vector2(0.0, 0.0);
     var vector4 = new THREE.Vector4(0.0, 0.0, 0.0, 0.0);
-    var showBorderUV = false;
+    var showBorderUV = true;
     var fooTexture;
 
     var getColorAtIdUv = function(nbTex)

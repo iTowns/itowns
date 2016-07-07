@@ -90,16 +90,17 @@ define('Scene/NodeProcess',
             var bboxes = params.tree.subdivideNode(node);
             node.pendingSubdivision = true;
 
-            for(i = 0; i < bboxes.length; i++) {
-                args = {layer: params.tree.wgs84TileLayer, bbox: bboxes[i]};
+            for(var i = 0; i < bboxes.length; i++) {
+                var args = {layer: params.tree.wgs84TileLayer, bbox: bboxes[i]};
                 var quadtree = params.tree;
 
 
                 quadtree.interCommand.request(args, node).then(function(child) {
-                    var textureCount = 0;
+                    console.log('subdivide done');
+                    var colorTextureCount = 0;
                     var paramMaterial = [];
 
-                    child.WMTSs = [];
+                    child.matrixSet = [];
 
                     // update wmts
                     for (var i = 0; i < quadtree.wmtsColorLayers.length; i++) {
@@ -110,36 +111,25 @@ define('Scene/NodeProcess',
                             child.matrixSet[tileMatrixSet] = projection.getCoordWMTS_WGS84(child.tileCoord, child.bbox, tileMatrixSet);
                         }
 
-                        if (provider.tileInsideLimit(child, layerData)) {
-
-                            var idProv = providersColor.indexOf(provider);
-                            if(idProv<0)
-                            {
-                                providersColor.push(provider);
-                                providerServices[providersColor.length-1] = [service];
-
-                            }
-                            else
-                                providerServices[idProv].push(service);
-
+                        if (layer.zoom.min <= child.level && child.level <= layer.zoom.max) {
                             var bcoord = child.matrixSet[tileMatrixSet];
 
                             paramMaterial.push({
                                 tileMT: tileMatrixSet,
-                                pit: textureCount,
-                                visible: map.colorTerrain.children[i].visible ? 1 : 0,
-                                opacity: map.colorTerrain.children[i].opacity || 1.0,
-                                fx: layerData.fx,
-                                idLayer: colorServices[i]
+                                pit: colorTextureCount,
+                                visible: 1 /* FIXME */,
+                                opacity: 1.0 /* FIXME */,
+                                fx: layer.fx,
+                                idLayer: layer.id
                             });
 
-                            textureCount += bcoord[1].row - bcoord[0].row + 1;
+                            colorTextureCount += bcoord[1].row - bcoord[0].row + 1;
                         }
                     }
 
 
                     child.setColorLayerParameters(paramMaterial);
-                    child.texturesNeeded += textureCount;
+                    child.texturesNeeded = 1 + colorTextureCount;
 
                     // request imagery update
                     updateNodeImagery(quadtree, child);
@@ -176,11 +166,6 @@ define('Scene/NodeProcess',
             child.setDisplayed(false);
         }
     };
-
-    function commandCancellationFn(cmd) {
-        // allow cancellation of the command if the node isn't visible anymore
-        return cmd.requester.visible === false && cmd.requester.level >= 2;
-    }
 
     function updateNodeImagery(quadtree, node) {
         var services = quadtree.wmtsColorLayers.map(function(layer) { return layer.id; });
@@ -249,7 +234,6 @@ define('Scene/NodeProcess',
                 // request level up
                 this.subdivideNode(node, camera, params);
             }
-
             // Ideally we'd want to hide this node and display its children
             node.setDisplayed(!node.childrenLoaded());
         } else {    // SSE good enough: display node and put it to the right scale if necessary
