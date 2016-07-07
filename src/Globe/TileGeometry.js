@@ -26,9 +26,7 @@ define('Globe/TileGeometry', [
     var cache = CacheRessource(); // TODO /!\ singleton
 
 
-    function Buffers(nSegment)
-    {
-
+    function Buffers() {
         this.index = null;
         this.position = null;
         this.normal = null;
@@ -51,14 +49,6 @@ define('Globe/TileGeometry', [
             'wgs84': null,
             'pm': null
         };
-
-        var cBuff = cache.getRessource(nSegment);
-
-        if(cBuff)
-        {
-            this.index = cBuff.index;
-            this.uv.wgs84 = cBuff.uv.wgs84;
-        }
     }
 
     function TileGeometry(params, builder) {
@@ -70,20 +60,22 @@ define('Globe/TileGeometry', [
 
         // TODO : free array
 
-        var buffersAttrib = this.computeBuffers(params,builder);
+        var bufferAttribs = this.computeBuffers(params,builder);
 
-        this.setIndex(buffersAttrib.index);
-        this.addAttribute('position', buffersAttrib.position);
-        this.addAttribute('normal', buffersAttrib.normal);
-        this.addAttribute('uv_wgs84', buffersAttrib.uv.wgs84);
-        this.addAttribute('uv_pm', buffersAttrib.uv.pm);
+        this.setIndex(bufferAttribs.index);
+        this.addAttribute('position', bufferAttribs.position);
+        this.addAttribute('normal', bufferAttribs.normal);
+        this.addAttribute('uv_wgs84', bufferAttribs.uv.wgs84);
+        this.addAttribute('uv_pm', bufferAttribs.uv.pm);
 
-        buffersAttrib.position = null;
-        buffersAttrib.normal= null;
-        buffersAttrib.uv.pm = null;
+        bufferAttribs.position = null;
+        bufferAttribs.normal= null;
+        bufferAttribs.uv.pm = null;
 
-        if(!cache.getRessource(params.segment))
-            cache.addRessource(params.segment, buffersAttrib);
+        // Update cache
+        if(!cache.getRessource(params.segment)) {
+            cache.addRessource(params.segment, bufferAttribs);
+        }
 
         // ---> for SSE
         this.computeBoundingSphere();
@@ -98,18 +90,28 @@ define('Globe/TileGeometry', [
     TileGeometry.prototype.computeBuffers = function(params,builder)
     {
         var javToo = new JavaTools();
-        var buffersAttrib = new Buffers(params.segment);
-        var buffers = new Buffers();
+        // Create output buffers.
+        var outBuffers = new Buffers(params.segment);
+        // Create temp buffers
+        var scratchBuffers = new Buffers();
 
         var nSeg = defaultValue(params.segment, 32);
         var nVertex = (nSeg + 1) * (nSeg + 1) + 8 * (nSeg - 1); // correct pour uniquement les vertex
         var triangles = (nSeg) * (nSeg) + 16 * (nSeg - 1); // correct pour uniquement les vertex
 
-        buffers.position = new Float32Array(nVertex * 3);
-        buffers.bufferIndex = buffersAttrib.index === null ? new Uint32Array(triangles * 3 * 2) : null;
-        buffers.normal = new Float32Array(nVertex * 3);
-        buffers.uv.wgs84 = buffersAttrib.uv.wgs84 === null ? new Float32Array(nVertex * 2) : null;
-        buffers.uv.pm = new Float32Array(nVertex);
+        scratchBuffers.position = new Float32Array(nVertex * 3);
+        scratchBuffers.normal = new Float32Array(nVertex * 3);
+        scratchBuffers.uv.pm = new Float32Array(nVertex);
+
+        // Read previously cached values
+        var cachedBuffers = cache.getRessource(params.segment);
+        if(cachedBuffers) {
+            outBuffers.index = cachedBuffers.index;
+            outBuffers.uv.wgs84 = cachedBuffers.uv.wgs84;
+        } else {
+            scratchBuffers.index = new Uint32Array(triangles * 3 * 2);
+            scratchBuffers.uv.wgs84 = new Float32Array(nVertex * 2);
+        }
 
         var widthSegments = Math.max(2, Math.floor(nSeg) || 2);
         var heightSegments = Math.max(2, Math.floor(nSeg) || 2);
@@ -125,18 +127,19 @@ define('Globe/TileGeometry', [
         var UV_WGS84 = function(){};
         var UV_PM = function(){};
 
-        if(buffersAttrib.uv.wgs84 === null) {
-            UV_WGS84 = function(u,v) {
-                buffers.uv.wgs84[idVertex * 2 + 0] = u;
-                buffers.uv.wgs84[idVertex * 2 + 1] = v;
+        // Define UV computation functions if needed
+        if(outBuffers.uv.wgs84 === null) {
+            UV_WGS84 = function(out, id, u,v) {
+                out.uv.wgs84[id * 2 + 0] = u;
+                out.uv.wgs84[id * 2 + 1] = v;
+            };
+        }
+        if(outBuffers.uv.pm === null && builder.getUV_PM) {
+            UV_PM = function(out, id, u) {
+                out.uv.pm[id] = u;
             };
         }
 
-        if(buffersAttrib.uv.pm === null && builder.getUV_PM) {
-            UV_PM = function(u) {
-                buffers.uv.pm[idVertex] = u;
-            };
-        }
 
         for (y = 0; y <= heightSegments; y++) {
 
@@ -146,7 +149,7 @@ define('Globe/TileGeometry', [
 
             builder.vProjecte(v,params);
 
-            var uv_pm = builder.getUV_PM(params);
+            var uv_pm = builder.getUV_PM ? builder.getUV_PM(params) : undefined;
 
             for (x = 0; x <= widthSegments; x++) {
 
@@ -157,53 +160,54 @@ define('Globe/TileGeometry', [
                 var vertex = builder.VertexPosition(params);
 
                 var id_m3 = idVertex * 3;
-                //
-                buffers.position[id_m3 + 0] = vertex.x - this.center.x;
-                buffers.position[id_m3 + 1] = vertex.y - this.center.y;
-                buffers.position[id_m3 + 2] = vertex.z - this.center.z;
+
+                scratchBuffers.position[id_m3 + 0] = vertex.x - this.center.x;
+                scratchBuffers.position[id_m3 + 1] = vertex.y - this.center.y;
+                scratchBuffers.position[id_m3 + 2] = vertex.z - this.center.z;
 
                 var normal = builder.VertexNormal(params);
 
-                buffers.normal[id_m3 + 0] = normal.x;
-                buffers.normal[id_m3 + 1] = normal.y;
-                buffers.normal[id_m3 + 2] = normal.z;
+                scratchBuffers.normal[id_m3 + 0] = normal.x;
+                scratchBuffers.normal[id_m3 + 1] = normal.y;
+                scratchBuffers.normal[id_m3 + 2] = normal.z;
 
-                UV_WGS84(u,v);
-                UV_PM(uv_pm);
+                UV_WGS84(scratchBuffers, idVertex, u,v);
+                UV_PM(scratchBuffers, idVertex, uv_pm);
 
-                if (y !== 0 && y !== heightSegments)
-                    if (x === widthSegments)
+                if (y !== 0 && y !== heightSegments) {
+                    if (x === widthSegments) {
                         skirt.push(idVertex);
-                    else if (x === 0)
-                    skirtEnd.push(idVertex);
+                    } else if (x === 0) {
+                        skirtEnd.push(idVertex);
+                    }
+                }
 
                 verticesRow.push(idVertex);
 
                 idVertex++;
-
             }
 
             vertices.push(verticesRow);
 
-            if (y === 0)
+            if (y === 0) {
                 skirt = skirt.concat(verticesRow);
-            else if (y === heightSegments)
+            } else if (y === heightSegments) {
                 skirt = skirt.concat(verticesRow.slice().reverse());
-
+            }
         }
 
         skirt = skirt.concat(skirtEnd.reverse());
 
         function bufferize(va, vb, vc, idVertex) {
-            buffers.bufferIndex[idVertex + 0] = va;
-            buffers.bufferIndex[idVertex + 1] = vb;
-            buffers.bufferIndex[idVertex + 2] = vc;
+            scratchBuffers.index[idVertex + 0] = va;
+            scratchBuffers.index[idVertex + 1] = vb;
+            scratchBuffers.index[idVertex + 2] = vc;
             return idVertex+3;
         }
 
         var idVertex2 = 0;
 
-        if(buffersAttrib.index === null)
+        if(outBuffers.index === null) {
             for (y = 0; y < heightSegments; y++) {
 
                 for (x = 0; x < widthSegments; x++) {
@@ -215,9 +219,9 @@ define('Globe/TileGeometry', [
 
                     idVertex2 = bufferize(v4, v2, v1, idVertex2);
                     idVertex2 = bufferize(v4, v3, v2, idVertex2);
-
                 }
             }
+        }
 
         var iStart = idVertex;
         var rmax = 5000;
@@ -229,8 +233,7 @@ define('Globe/TileGeometry', [
         var buildUVSkirt = function(){};
 
 
-        if(buffersAttrib.index === null)
-        {
+        if(outBuffers.index === null) {
             buildIndexSkirt = function(id,v1,v2,v3,v4)
             {
                 id = bufferize(v1, v2, v3, id);
@@ -239,8 +242,8 @@ define('Globe/TileGeometry', [
             };
 
             buildUVSkirt = function(){
-                buffers.uv.wgs84[idVertex * 2 + 0] = buffers.uv.wgs84[id * 2 + 0];
-                buffers.uv.wgs84[idVertex * 2 + 1] = buffers.uv.wgs84[id * 2 + 1];
+                scratchBuffers.uv.wgs84[idVertex * 2 + 0] = scratchBuffers.uv.wgs84[id * 2 + 0];
+                scratchBuffers.uv.wgs84[idVertex * 2 + 1] = scratchBuffers.uv.wgs84[id * 2 + 1];
             };
         }
 
@@ -251,17 +254,17 @@ define('Globe/TileGeometry', [
             id_m3 = idVertex * 3;
             var id2_m3 = id * 3;
 
-            buffers.position[id_m3 + 0] = buffers.position[id2_m3 + 0] - buffers.normal[id2_m3 + 0] * r;
-            buffers.position[id_m3 + 1] = buffers.position[id2_m3 + 1] - buffers.normal[id2_m3 + 1] * r;
-            buffers.position[id_m3 + 2] = buffers.position[id2_m3 + 2] - buffers.normal[id2_m3 + 2] * r;
+            scratchBuffers.position[id_m3 + 0] = scratchBuffers.position[id2_m3 + 0] - scratchBuffers.normal[id2_m3 + 0] * r;
+            scratchBuffers.position[id_m3 + 1] = scratchBuffers.position[id2_m3 + 1] - scratchBuffers.normal[id2_m3 + 1] * r;
+            scratchBuffers.position[id_m3 + 2] = scratchBuffers.position[id2_m3 + 2] - scratchBuffers.normal[id2_m3 + 2] * r;
 
-            buffers.normal[id_m3 + 0] = buffers.normal[id2_m3 + 0];
-            buffers.normal[id_m3 + 1] = buffers.normal[id2_m3 + 1];
-            buffers.normal[id_m3 + 2] = buffers.normal[id2_m3 + 2];
+            scratchBuffers.normal[id_m3 + 0] = scratchBuffers.normal[id2_m3 + 0];
+            scratchBuffers.normal[id_m3 + 1] = scratchBuffers.normal[id2_m3 + 1];
+            scratchBuffers.normal[id_m3 + 2] = scratchBuffers.normal[id2_m3 + 2];
 
             buildUVSkirt();
 
-            buffers.uv.pm[idVertex] = buffers.uv.pm[id];
+            scratchBuffers.uv.pm[idVertex] = scratchBuffers.uv.pm[id];
 
             var idf = (i + 1) % skirt.length;
 
@@ -270,33 +273,37 @@ define('Globe/TileGeometry', [
             v3 = idVertex + 1;
             v4 = skirt[idf];
 
-            if (idf === 0)
+            if (idf === 0) {
                 v3 = iStart;
+            }
 
             idVertex2 = buildIndexSkirt (idVertex2,v1,v2,v3,v4);
 
             idVertex++;
 
         }
-         // TODO : free array
 
-        if(buffersAttrib.index === null)
-            buffersAttrib.index = new THREE.BufferAttribute(buffers.bufferIndex, 1);
-        buffersAttrib.position = new THREE.BufferAttribute(buffers.position, 3);
-        buffersAttrib.normal= new THREE.BufferAttribute(buffers.normal, 3);
-        if(buffersAttrib.uv.wgs84 === null)
-            buffersAttrib.uv.wgs84 = new THREE.BufferAttribute(buffers.uv.wgs84, 2);
-        buffersAttrib.uv.pm = new THREE.BufferAttribute(buffers.uv.pm, 1);
+        // Copy missing buffer in outBuffers from scratchBuffers
+        // TODO : free array
+        if(outBuffers.index === null) {
+            outBuffers.index = new THREE.BufferAttribute(scratchBuffers.index, 1);
+        }
+        outBuffers.position = new THREE.BufferAttribute(scratchBuffers.position, 3);
+        outBuffers.normal= new THREE.BufferAttribute(scratchBuffers.normal, 3);
+        if(outBuffers.uv.wgs84 === null) {
+            outBuffers.uv.wgs84 = new THREE.BufferAttribute(scratchBuffers.uv.wgs84, 2);
+        }
+        outBuffers.uv.pm = new THREE.BufferAttribute(scratchBuffers.uv.pm, 1);
 
         javToo.freeArray(vertices);
 
-        buffers.position = null;
-        buffers.bufferIndex = null;
-        buffers.normal = null;
-        buffers.uv.wgs84 = null;
-        buffers.uv.pm = null;
+        scratchBuffers.position = null;
+        scratchBuffers.bufferIndex = null;
+        scratchBuffers.normal = null;
+        scratchBuffers.uv.wgs84 = null;
+        scratchBuffers.uv.pm = null;
 
-        return buffersAttrib;
+        return outBuffers;
 
     };
 
