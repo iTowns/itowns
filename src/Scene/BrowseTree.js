@@ -6,6 +6,10 @@
 
 import * as THREE from 'three';
 
+export const NO_SUBDIVIDE = 0;
+export const SUBDIVIDE = 1;
+export const CLEAN = 2;
+
 function BrowseTree(engine) {
     //Constructor
 
@@ -114,10 +118,10 @@ BrowseTree.prototype.browse = function(tree, camera, process, layersConfig, opti
 
     process.prepare(camera);
 
-    var action = (optional === 2) ? 'clean' : 'visibility_update';
+    var action = (optional === CLEAN) ? 'clean' : 'visibility_update';
     var params = {
         tree: this.tree,
-        withUp: (optional === 1),
+        withUp: (optional === SUBDIVIDE),
         layersConfig: layersConfig
     };
 
@@ -272,4 +276,10 @@ BrowseTree.prototype.updateMobileMappingLayer = function(layer, camera) {
     }
 };
 
-export default BrowseTree;
+BrowseTree.prototype.updateQuadtree = function(layer, layersConfiguration, action, camera) {
+    var quadtree = layer.node.tiles;
+
+    this.browse(quadtree, camera, layer.process, layersConfiguration, action);
+};
+
+export { BrowseTree };

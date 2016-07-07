@@ -91,7 +91,7 @@ function c3DEngine(scene, positionCamera, viewerDiv, debugMode, gLDebug) {
     this.update = function() {
         this.camera.update();
         this.updateControl();
-        this.scene.wait();
+        this.scene.notifyChange();
         this.renderScene();
 
     }.bind(this);

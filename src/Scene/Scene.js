@@ -15,7 +15,7 @@
 import c3DEngine from 'Renderer/c3DEngine';
 import Globe from 'Globe/Globe';
 import ManagerCommands from 'Core/Commander/ManagerCommands';
-import BrowseTree from 'Scene/BrowseTree';
+import { BrowseTree, CLEAN, SUBDIVIDE } from 'Scene/BrowseTree';
 import NodeProcess from 'Scene/NodeProcess';
 import Quadtree from 'Scene/Quadtree';
 import CoordStars from 'Core/Geographic/CoordStars';
@@ -27,9 +27,10 @@ import CustomEvent from 'custom-event';
 
 var instanceScene = null;
 var event = new CustomEvent('globe-built');
-var NO_SUBDIVISE = 0;
-var SUBDIVISE = 1;
-var CLEAN = 2;
+
+
+const RENDERING_PAUSED = 0;
+const RENDERING_ACTIVE = 1;
 
 function Scene(coordinate, ellipsoid, viewerDiv, debugMode, gLDebug) {
 
@@ -53,12 +54,16 @@ function Scene(coordinate, ellipsoid, viewerDiv, debugMode, gLDebug) {
     this.gfxEngine = c3DEngine(this,positionCamera,viewerDiv, debugMode,gLDebug);
     this.browserScene = new BrowseTree(this.gfxEngine);
     this.cap = new Capabilities();
+    this.lastUpdateTime = 0;
+    this.maxTimeWithNoUpdates = 200;
+    this.minCommandsBeforeUpdate = 16;
 
     this.time = 0;
     this.orbitOn = false;
     this.rAF = null;
 
     this.viewerDiv = viewerDiv;
+    this.renderingState = RENDERING_PAUSED;
 }
 
 Scene.prototype.constructor = Scene;
@@ -101,75 +106,65 @@ Scene.prototype.size = function() {
  *
  * @returns {undefined}
  */
-Scene.prototype.quadTreeRequest = function(quadtree, process) {
-
-    this.browserScene.browse(quadtree, this.currentCamera(), process, this.map.layersConfiguration, SUBDIVISE);
-    this.managerCommand.runAllCommands().then(function() {
-        if (this.managerCommand.isFree()) {
-            this.browserScene.browse(quadtree, this.currentCamera(), process, this.map.layersConfiguration, SUBDIVISE);
-            if (this.managerCommand.isFree()) {
-                this.browserScene.browse(quadtree, this.currentCamera(), process, this.map.layersConfiguration, CLEAN)
-                this.viewerDiv.dispatchEvent(event);
-
-            }
-        }
-
-    }.bind(this));
-
-    this.renderScene3D();
-
-};
-
-Scene.prototype.realtimeSceneProcess = function() {
-
-    for (var l = 0; l < this.layers.length; l++) {
-        var layer = this.layers[l].node;
-        var process = this.layers[l].process;
-
-        for (var sl = 0; sl < layer.children.length; sl++) {
-            var sLayer = layer.children[sl];
-
-            if (sLayer instanceof Quadtree)
-                this.browserScene.browse(sLayer, this.currentCamera(), process, this.map.layersConfiguration, NO_SUBDIVISE);
-            else if (sLayer instanceof MobileMappingLayer)
-                this.browserScene.updateMobileMappingLayer(sLayer, this.currentCamera());
-            else if (sLayer instanceof Layer)
-                this.browserScene.updateLayer(sLayer, this.currentCamera());
-
-        }
-    }
-};
-
-/**
- *
- * @returns {undefined}
- */
 Scene.prototype.updateScene3D = function() {
 
     this.gfxEngine.update();
 };
 
-Scene.prototype.wait = function(timeWait) {
 
-    var waitTime = timeWait ? timeWait : 20;
+/**
+ * Notifies the scene it needs to be updated due to changes exterior to the
+ * scene itself (e.g. camera movement).
+ */
+Scene.prototype.notifyChange = function() {
+    if (this.renderingState !== RENDERING_ACTIVE) {
+        this.renderingState = RENDERING_ACTIVE;
 
-    this.realtimeSceneProcess();
+        requestAnimationFrame(function() { this.step(); }.bind(this));
+    }
+};
 
-    window.clearInterval(this.timer);
+Scene.prototype.update = function() {
+    for (var l = 0; l < this.layers.length; l++) {
+        var layer = this.layers[l].node;
 
-    this.timer = window.setTimeout(this.quadTreeRequest.bind(this), waitTime, this.layers[0].node.tiles, this.layers[0].process);
+        for (var sl = 0; sl < layer.children.length; sl++) {
+            var sLayer = layer.children[sl];
+
+            if (sLayer instanceof Quadtree) {
+                this.browserScene.updateQuadtree(this.layers[l], this.map.layersConfiguration, SUBDIVIDE, this.currentCamera());
+
+                if (this.managerCommand.commandsWaitingExecutionCount() == 0) {
+                    this.browserScene.updateQuadtree(this.layers[l], this.map.layersConfiguration, CLEAN, this.currentCamera());
+                    this.viewerDiv.dispatchEvent(event);
+                }
+            } else if (sLayer instanceof MobileMappingLayer) {
+                this.browserScene.updateMobileMappingLayer(sLayer,this.currentCamera());
+            } else if (sLayer instanceof Layer) {
+                this.browserScene.updateLayer(sLayer,this.currentCamera());
+            }
+        }
+    }
+};
+
+Scene.prototype.step = function() {
+    // update data-structure
+    this.update();
+
+    // update rendering
+    this.renderScene3D();
+
+    // reset rendering flag
+    this.renderingState = RENDERING_PAUSED;
 };
 
 /**
  */
 Scene.prototype.renderScene3D = function() {
-
     this.gfxEngine.renderScene();
-
 };
 
 Scene.prototype.scene3D = function() {
-
     return this.gfxEngine.scene3D;
 };
 
@@ -179,12 +174,10 @@ Scene.prototype.scene3D = function() {
  * @param node {[object Object]}
  */
 Scene.prototype.add = function(node, nodeProcess) {
-
     if (node instanceof Globe) {
         this.map = node;
         nodeProcess = nodeProcess || new NodeProcess(this.currentCamera(), node.ellipsoid);
         //this.quadTreeRequest(node.tiles, nodeProcess);
-
     }
 
     this.layers.push({
