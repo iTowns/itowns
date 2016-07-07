@@ -13,7 +13,8 @@ define('Core/Commander/Providers/WMS_Provider', [
         'when',
         'Core/defaultValue',
         'THREE',
-        'Core/Commander/Providers/CacheRessource'
+        'Core/Commander/Providers/CacheRessource',
+        'Core/Math/Rectangle'
     ],
     function(
         Provider,
@@ -23,7 +24,8 @@ define('Core/Commander/Providers/WMS_Provider', [
         when,
         defaultValue,
         THREE,
-        CacheRessource) {
+        CacheRessource,
+        Rectangle) {
 
         /**
          * Return url wmts MNT
@@ -56,8 +58,14 @@ define('Core/Commander/Providers/WMS_Provider', [
         };
         WMS_Provider.prototype.customUrl = function(url,coord)
         {
-            var bbox = coord.minCarto.longitude + "," + coord.minCarto.latitude + "," +
-                       coord.maxCarto.longitude + "," + coord.maxCarto.latitude;
+
+            //convert radian to degree, lon is added a offset of Pi
+            //to align axis to card center
+            //var bbox = (coord.minCarto.longitude - Math.PI)* 180 / Math.PI + "," + coord.minCarto.latitude* 180 / Math.PI + "," +
+            //           (coord.maxCarto.longitude - Math.PI )*180/ Math.PI + "," + coord.maxCarto.latitude* 180 / Math.PI;
+
+            var bbox = coord.minCarto.latitude* 180 / Math.PI + "," + (coord.minCarto.longitude - Math.PI)* 180 / Math.PI + "," +
+                       coord.maxCarto.latitude* 180 / Math.PI + "," + (coord.maxCarto.longitude - Math.PI )*180/ Math.PI;
             var urld = url.replace('%bbox',bbox.toString());
 
             return urld;
@@ -82,21 +90,20 @@ define('Core/Commander/Providers/WMS_Provider', [
                 width = defaultValue(layer.heightMapWidth, 256),
                 version = defaultValue(layer.version, "1.3.0"),
                 styleName = defaultValue(layer.style, "normal"),
-                transparent = defaultValue(layer.transparent, false);
+                transparent = defaultValue(layer.transparent, false),
+                bbox = defaultValue(layer.bbox, [-180, -90, 180, 90]);
 
             var newBaseUrl =   baseUrl +
-                          '?SERVICE=WMS&REQUEST=GetMap&layers=' + layerName +
-                          '&version=' + version +
-                          '&styles=' + styleName +
-                          '&format=' + format +
-                          '&transparent=' + transparent +
-                          '&bbox=%bbox'  +
-                          '&crs=' + crs +
+                          '?SERVICE=WMS&REQUEST=GetMap&LAYERS=' + layerName +
+                          '&VERSION=' + version +
+                          '&STYLES=' + styleName +
+                          '&FORMAT=' + format +
+                          '&TRANSPARENT=' + transparent +
+                          '&BBOX=%bbox'  +
+                          '&CRS=' + crs +
                           "&WIDTH=" + width +
                           "&HEIGHT=" + width;
 
-                var maxZoom = layer.maxLevel;
-                var minZoom = layer.minLevel;
 
                 this.layersData[layer.id] = {
                     customUrl: newBaseUrl,
@@ -106,7 +113,7 @@ define('Core/Commander/Providers/WMS_Provider', [
                     version : version,
                     styleName : styleName,
                     transparent : transparent,
-                    zoom : {min:minZoom,max:maxZoom},
+                    bbox    : bbox,
                     fx : layer.fx || 0.0,
                     tileMatrixSet: 'WGS84G' //cet option pour prendre le parcours de wmts
                 };
@@ -117,7 +124,28 @@ define('Core/Commander/Providers/WMS_Provider', [
         };
 
         WMS_Provider.prototype.tileInsideLimit = function(tile,layer) {
-            return tile.level >= layer.zoom.min && tile.level <= layer.zoom.max;
+
+            var bbox = tile.bbox;
+
+            var rectTile = new Rectangle({west:bbox.minCarto.longitude,
+                                            east:bbox.maxCarto.longitude,
+                                            south:bbox.minCarto.latitude,
+                                            north:bbox.maxCarto.latitude});
+
+            //a reason that i add Pi here is because
+            //bbox of wms reference to center of map
+            //but bbox of itown reference to middle of left side.
+            var west =  layer.bbox[0]*Math.PI/180 + Math.PI;
+            var east =  layer.bbox[2]*Math.PI/180 + Math.PI;
+
+            var rectRegion = new Rectangle({west: west,
+                                            east: east,
+                                            south:layer.bbox[1]*Math.PI/180,
+                                            north:layer.bbox[3]*Math.PI/180});
+
+            console.log(rectRegion.contains(rectTile),rectTile,rectRegion);
+
+            return rectRegion.contains(rectTile);
         };
 
         WMS_Provider.prototype.getColorTextures = function(tile, layerWMSId) {
@@ -152,6 +180,7 @@ define('Core/Commander/Providers/WMS_Provider', [
 
             //ATTENTION: pitch???
             var result = {pitch : 1};
+
             var url = this.url(bbox,layerId);
 
             result.texture = this.cache.getRessource(url);
@@ -174,7 +203,6 @@ define('Core/Commander/Providers/WMS_Provider', [
                     result.texture.minFilter = THREE.LinearFilter;
                     result.texture.anisotropy = 16;
                     result.texture.url = url;
-                    //result.texture.level = zoom; //no zoom level in wms
                    // result.texture.layerId = layerId;
 
                     this.cache.addRessource(url, result.texture);

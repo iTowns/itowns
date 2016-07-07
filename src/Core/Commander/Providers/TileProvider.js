@@ -158,7 +158,7 @@ define('Core/Commander/Providers/TileProvider', [
             {
 
                 var layerView = map.colorTerrain.children[i];
-				var provider = this.manager.getProvider(layerView);
+                var provider = this.manager.getProvider(layerView);
                 var service = layerView.services[0];
                 var layerData = provider.layersData[service];
                 var tileMatrixSet = layerData.tileMatrixSet;
@@ -170,6 +170,7 @@ define('Core/Commander/Providers/TileProvider', [
                 // if(provider instanceof WMTS_Provider)
                 //     console.log('is WMTS_Provider');
 
+                console.log(service,layerView)
                 if (provider.tileInsideLimit(tile, layerData)) {
 
                     var idProv = providersColor.indexOf(provider);

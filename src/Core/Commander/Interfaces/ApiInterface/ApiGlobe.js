@@ -164,8 +164,12 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         var manager = this.scene.managerCommand;
         var providerWMTS = manager.getProvider(map.tiles).providerWMTS;
         var providerWMS = manager.getProvider(map.tiles).providerWMS;
+
         var layersData = providerWMTS.layersData;
-            layersData.push(providerWMS.layersData[0]);
+        //In ES6 Object.assign(obj1, obj2);
+        for (var layerName in providerWMS.layersData)
+            { layersData[layerName] = providerWMS.layersData[layerName]; }
+
         return layersData;
 
     };
