@@ -4,26 +4,17 @@
  * Description: Cette classe singleton gère les requetes/Commandes  de la scène. Ces commandes peuvent etre synchrone ou asynchrone. Elle permet d'executer, de prioriser  et d'annuler les commandes de la pile. Les commandes executées sont placées dans une autre file d'attente.
  */
 
-/**
- *
- * @param {type} EventsManager
- * @param {type} PriorityQueue
- * @param {type} when
- * @returns {Function}
- */
 define('Core/Commander/ManagerCommands', [
         'Core/Commander/Interfaces/EventsManager',
         'Globe/Globe',
         'Core/Commander/Providers/TileProvider',
-        'PriorityQueue',
-        'when'
+        'PriorityQueue'
     ],
     function(
         EventsManager,
         Globe,
         TileProvider,
-        PriorityQueue,
-        when
+        PriorityQueue
     ) {
 
         var instanceCommandManager = null;
@@ -87,20 +78,17 @@ define('Core/Commander/ManagerCommands', [
 
             if (this.commandsLength() === 0)
             {
-                return when(0);
+                return Promise.resolve(0);
             }
 
-            return when.all(this.arrayDeQueue(16))
-                .then(function() {
-
-                // if (this.commandsLength() <= 16)
-                     this.scene.wait(1);
-                // else
-                //     this.scene.renderScene3D();
-                return this.runAllCommands();
-
+            return Promise.all(this.arrayDeQueue(16))
+                .then(function () {
+                    // if (this.commandsLength() <= 16)
+                    this.scene.wait(1);
+                    // else
+                    //     this.scene.renderScene3D();
+                    return this.runAllCommands();
                 }.bind(this));
-
         };
 
         ManagerCommands.prototype.arrayDeQueue = function(number) {

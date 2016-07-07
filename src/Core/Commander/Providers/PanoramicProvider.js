@@ -11,7 +11,6 @@
 
  define ('Core/Commander/Providers/PanoramicProvider',
        ['three',
-        'when',
         'Core/Commander/Providers/Provider',
         'Core/Commander/Providers/BuildingBox_Provider',
         'Renderer/ProjectiveTexturingMaterial',
@@ -20,7 +19,6 @@
         'Renderer/PanoramicMesh'], function (
 
     THREE,
-    when,
     Provider,
     BuildingBox_Provider,
     ProjectiveTexturingMaterial,
@@ -33,7 +31,7 @@
         _urlPano = "",
         _urlImage = "",
         _urlCam = "",
-        _panoramicsMetaData;
+        _panoramicsMetaDataPromise;
 
 
     function PanoramicProvider(options){
@@ -72,24 +70,18 @@
      * @param {type} distance
      * @returns {Promise}
      */
-    PanoramicProvider.prototype.getMetaDataFromPos = function(longitude, latitude, distance){
+    PanoramicProvider.prototype.getMetaDataFromPos = function(longitude, latitude){
 
-        var that = this;
-        if(!_panoramicsMetaData){
-
+        if (_panoramicsMetaDataPromise == null) {
             var requestURL = _urlPano;    // TODO : string_format
-            return new Promise(function(resolve, reject) {
+            _panoramicsMetaDataPromise = new Promise(function(resolve, reject) {
 
               var req = new XMLHttpRequest();
               req.open('GET', requestURL);
 
               req.onload = function() {
-
                     if (req.status === 200) {
-
-                        _panoramicsMetaData = JSON.parse(req.response);
-                        var closestPano = that.getClosestPanoInMemory(longitude, latitude, distance);
-                        resolve(closestPano);
+                        resolve(JSON.parse(req.response));
                     }
                     else {
                       reject(Error(req.statusText));
@@ -102,32 +94,20 @@
 
               req.send();
             });
-
-        }else{          // Trajectory file already loaded
-
-                 var closestPano = that.getClosestPanoInMemory(longitude, latitude, distance);
-                 return new Promise(function(resolve) {resolve(closestPano);});
         }
+        return _panoramicsMetaDataPromise.then(function(panoramicsMetaData) {
+            var indiceClosest = 0;
+            var distMin = 99999;
+            for (var i=0; i < panoramicsMetaData.length; ++i){
+                var p = panoramicsMetaData[i];
+                var dist = Math.sqrt( (p.longitude - longitude) * (p.longitude - longitude) + (p.latitude - latitude) * (p.latitude - latitude) );
+                if(dist< distMin) {indiceClosest = i; distMin = dist;}
+            }
+            // FIXME: not concurrency-safe; modifying state depending on method call parameter
+            this.panoInfo = panoramicsMetaData[indiceClosest];
+            return panoramicsMetaData[indiceClosest];
+        }.bind(this));
     };
-
-
-
-    // USING MEMORISED TAB or JSON ORI
-    PanoramicProvider.prototype.getClosestPanoInMemory = function(longitude, latitude){
-
-        var indiceClosest = 0;
-        var distMin = 99999;
-        for (var i=0; i< _panoramicsMetaData.length; ++i){
-
-            var p = _panoramicsMetaData[i];
-            var dist = Math.sqrt( (p.longitude - longitude) * (p.longitude - longitude) + (p.latitude - latitude) * (p.latitude - latitude) );
-            if(dist< distMin) {indiceClosest = i; distMin = dist;}
-        }
-        this.panoInfo = _panoramicsMetaData[indiceClosest];
-        return [_panoramicsMetaData[indiceClosest]];
-    };
-
-
 
     PanoramicProvider.prototype.getTextureMaterial = function(panoInfo, pivot){
 
@@ -157,13 +137,9 @@
 
         var buildingBox_Provider = new BuildingBox_Provider(options);
 
-        var deferred = when.defer();
-        buildingBox_Provider.getData(options.bbox, altitude).then(function(){
-
-            deferred.resolve({geometry: buildingBox_Provider.geometry, pivot:buildingBox_Provider.pivot, roof: buildingBox_Provider.geometryRoof});
-        }.bind(this));
-
-        return deferred.promise;
+        return buildingBox_Provider.getData(options.bbox, altitude).then(function(){
+            return {geometry: buildingBox_Provider.geometry, pivot:buildingBox_Provider.pivot, roof: buildingBox_Provider.geometryRoof};
+        });
     };
 
 
@@ -172,57 +148,39 @@
     // - Get sensors informations (camera calibration)
     // - Get Building boxes from WFS
     PanoramicProvider.prototype.getTextureProjectiveMesh = function(longitude, latitude, distance){
+        return this.getMetaDataFromPos(longitude, latitude, distance).then(function(panoInfo){
+            return this.getGeometry(panoInfo.longitude, panoInfo.latitude, panoInfo.altitude);
+        }.bind(this)).then(function(data) {
+            this.geometry = data.geometry;
+            this.absoluteCenter = data.pivot; // pivot in fact here, not absoluteCenter
+            this.geometryRoof = data.roof;
 
-        var deferred = when.defer();
-        var that = this;
-        this.getMetaDataFromPos(longitude, latitude, distance).then(function(panoInfo){             // Get METADATA PANO
+            return this.getTextureMaterial(this.panoInfo, this.absoluteCenter);
+        }.bind(this)).then(function(shaderMaterial) {
+            this.material = shaderMaterial; //new THREE.MeshBasicMaterial({color: 0xffffff, transparent: true, opacity: 0.8});
+            //this.projectiveTexturedMesh = new THREE.Mesh(this.geometry, this.material);
+            this.panoramicMesh = new PanoramicMesh(this.geometry, this.material, this.absoluteCenter);
+            var roofMesh = new PanoramicMesh(this.geometryRoof, new BasicMaterial(new THREE.Color( 0xdddddd )), this.absoluteCenter);
+            roofMesh.material.side =  THREE.DoubleSide;
+            roofMesh.material.transparent  = true;
+            roofMesh.setDisplayed(true);
+            roofMesh.material.uniforms.lightOn.value = false;
 
-           // console.log("panoInfo", panoInfo);
-            that.getGeometry(panoInfo[0].longitude, panoInfo[0].latitude, panoInfo[0].altitude).then(function(data){      // GET GEOMETRY
+            this.panoramicMesh.add(roofMesh);
 
-                that.geometry = data.geometry;
-                that.absoluteCenter = data.pivot; // pivot in fact here, not absoluteCenter
-                that.geometryRoof = data.roof;
-
-                that.getTextureMaterial(panoInfo[0], that.absoluteCenter).then(function(shaderMaterial){                 // GET MATERIAL
-
-                    that.material = shaderMaterial; //new THREE.MeshBasicMaterial({color: 0xffffff, transparent: true, opacity: 0.8});
-                    //that.projectiveTexturedMesh = new THREE.Mesh(that.geometry, that.material);
-                    that.panoramicMesh = new PanoramicMesh(that.geometry, that.material, that.absoluteCenter);
-                    var roofMesh = new PanoramicMesh(that.geometryRoof, new BasicMaterial(new THREE.Color( 0xdddddd )), that.absoluteCenter);
-                    roofMesh.material.side =  THREE.DoubleSide;
-                    roofMesh.material.transparent  = true;
-                    roofMesh.setDisplayed(true);
-                    roofMesh.material.uniforms.lightOn.value = false;
-
-                    that.panoramicMesh.add(roofMesh);
-
-                   // console.log(that.panoramicMesh);
-                   // console.log(roofMesh);
-                    deferred.resolve(that.panoramicMesh);
-
-                });
-
-            }.bind(that));
-
+            // console.log(this.panoramicMesh);
+            // console.log(roofMesh);
+            return this.panoramicMesh;
         });
-        return deferred.promise;
     };
 
     // Update existing panoramic mesh with new images look for the closest to parameters position
     PanoramicProvider.prototype.updateMaterialImages = function(longitude, latitude, distance){
 
-      var deferred = when.defer();
-      var that = this;
-      this.getMetaDataFromPos(longitude, latitude, distance).then(function(panoInfo){             // Get METADATA PANO
-
-          deferred.resolve(panoInfo[0]);
-          that.updateTextureMaterial(panoInfo[0], that.absoluteCenter);
-
-
-
-      });
-      return deferred.promise;
+      return this.getMetaDataFromPos(longitude, latitude, distance).then(function(panoInfo){
+          this.updateTextureMaterial(panoInfo, this.absoluteCenter);
+          return panoInfo;
+      }.bind(this));
     };
 
 
