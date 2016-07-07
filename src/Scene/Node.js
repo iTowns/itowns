@@ -57,16 +57,24 @@ define('Scene/Node', [], function() {
     };
 
     Node.prototype.childrenLoaded = function() {
+        // TODO: '4' is specific to Quadtree
+        var fourChildren = this.children.length == 4;
 
-        if(!this.pendingSubdivision && this.childrenCount() > 0)
-            return true;
-
-        for (var i = 0, max = this.children.length; i < max; i++) {
-            if (this.children[i].loaded === false)
-                return false;
+        if (!fourChildren) {
+            return false;
         }
 
-        this.pendingSubdivision = false;
+        if (this.pendingSubdivision) {
+            // check children status
+            for (var i = 0, max = this.children.length; i < max; i++) {
+                if (this.children[i].loaded === false) {
+                    return false;
+                }
+            }
+
+            this.pendingSubdivision = false;
+        }
+
         return true;
     };
 

@@ -6,12 +6,16 @@
 
 define('Core/Commander/InterfaceCommander', ['Core/Commander/ManagerCommands', 'Core/Commander/Command'], function(ManagerCommands, Command) {
 
-    function InterfaceCommander(type) {
-        //Constructor
-
+    function InterfaceCommander(type, priorityFunction) {
         this.managerCommands = ManagerCommands();
+        this.priorityFunction = priorityFunction;
         this.type = type;
 
+        if (!Date.now) {
+            this.timestamp = function() { return new Date().getTime(); }
+        } else {
+            this.timestamp = Date.now;
+        }
     }
 
     InterfaceCommander.prototype.constructor = InterfaceCommander;
@@ -32,15 +36,14 @@ define('Core/Commander/InterfaceCommander', ['Core/Commander/ManagerCommands', '
         command.paramsFunction = parameters;
         command.layer = parameters.layer;
         command.earlyDropFunction = earlyDropFunction;
+        command.timestamp = this.timestamp();
 
         command.promise = new Promise(function(resolve, reject) {
             command.resolve = resolve;
             command.reject = reject;
         });
 
-        //command.priority = parent.sse === undefined ? 1 : Math.floor(parent.visible ? parent.sse * 10000 : 1.0) *  (parent.visible ? Math.abs(19 - parent.level) : Math.abs(parent.level) ) *10000;
-
-        command.priority = requester.sse ? Math.floor(requester.isVisible() && requester.isDisplayed() ? requester.sse * requester.sse * 100000 : 1.0) : 1.0;
+        command.priority = this.priorityFunction ? this.priorityFunction(command) : 1;
 
         this.managerCommands.addCommand(command);
 
