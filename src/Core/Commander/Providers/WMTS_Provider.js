@@ -34,7 +34,7 @@ define('Core/Commander/Providers/WMTS_Provider', [
             this.projection = new Projection();
             this.support = options.support || false;
 
-            this.layersData = [];
+            this.layersData = {};
 
             this.getTextureFloat;
 
@@ -295,6 +295,7 @@ define('Core/Commander/Providers/WMTS_Provider', [
 
             //var limits = layer.tileMatrixSetLimits[tile.level];
             //!coWMTS.isInside(limits)
+            //console.log(layer)
             return tile.level >= layer.zoom.min && tile.level <= layer.zoom.max;
         }
 

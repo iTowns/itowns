@@ -195,8 +195,6 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
 
     ApiGlobe.prototype.getLayers = function(/*param*/){
         var manager = this.scene.managerCommand;
-        // FIXME
-
         var providerWMTS = manager.getProvidersForProtocol('wmts');
         var providerWMS = manager.getProvidersForProtocol('wms');
 
