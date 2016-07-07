@@ -182,7 +182,8 @@ and open the template in the editor.
                         }
                     }
                 });
-
+                
+/*
                 itowns.viewer.addImageryLayer({
                 protocol:   "wmts",
                 id:         "OrthoCRS",
@@ -366,7 +367,7 @@ and open the template in the editor.
                         }
                     }
                 });
-
+*/
 
         // itowns.viewer.addImageryLayer({
         //         protocol:   "wmtsc",
@@ -589,7 +590,7 @@ and open the template in the editor.
                     itowns.viewer.showKML(newValue);
                 });
 
-                if(false)
+                if(true)
                 {
                     var f2 = gui.addFolder('Atmosphere');
 
@@ -617,7 +618,7 @@ and open the template in the editor.
 
 
                     f2.add(text, 'StreetLevelImagery').onChange(function(newValue) {
-			             itowns.viewer.setStreetLevelImageryOn(newValue);
+			 itowns.viewer.setStreetLevelImageryOn(newValue);
                     });
                 }
                 viewerDiv.addEventListener('rangeChanged',function(){

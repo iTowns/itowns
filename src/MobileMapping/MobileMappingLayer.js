@@ -66,7 +66,7 @@ define('MobileMapping/MobileMappingLayer', [
             var posPanoWGS84 = new CoordCarto().setFromDegreeGeo(panoInfo.longitude, panoInfo.latitude, panoInfo.altitude);
             var posPanoCartesian = ellipsoid.cartographicToCartesian(posPanoWGS84);
 
-            this.moveCameraToScanPosition(posPanoCartesian);
+          //  this.moveCameraToScanPosition(posPanoCartesian);
 
         }.bind(this));
     };

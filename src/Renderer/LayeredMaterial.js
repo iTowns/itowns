@@ -55,7 +55,7 @@ define('Renderer/LayeredMaterial', ['THREE',
 
         BasicMaterial.call(this);
 
-        var maxTexturesUnits =  gfxEngine().glParams.maxTexturesUnits;
+        var maxTexturesUnits =  8; //gfxEngine().glParams.maxTexturesUnits;
         this.vertexShader = GlobeVS;
 
         var nbSamplers = Math.min(maxTexturesUnits-1,16-1);

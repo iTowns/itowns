@@ -9,7 +9,7 @@ define ('MobileMapping/Sensor',['three'], function (THREE) {
 
 
   var  Sensor = function (infos){
-        this.infos = infos;
+        this.infos = infos;console.log(infos);
         this.position = new THREE.Vector3().fromArray( infos.position );
         this.rotation = new THREE.Matrix3().fromArray( infos.rotation );
         this.projection = new THREE.Matrix3().fromArray( infos.projection );
