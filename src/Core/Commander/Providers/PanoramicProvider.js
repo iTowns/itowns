@@ -186,7 +186,7 @@
 
                 that.getTextureMaterial(panoInfo[0], that.absoluteCenter).then(function(shaderMaterial){                 // GET MATERIAL
 
-                    that.material = shaderMaterial; //new THREE.MeshBasicMaterial({color: 0xffffff, transparent: true, opacity: 0.8});
+                    that.material = shaderMaterial; //new THREE.MeshBasicMaterial({color: 0xffffff, transparent: true, opacity: 0.8, side: THREE.DoubleSide});
                     //that.projectiveTexturedMesh = new THREE.Mesh(that.geometry, that.material);
                     that.panoramicMesh = new PanoramicMesh(that.geometry, that.material, that.absoluteCenter);
                     var roofMesh = new PanoramicMesh(that.geometryRoof, new BasicMaterial(new THREE.Color( 0xdddddd )), that.absoluteCenter);

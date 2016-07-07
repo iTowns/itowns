@@ -127,15 +127,15 @@ define('Core/Commander/Providers/BuildingBox_Provider',[
                    var pt2DTab   = polygon[j];   //.split(' ');
                    var p1  = new THREE.Vector3(parseFloat(pt2DTab[0]) , 0, parseFloat(pt2DTab[1]));
 
-                   var coordCarto1 = new CoordCarto().setFromDegreeGeo(p1.x  ,p1.z, z_min );
-                   var coordCarto2 = new CoordCarto().setFromDegreeGeo(p1.x  ,p1.z, z_min  + hauteur);// + Math.random(1000) );
+                   var coordCarto1 = new CoordCarto().setFromDegreeGeo(p1.z, p1.x, z_min );
+                   var coordCarto2 = new CoordCarto().setFromDegreeGeo(p1.z, p1.x, z_min  + hauteur);// + Math.random(1000) );
                    var pgeo1 = ellipsoid.cartographicToCartesian(coordCarto1); //{longitude:p1.z, latitude:p1.x, altitude: 0});
                    var pgeo2 = ellipsoid.cartographicToCartesian(coordCarto2);
 
                    var vector3_1 = new THREE.Vector3(pgeo1.x, pgeo1.y, pgeo1.z);  // - x temporary, bug
                    var vector3_2 = new THREE.Vector3(pgeo2.x, pgeo2.y, pgeo2.z);
 
-                   arrPoint2D.push(CVML.newPoint(p1.z, p1.x));//-pgeo1.x, pgeo1.z)); //for roof
+                   arrPoint2D.push(CVML.newPoint(p1.x, p1.z));//-pgeo1.x, pgeo1.z)); //for roof
                    _geometry.vertices.push(vector3_1,vector3_2);
 
                 }
@@ -198,10 +198,13 @@ define('Core/Commander/Providers/BuildingBox_Provider',[
 
         _geometry.computeFaceNormals();  // WARNING : VERY IMPORTANT WHILE WORKING WITH RAY CASTING ON CUSTOM MESH
         geometry.computeFaceNormals();
-
+       
+        _geometry.computeBoundingSphere();
+        _geometry.computeBoundingBox();
+        console.log(_geometry);
         /*
-            var matLambert = new THREE.MeshBasicMaterial({color: 0xffffff, transparent: true, opacity: 0.8});
-            var _currentMeshForRoof  = new THREE.Mesh(_geometry, matLambert);// //geometryClickToGo,mat);
+            var matLambert = new THREE.MeshBasicMaterial({color: 0xffffff, transparent: true, opacity: 0.8, side:THREE.DoubleSide});
+            var _currentMeshForRoof  = new THREE.Mesh(geometry, matLambert);// //geometryClickToGo,mat);
             gfxEngine().add3DScene(_currentMeshForRoof);
         */
 
@@ -217,11 +220,11 @@ define('Core/Commander/Providers/BuildingBox_Provider',[
                     geometry.vertices[i].sub(firstPos);
             }
         }
-
+         
          this.geometry = _geometry;
          this.pivot = firstPos;
          this.geometryRoof = geometry;
-
+         
          return {geometry:_geometry, pivot: firstPos, geometryRoof: geometry};
 
     };

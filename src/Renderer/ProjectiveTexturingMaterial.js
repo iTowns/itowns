@@ -162,7 +162,7 @@ define (['Renderer/c3DEngine','three','Renderer/ThreeExtented/threeExt','MobileM
 
                 var posPanoWGS84 = new CoordCarto().setFromDegreeGeo(panoInfo.longitude, panoInfo.latitude, panoInfo.altitude);
                 var posPanoCartesian = ellipsoid.cartographicToCartesian(posPanoWGS84);
-                //console.log("posPanoCartesian: ",posPanoCartesian);
+                console.log("posPanoCartesian: ",posPanoCartesian);
                 var spherePosPano = new THREE.Mesh( new THREE.SphereGeometry( 0.5, 12, 12 ), new THREE.MeshBasicMaterial({side: THREE.DoubleSide, color:0xff00ff}));
                 spherePosPano.position.copy(posPanoCartesian);
                 graphicEngine().add3DScene(spherePosPano);

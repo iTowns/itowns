@@ -263,8 +263,8 @@ define('Scene/BrowseTree', ['Globe/TileMesh', 'THREE'], function( TileMesh, THRE
         var root = layer.children[0];
 
         for (var c = 0; c < root.children.length; c++) {
-
-            var node = root.children[c];
+            
+            var node = root.children[c]; 
             node.setMatrixRTC(this.gfxEngine.getRTCMatrixFromCenter(node.absoluteCenter, camera));
 
         }
