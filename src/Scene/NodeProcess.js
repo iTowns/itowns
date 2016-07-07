@@ -235,7 +235,7 @@ define('Scene/NodeProcess',
                 this.subdivideNode(node, camera, params);
             }
             // Ideally we'd want to hide this node and display its children
-            node.setDisplayed(!node.childrenLoaded());
+            node.setDisplayed(false); // !node.childrenLoaded());
         } else {    // SSE good enough: display node and put it to the right scale if necessary
             if (params.withUp) {
                 this.refineNodeLayers(node, camera, params);
