@@ -56,20 +56,25 @@ See the [Build Guide](BUILDING.md) for how to build and run iTowns on your syste
 
 We welcome pull requests with great interest.  We try to promptly review them, provide feedback, and merge.  Following the tips in this guide will help your pull request be merged quickly.
 
-> If you plan to make a major change, please start a new thread on the [iTowns mailing list](https://lists.osgeo.org/mailman/listinfo/itowns-dev) first. Major code change need to be submitted to the PSC trough an *iTowns Enhancement Proposal*. See the [PSC](https://github.com/iTowns/itowns-project/blob/master/PSC.md) document for the (simple) process.  Pull requests for small features and bug fixes can generally just be opened without discussion on the list nor iEP.
+> If you plan to make a major change, please start a new thread on the [iTowns mailing list](https://lists.osgeo.org/mailman/listinfo/itowns-dev) first. Pull requests for small features and bug fixes can generally just be opened without discussion on the list. 
+
+> In the future, major code change will need to be submitted to the PSC trough an *iTowns Enhancement Proposal*. See the [PSC](https://github.com/iTowns/itowns-project/blob/master/PSC.md) document for the (simple) process.  
 
 ## Advices for commiters
 
-If you have commit access to iTowns, please try to follow these rules :
+The master branch is currently protected, and only the *Reviewers* Team can push to it. Therefore, you will need to create a new branch (or fork+branch) and a Pull Request if you want code to be integrated into master.
+
+Generally, if you have commit access to iTowns, please try to follow these rules :
 
 * Do not commit directly in master, work in branches
-* Create branches on main repo if you want to collaborate on medium/long term dev effort
-* Fork the project and work on a branch in your fork otherwise
+* Create branches on main repo, particularly if you want to collaborate on medium/long term dev effort
+* You can also fork the project and work on a branch in your fork if you want
 * Create Pull Requests on GitHub to merge your branches
 * Review code from other's PR, give advices on how to improve their code
 * Ping other people or teams to ask them reviewing your PR ( @githubuser )
 * Write meaningful commit messages
 * Keep the git history clean, rebase your work when necessary
+* Delete unused and obsolete branches
 
 ## IP
 
