@@ -271,20 +271,11 @@ ApiGlobe.prototype.createSceneGlobe = function(coordCarto, viewerDiv) {
 
     map.tiles.init(map.layersConfiguration.getGeometryLayers()[0]);
 
-    //!\\ TEMP
-    //this.scene.wait(0);
-    //!\\ TEMP
-
     return this.scene;
-
 };
 
 ApiGlobe.prototype.update = function() {
-
-    //!\\ TEMP
-    this.scene.wait(0);
-    //!\\ TEMP
-
+    this.scene.notifyChange();
 };
 
 // ApiGlobe.prototype.setLayerAtLevel = function(baseurl,layer/*,level*/) {
