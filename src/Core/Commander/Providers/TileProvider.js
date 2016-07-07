@@ -16,7 +16,6 @@
 
 
 define('Core/Commander/Providers/TileProvider', [
-        'when',
         'THREE',
         'Core/Geographic/Projection',
         'Core/Commander/Providers/WMTS_Provider',
@@ -29,7 +28,6 @@ define('Core/Commander/Providers/TileProvider', [
         'Scene/BoundingBox'
     ],
     function(
-        when,
         THREE,
         Projection,
         WMTS_Provider,
@@ -210,7 +208,7 @@ define('Core/Commander/Providers/TileProvider', [
 
             requests.push(this.getKML(tile));
 
-            return when.all(requests).then(function() {
+            return Promise.all(requests).then(function() {
                 return command.resolve(tile);
             });
         };

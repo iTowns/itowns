@@ -17,7 +17,6 @@
 define('Core/Commander/Providers/BuildingBox_Provider',[
             'Core/Commander/Providers/Provider',
             'Core/Commander/Providers/WFS_Provider',
-            'when',
             'THREE',
             'Core/Commander/Providers/CacheRessource',
             'Renderer/c3DEngine',
@@ -27,7 +26,6 @@ define('Core/Commander/Providers/BuildingBox_Provider',[
         function(
                 Provider,
                 WFS_Provider,
-                when,
                 THREE,
                 CacheRessource,
                 gfxEngine,
@@ -83,21 +81,10 @@ define('Core/Commander/Providers/BuildingBox_Provider',[
     };
 
     BuildingBox_Provider.prototype.getData = function(bbox, altitude){
-     /*
-       var deferred = when.defer();
-       deferred = this.WFS_Provider.getData(bbox).then(function(data){this.generateMesh(data,bbox);}.bind(this));
-       return deferred;
-     */
-
-        var deferred = when.defer();
-        this.WFS_Provider.getData(bbox).then(function(data){
-
+        return this.WFS_Provider.getData(bbox).then(function(data){
             this.generateMesh(data, bbox, altitude); // console.log(data);
-            deferred.resolve(this.geometry);
+            return this.geometry;
         }.bind(this));
-        return deferred.promise;
-
-      // return this.WFS_Provider.getData(bbox).then(function(data){this.generateMesh(data,bbox);}.bind(this));
     };
 
     BuildingBox_Provider.prototype.generateMesh = function(elements, bbox, altitude){

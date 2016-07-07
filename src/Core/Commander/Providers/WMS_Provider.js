@@ -10,7 +10,6 @@ define('Core/Commander/Providers/WMS_Provider', [
         'Core/Commander/Providers/IoDriver_XBIL',
         'Core/Commander/Providers/IoDriver_Image',
         'Core/Commander/Providers/IoDriverXML',
-        'when',
         'Core/defaultValue',
         'THREE',
         'Core/Commander/Providers/CacheRessource'
@@ -20,7 +19,6 @@ define('Core/Commander/Providers/WMS_Provider', [
         IoDriver_XBIL,
         IoDriver_Image,
         IoDriverXML,
-        when,
         defaultValue,
         THREE,
         CacheRessource) {
@@ -106,14 +104,16 @@ define('Core/Commander/Providers/WMS_Provider', [
         WMS_Provider.prototype.getTexture = function(bbox) {
 
             if (bbox === undefined)
-                return when(-2);
+                return Promise.resolve(-2);
 
             var url = this.url(bbox);
 
+            // TODO: this is not optimal: if called again before ioDriverImage resolves, it'll load the image again
             var textureCache = this.cache.getRessource(url);
 
-            if (textureCache !== undefined)
-                return when(textureCache);
+            if (textureCache !== undefined) {
+                return Promise.resolve(textureCache);
+            }
             return this.ioDriverImage.read(url).then(function(image) {
                 var result = {};
                 result.texture = new THREE.Texture(image);

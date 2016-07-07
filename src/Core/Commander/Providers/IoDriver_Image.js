@@ -4,7 +4,7 @@
  */
 
 
-define('Core/Commander/Providers/IoDriver_Image', ['Core/Commander/Providers/IoDriver','when'], function(IoDriver,when) {
+define('Core/Commander/Providers/IoDriver_Image', ['Core/Commander/Providers/IoDriver'], function(IoDriver) {
 
 
     function IoDriver_Image() {
@@ -19,10 +19,7 @@ define('Core/Commander/Providers/IoDriver_Image', ['Core/Commander/Providers/IoD
 
     IoDriver_Image.prototype.read = function(url) {
 
-        // TODO new Promise is supported?
-        return  when.promise(function(resolve/*, reject*/)
-        //return new Promise(function(resolve/*, reject*/)
-        {
+        return new Promise(function(resolve/*, reject*/) {
 
             var image = new Image();
 

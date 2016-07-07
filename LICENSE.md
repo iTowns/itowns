@@ -38,23 +38,17 @@ iTowns V2 includes the following third-party code.
 >
 > THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-### Require.js
-
-Require.js is published under both BSD and MIT. The MIT version is used here.
-
-http://requirejs.org/
-
 ### parallel.js
 
 Parallel.js is published under MIT ( https://github.com/adambom/parallel.js/blob/master/LICENSE )
 
 https://adambom.github.io/parallel.js/
 
-### when.js
+### ES6-Promise
 
-When.js is published under MIT.
+ES6-Promise is published under MIT.
 
-https://github.com/cujojs/when
+https://github.com/stefanpenner/es6-promise
 
 ### JSZip
 

@@ -10,7 +10,6 @@ define('Core/Commander/Providers/WFS_Provider', [
         'Core/Commander/Providers/IoDriver',
         'Core/Commander/Providers/IoDriver_JSON',
         'Core/Commander/Providers/IoDriverXML',
-        'when',
         'Core/defaultValue',
         'THREE',
         'Core/Commander/Providers/CacheRessource'
@@ -20,7 +19,6 @@ define('Core/Commander/Providers/WFS_Provider', [
         IoDriver_XBIL,
         IoDriver_JSON,
         IoDriverXML,
-        when,
         defaultValue,
         THREE,
         CacheRessource) {
