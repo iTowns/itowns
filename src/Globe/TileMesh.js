@@ -25,8 +25,18 @@ define('Globe/TileMesh', [
     'THREE',
     'OBBHelper',
     'SphereHelper',
-    'Renderer/LayeredMaterial'
-], function(NodeMesh, TileGeometry, BoundingBox, defaultValue, THREE, OBBHelper, SphereHelper, LayeredMaterial) {
+    'Renderer/LayeredMaterial',
+    'Renderer/DepthMaterial'
+], function(
+    NodeMesh,
+    TileGeometry,
+    BoundingBox,
+    defaultValue,
+    THREE,
+    OBBHelper,
+    SphereHelper,
+    LayeredMaterial,
+    DepthMaterial) {
 
     var groupelevation = [14, 11, 7, 3];
     var l_ELEVATION = 0;
@@ -53,7 +63,12 @@ define('Globe/TileMesh', [
         this.oSphere = new THREE.Sphere(this.centerSphere.clone(),this.geometry.boundingSphere.radius);
 
         this.texturesNeeded = 0;
-        this.material = new LayeredMaterial();
+        this.layeredMaterial = new LayeredMaterial();
+        this.depthMaterial = new DepthMaterial(this.layeredMaterial);
+
+        // set current material
+        this.material = this.layeredMaterial;
+
         this.frustumCulled = false;
         this.levelElevation = this.level;
 
@@ -137,7 +152,12 @@ define('Globe/TileMesh', [
     };
 
     TileMesh.prototype.enablePickingRender = function(enable) {
-        this.material.enablePickingRender(enable);
+
+
+        // this.material.enablePickingRender(enable);
+
+        this.material = enable ? this.depthMaterial : this.layeredMaterial;
+
     };
 
     TileMesh.prototype.setFog = function(fog) {

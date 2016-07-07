@@ -95,7 +95,7 @@ define('Renderer/LayeredMaterial', ['THREE',
 
         this.paramLayers = Array(8).fill(vector4);
         this.paramBLayers = Array(8).fill(vector2);
-
+        this.ColorFS = customFS;
 
         // Elevation texture
         this.uniforms.dTextures_00 = {
@@ -146,10 +146,6 @@ define('Renderer/LayeredMaterial', ['THREE',
         this.uniforms.pitScale_L01 = {
             type: "v3v",
             value: this.pitScale[1]
-        };
-        this.uniforms.pickingRender = {
-            type: "i",
-            value: 0
         };
         this.uniforms.lightingOn = {
              type: "i",
@@ -315,7 +311,6 @@ define('Renderer/LayeredMaterial', ['THREE',
 
     LayeredMaterial.prototype.enablePickingRender = function(enable) {
         this.uniforms.pickingRender.value = enable === true ? 1 : 0;
-
     };
 
     LayeredMaterial.prototype.setLightingOn = function (enable){
@@ -350,7 +345,6 @@ define('Renderer/LayeredMaterial', ['THREE',
 
         return level;
     };
-
 
     return LayeredMaterial;
 });

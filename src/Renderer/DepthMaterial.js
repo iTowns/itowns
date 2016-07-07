@@ -9,20 +9,25 @@ define('Renderer/DepthMaterial', ['THREE',
     'Renderer/BasicMaterial',
     'Core/System/JavaTools',
     'Renderer/Shader/DepthVS.glsl',
-    'Renderer/Shader/DepthFS.glsl'
+    'Renderer/Shader/DepthFS.glsl',
+    'Renderer/Shader/Depth2FS.glsl'
 ], function(
     THREE,
     BasicMaterial,
     JavaTools,
     DepthVS,
-    DepthFS) {
+    DepthFS,
+    Depth2FS) {
 
-    var DepthMaterial = function() {
+    var DepthMaterial = function(otherMaterial) {
 
         BasicMaterial.call(this);
 
-        this.vertexShader = DepthVS;
-        this.fragmentShader = DepthFS;
+        this.vertexShader =  otherMaterial.vertexShader ||  DepthVS;
+        this.fragmentShader = Depth2FS;
+
+        if(otherMaterial)
+            this.uniforms = otherMaterial.uniforms;
 
         this.wireframe = false;
         //this.wireframe = true;

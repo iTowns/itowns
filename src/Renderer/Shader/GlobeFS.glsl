@@ -1,8 +1,6 @@
 #define SHADER_NAME ShaderMaterial
 #define VERTEX_TEXTURES
 
-
-
 #define USE_LOGDEPTHBUF
 #define USE_LOGDEPTHBUF_EXT
 
@@ -42,7 +40,6 @@ uniform vec4        paramLayers[8];
 uniform vec2        paramBLayers[8];
 uniform int         layerSequence[8];
 
-uniform int         pickingRender;
 uniform int         nbTextures[8];
 
 uniform float       distanceFog;
@@ -64,56 +61,8 @@ varying vec4        pos;
 #if defined(DEBUG)
     const float sLine = 0.008;
 #endif
+
 const float borderS = 0.007;
-
-// GLSL 1.30 only accepts constant expressions when indexing into arrays,
-// so we have to resort to an if/else cascade.
-
-/*
-vec4 colorAtIdUv(sampler2D dTextures[TEX_UNITS],int id, vec2 uv){
-
-    // for (int i = 0; i < TEX_UNITS; ++i)
-    //     if(i == id)
-    //         return texture2D(dTextures[i],  pitUV(uv,pitScale_L01[i]));
-
-    if (id == 0) return texture2D(dTextures[0],  pitUV(uv,pitScale_L01[0]));
-    else if (id == 1) return texture2D(dTextures[1],  pitUV(uv,pitScale_L01[1]));
-    else if (id == 2) return texture2D(dTextures[2],  pitUV(uv,pitScale_L01[2]));
-    else if (id == 3) return texture2D(dTextures[3],  pitUV(uv,pitScale_L01[3]));
-    else if (id == 4) return texture2D(dTextures[4],  pitUV(uv,pitScale_L01[4]));
-    else if (id == 5) return texture2D(dTextures[5],  pitUV(uv,pitScale_L01[5]));
-    else if (id == 6) return texture2D(dTextures[6],  pitUV(uv,pitScale_L01[6]));
-    else if (id == 7) return texture2D(dTextures[7],  pitUV(uv,pitScale_L01[7]));
-    else if (id == 8) return texture2D(dTextures[8],  pitUV(uv,pitScale_L01[8]));
-    else if (id == 9) return texture2D(dTextures[9],  pitUV(uv,pitScale_L01[9]));
-    else if (id == 10) return texture2D(dTextures[10],  pitUV(uv,pitScale_L01[10]));
-    else if (id == 11) return texture2D(dTextures[11],  pitUV(uv,pitScale_L01[11]));
-    else if (id == 12) return texture2D(dTextures[12],  pitUV(uv,pitScale_L01[12]));
-    else if (id == 13) return texture2D(dTextures[13],  pitUV(uv,pitScale_L01[13]));
-    else if (id == 14) return texture2D(dTextures[14],  pitUV(uv,pitScale_L01[14]));
-    //else if (id == 15) return texture2D(dTextures[15],  pitUV(uv,pitScale_L01[15]));
-    else return vec4(0.0,0.0,0.0,0.0);
-
-}
-
-*/
-
-const vec4 bitSh = vec4( 256.0 * 256.0 * 256.0, 256.0 * 256.0, 256.0, 1.0 );
-const vec4 bitMsk = vec4( 0.0, 1.0 / 256.0, 1.0 / 256.0, 1.0 / 256.0 );
-
-vec4 pack1K ( float depth ) {
-    depth /= 100000000.0;
-    vec4 res = mod( depth * bitSh * vec4( 255 ), vec4( 256 ) ) / vec4( 255 );
-    res -= res.xxyz * bitMsk;
-    return res;
-}
-
-// float unpack1K ( vec4 color ) {
-
-//     const vec4 bitSh = vec4( 1.0 / ( 256.0 * 256.0 * 256.0 ), 1.0 / ( 256.0 * 256.0 ), 1.0 / 256.0, 1.0 );
-//     return dot( color, bitSh ) * 100000000.0;
-
-// }
 
 vec4 getParamLayers(int id)
 {
@@ -143,18 +92,6 @@ void main() {
 
     #endif
 
-    if(pickingRender == 1)
-    {
-
-        #if defined(USE_LOGDEPTHBUF) && defined(USE_LOGDEPTHBUF_EXT)
-            float z = 1.0/ gl_FragCoord.w ;
-            gl_FragColor = pack1K(z);
-        #else
-            float z = gl_FragCoord.z / gl_FragCoord.w;
-            gl_FragColor = pack1K(z);
-        #endif
-
-    }else
     #if defined(DEBUG)
          if(vUv_WGS84.x < sLine || vUv_WGS84.x > 1.0 - sLine || vUv_WGS84.y < sLine || vUv_WGS84.y > 1.0 - sLine)
              gl_FragColor = vec4( 1.0, 0.0, 0.0, 1.0);
