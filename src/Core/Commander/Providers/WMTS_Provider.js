@@ -90,7 +90,7 @@ define('Core/Commander/Providers/WMTS_Provider', [
             {
                  this.layersData[layer.id] = {
                     customUrl: layer.customUrl,
-                    tileMatrixSet:layer.wmtsOptions.tileMatrixSet,
+                    tileMatrixSet:layer.options.tileMatrixSet,
                     zoom:{min:2,max:20},
                     fx : layer.fx || 0.0
                 };
@@ -98,7 +98,7 @@ define('Core/Commander/Providers/WMTS_Provider', [
             else
             {
 
-                var options = layer.wmtsOptions;
+                var options = layer.options;
                 var newBaseUrl =  layer.url +
                     "?LAYER=" + options.name +
                     "&FORMAT=" +  options.mimetype +
@@ -272,7 +272,7 @@ define('Core/Commander/Providers/WMTS_Provider', [
             var tile = command.requester;
 
             if(destination === 1) {
-                return this.getColorTextures(tile, command.paramsFunction.layer.services).then(function(result) {
+                return this.getColorTextures(tile, command.paramsFunction.layer).then(function(result) {
                     return command.resolve(result);
                 });
             }
@@ -287,7 +287,7 @@ define('Core/Commander/Providers/WMTS_Provider', [
         WMTS_Provider.prototype.getZoomAncestor = function(tile,layer) {
 
             var levelParent = tile.getLevelNotDownScaled();
-            return (levelParent < layer.zoom.min ? tile.level : levelParent) + (layer.tileMatrixSet === 'PM' ? 1 : 0);
+            return (levelParent < layer.zoom.min ? tile.level : levelParent) + (layer.options.tileMatrixSet === 'PM' ? 1 : 0);
 
         }
 
@@ -299,7 +299,7 @@ define('Core/Commander/Providers/WMTS_Provider', [
             return tile.level >= layer.zoom.min && tile.level <= layer.zoom.max;
         }
 
-        WMTS_Provider.prototype.getColorTextures = function(tile,layerWMTSId) {
+        WMTS_Provider.prototype.getColorTextures = function(tile, layer) {
 
             var promises = [];
             if (tile.material === null) {
@@ -308,25 +308,21 @@ define('Core/Commander/Providers/WMTS_Provider', [
             // Request parent's texture if no texture at all
             var lookAtAncestor = tile.material.getLevelLayerColor(1) === -1;
 
-            for (var i = 0; i < layerWMTSId.length; i++) {
 
-                var layer = this.layersData[layerWMTSId[i]];
+            if (this.tileInsideLimit(tile,layer)) {
+                var bcoord = tile.matrixSet[layer.options.tileMatrixSet];
 
-                if (this.tileInsideLimit(tile,layer)) {
-                    var bcoord = tile.matrixSet[layer.tileMatrixSet];
+                // WARNING the direction textures is important
+                for (var row = bcoord[1].row; row >=  bcoord[0].row; row--) {
 
-                    // WARNING the direction textures is important
-                    for (var row = bcoord[1].row; row >=  bcoord[0].row; row--) {
+                   var cooWMTS = new CoordWMTS(bcoord[0].zoom, row, bcoord[0].col);
+                   var pitch = new THREE.Vector3(0.0,0.0,1.0);
 
-                       var cooWMTS = new CoordWMTS(bcoord[0].zoom, row, bcoord[0].col);
-                       var pitch = new THREE.Vector3(0.0,0.0,1.0);
+                   if(lookAtAncestor) {
+                        cooWMTS = this.projection.WMTS_WGS84Parent(cooWMTS,this.getZoomAncestor(tile,layer),pitch);
+                   }
 
-                       if(lookAtAncestor) {
-                            cooWMTS = this.projection.WMTS_WGS84Parent(cooWMTS,this.getZoomAncestor(tile,layer),pitch);
-                       }
-
-                       promises.push(this.getColorTexture(cooWMTS,pitch,layerWMTSId[i]));
-                    }
+                   promises.push(this.getColorTexture(cooWMTS,pitch, layer.id));
                 }
             }
 

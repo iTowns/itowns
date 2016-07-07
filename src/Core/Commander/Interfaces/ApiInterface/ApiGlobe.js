@@ -114,6 +114,8 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
     * @param {Layer} layer.
     */
     ApiGlobe.prototype.addImageryLayer = function(layer) {
+        console.log('********************************** TEMP');
+        if (layer.protocol != 'WMS') return;
         this.registerLayer(layer);
 
         var map = this.scene.getMap();
@@ -121,6 +123,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
 
         map.tiles.wmtsColorLayers.push(layer);
         map.colorTerrain.services.push(layer.id);
+        console.log(map.tiles.wmtsColorLayers.length);
     };
 
     ApiGlobe.prototype.moveLayerUp = function(layer){
@@ -194,11 +197,9 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
     */
 
     ApiGlobe.prototype.getLayers = function(/*param*/){
-        var manager = this.scene.managerCommand;
-        var providerWMTS = manager.getProvidersForProtocol('wmts');
-        var providerWMS = manager.getProvidersForProtocol('wms');
-
-        return [].concat(providerWMS.layersData).concat(providerWMTS.layersData);
+        var map = this.scene.getMap();
+        console.log(map.tiles.wmtsColorLayers.length);
+        return map.tiles.wmtsColorLayers;
     };
 
     /**

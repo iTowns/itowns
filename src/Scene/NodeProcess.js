@@ -96,7 +96,6 @@ define('Scene/NodeProcess',
 
 
                 quadtree.interCommand.request(args, node).then(function(child) {
-                    console.log('subdivide done');
                     var colorTextureCount = 0;
                     var paramMaterial = [];
 
@@ -105,13 +104,14 @@ define('Scene/NodeProcess',
                     // update wmts
                     for (var i = 0; i < quadtree.wmtsColorLayers.length; i++) {
                         var layer = quadtree.wmtsColorLayers[i];
-                        var tileMatrixSet = layer.wmtsOptions.tileMatrixSet;
+                        var tileMatrixSet = layer.options.tileMatrixSet;
 
                         if(!child.matrixSet[tileMatrixSet]) {
                             child.matrixSet[tileMatrixSet] = projection.getCoordWMTS_WGS84(child.tileCoord, child.bbox, tileMatrixSet);
                         }
 
-                        if (layer.zoom.min <= child.level && child.level <= layer.zoom.max) {
+                        if (true) { //layer.zoom.min <= child.level && child.level <= layer.zoom.max) {
+
                             var bcoord = child.matrixSet[tileMatrixSet];
 
                             paramMaterial.push({
@@ -168,18 +168,20 @@ define('Scene/NodeProcess',
     };
 
     function updateNodeImagery(quadtree, node) {
-        var services = quadtree.wmtsColorLayers.map(function(layer) { return layer.id; });
+        var promises = [];
 
-        var hackLayer = {
-            protocol: 'wmts',
-            services: services
-        };
-        var args = {layer: hackLayer, destination: 1 };
+        for (var i=0; i<quadtree.wmtsColorLayers.length; i++) {
+            var args = {layer: quadtree.wmtsColorLayers[i], destination: 1 };
+            promises.push(quadtree.interCommand.request(args, node, commandCancellationFn));
+        }
 
-        return quadtree.interCommand.request(args, node, commandCancellationFn).then(function(colorTextures) {
-                node.setTexturesLayer(colorTextures, 1);
-                return 0;
-            });
+        return Promise.all(promises).then(function(colorTextures) {
+            var textures = [];
+            for (var j=0; j<colorTextures.length; j++) {
+                textures = textures.concat(colorTextures[j]);
+            }
+            node.setTexturesLayer(textures, 1);
+        });
     }
 
     function updateNodeElevation(quadtree, tile) {

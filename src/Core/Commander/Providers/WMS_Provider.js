@@ -49,6 +49,10 @@ define('Core/Commander/Providers/WMS_Provider', [
 
         WMS_Provider.prototype.constructor = WMS_Provider;
 
+        WMS_Provider.prototype.supports = function(protocol) {
+            return protocol === 'WMS';
+        }
+
         WMS_Provider.prototype.url = function(bbox,layerId) {
 
             return this.customUrl(this.layersData[layerId].customUrl,bbox);
@@ -62,8 +66,14 @@ define('Core/Commander/Providers/WMS_Provider', [
             //var bbox = (coord.minCarto.longitude - Math.PI)* 180 / Math.PI + "," + coord.minCarto.latitude* 180 / Math.PI + "," +
             //           (coord.maxCarto.longitude - Math.PI )*180/ Math.PI + "," + coord.maxCarto.latitude* 180 / Math.PI;
 
-            var bbox = coord.minCarto.latitude* 180 / Math.PI + "," + (coord.minCarto.longitude - Math.PI)* 180 / Math.PI + "," +
-                       coord.maxCarto.latitude* 180 / Math.PI + "," + (coord.maxCarto.longitude - Math.PI )*180/ Math.PI;
+            var bbox = coord.minCarto.latitude * 180.0 / Math.PI +
+                        "," +
+                        (coord.minCarto.longitude - Math.PI)* 180.0 / Math.PI +
+                        ","+
+                       coord.maxCarto.latitude* 180.0 / Math.PI +
+                       "," +
+                       (coord.maxCarto.longitude - Math.PI )*180.0 / Math.PI;
+
             var urld = url.replace('%bbox',bbox.toString());
 
             return urld;
@@ -83,7 +93,7 @@ define('Core/Commander/Providers/WMS_Provider', [
 
             var baseUrl = layer.url,
                 layerName = layer.name,
-                format = defaultValue(layer.mimeType, "image/png"),
+                format = defaultValue(layer.options.mimeType, "image/png"),
                 crs = defaultValue(layer.projection, "EPSG:4326"),
                 width = defaultValue(layer.heightMapWidth, 256),
                 version = defaultValue(layer.version, "1.3.0"),
@@ -141,34 +151,29 @@ define('Core/Commander/Providers/WMS_Provider', [
                                             south:layer.bbox[1]*Math.PI/180,
                                             north:layer.bbox[3]*Math.PI/180});
 
-            console.log(rectRegion.contains(rectTile),rectTile,rectRegion);
+            // console.log(rectRegion.contains(rectTile),rectTile,rectRegion);
 
             return rectRegion.contains(rectTile);
         };
 
-        WMS_Provider.prototype.getColorTextures = function(tile, layerWMSId) {
+        WMS_Provider.prototype.getColorTextures = function(tile, layer) {
 
             var promises = [];
 
             if (tile.material === null) {
-                return when();
+                return Promise.resolve();
             }
 
-            for (var i = 0; i < layerWMSId.length; i++) {
-
-                var layer = this.layersData[layerWMSId[i]];
-
-                if (this.tileInsideLimit(tile,layer))
-                {
-                    var bbox = tile.bbox;
-                    promises.push(this.getColorTexture(bbox,layerWMSId[i]));
-                }
+            if (this.tileInsideLimit(tile,layer))
+            {
+                var bbox = tile.bbox;
+                promises.push(this.getColorTexture(bbox, layer.id));
             }
 
             if (promises.length)
-                return when.all(promises);
+                return Promise.all(promises);
             else
-                return when();
+                return Promise.resolve();
 
        };
 
@@ -184,7 +189,7 @@ define('Core/Commander/Providers/WMS_Provider', [
             result.texture = this.cache.getRessource(url);
 
             if (result.texture !== undefined) {
-                return when(result);
+                return Promise.resolve(result);
             }
             return this.ioDriverImage.read(url).then(function(image) {
 
@@ -208,8 +213,8 @@ define('Core/Commander/Providers/WMS_Provider', [
 
                 return result;
 
-            }.bind(this)).catch(function(/*reason*/) {
-                    //console.error('getColorTexture failed for url |', url, '| Reason:' + reason);
+            }.bind(this)).catch(function(reason) {
+                    console.error('getColorTexture failed for url |', url, '| Reason:' + reason);
                     result.texture = null;
 
                     return result;
@@ -220,7 +225,7 @@ define('Core/Commander/Providers/WMS_Provider', [
         WMS_Provider.prototype.executeCommand = function(command){
 
             var tile = command.requester;
-            return this.getColorTextures(tile,command.paramsFunction.layer.services).then(function(result)
+            return this.getColorTextures(tile,command.paramsFunction.layer).then(function(result)
             {
                     this.setTexturesLayer(result,1);
             }.bind(tile));
