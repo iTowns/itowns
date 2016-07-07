@@ -32,15 +32,32 @@ define('Globe/TileGeometry', [
         this.index = null;
         this.position = null;
         this.normal = null;
-        this.uv_0 = null;
-        this.uv_1 = null;
+        // 2 UV set per tile: wgs84 and pm
+        //    - wgs84: 1 texture per tile because tiles are using wgs84 projection
+        //    - pm: use multiple textures per tile.
+        //      +-------------------------+
+        //      |                         |
+        //      |     Texture 0           |
+        //      +-------------------------+
+        //      |                         |
+        //      |     Texture 1           |
+        //      +-------------------------+
+        //      |                         |
+        //      |     Texture 2           |
+        //      +-------------------------+
+        //        * u = wgs84.u
+        //        * v = textureid + v in this texture
+        this.uv = {
+            'wgs84': null,
+            'pm': null
+        };
 
         var cBuff = cache.getRessource(nSegment);
 
         if(cBuff)
         {
             this.index = cBuff.index;
-            this.uv_0 = cBuff.uv_0;
+            this.uv.wgs84 = cBuff.uv.wgs84;
         }
     }
 
@@ -58,12 +75,12 @@ define('Globe/TileGeometry', [
         this.setIndex(buffersAttrib.index);
         this.addAttribute('position', buffersAttrib.position);
         this.addAttribute('normal', buffersAttrib.normal);
-        this.addAttribute('uv', buffersAttrib.uv_0);
-        this.addAttribute('uv1', buffersAttrib.uv_1);
+        this.addAttribute('uv_wgs84', buffersAttrib.uv.wgs84);
+        this.addAttribute('uv_pm', buffersAttrib.uv.pm);
 
         buffersAttrib.position = null;
         buffersAttrib.normal= null;
-        buffersAttrib.uv_1 = null;
+        buffersAttrib.uv.pm = null;
 
         if(!cache.getRessource(params.segment))
             cache.addRessource(params.segment, buffersAttrib);
@@ -91,8 +108,8 @@ define('Globe/TileGeometry', [
         buffers.position = new Float32Array(nVertex * 3);
         buffers.bufferIndex = buffersAttrib.index === null ? new Uint32Array(triangles * 3 * 2) : null;
         buffers.normal = new Float32Array(nVertex * 3);
-        buffers.uv_0 = buffersAttrib.uv_0 === null ? new Float32Array(nVertex * 2) : null;
-        buffers.uv_1 = new Float32Array(nVertex);
+        buffers.uv.wgs84 = buffersAttrib.uv.wgs84 === null ? new Float32Array(nVertex * 2) : null;
+        buffers.uv.pm = new Float32Array(nVertex);
 
         var widthSegments = Math.max(2, Math.floor(nSeg) || 2);
         var heightSegments = Math.max(2, Math.floor(nSeg) || 2);
@@ -105,21 +122,21 @@ define('Globe/TileGeometry', [
 
         builder.Prepare(params);
 
-        var UV_0 = function(){};
-        var UV_1 = function(){};
+        var UV_WGS84 = function(){};
+        var UV_PM = function(){};
 
-        if(buffersAttrib.uv_0 === null)
-            UV_0 = function(u,v)
-            {
-                buffers.uv_0[idVertex * 2 + 0] = u;
-                buffers.uv_0[idVertex * 2 + 1] = 1 - v;
+        if(buffersAttrib.uv.wgs84 === null) {
+            UV_WGS84 = function(u,v) {
+                buffers.uv.wgs84[idVertex * 2 + 0] = u;
+                buffers.uv.wgs84[idVertex * 2 + 1] = v;
             };
+        }
 
-        if(buffersAttrib.uv_1 === null && builder.getUV_1)
-            UV_1 = function(u)
-            {
-                buffers.uv_1[idVertex] = u;
+        if(buffersAttrib.uv.pm === null && builder.getUV_PM) {
+            UV_PM = function(u) {
+                buffers.uv.pm[idVertex] = u;
             };
+        }
 
         for (y = 0; y <= heightSegments; y++) {
 
@@ -129,7 +146,7 @@ define('Globe/TileGeometry', [
 
             builder.vProjecte(v,params);
 
-            var uv_1 = builder.getUV_1(params);
+            var uv_pm = builder.getUV_PM(params);
 
             for (x = 0; x <= widthSegments; x++) {
 
@@ -151,8 +168,8 @@ define('Globe/TileGeometry', [
                 buffers.normal[id_m3 + 1] = normal.y;
                 buffers.normal[id_m3 + 2] = normal.z;
 
-                UV_0(u,v);
-                UV_1(uv_1);
+                UV_WGS84(u,v);
+                UV_PM(uv_pm);
 
                 if (y !== 0 && y !== heightSegments)
                     if (x === widthSegments)
@@ -222,8 +239,8 @@ define('Globe/TileGeometry', [
             };
 
             buildUVSkirt = function(){
-                buffers.uv_0[idVertex * 2 + 0] = buffers.uv_0[id * 2 + 0];
-                buffers.uv_0[idVertex * 2 + 1] = buffers.uv_0[id * 2 + 1];
+                buffers.uv.wgs84[idVertex * 2 + 0] = buffers.uv.wgs84[id * 2 + 0];
+                buffers.uv.wgs84[idVertex * 2 + 1] = buffers.uv.wgs84[id * 2 + 1];
             };
         }
 
@@ -244,7 +261,7 @@ define('Globe/TileGeometry', [
 
             buildUVSkirt();
 
-            buffers.uv_1[idVertex] = buffers.uv_1[id];
+            buffers.uv.pm[idVertex] = buffers.uv.pm[id];
 
             var idf = (i + 1) % skirt.length;
 
@@ -267,17 +284,17 @@ define('Globe/TileGeometry', [
             buffersAttrib.index = new THREE.BufferAttribute(buffers.bufferIndex, 1);
         buffersAttrib.position = new THREE.BufferAttribute(buffers.position, 3);
         buffersAttrib.normal= new THREE.BufferAttribute(buffers.normal, 3);
-        if(buffersAttrib.uv_0 === null)
-            buffersAttrib.uv_0 = new THREE.BufferAttribute(buffers.uv_0, 2);
-        buffersAttrib.uv_1 = new THREE.BufferAttribute(buffers.uv_1, 1);
+        if(buffersAttrib.uv.wgs84 === null)
+            buffersAttrib.uv.wgs84 = new THREE.BufferAttribute(buffers.uv.wgs84, 2);
+        buffersAttrib.uv.pm = new THREE.BufferAttribute(buffers.uv.pm, 1);
 
         javToo.freeArray(vertices);
 
         buffers.position = null;
         buffers.bufferIndex = null;
         buffers.normal = null;
-        buffers.uv_0 = null;
-        buffers.uv_1 = null;
+        buffers.uv.wgs84 = null;
+        buffers.uv.pm = null;
 
         return buffersAttrib;
 
