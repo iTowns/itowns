@@ -87,7 +87,7 @@ define('Renderer/Camera', ['Scene/Node', 'THREE'], function(Node, THREE) {
 
     };
 
-    Camera.prototype.SSE = function(node) {
+    Camera.prototype.computeNodeSSE = function(node) {
 
         var boundingSphere = node.geometry.boundingSphere;
         var distance = Math.max(0.0, (this.camera3D.position.distanceTo(node.centerSphere) - boundingSphere.radius));
@@ -97,8 +97,6 @@ define('Renderer/Camera', ['Scene/Node', 'THREE'], function(Node, THREE) {
         if(this.camera3D.position.length() > 6463300) dotProductW = 1;
         var SSE = Math.sqrt(dotProductW) * this.preSSE * (node.geometricError / distance);
         //var SSE = this.preSSE * (node.geometricError / distance);
-
-        node.sse = SSE;
 
         return SSE;
 

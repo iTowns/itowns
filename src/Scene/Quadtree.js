@@ -12,14 +12,39 @@
  */
 define('Scene/Quadtree', [
     'Scene/Layer',
+    'Core/Commander/InterfaceCommander',
     'Core/Geographic/Quad',
     'Renderer/NodeMesh'
-], function(Layer, Quad, NodeMesh) {
+], function(Layer, InterfaceCommander, Quad, NodeMesh) {
 
+
+    function commandQueuePriorityFunction(cmd) {
+        var node = cmd.requester;
+
+        // We know that 'node' is visible because commands can only be
+        // issued for visible nodes.
+        //
+        // Prioritize subdivision request
+        if (cmd.layer instanceof Quadtree) {
+            return 10000;
+        } else {
+            if (!node.loaded) {
+                return 1000;
+            } else {
+                // TODO: this magic value comes from NodeProcess
+                if (6.0 < node.sse) {
+                    return 100;
+                } else {
+                    return 10;
+                }
+            }
+        }
+    }
 
     function Quadtree(type, schemeTile, size, link) {
-        Layer.call(this, type, size);
+        Layer.call(this);
 
+        this.interCommand = new InterfaceCommander(type, commandQueuePriorityFunction);
         this.link = link;
         this.schemeTile = schemeTile;
         this.tileType = type;
