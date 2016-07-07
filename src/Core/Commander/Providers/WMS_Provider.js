@@ -40,31 +40,165 @@ define('Core/Commander/Providers/WMS_Provider', [
             this.ioDriverImage = new IoDriver_Image();
             this.ioDriverXML = new IoDriverXML();
 
-            this.baseUrl = options.url || "";
-            this.layer = options.layer || "";
-            this.format = defaultValue(options.format, "image/jpeg");
-            this.srs = options.srs || "";
-            this.width = defaultValue(options.width, 256);
-            this.height = defaultValue(options.height, 256);
+            this.layersData = {};
+
+            this._ready       = false;
         }
 
         WMS_Provider.prototype = Object.create(Provider.prototype);
 
         WMS_Provider.prototype.constructor = WMS_Provider;
 
+        WMS_Provider.prototype.url = function(bbox,layerId) {
 
-        /**
-         * Returns the url for a WMS query with the specified bounding box
-         * @param {BoundingBox} bbox: requested bounding box
-         * @returns {Object@call;create.url.url|String}
-         */
-        WMS_Provider.prototype.url = function(bbox) {
-            var url = this.baseUrl + "?LAYERS=" + this.layer + "&FORMAT=" + this.format +
-                "&SERVICE=WMS&VERSION=1.1.1" + "&REQUEST=GetMap&BBOX=" +
-                bbox.minCarto.longitude + "," + bbox.minCarto.latitude + "," +
-                bbox.maxCarto.longitude + "," + bbox.maxCarto.latitude +
-                "&WIDTH=" + this.width + "&HEIGHT=" + this.height + "&SRS=" + this.srs;
-            return url;
+            return this.customUrl(this.layersData[layerId].customUrl,bbox);
+
+        };
+        WMS_Provider.prototype.customUrl = function(url,coord)
+        {
+            var bbox = coord.minCarto.longitude + "," + coord.minCarto.latitude + "," +
+                       coord.maxCarto.longitude + "," + coord.maxCarto.latitude;
+            var urld = url.replace('%bbox',bbox.toString());
+
+            return urld;
+
+        };
+
+        WMS_Provider.prototype.removeLayer = function(idLayer)
+        {
+            if(this.layersData[idLayer])
+                this.layersData[idLayer] = undefined;
+
+        };
+
+        WMS_Provider.prototype.addLayer = function(layer){
+            if(!layer.name)
+                throw new Error('layerName is required.');
+
+            var baseUrl = layer.url,
+                layerName = layer.name,
+                format = defaultValue(layer.mimeType, "image/png"),
+                crs = defaultValue(layer.projection, "EPSG:4326"),
+                width = defaultValue(layer.heightMapWidth, 256),
+                version = defaultValue(layer.version, "1.3.0"),
+                styleName = defaultValue(layer.style, "normal"),
+                transparent = defaultValue(layer.transparent, false);
+
+            var newBaseUrl =   baseUrl +
+                          '?SERVICE=WMS&REQUEST=GetMap&layers=' + layerName +
+                          '&version=' + version +
+                          '&styles=' + styleName +
+                          '&format=' + format +
+                          '&transparent=' + transparent +
+                          '&bbox=%bbox'  +
+                          '&crs=' + crs +
+                          "&WIDTH=" + width +
+                          "&HEIGHT=" + width;
+
+                var maxZoom = layer.maxLevel;
+                var minZoom = layer.minLevel;
+
+                this.layersData[layer.id] = {
+                    customUrl: newBaseUrl,
+                    mimetype :  format,
+                    crs :   crs,
+                    width  : width,
+                    version : version,
+                    styleName : styleName,
+                    transparent : transparent,
+                    zoom : {min:minZoom,max:maxZoom},
+                    fx : layer.fx || 0.0,
+                    tileMatrixSet: 'WGS84G' //cet option pour prendre le parcours de wmts
+                };
+        };
+
+        WMS_Provider.prototype.executeCommand = function(){
+            //console.log("executeCommandWMS");
+        };
+
+        WMS_Provider.prototype.tileInsideLimit = function(tile,layer) {
+            return tile.level >= layer.zoom.min && tile.level <= layer.zoom.max;
+        };
+
+        WMS_Provider.prototype.getColorTextures = function(tile, layerWMSId) {
+
+            var promises = [];
+
+            if (tile.material === null) {
+                return when();
+            }
+
+            for (var i = 0; i < layerWMSId.length; i++) {
+
+                var layer = this.layersData[layerWMSId[i]];
+
+                if (this.tileInsideLimit(tile,layer))
+                {
+                    var bbox = tile.bbox;
+                    promises.push(this.getColorTexture(bbox,layerWMSId[i]));
+                }
+            }
+
+            if (promises.length)
+                return when.all(promises);
+            else
+                return when();
+
+       };
+
+
+
+       WMS_Provider.prototype.getColorTexture = function(bbox, layerId) {
+
+            //ATTENTION: pitch???
+            var result = {pitch : 1};
+            var url = this.url(bbox,layerId);
+
+            result.texture = this.cache.getRessource(url);
+
+            if (result.texture !== undefined) {
+                return when(result);
+            }
+            return this.ioDriverImage.read(url).then(function(image) {
+
+                var texture = this.cache.getRessource(image.src);
+
+                if(texture)
+                    result.texture = texture;
+                else
+                {
+                    result.texture = new THREE.Texture(image);
+                    result.texture.needsUpdate = true;
+                    result.texture.generateMipmaps = false;
+                    result.texture.magFilter = THREE.LinearFilter;
+                    result.texture.minFilter = THREE.LinearFilter;
+                    result.texture.anisotropy = 16;
+                    result.texture.url = url;
+                    //result.texture.level = zoom; //no zoom level in wms
+                   // result.texture.layerId = layerId;
+
+                    this.cache.addRessource(url, result.texture);
+                }
+
+                return result;
+
+            }.bind(this)).catch(function(/*reason*/) {
+                    //console.error('getColorTexture failed for url |', url, '| Reason:' + reason);
+                    result.texture = null;
+
+                    return result;
+                });
+
+        };
+
+        WMS_Provider.prototype.executeCommand = function(command){
+
+            var tile = command.requester;
+            return this.getColorTextures(tile,command.paramsFunction.layer.services).then(function(result)
+            {
+                    this.setTexturesLayer(result,1);
+            }.bind(tile));
+
         };
 
 
@@ -96,6 +230,19 @@ define('Core/Commander/Providers/WMS_Provider', [
 
         };
 
+                /**
+         * Returns the url for a WMS query with the specified bounding box
+         * @param {BoundingBox} bbox: requested bounding box
+         * @returns {Object@call;create.url.url|String}
+         */
+        WMS_Provider.prototype.urlClouds = function(bbox) {
+            var url = this.baseUrl + "?LAYERS=" + this.layer + "&FORMAT=" + this.format +
+                "&SERVICE=WMS&VERSION=1.1.1" + "&REQUEST=GetMap&BBOX=" +
+                bbox.minCarto.longitude + "," + bbox.minCarto.latitude + "," +
+                bbox.maxCarto.longitude + "," + bbox.maxCarto.latitude +
+                "&WIDTH=" + this.width + "&HEIGHT=" + this.height + "&SRS=" + this.srs;
+            return url;
+        };
 
 
         /**

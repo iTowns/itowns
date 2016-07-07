@@ -77,6 +77,11 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         return this.scene.managerCommand.getProvider(this.scene.getMap().tiles).providerWMTS;
     };
 
+    ApiGlobe.prototype.getWMSProvider = function()
+    {
+        return this.scene.managerCommand.getProvider(this.scene.getMap().tiles).providerWMS;
+    };
+
     /**
     * This function adds an imagery layer to the scene. The layer id must be unique. The protocol rules wich parameters are then needed for the function.
     * @constructor
@@ -87,12 +92,14 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         var map = this.scene.getMap();
         var manager = this.scene.managerCommand;
         var provider;
-
-        if(layer.protocol === 'wmts')
+        var protocol = layer.protocol;
+        if(protocol.toLowerCase() === 'wmts')
             provider = this.getWMTSProvider();
+        else if(protocol.toLowerCase() === 'wms')
+            provider = this.getWMSProvider();
 
         provider.addLayer(layer);
-        var colorLayer = map.addColorLayer(layer.id)
+        var colorLayer = map.addColorLayer(layer.id);
         manager.addLayer(colorLayer,provider);
 
     };
@@ -156,7 +163,9 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         var map = this.scene.getMap();
         var manager = this.scene.managerCommand;
         var providerWMTS = manager.getProvider(map.tiles).providerWMTS;
+        var providerWMS = manager.getProvider(map.tiles).providerWMS;
         var layersData = providerWMTS.layersData;
+            layersData.push(providerWMS.layersData[0]);
         return layersData;
 
     };
