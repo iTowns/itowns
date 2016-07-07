@@ -28,7 +28,7 @@ define('Renderer/LayeredMaterial', ['THREE',
     var vector = new THREE.Vector3(0.0, 0.0, 0.0);
     var vector2 = new THREE.Vector2(0.0, 0.0);
     var vector4 = new THREE.Vector4(0.0, 0.0, 0.0, 0.0);
-    var showBorderUV = false;
+    var showDebug = false;
     var fooTexture;
 
     var getColorAtIdUv = function(nbTex)
@@ -67,8 +67,8 @@ define('Renderer/LayeredMaterial', ['THREE',
 
         customFS += pitUV;
 
-        if(showBorderUV)
-            customFS += '#define BORDERLINE\n';
+        if(showDebug)
+            customFS += '#define DEBUG\n';
 
         customFS += getColorAtIdUv(nbSamplers);
 
@@ -288,7 +288,7 @@ define('Renderer/LayeredMaterial', ['THREE',
         this.uniforms.nColorLayer.value = param.length;
         for (var l = 0; l < param.length; l++)
         {
-            this.paramLayers[l] = new THREE.Vector4(param[l].pit, param[l].tileMT  === 'PM' ? 1 : 0,param[l].visible,param[l].opacity);
+            this.paramLayers[l] = new THREE.Vector4(param[l].layerTexturesOffset, param[l].tileMT  === 'PM' ? 1 : 0,param[l].visible,param[l].opacity);
             this.paramBLayers[l] = new THREE.Vector2(param[l].fx, 0.0);
         }
     };
