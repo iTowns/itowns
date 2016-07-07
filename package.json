@@ -26,7 +26,8 @@
     "three": "^0.77.0",
     "string_format": "^0.0.6",
     "when": "^3.7.7",
-    "simd": "^2.0.0"
+    "simd": "^2.0.0",
+    "fs": "^0.0.2"
   },
   "devDependencies": {
     "eslint": "^2.5.3",
@@ -34,6 +35,8 @@
     "js-beautify": "^1.6.2",
     "raw-loader": "^0.5.1",
     "webpack": "^1.12.12",
-    "webpack-dev-server": "^1.14.1"
+    "webpack-dev-server": "^1.14.1",
+    "gl": "^4.0.2",
+    "jsdom": "3.1.2"
   }
 }
