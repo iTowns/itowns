@@ -390,6 +390,24 @@ and open the template in the editor.
         //     fx :        2.5,
         // });
 
+        itowns.viewer.addImageryLayer({
+                                        url       : "https://wxs.ign.fr/gratuit/geoportail/v/wms?",
+                                        protocol  : 'WMS',
+                                        version   : '1.3.0',
+                                        id        : 'testwms',
+                                        name      : 'REGION.2016',
+                                        mimeType  : "image/png",
+                                        style      : "",
+                                        projection : "EPSG:4326",
+                                        transparent : true,
+                                        featureInfoMimeType : "",
+                                        dateTime  : "",
+                                        maxLevel  : 20,
+                                        minLevel  : 2,
+                                        heightMapWidth : 256,
+                                        waterMask      : false
+                                    });       
+
         itowns.viewer.addElevationLayer({
             protocol:   "wmts",
             id:         "IGN_MNT",

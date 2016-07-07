@@ -45,6 +45,7 @@ define('Core/Commander/Providers/TileProvider', [
             this.projection = new Projection();
             this.ellipsoid = new Ellipsoid(size);
             this.builder = new BuilderEllipsoidTile(this.ellipsoid,this.projection);
+            this.providerWMS = new WMS_Provider({support : gLDebug});
 
             this.cacheGeometry = [];
             this.tree = null;

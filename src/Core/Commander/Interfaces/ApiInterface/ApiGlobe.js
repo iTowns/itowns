@@ -12,6 +12,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
        'Scene/NodeProcess',
        'Globe/Globe',
        'Core/Commander/Providers/WMTS_Provider',
+       'Core/Commander/Providers/WMS_Provider',
        'Core/Commander/Providers/TileProvider',
        'Core/Geographic/CoordCarto',
        'Core/Geographic/Projection'], function(
@@ -21,6 +22,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
            NodeProcess,
            Globe,
            WMTS_Provider,
+           WMS_Provider,
            TileProvider,
            CoordCarto,
            Projection) {
@@ -101,6 +103,11 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         }
     }
 
+    ApiGlobe.prototype.getWMSProvider = function()
+    {
+        return this.scene.managerCommand.getProvider(this.scene.getMap().tiles).providerWMS;
+    };
+
     /**
     * This function adds an imagery layer to the scene. The layer id must be unique. The protocol rules wich parameters are then needed for the function.
     * @constructor
@@ -110,6 +117,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         this.registerLayer(layer);
 
         var map = this.scene.getMap();
+
 
         map.tiles.wmtsColorLayers.push(layer);
         map.colorTerrain.services.push(layer.id);
@@ -187,10 +195,12 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
 
     ApiGlobe.prototype.getLayers = function(/*param*/){
         var manager = this.scene.managerCommand;
-        var wmtsProviders = manager.getProvidersForProtocol('wmts');
-        var layersWMTS = wmtsProviders[0].layersWMTS;
-        return layersWMTS;
+        // FIXME
 
+        var providerWMTS = manager.getProvidersForProtocol('wmts');
+        var providerWMS = manager.getProvidersForProtocol('wms');
+
+        return [].concat(providerWMS.layersData).concat(providerWMTS.layersData);
     };
 
     /**
@@ -250,6 +260,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
 
         // Register all providers
         this.scene.managerCommand.addProvider(new WMTS_Provider({support : map.gLDebug}));
+        this.scene.managerCommand.addProvider(new WMS_Provider({support : map.gLDebug}));
         this.scene.managerCommand.addProvider(new TileProvider(map.size));
 
         var wgs84TileLayer = {
