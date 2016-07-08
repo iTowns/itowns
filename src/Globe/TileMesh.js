@@ -325,7 +325,7 @@ define('Globe/TileMesh', [
     };
 
     TileMesh.prototype.allTexturesAreLoaded = function(){
-        return this.texturesNeeded === this.material.nbLoadedTextures();
+        return this.texturesNeeded <= this.material.nbLoadedTextures();
     };
 
     TileMesh.prototype.loadingCheck = function() {

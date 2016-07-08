@@ -31,10 +31,13 @@ define('Core/Math/Rectangle', ['Core/defaultValue', 'THREE'],
 
         //if Right2 < Right1 && Left2 > Left1 && Top2 < Top1 && Bottom2 > Bottom1
         //this is correct only for coordinate positive
-        Rectangle.prototype.contains = function(rect){
-                var vmin = new THREE.Vector2(rect.getWest(), rect.getSouth());
-                var vmax = new THREE.Vector2(rect.getEast(), rect.getNorth());
-                return this.containsPoint(vmin) && this.containsPoint(vmax);
+        Rectangle.prototype.intersects = function(rect){
+            if (rect.getEast() < this._west) return false;
+            if (rect.getWest() > this._east) return false;
+            if (rect.getNorth() < this.south) return false;
+            if (rect.getSouth() > this._north) return false;
+
+            return true;
         };
 
         Rectangle.prototype.containsPoint = function( v) {

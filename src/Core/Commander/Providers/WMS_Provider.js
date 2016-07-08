@@ -136,7 +136,6 @@ define('Core/Commander/Providers/WMS_Provider', [
         };
 
         WMS_Provider.prototype.tileInsideLimit = function(tile,layer) {
-
             var bbox = tile.bbox;
 
             var rectTile = new Rectangle({west:bbox.minCarto.longitude,
@@ -147,17 +146,17 @@ define('Core/Commander/Providers/WMS_Provider', [
             //a reason that i add Pi here is because
             //bbox of wms reference to center of map
             //but bbox of itown reference to middle of left side.
-            var west =  layer.bbox[0]*Math.PI/180 + Math.PI;
-            var east =  layer.bbox[2]*Math.PI/180 + Math.PI;
+            var west =  layer.bbox[0]*Math.PI/180.0 + Math.PI;
+            var east =  layer.bbox[2]*Math.PI/180.0 + Math.PI;
 
             var rectRegion = new Rectangle({west: west,
                                             east: east,
-                                            south:layer.bbox[1]*Math.PI/180,
-                                            north:layer.bbox[3]*Math.PI/180});
+                                            south:layer.bbox[1]*Math.PI/180.0,
+                                            north:layer.bbox[3]*Math.PI/180.0});
 
             // console.log(rectRegion.contains(rectTile),rectTile,rectRegion);
 
-            return rectRegion.contains(rectTile);
+            return rectRegion.intersects(rectTile);
         };
 
         WMS_Provider.prototype.getColorTextures = function(tile, layer) {
@@ -231,8 +230,8 @@ define('Core/Commander/Providers/WMS_Provider', [
             var tile = command.requester;
             return this.getColorTextures(tile,command.paramsFunction.layer).then(function(result)
             {
-                    this.setTexturesLayer(result,1);
-            }.bind(tile));
+                    return command.resolve(result);
+            });
 
         };
 

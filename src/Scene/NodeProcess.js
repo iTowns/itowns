@@ -98,12 +98,14 @@ define('Scene/NodeProcess',
                 quadtree.interCommand.request(args, node).then(function(child) {
                     var colorTextureCount = 0;
                     var paramMaterial = [];
+                    var i;
+                    var layer;
 
                     child.matrixSet = [];
 
                     // update wmts
-                    for (var i = 0; i < quadtree.wmtsColorLayers.length; i++) {
-                        var layer = quadtree.wmtsColorLayers[i];
+                    for (i = 0; i < quadtree.wmtsColorLayers.length; i++) {
+                        layer = quadtree.wmtsColorLayers[i];
                         var tileMatrixSet = layer.options.tileMatrixSet;
 
                         if(!child.matrixSet[tileMatrixSet]) {
@@ -134,8 +136,8 @@ define('Scene/NodeProcess',
                     child.texturesNeeded = colorTextureCount;
 
 
-                    for (var i=0; i<quadtree.wmtsElevationLayers.length; i++) {
-                        var layer = quadtree.wmtsElevationLayers[i];
+                    for (i=0; i<quadtree.wmtsElevationLayers.length; i++) {
+                        layer = quadtree.wmtsElevationLayers[i];
                         if (layer.tileInsideLimit(child, layer)) {
                             // assume max 1 elevation layer
                             child.texturesNeeded += 1;
@@ -157,6 +159,7 @@ define('Scene/NodeProcess',
 
 
     function commandCancellationFn(cmd) {
+        return false;
         // allow cancellation of the command if the node isn't visible anymore
         return cmd.requester.visible === false && 2 <= cmd.requester.level;
     }
@@ -181,6 +184,8 @@ define('Scene/NodeProcess',
 
     function updateNodeImagery(quadtree, node) {
         var promises = [];
+        if (node.ttt) return;
+        node.ttt = true;
 
         for (var i=0; i<quadtree.wmtsColorLayers.length; i++) {
             var layer = quadtree.wmtsColorLayers[i];
@@ -198,6 +203,7 @@ define('Scene/NodeProcess',
             }
             console.log('SET', node.id, textures.length, node.texturesNeeded);
             node.setTexturesLayer(textures, 1);
+            node.ttt = false;
         });
     }
 
