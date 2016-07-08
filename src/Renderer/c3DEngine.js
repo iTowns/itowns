@@ -312,21 +312,37 @@ define('Renderer/c3DEngine', [
 
     };
 
-    c3DEngine.prototype.enablePickingRender = function(enable) {
+    c3DEngine.prototype.changeStateNodesScene = function(state){
+
+        // build traverse function
+        var changeStateFunction = function(){
+
+            var changeState = state;
+
+            return function (object3D){
+
+                  object3D.changeState(changeState);
+
+            };
+
+        }();
+
+        var enable = state === RENDER.FINAL;
+
         for (var x = 0; x < this.scene3D.children.length; x++) {
             var node = this.scene3D.children[x];
 
-            if (node.enablePickingRender)
-                node.traverseVisible(enable ? this.pickingOn.bind(this) : this.pickingOff.bind(this));
+            if (node.changeState)
+                node.traverseVisible(changeStateFunction);
             else
-            {
-                if(node.layer){
-                    node.visible = !enable ? node.layer.visible : false;
-                }
+
+                if(node.layer)
+                    node.visible = enable ? node.layer.visible : false;
                 else
-                    node.visible = !enable;
-            }
+                    node.visible = enable;
+
         }
+
     };
 
     c3DEngine.prototype.rtcOn = function(obj3D) {
@@ -418,21 +434,13 @@ define('Renderer/c3DEngine', [
     };
 
     c3DEngine.prototype.setStateRender = function(stateRender) {
+
         if (this.stateRender !== stateRender) {
             this.stateRender = stateRender;
 
-            switch (this.stateRender) {
-                case RENDER.FINAL:
-                    this.enablePickingRender(false);
-                    break;
-                case RENDER.PICKING:
-                    this.enablePickingRender(true);
-                    break;
-                default:
-                    this.stateRender = RENDER.FINAL;
-                    this.enablePickingRender(false);
-            }
-        }
+            this.changeStateNodesScene(stateRender);
+
+           }
     };
 
     c3DEngine.prototype.renderTobuffer = function(x, y, width, height, mode) {

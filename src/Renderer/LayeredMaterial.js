@@ -309,10 +309,6 @@ define('Renderer/LayeredMaterial', ['THREE',
 
     };
 
-    LayeredMaterial.prototype.enablePickingRender = function(enable) {
-        this.uniforms.pickingRender.value = enable === true ? 1 : 0;
-    };
-
     LayeredMaterial.prototype.setLightingOn = function (enable){
         this.uniforms.lightingOn.value = enable === true ? 1 : 0;
     };

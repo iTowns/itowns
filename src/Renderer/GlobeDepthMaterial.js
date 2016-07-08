@@ -24,6 +24,11 @@ define('Renderer/GlobeDepthMaterial', ['THREE',
         this.vertexShader =  GlobeDepthVS;
         this.fragmentShader = GlobeDepthFS;
 
+
+        // Peut passer directement l'uniform de otherMaterial,
+        // vérifier l'homogénéité des déclarations des attributes
+        // dans le 2 shaders
+
         this.uniforms.dTextures_00 = {
             type: "tv",
             value: otherMaterial.Textures[0]
