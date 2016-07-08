@@ -110,7 +110,7 @@ define('Scene/NodeProcess',
                             child.matrixSet[tileMatrixSet] = projection.getCoordWMTS_WGS84(child.tileCoord, child.bbox, tileMatrixSet);
                         }
 
-                        if (true) { //layer.zoom.min <= child.level && child.level <= layer.zoom.max) {
+                        if (layer.tileInsideLimit(child, layer)) {
 
                             var bcoord = child.matrixSet[tileMatrixSet];
 
@@ -124,12 +124,24 @@ define('Scene/NodeProcess',
                             });
 
                             colorTextureCount += bcoord[1].row - bcoord[0].row + 1;
+                            console.log('    ', child.id, child.level, layer.id, bcoord[1].row - bcoord[0].row + 1);
                         }
                     }
+                    console.log('->', child.id, colorTextureCount);
 
 
                     child.setColorLayerParameters(paramMaterial);
-                    child.texturesNeeded = 1 + colorTextureCount;
+                    child.texturesNeeded = colorTextureCount;
+
+
+                    for (var i=0; i<quadtree.wmtsElevationLayers.length; i++) {
+                        var layer = quadtree.wmtsElevationLayers[i];
+                        if (layer.tileInsideLimit(child, layer)) {
+                            // assume max 1 elevation layer
+                            child.texturesNeeded += 1;
+                            break;
+                        }
+                    }
 
                     // request imagery update
                     updateNodeImagery(quadtree, child);
@@ -171,8 +183,12 @@ define('Scene/NodeProcess',
         var promises = [];
 
         for (var i=0; i<quadtree.wmtsColorLayers.length; i++) {
-            var args = {layer: quadtree.wmtsColorLayers[i], destination: 1 };
-            promises.push(quadtree.interCommand.request(args, node, commandCancellationFn));
+            var layer = quadtree.wmtsColorLayers[i];
+
+            if (layer.tileInsideLimit(node, layer)) {
+                var args = {layer: layer, destination: 1 };
+                promises.push(quadtree.interCommand.request(args, node, commandCancellationFn));
+            }
         }
 
         return Promise.all(promises).then(function(colorTextures) {
@@ -180,6 +196,7 @@ define('Scene/NodeProcess',
             for (var j=0; j<colorTextures.length; j++) {
                 textures = textures.concat(colorTextures[j]);
             }
+            console.log('SET', node.id, textures.length, node.texturesNeeded);
             node.setTexturesLayer(textures, 1);
         });
     }
@@ -237,7 +254,7 @@ define('Scene/NodeProcess',
                 this.subdivideNode(node, camera, params);
             }
             // Ideally we'd want to hide this node and display its children
-            node.setDisplayed(false); // !node.childrenLoaded());
+            node.setDisplayed(!node.childrenLoaded());
         } else {    // SSE good enough: display node and put it to the right scale if necessary
             if (params.withUp) {
                 this.refineNodeLayers(node, camera, params);

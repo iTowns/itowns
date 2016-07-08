@@ -54,9 +54,13 @@ define('Core/Commander/Providers/WMS_Provider', [
         }
 
         WMS_Provider.prototype.url = function(bbox,layerId) {
-
             return this.customUrl(this.layersData[layerId].customUrl,bbox);
-
+/*
+        http://wxs.ign.fr/gratuit/geoportail/v/wms?SERVICE=WMS&REQUEST=GetMap&layers=REGION.2016&version=1.3.0&styles=&bbox=41.101318359375,-4.04117431640624951,49.9242431640625,1.0976318359374976&crs=EPSG:4326&format=image/png&width=264&height=264
+            http://wxs.ign.fr/gratuit/geoportail/v/wms?SERVICE=WMS&REQUEST=GetMap&layers=REGION.2016&version=1.3.0&styles=&bbox=48.5101318359375,-1.4117431640624951,49.2242431640625,-0.6976318359374976&crs=EPSG:4326&format=image/png&width=256&height=256
+            http://wxs.ign.fr/gratuit/geoportail/v/wms?SERVICE=WMS&REQUEST=GetMap&layers=REGION.2016&version=1.3.0&styles=&bbox=31.6406249999993,-1.4117431640624951,32.34375,-0.6976318359374976&crs=EPSG:4326&format=image/png&width=256&height=256
+            http://wxs.ign.fr/gratuit/geoportail/v/wms?SERVICE=WMS&REQUEST=GetMap&layers=REGION.2016&version=1.3.0&styles=&bbox=41.3067,-5.51158,51.0759,10.6963&crs=EPSG:4326&format=image/png&width=256&height=256
+*/
         };
         WMS_Provider.prototype.customUrl = function(url,coord)
         {
@@ -182,7 +186,7 @@ define('Core/Commander/Providers/WMS_Provider', [
        WMS_Provider.prototype.getColorTexture = function(bbox, layerId) {
 
             //ATTENTION: pitch???
-            var result = {pitch : 1};
+            var result = {pitch : new THREE.Vector3(0, 0, 1)};
 
             var url = this.url(bbox,layerId);
 

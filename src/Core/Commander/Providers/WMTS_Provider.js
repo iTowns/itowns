@@ -153,9 +153,6 @@ define('Core/Commander/Providers/WMTS_Provider', [
          * @returns {WMTS_Provider_L15.WMTS_Provider.prototype@pro;_IoDriver@call;read@call;then}
          */
         WMTS_Provider.prototype.getElevationTexture = function(tile,services) {
-
-            tile.texturesNeeded += 1;
-
             var layerId = services[0];
             var layer = this.layersData[layerId];
 

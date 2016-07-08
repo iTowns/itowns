@@ -76,7 +76,6 @@ define('Core/Commander/ManagerCommands', [
 
             if (this.commandsLength() === 0)
             {
-                console.log('run', this.counter.run, 'canceled', this.counter.canceled);
                 return Promise.resolve(0);
             }
 

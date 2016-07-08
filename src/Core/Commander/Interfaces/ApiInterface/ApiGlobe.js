@@ -98,6 +98,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         for (var i=0; i<providers.length; i++) {
             var provider = providers[i];
             if (provider.supports(layer.protocol) && provider.addLayer) {
+                layer.tileInsideLimit = provider.tileInsideLimit.bind(provider);
                 provider.addLayer(layer);
             }
         }
@@ -114,12 +115,9 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
     * @param {Layer} layer.
     */
     ApiGlobe.prototype.addImageryLayer = function(layer) {
-        console.log('********************************** TEMP');
-        if (layer.protocol != 'WMS') return;
         this.registerLayer(layer);
 
         var map = this.scene.getMap();
-
 
         map.tiles.wmtsColorLayers.push(layer);
         map.colorTerrain.services.push(layer.id);
