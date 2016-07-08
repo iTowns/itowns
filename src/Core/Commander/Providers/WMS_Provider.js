@@ -127,7 +127,7 @@ define('Core/Commander/Providers/WMS_Provider', [
 
             var bbox = tile.bbox;
 
-            var rectTile = new Rectangle({west:bbox.minCarto.longitude,
+            var rectTile = new Rectangle({  west:bbox.minCarto.longitude,
                                             east:bbox.maxCarto.longitude,
                                             south:bbox.minCarto.latitude,
                                             north:bbox.maxCarto.latitude});
@@ -155,7 +155,8 @@ define('Core/Commander/Providers/WMS_Provider', [
             if (tile.material === null) {
                 return when();
             }
-
+console.log(layerWMSId
+        );
             for (var i = 0; i < layerWMSId.length; i++) {
 
                 var layer = this.layersData[layerWMSId[i]];

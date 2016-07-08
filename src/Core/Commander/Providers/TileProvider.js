@@ -170,7 +170,6 @@ define('Core/Commander/Providers/TileProvider', [
                 // if(provider instanceof WMTS_Provider)
                 //     console.log('is WMTS_Provider');
 
-                console.log(service,layerView)
                 if (provider.tileInsideLimit(tile, layerData)) {
 
                     var idProv = providersColor.indexOf(provider);

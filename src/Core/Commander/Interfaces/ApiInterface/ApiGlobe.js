@@ -171,6 +171,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
             { layersData[layerName] = providerWMS.layersData[layerName]; }
 
         return layersData;
+        
 
     };
 
