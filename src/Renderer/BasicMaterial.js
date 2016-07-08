@@ -75,6 +75,10 @@ define('Renderer/BasicMaterial', ['THREE',
         this.uniforms.mVPMatRTC.value = rtc;
     };
 
+    BasicMaterial.prototype.getMatrixRTC = function() {
+        return this.uniforms.mVPMatRTC.value;
+    };
+
     BasicMaterial.prototype.setUuid = function(uuid) {
         this.uniforms.uuid.value = uuid;
     };

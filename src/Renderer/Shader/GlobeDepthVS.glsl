@@ -22,7 +22,7 @@ precision highp int;
 
 #endif
 
-attribute vec2      uv;
+attribute vec2      uv_wgs84;
 attribute vec3      position;
 attribute vec3      normal;
 
@@ -37,7 +37,7 @@ void main() {
 
         if(nbTextures[0] > 0)
         {
-            vec2    vVv = vec2(uv.x*pitScale_L00[0].z + pitScale_L00[0].x,uv.y*pitScale_L00[0].z + pitScale_L00[0].y);
+            vec2    vVv = vec2(uv_wgs84.x*pitScale_L00[0].z + pitScale_L00[0].x,uv_wgs84.y*pitScale_L00[0].z + pitScale_L00[0].y);
 
             float   dv  = max(texture2D( dTextures_00[0], vVv ).w, 0.);
 

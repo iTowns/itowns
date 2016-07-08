@@ -155,9 +155,12 @@ define('Globe/TileMesh', [
 
 
         if(enable)
-            this.depthMaterial.uniforms.mVPMatRTC.value = this.layeredMaterial.uniforms.mVPMatRTC.value;
-
-        this.material = enable ? this.depthMaterial : this.layeredMaterial;
+        {
+            this.depthMaterial.setMatrixRTC(this.layeredMaterial.getMatrixRTC());
+            this.material = this.depthMaterial;
+        }
+        else
+            this.material = this.layeredMaterial;
 
     };
 
