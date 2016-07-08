@@ -24,6 +24,7 @@ define('Scene/Node', [], function() {
         this.screenSpaceError = 0.0;
         this.loaded = false;
         this.pendingSubdivision = false;
+        this.pendingLayers = {};
         this.visible = true;
         this.layer = null;
 
