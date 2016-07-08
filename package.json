@@ -5,6 +5,7 @@
   "main": "dist/itowns2.js",
   "scripts": {
     "lint": "eslint \"src/**/*.js\" \"test/**/*.js\"",
+    "doc": "jsdoc src/Core/Commander/Interfaces/ApiInterface/*",
     "test": "npm run lint && npm run build",
     "build": "webpack -p",
     "start": "webpack-dev-server -d --inline --hot"
@@ -32,6 +33,7 @@
     "eslint": "^2.5.3",
     "eslint-loader": "^1.3.0",
     "js-beautify": "^1.6.2",
+    "jsdoc": "^3.4.0",
     "raw-loader": "^0.5.1",
     "webpack": "^1.12.12",
     "webpack-dev-server": "^1.14.1"
