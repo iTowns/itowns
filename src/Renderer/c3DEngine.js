@@ -10,7 +10,6 @@ define('Renderer/c3DEngine', [
     'THREE',
     'GlobeControls',
     'Renderer/Camera',
-    'Renderer/DepthMaterial',
     'Renderer/BasicMaterial',
     'Globe/Atmosphere',
     'Core/System/Capabilities'
@@ -18,7 +17,6 @@ define('Renderer/c3DEngine', [
     THREE,
     GlobeControls,
     Camera,
-    DepthMaterial,
     BasicMaterial,
     Atmosphere,
     Capabilities) {

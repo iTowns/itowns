@@ -1,0 +1,67 @@
+#version 100
+
+precision highp float;
+precision highp int;
+
+#define SHADER_NAME ShaderMaterial
+#define VERTEX_TEXTURES
+
+#define USE_LOGDEPTHBUF
+#define USE_LOGDEPTHBUF_EXT
+
+#ifdef USE_LOGDEPTHBUF
+
+    #define EPSILON 1e-6
+    #ifdef USE_LOGDEPTHBUF_EXT
+
+        varying float vFragDepth;
+
+    #endif
+
+    uniform float logDepthBufFC;
+
+#endif
+
+attribute vec2      uv;
+attribute vec3      position;
+attribute vec3      normal;
+
+uniform sampler2D   dTextures_00[1];
+uniform vec3        pitScale_L00[1];
+uniform int         nbTextures[8];
+uniform mat4        mVPMatRTC;
+
+void main() {
+
+        vec4 vPosition;
+
+        if(nbTextures[0] > 0)
+        {
+            vec2    vVv = vec2(uv.x*pitScale_L00[0].z + pitScale_L00[0].x,uv.y*pitScale_L00[0].z + pitScale_L00[0].y);
+
+            float   dv  = max(texture2D( dTextures_00[0], vVv ).w, 0.);
+
+            vPosition   = vec4( position +  normal  * dv ,1.0 );
+        }
+        else
+            vPosition = vec4( position ,1.0 );
+
+        gl_Position = mVPMatRTC * vPosition;
+
+        #ifdef USE_LOGDEPTHBUF
+
+            gl_Position.z = log2(max( EPSILON, gl_Position.w + 1.0 )) * logDepthBufFC;
+
+            #ifdef USE_LOGDEPTHBUF_EXT
+
+                vFragDepth = 1.0 + gl_Position.w;
+
+            #else
+
+                gl_Position.z = (gl_Position.z - 1.0) * gl_Position.w;
+
+            #endif
+
+        #endif
+
+}
