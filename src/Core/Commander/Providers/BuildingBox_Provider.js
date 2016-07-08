@@ -198,8 +198,6 @@ define('Core/Commander/Providers/BuildingBox_Provider',[
 
         _geometry.computeFaceNormals();  // WARNING : VERY IMPORTANT WHILE WORKING WITH RAY CASTING ON CUSTOM MESH
         geometry.computeFaceNormals();
-        
-        console.log(_geometry);
         /*
             var matLambert = new THREE.MeshBasicMaterial({color: 0xffffff, transparent: true, opacity: 0.8, side:THREE.DoubleSide});
             var _currentMeshForRoof  = new THREE.Mesh(geometry, matLambert);// //geometryClickToGo,mat);
@@ -218,11 +216,10 @@ define('Core/Commander/Providers/BuildingBox_Provider',[
                     geometry.vertices[i].sub(firstPos);
             }
         }
-         
          this.geometry = _geometry;
          this.pivot = firstPos;
          this.geometryRoof = geometry;
-         
+
          return {geometry:_geometry, pivot: firstPos, geometryRoof: geometry};
 
     };

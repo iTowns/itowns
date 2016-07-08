@@ -95,35 +95,20 @@ define (['Renderer/c3DEngine','three','Renderer/ThreeExtented/threeExt','MobileM
 
                var normal      = ellipsoid.geodeticSurfaceNormalCartographic(posPanoWGS84);
                var quaternion  = new THREE.Quaternion();
-               quaternion.setFromAxisAngle( new THREE.Vector3(1, 0 ,0 ), Math.PI/2 );
+               quaternion.setFromAxisAngle( new THREE.Vector3(1, 0 ,0 ), Math.PI/2);
 
                var child = new THREE.Object3D();
                var localTarget = new THREE.Vector3().addVectors(posPanoCartesian.clone(), normal );
                child.lookAt(localTarget);
-               child.quaternion.multiply(quaternion );
+               child.quaternion.multiply(quaternion);
                //child.position.copy(posCartesien.clone());
                child.updateMatrix();
                //console.log("matrice originale", matRotation,"MAtrice normale",child.matrix, "normal vec", normal );
 
                var c = child.matrix;//.elements;
                var m3 = new THREE.Matrix3().fromMatrix4(c);
-               //console.log(m3);
-               var matRotationOnGlobe = new THREE.Matrix3().multiplyMatrices(matRotation.clone(), m3);//child.matrix);
+               var matRotationOnGlobe = new THREE.Matrix3().multiplyMatrices(m3,matRotation.clone());//, m3);//child.matrix);
 
-               // Debug axis normal
-               var axisHelper = new THREE.AxisHelper( 5000 );
-               axisHelper.quaternion.copy(child.quaternion);
-               //child.position.copy(posCartesien.clone());
-               axisHelper.updateMatrix();
-               axisHelper.position.copy(posPanoCartesian);
-               graphicEngine().add3DScene( axisHelper );
-               
-               
-                /*
-                var lineNormal = new THREE.Mesh( new THREE.SphereGeometry( 0.5, 12, 12 ), new THREE.MeshBasicMaterial({side: THREE.DoubleSide, color:0xff00ff}));
-                spherePosPano.position.copy(posPanoCartesian);
-                graphicEngine().add3DScene(spherePosPano);
-*/
                return matRotationOnGlobe;
 
             },
@@ -180,7 +165,6 @@ define (['Renderer/c3DEngine','three','Renderer/ThreeExtented/threeExt','MobileM
 
                 var posPanoWGS84 = new CoordCarto().setFromDegreeGeo(panoInfo.longitude, panoInfo.latitude, panoInfo.altitude);
                 var posPanoCartesian = ellipsoid.cartographicToCartesian(posPanoWGS84);
-                console.log("posPanoCartesian: ",posPanoCartesian);
                 var spherePosPano = new THREE.Mesh( new THREE.SphereGeometry( 0.5, 12, 12 ), new THREE.MeshBasicMaterial({side: THREE.DoubleSide, color:0xff00ff}));
                 spherePosPano.position.copy(posPanoCartesian);
                 graphicEngine().add3DScene(spherePosPano);

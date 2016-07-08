@@ -108,7 +108,6 @@ define('Scene/BrowseTree', ['Globe/TileMesh', 'THREE'], function( TileMesh, THRE
             node.setSelected(node.visible && node.material.visible);
             if (this.selectedNode !== node) {
                 this.selectedNode = node;
-                //console.info(node);
             }
         }
     };
@@ -263,11 +262,10 @@ define('Scene/BrowseTree', ['Globe/TileMesh', 'THREE'], function( TileMesh, THRE
         var root = layer.children[0];
 
         for (var c = 0; c < root.children.length; c++) {
-            
-            var node = root.children[c]; 
-            var cachedRTC = this.gfxEngine.getRTCMatrixFromCenter(node.absoluteCenter, camera);
+            var node = root.children[c];
+            var cachedRTC = this.gfxEngine.getRTCMatrixFromCenter(node.absoluteCenter,camera);
             node.setMatrixRTC(cachedRTC);
-            
+
             var cRTC = function(obj) {
 
                 if (obj.material && obj.material.setMatrixRTC)

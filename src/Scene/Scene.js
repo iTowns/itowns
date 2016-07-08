@@ -222,7 +222,6 @@ define('Scene/Scene', [
 
         this.layers.push({node: node, process: nodeProcess});
         this.gfxEngine.add3DScene(node.getMesh());
-        console.log(node.getMesh(), nodeProcess);
     };
 
     Scene.prototype.getMap = function()
