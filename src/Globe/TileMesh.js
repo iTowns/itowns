@@ -26,7 +26,7 @@ define('Globe/TileMesh', [
     'OBBHelper',
     'SphereHelper',
     'Renderer/LayeredMaterial',
-    'Renderer/DepthMaterial'
+    'Renderer/GlobeDepthMaterial'
 ], function(
     NodeMesh,
     TileGeometry,
@@ -36,7 +36,7 @@ define('Globe/TileMesh', [
     OBBHelper,
     SphereHelper,
     LayeredMaterial,
-    DepthMaterial) {
+    GlobeDepthMaterial) {
 
     var groupelevation = [14, 11, 7, 3];
     var l_ELEVATION = 0;
@@ -64,7 +64,7 @@ define('Globe/TileMesh', [
 
         this.texturesNeeded = 0;
         this.layeredMaterial = new LayeredMaterial();
-        this.depthMaterial = new DepthMaterial(this.layeredMaterial);
+        this.depthMaterial = new GlobeDepthMaterial(this.layeredMaterial);
 
         // set current material
         this.material = this.layeredMaterial;
@@ -154,7 +154,8 @@ define('Globe/TileMesh', [
     TileMesh.prototype.enablePickingRender = function(enable) {
 
 
-        // this.material.enablePickingRender(enable);
+        if(enable)
+            this.depthMaterial.uniforms.mVPMatRTC.value = this.layeredMaterial.uniforms.mVPMatRTC.value;
 
         this.material = enable ? this.depthMaterial : this.layeredMaterial;
 
