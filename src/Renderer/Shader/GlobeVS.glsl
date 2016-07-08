@@ -28,8 +28,8 @@ const float PI          = 3.14159265359;
 const float INV_TWO_PI  = 1.0 / (2.0*PI);
 const float PI4         = 0.78539816339;
 
-attribute float     uv1;
-attribute vec2      uv;
+attribute float     uv_pm;
+attribute vec2      uv_wgs84;
 attribute vec3      position;
 attribute vec3      normal;
 
@@ -45,8 +45,8 @@ uniform int         pickingRender;
 uniform mat4        projectionMatrix;
 uniform mat4        modelViewMatrix;
 
-varying vec2        vUv_0;
-varying float       vUv_1;
+varying vec2        vUv_WGS84;
+varying float       vUv_PM;
 varying vec3        vNormal;
 varying vec4        pos;
 
@@ -62,14 +62,16 @@ highp float decode32(highp vec4 rgba) {
 
 void main() {
 
-        vUv_0    = uv;
-        vUv_1    = uv1;
+        vUv_WGS84    = uv_wgs84;
+        vUv_PM    = uv_pm;
 
         vec4 vPosition;
 
         if(nbTextures[0] > 0)
         {
-            vec2    vVv = vec2(vUv_0.x*pitScale_L00[0].z + pitScale_L00[0].x,vUv_0.y*pitScale_L00[0].z + pitScale_L00[0].y);
+            vec2    vVv = vec2(
+                vUv_WGS84.x * pitScale_L00[0].z + pitScale_L00[0].x,
+                (1.0 - vUv_WGS84.y) * pitScale_L00[0].z + pitScale_L00[0].y);
 
 
             #ifdef RGBA_ELEVATION

@@ -182,7 +182,7 @@ define('Core/Commander/Providers/TileProvider', [
 
                     paramMaterial.push({
                         tileMT: tileMatrixSet,
-                        pit: textureCount,
+                        layerTexturesOffset: textureCount,
                         visible: map.colorTerrain.children[i].visible ? 1 : 0,
                         opacity: map.colorTerrain.children[i].opacity || 1.0,
                         fx: layerData.fx,

@@ -67,7 +67,7 @@ define('Globe/BuilderEllipsoidTile',
     };
 
     // Compute uv 1, if isn't defined the uv1 isn't computed
-    BuilderEllipsoidTile.prototype.getUV_1 = function(params)
+    BuilderEllipsoidTile.prototype.getUV_PM = function(params)
     {
         var t =  this.projector.WGS84ToOneSubY(params.projected.latitude)*params.nbRow;
 

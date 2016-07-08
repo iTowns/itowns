@@ -95,7 +95,7 @@ define('Scene/NodeProcess',
     };
 
 
-    function commandCancellationFn(cmd) {
+    function refinementCommandCancellationFn(cmd) {
         // allow cancellation of the command if the node isn't visible anymore
         return cmd.requester.visible === false && 2 <= cmd.requester.level;
     }
@@ -107,7 +107,7 @@ define('Scene/NodeProcess',
         if(id !== undefined) {
             // update downscaled layer to appropriate scale
             var args = {layer : params.tree.children[id+1], subLayer : id};
-            params.tree.interCommand.request(args, node, commandCancellationFn).then(function(result) {
+            params.tree.interCommand.request(args, node, refinementCommandCancellationFn).then(function(result) {
                 if (!result) {
                     return;
                 }
