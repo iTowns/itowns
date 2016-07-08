@@ -57,7 +57,8 @@ define('Scene/Quadtree', [
 
         rootNode.link = this.link;
 
-        rootNode.enablePickingRender = function() { return true;};
+        rootNode.changeState = function() { return true;};
+
         this.add(rootNode);
     }
 

@@ -42,6 +42,11 @@ define('Globe/TileMesh', [
     var l_ELEVATION = 0;
     var l_COLOR = 1;
 
+    var RENDER = {
+        FINAL: 0,
+        PICKING: 1
+    };
+
     function TileMesh(params, builder, geometryCache) {
         //Constructor
         NodeMesh.call(this);
@@ -61,13 +66,15 @@ define('Globe/TileMesh', [
         this.centerSphere = new THREE.Vector3().addVectors(this.geometry.boundingSphere.center, params.center);
 
         this.oSphere = new THREE.Sphere(this.centerSphere.clone(),this.geometry.boundingSphere.radius);
-
         this.texturesNeeded = 0;
-        this.layeredMaterial = new LayeredMaterial();
-        this.depthMaterial = new GlobeDepthMaterial(this.layeredMaterial);
+
+        this.stateMaterial = [];
+
+        this.stateMaterial[RENDER.FINAL] = new LayeredMaterial();
+        this.stateMaterial[RENDER.PICKING] = new GlobeDepthMaterial(this.stateMaterial[RENDER.FINAL]);
 
         // set current material
-        this.material = this.layeredMaterial;
+        this.material = this.stateMaterial[RENDER.FINAL];
 
         this.frustumCulled = false;
         this.levelElevation = this.level;
@@ -151,17 +158,12 @@ define('Globe/TileMesh', [
         this.material.enableRTC(enable);
     };
 
-    TileMesh.prototype.enablePickingRender = function(enable) {
+    TileMesh.prototype.changeState = function(state) {
 
+        if(state !== RENDER.FINAL)
+            this.stateMaterial[state].setMatrixRTC(this.stateMaterial[RENDER.FINAL].getMatrixRTC());
 
-        if(enable)
-        {
-            this.depthMaterial.setMatrixRTC(this.layeredMaterial.getMatrixRTC());
-            this.material = this.depthMaterial;
-        }
-        else
-            this.material = this.layeredMaterial;
-
+        this.material = this.stateMaterial[state];
     };
 
     TileMesh.prototype.setFog = function(fog) {
