@@ -152,20 +152,11 @@ define('Core/Commander/Providers/WMTS_Provider', [
          * @param {type} coWMTS : coord WMTS
          * @returns {WMTS_Provider_L15.WMTS_Provider.prototype@pro;_IoDriver@call;read@call;then}
          */
-        WMTS_Provider.prototype.getElevationTexture = function(tile,services) {
-            var layerId = services[0];
-            var layer = this.layersData[layerId];
-
-            if(tile.level > layer.zoom.max)
-            {
-                layerId = services[1];
-                layer = this.layersData[layerId];
-            }
-
+        WMTS_Provider.prototype.getElevationTexture = function(tile,layer) {
             var coWMTS = tile.tileCoord;
 
 
-            var url = this.url(coWMTS,layerId);
+            var url = this.url(coWMTS,layer.id);
 
             // TODO: this is not optimal: if called again before the IoDriver resolves, it'll load the XBIL again
             var textureCache = this.cache.getRessource(url);
@@ -274,7 +265,7 @@ define('Core/Commander/Providers/WMTS_Provider', [
                 });
             }
             else if (destination === 0) {
-                return this.getElevationTexture(tile, command.paramsFunction.layer.services).then(function(terrain) {
+                return this.getElevationTexture(tile, command.paramsFunction.layer).then(function(terrain) {
                     command.resolve(terrain);
                 });
             }

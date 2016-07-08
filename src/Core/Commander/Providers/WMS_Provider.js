@@ -43,6 +43,24 @@ define('Core/Commander/Providers/WMS_Provider', [
             this.layersData = {};
 
             this._ready       = false;
+
+            this.getTextureFloat;
+
+            if(this.support)
+                this.getTextureFloat = function(){return new THREE.Texture();};
+            else
+                this.getTextureFloat = function(buffer){
+
+                    // Start float to RGBA uint8
+                    //var bufferUint = new Uint8Array(buffer.buffer);
+                    // var texture = new THREE.DataTexture(bufferUint, 256, 256);
+
+                    var texture = new THREE.DataTexture(buffer, 256, 256, THREE.AlphaFormat, THREE.FloatType);
+
+                    texture.needsUpdate = true;
+                    return texture;
+
+                };
         }
 
         WMS_Provider.prototype = Object.create(Provider.prototype);
@@ -225,13 +243,68 @@ define('Core/Commander/Providers/WMS_Provider', [
 
         };
 
-        WMS_Provider.prototype.executeCommand = function(command){
+        WMS_Provider.prototype.getElevationTexture = function(bbox,layer) {
+            var url = this.url(bbox,layer.id);
 
+            // TODO: this is not optimal: if called again before the IoDriver resolves, it'll load the XBIL again
+            var textureCache = this.cache.getRessource(url);
+
+            if (textureCache !== undefined)
+                return Promise.resolve(textureCache);
+
+
+            // bug #74
+            //var limits = layer.tileMatrixSetLimits[coWMTS.zoom];
+            // if (!limits || !coWMTS.isInside(limits)) {
+            //     var texture = -1;
+            //     this.cache.addRessource(url, texture);
+            //     return Promise.resolve(texture);
+            // }
+            // -> bug #74
+
+            return this._IoDriver.read(url).then(function(result) {
+                if (result !== undefined) {
+
+                    //TODO USE CACHE HERE ???
+
+                    result.texture = this.getTextureFloat(result.floatArray);
+                    result.texture.generateMipmaps = false;
+                    result.texture.magFilter = THREE.LinearFilter;
+                    result.texture.minFilter = THREE.LinearFilter;
+
+                    // In RGBA elevation texture LinearFilter give some errors with nodata value.
+                    // need to rewrite sample function in shader
+                    //result.texture.magFilter = THREE.NearestFilter;
+                    //result.texture.minFilter = THREE.NearestFilter;
+
+
+                    this.cache.addRessource(url, result);
+
+                    return result;
+                } else {
+                    var texture = -1;
+                    this.cache.addRessource(url, texture);
+                    return texture;
+                }
+            }.bind(this));
+        };
+
+
+        WMS_Provider.prototype.executeCommand = function(command){
+            //var service;
+            var destination = command.paramsFunction.destination;
             var tile = command.requester;
-            return this.getColorTextures(tile,command.paramsFunction.layer).then(function(result)
-            {
+
+            if(destination === 1) {
+                return this.getColorTextures(tile, command.paramsFunction.layer).then(function(result) {
                     return command.resolve(result);
-            });
+                });
+            }
+            else if (destination === 0) {
+                return this.getElevationTexture(tile.bbox, command.paramsFunction.layer).then(function(terrain) {
+                    return command.resolve(terrain);
+                });
+            }
 
         };
 
