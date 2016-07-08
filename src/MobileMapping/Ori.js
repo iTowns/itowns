@@ -57,7 +57,7 @@ define('MobileMapping/Ori',['three','MobileMapping/Sensor', 'when'],
       // Warning: heading pitch roll not all in right side in itowns ref
       // Pitch and Roll are in opposite
       computeMatOriFromHeadingPitchRoll: function(heading,pitch,roll){
-        heading = (180 - parseFloat(heading) ) / 180 * Math.PI; //parseFloat(heading) / 180 * Math.PI;  // Deg to Rad // Axe Y
+        heading = (180 - parseFloat(heading) ) / 180 * Math.PI; // on itownsV1 parseFloat(heading) / 180 * Math.PI
         pitch = parseFloat(pitch)/ 180 * Math.PI;  // Deg to Rad // axe X
         roll = parseFloat(roll)/ 180 * Math.PI;  // Deg to Rad   // axe Z
         // With quaternion  //set rotation.order to "YXZ", which is equivalent to "heading, pitch, and roll"

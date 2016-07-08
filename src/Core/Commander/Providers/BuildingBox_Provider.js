@@ -124,18 +124,18 @@ define('Core/Commander/Providers/BuildingBox_Provider',[
                 // VERTICES
                 for(var j=0; j< polygon.length -1; ++j){
 
-                   var pt2DTab   = polygon[j];   //.split(' ');
+                   var pt2DTab   = polygon[j];
                    var p1  = new THREE.Vector3(parseFloat(pt2DTab[0]) , 0, parseFloat(pt2DTab[1]));
 
                    var coordCarto1 = new CoordCarto().setFromDegreeGeo(p1.z, p1.x, z_min );
-                   var coordCarto2 = new CoordCarto().setFromDegreeGeo(p1.z, p1.x, z_min  + hauteur);// + Math.random(1000) );
-                   var pgeo1 = ellipsoid.cartographicToCartesian(coordCarto1); //{longitude:p1.z, latitude:p1.x, altitude: 0});
+                   var coordCarto2 = new CoordCarto().setFromDegreeGeo(p1.z, p1.x, z_min  + hauteur);
+                   var pgeo1 = ellipsoid.cartographicToCartesian(coordCarto1);
                    var pgeo2 = ellipsoid.cartographicToCartesian(coordCarto2);
 
-                   var vector3_1 = new THREE.Vector3(pgeo1.x, pgeo1.y, pgeo1.z);  // - x temporary, bug
+                   var vector3_1 = new THREE.Vector3(pgeo1.x, pgeo1.y, pgeo1.z);
                    var vector3_2 = new THREE.Vector3(pgeo2.x, pgeo2.y, pgeo2.z);
 
-                   arrPoint2D.push(CVML.newPoint(p1.x, p1.z));//-pgeo1.x, pgeo1.z)); //for roof
+                   arrPoint2D.push(CVML.newPoint(p1.x, p1.z));
                    _geometry.vertices.push(vector3_1,vector3_2);
 
                 }
@@ -198,9 +198,7 @@ define('Core/Commander/Providers/BuildingBox_Provider',[
 
         _geometry.computeFaceNormals();  // WARNING : VERY IMPORTANT WHILE WORKING WITH RAY CASTING ON CUSTOM MESH
         geometry.computeFaceNormals();
-       
-        _geometry.computeBoundingSphere();
-        _geometry.computeBoundingBox();
+        
         console.log(_geometry);
         /*
             var matLambert = new THREE.MeshBasicMaterial({color: 0xffffff, transparent: true, opacity: 0.8, side:THREE.DoubleSide});

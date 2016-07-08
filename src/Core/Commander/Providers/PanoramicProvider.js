@@ -189,7 +189,9 @@
                     that.material = shaderMaterial; //new THREE.MeshBasicMaterial({color: 0xffffff, transparent: true, opacity: 0.8, side: THREE.DoubleSide});
                     //that.projectiveTexturedMesh = new THREE.Mesh(that.geometry, that.material);
                     that.panoramicMesh = new PanoramicMesh(that.geometry, that.material, that.absoluteCenter);
+                    that.panoramicMesh.name = "wallMesh";
                     var roofMesh = new PanoramicMesh(that.geometryRoof, new BasicMaterial(new THREE.Color( 0xdddddd )), that.absoluteCenter);
+                    roofMesh.name = "roofMesh";
                     roofMesh.material.side =  THREE.DoubleSide;
                     roofMesh.material.transparent  = true;
                     roofMesh.setDisplayed(true);

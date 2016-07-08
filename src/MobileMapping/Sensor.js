@@ -25,8 +25,8 @@ define ('MobileMapping/Sensor',['three'], function (THREE) {
         // change conventions
         this.orientation = infos.orientation;
         this._itownsWay = new THREE.Matrix3().set(0, -1, 0,
-                                             0, 0,-1,
-                                             1, 0, 0);
+                                                  0, 0,-1,
+                                                  1, 0, 0);
 
         this.Photogram_JMM = new THREE.Matrix3().set(0, 0,-1,
                                                -1, 0, 0,

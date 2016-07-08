@@ -265,8 +265,17 @@ define('Scene/BrowseTree', ['Globe/TileMesh', 'THREE'], function( TileMesh, THRE
         for (var c = 0; c < root.children.length; c++) {
             
             var node = root.children[c]; 
-            node.setMatrixRTC(this.gfxEngine.getRTCMatrixFromCenter(node.absoluteCenter, camera));
+            var cachedRTC = this.gfxEngine.getRTCMatrixFromCenter(node.absoluteCenter, camera);
+            node.setMatrixRTC(cachedRTC);
+            
+            var cRTC = function(obj) {
 
+                if (obj.material && obj.material.setMatrixRTC)
+                    obj.material.setMatrixRTC(cachedRTC);
+
+            }.bind(this);
+
+            node.traverse(cRTC);
         }
     };
 
