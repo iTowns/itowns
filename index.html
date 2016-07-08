@@ -413,6 +413,29 @@ and open the template in the editor.
                                         }
                                     });
 
+        itowns.viewer.addImageryLayer({
+
+                                        //url       : "https://wxs.ign.fr/ngpro6r3fk4d49q5eqihgn18/inspire/r/wms?",
+                                        url       : "https://realearth.ssec.wisc.edu/cgi-bin/mapserv?map=globalir.map&",
+                                        protocol  : 'WMS',
+                                        version   : '1.3.0',
+                                        id        : 'testwms_elevation',
+                                        name      : 'latest',
+                                        style      : "",
+                                        projection : "EPSG:4326",
+                                        transparent : true,
+                                        // min long, min lat, max long, max lat
+                                        bbox      : [-61.80983300000002, -21.38963079935857, 55.83665389999998, 51.0890011990783],
+                                        featureInfoMimeType : "",
+                                        dateTime  : "",
+                                        heightMapWidth : 256,
+                                        waterMask      : false,
+                                        options: {
+                                            mimeType  : "image/png",
+                                            tileMatrixSet: 'WGS84G'
+                                        }
+                                    });
+
 
         itowns.viewer.addElevationLayer({
             protocol:   "wmts",
