@@ -16,6 +16,7 @@
 
 
 define('Core/Commander/Providers/TileProvider', [
+        'Core/Commander/Providers/Provider',
         'THREE',
         'Core/Geographic/Projection',
         'Core/Commander/Providers/WMTS_Provider',
@@ -28,6 +29,7 @@ define('Core/Commander/Providers/TileProvider', [
         'Scene/BoundingBox'
     ],
     function(
+        Provider,
         THREE,
         Projection,
         WMTS_Provider,
@@ -42,6 +44,7 @@ define('Core/Commander/Providers/TileProvider', [
 
         function TileProvider(size,manager,gLDebug) {
             //Constructor
+            Provider.call(this, null);
 
             this.projection = new Projection();
             this.providerWMTS = new WMTS_Provider({support : gLDebug});
@@ -59,6 +62,8 @@ define('Core/Commander/Providers/TileProvider', [
             this.nNode = 0;
 
         }
+
+        TileProvider.prototype = Object.create(Provider.prototype);
 
         TileProvider.prototype.constructor = TileProvider;
 
@@ -136,7 +141,7 @@ define('Core/Commander/Providers/TileProvider', [
             parent.worldToLocal(params.center);
 
             tile.position.copy(params.center);
-            tile.setVisibility(false);
+            tile.setVisibility(true);
 
             parent.add(tile);
             tile.updateMatrix();
