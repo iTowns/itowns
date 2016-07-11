@@ -12,6 +12,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
        'Scene/NodeProcess',
        'Globe/Globe',
        'Core/Commander/Providers/WMTS_Provider',
+       'Core/Commander/Providers/TileProvider',
        'Core/Geographic/CoordCarto',
        'Core/Geographic/Projection'], function(
            EventsManager,
@@ -20,6 +21,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
            NodeProcess,
            Globe,
            WMTS_Provider,
+           TileProvider,
            CoordCarto,
            Projection) {
 
@@ -71,7 +73,6 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         //TODO: Implement Me
 
     };
-
 
     ApiGlobe.prototype.getWMTSProvider = function()
     {
@@ -239,6 +240,17 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         var wmtsProvider = new WMTS_Provider({support : map.gLDebug});
         this.scene.managerCommand.addProtocolProvider('wmts', wmtsProvider);
         this.scene.managerCommand.addProtocolProvider('wmtsc', wmtsProvider);
+        this.scene.managerCommand.addProtocolProvider('tile', new TileProvider(map.size));
+
+        var wgs84TileLayer = {
+            protocol: 'tile',
+            id:       'wgs84'
+        };
+
+        preprocessLayer(wgs84TileLayer, this.scene.managerCommand.getProtocolProvider(wgs84TileLayer.protocol));
+        map.tiles.wgs84TileLayer = wgs84TileLayer;
+
+        map.tiles.init();
 
         //!\\ TEMP
         //this.scene.wait(0);
