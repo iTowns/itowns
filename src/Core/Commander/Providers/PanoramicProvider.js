@@ -126,6 +126,29 @@
         this.panoInfo = _panoramicsMetaData[indiceClosest];
         return [_panoramicsMetaData[indiceClosest]];
     };
+    
+    
+    PanoramicProvider.prototype.getNextPanoInTime = function(){
+        
+        var nextPano = this.panoInfo;
+        var found = false;
+        var i=0;
+        console.log(this.panoInfo);
+        while(!found && i<_panoramicsMetaData.length){
+
+            var p = _panoramicsMetaData[i];
+            if(p.filename == this.panoInfo.filename)  {
+                found = true;
+                this.panoInfo = _panoramicsMetaData[i+1];
+            }
+            i++;    
+           // var dist = Math.sqrt( (p.longitude - longitude) * (p.longitude - longitude) + (p.latitude - latitude) * (p.latitude - latitude) );
+           // if(dist< distMin) {indiceClosest = i; distMin = dist;}
+        }
+        console.log(this.panoInfo);
+        return this.panoInfo;
+
+    };
 
 
 

@@ -228,7 +228,7 @@ define('Core/Commander/Providers/BuildingBox_Provider',[
     BuildingBox_Provider.prototype.addRoad = function(geometry, bbox, altitude_road, ellipsoid){
 
          // Version using SIMPLE PLANE ROAD for Click and Go
-         var ratio = 0.2;
+         var ratio = 200;//0.2;
          var roadWidth  = (bbox.maxCarto.longitude - bbox.minCarto.longitude) * ratio;
          var roadHeight = (bbox.maxCarto.latitude  -  bbox.minCarto.latitude) * ratio;
          var pos = new THREE.Vector3((bbox.minCarto.latitude + bbox.maxCarto.latitude)/2,

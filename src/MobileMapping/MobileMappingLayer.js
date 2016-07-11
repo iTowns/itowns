@@ -38,8 +38,15 @@ define('MobileMapping/MobileMappingLayer', [
         this.domElement = document;
        // this.domElement.addEventListener('mousedown', onMouseDown, false).bind(this);
         window.addEventListener('mousedown', function(event){ if (event.button === 2) {this.updateData();}}.bind(this), false);
+        window.onkeyup = function(e) {
+            var key = e.keyCode ? e.keyCode : e.which;
 
-    }
+            if (key == 78) {
+                this.goToNextPOI();
+                
+            }
+        }.bind(this);
+  }
 
 
     MobileMappingLayer.prototype = Object.create(Layer.prototype);
@@ -95,7 +102,25 @@ define('MobileMapping/MobileMappingLayer', [
 
     };
 
+    MobileMappingLayer.prototype.goToNextPOI = function(){
+         
+        var nextPano = this.panoramicProvider.getNextPanoInTime();
+        var ellipsoid  = new Ellipsoid(new THREE.Vector3(6378137, 6356752.3142451793, 6378137));  // Should be computed elsewhere
+        var posPanoWGS84 = new CoordCarto().setFromDegreeGeo(nextPano.longitude, nextPano.latitude, nextPano.altitude);
+        var posPanoCartesian = ellipsoid.cartographicToCartesian(posPanoWGS84);
 
+        this.panoramicProvider.updateMaterialImages(nextPano.longitude, nextPano.latitude, 1000).then(function(panoInfo){
+
+            // Move camera to new pos
+            //   var panoInfo = panoInfo; //this.panoramicProvider.panoInfo;
+            var ellipsoid  = new Ellipsoid(new THREE.Vector3(6378137, 6356752.3142451793, 6378137));  // Should be computed elsewhere
+            var posPanoWGS84 = new CoordCarto().setFromDegreeGeo(panoInfo.longitude, panoInfo.latitude, panoInfo.altitude);
+            var posPanoCartesian = ellipsoid.cartographicToCartesian(posPanoWGS84);
+
+            this.moveCameraToScanPosition(posPanoCartesian);
+
+        }.bind(this));
+    };
 
     MobileMappingLayer.prototype.moveCameraToScanPosition = function(pos){
 

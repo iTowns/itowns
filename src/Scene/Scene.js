@@ -83,6 +83,7 @@ define('Scene/Scene', [
         this.rAF = null;
 
         this.viewerDiv = viewerDiv;
+        this.freeze = false;
     }
 
     Scene.prototype.constructor = Scene;
@@ -132,23 +133,31 @@ define('Scene/Scene', [
      */
     Scene.prototype.quadTreeRequest = function(quadtree, process){
 
-        this.browserScene.browse(quadtree,this.currentCamera(), process, SUBDIVISE);
-        this.managerCommand.runAllCommands().then(function()
-            {
-                if (this.managerCommand.isFree())
+        if(!this.freeze){
+            this.browserScene.browse(quadtree,this.currentCamera(), process, SUBDIVISE);
+            this.managerCommand.runAllCommands().then(function()
                 {
-                    this.browserScene.browse(quadtree,this.currentCamera(), process, SUBDIVISE);
-                    if (this.managerCommand.isFree()){
-                        this.browserScene.browse(quadtree,this.currentCamera(), process, CLEAN)
-                        this.viewerDiv.dispatchEvent(event);
+                    if (this.managerCommand.isFree())
+                    {
+                        this.browserScene.browse(quadtree,this.currentCamera(), process, SUBDIVISE);
+                        if (this.managerCommand.isFree()){
+                            this.browserScene.browse(quadtree,this.currentCamera(), process, CLEAN)
+                            this.viewerDiv.dispatchEvent(event);
 
+                        }
                     }
-                }
 
-            }.bind(this));
+                }.bind(this));
 
-        this.renderScene3D();
+            this.renderScene3D();
+        }
 
+    };
+    
+    Scene.prototype.setFreeze = function(bool){
+        
+        this.freeze = bool;
+        console.log(this.freeze);
     };
 
     Scene.prototype.realtimeSceneProcess = function() {
@@ -160,11 +169,11 @@ define('Scene/Scene', [
             for (var sl = 0; sl < layer.children.length; sl++) {
                 var sLayer = layer.children[sl];
 
-                if (sLayer instanceof Quadtree)
+                if (sLayer instanceof Quadtree && !this.freeze)
                     this.browserScene.browse(sLayer, this.currentCamera(), process, NO_SUBDIVISE);
                 else if (sLayer instanceof MobileMappingLayer)
                     this.browserScene.updateMobileMappingLayer(sLayer,this.currentCamera());
-                else if (sLayer instanceof Layer)
+                else if (sLayer instanceof Layer && !this.freeze)
                     this.browserScene.updateLayer(sLayer,this.currentCamera());
 
             }
@@ -270,6 +279,7 @@ define('Scene/Scene', [
                 var immersive = new Layer();
                 immersive.add(mobileMappingLayer);
                 this.add(immersive);
+                this.setFreeze(true);
             }
         }else
         {
