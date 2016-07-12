@@ -28,60 +28,37 @@ define('Renderer/ThreeExtented/KMZLoader', ['Renderer/ThreeExtented/jszip.min',
 
         KMZLoader.prototype.constructor = KMZLoader;
 
+        KMZLoader.prototype.parseCollada = function(buffer) {
+            var zip = new JSZip(buffer);
+            var collada = undefined;
+            var coordCarto = undefined;
+
+            for (var name in zip.files) {
+                if (name.toLowerCase().substr(-4) === '.dae') {
+                    collada = this.colladaLoader.parse(zip.file(name).asText());
+                } else if (name.toLowerCase().substr(-4) === '.kml') {
+
+                    var parser = new DOMParser();
+                    var doc = parser.parseFromString(zip.file(name).asText(), "text/xml");
+
+                    var longitude = Number(doc.getElementsByTagName("longitude")[0].childNodes[0].nodeValue);
+                    var latitude = Number(doc.getElementsByTagName("latitude")[0].childNodes[0].nodeValue);
+                    var altitude = Number(doc.getElementsByTagName("altitude")[0].childNodes[0].nodeValue);
+
+                    coordCarto = new CoordCarto().setFromDegreeGeo(longitude,latitude, altitude);
+                }
+            }
+
+            collada.coorCarto = coordCarto;
+            return collada;
+        }
+
         KMZLoader.prototype.load = function(url) {
-
-            return new Promise(function(resolve, reject)
-            {
-
-                var xhr = new XMLHttpRequest();
-
-                xhr.open("GET", url, true);
-
-                xhr.responseType = "arraybuffer";
-
-                xhr.crossOrigin = '';
-
-                var scopeLoader = this.colladaLoader;
-
-                xhr.onload = function() {
-
-                    var zip = new JSZip(this.response);
-                    var collada = undefined;
-                    var coordCarto = undefined;
-                    for (var name in zip.files) {
-
-                        if (name.toLowerCase().substr(-4) === '.dae') {
-                            collada = scopeLoader.parse(zip.file(name).asText());
-                        } else if (name.toLowerCase().substr(-4) === '.kml') {
-
-                            var parser = new DOMParser();
-                            var doc = parser.parseFromString(zip.file(name).asText(), "text/xml");
-
-                            var longitude = Number(doc.getElementsByTagName("longitude")[0].childNodes[0].nodeValue);
-                            var latitude = Number(doc.getElementsByTagName("latitude")[0].childNodes[0].nodeValue);
-                            var altitude = Number(doc.getElementsByTagName("altitude")[0].childNodes[0].nodeValue);
-
-                            coordCarto = new CoordCarto().setFromDegreeGeo(longitude,latitude, altitude);
-
-                        }
-                    }
-
-                    collada.coorCarto = coordCarto;
-
-                    resolve(collada);
-
-                };
-
-                xhr.onerror = function() {
-
-                    reject(Error("Error KMZLoader"));
-
-                };
-
-                xhr.send(null);
-
+            return fetch(url).then(function(response) {
+                return response.arrayBuffer();
+            }).then(function(buffer) {
+                return this.parseCollada(buffer);
             }.bind(this));
-
         };
 
         return KMZLoader;
