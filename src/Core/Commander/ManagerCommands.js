@@ -126,15 +126,10 @@ define('Core/Commander/ManagerCommands', [
 
             while (this.queueAsync.length > 0) {
                 var cmd = this.queueAsync.peek();
-                var requester = cmd.requester;
+
                 if (cmd.earlyDropFunction && cmd.earlyDropFunction(cmd)) {
-                    while (requester.children.length > 0) {
-                        var child = requester.children[0];
-                        child.dispose();
-                        requester.remove(child);
-                    }
-                    requester.pendingSubdivision = false;
                     this.queueAsync.dequeue();
+                    cmd.reject(new Error('command canceled'));
                 } else {
                     return this.queueAsync.dequeue();
                 }
