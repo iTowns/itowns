@@ -26,7 +26,8 @@ define('Globe/TileMesh', [
     'OBBHelper',
     'SphereHelper',
     'Renderer/LayeredMaterial',
-    'Renderer/GlobeDepthMaterial'
+    'Renderer/GlobeDepthMaterial',
+    'Renderer/idMaterial'
 ], function(
     NodeMesh,
     TileGeometry,
@@ -36,7 +37,8 @@ define('Globe/TileMesh', [
     OBBHelper,
     SphereHelper,
     LayeredMaterial,
-    GlobeDepthMaterial) {
+    GlobeDepthMaterial,
+    idMaterial) {
 
     var groupelevation = [14, 11, 7, 3];
     var l_ELEVATION = 0;
@@ -44,7 +46,8 @@ define('Globe/TileMesh', [
 
     var RENDER = {
         FINAL: 0,
-        PICKING: 1
+        PICKING: 1,
+        PICKINGID: 2
     };
 
     function TileMesh(params, builder, geometryCache) {
@@ -72,7 +75,7 @@ define('Globe/TileMesh', [
 
         this.stateMaterial[RENDER.FINAL] = new LayeredMaterial();
         this.stateMaterial[RENDER.PICKING] = new GlobeDepthMaterial(this.stateMaterial[RENDER.FINAL]);
-
+        this.stateMaterial[RENDER.PICKINGID] = new idMaterial(this.stateMaterial[RENDER.FINAL]);
         // set current material
         this.material = this.stateMaterial[RENDER.FINAL];
 
@@ -129,6 +132,14 @@ define('Globe/TileMesh', [
         this.geometry.dispose();
         this.geometry = null;
         this.material = null;
+    };
+
+
+    TileMesh.prototype.setUuid = function(uuid) {
+
+        this.stateMaterial[RENDER.FINAL].setUuid(uuid);
+        this.stateMaterial[RENDER.PICKINGID].setUuid(uuid);
+
     };
 
     TileMesh.prototype.setColorLayerParameters = function(paramsTextureColor) {
