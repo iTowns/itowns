@@ -628,10 +628,9 @@ THREE.GlobeControls = function(object, domElement, engine) {
             }
             else if (scope.keyS)
             {
-
                 var mouse = new THREE.Vector2(event.clientX - event.target.offsetLeft,event.clientY - event.target.offsetTop);
                 scope.engine.selecteWithMouse(mouse);
-                scope.engine.renderScene();
+                scope.engine.update();
 
             } else {
 
@@ -832,6 +831,8 @@ THREE.GlobeControls = function(object, domElement, engine) {
 
         scope.keyCtrl = false;
         scope.keyShift = false;
+        scope.keyS = false;
+
     }
 
     function onKeyDown(event) {

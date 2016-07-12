@@ -97,6 +97,8 @@ define('Core/Commander/Providers/TileProvider', [
             var tile = new command.type(params,this.builder);
 
             tile.tileCoord = tileCoord;
+
+
             tile.setUuid(this.nNode++);
             tile.link = parent.link;
             tile.geometricError = Math.pow(2, (18 - tileCoord.zoom));

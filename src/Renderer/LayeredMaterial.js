@@ -29,6 +29,7 @@ define('Renderer/LayeredMaterial', ['THREE',
     var vector2 = new THREE.Vector2(0.0, 0.0);
     var vector4 = new THREE.Vector4(0.0, 0.0, 0.0, 0.0);
     var showDebug = false;
+    //showDebug = true;
     var fooTexture;
 
     var getColorAtIdUv = function(nbTex)

@@ -137,10 +137,17 @@ define('Globe/TileMesh', [
 
     TileMesh.prototype.setUuid = function(uuid) {
 
+        this.id = uuid;
         this.stateMaterial[RENDER.FINAL].setUuid(uuid);
         this.stateMaterial[RENDER.PICKINGID].setUuid(uuid);
 
     };
+
+
+    TileMesh.prototype.getUuid = function(uuid) {
+
+        return this.stateMaterial[RENDER.PICKINGID].getUuid(uuid);
+    }
 
     TileMesh.prototype.setColorLayerParameters = function(paramsTextureColor) {
         this.material.setParam(paramsTextureColor);
@@ -178,19 +185,21 @@ define('Globe/TileMesh', [
     };
 
     TileMesh.prototype.setFog = function(fog) {
-        this.material.setFogDistance(fog);
+        this.stateMaterial[RENDER.FINAL].setFogDistance(fog);
     };
 
     TileMesh.prototype.setMatrixRTC = function(rtc) {
-        this.material.setMatrixRTC(rtc);
+        this.stateMaterial[RENDER.FINAL].setMatrixRTC(rtc);
     };
 
     TileMesh.prototype.setDebug = function(enable) {
-        this.material.setDebug(enable);
+        this.stateMaterial[RENDER.FINAL].setDebug(enable);
     };
 
     TileMesh.prototype.setSelected = function(select) {
-        this.material.setSelected(select);
+
+
+        this.stateMaterial[RENDER.FINAL].setSelected(select);
     };
 
     TileMesh.prototype.parseBufferElevation = function(image,minMax,pitScale) {
