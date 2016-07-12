@@ -11,6 +11,11 @@ fi
 SOURCE_BRANCH="master"
 TARGET_BRANCH="gh-pages"
 
+if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
+    echo "Skipping deploy for a pull request"
+    exit 0
+fi
+
 # Commits to other branches shouldn't try to deploy
 if [ "$TRAVIS_BRANCH" != "$SOURCE_BRANCH" ]; then
     echo "Skipping deploy for a commit on non-master branch"
