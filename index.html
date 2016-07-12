@@ -560,6 +560,21 @@ and open the template in the editor.
                         text[layer.id] = true;
                         text[layer.id+'_Opacity'] = 1.0;
 
+
+                        var fnUp = function(myid) {
+                            return function() {
+                                itowns.viewer.moveLayerUp(myid);
+                            }
+                        }(layer.id);
+                        var fnDown = function(myid) {
+                            return function() {
+                                itowns.viewer.moveLayerDown(myid);
+                            }
+                        }(layer.id);
+
+                        text[layer.id+'_up'] = fnUp;
+                        text[layer.id+'_down'] = fnDown;
+
                         var onchangeVisibily = function(id)
                         {
                             return function(newValue)
@@ -582,7 +597,8 @@ and open the template in the editor.
 
                         gui.add(text, layer.id).onChange( onchangeVisibily).name(layer.id);
                         gui.add(text, layer.id + '_Opacity').min(0.0).max(1.0).name(' → Opacity').onChange(onchangeOpacity);
-
+                        gui.add(text, layer.id + '_up');
+                        gui.add(text, layer.id + '_down');
                     }
                 }
 

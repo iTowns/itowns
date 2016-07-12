@@ -105,19 +105,21 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
 
     ApiGlobe.prototype.moveLayerUp = function(layer){
 
-        this.scene.getMap().moveLayerUp(layer);
+        this.scene.getMap().layersConfiguration.moveLayerUp(layer);
+        this.scene.getMap().updateLayersOrdering();
         this.scene.renderScene3D();
     };
 
     ApiGlobe.prototype.moveLayerDown = function(layer){
 
-        this.scene.getMap().moveLayerDown(layer);
+        this.scene.getMap().layersConfiguration.moveLayerDown(layer);
+        this.scene.getMap().updateLayersOrdering();
         this.scene.renderScene3D();
     };
 
     ApiGlobe.prototype.moveLayerToIndex = function(layer,newId){
-
-        this.scene.getMap().moveLayerToIndex(layer,newId);
+        this.scene.getMap().layersConfiguration.moveLayerToIndex(layer,newId);
+        this.scene.getMap().updateLayersOrdering();
         this.scene.renderScene3D();
     };
 
@@ -127,6 +129,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         {
             eventLayerRemoved.layer = id;
             this.viewerDiv.dispatchEvent(eventLayerRemoved);
+            this.scene.getMap().updateLayersOrdering();
             this.scene.renderScene3D();
             return true;
         }

@@ -37,6 +37,15 @@ define('Scene/LayersConfiguration', [
         this.colorLayersState[layer.id] = { visible: true, opacity: 1.0, sequence: this.colorLayers.length - 1 };
     }
 
+    LayersConfiguration.prototype.removeColorLayer = function(id) {
+        if (this.colorLayersState[id]) {
+            this.colorLayers.filter(function(l) { return l.id != id; });
+            this.colorLayers[id] = undefined;
+            return true;
+        }
+        return false;
+    }
+
     LayersConfiguration.prototype.getColorLayers = function() {
         return this.colorLayers;
     }
@@ -75,6 +84,46 @@ define('Scene/LayersConfiguration', [
 
     LayersConfiguration.prototype.getColorLayerOpacity = function(id) {
         return this.colorLayersState[id].opacity;
+    }
+
+    LayersConfiguration.prototype.moveLayerToIndex = function(id, newSequence){
+        if (this.colorLayersState[id]) {
+            var current = this.colorLayersState[id].sequence;
+
+            for (var i in this.colorLayersState) {
+                var state = this.colorLayersState[i];
+                if (state.sequence === newSequence) {
+                    state.sequence = current;
+                    this.colorLayersState[id].sequence = newSequence;
+                    break;
+                }
+            }
+        }
+    };
+
+    LayersConfiguration.prototype.moveLayerDown = function(id){
+        if (this.colorLayersState[id] && this.colorLayersState[id].sequence > 0) {
+            console.log('move down');
+            this.moveLayerToIndex(id, this.colorLayersState[id].sequence - 1);
+        }
+    };
+
+    LayersConfiguration.prototype.moveLayerUp = function(id){
+        if (this.colorLayersState[id] && this.colorLayersState[id].sequence < this.colorLayers.length - 1) {
+            console.log('move up');
+            this.moveLayerToIndex(id, this.colorLayersState[id].sequence + 1);
+        }
+    };
+
+    LayersConfiguration.prototype.getColorLayersIdOrderedBySequence = function() {
+        var seq = this.colorLayers.map(function(l) { return l.id; });
+        seq.sort(
+            function(a, b) {
+                return this.colorLayersState[a].sequence - this.colorLayersState[b].sequence;
+            }.bind(this)
+        );
+        console.log(JSON.stringify(seq));
+        return seq;
     }
 
     return LayersConfiguration;
