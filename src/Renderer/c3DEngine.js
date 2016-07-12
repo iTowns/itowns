@@ -553,10 +553,10 @@ define('Renderer/c3DEngine', [
 
     };
 
-    var  unpack1K  = function (color) {
+    var  unpack1K  = function (color,factor) {
 
             var bitSh = new THREE.Vector4( 1.0/( 256.0 * 256.0 * 256.0 ),1.0/( 256.0 * 256.0 ), 1.0/256.0, 1.0 );
-            return bitSh.dot(color) * 100000000.0;
+            return bitSh.dot(color) * factor;
     }
 
     c3DEngine.prototype.getPickingId = function(mouse) {
@@ -571,7 +571,7 @@ define('Renderer/c3DEngine', [
 
         var depthRGBA = new THREE.Vector4().fromArray(buffer).divideScalar(255.0);
 
-        var unpack = unpack1K(depthRGBA);
+        var unpack = unpack1K(depthRGBA,10000);
 
         return Math.round(unpack);
 
@@ -631,7 +631,7 @@ define('Renderer/c3DEngine', [
 
             depthRGBA.fromArray(buffer).divideScalar(255.0);
 
-            var depth = unpack1K(depthRGBA) / Math.cos(angle);
+            var depth = unpack1K(depthRGBA,100000000.0) / Math.cos(angle);
 
             pickWorldPosition.addVectors(camera.position,ray.direction.setLength(depth));
 

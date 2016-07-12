@@ -62,8 +62,6 @@ varying vec4        pos;
     const float sLine = 0.008;
 #endif
 
-const float borderS = 0.007;
-
 vec4 getParamLayers(int id)
 {
 
@@ -97,9 +95,6 @@ void main() {
              gl_FragColor = vec4( 1.0, 0.0, 0.0, 1.0);
          else
     #endif
-    if(selected == 1 && (vUv_WGS84.x < borderS || vUv_WGS84.x > 1.0 - borderS || vUv_WGS84.y < borderS || vUv_WGS84.y > 1.0 - borderS))
-        gl_FragColor = vec4( 1.0, 0.3, 0.0, 1.0);
-   else
     {
         // Reconstruct PM uv and PM subtexture id (see TileGeometry)
         vec2 uvPM ;
@@ -169,7 +164,13 @@ void main() {
         }
 
         if (validTextureCount > 0) {
+
+            if(selected == 1)
+                diffuseColor = mix(vec4( 1.0, 0.3, 0.0, 1.0), diffuseColor, 0.5 );
+
             gl_FragColor = RTC == 1 ? mix(fogColor, diffuseColor, fog ) : diffuseColor;
+
+
         } else {
             gl_FragColor = vec4( 0.04, 0.23, 0.35, 1.0);
         }

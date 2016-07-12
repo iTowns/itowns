@@ -24,7 +24,7 @@ define('Scene/BrowseTree', ['Globe/TileMesh', 'THREE'], function( TileMesh, THRE
         this._resetQuadtreeNode;
 
         this.selectMode = false;
-        //this.selectMode = true;
+        this.selectMode = true;
 
         if(this.selectMode)
         {
@@ -105,6 +105,7 @@ define('Scene/BrowseTree', ['Globe/TileMesh', 'THREE'], function( TileMesh, THRE
     BrowseTree.prototype._selectNode = function(node)
     {
         if (node.id === this.selectedNodeId) {
+            if(node.visible && node.material.visible)
             node.setSelected(node.visible && node.material.visible);
             if (this.selectedNode !== node) {
                 this.selectedNode = node;

@@ -80,7 +80,13 @@ define('Renderer/BasicMaterial', ['THREE',
     };
 
     BasicMaterial.prototype.setUuid = function(uuid) {
+
         this.uniforms.uuid.value = uuid;
+    };
+
+    BasicMaterial.prototype.getUuid = function() {
+
+        return this.uniforms.uuid.value;
     };
 
     BasicMaterial.prototype.setFogDistance = function(df) {
@@ -88,7 +94,7 @@ define('Renderer/BasicMaterial', ['THREE',
     };
 
     BasicMaterial.prototype.setSelected = function(selected) {
-        this.uniforms.selected.value = selected;
+        this.uniforms.selected.value = selected ? 1 : 0;
     };
 
     return BasicMaterial;
