@@ -550,15 +550,15 @@ and open the template in the editor.
                viewerDiv.appendChild(gui.domElement);
 
                 var layers = itowns.viewer.getLayers();
-                for(var id in layers)
+                for(var i in layers)
                 {
-                    var idLayer = id;
+                    var layer = layers[i];
 
-                    if(layers[id].options.mimetype != "image/x-bil;bits=32")
+                    if(layer.options.mimetype != "image/x-bil;bits=32")
                     {
 
-                        text[idLayer] = true;
-                        text[idLayer+'_Opacity'] = 1.0;
+                        text[layer.id] = true;
+                        text[layer.id+'_Opacity'] = 1.0;
 
                         var onchangeVisibily = function(id)
                         {
@@ -567,21 +567,21 @@ and open the template in the editor.
                                 itowns.viewer.setLayerVisibility(id,newValue);
                             };
 
-                        }(idLayer);
+                        }(layer.id);
 
                         var onchangeOpacity = function(id)
                         {
                             return function(newValue) {
 
-                                var opacity = Math.max(0,Math.min(newValue,1.0));
-                                itowns.viewer.setLayerOpacity(id,opacity);
+                                var opacity = Math.max(0,Math.min(newValue, 1.0));
+                                itowns.viewer.setLayerOpacity(layer.id, opacity);
 
                             };
 
-                        }(idLayer);
+                        }(layer.id);
 
-                        gui.add(text, idLayer).onChange( onchangeVisibily).name(idLayer);
-                        gui.add(text, idLayer + '_Opacity').min(0.0).max(1.0).name(' → Opacity').onChange(onchangeOpacity);
+                        gui.add(text, layer.id).onChange( onchangeVisibily).name(layer.id);
+                        gui.add(text, layer.id + '_Opacity').min(0.0).max(1.0).name(' → Opacity').onChange(onchangeOpacity);
 
                     }
                 }

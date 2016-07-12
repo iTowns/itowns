@@ -100,12 +100,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
 
         var map = this.scene.getMap();
 
-        map.tiles.colorLayers.push(layer);
-        map.colorTerrain.services.push(layer.id);
-
-        // TEMP
-        layer.visible = 1;
-        layer.opacity = 1.0;
+        map.layersConfiguration.addColorLayer(layer);
     };
 
     ApiGlobe.prototype.moveLayerUp = function(layer){
@@ -154,8 +149,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         preprocessLayer(layer, this.scene.managerCommand.getProtocolProvider(layer.protocol));
 
         var map = this.scene.getMap();
-        map.tiles.elevationLayers.push(layer);
-        map.elevationTerrain.services.push(layer.id);
+        map.layersConfiguration.addElevationLayer(layer);
     };
 
     /**
@@ -182,7 +176,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
 
     ApiGlobe.prototype.getLayers = function(/*param*/){
         var map = this.scene.getMap();
-        return map.tiles.colorLayers;
+        return map.layersConfiguration.getColorLayers();
     };
 
     /**
@@ -252,9 +246,9 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         };
 
         preprocessLayer(wgs84TileLayer, this.scene.managerCommand.getProtocolProvider(wgs84TileLayer.protocol));
-        map.tiles.wgs84TileLayer = wgs84TileLayer;
+        map.layersConfiguration.addGeometryLayer(wgs84TileLayer);
 
-        map.tiles.init();
+        map.tiles.init(map.layersConfiguration.getGeometryLayers()[0]);
 
         //!\\ TEMP
         //this.scene.wait(0);

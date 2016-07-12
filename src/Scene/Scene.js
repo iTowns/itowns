@@ -132,14 +132,14 @@ define('Scene/Scene', [
      */
     Scene.prototype.quadTreeRequest = function(quadtree, process){
 
-        this.browserScene.browse(quadtree,this.currentCamera(), process, SUBDIVISE);
+        this.browserScene.browse(quadtree,this.currentCamera(), process, this.map.layersConfiguration, SUBDIVISE);
         this.managerCommand.runAllCommands().then(function()
             {
                 if (this.managerCommand.isFree())
                 {
-                    this.browserScene.browse(quadtree,this.currentCamera(), process, SUBDIVISE);
+                    this.browserScene.browse(quadtree,this.currentCamera(), process, this.map.layersConfiguration, SUBDIVISE);
                     if (this.managerCommand.isFree()){
-                        this.browserScene.browse(quadtree,this.currentCamera(), process, CLEAN)
+                        this.browserScene.browse(quadtree,this.currentCamera(), process, this.map.layersConfiguration, CLEAN)
                         this.viewerDiv.dispatchEvent(event);
 
                     }
@@ -161,7 +161,7 @@ define('Scene/Scene', [
                 var sLayer = layer.children[sl];
 
                 if (sLayer instanceof Quadtree)
-                    this.browserScene.browse(sLayer, this.currentCamera(), process, NO_SUBDIVISE);
+                    this.browserScene.browse(sLayer, this.currentCamera(), process, this.map.layersConfiguration, NO_SUBDIVISE);
                 else if (sLayer instanceof MobileMappingLayer)
                     this.browserScene.updateMobileMappingLayer(sLayer,this.currentCamera());
                 else if (sLayer instanceof Layer)

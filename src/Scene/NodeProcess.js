@@ -89,7 +89,10 @@ define('Scene/NodeProcess',
             node.pendingSubdivision = true;
 
             for(var i = 0; i < bboxes.length; i++) {
-                var args = {layer: params.tree.wgs84TileLayer, bbox: bboxes[i]};
+                var args = {
+                    layer: params.layersConfig.getGeometryLayers()[0],
+                    bbox: bboxes[i]
+                };
                 var quadtree = params.tree;
 
                 quadtree.interCommand.request(args, node).then(function(child) {
@@ -102,8 +105,9 @@ define('Scene/NodeProcess',
 
 
                     // update wmts
-                    for (j = 0; j < quadtree.colorLayers.length; j++) {
-                        layer = quadtree.colorLayers[j];
+                    var colorLayers = params.layersConfig.getColorLayers();
+                    for (j = 0; j < colorLayers.length; j++) {
+                        layer = colorLayers[j];
                         var tileMatrixSet = layer.options.tileMatrixSet;
 
                         if(!child.matrixSet[tileMatrixSet]) {
@@ -117,8 +121,8 @@ define('Scene/NodeProcess',
                             paramMaterial.push({
                                 tileMT: tileMatrixSet,
                                 layerTexturesOffset: colorTextureCount,
-                                visible: 1 /* FIXME */,
-                                opacity: 1.0 /* FIXME */,
+                                visible: params.layersConfig.isColorLayerVisible(layer.id),
+                                opacity: params.layersConfig.getColorLayerOpacity(layer.id),
                                 fx: layer.fx,
                                 idLayer: layer.id
                             });
@@ -131,10 +135,10 @@ define('Scene/NodeProcess',
                     child.texturesNeeded = colorTextureCount + 1;
 
                     // request imagery update
-                    updateNodeImagery(quadtree, child);
+                    updateNodeImagery(quadtree, child, colorLayers);
 
                     // request elevation update
-                    updateNodeElevation(quadtree, child);
+                    updateNodeElevation(quadtree, child, params.layersConfig.getElevationLayers());
 
                     return 0;
                 }.bind(this));
@@ -166,11 +170,13 @@ define('Scene/NodeProcess',
                 node.pendingLayers[id] = true;
 
                 if (id === 0) {
-                    updateNodeElevation(params.tree, node).then(function() {
+                    updateNodeElevation(params.tree, node, params.layersConfig.getElevationLayers()).
+                    then(function() {
                         node.pendingLayers[id] = undefined;
                     });
                 } else if (id === 1) {
-                    updateNodeImagery(params.tree, node).then(function() {
+                    updateNodeImagery(params.tree, node, params.layersConfig.getColorLayers()).
+                    then(function() {
                         node.pendingLayers[id] = undefined;
                     });
                 } else {
@@ -187,11 +193,11 @@ define('Scene/NodeProcess',
         }
     };
 
-    function updateNodeImagery(quadtree, node) {
+    function updateNodeImagery(quadtree, node, colorLayers) {
         var promises = [];
 
-        for (var i=0; i<quadtree.colorLayers.length; i++) {
-            var layer = quadtree.colorLayers[i];
+        for (var i=0; i<colorLayers.length; i++) {
+            var layer = colorLayers[i];
 
             if (layer.tileInsideLimit(node, layer)) {
                 var args = {layer: layer, destination: 1 };
@@ -211,7 +217,7 @@ define('Scene/NodeProcess',
         });
     }
 
-    function updateNodeElevation(quadtree, node) {
+    function updateNodeElevation(quadtree, node, elevationLayers) {
         // See TileMesh's groupelevation. Elevations level are mapped on 4 levels (14, 11, 7, 3).
         // For instance, if tile.level is 12, it'll use levelElevation == 11.
         // Here we only make sure that the tile with level == levelElevation == 11 has its elevation texture.
@@ -222,8 +228,8 @@ define('Scene/NodeProcess',
 
         // If tileNotDownscaled's elevation texture is not ready yet, fetch it
         if (tileNotDownscaled.downScaledLayer(0)) {
-            for (var i=0; i<quadtree.elevationLayers.length; i++) {
-                var layer = quadtree.elevationLayers[i];
+            for (var i=0; i<elevationLayers.length; i++) {
+                var layer = elevationLayers[i];
 
                 if (layer.tileInsideLimit(tileNotDownscaled, layer)) {
                     var args = {layer: layer, destination: 0 };

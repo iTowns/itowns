@@ -50,9 +50,6 @@ define('Scene/Quadtree', [
         this.tileType = type;
         this.minLevel = 2;
         this.maxLevel = 17;
-        this.wgs84TileLayer = null;
-        this.colorLayers = [];
-        this.elevationLayers = [];
         var rootNode = new NodeMesh();
 
         rootNode.frustumCulled = false;
@@ -69,11 +66,11 @@ define('Scene/Quadtree', [
 
     Quadtree.prototype.constructor = Quadtree;
 
-    Quadtree.prototype.init = function() {
+    Quadtree.prototype.init = function(geometryLayer) {
         var rootNode = this.children[0];
 
         for (var i = 0; i < this.schemeTile.rootCount(); i++) {
-            this.requestNewTile(this.schemeTile.getRoot(i), rootNode);
+            this.requestNewTile(geometryLayer, this.schemeTile.getRoot(i), rootNode);
         }
     }
 
@@ -93,9 +90,8 @@ define('Scene/Quadtree', [
         return node.children[3];
     };
 
-    Quadtree.prototype.requestNewTile = function(bbox, parent) {
-
-        var params = {layer: this.wgs84TileLayer, bbox: bbox };
+    Quadtree.prototype.requestNewTile = function(geometryLayer, bbox, parent) {
+        var params = {layer: geometryLayer, bbox: bbox };
 
         this.interCommand.request(params, parent);
 
