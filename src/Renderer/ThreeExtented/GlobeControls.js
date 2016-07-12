@@ -661,8 +661,8 @@ THREE.GlobeControls = function(object, domElement, engine) {
 
 
         if (state !== STATE.NONE) {
-            window.addEventListener('mousemove', onMouseMove, false);
-            window.addEventListener('mouseup', onMouseUp, false);
+            domElement.addEventListener('mousemove', onMouseMove, false);
+            domElement.addEventListener('mouseup', onMouseUp, false);
             scope.dispatchEvent(startEvent);
         }
 
