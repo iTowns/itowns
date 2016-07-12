@@ -17,10 +17,11 @@ define('Globe/Globe', [
     'Core/System/Capabilities',
     'Core/Geographic/CoordCarto',
     'Renderer/BasicMaterial',
+    'Scene/LayersConfiguration',
     'THREE'
 ], function(defaultValue, Layer, Quadtree, SchemeTile, MathExt,
     Ellipsoid, TileMesh, Atmosphere, Clouds, Capabilities,
-    CoordCarto, BasicMaterial, THREE) {
+    CoordCarto, BasicMaterial, LayersConfiguration, THREE) {
 
     function Globe(size,gLDebug) {
         //Constructor
@@ -44,16 +45,7 @@ define('Globe/Globe', [
         kml.visible = false;
 
         this.tiles = new Quadtree(TileMesh, this.SchemeTileWMTS(2), this.size, kml);
-
-        // PROBLEM is not generic : elevationTerrain ,colorTerrain
-        this.elevationTerrain = new Layer();
-        this.colorTerrain = new Layer();
-
-        this.elevationTerrain.description = {style:{layerTile:0}};
-        this.colorTerrain.description = {style:{layerTile:1}};
-
-        this.tiles.add(this.elevationTerrain);
-        this.tiles.add(this.colorTerrain);
+        this.layersConfiguration = new LayersConfiguration();
 
         this.atmosphere = this.NOIE ? new Atmosphere(this.size) : undefined;
         this.clouds = new Clouds();
@@ -169,37 +161,17 @@ define('Globe/Globe', [
         return null;
      }
 
-    Globe.prototype.setLayerOpacity = function(id,opacity){
-        if (0 <= id && id < this.tiles.colorLayers.length) {
-            var layer = this.tiles.colorLayers[id];
-            layer.opacity = opacity;
+    Globe.prototype.setLayerOpacity = function(id, opacity){
+        this.layersConfiguration.setLayerOpacity(id, opacity);
 
-            var cO = function(object){
-                if(object.material.setLayerOpacity) {
-                    object.material.setLayerOpacity(object.getIndexLayerColor(layer.id),opacity);
-                }
-            };
+        var cO = function(object){
+            if(object.material.setLayerOpacity) {
+                object.material.setLayerOpacity(object.getIndexLayerColor(id),opacity);
+            }
+        };
 
-            // children[0] is rootNode
-            this.tiles.children[0].traverse(cO);
-        }
-    };
-
-    Globe.prototype.addColorLayer = function(layerId){
-
-        this.colorTerrain.services.push(layerId);
-
-        var subLayer = new Layer();
-
-        subLayer.services.push(layerId);
-
-        var idLayerTile = this.colorTerrain.children.length;
-
-        subLayer.description = {style:{layerTile:idLayerTile}};
-
-        this.colorTerrain.add(subLayer);
-
-        return subLayer;
+        // children[0] is rootNode
+        this.tiles.children[0].traverse(cO);
     };
 
     Globe.prototype.moveLayerUp = function(id){
@@ -261,19 +233,16 @@ define('Globe/Globe', [
     };
 
     Globe.prototype.setLayerVisibility = function(id, visible){
-        if (0 <= id && id < this.tiles.colorLayers.length) {
-            var layer = this.tiles.colorLayers[id];
-            layer.visible = visible;
+        this.layersConfiguration.setLayerVisibility(id, visible);
 
-            var cO = function(object){
-                if(object.material.setLayerVisibility) {
-                    object.material.setLayerVisibility(object.getIndexLayerColor(layer.id),visible);
-                }
-            };
+        var cO = function(object){
+            if(object.material.setLayerOpacity) {
+                object.material.setLayerVisibility(object.getIndexLayerColor(id), visible);
+            }
+        };
 
-            // children[0] is rootNode
-            this.tiles.children[0].traverse(cO);
-        }
+        // children[0] is rootNode
+        this.tiles.children[0].traverse(cO);
     };
 
     Globe.prototype.getZoomLevel = function(id){
