@@ -150,17 +150,6 @@ define('Globe/Globe', [
         this.clouds.updateLightingPos(pos);
     };
 
-     Globe.prototype.getLayerColor = function(id){
-
-        for (var i = 0; i < this.colorTerrain.children.length; i++) {
-            var layer = this.colorTerrain.children[i];
-            if(layer.services[0] === id)
-                return layer;
-        }
-
-        return null;
-     }
-
     Globe.prototype.setLayerOpacity = function(id, opacity){
         this.layersConfiguration.setLayerOpacity(id, opacity);
 
@@ -172,64 +161,6 @@ define('Globe/Globe', [
 
         // children[0] is rootNode
         this.tiles.children[0].traverse(cO);
-    };
-
-    Globe.prototype.moveLayerUp = function(id){
-
-        var colorLayer = this.getLayerColor(id);
-        var index = this.colorTerrain.children.indexOf(colorLayer);
-
-        if(index < this.colorTerrain.children.length-1)
-            this.moveLayerToIndex(id,index+1)
-    };
-
-    Globe.prototype.moveLayerDown = function(id){
-
-        var colorLayer = this.getLayerColor(id);
-        var index = this.colorTerrain.children.indexOf(colorLayer);
-
-        if(index > 0)
-            this.moveLayerToIndex(id,index-1)
-    };
-
-    Globe.prototype.moveLayerToIndex = function(layer,newId){
-
-        var index =  this.colorTerrain.children.indexOf(this.getLayerColor(layer));
-
-        this.colorTerrain.children.splice(newId,0,this.colorTerrain.children.splice(index,1)[0]);
-        this.colorTerrain.services.splice(newId,0,this.colorTerrain.services.splice(index,1)[0]);
-
-        var cO = function(object){
-            if(object.changeSequenceLayers)
-                object.changeSequenceLayers(this.colorTerrain.services);
-        }.bind(this);
-
-        this.tiles.children[0].traverse(cO);
-    };
-
-    Globe.prototype.removeColorLayer = function(id){
-
-        var colorLayer = this.getLayerColor(id);
-
-        if(colorLayer)
-        {
-            var cO = function(object){
-
-                if(object.removeLayerColor)
-                    object.removeLayerColor(id);
-            };
-
-            this.tiles.children[0].traverse(cO);
-            var services = this.colorTerrain.services;
-            var idService = services.indexOf(id);
-
-            if(idService>-1)
-                services.splice(idService,1);
-
-            return true;
-        }
-
-        return false;
     };
 
     Globe.prototype.setLayerVisibility = function(id, visible){
@@ -245,35 +176,37 @@ define('Globe/Globe', [
         this.tiles.children[0].traverse(cO);
     };
 
-    Globe.prototype.getZoomLevel = function(id){
+    Globe.prototype.updateLayersOrdering = function(){
+        var sequence = this.layersConfiguration.getColorLayersIdOrderedBySequence();
 
-        var layer = this.getLayerColor(id);
+        var cO = function(object){
+            if(object.changeSequenceLayers)
+                object.changeSequenceLayers(sequence);
+        }.bind(this);
 
-        if(layer)
-        {
+        this.tiles.children[0].traverse(cO);
+    };
 
-//            layer.visible = visible;
-            var cO = function(/*object*/){
+    Globe.prototype.getZoomLevel = function(/*id*/){
+        var cO = function(/*object*/){
 
-                var zoom = 0;
-                return function (object){
-                    if(object){
-                        zoom = Math.max(zoom,object.level);
-                    }
-                        return zoom;
-                };
+            var zoom = 0;
+            return function (object){
+                if(object){
+                    zoom = Math.max(zoom,object.level);
+                }
+                    return zoom;
+            };
 
-            }();
-            this.tiles.children[0].traverseVisible(cO);
-            return cO();
-        }
+        }();
+        this.tiles.children[0].traverseVisible(cO);
+        return cO();
     };
 
     Globe.prototype.setRealisticLightingOn = function(bool) {
 
         this.atmosphere.setRealisticOn(bool);
         this.clouds.setLightingOn(bool);
-
     };
 
     return Globe;
