@@ -12,6 +12,7 @@ import IoDriverXML from 'Core/Commander/Providers/IoDriverXML';
 import defaultValue from 'Core/defaultValue';
 import THREE from 'THREE';
 import CacheRessource from 'Core/Commander/Providers/CacheRessource';
+import BoundingBox from 'Scene/BoundingBox';
 
 /**
  * Return url wmts MNT
@@ -20,69 +21,184 @@ import CacheRessource from 'Core/Commander/Providers/CacheRessource';
  * @param {String} options.format: image format (default: format/jpeg)
  * @returns {Object@call;create.url.url|String}
  */
-function WMS_Provider(options) {
+function WMS_Provider(/*options*/) {
     //Constructor
-
     Provider.call(this, new IoDriver_XBIL());
     this.cache = CacheRessource();
     this.ioDriverImage = new IoDriver_Image();
     this.ioDriverXML = new IoDriverXML();
 
-    this.baseUrl = options.url || "";
-    this.layer = options.layer || "";
-    this.format = defaultValue(options.format, "image/jpeg");
-    this.srs = options.srs || "";
-    this.width = defaultValue(options.width, 256);
-    this.height = defaultValue(options.height, 256);
+    this.getTextureFloat = function(buffer){
+        // Start float to RGBA uint8
+        var texture = new THREE.DataTexture(buffer, 256, 256, THREE.AlphaFormat, THREE.FloatType);
+
+        texture.needsUpdate = true;
+        return texture;
+
+    };
 }
 
 WMS_Provider.prototype = Object.create(Provider.prototype);
 
 WMS_Provider.prototype.constructor = WMS_Provider;
 
+WMS_Provider.prototype.url = function(bbox,layer) {
+    return this.customUrl(layer.customUrl, bbox);
+};
+WMS_Provider.prototype.customUrl = function(url,coord) {
+    //convert radian to degree, lon is added a offset of Pi
+    //to align axisgit  to card center
 
-/**
- * Returns the url for a WMS query with the specified bounding box
- * @param {BoundingBox} bbox: requested bounding box
- * @returns {Object@call;create.url.url|String}
- */
-WMS_Provider.prototype.url = function(bbox) {
-    var url = this.baseUrl + "?LAYERS=" + this.layer + "&FORMAT=" + this.format +
-        "&SERVICE=WMS&VERSION=1.1.1" + "&REQUEST=GetMap&BBOX=" +
-        bbox.minCarto.longitude + "," + bbox.minCarto.latitude + "," +
-        bbox.maxCarto.longitude + "," + bbox.maxCarto.latitude +
-        "&WIDTH=" + this.width + "&HEIGHT=" + this.height + "&SRS=" + this.srs;
-    return url;
+    var bbox = coord.minCarto.latitude * 180.0 / Math.PI +
+                "," +
+                (coord.minCarto.longitude - Math.PI)* 180.0 / Math.PI +
+                ","+
+               coord.maxCarto.latitude* 180.0 / Math.PI +
+               "," +
+               (coord.maxCarto.longitude - Math.PI )*180.0 / Math.PI;
+
+    var urld = url.replace('%bbox',bbox.toString());
+
+    return urld;
+
+};
+
+WMS_Provider.prototype.preprocessDataLayer = function(layer){
+    if(!layer.name)
+        throw new Error('layerName is required.');
+
+    layer.format = defaultValue(layer.options.mimeType, "image/png"),
+    layer.crs = defaultValue(layer.projection, "EPSG:4326"),
+    layer.width = defaultValue(layer.heightMapWidth, 256),
+    layer.version = defaultValue(layer.version, "1.3.0"),
+    layer.styleName = defaultValue(layer.style, "normal"),
+    layer.transparent = defaultValue(layer.transparent, false),
+    layer.bbox = defaultValue(layer.bbox, [-180, -90, 180, 90]);
+    layer.customUrl = layer.url +
+                  '?SERVICE=WMS&REQUEST=GetMap&LAYERS=' + layer.name +
+                  '&VERSION=' + layer.version +
+                  '&STYLES=' + layer.styleName +
+                  '&FORMAT=' + layer.format +
+                  '&TRANSPARENT=' + layer.transparent +
+                  '&BBOX=%bbox'  +
+                  '&CRS=' + layer.crs +
+                  "&WIDTH=" + layer.width +
+                  "&HEIGHT=" + layer.width;
+};
+
+WMS_Provider.prototype.tileInsideLimit = function(tile,layer) {
+    var bbox = tile.bbox;
+    // shifting longitude because of issue #19
+    var west =  layer.bbox[0]*Math.PI/180.0 + Math.PI;
+    var east =  layer.bbox[2]*Math.PI/180.0 + Math.PI;
+    var bboxRegion = new BoundingBox(west, east, layer.bbox[1]*Math.PI/180.0, layer.bbox[3]*Math.PI/180.0, 0, 0, 0);
+    return bboxRegion.intersect(bbox);
+};
+
+WMS_Provider.prototype.getColorTexture = function(tile, layer) {
+    if (!this.tileInsideLimit(tile,layer) || tile.material === null) {
+        return Promise.resolve();
+    }
+
+    var result = {pitch : new THREE.Vector3(0, 0, 1)};
+
+    var url = this.url(tile.bbox, layer);
+
+    result.texture = this.cache.getRessource(url);
+
+    if (result.texture !== undefined) {
+        return Promise.resolve(result);
+    }
+    return this.ioDriverImage.read(url).then(function(image) {
+
+        var texture = this.cache.getRessource(image.src);
+
+        if(texture)
+            result.texture = texture;
+        else
+        {
+            result.texture = new THREE.Texture(image);
+            result.texture.needsUpdate = true;
+            result.texture.generateMipmaps = false;
+            result.texture.magFilter = THREE.LinearFilter;
+            result.texture.minFilter = THREE.LinearFilter;
+            result.texture.anisotropy = 16;
+            result.texture.url = url;
+
+            this.cache.addRessource(url, result.texture);
+        }
+
+        return result;
+
+    }.bind(this)).catch(function(/*reason*/) {
+            result.texture = null;
+
+            return result;
+        });
+
+};
+
+WMS_Provider.prototype.getElevationTexture = function(bbox, layer) {
+    var url = this.url(bbox,layer);
+
+    // TODO: this is not optimal: if called again before the IoDriver resolves, it'll load the XBIL again
+    var textureCache = this.cache.getRessource(url);
+
+    if (textureCache !== undefined)
+        return Promise.resolve(textureCache);
+
+
+    // bug #74
+    //var limits = layer.tileMatrixSetLimits[coWMTS.zoom];
+    // if (!limits || !coWMTS.isInside(limits)) {
+    //     var texture = -1;
+    //     this.cache.addRessource(url, texture);
+    //     return Promise.resolve(texture);
+    // }
+    // -> bug #74
+
+    return this._IoDriver.read(url).then(function(result) {
+        if (result !== undefined) {
+
+            //TODO USE CACHE HERE ???
+
+            result.texture = this.getTextureFloat(result.floatArray);
+            result.texture.generateMipmaps = false;
+            result.texture.magFilter = THREE.LinearFilter;
+            result.texture.minFilter = THREE.LinearFilter;
+
+            // In RGBA elevation texture LinearFilter give some errors with nodata value.
+            // need to rewrite sample function in shader
+            this.cache.addRessource(url, result);
+
+            return result;
+        } else {
+            var texture = -1;
+            this.cache.addRessource(url, texture);
+            return texture;
+        }
+    }.bind(this));
 };
 
 
-/**
- * Return url wms IR coverage
- * ex url: http://realearth.ssec.wisc.edu/api/image?products=globalir&bounds=-85,-178,85,178&width=1024&height=512
- * We can also specify time of coverage image like &time=2016-02-12+10:42
- * @param {type} coWMS
- * @returns {Object@call;create.urlOrtho.url|String}
- */
-WMS_Provider.prototype.urlGlobalIR = function(coWMS) {
-    var latBound = coWMS.latBound || new THREE.Vector2(-85, 85);
-    var longBound = coWMS.longBound || new THREE.Vector2(-178, 178);
+WMS_Provider.prototype.executeCommand = function(command){
+    //var service;
+    var destination = command.paramsFunction.destination;
+    var tile = command.requester;
 
-    var width = coWMS.width || 1024;
-    var height = coWMS.height || 512;
-
-    var urlBaseService = "http://realearth.ssec.wisc.edu/api/image?products=globalir&bounds=";
-
-    // URL for all globe  IR imagery
-    var url = urlBaseService + latBound.x + "," + longBound.x + "," + latBound.y + "," + longBound.y +
-        "&width=" + width + "&height=" + height;
-
-
-    //"http://realearth.ssec.wisc.edu/api/image?products=globalir_20160212_080000&"+
-    //"x="+coWMS.col+"&y="+coWMS.row+"&z=" + coWMS.zoom;
-    return url;
-
+    if(destination === 1) {
+        return this.getColorTexture(tile, command.paramsFunction.layer).then(function(result) {
+            return command.resolve(result);
+        });
+    }
+    else if (destination === 0) {
+        return this.getElevationTexture(tile.bbox, command.paramsFunction.layer).then(function(terrain) {
+            return command.resolve(terrain);
+        });
+    }
 
 };
+
 
 
 
@@ -111,10 +227,8 @@ WMS_Provider.prototype.getTexture = function(bbox) {
         result.texture.magFilter = THREE.LinearFilter;
         result.texture.minFilter = THREE.LinearFilter;
         result.texture.anisotropy = 16;
-
         this.cache.addRessource(url, result.texture);
         return result.texture;
-
     }.bind(this));
 };
 
