@@ -61,7 +61,7 @@ define('MobileMapping/Ori',['three','MobileMapping/Sensor', 'when'],
         pitch = parseFloat(pitch)/ 180 * Math.PI;  // Deg to Rad // axe X
         roll = parseFloat(roll)/ 180 * Math.PI;  // Deg to Rad   // axe Z
         // With quaternion  //set rotation.order to "YXZ", which is equivalent to "heading, pitch, and roll"
-        var q = new THREE.Quaternion().setFromEuler(new THREE.Euler(-pitch,heading,-roll,'YXZ'),true);
+        var q = new THREE.Quaternion().setFromEuler(new THREE.Euler(-pitch,heading,roll,'YXZ'),true);
         return new THREE.Matrix3().makeRotationFromQuaternion(q);
       },
 

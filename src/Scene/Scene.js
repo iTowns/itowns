@@ -153,11 +153,10 @@ define('Scene/Scene', [
         }
 
     };
-    
+
     Scene.prototype.setFreeze = function(bool){
-        
+
         this.freeze = bool;
-        console.log(this.freeze);
     };
 
     Scene.prototype.realtimeSceneProcess = function() {
@@ -279,7 +278,7 @@ define('Scene/Scene', [
                 var immersive = new Layer();
                 immersive.add(mobileMappingLayer);
                 this.add(immersive);
-                this.setFreeze(true);
+               // this.setFreeze(true);
             }
         }else
         {
