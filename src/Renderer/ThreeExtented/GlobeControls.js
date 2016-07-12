@@ -91,8 +91,9 @@ THREE.GlobeControls = function(object, domElement, engine) {
         RIGHT: 39,
         BOTTOM: 40,
         SPACE: 32,
+        SHIFT: 16,
         CTRL: 17,
-        SHIFT: 16
+        S: 83
     };
 
     // Mouse buttons
@@ -106,6 +107,9 @@ THREE.GlobeControls = function(object, domElement, engine) {
 
     this.keyCtrl = false;
     this.keyShift = false;
+    this.keyS = false;
+
+
     ////////////
     // internals
 
@@ -621,6 +625,14 @@ THREE.GlobeControls = function(object, domElement, engine) {
                 state = STATE.ORBIT;
             } else if (scope.keyShift) {
                 state = STATE.PANORAMIC;
+            }
+            else if (scope.keyS)
+            {
+
+                var mouse = new THREE.Vector2(event.clientX - event.target.offsetLeft,event.clientY - event.target.offsetTop);
+                scope.engine.selecteWithMouse(mouse);
+                scope.engine.renderScene();
+
             } else {
 
                 state = STATE.MOVE_GLOBE;
@@ -863,6 +875,10 @@ THREE.GlobeControls = function(object, domElement, engine) {
                 //computeVectorUp();
                 scope.keyShift = true;
                 break;
+            case scope.keys.S:
+                // WARNING loop !!!
+                scope.keyS = true;
+                break;
 
         }
     }
@@ -1000,6 +1016,7 @@ THREE.GlobeControls = function(object, domElement, engine) {
         state = STATE.NONE;
         scope.keyCtrl = false;
         scope.keyShift = false;
+        scope.keyS = false;
 
     }
 

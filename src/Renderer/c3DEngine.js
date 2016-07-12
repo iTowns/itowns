@@ -25,7 +25,8 @@ define('Renderer/c3DEngine', [
 
     var RENDER = {
         FINAL: 0,
-        PICKING: 1
+        PICKING: 1,
+        PICKINGID: 2
     };
 
     /*
@@ -552,6 +553,36 @@ define('Renderer/c3DEngine', [
 
     };
 
+    var  unpack1K  = function (color) {
+
+            var bitSh = new THREE.Vector4( 1.0/( 256.0 * 256.0 * 256.0 ),1.0/( 256.0 * 256.0 ), 1.0/256.0, 1.0 );
+            return bitSh.dot(color) * 100000000.0;
+    }
+
+    c3DEngine.prototype.getPickingId = function(mouse) {
+
+        var camera = this.camera.camera3D;
+
+        camera.updateMatrixWorld();
+
+        this.dummys.visible = false;
+        var buffer = this.renderTobuffer(mouse.x, this.height - mouse.y, 1, 1, RENDER.PICKINGID);
+        this.dummys.visible = true;
+
+        var depthRGBA = new THREE.Vector4().fromArray(buffer).divideScalar(255.0);
+
+        var unpack = unpack1K(depthRGBA);
+
+        return Math.round(unpack);
+
+    };
+
+    c3DEngine.prototype.selecteWithMouse = function(mouse) {
+
+        this.scene.selectNodeId(this.getPickingId(mouse));
+
+    };
+
     c3DEngine.prototype.getPickingPositionFromDepth = function() {
 
         var matrix = new THREE.Matrix4();
@@ -561,12 +592,6 @@ define('Renderer/c3DEngine', [
         var pickWorldPosition = new THREE.Vector3();
         var ray = new THREE.Ray();
         var depthRGBA = new THREE.Vector4();
-
-        var  unpack1K  = function (color) {
-
-            var bitSh = new THREE.Vector4( 1.0/( 256.0 * 256.0 * 256.0 ),1.0/( 256.0 * 256.0 ), 1.0/256.0, 1.0 );
-            return bitSh.dot(color) * 100000000.0;
-        }
 
         return function getPickingPositionFromDepth(mouse/*, scene*/) {
 
@@ -605,6 +630,7 @@ define('Renderer/c3DEngine', [
             var angle = dirCam.angleTo(ray.direction);
 
             depthRGBA.fromArray(buffer).divideScalar(255.0);
+
             var depth = unpack1K(depthRGBA) / Math.cos(angle);
 
             pickWorldPosition.addVectors(camera.position,ray.direction.setLength(depth));
