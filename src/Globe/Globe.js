@@ -170,26 +170,19 @@ define('Globe/Globe', [
      }
 
     Globe.prototype.setLayerOpacity = function(id,opacity){
-
-        var layer = this.getLayerColor(id);
-
-        if(layer)
-        {
-
+        if (0 <= id && id < this.tiles.colorLayers.length) {
+            var layer = this.tiles.colorLayers[id];
             layer.opacity = opacity;
-            //var idLtile = layer.description.style.layerTile;
+
             var cO = function(object){
-
-                if(object.material.setLayerOpacity)
-                {
-                    object.material.setLayerOpacity(object.getIndexLayerColor(id),opacity);
+                if(object.material.setLayerOpacity) {
+                    object.material.setLayerOpacity(object.getIndexLayerColor(layer.id),opacity);
                 }
-
             };
 
+            // children[0] is rootNode
             this.tiles.children[0].traverse(cO);
         }
-
     };
 
     Globe.prototype.addColorLayer = function(layerId){
@@ -267,26 +260,20 @@ define('Globe/Globe', [
         return false;
     };
 
-    Globe.prototype.setLayerVisibility = function(id,visible){
-
-        var layer = this.getLayerColor(id);
-
-        if(layer)
-        {
-
+    Globe.prototype.setLayerVisibility = function(id, visible){
+        if (0 <= id && id < this.tiles.colorLayers.length) {
+            var layer = this.tiles.colorLayers[id];
             layer.visible = visible;
-            // TODO remove layerTile
-            //var idLtile = layer.description.style.layerTile;
+
             var cO = function(object){
-
-                if(object.material.setLayerVisibility)
-                    object.material.setLayerVisibility(object.getIndexLayerColor(id),visible);
-
+                if(object.material.setLayerVisibility) {
+                    object.material.setLayerVisibility(object.getIndexLayerColor(layer.id),visible);
+                }
             };
 
+            // children[0] is rootNode
             this.tiles.children[0].traverse(cO);
         }
-
     };
 
     Globe.prototype.getZoomLevel = function(id){

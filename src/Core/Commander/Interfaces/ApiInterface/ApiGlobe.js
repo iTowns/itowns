@@ -102,6 +102,10 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
 
         map.tiles.colorLayers.push(layer);
         map.colorTerrain.services.push(layer.id);
+
+        // TEMP
+        layer.visible = 1;
+        layer.opacity = 1.0;
     };
 
     ApiGlobe.prototype.moveLayerUp = function(layer){
@@ -302,7 +306,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
 
     ApiGlobe.prototype.setLayerVisibility = function(id,visible){
 
-        this.scene.getMap().setLayerVisibility(id,visible);
+        this.scene.getMap().setLayerVisibility(id, visible);
 
         this.scene.renderScene3D();
     };
