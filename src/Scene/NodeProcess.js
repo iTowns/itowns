@@ -144,8 +144,16 @@ define('Scene/NodeProcess',
 
 
     function refinementCommandCancellationFn(cmd) {
+        // If node A is divided into A1, A2, A3, A4 and the user zooms fast enough on A2
+        // We might end up in a situation where:
+        //    - commands for A1, A3 or A4 are canceled because they're not visible anymore
+        //    - A2 A2 cannot be displayed because A won't be hidden until all of its
+        //      children are loaded.
+
         // allow cancellation of the command if the node isn't visible anymore
-        return cmd.requester.visible === false && 2 <= cmd.requester.level;
+        return cmd.requester.parent.childrenLoaded() &&
+               cmd.requester.visible === false &&
+               2 <= cmd.requester.level;
     }
 
     NodeProcess.prototype.refineNodeLayers = function (node, camera, params) {
@@ -253,23 +261,20 @@ define('Scene/NodeProcess',
 
         var sse = this.checkNodeSSE(node);
 
-        if (sse) {  // SSE too big: display or load children
-            if (params.withUp) {
-                // request level up
+        if (params.withUp) {
+            if (sse) {
+                // big screen space error: subdivide node, display children if possible
                 this.subdivideNode(node, camera, params);
-            }
-
-            // Ideally we'd want to hide this node and display its children
-            node.setDisplayed(!node.childrenLoaded());
-        } else {    // SSE good enough: display node and put it to the right scale if necessary
-            if (params.withUp) {
+            } else {
+                // node is going to be displayed (either because !sse or because children aren't ready),
+                // so try to refine its textures
                 this.refineNodeLayers(node, camera, params);
             }
-
-            // display node and hide children
-            this.hideNodeChildren(node);
-            node.setDisplayed(true);
         }
+
+        // display children if possible
+        var hidden = sse && node.childrenLoaded();
+        node.setDisplayed(!hidden);
     };
 
     /**
