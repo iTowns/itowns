@@ -198,6 +198,8 @@ define('Scene/NodeProcess',
             }
             node.setTexturesLayer(textures, 1);
             return node;
+        }, function() {
+            // 1 command has been canceled, no big deal, we just need to catch it
         });
     }
 
@@ -224,6 +226,8 @@ define('Scene/NodeProcess',
                             node.setTextureElevation(-2);
                         }
                         return node;
+                    }).catch(function() {
+                        // Command has been canceled, no big deal, we just need to catch it
                     });
                 }
             }
