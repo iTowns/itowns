@@ -42,14 +42,12 @@ WFS_Provider.prototype.constructor = WFS_Provider;
  * &bbox=2.325,48.855,2.335,48.865,epsg:4326&outputFormat=json
  */
 WFS_Provider.prototype.url = function(bbox) {
-
     var url = this.baseUrl +
-        "SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature" +
+        "?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature" +
         "&typeName=" + this.typename + "&BBOX=" +
         bbox.minCarto.longitude + "," + bbox.minCarto.latitude + "," +
         bbox.maxCarto.longitude + "," + bbox.maxCarto.latitude +
-        ",epsg:" + this.epsgCode + "&outputFormat=" + this.format;
-
+        "&SRSNAME=epsg:"+this.epsgCode + "&outputFormat=" + this.format;
     return url;
 };
 
@@ -61,6 +59,5 @@ WFS_Provider.prototype.getData = function(bbox) {
     var url = this.url(bbox);
     return this.ioDriver_JSON.read(url);
 };
-
 
 export default WFS_Provider;
