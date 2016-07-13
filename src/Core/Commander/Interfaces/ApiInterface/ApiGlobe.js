@@ -240,7 +240,6 @@ ApiGlobe.prototype.createSceneGlobe = function(coordCarto, viewerDiv) {
     this.scene.managerCommand.addProtocolProvider('wmtsc', wmtsProvider);
     this.scene.managerCommand.addProtocolProvider('tile', new TileProvider(ellipsoid));
     this.scene.managerCommand.addProtocolProvider('wms', new WMS_Provider({support : map.gLDebug}));
-
     var wgs84TileLayer = {
         protocol: 'tile',
         id: 'wgs84'
@@ -271,7 +270,7 @@ ApiGlobe.prototype.createSceneGlobe = function(coordCarto, viewerDiv) {
         }
     };*/
 
-    this.addFeatureLayer(params);
+    //this.addFeatureLayer(params);
 
     map.tiles.init(map.layersConfiguration.getGeometryLayers()[0]);
 
@@ -663,18 +662,19 @@ ApiGlobe.prototype.addFeatureLayer = function(params){
     var featureQuad = new Quadtree(FeatureMesh, schemeTile, this.scene.size);
     //this.scene.add(featureQuad, new NodeProcess(this.scene.currentCamera(), null, featureQuad.size));
 
-     //Test points on Lyon with data comming from the Grand Lyon (Velo'V stations and availability)
-    /*this.scene.managerCommand.addLayer(featureQuad, new FeatureProvider({url:'https://download.data.grandlyon.com/wfs/rdata',
+    //Test points on Lyon with data comming from the Grand Lyon (Velo'V stations and availability)
+    /*this.scene.managerCommand.addProtocolProvider('wfs', new FeatureProvider({url:'https://download.data.grandlyon.com/wfs/rdata',
                                                                         typename: 'jcd_jcdecaux.jcdvelov',
                                                                         epsgCode: 4326,
                                                                         format: 'geojson',
                                                                         tileParams: params}));*/
     //Test lines on Lyon with datas comming from the Grand Lyon (metro lines)
-    /*this.scene.managerCommand.addLayer(featureQuad, new FeatureProvider({url:'https://download.data.grandlyon.com/wfs/rdata',
+    /*this.scene.managerCommand.addProtocolProvider('wfs', new FeatureProvider({url:'https://download.data.grandlyon.com/wfs/rdata',
                                                                         typename: 'tcl_sytral.tcllignemf',
                                                                         epsgCode: 4326,
                                                                         format: 'geojson',
                                                                         tileParams: params}));*/
+    featureQuad.init({protocol: 'wfs', id: 'wfs84'});
 };
 
 export default ApiGlobe;
