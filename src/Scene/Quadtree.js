@@ -17,12 +17,12 @@ define('Scene/Quadtree', [
 ], function(Layer, Quad, NodeMesh) {
 
 
-    function Quadtree(type, schemeTile, size, link) {
+    function Quadtree(type, schemeTile, size, link, param) {
         Layer.call(this, type, size);
 
         this.link = link;
         this.schemeTile = schemeTile;
-        this.tileType = type;
+        this.tileType = type; // inutilisé
         this.minLevel = 2;
         this.maxLevel = 17;
         var rootNode = new NodeMesh();
@@ -31,6 +31,8 @@ define('Scene/Quadtree', [
         rootNode.material.visible = false;
 
         rootNode.link = this.link;
+
+        this.param = param;
 
         rootNode.enablePickingRender = function() { return true;};
         this.add(rootNode);
@@ -65,7 +67,6 @@ define('Scene/Quadtree', [
         var params = {layer : this,bbox: bbox };
 
         this.interCommand.request(params, parent);
-
     };
 
     /**
@@ -74,6 +75,7 @@ define('Scene/Quadtree', [
      * @returns {Array} an array of four bounding boxex
      */
     Quadtree.prototype.subdivideNode = function (node) {
+        //console.log(node.param);
         if(node.pendingSubdivision || node.level > this.maxLevel){
             return [];
         }
