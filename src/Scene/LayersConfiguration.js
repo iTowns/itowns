@@ -103,14 +103,12 @@ define('Scene/LayersConfiguration', [
 
     LayersConfiguration.prototype.moveLayerDown = function(id){
         if (this.colorLayersState[id] && this.colorLayersState[id].sequence > 0) {
-            console.log('move down');
             this.moveLayerToIndex(id, this.colorLayersState[id].sequence - 1);
         }
     };
 
     LayersConfiguration.prototype.moveLayerUp = function(id){
         if (this.colorLayersState[id] && this.colorLayersState[id].sequence < this.colorLayers.length - 1) {
-            console.log('move up');
             this.moveLayerToIndex(id, this.colorLayersState[id].sequence + 1);
         }
     };
@@ -122,7 +120,6 @@ define('Scene/LayersConfiguration', [
                 return this.colorLayersState[a].sequence - this.colorLayersState[b].sequence;
             }.bind(this)
         );
-        console.log(JSON.stringify(seq));
         return seq;
     }
 
