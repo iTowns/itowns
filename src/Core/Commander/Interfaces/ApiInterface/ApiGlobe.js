@@ -12,6 +12,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
        'Scene/NodeProcess',
        'Globe/Globe',
        'Core/Commander/Providers/WMTS_Provider',
+       'Core/Commander/Providers/TileProvider',
        'Core/Geographic/CoordCarto',
        'Core/Geographic/Projection'], function(
            EventsManager,
@@ -20,6 +21,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
            NodeProcess,
            Globe,
            WMTS_Provider,
+           TileProvider,
            CoordCarto,
            Projection) {
 
@@ -74,8 +76,19 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
 
     ApiGlobe.prototype.getWMTSProvider = function()
     {
-        return this.scene.managerCommand.getProvider(this.scene.getMap().tiles).providerWMTS;
-    };
+        return this.scene.managerCommand.getProtocolProvider('wmts');
+    }
+
+    /**
+    * This function gives a chance to the matching provider to pre-process some
+    * values for a layer.
+    */
+    function preprocessLayer(layer, provider) {
+        if (provider.preprocessDataLayer) {
+            layer.tileInsideLimit = provider.tileInsideLimit.bind(provider);
+            provider.preprocessDataLayer(layer);
+        }
+    }
 
     /**
     * This function adds an imagery layer to the scene. The layer id must be unique. The protocol rules wich parameters are then needed for the function.
@@ -83,36 +96,30 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
     * @param {Layer} layer.
     */
     ApiGlobe.prototype.addImageryLayer = function(layer) {
+        preprocessLayer(layer, this.scene.managerCommand.getProtocolProvider(layer.protocol));
 
         var map = this.scene.getMap();
-        var manager = this.scene.managerCommand;
-        var provider;
 
-        // get provider in function of provider
-        if(layer.protocol === 'wmts' || layer.protocol === 'wmtsc')
-            provider = this.getWMTSProvider();
-
-        provider.addLayer(layer);
-        var colorLayer = map.addColorLayer(layer.id)
-        manager.addLayer(colorLayer,provider);
-
+        map.layersConfiguration.addColorLayer(layer);
     };
 
     ApiGlobe.prototype.moveLayerUp = function(layer){
 
-        this.scene.getMap().moveLayerUp(layer);
+        this.scene.getMap().layersConfiguration.moveLayerUp(layer);
+        this.scene.getMap().updateLayersOrdering();
         this.scene.renderScene3D();
     };
 
     ApiGlobe.prototype.moveLayerDown = function(layer){
 
-        this.scene.getMap().moveLayerDown(layer);
+        this.scene.getMap().layersConfiguration.moveLayerDown(layer);
+        this.scene.getMap().updateLayersOrdering();
         this.scene.renderScene3D();
     };
 
     ApiGlobe.prototype.moveLayerToIndex = function(layer,newId){
-
-        this.scene.getMap().moveLayerToIndex(layer,newId);
+        this.scene.getMap().layersConfiguration.moveLayerToIndex(layer,newId);
+        this.scene.getMap().updateLayersOrdering();
         this.scene.renderScene3D();
     };
 
@@ -120,14 +127,32 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
 
         if(this.scene.getMap().removeColorLayer(id))
         {
-            this.getWMTSProvider().removeLayer(id);
             eventLayerRemoved.layer = id;
             this.viewerDiv.dispatchEvent(eventLayerRemoved);
+            this.scene.getMap().updateLayersOrdering();
             this.scene.renderScene3D();
             return true;
         }
 
         return false;
+    };
+
+
+    /**
+    * Add an elevation layer to the map. Elevations layers are used to build the terrain.
+    * Only one elevation layer is used, so if multiple layers cover the same area, the one
+    * with best resolution is used (or the first one is resolution are identical).
+    * The layer id must be unique amongst all layers already inserted.
+    * The protocol rules which parameters are then needed for the function.
+    * @constructor
+    * @param {Layer} layer.
+    */
+
+    ApiGlobe.prototype.addElevationLayer = function(layer) {
+        preprocessLayer(layer, this.scene.managerCommand.getProtocolProvider(layer.protocol));
+
+        var map = this.scene.getMap();
+        map.layersConfiguration.addElevationLayer(layer);
     };
 
     /**
@@ -153,13 +178,8 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
     */
 
     ApiGlobe.prototype.getLayers = function(/*param*/){
-
         var map = this.scene.getMap();
-        var manager = this.scene.managerCommand;
-        var providerWMTS = manager.getProvider(map.tiles).providerWMTS;
-        var layersData = providerWMTS.layersData;
-        return layersData;
-
+        return map.layersConfiguration.getColorLayers();
     };
 
     /**
@@ -176,25 +196,6 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         var providerWMTS = manager.getProvider(map.tiles).providerWMTS;
         var layerWMTS = providerWMTS.layersData;
         return layerWMTS[id].zoom.max;
-    };
-
-    /**
-    * Adds en elevation layer (MNT) to the scene. If there are some overlaps, the best resolution is taken.
-    * The layer id must be unique. The protocol rules wich parameters are then needed for the function.
-    * @constructor
-    * @param {Layer} layer.
-    */
-
-    ApiGlobe.prototype.addElevationLayer = function(layer) {
-
-        var map = this.scene.getMap();
-        var manager = this.scene.managerCommand;
-        var providerWMTS = manager.getProvider(map.tiles).providerWMTS;
-
-        providerWMTS.addLayer(layer);
-        manager.addLayer(map.elevationTerrain,providerWMTS);
-        map.elevationTerrain.services.push(layer.id);
-
     };
 
     /**
@@ -234,6 +235,23 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         var map = new Globe(this.scene.size,gLDebug);
 
         this.scene.add(map);
+
+
+        // Register all providers
+        var wmtsProvider = new WMTS_Provider({support : map.gLDebug});
+        this.scene.managerCommand.addProtocolProvider('wmts', wmtsProvider);
+        this.scene.managerCommand.addProtocolProvider('wmtsc', wmtsProvider);
+        this.scene.managerCommand.addProtocolProvider('tile', new TileProvider(map.size));
+
+        var wgs84TileLayer = {
+            protocol: 'tile',
+            id:       'wgs84'
+        };
+
+        preprocessLayer(wgs84TileLayer, this.scene.managerCommand.getProtocolProvider(wgs84TileLayer.protocol));
+        map.layersConfiguration.addGeometryLayer(wgs84TileLayer);
+
+        map.tiles.init(map.layersConfiguration.getGeometryLayers()[0]);
 
         //!\\ TEMP
         //this.scene.wait(0);
@@ -285,7 +303,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
 
     ApiGlobe.prototype.setLayerVisibility = function(id,visible){
 
-        this.scene.getMap().setLayerVisibility(id,visible);
+        this.scene.getMap().setLayerVisibility(id, visible);
 
         this.scene.renderScene3D();
     };

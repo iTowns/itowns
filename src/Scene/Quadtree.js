@@ -59,15 +59,20 @@ define('Scene/Quadtree', [
 
         rootNode.enablePickingRender = function() { return true;};
         this.add(rootNode);
-
-        for (var i = 0; i < this.schemeTile.rootCount(); i++) {
-            this.requestNewTile(this.schemeTile.getRoot(i), rootNode);
-        }
     }
+
 
     Quadtree.prototype = Object.create(Layer.prototype);
 
     Quadtree.prototype.constructor = Quadtree;
+
+    Quadtree.prototype.init = function(geometryLayer) {
+        var rootNode = this.children[0];
+
+        for (var i = 0; i < this.schemeTile.rootCount(); i++) {
+            this.requestNewTile(geometryLayer, this.schemeTile.getRoot(i), rootNode);
+        }
+    }
 
     Quadtree.prototype.northWest = function(node) {
         return node.children[0];
@@ -85,9 +90,8 @@ define('Scene/Quadtree', [
         return node.children[3];
     };
 
-    Quadtree.prototype.requestNewTile = function(bbox, parent) {
-
-        var params = {layer : this,bbox: bbox };
+    Quadtree.prototype.requestNewTile = function(geometryLayer, bbox, parent) {
+        var params = {layer: geometryLayer, bbox: bbox };
 
         this.interCommand.request(params, parent);
 

@@ -218,7 +218,7 @@ void main() {
                         lum = 1.0-pow(abs(a),paramsB.x);
                     }
 
-                    diffuseColor = mix( diffuseColor,layerColor, lum*params.w);
+                    diffuseColor = mix( diffuseColor,layerColor, lum*params.w * layerColor.a);
                 }
 #if defined(DEBUG)
                 else {

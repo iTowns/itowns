@@ -366,7 +366,7 @@ define('Globe/TileMesh', [
 
     TileMesh.prototype.changeSequenceLayers = function(sequence){
 
-        if(this.layersColor < 2)
+        if(this.layersColor.length < 2)
             return;
 
         var newSequence,layer;
