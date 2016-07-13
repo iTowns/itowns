@@ -21,7 +21,8 @@ function NodeProcess(camera, ellipsoid, bbox) {
 
     this.vhMagnitudeSquared = 1.0;
 
-    this.r = defaultValue(ellipsoid.size, new THREE.Vector3());
+    if(ellipsoid !== null)
+        this.r = defaultValue(ellipsoid.size, new THREE.Vector3());
     this.cV = new THREE.Vector3();
     this.projection = new Projection();
 }

@@ -4,7 +4,6 @@
  * Description: Classe façade pour attaquer les fonctionnalités du code.
  */
 
-
 import Scene from 'Scene/Scene';
 import Globe from 'Globe/Globe';
 import WMTS_Provider from 'Core/Commander/Providers/WMTS_Provider';
@@ -13,6 +12,12 @@ import TileProvider from 'Core/Commander/Providers/TileProvider';
 import CoordCarto from 'Core/Geographic/CoordCarto';
 import Ellipsoid from 'Core/Math/Ellipsoid';
 import Projection from 'Core/Geographic/Projection';
+import SchemeTile from 'Scene/SchemeTile';
+import Quadtree from 'Scene/Quadtree';
+import FeatureMesh from 'Globe/FeatureMesh';
+import NodeProcess from 'Scene/NodeProcess';
+import FeatureProvider from 'Core/Commander/Providers/FeatureProvider';
+import MathExt from 'Core/Math/MathExtented';
 
 var loaded = false;
 var eventLoaded = new Event('globe-loaded');
@@ -243,6 +248,20 @@ ApiGlobe.prototype.createSceneGlobe = function(coordCarto, viewerDiv) {
 
     preprocessLayer(wgs84TileLayer, this.scene.managerCommand.getProtocolProvider(wgs84TileLayer.protocol));
     map.layersConfiguration.addGeometryLayer(wgs84TileLayer);
+
+    //Test points on Lyon with data comming from the Grand Lyon (Velo'V stations and availability)
+    var params = {
+        point: {
+            color: {
+                property: 'availability',
+                testTab : ['Vert', 'Bleu', 'Gris', 'Orange'],
+                colorTab: [0x33CC33, 0x5599ff, 0x808080, 0xFF5577]
+            },
+            nbSegment: 8
+        }
+    };
+
+    this.addFeatureLayer(params);
 
     map.tiles.init(map.layersConfiguration.getGeometryLayers()[0]);
 
@@ -618,7 +637,7 @@ ApiGlobe.prototype.launchCommandApi = function() {
 //    ApiGlobe.prototype.testHeading = function (){
 //        this.setHeading(90);
 //        console.log(this.getHeading());
-//        this.resetHeading();
+    //        this.resetHeading();
 //        console.log(this.getHeading());
 //    };
 
@@ -628,5 +647,19 @@ ApiGlobe.prototype.showKML = function(value) {
     this.scene.renderScene3D();
 };
 
+ApiGlobe.prototype.addFeatureLayer = function(params){
+    var schemeTile = new SchemeTile();
+    schemeTile.add(0, MathExt.PI, -MathExt.PI_OV_TWO, MathExt.PI_OV_TWO);
+    schemeTile.add(MathExt.PI, MathExt.TWO_PI, -MathExt.PI_OV_TWO, MathExt.PI_OV_TWO);
+    var featureQuad = new Quadtree(FeatureMesh, schemeTile, this.scene.size);
+    //this.scene.add(featureQuad, new NodeProcess(this.scene.currentCamera(), null, featureQuad.size));
+
+     //Test points on Lyon with data comming from the Grand Lyon (Velo'V stations and availability)
+    /*this.scene.managerCommand.addLayer(featureQuad, new FeatureProvider({url:'https://download.data.grandlyon.com/wfs/rdata',
+                                                                        typename: 'jcd_jcdecaux.jcdvelov',
+                                                                        epsgCode: 4326,
+                                                                        format: 'geojson',
+                                                                        tileParams: params}));*/
+};
 
 export default ApiGlobe;
