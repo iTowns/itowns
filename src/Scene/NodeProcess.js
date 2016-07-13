@@ -128,17 +128,7 @@ define('Scene/NodeProcess',
                     }
 
                     child.setColorLayerParameters(paramMaterial);
-                    child.texturesNeeded = colorTextureCount;
-
-
-                    for (j=0; j<quadtree.elevationLayers.length; j++) {
-                        layer = quadtree.elevationLayers[j];
-                        if (layer.tileInsideLimit(child, layer)) {
-                            // assume max 1 elevation layer
-                            child.texturesNeeded += 1;
-                            break;
-                        }
-                    }
+                    child.texturesNeeded = colorTextureCount + 1;
 
                     // request imagery update
                     updateNodeImagery(quadtree, child);
@@ -220,7 +210,6 @@ define('Scene/NodeProcess',
             node :
             node.getParentLevel(node.levelElevation);
 
-
         // If tileNotDownscaled's elevation texture is not ready yet, fetch it
         if (tileNotDownscaled.downScaledLayer(0)) {
             for (var i=0; i<quadtree.elevationLayers.length; i++) {
@@ -237,10 +226,12 @@ define('Scene/NodeProcess',
                         return node;
                     });
                 }
-                return Promise.resolve(node);
             }
-        } else {
-            // TODO: check this
+
+            // No elevation texture available for this node, no need to wait for one.
+            node.texturesNeeded -= 1;
+            return Promise.resolve(node);
+        } else if (node != tileNotDownscaled) {
             node.setTextureElevation(-2);
             return Promise.resolve(node);
         }
