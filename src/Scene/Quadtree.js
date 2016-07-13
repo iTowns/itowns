@@ -39,7 +39,7 @@ function commandQueuePriorityFunction(cmd) {
     }
 }
 
-function Quadtree(type, schemeTile, link) {
+function Quadtree(type, schemeTile, link, param) {
     Layer.call(this);
 
     this.interCommand = new InterfaceCommander(type, commandQueuePriorityFunction);
@@ -55,13 +55,14 @@ function Quadtree(type, schemeTile, link) {
 
     rootNode.link = this.link;
 
+    this.param = param;
+
     rootNode.changeState = function() {
         return true;
     };
 
     this.add(rootNode);
 }
-
 
 Quadtree.prototype = Object.create(Layer.prototype);
 
@@ -98,7 +99,6 @@ Quadtree.prototype.requestNewTile = function(geometryLayer, bbox, parent) {
     };
 
     this.interCommand.request(params, parent);
-
 };
 
 /**
