@@ -628,6 +628,8 @@ THREE.GlobeControls = function(object, domElement, engine) {
             }
             else if (scope.keyS)
             {
+
+                // If the key 'S' is down, the engine selects node under mouse
                 var mouse = new THREE.Vector2(event.clientX - event.target.offsetLeft,event.clientY - event.target.offsetTop);
                 scope.engine.selecteWithMouse(mouse);
                 scope.engine.update();

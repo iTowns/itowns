@@ -12,22 +12,20 @@ define('Renderer/c3DEngine', [
     'Renderer/Camera',
     'Renderer/BasicMaterial',
     'Globe/Atmosphere',
-    'Core/System/Capabilities'
+    'Core/System/Capabilities',
+    'Renderer/RendererConstant'
 ], function(
     THREE,
     GlobeControls,
     Camera,
     BasicMaterial,
     Atmosphere,
-    Capabilities) {
+    Capabilities,
+    RendererConstant) {
 
     var instance3DEngine = null;
 
-    var RENDER = {
-        FINAL: 0,
-        PICKING: 1,
-        PICKINGID: 2
-    };
+    var RENDERING_STATE = RendererConstant().RENDERING_STATE;
 
     /*
     var step = function(val,stepVal)
@@ -108,7 +106,7 @@ define('Renderer/c3DEngine', [
         this.camDebug = undefined;
         this.dnear = 0.0;
         this.dfar = 0.0;
-        this.stateRender = RENDER.FINAL;
+        this.stateRender = RENDERING_STATE.FINAL;
         this.positionBuffer = null;
         this.lightingOn = false;
 
@@ -313,6 +311,12 @@ define('Renderer/c3DEngine', [
 
     };
 
+
+    /**
+     * change state all visible nodes
+     * @param {type} state new state to apply
+     * @returns {undefined}
+    */
     c3DEngine.prototype.changeStateNodesScene = function(state){
 
         // build traverse function
@@ -328,7 +332,7 @@ define('Renderer/c3DEngine', [
 
         }();
 
-        var enable = state === RENDER.FINAL;
+        var enable = state === RENDERING_STATE.FINAL;
 
         for (var x = 0; x < this.scene3D.children.length; x++) {
             var node = this.scene3D.children[x];
@@ -492,7 +496,7 @@ define('Renderer/c3DEngine', [
     c3DEngine.prototype.updatePositionBuffer = function() {
         this.camera.camera3D.updateMatrixWorld();
         this.dummys.visible = false;
-        this.positionBuffer = this.renderTobuffer(0, 0, this.width, this.height, RENDER.PICKING);
+        this.positionBuffer = this.renderTobuffer(0, 0, this.width, this.height, RENDERING_STATE.DEPTH);
         this.dummys.visible = true;
         this.renderScene(); // TODO debug to remove white screen, but why?
     };
@@ -536,7 +540,7 @@ define('Renderer/c3DEngine', [
         camera.updateMatrixWorld();
 
         this.dummys.visible = false;
-        var buffer = this.renderTobuffer(mouse.x, this.height - mouse.y, 1, 1, RENDER.PICKING);
+        var buffer = this.renderTobuffer(mouse.x, this.height - mouse.y, 1, 1, RENDERING_STATE.DEPTH);
         this.dummys.visible = true;
 
         var glslPosition = new THREE.Vector3().fromArray(buffer);
@@ -559,6 +563,12 @@ define('Renderer/c3DEngine', [
             return bitSh.dot(color) * factor;
     }
 
+
+    /**
+     *
+     * @param {Vecto2D} mouse : mouse position on screen in pixel
+     * @returns {int} uuid's node
+     * */
     c3DEngine.prototype.getPickingId = function(mouse) {
 
         var camera = this.camera.camera3D;
@@ -566,17 +576,24 @@ define('Renderer/c3DEngine', [
         camera.updateMatrixWorld();
 
         this.dummys.visible = false;
-        var buffer = this.renderTobuffer(mouse.x, this.height - mouse.y, 1, 1, RENDER.PICKINGID);
+        var buffer = this.renderTobuffer(mouse.x, this.height - mouse.y, 1, 1, RENDERING_STATE.ID);
         this.dummys.visible = true;
 
         var depthRGBA = new THREE.Vector4().fromArray(buffer).divideScalar(255.0);
 
+        // unpack RGBA to float
         var unpack = unpack1K(depthRGBA,10000);
 
         return Math.round(unpack);
 
     };
 
+
+    /**
+    *
+    * @param {Vecto2D} mouse : mouse position on screen in pixel
+    * Select node under mouse
+    **/
     c3DEngine.prototype.selecteWithMouse = function(mouse) {
 
         this.scene.selectNodeId(this.getPickingId(mouse));
@@ -603,7 +620,7 @@ define('Renderer/c3DEngine', [
             camera.updateMatrixWorld();
 
             this.dummys.visible = false;
-            var buffer = this.renderTobuffer(mouse.x, this.height - mouse.y, 1, 1, RENDER.PICKING);
+            var buffer = this.renderTobuffer(mouse.x, this.height - mouse.y, 1, 1, RENDERING_STATE.DEPTH);
             this.dummys.visible = true;
 
             screen.x =   ( (mouse.x) / this.width  ) * 2 - 1;
