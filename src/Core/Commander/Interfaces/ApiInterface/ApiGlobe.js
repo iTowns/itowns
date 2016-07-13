@@ -13,7 +13,12 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
        'Globe/Globe',
        'Core/Commander/Providers/WMTS_Provider',
        'Core/Geographic/CoordCarto',
-       'Core/Geographic/Projection'], function(
+       'Core/Geographic/Projection',
+       'Scene/SchemeTile',
+       'Core/Commander/Providers/FeatureProvider',
+       'Scene/Quadtree',
+       'Globe/FeatureMesh',
+       'Core/Math/MathExtented'], function(
            EventsManager,
            Scene,
            Layer,
@@ -21,7 +26,12 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
            Globe,
            WMTS_Provider,
            CoordCarto,
-           Projection) {
+           Projection,
+           SchemeTile,
+           FeatureProvider,
+           Quadtree,
+           FeatureMesh,
+           MathExt) {
 
     var loaded = false;
     var eventLoaded = new Event('globe-loaded');
@@ -234,6 +244,20 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         var map = new Globe(this.scene.size,gLDebug);
 
         this.scene.add(map);
+
+        //Test points on Lyon with data comming from the Grand Lyon (Velo'V stations and availability)
+        var params = {
+            point: {
+                color: {
+                    property: 'availability',
+                    testTab : ['Vert', 'Bleu', 'Gris', 'Orange'],
+                    colorTab: [0x33CC33, 0x5599ff, 0x808080, 0xFF5577]
+                },
+                nbSegment: 8
+            }
+        };
+
+        this.addFeatureLayer(params);
 
         //!\\ TEMP
         //this.scene.wait(0);
@@ -610,7 +634,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
 //    ApiGlobe.prototype.testHeading = function (){
 //        this.setHeading(90);
 //        console.log(this.getHeading());
-//        this.resetHeading();
+    //        this.resetHeading();
 //        console.log(this.getHeading());
 //    };
 
@@ -620,6 +644,32 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         this.scene.renderScene3D();
     };
 
+    ApiGlobe.prototype.addFeatureLayer = function(params){
+        var schemeTile = new SchemeTile();
+        schemeTile.add(0, MathExt.PI, -MathExt.PI_OV_TWO, MathExt.PI_OV_TWO);
+        schemeTile.add(MathExt.PI, MathExt.TWO_PI, -MathExt.PI_OV_TWO, MathExt.PI_OV_TWO);
+        var featureQuad = new Quadtree(FeatureMesh, schemeTile, this.scene.size);
+        this.scene.add(featureQuad, new NodeProcess(this.scene.currentCamera(), featureQuad.size));
+
+         //Test points on Lyon with data comming from the Grand Lyon (Velo'V stations and availability)
+        this.scene.managerCommand.addLayer(featureQuad, new FeatureProvider({url:'https://download.data.grandlyon.com/wfs/rdata',
+                                                                            typename: 'jcd_jcdecaux.jcdvelov',
+                                                                            epsgCode: 4326,
+                                                                            format: 'geojson',
+                                                                            tileParams: params}));
+    };
+
+    ApiGlobe.prototype.removeFeatureLayer = function(){
+        return 0;
+    };
+
+    ApiGlobe.prototype.setFeatureLayerOpacity = function(){
+        return 0;
+    };
+
+    ApiGlobe.prototype.setFeatureLayerVisibility = function(){
+        return 0;
+    };
 
     return ApiGlobe;
 
