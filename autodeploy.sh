@@ -11,6 +11,11 @@ fi
 SOURCE_BRANCH="master"
 TARGET_BRANCH="gh-pages"
 
+if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
+    echo "Skipping deploy for a pull request"
+    exit 0
+fi
+
 # Commits to other branches shouldn't try to deploy
 if [ "$TRAVIS_BRANCH" != "$SOURCE_BRANCH" ]; then
     echo "Skipping deploy for a commit on non-master branch"
@@ -27,6 +32,10 @@ COMMIT_AUTHOR_NAME=`git show  --pretty=format:"%an" -q`
 # Clone the existing gh-pages for this repo into out/
 git clone $REPO --single-branch --branch $TARGET_BRANCH out
 
+pushd out
+# Remove everything then recreate the content, to avoid keeping stale files
+git rm -rf dist index.html API_Doc
+popd
 # Copy build results
 cp -R dist out/
 # generate the API documentation
