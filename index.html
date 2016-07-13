@@ -47,7 +47,7 @@ and open the template in the editor.
                 protocol:   "wmts",
                 id:         "Ortho",
                 url:        "http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/geoportail/wmts",
-                wmtsOptions: {
+                options: {
                         //name:'GEOGRAPHICALGRIDSYSTEMS.MAPS',
                         name: "ORTHOIMAGERY.ORTHOPHOTOS",
                         mimetype: "image/jpeg",
@@ -183,12 +183,13 @@ and open the template in the editor.
                     }
                 });
 
+
                 itowns.viewer.addImageryLayer({
                 protocol:   "wmts",
                 id:         "OrthoCRS",
                 url:        "http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/geoportail/wmts",
                 fx :        1.0,
-                wmtsOptions: {
+                options: {
                         name: 'ORTHOIMAGERY.ORTHOPHOTOS.CRS84',
                         mimetype: "image/jpeg",
                         tileMatrixSet: "WGS84G",
@@ -275,7 +276,7 @@ and open the template in the editor.
                 id:         "ScanEX",
                 url:        "http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/geoportail/wmts",
                 fx :        2.5,
-                wmtsOptions: {
+                options: {
                         //name:'GEOGRAPHICALGRIDSYSTEMS.MAPS',
                         // name: 'GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN-EXPRESS.ROUTIER',
                         name: 'GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN-EXPRESS.STANDARD',
@@ -372,14 +373,14 @@ and open the template in the editor.
         //         protocol:   "wmtsc",
         //         id:         "DARK",
         //         customUrl:  "http://a.basemaps.cartocdn.com/dark_all/%TILEMATRIX/%COL/%ROW.png",
-        //         wmtsOptions: { tileMatrixSet: "PM"}
+        //         options: { tileMatrixSet: "PM"}
         //     });
 
         // itowns.viewer.addImageryLayer({
         //     protocol:   "wmtsc",
         //     id:         "OPENSM",
         //     customUrl:  'http://b.tile.openstreetmap.fr/osmfr/%TILEMATRIX/%COL/%ROW.png',
-        //     wmtsOptions: { tileMatrixSet: "PM"},
+        //     options: { tileMatrixSet: "PM"},
         //     fx :        2.5,
         // });
 
@@ -388,7 +389,7 @@ and open the template in the editor.
             id:         "IGN_MNT",
             url:        "http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/geoportail/wmts",
             noDataValue : -99999,
-            wmtsOptions: {
+            options: {
                     name: "ELEVATION.ELEVATIONGRIDCOVERAGE",
                     mimetype: "image/x-bil;bits=32",
                     tileMatrixSet: "WGS84G",
@@ -462,7 +463,7 @@ and open the template in the editor.
             id:         "IGN_MNT_HIGHRES",
             url:        "http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/geoportail/wmts",
             noDataValue : -99999,
-            wmtsOptions: {
+            options: {
                     name: "ELEVATION.ELEVATIONGRIDCOVERAGE.HIGHRES",
                     mimetype: "image/x-bil;bits=32",
                     tileMatrixSet: "WGS84G",
@@ -549,15 +550,30 @@ and open the template in the editor.
                viewerDiv.appendChild(gui.domElement);
 
                 var layers = itowns.viewer.getLayers();
-                for(var id in layers)
+                for(var i in layers)
                 {
-                    var idLayer = id;
+                    var layer = layers[i];
 
-                    if(layers[id].mimetype != "image/x-bil;bits=32")
+                    if(layer.options.mimetype != "image/x-bil;bits=32")
                     {
 
-                        text[idLayer] = true;
-                        text[idLayer+'_Opacity'] = 1.0;
+                        text[layer.id] = true;
+                        text[layer.id+'_Opacity'] = 1.0;
+
+
+                        var fnUp = function(myid) {
+                            return function() {
+                                itowns.viewer.moveLayerUp(myid);
+                            }
+                        }(layer.id);
+                        var fnDown = function(myid) {
+                            return function() {
+                                itowns.viewer.moveLayerDown(myid);
+                            }
+                        }(layer.id);
+
+                        text[layer.id+'_up'] = fnUp;
+                        text[layer.id+'_down'] = fnDown;
 
                         var onchangeVisibily = function(id)
                         {
@@ -566,22 +582,23 @@ and open the template in the editor.
                                 itowns.viewer.setLayerVisibility(id,newValue);
                             };
 
-                        }(idLayer);
+                        }(layer.id);
 
                         var onchangeOpacity = function(id)
                         {
                             return function(newValue) {
 
-                                var opacity = Math.max(0,Math.min(newValue,1.0));
-                                itowns.viewer.setLayerOpacity(id,opacity);
+                                var opacity = Math.max(0,Math.min(newValue, 1.0));
+                                itowns.viewer.setLayerOpacity(id, opacity);
 
                             };
 
-                        }(idLayer);
+                        }(layer.id);
 
-                        gui.add(text, idLayer).onChange( onchangeVisibily).name(idLayer);
-                        gui.add(text, idLayer + '_Opacity').min(0.0).max(1.0).name(' → Opacity').onChange(onchangeOpacity);
-
+                        gui.add(text, layer.id).onChange( onchangeVisibily).name(layer.id);
+                        gui.add(text, layer.id + '_Opacity').min(0.0).max(1.0).name(' → Opacity').onChange(onchangeOpacity);
+                        gui.add(text, layer.id + '_up');
+                        gui.add(text, layer.id + '_down');
                     }
                 }
 

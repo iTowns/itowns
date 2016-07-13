@@ -121,7 +121,7 @@ define('Scene/BrowseTree', ['Globe/TileMesh', 'THREE'], function( TileMesh, THRE
      * @param {type} optional   : optional process
      * @returns {undefined}
      */
-    BrowseTree.prototype.browse = function(tree, camera, process, optional) {
+    BrowseTree.prototype.browse = function(tree, camera, process, layersConfig, optional) {
         this.tree = tree;
 
         camera.updateMatrixWorld();
@@ -131,7 +131,7 @@ define('Scene/BrowseTree', ['Globe/TileMesh', 'THREE'], function( TileMesh, THRE
         process.prepare(camera);
 
         var action = (optional === 2) ? 'clean' : 'visibility_update';
-        var params = { tree: this.tree, withUp: (optional === 1) };
+        var params = { tree: this.tree, withUp: (optional === 1), layersConfig: layersConfig };
 
         var rootNode = tree.children[0];
 

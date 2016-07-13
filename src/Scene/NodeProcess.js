@@ -10,8 +10,9 @@ define('Scene/NodeProcess',
      'Core/Math/MathExtented',
      'Core/Commander/InterfaceCommander',
      'THREE',
-     'Core/defaultValue'
-], function(BoundingBox, Camera, MathExt, InterfaceCommander, THREE, defaultValue) {
+     'Core/defaultValue',
+     'Core/Geographic/Projection'
+], function(BoundingBox, Camera, MathExt, InterfaceCommander, THREE, defaultValue, Projection) {
 
 
     function NodeProcess(camera, size, bbox) {
@@ -25,7 +26,7 @@ define('Scene/NodeProcess',
 
         this.r = defaultValue(size, new THREE.Vector3());
         this.cV = new THREE.Vector3();
-
+        this.projection = new Projection();
     }
 
     /**
@@ -88,16 +89,75 @@ define('Scene/NodeProcess',
             node.pendingSubdivision = true;
 
             for(var i = 0; i < bboxes.length; i++) {
-                var args = {layer: params.tree, bbox: bboxes[i]};
-                params.tree.interCommand.request(args, node);
+                var args = {
+                    layer: params.layersConfig.getGeometryLayers()[0],
+                    bbox: bboxes[i]
+                };
+                var quadtree = params.tree;
+
+                quadtree.interCommand.request(args, node).then(function(child) {
+                    var colorTextureCount = 0;
+                    var paramMaterial = [];
+                    var layer;
+                    var j;
+
+                    child.matrixSet = [];
+
+
+                    // update wmts
+                    var colorLayers = params.layersConfig.getColorLayers();
+                    for (j = 0; j < colorLayers.length; j++) {
+                        layer = colorLayers[j];
+                        var tileMatrixSet = layer.options.tileMatrixSet;
+
+                        if(!child.matrixSet[tileMatrixSet]) {
+                            child.matrixSet[tileMatrixSet] = this.projection.getCoordWMTS_WGS84(child.tileCoord, child.bbox, tileMatrixSet);
+                        }
+
+                        if (layer.tileInsideLimit(child, layer)) {
+
+                            var bcoord = child.matrixSet[tileMatrixSet];
+
+                            paramMaterial.push({
+                                tileMT: tileMatrixSet,
+                                layerTexturesOffset: colorTextureCount,
+                                visible: params.layersConfig.isColorLayerVisible(layer.id),
+                                opacity: params.layersConfig.getColorLayerOpacity(layer.id),
+                                fx: layer.fx,
+                                idLayer: layer.id
+                            });
+
+                            colorTextureCount += bcoord[1].row - bcoord[0].row + 1;
+                        }
+                    }
+
+                    child.setColorLayerParameters(paramMaterial);
+                    child.texturesNeeded = colorTextureCount + 1;
+
+                    // request imagery update
+                    updateNodeImagery(quadtree, child, colorLayers);
+
+                    // request elevation update
+                    updateNodeElevation(quadtree, child, params.layersConfig.getElevationLayers());
+
+                    return 0;
+                }.bind(this));
             }
         }
     };
 
 
     function refinementCommandCancellationFn(cmd) {
+        // If node A is divided into A1, A2, A3, A4 and the user zooms fast enough on A2
+        // We might end up in a situation where:
+        //    - commands for A1, A3 or A4 are canceled because they're not visible anymore
+        //    - A2 A2 cannot be displayed because A won't be hidden until all of its
+        //      children are loaded.
+
         // allow cancellation of the command if the node isn't visible anymore
-        return cmd.requester.visible === false && 2 <= cmd.requester.level;
+        return cmd.requester.parent.childrenLoaded() &&
+               cmd.requester.visible === false &&
+               2 <= cmd.requester.level;
     }
 
     NodeProcess.prototype.refineNodeLayers = function (node, camera, params) {
@@ -105,25 +165,23 @@ define('Scene/NodeProcess',
         var id = node.getDownScaledLayer();
 
         if(id !== undefined) {
-            // update downscaled layer to appropriate scale
-            var args = {layer : params.tree.children[id+1], subLayer : id};
-
             // prevent multiple command creation
             if(node.pendingLayers[id] === undefined) {
                 node.pendingLayers[id] = true;
 
-                params.tree.interCommand.request(args, node, refinementCommandCancellationFn).then(function(result) {
+                if (id === 0) {
+                    updateNodeElevation(params.tree, node, params.layersConfig.getElevationLayers()).
+                    then(function() {
+                        node.pendingLayers[id] = undefined;
+                    });
+                } else if (id === 1) {
+                    updateNodeImagery(params.tree, node, params.layersConfig.getColorLayers()).
+                    then(function() {
+                        node.pendingLayers[id] = undefined;
+                    });
+                } else {
                     node.pendingLayers[id] = undefined;
-                    if (!result) {
-                        return;
-                    }
-
-                    if (id === 0) {
-                        node.setTextureElevation(result);
-                    } else if (id === 1) {
-                        node.setTexturesLayer(result, id);
-                    }
-                });
+                }
             }
         }
     };
@@ -134,6 +192,68 @@ define('Scene/NodeProcess',
             child.setDisplayed(false);
         }
     };
+
+    function updateNodeImagery(quadtree, node, colorLayers) {
+        var promises = [];
+
+        for (var i=0; i<colorLayers.length; i++) {
+            var layer = colorLayers[i];
+
+            if (layer.tileInsideLimit(node, layer)) {
+                var args = {layer: layer, destination: 1 };
+                promises.push(quadtree.interCommand.request(args, node, refinementCommandCancellationFn));
+            }
+        }
+
+        return Promise.all(promises).then(function(colorTextures) {
+            var textures = [];
+            for (var j=0; j<colorTextures.length; j++) {
+                textures = textures.concat(colorTextures[j]);
+            }
+            node.setTexturesLayer(textures, 1);
+            return node;
+        }, function() {
+            // 1 command has been canceled, no big deal, we just need to catch it
+        });
+    }
+
+    function updateNodeElevation(quadtree, node, elevationLayers) {
+        // See TileMesh's groupelevation. Elevations level are mapped on 4 levels (14, 11, 7, 3).
+        // For instance, if tile.level is 12, it'll use levelElevation == 11.
+        // Here we only make sure that the tile with level == levelElevation == 11 has its elevation texture.
+        // Also see TileMesh.setTextureElevation
+        var tileNotDownscaled = (node.level === node.levelElevation) ?
+            node :
+            node.getParentLevel(node.levelElevation);
+
+        // If tileNotDownscaled's elevation texture is not ready yet, fetch it
+        if (tileNotDownscaled.downScaledLayer(0)) {
+            for (var i=0; i<elevationLayers.length; i++) {
+                var layer = elevationLayers[i];
+
+                if (layer.tileInsideLimit(tileNotDownscaled, layer)) {
+                    var args = {layer: layer, destination: 0 };
+
+                    return quadtree.interCommand.request(args, tileNotDownscaled, refinementCommandCancellationFn).then(function(terrain) {
+                        tileNotDownscaled.setTextureElevation(terrain);
+                        if (tileNotDownscaled != node) {
+                            node.setTextureElevation(-2);
+                        }
+                        return node;
+                    }).catch(function() {
+                        // Command has been canceled, no big deal, we just need to catch it
+                    });
+                }
+            }
+
+            // No elevation texture available for this node, no need to wait for one.
+            node.texturesNeeded -= 1;
+            return Promise.resolve(node);
+        } else if (node != tileNotDownscaled) {
+            node.setTextureElevation(-2);
+            return Promise.resolve(node);
+        }
+    }
 
     /**
      * @documentation: Compute screen space error of node in function of camera
@@ -147,23 +267,20 @@ define('Scene/NodeProcess',
 
         var sse = this.checkNodeSSE(node);
 
-        if (sse) {  // SSE too big: display or load children
-            if (params.withUp) {
-                // request level up
+        if (params.withUp) {
+            if (sse) {
+                // big screen space error: subdivide node, display children if possible
                 this.subdivideNode(node, camera, params);
-            }
-            // Ideally we'd want to hide this node and display its children
-            node.setDisplayed(!node.childrenLoaded());
-
-        } else {    // SSE good enough: display node and put it to the right scale if necessary
-            if (params.withUp) {
+            } else {
+                // node is going to be displayed (either because !sse or because children aren't ready),
+                // so try to refine its textures
                 this.refineNodeLayers(node, camera, params);
             }
-
-            // display node and hide children
-            this.hideNodeChildren(node);
-            node.setDisplayed(true);
         }
+
+        // display children if possible
+        var hidden = sse && node.childrenLoaded();
+        node.setDisplayed(!hidden);
     };
 
     /**
