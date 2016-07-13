@@ -96,7 +96,6 @@ define('Renderer/LayeredMaterial', ['THREE',
 
         this.paramLayers = Array(8).fill(vector4);
         this.paramBLayers = Array(8).fill(vector2);
-        this.ColorFS = customFS;
 
         // Elevation texture
         this.uniforms.dTextures_00 = {

@@ -27,7 +27,8 @@ define('Globe/TileMesh', [
     'SphereHelper',
     'Renderer/LayeredMaterial',
     'Renderer/GlobeDepthMaterial',
-    'Renderer/idMaterial'
+    'Renderer/idMaterial',
+    'Renderer/RendererConstant'
 ], function(
     NodeMesh,
     TileGeometry,
@@ -38,17 +39,14 @@ define('Globe/TileMesh', [
     SphereHelper,
     LayeredMaterial,
     GlobeDepthMaterial,
-    idMaterial) {
+    idMaterial,
+    RendererConstant) {
 
     var groupelevation = [14, 11, 7, 3];
     var l_ELEVATION = 0;
     var l_COLOR = 1;
 
-    var RENDER = {
-        FINAL: 0,
-        PICKING: 1,
-        PICKINGID: 2
-    };
+    var RENDERING_STATE = RendererConstant().RENDERING_STATE;
 
     function TileMesh(params, builder, geometryCache) {
         //Constructor
@@ -73,11 +71,16 @@ define('Globe/TileMesh', [
 
         this.stateMaterial = [];
 
-        this.stateMaterial[RENDER.FINAL] = new LayeredMaterial();
-        this.stateMaterial[RENDER.PICKING] = new GlobeDepthMaterial(this.stateMaterial[RENDER.FINAL]);
-        this.stateMaterial[RENDER.PICKINGID] = new idMaterial(this.stateMaterial[RENDER.FINAL]);
-        // set current material
-        this.material = this.stateMaterial[RENDER.FINAL];
+
+        // instantiations all state materials : final, depth, id
+        // Final rendering : return layered color + fog
+        this.stateMaterial[RENDERING_STATE.FINAL] = new LayeredMaterial();
+        // Depth : return the distance between projection point and the node
+        this.stateMaterial[RENDERING_STATE.DEPTH] = new GlobeDepthMaterial(this.stateMaterial[RENDERING_STATE.FINAL]);
+        // ID : return id color in RGBA (float Pack in RGBA)
+        this.stateMaterial[RENDERING_STATE.ID] = new idMaterial(this.stateMaterial[RENDERING_STATE.FINAL]);
+        // Set current material in Final Rendering
+        this.material = this.stateMaterial[RENDERING_STATE.FINAL];
 
         this.frustumCulled = false;
         this.levelElevation = this.level;
@@ -134,19 +137,17 @@ define('Globe/TileMesh', [
         this.material = null;
     };
 
-
     TileMesh.prototype.setUuid = function(uuid) {
 
         this.id = uuid;
-        this.stateMaterial[RENDER.FINAL].setUuid(uuid);
-        this.stateMaterial[RENDER.PICKINGID].setUuid(uuid);
+        this.stateMaterial[RENDERING_STATE.FINAL].setUuid(uuid);
+        this.stateMaterial[RENDERING_STATE.ID].setUuid(uuid);
 
     };
 
-
     TileMesh.prototype.getUuid = function(uuid) {
 
-        return this.stateMaterial[RENDER.PICKINGID].getUuid(uuid);
+        return this.stateMaterial[RENDERING_STATE.ID].getUuid(uuid);
     }
 
     TileMesh.prototype.setColorLayerParameters = function(paramsTextureColor) {
@@ -158,7 +159,6 @@ define('Globe/TileMesh', [
     };
     /**
     *
-
      * @returns {undefined}     */
     TileMesh.prototype.disposeChildren = function() {
         while (this.children.length > 0) {
@@ -176,30 +176,33 @@ define('Globe/TileMesh', [
         this.material.enableRTC(enable);
     };
 
+    // switch material in function of state
     TileMesh.prototype.changeState = function(state) {
 
-        if(state !== RENDER.FINAL)
-            this.stateMaterial[state].setMatrixRTC(this.stateMaterial[RENDER.FINAL].getMatrixRTC());
+        if(state !== RENDERING_STATE.FINAL)
+        {
+            this.stateMaterial[state].setMatrixRTC(this.stateMaterial[RENDERING_STATE.FINAL].getMatrixRTC());
+            this.stateMaterial[state]. visible = this.stateMaterial[RENDERING_STATE.FINAL].visible;
+        }
 
         this.material = this.stateMaterial[state];
     };
 
     TileMesh.prototype.setFog = function(fog) {
-        this.stateMaterial[RENDER.FINAL].setFogDistance(fog);
+        this.stateMaterial[RENDERING_STATE.FINAL].setFogDistance(fog);
     };
 
     TileMesh.prototype.setMatrixRTC = function(rtc) {
-        this.stateMaterial[RENDER.FINAL].setMatrixRTC(rtc);
+        this.stateMaterial[RENDERING_STATE.FINAL].setMatrixRTC(rtc);
     };
 
     TileMesh.prototype.setDebug = function(enable) {
-        this.stateMaterial[RENDER.FINAL].setDebug(enable);
+        this.stateMaterial[RENDERING_STATE.FINAL].setDebug(enable);
     };
 
     TileMesh.prototype.setSelected = function(select) {
 
-
-        this.stateMaterial[RENDER.FINAL].setSelected(select);
+        this.stateMaterial[RENDERING_STATE.FINAL].setSelected(select);
     };
 
     TileMesh.prototype.parseBufferElevation = function(image,minMax,pitScale) {

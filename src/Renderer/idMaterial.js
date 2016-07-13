@@ -17,6 +17,9 @@ define('Renderer/idMaterial', ['THREE',
     idFS,
     GlobeDepthVS) {
 
+    // This material renders the id in RGBA Color
+    // Warning the RGBA contains id in float pack in 4 unsigned char
+
     var idMaterial = function(otherMaterial) {
 
         BasicMaterial.call(this);
@@ -25,8 +28,6 @@ define('Renderer/idMaterial', ['THREE',
         this.fragmentShader = idFS;
 
         this.uniforms.uuid.value = otherMaterial.uniforms.uuid.value;
-
-
 
     };
 
