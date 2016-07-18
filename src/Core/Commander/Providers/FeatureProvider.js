@@ -256,12 +256,13 @@ FeatureProvider.prototype.manageMaterial = function(featureProperties, color) {
 			this.tileParams.point(featureProperties);
 		else
 			this.manageColor(featureProperties, color, this.tileParams.point);
-	}/* else if (this.tileParams.line !== undefined) {
+	} else if (this.tileParams.line !== undefined) {
 		if(this.tileParams.line && getType.toString.call(this.tileParams.line) === '[object Function]')
 			this.tileParams.line(featureProperties, this.tileParams);
 		else
 			this.manageColor(featureProperties, color, this.tileParams.line);
-	} else if (this.tileParams.polygon !== undefined){
+	} /*else if (this.tileParams.polygon !== undefined){
+
 	} else {
 		console.log('Le type de data n\'est présentement pas le bon');
 	}*/
