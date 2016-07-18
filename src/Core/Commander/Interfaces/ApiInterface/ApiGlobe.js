@@ -246,7 +246,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         this.scene.add(map);
 
         //Test points on Lyon with data comming from the Grand Lyon (Velo'V stations and availability)
-        var params = {
+        /*var params = {
             point: {
                 color: {
                     property: 'availability',
@@ -255,8 +255,18 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
                 },
                 nbSegment: 8
             }
-        };
+        };*/
 
+        //Test lines on Lyon with datas comming from the Grand Lyon (metro lines)
+        var params = {
+            line: {
+                color: {
+                    property: 'ligne',
+                    testTab : ['A', 'B', 'C', 'D', 'F1', 'F2'],
+                    colorTab: [0x225599, 0x5599ff, 0x147845, 0xFF5577, 0xAAFF44, 0xD7F458]
+                }
+            }
+        };
         this.addFeatureLayer(params);
 
         //!\\ TEMP
@@ -652,11 +662,18 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         this.scene.add(featureQuad, new NodeProcess(this.scene.currentCamera(), featureQuad.size));
 
          //Test points on Lyon with data comming from the Grand Lyon (Velo'V stations and availability)
-        this.scene.managerCommand.addLayer(featureQuad, new FeatureProvider({url:'https://download.data.grandlyon.com/wfs/rdata',
+        /*this.scene.managerCommand.addLayer(featureQuad, new FeatureProvider({url:'https://download.data.grandlyon.com/wfs/rdata',
                                                                             typename: 'jcd_jcdecaux.jcdvelov',
                                                                             epsgCode: 4326,
                                                                             format: 'geojson',
-                                                                            tileParams: params}));
+                                                                            tileParams: params}));*/
+
+        //Test lines on Lyon with datas comming from the Grand Lyon (metro lines)
+        this.scene.managerCommand.addLayer(featureQuad, new FeatureProvider({url:'https://download.data.grandlyon.com/wfs/rdata',
+                                                                        typename: 'tcl_sytral.tcllignemf',
+                                                                        epsgCode: 4326,
+                                                                        format: 'geojson',
+                                                                        tileParams: params}));
     };
 
     ApiGlobe.prototype.removeFeatureLayer = function(){
