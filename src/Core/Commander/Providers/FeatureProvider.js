@@ -66,19 +66,157 @@ FeatureProvider.prototype.executeCommand = function (command) {
 		promise.then(function(value) {
 			if(value !== 0){
 				var geometry = new THREE.Geometry();
-				/*if(this.tileParams.line !== undefined)
+				if(this.tileParams.line !== undefined)
 					this.processLine(value, geometry, projBbox);
-				else */
-				if (this.tileParams.point !== undefined)
+				else if (this.tileParams.point !== undefined)
 					this.processPoint(value, geometry);
 				tile.setGeometry(geometry);
 				tile.geometry.computeBoundingSphere();
-
 				parent.add(tile);
 			}
 		}.bind(this));
 		return promise;
 	}
+}
+
+FeatureProvider.prototype.cutLine = function(coords, slope, rest, bbox) {
+
+	if(coords[0] < bbox.minCarto.longitude){
+		coords[0] = bbox.minCarto.longitude;
+		if(coords[1] >= bbox.minCarto.latitude && coords[1] <= bbox.maxCarto.latitude)
+			coords[1] = slope * coords[0] + rest;
+	}
+	else if (coords[0] > bbox.maxCarto.longitude){
+		coords[0] = bbox.maxCarto.longitude;
+		if(coords[1] >= bbox.minCarto.latitude && coords[1] <= bbox.maxCarto.latitude)
+			coords[1] = slope * coords[0] + rest;
+	}
+	if(coords[1] < bbox.minCarto.latitude){
+		coords[1] = bbox.minCarto.latitude;
+		if(coords[0] >= bbox.minCarto.longitude && coords[0] <= bbox.maxCarto.longitude)
+			coords[0] = (coords[1] - rest) / slope;
+	}
+	else if (coords[1] > bbox.maxCarto.latitude){
+		coords[1] = bbox.maxCarto.latitude;
+		if(coords[0] >= bbox.minCarto.longitude && coords[0] <= bbox.maxCarto.longitude)
+			coords[0] = (coords[1] - rest) / slope;
+	}
+}
+
+FeatureProvider.prototype.computeLineBorderPoints = function(pt1, pt2, isFirstPt) {
+
+	var coordCarto1 = new CoordCarto().setFromDegreeGeo(pt1.x, pt1.y, pt1.z);
+	var coordCarto2 = new CoordCarto().setFromDegreeGeo(pt2.x, pt2.y, pt2.z);
+
+	var cart1 = this.ellipsoid.cartographicToCartesian(coordCarto1);
+	var cart2 = this.ellipsoid.cartographicToCartesian(coordCarto2);
+
+	var dx 		= cart2.x - cart1.x;
+	var dy 		= cart2.y - cart1.y;
+	var dz		= cart2.z - cart1.z;
+
+	var direct 	= new THREE.Vector3(dx, dy, dz);
+	direct.normalize();
+	var normalGlobe = this.ellipsoid.geodeticSurfaceNormalCartographic(coordCarto1);
+	normalGlobe.normalize();
+
+	normalGlobe.cross(direct);
+	normalGlobe.normalize();
+
+	//Compute offset to find the left and right point with the given offset value
+	var offsetX = normalGlobe.x * this.offsetValue;
+	var offsetY = normalGlobe.y * this.offsetValue;
+	var offsetZ = normalGlobe.z * this.offsetValue;
+	//console.log(offsetZ);
+
+	//The first point left and point right of the line
+	var left, right;
+	if(isFirstPt){
+		left 	= new THREE.Vector3(cart1.x - offsetX, cart1.y - offsetY, cart1.z - offsetZ);
+		right 	= new THREE.Vector3(cart1.x + offsetX, cart1.y + offsetY, cart1.z + offsetZ);
+	} else {
+		left 	= new THREE.Vector3(cart2.x - offsetX, cart2.y - offsetY, cart2.z - offsetZ);
+		right 	= new THREE.Vector3(cart2.x + offsetX, cart2.y + offsetY, cart2.z + offsetZ);
+	}
+	return {left: left, right: right};
+}
+
+/**
+ * Process the data received from a WFS request with a tile of feature type 'Line'.
+ * Can be used whe the type of the feature tile is a Grid and not a quadTree
+ * @param value: the JSON object which contains the data received from the WFS request
+ * @param geometry: the geometry used to set the tile geometry
+ */
+FeatureProvider.prototype.processLine = function(value, geometry, bbox) {
+
+	for (var i = 0; i < value.features.length; i++) {
+		var feature 	= value.features[i];
+		var coords 		= feature.geometry.coordinates;
+
+		var j = 0;
+		var isInsideTile = false;
+
+		//Cut the line according to the tiles limits
+		//May not be usefull if we can cut the line before on the request to the WFS provider
+		do{
+			if(coords[j][0] < bbox.minCarto.longitude || coords[j][0] > bbox.maxCarto.longitude
+				|| coords[j][1] < bbox.minCarto.latitude || coords[j][1] > bbox.maxCarto.latitude) {
+				var coeffSlope, rest;
+				if(isInsideTile) {
+					coeffSlope = (coords[j][1] - coords[j - 1][1]) / (coords[j][0] - coords[j - 1][0]);
+					rest = coords[j][1] - coeffSlope * coords[j][0];
+
+					this.cutLine(coords[j], coeffSlope, rest, bbox);
+
+					j++;
+				} else if (coords[j+1] != undefined
+					&& (coords[j + 1][0] > bbox.minCarto.longitude && coords[j + 1][0] < bbox.maxCarto.longitude
+					&& coords[j + 1][1] > bbox.minCarto.latitude && coords[j + 1][1] < bbox.maxCarto.latitude)) {
+
+					coeffSlope = (coords[j + 1][1] - coords[j][1]) / (coords[j + 1][0] - coords[j][0]);
+					rest = coords[j + 1][1] - coeffSlope * coords[j + 1][0];
+
+					this.cutLine(coords[j], coeffSlope, rest, bbox);
+
+					j = j + 2;
+				} else {
+					coords.splice(j, 1);
+				}
+				isInsideTile = false;
+			} else {
+				isInsideTile = true;
+				j++;
+			}
+		}while (j < coords.length);
+
+		if(coords.length > 1){
+			var resp = this.computeLineBorderPoints(new THREE.Vector3(coords[0][0], coords[0][1], 600),
+													new THREE.Vector3(coords[1][0], coords[1][1], 600), true);
+
+			for (j = 0; j < coords.length - 1; j++) {
+				var currentGeometry = new THREE.Geometry();
+				currentGeometry.vertices.push(resp.left, resp.right);
+
+				resp = this.computeLineBorderPoints(new THREE.Vector3(coords[j][0], coords[j][1], 600),
+													new THREE.Vector3(coords[j + 1][0], coords[j + 1][1], 600), false);
+
+				currentGeometry.vertices.push(resp.left, resp.right);
+
+				currentGeometry.faces.push(	new THREE.Face3(0, 2, 1),
+											new THREE.Face3(2, 3, 1));
+
+				geometry.computeFaceNormals();
+				geometry.computeVertexNormals();
+
+				for (var k = 0; k < currentGeometry.faces.length; k++)
+					this.manageMaterial(feature.properties, currentGeometry.faces[k].color);
+
+				geometry.merge(currentGeometry);
+			}
+		}
+	}
+
+	return geometry;
 }
 
 /**
@@ -111,7 +249,6 @@ FeatureProvider.prototype.processPoint = function(value, geometry) {
 }
 
 FeatureProvider.prototype.manageMaterial = function(featureProperties, color) {
-
 	var getType = {};
 
 	if(this.tileParams.point !== undefined){
@@ -125,7 +262,8 @@ FeatureProvider.prototype.manageMaterial = function(featureProperties, color) {
 		else
 			this.manageColor(featureProperties, color, this.tileParams.line);
 	} else if (this.tileParams.polygon !== undefined){
-
+	} else {
+		console.log('Le type de data n\'est présentement pas le bon');
 	}*/
 }
 
