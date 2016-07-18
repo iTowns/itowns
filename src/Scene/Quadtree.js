@@ -75,7 +75,6 @@ define('Scene/Quadtree', [
      * @returns {Array} an array of four bounding boxex
      */
     Quadtree.prototype.subdivideNode = function (node) {
-        //console.log(node.param);
         if(node.pendingSubdivision || node.level > this.maxLevel){
             return [];
         }
