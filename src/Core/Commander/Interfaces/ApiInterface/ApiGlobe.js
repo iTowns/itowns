@@ -260,6 +260,16 @@ ApiGlobe.prototype.createSceneGlobe = function(coordCarto, viewerDiv) {
             nbSegment: 8
         }
     };
+    //Test lines on Lyon with datas comming from the Grand Lyon (metro lines)
+    /*var params = {
+        line: {
+            color: {
+                property: 'ligne',
+                testTab : ['A', 'B', 'C', 'D', 'F1', 'F2'],
+                colorTab: [0x225599, 0x5599ff, 0x147845, 0xFF5577, 0xAAFF44, 0xD7F458]
+            }
+        }
+    };*/
 
     this.addFeatureLayer(params);
 
@@ -642,7 +652,6 @@ ApiGlobe.prototype.launchCommandApi = function() {
 //    };
 
 ApiGlobe.prototype.showKML = function(value) {
-
     this.scene.getMap().showKML(value);
     this.scene.renderScene3D();
 };
@@ -657,6 +666,12 @@ ApiGlobe.prototype.addFeatureLayer = function(params){
      //Test points on Lyon with data comming from the Grand Lyon (Velo'V stations and availability)
     /*this.scene.managerCommand.addLayer(featureQuad, new FeatureProvider({url:'https://download.data.grandlyon.com/wfs/rdata',
                                                                         typename: 'jcd_jcdecaux.jcdvelov',
+                                                                        epsgCode: 4326,
+                                                                        format: 'geojson',
+                                                                        tileParams: params}));*/
+    //Test lines on Lyon with datas comming from the Grand Lyon (metro lines)
+    /*this.scene.managerCommand.addLayer(featureQuad, new FeatureProvider({url:'https://download.data.grandlyon.com/wfs/rdata',
+                                                                        typename: 'tcl_sytral.tcllignemf',
                                                                         epsgCode: 4326,
                                                                         format: 'geojson',
                                                                         tileParams: params}));*/
