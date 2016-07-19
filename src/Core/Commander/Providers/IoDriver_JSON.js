@@ -19,7 +19,12 @@ define('Core/Commander/Providers/IoDriver_JSON', ['Core/Commander/Providers/IoDr
 
     IoDriver_JSON.prototype.read = function(url) {
         return fetch(url).then(function(response) {
-            return response.json();
+            return response.json().then(
+                function(data){
+                    return data;
+                }).catch(function(error) {
+                    console.log('request failed', error);
+                });
         });
     };
 
