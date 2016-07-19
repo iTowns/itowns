@@ -61,10 +61,8 @@ FeatureProvider.prototype.executeCommand = function (command) {
 
 		var projBbox = new BoundingBox(minCoord[0], maxCoord[0], minCoord[1], maxCoord[1]);
 
-		var promise = this.WFS_Provider.getData(projBbox);
-
 		promise.then(function(value) {
-			if(value !== 0){
+			if(value !== 0 && value !== undefined){
 				var geometry = new THREE.Geometry();
 				if(this.tileParams.line !== undefined)
 					this.processLine(value, geometry, projBbox);
