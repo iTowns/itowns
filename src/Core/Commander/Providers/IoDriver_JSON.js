@@ -20,6 +20,15 @@ define('Core/Commander/Providers/IoDriver_JSON', ['Core/Commander/Providers/IoDr
     IoDriver_JSON.prototype.read = function(url) {
         return fetch(url).then(function(response) {
             return response.json().then(
+                function(response) {
+                    if(response.status >= 200 && response.status < 300)
+                        return response;
+                    else{
+                        var error = new Error(response.statusText);
+                        error.response = response;
+                        throw error;
+                    }
+                }).then(
                 function(data){
                     return data;
                 }).catch(function(error) {
