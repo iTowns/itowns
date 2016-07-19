@@ -22,6 +22,12 @@ This version includes a globe visualization mode.
 - DTM
 - Buildings
 
+## API documentation and demo 
+
+You can find an API documentation here [http://www.itowns-project.org/itowns2/API_Doc/]
+
+If you want to play a demostration, please see [http://www.itowns-project.org/itowns2/]
+
 ## In Progress
 
 - Coding main classes
