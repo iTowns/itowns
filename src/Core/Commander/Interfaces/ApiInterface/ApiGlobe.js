@@ -15,9 +15,9 @@ import Projection from 'Core/Geographic/Projection';
 import SchemeTile from 'Scene/SchemeTile';
 import Quadtree from 'Scene/Quadtree';
 import FeatureMesh from 'Globe/FeatureMesh';
-import NodeProcess from 'Scene/NodeProcess';
 import FeatureProvider from 'Core/Commander/Providers/FeatureProvider';
 import MathExt from 'Core/Math/MathExtented';
+import FeatureProcess from 'scene/FeatureProcess';
 
 var loaded = false;
 var eventLoaded = new Event('globe-loaded');
@@ -660,14 +660,14 @@ ApiGlobe.prototype.addFeatureLayer = function(params){
     schemeTile.add(0, MathExt.PI, -MathExt.PI_OV_TWO, MathExt.PI_OV_TWO);
     schemeTile.add(MathExt.PI, MathExt.TWO_PI, -MathExt.PI_OV_TWO, MathExt.PI_OV_TWO);
     var featureQuad = new Quadtree(FeatureMesh, schemeTile, this.scene.size);
-    //this.scene.add(featureQuad, new NodeProcess(this.scene.currentCamera(), null, featureQuad.size));
+    this.scene.add(featureQuad, new FeatureProcess(this.scene.currentCamera(), featureQuad.size));
 
     //Test points on Lyon with data comming from the Grand Lyon (Velo'V stations and availability)
-    /*this.scene.managerCommand.addProtocolProvider('wfs', new FeatureProvider({url:'https://download.data.grandlyon.com/wfs/rdata',
+    this.scene.managerCommand.addProtocolProvider('wfs', new FeatureProvider({url:'https://download.data.grandlyon.com/wfs/rdata',
                                                                         typename: 'jcd_jcdecaux.jcdvelov',
                                                                         epsgCode: 4326,
                                                                         format: 'geojson',
-                                                                        tileParams: params}));*/
+                                                                        tileParams: params}));
     //Test lines on Lyon with datas comming from the Grand Lyon (metro lines)
     /*this.scene.managerCommand.addProtocolProvider('wfs', new FeatureProvider({url:'https://download.data.grandlyon.com/wfs/rdata',
                                                                         typename: 'tcl_sytral.tcllignemf',
