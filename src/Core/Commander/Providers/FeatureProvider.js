@@ -61,7 +61,7 @@ FeatureProvider.prototype.executeCommand = function (command) {
 
 		var projBbox = new BoundingBox(minCoord[0], maxCoord[0], minCoord[1], maxCoord[1]);
 
-		promise.then(function(value) {
+		return this.WFS_Provider.getData(projBbox).then(function(value) {
 			if(value !== 0 && value !== undefined){
 				var geometry = new THREE.Geometry();
 				if(this.tileParams.line !== undefined)
@@ -70,10 +70,13 @@ FeatureProvider.prototype.executeCommand = function (command) {
 					this.processPoint(value, geometry);
 				tile.setGeometry(geometry);
 				tile.geometry.computeBoundingSphere();
+
 				parent.add(tile);
 			}
-		}.bind(this));
-		return promise;
+		}.bind(this)
+		).catch(function(error) {
+            console.log('Error caught in the FeatureProvider', error);
+        });
 	}
 }
 
