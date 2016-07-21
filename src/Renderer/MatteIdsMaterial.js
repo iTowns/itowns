@@ -17,12 +17,11 @@ var MatteIdsMaterial = function(otherMaterial) {
 
     BasicMaterial.call(this);
 
-    this.vertexShader = GlobeDepthVS;
-    this.fragmentShader = MatteIdsFS;
+	this.vertexShader =  this.vertexShaderHeader + GlobeDepthVS;
+    this.fragmentShader = this.fragmentShaderHeader + MatteIdsFS;
 
     this.uniforms.uuid.value = otherMaterial.uniforms.uuid.value;
-
-    this.uniforms.diffuseColor.value = new THREE.Color(Math.random() * 0xffffff); //.setHex( Math.random() * 0xffffff );
+        this.uniforms.diffuseColor.value = new THREE.Color( Math.random() * 0xffffff  );//.setHex( Math.random() * 0xffffff );
 
     this.uniforms.dTextures_00 = {
         type: "tv",

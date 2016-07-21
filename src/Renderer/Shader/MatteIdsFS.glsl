@@ -1,30 +1,5 @@
-#extension GL_EXT_frag_depth : enable
-precision highp float;
-precision highp int;
-
-#define SHADER_NAME ShaderMaterial
-#define VERTEX_TEXTURES
-
-#define USE_LOGDEPTHBUF
-#define USE_LOGDEPTHBUF_EXT
-
-#ifdef USE_LOGDEPTHBUF
-
-    uniform float logDepthBufFC;
-
-    #ifdef USE_LOGDEPTHBUF_EXT
-
-        //#extension GL_EXT_frag_depth : enable
-        varying float vFragDepth;
-
-    #endif
-
-#endif
-
 uniform int  uuid;
-
 uniform vec3 diffuseColor;
-
 
 const vec4 bitSh = vec4( 256.0 * 256.0 * 256.0, 256.0 * 256.0, 256.0, 1.0 );
 const vec4 bitMsk = vec4( 0.0, 1.0 / 256.0, 1.0 / 256.0, 1.0 / 256.0 );

@@ -51,7 +51,7 @@ function Scene(coordCarto, ellipsoid, viewerDiv, debugMode, gLDebug) {
     this.orbitOn = false;
 
     this.gLDebug = gLDebug;
-    this.gfxEngine = c3DEngine(this, positionCamera, viewerDiv, debugMode, gLDebug);
+    this.gfxEngine = c3DEngine(this,positionCamera,viewerDiv, debugMode,gLDebug);
     this.browserScene = new BrowseTree(this.gfxEngine);
     this.cap = new Capabilities();
 

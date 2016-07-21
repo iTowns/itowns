@@ -45,42 +45,49 @@ var LayeredMaterial = function(id) {
 
     BasicMaterial.call(this);
 
-    var maxTexturesUnits = gfxEngine().glParams.maxTexturesUnits;
+    var maxTexturesUnits =  gfxEngine().glParams.maxTexturesUnits;
     this.vertexShader = GlobeVS;
+    var nbSamplers = Math.min(maxTexturesUnits-1,16-1);
 
-    var nbSamplers = Math.min(maxTexturesUnits - 1, 16 - 1);
+    this.fragmentShaderHeader +='const int   TEX_UNITS   = ' + nbSamplers.toString() + ';\n';
+    this.fragmentShaderHeader += pitUV;
 
-    var customFS = '#extension GL_EXT_frag_depth : enable\n';
-    customFS += 'precision highp float;\n';
-    customFS += 'precision highp int;\n';
-    customFS += 'const int   TEX_UNITS   = ' + nbSamplers.toString() + ';\n';
+    if(showDebug)
+        this.fragmentShaderHeader += '#define DEBUG\n';
 
-    customFS += pitUV;
+    this.fragmentShaderHeader += getColorAtIdUv(nbSamplers);
 
-    if (showDebug)
-        customFS += '#define DEBUG\n';
-
-    customFS += getColorAtIdUv(nbSamplers);
-
-    this.fragmentShader = customFS + GlobeFS;
+    this.fragmentShader = this.fragmentShaderHeader + GlobeFS;
+    this.vertexShader = this.vertexShaderHeader + GlobeVS;
 
     this.Textures = [];
     this.pitScale = [];
     this.nbTextures = [];
 
+    // Array not suported in IE
+    var fill = function(array,remp){
+
+        for(var i=0;i<array.length;i++)
+            array[i] = remp;
+    };
+
     // Uniform three js needs no empty array
     for (var l = 0; l < nbLayer; l++) {
 
         // WARNING TODO prevent empty slot, but it's not the solution
-        this.pitScale[l] = Array(nbSamplers).fill(vector);
+        this.pitScale[l] = Array(nbSamplers);
+        fill(this.pitScale[l],vector) ;
         this.nbTextures[l] = 0;
     }
 
     this.Textures[0] = [emptyTexture];
-    this.Textures[1] = Array(nbSamplers).fill(emptyTexture);
+    this.Textures[1] = Array(nbSamplers);
+    this.paramLayers = Array(8);
+    this.paramBLayers = Array(8);
 
-    this.paramLayers = Array(8).fill(vector4);
-    this.paramBLayers = Array(8).fill(vector2);
+    fill(this.Textures[1],emptyTexture);
+    fill(this.paramLayers,vector4);
+    fill(this.paramBLayers,vector2);
 
     // Elevation texture
     this.uniforms.dTextures_00 = {
