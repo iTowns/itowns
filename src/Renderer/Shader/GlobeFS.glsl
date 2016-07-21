@@ -1,22 +1,3 @@
-#define SHADER_NAME ShaderMaterial
-#define VERTEX_TEXTURES
-
-#define USE_LOGDEPTHBUF
-#define USE_LOGDEPTHBUF_EXT
-
-#ifdef USE_LOGDEPTHBUF
-
-    uniform float logDepthBufFC;
-
-    #ifdef USE_LOGDEPTHBUF_EXT
-
-        //#extension GL_EXT_frag_depth : enable
-        varying float vFragDepth;
-
-    #endif
-
-#endif
-
 // BUG CHROME 50 UBUNTU 16.04
 // Lose context on compiling shader with too many IF STATEMENT
 // runconformance/glsl/bugs/conditional-discard-in-loop.html

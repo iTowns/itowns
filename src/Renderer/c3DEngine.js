@@ -9,7 +9,6 @@
 import THREE from 'THREE';
 import GlobeControls from 'GlobeControls';
 import Camera from 'Renderer/Camera';
-import BasicMaterial from 'Renderer/BasicMaterial';
 import Atmosphere from 'Globe/Atmosphere';
 import Capabilities from 'Core/System/Capabilities';
 import RendererConstant from 'Renderer/RendererConstant';
@@ -66,9 +65,7 @@ var decode32 = function(rgba) {
 
 var bf = new Float32Array([1256.211]);
 var bui = new Uint8Array(bf.buffer);
-
 var v = new THREE.Vector4().fromArray(bui);
-
 v.set(v.w,v.z,v.y,v.x);
 
 console.log(decode32(v.toArray()),parseFloat2(0x800000));
