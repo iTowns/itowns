@@ -5,11 +5,11 @@
  */
 /* global Uint16Array Float32Array*/
 
-var THREE = require('three');
+import THREE from 'three';
 
 // TODO regler le probleme glsl
-var fontJS = require('./fonts/optimer_regular.glsl');
-var font = new THREE.Font( JSON.parse( fontJS.substring( 65, fontJS.length - 2 )));
+import fontJS from './fonts/optimer_regular.glsl';
+var font = new THREE.Font(JSON.parse(fontJS.substring(65, fontJS.length - 2)));
 
 function OBBHelper(OBB, text) {
     var indices = new Uint16Array([0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 6, 6, 7, 7, 4, 0, 4, 1, 5, 2, 6, 3, 7]);
@@ -27,14 +27,14 @@ function OBBHelper(OBB, text) {
 
     var size = OBB.box3D.size();
 
-    var geometryText = new THREE.TextGeometry( text, {
+    var geometryText = new THREE.TextGeometry(text, {
 
-					font: font,
-					size: size.x * 0.0666,
-					height:size.z * 0.001,
-					curveSegments: 1
+        font: font,
+        size: size.x * 0.0666,
+        height: size.z * 0.001,
+        curveSegments: 1
 
-				});
+    });
 
     this.textMesh = new THREE.Mesh(geometryText, new THREE.MeshBasicMaterial({
         color: new THREE.Color(1, 0, 0),
@@ -98,11 +98,11 @@ OBBHelper.prototype.update = function(OBB) {
     var size = OBB.box3D.size();
 
     if (this.textMesh) {
-        this.textMesh.position.set(0,0,0);
+        this.textMesh.position.set(0, 0, 0);
         this.textMesh.translateX(-size.x * 0.45);
         this.textMesh.translateY(-size.y * 0.45);
         this.textMesh.translateZ(size.z * 0.5);
     }
 };
 
-module.exports = OBBHelper;
+export default OBBHelper;

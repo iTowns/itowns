@@ -5,7 +5,7 @@
  */
 
 
-var THREE = require('three');
+import THREE from 'three';
 
 function SphereHelper(radius) {
     THREE.Mesh.call(this);
@@ -27,4 +27,4 @@ SphereHelper.prototype.update = function(radius) {
     this.geometry = new THREE.SphereGeometry(radius, 8, 8);
 };
 
-module.exports = SphereHelper;
+export default SphereHelper;

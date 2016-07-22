@@ -7,77 +7,68 @@
 
 
 
-define('Renderer/PanoramicMesh', ['THREE', 'Renderer/ProjectiveTexturingMaterial','Renderer/BasicMaterial', 'MobileMapping/GeometryProj','Renderer/NodeMesh'],
-function(
-        THREE,
-        ProjectiveTexturingMaterial,
-        BasicMaterial,
-        GeometryProj,
-        NodeMesh
-        ) {
+import NodeMesh from 'Renderer/NodeMesh';
 
 
-    var PanoramicMesh = function(geom, mat, absC) {
+var PanoramicMesh = function(geom, mat, absC) {
 
-        NodeMesh.call(this);
+    NodeMesh.call(this);
 
-        this.matrixAutoUpdate = false;
-        this.rotationAutoUpdate = false;
+    this.matrixAutoUpdate = false;
+    this.rotationAutoUpdate = false;
 
-        this.geometry = geom;
-        this.material = mat;
-        this.absoluteCenter = absC;
-        this.position.copy(this.absoluteCenter);
-        this.name = "terrestrialMesh";
+    this.geometry = geom;
+    this.material = mat;
+    this.absoluteCenter = absC;
+    this.position.copy(this.absoluteCenter);
+    this.name = "terrestrialMesh";
 
-        this.frustumCulled = false;
+    this.frustumCulled = false;
 
-       // console.log("this.absoluteCenter",this.absoluteCenter);
-    };
+    // console.log("this.absoluteCenter",this.absoluteCenter);
+};
 
-    PanoramicMesh.prototype = Object.create(NodeMesh.prototype);
-    PanoramicMesh.prototype.constructor = PanoramicMesh;
+PanoramicMesh.prototype = Object.create(NodeMesh.prototype);
+PanoramicMesh.prototype.constructor = PanoramicMesh;
 
 
-    PanoramicMesh.prototype.setGeometry = function(geom){
+PanoramicMesh.prototype.setGeometry = function(geom) {
 
-      this.geometry = geom;
+    this.geometry = geom;
 
-    };
+};
 
-    PanoramicMesh.prototype.setMaterial = function(mat){
+PanoramicMesh.prototype.setMaterial = function(mat) {
 
-      this.material = mat;
+    this.material = mat;
 
-    };
+};
 
-    PanoramicMesh.prototype.setMatrixRTC = function(rtc) {
-      //  console.log(this.material);
-        this.material.uniforms.mVPMatRTC.value = rtc;
-    };
+PanoramicMesh.prototype.setMatrixRTC = function(rtc) {
+    //  console.log(this.material);
+    this.material.uniforms.mVPMatRTC.value = rtc;
+};
 
-    PanoramicMesh.prototype.useParent = function() {
+PanoramicMesh.prototype.useParent = function() {
     //    return this.level !== this.levelElevation;
-    };
+};
 
-    PanoramicMesh.prototype.enableRTC = function() {
-      //  this.material.enableRTC(enable);
-    };
+PanoramicMesh.prototype.enableRTC = function() {
+    //  this.material.enableRTC(enable);
+};
 
-    PanoramicMesh.prototype.enablePickingRender = function() {
-      //  this.material.enablePickingRender(enable);
-    };
+PanoramicMesh.prototype.enablePickingRender = function() {
+    //  this.material.enablePickingRender(enable);
+};
 
-    PanoramicMesh.prototype.setFog = function() {
-      //  this.material.setFogDistance(fog);
-    };
+PanoramicMesh.prototype.setFog = function() {
+    //  this.material.setFogDistance(fog);
+};
 
-    PanoramicMesh.prototype.setSelected = function() {
-      //  this.material.setSelected(select);
-    };
+PanoramicMesh.prototype.setSelected = function() {
+    //  this.material.setSelected(select);
+};
 
 
 
-    return PanoramicMesh;
-
-});
+export default PanoramicMesh;

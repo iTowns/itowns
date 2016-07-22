@@ -3,7 +3,7 @@
  * Class: IoDriverPly
  */
 
-var IoDriver = require('IoDriver');
+import IoDriver from 'IoDriver';
 
 function IoDriverPly() {
     //Constructor
@@ -14,6 +14,6 @@ function IoDriverPly() {
 IoDriverPly.prototype = new IoDriver();
 
 
-module.exports = {
-    IoDriverPly: IoDriverPly
+export {
+    IoDriverPly
 };

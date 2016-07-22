@@ -5,9 +5,9 @@
  */
 
 
-var THREE = require('three');
+import THREE from 'three';
 
-function OBB(min, max,lookAt,translate) {
+function OBB(min, max, lookAt, translate) {
     THREE.Object3D.call(this);
     this.box3D = new THREE.Box3(min, max);
 
@@ -16,12 +16,11 @@ function OBB(min, max,lookAt,translate) {
     this.quaInv = this.quaternion.clone().inverse();
 
 
-    if(lookAt)
+    if (lookAt)
         this.lookAt(lookAt);
 
 
-    if(translate)
-    {
+    if (translate) {
         this.translateX(translate.x);
         this.translateY(translate.y);
         this.translateZ(translate.z);
@@ -70,8 +69,8 @@ OBB.prototype.addHeight = function(bbox) {
     this.box3D.max.z = nHalfSize;
 
     this.position.copy(this.oPosition);
-//    this.updateMatrix();
-//    this.updateMatrixWorld(true);
+    //    this.updateMatrix();
+    //    this.updateMatrixWorld(true);
 
     this.translateZ(translaZ);
 
@@ -119,4 +118,4 @@ OBB.prototype.cPointsWorld = function(points) {
 
 };
 
-module.exports = OBB;
+export default OBB;

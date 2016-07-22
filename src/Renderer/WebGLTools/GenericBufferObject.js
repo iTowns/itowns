@@ -20,6 +20,6 @@ GenericBufferObject.prototype.computeVertex = function() {
 
 
 
-module.exports = {
-    GenericBufferObject: GenericBufferObject
+export {
+    GenericBufferObject
 };

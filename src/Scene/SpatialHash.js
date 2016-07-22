@@ -15,7 +15,7 @@ function SpatialHash() {
 /**
  * @param boundingBox
  */
-SpatialHash.prototype.hash = function(/*boundingBox*/) {
+SpatialHash.prototype.hash = function( /*boundingBox*/ ) {
     //TODO: Implement Me
 
 };
@@ -24,7 +24,7 @@ SpatialHash.prototype.hash = function(/*boundingBox*/) {
 /**
  * @param boundingBoxs
  */
-SpatialHash.prototype.hashNode = function(/*boundingBoxs*/) {
+SpatialHash.prototype.hashNode = function( /*boundingBoxs*/ ) {
     //TODO: Implement Me
 
 };
@@ -39,6 +39,6 @@ SpatialHash.prototype.buildRoot = function() {
 
 
 
-module.exports = {
-    SpatialHash: SpatialHash
+export {
+    SpatialHash
 };

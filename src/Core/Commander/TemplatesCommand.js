@@ -29,6 +29,6 @@ TemplatesCommand.prototype.specifiesCommand = function() {
 
 
 
-module.exports = {
-    TemplatesCommand: TemplatesCommand
+export {
+    TemplatesCommand
 };

@@ -4,7 +4,7 @@
  * Description: Service distant ou locaux.
  */
 
-var Provider = require('Provider');
+import Provider from 'Provider';
 
 function Service() {
     //Constructor
@@ -15,6 +15,6 @@ function Service() {
 Service.prototype = new Provider();
 
 
-module.exports = {
-    Service: Service
+export {
+    Service
 };

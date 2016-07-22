@@ -6,7 +6,7 @@
 //    Zoom - middle mouse, or mousewheel / touch: two finger spread or squish
 //    Pan - right mouse, or arrow keys / touch: three finter swipe
 
-var THREE = require('three');
+import THREE from 'three';
 
 function GlobeControls(object, domElement, engine) {
 
@@ -430,7 +430,7 @@ function GlobeControls(object, domElement, engine) {
 
     };
 
-    this.setRange = function (pRange){
+    this.setRange = function(pRange) {
 
         scale = pRange / this.globeTarget.position.distanceTo(this.object.position);
         state = STATE.ORBIT;
@@ -439,50 +439,51 @@ function GlobeControls(object, domElement, engine) {
         newTarget();
     };
 
-    this.getRay = function(){
+    this.getRay = function() {
 
-        var direction = new THREE.Vector3(0,0,1);
+        var direction = new THREE.Vector3(0, 0, 1);
         object.localToWorld(direction);
         direction.sub(object.position).negate().normalize();
 
 
-        return {origin:object.position,direction:direction};
+        return {
+            origin: object.position,
+            direction: direction
+        };
 
     };
 
-    this.getTilt = function (){
-        return phi * 180/Math.PI;
+    this.getTilt = function() {
+        return phi * 180 / Math.PI;
     };
 
-    this.getHeading = function (){
-        return theta * 180/Math.PI;
+    this.getHeading = function() {
+        return theta * 180 / Math.PI;
     };
 
-    this.getTiltRad = function (){
+    this.getTiltRad = function() {
         return phi;
     };
 
-    this.getHeadingRad = function (){
+    this.getHeadingRad = function() {
         return theta;
     };
 
-    this.setTilt = function(tilt)
-    {
+    this.setTilt = function(tilt) {
         phiDelta = (tilt * Math.PI / 180 - this.getTiltRad());
         state = STATE.ORBIT;
         this.update();
         state = STATE.NONE;
     };
 
-    this.setHeading = function(heading)
-    {
+    this.setHeading = function(heading) {
         thetaDelta = (heading * Math.PI / 180 - this.getHeadingRad());
         state = STATE.ORBIT;
         this.update();
         state = STATE.NONE;
     };
 
-    this.setCenter = function(position){
+    this.setCenter = function(position) {
 
         var center = this.globeTarget.position;
         this.object.updateMatrixWorld();
@@ -492,7 +493,7 @@ function GlobeControls(object, domElement, engine) {
         this.setPointGlobe(center);
         var vFrom = center.clone().normalize();
         var vTo = position.normalize();
-        quatGlobe.setFromUnitVectors(vFrom,vTo);
+        quatGlobe.setFromUnitVectors(vFrom, vTo);
         state = STATE.MOVE_GLOBE;
         this.update();
         newTarget();
@@ -621,12 +622,10 @@ function GlobeControls(object, domElement, engine) {
                 state = STATE.ORBIT;
             } else if (scope.keyShift) {
                 state = STATE.PANORAMIC;
-            }
-            else if (scope.keyS)
-            {
+            } else if (scope.keyS) {
 
                 // If the key 'S' is down, the engine selects node under mouse
-                var mouse = new THREE.Vector2(event.clientX - event.target.offsetLeft,event.clientY - event.target.offsetTop);
+                var mouse = new THREE.Vector2(event.clientX - event.target.offsetLeft, event.clientY - event.target.offsetTop);
                 scope.engine.selectNodeAt(mouse);
                 scope.engine.update();
 
@@ -644,7 +643,7 @@ function GlobeControls(object, domElement, engine) {
                 scope.engine.renderScene();
 
                 // calcul de la sphere qui passe par ce point
-                if(point)
+                if (point)
                     scope.setPointGlobe(point);
 
             }
@@ -689,7 +688,7 @@ function GlobeControls(object, domElement, engine) {
 
             if (scope.noRotate === true) return;
 
-            rotateEnd.set(event.clientX- event.target.offsetLeft, event.clientY- event.target.offsetTop);
+            rotateEnd.set(event.clientX - event.target.offsetLeft, event.clientY - event.target.offsetTop);
             rotateDelta.subVectors(rotateEnd, rotateStart);
 
             // rotating across whole screen goes 360 degrees around
@@ -714,7 +713,7 @@ function GlobeControls(object, domElement, engine) {
 
             if (scope.noZoom === true) return;
 
-            dollyEnd.set(event.clientX- event.target.offsetLeft, event.clientY- event.target.offsetTop);
+            dollyEnd.set(event.clientX - event.target.offsetLeft, event.clientY - event.target.offsetTop);
             dollyDelta.subVectors(dollyEnd, dollyStart);
 
             if (dollyDelta.y > 0) {
@@ -733,7 +732,7 @@ function GlobeControls(object, domElement, engine) {
 
             if (scope.noPan === true) return;
 
-            panEnd.set(event.clientX- event.target.offsetLeft, event.clientY- event.target.offsetTop);
+            panEnd.set(event.clientX - event.target.offsetLeft, event.clientY - event.target.offsetTop);
             panDelta.subVectors(panEnd, panStart);
 
             scope.pan(panDelta.x, panDelta.y);
@@ -823,7 +822,7 @@ function GlobeControls(object, domElement, engine) {
 
     }
 
-    function onKeyUp(/*event*/) {
+    function onKeyUp( /*event*/ ) {
 
         if (scope.enabled === false || scope.noKeys === true || scope.noPan === true) return;
 
@@ -1077,4 +1076,4 @@ function GlobeControls(object, domElement, engine) {
 GlobeControls.prototype = Object.create(THREE.EventDispatcher.prototype);
 GlobeControls.prototype.constructor = GlobeControls;
 
-module.exports = GlobeControls;
+export default GlobeControls;
