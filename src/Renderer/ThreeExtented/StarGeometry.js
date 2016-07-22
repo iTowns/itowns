@@ -7,7 +7,7 @@
 
 var THREE = require('three');
 
-THREE.StarGeometry = function() {
+function StarGeometry() {
     THREE.Geometry.call(this);
 
     for (var i = 0; i < 10000; i++) {
@@ -20,7 +20,9 @@ THREE.StarGeometry = function() {
         this.vertices.push(vertex);
 
     }
-};
+}
 
-THREE.StarGeometry.prototype = Object.create(THREE.Geometry.prototype);
-THREE.StarGeometry.prototype.constructor = THREE.StarGeometry;
+StarGeometry.prototype = Object.create(THREE.Geometry.prototype);
+StarGeometry.prototype.constructor = StarGeometry;
+
+module.exports = StarGeometry;

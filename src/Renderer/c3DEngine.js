@@ -247,7 +247,7 @@ define('Renderer/c3DEngine', [
         //
         // Create Control
         //
-        this.controls = new THREE.GlobeControls(this.camera.camera3D, this.renderer.domElement, this);
+        this.controls = new GlobeControls(this.camera.camera3D, this.renderer.domElement, this);
         this.controls.target = new THREE.Vector3(0, 0, 0);
         this.controls.damping = 0.1;
         this.controls.noPan = false;

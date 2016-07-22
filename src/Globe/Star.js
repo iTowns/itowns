@@ -14,7 +14,7 @@ define('Globe/Star', ['Renderer/NodeMesh', 'StarGeometry', 'three'], function(No
 
         NodeMesh.call(this);
 
-        var geom = new THREE.StarGeometry();
+        var geom = new StarGeometry();
 
         var particles = new THREE.Points(geom, new THREE.PointsMaterial({
             color: 0xAAAACC

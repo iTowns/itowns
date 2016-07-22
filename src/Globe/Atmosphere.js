@@ -230,7 +230,7 @@ define('Globe/Atmosphere', [
 
     */
 
-        this.skyDome = new THREE.Sky;
+        this.skyDome = new Sky();
         this.skyDome.mesh.frustumCulled = false;
         this.skyDome.mesh.material.transparent = true;
         this.skyDome.mesh.visible = false;

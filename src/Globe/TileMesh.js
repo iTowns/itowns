@@ -111,15 +111,15 @@ define('Globe/TileMesh', [
         var showHelperBox = true;
 
         if(showHelperBox)
-            this.helper = new THREE.OBBHelper(this.geometry.OBB, text);
+            this.helper = new OBBHelper(this.geometry.OBB, text);
         else
-            this.helper  = new THREE.SphereHelper(this.geometry.boundingSphere.radius);
+            this.helper  = new SphereHelper(this.geometry.boundingSphere.radius);
 
-        if (this.helper instanceof THREE.SphereHelper)
+        if (this.helper instanceof SphereHelper)
 
             this.helper.position.add(new THREE.Vector3().setFromMatrixPosition(this.matrixWorld));
 
-        else if (this.helper instanceof THREE.OBBHelper)
+        else if (this.helper instanceof OBBHelper)
 
             this.helper.translateZ(this.distance);
 
@@ -312,10 +312,10 @@ define('Globe/TileMesh', [
             this.geometry.boundingSphere.radius = Math.sqrt(delta.x * delta.x + this.oSphere.radius * this.oSphere.radius);
             this.centerSphere = new THREE.Vector3().addVectors(this.oSphere.center,trans);
 
-            if (this.helper instanceof THREE.OBBHelper) {
+            if (this.helper instanceof OBBHelper) {
                 this.helper.update(this.geometry.OBB);
                 this.helper.translateZ(this.distance);
-            } else if (this.helper instanceof THREE.SphereHelper) {
+            } else if (this.helper instanceof SphereHelper) {
                 this.helper.update(this.geometry.boundingSphere.radius);
                 this.helper.position.add(trans);
             }
