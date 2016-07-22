@@ -16,7 +16,7 @@
 
 var THREE = require('three');
 
-THREE.ShaderLib[ 'sky' ] = {
+var skyShader = {
 
 	uniforms: {
 
@@ -241,9 +241,8 @@ THREE.ShaderLib[ 'sky' ] = {
 
 };
 
-THREE.Sky = function () {
+function Sky() {
 
-	var skyShader = THREE.ShaderLib[ "sky" ];
 	var skyUniforms = THREE.UniformsUtils.clone( skyShader.uniforms );
 
 	var skyMat = new THREE.ShaderMaterial( {
@@ -261,7 +260,8 @@ THREE.Sky = function () {
 	this.mesh = skyMesh;
 	this.uniforms = skyUniforms;
 
-};
-//THREE.Sky.prototype = Object.create(THREE.EventDispatcher.prototype);
-THREE.Sky.prototype.constructor = THREE.Sky;
+}
+//Sky.prototype = Object.create(THREE.EventDispatcher.prototype);
+Sky.prototype.constructor = Sky;
 
+module.exports = Sky;

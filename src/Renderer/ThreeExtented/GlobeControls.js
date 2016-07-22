@@ -8,7 +8,7 @@
 
 var THREE = require('three');
 
-THREE.GlobeControls = function(object, domElement, engine) {
+function GlobeControls(object, domElement, engine) {
 
     this.object = object;
     this.cloneObject = object.clone();
@@ -1072,7 +1072,9 @@ THREE.GlobeControls = function(object, domElement, engine) {
     this.engine.scene3D.add(this.globeTarget);
     //this.globeTarget.add( new THREE.AxisHelper( 500000 ));
 
-};
+}
 
-THREE.GlobeControls.prototype = Object.create(THREE.EventDispatcher.prototype);
-THREE.GlobeControls.prototype.constructor = THREE.GlobeControls;
+GlobeControls.prototype = Object.create(THREE.EventDispatcher.prototype);
+GlobeControls.prototype.constructor = GlobeControls;
+
+module.exports = GlobeControls;

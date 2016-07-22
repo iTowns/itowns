@@ -11,7 +11,7 @@ var THREE = require('three');
 var fontJS = require('./fonts/optimer_regular.glsl');
 var font = new THREE.Font( JSON.parse( fontJS.substring( 65, fontJS.length - 2 )));
 
-THREE.OBBHelper = function(OBB, text) {
+function OBBHelper(OBB, text) {
     var indices = new Uint16Array([0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 6, 6, 7, 7, 4, 0, 4, 1, 5, 2, 6, 3, 7]);
     var positions = new Float32Array(8 * 3);
 
@@ -46,17 +46,17 @@ THREE.OBBHelper = function(OBB, text) {
     if (OBB !== undefined)
         this.update(OBB);
 
-};
+}
 
-THREE.OBBHelper.prototype = Object.create(THREE.LineSegments.prototype);
-THREE.OBBHelper.prototype.constructor = THREE.OBBHelper;
+OBBHelper.prototype = Object.create(THREE.LineSegments.prototype);
+OBBHelper.prototype.constructor = OBBHelper;
 
-THREE.OBBHelper.prototype.setMaterialVisibility = function(show) {
+OBBHelper.prototype.setMaterialVisibility = function(show) {
     this.material.visible = show;
     this.textMesh.material.visible = show;
 };
 
-THREE.OBBHelper.prototype.update = function(OBB) {
+OBBHelper.prototype.update = function(OBB) {
     var box = OBB.box3D;
     var min = box.min;
     var max = box.max;
@@ -104,3 +104,5 @@ THREE.OBBHelper.prototype.update = function(OBB) {
         this.textMesh.translateZ(size.z * 0.5);
     }
 };
+
+module.exports = OBBHelper;

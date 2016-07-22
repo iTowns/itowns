@@ -1,6 +1,6 @@
 
 define('Globe/BuilderEllipsoidTile',
-     ['Core/Geographic/CoordCarto','THREE'], function(CoordCarto,THREE) {
+     ['Core/Geographic/CoordCarto','THREE','Renderer/ThreeExtented/OBB'], function(CoordCarto,THREE,OBB) {
 
 	function BuilderEllipsoidTile(model,projector) {
 
@@ -139,7 +139,7 @@ define('Globe/BuilderEllipsoidTile',
         var min = new THREE.Vector3(-width, -height, -maxHeight);
 
         var translate = new THREE.Vector3(0,delta,-maxHeight);
-        var obb = new THREE.OBB(min, max,normal,translate);
+        var obb = new OBB(min, max,normal,translate);
 
         return obb;
     };
