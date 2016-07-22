@@ -128,29 +128,32 @@ void main() {
                 int textureIndex = layerTexturesOffset + (projWGS84 ? 0 : pmSubTextureIndex);
 
                 if (0 <= textureIndex && textureIndex < nbTextures[1]) {
-                    validTextureCount++;
 
                     vec4 layerColor = colorAtIdUv(
                         dTextures_01,
                         pitScale_L01,
                         textureIndex,
                         projWGS84 ? vUv_WGS84 : uvPM);
-                    float lum = 1.0;
 
-                    if(paramsB.x > 0.0) {
-                        vec3 white = vec3(1.0,1.0,1.0);
-                        vec3 coul = vec3(layerColor.xyz);
-                        float a = 1.0 - length(coul-white);
-                        a =  max(a,0.05);
-                        if(paramsB.x > 2.0) {
-                            a = (layerColor.r + layerColor.g + layerColor.b)/3.0;
-                            layerColor*= layerColor*layerColor;
+                    if (layerColor.a > 0.0) {
+                        validTextureCount++;
+                        float lum = 1.0;
+
+                        if(paramsB.x > 0.0) {
+                            vec3 white = vec3(1.0,1.0,1.0);
+                            vec3 coul = vec3(layerColor.xyz);
+                            float a = 1.0 - length(coul-white);
+                            a =  max(a,0.05);
+                            if(paramsB.x > 2.0) {
+                                a = (layerColor.r + layerColor.g + layerColor.b)/3.0;
+                                layerColor*= layerColor*layerColor;
+                            }
+
+                            lum = 1.0-pow(abs(a),paramsB.x);
                         }
 
-                        lum = 1.0-pow(abs(a),paramsB.x);
+                        diffuseColor = mix( diffuseColor,layerColor, lum*params.w * layerColor.a);
                     }
-
-                    diffuseColor = mix( diffuseColor,layerColor, lum*params.w * layerColor.a);
                 }
 #if defined(DEBUG)
                 else {
@@ -176,6 +179,7 @@ void main() {
             gl_FragColor = vec4( 0.04, 0.23, 0.35, 1.0);
         }
 
+        gl_FragColor.a = 1.0;
 
         if(lightingOn == 1) {   // Add lighting
             float light = min(2. * dot(vNormal, lightPosition),1.);
