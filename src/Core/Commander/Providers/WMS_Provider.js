@@ -51,16 +51,17 @@ WMS_Provider.prototype.customUrl = function(url,coord) {
     //convert radian to degree, lon is added a offset of Pi
     //to align axisgit  to card center
 
-    var bbox = coord.minCarto.latitude * 180.0 / Math.PI +
-                "," +
-                (coord.minCarto.longitude - Math.PI)* 180.0 / Math.PI +
-                ","+
-               coord.maxCarto.latitude* 180.0 / Math.PI +
-               "," +
-               (coord.maxCarto.longitude - Math.PI )*180.0 / Math.PI;
+    // var bbox = coord.minCarto.latitude * 180.0 / Math.PI +
+    //             "," +
+    //             (coord.minCarto.longitude - Math.PI)* 180.0 / Math.PI +
+    //             ","+
+    //            coord.maxCarto.latitude* 180.0 / Math.PI +
+    //            "," +
+    //            (coord.maxCarto.longitude - Math.PI )*180.0 / Math.PI;
 
-    var urld = url.replace('%bbox',bbox.toString());
+    // var urld = url.replace('%bbox',bbox.toString());
 
+    var urld = url.replace('%bbox', `${coord.minCarto.longitude},${coord.minCarto.latitude},${coord.maxCarto.longitude},${coord.maxCarto.latitude}`);
     return urld;
 
 };
@@ -94,7 +95,7 @@ WMS_Provider.prototype.tileInsideLimit = function(tile,layer) {
     var west =  layer.bbox[0]*Math.PI/180.0 + Math.PI;
     var east =  layer.bbox[2]*Math.PI/180.0 + Math.PI;
     var bboxRegion = new BoundingBox(west, east, layer.bbox[1]*Math.PI/180.0, layer.bbox[3]*Math.PI/180.0, 0, 0, 0);
-    return bboxRegion.intersect(bbox);
+    return true || bboxRegion.intersect(bbox);
 };
 
 WMS_Provider.prototype.getColorTexture = function(tile, layer, bbox, pitch) {
@@ -125,12 +126,12 @@ WMS_Provider.prototype.getColorTexture = function(tile, layer, bbox, pitch) {
             result.texture.minFilter = THREE.LinearFilter;
             result.texture.anisotropy = 16;
             result.texture.url = url;
+            result.texture.level = tile.level;
 
             this.cache.addRessource(url, result.texture);
         }
 
         return result;
-
     }.bind(this)).catch(function(/*reason*/) {
         result.texture = null;
         return result;
@@ -152,7 +153,6 @@ WMS_Provider.prototype.getXbilTexture = function(tile, layer, bbox, pitch) {
             max: textureCache.max
         } : null);
     }
-
 
     // bug #74
     //var limits = layer.tileMatrixSetLimits[coWMTS.zoom];

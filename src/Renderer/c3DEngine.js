@@ -7,11 +7,13 @@
 /* global Uint8Array Float64Array*/
 
 import THREE from 'THREE';
-import GlobeControls from 'GlobeControls';
+// import GlobeControls from 'GlobeControls';
 import Camera from 'Renderer/Camera';
 import Atmosphere from 'Globe/Atmosphere';
 import Capabilities from 'Core/System/Capabilities';
 import RendererConstant from 'Renderer/RendererConstant';
+
+THREE.OrbitControls = require('three-orbit-controls')(THREE);
 
 var instance3DEngine = null;
 
@@ -143,11 +145,9 @@ function c3DEngine(scene, positionCamera, viewerDiv, debugMode, gLDebug) {
         this.updateControl();
         this.scene.wait();
         this.renderScene();
-
     }.bind(this);
 
     this.onWindowResize = function() {
-
         this.width = this.debug ? this.viewerDiv.clientWidth * 0.5 : this.viewerDiv.clientWidth;
         this.height = this.viewerDiv.clientHeight;
         this.camera.resize(this.width, this.height);
@@ -164,14 +164,14 @@ function c3DEngine(scene, positionCamera, viewerDiv, debugMode, gLDebug) {
     }.bind(this);
 
     this.scene = scene;
-    this.size = this.scene.size().x;
+    this.size = 64;//this.scene.size().x;
 
     //
     // init camera
     //
     this.camera.setPosition(positionCamera);
     this.camera.camera3D.near = this.size * 2.333; // if near is too small --> bug no camera helper
-    this.camera.camera3D.far = this.size * 10;
+    this.camera.camera3D.far = this.size * 1000;
     this.camera.camera3D.updateProjectionMatrix();
     this.camera.camera3D.updateMatrixWorld(true);
 
@@ -218,7 +218,7 @@ function c3DEngine(scene, positionCamera, viewerDiv, debugMode, gLDebug) {
     //
     // Create Control
     //
-    this.controls = new GlobeControls(this.camera.camera3D, this.renderer.domElement, this);
+    /*this.controls = new THREE.GlobeControls(this.camera.camera3D, this.renderer.domElement, this);
     this.controls.target = new THREE.Vector3(0, 0, 0);
     this.controls.damping = 0.1;
     this.controls.noPan = false;
@@ -226,18 +226,32 @@ function c3DEngine(scene, positionCamera, viewerDiv, debugMode, gLDebug) {
     this.controls.zoomSpeed = 2.0;
     this.controls.minDistance = 30;
     this.controls.maxDistance = this.size * 8.0;
+    this.controls.keyPanSpeed = 0.01;*/
+
+    var origin = new THREE.Vector3(positionCamera.x, positionCamera.y, 300);
+    this.controls = new THREE.OrbitControls(this.camera.camera3D, this.renderer.domElement);
+
+    this.controls.constraint.target = origin;
+    this.controls.damping = 0.1;
+    this.controls.enablePan = false;
+    this.controls.rotateSpeed = 0.8;
+    this.controls.zoomSpeed = 1.0;
+    this.controls.minDistance = 30;
+
+    this.controls.maxDistance = 30000;
+    //this.controls.keyPanSpeed   = 1.0;
     this.controls.keyPanSpeed = 0.01;
 
     var gl = this.renderer.context;
-    var maxTexturesUnits = gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS);
+    var maxTexturesUnits =  gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS);
 
     var debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
-    if (debugInfo !== null) {
+    if (debugInfo !== null){
 
         var vendor = gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL);
         //var renderer = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
 
-        if (vendor.indexOf('mesa') > -1 || vendor.indexOf('Mesa') > -1)
+        if(vendor.indexOf('mesa')>-1 || vendor.indexOf('Mesa')>-1)
             maxTexturesUnits = Math.min(16, maxTexturesUnits);
     } else {
         maxTexturesUnits = Math.min(16, maxTexturesUnits);
@@ -268,6 +282,7 @@ c3DEngine.prototype.updateControl = function() {
     } else if (len >= lim)
         this.renderer.setClearColor(0x030508);
 };
+
 
 c3DEngine.prototype.enableRTC = function(enable) {
     for (var x = 0; x < this.scene3D.children.length; x++) {

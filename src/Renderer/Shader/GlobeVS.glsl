@@ -43,6 +43,7 @@ void main() {
 
         if(nbTextures[0] > 0)
         {
+
             vec2    vVv = vec2(
                 vUv_WGS84.x * pitScale_L00[0].z + pitScale_L00[0].x,
                 (1.0 - vUv_WGS84.y) * pitScale_L00[0].z + pitScale_L00[0].y);
@@ -62,9 +63,11 @@ void main() {
                     dv = 0.0;
 
             #else
-                float   dv  = max(texture2D( dTextures_00[0], vVv ).w, 0.);
+//                float   dv  = max(texture2D( dTextures_00[0], vVv ).w, 0.);
+
             #endif
 
+            float dv = texture2D( dTextures_00[0], vUv_WGS84).r * 1000.0;
             vNormal     = normal;
             vPosition   = vec4( position +  vNormal  * dv ,1.0 );
         }
