@@ -57,7 +57,6 @@ WMTS_Provider.prototype.customUrl = function(url, tilematrix, row, col) {
     urld = urld.replace('%COL', col.toString());
 
     return urld;
-
 };
 
 WMTS_Provider.prototype.removeLayer = function( /*idLayer*/ ) {
@@ -113,7 +112,7 @@ WMTS_Provider.prototype.url = function(coWMTS, layer) {
  * @returns {WMTS_Provider_L15.WMTS_Provider.prototype@pro;_IoDriver@call;read@call;then}
  */
 WMTS_Provider.prototype.getXbilTexture = function(tile, layer, parameters) {
-    var cooWMTS = tile.tileCoord;
+    var cooWMTS = tile.matrixSet[layer.options.tileMatrixSet][0];
     var pitch = new THREE.Vector3(0.0, 0.0, 1.0);
 
     if (parameters.ancestor) {

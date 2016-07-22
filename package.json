@@ -20,8 +20,8 @@
   },
   "homepage": "https://itowns.github.io/",
   "dependencies": {
-    "es6-promise": "^3.2.1",
     "babel-runtime": "^6.9.2",
+    "es6-promise": "^3.2.1",
     "imports-loader": "^0.6.5",
     "js-priority-queue": "^0.1.5",
     "jszip": "^2.5.0",
@@ -29,6 +29,7 @@
     "simd": "^2.0.0",
     "string_format": "^0.0.6",
     "three": "^0.79.0",
+    "three-orbit-controls": "^72.0.0",
     "whatwg-fetch": "^1.0.0",
     "custom-event": "^1.0.0"
   },

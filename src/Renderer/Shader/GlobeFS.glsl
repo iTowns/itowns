@@ -38,6 +38,7 @@ varying float       vUv_PM;
 varying vec3        vNormal;
 varying vec4        pos;
 
+#define DEBUG
 #if defined(DEBUG)
     const float sLine = 0.008;
 #endif
@@ -131,7 +132,6 @@ void main() {
 
                             lum = 1.0-pow(abs(a),paramsB.x);
                         }
-
                         diffuseColor = mix( diffuseColor,layerColor, lum*params.w * layerColor.a);
                     }
                 }
@@ -159,16 +159,12 @@ void main() {
 
         // Fog
         gl_FragColor = mix(fogColor, diffuseColor, fog );
+        gl_FragColor = diffuseColor;
 
         gl_FragColor.a = 1.0;
 
-        if(lightingOn == 1) {   // Add lighting
-            float light = min(2. * dot(vNormal, lightPosition),1.);
-            gl_FragColor.rgb *= light;
-        }
     }
 
     if(debug > 0)
        gl_FragColor = vec4( 1.0, 1.0, 0.0, 1.0);
-
 }

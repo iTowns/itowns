@@ -91,21 +91,13 @@ NodeProcess.prototype.subdivideNode = function(node, camera, params) {
                 var layer;
                 var j;
 
-                child.matrixSet = [];
-
-
-                // update wmts
+                    // update wmts
                 var colorLayers = params.layersConfig.getColorLayers();
                 for (j = 0; j < colorLayers.length; j++) {
                     layer = colorLayers[j];
-                    var tileMatrixSet = layer.options.tileMatrixSet;
-
-                    if (!child.matrixSet[tileMatrixSet]) {
-                        child.matrixSet[tileMatrixSet] = this.projection.getCoordWMTS_WGS84(child.tileCoord, child.bbox, tileMatrixSet);
-                    }
 
                     if (layer.tileInsideLimit(child, layer)) {
-
+                        var tileMatrixSet = layer.options.tileMatrixSet;
                         var bcoord = child.matrixSet[tileMatrixSet];
 
                         paramMaterial.push({

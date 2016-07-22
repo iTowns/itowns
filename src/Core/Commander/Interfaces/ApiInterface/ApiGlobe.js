@@ -8,6 +8,8 @@
 
 import Scene from 'Scene/Scene';
 import Globe from 'Globe/Globe';
+import Plane from 'Plane/Plane';
+import BoundingBox from 'Scene/BoundingBox';
 import WMTS_Provider from 'Core/Commander/Providers/WMTS_Provider';
 import WMS_Provider from 'Core/Commander/Providers/WMS_Provider';
 import TileProvider from 'Core/Commander/Providers/TileProvider';
@@ -239,6 +241,63 @@ ApiGlobe.prototype.createSceneGlobe = function(coordCarto, viewerDiv) {
     var wgs84TileLayer = {
         protocol: 'tile',
         id: 'wgs84'
+    };
+
+    preprocessLayer(wgs84TileLayer, this.scene.managerCommand.getProtocolProvider(wgs84TileLayer.protocol));
+    map.layersConfiguration.addGeometryLayer(wgs84TileLayer);
+
+    map.tiles.init(map.layersConfiguration.getGeometryLayers()[0]);
+
+    //!\\ TEMP
+    //this.scene.wait(0);
+    //!\\ TEMP
+
+    return this.scene;
+};
+
+    // TODO: move to ApiPlane
+ApiGlobe.prototype.createScenePlane = function(coordCarto, viewerDiv) {
+    // TODO: Normalement la creation de scene ne doit pas etre ici....
+    // Deplacer plus tard
+
+    this.viewerDiv = viewerDiv;
+
+    viewerDiv.addEventListener('globe-built', function(){
+
+        if(loaded == false)
+        {
+
+            loaded = true;
+            viewerDiv.dispatchEvent(eventLoaded);
+        }
+    }
+    , false);
+
+    var gLDebug = false; // true to support GLInspector addon
+    var debugMode = false;
+
+    //gLDebug = true; // true to support GLInspector addon
+    //debugMode = true;
+
+    this.scene = Scene(coordCarto, undefined, viewerDiv,debugMode,gLDebug);
+
+    var map = new Plane({bbox: new BoundingBox(1837816.94334, 1847692.32501, 5170036.4587, 5178412.82698)});
+
+    var nodeProcess = new PlanarNodeProcess(this.scene.gfxEngine.camera);
+
+    this.scene.add(map, nodeProcess);
+
+    // Register all providers
+
+    var wmtsProvider = new WMTS_Provider({support : map.gLDebug});
+    this.scene.managerCommand.addProtocolProvider('wmts', wmtsProvider);
+    this.scene.managerCommand.addProtocolProvider('wmtsc', wmtsProvider);
+    this.scene.managerCommand.addProtocolProvider('tile', new TileProvider(map.size, true));
+    this.scene.managerCommand.addProtocolProvider('wms', new WMS_Provider({support : map.gLDebug}));
+
+    var wgs84TileLayer = {
+        protocol: 'tile',
+        id:       'wgs84'
     };
 
     preprocessLayer(wgs84TileLayer, this.scene.managerCommand.getProtocolProvider(wgs84TileLayer.protocol));

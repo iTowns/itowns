@@ -12,8 +12,10 @@
  * @param {type} BrowseTree
  * @returns {Function}
  */
+
 import c3DEngine from 'Renderer/c3DEngine';
 import Globe from 'Globe/Globe';
+import Plane from 'Plane/Plane';
 import ManagerCommands from 'Core/Commander/ManagerCommands';
 import BrowseTree from 'Scene/BrowseTree';
 import NodeProcess from 'Scene/NodeProcess';
@@ -38,9 +40,13 @@ function Scene(coordCarto, ellipsoid, viewerDiv, debugMode, gLDebug) {
         throw new Error("Cannot instantiate more than one Scene");
     }
 
-    this.ellipsoid = ellipsoid;
-
-    var positionCamera = this.ellipsoid.cartographicToCartesian(new CoordCarto().setFromDegreeGeo(coordCarto.longitude, coordCarto.latitude, coordCarto.altitude));
+    var positionCamera;
+    if(ellipsoid) {
+        this.ellipsoid = ellipsoid;
+        positionCamera = this.ellipsoid.cartographicToCartesian(new CoordCarto().setFromDegreeGeo(coordCarto.longitude, coordCarto.latitude, coordCarto.altitude));
+    } else {
+        positionCamera = {x:1842816.94334, y: 5174236.4587, z:15000};
+    }
 
     this.layers = [];
     this.map = null;
@@ -180,12 +186,11 @@ Scene.prototype.scene3D = function() {
  * @param node {[object Object]}
  */
 Scene.prototype.add = function(node, nodeProcess) {
-
-    if (node instanceof Globe) {
+    // TODO: there should be an addMap instead of this
+    if(node instanceof Globe || node instanceof Plane) {
         this.map = node;
         nodeProcess = nodeProcess || new NodeProcess(this.currentCamera(), node.ellipsoid);
         //this.quadTreeRequest(node.tiles, nodeProcess);
-
     }
 
     this.layers.push({

@@ -13,12 +13,11 @@
  *
  */
 
-
-
 import Provider from 'Core/Commander/Providers/Provider';
 import Projection from 'Core/Geographic/Projection';
 import TileGeometry from 'Globe/TileGeometry';
 import BuilderEllipsoidTile from 'Globe/BuilderEllipsoidTile';
+import PlanarTileBuilder from 'Plane/PlanarTileBuilder';
 import BoundingBox from 'Scene/BoundingBox';
 
 function TileProvider(ellipsoid) {
@@ -26,13 +25,17 @@ function TileProvider(ellipsoid) {
     Provider.call(this, null);
 
     this.projection = new Projection();
-    this.ellipsoid = ellipsoid;
-    this.builder = new BuilderEllipsoidTile(this.ellipsoid, this.projection);
+
+    if(ellipsoid) {
+        this.ellipsoid = ellipsoid;
+        this.builder = new BuilderEllipsoidTile(this.ellipsoid,this.projection);
+    } else {
+        this.builder = new PlanarTileBuilder();
+    }
 
     this.cacheGeometry = [];
     this.tree = null;
     this.nNode = 0;
-
 }
 
 TileProvider.prototype = Object.create(Provider.prototype);
@@ -74,22 +77,24 @@ TileProvider.prototype.executeCommand = function(command) {
     var tileCoord = this.projection.WGS84toWMTS(bbox);
     var parent = command.requester;
 
+
+    var level = (tileCoord.zoom >= 0) ?
+        tileCoord.zoom :
+        (1 + (parent.level || 0));
+
     // build tile
     var geometry = undefined; //getGeometry(bbox,tileCoord);
 
     var params = {
         bbox: bbox,
-        zoom: tileCoord.zoom,
+        zoom: level,
         segment: 16,
         center: null,
         projected: null
     }
 
+    // build tile
     var tile = new command.type(params, this.builder);
-
-    tile.tileCoord = tileCoord;
-
-
     tile.setUuid(this.nNode++);
     tile.link = parent.link;
     tile.geometricError = Math.pow(2, (18 - tileCoord.zoom));
@@ -99,6 +104,12 @@ TileProvider.prototype.executeCommand = function(command) {
     }
 
     parent.worldToLocal(params.center);
+
+    tile.matrixSet = [];
+    for (var set of ['PM', 'WGS84G']) {
+        tile.matrixSet[set] = this.projection.getCoordWMTS_WGS84(
+            tileCoord, bbox, set);
+    }
 
     tile.position.copy(params.center);
     tile.setVisibility(false);
