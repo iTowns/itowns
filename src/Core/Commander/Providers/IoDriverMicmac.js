@@ -3,7 +3,7 @@
  * Class: IoDriverMicmac
  */
 
-var IoDriver = require('IoDriver');
+import IoDriver from 'IoDriver';
 
 function IoDriverMicmac() {
     //Constructor
@@ -22,6 +22,6 @@ IoDriverMicmac.prototype.loadOrientation = function() {
 
 
 
-module.exports = {
-    IoDriverMicmac: IoDriverMicmac
+export {
+    IoDriverMicmac
 };

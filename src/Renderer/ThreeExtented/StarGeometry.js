@@ -5,7 +5,7 @@
  */
 
 
-var THREE = require('three');
+import THREE from 'three';
 
 function StarGeometry() {
     THREE.Geometry.call(this);
@@ -25,4 +25,4 @@ function StarGeometry() {
 StarGeometry.prototype = Object.create(THREE.Geometry.prototype);
 StarGeometry.prototype.constructor = StarGeometry;
 
-module.exports = StarGeometry;
+export default StarGeometry;

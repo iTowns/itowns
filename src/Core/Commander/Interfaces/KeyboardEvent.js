@@ -4,7 +4,7 @@
  * Description: Evènement clavier
  */
 
-var Event = require('Event');
+import Event from 'Event';
 
 function KeyboardEvent() {
     //Constructor
@@ -15,6 +15,6 @@ function KeyboardEvent() {
 KeyboardEvent.prototype = new Event();
 
 
-module.exports = {
-    KeyboardEvent: KeyboardEvent
+export {
+    KeyboardEvent
 };

@@ -5,14 +5,12 @@
  */
 
 
-define('Core/defaultValue', ['THREE'], function(THREE) {
+import THREE from 'THREE';
 
-    var defaultValue = function(value, def) {
-        return value === undefined ? def : value;
-    };
+var defaultValue = function(value, def) {
+    return value === undefined ? def : value;
+};
 
-    defaultValue.lightingPos = new THREE.Vector3(1,0,0);
+defaultValue.lightingPos = new THREE.Vector3(1, 0, 0);
 
-    return defaultValue;
-
-});
+export default defaultValue;

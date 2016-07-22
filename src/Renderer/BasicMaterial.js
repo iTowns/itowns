@@ -5,98 +5,91 @@
  */
 
 
-define('Renderer/BasicMaterial', ['THREE',
-    'Core/defaultValue',
-    'Renderer/Shader/SimpleVS.glsl',
-    'Renderer/Shader/SimpleFS.glsl'
-], function(
-    THREE,
-    defaultValue,
-    SimpleVS,
-    SimpleFS) {
+import THREE from 'THREE';
+import defaultValue from 'Core/defaultValue';
+import SimpleVS from 'Renderer/Shader/SimpleVS.glsl';
+import SimpleFS from 'Renderer/Shader/SimpleFS.glsl';
 
-    function BasicMaterial(color) {
-        //Constructor
+function BasicMaterial(color) {
+    //Constructor
 
-        THREE.RawShaderMaterial.call(this);
+    THREE.RawShaderMaterial.call(this);
 
-        this.vertexShader = SimpleVS;
-        this.fragmentShader = SimpleFS;
+    this.vertexShader = SimpleVS;
+    this.fragmentShader = SimpleFS;
 
-        this.uniforms = {
-            diffuseColor: {
-                type: "c",
-                value: defaultValue(color, new THREE.Color())
-            },
-            RTC: {
-                type: "i",
-                value: 1
-            },
-            mVPMatRTC: {
-                type: "m4",
-                value: new THREE.Matrix4()
-            },
-            distanceFog: {
-                type: "f",
-                value: 1000000000.0
-            },
-            uuid: {
-                type: "i",
-                value: 0
-            },
-            debug: {
-                type: "i",
-                value: false
-            },
-            selected: {
-                type: "i",
-                value: false
-            },
-            lightOn: {
-                type: "i",
-                value: true
-            }
+    this.uniforms = {
+        diffuseColor: {
+            type: "c",
+            value: defaultValue(color, new THREE.Color())
+        },
+        RTC: {
+            type: "i",
+            value: 1
+        },
+        mVPMatRTC: {
+            type: "m4",
+            value: new THREE.Matrix4()
+        },
+        distanceFog: {
+            type: "f",
+            value: 1000000000.0
+        },
+        uuid: {
+            type: "i",
+            value: 0
+        },
+        debug: {
+            type: "i",
+            value: false
+        },
+        selected: {
+            type: "i",
+            value: false
+        },
+        lightOn: {
+            type: "i",
+            value: true
+        }
 
-        };
-    }
-
-    BasicMaterial.prototype = Object.create(THREE.RawShaderMaterial.prototype);
-    BasicMaterial.prototype.constructor = BasicMaterial;
-
-    BasicMaterial.prototype.enableRTC = function(enable) {
-        this.uniforms.RTC.value = enable === true ? 1 : 0;
     };
+}
 
-    BasicMaterial.prototype.setDebug = function(debug_value) {
-        this.uniforms.debug.value = debug_value;
-    };
+BasicMaterial.prototype = Object.create(THREE.RawShaderMaterial.prototype);
+BasicMaterial.prototype.constructor = BasicMaterial;
 
-    BasicMaterial.prototype.setMatrixRTC = function(rtc) {
-        this.uniforms.mVPMatRTC.value = rtc;
-    };
+BasicMaterial.prototype.enableRTC = function(enable) {
+    this.uniforms.RTC.value = enable === true ? 1 : 0;
+};
 
-    BasicMaterial.prototype.getMatrixRTC = function() {
-        return this.uniforms.mVPMatRTC.value;
-    };
+BasicMaterial.prototype.setDebug = function(debug_value) {
+    this.uniforms.debug.value = debug_value;
+};
 
-    BasicMaterial.prototype.setUuid = function(uuid) {
+BasicMaterial.prototype.setMatrixRTC = function(rtc) {
+    this.uniforms.mVPMatRTC.value = rtc;
+};
 
-        this.uniforms.uuid.value = uuid;
-    };
+BasicMaterial.prototype.getMatrixRTC = function() {
+    return this.uniforms.mVPMatRTC.value;
+};
 
-    BasicMaterial.prototype.getUuid = function() {
+BasicMaterial.prototype.setUuid = function(uuid) {
 
-        return this.uniforms.uuid.value;
-    };
+    this.uniforms.uuid.value = uuid;
+};
 
-    BasicMaterial.prototype.setFogDistance = function(df) {
-        this.uniforms.distanceFog.value = df;
-    };
+BasicMaterial.prototype.getUuid = function() {
 
-    BasicMaterial.prototype.setSelected = function(selected) {
-        this.uniforms.selected.value = selected ? 1 : 0;
-    };
+    return this.uniforms.uuid.value;
+};
 
-    return BasicMaterial;
+BasicMaterial.prototype.setFogDistance = function(df) {
+    this.uniforms.distanceFog.value = df;
+};
 
-});
+BasicMaterial.prototype.setSelected = function(selected) {
+    this.uniforms.selected.value = selected ? 1 : 0;
+};
+
+export default BasicMaterial;

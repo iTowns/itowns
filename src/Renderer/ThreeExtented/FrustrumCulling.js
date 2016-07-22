@@ -4,7 +4,7 @@
  * Description: Détermine les NodeMeshs contenues dans le frustrum de la caméra.
  */
 
-var NodeProcess = require('NodeProcess');
+import NodeProcess from 'NodeProcess';
 
 function FrustrumCulling() {
     //Constructor
@@ -15,6 +15,6 @@ function FrustrumCulling() {
 FrustrumCulling.prototype = new NodeProcess();
 
 
-module.exports = {
-    FrustrumCulling: FrustrumCulling
+export {
+    FrustrumCulling
 };
