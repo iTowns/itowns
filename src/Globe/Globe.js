@@ -16,6 +16,7 @@ import CoordCarto from 'Core/Geographic/CoordCarto';
 import BasicMaterial from 'Renderer/BasicMaterial';
 import LayersConfiguration from 'Scene/LayersConfiguration';
 import THREE from 'THREE';
+import PointCloud from 'Scene/PointCloud'
 
 function Globe(ellipsoid, gLDebug) {
     //Constructor
@@ -48,6 +49,7 @@ function Globe(ellipsoid, gLDebug) {
 
     this.atmosphere = this.NOIE ? new Atmosphere(this.ellipsoid) : undefined;
     this.clouds = new Clouds();
+    this.pointcloud = new PointCloud();
 
     var material = new BasicMaterial(new THREE.Color(1, 0, 0));
 
@@ -91,6 +93,7 @@ function Globe(ellipsoid, gLDebug) {
     this.add(this.batiments);
     this.add(this.gpxTracks);
     //this.add(this.layerWGS84Zup);
+    this.add(this.pointcloud);
 
     if (this.atmosphere !== undefined && !this.gLDebug) {
         this.atmosphere.add(this.clouds);
