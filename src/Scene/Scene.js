@@ -29,6 +29,7 @@ import MobileMappingLayer from 'MobileMapping/MobileMappingLayer';
 import CustomEvent from 'custom-event';
 import Ellipsoid from 'Core/Math/Ellipsoid';
 import BoundingBox from 'Scene/BoundingBox';
+import PointCloud from 'Scene/PointCloud'
 
 var instanceScene = null;
 var event = new CustomEvent('globe-built');
@@ -147,9 +148,10 @@ Scene.prototype.realtimeSceneProcess = function() {
                 this.browserScene.browse(sLayer, this.currentCamera(), process, this.map.layersConfiguration, NO_SUBDIVISE);
             else if (sLayer instanceof MobileMappingLayer)
                 this.browserScene.updateMobileMappingLayer(sLayer, this.currentCamera());
+            else if (sLayer instanceof PointCloud)
+                sLayer.update( this.currentCamera().camera3D, this.gfxEngine.renderer );
             else if (sLayer instanceof Layer)
                 this.browserScene.updateLayer(sLayer, this.currentCamera());
-
         }
     }
 };

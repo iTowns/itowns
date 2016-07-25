@@ -61,6 +61,7 @@ module.exports = {
     extensions: ['', '.js'],
     alias: {
       THREE:         'three',
+      Potree:        'potree',
       OBB:           'Renderer/ThreeExtented/OBB',
       OBBHelper:     'Renderer/ThreeExtented/OBBHelper',
       SphereHelper:  'Renderer/ThreeExtented/SphereHelper',

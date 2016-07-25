@@ -7,7 +7,7 @@
     "lint": "eslint \"src/**/*.js\" \"test/**/*.js\"",
     "doc": "jsdoc src/Core/Commander/Interfaces/ApiInterface/*",
     "test": "npm run lint && npm run build",
-    "build": "webpack -p",
+    "build": "webpack --display-error-details -p ",
     "start": "webpack-dev-server -d --inline --hot"
   },
   "repository": {
@@ -26,6 +26,7 @@
     "js-priority-queue": "^0.1.5",
     "jszip": "^2.5.0",
     "paralleljs": "^0.2.1",
+    "potree": "git://github.com/pblottiere/potree.git#lopocs",
     "simd": "^2.0.0",
     "string_format": "^0.0.6",
     "three": "^0.79.0",
