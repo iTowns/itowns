@@ -10,7 +10,6 @@ define('Globe/Globe', [
     'Scene/Quadtree',
     'Scene/SchemeTile',
     'Core/Math/MathExtented',
-    'Core/Math/Ellipsoid',
     'Globe/TileMesh',
     'Globe/Atmosphere',
     'Globe/Clouds',
@@ -20,10 +19,10 @@ define('Globe/Globe', [
     'Scene/LayersConfiguration',
     'THREE'
 ], function(defaultValue, Layer, Quadtree, SchemeTile, MathExt,
-    Ellipsoid, TileMesh, Atmosphere, Clouds, Capabilities,
+    TileMesh, Atmosphere, Clouds, Capabilities,
     CoordCarto, BasicMaterial, LayersConfiguration, THREE) {
 
-    function Globe(size,gLDebug) {
+    function Globe(ellipsoid, gLDebug) {
         //Constructor
 
         Layer.call(this);
@@ -31,8 +30,7 @@ define('Globe/Globe', [
         var caps = new Capabilities();
         this.NOIE = !caps.isInternetExplorer();
         this.gLDebug = gLDebug;
-        this.size = size;
-        this.ellipsoid = new Ellipsoid(this.size);
+        this.ellipsoid = ellipsoid;
 
         this.batiments = new Layer();
         this.layerWGS84Zup = new Layer();
@@ -44,10 +42,10 @@ define('Globe/Globe', [
 
         kml.visible = false;
 
-        this.tiles = new Quadtree(TileMesh, this.SchemeTileWMTS(2), this.size, kml);
+        this.tiles = new Quadtree(TileMesh, this.SchemeTileWMTS(2), kml);
         this.layersConfiguration = new LayersConfiguration();
 
-        this.atmosphere = this.NOIE ? new Atmosphere(this.size) : undefined;
+        this.atmosphere = this.NOIE ? new Atmosphere(this.ellipsoid) : undefined;
         this.clouds = new Clouds();
 
         var material = new BasicMaterial(new THREE.Color(1, 0, 0));

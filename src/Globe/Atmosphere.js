@@ -19,9 +19,11 @@ define('Globe/Atmosphere', [
   ],
   function(NodeMesh, THREE, defaultValue,Sky , skyFS, skyVS, groundFS, groundVS, GlowFS, GlowVS) {
 
-    function Atmosphere(size) {
+    function Atmosphere(ellipsoid) {
 
         NodeMesh.call(this);
+
+        var size = ellipsoid.size;
 
         this.realistic = false;
         this.sphereSun = null;

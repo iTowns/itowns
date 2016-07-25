@@ -41,7 +41,7 @@ define('Scene/Quadtree', [
         }
     }
 
-    function Quadtree(type, schemeTile, size, link) {
+    function Quadtree(type, schemeTile, link) {
         Layer.call(this);
 
         this.interCommand = new InterfaceCommander(type, commandQueuePriorityFunction);

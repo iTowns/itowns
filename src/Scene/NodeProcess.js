@@ -15,7 +15,7 @@ define('Scene/NodeProcess',
 ], function(BoundingBox, Camera, MathExt, InterfaceCommander, THREE, defaultValue, Projection) {
 
 
-    function NodeProcess(camera, size, bbox) {
+    function NodeProcess(camera, ellipsoid, bbox) {
         //Constructor
         this.camera = new Camera();
         this.camera.camera3D = camera.camera3D.clone();
@@ -24,7 +24,7 @@ define('Scene/NodeProcess',
 
         this.vhMagnitudeSquared = 1.0;
 
-        this.r = defaultValue(size, new THREE.Vector3());
+        this.r = defaultValue(ellipsoid.size, new THREE.Vector3());
         this.cV = new THREE.Vector3();
         this.projection = new Projection();
     }

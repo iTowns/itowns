@@ -18,7 +18,6 @@ define('Scene/Scene', [
     'Core/Commander/ManagerCommands',
     'Core/Commander/Providers/TileProvider',
     'Core/Commander/Providers/PanoramicProvider',
-    'Core/Math/Ellipsoid',
     'Renderer/PanoramicMesh',
     'Scene/BrowseTree',
     'Scene/NodeProcess',
@@ -36,7 +35,6 @@ define('Scene/Scene', [
         ManagerCommands,
         TileProvider,
         PanoramicProvider,
-        Ellipsoid,
         PanoramicMesh,
         BrowseTree,
         NodeProcess,
@@ -54,16 +52,15 @@ define('Scene/Scene', [
     var SUBDIVISE = 1;
     var CLEAN = 2;
 
-    function Scene(coordCarto,viewerDiv, debugMode,gLDebug) {
+    function Scene(coordCarto, ellipsoid, viewerDiv, debugMode ,gLDebug) {
 
         if (instanceScene !== null) {
             throw new Error("Cannot instantiate more than one Scene");
         }
 
-        // /!\ Doesn't work
-        this.size = {x:6378137,y: 6356752.3142451793,z:6378137};
+        this.ellipsoid = ellipsoid;
 
-        var positionCamera = new Ellipsoid(this.size).cartographicToCartesian(new CoordCarto().setFromDegreeGeo(coordCarto.longitude, coordCarto.latitude, coordCarto.altitude));
+        var positionCamera = this.ellipsoid.cartographicToCartesian(new CoordCarto().setFromDegreeGeo(coordCarto.longitude, coordCarto.latitude, coordCarto.altitude));
 
         this.layers = [];
         this.map = null;
@@ -110,7 +107,7 @@ define('Scene/Scene', [
     };
 
     Scene.prototype.getEllipsoid = function(){
-        return this.layers[0].node.ellipsoid;
+        return this.ellipsoid;
     }
 
     Scene.prototype.updateCamera = function() {
@@ -123,7 +120,7 @@ define('Scene/Scene', [
 //    };
 
     Scene.prototype.size = function() {
-        return this.size;
+        return this.ellipsoid.size;
     };
 
     /**
@@ -214,7 +211,7 @@ define('Scene/Scene', [
         if(node instanceof Globe)
         {
             this.map = node;
-            nodeProcess = nodeProcess || new NodeProcess(this.currentCamera(), node.size);
+            nodeProcess = nodeProcess || new NodeProcess(this.currentCamera(), node.ellipsoid);
             //this.quadTreeRequest(node.tiles, nodeProcess);
 
         }
