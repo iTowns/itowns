@@ -21,7 +21,6 @@ define('Core/Commander/Providers/TileProvider', [
         'Core/Geographic/Projection',
         'Globe/TileGeometry',
         'Core/Geographic/CoordWMTS',
-        'Core/Math/Ellipsoid',
         'Globe/BuilderEllipsoidTile',
         'Core/defaultValue',
         'Scene/BoundingBox'
@@ -32,18 +31,17 @@ define('Core/Commander/Providers/TileProvider', [
         Projection,
         TileGeometry,
         CoordWMTS,
-        Ellipsoid,
         BuilderEllipsoidTile,
         defaultValue,
         BoundingBox
     ) {
 
-        function TileProvider(size) {
+        function TileProvider(ellipsoid) {
             //Constructor
             Provider.call(this, null);
 
             this.projection = new Projection();
-            this.ellipsoid = new Ellipsoid(size);
+            this.ellipsoid = ellipsoid;
             this.builder = new BuilderEllipsoidTile(this.ellipsoid,this.projection);
 
             this.cacheGeometry = [];

@@ -198,7 +198,7 @@ define('Renderer/c3DEngine', [
         }.bind(this);
 
         this.scene = scene;
-        this.size = this.scene.size.x;
+        this.size = this.scene.size().x;
 
         //
         // init camera
