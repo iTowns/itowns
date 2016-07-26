@@ -14,6 +14,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
        'Core/Commander/Providers/WMTS_Provider',
        'Core/Commander/Providers/TileProvider',
        'Core/Geographic/CoordCarto',
+       'Core/Math/Ellipsoid',
        'Core/Geographic/Projection'], function(
            EventsManager,
            Scene,
@@ -23,6 +24,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
            WMTS_Provider,
            TileProvider,
            CoordCarto,
+           Ellipsoid,
            Projection) {
 
     var loaded = false;
@@ -230,9 +232,11 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         //gLDebug = true; // true to support GLInspector addon
         //debugMode = true;
 
-        this.scene = Scene(coordCarto,viewerDiv,debugMode,gLDebug);
+        var ellipsoid = new Ellipsoid({x:6378137,y: 6356752.3142451793,z:6378137});
 
-        var map = new Globe(this.scene.size,gLDebug);
+        this.scene = Scene(coordCarto, ellipsoid, viewerDiv, debugMode, gLDebug);
+
+        var map = new Globe(ellipsoid, gLDebug);
 
         this.scene.add(map);
 
@@ -241,7 +245,7 @@ define('Core/Commander/Interfaces/ApiInterface/ApiGlobe', [
         var wmtsProvider = new WMTS_Provider({support : map.gLDebug});
         this.scene.managerCommand.addProtocolProvider('wmts', wmtsProvider);
         this.scene.managerCommand.addProtocolProvider('wmtsc', wmtsProvider);
-        this.scene.managerCommand.addProtocolProvider('tile', new TileProvider(map.size));
+        this.scene.managerCommand.addProtocolProvider('tile', new TileProvider(ellipsoid));
 
         var wgs84TileLayer = {
             protocol: 'tile',
