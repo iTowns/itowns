@@ -28,8 +28,6 @@ PointCloud.prototype = Object.create(Layer.prototype);
 PointCloud.prototype.constructor = PointCloud;
 
 PointCloud.prototype.update = function(camera, renderer) {
-    console.log("update");
-    console.log(potreeInstance.children);
     if ( potreeInstance )
         Potree.updatePointClouds(potreeInstance.children, camera, renderer);
 };
@@ -37,17 +35,16 @@ PointCloud.prototype.update = function(camera, renderer) {
 PointCloud.prototype.load = function(url) {
     if(url.indexOf("greyhound://") === 0)
         this.load_greyhoud(url);
-    //else if(url.indexOf("cloud.js") > 0)
-    //    this.load_cloud(url);
+    else if(url.indexOf("cloud.js") > 0)
+        this.load_cloud(url);
 }
 
 PointCloud.prototype.load_greyhoud = function(url) {
     var loader = new Potree.GreyhoundLoader();
 
-    console.log(loader);
 
     loader.load(url, function(geometry) {
-        var material = new THREE.PointsMaterial( { size: 10000,
+        var material = new THREE.PointsMaterial( { size: 10000.0,
             vertexColors: THREE.VertexColors } );
         var pointcloud = new Potree.PointCloudOctree(geometry, material);
 
@@ -59,6 +56,24 @@ PointCloud.prototype.load_greyhoud = function(url) {
 
         loaders.push(loader);
     });
+}
+
+PointCloud.prototype.load_cloud = function(url) {
+    var loader = new Potree.POCLoader();
+
+    loader.load(url, function(geometry) {
+        var material = new THREE.PointsMaterial( { size: 1.0,
+            vertexColors: THREE.VertexColors } );
+        var pointcloud = new Potree.PointCloudOctree(geometry, material);
+
+        var pos = new THREE.Vector3 (4201215.424138484, 171429.945145441,
+                4779294.873914789);
+        pointcloud.position.copy(pos);
+
+        potreeInstance.add(pointcloud);
+    });
+
+    loaders.push(loader);
 }
 
 export default PointCloud;
