@@ -142,7 +142,7 @@ BrowseTree.prototype._browse = function(node, camera, process, action, params) {
         case 'visibility_update':
             {
                 if (this.quadtreeNodeVisibilityUpdate(node, camera, process, params)) {
-                    var child_action = node.isDisplayed() ? 'hide_all' : action;
+                    var child_action = (node.isDisplayed() && process.additiveRefinement !== true) ? 'hide_all' : action;
                     for (var i = 0; i < node.children.length; i++) {
                         this._browse(node.children[i], camera, process, child_action, params);
                     }
