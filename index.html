@@ -45,54 +45,7 @@ and open the template in the editor.
             viewerDiv,
             [1837816.94334, 1847692.32501, 5170036.4587, 5178412.82698]);
 
-        itowns.viewer.addImageryLayer({
-            url       : "https://download.data.grandlyon.com/wms/grandlyon",
-            protocol  : 'wms',
-            version   : '1.3.0',
-            id        : 'testwms',
-            name      : 'Ortho2009_vue_ensemble_16cm_CC46',
-            style      : "",
-            projection : "EPSG:3946",
-            transparent : false,
-            // min long, min lat, max long, max lat
-            bbox      : [1837816.94334, 5170036.4587, 1847692.32501, 5178412.82698],
-            featureInfoMimeType : "",
-            dateTime  : "",
-            heightMapWidth : 256,
-            waterMask      : false,
-            updateStrategy: {
-                type: 3
-            },
-            options: {
-                mimetype  : "image/jpeg",
-                tileMatrixSet: 'WGS84G'
-            }
-        });
-
-        itowns.viewer.addElevationLayer({
-            url       : "https://download.data.grandlyon.com/wms/grandlyon",
-            protocol  : 'wms',
-            version   : '1.3.0',
-            id        : 'testwms',
-            name      : 'MNT2012_Altitude_10m_CC46',
-            style      : "",
-            projection : "EPSG:3946",
-            transparent : false,
-            // min long, min lat, max long, max lat
-            bbox      : [1837816.94334, 5170036.4587, 1847692.32501, 5178412.82698],
-            featureInfoMimeType : "",
-            dateTime  : "",
-            heightMapWidth : 256,
-            waterMask      : false,
-            updateStrategy: {
-                type: 3
-            },
-            options: {
-                minmaxElevation: [0, 255],
-                mimetype  : "image/jpeg",
-                tileMatrixSet: 'WGS84G'
-            }
-        });
+        itowns.viewer.addPointCloud("greyhound://192.168.1.12:5000/greyhound/");
 
         itowns.viewer.update();
 

@@ -19,6 +19,7 @@ import CoordCarto from 'Core/Geographic/CoordCarto';
 import Ellipsoid from 'Core/Math/Ellipsoid';
 import Projection from 'Core/Geographic/Projection';
 import CustomEvent from 'custom-event';
+import PointCloud from 'Scene/PointCloud';
 
 var loaded = false;
 var eventLoaded = new CustomEvent('globe-loaded');
@@ -92,6 +93,19 @@ ApiGlobe.prototype.addImageryLayer = function(layer) {
     var map = this.scene.getMap();
 
     map.layersConfiguration.addColorLayer(layer);
+};
+
+ApiGlobe.prototype.addPointCloud = function(url) {
+    var layers = this.scene.layers;
+    for ( var l = 0; l < layers.length; l++ ) {
+        var layer = layers[l].node;
+
+        for (var sl = 0; sl < layer.children.length; sl++) {
+            var sLayer = layer.children[sl];
+            if (sLayer instanceof PointCloud)
+                sLayer.load(url);
+        }
+    }
 };
 
 ApiGlobe.prototype.moveLayerUp = function(layer) {
