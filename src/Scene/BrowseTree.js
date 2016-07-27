@@ -17,31 +17,15 @@ define('Scene/BrowseTree', ['Globe/TileMesh', 'THREE'], function( TileMesh, THRE
         this.mfogDistance = 1000000000.0;
         this.selectedNodeId = -1;
         this.selectedNode = null;
-        this.cachedRTC = null;
 
-        this.selectNode = function(){};
+        this.selectNode = function(node){this._selectNode(node);};
 
-        this._resetQuadtreeNode;
-
-        this.selectMode = false;
-        //this.selectMode = true;
-
-        if(this.selectMode)
+        this._resetQuadtreeNode = function(node)
         {
-            this.selectNode = function(node){this._selectNode(node);};
-            this._resetQuadtreeNode = function(node)
-            {
-                node.setVisibility(false);
-                node.setDisplayed(false);
-                node.setSelected(false);
-            };
-        }
-        else
-            this._resetQuadtreeNode = function(node)
-            {
-                node.setVisibility(false);
-                node.setDisplayed(false);
-            };
+            node.setVisibility(false);
+            node.setDisplayed(false);
+            node.setSelected(false);
+        };
 
     }
 
@@ -108,7 +92,9 @@ define('Scene/BrowseTree', ['Globe/TileMesh', 'THREE'], function( TileMesh, THRE
             node.setSelected(node.visible && node.material.visible);
             if (this.selectedNode !== node) {
                 this.selectedNode = node;
-                //console.info(node);
+                /* eslint-disable no-alert, no-console */
+                console.info(node);
+                /* eslint-enable no-alert, no-console */
             }
         }
     };
@@ -245,14 +231,18 @@ define('Scene/BrowseTree', ['Globe/TileMesh', 'THREE'], function( TileMesh, THRE
         for (var c = 0; c < root.children.length; c++) {
             var node = root.children[c];
 
-            this.cachedRTC = this.gfxEngine.getRTCMatrixFromNode(node, camera);
+             var cRTC = function(){
 
-            var cRTC = function(obj) {
+                var mRTC  = this.gfxEngine.getRTCMatrixFromNode(node, camera);
 
-                if (obj.material && obj.material.setMatrixRTC)
-                    obj.material.setMatrixRTC(this.cachedRTC);
+                return function (obj){
 
-            }.bind(this);
+                    if (obj.setMatrixRTC)
+                        obj.setMatrixRTC(mRTC);
+
+                };
+
+        }();
 
             node.traverse(cRTC);
         }
