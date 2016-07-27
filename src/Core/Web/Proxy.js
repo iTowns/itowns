@@ -12,6 +12,6 @@ function Proxy() {
 
 
 
-module.exports = {
-    Proxy: Proxy
+export {
+    Proxy
 };

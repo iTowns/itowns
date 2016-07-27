@@ -4,49 +4,47 @@
  */
 
 
-define('Core/Commander/Providers/IoDriver_Image', ['Core/Commander/Providers/IoDriver'], function(IoDriver) {
+import IoDriver from 'Core/Commander/Providers/IoDriver';
 
 
-    function IoDriver_Image() {
-        //Constructor
-        IoDriver.call(this);
+function IoDriver_Image() {
+    //Constructor
+    IoDriver.call(this);
 
-    }
+}
 
-    IoDriver_Image.prototype = Object.create(IoDriver.prototype);
+IoDriver_Image.prototype = Object.create(IoDriver.prototype);
 
-    IoDriver_Image.prototype.constructor = IoDriver_Image;
+IoDriver_Image.prototype.constructor = IoDriver_Image;
 
-    IoDriver_Image.prototype.read = function(url) {
+IoDriver_Image.prototype.read = function(url) {
 
-        return new Promise(function(resolve/*, reject*/) {
+    return new Promise(function(resolve /*, reject*/ ) {
 
-            var image = new Image();
+        var image = new Image();
 
-            image.addEventListener('load', function(/*event*/) {
+        image.addEventListener('load', function( /*event*/ ) {
 
-                resolve(this);
+            resolve(this);
 
-            }, false);
+        }, false);
 
-            image.addEventListener('progress', function(/*event*/) {
+        image.addEventListener('progress', function( /*event*/ ) {
 
-            }, false);
+        }, false);
 
 
-            image.addEventListener('error', function(/*event*/) {
+        image.addEventListener('error', function( /*event*/ ) {
 
-                this.src = '';
-                resolve(undefined);
+            this.src = '';
+            resolve(undefined);
 
-            }.bind(this), false);
+        }.bind(this), false);
 
-            image.crossOrigin = '';
-            image.src = url;
+        image.crossOrigin = '';
+        image.src = url;
 
-        });
-    };
+    });
+};
 
-    return IoDriver_Image;
-
-});
+export default IoDriver_Image;

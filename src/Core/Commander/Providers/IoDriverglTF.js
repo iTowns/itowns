@@ -3,7 +3,7 @@
  * Class: IoDriverglTF
  */
 
-var IoDriver = require('IoDriver');
+import IoDriver from 'IoDriver';
 
 function IoDriverglTF() {
     //Constructor
@@ -14,6 +14,6 @@ function IoDriverglTF() {
 IoDriverglTF.prototype = new IoDriver();
 
 
-module.exports = {
-    IoDriverglTF: IoDriverglTF
+export {
+    IoDriverglTF
 };

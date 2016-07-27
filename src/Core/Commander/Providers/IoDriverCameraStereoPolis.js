@@ -3,7 +3,7 @@
  * Class: IoDriverCameraStereoPolis
  */
 
-var IoDriver = require('IoDriver');
+import IoDriver from 'IoDriver';
 
 function IoDriverCameraStereoPolis() {
     //Constructor
@@ -14,6 +14,6 @@ function IoDriverCameraStereoPolis() {
 IoDriverCameraStereoPolis.prototype = new IoDriver();
 
 
-module.exports = {
-    IoDriverCameraStereoPolis: IoDriverCameraStereoPolis
+export {
+    IoDriverCameraStereoPolis
 };

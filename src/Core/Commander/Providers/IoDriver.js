@@ -5,54 +5,49 @@
  */
 
 
-define('Core/Commander/Providers/IoDriver', [], function() {
+function IoDriver() {
+    //Constructor
 
 
-    function IoDriver() {
-        //Constructor
+}
+
+IoDriver.prototype.constructor = IoDriver;
 
 
-    }
+/**
+ * @param url
+ */
+IoDriver.prototype.load = function( /*url*/ ) {
+    //TODO: Implement Me
 
-    IoDriver.prototype.constructor = IoDriver;
-
-
-    /**
-     * @param url
-     */
-    IoDriver.prototype.load = function(/*url*/) {
-        //TODO: Implement Me
-
-    };
+};
 
 
-    /**
-     * @param url
-     * @param inputObject {Object}
-     */
-    IoDriver.prototype.write = function(/*url, inputObject*/) {
-        //TODO: Implement Me
+/**
+ * @param url
+ * @param inputObject {Object}
+ */
+IoDriver.prototype.write = function( /*url, inputObject*/ ) {
+    //TODO: Implement Me
 
-    };
-
-
-    /**
-     * @param url
-     */
-    IoDriver.prototype.readAsync = function(/*url*/) {
-        //TODO: Implement Me
-
-    };
+};
 
 
-    /**
-     * @param url
-     */
-    IoDriver.prototype.writeAsync = function(/*url*/) {
-        //TODO: Implement Me
+/**
+ * @param url
+ */
+IoDriver.prototype.readAsync = function( /*url*/ ) {
+    //TODO: Implement Me
 
-    };
+};
 
-    return IoDriver;
 
-});
+/**
+ * @param url
+ */
+IoDriver.prototype.writeAsync = function( /*url*/ ) {
+    //TODO: Implement Me
+
+};
+
+export default IoDriver;

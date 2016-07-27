@@ -4,7 +4,7 @@
  * Description: Evènement souris
  */
 
-var Event = require('Event');
+import Event from 'Event';
 
 function MouseEvent() {
     //Constructor
@@ -15,6 +15,6 @@ function MouseEvent() {
 MouseEvent.prototype = new Event();
 
 
-module.exports = {
-    MouseEvent: MouseEvent
+export {
+    MouseEvent
 };

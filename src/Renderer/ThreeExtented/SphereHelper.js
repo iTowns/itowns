@@ -5,9 +5,9 @@
  */
 
 
-var THREE = require('three');
+import THREE from 'three';
 
-THREE.SphereHelper = function(radius) {
+function SphereHelper(radius) {
     THREE.Mesh.call(this);
 
     this.geometry = new THREE.SphereGeometry(radius, 8, 8);
@@ -17,12 +17,14 @@ THREE.SphereHelper = function(radius) {
         wireframe: true
     });
 
-};
+}
 
-THREE.SphereHelper.prototype = Object.create(THREE.Mesh.prototype);
-THREE.SphereHelper.prototype.constructor = THREE.SphereHelper;
+SphereHelper.prototype = Object.create(THREE.Mesh.prototype);
+SphereHelper.prototype.constructor = SphereHelper;
 
-THREE.SphereHelper.prototype.update = function(radius) {
+SphereHelper.prototype.update = function(radius) {
     this.geometry.dispose();
     this.geometry = new THREE.SphereGeometry(radius, 8, 8);
 };
+
+export default SphereHelper;

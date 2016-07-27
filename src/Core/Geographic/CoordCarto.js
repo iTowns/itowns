@@ -8,26 +8,25 @@
  * @param {type} defaultValue
  * @returns {CoordCarto_L9.CoordCarto}
  */
-define('Core/Geographic/CoordCarto', ['Core/defaultValue'], function(defaultValue) {
+import defaultValue from 'Core/defaultValue';
 
 
-    function CoordCarto(longitude, latitude, altitude) {
-        this.longitude = defaultValue(longitude, 0);
-        this.latitude = defaultValue(latitude, 0);
-        this.altitude = defaultValue(altitude, 0);
-    }
+function CoordCarto(longitude, latitude, altitude) {
+    this.longitude = defaultValue(longitude, 0);
+    this.latitude = defaultValue(latitude, 0);
+    this.altitude = defaultValue(altitude, 0);
+}
 
-    CoordCarto.prototype.constructor = CoordCarto;
+CoordCarto.prototype.constructor = CoordCarto;
 
-    CoordCarto.prototype.setFromDegreeGeo = function(longitude, latitude, altitude) {
+CoordCarto.prototype.setFromDegreeGeo = function(longitude, latitude, altitude) {
 
 
-        this.longitude = defaultValue(longitude * Math.PI / 180 + Math.PI, 0);
-        this.latitude = defaultValue(latitude * Math.PI / 180, 0);
-        this.altitude = defaultValue(altitude, 0);
+    this.longitude = defaultValue(longitude * Math.PI / 180 + Math.PI, 0);
+    this.latitude = defaultValue(latitude * Math.PI / 180, 0);
+    this.altitude = defaultValue(altitude, 0);
 
-        return this;
-    };
+    return this;
+};
 
-    return CoordCarto;
-});
+export default CoordCarto;

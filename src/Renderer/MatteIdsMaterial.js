@@ -5,55 +5,47 @@
  */
 
 
-define('Renderer/MatteIdsMaterial', ['THREE',
-    'Renderer/BasicMaterial',
-    'Core/System/JavaTools',
-    'Renderer/Shader/MatteIdsFS.glsl',
-    'Renderer/Shader/GlobeDepthVS.glsl'
-], function(
-    THREE,
-    BasicMaterial,
-    JavaTools,
-    MatteIdsFS,
-    GlobeDepthVS) {
+import THREE from 'THREE';
+import BasicMaterial from 'Renderer/BasicMaterial';
+import MatteIdsFS from 'Renderer/Shader/MatteIdsFS.glsl';
+import GlobeDepthVS from 'Renderer/Shader/GlobeDepthVS.glsl';
 
-    // This material renders the id in RGBA Color
-    // Warning the RGBA contains id in float pack in 4 unsigned char
+// This material renders the id in RGBA Color
+// Warning the RGBA contains id in float pack in 4 unsigned char
 
-    var MatteIdsMaterial = function(otherMaterial) {
+var MatteIdsMaterial = function(otherMaterial) {
 
-        BasicMaterial.call(this);
+    BasicMaterial.call(this);
 
-        this.vertexShader =  GlobeDepthVS;
-        this.fragmentShader = MatteIdsFS;
+    this.vertexShader = GlobeDepthVS;
+    this.fragmentShader = MatteIdsFS;
 
-        this.uniforms.uuid.value = otherMaterial.uniforms.uuid.value;
+    this.uniforms.uuid.value = otherMaterial.uniforms.uuid.value;
 
-        this.uniforms.diffuseColor.value = new THREE.Color( Math.random() * 0xffffff  );//.setHex( Math.random() * 0xffffff );
+    this.uniforms.diffuseColor.value = new THREE.Color(Math.random() * 0xffffff); //.setHex( Math.random() * 0xffffff );
 
-        this.uniforms.dTextures_00 = {
-            type: "tv",
-            value: otherMaterial.Textures[0]
-        };
-
-        this.uniforms.nbTextures = {
-            type: "i",
-            value: otherMaterial.nbTextures[0]
-        };
-
-        this.uniforms.pitScale_L00 = {
-            type: "v3v",
-            value: otherMaterial.pitScale[0]
-        };
-
+    this.uniforms.dTextures_00 = {
+        type: "tv",
+        value: otherMaterial.Textures[0]
     };
 
-    MatteIdsMaterial.prototype = Object.create(BasicMaterial.prototype);
-    MatteIdsMaterial.prototype.constructor = MatteIdsMaterial;
-
-    MatteIdsMaterial.prototype.setMatrixRTC = function(rtc) {
-        this.uniforms.mVPMatRTC.value = rtc;
+    this.uniforms.nbTextures = {
+        type: "i",
+        value: otherMaterial.nbTextures[0]
     };
 
-    return MatteIdsMaterial;
-});
+    this.uniforms.pitScale_L00 = {
+        type: "v3v",
+        value: otherMaterial.pitScale[0]
+    };
+
+};
+
+MatteIdsMaterial.prototype = Object.create(BasicMaterial.prototype);
+MatteIdsMaterial.prototype.constructor = MatteIdsMaterial;
+
+MatteIdsMaterial.prototype.setMatrixRTC = function(rtc) {
+    this.uniforms.mVPMatRTC.value = rtc;
+};
+
+export default MatteIdsMaterial;

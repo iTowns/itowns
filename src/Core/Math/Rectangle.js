@@ -11,6 +11,6 @@ function Rectangle() {
 
 
 
-module.exports = {
-    Rectangle: Rectangle
+export {
+    Rectangle
 };
