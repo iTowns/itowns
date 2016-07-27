@@ -23,6 +23,9 @@ precision highp int;
 
 uniform int  uuid;
 
+uniform vec3 diffuseColor;
+
+
 const vec4 bitSh = vec4( 256.0 * 256.0 * 256.0, 256.0 * 256.0, 256.0, 1.0 );
 const vec4 bitMsk = vec4( 0.0, 1.0 / 256.0, 1.0 / 256.0, 1.0 / 256.0 );
 
@@ -51,6 +54,6 @@ void main() {
 
     gl_FragColor = pack1K(float(uuid));
 
-    //gl_FragColor = pack1K(float(133));
+    // gl_FragColor = vec4(diffuseColor,1.0);
 
 }

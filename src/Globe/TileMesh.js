@@ -27,7 +27,7 @@ define('Globe/TileMesh', [
     'SphereHelper',
     'Renderer/LayeredMaterial',
     'Renderer/GlobeDepthMaterial',
-    'Renderer/idMaterial',
+    'Renderer/MatteIdsMaterial',
     'Renderer/RendererConstant'
 ], function(
     NodeMesh,
@@ -39,7 +39,7 @@ define('Globe/TileMesh', [
     SphereHelper,
     LayeredMaterial,
     GlobeDepthMaterial,
-    idMaterial,
+    MatteIdsMaterial,
     RendererConstant) {
 
     var groupelevation = [14, 11, 7, 3];
@@ -78,7 +78,7 @@ define('Globe/TileMesh', [
         // Depth : return the distance between projection point and the node
         this.stateMaterial[RENDERING_STATE.DEPTH] = new GlobeDepthMaterial(this.stateMaterial[RENDERING_STATE.FINAL]);
         // ID : return id color in RGBA (float Pack in RGBA)
-        this.stateMaterial[RENDERING_STATE.ID] = new idMaterial(this.stateMaterial[RENDERING_STATE.FINAL]);
+        this.stateMaterial[RENDERING_STATE.ID] = new MatteIdsMaterial(this.stateMaterial[RENDERING_STATE.FINAL]);
         // Set current material in Final Rendering
         this.material = this.stateMaterial[RENDERING_STATE.FINAL];
 
