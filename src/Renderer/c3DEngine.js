@@ -25,8 +25,6 @@ define('Renderer/c3DEngine', [
 
     var instance3DEngine = null;
 
-    var RENDERING_STATE = RendererConstant().RENDERING_STATE;
-
     /*
     var step = function(val,stepVal)
     {
@@ -106,7 +104,7 @@ define('Renderer/c3DEngine', [
         this.camDebug = undefined;
         this.dnear = 0.0;
         this.dfar = 0.0;
-        this.stateRender = RENDERING_STATE.FINAL;
+        this.stateRender = RendererConstant.FINAL;
         this.positionBuffer = null;
         this.lightingOn = false;
 
@@ -321,33 +319,26 @@ define('Renderer/c3DEngine', [
 
         // build traverse function
         var changeStateFunction = function(){
-
-            var changeState = state;
-
             return function (object3D){
-
-                  object3D.changeState(changeState);
-
-            };
-
+                  object3D.changeState(state);
+            }.bind(state);
         }();
 
-        var enable = state === RENDERING_STATE.FINAL;
+        var enable = state === RendererConstant.FINAL;
 
         for (var x = 0; x < this.scene3D.children.length; x++) {
             var node = this.scene3D.children[x];
 
-            if (node.changeState)
+            if (node.changeState) {
                 node.traverseVisible(changeStateFunction);
-            else
-
-                if(node.layer)
+            } else {
+                if(node.layer) {
                     node.visible = enable ? node.layer.visible : false;
-                else
+                } else {
                     node.visible = enable;
-
+                }
+            }
         }
-
     };
 
     c3DEngine.prototype.rtcOn = function(obj3D) {
@@ -496,7 +487,7 @@ define('Renderer/c3DEngine', [
     c3DEngine.prototype.updatePositionBuffer = function() {
         this.camera.camera3D.updateMatrixWorld();
         this.dummys.visible = false;
-        this.positionBuffer = this.renderTobuffer(0, 0, this.width, this.height, RENDERING_STATE.DEPTH);
+        this.positionBuffer = this.renderTobuffer(0, 0, this.width, this.height, RendererConstant.DEPTH);
         this.dummys.visible = true;
         this.renderScene(); // TODO debug to remove white screen, but why?
     };
@@ -540,7 +531,7 @@ define('Renderer/c3DEngine', [
         camera.updateMatrixWorld();
 
         this.dummys.visible = false;
-        var buffer = this.renderTobuffer(mouse.x, this.height - mouse.y, 1, 1, RENDERING_STATE.DEPTH);
+        var buffer = this.renderTobuffer(mouse.x, this.height - mouse.y, 1, 1, RendererConstant.DEPTH);
         this.dummys.visible = true;
 
         var glslPosition = new THREE.Vector3().fromArray(buffer);
@@ -569,14 +560,14 @@ define('Renderer/c3DEngine', [
      * @param {Vecto2D} mouse : mouse position on screen in pixel
      * @returns {int} uuid's node
      * */
-    c3DEngine.prototype.getPickingId = function(mouse) {
+    c3DEngine.prototype.screenCoordsToNodeId = function(mouse) {
 
         var camera = this.camera.camera3D;
 
         camera.updateMatrixWorld();
 
         this.dummys.visible = false;
-        var buffer = this.renderTobuffer(mouse.x, this.height - mouse.y, 1, 1, RENDERING_STATE.ID);
+        var buffer = this.renderTobuffer(mouse.x, this.height - mouse.y, 1, 1, RendererConstant.ID);
         this.dummys.visible = true;
 
         var depthRGBA = new THREE.Vector4().fromArray(buffer).divideScalar(255.0);
@@ -594,10 +585,8 @@ define('Renderer/c3DEngine', [
     * @param {Vecto2D} mouse : mouse position on screen in pixel
     * Select node under mouse
     **/
-    c3DEngine.prototype.selecteWithMouse = function(mouse) {
-
-        this.scene.selectNodeId(this.getPickingId(mouse));
-
+    c3DEngine.prototype.selectNodeAt = function(mouse) {
+        this.scene.selectNodeId(this.screenCoordsToNodeId(mouse));
     };
 
     c3DEngine.prototype.getPickingPositionFromDepth = function() {
@@ -610,7 +599,7 @@ define('Renderer/c3DEngine', [
         var ray = new THREE.Ray();
         var depthRGBA = new THREE.Vector4();
 
-        return function getPickingPositionFromDepth(mouse/*, scene*/) {
+        return function getPickingPositionFromDepth(mouse) {
 
             if (mouse === undefined)
                 mouse = new THREE.Vector2(Math.floor(this.width / 2), Math.floor(this.height / 2));
@@ -620,7 +609,7 @@ define('Renderer/c3DEngine', [
             camera.updateMatrixWorld();
 
             this.dummys.visible = false;
-            var buffer = this.renderTobuffer(mouse.x, this.height - mouse.y, 1, 1, RENDERING_STATE.DEPTH);
+            var buffer = this.renderTobuffer(mouse.x, this.height - mouse.y, 1, 1, RendererConstant.DEPTH);
             this.dummys.visible = true;
 
             screen.x =   ( (mouse.x) / this.width  ) * 2 - 1;
@@ -651,8 +640,6 @@ define('Renderer/c3DEngine', [
             var depth = unpack1K(depthRGBA,100000000.0) / Math.cos(angle);
 
             pickWorldPosition.addVectors(camera.position,ray.direction.setLength(depth));
-
-            //this.placeDummy(this.dummy_02,pickWorldPosition);
 
             if(pickWorldPosition.length()> 10000000)
                 return undefined;
