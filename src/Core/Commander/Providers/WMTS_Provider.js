@@ -112,7 +112,7 @@ WMTS_Provider.prototype.url = function(coWMTS, layer) {
  * @param {type} coWMTS : coord WMTS
  * @returns {WMTS_Provider_L15.WMTS_Provider.prototype@pro;_IoDriver@call;read@call;then}
  */
-WMTS_Provider.prototype.getElevationTexture = function(tile, layer) {
+WMTS_Provider.prototype.getXbilTexture = function(tile, layer) {
     var coWMTS = tile.tileCoord;
 
     var url = this.url(coWMTS, layer);
@@ -216,17 +216,23 @@ WMTS_Provider.prototype.getColorTexture = function(coWMTS, pitch, layer) {
 WMTS_Provider.prototype.executeCommand = function(command) {
 
     //var service;
-    var destination = command.paramsFunction.destination;
+    var layer = command.paramsFunction.layer;
     var tile = command.requester;
 
-    if (destination === 1) {
-        return this.getColorTextures(tile, command.paramsFunction.layer).then(function(result) {
+    var supportedFormats = {
+        'image/png':           this.getColorTextures.bind(this),
+        'image/jpg':           this.getColorTextures.bind(this),
+        'image/jpeg':          this.getColorTextures.bind(this),
+        'image/x-bil;bits=32': this.getXbilTexture.bind(this)
+    };
+
+    var func = supportedFormats[layer.options.mimetype];
+    if (func) {
+        return func(tile, layer).then(function(result) {
             return command.resolve(result);
         });
-    } else if (destination === 0) {
-        return this.getElevationTexture(tile, command.paramsFunction.layer).then(function(terrain) {
-            command.resolve(terrain);
-        });
+    } else {
+        return Promise.reject(new Error('Unsupported mimetype ' + layer.options.mimetype));
     }
 };
 
