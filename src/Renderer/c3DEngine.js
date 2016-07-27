@@ -151,7 +151,6 @@ function c3DEngine(scene, positionCamera, viewerDiv, debugMode, gLDebug) {
         this.width = this.debug ? this.viewerDiv.clientWidth * 0.5 : this.viewerDiv.clientWidth;
         this.height = this.viewerDiv.clientHeight;
         this.camera.resize(this.width, this.height);
-        this.scene.updateCamera();
 
         if (this.camDebug) {
             this.camDebug.aspect = this.camera.ratio;

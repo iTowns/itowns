@@ -5,7 +5,6 @@
  */
 
 import BoundingBox from 'Scene/BoundingBox';
-import Camera from 'Renderer/Camera';
 import MathExt from 'Core/Math/MathExtented';
 import THREE from 'THREE';
 import defaultValue from 'Core/defaultValue';
@@ -14,8 +13,6 @@ import Projection from 'Core/Geographic/Projection';
 
 function NodeProcess(camera, ellipsoid, bbox) {
     //Constructor
-    this.camera = new Camera();
-    this.camera.camera3D = camera.camera3D.clone();
 
     this.bbox = defaultValue(bbox, new BoundingBox(MathExt.PI_OV_TWO + MathExt.PI_OV_FOUR, MathExt.PI + MathExt.PI_OV_FOUR, 0, MathExt.PI_OV_TWO));
 
@@ -47,11 +44,6 @@ NodeProcess.prototype.backFaceCulling = function(node, camera) {
 
     return node.visible;
 
-};
-
-NodeProcess.prototype.updateCamera = function(camera) {
-    this.camera = new Camera(camera.width, camera.height);
-    this.camera.camera3D = camera.camera3D.clone();
 };
 
 /**
@@ -360,12 +352,10 @@ NodeProcess.prototype.frustumCullingOBB = function(node, camera) {
     //position in local space
     var position = node.OBB().worldToLocal(camera.position().clone());
     position.z -= node.distance;
-    this.camera.setPosition(position);
-    // rotation in local space
-    quaternion.multiplyQuaternions(node.OBB().quadInverse(), camera.camera3D.quaternion);
-    this.camera.setRotation(quaternion);
 
-    return this.camera.getFrustum().intersectsBox(node.OBB().box3D);
+    quaternion.multiplyQuaternions( node.OBB().quadInverse(), camera.camera3D.quaternion);
+
+    return camera.getFrustumLocalSpace(position, quaternion).intersectsBox(node.OBB().box3D);
 };
 
 /**
@@ -375,9 +365,7 @@ NodeProcess.prototype.frustumCullingOBB = function(node, camera) {
  * @returns {unresolved}
  */
 NodeProcess.prototype.frustumBB = function(node /*, camera*/ ) {
-
     return node.bbox.intersect(this.bbox);
-
 };
 
 /**
