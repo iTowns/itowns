@@ -69,10 +69,6 @@ THREE.GlobeControls = function(object, domElement, engine) {
     this.ptScreenClick = new THREE.Vector2();
     var pickOnGlobe = new THREE.Vector3();
     var pickOnGlobeNorm = new THREE.Vector3();
-
-    var selectMode = false;
-    //selectMode = true;
-
     var rayonPointGlobe = engine.size;
     var raycaster = new THREE.Raycaster();
 
@@ -631,7 +627,7 @@ THREE.GlobeControls = function(object, domElement, engine) {
 
                 // If the key 'S' is down, the engine selects node under mouse
                 var mouse = new THREE.Vector2(event.clientX - event.target.offsetLeft,event.clientY - event.target.offsetTop);
-                scope.engine.selecteWithMouse(mouse);
+                scope.engine.selectNodeAt(mouse);
                 scope.engine.update();
 
             } else {
@@ -643,7 +639,7 @@ THREE.GlobeControls = function(object, domElement, engine) {
                 scope.ptScreenClick.x = event.clientX - event.target.offsetLeft;
                 scope.ptScreenClick.y = event.clientY - event.target.offsetTop;
 
-                var point = scope.engine.getPickingPositionFromDepth(scope.ptScreenClick,selectMode ? scope.engine.scene : undefined);
+                var point = scope.engine.getPickingPositionFromDepth(scope.ptScreenClick);
 
                 scope.engine.renderScene();
 

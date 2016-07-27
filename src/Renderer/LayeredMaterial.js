@@ -29,7 +29,6 @@ define('Renderer/LayeredMaterial', ['THREE',
     var vector2 = new THREE.Vector2(0.0, 0.0);
     var vector4 = new THREE.Vector4(0.0, 0.0, 0.0, 0.0);
     var showDebug = false;
-    //showDebug = true;
     var fooTexture;
 
     var getColorAtIdUv = function(nbTex)
@@ -78,9 +77,6 @@ define('Renderer/LayeredMaterial', ['THREE',
         this.Textures = [];
         this.pitScale = [];
         this.nbTextures = [];
-        //this.paramLayers = [];
-        //this.mapLayerColor = [];
-
         this.nColorLayer = 1;
 
         // Uniform three js needs no empty array

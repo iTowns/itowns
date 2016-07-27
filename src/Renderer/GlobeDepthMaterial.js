@@ -1,9 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 
 define('Renderer/GlobeDepthMaterial', ['THREE',
     'Renderer/BasicMaterial',
@@ -24,10 +18,8 @@ define('Renderer/GlobeDepthMaterial', ['THREE',
         this.vertexShader =  GlobeDepthVS;
         this.fragmentShader = GlobeDepthFS;
 
-
-        // Peut passer directement l'uniform de otherMaterial,
-        // vérifier l'homogénéité des déclarations des attributes
-        // dans le 2 shaders
+        // Why connect directily uniform doesn't work?
+        // Verify attributes's shaders
 
         this.uniforms.dTextures_00 = {
             type: "tv",
@@ -35,8 +27,8 @@ define('Renderer/GlobeDepthMaterial', ['THREE',
         };
 
         this.uniforms.nbTextures = {
-            type: "iv1",
-            value: otherMaterial.nbTextures
+            type: "i",
+            value: otherMaterial.nbTextures[0]
         };
 
         this.uniforms.pitScale_L00 = {

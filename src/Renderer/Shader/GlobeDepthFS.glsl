@@ -31,13 +31,6 @@ vec4 pack1K ( float depth ) {
     return res;
 }
 
-// float unpack1K ( vec4 color ) {
-
-//     const vec4 bitSh = vec4( 1.0 / ( 256.0 * 256.0 * 256.0 ), 1.0 / ( 256.0 * 256.0 ), 1.0 / 256.0, 1.0 );
-//     return dot( color, bitSh ) * 100000000.0;
-
-// }
-
 void main() {
 
     #if defined(USE_LOGDEPTHBUF) && defined(USE_LOGDEPTHBUF_EXT)

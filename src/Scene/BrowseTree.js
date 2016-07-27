@@ -18,29 +18,14 @@ define('Scene/BrowseTree', ['Globe/TileMesh', 'THREE'], function( TileMesh, THRE
         this.selectedNodeId = -1;
         this.selectedNode = null;
 
-        this.selectNode = function(){};
+        this.selectNode = function(node){this._selectNode(node);};
 
-        this._resetQuadtreeNode;
-
-        this.selectMode = false;
-        this.selectMode = true;
-
-        if(this.selectMode)
+        this._resetQuadtreeNode = function(node)
         {
-            this.selectNode = function(node){this._selectNode(node);};
-            this._resetQuadtreeNode = function(node)
-            {
-                node.setVisibility(false);
-                node.setDisplayed(false);
-                node.setSelected(false);
-            };
-        }
-        else
-            this._resetQuadtreeNode = function(node)
-            {
-                node.setVisibility(false);
-                node.setDisplayed(false);
-            };
+            node.setVisibility(false);
+            node.setDisplayed(false);
+            node.setSelected(false);
+        };
 
     }
 
@@ -107,7 +92,9 @@ define('Scene/BrowseTree', ['Globe/TileMesh', 'THREE'], function( TileMesh, THRE
             node.setSelected(node.visible && node.material.visible);
             if (this.selectedNode !== node) {
                 this.selectedNode = node;
-                //console.info(node);
+                /* eslint-disable no-alert, no-console */
+                console.info(node);
+                /* eslint-enable no-alert, no-console */
             }
         }
     };

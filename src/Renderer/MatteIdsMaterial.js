@@ -37,8 +37,8 @@ define('Renderer/MatteIdsMaterial', ['THREE',
         };
 
         this.uniforms.nbTextures = {
-            type: "iv1",
-            value: otherMaterial.nbTextures
+            type: "i",
+            value: otherMaterial.nbTextures[0]
         };
 
         this.uniforms.pitScale_L00 = {

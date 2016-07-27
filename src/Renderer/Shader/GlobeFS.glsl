@@ -165,8 +165,9 @@ void main() {
 
         if (validTextureCount > 0) {
 
-            if(selected == 1)
+            if(selected == 1){
                 diffuseColor = mix(vec4( 1.0, 0.3, 0.0, 1.0), diffuseColor, 0.5 );
+            }
 
             gl_FragColor = RTC == 1 ? mix(fogColor, diffuseColor, fog ) : diffuseColor;
 

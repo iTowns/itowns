@@ -28,24 +28,23 @@ attribute vec3      normal;
 
 uniform sampler2D   dTextures_00[1];
 uniform vec3        pitScale_L00[1];
-uniform int         nbTextures[8];
+uniform int         nbTextures;
 uniform mat4        mVPMatRTC;
 
 void main() {
 
         vec4 vPosition;
 
-        if(nbTextures[0] > 0)
-        {
-
+        if(nbTextures > 0) {
             vec2    vVv = vec2(uv_wgs84.x * pitScale_L00[0].z + pitScale_L00[0].x,(1.0 - uv_wgs84.y) * pitScale_L00[0].z + pitScale_L00[0].y);
 
             float   dv  = max(texture2D( dTextures_00[0], vVv ).w, 0.);
 
-            vPosition   = vec4( position +  normal  * dv ,1.0 );
+            vPosition   = vec4(position + normal * dv, 1.0 );
         }
-        else
-            vPosition = vec4( position ,1.0 );
+        else {
+            vPosition = vec4(position, 1.0);
+        }
 
         gl_Position = mVPMatRTC * vPosition;
 
