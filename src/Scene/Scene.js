@@ -90,11 +90,6 @@ Scene.prototype.getEllipsoid = function() {
     return this.ellipsoid;
 }
 
-Scene.prototype.updateCamera = function() {
-    for (var i = 0; i < this.layers.length; i++) {
-        this.layers[i].process.updateCamera(this.gfxEngine.camera);
-    }
-};
 //    Scene.prototype.getZoomLevel = function(){
 //        return this.selectNodes;
 //    };
