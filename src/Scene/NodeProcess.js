@@ -330,6 +330,20 @@ function updateNodeElevation(quadtree, node, layersConfig, force) {
     return Promise.resolve(node);
 }
 
+
+NodeProcess.prototype.computeNodeSSE = function(node, camera) {
+    var boundingSphere = node.geometry.boundingSphere;
+    var distance = Math.max(0.0, (camera.camera3D.position.distanceTo(node.centerSphere) - boundingSphere.radius));
+    // Added small oblique weight (distance is not enough, tile orientation is needed)
+    var altiW = node.bbox.maxCarto.altitude === 10000 ? 0. : node.bbox.maxCarto.altitude / 10000.;
+    var dotProductW = Math.min(altiW + Math.abs(camera.camera3D.getWorldDirection().dot(node.centerSphere.clone().normalize())), 1.);
+    if (camera.camera3D.position.length() > 6463300) dotProductW = 1;
+    var SSE = Math.sqrt(dotProductW) * camera.preSSE * (node.geometricError / distance);
+    //var SSE = this.preSSE * (node.geometricError / distance);
+
+    return SSE;
+}
+
 /**
  * @documentation: Compute screen space error of node in function of camera
  * @param {type} node
@@ -338,7 +352,7 @@ function updateNodeElevation(quadtree, node, layersConfig, force) {
  */
 NodeProcess.prototype.SSE = function(node, camera, params) {
     // update node's sse value
-    node.sse = camera.computeNodeSSE(node);
+    node.sse = this.computeNodeSSE(node, camera);
 
     var sse = this.checkNodeSSE(node);
 

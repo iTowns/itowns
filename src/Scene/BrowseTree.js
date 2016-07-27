@@ -175,7 +175,7 @@ BrowseTree.prototype._browse = function(node, camera, process, action, params) {
 
 BrowseTree.prototype._clean = function(node, level, process, camera) {
     // update node's sse value
-    node.sse = camera.computeNodeSSE(node);
+    node.sse = process.computeNodeSSE(node, camera);
 
     var sse = process.checkNodeSSE(node);
 
