@@ -8,13 +8,15 @@ define('Core/Commander/Providers/GPX_Provider', [
         'Core/Commander/Providers/Provider',
         'Core/Commander/Providers/IoDriverXML',
         'THREE',
-        'Core/Geographic/CoordCarto'
+        'Core/Geographic/CoordCarto',
+        'Core/Commander/Providers/ItownsLine'
     ],
     function(
         Provider,
         IoDriverXML,
         THREE,
-        CoordCarto
+        CoordCarto,
+        ItownsLine
     ) {
 
         function GPX_Provider(ellipsoid) {
@@ -43,28 +45,39 @@ define('Core/Commander/Providers/GPX_Provider', [
                 for (var i = 0; i < wpt.length; i++)
                     geometry_p.vertices.push(this.ellipsoid.cartographicToCartesian(new CoordCarto().setFromDegreeGeo(Number(wpt[i].attributes.lon.nodeValue),Number(wpt[i].attributes.lat.nodeValue),Number(wpt[i].getElementsByTagName("ele")[0].childNodes[0].nodeValue))));
 
-                var material_p = new THREE.PointsMaterial( {color: 0x00ff00, size: 50, sizeAttenuation : true} );
+                var material_p = new THREE.PointsMaterial( {color: 0x00ff00, size: 100, sizeAttenuation : true} );
 
-                var point = new THREE.Points( geometry_p, material_p );
+                var points = new THREE.Points( geometry_p, material_p );
 
                 // ------------------------------------
                 //Getting the track points
                 // ------------------------------------
                 var trkpt = result.getElementsByTagName("trkpt");
-                var geometry = new THREE.Geometry();
 
-                for (var j = 0; j < trkpt.length; j++)
-                    geometry.vertices.push(this.ellipsoid.cartographicToCartesian(new CoordCarto().setFromDegreeGeo(Number(trkpt[j].attributes.lon.nodeValue),Number(trkpt[j].attributes.lat.nodeValue),Number(trkpt[j].getElementsByTagName("ele")[0].childNodes[0].nodeValue))));
+                var group = new THREE.Object3D();
+                
+                var color    = new THREE.Color("rgb(255, 0, 0)");
+                
+                var imageURL = "data/strokes/hway.png";
+                
+                var line = new ItownsLine({
+                                            time :  1.0,
+                                            linewidth   : 500.0,
+                                            texture :   imageURL,
+                                            useTexture : true,
+                                            opacity    : 1.0 ,
+                                            sizeAttenuation : 1.0,
+                                            color : [color.r, color.g, color.b]
+                });
 
-                var material = new THREE.LineBasicMaterial({
-                        color: 0xff0000, opacity: 1, linewidth: 5
-                    });
-
-
-                var line = new THREE.Line(geometry, material);
-                line.add(point);
-
-                return line;
+                for (var k = 0; k < trkpt.length ; k++) {
+                    var pt = this.ellipsoid.cartographicToCartesian(new CoordCarto().setFromDegreeGeo(Number(trkpt[k].attributes.lon.nodeValue),Number(trkpt[k].attributes.lat.nodeValue),Number(trkpt[k].getElementsByTagName("ele")[0].childNodes[0].nodeValue)));
+                    line.addPoint(pt);
+                }
+                line.process();
+                group.add(points);
+                group.add(line);
+                return group;
             }.bind(this));
 
         };

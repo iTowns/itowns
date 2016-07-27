@@ -743,6 +743,12 @@ and open the template in the editor.
                 } ,
                 false);
 
+                viewerDiv.addEventListener('globe-loaded',function(){
+                    console.log("Globe Loaded");
+                    itowns.viewer.loadGPX("data/ULTRA2009.gpx");
+                } ,
+                false);
+
                 // gui.add(text, 'StreetLevelImagery').onChange(function(newValue) {
                 //     itowns.viewer.setStreetLevelImageryOn(newValue);
                 // });
