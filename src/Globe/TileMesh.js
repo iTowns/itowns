@@ -25,8 +25,22 @@ define('Globe/TileMesh', [
     'THREE',
     'OBBHelper',
     'SphereHelper',
-    'Renderer/LayeredMaterial'
-], function(NodeMesh, TileGeometry, BoundingBox, defaultValue, THREE, OBBHelper, SphereHelper, LayeredMaterial) {
+    'Renderer/LayeredMaterial',
+    'Renderer/GlobeDepthMaterial',
+    'Renderer/MatteIdsMaterial',
+    'Renderer/RendererConstant'
+], function(
+    NodeMesh,
+    TileGeometry,
+    BoundingBox,
+    defaultValue,
+    THREE,
+    OBBHelper,
+    SphereHelper,
+    LayeredMaterial,
+    GlobeDepthMaterial,
+    MatteIdsMaterial,
+    RendererConstant) {
 
     var groupelevation = [14, 11, 7, 3];
     var l_ELEVATION = 0;
@@ -51,9 +65,21 @@ define('Globe/TileMesh', [
         this.centerSphere = new THREE.Vector3().addVectors(this.geometry.boundingSphere.center, params.center);
 
         this.oSphere = new THREE.Sphere(this.centerSphere.clone(),this.geometry.boundingSphere.radius);
-
         this.texturesNeeded = 0;
-        this.material = new LayeredMaterial();
+
+        this.materials = [];
+
+
+        // instantiations all state materials : final, depth, id
+        // Final rendering : return layered color + fog
+        this.materials[RendererConstant.FINAL] = new LayeredMaterial();
+        // Depth : return the distance between projection point and the node
+        this.materials[RendererConstant.DEPTH] = new GlobeDepthMaterial(this.materials[RendererConstant.FINAL]);
+        // ID : return id color in RGBA (float Pack in RGBA)
+        this.materials[RendererConstant.ID] = new MatteIdsMaterial(this.materials[RendererConstant.FINAL]);
+        // Set current material in Final Rendering
+        this.material = this.materials[RendererConstant.FINAL];
+
         this.frustumCulled = false;
         this.levelElevation = this.level;
 
@@ -109,8 +135,20 @@ define('Globe/TileMesh', [
         this.material = null;
     };
 
+    TileMesh.prototype.setUuid = function(uuid) {
+        this.id = uuid;
+        this.materials[RendererConstant.FINAL].setUuid(uuid);
+        this.materials[RendererConstant.ID].setUuid(uuid);
+
+    };
+
+    TileMesh.prototype.getUuid = function(uuid) {
+
+        return this.materials[RendererConstant.ID].getUuid(uuid);
+    }
+
     TileMesh.prototype.setColorLayerParameters = function(paramsTextureColor) {
-        this.material.setParam(paramsTextureColor);
+        this.materials[RendererConstant.FINAL].setParam(paramsTextureColor);
 
         for (var l = 0; l < paramsTextureColor.length; l++) {
             this.layersColor.push(paramsTextureColor[l].idLayer);
@@ -118,7 +156,6 @@ define('Globe/TileMesh', [
     };
     /**
     *
-
      * @returns {undefined}     */
     TileMesh.prototype.disposeChildren = function() {
         while (this.children.length > 0) {
@@ -128,32 +165,57 @@ define('Globe/TileMesh', [
         }
     };
 
+    TileMesh.prototype.setDisplayed = function(show) {
+
+        for(var key in this.materials) {
+            this.materials[key].visible = show;
+        }
+
+        if (this.helper !== undefined) {
+            this.helper.setMaterialVisibility(show);
+        }
+
+        if (this.content !== null && show) {
+            this.content.visible = true;
+        }
+    };
+
     TileMesh.prototype.useParent = function() {
         return this.level !== this.levelElevation;
     };
 
     TileMesh.prototype.enableRTC = function(enable) {
-        this.material.enableRTC(enable);
+        this.materials[RendererConstant.FINAL].enableRTC(enable);
     };
 
-    TileMesh.prototype.enablePickingRender = function(enable) {
-        this.material.enablePickingRender(enable);
+    // switch material in function of state
+    TileMesh.prototype.changeState = function(state) {
+
+        if(state !== RendererConstant.FINAL)
+        {
+            this.materials[state].visible = this.materials[RendererConstant.FINAL].visible;
+        }
+
+        this.material = this.materials[state];
     };
 
     TileMesh.prototype.setFog = function(fog) {
-        this.material.setFogDistance(fog);
+        this.materials[RendererConstant.FINAL].setFogDistance(fog);
     };
 
     TileMesh.prototype.setMatrixRTC = function(rtc) {
-        this.material.setMatrixRTC(rtc);
+        for(var key in this.materials) {
+            this.materials[key].setMatrixRTC(rtc);
+        }
     };
 
     TileMesh.prototype.setDebug = function(enable) {
-        this.material.setDebug(enable);
+        this.materials[RendererConstant.FINAL].setDebug(enable);
     };
 
     TileMesh.prototype.setSelected = function(select) {
-        this.material.setSelected(select);
+
+        this.materials[RendererConstant.FINAL].setSelected(select);
     };
 
     TileMesh.prototype.parseBufferElevation = function(image,minMax,pitScale) {
@@ -188,7 +250,7 @@ define('Globe/TileMesh', [
     };
 
     TileMesh.prototype.setTextureElevation = function(elevation) {
-        if (this.material === null) {
+        if (this.materials[RendererConstant.FINAL] === null) {
             return;
         }
 
@@ -205,7 +267,7 @@ define('Globe/TileMesh', [
 
             if (ancestor) { // TODO WHY -> because levelAncestor === -2
                 pitScale = ancestor.bbox.pitScale(this.bbox);
-                texture = ancestor.material.Textures[l_ELEVATION][0];
+                texture = ancestor.materials[RendererConstant.FINAL].Textures[l_ELEVATION][0];
                 var image = texture.image;
 
                 minMax.y = ancestor.bbox.maxCarto.altitude;
@@ -228,7 +290,11 @@ define('Globe/TileMesh', [
             this.currentElevation = elevation.level;
         }
 
-        this.material.setTexture(texture, l_ELEVATION, 0, pitScale);
+        this.materials[RendererConstant.FINAL].setTexture(texture, l_ELEVATION, 0, pitScale);
+
+        this.materials[RendererConstant.DEPTH].uniforms.nbTextures.value = this.materials[RendererConstant.FINAL].nbTextures[0];
+        this.materials[RendererConstant.ID].uniforms.nbTextures.value = this.materials[RendererConstant.FINAL].nbTextures[0];
+
 
         this.loadingCheck();
     };
@@ -275,7 +341,7 @@ define('Globe/TileMesh', [
                 return this.currentElevation < this.levelElevation ;
             }
         } else if(id === l_COLOR) {
-            return this.material.getLevelLayerColor(l_COLOR) < this.level + this.material.getDelta();
+            return this.materials[RendererConstant.FINAL].getLevelLayerColor(l_COLOR) < this.level + this.materials[RendererConstant.FINAL].getDelta();
         }
 
         return false;
@@ -325,7 +391,7 @@ define('Globe/TileMesh', [
     };
 
     TileMesh.prototype.allTexturesAreLoaded = function(){
-        return this.texturesNeeded === this.material.nbLoadedTextures();
+        return this.texturesNeeded === this.materials[RendererConstant.FINAL].nbLoadedTextures();
     };
 
     TileMesh.prototype.loadingCheck = function() {
@@ -357,9 +423,9 @@ define('Globe/TileMesh', [
         {
 
             this.layersColor.splice(id,1);
-            var nbTextures = this.material.nbLoadedTextures();
-            this.material.removeLayerColor(id);
-            this.texturesNeeded -= nbTextures - this.material.nbLoadedTextures();
+            var nbTextures = this.materials[RendererConstant.FINAL].nbLoadedTextures();
+            this.materials[RendererConstant.FINAL].removeLayerColor(id);
+            this.texturesNeeded -= nbTextures - this.materials[RendererConstant.FINAL].nbLoadedTextures();
         }
 
     };
@@ -395,7 +461,7 @@ define('Globe/TileMesh', [
             sequenceMaterial[l] = index ;
         }
 
-        this.material.setSequence(sequenceMaterial);
+        this.materials[RendererConstant.FINAL].setSequence(sequenceMaterial);
     };
 
     return TileMesh;

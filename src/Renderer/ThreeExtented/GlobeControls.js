@@ -69,10 +69,6 @@ THREE.GlobeControls = function(object, domElement, engine) {
     this.ptScreenClick = new THREE.Vector2();
     var pickOnGlobe = new THREE.Vector3();
     var pickOnGlobeNorm = new THREE.Vector3();
-
-    var selectMode = false;
-    //selectMode = true;
-
     var rayonPointGlobe = engine.size;
     var raycaster = new THREE.Raycaster();
 
@@ -91,8 +87,9 @@ THREE.GlobeControls = function(object, domElement, engine) {
         RIGHT: 39,
         BOTTOM: 40,
         SPACE: 32,
+        SHIFT: 16,
         CTRL: 17,
-        SHIFT: 16
+        S: 83
     };
 
     // Mouse buttons
@@ -106,6 +103,9 @@ THREE.GlobeControls = function(object, domElement, engine) {
 
     this.keyCtrl = false;
     this.keyShift = false;
+    this.keyS = false;
+
+
     ////////////
     // internals
 
@@ -621,6 +621,15 @@ THREE.GlobeControls = function(object, domElement, engine) {
                 state = STATE.ORBIT;
             } else if (scope.keyShift) {
                 state = STATE.PANORAMIC;
+            }
+            else if (scope.keyS)
+            {
+
+                // If the key 'S' is down, the engine selects node under mouse
+                var mouse = new THREE.Vector2(event.clientX - event.target.offsetLeft,event.clientY - event.target.offsetTop);
+                scope.engine.selectNodeAt(mouse);
+                scope.engine.update();
+
             } else {
 
                 state = STATE.MOVE_GLOBE;
@@ -630,7 +639,7 @@ THREE.GlobeControls = function(object, domElement, engine) {
                 scope.ptScreenClick.x = event.clientX - event.target.offsetLeft;
                 scope.ptScreenClick.y = event.clientY - event.target.offsetTop;
 
-                var point = scope.engine.getPickingPositionFromDepth(scope.ptScreenClick,selectMode ? scope.engine.scene : undefined);
+                var point = scope.engine.getPickingPositionFromDepth(scope.ptScreenClick);
 
                 scope.engine.renderScene();
 
@@ -820,6 +829,8 @@ THREE.GlobeControls = function(object, domElement, engine) {
 
         scope.keyCtrl = false;
         scope.keyShift = false;
+        scope.keyS = false;
+
     }
 
     function onKeyDown(event) {
@@ -862,6 +873,10 @@ THREE.GlobeControls = function(object, domElement, engine) {
             case scope.keys.SHIFT:
                 //computeVectorUp();
                 scope.keyShift = true;
+                break;
+            case scope.keys.S:
+                // WARNING loop !!!
+                scope.keyS = true;
                 break;
 
         }
@@ -1000,6 +1015,7 @@ THREE.GlobeControls = function(object, domElement, engine) {
         state = STATE.NONE;
         scope.keyCtrl = false;
         scope.keyShift = false;
+        scope.keyS = false;
 
     }
 
