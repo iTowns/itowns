@@ -18,7 +18,10 @@ IoDriver_JSON.prototype = Object.create(IoDriver.prototype);
 IoDriver_JSON.prototype.constructor = IoDriver_JSON;
 
 IoDriver_JSON.prototype.read = function(url) {
-    return fetch(url).then(function(response) {
+    return fetch(url).then(response => {
+        if (response.status < 200 || response.status >= 300) {
+            throw new Error(`Error loading ${url}: status ${response.status}`);
+        }
         return response.json();
     });
 };
