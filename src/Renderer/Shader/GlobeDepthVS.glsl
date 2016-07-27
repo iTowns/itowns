@@ -37,7 +37,8 @@ void main() {
 
         if(nbTextures[0] > 0)
         {
-            vec2    vVv = vec2(uv_wgs84.x*pitScale_L00[0].z + pitScale_L00[0].x,uv_wgs84.y*pitScale_L00[0].z + pitScale_L00[0].y);
+
+            vec2    vVv = vec2(uv_wgs84.x * pitScale_L00[0].z + pitScale_L00[0].x,(1.0 - uv_wgs84.y) * pitScale_L00[0].z + pitScale_L00[0].y);
 
             float   dv  = max(texture2D( dTextures_00[0], vVv ).w, 0.);
 
