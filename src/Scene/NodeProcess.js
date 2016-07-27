@@ -198,8 +198,7 @@ function updateNodeImagery(quadtree, node, colorLayers) {
 
         if (layer.tileInsideLimit(node, layer)) {
             var args = {
-                layer: layer,
-                destination: 1
+                layer: layer
             };
             promises.push(quadtree.interCommand.request(args, node, refinementCommandCancellationFn));
         }
@@ -233,8 +232,7 @@ function updateNodeElevation(quadtree, node, elevationLayers) {
 
             if (layer.tileInsideLimit(tileNotDownscaled, layer)) {
                 var args = {
-                    layer: layer,
-                    destination: 0
+                    layer: layer
                 };
 
                 return quadtree.interCommand.request(args, tileNotDownscaled, refinementCommandCancellationFn).then(function(terrain) {

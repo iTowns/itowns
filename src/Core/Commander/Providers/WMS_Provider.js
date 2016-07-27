@@ -67,7 +67,7 @@ WMS_Provider.prototype.preprocessDataLayer = function(layer){
     if(!layer.name)
         throw new Error('layerName is required.');
 
-    layer.format = defaultValue(layer.options.mimeType, "image/png"),
+    layer.format = defaultValue(layer.options.mimetype, "image/png"),
     layer.crs = defaultValue(layer.projection, "EPSG:4326"),
     layer.width = defaultValue(layer.heightMapWidth, 256),
     layer.version = defaultValue(layer.version, "1.3.0"),
@@ -138,8 +138,8 @@ WMS_Provider.prototype.getColorTexture = function(tile, layer) {
 
 };
 
-WMS_Provider.prototype.getElevationTexture = function(bbox, layer) {
-    var url = this.url(bbox,layer);
+WMS_Provider.prototype.getXbilTexture = function(tile, layer) {
+    var url = this.url(tile.bbox, layer);
 
     // TODO: this is not optimal: if called again before the IoDriver resolves, it'll load the XBIL again
     var textureCache = this.cache.getRessource(url);
@@ -180,26 +180,26 @@ WMS_Provider.prototype.getElevationTexture = function(bbox, layer) {
     }.bind(this));
 };
 
-
-WMS_Provider.prototype.executeCommand = function(command){
-    //var service;
-    var destination = command.paramsFunction.destination;
+WMS_Provider.prototype.executeCommand = function(command) {
+    var layer = command.paramsFunction.layer;
     var tile = command.requester;
 
-    if(destination === 1) {
-        return this.getColorTexture(tile, command.paramsFunction.layer).then(function(result) {
+    var supportedFormats = {
+        'image/png':           this.getColorTexture.bind(this),
+        'image/jpg':           this.getColorTexture.bind(this),
+        'image/jpeg':          this.getColorTexture.bind(this),
+        'image/x-bil;bits=32': this.getXbilTexture.bind(this)
+    };
+
+    var func = supportedFormats[layer.format];
+    if (func) {
+        return func(tile, layer).then(function(result) {
             return command.resolve(result);
         });
+    } else {
+        return Promise.reject(new Error('Unsupported mimetype ' + layer.format));
     }
-    else if (destination === 0) {
-        return this.getElevationTexture(tile.bbox, command.paramsFunction.layer).then(function(terrain) {
-            return command.resolve(terrain);
-        });
-    }
-
 };
-
-
 
 
 /**
