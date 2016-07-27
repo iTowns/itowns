@@ -133,26 +133,30 @@ WMTS_Provider.prototype.getXbilTexture = function(tile, layer) {
     // }
     // -> bug #74
 
-    return this._IoDriver.read(url).then(function(result) {
-        if (result !== undefined) {
-            //TODO USE CACHE HERE ???
-            result.texture = this.getTextureFloat(result.floatArray);
-            result.texture.generateMipmaps = false;
-            result.texture.magFilter = THREE.LinearFilter;
-            result.texture.minFilter = THREE.LinearFilter;
-            // In RGBA elevation texture LinearFilter give some errors with nodata value.
-            // need to rewrite sample function in shader
-            //result.texture.magFilter = THREE.NearestFilter;
-            //result.texture.minFilter = THREE.NearestFilter;
-            this.cache.addRessource(url, result);
+    return this._IoDriver.read(url).then(result => {
+        //TODO USE CACHE HERE ???
 
-            return result;
-        } else {
-            var texture = -1;
-            this.cache.addRessource(url, texture);
-            return texture;
-        }
-    }.bind(this));
+        result.texture = this.getTextureFloat(result.floatArray);
+        result.texture.generateMipmaps = false;
+        result.texture.magFilter = THREE.LinearFilter;
+        result.texture.minFilter = THREE.LinearFilter;
+
+        // In RGBA elevation texture LinearFilter give some errors with nodata value.
+        // need to rewrite sample function in shader
+        //result.texture.magFilter = THREE.NearestFilter;
+        //result.texture.minFilter = THREE.NearestFilter;
+
+        // TODO ATTENTION verifier le context
+        result.level = coWMTS.zoom;
+
+        this.cache.addRessource(url, result);
+
+        return result;
+    }).catch(() => {
+        var texture = -1;
+        this.cache.addRessource(url, texture);
+        return texture;
+    });
 };
 
 /**

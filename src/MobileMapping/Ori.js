@@ -18,26 +18,15 @@ var Ori = {
     init: function(options) {
         var baseUrl = options.cam; // PanoramicProvider.getMetaDataSensorURL();
 
-        return new Promise(function(resolve /*, reject*/ ) {
-            var request = new XMLHttpRequest();
-            request.open('GET', baseUrl, true);
-
-            request.onload = function() {
-                if (request.status >= 200 && request.status < 400) {
-                    var data = JSON.parse(request.responseText);
-                    this.handleDBData(data);
-                    resolve(this.initiated);
-                } else {
-                    //  console.log("error loading MetaDataSensorURL");
-                }
-            };
-
-            request.onerror = function() {
-                //console.log("error loading MetaDataSensorURL");
-            };
-
-            request.send();
-        }.bind(this));
+        return fetch(baseUrl).then(response => {
+            if (response.status < 200 || response.status >= 300) {
+                throw new Error(`Error loading ${baseUrl}: status ${response.status}`);
+            }
+            return response.json();
+        }).then(data => {
+            this.handleDBData(data);
+            return this.initiated;
+        });
     },
 
     handleDBData: function(data) {
