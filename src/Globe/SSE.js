@@ -4,7 +4,7 @@
  * Description: Calcul screen space error d'un NodeMesh
  */
 
-var NodeProcess = require('NodeProcess');
+import NodeProcess from 'NodeProcess';
 
 function SSE() {
     //Constructor
@@ -15,6 +15,6 @@ function SSE() {
 SSE.prototype = new NodeProcess();
 
 
-module.exports = {
-    SSE: SSE
+export {
+    SSE
 };

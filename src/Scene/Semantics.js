@@ -4,7 +4,7 @@
  * Description: Description sémantique du Node
  */
 
-var Description = require('Description');
+import Description from 'Description';
 
 function Semantics() {
     //Constructor
@@ -15,6 +15,6 @@ function Semantics() {
 Semantics.prototype = new Description();
 
 
-module.exports = {
-    Semantics: Semantics
+export {
+    Semantics
 };

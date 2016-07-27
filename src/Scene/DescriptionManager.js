@@ -20,6 +20,6 @@ DescriptionManager.prototype.descriptionToContent = function() {
 
 
 
-module.exports = {
-    DescriptionManager: DescriptionManager
+export {
+    DescriptionManager
 };

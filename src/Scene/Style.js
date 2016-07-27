@@ -4,7 +4,7 @@
  * Description: Description du style du Node. Le style et contenue sont les deux éléments permettant de convertir le Node pour le moteur graphique.
  */
 
-var Description = require('Description');
+import Description from 'Description';
 
 function Style() {
     //Constructor
@@ -17,6 +17,6 @@ function Style() {
 Style.prototype = new Description();
 
 
-module.exports = {
-    Style: Style
+export {
+    Style
 };

@@ -11,6 +11,6 @@ function Box() {
 
 
 
-module.exports = {
-    Box: Box
+export {
+    Box
 };

@@ -29,6 +29,6 @@ Event.prototype.xmlToEvents = function() {
 
 
 
-module.exports = {
-    Event: Event
+export {
+    Event
 };

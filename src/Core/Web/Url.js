@@ -13,6 +13,6 @@ function Url() {
 
 
 
-module.exports = {
-    Url: Url
+export {
+    Url
 };

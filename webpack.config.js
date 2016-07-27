@@ -28,6 +28,14 @@ module.exports = {
     ],
     loaders: [
       {
+        test: /\.js$/,
+        include: [
+          path.resolve(__dirname, 'src'),
+          path.resolve(__dirname, 'test')
+        ],
+        loader: 'babel'
+      },
+       {
         test: /\.glsl$/,
         include: [
           path.resolve(__dirname, 'src'),
