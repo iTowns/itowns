@@ -35,11 +35,9 @@ IoDriver_Image.prototype.read = function(url) {
 
 
         image.addEventListener('error', function( /*event*/ ) {
-
-            this.src = '';
+            // TODO: real error managament
             resolve(undefined);
-
-        }.bind(this), false);
+        }, false);
 
         image.crossOrigin = '';
         image.src = url;
