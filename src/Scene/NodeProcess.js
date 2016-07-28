@@ -159,6 +159,7 @@ function refinementCommandCancellationFn(cmd) {
 
 NodeProcess.prototype.refineNodeLayers = function(node, camera, params) {
     // find downscaled layer
+    // TODO: update color layer at a time
     var id = node.getDownScaledLayer();
 
     if (id !== undefined) {
@@ -190,6 +191,30 @@ NodeProcess.prototype.hideNodeChildren = function(node) {
     }
 };
 
+/**
+ * Return an ancestor of node if it has a texture for this layer
+ * that matches its level (not downsampled).
+ * Returns null otherwise
+ */
+function findAncestorWithValidTextureForLayer(node, layerId) {
+    var parent = node.parent;
+    if (parent && parent.material.getLayerTextureOffset) {
+        var slot = parent.material.getLayerTextureOffset(layerId);
+        if (slot < 0) {
+            return null;
+        } else {
+            var level = parent.material.getLevelLayerColor(1, slot);
+            if (level == parent.level) {
+                return parent;
+            } else {
+                return findAncestorWithValidTextureForLayer(parent, layerId);
+            }
+        }
+    } else {
+        return null;
+    }
+}
+
 function updateNodeImagery(quadtree, node, colorLayers) {
     var promises = [];
 
@@ -200,19 +225,48 @@ function updateNodeImagery(quadtree, node, colorLayers) {
             var args = {
                 layer: layer
             };
-            promises.push(quadtree.interCommand.request(args, node, refinementCommandCancellationFn));
+
+            var slot = node.material.getLayerTextureOffset(layer.id);
+            let ancestor = null;
+
+            // if this tile has no texture (level == -1), try use one from an ancestor
+            if (0 <= slot &&
+                node.material.getLevelLayerColor(1, slot) === -1) {
+                ancestor = findAncestorWithValidTextureForLayer(node, layer.id);
+                args.ancestor = ancestor;
+            }
+
+            promises.push(quadtree.interCommand.request(args, node, refinementCommandCancellationFn).then(
+                function(result) {
+                    let level = ancestor ? ancestor.level : node.level;
+
+                    // Assign .level to texture
+                    if (Array.isArray(result)) {
+                        for (var j=0; j<result.length; j++) {
+                            result[j].texture.level = level;
+                        }
+                    } else {
+                        result.texture.level = level;
+                    }
+                    return result;
+                }
+            ));
         }
     }
 
     return Promise.all(promises).then(function(colorTextures) {
+        // Make sure the node hasn't been destroyed
+        if (node.material === null) {
+            return;
+        }
         var textures = [];
         for (var j = 0; j < colorTextures.length; j++) {
             textures = textures.concat(colorTextures[j]);
         }
         node.setTexturesLayer(textures, 1);
         return node;
-    }, function() {
-        // 1 command has been canceled, no big deal, we just need to catch it
+    }).catch(function() {
+
     });
 }
 
@@ -236,12 +290,21 @@ function updateNodeElevation(quadtree, node, elevationLayers) {
                 };
 
                 return quadtree.interCommand.request(args, tileNotDownscaled, refinementCommandCancellationFn).then(function(terrain) {
+                    if (tileNotDownscaled.material === null) {
+                        return;
+                    }
+
+                    if (terrain !== -1 && terrain !== -2){
+                        terrain.level = tileNotDownscaled.level;
+                    }
+
                     tileNotDownscaled.setTextureElevation(terrain);
-                    if (tileNotDownscaled != node) {
-                        node.setTextureElevation(-2);
+                    if (tileNotDownscaled != node && node.material !== null) {
+                        node.setTextureElevation(2);
                     }
                     return node;
-                }).catch(function() {
+                })
+                .catch(function(/*err*/) {
                     // Command has been canceled, no big deal, we just need to catch it
                 });
             }

@@ -385,13 +385,13 @@ TileMesh.prototype.removeLayerColor = function(idLayer) {
 };
 
 TileMesh.prototype.changeSequenceLayers = function(sequence) {
-
-    if (this.materials[RendererConstant.FINAL].layerIdToIndex.length < 2)
+    var layerCount = this.materials[RendererConstant.FINAL].layerIdToIndex.length;
+    if (layerCount < 2)
         return;
 
     var newSequence, layer;
 
-    if (sequence.length !== this.layersColor.length) {
+    if (sequence.length !== layerCount) {
         newSequence = sequence.slice(0);
         var max = newSequence.length;
 
@@ -407,7 +407,6 @@ TileMesh.prototype.changeSequenceLayers = function(sequence) {
 
     for (var l = 0; l < newSequence.length; l++) {
         var index = this.getIndexLayerColor(newSequence[l]);
-        //this.layersColor[index].sequence = l;
         sequenceMaterial[l] = index;
     }
 
