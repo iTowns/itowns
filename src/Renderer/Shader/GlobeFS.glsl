@@ -24,7 +24,6 @@ uniform int         layerSequence[8];
 uniform int         nbTextures[8];
 
 uniform float       distanceFog;
-uniform int         RTC;
 uniform int         selected;
 uniform int         layerVisible;
 
@@ -147,18 +146,19 @@ void main() {
 
         }
 
-        if (validTextureCount > 0) {
+        // No texture color
+        if (validTextureCount == 0 ){
 
-            if(selected == 1){
-                diffuseColor = mix(vec4( 1.0, 0.3, 0.0, 1.0), diffuseColor, 0.5 );
-            }
-
-            gl_FragColor = RTC == 1 ? mix(fogColor, diffuseColor, fog ) : diffuseColor;
-
-
-        } else {
-            gl_FragColor = vec4( 0.04, 0.23, 0.35, 1.0);
+            diffuseColor = vec4( 0.04, 0.23, 0.35, 1.0);
         }
+
+        // Selected
+        if(selected == 1){
+            diffuseColor = mix(vec4( 1.0, 0.3, 0.0, 1.0), diffuseColor, 0.5 );
+        }
+
+        // Fog
+        gl_FragColor = mix(fogColor, diffuseColor, fog );
 
         gl_FragColor.a = 1.0;
 
