@@ -27,13 +27,13 @@ function commandQueuePriorityFunction(cmd) {
         return 10000;
     } else {
         if (!node.loaded) {
-            return 1000;
+            return 1000 + node.level;
         } else {
             // TODO: this magic value comes from NodeProcess
             if (6.0 < node.sse) {
-                return 100;
+                return 100 + node.level;
             } else {
-                return 10;
+                return 10 + node.level;
             }
         }
     }
