@@ -233,7 +233,7 @@ function c3DEngine(scene, positionCamera, viewerDiv, debugMode, gLDebug) {
 
     this.controls.constraint.target = origin;
     this.controls.damping = 0.1;
-    this.controls.enablePan = false;
+    this.controls.enablePan = true;
     this.controls.rotateSpeed = 0.8;
     this.controls.zoomSpeed = 1.0;
     this.controls.minDistance = 30;

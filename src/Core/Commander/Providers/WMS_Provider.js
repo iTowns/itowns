@@ -136,7 +136,6 @@ WMS_Provider.prototype.getColorTexture = function(tile, layer, bbox, pitch) {
         result.texture = null;
         return result;
     });
-
 };
 
 WMS_Provider.prototype.getXbilTexture = function(tile, layer, bbox, pitch) {
@@ -199,7 +198,7 @@ WMS_Provider.prototype.executeCommand = function(command) {
     var func = supportedFormats[layer.format];
     if (func) {
         var pitch = ancestor ?
-            this.projection.WMS_WGS84Parent(tile.bbox, ancestor.bbox) :
+            this.projection.childBBtoOffsetScale(tile.crs, tile.bbox, ancestor.bbox) :
             new THREE.Vector3(0, 0, 1);
 
         var bbox = ancestor ?

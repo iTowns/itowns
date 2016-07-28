@@ -131,7 +131,7 @@ Projection.prototype.WMTS_WGS84Parent = function(cWMTS, levelParent, pitch) {
 
 };
 
-Projection.prototype.WMS_WGS84Parent = function(bbox, bboxParent) {
+Projection.prototype.childBBtoOffsetScaleWGS84 = function(bbox, bboxParent) {
     var scale = bbox.dimension.x / bboxParent.dimension.x;
 
     var x =
@@ -141,10 +141,34 @@ Projection.prototype.WMS_WGS84Parent = function(bbox, bboxParent) {
         Math.abs(
             bbox.minCarto.latitude + bbox.dimension.y -
             (bboxParent.minCarto.latitude + bboxParent.dimension.y)) /
-        bboxParent.dimension.x;
+        bboxParent.dimension.y;
 
     return new THREE.Vector3(x, y, scale);
 };
+
+Projection.prototype.childBBtoOffsetScaleEPSG3946 = function(bbox, bboxParent) {
+    var scale = bbox.dimension.x / bboxParent.dimension.x;
+
+    var x =
+        (bbox.minCarto.longitude - bboxParent.minCarto.longitude) /
+        bboxParent.dimension.x;
+    var y =
+        (bbox.minCarto.latitude - bboxParent.minCarto.latitude) /
+        bboxParent.dimension.y;
+
+    return new THREE.Vector3(x, y, scale);
+};
+
+Projection.prototype.childBBtoOffsetScale = function(crs, bbox, bboxParent) {
+    if (crs === 'wgs84') {
+        return this.childBBtoOffsetScaleWGS84(bbox, bboxParent);
+    } else if (crs === 'EPSG:3946') {
+        return this.childBBtoOffsetScaleWGS84(bbox, bboxParent);
+    } else {
+        throw new Error('Unsupported CRS ' + crs);
+    }
+};
+
 
 Projection.prototype.WGS84toWMTS = function(bbox) {
 

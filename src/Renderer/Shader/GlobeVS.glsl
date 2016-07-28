@@ -32,6 +32,17 @@ highp float decode32(highp vec4 rgba) {
     return Result;
 }
 
+vec2    pitUV(vec2 uvIn, vec3 pit)
+{
+    vec2  uv;
+    uv.x = uvIn.x* pit.z + pit.x;
+    uv.y = 1.0 -( (1.0 - uvIn.y) * pit.z + pit.y);
+
+    return uv;
+}
+
+
+
 //#define RGBA_ELEVATION
 
 void main() {
@@ -44,10 +55,7 @@ void main() {
         if(nbTextures[0] > 0)
         {
 
-            vec2    vVv = vec2(
-                vUv_WGS84.x * pitScale_L00[0].z + pitScale_L00[0].x,
-                (1.0 - vUv_WGS84.y) * pitScale_L00[0].z + pitScale_L00[0].y);
-
+            vec2    vVv = pitUV(vUv_WGS84, pitScale_L00[0]);
 
             #ifdef RGBA_ELEVATION
                 vec4 rgba = texture2D( dTextures_00[0], vVv ) * 255.0;
@@ -67,7 +75,7 @@ void main() {
 
             #endif
 
-            float dv = texture2D( dTextures_00[0], vUv_WGS84).r * 1000.0;
+            float dv = texture2D( dTextures_00[0], vVv).r * 255.0;
             vNormal     = normal;
             vPosition   = vec4( position +  vNormal  * dv ,1.0 );
         }

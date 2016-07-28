@@ -39,7 +39,10 @@ and open the template in the editor.
         // iTowns namespace defined here
         var viewerDiv = document.getElementById("viewerDiv");
 
-        var scene = itowns.viewer.createScenePlane(initCenter, viewerDiv);
+        var scene = itowns.viewer.createScenePlane(
+            initCenter,
+            viewerDiv,
+            [1837816.94334, 1847692.32501, 5170036.4587, 5178412.82698]);
 
         itowns.viewer.addImageryLayer({
             url       : "https://download.data.grandlyon.com/wms/grandlyon",
@@ -49,15 +52,18 @@ and open the template in the editor.
             name      : 'Ortho2009_vue_ensemble_16cm_CC46',
             style      : "",
             projection : "EPSG:3946",
-            transparent : true,
+            transparent : false,
             // min long, min lat, max long, max lat
             bbox      : [1837816.94334, 5170036.4587, 1847692.32501, 5178412.82698],
             featureInfoMimeType : "",
             dateTime  : "",
             heightMapWidth : 256,
             waterMask      : false,
+            updateStrategy: {
+                type: 3
+            },
             options: {
-                mimetype  : "image/png",
+                mimetype  : "image/jpeg",
                 tileMatrixSet: 'WGS84G'
             }
         });
@@ -70,18 +76,22 @@ and open the template in the editor.
             name      : 'MNT2012_Altitude_10m_CC46',
             style      : "",
             projection : "EPSG:3946",
-            transparent : true,
+            transparent : false,
             // min long, min lat, max long, max lat
             bbox      : [1837816.94334, 5170036.4587, 1847692.32501, 5178412.82698],
             featureInfoMimeType : "",
             dateTime  : "",
             heightMapWidth : 256,
             waterMask      : false,
+            updateStrategy: {
+                type: 3
+            },
             options: {
-                mimetype  : "image/png",
+                mimetype  : "image/jpeg",
                 tileMatrixSet: 'WGS84G'
             }
         });
+
 
         itowns.viewer.update();
 
