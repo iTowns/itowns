@@ -19,9 +19,10 @@ function ManagerCommands(scene) {
         comparator: function(a, b) {
             var cmp = b.priority - a.priority;
             // Prioritize recent commands
-            if (cmp == 0) {
+            if (cmp === 0) {
                 return b.timestamp - a.timestamp;
             }
+            return cmp;
         }
     });
 
