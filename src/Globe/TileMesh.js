@@ -81,7 +81,6 @@ function TileMesh(params, builder, geometryCache) {
 
     // Layer
     this.currentElevation = -1;
-    this.layersColor = [];
     this.setDisplayed(false);
 
 }
@@ -136,10 +135,6 @@ TileMesh.prototype.getUuid = function(uuid) {
 
 TileMesh.prototype.setColorLayerParameters = function(paramsTextureColor) {
     this.materials[RendererConstant.FINAL].setParam(paramsTextureColor);
-
-    for (var l = 0; l < paramsTextureColor.length; l++) {
-        this.layersColor.push(paramsTextureColor[l].idLayer);
-    }
 };
 /**
  *
@@ -380,34 +375,18 @@ TileMesh.prototype.loadingCheck = function() {
 };
 
 TileMesh.prototype.getIndexLayerColor = function(idLayer) {
-
-    // for (var l = 0; l < this.layersColor.length; l++)
-    //     if(this.layersColor[l] === idLayer)
-    //         return l;
-
-    // return -1;
-
-    return this.layersColor.indexOf(idLayer);
-
+    return this.materials[RendererConstant.FINAL].layerIdToIndex[idLayer];
 };
 
 TileMesh.prototype.removeLayerColor = function(idLayer) {
-
-    var id = this.getIndexLayerColor(idLayer);
-
-    if (id > -1) {
-
-        this.layersColor.splice(id, 1);
-        var nbTextures = this.materials[RendererConstant.FINAL].nbLoadedTextures();
-        this.materials[RendererConstant.FINAL].removeLayerColor(id);
-        this.texturesNeeded -= nbTextures - this.materials[RendererConstant.FINAL].nbLoadedTextures();
-    }
-
+    var nbTextures = this.materials[RendererConstant.FINAL].nbLoadedTextures();
+    this.materials[RendererConstant.FINAL].removeLayerColor(idLayer);
+    this.texturesNeeded -= nbTextures - this.materials[RendererConstant.FINAL].nbLoadedTextures();
 };
 
 TileMesh.prototype.changeSequenceLayers = function(sequence) {
 
-    if (this.layersColor.length < 2)
+    if (this.materials[RendererConstant.FINAL].layerIdToIndex.length < 2)
         return;
 
     var newSequence, layer;

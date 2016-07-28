@@ -67,7 +67,6 @@ var LayeredMaterial = function(id) {
     this.Textures = [];
     this.pitScale = [];
     this.nbTextures = [];
-    this.nColorLayer = 1;
 
     // Uniform three js needs no empty array
     for (var l = 0; l < nbLayer; l++) {
@@ -107,7 +106,7 @@ var LayeredMaterial = function(id) {
 
     this.uniforms.nColorLayer = {
         type: "i",
-        value: this.nColorLayer
+        value: 1
     };
 
     // PIT n Textures
@@ -146,6 +145,7 @@ var LayeredMaterial = function(id) {
     this.wireframe = false;
     //this.wireframe = true;
 
+    this.layerIdToIndex = {};
 };
 
 LayeredMaterial.prototype = Object.create(BasicMaterial.prototype);
@@ -188,13 +188,15 @@ LayeredMaterial.prototype.setSequence = function(newSequence) {
 
 };
 
-LayeredMaterial.prototype.removeLayerColor = function(nIdLayer) {
+LayeredMaterial.prototype.removeLayerColor = function(idLayer) {
+    var layerIndex = this.layerIdToIndex[idLayer];
+    if (!layerIndex) return;
 
-    var startIdTexture = this.paramLayers[nIdLayer].x;
-    var nbTextures = this.getNbColorTexturesLayer(nIdLayer);
+    var startIdTexture = this.paramLayers[layerIndex].x;
+    var nbTextures = this.getNbColorTexturesLayer(layerIndex);
 
-    this.paramLayers.splice(nIdLayer, 1);
-    this.paramBLayers.splice(nIdLayer, 1);
+    this.paramLayers.splice(layerIndex, 1);
+    this.paramBLayers.splice(layerIndex, 1);
     this.paramLayers.push(vector4);
     this.paramBLayers.push(vector2);
 
@@ -204,10 +206,9 @@ LayeredMaterial.prototype.removeLayerColor = function(nIdLayer) {
     }
 
     this.Textures[1].splice(startIdTexture, nbTextures);
-    this.nColorLayer--;
     this.uniforms.nColorLayer.value--;
 
-    for (var j = nIdLayer, mx = this.paramLayers.length; j < mx; j++)
+    for (var j = layerIndex, mx = this.paramLayers.length; j < mx; j++)
         this.paramLayers[j].x -= nbTextures;
 
     // Rebuild sequence
@@ -215,18 +216,18 @@ LayeredMaterial.prototype.removeLayerColor = function(nIdLayer) {
     var limit = false;
 
     for (var l = 0; l < this.uniforms.nColorLayer.value; l++) {
-        if (limit || sequence[l] === nIdLayer) {
+        if (limit || sequence[l] === layerIndex) {
             limit = true;
             sequence[l] = sequence[l + 1];
         }
 
-        if (sequence[l] > nIdLayer)
+        if (sequence[l] > layerIndex)
             sequence[l]--;
     }
 
     // fill the end's sequence
     sequence[this.uniforms.nColorLayer.value] = this.uniforms.nColorLayer.value;
-
+    this.layerIdToIndex.idLayer = undefined;
 };
 
 LayeredMaterial.prototype.setTexture = function(texture, layer, slot, pitScale) {
@@ -254,15 +255,25 @@ LayeredMaterial.prototype.getIdLayer = function(slot) {
     }
 };
 
-LayeredMaterial.prototype.getNbColorTexturesLayer = function(idLayer) {
-    return (this.paramLayers[idLayer + 1].x || this.nbTextures[1]) - (this.paramLayers[idLayer].x || 0);
+LayeredMaterial.prototype.getNbColorTexturesLayer = function(layerIndex) {
+    return (this.paramLayers[layerIndex + 1].x || this.nbTextures[1]) - (this.paramLayers[layerIndex].x || 0);
 };
 
 LayeredMaterial.prototype.setParam = function(param) {
     this.uniforms.nColorLayer.value = param.length;
     for (var l = 0; l < param.length; l++) {
+        this.layerIdToIndex[param[l].idLayer] = l;
         this.paramLayers[l] = new THREE.Vector4(param[l].layerTexturesOffset, param[l].tileMT === 'PM' ? 1 : 0, param[l].visible, param[l].opacity);
         this.paramBLayers[l] = new THREE.Vector2(param[l].fx, 0.0);
+    }
+};
+
+LayeredMaterial.prototype.getLayerTextureOffset = function(layer) {
+    var index = this.layerIdToIndex[layer];
+    if (index !== undefined) {
+        return this.paramLayers[index].x;
+    } else {
+        return -1;
     }
 };
 
@@ -307,9 +318,9 @@ LayeredMaterial.prototype.setNbLayersColor = function(n) {
     this.uniforms.nColorLayer.value = n;
 };
 
-LayeredMaterial.prototype.getLevelLayerColor = function(id) {
+LayeredMaterial.prototype.getLevelLayerColor = function(id, slot) {
 
-    var level = this.Textures[id][0].level;
+    var level = this.Textures[id][slot || 0].level;
 
     return level;
 };
