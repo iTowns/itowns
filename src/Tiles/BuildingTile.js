@@ -26,19 +26,30 @@ function BuildingTile(params) {
     // TODO: geometric error doesn't really make sense in our case
 
     this.geometry = params.geometry;
-    this.geometry.translate(this.box3D.min.x, this.box3D.min.y, this.box3D.min.z);
-    this.geometry.computeBoundingSphere();
     this.centerSphere = this.geometry.boundingSphere.center;
 
     this.material = new BasicMaterial(new THREE.Color(0.8, 0.8, 0.8));
-
-    this.updateGeometry = true;
-    this.cullable = true;
 }
 
 BuildingTile.prototype = Object.create(NodeMesh.prototype);
 
 BuildingTile.prototype.constructor = BuildingTile;
+
+BuildingTile.prototype.dispose = function() {
+    // TODO à mettre dans node mesh
+    this.material.dispose();
+    this.geometry.dispose();
+    this.geometry = null;
+    this.material = null;
+};
+
+BuildingTile.prototype.disposeChildren = function() {
+    while (this.children.length > 0) {
+        var child = this.children[0];
+        this.remove(child);
+        child.dispose();
+    }
+};
 
 BuildingTile.prototype.enableRTC = function(enable) {
     this.material.enableRTC(enable);

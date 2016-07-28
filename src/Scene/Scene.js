@@ -126,7 +126,7 @@ Scene.prototype.quadTreeRequest = function(quadtree, process) {
             this.browserScene.browse(this.layers[1].node,this.currentCamera(), this.layers[1].process, this.map.layersConfiguration, SUBDIVISE);  // TODO: tmp
             if (this.managerCommand.isFree()) {
                 this.browserScene.browse(quadtree, this.currentCamera(), process, this.map.layersConfiguration, CLEAN)
-                //this.browserScene.browse(this.layers[1].node, this.currentCamera(), this.layers[1].process, this.map.layersConfiguration, CLEAN)  //TODO: temp
+                this.browserScene.browse(this.layers[1].node, this.currentCamera(), this.layers[1].process, this.map.layersConfiguration, CLEAN)  //TODO: temp
                 this.viewerDiv.dispatchEvent(event);
 
             }

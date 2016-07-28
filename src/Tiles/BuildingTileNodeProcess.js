@@ -67,9 +67,12 @@ BuildingTileNodeProcess.prototype.subdivideNode = function(node, camera, params)
                 bbox: bboxes[i].bbox,
                 bboxId: bboxes[i].id
             };
-            var quadtree = params.tree;
 
-            quadtree.interCommand.request(args, node);
+            params.tree.interCommand.request(args, node).then(function() {
+                if(node.childrenBboxes.length === node.children.length) {
+                    node.pendingSubdivision = false;
+                }
+            });
         }
     }
 };
