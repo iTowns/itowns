@@ -41,32 +41,43 @@ BuildingProvider.prototype.executeCommand = function(command) {
         return when(-2);
     }
 
+    var createTile = function(data) {
+        var geoms = data.geometries;
+        var bboxes = data.bboxes;
+
+        var params = {
+            id: bboxId,
+            bbox: bbox,
+            level: parent.level + 1,
+            childrenBboxes: bboxes,
+            geometry: geoms
+        };
+
+        var tile = new command.type(params);
+        parent.add(tile);
+
+        return tile;
+    };
+
     var url = this.url(bboxId);
     var cachedTile = this.cache.getRessource(url);
     if (cachedTile !== undefined) {
-        return when(cachedTile);
+        var tile = createTile(cachedTile);
+        return command.resolve(tile);
     }
 
     return this._IoDriver.read(url).then(function(geoJSON) {
         var result = {};
         result.bboxes = geoJSON.tiles;
 
-        result.geometries = [];
         var geoms = GeoJSONToThree.convert(geoJSON.geometries);
+        geoms.geometries.translate(bbox[0], bbox[1], bbox[2]);
+        geoms.geometries.computeBoundingSphere();
         result.geometries = geoms.geometries;
 
-        var params = {
-            id: bboxId,
-            bbox: bbox,
-            level: parent.level + 1,
-            childrenBboxes: geoJSON.tiles,
-            geometry: geoms.geometries
-        };
-
-        var tile = new command.type(params);
-        parent.add(tile);
-
         this.cache.addRessource(url, result);
+
+        var tile = createTile(result);
 
         return command.resolve(tile);
     }.bind(this));
