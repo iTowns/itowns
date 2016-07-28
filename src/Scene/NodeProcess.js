@@ -19,7 +19,9 @@ function NodeProcess(camera, ellipsoid, bbox) {
 
     this.vhMagnitudeSquared = 1.0;
 
-    this.r = defaultValue(ellipsoid.size, new THREE.Vector3());
+    if (ellipsoid) {
+        this.r = defaultValue(ellipsoid.size, new THREE.Vector3());
+    }
     this.cV = new THREE.Vector3();
     this.projection = new Projection();
 }
@@ -117,6 +119,7 @@ NodeProcess.prototype.subdivideNode = function(node, camera, params) {
                 child.texturesNeeded = colorTextureCount + 1;
 
                 // request imagery update
+
                 // note: last param is true because we need to be sure that this request
                 // will be run. See comment in refinementCommandCancellationFn
                 this.refineNodeLayers(child, camera, params, true);
@@ -265,8 +268,6 @@ function updateNodeImagery(quadtree, node, layersConfig, force) {
     return Promise.all(promises).then(function() {
         node.loadingCheck();
         return node;
-    }).catch(function() {
-
     });
 }
 
@@ -363,7 +364,7 @@ NodeProcess.prototype.SSE = function(node, camera, params) {
         } else {
             // node is going to be displayed (either because !sse or because children aren't ready),
             // so try to refine its textures
-            this.refineNodeLayers(node, camera, params);
+            if (node.level < 6) this.refineNodeLayers(node, camera, params);
         }
     }
 

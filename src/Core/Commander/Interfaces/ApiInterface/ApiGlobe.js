@@ -240,7 +240,8 @@ ApiGlobe.prototype.createSceneGlobe = function(coordCarto, viewerDiv) {
 
     var wgs84TileLayer = {
         protocol: 'tile',
-        id: 'wgs84'
+        id: 'l93',
+        crs: 'epsg:3946'
     };
 
     preprocessLayer(wgs84TileLayer, this.scene.managerCommand.getProtocolProvider(wgs84TileLayer.protocol));
@@ -256,7 +257,7 @@ ApiGlobe.prototype.createSceneGlobe = function(coordCarto, viewerDiv) {
 };
 
     // TODO: move to ApiPlane
-ApiGlobe.prototype.createScenePlane = function(coordCarto, viewerDiv) {
+ApiGlobe.prototype.createScenePlane = function(coordCarto, viewerDiv, boundingBox) {
     // TODO: Normalement la creation de scene ne doit pas etre ici....
     // Deplacer plus tard
 
@@ -276,13 +277,31 @@ ApiGlobe.prototype.createScenePlane = function(coordCarto, viewerDiv) {
     var gLDebug = false; // true to support GLInspector addon
     var debugMode = false;
 
-    this.scene = Scene(coordCarto, boundingBox, viewerDiv,debugMode,gLDebug);
+    var bbox = new BoundingBox(boundingBox[0], boundingBox[1], boundingBox[2], boundingBox[3]);
+    this.scene = Scene(coordCarto, bbox, viewerDiv,debugMode,gLDebug);
 
-    var map = new Plane({bbox: new BoundingBox(1837816.94334, 1847692.32501, 5170036.4587, 5178412.82698)});
+    var map = new Plane({bbox});
 
-    var nodeProcess = new PlanarNodeProcess(this.scene.gfxEngine.camera);
+    this.scene.add(map);
 
-    this.scene.add(map, nodeProcess);
+    var nodeProcess = this.scene.layers[this.scene.layers.length - 1].process;
+    nodeProcess.isCulled =
+        function(node, camera) {
+            // FIXME
+            return false;
+            return !this.frustumCullingOBB(node, camera);
+        }.bind(nodeProcess);
+
+    nodeProcess.prepare =
+        function(camera) {
+        }.bind(nodeProcess);
+
+    nodeProcess.computeNodeSSE =
+        function(node, camera) {
+            var d = camera.camera3D.position.distanceTo(node.centerSphere);
+            var sse = 45 * node.bbox.dimension.x / d;
+            return sse;
+        }.bind(nodeProcess);
 
     // Register all providers
 
@@ -294,7 +313,8 @@ ApiGlobe.prototype.createScenePlane = function(coordCarto, viewerDiv) {
 
     var wgs84TileLayer = {
         protocol: 'tile',
-        id:       'wgs84'
+        id:       'l93',
+        crs: 'EPSG:3946'
     };
 
     preprocessLayer(wgs84TileLayer, this.scene.managerCommand.getProtocolProvider(wgs84TileLayer.protocol));

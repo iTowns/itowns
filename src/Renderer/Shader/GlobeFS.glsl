@@ -64,7 +64,6 @@ vec2 getParamBLayers(int id)
 }
 
 void main() {
-
     #if defined(USE_LOGDEPTHBUF) && defined(USE_LOGDEPTHBUF_EXT)
 
 	   gl_FragDepthEXT = log2(vFragDepth) * logDepthBufFC * 0.5;
@@ -116,7 +115,7 @@ void main() {
                         textureIndex,
                         projWGS84 ? vUv_WGS84 : uvPM);
 
-                    if (layerColor.a > 0.0) {
+                    if (layerColor.a >= 0.0) {
                         validTextureCount++;
                         float lum = 1.0;
 
@@ -164,6 +163,7 @@ void main() {
         gl_FragColor.a = 1.0;
 
     }
+
 
     if(debug > 0)
        gl_FragColor = vec4( 1.0, 1.0, 0.0, 1.0);

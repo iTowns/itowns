@@ -86,6 +86,7 @@ TileProvider.prototype.executeCommand = function(command) {
     var geometry = undefined; //getGeometry(bbox,tileCoord);
 
     var params = {
+        crs: command.paramsFunction.layer.crs,
         bbox: bbox,
         zoom: level,
         segment: 16,
