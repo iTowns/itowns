@@ -49,10 +49,6 @@ PanoramicMesh.prototype.setMatrixRTC = function(rtc) {
     this.material.uniforms.mVPMatRTC.value = rtc;
 };
 
-PanoramicMesh.prototype.useParent = function() {
-    //    return this.level !== this.levelElevation;
-};
-
 PanoramicMesh.prototype.enableRTC = function() {
     //  this.material.enableRTC(enable);
 };

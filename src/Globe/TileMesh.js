@@ -167,10 +167,6 @@ TileMesh.prototype.setDisplayed = function(show) {
     }
 };
 
-TileMesh.prototype.useParent = function() {
-    return this.level !== this.levelElevation;
-};
-
 TileMesh.prototype.enableRTC = function(enable) {
     this.materials[RendererConstant.FINAL].enableRTC(enable);
 };
