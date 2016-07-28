@@ -11,6 +11,7 @@ import IoDriver_Image from 'Core/Commander/Providers/IoDriver_Image';
 import IoDriverXML from 'Core/Commander/Providers/IoDriverXML';
 import defaultValue from 'Core/defaultValue';
 import THREE from 'THREE';
+import Projection from 'Core/Geographic/Projection';
 import CacheRessource from 'Core/Commander/Providers/CacheRessource';
 import BoundingBox from 'Scene/BoundingBox';
 
@@ -27,6 +28,7 @@ function WMS_Provider(/*options*/) {
     this.cache = CacheRessource();
     this.ioDriverImage = new IoDriver_Image();
     this.ioDriverXML = new IoDriverXML();
+    this.projection = new Projection();
 
     this.getTextureFloat = function(buffer){
         // Start float to RGBA uint8
@@ -95,15 +97,22 @@ WMS_Provider.prototype.tileInsideLimit = function(tile,layer) {
     return bboxRegion.intersect(bbox);
 };
 
-WMS_Provider.prototype.getColorTexture = function(tile, layer) {
+WMS_Provider.prototype.getColorTexture = function(tile, layer, parameters) {
     if (!this.tileInsideLimit(tile,layer) || tile.material === null) {
         return Promise.resolve();
     }
 
-    var result = {pitch : new THREE.Vector3(0, 0, 1)};
+    var pitch = parameters.ancestor ?
+        this.projection.WMS_WGS84Parent(tile.bbox, parameters.ancestor.bbox) :
+        new THREE.Vector3(0, 0, 1);
 
-    var url = this.url(tile.bbox, layer);
+    var bbox = parameters.ancestor ?
+        parameters.ancestor.bbox :
+        tile.bbox;
 
+    var url = this.url(bbox, layer);
+
+    var result = { pitch };
     result.texture = this.cache.getRessource(url);
 
     if (result.texture !== undefined) {
@@ -132,7 +141,6 @@ WMS_Provider.prototype.getColorTexture = function(tile, layer) {
 
     }.bind(this)).catch(function(/*reason*/) {
             result.texture = null;
-
             return result;
         });
 
@@ -193,7 +201,7 @@ WMS_Provider.prototype.executeCommand = function(command) {
 
     var func = supportedFormats[layer.format];
     if (func) {
-        return func(tile, layer).then(function(result) {
+        return func(tile, layer, command.paramsFunction).then(function(result) {
             return command.resolve(result);
         });
     } else {
