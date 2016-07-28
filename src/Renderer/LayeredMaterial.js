@@ -288,6 +288,8 @@ LayeredMaterial.prototype.setTexturesLayer = function(textures, layer) {
 };
 
 LayeredMaterial.prototype.getDelta = function() {
+    // TODO: Fix Me, this function always used 1st layer
+    return 0;
 
     if (this.paramLayers[0])
         return this.paramLayers[0].y;
