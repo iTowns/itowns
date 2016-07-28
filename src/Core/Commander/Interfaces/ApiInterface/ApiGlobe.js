@@ -8,6 +8,7 @@
 import Scene from 'Scene/Scene';
 import Globe from 'Globe/Globe';
 import WMTS_Provider from 'Core/Commander/Providers/WMTS_Provider';
+import WMS_Provider from 'Core/Commander/Providers/WMS_Provider';
 import TileProvider from 'Core/Commander/Providers/TileProvider';
 import CoordCarto from 'Core/Geographic/CoordCarto';
 import Ellipsoid from 'Core/Math/Ellipsoid';
@@ -62,8 +63,8 @@ ApiGlobe.prototype.execute = function() {
 
 };
 
-ApiGlobe.prototype.getWMTSProvider = function() {
-    return this.scene.managerCommand.getProtocolProvider('wmts');
+ApiGlobe.prototype.getProtocolProvider = function(protocol) {
+    return this.scene.managerCommand.getProtocolProvider(protocol);
 }
 
 /**
@@ -226,7 +227,6 @@ ApiGlobe.prototype.createSceneGlobe = function(coordCarto, viewerDiv) {
 
     this.scene.add(map);
 
-
     // Register all providers
     var wmtsProvider = new WMTS_Provider({
         support: map.gLDebug
@@ -234,6 +234,7 @@ ApiGlobe.prototype.createSceneGlobe = function(coordCarto, viewerDiv) {
     this.scene.managerCommand.addProtocolProvider('wmts', wmtsProvider);
     this.scene.managerCommand.addProtocolProvider('wmtsc', wmtsProvider);
     this.scene.managerCommand.addProtocolProvider('tile', new TileProvider(ellipsoid));
+    this.scene.managerCommand.addProtocolProvider('wms', new WMS_Provider({support : map.gLDebug}));
 
     var wgs84TileLayer = {
         protocol: 'tile',

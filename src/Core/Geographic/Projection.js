@@ -7,6 +7,7 @@
 import CoordWMTS from 'Core/Geographic/CoordWMTS';
 import MathExt from 'Core/Math/MathExtented';
 import CoordCarto from 'Core/Geographic/CoordCarto';
+import THREE from 'THREE';
 
 
 function Projection() {
@@ -128,6 +129,21 @@ Projection.prototype.WMTS_WGS84Parent = function(cWMTS, levelParent, pitch) {
 
     return new CoordWMTS(levelParent, r, c);
 
+};
+
+Projection.prototype.WMS_WGS84Parent = function(bbox, bboxParent) {
+    var scale = bbox.dimension.x / bboxParent.dimension.x;
+
+    var x =
+        Math.abs(bbox.minCarto.longitude - bboxParent.minCarto.longitude) /
+        bboxParent.dimension.x;
+    var y =
+        Math.abs(
+            bbox.minCarto.latitude + bbox.dimension.y -
+            (bboxParent.minCarto.latitude + bboxParent.dimension.y)) /
+        bboxParent.dimension.x;
+
+    return new THREE.Vector3(x, y, scale);
 };
 
 Projection.prototype.WGS84toWMTS = function(bbox) {

@@ -112,7 +112,7 @@ WMTS_Provider.prototype.url = function(coWMTS, layer) {
  * @param {type} coWMTS : coord WMTS
  * @returns {WMTS_Provider_L15.WMTS_Provider.prototype@pro;_IoDriver@call;read@call;then}
  */
-WMTS_Provider.prototype.getElevationTexture = function(tile, layer) {
+WMTS_Provider.prototype.getXbilTexture = function(tile, layer) {
     var coWMTS = tile.tileCoord;
 
     var url = this.url(coWMTS, layer);
@@ -135,22 +135,15 @@ WMTS_Provider.prototype.getElevationTexture = function(tile, layer) {
 
     return this._IoDriver.read(url).then(function(result) {
         if (result !== undefined) {
-
             //TODO USE CACHE HERE ???
-
             result.texture = this.getTextureFloat(result.floatArray);
             result.texture.generateMipmaps = false;
             result.texture.magFilter = THREE.LinearFilter;
             result.texture.minFilter = THREE.LinearFilter;
-
             // In RGBA elevation texture LinearFilter give some errors with nodata value.
             // need to rewrite sample function in shader
             //result.texture.magFilter = THREE.NearestFilter;
             //result.texture.minFilter = THREE.NearestFilter;
-
-            // TODO ATTENTION verifier le context
-            result.level = coWMTS.zoom;
-
             this.cache.addRessource(url, result);
 
             return result;
@@ -196,7 +189,6 @@ WMTS_Provider.prototype.getColorTexture = function(coWMTS, pitch, layer) {
             result.texture.minFilter = THREE.LinearFilter;
             result.texture.anisotropy = 16;
             result.texture.url = url;
-            result.texture.level = coWMTS.zoom;
             // result.texture.layerId = layerId;
 
             this.cache.addRessource(url, result.texture);
@@ -216,24 +208,29 @@ WMTS_Provider.prototype.getColorTexture = function(coWMTS, pitch, layer) {
 WMTS_Provider.prototype.executeCommand = function(command) {
 
     //var service;
-    var destination = command.paramsFunction.destination;
+    var layer = command.paramsFunction.layer;
     var tile = command.requester;
 
-    if (destination === 1) {
-        return this.getColorTextures(tile, command.paramsFunction.layer).then(function(result) {
+    var supportedFormats = {
+        'image/png':           this.getColorTextures.bind(this),
+        'image/jpg':           this.getColorTextures.bind(this),
+        'image/jpeg':          this.getColorTextures.bind(this),
+        'image/x-bil;bits=32': this.getXbilTexture.bind(this)
+    };
+
+    var func = supportedFormats[layer.options.mimetype];
+    if (func) {
+        return func(tile, layer, command.paramsFunction).then(function(result) {
             return command.resolve(result);
         });
-    } else if (destination === 0) {
-        return this.getElevationTexture(tile, command.paramsFunction.layer).then(function(terrain) {
-            command.resolve(terrain);
-        });
+    } else {
+        return Promise.reject(new Error('Unsupported mimetype ' + layer.options.mimetype));
     }
 };
 
 
-WMTS_Provider.prototype.getZoomAncestor = function(tile, layer) {
-
-    var levelParent = tile.getLevelNotDownScaled();
+WMTS_Provider.prototype.getZoomAncestor = function(tile, ancestor, layer) {
+    var levelParent = ancestor.level;
     return (levelParent < layer.zoom.min ? tile.level : levelParent) + (layer.options.tileMatrixSet === 'PM' ? 1 : 0);
 
 }
@@ -245,16 +242,13 @@ WMTS_Provider.prototype.tileInsideLimit = function(tile, layer) {
     return tile.level >= layer.zoom.min && tile.level <= layer.zoom.max;
 }
 
-WMTS_Provider.prototype.getColorTextures = function(tile, layer) {
+WMTS_Provider.prototype.getColorTextures = function(tile, layer, parameters) {
 
     var promises = [];
     if (tile.material === null) {
         return Promise.resolve();
     }
     // Request parent's texture if no texture at all
-    var lookAtAncestor = tile.material.getLevelLayerColor(1) === -1;
-
-
     if (this.tileInsideLimit(tile, layer)) {
         var bcoord = tile.matrixSet[layer.options.tileMatrixSet];
 
@@ -264,8 +258,11 @@ WMTS_Provider.prototype.getColorTextures = function(tile, layer) {
             var cooWMTS = new CoordWMTS(bcoord[0].zoom, row, bcoord[0].col);
             var pitch = new THREE.Vector3(0.0, 0.0, 1.0);
 
-            if (lookAtAncestor) {
-                cooWMTS = this.projection.WMTS_WGS84Parent(cooWMTS, this.getZoomAncestor(tile, layer), pitch);
+            if (parameters.ancestor) {
+                cooWMTS = this.projection.WMTS_WGS84Parent(
+                    cooWMTS,
+                    this.getZoomAncestor(tile, parameters.ancestor, layer),
+                    pitch);
             }
 
             promises.push(this.getColorTexture(cooWMTS, pitch, layer));

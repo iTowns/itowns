@@ -14,13 +14,6 @@ function GeometryProj() {
 GeometryProj.prototype = Object.create(THREE.BufferGeometry.prototype);
 GeometryProj.prototype.constructor = GeometryProj;
 
-
-
-
-GeometryProj.prototype.useParent = function() {
-    return this.level !== this.levelElevation;
-};
-
 GeometryProj.prototype.enableRTC = function(enable) {
     this.material.enableRTC(enable);
 };
