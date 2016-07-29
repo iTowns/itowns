@@ -89,7 +89,7 @@ TileProvider.prototype.executeCommand = function(command) {
         crs: command.paramsFunction.layer.crs,
         bbox: bbox,
         zoom: level,
-        segment: 16,
+        segment: 8,
         center: null,
         projected: null
     }
