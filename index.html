@@ -623,13 +623,9 @@ and open the template in the editor.
                     }
                 }
 
-                gui.add(text, 'KML').onChange(function(newValue) {
-                    itowns.viewer.showKML(newValue);
-                });
-
-                //gui.add(text, 'GPX').onChange(function(newValue) {
-                //    itowns.viewer.showGPX(newValue);
-                //});
+                // gui.add(text, 'KML').onChange(function(newValue) {
+                //     itowns.viewer.showKML(newValue);
+                // });
 
                 if(false)
                 {
@@ -734,18 +730,13 @@ and open the template in the editor.
                     console.log("Globe Loaded");
                     //itowns.viewer.setRange(100000);
 
+                    //itowns.viewer.loadGPX("data/ULTRA2009.gpx");
                     //itowns.viewer.setCenter({longitude:-74,latitude:40,altitude:0});
                 } ,
                 false);
 
                 viewerDiv.addEventListener('Layer-removed',function(event){
                     console.log("Layer " + event.layer +  " removed");
-                } ,
-                false);
-
-                viewerDiv.addEventListener('globe-loaded',function(){
-                    console.log("Globe Loaded");
-                    itowns.viewer.loadGPX("data/ULTRA2009.gpx");
                 } ,
                 false);
 
