@@ -46,7 +46,9 @@ function TileMesh(params, builder, geometryCache) {
     this.geometry = defaultValue(geometryCache, new TileGeometry(params, builder));
     this.normal = params.center.clone().normalize();
 
-    this.distance = params.center.length();
+    var worldNormal = new THREE.Vector3(0, 0, 1).applyQuaternion(this.OBB().getWorldQuaternion());
+    // distance to globe center
+    this.distance = params.center.clone().projectOnVector(worldNormal).length();
 
     // TODO Why move sphere center
     this.centerSphere = new THREE.Vector3().addVectors(this.geometry.boundingSphere.center, params.center);
