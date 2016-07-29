@@ -50,7 +50,8 @@ BuildingProvider.prototype.executeCommand = function(command) {
             bbox: bbox,
             level: parent.level + 1,
             childrenBboxes: bboxes,
-            geometry: geoms
+            geometry: geoms,
+            properties: data.properties
         };
 
         var tile = new command.type(params);
@@ -70,10 +71,11 @@ BuildingProvider.prototype.executeCommand = function(command) {
         var result = {};
         result.bboxes = geoJSON.tiles;
 
-        var geoms = GeoJSONToThree.convert(geoJSON.geometries);
-        geoms.geometries.translate(bbox[0], bbox[1], bbox[2]);
-        geoms.geometries.computeBoundingSphere();
-        result.geometries = geoms.geometries;
+        var data = GeoJSONToThree.convert(geoJSON.geometries);
+        data.geometries.translate(bbox[0], bbox[1], bbox[2]);
+        data.geometries.computeBoundingSphere();
+        result.geometries = data.geometries;
+        result.properties = data.properties;
 
         this.cache.addRessource(url, result);
 

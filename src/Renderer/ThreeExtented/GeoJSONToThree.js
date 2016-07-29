@@ -37,8 +37,7 @@ GeoJSONToThree.convert = function(geoJson) {
 
         // add properties
         var properties = JSON.stringify(geoJson.features[f].properties);
-        /*properties.bbox = bbox;
-        propertiesList.push(properties);*/
+        propertiesList.push(properties);
         geometries.push(threeGeom);
     }
     var mergedGeom = new THREE.Geometry().fromBufferGeometry(geometries[0]);
@@ -48,7 +47,7 @@ GeoJSONToThree.convert = function(geoJson) {
 
     return {
         geometries: mergedGeom,
-        properties: properties
+        properties: propertiesList
     };
 };
 
