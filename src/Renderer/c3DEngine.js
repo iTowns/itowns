@@ -103,22 +103,6 @@ function c3DEngine(scene, positionCamera, viewerDiv, debugMode, gLDebug) {
 
     }
 
-    var material = new BasicMaterial(new THREE.Color(1, 0, 0));
-    var material2 = new BasicMaterial(new THREE.Color(0, 0, 1));
-    var geometry = new THREE.CylinderGeometry(0.6, 0.01, 2, 32);
-    //var geometry = new THREE.SphereGeometry(0.6);
-    this.dummy_01 = new THREE.Mesh(geometry, material);
-    this.dummy_02 = new THREE.Mesh(geometry, material2);
-
-    this.dummy_02.material.enableRTC(false);
-    this.dummy_01.material.enableRTC(false);
-
-    this.dummys = new THREE.Object3D();
-    this.dummys.add(this.dummy_01);
-    this.dummys.add(this.dummy_02);
-
-    //this.scene3D.add(this.dummys);
-
     this.pickingTexture = new THREE.WebGLRenderTarget(this.width, this.height);
     this.pickingTexture.texture.minFilter = THREE.LinearFilter;
     this.pickingTexture.texture.generateMipmaps = false;
@@ -476,9 +460,7 @@ c3DEngine.prototype.bufferToImage = function(pixelBuffer, width, height) {
 
 c3DEngine.prototype.updatePositionBuffer = function() {
     this.camera.camera3D.updateMatrixWorld();
-    this.dummys.visible = false;
     this.positionBuffer = this.renderTobuffer(0, 0, this.width, this.height, RendererConstant.DEPTH);
-    this.dummys.visible = true;
     this.renderScene(); // TODO debug to remove white screen, but why?
 };
 
@@ -520,9 +502,7 @@ c3DEngine.prototype.getPickingPosition = function(mouse, scene) {
 
     camera.updateMatrixWorld();
 
-    this.dummys.visible = false;
     var buffer = this.renderTobuffer(mouse.x, this.height - mouse.y, 1, 1, RendererConstant.DEPTH);
-    this.dummys.visible = true;
 
     var glslPosition = new THREE.Vector3().fromArray(buffer);
 
@@ -556,9 +536,7 @@ c3DEngine.prototype.screenCoordsToNodeId = function(mouse) {
 
     camera.updateMatrixWorld();
 
-    this.dummys.visible = false;
     var buffer = this.renderTobuffer(mouse.x, this.height - mouse.y, 1, 1, RendererConstant.ID);
-    this.dummys.visible = true;
 
     var depthRGBA = new THREE.Vector4().fromArray(buffer).divideScalar(255.0);
 
@@ -598,9 +576,7 @@ c3DEngine.prototype.getPickingPositionFromDepth = function() {
 
         camera.updateMatrixWorld();
 
-        this.dummys.visible = false;
         var buffer = this.renderTobuffer(mouse.x, this.height - mouse.y, 1, 1, RendererConstant.DEPTH);
-        this.dummys.visible = true;
 
         screen.x = ((mouse.x) / this.width) * 2 - 1;
         screen.y = -((mouse.y) / this.height) * 2 + 1;
