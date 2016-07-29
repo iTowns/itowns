@@ -762,16 +762,17 @@ function GlobeControls(object, domElement, engine) {
 
     function newTarget() {
         // Update target camera {START}
-
         var positionTarget = scope.engine.getPickingPositionFromDepth();
-        scope.engine.renderScene();
-        var distanceTarget = positionTarget.distanceTo(scope.object.position);
+        if(positionTarget !== undefined) {
+            scope.engine.renderScene();
+            var distanceTarget = positionTarget.distanceTo(scope.object.position);
 
-        scope.object.worldToLocal(scope.moveTarget);
-        scope.moveTarget.setLength(distanceTarget);
-        scope.object.localToWorld(scope.moveTarget);
-        computeTarget();
-        // Update target camera  {END}
+            scope.object.worldToLocal(scope.moveTarget);
+            scope.moveTarget.setLength(distanceTarget);
+            scope.object.localToWorld(scope.moveTarget);
+            computeTarget();
+            // Update target camera  {END}
+        }
     }
 
     function onMouseUp( /* event */ ) {
