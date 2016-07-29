@@ -364,7 +364,7 @@ NodeProcess.prototype.SSE = function(node, camera, params) {
         } else {
             // node is going to be displayed (either because !sse or because children aren't ready),
             // so try to refine its textures
-            if (node.level < 6) this.refineNodeLayers(node, camera, params);
+            this.refineNodeLayers(node, camera, params);
         }
     }
 

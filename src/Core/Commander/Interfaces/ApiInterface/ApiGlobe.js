@@ -287,20 +287,27 @@ ApiGlobe.prototype.createScenePlane = function(coordCarto, viewerDiv, boundingBo
     var nodeProcess = this.scene.layers[this.scene.layers.length - 1].process;
     nodeProcess.isCulled =
         function(node, camera) {
-            // FIXME
-            return false;
             return !this.frustumCullingOBB(node, camera);
         }.bind(nodeProcess);
 
     nodeProcess.prepare =
-        function(camera) {
+        function() {
         }.bind(nodeProcess);
 
     nodeProcess.computeNodeSSE =
         function(node, camera) {
-            var d = camera.camera3D.position.distanceTo(node.centerSphere);
-            var sse = 45 * node.bbox.dimension.x / d;
-            return sse;
+            var vFOV = camera.FOV * Math.PI / 180;
+
+            var diff = camera.camera3D.getWorldPosition().clone().sub(node.getWorldPosition());
+            var d = Math.max(0.1, diff.length() - node.bbox.size * 0.5);
+            var height = 2 * Math.tan( vFOV / 2 ) * d;
+
+            var dot = diff.normalize().z;
+
+            var ratio = (node.bbox.dimension.x * dot) / height;
+
+            if (ratio >= 0.25) return 7;
+            else return 1;
         }.bind(nodeProcess);
 
     // Register all providers
