@@ -19,16 +19,23 @@ function FeatureProvider(params) {
                                           typename: params.typename,
                                           epsgCode: params.epsgCode,
                                           format: 	params.format});
-	this.tileParams = params.tileParams;
+	this.tileParams = params.tileParams || undefined;
 
-	var obj 			= this.tileParams.point !== undefined ? this.tileParams.point :
-							(this.tileParams.line !== undefined ? this.tileParams.line :
-							(this.tileParams.polygon !== undefined ? this.tileParams.polygon : undefined));
-	this.radius 		= (obj !== undefined && obj.radius 	  	!== undefined) ? obj.radius 	 : 40;
-	this.nbSegment 		= (obj !== undefined && obj.nbSegment   !== undefined) ? obj.nbSegment   : 3;
-	this.thetaStart 	= (obj !== undefined && obj.thetaStart  !== undefined) ? obj.thetaStart  : 0;
-	this.thetaLength 	= (obj !== undefined && obj.thetaLength !== undefined) ? obj.thetaLength : 2 * Math.PI;
-	this.offsetValue 	= (obj !== undefined && obj.length 		!== undefined) ? obj.length 	 : 0.001;
+	if(this.tileParams !== undefined) {
+
+		var obj = this.tileParams.point || this.tileParams.line || this.tileParams.box || this.tileParams.polygon || undefined;
+		//Temporary values for the tests purpose
+		if(obj !== undefined) {
+			this.radius 		= obj.radius 		|| 60000;
+			this.nbSegment 		= obj.nbSegment 	|| 3;
+			this.thetaStart 	= obj.thetaStart 	|| 0;
+			this.thetaLength 	= obj.thetaLength 	|| 2 * Math.PI;
+			this.offsetValue 	= obj.length 		|| 40;
+
+			this.boxWidth		= obj.bowWidth 		|| 40000;
+			this.boxHeight		= obj.boxHeight 	|| 800000;
+		}
+	}
 
 	this.size = {x:6378137,y: 6356752.3142451793,z:6378137};
 	this.ellipsoid = new Ellipsoid(this.size);
@@ -45,11 +52,14 @@ FeatureProvider.prototype.executeCommand = function (command) {
 	var paramsFunction = command.paramsFunction;
 	var parent = command.requester;
 
-	var params = {bbox: paramsFunction.bbox, level: parent.level + 1, segment:16, center:null, projected:null};
+	var params = {bbox: paramsFunction.bbox, level: parent.level + 1, segment:16, center:null, projected:null, protocol: parent.protocol};
 	var projection = new Projection();
     var builder = new BuilderEllipsoidTile(this.ellipsoid, projection);
 
     var tile = new command.type(params, builder);
+
+	var tileCoord = projection.WGS84toWMTS(paramsFunction.bbox);
+    tile.geometricError = Math.pow(2, (18 - tileCoord.zoom));
 
 	if(paramsFunction.bbox !== null){
 		var bbox = paramsFunction.bbox;
@@ -66,20 +76,26 @@ FeatureProvider.prototype.executeCommand = function (command) {
 				var geometry = new THREE.Geometry();
 				if(this.tileParams.line !== undefined)
 					this.processLine(value, geometry, projBbox);
-				else if (this.tileParams.point !== undefined)
-					this.processPoint(value, geometry);
+				else if (this.tileParams.point !== undefined || this.tileParams.box !== undefined)
+					this.processFeatureMesh(value, geometry);
 				tile.setGeometry(geometry);
 				tile.geometry.computeBoundingSphere();
-
 				parent.add(tile);
 			}
 		}.bind(this)
-		).catch(function(error) {
-            console.log('Error caught in the FeatureProvider', error);
-        });
+		).catch(function(/*error*/) {
+	        //console.log('Error caught in the FeatureProvider', error);
+	    });
 	}
 }
 
+/**
+ * ermit to cut a line at the end of the tile.
+ * @param coords: the coords which are tested
+ * @param slope: the slope of the current portion of line
+ * @param rest:
+ * @param bbox; the tile bounding box
+ */
 FeatureProvider.prototype.cutLine = function(coords, slope, rest, bbox) {
 
 	if(coords[0] < bbox.minCarto.longitude){
@@ -104,6 +120,13 @@ FeatureProvider.prototype.cutLine = function(coords, slope, rest, bbox) {
 	}
 }
 
+/**
+ * From a single point, the direction of the line and the orientation of the tile
+ * compute the two points which will be on the border of the line.
+ * @param pt1: one point of the line
+ * @param pt2: another point of the line
+ * @param isFirstPt: permit to choose to which point we will compute the border points
+ */
 FeatureProvider.prototype.computeLineBorderPoints = function(pt1, pt2, isFirstPt) {
 
 	var coordCarto1 = new CoordCarto().setFromDegreeGeo(pt1.x, pt1.y, pt1.z);
@@ -221,23 +244,39 @@ FeatureProvider.prototype.processLine = function(value, geometry, bbox) {
 }
 
 /**
- * Process the data received from a WFS request with a tile of feature type 'Point'.
+ * Create the entire geometry of the object passed in. Is use to create feature geometry
+ * like points or boxes.
  * @param value: the JSON object which contains the data received from the WFS request
  * @param geometry: the geometry used to set the tile geometry
  */
-FeatureProvider.prototype.processPoint = function(value, geometry) {
+FeatureProvider.prototype.processFeatureMesh = function(value, geometry) {
 
 	for (var i = 0; i < value.features.length; i++) {
 		var feature = value.features[i];
-		var coords 	= feature.geometry.coordinates;
+		var coords = feature.geometry.coordinates;
 
-		var currentGeometry = new THREE.CircleGeometry(this.radius, this.nbSegment, this.thetaStart, this.thetaLength);
 		var coordCarto = new CoordCarto().setFromDegreeGeo(coords[0], coords[1], 500);
+		var normalGlobe = this.ellipsoid.geodeticSurfaceNormalCartographic(coordCarto);
 		var centerPoint = this.ellipsoid.cartographicToCartesian(coordCarto);
 
-		var normal = this.ellipsoid.geodeticSurfaceNormalCartographic(coordCarto);
-		currentGeometry.lookAt(new THREE.Vector3().addVectors(centerPoint, normal));
+		var currentGeometry;
+		//Change the type of height and radius computation. Used only for the test purpose
+		if(this.tileParams.box !== undefined) {
+			if(feature.properties[this.tileParams.box.heightParam] !== 0)
+				currentGeometry = new THREE.BoxGeometry(this.boxWidth, this.boxWidth, 800000 * (1 / feature.properties[this.tileParams.box.heightParam]));
+			else
+				currentGeometry = new THREE.BoxGeometry(this.boxWidth, this.boxWidth, 100000 * feature.properties[this.tileParams.box.heightParam]);
+		}
+		else if(this.tileParams.point !== undefined) {
+			if(feature.properties[this.tileParams.point.heightParam] !== 0)
+				currentGeometry = new THREE.CircleGeometry(this.radius * (1 / feature.properties[this.tileParams.point.heightParam]), this.nbSegment, this.thetaStart, this.thetaLength);
+			else
+				currentGeometry = new THREE.CircleGeometry(this.radius, this.nbSegment, this.thetaStart, this.thetaLength);
+		}
+		else
+			continue;
 
+		currentGeometry.lookAt(normalGlobe);
 		currentGeometry.translate(centerPoint.x, centerPoint.y, centerPoint.z);
 
 		for (var j = 0; j < currentGeometry.faces.length; j++)
@@ -249,7 +288,14 @@ FeatureProvider.prototype.processPoint = function(value, geometry) {
 	return geometry;
 }
 
+/**
+ * Manage the feature material. The management is done depending on the type of feature
+ * you want to display.
+ * @param featureProperties: properties specified for the current feature
+ * @param color: the color to set inside the current feature geometry
+ */
 FeatureProvider.prototype.manageMaterial = function(featureProperties, color) {
+
 	var getType = {};
 
 	if(this.tileParams.point !== undefined){
@@ -262,6 +308,11 @@ FeatureProvider.prototype.manageMaterial = function(featureProperties, color) {
 			this.tileParams.line(featureProperties, this.tileParams);
 		else
 			this.manageColor(featureProperties, color, this.tileParams.line);
+	}else if (this.tileParams.box !== undefined) {
+		if(this.tileParams.box && getType.toString.call(this.tileParams.box) === '[object Function]')
+			this.tileParams.box(featureProperties, this.tileParams);
+		else
+			this.manageColor(featureProperties, color, this.tileParams.box);
 	} /*else if (this.tileParams.polygon !== undefined){
 
 	} else {
