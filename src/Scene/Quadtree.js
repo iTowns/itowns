@@ -71,6 +71,8 @@ Quadtree.prototype.constructor = Quadtree;
 Quadtree.prototype.init = function(geometryLayer) {
     var rootNode = this.children[0];
 
+    this.protocol = geometryLayer.protocol;
+
     for (var i = 0; i < this.schemeTile.rootCount(); i++) {
         this.requestNewTile(geometryLayer, this.schemeTile.getRoot(i), rootNode);
     }

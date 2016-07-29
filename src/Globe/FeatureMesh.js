@@ -26,14 +26,21 @@ function FeatureMesh(params, builder) {
 								new THREE.Vector3(params.bbox.maxCarto.longitude, params.bbox.maxCarto.latitude, params.bbox.maxCarto.altitude));
 	this.centerSphere = new THREE.Vector3();
 	this.level 	= params.level;
-	this.geometricError = ((params.bbox[3] - params.bbox[0]) + (params.bbox[4] - params.bbox[1])) / 100;
 
 	this.updateGeometry = true;
 	this.cullable = true;
+
+	this.protocol = params.protocol;
 }
 
 FeatureMesh.prototype = Object.create(NodeMesh.prototype);
 FeatureMesh.prototype.constructor = FeatureMesh;
+
+FeatureMesh.prototype.setLayerVisibility = function(value) {
+
+    this.setInvisible = !value;
+    this.visible = value;
+};
 
 FeatureMesh.prototype.OBB = function() {
     return this.OBBParam;
@@ -48,7 +55,6 @@ FeatureMesh.prototype.setGeometry = function(geometry) {
 	this.geometry = geometry;
 	this.updateGeometry = false;
 	//Rotate mesh
-
 }
 
 FeatureMesh.prototype.getStatus = function() {

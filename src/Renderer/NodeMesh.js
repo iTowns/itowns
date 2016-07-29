@@ -38,11 +38,13 @@ NodeMesh.prototype.isVisible = function() {
 };
 
 NodeMesh.prototype.setVisibility = function(show) {
-    this.visible = show;
-    this.showHelper(show);
+    if(this.setInvisible === undefined || !this.setInvisible) {
+        this.visible = show;
+        this.showHelper(show);
 
-    if (this.content !== null)
-        this.content.visible = show;
+        if (this.content !== null)
+            this.content.visible = show;
+    }
 };
 
 NodeMesh.prototype.setDisplayed = function(show) {

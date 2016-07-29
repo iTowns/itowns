@@ -44,6 +44,37 @@ function FeatureProvider(params) {
 FeatureProvider.prototype.constructor = FeatureProvider;
 
 /**
+ * Preprocess the provider to permit to display the features.
+ * @param layer : the current layer
+ */
+FeatureProvider.prototype.preprocessProvider = function(layer) {
+
+	this.tileParams = layer.params || undefined;
+
+	if(this.tileParams !== undefined) {
+		var obj = this.tileParams.point || this.tileParams.line || this.tileParams.box || this.tileParams.polygon || undefined;
+		if(obj !== undefined) {
+			this.radius 		= obj.radius 		|| 60000;
+			this.nbSegment 		= obj.nbSegment 	|| 3;
+			this.thetaStart 	= obj.thetaStart 	|| 0;
+			this.thetaLength 	= obj.thetaLength 	|| 2 * Math.PI;
+			this.offsetValue 	= obj.length 		|| 40;
+
+			this.boxWidth		= obj.bowWidth 		|| 40000;
+			this.boxHeight		= obj.boxHeight 	|| 800000;
+
+			//Must convert all data to hexadecimal values because datas are automatically
+			//converted in decimal values betweene the index.html and the next JS function
+			if(obj.color !== undefined && obj.color.colorTab !== undefined)
+				for (var i = 0; i < obj.color.colorTab.length; i++)
+					obj.color.colorTab[i].toString(16);
+		}
+	}
+
+	this.WFS_Provider.preprocessProvider(layer);
+}
+
+/**
  * Send the command and process the answer.
  * @param command : Usefull data to make the request
  */
@@ -84,8 +115,8 @@ FeatureProvider.prototype.executeCommand = function (command) {
 			}
 		}.bind(this)
 		).catch(function(/*error*/) {
-	        //console.log('Error caught in the FeatureProvider', error);
-	    });
+			//console.log('Error caught in the FeatureProvider', error);
+		});
 	}
 }
 

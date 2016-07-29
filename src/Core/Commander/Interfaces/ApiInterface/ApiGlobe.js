@@ -129,6 +129,41 @@ ApiGlobe.prototype.removeImageryLayer = function(id) {
     return false;
 };
 
+/**
+ * This function add a feature Layer to the scene.
+*/
+ApiGlobe.prototype.addFeatureLayer = function(layer) {
+
+    var schemeTile = new SchemeTile();
+    schemeTile.add(0, MathExt.PI, -MathExt.PI_OV_TWO, MathExt.PI_OV_TWO);
+    schemeTile.add(MathExt.PI, MathExt.TWO_PI, -MathExt.PI_OV_TWO, MathExt.PI_OV_TWO);
+    var featureQuad = new Quadtree(FeatureMesh, schemeTile, this.scene.size);
+    this.scene.add(featureQuad, new FeatureProcess(this.scene.currentCamera(), featureQuad.size));
+
+    this.scene.managerCommand.getProtocolProvider(layer.protocol).preprocessProvider(layer);
+
+    featureQuad.init({protocol: layer.protocol, id: layer.id});
+};
+
+/**
+* Change the visibility of the current feature
+* @param value: the boolean value of the feature visibility
+*/
+ApiGlobe.prototype.showFeature = function(featureId, value) {
+
+    for (var i = 0; i < this.scene.layers.length; i++) {
+        var layer = this.scene.layers[i];
+        if(layer.process instanceof FeatureProcess && layer.node.protocol === featureId) {
+            this.scene.layers[i].node.children[0].traverse(function(currentNode) {
+                if(currentNode instanceof FeatureMesh)
+                    currentNode.setLayerVisibility(value);
+            });
+            this.scene.renderScene3D();
+            break;
+        }
+    }
+
+};
 
 /**
  * Add an elevation layer to the map. Elevations layers are used to build the terrain.
@@ -139,7 +174,6 @@ ApiGlobe.prototype.removeImageryLayer = function(id) {
  * @constructor
  * @param {Layer} layer.
  */
-
 ApiGlobe.prototype.addElevationLayer = function(layer) {
     preprocessLayer(layer, this.scene.managerCommand.getProtocolProvider(layer.protocol));
 
@@ -240,6 +274,9 @@ ApiGlobe.prototype.createSceneGlobe = function(coordCarto, viewerDiv) {
     this.scene.managerCommand.addProtocolProvider('wmtsc', wmtsProvider);
     this.scene.managerCommand.addProtocolProvider('tile', new TileProvider(ellipsoid));
     this.scene.managerCommand.addProtocolProvider('wms', new WMS_Provider({support : map.gLDebug}));
+    //Feature provider made for the test purpose
+    this.scene.managerCommand.addProtocolProvider('wfsPoint', new FeatureProvider({}));
+    this.scene.managerCommand.addProtocolProvider('wfsLine', new FeatureProvider({}));
     var wgs84TileLayer = {
         protocol: 'tile',
         id: 'wgs84'
@@ -247,30 +284,6 @@ ApiGlobe.prototype.createSceneGlobe = function(coordCarto, viewerDiv) {
 
     preprocessLayer(wgs84TileLayer, this.scene.managerCommand.getProtocolProvider(wgs84TileLayer.protocol));
     map.layersConfiguration.addGeometryLayer(wgs84TileLayer);
-
-    //Test points on Lyon with data comming from the Grand Lyon (Velo'V stations and availability)
-    var params = {
-        point: {
-            color: {
-                property: 'availability',
-                testTab : ['Vert', 'Bleu', 'Gris', 'Orange'],
-                colorTab: [0x33CC33, 0x5599ff, 0x808080, 0xFF5577]
-            },
-            nbSegment: 8
-        }
-    };
-    //Test lines on Lyon with datas comming from the Grand Lyon (metro lines)
-    /*var params = {
-        line: {
-            color: {
-                property: 'ligne',
-                testTab : ['A', 'B', 'C', 'D', 'F1', 'F2'],
-                colorTab: [0x225599, 0x5599ff, 0x147845, 0xFF5577, 0xAAFF44, 0xD7F458]
-            }
-        }
-    };*/
-
-    //this.addFeatureLayer(params);
 
     map.tiles.init(map.layersConfiguration.getGeometryLayers()[0]);
 
@@ -653,28 +666,6 @@ ApiGlobe.prototype.launchCommandApi = function() {
 ApiGlobe.prototype.showKML = function(value) {
     this.scene.getMap().showKML(value);
     this.scene.renderScene3D();
-};
-
-ApiGlobe.prototype.addFeatureLayer = function(params){
-    var schemeTile = new SchemeTile();
-    schemeTile.add(0, MathExt.PI, -MathExt.PI_OV_TWO, MathExt.PI_OV_TWO);
-    schemeTile.add(MathExt.PI, MathExt.TWO_PI, -MathExt.PI_OV_TWO, MathExt.PI_OV_TWO);
-    var featureQuad = new Quadtree(FeatureMesh, schemeTile, this.scene.size);
-    this.scene.add(featureQuad, new FeatureProcess(this.scene.currentCamera(), featureQuad.size));
-
-    //Test points on Lyon with data comming from the Grand Lyon (Velo'V stations and availability)
-    this.scene.managerCommand.addProtocolProvider('wfs', new FeatureProvider({url:'https://download.data.grandlyon.com/wfs/rdata',
-                                                                        typename: 'jcd_jcdecaux.jcdvelov',
-                                                                        epsgCode: 4326,
-                                                                        format: 'geojson',
-                                                                        tileParams: params}));
-    //Test lines on Lyon with datas comming from the Grand Lyon (metro lines)
-    /*this.scene.managerCommand.addProtocolProvider('wfs', new FeatureProvider({url:'https://download.data.grandlyon.com/wfs/rdata',
-                                                                        typename: 'tcl_sytral.tcllignemf',
-                                                                        epsgCode: 4326,
-                                                                        format: 'geojson',
-                                                                        tileParams: params}));*/
-    featureQuad.init({protocol: 'wfs', id: 'wfs84'});
 };
 
 export default ApiGlobe;

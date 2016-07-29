@@ -32,6 +32,12 @@ function WFS_Provider(options) {
 WFS_Provider.prototype = Object.create(Provider.prototype);
 WFS_Provider.prototype.constructor = WFS_Provider;
 
+WFS_Provider.prototype.preprocessProvider = function(layer) {
+
+    this.baseUrl = layer.url;
+    this.typename = layer.typename;
+    this.format = layer.format;
+}
 
 /**
  * Returns the url for a WMS query with the specified bounding box
