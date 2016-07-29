@@ -132,6 +132,27 @@ FeatureProcess.prototype.SSE = function(node, camera) {
 };
 
 /**
+ * @documentation: return true if point is occuled by horizon
+ * @param {type} point
+ * @returns {Boolean}
+ */
+FeatureProcess.prototype.pointHorizonCulling = function(point) {
+
+    var t = MathExt.divideVectors(point, this.r);
+    // Vector VT
+    var vT = new THREE.Vector3();
+    vT.subVectors(t, this.cV);
+
+    var vtMagnitudeSquared = MathExt.lenghtSquared(vT);
+    var dot = -vT.dot(this.cV);
+    var isOccluded = dot > this.vhMagnitudeSquared &&
+        dot * dot / vtMagnitudeSquared > this.vhMagnitudeSquared;
+
+    return isOccluded;
+};
+
+
+/**
  * @documentation:pre calcul for horizon culling
  * @param {type} camera
  * @returns {undefined}
