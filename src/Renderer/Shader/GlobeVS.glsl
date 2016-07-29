@@ -22,8 +22,6 @@ precision highp int;
 
 #endif
 
-
-
 const float PI          = 3.14159265359;
 const float INV_TWO_PI  = 1.0 / (2.0*PI);
 const float PI4         = 0.78539816339;

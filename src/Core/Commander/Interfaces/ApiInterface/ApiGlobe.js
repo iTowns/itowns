@@ -5,6 +5,7 @@
  */
 
 
+
 import Scene from 'Scene/Scene';
 import Globe from 'Globe/Globe';
 import WMTS_Provider from 'Core/Commander/Providers/WMTS_Provider';
@@ -13,12 +14,12 @@ import TileProvider from 'Core/Commander/Providers/TileProvider';
 import CoordCarto from 'Core/Geographic/CoordCarto';
 import Ellipsoid from 'Core/Math/Ellipsoid';
 import Projection from 'Core/Geographic/Projection';
+import CustomEvent from 'custom-event';
 
 var loaded = false;
-var eventLoaded = new Event('globe-loaded');
-var eventLayerRemoved = new Event('Layer-removed');
-
-var eventRange = new Event('rangeChanged');
+var eventLoaded = new CustomEvent('globe-loaded');
+var eventLayerRemoved = new CustomEvent('Layer-removed');
+var eventRange = new CustomEvent('rangeChanged');
 
 function ApiGlobe() {
     //Constructor
@@ -32,8 +33,6 @@ function ApiGlobe() {
 }
 
 ApiGlobe.prototype.constructor = ApiGlobe;
-
-
 
 //    var event = new Event('empty');
 //    document.addEventListener('empty', console.log('Your turn'));

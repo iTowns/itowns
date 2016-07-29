@@ -6,7 +6,7 @@ var path = require('path');
 //                                               #idcommit
 
 module.exports = {
-  entry: [ 'es6-promise', 'whatwg-fetch', path.resolve(__dirname, 'src/Main.js') ],
+  entry: [ 'es6-promise', 'whatwg-fetch', 'custom-event', path.resolve(__dirname, 'src/Main.js') ],
   devtool: 'source-map',
   output: {
     path: path.resolve(__dirname, 'dist'),
