@@ -12,7 +12,7 @@ import SimpleVS from 'Renderer/Shader/SimpleVS.glsl';
 import SimpleFS from 'Renderer/Shader/SimpleFS.glsl';
 import LogDepthBuffer from 'Renderer/Shader/Chunk/LogDepthBuffer.glsl';
 
-function BasicMaterial(color) {
+function BasicMaterial(color, id) {
     //Constructor
 
     THREE.RawShaderMaterial.call(this);
@@ -79,6 +79,8 @@ function BasicMaterial(color) {
         }
 
     };
+
+    this.setUuid(id || 0);
 }
 
 BasicMaterial.prototype = Object.create(THREE.RawShaderMaterial.prototype);

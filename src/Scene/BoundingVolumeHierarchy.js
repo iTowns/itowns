@@ -11,11 +11,10 @@
  */
 import Layer from 'Scene/Layer';
 import InterfaceCommander from 'Core/Commander/InterfaceCommander';
-import Quad from 'Core/Geographic/Quad';
 import NodeMesh from 'Renderer/NodeMesh';
 
 
-function commandQueuePriorityFunction(cmd) {
+function commandQueuePriorityFunction(/*cmd*/) {
     return 100000; // TODO: more suitable value
 }
 
@@ -30,12 +29,12 @@ function BoundingVolumeHierarchy(type, lvl0Tiles, link) {
 
     rootNode.frustumCulled = false;
     rootNode.material.visible = false;
+    rootNode.changeState = function() {
+        return true;
+    };
 
     rootNode.link = this.link;
 
-    rootNode.enablePickingRender = function() {
-        return true;
-    };
     this.add(rootNode);
 }
 

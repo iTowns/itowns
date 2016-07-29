@@ -4,11 +4,13 @@
 */
 
 
-import defaultValue from 'Core/defaultValue';
 import BoundingBox from 'Scene/BoundingBox';
 import NodeMesh from 'Renderer/NodeMesh';
 import BasicMaterial from 'Renderer/BasicMaterial';
 import THREE from 'THREE';
+import BasicDepthMaterial from 'Renderer/BasicDepthMaterial';
+import BasicIdsMaterial from 'Renderer/BasicIdsMaterial';
+import RendererConstant from 'Renderer/RendererConstant';
 
 function BuildingTile(params) {
     //Constructor
@@ -27,8 +29,19 @@ function BuildingTile(params) {
 
     this.geometry = params.geometry;
     this.centerSphere = this.geometry.boundingSphere.center;
+    this.properties = params.properties;
 
-    this.material = new BasicMaterial(new THREE.Color(0.8, 0.8, 0.8));
+    this.material = new BasicIdsMaterial(new BasicMaterial(new THREE.Color(0.8, 0.8, 0.8), this.id));
+    this.materials = [];
+
+    // instantiations all state materials : final, depth, id
+    // Final rendering : return layered color + fog
+    this.materials[RendererConstant.FINAL] = this.material;
+    // Depth : return the distance between projection point and the node
+    this.materials[RendererConstant.DEPTH] = new BasicDepthMaterial(this.materials[RendererConstant.FINAL]);
+    // ID : return id color in RGBA (float Pack in RGBA)
+    this.materials[RendererConstant.ID] = new BasicIdsMaterial(this.materials[RendererConstant.FINAL]);
+
 }
 
 BuildingTile.prototype = Object.create(NodeMesh.prototype);
@@ -55,10 +68,6 @@ BuildingTile.prototype.enableRTC = function(enable) {
     this.material.enableRTC(enable);
 };
 
-BuildingTile.prototype.enablePickingRender = function(enable) {
-    //this.material.enablePickingRender(enable);
-};
-
 BuildingTile.prototype.setFog = function(fog) {
     this.material.setFogDistance(fog);
 };
@@ -73,6 +82,16 @@ BuildingTile.prototype.setDebug = function(enable) {
 
 BuildingTile.prototype.setSelected = function(select) {
     this.material.setSelected(select);
+};
+
+// switch material in function of state
+BuildingTile.prototype.changeState = function(state) {
+
+    if (state !== RendererConstant.FINAL) {
+        this.materials[state].visible = this.materials[RendererConstant.FINAL].visible;
+    }
+
+    this.material = this.materials[state];
 };
 
 export default BuildingTile;
