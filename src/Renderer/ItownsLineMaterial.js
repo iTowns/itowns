@@ -4,48 +4,40 @@
  * and open the template in the editor.
  */
 
+import THREE from 'THREE';
+import BasicMaterial from 'Renderer/BasicMaterial';
+import LineVS from 'Renderer/Shader/LineVS.glsl';
+import LineFS from 'Renderer/Shader/LineFS.glsl';
 
-define('Renderer/ItownsLineMaterial', ['THREE',
-    'Renderer/BasicMaterial',
-    'Core/System/JavaTools',
-    'Renderer/Shader/LineVS.glsl',
-    'Renderer/Shader/LineFS.glsl'
-], function(
-    THREE,
-    BasicMaterial,
-    JavaTools,
-    LineVS,
-    LineFS) {
+var ItownsLineMaterial = function(options) {
+        BasicMaterial.call(this);
 
-    var ItownsLineMaterial = function(options) {
-            BasicMaterial.call(this);
-            
-            if(options === undefined)
-                         throw new Error("options is required");
-            
+        if(options === undefined)
+                     throw new Error("options is required");
 
-            this.vertexShader = LineVS;
-            this.fragmentShader = LineFS;
 
-            this.wireframe = false;
+        this.vertexShader = LineVS;
+        this.fragmentShader = LineFS;
 
-            var texture = THREE.ImageUtils.loadTexture(options.texture);
+        this.wireframe = false;
 
-            this.uniforms.time =  { value: options.time };
-            this.uniforms.THICKNESS   = { value: options.linewidth};
-            this.uniforms.MITER_LIMIT = { value: 1.0 };
-            this.uniforms.WIN_SCALE = { value: new THREE.Vector2(window.innerWidth,window.innerHeight) }; // todo: vraie resolution
-            this.uniforms.texture = { type: "t", value: texture };
-            this.uniforms.useTexture = { value: options.useTexture};
-            this.uniforms.opacity = { type: "f", value: options.opacity};
-            this.uniforms.sizeAttenuation = { type: 'f', value: options.sizeAttenuation};
-            this.uniforms.color = {type: 'v3', value: options.color};
+        var texture = new THREE.TextureLoader().load( options.texture );
 
-            this.transparent = true;
-    };
+        this.uniforms.time =  { value: options.time };
+        this.uniforms.THICKNESS   = { value: options.linewidth};
+        this.uniforms.MITER_LIMIT = { value: 1.0 };
+        this.uniforms.WIN_SCALE = { value: new THREE.Vector2(window.innerWidth,window.innerHeight) };
+        this.uniforms.texture = { type: "t", value: texture };
+        this.uniforms.useTexture = { value: options.useTexture};
+        this.uniforms.opacity = { type: "f", value: options.opacity};
+        this.uniforms.sizeAttenuation = { type: 'f', value: options.sizeAttenuation};
+        this.uniforms.color = {type: 'v3', value: options.color};
 
-    ItownsLineMaterial.prototype = Object.create(BasicMaterial.prototype);
-    ItownsLineMaterial.prototype.constructor = ItownsLineMaterial;
+        this.transparent = true;
+};
 
-    return ItownsLineMaterial;
-});
+ItownsLineMaterial.prototype = Object.create(BasicMaterial.prototype);
+ItownsLineMaterial.prototype.constructor = ItownsLineMaterial;
+
+export default ItownsLineMaterial;
+
