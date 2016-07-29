@@ -108,20 +108,26 @@ Scene.prototype.size = function() {
  */
 Scene.prototype.quadTreeRequest = function(quadtree, process) {
 
-    this.browserScene.browse(quadtree, this.currentCamera(), process, this.map.layersConfiguration, SUBDIVISE);
-    if(this.layers[1] !== undefined)
-            this.browserScene.browse(this.layers[1].node,this.currentCamera(), this.layers[1].process, null, SUBDIVISE);
-    this.managerCommand.runAllCommands().then(function() {
-        if (this.managerCommand.isFree()) {
-            this.browserScene.browse(quadtree, this.currentCamera(), process, this.map.layersConfiguration, SUBDIVISE);
-            if(this.layers[1] !== undefined)
-                this.browserScene.browse(this.layers[1].node,this.currentCamera(), this.layers[1].process, null, SUBDIVISE);
-            if (this.managerCommand.isFree()) {
-                this.browserScene.browse(quadtree, this.currentCamera(), process, this.map.layersConfiguration, CLEAN)
-                this.viewerDiv.dispatchEvent(event);
-            }
-        }
+    this.browserScene.browse(quadtree,this.currentCamera(), process, this.map.layersConfiguration, SUBDIVISE);
+    for (var i = 1; i < this.layers.length; i++) {
+        if(this.layers[i] !== undefined)
+            this.browserScene.browse(this.layers[i].node,this.currentCamera(), this.layers[i].process, null, SUBDIVISE);
+    }
+    this.managerCommand.runAllCommands().then(function()
+        {
+            if (this.managerCommand.isFree())
+            {
+                this.browserScene.browse(quadtree,this.currentCamera(), process, this.map.layersConfiguration, SUBDIVISE);
+                for (var i = 1; i < this.layers.length; i++) {
+                    if(this.layers[i] !== undefined)
+                        this.browserScene.browse(this.layers[i].node,this.currentCamera(), this.layers[i].process, null, SUBDIVISE);
+                }
+                if (this.managerCommand.isFree()){
+                    this.browserScene.browse(quadtree,this.currentCamera(), process, this.map.layersConfiguration, CLEAN)
+                    this.viewerDiv.dispatchEvent(event);
 
+                }
+            }
     }.bind(this));
 
     this.renderScene3D();
@@ -146,8 +152,11 @@ Scene.prototype.realtimeSceneProcess = function() {
 
         }
     }
-    if(this.layers[1] !== undefined)
-        this.browserScene.browse(this.layers[1].node, this.currentCamera(), this.layers[1].process, null, NO_SUBDIVISE); //TEMP
+
+    for (var i = 1; i < this.layers.length; i++) {
+        if(this.layers[i] !== undefined)
+            this.browserScene.browse(this.layers[i].node, this.currentCamera(), this.layers[i].process, null, NO_SUBDIVISE); //TEMP
+    }
 };
 
 /**
