@@ -42,6 +42,10 @@ FeatureMesh.prototype.setLayerVisibility = function(value) {
     this.visible = value;
 };
 
+FeatureMesh.prototype.setSelected = function() {
+
+};
+
 FeatureMesh.prototype.OBB = function() {
     return this.OBBParam;
 };

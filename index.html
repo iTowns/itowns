@@ -7,10 +7,9 @@ and open the template in the editor.
 <html>
     <head>
         <title>Globe</title>
-
-	<style type="text/css">
+        <style type="text/css">
             html {height: 100%}
-	    body { margin: 0; overflow:hidden; height:100%}
+            body { margin: 0; overflow:hidden; height:100%}
 
             #viewerDiv {
                 margin : auto auto;
@@ -22,7 +21,6 @@ and open the template in the editor.
             }
             #menuDiv {position: absolute; top:0px; margin-left: 0px;}
 
-
         </style>
         <meta charset="UTF-8">
 
@@ -33,17 +31,15 @@ and open the template in the editor.
         <div id="viewerDiv"></div>
         <script src="dist/itowns2.js"> </script>
         <script type="text/javascript">
+            var initCenter = { longitude:2.3465, latitude: 48.88, altitude: 25000000};
 
-               var initCenter = { longitude:2.3465, latitude: 48.88, altitude: 25000000};
+            // iTowns namespace defined here
 
-               // iTowns namespace defined here
+            var viewerDiv = document.getElementById("viewerDiv");
 
-               var viewerDiv = document.getElementById("viewerDiv");
+            itowns.viewer.createSceneGlobe(initCenter, viewerDiv) ;
 
-               itowns.viewer.createSceneGlobe(initCenter, viewerDiv) ;
-               //console.log(itowns.viewer.pickPosition());
-
-              itowns.viewer.addImageryLayer({
+            itowns.viewer.addImageryLayer({
                 protocol:   "wmts",
                 id:         "Ortho",
                 url:        "http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/geoportail/wmts",
@@ -547,9 +543,46 @@ and open the template in the editor.
                 }
             });
 
+        //Feature layers used fot tests purpose
+        itowns.viewer.addFeatureLayer({
+            id: 'testWfsPoint',
+            protocol: "wfsPoint",
+            url: 'http://geo.vliz.be/geoserver/wfs',
+            typename: 'World:worldcities',
+            epsgCode: 4326,
+            format: 'json',
+            params: {
+                point: {
+                    color: {
+                        property: 'pop_rank',
+                        testTab : [7, 1, 2, 3, 4, 5, 6],
+                        colorTab: [0xCCFF00, 0x00FF00, 0xFF0000, 0x33CC33, 0x5599ff, 0x00ffff, 0xFF5577]
+                    },
+                    heightParam: 'pop_rank',
+                    nbSegment: 8
+                }
+            }
+        });
+
+        itowns.viewer.addFeatureLayer({
+            id: 'testWfsLine',
+            protocol: "wfsLine",
+            url: 'https://download.data.grandlyon.com/wfs/rdata',
+            typename: 'tcl_sytral.tcllignemf',
+            epsgCode: 4326,
+            format: 'geojson',
+            params: {
+                line: {
+                    color: {
+                        property: 'ligne',
+                        testTab : ['A', 'B', 'C', 'D', 'F1', 'F2'],
+                        colorTab: [0x225599, 0x5599ff, 0x147845, 0xFF5577, 0xAAFF44, 0xD7F458]
+                    }
+                }
+            }
+        });
+
         itowns.viewer.update();
-
-
 
                // THIS IS AN EXAMPLE OF INTERFACE TO INTERACT WITH ITOWNS
                var Menu = function() {
@@ -623,9 +656,18 @@ and open the template in the editor.
                     }
                 }
 
-                // gui.add(text, 'KML').onChange(function(newValue) {
-                //     itowns.viewer.showKML(newValue);
-                // });
+                text['testWfsPoint'] = true;
+                gui.add(text, 'testWfsPoint').onChange(function(newValue) {
+                    itowns.viewer.showFeature('wfsPoint', newValue);
+                });
+                text['testWfsLine'] = true;
+                gui.add(text, 'testWfsLine').onChange(function(newValue) {
+                    itowns.viewer.showFeature('wfsLine', newValue);
+                });
+
+                gui.add(text, 'KML').onChange(function(newValue) {
+                    itowns.viewer.showKML(newValue);
+                });
 
                 if(false)
                 {

@@ -111,7 +111,7 @@ FeatureProcess.prototype.isCulled = function(node, camera) {
 FeatureProcess.prototype.checkNodeSSE = function(node) {
 
     //Random value for the SSE, used for the test purpose. Can be changed at any momment
-    return 31 < node.sse;
+    return 6 < node.sse;
 };
 
 /**
