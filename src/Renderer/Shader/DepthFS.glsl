@@ -1,4 +1,3 @@
-
 #ifdef USE_LOGDEPTHBUF
 
 	uniform float logDepthBufFC;
@@ -37,7 +36,6 @@ void main() {
 
         //gl_FragColor = mix(fogColor, diffuseColor, fog );
 
-
-        gl_FragColor = vec4( fog, fog, fog, 1.0);
+        gl_FragColor = vec4( depth, depth, depth, 1.0);
 
 }

@@ -275,6 +275,15 @@ function c3DEngine(scene, positionCamera, viewerDiv, debugMode, gLDebug) {
 
     this.controls.rollSpeed = 0.5;
     this.camera.position.z = 1000;
+
+    function onMouseDown(event) {
+        event.preventDefault();
+        var mouse = new THREE.Vector2(event.clientX - event.target.offsetLeft, event.clientY - event.target.offsetTop);
+        this.selectNodeAt(mouse);
+        this.update();
+    }
+
+    window.addEventListener('mousedown', onMouseDown.bind(this), false);
 }
 
 /**

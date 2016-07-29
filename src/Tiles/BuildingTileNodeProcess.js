@@ -4,11 +4,8 @@
  * Description: BuildingTileNodeProcess effectue une opération sur un Node.
  */
 
-import BoundingBox from 'Scene/BoundingBox';
 import Camera from 'Renderer/Camera';
-import MathExt from 'Core/Math/MathExtented';
 import InterfaceCommander from 'Core/Commander/InterfaceCommander';
-import THREE from 'THREE';
 
 
 function BuildingTileNodeProcess() {
@@ -16,8 +13,6 @@ function BuildingTileNodeProcess() {
     this.camera = new Camera();
     //this.camera.camera3D = camera.camera3D.clone();
     this.additiveRefinement = true;
-
-    this.interCommand = new InterfaceCommander(); // TODO: InterfaceCommander static class?
 }
 
 BuildingTileNodeProcess.prototype.updateCamera = function(camera) {
@@ -47,13 +42,6 @@ BuildingTileNodeProcess.prototype.isVisible = function(node, camera) {
 
 BuildingTileNodeProcess.prototype.traverseChildren = function(node) {
     return node.visible;
-};
-
-BuildingTileNodeProcess.prototype.createCommands = function(node, params) {
-    var status = node.getStatus();
-    for (var i = 0; i < status.length; i++) {
-        this.interCommand.request(status[i], node, params.tree, {});
-    }
 };
 
 BuildingTileNodeProcess.prototype.subdivideNode = function(node, camera, params) {
@@ -91,23 +79,10 @@ BuildingTileNodeProcess.prototype.SSE = function(node, camera, params) {
 
     if (params.withUp) {
         if (sse) {
-            // big screen space error: subdivide node, display children if possible
+            // big screen space error: subdivide node
             this.subdivideNode(node, camera, params);
         }
     }
-
-    /*node.setVisibility(false);
-    node.setMaterialVisibility(false);
-    if(!this.isCulled(node, camera) && this.checkSSE(node, camera)) {
-        this.createCommands(node, params);
-        if(node.ready()) {
-            if(node.noChild()) {
-                params.tree.subdivide(node);
-            }
-            node.setVisibility(true);
-            node.setMaterialVisibility(true);
-        }
-    }*/
 };
 
 /**
