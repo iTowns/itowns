@@ -65,7 +65,7 @@ ApiGlobe.prototype.execute = function() {
 
 ApiGlobe.prototype.getProtocolProvider = function(protocol) {
     return this.scene.managerCommand.getProtocolProvider(protocol);
-}
+};
 
 /**
  * This function gives a chance to the matching provider to pre-process some
@@ -76,7 +76,7 @@ function preprocessLayer(layer, provider) {
         layer.tileInsideLimit = provider.tileInsideLimit.bind(provider);
         provider.preprocessDataLayer(layer);
     }
-}
+};
 
 /**
  * This function adds an imagery layer to the scene. The layer id must be unique. The protocol rules wich parameters are then needed for the function.

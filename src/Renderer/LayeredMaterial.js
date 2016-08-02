@@ -39,7 +39,7 @@ var getColorAtIdUv = function(nbTex) {
     }
 
     return fooTexture;
-}
+};
 
 var LayeredMaterial = function(id) {
 
