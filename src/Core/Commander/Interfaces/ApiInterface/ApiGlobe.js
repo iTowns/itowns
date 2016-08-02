@@ -12,6 +12,7 @@ import Plane from 'Plane/Plane';
 import BoundingBox from 'Scene/BoundingBox';
 import WMTS_Provider from 'Core/Commander/Providers/WMTS_Provider';
 import WMS_Provider from 'Core/Commander/Providers/WMS_Provider';
+import SingleImageWMS_Provider from 'Core/Commander/Providers/SingleImage_Provider';
 import TileProvider from 'Core/Commander/Providers/TileProvider';
 import loadGpx from 'Core/Commander/Providers/GpxUtils';
 import CoordCarto from 'Core/Geographic/CoordCarto';
@@ -236,6 +237,7 @@ ApiGlobe.prototype.createSceneGlobe = function(coordCarto, viewerDiv) {
     this.scene.managerCommand.addProtocolProvider('wmts', wmtsProvider);
     this.scene.managerCommand.addProtocolProvider('wmtsc', wmtsProvider);
     this.scene.managerCommand.addProtocolProvider('tile', new TileProvider(ellipsoid));
+    this.scene.managerCommand.addProtocolProvider('single_image', new SingleImageWMS_Provider());
     this.scene.managerCommand.addProtocolProvider('wms', new WMS_Provider({support : map.gLDebug}));
 
     var wgs84TileLayer = {
@@ -317,6 +319,7 @@ ApiGlobe.prototype.createScenePlane = function(coordCarto, viewerDiv, boundingBo
     this.scene.managerCommand.addProtocolProvider('wmtsc', wmtsProvider);
     this.scene.managerCommand.addProtocolProvider('tile', new TileProvider(map.size, true));
     this.scene.managerCommand.addProtocolProvider('wms', new WMS_Provider({support : map.gLDebug}));
+    this.scene.managerCommand.addProtocolProvider('single_image', new SingleImageWMS_Provider());
 
     var wgs84TileLayer = {
         protocol: 'tile',
