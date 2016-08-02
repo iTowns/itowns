@@ -90,14 +90,17 @@ Node.prototype.update = function() {
  * @param {type} level
  * @returns {undefined}
  */
-Node.prototype.getParentLevel = function(level) {
+Node.prototype.getNodeAtLevel = function(level) {
+    if (level === this.level) {
+        return this;
+    }
 
-    var functionToCheck = this.parent.getParentLevel;
+    var functionToCheck = this.parent.getNodeAtLevel;
 
     if (!functionToCheck || !(typeof(functionToCheck) === 'function') && (this.parent.level !== level))
         return undefined;
 
-    return (this.parent.level === level) ? this.parent : this.parent.getParentLevel(level);
+    return (this.parent.level === level) ? this.parent : this.parent.getNodeAtLevel(level);
 };
 
 /**
