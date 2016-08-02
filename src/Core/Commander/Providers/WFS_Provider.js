@@ -4,7 +4,7 @@
  * Description: Provides data from a WFS stream
  */
 
-
+import THREE from 'THREE';
 import Provider from 'Core/Commander/Providers/Provider';
 import IoDriver_JSON from 'Core/Commander/Providers/IoDriver_JSON';
 import IoDriverXML from 'Core/Commander/Providers/IoDriverXML';
@@ -119,8 +119,7 @@ WFS_Provider.prototype.getFeatures = function(tile, layer, parameters) {
 
        if(feature.crs) {
             var features = feature.features;
-            var geometry = this._IoDriver.parseGeoJSON(features);
-            result.feature = new THREE.Line(geometry,)
+            result.feature = this._IoDriver.parseGeoJSON(features);
             this.cache.addRessource(url, result.feature);
         }
 
