@@ -13,6 +13,8 @@ import WMS_Provider from 'Core/Commander/Providers/WMS_Provider';
 import TileProvider from 'Core/Commander/Providers/TileProvider';
 import loadGpx from 'Core/Commander/Providers/GpxUtils';
 import GeoCoordinate,{UNIT} from 'Core/Geographic/GeoCoordinate';
+import WFS_Provider from 'Core/Commander/Providers/WFS_Provider';
+import CoordCarto from 'Core/Geographic/CoordCarto';
 import Ellipsoid from 'Core/Math/Ellipsoid';
 import Projection from 'Core/Geographic/Projection';
 import CustomEvent from 'custom-event';
@@ -88,6 +90,14 @@ ApiGlobe.prototype.addImageryLayer = function(layer) {
 
     var map = this.scene.getMap();
 
+    map.layersConfiguration.addColorLayer(layer);
+};
+
+ApiGlobe.prototype.addFeatureLayer = function(layer) {
+    preprocessLayer(layer, this.scene.managerCommand.getProtocolProvider(layer.protocol));
+
+    var map = this.scene.getMap();
+    //TODO: replace this with addGeometryLayer 
     map.layersConfiguration.addColorLayer(layer);
 };
 
@@ -238,6 +248,7 @@ ApiGlobe.prototype.createSceneGlobe = function(coordCarto, viewerDiv) {
     this.scene.managerCommand.addProtocolProvider('wmtsc', wmtsProvider);
     this.scene.managerCommand.addProtocolProvider('tile', new TileProvider(ellipsoid));
     this.scene.managerCommand.addProtocolProvider('wms', new WMS_Provider({support : map.gLDebug}));
+    this.scene.managerCommand.addProtocolProvider('wfs', new WFS_Provider());
 
     var wgs84TileLayer = {
         protocol: 'tile',
