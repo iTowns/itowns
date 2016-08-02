@@ -112,16 +112,32 @@ WMTS_Provider.prototype.url = function(coWMTS, layer) {
  * @param {type} coWMTS : coord WMTS
  * @returns {WMTS_Provider_L15.WMTS_Provider.prototype@pro;_IoDriver@call;read@call;then}
  */
-WMTS_Provider.prototype.getXbilTexture = function(tile, layer) {
-    var coWMTS = tile.tileCoord;
+WMTS_Provider.prototype.getXbilTexture = function(tile, layer, parameters) {
+    var cooWMTS = tile.tileCoord;
+    var pitch = new THREE.Vector3(0.0, 0.0, 1.0);
 
-    var url = this.url(coWMTS, layer);
+    if (parameters.ancestor) {
+        cooWMTS = this.projection.WMTS_WGS84Parent(
+            cooWMTS,
+            this.getZoomAncestor(tile, parameters.ancestor, layer),
+            pitch);
+    }
+
+    var url = this.url(cooWMTS, layer);
 
     // TODO: this is not optimal: if called again before the IoDriver resolves, it'll load the XBIL again
     var textureCache = this.cache.getRessource(url);
 
-    if (textureCache !== undefined)
-        return Promise.resolve(textureCache);
+    if (textureCache !== undefined) {
+        return Promise.resolve( textureCache ?
+            {
+                pitch,
+                texture: textureCache.texture,
+                min: textureCache.min,
+                max: textureCache.max
+            } :
+            null);
+    }
 
 
     // bug #74
@@ -134,8 +150,7 @@ WMTS_Provider.prototype.getXbilTexture = function(tile, layer) {
     // -> bug #74
 
     return this._IoDriver.read(url).then(result => {
-        //TODO USE CACHE HERE ???
-
+        result.pitch = pitch;
         result.texture = this.getTextureFloat(result.floatArray);
         result.texture.generateMipmaps = false;
         result.texture.magFilter = THREE.LinearFilter;
@@ -146,14 +161,11 @@ WMTS_Provider.prototype.getXbilTexture = function(tile, layer) {
         //result.texture.magFilter = THREE.NearestFilter;
         //result.texture.minFilter = THREE.NearestFilter;
 
-        // TODO ATTENTION verifier le context
-        result.level = coWMTS.zoom;
-
         this.cache.addRessource(url, result);
 
         return result;
     }).catch(() => {
-        var texture = -1;
+        var texture = null;
         this.cache.addRessource(url, texture);
         return texture;
     });
@@ -201,7 +213,6 @@ WMTS_Provider.prototype.getColorTexture = function(coWMTS, pitch, layer) {
         return result;
 
     }.bind(this)).catch(function( /*reason*/ ) {
-        //console.error('getColorTexture failed for url |', url, '| Reason:' + reason);
         result.texture = null;
 
         return result;

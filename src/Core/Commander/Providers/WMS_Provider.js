@@ -97,18 +97,10 @@ WMS_Provider.prototype.tileInsideLimit = function(tile,layer) {
     return bboxRegion.intersect(bbox);
 };
 
-WMS_Provider.prototype.getColorTexture = function(tile, layer, parameters) {
+WMS_Provider.prototype.getColorTexture = function(tile, layer, bbox, pitch) {
     if (!this.tileInsideLimit(tile,layer) || tile.material === null) {
         return Promise.resolve();
     }
-
-    var pitch = parameters.ancestor ?
-        this.projection.WMS_WGS84Parent(tile.bbox, parameters.ancestor.bbox) :
-        new THREE.Vector3(0, 0, 1);
-
-    var bbox = parameters.ancestor ?
-        parameters.ancestor.bbox :
-        tile.bbox;
 
     var url = this.url(bbox, layer);
 
@@ -140,20 +132,26 @@ WMS_Provider.prototype.getColorTexture = function(tile, layer, parameters) {
         return result;
 
     }.bind(this)).catch(function(/*reason*/) {
-            result.texture = null;
-            return result;
-        });
+        result.texture = null;
+        return result;
+    });
 
 };
 
-WMS_Provider.prototype.getXbilTexture = function(tile, layer) {
-    var url = this.url(tile.bbox, layer);
+WMS_Provider.prototype.getXbilTexture = function(tile, layer, bbox, pitch) {
+    var url = this.url(bbox, layer);
 
     // TODO: this is not optimal: if called again before the IoDriver resolves, it'll load the XBIL again
     var textureCache = this.cache.getRessource(url);
 
-    if (textureCache !== undefined)
-        return Promise.resolve(textureCache);
+    if (textureCache !== undefined) {
+        return Promise.resolve(textureCache ? {
+            pitch,
+            texture: textureCache.texture,
+            min: textureCache.min,
+            max: textureCache.max
+        } : null);
+    }
 
 
     // bug #74
@@ -167,13 +165,11 @@ WMS_Provider.prototype.getXbilTexture = function(tile, layer) {
 
     return this._IoDriver.read(url).then(function(result) {
         if (result !== undefined) {
-
-            //TODO USE CACHE HERE ???
-
             result.texture = this.getTextureFloat(result.floatArray);
             result.texture.generateMipmaps = false;
             result.texture.magFilter = THREE.LinearFilter;
             result.texture.minFilter = THREE.LinearFilter;
+            result.pitch = pitch;
 
             // In RGBA elevation texture LinearFilter give some errors with nodata value.
             // need to rewrite sample function in shader
@@ -181,7 +177,7 @@ WMS_Provider.prototype.getXbilTexture = function(tile, layer) {
 
             return result;
         } else {
-            var texture = -1;
+            var texture = null;
             this.cache.addRessource(url, texture);
             return texture;
         }
@@ -191,6 +187,7 @@ WMS_Provider.prototype.getXbilTexture = function(tile, layer) {
 WMS_Provider.prototype.executeCommand = function(command) {
     var layer = command.paramsFunction.layer;
     var tile = command.requester;
+    var ancestor = command.paramsFunction.ancestor;
 
     var supportedFormats = {
         'image/png':           this.getColorTexture.bind(this),
@@ -201,7 +198,16 @@ WMS_Provider.prototype.executeCommand = function(command) {
 
     var func = supportedFormats[layer.format];
     if (func) {
-        return func(tile, layer, command.paramsFunction).then(function(result) {
+        var pitch = ancestor ?
+            this.projection.WMS_WGS84Parent(tile.bbox, ancestor.bbox) :
+            new THREE.Vector3(0, 0, 1);
+
+        var bbox = ancestor ?
+            ancestor.bbox :
+            tile.bbox;
+
+
+        return func(tile, layer, bbox, pitch).then(function(result) {
             return command.resolve(result);
         });
     } else {
