@@ -164,7 +164,7 @@ function c3DEngine(scene, positionCamera, viewerDiv, debugMode, gLDebug) {
     }.bind(this);
 
     this.scene = scene;
-    this.size = 64;//this.scene.size().x;
+    this.size = this.scene.size().x;
 
     //
     // init camera
@@ -238,7 +238,7 @@ function c3DEngine(scene, positionCamera, viewerDiv, debugMode, gLDebug) {
     this.controls.zoomSpeed = 1.0;
     this.controls.minDistance = 30;
 
-    this.controls.maxDistance = 30000;
+    this.controls.maxDistance = 250000;
     //this.controls.keyPanSpeed   = 1.0;
     this.controls.keyPanSpeed = 0.01;
 

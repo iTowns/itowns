@@ -276,10 +276,7 @@ ApiGlobe.prototype.createScenePlane = function(coordCarto, viewerDiv) {
     var gLDebug = false; // true to support GLInspector addon
     var debugMode = false;
 
-    //gLDebug = true; // true to support GLInspector addon
-    //debugMode = true;
-
-    this.scene = Scene(coordCarto, undefined, viewerDiv,debugMode,gLDebug);
+    this.scene = Scene(coordCarto, boundingBox, viewerDiv,debugMode,gLDebug);
 
     var map = new Plane({bbox: new BoundingBox(1837816.94334, 1847692.32501, 5170036.4587, 5178412.82698)});
 
