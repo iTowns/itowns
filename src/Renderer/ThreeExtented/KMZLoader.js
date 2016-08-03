@@ -46,11 +46,12 @@ KMZLoader.prototype.parseCollada = function(buffer) {
 }
 
 KMZLoader.prototype.load = function(url) {
-    return fetch(url).then(function(response) {
+    return fetch(url).then(response => {
+        if (response.status < 200 || response.status >= 300) {
+            throw new Error(`Error loading ${url}: status ${response.status}`);
+        }
         return response.arrayBuffer();
-    }).then(function(buffer) {
-        return this.parseCollada(buffer);
-    }.bind(this));
+    }).then(buffer => this.parseCollada(buffer));
 };
 
 export default KMZLoader;
