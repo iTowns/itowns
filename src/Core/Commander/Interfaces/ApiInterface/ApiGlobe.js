@@ -96,8 +96,8 @@ ApiGlobe.prototype.addFeatureLayer = function(layer) {
     preprocessLayer(layer, this.scene.managerCommand.getProtocolProvider(layer.protocol));
 
     var map = this.scene.getMap();
-    //TODO: replace this with addGeometryLayer 
-    map.layersConfiguration.addColorLayer(layer);
+    //TODO: replace this with addGeometryLayer
+    map.layersConfiguration.addGeometryLayer(layer);
 };
 
 ApiGlobe.prototype.moveLayerUp = function(layer) {

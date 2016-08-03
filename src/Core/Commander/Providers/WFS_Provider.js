@@ -20,7 +20,7 @@ import BoundingBox from 'Scene/BoundingBox';
  * @returns {Object@call;create.url.url|String}
  */
 function WFS_Provider(/*options*/) {
-    
+
     Provider.call(this, new IoDriver_JSON());
     this.cache = CacheRessource();
     this.ioDriverXML = new IoDriverXML();
@@ -36,13 +36,21 @@ WFS_Provider.prototype.customUrl = function(url,coord) {
     //convert radian to degree, lon is added a offset of Pi
     //to align axisgit  to card center
 
-    var bbox = coord.minCarto.latitude * 180.0 / Math.PI +
+   /* var bbox = coord.minCarto.latitude * 180.0 / Math.PI +
                 "," +
                 (coord.minCarto.longitude - Math.PI)* 180.0 / Math.PI +
                 ","+
                coord.maxCarto.latitude* 180.0 / Math.PI +
                "," +
                (coord.maxCarto.longitude - Math.PI )*180.0 / Math.PI;
+    */        
+    var bbox =  (coord.minCarto.longitude - Math.PI)* 180.0 / Math.PI +
+                "," +
+                coord.minCarto.latitude * 180.0 / Math.PI +
+                ","+
+                (coord.maxCarto.longitude - Math.PI )*180.0 / Math.PI + 
+               "," +
+                coord.maxCarto.latitude* 180.0 / Math.PI;           
 
     var urld = url.replace('%bbox',bbox.toString());
 
@@ -63,16 +71,18 @@ WFS_Provider.prototype.preprocessDataLayer = function(layer){
                   'SERVICE=WFS&REQUEST=GetFeature&typeName=' + layer.title +
                   '&VERSION=' + layer.version +
                   '&outputFormat=' + layer.format +
-                  '&BBOX=%bbox,' + layer.crs; 
+                  '&BBOX=%bbox,' + layer.crs;
 };
 
 WFS_Provider.prototype.tileInsideLimit = function(tile,layer) {
     var bbox = tile.bbox;
+    var level = tile.level;
+    //console.log(level)
     // shifting longitude because of issue #19
     var west =  layer.bbox[0]*Math.PI/180.0 + Math.PI;
     var east =  layer.bbox[2]*Math.PI/180.0 + Math.PI;
     var bboxRegion = new BoundingBox(west, east, layer.bbox[1]*Math.PI/180.0, layer.bbox[3]*Math.PI/180.0, 0, 0, 0);
-    return bboxRegion.intersect(bbox);
+    return (level > 16) && bboxRegion.intersect(bbox);
 };
 
 WFS_Provider.prototype.executeCommand = function(command) {
@@ -81,7 +91,7 @@ WFS_Provider.prototype.executeCommand = function(command) {
 
     //TODO : support xml, gml2
     var supportedFormats = {
-        'json':    this.getFeatures.bind(this) 
+        'json':    this.getFeatures.bind(this)
     };
 
     var func = supportedFormats[layer.format];

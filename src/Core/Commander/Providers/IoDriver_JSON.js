@@ -39,23 +39,31 @@ IoDriver_JSON.prototype.parseGeoJSON = function(features) {
                                     sizeAttenuation : 1.0,
                                     color : [colorLine.r, colorLine.g, colorLine.b]
     });
-    
+
+    var geometry = new THREE.SphereGeometry( 10, 5, 5 );
+    var material = new THREE.MeshBasicMaterial( {color: 0xff0000} );
+    var sphere = new THREE.Mesh( geometry, material );
+    var spt;
     for (var r = 0; r < features.length; r++) {
 
         var hauteur = (features[r].properties.hauteur) || 0;
         var polygon = features[r].geometry.coordinates[0][0];
-        
+
         if (polygon.length > 2) {
             for (var j = 0; j < polygon.length - 1; ++j) {
                 var pt2DTab = polygon[j]; //.split(' ');
-                var pt = new THREE.Vector3(parseFloat(pt2DTab[0]), hauteur, parseFloat(pt2DTab[1]));
+                //long et puis lat
+                var pt = new THREE.Vector3(parseFloat(pt2DTab[1]), hauteur, parseFloat(pt2DTab[0]));
                 var coordCarto = new CoordCarto().setFromDegreeGeo(pt.x, pt.z, pt.y);
                 line.addPoint(ellipsoid.cartographicToCartesian(coordCarto));
+                spt = ellipsoid.cartographicToCartesian(coordCarto);
             }
-   
+
         }
-    }    
-    return line;
+    }
+    
+    sphere.position.copy(spt);
+    return sphere;
 
 };
 

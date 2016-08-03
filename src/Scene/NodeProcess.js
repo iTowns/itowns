@@ -137,6 +137,9 @@ NodeProcess.prototype.subdivideNode = function(node, camera, params) {
                 // request elevation update
                 updateNodeElevation(quadtree, child, params.layersConfig.getElevationLayers());
 
+                //request feature update
+                updateNodeFeature(quadtree, child, params.layersConfig.getGeometryLayers());
+
                 return 0;
             }.bind(this));
         }
@@ -214,6 +217,44 @@ function findAncestorWithValidTextureForLayer(node, layerId) {
         return null;
     }
 }
+
+function updateNodeFeature(quadtree, node, featureLayers) {
+
+    /*if(node.level === 10 && !node.content)
+    {
+        var objWFS;
+        var layer = quadtree.parent.batiments.children[0];
+
+        layer.add(objWFS);
+        node.content = objWFS;
+    }*/
+
+    for (var i = 0; i < featureLayers.length; i++) {
+            var layer = featureLayers[i];
+            var protocol = layer.protocol;
+            if(protocol.toLowerCase() == 'wfs') {
+               if (layer.tileInsideLimit(node, layer) && !node.content) {
+                    var args = {
+                        layer: layer
+                    };
+
+                    return quadtree.interCommand.request(args, node, refinementCommandCancellationFn).then(function(result) {
+                        //if request return empty jason, WFS_Provider.getFeatures return undefined
+                        if(result.feature !== undefined) {
+                            //console.log(feature)
+                            var layer = quadtree.parent.batiments.children[0];
+                            quadtree.parent.batiments.visible = true;
+                            layer.add(result.feature);
+                            node.content = result.feature;
+                        }
+                    })
+                    .catch(function(/*err*/) {
+                    // Command has been canceled, no big deal, we just need to catch it
+                    });
+                }
+            }
+    }
+};
 
 function updateNodeImagery(quadtree, node, colorLayers) {
     var promises = [];
