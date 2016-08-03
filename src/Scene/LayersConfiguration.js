@@ -18,7 +18,7 @@ function LayersConfiguration() {
     this.geometryLayers = [];
     this.colorLayers = [];
     this.elevationLayers = [];
-    
+
     // color layers state (visibility, opacity)
     this.colorLayersState = {};
 }
