@@ -43,9 +43,42 @@ and open the template in the editor.
         var scene = itowns.viewer.createScenePlane(
             initCenter,
             viewerDiv,
-            [1837816.94334, 1847692.32501, 5170036.4587, 5178412.82698]);
+            [266040.26, 344252.61, 4984521.41, 5095744.39]);
 
         itowns.viewer.addPointCloud("greyhound://192.168.1.12:5000/greyhound/");
+
+        itowns.viewer.addImageryLayer({
+            url       : "http://3d.oslandia.com/dem.png",
+            protocol  : 'single_image',
+            id        : 'testsinglpage',
+            name      : 'idem',
+            projection : "EPSG:3946",
+            bbox      : [266040.26, 4984521.41, 344252.61, 5095744.39],
+            updateStrategy: {
+                type: 0
+            },
+            options: {
+                mimetype  : "image/png",
+                tileMatrixSet: 'WGS84G'
+            }
+        });
+
+        itowns.viewer.addElevationLayer({
+            url       : "http://3d.oslandia.com/dem.png",
+            protocol  : 'single_image',
+            id        : 'testsinglpage',
+            name      : 'idem',
+            projection : "EPSG:3946",
+            bbox      : [266040.26, 4984521.41, 344252.61, 5095744.39],
+            updateStrategy: {
+                type: 0
+            },
+            options: {
+                minmaxElevation: [0, 255],
+                mimetype  : "image/png",
+                tileMatrixSet: 'WGS84G'
+            }
+        });
 
         itowns.viewer.update();
 
