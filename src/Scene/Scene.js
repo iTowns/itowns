@@ -27,6 +27,8 @@ import CoordCarto from 'Core/Geographic/CoordCarto';
 import Capabilities from 'Core/System/Capabilities';
 import MobileMappingLayer from 'MobileMapping/MobileMappingLayer';
 import CustomEvent from 'custom-event';
+import Ellipsoid from 'Core/Math/Ellipsoid';
+import BoundingBox from 'Scene/BoundingBox';
 
 var instanceScene = null;
 var event = new CustomEvent('globe-built');
@@ -34,18 +36,21 @@ var NO_SUBDIVISE = 0;
 var SUBDIVISE = 1;
 var CLEAN = 2;
 
-function Scene(coordCarto, ellipsoid, viewerDiv, debugMode, gLDebug) {
+function Scene(coordCarto, ellipsoidOrBB, viewerDiv, debugMode, gLDebug) {
 
     if (instanceScene !== null) {
         throw new Error("Cannot instantiate more than one Scene");
     }
 
     var positionCamera;
-    if(ellipsoid) {
-        this.ellipsoid = ellipsoid;
+    if(ellipsoidOrBB instanceof Ellipsoid) {
+        this.ellipsoid = ellipsoidOrBB;
         positionCamera = this.ellipsoid.cartographicToCartesian(new CoordCarto().setFromDegreeGeo(coordCarto.longitude, coordCarto.latitude, coordCarto.altitude));
+    } else if (ellipsoidOrBB instanceof BoundingBox) {
+        this.boundingBox = ellipsoidOrBB;
+        positionCamera = {x:ellipsoidOrBB.center.x, y: ellipsoidOrBB.center.y, z:250000};
     } else {
-        positionCamera = {x:1842816.94334, y: 5174236.4587, z:15000};
+        throw new Error('2nd arg must be either a Ellipsoid or a BoundingBox');
     }
 
     this.layers = [];
@@ -101,7 +106,9 @@ Scene.prototype.getEllipsoid = function() {
 //    };
 
 Scene.prototype.size = function() {
-    return this.ellipsoid.size;
+    return this.ellipsoid ?
+        this.ellipsoid.size :
+        this.boundingBox.dimension;
 };
 
 /**
