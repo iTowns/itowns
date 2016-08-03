@@ -19,25 +19,13 @@ IoDriver_Image.prototype.constructor = IoDriver_Image;
 
 IoDriver_Image.prototype.read = function(url) {
 
-    return new Promise(function(resolve /*, reject*/ ) {
+    return new Promise(function(resolve, reject) {
 
         var image = new Image();
 
-        image.addEventListener('load', function( /*event*/ ) {
+        image.onload = () => resolve(image);
 
-            resolve(this);
-
-        }, false);
-
-        image.addEventListener('progress', function( /*event*/ ) {
-
-        }, false);
-
-
-        image.addEventListener('error', function( /*event*/ ) {
-            // TODO: real error managament
-            resolve(undefined);
-        }, false);
+        image.onerror = () => reject(new Error(`Error loading ${url}`));
 
         image.crossOrigin = '';
         image.src = url;

@@ -30,16 +30,14 @@ IoDriverXML.prototype.read = function(url) {
 
         xhr.crossOrigin = '';
 
-        xhr.onload = function() {
-            resolve(this.response);
-
+        xhr.onload = () => {
+            if (xhr.status < 200 || xhr.status >= 300) {
+                throw new Error(`Error loading ${url}: status ${xhr.status}`);
+            }
+            resolve(xhr.response);
         };
 
-        xhr.onerror = function() {
-
-            reject(Error("Error IoDriverXML"));
-
-        };
+        xhr.onerror = () => reject(Error("Error IoDriverXML"));
 
         xhr.send(null);
     });
