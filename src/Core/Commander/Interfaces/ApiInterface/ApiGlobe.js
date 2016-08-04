@@ -11,6 +11,7 @@ import Globe from 'Globe/Globe';
 import WMTS_Provider from 'Core/Commander/Providers/WMTS_Provider';
 import WMS_Provider from 'Core/Commander/Providers/WMS_Provider';
 import TileProvider from 'Core/Commander/Providers/TileProvider';
+import loadGpx from 'Core/Commander/Providers/GpxUtils';
 import CoordCarto from 'Core/Geographic/CoordCarto';
 import Ellipsoid from 'Core/Math/Ellipsoid';
 import Projection from 'Core/Geographic/Projection';
@@ -624,6 +625,17 @@ ApiGlobe.prototype.launchCommandApi = function() {
 ApiGlobe.prototype.showKML = function(value) {
 
     this.scene.getMap().showKML(value);
+    this.scene.renderScene3D();
+};
+
+
+ApiGlobe.prototype.loadGPX = function(url) {
+    loadGpx(url, this.scene.getEllipsoid()).then(function(gpx){
+        if(gpx) {
+            this.scene.getMap().gpxTracks.children[0].add(gpx);
+        }
+    }.bind(this));
+
     this.scene.renderScene3D();
 };
 

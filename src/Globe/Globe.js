@@ -37,6 +37,12 @@ function Globe(ellipsoid, gLDebug) {
 
     kml.visible = false;
 
+	this.gpxTracks = new Layer();
+	var gpx = new THREE.Object3D();
+	this.gpxTracks.add(gpx);
+	this.gpxTracks.visible = true;
+    gpx.visible = true;
+
     this.tiles = new Quadtree(TileMesh, this.SchemeTileWMTS(2), kml);
     this.layersConfiguration = new LayersConfiguration();
 
@@ -83,6 +89,7 @@ function Globe(ellipsoid, gLDebug) {
 
     this.add(this.tiles);
     this.add(this.batiments);
+    this.add(this.gpxTracks);
     //this.add(this.layerWGS84Zup);
 
     if (this.atmosphere !== undefined && !this.gLDebug) {
