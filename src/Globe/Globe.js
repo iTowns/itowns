@@ -47,7 +47,6 @@ function Globe(ellipsoid, gLDebug) {
 
     var geometry = new THREE.SphereGeometry(5);
     var batiment = new THREE.Mesh(geometry, material);
-
     var position = this.ellipsoid.cartographicToCartesian(new CoordCarto().setFromDegreeGeo(0, 48.87, 200));
 
     position = new THREE.Vector3(4201215.424138484, 171429.945145441, 4779294.873914789);

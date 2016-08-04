@@ -7,16 +7,42 @@
 
 import THREE from 'THREE';
 import defaultValue from 'Core/defaultValue';
+import c3DEngine from 'Renderer/c3DEngine';
 import SimpleVS from 'Renderer/Shader/SimpleVS.glsl';
 import SimpleFS from 'Renderer/Shader/SimpleFS.glsl';
+import LogDepthBuffer from 'Renderer/Shader/Chunk/LogDepthBuffer.glsl';
 
 function BasicMaterial(color) {
     //Constructor
 
     THREE.RawShaderMaterial.call(this);
 
-    this.vertexShader = SimpleVS;
-    this.fragmentShader = SimpleFS;
+    this.vertexShaderHeader = '';
+    this.fragmentShaderHeader = '';
+
+    var logarithmicDepthBuffer = c3DEngine().renderer.capabilities.logarithmicDepthBuffer;
+
+    if(logarithmicDepthBuffer)
+    {
+        this.fragmentShaderHeader += '#extension GL_EXT_frag_depth : enable\n';
+    }
+
+    this.fragmentShaderHeader +='precision highp float;\n';
+    this.fragmentShaderHeader +='precision highp int;\n';
+
+
+    if(logarithmicDepthBuffer)
+    {
+        this.fragmentShaderHeader +='#define USE_LOGDEPTHBUF\n';
+        this.fragmentShaderHeader +='#define USE_LOGDEPTHBUF_EXT\n';
+		this.fragmentShaderHeader += LogDepthBuffer;
+    }
+
+	this.fragmentShaderHeader +='#define VERTEX_TEXTURES\n';
+	this.vertexShaderHeader = this.fragmentShaderHeader;
+
+	this.vertexShader = this.vertexShaderHeader + SimpleVS;
+	this.fragmentShader = this.fragmentShaderHeader + SimpleFS;
 
     this.uniforms = {
         diffuseColor: {

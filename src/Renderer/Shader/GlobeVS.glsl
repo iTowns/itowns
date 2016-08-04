@@ -1,29 +1,3 @@
-#version 100
-
-precision highp float;
-precision highp int;
-
-#define SHADER_NAME ShaderMaterial
-#define VERTEX_TEXTURES
-
-#define USE_LOGDEPTHBUF
-#define USE_LOGDEPTHBUF_EXT
-
-#ifdef USE_LOGDEPTHBUF
-
-    #define EPSILON 1e-6
-    #ifdef USE_LOGDEPTHBUF_EXT
-
-        varying float vFragDepth;
-
-    #endif
-
-    uniform float logDepthBufFC;
-
-#endif
-
-
-
 const float PI          = 3.14159265359;
 const float INV_TWO_PI  = 1.0 / (2.0*PI);
 const float PI4         = 0.78539816339;
