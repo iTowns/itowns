@@ -223,7 +223,7 @@ function updateNodeFeature(quadtree, node, featureLayers) {
             var layer = featureLayers[i];
             var protocol = layer.protocol;
             if(protocol.toLowerCase() == 'wfs') {
-               if (layer.tileInsideLimit(node, layer) && !node.content) { 
+               if (layer.tileInsideLimit(node, layer) && !node.content) {
                     var args = {
                         layer: layer
                     };
