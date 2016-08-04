@@ -251,7 +251,7 @@ BrowseTree.prototype.updateLayer = function(layer, camera) {
 
             };
 
-        }();
+        }.bind(this)();
 
         node.traverse(cRTC);
     }
