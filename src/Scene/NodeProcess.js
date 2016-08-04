@@ -223,7 +223,7 @@ function updateNodeFeature(quadtree, node, featureLayers) {
             var layer = featureLayers[i];
             var protocol = layer.protocol;
             if(protocol.toLowerCase() == 'wfs') {
-               if (layer.tileInsideLimit(node, layer) ) { //&& !node.content
+               if (layer.tileInsideLimit(node, layer) && !node.content) { 
                     var args = {
                         layer: layer
                     };
@@ -235,7 +235,7 @@ function updateNodeFeature(quadtree, node, featureLayers) {
                             var layer = quadtree.parent.batiments.children[0];
                             quadtree.parent.batiments.visible = true;
                             layer.add(result.feature);
-                            //node.content = result.feature;
+                            node.content = result.feature;
                         }
                     })
                     .catch(function(/*err*/) {
