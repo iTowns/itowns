@@ -5,10 +5,7 @@
  */
 
 import IoDriver from 'Core/Commander/Providers/IoDriver';
-import ItownsLine from 'Core/Commander/Providers/ItownsLine';
-import THREE from 'THREE';
-import Ellipsoid from 'Core/Math/Ellipsoid';
-import CoordCarto from 'Core/Geographic/CoordCarto';
+
 
 function IoDriver_JSON() {
     //Constructor
@@ -25,47 +22,5 @@ IoDriver_JSON.prototype.read = function(url) {
         return response.json();
     });
 };
-
-IoDriver_JSON.prototype.parseGeoJSON = function(features) {
-
-    var ellipsoid = new Ellipsoid(new THREE.Vector3(6378137, 6356752.3142451793, 6378137));
-    var colorLine = new THREE.Color("rgb(255, 0, 0)");
-    var line = new ItownsLine({
-                                    time :  1.0,
-                                    linewidth   : 100.0,
-                                    texture :   "data/strokes/hway1.png",
-                                    useTexture : false,
-                                    opacity    : 1.0 ,
-                                    sizeAttenuation : 1.0,
-                                    color : [colorLine.r, colorLine.g, colorLine.b]
-    });
-
-    var geometry = new THREE.SphereGeometry( 10, 5, 5 );
-    var material = new THREE.MeshBasicMaterial( {color: 0xff0000} );
-    var sphere = new THREE.Mesh( geometry, material );
-    var spt;
-    for (var r = 0; r < features.length; r++) {
-
-        var hauteur = (features[r].properties.hauteur) || 0;
-        var polygon = features[r].geometry.coordinates[0][0];
-
-        if (polygon.length > 2) {
-            for (var j = 0; j < polygon.length - 1; ++j) {
-                var pt2DTab = polygon[j]; //.split(' ');
-                //long et puis lat
-                var pt = new THREE.Vector3(parseFloat(pt2DTab[1]), hauteur, parseFloat(pt2DTab[0]));
-                var coordCarto = new CoordCarto().setFromDegreeGeo(pt.x, pt.z, pt.y);
-                line.addPoint(ellipsoid.cartographicToCartesian(coordCarto));
-                spt = ellipsoid.cartographicToCartesian(coordCarto);
-            }
-
-        }
-    }
-    
-    sphere.position.copy(spt);
-    return sphere;
-
-};
-
 
 export default IoDriver_JSON;
