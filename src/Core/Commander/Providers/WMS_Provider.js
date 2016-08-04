@@ -78,7 +78,7 @@ WMS_Provider.prototype.preprocessDataLayer = function(layer){
     layer.transparent = defaultValue(layer.transparent, false),
     layer.bbox = defaultValue(layer.bbox, [-180, -90, 180, 90]);
     layer.customUrl = layer.url +
-                  '?SERVICE=WMS&REQUEST=GetMap&LAYERS=' + layer.name +
+                  '&SERVICE=WMS&REQUEST=GetMap&LAYERS=' + layer.name +
                   '&VERSION=' + layer.version +
                   '&STYLES=' + layer.styleName +
                   '&FORMAT=' + layer.format +

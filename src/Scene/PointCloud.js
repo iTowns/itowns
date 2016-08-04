@@ -13,12 +13,27 @@ function PointCloud() {
     //change axis
     potreeInstance = new THREE.Object3D();
 
-    potreeInstance.quaternion.multiply(
-            new THREE.Quaternion().setFromAxisAngle(
-                new THREE.Vector3( 1, 0, 0 ), -Math.PI / 2 ));
-    potreeInstance.quaternion.multiply(
-            new THREE.Quaternion().setFromAxisAngle(
-                new THREE.Vector3( 0, 0, 1 ),  Math.PI ));
+    // potreeInstance.quaternion.multiply(
+    //         new THREE.Quaternion().setFromAxisAngle(
+    //             new THREE.Vector3( 1, 0, 0 ), -Math.PI / 2 ));
+    // potreeInstance.quaternion.multiply(
+    //         new THREE.Quaternion().setFromAxisAngle(
+    //             new THREE.Vector3( 0, 0, 1 ),  Math.PI ));
+
+var minx = 292000;
+var maxx = 294000;
+var miny = 5040000;
+var maxy = 5042000;
+var minz = 39.27;
+var maxz = 90.56;
+
+var geometry = new THREE.BoxGeometry(maxx - minx , maxy - miny, maxz - minz);
+var material = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
+material.transparent = true;
+material.opacity = 0.05;
+var cube = new THREE.Mesh( geometry, material );
+cube.position.copy(new THREE.Vector3((maxx + minx) * 0.5, (maxy + miny) * 0.5, (maxz + minz) * 0.5));
+this.add( cube );
 
     this.add(potreeInstance);
 }
@@ -44,7 +59,7 @@ PointCloud.prototype.load_greyhoud = function(url) {
 
 
     loader.load(url, function(geometry) {
-        var material = new THREE.PointsMaterial( { size: 1000000.0,
+        var material = new THREE.PointsMaterial( { size: 10.0,
             vertexColors: THREE.VertexColors } );
         var pointcloud = new Potree.PointCloudOctree(geometry, material);
 /*

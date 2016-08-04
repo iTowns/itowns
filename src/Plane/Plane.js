@@ -10,7 +10,7 @@ import Quadtree from 'Scene/Quadtree';
 import SchemeTile from 'Scene/SchemeTile';
 import TileMesh from 'Globe/TileMesh';
 import LayersConfiguration from 'Scene/LayersConfiguration';
-
+import PointCloud from 'Scene/PointCloud'
 
 function Plane(parameters, gLDebug) {
     //Constructor
@@ -18,6 +18,7 @@ function Plane(parameters, gLDebug) {
     Layer.call(this);
 
     this.gLDebug = gLDebug;
+    this.pointcloud = new PointCloud();
 
     this.batiments = new Layer();
     this.layerWGS84Zup = new Layer();
@@ -26,6 +27,7 @@ function Plane(parameters, gLDebug) {
     this.layersConfiguration = new LayersConfiguration();
 
     this.add(this.tiles);
+    this.add(this.pointcloud);
 }
 
 Plane.prototype = Object.create(Layer.prototype);

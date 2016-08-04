@@ -102,10 +102,13 @@ ApiGlobe.prototype.addPointCloud = function(url) {
 
         for (var sl = 0; sl < layer.children.length; sl++) {
             var sLayer = layer.children[sl];
-            if (sLayer instanceof PointCloud)
+            if (sLayer instanceof PointCloud) {
                 sLayer.load(url);
+                return;
+            }
         }
     }
+    throw new Error('No PointCloud layer');
 };
 
 ApiGlobe.prototype.moveLayerUp = function(layer) {
