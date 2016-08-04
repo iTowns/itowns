@@ -45,7 +45,7 @@ and open the template in the editor.
             viewerDiv,
             [266040.26, 344252.61, 4984521.41, 5095744.39]);
 
-        itowns.viewer.addPointCloud("greyhound://192.168.1.12:5000/greyhound/");
+        itowns.viewer.addPointCloud("greyhound://3d.oslandia.com/lopocs-itowns/greyhound/");
 
         itowns.viewer.addImageryLayer({
             url       : "http://3d.oslandia.com/dem.png",
@@ -75,6 +75,30 @@ and open the template in the editor.
             },
             options: {
                 minmaxElevation: [0, 255],
+                mimetype  : "image/png",
+                tileMatrixSet: 'WGS84G'
+            }
+        });
+
+        itowns.viewer.addImageryLayer({
+            url       : "http://geoindex.uqam.ca/mapserv?map=cmm_2013",
+            protocol  : 'wms',
+            version   : '1.3.0',
+            id        : 'testwms',
+            name      : 'cmm_2013',
+            style      : "",
+            projection : "EPSG:2950",
+            transparent : true,
+            // min long, min lat, max long, max lat
+            bbox      : [266040.26, 4984521.41, 344252.61, 5095744.39],
+            featureInfoMimeType : "",
+            dateTime  : "",
+            heightMapWidth : 256,
+            waterMask      : false,
+            updateStrategy: {
+                type: 3
+            },
+            options: {
                 mimetype  : "image/png",
                 tileMatrixSet: 'WGS84G'
             }

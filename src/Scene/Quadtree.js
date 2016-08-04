@@ -47,7 +47,7 @@ function Quadtree(type, schemeTile, link) {
     this.schemeTile = schemeTile;
     this.tileType = type;
     this.minLevel = 2;
-    this.maxLevel = 17;
+    this.maxLevel = 6;
     var rootNode = new NodeMesh();
 
     rootNode.frustumCulled = false;

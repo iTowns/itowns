@@ -75,7 +75,7 @@ void main() {
 
             #endif
 
-            float dv = texture2D( dTextures_00[0], vVv).r * 255.0;
+            float dv = 0.0;// texture2D( dTextures_00[0], vVv).r * 255.0;
             vNormal     = normal;
             vPosition   = vec4( position +  vNormal  * dv ,1.0 );
         }
