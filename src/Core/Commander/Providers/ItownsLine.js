@@ -16,7 +16,6 @@ THREE.Mesh.call(this);
     this.geometry = new THREE.BufferGeometry();
     this.material = new ItownsLineMaterial(options);
     this.widthCallback = null;
-
 };
 
 ItownsLine.prototype = Object.create(THREE.Mesh.prototype);

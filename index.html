@@ -172,7 +172,6 @@ and open the template in the editor.
                 }
             });
 
-
             itowns.viewer.addImageryLayer({
                 protocol:   "wmts",
                 id:         "OrthoCRS",
@@ -360,7 +359,6 @@ and open the template in the editor.
                 }
             });
 
-
         // itowns.viewer.addImageryLayer({
         //         protocol:   "wmtsc",
         //         id:         "DARK",
@@ -396,9 +394,29 @@ and open the template in the editor.
                 options: {}
             },
             options: {
-                mimetype  : "image/png"
+                mimetype  : "image/png",
+                tileMatrixSet: 'WGS84G'
             }
         });
+                                    
+        itowns.viewer.addFeatureLayer({
+            url       : "http://wxs.ign.fr/72hpsel8j8nhb5qgdh07gcyp/geoportail/wfs?",
+            protocol  : 'wfs',
+            version   : '2.0.0',
+            id        : 'testwfs',
+            title     : "BDTOPO_BDD_WLD_WGS84G:bati_remarquable,BDTOPO_BDD_WLD_WGS84G:bati_indifferencie",
+            styleName : "",
+            extractStyle : true,
+            projection: "EPSG:4326",
+            // min long, min lat, max long, max lat (lower et upper corners)
+            bbox      : [-63.1533283, -21.3896308, 55.8366872, 51.1028253],
+            ipr       : "IGN",
+            type      : "styledPoly", //bbox //poly//styledPoly
+            options: {
+                mimetype  : "json",
+                tileMatrixSet: 'WGS84G'
+            }
+        });                            
 
         itowns.viewer.addElevationLayer({
             protocol:   "wmts",
@@ -549,8 +567,6 @@ and open the template in the editor.
         });
 
         itowns.viewer.update();
-
-
 
         // THIS IS AN EXAMPLE OF INTERFACE TO INTERACT WITH ITOWNS
         var Menu = function() {
