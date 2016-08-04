@@ -15,6 +15,7 @@ import BoundingBox from 'Scene/BoundingBox';
 import ItownsLine from 'Core/Commander/Providers/ItownsLine';
 import Ellipsoid from 'Core/Math/Ellipsoid';
 import CoordCarto from 'Core/Geographic/CoordCarto';
+import CVML from 'Core/Math/CVML';
 
 /**
  * Return url wmts MNT
@@ -39,15 +40,6 @@ WFS_Provider.prototype.url = function(bbox,layer) {
 WFS_Provider.prototype.customUrl = function(url,coord) {
     //convert radian to degree, lon is added a offset of Pi
     //to align axisgit  to card center
-
-   /* var bbox = coord.minCarto.latitude * 180.0 / Math.PI +
-                "," +
-                (coord.minCarto.longitude - Math.PI)* 180.0 / Math.PI +
-                ","+
-               coord.maxCarto.latitude* 180.0 / Math.PI +
-               "," +
-               (coord.maxCarto.longitude - Math.PI )*180.0 / Math.PI;
-    */
     var bbox =  (coord.minCarto.longitude - Math.PI)* 180.0 / Math.PI +
                 "," +
                 coord.minCarto.latitude * 180.0 / Math.PI +
@@ -133,13 +125,10 @@ WFS_Provider.prototype.getFeatures = function(tile, layer, parameters) {
 
        if(feature.crs) {
             var features = feature.features;
-            var positions = this.parseGeoJSON(features);
-            var geometry = new THREE.BufferGeometry();
-            var material = new THREE.LineBasicMaterial({ color: 0xff0000, transparent : true, opacity: 0.9}); //side:THREE.DoubleSide, , linewidth: 5, 
-            geometry.addAttribute( 'position', new THREE.BufferAttribute( positions, 3 ) );
-            geometry.computeBoundingSphere();
-            result.feature = new THREE.Line( geometry, material );
-            result.feature.frustumCulled = false;
+            if(layer.type == "poly")
+                result.feature = this.GeoJSON2Polygon(features);
+            else if(layer.type = "bbox")
+                result.feature = this.GeoJSON2BBox(features);
             
             this.cache.addRessource(url, result.feature);
         }
@@ -152,30 +141,143 @@ WFS_Provider.prototype.getFeatures = function(tile, layer, parameters) {
 
 };
 
-WFS_Provider.prototype.parseGeoJSON = function(features) {
+WFS_Provider.prototype.GeoJSON2Polygon = function(features) {
     var ellipsoid = new Ellipsoid(new THREE.Vector3(6378137, 6356752.3142451793, 6378137));
-    var positions = [];
+    var polyGroup = new THREE.Object3D();
     for (var r = 0; r < features.length; r++) {
-
-        var hauteur = (features[r].properties.hauteur) || 0;
+        var positions = [];
+        //var hauteur = (features[r].properties.hauteur) || 0;
         var polygon = features[r].geometry.coordinates[0][0];
-
-        if (polygon.length > 2) {
-            for (var j = 0; j < polygon.length - 1; ++j) {
+        var altitude = features[r].properties.z_min; 
+        if (polygon.length > 2 && altitude != 9999) {
+            for (var j = 0; j < polygon.length; ++j) {
                 var pt2DTab = polygon[j]; //.split(' ');
                 //long et puis lat
                 //var pt = new THREE.Vector3(parseFloat(pt2DTab[1]), hauteur, parseFloat(pt2DTab[0]));
-                var coordCarto = new CoordCarto().setFromDegreeGeo(parseFloat(pt2DTab[1]), parseFloat(pt2DTab[0]), hauteur);
+                var coordCarto = new CoordCarto().setFromDegreeGeo(parseFloat(pt2DTab[1]), parseFloat(pt2DTab[0]), altitude);
                 var spt = ellipsoid.cartographicToCartesian(coordCarto);
                 positions.push( spt.x, spt.y, spt.z);
             }
-
+            var geometry = new THREE.BufferGeometry();
+            var material = new THREE.LineBasicMaterial({ color: 0xff0000, transparent : true, opacity: 0.9}); //side:THREE.DoubleSide, , linewidth: 5,
+                geometry.addAttribute( 'position', new THREE.BufferAttribute( new Float32Array( positions ), 3 ) );
+                geometry.computeBoundingSphere();
+            var poly = new THREE.Line( geometry, material );
+                poly.frustumCulled = false;
+            polyGroup.add(poly);    
+            
         }
     }
-    
-    return new Float32Array( positions );
+
+    return polyGroup;
 };
 
+WFS_Provider.prototype.GeoJSON2BBox = function(features) {
+    
+    var ellipsoid = new Ellipsoid(new THREE.Vector3(6378137, 6356752.3142451793, 6378137));
+    var bboxGroup = new THREE.Object3D();
+    var wallGeometry = new THREE.Geometry(); // for the walls
+    var roofGeometry = new THREE.Geometry(); // for the roof
+    var suppHeight = 10; // So we don't cut the roof
+    var texture = new THREE.TextureLoader().load( 'data/strokes/wall-texture.jpg'); 
+    
+    for (var r = 0; r < features.length; r++) {
+
+        var hauteur = (features[r].properties.hauteur + suppHeight) || 0;
+        var altitude = features[r].properties.z_min;  
+        var polygon = features[r].geometry.coordinates[0][0];
+
+        if (polygon.length > 2 && altitude != 9999) {
+
+            var arrPoint2D = [];
+            // VERTICES
+            for (var j = 0; j < polygon.length - 1; ++j) {
+
+                var pt2DTab = polygon[j]; //.split(' ');
+                
+                var coordCarto1 = new CoordCarto().setFromDegreeGeo(parseFloat(pt2DTab[1]), parseFloat(pt2DTab[0]), altitude);
+                var coordCarto2 = new CoordCarto().setFromDegreeGeo(parseFloat(pt2DTab[1]), parseFloat(pt2DTab[0]), altitude +hauteur);
+                var pgeo1 = ellipsoid.cartographicToCartesian(coordCarto1); 
+                var pgeo2 = ellipsoid.cartographicToCartesian(coordCarto2);
+
+                var vector3_1 = new THREE.Vector3(pgeo1.x, pgeo1.y, pgeo1.z); 
+                var vector3_2 = new THREE.Vector3(pgeo2.x, pgeo2.y, pgeo2.z);
+
+                arrPoint2D.push(CVML.newPoint(parseFloat(pt2DTab[1]), parseFloat(pt2DTab[0])));
+                //arrPoint2D.push(CVML.newPoint(pgeo2.x, pgeo2.y, pgeo2.z));
+                
+                wallGeometry.vertices.push(vector3_1, vector3_2);
+
+            }
+
+            // FACES
+            // indice of the first point of the polygon 3D
+            for (var k = wallGeometry.vertices.length - ((polygon.length - 1) * 2); k < wallGeometry.vertices.length; k = k + 2) {
+
+                var l = k; // % (pts2DTab.length);
+                if (l > wallGeometry.vertices.length - 4) {
+                    l = wallGeometry.vertices.length - ((polygon.length - 1) * 2);
+                }
+                wallGeometry.faces.push(new THREE.Face3(l, l + 1, l + 3));
+                wallGeometry.faces.push(new THREE.Face3(l, l + 3, l + 2));
+            }
+
+            var ll = wallGeometry.vertices.length - ((polygon.length - 1) * 2);
+            wallGeometry.faces.push(new THREE.Face3(ll, ll + 1, wallGeometry.vertices.length - 1));
+            wallGeometry.faces.push(new THREE.Face3(ll, wallGeometry.vertices.length - 1, wallGeometry.vertices.length - 2));
+
+        }
+        
+        wallGeometry.computeFaceNormals(); // WARNING : VERY IMPORTANT WHILE WORKING WITH RAY CASTING ON CUSTOM MESH
+        
+        //**************** ROOF ****************************
+      
+        var triangles = CVML.TriangulatePoly(arrPoint2D);
+        triangles.forEach(function(t) {
+
+            var pt1 = t.getPoint(0),
+                pt2 = t.getPoint(1),
+                pt3 = t.getPoint(2);
+
+            var coordCarto1 = new CoordCarto().setFromDegreeGeo(pt1.x, pt1.y, altitude + hauteur);
+            var coordCarto2 = new CoordCarto().setFromDegreeGeo(pt2.x, pt2.y, altitude + hauteur); // + Math.random(1000) );
+            var coordCarto3 = new CoordCarto().setFromDegreeGeo(pt3.x, pt3.y, altitude + hauteur);
+
+            var pgeo1 = ellipsoid.cartographicToCartesian(coordCarto1); //{longitude:p1.z, latitude:p1.x, altitude: 0});
+            var pgeo2 = ellipsoid.cartographicToCartesian(coordCarto2);
+            var pgeo3 = ellipsoid.cartographicToCartesian(coordCarto3);
+
+            //var geometry = new THREE.Geometry();
+            roofGeometry.vertices.push(new THREE.Vector3(pgeo1.x, pgeo1.y, pgeo1.z));
+            roofGeometry.vertices.push(new THREE.Vector3(pgeo2.x, pgeo2.y, pgeo2.z));
+            roofGeometry.vertices.push(new THREE.Vector3(pgeo3.x, pgeo3.y, pgeo3.z));
+
+            var face = new THREE.Face3(
+                roofGeometry.vertices.length - 3,
+                roofGeometry.vertices.length - 2,
+                roofGeometry.vertices.length - 1
+            );
+            roofGeometry.faces.push(face);
+
+        });
+
+    }
+
+    roofGeometry.computeFaceNormals();
+   
+    var wallMat = new THREE.MeshBasicMaterial({  color: 0x660000 , transparent: true, opacity: 0.8, side : THREE.DoubleSide});  // map : texture,
+    var roofMat = new THREE.MeshBasicMaterial({color: 0x0000ff, transparent: true, opacity: 0.8, side : THREE.DoubleSide});
+
+    var wall  = new THREE.Mesh(wallGeometry, wallMat);
+        wall.frustumCulled = false;
+    var roof  = new THREE.Mesh(roofGeometry, roofMat);
+        roof.frustumCulled = false;
+
+    bboxGroup.add(wall);
+    bboxGroup.add(roof);
+
+    return bboxGroup;
+};
 
 /**
  * Returns the url for a WMS query with the specified bounding box
