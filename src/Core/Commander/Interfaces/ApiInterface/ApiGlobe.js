@@ -111,6 +111,23 @@ ApiGlobe.prototype.addPointCloud = function(url) {
     throw new Error('No PointCloud layer');
 };
 
+ApiGlobe.prototype.setPointCloudVisibility = function(v) {
+    var layers = this.scene.layers;
+    for ( var l = 0; l < layers.length; l++ ) {
+        var layer = layers[l].node;
+
+        for (var sl = 0; sl < layer.children.length; sl++) {
+            var sLayer = layer.children[sl];
+            if (sLayer instanceof PointCloud) {
+                for (var i=0; i<sLayer.children.length; i++) {
+                    sLayer.children[i].visible = v;
+                }
+                return;
+            }
+        }
+    }
+}
+
 ApiGlobe.prototype.moveLayerUp = function(layer) {
 
     this.scene.getMap().layersConfiguration.moveLayerUp(layer);

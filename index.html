@@ -35,6 +35,7 @@ and open the template in the editor.
         <script src="node_modules/potree/libs/other/BinaryHeap.js"></script>
         <script type="text/javascript">
 
+
         var initCenter = { longitude:2.3465, latitude: 48.88, altitude: 25000000};
 
         // iTowns namespace defined here
@@ -118,6 +119,7 @@ and open the template in the editor.
             this.api = function(){};
             this.api2 = function(){};
             this.api3 = function(){};
+            this.pointcloud = true;
         };
 
         var text = new Menu();
@@ -185,6 +187,10 @@ and open the template in the editor.
                 itowns.viewer.setStreetLevelImageryOn(newValue);
             });
         }
+
+        gui.add(text, 'pointcloud').onChange(function(newValue) {
+            itowns.viewer.setPointCloudVisibility(newValue);
+        });
 
         viewerDiv.addEventListener('rangeChanged', function() {
             var controller;

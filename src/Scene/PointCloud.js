@@ -30,7 +30,7 @@ var maxz = 90.56;
 var geometry = new THREE.BoxGeometry(maxx - minx , maxy - miny, maxz - minz);
 var material = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
 material.transparent = true;
-material.opacity = 0.05;
+material.opacity = 0.0;
 var cube = new THREE.Mesh( geometry, material );
 cube.position.copy(new THREE.Vector3((maxx + minx) * 0.5, (maxy + miny) * 0.5, (maxz + minz) * 0.5));
 this.add( cube );
