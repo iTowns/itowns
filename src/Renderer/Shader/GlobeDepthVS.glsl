@@ -1,27 +1,3 @@
-#version 100
-
-precision highp float;
-precision highp int;
-
-#define SHADER_NAME ShaderMaterial
-#define VERTEX_TEXTURES
-
-#define USE_LOGDEPTHBUF
-#define USE_LOGDEPTHBUF_EXT
-
-#ifdef USE_LOGDEPTHBUF
-
-    #define EPSILON 1e-6
-    #ifdef USE_LOGDEPTHBUF_EXT
-
-        varying float vFragDepth;
-
-    #endif
-
-    uniform float logDepthBufFC;
-
-#endif
-
 attribute vec2      uv_wgs84;
 attribute vec3      position;
 attribute vec3      normal;

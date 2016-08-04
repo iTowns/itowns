@@ -1,3 +1,4 @@
+
 #ifdef USE_LOGDEPTHBUF
 
 	uniform float logDepthBufFC;

@@ -24,9 +24,10 @@ import Layer from 'Scene/Layer';
 import CoordCarto from 'Core/Geographic/CoordCarto';
 import Capabilities from 'Core/System/Capabilities';
 import MobileMappingLayer from 'MobileMapping/MobileMappingLayer';
+import CustomEvent from 'custom-event';
 
 var instanceScene = null;
-var event = new Event('globe-built');
+var event = new CustomEvent('globe-built');
 var NO_SUBDIVISE = 0;
 var SUBDIVISE = 1;
 var CLEAN = 2;
@@ -50,7 +51,7 @@ function Scene(coordCarto, ellipsoid, viewerDiv, debugMode, gLDebug) {
     this.orbitOn = false;
 
     this.gLDebug = gLDebug;
-    this.gfxEngine = c3DEngine(this, positionCamera, viewerDiv, debugMode, gLDebug);
+    this.gfxEngine = c3DEngine(this,positionCamera,viewerDiv, debugMode,gLDebug);
     this.browserScene = new BrowseTree(this.gfxEngine);
     this.cap = new Capabilities();
 

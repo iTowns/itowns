@@ -6,8 +6,8 @@ var GlobeDepthMaterial = function(otherMaterial) {
 
     BasicMaterial.call(this);
 
-    this.vertexShader = GlobeDepthVS;
-    this.fragmentShader = GlobeDepthFS;
+    this.vertexShader = this.vertexShaderHeader + GlobeDepthVS;
+    this.fragmentShader = this.fragmentShaderHeader + GlobeDepthFS;
 
     // Why connect directily uniform doesn't work?
     // Verify attributes's shaders
