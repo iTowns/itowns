@@ -12,6 +12,10 @@ import defaultValue from 'Core/defaultValue';
 import Projection from 'Core/Geographic/Projection';
 import CacheRessource from 'Core/Commander/Providers/CacheRessource';
 import BoundingBox from 'Scene/BoundingBox';
+import ItownsLine from 'Core/Commander/Providers/ItownsLine';
+import Ellipsoid from 'Core/Math/Ellipsoid';
+import CoordCarto from 'Core/Geographic/CoordCarto';
+
 /**
  * Return url wmts MNT
  * @param {String} options.url: service base url
@@ -43,14 +47,14 @@ WFS_Provider.prototype.customUrl = function(url,coord) {
                coord.maxCarto.latitude* 180.0 / Math.PI +
                "," +
                (coord.maxCarto.longitude - Math.PI )*180.0 / Math.PI;
-    */        
+    */
     var bbox =  (coord.minCarto.longitude - Math.PI)* 180.0 / Math.PI +
                 "," +
                 coord.minCarto.latitude * 180.0 / Math.PI +
                 ","+
-                (coord.maxCarto.longitude - Math.PI )*180.0 / Math.PI + 
+                (coord.maxCarto.longitude - Math.PI )*180.0 / Math.PI +
                "," +
-                coord.maxCarto.latitude* 180.0 / Math.PI;           
+                coord.maxCarto.latitude* 180.0 / Math.PI;
 
     var urld = url.replace('%bbox',bbox.toString());
 
@@ -77,12 +81,12 @@ WFS_Provider.prototype.preprocessDataLayer = function(layer){
 WFS_Provider.prototype.tileInsideLimit = function(tile,layer) {
     var bbox = tile.bbox;
     var level = tile.level;
-    //console.log(level)
+    console.log(level)
     // shifting longitude because of issue #19
     var west =  layer.bbox[0]*Math.PI/180.0 + Math.PI;
     var east =  layer.bbox[2]*Math.PI/180.0 + Math.PI;
     var bboxRegion = new BoundingBox(west, east, layer.bbox[1]*Math.PI/180.0, layer.bbox[3]*Math.PI/180.0, 0, 0, 0);
-    return (level > 16) && bboxRegion.intersect(bbox);
+    return (level == 18) && bboxRegion.intersect(bbox);
 };
 
 WFS_Provider.prototype.executeCommand = function(command) {
@@ -129,17 +133,47 @@ WFS_Provider.prototype.getFeatures = function(tile, layer, parameters) {
 
        if(feature.crs) {
             var features = feature.features;
-            result.feature = this._IoDriver.parseGeoJSON(features);
+            var positions = this.parseGeoJSON(features);
+            var geometry = new THREE.BufferGeometry();
+            var material = new THREE.LineBasicMaterial({ color: 0xff0000, transparent : true, opacity: 0.9}); //side:THREE.DoubleSide, , linewidth: 5, 
+            geometry.addAttribute( 'position', new THREE.BufferAttribute( positions, 3 ) );
+            geometry.computeBoundingSphere();
+            result.feature = new THREE.Line( geometry, material );
+            result.feature.frustumCulled = false;
+            
             this.cache.addRessource(url, result.feature);
         }
 
         return result;
-
     }.bind(this)).catch(function(/*reason*/) {
             result.feature = null;
             return result;
         });
 
+};
+
+WFS_Provider.prototype.parseGeoJSON = function(features) {
+    var ellipsoid = new Ellipsoid(new THREE.Vector3(6378137, 6356752.3142451793, 6378137));
+    var positions = [];
+    for (var r = 0; r < features.length; r++) {
+
+        var hauteur = (features[r].properties.hauteur) || 0;
+        var polygon = features[r].geometry.coordinates[0][0];
+
+        if (polygon.length > 2) {
+            for (var j = 0; j < polygon.length - 1; ++j) {
+                var pt2DTab = polygon[j]; //.split(' ');
+                //long et puis lat
+                //var pt = new THREE.Vector3(parseFloat(pt2DTab[1]), hauteur, parseFloat(pt2DTab[0]));
+                var coordCarto = new CoordCarto().setFromDegreeGeo(parseFloat(pt2DTab[1]), parseFloat(pt2DTab[0]), hauteur);
+                var spt = ellipsoid.cartographicToCartesian(coordCarto);
+                positions.push( spt.x, spt.y, spt.z);
+            }
+
+        }
+    }
+    
+    return new Float32Array( positions );
 };
 
 

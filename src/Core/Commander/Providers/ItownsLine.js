@@ -16,7 +16,8 @@ THREE.Mesh.call(this);
     this.geometry = new THREE.BufferGeometry();
     this.material = new ItownsLineMaterial(options);
     this.widthCallback = null;
-
+    //this.frustumCulled = false;
+    //this.doubleSided = true;
 };
 
 ItownsLine.prototype = Object.create(THREE.Mesh.prototype);

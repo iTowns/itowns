@@ -87,7 +87,7 @@ void main() {
                     #endif
 
                 #endif
-
+                
                 
                 vec2 previousScreen = fix( projectedPrePoint,aspect );	// start of previous segment
                 vec2 currentScreen = fix( projectedCurPoint ,aspect);	// end of previous segment, start of current segment
@@ -141,4 +141,5 @@ void main() {
                 vPosition    = ( modelViewMatrix * vec4( position, 1. ) ).xyz;
                 gl_Position  = projectedCurPoint;
                 gl_PointSize = 10.0;
+
 }
