@@ -49,7 +49,7 @@ function Scene(coordCarto, ellipsoidOrBB, viewerDiv, debugMode, gLDebug) {
         positionCamera = this.ellipsoid.cartographicToCartesian(new CoordCarto().setFromDegreeGeo(coordCarto.longitude, coordCarto.latitude, coordCarto.altitude));
     } else if (ellipsoidOrBB instanceof BoundingBox) {
         this.boundingBox = ellipsoidOrBB;
-        positionCamera = {x:ellipsoidOrBB.center.x, y: ellipsoidOrBB.center.y, z:250000};
+        positionCamera = {x:ellipsoidOrBB.center.x, y: ellipsoidOrBB.center.y, z:200000};
     } else {
         throw new Error('2nd arg must be either a Ellipsoid or a BoundingBox');
     }
