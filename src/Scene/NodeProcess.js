@@ -238,7 +238,8 @@ function updateNodeImagery(quadtree, node, layersConfig, force) {
 
         promises.push(quadtree.interCommand.request(args, node, refinementCommandCancellationFn).then(
             function(result) {
-                let level = ancestor ? ancestor.level : node.level;
+                let level = (ancestor ? ancestor.level : node.level) +
+                    (layer.options.levelOffset || 0);
 
                 // Assign .level to texture
                 if (Array.isArray(result)) {
@@ -310,7 +311,7 @@ function updateNodeElevation(quadtree, node, layersConfig, force) {
                 }
 
                 if (terrain && terrain.texture) {
-                    terrain.texture.level = ancestor.level;
+                    terrain.texture.level = ancestor.level + (layer.options.levelOffset || 0);
                 }
 
                 node.setTextureElevation(terrain);

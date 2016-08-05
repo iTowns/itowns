@@ -273,7 +273,9 @@ LayeredMaterial.prototype.setParam = function(param) {
     this.uniforms.nColorLayer.value = param.length;
     for (var l = 0; l < param.length; l++) {
         this.layerIdToIndex[param[l].idLayer] = l;
-        this.paramLayers[l] = new THREE.Vector4(param[l].layerTexturesOffset, param[l].tileMT === 'PM' ? 1 : 0, param[l].visible, param[l].opacity);
+        this.paramLayers[l] = new THREE.Vector4(
+            param[l].layerTexturesOffset,
+            param[l].tileMT === 'PM' ? 1 : 0, param[l].visible, param[l].opacity);
         this.paramBLayers[l] = new THREE.Vector2(param[l].fx, 0.0);
     }
 };
@@ -292,14 +294,6 @@ LayeredMaterial.prototype.setTexturesLayer = function(textures, layer, slotOffse
         if (textures[i]) {
             this.setTexture(textures[i].texture, layer, i + (slotOffset || 0), textures[i].pitch);
         }
-    }
-};
-
-LayeredMaterial.prototype.getDelta = function(layerIndex) {
-    if (this.paramLayers[layerIndex]) {
-        return 0; //this.paramLayers[layerIndex].y;
-    } else {
-        return 0;
     }
 };
 
