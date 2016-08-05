@@ -252,10 +252,8 @@ TileMesh.prototype.setTexturesLayer = function(textures, idLayer, slotOffset) {
 
 TileMesh.prototype.downScaledColorSlot = function(slot) {
     var mat = this.materials[RendererConstant.FINAL];
-    var layerIndex = mat.slotToLayerIndex(slot);
 
-    return (mat.getLevelLayerColor(l_COLOR, slot) <
-        (this.level + mat.getDelta(layerIndex)));
+    return mat.getLevelLayerColor(l_COLOR, slot) < this.level;
 }
 
 

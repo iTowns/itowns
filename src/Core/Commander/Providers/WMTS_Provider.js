@@ -251,10 +251,10 @@ WMTS_Provider.prototype.getZoomAncestor = function(tile, ancestor, layer) {
 }
 
 WMTS_Provider.prototype.tileInsideLimit = function(tile, layer) {
-
+    var level = tile.level + (layer.options.levelOffset || 0);
     //var limits = layer.tileMatrixSetLimits[tile.level];
     //!coWMTS.isInside(limits)
-    return tile.level >= layer.zoom.min && tile.level <= layer.zoom.max;
+    return layer.zoom.min <= level && level <= layer.zoom.max;
 }
 
 WMTS_Provider.prototype.getColorTextures = function(tile, layer, parameters) {
