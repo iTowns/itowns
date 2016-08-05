@@ -13,7 +13,7 @@ import Atmosphere from 'Globe/Atmosphere';
 import Capabilities from 'Core/System/Capabilities';
 import RendererConstant from 'Renderer/RendererConstant';
 
-THREE.OrbitControls = require('three-orbit-controls')(THREE);
+import fly from 'Renderer/fly-tweaked'
 
 var instance3DEngine = null;
 
@@ -140,7 +140,15 @@ function c3DEngine(scene, positionCamera, viewerDiv, debugMode, gLDebug) {
 
     }.bind(this);
 
+    this.previousTime = Date.now();
     this.update = function() {
+        var now = Date.now();
+        var dt = Math.min(now - this.previousTime, 200);
+        this.previousTime = now;
+
+        this.controls.movementSpeed = this.camera.camera3D.position.z / 5;
+
+        this.controls.update(dt * 0.001);
         this.camera.update();
         this.updateControl();
         this.scene.wait();
@@ -170,7 +178,7 @@ function c3DEngine(scene, positionCamera, viewerDiv, debugMode, gLDebug) {
     // init camera
     //
     this.camera.setPosition(positionCamera);
-    this.camera.camera3D.near = this.size * 2.333; // if near is too small --> bug no camera helper
+    this.camera.camera3D.near = 1; // this.size * 2.333; // if near is too small --> bug no camera helper
     this.camera.camera3D.far = this.size * 1000;
     this.camera.camera3D.updateProjectionMatrix();
     this.camera.camera3D.updateMatrixWorld(true);
@@ -210,7 +218,7 @@ function c3DEngine(scene, positionCamera, viewerDiv, debugMode, gLDebug) {
     });
     this.renderer.setPixelRatio(viewerDiv.devicePixelRatio);
     this.renderer.setSize(viewerDiv.clientWidth, viewerDiv.clientHeight);
-    this.renderer.setClearColor(0x030508);
+    this.renderer.setClearColor(0x252525);
     this.renderer.autoClear = false;
     //this.viewerDiv.appendChild(canvas);
     viewerDiv.appendChild(this.renderer.domElement);
@@ -229,19 +237,19 @@ function c3DEngine(scene, positionCamera, viewerDiv, debugMode, gLDebug) {
     this.controls.keyPanSpeed = 0.01;*/
 
     var origin = new THREE.Vector3(positionCamera.x, positionCamera.y, 300);
-    this.controls = new THREE.OrbitControls(this.camera.camera3D, this.renderer.domElement);
-
+    this.controls = fly(this.camera.camera3D, this.renderer.domElement, THREE);
+/*
     this.controls.constraint.target = origin;
     this.controls.damping = 0.1;
     this.controls.enablePan = true;
     this.controls.rotateSpeed = 0.8;
     this.controls.zoomSpeed = 1.0;
-    this.controls.minDistance = 30;
+    this.controls.minDistance = 1;
 
     this.controls.maxDistance = 250000;
     //this.controls.keyPanSpeed   = 1.0;
     this.controls.keyPanSpeed = 0.01;
-
+*/
     var gl = this.renderer.context;
     var maxTexturesUnits =  gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS);
 
@@ -262,8 +270,11 @@ function c3DEngine(scene, positionCamera, viewerDiv, debugMode, gLDebug) {
     };
 
     window.addEventListener('resize', this.onWindowResize, false);
-    this.controls.addEventListener('change', this.update);
+    // this.controls.addEventListener('change', this.update);
+    this.controls.on('move', this.update);
 
+    this.controls.rollSpeed = 0.5;
+    this.camera.position.z = 1000;
 }
 
 /**
