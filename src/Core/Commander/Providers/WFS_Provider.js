@@ -186,17 +186,20 @@ WFS_Provider.prototype.GeoJSON2BBox = function(features) {
         var hauteur = (features[r].properties.hauteur + suppHeight) || 0;
         var altitude = features[r].properties.z_min;  
         var polygon = features[r].geometry.coordinates[0][0];
-
-        if (polygon.length > 2 && altitude != 9999) {
-
+        var goodAltitude;
+        
+        if (polygon.length > 2) {
+            
+            if(altitude != 9999) goodAltitude = altitude;
+            
             var arrPoint2D = [];
             // VERTICES
             for (var j = 0; j < polygon.length - 1; ++j) {
 
                 var pt2DTab = polygon[j]; //.split(' ');
                 
-                var coordCarto1 = new CoordCarto().setFromDegreeGeo(parseFloat(pt2DTab[1]), parseFloat(pt2DTab[0]), altitude);
-                var coordCarto2 = new CoordCarto().setFromDegreeGeo(parseFloat(pt2DTab[1]), parseFloat(pt2DTab[0]), altitude +hauteur);
+                var coordCarto1 = new CoordCarto().setFromDegreeGeo(parseFloat(pt2DTab[1]), parseFloat(pt2DTab[0]), goodAltitude);
+                var coordCarto2 = new CoordCarto().setFromDegreeGeo(parseFloat(pt2DTab[1]), parseFloat(pt2DTab[0]), goodAltitude +hauteur);
                 var pgeo1 = ellipsoid.cartographicToCartesian(coordCarto1); 
                 var pgeo2 = ellipsoid.cartographicToCartesian(coordCarto2);
 
@@ -225,7 +228,6 @@ WFS_Provider.prototype.GeoJSON2BBox = function(features) {
             var ll = wallGeometry.vertices.length - ((polygon.length - 1) * 2);
             wallGeometry.faces.push(new THREE.Face3(ll, ll + 1, wallGeometry.vertices.length - 1));
             wallGeometry.faces.push(new THREE.Face3(ll, wallGeometry.vertices.length - 1, wallGeometry.vertices.length - 2));
-
         }
         
         wallGeometry.computeFaceNormals(); // WARNING : VERY IMPORTANT WHILE WORKING WITH RAY CASTING ON CUSTOM MESH
@@ -239,9 +241,9 @@ WFS_Provider.prototype.GeoJSON2BBox = function(features) {
                 pt2 = t.getPoint(1),
                 pt3 = t.getPoint(2);
 
-            var coordCarto1 = new CoordCarto().setFromDegreeGeo(pt1.x, pt1.y, altitude + hauteur);
-            var coordCarto2 = new CoordCarto().setFromDegreeGeo(pt2.x, pt2.y, altitude + hauteur); // + Math.random(1000) );
-            var coordCarto3 = new CoordCarto().setFromDegreeGeo(pt3.x, pt3.y, altitude + hauteur);
+            var coordCarto1 = new CoordCarto().setFromDegreeGeo(pt1.x, pt1.y, goodAltitude + hauteur);
+            var coordCarto2 = new CoordCarto().setFromDegreeGeo(pt2.x, pt2.y, goodAltitude + hauteur); // + Math.random(1000) );
+            var coordCarto3 = new CoordCarto().setFromDegreeGeo(pt3.x, pt3.y, goodAltitude + hauteur);
 
             var pgeo1 = ellipsoid.cartographicToCartesian(coordCarto1); //{longitude:p1.z, latitude:p1.x, altitude: 0});
             var pgeo2 = ellipsoid.cartographicToCartesian(coordCarto2);
@@ -265,8 +267,8 @@ WFS_Provider.prototype.GeoJSON2BBox = function(features) {
 
     roofGeometry.computeFaceNormals();
    
-    var wallMat = new THREE.MeshBasicMaterial({  color: 0x660000 , transparent: true, opacity: 0.8, side : THREE.DoubleSide});  // map : texture,
-    var roofMat = new THREE.MeshBasicMaterial({color: 0x0000ff, transparent: true, opacity: 0.8, side : THREE.DoubleSide});
+    var wallMat = new THREE.MeshBasicMaterial({  color: 0xcccccc, transparent: true, opacity: 0.8, side : THREE.DoubleSide});  // map : texture,
+    var roofMat = new THREE.MeshBasicMaterial({color: 0x660000, transparent: true, opacity: 0.8, side : THREE.DoubleSide});
 
     var wall  = new THREE.Mesh(wallGeometry, wallMat);
         wall.frustumCulled = false;
