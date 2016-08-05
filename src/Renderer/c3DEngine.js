@@ -218,7 +218,7 @@ function c3DEngine(scene, positionCamera, viewerDiv, debugMode, gLDebug) {
     });
     this.renderer.setPixelRatio(viewerDiv.devicePixelRatio);
     this.renderer.setSize(viewerDiv.clientWidth, viewerDiv.clientHeight);
-    this.renderer.setClearColor(0x252525);
+    this.renderer.setClearColor(0xccfffc);
     this.renderer.autoClear = false;
     //this.viewerDiv.appendChild(canvas);
     viewerDiv.appendChild(this.renderer.domElement);
@@ -236,7 +236,7 @@ function c3DEngine(scene, positionCamera, viewerDiv, debugMode, gLDebug) {
     this.controls.maxDistance = this.size * 8.0;
     this.controls.keyPanSpeed = 0.01;*/
 
-    var origin = new THREE.Vector3(positionCamera.x, positionCamera.y, 300);
+    // var origin = new THREE.Vector3(positionCamera.x, positionCamera.y, 300);
     this.controls = fly(this.camera.camera3D, this.renderer.domElement, THREE);
 /*
     this.controls.constraint.target = origin;
@@ -283,15 +283,7 @@ function c3DEngine(scene, positionCamera, viewerDiv, debugMode, gLDebug) {
  * @returns {undefined}
  */
 c3DEngine.prototype.updateControl = function() {
-    var len = this.camera.position().length();
-    var lim = this.size * 1.1;
 
-    if (len < lim) {
-        var t = Math.pow(Math.cos((lim - len) / (lim - this.size * 0.9981) * Math.PI * 0.5), 1.5);
-        var color = new THREE.Color(0x93d5f8);
-        this.renderer.setClearColor(color.multiplyScalar(1.0 - t));
-    } else if (len >= lim)
-        this.renderer.setClearColor(0x030508);
 };
 
 
