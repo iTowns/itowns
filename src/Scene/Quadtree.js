@@ -61,6 +61,8 @@ function Quadtree(type, schemeTile, link, param) {
         return true;
     };
 
+    rootNode.enablePickingRender = function() { return true;};
+
     this.add(rootNode);
 }
 
