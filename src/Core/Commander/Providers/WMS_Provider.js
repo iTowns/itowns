@@ -53,13 +53,13 @@ WMS_Provider.prototype.customUrl = function(url,coord) {
 
 
 
-    var bbox = (coord.minCarto.latitude) * 180.0 / Math.PI +
+    var bbox = (coord.south) * 180.0 / Math.PI +
                 "," +
-                (coord.minCarto.longitude >= Math.PI ? -(Math.PI * 2.0 - coord.minCarto.longitude) : coord.minCarto.longitude)* 180.0 / Math.PI +
+                (coord.west >= Math.PI ? -(Math.PI * 2.0 - coord.west) : coord.west)* 180.0 / Math.PI +
                 ","+
-               coord.maxCarto.latitude* 180.0 / Math.PI +
+               coord.north* 180.0 / Math.PI +
                "," +
-               (coord.maxCarto.longitude >= Math.PI ? -(Math.PI * 2.0 - coord.maxCarto.longitude) : coord.maxCarto.longitude)*180.0 / Math.PI;
+               (coord.east >= Math.PI ? -(Math.PI * 2.0 - coord.east) : coord.east)*180.0 / Math.PI;
 
     var urld = url.replace('%bbox',bbox.toString());
 

@@ -208,10 +208,10 @@ BuildingBox_Provider.prototype.addRoad = function(geometry, bbox, altitude_road,
 
     // Version using SIMPLE PLANE ROAD for Click and Go
     var ratio = 0.2;
-    var roadWidth = (bbox.maxCarto.longitude - bbox.minCarto.longitude) * ratio;
-    var roadHeight = (bbox.maxCarto.latitude - bbox.minCarto.latitude) * ratio;
-    var pos = new THREE.Vector3((bbox.minCarto.latitude + bbox.maxCarto.latitude) / 2,
-        altitude_road, (bbox.minCarto.longitude + bbox.maxCarto.longitude) / 2); //48.8505774,  altitude_sol, 2.3348124);
+    var roadWidth = (bbox.east - bbox.west) * ratio;
+    var roadHeight = (bbox.north - bbox.south) * ratio;
+    var pos = new THREE.Vector3((bbox.south + bbox.north) / 2,
+        altitude_road, (bbox.west + bbox.east) / 2); //48.8505774,  altitude_sol, 2.3348124);
 
     var coordCarto1 = new CoordCarto().setFromDegreeGeo(pos.x - roadWidth, pos.z - roadHeight, altitude_road);
     var coordCarto2 = new CoordCarto().setFromDegreeGeo(pos.x - roadWidth, pos.z + roadHeight, altitude_road);

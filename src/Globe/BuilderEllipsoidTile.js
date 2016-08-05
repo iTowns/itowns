@@ -17,7 +17,7 @@ BuilderEllipsoidTile.prototype.Prepare = function(params) {
 
     params.nbRow = Math.pow(2.0, params.zoom + 1.0);
 
-    var st1 = this.projector.WGS84ToOneSubY(params.bbox.minCarto.latitude);
+    var st1 = this.projector.WGS84ToOneSubY(params.bbox.south);
 
     if (!isFinite(st1))
         st1 = 0;
@@ -77,10 +77,10 @@ BuilderEllipsoidTile.prototype.OBB = function(params) {
 
     var normal = params.center.clone().normalize();
 
-    var phiStart = params.bbox.minCarto.longitude;
+    var phiStart = params.bbox.west;
     var phiLength = params.bbox.dimension.x;
 
-    var thetaStart = params.bbox.minCarto.latitude;
+    var thetaStart = params.bbox.south;
     var thetaLength = params.bbox.dimension.y;
 
     //      0---1---2
