@@ -59,7 +59,7 @@ PointCloud.prototype.load_greyhoud = function(url) {
 
 
     loader.load(url, function(geometry) {
-        var material = new THREE.PointsMaterial( { size: 5.0,
+        var material = new THREE.PointsMaterial( { size: 1.0,
             vertexColors: THREE.VertexColors } );
         var pointcloud = new Potree.PointCloudOctree(geometry, material);
 /*
