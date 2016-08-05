@@ -17,6 +17,15 @@ import BasicMaterial from 'Renderer/BasicMaterial';
 import LayersConfiguration from 'Scene/LayersConfiguration';
 import THREE from 'THREE';
 
+
+/* eslint-disable */
+// bbox longitude(0,360),latitude(-90,90)
+const schemeTile_0 = 0;
+// bbox longitude(-180,180),latitude(-90,90)
+const schemeTile_1 = 1;
+/* eslint-disable no-alert, no-console */
+/* eslint-enable */
+
 function Globe(ellipsoid, gLDebug) {
     //Constructor
 
@@ -43,7 +52,7 @@ function Globe(ellipsoid, gLDebug) {
 	this.gpxTracks.visible = true;
     gpx.visible = true;
 
-    this.tiles = new Quadtree(TileMesh, this.SchemeTileWMTS(2), kml);
+    this.tiles = new Quadtree(TileMesh, this.SchemeTileWMTS(schemeTile_1), kml);
     this.layersConfiguration = new LayersConfiguration();
 
     this.atmosphere = this.NOIE ? new Atmosphere(this.ellipsoid) : undefined;
@@ -112,11 +121,25 @@ Globe.prototype.QuadTreeToMaterial = function() {
 };
 
 Globe.prototype.SchemeTileWMTS = function(type) {
-    //TODO: Implement Me
-    if (type === 2) {
-        var schemeT = new SchemeTile();
+
+    if (type === 0) {
+
+        // bbox longitude(0,360),latitude(-90,90)
+        let schemeT = new SchemeTile();
+
         schemeT.add(0, MathExt.PI, -MathExt.PI_OV_TWO, MathExt.PI_OV_TWO);
         schemeT.add(MathExt.PI, MathExt.TWO_PI, -MathExt.PI_OV_TWO, MathExt.PI_OV_TWO);
+
+        return schemeT;
+    }
+    else if (type === 1) {
+
+        // bbox longitude(-180,180),latitude(-90,90)
+        let schemeT = new SchemeTile();
+
+        schemeT.add(-MathExt.PI, 0, -MathExt.PI_OV_TWO, MathExt.PI_OV_TWO);
+        schemeT.add(0, MathExt.PI, -MathExt.PI_OV_TWO, MathExt.PI_OV_TWO);
+
         return schemeT;
     }
 

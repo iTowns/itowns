@@ -5,7 +5,7 @@
  */
 
 import defaultValue from 'Core/defaultValue';
-import MathExt from 'Core/Math/MathExtented';
+import mE from 'Core/Math/MathExtented';
 import Point2D from 'Core/Math/Point2D';
 import THREE from 'THREE';
 import CoordCarto from 'Core/Geographic/CoordCarto';
@@ -21,21 +21,21 @@ import CoordCarto from 'Core/Geographic/CoordCarto';
  * @param {type} maxAltitude  : altitude maximum
  * @returns {BoundingBox_L7.BoundingBox}
  */
-function BoundingBox(west, east, south, north, parentCenter, minAltitude, maxAltitude) {
+
+function BoundingBox(west, east, south, north, minAltitude, maxAltitude) {
     //Constructor
 
-    this.minCarto = new CoordCarto(defaultValue(west, 0), defaultValue(south, -MathExt.PI_OV_TWO), defaultValue(minAltitude, 0));
-    this.maxCarto = new CoordCarto(defaultValue(east, MathExt.TWO_PI), defaultValue(north, MathExt.PI_OV_TWO), defaultValue(maxAltitude, 0));
+    this.minCarto = new CoordCarto(defaultValue(west, 0), defaultValue(south, -mE.PI_OV_TWO), defaultValue(minAltitude, 0));
+    this.maxCarto = new CoordCarto(defaultValue(east, mE.TWO_PI), defaultValue(north, mE.PI_OV_TWO), defaultValue(maxAltitude, 0));
 
-    this.west = defaultValue(west, 0);
-    this.east = defaultValue(east, MathExt.TWO_PI);
-    this.north = defaultValue(north, MathExt.PI_OV_TWO);
-    this.south = defaultValue(south, -MathExt.PI_OV_TWO);
+    this.west = defaultValue(west, -mE.PI);
+    this.east = defaultValue(east, mE.PI);
+    this.north = defaultValue(north, mE.PI_OV_TWO);
+    this.south = defaultValue(south, -mE.PI_OV_TWO);
 
     this.dimension = new Point2D(Math.abs(this.east - this.west), Math.abs(this.north - this.south));
     this.halfDimension = new Point2D(this.dimension.x * 0.5, this.dimension.y * 0.5);
     this.center = new Point2D(this.west + this.halfDimension.x, this.south + this.halfDimension.y);
-    //this.relativeCenter = parentCenter === undefined ? this.center : new Point2D(this.center.x - parentCenter.x,this.center.y - parentCenter.y);
     this.size = Math.sqrt(this.dimension.x * this.dimension.x + this.dimension.y * this.dimension.y);
 
 }
@@ -46,17 +46,15 @@ function BoundingBox(west, east, south, north, parentCenter, minAltitude, maxAlt
  * @param point {[object Object]}
  */
 BoundingBox.prototype.isInside = function(point) {
-    //TODO: Implement Me
-
     return point.x <= this.east && point.x >= this.west && point.y <= this.north && point.y >= this.south;
+};
 
+BoundingBox.prototype.toDegree = function() {
+    return { west: mE.radToDeg(this.west), east: mE.radToDeg(this.east), south : mE.radToDeg(this.south), north : mE.radToDeg(this.north)};
 };
 
 BoundingBox.prototype.BBoxIsInside = function(bbox) {
-    //TODO: Implement Me
-
     return bbox.east <= this.east && bbox.west >= this.west && bbox.north <= this.north && bbox.south >= this.south;
-
 };
 
 BoundingBox.prototype.pitScale = function(bbox) {

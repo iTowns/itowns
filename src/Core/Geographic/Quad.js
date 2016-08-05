@@ -7,10 +7,10 @@
 import BoundingBox from 'Scene/BoundingBox';
 
 function Quad(bbox) {
-    this.northWest = new BoundingBox(bbox.west, bbox.center.x, bbox.center.y, bbox.north, bbox.center);
-    this.northEast = new BoundingBox(bbox.center.x, bbox.east, bbox.center.y, bbox.north, bbox.center);
-    this.southWest = new BoundingBox(bbox.west, bbox.center.x, bbox.south, bbox.center.y, bbox.center);
-    this.southEast = new BoundingBox(bbox.center.x, bbox.east, bbox.south, bbox.center.y, bbox.center);
+    this.northWest = new BoundingBox(bbox.west, bbox.center.x, bbox.center.y, bbox.north);
+    this.northEast = new BoundingBox(bbox.center.x, bbox.east, bbox.center.y, bbox.north);
+    this.southWest = new BoundingBox(bbox.west, bbox.center.x, bbox.south, bbox.center.y);
+    this.southEast = new BoundingBox(bbox.center.x, bbox.east, bbox.south, bbox.center.y);
 }
 
 Quad.prototype.array = function() {

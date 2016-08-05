@@ -13,7 +13,8 @@ import defaultValue from 'Core/defaultValue';
 import THREE from 'THREE';
 import Projection from 'Core/Geographic/Projection';
 import CacheRessource from 'Core/Commander/Providers/CacheRessource';
-// import BoundingBox from 'Scene/BoundingBox';
+import mE from 'Core/Math/MathExtented';
+import BoundingBox from 'Scene/BoundingBox';
 
 /**
  * Return url wmts MNT
@@ -47,29 +48,30 @@ WMS_Provider.prototype.constructor = WMS_Provider;
 WMS_Provider.prototype.url = function(bbox,layer) {
     return this.customUrl(layer.customUrl, bbox);
 };
-WMS_Provider.prototype.customUrl = function(url,coord) {
-    //convert radian to degree, lon is added a offset of Pi
-    //to align axisgit  to card center
 
+WMS_Provider.prototype.customUrl = function(url,bbox) {
 
+    var bboxDeg = bbox.toDegree();
 
-    var bbox = (coord.south) * 180.0 / Math.PI +
-                "," +
-                (coord.west >= Math.PI ? -(Math.PI * 2.0 - coord.west) : coord.west)* 180.0 / Math.PI +
-                ","+
-               coord.north* 180.0 / Math.PI +
-               "," +
-               (coord.east >= Math.PI ? -(Math.PI * 2.0 - coord.east) : coord.east)*180.0 / Math.PI;
+    var bboxDegS = bboxDeg.south + "," +
+                    bboxDeg.west + "," +
+                    bboxDeg.north + "," +
+                    bboxDeg.east;
 
-    var urld = url.replace('%bbox',bbox.toString());
+    var urld = url.replace('%bbox',bboxDegS);
 
     return urld;
-
 };
 
 WMS_Provider.prototype.preprocessDataLayer = function(layer){
     if(!layer.name)
         throw new Error('layerName is required.');
+
+    if(layer.bbox)
+    {
+        mE.arrayDegToRad(layer.bbox);
+        layer.bbox = new BoundingBox(layer.bbox[0],layer.bbox[2],layer.bbox[1],layer.bbox[3]);
+    }
 
     layer.format = defaultValue(layer.options.mimetype, "image/png"),
     layer.crs = defaultValue(layer.projection, "EPSG:4326"),
@@ -77,7 +79,8 @@ WMS_Provider.prototype.preprocessDataLayer = function(layer){
     layer.version = defaultValue(layer.version, "1.3.0"),
     layer.styleName = defaultValue(layer.style, "normal"),
     layer.transparent = defaultValue(layer.transparent, false),
-    layer.bbox = defaultValue(layer.bbox, [-180, -90, 180, 90]);
+    layer.bbox = defaultValue(layer.bbox,new BoundingBox());
+
     layer.customUrl = layer.url +
                   '?SERVICE=WMS&REQUEST=GetMap&LAYERS=' + layer.name +
                   '&VERSION=' + layer.version +
@@ -90,14 +93,9 @@ WMS_Provider.prototype.preprocessDataLayer = function(layer){
                   "&HEIGHT=" + layer.width;
 };
 
-WMS_Provider.prototype.tileInsideLimit = function(tile/*,layer*/) {
-    // shifting longitude because of issue #19
-    // var bbox = tile.bbox;
-    // var west =  layer.bbox[0]*Math.PI/180.0;
-    // var east =  layer.bbox[2]*Math.PI/180.0;
+WMS_Provider.prototype.tileInsideLimit = function(tile,layer) {
 
-    // var bboxRegion = new BoundingBox(west, east, layer.bbox[1]*Math.PI/180.0, layer.bbox[3]*Math.PI/180.0, 0, 0, 0);
-    return tile.level > 2;// && bboxRegion.intersect(bbox);
+    return tile.level > 2 && layer.bbox.intersect(tile.bbox);
 };
 
 WMS_Provider.prototype.getColorTexture = function(tile, layer, parameters) {

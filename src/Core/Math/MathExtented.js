@@ -44,4 +44,38 @@ MathExt.INV_TWO_PI = 1.0 / MathExt.TWO_PI;
 
 MathExt.LOG_TWO = Math.log(2.0);
 
+MathExt.RADTODEG = 180.0 / MathExt.PI;
+
+MathExt.DEGTORAD = MathExt.PI / 180.0;
+
+MathExt.radToDeg = function(rad)
+{
+	return rad * MathExt.RADTODEG;
+};
+
+MathExt.degToRad = function(deg)
+{
+	return deg * MathExt.DEGTORAD;
+};
+
+MathExt.arrayDegToRad = function(arrayDeg)
+{
+	if(arrayDeg)
+	{
+		for (var i = 0; i < arrayDeg.length; i++) {
+			arrayDeg[i]= MathExt.degToRad(arrayDeg[i]);
+		}
+	}
+};
+
+MathExt.arrayRadToDeg = function(arrayDeg)
+{
+	if(arrayDeg)
+	{
+		for (var i = 0; i < arrayDeg.length; i++) {
+			arrayDeg[i]= MathExt.radToDeg(arrayDeg[i]);
+		}
+	}
+};
+
 export default MathExt;
