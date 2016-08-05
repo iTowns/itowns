@@ -12,24 +12,29 @@ import CoordCarto from 'Core/Geographic/CoordCarto';
 
 /**
  *
- * @param {type} minLongitude : longitude minimum
- * @param {type} maxLongitude : longitude maximum
- * @param {type} minLatitude  : latitude minimum
- * @param {type} maxLatitude  : latitude maximum
+ * @param {type} west : longitude minimum
+ * @param {type} east : longitude maximum
+ * @param {type} south  : latitude minimum
+ * @param {type} north  : latitude maximum
  * @param {type} parentCenter : center parent
  * @param {type} minAltitude  : altitude minimum
  * @param {type} maxAltitude  : altitude maximum
  * @returns {BoundingBox_L7.BoundingBox}
  */
-function BoundingBox(minLongitude, maxLongitude, minLatitude, maxLatitude, parentCenter, minAltitude, maxAltitude) {
+function BoundingBox(west, east, south, north, parentCenter, minAltitude, maxAltitude) {
     //Constructor
 
-    this.minCarto = new CoordCarto(defaultValue(minLongitude, 0), defaultValue(minLatitude, -MathExt.PI_OV_TWO), defaultValue(minAltitude, 0));
-    this.maxCarto = new CoordCarto(defaultValue(maxLongitude, MathExt.TWO_PI), defaultValue(maxLatitude, MathExt.PI_OV_TWO), defaultValue(maxAltitude, 0));
+    this.minCarto = new CoordCarto(defaultValue(west, 0), defaultValue(south, -MathExt.PI_OV_TWO), defaultValue(minAltitude, 0));
+    this.maxCarto = new CoordCarto(defaultValue(east, MathExt.TWO_PI), defaultValue(north, MathExt.PI_OV_TWO), defaultValue(maxAltitude, 0));
 
-    this.dimension = new Point2D(Math.abs(this.maxCarto.longitude - this.minCarto.longitude), Math.abs(this.maxCarto.latitude - this.minCarto.latitude));
+    this.west = defaultValue(west, 0);
+    this.east = defaultValue(east, MathExt.TWO_PI);
+    this.north = defaultValue(north, MathExt.PI_OV_TWO);
+    this.south = defaultValue(south, -MathExt.PI_OV_TWO);
+
+    this.dimension = new Point2D(Math.abs(this.east - this.west), Math.abs(this.north - this.south));
     this.halfDimension = new Point2D(this.dimension.x * 0.5, this.dimension.y * 0.5);
-    this.center = new Point2D(this.minCarto.longitude + this.halfDimension.x, this.minCarto.latitude + this.halfDimension.y);
+    this.center = new Point2D(this.west + this.halfDimension.x, this.south + this.halfDimension.y);
     //this.relativeCenter = parentCenter === undefined ? this.center : new Point2D(this.center.x - parentCenter.x,this.center.y - parentCenter.y);
     this.size = Math.sqrt(this.dimension.x * this.dimension.x + this.dimension.y * this.dimension.y);
 
@@ -43,20 +48,20 @@ function BoundingBox(minLongitude, maxLongitude, minLatitude, maxLatitude, paren
 BoundingBox.prototype.isInside = function(point) {
     //TODO: Implement Me
 
-    return point.x <= this.maxCarto.longitude && point.x >= this.minCarto.longitude && point.y <= this.maxCarto.latitude && point.y >= this.minCarto.latitude;
+    return point.x <= this.east && point.x >= this.west && point.y <= this.north && point.y >= this.south;
 
 };
 
 BoundingBox.prototype.BBoxIsInside = function(bbox) {
     //TODO: Implement Me
 
-    return bbox.maxCarto.longitude <= this.maxCarto.longitude && bbox.minCarto.longitude >= this.minCarto.longitude && bbox.maxCarto.latitude <= this.maxCarto.latitude && bbox.minCarto.latitude >= this.minCarto.latitude;
+    return bbox.east <= this.east && bbox.west >= this.west && bbox.north <= this.north && bbox.south >= this.south;
 
 };
 
 BoundingBox.prototype.pitScale = function(bbox) {
-    var pitX = Math.abs(bbox.minCarto.longitude - this.minCarto.longitude) / this.dimension.x;
-    var pitY = Math.abs(bbox.maxCarto.latitude - this.maxCarto.latitude) / this.dimension.y;
+    var pitX = Math.abs(bbox.west - this.west) / this.dimension.x;
+    var pitY = Math.abs(bbox.north - this.north) / this.dimension.y;
     var scale = bbox.dimension.x / this.dimension.x;
     return new THREE.Vector3(pitX, pitY, scale);
 };
@@ -93,7 +98,7 @@ BoundingBox.prototype.setBBoxZ = function(min, max) {
  * @returns {Boolean}
  */
 BoundingBox.prototype.intersect = function(bbox) {
-    return !(this.minCarto.longitude >= bbox.maxCarto.longitude || this.maxCarto.longitude <= bbox.minCarto.longitude || this.minCarto.latitude >= bbox.maxCarto.latitude || this.maxCarto.latitude <= bbox.minCarto.latitude);
+    return !(this.west >= bbox.east || this.east <= bbox.west || this.south >= bbox.north || this.north <= bbox.south);
 
 };
 

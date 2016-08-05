@@ -90,8 +90,8 @@ Projection.prototype.WMTS_WGS84ToWMTS_PM = function(cWMTS, bbox) {
     //var sY      = this.WGS84ToY(this.WGS84LatitudeClamp(-Math.PI*0.5)) - this.WGS84ToY(this.WGS84LatitudeClamp(Math.PI*0.5));
     var sizeRow = 1.0 / nbRow;
 
-    var yMin = this.WGS84ToY(this.WGS84LatitudeClamp(bbox.maxCarto.latitude));
-    var yMax = this.WGS84ToY(this.WGS84LatitudeClamp(bbox.minCarto.latitude));
+    var yMin = this.WGS84ToY(this.WGS84LatitudeClamp(bbox.north));
+    var yMax = this.WGS84ToY(this.WGS84LatitudeClamp(bbox.south));
 
     var minRow, maxRow, min, max;
 
@@ -135,12 +135,12 @@ Projection.prototype.WMS_WGS84Parent = function(bbox, bboxParent) {
     var scale = bbox.dimension.x / bboxParent.dimension.x;
 
     var x =
-        Math.abs(bbox.minCarto.longitude - bboxParent.minCarto.longitude) /
+        Math.abs(bbox.west - bboxParent.west) /
         bboxParent.dimension.x;
     var y =
         Math.abs(
-            bbox.minCarto.latitude + bbox.dimension.y -
-            (bboxParent.minCarto.latitude + bboxParent.dimension.y)) /
+            bbox.south + bbox.dimension.y -
+            (bboxParent.south + bboxParent.dimension.y)) /
         bboxParent.dimension.x;
 
     return new THREE.Vector3(x, y, scale);
@@ -163,11 +163,11 @@ Projection.prototype.WGS84toWMTS = function(bbox) {
 };
 
 Projection.prototype.UnitaryToLongitudeWGS84 = function(u, projection, bbox) {
-    projection.longitude = bbox.minCarto.longitude + u * bbox.dimension.x;
+    projection.longitude = bbox.west + u * bbox.dimension.x;
 };
 
 Projection.prototype.UnitaryToLatitudeWGS84 = function(v, projection, bbox) {
-    projection.latitude = bbox.minCarto.latitude + v * bbox.dimension.y;
+    projection.latitude = bbox.south + v * bbox.dimension.y;
 };
 
 Projection.prototype.cartesianToGeo = function(position) {
