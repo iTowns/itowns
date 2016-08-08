@@ -34,321 +34,319 @@ and open the template in the editor.
         <script src="dist/itowns2.js"> </script>
         <script type="text/javascript">
 
-               var initCenter = { longitude:2.3465, latitude: 48.88, altitude: 25000000};
+            var initCenter = { longitude:2.3465, latitude: 48.88, altitude: 25000000};
 
-               // iTowns namespace defined here
+            // iTowns namespace defined here
+            var viewerDiv = document.getElementById("viewerDiv");
 
-               var viewerDiv = document.getElementById("viewerDiv");
+            var scene = itowns.viewer.createSceneGlobe(initCenter, viewerDiv) ;
 
-               itowns.viewer.createSceneGlobe(initCenter, viewerDiv) ;
-               //console.log(itowns.viewer.pickPosition());
-
-              itowns.viewer.addImageryLayer({
+            itowns.viewer.addImageryLayer({
                 protocol:   "wmts",
                 id:         "Ortho",
                 url:        "http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/geoportail/wmts",
                 options: {
-                        name: "ORTHOIMAGERY.ORTHOPHOTOS",
-                        mimetype: "image/jpeg",
-                        tileMatrixSet: "PM",
-                        tileMatrixSetLimits: {
-                            "2": {
-                                "minTileRow": 0,
-                                "maxTileRow": 4,
-                                "minTileCol": 0,
-                                "maxTileCol": 4
-                            },
-                            "3": {
-                                "minTileRow": 0,
-                                "maxTileRow": 8,
-                                "minTileCol": 0,
-                                "maxTileCol": 8
-                            },
-                            "4": {
-                                "minTileRow": 0,
-                                "maxTileRow": 6,
-                                "minTileCol": 0,
-                                "maxTileCol": 16
-                            },
-                            "5": {
-                                "minTileRow": 0,
-                                "maxTileRow": 32,
-                                "minTileCol": 0,
-                                "maxTileCol": 32
-                            },
-                            "6": {
-                                "minTileRow": 1,
-                                "maxTileRow": 64,
-                                "minTileCol": 0,
-                                "maxTileCol": 64
-                            },
-                            "7": {
-                                "minTileRow": 3,
-                                "maxTileRow": 28,
-                                "minTileCol": 0,
-                                "maxTileCol": 128
-                            },
-                            "8": {
-                                "minTileRow": 7,
-                                "maxTileRow": 256,
-                                "minTileCol": 0,
-                                "maxTileCol": 256
-                            },
-                            "9": {
-                                "minTileRow": 15,
-                                "maxTileRow": 512,
-                                "minTileCol": 0,
-                                "maxTileCol": 512
-                            },
-                            "10": {
-                                "minTileRow": 31,
-                                "maxTileRow": 1024,
-                                "minTileCol": 0,
-                                "maxTileCol": 1024
-                            },
-                            "11": {
-                                "minTileRow": 62,
-                                "maxTileRow": 2048,
-                                "minTileCol": 0,
-                                "maxTileCol": 2048
-                            },
-                            "12": {
-                                "minTileRow": 125,
-                                "maxTileRow": 4096,
-                                "minTileCol": 0,
-                                "maxTileCol": 4096
-                            },
-                            "13": {
-                                "minTileRow": 2739,
-                                "maxTileRow": 4628,
-                                "minTileCol": 41,
-                                "maxTileCol": 7917
-                            },
-                            "14": {
-                                "minTileRow": 5478,
-                                "maxTileRow": 9256,
-                                "minTileCol": 82,
-                                "maxTileCol": 15835
-                            },
-                            "15": {
-                                "minTileRow": 10956,
-                                "maxTileRow": 8513,
-                                "minTileCol": 165,
-                                "maxTileCol": 31670
-                            },
-                            "16": {
-                                "minTileRow": 21912,
-                                "maxTileRow": 37026,
-                                "minTileCol": 330,
-                                "maxTileCol": 63341
-                            },
-                            "17": {
-                                "minTileRow": 43825,
-                                "maxTileRow": 74052,
-                                "minTileCol": 660,
-                                "maxTileCol": 126683
-                            },
-                            "18": {
-                                "minTileRow": 87651,
-                                "maxTileRow": 48105,
-                                "minTileCol": 1320,
-                                "maxTileCol": 253366
-                            },
-                            "19": {
-                                "minTileRow": 175302,
-                                "maxTileRow": 294060,
-                                "minTileCol": 170159,
-                                "maxTileCol": 343473
-                            },
-                            "20": {
-                                "minTileRow": 376733,
-                                "maxTileRow": 384679,
-                                "minTileCol": 530773,
-                                "maxTileCol": 540914
-                                }
+                    name: "ORTHOIMAGERY.ORTHOPHOTOS",
+                    mimetype: "image/jpeg",
+                    tileMatrixSet: "PM",
+                    tileMatrixSetLimits: {
+                        "2": {
+                            "minTileRow": 0,
+                            "maxTileRow": 4,
+                            "minTileCol": 0,
+                            "maxTileCol": 4
+                        },
+                        "3": {
+                            "minTileRow": 0,
+                            "maxTileRow": 8,
+                            "minTileCol": 0,
+                            "maxTileCol": 8
+                        },
+                        "4": {
+                            "minTileRow": 0,
+                            "maxTileRow": 6,
+                            "minTileCol": 0,
+                            "maxTileCol": 16
+                        },
+                        "5": {
+                            "minTileRow": 0,
+                            "maxTileRow": 32,
+                            "minTileCol": 0,
+                            "maxTileCol": 32
+                        },
+                        "6": {
+                            "minTileRow": 1,
+                            "maxTileRow": 64,
+                            "minTileCol": 0,
+                            "maxTileCol": 64
+                        },
+                        "7": {
+                            "minTileRow": 3,
+                            "maxTileRow": 28,
+                            "minTileCol": 0,
+                            "maxTileCol": 128
+                        },
+                        "8": {
+                            "minTileRow": 7,
+                            "maxTileRow": 256,
+                            "minTileCol": 0,
+                            "maxTileCol": 256
+                        },
+                        "9": {
+                            "minTileRow": 15,
+                            "maxTileRow": 512,
+                            "minTileCol": 0,
+                            "maxTileCol": 512
+                        },
+                        "10": {
+                            "minTileRow": 31,
+                            "maxTileRow": 1024,
+                            "minTileCol": 0,
+                            "maxTileCol": 1024
+                        },
+                        "11": {
+                            "minTileRow": 62,
+                            "maxTileRow": 2048,
+                            "minTileCol": 0,
+                            "maxTileCol": 2048
+                        },
+                        "12": {
+                            "minTileRow": 125,
+                            "maxTileRow": 4096,
+                            "minTileCol": 0,
+                            "maxTileCol": 4096
+                        },
+                        "13": {
+                            "minTileRow": 2739,
+                            "maxTileRow": 4628,
+                            "minTileCol": 41,
+                            "maxTileCol": 7917
+                        },
+                        "14": {
+                            "minTileRow": 5478,
+                            "maxTileRow": 9256,
+                            "minTileCol": 82,
+                            "maxTileCol": 15835
+                        },
+                        "15": {
+                            "minTileRow": 10956,
+                            "maxTileRow": 8513,
+                            "minTileCol": 165,
+                            "maxTileCol": 31670
+                        },
+                        "16": {
+                            "minTileRow": 21912,
+                            "maxTileRow": 37026,
+                            "minTileCol": 330,
+                            "maxTileCol": 63341
+                        },
+                        "17": {
+                            "minTileRow": 43825,
+                            "maxTileRow": 74052,
+                            "minTileCol": 660,
+                            "maxTileCol": 126683
+                        },
+                        "18": {
+                            "minTileRow": 87651,
+                            "maxTileRow": 48105,
+                            "minTileCol": 1320,
+                            "maxTileCol": 253366
+                        },
+                        "19": {
+                            "minTileRow": 175302,
+                            "maxTileRow": 294060,
+                            "minTileCol": 170159,
+                            "maxTileCol": 343473
+                        },
+                        "20": {
+                            "minTileRow": 376733,
+                            "maxTileRow": 384679,
+                            "minTileCol": 530773,
+                            "maxTileCol": 540914
                         }
                     }
-                });
+                }
+            });
 
 
-                itowns.viewer.addImageryLayer({
+            itowns.viewer.addImageryLayer({
                 protocol:   "wmts",
                 id:         "OrthoCRS",
                 url:        "http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/geoportail/wmts",
                 fx :        1.0,
                 options: {
-                        name: 'ORTHOIMAGERY.ORTHOPHOTOS.CRS84',
-                        mimetype: "image/jpeg",
-                        tileMatrixSet: "WGS84G",
-                        tileMatrixSetLimits: {
+                    name: 'ORTHOIMAGERY.ORTHOPHOTOS.CRS84',
+                    mimetype: "image/jpeg",
+                    tileMatrixSet: "WGS84G",
+                    tileMatrixSetLimits: {
 
-                            '6' : {
-                                'minTileRow' : 13,
-                                'maxTileRow' : 39,
-                                'minTileCol' : 0,
-                                'maxTileCol' : 83,
-                            },
-                            '7' : {
-                                'minTileRow' : 27,
-                                'maxTileRow' : 79,
-                                'minTileCol' : 1,
-                                'maxTileCol' : 167,
-                            },
-                            '8' : {
-                                'minTileRow' : 55,
-                                'maxTileRow' : 158,
-                                'minTileCol' : 2,
-                                'maxTileCol' : 335,
-                            },
-                            '9' : {
-                                'minTileRow' : 110,
-                                'maxTileRow' : 316,
-                                'minTileCol' : 5,
-                                'maxTileCol' : 670
-                            },
-                            '10' : {
-                                'minTileRow' : 221,
-                                'maxTileRow' : 633,
-                                'minTileCol' : 10,
-                                'maxTileCol' : 1341,
-                            },
-                            '11' : {
-                                'minTileRow' : 442,
-                                'maxTileRow' : 1267,
-                                'minTileCol' : 20,
-                                'maxTileCol' : 2683,
-                            },
-                            '12' : {
-                                'minTileRow' : 885,
-                                'maxTileRow' : 2534,
-                                'minTileCol' : 41,
-                                'maxTileCol' : 5366,
-                            },
-                            '13' : {
-                                'minTileRow' : 1770,
-                                'maxTileRow' : 5069,
-                                'minTileCol' : 82,
-                                'maxTileCol' : 10733,
-                            },
-                            '14' : {
-                                'minTileRow' : 3541,
-                                'maxTileRow' : 10139,
-                                'minTileCol' : 165,
-                                'maxTileCol' : 21467,
-                            },
-                            '15' : {
-                                'minTileRow' : 7082,
-                                'maxTileRow' : 20279,
-                                'minTileCol' : 330,
-                                'maxTileCol' : 42934,
-                            },
-                            '16' : {
-                                'minTileRow' : 14165,
-                                'maxTileRow' : 40559,
-                                'minTileCol' : 660,
-                                'maxTileCol' : 85868,
-                            },
-                            '17' : {
-                                'minTileRow' : 28330,
-                                'maxTileRow' : 81118,
-                                'minTileCol' : 1320,
-                                'maxTileCol' : 171736,
-                            }
+                        '6' : {
+                            'minTileRow' : 13,
+                            'maxTileRow' : 39,
+                            'minTileCol' : 0,
+                            'maxTileCol' : 83,
+                        },
+                        '7' : {
+                            'minTileRow' : 27,
+                            'maxTileRow' : 79,
+                            'minTileCol' : 1,
+                            'maxTileCol' : 167,
+                        },
+                        '8' : {
+                            'minTileRow' : 55,
+                            'maxTileRow' : 158,
+                            'minTileCol' : 2,
+                            'maxTileCol' : 335,
+                        },
+                        '9' : {
+                            'minTileRow' : 110,
+                            'maxTileRow' : 316,
+                            'minTileCol' : 5,
+                            'maxTileCol' : 670
+                        },
+                        '10' : {
+                            'minTileRow' : 221,
+                            'maxTileRow' : 633,
+                            'minTileCol' : 10,
+                            'maxTileCol' : 1341,
+                        },
+                        '11' : {
+                            'minTileRow' : 442,
+                            'maxTileRow' : 1267,
+                            'minTileCol' : 20,
+                            'maxTileCol' : 2683,
+                        },
+                        '12' : {
+                            'minTileRow' : 885,
+                            'maxTileRow' : 2534,
+                            'minTileCol' : 41,
+                            'maxTileCol' : 5366,
+                        },
+                        '13' : {
+                            'minTileRow' : 1770,
+                            'maxTileRow' : 5069,
+                            'minTileCol' : 82,
+                            'maxTileCol' : 10733,
+                        },
+                        '14' : {
+                            'minTileRow' : 3541,
+                            'maxTileRow' : 10139,
+                            'minTileCol' : 165,
+                            'maxTileCol' : 21467,
+                        },
+                        '15' : {
+                            'minTileRow' : 7082,
+                            'maxTileRow' : 20279,
+                            'minTileCol' : 330,
+                            'maxTileCol' : 42934,
+                        },
+                        '16' : {
+                            'minTileRow' : 14165,
+                            'maxTileRow' : 40559,
+                            'minTileCol' : 660,
+                            'maxTileCol' : 85868,
+                        },
+                        '17' : {
+                            'minTileRow' : 28330,
+                            'maxTileRow' : 81118,
+                            'minTileCol' : 1320,
+                            'maxTileCol' : 171736,
                         }
                     }
-                });
+                }
+            });
 
-                itowns.viewer.addImageryLayer({
+            itowns.viewer.addImageryLayer({
                 protocol:   "wmts",
                 id:         "ScanEX",
                 url:        "http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/geoportail/wmts",
                 fx :        2.5,
                 options: {
-                        name: 'GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN-EXPRESS.STANDARD',
-                        mimetype: "image/jpeg",
-                        tileMatrixSet: "PM",
-                        tileMatrixSetLimits: {
-                          '6' : {
+                    name: 'GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN-EXPRESS.STANDARD',
+                    mimetype: "image/jpeg",
+                    tileMatrixSet: "PM",
+                    tileMatrixSetLimits: {
+                      '6' : {
                             'minTileRow': 21,
                             'maxTileRow': 35,
                             'minTileCol':20,
                             'maxTileCol':41
-                          },
-                          '7' : {
+                        },
+                        '7' : {
                             'minTileRow': 42,
                             'maxTileRow': 71,
                             'minTileCol':41,
                             'maxTileCol':83
-                          },
-                          '8' : {
+                        },
+                        '8' : {
                             'minTileRow': 85,
                             'maxTileRow': 143,
                             'minTileCol':82,
                             'maxTileCol':167
-                          },
-                          '9' : {
+                        },
+                        '9' : {
                             'minTileRow': 170,
                             'maxTileRow': 287,
                             'minTileCol':165,
                             'maxTileCol':335
-                          },
-                          '10' : {
+                        },
+                        '10' : {
                             'minTileRow': 340,
                             'maxTileRow': 574,
                             'minTileCol': 331,
                             'maxTileCol': 671
-                          },
-                          '11' : {
+                        },
+                        '11' : {
                             'minTileRow': 681,
                             'maxTileRow': 1149,
                             'minTileCol':663,
                             'maxTileCol':1342
-                          },
-                          '12' : {
+                        },
+                        '12' : {
                             'minTileRow': 1363,
                             'maxTileRow': 2298,
                             'minTileCol':1327,
                             'maxTileCol':2684
-                          },
-                          '13' : {
+                        },
+                        '13' : {
                             'minTileRow': 2726,
                             'maxTileRow': 4602,
                             'minTileCol':2655,
                             'maxTileCol':5371
-                          },
-                          '14' : {
+                        },
+                        '14' : {
                             'minTileRow': 5452,
                             'maxTileRow': 9204,
                             'minTileCol':5311,
                             'maxTileCol':10742
-                          },
-                          '15' : {
+                        },
+                        '15' : {
                             'minTileRow': 10944,
                             'maxTileRow': 18381,
                             'minTileCol':10632,
                             'maxTileCol':21467
-                          },
-                          '16' : {
+                        },
+                        '16' : {
                             'minTileRow': 21889,
                             'maxTileRow': 36763,
                             'minTileCol':21264,
                             'maxTileCol':42934
-                          },
-                          '17' : {
+                        },
+                        '17' : {
                             'minTileRow': 43778,
                             'maxTileRow': 73526,
                             'minTileCol':42528,
                             'maxTileCol':85869
-                          },
-                          '18' : {
+                        },
+                        '18' : {
                             'minTileRow': 87557,
                             'maxTileRow': 147052,
                             'minTileCol':85058,
                             'maxTileCol':171738
-                          }
                         }
                     }
-                });
+                }
+            });
 
 
         // itowns.viewer.addImageryLayer({
@@ -367,24 +365,24 @@ and open the template in the editor.
         // });
 
         itowns.viewer.addImageryLayer({
-                                        url       : "https://wxs.ign.fr/gratuit/geoportail/v/wms",
-                                        protocol  : 'wms',
-                                        version   : '1.3.0',
-                                        id        : 'testwms',
-                                        name      : 'REGION.2016',
-                                        style      : "",
-                                        projection : "EPSG:4326",
-                                        transparent : true,
-                                        // min long, min lat, max long, max lat
-                                        bbox      : [-61.80983300000002, -21.38963079935857, 55.83665389999998, 51.0890011990783],
-                                        featureInfoMimeType : "",
-                                        dateTime  : "",
-                                        heightMapWidth : 256,
-                                        waterMask      : false,
-                                        options: {
-                                            mimetype  : "image/png"
-                                        }
-                                    });
+            url       : "https://wxs.ign.fr/gratuit/geoportail/v/wms",
+            protocol  : 'wms',
+            version   : '1.3.0',
+            id        : 'testwms',
+            name      : 'REGION.2016',
+            style      : "",
+            projection : "EPSG:4326",
+            transparent : true,
+            // min long, min lat, max long, max lat
+            bbox      : [-61.80983300000002, -21.38963079935857, 55.83665389999998, 51.0890011990783],
+            featureInfoMimeType : "",
+            dateTime  : "",
+            heightMapWidth : 256,
+            waterMask      : false,
+            options: {
+                mimetype  : "image/png"
+            }
+        });
 
         itowns.viewer.addElevationLayer({
             protocol:   "wmts",
@@ -392,73 +390,67 @@ and open the template in the editor.
             url:        "http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/geoportail/wmts",
             noDataValue : -99999,
             options: {
-                    name: "ELEVATION.ELEVATIONGRIDCOVERAGE",
-                    mimetype: "image/x-bil;bits=32",
-                    tileMatrixSet: "WGS84G",
-                    tileMatrixSetLimits: {
-                         // "2": {
-                         //    "minTileRow": 0,
-                         //    "maxTileRow": 2,
-                         //    "minTileCol": 2,
-                         //    "maxTileCol": 7
-                         //  },
-                          "3": {
-                            "minTileRow": 1,
-                            "maxTileRow": 5,
-                            "minTileCol": 5,
-                            "maxTileCol": 15
-                          },
-                          "4": {
-                            "minTileRow": 3,
-                            "maxTileRow": 10,
-                            "minTileCol": 10,
-                            "maxTileCol": 30
-                          },
-                          "5": {
-                            "minTileRow": 6,
-                            "maxTileRow": 20,
-                            "minTileCol": 20,
-                            "maxTileCol": 61
-                          },
-                          "6": {
-                            "minTileRow": 13,
-                            "maxTileRow": 40,
-                            "minTileCol": 41,
-                            "maxTileCol": 123
-                          },
-                          "7": {
-                            "minTileRow": 27,
-                            "maxTileRow": 80,
-                            "minTileCol": 82,
-                            "maxTileCol": 247
-                          },
-                          "8": {
-                            "minTileRow": 54,
-                            "maxTileRow": 160,
-                            "minTileCol": 164,
-                            "maxTileCol": 494
-                          },
-                          "9": {
-                            "minTileRow": 108,
-                            "maxTileRow": 321,
-                            "minTileCol": 329,
-                            "maxTileCol": 989
-                          },
-                          "10": {
-                            "minTileRow": 216,
-                            "maxTileRow": 642,
-                            "minTileCol": 659,
-                            "maxTileCol": 1979
-                          },
-                          "11": {
-                            "minTileRow": 432,
-                            "maxTileRow": 1285,
-                            "minTileCol": 1319,
-                            "maxTileCol": 3959
-                          }
-                        }
+                name: "ELEVATION.ELEVATIONGRIDCOVERAGE",
+                mimetype: "image/x-bil;bits=32",
+                tileMatrixSet: "WGS84G",
+                tileMatrixSetLimits: {
+                    "3": {
+                        "minTileRow": 1,
+                        "maxTileRow": 5,
+                        "minTileCol": 5,
+                        "maxTileCol": 15
+                    },
+                    "4": {
+                        "minTileRow": 3,
+                        "maxTileRow": 10,
+                        "minTileCol": 10,
+                        "maxTileCol": 30
+                    },
+                    "5": {
+                        "minTileRow": 6,
+                        "maxTileRow": 20,
+                        "minTileCol": 20,
+                        "maxTileCol": 61
+                    },
+                    "6": {
+                        "minTileRow": 13,
+                        "maxTileRow": 40,
+                        "minTileCol": 41,
+                        "maxTileCol": 123
+                    },
+                    "7": {
+                        "minTileRow": 27,
+                        "maxTileRow": 80,
+                        "minTileCol": 82,
+                        "maxTileCol": 247
+                    },
+                    "8": {
+                        "minTileRow": 54,
+                        "maxTileRow": 160,
+                        "minTileCol": 164,
+                        "maxTileCol": 494
+                    },
+                    "9": {
+                        "minTileRow": 108,
+                        "maxTileRow": 321,
+                        "minTileCol": 329,
+                        "maxTileCol": 989
+                    },
+                    "10": {
+                        "minTileRow": 216,
+                        "maxTileRow": 642,
+                        "minTileCol": 659,
+                        "maxTileCol": 1979
+                    },
+                    "11": {
+                        "minTileRow": 432,
+                        "maxTileRow": 1285,
+                        "minTileCol": 1319,
+                        "maxTileCol": 3959
+                    }
                 }
-            });
+            }
+        });
 
         itowns.viewer.addElevationLayer({
             protocol:   "wmts",
@@ -466,264 +458,226 @@ and open the template in the editor.
             url:        "http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/geoportail/wmts",
             noDataValue : -99999,
             options: {
-                    name: "ELEVATION.ELEVATIONGRIDCOVERAGE.HIGHRES",
-                    mimetype: "image/x-bil;bits=32",
-                    tileMatrixSet: "WGS84G",
-                    tileMatrixSetLimits: {
-                          "6": {
-                            "minTileRow": 13,
-                            "maxTileRow": 36,
-                            "minTileCol": 62,
-                            "maxTileCol": 80
-                          },
-                          "7": {
-                            "minTileRow": 27,
-                            "maxTileRow": 73,
-                            "minTileCol": 124,
-                            "maxTileCol": 160
-                          },
-                          "8": {
-                            "minTileRow": 55,
-                            "maxTileRow": 146,
-                            "minTileCol": 248,
-                            "maxTileCol": 320
-                          },
-                          "9": {
-                            "minTileRow": 110,
-                            "maxTileRow": 292,
-                            "minTileCol": 497,
-                            "maxTileCol": 640
-                          },
-                          "10": {
-                            "minTileRow": 221,
-                            "maxTileRow": 585,
-                            "minTileCol": 994,
-                            "maxTileCol": 1281
-                          },
-                          "11": {
-                            "minTileRow": 442,
-                            "maxTileRow": 1171,
-                            "minTileCol": 1989,
-                            "maxTileCol": 2563
-                          },
-                          "12": {
-                            "minTileRow": 885,
-                            "maxTileRow": 2343,
-                            "minTileCol": 3978,
-                            "maxTileCol": 5126
-                          },
-                          "13": {
-                            "minTileRow": 1770,
-                            "maxTileRow": 4687,
-                            "minTileCol": 7957,
-                            "maxTileCol": 10253
-                          },
-                          "14": {
-                            "minTileRow": 3540,
-                            "maxTileRow": 9375,
-                            "minTileCol": 15914,
-                            "maxTileCol": 20507
-                          }
-                        }
+                name: "ELEVATION.ELEVATIONGRIDCOVERAGE.HIGHRES",
+                mimetype: "image/x-bil;bits=32",
+                tileMatrixSet: "WGS84G",
+                tileMatrixSetLimits: {
+                    "6": {
+                        "minTileRow": 13,
+                        "maxTileRow": 36,
+                        "minTileCol": 62,
+                        "maxTileCol": 80
+                    },
+                    "7": {
+                        "minTileRow": 27,
+                        "maxTileRow": 73,
+                        "minTileCol": 124,
+                        "maxTileCol": 160
+                    },
+                    "8": {
+                        "minTileRow": 55,
+                        "maxTileRow": 146,
+                        "minTileCol": 248,
+                        "maxTileCol": 320
+                    },
+                    "9": {
+                        "minTileRow": 110,
+                        "maxTileRow": 292,
+                        "minTileCol": 497,
+                        "maxTileCol": 640
+                    },
+                    "10": {
+                        "minTileRow": 221,
+                        "maxTileRow": 585,
+                        "minTileCol": 994,
+                        "maxTileCol": 1281
+                    },
+                    "11": {
+                        "minTileRow": 442,
+                        "maxTileRow": 1171,
+                        "minTileCol": 1989,
+                        "maxTileCol": 2563
+                    },
+                    "12": {
+                        "minTileRow": 885,
+                        "maxTileRow": 2343,
+                        "minTileCol": 3978,
+                        "maxTileCol": 5126
+                    },
+                    "13": {
+                        "minTileRow": 1770,
+                        "maxTileRow": 4687,
+                        "minTileCol": 7957,
+                        "maxTileCol": 10253
+                    },
+                    "14": {
+                        "minTileRow": 3540,
+                        "maxTileRow": 9375,
+                        "minTileCol": 15914,
+                        "maxTileCol": 20507
+                    }
                 }
-            });
+            }
+        });
 
         itowns.viewer.update();
 
 
 
-               // THIS IS AN EXAMPLE OF INTERFACE TO INTERACT WITH ITOWNS
-               var Menu = function() {
-                   this.CloudsIR = false;
-                   this.SatelliteAnimation = false;
-                   this.RealisticLighting = false;
-                   this.StreetLevelImagery = false;
-                   this.KML = false;
-                   this.AnimateTime = false;
-                   this.Orbit = false;
-                   this.api = function(){};
-                   this.api2 = function(){};
-                   this.api3 = function(){};
-               };
+        // THIS IS AN EXAMPLE OF INTERFACE TO INTERACT WITH ITOWNS
+        var Menu = function() {
+            this.CloudsIR = false;
+            this.SatelliteAnimation = false;
+            this.RealisticLighting = false;
+            this.StreetLevelImagery = false;
+            this.KML = false;
+            this.AnimateTime = false;
+            this.Orbit = false;
+            this.api = function(){};
+            this.api2 = function(){};
+            this.api3 = function(){};
+        };
 
-               var text = new Menu();
-               var gui = new dat.GUI( { autoPlace: false});
-               gui.domElement.id = 'menuDiv';
-               viewerDiv.appendChild(gui.domElement);
+        var text = new Menu();
+        var gui = new dat.GUI( { autoPlace: false});
+        gui.domElement.id = 'menuDiv';
+        viewerDiv.appendChild(gui.domElement);
 
-                var layers = itowns.viewer.getLayers();
-                for(var i in layers)
-                {
-                    var layer = layers[i];
+        var config = scene.getMap().layersConfiguration;
 
-                    if(layer.options.mimetype != "image/x-bil;bits=32")
-                    {
+        var colorGui = gui.addFolder('Color Layers');
+        var colorLayers = scene.getMap().layersConfiguration.getColorLayers();
+        for(var i in colorLayers) {
+            var layer = colorLayers[i];
 
-                        text[layer.id] = true;
-                        text[layer.id+'_Opacity'] = 1.0;
+            var folder = colorGui.addFolder(layer.id);
+            folder.add( { visible: true }, 'visible').onChange(function(value) {
+                itowns.viewer.setLayerVisibility(this, value);
+            }.bind(layer.id));
+            folder.add( { opacity: 1.0 }, 'opacity').min(0.0).max(1.0).onChange(function(value) {
+                itowns.viewer.setLayerOpacity(this, value);
+            }.bind(layer.id));
+            folder.add( { frozen: false }, 'frozen').onChange(function(value) {
+                config.setLayerFreeze(this, value);
+            }.bind(layer.id));
+        }
+
+        var elevationGui = gui.addFolder('Elevation Layers');
+        var elevationLayers = config.getElevationLayers();
+        for(var i in elevationLayers) {
+            var layer = elevationLayers[i];
+
+            var folder = elevationGui.addFolder(layer.id);
+            folder.add( { frozen: false }, 'frozen').onChange(function(value) {
+                config.setLayerFreeze(this, value);
+            }.bind(layer.id));
+        }
+
+        if(false) {
+            var f2 = gui.addFolder('Atmosphere');
+
+            f2.open();
+
+            f2.add(text, 'CloudsIR').onChange(function(newValue) {
+                itowns.viewer.showClouds(newValue);
+            });
+
+            f2.add(text, 'SatelliteAnimation').onChange(function(newValue) {
+                itowns.viewer.showClouds(true, newValue);
+            });
+
+            f2.add(text, 'RealisticLighting').onChange(function(newValue) {
+                itowns.viewer.setRealisticLightingOn(newValue);
+            });
+
+            f2.add(text, 'AnimateTime').onChange(function(newValue) {
+                itowns.viewer.animateTime(newValue);
+            });
+
+            f2.add(text, 'Orbit').onChange(function(newValue) {
+                itowns.viewer.orbit(newValue);
+            });
 
 
-                        var fnUp = function(myid) {
-                            return function() {
-                                itowns.viewer.moveLayerUp(myid);
-                            }
-                        }(layer.id);
-                        var fnDown = function(myid) {
-                            return function() {
-                                itowns.viewer.moveLayerDown(myid);
-                            }
-                        }(layer.id);
+            f2.add(text, 'StreetLevelImagery').onChange(function(newValue) {
+                itowns.viewer.setStreetLevelImageryOn(newValue);
+            });
+        }
 
-                        text[layer.id+'_up'] = fnUp;
-                        text[layer.id+'_down'] = fnDown;
+        viewerDiv.addEventListener('rangeChanged', function() {
+            var controller;
+            controller = gui.add(text, 'api');
+            if(controller) {
+                controller.onChange(function(value) {
+                    // removeLayer('OPENSM');
+                    //itowns.viewer.moveLayerUp('OrthoCRS');
+                    //console.log(itowns.viewer.getZoomLevel("Ortho"));
+                });
+            }
+        }, false);
 
-                        var onchangeVisibily = function(id)
-                        {
-                            return function(newValue)
-                            {
-                                itowns.viewer.setLayerVisibility(id,newValue);
-                            };
+        var removeLayer = function(nameLayer) {
+            if(itowns.viewer.removeImageryLayer(nameLayer)) {
+                var controllerTodelete = [];
 
-                        }(layer.id);
+                for (var i in gui.__controllers) {
+                    var controller = gui.__controllers[i];
 
-                        var onchangeOpacity = function(id)
-                        {
-                            return function(newValue) {
-
-                                var opacity = Math.max(0,Math.min(newValue, 1.0));
-                                itowns.viewer.setLayerOpacity(id, opacity);
-
-                            };
-
-                        }(layer.id);
-
-                        gui.add(text, layer.id).onChange( onchangeVisibily).name(layer.id);
-                        gui.add(text, layer.id + '_Opacity').min(0.0).max(1.0).name(' → Opacity').onChange(onchangeOpacity);
-                        gui.add(text, layer.id + '_up');
-                        gui.add(text, layer.id + '_down');
+                    if(controller.property === nameLayer || controller.property === nameLayer + '_Opacity') {
+                        controllerTodelete.push(controller);
                     }
                 }
 
-                // gui.add(text, 'KML').onChange(function(newValue) {
-                //     itowns.viewer.showKML(newValue);
-                // });
-
-                if(false)
-                {
-                    var f2 = gui.addFolder('Atmosphere');
-
-                    f2.open();
-
-                    f2.add(text, 'CloudsIR').onChange(function(newValue) {
-                         itowns.viewer.showClouds(newValue);
-                    });
-
-                    f2.add(text, 'SatelliteAnimation').onChange(function(newValue) {
-                         itowns.viewer.showClouds(true, newValue);
-                    });
-
-                    f2.add(text, 'RealisticLighting').onChange(function(newValue) {
-                           itowns.viewer.setRealisticLightingOn(newValue);
-                    });
-
-                    f2.add(text, 'AnimateTime').onChange(function(newValue) {
-                        itowns.viewer.animateTime(newValue);
-                    });
-
-                    f2.add(text, 'Orbit').onChange(function(newValue) {
-                        itowns.viewer.orbit(newValue);
-                    });
-
-
-                    f2.add(text, 'StreetLevelImagery').onChange(function(newValue) {
-			             itowns.viewer.setStreetLevelImageryOn(newValue);
-                    });
+                for (var i in controllerTodelete) {
+                    gui.remove(controllerTodelete[i]);
                 }
-                viewerDiv.addEventListener('rangeChanged',function(){
+            }
+        }
 
-                var controller;
-                controller = gui.add(text, 'api');
-                if(controller)
-                 {
-                     controller.onChange(function(value) {
-                        // removeLayer('OPENSM');
-                        //itowns.viewer.moveLayerUp('OrthoCRS');
+        var controller;
+        var layerIdCrs = 'OrthoCRS';
 
-                            //console.log(itowns.viewer.getZoomLevel("Ortho"));
+        // var controller = gui.add(text,'api').name('Up');
 
-                    });
+        // if(controller)
+        // {
+        //     controller.onChange(function(value) {
+        //         itowns.viewer.moveLayerUp(layerIdCrs);
+        //     });
+        // }
 
-                 }
+        // controller = gui.add(text,'api2').name('down');
 
-                 }, false);
+        // if(controller)
+        // {
+        //     controller.onChange(function(value) {
+        //         itowns.viewer.moveLayerDown(layerIdCrs);
+        //     });
+        // }
 
-                var removeLayer= function(nameLayer)
-                {
+        // controller = gui.add(text,'api3').name('Remove Layer');
 
-                    if(itowns.viewer.removeImageryLayer(nameLayer))
-                    {
-                        var controllerTodelete = [];
+        // if(controller)
+        // {
+        //     controller.onChange(function(value) {
+        //         itowns.viewer.removeImageryLayer(layerIdCrs);
+        //     });
+        // }
 
-                        for (var i in gui.__controllers) {
+        viewerDiv.addEventListener('globe-loaded', function() {
+            console.log("Globe Loaded");
+            //itowns.viewer.setRange(100000);
 
-                            var controller = gui.__controllers[i];
+            //itowns.viewer.setCenter({longitude:-74,latitude:40,altitude:0});
+        }, false);
 
-                            if(controller.property === nameLayer || controller.property === nameLayer + '_Opacity')
-                                controllerTodelete.push(controller);
-                        }
+        viewerDiv.addEventListener('Layer-removed', function(event) {
+            console.log("Layer " + event.layer +  " removed");
+        }, false);
 
-                        for (var i in controllerTodelete)
-                            gui.remove(controllerTodelete[i]);
-                    }
-                }
-
-                var controller;
-                var layerIdCrs = 'OrthoCRS';
-
-                // var controller = gui.add(text,'api').name('Up');
-
-                // if(controller)
-                // {
-                //     controller.onChange(function(value) {
-                //         itowns.viewer.moveLayerUp(layerIdCrs);
-                //     });
-                // }
-
-                // controller = gui.add(text,'api2').name('down');
-
-                // if(controller)
-                // {
-                //     controller.onChange(function(value) {
-                //         itowns.viewer.moveLayerDown(layerIdCrs);
-                //     });
-                // }
-
-                // controller = gui.add(text,'api3').name('Remove Layer');
-
-                // if(controller)
-                // {
-                //     controller.onChange(function(value) {
-                //         itowns.viewer.removeImageryLayer(layerIdCrs);
-                //     });
-                // }
-
-                viewerDiv.addEventListener('globe-loaded',function(){
-                    console.log("Globe Loaded");
-                    //itowns.viewer.setRange(100000);
-
-                    //itowns.viewer.loadGPX("data/ULTRA2009.gpx");
-                    //itowns.viewer.setCenter({longitude:-74,latitude:40,altitude:0});
-                } ,
-                false);
-
-                viewerDiv.addEventListener('Layer-removed',function(event){
-                    console.log("Layer " + event.layer +  " removed");
-                } ,
-                false);
-
-                // gui.add(text, 'StreetLevelImagery').onChange(function(newValue) {
-                //     itowns.viewer.setStreetLevelImageryOn(newValue);
-                // });
+        // gui.add(text, 'StreetLevelImagery').onChange(function(newValue) {
+        //     itowns.viewer.setStreetLevelImageryOn(newValue);
+        // });
 
         </script>
     </body>
