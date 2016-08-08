@@ -319,6 +319,16 @@ function updateNodeElevation(quadtree, node, layersConfig, force) {
                     terrain.texture.level = ancestor.level + (layer.options.levelOffset || 0);
                 }
 
+                // if the provider doesn't (or can't) compute elevation min/max,
+                // use layer's property.
+                if (terrain.min === undefined && terrain.max === undefined) {
+                    if (!layer.options.minmaxElevation) {
+                        throw new Error('Missing layer.minmax elevation property');
+                    }
+                    terrain.min = layer.options.minmaxElevation[0];
+                    terrain.max = layer.options.minmaxElevation[1];
+                }
+
                 node.setTextureElevation(terrain);
 
                 return node;
