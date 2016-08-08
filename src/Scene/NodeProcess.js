@@ -10,6 +10,7 @@ import THREE from 'THREE';
 import defaultValue from 'Core/defaultValue';
 import Projection from 'Core/Geographic/Projection';
 import RendererConstant from 'Renderer/RendererConstant';
+import {chooseNextLevelToFetch} from 'Scene/LayerUpdateStrategy';
 
 function NodeProcess(camera, ellipsoid, bbox) {
     //Constructor
@@ -227,18 +228,25 @@ function updateNodeImagery(quadtree, node, layersConfig, force) {
         };
 
         let slot = node.materials[RendererConstant.FINAL].getLayerTextureOffset(layer.id);
-        let ancestor = null;
 
+        let currentLevel = node.materials[RendererConstant.FINAL].getLevelLayerColor(1, slot);
         // if this tile has no texture (level == -1), try use one from an ancestor
-        if (0 <= slot &&
-            node.materials[RendererConstant.FINAL].getLevelLayerColor(1, slot) === -1) {
-            ancestor = findAncestorWithValidTextureForLayer(node, layer.id);
-            args.ancestor = ancestor;
+        if (currentLevel === -1) {
+            args.ancestor = findAncestorWithValidTextureForLayer(node, layer.id);
+        } else {
+            var targetLevel = chooseNextLevelToFetch(layer.updateStrategy.type, node.level, currentLevel, layer.updateStrategy.options);
+
+            if (targetLevel === currentLevel) {
+                continue;
+            }
+            if (targetLevel < node.level) {
+                args.ancestor = node.getNodeAtLevel(targetLevel);
+            }
         }
 
         promises.push(quadtree.interCommand.request(args, node, refinementCommandCancellationFn).then(
             function(result) {
-                let level = (ancestor ? ancestor.level : node.level) +
+                let level = (args.ancestor ? args.ancestor.level : node.level) +
                     (layer.options.levelOffset || 0);
 
                 // Assign .level to texture
@@ -271,36 +279,40 @@ function updateNodeImagery(quadtree, node, layersConfig, force) {
 }
 
 function updateNodeElevation(quadtree, node, layersConfig, force) {
-    var currentElevation = node.materials[RendererConstant.FINAL].getLevelLayerColor(0, 0);
-
-    var ancestor = null;
-
-    if (currentElevation < 0) {
-        // no texture: use elevation texture from 1st non-downscaled parent
-        var n = node.getNodeAtLevel(node.levelElevation);
-        while (n && n.materials[RendererConstant.FINAL].getLevelLayerColor(0, 0) < n.level) {
-            n = n.parent;
-            if (n && !n.materials) {
-                n = null;
-            }
-        }
-
-        ancestor = n || node.getNodeAtLevel(node.levelElevation);
-    } else if (currentElevation < node.levelElevation) {
-        // downscaled texture: download our level
-        ancestor = node.getNodeAtLevel(node.levelElevation);
-    } else {
-        // all good
-        return Promise.resolve(node);
-    }
+    let currentElevation = node.materials[RendererConstant.FINAL].getLevelLayerColor(0, 0);
 
     const elevationLayers = layersConfig.getElevationLayers();
     for (var i = 0; i < elevationLayers.length; i++) {
-        var layer = elevationLayers[i];
+        let layer = elevationLayers[i];
 
         if (layersConfig.isLayerFrozen(layer.id) && !force) {
             continue;
         }
+
+        // Decide which texture (level) to download
+        let ancestor = null;
+        if (currentElevation < 0) {
+            // no texture: use elevation texture from 1st non-downscaled parent
+            var n = node.getNodeAtLevel(node.level);
+            while (n && n.materials[RendererConstant.FINAL].getLevelLayerColor(0, 0) < n.level) {
+                n = n.parent;
+                if (n && !n.materials) {
+                    n = null;
+                }
+            }
+
+            ancestor = n || node.getNodeAtLevel(node.level);
+        } else {
+            var targetLevel = chooseNextLevelToFetch(layer.updateStrategy.type, node.level, currentElevation, layer.updateStrategy.options);
+
+            if (targetLevel != currentElevation) {
+                ancestor = node.getNodeAtLevel(targetLevel);
+            } else {
+                // all good
+                return Promise.resolve(node);
+            }
+        }
+
 
         if (layer.tileInsideLimit(ancestor ? ancestor : node, layer)) {
             var args = { layer, ancestor };
