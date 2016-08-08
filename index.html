@@ -45,6 +45,10 @@ and open the template in the editor.
                 protocol:   "wmts",
                 id:         "Ortho",
                 url:        "http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/geoportail/wmts",
+                updateStrategy: {
+                    type: 0, /* see LayerUpdateStrategy.js */
+                    options: {}
+                },
                 options: {
                     name: "ORTHOIMAGERY.ORTHOPHOTOS",
                     mimetype: "image/jpeg",
@@ -174,6 +178,10 @@ and open the template in the editor.
                 id:         "OrthoCRS",
                 url:        "http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/geoportail/wmts",
                 fx :        1.0,
+                updateStrategy: {
+                    type: 0, /* see LayerUpdateStrategy.js */
+                    options: {}
+                },
                 options: {
                     name: 'ORTHOIMAGERY.ORTHOPHOTOS.CRS84',
                     mimetype: "image/jpeg",
@@ -261,6 +269,10 @@ and open the template in the editor.
                 id:         "ScanEX",
                 url:        "http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/geoportail/wmts",
                 fx :        2.5,
+                updateStrategy: {
+                    type: 0, /* see LayerUpdateStrategy.js */
+                    options: {}
+                },
                 options: {
                     name: 'GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN-EXPRESS.STANDARD',
                     mimetype: "image/jpeg",
@@ -379,6 +391,10 @@ and open the template in the editor.
             dateTime  : "",
             heightMapWidth : 256,
             waterMask      : false,
+            updateStrategy: {
+                type: 0, /* see LayerUpdateStrategy.js */
+                options: {}
+            },
             options: {
                 mimetype  : "image/png"
             }
@@ -389,6 +405,12 @@ and open the template in the editor.
             id:         "IGN_MNT",
             url:        "http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/geoportail/wmts",
             noDataValue : -99999,
+            updateStrategy: {
+                type: 1, /* see LayerUpdateStrategy.js */
+                options: {
+                    groups: [3, 7, 11, 14]
+                }
+            },
             options: {
                 name: "ELEVATION.ELEVATIONGRIDCOVERAGE",
                 mimetype: "image/x-bil;bits=32",
@@ -457,6 +479,12 @@ and open the template in the editor.
             id:         "IGN_MNT_HIGHRES",
             url:        "http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/geoportail/wmts",
             noDataValue : -99999,
+            updateStrategy: {
+                type: 1, /* see LayerUpdateStrategy.js */
+                options: {
+                    groups: [3, 7, 11, 14]
+                }
+            },
             options: {
                 name: "ELEVATION.ELEVATIONGRIDCOVERAGE.HIGHRES",
                 mimetype: "image/x-bil;bits=32",
