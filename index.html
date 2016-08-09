@@ -83,26 +83,42 @@ and open the template in the editor.
             }
         });
 
+        // itowns.viewer.addImageryLayer({
+        //     url       : "http://geoindex.uqam.ca/mapserv?map=cmm_2013",
+        //     protocol  : 'wms',
+        //     version   : '1.3.0',
+        //     id        : 'testwms',
+        //     name      : 'cmm_2013',
+        //     style      : "",
+        //     projection : "EPSG:2950",
+        //     transparent : true,
+        //     // min long, min lat, max long, max lat
+        //     bbox      : [266040.26, 4984521.41, 343559.74, 5095744.39],
+        //     featureInfoMimeType : "",
+        //     dateTime  : "",
+        //     heightMapWidth : 256,
+        //     waterMask      : false,
+        //     updateStrategy: {
+        //         type: 3
+        //     },
+        //     options: {
+        //         mimetype  : "image/png",
+        //         tileMatrixSet: 'WGS84G'
+        //     }
+        // });
+
         itowns.viewer.addImageryLayer({
-            url       : "http://geoindex.uqam.ca/mapserv?map=cmm_2013",
-            protocol  : 'wms',
-            version   : '1.3.0',
-            id        : 'testwms',
-            name      : 'cmm_2013',
-            style      : "",
-            projection : "EPSG:2950",
-            transparent : true,
-            // min long, min lat, max long, max lat
-            bbox      : [266040.26, 4984521.41, 343559.74, 5095744.39],
-            featureInfoMimeType : "",
-            dateTime  : "",
-            heightMapWidth : 256,
-            waterMask      : false,
+            url       : "http://3d.oslandia.com/mapserv.jpg",
+            protocol  : 'single_image',
+            id        : 'single_image_color',
+            name      : 'single_image_color',
+            projection : "EPSG:3946",
+            bbox      : [283000, 5031000, 304000,5052000],
             updateStrategy: {
-                type: 3
+                type: 0
             },
             options: {
-                mimetype  : "image/png",
+                mimetype  : "image/jpeg",
                 tileMatrixSet: 'WGS84G'
             }
         });
