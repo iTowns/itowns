@@ -361,7 +361,7 @@ ApiGlobe.prototype.createScenePlane = function(coordCarto, viewerDiv, boundingBo
 
     // Fin test BoundingVolumeHierarchy
 
-    var nodeProcess = this.scene.layers[this.scene.layers.length - 1].process;
+    var nodeProcess = this.scene.layers[0].process;
     nodeProcess.isCulled =
         function(node, camera) {
             return !this.frustumCullingOBB(node, camera);
