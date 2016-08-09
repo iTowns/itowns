@@ -7,7 +7,7 @@ var BasicDepthMaterial = function(otherMaterial) {
     BasicMaterial.call(this);
 
 //    this.vertexShader = DepthVS;
-    this.fragmentShader = GlobeDepthFS;
+    this.fragmentShader = this.fragmentShaderHeader + GlobeDepthFS;
 };
 
 BasicDepthMaterial.prototype = Object.create(BasicMaterial.prototype);
