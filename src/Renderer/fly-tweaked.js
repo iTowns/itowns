@@ -105,6 +105,7 @@ export default function fly(camera, domElement, THREE) {
   // when we have focus
   domElement.addEventListener('mousedown', mousedown, false);
   domElement.addEventListener('keydown', keydown, false);
+  domElement.addEventListener( 'mousewheel', mousewheel, false );
 
   // These are global since we can loose control otherwise and miss keyup/move
   // events.
@@ -231,6 +232,28 @@ export default function fly(camera, domElement, THREE) {
       updateRotationVector();
       api.fire('move', moveArgs);
     }
+  }
+
+  function mousewheel(event) {
+    var delta = 0;
+    if ( event.wheelDelta !== undefined ) {
+        // WebKit / Opera / Explorer 9
+        delta = event.wheelDelta;
+    } else if ( event.detail !== undefined ) {
+        // Firefox
+        delta = - event.detail;
+    }
+
+    if (delta > 0) {
+        moveState['forward'] = 1;
+    } else {
+        moveState['back'] = 1;
+    }
+
+    updateMovementVector();
+    api.fire('move', moveArgs);
+    moveState['forward'] = 0;
+    moveState['back'] = 0;
   }
 
   function mouseup(event) {
