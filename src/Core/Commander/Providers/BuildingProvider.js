@@ -16,8 +16,8 @@ function BuildingProvider(options) {
     Provider.call(this, new IoDriver_JSON());
     this.cache = CacheRessource();
     this.srs = options.srs;
-    this.baseUrl = "http://localhost/server"; // TODO: remove hard-coded values
-    this.layer = "lyon_lod2";
+    this.baseUrl = "http://3d.oslandia.com/building"; // TODO: remove hard-coded values
+    this.layer = "montreal";
     this.format = defaultValue(options.format, "GeoJSON");
     //this.cacheGeometry = [];
 }
