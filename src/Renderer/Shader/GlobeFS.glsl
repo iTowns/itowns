@@ -38,7 +38,6 @@ varying float       vUv_PM;
 varying vec3        vNormal;
 varying vec4        pos;
 
-#define DEBUG
 #if defined(DEBUG)
     const float sLine = 0.008;
 #endif

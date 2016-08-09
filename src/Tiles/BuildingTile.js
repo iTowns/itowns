@@ -31,7 +31,9 @@ function BuildingTile(params) {
     this.centerSphere = this.geometry.boundingSphere.center;
     this.properties = params.properties;
 
-    this.material = new BasicIdsMaterial(new BasicMaterial(new THREE.Color(0.8, 0.8, 0.8), this.id));
+    var m = 10000;
+    this.randomId = Math.random() * m;
+    this.material = new BasicIdsMaterial(new BasicMaterial(new THREE.Color(0.8, 0.8, 0.8), this.randomId));
     this.materials = [];
 
     // instantiations all state materials : final, depth, id
