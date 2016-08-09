@@ -283,7 +283,7 @@ function c3DEngine(scene, positionCamera, viewerDiv, debugMode, gLDebug) {
         this.update();
     }
 
-    window.addEventListener('mousedown', onMouseDown.bind(this), false);
+    // window.addEventListener('mousedown', onMouseDown.bind(this), false);
 }
 
 /**
