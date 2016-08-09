@@ -40,10 +40,13 @@ and open the template in the editor.
         // iTowns namespace defined here
         var viewerDiv = document.getElementById("viewerDiv");
 
+        var offset = 1000;
+
         var scene = itowns.viewer.createScenePlane(
             initCenter,
             viewerDiv,
-            [266040.26, 343559.74, 4984521.41, 5095744.39]);
+            // pointcloud bouding-box
+            [293000 - offset, 294000 + offset, 5041000 - offset, 5042000 + offset]);
 
         itowns.viewer.addPointCloud("greyhound://3d.oslandia.com/lopocs-itowns/greyhound/");
 
