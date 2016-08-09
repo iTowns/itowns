@@ -6,7 +6,6 @@
 
 import Provider from 'Core/Commander/Providers/Provider';
 import IoDriver_JSON from 'Core/Commander/Providers/IoDriver_JSON';
-import when from 'when';
 import GeoJSONToThree from 'Renderer/ThreeExtented/GeoJSONToThree';
 import defaultValue from 'Core/defaultValue';
 import CacheRessource from 'Core/Commander/Providers/CacheRessource';
@@ -38,7 +37,7 @@ BuildingProvider.prototype.executeCommand = function(command) {
 
 
     if (bboxId === undefined) {
-        return when(-2);
+        return Promise.resolve(-2);
     }
 
     var createTile = function(data) {
