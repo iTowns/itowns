@@ -30,9 +30,16 @@ BuildingTileNodeProcess.prototype.isCulled = function(node, camera) {
     return !(this.frustumCulling(node, camera));
 };
 
-BuildingTileNodeProcess.prototype.checkSSE = function(node, camera) {
+BuildingTileNodeProcess.prototype.computeNodeSSE = function(node, camera) {
+    var distance = node.box3D.distanceToPoint(camera.camera3D.position);
+    var SSE = camera.preSSE * (node.geometricError / distance);
+    return SSE;
+};
 
-    return camera.BoxSSE(node) > 6.0;
+
+BuildingTileNodeProcess.prototype.checkNodeSSE = function(node, camera) {
+
+    return 6.0 < node.sse;
 
 };
 
@@ -65,14 +72,10 @@ BuildingTileNodeProcess.prototype.subdivideNode = function(node, camera, params)
     }
 };
 
-BuildingTileNodeProcess.prototype.checkNodeSSE = function(node) {
-    return 6.0 < node.sse;
-};
-
 BuildingTileNodeProcess.prototype.SSE = function(node, camera, params) {
     // update node's sse value
 
-    node.sse = camera.computeNodeSSE(node);
+    node.sse = this.computeNodeSSE(node, camera);
 
     var sse = this.checkNodeSSE(node);
     node.setDisplayed(true);
