@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+*<!DOCTYPE html>
 <!--
 To change this license header, choose License Headers in Project Properties.
 To change this template file, choose Tools | Templates
@@ -19,9 +19,9 @@ and open the template in the editor.
                 padding: 0;
                 /*margin-top: 50vh;
                 transform: translateY(-50%);*/
+                color: red;
             }
             #menuDiv {position: absolute; top:0px; margin-left: 0px;}
-
 
         </style>
         <meta charset="UTF-8">
@@ -83,29 +83,30 @@ and open the template in the editor.
             }
         });
 
-        // itowns.viewer.addImageryLayer({
-        //     url       : "http://geoindex.uqam.ca/mapserv?map=cmm_2013",
-        //     protocol  : 'wms',
-        //     version   : '1.3.0',
-        //     id        : 'testwms',
-        //     name      : 'cmm_2013',
-        //     style      : "",
-        //     projection : "EPSG:2950",
-        //     transparent : true,
-        //     // min long, min lat, max long, max lat
-        //     bbox      : [266040.26, 4984521.41, 343559.74, 5095744.39],
-        //     featureInfoMimeType : "",
-        //     dateTime  : "",
-        //     heightMapWidth : 256,
-        //     waterMask      : false,
-        //     updateStrategy: {
-        //         type: 3
-        //     },
-        //     options: {
-        //         mimetype  : "image/png",
-        //         tileMatrixSet: 'WGS84G'
-        //     }
-        // });
+        itowns.viewer.addImageryLayer({
+            url       : "http://geoindex.uqam.ca/mapserv?map=cmm_2013",
+            protocol  : 'wms',
+            version   : '1.3.0',
+            id        : 'testwms',
+            name      : 'cmm_2013',
+            style      : "",
+            projection : "EPSG:2950",
+            transparent : true,
+            // min long, min lat, max long, max lat
+            bbox      : [266040.26, 4984521.41, 343559.74, 5095744.39],
+            featureInfoMimeType : "",
+            dateTime  : "",
+            heightMapWidth : 256,
+            waterMask      : false,
+            updateStrategy: {
+                type: 3
+            },
+            options: {
+                mimetype  : "image/png",
+                tileMatrixSet: 'WGS84G'
+            }
+        });
+
 
         itowns.viewer.addImageryLayer({
             url       : "http://3d.oslandia.com/mapserv.jpg",
@@ -175,6 +176,19 @@ and open the template in the editor.
             }.bind(layer.id));
         }
 
+       gui.add( { z_offset: -6.0 }, 'z_offset').min(-128.0).max(128.0).onChange(function(value) {
+            var cO = function(object) {
+                if (object.material.uniforms && object.material.uniforms.zOffset) {
+                    object.material.uniforms.zOffset.value = value;
+                }
+            };
+
+            // children[0] is rootNode
+            scene.getMap().tiles.children[0].traverse(cO);
+
+            scene.wait(0);
+        }.bind(layer.id));
+
         if(false) {
             var f2 = gui.addFolder('Atmosphere');
 
@@ -208,7 +222,25 @@ and open the template in the editor.
 
         gui.add(text, 'pointcloud').onChange(function(newValue) {
             itowns.viewer.setPointCloudVisibility(newValue);
+            scene.renderScene3D();
         });
+
+        for (var i=0; i<12; i++) {
+            var v = (i == 2 || i==5 || i==6);
+            gui.add({classif: v}, 'classif').name('classification'+i).onChange(function(newValue) {
+                var classif = this.valueOf();
+                var cO = function(object) {
+                    if (object.material && object.material.uniforms && object.material.uniforms.classificationMask) {
+                        object.material.uniforms.classificationMask.value[classif] = newValue ? 1 : 0;
+                        console.log(classif, JSON.stringify(object.material.uniforms.classificationMask.value));
+                    }
+                }
+
+                // children[0] is rootNode
+                scene.layers[0].node.children[1].children[1].traverse(cO);
+                scene.renderScene3D();
+            }.bind(i));
+        }
 
         viewerDiv.addEventListener('rangeChanged', function() {
             var controller;

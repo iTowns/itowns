@@ -1,6 +1,5 @@
 
 
-
 //attribute vec2      uv;
 attribute vec3      position;
 attribute vec3      normal;
@@ -19,10 +18,11 @@ void main()
 {
   vec3 dir =  normalize(vec3(1.0,1.0,0.5));
 
+  gl_PointSize = 3.0;
   if(RTC == 0)
         gl_Position = projectionMatrix * modelViewMatrix * vec4( position,  1.0 );
   else
-        gl_Position = mVPMatRTC * vec4( position ,1.0 );
+         gl_Position = mVPMatRTC * vec4( position ,1.0 );
 
     float h  = max(0.05,(1.0 - min(position.y / 50.0,1.0)));
 

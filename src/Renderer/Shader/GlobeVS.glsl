@@ -14,7 +14,7 @@ uniform int         RTC;
 uniform float       periArcLati;
 uniform mat4        mVPMatRTC;
 uniform int         pickingRender;
-
+uniform float zOffset;
 
 uniform mat4        projectionMatrix;
 uniform mat4        modelViewMatrix;
@@ -65,7 +65,7 @@ void main() {
 
             #endif
 
-            float dv = texture2D( dTextures_00[0], vVv).r * 255.0;
+            float dv = texture2D( dTextures_00[0], vVv).r * 255.0 + zOffset;
             vNormal     = normal;
             vPosition   = vec4( position +  vNormal  * dv ,1.0 );
         }

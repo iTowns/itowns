@@ -1,11 +1,15 @@
 import THREE from 'THREE';
 import Potree from 'potree';
 import Layer from 'Scene/Layer';
+import BasicMaterial from 'Renderer/BasicMaterial';
+import SimpleFS from 'Renderer/Shader/SimpleFS.glsl';
+import PointClassificationVS from 'Renderer/Shader/PointClassificationVS.glsl'
+import PointClassificationFS from 'Renderer/Shader/PointClassificationFS.glsl'
 
 var potreeInstance = null;
 var loaders = [];
 
-function PointCloud() {
+function PointCloud(boundingBox) {
     Layer.call(this);
 
     Potree.pointBudget = 10*1000*1000;
@@ -20,10 +24,10 @@ function PointCloud() {
     //         new THREE.Quaternion().setFromAxisAngle(
     //             new THREE.Vector3( 0, 0, 1 ),  Math.PI ));
 
-var minx = 292000;
-var maxx = 294000;
-var miny = 5040000;
-var maxy = 5042000;
+var minx = 298250;
+var maxx = 302750;
+var miny = 5039250;
+var maxy = 5043750;
 var minz = 39.27;
 var maxz = 90.56;
 
@@ -59,14 +63,51 @@ PointCloud.prototype.load_greyhoud = function(url) {
 
 
     loader.load(url, function(geometry) {
-        var material = new THREE.PointsMaterial( { size: 3.0,
-            vertexColors: THREE.VertexColors } );
-        var pointcloud = new Potree.PointCloudOctree(geometry, material);
-/*
-        var pos = new THREE.Vector3 (4201215.424138484, 171429.945145441,
-                4785694.873914789);
-        pointcloud.position.copy(pos);
-*/
+        if (false) {
+            var pointcloud = new Potree.PointCloudOctree(geometry);
+            pointcloud.material.size = 100;
+            // pointcloud.material.pointColorType = Potree.PointColorType.CLASSIFICATION;
+            pointcloud.material.lights = false;
+        } else if (true) {
+            var material = new THREE.ShaderMaterial({
+                uniforms: {
+                    size: { value: 6.0 },
+                    scale: { value: 1.0 },
+                    classificationMask: { value: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1] }
+                }
+            });
+            material.vertexShader = PointClassificationVS;
+            material.fragmentShader = PointClassificationFS;
+
+            //material.enableRTC(false);
+                // THREE.PointsMaterial( { size: 50.0,
+                // vertexColors: THREE.VertexColors } );
+            var pointcloud = new Potree.PointCloudOctree(geometry, material);
+
+        } else if(true) {
+            var material = new THREE.Material();
+            material.isPointsMaterial = true;
+            material.size = 50;
+            material.vertexColors = THREE.VertexColors;
+            material.sizeAttenuation = false;
+            material.lights = false;
+            material.map = null;
+            material._needsUpdate = true;
+            material.update();
+                // THREE.PointsMaterial( { size: 50.0,
+                // vertexColors: THREE.VertexColors } );
+            var pointcloud = new Potree.PointCloudOctree(geometry, material);
+        } else if (true) {
+            var material = new THREE.PointsMaterial( { size: 50.0, vertexColors: THREE.VertexColors } );
+            material.transparent = false;
+            material.fragmentShader = SimpleFS;
+            var pointcloud = new Potree.PointCloudOctree(geometry, material);
+        } else {
+            var material = new THREE.PointsMaterial( { size: 50.0, vertexColors: THREE.VertexColors } );
+            material.transparent = false;
+            var pointcloud = new Potree.PointCloudOctree(geometry, material);
+        }
+
         potreeInstance.add(pointcloud);
 
         loaders.push(loader);
@@ -77,9 +118,9 @@ PointCloud.prototype.load_cloud = function(url) {
     var loader = new Potree.POCLoader();
 
     loader.load(url, function(geometry) {
-        var material = new THREE.PointsMaterial( { size: 1.0,
-            vertexColors: THREE.VertexColors } );
-        var pointcloud = new Potree.PointCloudOctree(geometry, material);
+        var pointcloud = new Potree.PointCloudOctree(geometry);
+        pointcloud.material.size = 10;
+        pointcloud.material.pointColorType = Potree.PointColorType.CLASSIF
 
         var pos = new THREE.Vector3 (4201215.424138484, 171429.945145441,
                 4779294.873914789);

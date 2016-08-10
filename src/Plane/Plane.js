@@ -18,7 +18,7 @@ function Plane(parameters, gLDebug) {
     Layer.call(this);
 
     this.gLDebug = gLDebug;
-    this.pointcloud = new PointCloud();
+    this.pointcloud = new PointCloud(parameters.bbox);
 
     this.batiments = new Layer();
     this.layerWGS84Zup = new Layer();
