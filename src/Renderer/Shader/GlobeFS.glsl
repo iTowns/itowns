@@ -15,7 +15,7 @@ const vec4 fogColor = vec4( 0.76, 0.85, 1.0, 1.0);
 
 //uniform sampler2D   dTextures_00[TEX_UNITS];
 uniform sampler2D   dTextures_01[TEX_UNITS];
-uniform vec3        pitScale_L01[TEX_UNITS];
+uniform vec4        pitScale_L01[TEX_UNITS];
 
 uniform vec4        paramLayers[8];
 uniform vec2        paramBLayers[8];

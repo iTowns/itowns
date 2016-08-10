@@ -8,7 +8,7 @@ attribute vec3      position;
 attribute vec3      normal;
 
 uniform sampler2D   dTextures_00[1];
-uniform vec3        pitScale_L00[1];
+uniform vec4        pitScale_L00[1];
 uniform int         nbTextures[8];
 uniform int         RTC;
 uniform float       periArcLati;
@@ -31,16 +31,6 @@ highp float decode32(highp vec4 rgba) {
     highp float Result =  Sign * exp2(Exponent) * (Mantissa * exp2(-23.0 ));
     return Result;
 }
-
-vec2    pitUV(vec2 uvIn, vec3 pit)
-{
-    vec2  uv;
-    uv.x = uvIn.x* pit.z + pit.x;
-    uv.y = 1.0 -( (1.0 - uvIn.y) * pit.z + pit.y);
-
-    return uv;
-}
-
 
 
 //#define RGBA_ELEVATION

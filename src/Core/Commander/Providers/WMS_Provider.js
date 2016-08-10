@@ -199,7 +199,7 @@ WMS_Provider.prototype.executeCommand = function(command) {
     if (func) {
         var pitch = ancestor ?
             this.projection.childBBtoOffsetScale(tile.crs, tile.bbox, ancestor.bbox) :
-            new THREE.Vector3(0, 0, 1);
+            new THREE.Vector4(0, 0, 1, 1);
 
         var bbox = ancestor ?
             ancestor.bbox :
