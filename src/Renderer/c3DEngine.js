@@ -146,7 +146,7 @@ function c3DEngine(scene, positionCamera, viewerDiv, debugMode, gLDebug) {
         var dt = Math.min(now - this.previousTime, 200);
         this.previousTime = now;
 
-        this.controls.movementSpeed = this.camera.camera3D.position.z / 5;
+        this.controls.movementSpeed = this.camera.camera3D.position.z / 2;
 
         this.controls.update(dt * 0.001);
         this.camera.update();
