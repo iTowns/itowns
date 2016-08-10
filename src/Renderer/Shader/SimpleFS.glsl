@@ -1,28 +1,3 @@
-#version 100
-
-#extension GL_EXT_frag_depth : enable
-
-#define SHADER_NAME simpleMaterial
-#define VERTEX_TEXTURES
-
-precision highp float;
-precision highp int;
-
-#define USE_LOGDEPTHBUF
-#define USE_LOGDEPTHBUF_EXT
-
-#ifdef USE_LOGDEPTHBUF
-
-	uniform float logDepthBufFC;
-
-	#ifdef USE_LOGDEPTHBUF_EXT
-
-		varying float vFragDepth;
-
-	#endif
-
-#endif
-
 uniform vec3 diffuseColor;
 uniform int  lightOn;
 varying float      light;

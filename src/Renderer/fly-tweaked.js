@@ -7,7 +7,7 @@
 
 var eventify = require('ngraph.events');
 
-export default function fly(camera, domElement, THREE) {
+export default function fly(camera, domElement, THREE, engine) {
   domElement = domElement || document;
   domElement.setAttribute('tabindex', -1);
 
@@ -72,16 +72,13 @@ export default function fly(camera, domElement, THREE) {
   var tmpQuaternion = new THREE.Quaternion();
   var isMouseDown = 0;
   var keyMap = {
-    90: { name: 'forward' }, // W
-    83: { name: 'back'}, // S
-    81: { name: 'left'}, // A
-    68: { name: 'right'},// D
+    83: { name: 'pick'}, // S
     82: { name: 'up'}, // R
     70: { name: 'down'}, // F
-    38: { name: 'pitchUp'}, // up
-    40: { name: 'pitchDown'}, // down
-    37: { name: 'yawLeft'}, // left
-    39: { name: 'yawRight'}, // right
+    38: { name: 'forward'}, // up
+    40: { name: 'back'}, // down
+    37: { name: 'left'}, // left
+    39: { name: 'right'}, // right
     65: { name: 'rollLeft'}, // Q
     69: { name: 'rollRight'}, // E
     16: { name: 'fastfwd'} // LSHIFT
@@ -276,6 +273,14 @@ export default function fly(camera, domElement, THREE) {
           break;
       }
       updateMovementVector();
+    }
+
+    if (moveState['pick']) {
+        console.log('pick!');
+        var mouse = new THREE.Vector2(
+            event.clientX - event.target.offsetLeft, event.clientY - event.target.offsetTop);
+        engine.selectNodeAt(mouse);
+        engine.update();
     }
 
     updateRotationVector();
