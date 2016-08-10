@@ -125,14 +125,15 @@ Projection.prototype.WMTS_WGS84Parent = function(cWMTS, levelParent, pitch) {
 
     pitch.x = cWMTS.col * invDiff - c;
     pitch.y = cWMTS.row * invDiff - r;
-    pitch.z = invDiff;
+    pitch.z = pitch.w = invDiff;
 
     return new CoordWMTS(levelParent, r, c);
 
 };
 
 Projection.prototype.childBBtoOffsetScaleWGS84 = function(bbox, bboxParent) {
-    var scale = bbox.dimension.x / bboxParent.dimension.x;
+    var scaleX = bbox.dimension.x / bboxParent.dimension.x;
+    var scaleY = bbox.dimension.y / bboxParent.dimension.y;
 
     var x =
         Math.abs(bbox.minCarto.longitude - bboxParent.minCarto.longitude) /
@@ -143,11 +144,12 @@ Projection.prototype.childBBtoOffsetScaleWGS84 = function(bbox, bboxParent) {
             (bboxParent.minCarto.latitude + bboxParent.dimension.y)) /
         bboxParent.dimension.y;
 
-    return new THREE.Vector3(x, y, scale);
+    return new THREE.Vector4(x, y, scaleX, scaleY);
 };
 
 Projection.prototype.childBBtoOffsetScaleEPSG3946 = function(bbox, bboxParent) {
-    var scale = bbox.dimension.x / bboxParent.dimension.x;
+    var scaleX = bbox.dimension.x / bboxParent.dimension.x;
+    var scaleY = bbox.dimension.y / bboxParent.dimension.y;
 
     var x =
         (bbox.minCarto.longitude - bboxParent.minCarto.longitude) /
@@ -156,7 +158,7 @@ Projection.prototype.childBBtoOffsetScaleEPSG3946 = function(bbox, bboxParent) {
         (bbox.minCarto.latitude - bboxParent.minCarto.latitude) /
         bboxParent.dimension.y;
 
-    return new THREE.Vector3(x, y, scale);
+    return new THREE.Vector4(x, y, scaleX, scaleY);
 };
 
 Projection.prototype.childBBtoOffsetScale = function(crs, bbox, bboxParent) {

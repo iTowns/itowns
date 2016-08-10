@@ -20,13 +20,13 @@ var nbLayer = 2;
 var vector = new THREE.Vector3(0.0, 0.0, 0.0);
 var vector2 = new THREE.Vector2(0.0, 0.0);
 var vector4 = new THREE.Vector4(0.0, 0.0, 0.0, 0.0);
-var showDebug = false;
+var showDebug = true;
 var fooTexture;
 
 var getColorAtIdUv = function(nbTex) {
 
     if (!fooTexture) {
-        fooTexture = 'vec4 colorAtIdUv(sampler2D dTextures[TEX_UNITS],vec3 pitScale[TEX_UNITS],int id, vec2 uv){\n';
+        fooTexture = 'vec4 colorAtIdUv(sampler2D dTextures[TEX_UNITS],vec4 pitScale[TEX_UNITS],int id, vec2 uv){\n';
         fooTexture += ' if (id == 0) return texture2D(dTextures[0],  pitUV(uv,pitScale[0]));\n';
 
         for (var l = 1; l < nbTex; l++) {
@@ -58,7 +58,7 @@ var LayeredMaterial = function(id) {
     this.fragmentShaderHeader += getColorAtIdUv(nbSamplers);
 
     this.fragmentShader = this.fragmentShaderHeader + GlobeFS;
-    this.vertexShader = this.vertexShaderHeader + GlobeVS;
+    this.vertexShader = this.vertexShaderHeader + pitUV + GlobeVS;
 
     this.Textures = [];
     this.pitScale = [];
@@ -76,7 +76,7 @@ var LayeredMaterial = function(id) {
 
         // WARNING TODO prevent empty slot, but it's not the solution
         this.pitScale[l] = Array(nbSamplers);
-        fill(this.pitScale[l],vector) ;
+        fill(this.pitScale[l],vector4) ;
         this.nbTextures[l] = 0;
     }
 
@@ -132,11 +132,11 @@ var LayeredMaterial = function(id) {
     };
 
     this.uniforms.pitScale_L00 = {
-        type: "v3v",
+        type: "v4v",
         value: this.pitScale[0]
     };
     this.uniforms.pitScale_L01 = {
-        type: "v3v",
+        type: "v4v",
         value: this.pitScale[1]
     };
     this.uniforms.lightingOn = {
@@ -244,7 +244,7 @@ LayeredMaterial.prototype.setTexture = function(texture, layer, slot, pitScale) 
 
     // BEWARE: array [] -> size: 0; array [10]="wao" -> size: 11
     this.Textures[layer][slot] = texture ? texture : emptyTexture;
-    this.pitScale[layer][slot] = pitScale ? pitScale : new THREE.Vector3(0.0, 0.0, 1.0);
+    this.pitScale[layer][slot] = pitScale ? pitScale : new THREE.Vector3(0.0, 0.0, 1.0, 1.0);
 
     // TEMP
     if (texture === null) {

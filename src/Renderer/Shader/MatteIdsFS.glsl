@@ -1,6 +1,5 @@
 uniform int  uuid;
 uniform vec3 diffuseColor;
-varying float      light;
 
 const vec4 bitSh = vec4( 256.0 * 256.0 * 256.0, 256.0 * 256.0, 256.0, 1.0 );
 const vec4 bitMsk = vec4( 0.0, 1.0 / 256.0, 1.0 / 256.0, 1.0 / 256.0 );
@@ -22,7 +21,6 @@ void main() {
 
     #endif
 
-    float color = light;
+    gl_FragColor = pack1K(float(uuid));
 
-    gl_FragColor = vec4(color, color, color, 1.0);
 }
