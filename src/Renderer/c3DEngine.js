@@ -237,7 +237,7 @@ function c3DEngine(scene, positionCamera, viewerDiv, debugMode, gLDebug) {
     this.controls.keyPanSpeed = 0.01;*/
 
     // var origin = new THREE.Vector3(positionCamera.x, positionCamera.y, 300);
-    this.controls = fly(this.camera.camera3D, this.renderer.domElement, THREE);
+    this.controls = fly(this.camera.camera3D, this.renderer.domElement, THREE, this);
 /*
     this.controls.constraint.target = origin;
     this.controls.damping = 0.1;
