@@ -243,7 +243,7 @@ export default function fly(camera, domElement, THREE, engine) {
 
     if (delta > 0) {
         moveState['forward'] = 1;
-    } else {
+    } else if (delta < 0) {
         moveState['back'] = 1;
     }
 
@@ -251,6 +251,7 @@ export default function fly(camera, domElement, THREE, engine) {
     api.fire('move', moveArgs);
     moveState['forward'] = 0;
     moveState['back'] = 0;
+    updateMovementVector();
   }
 
   function mouseup(event) {

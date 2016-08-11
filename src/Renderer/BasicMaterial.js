@@ -77,7 +77,6 @@ function BasicMaterial(color, id) {
             type: "i",
             value: true
         }
-
     };
 
     this.setUuid(id || 0);

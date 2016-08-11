@@ -8,7 +8,7 @@ import BoundingBox from 'Scene/BoundingBox';
 import NodeMesh from 'Renderer/NodeMesh';
 import BasicMaterial from 'Renderer/BasicMaterial';
 import THREE from 'THREE';
-import BasicDepthMaterial from 'Renderer/BasicDepthMaterial';
+import BasicNormalMaterial from 'Renderer/BasicNormalMaterial';
 import BasicIdsMaterial from 'Renderer/BasicIdsMaterial';
 import RendererConstant from 'Renderer/RendererConstant';
 
@@ -40,10 +40,17 @@ function BuildingTile(params) {
     // Final rendering : return layered color + fog
     this.materials[RendererConstant.FINAL] = this.material;
     // Depth : return the distance between projection point and the node
-    this.materials[RendererConstant.DEPTH] = new BasicDepthMaterial(this.materials[RendererConstant.FINAL]);
+    this.materials[RendererConstant.DEPTH] = new BasicNormalMaterial(this.materials[RendererConstant.FINAL]);
     // ID : return id color in RGBA (float Pack in RGBA)
     this.materials[RendererConstant.ID] = new BasicIdsMaterial(this.materials[RendererConstant.FINAL]);
 
+    this.materials[RendererConstant.FINAL].uniforms.normalTexture = {
+        type: "t"
+    };
+    this.materials[RendererConstant.FINAL].uniforms.resolution = {
+        type: "2fv",
+        value: [200, 200]
+    };
 }
 
 BuildingTile.prototype = Object.create(NodeMesh.prototype);
@@ -68,14 +75,23 @@ BuildingTile.prototype.disposeChildren = function() {
 
 BuildingTile.prototype.enableRTC = function(enable) {
     this.material.enableRTC(enable);
+    for (var i=0; i<this.materials.length; i++) {
+        this.materials[i].enableRTC(enable);
+    }
 };
 
 BuildingTile.prototype.setFog = function(fog) {
     this.material.setFogDistance(fog);
+    for (var i=0; i<this.materials.length; i++) {
+        this.materials[i].setFogDistance(fog);
+    }
 };
 
 BuildingTile.prototype.setMatrixRTC = function(rtc) {
     this.material.setMatrixRTC(rtc);
+    for (var i=0; i<this.materials.length; i++) {
+        this.materials[i].setMatrixRTC(rtc);
+    }
 };
 
 BuildingTile.prototype.setDebug = function(enable) {

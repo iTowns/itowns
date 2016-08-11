@@ -110,10 +110,45 @@ function c3DEngine(scene, positionCamera, viewerDiv, debugMode, gLDebug) {
     this.pickingTexture.texture.generateMipmaps = false;
     this.pickingTexture.depthBuffer = true;
 
+    this.normalRenderBuffer = new THREE.WebGLRenderTarget(this.width, this.height, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter, format: THREE.RGBAFormat, type: THREE.FloatType } );
+    this.normalRenderBuffer.texture.generateMipmaps = false;
+    this.normalRenderBuffer.depthBuffer = true;
+    // this.normalRenderBuffer.stencilBuffer = false;
+
+    this.modemode = 0;
+
     this.renderScene = function() {
 
         this.renderer.clear();
         this.renderer.setViewport(0, 0, this.width, this.height);
+
+        // Render everything except buildings
+        // this.scene3D.children[3].visible = false;
+
+
+        // Render building only, in this.normalRenderBuffer
+        this.renderer.setClearColor(0);
+
+        this.scene3D.children[0].visible = false;
+        this.scene3D.children[1].visible = false;
+        this.scene3D.children[2].visible = false;
+        this.scene3D.children[3].visible = true;
+        this.changeStateNodesScene(RendererConstant.DEPTH, 3);
+        this.renderer.render(this.scene3D, this.camera.camera3D, this.normalRenderBuffer, true);
+
+        this.changeStateNodesScene(RendererConstant.FINAL, 3);
+        this.renderer.setClearColor(0xccfffc);
+
+        // Change render target
+        // this.changeStateNodesScene(this.modemode == 0 ? RendererConstant.FINAL: RendererConstant.DEPTH, 3);
+        // this.renderer.render(this.scene3D, this.camera.camera3D);
+
+
+        this.scene3D.children[0].visible = true;
+        this.scene3D.children[1].visible = true;
+        this.scene3D.children[2].visible = true;
+        this.scene3D.children[3].visible = true;
+
         this.renderer.render(this.scene3D, this.camera.camera3D);
 
         if (this.debug) {
@@ -166,6 +201,7 @@ function c3DEngine(scene, positionCamera, viewerDiv, debugMode, gLDebug) {
         }
 
         this.pickingTexture.setSize(this.width, this.height);
+        this.normalRenderBuffer.setSize(this.width, this.height);
         this.renderer.setSize(this.width, this.height);
         this.update();
 
@@ -179,7 +215,7 @@ function c3DEngine(scene, positionCamera, viewerDiv, debugMode, gLDebug) {
     //
     this.camera.setPosition(positionCamera);
     this.camera.camera3D.near = 1; // this.size * 2.333; // if near is too small --> bug no camera helper
-    this.camera.camera3D.far = this.size * 1000;
+    this.camera.camera3D.far = this.size * 3;
     this.camera.camera3D.updateProjectionMatrix();
     this.camera.camera3D.updateMatrixWorld(true);
 
@@ -277,10 +313,11 @@ function c3DEngine(scene, positionCamera, viewerDiv, debugMode, gLDebug) {
     this.camera.position.z = 1000;
 
     function onMouseDown(event) {
-        event.preventDefault();
-        var mouse = new THREE.Vector2(event.clientX - event.target.offsetLeft, event.clientY - event.target.offsetTop);
-        this.selectNodeAt(mouse);
-        this.update();
+        this.modemode = 1 - this.modemode;
+        // event.preventDefault();
+        // var mouse = new THREE.Vector2(event.clientX - event.target.offsetLeft, event.clientY - event.target.offsetTop);
+        // this.selectNodeAt(mouse);
+        // this.update();
     }
 
     // window.addEventListener('mousedown', onMouseDown.bind(this), false);
@@ -315,7 +352,7 @@ c3DEngine.prototype.enableRTC = function(enable) {
  * @param {type} state new state to apply
  * @returns {undefined}
  */
-c3DEngine.prototype.changeStateNodesScene = function(state) {
+c3DEngine.prototype.changeStateNodesScene = function(state, childrenIndex) {
 
     // build traverse function
     var changeStateFunction = function() {
@@ -327,6 +364,9 @@ c3DEngine.prototype.changeStateNodesScene = function(state) {
     var enable = state === RendererConstant.FINAL;
 
     for (var x = 0; x < this.scene3D.children.length; x++) {
+        if (childrenIndex !== undefined && x != childrenIndex) {
+            continue;
+        }
         var node = this.scene3D.children[x];
 
         if (node.changeState) {
