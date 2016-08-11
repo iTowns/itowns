@@ -108,21 +108,21 @@ and open the template in the editor.
         });
 
 
-        itowns.viewer.addImageryLayer({
-            url       : "http://3d.oslandia.com/mapserv.jpg",
-            protocol  : 'single_image',
-            id        : 'single_image_color',
-            name      : 'single_image_color',
-            projection : "EPSG:3946",
-            bbox      : [283000, 5031000, 304000,5052000],
-            updateStrategy: {
-                type: 0
-            },
-            options: {
-                mimetype  : "image/jpeg",
-                tileMatrixSet: 'WGS84G'
-            }
-        });
+        // itowns.viewer.addImageryLayer({
+        //     url       : "http://3d.oslandia.com/mapserv.jpg",
+        //     protocol  : 'single_image',
+        //     id        : 'single_image_color',
+        //     name      : 'single_image_color',
+        //     projection : "EPSG:3946",
+        //     bbox      : [283000, 5031000, 304000,5052000],
+        //     updateStrategy: {
+        //         type: 0
+        //     },
+        //     options: {
+        //         mimetype  : "image/jpeg",
+        //         tileMatrixSet: 'WGS84G'
+        //     }
+        // });
 
         itowns.viewer.update();
 

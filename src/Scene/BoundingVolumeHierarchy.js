@@ -12,7 +12,7 @@
 import Layer from 'Scene/Layer';
 import InterfaceCommander from 'Core/Commander/InterfaceCommander';
 import NodeMesh from 'Renderer/NodeMesh';
-
+import RendererConstant from 'Renderer/RendererConstant'
 
 function commandQueuePriorityFunction(/*cmd*/) {
     return 100000; // TODO: more suitable value
@@ -43,23 +43,27 @@ BoundingVolumeHierarchy.prototype = Object.create(Layer.prototype);
 
 BoundingVolumeHierarchy.prototype.constructor = BoundingVolumeHierarchy;
 
-BoundingVolumeHierarchy.prototype.init = function(geometryLayer) {
+BoundingVolumeHierarchy.prototype.init = function(geometryLayer, normalRenderTarget) {
     // TODO: loading level-0 tiles should not be mandatory
     var rootNode = this.children[0];
 
     for (var i = 0; i < rootNode.childrenBboxes.length; i++) {
-        this.requestNewTile(geometryLayer, rootNode.childrenBboxes[i], rootNode);
+        this.requestNewTile(geometryLayer, rootNode.childrenBboxes[i], rootNode, normalRenderTarget);
     }
 };
 
-BoundingVolumeHierarchy.prototype.requestNewTile = function(geometryLayer, bbox, parent) {
+BoundingVolumeHierarchy.prototype.requestNewTile = function(geometryLayer, bbox, parent, normalRenderTarget) {
     var params = {
         layer: geometryLayer,
         bbox: bbox.bbox,
         bboxId: bbox.id
     };
 
-    this.interCommand.request(params, parent);
+    this.interCommand.request(params, parent).then(function(node) {
+        node.materials[RendererConstant.FINAL].uniforms.normalTexture.value = normalRenderTarget.texture;
+        node.materials[RendererConstant.FINAL].uniforms.resolution.value =
+            [normalRenderTarget.width, normalRenderTarget.height];
+    });
 
 };
 

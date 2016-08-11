@@ -6,13 +6,14 @@
 
 import Camera from 'Renderer/Camera';
 import InterfaceCommander from 'Core/Commander/InterfaceCommander';
+import RendererConstant from 'Renderer/RendererConstant'
 
-
-function BuildingTileNodeProcess() {
+function BuildingTileNodeProcess(engine) {
     //Constructor
     this.camera = new Camera();
     //this.camera.camera3D = camera.camera3D.clone();
     this.additiveRefinement = true;
+    this.engine = engine;
 }
 
 BuildingTileNodeProcess.prototype.updateCamera = function(camera) {
@@ -63,11 +64,13 @@ BuildingTileNodeProcess.prototype.subdivideNode = function(node, camera, params)
                 bboxId: bboxes[i].id
             };
 
-            params.tree.interCommand.request(args, node).then(function() {
+            params.tree.interCommand.request(args, node).then(function(child) {
+                child.materials[RendererConstant.FINAL].uniforms.normalTexture.value = this.engine.normalRenderBuffer.texture;
+                child.materials[RendererConstant.FINAL].uniforms.resolution.value = [this.engine.normalRenderBuffer.width, this.engine.normalRenderBuffer.height];
                 if(node.childrenBboxes.length === node.children.length) {
                     node.pendingSubdivision = false;
                 }
-            });
+            }.bind(this));
         }
     }
 };

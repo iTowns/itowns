@@ -369,7 +369,7 @@ ApiGlobe.prototype.createScenePlane = function(coordCarto, viewerDiv, boundingBo
         ]
     );
 
-    var np = new BuildingTileNodeProcess();
+    var np = new BuildingTileNodeProcess(this.scene.gfxEngine);
     this.scene.add(bvh, np);
 
     var buildingProvider = new BuildingProvider({srs: 'EPSG:3946'});
@@ -380,7 +380,7 @@ ApiGlobe.prototype.createScenePlane = function(coordCarto, viewerDiv, boundingBo
     };
     this.scene.managerCommand.addProtocolProvider('building', buildingProvider);
 
-    bvh.init(buildingLayer);
+    bvh.init(buildingLayer, this.scene.gfxEngine.normalRenderBuffer);
 
     // Fin test BoundingVolumeHierarchy
 
