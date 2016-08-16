@@ -7,7 +7,7 @@
 
 var eventify = require('ngraph.events');
 
-export default function fly(camera, domElement, THREE, engine) {
+export default function fly(camera, domElement, THREE /*, engine */) {
   domElement = domElement || document;
   domElement.setAttribute('tabindex', -1);
 
@@ -24,7 +24,13 @@ export default function fly(camera, domElement, THREE, engine) {
     yawRight: 0,
     rollLeft: 0,
     rollRight: 0,
-    fastfwd: 0
+    fastfwd: 0,
+    backward: 0,
+
+    lookup: 0,
+    lookdown: 0,
+    zLeft: 0,
+    zRight: 0
   };
 
 
@@ -70,17 +76,28 @@ export default function fly(camera, domElement, THREE, engine) {
   eventify(api);
 
   var tmpQuaternion = new THREE.Quaternion();
-  var isMouseDown = 0;
+  var tmpQuaternion2 = new THREE.Quaternion();
+  // var isMouseDown = 0;
   var keyMap = {
     83: { name: 'pick'}, // S
     82: { name: 'up'}, // R
     70: { name: 'down'}, // F
+    65: { name: 'rollLeft'}, // A
+    69: { name: 'rollRight'}, // E
+
+    // Z 90 X 88 D 68
+    90: { name: 'lookup'}, // Z
+    88: { name: 'lookdown'}, // X
+    81: { name: 'zRight'}, // Q
+    68: { name: 'zLeft'}, // D
+
+    33: { name: 'up'}, // up
+    34: { name: 'down'}, // down
     38: { name: 'forward'}, // up
-    40: { name: 'back'}, // down
+    40: { name: 'backward'}, // down
     37: { name: 'left'}, // left
     39: { name: 'right'}, // right
-    65: { name: 'rollLeft'}, // Q
-    69: { name: 'rollRight'}, // E
+
     16: { name: 'fastfwd'} // LSHIFT
   };
 
@@ -90,8 +107,8 @@ export default function fly(camera, domElement, THREE, engine) {
   var moveVector = new THREE.Vector3(0, 0, 0);
   var rotationVector = new THREE.Vector3(0, 0, 0);
 
-  var previousX = 0;
-  var previousY = 0;
+  // var previousX = 0;
+  // var previousY = 0;
 
   var moveArgs = {
     move: moveVector,
@@ -143,12 +160,18 @@ export default function fly(camera, domElement, THREE, engine) {
     var moveMult = delta * api.movementSpeed * (moveState.fastfwd ? 3 : 1);
     var rotMult = delta * api.rollSpeed;
 
-    camera.translateX(moveVector.x * moveMult);
-    camera.translateY(moveVector.y * moveMult);
-    camera.translateZ(moveVector.z * moveMult);
+    var v = moveVector.clone().setZ(0).applyQuaternion(camera.getWorldQuaternion());
+    v.normalize().multiplyScalar(moveMult);
+    v.z = moveVector.z * moveMult;
 
-    tmpQuaternion.set(rotationVector.x * rotMult, rotationVector.y * rotMult, rotationVector.z * rotMult, 1).normalize();
-    camera.quaternion.multiply(tmpQuaternion);
+    // move in world coord
+    camera.position.add(v);
+
+    console.log(camera.position);
+
+    tmpQuaternion.set(rotationVector.x * rotMult, rotationVector.y * rotMult, 0, 1).normalize();
+    tmpQuaternion2.set(0, 0, rotationVector.z * rotMult, 1).normalize();
+    camera.quaternion.premultiply(tmpQuaternion2).multiply(tmpQuaternion);
 
     // expose the rotation vector for convenience
     camera.rotation.setFromQuaternion(camera.quaternion, camera.rotation.order);
@@ -184,138 +207,137 @@ export default function fly(camera, domElement, THREE, engine) {
     api.fire('move', moveArgs);
   }
 
-  function mousedown(event) {
-    if (domElement !== document) {
-      domElement.focus();
-    }
+  function mousedown(/*event*/) {
+    // if (domElement !== document) {
+    //   domElement.focus();
+    // }
 
-    document.addEventListener('mouseup', mouseup, false);
+    // document.addEventListener('mouseup', mouseup, false);
 
-    event.preventDefault();
-    //event.stopPropagation();
+    // event.preventDefault();
+    // //event.stopPropagation();
 
-    if (api.dragToLook) {
-      isMouseDown = true;
-    } else {
-      switch (event.button) {
-        case 0:
-          moveState.forward = 1;
-          break;
-        case 2:
-          moveState.back = 1;
-          break;
-      }
+    // if (api.dragToLook) {
+    //   isMouseDown = true;
+    // } else {
+    //   switch (event.button) {
+    //     case 0:
+    //       moveState.forward = 1;
+    //       break;
+    //     case 2:
+    //       moveState.back = 1;
+    //       break;
+    //   }
 
-      updateMovementVector();
-    }
+    //   updateMovementVector();
+    // }
 
-    api.fire('move', moveArgs);
+    // api.fire('move', moveArgs);
   }
 
-  function mousemove(event) {
-    if (!api.dragToLook || isMouseDown) {
-      var container = getContainerDimensions();
-      var halfWidth = container.size[0] / 2;
-      var halfHeight = container.size[1] / 2;
+  function mousemove(/*event*/) {
+    // if (!api.dragToLook || isMouseDown) {
+    //   var container = getContainerDimensions();
+    //   var halfWidth = container.size[0] / 2;
+    //   var halfHeight = container.size[1] / 2;
 
-      var x = -((event.pageX - container.offset[0]) - halfWidth) / halfWidth;
-      var y = ((event.pageY - container.offset[1]) - halfHeight) / halfHeight;
-      moveState.yawLeft = x - previousX;
-      moveState.pitchDown = y - previousY;
+    //   var x = -((event.pageX - container.offset[0]) - halfWidth) / halfWidth;
+    //   var y = ((event.pageY - container.offset[1]) - halfHeight) / halfHeight;
+    //   moveState.yawLeft = x - previousX;
+    //   moveState.pitchDown = y - previousY;
 
-      if (Math.abs(moveState.yawLeft) < api.deadzone) moveState.yawLeft = 0;
-      if (Math.abs(moveState.pitchDown) < api.deadzone) moveState.pitchDown = 0;
+    //   if (Math.abs(moveState.yawLeft) < api.deadzone) moveState.yawLeft = 0;
+    //   if (Math.abs(moveState.pitchDown) < api.deadzone) moveState.pitchDown = 0;
 
-      updateRotationVector();
-      api.fire('move', moveArgs);
-    }
+    //   updateRotationVector();
+    //   api.fire('move', moveArgs);
+    // }
   }
 
-  function mousewheel(event) {
-    var delta = 0;
-    if ( event.wheelDelta !== undefined ) {
-        // WebKit / Opera / Explorer 9
-        delta = event.wheelDelta;
-    } else if ( event.detail !== undefined ) {
-        // Firefox
-        delta = - event.detail;
-    }
+  function mousewheel(/*event*/) {
+    // var delta = 0;
+    // if ( event.wheelDelta !== undefined ) {
+    //     // WebKit / Opera / Explorer 9
+    //     delta = event.wheelDelta;
+    // } else if ( event.detail !== undefined ) {
+    //     // Firefox
+    //     delta = - event.detail;
+    // }
 
-    if (delta > 0) {
-        moveState['forward'] = 1;
-    } else if (delta < 0) {
-        moveState['back'] = 1;
-    }
+    // if (delta > 0) {
+    //     moveState['forward'] = 1;
+    // } else if (delta < 0) {
+    //     moveState['back'] = 1;
+    // }
 
-    updateMovementVector();
-    api.fire('move', moveArgs);
-    moveState['forward'] = 0;
-    moveState['back'] = 0;
-    updateMovementVector();
+    // updateMovementVector();
+    // api.fire('move', moveArgs);
+    // moveState['forward'] = 0;
+    // moveState['back'] = 0;
   }
 
-  function mouseup(event) {
-    event.preventDefault();
+  function mouseup(/*event*/) {
+    // event.preventDefault();
 
-    if (isMouseDown) {
-      document.removeEventListener('mouseup', mouseup);
-      isMouseDown = false;
-    }
+    // if (isMouseDown) {
+    //   document.removeEventListener('mouseup', mouseup);
+    //   isMouseDown = false;
+    // }
 
-    if (api.dragToLook) {
-      moveState.yawLeft = moveState.pitchDown = 0;
-    } else {
-      switch (event.button) {
-        case 0:
-          moveState.forward = 0;
-          break;
-        case 2:
-          moveState.back = 0;
-          break;
-      }
-      updateMovementVector();
-    }
+    // if (api.dragToLook) {
+    //   moveState.yawLeft = moveState.pitchDown = 0;
+    // } else {
+    //   switch (event.button) {
+    //     case 0:
+    //       moveState.forward = 0;
+    //       break;
+    //     case 2:
+    //       moveState.back = 0;
+    //       break;
+    //   }
+    //   updateMovementVector();
+    // }
 
-    if (moveState['pick']) {
-        console.log('pick!');
-        var mouse = new THREE.Vector2(
-            event.clientX - event.target.offsetLeft, event.clientY - event.target.offsetTop);
-        engine.selectNodeAt(mouse);
-        engine.update();
-    }
+    // if (moveState['pick']) {
+    //     console.log('pick!');
+    //     var mouse = new THREE.Vector2(
+    //         event.clientX - event.target.offsetLeft, event.clientY - event.target.offsetTop);
+    //     engine.selectNodeAt(mouse);
+    //     engine.update();
+    // }
 
-    updateRotationVector();
-    api.fire('move', moveArgs);
+    // updateRotationVector();
+    // api.fire('move', moveArgs);
   }
 
 
   function updateMovementVector() {
-    var forward = (moveState.forward || (api.autoForward && !moveState.back)) ? 1 : 0;
+    // var forward = (moveState.forward || (api.autoForward && !moveState.back)) ? 1 : 0;
 
     moveVector.x = (-moveState.left + moveState.right);
-    moveVector.y = (-moveState.down + moveState.up);
-    moveVector.z = (-forward + moveState.back);
+    moveVector.y = (-moveState.backward + moveState.forward);
+    moveVector.z = (-moveState.down + moveState.up);
   }
 
   function updateRotationVector() {
-    rotationVector.x = (-moveState.pitchDown + moveState.pitchUp);
-    rotationVector.y = (-moveState.yawRight + moveState.yawLeft);
-    rotationVector.z = (-moveState.rollRight + moveState.rollLeft);
+    rotationVector.x = (-moveState.lookdown + moveState.lookup);
+    rotationVector.y = 0;//(-moveState.pitchDown + moveState.pitchUp);
+    rotationVector.z = (-moveState.zLeft + moveState.zRight);
   }
 
-  function getContainerDimensions() {
-    if (domElement !== document) {
-      return {
-        size: [domElement.offsetWidth, domElement.offsetHeight],
-        offset: [domElement.offsetLeft, domElement.offsetTop]
-      };
-    } else {
-      return {
-        size: [window.innerWidth, window.innerHeight],
-        offset: [0, 0]
-      };
-    }
-  }
+  // function getContainerDimensions() {
+  //   if (domElement !== document) {
+  //     return {
+  //       size: [domElement.offsetWidth, domElement.offsetHeight],
+  //       offset: [domElement.offsetLeft, domElement.offsetTop]
+  //     };
+  //   } else {
+  //     return {
+  //       size: [window.innerWidth, window.innerHeight],
+  //       offset: [0, 0]
+  //     };
+  //   }
+  // }
 
   function destroy() {
     document.removeEventListener('mouseup', mouseup);

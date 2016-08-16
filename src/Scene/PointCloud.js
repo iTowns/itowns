@@ -63,16 +63,18 @@ PointCloud.prototype.load_greyhoud = function(url) {
 
 
     loader.load(url, function(geometry) {
+        var pointcloud;
+        var material;
         if (false) {
-            var pointcloud = new Potree.PointCloudOctree(geometry);
+            pointcloud = new Potree.PointCloudOctree(geometry);
             pointcloud.material.size = 100;
             // pointcloud.material.pointColorType = Potree.PointColorType.CLASSIFICATION;
             pointcloud.material.lights = false;
         } else if (true) {
-            var material = new THREE.ShaderMaterial({
+            material = new THREE.ShaderMaterial({
                 uniforms: {
-                    size: { value: 6.0 },
-                    scale: { value: 1.0 },
+                    size: { value: 1.0 },
+                    scale: { value: 1000.0 },
                     classificationMask: { value: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1] }
                 }
             });
@@ -82,10 +84,10 @@ PointCloud.prototype.load_greyhoud = function(url) {
             //material.enableRTC(false);
                 // THREE.PointsMaterial( { size: 50.0,
                 // vertexColors: THREE.VertexColors } );
-            var pointcloud = new Potree.PointCloudOctree(geometry, material);
+            pointcloud = new Potree.PointCloudOctree(geometry, material);
 
         } else if(true) {
-            var material = new THREE.Material();
+            material = new THREE.Material();
             material.isPointsMaterial = true;
             material.size = 50;
             material.vertexColors = THREE.VertexColors;
@@ -96,16 +98,16 @@ PointCloud.prototype.load_greyhoud = function(url) {
             material.update();
                 // THREE.PointsMaterial( { size: 50.0,
                 // vertexColors: THREE.VertexColors } );
-            var pointcloud = new Potree.PointCloudOctree(geometry, material);
+            pointcloud = new Potree.PointCloudOctree(geometry, material);
         } else if (true) {
-            var material = new THREE.PointsMaterial( { size: 50.0, vertexColors: THREE.VertexColors } );
+            material = new THREE.PointsMaterial( { size: 50.0, vertexColors: THREE.VertexColors } );
             material.transparent = false;
             material.fragmentShader = SimpleFS;
-            var pointcloud = new Potree.PointCloudOctree(geometry, material);
+            pointcloud = new Potree.PointCloudOctree(geometry, material);
         } else {
-            var material = new THREE.PointsMaterial( { size: 50.0, vertexColors: THREE.VertexColors } );
+            material = new THREE.PointsMaterial( { size: 50.0, vertexColors: THREE.VertexColors } );
             material.transparent = false;
-            var pointcloud = new Potree.PointCloudOctree(geometry, material);
+            pointcloud = new Potree.PointCloudOctree(geometry, material);
         }
 
         potreeInstance.add(pointcloud);

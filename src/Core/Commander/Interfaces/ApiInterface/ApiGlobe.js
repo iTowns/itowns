@@ -343,6 +343,9 @@ ApiGlobe.prototype.createScenePlane = function(coordCarto, viewerDiv, boundingBo
     var bbox = new BoundingBox(boundingBox[0], boundingBox[1], boundingBox[2], boundingBox[3]);
     this.scene = Scene(coordCarto, bbox, viewerDiv,debugMode,gLDebug);
 
+    // override camera position
+    this.scene.gfxEngine.camera.setPosition({x: 299449.92317099776, y: 5040449.923170999, z: 5775.422559511995});
+
     var map = new Plane({bbox});
 
     this.scene.add(map);
@@ -812,6 +815,41 @@ ApiGlobe.prototype.showKML = function(value) {
     this.scene.getMap().showKML(value);
     this.scene.renderScene3D();
 };
+
+ApiGlobe.prototype.panCamera = function(x, y, z) {
+    this.scene.gfxEngine.controls.moveState.forward = y > 0;
+    this.scene.gfxEngine.controls.moveState.backward = y < 0;
+    this.scene.gfxEngine.controls.moveState.left = x < 0;
+    this.scene.gfxEngine.controls.moveState.right = x > 0;
+    this.scene.gfxEngine.controls.moveState.up = z > 0;
+    this.scene.gfxEngine.controls.moveState.down = z < 0;
+    this.scene.gfxEngine.controls.updateMovementVector();
+    this.scene.gfxEngine.controls.fire('move', undefined);
+
+    this.scene.gfxEngine.controls.moveState.forward =
+        this.scene.gfxEngine.controls.moveState.backward =
+        this.scene.gfxEngine.controls.moveState.left =
+        this.scene.gfxEngine.controls.moveState.right =
+        this.scene.gfxEngine.controls.moveState.up =
+        this.scene.gfxEngine.controls.moveState.down = 0;
+    this.scene.gfxEngine.controls.updateMovementVector();
+}
+
+
+ApiGlobe.prototype.rotateCamera = function(x, y) {
+    this.scene.gfxEngine.controls.moveState.lookup = y > 0;
+    this.scene.gfxEngine.controls.moveState.lookdown = y < 0;
+    this.scene.gfxEngine.controls.moveState.zLeft = x < 0;
+    this.scene.gfxEngine.controls.moveState.zRight = x > 0;
+    this.scene.gfxEngine.controls.updateRotationVector();
+    this.scene.gfxEngine.controls.fire('move', undefined);
+
+    this.scene.gfxEngine.controls.moveState.lookup =
+        this.scene.gfxEngine.controls.moveState.lookdown =
+        this.scene.gfxEngine.controls.moveState.zLeft =
+        this.scene.gfxEngine.controls.moveState.zRight = 0;
+    this.scene.gfxEngine.controls.updateRotationVector();
+}
 
 
 ApiGlobe.prototype.loadGPX = function(url) {

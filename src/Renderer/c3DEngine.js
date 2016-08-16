@@ -181,7 +181,7 @@ function c3DEngine(scene, positionCamera, viewerDiv, debugMode, gLDebug) {
         var dt = Math.min(now - this.previousTime, 200);
         this.previousTime = now;
 
-        this.controls.movementSpeed = this.camera.camera3D.position.z / 2;
+        this.controls.movementSpeed = Math.max(100, this.camera.camera3D.position.z / 2);
 
         this.controls.update(dt * 0.001);
         this.camera.update();
@@ -202,6 +202,12 @@ function c3DEngine(scene, positionCamera, viewerDiv, debugMode, gLDebug) {
 
         this.pickingTexture.setSize(this.width, this.height);
         this.normalRenderBuffer.setSize(this.width, this.height);
+        var u = function(object) {
+            if (u.materials)
+                u.materials[RendererConstant.FINAL].uniforms.resolution.value =
+                    [this.normalRenderBuffer.width, this.normalRenderBuffer.height];
+        }.bind(this);
+        this.scene3D.children[3].traverse(u);
         this.renderer.setSize(this.width, this.height);
         this.update();
 
@@ -274,6 +280,7 @@ function c3DEngine(scene, positionCamera, viewerDiv, debugMode, gLDebug) {
 
     // var origin = new THREE.Vector3(positionCamera.x, positionCamera.y, 300);
     this.controls = fly(this.camera.camera3D, this.renderer.domElement, THREE, this);
+
 /*
     this.controls.constraint.target = origin;
     this.controls.damping = 0.1;
@@ -309,7 +316,7 @@ function c3DEngine(scene, positionCamera, viewerDiv, debugMode, gLDebug) {
     // this.controls.addEventListener('change', this.update);
     this.controls.on('move', this.update);
 
-    this.controls.rollSpeed = 0.5;
+    this.controls.rollSpeed = 0.25;
     this.camera.position.z = 1000;
 
     function onMouseDown(event) {

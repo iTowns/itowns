@@ -1,4 +1,4 @@
-*<!DOCTYPE html>
+<!DOCTYPE html>
 <!--
 To change this license header, choose License Headers in Project Properties.
 To change this template file, choose Tools | Templates
@@ -28,11 +28,153 @@ and open the template in the editor.
 
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.5.1/dat.gui.min.js"></script>
+
+
+
+        <!-- Camera controls -->
+        <style type="text/css">
+            #controls {
+                width: 120px;
+                position: absolute;
+                top: 0px;
+                right: 0px;
+            }
+
+            #controls div {
+                float: right;
+            }
+            #controls button,
+            #controls .btn {
+                width: 40px;
+                height: 40px;
+                line-height: 40px;
+
+                background-color: #DDDDDD;
+                border: 0;
+                text-align: center;
+                font-size: 1.5em;
+                background-size: 100% 100%;
+            }
+
+            #controls button:focus {
+                outline: none;
+            }
+
+            #controls button:hover {
+                background-color: #AAAAAA;
+            }
+
+            #controls .row {
+
+            }
+
+            #controls img {
+
+            }
+
+            #controls .columns {
+                float: left;
+            }
+
+            #controls .first div:first-child .btn {
+                border-radius: 100% 0 0 0;
+            }
+            #controls .first div:last-child .btn {
+                border-radius: 0 100% 0 0;
+            }
+            #controls .last div:first-child .btn {
+                border-radius: 0 0 0 100%;
+            }
+            #controls .last div:last-child .btn {
+                border-radius: 0 0 100% 0;
+            }
+        </style>
     </head>
     <body>
         <div id="viewerDiv"></div>
+
+        <div id="controls">
+
+            <!-- rotate -->
+            <div class="row" id="rotate">
+                <div class="row first">
+                    <div class="small-4 columns">
+                        <div class="btn"></div class="btn">
+                    </div>
+                    <div class="small-4 columns" id="lookUp">
+                        <button>⬆</button>
+                    </div>
+                    <div class="small-4 columns">
+                        <div class="btn"></div>
+                    </div>
+                </div>
+                <div class="row middle">
+                    <div class="small-4 columns" id="lookRight">
+                        <button>⬅</button>
+                    </div>
+                    <div class="small-4 columns">
+                        <div class="btn" style="background-image: url('ic_3d_rotation_black_24dp_2x.png')"></div>
+                    </div>
+                    <div class="small-4 columns" id="lookLeft">
+                        <button>➡</button>
+                    </div>
+                </div>
+                <div class="row last">
+                    <div class="small-4 columns">
+                        <div class="btn"></div>
+                    </div>
+                    <div class="small-4 columns" id="lookDown">
+                        <button>⬇</button>
+                    </div>
+                    <div class="small-4 columns">
+                        <div class="btn"></div>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- pan -->
+            <div class="row" id="pan">
+                <div class="row first">
+                    <div class="small-4 columns" id="moveDown">
+                        <button class="btn">+</button>
+                    </div>
+                    <div class="small-4 columns" id="panUp">
+                        <button>⬆</button>
+                    </div>
+                    <div class="small-4 columns">
+                        <div class="btn"></div>
+                    </div>
+                </div>
+                <div class="row middle">
+                    <div class="small-4 columns" id="panLeft">
+                        <button>⬅</button>
+                    </div>
+                    <div class="small-4 columns">
+                        <div class="btn" style="background-image: url('ic_open_with_black_24dp_2x.png')"></div>
+                    </div>
+                    <div class="small-4 columns" id="panRight">
+                        <button>➡</button>
+                    </div>
+                </div>
+                <div class="row last">
+                    <div class="small-4 columns" id="moveUp">
+                        <button class="btn">-</button>
+                    </div>
+                    <div class="small-4 columns" id="panDown">
+                        <button>⬇</button>
+                    </div>
+                    <div class="small-4 columns">
+                        <div class="btn"></div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
         <script src="dist/itowns2.js"> </script>
         <script type="text/javascript">
+
 
 
         var initCenter = { longitude:2.3465, latitude: 48.88, altitude: 25000000};
@@ -40,13 +182,18 @@ and open the template in the editor.
         // iTowns namespace defined here
         var viewerDiv = document.getElementById("viewerDiv");
 
-        var offset = 10000;
+        var offset = 1000;
+
+        var minx = 298250;
+        var maxx = 302750;
+        var miny = 5039250;
+        var maxy = 5043750;
 
         var scene = itowns.viewer.createScenePlane(
             initCenter,
             viewerDiv,
             // pointcloud bouding-box
-            [293000 - offset, 294000 + offset, 5041000 - offset, 5042000 + offset]);
+            [minx - offset, maxx + offset, miny - offset, maxy + offset]);
 
         itowns.viewer.addPointCloud("greyhound://3d.oslandia.com/lopocs-itowns/greyhound/");
 
@@ -84,7 +231,7 @@ and open the template in the editor.
         });
 
         itowns.viewer.addImageryLayer({
-            url       : "http://geoindex.uqam.ca/mapserv?map=cmm_2013",
+            url       : "http://3d.oslandia.com/mapserv?map=cmm_2013",
             protocol  : 'wms',
             version   : '1.3.0',
             id        : 'testwms',
@@ -102,11 +249,10 @@ and open the template in the editor.
                 type: 3
             },
             options: {
-                mimetype  : "image/png",
+                mimetype  : "image/jpeg",
                 tileMatrixSet: 'WGS84G'
             }
         });
-
 
         // itowns.viewer.addImageryLayer({
         //     url       : "http://3d.oslandia.com/mapserv.jpg",
@@ -225,21 +371,23 @@ and open the template in the editor.
             scene.renderScene3D();
         });
 
-        for (var i=0; i<12; i++) {
-            var v = (i == 2 || i==5 || i==6);
-            gui.add({classif: v}, 'classif').name('classification'+i).onChange(function(newValue) {
-                var classif = this.valueOf();
-                var cO = function(object) {
-                    if (object.material && object.material.uniforms && object.material.uniforms.classificationMask) {
-                        object.material.uniforms.classificationMask.value[classif] = newValue ? 1 : 0;
-                        console.log(classif, JSON.stringify(object.material.uniforms.classificationMask.value));
+        var names = ['', '', 'Ground', '', '', 'Vegetation', 'Buildings'];
+        for (var i=0; i<names.length; i++) {
+            if (i == 2 || i==5 || i==6) {
+                gui.add({classif: true}, 'classif').name(names[i]).onChange(function(newValue) {
+                    var classif = this.valueOf();
+                    var cO = function(object) {
+                        if (object.material && object.material.uniforms && object.material.uniforms.classificationMask) {
+                            object.material.uniforms.classificationMask.value[classif] = newValue ? 1 : 0;
+                            console.log(classif, JSON.stringify(object.material.uniforms.classificationMask.value));
+                        }
                     }
-                }
 
-                // children[0] is rootNode
-                scene.layers[0].node.children[1].children[1].traverse(cO);
-                scene.renderScene3D();
-            }.bind(i));
+                    // children[0] is rootNode
+                    scene.layers[0].node.children[1].children[1].traverse(cO);
+                    scene.renderScene3D();
+                }.bind(i));
+            }
         }
 
         viewerDiv.addEventListener('rangeChanged', function() {
@@ -316,6 +464,50 @@ and open the template in the editor.
         // gui.add(text, 'StreetLevelImagery').onChange(function(newValue) {
         //     itowns.viewer.setStreetLevelImageryOn(newValue);
         // });
+
+        // camera control
+        document.getElementById('panUp').addEventListener('click', function(event) {
+            itowns.viewer.panCamera(0, 1);
+            viewerDiv.focus();
+        });
+        document.getElementById('panDown').addEventListener('click', function(event) {
+            itowns.viewer.panCamera(0, -1);
+            viewerDiv.focus();
+        });
+        document.getElementById('panLeft').addEventListener('click', function(event) {
+            itowns.viewer.panCamera(-1, 0);
+            viewerDiv.focus();
+        });
+        document.getElementById('panRight').addEventListener('click', function(event) {
+            itowns.viewer.panCamera(1, 0);
+            viewerDiv.focus();
+        });
+        document.getElementById('moveUp').addEventListener('click', function(event) {
+            itowns.viewer.panCamera(0, 0, 1);
+            viewerDiv.focus();
+        });
+        document.getElementById('moveDown').addEventListener('click', function(event) {
+            itowns.viewer.panCamera(0, 0, -1);
+            viewerDiv.focus();
+        });
+
+
+        document.getElementById('lookUp').addEventListener('click', function(event) {
+            itowns.viewer.rotateCamera(0, 1);
+            viewerDiv.focus();
+        });
+        document.getElementById('lookDown').addEventListener('click', function(event) {
+            itowns.viewer.rotateCamera(0, -1);
+            viewerDiv.focus();
+        });
+        document.getElementById('lookLeft').addEventListener('click', function(event) {
+            itowns.viewer.rotateCamera(-1, 0);
+            viewerDiv.focus();
+        });
+        document.getElementById('lookRight').addEventListener('click', function(event) {
+            itowns.viewer.rotateCamera(1, 0);
+            viewerDiv.focus();
+        });
 
         </script>
     </body>
