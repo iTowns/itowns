@@ -7,7 +7,7 @@
 
 var eventify = require('ngraph.events');
 
-export default function fly(camera, domElement, THREE /*, engine */) {
+export default function fly(camera, domElement, THREE, engine) {
   domElement = domElement || document;
   domElement.setAttribute('tabindex', -1);
 
@@ -77,7 +77,7 @@ export default function fly(camera, domElement, THREE /*, engine */) {
 
   var tmpQuaternion = new THREE.Quaternion();
   var tmpQuaternion2 = new THREE.Quaternion();
-  // var isMouseDown = 0;
+  var isMouseDown = 0;
   var keyMap = {
     83: { name: 'pick'}, // S
     82: { name: 'up'}, // R
@@ -167,8 +167,6 @@ export default function fly(camera, domElement, THREE /*, engine */) {
     // move in world coord
     camera.position.add(v);
 
-    console.log(camera.position);
-
     tmpQuaternion.set(rotationVector.x * rotMult, rotationVector.y * rotMult, 0, 1).normalize();
     tmpQuaternion2.set(0, 0, rotationVector.z * rotMult, 1).normalize();
     camera.quaternion.premultiply(tmpQuaternion2).multiply(tmpQuaternion);
@@ -208,14 +206,14 @@ export default function fly(camera, domElement, THREE /*, engine */) {
   }
 
   function mousedown(/*event*/) {
-    // if (domElement !== document) {
-    //   domElement.focus();
-    // }
+    if (domElement !== document) {
+      domElement.focus();
+    }
 
-    // document.addEventListener('mouseup', mouseup, false);
+    document.addEventListener('mouseup', mouseup, false);
 
-    // event.preventDefault();
-    // //event.stopPropagation();
+    event.preventDefault();
+    //event.stopPropagation();
 
     // if (api.dragToLook) {
     //   isMouseDown = true;
@@ -277,12 +275,12 @@ export default function fly(camera, domElement, THREE /*, engine */) {
   }
 
   function mouseup(/*event*/) {
-    // event.preventDefault();
+    event.preventDefault();
 
-    // if (isMouseDown) {
-    //   document.removeEventListener('mouseup', mouseup);
-    //   isMouseDown = false;
-    // }
+    if (isMouseDown) {
+      document.removeEventListener('mouseup', mouseup);
+      isMouseDown = false;
+    }
 
     // if (api.dragToLook) {
     //   moveState.yawLeft = moveState.pitchDown = 0;
@@ -298,13 +296,13 @@ export default function fly(camera, domElement, THREE /*, engine */) {
     //   updateMovementVector();
     // }
 
-    // if (moveState['pick']) {
-    //     console.log('pick!');
-    //     var mouse = new THREE.Vector2(
-    //         event.clientX - event.target.offsetLeft, event.clientY - event.target.offsetTop);
-    //     engine.selectNodeAt(mouse);
-    //     engine.update();
-    // }
+    if (moveState['pick']) {
+        console.log('pick!');
+        var mouse = new THREE.Vector2(
+            event.clientX - event.target.offsetLeft, event.clientY - event.target.offsetTop);
+        engine.selectNodeAt(mouse);
+        engine.update();
+    }
 
     // updateRotationVector();
     // api.fire('move', moveArgs);
