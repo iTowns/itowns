@@ -11,8 +11,13 @@ uniform int classificationMask[12];
 #include <logdepthbuf_pars_vertex>
 #include <clipping_planes_pars_vertex>
 
-
+#define USE_SIZEATTENUATION
 void main() {
+    int i = int(classification);
+    if (classificationMask[i] == 0) {
+        gl_Position = vec4(-100000, -100000, -100000, 1.0);
+        return;
+    }
 
     #include <color_vertex>
     #include <begin_vertex>
@@ -21,14 +26,10 @@ void main() {
     #ifdef USE_SIZEATTENUATION
         gl_PointSize = size * ( scale / - mvPosition.z );
     #else
+        gl_PointSize = size;
     #endif
-    gl_PointSize = size;
 
-    int i = int(classification);
 
-    if (classificationMask[i] == 0) {
-        gl_PointSize = 0.0;
-    }
 
     cl.x = classification;
     cl.y = (transformed.z - 30.0)/ 90.0;
