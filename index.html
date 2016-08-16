@@ -36,8 +36,8 @@ and open the template in the editor.
             #controls {
                 width: 120px;
                 position: absolute;
-                top: 0px;
-                right: 0px;
+                top: 5px;
+                right: 5px;
             }
 
             #controls div {
@@ -48,20 +48,28 @@ and open the template in the editor.
                 width: 40px;
                 height: 40px;
                 line-height: 40px;
-
-                background-color: #DDDDDD;
+                background: none;
                 border: 0;
                 text-align: center;
                 font-size: 1.5em;
                 background-size: 100% 100%;
+                cursor: pointer;
+            }
+
+            #controls .inactive {
+                cursor: default;
             }
 
             #controls button:focus {
                 outline: none;
             }
 
+            #controls button {
+                color: #888888;
+            }
+
             #controls button:hover {
-                background-color: #AAAAAA;
+                color: #44abda;
             }
 
             #controls .row {
@@ -88,6 +96,44 @@ and open the template in the editor.
             #controls .last div:last-child .btn {
                 border-radius: 0 0 100% 0;
             }
+
+            #controls #rotate {
+               background: url('ic_3d_rotation_grey_120.png') center center no-repeat;
+            }
+
+            #controls #pan {
+               background: url('ic_move_grey_120.png') center center no-repeat;
+               margin-top: 5px;
+            }
+
+            #controls .move {
+                background: url('ic_zoom_bg_40.png') center center no-repeat;
+            }
+            #controls #rotate #lookUp {
+                background-image: url('ic_3d_rotation_top.png');
+            }
+            #controls #rotate #lookRight {
+                background-image: url('ic_3d_rotation_right.png');
+            }
+            #controls #rotate #lookLeft {
+                background-image: url('ic_3d_rotation_left.png');
+            }
+            #controls #rotate #lookDown {
+                background-image: url('ic_3d_rotation_bottom.png');
+            }
+
+            #controls #rotate #lookUp:hover {
+                background-image: url('ic_3d_rotation_top_hover.png');
+            }
+            #controls #rotate #lookRight:hover {
+                background-image: url('ic_3d_rotation_right_hover.png');
+            }
+            #controls #rotate #lookLeft:hover {
+                background-image: url('ic_3d_rotation_left_hover.png');
+            }
+            #controls #rotate #lookDown:hover {
+                background-image: url('ic_3d_rotation_bottom_hover.png');
+            }
         </style>
     </head>
     <body>
@@ -99,10 +145,10 @@ and open the template in the editor.
             <div class="row" id="rotate">
                 <div class="row first">
                     <div class="small-4 columns">
-                        <div class="btn"></div class="btn">
+                        <div class="btn"></div>
                     </div>
                     <div class="small-4 columns" id="lookUp">
-                        <button>⬆</button>
+                        <div class="btn"></div>
                     </div>
                     <div class="small-4 columns">
                         <div class="btn"></div>
@@ -110,13 +156,13 @@ and open the template in the editor.
                 </div>
                 <div class="row middle">
                     <div class="small-4 columns" id="lookRight">
-                        <button>⬅</button>
+                        <div class="btn"></div>
                     </div>
                     <div class="small-4 columns">
-                        <div class="btn" style="background-image: url('ic_3d_rotation_black_24dp_2x.png')"></div>
+                        <div class="btn inactive"></div>
                     </div>
                     <div class="small-4 columns" id="lookLeft">
-                        <button>➡</button>
+                        <div class="btn"></div>
                     </div>
                 </div>
                 <div class="row last">
@@ -124,7 +170,7 @@ and open the template in the editor.
                         <div class="btn"></div>
                     </div>
                     <div class="small-4 columns" id="lookDown">
-                        <button>⬇</button>
+                        <div class="btn"></div>
                     </div>
                     <div class="small-4 columns">
                         <div class="btn"></div>
@@ -132,12 +178,11 @@ and open the template in the editor.
                 </div>
             </div>
 
-
             <!-- pan -->
             <div class="row" id="pan">
                 <div class="row first">
                     <div class="small-4 columns" id="moveDown">
-                        <button class="btn">+</button>
+                        <button class="btn move">+</button>
                     </div>
                     <div class="small-4 columns" id="panUp">
                         <button>⬆</button>
@@ -151,7 +196,7 @@ and open the template in the editor.
                         <button>⬅</button>
                     </div>
                     <div class="small-4 columns">
-                        <div class="btn" style="background-image: url('ic_open_with_black_24dp_2x.png')"></div>
+                        <div class="btn inactive"></div>
                     </div>
                     <div class="small-4 columns" id="panRight">
                         <button>➡</button>
@@ -159,7 +204,7 @@ and open the template in the editor.
                 </div>
                 <div class="row last">
                     <div class="small-4 columns" id="moveUp">
-                        <button class="btn">-</button>
+                        <button class="btn move">-</button>
                     </div>
                     <div class="small-4 columns" id="panDown">
                         <button>⬇</button>
