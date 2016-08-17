@@ -595,6 +595,9 @@ var unpack1K = function(color, factor) {
     return bitSh.dot(color) * factor;
 }
 
+var unpack24bit = function(color) {
+    return color.x + color.y * 256.0 + color.z * 256.0 * 256.0;
+}
 
 /**
  *
@@ -609,12 +612,15 @@ c3DEngine.prototype.screenCoordsToNodeId = function(mouse) {
 
     var buffer = this.renderTobuffer(mouse.x, this.height - mouse.y, 1, 1, RendererConstant.ID);
 
-    var depthRGBA = new THREE.Vector4().fromArray(buffer).divideScalar(255.0);
+    var id = new THREE.Vector4().fromArray(buffer);
 
     // unpack RGBA to float
-    var unpack = unpack1K(depthRGBA, 10000);
+    var unpack = unpack24bit(id);
 
-    return Math.round(unpack);
+    var nodeId = unpack % (256*256);
+    var subId = Math.round(unpack / 256 / 256);
+
+    return [nodeId, subId];
 
 };
 

@@ -1,6 +1,8 @@
 uniform vec3 diffuseColor;
 uniform int  lightOn;
+uniform int  selected;
 varying float      light;
+varying float idx;
 
 uniform sampler2D normalTexture;
 uniform vec2 resolution;
@@ -53,6 +55,12 @@ void main() {
         }
     }
 
-    gl_FragColor = vec4(light, light, light, 1.0);
+    float l = min(1.0, light);
+    color = vec4(l, l, l, 1.0);
+    if(selected == int(floor(idx + 0.5)) + 1) {
+        color = mix(vec4(1.0, 0.3, 0.0, 1.0), color, 0.5);
+    }
+
+    gl_FragColor = color;//vec4(light, light, light, 1.0);
     // gl_FragColor = texture2D(normalTexture, computeScreenUV(vec2(0.0)));
 }

@@ -16,7 +16,7 @@ var BasicIdsMaterial = function(otherMaterial) {
     BasicMaterial.call(this);
 
     //this.vertexShader = DepthVS;
-    this.fragmentShader = this.fragmentShaderHeader + MatteIdsFS;
+    this.fragmentShader = this.fragmentShaderHeader + '#define MULTIPLE_GEOMETRIES\n' + MatteIdsFS;
 
     this.uniforms.uuid.value = otherMaterial.uniforms.uuid.value;
 

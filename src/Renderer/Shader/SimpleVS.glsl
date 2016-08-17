@@ -3,6 +3,7 @@
 //attribute vec2      uv;
 attribute vec3      position;
 attribute vec3      normal;
+attribute float geometryIndex;
 
 uniform mat4        projectionMatrix;
 uniform mat4        modelViewMatrix;
@@ -10,6 +11,7 @@ uniform mat4        modelViewMatrix;
 uniform mat4       mVPMatRTC;
 uniform int        RTC;
 varying float      light;
+varying float idx;
 
 uniform vec2 resolution;
 varying vec2 vScreenUV;
@@ -20,6 +22,7 @@ varying vec2 vScreenUV;
 void main()
 {
   vec3 dir =  normalize(vec3(1.0,1.0,0.5));
+  idx = geometryIndex;
 
   if(RTC == 0)
         gl_Position = projectionMatrix * modelViewMatrix * vec4( position,  1.0 );

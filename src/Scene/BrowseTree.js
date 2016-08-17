@@ -16,7 +16,7 @@ function BrowseTree(engine) {
     this.tree = undefined;
     this.fogDistance = 1000000000.0;
     this.mfogDistance = 1000000000.0;
-    this.selectedNodeId = -1;
+    this.selectedNodeIds = [null, null];
     this.selectedNode = null;
 
     this.selectNode = function(node) {
@@ -87,9 +87,9 @@ BrowseTree.prototype.uniformsProcess = function() {
 }();
 
 BrowseTree.prototype._selectNode = function(node) {
-    if (node.id === this.selectedNodeId) {
-        node.setSelected(node.visible && node.material.visible);
-        if (this.selectedNode !== node) {
+    if (node.id === this.selectedNodeIds[0]) {
+        node.setSelected(node.visible && node.material.visible, this.selectedNodeIds[1]);
+        if (this.selectedNode !== node && (node.getSelectedIndex === undefined || this.selectedNodeIds[1] !== node.getSelectedIndex())) {
             this.selectedNode = node;
             /* eslint-disable no-alert, no-console */
             console.info(node);
