@@ -15,7 +15,7 @@ function Node() {
     this.content = null;
     this.link = null;
     this.description = null;
-    this.id = null;
+    this.id = Node.count++;
     this.saveState = null;
     this.level = 0;
     this.screenSpaceError = 0.0;
@@ -27,6 +27,8 @@ function Node() {
 
 
 }
+
+Node.count = 0;
 
 
 Node.prototype.setVisibility = function(show) {
