@@ -205,7 +205,7 @@ export default function fly(camera, domElement, THREE, engine) {
     api.fire('move', moveArgs);
   }
 
-  function mousedown(/*event*/) {
+  function mousedown(event) {
     if (domElement !== document) {
       domElement.focus();
     }
@@ -274,7 +274,7 @@ export default function fly(camera, domElement, THREE, engine) {
     // moveState['back'] = 0;
   }
 
-  function mouseup(/*event*/) {
+  function mouseup(event) {
     event.preventDefault();
 
     if (isMouseDown) {
