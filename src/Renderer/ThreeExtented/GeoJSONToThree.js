@@ -14,6 +14,8 @@ function GeoJSONToThree() {
 GeoJSONToThree.convert = function(geoJson) {
     var geometries = [];
     var propertiesList = [];
+    var geometrySize = [];
+    var totalSize = 0;
     for (var f = 0; f < geoJson.features.length; f++) {
         var bbox = [];
         if (geoJson.features[f].geometry.bbox.length == 6) { // 3D bounding box
@@ -34,16 +36,40 @@ GeoJSONToThree.convert = function(geoJson) {
         var geom = this.geomFromGeoJSON(type, coords);
 
         var threeGeom = this.geomToThree(geom);
+        geometrySize.push(threeGeom.attributes.position.array.length / threeGeom.attributes.position.itemSize);
+        totalSize += threeGeom.attributes.position.array.length / threeGeom.attributes.position.itemSize;
 
         // add properties
         var properties = JSON.stringify(geoJson.features[f].properties);
         propertiesList.push(properties);
         geometries.push(threeGeom);
     }
-    var mergedGeom = new THREE.Geometry().fromBufferGeometry(geometries[0]);
+    /*var mergedGeom = geometries[0];
     for (var i = 1; i < geometries.length; i++) {
-        mergedGeom.merge(new THREE.Geometry().fromBufferGeometry(geometries[i]));
+        mergedGeom.merge(geometries[i]);
+    }*/
+    var mergedGeom = new THREE.BufferGeometry();
+    mergedGeom.addAttribute('position', new THREE.BufferAttribute(new Float32Array(totalSize*3),3));
+    mergedGeom.addAttribute('normal', new THREE.BufferAttribute(new Float32Array(totalSize*3),3));
+
+    var offset = 0;
+    for(var i = 0; i < geometries.length; i++) {
+        mergedGeom.merge(geometries[i], offset);
+        offset += geometrySize[i];
     }
+    // Only position and normal attributes are merged automatically
+    var geomIndexBuffer = new Float32Array(totalSize);
+    var idx = 0;
+    offset = geometrySize[0];
+    for(var i = 0; i < geomIndexBuffer.length; i++) {
+        if(i >= offset) {
+            idx++;
+            offset += geometrySize[idx];
+        }
+        geomIndexBuffer[i] = idx;
+    }
+    mergedGeom.addAttribute('geometryIndex', new THREE.BufferAttribute(geomIndexBuffer,1));
+
 
     return {
         geometries: mergedGeom,

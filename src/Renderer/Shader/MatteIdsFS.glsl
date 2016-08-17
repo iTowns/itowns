@@ -1,17 +1,16 @@
 uniform int  uuid;
 uniform vec3 diffuseColor;
+varying float idx;
 
-const vec4 bitSh = vec4( 256.0 * 256.0 * 256.0, 256.0 * 256.0, 256.0, 1.0 );
-const vec4 bitMsk = vec4( 0.0, 1.0 / 256.0, 1.0 / 256.0, 1.0 / 256.0 );
-
-vec4 pack1K ( float depth ) {
-
-    depth /= 10000.0;
-    vec4 res = mod( depth * bitSh * vec4( 255 ), vec4( 256 ) ) / vec4( 255 );
-    res -= res.xxyz * bitMsk;
-    return res;
+vec4 pack(float id) {
+    vec4 color;
+    color.b = floor(id / 256.0 / 256.0);
+    color.g = floor((id - color.b * 256.0 * 256.0) / 256.0);
+    color.r = floor(id - color.b * 256.0 * 256.0 - color.g * 256.0);
+    color.a = 255.0;
+    // now we have a vec3 with the 3 components in range [0..255]. Let's normalize it!
+    return color / 255.0;
 }
-
 
 void main() {
 
@@ -21,6 +20,14 @@ void main() {
 
     #endif
 
-    gl_FragColor = pack1K(float(uuid));
+    #if defined(MULTIPLE_GEOMETRIES)
+
+    gl_FragColor = pack(float(uuid) + 256.0 * 256.0 * floor(idx + 0.5));
+
+    #else
+
+    gl_FragColor = pack(float(uuid));
+
+    #endif
 
 }

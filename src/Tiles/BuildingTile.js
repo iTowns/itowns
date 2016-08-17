@@ -6,7 +6,7 @@
 
 import BoundingBox from 'Scene/BoundingBox';
 import NodeMesh from 'Renderer/NodeMesh';
-import BasicMaterial from 'Renderer/BasicMaterial';
+import MultiGeometryMaterial from 'Renderer/MultiGeometryMaterial';
 import THREE from 'THREE';
 import BasicNormalMaterial from 'Renderer/BasicNormalMaterial';
 import BasicIdsMaterial from 'Renderer/BasicIdsMaterial';
@@ -33,7 +33,7 @@ function BuildingTile(params) {
 
     var m = 10000;
     this.randomId = Math.random() * m;
-    this.material = new BasicMaterial(new THREE.Color(0.8, 0.8, 0.8), this.randomId);
+    this.material = new MultiGeometryMaterial(new THREE.Color(0.8, 0.8, 0.8), this.id/*this.randomId*/);
     this.materials = [];
 
     // instantiations all state materials : final, depth, id
@@ -98,8 +98,12 @@ BuildingTile.prototype.setDebug = function(enable) {
     this.material.setDebug(enable);
 };
 
-BuildingTile.prototype.setSelected = function(select) {
-    this.material.setSelected(select);
+BuildingTile.prototype.setSelected = function(select, index) {
+    this.material.setSelected(select, index);
+};
+
+BuildingTile.prototype.getSelectedIndex = function() {
+    return this.material.getSelectedIndex();
 };
 
 // switch material in function of state

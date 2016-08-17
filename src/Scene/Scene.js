@@ -236,9 +236,9 @@ Scene.prototype.select = function( /*layers*/ ) {
 
 };
 
-Scene.prototype.selectNodeId = function(id) {
+Scene.prototype.selectNodeId = function(ids) {
 
-    this.browserScene.selectedNodeId = id;
+    this.browserScene.selectedNodeIds = ids;
 
 };
 
