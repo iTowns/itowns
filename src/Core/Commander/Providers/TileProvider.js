@@ -35,7 +35,6 @@ function TileProvider(ellipsoid) {
 
     this.cacheGeometry = [];
     this.tree = null;
-    this.nNode = 0;
 }
 
 TileProvider.prototype = Object.create(Provider.prototype);
@@ -96,7 +95,6 @@ TileProvider.prototype.executeCommand = function(command) {
 
     // build tile
     var tile = new command.type(params, this.builder);
-    tile.setUuid(this.nNode++);
     tile.link = parent.link;
     tile.geometricError = Math.pow(2, (18 - tileCoord.zoom));
 

@@ -24,10 +24,7 @@ function Layer() {
     Node.call(this);
     this.descriManager = null;
     this.projection = new Projection();
-    this.id = Layer.count++;
 }
-
-Layer.count = 0;
 
 Layer.prototype = Object.create(Node.prototype);
 

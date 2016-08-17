@@ -62,10 +62,12 @@ function TileMesh(params, builder, geometryCache) {
     // instantiations all state materials : final, depth, id
     // Final rendering : return layered color + fog
     this.materials[RendererConstant.FINAL] = new LayeredMaterial();
+    this.materials[RendererConstant.FINAL].setUuid(this.id);
     // Depth : return the distance between projection point and the node
     this.materials[RendererConstant.DEPTH] = new GlobeDepthMaterial(this.materials[RendererConstant.FINAL]);
     // ID : return id color in RGBA (float Pack in RGBA)
     this.materials[RendererConstant.ID] = new MatteIdsMaterial(this.materials[RendererConstant.FINAL]);
+    this.materials[RendererConstant.ID].setUuid(this.id);
     // Set current material in Final Rendering
     this.material = this.materials[RendererConstant.FINAL];
 
@@ -110,13 +112,6 @@ TileMesh.prototype.dispose = function() {
     this.geometry.dispose();
     this.geometry = null;
     this.material = null;
-};
-
-TileMesh.prototype.setUuid = function(uuid) {
-    this.id = uuid;
-    this.materials[RendererConstant.FINAL].setUuid(uuid);
-    this.materials[RendererConstant.ID].setUuid(uuid);
-
 };
 
 TileMesh.prototype.getUuid = function(uuid) {
