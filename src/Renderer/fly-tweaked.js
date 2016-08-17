@@ -30,7 +30,9 @@ export default function fly(camera, domElement, THREE, engine) {
     lookup: 0,
     lookdown: 0,
     zLeft: 0,
-    zRight: 0
+    zRight: 0,
+    zoomIn: 0,
+    zoomOut: 0
   };
 
 
@@ -160,12 +162,17 @@ export default function fly(camera, domElement, THREE, engine) {
     var moveMult = delta * api.movementSpeed * (moveState.fastfwd ? 3 : 1);
     var rotMult = delta * api.rollSpeed;
 
-    var v = moveVector.clone().setZ(0).applyQuaternion(camera.getWorldQuaternion());
-    v.normalize().multiplyScalar(moveMult);
-    v.z = moveVector.z * moveMult;
+    if (moveState.zoomIn || moveState.zoomOut) {
+      var z = new THREE.Vector3(0, 0, moveState.zoomIn ? -moveMult : moveMult);
+      camera.position.add(z.applyQuaternion(camera.getWorldQuaternion()));
+    } else {
+      var v = moveVector.clone().setZ(0).applyQuaternion(camera.getWorldQuaternion());
+      v.normalize().multiplyScalar(moveMult);
+      v.z = moveVector.z * moveMult;
 
-    // move in world coord
-    camera.position.add(v);
+      // move in world coord
+      camera.position.add(v);
+    }
 
     tmpQuaternion.set(rotationVector.x * rotMult, rotationVector.y * rotMult, 0, 1).normalize();
     tmpQuaternion2.set(0, 0, rotationVector.z * rotMult, 1).normalize();

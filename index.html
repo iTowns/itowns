@@ -181,14 +181,14 @@ and open the template in the editor.
             <!-- pan -->
             <div class="row" id="pan">
                 <div class="row first">
-                    <div class="small-4 columns" id="moveDown">
+                    <div class="small-4 columns" id="zoomIn">
                         <button class="btn move">+</button>
                     </div>
                     <div class="small-4 columns" id="panUp">
                         <button>⬆</button>
                     </div>
-                    <div class="small-4 columns">
-                        <div class="btn"></div>
+                    <div class="small-4 columns" id="moveUp">
+                        <button class="btn">↥</button>
                     </div>
                 </div>
                 <div class="row middle">
@@ -203,14 +203,14 @@ and open the template in the editor.
                     </div>
                 </div>
                 <div class="row last">
-                    <div class="small-4 columns" id="moveUp">
+                    <div class="small-4 columns" id="zoomOut">
                         <button class="btn move">-</button>
                     </div>
                     <div class="small-4 columns" id="panDown">
                         <button>⬇</button>
                     </div>
-                    <div class="small-4 columns">
-                        <div class="btn"></div>
+                    <div class="small-4 columns" id="moveDown">
+                        <button class="btn">↧</button>
                     </div>
                 </div>
             </div>
@@ -533,6 +533,14 @@ and open the template in the editor.
         });
         document.getElementById('moveDown').addEventListener('click', function(event) {
             itowns.viewer.panCamera(0, 0, -1);
+            viewerDiv.focus();
+        });
+        document.getElementById('zoomIn').addEventListener('click', function(event) {
+            itowns.viewer.panCamera(0, 0, 0, 1);
+            viewerDiv.focus();
+        });
+        document.getElementById('zoomOut').addEventListener('click', function(event) {
+            itowns.viewer.panCamera(0, 0, 0, -1);
             viewerDiv.focus();
         });
 

@@ -816,13 +816,15 @@ ApiGlobe.prototype.showKML = function(value) {
     this.scene.renderScene3D();
 };
 
-ApiGlobe.prototype.panCamera = function(x, y, z) {
+ApiGlobe.prototype.panCamera = function(x, y, z, zoom) {
     this.scene.gfxEngine.controls.moveState.forward = y > 0;
     this.scene.gfxEngine.controls.moveState.backward = y < 0;
     this.scene.gfxEngine.controls.moveState.left = x < 0;
     this.scene.gfxEngine.controls.moveState.right = x > 0;
     this.scene.gfxEngine.controls.moveState.up = z > 0;
     this.scene.gfxEngine.controls.moveState.down = z < 0;
+    this.scene.gfxEngine.controls.moveState.zoomIn = zoom > 0;
+    this.scene.gfxEngine.controls.moveState.zoomOut = zoom < 0;
     this.scene.gfxEngine.controls.updateMovementVector();
     this.scene.gfxEngine.controls.fire('move', undefined);
 
@@ -831,7 +833,11 @@ ApiGlobe.prototype.panCamera = function(x, y, z) {
         this.scene.gfxEngine.controls.moveState.left =
         this.scene.gfxEngine.controls.moveState.right =
         this.scene.gfxEngine.controls.moveState.up =
-        this.scene.gfxEngine.controls.moveState.down = 0;
+        this.scene.gfxEngine.controls.moveState.down =
+        this.scene.gfxEngine.controls.moveState.zoomIn =
+        this.scene.gfxEngine.controls.moveState.zoomOut = 0;
+
+
     this.scene.gfxEngine.controls.updateMovementVector();
 }
 
