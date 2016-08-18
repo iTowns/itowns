@@ -234,11 +234,16 @@ and open the template in the editor.
         var miny = 5039250;
         var maxy = 5043750;
 
+        var attributes = [];
+        var colorFunction;
+
         var scene = itowns.viewer.createScenePlane(
             initCenter,
             viewerDiv,
             // pointcloud bouding-box
-            [minx - offset, maxx + offset, miny - offset, maxy + offset]);
+            [minx - offset, maxx + offset, miny - offset, maxy + offset],
+            attributes,
+            colorFunction);
 
         itowns.viewer.addPointCloud("greyhound://3d.oslandia.com/lopocs-itowns/greyhound/");
 

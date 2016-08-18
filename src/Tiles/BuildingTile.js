@@ -49,6 +49,8 @@ function BuildingTile(params) {
         type: "2fv",
         value: [200, 200]
     };
+
+    this.updateColors(params.colorFunction || function() { return new THREE.Vector3(1,1,1); });
 }
 
 BuildingTile.prototype = Object.create(NodeMesh.prototype);
