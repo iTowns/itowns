@@ -15,7 +15,7 @@ import NodeMesh from 'Renderer/NodeMesh';
 import RendererConstant from 'Renderer/RendererConstant'
 
 function commandQueuePriorityFunction(/*cmd*/) {
-    return 100000; // TODO: more suitable value
+    return 1; // TODO: more suitable value
 }
 
 function BoundingVolumeHierarchy(type, lvl0Tiles, link) {
