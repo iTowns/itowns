@@ -313,7 +313,6 @@ and open the template in the editor.
             this.api = function(){};
             this.api2 = function(){};
             this.api3 = function(){};
-            this.pointcloud = true;
         };
 
         var text = new Menu();
@@ -397,16 +396,27 @@ and open the template in the editor.
             });
         }
 
-        gui.add(text, 'pointcloud').name('Buildings Visible').onChange(function(newValue) {
+        gui.add({b: true}, 'b').name('Buildings Visible').onChange(function(newValue) {
             itowns.viewer.setBuildingsVisibility(newValue);
+            scene.realtimeSceneProcess();
             scene.renderScene3D();
         });
 
-        gui.add(text, 'pointcloud').name('Point Cloud Visible').onChange(function(newValue) {
+        gui.add({pc: true}, 'pc').name('Point Cloud Visible').onChange(function(newValue) {
             itowns.viewer.setPointCloudVisibility(newValue);
             scene.renderScene3D();
         });
         var pc = gui.addFolder('Point Cloud Details');
+
+        pc.add({size: 1.0}, 'size').name('Point Size').min(1.0).max(50.0).onChange(function(newValue) {
+            var cO = function(object) {
+                if (object.material && object.material.uniforms && object.material.uniforms.size) {
+                    object.material.uniforms.size.value = newValue;
+                }
+            }
+            scene.layers[0].node.children[1].children[1].traverse(cO);
+            scene.renderScene3D();
+        });
 
         var names = ['', '', 'Ground', '', '', 'Vegetation', 'Buildings'];
         for (var i=0; i<names.length; i++) {
@@ -416,7 +426,6 @@ and open the template in the editor.
                     var cO = function(object) {
                         if (object.material && object.material.uniforms && object.material.uniforms.classificationMask) {
                             object.material.uniforms.classificationMask.value[classif] = newValue ? 1 : 0;
-                            console.log(classif, JSON.stringify(object.material.uniforms.classificationMask.value));
                         }
                     }
 
