@@ -31,9 +31,7 @@ function BuildingTile(params) {
     this.centerSphere = this.geometry.boundingSphere.center;
     this.properties = params.properties;
 
-    var m = 10000;
-    this.randomId = Math.random() * m;
-    this.material = new MultiGeometryMaterial(new THREE.Color(0.8, 0.8, 0.8), this.id/*this.randomId*/);
+    this.material = new MultiGeometryMaterial(new THREE.Color(0.8, 0.8, 0.8), this.id, this.properties.length);
     this.materials = [];
 
     // instantiations all state materials : final, depth, id
@@ -115,5 +113,13 @@ BuildingTile.prototype.changeState = function(state) {
 
     this.material = this.materials[state];
 };
+
+BuildingTile.prototype.updateColors = function(colorFunction) {
+    var colors = []
+    for(var i = 0; i < this.properties.length; i++) {
+        colors[i] = colorFunction(this.properties[i]);
+    }
+    this.materials[RendererConstant.FINAL].updateColors(colors);
+}
 
 export default BuildingTile;
