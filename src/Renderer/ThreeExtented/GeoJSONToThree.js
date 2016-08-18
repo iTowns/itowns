@@ -40,7 +40,7 @@ GeoJSONToThree.convert = function(geoJson) {
         totalSize += threeGeom.attributes.position.array.length / threeGeom.attributes.position.itemSize;
 
         // add properties
-        var properties = JSON.stringify(geoJson.features[f].properties);
+        var properties = geoJson.features[f].properties;
         propertiesList.push(properties);
         geometries.push(threeGeom);
     }
@@ -61,7 +61,7 @@ GeoJSONToThree.convert = function(geoJson) {
     var geomIndexBuffer = new Float32Array(totalSize);
     var idx = 0;
     offset = geometrySize[0];
-    for(var i = 0; i < geomIndexBuffer.length; i++) {
+    for(i = 0; i < geomIndexBuffer.length; i++) {
         if(i >= offset) {
             idx++;
             offset += geometrySize[idx];
