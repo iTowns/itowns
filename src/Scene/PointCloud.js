@@ -78,7 +78,7 @@ PointCloud.prototype.load_greyhoud = function(url) {
             material = new THREE.ShaderMaterial({
                 uniforms: {
                     size: { value: 1.0 },
-                    scale: { value: 1000.0 },
+                    scale: { value: 2500.0 },
                     classificationMask: { value: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1] }
                 }
             });
