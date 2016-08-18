@@ -69,7 +69,7 @@ ManagerCommands.prototype.runAllCommands = function() {
         return Promise.resolve(0);
     }
 
-    return Promise.all(this.arrayDeQueue(3))
+    return Promise.all(this.arrayDeQueue(16))
         .then(function() {
             // if (this.commandsLength() <= 16)
             this.scene.wait(1);
