@@ -304,7 +304,6 @@ export default function fly(camera, domElement, THREE, engine) {
     // }
 
     if (moveState['pick']) {
-        console.log('pick!');
         var mouse = new THREE.Vector2(
             event.clientX - event.target.offsetLeft, event.clientY - event.target.offsetTop);
         engine.selectNodeAt(mouse);

@@ -1,8 +1,7 @@
 import BasicMaterial from 'Renderer/BasicMaterial';
 import GlobeDepthFS from 'Renderer/Shader/GlobeDepthFS.glsl';
-import DepthVS from 'Renderer/Shader/DepthVS.glsl';
 
-var BasicDepthMaterial = function(otherMaterial) {
+var BasicDepthMaterial = function() {
 
     BasicMaterial.call(this);
 

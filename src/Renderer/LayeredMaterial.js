@@ -17,7 +17,6 @@ var emptyTexture = new THREE.Texture();
 
 emptyTexture.level = -1;
 var nbLayer = 2;
-var vector = new THREE.Vector3(0.0, 0.0, 0.0);
 var vector2 = new THREE.Vector2(0.0, 0.0);
 var vector4 = new THREE.Vector4(0.0, 0.0, 0.0, 0.0);
 var showDebug = false;

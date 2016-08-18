@@ -4,21 +4,15 @@
  * Description: BuildingTileNodeProcess effectue une opération sur un Node.
  */
 
-import Camera from 'Renderer/Camera';
-import InterfaceCommander from 'Core/Commander/InterfaceCommander';
 import RendererConstant from 'Renderer/RendererConstant'
 
 function BuildingTileNodeProcess(engine) {
     //Constructor
-    this.camera = new Camera();
-    //this.camera.camera3D = camera.camera3D.clone();
     this.additiveRefinement = true;
     this.engine = engine;
 }
 
-BuildingTileNodeProcess.prototype.updateCamera = function(camera) {
-    this.camera = new Camera(camera.width, camera.height);
-    this.camera.camera3D = camera.camera3D.clone();
+BuildingTileNodeProcess.prototype.updateCamera = function() {
 };
 
 /**
@@ -38,7 +32,7 @@ BuildingTileNodeProcess.prototype.computeNodeSSE = function(node, camera) {
 };
 
 
-BuildingTileNodeProcess.prototype.checkNodeSSE = function(node, camera) {
+BuildingTileNodeProcess.prototype.checkNodeSSE = function(node) {
 
     return 6.0 < node.sse;
 

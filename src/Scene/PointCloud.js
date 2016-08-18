@@ -1,15 +1,13 @@
 import THREE from 'THREE';
 import Potree from 'potree';
 import Layer from 'Scene/Layer';
-import BasicMaterial from 'Renderer/BasicMaterial';
-import SimpleFS from 'Renderer/Shader/SimpleFS.glsl';
 import PointClassificationVS from 'Renderer/Shader/PointClassificationVS.glsl'
 import PointClassificationFS from 'Renderer/Shader/PointClassificationFS.glsl'
 
 var potreeInstance = null;
 var loaders = [];
 
-function PointCloud(boundingBox) {
+function PointCloud() {
     Layer.call(this);
 
     Potree.pointBudget = 10*1000*1000;
@@ -65,12 +63,18 @@ PointCloud.prototype.load_greyhoud = function(url) {
     loader.load(url, function(geometry) {
         var pointcloud;
         var material;
-        if (false) {
-            pointcloud = new Potree.PointCloudOctree(geometry);
-            pointcloud.material.size = 100;
-            // pointcloud.material.pointColorType = Potree.PointColorType.CLASSIFICATION;
-            pointcloud.material.lights = false;
-        } else if (true) {
+
+        // can't use this method since potree depends on three r71 but itowns
+        // uses r79
+        // if (false) {
+        //     pointcloud = new Potree.PointCloudOctree(geometry);
+        //     pointcloud.material.size = 100;
+        //     pointcloud.material.pointColorType = Potree.PointColorType.CLASSIFICATION;
+        //     pointcloud.material.lights = false;
+        // }
+
+        // reimplementation of classification colorization based on three point shaders
+        {
             material = new THREE.ShaderMaterial({
                 uniforms: {
                     size: { value: 1.0 },
@@ -80,35 +84,23 @@ PointCloud.prototype.load_greyhoud = function(url) {
             });
             material.vertexShader = PointClassificationVS;
             material.fragmentShader = PointClassificationFS;
-
-            //material.enableRTC(false);
-                // THREE.PointsMaterial( { size: 50.0,
-                // vertexColors: THREE.VertexColors } );
-            pointcloud = new Potree.PointCloudOctree(geometry, material);
-
-        } else if(true) {
-            material = new THREE.Material();
-            material.isPointsMaterial = true;
-            material.size = 50;
-            material.vertexColors = THREE.VertexColors;
-            material.sizeAttenuation = false;
-            material.lights = false;
-            material.map = null;
-            material._needsUpdate = true;
-            material.update();
-                // THREE.PointsMaterial( { size: 50.0,
-                // vertexColors: THREE.VertexColors } );
-            pointcloud = new Potree.PointCloudOctree(geometry, material);
-        } else if (true) {
-            material = new THREE.PointsMaterial( { size: 50.0, vertexColors: THREE.VertexColors } );
-            material.transparent = false;
-            material.fragmentShader = SimpleFS;
-            pointcloud = new Potree.PointCloudOctree(geometry, material);
-        } else {
-            material = new THREE.PointsMaterial( { size: 50.0, vertexColors: THREE.VertexColors } );
-            material.transparent = false;
             pointcloud = new Potree.PointCloudOctree(geometry, material);
         }
+
+        // alternative using three js stock point materials. Doesn't support
+        // classification
+        // {
+        //     material = new THREE.Material();
+        //     material.isPointsMaterial = true;
+        //     material.size = 50;
+        //     material.vertexColors = THREE.VertexColors;
+        //     material.sizeAttenuation = false;
+        //     material.lights = false;
+        //     material.map = null;
+        //     material._needsUpdate = true;
+        //     material.update();
+        //     pointcloud = new Potree.PointCloudOctree(geometry, material);
+        // }
 
         potreeInstance.add(pointcloud);
 
