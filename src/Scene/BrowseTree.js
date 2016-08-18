@@ -5,6 +5,7 @@
  */
 
 import THREE from 'THREE';
+import BoundingVolumeHierarchy from 'Scene/BoundingVolumeHierarchy';
 
 function BrowseTree(engine) {
     //Constructor
@@ -114,12 +115,20 @@ BrowseTree.prototype.browse = function(tree, camera, process, layersConfig, opti
 
     process.prepare(camera);
 
+
+
     var action = (optional === 2) ? 'clean' : 'visibility_update';
     var params = {
         tree: this.tree,
         withUp: (optional === 1),
         layersConfig: layersConfig
     };
+
+    // temp hack
+    if (tree instanceof BoundingVolumeHierarchy &&
+        !layersConfig.isColorLayerVisible('building')) {
+        action = 'hide_all';
+    }
 
     var rootNode = tree.children[0];
 

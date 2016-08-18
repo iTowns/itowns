@@ -125,11 +125,20 @@ ApiGlobe.prototype.setPointCloudVisibility = function(v) {
             if (sLayer instanceof PointCloud) {
                 for (var i=0; i<sLayer.children.length; i++) {
                     sLayer.children[i].visible = v;
+
+                    for (var k=0; k<sLayer.children[i].children.length; k++) {
+                        sLayer.children[i].children[k].visible = v;
+                    }
+
                 }
                 return;
             }
         }
     }
+}
+
+ApiGlobe.prototype.setBuildingsVisibility = function(v) {
+    this.scene.getMap().layersConfiguration.setLayerVisibility('building', v);
 }
 
 ApiGlobe.prototype.moveLayerUp = function(layer) {
