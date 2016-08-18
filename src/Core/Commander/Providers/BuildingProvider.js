@@ -18,6 +18,8 @@ function BuildingProvider(options) {
     this.baseUrl = "http://3d.oslandia.com/building"; // TODO: remove hard-coded values
     this.layer = "montreal";
     this.format = defaultValue(options.format, "GeoJSON");
+    this.colorFunction = options.colorFunction;
+    this.attributes = options.attributes;
     //this.cacheGeometry = [];
 }
 
@@ -25,7 +27,13 @@ BuildingProvider.prototype.constructor = BuildingProvider;
 
 BuildingProvider.prototype.url = function(tileId) {
     var url = this.baseUrl + "?query=getGeometry&city=" + this.layer + "&format=" + this.format +
-        "&tile=" + tileId /*+ "&ATTRIBUTES="*/ ;
+        "&tile=" + tileId;
+    if(this.attributes.length !== 0) {
+        url += "&attributes=" + this.attributes[0];
+        for(var i = 1; i < this.attributes.length; i++) {
+            url += "," + this.attributes[i];
+        }
+    }
     return url;
 };
 
@@ -50,14 +58,15 @@ BuildingProvider.prototype.executeCommand = function(command) {
             level: parent.level + 1,
             childrenBboxes: bboxes,
             geometry: geoms,
-            properties: data.properties
+            properties: data.properties,
+            colorFunction: this.colorFunction
         };
 
         var tile = new command.type(params);
         parent.add(tile);
 
         return tile;
-    };
+    }.bind(this);
 
     var url = this.url(bboxId);
     var cachedTile = this.cache.getRessource(url);
