@@ -2,7 +2,7 @@ import BasicMaterial from 'Renderer/BasicMaterial';
 import NormalFS from 'Renderer/Shader/NormalFS.glsl';
 import NormalVS from 'Renderer/Shader/NormalVS.glsl';
 
-var BasicNormalMaterial = function(otherMaterial) {
+var BasicNormalMaterial = function() {
 
     BasicMaterial.call(this);
 

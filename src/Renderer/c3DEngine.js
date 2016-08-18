@@ -115,8 +115,6 @@ function c3DEngine(scene, positionCamera, viewerDiv, debugMode, gLDebug) {
     this.normalRenderBuffer.depthBuffer = true;
     // this.normalRenderBuffer.stencilBuffer = false;
 
-    this.modemode = 0;
-
     this.renderScene = function() {
 
         this.renderer.clear();
@@ -203,9 +201,10 @@ function c3DEngine(scene, positionCamera, viewerDiv, debugMode, gLDebug) {
         this.pickingTexture.setSize(this.width, this.height);
         this.normalRenderBuffer.setSize(this.width, this.height);
         var u = function(object) {
-            if (u.materials)
-                u.materials[RendererConstant.FINAL].uniforms.resolution.value =
+            if (object.materials) {
+                object.materials[RendererConstant.FINAL].uniforms.resolution.value =
                     [this.normalRenderBuffer.width, this.normalRenderBuffer.height];
+            }
         }.bind(this);
         this.scene3D.children[3].traverse(u);
         this.renderer.setSize(this.width, this.height);
@@ -319,13 +318,12 @@ function c3DEngine(scene, positionCamera, viewerDiv, debugMode, gLDebug) {
     this.controls.rollSpeed = 0.25;
     this.camera.position.z = 1000;
 
-    function onMouseDown(event) {
-        this.modemode = 1 - this.modemode;
+    // function onMouseDown(event) {
         // event.preventDefault();
         // var mouse = new THREE.Vector2(event.clientX - event.target.offsetLeft, event.clientY - event.target.offsetTop);
         // this.selectNodeAt(mouse);
         // this.update();
-    }
+    //}
 
     // window.addEventListener('mousedown', onMouseDown.bind(this), false);
 }

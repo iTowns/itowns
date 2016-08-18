@@ -5,10 +5,8 @@
  */
 
 
-import THREE from 'THREE';
 import BasicMaterial from 'Renderer/BasicMaterial';
 import MatteIdsFS from 'Renderer/Shader/MatteIdsFS.glsl';
-import DepthVS from 'Renderer/Shader/DepthVS.glsl';
 
 // This material renders the id in RGBA Color
 // Warning the RGBA contains id in float pack in 4 unsigned char
