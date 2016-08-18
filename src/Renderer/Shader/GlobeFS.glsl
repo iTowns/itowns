@@ -157,6 +157,7 @@ void main() {
 
         // Fog
         gl_FragColor = mix(fogColor, diffuseColor, fog );
+
         gl_FragColor = diffuseColor;
 
         gl_FragColor.a = 1.0;

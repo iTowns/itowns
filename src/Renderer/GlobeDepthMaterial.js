@@ -1,12 +1,13 @@
 import BasicMaterial from 'Renderer/BasicMaterial';
 import GlobeDepthFS from 'Renderer/Shader/GlobeDepthFS.glsl';
 import GlobeDepthVS from 'Renderer/Shader/GlobeDepthVS.glsl';
+import pitUV from 'Renderer/Shader/Chunk/pitUV.glsl';
 
 var GlobeDepthMaterial = function(otherMaterial) {
 
     BasicMaterial.call(this);
 
-    this.vertexShader = this.vertexShaderHeader + GlobeDepthVS;
+    this.vertexShader = this.vertexShaderHeader + pitUV + GlobeDepthVS;
     this.fragmentShader = this.fragmentShaderHeader + GlobeDepthFS;
 
     // Why connect directily uniform doesn't work?
@@ -23,8 +24,13 @@ var GlobeDepthMaterial = function(otherMaterial) {
     };
 
     this.uniforms.pitScale_L00 = {
-        type: "v3v",
+        type: "v4v",
         value: otherMaterial.pitScale[0]
+    };
+
+    this.uniforms.zOffset = {
+        type: "f",
+        value: -6
     };
 };
 

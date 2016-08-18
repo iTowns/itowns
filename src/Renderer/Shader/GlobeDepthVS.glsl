@@ -3,18 +3,19 @@ attribute vec3      position;
 attribute vec3      normal;
 
 uniform sampler2D   dTextures_00[1];
-uniform vec3        pitScale_L00[1];
+uniform vec4        pitScale_L00[1];
 uniform int         nbTextures;
 uniform mat4        mVPMatRTC;
+uniform float       zOffset;
 
 void main() {
 
         vec4 vPosition;
 
         if(nbTextures > 0) {
-            vec2    vVv = vec2(uv_wgs84.x * pitScale_L00[0].z + pitScale_L00[0].x,(1.0 - uv_wgs84.y) * pitScale_L00[0].z + pitScale_L00[0].y);
+            vec2    vVv = pitUV(uv_wgs84, pitScale_L00[0]);
 
-            float   dv  = max(texture2D( dTextures_00[0], vVv ).w, 0.);
+            float   dv  = max(texture2D( dTextures_00[0], vVv ).r, 0.) * 255.0 + zOffset;
 
             vPosition   = vec4(position + normal * dv, 1.0 );
         }

@@ -197,6 +197,7 @@ TileMesh.prototype.setTextureElevation = function(elevation) {
 
     this.materials[RendererConstant.FINAL].setTexture(texture, l_ELEVATION, 0, pitScale);
     this.materials[RendererConstant.DEPTH].uniforms.nbTextures.value = this.materials[RendererConstant.FINAL].nbTextures[0];
+    this.materials[RendererConstant.ID].setTexture(texture, l_ELEVATION, 0, pitScale);
     this.materials[RendererConstant.ID].uniforms.nbTextures.value = this.materials[RendererConstant.FINAL].nbTextures[0];
 
 
@@ -230,7 +231,7 @@ TileMesh.prototype.setTexturesLayer = function(textures, idLayer, slotOffset) {
         return;
     }
     if (textures) {
-        this.material.setTexturesLayer(textures, idLayer, slotOffset);
+        this.materials[RendererConstant.FINAL].setTexturesLayer(textures, idLayer, slotOffset);
     }
     this.loadingCheck();
 };

@@ -9,6 +9,7 @@ import THREE from 'THREE';
 import BasicMaterial from 'Renderer/BasicMaterial';
 import MatteIdsFS from 'Renderer/Shader/MatteIdsFS.glsl';
 import GlobeDepthVS from 'Renderer/Shader/GlobeDepthVS.glsl';
+import pitUV from 'Renderer/Shader/Chunk/pitUV.glsl';
 
 // This material renders the id in RGBA Color
 // Warning the RGBA contains id in float pack in 4 unsigned char
@@ -17,7 +18,7 @@ var MatteIdsMaterial = function(otherMaterial) {
 
     BasicMaterial.call(this);
 
-	this.vertexShader =  this.vertexShaderHeader + GlobeDepthVS;
+	this.vertexShader =  this.vertexShaderHeader + pitUV + GlobeDepthVS;
     this.fragmentShader = this.fragmentShaderHeader + MatteIdsFS;
 
     this.uniforms.uuid.value = otherMaterial.uniforms.uuid.value;
@@ -34,10 +35,14 @@ var MatteIdsMaterial = function(otherMaterial) {
     };
 
     this.uniforms.pitScale_L00 = {
-        type: "v3v",
+        type: "v4v",
         value: otherMaterial.pitScale[0]
     };
 
+    this.uniforms.zOffset = {
+        type: "f",
+        value: -6
+    };
 };
 
 MatteIdsMaterial.prototype = Object.create(BasicMaterial.prototype);
@@ -45,6 +50,11 @@ MatteIdsMaterial.prototype.constructor = MatteIdsMaterial;
 
 MatteIdsMaterial.prototype.setMatrixRTC = function(rtc) {
     this.uniforms.mVPMatRTC.value = rtc;
+};
+
+MatteIdsMaterial.prototype.setTexture = function(texture, layer, slot, pitScale) {
+    this.uniforms.dTextures_00.value[0] = texture;
+    this.uniforms.pitScale_L00.value[0] = pitScale;
 };
 
 export default MatteIdsMaterial;
