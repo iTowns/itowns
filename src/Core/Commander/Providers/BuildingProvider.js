@@ -16,7 +16,7 @@ function BuildingProvider(options) {
     this.cache = CacheRessource();
     this.srs = options.srs;
     this.baseUrl = "http://3d.oslandia.com/building"; // TODO: remove hard-coded values
-    this.layer = "montreal";
+    this.layer = options.layer;
     this.format = defaultValue(options.format, "GeoJSON");
     this.colorFunction = options.colorFunction;
     this.attributes = options.attributes;

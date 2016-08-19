@@ -245,6 +245,7 @@ and open the template in the editor.
         var miny = 5039250;
         var maxy = 5043750;
 
+        var buildingLayerName = "montreal";
         var attributes = [];
         var colorFunction;
 
@@ -253,6 +254,7 @@ and open the template in the editor.
             viewerDiv,
             // pointcloud bouding-box
             [minx - offset, maxx + offset, miny - offset, maxy + offset],
+            buildingLayerName,
             attributes,
             colorFunction);
 

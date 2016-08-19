@@ -329,7 +329,7 @@ ApiGlobe.prototype.createSceneGlobe = function(coordCarto, viewerDiv) {
 };
 
     // TODO: move to ApiPlane
-ApiGlobe.prototype.createScenePlane = function(coordCarto, viewerDiv, boundingBox, attributes, colorFunction) {
+ApiGlobe.prototype.createScenePlane = function(coordCarto, viewerDiv, boundingBox, buildingLayerName, attributes, colorFunction) {
     // TODO: Normalement la creation de scene ne doit pas etre ici....
     // Deplacer plus tard
 
@@ -378,7 +378,7 @@ ApiGlobe.prototype.createScenePlane = function(coordCarto, viewerDiv, boundingBo
     var np = new BuildingTileNodeProcess(this.scene.gfxEngine);
     this.scene.add(bvh, np);
 
-    var buildingProvider = new BuildingProvider({srs: 'EPSG:3946', attributes: attributes, colorFunction: colorFunction});
+    var buildingProvider = new BuildingProvider({srs: 'EPSG:3946', attributes: attributes, colorFunction: colorFunction, layer: buildingLayerName});
 
     var buildingLayer = {
         protocol: 'building',
