@@ -86,11 +86,17 @@ BrowseTree.prototype.uniformsProcess = function() {
 
 }();
 
+var previousSubId = null;
+
 BrowseTree.prototype._selectNode = function(node) {
     if (node.id === this.selectedNodeIds[0]) {
         node.setSelected(node.visible && node.material.visible, this.selectedNodeIds[1]);
-        if (this.selectedNode !== node && (node.getSelectedIndex === undefined || this.selectedNodeIds[1] !== node.getSelectedIndex())) {
+        if (this.selectedNode !== node || (node.getSelectedIndex !== undefined && this.selectedNodeIds[1] !== previousSubId)) {
+            if(node.getSelectedIndex !== undefined) {
+                previousSubId = this.selectedNodeIds[1];
+            }
             this.selectedNode = node;
+            this.gfxEngine.viewerDiv.dispatchEvent(new CustomEvent('selection', {'detail': node}));
             /* eslint-disable no-alert, no-console */
             console.info(node);
             /* eslint-enable no-alert, no-console */

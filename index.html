@@ -33,6 +33,15 @@ and open the template in the editor.
 
         <!-- Camera controls -->
         <style type="text/css">
+            #infoBox {
+                width: 240px;
+                position: absolute;
+                bottom: 5px;
+                left: 5px;
+                background-color: #000000;
+                color: #FFFFFF;
+            }
+
             #controls {
                 width: 120px;
                 position: absolute;
@@ -138,6 +147,8 @@ and open the template in the editor.
     </head>
     <body>
         <div id="viewerDiv"></div>
+
+        <div id="infoBox"></div>
 
         <div id="controls">
 
@@ -440,6 +451,24 @@ and open the template in the editor.
                 }.bind(i));
             }
         }
+
+        viewerDiv.addEventListener('selection', function(e) {
+            var node = e.detail;
+            if(node.properties !== undefined) {
+                var idx = node.getSelectedIndex();
+                var properties = node.properties[idx];
+                var pString = "<table><tr><th>Name</th><th>Value</th></tr>";
+                for(var p in properties) {
+                    console.log(p, properties[p]);
+                    pString += "<tr><td>" + p + "</td><td>" + properties[p] + "</td></tr>";
+                }
+                pString += "</table>"
+                console.log(pString);
+                document.getElementById("infoBox").innerHTML = pString;
+            } else {
+                document.getElementById("infoBox").innerHTML = "";
+            }
+        });
 
         viewerDiv.addEventListener('rangeChanged', function() {
             var controller;
