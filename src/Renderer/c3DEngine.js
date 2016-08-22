@@ -13,7 +13,8 @@ import Atmosphere from 'Globe/Atmosphere';
 import Capabilities from 'Core/System/Capabilities';
 import RendererConstant from 'Renderer/RendererConstant';
 
-import fly from 'Renderer/fly-tweaked'
+//import fly from 'Renderer/fly-tweaked'
+import PlanarCameraControls from 'Renderer/ThreeExtented/PlanarCameraControls'
 
 var instance3DEngine = null;
 
@@ -176,12 +177,12 @@ function c3DEngine(scene, positionCamera, viewerDiv, debugMode, gLDebug) {
     this.previousTime = Date.now();
     this.update = function() {
         var now = Date.now();
-        var dt = Math.min(now - this.previousTime, 200);
+        //var dt = Math.min(now - this.previousTime, 200);
         this.previousTime = now;
 
         this.controls.movementSpeed = Math.max(100, this.camera.camera3D.position.z / 2);
 
-        this.controls.update(dt * 0.001);
+        //this.controls.update(dt * 0.001);
         this.camera.update();
         this.updateControl();
         this.scene.wait();
@@ -278,7 +279,21 @@ function c3DEngine(scene, positionCamera, viewerDiv, debugMode, gLDebug) {
     this.controls.keyPanSpeed = 0.01;*/
 
     // var origin = new THREE.Vector3(positionCamera.x, positionCamera.y, 300);
-    this.controls = fly(this.camera.camera3D, this.renderer.domElement, THREE, this);
+    //this.controls = fly(this.camera.camera3D, this.renderer.domElement, THREE, this);
+    this.camera.camera3D.up.set(0,0,1);
+
+    this.controls = new PlanarCameraControls(this.camera.camera3D, this.renderer.domElement, this);
+    this.controls.target.copy(this.camera.camera3D.position);
+    this.controls.target.z = 0;
+
+    this.controls.minDistanceUp = 0;
+    this.controls.maxDistanceUp = 20000;
+    this.controls.minScale      = 0.000001;
+    this.controls.maxScale      = 100.0;
+    this.controls.minZenithAngle = 0;
+    this.controls.maxZenithAngle = Math.PI / 2;
+
+    this.controls.update();
 
 /*
     this.controls.constraint.target = origin;
@@ -312,11 +327,11 @@ function c3DEngine(scene, positionCamera, viewerDiv, debugMode, gLDebug) {
     };
 
     window.addEventListener('resize', this.onWindowResize, false);
-    // this.controls.addEventListener('change', this.update);
-    this.controls.on('move', this.update);
+    this.controls.addEventListener('change', this.update);
+    //this.controls.on('move', this.update);
 
-    this.controls.rollSpeed = 0.25;
-    this.camera.position.z = 1000;
+    //this.controls.rollSpeed = 0.25;
+    //this.camera.position.z = 1000;
 
     // function onMouseDown(event) {
         // event.preventDefault();

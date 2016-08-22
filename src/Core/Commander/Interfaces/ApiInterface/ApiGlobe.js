@@ -352,9 +352,6 @@ ApiGlobe.prototype.createScenePlane = function(coordCarto, viewerDiv, boundingBo
     var bbox = new BoundingBox(boundingBox[0], boundingBox[1], boundingBox[2], boundingBox[3]);
     this.scene = Scene(coordCarto, bbox, viewerDiv,debugMode,gLDebug);
 
-    // override camera position
-    this.scene.gfxEngine.camera.setPosition({x: 299449.92317099776, y: 5040449.923170999, z: 5775.422559511995});
-
     var map = new Plane({bbox});
 
     this.scene.add(map);
