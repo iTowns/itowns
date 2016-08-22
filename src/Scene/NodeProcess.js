@@ -99,14 +99,11 @@ NodeProcess.prototype.subdivideNode = function(node, camera, params) {
                     layer = colorLayers[j];
                     var tileMatrixSet = layer.options.tileMatrixSet;
 
-                    if (!child.matrixSet[tileMatrixSet]) {
+                    if (tileMatrixSet && !child.matrixSet[tileMatrixSet]) {
                         child.matrixSet[tileMatrixSet] = this.projection.getCoordWMTS_WGS84(child.tileCoord, child.bbox, tileMatrixSet);
                     }
 
                     if (layer.tileInsideLimit(child, layer)) {
-
-                        var bcoord = child.matrixSet[tileMatrixSet];
-
                         paramMaterial.push({
                             tileMT: tileMatrixSet,
                             layerTexturesOffset: colorTextureCount,
@@ -116,7 +113,21 @@ NodeProcess.prototype.subdivideNode = function(node, camera, params) {
                             idLayer: layer.id
                         });
 
-                        colorTextureCount += bcoord[1].row - bcoord[0].row + 1;
+                        if(tileMatrixSet) {
+                            var bcoord = child.matrixSet[tileMatrixSet];
+                            colorTextureCount += bcoord[1].row - bcoord[0].row + 1;
+                        } else {
+                            colorTextureCount += 1;
+                        }
+                    }
+                }
+                var elevationLayers = params.layersConfig.getElevationLayers();
+                for (j = 0; j < elevationLayers.length; j++) {
+                    layer = elevationLayers[j];
+                    tileMatrixSet = layer.options.tileMatrixSet;
+
+                    if (tileMatrixSet && !child.matrixSet[tileMatrixSet]) {
+                        child.matrixSet[tileMatrixSet] = this.projection.getCoordWMTS_WGS84(child.tileCoord, child.bbox, tileMatrixSet);
                     }
                 }
 
