@@ -460,11 +460,9 @@ and open the template in the editor.
                 var properties = node.properties[idx];
                 var pString = "<table><tr><th>Name</th><th>Value</th></tr>";
                 for(var p in properties) {
-                    console.log(p, properties[p]);
                     pString += "<tr><td>" + p + "</td><td>" + properties[p] + "</td></tr>";
                 }
                 pString += "</table>"
-                console.log(pString);
                 document.getElementById("infoBox").innerHTML = pString;
             } else {
                 document.getElementById("infoBox").innerHTML = "";
