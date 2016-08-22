@@ -100,8 +100,6 @@ NodeProcess.prototype.subdivideNode = function(node, camera, params) {
 
                     if (layer.tileInsideLimit(child, layer)) {
                         var tileMatrixSet = layer.options.tileMatrixSet;
-                        var bcoord = child.matrixSet[tileMatrixSet];
-
                         paramMaterial.push({
                             tileMT: tileMatrixSet,
                             layerTexturesOffset: colorTextureCount,
@@ -110,8 +108,14 @@ NodeProcess.prototype.subdivideNode = function(node, camera, params) {
                             fx: layer.fx,
                             idLayer: layer.id
                         });
+                        if(tileMatrixSet) {
+                            var bcoord = child.matrixSet[tileMatrixSet];
 
-                        colorTextureCount += bcoord[1].row - bcoord[0].row + 1;
+                            colorTextureCount += bcoord[1].row - bcoord[0].row + 1;
+                        } else {    // WMS
+                            colorTextureCount += 1;
+                        }
+
                     }
                 }
 
