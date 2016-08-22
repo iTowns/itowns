@@ -442,6 +442,10 @@ ApiGlobe.prototype.createScenePlane = function(coordCarto, viewerDiv, boundingBo
 
 };
 
+ApiGlobe.prototype.addObject = function(object) {
+    this.scene.addObject(object);
+}
+
 ApiGlobe.prototype.update = function() {
 
     //!\\ TEMP

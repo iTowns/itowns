@@ -213,6 +213,10 @@ Scene.prototype.add = function(node, nodeProcess) {
     this.gfxEngine.add3DScene(node.getMesh());
 };
 
+Scene.prototype.addObject = function(object) {
+    this.gfxEngine.add3DScene(object);
+}
+
 Scene.prototype.getMap = function() {
     return this.map;
 };
