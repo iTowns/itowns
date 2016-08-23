@@ -24,6 +24,7 @@ import BoundingVolumeHierarchy from 'Scene/BoundingVolumeHierarchy';  // TODO: T
 import BuildingTile from 'Tiles/BuildingTile';  // TODO: TEMP
 import BuildingTileNodeProcess from 'Tiles/BuildingTileNodeProcess';  // TODO: TEMP
 import BuildingProvider from 'Core/Commander/Providers/BuildingProvider';  // TODO: TEMP
+import IoDriver_JSON from 'Core/Commander/Providers/IoDriver_JSON'  // TODO: TEMP
 
 var loaded = false;
 var eventLoaded = new CustomEvent('globe-loaded');
@@ -359,7 +360,23 @@ ApiGlobe.prototype.createScenePlane = function(coordCarto, viewerDiv, boundingBo
     // Test BoundingVolumeHierarchy
 
     // http://3d.oslandia.com/building?query=getCity&city=montreal
-    var bvh = new BoundingVolumeHierarchy(BuildingTile, [
+    var ioJson = new IoDriver_JSON();
+    ioJson.read("http://3d.oslandia.com/building?query=getCity&city=" + buildingLayerName).then(function(json) {
+        var bvh = new BoundingVolumeHierarchy(BuildingTile, json.tiles);
+        var np = new BuildingTileNodeProcess(this.scene.gfxEngine);
+        this.scene.add(bvh, np);
+        var buildingProvider = new BuildingProvider({srs: 'EPSG:3946', attributes: attributes, colorFunction: colorFunction, layer: buildingLayerName});
+
+        var buildingLayer = {
+            protocol: 'building',
+            id: 'building'
+        };
+        this.scene.managerCommand.addProtocolProvider('building', buildingProvider);
+
+        bvh.init(buildingLayer, this.scene.gfxEngine.normalRenderBuffer);
+        map.layersConfiguration.addGeometryLayer(buildingLayer);
+    }.bind(this));
+    /*var bvh = new BoundingVolumeHierarchy(BuildingTile, [
             {"id":"0/1/2","bbox":[301379.884,5040279.2183,4.9148,302867.0475,5042284.8294,74.8214]},
             {"id":"0/0/1","bbox":[299184.7101,5038057.45076,5.7899,301213.3173,5040298.7598,233.7539]},
             {"id":"0/0/0","bbox":[297244.8511,5038238.047,9.706018,299285.9168,5040297.3052,279.3466]},
@@ -383,7 +400,7 @@ ApiGlobe.prototype.createScenePlane = function(coordCarto, viewerDiv, boundingBo
     };
     this.scene.managerCommand.addProtocolProvider('building', buildingProvider);
 
-    bvh.init(buildingLayer, this.scene.gfxEngine.normalRenderBuffer);
+    bvh.init(buildingLayer, this.scene.gfxEngine.normalRenderBuffer);*/
 
     // Fin test BoundingVolumeHierarchy
 
@@ -430,7 +447,6 @@ ApiGlobe.prototype.createScenePlane = function(coordCarto, viewerDiv, boundingBo
 
     preprocessLayer(wgs84TileLayer, this.scene.managerCommand.getProtocolProvider(wgs84TileLayer.protocol));
     map.layersConfiguration.addGeometryLayer(wgs84TileLayer);
-    map.layersConfiguration.addGeometryLayer(buildingLayer);
 
     map.tiles.init(map.layersConfiguration.getGeometryLayers()[0]);
 

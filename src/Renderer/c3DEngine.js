@@ -131,7 +131,7 @@ function c3DEngine(scene, positionCamera, viewerDiv, debugMode, gLDebug) {
         this.scene3D.children[0].visible = false;
         this.scene3D.children[1].visible = false;
         this.scene3D.children[2].visible = false;
-        this.scene3D.children[3].visible = true;
+        if(this.scene3D.children[3]) this.scene3D.children[3].visible = true;
         this.changeStateNodesScene(RendererConstant.DEPTH, 3);
         this.renderer.render(this.scene3D, this.camera.camera3D, this.normalRenderBuffer, true);
 
@@ -146,7 +146,7 @@ function c3DEngine(scene, positionCamera, viewerDiv, debugMode, gLDebug) {
         this.scene3D.children[0].visible = true;
         this.scene3D.children[1].visible = true;
         this.scene3D.children[2].visible = true;
-        this.scene3D.children[3].visible = true;
+        if(this.scene3D.children[3]) this.scene3D.children[3].visible = true;
 
         this.renderer.render(this.scene3D, this.camera.camera3D);
 
