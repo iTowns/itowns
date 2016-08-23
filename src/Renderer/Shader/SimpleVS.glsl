@@ -16,6 +16,9 @@ varying float idx;
 uniform vec2 resolution;
 varying vec2 vScreenUV;
 
+attribute vec3 center;
+varying vec3 vCenter;
+
 // IE error : Initializer for const variable must initialize to a constant value
 //const vec3 dir =  normalize(vec3(1.0,1.0,0.5));
 
@@ -23,6 +26,8 @@ void main()
 {
   vec3 dir =  normalize(vec3(1.0,1.0,0.5));
   idx = geometryIndex;
+
+  vCenter = center;
 
   if(RTC == 0)
         gl_Position = projectionMatrix * modelViewMatrix * vec4( position,  1.0 );

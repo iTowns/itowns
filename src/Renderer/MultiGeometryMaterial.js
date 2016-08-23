@@ -13,7 +13,7 @@ function MultiGeometryMaterial(color, id, geometryCount) {
     //Constructor
     BasicMaterial.call(this, color, id);
 
-	this.fragmentShader = this.fragmentShaderHeader +
+	this.fragmentShader = "#extension GL_OES_standard_derivatives: enable\n" + this.fragmentShaderHeader +
         "#define GEOMETRY_COUNT " + geometryCount + "\n" + MultiGeometryFS;
 
     var colors = [];
