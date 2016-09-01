@@ -132,13 +132,22 @@ Camera.prototype.setRotation = function(rotation) {
 };
 
 Camera.prototype.getFrustum = function() {
-
-    this.camera3D.updateMatrix();
-    this.camera3D.updateMatrixWorld();
-    this.camera3D.matrixWorldInverse.getInverse(this.camera3D.matrixWorld);
+    this.updateMatrixWorld();
     this.frustum.setFromMatrix(new THREE.Matrix4().multiplyMatrices(this.camera3D.projectionMatrix, this.camera3D.matrixWorldInverse));
 
     return this.frustum;
 };
+
+Camera.prototype.getFrustumLocalSpace = function(position, quaternion) {
+    var m = new THREE.Matrix4();
+
+    m.makeRotationFromQuaternion(quaternion.inverse());
+    m.setPosition(position.negate().applyQuaternion(quaternion));
+
+    var f = new THREE.Frustum();
+    f.setFromMatrix(m.premultiply(this.camera3D.projectionMatrix));
+    return f;
+};
+
 
 export default Camera;
