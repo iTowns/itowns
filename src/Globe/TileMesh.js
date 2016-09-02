@@ -182,16 +182,10 @@ TileMesh.prototype.setTextureElevation = function setTextureElevation(elevation)
         return;
     }
 
-    let texture;
-    let offsetScale;
+    const offsetScale = elevation.pitch || new THREE.Vector3(0, 0, 1);
+    this.setBBoxZ(elevation.min, elevation.max);
 
-    if (elevation) {
-        texture = elevation.texture;
-        offsetScale = elevation.pitch || new THREE.Vector3(0, 0, 1);
-        this.setBBoxZ(elevation.min, elevation.max);
-    }
-
-    this.materials[RendererConstant.FINAL].setTexture(texture, l_ELEVATION, 0, offsetScale);
+    this.materials[RendererConstant.FINAL].setTexture(elevation.texture, l_ELEVATION, 0, offsetScale);
     this.materials[RendererConstant.DEPTH].uniforms.texturesCount.value = this.materials[RendererConstant.FINAL].loadedTexturesCount[0];
     this.materials[RendererConstant.ID].uniforms.texturesCount.value = this.materials[RendererConstant.FINAL].loadedTexturesCount[0];
 

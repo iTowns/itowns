@@ -159,15 +159,6 @@ WMTS_Provider.prototype.getXbilTexture = function getXbilTexture(tile, layer, pa
         result.texture.generateMipmaps = false;
         result.texture.magFilter = THREE.LinearFilter;
         result.texture.minFilter = THREE.LinearFilter;
-
-        // To compare with level tile
-        result.texture.url = result.url;
-
-        // In RGBA elevation texture LinearFilter give some errors with nodata value.
-        // need to rewrite sample function in shader
-        // result.texture.magFilter = THREE.NearestFilter;
-        // result.texture.minFilter = THREE.NearestFilter;
-
         this.cache.addRessource(url, { texture: result.texture, floatArray: result.floatArray });
 
         return result;
