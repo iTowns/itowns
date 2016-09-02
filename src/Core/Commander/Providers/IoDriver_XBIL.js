@@ -9,10 +9,9 @@ import IoDriver from 'Core/Commander/Providers/IoDriver';
 
 var portableXBIL = function portableXBIL(buffer) {
     this.floatArray = new Float32Array(buffer);
-    this.max = -1000000;
-    this.min = 1000000;
-    this.texture = -1;
-    this.level = -1;
+    this.max = undefined;
+    this.min = undefined;
+    this.texture = null;
 };
 
 
@@ -61,10 +60,6 @@ IoDriver_XBIL.prototype.parseXBil = function parseXBil(buffer, url) {
     var result = new portableXBIL(buffer);
 
     var elevation = this.computeMinMaxElevation(result.floatArray);
-
-    if (elevation.min === undefined || elevation.max === undefined) {
-        throw new Error('Error processing XBIL');
-    }
 
     result.min = elevation.min;
     result.max = elevation.max;

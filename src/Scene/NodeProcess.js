@@ -396,11 +396,11 @@ function updateNodeElevation(scene, quadtree, node, layersConfig, force) {
                     return;
                 }
 
-                if (terrain && terrain.texture) {
+                if (terrain.texture) {
                     terrain.texture.level = (ancestor || node).level;
                 }
 
-                if (terrain && terrain.max === undefined) {
+                if (terrain.max === undefined) {
                     terrain.min = (ancestor || node).bbox.bottom();
                     terrain.max = (ancestor || node).bbox.top();
                 }
