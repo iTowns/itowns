@@ -130,10 +130,8 @@ Scene.prototype.updateScene3D = function updateScene3D() {
 Scene.prototype.notifyChange = function notifyChange(delay) {
     this.needsRedraw = true;
 
-    window.clearInterval(this.timer);
-
     if (delay) {
-        this.timer = window.setTimeout(this.scheduleUpdate.bind(this), delay);
+        window.setTimeout(this.scheduleUpdate.bind(this), delay);
     } else {
         this.scheduleUpdate();
     }
@@ -216,8 +214,7 @@ Scene.prototype.scene3D = function scene3D() {
 Scene.prototype.add = function add(node, nodeProcess) {
     if (node instanceof Globe) {
         this.map = node;
-        nodeProcess = nodeProcess || new NodeProcess(this.currentCamera(), node.ellipsoid);
-        // this.quadTreeRequest(node.tiles, nodeProcess);
+        nodeProcess = nodeProcess || new NodeProcess(this, this.currentCamera(), node.ellipsoid);
     }
 
     this.layers.push({
