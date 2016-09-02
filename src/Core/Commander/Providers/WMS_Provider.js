@@ -126,14 +126,13 @@ WMS_Provider.prototype.getXbilTexture = function getXbilTexture(tile, layer, bbo
     var textureCache = this.cache.getRessource(url);
 
     if (textureCache !== undefined) {
-        return Promise.resolve(textureCache ? {
+        return Promise.resolve({
             pitch,
             texture: textureCache.texture,
             min: textureCache.min,
             max: textureCache.max,
-        } : null);
+        });
     }
-
 
     // bug #74
     // var limits = layer.tileMatrixSetLimits[coWMTS.zoom];
@@ -143,25 +142,18 @@ WMS_Provider.prototype.getXbilTexture = function getXbilTexture(tile, layer, bbo
     //     return Promise.resolve(texture);
     // }
     // -> bug #74
-
     return this._IoDriver.read(url).then((result) => {
-        if (result !== undefined) {
-            result.texture = this.getTextureFloat(result.floatArray);
-            result.texture.generateMipmaps = false;
-            result.texture.magFilter = THREE.LinearFilter;
-            result.texture.minFilter = THREE.LinearFilter;
-            result.pitch = pitch;
+        result.texture = this.getTextureFloat(result.floatArray);
+        result.texture.generateMipmaps = false;
+        result.texture.magFilter = THREE.LinearFilter;
+        result.texture.minFilter = THREE.LinearFilter;
+        result.pitch = pitch;
 
-            // In RGBA elevation texture LinearFilter give some errors with nodata value.
-            // need to rewrite sample function in shader
-            this.cache.addRessource(url, result);
+        // In RGBA elevation texture LinearFilter give some errors with nodata value.
+        // need to rewrite sample function in shader
+        this.cache.addRessource(url, result);
 
-            return result;
-        } else {
-            var texture = null;
-            this.cache.addRessource(url, texture);
-            return texture;
-        }
+        return result;
     });
 };
 
