@@ -173,6 +173,17 @@ ManagerCommands.prototype.getProviders = function getProviders() {
 };
 
 /**
+ * Custom error thrown when cancelling commands. Allows the caller to act differently if needed.
+ */
+function CancelledCommandException(command) {
+    this.command = command;
+}
+
+CancelledCommandException.prototype.toString = function toString() {
+    return `Cancelled command ${this.command.requester.id}/${this.command.layer.id}`;
+};
+
+/**
  */
 ManagerCommands.prototype.deQueue = function deQueue(queue) {
     var st = queue.storage;
@@ -181,7 +192,7 @@ ManagerCommands.prototype.deQueue = function deQueue(queue) {
 
         if (cmd.earlyDropFunction && cmd.earlyDropFunction(cmd)) {
             queue.counters.cancelled++;
-            cmd.reject(new Error(`command canceled ${cmd.requester.id}/${cmd.layer.id}`));
+            cmd.reject(new CancelledCommandException(cmd));
         } else {
             return cmd;
         }
@@ -196,6 +207,7 @@ ManagerCommands.prototype.wait = function wait() {
     this.eventsManager.wait();
 };
 
+export { CancelledCommandException };
 
 export default function (scene) {
     instanceCommandManager = instanceCommandManager || new ManagerCommands(scene);
