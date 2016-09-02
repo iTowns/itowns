@@ -22,9 +22,13 @@ function _instanciateQueue() {
             },
         }),
         counters: {
+            // commands in progress
             executing: 0,
+            // commands successfully executed
             executed: 0,
+            // commands failed
             failed: 0,
+            // commands cancelled
             cancelled: 0,
         },
         execute(cmd, provider, executingCounterUpToDate) {
@@ -36,15 +40,15 @@ function _instanciateQueue() {
             // Otherwise use a resolved Promise.
             var p = provider.executeCommand(cmd) || Promise.resolve();
 
-            return p.then(() => {
+            return p.then((result) => {
                 this.counters.executing--;
+                cmd.resolve(result);
                 this.counters.executed++;
-            },
-                        () => {
-                            this.counters.executing--;
-                            this.counters.executed++;
-                            this.counters.failed++;
-                        });
+            }, (err) => {
+                this.counters.executing--;
+                cmd.reject(err);
+                this.counters.failed++;
+            });
         },
     };
 }
@@ -119,8 +123,7 @@ ManagerCommands.prototype.addCommand = function addCommand(command) {
         }.bind(this);
 
         // We use a setTimeout to defer processing but we avoid the
-        // queue mechanism
-        // TODO: Why not use Promise?
+        // queue mechanism (why setTimeout and not Promise? see tasks vs microtasks priorities)
         window.setTimeout(runNow, 0);
     } else {
         q.storage.queue(command);

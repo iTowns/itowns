@@ -188,7 +188,7 @@ WMS_Provider.prototype.executeCommand = function executeCommand(command) {
             tile.bbox;
 
 
-        return func(tile, layer, bbox, pitch).then(result => command.resolve(result));
+        return func(tile, layer, bbox, pitch);
     } else {
         return Promise.reject(new Error(`Unsupported mimetype ${layer.format}`));
     }
