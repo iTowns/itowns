@@ -220,31 +220,30 @@ function findAncestorWithValidTextureForLayer(node, layerId) {
 
 function updateNodeFeature(quadtree, node, featureLayers) {
     for (var i = 0; i < featureLayers.length; i++) {
-            var layer = featureLayers[i];
-            var protocol = layer.protocol;
-            if(protocol.toLowerCase() == 'wfs') {
-               if (layer.tileInsideLimit(node, layer) && !node.content) {
-                    var args = {
-                        layer: layer
-                    };
+        var layer = featureLayers[i];
+        var protocol = layer.protocol;
+        if(protocol.toLowerCase() == 'wfs' || protocol.toLowerCase() == 'wfspoint' || protocol.toLowerCase() == 'wfsline') {
+            if (layer.tileInsideLimit(node, layer) && !node.content) {
+                var args = {
+                    layer: layer
+                };
 
-                    return quadtree.interCommand.request(args, node, refinementCommandCancellationFn).then(function(result) {
-                        //if request return empty jason, WFS_Provider.getFeatures return undefined
-                        if(result.feature !== undefined && result.feature != null) {
-                            //console.log(feature)
-                            var layer = quadtree.parent.batiments.children[0];
-                            quadtree.parent.batiments.visible = true;
-                            layer.add(result.feature);
-                            node.content = result.feature;
-                        }
-                    })
-                    .catch(function(/*err*/) {
-                    // Command has been canceled, no big deal, we just need to catch it
-                    });
-                }
+                /*return*/ quadtree.interCommand.request(args, node, refinementCommandCancellationFn).then(function(result) {
+                    //if request return empty json, WFS_Provider.getFeatures return undefined
+                    if(result.feature !== undefined && result.feature != null) {
+                        var layer = quadtree.parent.batiments.children[0];
+                        quadtree.parent.batiments.visible = true;
+                        layer.add(result.feature);
+                        node.content = result.feature;
+                    }
+                })
+                .catch(function(err) {
+                // Command has been canceled, no big deal, we just need to catch it
+                });
             }
+        }
     }
-};
+}
 
 function updateNodeImagery(quadtree, node, colorLayers) {
     var promises = [];
