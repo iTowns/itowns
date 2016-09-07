@@ -14,7 +14,6 @@ import TileProvider from 'Core/Commander/Providers/TileProvider';
 import loadGpx from 'Core/Commander/Providers/GpxUtils';
 import GeoCoordinate,{UNIT} from 'Core/Geographic/GeoCoordinate';
 import WFS_Provider from 'Core/Commander/Providers/WFS_Provider';
-import CoordCarto from 'Core/Geographic/CoordCarto';
 import Ellipsoid from 'Core/Math/Ellipsoid';
 import Projection from 'Core/Geographic/Projection';
 import CustomEvent from 'custom-event';
@@ -255,6 +254,9 @@ ApiGlobe.prototype.createSceneGlobe = function(coordCarto, viewerDiv) {
     this.scene.managerCommand.addProtocolProvider('tile', new TileProvider(ellipsoid));
     this.scene.managerCommand.addProtocolProvider('wms', new WMS_Provider({support : map.gLDebug}));
     this.scene.managerCommand.addProtocolProvider('wfs', new WFS_Provider());
+    //Feature provider made for the test purpose
+    this.scene.managerCommand.addProtocolProvider('wfsPoint', new WFS_Provider({}));
+    this.scene.managerCommand.addProtocolProvider('wfsLine', new WFS_Provider({}));
 
     var wgs84TileLayer = {
         protocol: 'tile',
