@@ -220,7 +220,7 @@ ApiGlobe.prototype.createSceneGlobe = function(coordCarto, viewerDiv) {
     var debugMode = false;
 
     //gLDebug = true; // true to support GLInspector addon
-    //debugMode = true;
+    debugMode = true;
 
     var ellipsoid = new Ellipsoid({
         x: 6378137,

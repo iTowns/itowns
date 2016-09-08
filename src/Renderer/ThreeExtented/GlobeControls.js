@@ -82,6 +82,7 @@ var initialZoom;
 /////////////////////////
 
 var ptScreenClick = new THREE.Vector2();
+var sizeRendering = new THREE.Vector2();
 var globeTarget = new THREE.Object3D();
 var movingGlobeTarget = new THREE.Vector3();
 
@@ -218,6 +219,8 @@ function GlobeControls(object, domElement, engine) {
     tSphere.setRadius(engine.size);
     spherical.radius = tSphere.radius;
 
+    sizeRendering.set(engine.width,engine.height);
+
     // so camera.up is the orbit axis
     //var quat = new THREE.Quaternion().setFromUnitVectors(object.up, new THREE.Vector3(0, 1, 0));
     //var quatInverse = quat.clone().inverse();
@@ -234,9 +237,11 @@ function GlobeControls(object, domElement, engine) {
         type: 'end'
     };
 
-    this.updateObject = function(object) {
+    this.updateObject = function(camera) {
 
-        snapShotCamera.init(object);
+        snapShotCamera.init(camera.camera3D);
+        sizeRendering.width = camera.width;
+        sizeRendering.height = camera.height;
 
     };
 
@@ -568,8 +573,12 @@ function GlobeControls(object, domElement, engine) {
 
             tSphere.setRadius(point.length());
 
-            mouse.x = (screenCoord.x / this.domElement.clientWidth) * 2 - 1;
-            mouse.y = -(screenCoord.y / this.domElement.clientHeight) * 2 + 1;
+            // mouse.x = (screenCoord.x / this.domElement.clientWidth) * 2 - 1;
+            // mouse.y = -(screenCoord.y / this.domElement.clientHeight) * 2 + 1;
+
+
+            mouse.x = (screenCoord.x / sizeRendering.width) * 2 - 1;
+            mouse.y = -(screenCoord.y / sizeRendering.height) * 2 + 1;
 
             snapShotCamera.updateRay(ray,mouse);
             // pick position on tSphere
@@ -596,10 +605,10 @@ function GlobeControls(object, domElement, engine) {
 
             // rotating across whole screen goes 360 degrees around
             if (!space) {
-                this.rotateLeft(2 * Math.PI * rotateDelta.x / this.domElement.clientWidth * this.rotateSpeed);
+                this.rotateLeft(2 * Math.PI * rotateDelta.x / sizeRendering.width * this.rotateSpeed);
 
                 // rotating up and down along whole screen attempts to go 360, but limited to 180
-                this.rotateUp(2 * Math.PI * rotateDelta.y / this.domElement.clientHeight * this.rotateSpeed);
+                this.rotateUp(2 * Math.PI * rotateDelta.y / sizeRendering.height * this.rotateSpeed);
 
             } else {
 
@@ -645,8 +654,8 @@ function GlobeControls(object, domElement, engine) {
 
             var mouse = new THREE.Vector2();
 
-            mouse.x = ((event.clientX - event.target.offsetLeft) / this.domElement.clientWidth) * 2 - 1;
-            mouse.y = -((event.clientY - event.target.offsetTop) / this.domElement.clientHeight) * 2 + 1;
+            mouse.x = ((event.clientX - event.target.offsetLeft) / sizeRendering.width) * 2 - 1;
+            mouse.y = -((event.clientY - event.target.offsetTop) / sizeRendering.height) * 2 + 1;
 
             var ray = new THREE.Ray();
 
@@ -1123,9 +1132,14 @@ GlobeControls.prototype.getAzimuthalAngle = function() {
 
 };
 
+GlobeControls.prototype.moveTarget = function() {
+
+    return movingGlobeTarget;
+
+};
+
 // End API functions
 // # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-
 
 GlobeControls.prototype.reset = function() {
 
@@ -1143,6 +1157,5 @@ GlobeControls.prototype.reset = function() {
     this.updateControls();
 
 };
-
 
 export default GlobeControls;
