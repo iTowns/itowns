@@ -30,6 +30,7 @@ uniform int         layerVisible;
 uniform int         nColorLayer;
 uniform int         uuid;
 uniform int         debug;
+uniform int         RTC;
 uniform vec3        lightPosition;
 uniform int         lightingOn;
 
@@ -158,7 +159,10 @@ void main() {
         }
 
         // Fog
-        gl_FragColor = mix(fogColor, diffuseColor, fog );
+        if(RTC == 1)
+            gl_FragColor = mix(fogColor, diffuseColor, fog );
+        else
+            gl_FragColor = diffuseColor;
 
         gl_FragColor.a = 1.0;
 

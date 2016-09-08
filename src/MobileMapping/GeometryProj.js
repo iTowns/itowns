@@ -18,9 +18,6 @@ GeometryProj.prototype.enableRTC = function(enable) {
     this.material.enableRTC(enable);
 };
 
-GeometryProj.prototype.enablePickingRender = function(enable) {
-    this.material.enablePickingRender(enable);
-};
 
 GeometryProj.prototype.setFog = function(fog) {
     this.material.setFogDistance(fog);
