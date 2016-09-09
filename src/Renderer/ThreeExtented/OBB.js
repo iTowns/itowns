@@ -58,8 +58,8 @@ OBB.prototype.addHeight = function(bbox) {
 
     var depth = Math.abs(this.natBox.min.z - this.natBox.max.z);
     //
-    this.box3D.min.z = this.natBox.min.z + bbox.minCarto.altitude;
-    this.box3D.max.z = this.natBox.max.z + bbox.maxCarto.altitude;
+    this.box3D.min.z = this.natBox.min.z + bbox.bottom();
+    this.box3D.max.z = this.natBox.max.z + bbox.top();
 
     // TODO à vérifier --->
 

@@ -12,7 +12,7 @@ import TileMesh from 'Globe/TileMesh';
 import Atmosphere from 'Globe/Atmosphere';
 import Clouds from 'Globe/Clouds';
 import Capabilities from 'Core/System/Capabilities';
-import CoordCarto from 'Core/Geographic/CoordCarto';
+import GeoCoordinate,{UNIT} from 'Core/Geographic/GeoCoordinate';
 import BasicMaterial from 'Renderer/BasicMaterial';
 import LayersConfiguration from 'Scene/LayersConfiguration';
 import THREE from 'THREE';
@@ -23,7 +23,6 @@ import THREE from 'THREE';
 const schemeTile_0 = 0;
 // bbox longitude(-180,180),latitude(-90,90)
 const schemeTile_1 = 1;
-/* eslint-disable no-alert, no-console */
 /* eslint-enable */
 
 function Globe(ellipsoid, gLDebug) {
@@ -62,15 +61,14 @@ function Globe(ellipsoid, gLDebug) {
 
     var geometry = new THREE.SphereGeometry(5);
     var batiment = new THREE.Mesh(geometry, material);
-    var position = this.ellipsoid.cartographicToCartesian(new CoordCarto().setFromDegreeGeo(0, 48.87, 200));
+
+    var position = this.ellipsoid.cartographicToCartesian(new GeoCoordinate(0, 48.87, 200,UNIT.DEGREE));
 
     position = new THREE.Vector3(4201215.424138484, 171429.945145441, 4779294.873914789);
 
     // http://www.apsalin.com/convert-geodetic-to-cartesian.aspx
     // 48.846931,2.337219,50
     position = new THREE.Vector3(4201801.65418896, 171495.727885073, 4779411.45896233);
-
-    //position = this.ellipsoid.cartographicToCartesian(new CoordCarto().setFromDegreeGeo(48.87, 0, 200));
 
     batiment.frustumCulled = false;
     //material.wireframe      = true;
@@ -79,7 +77,7 @@ function Globe(ellipsoid, gLDebug) {
     var material2 = new BasicMaterial(new THREE.Color(1, 0.5, 1));
     material2.visible = false;
     var batiment2 = new THREE.Mesh(geometry, material2);
-    var position2 = this.ellipsoid.cartographicToCartesian(new CoordCarto().setFromDegreeGeo(0.001, 48.87, 100));
+    var position2 = this.ellipsoid.cartographicToCartesian(new GeoCoordinate(0.001, 48.87, 100,UNIT.DEGREE));
     batiment2.frustumCulled = false;
     material2.wireframe = true;
     batiment2.position.copy(position2);

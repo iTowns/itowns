@@ -15,6 +15,7 @@ import Projection from 'Core/Geographic/Projection';
 import CacheRessource from 'Core/Commander/Providers/CacheRessource';
 import mE from 'Core/Math/MathExtented';
 import BoundingBox from 'Scene/BoundingBox';
+import {UNIT} from 'Core/Geographic/GeoCoordinate';
 
 /**
  * Return url wmts MNT
@@ -51,12 +52,10 @@ WMS_Provider.prototype.url = function(bbox,layer) {
 
 WMS_Provider.prototype.customUrl = function(url,bbox) {
 
-    var bboxDeg = bbox.toDegree();
-
-    var bboxDegS = bboxDeg.south + "," +
-                    bboxDeg.west + "," +
-                    bboxDeg.north + "," +
-                    bboxDeg.east;
+    var bboxDegS = bbox.south(UNIT.DEGREE) + "," +
+                    bbox.west(UNIT.DEGREE) + "," +
+                    bbox.north(UNIT.DEGREE) + "," +
+                    bbox.east(UNIT.DEGREE);
 
     var urld = url.replace('%bbox',bboxDegS);
 

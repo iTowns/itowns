@@ -6,7 +6,7 @@
 
 import CoordWMTS from 'Core/Geographic/CoordWMTS';
 import MathExt from 'Core/Math/MathExtented';
-import CoordCarto from 'Core/Geographic/CoordCarto';
+import GeoCoordinate from 'Core/Geographic/GeoCoordinate';
 import THREE from 'THREE';
 
 
@@ -90,8 +90,8 @@ Projection.prototype.WMTS_WGS84ToWMTS_PM = function(cWMTS, bbox) {
     //var sY      = this.WGS84ToY(this.WGS84LatitudeClamp(-Math.PI*0.5)) - this.WGS84ToY(this.WGS84LatitudeClamp(Math.PI*0.5));
     var sizeRow = 1.0 / nbRow;
 
-    var yMin = this.WGS84ToY(this.WGS84LatitudeClamp(bbox.north));
-    var yMax = this.WGS84ToY(this.WGS84LatitudeClamp(bbox.south));
+    var yMin = this.WGS84ToY(this.WGS84LatitudeClamp(bbox.north()));
+    var yMax = this.WGS84ToY(this.WGS84LatitudeClamp(bbox.south()));
 
     var minRow, maxRow, min, max;
 
@@ -135,12 +135,12 @@ Projection.prototype.WMS_WGS84Parent = function(bbox, bboxParent) {
     var scale = bbox.dimension.x / bboxParent.dimension.x;
 
     var x =
-        Math.abs(bbox.west - bboxParent.west) /
+        Math.abs(bbox.west() - bboxParent.west()) /
         bboxParent.dimension.x;
     var y =
         Math.abs(
-            bbox.south + bbox.dimension.y -
-            (bboxParent.south + bboxParent.dimension.y)) /
+            bbox.south() + bbox.dimension.y -
+            (bboxParent.south() + bboxParent.dimension.y)) /
         bboxParent.dimension.x;
 
     return new THREE.Vector3(x, y, scale);
@@ -163,11 +163,11 @@ Projection.prototype.WGS84toWMTS = function(bbox) {
 };
 
 Projection.prototype.UnitaryToLongitudeWGS84 = function(u, projection, bbox) {
-    projection.longitude = bbox.west + u * bbox.dimension.x;
+    projection.setLongitude(bbox.west() + u * bbox.dimension.x);
 };
 
 Projection.prototype.UnitaryToLatitudeWGS84 = function(v, projection, bbox) {
-    projection.latitude = bbox.south + v * bbox.dimension.y;
+    projection.setLatitude(bbox.south() + v * bbox.dimension.y);
 };
 
 Projection.prototype.cartesianToGeo = function(position) {
@@ -196,7 +196,7 @@ Projection.prototype.cartesianToGeo = function(position) {
     var h = (rsqXY * Math.cos(phi)) + p.z * Math.sin(phi) - a * Math.sqrt(1 - e * e * Math.sin(phi) * Math.sin(phi));
 
     //TODO: return only WGS84 coordinate
-    return new CoordCarto(-theta , phi, h);
+    return new GeoCoordinate(-theta , phi, h);
 };
 
 Projection.prototype.wgs84_to_lambert93 = function(latitude, longitude) //, x93, y93)

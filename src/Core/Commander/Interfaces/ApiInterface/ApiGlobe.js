@@ -12,7 +12,7 @@ import WMTS_Provider from 'Core/Commander/Providers/WMTS_Provider';
 import WMS_Provider from 'Core/Commander/Providers/WMS_Provider';
 import TileProvider from 'Core/Commander/Providers/TileProvider';
 import loadGpx from 'Core/Commander/Providers/GpxUtils';
-import CoordCarto from 'Core/Geographic/CoordCarto';
+import GeoCoordinate,{UNIT} from 'Core/Geographic/GeoCoordinate';
 import Ellipsoid from 'Core/Math/Ellipsoid';
 import Projection from 'Core/Geographic/Projection';
 import CustomEvent from 'custom-event';
@@ -221,7 +221,9 @@ ApiGlobe.prototype.createSceneGlobe = function(coordCarto, viewerDiv) {
         z: 6378137
     });
 
-    this.scene = Scene(coordCarto, ellipsoid, viewerDiv, debugMode, gLDebug);
+    var coordinate = new GeoCoordinate().copy(coordCarto,UNIT.DEGREE);
+
+    this.scene = Scene(coordinate, ellipsoid, viewerDiv, debugMode, gLDebug);
 
     var map = new Globe(ellipsoid, gLDebug);
 
@@ -231,6 +233,7 @@ ApiGlobe.prototype.createSceneGlobe = function(coordCarto, viewerDiv) {
     var wmtsProvider = new WMTS_Provider({
         support: map.gLDebug
     });
+
     this.scene.managerCommand.addProtocolProvider('wmts', wmtsProvider);
     this.scene.managerCommand.addProtocolProvider('wmtsc', wmtsProvider);
     this.scene.managerCommand.addProtocolProvider('tile', new TileProvider(ellipsoid));
@@ -509,7 +512,7 @@ ApiGlobe.prototype.resetHeading = function( /*bool*/ ) {
  */
 
 ApiGlobe.prototype.computeDistance = function(p1, p2) {
-    return this.scene.getEllipsoid().computeDistance(new CoordCarto().setFromDegreeGeo(p1.longitude, p1.latitude, p1.altitude), new CoordCarto().setFromDegreeGeo(p2.longitude, p2.latitude, p2.altitude));
+    return this.scene.getEllipsoid().computeDistance(new GeoCoordinate().copy(p1), new GeoCoordinate().copy(p2));
 };
 
 /**
@@ -519,9 +522,9 @@ ApiGlobe.prototype.computeDistance = function(p1, p2) {
  * @param {Position} position - The position on the scene.
  */
 
-ApiGlobe.prototype.setCenter = function(position) {
-    //        var position3D = this.scene.getEllipsoid().cartographicToCartesian(position);
-    var position3D = this.scene.getEllipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(position.longitude, position.latitude, position.altitude));
+ApiGlobe.prototype.setCenter = function(coordinates) {
+
+    var position3D = this.scene.getEllipsoid().cartographicToCartesian(new GeoCoordinate().copyFromDegree(coordinates));
     this.scene.currentControls().setCenter(position3D);
 };
 
@@ -586,17 +589,17 @@ ApiGlobe.prototype.launchCommandApi = function() {
     //        this.setHeading(180);
     //        this.resetTilt();
     //        this.resetHeading();
-    //        var p1 = new CoordCarto(2.4347047,48.8472568,0);
-    //        var p2 = new CoordCarto(2.4345599,48.8450221,0);
+    //        var p1 = new GeoCoordinate(2.4347047,48.8472568,0);
+    //        var p2 = new GeoCoordinate(2.4345599,48.8450221,0);
     //        console.log(this.computeDistance({longitude:2.4347047,latitude:48.8472568,altitude:0},{longitude:2.4345599,latitude:48.8450221,altitude:0}));
 
-    //var p = new CoordCarto(-74.0059700 ,40.7142700,0); //NY
+    //var p = new GeoCoordinate(-74.0059700 ,40.7142700,0); //NY
 
-    //        var p = new CoordCarto().setFromDegreeGeo(coordCarto.lon, coordCarto.lat, coordCarto.alt))
-    //        var p = new CoordCarto().setFromDegreeGeo(2,20,0); //NY
+    //        var p = new GeoCoordinate(coordCarto.lon, coordCarto.lat, coordCarto.alt,UNIT.DEGREE)
+    //        var p = new GeoCoordinate(2,20,0,UNIT.DEGREE); //NY
     //
     //        this.setCenter(p);
-    //        var p2 = new CoordCarto().setFromDegreeGeo(2.4347047,48.8472568,0); //Paris
+    //        var p2 = new GeoCoordinate().setFromDegree(2.4347047,48.8472568,0); //Paris
     //        this.setCenter(p2);
     //        this.setCenter({lon:-74,lat:40, alt:0});
     //        this.testTilt();

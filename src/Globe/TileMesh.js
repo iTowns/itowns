@@ -14,7 +14,7 @@
  * @param {type} OBBHelper
  * @param {type} SphereHelper
  * @param {type} LayeredMaterial
- * @param {type} CoordCarto
+ * @param {type} GeoCoordinate
  * @returns {EllipsoidTileMesh_L20.TileMesh}
  */
 import NodeMesh from 'Renderer/NodeMesh';
@@ -247,8 +247,8 @@ TileMesh.prototype.setTextureElevation = function(elevation) {
             texture = ancestor.materials[RendererConstant.FINAL].Textures[l_ELEVATION][0];
             var image = texture.image;
 
-            minMax.y = ancestor.bbox.maxCarto.altitude;
-            minMax.x = ancestor.bbox.minCarto.altitude;
+            minMax.y = ancestor.bbox.top();
+            minMax.x = ancestor.bbox.bottom();
 
             this.parseBufferElevation(image, minMax, pitScale);
 
@@ -278,7 +278,7 @@ TileMesh.prototype.setTextureElevation = function(elevation) {
 
 TileMesh.prototype.setBBoxZ = function(min, max) {
 
-    if (Math.floor(min) !== Math.floor(this.bbox.minCarto.altitude) || Math.floor(max) !== Math.floor(this.bbox.maxCarto.altitude)) {
+    if (Math.floor(min) !== Math.floor(this.bbox.bottom()) || Math.floor(max) !== Math.floor(this.bbox.top())) {
 
         this.bbox.setBBoxZ(min, max);
         var delta = this.geometry.OBB.addHeight(this.bbox);

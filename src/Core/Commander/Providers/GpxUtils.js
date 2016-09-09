@@ -6,7 +6,7 @@
 
 import THREE from 'THREE';
 import IoDriverXML from 'Core/Commander/Providers/IoDriverXML';
-import CoordCarto from 'Core/Geographic/CoordCarto';
+import GeoCoordinate,{UNIT} from 'Core/Geographic/GeoCoordinate';
 import ItownsLine from 'Core/Commander/Providers/ItownsLine';
 import ItownsPoint from 'Core/Commander/Providers/ItownsPoint';
 
@@ -20,13 +20,12 @@ function _gGpxToWTrackPointsArray(gpxXML) {
 }
 
 function _gpxPtToCartesian(pt,ellipsoid) {
-    var coordCarto = new CoordCarto();
 
     var longitude = Number(pt.attributes.lon.nodeValue);
     var latitude = Number(pt.attributes.lat.nodeValue);
     var elevation = Number(pt.getElementsByTagName("ele")[0].childNodes[0].nodeValue);
 
-    return ellipsoid.cartographicToCartesian(coordCarto.setFromDegreeGeo(longitude,latitude,elevation));
+    return ellipsoid.cartographicToCartesian(new GeoCoordinate(longitude,latitude,elevation,UNIT.DEGREE));
 }
 
 function _gpxToWayPointsMesh(gpxXML,ellipsoid) {
