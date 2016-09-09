@@ -92,6 +92,9 @@ BrowseTree.prototype._selectNode = function(node) {
             this.selectedNode = node;
             /* eslint-disable no-alert, no-console */
             console.info(node);
+            console.info(node.bbox.minCarto);
+            console.info(node.bbox.maxCarto);
+            console.info(node.tileCoord);
             /* eslint-enable no-alert, no-console */
         }
     }
