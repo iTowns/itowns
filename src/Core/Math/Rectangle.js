@@ -6,10 +6,10 @@
 import defaultValue from 'Core/defaultValue';
 
 function Rectangle(options) {
-    this._west  = defaultValue(options.west, 0);
-    this._south = defaultValue(options.south, 0);
-    this._east  = defaultValue(options.east, 0);
-    this._north = defaultValue(options.north, 0);
+    this._west  = defaultValue(options.west(), 0);
+    this._south = defaultValue(options.south(), 0);
+    this._east  = defaultValue(options.east(), 0);
+    this._north = defaultValue(options.north(), 0);
 }
 
 Rectangle.prototype.getWest = function(){

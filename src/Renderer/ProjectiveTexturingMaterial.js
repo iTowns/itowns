@@ -12,7 +12,7 @@ import Ori from 'MobileMapping/Ori';
 import Shader from 'MobileMapping/Shader';
 import url from 'url';
 import Ellipsoid from 'Core/Math/Ellipsoid';
-import CoordCarto from 'Core/Geographic/CoordCarto';
+import GeoCoordinate,{UNIT} from 'Core/Geographic/GeoCoordinate';
 
 window.requestAnimSelectionAlpha = (function() {
     return window.requestAnimationFrame ||
@@ -74,7 +74,7 @@ var ProjectiveTexturingMaterial = {
 
         // Then correct with position on ellipsoid
         // Orientation on normal
-        var posPanoWGS84 = new CoordCarto().setFromDegreeGeo(panoInfo.longitude, panoInfo.latitude, panoInfo.altitude);
+        var posPanoWGS84 = new GeoCoordinate(panoInfo.longitude, panoInfo.latitude, panoInfo.altitude,UNIT.DEGREE);
         var posPanoCartesian = ellipsoid.cartographicToCartesian(posPanoWGS84);
 
         var normal = ellipsoid.geodeticSurfaceNormalCartographic(posPanoWGS84);
@@ -149,7 +149,7 @@ var ProjectiveTexturingMaterial = {
 
     createShaderMat: function(panoInfo, rot, pivot) {
 
-        var posPanoWGS84 = new CoordCarto().setFromDegreeGeo(panoInfo.longitude, panoInfo.latitude, panoInfo.altitude);
+        var posPanoWGS84 = new GeoCoordinate(panoInfo.longitude, panoInfo.latitude, panoInfo.altitude,UNIT.DEGREE);
         var posPanoCartesian = ellipsoid.cartographicToCartesian(posPanoWGS84);
         //console.log("posPanoCartesian: ",posPanoCartesian);
         var spherePosPano = new THREE.Mesh(new THREE.SphereGeometry(0.5, 12, 12), new THREE.MeshBasicMaterial({
@@ -270,7 +270,7 @@ var ProjectiveTexturingMaterial = {
         var matRotationFrame = this.getCameraFrameRotation(panoInfo);
 
         // compute translation
-        var posPanoWGS84 = new CoordCarto().setFromDegreeGeo(panoInfo.longitude, panoInfo.latitude, panoInfo.altitude);
+        var posPanoWGS84 = new GeoCoordinate(panoInfo.longitude, panoInfo.latitude, panoInfo.altitude,UNIT.DEGREE);
         var posPanoCartesian = ellipsoid.cartographicToCartesian(posPanoWGS84);
         var posPiv = posPanoCartesian.clone().sub(pivot);
         var posFrameWithPivot = new THREE.Vector4(posPiv.x, posPiv.y, posPiv.z, 1.);
