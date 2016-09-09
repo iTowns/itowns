@@ -36,8 +36,8 @@ highp float decode32(highp vec4 rgba) {
 
 void main() {
 
-        vUv_WGS84    = uv_wgs84;
-        vUv_PM    = uv_pm;
+        vUv_WGS84 = uv_wgs84;
+        vUv_PM = uv_pm;
 
         vec4 vPosition;
 

@@ -13,7 +13,7 @@ import defaultValue from 'Core/defaultValue';
 import THREE from 'THREE';
 import Projection from 'Core/Geographic/Projection';
 import CacheRessource from 'Core/Commander/Providers/CacheRessource';
-import BoundingBox from 'Scene/BoundingBox';
+// import BoundingBox from 'Scene/BoundingBox';
 
 /**
  * Return url wmts MNT
@@ -51,13 +51,15 @@ WMS_Provider.prototype.customUrl = function(url,coord) {
     //convert radian to degree, lon is added a offset of Pi
     //to align axisgit  to card center
 
-    var bbox = coord.minCarto.latitude * 180.0 / Math.PI +
+
+
+    var bbox = (coord.minCarto.latitude) * 180.0 / Math.PI +
                 "," +
-                (coord.minCarto.longitude - Math.PI)* 180.0 / Math.PI +
+                (coord.minCarto.longitude >= Math.PI ? -(Math.PI * 2.0 - coord.minCarto.longitude) : coord.minCarto.longitude)* 180.0 / Math.PI +
                 ","+
                coord.maxCarto.latitude* 180.0 / Math.PI +
                "," +
-               (coord.maxCarto.longitude - Math.PI )*180.0 / Math.PI;
+               (coord.maxCarto.longitude >= Math.PI ? -(Math.PI * 2.0 - coord.maxCarto.longitude) : coord.maxCarto.longitude)*180.0 / Math.PI;
 
     var urld = url.replace('%bbox',bbox.toString());
 
@@ -88,13 +90,14 @@ WMS_Provider.prototype.preprocessDataLayer = function(layer){
                   "&HEIGHT=" + layer.width;
 };
 
-WMS_Provider.prototype.tileInsideLimit = function(tile,layer) {
-    var bbox = tile.bbox;
+WMS_Provider.prototype.tileInsideLimit = function(tile/*,layer*/) {
     // shifting longitude because of issue #19
-    var west =  layer.bbox[0]*Math.PI/180.0 + Math.PI;
-    var east =  layer.bbox[2]*Math.PI/180.0 + Math.PI;
-    var bboxRegion = new BoundingBox(west, east, layer.bbox[1]*Math.PI/180.0, layer.bbox[3]*Math.PI/180.0, 0, 0, 0);
-    return bboxRegion.intersect(bbox);
+    // var bbox = tile.bbox;
+    // var west =  layer.bbox[0]*Math.PI/180.0;
+    // var east =  layer.bbox[2]*Math.PI/180.0;
+
+    // var bboxRegion = new BoundingBox(west, east, layer.bbox[1]*Math.PI/180.0, layer.bbox[3]*Math.PI/180.0, 0, 0, 0);
+    return tile.level > 2;// && bboxRegion.intersect(bbox);
 };
 
 WMS_Provider.prototype.getColorTexture = function(tile, layer, parameters) {

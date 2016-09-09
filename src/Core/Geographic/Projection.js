@@ -156,7 +156,7 @@ Projection.prototype.WGS84toWMTS = function(bbox) {
     var uX = MathExt.TWO_PI / nX;
     var uY = MathExt.PI / nY;
 
-    var col = Math.floor(bbox.center.x / uX);
+    var col = Math.floor(((MathExt.PI + bbox.center.x)%(2*Math.PI) )/ uX);
     var row = Math.floor(nY - (MathExt.PI_OV_TWO + bbox.center.y) / uY);
 
     return new CoordWMTS(zoom, row, col);
@@ -172,8 +172,9 @@ Projection.prototype.UnitaryToLatitudeWGS84 = function(v, projection, bbox) {
 
 Projection.prototype.cartesianToGeo = function(position) {
 
+    // TODO: warning switch coord
     var p = position.clone();
-    p.x = -position.x;
+    p.x = position.x;
     p.y = position.z;
     p.z = position.y;
 
@@ -194,12 +195,9 @@ Projection.prototype.cartesianToGeo = function(position) {
 
     var h = (rsqXY * Math.cos(phi)) + p.z * Math.sin(phi) - a * Math.sqrt(1 - e * e * Math.sin(phi) * Math.sin(phi));
 
-    var coord = new CoordCarto(theta, phi, h);
-
-    return coord;
-    //console.log(theta / Math.PI * 180 + ' ' + phi / Math.PI * 180 + ' ' + h);
+    //TODO: return only WGS84 coordinate
+    return new CoordCarto(-theta , phi, h);
 };
-
 
 Projection.prototype.wgs84_to_lambert93 = function(latitude, longitude) //, x93, y93)
     {
