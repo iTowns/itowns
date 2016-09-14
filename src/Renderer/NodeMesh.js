@@ -7,7 +7,7 @@
 
 
 import Node from 'Scene/Node';
-import THREE from 'THREE';
+import * as THREE from 'THREE';
 
 
 var NodeMesh = function() {

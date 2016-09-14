@@ -6,7 +6,7 @@
  * Description: Tuile géométrique. Buffer des vertex et des faces
  */
 /* global Float32Array*/
-import THREE from 'THREE';
+import * as THREE from 'THREE';
 import defaultValue from 'Core/defaultValue';
 import JavaTools from 'Core/System/JavaTools';
 import CacheRessource from 'Core/Commander/Providers/CacheRessource';

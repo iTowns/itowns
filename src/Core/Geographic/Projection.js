@@ -7,7 +7,7 @@
 import CoordWMTS from 'Core/Geographic/CoordWMTS';
 import MathExt from 'Core/Math/MathExtented';
 import GeoCoordinate from 'Core/Geographic/GeoCoordinate';
-import THREE from 'THREE';
+import * as THREE from 'THREE';
 
 
 function Projection() {

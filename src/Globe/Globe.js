@@ -15,7 +15,7 @@ import Capabilities from 'Core/System/Capabilities';
 import GeoCoordinate,{UNIT} from 'Core/Geographic/GeoCoordinate';
 import BasicMaterial from 'Renderer/BasicMaterial';
 import LayersConfiguration from 'Scene/LayersConfiguration';
-import THREE from 'THREE';
+import * as THREE from 'THREE';
 
 
 /* eslint-disable */

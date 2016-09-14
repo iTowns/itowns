@@ -7,7 +7,7 @@
 import defaultValue from 'Core/defaultValue';
 import mE from 'Core/Math/MathExtented';
 import Point2D from 'Core/Math/Point2D';
-import THREE from 'THREE';
+import * as THREE from 'THREE';
 import GeoCoordinate from 'Core/Geographic/GeoCoordinate';
 
 /**

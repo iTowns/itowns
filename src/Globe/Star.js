@@ -7,7 +7,7 @@
 
 import NodeMesh from 'Renderer/NodeMesh';
 import StarGeometry from 'StarGeometry';
-import THREE from 'three';
+import * as THREE from 'THREE';
 
 
 
