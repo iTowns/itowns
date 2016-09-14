@@ -72,7 +72,7 @@ MobileMappingLayer.prototype.initiatePanoramic = function(imageOpt) {
 
 MobileMappingLayer.prototype.updateData = function() {
 
-    var pos = gfxEngine().controls.getPointGlobe();
+    var pos = gfxEngine().controls.getPickingPosition();
     var posWGS84 = new Projection().cartesianToGeo(pos);
     var lonDeg = posWGS84.longitude / Math.PI * 180;
     var latDeg = posWGS84.latitude / Math.PI * 180;

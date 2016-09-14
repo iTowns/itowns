@@ -78,4 +78,52 @@ MathExt.arrayRadToDeg = function(arrayDeg)
 	}
 };
 
+// TODO: Function in test :
+MathExt.step = function(val,stepVal)
+{
+    if(val<stepVal)
+        return 0.0;
+    else
+        return 1.0;
+
+};
+
+MathExt.exp2 = function(expo)
+{
+    return Math.pow(2,expo);
+};
+
+MathExt.parseFloat2= function(str) {
+    var float = 0, sign, /*order,*/ mantissa,exp,
+    int = 0, multi = 1;
+    if (/^0x/.exec(str)) {
+        int = parseInt(str,16);
+    }else{
+        for (var i = str.length -1; i >=0; i -= 1) {
+            if (str.charCodeAt(i)>255) {
+                //console.log('Wrong string parametr');
+                return false;
+            }
+            int += str.charCodeAt(i) * multi;
+            multi *= 256;
+        }
+    }
+    sign = (int>>>31)?-1:1;
+    exp = (int >>> 23 & 0xff) - 127;
+    mantissa = ((int & 0x7fffff) + 0x800000).toString(2);
+    for (i=0; i<mantissa.length; i+=1){
+        float += parseInt(mantissa[i])? Math.pow(2,exp):0;
+        exp--;
+    }
+    return float*sign;
+}
+
+MathExt.decode32= function(rgba) {
+    var Sign = 1.0 - this.step(128.0,rgba[0])*2.0;
+    var Exponent = 2.0 * (rgba[0]%128.0) + this.step(128.0,rgba[1]) - 127.0;
+    var Mantissa = (rgba[1]%128.0)*65536.0 + rgba[2]*256.0 +rgba[3] + this.parseFloat2(0x800000);
+    var Result =  Sign * this.exp2(Exponent) * (Mantissa * this.exp2(-23.0 ));
+    return Result;
+}
+
 export default MathExt;

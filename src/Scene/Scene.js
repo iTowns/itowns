@@ -299,7 +299,7 @@ Scene.prototype.orbit = function(value) {
     this.orbitOn = value;
 };
 
-export default function(coordCarto, debugMode, gLDebug) {
-    instanceScene = instanceScene || new Scene(coordCarto, debugMode, gLDebug);
+export default function(coordinate, ellipsoid, viewerDiv, debugMode, gLDebug) {
+    instanceScene = instanceScene || new Scene(coordinate, ellipsoid, viewerDiv, debugMode, gLDebug);
     return instanceScene;
 }
