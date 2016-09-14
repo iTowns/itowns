@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-import THREE from 'THREE';
+import * as THREE from 'THREE';
 import BasicMaterial from 'Renderer/BasicMaterial';
 import LineVS from 'Renderer/Shader/LineVS.glsl';
 import LineFS from 'Renderer/Shader/LineFS.glsl';

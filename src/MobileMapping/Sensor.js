@@ -4,7 +4,7 @@
  */
 
 
-import THREE from 'three';
+import * as THREE from 'THREE';
 
 
 var Sensor = function(infos) {

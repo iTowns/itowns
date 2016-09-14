@@ -21,7 +21,7 @@ import NodeMesh from 'Renderer/NodeMesh';
 import TileGeometry from 'Globe/TileGeometry';
 import BoundingBox from 'Scene/BoundingBox';
 import defaultValue from 'Core/defaultValue';
-import THREE from 'THREE';
+import * as THREE from 'THREE';
 import OBBHelper from 'OBBHelper';
 import SphereHelper from 'SphereHelper';
 import LayeredMaterial from 'Renderer/LayeredMaterial';

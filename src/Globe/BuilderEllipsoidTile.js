@@ -1,5 +1,5 @@
 import GeoCoordinate from 'Core/Geographic/GeoCoordinate';
-import THREE from 'THREE';
+import * as THREE from 'THREE';
 import OBB from 'Renderer/ThreeExtented/OBB';
 
 function BuilderEllipsoidTile(model, projector) {

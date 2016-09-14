@@ -1,4 +1,4 @@
-import THREE from 'THREE';
+import * as THREE from 'THREE';
 import ItownsPointMaterial from 'Renderer/ItownsPointMaterial';
 
 
