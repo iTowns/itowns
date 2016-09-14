@@ -22,7 +22,7 @@ define('Renderer/BasicMaterial', ['THREE',
 
         this.vertexShader = SimpleVS;
         this.fragmentShader = SimpleFS;
-
+        this.transparent = true;
         this.uniforms = {
             diffuseColor: {
                 type: "c",

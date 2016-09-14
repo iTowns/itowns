@@ -237,7 +237,7 @@ void main() {
             }
 
             gl_FragColor = RTC == 1 ? mix(fogColor, diffuseColor, fog ) : diffuseColor;
-
+           // gl_FragColor.a = 1.;
         }
 
         if(lightingOn == 1){   // Add lighting

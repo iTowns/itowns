@@ -99,12 +99,12 @@ define('Globe/Globe', [
 
         this.add(this.tiles);
         this.add(this.batiments);
-        //this.add(this.layerWGS84Zup);
+      /*  //this.add(this.layerWGS84Zup);
 
         if (this.atmosphere !== undefined && !this.gLDebug) {
             this.atmosphere.add(this.clouds);
             this.add(this.atmosphere);
-        }
+        }*/
     }
 
     Globe.prototype = Object.create(Layer.prototype);

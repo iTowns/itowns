@@ -42,6 +42,8 @@ define('MobileMapping/MobileMappingLayer', [
             var key = e.keyCode ? e.keyCode : e.which;
 
             if (key == 78) {
+               // var sc = require("Scene/Scene");
+             //   sc().setFreeze(true);
                 this.goToNextPOI();
             }
         }.bind(this);
