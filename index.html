@@ -405,7 +405,7 @@ and open the template in the editor.
 //                                        }
 //                                    });
                                     
-        /*itowns.viewer.addFeatureLayer({
+        itowns.viewer.addFeatureLayer({
                                         url       : "http://wxs.ign.fr/72hpsel8j8nhb5qgdh07gcyp/geoportail/wfs?",
                                         protocol  : 'wfs',
                                         version   : '2.0.0',
@@ -415,14 +415,17 @@ and open the template in the editor.
                                         extractStyle : true,
                                         projection : "EPSG:4326",
                                         // min long, min lat, max long, max lat (lower et upper corners)
-                                        bbox      : [-63.1533283, -21.3896308, 55.8366872, 51.1028253],
+                                        //bbox      : [-63.1533283, -21.3896308, 55.8366872, 51.1028253],
                                         ipr       : "IGN",
                                         type      : "bbox", //bbox //poly//styledPoly
                                         options: {
                                             mimetype  : "json",
                                             tileMatrixSet: 'WGS84G'
+                                        },
+                                        params: {
+                                            level: 18
                                         }
-                                    });*/
+                                    });
 
         //Feature layers used fot tests purpose
         itowns.viewer.addFeatureLayer({
@@ -438,15 +441,14 @@ and open the template in the editor.
                                             tileMatrixSet: 'WGS84G'
                                         },
                                         params: {
-                                            point: {
-                                                color: {
-                                                    property: 'pop_rank',
-                                                    testTab : [7, 1, 2, 3, 4, 5, 6],
-                                                    colorTab: [0xCCFF00, 0x00FF00, 0xFF0000, 0x33CC33, 0x5599ff, 0x00ffff, 0xFF5577]
-                                                },
-                                                heightParam : 'pop_rank',
-                                                nbSegment   : 8
-                                            }
+                                            color: {
+                                                property: 'availability',
+                                                testTab : ['Vert', 'Orange', 'Bleu', 'Gris'],
+                                                colorTab: [0x339933, 0xFF9900, 0x3399FF, 0x888888]
+                                            },
+                                            heightParam : 'pop_rank',
+                                            nbSegment   : 8,
+                                            level: 14
                                         }
         });
 
@@ -463,13 +465,12 @@ and open the template in the editor.
                                             tileMatrixSet: 'WGS84G'
                                         },
                                         params: {
-                                            line: {
-                                                color: {
-                                                    property: 'ligne',
-                                                    testTab : ['A', 'B', 'C', 'D', 'F1', 'F2'],
-                                                    colorTab: [0x225599, 0x5599ff, 0x147845, 0xFF5577, 0xAAFF44, 0xD7F458]
-                                                }
-                                            }
+                                            color: {
+                                                property: 'ligne',
+                                                testTab : ['A', 'B', 'C', 'D', 'F1', 'F2'],
+                                                colorTab: [0x225599, 0x5599ff, 0x147845, 0xFF5577, 0xAAFF44, 0xD7F458]
+                                            },
+                                            level: 15
                                         }
         });
 

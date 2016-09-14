@@ -14,7 +14,6 @@ import TileProvider from 'Core/Commander/Providers/TileProvider';
 import loadGpx from 'Core/Commander/Providers/GpxUtils';
 import GeoCoordinate,{UNIT} from 'Core/Geographic/GeoCoordinate';
 import WFS_Provider from 'Core/Commander/Providers/WFS_Provider';
-import CoordCarto from 'Core/Geographic/CoordCarto';
 import Ellipsoid from 'Core/Math/Ellipsoid';
 import Projection from 'Core/Geographic/Projection';
 import CustomEvent from 'custom-event';

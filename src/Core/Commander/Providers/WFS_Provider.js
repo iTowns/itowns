@@ -14,8 +14,10 @@ import CacheRessource from 'Core/Commander/Providers/CacheRessource';
 import BoundingBox from 'Scene/BoundingBox';
 //import ItownsLine from 'Core/Commander/Providers/ItownsLine';
 import Ellipsoid from 'Core/Math/Ellipsoid';
-import CoordCarto from 'Core/Geographic/CoordCarto';
+import GeoCoordinate, {UNIT} from 'Core/Geographic/GeoCoordinate';
 import CVML from 'Core/Math/CVML';
+import BuilderEllipsoidTile from 'Globe/BuilderEllipsoidTile';
+import FeatureMesh from 'Globe/FeatureMesh';
 
 /**
  * Return url wmts MNT
@@ -25,12 +27,12 @@ import CVML from 'Core/Math/CVML';
  * @returns {Object@call;create.url.url|String}
  */
 function WFS_Provider(/*options*/) {
-
     Provider.call(this, new IoDriver_JSON());
     this.cache = CacheRessource();
     this.ioDriverXML = new IoDriverXML();
     this.projection = new Projection();
 }
+
 WFS_Provider.prototype = Object.create(Provider.prototype);
 WFS_Provider.prototype.constructor = WFS_Provider;
 
@@ -38,22 +40,11 @@ WFS_Provider.prototype.url = function(bbox,layer) {
     return this.customUrl(layer.customUrl, bbox);
 };
 
-WFS_Provider.prototype.unmodifiedBBoxUrl = function(bbox, layer){
-    var urld = layer.customUrl.replace('%bbox', bbox.minCarto.longitude + ',' + 
-                                                bbox.minCarto.latitude  + ',' + 
-                                                bbox.maxCarto.longitude + ',' + 
-                                                bbox.maxCarto.latitude);
-    return urld;
-};
-
-WFS_Provider.prototype.tmpLineTestUrl = function(coord, layer){
-    var bbox =  coord.minCarto.latitude * 180.0 / Math.PI +
-                "," +
-                (coord.minCarto.longitude - Math.PI ) * 180.0 / Math.PI +
-                "," +
-                coord.maxCarto.latitude * 180.0 / Math.PI +
-                "," +
-                (coord.maxCarto.longitude - Math.PI ) * 180.0 / Math.PI;
+WFS_Provider.prototype.tmpUrl = function(coord, layer){
+    var bbox =  coord.south() * 180.0 / Math.PI + "," +
+                coord.west()  * 180.0 / Math.PI + "," +
+                coord.north() * 180.0 / Math.PI + "," +
+                coord.east()  * 180.0 / Math.PI;
 
     var urld = layer.customUrl.replace('%bbox', bbox.toString());
     return urld;
@@ -62,18 +53,13 @@ WFS_Provider.prototype.tmpLineTestUrl = function(coord, layer){
 WFS_Provider.prototype.customUrl = function(url,coord) {
     //convert radian to degree, lon is added a offset of Pi
     //to align axisgit  to card center
-    var bbox =  (coord.minCarto.longitude - Math.PI ) * 180.0 / Math.PI +
-                "," +
-                coord.minCarto.latitude * 180.0 / Math.PI +
-                ","+
-                (coord.maxCarto.longitude - Math.PI ) * 180.0 / Math.PI +
-                "," +
-                coord.maxCarto.latitude * 180.0 / Math.PI;
+    var bbox =  coord.west()  * 180.0 / Math.PI + "," +
+                coord.south() * 180.0 / Math.PI + "," +
+                coord.east()  * 180.0 / Math.PI +  "," +
+                coord.north() * 180.0 / Math.PI;
 
     var urld = url.replace('%bbox',bbox.toString());
-
     return urld;
-
 };
 
 WFS_Provider.prototype.preprocessDataLayer = function(layer){
@@ -89,40 +75,42 @@ WFS_Provider.prototype.preprocessDataLayer = function(layer){
                   '&VERSION=' + layer.version +
                   '&outputFormat=' + layer.format +
                   '&BBOX=%bbox,' + layer.crs;
+                  //'&Filter=<Filter><BBOX><PropertyName>NAME</PropertyName><Box srsName=\'' + layer.crs + '\'><coordinates>%bbox</coordinates></Box></BBOX></Filter>';
+
+    this.size      = {x:6378137,y: 6356752.3142451793,z:6378137};
+    this.ellipsoid = new Ellipsoid(this.size);
 
     this.tileParams = layer.params || undefined;
 
     if(this.tileParams !== undefined) {
-        var obj = this.tileParams.point || this.tileParams.line || this.tileParams.box || this.tileParams.polygon || undefined;
-        if(obj !== undefined) {
-            this.radius         = obj.radius        || 10;
-            this.nbSegment      = obj.nbSegment     || 3;
-            this.thetaStart     = obj.thetaStart    || 0;
-            this.thetaLength    = obj.thetaLength   || 2 * Math.PI;
-            this.offsetValue    = obj.length        || 10;
+        this.radius         = this.tileParams.radius        || 10;
+        this.nbSegment      = this.tileParams.nbSegment     || 3;
+        this.thetaStart     = this.tileParams.thetaStart    || 0;
+        this.thetaLength    = this.tileParams.thetaLength   || 2 * Math.PI;
+        this.offsetValue    = this.tileParams.length        || 10;
 
-            this.boxWidth       = obj.bowWidth      || 40000;
-            this.boxHeight      = obj.boxHeight     || 800000;
+        this.boxWidth       = this.tileParams.bowWidth      || 40;
+        this.boxHeight      = this.tileParams.boxHeight     || 80;
 
-            //Must convert all data to hexadecimal values because datas are automatically
-            //converted in decimal values between the index.html and the next JS function
-            if(obj.color !== undefined && obj.color.colorTab !== undefined)
-                for (var i = 0; i < obj.color.colorTab.length; i++)
-                    obj.color.colorTab[i].toString(16);
-        }
+        //Must convert all data to hexadecimal values because datas are automatically
+        //converted in decimal values between the index.html and the next JS function
+        if(this.tileParams.color !== undefined && this.tileParams.color.colorTab !== undefined)
+            for (var i = 0; i < this.tileParams.color.colorTab.length; i++)
+                this.tileParams.color.colorTab[i].toString(16);
+        this.level          = this.tileParams.level || 18;
+        this.switchLevel    = this.tileParams.switchLevel;
     }
 };
 
 WFS_Provider.prototype.tileInsideLimit = function(tile,layer) {
-    var bbox = tile.bbox;
-    var level = tile.level;
     //console.log(level);
+
     // shifting longitude because of issue #19
-    var west =  layer.bbox[0]*Math.PI/180.0 + Math.PI;
-    var east =  layer.bbox[2]*Math.PI/180.0 + Math.PI;
+    var west =  layer.bbox[0] * Math.PI/180.0 + Math.PI;
+    var east =  layer.bbox[2] * Math.PI/180.0 + Math.PI;
     var bboxRegion = new BoundingBox(west, east, layer.bbox[1]*Math.PI/180.0, layer.bbox[3]*Math.PI/180.0, 0, 0, 0);
 
-    return (level == 18) && bboxRegion.intersect(bbox);
+    return (tile.level == this.level) && bboxRegion.intersect(tile.bbox);
 };
 
 WFS_Provider.prototype.executeCommand = function(command) {
@@ -137,7 +125,7 @@ WFS_Provider.prototype.executeCommand = function(command) {
 
     var func = supportedFormats[layer.format];
     if (func) {
-        return func(tile, layer, command.paramsFunction).then(function(result) {
+        return func(tile, layer, command.paramsFunction, command.requester).then(function(result) {
             return command.resolve(result);
         });
     } else {
@@ -145,48 +133,66 @@ WFS_Provider.prototype.executeCommand = function(command) {
     }
 };
 
-WFS_Provider.prototype.getFeatures = function(tile, layer, parameters) {
+WFS_Provider.prototype.getFeatures = function(tile, layer, parameters, parent) {
     if (!this.tileInsideLimit(tile,layer) || tile.material === null)
         return Promise.resolve();
 
     var pitch = parameters.ancestor ?
-        this.projection.WMS_WGS84Parent(tile.bbox, parameters.ancestor.bbox) :
-        new THREE.Vector3(0, 0, 1);
-
-    var url;
+                this.projection.WMS_WGS84Parent(tile.bbox, parameters.ancestor.bbox) :
+                new THREE.Vector3(0, 0, 1);
     var bbox = parameters.ancestor ?
                 parameters.ancestor.bbox :
                 tile.bbox;
+    var url, geometry, params, builder, mesh;
 
-    if (layer.type == "point" || layer.type == "line")
-        url = this.tmpLineTestUrl(bbox, layer);
+    if (layer.type == "point" || layer.type == "line" || layer.type == "box"){
+        url = this.tmpUrl(bbox, layer);
+        geometry = new THREE.Geometry();
+        params = {bbox: bbox, level: parent.level + 1, segment:16, center:null, projected:null, protocol: parent.protocol};
+        builder = new BuilderEllipsoidTile(this.ellipsoid, this.projection);
+        mesh = new FeatureMesh(params, builder);
+    }
     else
         url = this.url(bbox, layer);
 
     var result = {pitch: pitch };
     result.feature = this.cache.getRessource(url);
 
-    if (result.feature !== undefined) 
-        return Promise.resolve(result);
+    if(result.feature != undefined)
+        mesh = result.feature;
+
+    //To uncomment for the true test with the buildings
+    /*if (result.feature !== undefined)
+        return Promise.resolve(result);*/
 
     return this._IoDriver.read(url).then(function(feature) {
-
         if(feature.crs || layer.crs) {
             var features = feature.features;
+
             if(layer.type == "poly")
                 result.feature = this.GeoJSON2Polygon(features);
             else if(layer.type == "bbox")
-                result.feature = this.GeoJSON2BBox(features);
-            else if(layer.type == "point"){
-                result.feature = this.GeoJSON2Point(features, bbox);
+                result.feature = this.GeoJSON2Box(features);
+            else if((mesh.currentType == undefined && (layer.type == "point" || layer.type == "box"))
+                        || mesh.currentType == "point" || mesh.currentType == "box"){
+                var type = mesh.currentType || layer.type;
+                this.GeoJSON2Point(features, bbox, geometry, type);
+                mesh.setGeometry(geometry);
+                if(mesh.currentType === undefined)
+                    mesh.currentType = layer.type;
+                result.feature = mesh;
             } else if(layer.type == "line"){
-                var tmpBbox = new BoundingBox((bbox.minCarto.longitude - Math.PI ) * 180.0 / Math.PI,
-                                                (bbox.maxCarto.longitude - Math.PI ) * 180.0 / Math.PI,
-                                                bbox.minCarto.latitude * 180.0 / Math.PI,
-                                                bbox.maxCarto.latitude * 180.0 / Math.PI,
-                                                bbox.minCarto.altitude, bbox.maxCarto.altitude);
-                result.feature = this.GeoJSON2Line(features, tmpBbox);
+                var tmpBbox = new BoundingBox(  bbox.west()  * 180.0 / Math.PI,
+                                                bbox.east()  * 180.0 / Math.PI,
+                                                bbox.south() * 180.0 / Math.PI,
+                                                bbox.north() * 180.0 / Math.PI,
+                                                bbox.bottom(), bbox.top());
+                this.GeoJSON2Line(features, tmpBbox, geometry);
+                mesh.setGeometry(geometry);
+                result.feature = mesh;
             }
+            //Is needed to do another request for the retail level change
+            result.feature.layer = layer;
 
             if (result.feature !== undefined)
                 this.cache.addRessource(url, result.feature);
@@ -200,7 +206,6 @@ WFS_Provider.prototype.getFeatures = function(tile, layer, parameters) {
 };
 
 WFS_Provider.prototype.GeoJSON2Polygon = function(features) {
-    var ellipsoid = new Ellipsoid(new THREE.Vector3(6378137, 6356752.3142451793, 6378137));
     var polyGroup = new THREE.Object3D();
     for (var r = 0; r < features.length; r++) {
         var positions = [];
@@ -212,8 +217,8 @@ WFS_Provider.prototype.GeoJSON2Polygon = function(features) {
                 var pt2DTab = polygon[j]; //.split(' ');
                 //long et puis lat
                 //var pt = new THREE.Vector3(parseFloat(pt2DTab[1]), hauteur, parseFloat(pt2DTab[0]));
-                var coordCarto = new CoordCarto().setFromDegreeGeo(parseFloat(pt2DTab[1]), parseFloat(pt2DTab[0]), altitude);
-                var spt = ellipsoid.cartographicToCartesian(coordCarto);
+                var geoCoord = new GeoCoordinate(parseFloat(pt2DTab[1]), parseFloat(pt2DTab[0]), altitude, UNIT.DEGREE)
+                var spt = this.ellipsoid.cartographicToCartesian(geoCoord);
                 positions.push( spt.x, spt.y, spt.z);
             }
             var geometry = new THREE.BufferGeometry();
@@ -230,9 +235,7 @@ WFS_Provider.prototype.GeoJSON2Polygon = function(features) {
     return polyGroup;
 };
 
-WFS_Provider.prototype.GeoJSON2BBox = function(features) {
-
-    var ellipsoid = new Ellipsoid(new THREE.Vector3(6378137, 6356752.3142451793, 6378137));
+WFS_Provider.prototype.GeoJSON2Box = function(features) {
     var bboxGroup = new THREE.Object3D();
     var wallGeometry = new THREE.Geometry(); // for the walls
     var roofGeometry = new THREE.Geometry(); // for the roof
@@ -240,7 +243,6 @@ WFS_Provider.prototype.GeoJSON2BBox = function(features) {
     //var texture = new THREE.TextureLoader().load( 'data/strokes/wall-texture.jpg');
 
     for (var r = 0; r < features.length; r++) {
-
         var hauteur = (features[r].properties.hauteur + suppHeight) || 0;
         var altitude = features[r].properties.z_min;
         var polygon = features[r].geometry.coordinates[0][0];
@@ -253,13 +255,12 @@ WFS_Provider.prototype.GeoJSON2BBox = function(features) {
             var arrPoint2D = [];
             // VERTICES
             for (var j = 0; j < polygon.length - 1; ++j) {
-
                 var pt2DTab = polygon[j]; //.split(' ');
 
-                var coordCarto1 = new CoordCarto().setFromDegreeGeo(parseFloat(pt2DTab[1]), parseFloat(pt2DTab[0]), goodAltitude);
-                var coordCarto2 = new CoordCarto().setFromDegreeGeo(parseFloat(pt2DTab[1]), parseFloat(pt2DTab[0]), goodAltitude + hauteur);
-                var pgeo1 = ellipsoid.cartographicToCartesian(coordCarto1);
-                var pgeo2 = ellipsoid.cartographicToCartesian(coordCarto2);
+                var geoCoord1 = new GeoCoordinate(parseFloat(pt2DTab[1]), parseFloat(pt2DTab[0]), goodAltitude, UNIT.DEGREE);
+                var geoCoord2 = new GeoCoordinate(parseFloat(pt2DTab[1]), parseFloat(pt2DTab[0]), goodAltitude + hauteur, UNIT.DEGREE);
+                var pgeo1 = this.ellipsoid.cartographicToCartesian(geoCoord1);
+                var pgeo2 = this.ellipsoid.cartographicToCartesian(geoCoord2);
 
                 var vector3_1 = new THREE.Vector3(pgeo1.x, pgeo1.y, pgeo1.z);
                 var vector3_2 = new THREE.Vector3(pgeo2.x, pgeo2.y, pgeo2.z);
@@ -299,13 +300,13 @@ WFS_Provider.prototype.GeoJSON2BBox = function(features) {
                 pt2 = t.getPoint(1),
                 pt3 = t.getPoint(2);
 
-            var coordCarto1 = new CoordCarto().setFromDegreeGeo(pt1.x, pt1.y, goodAltitude + hauteur);
-            var coordCarto2 = new CoordCarto().setFromDegreeGeo(pt2.x, pt2.y, goodAltitude + hauteur); // + Math.random(1000) );
-            var coordCarto3 = new CoordCarto().setFromDegreeGeo(pt3.x, pt3.y, goodAltitude + hauteur);
+            var geoCoord1 = new GeoCoordinate(pt1.x, pt1.y, goodAltitude + hauteur, UNIT.DEGREE);
+            var geoCoord2 = new GeoCoordinate(pt2.x, pt2.y, goodAltitude + hauteur, UNIT.DEGREE);
+            var geoCoord3 = new GeoCoordinate(pt3.x, pt3.y, goodAltitude + hauteur, UNIT.DEGREE);
 
-            var pgeo1 = ellipsoid.cartographicToCartesian(coordCarto1); //{longitude:p1.z, latitude:p1.x, altitude: 0});
-            var pgeo2 = ellipsoid.cartographicToCartesian(coordCarto2);
-            var pgeo3 = ellipsoid.cartographicToCartesian(coordCarto3);
+            var pgeo1 = this.ellipsoid.cartographicToCartesian(geoCoord1); //{longitude:p1.z, latitude:p1.x, altitude: 0});
+            var pgeo2 = this.ellipsoid.cartographicToCartesian(geoCoord2);
+            var pgeo3 = this.ellipsoid.cartographicToCartesian(geoCoord3);
 
             //var geometry = new THREE.Geometry();
             roofGeometry.vertices.push(new THREE.Vector3(pgeo1.x, pgeo1.y, pgeo1.z));
@@ -319,7 +320,7 @@ WFS_Provider.prototype.GeoJSON2BBox = function(features) {
             );
             roofGeometry.faces.push(face);
 
-        });
+        }.bind(this));
 
     }
 
@@ -347,25 +348,25 @@ WFS_Provider.prototype.GeoJSON2BBox = function(features) {
  * @param bbox; the tile bounding box
  */
 WFS_Provider.prototype.cutLine = function(coords, slope, rest, bbox) {
-
-    if(coords[0] < bbox.minCarto.longitude){
-        coords[0] = bbox.minCarto.longitude;
-        if(coords[1] >= bbox.minCarto.latitude && coords[1] <= bbox.maxCarto.latitude)
+    var minLong = bbox.west(), maxLong = bbox.east(), minLat  = bbox.south(), maxLat  = bbox.north();
+    if(coords[0] < minLong){
+        coords[0] = minLong;
+        if(coords[1] >= minLat && coords[1] <= maxLat)
             coords[1] = slope * coords[0] + rest;
     }
-    else if (coords[0] > bbox.maxCarto.longitude){
-        coords[0] = bbox.maxCarto.longitude;
-        if(coords[1] >= bbox.minCarto.latitude && coords[1] <= bbox.maxCarto.latitude)
+    else if (coords[0] > maxLong){
+        coords[0] = maxLong;
+        if(coords[1] >= minLat && coords[1] <= maxLat)
             coords[1] = slope * coords[0] + rest;
     }
-    if(coords[1] < bbox.minCarto.latitude){
-        coords[1] = bbox.minCarto.latitude;
-        if(coords[0] >= bbox.minCarto.longitude && coords[0] <= bbox.maxCarto.longitude)
+    if(coords[1] < minLat){
+        coords[1] = minLat;
+        if(coords[0] >= minLong && coords[0] <= maxLong)
             coords[0] = (coords[1] - rest) / slope;
     }
-    else if (coords[1] > bbox.maxCarto.latitude){
-        coords[1] = bbox.maxCarto.latitude;
-        if(coords[0] >= bbox.minCarto.longitude && coords[0] <= bbox.maxCarto.longitude)
+    else if (coords[1] > maxLat){
+        coords[1] = maxLat;
+        if(coords[0] >= minLong && coords[0] <= maxLong)
             coords[0] = (coords[1] - rest) / slope;
     }
 }
@@ -378,15 +379,11 @@ WFS_Provider.prototype.cutLine = function(coords, slope, rest, bbox) {
  * @param isFirstPt: permit to choose to which point we will compute the border points
  */
 WFS_Provider.prototype.computeLineBorderPoints = function(pt1, pt2, isFirstPt) {
+    var geoCoord1 = new GeoCoordinate(pt1.x, pt1.y, pt1.z, UNIT.DEGREE);
+    var geoCoord2 = new GeoCoordinate(pt2.x, pt2.y, pt2.z, UNIT.DEGREE);
 
-    var size        = {x:6378137,y: 6356752.3142451793,z:6378137};
-    var ellipsoid   = new Ellipsoid(size);
-
-    var coordCarto1 = new CoordCarto().setFromDegreeGeo(pt1.x, pt1.y, pt1.z);
-    var coordCarto2 = new CoordCarto().setFromDegreeGeo(pt2.x, pt2.y, pt2.z);
-
-    var cart1 = ellipsoid.cartographicToCartesian(coordCarto1);
-    var cart2 = ellipsoid.cartographicToCartesian(coordCarto2);
+    var cart1 = this.ellipsoid.cartographicToCartesian(geoCoord1);
+    var cart2 = this.ellipsoid.cartographicToCartesian(geoCoord2);
 
     var dx      = cart2.x - cart1.x;
     var dy      = cart2.y - cart1.y;
@@ -394,7 +391,7 @@ WFS_Provider.prototype.computeLineBorderPoints = function(pt1, pt2, isFirstPt) {
 
     var direct  = new THREE.Vector3(dx, dy, dz);
     direct.normalize();
-    var normalGlobe = ellipsoid.geodeticSurfaceNormalCartographic(coordCarto1);
+    var normalGlobe = this.ellipsoid.geodeticSurfaceNormalCartographic(geoCoord1);
     normalGlobe.normalize();
 
     normalGlobe.cross(direct);
@@ -423,60 +420,56 @@ WFS_Provider.prototype.computeLineBorderPoints = function(pt1, pt2, isFirstPt) {
  * @param value: the JSON object which contains the data received from the WFS request
  * @param geometry: the geometry used to set the tile geometry
  */
-WFS_Provider.prototype.GeoJSON2Line = function(features, bbox) {
-
-    var geometry = new THREE.Geometry();
-
+WFS_Provider.prototype.GeoJSON2Line = function(features, bbox, geometry) {
     for (var i = 0; i < features.length; i++) {
         var feature     = features[i];
         var coords      = feature.geometry.coordinates;
 
         var j = 0;
-        var isInsideTile = false;
+        var inTile = false;
+
 
         //Cut the line according to the tiles limits
         //May not be usefull if we can cut the line before inside the request to the WFS provider
         do{
-            if (coords[j][0] < bbox.minCarto.longitude || coords[j][0] > bbox.maxCarto.longitude
-                || coords[j][1] < bbox.minCarto.latitude || coords[j][1] > bbox.maxCarto.latitude) {
+            var c_1 = coords[j - 1], c = coords[j], cX = c[0], cY = c[1], c1  = coords[j + 1];
+            if(c_1 != undefined) var c_1X = c_1[0], c_1Y = c_1[1];
+            if(c1 != undefined)  var c1X  = c1[0],  c1Y  = c1[1];
+            var minLong = bbox.west(), maxLong = bbox.east(), minLat  = bbox.south(),  maxLat  = bbox.north();
+
+            if (cX < minLong || cX > maxLong || cY < minLat || cY > maxLat) {
                 var coeffSlope, rest;
-                if(isInsideTile) {
-                    coeffSlope = (coords[j][1] - coords[j - 1][1]) / (coords[j][0] - coords[j - 1][0]);
-                    rest = coords[j][1] - coeffSlope * coords[j][0];
+                if(inTile) {
+                    coeffSlope = (cY - c_1Y) / (cX - c_1X);
+                    rest = cY - coeffSlope * cX;
 
-                    this.cutLine(coords[j], coeffSlope, rest, bbox);
-
+                    this.cutLine(c, coeffSlope, rest, bbox);
                     j++;
-                } else if (coords[j+1] != undefined
-                    && (coords[j + 1][0] > bbox.minCarto.longitude && coords[j + 1][0] < bbox.maxCarto.longitude
-                    &&  coords[j + 1][1] > bbox.minCarto.latitude  && coords[j + 1][1] < bbox.maxCarto.latitude)) {
+                } else if (c1 != undefined && c1X > minLong && c1X < maxLong &&  c1Y > minLat  && c1Y < maxLat) {
+                    coeffSlope = (c1Y - cY) / (c1X - cX);
+                    rest = c1Y - coeffSlope * c1X;
 
-                    coeffSlope = (coords[j + 1][1] - coords[j][1]) / (coords[j + 1][0] - coords[j][0]);
-                    rest = coords[j + 1][1] - coeffSlope * coords[j + 1][0];
-
-                    this.cutLine(coords[j], coeffSlope, rest, bbox);
-
-                    j = j + 2;
-                } else {
+                    this.cutLine(c, coeffSlope, rest, bbox);
+                    j++;
+                } else
                     coords.splice(j, 1);
-                }
-                isInsideTile = false;
+                inTile = false;
             } else {
-                isInsideTile = true;
+                inTile = true;
                 j++;
             }
         }while (j < coords.length);
 
         if(coords.length > 1){
-            var resp = this.computeLineBorderPoints(new THREE.Vector3(coords[0][0], coords[0][1], 180/*(bbox.minCarto.altitude + bbox.maxCarto.altitude / 2) + 5*/),
-                                                    new THREE.Vector3(coords[1][0], coords[1][1], 180/*(bbox.minCarto.altitude + bbox.maxCarto.altitude / 2) + 5*/), true);
+            var resp = this.computeLineBorderPoints(new THREE.Vector3(coords[0][0], coords[0][1], 180),
+                                                    new THREE.Vector3(coords[1][0], coords[1][1], 180), true);
 
             for (j = 0; j < coords.length - 1; j++) {
                 var currentGeometry = new THREE.Geometry();
                 currentGeometry.vertices.push(resp.left, resp.right);
 
-                resp = this.computeLineBorderPoints(new THREE.Vector3(coords[j][0],     coords[j][1], 180/*(bbox.minCarto.altitude + bbox.maxCarto.altitude / 2) + 5*/),
-                                                    new THREE.Vector3(coords[j + 1][0], coords[j + 1][1], 180/*(bbox.minCarto.altitude + bbox.maxCarto.altitude / 2) + 5*/), false);
+                resp = this.computeLineBorderPoints(new THREE.Vector3(coords[j][0],     coords[j][1], 180),
+                                                    new THREE.Vector3(coords[j + 1][0], coords[j + 1][1], 180), false);
 
                 currentGeometry.vertices.push(resp.left, resp.right);
 
@@ -487,21 +480,12 @@ WFS_Provider.prototype.GeoJSON2Line = function(features, bbox) {
                 geometry.computeVertexNormals();
 
                 for (var k = 0; k < currentGeometry.faces.length; k++)
-                    this.manageMaterial(feature.properties, currentGeometry.faces[k].color);
+                    this.manageColor(feature.properties, currentGeometry.faces[k].color);
 
                 geometry.merge(currentGeometry);
             }
         }
     }
-
-    if(geometry.vertices.length !== 0) {
-        var mat = new THREE.MeshBasicMaterial({color: 0xFEFE54, transparent: true, opacity: 0.8, side : THREE.DoubleSide});
-        var mesh = new THREE.Mesh(geometry, mat);
-        var group = new THREE.Object3D();
-        group.add(mesh);
-        return group;
-    } else
-        return undefined;
 }
 
 /**
@@ -510,83 +494,32 @@ WFS_Provider.prototype.GeoJSON2Line = function(features, bbox) {
  * @param value: the JSON object which contains the data received from the WFS request
  * @param geometry: the geometry used to set the tile geometry
  */
-WFS_Provider.prototype.GeoJSON2Point = function(features, bbox) {
-
-    var geometry = new THREE.Geometry();
-    var group = new THREE.Object3D();
-
-    var size        = {x:6378137,y: 6356752.3142451793,z:6378137};
-    var ellipsoid   = new Ellipsoid(size);
-
+WFS_Provider.prototype.GeoJSON2Point = function(features, bbox, geometry, type) {
     for (var i = 0; i < features.length; i++) {
         var feature = features[i];
         var coords = feature.geometry.coordinates;
-        var offsetZ = Math.random();
 
-        var coordCarto = new CoordCarto().setFromDegreeGeo(coords[0], coords[1], ((bbox.minCarto.altitude + bbox.maxCarto.altitude) / 2) + 3);
-        var normalGlobe = ellipsoid.geodeticSurfaceNormalCartographic(coordCarto);
-        var centerPoint = ellipsoid.cartographicToCartesian(coordCarto);
+        var geoCoord = new GeoCoordinate(coords[0], coords[1], ((bbox.bottom() + bbox.top()) / 2) + 3, UNIT.DEGREE);
+        var normalGlobe = this.ellipsoid.geodeticSurfaceNormalCartographic(geoCoord);
+        var centerPoint = this.ellipsoid.cartographicToCartesian(geoCoord);
 
         var currentGeometry;
         //Change the type of height and radius computation. Used only for the test purpose
-        if(this.tileParams.box !== undefined) {
-            var tmp = feature.properties[this.tileParams.box.heightParam]; 
-            if(tmp !== undefined && tmp !== 0)
-                currentGeometry = new THREE.BoxGeometry(this.boxWidth, this.boxWidth, 800000 * (1 / tmp));
-            else
-                currentGeometry = new THREE.BoxGeometry(this.boxWidth, this.boxWidth, 100000 * feature.properties[this.tileParams.box.heightParam]);
-        } else if(this.tileParams.point !== undefined) {
-            var tmp = feature.properties[this.tileParams.point.heightParam];
-            if(tmp !== undefined && tmp !== 0)
-                currentGeometry = new THREE.CircleGeometry(this.radius * (1 / tmp), this.nbSegment, this.thetaStart, this.thetaLength);
-            else
-                currentGeometry = new THREE.CircleGeometry(this.radius, this.nbSegment, this.thetaStart, this.thetaLength);
-        } else
+        if(type == 'box')
+            currentGeometry = new THREE.BoxGeometry(this.boxWidth, this.boxWidth, this.boxHeight);
+        else if(type == 'point')
+            currentGeometry = new THREE.CircleGeometry(this.radius, this.nbSegment, this.thetaStart, this.thetaLength);
+        else
             continue;
 
         currentGeometry.lookAt(normalGlobe);
         currentGeometry.translate(centerPoint.x, centerPoint.y, centerPoint.z);
 
         for (var j = 0; j < currentGeometry.faces.length; j++)
-            this.manageMaterial(feature.properties, currentGeometry.faces[j].color);
+            this.manageColor(feature.properties, currentGeometry.faces[j].color);
 
         geometry.merge(currentGeometry);
     }
-
-    var mat = new THREE.MeshBasicMaterial({color: 0x54FEE8, transparent: true, opacity: 0.8, side : THREE.DoubleSide});
-    var mesh = new THREE.Mesh(geometry, mat);
-    group.add(mesh);
-    return group;
-}
-
-/**
- * Manage the feature material. The management is done depending on the type of feature
- * you want to display.
- * @param featureProperties: properties specified for the current feature
- * @param color: the color to set inside the current feature geometry
- */
-WFS_Provider.prototype.manageMaterial = function(featureProperties, color) {
-
-    var getType = {};
-
-    if(this.tileParams.point !== undefined){
-        if(this.tileParams.point && getType.toString.call(this.tileParams.point) === '[object Function]')
-            this.tileParams.point(featureProperties);
-        else
-            this.manageColor(featureProperties, color, this.tileParams.point);
-    } else if (this.tileParams.line !== undefined) {
-        if(this.tileParams.line && getType.toString.call(this.tileParams.line) === '[object Function]')
-            this.tileParams.line(featureProperties, this.tileParams);
-        else
-            this.manageColor(featureProperties, color, this.tileParams.line);
-    }else if (this.tileParams.box !== undefined) {
-        if(this.tileParams.box && getType.toString.call(this.tileParams.box) === '[object Function]')
-            this.tileParams.box(featureProperties, this.tileParams);
-        else
-            this.manageColor(featureProperties, color, this.tileParams.box);
-    } /*else if (this.tileParams.polygon !== undefined){
-
-    }*/
 }
 
 /**
@@ -595,45 +528,17 @@ WFS_Provider.prototype.manageMaterial = function(featureProperties, color) {
  * @param color : manager of the color of a face
  * @params tileParams: the tile to which apply the geometry
  */
-WFS_Provider.prototype.manageColor = function(properties, color, tileParams) {
+WFS_Provider.prototype.manageColor = function(properties, color) {
+    var colorParams = this.tileParams.color || undefined;
 
-    var colorParams = tileParams.color;
-
-    for (var i = 0; i < colorParams.testTab.length; i++) {
-        if(properties[colorParams.property] === colorParams.testTab[i]){
-            color.setHex(colorParams.colorTab[i]);
-            return;
+    if(colorParams !== undefined)
+        for (var i = 0; i < colorParams.testTab.length; i++) {
+            if(properties[colorParams.property] === colorParams.testTab[i]){
+                color.setHex(colorParams.colorTab[i]);
+                return;
+            }
         }
-    }
     color.setHex(new THREE.Color(0xFFFFFF));
 }
 
-/**
- * Returns the url for a WMS query with the specified bounding box
- * @param {BoundingBox} bbox: requested bounding box
- * @returns {Object@call;create.url.url|String}
- * ex http://wxs.ign.fr/72hpsel8j8nhb5qgdh07gcyp/geoportail/wfs?service=WFS&version=2.0.0
- * &REQUEST=GetFeature&typeName=BDTOPO_BDD_WLD_WGS84G:bati_remarquable,BDTOPO_BDD_WLD_WGS84G:bati_indifferencie
- * &bbox=2.325,48.855,2.335,48.865,epsg:4326&outputFormat=json
- */
-/*
-WFS_Provider.prototype.url = function(bbox) {
-
-    var url = this.baseUrl +
-        "SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature" +
-        "&typeName=" + this.typename + "&BBOX=" +
-        bbox.west() + "," + bbox.south() + "," +
-        bbox.east() + "," + bbox.north() +
-        ",epsg:" + this.epsgCode + "&outputFormat=" + this.format;
-
-    return url;
-};
-
-WFS_Provider.prototype.getData = function(bbox) {
-
-    var url = this.url(bbox);
-    return this.ioDriver_JSON.read(url);
-};
-
-*/
 export default WFS_Provider;

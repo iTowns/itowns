@@ -10,7 +10,8 @@ import MathExt from 'Core/Math/MathExtented';
 import THREE from 'THREE';
 import defaultValue from 'Core/defaultValue';
 import Projection from 'Core/Geographic/Projection';
-
+import FeatureMesh from 'Globe/FeatureMesh';
+import NodeManager from 'Core/Commander/Providers/NodeManager'
 
 function NodeProcess(camera, ellipsoid, bbox) {
     //Constructor
@@ -24,6 +25,7 @@ function NodeProcess(camera, ellipsoid, bbox) {
     this.r = defaultValue(ellipsoid.size, new THREE.Vector3());
     this.cV = new THREE.Vector3();
     this.projection = new Projection();
+    this.nodeManager = new NodeManager();
 }
 
 /**
@@ -228,7 +230,7 @@ function updateNodeFeature(quadtree, node, featureLayers) {
                     layer: layer
                 };
 
-                /*return*/ quadtree.interCommand.request(args, node, refinementCommandCancellationFn).then(function(result) {
+                quadtree.interCommand.request(args, node, refinementCommandCancellationFn).then(function(result) {
                     //if request return empty json, WFS_Provider.getFeatures return undefined
                     if(result.feature !== undefined && result.feature != null) {
                         var layer = quadtree.parent.batiments.children[0];
@@ -237,7 +239,7 @@ function updateNodeFeature(quadtree, node, featureLayers) {
                         node.content = result.feature;
                     }
                 })
-                .catch(function(err) {
+                .catch(function(/*err*/) {
                 // Command has been canceled, no big deal, we just need to catch it
                 });
             }
@@ -360,6 +362,10 @@ NodeProcess.prototype.SSE = function(node, camera, params) {
     node.sse = camera.computeNodeSSE(node);
 
     var sse = this.checkNodeSSE(node);
+
+    if(node.content != undefined && node.content != null && node.content instanceof FeatureMesh)
+        if(sse)
+            this.nodeManager.checkType(node, params.tree, refinementCommandCancellationFn);
 
     if (params.withUp) {
         if (sse) {
