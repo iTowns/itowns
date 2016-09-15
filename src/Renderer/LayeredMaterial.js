@@ -46,7 +46,6 @@ var LayeredMaterial = function(id) {
     BasicMaterial.call(this);
 
     var maxTexturesUnits =  gfxEngine().glParams.maxTexturesUnits;
-    this.vertexShader = GlobeVS;
     var nbSamplers = Math.min(maxTexturesUnits-1,16-1);
 
     this.fragmentShaderHeader +='const int   TEX_UNITS   = ' + nbSamplers.toString() + ';\n';
@@ -147,6 +146,10 @@ var LayeredMaterial = function(id) {
             type: "v3",
             value: new THREE.Vector3(-0.5, 0.0, 1.0)
         };
+    this.uniforms.zFactor = {
+            type: "f",
+            value: 1.
+    },
 
     this.setUuid(id || 0);
     this.wireframe = false;
@@ -237,6 +240,14 @@ LayeredMaterial.prototype.removeLayerColor = function(idLayer) {
     this.layerIdToIndex.idLayer = undefined;
 };
 
+LayeredMaterial.prototype.setZFactor = function(zFactor) {
+    this.uniforms.zFactor.value = zFactor;
+}
+LayeredMaterial.prototype.getZFactor = function() {
+    return this.uniforms.zFactor.value;
+}
+
+
 LayeredMaterial.prototype.setTexture = function(texture, layer, slot, pitScale) {
 
     if (this.Textures[layer][slot] === undefined || this.Textures[layer][slot].image === undefined)
@@ -266,12 +277,15 @@ LayeredMaterial.prototype.getNbColorTexturesLayer = function(layerIndex) {
     return (this.paramLayers[layerIndex + 1].x || this.nbTextures[1]) - (this.paramLayers[layerIndex].x || 0);
 };
 
-LayeredMaterial.prototype.setParam = function(param) {
-    this.uniforms.nColorLayer.value = param.length;
-    for (var l = 0; l < param.length; l++) {
-        this.layerIdToIndex[param[l].idLayer] = l;
-        this.paramLayers[l] = new THREE.Vector4(param[l].layerTexturesOffset, param[l].tileMT === 'PM' ? 1 : 0, param[l].visible, param[l].opacity);
-        this.paramBLayers[l] = new THREE.Vector2(param[l].fx, 0.0);
+LayeredMaterial.prototype.setParam = function(colorParam,elevationParam) {
+	this.setZFactor(elevationParam.zFactor);
+
+    this.uniforms.nColorLayer.value = colorParam.length;
+    for (var l = 0; l < colorParam.length; l++) {
+        this.layerIdToIndex[colorParam[l].idLayer] = l;
+        this.paramLayers[l] = new THREE.Vector4(colorParam[l].layerTexturesOffset, colorParam[l].tileMT === 'PM' ? 1 : 0, colorParam[l].visible, colorParam[l].opacity);
+        this.paramBLayers[l] = new THREE.Vector2(colorParam[l].fx, 0.0);
+		this.uniforms.nColorLayer.value = colorParam.length;
     }
 };
 

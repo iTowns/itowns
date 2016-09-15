@@ -194,7 +194,7 @@ ApiGlobe.prototype.getMaxZoomLevel = function(id) {
  * @params {Div} string.
  */
 
-ApiGlobe.prototype.createSceneGlobe = function(coordCarto, viewerDiv) {
+ApiGlobe.prototype.createSceneGlobe = function(coordCarto, viewerDiv, params) {
     // TODO: Normalement la creation de scene ne doit pas etre ici....
     // Deplacer plus tard
 
@@ -223,7 +223,7 @@ ApiGlobe.prototype.createSceneGlobe = function(coordCarto, viewerDiv) {
 
     this.scene = Scene(coordCarto, ellipsoid, viewerDiv, debugMode, gLDebug);
 
-    var map = new Globe(ellipsoid, gLDebug);
+    var map = new Globe(ellipsoid, gLDebug, params);
 
     this.scene.add(map);
 
@@ -278,6 +278,13 @@ ApiGlobe.prototype.showClouds = function(value, satelliteAnimation) {
     this.scene.renderScene3D();
 };
 
+ApiGlobe.prototype.showAtmosphere = function(value) {
+
+    this.scene.getMap().showAtmosphere(value);
+    this.scene.renderScene3D();
+    return value;
+};
+
 ApiGlobe.prototype.setRealisticLightingOn = function(value) {
 
     this.scene.setLightingPos();
@@ -299,6 +306,29 @@ ApiGlobe.prototype.setLayerVisibility = function(id, visible) {
     this.scene.getMap().setLayerVisibility(id, visible);
 
     this.scene.renderScene3D();
+};
+
+
+/**
+ * Sets the exageration Z factor of the elevation layers.
+ * @constructor
+ * @param {zFactor} float.
+ */
+
+ApiGlobe.prototype.setZFactor = function(zFactor) {
+
+    this.scene.getMap().setZFactor(zFactor);
+    this.scene.renderScene3D();
+};
+
+
+/**
+ * Gets the exageration Z factor of the elevation layers.
+ * @constructor
+ */
+
+ApiGlobe.prototype.getZFactor = function() {
+    return this.scene.getMap().getZFactor();
 };
 
 ApiGlobe.prototype.animateTime = function(value) {

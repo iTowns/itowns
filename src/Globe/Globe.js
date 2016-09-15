@@ -17,7 +17,7 @@ import BasicMaterial from 'Renderer/BasicMaterial';
 import LayersConfiguration from 'Scene/LayersConfiguration';
 import THREE from 'THREE';
 
-function Globe(ellipsoid, gLDebug) {
+function Globe(ellipsoid, gLDebug, params) {
     //Constructor
 
     Layer.call(this);
@@ -46,7 +46,7 @@ function Globe(ellipsoid, gLDebug) {
     this.tiles = new Quadtree(TileMesh, this.SchemeTileWMTS(2), kml);
     this.layersConfiguration = new LayersConfiguration();
 
-    this.atmosphere = this.NOIE ? new Atmosphere(this.ellipsoid) : undefined;
+    this.atmosphere = (params.atmosphere && this.NOIE) ? new Atmosphere(this.ellipsoid) : undefined;
     this.clouds = new Clouds();
 
     var material = new BasicMaterial(new THREE.Color(1, 0, 0));
@@ -173,6 +173,22 @@ Globe.prototype.setLayerVisibility = function(id, visible) {
 
     // children[0] is rootNode
     this.tiles.children[0].traverse(cO);
+};
+
+Globe.prototype.setZFactor = function(zFactor) {
+    this.layersConfiguration.setZFactor(zFactor);
+    var cO = function(object) {
+        if (object.material.setZFactor) {
+            object.material.setZFactor(zFactor);
+        }
+    };
+
+    // children[0] is rootNode
+    this.tiles.children[0].traverse(cO);
+};
+
+Globe.prototype.getZFactor = function() {
+    return this.layersConfiguration.getZFactor();
 };
 
 Globe.prototype.updateLayersOrdering = function() {

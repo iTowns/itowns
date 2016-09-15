@@ -133,8 +133,8 @@ TileMesh.prototype.getUuid = function(uuid) {
     return this.materials[RendererConstant.ID].getUuid(uuid);
 }
 
-TileMesh.prototype.setColorLayerParameters = function(paramsTextureColor) {
-    this.materials[RendererConstant.FINAL].setParam(paramsTextureColor);
+TileMesh.prototype.setLayerParameters = function(colorParam,elevationParam) {
+    this.materials[RendererConstant.FINAL].setParam(colorParam,elevationParam);
 };
 /**
  *

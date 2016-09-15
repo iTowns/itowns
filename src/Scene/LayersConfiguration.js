@@ -21,6 +21,8 @@ function LayersConfiguration() {
 
     // color layers state (visibility, opacity)
     this.colorLayersState = {};
+
+    this.zFactor = 1.;
 }
 
 LayersConfiguration.prototype.constructor = LayersConfiguration;
@@ -89,6 +91,14 @@ LayersConfiguration.prototype.isColorLayerVisible = function(id) {
 
 LayersConfiguration.prototype.getColorLayerOpacity = function(id) {
     return this.colorLayersState[id].opacity;
+}
+
+LayersConfiguration.prototype.setZFactor = function(zFactor) {
+    this.zFactor = zFactor;
+}
+
+LayersConfiguration.prototype.getZFactor = function() {
+    return this.zFactor;
 }
 
 LayersConfiguration.prototype.moveLayerToIndex = function(id, newSequence) {

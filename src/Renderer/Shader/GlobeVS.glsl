@@ -15,6 +15,7 @@ uniform float       periArcLati;
 uniform mat4        mVPMatRTC;
 uniform int         pickingRender;
 
+uniform float       zFactor;
 
 uniform mat4        projectionMatrix;
 uniform mat4        modelViewMatrix;
@@ -62,8 +63,11 @@ void main() {
                     dv = 0.0;
 
             #else
-                float   dv  = max(texture2D( dTextures_00[0], vVv ).w, 0.);
+             // float   dv  = max(texture2D( dTextures_00[0], vVv ).w, 0.); // this rudimentary no-data handling is interfering with negative displacements of the geoide
+                float   dv  = texture2D( dTextures_00[0], vVv ).w;
             #endif
+
+            dv *= zFactor;
 
             vNormal     = normal;
             vPosition   = vec4( position +  vNormal  * dv ,1.0 );

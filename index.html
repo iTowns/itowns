@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <!--
 To change this license header, choose License Headers in Project Properties.
@@ -40,8 +41,9 @@ and open the template in the editor.
 
                var viewerDiv = document.getElementById("viewerDiv");
 
-               itowns.viewer.createSceneGlobe(initCenter, viewerDiv) ;
+               itowns.viewer.createSceneGlobe(initCenter, viewerDiv, {atmosphere:false}) ;
                //console.log(itowns.viewer.pickPosition());
+
 
               itowns.viewer.addImageryLayer({
                 protocol:   "wmts",
@@ -182,7 +184,6 @@ and open the template in the editor.
                         }
                     }
                 });
-
 
                 itowns.viewer.addImageryLayer({
                 protocol:   "wmts",
@@ -376,13 +377,24 @@ and open the template in the editor.
         //         options: { tileMatrixSet: "PM"}
         //     });
 
-        // itowns.viewer.addImageryLayer({
-        //     protocol:   "wmtsc",
-        //     id:         "OPENSM",
-        //     customUrl:  'http://b.tile.openstreetmap.fr/osmfr/%TILEMATRIX/%COL/%ROW.png',
-        //     options: { tileMatrixSet: "PM"},
-        //     fx :        2.5,
-        // });
+         itowns.viewer.addImageryLayer({
+             protocol:   "wmtsc",
+             id:         "OPENSM",
+             customUrl:  'http://b.tile.openstreetmap.fr/osmfr/%TILEMATRIX/%COL/%ROW.png',
+             options: { mimetype  : "image/png",tileMatrixSet: "PM"},
+             fx :        2.5,
+          });
+
+          itowns.viewer.addImageryLayer({
+             protocol:  "wmtsc",
+             id:        "LAREGRGB",
+			 customUrl: 'geoide/geoideRGB/jpg/%TILEMATRIX/geoideRGB_%COL_%ROW.jpg',
+                                        options: {
+                                            mimetype  : "image/jpg",
+                                            tileMatrixSet: 'WGS84G'
+                                        }
+           });
+
 
         itowns.viewer.addImageryLayer({
                                         url       : "https://wxs.ign.fr/gratuit/geoportail/v/wms",
@@ -404,8 +416,8 @@ and open the template in the editor.
                                             tileMatrixSet: 'WGS84G'
                                         }
                                     });
-
-        itowns.viewer.addElevationLayer({
+/*
+         itowns.viewer.addElevationLayer({
             protocol:   "wmts",
             id:         "IGN_MNT",
             url:        "http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/geoportail/wmts",
@@ -546,10 +558,23 @@ and open the template in the editor.
                         }
                 }
             });
+*/
 
+       itowns.viewer.addElevationLayer({
+            protocol:  "wmtsc",
+            id:        "LAREG",
+			customUrl: 'geoide/geoide/bil/%TILEMATRIX/geoide_%COL_%ROW.bil',
+            noDataValue : -99999,
+            options: {
+                    name: "ELEVATION.ELEVATIONGRIDCOVERAGE",
+                    mimetype: "image/x-bil;bits=32",
+                    tileMatrixSet: "WGS84G"
+                }
+            });
+
+
+        itowns.viewer.showAtmosphere(false);
         itowns.viewer.update();
-
-
 
                // THIS IS AN EXAMPLE OF INTERFACE TO INTERACT WITH ITOWNS
                var Menu = function() {
@@ -563,12 +588,21 @@ and open the template in the editor.
                    this.api = function(){};
                    this.api2 = function(){};
                    this.api3 = function(){};
+                   this.Atmosphere = false;
                };
 
                var text = new Menu();
                var gui = new dat.GUI( { autoPlace: false});
                gui.domElement.id = 'menuDiv';
                viewerDiv.appendChild(gui.domElement);
+
+			   {
+                    var onchangeZFactor = function(newValue) {
+                            itowns.viewer.setZFactor(newValue);
+                    };
+                    text['ZFactor'] = itowns.viewer.getZFactor();
+                    gui.add(text, 'ZFactor').min(1.0).max(20000.0).onChange(onchangeZFactor);
+				}
 
                 var layers = itowns.viewer.getLayers();
                 for(var i in layers)
@@ -577,7 +611,6 @@ and open the template in the editor.
 
                     if(layer.options.mimetype != "image/x-bil;bits=32")
                     {
-
                         text[layer.id] = true;
                         text[layer.id+'_Opacity'] = 1.0;
 
@@ -627,6 +660,10 @@ and open the template in the editor.
                 //     itowns.viewer.showKML(newValue);
                 // });
 
+                gui.add(text, 'Atmosphere').onChange(function(newValue) {
+                    console.log(itowns.viewer.showAtmosphere(newValue));
+                });
+                    
                 if(false)
                 {
                     var f2 = gui.addFolder('Atmosphere');
@@ -687,7 +724,7 @@ and open the template in the editor.
 
                             var controller = gui.__controllers[i];
 
-                            if(controller.property === nameLayer || controller.property === nameLayer + '_Opacity')
+                            if(controller.property === nameLayer || controller.property === nameLayer + '_Opacity')
                                 controllerTodelete.push(controller);
                         }
 

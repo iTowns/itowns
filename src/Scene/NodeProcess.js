@@ -94,7 +94,7 @@ NodeProcess.prototype.subdivideNode = function(node, camera, params) {
 
             quadtree.interCommand.request(args, node).then(function(child) {
                 var colorTextureCount = 0;
-                var paramMaterial = [];
+                var colorParam = [];
                 var layer;
                 var j;
 
@@ -115,7 +115,7 @@ NodeProcess.prototype.subdivideNode = function(node, camera, params) {
 
                         var bcoord = child.matrixSet[tileMatrixSet];
 
-                        paramMaterial.push({
+                        colorParam.push({
                             tileMT: tileMatrixSet,
                             layerTexturesOffset: colorTextureCount,
                             visible: params.layersConfig.isColorLayerVisible(layer.id),
@@ -128,7 +128,8 @@ NodeProcess.prototype.subdivideNode = function(node, camera, params) {
                     }
                 }
 
-                child.setColorLayerParameters(paramMaterial);
+				var elevationParam = { zFactor : params.layersConfig.getZFactor() };
+                child.setLayerParameters(colorParam, elevationParam);
                 child.texturesNeeded = colorTextureCount + 1;
 
                 // request imagery update
