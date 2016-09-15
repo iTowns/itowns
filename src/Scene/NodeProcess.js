@@ -118,8 +118,8 @@ NodeProcess.prototype.subdivideNode = function(node, camera, params) {
                         colorParam.push({
                             tileMT: tileMatrixSet,
                             layerTexturesOffset: colorTextureCount,
-                            visible: params.layersConfig.isColorLayerVisible(layer.id),
-                            opacity: params.layersConfig.getColorLayerOpacity(layer.id),
+                            visible: params.layersConfig.isLayerVisible(layer.id),
+                            opacity: params.layersConfig.getLayerOpacity(layer.id),
                             fx: layer.fx,
                             idLayer: layer.id
                         });
@@ -358,15 +358,16 @@ NodeProcess.prototype.SSE = function(node, camera, params) {
 var quaternion = new THREE.Quaternion();
 
 NodeProcess.prototype.frustumCullingOBB = function(node, camera) {
+    var OBB = node.OBB();
     //position in local space
-    var position = node.OBB().worldToLocal(camera.position().clone());
+    var position = OBB.worldToLocal(camera.position().clone());
     position.z -= node.distance;
     this.camera.setPosition(position);
     // rotation in local space
-    quaternion.multiplyQuaternions(node.OBB().quadInverse(), camera.camera3D.quaternion);
+    quaternion.multiplyQuaternions(OBB.quadInverse(), camera.camera3D.quaternion);
     this.camera.setRotation(quaternion);
 
-    return this.camera.getFrustum().intersectsBox(node.OBB().box3D);
+    return this.camera.getFrustum().intersectsBox(OBB.box3D);
 };
 
 /**
@@ -426,8 +427,6 @@ NodeProcess.prototype.pointHorizonCulling = function(pt) {
 var point = new THREE.Vector3();
 
 NodeProcess.prototype.horizonCulling = function(node) {
-
-    // horizonCulling Oriented bounding box
     var points = node.OBB().pointsWorld;
     var isVisible = false;
 

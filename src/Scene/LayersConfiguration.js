@@ -33,11 +33,12 @@ LayersConfiguration.prototype.addElevationLayer = function(layer) {
 
 LayersConfiguration.prototype.addColorLayer = function(layer) {
     this.colorLayers.push(layer);
-    this.colorLayersState[layer.id] = {
-        visible: true,
-        opacity: 1.0,
+    var params = {
+        visible : (layer.visible  === undefined) ? true : layer.visible,
+        opacity : (layer.opacity  === undefined) ? 1.0  : layer.opacity,
         sequence: this.colorLayers.length - 1
     };
+    this.colorLayersState[layer.id] = params;
 }
 
 LayersConfiguration.prototype.removeColorLayer = function(id) {
@@ -85,11 +86,11 @@ LayersConfiguration.prototype.setLayerVisibility = function(id, visible) {
     }
 }
 
-LayersConfiguration.prototype.isColorLayerVisible = function(id) {
+LayersConfiguration.prototype.isLayerVisible = function(id) {
     return this.colorLayersState[id].visible;
 }
 
-LayersConfiguration.prototype.getColorLayerOpacity = function(id) {
+LayersConfiguration.prototype.getLayerOpacity = function(id) {
     return this.colorLayersState[id].opacity;
 }
 

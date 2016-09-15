@@ -19,8 +19,9 @@ import THREE from 'THREE';
 
 function Globe(ellipsoid, gLDebug, params) {
     //Constructor
+	params = params || {};
 
-    Layer.call(this);
+	Layer.call(this);
 
     var caps = new Capabilities();
     this.NOIE = !caps.isInternetExplorer();
@@ -46,6 +47,7 @@ function Globe(ellipsoid, gLDebug, params) {
     this.tiles = new Quadtree(TileMesh, this.SchemeTileWMTS(2), kml);
     this.layersConfiguration = new LayersConfiguration();
 
+	if(params.atmosphere === undefined) params.atmosphere = true;
     this.atmosphere = (params.atmosphere && this.NOIE) ? new Atmosphere(this.ellipsoid) : undefined;
     this.clouds = new Clouds();
 
@@ -96,6 +98,8 @@ function Globe(ellipsoid, gLDebug, params) {
         this.atmosphere.add(this.clouds);
         this.add(this.atmosphere);
     }
+
+    this.setZFactor(params.zFactor || 1);
 }
 
 Globe.prototype = Object.create(Layer.prototype);
@@ -160,6 +164,10 @@ Globe.prototype.setLayerOpacity = function(id, opacity) {
 
     // children[0] is rootNode
     this.tiles.children[0].traverse(cO);
+};
+
+Globe.prototype.getLayerOpacity = function(id) {
+    return this.layersConfiguration.getLayerOpacity(id);
 };
 
 Globe.prototype.setLayerVisibility = function(id, visible) {

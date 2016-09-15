@@ -67,7 +67,7 @@ WMTS_Provider.prototype.removeLayer = function( /*idLayer*/ ) {
 WMTS_Provider.prototype.preprocessDataLayer = function(layer) {
     layer.fx = layer.fx || 0.0;
     if (layer.protocol === 'wmtsc') {
-        layer.zoom = {
+        layer.zoom = layer.zoom || {
             min: 2,
             max: 20
         };

@@ -213,7 +213,7 @@ TileGeometry.prototype.computeBuffers = function(params, builder) {
     }
 
     var iStart = idVertex;
-    var rmax = 5000;
+    var rmax = 50000;
     var r = Math.max(rmax, Math.pow(rmax, 1 / params.zoom));
 
     r = isFinite(r) ? r : rmax;

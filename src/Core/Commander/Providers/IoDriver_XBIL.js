@@ -35,7 +35,7 @@ IoDriver_XBIL.prototype.parseXBil = function(buffer) {
     // Compute min max using subampling
     for (var i = 0; i < result.floatArray.length; i += 16) {
         var val = result.floatArray[i];
-        if (val > -10.0 && val !== undefined) {
+        if (val !== undefined) {
             result.max = Math.max(result.max, val);
             result.min = Math.min(result.min, val);
         }

@@ -348,7 +348,11 @@ TileMesh.prototype.center = function() {
 };
 
 TileMesh.prototype.OBB = function() {
-    return this.geometry.OBB;
+	var zFactor = this.material.uniforms.zFactor.value;
+	var OBB = this.geometry.OBB.clone();
+	OBB.box3D.min.z *= zFactor;
+	OBB.box3D.max.z *= zFactor;
+	return OBB;
 };
 
 TileMesh.prototype.getParentNotDownScaled = function(layer) {

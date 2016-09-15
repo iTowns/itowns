@@ -223,7 +223,7 @@ ApiGlobe.prototype.createSceneGlobe = function(coordCarto, viewerDiv, params) {
 
     this.scene = Scene(coordCarto, ellipsoid, viewerDiv, debugMode, gLDebug);
 
-    var map = new Globe(ellipsoid, gLDebug, params || {atmosphere:true});
+    var map = new Globe(ellipsoid, gLDebug, params);
 
     this.scene.add(map);
 
@@ -282,7 +282,7 @@ ApiGlobe.prototype.showAtmosphere = function(value) {
 
     this.scene.getMap().showAtmosphere(value);
     this.scene.renderScene3D();
-    
+
 };
 
 ApiGlobe.prototype.setRealisticLightingOn = function(value) {
@@ -352,6 +352,18 @@ ApiGlobe.prototype.setLayerOpacity = function(id, visible) {
 
     this.scene.getMap().setLayerOpacity(id, visible);
     this.scene.renderScene3D();
+};
+
+/**
+ * Gets the opacity of a layer.
+ * @constructor
+ * @param {id} string.
+ */
+
+ApiGlobe.prototype.getLayerOpacity = function(id) {
+
+    return this.scene.getMap().getLayerOpacity(id);
+
 };
 
 ApiGlobe.prototype.setStreetLevelImageryOn = function(value) {
