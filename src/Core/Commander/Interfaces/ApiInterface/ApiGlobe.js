@@ -223,7 +223,7 @@ ApiGlobe.prototype.createSceneGlobe = function(coordCarto, viewerDiv, params) {
 
     this.scene = Scene(coordCarto, ellipsoid, viewerDiv, debugMode, gLDebug);
 
-    var map = new Globe(ellipsoid, gLDebug, params);
+    var map = new Globe(ellipsoid, gLDebug, params || {atmosphere:true});
 
     this.scene.add(map);
 
@@ -282,7 +282,7 @@ ApiGlobe.prototype.showAtmosphere = function(value) {
 
     this.scene.getMap().showAtmosphere(value);
     this.scene.renderScene3D();
-    return value;
+    
 };
 
 ApiGlobe.prototype.setRealisticLightingOn = function(value) {
