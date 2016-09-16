@@ -1,6 +1,6 @@
 /**
  * Generated On: 2015-10-5
- * Class: CoordCarto
+ * Class: GeoCoordinate
  * Description: Coordonées cartographiques
  */
 

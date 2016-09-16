@@ -46,8 +46,8 @@ WFS_Provider.prototype.url = function(bbox) {
     var url = this.baseUrl +
         "SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature" +
         "&typeName=" + this.typename + "&BBOX=" +
-        bbox.minCarto.longitude + "," + bbox.minCarto.latitude + "," +
-        bbox.maxCarto.longitude + "," + bbox.maxCarto.latitude +
+        bbox.west() + "," + bbox.south() + "," +
+        bbox.east() + "," + bbox.north() +
         ",epsg:" + this.epsgCode + "&outputFormat=" + this.format;
 
     return url;
