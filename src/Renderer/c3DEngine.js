@@ -77,6 +77,8 @@ function c3DEngine(scene, positionCamera, viewerDiv, debugMode, gLDebug) {
 
             this.camDebug.position.copy(posDebug);
             this.camDebug.lookAt(target);
+            this.camDebug.translateX(posDebug.length()/2);
+            this.camDebug.lookAt(target);
             this.renderer.setViewport(this.width, 0, this.width, this.height);
             this.renderer.render(this.scene3D, this.camDebug);
 
@@ -99,7 +101,7 @@ function c3DEngine(scene, positionCamera, viewerDiv, debugMode, gLDebug) {
         this.width = this.viewerDiv.clientWidth * (this.debug ? 0.5 : 1);
         this.height = this.viewerDiv.clientHeight;
         this.camera.resize(this.width, this.height);
-        this.controls.updateObject(this.camera);
+        this.controls.updateCamera(this.camera);
 
         if (this.camDebug) {
             this.camDebug.aspect = this.camera.ratio;
@@ -235,7 +237,6 @@ c3DEngine.prototype.enableRTC = function(enable) {
     }
 
 };
-
 
 /**
  * change state all visible nodes

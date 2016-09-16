@@ -1,12 +1,9 @@
 import THREE from 'THREE';
-import defaultValue from 'Core/defaultValue';
-
 
 function Sphere(center,radius) {
 
-	this.center = defaultValue(center,new THREE.Vector3());
-	this.radius = defaultValue(radius,1.0);
-
+	this.center = center || new THREE.Vector3();
+    this.radius = radius || 1.0;
 }
 
 Sphere.prototype.constructor = Sphere;
@@ -23,23 +20,39 @@ Sphere.prototype.setRadius = function(radius) {
 
 var vector = new THREE.Vector3();
 
-Sphere.prototype.intersectWithRay = function(ray) {
+//
+Sphere.prototype.intersectWithRayNoMiss = function(ray) {
 
-    var pc = ray.closestPointToPoint(this.center);
-    var a = pc.length();
+    let pc = ray.closestPointToPoint(this.center);
+    let a = pc.length(),d,b;
 
-    if (a > this.radius)
-        return undefined; // new THREE.Vector3();
+    // TODO: recompute mirror ray
+    // If the ray miss sphere, we recompute the new ray with point symetric to tangent sphere
+    if (a > this.radius) {
+        // mirror point is symetric of pc
+        // The mirror ray must pass through the point mirrorPoint
+        let mirrorPoint = pc.clone().setLength(this.radius*2 - a);
 
-    if (ray.origin.length() > this.radius) {
-        var d = ray.direction.clone();
-        var b = Math.sqrt(this.radius * this.radius - a * a);
+        // Compute the new direction
+        d = ray.direction.subVectors(mirrorPoint,ray.origin).normalize();
+
+        // Classic intersection with the new ray
+        pc = ray.closestPointToPoint(this.center);
+        a = pc.length();
+
+        b = Math.sqrt(this.radius * this.radius - a * a);
         d.setLength(b);
 
-        return vector.subVectors(pc, d);
-    } else
-        return undefined;
+        return vector.addVectors(pc, d);
+    }
 
-}
+    // TODO: check all intersections : if (ray.origin.length() > this.radius)
+    d = ray.direction.clone();
+    b = Math.sqrt(this.radius * this.radius - a * a);
+    d.setLength(b);
+
+    return vector.subVectors(pc, d);
+
+};
 
 export default Sphere;

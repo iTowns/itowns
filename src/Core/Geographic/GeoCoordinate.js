@@ -35,7 +35,7 @@ var getCoordinateValue = function(unit,coord,id)
 
 		return mE.radToDeg(coord[id]);
 
-}
+};
 
 var setCoordinateValue = function(unit,coord,id,value)
 {
@@ -49,7 +49,7 @@ var setCoordinateValue = function(unit,coord,id,value)
 
 		return coord[id] = mE.degToRad(value);
 
-}
+};
 
 var setCoordinate = function(coordinate,longitude, latitude, altitude,unit) {
 

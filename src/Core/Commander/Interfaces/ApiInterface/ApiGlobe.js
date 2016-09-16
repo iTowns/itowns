@@ -131,7 +131,6 @@ ApiGlobe.prototype.removeImageryLayer = function(id) {
     return false;
 };
 
-
 /**
  * Add an elevation layer to the map. Elevations layers are used to build the terrain.
  * Only one elevation layer is used, so if multiple layers cover the same area, the one
@@ -220,7 +219,7 @@ ApiGlobe.prototype.createSceneGlobe = function(coordCarto, viewerDiv) {
     var debugMode = false;
 
     //gLDebug = true; // true to support GLInspector addon
-    debugMode = true;
+    //debugMode = true;
 
     var ellipsoid = new Ellipsoid({
         x: 6378137,
@@ -530,8 +529,7 @@ ApiGlobe.prototype.computeDistance = function(p1, p2) {
  */
 
 ApiGlobe.prototype.setCenter = function(coordinates) {
-
-    var position3D = this.scene.getEllipsoid().cartographicToCartesian(new GeoCoordinate().copyFromDegree(coordinates));
+    var position3D = this.scene.getEllipsoid().cartographicToCartesian(new GeoCoordinate(coordinates.longitude,coordinates.latitude,0,UNIT.DEGREE));
     this.scene.currentControls().setCenter(position3D);
 };
 

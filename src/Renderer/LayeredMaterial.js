@@ -39,7 +39,7 @@ var getColorAtIdUv = function(nbTex) {
     }
 
     return fooTexture;
-}
+};
 
 var LayeredMaterial = function(id) {
 
@@ -142,12 +142,11 @@ var LayeredMaterial = function(id) {
     this.uniforms.lightingOn = {
             type: "i",
             value: gfxEngine().lightingOn
-        },
-        this.uniforms.lightPosition = {
-            type: "v3",
-            value: new THREE.Vector3(-0.5, 0.0, 1.0)
         };
-
+    this.uniforms.lightPosition = {
+        type: "v3",
+        value: new THREE.Vector3(-0.5, 0.0, 1.0)
+    };
     this.setUuid(id || 0);
     this.wireframe = false;
     //this.wireframe = true;
