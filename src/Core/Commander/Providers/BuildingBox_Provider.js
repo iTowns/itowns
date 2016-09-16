@@ -18,7 +18,7 @@ import Provider from 'Core/Commander/Providers/Provider';
 import WFS_Provider from 'Core/Commander/Providers/WFS_Provider';
 import THREE from 'THREE';
 import Ellipsoid from 'Core/Math/Ellipsoid';
-import CoordCarto from 'Core/Geographic/CoordCarto';
+import GeoCoordinate,{UNIT} from 'Core/Geographic/GeoCoordinate';
 import CVML from 'Core/Math/CVML';
 
 
@@ -83,7 +83,6 @@ BuildingBox_Provider.prototype.generateMesh = function(elements, bbox, altitude)
     var ellipsoid = new Ellipsoid(new THREE.Vector3(6378137, 6356752.3142451793, 6378137));
     var features = elements.features;
     var altitude_ground = altitude - 1.5; //35;  // truck height
-    //var cPano = new CoordCarto().setFromDegreeGeo(p1.x  ,p1.z, z_min );
 
     for (var r = 0; r < features.length; r++) {
 
@@ -100,8 +99,8 @@ BuildingBox_Provider.prototype.generateMesh = function(elements, bbox, altitude)
                 var pt2DTab = polygon[j]; //.split(' ');
                 var p1 = new THREE.Vector3(parseFloat(pt2DTab[0]), 0, parseFloat(pt2DTab[1]));
 
-                var coordCarto1 = new CoordCarto().setFromDegreeGeo(p1.x, p1.z, z_min);
-                var coordCarto2 = new CoordCarto().setFromDegreeGeo(p1.x, p1.z, z_min + hauteur); // + Math.random(1000) );
+                var coordCarto1 = new GeoCoordinate(p1.x, p1.z, z_min,UNIT.DEGREE);
+                var coordCarto2 = new GeoCoordinate(p1.x, p1.z, z_min + hauteur,UNIT.DEGREE); // + Math.random(1000) );
                 var pgeo1 = ellipsoid.cartographicToCartesian(coordCarto1); //{longitude:p1.z, latitude:p1.x, altitude: 0});
                 var pgeo2 = ellipsoid.cartographicToCartesian(coordCarto2);
 
@@ -141,9 +140,9 @@ BuildingBox_Provider.prototype.generateMesh = function(elements, bbox, altitude)
                 pt2 = t.getPoint(1),
                 pt3 = t.getPoint(2);
 
-            var coordCarto1 = new CoordCarto().setFromDegreeGeo(pt1.y, pt1.x, z_min + hauteur);
-            var coordCarto2 = new CoordCarto().setFromDegreeGeo(pt2.y, pt2.x, z_min + hauteur); // + Math.random(1000) );
-            var coordCarto3 = new CoordCarto().setFromDegreeGeo(pt3.y, pt3.x, z_min + hauteur);
+            var coordCarto1 = new GeoCoordinate(pt1.y, pt1.x, z_min + hauteur,UNIT.DEGREE);
+            var coordCarto2 = new GeoCoordinate(pt2.y, pt2.x, z_min + hauteur,UNIT.DEGREE); // + Math.random(1000) );
+            var coordCarto3 = new GeoCoordinate(pt3.y, pt3.x, z_min + hauteur,UNIT.DEGREE);
 
             var pgeo1 = ellipsoid.cartographicToCartesian(coordCarto1); //{longitude:p1.z, latitude:p1.x, altitude: 0});
             var pgeo2 = ellipsoid.cartographicToCartesian(coordCarto2);
@@ -208,15 +207,15 @@ BuildingBox_Provider.prototype.addRoad = function(geometry, bbox, altitude_road,
 
     // Version using SIMPLE PLANE ROAD for Click and Go
     var ratio = 0.2;
-    var roadWidth = (bbox.maxCarto.longitude - bbox.minCarto.longitude) * ratio;
-    var roadHeight = (bbox.maxCarto.latitude - bbox.minCarto.latitude) * ratio;
-    var pos = new THREE.Vector3((bbox.minCarto.latitude + bbox.maxCarto.latitude) / 2,
-        altitude_road, (bbox.minCarto.longitude + bbox.maxCarto.longitude) / 2); //48.8505774,  altitude_sol, 2.3348124);
+    var roadWidth = (bbox.east() - bbox.west()) * ratio;
+    var roadHeight = (bbox.north() - bbox.south()) * ratio;
+    var pos = new THREE.Vector3((bbox.south() + bbox.north()) / 2,
+        altitude_road, (bbox.west() + bbox.east()) / 2); //48.8505774,  altitude_sol, 2.3348124);
 
-    var coordCarto1 = new CoordCarto().setFromDegreeGeo(pos.x - roadWidth, pos.z - roadHeight, altitude_road);
-    var coordCarto2 = new CoordCarto().setFromDegreeGeo(pos.x - roadWidth, pos.z + roadHeight, altitude_road);
-    var coordCarto3 = new CoordCarto().setFromDegreeGeo(pos.x + roadWidth, pos.z + roadHeight, altitude_road);
-    var coordCarto4 = new CoordCarto().setFromDegreeGeo(pos.x + roadWidth, pos.z - roadHeight, altitude_road);
+    var coordCarto1 = new GeoCoordinate(pos.x - roadWidth, pos.z - roadHeight, altitude_road,UNIT.DEGREE);
+    var coordCarto2 = new GeoCoordinate(pos.x - roadWidth, pos.z + roadHeight, altitude_road,UNIT.DEGREE);
+    var coordCarto3 = new GeoCoordinate(pos.x + roadWidth, pos.z + roadHeight, altitude_road,UNIT.DEGREE);
+    var coordCarto4 = new GeoCoordinate(pos.x + roadWidth, pos.z - roadHeight, altitude_road,UNIT.DEGREE);
 
     var pgeo1 = ellipsoid.cartographicToCartesian(coordCarto1);
     var pgeo2 = ellipsoid.cartographicToCartesian(coordCarto2);
