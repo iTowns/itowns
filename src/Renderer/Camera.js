@@ -29,12 +29,8 @@ function Camera(width, height, debug) {
     this.frustum = new THREE.Frustum();
     this.width = width;
     this.height = height;
-    this.Hypotenuse = Math.sqrt(this.width * this.width + this.height * this.height);
 
-    var radAngle = this.FOV * Math.PI / 180;
-    this.HFOV = 2.0 * Math.atan(Math.tan(radAngle * 0.5) / this.ratio); // TODO surement faux
-    this.HYFOV = 2.0 * Math.atan(Math.tan(radAngle * 0.5) * this.Hypotenuse / this.width);
-    this.preSSE = this.Hypotenuse * (2.0 * Math.tan(this.HYFOV * 0.5));
+    this.updatePreSSE();
 
     this.cameraHelper = debug ? new THREE.CameraHelper(this.camera3D) : undefined;
 }
@@ -57,9 +53,41 @@ Camera.prototype.camHelper = function() {
 
 };
 
+Camera.prototype.updatePreSSE = function() {
+
+    this.Hypotenuse = Math.sqrt(this.width * this.width + this.height * this.height);
+    var radAngle = this.FOV * Math.PI / 180;
+
+    this.HFOV = 2.0 * Math.atan(Math.tan(radAngle * 0.5) / this.ratio); // TODO: not correct -> see new preSSE
+    this.HYFOV = 2.0 * Math.atan(Math.tan(radAngle * 0.5) * this.Hypotenuse / this.width);
+    this.preSSE = this.Hypotenuse * (2.0 * Math.tan(this.HYFOV * 0.5));
+
+    /* TODO: New preSSE but problem on Windows
+    var d = this.height / (2*Math.tan(radAngle/2));
+
+    //TODO: Verify with arrow helper
+    this.HFOV = 2*Math.atan((this.width/2)/d);
+    this.HYFOV = 2*Math.atan((this.Hypotenuse/2)/d);
+
+    this.preSSE = this.Hypotenuse * (2.0 * Math.tan(this.HYFOV * 0.5));
+    */
+};
+
 Camera.prototype.createCamHelper = function() {
 
     this.cameraHelper = new THREE.CameraHelper(this.camera3D);
+
+    var dir = new THREE.Vector3( 0, 0, -1 );
+    var quaternion = new THREE.Quaternion();
+
+    quaternion.setFromAxisAngle( new THREE.Vector3( 0, 1, 0 ),  this.HFOV/2);
+    dir.applyQuaternion( quaternion );
+    var origin = new THREE.Vector3();
+    var length = 100000000;
+    var hex = 0xffff00;
+
+    this.arrowHelper = new THREE.ArrowHelper( dir, origin, length, hex );
+    this.cameraHelper.add(this.arrowHelper);
 
 };
 
@@ -74,17 +102,20 @@ Camera.prototype.resize = function(width, height) {
     this.height = height;
     this.ratio = width / height;
 
-    this.Hypotenuse = Math.sqrt(this.width * this.width + this.height * this.height);
-
-    var radAngle = this.FOV * Math.PI / 180;
-
-    this.HYFOV = 2.0 * Math.atan(Math.tan(radAngle * 0.5) * this.Hypotenuse / this.width);
-
-    this.preSSE = this.Hypotenuse * (2.0 * Math.tan(this.HYFOV * 0.5));
+    this.updatePreSSE();
 
     this.camera3D.aspect = this.ratio;
-
     this.camera3D.updateProjectionMatrix();
+
+    if(this.cameraHelper) {
+        var dir = new THREE.Vector3( 0, 0, -1 );
+        var quaternion = new THREE.Quaternion();
+        quaternion.setFromAxisAngle( new THREE.Vector3( 0, 1, 0 ),  this.HFOV/2);
+        dir.applyQuaternion( quaternion );
+
+        this.arrowHelper.setDirection(dir);
+        this.cameraHelper.update();
+    }
 
 };
 

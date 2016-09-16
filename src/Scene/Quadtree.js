@@ -73,7 +73,7 @@ Quadtree.prototype.init = function(geometryLayer) {
     for (var i = 0; i < this.schemeTile.rootCount(); i++) {
         this.requestNewTile(geometryLayer, this.schemeTile.getRoot(i), rootNode);
     }
-}
+};
 
 Quadtree.prototype.northWest = function(node) {
     return node.children[0];
@@ -118,6 +118,39 @@ Quadtree.prototype.subdivideNode = function(node) {
     var quad = new Quad(node.bbox);
 
     return [quad.northWest, quad.northEast, quad.southWest, quad.southEast];
+};
+
+Quadtree.prototype.traverse = function(foo,node)
+{
+    if(foo(node))
+      for (var i = 0; i < node.children.length; i++)
+        this.traverse(foo,node.children[i]);
+};
+
+Quadtree.prototype.getTile = function(coordinate) {
+
+    var point = {x:coordinate.longitude(),y:coordinate.latitude()};
+
+    var gT = function(tile)
+    {
+        var inside =  tile.bbox ? tile.bbox.isInside(point) : true;
+
+        if(tile.children.length === 0 && inside)
+            point.tile = tile;
+
+        //TODO: Fix error verify if this is correct
+        if(inside)
+             point.parent = tile.parent;
+
+        return inside;
+    };
+
+    this.traverse(gT,this.children[0]);
+
+    if(point.tile === undefined)
+      return point.parent;
+    else
+      return point.tile;
 };
 
 export default Quadtree;

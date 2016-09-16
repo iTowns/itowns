@@ -110,7 +110,7 @@ Globe.prototype = Object.create(Layer.prototype);
 Globe.prototype.constructor = Globe;
 
 /**
- * @documentation: Rafrachi les mat�riaux en fonction du quadTree ORTHO
+ * @documentation: Rafrachi les materiaux en fonction du quadTree ORTHO
  *
  */
 Globe.prototype.QuadTreeToMaterial = function() {
@@ -221,6 +221,10 @@ Globe.prototype.getZoomLevel = function( /*id*/ ) {
     }();
     this.tiles.children[0].traverseVisible(cO);
     return cO();
+};
+
+Globe.prototype.getTile = function(coordinate) {
+    return this.tiles.getTile(coordinate);
 };
 
 Globe.prototype.setRealisticLightingOn = function(bool) {

@@ -87,7 +87,7 @@ Scene.prototype.getPickPosition = function(mouse) {
 
 Scene.prototype.getEllipsoid = function() {
     return this.ellipsoid;
-}
+};
 
 //    Scene.prototype.getZoomLevel = function(){
 //        return this.selectNodes;
