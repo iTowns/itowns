@@ -27,4 +27,8 @@ FeatureMaterial.prototype.enablePickingRender = function(enable) {
     this.uniforms.pickingRender.value = enable === true ? 1 : 0;
 };
 
+FeatureMaterial.prototype.setVisibility = function(visible) {
+	this.visible = visible;
+}
+
 export default FeatureMaterial;

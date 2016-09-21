@@ -1,7 +1,7 @@
 /**
  * Generated On: 2016-09-09
  * Class: NodeManager
- * Description: Transition step between the 
+ * Description: Transition step between the
  */
 
  //https://github.com/Oslandia/workshop-3d-itowns/blob/master/2_analysis/5_3d_intersection.md
@@ -9,10 +9,10 @@
 function NodeManager() {
 	//Tab containing the different reprepresentation depending on the sse level for the features
 	// {levelMin, levelMax,representation}
-	this.levelSwitchTab = [ {min: 6, max: 13, type: 'point'},
-							{min: 13, max: 20, type: 'box'},
-							{min: 20, max: 27, type: 'point'},
-							{min: 27, max: 700, type: 'box'} ];
+	this.levelSwitchTab = [ {min: 6,  max: 13,  type: 'point'},
+							{min: 13, max: 20,  type: 'box'  },
+							{min: 20, max: 27,  type: 'point'},
+							{min: 27, max: 700, type: 'box'  }];
 }
 
 /**
@@ -22,12 +22,22 @@ function NodeManager() {
  */
 NodeManager.prototype.checkType = function(node, quadtree, refinementCommandCancellationFn) {
 	var level = node.sse;
-	for (var i = 0; i < this.levelSwitchTab.length; i++) {
-		var lvl = this.levelSwitchTab[i];
-		if(level > lvl.min && level < lvl.max && node.content.currentType != lvl.type){
-			node.content.currentType = lvl.type;
-			this.nodeRequest(node, quadtree, refinementCommandCancellationFn);
+	var layer = node.content.layer;
+	if(layer.id == 'testWfsPoint') {
+		var type = layer.params.getRetailType();
+		if(type != 'auto') {
+			if(type != layer.retailType || layer.params.getForceUpdate())
+				this.nodeRequest(node, quadtree, refinementCommandCancellationFn);
 			return;
+		} else {
+			for (var i = 0; i < this.levelSwitchTab.length; i++) {
+				var lvl = this.levelSwitchTab[i];
+				if(level > lvl.min && level < lvl.max && node.content.currentType != lvl.type){
+					node.content.currentType = lvl.type;
+					this.nodeRequest(node, quadtree, refinementCommandCancellationFn);
+					return;
+				}
+			}
 		}
 	}
 };
