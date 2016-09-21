@@ -306,12 +306,15 @@ ApiGlobe.prototype.setRealisticLightingOn = function(value) {
  * @param {id} string.
  * @params {visible} boolean.
  */
-
 ApiGlobe.prototype.setLayerVisibility = function(id, visible) {
-
     this.scene.getMap().setLayerVisibility(id, visible);
 
     this.scene.renderScene3D();
+};
+
+ApiGlobe.prototype.forceFeatureNodeUpdate = function() {
+    this.scene.realtimeSceneProcess();
+    this.scene.managerCommand.runAllCommands();
 };
 
 ApiGlobe.prototype.animateTime = function(value) {

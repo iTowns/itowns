@@ -363,9 +363,10 @@ NodeProcess.prototype.SSE = function(node, camera, params) {
 
     var sse = this.checkNodeSSE(node);
 
-    if(node.content != undefined && node.content != null && node.content instanceof FeatureMesh)
-        if(sse)
-            this.nodeManager.checkType(node, params.tree, refinementCommandCancellationFn);
+    if (node.content && ((node.content != null && node.content instanceof FeatureMesh) ||
+                         (node.content instanceof THREE.Object3D && node.content.children.length != 0 && node.content.children[0] instanceof THREE.Line))) {
+        this.nodeManager.checkType(node, params.tree, refinementCommandCancellationFn);
+    }
 
     if (params.withUp) {
         if (sse) {

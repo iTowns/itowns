@@ -114,8 +114,6 @@ WFS_Provider.prototype.tileInsideLimit = function(tile,layer) {
     var bbox = tile.bbox;
     var level = tile.level;
 
-    //console.log(level);
-
     // shifting longitude because of issue #19
     var west =  layer.bbox[0]*Math.PI/180.0 + Math.PI;
     var east =  layer.bbox[2]*Math.PI/180.0 + Math.PI;
@@ -187,7 +185,7 @@ WFS_Provider.prototype.getFeatures = function(tile, layer, parameters, parent) {
             else if((mesh.currentType == undefined && (layer.type == "point" || layer.type == "box"))
                         || mesh.currentType == "point" || mesh.currentType == "box"){
                 var type = mesh.currentType || layer.type;
-                this.GeoJSON2Point(features, bbox, geometry, type);
+                this.GeoJSON2Point(features, bbox, geometry, type, layer);
                 mesh.setGeometry(geometry);
                 if(mesh.currentType === undefined)
                     mesh.currentType = layer.type;
@@ -203,7 +201,8 @@ WFS_Provider.prototype.getFeatures = function(tile, layer, parameters, parent) {
                 result.feature = mesh;
             }
             //Is needed to do another request for the retail level change
-            result.feature.layer = layer;
+            if(result.feature.layer == null)
+                result.feature.layer = layer;
 
             if (result.feature !== undefined)
                 this.cache.addRessource(url, result.feature);
@@ -234,12 +233,11 @@ WFS_Provider.prototype.GeoJSON2Polygon = function(features) {
             }
             var geometry = new THREE.BufferGeometry();
             var material = new THREE.LineBasicMaterial({ color: 0xff0000, transparent : true, opacity: 0.9}); //side:THREE.DoubleSide, , linewidth: 5,
-                geometry.addAttribute( 'position', new THREE.BufferAttribute( new Float32Array( positions ), 3 ) );
-                geometry.computeBoundingSphere();
+            geometry.addAttribute( 'position', new THREE.BufferAttribute( new Float32Array( positions ), 3 ) );
+            geometry.computeBoundingSphere();
             var poly = new THREE.Line( geometry, material );
-                poly.frustumCulled = false;
+            poly.frustumCulled = false;
             polyGroup.add(poly);
-
         }
     }
 
@@ -447,7 +445,6 @@ WFS_Provider.prototype.GeoJSON2Line = function(features, bbox, geometry) {
             if(c1 != undefined)  var c1X  = c1[0],  c1Y  = c1[1];
             var minLong = bbox.minCarto.longitude, maxLong = bbox.maxCarto.longitude,
                 minLat  = bbox.minCarto.latitude,  maxLat  = bbox.maxCarto.latitude;
-                //console.log('Je suis actuellement au début de la boucle');
 
             if (cX < minLong || cX > maxLong || cY < minLat || cY > maxLat) {
                 var coeffSlope, rest;
@@ -506,7 +503,7 @@ WFS_Provider.prototype.GeoJSON2Line = function(features, bbox, geometry) {
  * @param value: the JSON object which contains the data received from the WFS request
  * @param geometry: the geometry used to set the tile geometry
  */
-WFS_Provider.prototype.GeoJSON2Point = function(features, bbox, geometry, type) {
+WFS_Provider.prototype.GeoJSON2Point = function(features, bbox, geometry, type, layer) {
     for (var i = 0; i < features.length; i++) {
         var feature = features[i];
         var coords = feature.geometry.coordinates;
@@ -517,6 +514,11 @@ WFS_Provider.prototype.GeoJSON2Point = function(features, bbox, geometry, type) 
 
         var currentGeometry;
         //Change the type of height and radius computation. Used only for the test purpose
+
+        if(layer.params && layer.params.retail) {
+            type = layer.params.retail(centerPoint, type, new THREE.Vector3());
+            layer.retailType = layer.params.getRetailType();
+        }
         if(type == 'box')
             currentGeometry = new THREE.BoxGeometry(this.boxWidth, this.boxWidth, this.boxHeight);
         else if(type == 'point')

@@ -160,9 +160,11 @@ Globe.prototype.setLayerVisibility = function(id, visible) {
     this.layersConfiguration.setLayerVisibility(id, visible);
 
     var cO = function(object) {
-        if (object.material.setLayerOpacity) {
+        if (object.material.setLayerVisibility) {
             object.material.setLayerVisibility(object.getIndexLayerColor(id), visible);
         }
+        if(object.content && object.content.material && object.content.material.setVisibility && object.content.layer.id == id)
+            object.content.material.setVisibility(visible);
     };
 
     // children[0] is rootNode
