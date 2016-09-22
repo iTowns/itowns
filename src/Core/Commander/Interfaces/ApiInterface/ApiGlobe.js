@@ -238,7 +238,8 @@ ApiGlobe.prototype.createSceneGlobe = function(coordCarto, viewerDiv, params) {
 
     var wgs84TileLayer = {
         protocol: 'tile',
-        id: 'wgs84'
+        id: 'wgs84',
+        elevationZooms: params.elevationZooms || [14,11,7,3]
     };
 
     preprocessLayer(wgs84TileLayer, this.scene.managerCommand.getProtocolProvider(wgs84TileLayer.protocol));

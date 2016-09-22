@@ -163,7 +163,7 @@ BrowseTree.prototype._browse = function(node, camera, process, action, params) {
             break;
         case 'clean':
             {
-                this._clean(node, node.level + 2, process, camera);
+                this._clean(node, node.level + 2, process, camera, params);
             }
             break;
         default:
@@ -173,17 +173,17 @@ BrowseTree.prototype._browse = function(node, camera, process, action, params) {
     }
 };
 
-BrowseTree.prototype._clean = function(node, level, process, camera) {
+BrowseTree.prototype._clean = function(node, level, process, camera, params) {
     // update node's sse value
     node.sse = camera.computeNodeSSE(node);
 
-    var sse = process.checkNodeSSE(node);
+    var sse = process.checkNodeSSE(node,params);
 
     // recursively clean children
     if (node.children.length > 0) {
         var disposableChildrenCount = 0;
         for (var i = 0; i < node.children.length; i++) {
-            if (this._clean(node.children[i], level, process, camera)) {
+            if (this._clean(node.children[i], level, process, camera, params)) {
                 disposableChildrenCount++;
             }
         }

@@ -74,12 +74,27 @@ TileProvider.prototype.executeCommand = function(command) {
     var tileCoord = this.projection.WGS84toWMTS(bbox);
     var parent = command.requester;
 
+
+	var elevationZooms = command.paramsFunction.layer.elevationZooms;
+	if(elevationZooms)
+	{
+		tileCoord.zoomElevation = 0;
+		for (var i = 0; i < elevationZooms.length; i++) {
+			var gLev = elevationZooms[i];
+			if (tileCoord.zoomElevation < gLev && gLev <= tileCoord.zoom) {
+				tileCoord.zoomElevation = gLev;
+				break;
+			}
+		}
+	}
+
     // build tile
     var geometry = undefined; //getGeometry(bbox,tileCoord);
 
     var params = {
         bbox: bbox,
         zoom: tileCoord.zoom,
+        zoomElevation: tileCoord.zoomElevation,
         segment: 16,
         center: null,
         projected: null

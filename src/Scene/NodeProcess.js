@@ -76,8 +76,9 @@ NodeProcess.prototype.frustumCulling = function(node, camera) {
     return frustum.intersectsObject(node);
 };
 
-NodeProcess.prototype.checkNodeSSE = function(node) {
-    return 6.0 < node.sse || node.level <= 2;
+NodeProcess.prototype.checkNodeSSE = function(node,params) {
+    var zoom = params.layersConfig.elevationLayers[0].zoom; // what about multiple elevations ?
+    return (6.0 < node.sse || node.level < zoom.min) && (node.level < zoom.max);
 };
 
 NodeProcess.prototype.subdivideNode = function(node, camera, params) {
@@ -330,7 +331,7 @@ NodeProcess.prototype.SSE = function(node, camera, params) {
     // update node's sse value
     node.sse = camera.computeNodeSSE(node);
 
-    var sse = this.checkNodeSSE(node);
+    var sse = this.checkNodeSSE(node, params);
 
     if (params.withUp) {
         if (sse) {

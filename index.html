@@ -11,18 +11,37 @@ and open the template in the editor.
 
     <style type="text/css">
             html {height: 100%}
-        body { margin: 0; overflow:hidden; height:100%}
+        body { margin: 0; overflow:hidden; height:100%;}
+        body * { 
+			
+            width: 100%;
+			background:#0000;
+			color:#FFFFFF;}
 
             #viewerDiv {
                 margin : auto auto;
-                width: 100%;
                 height: 100%;
                 padding: 0;
                 /*margin-top: 50vh;
                 transform: translateY(-50%);*/
             }
-            #menuDiv {position: absolute; top:0px; margin-left: 0px;}
+            #menuDiv {z-index: 1; position: absolute; top:0px; margin-left: 0px;}
 
+#header {
+   position:fixed;
+   left:0px;
+   top:0px;
+   height:30px;
+   text-align:right;
+}
+
+#footer {
+   position:fixed;
+   left:0px;
+   bottom:0px;
+   height:30px;
+   text-align:right;
+}
 
         </style>
         <meta charset="UTF-8">
@@ -32,6 +51,8 @@ and open the template in the editor.
     </head>
     <body>
         <div id="viewerDiv"></div>
+        <div id="header"><a href="http://recherche.ign.fr/labos/lareg">LAREG</a>, <a href="http://recherche.ign.fr/labos/matis">MATIS</a>, <a href="http://www.itowns-project.org/">iTowns</a></div>
+		<div id="footer">© <a href="http://www.ign.fr">IGN</a>, dataset : <a href="http://pmd.gfz-potsdam.de/icgem/showshort.php?id=escidoc:1119897">EIGEN-6C4</a> model (<a href="http://www.cnes.fr">CNES</a>/<a href="http://grgs.obs-mip.fr/">GRGS</a> and <a href="http://www.gfz-potsdam.de/en/home/">GFZ</a>)</div>
         <script src="dist/itowns2.js"> </script>
         <script type="text/javascript">
 
@@ -41,19 +62,12 @@ and open the template in the editor.
 
                var viewerDiv = document.getElementById("viewerDiv");
 
-               itowns.viewer.createSceneGlobe(initCenter, viewerDiv, {atmosphere:false, zFactor:12000}) ;
+               itowns.viewer.createSceneGlobe(initCenter, viewerDiv, {atmosphere:false, zFactor:12000, elevationZooms:[4,2]}) ;
 
-/*
-         itowns.viewer.addImageryLayer({
-                 protocol:   "wmtsc",
-                 id:         "DARK",
-                 customUrl:  "http://a.basemaps.cartocdn.com/dark_all/%TILEMATRIX/%COL/%ROW.png",
-                 options: { mimetype  : "image/png", tileMatrixSet: "PM"}
-         });
-*/
          itowns.viewer.addImageryLayer({
              protocol:   "wmtsc",
              id:         "OPENSM",
+             zoom : { min:1, max:4 },
              customUrl:  'http://b.tile.openstreetmap.fr/osmfr/%TILEMATRIX/%COL/%ROW.png',
              options: { mimetype  : "image/png", tileMatrixSet: "PM"},
              fx :        2.5
@@ -62,8 +76,8 @@ and open the template in the editor.
         itowns.viewer.addImageryLayer({
              protocol:  "wmtsc",
              id:        "GEOID",
-             zoom : { min:0, max:4 },
-             customUrl: 'geoide/geoideRGB/jpg/%TILEMATRIX/geoideRGB_%COL_%ROW.jpg',
+             zoom : { min:1, max:4 },
+             customUrl: 'localcolors/jpg/%TILEMATRIX/localcolors_%COL_%ROW.jpg',
              options: { mimetype  : "image/jpg", tileMatrixSet: 'WGS84G' },
              opacity : 0.8
            });
@@ -71,7 +85,8 @@ and open the template in the editor.
        itowns.viewer.addElevationLayer({
             protocol:  "wmtsc",
             id:        "GEOID",
-            customUrl: 'geoide/geoide/bil/%TILEMATRIX/geoide_%COL_%ROW.bil',
+            zoom : { min:2, max:4 },
+            customUrl: 'geoid/bil/%TILEMATRIX/geoid_%COL_%ROW.bil',
             noDataValue : -99999,
             options: {
                     name: "ELEVATION.ELEVATIONGRIDCOVERAGE",
@@ -87,6 +102,70 @@ and open the template in the editor.
                var gui = new dat.GUI( { autoPlace: false});
                gui.domElement.id = 'menuDiv';
                viewerDiv.appendChild(gui.domElement);
+               {
+				    var screenshot = function() {
+						
+						var gfx = itowns.viewer.scene.gfxEngine;
+						var tilelength = 4096;
+						var fullsize = text.screenshot;
+						var tiles   = { width: Math.ceil(fullsize.width/tilelength), height: Math.ceil(fullsize.height/tilelength) };
+						var size = gfx.getRenderer().getSize();
+						
+						var canvas = document.createElement("canvas");
+						var ctx = canvas.getContext("2d");
+						canvas.width = fullsize.width;
+						canvas.height = fullsize.height;
+						console.log
+						
+						for(var i=0; i<tiles.width; ++i) for(var j=0; j<tiles.height; ++j) {
+							console.log('screenshot, tile : ',(i+j*tiles.width)+"/"+(tiles.width*tiles.height));
+
+							var x = i*tilelength;
+							var y = j*tilelength;
+							var tilesize = { width: Math.min(fullsize.width-x,tilelength), height: Math.min(fullsize.height-y,tilelength) };
+							
+							gfx.width = tilesize.width;
+							gfx.height = tilesize.height;
+							gfx.camera.resize(tilesize.width, tilesize.height);
+							gfx.camera.camera3D.setViewOffset(fullsize.width,fullsize.height, x,y, tilesize.width,tilesize.height);
+							gfx.scene.updateCamera();
+							gfx.renderer.setSize( tilesize.width, tilesize.height );
+							gfx.update();
+							
+							ctx.drawImage(gfx.renderer.domElement, x, y);
+						}
+						
+						canvas.toBlob(function(blob) {
+							var element = document.createElement('a');
+							element.style.display = 'none';
+							var url = window.URL.createObjectURL(blob);
+							element.setAttribute('href', url);
+							element.setAttribute('download', 'itowns-geoid.png');
+							element.click();
+							window.URL.revokeObjectURL(blob);
+						});
+						console.log('screenshot : done');
+							
+						gfx.width = size.width;
+						gfx.height = size.height;
+						gfx.camera.resize(size.width, size.height);
+						gfx.camera.camera3D.clearViewOffset();
+						gfx.scene.updateCamera();
+						gfx.renderer.setSize( size.width, size.height );
+						gfx.update();
+					};
+					var ss = gui.addFolder('Screenshot');
+                    text.screenshot = {
+						width: 10000,
+						height: 10000,
+						screenshot: screenshot
+					};
+					
+					ss.add(text.screenshot,'screenshot');
+					ss.add(text.screenshot,'width');
+					ss.add(text.screenshot,'height');
+               
+			   }
 
                {
                     var onchangeZFactor = function(newValue) {
@@ -96,91 +175,21 @@ and open the template in the editor.
                     gui.add(text, 'ZFactor').min(1.0).max(20000.0).onChange(onchangeZFactor);
                 }
 
-                var layers = itowns.viewer.getLayers();
-                for(var i in layers)
                 {
-                    var layer = layers[i];
-
-                    if(layer.options.mimetype != "image/x-bil;bits=32")
-                    {
-                        text[layer.id] = true;
-                        text[layer.id+'_Opacity'] = itowns.viewer.getLayerOpacity(layer.id);
-
-
-                        var fnUp = function(myid) {
-                            return function() {
-                                itowns.viewer.moveLayerUp(myid);
-                            }
-                        }(layer.id);
-                        var fnDown = function(myid) {
-                            return function() {
-                                itowns.viewer.moveLayerDown(myid);
-                            }
-                        }(layer.id);
-
-                        text[layer.id+'_up'] = fnUp;
-                        text[layer.id+'_down'] = fnDown;
-
-                        var onchangeVisibily = function(id)
-                        {
-                            return function(newValue)
-                            {
-                                itowns.viewer.setLayerVisibility(id,newValue);
-                            };
-
-                        }(layer.id);
-
-                        var onchangeOpacity = function(id)
-                        {
-                            return function(newValue) {
-
-                                var opacity = Math.max(0,Math.min(newValue, 1.0));
-                                itowns.viewer.setLayerOpacity(id, opacity);
-
-                            };
-
-                        }(layer.id);
-
-                        gui.add(text, layer.id).onChange( onchangeVisibily).name(layer.id);
-                        gui.add(text, layer.id + '_Opacity').min(0.0).max(1.0).name(' → Opacity').onChange(onchangeOpacity);
-                        gui.add(text, layer.id + '_up');
-                        gui.add(text, layer.id + '_down');
-                    }
-                }
-
-                var removeLayer= function(nameLayer)
-                {
-
-                    if(itowns.viewer.removeImageryLayer(nameLayer))
-                    {
-                        var controllerTodelete = [];
-
-                        for (var i in gui.__controllers) {
-
-                            var controller = gui.__controllers[i];
-
-                            if(controller.property === nameLayer || controller.property === nameLayer + '_Opacity')
-                                controllerTodelete.push(controller);
-                        }
-
-                        for (var i in controllerTodelete)
-                            gui.remove(controllerTodelete[i]);
-                    }
-                }
-
-                var controller;
+					var onchangeOpacity = function(id) {
+                      return function(newValue) {
+						var opacity = Math.max(0,Math.min(newValue, 1.0));
+						itowns.viewer.setLayerOpacity(id, opacity);
+					  }
+					}("GEOID");
+					text['Opacity'] = itowns.viewer.getLayerOpacity("GEOID");
+					gui.add(text, 'Opacity').min(0.0).max(1.0).name('Opacity').onChange(onchangeOpacity);
+				};
                 
-                var layerIdCrs = 'OrthoCRS';
                 viewerDiv.addEventListener('globe-loaded',function(){
                     console.log("Globe Loaded");
                 } ,
                 false);
-
-                viewerDiv.addEventListener('Layer-removed',function(event){
-                    console.log("Layer " + event.layer +  " removed");
-                } ,
-                false);
-
         </script>
     </body>
 </html>

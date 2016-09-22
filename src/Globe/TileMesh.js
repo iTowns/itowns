@@ -29,7 +29,6 @@ import GlobeDepthMaterial from 'Renderer/GlobeDepthMaterial';
 import MatteIdsMaterial from 'Renderer/MatteIdsMaterial';
 import RendererConstant from 'Renderer/RendererConstant';
 
-var groupelevation = [14, 11, 7, 3];
 var l_ELEVATION = 0;
 var l_COLOR = 1;
 
@@ -68,16 +67,7 @@ function TileMesh(params, builder, geometryCache) {
     this.material = this.materials[RendererConstant.FINAL];
 
     this.frustumCulled = false;
-    this.levelElevation = this.level;
-
-    // TODO not generic
-    for (var i = 0; i < groupelevation.length; i++) {
-        var gLev = groupelevation[i];
-        if (this.level >= gLev) {
-            this.levelElevation = gLev;
-            break;
-        }
-    }
+    this.levelElevation = params.zoomElevation || this.level;
 
     // Layer
     this.currentElevation = -1;
