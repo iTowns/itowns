@@ -28,9 +28,12 @@ import FeatureMesh from 'Globe/FeatureMesh';
  */
 function WFS_Provider(/*options*/) {
     Provider.call(this, new IoDriver_JSON());
-    this.cache = CacheRessource();
-    this.ioDriverXML = new IoDriverXML();
-    this.projection = new Projection();
+    this.cache          = CacheRessource();
+    this.ioDriverXML    = new IoDriverXML();
+    this.projection     = new Projection();
+
+    this.size           = {x:6378137,y: 6356752.3142451793,z:6378137};
+    this.ellipsoid      = new Ellipsoid(this.size);
 }
 
 WFS_Provider.prototype = Object.create(Provider.prototype);
@@ -66,40 +69,15 @@ WFS_Provider.prototype.preprocessDataLayer = function(layer){
     if(!layer.title)
         throw new Error('layerName is required.');
 
-    layer.format = defaultValue(layer.options.mimetype, "json"),
-    layer.crs = defaultValue(layer.projection, "EPSG:4326"),
-    layer.version = defaultValue(layer.version, "1.3.0"),
-    layer.bbox = defaultValue(layer.bbox, [-180, -90, 180, 90]);
+    layer.format    = defaultValue(layer.options.mimetype, "json"),
+    layer.crs       = defaultValue(layer.projection, "EPSG:4326"),
+    layer.version   = defaultValue(layer.version, "1.3.0"),
+    layer.bbox      = defaultValue(layer.bbox, [-180, -90, 90, 180]);
     layer.customUrl = layer.url +
-                  'SERVICE=WFS&REQUEST=GetFeature&typeName=' + layer.title +
-                  '&VERSION=' + layer.version +
-                  '&outputFormat=' + layer.format +
-                  '&BBOX=%bbox,' + layer.crs;
-                  //'&Filter=<Filter><BBOX><PropertyName>NAME</PropertyName><Box srsName=\'' + layer.crs + '\'><coordinates>%bbox</coordinates></Box></BBOX></Filter>';
-
-    this.size      = {x:6378137,y: 6356752.3142451793,z:6378137};
-    this.ellipsoid = new Ellipsoid(this.size);
-
-    this.tileParams = layer.params || undefined;
-
-    if(this.tileParams !== undefined) {
-        this.radius         = this.tileParams.radius        || 10;
-        this.nbSegment      = this.tileParams.nbSegment     || 3;
-        this.thetaStart     = this.tileParams.thetaStart    || 0;
-        this.thetaLength    = this.tileParams.thetaLength   || 2 * Math.PI;
-        this.offsetValue    = this.tileParams.length        || 10;
-
-        this.boxWidth       = this.tileParams.bowWidth      || 40;
-        this.boxHeight      = this.tileParams.boxHeight     || 80;
-
-        //Must convert all data to hexadecimal values because datas are automatically
-        //converted in decimal values between the index.html and the next JS function
-        if(this.tileParams.color !== undefined && this.tileParams.color.colorTab !== undefined)
-            for (var i = 0; i < this.tileParams.color.colorTab.length; i++)
-                this.tileParams.color.colorTab[i].toString(16);
-        this.level          = this.tileParams.level || 18;
-        this.switchLevel    = this.tileParams.switchLevel;
-    }
+                      'SERVICE=WFS&REQUEST=GetFeature&typeName=' + layer.title +
+                      '&VERSION=' + layer.version +
+                      '&outputFormat=' + layer.format +
+                      '&BBOX=%bbox,' + layer.crs;
 };
 
 WFS_Provider.prototype.tileInsideLimit = function(tile,layer) {
@@ -108,7 +86,7 @@ WFS_Provider.prototype.tileInsideLimit = function(tile,layer) {
     var east =  layer.bbox[2] * Math.PI/180.0 + Math.PI;
     var bboxRegion = new BoundingBox(west, east, layer.bbox[1]*Math.PI/180.0, layer.bbox[3]*Math.PI/180.0, 0, 0, 0);
 
-    return (tile.level == this.level) && bboxRegion.intersect(tile.bbox);
+    return (tile.level == (layer.params.level || 18)) && bboxRegion.intersect(tile.bbox);
 };
 
 WFS_Provider.prototype.executeCommand = function(command) {
@@ -185,7 +163,7 @@ WFS_Provider.prototype.getFeatures = function(tile, layer, parameters, parent) {
                                                 bbox.south() * 180.0 / Math.PI,
                                                 bbox.north() * 180.0 / Math.PI,
                                                 bbox.bottom(), bbox.top());
-                this.GeoJSON2Line(features, tmpBbox, geometry);
+                this.GeoJSON2Line(features, tmpBbox, geometry, layer);
                 mesh.setGeometry(geometry);
                 result.feature = mesh;
             }
@@ -375,8 +353,9 @@ WFS_Provider.prototype.cutLine = function(coords, slope, rest, bbox) {
  * @param pt1: one point of the line
  * @param pt2: another point of the line
  * @param isFirstPt: permit to choose to which point we will compute the border points
+ * @param offsetValue: Half value of the line size
  */
-WFS_Provider.prototype.computeLineBorderPoints = function(pt1, pt2, isFirstPt) {
+WFS_Provider.prototype.computeLineBorderPoints = function(pt1, pt2, isFirstPt, offsetValue) {
     var geoCoord1 = new GeoCoordinate(pt1.x, pt1.y, pt1.z, UNIT.DEGREE);
     var geoCoord2 = new GeoCoordinate(pt2.x, pt2.y, pt2.z, UNIT.DEGREE);
 
@@ -396,9 +375,9 @@ WFS_Provider.prototype.computeLineBorderPoints = function(pt1, pt2, isFirstPt) {
     normalGlobe.normalize();
 
     //Compute offset to find the left and right point with the given offset value
-    var offsetX = normalGlobe.x * this.offsetValue;
-    var offsetY = normalGlobe.y * this.offsetValue;
-    var offsetZ = normalGlobe.z * this.offsetValue;
+    var offsetX = normalGlobe.x * offsetValue;
+    var offsetY = normalGlobe.y * offsetValue;
+    var offsetZ = normalGlobe.z * offsetValue;
 
     //The first point left and point right of the line
     var left, right;
@@ -418,7 +397,7 @@ WFS_Provider.prototype.computeLineBorderPoints = function(pt1, pt2, isFirstPt) {
  * @param value: the JSON object which contains the data received from the WFS request
  * @param geometry: the geometry used to set the tile geometry
  */
-WFS_Provider.prototype.GeoJSON2Line = function(features, bbox, geometry) {
+WFS_Provider.prototype.GeoJSON2Line = function(features, bbox, geometry, layer) {
     for (var i = 0; i < features.length; i++) {
         var feature     = features[i];
         var coords      = feature.geometry.coordinates;
@@ -460,14 +439,16 @@ WFS_Provider.prototype.GeoJSON2Line = function(features, bbox, geometry) {
 
         if(coords.length > 1){
             var resp = this.computeLineBorderPoints(new THREE.Vector3(coords[0][0], coords[0][1], 180),
-                                                    new THREE.Vector3(coords[1][0], coords[1][1], 180), true);
+                                                    new THREE.Vector3(coords[1][0], coords[1][1], 180),
+                                                    true, layer.params.length || 10);
 
             for (j = 0; j < coords.length - 1; j++) {
                 var currentGeometry = new THREE.Geometry();
                 currentGeometry.vertices.push(resp.left, resp.right);
 
                 resp = this.computeLineBorderPoints(new THREE.Vector3(coords[j][0],     coords[j][1], 180),
-                                                    new THREE.Vector3(coords[j + 1][0], coords[j + 1][1], 180), false);
+                                                    new THREE.Vector3(coords[j + 1][0], coords[j + 1][1], 180),
+                                                    false, layer.params.length || 10);
 
                 currentGeometry.vertices.push(resp.left, resp.right);
 
@@ -478,7 +459,7 @@ WFS_Provider.prototype.GeoJSON2Line = function(features, bbox, geometry) {
                 geometry.computeVertexNormals();
 
                 for (var k = 0; k < currentGeometry.faces.length; k++)
-                    this.manageColor(feature.properties, currentGeometry.faces[k].color);
+                    this.manageColor(feature.properties, currentGeometry.faces[k].color, layer);
 
                 geometry.merge(currentGeometry);
             }
@@ -508,10 +489,12 @@ WFS_Provider.prototype.GeoJSON2Point = function(features, bbox, geometry, type, 
             type = layer.params.retail(centerPoint, type, new THREE.Vector3());
             layer.retailType = layer.params.getRetailType();
         }
+
+        var params = layer.params;
         if(type == 'box')
-            currentGeometry = new THREE.BoxGeometry(this.boxWidth, this.boxWidth, this.boxHeight);
+            currentGeometry = new THREE.BoxGeometry(params.boxWidth || 40, params.boxWidth || 40, params.boxHeight || 80);
         else if(type == 'point')
-            currentGeometry = new THREE.CircleGeometry(this.radius, this.nbSegment, this.thetaStart, this.thetaLength);
+            currentGeometry = new THREE.CircleGeometry(params.radius || 10, params.nbSegment || 3, params.thetaStart || 0, params.thetaLength || 2 * Math.PI);
         else
             continue;
 
@@ -519,7 +502,7 @@ WFS_Provider.prototype.GeoJSON2Point = function(features, bbox, geometry, type, 
         currentGeometry.translate(centerPoint.x, centerPoint.y, centerPoint.z);
 
         for (var j = 0; j < currentGeometry.faces.length; j++)
-            this.manageColor(feature.properties, currentGeometry.faces[j].color);
+            this.manageColor(feature.properties, currentGeometry.faces[j].color, layer);
 
         geometry.merge(currentGeometry);
     }
@@ -531,8 +514,8 @@ WFS_Provider.prototype.GeoJSON2Point = function(features, bbox, geometry, type, 
  * @param color : manager of the color of a face
  * @params tileParams: the tile to which apply the geometry
  */
-WFS_Provider.prototype.manageColor = function(properties, color) {
-    var colorParams = this.tileParams.color || undefined;
+WFS_Provider.prototype.manageColor = function(properties, color, layer) {
+    var colorParams = layer.params.color || undefined;
 
     if(colorParams !== undefined)
         for (var i = 0; i < colorParams.testTab.length; i++) {

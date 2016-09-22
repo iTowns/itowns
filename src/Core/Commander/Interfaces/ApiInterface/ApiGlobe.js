@@ -96,7 +96,6 @@ ApiGlobe.prototype.addFeatureLayer = function(layer) {
     preprocessLayer(layer, this.scene.managerCommand.getProtocolProvider(layer.protocol));
 
     var map = this.scene.getMap();
-    //TODO: replace this with addGeometryLayer
     map.layersConfiguration.addGeometryLayer(layer);
 };
 
@@ -248,9 +247,6 @@ ApiGlobe.prototype.createSceneGlobe = function(coordCarto, viewerDiv) {
     this.scene.managerCommand.addProtocolProvider('tile', new TileProvider(ellipsoid));
     this.scene.managerCommand.addProtocolProvider('wms', new WMS_Provider({support : map.gLDebug}));
     this.scene.managerCommand.addProtocolProvider('wfs', new WFS_Provider());
-    //Feature provider made for the test purpose
-    this.scene.managerCommand.addProtocolProvider('wfsPoint', new WFS_Provider({}));
-    this.scene.managerCommand.addProtocolProvider('wfsLine', new WFS_Provider({}));
 
     var wgs84TileLayer = {
         protocol: 'tile',
