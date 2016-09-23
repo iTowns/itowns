@@ -1,4 +1,4 @@
-/* 
+/*
  * Computer vision and marchine learning tools
  * Quoc-Dinh dot Nguyen at IGN dot com
  */
@@ -8,16 +8,16 @@
  */
 
 var CVML = CVML || { REVISION: '1.0.0' };
-      
+
 CVML.epsilon = 2.220446049250313e-16;
 //Point
-      
+
 CVML.Point2D = function (x, y) {
                this.x = x;
                this.y = y;
 };
-      
-      
+
+
 var PointError = function (message, points) {
         this.name    = "PointError";
         this.points  = points = points || [];
@@ -29,7 +29,7 @@ var PointError = function (message, points) {
     PointError.prototype = new Error();
     PointError.prototype.constructor = PointError;
 
-  
+
     var Point = function(x, y, h) {
         this.h = +h || 0;
         this.x = +x || 0;
@@ -58,14 +58,14 @@ var PointError = function (message, points) {
         return this; // for chaining
     };
 
-    
+
     Point.prototype.negate = function() {
         this.x = -this.x;
         this.y = -this.y;
         return this; // for chaining
     };
 
-    
+
     Point.prototype.add = function(n) {
         this.x += n.x;
         this.y += n.y;
@@ -98,7 +98,7 @@ var PointError = function (message, points) {
         return this.x === p.x && this.y === p.y;
     };
 
-   
+
     Point.negate = function(p) {
         return new Point(-p.x, -p.y);
     };
@@ -155,7 +155,7 @@ var PointError = function (message, points) {
     Point.dot = function(a, b) {
         return a.x * b.x + a.y * b.y;
     };
-	
+
 	Point.prototype.distanceTo = function(v){
 		var dx = this.x - v.x;
 		var dy = this.y - v.y;
@@ -191,7 +191,7 @@ var PointError = function (message, points) {
      * quad-edge structures.
      * See: J. Shewchuk, "Triangle: Engineering a 2D Quality Mesh Generator and
      * Delaunay Triangulator", "Triangulations in CGAL"
-     * 
+     *
      * @param   a,b,c   any "Point like" objects with {x,y} (duck typing)
      */
     var Triangle = function(a, b, c) {
@@ -230,7 +230,7 @@ var PointError = function (message, points) {
         return (point === points[0] || point === points[1] || point === points[2]);
     };
 
-  
+
     Triangle.prototype.containsEdge = function(edge) {
         return this.containsPoint(edge.p) && this.containsPoint(edge.q);
     };
@@ -247,7 +247,7 @@ var PointError = function (message, points) {
         return this;
     };
 
-  
+
     Triangle.prototype.markNeighborPointers = function(p1, p2, t) {
         var points = this.points_;
         // Here we are comparing point references, not values
@@ -262,7 +262,7 @@ var PointError = function (message, points) {
         }
     };
 
-  
+
     Triangle.prototype.markNeighbor = function(t) {
         var points = this.points_;
         if (t.containsPoints(points[1], points[2])) {
@@ -290,7 +290,7 @@ var PointError = function (message, points) {
         this.delaunay_edge[2] = false;
     };
 
-   
+
     Triangle.prototype.pointCW = function(p) {
         var points = this.points_;
         // Here we are comparing point references, not values
@@ -305,7 +305,7 @@ var PointError = function (message, points) {
         }
     };
 
-   
+
     Triangle.prototype.pointCCW = function(p) {
         var points = this.points_;
         // Here we are comparing point references, not values
@@ -320,7 +320,7 @@ var PointError = function (message, points) {
         }
     };
 
-   
+
     Triangle.prototype.neighborCW = function(p) {
         // Here we are comparing point references, not values
         if (p === this.points_[0]) {
@@ -332,7 +332,7 @@ var PointError = function (message, points) {
         }
     };
 
-  
+
     Triangle.prototype.neighborCCW = function(p) {
         // Here we are comparing point references, not values
         if (p === this.points_[0]) {
@@ -451,7 +451,7 @@ var PointError = function (message, points) {
         return this.pointCW(cw);
     };
 
-   
+
     Triangle.prototype.legalize = function(opoint, npoint) {
         var points = this.points_;
         // Here we are comparing point references, not values
@@ -511,7 +511,7 @@ var PointError = function (message, points) {
         return -1;
     };
 
-    
+
     Triangle.prototype.markConstrainedEdgeByIndex = function(index) {
         this.constrained_edge[index] = true;
     };
@@ -520,7 +520,7 @@ var PointError = function (message, points) {
     };
     Triangle.prototype.markConstrainedEdgeByPoints = function(p, q) {
         var points = this.points_;
-        // Here we are comparing point references, not values        
+        // Here we are comparing point references, not values
         if ((q === points[0] && p === points[1]) || (q === points[1] && p === points[0])) {
             this.constrained_edge[2] = true;
         } else if ((q === points[0] && p === points[2]) || (q === points[2] && p === points[0])) {
@@ -535,7 +535,7 @@ var PointError = function (message, points) {
     var PI_2 = Math.PI / 2;
     var EPSILON = 1e-12;
 
-    /* 
+    /*
      * Inital triangle factor, seed triangle will extend 30% of
      * PointSet width to both left and right.
      */
@@ -718,8 +718,8 @@ var PointError = function (message, points) {
         this.right = false;
     };
 
-    
-    
+
+
     var SweepContext = function(contour, options) {
         options = options || {};
         this.triangles_ = [];
@@ -727,7 +727,7 @@ var PointError = function (message, points) {
         this.points_ = (options.cloneArrays ? contour.slice(0) : contour);
         this.edge_list = [];
 
-        // Bounding box of all points. Computed at the start of the triangulation, 
+        // Bounding box of all points. Computed at the start of the triangulation,
         // it is stored in case it is needed by the caller.
         this.pmin_ = this.pmax_ = null;
 
@@ -746,8 +746,8 @@ var PointError = function (message, points) {
         this.edge_event = new EdgeEvent();
 
         this.initEdges(this.points_);
-        
-        
+
+
     };
 
     SweepContext.prototype.addHole = function(polyline) {
@@ -789,7 +789,7 @@ var PointError = function (message, points) {
     // Backward compatibility
     SweepContext.prototype.GetTriangles = SweepContext.prototype.getTriangles;
 
- 
+
     SweepContext.prototype.front = function() {
         return this.front_;
     };
@@ -1125,7 +1125,7 @@ var PointError = function (message, points) {
         return Math.atan2(ay, ax);
     };
 
- 
+
     Sweep.holeAngle = function(node) {
         /* Complex plane
          * ab = cosA +i*sinA
@@ -1325,7 +1325,7 @@ var PointError = function (message, points) {
         Sweep.fillBasinReq(tcx, tcx.basin.bottom_node);
     };
 
-  
+
     Sweep.fillBasinReq = function(tcx, node) {
         // if shallow stop filling
         if (Sweep.isShallow(tcx, node)) {
@@ -1605,7 +1605,7 @@ var PointError = function (message, points) {
     };
 
    var Delaunay = {
-        
+
         _PointError : PointError,
         _Point          : Point,
         _Triangle       : Triangle,
@@ -1614,26 +1614,26 @@ var PointError = function (message, points) {
         // Backward compatibility
         _triangulate    : Sweep.triangulate,
         _sweep : {Triangulate: Sweep.triangulate}
-    
+
     };
-    
+
     CVML.newPoint = function(x,y, h){
         h = h || 0;
         return new Delaunay._Point(x,y,h);
     };
-    
+
     CVML.TriangulatePoly = function(arr){
         var swctx = new Delaunay._SweepContext(arr);
             swctx.triangulate();
         return swctx.getTriangles();
     };
-    
+
     CVML.initSweepContext = function(arr){
         return new Delaunay._SweepContext(arr);
     };
-    
 
-    
+
+
     //Line
     CVML.Line = function(a, b) { //y = ax + b
               this.a = a;
@@ -1644,7 +1644,7 @@ var PointError = function (message, points) {
               this.a = line.a;
               this.b = line.b;
     };
-        
+
 
     CVML.RobustLineFitting = function (points, threshold) {
                             return new CVML.Ransac(new CVML.LineFitting(), points, threshold);
@@ -1652,12 +1652,12 @@ var PointError = function (message, points) {
 
     CVML.LineFitting = function () {
 
-                            this.nbSampleNeeded = 2;	
+                            this.nbSampleNeeded = 2;
 
                             this.estimateModel = function(points, sample, model) {
                                     var counter = 0;
                                     for (var i in sample) {
-                                            _samplePoints[counter] = points[i];	
+                                            _samplePoints[counter] = points[i];
                                             counter++;
                                     }
 
@@ -1679,15 +1679,15 @@ var PointError = function (message, points) {
 
                             var _points     = points;
                             var _threshold  = threshold;
-                            var _problem     = fittingProblem;	
+                            var _problem     = fittingProblem;
                             var _bestModel   = new CVML.Line(0, 0);
                             var _bestInliers = {};
                             var _bestScore   = 4294967295;
-    
-                            
+
+
                             var _currentModel   = new CVML.Line(1, 0);
                             var _nbIters        = nbIterations(0.99, 0.5, fittingProblem.nbSampleNeeded);
-                          
+
 
                             function nbIterations(ransacProba, outlierRatio, sampleSize) {
                                     return Math.ceil(Math.log(1-ransacProba) / Math.log(1-Math.pow(1-outlierRatio, sampleSize)));
@@ -1709,18 +1709,18 @@ var PointError = function (message, points) {
                                     }
                             }
 
-                           
+
                            // this.next = function() {
                            for(var _iterationCounter = 0; _iterationCounter <_nbIters; _iterationCounter++)
                               {
-                                    
+
                                     var _currentInliers = [];
-                                    
+
                                     var score = 0;
                                     var sample = {};
                                     randomSample(_problem.nbSampleNeeded, _points.length, sample);
                                     _problem.estimateModel(_points, sample, _currentModel);
-                                   
+
                                     for (var j=0; j<_points.length; ++j) {
                                             var err = _problem.estimateError(_points, j, _currentModel);
                                             if (err > _threshold) {
@@ -1735,17 +1735,17 @@ var PointError = function (message, points) {
                                             _bestModel.copy(_currentModel);
                                             _bestInliers  = _currentInliers;
                                             _bestScore   = score;
-                                            
+
                                     }
 
-                                       
+
                               }
                  return {model : _bestModel, inliers: _bestInliers, score : _bestScore};
-                                     
+
      };
- 
-        //This part use data structure of Matlab 
- 
+
+        //This part use data structure of Matlab
+
         CVML._dim = function _dim(x) {
                     var ret = [];
                     while(typeof x === "object") { ret.push(x.length); x = x[0]; }
@@ -1766,8 +1766,8 @@ var PointError = function (message, points) {
                 return [x.length];
             }
             return [];
-        }; 
-        
+        };
+
         CVML.sdim = function(A,ret,k) {
             if(typeof ret === "undefined") { ret = []; }
             if(typeof A !== "object") return ret;
@@ -1794,7 +1794,7 @@ var PointError = function (message, points) {
             }
             return ret;
         };
-        
+
         CVML.rep = function rep(s,v,k) {
             if(typeof k === "undefined") { k=0; }
             var n = s[k], ret = Array(n), i;
@@ -1806,7 +1806,7 @@ var PointError = function (message, points) {
             for(i=n-1;i>=0;i--) { ret[i] = CVML.rep(s,v,k+1); }
             return ret;
         };
-        
+
         CVML.transpose = function(A) {
             var ret = [], n = A.length, i,j,Ai;
             for(i in A) {
@@ -1828,7 +1828,7 @@ var PointError = function (message, points) {
                 }
                 return svd.U[ind];
         };
-        
+
         CVML.maxVP = function(svd){
                 var ind = 0;
                 for(var i = 0; i < svd.S.length - 1; i++){
@@ -1836,26 +1836,26 @@ var PointError = function (message, points) {
                 }
                 return svd.U[ind];
         };
-        
+
         CVML.subVec = function(vec,vec1){
             var ret = new Array(vec.length);
             if(vec.length === vec1.length){
-                for(var i = 0; i<vec.length ; i++) 
+                for(var i = 0; i<vec.length ; i++)
                             ret[i] = vec[i] - vec1[i];
-            }else return -1; 
+            }else return -1;
             return ret;
         };
 
         CVML.addVec = function(vec,vec1){
             var ret = new Array(vec.length);
             if(vec.length === vec1.length){
-                for(var i = 0; i<vec.length ; i++) 
+                for(var i = 0; i<vec.length ; i++)
                             ret[i] = vec[i] + vec1[i];
             }else return -1 ;
             return ret;
         };
 
-        
+
         CVML.dotMV = function(A,x) {
             var p = A.length, Ai, i,j;
             var ret = Array(p), accum;
@@ -1871,7 +1871,7 @@ var PointError = function (message, points) {
             return ret;
         };
 
-        
+
         CVML.svd= function svd(A) {
                 var temp;
                 //Compute the thin SVD from G. H. Golub and C. Reinsch, Numer. Math. 14, 403-420 (1970)
@@ -1903,7 +1903,7 @@ var PointError = function (message, points) {
                         b = Math.abs(b)
                         if (a > b)
                                 return a*Math.sqrt(1.0+(b*b/a/a))
-                        else if (b == 0.0) 
+                        else if (b == 0.0)
                                 return a
                         return b*Math.sqrt(1.0+(a*a/b/b))
                 }
@@ -1919,16 +1919,16 @@ var PointError = function (message, points) {
                 var s= 0.0;
 
                 for (i=0; i < n; i++)
-                {	
+                {
                         e[i]= g;
                         s= 0.0;
                         l= i+1;
-                        for (j=i; j < m; j++) 
+                        for (j=i; j < m; j++)
                                 s += (u[j][i]*u[j][i]);
                         if (s <= tolerance)
                                 g= 0.0;
                         else
-                        {	
+                        {
                                 f= u[i][i];
                                 g= Math.sqrt(s);
                                 if (f >= 0.0) g= -g;
@@ -1937,21 +1937,21 @@ var PointError = function (message, points) {
                                 for (j=l; j < n; j++)
                                 {
                                         s= 0.0;
-                                        for (k=i; k < m; k++) 
+                                        for (k=i; k < m; k++)
                                                 s += u[k][i]*u[k][j];
                                         f= s/h;
-                                        for (k=i; k < m; k++) 
+                                        for (k=i; k < m; k++)
                                                 u[k][j]+=f*u[k][i];
                                 }
                         }
                         q[i]= g;
                         s= 0.0;
-                        for (j=l; j < n; j++) 
+                        for (j=l; j < n; j++)
                                 s= s + u[i][j]*u[i][j];
                         if (s <= tolerance)
                                 g= 0.0;
                         else
-                        {	
+                        {
                                 f= u[i][i+1];
                                 g= Math.sqrt(s);
                                 if (f >= 0.0) g= -g;
@@ -1959,35 +1959,35 @@ var PointError = function (message, points) {
                                 u[i][i+1] = f-g;
                                 for (j=l; j < n; j++) e[j]= u[i][j]/h;
                                 for (j=l; j < m; j++)
-                                {	
+                                {
                                         s=0.0;
-                                        for (k=l; k < n; k++) 
+                                        for (k=l; k < n; k++)
                                                 s += (u[j][k]*u[i][k]);
-                                        for (k=l; k < n; k++) 
+                                        for (k=l; k < n; k++)
                                                 u[j][k]+=s*e[k];
-                                }	
+                                }
                         }
                         y= Math.abs(q[i])+Math.abs(e[i]);
-                        if (y>x) 
+                        if (y>x)
                                 x=y;
                 }
 
                 // accumulation of right hand gtransformations
                 for (i=n-1; i != -1; i+= -1)
-                {	
+                {
                         if (g != 0.0);
                         {
                                 h= g*u[i][i+1];
-                                for (j=l; j < n; j++) 
+                                for (j=l; j < n; j++)
                                         v[j][i]=u[i][j]/h;
                                 for (j=l; j < n; j++)
-                                {	
+                                {
                                         s=0.0;
-                                        for (k=l; k < n; k++) 
+                                        for (k=l; k < n; k++)
                                                 s += u[i][k]*v[k][j];
-                                        for (k=l; k < n; k++) 
+                                        for (k=l; k < n; k++)
                                                 v[k][j]+=(s*v[k][i]);
-                                }	
+                                }
                         }
                         for (j=l; j < n; j++)
                         {
@@ -2001,10 +2001,10 @@ var PointError = function (message, points) {
 
                 // accumulation of left hand transformations
                 for (i=n-1; i != -1; i+= -1)
-                {	
+                {
                         l= i+1;
                         g= q[i];
-                        for (j=l; j < n; j++) 
+                        for (j=l; j < n; j++)
                                 u[i][j] = 0;
                         if (g != 0.0)
                         {
@@ -2031,7 +2031,7 @@ var PointError = function (message, points) {
                         {	// test f splitting
                                 var test_convergence = false
                                 for (l=k; l != -1; l+= -1)
-                                {	
+                                {
                                         if (Math.abs(e[l]) <= prec)
                                         {	test_convergence= true
                                                 break ;
@@ -2045,7 +2045,7 @@ var PointError = function (message, points) {
                                         s= 1.0;
                                         var l1= l-1;
                                         for (i =l; i<k+1; i++)
-                                        {	
+                                        {
                                                 f= s*e[i];
                                                 e[i]= c*e[i];
                                                 if (Math.abs(f) <= prec)
@@ -2056,13 +2056,13 @@ var PointError = function (message, points) {
                                                 c= g/h;
                                                 s= -f/h;
                                                 for (j=0; j < m; j++)
-                                                {	
+                                                {
                                                         y= u[j][l1];
                                                         z= u[j][i];
                                                         u[j][l1] =  y*c+(z*s);
                                                         u[j][i] = -y*s+(z*c);
-                                                } 
-                                        }	
+                                                }
+                                        }
                                 }
                                 // test f convergence
                                 z= q[k];
@@ -2093,7 +2093,7 @@ var PointError = function (message, points) {
                                 c= 1.0;
                                 s= 1.0;
                                 for (i=l+1; i< k+1; i++)
-                                {	
+                                {
                                         g= e[i];
                                         y= q[i];
                                         h= s*g;
@@ -2107,7 +2107,7 @@ var PointError = function (message, points) {
                                         h= y*s;
                                         y= y*c;
                                         for (j=0; j < n; j++)
-                                        {	
+                                        {
                                                 x= v[j][i-1];
                                                 z= v[j][i];
                                                 v[j][i-1] = x*c+z*s;
@@ -2130,17 +2130,17 @@ var PointError = function (message, points) {
                                 e[l]= 0.0;
                                 e[k]= f;
                                 q[k]= x;
-                        } 
+                        }
                 }
 
                 //vt= transpose(v)
                 //return (u,q,vt)
-                for (i=0;i<q.length; i++) 
+                for (i=0;i<q.length; i++)
                   if (q[i] < prec) q[i] = 0;
 
-                //sort eigenvalues	
+                //sort eigenvalues
                 for (i=0; i< n; i++)
-                {	 
+                {
                 //writeln(q)
                  for (j=i-1; j >= 0; j--)
                  {
@@ -2153,14 +2153,14 @@ var PointError = function (message, points) {
                    for(k=0;k<u.length;k++) { temp = u[k][i]; u[k][i] = u[k][j]; u[k][j] = temp; }
                    for(k=0;k<v.length;k++) { temp = v[k][i]; v[k][i] = v[k][j]; v[k][j] = temp; }
 
-                   i = j;	   
+                   i = j;
                   }
-                 }	
+                 }
                 }
 
                 return {U:u,S:q,V:v};
         };
-        
+
         CVML.dotMMsmall = function(x,y) {
             var i,j,k,p,q,r,ret,foo,bar,woo,i0,k0,p0,r0;
             p = x.length; q = y.length; r = y[0].length;
@@ -2265,22 +2265,22 @@ var PointError = function (message, points) {
                 var Ai = A[i];
                 for(var j = 0;j<Ai.length;j++)
                        Ai[j] = Ai[j]/m;
-                ret[i] = Ai;   
+                ret[i] = Ai;
             }
             return ret;
         };
-        
+
         //prends une matrice Nx3 and subtract to vector 3x1
         CVML.subMV = function(A,v){
-            if(A[0].length !== v.length) 
+            if(A[0].length !== v.length)
                  throw new Error('vector and matrice elements must have same length');
             var ret = new Array(A.length);
             for(var i=0;i<A.length;i++){
                 var Ai = A[i];//[x,y,z]
                 var elem = new Array(v.length);
                 for(var j =0;j<Ai.length;j++)
-                       elem[j] = Ai[j] - v[j]; 
-                ret[i] = elem;   
+                       elem[j] = Ai[j] - v[j];
+                ret[i] = elem;
             }
             return ret;
         };
@@ -2291,9 +2291,9 @@ var PointError = function (message, points) {
                 var sigma  = CVML.div(CVML.dot(CVML.transpose(A_norm), A_norm), m);
                 return CVML.svd(sigma);//.U;
         };
-        
+
         /*
-    
+
         CVML.pcaByEigen = function (A, mV) {
                var m = A.length;
                var A_norm = CVML.subMV(A,mV);
@@ -2303,9 +2303,9 @@ var PointError = function (message, points) {
         */
         //K-means : http://stackoverflow.com/questions/7370785/k-means-clustering-implementation-in-javascript
         //many error of the code have been corrected here!
-        
+
        CVML.MAX_LOOP_COUNT = 100;
-       
+
        CVML.hash = function(booga) {
                             if (booga == undefined) return undefined;
                             return "point" + booga.x + "_" + booga.y;
@@ -2316,7 +2316,7 @@ var PointError = function (message, points) {
                             return Math.sqrt(Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2));
                 }
                 console.log("start kmeans!");
-                 
+
                 var converged = false;
                 var dirty     = false;
                 var distance  = 0.0;
@@ -2346,7 +2346,7 @@ var PointError = function (message, points) {
                         converged = true;
                         break;
                     }
-                    
+
                     for (var i = 0; i < means.length; i = i + 1) {
                         sumX[i] = 0;
                         sumY[i] = 0;
@@ -2377,7 +2377,7 @@ var PointError = function (message, points) {
                 }//end while
             };
 
-          
-        
-        
+
+
+
  export default CVML;

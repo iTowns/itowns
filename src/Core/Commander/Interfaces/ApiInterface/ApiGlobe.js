@@ -96,7 +96,7 @@ ApiGlobe.prototype.addFeatureLayer = function(layer) {
     preprocessLayer(layer, this.scene.managerCommand.getProtocolProvider(layer.protocol));
 
     var map = this.scene.getMap();
-    //TODO: replace this with addGeometryLayer
+    //TODO: replace this with ad-dGeometryLayer
     map.layersConfiguration.addGeometryLayer(layer);
 };
 
@@ -172,6 +172,14 @@ ApiGlobe.prototype.getMinZoomLevel = function(id) {
  * @constructor
  * @param {id} id - The id of the layer.
  */
+
+ApiGlobe.prototype.addTileMatrixSet = function(params){
+    
+};
+
+ApiGlobe.prototype.getTileMatrixSet = function(params){
+    
+};
 
 ApiGlobe.prototype.getLayers = function( /*param*/ ) {
     var map = this.scene.getMap();
