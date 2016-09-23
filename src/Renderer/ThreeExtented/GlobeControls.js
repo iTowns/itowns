@@ -89,8 +89,11 @@ function GlobeControls(object, domElement, engine) {
         SPACE: 32,
         SHIFT: 16,
         CTRL: 17,
-        S: 83
+        S: 83,
+        D: 68
     };
+
+    this.isFirstPoint = true;
 
     // Mouse buttons
     this.mouseButtons = {
@@ -108,8 +111,6 @@ function GlobeControls(object, domElement, engine) {
 
     ////////////
     // internals
-
-
 
 
     var space = false;
@@ -187,7 +188,6 @@ function GlobeControls(object, domElement, engine) {
     };
 
     this.setPointGlobe = function(point) {
-
         rayonPointGlobe = point.length();
 
         var mouse = new THREE.Vector2();
@@ -628,7 +628,6 @@ function GlobeControls(object, domElement, engine) {
                 var mouse = new THREE.Vector2(event.clientX - event.target.offsetLeft, event.clientY - event.target.offsetTop);
                 scope.engine.selectNodeAt(mouse);
                 scope.engine.update();
-
             } else {
 
                 state = STATE.MOVE_GLOBE;
@@ -645,6 +644,12 @@ function GlobeControls(object, domElement, engine) {
                 // calcul de la sphere qui passe par ce point
                 if (point)
                     scope.setPointGlobe(point);
+
+                if (scope.keyD) {
+                    var pt = scope.getPointGlobe();
+                    scope.engine.scene.parent.setNewParams(pt.x, pt.y, pt.z, scope.isFirstPoint);
+                    scope.isFirstPoint = !scope.isFirstPoint;
+                }
 
             }
 
@@ -829,7 +834,7 @@ function GlobeControls(object, domElement, engine) {
         scope.keyCtrl = false;
         scope.keyShift = false;
         scope.keyS = false;
-
+        scope.keyD = false;
     }
 
     function onKeyDown(event) {
@@ -877,7 +882,9 @@ function GlobeControls(object, domElement, engine) {
                 // WARNING loop !!!
                 scope.keyS = true;
                 break;
-
+            case scope.keys.D:
+                scope.keyD = true;
+                break;
         }
     }
 
@@ -1015,7 +1022,7 @@ function GlobeControls(object, domElement, engine) {
         scope.keyCtrl = false;
         scope.keyShift = false;
         scope.keyS = false;
-
+        scope.keyD = false;
     }
 
     function computeTarget() { // Compute the new target center position

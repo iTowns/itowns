@@ -232,6 +232,7 @@ ApiGlobe.prototype.createSceneGlobe = function(coordCarto, viewerDiv) {
     var coordinate = new GeoCoordinate().copy(coordCarto,UNIT.DEGREE);
 
     this.scene = Scene(coordinate, ellipsoid, viewerDiv, debugMode, gLDebug);
+    this.scene.parent = this;
 
     var map = new Globe(ellipsoid, gLDebug);
 
@@ -312,8 +313,51 @@ ApiGlobe.prototype.setLayerVisibility = function(id, visible) {
 };
 
 ApiGlobe.prototype.forceFeatureNodeUpdate = function() {
+    this.controlText.force = true;
     this.scene.realtimeSceneProcess();
     this.scene.managerCommand.runAllCommands();
+    this.controlText.force = false;
+};
+
+ApiGlobe.prototype.setNewParams = function(x, y, z, isFirst) {
+    console.log(x);
+    console.log(y);
+    console.log(z);
+    var text = this.controlText;
+    if(text.retailType == 'circle') {
+        text.centerX = x;
+        text.centerY = y;
+        text.centerZ = z;
+    } else if (text.retailType == 'box') {
+        if (isFirst) {
+            if (x > text.maxX || y > text.maxY || z > text.maxZ) {
+                text.minX = text.maxX;
+                text.minY = text.maxY;
+                text.minZ = text.maxZ;
+                text.maxX = x;
+                text.maxY = y;
+                text.maxZ = z;
+            } else {
+                text.minX = x;
+                text.minY = y;
+                text.minZ = z;
+            }
+        } else {
+            if (x < text.minX || y < text.minY || z < text.minZ) {
+                text.maxX = text.minX;
+                text.maxY = text.minY;
+                text.maxZ = text.minZ;
+                text.minX = x;
+                text.minY = y;
+                text.minZ = z;
+            } else {
+                text.maxX = x;
+                text.maxY = y;
+                text.maxZ = z;
+            }
+        }
+    }
+    this.forceFeatureNodeUpdate();
 };
 
 ApiGlobe.prototype.animateTime = function(value) {
