@@ -14,7 +14,7 @@ import CacheRessource from 'Core/Commander/Providers/CacheRessource';
 import BoundingBox from 'Scene/BoundingBox';
 //import ItownsLine from 'Core/Commander/Providers/ItownsLine';
 import Ellipsoid from 'Core/Math/Ellipsoid';
-import CoordCarto from 'Core/Geographic/CoordCarto';
+import GeoCoordinate, {UNIT} from 'Core/Geographic/GeoCoordinate';
 import CVML from 'Core/Math/CVML';
 import BuilderEllipsoidTile from 'Globe/BuilderEllipsoidTile';
 import FeatureMesh from 'Globe/FeatureMesh';
@@ -28,26 +28,26 @@ import FeatureMesh from 'Globe/FeatureMesh';
  */
 function WFS_Provider(/*options*/) {
     Provider.call(this, new IoDriver_JSON());
-    this.cache = CacheRessource();
-    this.ioDriverXML = new IoDriverXML();
-    this.projection = new Projection();
+    this.cache          = CacheRessource();
+    this.ioDriverXML    = new IoDriverXML();
+    this.projection     = new Projection();
+
+    this.size           = {x:6378137,y: 6356752.3142451793,z:6378137};
+    this.ellipsoid      = new Ellipsoid(this.size);
 }
 
 WFS_Provider.prototype = Object.create(Provider.prototype);
 WFS_Provider.prototype.constructor = WFS_Provider;
 
-WFS_Provider.prototype.url = function(bbox,layer) {
+WFS_Provider.prototype.url = function(bbox, layer) {
     return this.customUrl(layer.customUrl, bbox);
 };
 
 WFS_Provider.prototype.tmpUrl = function(coord, layer){
-    var bbox =  coord.minCarto.latitude * 180.0 / Math.PI +
-                "," +
-                (coord.minCarto.longitude - Math.PI ) * 180.0 / Math.PI +
-                "," +
-                coord.maxCarto.latitude * 180.0 / Math.PI +
-                "," +
-                (coord.maxCarto.longitude - Math.PI ) * 180.0 / Math.PI;
+    var bbox =  coord.south() * 180.0 / Math.PI + "," +
+                coord.west()  * 180.0 / Math.PI + "," +
+                coord.north() * 180.0 / Math.PI + "," +
+                coord.east()  * 180.0 / Math.PI;
 
     var urld = layer.customUrl.replace('%bbox', bbox.toString());
     return urld;
@@ -56,70 +56,37 @@ WFS_Provider.prototype.tmpUrl = function(coord, layer){
 WFS_Provider.prototype.customUrl = function(url,coord) {
     //convert radian to degree, lon is added a offset of Pi
     //to align axisgit  to card center
-    var bbox =  (coord.minCarto.longitude - Math.PI ) * 180.0 / Math.PI +
-                "," +
-                coord.minCarto.latitude * 180.0 / Math.PI +
-                ","+
-                (coord.maxCarto.longitude - Math.PI ) * 180.0 / Math.PI +
-                "," +
-                coord.maxCarto.latitude * 180.0 / Math.PI;
+    var bbox =  coord.west()  * 180.0 / Math.PI + "," +
+                coord.south() * 180.0 / Math.PI + "," +
+                coord.east()  * 180.0 / Math.PI +  "," +
+                coord.north() * 180.0 / Math.PI;
 
     var urld = url.replace('%bbox',bbox.toString());
-
     return urld;
-
 };
 
 WFS_Provider.prototype.preprocessDataLayer = function(layer){
     if(!layer.title)
         throw new Error('layerName is required.');
 
-    layer.format = defaultValue(layer.options.mimetype, "json"),
-    layer.crs = defaultValue(layer.projection, "EPSG:4326"),
-    layer.version = defaultValue(layer.version, "1.3.0"),
-    layer.bbox = defaultValue(layer.bbox, [-180, -90, 180, 90]);
+    layer.format    = defaultValue(layer.options.mimetype, "json"),
+    layer.crs       = defaultValue(layer.projection, "EPSG:4326"),
+    layer.version   = defaultValue(layer.version, "1.3.0"),
+    layer.bbox      = defaultValue(layer.bbox, [-180, -90, 90, 180]);
     layer.customUrl = layer.url +
-                  'SERVICE=WFS&REQUEST=GetFeature&typeName=' + layer.title +
-                  '&VERSION=' + layer.version +
-                  '&outputFormat=' + layer.format +
-                  '&BBOX=%bbox,' + layer.crs;
-                  //'&Filter=<Filter><BBOX><PropertyName>NAME</PropertyName><Box srsName=\'' + layer.crs + '\'><coordinates>%bbox</coordinates></Box></BBOX></Filter>';
-
-    this.size      = {x:6378137,y: 6356752.3142451793,z:6378137};
-    this.ellipsoid = new Ellipsoid(this.size);
-
-    this.tileParams = layer.params || undefined;
-
-    if(this.tileParams !== undefined) {
-        this.radius         = this.tileParams.radius        || 10;
-        this.nbSegment      = this.tileParams.nbSegment     || 3;
-        this.thetaStart     = this.tileParams.thetaStart    || 0;
-        this.thetaLength    = this.tileParams.thetaLength   || 2 * Math.PI;
-        this.offsetValue    = this.tileParams.length        || 10;
-
-        this.boxWidth       = this.tileParams.bowWidth      || 40;
-        this.boxHeight      = this.tileParams.boxHeight     || 80;
-
-        //Must convert all data to hexadecimal values because datas are automatically
-        //converted in decimal values between the index.html and the next JS function
-        if(this.tileParams.color !== undefined && this.tileParams.color.colorTab !== undefined)
-            for (var i = 0; i < this.tileParams.color.colorTab.length; i++)
-                this.tileParams.color.colorTab[i].toString(16);
-        this.level          = this.tileParams.level || 18;
-        this.switchLevel    = this.tileParams.switchLevel;
-    }
+                      'SERVICE=WFS&REQUEST=GetFeature&typeName=' + layer.title +
+                      '&VERSION=' + layer.version +
+                      '&outputFormat=' + layer.format +
+                      '&BBOX=%bbox,' + layer.crs;
 };
 
 WFS_Provider.prototype.tileInsideLimit = function(tile,layer) {
-    var bbox = tile.bbox;
-    var level = tile.level;
-
     // shifting longitude because of issue #19
-    var west =  layer.bbox[0]*Math.PI/180.0 + Math.PI;
-    var east =  layer.bbox[2]*Math.PI/180.0 + Math.PI;
+    var west =  layer.bbox[0] * Math.PI/180.0 + Math.PI;
+    var east =  layer.bbox[2] * Math.PI/180.0 + Math.PI;
     var bboxRegion = new BoundingBox(west, east, layer.bbox[1]*Math.PI/180.0, layer.bbox[3]*Math.PI/180.0, 0, 0, 0);
 
-    return (level == this.level) && bboxRegion.intersect(bbox);
+    return (tile.level == (layer.params.level || 18)) && bboxRegion.intersect(tile.bbox);
 };
 
 WFS_Provider.prototype.executeCommand = function(command) {
@@ -191,12 +158,12 @@ WFS_Provider.prototype.getFeatures = function(tile, layer, parameters, parent) {
                     mesh.currentType = layer.type;
                 result.feature = mesh;
             } else if(layer.type == "line"){
-                var tmpBbox = new BoundingBox((bbox.minCarto.longitude - Math.PI ) * 180.0 / Math.PI,
-                                                (bbox.maxCarto.longitude - Math.PI ) * 180.0 / Math.PI,
-                                                bbox.minCarto.latitude * 180.0 / Math.PI,
-                                                bbox.maxCarto.latitude * 180.0 / Math.PI,
-                                                bbox.minCarto.altitude, bbox.maxCarto.altitude);
-                this.GeoJSON2Line(features, tmpBbox, geometry);
+                var tmpBbox = new BoundingBox(  bbox.west()  * 180.0 / Math.PI,
+                                                bbox.east()  * 180.0 / Math.PI,
+                                                bbox.south() * 180.0 / Math.PI,
+                                                bbox.north() * 180.0 / Math.PI,
+                                                bbox.bottom(), bbox.top());
+                this.GeoJSON2Line(features, tmpBbox, geometry, layer);
                 mesh.setGeometry(geometry);
                 result.feature = mesh;
             }
@@ -227,8 +194,8 @@ WFS_Provider.prototype.GeoJSON2Polygon = function(features) {
                 var pt2DTab = polygon[j]; //.split(' ');
                 //long et puis lat
                 //var pt = new THREE.Vector3(parseFloat(pt2DTab[1]), hauteur, parseFloat(pt2DTab[0]));
-                var coordCarto = new CoordCarto().setFromDegreeGeo(parseFloat(pt2DTab[1]), parseFloat(pt2DTab[0]), altitude);
-                var spt = this.ellipsoid.cartographicToCartesian(coordCarto);
+                var geoCoord = new GeoCoordinate(parseFloat(pt2DTab[1]), parseFloat(pt2DTab[0]), altitude, UNIT.DEGREE)
+                var spt = this.ellipsoid.cartographicToCartesian(geoCoord);
                 positions.push( spt.x, spt.y, spt.z);
             }
             var geometry = new THREE.BufferGeometry();
@@ -266,10 +233,10 @@ WFS_Provider.prototype.GeoJSON2Box = function(features) {
             for (var j = 0; j < polygon.length - 1; ++j) {
                 var pt2DTab = polygon[j]; //.split(' ');
 
-                var coordCarto1 = new CoordCarto().setFromDegreeGeo(parseFloat(pt2DTab[1]), parseFloat(pt2DTab[0]), goodAltitude);
-                var coordCarto2 = new CoordCarto().setFromDegreeGeo(parseFloat(pt2DTab[1]), parseFloat(pt2DTab[0]), goodAltitude + hauteur);
-                var pgeo1 = this.ellipsoid.cartographicToCartesian(coordCarto1);
-                var pgeo2 = this.ellipsoid.cartographicToCartesian(coordCarto2);
+                var geoCoord1 = new GeoCoordinate(parseFloat(pt2DTab[1]), parseFloat(pt2DTab[0]), goodAltitude, UNIT.DEGREE);
+                var geoCoord2 = new GeoCoordinate(parseFloat(pt2DTab[1]), parseFloat(pt2DTab[0]), goodAltitude + hauteur, UNIT.DEGREE);
+                var pgeo1 = this.ellipsoid.cartographicToCartesian(geoCoord1);
+                var pgeo2 = this.ellipsoid.cartographicToCartesian(geoCoord2);
 
                 var vector3_1 = new THREE.Vector3(pgeo1.x, pgeo1.y, pgeo1.z);
                 var vector3_2 = new THREE.Vector3(pgeo2.x, pgeo2.y, pgeo2.z);
@@ -309,13 +276,13 @@ WFS_Provider.prototype.GeoJSON2Box = function(features) {
                 pt2 = t.getPoint(1),
                 pt3 = t.getPoint(2);
 
-            var coordCarto1 = new CoordCarto().setFromDegreeGeo(pt1.x, pt1.y, goodAltitude + hauteur);
-            var coordCarto2 = new CoordCarto().setFromDegreeGeo(pt2.x, pt2.y, goodAltitude + hauteur); // + Math.random(1000) );
-            var coordCarto3 = new CoordCarto().setFromDegreeGeo(pt3.x, pt3.y, goodAltitude + hauteur);
+            var geoCoord1 = new GeoCoordinate(pt1.x, pt1.y, goodAltitude + hauteur, UNIT.DEGREE);
+            var geoCoord2 = new GeoCoordinate(pt2.x, pt2.y, goodAltitude + hauteur, UNIT.DEGREE);
+            var geoCoord3 = new GeoCoordinate(pt3.x, pt3.y, goodAltitude + hauteur, UNIT.DEGREE);
 
-            var pgeo1 = this.ellipsoid.cartographicToCartesian(coordCarto1); //{longitude:p1.z, latitude:p1.x, altitude: 0});
-            var pgeo2 = this.ellipsoid.cartographicToCartesian(coordCarto2);
-            var pgeo3 = this.ellipsoid.cartographicToCartesian(coordCarto3);
+            var pgeo1 = this.ellipsoid.cartographicToCartesian(geoCoord1); //{longitude:p1.z, latitude:p1.x, altitude: 0});
+            var pgeo2 = this.ellipsoid.cartographicToCartesian(geoCoord2);
+            var pgeo3 = this.ellipsoid.cartographicToCartesian(geoCoord3);
 
             //var geometry = new THREE.Geometry();
             roofGeometry.vertices.push(new THREE.Vector3(pgeo1.x, pgeo1.y, pgeo1.z));
@@ -357,24 +324,25 @@ WFS_Provider.prototype.GeoJSON2Box = function(features) {
  * @param bbox; the tile bounding box
  */
 WFS_Provider.prototype.cutLine = function(coords, slope, rest, bbox) {
-    if(coords[0] < bbox.minCarto.longitude){
-        coords[0] = bbox.minCarto.longitude;
-        if(coords[1] >= bbox.minCarto.latitude && coords[1] <= bbox.maxCarto.latitude)
+    var minLong = bbox.west(), maxLong = bbox.east(), minLat  = bbox.south(), maxLat  = bbox.north();
+    if(coords[0] < minLong){
+        coords[0] = minLong;
+        if(coords[1] >= minLat && coords[1] <= maxLat)
             coords[1] = slope * coords[0] + rest;
     }
-    else if (coords[0] > bbox.maxCarto.longitude){
-        coords[0] = bbox.maxCarto.longitude;
-        if(coords[1] >= bbox.minCarto.latitude && coords[1] <= bbox.maxCarto.latitude)
+    else if (coords[0] > maxLong){
+        coords[0] = maxLong;
+        if(coords[1] >= minLat && coords[1] <= maxLat)
             coords[1] = slope * coords[0] + rest;
     }
-    if(coords[1] < bbox.minCarto.latitude){
-        coords[1] = bbox.minCarto.latitude;
-        if(coords[0] >= bbox.minCarto.longitude && coords[0] <= bbox.maxCarto.longitude)
+    if(coords[1] < minLat){
+        coords[1] = minLat;
+        if(coords[0] >= minLong && coords[0] <= maxLong)
             coords[0] = (coords[1] - rest) / slope;
     }
-    else if (coords[1] > bbox.maxCarto.latitude){
-        coords[1] = bbox.maxCarto.latitude;
-        if(coords[0] >= bbox.minCarto.longitude && coords[0] <= bbox.maxCarto.longitude)
+    else if (coords[1] > maxLat){
+        coords[1] = maxLat;
+        if(coords[0] >= minLong && coords[0] <= maxLong)
             coords[0] = (coords[1] - rest) / slope;
     }
 }
@@ -385,13 +353,14 @@ WFS_Provider.prototype.cutLine = function(coords, slope, rest, bbox) {
  * @param pt1: one point of the line
  * @param pt2: another point of the line
  * @param isFirstPt: permit to choose to which point we will compute the border points
+ * @param offsetValue: Half value of the line size
  */
-WFS_Provider.prototype.computeLineBorderPoints = function(pt1, pt2, isFirstPt) {
-    var coordCarto1 = new CoordCarto().setFromDegreeGeo(pt1.x, pt1.y, pt1.z);
-    var coordCarto2 = new CoordCarto().setFromDegreeGeo(pt2.x, pt2.y, pt2.z);
+WFS_Provider.prototype.computeLineBorderPoints = function(pt1, pt2, isFirstPt, offsetValue) {
+    var geoCoord1 = new GeoCoordinate(pt1.x, pt1.y, pt1.z, UNIT.DEGREE);
+    var geoCoord2 = new GeoCoordinate(pt2.x, pt2.y, pt2.z, UNIT.DEGREE);
 
-    var cart1 = this.ellipsoid.cartographicToCartesian(coordCarto1);
-    var cart2 = this.ellipsoid.cartographicToCartesian(coordCarto2);
+    var cart1 = this.ellipsoid.cartographicToCartesian(geoCoord1);
+    var cart2 = this.ellipsoid.cartographicToCartesian(geoCoord2);
 
     var dx      = cart2.x - cart1.x;
     var dy      = cart2.y - cart1.y;
@@ -399,16 +368,16 @@ WFS_Provider.prototype.computeLineBorderPoints = function(pt1, pt2, isFirstPt) {
 
     var direct  = new THREE.Vector3(dx, dy, dz);
     direct.normalize();
-    var normalGlobe = this.ellipsoid.geodeticSurfaceNormalCartographic(coordCarto1);
+    var normalGlobe = this.ellipsoid.geodeticSurfaceNormalCartographic(geoCoord1);
     normalGlobe.normalize();
 
     normalGlobe.cross(direct);
     normalGlobe.normalize();
 
     //Compute offset to find the left and right point with the given offset value
-    var offsetX = normalGlobe.x * this.offsetValue;
-    var offsetY = normalGlobe.y * this.offsetValue;
-    var offsetZ = normalGlobe.z * this.offsetValue;
+    var offsetX = normalGlobe.x * offsetValue;
+    var offsetY = normalGlobe.y * offsetValue;
+    var offsetZ = normalGlobe.z * offsetValue;
 
     //The first point left and point right of the line
     var left, right;
@@ -428,7 +397,7 @@ WFS_Provider.prototype.computeLineBorderPoints = function(pt1, pt2, isFirstPt) {
  * @param value: the JSON object which contains the data received from the WFS request
  * @param geometry: the geometry used to set the tile geometry
  */
-WFS_Provider.prototype.GeoJSON2Line = function(features, bbox, geometry) {
+WFS_Provider.prototype.GeoJSON2Line = function(features, bbox, geometry, layer) {
     for (var i = 0; i < features.length; i++) {
         var feature     = features[i];
         var coords      = feature.geometry.coordinates;
@@ -443,8 +412,7 @@ WFS_Provider.prototype.GeoJSON2Line = function(features, bbox, geometry) {
             var c_1 = coords[j - 1], c = coords[j], cX = c[0], cY = c[1], c1  = coords[j + 1];
             if(c_1 != undefined) var c_1X = c_1[0], c_1Y = c_1[1];
             if(c1 != undefined)  var c1X  = c1[0],  c1Y  = c1[1];
-            var minLong = bbox.minCarto.longitude, maxLong = bbox.maxCarto.longitude,
-                minLat  = bbox.minCarto.latitude,  maxLat  = bbox.maxCarto.latitude;
+            var minLong = bbox.west(), maxLong = bbox.east(), minLat  = bbox.south(),  maxLat  = bbox.north();
 
             if (cX < minLong || cX > maxLong || cY < minLat || cY > maxLat) {
                 var coeffSlope, rest;
@@ -470,15 +438,17 @@ WFS_Provider.prototype.GeoJSON2Line = function(features, bbox, geometry) {
         }while (j < coords.length);
 
         if(coords.length > 1){
-            var resp = this.computeLineBorderPoints(new THREE.Vector3(coords[0][0], coords[0][1], 180/*(bbox.minCarto.altitude + bbox.maxCarto.altitude / 2) + 5*/),
-                                                    new THREE.Vector3(coords[1][0], coords[1][1], 180/*(bbox.minCarto.altitude + bbox.maxCarto.altitude / 2) + 5*/), true);
+            var resp = this.computeLineBorderPoints(new THREE.Vector3(coords[0][0], coords[0][1], 180),
+                                                    new THREE.Vector3(coords[1][0], coords[1][1], 180),
+                                                    true, layer.params.length || 10);
 
             for (j = 0; j < coords.length - 1; j++) {
                 var currentGeometry = new THREE.Geometry();
                 currentGeometry.vertices.push(resp.left, resp.right);
 
-                resp = this.computeLineBorderPoints(new THREE.Vector3(coords[j][0],     coords[j][1], 180/*(bbox.minCarto.altitude + bbox.maxCarto.altitude / 2) + 5*/),
-                                                    new THREE.Vector3(coords[j + 1][0], coords[j + 1][1], 180/*(bbox.minCarto.altitude + bbox.maxCarto.altitude / 2) + 5*/), false);
+                resp = this.computeLineBorderPoints(new THREE.Vector3(coords[j][0],     coords[j][1], 180),
+                                                    new THREE.Vector3(coords[j + 1][0], coords[j + 1][1], 180),
+                                                    false, layer.params.length || 10);
 
                 currentGeometry.vertices.push(resp.left, resp.right);
 
@@ -489,7 +459,7 @@ WFS_Provider.prototype.GeoJSON2Line = function(features, bbox, geometry) {
                 geometry.computeVertexNormals();
 
                 for (var k = 0; k < currentGeometry.faces.length; k++)
-                    this.manageColor(feature.properties, currentGeometry.faces[k].color);
+                    this.manageColor(feature.properties, currentGeometry.faces[k].color, layer);
 
                 geometry.merge(currentGeometry);
             }
@@ -508,9 +478,9 @@ WFS_Provider.prototype.GeoJSON2Point = function(features, bbox, geometry, type, 
         var feature = features[i];
         var coords = feature.geometry.coordinates;
 
-        var coordCarto = new CoordCarto().setFromDegreeGeo(coords[0], coords[1], ((bbox.minCarto.altitude + bbox.maxCarto.altitude) / 2) + 3);
-        var normalGlobe = this.ellipsoid.geodeticSurfaceNormalCartographic(coordCarto);
-        var centerPoint = this.ellipsoid.cartographicToCartesian(coordCarto);
+        var geoCoord = new GeoCoordinate(coords[0], coords[1], ((bbox.bottom() + bbox.top()) / 2) + 3, UNIT.DEGREE);
+        var normalGlobe = this.ellipsoid.geodeticSurfaceNormalCartographic(geoCoord);
+        var centerPoint = this.ellipsoid.cartographicToCartesian(geoCoord);
 
         var currentGeometry;
         //Change the type of height and radius computation. Used only for the test purpose
@@ -519,10 +489,12 @@ WFS_Provider.prototype.GeoJSON2Point = function(features, bbox, geometry, type, 
             type = layer.params.retail(centerPoint, type, new THREE.Vector3());
             layer.retailType = layer.params.getRetailType();
         }
+
+        var params = layer.params;
         if(type == 'box')
-            currentGeometry = new THREE.BoxGeometry(this.boxWidth, this.boxWidth, this.boxHeight);
+            currentGeometry = new THREE.BoxGeometry(params.boxWidth || 40, params.boxWidth || 40, params.boxHeight || 80);
         else if(type == 'point')
-            currentGeometry = new THREE.CircleGeometry(this.radius, this.nbSegment, this.thetaStart, this.thetaLength);
+            currentGeometry = new THREE.CircleGeometry(params.radius || 10, params.nbSegment || 3, params.thetaStart || 0, params.thetaLength || 2 * Math.PI);
         else
             continue;
 
@@ -530,7 +502,7 @@ WFS_Provider.prototype.GeoJSON2Point = function(features, bbox, geometry, type, 
         currentGeometry.translate(centerPoint.x, centerPoint.y, centerPoint.z);
 
         for (var j = 0; j < currentGeometry.faces.length; j++)
-            this.manageColor(feature.properties, currentGeometry.faces[j].color);
+            this.manageColor(feature.properties, currentGeometry.faces[j].color, layer);
 
         geometry.merge(currentGeometry);
     }
@@ -542,8 +514,8 @@ WFS_Provider.prototype.GeoJSON2Point = function(features, bbox, geometry, type, 
  * @param color : manager of the color of a face
  * @params tileParams: the tile to which apply the geometry
  */
-WFS_Provider.prototype.manageColor = function(properties, color) {
-    var colorParams = this.tileParams.color || undefined;
+WFS_Provider.prototype.manageColor = function(properties, color, layer) {
+    var colorParams = layer.params.color || undefined;
 
     if(colorParams !== undefined)
         for (var i = 0; i < colorParams.testTab.length; i++) {

@@ -21,17 +21,17 @@ import Quadtree from 'Scene/Quadtree';
 import CoordStars from 'Core/Geographic/CoordStars';
 import defaultValue from 'Core/defaultValue';
 import Layer from 'Scene/Layer';
-import CoordCarto from 'Core/Geographic/CoordCarto';
 import Capabilities from 'Core/System/Capabilities';
 import MobileMappingLayer from 'MobileMapping/MobileMappingLayer';
+import CustomEvent from 'custom-event';
 
 var instanceScene = null;
-var event = new Event('globe-built');
+var event = new CustomEvent('globe-built');
 var NO_SUBDIVISE = 0;
 var SUBDIVISE = 1;
 var CLEAN = 2;
 
-function Scene(coordCarto, ellipsoid, viewerDiv, debugMode, gLDebug) {
+function Scene(coordinate, ellipsoid, viewerDiv, debugMode, gLDebug) {
 
     if (instanceScene !== null) {
         throw new Error("Cannot instantiate more than one Scene");
@@ -39,7 +39,7 @@ function Scene(coordCarto, ellipsoid, viewerDiv, debugMode, gLDebug) {
 
     this.ellipsoid = ellipsoid;
 
-    var positionCamera = this.ellipsoid.cartographicToCartesian(new CoordCarto().setFromDegreeGeo(coordCarto.longitude, coordCarto.latitude, coordCarto.altitude));
+    var positionCamera = this.ellipsoid.cartographicToCartesian(coordinate);
 
     this.layers = [];
     this.map = null;
@@ -50,7 +50,7 @@ function Scene(coordCarto, ellipsoid, viewerDiv, debugMode, gLDebug) {
     this.orbitOn = false;
 
     this.gLDebug = gLDebug;
-    this.gfxEngine = c3DEngine(this, positionCamera, viewerDiv, debugMode, gLDebug);
+    this.gfxEngine = c3DEngine(this,positionCamera,viewerDiv, debugMode,gLDebug);
     this.browserScene = new BrowseTree(this.gfxEngine);
     this.cap = new Capabilities();
 

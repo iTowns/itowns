@@ -55,7 +55,7 @@ TileProvider.prototype.getGeometry = function(bbox, cooWMTS) {
             this.cacheGeometry[cooWMTS.zoom] = new Array();
 
         var precision = 16;
-        var rootBBox = new BoundingBox(0, part + part * 0.01, bbox.minCarto.latitude, bbox.maxCarto.latitude);
+        var rootBBox = new BoundingBox(0, part + part * 0.01, bbox.south(), bbox.north());
 
         geometry = new TileGeometry(rootBBox, precision, this.ellipsoid, cooWMTS.zoom);
         this.cacheGeometry[cooWMTS.zoom][cooWMTS.row] = geometry;

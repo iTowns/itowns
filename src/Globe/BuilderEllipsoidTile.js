@@ -1,4 +1,4 @@
-import CoordCarto from 'Core/Geographic/CoordCarto';
+import GeoCoordinate from 'Core/Geographic/GeoCoordinate';
 import THREE from 'THREE';
 import OBB from 'Renderer/ThreeExtented/OBB';
 
@@ -17,7 +17,7 @@ BuilderEllipsoidTile.prototype.Prepare = function(params) {
 
     params.nbRow = Math.pow(2.0, params.zoom + 1.0);
 
-    var st1 = this.projector.WGS84ToOneSubY(params.bbox.minCarto.latitude);
+    var st1 = this.projector.WGS84ToOneSubY(params.bbox.south());
 
     if (!isFinite(st1))
         st1 = 0;
@@ -29,13 +29,13 @@ BuilderEllipsoidTile.prototype.Prepare = function(params) {
     params.deltaUV1 = (st1 - start) * params.nbRow;
 
     // /!\ init params.projected
-    params.projected = new CoordCarto();
+    params.projected = new GeoCoordinate();
 };
 
 
 // get center tile in cartesian 3D
 BuilderEllipsoidTile.prototype.Center = function(params) {
-    params.center = this.ellipsoid.cartographicToCartesian(new CoordCarto(params.bbox.center.x, params.bbox.center.y, 0));
+    params.center = this.ellipsoid.cartographicToCartesian(new GeoCoordinate(params.bbox.center.x, params.bbox.center.y, 0));
     return params.center;
 };
 
@@ -62,7 +62,7 @@ BuilderEllipsoidTile.prototype.vProjecte = function(v, params) {
 
 // Compute uv 1, if isn't defined the uv1 isn't computed
 BuilderEllipsoidTile.prototype.getUV_PM = function(params) {
-    var t = this.projector.WGS84ToOneSubY(params.projected.latitude) * params.nbRow;
+    var t = this.projector.WGS84ToOneSubY(params.projected.latitude()) * params.nbRow;
 
     if (!isFinite(t))
         t = 0;
@@ -77,10 +77,10 @@ BuilderEllipsoidTile.prototype.OBB = function(params) {
 
     var normal = params.center.clone().normalize();
 
-    var phiStart = params.bbox.minCarto.longitude;
+    var phiStart = params.bbox.west();
     var phiLength = params.bbox.dimension.x;
 
-    var thetaStart = params.bbox.minCarto.latitude;
+    var thetaStart = params.bbox.south();
     var thetaLength = params.bbox.dimension.y;
 
     //      0---1---2
@@ -89,14 +89,14 @@ BuilderEllipsoidTile.prototype.OBB = function(params) {
     //      |       |
     //      6---5---4
 
-    cardinals.push(new CoordCarto(phiStart, thetaStart, 0));
-    cardinals.push(new CoordCarto(phiStart + params.bbox.halfDimension.x, thetaStart, 0));
-    cardinals.push(new CoordCarto(phiStart + phiLength, thetaStart, 0));
-    cardinals.push(new CoordCarto(phiStart + phiLength, thetaStart + params.bbox.halfDimension.y, 0));
-    cardinals.push(new CoordCarto(phiStart + phiLength, thetaStart + thetaLength, 0));
-    cardinals.push(new CoordCarto(phiStart + params.bbox.halfDimension.x, thetaStart + thetaLength, 0));
-    cardinals.push(new CoordCarto(phiStart, thetaStart + thetaLength, 0));
-    cardinals.push(new CoordCarto(phiStart, thetaStart + params.bbox.halfDimension.y, 0));
+    cardinals.push(new GeoCoordinate(phiStart, thetaStart, 0));
+    cardinals.push(new GeoCoordinate(phiStart + params.bbox.halfDimension.x, thetaStart, 0));
+    cardinals.push(new GeoCoordinate(phiStart + phiLength, thetaStart, 0));
+    cardinals.push(new GeoCoordinate(phiStart + phiLength, thetaStart + params.bbox.halfDimension.y, 0));
+    cardinals.push(new GeoCoordinate(phiStart + phiLength, thetaStart + thetaLength, 0));
+    cardinals.push(new GeoCoordinate(phiStart + params.bbox.halfDimension.x, thetaStart + thetaLength, 0));
+    cardinals.push(new GeoCoordinate(phiStart, thetaStart + thetaLength, 0));
+    cardinals.push(new GeoCoordinate(phiStart, thetaStart + params.bbox.halfDimension.y, 0));
 
     var cardinals3D = [];
     var cardin3DPlane = [];

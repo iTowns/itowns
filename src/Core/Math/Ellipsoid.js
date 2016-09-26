@@ -23,12 +23,12 @@ function Ellipsoid(size) {
 
 Ellipsoid.prototype.geodeticSurfaceNormalCartographic = function(coordCarto) {
 
-    var longitude = coordCarto.longitude;
-    var latitude = coordCarto.latitude;
+    var longitude = Math.PI * 2 - coordCarto.longitude();
+    var latitude = coordCarto.latitude();
     var cosLatitude = Math.cos(latitude);
 
-    var x = cosLatitude * Math.cos(-longitude);
-    var z = cosLatitude * Math.sin(-longitude);
+    var x = cosLatitude * Math.cos(longitude);
+    var z = cosLatitude * Math.sin(longitude);
     var y = Math.sin(latitude);
 
     var result = new THREE.Vector3(x, y, z);
@@ -58,7 +58,7 @@ Ellipsoid.prototype.cartographicToCartesian = function(coordCarto) {
 
     k.divideScalar(gamma);
 
-    n.multiplyScalar(coordCarto.altitude);
+    n.multiplyScalar(coordCarto.altitude());
 
     //n.multiplyScalar(0.0);
 
@@ -132,10 +132,10 @@ Ellipsoid.prototype.intersection = function(ray) {
 
 Ellipsoid.prototype.computeDistance = function(coordCarto1, coordCarto2) {
 
-    var longitude1 = coordCarto1.longitude * Math.PI / 180;
-    var latitude1 = coordCarto1.latitude * Math.PI / 180;
-    var longitude2 = coordCarto2.longitude * Math.PI / 180;
-    var latitude2 = coordCarto2.latitude * Math.PI / 180;
+    var longitude1 = coordCarto1.longitude() * Math.PI / 180;
+    var latitude1 = coordCarto1.latitude() * Math.PI / 180;
+    var longitude2 = coordCarto2.longitude() * Math.PI / 180;
+    var latitude2 = coordCarto2.latitude() * Math.PI / 180;
 
     var distRad = Math.acos(Math.sin(latitude1) * Math.sin(latitude2) + Math.cos(latitude1) * Math.cos(latitude2) * Math.cos(longitude2 - longitude1));
 

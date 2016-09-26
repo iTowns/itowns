@@ -4,9 +4,6 @@
  * and open the template in the editor.
  */
 
-
-import THREE from 'THREE';
-
 /**
  * Math functions.
  *
@@ -47,15 +44,38 @@ MathExt.INV_TWO_PI = 1.0 / MathExt.TWO_PI;
 
 MathExt.LOG_TWO = Math.log(2.0);
 
-MathExt.divideVectors = function(u, v) {
-    var w = new THREE.Vector3(u.x / v.x, u.y / v.y, u.z / v.z);
+MathExt.RADTODEG = 180.0 / MathExt.PI;
 
-    return w;
+MathExt.DEGTORAD = MathExt.PI / 180.0;
+
+MathExt.radToDeg = function(rad)
+{
+	return rad * MathExt.RADTODEG;
 };
 
-MathExt.lenghtSquared = function(u) {
+MathExt.degToRad = function(deg)
+{
+	return deg * MathExt.DEGTORAD;
+};
 
-    return u.x * u.x + u.y * u.y + u.z * u.z;
+MathExt.arrayDegToRad = function(arrayDeg)
+{
+	if(arrayDeg)
+	{
+		for (var i = 0; i < arrayDeg.length; i++) {
+			arrayDeg[i]= MathExt.degToRad(arrayDeg[i]);
+		}
+	}
+};
+
+MathExt.arrayRadToDeg = function(arrayDeg)
+{
+	if(arrayDeg)
+	{
+		for (var i = 0; i < arrayDeg.length; i++) {
+			arrayDeg[i]= MathExt.radToDeg(arrayDeg[i]);
+		}
+	}
 };
 
 export default MathExt;

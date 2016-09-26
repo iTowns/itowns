@@ -160,7 +160,7 @@ TileGeometry.prototype.computeBuffers = function(params, builder) {
             scratchBuffers.normal[id_m3 + 1] = normal.y;
             scratchBuffers.normal[id_m3 + 2] = normal.z;
 
-            UV_WGS84(scratchBuffers, idVertex, u, v);
+            UV_WGS84(scratchBuffers, idVertex,u,v);
             UV_PM(scratchBuffers, idVertex, uv_pm);
 
             if (y !== 0 && y !== heightSegments) {

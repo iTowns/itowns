@@ -6,7 +6,7 @@
 import JSZip from 'Renderer/ThreeExtented/jszip.min';
 import THREE from 'THREE';
 import IoDriverXML from 'Core/Commander/Providers/IoDriverXML';
-import CoordCarto from 'Core/Geographic/CoordCarto';
+import GeoCoordinate,{UNIT} from 'Core/Geographic/GeoCoordinate';
 
 function KMZLoader() {
 
@@ -37,7 +37,7 @@ KMZLoader.prototype.parseCollada = function(buffer) {
             var latitude = Number(doc.getElementsByTagName("latitude")[0].childNodes[0].nodeValue);
             var altitude = Number(doc.getElementsByTagName("altitude")[0].childNodes[0].nodeValue);
 
-            coordCarto = new CoordCarto().setFromDegreeGeo(longitude, latitude, altitude);
+            coordCarto = new GeoCoordinate(longitude, latitude, altitude, UNIT.DEGREE);
         }
     }
 
@@ -46,11 +46,12 @@ KMZLoader.prototype.parseCollada = function(buffer) {
 }
 
 KMZLoader.prototype.load = function(url) {
-    return fetch(url).then(function(response) {
+    return fetch(url).then(response => {
+        if (response.status < 200 || response.status >= 300) {
+            throw new Error(`Error loading ${url}: status ${response.status}`);
+        }
         return response.arrayBuffer();
-    }).then(function(buffer) {
-        return this.parseCollada(buffer);
-    }.bind(this));
+    }).then(buffer => this.parseCollada(buffer));
 };
 
 export default KMZLoader;

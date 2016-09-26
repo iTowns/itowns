@@ -431,32 +431,25 @@ NodeProcess.prototype.prepare = function(camera) {
  * @returns {undefined}
  */
 NodeProcess.prototype.preHorizonCulling = function(camera) {
-
-    this.cV = MathExt.divideVectors(camera.position(), this.r);
-
-    this.vhMagnitudeSquared = MathExt.lenghtSquared(this.cV) - 1.0;
-
+    this.cV.copy(camera.position()).divide(this.r);
+    this.vhMagnitudeSquared = this.cV.lengthSq() - 1.0;
 };
 
 /**
  * @documentation: return true if point is occuled by horizon
- * @param {type} point
+ * @param {type} pt
  * @returns {Boolean}
  */
-NodeProcess.prototype.pointHorizonCulling = function(point) {
+NodeProcess.prototype.pointHorizonCulling = function(pt) {
+    var vT = pt.divide(this.r).sub(this.cV);
 
-    var t = MathExt.divideVectors(point, this.r);
-
-    // Vector VT
-    var vT = new THREE.Vector3();
-    vT.subVectors(t, this.cV);
-
-    var vtMagnitudeSquared = MathExt.lenghtSquared(vT);
+    var vtMagnitudeSquared = vT.lengthSq();
 
     var dot = -vT.dot(this.cV);
 
-    var isOccluded = dot > this.vhMagnitudeSquared &&
-        dot * dot / vtMagnitudeSquared > this.vhMagnitudeSquared;
+    var isOccluded =
+        this.vhMagnitudeSquared < dot &&
+        this.vhMagnitudeSquared < dot * dot / vtMagnitudeSquared;
 
     return isOccluded;
 };
@@ -466,43 +459,24 @@ NodeProcess.prototype.pointHorizonCulling = function(point) {
  * @param {type} node
  * @returns {Boolean}
  */
-var center = new THREE.Vector3();
+var point = new THREE.Vector3();
 
 NodeProcess.prototype.horizonCulling = function(node) {
 
     // horizonCulling Oriented bounding box
     var points = node.OBB().pointsWorld;
-    center.setFromMatrixPosition(node.matrixWorld);
     var isVisible = false;
-    for (var i = 0, max = points.length; i < max; i++) {
-        var point = points[i].add(center);
 
+    var nodePosition = new THREE.Vector3().setFromMatrixPosition(node.matrixWorld);
+    for (var i = 0, max = points.length; i < max; i++) {
+        point.addVectors(nodePosition, points[i]);
         if (!this.pointHorizonCulling(point)) {
             isVisible = true;
             break;
         }
     }
 
-    /*
-     var points    = node.geometry.tops;
-     var isVisible = false;
-     for (var i = 0, max = points.length; i < max; i++)
-     {
-           if(!this.pointHorizonCulling(points[i]))
-           {
-               isVisible = true;
-               break;
-           }
-     }
-     */
-
     return isVisible;
-    //      if(isVisible === false)
-    //          node.tMat.setDebug(1);
-    //      else
-    //          node.tMat.setDebug(0);
-    //
-
 };
 
 

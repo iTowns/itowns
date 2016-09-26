@@ -5,27 +5,29 @@
  */
 
 
+
 import Scene from 'Scene/Scene';
 import Globe from 'Globe/Globe';
 import WMTS_Provider from 'Core/Commander/Providers/WMTS_Provider';
 import WMS_Provider from 'Core/Commander/Providers/WMS_Provider';
 import TileProvider from 'Core/Commander/Providers/TileProvider';
+import loadGpx from 'Core/Commander/Providers/GpxUtils';
+import GeoCoordinate,{UNIT} from 'Core/Geographic/GeoCoordinate';
 import WFS_Provider from 'Core/Commander/Providers/WFS_Provider';
-import CoordCarto from 'Core/Geographic/CoordCarto';
 import Ellipsoid from 'Core/Math/Ellipsoid';
 import Projection from 'Core/Geographic/Projection';
+import CustomEvent from 'custom-event';
 
 var loaded = false;
-var eventLoaded = new Event('globe-loaded');
-var eventLayerRemoved = new Event('Layer-removed');
-
-var eventRange = new Event('rangeChanged');
+var eventLoaded = new CustomEvent('globe-loaded');
+var eventLayerRemoved = new CustomEvent('Layer-removed');
+var eventRange = new CustomEvent('rangeChanged');
 
 function ApiGlobe() {
     //Constructor
 
     this.scene = null;
-    //        this.nodeProcess = null;
+    //this.nodeProcess = null;
     this.commandsTree = null;
     this.projection = new Projection();
     this.viewerDiv = null;
@@ -33,8 +35,6 @@ function ApiGlobe() {
 }
 
 ApiGlobe.prototype.constructor = ApiGlobe;
-
-
 
 //    var event = new Event('empty');
 //    document.addEventListener('empty', console.log('Your turn'));
@@ -96,7 +96,6 @@ ApiGlobe.prototype.addFeatureLayer = function(layer) {
     preprocessLayer(layer, this.scene.managerCommand.getProtocolProvider(layer.protocol));
 
     var map = this.scene.getMap();
-    //TODO: replace this with ad-dGeometryLayer
     map.layersConfiguration.addGeometryLayer(layer);
 };
 
@@ -238,7 +237,10 @@ ApiGlobe.prototype.createSceneGlobe = function(coordCarto, viewerDiv) {
         z: 6378137
     });
 
-    this.scene = Scene(coordCarto, ellipsoid, viewerDiv, debugMode, gLDebug);
+    var coordinate = new GeoCoordinate().copy(coordCarto,UNIT.DEGREE);
+
+    this.scene = Scene(coordinate, ellipsoid, viewerDiv, debugMode, gLDebug);
+    this.scene.parent = this;
 
     var map = new Globe(ellipsoid, gLDebug);
 
@@ -248,14 +250,12 @@ ApiGlobe.prototype.createSceneGlobe = function(coordCarto, viewerDiv) {
     var wmtsProvider = new WMTS_Provider({
         support: map.gLDebug
     });
+
     this.scene.managerCommand.addProtocolProvider('wmts', wmtsProvider);
     this.scene.managerCommand.addProtocolProvider('wmtsc', wmtsProvider);
     this.scene.managerCommand.addProtocolProvider('tile', new TileProvider(ellipsoid));
     this.scene.managerCommand.addProtocolProvider('wms', new WMS_Provider({support : map.gLDebug}));
     this.scene.managerCommand.addProtocolProvider('wfs', new WFS_Provider());
-    //Feature provider made for the test purpose
-    this.scene.managerCommand.addProtocolProvider('wfsPoint', new WFS_Provider({}));
-    this.scene.managerCommand.addProtocolProvider('wfsLine', new WFS_Provider({}));
 
     var wgs84TileLayer = {
         protocol: 'tile',
@@ -321,8 +321,48 @@ ApiGlobe.prototype.setLayerVisibility = function(id, visible) {
 };
 
 ApiGlobe.prototype.forceFeatureNodeUpdate = function() {
+    this.controlText.force = true;
     this.scene.realtimeSceneProcess();
     this.scene.managerCommand.runAllCommands();
+    this.controlText.force = false;
+};
+
+ApiGlobe.prototype.setNewParams = function(x, y, z, isFirst) {
+    var text = this.controlText;
+    if(text.retailType == 'circle') {
+        text.centerX = x;
+        text.centerY = y;
+        text.centerZ = z;
+    } else if (text.retailType == 'box') {
+        if (isFirst) {
+            if (x > text.maxX || y > text.maxY || z > text.maxZ) {
+                text.minX = text.maxX;
+                text.minY = text.maxY;
+                text.minZ = text.maxZ;
+                text.maxX = x;
+                text.maxY = y;
+                text.maxZ = z;
+            } else {
+                text.minX = x;
+                text.minY = y;
+                text.minZ = z;
+            }
+        } else {
+            if (x < text.minX || y < text.minY || z < text.minZ) {
+                text.maxX = text.minX;
+                text.maxY = text.minY;
+                text.maxZ = text.minZ;
+                text.minX = x;
+                text.minY = y;
+                text.minZ = z;
+            } else {
+                text.maxX = x;
+                text.maxY = y;
+                text.maxZ = z;
+            }
+        }
+    }
+    this.forceFeatureNodeUpdate();
 };
 
 ApiGlobe.prototype.animateTime = function(value) {
@@ -533,7 +573,7 @@ ApiGlobe.prototype.resetHeading = function( /*bool*/ ) {
  */
 
 ApiGlobe.prototype.computeDistance = function(p1, p2) {
-    return this.scene.getEllipsoid().computeDistance(new CoordCarto().setFromDegreeGeo(p1.longitude, p1.latitude, p1.altitude), new CoordCarto().setFromDegreeGeo(p2.longitude, p2.latitude, p2.altitude));
+    return this.scene.getEllipsoid().computeDistance(new GeoCoordinate().copy(p1), new GeoCoordinate().copy(p2));
 };
 
 /**
@@ -543,9 +583,9 @@ ApiGlobe.prototype.computeDistance = function(p1, p2) {
  * @param {Position} position - The position on the scene.
  */
 
-ApiGlobe.prototype.setCenter = function(position) {
-    //        var position3D = this.scene.getEllipsoid().cartographicToCartesian(position);
-    var position3D = this.scene.getEllipsoid().cartographicToCartesian(new CoordCarto().setFromDegreeGeo(position.longitude, position.latitude, position.altitude));
+ApiGlobe.prototype.setCenter = function(coordinates) {
+
+    var position3D = this.scene.getEllipsoid().cartographicToCartesian(new GeoCoordinate().copyFromDegree(coordinates));
     this.scene.currentControls().setCenter(position3D);
 };
 
@@ -610,17 +650,17 @@ ApiGlobe.prototype.launchCommandApi = function() {
     //        this.setHeading(180);
     //        this.resetTilt();
     //        this.resetHeading();
-    //        var p1 = new CoordCarto(2.4347047,48.8472568,0);
-    //        var p2 = new CoordCarto(2.4345599,48.8450221,0);
+    //        var p1 = new GeoCoordinate(2.4347047,48.8472568,0);
+    //        var p2 = new GeoCoordinate(2.4345599,48.8450221,0);
     //        console.log(this.computeDistance({longitude:2.4347047,latitude:48.8472568,altitude:0},{longitude:2.4345599,latitude:48.8450221,altitude:0}));
 
-    //var p = new CoordCarto(-74.0059700 ,40.7142700,0); //NY
+    //var p = new GeoCoordinate(-74.0059700 ,40.7142700,0); //NY
 
-    //        var p = new CoordCarto().setFromDegreeGeo(coordCarto.lon, coordCarto.lat, coordCarto.alt))
-    //        var p = new CoordCarto().setFromDegreeGeo(2,20,0); //NY
+    //        var p = new GeoCoordinate(coordCarto.lon, coordCarto.lat, coordCarto.alt,UNIT.DEGREE)
+    //        var p = new GeoCoordinate(2,20,0,UNIT.DEGREE); //NY
     //
     //        this.setCenter(p);
-    //        var p2 = new CoordCarto().setFromDegreeGeo(2.4347047,48.8472568,0); //Paris
+    //        var p2 = new GeoCoordinate().setFromDegree(2.4347047,48.8472568,0); //Paris
     //        this.setCenter(p2);
     //        this.setCenter({lon:-74,lat:40, alt:0});
     //        this.testTilt();
@@ -649,6 +689,17 @@ ApiGlobe.prototype.launchCommandApi = function() {
 ApiGlobe.prototype.showKML = function(value) {
 
     this.scene.getMap().showKML(value);
+    this.scene.renderScene3D();
+};
+
+
+ApiGlobe.prototype.loadGPX = function(url) {
+    loadGpx(url, this.scene.getEllipsoid()).then(function(gpx){
+        if(gpx) {
+            this.scene.getMap().gpxTracks.children[0].add(gpx);
+        }
+    }.bind(this));
+
     this.scene.renderScene3D();
 };
 

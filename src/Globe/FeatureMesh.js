@@ -22,8 +22,8 @@ function FeatureMesh(params, builder) {
 	this.bboxId = params.id;
 	this.bbox 	= params.bbox;
 
-	this.box3D 	= new THREE.Box3(new THREE.Vector3(params.bbox.minCarto.longitude, params.bbox.minCarto.latitude, params.bbox.minCarto.altitude),
-								new THREE.Vector3(params.bbox.maxCarto.longitude, params.bbox.maxCarto.latitude, params.bbox.maxCarto.altitude));
+	this.box3D 	= new THREE.Box3(new THREE.Vector3(this.bbox.west(), this.bbox.south(), this.bbox.bottom()),
+								new THREE.Vector3(this.bbox.east(), this.bbox.north(), this.bbox.top()));
 	this.centerSphere = new THREE.Vector3();
 	this.level 	= params.level;
 
