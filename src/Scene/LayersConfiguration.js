@@ -21,13 +21,13 @@ function LayersConfiguration() {
 
     // color layers state (visibility, opacity)
     this.colorLayersState = {};
-}
+};
 
 LayersConfiguration.prototype.constructor = LayersConfiguration;
 
 LayersConfiguration.prototype.addElevationLayer = function(layer) {
     this.elevationLayers.push(layer);
-}
+};
 
 LayersConfiguration.prototype.addColorLayer = function(layer) {
     this.colorLayers.push(layer);
@@ -36,7 +36,7 @@ LayersConfiguration.prototype.addColorLayer = function(layer) {
         opacity: 1.0,
         sequence: this.colorLayers.length - 1
     };
-}
+};
 
 LayersConfiguration.prototype.removeColorLayer = function(id) {
     if (this.colorLayersState[id]) {
@@ -47,49 +47,49 @@ LayersConfiguration.prototype.removeColorLayer = function(id) {
         return true;
     }
     return false;
-}
+};
 
 LayersConfiguration.prototype.getColorLayers = function() {
     return this.colorLayers;
-}
+};
 
 LayersConfiguration.prototype.getColorLayersId = function() {
     return this.colorLayers.map(function(l) {
         return l.id;
     });
-}
+};
 
 LayersConfiguration.prototype.addGeometryLayer = function(layer) {
     this.geometryLayers.push(layer);
-}
+};
 
 LayersConfiguration.prototype.getGeometryLayers = function() {
     return this.geometryLayers;
-}
+};
 
 LayersConfiguration.prototype.getElevationLayers = function() {
     return this.elevationLayers;
-}
+};
 
 LayersConfiguration.prototype.setLayerOpacity = function(id, opacity) {
     if (this.colorLayersState[id]) {
         this.colorLayersState[id].opacity = opacity;
     }
-}
+};
 
 LayersConfiguration.prototype.setLayerVisibility = function(id, visible) {
     if (this.colorLayersState[id]) {
         this.colorLayersState[id].visible = visible;
     }
-}
+};
 
 LayersConfiguration.prototype.isColorLayerVisible = function(id) {
     return this.colorLayersState[id].visible;
-}
+};
 
 LayersConfiguration.prototype.getColorLayerOpacity = function(id) {
     return this.colorLayersState[id].opacity;
-}
+};
 
 LayersConfiguration.prototype.moveLayerToIndex = function(id, newSequence) {
     if (this.colorLayersState[id]) {
@@ -128,6 +128,6 @@ LayersConfiguration.prototype.getColorLayersIdOrderedBySequence = function() {
         }.bind(this)
     );
     return seq;
-}
+};
 
 export default LayersConfiguration;
