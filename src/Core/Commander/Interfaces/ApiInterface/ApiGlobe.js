@@ -320,9 +320,6 @@ ApiGlobe.prototype.forceFeatureNodeUpdate = function() {
 };
 
 ApiGlobe.prototype.setNewParams = function(x, y, z, isFirst) {
-    console.log(x);
-    console.log(y);
-    console.log(z);
     var text = this.controlText;
     if(text.retailType == 'circle') {
         text.centerX = x;
