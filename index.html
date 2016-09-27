@@ -453,10 +453,22 @@ and open the template in the editor.
                                             // Warning: the type of coordinates used are CARTESIAN
                                             retail: function(point, type, v) {
                                                 if(controlText.retailType == 'box') {
-                                                    var box = [controlText.minX, controlText.minY, controlText.minZ, controlText.maxX, controlText.maxY, controlText.maxZ];
-                                                    if (point.x > box[0] && point.x < box[3] &&
-                                                        point.y > box[1] && point.y < box[4] &&
-                                                        point.z > box[2] && point.z < box[5])
+                                                    var box = [];
+                                                    if(controlText.minX < controlText.maxX)
+                                                        box.push(controlText.minX, controlText.maxX);
+                                                    else
+                                                        box.push(controlText.maxX, controlText.minX);
+                                                    if(controlText.minY < controlText.maxY)
+                                                        box.push(controlText.minY, controlText.maxY);
+                                                    else
+                                                        box.push(controlText.maxY, controlText.minY);
+                                                    if(controlText.minZ < controlText.maxZ)
+                                                        box.push(controlText.minZ, controlText.maxZ);
+                                                    else
+                                                        box.push(controlText.maxZ, controlText.minZ);
+                                                    if (point.x > box[0] && point.x < box[1] &&
+                                                        point.y > box[2] && point.y < box[3] &&
+                                                        point.z > box[4] && point.z < box[5])
                                                         type = 'box';
                                                     else
                                                         type = 'point';
