@@ -233,9 +233,10 @@ function updateNodeFeature(quadtree, node, featureLayers) {
                 quadtree.interCommand.request(args, node, refinementCommandCancellationFn).then(function(result) {
                     //if request return empty json, WFS_Provider.getFeatures return undefined
                     if(result.feature !== undefined && result.feature != null) {
-                        var layer = quadtree.parent.batiments.children[0];
-                        quadtree.parent.batiments.visible = true;
-                        layer.add(result.feature);
+                        var layers = quadtree.parent.features.children[0];
+                        quadtree.parent.features.visible = true;
+                        
+                        layers.add(result.feature);
                         node.content = result.feature;
                     }
                 })
