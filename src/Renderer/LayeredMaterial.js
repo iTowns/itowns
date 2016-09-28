@@ -143,10 +143,14 @@ var LayeredMaterial = function(id) {
             type: "i",
             value: gfxEngine().lightingOn
         },
-        this.uniforms.lightPosition = {
-            type: "v3",
-            value: new THREE.Vector3(-0.5, 0.0, 1.0)
-        };
+    this.uniforms.lightPosition = {
+        type: "v3",
+        value: new THREE.Vector3(-0.5, 0.0, 1.0)
+    };
+    this.uniforms.time = {
+        type: "f",
+        value: 0.
+    };
 
     this.setUuid(id || 0);
     this.wireframe = false;

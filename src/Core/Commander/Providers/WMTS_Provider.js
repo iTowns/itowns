@@ -14,6 +14,12 @@ import IoDriverXML from 'Core/Commander/Providers/IoDriverXML';
 import THREE from 'THREE';
 import CacheRessource from 'Core/Commander/Providers/CacheRessource';
 
+import Segmentation from 'Processing/Segmentation';
+
+
+
+
+
 function WMTS_Provider(options) {
     //Constructor
 
@@ -23,7 +29,7 @@ function WMTS_Provider(options) {
     this.ioDriverXML = new IoDriverXML();
     this.projection = new Projection();
     this.support = options.support || false;
-
+    this.segmentation = new Segmentation();
     this.getTextureFloat;
 
     if (this.support)
@@ -186,18 +192,32 @@ WMTS_Provider.prototype.getColorTexture = function(coWMTS, pitch, layer) {
         if (texture)
             result.texture = texture;
         else {
+            //console.log(image.src);
+            if(image.src.indexOf("TILEMATRIX=20")<0){
+                result.texture = new THREE.Texture(image);
+                result.texture.needsUpdate = true;
+            }else{
+            /*
             result.texture = new THREE.Texture(image);
+            //result.texture.flipY = false;
             result.texture.needsUpdate = true;
             result.texture.generateMipmaps = false;
             result.texture.magFilter = THREE.LinearFilter;
             result.texture.minFilter = THREE.LinearFilter;
             result.texture.anisotropy = 16;
-            result.texture.url = url;
+            result.texture.url = url;*/
             // result.texture.layerId = layerId;
-
+            //console.log(this.segmentation);
+            this.segmentation.setImage(image);
+            result.texture = this.segmentation.extractCars();
+        }
+            //result.texture = this.segmentation.setImage(image).extractCars();
+            //result.texture = new Segmentation(image).extractCars();//new Segmentation(image).extractCars();
             this.cache.addRessource(url, result.texture);
         }
-
+        /*eslint-disable */
+        //console.log(result.texture);
+        /*eslint-enable */
         return result;
 
     }.bind(this)).catch(function( /*reason*/ ) {

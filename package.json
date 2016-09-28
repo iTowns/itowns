@@ -30,7 +30,9 @@
     "string_format": "^0.0.6",
     "three": "^0.79.0",
     "whatwg-fetch": "^1.0.0",
-    "custom-event": "^1.0.0"
+    "custom-event": "^1.0.0",
+    "tracking": "^1.1.2",
+    "sobel":"^0.0.7"
   },
   "devDependencies": {
     "babel-cli": "^6.11.4",

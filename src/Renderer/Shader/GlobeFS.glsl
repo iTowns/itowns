@@ -32,6 +32,7 @@ uniform int         uuid;
 uniform int         debug;
 uniform vec3        lightPosition;
 uniform int         lightingOn;
+uniform float       time;
 
 varying vec2        vUv_WGS84;
 varying float       vUv_PM;
@@ -61,6 +62,24 @@ vec2 getParamBLayers(int id)
 
     return vec2(0.0,0.0);
 }
+
+
+// Function to detect contour of detection for smooth blending
+vec4 smoothContours(vec3 pitScale[TEX_UNITS], int textureInd, vec2 posCar, vec2 posCurrent ){
+
+    vec4 colPosCar     =  colorAtIdUv(dTextures_01, pitScale, textureInd, posCar);
+    vec4 colPosCurrent =  colorAtIdUv(dTextures_01, pitScale, textureInd, posCurrent);
+    
+    vec4 colOut = colPosCar;
+    vec4 colM1  = colorAtIdUv(dTextures_01, pitScale, textureInd, vec2(posCar.x -10./256., posCar.y));
+    if(colM1.a >=1.) {
+        
+        colOut = mix (colPosCar, colPosCurrent, 0.5);
+    }
+
+    return colOut;
+}
+
 
 void main() {
 
@@ -115,9 +134,44 @@ void main() {
                         textureIndex,
                         projWGS84 ? vUv_WGS84 : uvPM);
 
-                    if (layerColor.a > 0.0) {
+                  //  if (layerColor.a > 0.0) {
                         validTextureCount++;
                         float lum = 1.0;
+                        
+                                    /*        
+                                        if (layerColor.a < 1.0) {
+                                            layerColor = colorAtIdUv(
+                                                dTextures_01,
+                                                pitScale_L01,
+                                                textureIndex,
+                                                vec2( clamp(uvPM.x + mod(time/100., 1.), 0.,1.), uvPM.y));
+                                        }
+                                   */
+
+                   
+                   float currentTranslation = mod(time/100., 1.);
+                /*
+                   // Kaleidoscope fun
+                   uvPM.x = uvPM.x > currentTranslation ? 1. - uvPM.x : uvPM.x;
+                   layerColor = colorAtIdUv(dTextures_01, pitScale_L01, textureIndex, uvPM);
+                */
+
+                
+                   // Need to know the direction..
+                   if(uvPM.y>0.5) currentTranslation = -currentTranslation*1.5;
+                   vec2 previousPos = vec2(clamp(uvPM.x + currentTranslation, 0.,1.), uvPM.y);
+                   vec4 colPrevPos =  colorAtIdUv(dTextures_01, pitScale_L01, textureIndex, previousPos);
+                   vec4 currentColor = colorAtIdUv(dTextures_01, pitScale_L01, textureIndex, uvPM);
+
+                   if (colPrevPos.a < 1.0) { // was car -> draw car  // Need opacity smooth with contour
+                                // layerColor = colPrevPos; //vec4(1.,0.,0.,0.5);
+                       layerColor = smoothContours(pitScale_L01, textureIndex, previousPos, uvPM);
+                   }else
+                        if (currentColor.a < 1.0) {  // is car -> needs inpainting
+                            layerColor = colorAtIdUv(dTextures_01, pitScale_L01, textureIndex, vec2(uvPM.x+0.2,uvPM.y));
+                   }
+ 
+              
 
                         if(paramsB.x > 0.0) {
                             vec3 white = vec3(1.0,1.0,1.0);
@@ -132,8 +186,12 @@ void main() {
                             lum = 1.0-pow(abs(a),paramsB.x);
                         }
 
-                        diffuseColor = mix( diffuseColor,layerColor, lum*params.w * layerColor.a);
-                    }
+                        diffuseColor = mix( diffuseColor, layerColor, 1.);//lum*params.w );//* layerColor.a);
+
+                        
+
+                      //  diffuseColor.a = 1.;
+                 //   }
                 }
 #if defined(DEBUG)
                 else {

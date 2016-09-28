@@ -224,8 +224,6 @@ BrowseTree.prototype.updateMaterialUniform = function(uniformName, value) {
 
             if (node.traverse)
                 node.traverse(lookMaterial);
-
-
         }
     }
 };
