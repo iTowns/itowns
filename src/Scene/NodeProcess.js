@@ -96,8 +96,10 @@ NodeProcess.prototype.subdivideNode = function(node, camera, params) {
             quadtree.interCommand.request(args, node).then(function(child) {
                 var colorTextureCount = 0;
                 var colorParam = [];
+                var elevationParam = {};
                 var layer;
                 var j;
+                var tileMatrixSet;
 
                 child.matrixSet = [];
 
@@ -106,7 +108,7 @@ NodeProcess.prototype.subdivideNode = function(node, camera, params) {
                 var colorLayers = params.layersConfig.getColorLayers();
                 for (j = 0; j < colorLayers.length; j++) {
                     layer = colorLayers[j];
-                    var tileMatrixSet = layer.options.tileMatrixSet;
+                    tileMatrixSet = layer.options.tileMatrixSet;
 
                     if (!child.matrixSet[tileMatrixSet]) {
                         child.matrixSet[tileMatrixSet] = this.projection.getCoordWMTS_WGS84(child.tileCoord, child.bbox, tileMatrixSet);
@@ -129,10 +131,24 @@ NodeProcess.prototype.subdivideNode = function(node, camera, params) {
                     }
                 }
 
-				var elevationParam = {
-					zFactor : params.layersConfig.getZFactor(),
-					noData  : params.layersConfig.getNoData()
-				};
+                var elevationLayers = params.layersConfig.getElevationLayers();
+                for (j = 0; j < elevationLayers.length; j++) {
+                    layer = elevationLayers[j];
+                    tileMatrixSet = layer.options.tileMatrixSet;
+
+                    if (!child.matrixSet[tileMatrixSet]) {
+                        child.matrixSet[tileMatrixSet] = this.projection.getCoordWMTS_WGS84(child.tileCoord, child.bbox, tileMatrixSet);
+                    }
+
+                    if (layer.tileInsideLimit(child, layer)) {
+						elevationParam = {
+							zFactor : params.layersConfig.getZFactor(layer.id),
+							noData  : params.layersConfig.getNoData(layer.id)
+						};
+						break;
+					}
+				}
+
                 child.setLayerParameters(colorParam, elevationParam);
                 child.texturesNeeded = colorTextureCount + 1;
 
@@ -140,7 +156,7 @@ NodeProcess.prototype.subdivideNode = function(node, camera, params) {
                 updateNodeImagery(quadtree, child, colorLayers);
 
                 // request elevation update
-                updateNodeElevation(quadtree, child, params.layersConfig.getElevationLayers());
+                updateNodeElevation(quadtree, child, elevationLayers);
 
                 return 0;
             }.bind(this));
@@ -290,6 +306,7 @@ function updateNodeElevation(quadtree, node, elevationLayers) {
             var layer = elevationLayers[i];
 
             if (layer.tileInsideLimit(tileNotDownscaled, layer)) {
+				node.elevationId = layer.id;
                 var args = {
                     layer: layer
                 };
@@ -317,8 +334,10 @@ function updateNodeElevation(quadtree, node, elevationLayers) {
 
         // No elevation texture available for this node, no need to wait for one.
         node.texturesNeeded -= 1;
+        node.elevationId = undefined;
         return Promise.resolve(node);
     } else if (node != tileNotDownscaled) {
+        node.elevationId = tileNotDownscaled.elevationId;
         node.setTextureElevation(-2);
         return Promise.resolve(node);
     }

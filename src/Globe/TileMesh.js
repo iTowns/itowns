@@ -73,6 +73,7 @@ function TileMesh(params, builder, geometryCache) {
     this.currentElevation = -1;
     this.setDisplayed(false);
 
+	this.elevationId = undefined;
 }
 
 TileMesh.prototype = Object.create(NodeMesh.prototype);

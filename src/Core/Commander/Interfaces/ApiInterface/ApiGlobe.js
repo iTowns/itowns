@@ -316,9 +316,9 @@ ApiGlobe.prototype.setLayerVisibility = function(id, visible) {
  * @param {zFactor} float.
  */
 
-ApiGlobe.prototype.setZFactor = function(zFactor) {
+ApiGlobe.prototype.setZFactor = function(id, zFactor) {
 
-    this.scene.getMap().setZFactor(zFactor);
+    this.scene.getMap().setZFactor(id, zFactor);
     this.scene.renderScene3D();
 };
 
@@ -328,8 +328,8 @@ ApiGlobe.prototype.setZFactor = function(zFactor) {
  * @constructor
  */
 
-ApiGlobe.prototype.getZFactor = function() {
-    return this.scene.getMap().getZFactor();
+ApiGlobe.prototype.getZFactor = function(id) {
+    return this.scene.getMap().getZFactor(id);
 };
 
 ApiGlobe.prototype.animateTime = function(value) {

@@ -22,13 +22,20 @@ function LayersConfiguration() {
     // color layers state (visibility, opacity)
     this.colorLayersState = {};
 
-    this.zFactor = 1.;
+    // elevation layers state (zFactor, noData)
+    this.elevationLayersState = {};
+
 }
 
 LayersConfiguration.prototype.constructor = LayersConfiguration;
 
 LayersConfiguration.prototype.addElevationLayer = function(layer) {
     this.elevationLayers.push(layer);
+    var params = {
+        noData  : (layer.noDataValue === undefined) ? 0.0 : layer.noDataValue,
+        zFactor : (layer.zFactor     === undefined) ? 1.0 : layer.zFactor
+    };
+    this.elevationLayersState[layer.id] = params;
 }
 
 LayersConfiguration.prototype.addColorLayer = function(layer) {
@@ -94,23 +101,20 @@ LayersConfiguration.prototype.getLayerOpacity = function(id) {
     return this.colorLayersState[id].opacity;
 }
 
-// should be at the elevation layer level
-LayersConfiguration.prototype.setZFactor = function(zFactor) {
-    this.zFactor = zFactor;
+LayersConfiguration.prototype.setZFactor = function(id, zFactor) {
+    this.elevationLayersState[id].zFactor = zFactor;
 }
 
-LayersConfiguration.prototype.getZFactor = function() {
-    return this.zFactor;
+LayersConfiguration.prototype.getZFactor = function(id) {
+    return this.elevationLayersState[id].zFactor;
 }
 
-// should be at the elevation layer level (defaults to 0)
-LayersConfiguration.prototype.setNoData = function(noData) {
-    this.elevationLayers[0].noDataValue = noData;
+LayersConfiguration.prototype.setNoData = function(id,noData) {
+    this.elevationLayersState[id].noData = noData;
 }
 
-// should be at the elevation layer level (defaults to 0)
-LayersConfiguration.prototype.getNoData = function() {
-    return this.elevationLayers[0].noDataValue;
+LayersConfiguration.prototype.getNoData = function(id) {
+    return this.elevationLayersState[id].noData;
 }
 
 LayersConfiguration.prototype.moveLayerToIndex = function(id, newSequence) {

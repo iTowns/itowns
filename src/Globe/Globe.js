@@ -98,8 +98,6 @@ function Globe(ellipsoid, gLDebug, params) {
         this.atmosphere.add(this.clouds);
         this.add(this.atmosphere);
     }
-
-    this.setZFactor(params.zFactor || 1);
 }
 
 Globe.prototype = Object.create(Layer.prototype);
@@ -183,11 +181,11 @@ Globe.prototype.setLayerVisibility = function(id, visible) {
     this.tiles.children[0].traverse(cO);
 };
 
-Globe.prototype.setZFactor = function(zFactor) {
-    this.layersConfiguration.setZFactor(zFactor);
+Globe.prototype.setZFactor = function(id,zFactor) {
+    this.layersConfiguration.setZFactor(id,zFactor);
     var cO = function(object) {
-        if (object.material.setZFactor) {
-            object.material.setZFactor(zFactor);
+        if (object.material.setZFactor && object.elevationId == id) {
+			object.material.setZFactor(zFactor);
         }
     };
 
@@ -195,8 +193,8 @@ Globe.prototype.setZFactor = function(zFactor) {
     this.tiles.children[0].traverse(cO);
 };
 
-Globe.prototype.getZFactor = function() {
-    return this.layersConfiguration.getZFactor();
+Globe.prototype.getZFactor = function(id) {
+    return this.layersConfiguration.getZFactor(id);
 };
 
 Globe.prototype.updateLayersOrdering = function() {

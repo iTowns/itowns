@@ -746,11 +746,20 @@ and open the template in the editor.
 
 
                {
-                    var onchangeZFactor = function(newValue) {
-                            itowns.viewer.setZFactor(newValue);
-                    };
-                    text['ZFactor'] = itowns.viewer.getZFactor();
-                    gui.add(text, 'ZFactor').min(1.0).max(3.0).onChange(onchangeZFactor);
+					var onchangeZFactor = function(id)
+					{
+						return function(newValue)
+						{
+							itowns.viewer.setZFactor(id,newValue);
+						};
+
+					};
+                    
+                    text['ZFactor'] = itowns.viewer.getZFactor("IGN_MNT");
+                    gui.add(text, 'ZFactor').min(1.0).max(100.0).onChange(onchangeZFactor("IGN_MNT"));
+                    
+                    text['ZFactor_HIGHRES'] = itowns.viewer.getZFactor("IGN_MNT_HIGHRES");
+                    gui.add(text, 'ZFactor_HIGHRES').min(1.0).max(100.0).onChange(onchangeZFactor("IGN_MNT_HIGHRES"));
                 }
 
                {
