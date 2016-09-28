@@ -129,7 +129,10 @@ NodeProcess.prototype.subdivideNode = function(node, camera, params) {
                     }
                 }
 
-				var elevationParam = { zFactor : params.layersConfig.getZFactor() };
+				var elevationParam = {
+					zFactor : params.layersConfig.getZFactor(),
+					noData  : params.layersConfig.getNoData()
+				};
                 child.setLayerParameters(colorParam, elevationParam);
                 child.texturesNeeded = colorTextureCount + 1;
 

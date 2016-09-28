@@ -150,6 +150,10 @@ var LayeredMaterial = function(id) {
             type: "f",
             value: 1.
     },
+    this.uniforms.noData = {
+            type: "f",
+            value: 0.
+    },
 
     this.setUuid(id || 0);
     this.wireframe = false;
@@ -248,6 +252,13 @@ LayeredMaterial.prototype.getZFactor = function() {
 }
 
 
+LayeredMaterial.prototype.setNoData = function(noData) {
+    this.uniforms.noData.value = noData;
+}
+LayeredMaterial.prototype.getNoData = function() {
+    return this.uniforms.noData.value;
+}
+
 LayeredMaterial.prototype.setTexture = function(texture, layer, slot, pitScale) {
 
     if (this.Textures[layer][slot] === undefined || this.Textures[layer][slot].image === undefined)
@@ -279,6 +290,7 @@ LayeredMaterial.prototype.getNbColorTexturesLayer = function(layerIndex) {
 
 LayeredMaterial.prototype.setParam = function(colorParam,elevationParam) {
 	this.setZFactor(elevationParam.zFactor);
+	this.setNoData(elevationParam.noData);
 
     this.uniforms.nColorLayer.value = colorParam.length;
     for (var l = 0; l < colorParam.length; l++) {

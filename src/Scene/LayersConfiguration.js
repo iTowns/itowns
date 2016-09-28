@@ -94,12 +94,23 @@ LayersConfiguration.prototype.getLayerOpacity = function(id) {
     return this.colorLayersState[id].opacity;
 }
 
+// should be at the elevation layer level
 LayersConfiguration.prototype.setZFactor = function(zFactor) {
     this.zFactor = zFactor;
 }
 
 LayersConfiguration.prototype.getZFactor = function() {
     return this.zFactor;
+}
+
+// should be at the elevation layer level (defaults to 0)
+LayersConfiguration.prototype.setNoData = function(noData) {
+    this.elevationLayers[0].noDataValue = noData;
+}
+
+// should be at the elevation layer level (defaults to 0)
+LayersConfiguration.prototype.getNoData = function() {
+    return this.elevationLayers[0].noDataValue;
 }
 
 LayersConfiguration.prototype.moveLayerToIndex = function(id, newSequence) {
