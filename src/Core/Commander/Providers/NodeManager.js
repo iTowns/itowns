@@ -9,10 +9,10 @@
 function NodeManager() {
 	//Tab containing the different reprepresentation depending on the sse level for the features
 	// {levelMin, levelMax,representation}
-	this.levelSwitchTab = [ {min: 6,  max: 13,  type: 'point'},
-							{min: 13, max: 20,  type: 'box'  },
-							{min: 20, max: 27,  type: 'point'},
-							{min: 27, max: 700, type: 'box'  }];
+	this.levelSwitchTab = [ {min:  0, max:    4, type: 'point'},
+							{min:  4, max:   10, type: 'box'  },
+							{min: 10, max:   30, type: 'point'},
+							{min: 30, max: 1000, type: 'box'  }];
 }
 
 /**
@@ -26,13 +26,14 @@ NodeManager.prototype.checkType = function(node, quadtree, refinementCommandCanc
 	if(layer.id == 'testWfsPoint') {
 		var type = layer.params.getRetailType();
 		if(type != 'auto') {
-			if(type != layer.retailType || layer.params.getForceUpdate())
+			if(node.retailType == 'auto' || type != node.retailType || layer.params.getForceUpdate())
 				this.nodeRequest(node, quadtree, refinementCommandCancellationFn);
 			return;
 		} else {
 			for (var i = 0; i < this.levelSwitchTab.length; i++) {
 				var lvl = this.levelSwitchTab[i];
-				if(level > lvl.min && level < lvl.max && node.content.currentType != lvl.type){
+				if (node.retailType != 'auto' ||
+					level > lvl.min && level < lvl.max && node.content.currentType != lvl.type){
 					node.content.currentType = lvl.type;
 					this.nodeRequest(node, quadtree, refinementCommandCancellationFn);
 					return;

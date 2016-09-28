@@ -4,12 +4,13 @@
  * Description:
  */
 
- import THREE 					from 'THREE';
- import CVML 					from 'Core/Math/CVML';
- import FeatureMesh 			from 'Globe/FeatureMesh';
- import Ellipsoid 				from 'Core/Math/Ellipsoid';
- import BuilderEllipsoidTile 	from 'Globe/BuilderEllipsoidTile';
- import GeoCoordinate, {UNIT} 	from 'Core/Geographic/GeoCoordinate';
+import THREE 					from 'THREE';
+import CVML 					from 'Core/Math/CVML';
+import BoundingBox      		from 'Scene/BoundingBox';
+import FeatureMesh 				from 'Globe/FeatureMesh';
+import Ellipsoid 				from 'Core/Math/Ellipsoid';
+import BuilderEllipsoidTile 	from 'Globe/BuilderEllipsoidTile';
+import GeoCoordinate, {UNIT}	from 'Core/Geographic/GeoCoordinate';
 
 function FeatureToolBox() {
 	this.size       = {x:6378137,y: 6356752.3142451793,z:6378137};
@@ -31,9 +32,9 @@ FeatureToolBox.prototype.getFeatures = function(tile, layer, parameters, parent)
     if (layer.type == "point" || layer.type == "line" || layer.type == "box"){
         url = this.tmpUrl(bbox, layer);
         geometry = new THREE.Geometry();
-        params = {bbox: bbox, level: parent.level + 1, segment:16, center:null, projected:null, protocol: parent.protocol};
-        builder = new BuilderEllipsoidTile(this.tool.ellipsoid, this.projection);
-        mesh = new FeatureMesh(params, builder);
+        params 	 = {bbox: bbox, level: parent.level + 1, segment:16, center:null, projected:null, protocol: parent.protocol};
+        builder  = new BuilderEllipsoidTile(this.tool.ellipsoid, this.projection);
+        mesh 	 = new FeatureMesh(params, builder);
     }
     else
         url = this.url(bbox, layer);
@@ -59,7 +60,7 @@ FeatureToolBox.prototype.getFeatures = function(tile, layer, parameters, parent)
             else if((mesh.currentType == undefined && (layer.type == "point" || layer.type == "box"))
                         || mesh.currentType == "point" || mesh.currentType == "box"){
                 var type = mesh.currentType || layer.type;
-                this.tool.GeoJSON2Point(features, bbox, geometry, type, layer);
+                this.tool.GeoJSON2Point(features, bbox, geometry, type, layer, tile);
                 mesh.setGeometry(geometry);
                 if(mesh.currentType === undefined)
                     mesh.currentType = layer.type;
@@ -312,7 +313,6 @@ FeatureToolBox.prototype.GeoJSON2Line = function(features, bbox, geometry, layer
         var j = 0;
         var inTile = false;
 
-
         //Cut the line according to the tiles limits
         //May not be usefull if we can cut the line before inside the request to the WFS provider
         do{
@@ -380,7 +380,7 @@ FeatureToolBox.prototype.GeoJSON2Line = function(features, bbox, geometry, layer
  * @param value: the JSON object which contains the data received from the WFS request
  * @param geometry: the geometry used to set the tile geometry
  */
-FeatureToolBox.prototype.GeoJSON2Point = function(features, bbox, geometry, type, layer) {
+FeatureToolBox.prototype.GeoJSON2Point = function(features, bbox, geometry, type, layer, node) {
     for (var i = 0; i < features.length; i++) {
         var feature = features[i];
         var coords = feature.geometry.coordinates;
@@ -394,7 +394,7 @@ FeatureToolBox.prototype.GeoJSON2Point = function(features, bbox, geometry, type
 
         if(layer.params && layer.params.retail) {
             type = layer.params.retail(centerPoint, type, new THREE.Vector3());
-            layer.retailType = layer.params.getRetailType();
+            node.retailType = layer.params.getRetailType();
         }
 
         var params = layer.params;
