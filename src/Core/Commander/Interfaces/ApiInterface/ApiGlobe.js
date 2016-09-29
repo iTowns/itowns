@@ -97,6 +97,8 @@ ApiGlobe.prototype.addFeatureLayer = function(layer) {
 
     var map = this.scene.getMap();
     map.layersConfiguration.addGeometryLayer(layer);
+    //map.createFeatureLayer(layer.id);
+    //map.createNewFeatureLayer(layer.id);
 };
 
 ApiGlobe.prototype.moveLayerUp = function(layer) {
@@ -173,11 +175,22 @@ ApiGlobe.prototype.getMinZoomLevel = function(id) {
  */
 
 ApiGlobe.prototype.addTileMatrixSet = function(params){
-    
+    var map = this.scene.getMap();
+    var colorLayers =  map.layersConfiguration.getColorLayers();
+    console.log(colorLayers[0]);
 };
 
 ApiGlobe.prototype.getTileMatrixSet = function(params){
     
+};
+
+ApiGlobe.prototype.addFeature = function(options){
+    var layerId  = options.layerId;
+    var map = this.scene.getMap();
+    var geometryLayers =  map.layersConfiguration.getGeometryLayers();
+    
+   // console.log(geometryLayers);
+
 };
 
 ApiGlobe.prototype.getLayers = function( /*param*/ ) {
