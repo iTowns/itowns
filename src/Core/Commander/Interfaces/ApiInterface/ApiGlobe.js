@@ -104,6 +104,8 @@ ApiGlobe.prototype.addFeatureLayer = function(layer) {
 
     var map = this.scene.getMap();
     map.layersConfiguration.addGeometryLayer(layer);
+    //map.createFeatureLayer(layer.id);
+    //map.createNewFeatureLayer(layer.id);
 };
 
 ApiGlobe.prototype.moveLayerUp = function(layer) {
@@ -177,6 +179,20 @@ ApiGlobe.prototype.getMinZoomLevel = function(id) {
  * @constructor
  * @param {id} id - The id of the layer.
  */
+ApiGlobe.prototype.addTileMatrixSet = function(/*params*/){
+};
+
+ApiGlobe.prototype.getTileMatrixSet = function(/*params*/){
+};
+
+ApiGlobe.prototype.addFeature = function(options){
+    var layerId  = options.layerId;
+    var map = this.scene.getMap();
+    var geometryLayers =  map.layersConfiguration.getGeometryLayers();
+    
+   // console.log(geometryLayers);
+
+};
 
 ApiGlobe.prototype.getLayers = function( /*param*/ ) {
     var map = this.scene.getMap();

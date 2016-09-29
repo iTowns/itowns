@@ -65,37 +65,37 @@ LayersConfiguration.prototype.removeColorLayer = function(id) {
         return true;
     }
     return false;
-}
+};
 
 LayersConfiguration.prototype.getColorLayers = function() {
     return this.colorLayers;
-}
+};
 
 LayersConfiguration.prototype.getColorLayersId = function() {
     return this.colorLayers.map(function(l) {
         return l.id;
     });
-}
+};
 
 LayersConfiguration.prototype.getGeometryLayers = function() {
     return this.geometryLayers;
-}
+};
 
 LayersConfiguration.prototype.getElevationLayers = function() {
     return this.elevationLayers;
-}
+};
 
 LayersConfiguration.prototype.setLayerOpacity = function(id, opacity) {
     if (this.layersState[id]) {
         this.layersState[id].opacity = opacity;
     }
-}
+};
 
 LayersConfiguration.prototype.setLayerVisibility = function(id, visible) {
     if (this.layersState[id]) {
         this.layersState[id].visible = visible;
     }
-}
+};
 
 LayersConfiguration.prototype.isColorLayerVisible = function(id) {
     return this.layersState[id].visible;
@@ -153,6 +153,6 @@ LayersConfiguration.prototype.getColorLayersIdOrderedBySequence = function() {
         }.bind(this)
     );
     return seq;
-}
+};
 
 export default LayersConfiguration;
