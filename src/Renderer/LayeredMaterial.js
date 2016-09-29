@@ -248,18 +248,21 @@ LayeredMaterial.prototype.setTexture = function(texture, layer, slot, pitScale) 
 
     // TEMP
     if (texture === null) {
-        var l = this.getIdLayer(slot);
-        if (l)
+        var l = this.slotToLayerIndex(slot);
+        if (l >= 0) {
             this.paramLayers[l].z = 0;
+        }
     }
 
 };
 
-LayeredMaterial.prototype.getIdLayer = function(slot) {
-    for (var l = 0; l < this.paramLayers.length; l++) {
-        if (slot === this.paramLayers[l].x)
-            return l;
+LayeredMaterial.prototype.slotToLayerIndex = function(slot) {
+    for (var l = 1; l < this.uniforms.nColorLayer.value; l++) {
+        if (slot < this.paramLayers[l].x) {
+            return l-1;
+        }
     }
+    return this.uniforms.nColorLayer.value - 1;
 };
 
 LayeredMaterial.prototype.getNbColorTexturesLayer = function(layerIndex) {
@@ -270,7 +273,9 @@ LayeredMaterial.prototype.setParam = function(param) {
     this.uniforms.nColorLayer.value = param.length;
     for (var l = 0; l < param.length; l++) {
         this.layerIdToIndex[param[l].idLayer] = l;
-        this.paramLayers[l] = new THREE.Vector4(param[l].layerTexturesOffset, param[l].tileMT === 'PM' ? 1 : 0, param[l].visible, param[l].opacity);
+        this.paramLayers[l] = new THREE.Vector4(
+            param[l].layerTexturesOffset,
+            param[l].tileMT === 'PM' ? 1 : 0, param[l].visible, param[l].opacity);
         this.paramBLayers[l] = new THREE.Vector2(param[l].fx, 0.0);
     }
 };
@@ -284,23 +289,12 @@ LayeredMaterial.prototype.getLayerTextureOffset = function(layer) {
     }
 };
 
-LayeredMaterial.prototype.setTexturesLayer = function(textures, layer) {
-
+LayeredMaterial.prototype.setTexturesLayer = function(textures, layer, slotOffset) {
     for (var i = 0, max = textures.length; i < max; i++) {
-
-        if (textures[i])
-            this.setTexture(textures[i].texture, layer, i, textures[i].pitch);
-
+        if (textures[i]) {
+            this.setTexture(textures[i].texture, layer, i + (slotOffset || 0), textures[i].pitch);
+        }
     }
-};
-
-LayeredMaterial.prototype.getDelta = function() {
-    if (this.paramLayers[0])
-        // TODO: Fix Me, this function always used 1st layer
-        return 0; // this.paramLayers[0].y;
-    else
-        return 0;
-
 };
 
 LayeredMaterial.prototype.setLightingOn = function(enable) {

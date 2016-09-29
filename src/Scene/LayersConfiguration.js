@@ -19,31 +19,49 @@ function LayersConfiguration() {
     this.colorLayers = [];
     this.elevationLayers = [];
 
-    // color layers state (visibility, opacity)
-    this.colorLayersState = {};
+    // layers state (visibility, opacity)
+    this.layersState = {};
 }
 
 LayersConfiguration.prototype.constructor = LayersConfiguration;
 
+function defaultState(seq) {
+    return {
+        /// shared attributes
+        // if true, stop fetching new data
+        frozen: false,
+
+        /// color layers only attributes
+        // is this layer displayed
+        visible: true,
+        // layer's opacity (0.0 = transparent)
+        opacity: 1.0,
+        // rendering order
+        sequence: seq || 0
+    };
+}
+
 LayersConfiguration.prototype.addElevationLayer = function(layer) {
     this.elevationLayers.push(layer);
+    this.layersState[layer.id] = defaultState();
 }
 
 LayersConfiguration.prototype.addColorLayer = function(layer) {
     this.colorLayers.push(layer);
-    this.colorLayersState[layer.id] = {
-        visible: true,
-        opacity: 1.0,
-        sequence: this.colorLayers.length - 1
-    };
+    this.layersState[layer.id] = defaultState(this.colorLayers.length - 1);
+}
+
+LayersConfiguration.prototype.addGeometryLayer = function(layer) {
+    this.geometryLayers.push(layer);
+    this.layersState[layer.id] = defaultState();
 }
 
 LayersConfiguration.prototype.removeColorLayer = function(id) {
-    if (this.colorLayersState[id]) {
+    if (this.layersState[id]) {
         this.colorLayers.filter(function(l) {
             return l.id != id;
         });
-        this.colorLayers[id] = undefined;
+        this.layersState[id] = undefined;
         return true;
     }
     return false;
@@ -59,10 +77,6 @@ LayersConfiguration.prototype.getColorLayersId = function() {
     });
 }
 
-LayersConfiguration.prototype.addGeometryLayer = function(layer) {
-    this.geometryLayers.push(layer);
-}
-
 LayersConfiguration.prototype.getGeometryLayers = function() {
     return this.geometryLayers;
 }
@@ -72,34 +86,45 @@ LayersConfiguration.prototype.getElevationLayers = function() {
 }
 
 LayersConfiguration.prototype.setLayerOpacity = function(id, opacity) {
-    if (this.colorLayersState[id]) {
-        this.colorLayersState[id].opacity = opacity;
+    if (this.layersState[id]) {
+        this.layersState[id].opacity = opacity;
     }
 }
 
 LayersConfiguration.prototype.setLayerVisibility = function(id, visible) {
-    if (this.colorLayersState[id]) {
-        this.colorLayersState[id].visible = visible;
+    if (this.layersState[id]) {
+        this.layersState[id].visible = visible;
     }
 }
 
 LayersConfiguration.prototype.isColorLayerVisible = function(id) {
-    return this.colorLayersState[id].visible;
+    return this.layersState[id].visible;
 }
 
 LayersConfiguration.prototype.getColorLayerOpacity = function(id) {
-    return this.colorLayersState[id].opacity;
+    return this.layersState[id].opacity;
 }
 
-LayersConfiguration.prototype.moveLayerToIndex = function(id, newSequence) {
-    if (this.colorLayersState[id]) {
-        var current = this.colorLayersState[id].sequence;
+LayersConfiguration.prototype.setLayerFreeze = function(id, frozen) {
+    if (this.layersState[id]) {
+        this.layersState[id].frozen = frozen;
+    }
+}
 
-        for (var i in this.colorLayersState) {
-            var state = this.colorLayersState[i];
+LayersConfiguration.prototype.isLayerFrozen = function(id) {
+    return this.layersState[id].frozen;
+}
+
+
+LayersConfiguration.prototype.moveLayerToIndex = function(id, newSequence) {
+    if (this.layersState[id]) {
+        var current = this.layersState[id].sequence;
+
+        for (var i in this.layersState) {
+            var state = this.layersState[i];
             if (state.sequence === newSequence) {
                 state.sequence = current;
-                this.colorLayersState[id].sequence = newSequence;
+                this.layersState[id].sequence = newSequence;
                 break;
             }
         }
@@ -107,14 +132,14 @@ LayersConfiguration.prototype.moveLayerToIndex = function(id, newSequence) {
 };
 
 LayersConfiguration.prototype.moveLayerDown = function(id) {
-    if (this.colorLayersState[id] && this.colorLayersState[id].sequence > 0) {
-        this.moveLayerToIndex(id, this.colorLayersState[id].sequence - 1);
+    if (this.layersState[id] && this.layersState[id].sequence > 0) {
+        this.moveLayerToIndex(id, this.layersState[id].sequence - 1);
     }
 };
 
 LayersConfiguration.prototype.moveLayerUp = function(id) {
-    if (this.colorLayersState[id] && this.colorLayersState[id].sequence < this.colorLayers.length - 1) {
-        this.moveLayerToIndex(id, this.colorLayersState[id].sequence + 1);
+    if (this.layersState[id] && this.layersState[id].sequence < this.colorLayers.length - 1) {
+        this.moveLayerToIndex(id, this.layersState[id].sequence + 1);
     }
 };
 
@@ -124,7 +149,7 @@ LayersConfiguration.prototype.getColorLayersIdOrderedBySequence = function() {
     });
     seq.sort(
         function(a, b) {
-            return this.colorLayersState[a].sequence - this.colorLayersState[b].sequence;
+            return this.layersState[a].sequence - this.layersState[b].sequence;
         }.bind(this)
     );
     return seq;

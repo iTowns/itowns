@@ -26,26 +26,53 @@ IoDriver_XBIL.prototype = Object.create(IoDriver.prototype);
 
 IoDriver_XBIL.prototype.constructor = IoDriver_XBIL;
 
+IoDriver_XBIL.prototype.computeMinMaxElevation = function(buffer, width, height, pitScale) {
+    let min = 1000000;
+    let max = -1000000;
+
+    let sizeX = pitScale ? Math.floor(pitScale.z * width) : buffer.length;
+    let sizeY = pitScale ? Math.floor(pitScale.z * height) : 1;
+    let xs = pitScale ? Math.floor(pitScale.x * width) : 0;
+    let ys = pitScale ? Math.floor(pitScale.y * height) : 0;
+
+    let inc = pitScale ? Math.max(Math.floor(sizeX / 8), 2) : 16;
+
+    for (let y = ys; y < ys + sizeY; y += inc) {
+        let pit = y * (width || 0);
+        for (let x = xs; x < xs + sizeX; x += inc) {
+            let val = buffer[pit + x];
+            if (val > -10.0 && val !== undefined) {
+                max = Math.max(max, val);
+                min = Math.min(min, val);
+            }
+        }
+    }
+
+    if (max === -1000000 || min === 1000000) {
+        return { min: undefined, max: undefined };
+    }
+    return { min, max };
+};
+
 IoDriver_XBIL.prototype.parseXBil = function(buffer) {
     if (!buffer) {
         throw new Error('Error processing XBIL');
     }
 
     var result = new portableXBIL(buffer);
-    // Compute min max using subampling
-    for (var i = 0; i < result.floatArray.length; i += 16) {
-        var val = result.floatArray[i];
-        if (val > -10.0 && val !== undefined) {
-            result.max = Math.max(result.max, val);
-            result.min = Math.min(result.min, val);
-        }
+
+    var elevation = this.computeMinMaxElevation(result.floatArray);
+
+    if (elevation.min === undefined || elevation.max === undefined) {
+        throw new Error('Error processing XBIL');
     }
 
-    if (result.max === -1000000)
-        throw new Error('Error processing XBIL');
+    result.min = elevation.min;
+    result.max = elevation.max;
 
     return result;
 };
+
 
 IoDriver_XBIL.prototype.read = function(url) {
     return fetch(url).then(response => {
