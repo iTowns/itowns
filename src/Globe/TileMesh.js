@@ -29,9 +29,9 @@ import GlobeDepthMaterial from 'Renderer/GlobeDepthMaterial';
 import MatteIdsMaterial from 'Renderer/MatteIdsMaterial';
 import RendererConstant from 'Renderer/RendererConstant';
 
-var groupelevation = [14, 11, 7, 3];
-var l_ELEVATION = 0;
-var l_COLOR = 1;
+const groupelevation = [14, 11, 7, 3];
+const l_ELEVATION = 0;
+const l_COLOR = 1;
 
 function TileMesh(params, builder, geometryCache) {
     //Constructor
@@ -46,7 +46,9 @@ function TileMesh(params, builder, geometryCache) {
     this.geometry = defaultValue(geometryCache, new TileGeometry(params, builder));
     this.normal = params.center.clone().normalize();
 
-    this.distance = params.center.length();
+    var worldNormal = new THREE.Vector3(0, 0, 1).applyQuaternion(this.OBB().getWorldQuaternion());
+    // distance to globe center
+    this.distance = params.center.clone().projectOnVector(worldNormal).length();
 
     // TODO Why move sphere center
     this.centerSphere = new THREE.Vector3().addVectors(this.geometry.boundingSphere.center, params.center);
@@ -80,7 +82,6 @@ function TileMesh(params, builder, geometryCache) {
     }
 
     // Layer
-    this.currentElevation = -1;
     this.setDisplayed(false);
 
 }
@@ -195,37 +196,6 @@ TileMesh.prototype.setSelected = function(select) {
     this.materials[RendererConstant.FINAL].setSelected(select);
 };
 
-TileMesh.prototype.parseBufferElevation = function(image, minMax, pitScale) {
-
-    var buffer = image.data;
-
-    var size = Math.floor(pitScale.z * image.width);
-    var xs = Math.floor(pitScale.x * image.width);
-    var ys = Math.floor(pitScale.y * image.width);
-
-    var oMinMax = minMax.clone();
-
-    minMax.y = -1000000;
-    minMax.x = 1000000;
-
-    var inc = Math.max(Math.floor(size / 8), 2);
-
-    for (var y = ys; y < ys + size; y += inc) {
-        var pit = y * image.width;
-        for (var x = xs; x < xs + size; x += inc) {
-            var val = buffer[pit + x];
-            if (val > -10.0 && val !== undefined) {
-                minMax.y = Math.max(minMax.y, val);
-                minMax.x = Math.min(minMax.x, val);
-            }
-        }
-    }
-
-    if (minMax.x === 1000000 || minMax.y === -1000000)
-        minMax.copy(oMinMax);
-
-};
-
 TileMesh.prototype.setTextureElevation = function(elevation) {
     if (this.materials[RendererConstant.FINAL] === null) {
         return;
@@ -234,41 +204,13 @@ TileMesh.prototype.setTextureElevation = function(elevation) {
     var texture = undefined;
     var pitScale;
 
-    if (elevation === -1) { // No texture
-        this.currentElevation = -2;
-    } else if (elevation === -2) { // get ancestor texture
-        var levelAncestor = this.getParentNotDownScaled(l_ELEVATION).currentElevation;
-        var ancestor = this.getParentLevel(levelAncestor);
-        var minMax = new THREE.Vector2();
-
-
-        if (ancestor) { // TODO WHY -> because levelAncestor === -2
-            pitScale = ancestor.bbox.pitScale(this.bbox);
-            texture = ancestor.materials[RendererConstant.FINAL].Textures[l_ELEVATION][0];
-            var image = texture.image;
-
-            minMax.y = ancestor.bbox.top();
-            minMax.x = ancestor.bbox.bottom();
-
-            this.parseBufferElevation(image, minMax, pitScale);
-
-            if (minMax.x !== 0 && minMax.y !== 0) {
-                this.setBBoxZ(minMax.x, minMax.y);
-            }
-
-            this.currentElevation = ancestor.currentElevation;
-        } else {
-            this.currentElevation = -2;
-        }
-    } else {
+    if (elevation) {
         texture = elevation.texture;
-        pitScale = new THREE.Vector3(0, 0, 1);
+        pitScale = elevation.pitch || new THREE.Vector3(0, 0, 1);
         this.setBBoxZ(elevation.min, elevation.max);
-        this.currentElevation = elevation.level;
     }
 
     this.materials[RendererConstant.FINAL].setTexture(texture, l_ELEVATION, 0, pitScale);
-
     this.materials[RendererConstant.DEPTH].uniforms.nbTextures.value = this.materials[RendererConstant.FINAL].nbTextures[0];
     this.materials[RendererConstant.ID].uniforms.nbTextures.value = this.materials[RendererConstant.FINAL].nbTextures[0];
 
@@ -298,25 +240,49 @@ TileMesh.prototype.setBBoxZ = function(min, max) {
     }
 };
 
-TileMesh.prototype.setTexturesLayer = function(textures, idLayer) {
+TileMesh.prototype.setTexturesLayer = function(textures, idLayer, slotOffset) {
     if (this.material === null) {
         return;
     }
     if (textures) {
-        this.material.setTexturesLayer(textures, idLayer);
+        this.material.setTexturesLayer(textures, idLayer, slotOffset);
     }
     this.loadingCheck();
 };
 
+TileMesh.prototype.downScaledColorSlot = function(slot) {
+    var mat = this.materials[RendererConstant.FINAL];
+
+    return mat.getLevelLayerColor(l_COLOR, slot) < this.level;
+}
+
+
+TileMesh.prototype.downScaledColorLayer = function(layer) {
+    var mat = this.materials[RendererConstant.FINAL];
+    let slot = mat.getLayerTextureOffset(layer);
+
+    return this.downScaledColorSlot(slot);
+}
+
+
 TileMesh.prototype.downScaledLayer = function(id) {
+    var mat = this.materials[RendererConstant.FINAL];
+
     if (id === l_ELEVATION) {
-        if (this.currentElevation === -2) {
+        if (mat.Textures[l_ELEVATION][0].level < 0) {
             return false;
         } else {
-            return this.currentElevation < this.levelElevation;
+            return mat.Textures[l_ELEVATION][0].level <
+                this.levelElevation;
         }
     } else if (id === l_COLOR) {
-        return this.materials[RendererConstant.FINAL].getLevelLayerColor(l_COLOR) < this.level + this.materials[RendererConstant.FINAL].getDelta();
+        // browse each layer
+        var nb = mat.nbTextures[1];
+        for (var slot=0; slot<nb; slot++) {
+            if (this.downScaledColorSlot(slot)) {
+                return true;
+            }
+        }
     }
 
     return false;
@@ -349,17 +315,6 @@ TileMesh.prototype.center = function() {
 
 TileMesh.prototype.OBB = function() {
     return this.geometry.OBB;
-};
-
-TileMesh.prototype.getParentNotDownScaled = function(layer) {
-    if (this.parent.downScaledLayer)
-        return !this.parent.downScaledLayer(layer) ? this.parent : this.parent.getParentNotDownScaled(layer);
-    else
-        return null;
-};
-
-TileMesh.prototype.getLevelNotDownScaled = function() {
-    return (this.getParentNotDownScaled(1) || this).level;
 };
 
 TileMesh.prototype.allTexturesAreLoaded = function() {

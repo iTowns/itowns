@@ -119,7 +119,7 @@ ManagerCommands.prototype.deQueue = function() {
 
         if (cmd.earlyDropFunction && cmd.earlyDropFunction(cmd)) {
             this.queueAsync.dequeue();
-            cmd.reject(new Error('command canceled'));
+            cmd.reject(new Error('command canceled ' + cmd.requester.id + '/' + cmd.layer.id));
         } else {
             return this.queueAsync.dequeue();
         }

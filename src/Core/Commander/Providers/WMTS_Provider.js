@@ -57,7 +57,6 @@ WMTS_Provider.prototype.customUrl = function(url, tilematrix, row, col) {
     urld = urld.replace('%COL', col.toString());
 
     return urld;
-
 };
 
 WMTS_Provider.prototype.removeLayer = function( /*idLayer*/ ) {
@@ -112,16 +111,42 @@ WMTS_Provider.prototype.url = function(coWMTS, layer) {
  * @param {type} coWMTS : coord WMTS
  * @returns {WMTS_Provider_L15.WMTS_Provider.prototype@pro;_IoDriver@call;read@call;then}
  */
-WMTS_Provider.prototype.getXbilTexture = function(tile, layer) {
-    var coWMTS = tile.tileCoord;
+WMTS_Provider.prototype.getXbilTexture = function(tile, layer, parameters) {
+    var cooWMTS = tile.matrixSet[layer.options.tileMatrixSet][0];
+    var pitch = new THREE.Vector3(0.0, 0.0, 1.0);
 
-    var url = this.url(coWMTS, layer);
+    if (parameters.ancestor) {
+        // account for possible level offset between coords and tile level
+        // (e.g for PM texture cooWMTS.level = tile.level + 1)
+        var levelOffset = cooWMTS.zoom - tile.level;
+
+        cooWMTS = this.projection.WMTS_WGS84Parent(
+            cooWMTS,
+            this.computeLevelToDownload(tile, parameters.ancestor, layer) + levelOffset,
+            pitch);
+    }
+
+    var url = this.url(cooWMTS, layer);
 
     // TODO: this is not optimal: if called again before the IoDriver resolves, it'll load the XBIL again
     var textureCache = this.cache.getRessource(url);
 
-    if (textureCache !== undefined)
-        return Promise.resolve(textureCache);
+    if (textureCache !== undefined) {
+        if (textureCache) {
+            let minmax = this._IoDriver.computeMinMaxElevation(
+                textureCache.floatArray,
+                256, 256,
+                pitch);
+            return Promise.resolve(
+                {
+                    pitch,
+                    texture: textureCache.texture,
+                    min: minmax.min,
+                    max: minmax.max
+                });
+        }
+        return Promise.resolve(null);
+    }
 
 
     // bug #74
@@ -134,8 +159,7 @@ WMTS_Provider.prototype.getXbilTexture = function(tile, layer) {
     // -> bug #74
 
     return this._IoDriver.read(url).then(result => {
-        //TODO USE CACHE HERE ???
-
+        result.pitch = pitch;
         result.texture = this.getTextureFloat(result.floatArray);
         result.texture.generateMipmaps = false;
         result.texture.magFilter = THREE.LinearFilter;
@@ -146,14 +170,11 @@ WMTS_Provider.prototype.getXbilTexture = function(tile, layer) {
         //result.texture.magFilter = THREE.NearestFilter;
         //result.texture.minFilter = THREE.NearestFilter;
 
-        // TODO ATTENTION verifier le context
-        result.level = coWMTS.zoom;
-
-        this.cache.addRessource(url, result);
+        this.cache.addRessource(url, { texture: result.texture, floatArray: result.floatArray });
 
         return result;
     }).catch(() => {
-        var texture = -1;
+        var texture = null;
         this.cache.addRessource(url, texture);
         return texture;
     });
@@ -201,7 +222,6 @@ WMTS_Provider.prototype.getColorTexture = function(coWMTS, pitch, layer) {
         return result;
 
     }.bind(this)).catch(function( /*reason*/ ) {
-        //console.error('getColorTexture failed for url |', url, '| Reason:' + reason);
         result.texture = null;
 
         return result;
@@ -233,17 +253,19 @@ WMTS_Provider.prototype.executeCommand = function(command) {
 };
 
 
-WMTS_Provider.prototype.getZoomAncestor = function(tile, ancestor, layer) {
-    var levelParent = ancestor.level;
-    return (levelParent < layer.zoom.min ? tile.level : levelParent) + (layer.options.tileMatrixSet === 'PM' ? 1 : 0);
+WMTS_Provider.prototype.computeLevelToDownload = function(tile, ancestor, layer) {
+    // Use ancestor's level if valid, else fallback on tile's level
+    var lvl = ancestor ? ancestor.level : tile.level;
 
+    return Math.min(
+        layer.zoom.max,
+        Math.max(
+            layer.zoom.min,
+            lvl));
 }
 
 WMTS_Provider.prototype.tileInsideLimit = function(tile, layer) {
-
-    //var limits = layer.tileMatrixSetLimits[tile.level];
-    //!coWMTS.isInside(limits)
-    return tile.level >= layer.zoom.min && tile.level <= layer.zoom.max;
+    return layer.zoom.min <= tile.level && tile.level <= layer.zoom.max;
 }
 
 WMTS_Provider.prototype.getColorTextures = function(tile, layer, parameters) {
@@ -263,9 +285,13 @@ WMTS_Provider.prototype.getColorTextures = function(tile, layer, parameters) {
             var pitch = new THREE.Vector3(0.0, 0.0, 1.0);
 
             if (parameters.ancestor) {
+                // account for possible level offset between coords and tile level
+                // (e.g for PM texture cooWMTS.level = tile.level + 1)
+                var levelOffset = cooWMTS.zoom - tile.level;
+
                 cooWMTS = this.projection.WMTS_WGS84Parent(
                     cooWMTS,
-                    this.getZoomAncestor(tile, parameters.ancestor, layer),
+                    this.computeLevelToDownload(tile, parameters.ancestor, layer) + levelOffset,
                     pitch);
             }
 
