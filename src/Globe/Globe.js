@@ -35,15 +35,14 @@ function Globe(ellipsoid, gLDebug) {
     this.gLDebug = gLDebug;
     this.ellipsoid = ellipsoid;
 
-    this.batiments = new Layer();
+    this.features = new Layer(); //new THREE.Group();
     this.layerWGS84Zup = new Layer();
 
-    var kml = new THREE.Object3D();
-    this.batiments.add(kml);
+    var featureLayerCollection = new THREE.Group(); //new THREE.Object3D();
+    this.features.add(featureLayerCollection);
+    this.features.visible = false;
 
-    this.batiments.visible = false;
-
-    kml.visible = false;
+    featureLayerCollection.visible = false;
 
 	this.gpxTracks = new Layer();
 	var gpx = new THREE.Object3D();
@@ -51,7 +50,7 @@ function Globe(ellipsoid, gLDebug) {
 	this.gpxTracks.visible = true;
     gpx.visible = true;
 
-    this.tiles = new Quadtree(TileMesh, this.SchemeTileWMTS(schemeTile_1), kml);
+    this.tiles = new Quadtree(TileMesh, this.SchemeTileWMTS(schemeTile_1), featureLayerCollection);
     this.layersConfiguration = new LayersConfiguration();
 
     this.atmosphere = this.NOIE ? new Atmosphere(this.ellipsoid) : undefined;
@@ -95,7 +94,7 @@ function Globe(ellipsoid, gLDebug) {
     zUp.add(batiment);
 
     this.add(this.tiles);
-    this.add(this.batiments);
+    this.add(this.features);
     this.add(this.gpxTracks);
     //this.add(this.layerWGS84Zup);
 
@@ -159,9 +158,13 @@ Globe.prototype.showClouds = function(show, satelliteAnimation) {
 
 Globe.prototype.showKML = function(show) {
 
-    this.batiments.visible = show;
+    this.features.visible = show;
 
-    this.batiments.children[0].visible = show;
+    this.features.children[0].visible = show;
+};
+
+Globe.prototype.addFeature = function(features){
+    
 };
 
 Globe.prototype.updateLightingPos = function(pos) {

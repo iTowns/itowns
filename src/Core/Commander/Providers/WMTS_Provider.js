@@ -23,7 +23,7 @@ function WMTS_Provider(options) {
     this.ioDriverXML = new IoDriverXML();
     this.projection = new Projection();
     this.support = options.support || false;
-
+    this.arrayLimits = null;
     this.getTextureFloat;
 
     if (this.support)
@@ -82,10 +82,10 @@ WMTS_Provider.prototype.preprocessDataLayer = function(layer) {
             "&REQUEST=GetTile&STYLE=normal&TILEMATRIXSET=" + options.tileMatrixSet;
 
         newBaseUrl += "&TILEMATRIX=%TILEMATRIX&TILEROW=%ROW&TILECOL=%COL";
-        var arrayLimits = Object.keys(options.tileMatrixSetLimits);
+        this.arrayLimits = Object.keys(options.tileMatrixSetLimits);
 
-        var size = arrayLimits.length;
-        var maxZoom = Number(arrayLimits[size - 1]);
+        var size = this.arrayLimits.length;
+        var maxZoom = Number(this.arrayLimits[size - 1]);
         var minZoom = maxZoom - size + 1;
 
         layer.zoom = {

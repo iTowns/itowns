@@ -81,10 +81,10 @@ WFS_Provider.prototype.preprocessDataLayer = function(layer){
 };
 
 WFS_Provider.prototype.tileInsideLimit = function(tile,layer) {
-    var west =  layer.bbox[0] * Math.PI/180.0; 
+    var west =  layer.bbox[0] * Math.PI/180.0;
     var east =  layer.bbox[2] * Math.PI/180.0;
     var bboxRegion = new BoundingBox(west, east, layer.bbox[1]*Math.PI/180.0, layer.bbox[3]*Math.PI/180.0, 0, 0, 0);
-    
+
     return (tile.level == (layer.params.level || 18)) && bboxRegion.intersect(tile.bbox);
 };
 
