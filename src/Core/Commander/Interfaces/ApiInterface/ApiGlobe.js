@@ -93,12 +93,13 @@ ApiGlobe.prototype.addImageryLayer = function(layer) {
 };
 
 ApiGlobe.prototype.addFeatureLayer = function(layer) {
+    
     preprocessLayer(layer, this.scene.managerCommand.getProtocolProvider(layer.protocol));
 
     var map = this.scene.getMap();
     map.layersConfiguration.addGeometryLayer(layer);
-    //map.createFeatureLayer(layer.id);
-    //map.createNewFeatureLayer(layer.id);
+    var featureLayer  = map.createFeatureLayer(layer.id);
+    this.scene.gfxEngine.add3DScene(featureLayer.getMesh());
 };
 
 ApiGlobe.prototype.moveLayerUp = function(layer) {
@@ -184,12 +185,10 @@ ApiGlobe.prototype.getTileMatrixSet = function(/*params*/){
 };
 
 ApiGlobe.prototype.addFeature = function(options){
-    var layerId  = options.layerId;
+    if(options === undefined)
+        throw new Error("options is required");
     var map = this.scene.getMap();
-    var geometryLayers =  map.layersConfiguration.getGeometryLayers();
-    
-   // console.log(geometryLayers);
-
+    map.addFeature(options);
 };
 
 ApiGlobe.prototype.getLayers = function( /*param*/ ) {

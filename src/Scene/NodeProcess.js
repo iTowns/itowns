@@ -220,11 +220,12 @@ function findAncestorWithValidTextureForLayer(node, layerId) {
     }
 }
 
+
 function updateNodeFeature(quadtree, node, featureLayers) {
     for (var i = 0; i < featureLayers.length; i++) {
         var layer = featureLayers[i];
         var protocol = layer.protocol;
-        if(protocol.toLowerCase() == 'wfs') { 
+        if(protocol.toLowerCase() == 'wfs') {
             if (layer.tileInsideLimit(node, layer) && !node.content) {
                 var args = {
                     layer: layer
@@ -233,20 +234,28 @@ function updateNodeFeature(quadtree, node, featureLayers) {
                 quadtree.interCommand.request(args, node, refinementCommandCancellationFn).then(function(result) {
                     //if request return empty json, WFS_Provider.getFeatures return undefined
                     if(result.feature !== undefined && result.feature != null) {
-                        var layers = quadtree.parent.features.children[0];
-                        quadtree.parent.features.visible = true;
+                        //var layer = quadtree.parent.features.children[0];
+                        var map = quadtree.parent;
+                        var layerid = result.feature.layer.id; 
+                        var layer = map.getFeatureLayerByName(layerid);
                         
-                        layers.add(result.feature);
+                        if(layer !== undefined){
+                            layer.children[0].add(result.feature);
+                            
+                        }
                         node.content = result.feature;
                     }
                 })
-                .catch(function(/*err*/) {
+                .catch(function() {
                 // Command has been canceled, no big deal, we just need to catch it
                 });
             }
         }
     }
 }
+
+
+
 
 function updateNodeImagery(quadtree, node, colorLayers) {
     var promises = [];

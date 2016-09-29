@@ -16,7 +16,7 @@ import GeoCoordinate,{UNIT} from 'Core/Geographic/GeoCoordinate';
 import BasicMaterial from 'Renderer/BasicMaterial';
 import LayersConfiguration from 'Scene/LayersConfiguration';
 import THREE from 'THREE';
-
+import FeatureToolBox   from 'Renderer/ThreeExtented/FeatureToolBox';
 
 /* eslint-disable */
 // bbox longitude(0,360),latitude(-90,90)
@@ -163,10 +163,6 @@ Globe.prototype.showKML = function(show) {
     this.features.children[0].visible = show;
 };
 
-Globe.prototype.addFeature = function(features){
-    
-};
-
 Globe.prototype.updateLightingPos = function(pos) {
 
     this.atmosphere.updateLightingPos(pos);
@@ -232,6 +228,36 @@ Globe.prototype.setRealisticLightingOn = function(bool) {
 
     this.atmosphere.setRealisticOn(bool);
     this.clouds.setLightingOn(bool);
+};
+
+Globe.prototype.getFeatureLayerByName = function(name){
+    var layers = this.children;
+    for(var i=0 ; i < layers.length; i++){
+        if(layers[i] instanceof Layer){
+            if(layers[i].getName() === name)
+                return layers[i];
+        }
+    }
+    
+    return undefined;
+};
+
+Globe.prototype.createFeatureLayer = function(name){
+    var featureLayer = new Layer();
+        featureLayer.setName(name)
+    var dataLayer = new THREE.Object3D();
+        featureLayer.add(dataLayer);
+    this.add(featureLayer);  
+    
+    return featureLayer;
+};
+
+
+Globe.prototype.addFeature = function(options){
+    var layerId = options.layerId;
+    var tool = new FeatureToolBox();
+    //if(options.geometry != undefined)    
+                // tool.processingGeoJSON(options.geometry);
 };
 
 export default Globe;
