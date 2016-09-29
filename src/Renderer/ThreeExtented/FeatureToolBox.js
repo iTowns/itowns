@@ -434,4 +434,183 @@ FeatureToolBox.prototype.manageColor = function(properties, color, layer) {
     color.setHex(new THREE.Color(0xFFFFFF));
 };
 
+////addFeature
+FeatureToolBox.prototype.createGeometryArray = function(json) {
+    
+    var geometry_array = [];
+
+    if (json.type == 'Feature') {
+        geometry_array.push(json.geometry);
+    } else if (json.type == 'FeatureCollection') {
+        for (var feature_num = 0; feature_num < json.features.length; feature_num++) {
+            geometry_array.push(json.features[feature_num].geometry);
+        }
+    } else if (json.type == 'GeometryCollection') {
+        for (var geom_num = 0; geom_num < json.geometries.length; geom_num++) {
+            geometry_array.push(json.geometries[geom_num]);
+        }
+    } else {
+        throw new Error('The geoJSON is not valid.');
+    }
+    //alert(geometry_array.length);
+    return geometry_array;
+};
+
+FeatureToolBox.prototype.convertCoordinates = function(coordinates_array) {
+    var lon = coordinates_array[0];
+    var lat = coordinates_array[1];
+    var geoCoord = new GeoCoordinate(lon, lat, 180, UNIT.DEGREE);
+    return this.ellipsoid.cartographicToCartesian(geoCoord);
+};
+
+FeatureToolBox.prototype.getMidpoint = function(point1, point2) {    
+    var midpoint_lon = (point1[0] + point2[0]) / 2;
+    var midpoint_lat = (point1[1] + point2[1]) / 2;
+    var midpoint = [midpoint_lon, midpoint_lat]; 
+    
+    return midpoint;
+}
+
+FeatureToolBox.prototype.needsInterpolation = function(point2, point1) {
+    //If the distance between two latitude and longitude values is 
+    //greater than five degrees, return true.
+    var lon1 = point1[0];
+    var lat1 = point1[1];
+    var lon2 = point2[0];
+    var lat2 = point2[1];
+    var lon_distance = Math.abs(lon1 - lon2);
+    var lat_distance = Math.abs(lat1 - lat2);
+    
+    if (lon_distance > 5 || lat_distance > 5) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+
+FeatureToolBox.prototype.interpolatePoints = function(interpolation_array) {
+    //This function is recursive. It will continue to add midpoints to the 
+    //interpolation array until needsInterpolation() returns false.
+    var temp_array = [];
+    var point1, point2;
+    
+    for (var point_num = 0; point_num < interpolation_array.length-1; point_num++) {
+        point1 = interpolation_array[point_num];
+        point2 = interpolation_array[point_num + 1];
+        
+        if (this.needsInterpolation(point2, point1)) {
+            temp_array.push(point1);
+            temp_array.push(this.getMidpoint(point1, point2));          
+        } else {
+            temp_array.push(point1);
+        }
+    }
+    
+    temp_array.push(interpolation_array[interpolation_array.length-1]);
+    
+    if (temp_array.length > interpolation_array.length) { 
+        temp_array = this.interpolatePoints(temp_array);
+    } else { 
+        return temp_array;
+    }
+    return temp_array;    
+};
+
+FeatureToolBox.prototype.createCoordinateArray = function(feature) {
+    //Loop through the coordinates and figure out if the points need interpolation.
+    var temp_array = [];
+    var interpolation_array = [];
+    
+        for (var point_num = 0; point_num < feature.length; point_num++) {
+            var point1 = feature[point_num];
+            var point2 = feature[point_num - 1];
+            
+            if (point_num > 0) {                               
+                if (this.needsInterpolation(point2, point1)) {                    
+                    interpolation_array = [point2, point1];
+                    interpolation_array = this.interpolatePoints(interpolation_array);
+                    
+                    for (var inter_point_num = 0; inter_point_num < interpolation_array.length; inter_point_num++) {
+                        temp_array.push(interpolation_array[inter_point_num]);
+                    }                    
+                } else {
+                    temp_array.push(point1); 
+                } 
+            } else {
+                temp_array.push(point1);
+            } 
+        }
+    return temp_array;
+};
+
+
+
+FeatureToolBox.prototype.processingGeoJSON = function(json) {
+
+    var json_geom = this.createGeometryArray(json);
+   
+    var coordinate_array = [];
+    //Re-usable array to hold coordinate values. This is necessary so that you can add
+    //interpolated coordinates. Otherwise, lines go through the sphere instead of wrapping around.
+
+    for (var geom_num = 0; geom_num < json_geom.length; geom_num++) {
+
+        if (json_geom[geom_num].type == 'Point') {
+            this.convertCoordinates(json_geom[geom_num].coordinates, radius);
+            //drawParticle(y_values[0], z_values[0], x_values[0], options);
+
+        } else if (json_geom[geom_num].type == 'MultiPoint') {
+            for (var point_num = 0; point_num < json_geom[geom_num].coordinates.length; point_num++) {
+                this.convertCoordinates(json_geom[geom_num].coordinates[point_num]);
+                //drawParticle(y_values[0], z_values[0], x_values[0], options);
+            }
+
+        } else if (json_geom[geom_num].type == 'LineString') {
+            coordinate_array = this.createCoordinateArray(json_geom[geom_num].coordinates);
+
+            for (var point_num = 0; point_num < coordinate_array.length; point_num++) {
+                this.convertCoordinates(coordinate_array[point_num]);
+            }
+            //drawLine(y_values, z_values, x_values, options);
+
+        } else if (json_geom[geom_num].type == 'Polygon') {
+            for (var segment_num = 0; segment_num < json_geom[geom_num].coordinates.length; segment_num++) {
+                coordinate_array = this.createCoordinateArray(json_geom[geom_num].coordinates[segment_num]);
+
+                for (var point_num = 0; point_num < coordinate_array.length; point_num++) {
+                    this.convertCoordinates(coordinate_array[point_num]);
+                }
+                //drawLine(y_values, z_values, x_values, options);
+            }
+
+        } else if (json_geom[geom_num].type == 'MultiLineString') {
+            for (var segment_num = 0; segment_num < json_geom[geom_num].coordinates.length; segment_num++) {
+                coordinate_array = this.createCoordinateArray(json_geom[geom_num].coordinates[segment_num]);
+
+                for (var point_num = 0; point_num < coordinate_array.length; point_num++) {
+                    this.convertCoordinates(coordinate_array[point_num]);
+                }
+                //drawLine(y_values, z_values, x_values, options);
+            }
+
+        } else if (json_geom[geom_num].type == 'MultiPolygon') {
+            for (var polygon_num = 0; polygon_num < json_geom[geom_num].coordinates.length; polygon_num++) {
+                for (var segment_num = 0; segment_num < json_geom[geom_num].coordinates[polygon_num].length; segment_num++) {
+                    coordinate_array = this.createCoordinateArray(json_geom[geom_num].coordinates[polygon_num][segment_num]);
+
+                    for (var point_num = 0; point_num < coordinate_array.length; point_num++) {
+                        this.convertCoordinates(coordinate_array[point_num]);
+                    }
+                    //drawLine(y_values, z_values, x_values, options);
+                }
+            }
+        } else {
+            throw new Error('The geoJSON is not valid.');
+        }
+    }
+
+    
+};
+
 export default FeatureToolBox;

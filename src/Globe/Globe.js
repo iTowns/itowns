@@ -256,8 +256,8 @@ Globe.prototype.createFeatureLayer = function(name){
 Globe.prototype.addFeature = function(options){
     var layerId = options.layerId;
     var tool = new FeatureToolBox();
-    //if(options.geometry != undefined)    
-                // tool.processingGeoJSON(options.geometry);
+    if(options.geometry != undefined)    
+           tool.processingGeoJSON(options.geometry);
 };
 
 export default Globe;

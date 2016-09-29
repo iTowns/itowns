@@ -11,7 +11,7 @@ import defaultValue     from 'Core/defaultValue';
 import Projection       from 'Core/Geographic/Projection';
 import CacheRessource   from 'Core/Commander/Providers/CacheRessource';
 import BoundingBox      from 'Scene/BoundingBox';
-import FeatureToolBox   from 'Renderer/ThreeExtented/FeatureToolBox.js'
+import FeatureToolBox   from 'Renderer/ThreeExtented/FeatureToolBox'
 //import ItownsLine from 'Core/Commander/Providers/ItownsLine';
 
 /**
