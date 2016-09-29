@@ -134,44 +134,24 @@ void main() {
                         textureIndex,
                         projWGS84 ? vUv_WGS84 : uvPM);
 
-                  //  if (layerColor.a > 0.0) {
+                    if (layerColor.a > 0.0) {
                         validTextureCount++;
                         float lum = 1.0;
                         
-                                    /*        
-                                        if (layerColor.a < 1.0) {
-                                            layerColor = colorAtIdUv(
-                                                dTextures_01,
-                                                pitScale_L01,
-                                                textureIndex,
-                                                vec2( clamp(uvPM.x + mod(time/100., 1.), 0.,1.), uvPM.y));
-                                        }
-                                   */
+                        /*                    
+                                    if (layerColor.a < 1.0) {
+                                        layerColor = colorAtIdUv(
+                                            dTextures_01,
+                                            pitScale_L01,
+                                            textureIndex,
+                                            vec2( clamp(uvPM.x + mod(time/100., 1.), 0.,1.), uvPM.y));
+                                    }
+                                    float currentTranslation = mod(time/100., 1.);
+                        */      
 
                    
-                   float currentTranslation = mod(time/100., 1.);
-                /*
-                   // Kaleidoscope fun
-                   uvPM.x = uvPM.x > currentTranslation ? 1. - uvPM.x : uvPM.x;
-                   layerColor = colorAtIdUv(dTextures_01, pitScale_L01, textureIndex, uvPM);
-                */
-
+                       
                 
-                   // Need to know the direction..
-                   if(uvPM.y>0.5) currentTranslation = -currentTranslation*1.5;
-                   vec2 previousPos = vec2(clamp(uvPM.x + currentTranslation, 0.,1.), uvPM.y);
-                   vec4 colPrevPos =  colorAtIdUv(dTextures_01, pitScale_L01, textureIndex, previousPos);
-                   vec4 currentColor = colorAtIdUv(dTextures_01, pitScale_L01, textureIndex, uvPM);
-
-                   if (colPrevPos.a < 1.0) { // was car -> draw car  // Need opacity smooth with contour
-                                // layerColor = colPrevPos; //vec4(1.,0.,0.,0.5);
-                       layerColor = smoothContours(pitScale_L01, textureIndex, previousPos, uvPM);
-                   }else
-                        if (currentColor.a < 1.0) {  // is car -> needs inpainting
-                            layerColor = colorAtIdUv(dTextures_01, pitScale_L01, textureIndex, vec2(uvPM.x+0.2,uvPM.y));
-                   }
- 
-              
 
                         if(paramsB.x > 0.0) {
                             vec3 white = vec3(1.0,1.0,1.0);
@@ -185,13 +165,24 @@ void main() {
 
                             lum = 1.0-pow(abs(a),paramsB.x);
                         }
-
-                        diffuseColor = mix( diffuseColor, layerColor, 1.);//lum*params.w );//* layerColor.a);
-
+                            
+                        if(layer == 1){
+                           // params.w -= 2. * abs(0.5 - uvPM.x);
+                            if(abs(0.5 - uvPM.x) > 0.4 || abs(0.5 - uvPM.y) > 0.4){
+                                params.w = 0.;
+                            }else{
+                                
+                                 if(abs(0.5 - uvPM.x) > 0.3 || abs(0.5 - uvPM.y) > 0.3){
+                                     float xA = 10. * (0.4 - abs(0.5 - uvPM.x));
+                                     float xB = 10. * (0.4 - abs(0.5 - uvPM.y));
+                                     params.w = min(xA,xB);    
+                                 }
+                            }
+                        }
                         
+                        diffuseColor = mix( diffuseColor, layerColor, lum*params.w );//* layerColor.a);
 
-                      //  diffuseColor.a = 1.;
-                 //   }
+                    }
                 }
 #if defined(DEBUG)
                 else {

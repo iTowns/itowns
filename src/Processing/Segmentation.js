@@ -2491,6 +2491,12 @@ function setPixel(imageData, x, y, r, g, b, a) {
 }
 */
 
+
+Segmentation.prototype.getImageOtherPosition = function(){
+    
+    console.log(this.imgIn);
+};
+
 Segmentation.prototype.extractCarsTest = function(){
    
     console.log("extractCars");

@@ -22,7 +22,6 @@ import Segmentation from 'Processing/Segmentation';
 
 function WMTS_Provider(options) {
     //Constructor
-
     Provider.call(this, new IoDriver_XBIL());
     this.cache = CacheRessource();
     this.ioDriverImage = new IoDriver_Image();
@@ -177,6 +176,19 @@ WMTS_Provider.prototype.getColorTexture = function(coWMTS, pitch, layer) {
     var result = {
         pitch: pitch
     };
+    
+    // ALEX TEMP TO COMPUTE TRANSLATION IF LAYER TRANSLATED CITY
+    if(layer.id.indexOf("OrthoOtherCity")>= 0 && coWMTS.zoom == 17){
+        //console.log(coWMTS,layer);
+        // TEst pour ne pas afficher toutes les tuiles (aleatoire pr test)
+        if(coWMTS.row % 4 == 0 && coWMTS.col % 4 == 0){
+            coWMTS.row += 2138;
+            coWMTS.col -= 1060;
+        }
+    }
+    
+    
+    
     var url = this.url(coWMTS, layer);
 
     // TODO: this is not optimal: if called again before ioDriverImage resolves, it'll load the image again
@@ -193,7 +205,7 @@ WMTS_Provider.prototype.getColorTexture = function(coWMTS, pitch, layer) {
             result.texture = texture;
         else {
             //console.log(image.src);
-            if(image.src.indexOf("TILEMATRIX=20")<0){
+            if(image.src.indexOf("TILEMATRIX=37")<0){
                 result.texture = new THREE.Texture(image);
                 result.texture.needsUpdate = true;
             }else{
@@ -209,7 +221,7 @@ WMTS_Provider.prototype.getColorTexture = function(coWMTS, pitch, layer) {
             // result.texture.layerId = layerId;
             //console.log(this.segmentation);
             this.segmentation.setImage(image);
-            result.texture = this.segmentation.extractCars();
+            result.texture = this.segmentation.getImageOtherPosition();//extractCars();
         }
             //result.texture = this.segmentation.setImage(image).extractCars();
             //result.texture = new Segmentation(image).extractCars();//new Segmentation(image).extractCars();
@@ -234,7 +246,7 @@ WMTS_Provider.prototype.executeCommand = function(command) {
     //var service;
     var layer = command.paramsFunction.layer;
     var tile = command.requester;
-
+   // console.log(layer, command);
     var supportedFormats = {
         'image/png':           this.getColorTextures.bind(this),
         'image/jpg':           this.getColorTextures.bind(this),
