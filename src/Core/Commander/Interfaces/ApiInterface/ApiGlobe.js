@@ -4,8 +4,6 @@
  * Description: Classe façade pour attaquer les fonctionnalités du code.
  */
 
-
-
 import Scene from 'Scene/Scene';
 import Globe from 'Globe/Globe';
 import WMTS_Provider from 'Core/Commander/Providers/WMTS_Provider';
@@ -100,12 +98,13 @@ ApiGlobe.prototype.addImageryLayer = function(layer) {
 };
 
 ApiGlobe.prototype.addFeatureLayer = function(layer) {
+
     preprocessLayer(layer, this.scene.managerCommand.getProtocolProvider(layer.protocol));
 
     var map = this.scene.getMap();
     map.layersConfiguration.addGeometryLayer(layer);
-    //map.createFeatureLayer(layer.id);
-    //map.createNewFeatureLayer(layer.id);
+    var featureLayer  = map.createFeatureLayer(layer.id);
+    this.scene.gfxEngine.add3DScene(featureLayer.getMesh());
 };
 
 ApiGlobe.prototype.moveLayerUp = function(layer) {
@@ -186,18 +185,35 @@ ApiGlobe.prototype.getTileMatrixSet = function(/*params*/){
 };
 
 ApiGlobe.prototype.addFeature = function(options){
-    var layerId  = options.layerId;
+    if(options === undefined)
+        throw new Error("options is required");
     var map = this.scene.getMap();
-    var geometryLayers =  map.layersConfiguration.getGeometryLayers();
-    
-   // console.log(geometryLayers);
-
+    map.addFeature(options);
 };
 
 ApiGlobe.prototype.getLayers = function( /*param*/ ) {
     var map = this.scene.getMap();
     return map.layersConfiguration.getColorLayers();
 };
+
+
+ApiGlobe.prototype.pickFeature = function(Position, layerId){
+    if(Position == undefined)
+       throw new Error("Position is required");
+    var map = this.scene.getMap();
+    var layer = map.getFeatureLayerByName(layerId);
+    return this.scene.getPickFeature(Position, layer);
+};
+
+ApiGlobe.prototype.removeFeature = function(feature){
+
+    var featureId = feature.featureId;
+    var layerId = feature.layerId;
+    var map = this.scene.getMap();
+    var layer = map.getFeatureLayerByName(layerId);
+    layer.removeFeature(featureId);
+};
+
 
 /**
  * Gets the maximun zoom level of the chosen layer.

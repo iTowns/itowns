@@ -432,7 +432,6 @@ and open the template in the editor.
             }
         });                            
 
-                //an example feature to be added
         var feature = {
                  featureId : "testfeature", //String he feature identifier
                  layerId   : "testwfs",// layer identifier
@@ -447,10 +446,10 @@ and open the template in the editor.
                 properties : "string", 	
                 visible    : true,	
                 highlight  : true
-        }
+        };
                                 
-        itowns.viewer.addFeature(feature);                        
-
+        itowns.viewer.addFeature(feature); 
+        
         //Feature layers used fot tests purpose
         itowns.viewer.addFeatureLayer({
             id          : 'testWfsPoint',
