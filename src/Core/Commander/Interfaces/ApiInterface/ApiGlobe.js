@@ -180,8 +180,7 @@ ApiGlobe.prototype.addTileMatrixSet = function(params){
     console.log(colorLayers[0]);
 };
 
-ApiGlobe.prototype.getTileMatrixSet = function(params){
-    
+ApiGlobe.prototype.getTileMatrixSet = function(/*params*/){
 };
 
 ApiGlobe.prototype.addFeature = function(options){
@@ -348,31 +347,13 @@ ApiGlobe.prototype.setNewParams = function(x, y, z, isFirst) {
         text.centerZ = z;
     } else if (text.retailType == 'box') {
         if (isFirst) {
-            if (x > text.maxX || y > text.maxY || z > text.maxZ) {
-                text.minX = text.maxX;
-                text.minY = text.maxY;
-                text.minZ = text.maxZ;
-                text.maxX = x;
-                text.maxY = y;
-                text.maxZ = z;
-            } else {
-                text.minX = x;
-                text.minY = y;
-                text.minZ = z;
-            }
+            text.minX = x;
+            text.minY = y;
+            text.minZ = z;
         } else {
-            if (x < text.minX || y < text.minY || z < text.minZ) {
-                text.maxX = text.minX;
-                text.maxY = text.minY;
-                text.maxZ = text.minZ;
-                text.minX = x;
-                text.minY = y;
-                text.minZ = z;
-            } else {
-                text.maxX = x;
-                text.maxY = y;
-                text.maxZ = z;
-            }
+            text.maxX = x;
+            text.maxY = y;
+            text.maxZ = z;
         }
     }
     this.forceFeatureNodeUpdate();
