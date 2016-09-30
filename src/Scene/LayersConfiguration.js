@@ -21,7 +21,7 @@ function LayersConfiguration() {
 
     // color layers state (visibility, opacity)
     this.colorLayersState = {};
-};
+}
 
 LayersConfiguration.prototype.constructor = LayersConfiguration;
 

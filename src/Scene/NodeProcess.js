@@ -236,12 +236,11 @@ function updateNodeFeature(quadtree, node, featureLayers) {
                     if(result.feature !== undefined && result.feature != null) {
                         //var layer = quadtree.parent.features.children[0];
                         var map = quadtree.parent;
-                        var layerid = result.feature.layer.id; 
+                        var layerid = result.feature.layer.id;
                         var layer = map.getFeatureLayerByName(layerid);
-                        
+
                         if(layer !== undefined){
                             layer.children[0].add(result.feature);
-                            
                         }
                         node.content = result.feature;
                     }

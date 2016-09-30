@@ -238,7 +238,7 @@ Globe.prototype.getFeatureLayerByName = function(name){
                 return layers[i];
         }
     }
-    
+
     return undefined;
 };
 
@@ -247,16 +247,16 @@ Globe.prototype.createFeatureLayer = function(name){
         featureLayer.setName(name)
     var dataLayer = new THREE.Object3D();
         featureLayer.add(dataLayer);
-    this.add(featureLayer);  
-    
+    this.add(featureLayer);
+
     return featureLayer;
 };
 
 
 Globe.prototype.addFeature = function(options){
-    var layerId = options.layerId;
+    //var layerId = options.layerId;
     var tool = new FeatureToolBox();
-    if(options.geometry != undefined)    
+    if(options.geometry != undefined)
            tool.processingGeoJSON(options.geometry);
 };
 
