@@ -15,7 +15,7 @@ function BuildingProvider(options) {
     Provider.call(this, new IoDriver_JSON());
     this.cache = CacheRessource();
     this.srs = options.srs;
-    this.baseUrl = "http://3d.oslandia.com/building"; // TODO: remove hard-coded values
+    this.baseUrl = "http://3d.oslandia.com/building-dev/"; // TODO: remove hard-coded values
     this.layer = options.layer;
     this.format = defaultValue(options.format, "GeoJSON");
     this.colorFunction = options.colorFunction;
@@ -26,7 +26,7 @@ function BuildingProvider(options) {
 BuildingProvider.prototype.constructor = BuildingProvider;
 
 BuildingProvider.prototype.url = function(tileId) {
-    var url = this.baseUrl + "?query=getGeometry&city=" + this.layer + "&format=" + this.format +
+    var url = this.baseUrl + "getGeometry?city=" + this.layer + "&format=" + this.format +
         "&tile=" + tileId;
     if(this.attributes.length !== 0) {
         url += "&attributes=" + this.attributes[0];

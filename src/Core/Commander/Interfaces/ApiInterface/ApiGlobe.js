@@ -359,9 +359,9 @@ ApiGlobe.prototype.createScenePlane = function(coordCarto, viewerDiv, boundingBo
 
     // Test BoundingVolumeHierarchy
 
-    // http://3d.oslandia.com/building?query=getCity&city=montreal
+    // http://3d.oslandia.com/building-dev/getCity?city=montreal
     var ioJson = new IoDriver_JSON();
-    ioJson.read("http://3d.oslandia.com/building?query=getCity&city=" + buildingLayerName).then(function(json) {
+    ioJson.read("http://3d.oslandia.com/building-dev/getCity?city=" + buildingLayerName).then(function(json) {
         var bvh = new BoundingVolumeHierarchy(BuildingTile, json.tiles);
         var np = new BuildingTileNodeProcess(this.scene.gfxEngine);
         this.scene.add(bvh, np);
