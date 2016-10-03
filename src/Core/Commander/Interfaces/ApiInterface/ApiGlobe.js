@@ -16,6 +16,7 @@ import GeoCoordinate,{UNIT} from 'Core/Geographic/GeoCoordinate';
 import Ellipsoid from 'Core/Math/Ellipsoid';
 import Projection from 'Core/Geographic/Projection';
 import CustomEvent from 'custom-event';
+import {STRATEGY_MIN_NETWORK_TRAFFIC} from 'Scene/LayerUpdateStrategy'
 
 var loaded = false;
 var eventLoaded = new CustomEvent('globe-loaded');
@@ -72,6 +73,12 @@ ApiGlobe.prototype.getProtocolProvider = function(protocol) {
  * values for a layer.
  */
 function preprocessLayer(layer, provider) {
+    if (!layer.updateStrategy) {
+        layer.updateStrategy = {
+            type: STRATEGY_MIN_NETWORK_TRAFFIC
+        };
+    }
+
     if (provider.preprocessDataLayer) {
         layer.tileInsideLimit = provider.tileInsideLimit.bind(provider);
         provider.preprocessDataLayer(layer);
@@ -301,7 +308,7 @@ ApiGlobe.prototype.setLayerVisibility = function(id, visible) {
 
     this.scene.getMap().setLayerVisibility(id, visible);
 
-    this.scene.renderScene3D();
+    this.update();
 };
 
 ApiGlobe.prototype.animateTime = function(value) {
