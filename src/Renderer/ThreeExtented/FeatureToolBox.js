@@ -557,7 +557,7 @@ FeatureToolBox.prototype.processingGeoJSON = function(json) {
     for (var geom_num = 0; geom_num < json_geom.length; geom_num++) {
 
         if (json_geom[geom_num].type == 'Point') {
-            this.convertCoordinates(json_geom[geom_num].coordinates, radius);
+            this.convertCoordinates(json_geom[geom_num].coordinates);
             //drawParticle(y_values[0], z_values[0], x_values[0], options);
 
         } else if (json_geom[geom_num].type == 'MultiPoint') {
