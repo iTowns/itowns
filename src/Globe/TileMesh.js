@@ -29,7 +29,6 @@ import GlobeDepthMaterial from 'Renderer/GlobeDepthMaterial';
 import MatteIdsMaterial from 'Renderer/MatteIdsMaterial';
 import RendererConstant from 'Renderer/RendererConstant';
 
-const groupelevation = [14, 11, 7, 3];
 const l_ELEVATION = 0;
 const l_COLOR = 1;
 
@@ -70,16 +69,6 @@ function TileMesh(params, builder, geometryCache) {
     this.material = this.materials[RendererConstant.FINAL];
 
     this.frustumCulled = false;
-    this.levelElevation = this.level;
-
-    // TODO not generic
-    for (var i = 0; i < groupelevation.length; i++) {
-        var gLev = groupelevation[i];
-        if (this.level >= gLev) {
-            this.levelElevation = gLev;
-            break;
-        }
-    }
 
     // Layer
     this.setDisplayed(false);
@@ -273,7 +262,7 @@ TileMesh.prototype.downScaledLayer = function(id) {
             return false;
         } else {
             return mat.Textures[l_ELEVATION][0].level <
-                this.levelElevation;
+                this.level;
         }
     } else if (id === l_COLOR) {
         // browse each layer
