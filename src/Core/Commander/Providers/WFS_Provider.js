@@ -4,6 +4,8 @@
  * Description: Provides data from a WFS stream
  */
 
+import THREE            from 'THREE'
+import FeatureMesh      from 'Globe/FeatureMesh';
 import Provider         from 'Core/Commander/Providers/Provider';
 import IoDriver_JSON    from 'Core/Commander/Providers/IoDriver_JSON';
 import IoDriverXML      from 'Core/Commander/Providers/IoDriverXML';
@@ -12,6 +14,7 @@ import Projection       from 'Core/Geographic/Projection';
 import CacheRessource   from 'Core/Commander/Providers/CacheRessource';
 import BoundingBox      from 'Scene/BoundingBox';
 import FeatureToolBox   from 'Renderer/ThreeExtented/FeatureToolBox'
+import BuilderEllipsoidTile from 'Globe/BuilderEllipsoidTile';
 //import ItownsLine from 'Core/Commander/Providers/ItownsLine';
 
 /**
@@ -99,6 +102,79 @@ WFS_Provider.prototype.executeCommand = function(command) {
     } else {
         return Promise.reject(new Error('Unsupported mimetype ' + layer.format));
     }
+};
+
+FeatureToolBox.prototype.getFeatures = function(tile, layer, parameters, parent) {
+    if (!this.tileInsideLimit(tile,layer) || tile.material === null)
+        return Promise.resolve();
+
+    var pitch = parameters.ancestor ?
+                this.projection.WMS_WGS84Parent(tile.bbox, parameters.ancestor.bbox) :
+                new THREE.Vector3(0, 0, 1);
+    var bbox = parameters.ancestor ?
+                parameters.ancestor.bbox :
+                tile.bbox;
+    var url, geometry, params, builder, mesh;
+
+    if (layer.type == "point" || layer.type == "line" || layer.type == "box"){
+        url = this.tmpUrl(bbox, layer);
+        geometry = new THREE.Geometry();
+        params   = {bbox: bbox, level: parent.level + 1, segment:16, center:null, projected:null, protocol: parent.protocol};
+        builder  = new BuilderEllipsoidTile(this.tool.ellipsoid, this.projection);
+        mesh     = new FeatureMesh(params, builder);
+    }
+    else
+        url = this.url(bbox, layer);
+
+    var result = {pitch: pitch };
+    result.feature = this.cache.getRessource(url);
+
+    if(result.feature != undefined)
+        mesh = result.feature;
+
+    //To uncomment for the true test with the buildings
+    /*if (result.feature !== undefined)
+        return Promise.resolve(result);*/
+
+    return this._IoDriver.read(url).then(function(feature) {
+        if(feature.crs || layer.crs) {
+            var features = feature.features;
+
+            if(layer.type == "poly")
+                result.feature = this.tool.GeoJSON2Polygon(features);
+            else if(layer.type == "bbox")
+                result.feature = this.tool.GeoJSON2Box(features);
+            else if((mesh.currentType == undefined && (layer.type == "point" || layer.type == "box"))
+                        || mesh.currentType == "point" || mesh.currentType == "box"){
+                var type = mesh.currentType || layer.type;
+                this.tool.GeoJSON2Point(features, bbox, geometry, type, layer, tile);
+                mesh.setGeometry(geometry);
+                if(mesh.currentType === undefined)
+                    mesh.currentType = layer.type;
+                result.feature = mesh;
+            } else if(layer.type == "line"){
+                var tmpBbox = new BoundingBox(  bbox.west()  * 180.0 / Math.PI,
+                                                bbox.east()  * 180.0 / Math.PI,
+                                                bbox.south() * 180.0 / Math.PI,
+                                                bbox.north() * 180.0 / Math.PI,
+                                                bbox.bottom(), bbox.top());
+                this.tool.GeoJSON2Line(features, tmpBbox, geometry, layer);
+                mesh.setGeometry(geometry);
+                result.feature = mesh;
+            }
+            //Is needed to do another request for the retail level change
+            if(result.feature.layer == null)
+                result.feature.layer = layer;
+
+            if (result.feature !== undefined)
+                this.cache.addRessource(url, result.feature);
+        }
+
+        return result;
+    }.bind(this)).catch(function(/*reason*/) {
+            result.feature = null;
+            return result;
+        });
 };
 
 export default WFS_Provider;
