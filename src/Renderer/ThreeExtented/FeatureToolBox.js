@@ -8,7 +8,7 @@ import THREE 					from 'THREE';
 import CVML 					from 'Core/Math/CVML';
 import Ellipsoid 				from 'Core/Math/Ellipsoid';
 import GeoCoordinate, {UNIT}	from 'Core/Geographic/GeoCoordinate';
-
+import BasicMaterial from 'Renderer/BasicMaterial';
 function FeatureToolBox() {
 	this.size       = {x:6378137,y: 6356752.3142451793,z:6378137};
     this.ellipsoid  = new Ellipsoid(this.size);
@@ -379,7 +379,7 @@ FeatureToolBox.prototype.createGeometryArray = function(json) {
     return geometry_array;
 };
 
-FeatureToolBox.prototype.convertCoordinates = function(coordinates_array) {
+FeatureToolBox.prototype.convertLonLatToWGS84 = function(coordinates_array) {
     var lon = coordinates_array[0];
     var lat = coordinates_array[1];
     var geoCoord = new GeoCoordinate(lon, lat, 180, UNIT.DEGREE);
@@ -409,7 +409,7 @@ FeatureToolBox.prototype.needsInterpolation = function(point2, point1) {
     } else {
         return false;
     }
-}
+};
 
 
 FeatureToolBox.prototype.interpolatePoints = function(interpolation_array) {
@@ -469,67 +469,82 @@ FeatureToolBox.prototype.createCoordinateArray = function(feature) {
 
 FeatureToolBox.prototype.processingGeoJSON = function(json) {
 
-    var json_geom = this.createGeometryArray(json);
-
+    var jsonFeatures = this.createGeometryArray(json);
     var coordinate_array = [];
-    //Re-usable array to hold coordinate values. This is necessary so that you can add
-    //interpolated coordinates. Otherwise, lines go through the sphere instead of wrapping around.
-
-    for (var geom_num = 0; geom_num < json_geom.length; geom_num++) {
-		var point_num, segment_num;
-        if (json_geom[geom_num].type == 'Point') {
-            this.convertCoordinates(json_geom[geom_num].coordinates);
-            //drawParticle(y_values[0], z_values[0], x_values[0], options);
-
-        } else if (json_geom[geom_num].type == 'MultiPoint') {
-            for (point_num = 0; point_num < json_geom[geom_num].coordinates.length; point_num++) {
-                this.convertCoordinates(json_geom[geom_num].coordinates[point_num]);
-                //drawParticle(y_values[0], z_values[0], x_values[0], options);
+    var geometry = new THREE.Geometry();
+    var bpoint = true;
+    for (var nFeature = 0; nFeature < jsonFeatures.length; nFeature++) {
+	var point_num, segment_num;
+        if (jsonFeatures[nFeature].type == 'Point') {
+            var vertex = this.convertLonLatToWGS84(jsonFeatures[nFeature].coordinates);
+            geometry.vertices.push(vertex);
+        }
+        else if (jsonFeatures[nFeature].type == 'MultiPoint') {
+            for (point_num = 0; point_num < jsonFeatures[nFeature].coordinates.length; point_num++) {
+                var vertex = this.convertLonLatToWGS84(jsonFeatures[nFeature].coordinates[point_num]);
+                geometry.vertices.push(vertex);
             }
 
-        } else if (json_geom[geom_num].type == 'LineString') {
-            coordinate_array = this.createCoordinateArray(json_geom[geom_num].coordinates);
+        }
+        else if (jsonFeatures[nFeature].type == 'LineString') {
+            coordinate_array = this.createCoordinateArray(jsonFeatures[nFeature].coordinates);
 
             for (point_num = 0; point_num < coordinate_array.length; point_num++) {
-                this.convertCoordinates(coordinate_array[point_num]);
+                var vertex = this.convertLonLatToWGS84(coordinate_array[point_num]);
+                 geometry.vertices.push(vertex);
             }
-            //drawLine(y_values, z_values, x_values, options);
+            
+            bpoint = false;
+        }
 
-        } else if (json_geom[geom_num].type == 'Polygon') {
-            for (segment_num = 0; segment_num < json_geom[geom_num].coordinates.length; segment_num++) {
-                coordinate_array = this.createCoordinateArray(json_geom[geom_num].coordinates[segment_num]);
+        else if (jsonFeatures[nFeature].type == 'Polygon') {
+            for (segment_num = 0; segment_num < jsonFeatures[nFeature].coordinates.length; segment_num++) {
+                coordinate_array = this.createCoordinateArray(jsonFeatures[nFeature].coordinates[segment_num]);
 
                 for (point_num = 0; point_num < coordinate_array.length; point_num++) {
-                    this.convertCoordinates(coordinate_array[point_num]);
+                    var vertex = this.convertLonLatToWGS84(coordinate_array[point_num]);
+                    geometry.vertices.push(vertex);
                 }
-                //drawLine(y_values, z_values, x_values, options);
             }
-
-        } else if (json_geom[geom_num].type == 'MultiLineString') {
-            for (segment_num = 0; segment_num < json_geom[geom_num].coordinates.length; segment_num++) {
-                coordinate_array = this.createCoordinateArray(json_geom[geom_num].coordinates[segment_num]);
+            bpoint = false;
+        }
+        else if (jsonFeatures[nFeature].type == 'MultiLineString') {
+            for (segment_num = 0; segment_num < jsonFeatures[nFeature].coordinates.length; segment_num++) {
+                coordinate_array = this.createCoordinateArray(jsonFeatures[nFeature].coordinates[segment_num]);
 
                 for (point_num = 0; point_num < coordinate_array.length; point_num++) {
-                    this.convertCoordinates(coordinate_array[point_num]);
+                    var vertex = this.convertLonLatToWGS84(coordinate_array[point_num]);
+                    geometry.vertices.push(vertex);
                 }
-                //drawLine(y_values, z_values, x_values, options);
             }
-
-        } else if (json_geom[geom_num].type == 'MultiPolygon') {
-            for (var polygon_num = 0; polygon_num < json_geom[geom_num].coordinates.length; polygon_num++) {
-                for (segment_num = 0; segment_num < json_geom[geom_num].coordinates[polygon_num].length; segment_num++) {
-                    coordinate_array = this.createCoordinateArray(json_geom[geom_num].coordinates[polygon_num][segment_num]);
+            
+            bpoint = false;
+        }
+        else if (jsonFeatures[nFeature].type == 'MultiPolygon') {
+            for (var polygon_num = 0; polygon_num < jsonFeatures[nFeature].coordinates.length; polygon_num++) {
+                for (segment_num = 0; segment_num < jsonFeatures[nFeature].coordinates[polygon_num].length; segment_num++) {
+                    coordinate_array = this.createCoordinateArray(jsonFeatures[nFeature].coordinates[polygon_num][segment_num]);
 
                     for (point_num = 0; point_num < coordinate_array.length; point_num++) {
-                        this.convertCoordinates(coordinate_array[point_num]);
+                        var vertex = this.convertLonLatToWGS84(coordinate_array[point_num]);
+                        geometry.vertices.push(vertex);
                     }
-                    //drawLine(y_values, z_values, x_values, options);
                 }
             }
+            bpoint = false;
         } else {
             throw new Error('The geoJSON is not valid.');
         }
     }
+
+    if(!bpoint){
+                var material = new THREE.LineBasicMaterial({color : 0xff0000});
+                return new THREE.Line(geometry, material);
+    }else{
+                var material = new THREE.PointsMaterial({color : 0xff0000, size : 100});
+                return new THREE.Points(geometry, material);
+    }            
+
 };
 
 export default FeatureToolBox;
