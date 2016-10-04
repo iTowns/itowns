@@ -264,4 +264,5 @@ Globe.prototype.addFeature = function(options){
     }       
 };
 
+
 export default Globe;

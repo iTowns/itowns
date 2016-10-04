@@ -4,8 +4,6 @@
  * Description: Classe façade pour attaquer les fonctionnalités du code.
  */
 
-
-
 import Scene from 'Scene/Scene';
 import Globe from 'Globe/Globe';
 import WMTS_Provider from 'Core/Commander/Providers/WMTS_Provider';
@@ -195,6 +193,22 @@ ApiGlobe.prototype.getLayers = function( /*param*/ ) {
     var map = this.scene.getMap();
     return map.layersConfiguration.getColorLayers();
 };
+
+
+ApiGlobe.prototype.pickFeature = function(Position, layerId){
+    if(Position == undefined)
+       throw new Error("Position is required");
+    var map = this.scene.getMap();
+    var layer = map.getFeatureLayerByName(layerId);
+    return this.scene.getPickFeature(Position, layer);
+};
+
+ApiGlobe.prototype.removeFeature = function(featureId, layerId){
+    var map = this.scene.getMap();
+    var layer = map.getFeatureLayerByName(layerId);
+    layer.remove(featureId);
+};
+
 
 /**
  * Gets the maximun zoom level of the chosen layer.
