@@ -6,7 +6,7 @@
 
 
 import NodeMesh from 'Renderer/NodeMesh';
-import THREE from 'THREE';
+import * as THREE from 'THREE';
 import defaultValue from 'Core/defaultValue';
 import Sky from 'Globe/SkyShader';
 import skyFS from 'Renderer/Shader/skyFS.glsl';

@@ -4,7 +4,7 @@
  * Description: Parse Gpx file to get [lat, lon, alt]
  */
 
-import THREE from 'THREE';
+import * as THREE from 'THREE';
 import IoDriverXML from 'Core/Commander/Providers/IoDriverXML';
 import GeoCoordinate,{UNIT} from 'Core/Geographic/GeoCoordinate';
 import ItownsLine from 'Core/Commander/Providers/ItownsLine';

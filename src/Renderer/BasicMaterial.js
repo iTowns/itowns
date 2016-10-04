@@ -5,7 +5,7 @@
  */
 
 
-import THREE from 'THREE';
+import * as THREE from 'THREE';
 import defaultValue from 'Core/defaultValue';
 import c3DEngine from 'Renderer/c3DEngine';
 import SimpleVS from 'Renderer/Shader/SimpleVS.glsl';

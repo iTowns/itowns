@@ -4,7 +4,7 @@
  */
 
 
-import THREE from 'THREE';
+import * as THREE from 'THREE';
 
 function GeometryProj() {
     //Constructor

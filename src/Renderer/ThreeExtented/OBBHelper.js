@@ -5,7 +5,7 @@
  */
 /* global Uint16Array Float32Array*/
 
-import THREE from 'three';
+import * as THREE from 'THREE';
 
 // TODO regler le probleme glsl
 import fontJS from './fonts/optimer_regular.glsl';

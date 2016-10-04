@@ -9,7 +9,7 @@
 
 /* global Promise*/
 
-import THREE from 'three';
+import * as THREE from 'THREE';
 import Provider from 'Core/Commander/Providers/Provider';
 import BuildingBox_Provider from 'Core/Commander/Providers/BuildingBox_Provider';
 import ProjectiveTexturingMaterial from 'Renderer/ProjectiveTexturingMaterial';
