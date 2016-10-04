@@ -105,9 +105,7 @@ TileProvider.prototype.executeCommand = function(command) {
     tile.updateMatrix();
     tile.updateMatrixWorld();
 
-    command.resolve(tile);
-
-    return Promise.resolve();
+    return command.resolve(tile);
 };
 
 export default TileProvider;
