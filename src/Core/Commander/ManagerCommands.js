@@ -27,12 +27,15 @@ function _instanciateQueue() {
             failed: 0,
             cancelled: 0
         },
-        execute: function(cmd, provider) {
-            this.counters.executing++;
+        execute: function(cmd, provider, executingCounterUpToDate) {
+            if (!executingCounterUpToDate) {
+                this.counters.executing++;
+            }
 
-            var p = provider.executeCommand(cmd);
+            // If the provider returns a Promise, use it to handle counters
+            // Otherwise use a resolved Promise.
+            var p = provider.executeCommand(cmd) || Promise.resolve();
 
-            if (!p) throw new Error('arg');
             return p.then(
                 function() {
                     this.counters.executing--;
@@ -62,11 +65,6 @@ function ManagerCommands(scene) {
     this.eventsManager = new EventsManager();
     this.maxConcurrentCommands = 16;
     this.maxCommandsPerHost = 6;
-    this.counters = {
-        runningCommands: 0,
-        executedCommands: 0,
-        hostCommands: {}
-    };
 
     if (!scene)
         throw new Error("Cannot instantiate ManagerCommands without scene");
@@ -77,15 +75,19 @@ function ManagerCommands(scene) {
 
 ManagerCommands.prototype.constructor = ManagerCommands;
 
-ManagerCommands.prototype.runCommand = function(command, queue) {
+ManagerCommands.prototype.runCommand = function(command, queue, executingCounterUpToDate) {
     var provider = this.providers[command.layer.protocol];
 
     if (!provider) {
         throw new Error('No known provider for layer', command.layer.id);
     }
 
-    queue.execute(command, provider).then(function() {
-        this.scene.notifyChange();
+    queue.execute(command, provider, executingCounterUpToDate).then(function() {
+        // notify scene that one command ended.
+        // We allow the scene to delay the update/repaint up to 100ms
+        // to reduce CPU load (no need to perform an update on completion if we
+        // know there's another one ending soon)
+        this.scene.notifyChange(100);
 
         // try to execute next command
         if (queue.counters.executing < this.maxCommandsPerHost) {
@@ -114,13 +116,16 @@ ManagerCommands.prototype.addCommand = function(command) {
 
     // execute command now if possible
     if (q.counters.executing < this.maxCommandsPerHost) {
-        if (host) {
-            this.runCommand(command, q);
-        } else {
-            Promise.resolve(true).then(function() {
-                this.runCommand(command, q);
-            }.bind(this));
-        }
+        // increment before
+        q.counters.executing++;
+
+        var runNow = function() {
+            this.runCommand(command, q, true);
+        }.bind(this);
+
+        // We use a setTimeout to defer processing but we avoid the
+        // queue mechanism
+        window.setTimeout(runNow, 0);
     } else {
         q.storage.queue(command);
     }
@@ -135,23 +140,11 @@ ManagerCommands.prototype.getProtocolProvider = function(protocol) {
     return this.providers[protocol];
 };
 
-ManagerCommands.prototype.commandsLength = function() {
-    return 0;//return this.queueAsync.length;
-};
-
-ManagerCommands.prototype.isFree = function() {
-    return this.commandsLength() === 0;
-};
-
-ManagerCommands.prototype.resetExecutedCommandsCount = function() {
-    this.counters.executedCommands = 0;
-};
-
 ManagerCommands.prototype.commandsWaitingExecutionCount = function() {
-    let sum = this.defaultQueue.storage.length;
-
+    let sum = this.defaultQueue.storage.length
+        + this.defaultQueue.counters.executing;
     for (var q of this.hostQueues) {
-        sum += q[1].storage.length;
+        sum += q[1].storage.length + q[1].counters.executing;
     }
     return sum;
 };
@@ -165,15 +158,16 @@ ManagerCommands.prototype.commandsRunningCount = function() {
     return sum;
 };
 
-ManagerCommands.prototype.commandsCancelledCount = function() {
-    let sum = this.defaultQueue.counters.cancelled;
+ManagerCommands.prototype.resetCommandsCount = function(type) {
 
+    let sum = this.defaultQueue.counters[type];
+    this.defaultQueue.counters[type] = 0;
     for (var q of this.hostQueues) {
-        sum += q[1].counters.cancelled;
+        sum += q[1].counters[type];
+        q[1].counters[type] = 0;
     }
     return sum;
 };
-
 
 ManagerCommands.prototype.getProviders = function() {
     var p = [];

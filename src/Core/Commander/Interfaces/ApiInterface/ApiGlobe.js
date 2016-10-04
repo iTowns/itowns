@@ -221,9 +221,7 @@ ApiGlobe.prototype.createSceneGlobe = function(coordCarto, viewerDiv) {
     this.viewerDiv = viewerDiv;
 
     viewerDiv.addEventListener('globe-built', function() {
-
         if (loaded == false) {
-
             loaded = true;
             viewerDiv.dispatchEvent(eventLoaded);
         } else {

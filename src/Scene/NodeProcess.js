@@ -145,6 +145,9 @@ NodeProcess.prototype.subdivideNode = function(node, camera, params) {
 };
 
 function refinementCommandCancellationFn(cmd) {
+    if (!cmd.requester.parent || !cmd.requester.material) {
+        return true;
+    }
     // If node A is divided into A1, A2, A3, A4 and the user zooms fast enough on A2
     // We might end up in a situation where:
     //    - commands for A1, A3 or A4 are canceled because they're not visible anymore
@@ -304,7 +307,7 @@ function updateNodeElevation(quadtree, node, layersConfig, force) {
 
         // Decide which texture (level) to download
         let ancestor = null;
-        if (currentElevation < 0) {
+        if (currentElevation === 0 && node.parent.materials) {
             // no texture: use elevation texture from parent
             let parentElevationLevel = node.parent.materials[RendererConstant.FINAL].getLevelLayerColor(0, 0);
             if (parentElevationLevel > 0) {
@@ -352,35 +355,44 @@ function updateNodeElevation(quadtree, node, layersConfig, force) {
     return Promise.resolve(node);
 }
 
-/**
- * @documentation: Compute screen space error of node in function of camera
- * @param {type} node
- * @param {type} camera
- * @returns {Boolean}
- */
-NodeProcess.prototype.SSE = function(node, camera, params) {
-    // update node's sse value
-    node.sse = camera.computeNodeSSE(node);
 
-    var sse = this.checkNodeSSE(node);
-    var hidden = sse && node.childrenLoaded();
+NodeProcess.prototype.processNode = function(node, camera, params) {
+    let wasVisible = node.isVisible();
+    let isVisible = !this.isCulled(node, camera);
 
-    if (params.withUp) {
+    node.setDisplayed(false);
+    node.setSelected(false);
+
+    node.setVisibility(isVisible);
+
+    if (isVisible) {
+        // update node's sse value
+        node.sse = camera.computeNodeSSE(node);
+
+        let sse = this.checkNodeSSE(node);
+        let hidden = sse && node.childrenLoaded();
+
         if (sse && params.tree.canSubdivideNode(node)) {
             // big screen space error: subdivide node, display children if possible
             this.subdivideNode(node, camera, params);
         }
 
-        if (!hidden && !node.pendingSubdivision) {
+        if (!hidden)  {
             // node is going to be displayed (either because !sse or because children aren't ready),
             // so try to refine its textures
             this.refineNodeLayers(node, camera, params);
         }
+
+        // display children if possible
+        node.setDisplayed(!hidden);
+
+        // todo uniformsProcess
+    } else {
+        node.setDisplayed(false);
     }
 
-    // display children if possible
-    node.setDisplayed(!hidden);
-};
+    return wasVisible || isVisible;
+}
 
 /**
  * @documentation: Cull node with frustrum and oriented bounding box of node

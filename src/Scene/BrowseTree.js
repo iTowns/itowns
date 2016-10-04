@@ -6,10 +6,6 @@
 
 import * as THREE from 'three';
 
-export const NO_SUBDIVIDE = 0;
-export const SUBDIVIDE = 1;
-export const CLEAN = 2;
-
 function BrowseTree(engine) {
     //Constructor
 
@@ -25,13 +21,6 @@ function BrowseTree(engine) {
     this.selectNode = function(node) {
         this._selectNode(node);
     };
-
-    this._resetQuadtreeNode = function(node) {
-        node.setVisibility(false);
-        node.setDisplayed(false);
-        node.setSelected(false);
-    };
-
 }
 
 BrowseTree.prototype.addNodeProcess = function(nodeProcess) {
@@ -40,38 +29,6 @@ BrowseTree.prototype.addNodeProcess = function(nodeProcess) {
 
 BrowseTree.prototype.NodeProcess = function() {
     return this.nodeProcess;
-};
-
-BrowseTree.prototype.resetQuadtreeNode = function(node) {
-    this._resetQuadtreeNode(node);
-};
-
-/**
- * @documentation: Process to apply to each node
- * @param {type} node   : node current to apply process
- * @param {type} camera : current camera needed to process
- * @param {type} enableUp  : optional process
- * @returns {Boolean}
- */
-BrowseTree.prototype.quadtreeNodeVisibilityUpdate = function(node, camera, process, params) {
-    var wasVisible = node.isVisible();
-    var isVisible = !process.isCulled(node, camera);
-
-    this.resetQuadtreeNode(node);
-    node.setVisibility(isVisible);
-
-    // Displayed if visible.
-    // process.SSE() can modify the displayed property if needed
-    // (e.g on subdivision)
-    node.setDisplayed(isVisible);
-
-    if (isVisible) {
-        process.SSE(node, camera, params);
-
-        this.uniformsProcess(node, camera);
-    }
-
-    return wasVisible || isVisible;
 };
 
 BrowseTree.prototype.uniformsProcess = function() {
@@ -101,6 +58,12 @@ BrowseTree.prototype._selectNode = function(node) {
     }
 };
 
+function applyFunctionToChildren(func, node) {
+    for (let i = 0; i < node.children.length; i++) {
+        func(node.children[i]);
+    }
+}
+
 /**
  * @documentation: Initiate traverse tree
  * @param {type} tree       : tree
@@ -109,7 +72,7 @@ BrowseTree.prototype._selectNode = function(node) {
  * @param {type} optional   : optional process
  * @returns {undefined}
  */
-BrowseTree.prototype.browse = function(tree, camera, process, layersConfig, optional) {
+BrowseTree.prototype.browse = function(tree, camera, process, layersConfig) {
     this.tree = tree;
 
     camera.updateMatrixWorld();
@@ -118,19 +81,13 @@ BrowseTree.prototype.browse = function(tree, camera, process, layersConfig, opti
 
     process.prepare(camera);
 
-    var action = (optional === CLEAN) ? 'clean' : 'visibility_update';
     var params = {
         tree: this.tree,
-        withUp: (optional === SUBDIVIDE),
         layersConfig: layersConfig
     };
 
     var rootNode = tree.children[0];
-
-    for (var i = 0; i < rootNode.children.length; i++) {
-        this._browse(rootNode.children[i], camera, process, action, params);
-    }
-
+    applyFunctionToChildren(n => this._browseDisplayableNode(n, camera, process, params), rootNode);
 };
 
 /**
@@ -141,53 +98,39 @@ BrowseTree.prototype.browse = function(tree, camera, process, layersConfig, opti
  * @param {type} optional   : optional process
  * @returns {undefined}
  */
-BrowseTree.prototype._browse = function(node, camera, process, action, params) {
-    switch (action) {
-        case 'visibility_update':
-            {
-                if (this.quadtreeNodeVisibilityUpdate(node, camera, process, params)) {
-                    var child_action = node.isDisplayed() ? 'hide_all' : action;
-                    for (var i = 0; i < node.children.length; i++) {
-                        this._browse(node.children[i], camera, process, child_action, params);
-                    }
-                }
-            }
-            break;
-        case 'hide_all':
-            {
-                if (node.isVisible()) {
-                    this.resetQuadtreeNode(node);
-                    node.setVisibility(!process.isCulled(node, camera));
-                    node.setDisplayed(false);
-                    for (var j = 0; j < node.children.length; j++) {
-                        this._browse(node.children[j], camera, process, action, params);
-                    }
-                }
-            }
-            break;
-        case 'clean':
-            {
-                this._clean(node, node.level + 2, process, camera);
-            }
-            break;
-        default:
-            {
-                //console.error('Unknown action ', action);
-            }
+BrowseTree.prototype._browseDisplayableNode = function(node, camera, process, params) {
+    if (node.parent.isVisible() && process.processNode(node, camera, params)) {
+        if (node.isDisplayed()) {
+            this.uniformsProcess(node, camera);
+            applyFunctionToChildren(n => this._browseNonDisplayableNode(n, node.level + 2, process, camera, params), node);
+        } else {
+            applyFunctionToChildren(n => this._browseDisplayableNode(n, camera, process, params), node);
+        }
+    } else {
+        node.setVisibility(false);
+        node.setDisplayed(false);
+
+        applyFunctionToChildren(n => this._browseNonDisplayableNode(n, node.level + 2, process, camera, params), node);
     }
 };
 
-BrowseTree.prototype._clean = function(node, level, process, camera) {
+BrowseTree.prototype._browseNonDisplayableNode = function(node, level, process, camera, params) {
     // update node's sse value
     node.sse = camera.computeNodeSSE(node);
+    node.setDisplayed(false);
 
     var sse = process.checkNodeSSE(node);
+
+    if (!sse && node.loaded) {
+        // Make sure this node is not stuck in a !loaded state
+        process.refineNodeLayers(node, camera, params);
+    }
 
     // recursively clean children
     if (node.children.length > 0) {
         var disposableChildrenCount = 0;
         for (var i = 0; i < node.children.length; i++) {
-            if (this._clean(node.children[i], level, process, camera)) {
+            if (this._browseNonDisplayableNode(node.children[i], level, process, camera, params)) {
                 disposableChildrenCount++;
             }
         }
@@ -196,7 +139,7 @@ BrowseTree.prototype._clean = function(node, level, process, camera) {
         if (disposableChildrenCount === node.children.length && !sse) {
             // remove children and update visibility
             node.disposeChildren();
-            node.setDisplayed(node.isVisible());
+            node.setDisplayed(!node.parent.isDisplayed() && node.isVisible());
         } else {
             return false;
         }
@@ -276,10 +219,10 @@ BrowseTree.prototype.updateMobileMappingLayer = function(layer, camera) {
     }
 };
 
-BrowseTree.prototype.updateQuadtree = function(layer, layersConfiguration, action, camera) {
+BrowseTree.prototype.updateQuadtree = function(layer, layersConfiguration, camera) {
     var quadtree = layer.node.tiles;
 
-    this.browse(quadtree, camera, layer.process, layersConfiguration, action);
+    this.browse(quadtree, camera, layer.process, layersConfiguration);
 };
 
-export { BrowseTree };
+export default BrowseTree;

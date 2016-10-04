@@ -15,7 +15,7 @@
 import c3DEngine from 'Renderer/c3DEngine';
 import Globe from 'Globe/Globe';
 import ManagerCommands from 'Core/Commander/ManagerCommands';
-import { BrowseTree, CLEAN, SUBDIVIDE } from 'Scene/BrowseTree';
+import BrowseTree from 'Scene/BrowseTree';
 import NodeProcess from 'Scene/NodeProcess';
 import Quadtree from 'Scene/Quadtree';
 import CoordStars from 'Core/Geographic/CoordStars';
@@ -26,7 +26,6 @@ import MobileMappingLayer from 'MobileMapping/MobileMappingLayer';
 import CustomEvent from 'custom-event';
 
 var instanceScene = null;
-var event = new CustomEvent('globe-built');
 
 
 const RENDERING_PAUSED = 0;
@@ -54,9 +53,10 @@ function Scene(coordinate, ellipsoid, viewerDiv, debugMode, gLDebug) {
     this.gfxEngine = c3DEngine(this,positionCamera,viewerDiv, debugMode,gLDebug);
     this.browserScene = new BrowseTree(this.gfxEngine);
     this.cap = new Capabilities();
-    this.lastUpdateTime = 0;
-    this.maxTimeWithNoUpdates = 200;
-    this.minCommandsBeforeUpdate = 16;
+
+    this.needsRedraw = false;
+    this.lastRenderTime = 0;
+    this.maxFramePerSec = 60;
 
     this.time = 0;
     this.orbitOn = false;
@@ -115,8 +115,22 @@ Scene.prototype.updateScene3D = function() {
 /**
  * Notifies the scene it needs to be updated due to changes exterior to the
  * scene itself (e.g. camera movement).
+ * Using a non-0 delay allows to delay update - useful to reduce CPU load for
+ * non-interactive events (e.g: texture loaded)
  */
-Scene.prototype.notifyChange = function() {
+Scene.prototype.notifyChange = function(delay) {
+    this.needsRedraw = true;
+
+    window.clearInterval(this.timer);
+
+    if (delay) {
+        this.timer = window.setTimeout(this.scheduleUpdate.bind(this), delay);
+    } else {
+        this.scheduleUpdate();
+    }
+};
+
+Scene.prototype.scheduleUpdate = function() {
     if (this.renderingState !== RENDERING_ACTIVE) {
         this.renderingState = RENDERING_ACTIVE;
 
@@ -132,12 +146,7 @@ Scene.prototype.update = function() {
             var sLayer = layer.children[sl];
 
             if (sLayer instanceof Quadtree) {
-                this.browserScene.updateQuadtree(this.layers[l], this.map.layersConfiguration, SUBDIVIDE, this.currentCamera());
-
-                if (this.managerCommand.commandsWaitingExecutionCount() == 0) {
-                    this.browserScene.updateQuadtree(this.layers[l], this.map.layersConfiguration, CLEAN, this.currentCamera());
-                    this.viewerDiv.dispatchEvent(event);
-                }
+                this.browserScene.updateQuadtree(this.layers[l], this.map.layersConfiguration, this.currentCamera());
             } else if (sLayer instanceof MobileMappingLayer) {
                 this.browserScene.updateMobileMappingLayer(sLayer,this.currentCamera());
             } else if (sLayer instanceof Layer) {
@@ -151,11 +160,34 @@ Scene.prototype.step = function() {
     // update data-structure
     this.update();
 
-    // update rendering
-    this.renderScene3D();
+    // Check if we're done (no command left).
+    // We need to make sure we didn't executed any commands because these commands
+    // might spawn other commands in a next update turn.
+    let executedDuringUpdate = this.managerCommand.resetCommandsCount('executed');
+    if (this.managerCommand.commandsWaitingExecutionCount() == 0 && executedDuringUpdate == 0) {
+        this.viewerDiv.dispatchEvent(new CustomEvent('globe-built'));
 
-    // reset rendering flag
-    this.renderingState = RENDERING_PAUSED;
+        // one last rendering before pausing
+        this.renderScene3D();
+
+        // reset rendering flag
+        this.renderingState = RENDERING_PAUSED;
+    } else {
+
+        let ts = Date.now();
+
+        // update rendering
+        if ((1000.0 / this.maxFramePerSec) < (ts - this.lastRenderTime)) {
+            // only perform rendering if needed
+            if (this.needsRedraw || executedDuringUpdate > 0) {
+                this.renderScene3D();
+                this.lastRenderTime = ts;
+                this.needsRedraw = false;
+            }
+        }
+
+        requestAnimationFrame(function() { this.step(); }.bind(this));
+    }
 };
 
 /**
