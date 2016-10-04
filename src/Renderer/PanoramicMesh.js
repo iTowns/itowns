@@ -53,10 +53,6 @@ PanoramicMesh.prototype.enableRTC = function() {
     //  this.material.enableRTC(enable);
 };
 
-PanoramicMesh.prototype.enablePickingRender = function() {
-    //  this.material.enablePickingRender(enable);
-};
-
 PanoramicMesh.prototype.setFog = function() {
     //  this.material.setFogDistance(fog);
 };

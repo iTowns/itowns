@@ -13,8 +13,6 @@ uniform int         nbTextures[8];
 uniform int         RTC;
 uniform float       periArcLati;
 uniform mat4        mVPMatRTC;
-uniform int         pickingRender;
-
 
 uniform mat4        projectionMatrix;
 uniform mat4        modelViewMatrix;
@@ -70,9 +68,6 @@ void main() {
         }
         else
             vPosition = vec4( position ,1.0 );
-
-        if(pickingRender == 1)
-            pos = modelViewMatrix * vPosition;
 
         mat4 projModelViewMatrix = (RTC == 0) ? projectionMatrix * modelViewMatrix : mVPMatRTC;
 

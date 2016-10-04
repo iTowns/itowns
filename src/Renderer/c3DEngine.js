@@ -15,62 +15,6 @@ import RendererConstant from 'Renderer/RendererConstant';
 
 var instance3DEngine = null;
 
-/*
-var step = function(val,stepVal)
-{
-    if(val<stepVal)
-        return 0.0;
-    else
-        return 1.0;
-
-};
-
-var exp2 = function(expo)
-{
-    return Math.pow(2,expo);
-};
-
-function parseFloat2(str) {
-    var float = 0, sign, order, mantiss,exp,
-    int = 0, multi = 1;
-    if (/^0x/.exec(str)) {
-        int = parseInt(str,16);
-    }else{
-        for (var i = str.length -1; i >=0; i -= 1) {
-            if (str.charCodeAt(i)>255) {
-                console.log('Wrong string parametr');
-                return false;
-            }
-            int += str.charCodeAt(i) * multi;
-            multi *= 256;
-        }
-    }
-    sign = (int>>>31)?-1:1;
-    exp = (int >>> 23 & 0xff) - 127;
-    mantissa = ((int & 0x7fffff) + 0x800000).toString(2);
-    for (i=0; i<mantissa.length; i+=1){
-        float += parseInt(mantissa[i])? Math.pow(2,exp):0;
-        exp--;
-    }
-    return float*sign;
-}
-
-var decode32 = function(rgba) {
-    var Sign = 1.0 - step(128.0,rgba[0])*2.0;
-    var Exponent = 2.0 * (rgba[0]%128.0) + step(128.0,rgba[1]) - 127.0;
-    var Mantissa = (rgba[1]%128.0)*65536.0 + rgba[2]*256.0 +rgba[3] + parseFloat2(0x800000);
-    var Result =  Sign * exp2(Exponent) * (Mantissa * exp2(-23.0 ));
-    return Result;
-};
-
-var bf = new Float32Array([1256.211]);
-var bui = new Uint8Array(bf.buffer);
-var v = new THREE.Vector4().fromArray(bui);
-v.set(v.w,v.z,v.y,v.x);
-
-console.log(decode32(v.toArray()),parseFloat2(0x800000));
-*/
-
 function c3DEngine(scene, positionCamera, viewerDiv, debugMode, gLDebug) {
 
     //Constructor
@@ -103,12 +47,16 @@ function c3DEngine(scene, positionCamera, viewerDiv, debugMode, gLDebug) {
 
     }
 
+    // TODO: verify if this.pickingTexture is used
     this.pickingTexture = new THREE.WebGLRenderTarget(this.width, this.height);
     this.pickingTexture.texture.minFilter = THREE.LinearFilter;
     this.pickingTexture.texture.generateMipmaps = false;
     this.pickingTexture.depthBuffer = true;
 
     this.renderScene = function() {
+
+        if(this.camera.camHelper())
+            this.camera.camHelper().visible = false;
 
         this.renderer.clear();
         this.renderer.setViewport(0, 0, this.width, this.height);
@@ -119,9 +67,8 @@ function c3DEngine(scene, positionCamera, viewerDiv, debugMode, gLDebug) {
             this.enableRTC(false);
             this.camera.camHelper().visible = true;
 
-            var target = this.controls.moveTarget;
+            var target = this.controls.moveTarget();
             var position = this.camera.position();
-
             var posDebug = new THREE.Vector3().subVectors(position, target);
 
             posDebug.setLength(posDebug.length() * 2.0);
@@ -130,8 +77,11 @@ function c3DEngine(scene, positionCamera, viewerDiv, debugMode, gLDebug) {
 
             this.camDebug.position.copy(posDebug);
             this.camDebug.lookAt(target);
+            this.camDebug.translateX(posDebug.length()/2);
+            this.camDebug.lookAt(target);
             this.renderer.setViewport(this.width, 0, this.width, this.height);
             this.renderer.render(this.scene3D, this.camDebug);
+
             this.enableRTC(true);
             this.camera.camHelper().visible = false;
         }
@@ -148,9 +98,10 @@ function c3DEngine(scene, positionCamera, viewerDiv, debugMode, gLDebug) {
 
     this.onWindowResize = function() {
 
-        this.width = this.debug ? this.viewerDiv.clientWidth * 0.5 : this.viewerDiv.clientWidth;
+        this.width = this.viewerDiv.clientWidth * (this.debug ? 0.5 : 1);
         this.height = this.viewerDiv.clientHeight;
         this.camera.resize(this.width, this.height);
+        this.controls.updateCamera(this.camera);
 
         if (this.camDebug) {
             this.camDebug.aspect = this.camera.ratio;
@@ -158,7 +109,7 @@ function c3DEngine(scene, positionCamera, viewerDiv, debugMode, gLDebug) {
         }
 
         this.pickingTexture.setSize(this.width, this.height);
-        this.renderer.setSize(this.width, this.height);
+        this.renderer.setSize(this.viewerDiv.clientWidth, this.height);
         this.update();
 
     }.bind(this);
@@ -177,7 +128,7 @@ function c3DEngine(scene, positionCamera, viewerDiv, debugMode, gLDebug) {
 
     if (this.debug) {
 
-        this.camDebug.position.x = -this.size * 6;
+        this.camDebug.position.x = this.size * 6;
         this.camDebug.lookAt(new THREE.Vector3(0, 0, 0));
         this.camDebug.near = this.size * 0.1;
         this.camDebug.far = this.size * 10;
@@ -212,6 +163,7 @@ function c3DEngine(scene, positionCamera, viewerDiv, debugMode, gLDebug) {
     this.renderer.setSize(viewerDiv.clientWidth, viewerDiv.clientHeight);
     this.renderer.setClearColor(0x030508);
     this.renderer.autoClear = false;
+
     //this.viewerDiv.appendChild(canvas);
     viewerDiv.appendChild(this.renderer.domElement);
 
@@ -219,14 +171,10 @@ function c3DEngine(scene, positionCamera, viewerDiv, debugMode, gLDebug) {
     // Create Control
     //
     this.controls = new GlobeControls(this.camera.camera3D, this.renderer.domElement, this);
-    this.controls.target = new THREE.Vector3(0, 0, 0);
-    this.controls.damping = 0.1;
-    this.controls.noPan = false;
     this.controls.rotateSpeed = 0.8;
     this.controls.zoomSpeed = 2.0;
     this.controls.minDistance = 30;
     this.controls.maxDistance = this.size * 8.0;
-    this.controls.keyPanSpeed = 0.01;
 
     var gl = this.renderer.context;
     var maxTexturesUnits = gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS);
@@ -249,6 +197,14 @@ function c3DEngine(scene, positionCamera, viewerDiv, debugMode, gLDebug) {
 
     window.addEventListener('resize', this.onWindowResize, false);
     this.controls.addEventListener('change', this.update);
+
+    // select
+    this.renderer.domElement.addEventListener('selectClick',function(event){
+
+        this.selectNodeAt(event.mouse);
+        this.update();
+
+    }.bind(this),false);
 
 }
 
@@ -273,15 +229,14 @@ c3DEngine.prototype.enableRTC = function(enable) {
     for (var x = 0; x < this.scene3D.children.length; x++) {
         var node = this.scene3D.children[x];
 
-        if (node.enableRTC && !(node instanceof Atmosphere))
-            node.traverseVisible(enable ? this.rtcOn.bind(this) : this.rtcOff.bind(this));
-        else
+        if(node instanceof Atmosphere)
             node.visible = enable;
+        else if (node.enableRTC)
+            node.traverseVisible(enable ? this.rtcOn.bind(this) : this.rtcOff.bind(this));
 
     }
 
 };
-
 
 /**
  * change state all visible nodes
@@ -323,14 +278,7 @@ c3DEngine.prototype.rtcOff = function(obj3D) {
     obj3D.enableRTC(false);
     obj3D.matrixWorldNeedsUpdate = true;
     obj3D.matrixAutoUpdate = true;
-};
 
-c3DEngine.prototype.pickingOn = function(obj3D) {
-    obj3D.enablePickingRender(true);
-};
-
-c3DEngine.prototype.pickingOff = function(obj3D) {
-    obj3D.enablePickingRender(false);
 };
 
 /**
@@ -566,7 +514,7 @@ c3DEngine.prototype.getPickingPositionFromDepth = function() {
     var ray = new THREE.Ray();
     var depthRGBA = new THREE.Vector4();
 
-    return function getPickingPositionFromDepth(mouse) {
+    return function(mouse) {
 
         if (mouse === undefined)
             mouse = new THREE.Vector2(Math.floor(this.width / 2), Math.floor(this.height / 2));
@@ -657,7 +605,7 @@ c3DEngine.prototype.setLightingOn = function(value) {
     this.lightingOn = value;
 };
 
-export default function(scene, positionCamera, debugMode, gLDebug) {
-    instance3DEngine = instance3DEngine || new c3DEngine(scene, positionCamera, debugMode, gLDebug);
+export default function(scene, positionCamera, viewerDiv, debugMode, gLDebug) {
+    instance3DEngine = instance3DEngine || new c3DEngine(scene, positionCamera, viewerDiv, debugMode, gLDebug);
     return instance3DEngine;
 }

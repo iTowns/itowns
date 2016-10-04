@@ -13,8 +13,6 @@
  *
  */
 
-
-
 import Provider from 'Core/Commander/Providers/Provider';
 import Projection from 'Core/Geographic/Projection';
 import TileGeometry from 'Globe/TileGeometry';
@@ -41,10 +39,10 @@ TileProvider.prototype.constructor = TileProvider;
 
 TileProvider.prototype.preprocessLayer = function( /*layer*/ ) {
     /* no-op */
-}
+};
 
 TileProvider.prototype.getGeometry = function(bbox, cooWMTS) {
-    var geometry = undefined;
+    var geometry;
     var n = Math.pow(2, cooWMTS.zoom + 1);
     var part = Math.PI * 2.0 / n;
 
@@ -75,7 +73,7 @@ TileProvider.prototype.executeCommand = function(command) {
     var parent = command.requester;
 
     // build tile
-    var geometry = undefined; //getGeometry(bbox,tileCoord);
+    var geometry; //getGeometry(bbox,tileCoord);
 
     var params = {
         bbox: bbox,
@@ -83,7 +81,7 @@ TileProvider.prototype.executeCommand = function(command) {
         segment: 16,
         center: null,
         projected: null
-    }
+    };
 
     var tile = new command.type(params, this.builder);
 
