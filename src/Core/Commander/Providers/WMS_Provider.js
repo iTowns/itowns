@@ -10,7 +10,7 @@ import IoDriver_XBIL from 'Core/Commander/Providers/IoDriver_XBIL';
 import IoDriver_Image from 'Core/Commander/Providers/IoDriver_Image';
 import IoDriverXML from 'Core/Commander/Providers/IoDriverXML';
 import defaultValue from 'Core/defaultValue';
-import THREE from 'THREE';
+import * as THREE from 'THREE';
 import Projection from 'Core/Geographic/Projection';
 import CacheRessource from 'Core/Commander/Providers/CacheRessource';
 import mE from 'Core/Math/MathExtented';

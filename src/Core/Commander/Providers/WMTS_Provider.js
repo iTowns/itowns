@@ -11,7 +11,7 @@ import CoordWMTS from 'Core/Geographic/CoordWMTS';
 import IoDriver_XBIL from 'Core/Commander/Providers/IoDriver_XBIL';
 import IoDriver_Image from 'Core/Commander/Providers/IoDriver_Image';
 import IoDriverXML from 'Core/Commander/Providers/IoDriverXML';
-import THREE from 'THREE';
+import * as THREE from 'THREE';
 import CacheRessource from 'Core/Commander/Providers/CacheRessource';
 
 function WMTS_Provider(options) {

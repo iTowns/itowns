@@ -16,7 +16,7 @@
 // TODO , will use WFS_Provider
 import Provider from 'Core/Commander/Providers/Provider';
 import WFS_Provider from 'Core/Commander/Providers/WFS_Provider';
-import THREE from 'THREE';
+import * as THREE from 'THREE';
 import Ellipsoid from 'Core/Math/Ellipsoid';
 import GeoCoordinate,{UNIT} from 'Core/Geographic/GeoCoordinate';
 import CVML from 'Core/Math/CVML';

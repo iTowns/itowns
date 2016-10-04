@@ -15,7 +15,6 @@ import InterfaceCommander from 'Core/Commander/InterfaceCommander';
 import Quad from 'Core/Geographic/Quad';
 import NodeMesh from 'Renderer/NodeMesh';
 
-
 function commandQueuePriorityFunction(cmd) {
     var node = cmd.requester;
 
@@ -61,7 +60,6 @@ function Quadtree(type, schemeTile, link) {
 
     this.add(rootNode);
 }
-
 
 Quadtree.prototype = Object.create(Layer.prototype);
 

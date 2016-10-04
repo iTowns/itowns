@@ -6,7 +6,7 @@
 
 
 import NodeMesh from 'Renderer/NodeMesh';
-import THREE from 'THREE';
+import * as THREE from 'THREE';
 import defaultValue from 'Core/defaultValue';
 import WMS_Provider from 'Core/Commander/Providers/WMS_Provider';
 import CloudsFS from 'Renderer/Shader/CloudsFS.glsl';

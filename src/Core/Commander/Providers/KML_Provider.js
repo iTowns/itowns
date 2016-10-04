@@ -7,7 +7,7 @@
 
 import Provider from 'Core/Commander/Providers/Provider';
 import IoDriverXML from 'Core/Commander/Providers/IoDriverXML';
-import THREE from 'THREE';
+import * as THREE from 'THREE';
 import KMZLoader from 'Renderer/ThreeExtented/KMZLoader';
 import BasicMaterial from 'Renderer/BasicMaterial';
 

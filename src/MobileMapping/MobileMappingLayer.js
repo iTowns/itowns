@@ -5,7 +5,7 @@
  */
 
 import Layer from 'Scene/Layer';
-import THREE from 'THREE';
+import * as THREE from 'THREE';
 import gfxEngine from 'Renderer/c3DEngine';
 import Projection from 'Core/Geographic/Projection';
 import PanoramicProvider from 'Core/Commander/Providers/PanoramicProvider';
