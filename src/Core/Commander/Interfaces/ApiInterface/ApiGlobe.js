@@ -91,7 +91,7 @@ ApiGlobe.prototype.addImageryLayer = function(layer) {
 };
 
 ApiGlobe.prototype.addFeatureLayer = function(layer) {
-    
+
     preprocessLayer(layer, this.scene.managerCommand.getProtocolProvider(layer.protocol));
 
     var map = this.scene.getMap();

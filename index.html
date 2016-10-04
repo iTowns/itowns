@@ -458,8 +458,9 @@ and open the template in the editor.
                 highlight  : true
         };
                                 
-        itowns.viewer.addFeature(feature);                        
-
+        itowns.viewer.addFeature(feature); 
+        //var Position = itowns.viewer.pickPosition();
+        itowns.viewer.pickFeature({x : 400, y : 400}, "testwfs");
         //Feature layers used fot tests purpose
 //        itowns.viewer.addFeatureLayer({
 //                                        id          : 'testWfsPoint',
