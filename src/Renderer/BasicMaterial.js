@@ -85,6 +85,7 @@ BasicMaterial.prototype = Object.create(THREE.RawShaderMaterial.prototype);
 BasicMaterial.prototype.constructor = BasicMaterial;
 
 BasicMaterial.prototype.enableRTC = function(enable) {
+
     this.uniforms.RTC.value = enable === true ? 1 : 0;
 };
 
