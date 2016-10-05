@@ -139,9 +139,9 @@ Node.prototype.add = function(child) {
  *
  * @param child {[object Object]}
  */
-Node.prototype.remove = function( id ) {
+Node.prototype.remove = function( /*id*/ ) {
     //TODO: Implement Me
-    this.children.splice(id, 1);
+    //this.children.splice(id, 1);
 };
 
 

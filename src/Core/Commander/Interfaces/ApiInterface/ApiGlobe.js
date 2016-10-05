@@ -206,7 +206,7 @@ ApiGlobe.prototype.pickFeature = function(Position, layerId){
 ApiGlobe.prototype.removeFeature = function(featureId, layerId){
     var map = this.scene.getMap();
     var layer = map.getFeatureLayerByName(layerId);
-    layer.remove(featureId);
+    layer.removeFeature(featureId);
 };
 
 

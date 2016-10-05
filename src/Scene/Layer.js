@@ -42,6 +42,11 @@ Layer.prototype.getName = function(){
     return this.name;
 };
 
+Layer.prototype.removeFeature = function(id){
+    this.children[0].children.splice(id,1);    
+};
+
+
 // Should be plural as it return an array of meshes
 Layer.prototype.getMesh = function() {
     var meshs = [];
