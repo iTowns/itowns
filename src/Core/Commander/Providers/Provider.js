@@ -9,7 +9,7 @@ function Provider(iodriver) {
 
     this.type = null;
     this._IoDriver = iodriver;
-
+    this.tileMatriceSets = {};
 }
 
 Provider.prototype.constructor = Provider;
@@ -22,13 +22,21 @@ Provider.prototype.get = function( /*url*/ ) {
 
 };
 
+Provider.prototype.addTileMatrixSets = function(v) {
+    this.tileMatriceSets[v.id] = v;
+};
+
+Provider.prototype.getTileMatrixSets = function(id) {
+    return this.tileMatriceSets[id];
+};
+
 /**
  * preprocessLayer will be called each time a layer is added.
  * Allows the Provider to perform precomputations on the layer
  */
 Provider.prototype.preprocessLayer = function( /*layer*/ ) {
 
-}
+};
 
 /**
  * @param url

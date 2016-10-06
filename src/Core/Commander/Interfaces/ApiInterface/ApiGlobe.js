@@ -173,13 +173,14 @@ ApiGlobe.prototype.getMinZoomLevel = function(id) {
  * @param {id} id - The id of the layer.
  */
 
-ApiGlobe.prototype.addTileMatrixSet = function(params){
-    var map = this.scene.getMap();
-    var colorLayers =  map.layersConfiguration.getColorLayers();
-    console.log(colorLayers[0]);
+ApiGlobe.prototype.addTileMatrixSet = function(options){
+    var provider = this.scene.managerCommand.getProtocolProvider("wmts");
+        provider.addTileMatrixSets(options);
 };
 
-ApiGlobe.prototype.getTileMatrixSet = function(/*params*/){
+ApiGlobe.prototype.getTileMatrixSet = function(id){
+    var provider = this.scene.managerCommand.getProtocolProvider("wmts");
+    return provider.getTileMatrixSets(id);
 };
 
 ApiGlobe.prototype.addFeature = function(options){
