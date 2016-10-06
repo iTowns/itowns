@@ -6,9 +6,10 @@
 
 import THREE 					from 'THREE';
 import CVML 					from 'Core/Math/CVML';
+import BoundingBox      		from 'Scene/BoundingBox';
 import Ellipsoid 				from 'Core/Math/Ellipsoid';
 import GeoCoordinate, {UNIT}	from 'Core/Geographic/GeoCoordinate';
-import BasicMaterial from 'Renderer/BasicMaterial';
+
 function FeatureToolBox() {
 	this.size       = {x:6378137,y: 6356752.3142451793,z:6378137};
     this.ellipsoid  = new Ellipsoid(this.size);
@@ -226,13 +227,22 @@ FeatureToolBox.prototype.computeLineBorderPoints = function(pt1, pt2, isFirstPt,
 /**
  * Process the data received from a WFS request with a tile of feature type 'Line'.
  * Can be used whe the type of the feature tile is a Grid and not a quadTree
- * @param value: the JSON object which contains the data received from the WFS request
- * @param geometry: the geometry used to set the tile geometry
+ * @param features: the data received as JSON inside a tab
+ * @param box: 		the tile bounding box (rad)
+ * @param layer: 	the current layer with specific parameters
  */
-FeatureToolBox.prototype.GeoJSON2Line = function(features, bbox, geometry, layer) {
+FeatureToolBox.prototype.GeoJSON2Line = function(features, box, layer) {
+    var bbox = new BoundingBox( box.west()  * 180.0 / Math.PI,
+								box.east()  * 180.0 / Math.PI,
+								box.south() * 180.0 / Math.PI,
+								box.north() * 180.0 / Math.PI,
+								box.bottom(), box.top());
+    var minLong  = bbox.west(), maxLong = bbox.east(), minLat  = bbox.south(),  maxLat  = bbox.north();
+    var geometry = new THREE.Geometry();
+
     for (var i = 0; i < features.length; i++) {
-        var feature     = features[i];
-        var coords      = feature.geometry.coordinates;
+        var feature = features[i];
+        var coords  = feature.geometry.coordinates;
 
         var j = 0;
         var inTile = false;
@@ -243,7 +253,6 @@ FeatureToolBox.prototype.GeoJSON2Line = function(features, bbox, geometry, layer
             var c_1 = coords[j - 1], c = coords[j], cX = c[0], cY = c[1], c1  = coords[j + 1];
             if(c_1 != undefined) var c_1X = c_1[0], c_1Y = c_1[1];
             if(c1 != undefined)  var c1X  = c1[0],  c1Y  = c1[1];
-            var minLong = bbox.west(), maxLong = bbox.east(), minLat  = bbox.south(),  maxLat  = bbox.north();
 
             if (cX < minLong || cX > maxLong || cY < minLat || cY > maxLat) {
                 var coeffSlope, rest;
@@ -296,15 +305,20 @@ FeatureToolBox.prototype.GeoJSON2Line = function(features, bbox, geometry, layer
             }
         }
     }
+    return geometry;
 };
 
 /**
  * Create the entire geometry of the object passed in. Is use to create feature geometry
  * like points or boxes.
- * @param value: the JSON object which contains the data received from the WFS request
- * @param geometry: the geometry used to set the tile geometry
+ * @param features: the data received as JSON inside a tab
+ * @param bbox:  	the tile bounding box (rad)
+ * @param type:  	the type of mesh for this layer
+ * @param layer: 	the current layer with specific parameters
+ * @param node: 	the current node
  */
-FeatureToolBox.prototype.GeoJSON2Point = function(features, bbox, geometry, type, layer, node) {
+FeatureToolBox.prototype.GeoJSON2Point = function(features, bbox, type, layer, node) {
+    var geometry = new THREE.Geometry();
     for (var i = 0; i < features.length; i++) {
         var feature = features[i];
         var coords = feature.geometry.coordinates;
@@ -313,14 +327,13 @@ FeatureToolBox.prototype.GeoJSON2Point = function(features, bbox, geometry, type
         var normalGlobe = this.ellipsoid.geodeticSurfaceNormalCartographic(geoCoord);
         var centerPoint = this.ellipsoid.cartographicToCartesian(geoCoord);
 
-        var currentGeometry;
-        //Change the type of height and radius computation. Used only for the test purpose
-
+        //Change the type of height and radius computation.
         if(layer.params && layer.params.retail) {
             type = layer.params.retail(centerPoint, type, new THREE.Vector3());
             node.retailType = layer.params.getRetailType();
         }
 
+        var currentGeometry;
         var params = layer.params;
         if(type == 'box')
             currentGeometry = new THREE.BoxGeometry(params.boxWidth || 40, params.boxWidth || 40, params.boxHeight || 80);
@@ -337,13 +350,14 @@ FeatureToolBox.prototype.GeoJSON2Point = function(features, bbox, geometry, type
 
         geometry.merge(currentGeometry);
     }
+    return geometry;
 };
 
 /**
  * Manage to put the colors inside the color manager for a feature type 'Point'.
  * @param properties: properties of the feature
- * @param color : manager of the color of a face
- * @params tileParams: the tile to which apply the geometry
+ * @param color: 	  manager of the color of a face
+ * @params layer: 	  the current layer with specific parameters
  */
 FeatureToolBox.prototype.manageColor = function(properties, color, layer) {
     var colorParams = layer.params.color || undefined;
@@ -474,14 +488,14 @@ FeatureToolBox.prototype.processingGeoJSON = function(json) {
     var geometry = new THREE.Geometry();
     var bpoint = true;
     for (var nFeature = 0; nFeature < jsonFeatures.length; nFeature++) {
-	var point_num, segment_num;
+	var point_num, segment_num, vertex;
         if (jsonFeatures[nFeature].type == 'Point') {
-            var vertex = this.convertLonLatToWGS84(jsonFeatures[nFeature].coordinates);
+            vertex = this.convertLonLatToWGS84(jsonFeatures[nFeature].coordinates);
             geometry.vertices.push(vertex);
         }
         else if (jsonFeatures[nFeature].type == 'MultiPoint') {
             for (point_num = 0; point_num < jsonFeatures[nFeature].coordinates.length; point_num++) {
-                var vertex = this.convertLonLatToWGS84(jsonFeatures[nFeature].coordinates[point_num]);
+                vertex = this.convertLonLatToWGS84(jsonFeatures[nFeature].coordinates[point_num]);
                 geometry.vertices.push(vertex);
             }
 
@@ -490,10 +504,10 @@ FeatureToolBox.prototype.processingGeoJSON = function(json) {
             coordinate_array = this.createCoordinateArray(jsonFeatures[nFeature].coordinates);
 
             for (point_num = 0; point_num < coordinate_array.length; point_num++) {
-                var vertex = this.convertLonLatToWGS84(coordinate_array[point_num]);
+                vertex = this.convertLonLatToWGS84(coordinate_array[point_num]);
                  geometry.vertices.push(vertex);
             }
-            
+
             bpoint = false;
         }
 
@@ -502,7 +516,7 @@ FeatureToolBox.prototype.processingGeoJSON = function(json) {
                 coordinate_array = this.createCoordinateArray(jsonFeatures[nFeature].coordinates[segment_num]);
 
                 for (point_num = 0; point_num < coordinate_array.length; point_num++) {
-                    var vertex = this.convertLonLatToWGS84(coordinate_array[point_num]);
+                    vertex = this.convertLonLatToWGS84(coordinate_array[point_num]);
                     geometry.vertices.push(vertex);
                 }
             }
@@ -513,11 +527,11 @@ FeatureToolBox.prototype.processingGeoJSON = function(json) {
                 coordinate_array = this.createCoordinateArray(jsonFeatures[nFeature].coordinates[segment_num]);
 
                 for (point_num = 0; point_num < coordinate_array.length; point_num++) {
-                    var vertex = this.convertLonLatToWGS84(coordinate_array[point_num]);
+                    vertex = this.convertLonLatToWGS84(coordinate_array[point_num]);
                     geometry.vertices.push(vertex);
                 }
             }
-            
+
             bpoint = false;
         }
         else if (jsonFeatures[nFeature].type == 'MultiPolygon') {
@@ -526,7 +540,7 @@ FeatureToolBox.prototype.processingGeoJSON = function(json) {
                     coordinate_array = this.createCoordinateArray(jsonFeatures[nFeature].coordinates[polygon_num][segment_num]);
 
                     for (point_num = 0; point_num < coordinate_array.length; point_num++) {
-                        var vertex = this.convertLonLatToWGS84(coordinate_array[point_num]);
+                        vertex = this.convertLonLatToWGS84(coordinate_array[point_num]);
                         geometry.vertices.push(vertex);
                     }
                 }
@@ -537,13 +551,14 @@ FeatureToolBox.prototype.processingGeoJSON = function(json) {
         }
     }
 
+    var material;
     if(!bpoint){
-                var material = new THREE.LineBasicMaterial({color : 0xff0000});
-                return new THREE.Line(geometry, material);
+        material = new THREE.LineBasicMaterial({color : 0xff0000});
+        return new THREE.Line(geometry, material);
     }else{
-                var material = new THREE.PointsMaterial({color : 0xff0000, size : 100});
-                return new THREE.Points(geometry, material);
-    }            
+        material = new THREE.PointsMaterial({color : 0xff0000, size : 100});
+        return new THREE.Points(geometry, material);
+    }
 
 };
 

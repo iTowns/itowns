@@ -29,8 +29,6 @@ function FeatureMesh(params, builder) {
 
 	this.updateGeometry = true;
 	this.cullable = true;
-
-	this.protocol = params.protocol;
 }
 
 FeatureMesh.prototype = Object.create(NodeMesh.prototype);

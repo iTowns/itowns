@@ -43,7 +43,7 @@ Layer.prototype.getName = function(){
 };
 
 Layer.prototype.removeFeature = function(id){
-    this.children[0].children.splice(id,1);    
+    this.children[0].children.splice(id,1);
 };
 
 

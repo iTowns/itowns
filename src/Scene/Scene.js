@@ -87,16 +87,16 @@ Scene.prototype.getPickPosition = function(mouse) {
 };
 
 Scene.prototype.getPickFeature = function(Position, Layer){
-    var mouse = new THREE.Vector2(); 
+    var mouse = new THREE.Vector2();
        //calculate mouse position in normalized device coordinates
        // (-1 to +1) for both components
 	mouse.x = ( Position.x / window.innerWidth ) * 2 - 1;
-	mouse.y = - ( Position.y / window.innerHeight ) * 2 + 1;	
-    
+	mouse.y = - ( Position.y / window.innerHeight ) * 2 + 1;
+
     var raycaster = new THREE.Raycaster();
     var camera = this.currentCamera().camera3D;
-        raycaster.setFromCamera(mouse, camera );	
-        
+        raycaster.setFromCamera(mouse, camera );
+
     // calculate objects intersecting the picking ray
     return raycaster.intersectObjects(Layer.children[0]);
 }

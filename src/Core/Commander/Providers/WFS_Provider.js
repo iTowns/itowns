@@ -90,13 +90,13 @@ WFS_Provider.prototype.executeCommand = function(command) {
 
     //TODO : support xml, gml2, geojson
     var supportedFormats = {
-        json:    this.tool.getFeatures.bind(this),
-        geojson: this.tool.getFeatures.bind(this)
+        json:    this.getFeatures.bind(this),
+        geojson: this.getFeatures.bind(this)
     };
 
     var func = supportedFormats[layer.format];
     if (func) {
-        return func(tile, layer, command.paramsFunction, command.requester).then(function(result) {
+        return func(tile, layer, command.paramsFunction).then(function(result) {
             return command.resolve(result);
         });
     } else {
@@ -104,7 +104,7 @@ WFS_Provider.prototype.executeCommand = function(command) {
     }
 };
 
-FeatureToolBox.prototype.getFeatures = function(tile, layer, parameters, parent) {
+WFS_Provider.prototype.getFeatures = function(tile, layer, parameters) {
     if (!this.tileInsideLimit(tile,layer) || tile.material === null)
         return Promise.resolve();
 
@@ -114,62 +114,54 @@ FeatureToolBox.prototype.getFeatures = function(tile, layer, parameters, parent)
     var bbox = parameters.ancestor ?
                 parameters.ancestor.bbox :
                 tile.bbox;
-    var url, geometry, params, builder, mesh;
-
-    if (layer.type == "point" || layer.type == "line" || layer.type == "box"){
+    var url;
+    if (layer.type == "point" || layer.type == "line" || layer.type == "box")
         url = this.tmpUrl(bbox, layer);
-        geometry = new THREE.Geometry();
-        params   = {bbox: bbox, level: parent.level + 1, segment:16, center:null, projected:null, protocol: parent.protocol};
-        builder  = new BuilderEllipsoidTile(this.tool.ellipsoid, this.projection);
-        mesh     = new FeatureMesh(params, builder);
-    }
     else
         url = this.url(bbox, layer);
 
-    var result = {pitch: pitch };
+    var result = { pitch: pitch };
     result.feature = this.cache.getRessource(url);
 
-    if(result.feature != undefined)
-        mesh = result.feature;
-
-    //To uncomment for the true test with the buildings
-    /*if (result.feature !== undefined)
-        return Promise.resolve(result);*/
+    if (result.feature != undefined && layer.params.retail == undefined)
+        return Promise.resolve(result);
 
     return this._IoDriver.read(url).then(function(feature) {
         if(feature.crs || layer.crs) {
             var features = feature.features;
-
             if(layer.type == "poly")
                 result.feature = this.tool.GeoJSON2Polygon(features);
             else if(layer.type == "bbox")
                 result.feature = this.tool.GeoJSON2Box(features);
-            else if((mesh.currentType == undefined && (layer.type == "point" || layer.type == "box"))
-                        || mesh.currentType == "point" || mesh.currentType == "box"){
-                var type = mesh.currentType || layer.type;
-                this.tool.GeoJSON2Point(features, bbox, geometry, type, layer, tile);
-                mesh.setGeometry(geometry);
-                if(mesh.currentType === undefined)
-                    mesh.currentType = layer.type;
-                result.feature = mesh;
-            } else if(layer.type == "line"){
-                var tmpBbox = new BoundingBox(  bbox.west()  * 180.0 / Math.PI,
-                                                bbox.east()  * 180.0 / Math.PI,
-                                                bbox.south() * 180.0 / Math.PI,
-                                                bbox.north() * 180.0 / Math.PI,
-                                                bbox.bottom(), bbox.top());
-                this.tool.GeoJSON2Line(features, tmpBbox, geometry, layer);
-                mesh.setGeometry(geometry);
+            else {
+                var geometry, mesh;
+                if(result.feature != undefined)
+                    mesh = result.feature;
+                else{
+                    var builder  = new BuilderEllipsoidTile(this.tool.ellipsoid, this.projection);
+                    mesh = new FeatureMesh({ bbox: bbox }, builder);
+                }
+                if((mesh.currentType == undefined && (layer.type == "point" || layer.type == "box"))
+                        || mesh.currentType == "point" || mesh.currentType == "box") {
+                    geometry = this.tool.GeoJSON2Point(features, bbox, mesh.currentType || layer.type, layer, tile);
+                    mesh.setGeometry(geometry);
+                    if(mesh.currentType === undefined)
+                        mesh.currentType = layer.type;
+                } else if(layer.type == "line") {
+                    geometry = this.tool.GeoJSON2Line(features, bbox, layer);
+                    mesh.setGeometry(geometry);
+                } else
+                    return result;
                 result.feature = mesh;
             }
-            //Is needed to do another request for the retail level change
-            if(result.feature.layer == null)
-                result.feature.layer = layer;
 
-            if (result.feature !== undefined)
+            if (result.feature !== undefined){
+                //Is needed to do another request for the retail level change
+                if(result.feature.layer == null)
+                    result.feature.layer = layer;
                 this.cache.addRessource(url, result.feature);
+            }
         }
-
         return result;
     }.bind(this)).catch(function(/*reason*/) {
             result.feature = null;

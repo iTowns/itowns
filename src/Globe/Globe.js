@@ -244,7 +244,7 @@ Globe.prototype.getFeatureLayerByName = function(name){
 
 Globe.prototype.createFeatureLayer = function(name){
     var featureLayer = new Layer();
-        featureLayer.setName(name)
+        featureLayer.setName(name);
     var dataLayer = new THREE.Object3D();
         featureLayer.add(dataLayer);
     this.add(featureLayer);
@@ -261,7 +261,7 @@ Globe.prototype.addFeature = function(options){
     if((layerId != undefined) && (options.geometry != undefined) && (layer != undefined)){
            var object  = tool.processingGeoJSON(options.geometry);
            layer.children[0].add(object);
-    }       
+    }
 };
 
 

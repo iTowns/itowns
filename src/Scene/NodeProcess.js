@@ -218,7 +218,7 @@ function findAncestorWithValidTextureForLayer(node, layerId) {
     } else {
         return null;
     }
-};
+}
 
 
 function updateNodeFeature(quadtree, node, featureLayers) {
@@ -251,9 +251,7 @@ function updateNodeFeature(quadtree, node, featureLayers) {
             }
         }
     }
-};
-
-
+}
 
 
 function updateNodeImagery(quadtree, node, colorLayers) {

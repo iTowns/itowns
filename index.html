@@ -467,88 +467,88 @@ and open the template in the editor.
         //itowns.viewer.removeFeature(0, "testwfs");
                 
         //Feature layers used fot tests purpose
-//        itowns.viewer.addFeatureLayer({
-//                                        id          : 'testWfsPoint',
-//                                        protocol    : "wfs",
-//                                        url         : 'https://download.data.grandlyon.com/wfs/rdata?',
-//                                        title       : 'jcd_jcdecaux.jcdvelov',
-//                                        crs         : 'EPSG:4326',
-//                                        type        : 'point',
-//                                        version     : '2.0.0',
-//                                        options: {
-//                                            mimetype  : "geojson",
-//                                            tileMatrixSet: 'WGS84G'
-//                                        },
-//                                        params: {
-//                                            color: {
-//                                                property: 'availability',
-//                                                testTab : ['Vert', 'Orange', 'Bleu', 'Gris'],
-//                                                colorTab: [0x339933, 0xFF9900, 0x3399FF, 0x888888]
-//                                            },
-//                                            heightParam : 'pop_rank',
-//                                            nbSegment   : 8,
-//                                            level: 14,
-//                                            // Test of retail change on a specified area (box area define by 2 angles : min and max)
-//                                            // Warning: the type of coordinates used are CARTESIAN
-//                                            retail: function(point, type, v) {
-//                                                if(controlText.retailType == 'box') {
-//                                                    var box = [];
-//                                                    if(controlText.minX < controlText.maxX)
-//                                                        box.push(controlText.minX, controlText.maxX);
-//                                                    else
-//                                                        box.push(controlText.maxX, controlText.minX);
-//                                                    if(controlText.minY < controlText.maxY)
-//                                                        box.push(controlText.minY, controlText.maxY);
-//                                                    else
-//                                                        box.push(controlText.maxY, controlText.minY);
-//                                                    if(controlText.minZ < controlText.maxZ)
-//                                                        box.push(controlText.minZ, controlText.maxZ);
-//                                                    else
-//                                                        box.push(controlText.maxZ, controlText.minZ);
-//                                                    if (point.x > box[0] && point.x < box[1] &&
-//                                                        point.y > box[2] && point.y < box[3] &&
-//                                                        point.z > box[4] && point.z < box[5])
-//                                                        type = 'box';
-//                                                    else
-//                                                        type = 'point';
-//                                                } else if (controlText.retailType == 'circle') {
-//                                                    var center = [controlText.centerX, controlText.centerY, controlText.centerZ];
-//                                                    var radius = controlText.radius;
-//                                                    v.set(point.x - center[0], point.y - center[1], point.z - center[2]);
-//                                                    if(v.length() < radius)
-//                                                        type = 'box';
-//                                                    else
-//                                                        type = 'point';
-//                                                    return type;
-//                                                }
-//                                                return type;
-//                                            },
-//                                            getRetailType: function() { return controlText.retailType; },
-//                                            getForceUpdate: function() {return controlText.force; }
-//                                        }
-//        });
+       itowns.viewer.addFeatureLayer({
+                                       id          : 'testWfsPoint',
+                                       protocol    : "wfs",
+                                       url         : 'https://download.data.grandlyon.com/wfs/rdata?',
+                                       title       : 'jcd_jcdecaux.jcdvelov',
+                                       crs         : 'EPSG:4326',
+                                       type        : 'point',
+                                       version     : '2.0.0',
+                                       options: {
+                                           mimetype  : "geojson",
+                                           tileMatrixSet: 'WGS84G'
+                                       },
+                                       params: {
+                                           color: {
+                                               property: 'availability',
+                                               testTab : ['Vert', 'Orange', 'Bleu', 'Gris'],
+                                               colorTab: [0x339933, 0xFF9900, 0x3399FF, 0x888888]
+                                           },
+                                           heightParam : 'pop_rank',
+                                           nbSegment   : 8,
+                                           level: 14,
+                                           // Test of retail change on a specified area (box area define by 2 angles : min and max)
+                                           // Warning: the type of coordinates used are CARTESIAN
+                                           retail: function(point, type, v) {
+                                               if(controlText.retailType == 'box') {
+                                                   var box = [];
+                                                   if(controlText.minX < controlText.maxX)
+                                                       box.push(controlText.minX, controlText.maxX);
+                                                   else
+                                                       box.push(controlText.maxX, controlText.minX);
+                                                   if(controlText.minY < controlText.maxY)
+                                                       box.push(controlText.minY, controlText.maxY);
+                                                   else
+                                                       box.push(controlText.maxY, controlText.minY);
+                                                   if(controlText.minZ < controlText.maxZ)
+                                                       box.push(controlText.minZ, controlText.maxZ);
+                                                   else
+                                                       box.push(controlText.maxZ, controlText.minZ);
+                                                   if (point.x > box[0] && point.x < box[1] &&
+                                                       point.y > box[2] && point.y < box[3] &&
+                                                       point.z > box[4] && point.z < box[5])
+                                                       type = 'box';
+                                                   else
+                                                       type = 'point';
+                                               } else if (controlText.retailType == 'circle') {
+                                                   var center = [controlText.centerX, controlText.centerY, controlText.centerZ];
+                                                   var radius = controlText.radius;
+                                                   v.set(point.x - center[0], point.y - center[1], point.z - center[2]);
+                                                   if(v.length() < radius)
+                                                       type = 'box';
+                                                   else
+                                                       type = 'point';
+                                                   return type;
+                                               }
+                                               return type;
+                                           },
+                                           getRetailType: function() { return controlText.retailType; },
+                                           getForceUpdate: function() {return controlText.force; }
+                                       }
+       });
 
-//        itowns.viewer.addFeatureLayer({
-//                                        id          : 'testWfsLine',
-//                                        protocol    : "wfs",
-//                                        url         : 'https://download.data.grandlyon.com/wfs/rdata?',
-//                                        title       : 'tcl_sytral.tcllignemf',
-//                                        crs         : 'EPSG:4326',
-//                                        type        : 'line',
-//                                        version   : '2.0.0',
-//                                        options: {
-//                                            mimetype  : "geojson",
-//                                            tileMatrixSet: 'WGS84G'
-//                                        },
-//                                        params: {
-//                                            color: {
-//                                                property: 'ligne',
-//                                                testTab : ['A', 'B', 'C', 'D', 'F1', 'F2'],
-//                                                colorTab: [0x225599, 0x5599ff, 0x147845, 0xFF5577, 0xAAFF44, 0xD7F458]
-//                                            },
-//                                            level: 15
-//                                        }
-//        });
+       itowns.viewer.addFeatureLayer({
+                                       id          : 'testWfsLine',
+                                       protocol    : "wfs",
+                                       url         : 'https://download.data.grandlyon.com/wfs/rdata?',
+                                       title       : 'tcl_sytral.tcllignemf',
+                                       crs         : 'EPSG:4326',
+                                       type        : 'line',
+                                       version   : '2.0.0',
+                                       options: {
+                                           mimetype  : "geojson",
+                                           tileMatrixSet: 'WGS84G'
+                                       },
+                                       params: {
+                                           color: {
+                                               property: 'ligne',
+                                               testTab : ['A', 'B', 'C', 'D', 'F1', 'F2'],
+                                               colorTab: [0x225599, 0x5599ff, 0x147845, 0xFF5577, 0xAAFF44, 0xD7F458]
+                                           },
+                                           level: 15
+                                       }
+       });
 
         itowns.viewer.addElevationLayer({
             protocol:   "wmts",
