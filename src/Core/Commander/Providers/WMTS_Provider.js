@@ -74,6 +74,13 @@ WMTS_Provider.prototype.preprocessDataLayer = function(layer) {
     } else {
 
         var options = layer.options;
+        
+        //switch tileMatrixSet
+        var tileMatrixSetId = options.tileMatrixSet;     
+        var tileMatrixSet   = this.getTileMatrixSets(tileMatrixSetId);
+        if((tileMatrixSet != undefined) && ((tileMatrixSetId != "PM") || (tileMatrixSetId != "WGS84G"))){
+            options.tileMatrixSet = tileMatrixSet.tileMatrixSet;
+        }
         var newBaseUrl = layer.url +
             "?LAYER=" + options.name +
             "&FORMAT=" + options.mimetype +
