@@ -28,7 +28,7 @@ Provider.prototype.get = function( /*url*/ ) {
  */
 Provider.prototype.preprocessLayer = function( /*layer*/ ) {
 
-}
+};
 
 /**
  * @param url

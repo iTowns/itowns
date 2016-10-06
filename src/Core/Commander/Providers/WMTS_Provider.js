@@ -26,6 +26,8 @@ function WMTS_Provider(options) {
     this.arrayLimits = null;
     this.getTextureFloat;
 
+    this.tileMatriceSets = {};
+
     if (this.support)
         this.getTextureFloat = function() {
             return new THREE.Texture();
@@ -63,6 +65,14 @@ WMTS_Provider.prototype.removeLayer = function( /*idLayer*/ ) {
 
 }
 
+WMTS_Provider.prototype.addTileMatrixSets = function(v) {
+    this.tileMatriceSets[v.id] = v;
+};
+
+WMTS_Provider.prototype.getTileMatrixSets = function(id) {
+    return this.tileMatriceSets[id];
+};
+
 WMTS_Provider.prototype.preprocessDataLayer = function(layer) {
     layer.fx = layer.fx || 0.0;
     if (layer.protocol === 'wmtsc') {
@@ -73,6 +83,13 @@ WMTS_Provider.prototype.preprocessDataLayer = function(layer) {
     } else {
 
         var options = layer.options;
+
+        //switch tileMatrixSet
+        var tileMatrixSetId = options.tileMatrixSet;
+        var tileMatrixSet   = this.getTileMatrixSets(tileMatrixSetId);
+        if((tileMatrixSet != undefined) && ((tileMatrixSetId != "PM") || (tileMatrixSetId != "WGS84G"))){
+            options.tileMatrixSet = tileMatrixSet.tileMatrixSet;
+        }
         var newBaseUrl = layer.url +
             "?LAYER=" + options.name +
             "&FORMAT=" + options.mimetype +
