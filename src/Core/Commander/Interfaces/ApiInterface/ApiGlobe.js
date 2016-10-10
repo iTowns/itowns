@@ -20,8 +20,17 @@ import {STRATEGY_MIN_NETWORK_TRAFFIC} from 'Scene/LayerUpdateStrategy'
 
 var loaded = false;
 var eventLoaded = new CustomEvent('globe-loaded');
-var eventLayerRemoved = new CustomEvent('Layer-removed');
 var eventRange = new CustomEvent('rangeChanged');
+var eventCenter = new CustomEvent('centerchanged');
+var eventOrientation = new CustomEvent('orientationchanged');
+var eventLayerAdded = new CustomEvent('layeradded');
+var eventLayerRemoved = new CustomEvent('layerremoved');
+var eventLayerChanged = new CustomEvent('layerchanged');
+var eventLayerChangedVisible = new CustomEvent('layerchanged:visible');
+var eventLayerChangedOpacity = new CustomEvent('layerchanged:opacity');
+var eventLayerChangedIndex = new CustomEvent('layerchanged:index');
+var eventError = new CustomEvent('error');
+
 
 function ApiGlobe() {
     //Constructor
@@ -96,6 +105,7 @@ ApiGlobe.prototype.addImageryLayer = function(layer) {
     var map = this.scene.getMap();
 
     map.layersConfiguration.addColorLayer(layer);
+    this.viewerDiv.dispatchEvent(eventLayerAdded);
 };
 
 ApiGlobe.prototype.moveLayerUp = function(layer) {
@@ -116,15 +126,18 @@ ApiGlobe.prototype.moveLayerToIndex = function(layer, newId) {
     this.scene.getMap().layersConfiguration.moveLayerToIndex(layer, newId);
     this.scene.getMap().updateLayersOrdering();
     this.scene.renderScene3D();
+    eventLayerChangedIndex.layerId = newId;
+    eventLayerChangedIndex.layer = layer;
+    this.viewerDiv.dispatchEvent(eventLayerChangedIndex);
 };
 
 ApiGlobe.prototype.removeImageryLayer = function(id) {
 
     if (this.scene.getMap().removeColorLayer(id)) {
-        eventLayerRemoved.layer = id;
-        this.viewerDiv.dispatchEvent(eventLayerRemoved);
         this.scene.getMap().updateLayersOrdering();
         this.scene.renderScene3D();
+        eventLayerRemoved.layer = id;
+        this.viewerDiv.dispatchEvent(eventLayerRemoved);
         return true;
     }
 
@@ -146,6 +159,7 @@ ApiGlobe.prototype.addElevationLayer = function(layer) {
 
     var map = this.scene.getMap();
     map.layersConfiguration.addElevationLayer(layer);
+    this.viewerDiv.dispatchEvent(eventLayerAdded);
 };
 
 /**
@@ -212,6 +226,8 @@ ApiGlobe.prototype.createSceneGlobe = function(coordCarto, viewerDiv) {
 
             loaded = true;
             viewerDiv.dispatchEvent(eventLoaded);
+        } else {
+            viewerDiv.dispatchEvent(eventError);
         }
     }, false);
 
@@ -306,8 +322,11 @@ ApiGlobe.prototype.setRealisticLightingOn = function(value) {
 ApiGlobe.prototype.setLayerVisibility = function(id, visible) {
 
     this.scene.getMap().setLayerVisibility(id, visible);
-
     this.update();
+    eventLayerChangedVisible.layerId = id;
+    eventLayerChangedVisible.visible = visible;
+    this.viewerDiv.dispatchEvent(eventLayerChangedVisible);
+
 };
 
 ApiGlobe.prototype.animateTime = function(value) {
@@ -327,10 +346,13 @@ ApiGlobe.prototype.orbit = function(value) {
  * @params {visible} boolean.
  */
 
-ApiGlobe.prototype.setLayerOpacity = function(id, visible) {
+ApiGlobe.prototype.setLayerOpacity = function(id, opacity) {
 
-    this.scene.getMap().setLayerOpacity(id, visible);
+    this.scene.getMap().setLayerOpacity(id, opacity);
     this.scene.renderScene3D();
+    eventLayerChangedOpacity.layerId = id;
+    eventLayerChangedOpacity.opacity = opacity;
+    this.viewerDiv.dispatchEvent(eventLayerChangedOpacity);
 };
 
 ApiGlobe.prototype.setStreetLevelImageryOn = function(value) {
@@ -369,7 +391,6 @@ ApiGlobe.prototype.getCameraLocation = function() {
  */
 
 ApiGlobe.prototype.getCenter = function() {
-
     var controlCam = this.scene.currentControls();
     return this.projection.cartesianToGeo(controlCam.globeTarget.position);
 };
@@ -382,9 +403,9 @@ ApiGlobe.prototype.getCenter = function() {
  */
 
 ApiGlobe.prototype.setCameraOrientation = function(orientation /*param,pDisableAnimationopt*/ ) {
-
     this.setHeading(orientation.heading);
     this.setTilt(orientation.tilt);
+    this.viewerDiv.dispatchEvent(eventOrientation);
 };
 
 /**
@@ -470,8 +491,9 @@ ApiGlobe.prototype.getRange = function() {
  */
 
 ApiGlobe.prototype.setTilt = function(tilt /*, bool*/ ) {
-
+    eventOrientation.oldTilt = this.getTilt();
     this.scene.currentControls().setTilt(tilt);
+    this.viewerDiv.dispatchEvent(eventOrientation);
 };
 
 /**
@@ -483,8 +505,9 @@ ApiGlobe.prototype.setTilt = function(tilt /*, bool*/ ) {
  */
 
 ApiGlobe.prototype.setHeading = function(heading /*, bool*/ ) {
-
+    eventOrientation.oldHeading = this.getHeading();
     this.scene.currentControls().setHeading(heading);
+    this.viewerDiv.dispatchEvent(eventOrientation);
 };
 
 /**
@@ -494,8 +517,8 @@ ApiGlobe.prototype.setHeading = function(heading /*, bool*/ ) {
  */
 
 ApiGlobe.prototype.resetTilt = function( /*bool*/ ) {
-
     this.scene.currentControls().setTilt(0);
+    this.viewerDiv.dispatchEvent(eventOrientation);
 };
 
 /**
@@ -505,8 +528,8 @@ ApiGlobe.prototype.resetTilt = function( /*bool*/ ) {
  */
 
 ApiGlobe.prototype.resetHeading = function( /*bool*/ ) {
-
     this.scene.currentControls().setHeading(0);
+    this.viewerDiv.dispatchEvent(eventOrientation);
 };
 
 /**
@@ -529,8 +552,10 @@ ApiGlobe.prototype.computeDistance = function(p1, p2) {
  */
 
 ApiGlobe.prototype.setCenter = function(coordinates) {
+    eventCenter.oldCenter = this.getCenter();
     var position3D = this.scene.getEllipsoid().cartographicToCartesian(new GeoCoordinate(coordinates.longitude,coordinates.latitude,0,UNIT.DEGREE));
     this.scene.currentControls().setCenter(position3D);
+    this.viewerDiv.dispatchEvent(eventCenter);
 };
 
 /**
@@ -560,10 +585,9 @@ ApiGlobe.prototype.setCenterAdvanced = function(pPosition /*, pDisableAnimationo
  */
 
 ApiGlobe.prototype.setRange = function(pRange /*, bool*/ ) {
-    var viewerDiv = document.getElementById("viewerDiv");
-
+    eventRange.oldRange = this.getRange();
     this.scene.currentControls().setRange(pRange);
-    viewerDiv.dispatchEvent(eventRange);
+    this.viewerDiv.dispatchEvent(eventRange);
 };
 
 /**
@@ -574,6 +598,68 @@ ApiGlobe.prototype.setRange = function(pRange /*, bool*/ ) {
 
 ApiGlobe.prototype.getZoomLevel = function(id) {
     return this.scene.getMap().getZoomLevel(id);
+};
+
+/**
+ * Some event return the old value before the change. The available events are centerchanged, zoomchanged, orientationchanged, layerchanged:opacity, layerchanged:visible, layerchanged:ipr and layerchanged:index.
+ * @constructor
+ * @param {string} Eventname - The name of the event.
+ * @param {callback} Callback - The callback that is called when the event is heard.
+ */
+
+ApiGlobe.prototype.addEventListener = function (eventname, callback){
+
+    if (eventname == "layerchanged"){
+
+        this.viewerDiv.addEventListener("layerchanged", callback, false);
+        this.addEventListenerLayerChanged();
+
+    } else {
+
+        this.viewerDiv.addEventListener(eventname, callback, false);
+
+    }
+
+};
+
+ApiGlobe.prototype.addEventListenerLayerChanged = function () {
+
+    this.viewerDiv.addEventListener("layerchanged:visible", this.callbackLayerChanged, false);
+    this.viewerDiv.addEventListener("layerchanged:opacity", this.callbackLayerChanged, false);
+    this.viewerDiv.addEventListener("layerchanged:index", this.callbackLayerChanged, false);
+
+};
+
+ApiGlobe.prototype.callbackLayerChanged = function () {
+
+    this.dispatchEvent(eventLayerChanged);
+};
+
+/**
+ * Remove the event of events listener from the event target.
+ * @constructor
+ * @param {string} Eventname - The name of the event.
+ * @param {callback} Callback - The callback that is called when the event is heard.
+ */
+
+ApiGlobe.prototype.removeEventListener = function (eventname, callback) {
+
+    if (eventname == "layerchanged"){
+
+        this.viewerDiv.removeEventListener("layerchanged", callback, false);
+        this.removeEventListenerLayerChanged();
+
+    } else {
+
+        this.viewerDiv.removeEventListener(eventname, callback, false);
+
+    }
+};
+
+ApiGlobe.prototype.removeEventListenerLayerChanged = function () {
+    this.viewerDiv.removeEventListener("layerchanged:visible", this.callbackLayerChanged, false);
+    this.viewerDiv.removeEventListener("layerchanged:opacity", this.callbackLayerChanged, false);
+    this.viewerDiv.removeEventListener("layerchanged:index", this.callbackLayerChanged, false);
 };
 
 ApiGlobe.prototype.launchCommandApi = function() {
