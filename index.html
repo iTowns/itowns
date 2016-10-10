@@ -632,7 +632,7 @@ and open the template in the editor.
             });
         }
 
-        viewerDiv.addEventListener('rangeChanged', function() {
+        /*viewerDiv.addEventListener('rangeChanged', function() {
             var controller;
             controller = gui.add(text, 'api');
             if(controller) {
@@ -642,7 +642,7 @@ and open the template in the editor.
                     //console.log(itowns.viewer.getZoomLevel("Ortho"));
                 });
             }
-        }, false);
+        }, false);*/
 
         var removeLayer = function(nameLayer) {
             if(itowns.viewer.removeImageryLayer(nameLayer)) {
@@ -692,16 +692,16 @@ and open the template in the editor.
         //     });
         // }
 
-        viewerDiv.addEventListener('globe-loaded', function() {
+        itowns.viewer.addEventListener('globe-loaded', function() {
             console.log("Globe Loaded");
-            //itowns.viewer.setRange(100000);
 
-            //itowns.viewer.setCenter({longitude:-74,latitude:40,altitude:0});
-        }, false);
+            //itowns.viewer.addEventListener('layerchanged:visible', callback);
 
-        viewerDiv.addEventListener('Layer-removed', function(event) {
+        });
+
+        itowns.viewer.addEventListener('Layer-removed', function(event) {
             console.log("Layer " + event.layer +  " removed");
-        }, false);
+        });
 
         // gui.add(text, 'StreetLevelImagery').onChange(function(newValue) {
         //     itowns.viewer.setStreetLevelImageryOn(newValue);
