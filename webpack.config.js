@@ -70,7 +70,8 @@ module.exports = {
       ColladaLoader: 'three/examples/js/loaders/ColladaLoader',
       GlobeControls: 'Renderer/ThreeExtented/GlobeControls',
       StarGeometry:  'Renderer/ThreeExtented/StarGeometry',
-      Sky:           'Globe/SkyShader'
+      Sky:           'Globe/SkyShader',
+      Text2Json:     'plain-text-data-to-json'
     }
   },
   devServer: {

@@ -12,6 +12,7 @@ import WMTS_Provider from 'Core/Commander/Providers/WMTS_Provider';
 import WMS_Provider from 'Core/Commander/Providers/WMS_Provider';
 import TileProvider from 'Core/Commander/Providers/TileProvider';
 import loadGpx from 'Core/Commander/Providers/GpxUtils';
+import loadGeoidData from 'Core/Commander/Providers/GeoidUtils';
 import CoordCarto from 'Core/Geographic/CoordCarto';
 import Ellipsoid from 'Core/Math/Ellipsoid';
 import Projection from 'Core/Geographic/Projection';
@@ -682,5 +683,15 @@ ApiGlobe.prototype.loadGPX = function(url) {
     this.scene.renderScene3D();
 };
 
+
+ApiGlobe.prototype.loadGeoidData = function(url) {
+    loadGeoidData(url, this.scene.getEllipsoid()).then(function(geoid){
+        if(geoid) {
+            this.scene.getMap().gpxTracks.children[0].add(geoid);
+        }
+    }.bind(this));
+
+    this.scene.renderScene3D();
+};
 
 export default ApiGlobe;
