@@ -11,6 +11,7 @@ import Globe from 'Globe/Globe';
 import WMTS_Provider from 'Core/Commander/Providers/WMTS_Provider';
 import WMS_Provider from 'Core/Commander/Providers/WMS_Provider';
 import TileProvider from 'Core/Commander/Providers/TileProvider';
+import KML_Provider from 'Core/Commander/Providers/KML_Provider';
 import loadGpx from 'Core/Commander/Providers/GpxUtils';
 import GeoCoordinate,{UNIT} from 'Core/Geographic/GeoCoordinate';
 import Ellipsoid from 'Core/Math/Ellipsoid';
@@ -306,6 +307,13 @@ ApiGlobe.prototype.setRealisticLightingOn = function(value) {
 ApiGlobe.prototype.setLayerVisibility = function(id, visible) {
 
     this.scene.getMap().setLayerVisibility(id, visible);
+
+    this.update();
+};
+
+ApiGlobe.prototype.setFeatureLayerVisibility = function(id, visible) {
+
+    this.scene.getMap().setFeatureLayerVisibility(id, visible);
 
     this.update();
 };
@@ -630,12 +638,57 @@ ApiGlobe.prototype.launchCommandApi = function() {
 //        console.log(this.getHeading());
 //    };
 
+
+/*   // OLD KML LOAD (TREE STRUCTURE)
 ApiGlobe.prototype.showKML = function(value) {
 
     this.scene.getMap().showKML(value);
     this.scene.renderScene3D();
 };
+*/
 
+/**
+ * Add a feature Layer to the scene graph. Handle vector data such as GPX, KML, GeoJSON,...
+ * @param {type} Layer
+ * @returns {undefined}
+ */
+ApiGlobe.prototype.addFeaturesLayer = function(layer) {
+    /*
+    var map = this.scene.getMap();
+    map.layersConfiguration.addFeaturesLayer(layer);
+    this.scene.setFeaturesRasterOnOff();
+    */
+  //  if(this.scene.getFeaturesRasterOnOff() && this.scene.getFeaturesRaster() === null)
+  //  {
+        var map = this.scene.getMap();
+        map.layersConfiguration.addFeaturesLayer(layer);
+        var featureLayer  = map.createFeatureLayer(layer.id);
+
+        if(layer.local){
+            if(layer.protocol === "kml"){
+                var kml_Provider = new KML_Provider(this.scene.getEllipsoid());
+                var geo = kml_Provider.parseKML(layer.url).then(
+                        function(obj){
+                            this.scene.addFeaturesRaster(obj.objLinesPolyToRaster); // Only 2D Polygons and Lines
+                            featureLayer.add(obj.geoFeat);
+                          //  this.scene.gfxEngine.add3DScene(featureLayer.getMesh());// Only 3D Feat and 2D Icon/Text
+                        }.bind(this));
+                console.log('geo',geo);  
+            }
+        }else{
+            preprocessLayer(layer, this.scene.managerCommand.getProtocolProvider(layer.protocol));
+        }
+  //  }
+    
+
+};
+
+ApiGlobe.prototype.updateFeatureHeights = function(){
+    
+    console.log('adjust height');
+    this.scene.getMap().updateFeatureHeights();
+    this.scene.renderScene3D();
+};
 
 ApiGlobe.prototype.loadGPX = function(url) {
     loadGpx(url, this.scene.getEllipsoid()).then(function(gpx){

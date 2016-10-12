@@ -18,6 +18,7 @@ function LayersConfiguration() {
     this.geometryLayers = [];
     this.colorLayers = [];
     this.elevationLayers = [];
+    this.featuresLayers = []; 
 
     // layers state (visibility, opacity)
     this.layersState = {};
@@ -56,6 +57,11 @@ LayersConfiguration.prototype.addGeometryLayer = function(layer) {
     this.layersState[layer.id] = defaultState();
 }
 
+LayersConfiguration.prototype.addFeaturesLayer = function(layer) {
+    this.featuresLayers.push(layer);
+    this.layersState[layer.id] = defaultState();
+}
+
 LayersConfiguration.prototype.removeColorLayer = function(id) {
     if (this.layersState[id]) {
         this.colorLayers.filter(function(l) {
@@ -83,6 +89,10 @@ LayersConfiguration.prototype.getGeometryLayers = function() {
 
 LayersConfiguration.prototype.getElevationLayers = function() {
     return this.elevationLayers;
+}
+
+LayersConfiguration.prototype.getFeaturesLayers = function() {
+    return this.featuresLayers;
 }
 
 LayersConfiguration.prototype.setLayerOpacity = function(id, opacity) {

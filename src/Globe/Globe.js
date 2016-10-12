@@ -15,6 +15,7 @@ import Capabilities from 'Core/System/Capabilities';
 import GeoCoordinate,{UNIT} from 'Core/Geographic/GeoCoordinate';
 import BasicMaterial from 'Renderer/BasicMaterial';
 import LayersConfiguration from 'Scene/LayersConfiguration';
+import c3DEngine from 'Renderer/c3DEngine';
 import * as THREE from 'THREE';
 
 
@@ -45,10 +46,10 @@ function Globe(ellipsoid, gLDebug) {
 
     kml.visible = false;
 
-	this.gpxTracks = new Layer();
-	var gpx = new THREE.Object3D();
-	this.gpxTracks.add(gpx);
-	this.gpxTracks.visible = true;
+    this.gpxTracks = new Layer();
+    var gpx = new THREE.Object3D();
+    this.gpxTracks.add(gpx);
+    this.gpxTracks.visible = true;
     gpx.visible = true;
 
     this.tiles = new Quadtree(TileMesh, this.SchemeTileWMTS(schemeTile_1), kml);
@@ -184,6 +185,7 @@ Globe.prototype.setLayerOpacity = function(id, opacity) {
 };
 
 Globe.prototype.setLayerVisibility = function(id, visible) {
+
     this.layersConfiguration.setLayerVisibility(id, visible);
 
     var cO = function(object) {
@@ -191,9 +193,24 @@ Globe.prototype.setLayerVisibility = function(id, visible) {
             object.material.setLayerVisibility(object.getIndexLayerColor(id), visible);
         }
     };
-
+    
     // children[0] is rootNode
     this.tiles.children[0].traverse(cO);
+    
+};
+
+Globe.prototype.setFeatureLayerVisibility = function(id, visible) {
+
+    this.layersConfiguration.setLayerVisibility(id, visible);
+
+    var cO = function(object) {
+        if (object.material.setFeatureLayerVisibility) {
+            object.material.setFeatureLayerVisibility(visible);
+        }
+    };
+    // children[0] is rootNode
+    this.tiles.children[0].traverse(cO);
+   
 };
 
 Globe.prototype.updateLayersOrdering = function() {
@@ -232,5 +249,32 @@ Globe.prototype.setRealisticLightingOn = function(bool) {
     this.atmosphere.setRealisticOn(bool);
     this.clouds.setLightingOn(bool);
 };
+
+
+Globe.prototype.createFeatureLayer = function(/*name*/){
+    var featureLayer = new Layer();
+        //featureLayer.setName(name)
+    var dataLayer = new THREE.Object3D();
+        featureLayer.add(dataLayer);
+    this.add(featureLayer);
+
+    return featureLayer;
+};
+
+Globe.prototype.updateFeatureHeights = function(featureLayer){
+    
+    var pos = c3DEngine().getPickingPosition();//getPickingPositionFromDepth();//{x:1000,y:500});
+    
+    console.log(pos);
+    
+};
+
+/*
+Globe.prototype.addFeaturesRaster = function(featuresRaster){
+    
+    console.log(this);
+    
+};
+*/
 
 export default Globe;

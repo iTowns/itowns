@@ -21,6 +21,7 @@ varying vec2        vUv_WGS84;
 varying float       vUv_PM;
 varying vec3        vNormal;
 varying vec4        pos;
+varying float       dv;
 
 highp float decode32(highp vec4 rgba) {
     highp float Sign = 1.0 - step(128.0,rgba[0])*2.0;
@@ -60,7 +61,7 @@ void main() {
                     dv = 0.0;
 
             #else
-                float   dv  = max(texture2D( dTextures_00[0], vVv ).w, 0.);
+               /* float*/   dv  = max(texture2D( dTextures_00[0], vVv ).w, 0.);
             #endif
 
             vNormal     = normal;

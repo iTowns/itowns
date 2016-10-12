@@ -340,7 +340,9 @@ function updateNodeElevation(quadtree, node, layersConfig, force) {
                     terrain.max = (ancestor || node).bbox.top();
                 }
 
+                
                 node.setTextureElevation(terrain);
+                node.setRasterFeatures();
 
                 return node;
             });

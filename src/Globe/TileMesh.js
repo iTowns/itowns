@@ -20,6 +20,7 @@
 import NodeMesh from 'Renderer/NodeMesh';
 import TileGeometry from 'Globe/TileGeometry';
 import BoundingBox from 'Scene/BoundingBox';
+import Scene from 'Scene/Scene';
 import defaultValue from 'Core/defaultValue';
 import * as THREE from 'THREE';
 import OBBHelper from 'OBBHelper';
@@ -60,7 +61,8 @@ function TileMesh(params, builder, geometryCache) {
 
     // instantiations all state materials : final, depth, id
     // Final rendering : return layered color + fog
-    this.materials[RendererConstant.FINAL] = new LayeredMaterial();
+    this.materials[RendererConstant.FINAL] = new LayeredMaterial(null, this.bbox);
+    
     // Depth : return the distance between projection point and the node
     this.materials[RendererConstant.DEPTH] = new GlobeDepthMaterial(this.materials[RendererConstant.FINAL]);
     // ID : return id color in RGBA (float Pack in RGBA)
@@ -69,7 +71,7 @@ function TileMesh(params, builder, geometryCache) {
     this.material = this.materials[RendererConstant.FINAL];
 
     this.frustumCulled = false;
-
+   // console.log(this);
     // Layer
     this.setDisplayed(false);
 
@@ -186,6 +188,7 @@ TileMesh.prototype.setSelected = function(select) {
 };
 
 TileMesh.prototype.setTextureElevation = function(elevation) {
+    
     if (this.materials[RendererConstant.FINAL] === null) {
         return;
     }
@@ -202,7 +205,7 @@ TileMesh.prototype.setTextureElevation = function(elevation) {
     this.materials[RendererConstant.DEPTH].uniforms.nbTextures.value = this.materials[RendererConstant.FINAL].nbTextures[0];
     this.materials[RendererConstant.ID].uniforms.nbTextures.value = this.materials[RendererConstant.FINAL].nbTextures[0];
 
-
+    
     this.loadingCheck();
 };
 
@@ -237,6 +240,30 @@ TileMesh.prototype.setTexturesLayer = function(textures, idLayer, slotOffset) {
     }
     this.loadingCheck();
 };
+
+
+TileMesh.prototype.setRasterFeatures = function(rasterFeatures) {
+    // console.log("setRasterFeatures"); 
+   
+     if(Scene().featuresRasterOn && Scene().featuresRaster != null){
+     //   console.log("setRasterFeatures"),Scene().featuresRaster.lines[0]);  
+        this.material.uniforms.lineFeatures.value = Scene().featuresRaster.lines;
+        this.material.uniforms.polygonFeatures.value = Scene().featuresRaster.polygons;
+        this.material.uniforms.rasterFeatures.value = 1.;
+     }
+     //console.log(this);
+     
+     /*
+    if (this.material === null) {
+        return;
+    }
+    if (textures) {
+       console.log(this.materials[RendererConstant.FINAL]);//.uniforms.nbTextures.value = this.materials[RendererConstant.FINAL].nbTextures[0];
+    }
+*/
+};
+
+
 
 TileMesh.prototype.downScaledColorSlot = function(slot) {
     var mat = this.materials[RendererConstant.FINAL];

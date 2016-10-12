@@ -43,6 +43,8 @@ function Scene(coordinate, ellipsoid, viewerDiv, debugMode, gLDebug) {
 
     this.layers = [];
     this.map = null;
+    this.featuresRaster = null;
+    this.featuresRasterOn = false;
 
     this.cameras = null;
     this.selectNodes = null;
@@ -262,6 +264,32 @@ Scene.prototype.setLightingPos = function(pos) {
     this.browserScene.updateMaterialUniform("lightPosition", this.lightingPos.clone().normalize());
     this.layers[0].node.updateLightingPos(this.lightingPos);
 };
+
+
+Scene.prototype.addFeaturesRaster = function(featuresRaster){
+    
+    console.log(this);
+    this.featuresRasterOn = true;
+    this.featuresRaster = featuresRaster;
+    this.browserScene.updateMaterialUniform("rasterFeatures", 1);
+    this.browserScene.updateMaterialUniform("lineFeatures", featuresRaster.lines);
+    this.browserScene.updateMaterialUniform("polygonFeatures", featuresRaster.polygons);
+    
+};
+
+Scene.prototype.setFeaturesRasterOnOff = function(){
+    this.featuresRasterOn = !this.featuresRasterOn;
+    this.browserScene.updateMaterialUniform("rasterFeatures", this.featuresRasterOn? 1:0);
+}
+
+Scene.prototype.getFeaturesRasterOnOff = function(){
+    
+    return this.featuresRasterOn;
+}
+
+Scene.prototype.getFeaturesRaster = function(){
+    return this.featuresRaster;
+}
 
 // Should be moved in time module: A single loop update registered object every n millisec
 Scene.prototype.animateTime = function(value) {

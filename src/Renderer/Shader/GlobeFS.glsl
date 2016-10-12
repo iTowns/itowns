@@ -9,6 +9,7 @@ const float INV_TWO_PI  = 1.0 / (2.0*PI);
 const float PI2         = 1.57079632679;
 
 const float PI4         = 0.78539816339;
+const int nbPointsP = 6;
 // const float poleSud     = -82.0 / 180.0 * PI;
 // const float poleNord    =  84.0 / 180.0 * PI;
 const vec4 fogColor = vec4( 0.76, 0.85, 1.0, 1.0);
@@ -33,11 +34,16 @@ uniform int         debug;
 uniform int         RTC;
 uniform vec3        lightPosition;
 uniform int         lightingOn;
+uniform vec4        bbox;
+uniform int         rasterFeatures;
+uniform vec3        lineFeatures[4];
+uniform vec3        polygonFeatures[6];
 
 varying vec2        vUv_WGS84;
 varying float       vUv_PM;
 varying vec3        vNormal;
 varying vec4        pos;
+varying float       dv;
 
 #if defined(DEBUG)
     const float sLine = 0.008;
@@ -63,6 +69,91 @@ vec2 getParamBLayers(int id)
     return vec2(0.0,0.0);
 }
 
+#define resolution vec2(500.0, 500.0)
+#define Thickness 0.00001
+
+float drawLine(vec2 p1, vec2 p2, float thickness) {
+
+    vec2 tileWH = vec2(bbox.z - bbox.x, bbox.w - bbox.y);
+    vec2 currentCoord = vec2(bbox.x + vUv_WGS84.x * tileWH.x, bbox.y + vUv_WGS84.y * tileWH.y);
+    vec2 currentCoordDeg = currentCoord / PI * 180.;
+
+    vec2 uv = currentCoordDeg;// gl_FragCoord.xy / resolution.xy;
+
+    float a = abs(distance(p1, uv));
+    float b = abs(distance(p2, uv));
+    float c = abs(distance(p1, p2));
+
+    if ( a >= c || b >=  c ) return 0.0;
+
+    float p = (a + b + c) * 0.5;
+
+    // median to (p1, p2) vector
+    float h = 2. / c * sqrt( p * ( p - a) * ( p - b) * ( p - c));
+
+    return mix(1.0, 0.0, smoothstep(0.5 * thickness, 1.5 * thickness, h));
+}
+
+int intersectsegment(vec2 A, vec2 B, vec2 I, vec2 P){
+
+   vec2 D,E;
+   D.x = B.x - A.x;
+   D.y = B.y - A.y;
+   E.x = P.x - I.x;
+   E.y = P.y - I.y;
+   float denom = D.x*E.y - D.y*E.x;
+   if (denom == 0.)
+       return -1;   // erreur, cas limite
+   float t = - (A.x*E.y-I.x*E.y-E.x*A.y+E.x*I.y) / denom;
+   if (t < 0. || t >= 1.)
+      return 0;
+   float u = - (-D.x*A.y+D.x*I.y+D.y*A.x-D.y*I.x) / denom;
+   if (u < 0. || u >= 1.)
+      return 0;
+   return 1;
+}
+
+// tab is array of polygon poins. nbp length of tab. P is current frag point
+bool collision(vec3 tab[6], const int nbp, vec2 P){
+
+  vec2 I = vec2(10.,50.);
+  int nbintersections = 0;
+  for(int i=0; i < nbPointsP; i++)
+  {
+     vec2 A = tab[i].xy;
+     vec2 B = tab[i+1].xy;
+     int iseg = intersectsegment(A,B,I,P); 
+     nbintersections += iseg;
+  }
+     return mod(float(nbintersections),2.) == 0.;
+}
+
+
+float drawLines(float thickness){
+    float feat = 0.;
+    for( int i= 0; i< 3; ++i){    //  return drawLine(vec2(6.840534210205076,45.92121428068), vec2(6.904134750366209,45.93273669875063));
+        feat += drawLine(lineFeatures[i].xy, lineFeatures[i+1].xy, thickness);
+    }
+    return clamp(feat,0.,1.);
+}
+
+float drawContourPoly(float thickness){
+    float feat = 0.;
+    for( int i= 0; i< 6; ++i){
+        feat += drawLine(polygonFeatures[i].xy, polygonFeatures[i+1].xy, thickness);
+    }
+    return clamp(feat,0.,1.);
+}
+
+/*
+float drawLinesAndContourFeatures(){
+    
+    float feat = 0.;
+    feat = drawLines(0.00004);
+    feat += drawContourPoly(0.0002);
+    return clamp(feat,0.,1.);
+}
+*/
 void main() {
 
     #if defined(USE_LOGDEPTHBUF) && defined(USE_LOGDEPTHBUF_EXT)
@@ -170,6 +261,34 @@ void main() {
             float light = min(2. * dot(vNormal, lightPosition),1.);
             gl_FragColor.rgb *= light;
         }
+    }
+
+
+    if(rasterFeatures == 1){
+        
+
+        // POLYGONS
+        float featurePolygonOpacity = .5;
+        vec4 featurePolygonColor = vec4( 0., 0.71, 0.6, 1.);
+        vec2 tileWH = vec2(bbox.z - bbox.x, bbox.w - bbox.y);
+        vec2 currentCoord = vec2(bbox.x + vUv_WGS84.x * tileWH.x, bbox.y + vUv_WGS84.y * tileWH.y);
+        vec2 currentCoordDeg = currentCoord / PI * 180.;
+        bool c = collision( polygonFeatures, nbPointsP, currentCoordDeg);
+        if(c) gl_FragColor  = mix(gl_FragColor, featurePolygonColor , featurePolygonOpacity);
+
+        // POLYGONS CONTOURS
+        float featureValue = drawContourPoly(0.0004); //drawFeatures();
+        float featureOpacity = 1.;
+        vec4 featureColor = vec4(0.,0.16,0.31, 1.);
+        if(c) gl_FragColor = mix(gl_FragColor, featureColor , featureValue * featureOpacity);
+
+        // LINES
+        featureValue = drawLines(0.00005); //drawFeatures();
+        featureOpacity = 1.;
+        featureColor = vec4(0.,0.16,0.31, 1.);
+        gl_FragColor = mix(gl_FragColor, featureColor , featureValue * featureOpacity);
+
+        
     }
 
     if(debug > 0)

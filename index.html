@@ -172,14 +172,14 @@ and open the template in the editor.
                 }
             });
 
-
+/*
             itowns.viewer.addImageryLayer({
                 protocol:   "wmts",
                 id:         "OrthoCRS",
                 url:        "http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/geoportail/wmts",
                 fx :        1.0,
                 updateStrategy: {
-                    type: 0, /* see LayerUpdateStrategy.js */
+                    type: 0,
                     options: {}
                 },
                 options: {
@@ -270,7 +270,7 @@ and open the template in the editor.
                 url:        "http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/geoportail/wmts",
                 fx :        2.5,
                 updateStrategy: {
-                    type: 0, /* see LayerUpdateStrategy.js */
+                    type: 0,
                     options: {}
                 },
                 options: {
@@ -392,14 +392,14 @@ and open the template in the editor.
             heightMapWidth : 256,
             waterMask      : false,
             updateStrategy: {
-                type: 0, /* see LayerUpdateStrategy.js */
+                type: 0,
                 options: {}
             },
             options: {
                 mimetype  : "image/png"
             }
         });
-
+*/
         itowns.viewer.addElevationLayer({
             protocol:   "wmts",
             id:         "IGN_MNT",
@@ -548,8 +548,19 @@ and open the template in the editor.
             }
         });
 
-        itowns.viewer.update();
 
+        itowns.viewer.loadGPX("data/ULTRA2009.gpx");
+
+        itowns.viewer.addFeaturesLayer({
+                    protocol:"kml",
+                    id: "myKmlLayer",
+                    style: "myStyle",
+                    local:"true",
+                    url: "data/croquis.kml"
+                });
+
+
+        itowns.viewer.update();
 
 
         // THIS IS AN EXAMPLE OF INTERFACE TO INTERACT WITH ITOWNS
@@ -561,6 +572,7 @@ and open the template in the editor.
             this.KML = false;
             this.AnimateTime = false;
             this.Orbit = false;
+            this.updateFeatureHeights = false;
             this.api = function(){};
             this.api2 = function(){};
             this.api3 = function(){};
@@ -601,7 +613,18 @@ and open the template in the editor.
             }.bind(layer.id));
         }
 
-        if(false) {
+        var featuresGui = gui.addFolder('Features Layers');
+        var featuresLayers = config.getFeaturesLayers();
+        for(var i in featuresLayers) {
+            var layer = featuresLayers[i];
+
+            var folder = featuresGui.addFolder(layer.id);
+            folder.add( { visible: true }, 'visible').onChange(function(value) {
+                itowns.viewer.setFeatureLayerVisibility(this, value);
+            }.bind(layer.id));
+        }
+
+        if(true) {
             var f2 = gui.addFolder('Atmosphere');
 
             f2.open();
@@ -629,6 +652,20 @@ and open the template in the editor.
 
             f2.add(text, 'StreetLevelImagery').onChange(function(newValue) {
                 itowns.viewer.setStreetLevelImageryOn(newValue);
+            });
+
+            f2.add(text, 'updateFeatureHeights').onChange(function(newValue) {
+                  itowns.viewer.addFeaturesLayer({
+                    protocol:"kml",
+                    id: "myKmlLayer",
+                    style: "myStyle",
+                    local:"true",
+                    url: "data/croquis.kml"
+                });
+
+
+             itowns.viewer.update();
+              //  itowns.viewer.updateFeatureHeights();
             });
         }
 

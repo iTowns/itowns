@@ -30,7 +30,8 @@
     "string_format": "^0.0.6",
     "three": "^0.80.0",
     "whatwg-fetch": "^1.0.0",
-    "custom-event": "^1.0.0"
+    "custom-event": "^1.0.0",
+    "togeojson":"^0.14.2"
   },
   "devDependencies": {
     "babel-cli": "^6.11.4",
