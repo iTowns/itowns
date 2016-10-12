@@ -624,7 +624,7 @@ and open the template in the editor.
             }.bind(layer.id));
         }
 
-        if(true) {
+        if(false) {
             var f2 = gui.addFolder('Atmosphere');
 
             f2.open();
@@ -654,19 +654,7 @@ and open the template in the editor.
                 itowns.viewer.setStreetLevelImageryOn(newValue);
             });
 
-            f2.add(text, 'updateFeatureHeights').onChange(function(newValue) {
-                  itowns.viewer.addFeaturesLayer({
-                    protocol:"kml",
-                    id: "myKmlLayer",
-                    style: "myStyle",
-                    local:"true",
-                    url: "data/croquis.kml"
-                });
 
-
-             itowns.viewer.update();
-              //  itowns.viewer.updateFeatureHeights();
-            });
         }
 
         viewerDiv.addEventListener('rangeChanged', function() {
