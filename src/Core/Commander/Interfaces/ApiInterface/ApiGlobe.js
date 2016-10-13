@@ -669,9 +669,10 @@ ApiGlobe.prototype.addFeaturesLayer = function(layer) {
                 var kml_Provider = new KML_Provider(this.scene.getEllipsoid());
                 var geo = kml_Provider.parseKML(layer.url).then(
                         function(obj){
-                            this.scene.addFeaturesRaster(obj.objLinesPolyToRaster); // Only 2D Polygons and Lines
+                            console.log(obj);
+                            this.scene.addFeaturesRaster(obj.objLinesPolyToRaster, obj.objLinesPolyToRaster.nbLines); // Only 2D Polygons and Lines
                             featureLayer.add(obj.geoFeat);
-                          //  this.scene.gfxEngine.add3DScene(featureLayer.getMesh());// Only 3D Feat and 2D Icon/Text
+                            this.scene.gfxEngine.add3DScene(featureLayer.getMesh());// Only 3D Feat and 2D Icon/Text
                         }.bind(this));
                 console.log('geo',geo);  
             }
