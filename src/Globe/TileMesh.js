@@ -263,6 +263,12 @@ TileMesh.prototype.setRasterFeatures = function(rasterFeatures) {
 */
 };
 
+TileMesh.prototype.computeRasterFeature = function(rasterFeatures) {
+    
+    
+    
+};
+
 
 
 TileMesh.prototype.downScaledColorSlot = function(slot) {

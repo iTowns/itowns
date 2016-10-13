@@ -266,17 +266,33 @@ Scene.prototype.setLightingPos = function(pos) {
 };
 
 
-Scene.prototype.addFeaturesRaster = function(featuresRaster){
+
+Scene.prototype.addFeaturesRaster = function(featuresRaster, nbLines){
     
-    console.log(this);
+    console.log("gggggggggggggggggg", featuresRaster.lines, nbLines);
     this.featuresRasterOn = true;
     this.featuresRaster = featuresRaster;
     this.browserScene.updateMaterialUniform("rasterFeatures", 1);
     this.browserScene.updateMaterialUniform("lineFeatures", featuresRaster.lines);
+    this.browserScene.updateMaterialUniform("nbFeatLines", nbLines);
     this.browserScene.updateMaterialUniform("polygonFeatures", featuresRaster.polygons);
     
 };
 
+/*
+// Test GPU WAY
+Scene.prototype.addFeaturesRaster = function(featuresRaster, nbLines){
+    
+    console.log("gggggggggggggggggg", featuresRaster.lines, nbLines);
+    this.featuresRasterOn = true;
+    this.featuresRaster = featuresRaster;
+    this.browserScene.updateMaterialUniform("rasterFeatures", 1);
+    this.browserScene.updateMaterialUniform("lineFeatures", featuresRaster.lines);
+    this.browserScene.updateMaterialUniform("nbFeatLines", nbLines);
+    this.browserScene.updateMaterialUniform("polygonFeatures", featuresRaster.polygons);
+    
+};
+*/
 Scene.prototype.setFeaturesRasterOnOff = function(){
     this.featuresRasterOn = !this.featuresRasterOn;
     this.browserScene.updateMaterialUniform("rasterFeatures", this.featuresRasterOn? 1:0);

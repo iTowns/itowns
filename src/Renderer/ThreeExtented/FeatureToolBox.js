@@ -482,12 +482,21 @@ FeatureToolBox.prototype.createCoordinateArray = function(feature) {
     return temp_array;
 };
 
+// Array not suported in IE
+    var fill = function(array,remp){
+
+        for(var i=0;i<array.length;i++)
+            array[i] = remp;
+    };
 
 // Extract polygons and lines for raster rendering in GPU
 FeatureToolBox.prototype.extractFeatures = function(json) {
     
+    var MaxLines = 100;
     var arrPolygons = [];
-    var arrLines = [];
+    var arrLines = Array(MaxLines);
+    var nbLines = 0;
+    fill(arrLines, new THREE.Vector3());
     var occPoly = 0;
     var occLines = 0;
     var jsonFeatures = this.createGeometryArray(json);
@@ -498,7 +507,8 @@ FeatureToolBox.prototype.extractFeatures = function(json) {
         if (feat.type === 'LineString') {
              for (var point_num = 0; point_num < feat.coordinates.length; point_num++) {
                  var v = feat.coordinates[point_num];
-                 arrLines.push(new THREE.Vector3(v[0], v[1], occLines));
+                 arrLines[nbLines] = new THREE.Vector3(v[0], v[1], occLines);
+                 nbLines++;
              }
              occLines++;
          }
@@ -513,8 +523,100 @@ FeatureToolBox.prototype.extractFeatures = function(json) {
          }
     }
     
-    return {lines: arrLines, polygons: arrPolygons};
+    return {lines: arrLines, nbLines:nbLines, polygons: arrPolygons};
 };
+
+function smoothstep(min, max, value) {
+  var x = Math.max(0, Math.min(1, (value-min)/(max-min)));
+  return x*x*(3 - 2*x);
+};
+
+
+function mix(x,y,a){
+    return x* (1-a) + y*a;
+};
+
+/*
+ * coordOrigin of tile in wgs84
+ * tileWH is tileSize in deg
+ * p1 and p2, line extremities
+ * thickness of line
+ */
+FeatureToolBox.prototype.drawLine = function(coordOrigin, tileWH, p1, p2, thickness) {
+
+    //var tileWH = vec2(bbox.z - bbox.x, bbox.w - bbox.y);
+    //var currentCoord = vec2(bbox.x + vUv_WGS84.x * tileWH.x, bbox.y + vUv_WGS84.y * tileWH.y);
+    //var currentCoordDeg = currentCoord / PI * 180.;
+
+    var uv = coordOrigin ; //currentCoordDeg;// gl_FragCoord.xy / resolution.xy;
+
+    var a = Math.abs(distance(p1, uv));
+    var b = Math.abs(distance(p2, uv));
+    var c = Math.abs(distance(p1, p2));
+
+    if ( a >= c || b >=  c ) return 0.0;
+
+    var p = (a + b + c) * 0.5;
+
+    // median to (p1, p2) vector
+    var h = 2. / c * Math.sqrt( p * ( p - a) * ( p - b) * ( p - c));
+    return mix(1.0, 0.0, smoothstep(0.5 * thickness, 1.5 * thickness, h));
+};
+
+FeatureToolBox.prototype.intersectsegment = function( a, b, i, p){
+
+   var d,e;
+   d.x = b.x - a.x;
+   d.y = b.y - a.y;
+   e.x = p.x - i.x;
+   e.y = p.y - i.y;
+   var denom = d.x*e.y - d.y*e.x;
+   if (denom == 0.)
+       return -1;   // erreur, cas limite
+   var t = - (a.x*e.y-i.x*e.y-e.x*a.y+e.x*i.y) / denom;
+   if (t < 0. || t >= 1.)
+      return 0;
+   var u = - (-d.x*a.y+d.x*i.y+d.y*a.x-d.y*i.x) / denom;
+   if (u < 0. || u >= 1.)
+      return 0;
+   return 1;
+};
+
+// tab is array of polygon points. p is current frag point
+FeatureToolBox.prototype.collision = function(arrPoints, p){
+
+    var k = new THREE.Vector2(10.,50.);
+    var nbintersections = 0;
+    for(var i=0; i < arrPoints.length -1; i++){
+
+       var a = arrPoints[i];//.xy;
+       var b = arrPoints[i+1];//.xy;
+       var iseg = intersectsegment(a,b,k,p); 
+       nbintersections += iseg;
+    }
+    return ((nbintersections % 2) == 0); //mod(float(nbintersections),2.) == 0.;
+}
+
+
+FeatureToolBox.prototype.drawLines = function(coordOrigin, tileWH, arrPoints, thickness){
+    
+    var feat = 0.;
+    for( var i= 0; i< arrPoints.length -1; ++i){    //  return drawLine(vec2(6.840534210205076,45.92121428068), vec2(6.904134750366209,45.93273669875063));
+        //if(arrPoints[i+1].x != 0. && lineFeatures[i+1].y != 0.)
+        feat += drawLine(coordOrigin, tileWH, arrPoints[i].xy, arrPoints[i+1].xy, thickness);
+    }
+    return Math.min(feat,1.);
+}
+
+/*
+float drawContourPoly(float thickness){
+    float feat = 0.;
+    for( int i= 0; i< 6; ++i){
+        feat += drawLine(polygonFeatures[i].xy, polygonFeatures[i+1].xy, thickness);
+    }
+    return clamp(feat,0.,1.);
+}
+*/
 
 
 FeatureToolBox.prototype.processingGeoJSON = function(json) {

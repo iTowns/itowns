@@ -84,13 +84,15 @@ var LayeredMaterial = function(id,bbox) {
 
     this.Textures[0] = [emptyTexture];
     this.Textures[1] = Array(nbSamplers);
+  
     this.paramLayers = Array(8);
     this.paramBLayers = Array(8);
+    this.featLines = Array(100);
 
     fill(this.Textures[1],emptyTexture);
     fill(this.paramLayers,vector4);
     fill(this.paramBLayers,vector2);
-
+    fill(this.featLines,vector);
     // Elevation texture
     this.uniforms.dTextures_00 = {
         type: "tv",
@@ -101,6 +103,12 @@ var LayeredMaterial = function(id,bbox) {
     this.uniforms.dTextures_01 = {
         type: "tv",
         value: this.Textures[1]
+    };
+    // temp raster texture
+        // Color texture
+    this.uniforms.featureTexture = {
+        type: "tv",
+        value: new THREE.Texture()
     };
 
     this.uniforms.nbTextures = {
@@ -163,11 +171,15 @@ var LayeredMaterial = function(id,bbox) {
     this.uniforms.rasterFeatures = {
          type: "i",
          value: 0
-    }
+    };
+    this.uniforms.nbFeatLines = {
+         type: "i",
+         value: 0
+    };
     // Lines have vec3 with Z as id so we can put different lines in same buffer
     this.uniforms.lineFeatures = {
         type: "v3v",
-        value:  [new THREE.Vector3(),new THREE.Vector3(),new THREE.Vector3(),new THREE.Vector3()]
+        value:  this.featLines
         /*new THREE.Vector3(6.840534210205076,45.921214280686,0),
                   new THREE.Vector3(6.877784729003904,45.92473693191741,0),
                   new THREE.Vector3(6.9037055969238255,45.920915740639856,0),

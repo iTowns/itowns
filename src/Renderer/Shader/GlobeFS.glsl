@@ -16,6 +16,7 @@ const vec4 fogColor = vec4( 0.76, 0.85, 1.0, 1.0);
 
 //uniform sampler2D   dTextures_00[TEX_UNITS];
 uniform sampler2D   dTextures_01[TEX_UNITS];
+uniform sampler2D   featureTexture;
 uniform vec3        pitScale_L01[TEX_UNITS];
 
 uniform vec4        paramLayers[8];
@@ -36,7 +37,8 @@ uniform vec3        lightPosition;
 uniform int         lightingOn;
 uniform vec4        bbox;
 uniform int         rasterFeatures;
-uniform vec3        lineFeatures[4];
+uniform int         nbFeatLines;
+uniform vec3        lineFeatures[100];
 uniform vec3        polygonFeatures[6];
 
 varying vec2        vUv_WGS84;
@@ -131,8 +133,10 @@ bool collision(vec3 tab[6], const int nbp, vec2 P){
 
 float drawLines(float thickness){
     float feat = 0.;
-    for( int i= 0; i< 3; ++i){    //  return drawLine(vec2(6.840534210205076,45.92121428068), vec2(6.904134750366209,45.93273669875063));
-        feat += drawLine(lineFeatures[i].xy, lineFeatures[i+1].xy, thickness);
+    for( int i= 0; i< 99; ++i){    //  return drawLine(vec2(6.840534210205076,45.92121428068), vec2(6.904134750366209,45.93273669875063));
+       // if(i < nbFeatLines)
+        if(lineFeatures[i+1].x != 0. && lineFeatures[i+1].y != 0.)
+            feat += drawLine(lineFeatures[i].xy, lineFeatures[i+1].xy, thickness);
     }
     return clamp(feat,0.,1.);
 }
@@ -145,15 +149,7 @@ float drawContourPoly(float thickness){
     return clamp(feat,0.,1.);
 }
 
-/*
-float drawLinesAndContourFeatures(){
-    
-    float feat = 0.;
-    feat = drawLines(0.00004);
-    feat += drawContourPoly(0.0002);
-    return clamp(feat,0.,1.);
-}
-*/
+
 void main() {
 
     #if defined(USE_LOGDEPTHBUF) && defined(USE_LOGDEPTHBUF_EXT)
@@ -264,11 +260,12 @@ void main() {
     }
 
 
-    if(rasterFeatures == 1){
+    if(false/*rasterFeatures == 1*/){
         
-
+        float featureValue, featureOpacity;
+        vec4 featureColor;
         // POLYGONS
-        float featurePolygonOpacity = .5;
+/*        float featurePolygonOpacity = .5;
         vec4 featurePolygonColor = vec4( 0., 0.71, 0.6, 1.);
         vec2 tileWH = vec2(bbox.z - bbox.x, bbox.w - bbox.y);
         vec2 currentCoord = vec2(bbox.x + vUv_WGS84.x * tileWH.x, bbox.y + vUv_WGS84.y * tileWH.y);
@@ -277,11 +274,11 @@ void main() {
         if(c) gl_FragColor  = mix(gl_FragColor, featurePolygonColor , featurePolygonOpacity);
 
         // POLYGONS CONTOURS
-        float featureValue = drawContourPoly(0.0004); //drawFeatures();
-        float featureOpacity = 1.;
-        vec4 featureColor = vec4(0.,0.16,0.31, 1.);
+        featureValue = drawContourPoly(0.0004); //drawFeatures();
+        featureOpacity = 1.;
+        featureColor = vec4(0.,0.16,0.31, 1.);
         if(c) gl_FragColor = mix(gl_FragColor, featureColor , featureValue * featureOpacity);
-
+*/
         // LINES
         featureValue = drawLines(0.00005); //drawFeatures();
         featureOpacity = 1.;
