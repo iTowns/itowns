@@ -565,7 +565,7 @@ FeatureToolBox.prototype.drawLine = function(coordOrigin, tileWH, p1, p2, thickn
 
 FeatureToolBox.prototype.intersectsegment = function( a, b, i, p){
 
-   var d,e;
+   var d,e; 
    d.x = b.x - a.x;
    d.y = b.y - a.y;
    e.x = p.x - i.x;
