@@ -29,6 +29,7 @@ import LayeredMaterial from 'Renderer/LayeredMaterial';
 import GlobeDepthMaterial from 'Renderer/GlobeDepthMaterial';
 import MatteIdsMaterial from 'Renderer/MatteIdsMaterial';
 import RendererConstant from 'Renderer/RendererConstant';
+import FeatureToolBox from 'Renderer/ThreeExtented/FeatureToolBox';
 
 const l_ELEVATION = 0;
 const l_COLOR = 1;
@@ -242,31 +243,31 @@ TileMesh.prototype.setTexturesLayer = function(textures, idLayer, slotOffset) {
 };
 
 
-TileMesh.prototype.setRasterFeatures = function(rasterFeatures) {
-    // console.log("setRasterFeatures"); 
-   
+       
+TileMesh.prototype.setRasterFeatures = function() {
+
+    this.material.uniforms.rasterFeatures.value = Scene().featuresRasterOn ? 1 : 0;
+    this.material.uniforms.featureTexture.value = this.computeRasterFeature();
+   /*
      if(Scene().featuresRasterOn && Scene().featuresRaster != null){
      //   console.log("setRasterFeatures"),Scene().featuresRaster.lines[0]);  
         this.material.uniforms.lineFeatures.value = Scene().featuresRaster.lines;
         this.material.uniforms.polygonFeatures.value = Scene().featuresRaster.polygons;
         this.material.uniforms.rasterFeatures.value = 1.;
-     }
-     //console.log(this);
-     
-     /*
-    if (this.material === null) {
-        return;
-    }
-    if (textures) {
-       console.log(this.materials[RendererConstant.FINAL]);//.uniforms.nbTextures.value = this.materials[RendererConstant.FINAL].nbTextures[0];
-    }
-*/
+     }*/
 };
 
-TileMesh.prototype.computeRasterFeature = function(rasterFeatures) {
+TileMesh.prototype.computeRasterFeature = function() {
     
+    var bbox = new THREE.Vector4(this.bbox.minCoordinate.coordinate[0],
+                                 this.bbox.minCoordinate.coordinate[1],
+                                 this.bbox.maxCoordinate.coordinate[0],
+                                 this.bbox.maxCoordinate.coordinate[1]
+                                );
     
-    
+    var bboxOriginDeg = new THREE.Vector2(bbox.x, bbox.y).divideScalar(Math.PI/180);
+    var bboxSizeDeg = new THREE.Vector2(bbox.z - bbox.x, bbox.w - bbox.y).divideScalar(Math.PI/180);
+    return new FeatureToolBox().createRasterImage(bboxOriginDeg, bboxSizeDeg, Scene().featuresRaster.lines, Scene().featuresRaster.polygons);
 };
 
 

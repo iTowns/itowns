@@ -313,6 +313,7 @@ ApiGlobe.prototype.setLayerVisibility = function(id, visible) {
 
 ApiGlobe.prototype.setFeatureLayerVisibility = function(id, visible) {
 
+    this.scene.setFeaturesRasterOnOff(visible);
     this.scene.getMap().setFeatureLayerVisibility(id, visible);
 
     this.update();
@@ -660,6 +661,7 @@ ApiGlobe.prototype.addFeaturesLayer = function(layer) {
     */
   //  if(this.scene.getFeaturesRasterOnOff() && this.scene.getFeaturesRaster() === null)
   //  {
+      //  this.scene.setFeaturesRasterOnOff();
         var map = this.scene.getMap();
         map.layersConfiguration.addFeaturesLayer(layer);
         var featureLayer  = map.createFeatureLayer(layer.id);
@@ -669,12 +671,11 @@ ApiGlobe.prototype.addFeaturesLayer = function(layer) {
                 var kml_Provider = new KML_Provider(this.scene.getEllipsoid());
                 var geo = kml_Provider.parseKML(layer.url).then(
                         function(obj){
-                            console.log(obj);
-                            this.scene.addFeaturesRaster(obj.objLinesPolyToRaster, obj.objLinesPolyToRaster.nbLines); // Only 2D Polygons and Lines
+                            this.scene.addFeaturesRaster(obj.objLinesPolyToRaster); // Only 2D Polygons and Lines
                             featureLayer.add(obj.geoFeat);
                             this.scene.gfxEngine.add3DScene(featureLayer.getMesh());// Only 3D Feat and 2D Icon/Text
-                        }.bind(this));
-                console.log('geo',geo);  
+                           // this.scene.setFeaturesRasterOnOff(true);
+                        }.bind(this));  
             }
         }else{
             preprocessLayer(layer, this.scene.managerCommand.getProtocolProvider(layer.protocol));

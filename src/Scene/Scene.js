@@ -267,35 +267,23 @@ Scene.prototype.setLightingPos = function(pos) {
 
 
 
-Scene.prototype.addFeaturesRaster = function(featuresRaster, nbLines){
+Scene.prototype.addFeaturesRaster = function(featuresRaster){
     
-    console.log("gggggggggggggggggg", featuresRaster.lines, nbLines);
     this.featuresRasterOn = true;
     this.featuresRaster = featuresRaster;
     this.browserScene.updateMaterialUniform("rasterFeatures", 1);
-    this.browserScene.updateMaterialUniform("lineFeatures", featuresRaster.lines);
-    this.browserScene.updateMaterialUniform("nbFeatLines", nbLines);
-    this.browserScene.updateMaterialUniform("polygonFeatures", featuresRaster.polygons);
-    
+    this.browserScene.updateFeatureRasterLayer();
 };
 
-/*
-// Test GPU WAY
-Scene.prototype.addFeaturesRaster = function(featuresRaster, nbLines){
+
+Scene.prototype.setFeaturesRasterOnOff = function(b){
     
-    console.log("gggggggggggggggggg", featuresRaster.lines, nbLines);
-    this.featuresRasterOn = true;
-    this.featuresRaster = featuresRaster;
-    this.browserScene.updateMaterialUniform("rasterFeatures", 1);
-    this.browserScene.updateMaterialUniform("lineFeatures", featuresRaster.lines);
-    this.browserScene.updateMaterialUniform("nbFeatLines", nbLines);
-    this.browserScene.updateMaterialUniform("polygonFeatures", featuresRaster.polygons);
+    if(b != null) 
+        this.featuresRasterOn = b;
+    else
+        this.featuresRasterOn = !this.featuresRasterOn;
     
-};
-*/
-Scene.prototype.setFeaturesRasterOnOff = function(){
-    this.featuresRasterOn = !this.featuresRasterOn;
-    this.browserScene.updateMaterialUniform("rasterFeatures", this.featuresRasterOn? 1:0);
+    this.browserScene.updateMaterialUniform("rasterFeatures", this.featuresRasterOn);//this.featuresRasterOn? 1:0);
 }
 
 Scene.prototype.getFeaturesRasterOnOff = function(){

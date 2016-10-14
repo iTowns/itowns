@@ -35,9 +35,9 @@ KML_Provider.prototype.parseKML = function(urlFile) {
     
     return this.ioDriverXML.read(urlFile).then(function(result) {
          var geojson = togeojson.kml(result);
-         var objLinesPolyToRaster = new FeatureToolBox().extractFeatures(geojson);
-         var geoFeat = new FeatureToolBox().processingGeoJSON(geojson);
-         console.log(objLinesPolyToRaster);
+         var objLinesPolyToRaster = new FeatureToolBox().extractFeatures(geojson); // Raster feat
+         var geoFeat = new FeatureToolBox().processingGeoJSON(geojson);            // vector feat
+         //console.log(objLinesPolyToRaster);
          return {geoFeat: geoFeat, objLinesPolyToRaster: objLinesPolyToRaster};
         }.bind(this));
 };

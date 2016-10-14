@@ -48,7 +48,7 @@ var LayeredMaterial = function(id,bbox) {
 
     var maxTexturesUnits =  gfxEngine().glParams.maxTexturesUnits;
     this.vertexShader = GlobeVS;
-    var nbSamplers = Math.min(maxTexturesUnits-1,16-1);
+    var nbSamplers = 8;//Math.min(maxTexturesUnits-1,16-1);
 
     this.fragmentShaderHeader +='const int   TEX_UNITS   = ' + nbSamplers.toString() + ';\n';
     this.fragmentShaderHeader += pitUV;
@@ -107,7 +107,7 @@ var LayeredMaterial = function(id,bbox) {
     // temp raster texture
         // Color texture
     this.uniforms.featureTexture = {
-        type: "tv",
+        type: "t",
         value: new THREE.Texture()
     };
 
@@ -172,41 +172,7 @@ var LayeredMaterial = function(id,bbox) {
          type: "i",
          value: 0
     };
-    this.uniforms.nbFeatLines = {
-         type: "i",
-         value: 0
-    };
-    // Lines have vec3 with Z as id so we can put different lines in same buffer
-    this.uniforms.lineFeatures = {
-        type: "v3v",
-        value:  this.featLines
-        /*new THREE.Vector3(6.840534210205076,45.921214280686,0),
-                  new THREE.Vector3(6.877784729003904,45.92473693191741,0),
-                  new THREE.Vector3(6.9037055969238255,45.920915740639856,0),
-                  new THREE.Vector3(6.904134750366209,45.93273669875063,0)] //new THREE.Vector3(),new THREE.Vector3() ] */
-    };
-    
-     // Polygons have vec3 with Z as id so we can put different lines in same buffer
-    this.uniforms.polygonFeatures = {
-        type: "v3v",
-        value:  [ new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3(),
-                  new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()]
-            
-            /*6.8187332153320295,45.92270695682126,0),
-                  new THREE.Vector3(6.812124252319334,45.91070470414485,0),
-                  new THREE.Vector3(6.800451278686521,45.92061719898726,0),
-                  new THREE.Vector3(6.797189712524413,45.93876561121306,0),
-                  new THREE.Vector3(6.844482421875,45.94031750239728,0),
-                  new THREE.Vector3(6.8187332153320295,45.92270695682126,0)] //new THREE.Vector3(),new THREE.Vector3() ] */
-    };
-    
-  //  console.log(this.uniforms.bbox);
-     /*
-         vec2 tileWH = vec2(bbox.z - bbox.x, bbox.w - bbox.y);
-         vec2 currentCoord = vec2(bbox.x + vUv_WGS84.x * tileWH.x, bbox.w + vUv_WGS84.y * tileWH.y);
-         vec2 currentCoordDeg = currentCoord / PI * 180.;
-     */
-   // console.log(this.bbox.minCoordinate.coordinate[0] / Math.PI * 180.);
+  
     this.setUuid(id || 0);
     this.wireframe = false;
     //this.wireframe = true;

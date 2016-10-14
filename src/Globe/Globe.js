@@ -199,6 +199,7 @@ Globe.prototype.setLayerVisibility = function(id, visible) {
     
 };
 
+//TEMP
 Globe.prototype.setFeatureLayerVisibility = function(id, visible) {
 
     this.layersConfiguration.setLayerVisibility(id, visible);
@@ -268,13 +269,5 @@ Globe.prototype.updateFeatureHeights = function(featureLayer){
     console.log(pos);
     
 };
-
-/*
-Globe.prototype.addFeaturesRaster = function(featuresRaster){
-    
-    console.log(this);
-    
-};
-*/
 
 export default Globe;

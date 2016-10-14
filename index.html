@@ -556,7 +556,7 @@ and open the template in the editor.
                     id: "myKmlLayer",
                     style: "myStyle",
                     local:"true",
-                    url: "data/croquis2.kml"
+                    url: "data/croquis.kml"
                 });
 
 
@@ -569,6 +569,7 @@ and open the template in the editor.
             this.SatelliteAnimation = false;
             this.RealisticLighting = false;
             this.StreetLevelImagery = false;
+            this.featureLayer = false;
             this.KML = false;
             this.AnimateTime = false;
             this.Orbit = false;
@@ -653,6 +654,9 @@ and open the template in the editor.
             f2.add(text, 'StreetLevelImagery').onChange(function(newValue) {
                 itowns.viewer.setStreetLevelImageryOn(newValue);
             });
+
+
+
 
 
         }

@@ -488,15 +488,48 @@ FeatureToolBox.prototype.createCoordinateArray = function(feature) {
         for(var i=0;i<array.length;i++)
             array[i] = remp;
     };
+ 
+ 
+ // Extract polygons and lines for raster rendering in GPU
+FeatureToolBox.prototype.extractFeatures = function(json) {
+    
+    var arrPolygons = [];
+    var arrLines = [];
 
+    for (var nFeature = 0; nFeature < json.features.length; nFeature++) {
+        var feat = json.features[nFeature];
+        if (feat.geometry.type === 'LineString') {
+             var arrLine = [];
+             for (var point_num = 0; point_num < feat.geometry.coordinates.length; point_num++) {
+                 var v = feat.geometry.coordinates[point_num];
+                 arrLine.push(new THREE.Vector2(v[0], v[1]));
+             }
+             arrLines.push({line:arrLine, properties: feat.properties});
+         }
+         
+         if (feat.geometry.type === 'Polygon') {
+             var arrPolygon = [];
+             for (var point_num = 0; point_num < feat.geometry.coordinates.length; point_num++) {
+                 for( var p = 0; p < feat.geometry.coordinates[point_num].length; ++p ){
+                    var v = feat.geometry.coordinates[point_num][p];
+                    arrPolygon.push(new THREE.Vector2(v[0], v[1]));
+                }
+             }
+             arrPolygons.push({polygon:arrPolygon, properties: feat.properties});
+         }
+    }
+    return {lines: arrLines, polygons: arrPolygons};
+};
+
+/*
 // Extract polygons and lines for raster rendering in GPU
 FeatureToolBox.prototype.extractFeatures = function(json) {
     
-    var MaxLines = 100;
+    //var MaxLines = 100;
     var arrPolygons = [];
-    var arrLines = Array(MaxLines);
+    var arrLines = [];//Array(MaxLines);
     var nbLines = 0;
-    fill(arrLines, new THREE.Vector3());
+   // fill(arrLines, new THREE.Vector3());
     var occPoly = 0;
     var occLines = 0;
     var jsonFeatures = this.createGeometryArray(json);
@@ -507,7 +540,7 @@ FeatureToolBox.prototype.extractFeatures = function(json) {
         if (feat.type === 'LineString') {
              for (var point_num = 0; point_num < feat.coordinates.length; point_num++) {
                  var v = feat.coordinates[point_num];
-                 arrLines[nbLines] = new THREE.Vector3(v[0], v[1], occLines);
+                 arrLines.push(new THREE.Vector3(v[0], v[1], occLines));
                  nbLines++;
              }
              occLines++;
@@ -525,6 +558,7 @@ FeatureToolBox.prototype.extractFeatures = function(json) {
     
     return {lines: arrLines, nbLines:nbLines, polygons: arrPolygons};
 };
+*/
 
 function smoothstep(min, max, value) {
   var x = Math.max(0, Math.min(1, (value-min)/(max-min)));
@@ -536,13 +570,28 @@ function mix(x,y,a){
     return x* (1-a) + y*a;
 };
 
+// tab is array of polygon points. p is current frag point
+FeatureToolBox.prototype.collision = function(arrPoints, p){
+
+    var k = new THREE.Vector2(10.,50.);
+    var nbintersections = 0;
+    for(var i=0; i < arrPoints.length -1; i++){
+
+       var a = arrPoints[i];//.xy;
+       var b = arrPoints[i+1];//.xy;
+       var iseg = intersectsegment(a,b,k,p); 
+       nbintersections += iseg;
+    }
+    return ((nbintersections % 2) == 0); //mod(float(nbintersections),2.) == 0.;
+}
+
 /*
  * coordOrigin of tile in wgs84
  * tileWH is tileSize in deg
  * p1 and p2, line extremities
  * thickness of line
  */
-FeatureToolBox.prototype.drawLine = function(coordOrigin, tileWH, p1, p2, thickness) {
+FeatureToolBox.prototype.drawLineSAVE = function(coordOrigin, tileWH, p1, p2, thickness) {
 
     //var tileWH = vec2(bbox.z - bbox.x, bbox.w - bbox.y);
     //var currentCoord = vec2(bbox.x + vUv_WGS84.x * tileWH.x, bbox.y + vUv_WGS84.y * tileWH.y);
@@ -563,6 +612,17 @@ FeatureToolBox.prototype.drawLine = function(coordOrigin, tileWH, p1, p2, thickn
     return mix(1.0, 0.0, smoothstep(0.5 * thickness, 1.5 * thickness, h));
 };
 
+
+FeatureToolBox.prototype.drawLinesSAVE = function(coordOrigin, tileWH, arrPoints, thickness){
+    
+    var feat = 0.;
+    for( var i= 0; i< arrPoints.length -1; ++i){    //  return drawLine(vec2(6.840534210205076,45.92121428068), vec2(6.904134750366209,45.93273669875063));
+        //if(arrPoints[i+1].x != 0. && lineFeatures[i+1].y != 0.)
+        feat += drawLine(coordOrigin, tileWH, arrPoints[i].xy, arrPoints[i+1].xy, thickness);
+    }
+    return Math.min(feat,1.);
+}
+
 FeatureToolBox.prototype.intersectsegment = function( a, b, i, p){
 
    var d,e; 
@@ -582,31 +642,139 @@ FeatureToolBox.prototype.intersectsegment = function( a, b, i, p){
    return 1;
 };
 
-// tab is array of polygon points. p is current frag point
-FeatureToolBox.prototype.collision = function(arrPoints, p){
-
-    var k = new THREE.Vector2(10.,50.);
-    var nbintersections = 0;
-    for(var i=0; i < arrPoints.length -1; i++){
-
-       var a = arrPoints[i];//.xy;
-       var b = arrPoints[i+1];//.xy;
-       var iseg = intersectsegment(a,b,k,p); 
-       nbintersections += iseg;
-    }
-    return ((nbintersections % 2) == 0); //mod(float(nbintersections),2.) == 0.;
-}
-
-
-FeatureToolBox.prototype.drawLines = function(coordOrigin, tileWH, arrPoints, thickness){
+FeatureToolBox.prototype.drawLine = function(coordOrigin, tileWH, p1, p2, thickness, ctx, prop) {
     
-    var feat = 0.;
-    for( var i= 0; i< arrPoints.length -1; ++i){    //  return drawLine(vec2(6.840534210205076,45.92121428068), vec2(6.904134750366209,45.93273669875063));
-        //if(arrPoints[i+1].x != 0. && lineFeatures[i+1].y != 0.)
-        feat += drawLine(coordOrigin, tileWH, arrPoints[i].xy, arrPoints[i+1].xy, thickness);
+    var tilePx = 256;
+    ctx.strokeStyle = prop.stroke; //"rgba(255, 0, 255, 0.5)";//"rgba(1,1,0,1)";
+    ctx.lineWidth = prop["stroke-width"];
+    ctx.globalAlpha = prop["stroke-opacity"];
+   // ctx["stroke-opacity"] = 0.2;
+ //   console.log(ctx.strokeStyle);
+    ctx.beginPath();
+  /*  ctx.moveTo(0, 0);
+                ctx.lineTo(200, 200);
+                ctx.stroke();*/
+   //console.log("aaaaaaaaaaaaaaaaaaaaaaaaaaaa",coordOrigin,p1,p2,tileWH);
+    /*if(p1.x >= coordOrigin.x && p1.x <= coordOrigin.x +  tileWH.x && 
+       p1.y >= coordOrigin.y && p1.y <= coordOrigin.y +  tileWH.y &&
+       p2.x >= coordOrigin.x && p2.x <= coordOrigin.x +  tileWH.x && 
+       p2.y >= coordOrigin.y && p2.y <= coordOrigin.y +  tileWH.y   ){
+   */
+            var a = p1.sub(coordOrigin);
+            var b = p2.sub(coordOrigin);
+            
+            a.divideScalar(tileWH.x).multiplyScalar(tilePx);
+            b.divideScalar(tileWH.x).multiplyScalar(tilePx);
+   //      console.log("aa",coordOrigin,tileWH,p1,p2,a,b);
+      //       if( (a.x>=0 && a.x<= tilePx && a.y >=0 && a.y <=tilePx)
+      //          && (b.x>=0 && b.x<= tilePx && b.y >=0 && b.y <=tilePx)){
+                ctx.moveTo(a.x, tilePx - a.y);
+                ctx.lineTo(b.x, tilePx - b.y);
+                ctx.stroke();
+                ctx.globalAlpha = 1.;
+      //      }
+   // }
+ 
+
+};
+
+
+FeatureToolBox.prototype.drawPolygon = function(polygon, coordOrigin, tileWH, ctx, prop) {
+
+    var tilePx = 256;
+    ctx.strokeStyle = prop.stroke;
+    ctx.lineWidth = prop["stroke-width"];
+    ctx.fillStyle = prop.fill; //"rgba(255, 0, 255, 0.5)";//"rgba(1,1,0,1)";
+    ctx.globalAlpha = prop["fill-opacity"];
+    //  ctx["stroke-opacity"] = 0.8;
+    // console.log(ctx.strokeStyle);
+    ctx.beginPath();
+ 
+    for (var i = 0; i< polygon.length -1; ++i){
+
+        var p1 = polygon[i];
+        var p2 = polygon[i+1];
+        var a = p1.clone().sub(coordOrigin);
+        var b = p2.clone().sub(coordOrigin);
+
+        a.divideScalar(tileWH.x).multiplyScalar(tilePx);
+        b.divideScalar(tileWH.x).multiplyScalar(tilePx);
+
+        if(i === 0) {
+            ctx.moveTo(a.x, tilePx - a.y);
+            ctx.lineTo(b.x, tilePx - b.y);
+        }else{
+            ctx.lineTo(b.x, tilePx - b.y);
+        }
+     }
+     ctx.closePath();
+     ctx.globalAlpha = prop["fill-opacity"];
+     ctx.fill();
+     ctx.globalAlpha = prop["stroke-opacity"];
+     ctx.stroke();
+     ctx.globalAlpha = 1.;
+};
+
+
+// parameters in deg, vec2
+FeatureToolBox.prototype.createRasterImage = function(coordOrigin, tileWH, lines, polygons){
+    
+    
+    var c = document.createElement('canvas');
+    c.width = 256; 
+    c.height = 256;
+    var ctx = c.getContext("2d");
+    // Lines
+    for (var j= 0; j< lines.length; ++j){
+        var line = lines[j].line; 
+        var properties = lines[j].properties; 
+        for (var i= 0; i< line.length -1; ++i){
+           this.drawLine(coordOrigin, tileWH, line[i].clone(), line[i+1].clone(), 4, ctx, properties);
+        }
     }
-    return Math.min(feat,1.);
-}
+    // Polygon
+    for (var i= 0; i< polygons.length; ++i){
+        this.drawPolygon(polygons[i].polygon, coordOrigin, tileWH, ctx, polygons[i].properties);
+    }
+
+    var texture = new THREE.Texture(c);
+    texture.flipY = true;  // FALSE by default on THREE.DataTexture but True by default for THREE.Texture!
+    texture.needsUpdate = true;
+    texture.name = "featureRaster";
+    return texture;
+};
+
+
+
+// parameters in deg, vec2
+FeatureToolBox.prototype.createImageSAVE = function(coordOrigin, tileWH){
+   
+    console.log("create Empty Feature Image");
+
+    var canvas = document.createElement('canvas');
+    canvas.width = 256;  // CANVAS SIZE IS IMPORTANT §§§
+    canvas.height = 256;
+    var context = canvas.getContext('2d');
+    //context.drawImage(this.imgIn, 0, 0, 256, 256 );
+    var imgData = context.getImageData(0, 0, 256, 256);
+    var pixels = imgData.data;
+
+    var dataMap = new Uint8Array(4*256*256);
+  
+    for(var i = 0; i < pixels.length; i+=4){
+
+        dataMap[i] = 255;//r;
+        dataMap[i + 1] = 0;//g;
+        dataMap[i + 2] = 0;//b;
+        dataMap[i + 3] = 255;//a;
+    }
+    
+    var texture = new THREE.DataTexture( dataMap/*newImage.data*/, 256, 256, THREE.RGBAFormat );
+    texture.flipY = true;  // FALSE by default on THREE.DataTexture but True by default for THREE.Texture!
+    texture.needsUpdate = true;
+ 
+    return texture; 
+};
 
 /*
 float drawContourPoly(float thickness){
