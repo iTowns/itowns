@@ -19,7 +19,15 @@ function Ellipsoid(size) {
     this.size = new THREE.Vector3(size.x, size.y, size.z);
 
     this._radiiSquared = new THREE.Vector3(size.x * size.x, size.y * size.y, size.z * size.z);
+    this._oneOverRadiiSquared = new THREE.Vector3(1/(size.x * size.x), 1/(size.y * size.y), 1/(size.z * size.z));
 }
+
+ Ellipsoid.prototype.geodeticSurfaceNormal = function(position) {
+        var ret = new THREE.Vector3().copy(position);
+            ret.multiply(this._oneOverRadiiSquared);
+        return ret.normalize();
+};
+
 
 Ellipsoid.prototype.geodeticSurfaceNormalCartographic = function(coordCarto) {
 
