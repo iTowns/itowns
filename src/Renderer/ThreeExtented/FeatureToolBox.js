@@ -489,37 +489,6 @@ FeatureToolBox.prototype.createCoordinateArray = function(feature) {
             array[i] = remp;
     };
  
- 
- // Extract polygons and lines for raster rendering in GPU
-FeatureToolBox.prototype.extractFeatures = function(json) {
-    
-    var arrPolygons = [];
-    var arrLines = [];
-
-    for (var nFeature = 0; nFeature < json.features.length; nFeature++) {
-        var feat = json.features[nFeature];
-        if (feat.geometry.type === 'LineString') {
-             var arrLine = [];
-             for (var point_num = 0; point_num < feat.geometry.coordinates.length; point_num++) {
-                 var v = feat.geometry.coordinates[point_num];
-                 arrLine.push(new THREE.Vector2(v[0], v[1]));
-             }
-             arrLines.push({line:arrLine, properties: feat.properties});
-         }
-         
-         if (feat.geometry.type === 'Polygon') {
-             var arrPolygon = [];
-             for (var point_num = 0; point_num < feat.geometry.coordinates.length; point_num++) {
-                 for( var p = 0; p < feat.geometry.coordinates[point_num].length; ++p ){
-                    var v = feat.geometry.coordinates[point_num][p];
-                    arrPolygon.push(new THREE.Vector2(v[0], v[1]));
-                }
-             }
-             arrPolygons.push({polygon:arrPolygon, properties: feat.properties});
-         }
-    }
-    return {lines: arrLines, polygons: arrPolygons};
-};
 
 /*
 // Extract polygons and lines for raster rendering in GPU
@@ -746,45 +715,62 @@ FeatureToolBox.prototype.createRasterImage = function(coordOrigin, tileWH, lines
 
 
 
-// parameters in deg, vec2
-FeatureToolBox.prototype.createImageSAVE = function(coordOrigin, tileWH){
-   
-    console.log("create Empty Feature Image");
-
-    var canvas = document.createElement('canvas');
-    canvas.width = 256;  // CANVAS SIZE IS IMPORTANT §§§
-    canvas.height = 256;
-    var context = canvas.getContext('2d');
-    //context.drawImage(this.imgIn, 0, 0, 256, 256 );
-    var imgData = context.getImageData(0, 0, 256, 256);
-    var pixels = imgData.data;
-
-    var dataMap = new Uint8Array(4*256*256);
-  
-    for(var i = 0; i < pixels.length; i+=4){
-
-        dataMap[i] = 255;//r;
-        dataMap[i + 1] = 0;//g;
-        dataMap[i + 2] = 0;//b;
-        dataMap[i + 3] = 255;//a;
-    }
-    
-    var texture = new THREE.DataTexture( dataMap/*newImage.data*/, 256, 256, THREE.RGBAFormat );
-    texture.flipY = true;  // FALSE by default on THREE.DataTexture but True by default for THREE.Texture!
-    texture.needsUpdate = true;
  
-    return texture; 
+ // Extract polygons and lines for raster rendering in GPU
+FeatureToolBox.prototype.extractFeatures = function(json) {
+    
+    var arrPolygons = [];
+    var arrLines = [];
+
+    for (var nFeature = 0; nFeature < json.features.length; nFeature++) {
+        var feat = json.features[nFeature];
+        if (feat.geometry.type === 'LineString') {
+             var arrLine = [];
+             for (var point_num = 0; point_num < feat.geometry.coordinates.length; point_num++) {
+                 var v = feat.geometry.coordinates[point_num];
+                 arrLine.push(new THREE.Vector2(v[0], v[1]));
+             }
+             arrLines.push({line:arrLine, properties: feat.properties});
+         }
+         
+         if (feat.geometry.type === 'Polygon') {
+             var arrPolygon = [];
+             for (var point_num = 0; point_num < feat.geometry.coordinates.length; point_num++) {
+                 for( var p = 0; p < feat.geometry.coordinates[point_num].length; ++p ){
+                    var v = feat.geometry.coordinates[point_num][p];
+                    arrPolygon.push(new THREE.Vector2(v[0], v[1]));
+                }
+             }
+             arrPolygons.push({polygon:arrPolygon, properties: feat.properties});
+         }
+    }
+    return {lines: arrLines, polygons: arrPolygons};
 };
 
-/*
-float drawContourPoly(float thickness){
-    float feat = 0.;
-    for( int i= 0; i< 6; ++i){
-        feat += drawLine(polygonFeatures[i].xy, polygonFeatures[i+1].xy, thickness);
-    }
-    return clamp(feat,0.,1.);
-}
-*/
+
+FeatureToolBox.prototype.createFeaturesPoints = function(json){
+    
+    var globalObject = new THREE.Object3D();
+
+    for (var nFeature = 0; nFeature < json.features.length; nFeature++) {
+           var feat = json.features[nFeature];
+           if (feat.geometry.type === 'Point') {
+               console.log(feat);
+               var vertex = this.convertLonLatToWGS84(feat.geometry.coordinates);
+               if (feat.properties.name != null){
+                   console.log(feat.properties.name);
+                   globalObject.add(this.createText(vertex, feat.properties));
+               }else{
+                   globalObject.add(this.createIcon(vertex));
+               }
+            }
+       }
+       
+     //  globalObject.add(new THREE.LineSegments(geometry, basicLineMaterial));
+       return globalObject;
+
+};
+
 
 
 FeatureToolBox.prototype.processingGeoJSON = function(json) {
@@ -896,12 +882,110 @@ FeatureToolBox.prototype.createIcon = function(pos){
     image.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACIAAAAsCAYAAAAATWqyAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAABTtJREFUeNq8WGtsFUUU/rb3gtdCAykFG9AUDTQUKimhxUewEusrJYoBo4FfEgoqotHERH6oP9TGmJhIrIlWAf9hjAaEiME2pgFfVVpFii8sWqIQLLSx3EJLW7p+Z2Z2b2l7d/b23vZLTmZ2duacb2fmnDk7DlKA67rXs1hJKacsohRQppjXFygnKT9TDlH2O47zFzIFGnco91EOuqnjoBnr2Ow4FhIlLN6m3DykFTh3BGj/Doj/CfSe082xPCDnBmDWTUBeyXDVjZTHOUNHUiZCEs+weI0ySTV0/w0c2wa07gIungn+vOx8YN46oPhpYOp1Xms/5TmSeSMUERKImFnYqBoGuPRNL5LEW8BgX2rrmjWZZLYApS8BUW8r4T0zO5eTEjFr+S6lSjV0HgPqVwNdf6S30abNB+7aDeQWey3bKZtIxvU5DxvyrE/izJfAvuXpkxCIDtElOjWqjK2RM8LZWMbiG0oEnUc5kB7a14WMYvI04H56du5ieZKluZWz8r0/IyQh5TuKRH8cqFuTeRIC0Sm6xYbYok1j21+ahyhLVO3wC8D5VowbRLfY0FhibOulIavDLEoRZyD8sJDeMWBXKG5ZsIobsdDsg+OMq3u1m1u9KQo8zP45EqjRxOUpk6i50IRl4FuGjpZtwUoiMYa314GFj/EzIsN8n8v+C1e4kfvwcm+wnhsZY27xQ8oiWZpKrWRQB6tAElfxpKnjsCdGklDzG9HvpI/0DYLYEpsalVnmAAM6fgR62oMHl70C5N9mn3rpI32DILbEpkZ5ljlFgbPNFtebzij5VPhNKX1lTBASNtXSzPZ3cxCuvVOH7FTCu4yxeZDGbCES0z5+PniQ3uGpwTYmYTOWCPGTpgYP6u9OnYhtzBCbQkSH0NiM4EEdP6VOxDYmYbNLiJxQ1elFwYPaG3XQCn3QHddjgpCweUKI6K2bvzw4YROf//rJob6fZl/H2FRoFiINfqo3qyzYwD8MVIeYLw32J+8j76SP9A2C2BKbGg1CZL+EF/W4YKP9a3/fCeyhkrY9DOOXEu1SlzZ5J31sSNjqURm/OfQkY9qgvkYOvXhbuH0g505Oga7HT9rPF9+t5+pDL0ulwzt46FV5ROax+JUSRRtP0LoHMK64+xNg7iqVEVOKSKRVxRGpsKhRnaRD4SPjR0J0axKCGmP7ilQxm4X8d8xXmfvHJZlPkCR3WfODl9FLMlxCIhevSJ5Nwzo1XdKxYpe3hpmB6BKdmoS43VqPxIgsni+aWOg8biZ3f+nLmSMiuvKWek/P01az7QdLyNVT7lC/l59WAKcb0iMxhzpW1nvmvpDtSiKD1l9OkpnDgv8UyMWFU9wvTP8vdY6NhJwnD1JVtso2OiiLSeL0iJUbNfg6zikVVwRTyOn2HWOfjfLtHgnBhtFIJCViyNDZUatdmnGlaFPqJIoe1WM1aqlz71ivJbLNobgAA9zgu7nZ/vstHAk5WVdzaPRqmGC5lER6kjpV4OWJdq+1kkshSk4VH9izcy/bV66qSPQZV+0J9G7rTY6+XNmqHmYwyJVV24kse1X31dhKHdasygkzy+a64oC4nWr47F4e858nSbLv4V/KAe9JKpVDrx/SImLIXMOiRUKdujESl+49O8xVZxpXzVc/C/I/RxL/hgq8YYkYhev9q6kVO4d9B+sr3vdICNaHJTHWW8Ya/87wqy2uWwstUk/gTYw3aCRGOarMDfS67kfFWqSuIe9imAjQEC272nJHixYNaSvGRIIGN49ywbsZEw1zI11N6TZSHeaGORn+F2AAJtRIMx4t+hUAAAAASUVORK5CYII=';
     var materialS = new THREE.SpriteMaterial( { map: texture,  color: 0xffffff, depthTest: false} );
     var sprite = new THREE.Sprite(materialS); 
-    sprite.scale.set(1000,1000,1000);
+    sprite.scale.set(500,500,500);
     sprite.position.copy(pos);
 
+    var material = new THREE.LineBasicMaterial({ color: 0xffffff, transparent : false}); //side:THREE.DoubleSide, , linewidth: 5,
+    var geometry = new THREE.Geometry();
+    geometry.vertices.push(new THREE.Vector3(), new THREE.Vector3( -pos.x, -pos.y, -pos.z ).divideScalar(1000));
+    var line = new THREE.Line( geometry, material );
+    sprite.add(line);
+    
     return sprite;
-};				
+};	
 
+
+FeatureToolBox.prototype.createText = function(pos, prop){
+    
+    var sprite = makeTextSprite(prop.name);
+    sprite.position.copy(pos);
+    
+    var material = new THREE.LineBasicMaterial({ color: 0xffffff, transparent : false}); //side:THREE.DoubleSide, , linewidth: 5,
+    var geometry = new THREE.Geometry();
+    geometry.vertices.push(new THREE.Vector3(), new THREE.Vector3( -pos.x, -pos.y, -pos.z ).divideScalar(1000));
+    var line = new THREE.Line( geometry, material );
+    sprite.add(line);
+
+    return sprite;
+}
+
+function makeTextSprite( message, parameters )
+{
+	if ( parameters === undefined ) parameters = {};
+	
+	var fontface = parameters.hasOwnProperty("fontface") ? 
+		parameters["fontface"] : "Arial";
+	
+	var fontsize = parameters.hasOwnProperty("fontsize") ? 
+		parameters["fontsize"] : 22;
+	
+	var borderThickness = parameters.hasOwnProperty("borderThickness") ? 
+		parameters["borderThickness"] : 4;
+	
+	var borderColor = parameters.hasOwnProperty("borderColor") ?
+		parameters["borderColor"] : { r:0, g:0, b:0, a:1.0 };
+	
+	var backgroundColor = parameters.hasOwnProperty("backgroundColor") ?
+		parameters["backgroundColor"] : { r:255, g:255, b:255, a:.8 };
+
+	//var spriteAlignment = THREE.SpriteAlignment.topLeft;
+		
+	var canvas = document.createElement('canvas');
+	var context = canvas.getContext('2d');
+	context.font = "Bold " + fontsize + "px " + fontface;
+    
+	// get size data (height depends only on font size)
+	var metrics = context.measureText( message );
+	var textWidth = metrics.width;
+	
+	// background color
+	context.fillStyle   = "rgba(" + backgroundColor.r + "," + backgroundColor.g + ","
+								  + backgroundColor.b + "," + backgroundColor.a + ")";
+	// border color
+	context.strokeStyle = "rgba(" + borderColor.r + "," + borderColor.g + ","
+								  + borderColor.b + "," + borderColor.a + ")";
+      /*                                                    
+        context.shadowColor = "#ffffff";
+        context.shadowOffsetX = 6;
+        context.shadowOffsetY = 6;
+        context.shadowBlur = 3;
+      */
+	context.lineWidth = borderThickness;
+	roundRect(context, borderThickness/2, borderThickness/2, textWidth + borderThickness, fontsize * 1.4 + borderThickness, 6);
+	// 1.4 is extra height factor for text below baseline: g,j,p,q.
+	
+	// text color
+	context.fillStyle = "rgba(0, 0, 0, 1.0)";
+
+	context.fillText( message, borderThickness, fontsize + borderThickness);
+	
+	// canvas contents will be used for a texture
+	var texture = new THREE.Texture(canvas) 
+	texture.needsUpdate = true;
+
+	var spriteMaterial = new THREE.SpriteMaterial({ map: texture,  color: 0xffffff, depthTest: false} );//, useScreenCoordinates: false} );
+	var sprite = new THREE.Sprite( spriteMaterial );
+	sprite.scale.set(1000,1000,1000);//100,50,1.0);
+	return sprite;	
+}
+
+// function for drawing rounded rectangles
+function roundRect(ctx, x, y, w, h, r) 
+{
+    ctx.beginPath();
+    ctx.moveTo(x+r, y);
+    ctx.lineTo(x+w-r, y);
+    ctx.quadraticCurveTo(x+w, y, x+w, y+r);
+    ctx.lineTo(x+w, y+h-r);
+    ctx.quadraticCurveTo(x+w, y+h, x+w-r, y+h);
+    ctx.lineTo(x+r, y+h);
+    ctx.quadraticCurveTo(x, y+h, x, y+h-r);
+    ctx.lineTo(x, y+r);
+    ctx.quadraticCurveTo(x, y, x+r, y);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();   
+}
 /*
  * Compute height for all feature vertices using available DTM data
  */
