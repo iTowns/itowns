@@ -24,7 +24,7 @@ function _toCartesian(elem, ellipsoid) {
     var v_h    = elem[6];
 
     var direction = new THREE.Vector3(v_east, v_north, v_h).multiplyScalar(e/(365*24*60*60));
-    
+
     return {position: origin, direction: direction};
 };
 
@@ -66,21 +66,21 @@ function _GeoidDataToThreeJS(data,ellipsoid) {
     }
 
     var group = new THREE.Object3D();
-    
+
     var jdata = _matrixify(_standarlizeData(data),7);
 
     for(var i = 0; i < 1; i++){//jdata.length
         var tmp = _toCartesian(jdata[i], ellipsoid);
         //group.add(new THREE.ArrowHelper(tmp.direction.clone().normalize(), tmp.position, 100, 0x00ff00));
-       return  new THREE.ArrowHelper(tmp.direction.clone().normalize(), tmp.position, 10000, 0x00ff00);
+       return  new THREE.ArrowHelper(tmp.direction.clone().normalize(), tmp.position, 1000, 0x00ff00);
        /* var material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
         var geometry = new THREE.SphereGeometry(50000, 64, 64);
         var sphere = new THREE.Mesh(geometry, material);
             sphere.position.copy(tmp.position);
         */
-        group.add(sphere);    
-    }    
-       
+        group.add(sphere);
+    }
+
     return group;
 };
 
