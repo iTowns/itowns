@@ -7,6 +7,7 @@
 
 import * as THREE from 'three';
 import { UNIT } from '../Geographic/Coordinates';
+import Datum from 'Core/Math/Datum';
 
 function Ellipsoid(size) {
     // Constructor

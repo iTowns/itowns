@@ -54,19 +54,20 @@ function intermediatePointTo(ori, dest, fraction) {
 function _toCartesian(elem, ellipsoid) {
     var coordCarto = new CoordCarto();
 
+    var deltaElevation = 4000;
     var lon = elem[2];
     var lat = elem[1];
     var elevation = elem[3];
 
-    var origin =  ellipsoid.cartographicToCartesian(coordCarto.setFromDegreeGeo(lon,lat,elevation));
+    var origin =  ellipsoid.cartographicToCartesian(coordCarto.setFromDegreeGeo(lon, lat, elevation + deltaElevation));
 
-    var e       = 100000;
+    var e       = 40000;
     //O + (e * v_est, e * v_nord, e * v_up)
-    var lon2  = elem[4];
-    var lat2  = elem[5];
+    var lon2  = elem[5];
+    var lat2  = elem[4];
     var h2    = elem[6];
 
-    var target =  ellipsoid.cartographicToCartesian(coordCarto.setFromDegreeGeo(lon2,lat2,h2));
+    var target =  ellipsoid.cartographicToCartesian(coordCarto.setFromDegreeGeo(lon2, lat2, h2 + deltaElevation));
 
     var direction = new THREE.Vector3().sub(target, origin);
 
@@ -116,7 +117,7 @@ function _GeoidDataToThreeJS(data,ellipsoid) {
 
     for(var i = 0; i < jdata.length; i++){ //
         var tmp = _toCartesian(jdata[i], ellipsoid);
-            group.add(new THREE.ArrowHelper(tmp.direction.clone().normalize(), tmp.position, tmp.scale, 0xccff00));
+            group.add(new THREE.ArrowHelper(tmp.direction.normalize(), tmp.position, tmp.scale, 0xccff00,0.5*tmp.scale));
     }
     return group;
 };
