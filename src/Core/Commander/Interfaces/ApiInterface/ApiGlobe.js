@@ -687,7 +687,9 @@ ApiGlobe.prototype.loadGPX = function(url) {
 ApiGlobe.prototype.loadGeoidData = function(url) {
     loadGeoidData(url, this.scene.getEllipsoid()).then(function(geoid){
         if(geoid) {
-            this.scene.getMap().gpxTracks.children[0].add(geoid);
+            //for(var i= 0; i < geoid.children.length; i++)
+                //this.scene.getMap().gpxTracks.children[0].add(geoid.children[i]);
+                this.scene.getMap().gpxTracks.children[0].add(geoid);
         }
     }.bind(this));
 
