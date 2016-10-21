@@ -696,4 +696,13 @@ ApiGlobe.prototype.loadGeoidData = function(url) {
     this.scene.renderScene3D();
 };
 
+ApiGlobe.prototype.setITFRScale = function(scale) {
+    var gpx =  this.scene.getMap().getGPXTracks();
+    var arrows = gpx.children[0].children[0].children;
+    for(var i=0 ; i  < arrows.length; i++){
+            arrows[i].setLength (scale, 0.2*scale, 0.04*scale);
+    }
+    this.scene.renderScene3D();
+};
+
 export default ApiGlobe;

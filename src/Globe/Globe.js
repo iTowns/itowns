@@ -197,6 +197,11 @@ Globe.prototype.getZFactor = function(id) {
     return this.layersConfiguration.getZFactor(id);
 };
 
+Globe.prototype.getGPXTracks = function() {
+    return this.gpxTracks;
+};
+
+
 Globe.prototype.updateLayersOrdering = function() {
     var sequence = this.layersConfiguration.getColorLayersIdOrderedBySequence();
 

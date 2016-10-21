@@ -761,6 +761,9 @@ and open the template in the editor.
                     
                     text['ZFactor_HIGHRES'] = itowns.viewer.getZFactor("IGN_MNT_HIGHRES");
                     gui.add(text, 'ZFactor_HIGHRES').min(1.0).max(100.0).onChange(onchangeZFactor("IGN_MNT_HIGHRES"));
+                    
+                    text['ITRFFactor'] = 1;
+                    gui.add(text, 'ITRFFactor').min(1.0).max(100.0).onChange(function(v){ itowns.viewer.setITFRScale(v*10000)});
                 }
 
                {
