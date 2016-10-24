@@ -13,6 +13,9 @@ import GeoCoordinate, {UNIT} from 'Core/Geographic/GeoCoordinate';
 function FeatureToolBox() {
     this.size       = {x:6378137,y: 6356752.3142451793,z:6378137};
     this.ellipsoid  = new Ellipsoid(this.size);
+    
+    this.arrPolygons = null;
+    this.arrLines = null;
 }
 
 FeatureToolBox.prototype.GeoJSON2Polygon = function(features) {
@@ -555,6 +558,26 @@ FeatureToolBox.prototype.collision = function(arrPoints, p){
 }
 
 /*
+ * Function that test if a point p is inside a polygon 
+ * @param {type} posGeo
+ * @returns {undefined}
+ */
+FeatureToolBox.prototype.inPolygon = function(p, arrPoints){
+    
+    var k = new THREE.Vector2(10.,50.);
+    var nbintersections = 0;
+    for(var i=0; i < arrPoints.length -1; i++){
+
+       var a = arrPoints[i];//.xy;
+       var b = arrPoints[i+1];//.xy;
+       var iseg = intersectsegment(a,b,k,p); 
+       nbintersections += iseg;
+    }
+    return ((nbintersections % 2) === 0); //mod(float(nbintersections),2.) == 0.;
+    
+}
+
+/*
  * coordOrigin of tile in wgs84
  * tileWH is tileSize in deg
  * p1 and p2, line extremities
@@ -655,7 +678,7 @@ FeatureToolBox.prototype.drawPolygon = function(polygon, coordOrigin, tileWH, ct
     ctx.lineWidth = prop["stroke-width"];
     ctx.fillStyle = prop.fill; //"rgba(255, 0, 255, 0.5)";//"rgba(1,1,0,1)";
     ctx.globalAlpha = prop["fill-opacity"];
-    //  ctx["stroke-opacity"] = 0.8;
+    // ctx["stroke-opacity"] = 0.8;
     // console.log(ctx.strokeStyle);
     ctx.beginPath();
  
@@ -744,6 +767,8 @@ FeatureToolBox.prototype.extractFeatures = function(json) {
              arrPolygons.push({polygon:arrPolygon, properties: feat.properties});
          }
     }
+    this.arrPolygons = arrPolygons; console.log("rrrr",this.arrPolygons);
+    this.arrLines = arrLines;
     return {lines: arrLines, polygons: arrPolygons};
 };
 

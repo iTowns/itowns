@@ -490,6 +490,7 @@ c3DEngine.prototype.screenCoordsToNodeId = function(mouse) {
     // unpack RGBA to float
     var unpack = unpack1K(depthRGBA, 10000);
 
+    console.log("gergergerg",Math.round(unpack));
     return Math.round(unpack);
 
 };

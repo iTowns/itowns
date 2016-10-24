@@ -11,6 +11,8 @@ import Sphere from 'Core/Math/Sphere';
 import CustomEvent from 'custom-event';
 
 var selectClick = new CustomEvent('selectClick');
+var clickDown = new CustomEvent('clickDown');
+
 
 //TODO:
 // Recast touch for globe
@@ -797,7 +799,11 @@ function GlobeControls(camera, domElement, engine) {
                 ptScreenClick.x = event.clientX - event.target.offsetLeft;
                 ptScreenClick.y = event.clientY - event.target.offsetTop;
 
+                // Dispatch 3D position of click for any services that need it
                 var point = getPickingPosition(ptScreenClick);
+                clickDown.mouse = new THREE.Vector2(ptScreenClick.x,ptScreenClick.y);
+                clickDown.coord3d = point;
+                domElement.dispatchEvent(clickDown);
 
                 // update tangent sphere which passes through the point
                 if (point)
