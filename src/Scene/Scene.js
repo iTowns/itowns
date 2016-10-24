@@ -276,7 +276,7 @@ Scene.prototype.animateTime = function(value) {
             var coSun = CoordStars.getSunPositionInScene(this.getEllipsoid(), new Date().getTime() + 3.6 * nMilliSeconds, 0, 0);
             this.lightingPos = coSun;
             this.browserScene.updateMaterialUniform("lightPosition", this.lightingPos.clone().normalize());
-            this.browserScene.updateMaterialUniform("time", this.time /4000);
+            this.browserScene.updateMaterialUniform("time", this.time /1000 % 3000);
             
             this.layers[0].node.updateLightingPos(this.lightingPos);
             if (this.orbitOn) { // ISS orbit is 0.0667 degree per second -> every 60th of sec: 0.00111;
