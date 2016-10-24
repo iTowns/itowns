@@ -115,6 +115,16 @@ var LayeredMaterial = function(id) {
         type: "i",
         value: 1
     };
+    
+    this.uniforms.elevationEffectOn = {
+         type: "f",
+         value: 0.
+    };
+    
+    this.uniforms.time = {
+         type: "f",
+         value: 0.
+    };
 
     // PIT n Textures
     // Projection
@@ -312,6 +322,12 @@ LayeredMaterial.prototype.setLayerVisibility = function(id, visible) {
     if (this.paramLayers[id]) {
         this.paramLayers[id].z = visible ? 1 : 0;
     }
+};
+
+
+LayeredMaterial.prototype.setElevationEffectOn = function(val){
+    
+    this.uniforms.elevationEffectOn.value = val;
 };
 
 LayeredMaterial.prototype.setNbLayersColor = function(n) {

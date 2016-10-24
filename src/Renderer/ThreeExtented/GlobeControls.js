@@ -191,7 +191,7 @@ function GlobeControls(camera, domElement, engine) {
     // This option actually enables dollying in and out; left as "zoom" for
     // backwards compatibility
     this.enableZoom = true;
-    this.zoomSpeed = 1.0;
+    this.zoomSpeed = 0.02;//1.0;
 
     // Limits to how far you can dolly in and out ( PerspectiveCamera only )
     this.minDistance = radiusCollision;
@@ -280,7 +280,7 @@ function GlobeControls(camera, domElement, engine) {
 
     this.getZoomScale  = function () {
 
-        return Math.pow(0.95, this.zoomSpeed);
+        return Math.pow(0.95, 0.02);//this.zoomSpeed);
 
     };
 
@@ -374,7 +374,6 @@ function GlobeControls(camera, domElement, engine) {
     this.dollyIn = function(dollyScale) {
 
         if (dollyScale === undefined) {
-
             dollyScale = this.getZoomScale();
 
         }

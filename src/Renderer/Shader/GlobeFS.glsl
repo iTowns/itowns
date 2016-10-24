@@ -33,11 +33,14 @@ uniform int         debug;
 uniform int         RTC;
 uniform vec3        lightPosition;
 uniform int         lightingOn;
+uniform float       elevationEffectOn; // if -666 then not in order
+uniform float       time;
 
 varying vec2        vUv_WGS84;
 varying float       vUv_PM;
 varying vec3        vNormal;
 varying vec4        pos;
+varying float       altitude;
 
 #if defined(DEBUG)
     const float sLine = 0.008;
@@ -170,6 +173,17 @@ void main() {
             float light = min(2. * dot(vNormal, lightPosition),1.);
             gl_FragColor.rgb *= light;
         }
+    }
+
+
+    // Elevation effects
+    if(elevationEffectOn == 1.){
+        float currentMaxAlti = time;
+        if(altitude >= currentMaxAlti) //elevationMaxToDraw)
+            gl_FragColor = vec4( 1.0, 1.0, 1.0, 1.0);
+
+        if (altitude >= 1. && altitude >= currentMaxAlti - 5. && altitude <= currentMaxAlti + 5.)
+            gl_FragColor = vec4( 1.0, .0, 1.0, 1.0);
     }
 
     if(debug > 0)

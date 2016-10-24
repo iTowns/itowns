@@ -57,6 +57,7 @@ function Scene(coordinate, ellipsoid, viewerDiv, debugMode, gLDebug) {
     this.time = 0;
     this.orbitOn = false;
     this.rAF = null;
+    this.elevationEffect = false;
 
     this.viewerDiv = viewerDiv;
 }
@@ -275,6 +276,8 @@ Scene.prototype.animateTime = function(value) {
             var coSun = CoordStars.getSunPositionInScene(this.getEllipsoid(), new Date().getTime() + 3.6 * nMilliSeconds, 0, 0);
             this.lightingPos = coSun;
             this.browserScene.updateMaterialUniform("lightPosition", this.lightingPos.clone().normalize());
+            this.browserScene.updateMaterialUniform("time", this.time /4000);
+            
             this.layers[0].node.updateLightingPos(this.lightingPos);
             if (this.orbitOn) { // ISS orbit is 0.0667 degree per second -> every 60th of sec: 0.00111;
                 var p = this.gfxEngine.camera.camera3D.position;
@@ -291,6 +294,24 @@ Scene.prototype.animateTime = function(value) {
 
     } else
         window.cancelAnimationFrame(this.rAF);
+};
+
+
+Scene.prototype.getElevationEffect = function(){
+    
+    return this.elevationEffect;
+};
+
+Scene.prototype.setElevationEffect = function(b){
+    
+    if(b === null )
+        this.elevationEffect = !this.elevationEffect;
+    else 
+        this.elevationEffect = b;
+
+    this.browserScene.updateMaterialUniform("elevationEffectOn", this.elevationEffect ? 1. : 0.);
+    console.log(this.elevationEffect);
+    this.renderScene3D();
 };
 
 Scene.prototype.orbit = function(value) {

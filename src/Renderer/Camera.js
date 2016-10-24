@@ -15,7 +15,7 @@ function Camera(width, height, debug) {
     Node.call(this);
 
     this.ratio = width / height;
-    this.FOV = 30;
+    this.FOV = 2;
 
     this.camera3D = new THREE.PerspectiveCamera(this.FOV, this.ratio);
 
@@ -60,7 +60,7 @@ Camera.prototype.updatePreSSE = function() {
 
     this.HFOV = 2.0 * Math.atan(Math.tan(radAngle * 0.5) / this.ratio); // TODO: not correct -> see new preSSE
     this.HYFOV = 2.0 * Math.atan(Math.tan(radAngle * 0.5) * this.Hypotenuse / this.width);
-    this.preSSE = this.Hypotenuse * (2.0 * Math.tan(this.HYFOV * 0.5));
+    this.preSSE = 60000;//this.Hypotenuse * (2.0 * Math.tan(this.HYFOV * 0.5));
 
     /* TODO: New preSSE but problem on Windows
     var d = this.height / (2*Math.tan(radAngle/2));

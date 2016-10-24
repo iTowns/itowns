@@ -171,7 +171,7 @@ and open the template in the editor.
                     }
                 }
             });
-
+/*
 
             itowns.viewer.addImageryLayer({
                 protocol:   "wmts",
@@ -179,7 +179,7 @@ and open the template in the editor.
                 url:        "http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/geoportail/wmts",
                 fx :        1.0,
                 updateStrategy: {
-                    type: 0, /* see LayerUpdateStrategy.js */
+                    type: 0,
                     options: {}
                 },
                 options: {
@@ -270,7 +270,7 @@ and open the template in the editor.
                 url:        "http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/geoportail/wmts",
                 fx :        2.5,
                 updateStrategy: {
-                    type: 0, /* see LayerUpdateStrategy.js */
+                    type: 0,
                     options: {}
                 },
                 options: {
@@ -392,14 +392,14 @@ and open the template in the editor.
             heightMapWidth : 256,
             waterMask      : false,
             updateStrategy: {
-                type: 0, /* see LayerUpdateStrategy.js */
+                type: 0,
                 options: {}
             },
             options: {
                 mimetype  : "image/png"
             }
         });
-
+*/
         itowns.viewer.addElevationLayer({
             protocol:   "wmts",
             id:         "IGN_MNT",
@@ -561,6 +561,7 @@ and open the template in the editor.
             this.KML = false;
             this.AnimateTime = false;
             this.Orbit = false;
+            this.ElevationEffect = false;
             this.api = function(){};
             this.api2 = function(){};
             this.api3 = function(){};
@@ -601,7 +602,7 @@ and open the template in the editor.
             }.bind(layer.id));
         }
 
-        if(false) {
+        if(true) {
             var f2 = gui.addFolder('Atmosphere');
 
             f2.open();
@@ -629,6 +630,10 @@ and open the template in the editor.
 
             f2.add(text, 'StreetLevelImagery').onChange(function(newValue) {
                 itowns.viewer.setStreetLevelImageryOn(newValue);
+            });
+
+            f2.add(text, 'ElevationEffect').onChange(function(newValue) {
+                itowns.viewer.setElevationEffectOn();
             });
         }
 

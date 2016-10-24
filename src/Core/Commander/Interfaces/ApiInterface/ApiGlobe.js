@@ -16,7 +16,9 @@ import GeoCoordinate,{UNIT} from 'Core/Geographic/GeoCoordinate';
 import Ellipsoid from 'Core/Math/Ellipsoid';
 import Projection from 'Core/Geographic/Projection';
 import CustomEvent from 'custom-event';
-import {STRATEGY_MIN_NETWORK_TRAFFIC} from 'Scene/LayerUpdateStrategy'
+import {STRATEGY_MIN_NETWORK_TRAFFIC} from 'Scene/LayerUpdateStrategy';
+import ElevationEffect from 'Effects/ElevationEffect';
+
 
 var loaded = false;
 var eventLoaded = new CustomEvent('globe-loaded');
@@ -731,6 +733,15 @@ ApiGlobe.prototype.loadGPX = function(url) {
     }.bind(this));
 
     this.scene.renderScene3D();
+};
+
+
+ApiGlobe.prototype.setElevationEffectOn = function(value){
+    
+    this.scene.setElevationEffect(null);
+  //  var elevationEffectOn = this.scene.getElevationEffect();
+ //   this.scene.browserScene.updateMaterialUniform("elevationMaxToDraw", value);
+  //  this.scene.renderScene3D();
 };
 
 
