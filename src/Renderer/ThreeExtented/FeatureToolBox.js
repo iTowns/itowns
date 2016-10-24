@@ -311,7 +311,7 @@ FeatureToolBox.prototype.GeoJSON2Line = function(features, box, layer, pointOrde
  * @param layer: 	the current layer with specific parameters
  * @param node: 	the current node
  */
-FeatureToolBox.prototype.GeoJSON2Point = function(features, bbox, layer, pointOrder) {
+FeatureToolBox.prototype.GeoJSON2Point = function(features, bbox, layer, node, type, pointOrder) {
     var geometry = new THREE.Geometry();
     for (var i = 0; i < features.length; i++) {
         var feature = features[i];
@@ -320,6 +320,12 @@ FeatureToolBox.prototype.GeoJSON2Point = function(features, bbox, layer, pointOr
         var geoCoord = new GeoCoordinate(coords[pointOrder.long], coords[pointOrder.lat], ((bbox.bottom() + bbox.top()) / 2) + 3, UNIT.DEGREE);
         var normalGlobe = this.ellipsoid.geodeticSurfaceNormalCartographic(geoCoord);
         var centerPoint = this.ellipsoid.cartographicToCartesian(geoCoord);
+
+        //Change the type of height and radius computation.
+        if(layer.params && layer.params.retail) {
+            type = layer.params.retail(centerPoint, type, new THREE.Vector3());
+            node.retailType = layer.params.getRetailType();
+        }
 
         var currentGeometry;
         var params = layer.params;

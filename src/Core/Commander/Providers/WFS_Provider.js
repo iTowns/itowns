@@ -65,7 +65,7 @@ WFS_Provider.prototype.preprocessDataLayer = function(layer){
 
 WFS_Provider.prototype.tileInsideLimit = function(tile,layer) {
     var bbox = new BoundingBox(layer.bbox[0],layer.bbox[2],layer.bbox[1],layer.bbox[3],0, 0,UNIT.DEGREE);
-    return (tile.level == 17) && bbox.intersect(tile.bbox);
+    return (tile.level == (layer.params.level || 17)) && bbox.intersect(tile.bbox);
 };
 
 WFS_Provider.prototype.executeCommand = function(command) {
@@ -105,7 +105,7 @@ WFS_Provider.prototype.getFeatures = function(tile, layer, parameters) {
     var result = { pitch: pitch };
     result.feature = this.cache.getRessource(url);
 
-    if (result.feature !== undefined)
+    if (result.feature !== undefined && layer.params.retail == undefined)
         return Promise.resolve(result);
 
     return this._IoDriver.read(url).then(function(feature) {
@@ -118,15 +118,23 @@ WFS_Provider.prototype.getFeatures = function(tile, layer, parameters) {
                 else if(layer.type == "bbox")
                     result.feature = tool.GeoJSON2Box(features, pointOrder);
                 else {
-                    let mesh = new FeatureMesh({ bbox: bbox }, builder);
-                    let geometry;
-                    if(layer.type == "point" || layer.type == "box")
-                        geometry = tool.GeoJSON2Point(features, bbox, layer, pointOrder);
-                    else if(layer.type == "line")
-                        geometry = tool.GeoJSON2Line(features, bbox, layer, pointOrder);
-                    else
+                    let mesh;
+                    if(result.feature != undefined)
+                        mesh = result.feature;
+                    else{
+                        mesh = new FeatureMesh({ bbox: bbox }, builder);
+                    }
+                    if((mesh.currentType == undefined && (layer.type == "point" || layer.type == "box"))
+                            || mesh.currentType == "point" || mesh.currentType == "box") {
+                        let geometry = tool.GeoJSON2Point(features, bbox, layer, tile, mesh.currentType || layer.type, pointOrder);
+                        mesh.setGeometry(geometry);
+                        if(mesh.currentType === undefined)
+                            mesh.currentType = layer.type;
+                    } else if(layer.type == "line") {
+                        let geometry = tool.GeoJSON2Line(features, bbox, layer, pointOrder);
+                        mesh.setGeometry(geometry);
+                    } else
                         return result;
-                    mesh.setGeometry(geometry);
                     result.feature = mesh;
                 }
 
@@ -136,9 +144,9 @@ WFS_Provider.prototype.getFeatures = function(tile, layer, parameters) {
                         result.feature.layer = layer;
                     this.cache.addRessource(url, result.feature);
                 }
-                return result;
             }
         }
+        return result;
     }.bind(this)).catch(function(/*reason*/) {
             result.feature = null;
             return result;

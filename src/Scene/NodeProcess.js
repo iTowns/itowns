@@ -11,6 +11,7 @@ import defaultValue from 'Core/defaultValue';
 import Projection from 'Core/Geographic/Projection';
 import RendererConstant from 'Renderer/RendererConstant';
 import {chooseNextLevelToFetch} from 'Scene/LayerUpdateStrategy';
+import FeatureMesh from 'Renderer/FeatureMesh';
 
 function NodeProcess(camera, ellipsoid, bbox) {
     //Constructor
@@ -22,6 +23,11 @@ function NodeProcess(camera, ellipsoid, bbox) {
     this.r = defaultValue(ellipsoid.size, new THREE.Vector3());
     this.cV = new THREE.Vector3();
     this.projection = new Projection();
+
+    this.levelSwitchTab = [ {min:  0, max:    4, type: 'point'},
+                            {min:  4, max:   10, type: 'box'  },
+                            {min: 10, max:   30, type: 'point'},
+                            {min: 30, max: 1000, type: 'box'  }];
 }
 
 /**
@@ -401,6 +407,10 @@ NodeProcess.prototype.SSE = function(node, camera, params) {
     var sse = this.checkNodeSSE(node);
     var hidden = sse && node.childrenLoaded();
 
+    if(node.content != undefined && node.content != null && node.content instanceof FeatureMesh)
+        if(sse)
+            this.checkType(node, params.tree, refinementCommandCancellationFn);
+
     if (params.withUp) {
         if (sse && params.tree.canSubdivideNode(node)) {
             // big screen space error: subdivide node, display children if possible
@@ -509,5 +519,32 @@ NodeProcess.prototype.horizonCulling = function(node) {
     return isVisible;
 };
 
+/**
+ * Check the feature type of the layer. It depends of the SSE, the type is kept inside the level switch tab.
+ * @param level: the layer current level
+ * @return type: if the type must be change return a string containing the new type, else return undefined
+ */
+NodeProcess.prototype.checkType = function(node, quadtree, refinementCommandCancellationFn) {
+    var level = node.sse;
+    for (var i = 0; i < this.levelSwitchTab.length; i++) {
+        var lvl = this.levelSwitchTab[i];
+        if(level > lvl.min && level < lvl.max && node.content.currentType != lvl.type){
+            node.content.currentType = lvl.type;
+            this.nodeRequest(node, quadtree, refinementCommandCancellationFn);
+            return;
+        }
+    }
+};
 
+NodeProcess.prototype.nodeRequest = function(node, quadtree, refinementCommandCancellationFn) {
+    var args = {
+        layer: node.content.layer
+    };
+
+    quadtree.interCommand.request(args, node, refinementCommandCancellationFn)
+    .catch(function(/*err*/) {
+    // Command has been canceled, no big deal, we just need to catch it
+    });
+
+};
 export default NodeProcess;
