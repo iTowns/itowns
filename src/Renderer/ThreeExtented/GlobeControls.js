@@ -41,9 +41,9 @@ var CONTROL_KEYS = {
     SPACE: 32,
     SHIFT: 16,
     CTRL: 17,
-    S: 83
+    S: 83,
+    D: 68
 };
-
 
 // private members
 
@@ -110,6 +110,7 @@ tSphere.picking = {position : new THREE.Vector3(),normal:new THREE.Vector3()};
 var keyCtrl = false;
 var keyShift = false;
 var keyS = false;
+var keyD = false;
 
 // Set to true to enable target helper
 var enableTargetHelper = false;
@@ -120,6 +121,8 @@ var _handlerMouseUp;
 
 // Pseudo collision
 var radiusCollision = 50;
+
+var isFirstPoint = true;
 
 
 // SnapCamera saves transformation's camera
@@ -227,7 +230,6 @@ function GlobeControls(camera, domElement, engine) {
     // Set to true to disable use of the keys
     this.enableKeys = true;
 
-
     if(enableTargetHelper)
     {
         this.pickingHelper = new THREE.AxisHelper( 500000 );
@@ -261,7 +263,6 @@ function GlobeControls(camera, domElement, engine) {
     this.endEvent = {
         type: 'end'
     };
-
 
     //
     this.updateCamera = function(camera) {
@@ -803,6 +804,10 @@ function GlobeControls(camera, domElement, engine) {
                 if (point)
                     updateSpherePicking.bind(this)(point,ptScreenClick);
 
+                if (keyD) {
+                    scene.setDetailedFeatureParameters(point, isFirstPoint);
+                    isFirstPoint = !isFirstPoint;
+                }
             }
 
             rotateStart.set(event.clientX - event.target.offsetLeft, event.clientY - event.target.offsetTop);
@@ -895,7 +900,6 @@ function GlobeControls(camera, domElement, engine) {
 
         if (this.enabled === false || this.enableKeys === false || this.enablePan === false) return;
 
-
         if(state === CONTROL_STATE.PAN)
         {
             movingGlobeTarget.copy(globeTarget.position);
@@ -906,6 +910,7 @@ function GlobeControls(camera, domElement, engine) {
         keyCtrl = false;
         keyShift = false;
         keyS = false;
+        keyD = false;
     };
 
     var panUpdate = function(deltaX,deltaY) {
@@ -951,7 +956,9 @@ function GlobeControls(camera, domElement, engine) {
                 // WARNING loop !!!
                 keyS = true;
                 break;
-
+            case CONTROL_KEYS.D:
+                keyD = true;
+                break;
         }
     };
 
@@ -1089,6 +1096,7 @@ function GlobeControls(camera, domElement, engine) {
         keyCtrl = false;
         keyShift = false;
         keyS = false;
+        keyD = false;
 
     };
 

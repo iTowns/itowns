@@ -101,6 +101,34 @@ Scene.prototype.getPickFeature = function(Position, Layer){
     return raycaster.intersectObjects(Layer.children[0]);
 }
 
+Scene.prototype.forceFeatureNodeUpdate = function() {
+    this.controlText.force = true;
+    this.realtimeSceneProcess();
+    this.managerCommand.runAllCommands();
+    this.controlText.force = false;
+};
+
+Scene.prototype.setDetailedFeatureParameters = function(point, isFirst) {
+    var x = point.x, y = point.y, z = point.z;
+    var text = this.controlText;
+    if(text.retailType == 'circle') {
+        text.centerX = x;
+        text.centerY = y;
+        text.centerZ = z;
+    } else if (text.retailType == 'box') {
+        if (isFirst) {
+            text.minX = x;
+            text.minY = y;
+            text.minZ = z;
+        } else {
+            text.maxX = x;
+            text.maxY = y;
+            text.maxZ = z;
+        }
+    }
+    this.forceFeatureNodeUpdate();
+};
+
 Scene.prototype.getEllipsoid = function() {
     return this.ellipsoid;
 };

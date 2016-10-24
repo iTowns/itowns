@@ -496,17 +496,29 @@ and open the template in the editor.
                 // Test of retail change on a specified area (box area define by 2 angles : min and max)
                 // Warning: the type of coordinates used are CARTESIAN
                 retail: function(point, type, v) {
-                    if(text.retailType == 'box') {
-                        var box = [text.minX, text.minY, text.minZ, text.maxX, text.maxY, text.maxZ];
-                        if (point.x > box[0] && point.x < box[3] &&
-                            point.y > box[1] && point.y < box[4] &&
-                            point.z > box[2] && point.z < box[5])
+                    if(controlText.retailType == 'box') {
+                        var box = [];
+                        if(controlText.minX < controlText.maxX)
+                            box.push(controlText.minX, controlText.maxX);
+                        else
+                            box.push(controlText.maxX, controlText.minX);
+                        if(controlText.minY < controlText.maxY)
+                            box.push(controlText.minY, controlText.maxY);
+                        else
+                            box.push(controlText.maxY, controlText.minY);
+                        if(controlText.minZ < controlText.maxZ)
+                            box.push(controlText.minZ, controlText.maxZ);
+                        else
+                            box.push(controlText.maxZ, controlText.minZ);
+                        if (point.x > box[0] && point.x < box[1] &&
+                            point.y > box[2] && point.y < box[3] &&
+                            point.z > box[4] && point.z < box[5])
                             type = 'box';
                         else
                             type = 'point';
-                    } else if (text.retailType == 'circle') {
-                        var center = [text.centerX, text.centerY, text.centerZ];
-                        var radius = text.radius;
+                    } else if (controlText.retailType == 'circle') {
+                        var center = [controlText.centerX, controlText.centerY, controlText.centerZ];
+                        var radius = controlText.radius;
                         v.set(point.x - center[0], point.y - center[1], point.z - center[2]);
                         if(v.length() < radius)
                             type = 'box';
@@ -516,9 +528,8 @@ and open the template in the editor.
                     }
                     return type;
                 },
-                getRetailType: function() { return text.retailType; },
-                getForceUpdate: function() {return text.force; },
-                setForceUpdate: function(value) { text.force = value; }
+                getRetailType: function() { return controlText.retailType; },
+                getForceUpdate: function() {return controlText.force; }
             }
         });
 
@@ -709,6 +720,9 @@ and open the template in the editor.
             this.api3 = function(){};
         };
 
+        scene.controlText = {};
+        var controlText = scene.controlText;
+
         var text = new Menu();
         var gui = new dat.GUI( { autoPlace: false});
         gui.domElement.id = 'menuDiv';
@@ -744,16 +758,6 @@ and open the template in the editor.
             }.bind(layer.id));
         }
 
-        text['testWfsPoint'] = true;
-        gui.add(text, 'testWfsPoint').onChange(function(newValue) {
-            itowns.viewer.setLayerVisibility('testWfsPoint', newValue);
-        });
-
-        text['testWfsLine'] = true;
-        gui.add(text, 'testWfsLine').onChange(function(newValue) {
-            itowns.viewer.setLayerVisibility('testWfsLine', newValue);
-        });
-
         var f3 = gui.addFolder('WFS Features');
         var fPoint = f3.addFolder('Point');
         var fLine = f3.addFolder('Line');
@@ -762,8 +766,8 @@ and open the template in the editor.
             itowns.viewer.setLayerVisibility('testWfsPoint', newValue);
         });
 
-        text['retailType'] = 'circle';
-        fPoint.add(text, 'retailType', ['box', 'circle', 'auto']).onChange(function(value) {
+        controlText['retailType'] = 'circle';
+        fPoint.add(controlText, 'retailType', ['box', 'circle', 'auto']).onChange(function(value) {
             var f = (value == fCircle.__ul.firstChild.innerText) ? fCircle : fBox;
             if(value == fCircle.__ul.firstChild.innerText) {
                 fCircle.__ul.hidden = false;
@@ -777,37 +781,33 @@ and open the template in the editor.
                 fCircle.__ul.hidden = true;
                 fBox.__ul.hidden    = true;
             }
-            text.change = true;
-            itowns.viewer.forceFeatureNodeUpdate();
-            text.force = false;
+            scene.forceFeatureNodeUpdate();
         });
 
-        var forceFunction = function(value) { text.force = true; itowns.viewer.forceFeatureNodeUpdate(); text.force = false; };
-
         var fBox = fPoint.addFolder('box');
-        text['minX'] = -4441500;
-        fBox.add(text, 'minX').onFinishChange(forceFunction);
-        text['maxX'] = -4430100;
-        fBox.add(text, 'maxX').onFinishChange(forceFunction);
-        text['minY'] = 4545000;
-        fBox.add(text, 'minY').onFinishChange(forceFunction);
-        text['maxY'] = 4550600;
-        fBox.add(text, 'maxY').onFinishChange(forceFunction);
-        text['minZ'] = 373000;
-        fBox.add(text, 'minZ').onFinishChange(forceFunction);
-        text['maxZ'] = 379800;
-        fBox.add(text, 'maxZ').onFinishChange(forceFunction);
+        controlText['minX'] = 4442277;
+        fBox.add(controlText, 'minX').listen();
+        controlText['maxX'] = 4441652;
+        fBox.add(controlText, 'maxX').listen();
+        controlText['minY'] = 4546278;
+        fBox.add(controlText, 'minY').listen();
+        controlText['maxY'] = 4546789;
+        fBox.add(controlText, 'maxY').listen();
+        controlText['minZ'] = -375506;
+        fBox.add(controlText, 'minZ').listen();
+        controlText['maxZ'] = -376638;
+        fBox.add(controlText, 'maxZ').listen();
         fBox.__ul.hidden = true;
 
         var fCircle = fPoint.addFolder('circle');
-        text['centerX'] = -4441321;
-        fCircle.add(text, 'centerX').onFinishChange(forceFunction);
-        text['centerY'] = 4547302;
-        fCircle.add(text, 'centerY').onFinishChange(forceFunction);
-        text['centerZ'] = 375376;
-        fCircle.add(text, 'centerZ').onFinishChange(forceFunction);
-        text['radius'] = 1000;
-        fCircle.add(text, 'radius' ).onFinishChange(forceFunction);
+        controlText['centerX'] = 4442277;
+        fCircle.add(controlText, 'centerX').listen();
+        controlText['centerY'] = 4546278;
+        fCircle.add(controlText, 'centerY').listen();
+        controlText['centerZ'] = -375506;
+        fCircle.add(controlText, 'centerZ').listen();
+        controlText['radius'] = 1000;
+        fCircle.add(controlText, 'radius' ).onFinishChange(function(value) { scene.forceFeatureNodeUpdate(); });
         fCircle.open();
 
         text['testWfsLine'] = true;

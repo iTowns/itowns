@@ -353,11 +353,6 @@ ApiGlobe.prototype.setLayerVisibility = function(id, visible) {
     this.update();
 };
 
-ApiGlobe.prototype.forceFeatureNodeUpdate = function() {
-    this.scene.realtimeSceneProcess();
-    this.scene.managerCommand.runAllCommands();
-};
-
 ApiGlobe.prototype.animateTime = function(value) {
 
     this.scene.animateTime(value);
