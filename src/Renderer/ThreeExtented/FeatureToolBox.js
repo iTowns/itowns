@@ -329,9 +329,9 @@ FeatureToolBox.prototype.GeoJSON2Point = function(features, bbox, layer, node, t
 
         var currentGeometry;
         var params = layer.params;
-        if(layer.type == 'box')
+        if(type == 'box')
             currentGeometry = new THREE.BoxGeometry(params.boxWidth || 40, params.boxWidth || 40, params.boxHeight || 80);
-        else if(layer.type == 'point')
+        else if(type == 'point')
             currentGeometry = new THREE.CircleGeometry(params.radius || 10, params.nbSegment || 3, params.thetaStart || 0, params.thetaLength || 2 * Math.PI);
         else
             continue;

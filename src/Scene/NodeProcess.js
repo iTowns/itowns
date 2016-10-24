@@ -407,9 +407,10 @@ NodeProcess.prototype.SSE = function(node, camera, params) {
     var sse = this.checkNodeSSE(node);
     var hidden = sse && node.childrenLoaded();
 
-    if(node.content != undefined && node.content != null && node.content instanceof FeatureMesh)
-        if(sse)
-            this.checkType(node, params.tree, refinementCommandCancellationFn);
+    if (node.content && ((node.content != null && node.content instanceof FeatureMesh) ||
+                         (node.content instanceof THREE.Object3D && node.content.children.length != 0 && node.content.children[0] instanceof THREE.Line))) {
+        this.checkType(node, params.tree, refinementCommandCancellationFn);
+    }
 
     if (params.withUp) {
         if (sse && params.tree.canSubdivideNode(node)) {
@@ -526,12 +527,23 @@ NodeProcess.prototype.horizonCulling = function(node) {
  */
 NodeProcess.prototype.checkType = function(node, quadtree, refinementCommandCancellationFn) {
     var level = node.sse;
-    for (var i = 0; i < this.levelSwitchTab.length; i++) {
-        var lvl = this.levelSwitchTab[i];
-        if(level > lvl.min && level < lvl.max && node.content.currentType != lvl.type){
-            node.content.currentType = lvl.type;
-            this.nodeRequest(node, quadtree, refinementCommandCancellationFn);
+    var layer = node.content.layer;
+    if(layer.id == 'testWfsPoint') {
+        var type = layer.params.getRetailType();
+        if(type != 'auto') {
+            if(node.retailType == 'auto' || type != node.retailType || layer.params.getForceUpdate())
+                this.nodeRequest(node, quadtree, refinementCommandCancellationFn);
             return;
+        } else {
+            for (var i = 0; i < this.levelSwitchTab.length; i++) {
+                var lvl = this.levelSwitchTab[i];
+                if (node.retailType != 'auto' ||
+                    level > lvl.min && level < lvl.max && node.content.currentType != lvl.type){
+                    node.content.currentType = lvl.type;
+                    this.nodeRequest(node, quadtree, refinementCommandCancellationFn);
+                    return;
+                }
+            }
         }
     }
 };
