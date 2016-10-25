@@ -16,6 +16,7 @@ uniform mat4        mVPMatRTC;
 
 uniform mat4        projectionMatrix;
 uniform mat4        modelViewMatrix;
+uniform mat4        modelMatrix;
 
 varying vec2        vUv_WGS84;
 varying float       vUv_PM;
@@ -70,6 +71,8 @@ void main() {
         }
         else
             vPosition = vec4( position ,1.0 );
+
+        pos = modelMatrix * vPosition;
 
         mat4 projModelViewMatrix = (RTC == 0) ? projectionMatrix * modelViewMatrix : mVPMatRTC;
 

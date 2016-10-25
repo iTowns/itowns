@@ -19,11 +19,13 @@ import BrowseTree from 'Scene/BrowseTree';
 import NodeProcess from 'Scene/NodeProcess';
 import Quadtree from 'Scene/Quadtree';
 import CoordStars from 'Core/Geographic/CoordStars';
+import GeoCoordinate,{UNIT} from 'Core/Geographic/GeoCoordinate';
 import defaultValue from 'Core/defaultValue';
 import Layer from 'Scene/Layer';
 import Capabilities from 'Core/System/Capabilities';
 import MobileMappingLayer from 'MobileMapping/MobileMappingLayer';
 import CustomEvent from 'custom-event';
+import * as THREE from 'THREE';
 
 var instanceScene = null;
 var event = new CustomEvent('globe-built');
@@ -58,6 +60,8 @@ function Scene(coordinate, ellipsoid, viewerDiv, debugMode, gLDebug) {
     this.orbitOn = false;
     this.rAF = null;
     this.elevationEffect = false;
+    this.heightMapEffect = false;
+    this.sunEffect = false;
 
     this.viewerDiv = viewerDiv;
 }
@@ -310,9 +314,43 @@ Scene.prototype.setElevationEffect = function(b){
         this.elevationEffect = b;
 
     this.browserScene.updateMaterialUniform("elevationEffectOn", this.elevationEffect ? 1. : 0.);
-    console.log(this.elevationEffect);
     this.renderScene3D();
 };
+
+Scene.prototype.setHeightMapEffect = function(b){
+    
+    if(b === null )
+        this.heightMapEffect = !this.heightMapEffect;
+    else 
+        this.heightMapEffect = b;
+
+    this.browserScene.updateMaterialUniform("heightMapEffectOn", this.heightMapEffect ? 1. : 0.);
+    this.renderScene3D();
+};
+
+
+Scene.prototype.setSunPosition = function(b){
+    
+    if(b === null )
+        this.sunEffect = !this.sunEffect;
+    else 
+        this.sunEffect = b;
+
+    this.browserScene.updateMaterialUniform("sunOn", this.sunEffect ? 1 : 0);
+ 
+    var sphere = new THREE.Mesh((new THREE.SphereGeometry(500, 8, 8)), new THREE.MeshBasicMaterial({depthWrite: false, depthTest: false}));
+    this.gfxEngine.add3DScene(sphere);
+    // sphere.position.copy(new THREE.Vector3(3370386.310755235, -2285365.632290666, -4904477.750950122));
+    // Reunion center: lon/lat 55.546875/-21.110765
+    var posCartCenterIsland = this.ellipsoid.cartographicToCartesian(new GeoCoordinate(55.546875, -21.110765, 10000, UNIT.DEGREE));
+    console.log(posCartCenterIsland);
+    sphere.position.copy(posCartCenterIsland);
+    this.browserScene.updateMaterialUniform("sunPosition", posCartCenterIsland);
+    
+    this.renderScene3D();
+};
+
+
 
 Scene.prototype.orbit = function(value) {
 

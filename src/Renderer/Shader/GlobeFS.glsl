@@ -33,7 +33,10 @@ uniform int         debug;
 uniform int         RTC;
 uniform vec3        lightPosition;
 uniform int         lightingOn;
-uniform float       elevationEffectOn; // if -666 then not in order
+uniform int         sunOn;
+uniform vec3        sunPosition;
+uniform float       elevationEffectOn; 
+uniform float       heightMapEffectOn;
 uniform float       time;
 
 varying vec2        vUv_WGS84;
@@ -176,6 +179,11 @@ void main() {
     }
 
 
+
+
+
+
+
     // Elevation effects
     if(elevationEffectOn == 1.){
         float currentMaxAlti = time;
@@ -185,6 +193,28 @@ void main() {
         if (altitude >= 1. && altitude >= currentMaxAlti - 5. && altitude <= currentMaxAlti + 5.)
             gl_FragColor = vec4( 1.0, .0, 1.0, 1.0);
     }
+
+    // Elevation effects
+    if(heightMapEffectOn == 1.){
+
+        vec4 heightColor = vec4( altitude/3200., altitude/3200., altitude/3200., 1.0);
+        gl_FragColor = mix(gl_FragColor, heightColor, 0.8 );
+    }
+    
+    // sun effects
+    if(sunOn == 1){
+        //vec3 posT = vec3(3372886.3119454198, -2286441.5897049564, -4916191.593482849);
+        //float light = min(2. * dot(vNormal, sunPosition), 1.);
+        //float light = 1. - distance(pos.xyz, posT) / 10000000.;
+        float light = 1. - distance(pos.xyz, sunPosition) / 50000.;
+        gl_FragColor.rgb *= light;
+        //if(pos.y > 3000000.)  gl_FragColor = vec4( 1.0, 1.0, 0.0, 1.0);
+    }
+
+
+
+
+
 
     if(debug > 0)
        gl_FragColor = vec4( 1.0, 1.0, 0.0, 1.0);

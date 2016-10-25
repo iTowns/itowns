@@ -280,7 +280,7 @@ function GlobeControls(camera, domElement, engine) {
 
     this.getZoomScale  = function () {
 
-        return Math.pow(0.95, 0.02);//this.zoomSpeed);
+        return Math.pow(0.95, this.zoomSpeed);
 
     };
 

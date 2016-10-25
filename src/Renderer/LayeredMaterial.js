@@ -120,12 +120,23 @@ var LayeredMaterial = function(id) {
          type: "f",
          value: 0.
     };
+    this.uniforms.heightMapEffectOn = {
+         type: "f",
+         value: 0.
+    };
     
     this.uniforms.time = {
          type: "f",
          value: 0.
     };
-
+    this.uniforms.sunOn = {
+        type: "i",
+        value: 0
+    };
+    this.uniforms.sunPosition = {
+        type: "v3",
+        value: new THREE.Vector3(-0.5, 0.0, 1.0)
+    };
     // PIT n Textures
     // Projection
     // Visible

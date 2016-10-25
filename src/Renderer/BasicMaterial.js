@@ -57,6 +57,7 @@ function BasicMaterial(color) {
             type: "m4",
             value: new THREE.Matrix4()
         },
+        
         distanceFog: {
             type: "f",
             value: 1000000000.0

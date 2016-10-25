@@ -408,7 +408,7 @@ and open the template in the editor.
             updateStrategy: {
                 type: 1, /* see LayerUpdateStrategy.js */
                 options: {
-                    groups: [3, 7, 11, 14]
+                    groups: [3, 7, 9,10, 11,12, 14]
                 }
             },
             options: {
@@ -563,6 +563,8 @@ and open the template in the editor.
             this.AnimateTime = false;
             this.Orbit = false;
             this.ElevationEffect = false;
+            this.HeightMapEffect = false;
+            this.SunEffect = false;
             this.api = function(){};
             this.api2 = function(){};
             this.api3 = function(){};
@@ -635,6 +637,12 @@ and open the template in the editor.
 
             f2.add(text, 'ElevationEffect').onChange(function(newValue) {
                 itowns.viewer.setElevationEffectOn();
+            });
+            f2.add(text, 'HeightMapEffect').onChange(function(newValue) {
+                itowns.viewer.setHeightMapEffectOn();
+            });
+            f2.add(text, 'SunEffect').onChange(function(newValue) {
+                itowns.viewer.setSunEffectOn();
             });
         }
 

@@ -743,6 +743,16 @@ ApiGlobe.prototype.setElevationEffectOn = function(value){
  //   this.scene.browserScene.updateMaterialUniform("elevationMaxToDraw", value);
   //  this.scene.renderScene3D();
 };
+ApiGlobe.prototype.setHeightMapEffectOn = function(value){
+    
+    this.scene.setHeightMapEffect(null);
+};
+
+ApiGlobe.prototype.setSunEffectOn = function(value){
+    
+    this.scene.setSunPosition(null);
+};
+
 
 
 export default ApiGlobe;
