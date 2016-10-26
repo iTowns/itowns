@@ -11,6 +11,7 @@ import defaultValue from 'Core/defaultValue';
 import Projection from 'Core/Geographic/Projection';
 import RendererConstant from 'Renderer/RendererConstant';
 import {chooseNextLevelToFetch} from 'Scene/LayerUpdateStrategy';
+import {l_ELEVATION, l_COLOR} from 'Globe/TileMesh';
 
 function NodeProcess(camera, ellipsoid, bbox) {
     //Constructor
@@ -123,6 +124,7 @@ NodeProcess.prototype.subdivideNode = function(node, camera, params) {
                     }
                 }
                 var elevationLayers = params.layersConfig.getElevationLayers();
+                var canHaveElevation = false;
                 for (j = 0; j < elevationLayers.length; j++) {
                     layer = elevationLayers[j];
                     tileMatrixSet = layer.options.tileMatrixSet;
@@ -130,10 +132,11 @@ NodeProcess.prototype.subdivideNode = function(node, camera, params) {
                     if (tileMatrixSet && !child.matrixSet[tileMatrixSet]) {
                         child.matrixSet[tileMatrixSet] = this.projection.getCoordWMTS_WGS84(child.tileCoord, child.bbox, tileMatrixSet);
                     }
+                    canHaveElevation |= layer.tileInsideLimit(child, layer);
                 }
 
                 child.setColorLayerParameters(paramMaterial);
-                child.texturesNeeded = colorTextureCount + 1;
+                child.texturesNeeded = colorTextureCount + canHaveElevation;
 
                 // request layers (imagery/elevation) update
                 this.refineNodeLayers(child, camera, params);
@@ -198,18 +201,19 @@ NodeProcess.prototype.hideNodeChildren = function(node) {
  * that matches its level (not downsampled).
  * Returns null otherwise
  */
-function findAncestorWithValidTextureForLayer(node, layer) {
+function findAncestorWithValidTextureForLayer(node, layerType, layer) {
     var parent = node.parent;
-    if (parent && parent.material.getLayerTextureOffset) {
-        var slot = parent.material.getLayerTextureOffset(layer.id);
+    if (parent && parent.material && parent.material.getLayerTextureOffset) {
+        var slot = layerType == l_ELEVATION ? 0 : parent.material.getLayerTextureOffset(layer.id);
         if (slot < 0) {
             return null;
         } else {
-            var level = parent.material.getLevelLayerColor(1, slot);
-            if (parent.level === level) {
-                return parent;
+            let level = parent.material.getLayerLevel(layerType, slot);
+            if (0 <= level) {
+                // Return tile at this level  - because parent may have use texture from an ancestor as well
+                return node.getNodeAtLevel(level);
             } else {
-                return findAncestorWithValidTextureForLayer(parent, layer);
+                return findAncestorWithValidTextureForLayer(parent, layerType, layer);
             }
         }
     } else {
@@ -225,6 +229,9 @@ function updateNodeImagery(quadtree, node, layersConfig, force) {
         let layer = colorLayers[i];
 
         // is tile covered by this layer?
+        // We test early (rather than after chooseNextLevelToFetch like elevation)
+        // because colorParams only exist for tiles where tileInsideLimit is true
+        // (see `subdivideNode`)
         if (!layer.tileInsideLimit(node, layer)) {
             continue;
         }
@@ -246,10 +253,10 @@ function updateNodeImagery(quadtree, node, layersConfig, force) {
 
         let slot = node.materials[RendererConstant.FINAL].getLayerTextureOffset(layer.id);
 
-        let currentLevel = node.materials[RendererConstant.FINAL].getLevelLayerColor(1, slot);
+        let currentLevel = node.materials[RendererConstant.FINAL].getLayerLevel(l_COLOR, slot);
         // if this tile has no texture (level == -1), try use one from an ancestor
         if (currentLevel === -1) {
-            args.ancestor = findAncestorWithValidTextureForLayer(node, layer);
+            args.ancestor = findAncestorWithValidTextureForLayer(node, l_COLOR, layer);
         } else {
             var targetLevel = chooseNextLevelToFetch(layer.updateStrategy.type, node.level, currentLevel, layer.updateStrategy.options);
 
@@ -271,10 +278,10 @@ function updateNodeImagery(quadtree, node, layersConfig, force) {
                         result[j].texture.level = level;
                     }
 
-                    node.setTexturesLayer(result, 1, slot);
+                    node.setTexturesLayer(result, l_COLOR, slot);
                 } else if (result.texture) {
                     result.texture.level = level;
-                    node.setTexturesLayer([result], 1, slot);
+                    node.setTexturesLayer([result], l_COLOR, slot);
                 } else {
                     // TODO: null texture is probably an error
                     // Maybe add an error counter for the node/layer,
@@ -295,63 +302,94 @@ function updateNodeImagery(quadtree, node, layersConfig, force) {
 }
 
 function updateNodeElevation(quadtree, node, layersConfig, force) {
-    let currentElevation = node.materials[RendererConstant.FINAL].getLevelLayerColor(0, 0);
-
+    // Elevation is currently handled differently from color layers.
+    // This is caused by a LayeredMaterial limitation: only 1 elevation texture
+    // can be used (where a tile can have N textures x M layers)
     const elevationLayers = layersConfig.getElevationLayers();
-    for (var i = 0; i < elevationLayers.length; i++) {
-        let layer = elevationLayers[i];
+    let bestLayer = null;
+    let ancestor = null;
 
-        if (layersConfig.isLayerFrozen(layer.id) && !force) {
-            continue;
-        }
+    let currentElevation = node.materials[RendererConstant.FINAL].getLayerLevel(l_ELEVATION, 0);
 
-        // Decide which texture (level) to download
-        let ancestor = null;
-        if (currentElevation === 0 && node.parent.materials) {
-            // no texture: use elevation texture from parent
-            let parentElevationLevel = node.parent.materials[RendererConstant.FINAL].getLevelLayerColor(0, 0);
-            if (parentElevationLevel > 0) {
-                ancestor = node.getNodeAtLevel(parentElevationLevel);
+    // Step 0: currentElevevation is -1 BUT material.nbTextures[l_ELEVATION] is > 0
+    // means that we already tried and failed to download an elevation texture
+    if (currentElevation == -1 && 0 < node.material.nbTextures[l_ELEVATION]) {
+        return Promise.resolve(node);
+    }
+
+    // First step: if currentElevation is empty (level is -1), we *must* use the texture from
+    // one of our parent. This allows for smooth transitions when subdividing
+    // We don't care about layer status (isLayerFrozen) or limits (tileInsideLimit) because
+    // we simply want to use ancestor's texture with a different pitch
+    if (currentElevation == -1) {
+        for (let i = 0; i < elevationLayers.length; i++) {
+            let layer = elevationLayers[i];
+
+            if (currentElevation === -1) {
+                let a = findAncestorWithValidTextureForLayer(node, l_ELEVATION, layer);
+
+                if (a != null) {
+                    bestLayer = layer;
+                    ancestor = a;
+                    break;
+                }
             }
-
-        } else {
-            var targetLevel = chooseNextLevelToFetch(layer.updateStrategy.type, node.level, currentElevation, layer.updateStrategy.options);
-
-            if (targetLevel != currentElevation) {
-                ancestor = node.getNodeAtLevel(targetLevel);
-            } else {
-                // all good
-                return Promise.resolve(node);
-            }
-        }
-
-
-        if (layer.tileInsideLimit(ancestor ? ancestor : node, layer)) {
-            var args = { layer, ancestor };
-
-            return quadtree.interCommand.request(args, node, refinementCommandCancellationFn).then(function(terrain) {
-                if (node.material === null) {
-                    return;
-                }
-
-                if (terrain && terrain.texture) {
-                    terrain.texture.level = (ancestor || node).level;
-                }
-
-                if (terrain && terrain.max === undefined) {
-                    terrain.min = (ancestor || node).bbox.bottom();
-                    terrain.max = (ancestor || node).bbox.top();
-                }
-
-                node.setTextureElevation(terrain);
-
-                return node;
-            });
         }
     }
 
+    // We don't have a texture to reuse. This can happen in two cases:
+    //   * no ancestor texture to use
+    //   * we already have 1 texture (so currentElevation >= 0)
+    // Again, LayeredMaterial's 1 elevation texture limitation forces us to `break` as soon
+    // as one layer can supply a texture for this node. So ordering of elevation layers is important.
+    if (bestLayer == null) {
+        for (let i = 0; i < elevationLayers.length; i++) {
+            let layer = elevationLayers[i];
+
+            if (!layer.tileInsideLimit(node, layer)) {
+                continue;
+            }
+
+            if (layersConfig.isLayerFrozen(layer.id) && !force) {
+                continue;
+            }
+
+            let targetLevel = chooseNextLevelToFetch(layer.updateStrategy.type, node.level, currentElevation, layer.updateStrategy.options);
+            if (targetLevel <= currentElevation) {
+                continue;
+            }
+
+            ancestor = node.getNodeAtLevel(targetLevel);
+            bestLayer = layer;
+            break;
+        }
+    }
+
+    // If we found a usable layer, perform a query
+    if (bestLayer != null) {
+        let args = { 'layer': bestLayer, ancestor };
+
+        return quadtree.interCommand.request(args, node, refinementCommandCancellationFn).then(function(terrain) {
+            if (node.material === null) {
+                return;
+            }
+
+            if (terrain && terrain.texture) {
+                terrain.texture.level = (ancestor || node).level;
+            }
+
+            if (terrain && terrain.max === undefined) {
+                terrain.min = (ancestor || node).bbox.bottom();
+                terrain.max = (ancestor || node).bbox.top();
+            }
+
+            node.setTextureElevation(terrain);
+
+            return node;
+        });
+    }
+
     // No elevation texture available for this node, no need to wait for one.
-    node.texturesNeeded -= 1;
     return Promise.resolve(node);
 }
 
