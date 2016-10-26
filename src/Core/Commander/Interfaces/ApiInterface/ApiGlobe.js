@@ -675,9 +675,9 @@ ApiGlobe.prototype.launchCommandApi = function() {
 //        console.log(this.getHeading());
 //    };
 
-ApiGlobe.prototype.showKML = function(value) {
+ApiGlobe.prototype.showFeature = function(value) {
 
-    this.scene.getMap().showKML(value);
+    this.scene.getMap().showFeature(value);
     this.scene.renderScene3D();
 };
 

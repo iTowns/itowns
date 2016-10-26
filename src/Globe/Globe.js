@@ -156,7 +156,7 @@ Globe.prototype.showClouds = function(show, satelliteAnimation) {
     this.clouds.visible = show;
 };
 
-Globe.prototype.showKML = function(show) {
+Globe.prototype.showFeature = function(show) {
 
     this.features.visible = show;
 
