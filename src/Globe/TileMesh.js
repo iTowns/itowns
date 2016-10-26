@@ -29,8 +29,8 @@ import GlobeDepthMaterial from 'Renderer/GlobeDepthMaterial';
 import MatteIdsMaterial from 'Renderer/MatteIdsMaterial';
 import RendererConstant from 'Renderer/RendererConstant';
 
-const l_ELEVATION = 0;
-const l_COLOR = 1;
+export const l_ELEVATION = 0;
+export const l_COLOR = 1;
 
 function TileMesh(params, builder, geometryCache) {
     //Constructor
@@ -241,7 +241,7 @@ TileMesh.prototype.setTexturesLayer = function(textures, idLayer, slotOffset) {
 TileMesh.prototype.downScaledColorSlot = function(slot) {
     var mat = this.materials[RendererConstant.FINAL];
 
-    return mat.getLevelLayerColor(l_COLOR, slot) < this.level;
+    return mat.getLayerLevel(l_COLOR, slot) < this.level;
 }
 
 
