@@ -137,9 +137,16 @@ ApiGlobe.prototype.moveLayerToIndex = function(layer, newId) {
     this.viewerDiv.dispatchEvent(eventLayerChangedIndex);
 };
 
+
+/**
+ * Removes a specific imagery layer from the current layer list. This removes layers inserted with addLayer().
+ *
+ * @param      {string}   id      The identifier
+ * @return     {boolean}  { description_of_the_return_value }
+ */
 ApiGlobe.prototype.removeImageryLayer = function(id) {
 
-    if (this.scene.getMap().removeColorLayer(id)) {
+    if (this.scene.getMap().layersConfiguration.removeColorLayer(id)) {
         this.scene.getMap().updateLayersOrdering();
         this.scene.renderScene3D();
         eventLayerRemoved.layer = id;
