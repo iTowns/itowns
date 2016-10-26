@@ -4,7 +4,7 @@
  * Description: Classe façade pour attaquer les fonctionnalités du code.
  */
 
-
+/* global document */
 
 import Scene from 'Scene/Scene';
 import Globe from 'Globe/Globe';
@@ -16,7 +16,7 @@ import GeoCoordinate,{UNIT} from 'Core/Geographic/GeoCoordinate';
 import Ellipsoid from 'Core/Math/Ellipsoid';
 import Projection from 'Core/Geographic/Projection';
 import CustomEvent from 'custom-event';
-import {STRATEGY_MIN_NETWORK_TRAFFIC} from 'Scene/LayerUpdateStrategy'
+import {STRATEGY_MIN_NETWORK_TRAFFIC} from 'Scene/LayerUpdateStrategy';
 
 var loaded = false;
 var eventLoaded = new CustomEvent('globe-loaded');
@@ -75,7 +75,7 @@ ApiGlobe.prototype.execute = function() {
 
 ApiGlobe.prototype.getProtocolProvider = function(protocol) {
     return this.scene.managerCommand.getProtocolProvider(protocol);
-}
+};
 
 /**
  * This function gives a chance to the matching provider to pre-process some
@@ -122,6 +122,12 @@ ApiGlobe.prototype.moveLayerDown = function(layer) {
     this.scene.renderScene3D();
 };
 
+/**
+ * { Moves a specific layer to a specific index in the layer list. This function has no effect if the layer is moved to its current index. }
+ *
+ * @param      {string}  layer   The layer
+ * @param      {number}  newId   The new identifier
+ */
 ApiGlobe.prototype.moveLayerToIndex = function(layer, newId) {
     this.scene.getMap().layersConfiguration.moveLayerToIndex(layer, newId);
     this.scene.getMap().updateLayersOrdering();
@@ -347,7 +353,7 @@ ApiGlobe.prototype.setLayerOpacity = function(id, opacity) {
 ApiGlobe.prototype.setStreetLevelImageryOn = function(value) {
 
     this.scene.setStreetLevelImageryOn(value);
-}
+};
 
 /**
  * Returns the orientation angles of the current camera, in degrees.
@@ -381,7 +387,7 @@ ApiGlobe.prototype.getCameraLocation = function() {
 
 ApiGlobe.prototype.getCenter = function() {
     var controlCam = this.scene.currentControls();
-    return this.projection.cartesianToGeo(controlCam.globeTarget.position);
+    return this.projection.cartesianToGeo(controlCam.getCenter());
 };
 
 /**
@@ -456,16 +462,17 @@ ApiGlobe.prototype.getHeading = function() {
  */
 
 ApiGlobe.prototype.getRange = function() {
+    return this.scene.currentControls().getRange();
+};
 
+ApiGlobe.prototype.getRangeFromEllispoid = function() {
+
+    // TODO: error is distance is big with ellipsoid.intersection(ray) because d < 0
     var controlCam = this.scene.currentControls();
     var ellipsoid = this.scene.getEllipsoid();
     var ray = controlCam.getRay();
-
     var intersection = ellipsoid.intersection(ray);
-
-    //        var center = controlCam.globeTarget.position;
     var camPosition = this.scene.currentCamera().position();
-    // var range = center.distanceTo(camPosition);
     var range = intersection.distanceTo(camPosition);
 
     return range;
@@ -580,13 +587,117 @@ ApiGlobe.prototype.setRange = function(pRange /*, bool*/ ) {
 };
 
 /**
- * Returns the actual zoom level. The level will always be between the [getMinZoomLevel(), getMaxZoomLevel()].
- * @constructor
- * @param {Id} id - The id of a layer.
+ * { Displaces the central point to a specific amount of pixels from its current position.
+ *  The view flies to the desired coordinate, i.e.is not teleported instantly. Note : The results can be strange in some cases, if ever possible, when e.g.the camera looks horizontally or if the displaced center would not pick the ground once displaced.}
+ *
+ * @param      {<type>}  pVector  The vector
  */
+ApiGlobe.prototype.pan = function(pVector) {
 
-ApiGlobe.prototype.getZoomLevel = function(id) {
-    return this.scene.getMap().getZoomLevel(id);
+    this.scene.currentControls().pan(pVector.x,pVector.y);
+
+};
+
+/**
+ * Returns the actual zoom level. The level will always be between the [getMinZoomLevel(), getMaxZoomLevel()].
+ *
+ * @return     {<type>}  The zoom level.
+ */
+ApiGlobe.prototype.getZoomLevel = function() {
+    return this.scene.getMap().getZoomLevel();
+};
+
+
+/**
+ * Gets the current zoom level, which is an index in the logical scales predefined for the application.
+ * The higher the level, the closer to the ground.
+ * The level is always in the [getMinZoomLevel(), getMaxZoomLevel()] range.
+ *
+ * @param      {number}  zoom    The zoom
+ */
+ApiGlobe.prototype.setZoomLevel = function(zoom) {
+
+    zoom = Math.max(2,zoom);
+
+    let distance = this.scene.getMap().computeDistanceForZoomLevel(zoom,this.scene.currentCamera());
+
+    this.setRange(distance);
+
+};
+
+
+/**
+ * Return the current zoom scale at the central point of the view.
+ *
+ * @param      {number}  pitch   Screen pitch, in millimeters ; 0.28 by default
+ * @return     {number}  The zoom scale.
+ */
+ApiGlobe.prototype.getZoomScale = function(pitch) {
+    // TODO: Error div size height in Chrome
+    // Screen pitch, in millimeters
+    pitch = (pitch || 0.28)/1000;
+
+    let camera = this.scene.currentCamera();
+    let center = this.scene.currentControls().getCenter();
+    let rayon = center.length();
+    let range = center.distanceTo(camera.camera3D.position);
+    let distance = rayon + range;
+    let alpha = camera.FOV / 180 * Math.PI * 0.5;
+    let phi = Math.PI - Math.asin(distance / rayon * Math.sin(alpha));
+    let projection;
+
+    if(isNaN(phi)) {
+
+        projection = distance * 2 * Math.tan(alpha);
+
+    } else {
+
+        /* // develop operation
+        var beta = Math.PI - ( phi + alpha);
+        projection = rayon * Math.sin(beta) * 2.0;
+        // factorisation -->> */
+        projection = 2.0 * rayon * Math.sin(phi + alpha);
+
+    }
+
+    let zoomScale = camera.height * pitch / projection;
+
+    return zoomScale;
+};
+
+/**
+ * Changes the zoom level of the central point of screen so that screen acts as a map with a specified scale.
+ *  The view flies to the desired zoom scale;
+ *
+ * @param      {number}  zoomScale  The zoom scale
+ * @param      {number}  pitch      The pitch
+ */
+ApiGlobe.prototype.setZoomScale = function(zoomScale,pitch) {
+
+    // Screen pitch, in millimeters
+    pitch = (pitch || 0.28)/1000;
+
+    let camera = this.scene.currentCamera();
+    let projection = camera.height * pitch / zoomScale;
+    let rayon = this.scene.currentControls().getCenter().length();
+    let alpha = camera.FOV / 180 * Math.PI * 0.5;
+    let distance;
+    let sinBeta = projection / (2 * rayon);
+
+    if(sinBeta < 1.0) {
+
+        let beta = Math.asin(sinBeta);
+        // let phi = Math.PI - ( beta + alpha);
+        // distance  = rayon * Math.sin(phi) / Math.sin(alpha) ;
+        distance  = rayon * Math.sin(beta + alpha) / Math.sin(alpha) ;
+
+    } else {
+
+        distance = rayon / Math.tan(alpha) * sinBeta;
+    }
+
+    let range = distance - rayon;
+    this.setRange(range);
 };
 
 /**

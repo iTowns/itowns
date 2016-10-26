@@ -207,8 +207,9 @@ Globe.prototype.updateLayersOrdering = function() {
     this.tiles.children[0].traverse(cO);
 };
 
-Globe.prototype.getZoomLevel = function( /*id*/ ) {
-    var cO = function( /*object*/ ) {
+Globe.prototype.getZoomLevel = function() {
+
+    var cO = function() {
 
         var zoom = 0;
         return function(object) {
@@ -219,8 +220,16 @@ Globe.prototype.getZoomLevel = function( /*id*/ ) {
         };
 
     }();
+
     this.tiles.children[0].traverseVisible(cO);
     return cO();
+};
+
+
+Globe.prototype.computeDistanceForZoomLevel = function(zoom,camera) {
+
+    return camera.preSSE * Math.pow(2, (18 - zoom + 1 ))/ 6.0;
+
 };
 
 Globe.prototype.getTile = function(coordinate) {

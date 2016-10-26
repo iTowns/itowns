@@ -4,7 +4,7 @@
  * Description: 3DEngine est l'interface avec le framework webGL.
  */
 
-/* global Uint8Array Float64Array*/
+/* global Uint8Array, Float64Array, document, window, Image */
 
 import * as THREE from 'three';
 import GlobeControls from 'Renderer/ThreeExtented/GlobeControls';
@@ -465,8 +465,7 @@ var unpack1K = function(color, factor) {
 
     var bitSh = new THREE.Vector4(1.0 / (256.0 * 256.0 * 256.0), 1.0 / (256.0 * 256.0), 1.0 / 256.0, 1.0);
     return bitSh.dot(color) * factor;
-}
-
+};
 
 /**
  *
