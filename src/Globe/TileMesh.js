@@ -130,6 +130,8 @@ TileMesh.prototype.setColorLayerParameters = function(paramsTextureColor) {
  *
  * @returns {undefined}     */
 TileMesh.prototype.disposeChildren = function() {
+    this.pendingSubdivision = false;
+
     while (this.children.length > 0) {
         var child = this.children[0];
         this.remove(child);
