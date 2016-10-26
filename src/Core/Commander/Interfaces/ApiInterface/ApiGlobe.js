@@ -144,7 +144,7 @@ ApiGlobe.prototype.moveLayerToIndex = function(layerId, newIndex) {
  */
 ApiGlobe.prototype.removeImageryLayer = function(id) {
 
-    if (this.scene.getMap().removeColorLayer(id)) {
+    if (this.scene.getMap().layersConfiguration.removeColorLayer(id)) {
         this.scene.getMap().updateLayersOrdering();
         this.scene.renderScene3D();
         eventLayerRemoved.layer = id;
