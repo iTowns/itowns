@@ -15,7 +15,7 @@ function BuildingProvider(options) {
     Provider.call(this, new IoDriver_JSON());
     this.cache = CacheRessource();
     this.srs = options.srs;
-    this.baseUrl = "http://3d.oslandia.com/building-dev/"; // TODO: remove hard-coded values
+    this.baseUrl = options.url;
     this.layer = options.layer;
     this.format = defaultValue(options.format, "GeoJSON");
     this.colorFunction = options.colorFunction;

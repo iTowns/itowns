@@ -330,7 +330,7 @@ ApiGlobe.prototype.createSceneGlobe = function(coordCarto, viewerDiv) {
 };
 
     // TODO: move to ApiPlane
-ApiGlobe.prototype.createScenePlane = function(coordCarto, viewerDiv, boundingBox, buildingLayerName, attributes, colorFunction) {
+ApiGlobe.prototype.createScenePlane = function(coordCarto, viewerDiv, boundingBox, buildingUrl, buildingLayerName, attributes, colorFunction) {
     // TODO: Normalement la creation de scene ne doit pas etre ici....
     // Deplacer plus tard
 
@@ -361,11 +361,11 @@ ApiGlobe.prototype.createScenePlane = function(coordCarto, viewerDiv, boundingBo
 
     // http://3d.oslandia.com/building-dev/getCity?city=montreal
     var ioJson = new IoDriver_JSON();
-    ioJson.read("http://3d.oslandia.com/building-dev/getCity?city=" + buildingLayerName).then(function(json) {
+    ioJson.read(buildingUrl + "getCity?city=" + buildingLayerName).then(function(json) {
         var bvh = new BoundingVolumeHierarchy(BuildingTile, json.tiles);
         var np = new BuildingTileNodeProcess(this.scene.gfxEngine);
         this.scene.add(bvh, np);
-        var buildingProvider = new BuildingProvider({srs: 'EPSG:3946', attributes: attributes, colorFunction: colorFunction, layer: buildingLayerName});
+        var buildingProvider = new BuildingProvider({url: buildingUrl, srs: 'EPSG:3946', attributes: attributes, colorFunction: colorFunction, layer: buildingLayerName});
 
         var buildingLayer = {
             protocol: 'building',
