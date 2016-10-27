@@ -129,6 +129,7 @@ TileGeometry.prototype.computeBuffers = function(params, builder) {
         };
     }
 
+    let id_m3,v1,v2,v3,v4;
 
     for (y = 0; y <= heightSegments; y++) {
 
@@ -148,7 +149,7 @@ TileGeometry.prototype.computeBuffers = function(params, builder) {
 
             var vertex = builder.VertexPosition(params);
 
-            var id_m3 = idVertex * 3;
+            id_m3 = idVertex * 3;
 
             scratchBuffers.position[id_m3 + 0] = vertex.x - this.center.x;
             scratchBuffers.position[id_m3 + 1] = vertex.y - this.center.y;
@@ -201,10 +202,10 @@ TileGeometry.prototype.computeBuffers = function(params, builder) {
 
             for (x = 0; x < widthSegments; x++) {
 
-                var v1 = vertices[y][x + 1];
-                var v2 = vertices[y][x];
-                var v3 = vertices[y + 1][x];
-                var v4 = vertices[y + 1][x + 1];
+                v1 = vertices[y][x + 1];
+                v2 = vertices[y][x];
+                v3 = vertices[y + 1][x];
+                v4 = vertices[y + 1][x + 1];
 
                 idVertex2 = bufferize(v4, v2, v1, idVertex2);
                 idVertex2 = bufferize(v4, v3, v2, idVertex2);
@@ -213,14 +214,15 @@ TileGeometry.prototype.computeBuffers = function(params, builder) {
     }
 
     var iStart = idVertex;
-    var rmax = 5000;
-    var r = Math.max(rmax, Math.pow(rmax, 1 / params.zoom));
+
+    //TODO: WARNING beware size'skirt influence performance
+    var rmax = 50;
+    var r = Math.pow(rmax, 1 + 1.25/ params.zoom);
 
     r = isFinite(r) ? r : rmax;
 
     var buildIndexSkirt = function() {};
     var buildUVSkirt = function() {};
-
 
     if (outBuffers.index === null) {
         buildIndexSkirt = function(id, v1, v2, v3, v4) {
