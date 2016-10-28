@@ -7,6 +7,8 @@
 function Description() {
     //Constructor
 
+
+    this.name = null;
     this.type = null;
 
 }
