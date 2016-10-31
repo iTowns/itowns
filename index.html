@@ -433,6 +433,7 @@ and open the template in the editor.
             url       : "http://wxs.ign.fr/72hpsel8j8nhb5qgdh07gcyp/geoportail/wfs?",
             protocol  : 'wfs',
             version   : '2.0.0',
+            axisOrder : 'inverted',
             id        : 'testwfs',
             title     : "BDTOPO_BDD_WLD_WGS84G:bati_remarquable,BDTOPO_BDD_WLD_WGS84G:bati_indifferencie",
             styleName : "",
@@ -474,7 +475,8 @@ and open the template in the editor.
             title       : 'jcd_jcdecaux.jcdvelov',
             crs         : 'EPSG:4326',
             type        : 'point',
-            version   : '2.0.0',
+            version     : '2.0.0',
+            axisOrder   : 'ordered',
             options: {
                 mimetype  : "geojson",
                 tileMatrixSet: 'WGS84G'
@@ -485,7 +487,6 @@ and open the template in the editor.
                     testTab : ['Vert', 'Orange', 'Bleu', 'Gris'],
                     colorTab: [0x339933, 0xFF9900, 0x3399FF, 0x888888]
                 },
-                heightParam : 'pop_rank',
                 nbSegment   : 8
             }
         });
@@ -498,6 +499,7 @@ and open the template in the editor.
             crs         : 'EPSG:4326',
             type        : 'line',
             version   : '2.0.0',
+            axisOrder   : 'ordered',
             options: {
                 mimetype  : "geojson",
                 tileMatrixSet: 'WGS84G'

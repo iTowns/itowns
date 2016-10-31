@@ -37,12 +37,12 @@ WFS_Provider.prototype.constructor = WFS_Provider;
 
 WFS_Provider.prototype.url = function(coord, layer) {
     var bbox;
-    if (layer.type == "point" || layer.type == "line" || layer.type == "box")
-        bbox =  coord.south(UNIT.DEGREE) + "," + coord.west(UNIT.DEGREE) + "," +
-                coord.north(UNIT.DEGREE) + "," + coord.east(UNIT.DEGREE);
+    if (layer.axisOrder == 'ordered')
+        bbox = coord.south(UNIT.DEGREE) + "," + coord.west(UNIT.DEGREE) + "," +
+               coord.north(UNIT.DEGREE) + "," + coord.east(UNIT.DEGREE);
     else
-        bbox =  coord.west(UNIT.DEGREE) + "," + coord.south(UNIT.DEGREE) + "," +
-                coord.east(UNIT.DEGREE) + "," + coord.north(UNIT.DEGREE);
+        bbox = coord.west(UNIT.DEGREE) + "," + coord.south(UNIT.DEGREE) + "," +
+               coord.east(UNIT.DEGREE) + "," + coord.north(UNIT.DEGREE);
     var urld = layer.customUrl.replace('%bbox', bbox.toString());
     return urld;
 };
@@ -58,6 +58,7 @@ WFS_Provider.prototype.preprocessDataLayer = function(layer){
     layer.customUrl = layer.url +
                       'SERVICE=WFS&REQUEST=GetFeature&typeName=' + layer.title +
                       '&VERSION=' + layer.version +
+                      '&SRSNAME=' + layer.crs +
                       '&outputFormat=' + layer.format +
                       '&BBOX=%bbox,' + layer.crs;
 };
@@ -109,36 +110,69 @@ WFS_Provider.prototype.getFeatures = function(tile, layer, parameters) {
 
     return this._IoDriver.read(url).then(function(feature) {
         if(feature.crs || layer.crs) {
-            let features = feature.features;
-            if(layer.type == "poly")
-                result.feature = tool.GeoJSON2Polygon(features);
-            else if(layer.type == "bbox")
-                result.feature = tool.GeoJSON2Box(features);
-            else {
-                let mesh = new FeatureMesh({ bbox: bbox }, builder);
-                let geometry;
-                if(layer.type == "point" || layer.type == "box")
-                    geometry = tool.GeoJSON2Point(features, bbox, layer);
-                else if(layer.type == "line")
-                    geometry = tool.GeoJSON2Line(features, bbox, layer);
-                else
-                    return result;
-                mesh.setGeometry(geometry);
-                result.feature = mesh;
-            }
+            var pointOrder = this.CheckOutputType(feature.crs);
+            if(pointOrder != undefined) {
+                let features = feature.features;
+                if(layer.type == "poly")
+                    result.feature = tool.GeoJSON2Polygon(features, pointOrder);
+                else if(layer.type == "bbox")
+                    result.feature = tool.GeoJSON2Box(features, pointOrder);
+                else {
+                    let mesh = new FeatureMesh({ bbox: bbox }, builder);
+                    let geometry;
+                    if(layer.type == "point" || layer.type == "box")
+                        geometry = tool.GeoJSON2Point(features, bbox, layer, pointOrder);
+                    else if(layer.type == "line")
+                        geometry = tool.GeoJSON2Line(features, bbox, layer, pointOrder);
+                    else
+                        return result;
+                    mesh.setGeometry(geometry);
+                    result.feature = mesh;
+                }
 
-            if (result.feature !== undefined){
-                //Is needed to do another request for the retail level change
-                if(result.feature.layer == null)
-                    result.feature.layer = layer;
-                this.cache.addRessource(url, result.feature);
+                if (result.feature !== undefined){
+                    //Is needed to do another request for the retail level change
+                    if(result.feature.layer == null)
+                        result.feature.layer = layer;
+                    this.cache.addRessource(url, result.feature);
+                }
+                return result;
             }
         }
-        return result;
     }.bind(this)).catch(function(/*reason*/) {
             result.feature = null;
             return result;
         });
+};
+
+WFS_Provider.prototype.CheckOutputType = function(crs) {
+    var pointOrder = {
+        lat:  0,
+        long: 1
+    };
+    if(crs.type == 'EPSG' && crs.properties.code == '4326') {
+        pointOrder.long = 0;
+        pointOrder.lat  = 1;
+        return pointOrder;
+    }
+    else if(crs.type == 'name') {
+        if(crs.properties.name) {
+            var regExpEpsg = new RegExp(/^urn:[x-]?ogc:def:crs:EPSG:(\d*.?\d*)?:\d{4}/);
+            if(regExpEpsg.test(crs.properties.name))
+                return pointOrder;
+            else {
+                var regExpOgc = new RegExp(/^urn:[x-]?ogc:def:crs:OGC:(\d*.?\d*)?:(CRS)?(WSG)?\d{0,2}/);
+                if(regExpOgc.test(crs.properties.name)) {
+                    pointOrder.long = 0;
+                    pointOrder.lat  = 1;
+                    return pointOrder;
+                } else
+                    return undefined;
+            }
+        } else
+            return undefined
+    } else
+        return undefined;
 };
 
 export default WFS_Provider;

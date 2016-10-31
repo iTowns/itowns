@@ -15,7 +15,7 @@ function FeatureToolBox() {
     this.ellipsoid  = new Ellipsoid(this.size);
 }
 
-FeatureToolBox.prototype.GeoJSON2Polygon = function(features) {
+FeatureToolBox.prototype.GeoJSON2Polygon = function(features, pointOrder) {
     var polyGroup = new THREE.Object3D();
     for (var r = 0; r < features.length; r++) {
         var positions = [];
@@ -25,7 +25,7 @@ FeatureToolBox.prototype.GeoJSON2Polygon = function(features) {
             for (var j = 0; j < polygon.length; ++j) {
                 var pt2DTab = polygon[j]; //.split(' ');
                 //long et puis lat
-                var geoCoord = new GeoCoordinate(parseFloat(pt2DTab[1]), parseFloat(pt2DTab[0]), altitude, UNIT.DEGREE)
+                var geoCoord = new GeoCoordinate(parseFloat(pt2DTab[pointOrder.long]), parseFloat(pt2DTab[pointOrder.lat]), altitude, UNIT.DEGREE)
                 var spt = this.tool.ellipsoid.cartographicToCartesian(geoCoord);
                 positions.push( spt.x, spt.y, spt.z);
             }
@@ -42,7 +42,7 @@ FeatureToolBox.prototype.GeoJSON2Polygon = function(features) {
     return polyGroup;
 };
 
-FeatureToolBox.prototype.GeoJSON2Box = function(features) {
+FeatureToolBox.prototype.GeoJSON2Box = function(features, pointOrder) {
     var bboxGroup = new THREE.Object3D();
     var wallGeometry = new THREE.Geometry(); // for the walls
     var roofGeometry = new THREE.Geometry(); // for the roof
@@ -63,15 +63,15 @@ FeatureToolBox.prototype.GeoJSON2Box = function(features) {
             for (var j = 0; j < polygon.length - 1; ++j) {
                 var pt2DTab = polygon[j]; //.split(' ');
 
-                var geoCoord1 = new GeoCoordinate(parseFloat(pt2DTab[1]), parseFloat(pt2DTab[0]), goodAltitude, UNIT.DEGREE);
-                var geoCoord2 = new GeoCoordinate(parseFloat(pt2DTab[1]), parseFloat(pt2DTab[0]), goodAltitude + hauteur, UNIT.DEGREE);
+                var geoCoord1 = new GeoCoordinate(parseFloat(pt2DTab[pointOrder.long]), parseFloat(pt2DTab[pointOrder.lat]), goodAltitude, UNIT.DEGREE);
+                var geoCoord2 = new GeoCoordinate(parseFloat(pt2DTab[pointOrder.long]), parseFloat(pt2DTab[pointOrder.lat]), goodAltitude + hauteur, UNIT.DEGREE);
                 var pgeo1 = this.ellipsoid.cartographicToCartesian(geoCoord1);
                 var pgeo2 = this.ellipsoid.cartographicToCartesian(geoCoord2);
 
                 var vector3_1 = new THREE.Vector3(pgeo1.x, pgeo1.y, pgeo1.z);
                 var vector3_2 = new THREE.Vector3(pgeo2.x, pgeo2.y, pgeo2.z);
 
-                arrPoint2D.push(CVML.newPoint(parseFloat(pt2DTab[1]), parseFloat(pt2DTab[0])));
+                arrPoint2D.push(CVML.newPoint(parseFloat(pt2DTab[pointOrder.long]), parseFloat(pt2DTab[pointOrder.lat])));
 
                 wallGeometry.vertices.push(vector3_1, vector3_2);
 
@@ -226,7 +226,7 @@ FeatureToolBox.prototype.computeLineBorderPoints = function(pt1, pt2, isFirstPt,
  * @param box: 		the tile bounding box (rad)
  * @param layer: 	the current layer with specific parameters
  */
-FeatureToolBox.prototype.GeoJSON2Line = function(features, box, layer) {
+FeatureToolBox.prototype.GeoJSON2Line = function(features, box, layer, pointOrder) {
     var bbox = new BoundingBox( box.west()  * 180.0 / Math.PI,
 								box.east()  * 180.0 / Math.PI,
 								box.south() * 180.0 / Math.PI,
@@ -245,9 +245,9 @@ FeatureToolBox.prototype.GeoJSON2Line = function(features, box, layer) {
         //Cut the line according to the tiles limits
         //May not be usefull if we can cut the line before inside the request to the WFS provider
         do{
-            var c_1 = coords[j - 1], c = coords[j], cX = c[0], cY = c[1], c1  = coords[j + 1];
-            if(c_1 != undefined) var c_1X = c_1[0], c_1Y = c_1[1];
-            if(c1 != undefined)  var c1X  = c1[0],  c1Y  = c1[1];
+            var c_1 = coords[j - 1], c = coords[j], cX = c[pointOrder.long], cY = c[pointOrder.lat], c1  = coords[j + 1];
+            if(c_1 != undefined) var c_1X = c_1[pointOrder.long], c_1Y = c_1[pointOrder.lat];
+            if(c1 != undefined)  var c1X  = c1[pointOrder.long],  c1Y  = c1[pointOrder.lat];
 
             if (cX < minLong || cX > maxLong || cY < minLat || cY > maxLat) {
                 if(inTile) {
@@ -272,16 +272,16 @@ FeatureToolBox.prototype.GeoJSON2Line = function(features, box, layer) {
         }while (j < coords.length);
 
         if(coords.length > 1){
-            var resp = this.computeLineBorderPoints(new THREE.Vector3(coords[0][0], coords[0][1], 180),
-                                                    new THREE.Vector3(coords[1][0], coords[1][1], 180),
+            var resp = this.computeLineBorderPoints(new THREE.Vector3(coords[0][pointOrder.long], coords[0][pointOrder.lat], 180),
+                                                    new THREE.Vector3(coords[1][pointOrder.long], coords[1][pointOrder.lat], 180),
                                                     true, layer.params.length || 10);
 
             for (j = 0; j < coords.length - 1; j++) {
                 var currentGeometry = new THREE.Geometry();
                 currentGeometry.vertices.push(resp.left, resp.right);
 
-                resp = this.computeLineBorderPoints(new THREE.Vector3(coords[j][0],     coords[j][1], 180),
-                                                    new THREE.Vector3(coords[j + 1][0], coords[j + 1][1], 180),
+                resp = this.computeLineBorderPoints(new THREE.Vector3(coords[j][pointOrder.long],     coords[j][pointOrder.lat], 180),
+                                                    new THREE.Vector3(coords[j + 1][pointOrder.long], coords[j + 1][pointOrder.lat], 180),
                                                     false, layer.params.length || 10);
 
                 currentGeometry.vertices.push(resp.left, resp.right);
@@ -311,13 +311,13 @@ FeatureToolBox.prototype.GeoJSON2Line = function(features, box, layer) {
  * @param layer: 	the current layer with specific parameters
  * @param node: 	the current node
  */
-FeatureToolBox.prototype.GeoJSON2Point = function(features, bbox, layer) {
+FeatureToolBox.prototype.GeoJSON2Point = function(features, bbox, layer, pointOrder) {
     var geometry = new THREE.Geometry();
     for (var i = 0; i < features.length; i++) {
         var feature = features[i];
         var coords = feature.geometry.coordinates;
 
-        var geoCoord = new GeoCoordinate(coords[0], coords[1], ((bbox.bottom() + bbox.top()) / 2) + 3, UNIT.DEGREE);
+        var geoCoord = new GeoCoordinate(coords[pointOrder.long], coords[pointOrder.lat], ((bbox.bottom() + bbox.top()) / 2) + 3, UNIT.DEGREE);
         var normalGlobe = this.ellipsoid.geodeticSurfaceNormalCartographic(geoCoord);
         var centerPoint = this.ellipsoid.cartographicToCartesian(geoCoord);
 
@@ -350,13 +350,14 @@ FeatureToolBox.prototype.GeoJSON2Point = function(features, bbox, layer) {
 FeatureToolBox.prototype.manageColor = function(properties, color, layer) {
     var colorParams = layer.params.color || undefined;
 
-    if(colorParams !== undefined)
+    if(colorParams !== undefined) {
         for (var i = 0; i < colorParams.testTab.length; i++) {
             if(properties[colorParams.property] === colorParams.testTab[i]){
                 color.setHex(colorParams.colorTab[i]);
                 return;
             }
         }
+    }
     color.setHex(new THREE.Color(0xFFFFFF));
 };
 
