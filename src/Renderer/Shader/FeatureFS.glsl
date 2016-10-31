@@ -1,5 +1,3 @@
-#version 100
-
 #extension GL_EXT_frag_depth : enable
 
 #define SHADER_NAME simpleMaterial

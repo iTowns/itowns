@@ -4,7 +4,7 @@
  * Description:
  */
 
-import THREE 					from 'THREE';
+import * as THREE 				from 'THREE';
 import CVML 					from 'Core/Math/CVML';
 import BoundingBox      		from 'Scene/BoundingBox';
 import Ellipsoid 				from 'Core/Math/Ellipsoid';

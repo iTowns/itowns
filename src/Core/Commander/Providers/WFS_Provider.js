@@ -4,7 +4,7 @@
  * Description: Provides data from a WFS stream
  */
 
-import THREE            from 'THREE';
+import * as THREE       from 'THREE';
 import {UNIT}           from 'Core/Geographic/GeoCoordinate';
 import FeatureMesh      from 'Renderer/FeatureMesh';
 import Provider         from 'Core/Commander/Providers/Provider';

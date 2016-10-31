@@ -6,7 +6,7 @@
 
 import NodeMesh from 'Renderer/NodeMesh';
 import FeatureMaterial from 'Renderer/FeatureMaterial';
-import THREE from 'THREE';
+import * as THREE from 'THREE';
 
 function FeatureMesh(params, builder) {
 

@@ -24,7 +24,7 @@ import Layer from 'Scene/Layer';
 import Capabilities from 'Core/System/Capabilities';
 import MobileMappingLayer from 'MobileMapping/MobileMappingLayer';
 import CustomEvent from 'custom-event';
-import THREE from 'THREE';
+import * as THREE from 'THREE';
 
 var instanceScene = null;
 var event = new CustomEvent('globe-built');
