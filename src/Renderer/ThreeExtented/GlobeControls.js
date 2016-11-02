@@ -6,7 +6,7 @@
 //    Zoom - middle mouse, or mousewheel / touch: two finger spread or squish
 //    Pan - right mouse, or arrow keys / touch: three finter swipe
 
-import * as THREE from 'THREE';
+import * as THREE from 'three';
 import Sphere from 'Core/Math/Sphere';
 import CustomEvent from 'custom-event';
 

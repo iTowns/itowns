@@ -5,7 +5,7 @@
  */
 
 import EventsManager from 'Core/Commander/Interfaces/EventsManager';
-import PriorityQueue from 'PriorityQueue';
+import PriorityQueue from 'js-priority-queue';
 
 var instanceCommandManager = null;
 

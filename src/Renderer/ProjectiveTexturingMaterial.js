@@ -7,7 +7,7 @@
  */
 
 import graphicEngine from 'Renderer/c3DEngine';
-import * as THREE from 'THREE';
+import * as THREE from 'three';
 import Ori from 'MobileMapping/Ori';
 import Shader from 'MobileMapping/Shader';
 import url from 'url';
