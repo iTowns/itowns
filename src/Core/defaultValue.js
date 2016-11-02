@@ -5,7 +5,7 @@
  */
 
 
-import {Vector3} from 'THREE';
+import {Vector3} from 'three';
 
 var defaultValue = function(value, def) {
     return value === undefined ? def : value;

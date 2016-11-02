@@ -5,7 +5,7 @@
  */
 
 
-import * as THREE from 'THREE';
+import * as THREE from 'three';
 
 function OBB(min, max, lookAt, translate) {
     THREE.Object3D.call(this);

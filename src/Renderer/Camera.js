@@ -7,7 +7,7 @@
 /* global Float64Array*/
 
 import Node from 'Scene/Node';
-import * as THREE from 'THREE';
+import * as THREE from 'three';
 
 function Camera(width, height, debug) {
     //Constructor

@@ -2,9 +2,8 @@
  * @author mrdoob / http://mrdoob.com/
  */
 
-//var JSZip = require("C:/Users/vcoindet/Documents/NetBeansProjects/itownsV1/src/Renderer/ThreeExtented/jszip.min");
-import JSZip from 'Renderer/ThreeExtented/jszip.min';
-import * as THREE from 'THREE';
+import JSZip from 'jszip';
+import * as THREE from 'three';
 import IoDriverXML from 'Core/Commander/Providers/IoDriverXML';
 import GeoCoordinate,{UNIT} from 'Core/Geographic/GeoCoordinate';
 

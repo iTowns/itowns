@@ -13,7 +13,7 @@
  * @param {type} NodeMesh
  * @returns {Layer_L15.Layer}
  */
-import * as THREE from 'THREE';
+import * as THREE from 'three';
 import Node from 'Scene/Node';
 import Projection from 'Core/Geographic/Projection';
 import NodeMesh from 'Renderer/NodeMesh';

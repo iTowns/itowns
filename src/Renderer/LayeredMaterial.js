@@ -5,7 +5,7 @@
  */
 
 
-import * as THREE from 'THREE';
+import * as THREE from 'three';
 import BasicMaterial from 'Renderer/BasicMaterial';
 import gfxEngine from 'Renderer/c3DEngine';
 import JavaTools from 'Core/System/JavaTools';
