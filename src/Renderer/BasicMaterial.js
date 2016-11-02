@@ -16,6 +16,7 @@ function BasicMaterial(color) {
     //Constructor
 
     THREE.RawShaderMaterial.call(this);
+//    this.transparent = true;
 
     this.vertexShaderHeader = '';
     this.fragmentShaderHeader = '';

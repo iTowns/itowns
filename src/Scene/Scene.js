@@ -26,6 +26,10 @@ import Capabilities from 'Core/System/Capabilities';
 import MobileMappingLayer from 'MobileMapping/MobileMappingLayer';
 import CustomEvent from 'custom-event';
 import * as THREE from 'THREE';
+import volcanoFS from 'Renderer/Shader/VolcanoFS.glsl';
+import volcanoVS from 'Renderer/Shader/VolcanoVS.glsl';
+import particleFS from 'Renderer/Shader/ParticleFS.glsl';
+import particleVS from 'Renderer/Shader/ParticleVS.glsl';
 
 var instanceScene = null;
 var event = new CustomEvent('globe-built');
@@ -62,6 +66,11 @@ function Scene(coordinate, ellipsoid, viewerDiv, debugMode, gLDebug) {
     this.elevationEffect = false;
     this.heightMapEffect = false;
     this.sunEffect = false;
+    this.fogEffect = false;
+    this.hideSea = false;
+    this.slideOn = false;
+    this.volcanoMesh = null;
+    this.particles = null;
 
     this.viewerDiv = viewerDiv;
 }
@@ -280,7 +289,28 @@ Scene.prototype.animateTime = function(value) {
             var coSun = CoordStars.getSunPositionInScene(this.getEllipsoid(), new Date().getTime() + 3.6 * nMilliSeconds, 0, 0);
             this.lightingPos = coSun;
             this.browserScene.updateMaterialUniform("lightPosition", this.lightingPos.clone().normalize());
-            this.browserScene.updateMaterialUniform("time", this.time /1000 % 3000);
+          
+            
+            // TEMP georoom ****************************************************
+            this.browserScene.updateMaterialUniform("time", this.time /1000);
+            var posCartCenterIsland = new THREE.Vector3(3370247.4958533593, -2284640.7292576847, -4912345.35489408);
+            var i = this.time /400000;
+            var dist = 20000;
+            var x = Math.cos(i) * dist;
+            var y = Math.sin(i) * dist;
+            var z = 0;
+            // Then apply rotation using posCartCenterIsland normal
+            var newPos = posCartCenterIsland.clone().add(new THREE.Vector3(x,y,z));
+            this.browserScene.updateMaterialUniform("sunPosition", newPos);
+    
+            if (this.volcanoMesh != null)
+                  this.volcanoMesh.material.uniforms[ 'time' ].value = .00000020 * this.time;//.00025 * ( Date.now() - start );)
+              
+
+	    if(this.particles != null){
+                this.particles.material.uniforms[ 'time' ].value =  this.time / 4000;
+            }
+            // *****************************************************************
             
             this.layers[0].node.updateLightingPos(this.lightingPos);
             if (this.orbitOn) { // ISS orbit is 0.0667 degree per second -> every 60th of sec: 0.00111;
@@ -329,6 +359,30 @@ Scene.prototype.setHeightMapEffect = function(b){
 };
 
 
+Scene.prototype.setHideSeaOn = function(b){
+    
+    if(b === null )
+        this.hideSea = !this.hideSea;
+    else 
+        this.hideSea = b;
+
+    this.browserScene.updateMaterialUniform("hideSea", this.hideSea ? 1. : 0.);
+    this.renderScene3D();
+};
+
+
+Scene.prototype.setFogEffect = function(b){
+    
+    if(b === null )
+        this.fogEffect = !this.fogEffect;
+    else 
+        this.fogEffect = b;
+
+    this.browserScene.updateMaterialUniform("fogEffectOn", this.fogEffect ? 1. : 0.);
+    this.renderScene3D();
+};
+
+
 Scene.prototype.setSunPosition = function(b){
     
     if(b === null )
@@ -338,25 +392,162 @@ Scene.prototype.setSunPosition = function(b){
 
     this.browserScene.updateMaterialUniform("sunOn", this.sunEffect ? 1 : 0);
  
-    var sphere = new THREE.Mesh((new THREE.SphereGeometry(500, 8, 8)), new THREE.MeshBasicMaterial({depthWrite: false, depthTest: false}));
-    this.gfxEngine.add3DScene(sphere);
+    //var sphere = new THREE.Mesh((new THREE.SphereGeometry(500, 8, 8)), new THREE.MeshBasicMaterial({depthWrite: false, depthTest: false}));
+    //this.gfxEngine.add3DScene(sphere);
     // sphere.position.copy(new THREE.Vector3(3370386.310755235, -2285365.632290666, -4904477.750950122));
     // Reunion center: lon/lat 55.546875/-21.110765
-    var posCartCenterIsland = this.ellipsoid.cartographicToCartesian(new GeoCoordinate(55.546875, -21.110765, 10000, UNIT.DEGREE));
-    console.log(posCartCenterIsland);
-    sphere.position.copy(posCartCenterIsland);
+    var posCartCenterIsland = this.ellipsoid.cartographicToCartesian(new GeoCoordinate(55.546875, -21.110765, 5000, UNIT.DEGREE));
+ //   console.log(posCartCenterIsland);
+ //   sphere.position.copy(posCartCenterIsland);
     this.browserScene.updateMaterialUniform("sunPosition", posCartCenterIsland);
     
     this.renderScene3D();
 };
 
+Scene.prototype.slide = function(b) {
+    
+    if(b === null )
+        this.slideOn = !this.slideOn;
+    else 
+        this.slideOn = b;
+    this.browserScene.updateMaterialUniform("slide", this.slideOn ? 1 : 0);
+    this.renderScene3D();
+};
 
+Scene.prototype.setVolcanoOn = function(b) {
+    
+    if(this.volcanoMesh === null ){
+
+        var textureLoader = new THREE.TextureLoader();
+
+        var materialVolcano = new THREE.ShaderMaterial( {
+
+            uniforms: { 
+                tExplosion: { 
+                  type: "t", 
+                  value: textureLoader.load( 'data/textures/volcano/explosion.png' )
+                },
+               time: { 
+                  type: "f", 
+                  value: 0.0 
+                }
+            },
+
+            vertexShader: volcanoVS,
+            fragmentShader: volcanoFS,
+
+            // depthTest: false,
+            // depthWrite: false,
+
+        } );
+
+
+        this.volcanoMesh = new THREE.Mesh( 
+                new THREE.IcosahedronGeometry( 1000, 4 ), 
+                materialVolcano 
+        );
+        materialVolcano.uniforms.tExplosion.needsUpdate = true;
+        var posCartCenterIsland = this.ellipsoid.cartographicToCartesian(new GeoCoordinate(  55.714073, -21.243862, 2224, UNIT.DEGREE)); //55.546875, -21.110765
+        this.volcanoMesh.position.copy(posCartCenterIsland);
+        this.volcanoMesh.scale.set(2,2,2);
+        this.gfxEngine.add3DScene(this.volcanoMesh);
+        this.setSmokeParticle(posCartCenterIsland);
+        this.renderScene3D();
+    }
+    else
+        this.volcanoMesh.visible = ! this.volcanoMesh.visible;
+
+};
+
+
+Scene.prototype.setSmokeParticle = function(p){
+    
+     var p = this.ellipsoid.cartographicToCartesian(new GeoCoordinate(  55.703516, -21.243862, 4224, UNIT.DEGREE)); // 55.714073, -21.243862
+     var normalSmoke = p.clone().normalize();
+     var dist = 10;
+     var addedDist = normalSmoke.clone().multiplyScalar(dist);
+     console.log(addedDist, addedDist.x + dist* Math.random());
+     /*
+        var camPos = this.gfxEngine.getCamera().position().clone();
+        var vecDir = camPos.clone().sub(p.clone()).normalize();
+        var pos = camPos.clone().sub(vecDir.multiplyScalar(dist));
+        console.log(camPos, pos);
+    */
+    
+    var uniforms = {
+            time:      { value: 0.},
+            color:     { value: new THREE.Color( 0xffffff ) },
+            texture:   { value: new THREE.TextureLoader().load( "data/textures/particles/smoke3.png" ) }//perlin-512.png" ) }//smoke_PNG965.png" ) }
+    };
+    var shaderMaterial = new THREE.ShaderMaterial( {
+            uniforms:       uniforms,
+            vertexShader:   particleVS,
+            fragmentShader: particleFS,
+         //   blending:       THREE.AdditiveBlending,
+       //     depthTest:      false,
+            depthWrite:     false,
+            transparent:    true
+    });
+
+    var particles = 10000;
+    var radius = 5;
+    var geometry = new THREE.BufferGeometry();
+    var positions = new Float32Array( particles * 3 );
+    var colors = new Float32Array( particles * 3 );
+    var sizes = new Float32Array( particles );
+    var maxD = new Float32Array( particles );
+    var color = new THREE.Color();
+    for ( var i = 0, i3 = 0; i < particles; i ++, i3 += 3 ) {
+            positions[ i3 + 0 ] = Math.random()* radius;//( Math.random() * 2 - 1 ) * radius;
+            positions[ i3 + 1 ] = Math.random()* radius;//( Math.random() * 2 - 1 ) * radius ;
+            positions[ i3 + 2 ] = Math.random()* radius;//( Math.random() * 2 - 1 ) * radius;
+            //color.setHSL( i / particles, 1.0, 0.5 );
+            colors[ i3 + 0 ] = addedDist.x + dist* Math.random();//positions[ i3 + 0 ]  + addedDist;
+            colors[ i3 + 1 ] = addedDist.y + dist* Math.random();//positions[ i3 + 1 ]  + addedDist;
+            colors[ i3 + 2 ] = addedDist.z + dist* Math.random();//positions[ i3 + 2 ]  + addedDist;
+            sizes[ i ] = 40000;
+            maxD[ i ] = 4000 * Math.random();
+    }
+    geometry.addAttribute( 'position', new THREE.BufferAttribute( positions, 3 ) );
+    geometry.addAttribute( 'customColor', new THREE.BufferAttribute( colors, 3 ) );
+    geometry.addAttribute( 'size', new THREE.BufferAttribute( sizes, 1 ) );
+    geometry.addAttribute( 'maxDist', new THREE.BufferAttribute( maxD, 1 ) );
+    
+    this.particles = new THREE.Points( geometry, shaderMaterial );
+
+    var p = this.ellipsoid.cartographicToCartesian(new GeoCoordinate(  55.69, -21.24, 4224, UNIT.DEGREE)); //55.546875, -21.110765
+    this.particles.position.copy(p);
+    this.gfxEngine.add3DScene(this.particles);   
+    /*
+    this.particles.frustumCulled = false;
+    this.particles.geometry.computeBoundingSphere();
+    this.particles.geometry.computeBoundingBox();
+    this.particles.renderOrder = -15;
+    this.gfxEngine.add3DScene(this.particles);     
+    this.particles.renderOrder = -15;
+    */
+        
+        // We need to bring particles close to camera for nice rendering
+        // Compute position in front of cam in direction of volcano
+ /*       var dist = 800;
+        var camPos = this.gfxEngine.getCamera().position().clone();
+        
+        var vecDir = camPos.clone().sub(p.clone()).normalize();
+        var pos = camPos.clone().sub(vecDir.multiplyScalar(dist));
+        console.log(camPos, pos);
+        this.particles.position.copy(pos);
+   */     
+                        
+};
 
 Scene.prototype.orbit = function(value) {
 
     //this.gfxEngine.controls = null;
     this.orbitOn = value;
 };
+
+
+
 
 export default function(coordinate, ellipsoid, viewerDiv, debugMode, gLDebug) {
     instanceScene = instanceScene || new Scene(coordinate, ellipsoid, viewerDiv, debugMode, gLDebug);

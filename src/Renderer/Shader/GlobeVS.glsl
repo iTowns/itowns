@@ -23,6 +23,7 @@ varying float       vUv_PM;
 varying vec3        vNormal;
 varying vec4        pos;
 varying float       altitude;
+varying vec2        vVv;
 
 highp float decode32(highp vec4 rgba) {
     highp float Sign = 1.0 - step(128.0,rgba[0])*2.0;
@@ -43,7 +44,7 @@ void main() {
 
         if(nbTextures[0] > 0)
         {
-            vec2    vVv = vec2(
+                vVv = vec2(
                 vUv_WGS84.x * pitScale_L00[0].z + pitScale_L00[0].x,
                 (1.0 - vUv_WGS84.y) * pitScale_L00[0].z + pitScale_L00[0].y);
 

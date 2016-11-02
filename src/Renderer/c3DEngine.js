@@ -161,7 +161,7 @@ function c3DEngine(scene, positionCamera, viewerDiv, debugMode, gLDebug) {
     });
     this.renderer.setPixelRatio(viewerDiv.devicePixelRatio);
     this.renderer.setSize(viewerDiv.clientWidth, viewerDiv.clientHeight);
-    this.renderer.setClearColor(0x030508);
+    this.renderer.setClearColor(0x000000);
     this.renderer.autoClear = false;
 
     //this.viewerDiv.appendChild(canvas);
@@ -216,13 +216,14 @@ function c3DEngine(scene, positionCamera, viewerDiv, debugMode, gLDebug) {
 c3DEngine.prototype.updateControl = function() {
     var len = this.camera.position().length();
     var lim = this.size * 1.1;
-
+/*
     if (len < lim) {
         var t = Math.pow(Math.cos((lim - len) / (lim - this.size * 0.9981) * Math.PI * 0.5), 1.5);
         var color = new THREE.Color(0x93d5f8);
         this.renderer.setClearColor(color.multiplyScalar(1.0 - t));
     } else if (len >= lim)
         this.renderer.setClearColor(0x030508);
+    */
 };
 
 c3DEngine.prototype.enableRTC = function(enable) {
@@ -561,6 +562,11 @@ c3DEngine.prototype.getPickingPositionFromDepth = function() {
     };
 
 }();
+
+c3DEngine.prototype.getCamera = function(){
+  
+    return this.camera;
+};
 
 c3DEngine.prototype.placeDummy = function(dummy, position) {
     dummy.position.copy(position);

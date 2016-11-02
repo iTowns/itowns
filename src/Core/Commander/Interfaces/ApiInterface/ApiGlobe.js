@@ -754,5 +754,26 @@ ApiGlobe.prototype.setSunEffectOn = function(value){
 };
 
 
+ApiGlobe.prototype.setFogEffectOn = function(value){
+    
+    this.scene.setFogEffect(null);
+};
+
+ApiGlobe.prototype.setHideSeaOn = function(value){
+    
+    this.scene.setHideSeaOn(null);
+};
+
+ApiGlobe.prototype.setVolcanoOn = function(value){
+    
+    this.scene.setVolcanoOn(null);
+};
+
+ApiGlobe.prototype.slide = function(value){
+    
+    this.scene.slide(null);
+};
+
+
 
 export default ApiGlobe;

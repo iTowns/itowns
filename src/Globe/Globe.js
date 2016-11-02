@@ -98,11 +98,12 @@ function Globe(ellipsoid, gLDebug) {
     this.add(this.batiments);
     this.add(this.gpxTracks);
     //this.add(this.layerWGS84Zup);
-
+/*
     if (this.atmosphere !== undefined && !this.gLDebug) {
         this.atmosphere.add(this.clouds);
         this.add(this.atmosphere);
     }
+  */
 }
 
 Globe.prototype = Object.create(Layer.prototype);

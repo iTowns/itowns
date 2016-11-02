@@ -44,8 +44,9 @@ var getColorAtIdUv = function(nbTex) {
 var LayeredMaterial = function(id) {
 
     BasicMaterial.call(this);
+    //this.transparent = true;
 
-    var maxTexturesUnits =  gfxEngine().glParams.maxTexturesUnits;
+    var maxTexturesUnits =  gfxEngine().glParams.maxTexturesUnits -2;
     this.vertexShader = GlobeVS;
     var nbSamplers = Math.min(maxTexturesUnits-1,16-1);
 
@@ -82,6 +83,7 @@ var LayeredMaterial = function(id) {
 
     this.Textures[0] = [emptyTexture];
     this.Textures[1] = Array(nbSamplers);
+    
     this.paramLayers = Array(8);
     this.paramBLayers = Array(8);
 
@@ -124,7 +126,10 @@ var LayeredMaterial = function(id) {
          type: "f",
          value: 0.
     };
-    
+    this.uniforms.fogEffectOn = {
+         type: "f",
+         value: 0.
+    };
     this.uniforms.time = {
          type: "f",
          value: 0.
@@ -132,6 +137,24 @@ var LayeredMaterial = function(id) {
     this.uniforms.sunOn = {
         type: "i",
         value: 0
+    };
+    this.uniforms.hideSea = {
+        type: "f",
+        value: 0.
+    };
+    this.uniforms.slide = {
+        type: "f",
+        value: 0.
+    };
+    // effect texture
+    var textureLoader = new THREE.TextureLoader();
+    this.uniforms.effectTexture = {
+        type: "t",
+        value: null//textureLoader.load("data/textures/sea/japanwave.jpg")
+    };
+    this.uniforms.cloudsTexture = {
+        type: "t",
+        value: null//textureLoader.load("data/textures/clouds/clouds3.png")
     };
     this.uniforms.sunPosition = {
         type: "v3",

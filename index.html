@@ -34,7 +34,7 @@ and open the template in the editor.
         <script src="dist/itowns2.js"> </script>
         <script type="text/javascript">
 
-            var initCenter = { longitude:2.3465, latitude: 48.88, altitude: 25000000};
+            var initCenter = { longitude:55.537949, latitude: -21.118132, altitude: 2000000};//{ longitude:55.537949, latitude: -21.118132, altitude: 2000000};//{ longitude:2.3465, latitude: 48.88, altitude: 25000000};//
 
             // iTowns namespace defined here
             var viewerDiv = document.getElementById("viewerDiv");
@@ -263,18 +263,19 @@ and open the template in the editor.
                     }
                 }
             });
-
+*/
+/*
             itowns.viewer.addImageryLayer({
                 protocol:   "wmts",
                 id:         "ScanEX",
-                url:        "http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/geoportail/wmts",
+                url:        "http://wxs.ign.fr/an7nvfzojv5wa96dsga5nk8w/geoportail/wmts",//"http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/geoportail/wmts",
                 fx :        2.5,
                 updateStrategy: {
                     type: 0,
                     options: {}
                 },
                 options: {
-                    name: 'GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN-EXPRESS.STANDARD',
+                    name: 'GEOGRAPHICALGRIDSYSTEMS.PLANIGN',//'GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN-EXPRESS.STANDARD',
                     mimetype: "image/jpeg",
                     tileMatrixSet: "PM",
                     tileMatrixSetLimits: {
@@ -359,7 +360,76 @@ and open the template in the editor.
                     }
                 }
             });
+*/
 
+
+     itowns.viewer.addImageryLayer({
+
+            protocol:   "wmtsc",
+            id:         "Stamen",
+            customUrl:  'http://c.tile.stamen.com/watercolor/%TILEMATRIX/%COL/%ROW.png', //http://c.tile.stamen.com/watercolor/12/2680/2290.jpg
+            options: { tileMatrixSet: "PM"},
+            fx :        2.5,
+
+            updateStrategy: {
+                type: 1,
+                options: {
+                    groups: [3, 7, 9,10, 11,12, 14]
+                }
+            },
+
+            options: {
+                mimetype:  "image/jpeg",
+                tileMatrixSet: "PM"
+            }
+   });
+
+
+   itowns.viewer.addImageryLayer({
+
+            protocol:   "wmtsc",
+            id:         "OPENSM",
+            customUrl:  'http://b.tile.openstreetmap.fr/osmfr/%TILEMATRIX/%COL/%ROW.png',
+            options: { tileMatrixSet: "PM"},
+            fx :        2.5,
+
+            updateStrategy: {
+                type: 1,
+                options: {
+                    groups: [3, 7, 9,10, 11,12, 14]
+                }
+            },
+
+            options: {
+                mimetype:  "image/jpeg",
+                tileMatrixSet: "PM"
+            }
+   });
+/*
+     itowns.viewer.addImageryLayer({
+
+            protocol:   "wmtsc",
+            id:         "DARK",
+            customUrl:  'http://a.basemaps.cartocdn.com/dark_all/%TILEMATRIX/%COL/%ROW.png',
+            options: { tileMatrixSet: "PM"},
+            fx :        2.5,
+
+            updateStrategy: {
+                type: 1,
+                options: {
+                    groups: [3, 7, 9,10, 11,12, 14]
+                }
+            },
+
+            options: {
+                mimetype:  "image/jpeg",
+                tileMatrixSet: "PM"
+            }
+   });*/
+
+
+
+//https://wxs.ign.fr/an7nvfzojv5wa96dsga5nk8w/geoportail/wmts?layer=GEOGRAPHICALGRIDSYSTEMS.PLANIGN&style=normal&tilematrixset=PM&Service=WMTS&Request=GetTile&Version=1.0.0&Format=image%2Fjpeg&TileMatrix=12&TileCol=2673&TileRow=2291
 
         // itowns.viewer.addImageryLayer({
         //         protocol:   "wmtsc",
@@ -367,15 +437,17 @@ and open the template in the editor.
         //         customUrl:  "http://a.basemaps.cartocdn.com/dark_all/%TILEMATRIX/%COL/%ROW.png",
         //         options: { tileMatrixSet: "PM"}
         //     });
+/*
+         itowns.viewer.addImageryLayer({
+             protocol:   "wmtsc",
+             id:         "OPENSM",
+             customUrl:  'http://b.tile.openstreetmap.fr/osmfr/%TILEMATRIX/%COL/%ROW.png',
+             options: { tileMatrixSet: "PM"},
+             fx :        2.5,
+         });
+    */
 
-        // itowns.viewer.addImageryLayer({
-        //     protocol:   "wmtsc",
-        //     id:         "OPENSM",
-        //     customUrl:  'http://b.tile.openstreetmap.fr/osmfr/%TILEMATRIX/%COL/%ROW.png',
-        //     options: { tileMatrixSet: "PM"},
-        //     fx :        2.5,
-        // });
-
+/*
         itowns.viewer.addImageryLayer({
             url       : "https://wxs.ign.fr/gratuit/geoportail/v/wms",
             protocol  : 'wms',
@@ -565,6 +637,10 @@ and open the template in the editor.
             this.ElevationEffect = false;
             this.HeightMapEffect = false;
             this.SunEffect = false;
+            this.FogEffect = false;
+            this.HideSea = false;
+            this.Volcano = false;
+            this.Slide = false;
             this.api = function(){};
             this.api2 = function(){};
             this.api3 = function(){};
@@ -635,6 +711,9 @@ and open the template in the editor.
                 itowns.viewer.setStreetLevelImageryOn(newValue);
             });
 
+
+        // Rendering Effects
+
             f2.add(text, 'ElevationEffect').onChange(function(newValue) {
                 itowns.viewer.setElevationEffectOn();
             });
@@ -644,7 +723,30 @@ and open the template in the editor.
             f2.add(text, 'SunEffect').onChange(function(newValue) {
                 itowns.viewer.setSunEffectOn();
             });
+            f2.add(text, 'FogEffect').onChange(function(newValue) {
+                itowns.viewer.setFogEffectOn();
+            });
+            f2.add(text, 'HideSea').onChange(function(newValue) {
+                itowns.viewer.setHideSeaOn();
+            });
+            f2.add(text, 'Slide').onChange(function(newValue) {
+                itowns.viewer.slide();
+            });
+            f2.add(text, 'Volcano').onChange(function(newValue) {
+                itowns.viewer.setVolcanoOn();
+            });
         }
+
+/*
+        var controllerAction = gui.add(text,'api').name('Slide');
+
+        if(controllerAction)
+          {
+             controllerAction.onChange(function(value) {
+                 itowns.viewer.slide();
+             });
+        }
+*/
 
         /*viewerDiv.addEventListener('rangeChanged', function() {
             var controller;
@@ -679,14 +781,7 @@ and open the template in the editor.
         var controller;
         var layerIdCrs = 'OrthoCRS';
 
-        // var controller = gui.add(text,'api').name('Up');
 
-        // if(controller)
-        // {
-        //     controller.onChange(function(value) {
-        //         itowns.viewer.moveLayerUp(layerIdCrs);
-        //     });
-        // }
 
         // controller = gui.add(text,'api2').name('down');
 
