@@ -257,10 +257,10 @@ function Atmosphere(ellipsoid) {
 
     // LensFlare
 
-    var textureLoader = new THREE.TextureLoader();
-    var textureFlare0 = textureLoader.load("data/textures/lensflare/lensflare0.png");
-    var textureFlare2 = textureLoader.load("data/textures/lensflare/lensflare2.png");
-    var textureFlare3 = textureLoader.load("data/textures/lensflare/lensflare3.png");
+    // var textureLoader = new THREE.TextureLoader();
+    // var textureFlare0 = textureLoader.load("data/textures/lensflare/lensflare0.png");
+    // var textureFlare2 = textureLoader.load("data/textures/lensflare/lensflare2.png");
+    // var textureFlare3 = textureLoader.load("data/textures/lensflare/lensflare3.png");
     var h = 0.55,
         s = 0.9,
         l = 0.5;
@@ -268,16 +268,16 @@ function Atmosphere(ellipsoid) {
     var flareColor = new THREE.Color(0xffffff);
     flareColor.setHSL(h, s, l + 0.5);
 
-    this.lensFlare = new THREE.LensFlare(textureFlare0, 700, 0.0, THREE.AdditiveBlending, flareColor);
-    this.lensFlare.add(textureFlare2, 512, 0.0, THREE.AdditiveBlending);
-    this.lensFlare.add(textureFlare2, 512, 0.0, THREE.AdditiveBlending);
-    this.lensFlare.add(textureFlare2, 512, 0.0, THREE.AdditiveBlending);
-    this.lensFlare.add(textureFlare3, 60, 0.6, THREE.AdditiveBlending);
-    this.lensFlare.add(textureFlare3, 70, 0.7, THREE.AdditiveBlending);
-    this.lensFlare.add(textureFlare3, 120, 0.9, THREE.AdditiveBlending);
-    this.lensFlare.add(textureFlare3, 70, 1.0, THREE.AdditiveBlending);
-    this.lensFlare.visible = false;
-    this.add(this.lensFlare);
+    // this.lensFlare = new THREE.LensFlare(textureFlare0, 700, 0.0, THREE.AdditiveBlending, flareColor);
+    // this.lensFlare.add(textureFlare2, 512, 0.0, THREE.AdditiveBlending);
+    // this.lensFlare.add(textureFlare2, 512, 0.0, THREE.AdditiveBlending);
+    // this.lensFlare.add(textureFlare2, 512, 0.0, THREE.AdditiveBlending);
+    // this.lensFlare.add(textureFlare3, 60, 0.6, THREE.AdditiveBlending);
+    // this.lensFlare.add(textureFlare3, 70, 0.7, THREE.AdditiveBlending);
+    // this.lensFlare.add(textureFlare3, 120, 0.9, THREE.AdditiveBlending);
+    // this.lensFlare.add(textureFlare3, 70, 1.0, THREE.AdditiveBlending);
+    // this.lensFlare.visible = false;
+    // this.add(this.lensFlare);
 
 }
 
