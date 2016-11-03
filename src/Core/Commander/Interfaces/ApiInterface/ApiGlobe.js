@@ -779,6 +779,11 @@ ApiGlobe.prototype.setTraceOn = function(value){
     this.scene.setTraceOn(null);
 };
 
+ApiGlobe.prototype.setHandPos = function(pos){
+    
+    this.scene.setHandPos(pos);
+};
+
 ApiGlobe.prototype.setDiffractionOn = function(value){
     
     this.scene.setDiffractionOn(null);

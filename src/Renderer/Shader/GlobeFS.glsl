@@ -46,6 +46,7 @@ uniform float       diffractionOn;
 uniform float       hideSea;
 uniform float       time;
 uniform float       slide;
+uniform vec2        handPos;
 
 
 varying vec2        vUv_WGS84;
@@ -271,6 +272,11 @@ void main() {
                             lum = 1.0-pow(abs(a),paramsB.x);
                         }
 
+                        //diffuseColor = mix( diffuseColor,layerColor, lum*params.w * layerColor.a);
+                        if(layer == 2 ){
+                            if( gl_FragCoord.x/6. > handPos.x)
+                                diffuseColor = mix( diffuseColor,layerColor, lum*params.w * layerColor.a);
+                        }else
                         diffuseColor = mix( diffuseColor,layerColor, lum*params.w * layerColor.a);
                      //   if(layer == 1 && diffuseColor.r >=0.9 && diffuseColor.g >=0.9 && diffuseColor.b >=0.9) diffuseColor =  vec4(0.0, 0.0, 0.0, 1.0); layerColor;
                     }
@@ -412,7 +418,9 @@ void main() {
         if (texture2D( dTextures_00[0], vVv ).w <= 0.)
             gl_FragColor = vec4( .0, .0, 0.0, 1.0);
 
- 
+            
+    if( abs(gl_FragCoord.x / 6. - handPos.x) < .5 ) 
+            gl_FragColor = vec4( 1., .0, 0.0, 1.0);
 
     if(debug > 0)
        gl_FragColor = vec4( 1.0, 1.0, 0.0, 1.0);

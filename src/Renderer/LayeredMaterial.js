@@ -146,6 +146,10 @@ var LayeredMaterial = function(id) {
         type: "f",
         value: 0.
     };
+    this.uniforms.handPos = {
+        type: "v2",
+        value: new THREE.Vector2()
+    };
     this.uniforms.hideSea = {
         type: "f",
         value: 0.

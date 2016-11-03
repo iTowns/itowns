@@ -441,6 +441,13 @@ Scene.prototype.setTraceOn = function(){
     this.renderScene3D();
 };
 
+
+Scene.prototype.setHandPos = function(pos){
+    
+    this.browserScene.updateMaterialUniform("handPos", new THREE.Vector2(pos.x, pos.y));
+    
+};
+
 Scene.prototype.setSunPosition = function(b){
     
     if(b === null )

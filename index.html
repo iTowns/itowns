@@ -31,8 +31,19 @@ and open the template in the editor.
     </head>
     <body>
         <div id="viewerDiv"></div>
+        <div class="camera">
+             <video id="video">Video stream not available.</video>
+             <button id="startbutton">Take photo</button>
+        </div>
+        <audio id="play" src="http://www.soundjay.com/button/beep-07.wav"></audio>
+        <canvas id="canvasCam">
+        </canvas>
+        <div class="output">
+            <img id="photo" alt="The screen capture will appear in this box.">
+        </div>
         <script src="dist/itowns2.js"> </script>
         <script type="text/javascript">
+            var frameTime = 0;
 
             var initCenter = { longitude:55.537949, latitude: -21.118132, altitude: 2000000};//{ longitude:55.537949, latitude: -21.118132, altitude: 2000000};//{ longitude:2.3465, latitude: 48.88, altitude: 25000000};//
 
@@ -814,11 +825,193 @@ and open the template in the editor.
         // }
 
         itowns.viewer.addEventListener('globe-loaded', function() {
-            console.log("Globe Loaded");
-        //    itowns.viewer.setCenter({lon:-74.0059700,lat:40.7142700,alt:0});
-            //itowns.viewer.addEventListener('layerchanged:visible', callback);
 
-        });
+
+            window.requestAnimSelectionBeta = (function() {
+                return window.requestAnimationFrame ||
+                    window.webkitRequestAnimationFrame ||
+                    window.mozRequestAnimationFrame ||
+                    window.oRequestAnimationFrame ||
+                    window.msRequestAnimationFrame ||
+                    function(callback) {
+                        window.setTimeout(callback, 1000 / 60);
+                    };
+            })();
+
+            // The width and height of the captured photo. We will set the
+              // width to the value defined here, but the height will be
+              // calculated based on the aspect ratio of the input stream.
+
+              var width = 320;    // We will scale the photo width to this
+              var height = 0;     // This will be computed based on the input stream
+
+              // |streaming| indicates whether or not we're currently streaming
+              // video from the camera. Obviously, we start at false.
+
+              var streaming = false;
+
+              // The various HTML elements we need to configure or control. These
+              // will be set by the startup() function.
+
+              var video = null;
+              var canvas = null;
+              var photo = null;
+              var startbutton = null;
+
+
+
+            video = document.getElementById('video');
+            canvas = document.getElementById('canvasCam');
+            photo = document.getElementById('photo');
+            startbutton = document.getElementById('startbutton');
+
+            console.log("Globe Loaded");
+            var stream
+
+            navigator.getMedia = ( navigator.getUserMedia ||
+                                   navigator.webkitGetUserMedia ||
+                                   navigator.mozGetUserMedia ||
+                                   navigator.msGetUserMedia
+                                 );
+
+            navigator.getMedia(
+                {
+                  video: true,
+                  audio: false
+                },
+                function(stream) {
+                  if (navigator.mozGetUserMedia) {
+                    video.mozSrcObject = stream;
+                  } else {
+                    var vendorURL = window.URL || window.webkitURL;
+                    video.src = vendorURL.createObjectURL(stream);
+                  }
+                  video.play();
+                  //analyse();
+
+                },
+                function(err) {
+                  console.log("An error occured! " + err);
+                }
+              );
+
+
+              video.addEventListener('canplay', function(ev){
+
+                if (!streaming) {
+                  height = video.videoHeight / (video.videoWidth/width);
+
+                  // Firefox currently has a bug where the height can't be read from
+                  // the video, so we will make assumptions if this happens.
+
+                  if (isNaN(height)) {
+                    height = width / (4/3);
+                  }
+
+                  video.setAttribute('width', width);
+                  video.setAttribute('height', height);
+                  canvas.setAttribute('width', width);
+                  canvas.setAttribute('height', height);
+
+                  streaming = true;
+                }
+                analyse();
+              }, false);
+
+
+                function getPixel(imgData, index) {
+                  var i = index*4, d = imgData.data;
+                  return [d[i],d[i+1],d[i+2],d[i+3]] // returns array [R,G,B,A]
+                };
+
+                function getPixelXY(imgData, x, y) {
+                    return getPixel(imgData, y*imgData.width+x);
+                };
+
+                function averageColor(imgData, x, y, r) {
+
+                    var average = {r:0, g:0, b:0};
+
+                    for(var i = x - r/2; i< x + r/2; ++i){
+                         for(var j = y - r/2; j< y + r/2; ++j){
+                             var col = getPixel(imgData, i, j);
+                             average.r += col[0];
+                             average.g += col[1];
+                             average.b += col[2];
+                        }
+                    }
+                    var nbSamples = r*r;
+                    average.r /= nbSamples;
+                    average.g /= nbSamples;
+                    average.b /= nbSamples;
+
+                    return average;
+                };
+
+                // r is size of pattern average (window sample)
+                function getPositionMaxDif(imgData, y, r){
+
+                    var nbSamples = width/r;
+                    var maxDifPos = 0;
+                    var maxDifValue = 0;
+                    for(var i=0; i< nbSamples; ++i){
+                        var coordWindowX = i * r + r/2;
+                        var ac = averageColor(imgData, coordWindowX, y, r);
+                        if(coordWindowX > width /5 && coordWindowX < 4*width/5){
+                            var dif = difColor(ac, backgroundColor);
+                            if(dif > maxDifValue){
+                                maxDifValue = dif;
+                                maxDifPos = coordWindowX;
+                            }
+                        }
+                    }
+                //    console.log("***********************************************************************************************maxDifValue: ", maxDifValue);
+                    return maxDifPos;
+                };
+
+                function difColor(c1,c2){
+                    return Math.abs(c1.r - c2.r) + Math.abs(c1.g - c2.g) + Math.abs(c1.b - c2.b);
+                };
+
+              var backgroundColor = {r:55, g:42, b:4};
+
+              function analyse() {
+
+                if(frameTime % 2 == 0){
+
+                    var context = canvas.getContext('2d');
+                   // console.log("ANALYSESSSSS", width, height);
+                    if (width && height) {
+                      canvas.width = width;
+                      canvas.height = height;
+                      context.drawImage(video, 0, 0, width, height/10.);
+                      var pix = context.getImageData(0, 0, width, height/10.); // .data
+
+                      var pCenterHigh = getPixel(pix, 160, 30);
+                     // console.log(pCenterHigh);
+
+                      var ac = averageColor(pix, 160, 16, 10);
+
+                      var dif = difColor(ac, backgroundColor);
+                      if(dif>100) playSound();
+
+                      var maxDifPos = getPositionMaxDif(pix, 16, 10);
+                    //  console.log("***********************************************************************************************dif: ", dif, "ac: ", ac, "maxDifPos: ", maxDifPos);
+                      itowns.viewer.setHandPos({x:maxDifPos, y:0});
+
+                    } else {
+                      console.log("clearphoto");//clearphoto();
+                    }
+                }
+                frameTime++;
+                requestAnimationFrame(analyse); //this.animate.bind(this));
+              };
+
+              function playSound () {
+                document.getElementById('play').play();
+            }
+
+    });
 
         itowns.viewer.addEventListener('Layer-removed', function(event) {
             console.log("Layer " + event.layer +  " removed");
