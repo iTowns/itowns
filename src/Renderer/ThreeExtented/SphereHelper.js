@@ -5,7 +5,7 @@
  */
 
 
-import * as THREE from 'THREE';
+import * as THREE from 'three';
 
 function SphereHelper(radius) {
     THREE.Mesh.call(this);

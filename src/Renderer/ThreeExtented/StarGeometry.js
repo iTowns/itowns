@@ -5,7 +5,7 @@
  */
 
 
-import * as THREE from 'THREE';
+import * as THREE from 'three';
 
 function StarGeometry() {
     THREE.Geometry.call(this);

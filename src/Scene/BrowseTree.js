@@ -4,7 +4,7 @@
  * Description: BrowseTree parcourt un arbre de Node. Lors du parcours un ou plusieur NodeProcess peut etre appliqué sur certains Node.
  */
 
-import * as THREE from 'THREE';
+import * as THREE from 'three';
 
 function BrowseTree(engine) {
     //Constructor

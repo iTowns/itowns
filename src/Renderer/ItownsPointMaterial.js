@@ -1,4 +1,4 @@
-import * as THREE from 'THREE';
+import * as THREE from 'three';
 import BasicMaterial from 'Renderer/BasicMaterial';
 import PointVS from 'Renderer/Shader/PointVS.glsl';
 import PointFS from 'Renderer/Shader/PointFS.glsl';

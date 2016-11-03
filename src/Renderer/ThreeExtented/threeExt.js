@@ -3,7 +3,7 @@
  *
  */
 
-import * as THREE from 'THREE';
+import * as THREE from 'three';
 
 
 // mbredif: extend THREE.Matrix3 prototype to with some THREE.Matrix4 functionalities
