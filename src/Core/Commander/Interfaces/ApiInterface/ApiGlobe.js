@@ -30,7 +30,7 @@ var eventLayerChangedVisible = new CustomEvent('layerchanged:visible');
 var eventLayerChangedOpacity = new CustomEvent('layerchanged:opacity');
 var eventLayerChangedIndex = new CustomEvent('layerchanged:index');
 var eventError = new CustomEvent('error');
-
+var JSONDriver = new IoDriver_JSON();
 
 function ApiGlobe() {
     //Constructor
@@ -99,6 +99,7 @@ function preprocessLayer(layer, provider) {
  * @param {Layer} layer.
  */
 ApiGlobe.prototype.addImageryLayer = function(layer) {
+
     preprocessLayer(layer, this.scene.managerCommand.getProtocolProvider(layer.protocol));
 
     var map = this.scene.getMap();
@@ -107,7 +108,42 @@ ApiGlobe.prototype.addImageryLayer = function(layer) {
     this.viewerDiv.dispatchEvent(eventLayerAdded);
 };
 
-ApiGlobe.prototype.moveLayerUp = function(layerId) {
+/**
+ * This function adds an imagery layer to the scene using a JSON file. The layer id must be unique. The protocol rules wich parameters are then needed for the function.
+ * @constructor
+ * @param {Layer} layer.
+ */
+
+ApiGlobe.prototype.addImageryLayerFromJSON = function(url) {
+     return JSONDriver.read(url).then(function(result){
+         this.addImageryLayer(result);
+     }.bind(this));
+};
+
+/**
+ * This function adds an imagery layer to the scene using an array of JSON files. The layer id must be unique. The protocol rules wich parameters are then needed for the function.
+ * @constructor
+ * @param {Layerss} array - An array of JSON files.
+ */
+
+ApiGlobe.prototype.addImageryLayersFromJSONArray = function (urls) {
+
+    var proms = [];
+
+    for (var i = 0; i < urls.length; i++) {
+        proms.push(JSONDriver.read(urls[i]));
+    }
+
+    return Promise.all(proms).then((values) => {
+
+        for (var i = 0; i < urls.length; i++) {
+            this.addImageryLayer(values[i]);
+        }
+        return this.getColorLayers();
+    });
+};
+
+ApiGlobe.prototype.moveLayerUp = function(layer) {
 
     this.scene.getMap().layersConfiguration.moveLayerUp(layerId);
     this.scene.getMap().updateLayersOrdering();
@@ -171,6 +207,50 @@ ApiGlobe.prototype.addElevationLayer = function(layer) {
     var map = this.scene.getMap();
     map.layersConfiguration.addElevationLayer(layer);
     this.viewerDiv.dispatchEvent(eventLayerAdded);
+};
+
+/**
+ * Add an elevation layer to the map using a JSON file.
+ * Elevations layers are used to build the terrain.
+ * Only one elevation layer is used, so if multiple layers cover the same area, the one
+ * with best resolution is used (or the first one is resolution are identical).
+ * The layer id must be unique amongst all layers already inserted.
+ * The protocol rules which parameters are then needed for the function.
+ * @constructor
+ * @param {Layers} array - An array of JSON files.
+ */
+
+ApiGlobe.prototype.addElevationLayersFromJSON = function(url) {
+     return JSONDriver.read(url).then(function(result){
+         this.addElevationLayer(result);
+     }.bind(this));
+};
+
+/**
+ * Add an elevation layer to the map using an array of JSON files.
+ * Elevations layers are used to build the terrain.
+ * Only one elevation layer is used, so if multiple layers cover the same area, the one
+ * with best resolution is used (or the first one is resolution are identical).
+ * The layer id must be unique amongst all layers already inserted.
+ * The protocol rules which parameters are then needed for the function.
+ * @constructor
+ * @param {Layer} layer.
+ */
+
+ApiGlobe.prototype.addElevationLayersFromJSONArray = function (urls) {
+
+    var proms = [];
+
+    for (var i = 0; i < urls.length; i++) {
+        proms.push(JSONDriver.read(urls[i]));
+    }
+
+    return Promise.all(proms).then((values) => {
+        for (var i = 0; i < urls.length; i++) {
+            this.addElevationLayer(values[i])
+        }
+        return this.getElevationLayers();
+    });
 };
 
 /**
