@@ -6,7 +6,7 @@
  * @Depends Sensor.js
  */
 
-import * as THREE from 'THREE';
+import * as THREE from 'three';
 import Sensor from 'MobileMapping/Sensor';
 
 var Ori = {

@@ -5,7 +5,7 @@
  */
 
 
-import * as THREE from 'THREE';
+import * as THREE from 'three';
 import BasicMaterial from 'Renderer/BasicMaterial';
 import MatteIdsFS from 'Renderer/Shader/MatteIdsFS.glsl';
 import GlobeDepthVS from 'Renderer/Shader/GlobeDepthVS.glsl';

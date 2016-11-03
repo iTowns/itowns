@@ -1,4 +1,4 @@
-import * as THREE from 'THREE';
+import * as THREE from 'three';
 import ItownsLineMaterial from 'Renderer/ItownsLineMaterial';
 
 var ItownsLine = function(options){

@@ -6,7 +6,7 @@
 
 
 
-import * as THREE from 'THREE';
+import * as THREE from 'three';
 
 function Ellipsoid(size) {
     //Constructor

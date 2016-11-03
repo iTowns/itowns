@@ -58,20 +58,7 @@ module.exports = {
   },
   resolve: {
     root: path.resolve(__dirname, 'src'),
-    extensions: ['', '.js'],
-    alias: {
-      THREE:         'three',
-      OBB:           'Renderer/ThreeExtented/OBB',
-      OBBHelper:     'Renderer/ThreeExtented/OBBHelper',
-      SphereHelper:  'Renderer/ThreeExtented/SphereHelper',
-      PriorityQueue: 'js-priority-queue',
-      'Renderer/ThreeExtented/jszip.min': 'jszip',
-      'Renderer/ThreeExtented/ColladaLoader': 'ColladaLoader',
-      ColladaLoader: 'three/examples/js/loaders/ColladaLoader',
-      GlobeControls: 'Renderer/ThreeExtented/GlobeControls',
-      StarGeometry:  'Renderer/ThreeExtented/StarGeometry',
-      Sky:           'Globe/SkyShader'
-    }
+    extensions: ['', '.js']
   },
   devServer: {
     publicPath: '/dist/'
