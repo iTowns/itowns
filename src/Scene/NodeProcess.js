@@ -171,7 +171,7 @@ function refinementCommandCancellationFn(cmd) {
 }
 
 NodeProcess.prototype.refineNodeLayers = function(node, camera, params) {
-    // Elevation and Imagery u pdates require separate functions (for now):
+    // Elevation and Imagery updates require separate functions (for now):
     //   * a node can only have 1 elevation texture
     //   * a node inherits elevation texture from parent, even if tileInsideLimit(node)
     //     returns false

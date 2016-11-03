@@ -203,7 +203,6 @@ TileMesh.prototype.setTextureElevation = function(elevation) {
     this.materials[RendererConstant.DEPTH].uniforms.texturesCount.value = this.materials[RendererConstant.FINAL].texturesCount[0];
     this.materials[RendererConstant.ID].uniforms.texturesCount.value = this.materials[RendererConstant.FINAL].texturesCount[0];
 
-
     this.loadingCheck();
 };
 

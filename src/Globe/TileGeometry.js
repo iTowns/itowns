@@ -237,7 +237,6 @@ TileGeometry.prototype.computeBuffers = function(params, builder) {
         };
     }
 
-
     for (var i = 0; i < skirt.length; i++) {
 
         var id = skirt[i];

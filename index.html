@@ -396,7 +396,7 @@ and open the template in the editor.
             heightMapWidth : 256,
             waterMask      : false,
             updateStrategy: {
-                type: 0, /* see LayerUpdateStrategy.js */
+                type: 0, /* see LayerUpdateStrategy.js*/
                 options: {}
             },
             options: {
@@ -554,8 +554,6 @@ and open the template in the editor.
 
         itowns.viewer.update();
 
-
-
         // THIS IS AN EXAMPLE OF INTERFACE TO INTERACT WITH ITOWNS
         var Menu = function() {
             this.CloudsIR = false;
@@ -597,14 +595,15 @@ and open the template in the editor.
 
             var folder = colorGui.addFolder(layer.id);
             folder.add( { visible: true }, 'visible').onChange(function(value) {
-                itowns.viewer.setLayerVisibility(this, value);
-            }.bind(layer.id));
+                itowns.viewer.setLayerVisibility(this.id, value);
+            }.bind(layer));
+
             folder.add( { opacity: 1.0 }, 'opacity').min(0.0).max(1.0).onChange(function(value) {
-                itowns.viewer.setLayerOpacity(this, value);
-            }.bind(layer.id));
+                itowns.viewer.setLayerOpacity(this.id, value);
+            }.bind(layer));
             folder.add( { frozen: false }, 'frozen').onChange(function(value) {
-                config.setLayerFreeze(this, value);
-            }.bind(layer.id));
+                config.setLayerFreeze(this.id, value);
+            }.bind(layer));
         }
 
         var elevationGui = gui.addFolder('Elevation Layers');
@@ -614,8 +613,8 @@ and open the template in the editor.
 
             var folder = elevationGui.addFolder(layer.id);
             folder.add( { frozen: false }, 'frozen').onChange(function(value) {
-                config.setLayerFreeze(this, value);
-            }.bind(layer.id));
+                config.setLayerFreeze(this.id, value);
+            }.bind(layer));
         }
 
         if(false) {
@@ -667,7 +666,15 @@ and open the template in the editor.
                 // var zoomScale =0.0006614869005378093;
                 // itowns.viewer.setZoomScale(zoomScale);
                 //removeLayer('OrthoCRS');
+                //
+                //itowns.viewer.moveLayerUp('OPENSM');
+                //itowns.viewer.moveLayerUp('DARK');
+                //removeLayer('OrthoCRS');
+                //removeLayer('ScanEX');
                 //itowns.viewer.moveLayerUp('OrthoCRS');
+
+                //itowns.viewer.moveLayerDown('ScanEX');
+
                 //console.log(itowns.viewer.getZoomLevel("Ortho"));
             });
         }

@@ -178,8 +178,6 @@ ManagerCommands.prototype.getProviders = function() {
     return p;
 };
 
-
-
 /**
  */
 ManagerCommands.prototype.deQueue = function(queue) {
