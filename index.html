@@ -639,8 +639,11 @@ and open the template in the editor.
             this.SunEffect = false;
             this.FogEffect = false;
             this.HideSea = false;
+            this.Fire = false;
+            this.Diffraction = false;
             this.Volcano = false;
             this.Slide = false;
+            this.Trace = false;
             this.api = function(){};
             this.api2 = function(){};
             this.api3 = function(){};
@@ -734,6 +737,15 @@ and open the template in the editor.
             });
             f2.add(text, 'Volcano').onChange(function(newValue) {
                 itowns.viewer.setVolcanoOn();
+            });
+            f2.add(text, 'Fire').onChange(function(newValue) {
+                itowns.viewer.setFireOn();
+            });
+            f2.add(text, 'Diffraction').onChange(function(newValue) {
+                itowns.viewer.setDiffractionOn();
+            });
+            f2.add(text, 'Trace').onChange(function(newValue) {
+                itowns.viewer.setTraceOn();
             });
         }
 

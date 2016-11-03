@@ -138,6 +138,14 @@ var LayeredMaterial = function(id) {
         type: "i",
         value: 0
     };
+    this.uniforms.fireOn = {
+        type: "f",
+        value: 0.
+    };
+    this.uniforms.diffractionOn = {
+        type: "f",
+        value: 0.
+    };
     this.uniforms.hideSea = {
         type: "f",
         value: 0.

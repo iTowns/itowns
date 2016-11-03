@@ -769,6 +769,22 @@ ApiGlobe.prototype.setVolcanoOn = function(value){
     this.scene.setVolcanoOn(null);
 };
 
+ApiGlobe.prototype.setFireOn = function(value){
+    
+    this.scene.setFireOn(null);
+};
+
+ApiGlobe.prototype.setTraceOn = function(value){
+    
+    this.scene.setTraceOn(null);
+};
+
+ApiGlobe.prototype.setDiffractionOn = function(value){
+    
+    this.scene.setDiffractionOn(null);
+};
+
+
 ApiGlobe.prototype.slide = function(value){
     
     this.scene.slide(null);
