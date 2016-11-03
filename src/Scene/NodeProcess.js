@@ -11,7 +11,7 @@ import defaultValue from 'Core/defaultValue';
 import Projection from 'Core/Geographic/Projection';
 import RendererConstant from 'Renderer/RendererConstant';
 import {chooseNextLevelToFetch} from 'Scene/LayerUpdateStrategy';
-import {l_ELEVATION, l_COLOR} from 'Globe/TileMesh';
+import {l_ELEVATION, l_COLOR} from 'Renderer/LayeredMaterial';
 
 function NodeProcess(camera, ellipsoid, bbox) {
     //Constructor
@@ -93,36 +93,43 @@ NodeProcess.prototype.subdivideNode = function(node, camera, params) {
                 var j;
 
                 child.matrixSet = [];
-
+                let tileMatrixSet,texturesCount;
 
                 // update wmts
                 var colorLayers = params.layersConfig.getColorLayers();
+
+                // update Imagery wmts
                 for (j = 0; j < colorLayers.length; j++) {
                     layer = colorLayers[j];
-                    var tileMatrixSet = layer.options.tileMatrixSet;
+                     tileMatrixSet = layer.options.tileMatrixSet;
 
                     if (tileMatrixSet && !child.matrixSet[tileMatrixSet]) {
                         child.matrixSet[tileMatrixSet] = this.projection.getCoordWMTS_WGS84(child.tileCoord, child.bbox, tileMatrixSet);
                     }
 
                     if (layer.tileInsideLimit(child, layer)) {
+
+                        if(tileMatrixSet) {
+                            var bcoord = child.matrixSet[tileMatrixSet];
+                            texturesCount = bcoord[1].row - bcoord[0].row + 1;
+                        } else {
+                            texturesCount = 1;
+                        }
+
                         paramMaterial.push({
                             tileMT: tileMatrixSet,
-                            layerTexturesOffset: colorTextureCount,
+                            texturesCount: texturesCount,
                             visible: params.layersConfig.isColorLayerVisible(layer.id),
                             opacity: params.layersConfig.getColorLayerOpacity(layer.id),
                             fx: layer.fx,
                             idLayer: layer.id
                         });
 
-                        if(tileMatrixSet) {
-                            var bcoord = child.matrixSet[tileMatrixSet];
-                            colorTextureCount += bcoord[1].row - bcoord[0].row + 1;
-                        } else {
-                            colorTextureCount += 1;
-                        }
+                        colorTextureCount += texturesCount;
                     }
                 }
+
+                // update Imagery wmts
                 var elevationLayers = params.layersConfig.getElevationLayers();
                 var canHaveElevation = false;
                 for (j = 0; j < elevationLayers.length; j++) {
@@ -174,16 +181,16 @@ NodeProcess.prototype.refineNodeLayers = function(node, camera, params) {
         updateNodeImagery
     ];
 
-    for (let i=0; i<2; i++) {
-        if (node.pendingLayers[i] === undefined
-            && (!node.loaded || node.downScaledLayer(i))) {
+    var resetPendingFlag = function(id){node.pendingLayers[id] = undefined;};
 
-            node.pendingLayers[i] = true;
+    for (let typeLayer=0; typeLayer<2; typeLayer++) {
+        if (node.pendingLayers[typeLayer] === undefined && (!node.loaded || node.downScaledLayer(typeLayer))) {
 
-            layerFunctions[i](params.tree, node, params.layersConfig, !node.loaded).then(
+            node.pendingLayers[typeLayer] = true;
+            layerFunctions[typeLayer](params.tree, node, params.layersConfig, !node.loaded).then(
                 // reset the flag, regardless of the request success/failure
-                function() { node.pendingLayers[i] = undefined; },
-                function() { node.pendingLayers[i] = undefined; }
+                resetPendingFlag(typeLayer),
+                resetPendingFlag(typeLayer)
             );
         }
     }
@@ -201,19 +208,19 @@ NodeProcess.prototype.hideNodeChildren = function(node) {
  * that matches its level (not downsampled).
  * Returns null otherwise
  */
-function findAncestorWithValidTextureForLayer(node, layerType, layer) {
+function findAncestorWithValidTextureForLayer(node, layer) {
     var parent = node.parent;
-    if (parent && parent.material && parent.material.getLayerTextureOffset) {
-        var slot = layerType == l_ELEVATION ? 0 : parent.material.getLayerTextureOffset(layer.id);
-        if (slot < 0) {
+    if (parent && parent.material && parent.material.getColorLayerLevel) {
+        var levelColor = parent.material.getColorLayerLevel(layer);
+        if (levelColor < 0) {
             return null;
         } else {
-            let level = parent.material.getLayerLevel(layerType, slot);
+            let level = parent.material.getElevationLayerLevel();
             if (0 <= level) {
                 // Return tile at this level  - because parent may have use texture from an ancestor as well
                 return node.getNodeAtLevel(level);
             } else {
-                return findAncestorWithValidTextureForLayer(parent, layerType, layer);
+                return findAncestorWithValidTextureForLayer(parent, layer);
             }
         }
     } else {
@@ -251,15 +258,12 @@ function updateNodeImagery(quadtree, node, layersConfig, force) {
             layer: layer
         };
 
-        let slot = node.materials[RendererConstant.FINAL].getLayerTextureOffset(layer.id);
-
-        let currentLevel = node.materials[RendererConstant.FINAL].getLayerLevel(l_COLOR, slot);
+        let currentLevel = node.materials[RendererConstant.FINAL].getColorLayerLevel(layer.id);
         // if this tile has no texture (level == -1), try use one from an ancestor
         if (currentLevel === -1) {
             args.ancestor = findAncestorWithValidTextureForLayer(node, l_COLOR, layer);
         } else {
             var targetLevel = chooseNextLevelToFetch(layer.updateStrategy.type, node.level, currentLevel, layer.updateStrategy.options);
-
             if (targetLevel === currentLevel) {
                 continue;
             }
@@ -271,17 +275,16 @@ function updateNodeImagery(quadtree, node, layersConfig, force) {
         promises.push(quadtree.interCommand.request(args, node, refinementCommandCancellationFn).then(
             function(result) {
                 let level = args.ancestor ? args.ancestor.level : node.level;
-
                 // Assign .level to texture
                 if (Array.isArray(result)) {
                     for (let j=0; j<result.length; j++) {
                         result[j].texture.level = level;
                     }
 
-                    node.setTexturesLayer(result, l_COLOR, slot);
+                    node.setTexturesLayer(result, l_COLOR, layer.id);
                 } else if (result.texture) {
                     result.texture.level = level;
-                    node.setTexturesLayer([result], l_COLOR, slot);
+                    node.setTexturesLayer([result], l_COLOR, layer.id);
                 } else {
                     // TODO: null texture is probably an error
                     // Maybe add an error counter for the node/layer,
@@ -309,11 +312,11 @@ function updateNodeElevation(quadtree, node, layersConfig, force) {
     let bestLayer = null;
     let ancestor = null;
 
-    let currentElevation = node.materials[RendererConstant.FINAL].getLayerLevel(l_ELEVATION, 0);
+    let currentElevation = node.materials[RendererConstant.FINAL].getElevationLayerLevel();
 
-    // Step 0: currentElevevation is -1 BUT material.nbTextures[l_ELEVATION] is > 0
+    // Step 0: currentElevevation is -1 BUT material.texturesCount[l_ELEVATION] is > 0
     // means that we already tried and failed to download an elevation texture
-    if (currentElevation == -1 && 0 < node.material.nbTextures[l_ELEVATION]) {
+    if (currentElevation == -1 && 0 < node.material.texturesCount[l_ELEVATION]) {
         return Promise.resolve(node);
     }
 

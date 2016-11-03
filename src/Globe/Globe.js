@@ -207,6 +207,17 @@ Globe.prototype.updateLayersOrdering = function() {
     this.tiles.children[0].traverse(cO);
 };
 
+
+Globe.prototype.removeColorLayer = function(layer) {
+
+    var cO = function(object) {
+        if (object.changeSequenceLayers)
+            object.removeColorLayer(layer);
+    }.bind(this);
+
+    this.tiles.children[0].traverse(cO);
+};
+
 Globe.prototype.getZoomLevel = function() {
 
     var cO = function() {

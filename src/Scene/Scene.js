@@ -95,10 +95,6 @@ Scene.prototype.getPickPosition = function(mouse) {
     return this.gfxEngine.getPickingPositionFromDepth(mouse);
 };
 
-Scene.prototype.addStyle = function(style) {
-    this.stylesManager.addStyle(style);
-};
-
 Scene.prototype.getStyle = function(name) {
     return this.stylesManager.getStyle(name);
 };

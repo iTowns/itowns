@@ -17,14 +17,14 @@ var GlobeDepthMaterial = function(otherMaterial) {
         value: otherMaterial.Textures[0]
     };
 
-    this.uniforms.nbTextures = {
+    this.uniforms.texturesCount = {
         type: "i",
-        value: otherMaterial.nbTextures[0]
+        value: otherMaterial.texturesCount[0]
     };
 
-    this.uniforms.pitScale_L00 = {
+    this.uniforms.offsetScale_L00 = {
         type: "v3v",
-        value: otherMaterial.pitScale[0]
+        value: otherMaterial.offsetScale[0]
     };
 };
 
