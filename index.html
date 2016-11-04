@@ -965,19 +965,39 @@ and open the template in the editor.
                             }
                         }
                     }
+                    //    console.log("***********************************************************************************************maxDifValue: ", maxDifValue);
+                    if(maxDifValue < minDif)  maxDifPos = 0;
+
+                    return maxDifPos;
+                };
+/*
+                      // r is size of pattern average (window sample)
+                function getAverageColorAll(imgData, y, r){
+
+                    var nbSamples = width/r;
+                    var colorBase = {r:0, g:0, b:0};
+                    for(var i=0; i< nbSamples; ++i){
+                        var coordWindowX = i * r + r/2;
+                        var ac = averageColor(imgData, coordWindowX, y, r);
+                        if(coordWindowX > width /5 && coordWindowX < 4*width/5){
+
+
+                        }
+                    }
                 //    console.log("***********************************************************************************************maxDifValue: ", maxDifValue);
                     return maxDifPos;
                 };
-
+*/
                 function difColor(c1,c2){
                     return Math.abs(c1.r - c2.r) + Math.abs(c1.g - c2.g) + Math.abs(c1.b - c2.b);
                 };
 
               var backgroundColor = {r:55, g:42, b:4};
+              var minDif = 20;
 
               function analyse() {
 
-                if(frameTime % 2 == 0){
+                if(frameTime % 1 == 0){
 
                     var context = canvas.getContext('2d');
                    // console.log("ANALYSESSSSS", width, height);
@@ -991,11 +1011,14 @@ and open the template in the editor.
                      // console.log(pCenterHigh);
 
                       var ac = averageColor(pix, 160, 16, 10);
+                      if(frameTime <= 200){
+                          backgroundColor = ac;
+                          playSound();
+                      }
+                   //   var dif = difColor(ac, backgroundColor);
+                   //   if(dif>100) playSound();
 
-                      var dif = difColor(ac, backgroundColor);
-                      if(dif>100) playSound();
-
-                      var maxDifPos = getPositionMaxDif(pix, 16, 10);
+                      var maxDifPos = getPositionMaxDif(pix, 16, 4);
                     //  console.log("***********************************************************************************************dif: ", dif, "ac: ", ac, "maxDifPos: ", maxDifPos);
                       itowns.viewer.setHandPos({x:maxDifPos, y:0});
 
