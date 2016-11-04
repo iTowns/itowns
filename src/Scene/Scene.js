@@ -26,10 +26,10 @@ import MobileMappingLayer from 'MobileMapping/MobileMappingLayer';
 import CustomEvent from 'custom-event';
 
 var instanceScene = null;
-var event = new CustomEvent('globe-built');
-var NO_SUBDIVISE = 0;
-var SUBDIVISE = 1;
-var CLEAN = 2;
+
+
+const RENDERING_PAUSED = 0;
+const RENDERING_ACTIVE = 1;
 
 function Scene(coordinate, ellipsoid, viewerDiv, debugMode, gLDebug) {
 
@@ -54,11 +54,16 @@ function Scene(coordinate, ellipsoid, viewerDiv, debugMode, gLDebug) {
     this.browserScene = new BrowseTree(this.gfxEngine);
     this.cap = new Capabilities();
 
+    this.needsRedraw = false;
+    this.lastRenderTime = 0;
+    this.maxFramePerSec = 60;
+
     this.time = 0;
     this.orbitOn = false;
     this.rAF = null;
 
     this.viewerDiv = viewerDiv;
+    this.renderingState = RENDERING_PAUSED;
 }
 
 Scene.prototype.constructor = Scene;
@@ -101,75 +106,97 @@ Scene.prototype.size = function() {
  *
  * @returns {undefined}
  */
-Scene.prototype.quadTreeRequest = function(quadtree, process) {
-
-    this.browserScene.browse(quadtree, this.currentCamera(), process, this.map.layersConfiguration, SUBDIVISE);
-    this.managerCommand.runAllCommands().then(function() {
-        if (this.managerCommand.isFree()) {
-            this.browserScene.browse(quadtree, this.currentCamera(), process, this.map.layersConfiguration, SUBDIVISE);
-            if (this.managerCommand.isFree()) {
-                this.browserScene.browse(quadtree, this.currentCamera(), process, this.map.layersConfiguration, CLEAN)
-                this.viewerDiv.dispatchEvent(event);
-
-            }
-        }
-
-    }.bind(this));
-
-    this.renderScene3D();
-
-};
-
-Scene.prototype.realtimeSceneProcess = function() {
-
-    for (var l = 0; l < this.layers.length; l++) {
-        var layer = this.layers[l].node;
-        var process = this.layers[l].process;
-
-        for (var sl = 0; sl < layer.children.length; sl++) {
-            var sLayer = layer.children[sl];
-
-            if (sLayer instanceof Quadtree)
-                this.browserScene.browse(sLayer, this.currentCamera(), process, this.map.layersConfiguration, NO_SUBDIVISE);
-            else if (sLayer instanceof MobileMappingLayer)
-                this.browserScene.updateMobileMappingLayer(sLayer, this.currentCamera());
-            else if (sLayer instanceof Layer)
-                this.browserScene.updateLayer(sLayer, this.currentCamera());
-
-        }
-    }
-};
-
-/**
- *
- * @returns {undefined}
- */
 Scene.prototype.updateScene3D = function() {
 
     this.gfxEngine.update();
 };
 
-Scene.prototype.wait = function(timeWait) {
 
-    var waitTime = timeWait ? timeWait : 20;
-
-    this.realtimeSceneProcess();
+/**
+ * Notifies the scene it needs to be updated due to changes exterior to the
+ * scene itself (e.g. camera movement).
+ * Using a non-0 delay allows to delay update - useful to reduce CPU load for
+ * non-interactive events (e.g: texture loaded)
+ */
+Scene.prototype.notifyChange = function(delay) {
+    this.needsRedraw = true;
 
     window.clearInterval(this.timer);
 
-    this.timer = window.setTimeout(this.quadTreeRequest.bind(this), waitTime, this.layers[0].node.tiles, this.layers[0].process);
+    if (delay) {
+        this.timer = window.setTimeout(this.scheduleUpdate.bind(this), delay);
+    } else {
+        this.scheduleUpdate();
+    }
+};
+
+Scene.prototype.scheduleUpdate = function() {
+    if (this.renderingState !== RENDERING_ACTIVE) {
+        this.renderingState = RENDERING_ACTIVE;
+
+        requestAnimationFrame(function() { this.step(); }.bind(this));
+    }
+};
+
+Scene.prototype.update = function() {
+    for (var l = 0; l < this.layers.length; l++) {
+        var layer = this.layers[l].node;
+
+        for (var sl = 0; sl < layer.children.length; sl++) {
+            var sLayer = layer.children[sl];
+
+            if (sLayer instanceof Quadtree) {
+                this.browserScene.updateQuadtree(this.layers[l], this.map.layersConfiguration, this.currentCamera());
+            } else if (sLayer instanceof MobileMappingLayer) {
+                this.browserScene.updateMobileMappingLayer(sLayer,this.currentCamera());
+            } else if (sLayer instanceof Layer) {
+                this.browserScene.updateLayer(sLayer,this.currentCamera());
+            }
+        }
+    }
+};
+
+Scene.prototype.step = function() {
+    // update data-structure
+    this.update();
+
+    // Check if we're done (no command left).
+    // We need to make sure we didn't executed any commands because these commands
+    // might spawn other commands in a next update turn.
+    let executedDuringUpdate = this.managerCommand.resetCommandsCount('executed');
+    if (this.managerCommand.commandsWaitingExecutionCount() == 0 && executedDuringUpdate == 0) {
+        this.viewerDiv.dispatchEvent(new CustomEvent('globe-built'));
+
+        // one last rendering before pausing
+        this.renderScene3D();
+
+        // reset rendering flag
+        this.renderingState = RENDERING_PAUSED;
+    } else {
+
+        let ts = Date.now();
+
+        // update rendering
+        if ((1000.0 / this.maxFramePerSec) < (ts - this.lastRenderTime)) {
+            // only perform rendering if needed
+            if (this.needsRedraw || executedDuringUpdate > 0) {
+                this.renderScene3D();
+                this.lastRenderTime = ts;
+                this.needsRedraw = false;
+            }
+        }
+
+        requestAnimationFrame(function() { this.step(); }.bind(this));
+    }
 };
 
 /**
  */
 Scene.prototype.renderScene3D = function() {
-
     this.gfxEngine.renderScene();
-
 };
 
 Scene.prototype.scene3D = function() {
-
     return this.gfxEngine.scene3D;
 };
 
@@ -179,12 +206,10 @@ Scene.prototype.scene3D = function() {
  * @param node {[object Object]}
  */
 Scene.prototype.add = function(node, nodeProcess) {
-
     if (node instanceof Globe) {
         this.map = node;
         nodeProcess = nodeProcess || new NodeProcess(this.currentCamera(), node.ellipsoid);
         //this.quadTreeRequest(node.tiles, nodeProcess);
-
     }
 
     this.layers.push({
