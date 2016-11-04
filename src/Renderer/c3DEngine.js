@@ -54,7 +54,6 @@ function c3DEngine(scene, positionCamera, viewerDiv, debugMode, gLDebug) {
     this.pickingTexture.depthBuffer = true;
 
     this.renderScene = function() {
-
         if(this.camera.camHelper())
             this.camera.camHelper().visible = false;
 
@@ -91,8 +90,7 @@ function c3DEngine(scene, positionCamera, viewerDiv, debugMode, gLDebug) {
     this.update = function() {
         this.camera.update();
         this.updateControl();
-        this.scene.wait();
-        this.renderScene();
+        this.scene.notifyChange();
 
     }.bind(this);
 
@@ -262,8 +260,6 @@ c3DEngine.prototype.changeStateNodesScene = function(state) {
         } else {
             if (node.layer) {
                 node.visible = enable ? node.layer.visible : false;
-            } else {
-                node.visible = enable;
             }
         }
     }

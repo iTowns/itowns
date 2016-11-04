@@ -50,9 +50,10 @@ WMTS_Provider.prototype = Object.create(Provider.prototype);
 
 WMTS_Provider.prototype.constructor = WMTS_Provider;
 
-WMTS_Provider.prototype.customUrl = function(url, tilematrix, row, col) {
+WMTS_Provider.prototype.customUrl = function(layer, url, tilematrix, row, col) {
+    let tm = Math.min(layer.zoom.max, tilematrix);
 
-    var urld = url.replace('%TILEMATRIX', tilematrix.toString());
+    let urld = url.replace('%TILEMATRIX', tm.toString());
     urld = urld.replace('%ROW', row.toString());
     urld = urld.replace('%COL', col.toString());
 
@@ -102,7 +103,7 @@ WMTS_Provider.prototype.preprocessDataLayer = function(layer) {
  */
 WMTS_Provider.prototype.url = function(coWMTS, layer) {
 
-    return this.customUrl(layer.customUrl, coWMTS.zoom, coWMTS.row, coWMTS.col);
+    return this.customUrl(layer, layer.customUrl, coWMTS.zoom, coWMTS.row, coWMTS.col);
 
 };
 
@@ -265,7 +266,10 @@ WMTS_Provider.prototype.computeLevelToDownload = function(tile, ancestor, layer)
 }
 
 WMTS_Provider.prototype.tileInsideLimit = function(tile, layer) {
-    return layer.zoom.min <= tile.level && tile.level <= layer.zoom.max;
+    // This layer provides data starting at level = layer.zoom.min
+    // (the zoom.max property is used when building the url to make
+    //  sure we don't use invalid levels)
+    return layer.zoom.min <= tile.level;
 }
 
 WMTS_Provider.prototype.getColorTextures = function(tile, layer, parameters) {

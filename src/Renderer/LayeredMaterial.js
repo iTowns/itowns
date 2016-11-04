@@ -318,8 +318,8 @@ LayeredMaterial.prototype.setNbLayersColor = function(n) {
     this.uniforms.nColorLayer.value = n;
 };
 
-LayeredMaterial.prototype.getLevelLayerColor = function(id, slot) {
 
+LayeredMaterial.prototype.getLayerLevel = function(id, slot) {
     var level = this.Textures[id][slot || 0].level;
 
     return level;
