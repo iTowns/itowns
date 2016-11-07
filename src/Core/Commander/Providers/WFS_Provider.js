@@ -63,9 +63,21 @@ WFS_Provider.prototype.preprocessDataLayer = function(layer){
                       '&BBOX=%bbox,' + layer.crs;
 };
 
+WFS_Provider.prototype.preprocessDataForTileSet = function(layer) {
+    layer.protocol = 'wfs';
+    layer.isTileset = true;
+    layer.type = 'bbox';
+    layer.format  = 'text/json';
+};
+
 WFS_Provider.prototype.tileInsideLimit = function(tile,layer) {
     var bbox = new BoundingBox(layer.bbox[0],layer.bbox[2],layer.bbox[1],layer.bbox[3],0, 0,UNIT.DEGREE);
-    return (tile.level == (layer.params.level || 17)) && bbox.intersect(tile.bbox);
+    if(layer.isTileset)
+        return bbox.intersect(tile.bbox);
+    var currentLevel = 17;
+    if(layer.params && layer.params.level)
+        currentLevel = layer.params.level;
+    return (tile.level == currentLevel) && bbox.intersect(tile.bbox);
 };
 
 WFS_Provider.prototype.executeCommand = function(command) {
@@ -75,7 +87,8 @@ WFS_Provider.prototype.executeCommand = function(command) {
     //TODO : support xml, gml2, geojson
     var supportedFormats = {
         json:    this.getFeatures.bind(this),
-        geojson: this.getFeatures.bind(this)
+        geojson: this.getFeatures.bind(this),
+        'text/json': this.getFeatures.bind(this)
     };
 
     var func = supportedFormats[layer.format];
@@ -87,6 +100,14 @@ WFS_Provider.prototype.executeCommand = function(command) {
         return Promise.reject(new Error('Unsupported mimetype ' + layer.format));
     }
 };
+
+/*WFS_Provider.prototype.getTileFeatures = function(tile, layer, parameters) {
+    if (!this.tileInsideLimit(tile,layer) || tile.material === null)
+        return Promise.resolve();
+    this._IoDriver.read(layer.root.content.url).then(function(feature) {
+        console.log(feature);
+    });
+};*/
 
 var builder  = new BuilderEllipsoidTile(tool.ellipsoid, projection);
 WFS_Provider.prototype.getFeatures = function(tile, layer, parameters) {
@@ -100,7 +121,7 @@ WFS_Provider.prototype.getFeatures = function(tile, layer, parameters) {
                 parameters.ancestor.bbox :
                 tile.bbox;
 
-    var url = this.url(bbox, layer);
+    var url = layer.tileUrl || this.url(bbox, layer);
 
     var result = { pitch: pitch };
     result.feature = this.cache.getRessource(url);
@@ -109,14 +130,20 @@ WFS_Provider.prototype.getFeatures = function(tile, layer, parameters) {
         return Promise.resolve(result);
 
     return this._IoDriver.read(url).then(function(feature) {
-        if(feature.crs || layer.crs) {
-            var pointOrder = this.CheckOutputType(feature.crs);
+        if(feature.crs || feature.geometries.crs) {
+            let pointOrder, features;
+            if(feature.crs) {
+                pointOrder = this.CheckOutputType(feature.crs);
+                features = feature.features;
+            } else {
+                pointOrder = this.CheckOutputType(feature.geometries.crs);
+                features = feature.geometries.features;
+            }
             if(pointOrder != undefined) {
-                let features = feature.features;
                 if(layer.type == "poly")
                     result.feature = tool.GeoJSON2Polygon(features, pointOrder);
                 else if(layer.type == "bbox")
-                    result.feature = tool.GeoJSON2Box(features, pointOrder);
+                    result.feature = tool.GeoJSON2Box(features, pointOrder, layer.bbox);
                 else {
                     let mesh;
                     if(result.feature != undefined)
@@ -165,7 +192,7 @@ WFS_Provider.prototype.CheckOutputType = function(crs) {
     }
     else if(crs.type == 'name') {
         if(crs.properties.name) {
-            var regExpEpsg = new RegExp(/^urn:[x-]?ogc:def:crs:EPSG:(\d*.?\d*)?:\d{4}/);
+            var regExpEpsg = new RegExp(/^(urn:[x-]?ogc:def:crs:)?EPSG:(\d*.?\d*:)?\d{4}/);
             if(regExpEpsg.test(crs.properties.name))
                 return pointOrder;
             else {

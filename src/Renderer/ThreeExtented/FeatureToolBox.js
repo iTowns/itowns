@@ -42,7 +42,7 @@ FeatureToolBox.prototype.GeoJSON2Polygon = function(features, pointOrder) {
     return polyGroup;
 };
 
-FeatureToolBox.prototype.GeoJSON2Box = function(features, pointOrder) {
+FeatureToolBox.prototype.GeoJSON2Box = function(features, pointOrder/*, bbox*/) {
     var bboxGroup = new THREE.Object3D();
     var wallGeometry = new THREE.Geometry(); // for the walls
     var roofGeometry = new THREE.Geometry(); // for the roof

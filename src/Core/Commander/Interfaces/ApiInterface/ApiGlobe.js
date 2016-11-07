@@ -15,7 +15,8 @@ import WFS_Provider from 'Core/Commander/Providers/WFS_Provider';
 import Ellipsoid from 'Core/Math/Ellipsoid';
 import Projection from 'Core/Geographic/Projection';
 import CustomEvent from 'custom-event';
-import {STRATEGY_MIN_NETWORK_TRAFFIC} from 'Scene/LayerUpdateStrategy'
+import {STRATEGY_MIN_NETWORK_TRAFFIC} from 'Scene/LayerUpdateStrategy';
+import IODriver_JSON from 'Core/Commander/Providers/IODriver_JSON';
 
 var loaded = false;
 var eventLoaded = new CustomEvent('globe-loaded');
@@ -200,6 +201,22 @@ ApiGlobe.prototype.getLayers = function( /*param*/ ) {
     return map.layersConfiguration.getColorLayers();
 };
 
+ApiGlobe.prototype.getSceneTileSet = function() {
+
+    var ioDriverJSON = new IODriver_JSON();
+    return ioDriverJSON.read("data/tileset.json").then(
+        function(layer) {
+            //Bind provider to layer
+            var provider = this.scene.managerCommand.getProtocolProvider('wfs');
+            layer.tileInsideLimit = provider.tileInsideLimit.bind(provider);
+            provider.preprocessDataForTileSet(layer);
+            //Add layer to scene
+            var map = this.scene.getMap();
+            map.layersConfiguration.addGeometryLayer(layer);
+            var featureLayer  = map.createFeatureLayer(layer.id);
+            this.scene.gfxEngine.add3DScene(featureLayer.getMesh());
+        }.bind(this));
+};
 
 ApiGlobe.prototype.pickFeature = function(Position, layerId){
     if(Position == undefined)
@@ -299,6 +316,9 @@ ApiGlobe.prototype.createSceneGlobe = function(coordCarto, viewerDiv) {
     map.layersConfiguration.addGeometryLayer(wgs84TileLayer);
 
     map.tiles.init(map.layersConfiguration.getGeometryLayers()[0]);
+
+    //Test Tileset
+    this.getSceneTileSet();
 
     //!\\ TEMP
     //this.scene.wait(0);

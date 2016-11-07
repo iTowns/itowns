@@ -28,6 +28,9 @@ function NodeProcess(camera, ellipsoid, bbox) {
                             {min:  4, max:   10, type: 'box'  },
                             {min: 10, max:   30, type: 'point'},
                             {min: 30, max: 1000, type: 'box'  }];
+    this.proj4 = require('proj4');
+    this.proj3946 = '+proj=lcc +lat_1=45.25 +lat_2=46.75 +lat_0=46 +lon_0=3 +x_0=1700000 +y_0=5200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs';
+    this.proj4326 = '+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs';
 }
 
 /**
@@ -145,7 +148,7 @@ NodeProcess.prototype.subdivideNode = function(node, camera, params) {
                 this.refineNodeLayers(child, camera, params);
 
                 //request feature update
-                updateNodeFeature(quadtree, child, params.layersConfig.getGeometryLayers());
+                this.updateNodeFeature(quadtree, child, params.layersConfig.getGeometryLayers());
 
                 return 0;
             }.bind(this));
@@ -223,38 +226,70 @@ function findAncestorWithValidTextureForLayer(node, layer) {
     }
 }
 
+/*NodeProcess.prototype.recursiveTileSet = function(layer, data) {
 
-function updateNodeFeature(quadtree, node, featureLayers) {
+};*/
+
+NodeProcess.prototype.readTileSet = function(layer, node) {
+    var datas = layer.root;
+    //do {
+        var box = datas.boundingVolume.region;
+        var a = this.proj4(this.proj3946, this.proj4326, [box[0], box[1]]);
+        var b = this.proj4(this.proj3946, this.proj4326, [box[2], box[3]]);
+        layer.bbox = [a[0], a[1], b[0], b[1], box[4], box[5]];
+        if(layer.tileInsideLimit(node, layer)){
+            if(datas.geometricError == node.geometricError) {
+                layer.tileUrl = datas.content.url;
+                return true;
+                //break;
+            } else if( datas.geometricError > node.geometricError) {
+                console.log('un enfant peut etre la solution');
+                return false;
+            } else
+                return false;
+        }
+    //} while (datas.children != undefined);
+};
+
+NodeProcess.prototype.updateNodeFeature = function(quadtree, node, featureLayers) {
     for (var i = 0; i < featureLayers.length; i++) {
         var layer = featureLayers[i];
         var protocol = layer.protocol;
-        if(protocol.toLowerCase() == 'wfs') {
-            if (layer.tileInsideLimit(node, layer) && !node.content) {
-                var args = {
-                    layer: layer
-                };
-
-                quadtree.interCommand.request(args, node, refinementCommandCancellationFn).then(function(result) {
-                    //if request return empty json, WFS_Provider.getFeatures return undefined
-                    if(result.feature !== undefined && result.feature != null) {
-                        //var layer = quadtree.parent.features.children[0];
-                        var map = quadtree.parent;
-                        var layerid = result.feature.layer.id;
-                        var layer = map.getFeatureLayerByName(layerid);
-
-                        if(layer !== undefined){
-                            layer.children[0].add(result.feature);
-                        }
-                        node.content = result.feature;
-                    }
-                })
-                .catch(function() {
-                // Command has been canceled, no big deal, we just need to catch it
-                });
+        if(protocol && protocol.toLowerCase() == 'wfs') {
+            if (layer.isTileset) {
+                if (this.readTileSet(layer, node))
+                    this.requestNodeFeature(quadtree, node, layer);
+            }
+            else if (layer.tileInsideLimit(node, layer) && !node.content) {
+                this.requestNodeFeature(quadtree, node, layer);
             }
         }
     }
-}
+};
+
+NodeProcess.prototype.requestNodeFeature = function(quadtree, node, layer) {
+    let args = {
+        layer: layer
+    };
+
+    quadtree.interCommand.request(args, node, refinementCommandCancellationFn).then(function(result) {
+        //if request return empty json, WFS_Provider.getFeatures return undefined
+        if(result.feature !== undefined && result.feature != null) {
+            //var layer = quadtree.parent.features.children[0];
+            var map = quadtree.parent;
+            var layerid = result.feature.layer.id;
+            var layer = map.getFeatureLayerByName(layerid);
+
+            if(layer !== undefined){
+                layer.children[0].add(result.feature);
+            }
+            node.content = result.feature;
+        }
+    })
+    .catch(function() {
+    // Command has been canceled, no big deal, we just need to catch it
+    });
+};
 
 function updateNodeImagery(quadtree, node,  layersConfig, force) {
     let promises = [];
