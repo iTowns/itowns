@@ -27,7 +27,7 @@ and open the template in the editor.
         <meta charset="UTF-8">
 
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.5.1/dat.gui.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.6.1/dat.gui.min.js"></script>
     </head>
     <body>
         <div id="viewerDiv"></div>
@@ -44,13 +44,13 @@ and open the template in the editor.
             var menuGlobe = new GuiTools(itowns.viewer,'menuDiv');
             itowns.viewer.createSceneGlobe(positionOnGlobe, viewerDiv);
 
-            var urlImageryLayersArray = ["examples/layers/Ortho.json",
-                                        "examples/layers/OrthosCRS.json",
-                                        "examples/layers/ScanEX.json",
-                                        "examples/layers/Region.json"];
+            var urlImageryLayersArray = ["examples/layers/JSONLayers/Ortho.json",
+                                        "examples/layers/JSONLayers/OrthosCRS.json",
+                                        "examples/layers/JSONLayers/ScanEX.json",
+                                        "examples/layers/JSONLayers/Region.json"];
 
-            var urlElevationLayersArray = [ "examples/layers/IGN_MNT.json",
-                                            "examples/layers/IGN_MNT_HIGHRES.json"];
+            var urlElevationLayersArray = [ "examples/layers/JSONLayers/IGN_MNT.json",
+                                            "examples/layers/JSONLayers/IGN_MNT_HIGHRES.json"];
 
             itowns.viewer.addImageryLayersFromJSONArray(urlImageryLayersArray).then((layersColors) => {menuGlobe.addImageryLayersGUI(layersColors);});
             itowns.viewer.addElevationLayersFromJSONArray(urlElevationLayersArray).then((layersElevations) => {menuGlobe.addElevationLayersGUI(layersElevations);});

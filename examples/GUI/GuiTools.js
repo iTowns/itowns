@@ -21,14 +21,14 @@ GuiTools.prototype.addImageryLayerGUI = function (layer) {
 
 		var folder = this.colorGui.addFolder(layer.id);
 		folder.add( { visible: true }, 'visible').onChange(function(value) {
-			this.api.setLayerVisibility(this, value);
-		}.bind(layer.id));
+			this.api.setLayerVisibility(layer.id, value);
+		}.bind(this));
 		folder.add( { opacity: 1.0 }, 'opacity').min(0.0).max(1.0).onChange(function(value) {
-			this.api.setLayerOpacity(this, value);
-		}.bind(layer.id));
+			this.api.setLayerOpacity(layer.id, value);
+		}.bind(this));
 		folder.add( { frozen: false }, 'frozen').onChange(function(value) {
-			this.api.setLayerFreeze(this, value);
-		}.bind(layer.id));
+			this.api.setLayerFreeze(layer.id, value);
+		}.bind(this));
 };
 
 GuiTools.prototype.addElevationLayerGUI = function (layer) {
