@@ -98,8 +98,7 @@ ManagerCommands.prototype.runCommand = function(command, queue, executingCounter
         }
     }.bind(this));
 
-
-}
+};
 
 ManagerCommands.prototype.addCommand = function(command) {
     // parse host
@@ -125,6 +124,7 @@ ManagerCommands.prototype.addCommand = function(command) {
 
         // We use a setTimeout to defer processing but we avoid the
         // queue mechanism
+        // TODO: Why not use Promise?
         window.setTimeout(runNow, 0);
     } else {
         q.storage.queue(command);
@@ -141,8 +141,7 @@ ManagerCommands.prototype.getProtocolProvider = function(protocol) {
 };
 
 ManagerCommands.prototype.commandsWaitingExecutionCount = function() {
-    let sum = this.defaultQueue.storage.length
-        + this.defaultQueue.counters.executing;
+    let sum = this.defaultQueue.storage.length + this.defaultQueue.counters.executing;
     for (var q of this.hostQueues) {
         sum += q[1].storage.length + q[1].counters.executing;
     }
@@ -187,11 +186,12 @@ ManagerCommands.prototype.deQueue = function(queue) {
 
         if (cmd.earlyDropFunction && cmd.earlyDropFunction(cmd)) {
             queue.counters.cancelled++;
-            cmd.reject(new Error('command canceled ' + cmd.requester.id + '/' + cmd.layer.id));
+            //TODO: Solve reject status
+            //cmd.reject(new Error('command canceled ' + cmd.requester.id + '/' + cmd.layer.id));
+
         } else {
             return cmd;
         }
-
     }
 
     return undefined;

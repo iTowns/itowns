@@ -395,10 +395,9 @@ LayeredMaterial.prototype.downScaledLayer = function(layerType,level) {
             return this.Textures[l_ELEVATION][0].level < level;
         }
     } else if (layerType === l_COLOR) {
-        // browse each layer
-        // TODO: optimize only the first texture layer
-        for (var slot = 0, nb = this.texturesCount[1]; slot < nb; slot++) {
-            if (this.Textures[l_COLOR][slot].level < level) {
+        for (var index = 0, max = this.colorLayersId.length; index < max; index++) {
+            let offset = this.getTextureOffsetByLayerIndex(index);
+            if (this.Textures[l_COLOR][offset].level < level) {
                 return true;
             }
         }
@@ -407,20 +406,29 @@ LayeredMaterial.prototype.downScaledLayer = function(layerType,level) {
     return false;
 };
 
-LayeredMaterial.prototype.getColorLayerLevel = function(layerType, colorLayerId) {
+LayeredMaterial.prototype.getColorLayerLevel = function(colorLayerId) {
 
-    var index = this.indexOfColorLayer(colorLayerId);
+    let index = this.indexOfColorLayer(colorLayerId);
     if(index ===-1) {
         index = 0;
     }
-    var slot = this.getTextureOffsetByLayerIndex(index);
-    var level = this.Textures[l_COLOR][slot].level;
+    let slot = this.getTextureOffsetByLayerIndex(index);
+    let level = this.Textures[l_COLOR][slot].level;
 
     return level;
 };
 
 LayeredMaterial.prototype.getElevationLayerLevel = function() {
     return this.Textures[l_ELEVATION][0].level;
+};
+
+LayeredMaterial.prototype.getLayerLevel = function(layerType,layer) {
+
+    if(layerType == l_ELEVATION) {
+        return this.getElevationLayerLevel();
+    } else {
+        return this.getColorLayerLevel(layer);
+    }
 };
 
 export default LayeredMaterial;

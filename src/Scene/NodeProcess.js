@@ -208,20 +208,14 @@ NodeProcess.prototype.hideNodeChildren = function(node) {
  * that matches its level (not downsampled).
  * Returns null otherwise
  */
-function findAncestorWithValidTextureForLayer(node, layer) {
+function findAncestorWithValidTextureForLayer(node, layerType, layer) {
     var parent = node.parent;
-    if (parent && parent.material && parent.material.getColorLayerLevel) {
-        var levelColor = parent.material.getColorLayerLevel(layer);
-        if (levelColor < 0) {
-            return null;
+    if (parent && parent.material && parent.material.getLayerLevel) {
+        var level = parent.material.getLayerLevel(layerType, layer);
+        if (level >= 0) {
+            return node.getNodeAtLevel(level);
         } else {
-            let level = parent.material.getElevationLayerLevel();
-            if (0 <= level) {
-                // Return tile at this level  - because parent may have use texture from an ancestor as well
-                return node.getNodeAtLevel(level);
-            } else {
-                return findAncestorWithValidTextureForLayer(parent, layer);
-            }
+            return findAncestorWithValidTextureForLayer(parent, layerType, layer);
         }
     } else {
         return null;
@@ -417,8 +411,7 @@ NodeProcess.prototype.processNode = function(node, camera, params) {
             // big screen space error: subdivide node, display children if possible
             this.subdivideNode(node, camera, params);
         }
-
-        if (!hidden)  {
+        else if (!hidden)  {
             // node is going to be displayed (either because !sse or because children aren't ready),
             // so try to refine its textures
             this.refineNodeLayers(node, camera, params);
@@ -426,14 +419,14 @@ NodeProcess.prototype.processNode = function(node, camera, params) {
 
         // display children if possible
         node.setDisplayed(!hidden);
-
         // todo uniformsProcess
-    } else {
-        node.setDisplayed(false);
     }
+    /* else {
+        node.setDisplayed(false);
+    }*/
 
     return wasVisible || isVisible;
-}
+};
 
 /**
  * @documentation: Cull node with frustrum and oriented bounding box of node
