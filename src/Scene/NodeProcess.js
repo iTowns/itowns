@@ -146,6 +146,7 @@ NodeProcess.prototype.subdivideNode = function(node, camera, params) {
                 child.texturesNeeded = colorTextureCount + canHaveElevation;
 
                 // request layers (imagery/elevation) update
+                child.from = 'subdivideNode';
                 this.refineNodeLayers(child, camera, params);
 
                 return 0;
@@ -181,7 +182,8 @@ NodeProcess.prototype.refineNodeLayers = function(node, camera, params) {
         updateNodeImagery
     ];
 
-    var resetPendingFlag = function(id){node.pendingLayers[id] = undefined;};
+    // WARNING don't use declaration function to reset flag
+    // var resetPendingFlag = function(id){node.pendingLayers[id] = undefined;};
 
     for (let typeLayer=0; typeLayer<2; typeLayer++) {
         if (node.pendingLayers[typeLayer] === undefined && (!node.loaded || node.downScaledLayer(typeLayer))) {
@@ -189,8 +191,8 @@ NodeProcess.prototype.refineNodeLayers = function(node, camera, params) {
             node.pendingLayers[typeLayer] = true;
             layerFunctions[typeLayer](params.tree, node, params.layersConfig, !node.loaded).then(
                 // reset the flag, regardless of the request success/failure
-                resetPendingFlag(typeLayer),
-                resetPendingFlag(typeLayer)
+                function(){node.pendingLayers[typeLayer] = undefined;},
+                function(){node.pendingLayers[typeLayer] = undefined;}
             );
         }
     }
@@ -319,18 +321,10 @@ function updateNodeElevation(quadtree, node, layersConfig, force) {
     // We don't care about layer status (isLayerFrozen) or limits (tileInsideLimit) because
     // we simply want to use ancestor's texture with a different pitch
     if (currentElevation == -1) {
-        for (let i = 0; i < elevationLayers.length; i++) {
-            let layer = elevationLayers[i];
-
-            if (currentElevation === -1) {
-                let a = findAncestorWithValidTextureForLayer(node, l_ELEVATION, layer);
-
-                if (a != null) {
-                    bestLayer = layer;
-                    ancestor = a;
-                    break;
-                }
-            }
+        let a = findAncestorWithValidTextureForLayer(node, l_ELEVATION);
+        if (a !== null) {
+            bestLayer = elevationLayers[elevationLayers.length-1];
+            ancestor = a;
         }
     }
 
@@ -340,7 +334,8 @@ function updateNodeElevation(quadtree, node, layersConfig, force) {
     // Again, LayeredMaterial's 1 elevation texture limitation forces us to `break` as soon
     // as one layer can supply a texture for this node. So ordering of elevation layers is important.
     if (bestLayer == null) {
-        for (let i = 0; i < elevationLayers.length; i++) {
+        for (let i = elevationLayers.length - 1; i >= 0; i--) {
+        //for (let i = 0; i < elevationLayers.length; i++) {
             let layer = elevationLayers[i];
 
             if (!layer.tileInsideLimit(node, layer)) {
@@ -363,7 +358,7 @@ function updateNodeElevation(quadtree, node, layersConfig, force) {
     }
 
     // If we found a usable layer, perform a query
-    if (bestLayer != null) {
+    if (bestLayer !== null) {
         let args = { 'layer': bestLayer, ancestor };
 
         return quadtree.interCommand.request(args, node, refinementCommandCancellationFn).then(function(terrain) {
@@ -373,6 +368,13 @@ function updateNodeElevation(quadtree, node, layersConfig, force) {
 
             if (terrain && terrain.texture) {
                 terrain.texture.level = (ancestor || node).level;
+                // if(terrain.texture.level === 14)
+                // {
+                //     let url = terrain.texture.url;
+                //     let tileM = 'TILEMATRIX=';
+                //     let levelS = url.substring(url.lastIndexOf(tileM) + tileM.length);
+                //     levelS = levelS.substring(0,levelS.indexOf('&'));
+                // }
             }
 
             if (terrain && terrain.max === undefined) {
@@ -380,7 +382,10 @@ function updateNodeElevation(quadtree, node, layersConfig, force) {
                 terrain.max = (ancestor || node).bbox.top();
             }
 
-            node.setTextureElevation(terrain);
+            // TODO patch car node.materials[RendererConstant.FINAL].texturesCount[0] > 1 ????
+            // Devrait etre par step 0
+            if(!(terrain === null && node.materials[RendererConstant.FINAL].texturesCount[0] ===1))
+                node.setTextureElevation(terrain);
 
             return node;
         });
@@ -392,7 +397,7 @@ function updateNodeElevation(quadtree, node, layersConfig, force) {
 
 
 NodeProcess.prototype.processNode = function(node, camera, params) {
-    let wasVisible = node.isVisible();
+    // let wasVisible = node.isVisible();
     let isVisible = !this.isCulled(node, camera);
 
     node.setDisplayed(false);
@@ -410,10 +415,10 @@ NodeProcess.prototype.processNode = function(node, camera, params) {
         if (sse && params.tree.canSubdivideNode(node)) {
             // big screen space error: subdivide node, display children if possible
             this.subdivideNode(node, camera, params);
-        }
-        else if (!hidden)  {
+        } else if (!hidden /*&& node.downScaledLayer(1)*/) {
             // node is going to be displayed (either because !sse or because children aren't ready),
             // so try to refine its textures
+            node.from = 'processNode ';
             this.refineNodeLayers(node, camera, params);
         }
 
@@ -421,11 +426,11 @@ NodeProcess.prototype.processNode = function(node, camera, params) {
         node.setDisplayed(!hidden);
         // todo uniformsProcess
     }
-    /* else {
-        node.setDisplayed(false);
-    }*/
+    // else {
+    //     node.setDisplayed(false);
+    // }
 
-    return wasVisible || isVisible;
+    return/* wasVisible ||*/ isVisible;
 };
 
 /**

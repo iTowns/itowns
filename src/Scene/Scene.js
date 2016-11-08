@@ -4,7 +4,7 @@
  * Description: La Scene est l'instance principale du client. Elle est le chef orchestre de l'application.
  */
 
-/* global window */
+/* global window, requestAnimationFrame */
 
 /**
  *

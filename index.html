@@ -35,235 +35,235 @@ and open the template in the editor.
         <script type="text/javascript">
 
             /* global document, itowns, dat */
-            var initCenter = { longitude:2.3465, latitude: 48.88, altitude: 25000000};
+            var initCenter = { longitude:2.3465, latitude: 48.88, altitude: 25000};
 
             // iTowns namespace defined here
             var viewerDiv = document.getElementById("viewerDiv");
 
             var scene = itowns.viewer.createSceneGlobe(initCenter, viewerDiv) ;
 
-            itowns.viewer.addImageryLayer({
-                protocol:   "wmts",
-                id:         "Ortho",
-                url:        "http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/geoportail/wmts",
-                updateStrategy: {
-                    type: 0, /* see LayerUpdateStrategy.js */
-                    options: {}
-                },
-                options: {
-                    name: "ORTHOIMAGERY.ORTHOPHOTOS",
-                    mimetype: "image/jpeg",
-                    tileMatrixSet: "PM",
-                    tileMatrixSetLimits: {
-                        "2": {
-                            "minTileRow": 0,
-                            "maxTileRow": 4,
-                            "minTileCol": 0,
-                            "maxTileCol": 4
-                        },
-                        "3": {
-                            "minTileRow": 0,
-                            "maxTileRow": 8,
-                            "minTileCol": 0,
-                            "maxTileCol": 8
-                        },
-                        "4": {
-                            "minTileRow": 0,
-                            "maxTileRow": 6,
-                            "minTileCol": 0,
-                            "maxTileCol": 16
-                        },
-                        "5": {
-                            "minTileRow": 0,
-                            "maxTileRow": 32,
-                            "minTileCol": 0,
-                            "maxTileCol": 32
-                        },
-                        "6": {
-                            "minTileRow": 1,
-                            "maxTileRow": 64,
-                            "minTileCol": 0,
-                            "maxTileCol": 64
-                        },
-                        "7": {
-                            "minTileRow": 3,
-                            "maxTileRow": 28,
-                            "minTileCol": 0,
-                            "maxTileCol": 128
-                        },
-                        "8": {
-                            "minTileRow": 7,
-                            "maxTileRow": 256,
-                            "minTileCol": 0,
-                            "maxTileCol": 256
-                        },
-                        "9": {
-                            "minTileRow": 15,
-                            "maxTileRow": 512,
-                            "minTileCol": 0,
-                            "maxTileCol": 512
-                        },
-                        "10": {
-                            "minTileRow": 31,
-                            "maxTileRow": 1024,
-                            "minTileCol": 0,
-                            "maxTileCol": 1024
-                        },
-                        "11": {
-                            "minTileRow": 62,
-                            "maxTileRow": 2048,
-                            "minTileCol": 0,
-                            "maxTileCol": 2048
-                        },
-                        "12": {
-                            "minTileRow": 125,
-                            "maxTileRow": 4096,
-                            "minTileCol": 0,
-                            "maxTileCol": 4096
-                        },
-                        "13": {
-                            "minTileRow": 2739,
-                            "maxTileRow": 4628,
-                            "minTileCol": 41,
-                            "maxTileCol": 7917
-                        },
-                        "14": {
-                            "minTileRow": 5478,
-                            "maxTileRow": 9256,
-                            "minTileCol": 82,
-                            "maxTileCol": 15835
-                        },
-                        "15": {
-                            "minTileRow": 10956,
-                            "maxTileRow": 8513,
-                            "minTileCol": 165,
-                            "maxTileCol": 31670
-                        },
-                        "16": {
-                            "minTileRow": 21912,
-                            "maxTileRow": 37026,
-                            "minTileCol": 330,
-                            "maxTileCol": 63341
-                        },
-                        "17": {
-                            "minTileRow": 43825,
-                            "maxTileRow": 74052,
-                            "minTileCol": 660,
-                            "maxTileCol": 126683
-                        },
-                        "18": {
-                            "minTileRow": 87651,
-                            "maxTileRow": 48105,
-                            "minTileCol": 1320,
-                            "maxTileCol": 253366
-                        },
-                        "19": {
-                            "minTileRow": 175302,
-                            "maxTileRow": 294060,
-                            "minTileCol": 170159,
-                            "maxTileCol": 343473
-                        },
-                        "20": {
-                            "minTileRow": 376733,
-                            "maxTileRow": 384679,
-                            "minTileCol": 530773,
-                            "maxTileCol": 540914
-                        }
-                    }
-                }
-            });
-
-
             // itowns.viewer.addImageryLayer({
             //     protocol:   "wmts",
-            //     id:         "OrthoCRS",
+            //     id:         "Ortho",
             //     url:        "http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/geoportail/wmts",
-            //     fx :        1.0,
             //     updateStrategy: {
             //         type: 0, /* see LayerUpdateStrategy.js */
             //         options: {}
             //     },
             //     options: {
-            //         name: 'ORTHOIMAGERY.ORTHOPHOTOS.CRS84',
+            //         name: "ORTHOIMAGERY.ORTHOPHOTOS",
             //         mimetype: "image/jpeg",
-            //         tileMatrixSet: "WGS84G",
+            //         tileMatrixSet: "PM",
             //         tileMatrixSetLimits: {
-
-            //             '6' : {
-            //                 'minTileRow' : 13,
-            //                 'maxTileRow' : 39,
-            //                 'minTileCol' : 0,
-            //                 'maxTileCol' : 83,
+            //             "2": {
+            //                 "minTileRow": 0,
+            //                 "maxTileRow": 4,
+            //                 "minTileCol": 0,
+            //                 "maxTileCol": 4
             //             },
-            //             '7' : {
-            //                 'minTileRow' : 27,
-            //                 'maxTileRow' : 79,
-            //                 'minTileCol' : 1,
-            //                 'maxTileCol' : 167,
+            //             "3": {
+            //                 "minTileRow": 0,
+            //                 "maxTileRow": 8,
+            //                 "minTileCol": 0,
+            //                 "maxTileCol": 8
             //             },
-            //             '8' : {
-            //                 'minTileRow' : 55,
-            //                 'maxTileRow' : 158,
-            //                 'minTileCol' : 2,
-            //                 'maxTileCol' : 335,
+            //             "4": {
+            //                 "minTileRow": 0,
+            //                 "maxTileRow": 6,
+            //                 "minTileCol": 0,
+            //                 "maxTileCol": 16
             //             },
-            //             '9' : {
-            //                 'minTileRow' : 110,
-            //                 'maxTileRow' : 316,
-            //                 'minTileCol' : 5,
-            //                 'maxTileCol' : 670
+            //             "5": {
+            //                 "minTileRow": 0,
+            //                 "maxTileRow": 32,
+            //                 "minTileCol": 0,
+            //                 "maxTileCol": 32
             //             },
-            //             '10' : {
-            //                 'minTileRow' : 221,
-            //                 'maxTileRow' : 633,
-            //                 'minTileCol' : 10,
-            //                 'maxTileCol' : 1341,
+            //             "6": {
+            //                 "minTileRow": 1,
+            //                 "maxTileRow": 64,
+            //                 "minTileCol": 0,
+            //                 "maxTileCol": 64
             //             },
-            //             '11' : {
-            //                 'minTileRow' : 442,
-            //                 'maxTileRow' : 1267,
-            //                 'minTileCol' : 20,
-            //                 'maxTileCol' : 2683,
+            //             "7": {
+            //                 "minTileRow": 3,
+            //                 "maxTileRow": 28,
+            //                 "minTileCol": 0,
+            //                 "maxTileCol": 128
             //             },
-            //             '12' : {
-            //                 'minTileRow' : 885,
-            //                 'maxTileRow' : 2534,
-            //                 'minTileCol' : 41,
-            //                 'maxTileCol' : 5366,
+            //             "8": {
+            //                 "minTileRow": 7,
+            //                 "maxTileRow": 256,
+            //                 "minTileCol": 0,
+            //                 "maxTileCol": 256
             //             },
-            //             '13' : {
-            //                 'minTileRow' : 1770,
-            //                 'maxTileRow' : 5069,
-            //                 'minTileCol' : 82,
-            //                 'maxTileCol' : 10733,
+            //             "9": {
+            //                 "minTileRow": 15,
+            //                 "maxTileRow": 512,
+            //                 "minTileCol": 0,
+            //                 "maxTileCol": 512
             //             },
-            //             '14' : {
-            //                 'minTileRow' : 3541,
-            //                 'maxTileRow' : 10139,
-            //                 'minTileCol' : 165,
-            //                 'maxTileCol' : 21467,
+            //             "10": {
+            //                 "minTileRow": 31,
+            //                 "maxTileRow": 1024,
+            //                 "minTileCol": 0,
+            //                 "maxTileCol": 1024
             //             },
-            //             '15' : {
-            //                 'minTileRow' : 7082,
-            //                 'maxTileRow' : 20279,
-            //                 'minTileCol' : 330,
-            //                 'maxTileCol' : 42934,
+            //             "11": {
+            //                 "minTileRow": 62,
+            //                 "maxTileRow": 2048,
+            //                 "minTileCol": 0,
+            //                 "maxTileCol": 2048
             //             },
-            //             '16' : {
-            //                 'minTileRow' : 14165,
-            //                 'maxTileRow' : 40559,
-            //                 'minTileCol' : 660,
-            //                 'maxTileCol' : 85868,
+            //             "12": {
+            //                 "minTileRow": 125,
+            //                 "maxTileRow": 4096,
+            //                 "minTileCol": 0,
+            //                 "maxTileCol": 4096
             //             },
-            //             '17' : {
-            //                 'minTileRow' : 28330,
-            //                 'maxTileRow' : 81118,
-            //                 'minTileCol' : 1320,
-            //                 'maxTileCol' : 171736,
+            //             "13": {
+            //                 "minTileRow": 2739,
+            //                 "maxTileRow": 4628,
+            //                 "minTileCol": 41,
+            //                 "maxTileCol": 7917
+            //             },
+            //             "14": {
+            //                 "minTileRow": 5478,
+            //                 "maxTileRow": 9256,
+            //                 "minTileCol": 82,
+            //                 "maxTileCol": 15835
+            //             },
+            //             "15": {
+            //                 "minTileRow": 10956,
+            //                 "maxTileRow": 8513,
+            //                 "minTileCol": 165,
+            //                 "maxTileCol": 31670
+            //             },
+            //             "16": {
+            //                 "minTileRow": 21912,
+            //                 "maxTileRow": 37026,
+            //                 "minTileCol": 330,
+            //                 "maxTileCol": 63341
+            //             },
+            //             "17": {
+            //                 "minTileRow": 43825,
+            //                 "maxTileRow": 74052,
+            //                 "minTileCol": 660,
+            //                 "maxTileCol": 126683
+            //             },
+            //             "18": {
+            //                 "minTileRow": 87651,
+            //                 "maxTileRow": 48105,
+            //                 "minTileCol": 1320,
+            //                 "maxTileCol": 253366
+            //             },
+            //             "19": {
+            //                 "minTileRow": 175302,
+            //                 "maxTileRow": 294060,
+            //                 "minTileCol": 170159,
+            //                 "maxTileCol": 343473
+            //             },
+            //             "20": {
+            //                 "minTileRow": 376733,
+            //                 "maxTileRow": 384679,
+            //                 "minTileCol": 530773,
+            //                 "maxTileCol": 540914
             //             }
             //         }
             //     }
             // });
+
+
+            itowns.viewer.addImageryLayer({
+                protocol:   "wmts",
+                id:         "OrthoCRS",
+                url:        "http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/geoportail/wmts",
+                fx :        1.0,
+                updateStrategy: {
+                    type: 0, /* see LayerUpdateStrategy.js */
+                    options: {}
+                },
+                options: {
+                    name: 'ORTHOIMAGERY.ORTHOPHOTOS.CRS84',
+                    mimetype: "image/jpeg",
+                    tileMatrixSet: "WGS84G",
+                    tileMatrixSetLimits: {
+
+                        '6' : {
+                            'minTileRow' : 13,
+                            'maxTileRow' : 39,
+                            'minTileCol' : 0,
+                            'maxTileCol' : 83,
+                        },
+                        '7' : {
+                            'minTileRow' : 27,
+                            'maxTileRow' : 79,
+                            'minTileCol' : 1,
+                            'maxTileCol' : 167,
+                        },
+                        '8' : {
+                            'minTileRow' : 55,
+                            'maxTileRow' : 158,
+                            'minTileCol' : 2,
+                            'maxTileCol' : 335,
+                        },
+                        '9' : {
+                            'minTileRow' : 110,
+                            'maxTileRow' : 316,
+                            'minTileCol' : 5,
+                            'maxTileCol' : 670
+                        },
+                        '10' : {
+                            'minTileRow' : 221,
+                            'maxTileRow' : 633,
+                            'minTileCol' : 10,
+                            'maxTileCol' : 1341,
+                        },
+                        '11' : {
+                            'minTileRow' : 442,
+                            'maxTileRow' : 1267,
+                            'minTileCol' : 20,
+                            'maxTileCol' : 2683,
+                        },
+                        '12' : {
+                            'minTileRow' : 885,
+                            'maxTileRow' : 2534,
+                            'minTileCol' : 41,
+                            'maxTileCol' : 5366,
+                        },
+                        '13' : {
+                            'minTileRow' : 1770,
+                            'maxTileRow' : 5069,
+                            'minTileCol' : 82,
+                            'maxTileCol' : 10733,
+                        },
+                        '14' : {
+                            'minTileRow' : 3541,
+                            'maxTileRow' : 10139,
+                            'minTileCol' : 165,
+                            'maxTileCol' : 21467,
+                        },
+                        '15' : {
+                            'minTileRow' : 7082,
+                            'maxTileRow' : 20279,
+                            'minTileCol' : 330,
+                            'maxTileCol' : 42934,
+                        },
+                        '16' : {
+                            'minTileRow' : 14165,
+                            'maxTileRow' : 40559,
+                            'minTileCol' : 660,
+                            'maxTileCol' : 85868,
+                        },
+                        '17' : {
+                            'minTileRow' : 28330,
+                            'maxTileRow' : 81118,
+                            'minTileCol' : 1320,
+                            'maxTileCol' : 171736,
+                        }
+                    }
+                }
+            });
 
             // itowns.viewer.addImageryLayer({
             //     protocol:   "wmts",

@@ -54,7 +54,7 @@ IoDriver_XBIL.prototype.computeMinMaxElevation = function(buffer, width, height,
     return { min, max };
 };
 
-IoDriver_XBIL.prototype.parseXBil = function(buffer) {
+IoDriver_XBIL.prototype.parseXBil = function(buffer,url) {
     if (!buffer) {
         throw new Error('Error processing XBIL');
     }
@@ -70,6 +70,8 @@ IoDriver_XBIL.prototype.parseXBil = function(buffer) {
     result.min = elevation.min;
     result.max = elevation.max;
 
+    result.url = url;
+
     return result;
 };
 
@@ -80,7 +82,7 @@ IoDriver_XBIL.prototype.read = function(url) {
             throw new Error(`Error loading ${url}: status ${response.status}`);
         }
         return response.arrayBuffer();
-    }).then(buffer => this.parseXBil(buffer));
+    }).then(buffer => this.parseXBil(buffer,url));
 };
 
 

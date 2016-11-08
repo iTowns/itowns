@@ -823,6 +823,14 @@ ApiGlobe.prototype.launchCommandApi = function() {
 //        console.log(this.getHeading());
 //    };
 
+
+ApiGlobe.prototype.selectNodeById = function(id) {
+
+    this.scene.selectNodeId(id);
+    this.scene.update();
+    this.scene.renderScene3D();
+};
+
 ApiGlobe.prototype.showKML = function(value) {
 
     this.scene.getMap().showKML(value);

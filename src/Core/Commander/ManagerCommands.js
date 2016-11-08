@@ -177,6 +177,8 @@ ManagerCommands.prototype.getProviders = function() {
     return p;
 };
 
+
+
 /**
  */
 ManagerCommands.prototype.deQueue = function(queue) {
@@ -186,10 +188,15 @@ ManagerCommands.prototype.deQueue = function(queue) {
 
         if (cmd.earlyDropFunction && cmd.earlyDropFunction(cmd)) {
             queue.counters.cancelled++;
-            //TODO: Solve reject status
-            //cmd.reject(new Error('command canceled ' + cmd.requester.id + '/' + cmd.layer.id));
 
+            //TODO: Solve reject status
+
+            if(!cmd.requester.visible)
+                console.log(cmd.requester.from);
+            //     // console.log(cmd.requester.from);//,cmd.layer.id,cmd.requester.downScaledLayer(1),cmd.requester.loaded);
+            cmd.reject(new Error('command canceled ' + cmd.requester.id + '/' + cmd.layer.id));
         } else {
+            cmd.requester.setSelected(true);
             return cmd;
         }
     }

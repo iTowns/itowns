@@ -291,15 +291,15 @@ LayeredMaterial.prototype.setTexturesLayer = function(textures, layerType, layer
     }
 };
 
-LayeredMaterial.prototype.setTexture = function(texture, layer, slot, offsetScale) {
+LayeredMaterial.prototype.setTexture = function(texture, layerType, slot, offsetScale) {
 
-    if (this.Textures[layer][slot] === undefined || this.Textures[layer][slot].image === undefined) {
-        this.texturesCount[layer] += 1;
+    if (this.Textures[layerType][slot] === undefined || this.Textures[layerType][slot].image === undefined) {
+        this.texturesCount[layerType] += 1;
     }
 
     // BEWARE: array [] -> size: 0; array [10]="wao" -> size: 11
-    this.Textures[layer][slot] = texture ? texture : emptyTexture;
-    this.offsetScale[layer][slot] = offsetScale ? offsetScale : new THREE.Vector3(0.0, 0.0, 1.0);
+    this.Textures[layerType][slot] = texture ? texture : emptyTexture;
+    this.offsetScale[layerType][slot] = offsetScale ? offsetScale : new THREE.Vector3(0.0, 0.0, 1.0);
 };
 
 LayeredMaterial.prototype.setColorLayerParameters = function(params) {
