@@ -35,143 +35,143 @@ and open the template in the editor.
         <script type="text/javascript">
 
             /* global document, itowns, dat */
-            var initCenter = { longitude:2.3465, latitude: 48.88, altitude: 25000000};
+            var initCenter = { longitude:2.3465, latitude: 48.88, altitude: 25000};
 
             // iTowns namespace defined here
             var viewerDiv = document.getElementById("viewerDiv");
 
             var scene = itowns.viewer.createSceneGlobe(initCenter, viewerDiv) ;
 
-            itowns.viewer.addImageryLayer({
-                protocol:   "wmts",
-                id:         "Ortho",
-                url:        "http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/geoportail/wmts",
-                updateStrategy: {
-                    type: 0, /* see LayerUpdateStrategy.js */
-                    options: {}
-                },
-                options: {
-                    name: "ORTHOIMAGERY.ORTHOPHOTOS",
-                    mimetype: "image/jpeg",
-                    tileMatrixSet: "PM",
-                    tileMatrixSetLimits: {
-                        "2": {
-                            "minTileRow": 0,
-                            "maxTileRow": 4,
-                            "minTileCol": 0,
-                            "maxTileCol": 4
-                        },
-                        "3": {
-                            "minTileRow": 0,
-                            "maxTileRow": 8,
-                            "minTileCol": 0,
-                            "maxTileCol": 8
-                        },
-                        "4": {
-                            "minTileRow": 0,
-                            "maxTileRow": 6,
-                            "minTileCol": 0,
-                            "maxTileCol": 16
-                        },
-                        "5": {
-                            "minTileRow": 0,
-                            "maxTileRow": 32,
-                            "minTileCol": 0,
-                            "maxTileCol": 32
-                        },
-                        "6": {
-                            "minTileRow": 1,
-                            "maxTileRow": 64,
-                            "minTileCol": 0,
-                            "maxTileCol": 64
-                        },
-                        "7": {
-                            "minTileRow": 3,
-                            "maxTileRow": 28,
-                            "minTileCol": 0,
-                            "maxTileCol": 128
-                        },
-                        "8": {
-                            "minTileRow": 7,
-                            "maxTileRow": 256,
-                            "minTileCol": 0,
-                            "maxTileCol": 256
-                        },
-                        "9": {
-                            "minTileRow": 15,
-                            "maxTileRow": 512,
-                            "minTileCol": 0,
-                            "maxTileCol": 512
-                        },
-                        "10": {
-                            "minTileRow": 31,
-                            "maxTileRow": 1024,
-                            "minTileCol": 0,
-                            "maxTileCol": 1024
-                        },
-                        "11": {
-                            "minTileRow": 62,
-                            "maxTileRow": 2048,
-                            "minTileCol": 0,
-                            "maxTileCol": 2048
-                        },
-                        "12": {
-                            "minTileRow": 125,
-                            "maxTileRow": 4096,
-                            "minTileCol": 0,
-                            "maxTileCol": 4096
-                        },
-                        "13": {
-                            "minTileRow": 2739,
-                            "maxTileRow": 4628,
-                            "minTileCol": 41,
-                            "maxTileCol": 7917
-                        },
-                        "14": {
-                            "minTileRow": 5478,
-                            "maxTileRow": 9256,
-                            "minTileCol": 82,
-                            "maxTileCol": 15835
-                        },
-                        "15": {
-                            "minTileRow": 10956,
-                            "maxTileRow": 8513,
-                            "minTileCol": 165,
-                            "maxTileCol": 31670
-                        },
-                        "16": {
-                            "minTileRow": 21912,
-                            "maxTileRow": 37026,
-                            "minTileCol": 330,
-                            "maxTileCol": 63341
-                        },
-                        "17": {
-                            "minTileRow": 43825,
-                            "maxTileRow": 74052,
-                            "minTileCol": 660,
-                            "maxTileCol": 126683
-                        },
-                        "18": {
-                            "minTileRow": 87651,
-                            "maxTileRow": 48105,
-                            "minTileCol": 1320,
-                            "maxTileCol": 253366
-                        },
-                        "19": {
-                            "minTileRow": 175302,
-                            "maxTileRow": 294060,
-                            "minTileCol": 170159,
-                            "maxTileCol": 343473
-                        },
-                        "20": {
-                            "minTileRow": 376733,
-                            "maxTileRow": 384679,
-                            "minTileCol": 530773,
-                            "maxTileCol": 540914
-                        }
-                    }
-                }
-            });
+            // itowns.viewer.addImageryLayer({
+            //     protocol:   "wmts",
+            //     id:         "Ortho",
+            //     url:        "http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/geoportail/wmts",
+            //     updateStrategy: {
+            //         type: 0, /* see LayerUpdateStrategy.js */
+            //         options: {}
+            //     },
+            //     options: {
+            //         name: "ORTHOIMAGERY.ORTHOPHOTOS",
+            //         mimetype: "image/jpeg",
+            //         tileMatrixSet: "PM",
+            //         tileMatrixSetLimits: {
+            //             "2": {
+            //                 "minTileRow": 0,
+            //                 "maxTileRow": 4,
+            //                 "minTileCol": 0,
+            //                 "maxTileCol": 4
+            //             },
+            //             "3": {
+            //                 "minTileRow": 0,
+            //                 "maxTileRow": 8,
+            //                 "minTileCol": 0,
+            //                 "maxTileCol": 8
+            //             },
+            //             "4": {
+            //                 "minTileRow": 0,
+            //                 "maxTileRow": 6,
+            //                 "minTileCol": 0,
+            //                 "maxTileCol": 16
+            //             },
+            //             "5": {
+            //                 "minTileRow": 0,
+            //                 "maxTileRow": 32,
+            //                 "minTileCol": 0,
+            //                 "maxTileCol": 32
+            //             },
+            //             "6": {
+            //                 "minTileRow": 1,
+            //                 "maxTileRow": 64,
+            //                 "minTileCol": 0,
+            //                 "maxTileCol": 64
+            //             },
+            //             "7": {
+            //                 "minTileRow": 3,
+            //                 "maxTileRow": 28,
+            //                 "minTileCol": 0,
+            //                 "maxTileCol": 128
+            //             },
+            //             "8": {
+            //                 "minTileRow": 7,
+            //                 "maxTileRow": 256,
+            //                 "minTileCol": 0,
+            //                 "maxTileCol": 256
+            //             },
+            //             "9": {
+            //                 "minTileRow": 15,
+            //                 "maxTileRow": 512,
+            //                 "minTileCol": 0,
+            //                 "maxTileCol": 512
+            //             },
+            //             "10": {
+            //                 "minTileRow": 31,
+            //                 "maxTileRow": 1024,
+            //                 "minTileCol": 0,
+            //                 "maxTileCol": 1024
+            //             },
+            //             "11": {
+            //                 "minTileRow": 62,
+            //                 "maxTileRow": 2048,
+            //                 "minTileCol": 0,
+            //                 "maxTileCol": 2048
+            //             },
+            //             "12": {
+            //                 "minTileRow": 125,
+            //                 "maxTileRow": 4096,
+            //                 "minTileCol": 0,
+            //                 "maxTileCol": 4096
+            //             },
+            //             "13": {
+            //                 "minTileRow": 2739,
+            //                 "maxTileRow": 4628,
+            //                 "minTileCol": 41,
+            //                 "maxTileCol": 7917
+            //             },
+            //             "14": {
+            //                 "minTileRow": 5478,
+            //                 "maxTileRow": 9256,
+            //                 "minTileCol": 82,
+            //                 "maxTileCol": 15835
+            //             },
+            //             "15": {
+            //                 "minTileRow": 10956,
+            //                 "maxTileRow": 8513,
+            //                 "minTileCol": 165,
+            //                 "maxTileCol": 31670
+            //             },
+            //             "16": {
+            //                 "minTileRow": 21912,
+            //                 "maxTileRow": 37026,
+            //                 "minTileCol": 330,
+            //                 "maxTileCol": 63341
+            //             },
+            //             "17": {
+            //                 "minTileRow": 43825,
+            //                 "maxTileRow": 74052,
+            //                 "minTileCol": 660,
+            //                 "maxTileCol": 126683
+            //             },
+            //             "18": {
+            //                 "minTileRow": 87651,
+            //                 "maxTileRow": 48105,
+            //                 "minTileCol": 1320,
+            //                 "maxTileCol": 253366
+            //             },
+            //             "19": {
+            //                 "minTileRow": 175302,
+            //                 "maxTileRow": 294060,
+            //                 "minTileCol": 170159,
+            //                 "maxTileCol": 343473
+            //             },
+            //             "20": {
+            //                 "minTileRow": 376733,
+            //                 "maxTileRow": 384679,
+            //                 "minTileCol": 530773,
+            //                 "maxTileCol": 540914
+            //             }
+            //         }
+            //     }
+            // });
 
 
             itowns.viewer.addImageryLayer({
@@ -265,141 +265,144 @@ and open the template in the editor.
                 }
             });
 
-            itowns.viewer.addImageryLayer({
-                protocol:   "wmts",
-                id:         "ScanEX",
-                url:        "http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/geoportail/wmts",
-                fx :        2.5,
-                updateStrategy: {
-                    type: 0, /* see LayerUpdateStrategy.js */
-                    options: {}
-                },
-                options: {
-                    name: 'GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN-EXPRESS.STANDARD',
-                    mimetype: "image/jpeg",
-                    tileMatrixSet: "PM",
-                    tileMatrixSetLimits: {
-                      '6' : {
-                            'minTileRow': 21,
-                            'maxTileRow': 35,
-                            'minTileCol':20,
-                            'maxTileCol':41
-                        },
-                        '7' : {
-                            'minTileRow': 42,
-                            'maxTileRow': 71,
-                            'minTileCol':41,
-                            'maxTileCol':83
-                        },
-                        '8' : {
-                            'minTileRow': 85,
-                            'maxTileRow': 143,
-                            'minTileCol':82,
-                            'maxTileCol':167
-                        },
-                        '9' : {
-                            'minTileRow': 170,
-                            'maxTileRow': 287,
-                            'minTileCol':165,
-                            'maxTileCol':335
-                        },
-                        '10' : {
-                            'minTileRow': 340,
-                            'maxTileRow': 574,
-                            'minTileCol': 331,
-                            'maxTileCol': 671
-                        },
-                        '11' : {
-                            'minTileRow': 681,
-                            'maxTileRow': 1149,
-                            'minTileCol':663,
-                            'maxTileCol':1342
-                        },
-                        '12' : {
-                            'minTileRow': 1363,
-                            'maxTileRow': 2298,
-                            'minTileCol':1327,
-                            'maxTileCol':2684
-                        },
-                        '13' : {
-                            'minTileRow': 2726,
-                            'maxTileRow': 4602,
-                            'minTileCol':2655,
-                            'maxTileCol':5371
-                        },
-                        '14' : {
-                            'minTileRow': 5452,
-                            'maxTileRow': 9204,
-                            'minTileCol':5311,
-                            'maxTileCol':10742
-                        },
-                        '15' : {
-                            'minTileRow': 10944,
-                            'maxTileRow': 18381,
-                            'minTileCol':10632,
-                            'maxTileCol':21467
-                        },
-                        '16' : {
-                            'minTileRow': 21889,
-                            'maxTileRow': 36763,
-                            'minTileCol':21264,
-                            'maxTileCol':42934
-                        },
-                        '17' : {
-                            'minTileRow': 43778,
-                            'maxTileRow': 73526,
-                            'minTileCol':42528,
-                            'maxTileCol':85869
-                        },
-                        '18' : {
-                            'minTileRow': 87557,
-                            'maxTileRow': 147052,
-                            'minTileCol':85058,
-                            'maxTileCol':171738
-                        }
-                    }
-                }
-            });
+            // itowns.viewer.addImageryLayer({
+            //     protocol:   "wmts",
+            //     id:         "ScanEX",
+            //     url:        "http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/geoportail/wmts",
+            //     fx :        2.5,
+            //     updateStrategy: {
+            //         type: 0, /* see LayerUpdateStrategy.js */
+            //         options: {}
+            //     },
+            //     options: {
+            //         name: 'GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN-EXPRESS.STANDARD',
+            //         mimetype: "image/jpeg",
+            //         tileMatrixSet: "PM",
+            //         tileMatrixSetLimits: {
+            //           '6' : {
+            //                 'minTileRow': 21,
+            //                 'maxTileRow': 35,
+            //                 'minTileCol':20,
+            //                 'maxTileCol':41
+            //             },
+            //             '7' : {
+            //                 'minTileRow': 42,
+            //                 'maxTileRow': 71,
+            //                 'minTileCol':41,
+            //                 'maxTileCol':83
+            //             },
+            //             '8' : {
+            //                 'minTileRow': 85,
+            //                 'maxTileRow': 143,
+            //                 'minTileCol':82,
+            //                 'maxTileCol':167
+            //             },
+            //             '9' : {
+            //                 'minTileRow': 170,
+            //                 'maxTileRow': 287,
+            //                 'minTileCol':165,
+            //                 'maxTileCol':335
+            //             },
+            //             '10' : {
+            //                 'minTileRow': 340,
+            //                 'maxTileRow': 574,
+            //                 'minTileCol': 331,
+            //                 'maxTileCol': 671
+            //             },
+            //             '11' : {
+            //                 'minTileRow': 681,
+            //                 'maxTileRow': 1149,
+            //                 'minTileCol':663,
+            //                 'maxTileCol':1342
+            //             },
+            //             '12' : {
+            //                 'minTileRow': 1363,
+            //                 'maxTileRow': 2298,
+            //                 'minTileCol':1327,
+            //                 'maxTileCol':2684
+            //             },
+            //             '13' : {
+            //                 'minTileRow': 2726,
+            //                 'maxTileRow': 4602,
+            //                 'minTileCol':2655,
+            //                 'maxTileCol':5371
+            //             },
+            //             '14' : {
+            //                 'minTileRow': 5452,
+            //                 'maxTileRow': 9204,
+            //                 'minTileCol':5311,
+            //                 'maxTileCol':10742
+            //             },
+            //             '15' : {
+            //                 'minTileRow': 10944,
+            //                 'maxTileRow': 18381,
+            //                 'minTileCol':10632,
+            //                 'maxTileCol':21467
+            //             },
+            //             '16' : {
+            //                 'minTileRow': 21889,
+            //                 'maxTileRow': 36763,
+            //                 'minTileCol':21264,
+            //                 'maxTileCol':42934
+            //             },
+            //             '17' : {
+            //                 'minTileRow': 43778,
+            //                 'maxTileRow': 73526,
+            //                 'minTileCol':42528,
+            //                 'maxTileCol':85869
+            //             },
+            //             '18' : {
+            //                 'minTileRow': 87557,
+            //                 'maxTileRow': 147052,
+            //                 'minTileCol':85058,
+            //                 'maxTileCol':171738
+            //             }
+            //         }
+            //     }
+            // });
 
 
         // itowns.viewer.addImageryLayer({
         //         protocol:   "wmtsc",
         //         id:         "DARK",
         //         customUrl:  "http://a.basemaps.cartocdn.com/dark_all/%TILEMATRIX/%COL/%ROW.png",
-        //         options: { tileMatrixSet: "PM"}
+        //         options: {
+        //             mimetype: "image/jpeg",
+        //             tileMatrixSet: "PM"}
         //     });
 
         // itowns.viewer.addImageryLayer({
         //     protocol:   "wmtsc",
         //     id:         "OPENSM",
         //     customUrl:  'http://b.tile.openstreetmap.fr/osmfr/%TILEMATRIX/%COL/%ROW.png',
-        //     options: { tileMatrixSet: "PM"},
-        //     fx :        2.5,
+        //     options: { mimetype: "image/jpeg",
+        //     tileMatrixSet: "PM"},
+        //     fx :        2.5
         // });
 
-        itowns.viewer.addImageryLayer({
-            url       : "https://wxs.ign.fr/gratuit/geoportail/v/wms",
-            protocol  : 'wms',
-            version   : '1.3.0',
-            id        : 'testwms',
-            name      : 'REGION.2016',
-            style      : "",
-            projection : "EPSG:4326",
-            transparent : true,
-            // min long, min lat, max long, max lat
-            bbox      : [-61.80983300000002, -21.38963079935857, 55.83665389999998, 51.0890011990783],
-            featureInfoMimeType : "",
-            dateTime  : "",
-            heightMapWidth : 256,
-            waterMask      : false,
-            updateStrategy: {
-                type: 0, /* see LayerUpdateStrategy.js */
-                options: {}
-            },
-            options: {
-                mimetype  : "image/png"
-            }
-        });
+        // itowns.viewer.addImageryLayer({
+        //     url       : "https://wxs.ign.fr/gratuit/geoportail/v/wms",
+        //     protocol  : 'wms',
+        //     version   : '1.3.0',
+        //     id        : 'testwms',
+        //     name      : 'REGION.2016',
+        //     style      : "",
+        //     projection : "EPSG:4326",
+        //     transparent : true,
+        //     // min long, min lat, max long, max lat
+        //     bbox      : [-61.80983300000002, -21.38963079935857, 55.83665389999998, 51.0890011990783],
+        //     featureInfoMimeType : "",
+        //     dateTime  : "",
+        //     heightMapWidth : 256,
+        //     waterMask      : false,
+        //     updateStrategy: {
+        //         type: 0, /* see LayerUpdateStrategy.js*/
+        //         options: {}
+        //     },
+        //     options: {
+        //         mimetype  : "image/png"
+        //     }
+        // });
 
         itowns.viewer.addElevationLayer({
             protocol:   "wmts",
@@ -551,8 +554,6 @@ and open the template in the editor.
 
         itowns.viewer.update();
 
-
-
         // THIS IS AN EXAMPLE OF INTERFACE TO INTERACT WITH ITOWNS
         var Menu = function() {
             this.CloudsIR = false;
@@ -594,14 +595,15 @@ and open the template in the editor.
 
             var folder = colorGui.addFolder(layer.id);
             folder.add( { visible: true }, 'visible').onChange(function(value) {
-                itowns.viewer.setLayerVisibility(this, value);
-            }.bind(layer.id));
+                itowns.viewer.setLayerVisibility(this.id, value);
+            }.bind(layer));
+
             folder.add( { opacity: 1.0 }, 'opacity').min(0.0).max(1.0).onChange(function(value) {
-                itowns.viewer.setLayerOpacity(this, value);
-            }.bind(layer.id));
+                itowns.viewer.setLayerOpacity(this.id, value);
+            }.bind(layer));
             folder.add( { frozen: false }, 'frozen').onChange(function(value) {
-                config.setLayerFreeze(this, value);
-            }.bind(layer.id));
+                config.setLayerFreeze(this.id, value);
+            }.bind(layer));
         }
 
         var elevationGui = gui.addFolder('Elevation Layers');
@@ -611,8 +613,8 @@ and open the template in the editor.
 
             var folder = elevationGui.addFolder(layer.id);
             folder.add( { frozen: false }, 'frozen').onChange(function(value) {
-                config.setLayerFreeze(this, value);
-            }.bind(layer.id));
+                config.setLayerFreeze(this.id, value);
+            }.bind(layer));
         }
 
         if(false) {
@@ -664,7 +666,15 @@ and open the template in the editor.
                 // var zoomScale =0.0006614869005378093;
                 // itowns.viewer.setZoomScale(zoomScale);
                 //removeLayer('OrthoCRS');
+                //
+                //itowns.viewer.moveLayerUp('OPENSM');
+                //itowns.viewer.moveLayerUp('DARK');
+                //removeLayer('OrthoCRS');
+                //removeLayer('ScanEX');
                 //itowns.viewer.moveLayerUp('OrthoCRS');
+
+                //itowns.viewer.moveLayerDown('ScanEX');
+
                 //console.log(itowns.viewer.getZoomLevel("Ortho"));
             });
         }

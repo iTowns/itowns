@@ -23,8 +23,7 @@ function WMTS_Provider(options) {
     this.ioDriverXML = new IoDriverXML();
     this.projection = new Projection();
     this.support = options.support || false;
-
-    this.getTextureFloat;
+    this.getTextureFloat = null;
 
     if (this.support)
         this.getTextureFloat = function() {
@@ -62,7 +61,7 @@ WMTS_Provider.prototype.customUrl = function(layer, url, tilematrix, row, col) {
 
 WMTS_Provider.prototype.removeLayer = function( /*idLayer*/ ) {
 
-}
+};
 
 WMTS_Provider.prototype.preprocessDataLayer = function(layer) {
     layer.fx = layer.fx || 0.0;
@@ -166,6 +165,9 @@ WMTS_Provider.prototype.getXbilTexture = function(tile, layer, parameters) {
         result.texture.magFilter = THREE.LinearFilter;
         result.texture.minFilter = THREE.LinearFilter;
 
+        // To compare with level tile
+        result.texture.url = result.url;
+
         // In RGBA elevation texture LinearFilter give some errors with nodata value.
         // need to rewrite sample function in shader
         //result.texture.magFilter = THREE.NearestFilter;
@@ -232,7 +234,6 @@ WMTS_Provider.prototype.getColorTexture = function(coWMTS, pitch, layer) {
 
 WMTS_Provider.prototype.executeCommand = function(command) {
 
-    //var service;
     var layer = command.paramsFunction.layer;
     var tile = command.requester;
 
@@ -263,14 +264,14 @@ WMTS_Provider.prototype.computeLevelToDownload = function(tile, ancestor, layer)
         Math.max(
             layer.zoom.min,
             lvl));
-}
+};
 
 WMTS_Provider.prototype.tileInsideLimit = function(tile, layer) {
     // This layer provides data starting at level = layer.zoom.min
     // (the zoom.max property is used when building the url to make
     //  sure we don't use invalid levels)
     return layer.zoom.min <= tile.level;
-}
+};
 
 WMTS_Provider.prototype.getColorTextures = function(tile, layer, parameters) {
 

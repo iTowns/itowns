@@ -116,18 +116,19 @@ LayersConfiguration.prototype.isLayerFrozen = function(id) {
 };
 
 
-LayersConfiguration.prototype.moveLayerToIndex = function(id, newSequence) {
+LayersConfiguration.prototype.moveLayerToIndex = function(id, new_index) {
     if (this.layersState[id]) {
-        var current = this.layersState[id].sequence;
-
+        var old_index = this.layersState[id].sequence;
         for (var i in this.layersState) {
             var state = this.layersState[i];
-            if (state.sequence === newSequence) {
-                state.sequence = current;
-                this.layersState[id].sequence = newSequence;
+            if (state.sequence === new_index) {
+                state.sequence = old_index;
+                this.layersState[id].sequence = new_index;
                 break;
             }
         }
+
+        this.colorLayers.splice(new_index, 0, this.colorLayers.splice(old_index, 1)[0]);
     }
 };
 

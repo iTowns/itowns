@@ -4,7 +4,7 @@
  * Description: La Scene est l'instance principale du client. Elle est le chef orchestre de l'application.
  */
 
-/* global window */
+/* global window, requestAnimationFrame */
 
 /**
  *
@@ -26,6 +26,7 @@ import Layer from 'Scene/Layer';
 import Capabilities from 'Core/System/Capabilities';
 import MobileMappingLayer from 'MobileMapping/MobileMappingLayer';
 import CustomEvent from 'custom-event';
+import {StyleManager} from 'Scene/Description/StyleManager';
 
 var instanceScene = null;
 
@@ -50,6 +51,8 @@ function Scene(coordinate, ellipsoid, viewerDiv, debugMode, gLDebug) {
     this.selectNodes = null;
     this.managerCommand = ManagerCommands(this);
     this.orbitOn = false;
+
+    this.stylesManager = new StyleManager();
 
     this.gLDebug = gLDebug;
     this.gfxEngine = c3DEngine(this,positionCamera,viewerDiv, debugMode,gLDebug);
@@ -92,13 +95,21 @@ Scene.prototype.getPickPosition = function(mouse) {
     return this.gfxEngine.getPickingPositionFromDepth(mouse);
 };
 
+Scene.prototype.getStyle = function(name) {
+    return this.stylesManager.getStyle(name);
+};
+
+Scene.prototype.removeStyle = function(name) {
+    return this.stylesManager.removeStyle(name);
+};
+
+Scene.prototype.getStyles = function() {
+    return this.stylesManager.getStyles();
+};
+
 Scene.prototype.getEllipsoid = function() {
     return this.ellipsoid;
 };
-
-//    Scene.prototype.getZoomLevel = function(){
-//        return this.selectNodes;
-//    };
 
 Scene.prototype.size = function() {
     return this.ellipsoid.size;
