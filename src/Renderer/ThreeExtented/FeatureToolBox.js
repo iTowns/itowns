@@ -9,10 +9,14 @@ import CVML 					from 'Core/Math/CVML';
 import BoundingBox      		from 'Scene/BoundingBox';
 import Ellipsoid 				from 'Core/Math/Ellipsoid';
 import GeoCoordinate, {UNIT}	from 'Core/Geographic/GeoCoordinate';
+import GeoJSONToThree           from 'Renderer/ThreeExtented/GeoJSONToThree'
 
 function FeatureToolBox() {
 	this.size       = {x:6378137,y: 6356752.3142451793,z:6378137};
     this.ellipsoid  = new Ellipsoid(this.size);
+    this.proj4 = require('proj4');
+    this.proj3946 = '+proj=lcc +lat_1=45.25 +lat_2=46.75 +lat_0=46 +lon_0=3 +x_0=1700000 +y_0=5200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs';
+    this.proj4326 = '+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs';
 }
 
 FeatureToolBox.prototype.GeoJSON2Polygon = function(features, pointOrder) {
@@ -42,7 +46,44 @@ FeatureToolBox.prototype.GeoJSON2Polygon = function(features, pointOrder) {
     return polyGroup;
 };
 
-FeatureToolBox.prototype.GeoJSON2Box = function(features, pointOrder/*, bbox*/) {
+var geoJsonToThree = new GeoJSONToThree();
+FeatureToolBox.prototype.GeoJSON2Mesh = function(geoJson, pointOrder) {
+    let features = geoJson.geometries.features
+    for (var r = 0; r < features.length; r++) {
+        let coords = features[r].geometry.coordinates;
+        for(let i = 0; i < coords.length; i++) {
+            let polygon = coords[i][0];
+            if (polygon.length > 2) {
+                for (var j = 0; j < polygon.length - 1; ++j) {
+                    let pt2DTab = polygon[j];
+                    let coord = this.proj4(this.proj3946, this.proj4326, [pt2DTab[pointOrder.lat], pt2DTab[pointOrder.long]]);
+                    let geoCoord = new GeoCoordinate(parseFloat(coord[0]), parseFloat(coord[1]), parseFloat(pt2DTab[2]), UNIT.DEGREE);
+                    let pgeo = this.ellipsoid.cartographicToCartesian(geoCoord);
+                    geoJson.geometries.features[r].geometry.coordinates[i][0][j] = [pgeo.x, pgeo.y, pgeo.z];
+                }
+            }
+        }
+        //Change bbox crs
+        let bbox = features[r].geometry.bbox;
+
+        let coord1 = this.proj4(this.proj3946, this.proj4326, [bbox[0], bbox[1]]);
+        let coord2 = this.proj4(this.proj3946, this.proj4326, [bbox[3], bbox[4]]);
+        let geoCoord1 = new GeoCoordinate(parseFloat(coord1[0]), parseFloat(coord1[1]), parseFloat(bbox[2]), UNIT.DEGREE);
+        let geoCoord2 = new GeoCoordinate(parseFloat(coord2[0]), parseFloat(coord2[1]), parseFloat(bbox[5]), UNIT.DEGREE);
+        let pgeo1 = this.ellipsoid.cartographicToCartesian(geoCoord1);
+        let pgeo2 = this.ellipsoid.cartographicToCartesian(geoCoord2);
+
+        geoJson.geometries.features[r].geometry.bbox = [pgeo2.x, pgeo1.y, pgeo1.z, pgeo1.x, pgeo2.y, pgeo2.z];
+    }
+    var threeDatas = geoJsonToThree.convert(geoJson);
+    var mat = new THREE.MeshBasicMaterial({color: 0x464fe8, transparent: true, opacity: 0.8, side : THREE.DoubleSide});
+    var mesh = new THREE.Mesh(threeDatas.geometries, mat);
+    mesh.frustumCulled = false;
+
+    return mesh;
+};
+
+FeatureToolBox.prototype.GeoJSON2Box = function(features, pointOrder) {
     var bboxGroup = new THREE.Object3D();
     var wallGeometry = new THREE.Geometry(); // for the walls
     var roofGeometry = new THREE.Geometry(); // for the roof

@@ -66,7 +66,7 @@ WFS_Provider.prototype.preprocessDataLayer = function(layer){
 WFS_Provider.prototype.preprocessDataForTileSet = function(layer) {
     layer.protocol = 'wfs';
     layer.isTileset = true;
-    layer.type = 'bbox';
+    layer.type = 'mesh';
     layer.format  = 'text/json';
 };
 
@@ -126,7 +126,7 @@ WFS_Provider.prototype.getFeatures = function(tile, layer, parameters) {
     var result = { pitch: pitch };
     result.feature = this.cache.getRessource(url);
 
-    if (result.feature !== undefined && layer.params.retail == undefined)
+    if (result.feature !== undefined && layer.params && layer.params.retail == undefined)
         return Promise.resolve(result);
 
     return this._IoDriver.read(url).then(function(feature) {
@@ -143,7 +143,9 @@ WFS_Provider.prototype.getFeatures = function(tile, layer, parameters) {
                 if(layer.type == "poly")
                     result.feature = tool.GeoJSON2Polygon(features, pointOrder);
                 else if(layer.type == "bbox")
-                    result.feature = tool.GeoJSON2Box(features, pointOrder, layer.bbox);
+                    result.feature = tool.GeoJSON2Box(features, pointOrder);
+                else if(layer.type == "mesh")
+                    result.feature = tool.GeoJSON2Mesh(feature, pointOrder);
                 else {
                     let mesh;
                     if(result.feature != undefined)
