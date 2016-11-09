@@ -17,6 +17,11 @@ import Ellipsoid from 'Core/Math/Ellipsoid';
 import Projection from 'Core/Geographic/Projection';
 import CustomEvent from 'custom-event';
 import {STRATEGY_MIN_NETWORK_TRAFFIC} from 'Scene/LayerUpdateStrategy'
+// 3d-tiles test
+import ThreeDTilesNodeProcess from 'Scene/ThreeDTilesNodeProcess';
+import BoundingVolumeHierarchy from 'Scene/BoundingVolumeHierarchy';
+import IoDriver_JSON from 'Core/Commander/Providers/IoDriver_JSON';
+import ThreeDTiles_Provider from 'Core/Commander/Providers/ThreeDTiles_Provider';
 
 var loaded = false;
 var eventLoaded = new CustomEvent('globe-loaded');
@@ -269,8 +274,37 @@ ApiGlobe.prototype.createSceneGlobe = function(coordCarto, viewerDiv) {
 
     map.tiles.init(map.layersConfiguration.getGeometryLayers()[0]);
 
+    // 3d tiles test
+    var ioDriverJSON = new IoDriver_JSON();
+    ioDriverJSON.read("data/tileset.json").then(function(tileset) {
+        var lvl0Tiles = tileset.root;
+        var tiles = {};
+        tileset2dict(tileset.root, tiles);
+        var bvh = new BoundingVolumeHierarchy(undefined, [lvl0Tiles], tiles);
+        var tnp = new ThreeDTilesNodeProcess(null, ellipsoid);
+        this.scene.add(bvh, tnp);
+
+        var layer3dTiles = {
+            protocol: '3d-tiles',
+            id: 'building',
+            url: 'http://localhost/server?'
+        };
+
+        this.scene.managerCommand.addProtocolProvider('3d-tiles', new ThreeDTiles_Provider());
+
+        bvh.init(layer3dTiles)
+    }.bind(this));
+    // 3d tiles test
+
     return this.scene;
 };
+
+var tileset2dict = function(node, dict) {
+    dict[node.content.url] = node;
+    for(let child in node.children) {
+        tileset2dict(node.children[child], dict)
+    }
+}
 
 ApiGlobe.prototype.update = function() {
     this.scene.notifyChange();
