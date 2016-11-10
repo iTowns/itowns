@@ -74,22 +74,21 @@ and open the template in the editor.
 
             // TODO: move in GuiTools
             var removeLayer = function(nameLayer) {
-                if(itowns.viewer.removeImageryLayer(nameLayer)) {
-                    var controllerTodelete = [];
+	            if(itowns.viewer.removeImageryLayer(nameLayer)) {
+	                colorGui.removeFolder(nameLayer);
+	            }
+        	};
 
-                    for (var i in gui.__controllers) {
-                        var controller = gui.__controllers[i];
-
-                        if(controller.property === nameLayer || controller.property === nameLayer + '_Opacity') {
-                            controllerTodelete.push(controller);
-                        }
-                    }
-
-                    for (var i in controllerTodelete) {
-                        gui.remove(controllerTodelete[i]);
-                    }
-                }
-            }
+            dat.GUI.prototype.removeFolder = function(name) {
+	            var folder = this.__folders[name];
+	            if (!folder) {
+	              return;
+	            }
+	            folder.close();
+	            this.__ul.removeChild(folder.domElement.parentNode);
+	            delete this.__folders[name];
+	            this.onResize();
+         	};
 
         </script>
     </body>

@@ -12,12 +12,12 @@
 
 #endif
 
-uniform int        RTC;
+uniform bool       useRTC;
 uniform mat4       mVPMatRTC;
 
 void main() {
 
-        //mat4 projModelViewMatrix = (RTC == 0) ? projectionMatrix * modelViewMatrix : mVPMatRTC;
+        //mat4 projModelViewMatrix = (useRTC == 0) ? projectionMatrix * modelViewMatrix : mVPMatRTC;
 
         mat4 projModelViewMatrix = projectionMatrix * modelViewMatrix ;
 

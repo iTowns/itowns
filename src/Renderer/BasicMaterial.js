@@ -45,39 +45,14 @@ function BasicMaterial(color) {
 	this.fragmentShader = this.fragmentShaderHeader + SimpleFS;
 
     this.uniforms = {
-        diffuseColor: {
-            type: "c",
-            value: defaultValue(color, new THREE.Color())
-        },
-        RTC: {
-            type: "i",
-            value: 1
-        },
-        mVPMatRTC: {
-            type: "m4",
-            value: new THREE.Matrix4()
-        },
-        distanceFog: {
-            type: "f",
-            value: 1000000000.0
-        },
-        uuid: {
-            type: "i",
-            value: 0
-        },
-        debug: {
-            type: "i",
-            value: false
-        },
-        selected: {
-            type: "i",
-            value: false
-        },
-        lightOn: {
-            type: "i",
-            value: true
-        }
-
+        diffuseColor: { value: defaultValue(color, new THREE.Color()) },
+        useRTC: { value: true },
+        mVPMatRTC: { value: new THREE.Matrix4()},
+        distanceFog: { value: 1000000000.0 },
+        uuid: { value: 0 },
+        debug: { value: false },
+        selected: { value: false },
+        lightOn: { value: true }
     };
 }
 
@@ -86,7 +61,7 @@ BasicMaterial.prototype.constructor = BasicMaterial;
 
 BasicMaterial.prototype.enableRTC = function(enable) {
 
-    this.uniforms.RTC.value = enable === true ? 1 : 0;
+    this.uniforms.useRTC.value = enable ;
 };
 
 BasicMaterial.prototype.setDebug = function(debug_value) {
@@ -116,7 +91,7 @@ BasicMaterial.prototype.setFogDistance = function(df) {
 };
 
 BasicMaterial.prototype.setSelected = function(selected) {
-    this.uniforms.selected.value = selected ? 1 : 0;
+    this.uniforms.selected.value = selected;
 };
 
 export default BasicMaterial;

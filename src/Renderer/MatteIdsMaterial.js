@@ -21,23 +21,11 @@ var MatteIdsMaterial = function(otherMaterial) {
     this.fragmentShader = this.fragmentShaderHeader + MatteIdsFS;
 
     this.uniforms.uuid.value = otherMaterial.uniforms.uuid.value;
-        this.uniforms.diffuseColor.value = new THREE.Color( Math.random() * 0xffffff  );//.setHex( Math.random() * 0xffffff );
+    this.uniforms.diffuseColor.value = new THREE.Color( Math.random() * 0xffffff  );//.setHex( Math.random() * 0xffffff );
 
-    this.uniforms.dTextures_00 = {
-        type: "tv",
-        value: otherMaterial.Textures[0]
-    };
-
-    this.uniforms.nbTextures = {
-        type: "i",
-        value: otherMaterial.nbTextures[0]
-    };
-
-    this.uniforms.pitScale_L00 = {
-        type: "v3v",
-        value: otherMaterial.pitScale[0]
-    };
-
+    this.uniforms.dTextures_00 = new THREE.Uniform(otherMaterial.textures[0]);
+    this.uniforms.texturesCount = new THREE.Uniform(otherMaterial.loadedTexturesCount[0]);
+    this.uniforms.offsetScale_L00 = new THREE.Uniform(otherMaterial.offsetScale[0]);
 };
 
 MatteIdsMaterial.prototype = Object.create(BasicMaterial.prototype);
