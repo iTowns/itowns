@@ -203,7 +203,7 @@ Globe.prototype.updateLayersOrdering = function() {
     var cO = function(object) {
         if (object.changeSequenceLayers)
             object.changeSequenceLayers(sequence);
-    }.bind(this);
+    };
 
     this.tiles.children[0].traverse(cO);
 };
@@ -214,7 +214,7 @@ Globe.prototype.removeColorLayer = function(layer) {
         if (object.removeColorLayer) {
             object.removeColorLayer(layer);
         }
-    }.bind(this);
+    };
 
     this.tiles.children[0].traverse(cO);
 };

@@ -38,9 +38,7 @@ varying vec3        vNormal;
 
 // Note see after in code
 // int textureIndex = 0;
-
 // int getTextureIndex() {
-// {
 //     return textureIndex;
 // }
 
@@ -93,7 +91,7 @@ void main() {
                         // TODO: Try other OS before delete dead
                         // get value in array, the index must be constant
                         // Strangely it's work with function returning a global variable, doesn't work on Chrome Windows
-                        // vec4 layerColor = texture2D(dTextures_01[getTextureIndex()],  pitUV(projWGS84 ? vUv_WGS84 : uvPM,offsetScale_L01[getTextureIndex()]));
+                        // vec4 layerColor = texture2D(dTextures_01[getTextureIndex()],  pitUV(projWGS84 ? vUv_WGS84 : uvPM,pitScale_L01[getTextureIndex()]));
                         vec4 layerColor = colorAtIdUv(
                             dTextures_01,
                             offsetScale_L01,

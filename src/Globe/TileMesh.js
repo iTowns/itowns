@@ -54,7 +54,6 @@ function TileMesh(params, builder, geometryCache) {
 
     this.materials = [];
 
-
     // instantiations all state materials : final, depth, id
     // Final rendering : return layered color + fog
     this.materials[RendererConstant.FINAL] = new LayeredMaterial();
@@ -203,7 +202,6 @@ TileMesh.prototype.setTextureElevation = function(elevation) {
     this.materials[RendererConstant.DEPTH].uniforms.texturesCount.value = this.materials[RendererConstant.FINAL].loadedTexturesCount[0];
     this.materials[RendererConstant.ID].uniforms.texturesCount.value = this.materials[RendererConstant.FINAL].loadedTexturesCount[0];
 
-
     this.loadingCheck();
 };
 
@@ -297,8 +295,9 @@ TileMesh.prototype.changeSequenceLayers = function(sequence) {
     var layerCount = this.materials[RendererConstant.FINAL].getColorLayersCount();
 
     // Quit if there is only one layer
-    if (layerCount < 2)
+    if (layerCount < 2) {
         return;
+    }
 
     this.materials[RendererConstant.FINAL].setSequence(sequence);
 

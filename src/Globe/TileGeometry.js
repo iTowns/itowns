@@ -215,11 +215,12 @@ TileGeometry.prototype.computeBuffers = function(params, builder) {
 
     var iStart = idVertex;
 
-    //TODO: WARNING beware size'skirt influence performance
-    var rmax = 50;
-    var r = Math.pow(rmax, 1 + 1.25/ params.zoom);
+    //TODO: WARNING beware skirt's size influences performance
+    //Fix Me: Compute correct the skirt's size : minimize the size without crack between tiles
+    //This size must be take into account the bbox's size
+    //For the moment, I reduce the size to increase performance (pixel shader performance)
 
-    r = isFinite(r) ? r : rmax;
+    let r = 5 *((20-params.zoom)+10);
 
     var buildIndexSkirt = function() {};
     var buildUVSkirt = function() {};
@@ -236,7 +237,6 @@ TileGeometry.prototype.computeBuffers = function(params, builder) {
             scratchBuffers.uv.wgs84[idVertex * 2 + 1] = scratchBuffers.uv.wgs84[id * 2 + 1];
         };
     }
-
 
     for (var i = 0; i < skirt.length; i++) {
 
