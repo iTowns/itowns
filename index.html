@@ -34,6 +34,7 @@ and open the template in the editor.
         <script src="dist/itowns2.js"> </script>
         <script type="text/javascript">
 
+            /* global document, itowns, dat */
             var initCenter = { longitude:2.3465, latitude: 48.88, altitude: 25000000};
 
             // iTowns namespace defined here
@@ -567,6 +568,19 @@ and open the template in the editor.
         };
 
         var text = new Menu();
+
+        dat.GUI.prototype.removeFolder = function(name) {
+            var folder = this.__folders[name];
+            if (!folder) {
+              return;
+            }
+            folder.close();
+            this.__ul.removeChild(folder.domElement.parentNode);
+            delete this.__folders[name];
+            this.onResize();
+         };
+
+
         var gui = new dat.GUI( { autoPlace: false});
         gui.domElement.id = 'menuDiv';
         viewerDiv.appendChild(gui.domElement);
@@ -632,38 +646,32 @@ and open the template in the editor.
             });
         }
 
-        /*viewerDiv.addEventListener('rangeChanged', function() {
-            var controller;
-            controller = gui.add(text, 'api');
-            if(controller) {
-                controller.onChange(function(value) {
-                    // removeLayer('OPENSM');
-                    //itowns.viewer.moveLayerUp('OrthoCRS');
-                    //console.log(itowns.viewer.getZoomLevel("Ortho"));
-                });
-            }
-        }, false);*/
+        viewerDiv.addEventListener('rangeChanged', function() {
+        }, false);
 
         var removeLayer = function(nameLayer) {
             if(itowns.viewer.removeImageryLayer(nameLayer)) {
-                var controllerTodelete = [];
-
-                for (var i in gui.__controllers) {
-                    var controller = gui.__controllers[i];
-
-                    if(controller.property === nameLayer || controller.property === nameLayer + '_Opacity') {
-                        controllerTodelete.push(controller);
-                    }
-                }
-
-                for (var i in controllerTodelete) {
-                    gui.remove(controllerTodelete[i]);
-                }
+                colorGui.removeFolder(nameLayer);
             }
+        };
+
+        var controllerAPI;
+        //controllerAPI = gui.add(text, 'api');
+
+        if(controllerAPI) {
+            controllerAPI.onChange(function() {
+
+                // var zoomScale =0.0006614869005378093;
+                // itowns.viewer.setZoomScale(zoomScale);
+                //removeLayer('OrthoCRS');
+                //itowns.viewer.moveLayerUp('OrthoCRS');
+                //console.log(itowns.viewer.getZoomLevel("Ortho"));
+            });
         }
 
-        var controller;
-        var layerIdCrs = 'OrthoCRS';
+
+        // var controller;
+        // var layerIdCrs = 'OrthoCRS';
 
         // var controller = gui.add(text,'api').name('Up');
 
@@ -695,8 +703,9 @@ and open the template in the editor.
         itowns.viewer.addEventListener('globe-loaded', function() {
             console.log("Globe Loaded");
 
-            //itowns.viewer.addEventListener('layerchanged:visible', callback);
+            //itowns.viewer.setRange(100000);
 
+            //itowns.viewer.setCenter({longitude:-74,latitude:40,altitude:0});
         });
 
         itowns.viewer.addEventListener('Layer-removed', function(event) {

@@ -14,6 +14,7 @@ import Layer from 'Scene/Layer';
 import InterfaceCommander from 'Core/Commander/InterfaceCommander';
 import Quad from 'Core/Geographic/Quad';
 import NodeMesh from 'Renderer/NodeMesh';
+import {SSE_SUBDIVISION_THRESHOLD} from 'Scene/NodeProcess';
 
 function commandQueuePriorityFunction(cmd) {
     var node = cmd.requester;
@@ -28,8 +29,7 @@ function commandQueuePriorityFunction(cmd) {
         if (!node.loaded) {
             return 1000;
         } else {
-            // TODO: this magic value comes from NodeProcess
-            if (6.0 < node.sse) {
+            if (SSE_SUBDIVISION_THRESHOLD < node.sse) {
                 return 100;
             } else {
                 return 10;
