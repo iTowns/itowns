@@ -4,7 +4,7 @@
  * Description: Classe façade pour attaquer les fonctionnalités du code.
  */
 
-
+/* global document */
 
 import Scene from 'Scene/Scene';
 import Globe from 'Globe/Globe';
@@ -16,7 +16,7 @@ import GeoCoordinate,{UNIT} from 'Core/Geographic/GeoCoordinate';
 import Ellipsoid from 'Core/Math/Ellipsoid';
 import Projection from 'Core/Geographic/Projection';
 import CustomEvent from 'custom-event';
-import {STRATEGY_MIN_NETWORK_TRAFFIC} from 'Scene/LayerUpdateStrategy'
+import {STRATEGY_MIN_NETWORK_TRAFFIC} from 'Scene/LayerUpdateStrategy';
 
 var loaded = false;
 var eventLoaded = new CustomEvent('globe-loaded');
@@ -57,7 +57,6 @@ ApiGlobe.prototype.add = function( /*Command*/ ) {
 
 };
 
-
 /**
  * @param commandTemplate
  */
@@ -75,7 +74,7 @@ ApiGlobe.prototype.execute = function() {
 
 ApiGlobe.prototype.getProtocolProvider = function(protocol) {
     return this.scene.managerCommand.getProtocolProvider(protocol);
-}
+};
 
 /**
  * This function gives a chance to the matching provider to pre-process some
@@ -108,29 +107,41 @@ ApiGlobe.prototype.addImageryLayer = function(layer) {
     this.viewerDiv.dispatchEvent(eventLayerAdded);
 };
 
-ApiGlobe.prototype.moveLayerUp = function(layer) {
+ApiGlobe.prototype.moveLayerUp = function(layerId) {
 
-    this.scene.getMap().layersConfiguration.moveLayerUp(layer);
+    this.scene.getMap().layersConfiguration.moveLayerUp(layerId);
     this.scene.getMap().updateLayersOrdering();
     this.scene.renderScene3D();
 };
 
-ApiGlobe.prototype.moveLayerDown = function(layer) {
+ApiGlobe.prototype.moveLayerDown = function(layerId) {
 
-    this.scene.getMap().layersConfiguration.moveLayerDown(layer);
+    this.scene.getMap().layersConfiguration.moveLayerDown(layerId);
     this.scene.getMap().updateLayersOrdering();
     this.scene.renderScene3D();
 };
 
-ApiGlobe.prototype.moveLayerToIndex = function(layer, newId) {
-    this.scene.getMap().layersConfiguration.moveLayerToIndex(layer, newId);
+/**
+ * Moves a specific layer to a specific index in the layer list. This function has no effect if the layer is moved to its current index.
+ *
+ * @param      {string}  layerId   The layer's idendifiant
+ * @param      {number}  newIndex   The new index
+ */
+ApiGlobe.prototype.moveLayerToIndex = function(layerId, newIndex) {
+    this.scene.getMap().layersConfiguration.moveLayerToIndex(layerId, newIndex);
     this.scene.getMap().updateLayersOrdering();
     this.scene.renderScene3D();
-    eventLayerChangedIndex.layerId = newId;
-    eventLayerChangedIndex.layer = layer;
+    eventLayerChangedIndex.layerIndex = newIndex;
+    eventLayerChangedIndex.layerId = layerId;
     this.viewerDiv.dispatchEvent(eventLayerChangedIndex);
 };
 
+/**
+ * Removes a specific imagery layer from the current layer list. This removes layers inserted with addLayer().
+ *
+ * @param      {string}   id      The identifier
+ * @return     {boolean}  { description_of_the_return_value }
+ */
 ApiGlobe.prototype.removeImageryLayer = function(id) {
 
     if (this.scene.getMap().removeColorLayer(id)) {
@@ -166,43 +177,52 @@ ApiGlobe.prototype.addElevationLayer = function(layer) {
  * Gets the minimum zoom level of the chosen layer.
  * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/66r8ugq0/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
  * @constructor
- * @param {id} id - The id of the layer.
+ * @param {index} index - The index of the layer.
  */
-
-ApiGlobe.prototype.getMinZoomLevel = function(id) {
-    //console.log(this.addImageryLayer().id);
-    var map = this.scene.getMap();
-    var manager = this.scene.managerCommand;
-    var providerWMTS = manager.getProvider(map.tiles).providerWMTS;
-    var layerWMTS = providerWMTS.layersData;
-    return layerWMTS[id].zoom.min;
-};
-
-/**
- * Return the list of all layers in the scene in the order of how they are stacked on top of each other.
- * @constructor
- * @param {id} id - The id of the layer.
- */
-
-ApiGlobe.prototype.getLayers = function( /*param*/ ) {
-    var map = this.scene.getMap();
-    return map.layersConfiguration.getColorLayers();
+ApiGlobe.prototype.getMinZoomLevel = function(index) {
+    var layer = this.getImageryLayers()[index];
+    if(layer && layer.zoom) {
+        return layer.zoom.min;
+    } else {
+        var layers = this.getImageryLayers();
+        let min = Infinity;
+        for (var i = layers.length - 1; i >= 0; i--) {
+            if(layers[i].zoom) {
+                min = Math.min(min,layers[i].zoom.min);
+            }
+        }
+        return min;
+    }
 };
 
 /**
  * Gets the maximun zoom level of the chosen layer.
  * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/y1xcqv4s/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
  * @constructor
- * @param {id} id - The id of the layer.
+ * @param {index} index - The index of the layer.
  */
+ApiGlobe.prototype.getMaxZoomLevel = function(index) {
+    var layer = this.getImageryLayers()[index];
+    if(layer && layer.zoom) {
+        return layer.zoom.max;
+    } else {
+        var layers = this.getImageryLayers();
+        let max = 0;
+        for (var i = layers.length - 1; i >= 0; i--) {
+            if(layers[i].zoom) {
+                max = Math.max(max,layers[i].zoom.max);
+            }
+        }
+        return max;
+    }
+};
 
-ApiGlobe.prototype.getMaxZoomLevel = function(id) {
-    //console.log(this.addImageryLayer().id);
+/**
+ * Return the list of all layers in the scene in the order of how they are stacked on top of each other.
+ */
+ApiGlobe.prototype.getImageryLayers = function() {
     var map = this.scene.getMap();
-    var manager = this.scene.managerCommand;
-    var providerWMTS = manager.getProvider(map.tiles).providerWMTS;
-    var layerWMTS = providerWMTS.layersData;
-    return layerWMTS[id].zoom.max;
+    return map.layersConfiguration.getColorLayers();
 };
 
 /**
@@ -347,7 +367,7 @@ ApiGlobe.prototype.setLayerOpacity = function(id, opacity) {
 ApiGlobe.prototype.setStreetLevelImageryOn = function(value) {
 
     this.scene.setStreetLevelImageryOn(value);
-}
+};
 
 /**
  * Returns the orientation angles of the current camera, in degrees.
@@ -381,7 +401,7 @@ ApiGlobe.prototype.getCameraLocation = function() {
 
 ApiGlobe.prototype.getCenter = function() {
     var controlCam = this.scene.currentControls();
-    return this.projection.cartesianToGeo(controlCam.globeTarget.position);
+    return this.projection.cartesianToGeo(controlCam.getTargetCameraPosition());
 };
 
 /**
@@ -456,16 +476,17 @@ ApiGlobe.prototype.getHeading = function() {
  */
 
 ApiGlobe.prototype.getRange = function() {
+    return this.scene.currentControls().getRange();
+};
 
+ApiGlobe.prototype.getRangeFromEllipsoid = function() {
+
+    // TODO: error is distance is big with ellipsoid.intersection(ray) because d < 0
     var controlCam = this.scene.currentControls();
     var ellipsoid = this.scene.getEllipsoid();
     var ray = controlCam.getRay();
-
     var intersection = ellipsoid.intersection(ray);
-
-    //        var center = controlCam.globeTarget.position;
     var camPosition = this.scene.currentCamera().position();
-    // var range = center.distanceTo(camPosition);
     var range = intersection.distanceTo(camPosition);
 
     return range;
@@ -565,6 +586,11 @@ ApiGlobe.prototype.setCenterAdvanced = function(pPosition /*, pDisableAnimationo
     this.setTilt(pPosition.tilt);
 };
 
+var updateTargetCamera = function(api){
+    api.scene.currentControls().updateCameraTransformation();
+    api.viewerDiv.dispatchEvent(eventRange);
+    api.removeEventListener('globe-loaded', updateTargetCamera);
+};
 /**
  * Sets the "range": the distance in meters between the camera and the current central point on the screen.
  * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/Lt3jL5pd/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
@@ -572,21 +598,154 @@ ApiGlobe.prototype.setCenterAdvanced = function(pPosition /*, pDisableAnimationo
  * @param {Number} pRange - The camera altitude.
  * @param {Boolean} [pDisableAnimation] - Used to force the non use of animation if its enable.
  */
-
-ApiGlobe.prototype.setRange = function(pRange /*, bool*/ ) {
+ApiGlobe.prototype.setRange = function(pRange /*, bool anim*/) {
     eventRange.oldRange = this.getRange();
+    loaded = false;
     this.scene.currentControls().setRange(pRange);
-    this.viewerDiv.dispatchEvent(eventRange);
+    this.addEventListener('globe-loaded', updateTargetCamera(this));
+};
+
+/**
+ * Displaces the central point to a specific amount of pixels from its current position.
+ * The view flies to the desired coordinate, i.e.is not teleported instantly. Note : The results can be strange in some cases, if ever possible, when e.g.the camera looks horizontally or if the displaced center would not pick the ground once displaced.
+ *
+ * @param      {<type>}  pVector  The vector
+ */
+ApiGlobe.prototype.pan = function(pVector) {
+    this.scene.currentControls().pan(pVector.x,pVector.y);
 };
 
 /**
  * Returns the actual zoom level. The level will always be between the [getMinZoomLevel(), getMaxZoomLevel()].
- * @constructor
- * @param {Id} id - The id of a layer.
+ *
+ * @return     {<type>}  The zoom level.
  */
+ApiGlobe.prototype.getZoomLevel = function() {
+    return this.scene.getMap().getZoomLevel();
+};
 
-ApiGlobe.prototype.getZoomLevel = function(id) {
-    return this.scene.getMap().getZoomLevel(id);
+/**
+ * Gets the current zoom level, which is an index in the logical scales predefined for the application.
+ * The higher the level, the closer to the ground.
+ * The level is always in the [getMinZoomLevel(), getMaxZoomLevel()] range.
+ *
+ * @param      {number}  zoom    The zoom
+ */
+ApiGlobe.prototype.setZoomLevel = function(zoom) {
+    zoom = Math.max(this.getMinZoomLevel(),zoom);
+    zoom = Math.min(this.getMaxZoomLevel(),zoom);
+    let distance = this.scene.getMap().computeDistanceForZoomLevel(zoom,this.scene.currentCamera());
+    this.setRange(distance);
+};
+
+/**
+ * Return the current zoom scale at the central point of the view.
+ * This function compute the scale of a map
+ * @param      {number}  pitch   Screen pitch, in millimeters ; 0.28 by default
+ * @return     {number}  The zoom scale.
+ */
+ApiGlobe.prototype.getZoomScale = function(pitch) {
+    // TODO: Why error div size height in Chrome?
+    // Screen pitch, in millimeters
+    pitch = (pitch || 0.28)/1000;
+
+    // To compute scale, we must to calculate the maximum vertical distance (in meter) perceived by the camera
+    // the maximum vertical distance 2xHS (look at the explanations below 'HS segment')
+    // There's two state
+    //     * Globe is inside the frustrum camera
+    //     * Globe intersects with the frustrum camera
+    let camera = this.scene.currentCamera();
+    let center = this.scene.currentControls().getTargetCameraPosition();
+    let rayon = center.length();
+    let range = center.distanceTo(camera.camera3D.position);
+    // compute distance camera/globe's center
+    let distance = rayon + range;
+    // Three points C,G and S
+    // C : Camera's position
+    // G : Globe's center
+    // S : The furthest interesection[camera verical frustrum, globe surface] from line CG
+    // HS is triangle CSG's altitude going through S and H is in GC segment
+    // alpha is angle GCS
+    // phi is angle CSG
+    let alpha = camera.FOV / 180 * Math.PI * 0.5;
+    let phi = Math.PI - Math.asin(distance / rayon * Math.sin(alpha));
+    // projection is projection segment HS on camera
+    let projection;
+
+    if(isNaN(phi)) {
+        //Globe is inside the frustrum camera
+        projection = distance * 2 * Math.tan(alpha);
+
+    } else {
+        // Globe intersects with the frustrum camera
+
+        // develop operation
+        // {
+        //     var beta = Math.PI - ( phi + alpha);
+        //     projection = rayon * Math.sin(beta) * 2.0;
+        // }
+        // factorisation ->
+        projection = 2.0 * rayon * Math.sin(phi + alpha);
+    }
+
+    let zoomScale = camera.height * pitch / projection;
+
+    return zoomScale;
+};
+
+/**
+ * Changes the zoom level of the central point of screen so that screen acts as a map with a specified scale.
+ *  The view flies to the desired zoom scale;
+ *
+ * @param      {number}  zoomScale  The zoom scale
+ * @param      {number}  pitch      The pitch
+ */
+ApiGlobe.prototype.setZoomScale = function(zoomScale,pitch) {
+
+    // Screen pitch, in millimeters
+    pitch = (pitch || 0.28)/1000;
+
+    // To set scale, we must to calculate the maximum vertical distance (in meter) perceived by the camera
+    // the maximum vertical distance 2xHS (look at the explanations below 'HS segment')
+    // projection is projection segment HS on camera
+    // There's two state
+    //     * Globe is inside the frustrum camera
+    //     * Globe intersects with the frustrum camera
+
+    let camera = this.scene.currentCamera();
+    let projection = camera.height * pitch / zoomScale;
+    let rayon = this.scene.currentControls().getTargetCameraPosition().length();
+    let alpha = camera.FOV / 180 * Math.PI * 0.5;
+    // distance camera/globe's center
+    let distance;
+    // Three points C,G and S
+    // C camera's position
+    // G globe's center
+    // S = the furthest interesection[camera verical frustrum, globe surface] from line CG
+    // HS is triangle CSG's altitude going through S and H is in GC segment
+    // alpha is angle GCS
+    // phi is angle CSG
+    // beta is angle SGC
+    let sinBeta = projection / (2 * rayon);
+
+    if(sinBeta < 1.0) {
+        // Globe is inside the frustrum camera
+        let beta = Math.asin(sinBeta);
+        // develop operation
+        //  {
+        //      let phi = Math.PI - ( beta + alpha);
+        //      distance  = rayon * Math.sin(phi) / Math.sin(alpha) ;
+        //  }
+        //  factorisation ->
+        distance  = rayon * Math.sin(beta + alpha) / Math.sin(alpha) ;
+
+    } else {
+        //Globe is inside the frustrum camera
+        distance = rayon / Math.tan(alpha) * sinBeta;
+    }
+
+    let range = distance - rayon;
+    this.setRange(range);
 };
 
 /**

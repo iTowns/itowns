@@ -114,13 +114,12 @@ var keyS = false;
 // Set to true to enable target helper
 var enableTargetHelper = false;
 
-// Handle Mouse
+// Handle function
 var _handlerMouseMove;
 var _handlerMouseUp;
 
 // Pseudo collision
 var radiusCollision = 50;
-
 
 // SnapCamera saves transformation's camera
 // It's use to globe move
@@ -246,6 +245,7 @@ function GlobeControls(camera, domElement, engine) {
 
     sizeRendering.set(engine.width,engine.height);
 
+    // Note A
     // TODO: test before remove test code
     // so camera.up is the orbit axis
     //var quat = new THREE.Quaternion().setFromUnitVectors(camera.up, new THREE.Vector3(0, 1, 0));
@@ -334,7 +334,7 @@ function GlobeControls(camera, domElement, engine) {
 
     // pass in x,y of change desired in pixel space,
     // right and down are positive
-    this.pan = function(deltaX, deltaY) {
+    this.mouseToPan = function(deltaX, deltaY) {
 
         var element = this.domElement === document ? this.domElement.body : this.domElement;
 
@@ -344,7 +344,7 @@ function GlobeControls(camera, domElement, engine) {
             var position = this.camera.position;
 
             //var offset = position.clone().sub(this.target);
-            var offset = position.clone().sub(globeTarget.position);
+            var offset = position.clone().sub(this.getTargetCameraPosition());
 
             var targetDistance = offset.length();
 
@@ -365,7 +365,7 @@ function GlobeControls(camera, domElement, engine) {
         } else {
 
             // camera neither orthographic or perspective
-            //console.warn('WARNING: GlobeControls.js encountered an unknown camera type - this.pan disabled.');
+            //console.warn('WARNING: GlobeControls.js encountered an unknown camera type - this.mouseToPan disabled.');
 
         }
 
@@ -457,7 +457,6 @@ function GlobeControls(camera, domElement, engine) {
         return position;
     };
 
-    var offGT = new THREE.Vector3();
     var quaterPano = new THREE.Quaternion();
     var quaterAxis = new THREE.Quaternion();
     var axisX = new THREE.Vector3(1, 0, 0);
@@ -470,47 +469,45 @@ function GlobeControls(camera, domElement, engine) {
 
     var update = function() {
 
+
+        // MOVE_GLOBE
+        // Rotate globe with mouse
         if (state === CONTROL_STATE.MOVE_GLOBE) {
-            offset.copy(snapShotCamera.position);
-        } else {
-            // get camera position
-            offset.copy(this.camera.position);
-            // transform to local globeTarget
-            offset.applyMatrix4( globeTarget.matrixWorldInverse );
-        }
-
-        offGT.copy(globeTarget.position);
-
-        if (state === CONTROL_STATE.MOVE_GLOBE) {
-
-            offGT.applyQuaternion(quatGlobe);
-            movingGlobeTarget.copy(offGT);
-            this.camera.position.copy(offset.applyQuaternion(quatGlobe));
-            this.camera.up.copy(offGT.clone().normalize());
-
-        }
-        else if(state === CONTROL_STATE.PAN)
-        {
+            movingGlobeTarget.copy(this.getTargetCameraPosition()).applyQuaternion(quatGlobe);
+            this.camera.position.copy(snapShotCamera.position).applyQuaternion(quatGlobe);
+            this.camera.up.copy(movingGlobeTarget.clone().normalize());
+        // PAN
+        // Move camera in projection plan
+        } else if(state === CONTROL_STATE.PAN) {
             this.camera.position.add( panVector );
-            globeTarget.position.add( panVector );
-            globeTarget.updateMatrixWorld();
-            globeTarget.matrixWorldInverse.getInverse(globeTarget.matrixWorld);
-            offGT.copy(globeTarget.position);
-        }
-        else if (state !== CONTROL_STATE.PANORAMIC) {
+            movingGlobeTarget.add( panVector );
+        // PANORAMIC
+        // Move target camera
+        } else if (state === CONTROL_STATE.PANORAMIC) {
+            // TODO: this part must be reworked
+            this.camera.worldToLocal(movingGlobeTarget);
+            var normal = this.camera.position.clone().normalize().applyQuaternion(this.camera.quaternion.clone().inverse());
+            quaterPano.setFromAxisAngle(normal, sphericalDelta.theta).multiply(quaterAxis.setFromAxisAngle(axisX, sphericalDelta.phi));
+            movingGlobeTarget.applyQuaternion(quaterPano);
+            this.camera.localToWorld(movingGlobeTarget);
+            this.camera.up.copy(movingGlobeTarget.clone().normalize());
+        } else {
+            // ZOOM/ORBIT
+            // Move Camera around the target camera
 
-            // State ZOOM/ORBIT
-
+            // TODO: test before remove test code see (Note A)
             //offset.applyQuaternion( quat );
 
+            // get camera position in local space of target
+            offset.copy(this.camera.position).applyMatrix4( globeTarget.matrixWorldInverse );
+
             // angle from z-axis around y-axis
-            if(sphericalDelta.theta || sphericalDelta.phi )
+            if(sphericalDelta.theta || sphericalDelta.phi ) {
                 spherical.setFromVector3( offset );
+            }
 
             if (this.autoRotate && state === CONTROL_STATE.NONE) {
-
                 this.rotateLeft(this.getAutoRotationAngle());
-
             }
 
             spherical.theta += sphericalDelta.theta;
@@ -535,30 +532,10 @@ function GlobeControls(camera, domElement, engine) {
             //rotate point back to "camera-up-vector-is-up" space
             //offset.applyQuaternion( quatInverse );
 
-            var newPosition = globeTarget.localToWorld(offset.clone());
-
-            this.camera.position.copy(newPosition);
-
-            // TODO: there's problem when the cameran looks at perpendicular
-            // -->
-            // if(state === CONTROL_STATE.PAN)
-            //     this.camera.up.copy(this.camera.position.clone().normalize());
-            // <--
+            this.camera.position.copy(globeTarget.localToWorld(offset));
         }
 
-        if (state === CONTROL_STATE.PANORAMIC) {
-
-            this.camera.worldToLocal(movingGlobeTarget);
-            var normal = this.camera.position.clone().normalize().applyQuaternion(this.camera.quaternion.clone().inverse());
-            quaterPano.setFromAxisAngle(normal, sphericalDelta.theta).multiply(quaterAxis.setFromAxisAngle(axisX, sphericalDelta.phi));
-            movingGlobeTarget.applyQuaternion(quaterPano);
-            this.camera.localToWorld(movingGlobeTarget);
-            this.camera.up.copy(movingGlobeTarget.clone().normalize());
-            this.camera.lookAt(movingGlobeTarget);
-
-        } else {
-            this.camera.lookAt(offGT); // Usual CASE (not rotating around camera axe)
-        }
+        this.camera.lookAt(movingGlobeTarget);
 
         quatGlobe.set(0, 0, 0, 1);
         sphericalDelta.theta = 0;
@@ -616,15 +593,15 @@ function GlobeControls(camera, domElement, engine) {
     var updateGlobeTarget = function() {
 
         // Get distance camera DME
-        var distanceTarget = Math.floor(getPickingPosition().distanceTo(this.camera.position));
+        var pickingPosition = getPickingPosition();
+
+        if(!pickingPosition) {
+            return;
+        }
+
+        var distanceTarget = Math.floor(pickingPosition.distanceTo(this.camera.position));
 
         // Position movingGlobeTarget on DME
-
-        // TODO: error accuracy with this old method : why? : matrix world inverse
-        // this.camera.worldToLocal(movingGlobeTarget);
-        // movingGlobeTarget.setLength(distanceTarget);
-        // this.camera.localToWorld(movingGlobeTarget);
-
         cT.subVectors(movingGlobeTarget,this.camera.position);
         cT.setLength(distanceTarget);
         movingGlobeTarget.addVectors(this.camera.position,cT);
@@ -738,7 +715,7 @@ function GlobeControls(camera, domElement, engine) {
                 panEnd.set(event.clientX - event.target.offsetLeft, event.clientY - event.target.offsetTop);
                 panDelta.subVectors(panEnd, panStart);
 
-                this.pan(panDelta.x, panDelta.y);
+                this.mouseToPan(panDelta.x, panDelta.y);
 
                 panStart.copy(panEnd);
 
@@ -786,9 +763,6 @@ function GlobeControls(camera, domElement, engine) {
                 domElement.dispatchEvent(selectClick);
 
             } else {
-
-                // TODO: update target resolve problem target
-                updateGlobeTarget.bind(this)();
 
                 state = CONTROL_STATE.MOVE_GLOBE;
 
@@ -848,9 +822,6 @@ function GlobeControls(camera, domElement, engine) {
         this.domElement.removeEventListener('mouseup', _handlerMouseUp, false);
         this.dispatchEvent(this.endEvent);
 
-        if(state === CONTROL_STATE.PAN)
-            movingGlobeTarget.copy(globeTarget.position);
-
         updateGlobeTarget.bind(this)();
         state = CONTROL_STATE.NONE;
     };
@@ -898,7 +869,6 @@ function GlobeControls(camera, domElement, engine) {
 
         if(state === CONTROL_STATE.PAN)
         {
-            movingGlobeTarget.copy(globeTarget.position);
             updateGlobeTarget.bind(this)();
             state = CONTROL_STATE.NONE;
         }
@@ -906,12 +876,6 @@ function GlobeControls(camera, domElement, engine) {
         keyCtrl = false;
         keyShift = false;
         keyS = false;
-    };
-
-    var panUpdate = function(deltaX,deltaY) {
-        this.pan(deltaX,deltaY);
-        state = CONTROL_STATE.PAN;
-        update();
     };
 
     var onKeyDown = function(event) {
@@ -922,16 +886,24 @@ function GlobeControls(camera, domElement, engine) {
 
         switch (event.keyCode) {
             case CONTROL_KEYS.UP:
-                panUpdate.bind(this)(0, this.keyPanSpeed);
+                this.mouseToPan(0, this.keyPanSpeed);
+                state = CONTROL_STATE.PAN;
+                update();
                 break;
             case CONTROL_KEYS.BOTTOM:
-                panUpdate.bind(this)(0, -this.keyPanSpeed);
+                this.mouseToPan(0, -this.keyPanSpeed);
+                state = CONTROL_STATE.PAN;
+                update();
                 break;
             case CONTROL_KEYS.LEFT:
-                panUpdate.bind(this)(this.keyPanSpeed, 0);
+                this.mouseToPan(this.keyPanSpeed, 0);
+                state = CONTROL_STATE.PAN;
+                update();
                 break;
             case CONTROL_KEYS.RIGHT:
-                panUpdate.bind(this)(-this.keyPanSpeed, 0);
+                this.mouseToPan(-this.keyPanSpeed, 0);
+                state = CONTROL_STATE.PAN;
+                update();
                 break;
             // TODO Why space key, looking for movement
             case CONTROL_KEYS.SPACE:
@@ -982,7 +954,7 @@ function GlobeControls(camera, domElement, engine) {
                 dollyStart.set(0, distance);
                 break;
 
-            case 3: // three-fingered touch: this.pan
+            case 3: // three-fingered touch: this.mouseToPan
 
                 if (this.enablePan === false) return;
 
@@ -1057,7 +1029,7 @@ function GlobeControls(camera, domElement, engine) {
                 update();
                 break;
 
-            case 3: // three-fingered touch: this.pan
+            case 3: // three-fingered touch: this.mouseToPan
 
                 if (this.enablePan === false) return;
                 if (state !== CONTROL_STATE.TOUCH_PAN) return;
@@ -1065,7 +1037,7 @@ function GlobeControls(camera, domElement, engine) {
                 panEnd.set(event.touches[0].pageX, event.touches[0].pageY);
                 panDelta.subVectors(panEnd, panStart);
 
-                this.pan(panDelta.x, panDelta.y);
+                this.mouseToPan(panDelta.x, panDelta.y);
 
                 panStart.copy(panEnd);
 
@@ -1179,9 +1151,17 @@ GlobeControls.prototype.setHeading = function(heading) {
     this.updateCameraTransformation();
 };
 
-GlobeControls.prototype.setCenter = function(position) {
+/**
+ * Gets camera's target position
+ *
+ * @return     {Vecto3}
+ */
+GlobeControls.prototype.getTargetCameraPosition = function() {
+    return globeTarget.position;
+};
 
-    var center = globeTarget.position;
+GlobeControls.prototype.setCenter = function(position) {
+    var center = this.getTargetCameraPosition();
 
     snapShotCamera.shot(this.camera);
 
@@ -1193,16 +1173,16 @@ GlobeControls.prototype.setCenter = function(position) {
     quatGlobe.setFromUnitVectors(vFrom, vTo);
 
     this.updateCameraTransformation(CONTROL_STATE.MOVE_GLOBE);
-
 };
 
 GlobeControls.prototype.setRange = function(pRange) {
-
-    scale = pRange / globeTarget.position.distanceTo(this.camera.position);
+    scale = pRange / this.getTargetCameraPosition().distanceTo(this.camera.position);
     this.updateCameraTransformation();
-
 };
 
+GlobeControls.prototype.getRange = function() {
+    return this.getTargetCameraPosition().distanceTo(this.camera.position);
+};
 
 // TODO idea : remove this? used in API
 GlobeControls.prototype.getRay = function() {
@@ -1251,7 +1231,11 @@ GlobeControls.prototype.getAzimuthalAngle = function() {
 GlobeControls.prototype.moveTarget = function() {
 
     return movingGlobeTarget;
+};
 
+GlobeControls.prototype.pan = function(deltaX,deltaY) {
+        this.mouseToPan(deltaX,deltaY);
+        this.updateCameraTransformation(CONTROL_STATE.PAN);
 };
 
 // End API functions
