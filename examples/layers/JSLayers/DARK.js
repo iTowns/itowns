@@ -1,8 +1,0 @@
-itowns.viewer.addImageryLayer({
-    protocol:   "wmtsc",
-    id:         "DARK",
-    customUrl:  "http://a.basemaps.cartocdn.com/dark_all/%TILEMATRIX/%COL/%ROW.png",
-    options: { 
-		tileMatrixSet: "PM",
-		mimetype: "image/png"}
-});

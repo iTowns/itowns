@@ -16,6 +16,7 @@ import GeoCoordinate,{UNIT} from 'Core/Geographic/GeoCoordinate';
 import Ellipsoid from 'Core/Math/Ellipsoid';
 import Projection from 'Core/Geographic/Projection';
 import CustomEvent from 'custom-event';
+import IoDriver_JSON from 'Core/Commander/Providers/IoDriver_JSON';
 import {STRATEGY_MIN_NETWORK_TRAFFIC} from 'Scene/LayerUpdateStrategy';
 
 var loaded = false;
@@ -139,11 +140,11 @@ ApiGlobe.prototype.addImageryLayersFromJSONArray = function (urls) {
         for (var i = 0; i < urls.length; i++) {
             this.addImageryLayer(values[i]);
         }
-        return this.getColorLayers();
+        return this.scene.getMap().layersConfiguration.getColorLayers();
     });
 };
 
-ApiGlobe.prototype.moveLayerUp = function(layer) {
+ApiGlobe.prototype.moveLayerUp = function(layerId) {
 
     this.scene.getMap().layersConfiguration.moveLayerUp(layerId);
     this.scene.getMap().updateLayersOrdering();
@@ -249,7 +250,7 @@ ApiGlobe.prototype.addElevationLayersFromJSONArray = function (urls) {
         for (var i = 0; i < urls.length; i++) {
             this.addElevationLayer(values[i])
         }
-        return this.getElevationLayers();
+        return this.scene.getMap().layersConfiguration.getElevationLayers();
     });
 };
 
