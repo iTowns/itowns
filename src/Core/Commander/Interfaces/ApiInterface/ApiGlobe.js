@@ -197,7 +197,7 @@ ApiGlobe.prototype.moveLayerToIndex = function(layerId, newIndex) {
 ApiGlobe.prototype.removeImageryLayer = function(id) {
 
     if (this.scene.getMap().layersConfiguration.removeColorLayer(id)) {
-        this.scene.getMap().updateLayersOrdering();
+        this.scene.getMap().removeColorLayer(id);
         this.scene.renderScene3D();
         eventLayerRemoved.layer = id;
         this.viewerDiv.dispatchEvent(eventLayerRemoved);
@@ -956,6 +956,14 @@ ApiGlobe.prototype.launchCommandApi = function() {
 //        this.resetHeading();
 //        console.log(this.getHeading());
 //    };
+
+
+ApiGlobe.prototype.selectNodeById = function(id) {
+
+    this.scene.selectNodeId(id);
+    this.scene.update();
+    this.scene.renderScene3D();
+};
 
 ApiGlobe.prototype.showKML = function(value) {
 

@@ -72,7 +72,7 @@ BoundingBox.prototype.BBoxIsInside = function(bbox) {
     return bbox.east() <= this.east() && bbox.west() >= this.west() && bbox.north() <= this.north() && bbox.south() >= this.south();
 };
 
-BoundingBox.prototype.pitScale = function(bbox) {
+BoundingBox.prototype.offsetScale = function(bbox) {
     var pitX = Math.abs(bbox.west() - this.west()) / this.dimension.x;
     var pitY = Math.abs(bbox.north() - this.north()) / this.dimension.y;
     var scale = bbox.dimension.x / this.dimension.x;

@@ -1,3 +1,4 @@
+import * as THREE from 'three';
 import BasicMaterial from 'Renderer/BasicMaterial';
 import GlobeDepthFS from 'Renderer/Shader/GlobeDepthFS.glsl';
 import GlobeDepthVS from 'Renderer/Shader/GlobeDepthVS.glsl';
@@ -12,20 +13,9 @@ var GlobeDepthMaterial = function(otherMaterial) {
     // Why connect directily uniform doesn't work?
     // Verify attributes's shaders
 
-    this.uniforms.dTextures_00 = {
-        type: "tv",
-        value: otherMaterial.Textures[0]
-    };
-
-    this.uniforms.nbTextures = {
-        type: "i",
-        value: otherMaterial.nbTextures[0]
-    };
-
-    this.uniforms.pitScale_L00 = {
-        type: "v3v",
-        value: otherMaterial.pitScale[0]
-    };
+    this.uniforms.dTextures_00 = new THREE.Uniform(otherMaterial.textures[0]);
+    this.uniforms.texturesCount = new THREE.Uniform(otherMaterial.loadedTexturesCount[0]);
+    this.uniforms.offsetScale_L00 = new THREE.Uniform(otherMaterial.offsetScale[0]);
 };
 
 GlobeDepthMaterial.prototype = Object.create(BasicMaterial.prototype);

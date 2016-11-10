@@ -8,9 +8,9 @@ attribute vec3      position;
 attribute vec3      normal;
 
 uniform sampler2D   dTextures_00[1];
-uniform vec3        pitScale_L00[1];
-uniform int         nbTextures[8];
-uniform int         RTC;
+uniform vec3        offsetScale_L00[1];
+uniform int         loadedTexturesCount[8];
+uniform bool        useRTC;
 uniform float       periArcLati;
 uniform mat4        mVPMatRTC;
 
@@ -39,11 +39,11 @@ void main() {
 
         vec4 vPosition;
 
-        if(nbTextures[0] > 0)
+        if(loadedTexturesCount[0] > 0)
         {
             vec2    vVv = vec2(
-                vUv_WGS84.x * pitScale_L00[0].z + pitScale_L00[0].x,
-                (1.0 - vUv_WGS84.y) * pitScale_L00[0].z + pitScale_L00[0].y);
+                vUv_WGS84.x * offsetScale_L00[0].z + offsetScale_L00[0].x,
+                (1.0 - vUv_WGS84.y) * offsetScale_L00[0].z + offsetScale_L00[0].y);
 
 
             #ifdef RGBA_ELEVATION
@@ -69,7 +69,7 @@ void main() {
         else
             vPosition = vec4( position ,1.0 );
 
-        mat4 projModelViewMatrix = (RTC == 0) ? projectionMatrix * modelViewMatrix : mVPMatRTC;
+        mat4 projModelViewMatrix = useRTC ? mVPMatRTC : projectionMatrix * modelViewMatrix;
 
         gl_Position = projModelViewMatrix * vPosition;
 

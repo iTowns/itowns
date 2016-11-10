@@ -4,7 +4,7 @@
  * Description: La Scene est l'instance principale du client. Elle est le chef orchestre de l'application.
  */
 
-/* global window */
+/* global window, requestAnimationFrame */
 
 /**
  *
@@ -93,10 +93,6 @@ Scene.prototype.currentControls = function() {
 
 Scene.prototype.getPickPosition = function(mouse) {
     return this.gfxEngine.getPickingPositionFromDepth(mouse);
-};
-
-Scene.prototype.addStyle = function(style) {
-    this.stylesManager.addStyle(style);
 };
 
 Scene.prototype.getStyle = function(name) {
