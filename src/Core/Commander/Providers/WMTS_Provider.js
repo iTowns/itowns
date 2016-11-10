@@ -23,8 +23,7 @@ function WMTS_Provider(options) {
     this.ioDriverXML = new IoDriverXML();
     this.projection = new Projection();
     this.support = options.support || false;
-
-    this.getTextureFloat;
+    this.getTextureFloat = null;
 
     if (this.support)
         this.getTextureFloat = function() {
@@ -62,7 +61,7 @@ WMTS_Provider.prototype.customUrl = function(layer, url, tilematrix, row, col) {
 
 WMTS_Provider.prototype.removeLayer = function( /*idLayer*/ ) {
 
-}
+};
 
 WMTS_Provider.prototype.preprocessDataLayer = function(layer) {
     layer.fx = layer.fx || 0.0;
@@ -240,7 +239,6 @@ WMTS_Provider.prototype.getColorTexture = function(coWMTS, pitch, layer) {
 
 WMTS_Provider.prototype.executeCommand = function(command) {
 
-    //var service;
     var layer = command.paramsFunction.layer;
     var tile = command.requester;
 
@@ -271,7 +269,7 @@ WMTS_Provider.prototype.computeLevelToDownload = function(tile, ancestor, layer)
         Math.max(
             layer.zoom.min,
             lvl));
-}
+};
 
 WMTS_Provider.prototype.tileInsideLimit = function(tile, layer) {
     // This layer provides data starting at level = layer.zoom.min

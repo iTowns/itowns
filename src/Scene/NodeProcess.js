@@ -172,7 +172,7 @@ function refinementCommandCancellationFn(cmd) {
 }
 
 NodeProcess.prototype.refineNodeLayers = function(node, camera, params) {
-    // Elevation and Imagery u pdates require separate functions (for now):
+    // Elevation and Imagery updates require separate functions (for now):
     //   * a node can only have 1 elevation texture
     //   * a node inherits elevation texture from parent, even if tileInsideLimit(node)
     //     returns false
@@ -210,7 +210,7 @@ NodeProcess.prototype.hideNodeChildren = function(node) {
 function findAncestorWithValidTextureForLayer(node, layerType, layer) {
     var parent = node.parent;
     if (parent && parent.material && parent.material.getLayerLevel) {
-        var level = parent.material.getLayerLevel(layerType, layer);
+        var level = parent.material.getLayerLevel(layerType, layer ? layer.id : undefined);
         if ( 0 <= level ) {
             return node.getNodeAtLevel(level);
         } else {
@@ -343,6 +343,9 @@ function updateNodeElevation(quadtree, node, layersConfig, force) {
             continue;
         }
 
+        // ancestor is not enough: we also need to know from which layer we're going to request the elevation texture (see how this is done for color texture).
+        // Right now this is done in the `for` loop below but this is hacky because there's no real warranty that bestLayer and ancestor really match.
+        // FIXME: we need to be able to set both ancestor and bestLayer at the same time
         if(ancestor === null) {
             ancestor = node.getNodeAtLevel(targetLevel);
         }

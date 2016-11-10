@@ -15,7 +15,7 @@ function InterfaceCommander(type, priorityFunction) {
     if (!Date.now) {
         this.timestamp = function() {
             return new Date().getTime();
-        }
+        };
     } else {
         this.timestamp = Date.now;
     }

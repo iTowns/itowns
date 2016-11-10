@@ -4,6 +4,19 @@
  * Description: Classe pour créer un menu.
  */
 
+ /* global dat,viewerDiv */
+
+dat.GUI.prototype.removeFolder = function(name) {
+    var folder = this.__folders[name];
+    if (!folder) {
+      return;
+    }
+    folder.close();
+    this.__ul.removeChild(folder.domElement.parentNode);
+    delete this.__folders[name];
+    this.onResize();
+};
+
 function GuiTools(api,domId) {
 
     this.api = api;
@@ -56,13 +69,15 @@ GuiTools.prototype.addLayersGUI = function (imageryLayers, elevationLayers) {
 	this.addElevationLayersGUI(elevationLayers);
 };
 
+GuiTools.prototype.removeLayersGUI = function(nameLayer) {
+    if(this.api.removeImageryLayer(nameLayer)) {
+        this.colorGui.removeFolder(nameLayer);
+    }
+};
+
 GuiTools.prototype.addGUI = function (name,value,callback) {
 
 	this[name] = value;
 	this.gui.add(this, name).onChange(callback);
 };
 
-//TODO
-//GuiTools.prototype.removeImageryLayersGUI = function () {
-
-// };
