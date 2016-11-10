@@ -672,6 +672,18 @@ ApiGlobe.prototype.addFeaturesLayer = function(layer) {
                 var geo = kml_Provider.parseKML(layer.url).then(
                         function(obj){
                             this.scene.addFeaturesRaster(obj.objLinesPolyToRaster); // Only 2D Polygons and Lines
+                            // Add listener for click down. 
+                            this.scene.gfxEngine.getRenderer().domElement.addEventListener('clickDown',function(event){
+                                
+                                    var pos = this.scene.getPickPosition(event.mouse);
+                                    this.scene.renderScene3D();
+                                    var posWGS84 = this.projection.cartesianToGeo(pos); 
+                                    var lonDeg = posWGS84.coordinate[0] / Math.PI * 180;
+                                    var latDeg = posWGS84.coordinate[1] / Math.PI * 180;
+                                    kml_Provider.showFeatureAttributesAtPos({x:lonDeg, y: latDeg}, event.mouse);
+                                 
+                            }.bind(this), false);
+                            
                             featureLayer.add(obj.geoFeat);
                             this.scene.gfxEngine.add3DScene(featureLayer.getMesh());// Only 3D Feat and 2D Icon/Text
                            // this.scene.setFeaturesRasterOnOff(true);

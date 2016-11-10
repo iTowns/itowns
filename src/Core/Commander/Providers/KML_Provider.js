@@ -20,6 +20,7 @@ function KML_Provider(ellipsoid) {
     this.ioDriverXML = new IoDriverXML();
   //  this.kmzLoader = new KMZLoader();
     this.cache = new Map();
+    this.featureToolBox = null;
     console.log(togeojson);
 }
 
@@ -35,12 +36,64 @@ KML_Provider.prototype.parseKML = function(urlFile) {
     
     return this.ioDriverXML.read(urlFile).then(function(result) {
          var geojson = togeojson.kml(result);
-         var objLinesPolyToRaster = new FeatureToolBox().extractFeatures(geojson); // Raster feat
+         this.featureToolBox = new FeatureToolBox();
+         var objLinesPolyToRaster = this.featureToolBox.extractFeatures(geojson); // Raster feat
          var geoFeat = new FeatureToolBox().createFeaturesPoints(geojson);//processingGeoJSON(geojson);            // vector feat
          //console.log(objLinesPolyToRaster);
          return {geoFeat: geoFeat, objLinesPolyToRaster: objLinesPolyToRaster};
         }.bind(this));
 };
+
+
+/**
+ * Display in DOM the attributes of the clicked polygon
+ * @param {type} p
+ * @param {type} mouse
+ * @returns {undefined}
+ */
+KML_Provider.prototype.showFeatureAttributesAtPos = function(p, mouse){
+    
+    var att =   this.featureToolBox.showFeatureAttributesAtPos(p);
+    var desc = att === "" ? "No Description" : att;
+ 
+    if(att !=="noIntersect") {
+        
+        var canvas = document.createElement("canvas");
+        canvas.width = 1920;
+        canvas.height = 1080;
+        canvas.setAttribute("id", "canvasID");  
+        var ctx = canvas.getContext("2d");
+        
+        ctx.textAlign = 'center' 
+        ctx.beginPath();
+        ctx.globalAlpha = 0.50;
+        ctx.font = "24px serif";
+        var w = ctx.measureText(desc).width;
+        var h = 30;
+        ctx.rect(mouse.x - w/2, mouse.y - h*2/3, w, h);
+        ctx.fillStyle = "white";
+        ctx.fill();
+
+        ctx.fillStyle = "black";
+        ctx.globalAlpha = .8;
+        
+        ctx.fillText(desc, mouse.x, mouse.y);
+        
+        canvas.style.left = "0px";//mouse.x + "px";
+        canvas.style.top  = "0px";//mouse.y + "px";
+        canvas.style.position = "absolute";
+
+        document.body.appendChild(canvas);
+
+        canvas.addEventListener('mousedown', function() {
+            var oldcanv = document.getElementById('canvasID');
+            console.log(oldcanv);
+            oldcanv.parentNode.removeChild(oldcanv);
+        }, false);
+    }
+  
+};
+
 
 /*
 KML_Provider.prototype.loadKMZ = function(longitude, latitude) {

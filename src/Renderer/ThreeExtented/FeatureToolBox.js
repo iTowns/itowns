@@ -542,20 +542,25 @@ function mix(x,y,a){
     return x* (1-a) + y*a;
 };
 
-// tab is array of polygon points. p is current frag point
-FeatureToolBox.prototype.collision = function(arrPoints, p){
+FeatureToolBox.prototype.intersectsegment = function( a, b, i, p){
 
-    var k = new THREE.Vector2(10.,50.);
-    var nbintersections = 0;
-    for(var i=0; i < arrPoints.length -1; i++){
-
-       var a = arrPoints[i];//.xy;
-       var b = arrPoints[i+1];//.xy;
-       var iseg = intersectsegment(a,b,k,p); 
-       nbintersections += iseg;
-    }
-    return ((nbintersections % 2) == 0); //mod(float(nbintersections),2.) == 0.;
-}
+   var d = new THREE.Vector2(); 
+   var e = new THREE.Vector2();
+   d.x = b.x - a.x;
+   d.y = b.y - a.y;
+   e.x = p.x - i.x;
+   e.y = p.y - i.y;
+   var denom = d.x*e.y - d.y*e.x;
+   if (denom == 0.)
+       return -1;   // erreur, cas limite
+   var t = - (a.x*e.y-i.x*e.y-e.x*a.y+e.x*i.y) / denom;
+   if (t < 0. || t >= 1.)
+      return 0;
+   var u = - (-d.x*a.y+d.x*i.y+d.y*a.x-d.y*i.x) / denom;
+   if (u < 0. || u >= 1.)
+      return 0;
+   return 1;
+};
 
 /*
  * Function that test if a point p is inside a polygon 
@@ -564,18 +569,43 @@ FeatureToolBox.prototype.collision = function(arrPoints, p){
  */
 FeatureToolBox.prototype.inPolygon = function(p, arrPoints){
     
-    var k = new THREE.Vector2(10.,50.);
+    var k = new THREE.Vector2(6.,46.); 
     var nbintersections = 0;
     for(var i=0; i < arrPoints.length -1; i++){
 
-       var a = arrPoints[i];//.xy;
+       var a = arrPoints[i]; 
        var b = arrPoints[i+1];//.xy;
-       var iseg = intersectsegment(a,b,k,p); 
+       var iseg = this.intersectsegment(a,b,k,p); 
        nbintersections += iseg;
     }
-    return ((nbintersections % 2) === 0); //mod(float(nbintersections),2.) == 0.;
+    return ((nbintersections % 2) === 1); 
+};
+
+/**
+ * 
+ * display feature attribute information at position p (lonlat)
+ */
+FeatureToolBox.prototype.showFeatureAttributesAtPos = function(p){
     
+    var intersect = false;
+    var desc = "";
+    var i=0;
+    while(!intersect && i< this.arrPolygons.length){
+        intersect = this.inPolygon(p, this.arrPolygons[i].polygon);
+        i++;
+    }
+    
+    i--;
+    if(intersect && this.arrPolygons[i].properties.description !== undefined){
+        desc = this.arrPolygons[i].properties.description;
+    }
+   
+    if(!intersect) desc = "noIntersect";
+    
+    return desc;
+
 }
+
 
 /*
  * coordOrigin of tile in wgs84
@@ -615,24 +645,6 @@ FeatureToolBox.prototype.drawLinesSAVE = function(coordOrigin, tileWH, arrPoints
     return Math.min(feat,1.);
 }
 
-FeatureToolBox.prototype.intersectsegment = function( a, b, i, p){
-
-   var d,e; 
-   d.x = b.x - a.x;
-   d.y = b.y - a.y;
-   e.x = p.x - i.x;
-   e.y = p.y - i.y;
-   var denom = d.x*e.y - d.y*e.x;
-   if (denom == 0.)
-       return -1;   // erreur, cas limite
-   var t = - (a.x*e.y-i.x*e.y-e.x*a.y+e.x*i.y) / denom;
-   if (t < 0. || t >= 1.)
-      return 0;
-   var u = - (-d.x*a.y+d.x*i.y+d.y*a.x-d.y*i.x) / denom;
-   if (u < 0. || u >= 1.)
-      return 0;
-   return 1;
-};
 
 FeatureToolBox.prototype.drawLine = function(coordOrigin, tileWH, p1, p2, thickness, ctx, prop) {
     
