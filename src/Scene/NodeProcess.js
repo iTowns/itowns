@@ -13,6 +13,8 @@ import RendererConstant from 'Renderer/RendererConstant';
 import {chooseNextLevelToFetch} from 'Scene/LayerUpdateStrategy';
 import {l_ELEVATION, l_COLOR} from 'Globe/TileMesh';
 
+export const SSE_SUBDIVISION_THRESHOLD = 6.0;
+
 function NodeProcess(camera, ellipsoid, bbox) {
     //Constructor
 
@@ -71,7 +73,7 @@ NodeProcess.prototype.frustumCulling = function(node, camera) {
 };
 
 NodeProcess.prototype.checkNodeSSE = function(node) {
-    return 6.0 < node.sse || node.level <= 2;
+    return SSE_SUBDIVISION_THRESHOLD < node.sse || node.level <= 2;
 };
 
 NodeProcess.prototype.subdivideNode = function(node, camera, params) {
