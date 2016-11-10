@@ -1,0 +1,10 @@
+{
+    "protocol":   "wmtsc",
+    "id":         "OPENSM",
+    "fx" :2.5,
+    "customUrl":  "http://b.tile.openstreetmap.fr/osmfr/%TILEMATRIX/%COL/%ROW.png",
+    "options": {
+		"tileMatrixSet": "PM",
+		"mimetype": "image/png"
+	}
+}

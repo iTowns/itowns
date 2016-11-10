@@ -34,7 +34,7 @@ git clone $REPO --single-branch --branch $TARGET_BRANCH out
 
 pushd out
 # Remove everything then recreate the content, to avoid keeping stale files
-git rm -rf dist index.html API_Doc
+git rm -rf dist index.html API_Doc examples
 popd
 # Copy build results
 cp -R dist out/
@@ -42,8 +42,12 @@ cp -R dist out/
 npm run doc -- -d out/API_Doc
 # Copy demo
 cp index.html out/
+# Copy examples
+cp -R examples out/
 # Copy the decoded deploy key (decoding made with openssl command in .travis.yml)
 cp deploy_key out/
+# Deleting the JS files in examples/layers
+#git rm -f examples/layers/\ *.js
 
 # Now let's go have some fun with the cloned repo
 cd out
@@ -51,7 +55,7 @@ git config user.name "$COMMIT_AUTHOR_NAME"
 git config user.email "$COMMIT_AUTHOR_EMAIL"
 
 # Commit the "changes", i.e. the new version.
-git add dist index.html API_Doc
+git add dist index.html API_Doc examples
 git commit -m "Deploy to GitHub Pages: ${SHA}"
 
 chmod 600 deploy_key
