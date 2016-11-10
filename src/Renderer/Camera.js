@@ -116,19 +116,25 @@ Camera.prototype.resize = function(width, height) {
         this.arrowHelper.setDirection(dir);
         this.cameraHelper.update();
     }
-
 };
 
 Camera.prototype.computeNodeSSE = function(node) {
 
     var boundingSphere = node.geometry.boundingSphere;
     var distance = Math.max(0.0, (this.camera3D.position.distanceTo(node.centerSphere) - boundingSphere.radius));
+
+    // Removed because is false computation, it doesn't consider the altitude of node
     // Added small oblique weight (distance is not enough, tile orientation is needed)
+    /*
     var altiW = node.bbox.top() === 10000 ? 0. : node.bbox.bottom() / 10000.;
     var dotProductW = Math.min(altiW + Math.abs(this.camera3D.getWorldDirection().dot(node.centerSphere.clone().normalize())), 1.);
     if (this.camera3D.position.length() > 6463300) dotProductW = 1;
     var SSE = Math.sqrt(dotProductW) * this.preSSE * (node.geometricError / distance);
-    //var SSE = this.preSSE * (node.geometricError / distance);
+    */
+
+    // TODO: node.geometricError is computed using a hardcoded 18 level
+    // The computation of node.geometricError is surely false
+    var SSE = this.preSSE * (node.geometricError / distance);
 
     return SSE;
 
