@@ -76,7 +76,7 @@ WMS_Provider.prototype.preprocessDataLayer = function(layer){
     layer.crs = defaultValue(layer.projection, "EPSG:4326"),
     layer.width = defaultValue(layer.heightMapWidth, 256),
     layer.version = defaultValue(layer.version, "1.3.0"),
-    layer.styleName = defaultValue(layer.style, "normal"),
+    layer.style = defaultValue(layer.style, "normal"),
     layer.transparent = defaultValue(layer.transparent, false),
     layer.bbox = defaultValue(layer.bbox,new BoundingBox());
 

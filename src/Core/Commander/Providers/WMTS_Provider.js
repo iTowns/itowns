@@ -74,6 +74,11 @@ WMTS_Provider.prototype.preprocessDataLayer = function(layer) {
     } else {
 
         var options = layer.options;
+        options.version = options.version || "1.0.0";
+        options.tileMatrixSet = options.tileMatrixSet || "WGS84";
+        options.mimetype = options.mimetype || "image/png";
+        options.style = options.style || "normal";
+        options.projection = options.projection || "EPSG:3857";
         var newBaseUrl = layer.url +
             "?LAYER=" + options.name +
             "&FORMAT=" + options.mimetype +
