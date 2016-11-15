@@ -17,9 +17,6 @@
 import c3DEngine from 'Renderer/c3DEngine';
 import Globe from 'Globe/Globe';
 import ManagerCommands from 'Core/Commander/ManagerCommands';
-import BrowseTree from 'Scene/BrowseTree';
-import NodeProcess from 'Scene/NodeProcess';
-import Quadtree from 'Scene/Quadtree';
 import CoordStars from 'Core/Geographic/CoordStars';
 import defaultValue from 'Core/defaultValue';
 import Layer from 'Scene/Layer';
@@ -43,7 +40,8 @@ function Scene(coordinate, ellipsoid, viewerDiv, debugMode, gLDebug) {
 
     var positionCamera = this.ellipsoid.cartographicToCartesian(coordinate);
 
-    this.layers = [];
+    this.updaters = [];
+
     this.map = null;
 
     this.cameras = null;
@@ -55,7 +53,6 @@ function Scene(coordinate, ellipsoid, viewerDiv, debugMode, gLDebug) {
 
     this.gLDebug = gLDebug;
     this.gfxEngine = c3DEngine(this, positionCamera, viewerDiv, debugMode, gLDebug);
-    this.browserScene = new BrowseTree(this.gfxEngine);
     this.cap = new Capabilities();
 
     this.needsRedraw = false;
@@ -150,19 +147,14 @@ Scene.prototype.scheduleUpdate = function () {
 };
 
 Scene.prototype.update = function () {
-    for (var l = 0; l < this.layers.length; l++) {
-        var layer = this.layers[l].node;
-
-        for (var sl = 0; sl < layer.children.length; sl++) {
-            var sLayer = layer.children[sl];
-
-            if (sLayer instanceof Quadtree) {
-                this.browserScene.updateQuadtree(this.layers[l], this.map.layersConfiguration, this.currentCamera());
-            } else if (sLayer instanceof MobileMappingLayer) {
-                this.browserScene.updateMobileMappingLayer(sLayer, this.currentCamera());
-            } else if (sLayer instanceof Layer) {
-                this.browserScene.updateLayer(sLayer, this.currentCamera());
-            }
+    const params = { cam: this.currentCamera() };
+    for (var l = 0; l < this.updaters.length; l++) {
+        var updater = this.updaters[l];
+        params.layer = updater.node;
+        params.layersConfig = updater.node.layersConfiguration;
+        // Is implemented for Globe, Quadtree, Layer and MobileMappingLayer.
+        if (updater.update) {
+            updater.update(params);
         }
     }
 };
@@ -215,18 +207,13 @@ Scene.prototype.scene3D = function () {
  *
  * @param node {[object Object]}
  */
-Scene.prototype.add = function (node, nodeProcess) {
-    if (node instanceof Globe) {
-        this.map = node;
-        nodeProcess = nodeProcess || new NodeProcess(this.currentCamera(), node.ellipsoid);
+Scene.prototype.add = function (updater) {
+    if (updater.node instanceof Globe) {
+        this.map = updater.node;
         // this.quadTreeRequest(node.tiles, nodeProcess);
     }
-
-    this.layers.push({
-        node,
-        process: nodeProcess,
-    });
-    this.gfxEngine.add3DScene(node.getMesh());
+    this.updaters.push(updater);
+    this.gfxEngine.add3DScene(updater.node.getMesh());
 };
 
 Scene.prototype.getMap = function () {
@@ -253,14 +240,23 @@ Scene.prototype.select = function (/* layers*/) {
 };
 
 Scene.prototype.selectNodeId = function (id) {
-    this.browserScene.selectedNodeId = id;
+    for (var i = 0; i < this.updaters.length; i++) {
+        var updater = this.updaters[i];
+        if (updater.setNodeToSelect) {
+            var params = {
+                layer: updater.node,
+                id,
+            };
+            updater.setNodeToSelect(params);
+        }
+    }
 };
 
 Scene.prototype.setStreetLevelImageryOn = function (value) {
     if (value) {
-        if (this.layers[1]) {
-            this.layers[1].node.visible = true;
-            this.layers[1].node.children[0].visible = true;
+        if (this.updaters[1]) {
+            this.updaters[1].node.visible = true;
+            this.updaters[1].node.children[0].visible = true;
         } else {
             var mobileMappingLayer = new MobileMappingLayer();
             mobileMappingLayer.initiatePanoramic();
@@ -270,11 +266,23 @@ Scene.prototype.setStreetLevelImageryOn = function (value) {
             this.add(immersive);
         }
     } else {
-        this.layers[1].node.visible = false;
-        this.layers[1].node.children[0].visible = false; // mobileMappingLayer
+        this.updaters[1].node.visible = false;
+        this.updaters[1].node.children[0].visible = false; // mobileMappingLayer
     }
 
     this.updateScene3D();
+};
+
+Scene.prototype.updateMaterial = function (params) {
+    for (var i = 0; i < this.updaters.length; i++) {
+        var updater = this.updaters[i];
+        if (updater.updateMaterial) {
+            params.layer = updater.node;
+            updater.updateMaterial(params);
+        }
+        if (updater.node.updateLightingPos)
+            { updater.node.updateLightingPos(this.lightingPos); }
+    }
 };
 
 Scene.prototype.setLightingPos = function (pos) {
@@ -287,8 +295,7 @@ Scene.prototype.setLightingPos = function (pos) {
 
     defaultValue.lightingPos = this.lightingPos;
 
-    this.browserScene.updateMaterialUniform('lightPosition', this.lightingPos.clone().normalize());
-    this.layers[0].node.updateLightingPos(this.lightingPos);
+    this.updateMaterial({ uniformName: 'lightPosition', value: this.lightingPos.clone().normalize() });
 };
 
 // Should be moved in time module: A single loop update registered object every n millisec
@@ -300,8 +307,7 @@ Scene.prototype.animateTime = function (value) {
             var nMilliSeconds = this.time;
             var coSun = CoordStars.getSunPositionInScene(this.getEllipsoid(), new Date().getTime() + 3.6 * nMilliSeconds, 0, 0);
             this.lightingPos = coSun;
-            this.browserScene.updateMaterialUniform('lightPosition', this.lightingPos.clone().normalize());
-            this.layers[0].node.updateLightingPos(this.lightingPos);
+            this.updateMaterial({ uniformName: 'lightPosition', value: this.lightingPos.clone().normalize() });
             if (this.orbitOn) { // ISS orbit is 0.0667 degree per second -> every 60th of sec: 0.00111;
                 var p = this.gfxEngine.camera.camera3D.position;
                 var r = Math.sqrt(p.z * p.z + p.x * p.x);
