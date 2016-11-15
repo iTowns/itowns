@@ -6,7 +6,8 @@
   "scripts": {
     "lint": "eslint \"src/**/*.js\" \"test/**/*.js\"",
     "doc": "jsdoc src/Core/Commander/Interfaces/ApiInterface/*",
-    "test": "npm run lint && npm run build",
+    "doclint": "npm run doc -- -t templates/silent",
+    "test": "npm run lint && npm run build && npm run doclint",
     "build": "webpack -p",
     "start": "webpack-dev-server -d --inline --hot"
   },
@@ -40,7 +41,7 @@
     "babel-preset-es2015": "^6.9.0",
     "eslint": "^2.5.3",
     "eslint-loader": "^1.3.0",
-    "jsdoc": "^3.4.0",
+    "jsdoc": "^3.4.3",
     "raw-loader": "^0.5.1",
     "webpack": "^1.12.12",
     "webpack-dev-server": "^1.14.1"
