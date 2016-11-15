@@ -24,6 +24,7 @@ function Node() {
     this.pendingLayers = {};
     this.visible = true;
     this.layer = null;
+    this.maxChildrenNumber = 4;
 
 
 }
@@ -55,10 +56,8 @@ Node.prototype.noChild = function() {
 };
 
 Node.prototype.childrenLoaded = function() {
-    // TODO: '4' is specific to Quadtree
-    var fourChildren = this.children.length == 4;
 
-    if (!fourChildren) {
+    if (this.children.length !== this.maxChildrenNumber) {
         return false;
     }
 
