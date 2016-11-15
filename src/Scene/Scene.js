@@ -15,7 +15,6 @@
  * @returns {Function}
  */
 import c3DEngine from 'Renderer/c3DEngine';
-import Globe from 'Globe/Globe';
 import ManagerCommands from 'Core/Commander/ManagerCommands';
 import CoordStars from 'Core/Geographic/CoordStars';
 import defaultValue from 'Core/defaultValue';
@@ -208,12 +207,13 @@ Scene.prototype.scene3D = function () {
  * @param node {[object Object]}
  */
 Scene.prototype.add = function (updater) {
-    if (updater.node instanceof Globe) {
-        this.map = updater.node;
-        // this.quadTreeRequest(node.tiles, nodeProcess);
-    }
     this.updaters.push(updater);
     this.gfxEngine.add3DScene(updater.node.getMesh());
+};
+
+Scene.prototype.setMap = function (updater) {
+    this.map = updater.node;
+    this.add(updater);
 };
 
 Scene.prototype.getMap = function () {

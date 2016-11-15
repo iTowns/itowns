@@ -350,7 +350,7 @@ ApiGlobe.prototype.createSceneGlobe = function (coordCarto, viewerDiv) {
     var nodeProcess = new NodeProcess(this.scene.currentCamera(), map.ellipsoid);
     var updater = new UpdaterGlobe({ node: map, process: nodeProcess, scene: this.scene });
 
-    this.scene.add(updater);
+    this.scene.setMap(updater);
 
     // Register all providers
     var wmtsProvider = new WMTS_Provider({
