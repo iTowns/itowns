@@ -113,6 +113,7 @@ ApiGlobe.prototype.addImageryLayer = function(layer) {
  * This function adds an imagery layer to the scene using a JSON file. The layer id must be unique. The protocol rules wich parameters are then needed for the function.
  * @constructor
  * @param {Layer} layer.
+ * @return     {layer}  The Layer.
  */
 
 ApiGlobe.prototype.addImageryLayerFromJSON = function(url) {
@@ -124,7 +125,8 @@ ApiGlobe.prototype.addImageryLayerFromJSON = function(url) {
 /**
  * This function adds an imagery layer to the scene using an array of JSON files. The layer id must be unique. The protocol rules wich parameters are then needed for the function.
  * @constructor
- * @param {Layerss} array - An array of JSON files.
+ * @param {Layers} array - An array of JSON files.
+ * @return     {layer}  The Layers.
  */
 
 ApiGlobe.prototype.addImageryLayersFromJSONArray = function (urls) {
@@ -160,7 +162,7 @@ ApiGlobe.prototype.moveLayerDown = function(layerId) {
 
 /**
  * Moves a specific layer to a specific index in the layer list. This function has no effect if the layer is moved to its current index.
- *
+ * @constructor
  * @param      {string}  layerId   The layer's idendifiant
  * @param      {number}  newIndex   The new index
  */
@@ -175,7 +177,7 @@ ApiGlobe.prototype.moveLayerToIndex = function(layerId, newIndex) {
 
 /**
  * Removes a specific imagery layer from the current layer list. This removes layers inserted with addLayer().
- *
+ * @constructor
  * @param      {string}   id      The identifier
  * @return     {boolean}  { description_of_the_return_value }
  */
@@ -219,6 +221,7 @@ ApiGlobe.prototype.addElevationLayer = function(layer) {
  * The protocol rules which parameters are then needed for the function.
  * @constructor
  * @param {Layers} array - An array of JSON files.
+* @return     {layer}  The Layers.
  */
 
 ApiGlobe.prototype.addElevationLayersFromJSON = function(url) {
@@ -236,6 +239,7 @@ ApiGlobe.prototype.addElevationLayersFromJSON = function(url) {
  * The protocol rules which parameters are then needed for the function.
  * @constructor
  * @param {Layer} layer.
+ * @return     {layer}  The Layers.
  */
 
 ApiGlobe.prototype.addElevationLayersFromJSONArray = function (urls) {
@@ -259,6 +263,7 @@ ApiGlobe.prototype.addElevationLayersFromJSONArray = function (urls) {
  * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/66r8ugq0/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
  * @constructor
  * @param {index} index - The index of the layer.
+ * @return     {number}  The min of the level.
  */
 ApiGlobe.prototype.getMinZoomLevel = function(index) {
     var layer = this.getImageryLayers()[index];
@@ -281,6 +286,7 @@ ApiGlobe.prototype.getMinZoomLevel = function(index) {
  * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/y1xcqv4s/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
  * @constructor
  * @param {index} index - The index of the layer.
+ * @return     {number}  The max of the level.
  */
 ApiGlobe.prototype.getMaxZoomLevel = function(index) {
     var layer = this.getImageryLayers()[index];
@@ -300,6 +306,8 @@ ApiGlobe.prototype.getMaxZoomLevel = function(index) {
 
 /**
  * Return the list of all layers in the scene in the order of how they are stacked on top of each other.
+ * @constructor
+ * @return     {layer}  The Layers.
  */
 ApiGlobe.prototype.getImageryLayers = function() {
     var map = this.scene.getMap();
@@ -466,6 +474,7 @@ ApiGlobe.prototype.getCameraOrientation = function() {
  * Returns the camera location projected on the ground in lat,lon.
  * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/mjv7ha02/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
  * @constructor
+ * @return {Position} position
  */
 
 ApiGlobe.prototype.getCameraLocation = function() {
@@ -629,6 +638,7 @@ ApiGlobe.prototype.resetHeading = function( /*bool*/ ) {
  * @constructor
  * @param {Position} First - Position.
  * @param {Position} Second - Position.
+ * @return {Number} distance
  */
 
 ApiGlobe.prototype.computeDistance = function(p1, p2) {
@@ -689,8 +699,8 @@ ApiGlobe.prototype.setRange = function(pRange /*, bool anim*/) {
 /**
  * Displaces the central point to a specific amount of pixels from its current position.
  * The view flies to the desired coordinate, i.e.is not teleported instantly. Note : The results can be strange in some cases, if ever possible, when e.g.the camera looks horizontally or if the displaced center would not pick the ground once displaced.
- *
- * @param      {<type>}  pVector  The vector
+ * @constructor
+ * @param      {vector}  pVector  The vector
  */
 ApiGlobe.prototype.pan = function(pVector) {
     this.scene.currentControls().pan(pVector.x,pVector.y);
@@ -698,8 +708,8 @@ ApiGlobe.prototype.pan = function(pVector) {
 
 /**
  * Returns the actual zoom level. The level will always be between the [getMinZoomLevel(), getMaxZoomLevel()].
- *
- * @return     {<type>}  The zoom level.
+ * @constructor
+ * @return     {number}  The zoom level.
  */
 ApiGlobe.prototype.getZoomLevel = function() {
     return this.scene.getMap().getZoomLevel();
@@ -709,7 +719,7 @@ ApiGlobe.prototype.getZoomLevel = function() {
  * Gets the current zoom level, which is an index in the logical scales predefined for the application.
  * The higher the level, the closer to the ground.
  * The level is always in the [getMinZoomLevel(), getMaxZoomLevel()] range.
- *
+ * @constructor
  * @param      {number}  zoom    The zoom
  */
 ApiGlobe.prototype.setZoomLevel = function(zoom) {
@@ -722,6 +732,7 @@ ApiGlobe.prototype.setZoomLevel = function(zoom) {
 /**
  * Return the current zoom scale at the central point of the view.
  * This function compute the scale of a map
+ * @constructor
  * @param      {number}  pitch   Screen pitch, in millimeters ; 0.28 by default
  * @return     {number}  The zoom scale.
  */
@@ -777,7 +788,7 @@ ApiGlobe.prototype.getZoomScale = function(pitch) {
 /**
  * Changes the zoom level of the central point of screen so that screen acts as a map with a specified scale.
  *  The view flies to the desired zoom scale;
- *
+ * @constructor
  * @param      {number}  zoomScale  The zoom scale
  * @param      {number}  pitch      The pitch
  */
