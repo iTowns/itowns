@@ -100,10 +100,13 @@ BrowseTree.prototype.browse = function(tree, camera, process, layersConfig) {
  */
 BrowseTree.prototype._browseDisplayableNode = function(node, camera, process, params) {
     if (node.parent.isVisible() && process.processNode(node, camera, params)) {
-        if (node.isDisplayed()) {
+        if (!node.additiveRefinement && node.isDisplayed()) {
             this.uniformsProcess(node, camera);
             applyFunctionToChildren(n => this._browseNonDisplayableNode(n, node.level + 2, process, camera, params), node);
         } else {
+            if(node.additiveRefinement) {
+                this.uniformsProcess(node, camera);
+            }
             applyFunctionToChildren(n => this._browseDisplayableNode(n, camera, process, params), node);
         }
     } else {

@@ -77,24 +77,22 @@ ThreeDTilesNodeProcess.prototype.subdivideNode = function(node, camera, params) 
         node.pendingSubdivision = true;
 
         for (var i = 0; i < bboxes.length; i++) {
-            var args = {
-                layer: params.layersConfig.getGeometryLayers()[0],
-                bbox: bboxes[i]
-            };
-            var quadtree = params.tree;
+            var bvh = params.tree;
 
-            quadtree.interCommand.request(args, node).then(function(child) {
+            bvh.requestNewTile(params.layersConfig, bboxes[i], node);   // TODO: .then?
+
+            /*bvh.interCommand.request(args, node).then(function(child) {
                 // TODO: set node geometry
 
                 return 0;
-            }.bind(this));
+            }.bind(this));*/
         }
     }
 };
 
 
 // TODO: is this required?
-function refinementCommandCancellationFn(cmd) {
+/*function refinementCommandCancellationFn(cmd) {
     if (!cmd.requester.parent || !cmd.requester.material) {
         return true;
     }
@@ -108,7 +106,7 @@ function refinementCommandCancellationFn(cmd) {
     return cmd.requester.parent.childrenLoaded() &&
         cmd.requester.visible === false &&
         2 <= cmd.requester.level;
-}
+}*/
 
 ThreeDTilesNodeProcess.prototype.hideNodeChildren = function(node) {
     for (var i = 0; i < node.children.length; i++) {
@@ -126,13 +124,15 @@ ThreeDTilesNodeProcess.prototype.processNode = function(node, camera, params) {
     node.setSelected(false);
 
     node.setVisibility(isVisible);
+    //console.log(node.id);
 
     if (isVisible) {
         // update node's sse value
         node.sse = camera.computeNodeSSE(node);
+        //console.log("id: " + node.id + " sse: " + node.sse);
 
         let sse = this.checkNodeSSE(node);
-        let hidden = sse && node.childrenLoaded();
+        let hidden = !node.additiveRefinement && sse && node.childrenLoaded();
 
         if (sse && params.tree.canSubdivideNode(node)) {
             // big screen space error: subdivide node, display children if possible
@@ -241,5 +241,8 @@ ThreeDTilesNodeProcess.prototype.horizonCulling = function(node) {
     return isVisible;
 };
 
+ThreeDTilesNodeProcess.prototype.refineNodeLayers = function(/*node, camera, params*/) {
+
+};
 
 export default ThreeDTilesNodeProcess;

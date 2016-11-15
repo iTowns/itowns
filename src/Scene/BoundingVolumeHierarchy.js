@@ -28,6 +28,7 @@ function BoundingVolumeHierarchy(type, lvl0Tiles, tileDictionary, link) {
     this.lvl0Tiles = lvl0Tiles;
     var rootNode = new NodeMesh();
     rootNode.childrenBboxes = lvl0Tiles;
+    rootNode.maxChildrenNumber = lvl0Tiles.length;
 
     rootNode.frustumCulled = false;
     rootNode.material.visible = false;
@@ -57,9 +58,7 @@ BoundingVolumeHierarchy.prototype.init = function(geometryLayer) {
 BoundingVolumeHierarchy.prototype.requestNewTile = function(geometryLayer, bbox, parent) {
     var params = {
         layer: geometryLayer,
-        bbox: bbox.bbox,
-        bboxId: bbox.id,
-        urlSuffix: bbox.content.url
+        metadata: bbox
     };
 
     this.interCommand.request(params, parent);
@@ -67,7 +66,9 @@ BoundingVolumeHierarchy.prototype.requestNewTile = function(geometryLayer, bbox,
 };
 
 BoundingVolumeHierarchy.prototype.canSubdivideNode = function(node) {
-    return this.tileDictionary[node.id].length !== 0;
+    return node.url in this.tileDictionary
+        && this.tileDictionary[node.url].children
+        && this.tileDictionary[node.url].children.length !== 0;
 };
 
 /**
@@ -80,7 +81,7 @@ BoundingVolumeHierarchy.prototype.subdivideNode = function(node) {
         return [];
     }
 
-    return this.tileDictionary[node.id];
+    return this.tileDictionary[node.url].children;
 };
 
 BoundingVolumeHierarchy.prototype.traverse = function(foo,node)
