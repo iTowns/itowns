@@ -75,14 +75,14 @@ WMS_Provider.prototype.preprocessDataLayer = function(layer){
     layer.crs = layer.projection || "EPSG:4326";
     layer.width = layer.heightMapWidth || 256;
     layer.version = layer.version || "1.3.0";
-    layer.style = layer.style || "normal";
+    layer.style = layer.style || "";
     layer.transparent = layer.transparent || false;
     layer.bbox = layer.bbox || new BoundingBox();
 
     layer.customUrl = layer.url +
                   '?SERVICE=WMS&REQUEST=GetMap&LAYERS=' + layer.name +
                   '&VERSION=' + layer.version +
-                  '&STYLES=' + layer.styleName +
+                  '&STYLES=' + layer.style +
                   '&FORMAT=' + layer.format +
                   '&TRANSPARENT=' + layer.transparent +
                   '&BBOX=%bbox'  +
