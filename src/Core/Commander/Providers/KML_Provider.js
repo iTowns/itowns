@@ -6,7 +6,7 @@
 /* global Promise*/
 
 import Provider from 'Core/Commander/Providers/Provider';
-import IoDriverXML from 'Core/Commander/Providers/IoDriverXML';
+import Fetcher from 'Core/Commander/Providers/Fetcher';
 import * as THREE from 'three';
 import KMZLoader from 'Renderer/ThreeExtented/KMZLoader';
 import BasicMaterial from 'Renderer/BasicMaterial';
@@ -15,7 +15,6 @@ import BasicMaterial from 'Renderer/BasicMaterial';
 function KML_Provider(ellipsoid) {
     // Constructor
     this.ellipsoid = ellipsoid;
-    this.ioDriverXML = new IoDriverXML();
     this.kmzLoader = new KMZLoader();
     this.cache = new Map();
 }
@@ -78,7 +77,7 @@ KML_Provider.prototype.parseKML = function (urlFile, longitude, latitude) {
     var west = longitude;
     var key = 'va5orxd0pgzvq3jxutqfuy0b';
     var url = `http://wxs.ign.fr/${key}/vecteurtuile3d/BATI3D/` + 'FXX/';
-    return this.ioDriverXML.read(urlFile).then((result) => {
+    return Fetcher.xml(urlFile).then((result) => {
         var NetworkLink = [];
         NetworkLink = result.getElementsByTagName('NetworkLink');
 
@@ -116,7 +115,7 @@ KML_Provider.prototype.parseKML = function (urlFile, longitude, latitude) {
 
 
 KML_Provider.prototype.getUrlCollada = function (longitude, latitude) {
-    return this.ioDriverXML.read('http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/vecteurtuile3d/BATI3D/BU.Building.kml').then((/* result_0*/) => {
+    return Fetcher.xml('http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/vecteurtuile3d/BATI3D/BU.Building.kml').then((/* result_0*/) => {
         // get href's node value
         // var kml_0 = result_0.getElementsByTagName("href");
         var url_href_1;
@@ -133,7 +132,7 @@ export default KML_Provider;
 //                if (url_href_1[i] === 'http://wxs.ign.fr/' + key + '/vecteurtuile3d/BATI3D/FXX/TREE/0/0_000_000.kml'){
 //                    //this.ParseKML(url_href_1[i]);
 //                    //console.log("wesh");
-//                    this.ioDriverXML.read(url_href_1[i]).then(function(result_1)
+//                    Fetcher.xml(url_href_1[i]).then(function(result_1)
 //                    {
 //                        var kml_1 = [];
 //                        kml_1 = result_1.getElementsByTagName("href");
@@ -163,7 +162,7 @@ export default KML_Provider;
 //                            if (north < coords_2[j,1] && south > coords_2[j,2]  && east < coords_2[j,3] && west > coords_2[j,4]){
 //                                //this.ParseKML(url_href_2[j]);
 //
-//                                this.ioDriverXML.read(url_href_2[j]).then(function(result_2){
+//                                Fetcher.xml(url_href_2[j]).then(function(result_2){
 //
 //                                    var kml_2 = [];
 //                                    kml_2 = result_2.getElementsByTagName("href");
@@ -182,7 +181,7 @@ export default KML_Provider;
 //                                        //Next Level : Get the next KML actual position's coords
 //                                        if (north < coords_3[k,1] && south > coords_3[k,2]  && east < coords_3[k,3] && west > coords_3[k,4]){
 //
-//                                            this.ioDriverXML.read(url_href_3[k]).then(function(result_3){
+//                                            Fetcher.xml(url_href_3[k]).then(function(result_3){
 //
 //                                                var kml_3 = [];
 //                                                kml_3 = result_3.getElementsByTagName("href");
@@ -201,7 +200,7 @@ export default KML_Provider;
 //                                                    //Next Level : Get the KMZ actual position's coords
 //                                                    if (north < coords_4[l,1] && south > coords_4[l,2]  && east < coords_4[l,3] && west > coords_4[l,4]){
 //
-//                                                        this.ioDriverXML.read(url_href_4[l]).then(function(result_4){
+//                                                        Fetcher.xml(url_href_4[l]).then(function(result_4){
 //
 //                                                            var kml_4 = [];
 //                                                            kml_4 = result_4.getElementsByTagName("href");
@@ -212,9 +211,9 @@ export default KML_Provider;
 //                                                                url_href_kmz[m] = 'http://wxs.ign.fr/' + key + '/vecteurtuile3d/BATI3D/' + 'FXX/' + kml_4[m].childNodes[0].nodeValue.replace("../../", "");
 //                                                                //console.log(url_href_kmz[m]);
 //
-//                                                                /*this.ioDriverXML = new IoDriverXML();
+//                                                                /*
 //                                                                var KMZLoader = new THREE.KMZLoader();
-//                                                                this.ioDriverXML.read(KMZLoader.load(url_href_kmz[m])).then(function(result_5){
+//                                                                Fetcher.xml(KMZLoader.load(url_href_kmz[m])).then(function(result_5){
 //                                                                    console.log(result_5);
 //                                                                });*/
 //
@@ -266,8 +265,7 @@ export default KML_Provider;
  //If Guadeloupe
                 if (url_href_1[i] === 'http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/vecteurtuile3d/BATI3D/GLP/TREE/0/0_00_00.kml'){
 
-                    this.ioDriverXML = new IoDriverXML();
-                    this.ioDriverXML.read(url_href_1[i]).then(function(result_1)
+                    Fetcher.xml(url_href_1[i]).then(function(result_1)
                     {
 
                         var kml_1 = [];
@@ -296,8 +294,7 @@ export default KML_Provider;
 
                             //Next level : Get the next KML actual position's coords
                             if (north < coords_2[j,1] && south > coords_2[j,2]  && east < coords_2[j,3] && west > coords_2[j,4]){
-                                this.ioDriverXML = new IoDriverXML();
-                                this.ioDriverXML.read(url_href_2[j]).then(function(result_2){
+                                Fetcher.xml(url_href_2[j]).then(function(result_2){
 
                                     var kml_2 = [];
                                     kml_2 = result_2.getElementsByTagName("href");
@@ -315,8 +312,7 @@ export default KML_Provider;
 
                                         //Next Level : Get the next KML actual position's coords
                                         if (north < coords_3[k,1] && south > coords_3[k,2]  && east < coords_3[k,3] && west > coords_3[k,4]){
-                                            this.ioDriverXML_3 = new IoDriverXML();
-                                            this.ioDriverXML_3.read(url_href_3[k]).then(function(result_3){
+                                            Fetcher.xml(url_href_3[k]).then(function(result_3){
 
                                                 var kml_3 = [];
                                                 kml_3 = result_3.getElementsByTagName("href");
@@ -350,8 +346,7 @@ export default KML_Provider;
                 //If Guyane
                 if (url_href_1[i] === 'http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/vecteurtuile3d/BATI3D/GUF/TREE/0/0_00_00.kml'){
 
-                    this.ioDriverXML = new IoDriverXML();
-                    this.ioDriverXML.read(url_href_1[i]).then(function(result_1)
+                    Fetcher.xml(url_href_1[i]).then(function(result_1)
                     {
 
                         var kml_1 = [];
@@ -380,8 +375,7 @@ export default KML_Provider;
 
                             //Next level : Get the next KML actual position's coords
                             if (north < coords_2[j,1] && south > coords_2[j,2]  && east < coords_2[j,3] && west > coords_2[j,4]){
-                                this.ioDriverXML = new IoDriverXML();
-                                this.ioDriverXML.read(url_href_2[j]).then(function(result_2){
+                                Fetcher.xml(url_href_2[j]).then(function(result_2){
 
                                     var kml_2 = [];
                                     kml_2 = result_2.getElementsByTagName("href");
@@ -399,8 +393,7 @@ export default KML_Provider;
 
                                         //Next Level : Get the next KML actual position's coords
                                         if (north < coords_3[k,1] && south > coords_3[k,2]  && east < coords_3[k,3] && west > coords_3[k,4]){
-                                            this.ioDriverXML_3 = new IoDriverXML();
-                                            this.ioDriverXML_3.read(url_href_3[k]).then(function(result_3){
+                                            Fetcher.xml(url_href_3[k]).then(function(result_3){
 
                                                 var kml_3 = [];
                                                 kml_3 = result_3.getElementsByTagName("href");
@@ -434,8 +427,7 @@ export default KML_Provider;
                 //If Martinique
                 if (url_href_1[i] === 'http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/vecteurtuile3d/BATI3D/MTQ/TREE/0/0_00_00.kml'){
 
-                    this.ioDriverXML = new IoDriverXML();
-                    this.ioDriverXML.read(url_href_1[i]).then(function(result_1)
+                    Fetcher.xml(url_href_1[i]).then(function(result_1)
                     {
 
                         var kml_1 = [];
@@ -464,8 +456,7 @@ export default KML_Provider;
 
                             //Next level : Get the next KML actual position's coords
                             if (north < coords_2[j,1] && south > coords_2[j,2]  && east < coords_2[j,3] && west > coords_2[j,4]){
-                                this.ioDriverXML = new IoDriverXML();
-                                this.ioDriverXML.read(url_href_2[j]).then(function(result_2){
+                                Fetcher.xml(url_href_2[j]).then(function(result_2){
 
                                     var kml_2 = [];
                                     kml_2 = result_2.getElementsByTagName("href");
@@ -483,8 +474,7 @@ export default KML_Provider;
 
                                         //Next Level : Get the next KML actual position's coords
                                         if (north < coords_3[k,1] && south > coords_3[k,2]  && east < coords_3[k,3] && west > coords_3[k,4]){
-                                            this.ioDriverXML_3 = new IoDriverXML();
-                                            this.ioDriverXML_3.read(url_href_3[k]).then(function(result_3){
+                                            Fetcher.xml(url_href_3[k]).then(function(result_3){
 
                                                 var kml_3 = [];
                                                 kml_3 = result_3.getElementsByTagName("href");
@@ -518,8 +508,7 @@ export default KML_Provider;
                 //If Réunion
                 if (url_href_1[i] === 'http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/vecteurtuile3d/BATI3D/REU/TREE/0/0_00_00.kml'){
 
-                    this.ioDriverXML = new IoDriverXML();
-                    this.ioDriverXML.read(url_href_1[i]).then(function(result_1)
+                    Fetcher.xml(url_href_1[i]).then(function(result_1)
                     {
 
                         var kml_1 = [];
@@ -548,8 +537,7 @@ export default KML_Provider;
 
                             //Next level : Get the next KML actual position's coords
                             if (north < coords_2[j,1] && south > coords_2[j,2]  && east < coords_2[j,3] && west > coords_2[j,4]){
-                                this.ioDriverXML = new IoDriverXML();
-                                this.ioDriverXML.read(url_href_2[j]).then(function(result_2){
+                                Fetcher.xml(url_href_2[j]).then(function(result_2){
 
                                     var kml_2 = [];
                                     kml_2 = result_2.getElementsByTagName("href");
@@ -567,8 +555,7 @@ export default KML_Provider;
 
                                         //Next Level : Get the next KML actual position's coords
                                         if (north < coords_3[k,1] && south > coords_3[k,2]  && east < coords_3[k,3] && west > coords_3[k,4]){
-                                            this.ioDriverXML_3 = new IoDriverXML();
-                                            this.ioDriverXML_3.read(url_href_3[k]).then(function(result_3){
+                                            Fetcher.xml(url_href_3[k]).then(function(result_3){
 
                                                 var kml_3 = [];
                                                 kml_3 = result_3.getElementsByTagName("href");
@@ -601,8 +588,7 @@ export default KML_Provider;
                 //If Saint-Pierre et Miquelon
                 if (url_href_1[i] === 'http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/vecteurtuile3d/BATI3D/SPM/TREE/0/0_00_00.kml'){
 
-                    this.ioDriverXML = new IoDriverXML();
-                    this.ioDriverXML.read(url_href_1[i]).then(function(result_1)
+                    Fetcher.xml(url_href_1[i]).then(function(result_1)
                     {
 
                         var kml_1 = [];
@@ -631,8 +617,7 @@ export default KML_Provider;
 
                             //Next level : Get the next KML actual position's coords
                             if (north < coords_2[j,1] && south > coords_2[j,2]  && east < coords_2[j,3] && west > coords_2[j,4]){
-                                this.ioDriverXML = new IoDriverXML();
-                                this.ioDriverXML.read(url_href_2[j]).then(function(result_2){
+                                Fetcher.xml(url_href_2[j]).then(function(result_2){
 
                                     var kml_2 = [];
                                     kml_2 = result_2.getElementsByTagName("href");
@@ -650,8 +635,7 @@ export default KML_Provider;
 
                                         //Next Level : Get the next KML actual position's coords
                                         if (north < coords_3[k,1] && south > coords_3[k,2]  && east < coords_3[k,3] && west > coords_3[k,4]){
-                                            this.ioDriverXML_3 = new IoDriverXML();
-                                            this.ioDriverXML_3.read(url_href_3[k]).then(function(result_3){
+                                            Fetcher.xml(url_href_3[k]).then(function(result_3){
 
                                                 var kml_3 = [];
                                                 kml_3 = result_3.getElementsByTagName("href");

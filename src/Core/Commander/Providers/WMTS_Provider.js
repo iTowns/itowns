@@ -10,7 +10,6 @@ import Projection from 'Core/Geographic/Projection';
 import CoordWMTS from 'Core/Geographic/CoordWMTS';
 import IoDriver_XBIL from 'Core/Commander/Providers/IoDriver_XBIL';
 import IoDriver_Image from 'Core/Commander/Providers/IoDriver_Image';
-import IoDriverXML from 'Core/Commander/Providers/IoDriverXML';
 import * as THREE from 'three';
 import CacheRessource from 'Core/Commander/Providers/CacheRessource';
 
@@ -20,7 +19,6 @@ function WMTS_Provider(options) {
     Provider.call(this, new IoDriver_XBIL());
     this.cache = CacheRessource();
     this.ioDriverImage = new IoDriver_Image();
-    this.ioDriverXML = new IoDriverXML();
     this.projection = new Projection();
     this.support = options.support || false;
     this.getTextureFloat = null;
