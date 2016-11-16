@@ -1,3 +1,6 @@
+import { TextureLoader } from 'three';
+
+const textureLoader = new TextureLoader();
 
 function checkResponse(response) {
     if (response.status < 200 || response.status >= 300) {
@@ -21,5 +24,17 @@ export default {
             checkResponse(response);
             return response.text();
         }).then(text => new window.DOMParser().parseFromString(text, 'text/xml'));
+    },
+
+    texture(url) {
+        let res,
+            rej;
+        const promise = new Promise((resolve, reject) => {
+            res = resolve;
+            rej = reject;
+        });
+
+        const texture = textureLoader.load(url, res, () => {}, rej);
+        return { texture, promise };
     },
 };
