@@ -87,7 +87,7 @@ KML_Provider.prototype.showFeatureAttributesAtPos = function(p, mouse){
 
         canvas.addEventListener('mousedown', function() {
             var oldcanv = document.getElementById('canvasID');
-            console.log(oldcanv);
+            //console.log(oldcanv);
             oldcanv.parentNode.removeChild(oldcanv);
         }, false);
     }

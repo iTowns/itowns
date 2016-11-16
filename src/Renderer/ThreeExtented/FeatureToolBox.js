@@ -563,13 +563,14 @@ FeatureToolBox.prototype.intersectsegment = function( a, b, i, p){
 };
 
 /*
- * Function that test if a point p is inside a polygon 
+ * Function that tests if a point p is inside a polygon using the classic
+ * Ray Casting algorithm
  * @param {type} posGeo
  * @returns {undefined}
  */
 FeatureToolBox.prototype.inPolygon = function(p, arrPoints){
     
-    var k = new THREE.Vector2(6.,46.); 
+    var k = new THREE.Vector2(6.,75.); //This point should be out of the polygon
     var nbintersections = 0;
     for(var i=0; i < arrPoints.length -1; i++){
 
@@ -682,7 +683,15 @@ FeatureToolBox.prototype.drawLine = function(coordOrigin, tileWH, p1, p2, thickn
 
 };
 
-
+/*
+ * Draw 2D polygon in tile (rasterized)
+ * @param {type} polygon
+ * @param {type} coordOrigin
+ * @param {type} tileWH
+ * @param {type} ctx
+ * @param {type} prop
+ * @returns {undefined}
+ */
 FeatureToolBox.prototype.drawPolygon = function(polygon, coordOrigin, tileWH, ctx, prop) {
 
     var tilePx = 256;
