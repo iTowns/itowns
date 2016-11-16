@@ -6,7 +6,7 @@
 
 
 import Provider from 'Core/Commander/Providers/Provider';
-import IoDriver_JSON from 'Core/Commander/Providers/IoDriver_JSON';
+import Fetcher from 'Core/Commander/Providers/Fetcher';
 import defaultValue from 'Core/defaultValue';
 import CacheRessource from 'Core/Commander/Providers/CacheRessource';
 
@@ -19,7 +19,6 @@ import CacheRessource from 'Core/Commander/Providers/CacheRessource';
  */
 function WFS_Provider(options) {
     this.cache = CacheRessource();
-    this.ioDriver_JSON = new IoDriver_JSON();
     this.baseUrl = options.url || '';
     this.layer = options.layer || '';
     this.typename = options.typename || '';
@@ -56,7 +55,7 @@ WFS_Provider.prototype.url = function (bbox) {
  */
 WFS_Provider.prototype.getData = function (bbox) {
     var url = this.url(bbox);
-    return this.ioDriver_JSON.read(url);
+    return Fetcher.json(url);
 };
 
 

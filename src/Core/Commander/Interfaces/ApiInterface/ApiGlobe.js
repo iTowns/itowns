@@ -14,7 +14,7 @@ import GeoCoordinate, { UNIT } from 'Core/Geographic/GeoCoordinate';
 import Ellipsoid from 'Core/Math/Ellipsoid';
 import Projection from 'Core/Geographic/Projection';
 import CustomEvent from 'custom-event';
-import IoDriver_JSON from 'Core/Commander/Providers/IoDriver_JSON';
+import Fetcher from 'Core/Commander/Providers/Fetcher';
 import { STRATEGY_MIN_NETWORK_TRAFFIC } from 'Scene/LayerUpdateStrategy';
 
 var loaded = false;
@@ -29,7 +29,6 @@ var eventLayerChangedVisible = new CustomEvent('layerchanged:visible');
 var eventLayerChangedOpacity = new CustomEvent('layerchanged:opacity');
 var eventLayerChangedIndex = new CustomEvent('layerchanged:index');
 var eventError = new CustomEvent('error');
-var JSONDriver = new IoDriver_JSON();
 
 function ApiGlobe() {
     // Constructor
@@ -124,7 +123,7 @@ ApiGlobe.prototype.addImageryLayer = function (layer) {
  */
 
 ApiGlobe.prototype.addImageryLayerFromJSON = function (url) {
-    return JSONDriver.read(url).then((result) => {
+    return Fetcher.json(url).then((result) => {
         this.addImageryLayer(result);
     });
 };
@@ -140,7 +139,7 @@ ApiGlobe.prototype.addImageryLayersFromJSONArray = function (urls) {
     var proms = [];
 
     for (var i = 0; i < urls.length; i++) {
-        proms.push(JSONDriver.read(urls[i]).then(this.addImageryLayer.bind(this)));
+        proms.push(Fetcher.json(urls[i]).then(this.addImageryLayer.bind(this)));
     }
 
     return Promise.all(proms).then(() => this.scene.getMap().layersConfiguration.getColorLayers());
@@ -222,7 +221,7 @@ ApiGlobe.prototype.addElevationLayer = function (layer) {
  */
 
 ApiGlobe.prototype.addElevationLayersFromJSON = function (url) {
-    return JSONDriver.read(url).then((result) => {
+    return Fetcher.json(url).then((result) => {
         this.addElevationLayer(result);
     });
 };
@@ -243,7 +242,7 @@ ApiGlobe.prototype.addElevationLayersFromJSONArray = function (urls) {
     var proms = [];
 
     for (var i = 0; i < urls.length; i++) {
-        proms.push(JSONDriver.read(urls[i]).then(this.addElevationLayer.bind(this)));
+        proms.push(Fetcher.json(urls[i]).then(this.addElevationLayer.bind(this)));
     }
 
     return Promise.all(proms).then(() => this.scene.getMap().layersConfiguration.getElevationLayers());

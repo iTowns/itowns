@@ -8,7 +8,6 @@
 import Provider from 'Core/Commander/Providers/Provider';
 import IoDriver_XBIL from 'Core/Commander/Providers/IoDriver_XBIL';
 import IoDriver_Image from 'Core/Commander/Providers/IoDriver_Image';
-import IoDriverXML from 'Core/Commander/Providers/IoDriverXML';
 import * as THREE from 'three';
 import Projection from 'Core/Geographic/Projection';
 import CacheRessource from 'Core/Commander/Providers/CacheRessource';
@@ -28,7 +27,6 @@ function WMS_Provider(/* options*/) {
     Provider.call(this, new IoDriver_XBIL());
     this.cache = CacheRessource();
     this.ioDriverImage = new IoDriver_Image();
-    this.ioDriverXML = new IoDriverXML();
     this.projection = new Projection();
 
     this.getTextureFloat = function (buffer) {
