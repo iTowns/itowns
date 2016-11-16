@@ -9,7 +9,6 @@ import Provider from 'Core/Commander/Providers/Provider';
 import IoDriver_XBIL from 'Core/Commander/Providers/IoDriver_XBIL';
 import IoDriver_Image from 'Core/Commander/Providers/IoDriver_Image';
 import IoDriverXML from 'Core/Commander/Providers/IoDriverXML';
-import defaultValue from 'Core/defaultValue';
 import * as THREE from 'three';
 import Projection from 'Core/Geographic/Projection';
 import CacheRessource from 'Core/Commander/Providers/CacheRessource';
@@ -72,13 +71,13 @@ WMS_Provider.prototype.preprocessDataLayer = function(layer){
         layer.bbox = new BoundingBox(layer.bbox[0],layer.bbox[2],layer.bbox[1],layer.bbox[3]);
     }
 
-    layer.format = defaultValue(layer.options.mimetype, "image/png"),
-    layer.crs = defaultValue(layer.projection, "EPSG:4326"),
-    layer.width = defaultValue(layer.heightMapWidth, 256),
-    layer.version = defaultValue(layer.version, "1.3.0"),
-    layer.styleName = defaultValue(layer.style, "normal"),
-    layer.transparent = defaultValue(layer.transparent, false),
-    layer.bbox = defaultValue(layer.bbox,new BoundingBox());
+    layer.format = layer.options.mimetype || "image/png";
+    layer.crs = layer.projection || "EPSG:4326";
+    layer.width = layer.heightMapWidth || 256;
+    layer.version = layer.version || "1.3.0";
+    layer.style = layer.style || "normal";
+    layer.transparent = layer.transparent || false;
+    layer.bbox = layer.bbox || new BoundingBox();
 
     layer.customUrl = layer.url +
                   '?SERVICE=WMS&REQUEST=GetMap&LAYERS=' + layer.name +
