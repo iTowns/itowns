@@ -19,6 +19,7 @@ import BrowseTree from 'Scene/BrowseTree';
 import NodeProcess from 'Scene/NodeProcess';
 import Quadtree from 'Scene/Quadtree';
 import CoordStars from 'Core/Geographic/CoordStars';
+import Projection from 'Core/Geographic/Projection';
 import defaultValue from 'Core/defaultValue';
 import Layer from 'Scene/Layer';
 import Capabilities from 'Core/System/Capabilities';
@@ -86,6 +87,22 @@ Scene.prototype.currentControls = function() {
 Scene.prototype.getPickPosition = function(mouse) {
     return this.gfxEngine.getPickingPositionFromDepth(mouse);
 };
+
+/*
+ * Return long lat at mouse click
+ */
+Scene.prototype.getPickPositionLonLat = function(mouse) {
+    
+    var pos = this.getPickPosition(mouse);
+    this.renderScene3D();
+    var posWGS84 = new Projection().cartesianToGeo(pos); 
+    var lonDeg = posWGS84.coordinate[0] / Math.PI * 180;
+    var latDeg = posWGS84.coordinate[1] / Math.PI * 180;
+   
+    return {x:lonDeg, y:latDeg};
+};
+
+ 
 
 Scene.prototype.getEllipsoid = function() {
     return this.ellipsoid;
