@@ -7,7 +7,7 @@
 
 import Provider from 'Core/Commander/Providers/Provider';
 import IoDriver_XBIL from 'Core/Commander/Providers/IoDriver_XBIL';
-import IoDriver_Image from 'Core/Commander/Providers/IoDriver_Image';
+import Fetcher from 'Core/Commander/Providers/Fetcher';
 import * as THREE from 'three';
 import Projection from 'Core/Geographic/Projection';
 import CacheRessource from 'Core/Commander/Providers/CacheRessource';
@@ -26,7 +26,6 @@ function WMS_Provider(/* options*/) {
     // Constructor
     Provider.call(this, new IoDriver_XBIL());
     this.cache = CacheRessource();
-    this.ioDriverImage = new IoDriver_Image();
     this.projection = new Projection();
 
     this.getTextureFloat = function (buffer) {
@@ -104,27 +103,18 @@ WMS_Provider.prototype.getColorTexture = function (tile, layer, bbox, pitch) {
     if (result.texture !== undefined) {
         return Promise.resolve(result);
     }
-    return this.ioDriverImage.read(url).then((image) => {
-        var texture = this.cache.getRessource(image.src);
 
-        if (texture)
-            { result.texture = texture; }
-        else
-        {
-            result.texture = new THREE.Texture(image);
-            result.texture.needsUpdate = true;
-            result.texture.generateMipmaps = false;
-            result.texture.magFilter = THREE.LinearFilter;
-            result.texture.minFilter = THREE.LinearFilter;
-            result.texture.anisotropy = 16;
-            result.texture.url = url;
+    const { texture, promise } = Fetcher.texture(url);
+    result.texture = texture;
 
-            this.cache.addRessource(url, result.texture);
-        }
+    result.texture.generateMipmaps = false;
+    result.texture.magFilter = THREE.LinearFilter;
+    result.texture.minFilter = THREE.LinearFilter;
+    result.texture.anisotropy = 16;
 
-        return result;
-    }).catch((/* reason*/) => {
-        result.texture = null;
+    return promise.then(() => {
+        this.cache.addRessource(url, result.texture);
+        result.texture.needsUpdate = true;
         return result;
     });
 };
