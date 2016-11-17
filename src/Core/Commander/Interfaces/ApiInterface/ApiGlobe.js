@@ -95,6 +95,23 @@ function preprocessLayer(layer, provider) {
 }
 
 /**
+ * Init the geometry layer of the Scene.
+ */
+ApiGlobe.prototype.init = function () {
+    var map = this.scene.getMap();
+    map.tiles.init(map.layersConfiguration.getGeometryLayers()[0]);
+};
+
+/**
+ * Add the geometry layer to the scene.
+ */
+ApiGlobe.prototype.addGeometryLayer = function(layer) {
+    preprocessLayer(layer, this.scene.managerCommand.getProtocolProvider(layer.protocol));
+    var map = this.scene.getMap();
+    map.layersConfiguration.addGeometryLayer(layer);
+};
+
+/**
  * This function adds an imagery layer to the scene. The layer id must be unique. The protocol rules wich parameters are then needed for the function.
  * @constructor
  * @param {Layer} layer.
@@ -134,14 +151,10 @@ ApiGlobe.prototype.addImageryLayersFromJSONArray = function (urls) {
     var proms = [];
 
     for (var i = 0; i < urls.length; i++) {
-        proms.push(JSONDriver.read(urls[i]));
+        proms.push(JSONDriver.read(urls[i]).then(this.addImageryLayer.bind(this)));
     }
 
-    return Promise.all(proms).then((values) => {
-
-        for (var i = 0; i < urls.length; i++) {
-            this.addImageryLayer(values[i]);
-        }
+    return Promise.all(proms).then(() => {
         return this.scene.getMap().layersConfiguration.getColorLayers();
     });
 };
@@ -247,13 +260,10 @@ ApiGlobe.prototype.addElevationLayersFromJSONArray = function (urls) {
     var proms = [];
 
     for (var i = 0; i < urls.length; i++) {
-        proms.push(JSONDriver.read(urls[i]));
+        proms.push(JSONDriver.read(urls[i]).then(this.addElevationLayer.bind(this)));
     }
 
-    return Promise.all(proms).then((values) => {
-        for (var i = 0; i < urls.length; i++) {
-            this.addElevationLayer(values[i])
-        }
+    return Promise.all(proms).then(() => {
         return this.scene.getMap().layersConfiguration.getElevationLayers();
     });
 };
@@ -368,15 +378,6 @@ ApiGlobe.prototype.createSceneGlobe = function(coordCarto, viewerDiv) {
     this.scene.managerCommand.addProtocolProvider('tile', new TileProvider(ellipsoid));
     this.scene.managerCommand.addProtocolProvider('wms', new WMS_Provider({support : map.gLDebug}));
 
-    var wgs84TileLayer = {
-        protocol: 'tile',
-        id: 'wgs84'
-    };
-
-    preprocessLayer(wgs84TileLayer, this.scene.managerCommand.getProtocolProvider(wgs84TileLayer.protocol));
-    map.layersConfiguration.addGeometryLayer(wgs84TileLayer);
-
-    map.tiles.init(map.layersConfiguration.getGeometryLayers()[0]);
 
     return this.scene;
 };
