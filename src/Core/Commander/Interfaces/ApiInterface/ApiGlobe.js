@@ -650,50 +650,40 @@ ApiGlobe.prototype.showKML = function(value) {
 
 /**
  * Add a feature Layer to the scene graph. Handle vector data such as GPX, KML, GeoJSON,...
+ * Needs to be rewrited to have a singleton kml provider for n feature layers
  * @param {type} Layer
  * @returns {undefined}
  */
 ApiGlobe.prototype.addFeaturesLayer = function(layer) {
-    /*
-    var map = this.scene.getMap();
-    map.layersConfiguration.addFeaturesLayer(layer);
-    this.scene.setFeaturesRasterOnOff();
-    */
-  //  if(this.scene.getFeaturesRasterOnOff() && this.scene.getFeaturesRaster() === null)
-  //  {
-      //  this.scene.setFeaturesRasterOnOff();
-        var map = this.scene.getMap();
-        map.layersConfiguration.addFeaturesLayer(layer);
-        var featureLayer  = map.createFeatureLayer(layer.id);
-
-        if(layer.local){
-            if(layer.protocol === "kml"){
-                var kml_Provider = new KML_Provider(this.scene.getEllipsoid());
-                var geo = kml_Provider.parseKML(layer.url).then(
-                        function(obj){
-                            this.scene.addFeaturesRaster(obj.objLinesPolyToRaster); // Only 2D Polygons and Lines
-                            // Add listener for click down. 
-                            this.scene.gfxEngine.getRenderer().domElement.addEventListener('clickDown',function(event){
-                                var pos = this.scene.getPickPositionLonLat(event.mouse); console.log(pos);
-                                kml_Provider.showFeatureAttributesAtPos(pos, event.mouse);
-                            }.bind(this), false);
-                            
-                            featureLayer.add(obj.geoFeat);
-                            this.scene.gfxEngine.add3DScene(featureLayer.getMesh());// Only 3D Feat and 2D Icon/Text
-                           // this.scene.setFeaturesRasterOnOff(true);
-                        }.bind(this));  
-            }
-        }else{
-            preprocessLayer(layer, this.scene.managerCommand.getProtocolProvider(layer.protocol));
-        }
-  //  }
     
+    var map = this.scene.getMap();
+    map.layersConfiguration.addFeaturesLayer(layer);  // if already a feature layer don't 
+    var featureLayer  = map.createFeatureLayer(layer.id);
 
+    if(layer.local){
+        if(layer.protocol === "kml"){
+            var kml_Provider = new KML_Provider(this.scene.getEllipsoid());  
+            kml_Provider.parseKML(layer.url).then( function(obj){
+                
+                this.scene.addFeaturesRaster(obj.objLinesPolyToRaster); // Only 2D Polygons and Lines
+                // Add listener for click down on feature
+                this.scene.gfxEngine.getRenderer().domElement.addEventListener('clickDown',function(event){
+                    if(this.scene.getFeaturesRasterOnOff()){
+                        var pos = this.scene.getPickPositionLonLat(event.mouse); 
+                        kml_Provider.showFeatureAttributesAtPos(pos, event.mouse);
+                    }
+                }.bind(this), false);
+                featureLayer.add(obj.geoFeat);
+                this.scene.gfxEngine.add3DScene(featureLayer.getMesh());// Only 3D Feat and 2D Icon/Text
+            }.bind(this));  
+        }
+    }else{
+        preprocessLayer(layer, this.scene.managerCommand.getProtocolProvider(layer.protocol));
+    }
 };
 
 ApiGlobe.prototype.updateFeatureHeights = function(){
     
-    console.log('adjust height');
     this.scene.getMap().updateFeatureHeights();
     this.scene.renderScene3D();
 };

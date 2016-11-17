@@ -1,7 +1,6 @@
 /**
- * Generated On: 2016-01-20
  * Class: KML_Provider
- * Description: Parseur de KML jusqu'à obtention du collada
+ * Description: Provide geometry out of KML
  */
 /* global Promise*/
 
@@ -11,37 +10,33 @@ import * as THREE from 'THREE';
 //import KMZLoader from 'Renderer/ThreeExtented/KMZLoader';
 import FeatureToolBox from 'Renderer/ThreeExtented/FeatureToolBox';
 import BasicMaterial from 'Renderer/BasicMaterial';
-import togeojson from 'togeojson';
+import Togeojson from 'togeojson';
 
 
 function KML_Provider(ellipsoid) {
-    //Constructor
+
     this.ellipsoid = ellipsoid;
     this.ioDriverXML = new IoDriverXML();
-  //  this.kmzLoader = new KMZLoader();
+    // this.kmzLoader = new KMZLoader();
     this.cache = new Map();
     this.featureToolBox = null;
-    console.log(togeojson);
 }
 
 KML_Provider.prototype = Object.create(Provider.prototype);
 
 KML_Provider.prototype.constructor = KML_Provider;
 
-KML_Provider.prototype.loadKMZCenterInBBox = function( /*bbox*/ ) {
-
-};
 
 KML_Provider.prototype.parseKML = function(urlFile) {
     
     return this.ioDriverXML.read(urlFile).then(function(result) {
-         var geojson = togeojson.kml(result);
-         this.featureToolBox = new FeatureToolBox();
-         var objLinesPolyToRaster = this.featureToolBox.extractFeatures(geojson); // Raster feat
-         var geoFeat = new FeatureToolBox().createFeaturesPoints(geojson);//processingGeoJSON(geojson);            // vector feat
-         //console.log(objLinesPolyToRaster);
-         return {geoFeat: geoFeat, objLinesPolyToRaster: objLinesPolyToRaster};
-        }.bind(this));
+        var geojson = Togeojson.kml(result);
+        this.featureToolBox = new FeatureToolBox();
+        var objLinesPolyToRaster = this.featureToolBox.extractFeatures(geojson); // Raster feat
+        var geoFeat = new FeatureToolBox().createFeaturesPoints(geojson); // processingGeoJSON(geojson);
+        //console.log(objLinesPolyToRaster);
+        return {geoFeat: geoFeat, objLinesPolyToRaster: objLinesPolyToRaster};
+    }.bind(this));
 };
 
 
@@ -73,10 +68,8 @@ KML_Provider.prototype.showFeatureAttributesAtPos = function(p, mouse){
         ctx.rect(mouse.x - w/2, mouse.y - h*2/3, w, h);
         ctx.fillStyle = "white";
         ctx.fill();
-
         ctx.fillStyle = "black";
         ctx.globalAlpha = .8;
-        
         ctx.fillText(desc, mouse.x, mouse.y);
         
         canvas.style.left = "0px";//mouse.x + "px";
@@ -87,13 +80,14 @@ KML_Provider.prototype.showFeatureAttributesAtPos = function(p, mouse){
 
         canvas.addEventListener('mousedown', function() {
             var oldcanv = document.getElementById('canvasID');
-            //console.log(oldcanv);
             oldcanv.parentNode.removeChild(oldcanv);
         }, false);
     }
-  
 };
 
+KML_Provider.prototype.loadKMZCenterInBBox = function( /*bbox*/ ) {
+
+};
 
 /*
 KML_Provider.prototype.loadKMZ = function(longitude, latitude) {

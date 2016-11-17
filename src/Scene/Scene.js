@@ -290,16 +290,6 @@ Scene.prototype.addFeaturesRaster = function(featuresRaster){
     this.featuresRaster = featuresRaster;
     this.browserScene.updateMaterialUniform("rasterFeatures", 1);
     this.browserScene.updateFeatureRasterLayer();
-    
-/*    // Add listener for click down. 
-    c3DEngine().getRenderer().domElement.addEventListener('clickDown',function(event){
-
-        console.log("down clickkky");
-        showFeatureAttributesAtPos(p);
-    });
-  */  
-//    }.bind(this),false);
-    
 };
 
 
