@@ -118,7 +118,7 @@ ThreeDTilesNodeProcess.prototype.hideNodeChildren = function(node) {
 ThreeDTilesNodeProcess.prototype.processNode = function(node, camera, params) {
     // TODO: handle replace vs add refinement
     let wasVisible = node.isVisible();
-    let isVisible = !this.isCulled(node, camera);
+    let isVisible = true;// !this.isCulled(node, camera);
 
     node.setDisplayed(false);
     node.setSelected(false);

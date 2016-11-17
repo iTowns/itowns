@@ -219,6 +219,8 @@ ApiGlobe.prototype.getMaxZoomLevel = function(id) {
  * @params {Div} string.
  */
 
+import * as THREE from 'three'
+
 ApiGlobe.prototype.createSceneGlobe = function(coordCarto, viewerDiv) {
     // TODO: Normalement la creation de scene ne doit pas etre ici....
     // Deplacer plus tard
@@ -276,7 +278,7 @@ ApiGlobe.prototype.createSceneGlobe = function(coordCarto, viewerDiv) {
 
     // 3d tiles test
     var ioDriverJSON = new IoDriver_JSON();
-    ioDriverJSON.read("data/tileset.json").then(function(tileset) {
+    ioDriverJSON.read("data/tileset2.json").then(function(tileset) {
         var lvl0Tiles = tileset.root;
         var tiles = {};
         tileset2dict(tileset.root, tiles);
@@ -287,7 +289,7 @@ ApiGlobe.prototype.createSceneGlobe = function(coordCarto, viewerDiv) {
         var layer3dTiles = {
             protocol: '3d-tiles',
             id: 'building',
-            url: 'http://localhost/server?'
+            url: 'http://localhost:9090/'//'http://localhost/server?'
         };
 
         this.scene.managerCommand.addProtocolProvider('3d-tiles', new ThreeDTiles_Provider());
