@@ -44,6 +44,11 @@ and open the template in the editor.
             var menuGlobe = new GuiTools(itowns.viewer,'menuDiv');
             itowns.viewer.createSceneGlobe(positionOnGlobe, viewerDiv);
 
+            let wgs84TileLayer = {
+                protocol: 'tile',
+                id: 'wgs84'
+            };
+
             var urlImageryLayersArray = ["examples/layers/JSONLayers/Ortho.json",
                                         "examples/layers/JSONLayers/OrthosCRS.json",
                                         "examples/layers/JSONLayers/ScanEX.json",
@@ -52,9 +57,14 @@ and open the template in the editor.
             var urlElevationLayersArray = [ "examples/layers/JSONLayers/IGN_MNT.json",
                                             "examples/layers/JSONLayers/IGN_MNT_HIGHRES.json"];
 
-            itowns.viewer.addImageryLayersFromJSONArray(urlImageryLayersArray).then((layersColors) => {menuGlobe.addImageryLayersGUI(layersColors);});
-            itowns.viewer.addElevationLayersFromJSONArray(urlElevationLayersArray).then((layersElevations) => {menuGlobe.addElevationLayersGUI(layersElevations);});
-            itowns.viewer.update();
+            itowns.viewer.addGeometryLayer(wgs84TileLayer);
+            let imageryPromise = itowns.viewer.addImageryLayersFromJSONArray(urlImageryLayersArray);
+            let elevationPromise = itowns.viewer.addElevationLayersFromJSONArray(urlElevationLayersArray);
+
+            imageryPromise.then((layersColors) => menuGlobe.addImageryLayersGUI(layersColors));
+            elevationPromise.then((layersElevations) => {menuGlobe.addElevationLayersGUI(layersElevations);});
+
+            Promise.all([imageryPromise, elevationPromise]).then(() => itowns.viewer.init());
 
             menuGlobe.addGUI('RealisticLighting',false,function(newValue) {itowns.viewer.setRealisticLightingOn(newValue);});
 
