@@ -98,7 +98,7 @@ function preprocessLayer(layer, provider) {
  * Init the geometry layer of the Scene.
  */
 ApiGlobe.prototype.init = function () {
-    var map = this.scene.getMap();
+    let map = this.scene.getMap();
     map.tiles.init(map.layersConfiguration.getGeometryLayers()[0]);
 };
 
@@ -107,7 +107,7 @@ ApiGlobe.prototype.init = function () {
  */
 ApiGlobe.prototype.addGeometryLayer = function(layer) {
     preprocessLayer(layer, this.scene.managerCommand.getProtocolProvider(layer.protocol));
-    var map = this.scene.getMap();
+    let map = this.scene.getMap();
     map.layersConfiguration.addGeometryLayer(layer);
 };
 
