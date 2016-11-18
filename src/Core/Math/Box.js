@@ -4,13 +4,12 @@
  */
 
 function Box() {
-    //Constructor
+    // Constructor
 
 
 }
 
 
-
 export {
-    Box
+    Box,
 };

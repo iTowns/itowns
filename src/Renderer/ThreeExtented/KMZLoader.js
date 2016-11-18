@@ -5,10 +5,9 @@
 import JSZip from 'jszip';
 import * as THREE from 'three';
 import IoDriverXML from 'Core/Commander/Providers/IoDriverXML';
-import GeoCoordinate,{UNIT} from 'Core/Geographic/GeoCoordinate';
+import GeoCoordinate, { UNIT } from 'Core/Geographic/GeoCoordinate';
 
 function KMZLoader() {
-
     this.colladaLoader = new THREE.ColladaLoader();
     this.colladaLoader.options.convertUpAxis = true;
     this.ioDriverXML = new IoDriverXML();
@@ -19,22 +18,21 @@ KMZLoader.prototype = Object.create(KMZLoader.prototype);
 
 KMZLoader.prototype.constructor = KMZLoader;
 
-KMZLoader.prototype.parseCollada = function(buffer) {
+KMZLoader.prototype.parseCollada = function (buffer) {
     var zip = new JSZip(buffer);
-    var collada = undefined;
-    var coordCarto = undefined;
+    var collada;
+    var coordCarto;
 
     for (var name in zip.files) {
         if (name.toLowerCase().substr(-4) === '.dae') {
             collada = this.colladaLoader.parse(zip.file(name).asText());
         } else if (name.toLowerCase().substr(-4) === '.kml') {
-
             var parser = new DOMParser();
-            var doc = parser.parseFromString(zip.file(name).asText(), "text/xml");
+            var doc = parser.parseFromString(zip.file(name).asText(), 'text/xml');
 
-            var longitude = Number(doc.getElementsByTagName("longitude")[0].childNodes[0].nodeValue);
-            var latitude = Number(doc.getElementsByTagName("latitude")[0].childNodes[0].nodeValue);
-            var altitude = Number(doc.getElementsByTagName("altitude")[0].childNodes[0].nodeValue);
+            var longitude = Number(doc.getElementsByTagName('longitude')[0].childNodes[0].nodeValue);
+            var latitude = Number(doc.getElementsByTagName('latitude')[0].childNodes[0].nodeValue);
+            var altitude = Number(doc.getElementsByTagName('altitude')[0].childNodes[0].nodeValue);
 
             coordCarto = new GeoCoordinate(longitude, latitude, altitude, UNIT.DEGREE);
         }
@@ -42,10 +40,10 @@ KMZLoader.prototype.parseCollada = function(buffer) {
 
     collada.coorCarto = coordCarto;
     return collada;
-}
+};
 
-KMZLoader.prototype.load = function(url) {
-    return fetch(url).then(response => {
+KMZLoader.prototype.load = function (url) {
+    return fetch(url).then((response) => {
         if (response.status < 200 || response.status >= 300) {
             throw new Error(`Error loading ${url}: status ${response.status}`);
         }

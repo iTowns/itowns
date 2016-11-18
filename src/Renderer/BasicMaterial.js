@@ -13,7 +13,7 @@ import SimpleFS from 'Renderer/Shader/SimpleFS.glsl';
 import LogDepthBuffer from 'Renderer/Shader/Chunk/LogDepthBuffer.glsl';
 
 function BasicMaterial(color) {
-    //Constructor
+    // Constructor
 
     THREE.RawShaderMaterial.call(this);
 
@@ -22,75 +22,72 @@ function BasicMaterial(color) {
 
     var logarithmicDepthBuffer = c3DEngine().renderer.capabilities.logarithmicDepthBuffer;
 
-    if(logarithmicDepthBuffer)
+    if (logarithmicDepthBuffer)
     {
         this.fragmentShaderHeader += '#extension GL_EXT_frag_depth : enable\n';
     }
 
-    this.fragmentShaderHeader +='precision highp float;\n';
-    this.fragmentShaderHeader +='precision highp int;\n';
+    this.fragmentShaderHeader += 'precision highp float;\n';
+    this.fragmentShaderHeader += 'precision highp int;\n';
 
 
-    if(logarithmicDepthBuffer)
+    if (logarithmicDepthBuffer)
     {
-        this.fragmentShaderHeader +='#define USE_LOGDEPTHBUF\n';
-        this.fragmentShaderHeader +='#define USE_LOGDEPTHBUF_EXT\n';
-		this.fragmentShaderHeader += LogDepthBuffer;
+        this.fragmentShaderHeader += '#define USE_LOGDEPTHBUF\n';
+        this.fragmentShaderHeader += '#define USE_LOGDEPTHBUF_EXT\n';
+        this.fragmentShaderHeader += LogDepthBuffer;
     }
 
-	this.fragmentShaderHeader +='#define VERTEX_TEXTURES\n';
-	this.vertexShaderHeader = this.fragmentShaderHeader;
+    this.fragmentShaderHeader += '#define VERTEX_TEXTURES\n';
+    this.vertexShaderHeader = this.fragmentShaderHeader;
 
-	this.vertexShader = this.vertexShaderHeader + SimpleVS;
-	this.fragmentShader = this.fragmentShaderHeader + SimpleFS;
+    this.vertexShader = this.vertexShaderHeader + SimpleVS;
+    this.fragmentShader = this.fragmentShaderHeader + SimpleFS;
 
     this.uniforms = {
         diffuseColor: { value: defaultValue(color, new THREE.Color()) },
         useRTC: { value: true },
-        mVPMatRTC: { value: new THREE.Matrix4()},
+        mVPMatRTC: { value: new THREE.Matrix4() },
         distanceFog: { value: 1000000000.0 },
         uuid: { value: 0 },
         debug: { value: false },
         selected: { value: false },
-        lightOn: { value: true }
+        lightOn: { value: true },
     };
 }
 
 BasicMaterial.prototype = Object.create(THREE.RawShaderMaterial.prototype);
 BasicMaterial.prototype.constructor = BasicMaterial;
 
-BasicMaterial.prototype.enableRTC = function(enable) {
-
-    this.uniforms.useRTC.value = enable ;
+BasicMaterial.prototype.enableRTC = function (enable) {
+    this.uniforms.useRTC.value = enable;
 };
 
-BasicMaterial.prototype.setDebug = function(debug_value) {
+BasicMaterial.prototype.setDebug = function (debug_value) {
     this.uniforms.debug.value = debug_value;
 };
 
-BasicMaterial.prototype.setMatrixRTC = function(rtc) {
+BasicMaterial.prototype.setMatrixRTC = function (rtc) {
     this.uniforms.mVPMatRTC.value = rtc;
 };
 
-BasicMaterial.prototype.getMatrixRTC = function() {
+BasicMaterial.prototype.getMatrixRTC = function () {
     return this.uniforms.mVPMatRTC.value;
 };
 
-BasicMaterial.prototype.setUuid = function(uuid) {
-
+BasicMaterial.prototype.setUuid = function (uuid) {
     this.uniforms.uuid.value = uuid;
 };
 
-BasicMaterial.prototype.getUuid = function() {
-
+BasicMaterial.prototype.getUuid = function () {
     return this.uniforms.uuid.value;
 };
 
-BasicMaterial.prototype.setFogDistance = function(df) {
+BasicMaterial.prototype.setFogDistance = function (df) {
     this.uniforms.distanceFog.value = df;
 };
 
-BasicMaterial.prototype.setSelected = function(selected) {
+BasicMaterial.prototype.setSelected = function (selected) {
     this.uniforms.selected.value = selected;
 };
 

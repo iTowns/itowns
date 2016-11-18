@@ -9,24 +9,23 @@ import IoDriver from 'Core/Commander/Providers/IoDriver';
 
 
 function IoDriverXML() {
-    //Constructor
+    // Constructor
     IoDriver.call(this);
-
 }
 
 IoDriverXML.prototype = Object.create(IoDriver.prototype);
 
 IoDriverXML.prototype.constructor = IoDriverXML;
 
-IoDriverXML.prototype.read = function(url) {
+IoDriverXML.prototype.read = function (url) {
     // We don't use fetch here because there no direct
     // equivalent to responseType="document"
-    return new Promise(function(resolve, reject) {
+    return new Promise((resolve, reject) => {
         var xhr = new XMLHttpRequest();
 
-        xhr.open("GET", url, true);
+        xhr.open('GET', url, true);
 
-        xhr.responseType = "document";
+        xhr.responseType = 'document';
 
         xhr.crossOrigin = '';
 
@@ -37,11 +36,10 @@ IoDriverXML.prototype.read = function(url) {
             resolve(xhr.response);
         };
 
-        xhr.onerror = () => reject(Error("Error IoDriverXML"));
+        xhr.onerror = () => reject(Error('Error IoDriverXML'));
 
         xhr.send(null);
     });
-
 };
 
 export default IoDriverXML;

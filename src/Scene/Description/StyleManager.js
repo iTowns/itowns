@@ -4,46 +4,38 @@
  * Description:
  */
 
-import {Style} from 'Scene/Description/Style';
+import { Style } from 'Scene/Description/Style';
 
 function StyleManager() {
-
-	this.styles = [];
-
+    this.styles = [];
 }
 
 StyleManager.prototype = Object.create(StyleManager.prototype);
 
 StyleManager.prototype.constructor = StyleManager;
 
-StyleManager.prototype.getStyles = function() {
-	return this.styles;
+StyleManager.prototype.getStyles = function () {
+    return this.styles;
 };
 
-StyleManager.prototype.addStyle = function(style) {
-
-	if(style instanceof Style)
-		this.styles.push(style);
+StyleManager.prototype.addStyle = function (style) {
+    if (style instanceof Style)
+		{ this.styles.push(style); }
 };
 
-StyleManager.prototype.getStyle = function(idStyle) {
-
-    return this.styles.filter(function(element) {
-        return element.name === idStyle;
-    }).pop();
+StyleManager.prototype.getStyle = function (idStyle) {
+    return this.styles.filter(element => element.name === idStyle).pop();
 };
 
-StyleManager.prototype.removeStyle = function(idStyle) {
-	this.styles = this.styles.filter(function(element) {
-        return element.name === idStyle;
-    });
+StyleManager.prototype.removeStyle = function (idStyle) {
+    this.styles = this.styles.filter(element => element.name === idStyle);
 };
 
-StyleManager.prototype.updateStyle = function() {
+StyleManager.prototype.updateStyle = function () {
 
 
 };
 
 export {
-    StyleManager
+    StyleManager,
 };

@@ -12,18 +12,17 @@
  */
 
 
-
 // TODO , will use WFS_Provider
 import Provider from 'Core/Commander/Providers/Provider';
 import WFS_Provider from 'Core/Commander/Providers/WFS_Provider';
 import * as THREE from 'three';
 import Ellipsoid from 'Core/Math/Ellipsoid';
-import GeoCoordinate,{UNIT} from 'Core/Geographic/GeoCoordinate';
+import GeoCoordinate, { UNIT } from 'Core/Geographic/GeoCoordinate';
 import CVML from 'Core/Math/CVML';
 
 
 function BuildingBox_Provider(options) {
-    //Constructor
+    // Constructor
 
     // Provider.call( this,new IoDriver_XBIL());
     // this.cache         = CacheRessource();
@@ -33,7 +32,6 @@ function BuildingBox_Provider(options) {
     this.pivot = null;
     this.roadOn = true;
     this.rtcOn = true;
-
 }
 
 BuildingBox_Provider.prototype = Object.create(Provider.prototype);
@@ -45,77 +43,70 @@ BuildingBox_Provider.prototype.constructor = BuildingBox_Provider;
  * @param {type} coWMTS : coord WMTS
  * @returns {Object@call;create.url.url|String}
  */
-BuildingBox_Provider.prototype.url = function(longitude, latitude, radius) {
+BuildingBox_Provider.prototype.url = function (longitude, latitude, radius) {
+    // var key    = "wmybzw30d6zg563hjlq8eeqb";
+    // var key    = coWMTS.zoom > 11 ? "va5orxd0pgzvq3jxutqfuy0b" : "wmybzw30d6zg563hjlq8eeqb"; // clef pro va5orxd0pgzvq3jxutqfuy0b
 
-    //var key    = "wmybzw30d6zg563hjlq8eeqb";
-    //var key    = coWMTS.zoom > 11 ? "va5orxd0pgzvq3jxutqfuy0b" : "wmybzw30d6zg563hjlq8eeqb"; // clef pro va5orxd0pgzvq3jxutqfuy0b
+    var key = '72hpsel8j8nhb5qgdh07gcyp';
 
-    var key = "72hpsel8j8nhb5qgdh07gcyp";
-
-    //var layer  = "BDTOPO_BDD_WLD_WGS84G:bati_remarquable,BDTOPO_BDD_WLD_WGS84G:bati_indifferencie"
-    var serviceVersionRequestLayer = "service=WFS&version=2.0.0&REQUEST=GetFeature&typeName=BDTOPO_BDD_WLD_WGS84G:bati_remarquable,BDTOPO_BDD_WLD_WGS84G:bati_indifferencie"
+    // var layer  = "BDTOPO_BDD_WLD_WGS84G:bati_remarquable,BDTOPO_BDD_WLD_WGS84G:bati_indifferencie"
+    var serviceVersionRequestLayer = 'service=WFS&version=2.0.0&REQUEST=GetFeature&typeName=BDTOPO_BDD_WLD_WGS84G:bati_remarquable,BDTOPO_BDD_WLD_WGS84G:bati_indifferencie';
 
     var bottomLeft = new THREE.Vector2(longitude - radius, latitude - radius);
     var topRight = new THREE.Vector2(longitude + radius, latitude + radius);
 
 
-    var url = "http://wxs.ign.fr/" + key + "/geoportail/wfs?" + serviceVersionRequestLayer +
-        "&bbox=" + bottomLeft.x + "," + bottomLeft.y + "," + topRight.x +
-        "," + topRight.y + ",epsg:4326&outputFormat=json";
+    var url = `http://wxs.ign.fr/${key}/geoportail/wfs?${serviceVersionRequestLayer
+        }&bbox=${bottomLeft.x},${bottomLeft.y},${topRight.x
+        },${topRight.y},epsg:4326&outputFormat=json`;
 
     return url;
 };
 
-BuildingBox_Provider.prototype.getData = function(bbox, altitude) {
-    return this.WFS_Provider.getData(bbox).then(function(data) {
+BuildingBox_Provider.prototype.getData = function (bbox, altitude) {
+    return this.WFS_Provider.getData(bbox).then((data) => {
         this.generateMesh(data, bbox, altitude); // console.log(data);
         return this.geometry;
-    }.bind(this));
+    });
 };
 
-BuildingBox_Provider.prototype.generateMesh = function(elements, bbox, altitude) {
-
-    //console.log(elements);
+BuildingBox_Provider.prototype.generateMesh = function (elements, bbox, altitude) {
+    // console.log(elements);
 
     var _geometry = new THREE.Geometry(); // for the walls
     var geometry = new THREE.Geometry(); // for the roof
     var suppHeight = 10; // So we don't cut the roof
     var ellipsoid = new Ellipsoid(new THREE.Vector3(6378137, 6356752.3142451793, 6378137));
     var features = elements.features;
-    var altitude_ground = altitude - 1.5; //35;  // truck height
+    var altitude_ground = altitude - 1.5; // 35;  // truck height
 
     for (var r = 0; r < features.length; r++) {
-
         var hauteur = (features[r].properties.hauteur + suppHeight) || 0;
-        var z_min = altitude_ground; //features[r].properties.z_min;  // altitude_ground // force altitude ground
+        var z_min = altitude_ground; // features[r].properties.z_min;  // altitude_ground // force altitude ground
         var polygon = features[r].geometry.coordinates[0][0];
 
         if (polygon.length > 2) {
-
             var arrPoint2D = [];
             // VERTICES
             for (var j = 0; j < polygon.length - 1; ++j) {
-
-                var pt2DTab = polygon[j]; //.split(' ');
+                var pt2DTab = polygon[j]; // .split(' ');
                 var p1 = new THREE.Vector3(parseFloat(pt2DTab[0]), 0, parseFloat(pt2DTab[1]));
 
-                var coordCarto1 = new GeoCoordinate(p1.x, p1.z, z_min,UNIT.DEGREE);
-                var coordCarto2 = new GeoCoordinate(p1.x, p1.z, z_min + hauteur,UNIT.DEGREE); // + Math.random(1000) );
-                var pgeo1 = ellipsoid.cartographicToCartesian(coordCarto1); //{longitude:p1.z, latitude:p1.x, altitude: 0});
+                var coordCarto1 = new GeoCoordinate(p1.x, p1.z, z_min, UNIT.DEGREE);
+                var coordCarto2 = new GeoCoordinate(p1.x, p1.z, z_min + hauteur, UNIT.DEGREE); // + Math.random(1000) );
+                var pgeo1 = ellipsoid.cartographicToCartesian(coordCarto1); // {longitude:p1.z, latitude:p1.x, altitude: 0});
                 var pgeo2 = ellipsoid.cartographicToCartesian(coordCarto2);
 
                 var vector3_1 = new THREE.Vector3(pgeo1.x, pgeo1.y, pgeo1.z); // - x temporary, bug
                 var vector3_2 = new THREE.Vector3(pgeo2.x, pgeo2.y, pgeo2.z);
 
-                arrPoint2D.push(CVML.newPoint(p1.z, p1.x)); //-pgeo1.x, pgeo1.z)); //for roof
+                arrPoint2D.push(CVML.newPoint(p1.z, p1.x)); // -pgeo1.x, pgeo1.z)); //for roof
                 _geometry.vertices.push(vector3_1, vector3_2);
-
             }
 
             // FACES
             // indice of the first point of the polygon 3D
             for (var k = _geometry.vertices.length - ((polygon.length - 1) * 2); k < _geometry.vertices.length; k = k + 2) {
-
                 var l = k; // % (pts2DTab.length);
                 if (l > _geometry.vertices.length - 4) {
                     l = _geometry.vertices.length - ((polygon.length - 1) * 2);
@@ -127,45 +118,39 @@ BuildingBox_Provider.prototype.generateMesh = function(elements, bbox, altitude)
             var ll = _geometry.vertices.length - ((polygon.length - 1) * 2);
             _geometry.faces.push(new THREE.Face3(ll, ll + 1, _geometry.vertices.length - 1));
             _geometry.faces.push(new THREE.Face3(ll, _geometry.vertices.length - 1, _geometry.vertices.length - 2));
-
         }
 
-        //**************** ROOF ****************************
+        //* *************** ROOF ****************************
 
         var triangles = CVML.TriangulatePoly(arrPoint2D);
-        //var geometry = new THREE.Geometry();  // for the roof
-        triangles.forEach(function(t) {
-
+        // var geometry = new THREE.Geometry();  // for the roof
+        triangles.forEach((t) => {
             var pt1 = t.getPoint(0),
                 pt2 = t.getPoint(1),
                 pt3 = t.getPoint(2);
 
-            var coordCarto1 = new GeoCoordinate(pt1.y, pt1.x, z_min + hauteur,UNIT.DEGREE);
-            var coordCarto2 = new GeoCoordinate(pt2.y, pt2.x, z_min + hauteur,UNIT.DEGREE); // + Math.random(1000) );
-            var coordCarto3 = new GeoCoordinate(pt3.y, pt3.x, z_min + hauteur,UNIT.DEGREE);
+            var coordCarto1 = new GeoCoordinate(pt1.y, pt1.x, z_min + hauteur, UNIT.DEGREE);
+            var coordCarto2 = new GeoCoordinate(pt2.y, pt2.x, z_min + hauteur, UNIT.DEGREE); // + Math.random(1000) );
+            var coordCarto3 = new GeoCoordinate(pt3.y, pt3.x, z_min + hauteur, UNIT.DEGREE);
 
-            var pgeo1 = ellipsoid.cartographicToCartesian(coordCarto1); //{longitude:p1.z, latitude:p1.x, altitude: 0});
+            var pgeo1 = ellipsoid.cartographicToCartesian(coordCarto1); // {longitude:p1.z, latitude:p1.x, altitude: 0});
             var pgeo2 = ellipsoid.cartographicToCartesian(coordCarto2);
             var pgeo3 = ellipsoid.cartographicToCartesian(coordCarto3);
 
-            //var geometry = new THREE.Geometry();
+            // var geometry = new THREE.Geometry();
             geometry.vertices.push(new THREE.Vector3(pgeo1.x, pgeo1.y, pgeo1.z));
             geometry.vertices.push(new THREE.Vector3(pgeo2.x, pgeo2.y, pgeo2.z));
             geometry.vertices.push(new THREE.Vector3(pgeo3.x, pgeo3.y, pgeo3.z));
 
-            var face = new THREE.Face3(
-                geometry.vertices.length - 3,
-                geometry.vertices.length - 2,
-                geometry.vertices.length - 1
-            );
+            var face = new THREE.Face3(geometry.vertices.length - 3,
+                                     geometry.vertices.length - 2,
+                                     geometry.vertices.length - 1);
             geometry.faces.push(face);
-
         });
-
     }
 
     if (this.roadOn)
-        this.addRoad(_geometry, bbox, altitude_ground, ellipsoid);
+        { this.addRoad(_geometry, bbox, altitude_ground, ellipsoid); }
 
 
     _geometry.computeFaceNormals(); // WARNING : VERY IMPORTANT WHILE WORKING WITH RAY CASTING ON CUSTOM MESH
@@ -197,25 +182,23 @@ BuildingBox_Provider.prototype.generateMesh = function(elements, bbox, altitude)
     return {
         geometry: _geometry,
         pivot: firstPos,
-        geometryRoof: geometry
+        geometryRoof: geometry,
     };
-
 };
 
 
-BuildingBox_Provider.prototype.addRoad = function(geometry, bbox, altitude_road, ellipsoid) {
-
+BuildingBox_Provider.prototype.addRoad = function (geometry, bbox, altitude_road, ellipsoid) {
     // Version using SIMPLE PLANE ROAD for Click and Go
     var ratio = 0.2;
     var roadWidth = (bbox.east() - bbox.west()) * ratio;
     var roadHeight = (bbox.north() - bbox.south()) * ratio;
     var pos = new THREE.Vector3((bbox.south() + bbox.north()) / 2,
-        altitude_road, (bbox.west() + bbox.east()) / 2); //48.8505774,  altitude_sol, 2.3348124);
+        altitude_road, (bbox.west() + bbox.east()) / 2); // 48.8505774,  altitude_sol, 2.3348124);
 
-    var coordCarto1 = new GeoCoordinate(pos.x - roadWidth, pos.z - roadHeight, altitude_road,UNIT.DEGREE);
-    var coordCarto2 = new GeoCoordinate(pos.x - roadWidth, pos.z + roadHeight, altitude_road,UNIT.DEGREE);
-    var coordCarto3 = new GeoCoordinate(pos.x + roadWidth, pos.z + roadHeight, altitude_road,UNIT.DEGREE);
-    var coordCarto4 = new GeoCoordinate(pos.x + roadWidth, pos.z - roadHeight, altitude_road,UNIT.DEGREE);
+    var coordCarto1 = new GeoCoordinate(pos.x - roadWidth, pos.z - roadHeight, altitude_road, UNIT.DEGREE);
+    var coordCarto2 = new GeoCoordinate(pos.x - roadWidth, pos.z + roadHeight, altitude_road, UNIT.DEGREE);
+    var coordCarto3 = new GeoCoordinate(pos.x + roadWidth, pos.z + roadHeight, altitude_road, UNIT.DEGREE);
+    var coordCarto4 = new GeoCoordinate(pos.x + roadWidth, pos.z - roadHeight, altitude_road, UNIT.DEGREE);
 
     var pgeo1 = ellipsoid.cartographicToCartesian(coordCarto1);
     var pgeo2 = ellipsoid.cartographicToCartesian(coordCarto2);
@@ -231,7 +214,6 @@ BuildingBox_Provider.prototype.addRoad = function(geometry, bbox, altitude_road,
     geometry.faces.push(new THREE.Face3(len - 4, len - 3, len - 2));
     geometry.faces.push(new THREE.Face3(len - 4, len - 2, len - 1));
 };
-
 
 
 export default BuildingBox_Provider;

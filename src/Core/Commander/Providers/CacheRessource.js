@@ -7,38 +7,33 @@
 var instanceCache = null;
 
 function CacheRessource() {
-    //Constructor
+    // Constructor
 
     this.cacheObjects = [];
     this._maximumSize = null;
-
 }
 
 /**
  * @param url
  */
-CacheRessource.prototype.getRessource = function(url) {
-
+CacheRessource.prototype.getRessource = function (url) {
     return this.cacheObjects[url];
-
 };
 
-CacheRessource.prototype.addRessource = function(url, ressource) {
-
+CacheRessource.prototype.addRessource = function (url, ressource) {
     this.cacheObjects[url] = ressource;
-
 };
 
 
 /**
  * @param id
  */
-CacheRessource.prototype.getRessourceByID = function( /*id*/ ) {
-    //TODO: Implement Me
+CacheRessource.prototype.getRessourceByID = function (/* id*/) {
+    // TODO: Implement Me
 
 };
 
-export default function() {
+export default function () {
     instanceCache = instanceCache || new CacheRessource();
     return instanceCache;
 }

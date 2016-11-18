@@ -6,7 +6,7 @@
 import IoDriver from 'IoDriver';
 
 function IoDriverglTF() {
-    //Constructor
+    // Constructor
 
 
 }
@@ -15,5 +15,5 @@ IoDriverglTF.prototype = new IoDriver();
 
 
 export {
-    IoDriverglTF
+    IoDriverglTF,
 };

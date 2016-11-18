@@ -22,41 +22,40 @@ function OBBHelper(OBB, text) {
     var color = new THREE.Color(Math.random(), Math.random(), Math.random());
 
     THREE.LineSegments.call(this, geometry, new THREE.LineBasicMaterial({
-        color: color.getHex()
+        color: color.getHex(),
     }));
 
     var size = OBB.box3D.size();
 
     var geometryText = new THREE.TextGeometry(text, {
 
-        font: font,
+        font,
         size: size.x * 0.0666,
         height: size.z * 0.001,
-        curveSegments: 1
+        curveSegments: 1,
 
     });
 
     this.textMesh = new THREE.Mesh(geometryText, new THREE.MeshBasicMaterial({
         color: new THREE.Color(1, 0, 0),
-        side: THREE.DoubleSide
+        side: THREE.DoubleSide,
     }));
 
     this.add(this.textMesh);
 
     if (OBB !== undefined)
-        this.update(OBB);
-
+      { this.update(OBB); }
 }
 
 OBBHelper.prototype = Object.create(THREE.LineSegments.prototype);
 OBBHelper.prototype.constructor = OBBHelper;
 
-OBBHelper.prototype.setMaterialVisibility = function(show) {
+OBBHelper.prototype.setMaterialVisibility = function (show) {
     this.material.visible = show;
     this.textMesh.material.visible = show;
 };
 
-OBBHelper.prototype.update = function(OBB) {
+OBBHelper.prototype.update = function (OBB) {
     var box = OBB.box3D;
     var min = box.min;
     var max = box.max;

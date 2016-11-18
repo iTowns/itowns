@@ -7,7 +7,7 @@
 import * as THREE from 'three';
 
 function BrowseTree(engine) {
-    //Constructor
+    // Constructor
 
     this.oneNode = 0;
     this.gfxEngine = engine;
@@ -18,35 +18,31 @@ function BrowseTree(engine) {
     this.selectedNodeId = -1;
     this.selectedNode = null;
 
-    this.selectNode = function(node) {
+    this.selectNode = function (node) {
         this._selectNode(node);
     };
 }
 
-BrowseTree.prototype.addNodeProcess = function(nodeProcess) {
+BrowseTree.prototype.addNodeProcess = function (nodeProcess) {
     this.nodeProcess = nodeProcess;
 };
 
-BrowseTree.prototype.NodeProcess = function() {
+BrowseTree.prototype.NodeProcess = function () {
     return this.nodeProcess;
 };
 
-BrowseTree.prototype.uniformsProcess = function() {
-
+BrowseTree.prototype.uniformsProcess = (function () {
     var positionWorld = new THREE.Vector3();
 
-    return function(node, camera) {
-
+    return function (node, camera) {
         node.setMatrixRTC(this.gfxEngine.getRTCMatrixFromCenter(positionWorld.setFromMatrixPosition(node.matrixWorld), camera));
         node.setFog(this.fogDistance);
 
         this.selectNode(node);
-
     };
+}());
 
-}();
-
-BrowseTree.prototype._selectNode = function(node) {
+BrowseTree.prototype._selectNode = function (node) {
     if (node.id === this.selectedNodeId) {
         node.setSelected(node.visible && node.material.visible);
         if (this.selectedNode !== node) {
@@ -72,7 +68,7 @@ function applyFunctionToChildren(func, node) {
  * @param {type} optional   : optional process
  * @returns {undefined}
  */
-BrowseTree.prototype.browse = function(tree, camera, process, layersConfig) {
+BrowseTree.prototype.browse = function (tree, camera, process, layersConfig) {
     this.tree = tree;
 
     camera.updateMatrixWorld();
@@ -83,7 +79,7 @@ BrowseTree.prototype.browse = function(tree, camera, process, layersConfig) {
 
     var params = {
         tree: this.tree,
-        layersConfig: layersConfig
+        layersConfig,
     };
 
     var rootNode = tree.children[0];
@@ -98,7 +94,7 @@ BrowseTree.prototype.browse = function(tree, camera, process, layersConfig) {
  * @param {type} optional   : optional process
  * @returns {undefined}
  */
-BrowseTree.prototype._browseDisplayableNode = function(node, camera, process, params) {
+BrowseTree.prototype._browseDisplayableNode = function (node, camera, process, params) {
     if (node.parent.isVisible() && process.processNode(node, camera, params)) {
         if (node.isDisplayed()) {
             this.uniformsProcess(node, camera);
@@ -114,7 +110,7 @@ BrowseTree.prototype._browseDisplayableNode = function(node, camera, process, pa
     }
 };
 
-BrowseTree.prototype._browseNonDisplayableNode = function(node, level, process, camera, params) {
+BrowseTree.prototype._browseNonDisplayableNode = function (node, level, process, camera, params) {
     // update node's sse value
     node.sse = camera.computeNodeSSE(node);
     node.setDisplayed(false);
@@ -156,70 +152,56 @@ BrowseTree.prototype._browseNonDisplayableNode = function(node, level, process, 
  * @documentation: Recursive traverse tree to update a material specific uniform
  * @returns {undefined}
  */
-BrowseTree.prototype.updateMaterialUniform = function(uniformName, value) {
-
-
+BrowseTree.prototype.updateMaterialUniform = function (uniformName, value) {
     for (var a = 0; a < this.tree.children.length; ++a) {
         var root = this.tree.children[a];
         for (var c = 0; c < root.children.length; c++) {
-
             var node = root.children[c];
-            var lookMaterial = function(obj) {
-
+            var lookMaterial = function (obj) {
                 obj.material.uniforms[uniformName].value = value;
-            }.bind(this);
+            };
 
             if (node.traverse)
-                node.traverse(lookMaterial);
-
-
+              { node.traverse(lookMaterial); }
         }
     }
 };
 
-BrowseTree.prototype.updateLayer = function(layer, camera) {
-
+BrowseTree.prototype.updateLayer = function (layer, camera) {
     if (!layer.visible)
-        return;
+        { return; }
 
     var root = layer.children[0];
 
     for (var c = 0; c < root.children.length; c++) {
         var node = root.children[c];
 
-        var cRTC = function() {
-
+        var cRTC = function () {
             var mRTC = this.gfxEngine.getRTCMatrixFromNode(node, camera);
 
-            return function(obj) {
-
+            return function (obj) {
                 if (obj.setMatrixRTC)
-                    obj.setMatrixRTC(mRTC);
-
+                  { obj.setMatrixRTC(mRTC); }
             };
-
         }.bind(this)();
 
         node.traverse(cRTC);
     }
 };
 
-BrowseTree.prototype.updateMobileMappingLayer = function(layer, camera) {
-
+BrowseTree.prototype.updateMobileMappingLayer = function (layer, camera) {
     if (!layer.visible)
-        return;
+        { return; }
 
     var root = layer.children[0];
 
     for (var c = 0; c < root.children.length; c++) {
-
         var node = root.children[c];
         node.setMatrixRTC(this.gfxEngine.getRTCMatrixFromCenter(node.absoluteCenter, camera));
-
     }
 };
 
-BrowseTree.prototype.updateQuadtree = function(layer, layersConfiguration, camera) {
+BrowseTree.prototype.updateQuadtree = function (layer, layersConfiguration, camera) {
     var quadtree = layer.node.tiles;
 
     this.browse(quadtree, camera, layer.process, layersConfiguration);

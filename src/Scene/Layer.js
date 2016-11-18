@@ -19,7 +19,7 @@ import Projection from 'Core/Geographic/Projection';
 import NodeMesh from 'Renderer/NodeMesh';
 
 function Layer() {
-    //Constructor
+    // Constructor
 
     Node.call(this);
     this.descriManager = null;
@@ -34,7 +34,7 @@ Layer.prototype = Object.create(Node.prototype);
 Layer.prototype.constructor = Layer;
 
 // Should be plural as it return an array of meshes
-Layer.prototype.getMesh = function() {
+Layer.prototype.getMesh = function () {
     var meshs = [];
 
     for (var i = 0; i < this.children.length; i++) {
@@ -42,14 +42,13 @@ Layer.prototype.getMesh = function() {
 
 
         if (node instanceof NodeMesh || node instanceof THREE.Mesh || node instanceof THREE.Object3D)
-            meshs.push(node);
+            { meshs.push(node); }
         else if (node instanceof Layer) {
             meshs = meshs.concat(node.getMesh());
         }
     }
 
     return meshs;
-
 };
 
 export default Layer;

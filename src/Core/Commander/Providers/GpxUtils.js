@@ -6,43 +6,42 @@
 
 import * as THREE from 'three';
 import IoDriverXML from 'Core/Commander/Providers/IoDriverXML';
-import GeoCoordinate,{UNIT} from 'Core/Geographic/GeoCoordinate';
+import GeoCoordinate, { UNIT } from 'Core/Geographic/GeoCoordinate';
 import ItownsLine from 'Core/Commander/Providers/ItownsLine';
 import ItownsPoint from 'Core/Commander/Providers/ItownsPoint';
 
 
 function _gpxToWayPointsArray(gpxXML) {
-    return gpxXML.getElementsByTagName("wpt");
+    return gpxXML.getElementsByTagName('wpt');
 }
 
 function _gGpxToWTrackPointsArray(gpxXML) {
-    return gpxXML.getElementsByTagName("trkpt");
+    return gpxXML.getElementsByTagName('trkpt');
 }
 
-function _gpxPtToCartesian(pt,ellipsoid) {
-
+function _gpxPtToCartesian(pt, ellipsoid) {
     var longitude = Number(pt.attributes.lon.nodeValue);
     var latitude = Number(pt.attributes.lat.nodeValue);
-    var elevation = Number(pt.getElementsByTagName("ele")[0].childNodes[0].nodeValue);
+    var elevation = Number(pt.getElementsByTagName('ele')[0].childNodes[0].nodeValue);
 
-    return ellipsoid.cartographicToCartesian(new GeoCoordinate(longitude,latitude,elevation,UNIT.DEGREE));
+    return ellipsoid.cartographicToCartesian(new GeoCoordinate(longitude, latitude, elevation, UNIT.DEGREE));
 }
 
-function _gpxToWayPointsMesh(gpxXML,ellipsoid) {
+function _gpxToWayPointsMesh(gpxXML, ellipsoid) {
     var wayPts = _gpxToWayPointsArray(gpxXML);
 
-    if(wayPts.length) {
-        var colorPoint = new THREE.Color("rgb(0, 255, 0)");
+    if (wayPts.length) {
+        var colorPoint = new THREE.Color('rgb(0, 255, 0)');
         var points = new ItownsPoint({
-                time : 1.0,
-                useTexture : false,
-                texture : "data/strokes/pstar1.png",
-                color   : [colorPoint.r, colorPoint.g, colorPoint.b],
-                opacity : 1.0
+            time: 1.0,
+            useTexture: false,
+            texture: 'data/strokes/pstar1.png',
+            color: [colorPoint.r, colorPoint.g, colorPoint.b],
+            opacity: 1.0,
         });
 
         for (var i = 0; i < wayPts.length; i++) {
-            points.addPoint(_gpxPtToCartesian(wayPts[i],ellipsoid),colorPoint,600.0);
+            points.addPoint(_gpxPtToCartesian(wayPts[i], ellipsoid), colorPoint, 600.0);
         }
 
         points.process();
@@ -53,23 +52,23 @@ function _gpxToWayPointsMesh(gpxXML,ellipsoid) {
     }
 }
 
-function _gpxToWTrackPointsMesh(gpxXML,ellipsoid) {
+function _gpxToWTrackPointsMesh(gpxXML, ellipsoid) {
     var trackPts = _gGpxToWTrackPointsArray(gpxXML);
 
-    if(trackPts.length){
-        var colorLine = new THREE.Color("rgb(255, 0, 0)");
+    if (trackPts.length) {
+        var colorLine = new THREE.Color('rgb(255, 0, 0)');
         var line = new ItownsLine({
-                                    time :  1.0,
-                                    linewidth   : 100.0,
-                                    texture :   "data/strokes/hway1.png",
-                                    useTexture : false,
-                                    opacity    : 1.0 ,
-                                    sizeAttenuation : 1.0,
-                                    color : [colorLine.r, colorLine.g, colorLine.b]
+            time: 1.0,
+            linewidth: 100.0,
+            texture: 'data/strokes/hway1.png',
+            useTexture: false,
+            opacity: 1.0,
+            sizeAttenuation: 1.0,
+            color: [colorLine.r, colorLine.g, colorLine.b],
         });
 
-        for (var k=0; k < trackPts.length ; k++){
-            line.addPoint(_gpxPtToCartesian(trackPts[k],ellipsoid));
+        for (var k = 0; k < trackPts.length; k++) {
+            line.addPoint(_gpxPtToCartesian(trackPts[k], ellipsoid));
         }
 
         line.process();
@@ -80,37 +79,34 @@ function _gpxToWTrackPointsMesh(gpxXML,ellipsoid) {
     }
 }
 
-function _gpxToMesh(gpxXML,ellipsoid) {
+function _gpxToMesh(gpxXML, ellipsoid) {
     if (!gpxXML) {
         return undefined;
     }
 
     var gpxMesh = new THREE.Object3D();
 
-    //Getting the track points
-    var trackPts = _gpxToWTrackPointsMesh(gpxXML,ellipsoid);
+    // Getting the track points
+    var trackPts = _gpxToWTrackPointsMesh(gpxXML, ellipsoid);
 
     if (trackPts) {
         gpxMesh.add(trackPts);
     }
 
     // Getting the waypoint points
-    var wayPts = _gpxToWayPointsMesh(gpxXML,ellipsoid);
+    var wayPts = _gpxToWayPointsMesh(gpxXML, ellipsoid);
 
     if (wayPts) {
         gpxMesh.add(wayPts);
     }
 
     return gpxMesh;
-
 }
 
-export default function loadGpx(urlFile,ellipsoid) {
+export default function loadGpx(urlFile, ellipsoid) {
     var ioDriverXML = new IoDriverXML();
 
     return ioDriverXML.read(urlFile).then(
-        function(gpxXML) {
-            return _gpxToMesh(gpxXML,ellipsoid);
-        });
+        gpxXML => _gpxToMesh(gpxXML, ellipsoid));
 }
 

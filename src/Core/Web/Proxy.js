@@ -5,13 +5,12 @@
  */
 
 function Proxy() {
-    //Constructor
+    // Constructor
 
 
 }
 
 
-
 export {
-    Proxy
+    Proxy,
 };
