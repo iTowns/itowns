@@ -6,7 +6,7 @@
 
 
 function IoDriver() {
-    //Constructor
+    // Constructor
 
 
 }
@@ -17,8 +17,8 @@ IoDriver.prototype.constructor = IoDriver;
 /**
  * @param url
  */
-IoDriver.prototype.load = function( /*url*/ ) {
-    //TODO: Implement Me
+IoDriver.prototype.load = function (/* url*/) {
+    // TODO: Implement Me
 
 };
 
@@ -27,8 +27,8 @@ IoDriver.prototype.load = function( /*url*/ ) {
  * @param url
  * @param inputObject {Object}
  */
-IoDriver.prototype.write = function( /*url, inputObject*/ ) {
-    //TODO: Implement Me
+IoDriver.prototype.write = function (/* url, inputObject*/) {
+    // TODO: Implement Me
 
 };
 
@@ -36,8 +36,8 @@ IoDriver.prototype.write = function( /*url, inputObject*/ ) {
 /**
  * @param url
  */
-IoDriver.prototype.readAsync = function( /*url*/ ) {
-    //TODO: Implement Me
+IoDriver.prototype.readAsync = function (/* url*/) {
+    // TODO: Implement Me
 
 };
 
@@ -45,8 +45,8 @@ IoDriver.prototype.readAsync = function( /*url*/ ) {
 /**
  * @param url
  */
-IoDriver.prototype.writeAsync = function( /*url*/ ) {
-    //TODO: Implement Me
+IoDriver.prototype.writeAsync = function (/* url*/) {
+    // TODO: Implement Me
 
 };
 

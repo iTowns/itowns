@@ -4,18 +4,17 @@
  */
 
 function Capabilities() {
-    //Constructor
+    // Constructor
 
     this._systemCap = null;
     this._gpuCap = null;
-
 }
 
 
 /**
  */
-Capabilities.prototype.getSystemCapabilities = function() {
-    //TODO: Implement Me
+Capabilities.prototype.getSystemCapabilities = function () {
+    // TODO: Implement Me
     /*
     var memory = window.performance.memory;
     console.log(memory.totalJSHeapSize / (1024 * 1024) + '/' + memory.jsHeapSizeLimit / (1024 * 1024));
@@ -25,23 +24,21 @@ Capabilities.prototype.getSystemCapabilities = function() {
 
 /**
  */
-Capabilities.prototype.getGpuCapabilities = function() {
-    //TODO: Implement Me
+Capabilities.prototype.getGpuCapabilities = function () {
+    // TODO: Implement Me
 
 };
 
 
 /**
  */
-Capabilities.prototype.ioFile = function() {
-    //TODO: Implement Me
+Capabilities.prototype.ioFile = function () {
+    // TODO: Implement Me
 
 };
 
-Capabilities.prototype.isInternetExplorer = function() {
-
-    return /*@cc_on!@*/ false || !!document.documentMode;
-
+Capabilities.prototype.isInternetExplorer = function () {
+    return /* @cc_on!@*/ false || !!document.documentMode;
 };
 /*
     Capabilities.prototype.checkVersion = function()

@@ -13,15 +13,14 @@ import GlobeDepthVS from 'Renderer/Shader/GlobeDepthVS.glsl';
 // This material renders the id in RGBA Color
 // Warning the RGBA contains id in float pack in 4 unsigned char
 
-var MatteIdsMaterial = function(otherMaterial) {
-
+var MatteIdsMaterial = function (otherMaterial) {
     BasicMaterial.call(this);
 
-	this.vertexShader =  this.vertexShaderHeader + GlobeDepthVS;
+    this.vertexShader = this.vertexShaderHeader + GlobeDepthVS;
     this.fragmentShader = this.fragmentShaderHeader + MatteIdsFS;
 
     this.uniforms.uuid.value = otherMaterial.uniforms.uuid.value;
-    this.uniforms.diffuseColor.value = new THREE.Color( Math.random() * 0xffffff  );//.setHex( Math.random() * 0xffffff );
+    this.uniforms.diffuseColor.value = new THREE.Color(Math.random() * 0xffffff);// .setHex( Math.random() * 0xffffff );
 
     this.uniforms.dTextures_00 = new THREE.Uniform(otherMaterial.textures[0]);
     this.uniforms.texturesCount = new THREE.Uniform(otherMaterial.loadedTexturesCount[0]);
@@ -31,7 +30,7 @@ var MatteIdsMaterial = function(otherMaterial) {
 MatteIdsMaterial.prototype = Object.create(BasicMaterial.prototype);
 MatteIdsMaterial.prototype.constructor = MatteIdsMaterial;
 
-MatteIdsMaterial.prototype.setMatrixRTC = function(rtc) {
+MatteIdsMaterial.prototype.setMatrixRTC = function (rtc) {
     this.uniforms.mVPMatRTC.value = rtc;
 };
 

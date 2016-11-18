@@ -7,7 +7,7 @@
 import * as THREE from 'three';
 
 
-var Sensor = function(infos) {
+var Sensor = function (infos) {
     this.infos = infos;
     this.position = new THREE.Vector3().fromArray(infos.position);
     this.rotation = new THREE.Matrix3().fromArray(infos.rotation);
@@ -39,23 +39,20 @@ var Sensor = function(infos) {
 };
 
 
-
-Sensor.prototype.getDistortion_r2max = function(disto) {
+Sensor.prototype.getDistortion_r2max = function (disto) {
     // returned the square of the smallest positive root of the derivativeof the distortion polynomial
     // which tells where the distortion might no longer be bijective.
     var roots = this.cardan_cubic_roots(7 * disto.z, 5 * disto.y, 3 * disto.x, 1);
     var imax = -1;
     for (var i in roots)
-        if (roots[i] > 0 && (imax === -1 || roots[imax] > roots[i])) imax = i;
+        { if (roots[i] > 0 && (imax === -1 || roots[imax] > roots[i])) imax = i; }
     if (imax === -1) return Infinity; // no roots : all is valid !
     return roots[imax];
 };
 
 
-
 // rotation * Photogram_JMM * getMatOrientationCapteur * photgramme_image
-Sensor.prototype.getMatOrientationTotal = function() {
-
+Sensor.prototype.getMatOrientationTotal = function () {
     var out = this.rotation.clone();
     out = new THREE.Matrix3().multiplyMatrices(out.clone(), this.Photogram_JMM.clone());
 
@@ -64,11 +61,9 @@ Sensor.prototype.getMatOrientationTotal = function() {
 
     out = new THREE.Matrix3().multiplyMatrices(this._itownsWay, out.clone());
     return out;
-
 };
 
-Sensor.prototype.getMatOrientationCapteur = function() {
-
+Sensor.prototype.getMatOrientationCapteur = function () {
     var ori0 = new THREE.Matrix3().set(0, -1, 0,
         1, 0, 0,
         0, 0, 1);
@@ -97,11 +92,9 @@ Sensor.prototype.getMatOrientationCapteur = function() {
 };
 
 
-Sensor.prototype.cardan_cubic_roots = function(a, b, c, d) {
-
+Sensor.prototype.cardan_cubic_roots = function (a, b, c, d) {
     // http://fr.wikipedia.org/wiki/Methode_de_Cardan  Thanks Bredif
-    var cardan_cubic_roots = function(a, b, c, d) {
-
+    var cardan_cubic_roots = function (a, b, c, d) {
         if (a === 0) return quadratic_roots(b, c, d);
         var vt = -b / (3 * a);
         var a2 = a * a;
@@ -130,16 +123,16 @@ Sensor.prototype.cardan_cubic_roots = function(a, b, c, d) {
         } else // (del < 0)
         {
             var kos = Math.acos(-q / Math.sqrt(p3_4_27));
-            var r = 2 * Math.sqrt(-p / 3)
+            var r = 2 * Math.sqrt(-p / 3);
             return [
                 r * Math.cos((kos) / 3) + vt,
                 r * Math.cos((kos + Math.PI) / 3) + vt,
-                r * Math.cos((kos + 2 * Math.PI) / 3) + vt
+                r * Math.cos((kos + 2 * Math.PI) / 3) + vt,
             ];
         }
     };
 
-    var quadratic_roots = function(a, b, c) {
+    var quadratic_roots = function (a, b, c) {
         var delta = b * b - 4 * a * c;
         if (delta < 0) return [];
         var x0 = -b / (2 * a);
@@ -148,11 +141,11 @@ Sensor.prototype.cardan_cubic_roots = function(a, b, c, d) {
         return [x0 - sqr_delta_2a, x0 + sqr_delta_2a];
     };
 
-    var sgn = function(x) {
+    var sgn = function (x) {
         return (x > 0) - (x < 0);
     };
 
-    var cubic_root = function(x) {
+    var cubic_root = function (x) {
         return sgn(x) * Math.pow(Math.abs(x), 1 / 3);
     };
 

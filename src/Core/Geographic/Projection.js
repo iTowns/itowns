@@ -11,25 +11,20 @@ import * as THREE from 'three';
 
 
 function Projection() {
-    //Constructor
+    // Constructor
 
 }
 
-Projection.prototype.WGS84ToY = function(latitude) {
-
+Projection.prototype.WGS84ToY = function (latitude) {
     return 0.5 - Math.log(Math.tan(MathExt.PI_OV_FOUR + latitude * 0.5)) * MathExt.INV_TWO_PI;
-
 };
 
-Projection.prototype.WGS84ToOneSubY = function(latitude) {
-
+Projection.prototype.WGS84ToOneSubY = function (latitude) {
     return 0.5 + Math.log(Math.tan(MathExt.PI_OV_FOUR + latitude * 0.5)) * MathExt.INV_TWO_PI;
-
 };
 
-Projection.prototype.WGS84LatitudeClamp = function(latitude) {
-
-    //var min = -68.1389  / 180 * Math.PI;
+Projection.prototype.WGS84LatitudeClamp = function (latitude) {
+    // var min = -68.1389  / 180 * Math.PI;
     var min = -86 / 180 * Math.PI;
     var max = 84 / 180 * Math.PI;
 
@@ -37,38 +32,33 @@ Projection.prototype.WGS84LatitudeClamp = function(latitude) {
     latitude = Math.min(max, latitude);
 
     return latitude;
-
 };
 
 
-Projection.prototype.getCoordWMTS_WGS84 = function(tileCoord, bbox, tileMatrixSet) {
-
+Projection.prototype.getCoordWMTS_WGS84 = function (tileCoord, bbox, tileMatrixSet) {
     if (tileMatrixSet === 'PM')
-        return this.WMTS_WGS84ToWMTS_PM(tileCoord, bbox);
+        { return this.WMTS_WGS84ToWMTS_PM(tileCoord, bbox); }
     else if (tileMatrixSet === 'WGS84G')
-        return [tileCoord, tileCoord];
+        { return [tileCoord, tileCoord]; }
 };
 
-Projection.prototype.getAllCoordsWMTS = function(tileCoord, bbox, tileMatrixSets) {
-
+Projection.prototype.getAllCoordsWMTS = function (tileCoord, bbox, tileMatrixSets) {
     var tilesMT = [];
 
     for (var key in tileMatrixSets)
 
-        tilesMT[key] = this.getCoordsWMTS(tileCoord, bbox, key);
+        { tilesMT[key] = this.getCoordsWMTS(tileCoord, bbox, key); }
 
     return tilesMT;
-
 };
 
-Projection.prototype.getCoordsWMTS = function(tileCoord, bbox, tileMatrixSet) {
-
+Projection.prototype.getCoordsWMTS = function (tileCoord, bbox, tileMatrixSet) {
     var box = this.getCoordWMTS_WGS84(tileCoord, bbox, tileMatrixSet);
     var tilesMT = [];
 
     for (var row = box[0].row; row < box[1].row + 1; row++)
 
-        tilesMT.push(new CoordWMTS(box[0].zoom, row, box[0].col));
+        { tilesMT.push(new CoordWMTS(box[0].zoom, row, box[0].col)); }
 
 
     return tilesMT;
@@ -81,19 +71,21 @@ Projection.prototype.getCoordsWMTS = function(tileCoord, bbox, tileMatrixSet) {
  * @param {type} bbox
  * @returns {Array} coord WMTS array in pseudo mercator
  */
-Projection.prototype.WMTS_WGS84ToWMTS_PM = function(cWMTS, bbox) {
-
+Projection.prototype.WMTS_WGS84ToWMTS_PM = function (cWMTS, bbox) {
     var wmtsBox = [];
     var level = cWMTS.zoom + 1;
     var nbRow = Math.pow(2, level);
 
-    //var sY      = this.WGS84ToY(this.WGS84LatitudeClamp(-Math.PI*0.5)) - this.WGS84ToY(this.WGS84LatitudeClamp(Math.PI*0.5));
+    // var sY      = this.WGS84ToY(this.WGS84LatitudeClamp(-Math.PI*0.5)) - this.WGS84ToY(this.WGS84LatitudeClamp(Math.PI*0.5));
     var sizeRow = 1.0 / nbRow;
 
     var yMin = this.WGS84ToY(this.WGS84LatitudeClamp(bbox.north()));
     var yMax = this.WGS84ToY(this.WGS84LatitudeClamp(bbox.south()));
 
-    var minRow, maxRow, min, max;
+    var minRow,
+        maxRow,
+        min,
+        max;
 
     min = yMin / sizeRow;
     max = yMax / sizeRow;
@@ -102,7 +94,7 @@ Projection.prototype.WMTS_WGS84ToWMTS_PM = function(cWMTS, bbox) {
     maxRow = Math.floor(max);
 
     if (max - maxRow === 0.0 || maxRow === nbRow)
-        maxRow--;
+        { maxRow--; }
 
     var minCol = cWMTS.col;
     var maxCol = minCol;
@@ -111,11 +103,9 @@ Projection.prototype.WMTS_WGS84ToWMTS_PM = function(cWMTS, bbox) {
     wmtsBox.push(new CoordWMTS(level, maxRow, maxCol));
 
     return wmtsBox;
-
 };
 
-Projection.prototype.WMTS_WGS84Parent = function(cWMTS, levelParent, pitch) {
-
+Projection.prototype.WMTS_WGS84Parent = function (cWMTS, levelParent, pitch) {
     var diffLevel = cWMTS.zoom - levelParent;
     var diff = Math.pow(2, diffLevel);
     var invDiff = 1 / diff;
@@ -128,10 +118,9 @@ Projection.prototype.WMTS_WGS84Parent = function(cWMTS, levelParent, pitch) {
     pitch.z = invDiff;
 
     return new CoordWMTS(levelParent, r, c);
-
 };
 
-Projection.prototype.WMS_WGS84Parent = function(bbox, bboxParent) {
+Projection.prototype.WMS_WGS84Parent = function (bbox, bboxParent) {
     var scale = bbox.dimension.x / bboxParent.dimension.x;
 
     var x =
@@ -146,8 +135,7 @@ Projection.prototype.WMS_WGS84Parent = function(bbox, bboxParent) {
     return new THREE.Vector3(x, y, scale);
 };
 
-Projection.prototype.WGS84toWMTS = function(bbox) {
-
+Projection.prototype.WGS84toWMTS = function (bbox) {
     var zoom = Math.floor(Math.log(MathExt.PI / bbox.dimension.y) / MathExt.LOG_TWO + 0.5);
 
     var nY = Math.pow(2, zoom);
@@ -156,22 +144,21 @@ Projection.prototype.WGS84toWMTS = function(bbox) {
     var uX = MathExt.TWO_PI / nX;
     var uY = MathExt.PI / nY;
 
-    var col = Math.floor(((MathExt.PI + bbox.center.x)%(2*Math.PI) )/ uX);
+    var col = Math.floor(((MathExt.PI + bbox.center.x) % (2 * Math.PI)) / uX);
     var row = Math.floor(nY - (MathExt.PI_OV_TWO + bbox.center.y) / uY);
 
     return new CoordWMTS(zoom, row, col);
 };
 
-Projection.prototype.UnitaryToLongitudeWGS84 = function(u, projection, bbox) {
+Projection.prototype.UnitaryToLongitudeWGS84 = function (u, projection, bbox) {
     projection.setLongitude(bbox.west() + u * bbox.dimension.x);
 };
 
-Projection.prototype.UnitaryToLatitudeWGS84 = function(v, projection, bbox) {
+Projection.prototype.UnitaryToLatitudeWGS84 = function (v, projection, bbox) {
     projection.setLatitude(bbox.south() + v * bbox.dimension.y);
 };
 
-Projection.prototype.cartesianToGeo = function(position) {
-
+Projection.prototype.cartesianToGeo = function (position) {
     // TODO: warning switch coord
     var p = position.clone();
     p.x = position.x;
@@ -195,11 +182,11 @@ Projection.prototype.cartesianToGeo = function(position) {
 
     var h = (rsqXY * Math.cos(phi)) + p.z * Math.sin(phi) - a * Math.sqrt(1 - e * e * Math.sin(phi) * Math.sin(phi));
 
-    //TODO: return only WGS84 coordinate
-    return new GeoCoordinate(-theta , phi, h);
+    // TODO: return only WGS84 coordinate
+    return new GeoCoordinate(-theta, phi, h);
 };
 
-Projection.prototype.wgs84_to_lambert93 = function(latitude, longitude) //, x93, y93)
+Projection.prototype.wgs84_to_lambert93 = function (latitude, longitude) // , x93, y93)
     {
         /*
         rfrences :
@@ -208,61 +195,60 @@ Projection.prototype.wgs84_to_lambert93 = function(latitude, longitude) //, x93,
         http://www.ign.fr/affiche_rubrique.asp?rbr_id=1700&lng_id=FR
         */
 
-        //variables:
+        // variables:
 
-        //systme WGS84
-        var a = 6378137; //demi grand axe de l'ellipsoide (m)
-        var e = 0.08181919106; //premire excentricit de l'ellipsoide
+        // systme WGS84
+    var a = 6378137; // demi grand axe de l'ellipsoide (m)
+    var e = 0.08181919106; // premire excentricit de l'ellipsoide
 
 
-        var deg2rad = function() {};
+    var deg2rad = function () {};
 
-        //paramtres de projections
-        //var l0 =deg2rad(3);
-        var lc = deg2rad(3); //longitude de rfrence
-        var phi0 = deg2rad(46.5); //latitude d'origine en radian
-        var phi1 = deg2rad(44); //1er parallele automcoque
-        var phi2 = deg2rad(49); //2eme parallele automcoque
+        // paramtres de projections
+        // var l0 =deg2rad(3);
+    var lc = deg2rad(3); // longitude de rfrence
+    var phi0 = deg2rad(46.5); // latitude d'origine en radian
+    var phi1 = deg2rad(44); // 1er parallele automcoque
+    var phi2 = deg2rad(49); // 2eme parallele automcoque
 
-        var x0 = 700000; //coordonnes l'origine
-        var y0 = 6600000; //coordonnes l'origine
+    var x0 = 700000; // coordonnes l'origine
+    var y0 = 6600000; // coordonnes l'origine
 
-        //coordonnes du point traduire
-        var phi = deg2rad(latitude);
-        var l = deg2rad(longitude);
+        // coordonnes du point traduire
+    var phi = deg2rad(latitude);
+    var l = deg2rad(longitude);
 
-        //calcul des grandes normales
-        var gN1 = a / Math.sqrt(1 - e * e * Math.sin(phi1) * Math.sin(phi1));
-        var gN2 = a / Math.sqrt(1 - e * e * Math.sin(phi2) * Math.sin(phi2));
+        // calcul des grandes normales
+    var gN1 = a / Math.sqrt(1 - e * e * Math.sin(phi1) * Math.sin(phi1));
+    var gN2 = a / Math.sqrt(1 - e * e * Math.sin(phi2) * Math.sin(phi2));
 
-        //calculs de slatitudes isomtriques
-        var gl1 = Math.log(Math.tan(Math.PI / 4 + phi1 / 2) * Math.pow((1 - e * Math.sin(phi1)) / (1 + e * Math.sin(phi1)), e / 2));
+        // calculs de slatitudes isomtriques
+    var gl1 = Math.log(Math.tan(Math.PI / 4 + phi1 / 2) * Math.pow((1 - e * Math.sin(phi1)) / (1 + e * Math.sin(phi1)), e / 2));
 
-        var gl2 = Math.log(Math.tan(Math.PI / 4 + phi2 / 2) * Math.pow((1 - e * Math.sin(phi2)) / (1 + e * Math.sin(phi2)), e / 2));
+    var gl2 = Math.log(Math.tan(Math.PI / 4 + phi2 / 2) * Math.pow((1 - e * Math.sin(phi2)) / (1 + e * Math.sin(phi2)), e / 2));
 
-        var gl0 = Math.log(Math.tan(Math.PI / 4 + phi0 / 2) * Math.pow((1 - e * Math.sin(phi0)) / (1 + e * Math.sin(phi0)), e / 2));
+    var gl0 = Math.log(Math.tan(Math.PI / 4 + phi0 / 2) * Math.pow((1 - e * Math.sin(phi0)) / (1 + e * Math.sin(phi0)), e / 2));
 
-        var gl = Math.log(Math.tan(Math.PI / 4 + phi / 2) * Math.pow((1 - e * Math.sin(phi)) / (1 + e * Math.sin(phi)), e / 2));
+    var gl = Math.log(Math.tan(Math.PI / 4 + phi / 2) * Math.pow((1 - e * Math.sin(phi)) / (1 + e * Math.sin(phi)), e / 2));
 
-        //calcul de l'exposant de la projection
-        var n = (Math.log((gN2 * Math.cos(phi2)) / (gN1 * Math.cos(phi1)))) / (gl1 - gl2); //ok
+        // calcul de l'exposant de la projection
+    var n = (Math.log((gN2 * Math.cos(phi2)) / (gN1 * Math.cos(phi1)))) / (gl1 - gl2); // ok
 
-        //calcul de la constante de projection
-        var c = ((gN1 * Math.cos(phi1)) / n) * Math.exp(n * gl1); //ok
+        // calcul de la constante de projection
+    var c = ((gN1 * Math.cos(phi1)) / n) * Math.exp(n * gl1); // ok
 
-        //calcul des coordonnes
-        var ys = y0 + c * Math.exp(-1 * n * gl0);
+        // calcul des coordonnes
+    var ys = y0 + c * Math.exp(-1 * n * gl0);
 
-        //calcul des coordonnes lambert
-        var x93 = x0 + c * Math.exp(-1 * n * gl) * Math.sin(n * (l - lc));
-        var y93 = ys - c * Math.exp(-1 * n * gl) * Math.cos(n * (l - lc));
+        // calcul des coordonnes lambert
+    var x93 = x0 + c * Math.exp(-1 * n * gl) * Math.sin(n * (l - lc));
+    var y93 = ys - c * Math.exp(-1 * n * gl) * Math.cos(n * (l - lc));
 
-        return {
-            x: x93,
-            y: y93
-        };
-    }
-
+    return {
+        x: x93,
+        y: y93,
+    };
+};
 
 
 export default Projection;

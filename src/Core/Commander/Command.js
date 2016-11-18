@@ -5,10 +5,10 @@
  */
 
 function Command() {
-    //Constructor
+    // Constructor
 
     this.name = null;
-    this.priority = 0.0; //Math.floor((Math.random()*100));
+    this.priority = 0.0; // Math.floor((Math.random()*100));
     this.state = null;
     this.inParallel = null;
     this.inBuffers = null;
@@ -28,8 +28,8 @@ Command.prototype.constructor = Command;
 
 /**
  */
-Command.prototype.instance = function() {
-    //TODO: Implement Me
+Command.prototype.instance = function () {
+    // TODO: Implement Me
 
 };
 

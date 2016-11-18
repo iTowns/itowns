@@ -15,7 +15,7 @@ import * as THREE from 'three';
 import CacheRessource from 'Core/Commander/Providers/CacheRessource';
 
 function WMTS_Provider(options) {
-    //Constructor
+    // Constructor
 
     Provider.call(this, new IoDriver_XBIL());
     this.cache = CacheRessource();
@@ -26,31 +26,28 @@ function WMTS_Provider(options) {
     this.getTextureFloat = null;
 
     if (this.support)
-        this.getTextureFloat = function() {
+        { this.getTextureFloat = function () {
             return new THREE.Texture();
-        };
+        }; }
     else
-        this.getTextureFloat = function(buffer) {
-
+        { this.getTextureFloat = function (buffer) {
             // Start float to RGBA uint8
-            //var bufferUint = new Uint8Array(buffer.buffer);
+            // var bufferUint = new Uint8Array(buffer.buffer);
             // var texture = new THREE.DataTexture(bufferUint, 256, 256);
 
             var texture = new THREE.DataTexture(buffer, 256, 256, THREE.AlphaFormat, THREE.FloatType);
 
             texture.needsUpdate = true;
             return texture;
-
-        };
-
+        }; }
 }
 
 WMTS_Provider.prototype = Object.create(Provider.prototype);
 
 WMTS_Provider.prototype.constructor = WMTS_Provider;
 
-WMTS_Provider.prototype.customUrl = function(layer, url, tilematrix, row, col) {
-    let tm = Math.min(layer.zoom.max, tilematrix);
+WMTS_Provider.prototype.customUrl = function (layer, url, tilematrix, row, col) {
+    const tm = Math.min(layer.zoom.max, tilematrix);
 
     let urld = url.replace('%TILEMATRIX', tm.toString());
     urld = urld.replace('%ROW', row.toString());
@@ -59,33 +56,32 @@ WMTS_Provider.prototype.customUrl = function(layer, url, tilematrix, row, col) {
     return urld;
 };
 
-WMTS_Provider.prototype.removeLayer = function( /*idLayer*/ ) {
+WMTS_Provider.prototype.removeLayer = function (/* idLayer*/) {
 
 };
 
-WMTS_Provider.prototype.preprocessDataLayer = function(layer) {
+WMTS_Provider.prototype.preprocessDataLayer = function (layer) {
     layer.fx = layer.fx || 0.0;
     if (layer.protocol === 'wmtsc') {
         layer.zoom = {
             min: 2,
-            max: 20
+            max: 20,
         };
     } else {
-
         var options = layer.options;
-        options.version = options.version || "1.0.0";
-        options.tileMatrixSet = options.tileMatrixSet || "WGS84";
-        options.mimetype = options.mimetype || "image/png";
-        options.style = options.style || "normal";
-        options.projection = options.projection || "EPSG:3857";
-        var newBaseUrl = layer.url +
-            "?LAYER=" + options.name +
-            "&FORMAT=" + options.mimetype +
-            "&SERVICE=WMTS" +
-            "&VERSION=1.0.0" +
-            "&REQUEST=GetTile&STYLE=normal&TILEMATRIXSET=" + options.tileMatrixSet;
+        options.version = options.version || '1.0.0';
+        options.tileMatrixSet = options.tileMatrixSet || 'WGS84';
+        options.mimetype = options.mimetype || 'image/png';
+        options.style = options.style || 'normal';
+        options.projection = options.projection || 'EPSG:3857';
+        var newBaseUrl = `${layer.url
+            }?LAYER=${options.name
+            }&FORMAT=${options.mimetype
+            }&SERVICE=WMTS` +
+            '&VERSION=1.0.0' +
+            `&REQUEST=GetTile&STYLE=normal&TILEMATRIXSET=${options.tileMatrixSet}`;
 
-        newBaseUrl += "&TILEMATRIX=%TILEMATRIX&TILEROW=%ROW&TILECOL=%COL";
+        newBaseUrl += '&TILEMATRIX=%TILEMATRIX&TILEROW=%ROW&TILECOL=%COL';
         var arrayLimits = Object.keys(options.tileMatrixSetLimits);
 
         var size = arrayLimits.length;
@@ -94,7 +90,7 @@ WMTS_Provider.prototype.preprocessDataLayer = function(layer) {
 
         layer.zoom = {
             min: minZoom,
-            max: maxZoom
+            max: maxZoom,
         };
         layer.customUrl = newBaseUrl;
     }
@@ -105,10 +101,8 @@ WMTS_Provider.prototype.preprocessDataLayer = function(layer) {
  * @param {type} coWMTS
  * @returns {Object@call;create.urlOrtho.url|String}
  */
-WMTS_Provider.prototype.url = function(coWMTS, layer) {
-
+WMTS_Provider.prototype.url = function (coWMTS, layer) {
     return this.customUrl(layer, layer.customUrl, coWMTS.zoom, coWMTS.row, coWMTS.col);
-
 };
 
 /**
@@ -116,7 +110,7 @@ WMTS_Provider.prototype.url = function(coWMTS, layer) {
  * @param {type} coWMTS : coord WMTS
  * @returns {WMTS_Provider_L15.WMTS_Provider.prototype@pro;_IoDriver@call;read@call;then}
  */
-WMTS_Provider.prototype.getXbilTexture = function(tile, layer, parameters) {
+WMTS_Provider.prototype.getXbilTexture = function (tile, layer, parameters) {
     var cooWMTS = tile.matrixSet[layer.options.tileMatrixSet][0];
     var pitch = new THREE.Vector3(0.0, 0.0, 1.0);
 
@@ -138,7 +132,7 @@ WMTS_Provider.prototype.getXbilTexture = function(tile, layer, parameters) {
 
     if (textureCache !== undefined) {
         if (textureCache) {
-            let minmax = this._IoDriver.computeMinMaxElevation(
+            const minmax = this._IoDriver.computeMinMaxElevation(
                 textureCache.floatArray,
                 256, 256,
                 pitch);
@@ -147,7 +141,7 @@ WMTS_Provider.prototype.getXbilTexture = function(tile, layer, parameters) {
                     pitch,
                     texture: textureCache.texture,
                     min: minmax.min,
-                    max: minmax.max
+                    max: minmax.max,
                 });
         }
         return Promise.resolve(null);
@@ -155,7 +149,7 @@ WMTS_Provider.prototype.getXbilTexture = function(tile, layer, parameters) {
 
 
     // bug #74
-    //var limits = layer.tileMatrixSetLimits[coWMTS.zoom];
+    // var limits = layer.tileMatrixSetLimits[coWMTS.zoom];
     // if (!limits || !coWMTS.isInside(limits)) {
     //     var texture = -1;
     //     this.cache.addRessource(url, texture);
@@ -163,7 +157,7 @@ WMTS_Provider.prototype.getXbilTexture = function(tile, layer, parameters) {
     // }
     // -> bug #74
 
-    return this._IoDriver.read(url).then(result => {
+    return this._IoDriver.read(url).then((result) => {
         result.pitch = pitch;
         result.texture = this.getTextureFloat(result.floatArray);
         result.texture.generateMipmaps = false;
@@ -175,8 +169,8 @@ WMTS_Provider.prototype.getXbilTexture = function(tile, layer, parameters) {
 
         // In RGBA elevation texture LinearFilter give some errors with nodata value.
         // need to rewrite sample function in shader
-        //result.texture.magFilter = THREE.NearestFilter;
-        //result.texture.minFilter = THREE.NearestFilter;
+        // result.texture.magFilter = THREE.NearestFilter;
+        // result.texture.minFilter = THREE.NearestFilter;
 
         this.cache.addRessource(url, { texture: result.texture, floatArray: result.floatArray });
 
@@ -195,10 +189,9 @@ WMTS_Provider.prototype.getXbilTexture = function(tile, layer, parameters) {
  * @param {type} id
  * @returns {WMTS_Provider_L15.WMTS_Provider.prototype@pro;ioDriverImage@call;read@call;then}
  */
-WMTS_Provider.prototype.getColorTexture = function(coWMTS, pitch, layer) {
-
+WMTS_Provider.prototype.getColorTexture = function (coWMTS, pitch, layer) {
     var result = {
-        pitch: pitch
+        pitch,
     };
     var url = this.url(coWMTS, layer);
 
@@ -208,12 +201,11 @@ WMTS_Provider.prototype.getColorTexture = function(coWMTS, pitch, layer) {
     if (result.texture !== undefined) {
         return Promise.resolve(result);
     }
-    return this.ioDriverImage.read(url).then(function(image) {
-
+    return this.ioDriverImage.read(url).then((image) => {
         var texture = this.cache.getRessource(image.src);
 
         if (texture)
-            result.texture = texture;
+            { result.texture = texture; }
         else {
             result.texture = new THREE.Texture(image);
             result.texture.needsUpdate = true;
@@ -228,39 +220,34 @@ WMTS_Provider.prototype.getColorTexture = function(coWMTS, pitch, layer) {
         }
 
         return result;
-
-    }.bind(this)).catch(function( /*reason*/ ) {
+    }).catch((/* reason*/) => {
         result.texture = null;
 
         return result;
     });
-
 };
 
-WMTS_Provider.prototype.executeCommand = function(command) {
-
+WMTS_Provider.prototype.executeCommand = function (command) {
     var layer = command.paramsFunction.layer;
     var tile = command.requester;
 
     var supportedFormats = {
-        'image/png':           this.getColorTextures.bind(this),
-        'image/jpg':           this.getColorTextures.bind(this),
-        'image/jpeg':          this.getColorTextures.bind(this),
-        'image/x-bil;bits=32': this.getXbilTexture.bind(this)
+        'image/png': this.getColorTextures.bind(this),
+        'image/jpg': this.getColorTextures.bind(this),
+        'image/jpeg': this.getColorTextures.bind(this),
+        'image/x-bil;bits=32': this.getXbilTexture.bind(this),
     };
 
     var func = supportedFormats[layer.options.mimetype];
     if (func) {
-        return func(tile, layer, command.paramsFunction).then(function(result) {
-            return command.resolve(result);
-        });
+        return func(tile, layer, command.paramsFunction).then(result => command.resolve(result));
     } else {
-        return Promise.reject(new Error('Unsupported mimetype ' + layer.options.mimetype));
+        return Promise.reject(new Error(`Unsupported mimetype ${layer.options.mimetype}`));
     }
 };
 
 
-WMTS_Provider.prototype.computeLevelToDownload = function(tile, ancestor, layer) {
+WMTS_Provider.prototype.computeLevelToDownload = function (tile, ancestor, layer) {
     // Use ancestor's level if valid, else fallback on tile's level
     var lvl = ancestor ? ancestor.level : tile.level;
 
@@ -271,15 +258,14 @@ WMTS_Provider.prototype.computeLevelToDownload = function(tile, ancestor, layer)
             lvl));
 };
 
-WMTS_Provider.prototype.tileInsideLimit = function(tile, layer) {
+WMTS_Provider.prototype.tileInsideLimit = function (tile, layer) {
     // This layer provides data starting at level = layer.zoom.min
     // (the zoom.max property is used when building the url to make
     //  sure we don't use invalid levels)
     return layer.zoom.min <= tile.level;
 };
 
-WMTS_Provider.prototype.getColorTextures = function(tile, layer, parameters) {
-
+WMTS_Provider.prototype.getColorTextures = function (tile, layer, parameters) {
     var promises = [];
     if (tile.material === null) {
         return Promise.resolve();
@@ -290,7 +276,6 @@ WMTS_Provider.prototype.getColorTextures = function(tile, layer, parameters) {
 
         // WARNING the direction textures is important
         for (var row = bcoord[1].row; row >= bcoord[0].row; row--) {
-
             var cooWMTS = new CoordWMTS(bcoord[0].zoom, row, bcoord[0].col);
             var pitch = new THREE.Vector3(0.0, 0.0, 1.0);
 
@@ -310,10 +295,9 @@ WMTS_Provider.prototype.getColorTextures = function(tile, layer, parameters) {
     }
 
     if (promises.length)
-        return Promise.all(promises);
+        { return Promise.all(promises); }
     else
-        return Promise.resolve();
-
+        { return Promise.resolve(); }
 };
 
 export default WMTS_Provider;

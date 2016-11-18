@@ -5,31 +5,28 @@
  */
 
 
-
 function EventsManager() {
-    //Constructor
+    // Constructor
 
     this.commands = null;
     this.events = null;
     this.timer = null;
-
-
 }
 
 /**
  * @param pevent {[object Object]}
  * @param com {[object Object]}
  */
-EventsManager.prototype.connect = function( /*pevent, com*/ ) {
-    //TODO: Implement Me
+EventsManager.prototype.connect = function (/* pevent, com*/) {
+    // TODO: Implement Me
 
 };
 
-EventsManager.prototype.command = function() {
+EventsManager.prototype.command = function () {
 
 };
 
-EventsManager.prototype.wait = function() {
+EventsManager.prototype.wait = function () {
     var waitTime = 250;
     if (this.timer === null) {
         this.timer = window.setTimeout(this.command, waitTime);
@@ -37,7 +34,6 @@ EventsManager.prototype.wait = function() {
         window.clearInterval(this.timer);
         this.timer = window.setTimeout(this.command, waitTime);
     }
-
 };
 
 export default EventsManager;

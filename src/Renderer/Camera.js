@@ -10,7 +10,7 @@ import Node from 'Scene/Node';
 import * as THREE from 'three';
 
 function Camera(width, height, debug) {
-    //Constructor
+    // Constructor
 
     Node.call(this);
 
@@ -41,20 +41,15 @@ Camera.prototype.constructor = Camera;
 
 /**
  */
-Camera.prototype.position = function() {
-
+Camera.prototype.position = function () {
     return this.camera3D.position;
-
 };
 
-Camera.prototype.camHelper = function() {
-
+Camera.prototype.camHelper = function () {
     return this.cameraHelper;
-
 };
 
-Camera.prototype.updatePreSSE = function() {
-
+Camera.prototype.updatePreSSE = function () {
     this.Hypotenuse = Math.sqrt(this.width * this.width + this.height * this.height);
     var radAngle = this.FOV * Math.PI / 180;
 
@@ -73,31 +68,27 @@ Camera.prototype.updatePreSSE = function() {
     */
 };
 
-Camera.prototype.createCamHelper = function() {
-
+Camera.prototype.createCamHelper = function () {
     this.cameraHelper = new THREE.CameraHelper(this.camera3D);
 
-    var dir = new THREE.Vector3( 0, 0, -1 );
+    var dir = new THREE.Vector3(0, 0, -1);
     var quaternion = new THREE.Quaternion();
 
-    quaternion.setFromAxisAngle( new THREE.Vector3( 0, 1, 0 ),  this.HFOV/2);
-    dir.applyQuaternion( quaternion );
+    quaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), this.HFOV / 2);
+    dir.applyQuaternion(quaternion);
     var origin = new THREE.Vector3();
     var length = 100000000;
     var hex = 0xffff00;
 
-    this.arrowHelper = new THREE.ArrowHelper( dir, origin, length, hex );
+    this.arrowHelper = new THREE.ArrowHelper(dir, origin, length, hex);
     this.cameraHelper.add(this.arrowHelper);
-
 };
 
-Camera.prototype.matrixWorldInverse = function() {
-
+Camera.prototype.matrixWorldInverse = function () {
     return this.camera3D.matrixWorldInverse;
 };
 
-Camera.prototype.resize = function(width, height) {
-
+Camera.prototype.resize = function (width, height) {
     this.width = width;
     this.height = height;
     this.ratio = width / height;
@@ -107,19 +98,18 @@ Camera.prototype.resize = function(width, height) {
     this.camera3D.aspect = this.ratio;
     this.camera3D.updateProjectionMatrix();
 
-    if(this.cameraHelper) {
-        var dir = new THREE.Vector3( 0, 0, -1 );
+    if (this.cameraHelper) {
+        var dir = new THREE.Vector3(0, 0, -1);
         var quaternion = new THREE.Quaternion();
-        quaternion.setFromAxisAngle( new THREE.Vector3( 0, 1, 0 ),  this.HFOV/2);
-        dir.applyQuaternion( quaternion );
+        quaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), this.HFOV / 2);
+        dir.applyQuaternion(quaternion);
 
         this.arrowHelper.setDirection(dir);
         this.cameraHelper.update();
     }
 };
 
-Camera.prototype.computeNodeSSE = function(node) {
-
+Camera.prototype.computeNodeSSE = function (node) {
     var boundingSphere = node.geometry.boundingSphere;
     var distance = Math.max(0.0, (this.camera3D.position.distanceTo(node.centerSphere) - boundingSphere.radius));
 
@@ -137,45 +127,42 @@ Camera.prototype.computeNodeSSE = function(node) {
     var SSE = this.preSSE * (node.geometricError / distance);
 
     return SSE;
-
 };
 
-Camera.prototype.update = function() {
+Camera.prototype.update = function () {
     var vector = new THREE.Vector3(0, 0, 1);
 
     this.direction = vector.applyQuaternion(this.camera3D.quaternion);
 
     this.frustum.setFromMatrix(new THREE.Matrix4().multiplyMatrices(this.camera3D.projectionMatrix, this.camera3D.matrixWorldInverse));
-
 };
 
-Camera.prototype.updateMatrixWorld = function() {
+Camera.prototype.updateMatrixWorld = function () {
     this.camera3D.updateMatrix();
     this.camera3D.updateMatrixWorld(true);
     this.camera3D.matrixWorldInverse.getInverse(this.camera3D.matrixWorld);
-
 };
 
-Camera.prototype.getDistanceFromOrigin = function() {
+Camera.prototype.getDistanceFromOrigin = function () {
     return this.camera3D.position.length();
 };
 
-Camera.prototype.setPosition = function(position) {
+Camera.prototype.setPosition = function (position) {
     this.camera3D.position.copy(position);
 };
 
-Camera.prototype.setRotation = function(rotation) {
+Camera.prototype.setRotation = function (rotation) {
     this.camera3D.quaternion.copy(rotation);
 };
 
-Camera.prototype.getFrustum = function() {
+Camera.prototype.getFrustum = function () {
     this.updateMatrixWorld();
     this.frustum.setFromMatrix(new THREE.Matrix4().multiplyMatrices(this.camera3D.projectionMatrix, this.camera3D.matrixWorldInverse));
 
     return this.frustum;
 };
 
-Camera.prototype.getFrustumLocalSpace = function(position, quaternion) {
+Camera.prototype.getFrustumLocalSpace = function (position, quaternion) {
     var m = new THREE.Matrix4();
 
     m.makeRotationFromQuaternion(quaternion.inverse());

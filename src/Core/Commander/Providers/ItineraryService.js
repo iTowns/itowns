@@ -7,7 +7,7 @@
 import Service from 'Service';
 
 function ItineraryService() {
-    //Constructor
+    // Constructor
 
 
 }
@@ -16,5 +16,5 @@ ItineraryService.prototype = new Service();
 
 
 export {
-    ItineraryService
+    ItineraryService,
 };

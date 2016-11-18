@@ -8,19 +8,16 @@ import IoDriver from 'Core/Commander/Providers/IoDriver';
 
 
 function IoDriver_Image() {
-    //Constructor
+    // Constructor
     IoDriver.call(this);
-
 }
 
 IoDriver_Image.prototype = Object.create(IoDriver.prototype);
 
 IoDriver_Image.prototype.constructor = IoDriver_Image;
 
-IoDriver_Image.prototype.read = function(url) {
-
-    return new Promise(function(resolve, reject) {
-
+IoDriver_Image.prototype.read = function (url) {
+    return new Promise((resolve, reject) => {
         var image = new Image();
 
         image.onload = () => resolve(image);
@@ -29,7 +26,6 @@ IoDriver_Image.prototype.read = function(url) {
 
         image.crossOrigin = '';
         image.src = url;
-
     });
 };
 

@@ -5,16 +5,14 @@
  */
 
 function Description() {
-    //Constructor
+    // Constructor
 
 
     this.name = null;
     this.type = null;
-
 }
 
 
-
 export {
-    Description
+    Description,
 };

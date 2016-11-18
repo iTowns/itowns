@@ -14,7 +14,7 @@ import Layer from 'Scene/Layer';
 import InterfaceCommander from 'Core/Commander/InterfaceCommander';
 import Quad from 'Core/Geographic/Quad';
 import NodeMesh from 'Renderer/NodeMesh';
-import {SSE_SUBDIVISION_THRESHOLD} from 'Scene/NodeProcess';
+import { SSE_SUBDIVISION_THRESHOLD } from 'Scene/NodeProcess';
 
 function commandQueuePriorityFunction(cmd) {
     var node = cmd.requester;
@@ -54,7 +54,7 @@ function Quadtree(type, schemeTile, link) {
 
     rootNode.link = this.link;
 
-    rootNode.changeState = function() {
+    rootNode.changeState = function () {
         return true;
     };
 
@@ -65,7 +65,7 @@ Quadtree.prototype = Object.create(Layer.prototype);
 
 Quadtree.prototype.constructor = Quadtree;
 
-Quadtree.prototype.init = function(geometryLayer) {
+Quadtree.prototype.init = function (geometryLayer) {
     var rootNode = this.children[0];
 
     for (var i = 0; i < this.schemeTile.rootCount(); i++) {
@@ -73,33 +73,32 @@ Quadtree.prototype.init = function(geometryLayer) {
     }
 };
 
-Quadtree.prototype.northWest = function(node) {
+Quadtree.prototype.northWest = function (node) {
     return node.children[0];
 };
 
-Quadtree.prototype.northEast = function(node) {
+Quadtree.prototype.northEast = function (node) {
     return node.children[1];
 };
 
-Quadtree.prototype.southWest = function(node) {
+Quadtree.prototype.southWest = function (node) {
     return node.children[2];
 };
 
-Quadtree.prototype.southEast = function(node) {
+Quadtree.prototype.southEast = function (node) {
     return node.children[3];
 };
 
-Quadtree.prototype.requestNewTile = function(geometryLayer, bbox, parent) {
+Quadtree.prototype.requestNewTile = function (geometryLayer, bbox, parent) {
     var params = {
         layer: geometryLayer,
-        bbox: bbox
+        bbox,
     };
 
     this.interCommand.request(params, parent);
-
 };
 
-Quadtree.prototype.canSubdivideNode = function(node) {
+Quadtree.prototype.canSubdivideNode = function (node) {
     return node.level < this.maxLevel;
 };
 
@@ -108,7 +107,7 @@ Quadtree.prototype.canSubdivideNode = function(node) {
  * @param {type} node
  * @returns {Array} an array of four bounding boxex
  */
-Quadtree.prototype.subdivideNode = function(node) {
+Quadtree.prototype.subdivideNode = function (node) {
     if (node.pendingSubdivision || !this.canSubdivideNode(node)) {
         return [];
     }
@@ -118,37 +117,36 @@ Quadtree.prototype.subdivideNode = function(node) {
     return [quad.northWest, quad.northEast, quad.southWest, quad.southEast];
 };
 
-Quadtree.prototype.traverse = function(foo,node)
+Quadtree.prototype.traverse = function (foo, node)
 {
-    if(foo(node))
-      for (var i = 0; i < node.children.length; i++)
-        this.traverse(foo,node.children[i]);
+    if (foo(node))
+      { for (var i = 0; i < node.children.length; i++)
+        { this.traverse(foo, node.children[i]); } }
 };
 
-Quadtree.prototype.getTile = function(coordinate) {
+Quadtree.prototype.getTile = function (coordinate) {
+    var point = { x: coordinate.longitude(), y: coordinate.latitude() };
 
-    var point = {x:coordinate.longitude(),y:coordinate.latitude()};
-
-    var gT = function(tile)
+    var gT = function (tile)
     {
-        var inside =  tile.bbox ? tile.bbox.isInside(point) : true;
+        var inside = tile.bbox ? tile.bbox.isInside(point) : true;
 
-        if(tile.children.length === 0 && inside)
-            point.tile = tile;
+        if (tile.children.length === 0 && inside)
+            { point.tile = tile; }
 
-        //TODO: Fix error verify if this is correct
-        if(inside)
-             point.parent = tile.parent;
+        // TODO: Fix error verify if this is correct
+        if (inside)
+             { point.parent = tile.parent; }
 
         return inside;
     };
 
-    this.traverse(gT,this.children[0]);
+    this.traverse(gT, this.children[0]);
 
-    if(point.tile === undefined)
-      return point.parent;
+    if (point.tile === undefined)
+      { return point.parent; }
     else
-      return point.tile;
+      { return point.tile; }
 };
 
 export default Quadtree;

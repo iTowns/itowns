@@ -7,7 +7,7 @@
 import NodeProcess from 'NodeProcess';
 
 function SSE() {
-    //Constructor
+    // Constructor
 
 
 }
@@ -16,5 +16,5 @@ SSE.prototype = new NodeProcess();
 
 
 export {
-    SSE
+    SSE,
 };

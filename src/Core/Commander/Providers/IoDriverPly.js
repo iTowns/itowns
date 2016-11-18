@@ -6,7 +6,7 @@
 import IoDriver from 'IoDriver';
 
 function IoDriverPly() {
-    //Constructor
+    // Constructor
 
 
 }
@@ -15,5 +15,5 @@ IoDriverPly.prototype = new IoDriver();
 
 
 export {
-    IoDriverPly
+    IoDriverPly,
 };

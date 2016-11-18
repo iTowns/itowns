@@ -7,7 +7,7 @@
 import Event from 'Event';
 
 function MouseEvent() {
-    //Constructor
+    // Constructor
 
 
 }
@@ -16,5 +16,5 @@ MouseEvent.prototype = new Event();
 
 
 export {
-    MouseEvent
+    MouseEvent,
 };

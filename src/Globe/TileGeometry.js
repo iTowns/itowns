@@ -36,13 +36,13 @@ function Buffers() {
     //        * u = wgs84.u
     //        * v = textureid + v in this texture
     this.uv = {
-        'wgs84': null,
-        'pm': null
+        wgs84: null,
+        pm: null,
     };
 }
 
 function TileGeometry(params, builder) {
-    //Constructor
+    // Constructor
     THREE.BufferGeometry.call(this);
 
     this.center = builder.Center(params);
@@ -69,7 +69,6 @@ function TileGeometry(params, builder) {
 
     // ---> for SSE
     this.computeBoundingSphere();
-
 }
 
 
@@ -77,7 +76,7 @@ TileGeometry.prototype = Object.create(THREE.BufferGeometry.prototype);
 
 TileGeometry.prototype.constructor = TileGeometry;
 
-TileGeometry.prototype.computeBuffers = function(params, builder) {
+TileGeometry.prototype.computeBuffers = function (params, builder) {
     var javToo = new JavaTools();
     // Create output buffers.
     var outBuffers = new Buffers(params.segment);
@@ -106,33 +105,39 @@ TileGeometry.prototype.computeBuffers = function(params, builder) {
     var heightSegments = Math.max(2, Math.floor(nSeg) || 2);
 
     var idVertex = 0;
-    var x, y, vertices = [],
+    var x,
+        y,
+        vertices = [],
         skirt = [],
         skirtEnd = [];
-    var u, v;
+    var u,
+        v;
 
     builder.Prepare(params);
 
-    var UV_WGS84 = function() {};
-    var UV_PM = function() {};
+    var UV_WGS84 = function () {};
+    var UV_PM = function () {};
 
     // Define UV computation functions if needed
     if (outBuffers.uv.wgs84 === null) {
-        UV_WGS84 = function(out, id, u, v) {
+        UV_WGS84 = function (out, id, u, v) {
             out.uv.wgs84[id * 2 + 0] = u;
             out.uv.wgs84[id * 2 + 1] = v;
         };
     }
     if (outBuffers.uv.pm === null && builder.getUV_PM) {
-        UV_PM = function(out, id, u) {
+        UV_PM = function (out, id, u) {
             out.uv.pm[id] = u;
         };
     }
 
-    let id_m3,v1,v2,v3,v4;
+    let id_m3,
+        v1,
+        v2,
+        v3,
+        v4;
 
     for (y = 0; y <= heightSegments; y++) {
-
         var verticesRow = [];
 
         v = y / heightSegments;
@@ -142,7 +147,6 @@ TileGeometry.prototype.computeBuffers = function(params, builder) {
         var uv_pm = builder.getUV_PM ? builder.getUV_PM(params) : undefined;
 
         for (x = 0; x <= widthSegments; x++) {
-
             u = x / widthSegments;
 
             builder.uProjecte(u, params);
@@ -161,7 +165,7 @@ TileGeometry.prototype.computeBuffers = function(params, builder) {
             scratchBuffers.normal[id_m3 + 1] = normal.y;
             scratchBuffers.normal[id_m3 + 2] = normal.z;
 
-            UV_WGS84(scratchBuffers, idVertex,u,v);
+            UV_WGS84(scratchBuffers, idVertex, u, v);
             UV_PM(scratchBuffers, idVertex, uv_pm);
 
             if (y !== 0 && y !== heightSegments) {
@@ -199,9 +203,7 @@ TileGeometry.prototype.computeBuffers = function(params, builder) {
 
     if (outBuffers.index === null) {
         for (y = 0; y < heightSegments; y++) {
-
             for (x = 0; x < widthSegments; x++) {
-
                 v1 = vertices[y][x + 1];
                 v2 = vertices[y][x];
                 v3 = vertices[y + 1][x];
@@ -215,31 +217,30 @@ TileGeometry.prototype.computeBuffers = function(params, builder) {
 
     var iStart = idVertex;
 
-    //TODO: WARNING beware skirt's size influences performance
-    //Fix Me: Compute correct the skirt's size : minimize the size without crack between tiles
-    //This size must be take into account the bbox's size
-    //For the moment, I reduce the size to increase performance (pixel shader performance)
+    // TODO: WARNING beware skirt's size influences performance
+    // Fix Me: Compute correct the skirt's size : minimize the size without crack between tiles
+    // This size must be take into account the bbox's size
+    // For the moment, I reduce the size to increase performance (pixel shader performance)
 
-    let r = 5 *((20-params.zoom)+10);
+    const r = 5 * ((20 - params.zoom) + 10);
 
-    var buildIndexSkirt = function() {};
-    var buildUVSkirt = function() {};
+    var buildIndexSkirt = function () {};
+    var buildUVSkirt = function () {};
 
     if (outBuffers.index === null) {
-        buildIndexSkirt = function(id, v1, v2, v3, v4) {
+        buildIndexSkirt = function (id, v1, v2, v3, v4) {
             id = bufferize(v1, v2, v3, id);
             id = bufferize(v1, v3, v4, id);
             return id;
         };
 
-        buildUVSkirt = function() {
+        buildUVSkirt = function () {
             scratchBuffers.uv.wgs84[idVertex * 2 + 0] = scratchBuffers.uv.wgs84[id * 2 + 0];
             scratchBuffers.uv.wgs84[idVertex * 2 + 1] = scratchBuffers.uv.wgs84[id * 2 + 1];
         };
     }
 
     for (var i = 0; i < skirt.length; i++) {
-
         var id = skirt[i];
         id_m3 = idVertex * 3;
         var id2_m3 = id * 3;
@@ -270,7 +271,6 @@ TileGeometry.prototype.computeBuffers = function(params, builder) {
         idVertex2 = buildIndexSkirt(idVertex2, v1, v2, v3, v4);
 
         idVertex++;
-
     }
 
     // Copy missing buffer in outBuffers from scratchBuffers
@@ -294,7 +294,6 @@ TileGeometry.prototype.computeBuffers = function(params, builder) {
     scratchBuffers.uv.pm = null;
 
     return outBuffers;
-
 };
 
 export default TileGeometry;

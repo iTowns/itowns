@@ -12,11 +12,11 @@ import TileMesh from 'Globe/TileMesh';
 import Atmosphere from 'Globe/Atmosphere';
 import Clouds from 'Globe/Clouds';
 import Capabilities from 'Core/System/Capabilities';
-import GeoCoordinate,{UNIT} from 'Core/Geographic/GeoCoordinate';
+import GeoCoordinate, { UNIT } from 'Core/Geographic/GeoCoordinate';
 import BasicMaterial from 'Renderer/BasicMaterial';
 import LayersConfiguration from 'Scene/LayersConfiguration';
 import * as THREE from 'three';
-import {SSE_SUBDIVISION_THRESHOLD} from 'Scene/NodeProcess';
+import { SSE_SUBDIVISION_THRESHOLD } from 'Scene/NodeProcess';
 
 
 /* eslint-disable */
@@ -27,7 +27,7 @@ const schemeTile_1 = 1;
 /* eslint-enable */
 
 function Globe(ellipsoid, gLDebug) {
-    //Constructor
+    // Constructor
 
     Layer.call(this);
 
@@ -46,10 +46,10 @@ function Globe(ellipsoid, gLDebug) {
 
     kml.visible = false;
 
-	this.gpxTracks = new Layer();
-	var gpx = new THREE.Object3D();
-	this.gpxTracks.add(gpx);
-	this.gpxTracks.visible = true;
+    this.gpxTracks = new Layer();
+    var gpx = new THREE.Object3D();
+    this.gpxTracks.add(gpx);
+    this.gpxTracks.visible = true;
     gpx.visible = true;
 
     this.tiles = new Quadtree(TileMesh, this.SchemeTileWMTS(schemeTile_1), kml);
@@ -63,7 +63,7 @@ function Globe(ellipsoid, gLDebug) {
     var geometry = new THREE.SphereGeometry(5);
     var batiment = new THREE.Mesh(geometry, material);
 
-    var position = this.ellipsoid.cartographicToCartesian(new GeoCoordinate(0, 48.87, 200,UNIT.DEGREE));
+    var position = this.ellipsoid.cartographicToCartesian(new GeoCoordinate(0, 48.87, 200, UNIT.DEGREE));
 
     position = new THREE.Vector3(4201215.424138484, 171429.945145441, 4779294.873914789);
 
@@ -72,19 +72,19 @@ function Globe(ellipsoid, gLDebug) {
     position = new THREE.Vector3(4201801.65418896, 171495.727885073, 4779411.45896233);
 
     batiment.frustumCulled = false;
-    //material.wireframe      = true;
+    // material.wireframe      = true;
     batiment.position.copy(position);
 
     var material2 = new BasicMaterial(new THREE.Color(1, 0.5, 1));
     material2.visible = false;
     var batiment2 = new THREE.Mesh(geometry, material2);
-    var position2 = this.ellipsoid.cartographicToCartesian(new GeoCoordinate(0.001, 48.87, 100,UNIT.DEGREE));
+    var position2 = this.ellipsoid.cartographicToCartesian(new GeoCoordinate(0.001, 48.87, 100, UNIT.DEGREE));
     batiment2.frustumCulled = false;
     material2.wireframe = true;
     batiment2.position.copy(position2);
 
-    //kml.add( batiment );
-    //kml.add( batiment2 );
+    // kml.add( batiment );
+    // kml.add( batiment2 );
 
     var zUp = new THREE.Object3D();
 
@@ -98,7 +98,7 @@ function Globe(ellipsoid, gLDebug) {
     this.add(this.tiles);
     this.add(this.batiments);
     this.add(this.gpxTracks);
-    //this.add(this.layerWGS84Zup);
+    // this.add(this.layerWGS84Zup);
 
     if (this.atmosphere !== undefined && !this.gLDebug) {
         this.atmosphere.add(this.clouds);
@@ -114,17 +114,15 @@ Globe.prototype.constructor = Globe;
  * @documentation: Rafrachi les materiaux en fonction du quadTree ORTHO
  *
  */
-Globe.prototype.QuadTreeToMaterial = function() {
-    //TODO: Implement Me
+Globe.prototype.QuadTreeToMaterial = function () {
+    // TODO: Implement Me
 
 };
 
-Globe.prototype.SchemeTileWMTS = function(type) {
-
+Globe.prototype.SchemeTileWMTS = function (type) {
     if (type === 0) {
-
         // bbox longitude(0,360),latitude(-90,90)
-        let schemeT = new SchemeTile();
+        const schemeT = new SchemeTile();
 
         schemeT.add(0, MathExt.PI, -MathExt.PI_OV_TWO, MathExt.PI_OV_TWO);
         schemeT.add(MathExt.PI, MathExt.TWO_PI, -MathExt.PI_OV_TWO, MathExt.PI_OV_TWO);
@@ -132,49 +130,43 @@ Globe.prototype.SchemeTileWMTS = function(type) {
         return schemeT;
     }
     else if (type === 1) {
-
         // bbox longitude(-180,180),latitude(-90,90)
-        let schemeT = new SchemeTile();
+        const schemeT = new SchemeTile();
 
         schemeT.add(-MathExt.PI, 0, -MathExt.PI_OV_TWO, MathExt.PI_OV_TWO);
         schemeT.add(0, MathExt.PI, -MathExt.PI_OV_TWO, MathExt.PI_OV_TWO);
 
         return schemeT;
     }
-
 };
 
-Globe.prototype.showAtmosphere = function(show) {
+Globe.prototype.showAtmosphere = function (show) {
     if (this.atmosphere !== undefined)
-        this.atmosphere.visible = show;
-
+      { this.atmosphere.visible = show; }
 };
 
-Globe.prototype.showClouds = function(show, satelliteAnimation) {
-
-    if ( /*this.clouds.live === false && */ show) {
+Globe.prototype.showClouds = function (show, satelliteAnimation) {
+    if (/* this.clouds.live === false && */ show) {
         this.clouds.generate(satelliteAnimation);
     }
     this.clouds.visible = show;
 };
 
-Globe.prototype.showKML = function(show) {
-
+Globe.prototype.showKML = function (show) {
     this.batiments.visible = show;
 
     this.batiments.children[0].visible = show;
 };
 
-Globe.prototype.updateLightingPos = function(pos) {
-
+Globe.prototype.updateLightingPos = function (pos) {
     this.atmosphere.updateLightingPos(pos);
     this.clouds.updateLightingPos(pos);
 };
 
-Globe.prototype.setLayerOpacity = function(id, opacity) {
+Globe.prototype.setLayerOpacity = function (id, opacity) {
     this.layersConfiguration.setLayerOpacity(id, opacity);
 
-    var cO = function(object) {
+    var cO = function (object) {
         if (object.material.setLayerOpacity) {
             object.material.setLayerOpacity(object.getIndexLayerColor(id), opacity);
         }
@@ -184,10 +176,10 @@ Globe.prototype.setLayerOpacity = function(id, opacity) {
     this.tiles.children[0].traverse(cO);
 };
 
-Globe.prototype.setLayerVisibility = function(id, visible) {
+Globe.prototype.setLayerVisibility = function (id, visible) {
     this.layersConfiguration.setLayerVisibility(id, visible);
 
-    var cO = function(object) {
+    var cO = function (object) {
         if (object.material.setLayerOpacity) {
             object.material.setLayerVisibility(object.getIndexLayerColor(id), visible);
         }
@@ -197,20 +189,19 @@ Globe.prototype.setLayerVisibility = function(id, visible) {
     this.tiles.children[0].traverse(cO);
 };
 
-Globe.prototype.updateLayersOrdering = function() {
+Globe.prototype.updateLayersOrdering = function () {
     var sequence = this.layersConfiguration.getColorLayersIdOrderedBySequence();
 
-    var cO = function(object) {
+    var cO = function (object) {
         if (object.changeSequenceLayers)
-            object.changeSequenceLayers(sequence);
+            { object.changeSequenceLayers(sequence); }
     };
 
     this.tiles.children[0].traverse(cO);
 };
 
-Globe.prototype.removeColorLayer = function(layer) {
-
-    var cO = function(object) {
+Globe.prototype.removeColorLayer = function (layer) {
+    var cO = function (object) {
         if (object.removeColorLayer) {
             object.removeColorLayer(layer);
         }
@@ -219,35 +210,31 @@ Globe.prototype.removeColorLayer = function(layer) {
     this.tiles.children[0].traverse(cO);
 };
 
-Globe.prototype.getZoomLevel = function() {
-
-    var cO = function() {
-
+Globe.prototype.getZoomLevel = function () {
+    var cO = (function () {
         var zoom = 0;
-        return function(object) {
+        return function (object) {
             if (object) {
                 zoom = Math.max(zoom, object.level);
             }
             return zoom;
         };
-
-    }();
+    }());
 
     this.tiles.children[0].traverseVisible(cO);
     return cO();
 };
 
 
-Globe.prototype.computeDistanceForZoomLevel = function(zoom,camera) {
-    return camera.preSSE * Math.pow(this.tiles.minLevel, (this.tiles.maxLevel - zoom + 1 ))/ SSE_SUBDIVISION_THRESHOLD;
+Globe.prototype.computeDistanceForZoomLevel = function (zoom, camera) {
+    return camera.preSSE * Math.pow(this.tiles.minLevel, (this.tiles.maxLevel - zoom + 1)) / SSE_SUBDIVISION_THRESHOLD;
 };
 
-Globe.prototype.getTile = function(coordinate) {
+Globe.prototype.getTile = function (coordinate) {
     return this.tiles.getTile(coordinate);
 };
 
-Globe.prototype.setRealisticLightingOn = function(bool) {
-
+Globe.prototype.setRealisticLightingOn = function (bool) {
     this.atmosphere.setRealisticOn(bool);
     this.clouds.setLightingOn(bool);
 };
