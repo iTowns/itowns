@@ -7,7 +7,7 @@
 /* global Uint8Array Float64Array*/
 
 import * as THREE from 'THREE';
-import GlobeControls from 'GlobeControls';
+import GlobeControls from 'Renderer/ThreeExtented/GlobeControls';
 import Camera from 'Renderer/Camera';
 import Atmosphere from 'Globe/Atmosphere';
 import Capabilities from 'Core/System/Capabilities';
