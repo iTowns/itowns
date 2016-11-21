@@ -1,13 +1,13 @@
 /**
  * Generated On: 2016-11-15
- * Class: UpdaterLayer
+ * Class: DefaultUpdater
  * Description: Updaters for MobileMappingLayers.
  */
 
-function UpdaterMobileMappingLayer() {
+function MobileMappingUpdater() {
 }
 
-UpdaterMobileMappingLayer.prototype.update = function (params) {
+MobileMappingUpdater.prototype.update = function (params) {
     if (!params.layer.visible)
         { return; }
 
@@ -19,4 +19,4 @@ UpdaterMobileMappingLayer.prototype.update = function (params) {
     }
 };
 
-export default UpdaterMobileMappingLayer;
+export default MobileMappingUpdater;

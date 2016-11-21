@@ -16,7 +16,7 @@ import Projection from 'Core/Geographic/Projection';
 import CustomEvent from 'custom-event';
 import Fetcher from 'Core/Commander/Providers/Fetcher';
 import { STRATEGY_MIN_NETWORK_TRAFFIC } from 'Scene/LayerUpdateStrategy';
-import UpdaterGlobe from 'Scene/UpdaterGlobe';
+import GlobeUpdater from 'Scene/GlobeUpdater';
 
 var loaded = false;
 var eventLoaded = new CustomEvent('globe-loaded');
@@ -346,7 +346,7 @@ ApiGlobe.prototype.createSceneGlobe = function (coordCarto, viewerDiv) {
     this.scene = Scene(coordinate, ellipsoid, viewerDiv, debugMode, gLDebug);
 
     var map = new Globe(ellipsoid, gLDebug);
-    var updater = new UpdaterGlobe(ellipsoid);
+    var updater = new GlobeUpdater(ellipsoid);
 
     this.scene.setMap(map, updater);
 

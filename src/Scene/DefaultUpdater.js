@@ -1,13 +1,13 @@
 /**
  * Generated On: 2016-11-15
- * Class: UpdaterLayer
+ * Class: DefaultUpdater
  * Description: Updaters for Layers.
  */
 
-function UpdaterLayer() {
+function DefaultUpdater() {
 }
 
-UpdaterLayer.prototype.update = function (params) {
+DefaultUpdater.prototype.update = function (params) {
     if (!params.layer.visible)
         { return; }
 
@@ -29,4 +29,4 @@ UpdaterLayer.prototype.update = function (params) {
     }
 };
 
-export default UpdaterLayer;
+export default DefaultUpdater;

@@ -1,22 +1,22 @@
 /**
  * Generated On: 2016-11-15
- * Class: UpdaterGlobe
+ * Class: GlobeUpdater
  * Description: Updaters for Globes.
  */
 
 import NodeProcess from 'Scene/NodeProcess';
 import Quadtree from 'Scene/Quadtree';
-import UpdaterQuadtree from 'Scene/UpdaterQuadtree';
+import TreeUpdater from 'Scene/TreeUpdater';
 import Layer from 'Scene/Layer';
-import UpdaterLayer from 'Scene/UpdaterLayer';
+import DefaultUpdater from 'Scene/DefaultUpdater';
 import MobileMappingLayer from 'MobileMapping/MobileMappingLayer';
-import UpdaterMobileMappingLayer from 'Scene/UpdaterMobileMappingLayer';
+import MobileMappingUpdater from 'Scene/MobileMappingUpdater';
 
 
-function UpdaterGlobe(ellipsoid) {
-    this.treeUpdater = new UpdaterQuadtree(new NodeProcess(ellipsoid));
-    this.defaultUpdater = new UpdaterLayer();
-    this.mobileMappingUpdater = new UpdaterMobileMappingLayer();
+function GlobeUpdater(ellipsoid) {
+    this.treeUpdater = new TreeUpdater(new NodeProcess(ellipsoid));
+    this.defaultUpdater = new DefaultUpdater();
+    this.mobileMappingUpdater = new MobileMappingUpdater();
 
     this.getUpdater = function (subLayer) {
         if (subLayer instanceof Quadtree) {
@@ -31,7 +31,7 @@ function UpdaterGlobe(ellipsoid) {
     };
 }
 
-UpdaterGlobe.prototype.update = function (params) {
+GlobeUpdater.prototype.update = function (params) {
     var layer = params.layer;
     for (var l = 0; l < layer.children.length; l++) {
         var sLayer = layer.children[l];
@@ -44,7 +44,7 @@ UpdaterGlobe.prototype.update = function (params) {
     params.layer = layer;
 };
 
-UpdaterGlobe.prototype.updateMaterial = function (params) {
+GlobeUpdater.prototype.updateMaterial = function (params) {
     var layer = params.layer;
     for (var l = 0; l < layer.children.length; l++) {
         var sLayer = layer.children[l];
@@ -56,7 +56,7 @@ UpdaterGlobe.prototype.updateMaterial = function (params) {
     }
 };
 
-UpdaterGlobe.prototype.selectNode = function (params) {
+GlobeUpdater.prototype.selectNode = function (params) {
     var layer = params.layer;
     for (var l = 0; l < layer.children.length; l++) {
         var sLayer = layer.children[l];
@@ -68,4 +68,4 @@ UpdaterGlobe.prototype.selectNode = function (params) {
     }
 };
 
-export default UpdaterGlobe;
+export default GlobeUpdater;
