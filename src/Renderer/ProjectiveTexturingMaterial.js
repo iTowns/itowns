@@ -164,7 +164,7 @@ var ProjectiveTexturingMaterial = {
         var N = this.nbImages();
         var P = this.nbPanoramics();
         var uniforms = {
-            RTC: {
+            useRTC: {
                 type: "i",
                 value: 1
             },

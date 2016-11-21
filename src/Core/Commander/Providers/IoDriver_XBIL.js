@@ -26,16 +26,16 @@ IoDriver_XBIL.prototype = Object.create(IoDriver.prototype);
 
 IoDriver_XBIL.prototype.constructor = IoDriver_XBIL;
 
-IoDriver_XBIL.prototype.computeMinMaxElevation = function(buffer, width, height, pitScale) {
+IoDriver_XBIL.prototype.computeMinMaxElevation = function(buffer, width, height, offsetScale) {
     let min = 1000000;
     let max = -1000000;
 
-    let sizeX = pitScale ? Math.floor(pitScale.z * width) : buffer.length;
-    let sizeY = pitScale ? Math.floor(pitScale.z * height) : 1;
-    let xs = pitScale ? Math.floor(pitScale.x * width) : 0;
-    let ys = pitScale ? Math.floor(pitScale.y * height) : 0;
+    let sizeX = offsetScale ? Math.floor(offsetScale.z * width) : buffer.length;
+    let sizeY = offsetScale ? Math.floor(offsetScale.z * height) : 1;
+    let xs = offsetScale ? Math.floor(offsetScale.x * width) : 0;
+    let ys = offsetScale ? Math.floor(offsetScale.y * height) : 0;
 
-    let inc = pitScale ? Math.max(Math.floor(sizeX / 8), 2) : 16;
+    let inc = offsetScale ? Math.max(Math.floor(sizeX / 8), 2) : 16;
 
     for (let y = ys; y < ys + sizeY; y += inc) {
         let pit = y * (width || 0);
@@ -54,7 +54,7 @@ IoDriver_XBIL.prototype.computeMinMaxElevation = function(buffer, width, height,
     return { min, max };
 };
 
-IoDriver_XBIL.prototype.parseXBil = function(buffer) {
+IoDriver_XBIL.prototype.parseXBil = function(buffer,url) {
     if (!buffer) {
         throw new Error('Error processing XBIL');
     }
@@ -70,6 +70,8 @@ IoDriver_XBIL.prototype.parseXBil = function(buffer) {
     result.min = elevation.min;
     result.max = elevation.max;
 
+    result.url = url;
+
     return result;
 };
 
@@ -80,7 +82,7 @@ IoDriver_XBIL.prototype.read = function(url) {
             throw new Error(`Error loading ${url}: status ${response.status}`);
         }
         return response.arrayBuffer();
-    }).then(buffer => this.parseXBil(buffer));
+    }).then(buffer => this.parseXBil(buffer,url));
 };
 
 

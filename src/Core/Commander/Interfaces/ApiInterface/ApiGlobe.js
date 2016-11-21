@@ -4,8 +4,6 @@
  * Description: Classe façade pour attaquer les fonctionnalités du code.
  */
 
-/* global document */
-
 import Scene from 'Scene/Scene';
 import Globe from 'Globe/Globe';
 import WMTS_Provider from 'Core/Commander/Providers/WMTS_Provider';
@@ -35,20 +33,13 @@ var JSONDriver = new IoDriver_JSON();
 
 function ApiGlobe() {
     //Constructor
-
     this.scene = null;
-    //        this.nodeProcess = null;
     this.commandsTree = null;
     this.projection = new Projection();
     this.viewerDiv = null;
-
 }
 
 ApiGlobe.prototype.constructor = ApiGlobe;
-
-//    var event = new Event('empty');
-//    document.addEventListener('empty', console.log('Your turn'));
-//    document.dispatchEvent(event);
 
 /**
  * @param Command
@@ -197,7 +188,7 @@ ApiGlobe.prototype.moveLayerToIndex = function(layerId, newIndex) {
 ApiGlobe.prototype.removeImageryLayer = function(id) {
 
     if (this.scene.getMap().layersConfiguration.removeColorLayer(id)) {
-        this.scene.getMap().updateLayersOrdering();
+        this.scene.getMap().removeColorLayer(id);
         this.scene.renderScene3D();
         eventLayerRemoved.layer = id;
         this.viewerDiv.dispatchEvent(eventLayerRemoved);
@@ -650,9 +641,8 @@ ApiGlobe.prototype.computeDistance = function(p1, p2) {
  * Changes the center of the scene on screen to the specified coordinates.
  * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/x06yhbq6/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
  * @constructor
- * @param {Position} position - The position on the scene.
+ * @param {coordinates} coordinates - Properties : longitude and latitude
  */
-
 ApiGlobe.prototype.setCenter = function(coordinates) {
     eventCenter.oldCenter = this.getCenter();
     var position3D = this.scene.getEllipsoid().cartographicToCartesian(new GeoCoordinate(coordinates.longitude,coordinates.latitude,0,UNIT.DEGREE));
@@ -956,6 +946,14 @@ ApiGlobe.prototype.launchCommandApi = function() {
 //        this.resetHeading();
 //        console.log(this.getHeading());
 //    };
+
+
+ApiGlobe.prototype.selectNodeById = function(id) {
+
+    this.scene.selectNodeId(id);
+    this.scene.update();
+    this.scene.renderScene3D();
+};
 
 ApiGlobe.prototype.showKML = function(value) {
 

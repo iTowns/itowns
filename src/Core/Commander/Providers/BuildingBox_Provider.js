@@ -177,7 +177,7 @@ BuildingBox_Provider.prototype.generateMesh = function(elements, bbox, altitude)
         gfxEngine().add3DScene(_currentMeshForRoof);
     */
 
-    // Test if we return brute geometry or if we use local pivot (for RTC)
+    // Test if we return brute geometry or if we use local pivot (for useRTC)
     var firstPos = new THREE.Vector3();
     if (this.rtcOn) {
         firstPos = _geometry.vertices[0].clone();
