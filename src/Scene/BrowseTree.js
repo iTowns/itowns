@@ -6,11 +6,10 @@
 
 import * as THREE from 'three';
 
-function BrowseTree(engine) {
+function BrowseTree() {
     // Constructor
 
     this.oneNode = 0;
-    this.gfxEngine = engine;
     this.nodeProcess = undefined;
     this.tree = undefined;
     this.fogDistance = 1000000000.0;
@@ -35,7 +34,7 @@ BrowseTree.prototype.uniformsProcess = (function () {
     var positionWorld = new THREE.Vector3();
 
     return function (node, camera) {
-        node.setMatrixRTC(this.gfxEngine.getRTCMatrixFromCenter(positionWorld.setFromMatrixPosition(node.matrixWorld), camera));
+        node.setMatrixRTC(camera.getRTCMatrixFromCenter(positionWorld.setFromMatrixPosition(node.matrixWorld)));
         node.setFog(this.fogDistance);
 
         this.selectNode(node);

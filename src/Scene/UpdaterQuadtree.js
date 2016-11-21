@@ -10,7 +10,7 @@
  function UpdaterQuadtree(args) {
      this.node = args.node;
      this.process = args.process || new NodeProcess(args.scene.currentCamera(), args.map.ellipsoid);
-     this.browser = new BrowseTree(args.scene.gfxEngine);
+     this.browser = new BrowseTree();
  }
 
  UpdaterQuadtree.prototype.update = function (params) {

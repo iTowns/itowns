@@ -6,7 +6,6 @@
 
 function UpdaterLayer(args) {
     this.node = args.node;
-    this.gfxEngine = args.scene.gfxEngine;
 }
 
 UpdaterLayer.prototype.update = function (params) {
@@ -19,7 +18,7 @@ UpdaterLayer.prototype.update = function (params) {
         var node = root.children[c];
 
         var cRTC = function () {
-            var mRTC = this.gfxEngine.getRTCMatrixFromNode(node, params.camera);
+            var mRTC = params.camera.getRTCMatrixFromNode(node);
 
             return function (obj) {
                 if (obj.setMatrixRTC)

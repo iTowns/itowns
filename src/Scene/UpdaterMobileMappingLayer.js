@@ -17,7 +17,7 @@ UpdaterMobileMappingLayer.prototype.update = function (params) {
 
     for (var c = 0; c < root.children.length; c++) {
         var node = root.children[c];
-        node.setMatrixRTC(this.gfxEngine.getRTCMatrixFromCenter(node.absoluteCenter, params.camera));
+        node.setMatrixRTC(params.camera.getRTCMatrixFromCenter(node.absoluteCenter));
     }
 };
 
