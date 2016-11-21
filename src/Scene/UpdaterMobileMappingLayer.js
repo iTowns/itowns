@@ -4,9 +4,7 @@
  * Description: Updaters for MobileMappingLayers.
  */
 
-function UpdaterMobileMappingLayer(args) {
-    this.node = args.node;
-    this.gfxEngine = args.scene.gfxEngine;
+function UpdaterMobileMappingLayer() {
 }
 
 UpdaterMobileMappingLayer.prototype.update = function (params) {

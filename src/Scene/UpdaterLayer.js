@@ -4,8 +4,7 @@
  * Description: Updaters for Layers.
  */
 
-function UpdaterLayer(args) {
-    this.node = args.node;
+function UpdaterLayer() {
 }
 
 UpdaterLayer.prototype.update = function (params) {

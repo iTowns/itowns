@@ -18,9 +18,7 @@ import c3DEngine from 'Renderer/c3DEngine';
 import ManagerCommands from 'Core/Commander/ManagerCommands';
 import CoordStars from 'Core/Geographic/CoordStars';
 import defaultValue from 'Core/defaultValue';
-import Layer from 'Scene/Layer';
 import Capabilities from 'Core/System/Capabilities';
-import MobileMappingLayer from 'MobileMapping/MobileMappingLayer';
 import CustomEvent from 'custom-event';
 
 var instanceScene = null;
@@ -38,7 +36,7 @@ function Scene(coordinate, ellipsoid, viewerDiv, debugMode, gLDebug) {
 
     var positionCamera = this.ellipsoid.cartographicToCartesian(coordinate);
 
-    this.updaters = [];
+    this.layers = [];
 
     this.map = null;
 
@@ -134,10 +132,10 @@ Scene.prototype.scheduleUpdate = function () {
 Scene.prototype.update = function () {
     const sceneParams = { fogDistance: this.fogDistance, selectedNodeId: this.selectedNodeId };
     const params = { cam: this.currentCamera(), sceneParams };
-    for (var l = 0; l < this.updaters.length; l++) {
-        var updater = this.updaters[l];
-        params.layer = updater.node;
-        params.layersConfig = updater.node.layersConfiguration;
+    for (var l = 0; l < this.layers.length; l++) {
+        var updater = this.layers[l].updater;
+        params.layer = this.layers[l].layer;
+        params.layersConfig = params.layer.layersConfiguration;
         // Is implemented for Globe, Quadtree, Layer and MobileMappingLayer.
         if (updater.update)
             { updater.update(params); }
@@ -192,14 +190,14 @@ Scene.prototype.scene3D = function () {
  *
  * @param node {[object Object]}
  */
-Scene.prototype.add = function (updater) {
-    this.updaters.push(updater);
-    this.gfxEngine.add3DScene(updater.node.getMesh());
+Scene.prototype.add = function (layer, updater) {
+    this.layers.push({ layer, updater });
+    this.gfxEngine.add3DScene(layer.getMesh());
 };
 
-Scene.prototype.setMap = function (updater) {
-    this.map = updater.node;
-    this.add(updater);
+Scene.prototype.setMap = function (layer, updater) {
+    this.map = layer;
+    this.add(layer, updater);
 };
 
 Scene.prototype.getMap = function () {
@@ -227,11 +225,12 @@ Scene.prototype.select = function (/* layers*/) {
 
 Scene.prototype.selectNodeId = function (id) {
     this.selectedNodeId = id;
-    for (var i = 0; i < this.updaters.length; i++) {
-        var updater = this.updaters[i];
+    for (var i = 0; i < this.layers.length; i++) {
+        var updater = this.layers[i].updater;
+        var layer = this.layers[i].layer;
         if (updater.selectNode) {
             var params = {
-                layer: updater.node,
+                layer,
                 id,
             };
             updater.selectNode(params);
@@ -239,7 +238,8 @@ Scene.prototype.selectNodeId = function (id) {
     }
 };
 
-Scene.prototype.setStreetLevelImageryOn = function (value) {
+/* Scene.prototype.setStreetLevelImageryOn = function(value) {
+
     if (value) {
         if (this.updaters[1]) {
             this.updaters[1].node.visible = true;
@@ -258,13 +258,14 @@ Scene.prototype.setStreetLevelImageryOn = function (value) {
     }
 
     this.updateScene3D();
-};
+};*/
 
 Scene.prototype.updateMaterial = function (params) {
-    for (var i = 0; i < this.updaters.length; i++) {
-        var updater = this.updaters[i];
+    for (var i = 0; i < this.layers.length; i++) {
+        var updater = this.layers[i].updater;
+        var layer = this.layers[i].layer;
         if (updater.updateMaterial) {
-            params.layer = updater.node;
+            params.layer = layer;
             updater.updateMaterial(params);
         }
         if (updater.node.updateLightingPos)

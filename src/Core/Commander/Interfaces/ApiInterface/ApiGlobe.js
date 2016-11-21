@@ -17,7 +17,6 @@ import CustomEvent from 'custom-event';
 import Fetcher from 'Core/Commander/Providers/Fetcher';
 import { STRATEGY_MIN_NETWORK_TRAFFIC } from 'Scene/LayerUpdateStrategy';
 import UpdaterGlobe from 'Scene/UpdaterGlobe';
-import NodeProcess from 'Scene/NodeProcess';
 
 var loaded = false;
 var eventLoaded = new CustomEvent('globe-loaded');
@@ -347,10 +346,9 @@ ApiGlobe.prototype.createSceneGlobe = function (coordCarto, viewerDiv) {
     this.scene = Scene(coordinate, ellipsoid, viewerDiv, debugMode, gLDebug);
 
     var map = new Globe(ellipsoid, gLDebug);
-    var nodeProcess = new NodeProcess(this.scene.currentCamera(), map.ellipsoid);
-    var updater = new UpdaterGlobe({ node: map, process: nodeProcess, scene: this.scene });
+    var updater = new UpdaterGlobe(ellipsoid);
 
-    this.scene.setMap(updater);
+    this.scene.setMap(map, updater);
 
     // Register all providers
     var wmtsProvider = new WMTS_Provider({

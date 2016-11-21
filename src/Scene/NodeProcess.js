@@ -4,8 +4,6 @@
  * Description: NodeProcess effectue une opération sur un Node.
  */
 
-import BoundingBox from 'Scene/BoundingBox';
-import MathExt from 'Core/Math/MathExtented';
 import * as THREE from 'three';
 import defaultValue from 'Core/defaultValue';
 import Projection from 'Core/Geographic/Projection';
@@ -15,11 +13,8 @@ import { l_ELEVATION, l_COLOR } from 'Renderer/LayeredMaterial';
 
 export const SSE_SUBDIVISION_THRESHOLD = 6.0;
 
-function NodeProcess(camera, ellipsoid, bbox) {
+function NodeProcess(ellipsoid) {
     // Constructor
-
-    this.bbox = defaultValue(bbox, new BoundingBox(MathExt.PI_OV_TWO + MathExt.PI_OV_FOUR, MathExt.PI + MathExt.PI_OV_FOUR, 0, MathExt.PI_OV_TWO));
-
     this.vhMagnitudeSquared = 1.0;
 
     this.r = defaultValue(ellipsoid.size, new THREE.Vector3());
