@@ -132,7 +132,7 @@ var Shader = {
             "#endif",
             "#define N " + N,
 
-            "uniform int RTC;",
+            "uniform int useRTC;",
             "uniform mat4 mVPMatRTC;",
             "uniform mat3 mvpp[N];",
             "uniform vec3 translation[N];",
@@ -141,7 +141,7 @@ var Shader = {
             "void main() {",
             "    pos =  vec4(position,1.);",
             "    for(int i=0; i<N; ++i) v_texcoord[i] = mvpp[i] * (position-translation[i]);",
-            "    mat4 projModelViewMatrix = (RTC == 0) ? projectionMatrix * modelViewMatrix : mVPMatRTC;",
+            "    mat4 projModelViewMatrix = (useRTC == 0) ? projectionMatrix * modelViewMatrix : mVPMatRTC;",
             "    gl_Position  =  projModelViewMatrix * pos;",
 
             "#ifdef USE_LOGDEPTHBUF",

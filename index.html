@@ -49,17 +49,19 @@ and open the template in the editor.
                 id: 'wgs84'
             };
 
-            var urlImageryLayersArray = ["examples/layers/JSONLayers/Ortho.json",
-                                        "examples/layers/JSONLayers/OrthosCRS.json",
-                                        "examples/layers/JSONLayers/ScanEX.json",
-                                        "examples/layers/JSONLayers/Region.json"];
+			var urlImageryLayers = [], urlElevationLayers = [];
 
-            var urlElevationLayersArray = [ "examples/layers/JSONLayers/IGN_MNT.json",
-                                            "examples/layers/JSONLayers/IGN_MNT_HIGHRES.json"];
+            urlImageryLayers.push('examples/layers/JSONLayers/Ortho.json');
+            urlImageryLayers.push('examples/layers/JSONLayers/OrthosCRS.json');
+            urlImageryLayers.push('examples/layers/JSONLayers/ScanEX.json');
+            urlImageryLayers.push('examples/layers/JSONLayers/Region.json');
+
+		  	urlElevationLayers.push('examples/layers/JSONLayers/IGN_MNT.json');
+            urlElevationLayers.push('examples/layers/JSONLayers/IGN_MNT_HIGHRES.json');
 
             itowns.viewer.addGeometryLayer(wgs84TileLayer);
-            let imageryPromise = itowns.viewer.addImageryLayersFromJSONArray(urlImageryLayersArray);
-            let elevationPromise = itowns.viewer.addElevationLayersFromJSONArray(urlElevationLayersArray);
+            let imageryPromise = itowns.viewer.addImageryLayersFromJSONArray(urlImageryLayers);
+            let elevationPromise = itowns.viewer.addElevationLayersFromJSONArray(urlElevationLayers);
 
             imageryPromise.then((layersColors) => menuGlobe.addImageryLayersGUI(layersColors));
             elevationPromise.then((layersElevations) => {menuGlobe.addElevationLayersGUI(layersElevations);});
@@ -71,26 +73,6 @@ and open the template in the editor.
            	itowns.viewer.addEventListener('globe-loaded', function() {
             	console.log("Globe Loaded");
         	});
-
-            // TODO: move in GuiTools
-            var removeLayer = function(nameLayer) {
-                if(itowns.viewer.removeImageryLayer(nameLayer)) {
-                    var controllerTodelete = [];
-
-                    for (var i in gui.__controllers) {
-                        var controller = gui.__controllers[i];
-
-                        if(controller.property === nameLayer || controller.property === nameLayer + '_Opacity') {
-                            controllerTodelete.push(controller);
-                        }
-                    }
-
-                    for (var i in controllerTodelete) {
-                        gui.remove(controllerTodelete[i]);
-                    }
-                }
-            }
-
         </script>
     </body>
 </html>
