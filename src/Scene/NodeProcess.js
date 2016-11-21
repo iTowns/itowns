@@ -380,7 +380,6 @@ function updateNodeElevation(quadtree, node, layersConfig, force) {
 
 NodeProcess.prototype.processNode = function (node, camera, params) {
     node.setDisplayed(false);
-    node.setSelected(false);
 
     const isVisible = !this.isCulled(node, camera);
 

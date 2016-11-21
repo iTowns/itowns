@@ -4,7 +4,7 @@
  * Description: La Scene est l'instance principale du client. Elle est le chef orchestre de l'application.
  */
 
-/* global window, requestAnimationFrame */
+/* global window */
 
 /**
  *
@@ -22,7 +22,6 @@ import Layer from 'Scene/Layer';
 import Capabilities from 'Core/System/Capabilities';
 import MobileMappingLayer from 'MobileMapping/MobileMappingLayer';
 import CustomEvent from 'custom-event';
-import { StyleManager } from 'Scene/Description/StyleManager';
 
 var instanceScene = null;
 
@@ -44,11 +43,9 @@ function Scene(coordinate, ellipsoid, viewerDiv, debugMode, gLDebug) {
     this.map = null;
 
     this.cameras = null;
-    this.selectNodes = null;
+    this.selectedNodeId = null;
     this.managerCommand = ManagerCommands(this);
     this.orbitOn = false;
-
-    this.stylesManager = new StyleManager();
 
     this.gLDebug = gLDebug;
     this.gfxEngine = c3DEngine(this, positionCamera, viewerDiv, debugMode, gLDebug);
@@ -57,6 +54,7 @@ function Scene(coordinate, ellipsoid, viewerDiv, debugMode, gLDebug) {
     this.needsRedraw = false;
     this.lastRenderTime = 0;
     this.maxFramePerSec = 60;
+    this.fogDistance = 1000000000.0;
 
     this.time = 0;
     this.orbitOn = false;
@@ -88,18 +86,6 @@ Scene.prototype.currentControls = function () {
 
 Scene.prototype.getPickPosition = function (mouse) {
     return this.gfxEngine.getPickingPositionFromDepth(mouse);
-};
-
-Scene.prototype.getStyle = function (name) {
-    return this.stylesManager.getStyle(name);
-};
-
-Scene.prototype.removeStyle = function (name) {
-    return this.stylesManager.removeStyle(name);
-};
-
-Scene.prototype.getStyles = function () {
-    return this.stylesManager.getStyles();
 };
 
 Scene.prototype.getEllipsoid = function () {
@@ -146,15 +132,15 @@ Scene.prototype.scheduleUpdate = function () {
 };
 
 Scene.prototype.update = function () {
-    const params = { cam: this.currentCamera() };
+    const sceneParams = { fogDistance: this.fogDistance, selectedNodeId: this.selectedNodeId };
+    const params = { cam: this.currentCamera(), sceneParams };
     for (var l = 0; l < this.updaters.length; l++) {
         var updater = this.updaters[l];
         params.layer = updater.node;
         params.layersConfig = updater.node.layersConfiguration;
         // Is implemented for Globe, Quadtree, Layer and MobileMappingLayer.
-        if (updater.update) {
-            updater.update(params);
-        }
+        if (updater.update)
+            { updater.update(params); }
     }
 };
 
@@ -240,14 +226,15 @@ Scene.prototype.select = function (/* layers*/) {
 };
 
 Scene.prototype.selectNodeId = function (id) {
+    this.selectedNodeId = id;
     for (var i = 0; i < this.updaters.length; i++) {
         var updater = this.updaters[i];
-        if (updater.setNodeToSelect) {
+        if (updater.selectNode) {
             var params = {
                 layer: updater.node,
                 id,
             };
-            updater.setNodeToSelect(params);
+            updater.selectNode(params);
         }
     }
 };
@@ -307,7 +294,9 @@ Scene.prototype.animateTime = function (value) {
             var nMilliSeconds = this.time;
             var coSun = CoordStars.getSunPositionInScene(this.getEllipsoid(), new Date().getTime() + 3.6 * nMilliSeconds, 0, 0);
             this.lightingPos = coSun;
+
             this.updateMaterial({ uniformName: 'lightPosition', value: this.lightingPos.clone().normalize() });
+
             if (this.orbitOn) { // ISS orbit is 0.0667 degree per second -> every 60th of sec: 0.00111;
                 var p = this.gfxEngine.camera.camera3D.position;
                 var r = Math.sqrt(p.z * p.z + p.x * p.x);

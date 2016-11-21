@@ -10,16 +10,15 @@
  function UpdaterQuadtree(args) {
      this.node = args.node;
      this.process = args.process || new NodeProcess(args.scene.currentCamera(), args.map.ellipsoid);
-     this.browser = new BrowseTree();
  }
 
  UpdaterQuadtree.prototype.update = function (params) {
-     this.browser.browse(params.layer, params.cam, this.process, params.layersConfig);
+     BrowseTree.browse(params.layer, params.cam, this.process, params.layersConfig, params.sceneParams);
  };
 
  UpdaterQuadtree.prototype.updateMaterial = function (params) {
-     for (var a = 0; a < this.browser.tree.children.length; ++a) {
-         var root = this.browser.tree.children[a];
+     for (var a = 0; a < params.layer.children.length; ++a) {
+         var root = params.layer.children[a];
          for (var c = 0; c < root.children.length; c++) {
              var node = root.children[c];
              var lookMaterial = function (obj) {
@@ -31,8 +30,8 @@
      }
  };
 
- UpdaterQuadtree.prototype.setNodeToSelect = function (params) {
-     this.browser.selectedNodeId = params.id;
+ UpdaterQuadtree.prototype.selectNode = function (params) {
+     BrowseTree.selectNode(params.layer, params.id);
  };
 
  export default UpdaterQuadtree;

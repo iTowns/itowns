@@ -46,11 +46,12 @@ UpdaterGlobe.prototype.updateMaterial = function (params) {
     }
 };
 
-UpdaterGlobe.prototype.setNodeToSelect = function (params) {
+
+UpdaterGlobe.prototype.selectNode = function (params) {
     for (var l = 0; l < params.layer.children.length; l++) {
         var sLayer = params.layer.children[l];
-        if (sLayer.updater && sLayer.updater.updateMaterial)
-            { sLayer.updater.setNodeToSelect(params); }
+        if (sLayer.updater && sLayer.updater.selectNode)
+            { sLayer.updater.selectNode(params); }
     }
 };
 

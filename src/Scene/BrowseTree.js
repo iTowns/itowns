@@ -7,49 +7,25 @@
 import * as THREE from 'three';
 
 function BrowseTree() {
-    // Constructor
-
-    this.oneNode = 0;
-    this.nodeProcess = undefined;
-    this.tree = undefined;
-    this.fogDistance = 1000000000.0;
-    this.mfogDistance = 1000000000.0;
-    this.selectedNodeId = -1;
-    this.selectedNode = null;
-
-    this.selectNode = function (node) {
-        this._selectNode(node);
-    };
 }
 
-BrowseTree.prototype.addNodeProcess = function (nodeProcess) {
-    this.nodeProcess = nodeProcess;
-};
-
-BrowseTree.prototype.NodeProcess = function () {
-    return this.nodeProcess;
-};
-
-BrowseTree.prototype.uniformsProcess = (function () {
+BrowseTree.uniformsProcess = (function () {
     var positionWorld = new THREE.Vector3();
 
-    return function (node, camera) {
+    return function (node, camera, sceneParams) {
         node.setMatrixRTC(camera.getRTCMatrixFromCenter(positionWorld.setFromMatrixPosition(node.matrixWorld)));
-        node.setFog(this.fogDistance);
-
-        this.selectNode(node);
+        node.setFog(sceneParams.fogDistance);
+        node.setSelected(sceneParams.selectedNodeId === node.id);
     };
 }());
 
-BrowseTree.prototype._selectNode = function (node) {
-    if (node.id === this.selectedNodeId) {
-        node.setSelected(node.visible && node.material.visible);
-        if (this.selectedNode !== node) {
-            this.selectedNode = node;
-            /* eslint-disable no-alert, no-console */
-            console.info(node);
-            /* eslint-enable no-alert, no-console */
-        }
+BrowseTree.selectNode = function (node, id) {
+    if (node.id === id) {
+        /* eslint-disable no-alert, no-console */
+        console.info(node);
+        /* eslint-enable no-alert, no-console */
+    } else {
+        applyFunctionToChildren(n => BrowseTree.selectNode(n, id), node);
     }
 };
 
@@ -67,22 +43,23 @@ function applyFunctionToChildren(func, node) {
  * @param {type} optional   : optional process
  * @returns {undefined}
  */
-BrowseTree.prototype.browse = function (tree, camera, process, layersConfig) {
-    this.tree = tree;
-
+BrowseTree.browse = function (tree, camera, process, layersConfig, sceneParams) {
     camera.updateMatrixWorld();
 
-    this.fogDistance = this.mfogDistance * Math.pow((camera.getDistanceFromOrigin() - 6300000) / 25000000, 1.6);
+    var fogDistance = sceneParams.fogDistance * Math.pow((camera.getDistanceFromOrigin() - 6300000) / 25000000, 1.6);
+    sceneParams.fogDistance = fogDistance;
 
     process.prepare(camera);
 
     var params = {
-        tree: this.tree,
+        sceneParams,
+        tree,
         layersConfig,
+        fogDistance,
     };
 
     var rootNode = tree.children[0];
-    applyFunctionToChildren(n => this._browseDisplayableNode(n, camera, process, params), rootNode);
+    applyFunctionToChildren(n => BrowseTree._browseDisplayableNode(n, camera, process, params), rootNode);
 };
 
 /**
@@ -93,23 +70,23 @@ BrowseTree.prototype.browse = function (tree, camera, process, layersConfig) {
  * @param {type} optional   : optional process
  * @returns {undefined}
  */
-BrowseTree.prototype._browseDisplayableNode = function (node, camera, process, params) {
+BrowseTree._browseDisplayableNode = function (node, camera, process, params) {
     if (node.parent.isVisible() && process.processNode(node, camera, params)) {
         if (node.isDisplayed()) {
-            this.uniformsProcess(node, camera);
-            applyFunctionToChildren(n => this._browseNonDisplayableNode(n, node.level + 2, process, camera, params), node);
+            this.uniformsProcess(node, camera, params.sceneParams);
+            applyFunctionToChildren(n => BrowseTree._browseNonDisplayableNode(n, node.level + 2, process, camera, params), node);
         } else {
-            applyFunctionToChildren(n => this._browseDisplayableNode(n, camera, process, params), node);
+            applyFunctionToChildren(n => BrowseTree._browseDisplayableNode(n, camera, process, params), node);
         }
     } else {
         node.setVisibility(false);
         node.setDisplayed(false);
 
-        applyFunctionToChildren(n => this._browseNonDisplayableNode(n, node.level + 2, process, camera, params), node);
+        applyFunctionToChildren(n => BrowseTree._browseNonDisplayableNode(n, node.level + 2, process, camera, params), node);
     }
 };
 
-BrowseTree.prototype._browseNonDisplayableNode = function (node, level, process, camera, params) {
+BrowseTree._browseNonDisplayableNode = function (node, level, process, camera, params) {
     // update node's sse value
     node.sse = camera.computeNodeSSE(node);
     node.setDisplayed(false);
@@ -125,7 +102,7 @@ BrowseTree.prototype._browseNonDisplayableNode = function (node, level, process,
     if (node.children.length > 0) {
         var disposableChildrenCount = 0;
         for (var i = 0; i < node.children.length; i++) {
-            if (this._browseNonDisplayableNode(node.children[i], level, process, camera, params)) {
+            if (BrowseTree._browseNonDisplayableNode(node.children[i], level, process, camera, params)) {
                 disposableChildrenCount++;
             }
         }
