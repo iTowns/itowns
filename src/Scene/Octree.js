@@ -7,7 +7,7 @@
 import SpatialHash from 'SpatialHash';
 
 function Octree() {
-    //Constructor
+    // Constructor
 
 
 }
@@ -16,5 +16,5 @@ Octree.prototype = new SpatialHash();
 
 
 export {
-    Octree
+    Octree,
 };

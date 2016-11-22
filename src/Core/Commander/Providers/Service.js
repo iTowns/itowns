@@ -7,7 +7,7 @@
 import Provider from 'Provider';
 
 function Service() {
-    //Constructor
+    // Constructor
 
 
 }
@@ -16,5 +16,5 @@ Service.prototype = new Provider();
 
 
 export {
-    Service
+    Service,
 };

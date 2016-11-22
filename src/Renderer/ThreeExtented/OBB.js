@@ -17,7 +17,7 @@ function OBB(min, max, lookAt, translate) {
 
 
     if (lookAt)
-        this.lookAt(lookAt);
+        { this.lookAt(lookAt); }
 
 
     if (translate) {
@@ -33,14 +33,12 @@ function OBB(min, max, lookAt, translate) {
     this.oPosition = this.position.clone();
 
     this.pointsWorld;
-
 }
 
 OBB.prototype = Object.create(THREE.Object3D.prototype);
 OBB.prototype.constructor = OBB;
 
-OBB.prototype.update = function() {
-
+OBB.prototype.update = function () {
     this.updateMatrix();
     this.updateMatrixWorld();
 
@@ -49,13 +47,11 @@ OBB.prototype.update = function() {
     this.pointsWorld = this.cPointsWorld(this.points());
 };
 
-OBB.prototype.quadInverse = function() {
-
+OBB.prototype.quadInverse = function () {
     return this.quaInv;
 };
 
-OBB.prototype.addHeight = function(bbox) {
-
+OBB.prototype.addHeight = function (bbox) {
     var depth = Math.abs(this.natBox.min.z - this.natBox.max.z);
     //
     this.box3D.min.z = this.natBox.min.z + bbox.bottom();
@@ -81,8 +77,7 @@ OBB.prototype.addHeight = function(bbox) {
     // TODO <---- à vérifier
 };
 
-OBB.prototype.points = function() {
-
+OBB.prototype.points = function () {
     var points = [
         new THREE.Vector3(),
         new THREE.Vector3(),
@@ -91,7 +86,7 @@ OBB.prototype.points = function() {
         new THREE.Vector3(),
         new THREE.Vector3(),
         new THREE.Vector3(),
-        new THREE.Vector3()
+        new THREE.Vector3(),
     ];
 
     points[0].set(this.box3D.min.x, this.box3D.min.y, this.box3D.min.z);
@@ -106,8 +101,7 @@ OBB.prototype.points = function() {
     return points;
 };
 
-OBB.prototype.cPointsWorld = function(points) {
-
+OBB.prototype.cPointsWorld = function (points) {
     var m = this.matrixWorld;
 
     for (var i = 0, max = points.length; i < max; i++) {
@@ -115,7 +109,6 @@ OBB.prototype.cPointsWorld = function(points) {
     }
 
     return points;
-
 };
 
 export default OBB;

@@ -20,7 +20,7 @@ import BuilderEllipsoidTile from 'Globe/BuilderEllipsoidTile';
 import BoundingBox from 'Scene/BoundingBox';
 
 function TileProvider(ellipsoid) {
-    //Constructor
+    // Constructor
     Provider.call(this, null);
 
     this.projection = new Projection();
@@ -30,18 +30,17 @@ function TileProvider(ellipsoid) {
     this.cacheGeometry = [];
     this.tree = null;
     this.nNode = 0;
-
 }
 
 TileProvider.prototype = Object.create(Provider.prototype);
 
 TileProvider.prototype.constructor = TileProvider;
 
-TileProvider.prototype.preprocessLayer = function( /*layer*/ ) {
+TileProvider.prototype.preprocessLayer = function (/* layer*/) {
     /* no-op */
 };
 
-TileProvider.prototype.getGeometry = function(bbox, cooWMTS) {
+TileProvider.prototype.getGeometry = function (bbox, cooWMTS) {
     var geometry;
     var n = Math.pow(2, cooWMTS.zoom + 1);
     var part = Math.PI * 2.0 / n;
@@ -49,23 +48,22 @@ TileProvider.prototype.getGeometry = function(bbox, cooWMTS) {
     if (this.cacheGeometry[cooWMTS.zoom] !== undefined && this.cacheGeometry[cooWMTS.zoom][cooWMTS.row] !== undefined) {
         geometry = this.cacheGeometry[cooWMTS.zoom][cooWMTS.row];
     } else {
-        if (this.cacheGeometry[cooWMTS.zoom] === undefined)
-            this.cacheGeometry[cooWMTS.zoom] = new Array();
+        if (this.cacheGeometry[cooWMTS.zoom] === undefined) {
+            this.cacheGeometry[cooWMTS.zoom] = [];
+        }
 
         var precision = 16;
         var rootBBox = new BoundingBox(0, part + part * 0.01, bbox.south(), bbox.north());
 
         geometry = new TileGeometry(rootBBox, precision, this.ellipsoid, cooWMTS.zoom);
         this.cacheGeometry[cooWMTS.zoom][cooWMTS.row] = geometry;
-
     }
 
     return geometry;
 };
 
 
-TileProvider.prototype.executeCommand = function(command) {
-
+TileProvider.prototype.executeCommand = function (command) {
     var bbox = command.paramsFunction.bbox;
 
     // TODO not generic
@@ -73,14 +71,14 @@ TileProvider.prototype.executeCommand = function(command) {
     var parent = command.requester;
 
     // build tile
-    var geometry; //getGeometry(bbox,tileCoord);
+    var geometry; // getGeometry(bbox,tileCoord);
 
     var params = {
-        bbox: bbox,
+        bbox,
         zoom: tileCoord.zoom,
         segment: 16,
         center: null,
-        projected: null
+        projected: null,
     };
 
     var tile = new command.type(params, this.builder);

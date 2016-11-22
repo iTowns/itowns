@@ -6,7 +6,7 @@
 import IoDriver from 'IoDriver';
 
 function IoDriverBati3D() {
-    //Constructor
+    // Constructor
 
 
 }
@@ -15,5 +15,5 @@ IoDriverBati3D.prototype = new IoDriver();
 
 
 export {
-    IoDriverBati3D
+    IoDriverBati3D,
 };

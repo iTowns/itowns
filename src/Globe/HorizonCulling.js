@@ -7,7 +7,7 @@
 import NodeProcess from 'NodeProcess';
 
 function HorizonCulling() {
-    //Constructor
+    // Constructor
 
 
 }
@@ -16,5 +16,5 @@ HorizonCulling.prototype = new NodeProcess();
 
 
 export {
-    HorizonCulling
+    HorizonCulling,
 };

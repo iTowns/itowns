@@ -6,11 +6,10 @@
 import EventsManager from 'EventsManager';
 
 function Timeline() {
-    //Constructor
+    // Constructor
 
     this._timer = null;
     this._triggers = null;
-
 }
 
 Timeline.prototype = new EventsManager();
@@ -19,13 +18,12 @@ Timeline.prototype = new EventsManager();
  * @documentation: Cette classe est un conteneur et gestionnaire de triggeurs
  *
  */
-Timeline.prototype.update = function() {
-    //TODO: Implement Me
+Timeline.prototype.update = function () {
+    // TODO: Implement Me
 
 };
 
 
-
 export {
-    Timeline
+    Timeline,
 };

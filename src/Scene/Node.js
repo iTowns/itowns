@@ -6,7 +6,7 @@
  */
 
 function Node() {
-    //Constructor
+    // Constructor
 
     this.parent = null;
     this.children = [];
@@ -24,16 +24,14 @@ function Node() {
     this.pendingLayers = {};
     this.visible = true;
     this.layer = null;
-
-
 }
 
 
-Node.prototype.setVisibility = function(show) {
+Node.prototype.setVisibility = function (show) {
     this.visible = show;
 };
 
-Node.prototype.setDisplayed = function( /*show*/ ) {
+Node.prototype.setDisplayed = function (/* show*/) {
     // The default node has nothing to display
 };
 
@@ -42,19 +40,15 @@ Node.prototype.setDisplayed = function( /*show*/ ) {
  *
  * @return  {int}
  */
-Node.prototype.childrenCount = function() {
-
+Node.prototype.childrenCount = function () {
     return this.children.length;
-
 };
 
-Node.prototype.noChild = function() {
-
+Node.prototype.noChild = function () {
     return this.children.length === 0;
-
 };
 
-Node.prototype.childrenLoaded = function() {
+Node.prototype.childrenLoaded = function () {
     // TODO: '4' is specific to Quadtree
     var fourChildren = this.children.length == 4;
 
@@ -80,8 +74,8 @@ Node.prototype.childrenLoaded = function() {
  * @documentation: Rafraichi le Node si le contenu ou  le style a été modifié.
  *
  */
-Node.prototype.update = function() {
-    //TODO: Implement Me
+Node.prototype.update = function () {
+    // TODO: Implement Me
 
 };
 
@@ -90,15 +84,15 @@ Node.prototype.update = function() {
  * @param {type} level
  * @returns {undefined}
  */
-Node.prototype.getNodeAtLevel = function(level) {
+Node.prototype.getNodeAtLevel = function (level) {
     if (level === this.level) {
         return this;
     }
 
     var functionToCheck = this.parent.getNodeAtLevel;
 
-    if (!functionToCheck || !(typeof(functionToCheck) === 'function') && (this.parent.level !== level))
-        return undefined;
+    if (!functionToCheck || !(typeof (functionToCheck) === 'function') && (this.parent.level !== level))
+        { return undefined; }
 
     return (this.parent.level === level) ? this.parent : this.parent.getNodeAtLevel(level);
 };
@@ -108,8 +102,8 @@ Node.prototype.getNodeAtLevel = function(level) {
  *param
  * @return  {[object Object]}
  */
-Node.prototype.hydrate = function() {
-    //TODO: Implement Me
+Node.prototype.hydrate = function () {
+    // TODO: Implement Me
 
 };
 
@@ -119,8 +113,8 @@ Node.prototype.hydrate = function() {
  *
  * @param mem {[object Object]}
  */
-Node.prototype.dehydrate = function( /*mem*/ ) {
-    //TODO: Implement Me
+Node.prototype.dehydrate = function (/* mem*/) {
+    // TODO: Implement Me
 
 };
 
@@ -129,8 +123,8 @@ Node.prototype.dehydrate = function( /*mem*/ ) {
  *
  * @param child {[object Object]}
  */
-Node.prototype.add = function(child) {
-    //TODO: Implement Me
+Node.prototype.add = function (child) {
+    // TODO: Implement Me
     this.children.push(child);
     child.parent = this;
 
@@ -142,8 +136,8 @@ Node.prototype.add = function(child) {
  *
  * @param child {[object Object]}
  */
-Node.prototype.remove = function( /*child*/ ) {
-    //TODO: Implement Me
+Node.prototype.remove = function (/* child*/) {
+    // TODO: Implement Me
 
 };
 
@@ -154,8 +148,7 @@ Node.prototype.remove = function( /*child*/ ) {
  * @param childClass {Object}
  */
 
-Node.extend = function(childClass) {
-
+Node.extend = function (childClass) {
     function propName(prop, value) {
         for (var i in prop) {
             if (prop[i] === value) {
@@ -169,14 +162,13 @@ Node.extend = function(childClass) {
         var protoName = propName(Node.prototype, Node.prototype[p]);
 
 
-        if (protoName !== "add" && protoName !== "remove" & protoName !== "setVisibility" && protoName !== "setDisplayed") {
+        if (protoName !== 'add' && protoName !== 'remove' & protoName !== 'setVisibility' && protoName !== 'setDisplayed') {
             childClass.prototype[protoName] = Node.prototype[p];
         }
     }
-
 };
 
 
 export default Node;
 
-//module.exports = {Node:Node};
+// module.exports = {Node:Node};

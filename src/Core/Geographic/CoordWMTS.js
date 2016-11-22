@@ -27,11 +27,11 @@ function CoordWMTS(zoom, row, col) {
 
 CoordWMTS.prototype.constructor = CoordWMTS;
 
-CoordWMTS.prototype.clone = function() {
+CoordWMTS.prototype.clone = function () {
     return new CoordWMTS(this.zoom, this.row, this.col);
 };
 
-CoordWMTS.prototype.isInside = function(limit) {
+CoordWMTS.prototype.isInside = function (limit) {
     return this.row >= limit.minTileRow && this.row <= limit.maxTileRow && this.col <= limit.maxTileCol && this.col >= limit.minTileCol;
 };
 

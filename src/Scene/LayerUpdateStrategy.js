@@ -6,11 +6,11 @@
  */
 
 export const STRATEGY_MIN_NETWORK_TRAFFIC = 0;
-export const STRATEGY_GROUP               = 1;
-export const STRATEGY_PROGRESSIVE         = 2;
-export const STRATEGY_DICHOTOMY           = 3;
+export const STRATEGY_GROUP = 1;
+export const STRATEGY_PROGRESSIVE = 2;
+export const STRATEGY_DICHOTOMY = 3;
 
-function _minimizeNetworkTraffic(nodeLevel /*, currentLevel, options */) {
+function _minimizeNetworkTraffic(nodeLevel /* , currentLevel, options */) {
     return nodeLevel;
 }
 
@@ -33,7 +33,7 @@ function _progressive(nodeLevel, currentLevel, options) {
 // Load textures at mid-point between current level and node's level.
 // This produces smoother transitions and a single fetch updates multiple
 // tiles thanks to caching.
-function _dichotomy(nodeLevel, currentLevel /*, options */) {
+function _dichotomy(nodeLevel, currentLevel /* , options */) {
     return Math.min(
         nodeLevel,
         Math.ceil((currentLevel + nodeLevel) / 2));

@@ -5,30 +5,28 @@
  */
 
 function TemplatesCommand() {
-    //Constructor
+    // Constructor
 
     this.commands = null;
-
 }
 
 
 /**
  */
-TemplatesCommand.prototype.xmlToCommands = function() {
-    //TODO: Implement Me
+TemplatesCommand.prototype.xmlToCommands = function () {
+    // TODO: Implement Me
 
 };
 
 
 /**
  */
-TemplatesCommand.prototype.specifiesCommand = function() {
-    //TODO: Implement Me
+TemplatesCommand.prototype.specifiesCommand = function () {
+    // TODO: Implement Me
 
 };
 
 
-
 export {
-    TemplatesCommand
+    TemplatesCommand,
 };

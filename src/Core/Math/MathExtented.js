@@ -48,52 +48,42 @@ MathExt.RADTODEG = 180.0 / MathExt.PI;
 
 MathExt.DEGTORAD = MathExt.PI / 180.0;
 
-MathExt.radToDeg = function(rad) {
-
-	return rad * MathExt.RADTODEG;
+MathExt.radToDeg = function (rad) {
+    return rad * MathExt.RADTODEG;
 };
 
-MathExt.degToRad = function(deg) {
-
-	return deg * MathExt.DEGTORAD;
+MathExt.degToRad = function (deg) {
+    return deg * MathExt.DEGTORAD;
 };
 
-MathExt.arrayDegToRad = function(arrayDeg) {
-
-	if(arrayDeg) {
-		for (var i = 0; i < arrayDeg.length; i++) {
-			arrayDeg[i]= MathExt.degToRad(arrayDeg[i]);
-		}
-	}
+MathExt.arrayDegToRad = function (arrayDeg) {
+    if (arrayDeg) {
+        for (var i = 0; i < arrayDeg.length; i++) {
+            arrayDeg[i] = MathExt.degToRad(arrayDeg[i]);
+        }
+    }
 };
 
-MathExt.arrayRadToDeg = function(arrayDeg) {
-
-	if(arrayDeg) {
-		for (var i = 0; i < arrayDeg.length; i++) {
-			arrayDeg[i]= MathExt.radToDeg(arrayDeg[i]);
-		}
-	}
+MathExt.arrayRadToDeg = function (arrayDeg) {
+    if (arrayDeg) {
+        for (var i = 0; i < arrayDeg.length; i++) {
+            arrayDeg[i] = MathExt.radToDeg(arrayDeg[i]);
+        }
+    }
 };
 
 // TODO: Function in test :
-MathExt.step = function(val, stepVal) {
-
-    if(val<stepVal) {
-
+MathExt.step = function (val, stepVal) {
+    if (val < stepVal) {
         return 0.0;
-
     }
     else {
-
         return 1.0;
     }
 };
 
-MathExt.exp2 = function(expo) {
-
+MathExt.exp2 = function (expo) {
     return Math.pow(2, expo);
-
 };
 
 export default MathExt;

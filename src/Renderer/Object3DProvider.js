@@ -6,12 +6,12 @@
 import NodeProvider from 'NodeProvider';
 
 function Object3DProvider() {
-    //Constructor
+    // Constructor
 }
 
 Object3DProvider.prototype = new NodeProvider();
 
 
 export {
-    Object3DProvider
+    Object3DProvider,
 };

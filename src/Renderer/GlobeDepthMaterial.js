@@ -3,8 +3,7 @@ import BasicMaterial from 'Renderer/BasicMaterial';
 import GlobeDepthFS from 'Renderer/Shader/GlobeDepthFS.glsl';
 import GlobeDepthVS from 'Renderer/Shader/GlobeDepthVS.glsl';
 
-var GlobeDepthMaterial = function(otherMaterial) {
-
+var GlobeDepthMaterial = function (otherMaterial) {
     BasicMaterial.call(this);
 
     this.vertexShader = this.vertexShaderHeader + GlobeDepthVS;

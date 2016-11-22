@@ -6,7 +6,7 @@
 import IoDriver from 'IoDriver';
 
 function IoDriverFloatImage() {
-    //Constructor
+    // Constructor
 
 
 }
@@ -15,5 +15,5 @@ IoDriverFloatImage.prototype = new IoDriver();
 
 
 export {
-    IoDriverFloatImage
+    IoDriverFloatImage,
 };

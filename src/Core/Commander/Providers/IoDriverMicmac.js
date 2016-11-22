@@ -6,7 +6,7 @@
 import IoDriver from 'IoDriver';
 
 function IoDriverMicmac() {
-    //Constructor
+    // Constructor
 
 
 }
@@ -15,13 +15,12 @@ IoDriverMicmac.prototype = new IoDriver();
 
 /**
  */
-IoDriverMicmac.prototype.loadOrientation = function() {
-    //TODO: Implement Me
+IoDriverMicmac.prototype.loadOrientation = function () {
+    // TODO: Implement Me
 
 };
 
 
-
 export {
-    IoDriverMicmac
+    IoDriverMicmac,
 };

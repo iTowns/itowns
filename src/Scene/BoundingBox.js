@@ -23,39 +23,38 @@ import GeoCoordinate from 'Core/Geographic/GeoCoordinate';
  */
 
 function BoundingBox(west, east, south, north, minAltitude, maxAltitude, unit) {
-    //Constructor
+    // Constructor
 
-    this.minCoordinate = new GeoCoordinate(defaultValue(west, -mE.PI), defaultValue(south, -mE.PI_OV_TWO), defaultValue(minAltitude, 0),unit);
-    this.maxCoordinate = new GeoCoordinate(defaultValue(east, mE.PI), defaultValue(north, mE.PI_OV_TWO), defaultValue(maxAltitude, 0),unit);
+    this.minCoordinate = new GeoCoordinate(defaultValue(west, -mE.PI), defaultValue(south, -mE.PI_OV_TWO), defaultValue(minAltitude, 0), unit);
+    this.maxCoordinate = new GeoCoordinate(defaultValue(east, mE.PI), defaultValue(north, mE.PI_OV_TWO), defaultValue(maxAltitude, 0), unit);
 
     this.dimension = new Point2D(Math.abs(this.east() - this.west()), Math.abs(this.north() - this.south()));
     this.halfDimension = new Point2D(this.dimension.x * 0.5, this.dimension.y * 0.5);
     this.center = new Point2D(this.west() + this.halfDimension.x, this.south() + this.halfDimension.y);
     this.size = Math.sqrt(this.dimension.x * this.dimension.x + this.dimension.y * this.dimension.y);
-
 }
 
-BoundingBox.prototype.west = function(unit) {
+BoundingBox.prototype.west = function (unit) {
     return this.minCoordinate.longitude(unit);
 };
 
-BoundingBox.prototype.east = function(unit) {
+BoundingBox.prototype.east = function (unit) {
     return this.maxCoordinate.longitude(unit);
 };
 
-BoundingBox.prototype.north = function(unit) {
+BoundingBox.prototype.north = function (unit) {
     return this.maxCoordinate.latitude(unit);
 };
 
-BoundingBox.prototype.south = function(unit) {
+BoundingBox.prototype.south = function (unit) {
     return this.minCoordinate.latitude(unit);
 };
 
-BoundingBox.prototype.top = function() {
+BoundingBox.prototype.top = function () {
     return this.maxCoordinate.altitude();
 };
 
-BoundingBox.prototype.bottom = function() {
+BoundingBox.prototype.bottom = function () {
     return this.minCoordinate.altitude();
 };
 
@@ -64,15 +63,15 @@ BoundingBox.prototype.bottom = function() {
  *
  * @param point {[object Object]}
  */
-BoundingBox.prototype.isInside = function(point) {
+BoundingBox.prototype.isInside = function (point) {
     return point.x <= this.east() && point.x >= this.west() && point.y <= this.north() && point.y >= this.south();
 };
 
-BoundingBox.prototype.BBoxIsInside = function(bbox) {
+BoundingBox.prototype.BBoxIsInside = function (bbox) {
     return bbox.east() <= this.east() && bbox.west() >= this.west() && bbox.north() <= this.north() && bbox.south() >= this.south();
 };
 
-BoundingBox.prototype.offsetScale = function(bbox) {
+BoundingBox.prototype.offsetScale = function (bbox) {
     var pitX = Math.abs(bbox.west() - this.west()) / this.dimension.x;
     var pitY = Math.abs(bbox.north() - this.north()) / this.dimension.y;
     var scale = bbox.dimension.x / this.dimension.x;
@@ -85,11 +84,9 @@ BoundingBox.prototype.offsetScale = function(bbox) {
  * @param {type} halfDimension : half dimension of box
  * @returns {undefined}
  */
-BoundingBox.prototype.set = function(center, halfDimension) {
-
+BoundingBox.prototype.set = function (center, halfDimension) {
     this.halfDimension = halfDimension;
     this.center = center;
-
 };
 
 /**
@@ -98,11 +95,9 @@ BoundingBox.prototype.set = function(center, halfDimension) {
  * @param {type} max : maximum altitude
  * @returns {undefined}
  */
-BoundingBox.prototype.setBBoxZ = function(min, max) {
-
+BoundingBox.prototype.setBBoxZ = function (min, max) {
     this.minCoordinate.setAltitude(min);
     this.maxCoordinate.setAltitude(max);
-
 };
 
 /**
@@ -110,9 +105,8 @@ BoundingBox.prototype.setBBoxZ = function(min, max) {
  * @param {type} bbox
  * @returns {Boolean}
  */
-BoundingBox.prototype.intersect = function(bbox) {
+BoundingBox.prototype.intersect = function (bbox) {
     return !(this.west() >= bbox.east() || this.east() <= bbox.west() || this.south() >= bbox.north() || this.north() <= bbox.south());
-
 };
 
 export default BoundingBox;

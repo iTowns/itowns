@@ -7,7 +7,7 @@
 import Description from 'Description';
 
 function Semantics() {
-    //Constructor
+    // Constructor
 
 
 }
@@ -16,5 +16,5 @@ Semantics.prototype = new Description();
 
 
 export {
-    Semantics
+    Semantics,
 };

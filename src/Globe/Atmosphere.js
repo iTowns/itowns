@@ -17,7 +17,6 @@ import GlowFS from 'Renderer/Shader/GlowFS.glsl';
 import GlowVS from 'Renderer/Shader/GlowVS.glsl';
 
 function Atmosphere(ellipsoid) {
-
     NodeMesh.call(this);
 
     var size = ellipsoid.size;
@@ -27,13 +26,13 @@ function Atmosphere(ellipsoid) {
 
     this.uniformsOut = {
         atmoIN: {
-            type: "i",
-            value: 0
+            type: 'i',
+            value: 0,
         },
         screenSize: {
-            type: "v2",
-            value: new THREE.Vector2(window.innerWidth, window.innerHeight)
-        } // Should be updated on screen resize...
+            type: 'v2',
+            value: new THREE.Vector2(window.innerWidth, window.innerHeight),
+        }, // Should be updated on screen resize...
     };
 
     var material = new THREE.ShaderMaterial({
@@ -44,7 +43,7 @@ function Atmosphere(ellipsoid) {
         side: THREE.BackSide,
         blending: THREE.AdditiveBlending,
         transparent: true,
-        wireframe: false
+        wireframe: false,
 
     });
 
@@ -54,18 +53,18 @@ function Atmosphere(ellipsoid) {
     this.geometry = geometry;
     this.material = material;
 
-    //this.atmosphereOUT    = new THREE.Mesh(geometry,material);
-    //this.add(this.atmosphereOUT);
+    // this.atmosphereOUT    = new THREE.Mesh(geometry,material);
+    // this.add(this.atmosphereOUT);
 
     this.uniformsIn = {
         atmoIN: {
-            type: "i",
-            value: 1
+            type: 'i',
+            value: 1,
         },
         screenSize: {
-            type: "v2",
-            value: new THREE.Vector2(window.innerWidth, window.innerHeight)
-        } // Should be updated on screen resize...
+            type: 'v2',
+            value: new THREE.Vector2(window.innerWidth, window.innerHeight),
+        }, // Should be updated on screen resize...
     };
 
     var materialAtmoIn = new THREE.ShaderMaterial({
@@ -75,7 +74,7 @@ function Atmosphere(ellipsoid) {
         fragmentShader: GlowFS,
         side: THREE.FrontSide,
         blending: THREE.AdditiveBlending,
-        transparent: true
+        transparent: true,
 
     });
 
@@ -92,100 +91,100 @@ function Atmosphere(ellipsoid) {
         outerRadius: 6700000,
         wavelength: [0.650, 0.570, 0.475],
         scaleDepth: 0.25,
-        mieScaleDepth: 0.1
+        mieScaleDepth: 0.1,
     };
 
 
     var uniformsSky = {
         v3LightPosition: {
-            type: "v3",
-            value: defaultValue.lightingPos.clone().normalize()
+            type: 'v3',
+            value: defaultValue.lightingPos.clone().normalize(),
         },
         v3InvWavelength: {
-            type: "v3",
-            value: new THREE.Vector3(1 / Math.pow(atmosphere.wavelength[0], 4), 1 / Math.pow(atmosphere.wavelength[1], 4), 1 / Math.pow(atmosphere.wavelength[2], 4))
+            type: 'v3',
+            value: new THREE.Vector3(1 / Math.pow(atmosphere.wavelength[0], 4), 1 / Math.pow(atmosphere.wavelength[1], 4), 1 / Math.pow(atmosphere.wavelength[2], 4)),
         },
         fCameraHeight: {
-            type: "f",
-            value: 0.0
+            type: 'f',
+            value: 0.0,
         },
         fCameraHeight2: {
-            type: "f",
-            value: 0.0
+            type: 'f',
+            value: 0.0,
         },
         fInnerRadius: {
-            type: "f",
-            value: atmosphere.innerRadius
+            type: 'f',
+            value: atmosphere.innerRadius,
         },
         fInnerRadius2: {
-            type: "f",
-            value: atmosphere.innerRadius * atmosphere.innerRadius
+            type: 'f',
+            value: atmosphere.innerRadius * atmosphere.innerRadius,
         },
         fOuterRadius: {
-            type: "f",
-            value: atmosphere.outerRadius
+            type: 'f',
+            value: atmosphere.outerRadius,
         },
         fOuterRadius2: {
-            type: "f",
-            value: atmosphere.outerRadius * atmosphere.outerRadius
+            type: 'f',
+            value: atmosphere.outerRadius * atmosphere.outerRadius,
         },
         fKrESun: {
-            type: "f",
-            value: atmosphere.Kr * atmosphere.ESun
+            type: 'f',
+            value: atmosphere.Kr * atmosphere.ESun,
         },
         fKmESun: {
-            type: "f",
-            value: atmosphere.Km * atmosphere.ESun
+            type: 'f',
+            value: atmosphere.Km * atmosphere.ESun,
         },
         fKr4PI: {
-            type: "f",
-            value: atmosphere.Kr * 4.0 * Math.PI
+            type: 'f',
+            value: atmosphere.Kr * 4.0 * Math.PI,
         },
         fKm4PI: {
-            type: "f",
-            value: atmosphere.Km * 4.0 * Math.PI
+            type: 'f',
+            value: atmosphere.Km * 4.0 * Math.PI,
         },
         fScale: {
-            type: "f",
-            value: 1 / (atmosphere.outerRadius - atmosphere.innerRadius)
+            type: 'f',
+            value: 1 / (atmosphere.outerRadius - atmosphere.innerRadius),
         },
         fScaleDepth: {
-            type: "f",
-            value: atmosphere.scaleDepth
+            type: 'f',
+            value: atmosphere.scaleDepth,
         },
         fScaleOverScaleDepth: {
-            type: "f",
-            value: 1 / (atmosphere.outerRadius - atmosphere.innerRadius) / atmosphere.scaleDepth
+            type: 'f',
+            value: 1 / (atmosphere.outerRadius - atmosphere.innerRadius) / atmosphere.scaleDepth,
         },
         g: {
-            type: "f",
-            value: atmosphere.g
+            type: 'f',
+            value: atmosphere.g,
         },
         g2: {
-            type: "f",
-            value: atmosphere.g * atmosphere.g
+            type: 'f',
+            value: atmosphere.g * atmosphere.g,
         },
         nSamples: {
-            type: "i",
-            value: 3
+            type: 'i',
+            value: 3,
         },
         fSamples: {
-            type: "f",
-            value: 3.0
+            type: 'f',
+            value: 3.0,
         },
 
         tDisplacement: {
-            type: "t",
-            value: new THREE.Texture()
+            type: 't',
+            value: new THREE.Texture(),
         },
         tSkyboxDiffuse: {
-            type: "t",
-            value: new THREE.Texture()
+            type: 't',
+            value: new THREE.Texture(),
         },
         fNightScale: {
-            type: "f",
-            value: 1.0
-        }
+            type: 'f',
+            value: 1.0,
+        },
     };
 
     this.ground = {
@@ -197,8 +196,8 @@ function Atmosphere(ellipsoid) {
             blending: THREE.AdditiveBlending,
             transparent: true,
             depthTest: false,
-            depthWrite: false
-        })
+            depthWrite: false,
+        }),
     };
 
     this.ground.mesh = new THREE.Mesh(this.ground.geometry, this.ground.material);
@@ -208,8 +207,8 @@ function Atmosphere(ellipsoid) {
         material: new THREE.ShaderMaterial({
             uniforms: uniformsSky,
             vertexShader: skyVS,
-            fragmentShader: skyFS
-        })
+            fragmentShader: skyFS,
+        }),
     };
 
     this.sky.mesh = new THREE.Mesh(this.sky.geometry, this.sky.material);
@@ -243,7 +242,7 @@ function Atmosphere(ellipsoid) {
         luminance: 1,
         inclination: 0.49, // elevation / inclination
         azimuth: 0.25, // Facing front,
-        sun: !true
+        sun: !true,
     };
 
     var uniforms = this.skyDome.uniforms;
@@ -258,9 +257,9 @@ function Atmosphere(ellipsoid) {
     // LensFlare
 
     var textureLoader = new THREE.TextureLoader();
-    var textureFlare0 = textureLoader.load("data/textures/lensflare/lensflare0.png");
-    var textureFlare2 = textureLoader.load("data/textures/lensflare/lensflare2.png");
-    var textureFlare3 = textureLoader.load("data/textures/lensflare/lensflare3.png");
+    var textureFlare0 = textureLoader.load('data/textures/lensflare/lensflare0.png');
+    var textureFlare2 = textureLoader.load('data/textures/lensflare/lensflare2.png');
+    var textureFlare3 = textureLoader.load('data/textures/lensflare/lensflare3.png');
     var h = 0.55,
         s = 0.9,
         l = 0.5;
@@ -278,14 +277,12 @@ function Atmosphere(ellipsoid) {
     this.lensFlare.add(textureFlare3, 70, 1.0, THREE.AdditiveBlending);
     this.lensFlare.visible = false;
     this.add(this.lensFlare);
-
 }
 
 Atmosphere.prototype = Object.create(NodeMesh.prototype);
 Atmosphere.prototype.constructor = Atmosphere;
 
-Atmosphere.prototype.setRealisticOn = function(bool) {
-
+Atmosphere.prototype.setRealisticOn = function (bool) {
     this.realistic = bool;
     this.material.visible = !this.realistic;
     this.atmosphereIN.visible = !this.realistic;
@@ -297,8 +294,7 @@ Atmosphere.prototype.setRealisticOn = function(bool) {
     // this.sphereSun.visible     = this.realistic;
 };
 
-Atmosphere.prototype.updateLightingPos = function(pos) {
-
+Atmosphere.prototype.updateLightingPos = function (pos) {
     this.ground.material.uniforms.v3LightPosition.value = pos.clone().normalize();
     this.sky.material.uniforms.v3LightPosition.value = pos.clone().normalize();
     //  this.sphereSun.position.copy(pos);
