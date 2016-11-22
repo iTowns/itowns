@@ -82,6 +82,7 @@ module.exports = {
     'no-return-assign': 'off',
     'no-useless-concat': 'off',
     'no-loop-func': 'off',
+	'linebreak-style': 'off',
 
     /* import problems */
     'import/no-mutable-exports': 'off',
