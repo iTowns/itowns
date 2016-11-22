@@ -34,7 +34,7 @@ void main() {
 
     #endif
 
-    vec4 color    =  (lightOn ==1 )? vec4( vColor / light,1.0) : vec4( vColor, 1.0);
+    vec4 color    =  (lightOn ==1 )? vec4( diffuseColor / light,1.0) : vec4( diffuseColor, 1.0);
 
-    gl_FragColor = vec4(vColor, 1.0);
+    gl_FragColor = color;
 }

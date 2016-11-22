@@ -127,8 +127,8 @@ Camera.prototype.computeNodeSSE = function(node) {
     var altiW = node.bbox.top() === 10000 ? 0. : node.bbox.bottom() / 10000.;
     var dotProductW = Math.min(altiW + Math.abs(this.camera3D.getWorldDirection().dot(node.centerSphere.clone().normalize())), 1.);
     if (this.camera3D.position.length() > 6463300) dotProductW = 1;
-    var SSE = Math.sqrt(dotProductW) * this.preSSE * (node.geometricError / distance);
-    //var SSE = this.preSSE * (node.geometricError / distance);
+    //var SSE = Math.sqrt(dotProductW) * this.preSSE * (node.geometricError / distance);
+    var SSE = this.preSSE * (node.geometricError / distance);
 
     return SSE;
 

@@ -132,7 +132,7 @@ ThreeDTilesNodeProcess.prototype.processNode = function(node, camera, params) {
         //console.log("id: " + node.id + " sse: " + node.sse);
 
         let sse = this.checkNodeSSE(node);
-        let hidden = !node.additiveRefinement && sse && node.childrenLoaded();
+        let hidden = !node.additiveRefinement && sse && node.childrenLoaded() && node.maxChildrenNumber !== 0;
 
         if (sse && params.tree.canSubdivideNode(node)) {
             // big screen space error: subdivide node, display children if possible

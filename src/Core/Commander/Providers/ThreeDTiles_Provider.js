@@ -71,7 +71,7 @@ ThreeDTiles_Provider.prototype.getData = function(tile, layer, params) {
         bbox: this.getBox(params.metadata.boundingVolume),
         urlSuffix: params.metadata.content.url,
         maxChildrenNumber: params.metadata.children ? params.metadata.children.length : 0,
-        additive: params.metadata.refine === "add"
+        additive: false// params.metadata.refine === "add"
     };
 
     var url = layer.url + parameters.urlSuffix;
@@ -93,102 +93,72 @@ ThreeDTiles_Provider.prototype.getData = function(tile, layer, params) {
                 // TODO: create new tile
                 var geoJson = result;
                 let features = geoJson.geometries.features;
-                console.log(result);
 
                 var geometry;
                 var proj3946 = '+proj=lcc +lat_1=45.25 +lat_2=46.75 +lat_0=46 +lon_0=3 +x_0=1700000 +y_0=5200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs';
                 var proj4326 = '+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs';
-                if(geoJson.geometries.features[0].properties.zmax !== undefined) {
-                    console.log("2.5D");
-                    let height = geoJson.geometries.features[0].properties.zmax - geoJson.geometries.features[0].properties.zmin;
-                    let transform = new THREE.Matrix4();
-                    let center = new THREE.Vector3((parameters.bbox.west() + parameters.bbox.east()) / 2,
-                        (parameters.bbox.south() + parameters.bbox.north()) / 2,
-                        (parameters.bbox.top() + parameters.bbox.bottom()) / 2);
-                    console.log(center);
-                    let coordGlobe = proj4(proj3946, proj4326, [center.x, center.y]);
-                    let geoCoord = new GeoCoordinate(parseFloat(coordGlobe[0]), parseFloat(coordGlobe[1]), parseFloat(center.z), UNIT.DEGREE);
-                    let pgeo = ellipsoid.cartographicToCartesian(geoCoord);
-                    let quat = new THREE.Quaternion();
-                    quat.setFromAxisAngle(pgeo, 0);
-                    transform.compose(pgeo, quat, new THREE.Vector3(1,1,1));
 
+                let transform = new THREE.Matrix4();
+                let center = new THREE.Vector3((parameters.bbox.west() + parameters.bbox.east()) / 2,
+                    (parameters.bbox.south() + parameters.bbox.north()) / 2,
+                    (parameters.bbox.top() + parameters.bbox.bottom()) / 2);
+                let coordGlobe = proj4(proj3946, proj4326, [center.x, center.y]);
+                let geoCoord = new GeoCoordinate(parseFloat(coordGlobe[0]), parseFloat(coordGlobe[1]), parseFloat(center.z), UNIT.DEGREE);
+                let pgeo = ellipsoid.cartographicToCartesian(geoCoord);
+                let normal = ellipsoid.geodeticSurfaceNormalCartographic(geoCoord);
+                let quat = (new THREE.Quaternion()).setFromUnitVectors(new THREE.Vector3(0,0,1), normal);
+                let quat2 = (new THREE.Quaternion()).setFromAxisAngle(new THREE.Vector3(0,0,1), Math.atan(normal.y / normal.x));
+                quat.multiply(quat2);
+                transform.compose(pgeo, quat, new THREE.Vector3(1,1,1));
+
+                if(geoJson.geometries.features[0].properties.zmax !== undefined) {
+                    let height = geoJson.geometries.features[0].properties.zmax - geoJson.geometries.features[0].properties.zmin;
                     let offset;
                     let shape = new THREE.Shape();
                     for(let r = 0; r < features.length; r++) {
                         let coords = features[r].geometry.coordinates;
                         for(let i = 0; i < coords.length; i++) {
                             let polygon = coords[i][0]; // TODO: support holes
+                            let pathPoints = [];
                             offset = new THREE.Vector2(center.x, center.y)
-                            // temp projection
-                            for (let j = 0; j < polygon.length - 1; ++j) {
-                                polygon[j] = (new THREE.Vector2(polygon[j][0], polygon[j][1])).sub(offset);
-                                //let pt2DTab = polygon[j];
-                                //let coord = proj4(proj3946, proj4326, [pt2DTab[0], pt2DTab[1]]);
-                                //let geoCoord = new GeoCoordinate(parseFloat(coord[0]), parseFloat(coord[1]), parseFloat(pt2DTab[2]), UNIT.DEGREE);
-                                //let pgeo = ellipsoid.cartographicToCartesian(geoCoord);
-                                //geoJson.geometries.features[r].geometry.coordinates[i][0][j] = new THREE.Vector3(pgeo.x, pgeo.y, pgeo.z);
+                            for (let j = 0; j < polygon.length - 2; ++j) {  // skip redundant point
+                                pathPoints[j] = (new THREE.Vector2(polygon[j][0], polygon[j][1])).sub(offset);
                             }
-                            console.log(polygon);
                             // shape creation
-                            shape = new THREE.Shape(polygon);
-                            /*offset = polygon[0];
-                            shape.moveTo(polygon[0]);
-                            for (let j = 1; j < polygon.length - 1; ++j) {
-                                console.log((new THREE.Vector2()).subVectors(polygon[j], polygon[j-1]));
-                                shape.lineTo((new THREE.Vector2()).subVectors(polygon[j], polygon[j-1]));
-                            }*/
+                            shape = new THREE.Shape(pathPoints);
                         }
                     }
-                    console.log(shape);
                     var extrudeSettings = {
                         amount: height,
-                        bevelEnabled: false
+                        bevelEnabled: true,
+                    	bevelThickness: height / 10,
+                    	bevelSize: height / 10,
+                    	bevelSegments: 2
                     };
 
                     geometry = new THREE.ExtrudeGeometry( shape, extrudeSettings );
-                    //geometry.translate(pgeo.x, pgeo.y, pgeo.z);
                     geometry.applyMatrix(transform);
                     geometry.computeBoundingSphere();
                 } else {
-                    for (let r = 0; r < features.length; r++) {
-                        let coords = features[r].geometry.coordinates;
-                        for(let i = 0; i < coords.length; i++) {
-                            let polygon = coords[i][0]; // TODO: support holes
-                            if (polygon.length > 2) {
-                                for (let j = 0; j < polygon.length - 1; ++j) {
-                                    let pt2DTab = polygon[j];
-                                    let coord = proj4(proj3946, proj4326, [pt2DTab[0], pt2DTab[1]]);
-                                    let geoCoord = new GeoCoordinate(parseFloat(coord[0]), parseFloat(coord[1]), parseFloat(pt2DTab[2]), UNIT.DEGREE);
-                                    let pgeo = ellipsoid.cartographicToCartesian(geoCoord);
-                                    geoJson.geometries.features[r].geometry.coordinates[i][0][j] = [pgeo.x, pgeo.y, pgeo.z];
-                                }
-                            }
-                        }
-                        //Change bbox crs
-                        let bbox = features[r].geometry.bbox;
-
-                        let coord1 = proj4(proj3946, proj4326, [bbox[0], bbox[1]]);
-                        let coord2 = proj4(proj3946, proj4326, [bbox[3], bbox[4]]);
-                        let geoCoord1 = new GeoCoordinate(parseFloat(coord1[0]), parseFloat(coord1[1]), parseFloat(bbox[2]), UNIT.DEGREE);
-                        let geoCoord2 = new GeoCoordinate(parseFloat(coord2[0]), parseFloat(coord2[1]), parseFloat(bbox[5]), UNIT.DEGREE);
-                        let pgeo1 = ellipsoid.cartographicToCartesian(geoCoord1);
-                        let pgeo2 = ellipsoid.cartographicToCartesian(geoCoord2);
-
-                        geoJson.geometries.features[r].geometry.bbox = [pgeo2.x, pgeo1.y, pgeo1.z, pgeo1.x, pgeo2.y, pgeo2.z];
-                        var threeDatas = geoJsonToThree.convert(geoJson);
-                        geometry = threeDatas.geometries;
-                    }
+                    let translation = (new THREE.Matrix4()).makeTranslation(-center.x, -center.y, -center.z);
+                    transform.multiply(translation);
+                    let threeData = geoJsonToThree.convert(geoJson);
+                    geometry = threeData.geometries;
+                    geometry.applyMatrix(transform);
+                    geometry.computeBoundingSphere();
                 }
                 var box = parameters.bbox;
                 var mesh = new FeatureMesh({bbox: box}, builder);
                 mesh.setGeometry(geometry);
                 mesh.frustumCulled = false;
-                mesh.geometricError = 50000;
+                mesh.geometricError = 43500;
+                if(!parameters.urlSuffix.includes("D0")) mesh.geometricError = 43460;
                 mesh.url = parameters.urlSuffix;
                 mesh.maxChildrenNumber = parameters.maxChildrenNumber;
                 mesh.loaded = true;
                 mesh.additiveRefinement = parameters.additive;
+                mesh.material.uniforms.diffuseColor.value = new THREE.Color(Math.random(), Math.random(), Math.random());
+                console.log(mesh.material.uniforms.diffuseColor.value);
 
                 tile.add(mesh);
 

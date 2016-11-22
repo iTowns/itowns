@@ -52,7 +52,8 @@ void main()
 
     float h  = max(0.05,(1.0 - min(position.y / 50.0,1.0)));
 
-    light    =   h / max(0.25,dot(dir,normal));
+    //light    =   h / max(0.25,dot(dir,normal));
+    light = 2.0 - dot(dir,normal);
 
     #ifdef USE_LOGDEPTHBUF
 
