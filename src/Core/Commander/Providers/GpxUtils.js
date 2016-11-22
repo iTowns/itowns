@@ -5,7 +5,7 @@
  */
 
 import * as THREE from 'three';
-import IoDriverXML from 'Core/Commander/Providers/IoDriverXML';
+import Fetcher from 'Core/Commander/Providers/Fetcher';
 import GeoCoordinate, { UNIT } from 'Core/Geographic/GeoCoordinate';
 import ItownsLine from 'Core/Commander/Providers/ItownsLine';
 import ItownsPoint from 'Core/Commander/Providers/ItownsPoint';
@@ -104,9 +104,6 @@ function _gpxToMesh(gpxXML, ellipsoid) {
 }
 
 export default function loadGpx(urlFile, ellipsoid) {
-    var ioDriverXML = new IoDriverXML();
-
-    return ioDriverXML.read(urlFile).then(
-        gpxXML => _gpxToMesh(gpxXML, ellipsoid));
+    return Fetcher.xml(urlFile).then(gpxXML => _gpxToMesh(gpxXML, ellipsoid));
 }
 
