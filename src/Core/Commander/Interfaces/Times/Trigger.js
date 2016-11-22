@@ -5,24 +5,22 @@
  */
 
 function Trigger() {
-    //Constructor
+    // Constructor
 
     this._trigTime = null;
     this._command = null;
     this.children = null;
-
 }
 
 
 /**
  */
-Trigger.prototype.executeChildrenCommand = function() {
-    //TODO: Implement Me
+Trigger.prototype.executeChildrenCommand = function () {
+    // TODO: Implement Me
 
 };
 
 
-
 export {
-    Trigger
+    Trigger,
 };

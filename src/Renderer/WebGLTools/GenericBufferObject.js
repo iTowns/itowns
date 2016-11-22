@@ -4,22 +4,20 @@
  */
 
 function GenericBufferObject() {
-    //Constructor
+    // Constructor
 
     this.vertexBuffer = null;
-
 }
 
 
 /**
  */
-GenericBufferObject.prototype.computeVertex = function() {
-    //TODO: Implement Me
+GenericBufferObject.prototype.computeVertex = function () {
+    // TODO: Implement Me
 
 };
 
 
-
 export {
-    GenericBufferObject
+    GenericBufferObject,
 };

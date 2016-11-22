@@ -7,7 +7,7 @@
 import NodeProcess from 'NodeProcess';
 
 function FrustrumCulling() {
-    //Constructor
+    // Constructor
 
 
 }
@@ -16,5 +16,5 @@ FrustrumCulling.prototype = new NodeProcess();
 
 
 export {
-    FrustrumCulling
+    FrustrumCulling,
 };

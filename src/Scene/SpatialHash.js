@@ -5,18 +5,17 @@
  */
 
 function SpatialHash() {
-    //Constructor
+    // Constructor
 
     this._schemeTile = null;
-
 }
 
 
 /**
  * @param boundingBox
  */
-SpatialHash.prototype.hash = function( /*boundingBox*/ ) {
-    //TODO: Implement Me
+SpatialHash.prototype.hash = function (/* boundingBox*/) {
+    // TODO: Implement Me
 
 };
 
@@ -24,21 +23,20 @@ SpatialHash.prototype.hash = function( /*boundingBox*/ ) {
 /**
  * @param boundingBoxs
  */
-SpatialHash.prototype.hashNode = function( /*boundingBoxs*/ ) {
-    //TODO: Implement Me
+SpatialHash.prototype.hashNode = function (/* boundingBoxs*/) {
+    // TODO: Implement Me
 
 };
 
 
 /**
  */
-SpatialHash.prototype.buildRoot = function() {
-    //TODO: Implement Me
+SpatialHash.prototype.buildRoot = function () {
+    // TODO: Implement Me
 
 };
 
 
-
 export {
-    SpatialHash
+    SpatialHash,
 };

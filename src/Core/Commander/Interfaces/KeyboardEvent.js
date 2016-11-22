@@ -7,7 +7,7 @@
 import Event from 'Event';
 
 function KeyboardEvent() {
-    //Constructor
+    // Constructor
 
 
 }
@@ -16,5 +16,5 @@ KeyboardEvent.prototype = new Event();
 
 
 export {
-    KeyboardEvent
+    KeyboardEvent,
 };

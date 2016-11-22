@@ -10,19 +10,15 @@ import StarGeometry from 'Renderer/ThreeExtented/StarGeometry';
 import * as THREE from 'three';
 
 
-
-var Star = function() {
-
-
+var Star = function () {
     NodeMesh.call(this);
 
     var geom = new StarGeometry();
 
     var particles = new THREE.Points(geom, new THREE.PointsMaterial({
-        color: 0xAAAACC
+        color: 0xAAAACC,
     }));
     this.add(particles);
-
 };
 
 Star.prototype = Object.create(NodeMesh.prototype);

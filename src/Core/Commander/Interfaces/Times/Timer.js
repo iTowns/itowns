@@ -5,7 +5,7 @@
  */
 
 function Timer() {
-    //Constructor
+    // Constructor
 
 
 }
@@ -13,37 +13,36 @@ function Timer() {
 
 /**
  */
-Timer.prototype.getTime = function() {
-    //TODO: Implement Me
+Timer.prototype.getTime = function () {
+    // TODO: Implement Me
 
 };
 
 
 /**
  */
-Timer.prototype.stop = function() {
-    //TODO: Implement Me
+Timer.prototype.stop = function () {
+    // TODO: Implement Me
 
 };
 
 
 /**
  */
-Timer.prototype.start = function() {
-    //TODO: Implement Me
+Timer.prototype.start = function () {
+    // TODO: Implement Me
 
 };
 
 
 /**
  */
-Timer.prototype.pause = function() {
-    //TODO: Implement Me
+Timer.prototype.pause = function () {
+    // TODO: Implement Me
 
 };
-
 
 
 export {
-    Timer
+    Timer,
 };

@@ -4,13 +4,12 @@
  */
 
 function MessageError() {
-    //Constructor
+    // Constructor
 
 
 }
 
 
-
 export {
-    MessageError
+    MessageError,
 };

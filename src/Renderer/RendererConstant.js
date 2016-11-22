@@ -7,5 +7,5 @@ export default {
     // depth buffer
     DEPTH: 1,
     // id object
-    ID: 2
+    ID: 2,
 };

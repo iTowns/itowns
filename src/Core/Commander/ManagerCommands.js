@@ -12,22 +12,22 @@ var instanceCommandManager = null;
 function _instanciateQueue() {
     return {
         storage: new PriorityQueue({
-            comparator: function(a, b) {
+            comparator(a, b) {
                 var cmp = b.priority - a.priority;
                 // Prioritize recent commands
                 if (cmp === 0) {
                     return b.timestamp - a.timestamp;
                 }
                 return cmp;
-            }
+            },
         }),
         counters: {
             executing: 0,
             executed: 0,
             failed: 0,
-            cancelled: 0
+            cancelled: 0,
         },
-        execute: function(cmd, provider, executingCounterUpToDate) {
+        execute(cmd, provider, executingCounterUpToDate) {
             if (!executingCounterUpToDate) {
                 this.counters.executing++;
             }
@@ -36,25 +36,23 @@ function _instanciateQueue() {
             // Otherwise use a resolved Promise.
             var p = provider.executeCommand(cmd) || Promise.resolve();
 
-            return p.then(
-                function() {
-                    this.counters.executing--;
-                    this.counters.executed++;
-                }.bind(this),
-                function() {
-                    this.counters.executing--;
-                    this.counters.executed++;
-                    this.counters.failed++;
-                }.bind(this)
-            );
-        }
+            return p.then(() => {
+                this.counters.executing--;
+                this.counters.executed++;
+            },
+                        () => {
+                            this.counters.executing--;
+                            this.counters.executed++;
+                            this.counters.failed++;
+                        });
+        },
     };
 }
 
 function ManagerCommands(scene) {
-    //Constructor
+    // Constructor
     if (instanceCommandManager !== null) {
-        throw new Error("Cannot instantiate more than one ManagerCommands");
+        throw new Error('Cannot instantiate more than one ManagerCommands');
     }
 
     this.defaultQueue = _instanciateQueue();
@@ -67,22 +65,21 @@ function ManagerCommands(scene) {
     this.maxCommandsPerHost = 6;
 
     if (!scene)
-        throw new Error("Cannot instantiate ManagerCommands without scene");
+        { throw new Error('Cannot instantiate ManagerCommands without scene'); }
 
     this.scene = scene;
-
 }
 
 ManagerCommands.prototype.constructor = ManagerCommands;
 
-ManagerCommands.prototype.runCommand = function(command, queue, executingCounterUpToDate) {
+ManagerCommands.prototype.runCommand = function (command, queue, executingCounterUpToDate) {
     var provider = this.providers[command.layer.protocol];
 
     if (!provider) {
         throw new Error('No known provider for layer', command.layer.id);
     }
 
-    queue.execute(command, provider, executingCounterUpToDate).then(function() {
+    queue.execute(command, provider, executingCounterUpToDate).then(() => {
         // notify scene that one command ended.
         // We allow the scene to delay the update/repaint up to 100ms
         // to reduce CPU load (no need to perform an update on completion if we
@@ -91,34 +88,33 @@ ManagerCommands.prototype.runCommand = function(command, queue, executingCounter
 
         // try to execute next command
         if (queue.counters.executing < this.maxCommandsPerHost) {
-            let cmd = this.deQueue(queue);
+            const cmd = this.deQueue(queue);
             if (cmd) {
                 return this.runCommand(cmd, queue);
             }
         }
-    }.bind(this));
-
+    });
 };
 
-ManagerCommands.prototype.addCommand = function(command) {
+ManagerCommands.prototype.addCommand = function (command) {
     // parse host
-    let layer = command.layer;
+    const layer = command.layer;
 
-    let host = layer.url ? new URL(layer.url).host : undefined;
+    const host = layer.url ? new URL(layer.url).host : undefined;
 
     // init queue if needed
     if (host && !(this.hostQueues.has(host))) {
         this.hostQueues.set(host, _instanciateQueue());
     }
 
-    let q = host ? this.hostQueues.get(host) : this.defaultQueue;
+    const q = host ? this.hostQueues.get(host) : this.defaultQueue;
 
     // execute command now if possible
     if (q.counters.executing < this.maxCommandsPerHost) {
         // increment before
         q.counters.executing++;
 
-        var runNow = function() {
+        var runNow = function () {
             this.runCommand(command, q, true);
         }.bind(this);
 
@@ -132,15 +128,15 @@ ManagerCommands.prototype.addCommand = function(command) {
 };
 
 
-ManagerCommands.prototype.addProtocolProvider = function(protocol, provider) {
+ManagerCommands.prototype.addProtocolProvider = function (protocol, provider) {
     this.providers[protocol] = provider;
 };
 
-ManagerCommands.prototype.getProtocolProvider = function(protocol) {
+ManagerCommands.prototype.getProtocolProvider = function (protocol) {
     return this.providers[protocol];
 };
 
-ManagerCommands.prototype.commandsWaitingExecutionCount = function() {
+ManagerCommands.prototype.commandsWaitingExecutionCount = function () {
     let sum = this.defaultQueue.storage.length + this.defaultQueue.counters.executing;
     for (var q of this.hostQueues) {
         sum += q[1].storage.length + q[1].counters.executing;
@@ -148,7 +144,7 @@ ManagerCommands.prototype.commandsWaitingExecutionCount = function() {
     return sum;
 };
 
-ManagerCommands.prototype.commandsRunningCount = function() {
+ManagerCommands.prototype.commandsRunningCount = function () {
     let sum = this.defaultQueue.counters.executing;
 
     for (var q of this.hostQueues) {
@@ -157,8 +153,7 @@ ManagerCommands.prototype.commandsRunningCount = function() {
     return sum;
 };
 
-ManagerCommands.prototype.resetCommandsCount = function(type) {
-
+ManagerCommands.prototype.resetCommandsCount = function (type) {
     let sum = this.defaultQueue.counters[type];
     this.defaultQueue.counters[type] = 0;
     for (var q of this.hostQueues) {
@@ -168,7 +163,7 @@ ManagerCommands.prototype.resetCommandsCount = function(type) {
     return sum;
 };
 
-ManagerCommands.prototype.getProviders = function() {
+ManagerCommands.prototype.getProviders = function () {
     var p = [];
 
     for (var protocol in this.providers) {
@@ -179,14 +174,14 @@ ManagerCommands.prototype.getProviders = function() {
 
 /**
  */
-ManagerCommands.prototype.deQueue = function(queue) {
+ManagerCommands.prototype.deQueue = function (queue) {
     var st = queue.storage;
     while (st.length > 0) {
         var cmd = st.dequeue();
 
         if (cmd.earlyDropFunction && cmd.earlyDropFunction(cmd)) {
             queue.counters.cancelled++;
-            cmd.reject(new Error('command canceled ' + cmd.requester.id + '/' + cmd.layer.id));
+            cmd.reject(new Error(`command canceled ${cmd.requester.id}/${cmd.layer.id}`));
         } else {
             return cmd;
         }
@@ -197,12 +192,12 @@ ManagerCommands.prototype.deQueue = function(queue) {
 
 /**
  */
-ManagerCommands.prototype.wait = function() {
+ManagerCommands.prototype.wait = function () {
     this.eventsManager.wait();
 };
 
 
-export default function(scene) {
+export default function (scene) {
     instanceCommandManager = instanceCommandManager || new ManagerCommands(scene);
     return instanceCommandManager;
 }

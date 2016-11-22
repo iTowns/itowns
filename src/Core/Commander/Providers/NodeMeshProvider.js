@@ -7,7 +7,7 @@
 import NodeProvider from 'NodeProvider';
 
 function NodeMeshProvider() {
-    //Constructor
+    // Constructor
 
 
 }
@@ -16,5 +16,5 @@ NodeMeshProvider.prototype = new NodeProvider();
 
 
 export {
-    NodeMeshProvider
+    NodeMeshProvider,
 };

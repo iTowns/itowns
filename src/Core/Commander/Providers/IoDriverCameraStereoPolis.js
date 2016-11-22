@@ -6,7 +6,7 @@
 import IoDriver from 'IoDriver';
 
 function IoDriverCameraStereoPolis() {
-    //Constructor
+    // Constructor
 
 
 }
@@ -15,5 +15,5 @@ IoDriverCameraStereoPolis.prototype = new IoDriver();
 
 
 export {
-    IoDriverCameraStereoPolis
+    IoDriverCameraStereoPolis,
 };

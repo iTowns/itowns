@@ -6,7 +6,7 @@
 
 
 function Palette() {
-    //Constructor
+    // Constructor
     //
     this.colorLine = 0x000000;
     this.colorBrush = 0x000000;
@@ -18,5 +18,5 @@ function Palette() {
 Palette.prototype.constructor = Palette;
 
 export {
-    Palette
+    Palette,
 };

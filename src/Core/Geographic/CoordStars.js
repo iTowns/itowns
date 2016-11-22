@@ -3,12 +3,11 @@
  * Class: CoordStars
  * Description: get coord of stars like earth...
  */
-import GeoCoordinate,{UNIT} from 'Core/Geographic/GeoCoordinate';
+import GeoCoordinate, { UNIT } from 'Core/Geographic/GeoCoordinate';
 
 var CoordStars = {
 
-    getSunPosition: function() {
-
+    getSunPosition() {
         var m = Math,
             PI = m.PI,
             sin = m.sin,
@@ -80,26 +79,23 @@ var CoordStars = {
                 EclipticLongitude: L,
                 declinaison: D,
                 ascension: A,
-                H: H,
+                H,
                 SiderealTime: t,
                 altitude: getAltitude(H, phi, D),
-                azimuth: getAzimuth(H, phi, D) + PI / 2 //+ PI// - PI/2 // origin: north !!! not like original Mourner code but more classical ref
+                azimuth: getAzimuth(H, phi, D) + PI / 2, // + PI// - PI/2 // origin: north !!! not like original Mourner code but more classical ref
             };
         };
-
     },
 
     // Return scene coordinate ({x,y,z}) of sun
-    getSunPositionInScene: function(ellipsoid, date, lat, lon) {
-
+    getSunPositionInScene(ellipsoid, date, lat, lon) {
         var sun = CoordStars.getSunPosition()(date, lat, lon);
         var dayMilliSec = 24 * 3600000;
         var longitude = sun.ascension + ((date % dayMilliSec) / dayMilliSec) * -360 + 180; // cause midday
-        var coSunCarto = ellipsoid.cartographicToCartesian(new GeoCoordinate(longitude, lat, 50000000,UNIT.DEGREE));
+        var coSunCarto = ellipsoid.cartographicToCartesian(new GeoCoordinate(longitude, lat, 50000000, UNIT.DEGREE));
 
         return coSunCarto;
-    }
-
+    },
 
 
 };

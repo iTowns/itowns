@@ -13,7 +13,7 @@ function Quad(bbox) {
     this.southEast = new BoundingBox(bbox.center.x, bbox.east(), bbox.south(), bbox.center.y);
 }
 
-Quad.prototype.array = function() {
+Quad.prototype.array = function () {
     var subdiv = [];
 
     subdiv.push(this.northWest);

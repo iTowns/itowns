@@ -5,7 +5,7 @@
  */
 
 function DescriptionManager() {
-    //Constructor
+    // Constructor
 
 
 }
@@ -13,13 +13,12 @@ function DescriptionManager() {
 
 /**
  */
-DescriptionManager.prototype.descriptionToContent = function() {
-    //TODO: Implement Me
+DescriptionManager.prototype.descriptionToContent = function () {
+    // TODO: Implement Me
 
 };
 
 
-
 export {
-    DescriptionManager
+    DescriptionManager,
 };

@@ -7,7 +7,7 @@
 import Provider from 'Provider';
 
 function NodeProvider() {
-    //Constructor
+    // Constructor
 
 
 }
@@ -17,13 +17,12 @@ NodeProvider.prototype = new Provider();
 /**
  * @param type {int}
  */
-NodeProvider.prototype.createObject = function( /*type*/ ) {
-    //TODO: Implement Me
+NodeProvider.prototype.createObject = function (/* type*/) {
+    // TODO: Implement Me
 
 };
 
 
-
 export {
-    NodeProvider
+    NodeProvider,
 };

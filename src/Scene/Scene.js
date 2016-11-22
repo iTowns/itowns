@@ -26,7 +26,7 @@ import Layer from 'Scene/Layer';
 import Capabilities from 'Core/System/Capabilities';
 import MobileMappingLayer from 'MobileMapping/MobileMappingLayer';
 import CustomEvent from 'custom-event';
-import {StyleManager} from 'Scene/Description/StyleManager';
+import { StyleManager } from 'Scene/Description/StyleManager';
 
 var instanceScene = null;
 
@@ -35,9 +35,8 @@ const RENDERING_PAUSED = 0;
 const RENDERING_ACTIVE = 1;
 
 function Scene(coordinate, ellipsoid, viewerDiv, debugMode, gLDebug) {
-
     if (instanceScene !== null) {
-        throw new Error("Cannot instantiate more than one Scene");
+        throw new Error('Cannot instantiate more than one Scene');
     }
 
     this.ellipsoid = ellipsoid;
@@ -55,7 +54,7 @@ function Scene(coordinate, ellipsoid, viewerDiv, debugMode, gLDebug) {
     this.stylesManager = new StyleManager();
 
     this.gLDebug = gLDebug;
-    this.gfxEngine = c3DEngine(this,positionCamera,viewerDiv, debugMode,gLDebug);
+    this.gfxEngine = c3DEngine(this, positionCamera, viewerDiv, debugMode, gLDebug);
     this.browserScene = new BrowseTree(this.gfxEngine);
     this.cap = new Capabilities();
 
@@ -74,8 +73,8 @@ function Scene(coordinate, ellipsoid, viewerDiv, debugMode, gLDebug) {
 Scene.prototype.constructor = Scene;
 /**
  */
-Scene.prototype.updateCommand = function() {
-    //TODO: Implement Me
+Scene.prototype.updateCommand = function () {
+    // TODO: Implement Me
 
 };
 
@@ -83,35 +82,35 @@ Scene.prototype.updateCommand = function() {
  * @documentation: return current camera
  * @returns {Scene_L7.Scene.gfxEngine.camera}
  */
-Scene.prototype.currentCamera = function() {
+Scene.prototype.currentCamera = function () {
     return this.gfxEngine.camera;
 };
 
-Scene.prototype.currentControls = function() {
+Scene.prototype.currentControls = function () {
     return this.gfxEngine.controls;
 };
 
-Scene.prototype.getPickPosition = function(mouse) {
+Scene.prototype.getPickPosition = function (mouse) {
     return this.gfxEngine.getPickingPositionFromDepth(mouse);
 };
 
-Scene.prototype.getStyle = function(name) {
+Scene.prototype.getStyle = function (name) {
     return this.stylesManager.getStyle(name);
 };
 
-Scene.prototype.removeStyle = function(name) {
+Scene.prototype.removeStyle = function (name) {
     return this.stylesManager.removeStyle(name);
 };
 
-Scene.prototype.getStyles = function() {
+Scene.prototype.getStyles = function () {
     return this.stylesManager.getStyles();
 };
 
-Scene.prototype.getEllipsoid = function() {
+Scene.prototype.getEllipsoid = function () {
     return this.ellipsoid;
 };
 
-Scene.prototype.size = function() {
+Scene.prototype.size = function () {
     return this.ellipsoid.size;
 };
 
@@ -119,8 +118,7 @@ Scene.prototype.size = function() {
  *
  * @returns {undefined}
  */
-Scene.prototype.updateScene3D = function() {
-
+Scene.prototype.updateScene3D = function () {
     this.gfxEngine.update();
 };
 
@@ -131,7 +129,7 @@ Scene.prototype.updateScene3D = function() {
  * Using a non-0 delay allows to delay update - useful to reduce CPU load for
  * non-interactive events (e.g: texture loaded)
  */
-Scene.prototype.notifyChange = function(delay) {
+Scene.prototype.notifyChange = function (delay) {
     this.needsRedraw = true;
 
     window.clearInterval(this.timer);
@@ -143,15 +141,15 @@ Scene.prototype.notifyChange = function(delay) {
     }
 };
 
-Scene.prototype.scheduleUpdate = function() {
+Scene.prototype.scheduleUpdate = function () {
     if (this.renderingState !== RENDERING_ACTIVE) {
         this.renderingState = RENDERING_ACTIVE;
 
-        requestAnimationFrame(function() { this.step(); }.bind(this));
+        requestAnimationFrame(() => { this.step(); });
     }
 };
 
-Scene.prototype.update = function() {
+Scene.prototype.update = function () {
     for (var l = 0; l < this.layers.length; l++) {
         var layer = this.layers[l].node;
 
@@ -161,22 +159,22 @@ Scene.prototype.update = function() {
             if (sLayer instanceof Quadtree) {
                 this.browserScene.updateQuadtree(this.layers[l], this.map.layersConfiguration, this.currentCamera());
             } else if (sLayer instanceof MobileMappingLayer) {
-                this.browserScene.updateMobileMappingLayer(sLayer,this.currentCamera());
+                this.browserScene.updateMobileMappingLayer(sLayer, this.currentCamera());
             } else if (sLayer instanceof Layer) {
-                this.browserScene.updateLayer(sLayer,this.currentCamera());
+                this.browserScene.updateLayer(sLayer, this.currentCamera());
             }
         }
     }
 };
 
-Scene.prototype.step = function() {
+Scene.prototype.step = function () {
     // update data-structure
     this.update();
 
     // Check if we're done (no command left).
     // We need to make sure we didn't executed any commands because these commands
     // might spawn other commands in a next update turn.
-    let executedDuringUpdate = this.managerCommand.resetCommandsCount('executed');
+    const executedDuringUpdate = this.managerCommand.resetCommandsCount('executed');
     if (this.managerCommand.commandsWaitingExecutionCount() == 0 && executedDuringUpdate == 0) {
         this.viewerDiv.dispatchEvent(new CustomEvent('globe-built'));
 
@@ -186,8 +184,7 @@ Scene.prototype.step = function() {
         // reset rendering flag
         this.renderingState = RENDERING_PAUSED;
     } else {
-
-        let ts = Date.now();
+        const ts = Date.now();
 
         // update rendering
         if ((1000.0 / this.maxFramePerSec) < (ts - this.lastRenderTime)) {
@@ -199,17 +196,17 @@ Scene.prototype.step = function() {
             }
         }
 
-        requestAnimationFrame(function() { this.step(); }.bind(this));
+        requestAnimationFrame(() => { this.step(); });
     }
 };
 
 /**
  */
-Scene.prototype.renderScene3D = function() {
+Scene.prototype.renderScene3D = function () {
     this.gfxEngine.renderScene();
 };
 
-Scene.prototype.scene3D = function() {
+Scene.prototype.scene3D = function () {
     return this.gfxEngine.scene3D;
 };
 
@@ -218,21 +215,21 @@ Scene.prototype.scene3D = function() {
  *
  * @param node {[object Object]}
  */
-Scene.prototype.add = function(node, nodeProcess) {
+Scene.prototype.add = function (node, nodeProcess) {
     if (node instanceof Globe) {
         this.map = node;
         nodeProcess = nodeProcess || new NodeProcess(this.currentCamera(), node.ellipsoid);
-        //this.quadTreeRequest(node.tiles, nodeProcess);
+        // this.quadTreeRequest(node.tiles, nodeProcess);
     }
 
     this.layers.push({
-        node: node,
-        process: nodeProcess
+        node,
+        process: nodeProcess,
     });
     this.gfxEngine.add3DScene(node.getMesh());
 };
 
-Scene.prototype.getMap = function() {
+Scene.prototype.getMap = function () {
     return this.map;
 };
 
@@ -241,8 +238,8 @@ Scene.prototype.getMap = function() {
  *
  * @param layer {[object Object]}
  */
-Scene.prototype.remove = function( /*layer*/ ) {
-    //TODO: Implement Me
+Scene.prototype.remove = function (/* layer*/) {
+    // TODO: Implement Me
 
 };
 
@@ -250,27 +247,21 @@ Scene.prototype.remove = function( /*layer*/ ) {
 /**
  * @param layers {[object Object]}
  */
-Scene.prototype.select = function( /*layers*/ ) {
-    //TODO: Implement Me
+Scene.prototype.select = function (/* layers*/) {
+    // TODO: Implement Me
 
 };
 
-Scene.prototype.selectNodeId = function(id) {
-
+Scene.prototype.selectNodeId = function (id) {
     this.browserScene.selectedNodeId = id;
-
 };
 
-Scene.prototype.setStreetLevelImageryOn = function(value) {
-
+Scene.prototype.setStreetLevelImageryOn = function (value) {
     if (value) {
         if (this.layers[1]) {
-
             this.layers[1].node.visible = true;
             this.layers[1].node.children[0].visible = true;
-
         } else {
-
             var mobileMappingLayer = new MobileMappingLayer();
             mobileMappingLayer.initiatePanoramic();
 
@@ -286,10 +277,9 @@ Scene.prototype.setStreetLevelImageryOn = function(value) {
     this.updateScene3D();
 };
 
-Scene.prototype.setLightingPos = function(pos) {
-
+Scene.prototype.setLightingPos = function (pos) {
     if (pos)
-        this.lightingPos = pos;
+        { this.lightingPos = pos; }
     else {
         var coSun = CoordStars.getSunPositionInScene(this.getEllipsoid(), new Date().getTime(), 48.85, 2.35);
         this.lightingPos = coSun;
@@ -297,22 +287,20 @@ Scene.prototype.setLightingPos = function(pos) {
 
     defaultValue.lightingPos = this.lightingPos;
 
-    this.browserScene.updateMaterialUniform("lightPosition", this.lightingPos.clone().normalize());
+    this.browserScene.updateMaterialUniform('lightPosition', this.lightingPos.clone().normalize());
     this.layers[0].node.updateLightingPos(this.lightingPos);
 };
 
 // Should be moved in time module: A single loop update registered object every n millisec
-Scene.prototype.animateTime = function(value) {
-
+Scene.prototype.animateTime = function (value) {
     if (value) {
         this.time += 4000;
 
         if (this.time) {
-
             var nMilliSeconds = this.time;
             var coSun = CoordStars.getSunPositionInScene(this.getEllipsoid(), new Date().getTime() + 3.6 * nMilliSeconds, 0, 0);
             this.lightingPos = coSun;
-            this.browserScene.updateMaterialUniform("lightPosition", this.lightingPos.clone().normalize());
+            this.browserScene.updateMaterialUniform('lightPosition', this.lightingPos.clone().normalize());
             this.layers[0].node.updateLightingPos(this.lightingPos);
             if (this.orbitOn) { // ISS orbit is 0.0667 degree per second -> every 60th of sec: 0.00111;
                 var p = this.gfxEngine.camera.camera3D.position;
@@ -326,18 +314,16 @@ Scene.prototype.animateTime = function(value) {
             // this.gfxEngine.renderScene();
         }
         this.rAF = requestAnimationFrame(this.animateTime.bind(this));
-
     } else
-        window.cancelAnimationFrame(this.rAF);
+        { window.cancelAnimationFrame(this.rAF); }
 };
 
-Scene.prototype.orbit = function(value) {
-
-    //this.gfxEngine.controls = null;
+Scene.prototype.orbit = function (value) {
+    // this.gfxEngine.controls = null;
     this.orbitOn = value;
 };
 
-export default function(coordinate, ellipsoid, viewerDiv, debugMode, gLDebug) {
+export default function (coordinate, ellipsoid, viewerDiv, debugMode, gLDebug) {
     instanceScene = instanceScene || new Scene(coordinate, ellipsoid, viewerDiv, debugMode, gLDebug);
     return instanceScene;
 }

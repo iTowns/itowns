@@ -13,7 +13,7 @@ function InterfaceCommander(type, priorityFunction) {
     this.type = type;
 
     if (!Date.now) {
-        this.timestamp = function() {
+        this.timestamp = function () {
             return new Date().getTime();
         };
     } else {
@@ -26,13 +26,12 @@ InterfaceCommander.prototype.constructor = InterfaceCommander;
 /**
  * @return  {[object Object]}
  */
-InterfaceCommander.prototype.buildCommand = function() {
-    //TODO: Implement Me
+InterfaceCommander.prototype.buildCommand = function () {
+    // TODO: Implement Me
     this._builderCommand();
 };
 
-InterfaceCommander.prototype.request = function(parameters, requester, earlyDropFunction) {
-
+InterfaceCommander.prototype.request = function (parameters, requester, earlyDropFunction) {
     var command = new Command();
     command.type = this.type;
     command.requester = requester;
@@ -41,7 +40,7 @@ InterfaceCommander.prototype.request = function(parameters, requester, earlyDrop
     command.earlyDropFunction = earlyDropFunction;
     command.timestamp = this.timestamp();
 
-    command.promise = new Promise(function(resolve, reject) {
+    command.promise = new Promise((resolve, reject) => {
         command.resolve = resolve;
         command.reject = reject;
     });

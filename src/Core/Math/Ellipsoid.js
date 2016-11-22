@@ -5,11 +5,10 @@
  */
 
 
-
 import * as THREE from 'three';
 
 function Ellipsoid(size) {
-    //Constructor
+    // Constructor
 
 
     this.rayon_1 = size.x;
@@ -21,8 +20,7 @@ function Ellipsoid(size) {
     this._radiiSquared = new THREE.Vector3(size.x * size.x, size.y * size.y, size.z * size.z);
 }
 
-Ellipsoid.prototype.geodeticSurfaceNormalCartographic = function(coordCarto) {
-
+Ellipsoid.prototype.geodeticSurfaceNormalCartographic = function (coordCarto) {
     var longitude = Math.PI * 2 - coordCarto.longitude();
     var latitude = coordCarto.latitude();
     var cosLatitude = Math.cos(latitude);
@@ -34,10 +32,9 @@ Ellipsoid.prototype.geodeticSurfaceNormalCartographic = function(coordCarto) {
     var result = new THREE.Vector3(x, y, z);
 
     return result.normalize();
-
 };
 
-Ellipsoid.prototype.setSize = function(size) {
+Ellipsoid.prototype.setSize = function (size) {
     this.rayon_1 = size.x;
     this.rayon_2 = size.y;
     this.rayon_3 = size.z;
@@ -46,9 +43,8 @@ Ellipsoid.prototype.setSize = function(size) {
 };
 
 
-Ellipsoid.prototype.cartographicToCartesian = function(coordCarto) {
-
-    //var n;
+Ellipsoid.prototype.cartographicToCartesian = function (coordCarto) {
+    // var n;
     var k = new THREE.Vector3();
     var n = this.geodeticSurfaceNormalCartographic(coordCarto);
 
@@ -60,28 +56,25 @@ Ellipsoid.prototype.cartographicToCartesian = function(coordCarto) {
 
     n.multiplyScalar(coordCarto.altitude());
 
-    //n.multiplyScalar(0.0);
+    // n.multiplyScalar(0.0);
 
     return k.add(n);
 };
 
-Ellipsoid.prototype.cartographicToCartesianArray = function(coordCartoArray) {
-
+Ellipsoid.prototype.cartographicToCartesianArray = function (coordCartoArray) {
     var cartesianArray = [];
     for (var i = 0; i < coordCartoArray.length; i++) {
         cartesianArray.push(this.cartographicToCartesian(coordCartoArray[i]));
     }
 
     return cartesianArray;
-
 };
 
-Ellipsoid.prototype.intersection = function(ray) {
-
+Ellipsoid.prototype.intersection = function (ray) {
     var EPSILON = 0.0001;
     var O_C = ray.origin;
     var dir = ray.direction;
-    //normalizeVector( dir );
+    // normalizeVector( dir );
 
     var a =
         ((dir.x * dir.x) / (this.size.x * this.size.x)) + ((dir.y * dir.y) / (this.size.y * this.size.y)) + ((dir.z * dir.z) / (this.size.z * this.size.z));
@@ -93,7 +86,7 @@ Ellipsoid.prototype.intersection = function(ray) {
 
     var d = ((b * b) - (4 * a * c));
     if (d < 0 || a === 0 || b === 0 || c === 0)
-        return false;
+        { return false; }
 
     d = Math.sqrt(d);
 
@@ -101,15 +94,15 @@ Ellipsoid.prototype.intersection = function(ray) {
     var t2 = (-b - d) / (2 * a);
 
     if (t1 <= EPSILON && t2 <= EPSILON) return false; // both intersections are behind the ray origin
-    //var back = (t1 <= EPSILON || t2 <= EPSILON); // If only one intersection (t>0) then we are inside the ellipsoid and the intersection is at the back of the ellipsoid
+    // var back = (t1 <= EPSILON || t2 <= EPSILON); // If only one intersection (t>0) then we are inside the ellipsoid and the intersection is at the back of the ellipsoid
     var t = 0;
     if (t1 <= EPSILON)
-        t = t2;
+        { t = t2; }
     else
     if (t2 <= EPSILON)
-        t = t1;
+        { t = t1; }
     else
-        t = (t1 < t2) ? t1 : t2;
+        { t = (t1 < t2) ? t1 : t2; }
 
     if (t < EPSILON) return false; // Too close to intersection
 
@@ -130,8 +123,7 @@ Ellipsoid.prototype.intersection = function(ray) {
     */
 };
 
-Ellipsoid.prototype.computeDistance = function(coordCarto1, coordCarto2) {
-
+Ellipsoid.prototype.computeDistance = function (coordCarto1, coordCarto2) {
     var longitude1 = coordCarto1.longitude() * Math.PI / 180;
     var latitude1 = coordCarto1.latitude() * Math.PI / 180;
     var longitude2 = coordCarto2.longitude() * Math.PI / 180;

@@ -5,15 +5,13 @@
  */
 
 function ManagerMaterial() {
-    //Constructor
+    // Constructor
 
     this._shaders = null;
     this._textures = null;
-
 }
 
 
-
 export {
-    ManagerMaterial
+    ManagerMaterial,
 };

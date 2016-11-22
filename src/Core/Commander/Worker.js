@@ -4,13 +4,12 @@
  */
 
 function Worker() {
-    //Constructor
+    // Constructor
 
 
 }
 
 
-
 export {
-    Worker
+    Worker,
 };

@@ -5,14 +5,12 @@
  */
 
 function Url() {
-    //Constructor
+    // Constructor
 
     this.url = null;
-
 }
 
 
-
 export {
-    Url
+    Url,
 };

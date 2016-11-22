@@ -8,11 +8,10 @@
 import defaultValue from 'Core/defaultValue';
 
 function Point2D(x, y) {
-    //Constructor
+    // Constructor
 
     this.x = defaultValue(x, 0);
     this.y = defaultValue(y, 0);
-
 }
 
 export default Point2D;

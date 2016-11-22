@@ -6,23 +6,25 @@ var Binary = {};
 // Unsigned right-shifting is simple: just move the bits,
 // while shifting in zeros from the left.
 // The sign is not preserved, the result is always a Uint32
-Binary.ToUint32 = function(x) {
-        return x >>> 0;
+Binary.ToUint32 = function (x) {
+    return x >>> 0;
 };
 
-Binary.ToInt32 = function(x) {
-        return x >> 0;
+Binary.ToInt32 = function (x) {
+    return x >> 0;
 };
 
 
 // Convert flag to char
-Binary.toChar = function(nMask) {
-	var nFlag, nShifted = nMask, sMask = "";
-	for (nFlag = 0; nFlag < 32;nFlag++) {
-		sMask += String(nShifted >>> 31);
-		nShifted <<= 1;
-	}
-	return sMask;
+Binary.toChar = function (nMask) {
+    var nFlag,
+        nShifted = nMask,
+        sMask = '';
+    for (nFlag = 0; nFlag < 32; nFlag++) {
+        sMask += String(nShifted >>> 31);
+        nShifted <<= 1;
+    }
+    return sMask;
 };
 
 // / ! \ WARNING is not supported on WebGl Glsl !!!
