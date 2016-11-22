@@ -4,13 +4,11 @@
 
 import JSZip from 'jszip';
 import * as THREE from 'three';
-import IoDriverXML from 'Core/Commander/Providers/IoDriverXML';
 import GeoCoordinate, { UNIT } from 'Core/Geographic/GeoCoordinate';
 
 function KMZLoader() {
     this.colladaLoader = new THREE.ColladaLoader();
     this.colladaLoader.options.convertUpAxis = true;
-    this.ioDriverXML = new IoDriverXML();
     this.cache = [];
 }
 

@@ -9,8 +9,7 @@ import Provider from 'Core/Commander/Providers/Provider';
 import Projection from 'Core/Geographic/Projection';
 import CoordWMTS from 'Core/Geographic/CoordWMTS';
 import IoDriver_XBIL from 'Core/Commander/Providers/IoDriver_XBIL';
-import IoDriver_Image from 'Core/Commander/Providers/IoDriver_Image';
-import IoDriverXML from 'Core/Commander/Providers/IoDriverXML';
+import Fetcher from 'Core/Commander/Providers/Fetcher';
 import * as THREE from 'three';
 import CacheRessource from 'Core/Commander/Providers/CacheRessource';
 
@@ -19,8 +18,6 @@ function WMTS_Provider(options) {
 
     Provider.call(this, new IoDriver_XBIL());
     this.cache = CacheRessource();
-    this.ioDriverImage = new IoDriver_Image();
-    this.ioDriverXML = new IoDriverXML();
     this.projection = new Projection();
     this.support = options.support || false;
     this.getTextureFloat = null;
@@ -195,34 +192,23 @@ WMTS_Provider.prototype.getColorTexture = function (coWMTS, pitch, layer) {
     };
     var url = this.url(coWMTS, layer);
 
-    // TODO: this is not optimal: if called again before ioDriverImage resolves, it'll load the image again
     result.texture = this.cache.getRessource(url);
 
     if (result.texture !== undefined) {
         return Promise.resolve(result);
     }
-    return this.ioDriverImage.read(url).then((image) => {
-        var texture = this.cache.getRessource(image.src);
 
-        if (texture)
-            { result.texture = texture; }
-        else {
-            result.texture = new THREE.Texture(image);
-            result.texture.needsUpdate = true;
-            result.texture.generateMipmaps = false;
-            result.texture.magFilter = THREE.LinearFilter;
-            result.texture.minFilter = THREE.LinearFilter;
-            result.texture.anisotropy = 16;
-            result.texture.url = url;
-            // result.texture.layerId = layerId;
+    const { texture, promise } = Fetcher.texture(url);
+    result.texture = texture;
 
-            this.cache.addRessource(url, result.texture);
-        }
+    result.texture.generateMipmaps = false;
+    result.texture.magFilter = THREE.LinearFilter;
+    result.texture.minFilter = THREE.LinearFilter;
+    result.texture.anisotropy = 16;
 
-        return result;
-    }).catch((/* reason*/) => {
-        result.texture = null;
-
+    return promise.then(() => {
+        this.cache.addRessource(url, result.texture);
+        result.texture.needsUpdate = true;
         return result;
     });
 };
