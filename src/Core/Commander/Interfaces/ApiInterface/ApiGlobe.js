@@ -16,6 +16,7 @@ import Projection from 'Core/Geographic/Projection';
 import CustomEvent from 'custom-event';
 import Fetcher from 'Core/Commander/Providers/Fetcher';
 import { STRATEGY_MIN_NETWORK_TRAFFIC } from 'Scene/LayerUpdateStrategy';
+import GlobeUpdater from 'Scene/GlobeUpdater';
 
 var loaded = false;
 var eventLoaded = new CustomEvent('globe-loaded');
@@ -345,8 +346,9 @@ ApiGlobe.prototype.createSceneGlobe = function (coordCarto, viewerDiv) {
     this.scene = Scene(coordinate, ellipsoid, viewerDiv, debugMode, gLDebug);
 
     var map = new Globe(ellipsoid, gLDebug);
+    var updater = new GlobeUpdater(ellipsoid);
 
-    this.scene.add(map);
+    this.scene.setMap(map, updater);
 
     // Register all providers
     var wmtsProvider = new WMTS_Provider({
@@ -385,7 +387,7 @@ ApiGlobe.prototype.setRealisticLightingOn = function (value) {
     this.scene.setLightingPos();
     this.scene.gfxEngine.setLightingOn(value);
     this.scene.getMap().setRealisticLightingOn(value);
-    this.scene.browserScene.updateMaterialUniform('lightingOn', value ? 1 : 0);
+    this.scene.updateMaterial({ uniformName: 'lightingOn', value: value ? 1 : 0, browser: this.scene.browser });
     this.scene.renderScene3D();
 };
 

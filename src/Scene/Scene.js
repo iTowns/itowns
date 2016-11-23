@@ -4,7 +4,7 @@
  * Description: La Scene est l'instance principale du client. Elle est le chef orchestre de l'application.
  */
 
-/* global window, requestAnimationFrame */
+/* global window */
 
 /**
  *
@@ -15,18 +15,11 @@
  * @returns {Function}
  */
 import c3DEngine from 'Renderer/c3DEngine';
-import Globe from 'Globe/Globe';
 import ManagerCommands from 'Core/Commander/ManagerCommands';
-import BrowseTree from 'Scene/BrowseTree';
-import NodeProcess from 'Scene/NodeProcess';
-import Quadtree from 'Scene/Quadtree';
 import CoordStars from 'Core/Geographic/CoordStars';
 import defaultValue from 'Core/defaultValue';
-import Layer from 'Scene/Layer';
 import Capabilities from 'Core/System/Capabilities';
-import MobileMappingLayer from 'MobileMapping/MobileMappingLayer';
 import CustomEvent from 'custom-event';
-import { StyleManager } from 'Scene/Description/StyleManager';
 
 var instanceScene = null;
 
@@ -44,23 +37,22 @@ function Scene(coordinate, ellipsoid, viewerDiv, debugMode, gLDebug) {
     var positionCamera = this.ellipsoid.cartographicToCartesian(coordinate);
 
     this.layers = [];
+
     this.map = null;
 
     this.cameras = null;
-    this.selectNodes = null;
+    this.selectedNodeId = null;
     this.managerCommand = ManagerCommands(this);
     this.orbitOn = false;
 
-    this.stylesManager = new StyleManager();
-
     this.gLDebug = gLDebug;
     this.gfxEngine = c3DEngine(this, positionCamera, viewerDiv, debugMode, gLDebug);
-    this.browserScene = new BrowseTree(this.gfxEngine);
     this.cap = new Capabilities();
 
     this.needsRedraw = false;
     this.lastRenderTime = 0;
     this.maxFramePerSec = 60;
+    this.fogDistance = 1000000000.0;
 
     this.time = 0;
     this.orbitOn = false;
@@ -92,18 +84,6 @@ Scene.prototype.currentControls = function () {
 
 Scene.prototype.getPickPosition = function (mouse) {
     return this.gfxEngine.getPickingPositionFromDepth(mouse);
-};
-
-Scene.prototype.getStyle = function (name) {
-    return this.stylesManager.getStyle(name);
-};
-
-Scene.prototype.removeStyle = function (name) {
-    return this.stylesManager.removeStyle(name);
-};
-
-Scene.prototype.getStyles = function () {
-    return this.stylesManager.getStyles();
 };
 
 Scene.prototype.getEllipsoid = function () {
@@ -150,20 +130,15 @@ Scene.prototype.scheduleUpdate = function () {
 };
 
 Scene.prototype.update = function () {
+    const sceneParams = { fogDistance: this.fogDistance, selectedNodeId: this.selectedNodeId };
+    const params = { cam: this.currentCamera(), sceneParams };
     for (var l = 0; l < this.layers.length; l++) {
-        var layer = this.layers[l].node;
-
-        for (var sl = 0; sl < layer.children.length; sl++) {
-            var sLayer = layer.children[sl];
-
-            if (sLayer instanceof Quadtree) {
-                this.browserScene.updateQuadtree(this.layers[l], this.map.layersConfiguration, this.currentCamera());
-            } else if (sLayer instanceof MobileMappingLayer) {
-                this.browserScene.updateMobileMappingLayer(sLayer, this.currentCamera());
-            } else if (sLayer instanceof Layer) {
-                this.browserScene.updateLayer(sLayer, this.currentCamera());
-            }
-        }
+        var updater = this.layers[l].updater;
+        params.layer = this.layers[l].layer;
+        params.layersConfig = params.layer.layersConfiguration;
+        // Is implemented for Globe, Quadtree, Layer and MobileMappingLayer.
+        if (updater.update)
+            { updater.update(params); }
     }
 };
 
@@ -215,18 +190,14 @@ Scene.prototype.scene3D = function () {
  *
  * @param node {[object Object]}
  */
-Scene.prototype.add = function (node, nodeProcess) {
-    if (node instanceof Globe) {
-        this.map = node;
-        nodeProcess = nodeProcess || new NodeProcess(this.currentCamera(), node.ellipsoid);
-        // this.quadTreeRequest(node.tiles, nodeProcess);
-    }
+Scene.prototype.add = function (layer, updater) {
+    this.layers.push({ layer, updater });
+    this.gfxEngine.add3DScene(layer.getMesh());
+};
 
-    this.layers.push({
-        node,
-        process: nodeProcess,
-    });
-    this.gfxEngine.add3DScene(node.getMesh());
+Scene.prototype.setMap = function (layer, updater) {
+    this.map = layer;
+    this.add(layer, updater);
 };
 
 Scene.prototype.getMap = function () {
@@ -253,14 +224,26 @@ Scene.prototype.select = function (/* layers*/) {
 };
 
 Scene.prototype.selectNodeId = function (id) {
-    this.browserScene.selectedNodeId = id;
+    this.selectedNodeId = id;
+    for (var i = 0; i < this.layers.length; i++) {
+        var updater = this.layers[i].updater;
+        var layer = this.layers[i].layer;
+        if (updater.selectNode) {
+            var params = {
+                layer,
+                id,
+            };
+            updater.selectNode(params);
+        }
+    }
 };
 
-Scene.prototype.setStreetLevelImageryOn = function (value) {
+/* Scene.prototype.setStreetLevelImageryOn = function(value) {
+
     if (value) {
-        if (this.layers[1]) {
-            this.layers[1].node.visible = true;
-            this.layers[1].node.children[0].visible = true;
+        if (this.updaters[1]) {
+            this.updaters[1].node.visible = true;
+            this.updaters[1].node.children[0].visible = true;
         } else {
             var mobileMappingLayer = new MobileMappingLayer();
             mobileMappingLayer.initiatePanoramic();
@@ -270,11 +253,24 @@ Scene.prototype.setStreetLevelImageryOn = function (value) {
             this.add(immersive);
         }
     } else {
-        this.layers[1].node.visible = false;
-        this.layers[1].node.children[0].visible = false; // mobileMappingLayer
+        this.updaters[1].node.visible = false;
+        this.updaters[1].node.children[0].visible = false; // mobileMappingLayer
     }
 
     this.updateScene3D();
+};*/
+
+Scene.prototype.updateMaterial = function (params) {
+    for (var i = 0; i < this.layers.length; i++) {
+        var updater = this.layers[i].updater;
+        var layer = this.layers[i].layer;
+        if (updater.updateMaterial) {
+            params.layer = layer;
+            updater.updateMaterial(params);
+        }
+        if (updater.node.updateLightingPos)
+            { updater.node.updateLightingPos(this.lightingPos); }
+    }
 };
 
 Scene.prototype.setLightingPos = function (pos) {
@@ -287,8 +283,7 @@ Scene.prototype.setLightingPos = function (pos) {
 
     defaultValue.lightingPos = this.lightingPos;
 
-    this.browserScene.updateMaterialUniform('lightPosition', this.lightingPos.clone().normalize());
-    this.layers[0].node.updateLightingPos(this.lightingPos);
+    this.updateMaterial({ uniformName: 'lightPosition', value: this.lightingPos.clone().normalize() });
 };
 
 // Should be moved in time module: A single loop update registered object every n millisec
@@ -300,8 +295,9 @@ Scene.prototype.animateTime = function (value) {
             var nMilliSeconds = this.time;
             var coSun = CoordStars.getSunPositionInScene(this.getEllipsoid(), new Date().getTime() + 3.6 * nMilliSeconds, 0, 0);
             this.lightingPos = coSun;
-            this.browserScene.updateMaterialUniform('lightPosition', this.lightingPos.clone().normalize());
-            this.layers[0].node.updateLightingPos(this.lightingPos);
+
+            this.updateMaterial({ uniformName: 'lightPosition', value: this.lightingPos.clone().normalize() });
+
             if (this.orbitOn) { // ISS orbit is 0.0667 degree per second -> every 60th of sec: 0.00111;
                 var p = this.gfxEngine.camera.camera3D.position;
                 var r = Math.sqrt(p.z * p.z + p.x * p.x);

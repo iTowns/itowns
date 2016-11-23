@@ -531,32 +531,6 @@ c3DEngine.prototype.placeDummy = function (dummy, position) {
     dummy.updateMatrixWorld();
 };
 
-c3DEngine.prototype.getRTCMatrixFromCenter = function (center, camera) {
-    var position = new THREE.Vector3().subVectors(camera.camera3D.position, center);
-    var quaternion = new THREE.Quaternion().copy(camera.camera3D.quaternion);
-    var matrix = new THREE.Matrix4().compose(position, quaternion, new THREE.Vector3(1, 1, 1));
-    var matrixInv = new THREE.Matrix4().getInverse(matrix);
-    var centerEye = new THREE.Vector4().applyMatrix4(matrixInv);
-    var mvc = matrixInv.setPosition(centerEye);
-    return new THREE.Matrix4().multiplyMatrices(camera.camera3D.projectionMatrix, mvc);
-};
-
-c3DEngine.prototype.getRTCMatrixFromNode = function (node, camera) {
-    var camera3D = camera.camera3D;
-    // var position = new THREE.Vector3().subVectors(camera3D.position, node.position);
-    var positionWorld = new THREE.Vector3().setFromMatrixPosition(node.matrixWorld);
-    var position = new THREE.Vector3().subVectors(camera3D.position, positionWorld);
-    var quaternion = new THREE.Quaternion().copy(camera3D.quaternion);
-    var matrix = new THREE.Matrix4().compose(position, quaternion, new THREE.Vector3(1, 1, 1));
-    var matrixInv = new THREE.Matrix4().getInverse(matrix);
-    var model = node.matrixWorld.clone().setPosition(new THREE.Vector3());
-    matrixInv.multiply(model);
-
-    var centerEye = new THREE.Vector4().applyMatrix4(matrixInv);
-    var mvc = matrixInv.setPosition(centerEye);
-    return new THREE.Matrix4().multiplyMatrices(camera3D.projectionMatrix, mvc);
-};
-
 c3DEngine.prototype.setLightingOn = function (value) {
     this.lightingOn = value;
 };

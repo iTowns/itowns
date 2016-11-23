@@ -174,4 +174,30 @@ Camera.prototype.getFrustumLocalSpace = function (position, quaternion) {
 };
 
 
+Camera.prototype.getRTCMatrixFromCenter = function (center) {
+    var position = new THREE.Vector3().subVectors(this.camera3D.position, center);
+    var quaternion = new THREE.Quaternion().copy(this.camera3D.quaternion);
+    var matrix = new THREE.Matrix4().compose(position, quaternion, new THREE.Vector3(1, 1, 1));
+    var matrixInv = new THREE.Matrix4().getInverse(matrix);
+    var centerEye = new THREE.Vector4().applyMatrix4(matrixInv);
+    var mvc = matrixInv.setPosition(centerEye);
+    return new THREE.Matrix4().multiplyMatrices(this.camera3D.projectionMatrix, mvc);
+};
+
+Camera.prototype.getRTCMatrixFromNode = function (node) {
+    var camera3D = this.camera3D;
+    // var position = new THREE.Vector3().subVectors(camera3D.position, node.position);
+    var positionWorld = new THREE.Vector3().setFromMatrixPosition(node.matrixWorld);
+    var position = new THREE.Vector3().subVectors(camera3D.position, positionWorld);
+    var quaternion = new THREE.Quaternion().copy(camera3D.quaternion);
+    var matrix = new THREE.Matrix4().compose(position, quaternion, new THREE.Vector3(1, 1, 1));
+    var matrixInv = new THREE.Matrix4().getInverse(matrix);
+    var model = node.matrixWorld.clone().setPosition(new THREE.Vector3());
+    matrixInv.multiply(model);
+
+    var centerEye = new THREE.Vector4().applyMatrix4(matrixInv);
+    var mvc = matrixInv.setPosition(centerEye);
+    return new THREE.Matrix4().multiplyMatrices(camera3D.projectionMatrix, mvc);
+};
+
 export default Camera;
