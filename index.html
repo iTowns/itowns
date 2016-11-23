@@ -17,11 +17,13 @@ and open the template in the editor.
                 width: 100%;
                 height: 100%;
                 padding: 0;
+                position: relative;
                 /*margin-top: 50vh;
                 transform: translateY(-50%);*/
             }
             #menuDiv {position: absolute; top:0px; margin-left: 0px;}
 
+            #controlDiv {position:absolute;top:0px;right:0px;width:100px;height:100px;background-color: red; }
 
         </style>
         <meta charset="UTF-8">
@@ -30,8 +32,10 @@ and open the template in the editor.
         <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.6.1/dat.gui.min.js"></script>
     </head>
     <body>
-        <div id="viewerDiv"></div>
+        <div id="viewerDiv"><div id="controlDiv"></div></div>
+
         <script src="examples/GUI/GuiTools.js"></script>
+        <script src="src/Core/Commander/Interfaces/Control.js"></script>
         <script src="dist/itowns2.js"> </script>
         <script type="text/javascript">
 
@@ -42,6 +46,7 @@ and open the template in the editor.
             // iTowns namespace defined here
             var viewerDiv = document.getElementById('viewerDiv');
             var menuGlobe = new GuiTools(itowns.viewer,'menuDiv');
+            var controlTest = new Control("testControl", 'test', 'controlDiv');
             itowns.viewer.createSceneGlobe(positionOnGlobe, viewerDiv);
 
             let wgs84TileLayer = {
@@ -73,6 +78,11 @@ and open the template in the editor.
            	itowns.viewer.addEventListener('globe-loaded', function() {
             	console.log("Globe Loaded");
         	});
+
+            console.log(controlTest.getName());
+            console.log(controlTest.getElement());
+            console.log(controlTest.getOptions());
+
         </script>
     </body>
 </html>

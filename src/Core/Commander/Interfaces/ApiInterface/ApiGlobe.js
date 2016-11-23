@@ -16,6 +16,7 @@ import Projection from 'Core/Geographic/Projection';
 import CustomEvent from 'custom-event';
 import Fetcher from 'Core/Commander/Providers/Fetcher';
 import { STRATEGY_MIN_NETWORK_TRAFFIC } from 'Scene/LayerUpdateStrategy';
+//import Control from 'Core/Commander/Interfaces/Control';
 
 var loaded = false;
 var eventLoaded = new CustomEvent('globe-loaded');
@@ -852,7 +853,12 @@ ApiGlobe.prototype.removeEventListenerLayerChanged = function removeEventListene
     this.viewerDiv.removeEventListener('layerchanged:index', this.callbackLayerChanged, false);
 };
 
-ApiGlobe.prototype.launchCommandApi = function launchCommandApi() {
+/* ApiGlobe.prototype.addControl = function (control) {
+    var pControl = new Control(control);
+    console.log(pControl);
+}; */
+
+ApiGlobe.prototype.launchCommandApi = function() {
 
     // this.removeImageryLayer('ScanEX');
 
