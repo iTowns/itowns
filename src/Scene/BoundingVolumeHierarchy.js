@@ -66,9 +66,9 @@ BoundingVolumeHierarchy.prototype.requestNewTile = function(geometryLayer, bbox,
 };
 
 BoundingVolumeHierarchy.prototype.canSubdivideNode = function(node) {
-    return node.url in this.tileDictionary
-        && this.tileDictionary[node.url].children
-        && this.tileDictionary[node.url].children.length !== 0;
+    return node.tileId in this.tileDictionary
+        && this.tileDictionary[node.tileId].children
+        && this.tileDictionary[node.tileId].children.length !== 0;
 };
 
 /**
@@ -81,7 +81,7 @@ BoundingVolumeHierarchy.prototype.subdivideNode = function(node) {
         return [];
     }
 
-    return this.tileDictionary[node.url].children;
+    return this.tileDictionary[node.tileId].children;
 };
 
 BoundingVolumeHierarchy.prototype.traverse = function(foo,node)

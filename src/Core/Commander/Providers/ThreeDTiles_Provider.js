@@ -69,16 +69,34 @@ ThreeDTiles_Provider.prototype.getData = function(tile, layer, params) {
     // Parsing metadata
     var parameters = {
         bbox: this.getBox(params.metadata.boundingVolume),
-        urlSuffix: params.metadata.content.url,
+        urlSuffix: params.metadata.content ? params.metadata.content.url : undefined,
         maxChildrenNumber: params.metadata.children ? params.metadata.children.length : 0,
+        tileId: params.metadata.tileId,
         additive: false// params.metadata.refine === "add"
     };
 
-    var url = layer.url + parameters.urlSuffix;
+    // Temporary transform from EPSG:3946 to world coordinates
+    let proj3946 = '+proj=lcc +lat_1=45.25 +lat_2=46.75 +lat_0=46 +lon_0=3 +x_0=1700000 +y_0=5200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs';
+    let proj4326 = '+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs';
 
-    // TODO: ioDrive should be binary?
-    return this._IoDriver.read(url).then(function(result) {
-        try {
+    let transform = new THREE.Matrix4();
+    let center = new THREE.Vector3((parameters.bbox.west() + parameters.bbox.east()) / 2,
+        (parameters.bbox.south() + parameters.bbox.north()) / 2,
+        (parameters.bbox.top() + parameters.bbox.bottom()) / 2);
+    let coordGlobe = proj4(proj3946, proj4326, [center.x, center.y]);
+    let geoCoord = new GeoCoordinate(parseFloat(coordGlobe[0]), parseFloat(coordGlobe[1]), parseFloat(center.z), UNIT.DEGREE);
+    let pgeo = ellipsoid.cartographicToCartesian(geoCoord);
+    let normal = ellipsoid.geodeticSurfaceNormalCartographic(geoCoord);
+    let quat = (new THREE.Quaternion()).setFromUnitVectors(new THREE.Vector3(0,0,1), normal);
+    let quat2 = (new THREE.Quaternion()).setFromAxisAngle(new THREE.Vector3(0,0,1), Math.atan(normal.y / normal.x));
+    quat.multiply(quat2);
+    transform.compose(pgeo, quat, new THREE.Vector3(1,1,1));
+
+    if(parameters.urlSuffix) {
+        var url = layer.url + parameters.urlSuffix;
+
+        // TODO: ioDrive should be binary?
+        return this._IoDriver.read(url).then(function(result) {
             if (result !== undefined) {
                 // TODO: check magic bytes
                 /*var supportedFormats = {
@@ -91,25 +109,10 @@ ThreeDTiles_Provider.prototype.getData = function(tile, layer, params) {
 
 
                 // TODO: create new tile
-                var geoJson = result;
+                let geoJson = result;
                 let features = geoJson.geometries.features;
 
-                var geometry;
-                var proj3946 = '+proj=lcc +lat_1=45.25 +lat_2=46.75 +lat_0=46 +lon_0=3 +x_0=1700000 +y_0=5200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs';
-                var proj4326 = '+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs';
-
-                let transform = new THREE.Matrix4();
-                let center = new THREE.Vector3((parameters.bbox.west() + parameters.bbox.east()) / 2,
-                    (parameters.bbox.south() + parameters.bbox.north()) / 2,
-                    (parameters.bbox.top() + parameters.bbox.bottom()) / 2);
-                let coordGlobe = proj4(proj3946, proj4326, [center.x, center.y]);
-                let geoCoord = new GeoCoordinate(parseFloat(coordGlobe[0]), parseFloat(coordGlobe[1]), parseFloat(center.z), UNIT.DEGREE);
-                let pgeo = ellipsoid.cartographicToCartesian(geoCoord);
-                let normal = ellipsoid.geodeticSurfaceNormalCartographic(geoCoord);
-                let quat = (new THREE.Quaternion()).setFromUnitVectors(new THREE.Vector3(0,0,1), normal);
-                let quat2 = (new THREE.Quaternion()).setFromAxisAngle(new THREE.Vector3(0,0,1), Math.atan(normal.y / normal.x));
-                quat.multiply(quat2);
-                transform.compose(pgeo, quat, new THREE.Vector3(1,1,1));
+                let geometry;
 
                 if(geoJson.geometries.features[0].properties.zmax !== undefined) {
                     let height = geoJson.geometries.features[0].properties.zmax - geoJson.geometries.features[0].properties.zmin;
@@ -147,13 +150,13 @@ ThreeDTiles_Provider.prototype.getData = function(tile, layer, params) {
                     geometry.applyMatrix(transform);
                     geometry.computeBoundingSphere();
                 }
-                var box = parameters.bbox;
-                var mesh = new FeatureMesh({bbox: box}, builder);
+                let box = parameters.bbox;
+                let mesh = new FeatureMesh({bbox: box}, builder);
                 mesh.setGeometry(geometry);
                 mesh.frustumCulled = false;
                 mesh.geometricError = 43500;
                 if(!parameters.urlSuffix.includes("D0")) mesh.geometricError = 43460;
-                mesh.url = parameters.urlSuffix;
+                mesh.tileId = parameters.tileId;
                 mesh.maxChildrenNumber = parameters.maxChildrenNumber;
                 mesh.loaded = true;
                 mesh.additiveRefinement = parameters.additive;
@@ -169,10 +172,29 @@ ThreeDTiles_Provider.prototype.getData = function(tile, layer, params) {
                 this.cache.addRessource(url, null);
                 return null;
             }
-        } catch(error) {
-            console.error(error.message);
-        }
-    }.bind(this));
+        }.bind(this));
+    } else {
+        return new Promise(function(resolve, reject) {
+            let dx = (parameters.bbox.east() - parameters.bbox.west()) / 2;
+            let dy = (parameters.bbox.north() - parameters.bbox.south()) / 2;
+            let dz = (parameters.bbox.top() - parameters.bbox.bottom()) / 2;
+            let radius = Math.sqrt(dx * dx + dy * dy + dz * dz);
+            let geometry = new THREE.SphereGeometry(radius);
+            geometry.applyMatrix(transform);
+            geometry.computeBoundingSphere();
+
+            let mesh = new FeatureMesh({bbox: parameters.bbox}, builder);
+            mesh.setGeometry(geometry);
+            mesh.frustumCulled = false;
+            mesh.tileId = parameters.tileId;
+            mesh.maxChildrenNumber = parameters.maxChildrenNumber;
+            mesh.loaded = true;
+            mesh.additiveRefinement = parameters.additive;
+            mesh.geometricError = 43500; // TODO: temp
+            tile.add(mesh);
+            resolve(mesh);
+        })
+    }
 
 
 }

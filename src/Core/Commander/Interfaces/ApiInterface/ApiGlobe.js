@@ -278,7 +278,7 @@ ApiGlobe.prototype.createSceneGlobe = function(coordCarto, viewerDiv) {
 
     // 3d tiles test
     var ioDriverJSON = new IoDriver_JSON();
-    ioDriverJSON.read("data/tileset2.json").then(function(tileset) {
+    ioDriverJSON.read("http://localhost:9090/getScene?city=lyon&layer=buildings&representations=lod1,lod2&weights=1,2").then(function(tileset) {
         var lvl0Tiles = tileset.root;
         var tiles = {};
         tileset2dict(tileset.root, tiles);
@@ -301,11 +301,17 @@ ApiGlobe.prototype.createSceneGlobe = function(coordCarto, viewerDiv) {
     return this.scene;
 };
 
-var tileset2dict = function(node, dict) {
-    dict[node.content.url] = node;
-    for(let child in node.children) {
-        tileset2dict(node.children[child], dict)
+var tileset2dict = function(root, dict) {
+    var id = 0;
+    var recurse = function(node) {
+        dict[id] = node;
+        node.tileId = id;
+        id++
+        for(let child in node.children) {
+            recurse(node.children[child], dict)
+        }
     }
+    recurse(root);
 }
 
 ApiGlobe.prototype.update = function() {
