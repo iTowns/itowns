@@ -9,21 +9,41 @@ and open the template in the editor.
         <title>Globe</title>
 
 	<style type="text/css">
-            html {height: 100%}
-	    body { margin: 0; overflow:hidden; height:100%}
+        html {height: 100%}
 
-            #viewerDiv {
-                margin : auto auto;
-                width: 100%;
-                height: 100%;
-                padding: 0;
-                position: relative;
-                /*margin-top: 50vh;
-                transform: translateY(-50%);*/
-            }
-            #menuDiv {position: absolute; top:0px; margin-left: 0px;}
+	    body {
+            margin: 0;
+            overflow:hidden;
+            height:100%
+        }
 
-            #controlDiv {position:absolute;top:0px;right:0px;width:100px;height:100px;background-color: red; }
+        #viewerDiv {
+            margin : auto auto;
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            position: relative;
+            /*margin-top: 50vh;
+            transform: translateY(-50%);*/
+        }
+        #menuDiv {
+            position: absolute;
+            top:0px;
+            margin-left: 0px;
+        }
+
+        #controlDiv {
+            position:absolute;
+            top:10px;
+            right:10px;
+            width:150px;
+            height:150px;
+            background-color: white;
+            border-style: solid;
+            border-color: black;
+            border-width: 1px;
+            box-shadow: 1px 1px 10px #555;
+        }
 
         </style>
         <meta charset="UTF-8">
@@ -32,10 +52,13 @@ and open the template in the editor.
         <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.6.1/dat.gui.min.js"></script>
     </head>
     <body>
-        <div id="viewerDiv"><div id="controlDiv"></div></div>
+        <div id="viewerDiv">
+            <div id="controlDiv"></div>
+            <div id="pickControl"></div>
+            <div id="rangeControl"></div>
+        </div>
 
         <script src="examples/GUI/GuiTools.js"></script>
-        <script src="src/Core/Commander/Interfaces/Control.js"></script>
         <script src="dist/itowns2.js"> </script>
         <script type="text/javascript">
 
@@ -46,7 +69,7 @@ and open the template in the editor.
             // iTowns namespace defined here
             var viewerDiv = document.getElementById('viewerDiv');
             var menuGlobe = new GuiTools(itowns.viewer,'menuDiv');
-            var controlTest = new Control("testControl", 'test', 'controlDiv');
+
             itowns.viewer.createSceneGlobe(positionOnGlobe, viewerDiv);
 
             let wgs84TileLayer = {
@@ -57,9 +80,9 @@ and open the template in the editor.
 			var urlImageryLayers = [], urlElevationLayers = [];
 
             urlImageryLayers.push('examples/layers/JSONLayers/Ortho.json');
-            urlImageryLayers.push('examples/layers/JSONLayers/OrthosCRS.json');
+            /* urlImageryLayers.push('examples/layers/JSONLayers/OrthosCRS.json');
             urlImageryLayers.push('examples/layers/JSONLayers/ScanEX.json');
-            urlImageryLayers.push('examples/layers/JSONLayers/Region.json');
+            urlImageryLayers.push('examples/layers/JSONLayers/Region.json'); */
 
 		  	urlElevationLayers.push('examples/layers/JSONLayers/IGN_MNT.json');
             urlElevationLayers.push('examples/layers/JSONLayers/IGN_MNT_HIGHRES.json');
@@ -73,15 +96,49 @@ and open the template in the editor.
 
             Promise.all([imageryPromise, elevationPromise]).then(() => itowns.viewer.init());
 
-            menuGlobe.addGUI('RealisticLighting',false,function(newValue) {itowns.viewer.setRealisticLightingOn(newValue);});
+            menuGlobe.addGUI('RealisticLighting',false,(newValue) => {itowns.viewer.setRealisticLightingOn(newValue);});
 
            	itowns.viewer.addEventListener('globe-loaded', function() {
             	console.log("Globe Loaded");
-        	});
 
-            console.log(controlTest.getName());
-            console.log(controlTest.getElement());
-            console.log(controlTest.getOptions());
+                var control = new itowns.viewer.Control(
+                    'Pick',
+                    document.getElementById('pickControl'),
+                    {
+                        div: document.getElementById('controlDiv')
+                    }
+                );
+
+                var callback = function () {
+                    itowns.viewer.removeControl(control);
+                    itowns.viewer.addControl(control);
+                    document.getElementById(control.options.div.id).appendChild(document.getElementById(control.pElement.id));
+
+                    document.getElementById(control.pElement.id).innerHTML = "longitude : " + itowns.viewer.pickPosition().coordinate[0] * 180 / 3.14 + " ; latitude : " + itowns.viewer.pickPosition().coordinate[1] * 180 / 3.14 + " ; altitude : " +  itowns.viewer.pickPosition().coordinate[2];
+                };
+
+                var controlR = new itowns.viewer.Control(
+                    'Range',
+                    document.getElementById('rangeControl'),
+                    {
+                        div: document.getElementById('controlDiv')
+                    }
+                );
+
+                var callbackR = function () {
+                    itowns.viewer.removeControl(controlR);
+                    itowns.viewer.addControl(controlR);
+                    document.getElementById(controlR.options.div.id).appendChild(document.getElementById(controlR.pElement.id));
+
+                    document.getElementById(controlR.pElement.id).innerHTML = "Range : " + itowns.viewer.getRange();
+                };
+
+                itowns.viewer.removeControl(control);
+
+                itowns.viewer.addEventListener('mousedown', callback);
+                itowns.viewer.addEventListener('mousedown', callbackR);
+
+        	});
 
         </script>
     </body>

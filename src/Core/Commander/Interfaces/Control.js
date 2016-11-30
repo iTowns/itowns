@@ -5,34 +5,63 @@
  */
 
 function Control(pName, pElement, options) {
-
-	this.pName = pName;
-	this.pElement = pElement;
-	this.options = options;
+    this.pName = pName;
+    this.pElement = pElement;
+    this.options = options;
 }
 
 Control.prototype.constructor = Control;
 
-Control.prototype.getName = function() {
-	return this.pName;
+/**
+ * Return the name of the control.
+ * @constructor
+ * @return     {name}  The name.
+ */
+
+Control.prototype.getName = function () {
+    return this.pName;
 };
 
-Control.prototype.getMap = function() {
-	//TODO : Implement Me
+Control.prototype.getMap = function () {
+    // TODO : Implement Me
 
 };
 
-Control.prototype.getElement = function() {
-	return this.pElement;
+/*
+ * Return the element used by the control to display its GUI.
+ * @constructor
+ * @return     {element}  The element.
+*/
+
+Control.prototype.getElement = function () {
+    return this.pElement;
 };
 
-Control.prototype.getOptions = function() {
-	return this.options;
+/**
+ * Return the options of the control.
+ * @constructor
+ * @return     {object}  Object.
+ */
+
+Control.prototype.getOptions = function () {
+    this.options = this.options || '';
+    return this.options;
 };
 
-/*Control.prototype.setOptions = function(pOptions) {
-	//TODO : Implement Me
+/**
+ * Change the options of the control.
+ * @constructor
+ * @param {object} pOptions - The new options of the conrtol.
+ */
 
-};*/
+Control.prototype.setOptions = function (pOptions) {
+    this.pName = pOptions.name;
+    this.pElement = pOptions.element;
+    this.options = pOptions.options;
+};
 
-//export default Control;
+Control.prototype.listenToMap = function (pEventName, pCallback) {
+    document.getElementById('viewerDiv').addEventListener(pEventName, pCallback, false);
+};
+
+export default Control;
