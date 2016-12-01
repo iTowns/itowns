@@ -601,6 +601,18 @@ and open the template in the editor.
             }.bind(layer.id));
         }
 
+        var conf3dtiles = {
+            representations: "lod1,lod2",
+            poids: "1,2",
+            reload: function() {
+                var url = "http://localhost:9090/getScene?city=lyon&layer=buildings&representations=" + conf3dtiles.representations + "&weights=" + conf3dtiles.poids;
+                itowns.viewer.load3dtiles(url);
+            }
+        };
+        gui.add(conf3dtiles, "representations");
+        gui.add(conf3dtiles, "poids");
+        gui.add(conf3dtiles, "reload");
+
         if(false) {
             var f2 = gui.addFolder('Atmosphere');
 

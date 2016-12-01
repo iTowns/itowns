@@ -276,14 +276,22 @@ ApiGlobe.prototype.createSceneGlobe = function(coordCarto, viewerDiv) {
 
     map.tiles.init(map.layersConfiguration.getGeometryLayers()[0]);
 
-    // 3d tiles test
+    return this.scene;
+};
+
+ApiGlobe.prototype.load3dtiles = function(url) {
     var ioDriverJSON = new IoDriver_JSON();
-    ioDriverJSON.read("http://localhost:9090/getScene?city=lyon&layer=buildings&representations=lod1,lod2&weights=1,2").then(function(tileset) {
+    ioDriverJSON.read(url).then(function(tileset) {
+        if(this.scene.layers[1]) {
+            // hack
+            this.scene.gfxEngine.scene3D.children.length--;
+            this.scene.layers.length--;
+        }
         var lvl0Tiles = tileset.root;
         var tiles = {};
         tileset2dict(tileset.root, tiles);
         var bvh = new BoundingVolumeHierarchy(undefined, [lvl0Tiles], tiles);
-        var tnp = new ThreeDTilesNodeProcess(null, ellipsoid);
+        var tnp = new ThreeDTilesNodeProcess(null, this.scene.ellipsoid);
         this.scene.add(bvh, tnp);
 
         var layer3dTiles = {
@@ -296,10 +304,7 @@ ApiGlobe.prototype.createSceneGlobe = function(coordCarto, viewerDiv) {
 
         bvh.init(layer3dTiles)
     }.bind(this));
-    // 3d tiles test
-
-    return this.scene;
-};
+}
 
 var tileset2dict = function(root, dict) {
     var id = 0;
