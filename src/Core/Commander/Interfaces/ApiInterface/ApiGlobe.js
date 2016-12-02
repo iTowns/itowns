@@ -279,9 +279,9 @@ ApiGlobe.prototype.createSceneGlobe = function(coordCarto, viewerDiv) {
     return this.scene;
 };
 
-ApiGlobe.prototype.load3dtiles = function(url) {
+ApiGlobe.prototype.load3dtiles = function(baseUrl, suffix) {
     var ioDriverJSON = new IoDriver_JSON();
-    ioDriverJSON.read(url).then(function(tileset) {
+    ioDriverJSON.read(baseUrl + suffix).then(function(tileset) {
         if(this.scene.layers[1]) {
             // hack
             this.scene.gfxEngine.scene3D.children.length--;
@@ -297,12 +297,13 @@ ApiGlobe.prototype.load3dtiles = function(url) {
         var layer3dTiles = {
             protocol: '3d-tiles',
             id: 'building',
-            url: 'http://localhost:9090/'//'http://localhost/server?'
+            url: baseUrl
         };
 
         this.scene.managerCommand.addProtocolProvider('3d-tiles', new ThreeDTiles_Provider());
 
         bvh.init(layer3dTiles)
+        bvh.layersConfiguration = layer3dTiles;
     }.bind(this));
 }
 

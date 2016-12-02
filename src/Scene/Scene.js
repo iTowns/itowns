@@ -139,12 +139,7 @@ Scene.prototype.scheduleUpdate = function() {
 };
 
 Scene.prototype.update = function() {
-    var layer3dTiles = {
-        protocol: '3d-tiles',
-        id: 'building',
-        url: 'http://localhost:9090/'//'http://localhost/server?'
-    };
-    if(this.layers[1]) this.browserScene.browse(this.layers[1].node, this.currentCamera(), this.layers[1].process, layer3dTiles); // TODO: tmp
+    if(this.layers[1]) this.browserScene.browse(this.layers[1].node, this.currentCamera(), this.layers[1].process, this.layers[1].node.layersConfiguration); // TODO: tmp
     for (var l = 0; l < this.layers.length; l++) {
         var layer = this.layers[l].node;
 

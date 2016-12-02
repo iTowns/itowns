@@ -605,8 +605,9 @@ and open the template in the editor.
             representations: "lod1,lod2",
             poids: "1,2",
             reload: function() {
-                var url = "http://localhost:9090/getScene?city=lyon&layer=buildings&representations=" + conf3dtiles.representations + "&weights=" + conf3dtiles.poids;
-                itowns.viewer.load3dtiles(url);
+                var baseUrl = "http://localhost:9090/"
+                var suffix = "getScene?city=lyon&layer=buildings&representations=" + conf3dtiles.representations + "&weights=" + conf3dtiles.poids;
+                itowns.viewer.load3dtiles(baseUrl, suffix);
             }
         };
         gui.add(conf3dtiles, "representations");
