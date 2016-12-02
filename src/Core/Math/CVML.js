@@ -37,10 +37,6 @@ var Point = function (x, y) {
     this.x = +x || 0;
     this.y = +y || 0;
 
-    // All extra fields added to Point are prefixed with _p2t_
-    // to avoid collisions if custom Point class is used.
-
-    // The edges this point constitutes an upper ending point
     this._p2t_edge_list = null;
 };
 
@@ -291,13 +287,13 @@ var Edge = function (p1, p2) {
 var Triangle = function (a, b, c) {
     // Triangle points
     this.points_ = [a, b, c];
-    // Neighbor list
+        // Neighbor list
     this.neighbors_ = [null, null, null];
-    // Has this triangle been marked as an interior triangle?
+        // Has this triangle been marked as an interior triangle?
     this.interior_ = false;
-    // Flags to determine if an edge is a Constrained edge
+        // Flags to determine if an edge is a Constrained edge
     this.constrained_edge = [false, false, false];
-    // Flags to determine if an edge is a Delauney edge
+        // Flags to determine if an edge is a Delauney edge
     this.delaunay_edge = [false, false, false];
 };
 
@@ -310,7 +306,7 @@ Triangle.prototype.toString = function () {
 Triangle.prototype.getPoint = function (index) {
     return this.points_[index];
 };
-// for backward compatibility
+    // for backward compatibility
 Triangle.prototype.GetPoint = Triangle.prototype.getPoint;
 
 Triangle.prototype.getNeighbor = function (index) {
@@ -320,7 +316,7 @@ Triangle.prototype.getNeighbor = function (index) {
 
 Triangle.prototype.containsPoint = function (point) {
     var points = this.points_;
-    // Here we are comparing point references, not values
+        // Here we are comparing point references, not values
     return (point === points[0] || point === points[1] || point === points[2]);
 };
 
@@ -354,7 +350,7 @@ Triangle.prototype.setInterior = function (interior) {
  */
 Triangle.prototype.markNeighborPointers = function (p1, p2, t) {
     var points = this.points_;
-    // Here we are comparing point references, not values
+        // Here we are comparing point references, not values
     if ((p1 === points[2] && p2 === points[1]) || (p1 === points[1] && p2 === points[2])) {
         this.neighbors_[0] = t;
     } else if ((p1 === points[0] && p2 === points[2]) || (p1 === points[2] && p2 === points[0])) {
@@ -402,7 +398,7 @@ Triangle.prototype.clearDelunayEdges = function () {
  */
 Triangle.prototype.pointCW = function (p) {
     var points = this.points_;
-    // Here we are comparing point references, not values
+        // Here we are comparing point references, not values
     if (p === points[0]) {
         return points[2];
     } else if (p === points[1]) {
@@ -419,7 +415,7 @@ Triangle.prototype.pointCW = function (p) {
  */
 Triangle.prototype.pointCCW = function (p) {
     var points = this.points_;
-    // Here we are comparing point references, not values
+        // Here we are comparing point references, not values
     if (p === points[0]) {
         return points[1];
     } else if (p === points[1]) {
@@ -573,7 +569,7 @@ Triangle.prototype.oppositePoint = function (t, p) {
  */
 Triangle.prototype.legalize = function (opoint, npoint) {
     var points = this.points_;
-    // Here we are comparing point references, not values
+        // Here we are comparing point references, not values
     if (opoint === points[0]) {
         points[1] = points[0];
         points[0] = points[2];
@@ -599,7 +595,7 @@ Triangle.prototype.legalize = function (opoint, npoint) {
  */
 Triangle.prototype.index = function (p) {
     var points = this.points_;
-    // Here we are comparing point references, not values
+        // Here we are comparing point references, not values
     if (p === points[0]) {
         return 0;
     } else if (p === points[1]) {
@@ -613,7 +609,7 @@ Triangle.prototype.index = function (p) {
 
 Triangle.prototype.edgeIndex = function (p1, p2) {
     var points = this.points_;
-    // Here we are comparing point references, not values
+        // Here we are comparing point references, not values
     if (p1 === points[0]) {
         if (p2 === points[1]) {
             return 2;
@@ -649,7 +645,7 @@ Triangle.prototype.markConstrainedEdgeByEdge = function (edge) {
 };
 Triangle.prototype.markConstrainedEdgeByPoints = function (p, q) {
     var points = this.points_;
-    // Here we are comparing point references, not values
+        // Here we are comparing point references, not values
     if ((q === points[0] && p === points[1]) || (q === points[1] && p === points[0])) {
         this.constrained_edge[2] = true;
     } else if ((q === points[0] && p === points[2]) || (q === points[2] && p === points[0])) {
@@ -659,15 +655,15 @@ Triangle.prototype.markConstrainedEdgeByPoints = function (p, q) {
     }
 };
 
-// ------utils
+   // ------utils
 var PI_3div4 = 3 * Math.PI / 4;
 var PI_2 = Math.PI / 2;
-var EPSILON = 1e-15;
+var EPSILON = 1e-12;
 
-/*
- * Inital triangle factor, seed triangle will extend 30% of
- * PointSet width to both left and right.
- */
+    /*
+     * Inital triangle factor, seed triangle will extend 30% of
+     * PointSet width to both left and right.
+     */
 var kAlpha = 0.3;
 
 var Orientation = {
@@ -767,21 +763,35 @@ AdvancingFront.prototype.findSearchNode = function (/* x*/) {
 AdvancingFront.prototype.locateNode = function (x) {
     var node = this.search_node_;
 
-    /* jshint boss:true */
+        /* jshint boss:true */
     if (x < node.value) {
-        while ((node = node.prev) !== null) {
+        do {
+            node = node.prev;
             if (x >= node.value) {
                 this.search_node_ = node;
                 return node;
             }
-        }
+        } while (node.prev);
+            /* while (node = node.prev) {
+                if (x >= node.value) {
+                    this.search_node_ = node;
+                    return node;
+                }
+            }*/
     } else {
-        while ((node = node.next) != null) {
+        do {
+            node = node.next;
             if (x < node.value) {
                 this.search_node_ = node.prev;
                 return node.prev;
             }
-        }
+        } while (node.next);
+            /* while (node = node.next) {
+                if (x < node.value) {
+                    this.search_node_ = node.prev;
+                    return node.prev;
+                }
+            }*/
     }
     return null;
 };
@@ -792,9 +802,9 @@ AdvancingFront.prototype.locatePoint = function (point) {
     var nx = node.point.x;
 
     if (px === nx) {
-        // Here we are comparing point references, not values
+            // Here we are comparing point references, not values
         if (point !== node.point) {
-            // We might have two nodes with same x value for a short time
+                // We might have two nodes with same x value for a short time
             if (point === node.prev.point) {
                 node = node.prev;
             } else if (point === node.next.point) {
@@ -804,18 +814,28 @@ AdvancingFront.prototype.locatePoint = function (point) {
             }
         }
     } else if (px < nx) {
-        /* jshint boss:true */
-        while ((node = node.prev) !== null) {
-            if (point === node.point) {
-                break;
-            }
-        }
+            /* jshint boss:true */
+        do {
+            node = node.prev;
+            if (point === node.point)
+                    { break; }
+        } while (node.prev);
+            /* while (node = node.prev) {
+                if (point === node.point) {
+                    break;
+                }
+            }*/
     } else {
-        while ((node = node.next) !== null) {
-            if (point === node.point) {
-                break;
-            }
-        }
+        do {
+            node = node.next;
+            if (point === node.point)
+                    { break; }
+        } while (node.next);
+            /* while (node = node.next) {
+                if (point === node.point) {
+                    break;
+                }
+            }*/
     }
 
     if (node) {
@@ -866,15 +886,15 @@ var SweepContext = function (contour, options) {
     this.points_ = (options.cloneArrays ? contour.slice(0) : contour);
     this.edge_list = [];
 
-    // Bounding box of all points. Computed at the start of the triangulation,
-    // it is stored in case it is needed by the caller.
+        // Bounding box of all points. Computed at the start of the triangulation,
+        // it is stored in case it is needed by the caller.
     this.pmin_ = this.pmax_ = null;
 
-    // Advancing front
+        // Advancing front
     this.front_ = null; // AdvancingFront
-    // head point used with advancing front
+        // head point used with advancing front
     this.head_ = null; // Point
-    // tail point used with advancing front
+        // tail point used with advancing front
     this.tail_ = null; // Point
 
     this.af_head_ = null; // Node
@@ -886,7 +906,6 @@ var SweepContext = function (contour, options) {
 
     this.initEdges(this.points_);
 };
-
 
 /**
  * Add a hole to the constraints
@@ -901,7 +920,7 @@ SweepContext.prototype.addHole = function (polyline) {
     }
     return this; // for chaining
 };
-// Backward compatibility
+    // Backward compatibility
 SweepContext.prototype.AddHole = SweepContext.prototype.addHole;
 
 
@@ -913,7 +932,7 @@ SweepContext.prototype.addPoint = function (point) {
     this.points_.push(point);
     return this; // for chaining
 };
-// Backward compatibility
+    // Backward compatibility
 SweepContext.prototype.AddPoint = SweepContext.prototype.addPoint;
 
 
@@ -937,7 +956,7 @@ SweepContext.prototype.getBoundingBox = function () {
 SweepContext.prototype.getTriangles = function () {
     return this.triangles_;
 };
-// Backward compatibility
+    // Backward compatibility
 SweepContext.prototype.GetTriangles = SweepContext.prototype.getTriangles;
 
 
@@ -980,7 +999,7 @@ SweepContext.prototype.initTriangulation = function () {
         len = this.points_.length;
     for (i = 1; i < len; i++) {
         var p = this.points_[i];
-        /* jshint expr:true */
+            /* jshint expr:true */
         (p.x > xmax) && (xmax = p.x);
         (p.x < xmin) && (xmin = p.x);
         (p.y > ymax) && (ymax = p.y);
@@ -994,7 +1013,7 @@ SweepContext.prototype.initTriangulation = function () {
     this.head_ = new Point(xmax + dx, ymin - dy);
     this.tail_ = new Point(xmin - dx, ymin - dy);
 
-    // Sort points along y-axis
+        // Sort points along y-axis
     this.points_.sort(Point.compare);
 };
 
@@ -1022,7 +1041,7 @@ SweepContext.prototype.createAdvancingFront = function () {
     var head;
     var middle;
     var tail;
-    // Initial triangle
+        // Initial triangle
     var triangle = new Triangle(this.points_[0], this.tail_, this.head_);
 
     this.map_.push(triangle);
@@ -1075,8 +1094,8 @@ SweepContext.prototype.meshClean = function (triangle) {
         i;
     /* jshint boss:true */
 
-    t = triangles.pop();
-    while (t) {
+    do {
+        t = triangles.pop();
         if (!t.isInterior()) {
             t.setInterior(true);
             this.triangles_.push(t);
@@ -1086,8 +1105,18 @@ SweepContext.prototype.meshClean = function (triangle) {
                 }
             }
         }
-        t = triangles.pop();
-    }
+    } while (triangles.length != 0);
+        /* while (t = triangles.pop()) {
+            if (!t.isInterior()) {
+                t.setInterior(true);
+                this.triangles_.push(t);
+                for (i = 0; i < 3; i++) {
+                    if (!t.constrained_edge[i]) {
+                        triangles.push(t.getNeighbor(i));
+                    }
+                }
+            }
+        }*/
 };
 
 var Sweep = {};
@@ -1095,9 +1124,9 @@ var Sweep = {};
 Sweep.triangulate = function (tcx) {
     tcx.initTriangulation();
     tcx.createAdvancingFront();
-    // Sweep points; build mesh
+        // Sweep points; build mesh
     Sweep.sweepPoints(tcx);
-    // Clean up
+        // Clean up
     Sweep.finalizationPolygon(tcx);
 };
 
@@ -1122,7 +1151,7 @@ Sweep.finalizationPolygon = function (tcx) {
         t = t.neighborCCW(p);
     }
 
-    // Collect interior triangles constrained by edges
+        // Collect interior triangles constrained by edges
     tcx.meshClean(t);
 };
 
@@ -1130,8 +1159,8 @@ Sweep.pointEvent = function (tcx, point) {
     var node = tcx.locateNode(point);
     var new_node = Sweep.newFrontTriangle(tcx, point, node);
 
-    // Only need to check +epsilon since point never have smaller
-    // x value than node due to how we fetch nodes from the front
+        // Only need to check +epsilon since point never have smaller
+        // x value than node due to how we fetch nodes from the front
     if (point.x <= node.point.x + (EPSILON)) {
         Sweep.fill(tcx, node);
     }
@@ -1150,9 +1179,9 @@ Sweep.edgeEventByEdge = function (tcx, edge, node) {
         return;
     }
 
-    // For now we will do all needed filling
-    // TODO: integrate with flip process might give some better performance
-    //       but for now this avoid the issue with cases that needs both flips and fills
+        // For now we will do all needed filling
+        // TODO: integrate with flip process might give some better performance
+        //       but for now this avoid the issue with cases that needs both flips and fills
     Sweep.fillEdgeEvent(tcx, edge, node);
     Sweep.edgeEventByPoints(tcx, edge.p, edge.q, node.triangle, edge.q);
 };
@@ -1165,20 +1194,20 @@ Sweep.edgeEventByPoints = function (tcx, ep, eq, triangle, point) {
     var p1 = triangle.pointCCW(point);
     var o1 = orient2d(eq, p1, ep);
     if (o1 === Orientation.COLLINEAR) {
-        // TODO integrate here changes from C++ version
+            // TODO integrate here changes from C++ version
         throw new PointError('EdgeEvent: Collinear not supported!', [eq, p1, ep]);
     }
 
     var p2 = triangle.pointCW(point);
     var o2 = orient2d(eq, p2, ep);
     if (o2 === Orientation.COLLINEAR) {
-        // TODO integrate here changes from C++ version
+            // TODO integrate here changes from C++ version
         throw new PointError('EdgeEvent: Collinear not supported!', [eq, p2, ep]);
     }
 
     if (o1 === o2) {
-        // Need to decide if we are rotating CW or CCW to get to a triangle
-        // that will cross edge
+            // Need to decide if we are rotating CW or CCW to get to a triangle
+            // that will cross edge
         if (o1 === Orientation.CW) {
             triangle = triangle.neighborCCW(point);
         } else {
@@ -1186,7 +1215,7 @@ Sweep.edgeEventByPoints = function (tcx, ep, eq, triangle, point) {
         }
         Sweep.edgeEventByPoints(tcx, ep, eq, triangle, point);
     } else {
-        // This triangle crosses constraint so lets flippin start!
+            // This triangle crosses constraint so lets flippin start!
         Sweep.flipEdgeEvent(tcx, ep, eq, triangle, point);
     }
 };
@@ -1226,19 +1255,19 @@ Sweep.newFrontTriangle = function (tcx, point, node) {
 Sweep.fill = function (tcx, node) {
     var triangle = new Triangle(node.prev.point, node.point, node.next.point);
 
-    // TODO: should copy the constrained_edge value from neighbor triangles
-    //       for now constrained_edge values are copied during the legalize
+        // TODO: should copy the constrained_edge value from neighbor triangles
+        //       for now constrained_edge values are copied during the legalize
     triangle.markNeighbor(node.prev.triangle);
     triangle.markNeighbor(node.triangle);
 
     tcx.addToMap(triangle);
 
-    // Update the advancing front
+        // Update the advancing front
     node.prev.next = node.next;
     node.next.prev = node.prev;
 
 
-    // If it was legalized the triangle has already been mapped
+        // If it was legalized the triangle has already been mapped
     if (!Sweep.legalize(tcx, triangle)) {
         tcx.mapTriangleToNodes(triangle);
     }
@@ -1260,7 +1289,7 @@ Sweep.fillAdvancingFront = function (tcx, n) {
         node = node.next;
     }
 
-    // Fill left holes
+        // Fill left holes
     node = n.prev;
     while (node.prev) {
         angle = Sweep.holeAngle(node);
@@ -1271,7 +1300,7 @@ Sweep.fillAdvancingFront = function (tcx, n) {
         node = node.prev;
     }
 
-    // Fill right basins
+        // Fill right basins
     if (n.next && n.next.next) {
         angle = Sweep.basinAngle(n);
         if (angle < PI_3div4) {
@@ -1323,8 +1352,8 @@ Sweep.legalize = function (tcx, t) {
             var op = ot.oppositePoint(t, p);
             var oi = ot.index(op);
 
-            // If this is a Constrained Edge or a Delaunay Edge(only during recursive legalization)
-            // then we should not try to legalize
+                // If this is a Constrained Edge or a Delaunay Edge(only during recursive legalization)
+                // then we should not try to legalize
             if (ot.constrained_edge[oi] || ot.delaunay_edge[oi]) {
                 t.constrained_edge[i] = ot.constrained_edge[oi];
                 continue;
@@ -1332,17 +1361,17 @@ Sweep.legalize = function (tcx, t) {
 
             var inside = Sweep.inCircle(p, t.pointCCW(p), t.pointCW(p), op);
             if (inside) {
-                // Lets mark this shared edge as Delaunay
+                    // Lets mark this shared edge as Delaunay
                 t.delaunay_edge[i] = true;
                 ot.delaunay_edge[oi] = true;
 
-                // Lets rotate shared edge one vertex CW to legalize it
+                    // Lets rotate shared edge one vertex CW to legalize it
                 Sweep.rotateTrianglePair(t, p, ot, op);
 
-                // We now got one valid Delaunay Edge shared by two triangles
-                // This gives us 4 new edges to check for Delaunay
+                    // We now got one valid Delaunay Edge shared by two triangles
+                    // This gives us 4 new edges to check for Delaunay
 
-                // Make sure that triangle to node mapping is done only one time for a specific triangle
+                    // Make sure that triangle to node mapping is done only one time for a specific triangle
                 var not_legalized = !Sweep.legalize(tcx, t);
                 if (not_legalized) {
                     tcx.mapTriangleToNodes(t);
@@ -1352,15 +1381,15 @@ Sweep.legalize = function (tcx, t) {
                 if (not_legalized) {
                     tcx.mapTriangleToNodes(ot);
                 }
-                // Reset the Delaunay edges, since they only are valid Delaunay edges
-                // until we add a new triangle or point.
-                // XXX: need to think about this. Can these edges be tried after we
-                //      return to previous recursive level?
+                    // Reset the Delaunay edges, since they only are valid Delaunay edges
+                    // until we add a new triangle or point.
+                    // XXX: need to think about this. Can these edges be tried after we
+                    //      return to previous recursive level?
                 t.delaunay_edge[i] = false;
                 ot.delaunay_edge[oi] = false;
 
-                // If triangle have been legalized no need to check the other edges since
-                // the recursive legalization will handles those so we can end here.
+                    // If triangle have been legalized no need to check the other edges since
+                    // the recursive legalization will handles those so we can end here.
                 return true;
             }
         }
@@ -1433,23 +1462,23 @@ Sweep.rotateTrianglePair = function (t, p, ot, op) {
     t.legalize(p, op);
     ot.legalize(op, p);
 
-    // Remap delaunay_edge
+        // Remap delaunay_edge
     ot.setDelaunayEdgeCCW(p, de1);
     t.setDelaunayEdgeCW(p, de2);
     t.setDelaunayEdgeCCW(op, de3);
     ot.setDelaunayEdgeCW(op, de4);
 
-    // Remap constrained_edge
+        // Remap constrained_edge
     ot.setConstrainedEdgeCCW(p, ce1);
     t.setConstrainedEdgeCW(p, ce2);
     t.setConstrainedEdgeCCW(op, ce3);
     ot.setConstrainedEdgeCW(op, ce4);
 
-    // Remap neighbors
-    // XXX: might optimize the markNeighbor by keeping track of
-    //      what side should be assigned to what neighbor after the
-    //      rotation. Now mark neighbor does lots of testing to find
-    //      the right side.
+        // Remap neighbors
+        // XXX: might optimize the markNeighbor by keeping track of
+        //      what side should be assigned to what neighbor after the
+        //      rotation. Now mark neighbor does lots of testing to find
+        //      the right side.
     t.clearNeigbors();
     ot.clearNeigbors();
     if (n1) {
@@ -1474,13 +1503,13 @@ Sweep.fillBasin = function (tcx, node) {
         tcx.basin.left_node = node.next;
     }
 
-    // Find the bottom and right node
+        // Find the bottom and right node
     tcx.basin.bottom_node = tcx.basin.left_node;
     while (tcx.basin.bottom_node.next && tcx.basin.bottom_node.point.y >= tcx.basin.bottom_node.next.point.y) {
         tcx.basin.bottom_node = tcx.basin.bottom_node.next;
     }
     if (tcx.basin.bottom_node === tcx.basin.left_node) {
-        // No valid basin
+            // No valid basin
         return;
     }
 
@@ -1489,7 +1518,7 @@ Sweep.fillBasin = function (tcx, node) {
         tcx.basin.right_node = tcx.basin.right_node.next;
     }
     if (tcx.basin.right_node === tcx.basin.bottom_node) {
-        // No valid basins
+            // No valid basins
         return;
     }
 
@@ -1529,7 +1558,7 @@ Sweep.fillBasinReq = function (tcx, node) {
         }
         node = node.prev;
     } else {
-        // Continue with the neighbor node with lowest Y value
+            // Continue with the neighbor node with lowest Y value
         if (node.prev.point.y < node.next.point.y) {
             node = node.prev;
         } else {
@@ -1548,7 +1577,7 @@ Sweep.isShallow = function (tcx, node) {
         height = tcx.basin.right_node.point.y - node.point.y;
     }
 
-    // if shallow stop filling
+        // if shallow stop filling
     if (tcx.basin.width > height) {
         return true;
     }
@@ -1565,7 +1594,7 @@ Sweep.fillEdgeEvent = function (tcx, edge, node) {
 
 Sweep.fillRightAboveEdgeEvent = function (tcx, edge, node) {
     while (node.next.point.x < edge.p.x) {
-        // Check if next node is below the edge
+            // Check if next node is below the edge
         if (orient2d(edge.q, node.next.point, edge.p) === Orientation.CCW) {
             Sweep.fillRightBelowEdgeEvent(tcx, edge, node);
         } else {
@@ -1577,12 +1606,12 @@ Sweep.fillRightAboveEdgeEvent = function (tcx, edge, node) {
 Sweep.fillRightBelowEdgeEvent = function (tcx, edge, node) {
     if (node.point.x < edge.p.x) {
         if (orient2d(node.point, node.next.point, node.next.next.point) === Orientation.CCW) {
-            // Concave
+                // Concave
             Sweep.fillRightConcaveEdgeEvent(tcx, edge, node);
         } else {
-            // Convex
+                // Convex
             Sweep.fillRightConvexEdgeEvent(tcx, edge, node);
-            // Retry this one
+                // Retry this one
             Sweep.fillRightBelowEdgeEvent(tcx, edge, node);
         }
     }
@@ -1591,15 +1620,15 @@ Sweep.fillRightBelowEdgeEvent = function (tcx, edge, node) {
 Sweep.fillRightConcaveEdgeEvent = function (tcx, edge, node) {
     Sweep.fill(tcx, node.next);
     if (node.next.point !== edge.p) {
-        // Next above or below edge?
+            // Next above or below edge?
         if (orient2d(edge.q, node.next.point, edge.p) === Orientation.CCW) {
-            // Below
+                // Below
             if (orient2d(node.point, node.next.point, node.next.next.point) === Orientation.CCW) {
-                // Next is concave
+                    // Next is concave
                 Sweep.fillRightConcaveEdgeEvent(tcx, edge, node);
             } else {
-                // Next is convex
-                /* jshint noempty:false */
+                    // Next is convex
+                    /* jshint noempty:false */
             }
         }
     }
@@ -1608,24 +1637,24 @@ Sweep.fillRightConcaveEdgeEvent = function (tcx, edge, node) {
 Sweep.fillRightConvexEdgeEvent = function (tcx, edge, node) {
     // Next concave or convex?
     if (orient2d(node.next.point, node.next.next.point, node.next.next.next.point) === Orientation.CCW) {
-        // Concave
+            // Concave
         Sweep.fillRightConcaveEdgeEvent(tcx, edge, node.next);
     } else {
-        // Convex
-        // Next above or below edge?
+            // Convex
+            // Next above or below edge?
         if (orient2d(edge.q, node.next.next.point, edge.p) === Orientation.CCW) {
-            // Below
+                // Below
             Sweep.fillRightConvexEdgeEvent(tcx, edge, node.next);
         } else {
-            // Above
-            /* jshint noempty:false */
+                // Above
+                /* jshint noempty:false */
         }
     }
 };
 
 Sweep.fillLeftAboveEdgeEvent = function (tcx, edge, node) {
     while (node.prev.point.x > edge.p.x) {
-        // Check if next node is below the edge
+            // Check if next node is below the edge
         if (orient2d(edge.q, node.prev.point, edge.p) === Orientation.CW) {
             Sweep.fillLeftBelowEdgeEvent(tcx, edge, node);
         } else {
@@ -1637,12 +1666,12 @@ Sweep.fillLeftAboveEdgeEvent = function (tcx, edge, node) {
 Sweep.fillLeftBelowEdgeEvent = function (tcx, edge, node) {
     if (node.point.x > edge.p.x) {
         if (orient2d(node.point, node.prev.point, node.prev.prev.point) === Orientation.CW) {
-            // Concave
+                // Concave
             Sweep.fillLeftConcaveEdgeEvent(tcx, edge, node);
         } else {
-            // Convex
+                // Convex
             Sweep.fillLeftConvexEdgeEvent(tcx, edge, node);
-            // Retry this one
+                // Retry this one
             Sweep.fillLeftBelowEdgeEvent(tcx, edge, node);
         }
     }
@@ -1651,17 +1680,17 @@ Sweep.fillLeftBelowEdgeEvent = function (tcx, edge, node) {
 Sweep.fillLeftConvexEdgeEvent = function (tcx, edge, node) {
     // Next concave or convex?
     if (orient2d(node.prev.point, node.prev.prev.point, node.prev.prev.prev.point) === Orientation.CW) {
-        // Concave
+            // Concave
         Sweep.fillLeftConcaveEdgeEvent(tcx, edge, node.prev);
     } else {
-        // Convex
-        // Next above or below edge?
+            // Convex
+            // Next above or below edge?
         if (orient2d(edge.q, node.prev.prev.point, edge.p) === Orientation.CW) {
-            // Below
+                // Below
             Sweep.fillLeftConvexEdgeEvent(tcx, edge, node.prev);
         } else {
-            // Above
-            /* jshint noempty:false */
+                // Above
+                /* jshint noempty:false */
         }
     }
 };
@@ -1669,15 +1698,15 @@ Sweep.fillLeftConvexEdgeEvent = function (tcx, edge, node) {
 Sweep.fillLeftConcaveEdgeEvent = function (tcx, edge, node) {
     Sweep.fill(tcx, node.prev);
     if (node.prev.point !== edge.p) {
-        // Next above or below edge?
+            // Next above or below edge?
         if (orient2d(edge.q, node.prev.point, edge.p) === Orientation.CW) {
-            // Below
+                // Below
             if (orient2d(node.point, node.prev.point, node.prev.prev.point) === Orientation.CW) {
-                // Next is concave
+                    // Next is concave
                 Sweep.fillLeftConcaveEdgeEvent(tcx, edge, node);
             } else {
-                // Next is convex
-                /* jshint noempty:false */
+                    // Next is convex
+                    /* jshint noempty:false */
             }
         }
     }
@@ -1686,23 +1715,23 @@ Sweep.fillLeftConcaveEdgeEvent = function (tcx, edge, node) {
 Sweep.flipEdgeEvent = function (tcx, ep, eq, t, p) {
     var ot = t.neighborAcross(p);
     if (!ot) {
-        // If we want to integrate the fillEdgeEvent do it here
-        // With current implementation we should never get here
+            // If we want to integrate the fillEdgeEvent do it here
+            // With current implementation we should never get here
         throw new Error('[BUG:FIXME] FLIP failed due to missing triangle!');
     }
     var op = ot.oppositePoint(t, p);
 
     if (inScanArea(p, t.pointCCW(p), t.pointCW(p), op)) {
-        // Lets rotate shared edge one vertex CW
+            // Lets rotate shared edge one vertex CW
         Sweep.rotateTrianglePair(t, p, ot, op);
         tcx.mapTriangleToNodes(t);
         tcx.mapTriangleToNodes(ot);
 
-        // XXX: in the original C++ code for the next 2 lines, we are
-        // comparing point values (and not pointers). In this JavaScript
-        // code, we are comparing point references (pointers). This works
-        // because we can't have 2 different points with the same values.
-        // But to be really equivalent, we should use "Point.equals" here.
+            // XXX: in the original C++ code for the next 2 lines, we are
+            // comparing point values (and not pointers). In this JavaScript
+            // code, we are comparing point references (pointers). This works
+            // because we can't have 2 different points with the same values.
+            // But to be really equivalent, we should use "Point.equals" here.
         if (p === eq && op === ep) {
             if (eq === tcx.edge_event.constrained_edge.q && ep === tcx.edge_event.constrained_edge.p) {
                 t.markConstrainedEdgeByPoints(ep, eq);
@@ -1710,8 +1739,8 @@ Sweep.flipEdgeEvent = function (tcx, ep, eq, t, p) {
                 Sweep.legalize(tcx, t);
                 Sweep.legalize(tcx, ot);
             } else {
-                // XXX: I think one of the triangles should be legalized here?
-                /* jshint noempty:false */
+                    // XXX: I think one of the triangles should be legalized here?
+                    /* jshint noempty:false */
             }
         } else {
             var o = orient2d(eq, op, ep);
@@ -1728,7 +1757,7 @@ Sweep.flipEdgeEvent = function (tcx, ep, eq, t, p) {
 Sweep.nextFlipTriangle = function (tcx, o, t, ot, p, op) {
     var edge_index;
     if (o === Orientation.CCW) {
-        // ot is not crossing edge after flip
+            // ot is not crossing edge after flip
         edge_index = ot.edgeIndex(p, op);
         ot.delaunay_edge[edge_index] = true;
         Sweep.legalize(tcx, ot);
@@ -1736,7 +1765,7 @@ Sweep.nextFlipTriangle = function (tcx, o, t, ot, p, op) {
         return t;
     }
 
-    // t is not crossing edge after flip
+        // t is not crossing edge after flip
     edge_index = t.edgeIndex(p, op);
 
     t.delaunay_edge[edge_index] = true;
@@ -1748,10 +1777,10 @@ Sweep.nextFlipTriangle = function (tcx, o, t, ot, p, op) {
 Sweep.nextFlipPoint = function (ep, eq, ot, op) {
     var o2d = orient2d(eq, op, ep);
     if (o2d === Orientation.CW) {
-        // Right
+            // Right
         return ot.pointCCW(op);
     } else if (o2d === Orientation.CCW) {
-        // Left
+            // Left
         return ot.pointCW(op);
     } else {
         throw new PointError('[Unsupported] nextFlipPoint: opposing point on constrained edge!', [eq, op, ep]);
@@ -1761,22 +1790,22 @@ Sweep.nextFlipPoint = function (ep, eq, ot, op) {
 Sweep.flipScanEdgeEvent = function (tcx, ep, eq, flip_triangle, t, p) {
     var ot = t.neighborAcross(p);
     if (!ot) {
-        // If we want to integrate the fillEdgeEvent do it here
-        // With current implementation we should never get here
+            // If we want to integrate the fillEdgeEvent do it here
+            // With current implementation we should never get here
         throw new Error('[BUG:FIXME] FLIP failed due to missing triangle');
     }
     var op = ot.oppositePoint(t, p);
 
     if (inScanArea(eq, flip_triangle.pointCCW(eq), flip_triangle.pointCW(eq), op)) {
-        // flip with new edge op.eq
+            // flip with new edge op.eq
         Sweep.flipEdgeEvent(tcx, eq, op, ot, op);
-        // TODO: Actually I just figured out that it should be possible to
-        //       improve this by getting the next ot and op before the the above
-        //       flip and continue the flipScanEdgeEvent here
-        // set new ot and op here and loop back to inScanArea test
-        // also need to set a new flip_triangle first
-        // Turns out at first glance that this is somewhat complicated
-        // so it will have to wait.
+            // TODO: Actually I just figured out that it should be possible to
+            //       improve this by getting the next ot and op before the the above
+            //       flip and continue the flipScanEdgeEvent here
+            // set new ot and op here and loop back to inScanArea test
+            // also need to set a new flip_triangle first
+            // Turns out at first glance that this is somewhat complicated
+            // so it will have to wait.
     } else {
         var newP = Sweep.nextFlipPoint(ep, eq, ot, op);
         Sweep.flipScanEdgeEvent(tcx, ep, eq, flip_triangle, ot, newP);
@@ -1790,7 +1819,7 @@ var Delaunay = {
     _Triangle: Triangle,
     _SweepContext: SweepContext,
 
-    // Backward compatibility
+        // Backward compatibility
     _triangulate: Sweep.triangulate,
     _sweep: {
         Triangulate: Sweep.triangulate,
@@ -1899,7 +1928,8 @@ CVML.Ransac = function (fittingProblem, points, threshold) {
             var err = _problem.estimateError(_points, j, _currentModel);
             if (err > _threshold) {
                 score += _threshold;
-            } else {
+            }
+            else {
                 score += err;
                 _currentInliers.push(j);
             }
@@ -1974,9 +2004,7 @@ CVML.clone = function (A, k, n) {
     var i,
         ret = Array(A.length);
     if (k === n - 1) {
-        for (i in A) {
-            if (A.hasOwnProperty(i)) ret[i] = A[i];
-        }
+        for (i in A) { if (A.hasOwnProperty(i)) ret[i] = A[i]; }
         return ret;
     }
     for (i in A) {
@@ -1993,18 +2021,11 @@ CVML.rep = function rep(s, v, k) {
         ret = Array(n),
         i;
     if (k === s.length - 1) {
-        for (i = n - 2; i >= 0; i -= 2) {
-            ret[i + 1] = v;
-            ret[i] = v;
-        }
-        if (i === -1) {
-            ret[0] = v;
-        }
+        for (i = n - 2; i >= 0; i -= 2) { ret[i + 1] = v; ret[i] = v; }
+        if (i === -1) { ret[0] = v; }
         return ret;
     }
-    for (i = n - 1; i >= 0; i--) {
-        ret[i] = CVML.rep(s, v, k + 1);
-    }
+    for (i = n - 1; i >= 0; i--) { ret[i] = CVML.rep(s, v, k + 1); }
     return ret;
 };
 
@@ -2106,7 +2127,7 @@ CVML.svd = function svd(A) {
     var q = new Array(n);
     for (i = 0; i < n; i++) e[i] = q[i] = 0.0;
     var v = CVML.rep([n, n], 0);
-    //	v.zero();
+                //	v.zero();
 
     function pythag(a, b) {
         a = Math.abs(a);
@@ -2128,7 +2149,8 @@ CVML.svd = function svd(A) {
     var z = 0.0;
     var s = 0.0;
 
-    for (i = 0; i < n; i++) {
+    for (i = 0; i < n; i++)
+                {
         e[i] = g;
         s = 0.0;
         l = i + 1;
@@ -2142,7 +2164,8 @@ CVML.svd = function svd(A) {
             if (f >= 0.0) g = -g;
             h = f * g - s;
             u[i][i] = f - g;
-            for (j = l; j < n; j++) {
+            for (j = l; j < n; j++)
+                                {
                 s = 0.0;
                 for (k = i; k < m; k++)
                     { s += u[k][i] * u[k][j]; }
@@ -2164,7 +2187,8 @@ CVML.svd = function svd(A) {
             h = f * g - s;
             u[i][i + 1] = f - g;
             for (j = l; j < n; j++) e[j] = u[i][j] / h;
-            for (j = l; j < m; j++) {
+            for (j = l; j < m; j++)
+                                {
                 s = 0.0;
                 for (k = l; k < n; k++)
                     { s += (u[j][k] * u[i][k]); }
@@ -2177,9 +2201,11 @@ CVML.svd = function svd(A) {
             { x = y; }
     }
 
-    // accumulation of right hand gtransformations
-    for (i = n - 1; i != -1; i += -1) {
-        if (g != 0.0) {
+                // accumulation of right hand gtransformations
+    for (i = n - 1; i != -1; i += -1)
+                {
+        if (g != 0.0)
+        {
             h = g * u[i][i + 1];
             for (j = l; j < n; j++)
                 { v[j][i] = u[i][j] / h; }
@@ -2191,7 +2217,8 @@ CVML.svd = function svd(A) {
                     { v[k][j] += (s * v[k][i]); }
             }
         }
-        for (j = l; j < n; j++) {
+        for (j = l; j < n; j++)
+                        {
             v[i][j] = 0;
             v[j][i] = 0;
         }
@@ -2200,15 +2227,17 @@ CVML.svd = function svd(A) {
         l = i;
     }
 
-    // accumulation of left hand transformations
-    for (i = n - 1; i != -1; i += -1) {
+                // accumulation of left hand transformations
+    for (i = n - 1; i != -1; i += -1)
+                {
         l = i + 1;
         g = q[i];
         for (j = l; j < n; j++)
             { u[i][j] = 0; }
         if (g != 0.0) {
             h = u[i][i] * g;
-            for (j = l; j < n; j++) {
+            for (j = l; j < n; j++)
+                                {
                 s = 0.0;
                 for (k = l; k < m; k++) s += u[k][i] * u[k][j];
                 f = s / h;
@@ -2220,7 +2249,7 @@ CVML.svd = function svd(A) {
         u[i][i] += 1;
     }
 
-    // diagonalization of the bidiagonal form
+                // diagonalization of the bidiagonal form
     prec = prec * x;
     for (k = n - 1; k != -1; k += -1) {
         for (var iteration = 0; iteration < itmax; iteration++) { // test f splitting
@@ -2233,11 +2262,13 @@ CVML.svd = function svd(A) {
                 if (Math.abs(q[l - 1]) <= prec)
                   { break; }
             }
-            if (!test_convergence) { // cancellation of e[l] if l>0
+            if (!test_convergence)
+                                {	// cancellation of e[l] if l>0
                 c = 0.0;
                 s = 1.0;
                 var l1 = l - 1;
-                for (i = l; i < k + 1; i++) {
+                for (i = l; i < k + 1; i++)
+                                        {
                     f = s * e[i];
                     e[i] = c * e[i];
                     if (Math.abs(f) <= prec)
@@ -2247,7 +2278,8 @@ CVML.svd = function svd(A) {
                     q[i] = h;
                     c = g / h;
                     s = -f / h;
-                    for (j = 0; j < m; j++) {
+                    for (j = 0; j < m; j++)
+                                                {
                         y = u[j][l1];
                         z = u[j][i];
                         u[j][l1] = y * c + (z * s);
@@ -2255,7 +2287,7 @@ CVML.svd = function svd(A) {
                     }
                 }
             }
-            // test f convergence
+                                // test f convergence
             z = q[k];
             if (l == k) { // convergence
                 if (z < 0.0) { // q[k] is made non-negative
@@ -2281,7 +2313,8 @@ CVML.svd = function svd(A) {
             // next QR transformation
             c = 1.0;
             s = 1.0;
-            for (i = l + 1; i < k + 1; i++) {
+            for (i = l + 1; i < k + 1; i++)
+                                {
                 g = e[i];
                 y = q[i];
                 h = s * g;
@@ -2294,7 +2327,8 @@ CVML.svd = function svd(A) {
                 g = -x * s + g * c;
                 h = y * s;
                 y = y * c;
-                for (j = 0; j < n; j++) {
+                for (j = 0; j < n; j++)
+                                        {
                     x = v[j][i - 1];
                     z = v[j][i];
                     v[j][i - 1] = x * c + z * s;
@@ -2306,7 +2340,8 @@ CVML.svd = function svd(A) {
                 s = h / z;
                 f = c * g + s * y;
                 x = -s * g + c * y;
-                for (j = 0; j < m; j++) {
+                for (j = 0; j < m; j++)
+                                        {
                     y = u[j][i - 1];
                     z = u[j][i];
                     u[j][i - 1] = y * c + z * s;
@@ -2333,16 +2368,8 @@ CVML.svd = function svd(A) {
                 c = q[j];
                 q[j] = q[i];
                 q[i] = c;
-                for (k = 0; k < u.length; k++) {
-                    temp = u[k][i];
-                    u[k][i] = u[k][j];
-                    u[k][j] = temp;
-                }
-                for (k = 0; k < v.length; k++) {
-                    temp = v[k][i];
-                    v[k][i] = v[k][j];
-                    v[k][j] = temp;
-                }
+                for (k = 0; k < u.length; k++) { temp = u[k][i]; u[k][i] = u[k][j]; u[k][j] = temp; }
+                for (k = 0; k < v.length; k++) { temp = v[k][i]; v[k][i] = v[k][j]; v[k][j] = temp; }
 
                 i = j;
             }
@@ -2355,6 +2382,7 @@ CVML.svd = function svd(A) {
         V: v,
     };
 };
+
 CVML.dotMMsmall = function (x, y) {
     var i,
         j,
@@ -2380,9 +2408,7 @@ CVML.dotMMsmall = function (x, y) {
                 i0 = j - 1;
                 woo += bar[j] * y[j][k] + bar[i0] * y[i0][k];
             }
-            if (j === 0) {
-                woo += bar[0] * y[0][k];
-            }
+            if (j === 0) { woo += bar[0] * y[0][k]; }
             foo[k] = woo;
         }
         ret[i] = foo;
@@ -2426,12 +2452,11 @@ CVML.dotMMbig = function (x, y) {
 };
 
 CVML.dotMV = function (x, y) {
-    var p = x.length; // , q = y.length,i;
+    var p = x.length/* ,q = y.length*/,
+        i;
     var ret = Array(p),
         dotVV = CVML.dotVV;
-    for (var i = p - 1; i >= 0; i--) {
-        ret[i] = dotVV(x[i], y);
-    }
+    for (i = p - 1; i >= 0; i--) { ret[i] = dotVV(x[i], y); }
     return ret;
 };
 
@@ -2452,9 +2477,7 @@ CVML.dotVM = function (x, y) {
             i0 = j - 1;
             woo += x[j] * y[j][k] + x[i0] * y[i0][k];
         }
-        if (j === 0) {
-            woo += x[0] * y[0][k];
-        }
+        if (j === 0) { woo += x[0] * y[0][k]; }
         ret[k] = woo;
     }
     return ret;
@@ -2469,9 +2492,7 @@ CVML.dotVV = function (x, y) {
         i1 = i - 1;
         ret += x[i] * y[i] + x[i1] * y[i1];
     }
-    if (i === 0) {
-        ret += x[0] * y[0];
-    }
+    if (i === 0) { ret += x[0] * y[0]; }
     return ret;
 };
 
@@ -2528,7 +2549,92 @@ CVML.pca = function (A, mV) {
     var m = A.length;
     var A_norm = CVML.subMV(A, mV);
     var sigma = CVML.div(CVML.dot(CVML.transpose(A_norm), A_norm), m);
-    return CVML.svd(sigma); // .U;
+    return CVML.svd(sigma);// .U;
 };
+
+        /*
+
+        CVML.pcaByEigen = function (A, mV) {
+               var m = A.length;
+               var A_norm = CVML.subMV(A,mV);
+               var sigma  = CVML.div(CVML.dot(CVML.transpose(A_norm), A_norm), m);
+               return numeric.eig(sigma);
+        };
+        */
+        // K-means : http://stackoverflow.com/questions/7370785/k-means-clustering-implementation-in-javascript
+        // many error of the code have been corrected here!
+
+CVML.MAX_LOOP_COUNT = 100;
+
+CVML.hash = function (booga) {
+    if (booga == undefined) return undefined;
+    return `point${booga.x}_${booga.y}`;
+};
+CVML.kmeans = function (points, means, distances, w, h) {
+    function computeDistance(a, b) {
+        return Math.sqrt(Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2));
+    }
+                // console.log("start kmeans!");
+
+    var converged = false;
+    var dirty = false;
+    var distance = 0.0;
+    var curMinDistance = 0.0;
+    var sumX = [];
+    var sumY = [];
+    var clusterSizes = [];
+                // var cluster = new Array();
+    var loopCount = 0;
+
+    while (!converged) {
+        dirty = false;
+        for (let i = 0; i < points.length; i = i + 1) {
+            const point = points[i];
+            curMinDistance = distances[CVML.hash(point)];
+            for (var j = 0; j < means.length; j = j + 1) {
+                var mean = means[j];
+                distance = computeDistance(point, mean);
+                if (distance < curMinDistance) {
+                    dirty = true;
+                    curMinDistance = distance;
+                    point.cluster = j;
+                }
+            }
+        }
+        if (!dirty) {
+            converged = true;
+            break;
+        }
+
+        for (let i = 0; i < means.length; i = i + 1) {
+            sumX[i] = 0;
+            sumY[i] = 0;
+            clusterSizes[i] = 0;
+        }
+        for (let i = 0; i < points.length; i = i + 1) {
+            const point = points[i];
+            sumX[point.cluster] = sumX[point.cluster] + point.x;
+            sumY[point.cluster] = sumY[point.cluster] + point.y;
+            clusterSizes[point.cluster] = clusterSizes[point.cluster] + 1;
+        }
+        for (let i = 0; i < means.length; i = i + 1) {
+            if (clusterSizes[i] !== 0) {
+                means[i].x = sumX[i] / clusterSizes[i];
+                means[i].y = sumY[i] / clusterSizes[i];
+                means[i].z = clusterSizes[i];
+            } else {
+                means[i].x = Math.floor(Math.random() * w);
+                means[i].y = Math.floor(Math.random() * h);
+                means[i].z = 0;
+            }
+        }
+        loopCount = loopCount + 1;
+        if (loopCount > CVML.MAX_LOOP_COUNT) {
+            converged = true;
+                        // console.log('converged');
+        }
+    }// end while
+};
+
 
 export default CVML;

@@ -29,7 +29,7 @@ var getCoordinateValue = function (unit, coord, id)
 
     if (unit === UNIT.RADIAN)
 
-		{ return coord[id]; }
+        { return coord[id]; }
 
     else if (unit === UNIT.DEGREE)
 

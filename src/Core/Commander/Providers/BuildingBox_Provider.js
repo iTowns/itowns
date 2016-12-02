@@ -18,8 +18,7 @@ import WFS_Provider from 'Core/Commander/Providers/WFS_Provider';
 import * as THREE from 'three';
 import Ellipsoid from 'Core/Math/Ellipsoid';
 import GeoCoordinate, { UNIT } from 'Core/Geographic/GeoCoordinate';
-import CVML from 'Core/Math/CVML';
-
+import Earcut from 'earcut';
 
 function BuildingBox_Provider(options) {
     // Constructor
@@ -71,8 +70,7 @@ BuildingBox_Provider.prototype.getData = function (bbox, altitude) {
 };
 
 BuildingBox_Provider.prototype.generateMesh = function (elements, bbox, altitude) {
-    // console.log(elements);
-
+    var roofGeometry = new THREE.Geometry(); // for the roof
     var _geometry = new THREE.Geometry(); // for the walls
     var geometry = new THREE.Geometry(); // for the roof
     var suppHeight = 10; // So we don't cut the roof
@@ -100,7 +98,8 @@ BuildingBox_Provider.prototype.generateMesh = function (elements, bbox, altitude
                 var vector3_1 = new THREE.Vector3(pgeo1.x, pgeo1.y, pgeo1.z); // - x temporary, bug
                 var vector3_2 = new THREE.Vector3(pgeo2.x, pgeo2.y, pgeo2.z);
 
-                arrPoint2D.push(CVML.newPoint(p1.z, p1.x)); // -pgeo1.x, pgeo1.z)); //for roof
+
+                arrPoint2D.push(p1.z, p1.x);
                 _geometry.vertices.push(vector3_1, vector3_2);
             }
 
@@ -122,31 +121,28 @@ BuildingBox_Provider.prototype.generateMesh = function (elements, bbox, altitude
 
         //* *************** ROOF ****************************
 
-        var triangles = CVML.TriangulatePoly(arrPoint2D);
-        // var geometry = new THREE.Geometry();  // for the roof
-        triangles.forEach((t) => {
-            var pt1 = t.getPoint(0),
-                pt2 = t.getPoint(1),
-                pt3 = t.getPoint(2);
+        var triangles = Earcut(arrPoint2D);
+        for (var w = 0; w < triangles.length; w += 3) {
+            var pt1 = new THREE.Vector2(arrPoint2D[triangles[i] * 2], arrPoint2D[triangles[i] * 2 + 1]);
+            var pt2 = new THREE.Vector2(arrPoint2D[triangles[i + 1] * 2], arrPoint2D[triangles[i + 1] * 2 + 1]);
+            var pt3 = new THREE.Vector2(arrPoint2D[triangles[i + 2] * 2], arrPoint2D[triangles[i + 2] * 2 + 1]);
+            var c1 = new GeoCoordinate(pt1.x, pt1.y, z_min + hauteur, UNIT.DEGREE);
+            var c2 = new GeoCoordinate(pt2.x, pt2.y, z_min + hauteur, UNIT.DEGREE);
+            var c3 = new GeoCoordinate(pt3.x, pt3.y, z_min + hauteur, UNIT.DEGREE);
 
-            var coordCarto1 = new GeoCoordinate(pt1.y, pt1.x, z_min + hauteur, UNIT.DEGREE);
-            var coordCarto2 = new GeoCoordinate(pt2.y, pt2.x, z_min + hauteur, UNIT.DEGREE); // + Math.random(1000) );
-            var coordCarto3 = new GeoCoordinate(pt3.y, pt3.x, z_min + hauteur, UNIT.DEGREE);
+            var pc1 = this.ellipsoid.cartographicToCartesian(c1); // {longitude:p1.z, latitude:p1.x, altitude: 0});
+            var pc2 = this.ellipsoid.cartographicToCartesian(c2);
+            var pc3 = this.ellipsoid.cartographicToCartesian(c3);
 
-            var pgeo1 = ellipsoid.cartographicToCartesian(coordCarto1); // {longitude:p1.z, latitude:p1.x, altitude: 0});
-            var pgeo2 = ellipsoid.cartographicToCartesian(coordCarto2);
-            var pgeo3 = ellipsoid.cartographicToCartesian(coordCarto3);
-
-            // var geometry = new THREE.Geometry();
-            geometry.vertices.push(new THREE.Vector3(pgeo1.x, pgeo1.y, pgeo1.z));
-            geometry.vertices.push(new THREE.Vector3(pgeo2.x, pgeo2.y, pgeo2.z));
-            geometry.vertices.push(new THREE.Vector3(pgeo3.x, pgeo3.y, pgeo3.z));
+            roofGeometry.vertices.push(new THREE.Vector3(pc1.x, pc1.y, pc1.z));
+            roofGeometry.vertices.push(new THREE.Vector3(pc2.x, pc2.y, pc2.z));
+            roofGeometry.vertices.push(new THREE.Vector3(pc3.x, pc3.y, pc3.z));
 
             var face = new THREE.Face3(geometry.vertices.length - 3,
                                      geometry.vertices.length - 2,
                                      geometry.vertices.length - 1);
             geometry.faces.push(face);
-        });
+        }
     }
 
     if (this.roadOn)

@@ -34,6 +34,7 @@ var ItownsLineMaterial = function (options) {
     this.uniforms.color = { type: 'v3', value: options.color };
 
     this.transparent = true;
+    this.side = THREE.DoubleSide;
 };
 
 ItownsLineMaterial.prototype = Object.create(BasicMaterial.prototype);

@@ -15,6 +15,7 @@ import Ellipsoid from 'Core/Math/Ellipsoid';
 import Projection from 'Core/Geographic/Projection';
 import CustomEvent from 'custom-event';
 import Fetcher from 'Core/Commander/Providers/Fetcher';
+import WFS_Provider from 'Core/Commander/Providers/WFS_Provider';
 import { STRATEGY_MIN_NETWORK_TRAFFIC } from 'Scene/LayerUpdateStrategy';
 
 var loaded = false;
@@ -113,6 +114,13 @@ ApiGlobe.prototype.addImageryLayer = function (layer) {
 
     map.layersConfiguration.addColorLayer(layer);
     this.viewerDiv.dispatchEvent(eventLayerAdded);
+};
+
+ApiGlobe.prototype.addFeatureLayer = function (layer) {
+    preprocessLayer(layer, this.scene.managerCommand.getProtocolProvider(layer.protocol));
+
+    var map = this.scene.getMap();
+    map.layersConfiguration.addGeometryLayer(layer);
 };
 
 /**
@@ -357,7 +365,7 @@ ApiGlobe.prototype.createSceneGlobe = function (coordCarto, viewerDiv) {
     this.scene.managerCommand.addProtocolProvider('wmtsc', wmtsProvider);
     this.scene.managerCommand.addProtocolProvider('tile', new TileProvider(ellipsoid));
     this.scene.managerCommand.addProtocolProvider('wms', new WMS_Provider({ support: map.gLDebug }));
-
+    this.scene.managerCommand.addProtocolProvider('wfs', new WFS_Provider());
 
     return this.scene;
 };

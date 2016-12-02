@@ -147,6 +147,9 @@ NodeProcess.prototype.subdivideNode = function (node, camera, params) {
                 // request layers (imagery/elevation) update
                 this.refineNodeLayers(child, camera, params);
 
+                // request feature update
+                updateNodeFeature(quadtree, child, params.layersConfig.getGeometryLayers());
+
                 return 0;
             });
         }
@@ -214,6 +217,33 @@ function findAncestorWithValidTextureForLayer(node, layerType, layer) {
         }
     } else {
         return null;
+    }
+}
+
+function updateNodeFeature(quadtree, node, featureLayers) {
+    for (var i = 0; i < featureLayers.length; i++) {
+        var layer = featureLayers[i];
+        var protocol = layer.protocol;
+        if (protocol.toLowerCase() == 'wfs' || protocol.toLowerCase() == 'wfspoint' || protocol.toLowerCase() == 'wfsline') {
+            if (layer.tileInsideLimit(node, layer) && !node.content) {
+                var args = {
+                    layer,
+                };
+
+                quadtree.interCommand.request(args, node, refinementCommandCancellationFn).then((result) => {
+                    // if request return empty json, WFS_Provider.getFeatures return undefined
+                    if (result.feature !== undefined && result.feature != null) {
+                        var layer = quadtree.parent.batiments.children[0];
+                        quadtree.parent.batiments.visible = true;
+                        layer.add(result.feature);
+                        node.content = result.feature;
+                    }
+                })
+                .catch((/* err*/) => {
+                // Command has been canceled, no big deal, we just need to catch it
+                });
+            }
+        }
     }
 }
 

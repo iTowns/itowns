@@ -180,7 +180,7 @@ Globe.prototype.setLayerVisibility = function (id, visible) {
     this.layersConfiguration.setLayerVisibility(id, visible);
 
     var cO = function (object) {
-        if (object.material.setLayerOpacity) {
+        if (object.material.setLayerVisibility) {
             object.material.setLayerVisibility(object.getIndexLayerColor(id), visible);
         }
     };
