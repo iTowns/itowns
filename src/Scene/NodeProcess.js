@@ -220,6 +220,7 @@ function findAncestorWithValidTextureForLayer(node, layerType, layer) {
     }
 }
 
+
 function updateNodeFeature(quadtree, node, featureLayers) {
     for (var i = 0; i < featureLayers.length; i++) {
         var layer = featureLayers[i];
@@ -233,14 +234,18 @@ function updateNodeFeature(quadtree, node, featureLayers) {
                 quadtree.interCommand.request(args, node, refinementCommandCancellationFn).then((result) => {
                     // if request return empty json, WFS_Provider.getFeatures return undefined
                     if (result.feature !== undefined && result.feature != null) {
-                        var layers = quadtree.parent.features.children[0];
-                        quadtree.parent.features.visible = true;
+                        // var layer = quadtree.parent.features.children[0];
+                        var map = quadtree.parent;
+                        var layerid = result.feature.layer.id;
+                        var layer = map.getFeatureLayerByName(layerid);
 
-                        layers.add(result.feature);
+                        if (layer !== undefined) {
+                            layer.children[0].add(result.feature);
+                        }
                         node.content = result.feature;
                     }
                 })
-                .catch((/* err*/) => {
+                .catch(() => {
                 // Command has been canceled, no big deal, we just need to catch it
                 });
             }

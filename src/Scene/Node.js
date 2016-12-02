@@ -136,9 +136,8 @@ Node.prototype.add = function (child) {
  *
  * @param child {[object Object]}
  */
-Node.prototype.remove = function (/* child*/) {
+Node.prototype.remove = function () {
     // TODO: Implement Me
-
 };
 
 

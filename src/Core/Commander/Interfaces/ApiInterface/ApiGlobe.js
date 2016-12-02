@@ -121,8 +121,8 @@ ApiGlobe.prototype.addFeatureLayer = function (layer) {
 
     var map = this.scene.getMap();
     map.layersConfiguration.addGeometryLayer(layer);
-    // map.createFeatureLayer(layer.id);
-    // map.createNewFeatureLayer(layer.id);
+    var featureLayer = map.createFeatureLayer(layer.id);
+    this.scene.gfxEngine.add3DScene(featureLayer.getMesh());
 };
 
 /**
@@ -248,13 +248,11 @@ ApiGlobe.prototype.addElevationLayersFromJSON = function (url) {
  * @return     {layer}  The Layers.
  */
 
-// Add feature
-ApiGlobe.prototype.addFeature = function (/* options*/) {
-    // var layerId = options.layerId;
-    // var map = this.scene.getMap();
-    // var geometryLayers = map.layersConfiguration.getGeometryLayers();
-
-   // console.log(geometryLayers);
+ApiGlobe.prototype.addFeature = function (options) {
+    if (options === undefined)
+        { throw new Error('options is required'); }
+    var map = this.scene.getMap();
+    map.addFeature(options);
 };
 
 ApiGlobe.prototype.addElevationLayersFromJSONArray = function (urls) {
@@ -289,6 +287,24 @@ ApiGlobe.prototype.getMinZoomLevel = function (index) {
         return min;
     }
 };
+
+
+ApiGlobe.prototype.pickFeature = function (Position, layerId) {
+    if (Position == undefined)
+        { throw new Error('Position is required'); }
+    var map = this.scene.getMap();
+    var layer = map.getFeatureLayerByName(layerId);
+    return this.scene.getPickFeature(Position, layer);
+};
+
+ApiGlobe.prototype.removeFeature = function (feature) {
+    var featureId = feature.featureId;
+    var layerId = feature.layerId;
+    var map = this.scene.getMap();
+    var layer = map.getFeatureLayerByName(layerId);
+    layer.removeFeature(featureId);
+};
+
 
 /**
  * Gets the maximun zoom level of the chosen layer.
@@ -925,15 +941,14 @@ ApiGlobe.prototype.launchCommandApi = function () {
 //        console.log(this.getHeading());
 //    };
 
-
 ApiGlobe.prototype.selectNodeById = function (id) {
     this.scene.selectNodeId(id);
     this.scene.update();
     this.scene.renderScene3D();
 };
 
-ApiGlobe.prototype.showKML = function (value) {
-    this.scene.getMap().showKML(value);
+ApiGlobe.prototype.showFeature = function (value) {
+    this.scene.getMap().showFeature(value);
     this.scene.renderScene3D();
 };
 

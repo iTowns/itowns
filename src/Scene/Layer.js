@@ -25,6 +25,7 @@ function Layer() {
     this.descriManager = null;
     this.projection = new Projection();
     this.id = Layer.count++;
+    this.name = '';
 }
 
 Layer.count = 0;
@@ -32,6 +33,19 @@ Layer.count = 0;
 Layer.prototype = Object.create(Node.prototype);
 
 Layer.prototype.constructor = Layer;
+
+Layer.prototype.setName = function (name) {
+    this.name = name;
+};
+
+Layer.prototype.getName = function () {
+    return this.name;
+};
+
+Layer.prototype.removeFeature = function (id) {
+    this.children[0].children.splice(id, 1);
+};
+
 
 // Should be plural as it return an array of meshes
 Layer.prototype.getMesh = function () {

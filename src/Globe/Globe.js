@@ -17,7 +17,7 @@ import BasicMaterial from 'Renderer/BasicMaterial';
 import LayersConfiguration from 'Scene/LayersConfiguration';
 import * as THREE from 'three';
 import { SSE_SUBDIVISION_THRESHOLD } from 'Scene/NodeProcess';
-
+import FeatureToolBox from 'Renderer/ThreeExtented/FeatureToolBox';
 
 /* eslint-disable */
 // bbox longitude(0,360),latitude(-90,90)
@@ -36,14 +36,9 @@ function Globe(ellipsoid, gLDebug) {
     this.gLDebug = gLDebug;
     this.ellipsoid = ellipsoid;
 
-    this.features = new Layer(); // new THREE.Group();
+    // this.features = new Layer(); //new THREE.Group();
+    // this.features.setName("featureLayerCollection");
     this.layerWGS84Zup = new Layer();
-
-    var featureLayerCollection = new THREE.Group(); // new THREE.Object3D();
-    this.features.add(featureLayerCollection);
-    this.features.visible = false;
-
-    featureLayerCollection.visible = false;
 
     this.gpxTracks = new Layer();
     var gpx = new THREE.Object3D();
@@ -51,7 +46,7 @@ function Globe(ellipsoid, gLDebug) {
     this.gpxTracks.visible = true;
     gpx.visible = true;
 
-    this.tiles = new Quadtree(TileMesh, this.SchemeTileWMTS(schemeTile_1), featureLayerCollection);
+    this.tiles = new Quadtree(TileMesh, this.SchemeTileWMTS(schemeTile_1), null);// featureLayerCollection
     this.layersConfiguration = new LayersConfiguration();
 
     this.atmosphere = this.NOIE ? new Atmosphere(this.ellipsoid) : undefined;
@@ -95,7 +90,7 @@ function Globe(ellipsoid, gLDebug) {
     zUp.add(batiment);
 
     this.add(this.tiles);
-    this.add(this.features);
+    // this.add(this.features);
     this.add(this.gpxTracks);
     // this.add(this.layerWGS84Zup);
 
@@ -151,14 +146,10 @@ Globe.prototype.showClouds = function (show, satelliteAnimation) {
     this.clouds.visible = show;
 };
 
-Globe.prototype.showKML = function (show) {
+Globe.prototype.showFeature = function (show) {
     this.features.visible = show;
 
     this.features.children[0].visible = show;
-};
-
-Globe.prototype.addFeature = function (/* features*/) {
-
 };
 
 Globe.prototype.updateLightingPos = function (pos) {
@@ -190,6 +181,10 @@ Globe.prototype.setLayerVisibility = function (id, visible) {
 
     // children[0] is rootNode
     this.tiles.children[0].traverse(cO);
+
+    var featureLayer = this.getFeatureLayerByName(id);
+    if (featureLayer != undefined)
+        { featureLayer.children[0].visible = visible; }
 };
 
 Globe.prototype.updateLayersOrdering = function () {
@@ -240,6 +235,36 @@ Globe.prototype.getTile = function (coordinate) {
 Globe.prototype.setRealisticLightingOn = function (bool) {
     this.atmosphere.setRealisticOn(bool);
     this.clouds.setLightingOn(bool);
+};
+
+Globe.prototype.getFeatureLayerByName = function (name) {
+    var layers = this.children;
+    for (var i = 0; i < layers.length; i++) {
+        if (layers[i] instanceof Layer && layers[i].getName() === name)
+            { return layers[i]; }
+    }
+    return undefined;
+};
+
+Globe.prototype.createFeatureLayer = function (name) {
+    var featureLayer = new Layer();
+    featureLayer.setName(name);
+    var dataLayer = new THREE.Object3D();
+    dataLayer.frustumCulled = false;
+    dataLayer.name = name;
+    featureLayer.add(dataLayer);
+    this.add(featureLayer);
+    return featureLayer;
+};
+
+var tool = new FeatureToolBox();
+Globe.prototype.addFeature = function (options) {
+    var layerId = options.layerId;
+    var layer = this.getFeatureLayerByName(layerId);
+    if ((layerId != undefined) && (options.geometry != undefined) && (layer != undefined)) {
+        var object = tool.processingGeoJSON(options.geometry);
+        layer.children[0].add(object);
+    }
 };
 
 export default Globe;

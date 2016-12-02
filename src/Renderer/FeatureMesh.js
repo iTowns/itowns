@@ -26,10 +26,7 @@ function FeatureMesh(params, builder) {
     this.centerSphere = new THREE.Vector3();
     this.level 	= params.level;
 
-    this.updateGeometry = true;
-    this.cullable = true;
-
-    this.protocol = params.protocol;
+    this.geometry = new THREE.Geometry();
 }
 
 FeatureMesh.prototype = Object.create(NodeMesh.prototype);
@@ -44,23 +41,6 @@ FeatureMesh.prototype.OBB = function () {
 
 FeatureMesh.prototype.enablePickingRender = function (enable) {
     this.material.enablePickingRender(enable);
-};
-
-FeatureMesh.prototype.setGeometry = function (geometry) {
-    this.geometry = geometry;
-    this.updateGeometry = false;
-	// Rotate mesh
-};
-
-FeatureMesh.prototype.getStatus = function () {
-    var status = [];
-    if (this.updateGeometry)
-		{ status.push('geometry'); }
-    return status;
-};
-
-FeatureMesh.prototype.ready = function () {
-    return !this.updateGeometry;
 };
 
 FeatureMesh.prototype.setMatrixRTC = function (rtc) {

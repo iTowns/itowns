@@ -27,9 +27,9 @@ import Capabilities from 'Core/System/Capabilities';
 import MobileMappingLayer from 'MobileMapping/MobileMappingLayer';
 import CustomEvent from 'custom-event';
 import { StyleManager } from 'Scene/Description/StyleManager';
+import * as THREE from 'three';
 
 var instanceScene = null;
-
 
 const RENDERING_PAUSED = 0;
 const RENDERING_ACTIVE = 1;
@@ -106,6 +106,21 @@ Scene.prototype.getStyles = function () {
     return this.stylesManager.getStyles();
 };
 
+Scene.prototype.getPickFeature = function (Position, Layer) {
+    var mouse = new THREE.Vector2();
+       // calculate mouse position in normalized device coordinates
+       // (-1 to +1) for both components
+    mouse.x = (Position.x / window.innerWidth) * 2 - 1;
+    mouse.y = -(Position.y / window.innerHeight) * 2 + 1;
+
+    var raycaster = new THREE.Raycaster();
+    var camera = this.currentCamera().camera3D;
+    raycaster.setFromCamera(mouse, camera);
+
+    // calculate objects intersecting the picking ray
+    return raycaster.intersectObjects(Layer.children[0]);
+};
+
 Scene.prototype.getEllipsoid = function () {
     return this.ellipsoid;
 };
@@ -155,7 +170,6 @@ Scene.prototype.update = function () {
 
         for (var sl = 0; sl < layer.children.length; sl++) {
             var sLayer = layer.children[sl];
-
             if (sLayer instanceof Quadtree) {
                 this.browserScene.updateQuadtree(this.layers[l], this.map.layersConfiguration, this.currentCamera());
             } else if (sLayer instanceof MobileMappingLayer) {
