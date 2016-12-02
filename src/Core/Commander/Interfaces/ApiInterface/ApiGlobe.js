@@ -121,6 +121,8 @@ ApiGlobe.prototype.addFeatureLayer = function (layer) {
 
     var map = this.scene.getMap();
     map.layersConfiguration.addGeometryLayer(layer);
+    // map.createFeatureLayer(layer.id);
+    // map.createNewFeatureLayer(layer.id);
 };
 
 /**
@@ -245,6 +247,15 @@ ApiGlobe.prototype.addElevationLayersFromJSON = function (url) {
  * @param {Layer} layer.
  * @return     {layer}  The Layers.
  */
+
+// Add feature
+ApiGlobe.prototype.addFeature = function (/* options*/) {
+    // var layerId = options.layerId;
+    // var map = this.scene.getMap();
+    // var geometryLayers = map.layersConfiguration.getGeometryLayers();
+
+   // console.log(geometryLayers);
+};
 
 ApiGlobe.prototype.addElevationLayersFromJSONArray = function (urls) {
     var proms = [];
