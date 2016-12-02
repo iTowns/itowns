@@ -25,6 +25,7 @@ function GuiTools(api,domId) {
 	viewerDiv.appendChild(this.gui.domElement);
 	this.colorGui = this.gui.addFolder('Color Layers');
 	this.elevationGui = this.gui.addFolder('Elevation Layers');
+	this.featureGui = this.gui.addFolder('Feature Layers');
 }
 
 GuiTools.prototype.addImageryLayerGUI = function (layer) {
@@ -49,6 +50,16 @@ GuiTools.prototype.addElevationLayerGUI = function (layer) {
 		}.bind(this));
 };
 
+GuiTools.prototype.addFeatureLayerGUI = function(layer) {
+
+	if(layer.id.match(/.*[wW]fs.*/)){
+		var folder = this.featureGui.addFolder(layer.id);
+		folder.add( {visible: true }, 'visible').onChange(function(value) {
+			this.api.setLayerVisibility(layer.id, value);
+		}.bind(this));
+	}
+};
+
 GuiTools.prototype.addImageryLayersGUI = function (layers) {
 
 	for (var i = 0; i < layers.length; i++){
@@ -61,6 +72,12 @@ GuiTools.prototype.addElevationLayersGUI = function (layers) {
 	for (var i = 0; i < layers.length; i++){
 		this.addElevationLayerGUI(layers[i]);
 	}
+};
+
+GuiTools.prototype.addFeatureLayersGUI = function(layers) {
+
+	for(var i = 0; i < layers.length; i++)
+		this.addFeatureLayerGUI(layers[i]);
 };
 
 GuiTools.prototype.addLayersGUI = function (imageryLayers, elevationLayers) {

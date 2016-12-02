@@ -1,0 +1,18 @@
+{
+    "url"       : "http://wxs.ign.fr/72hpsel8j8nhb5qgdh07gcyp/geoportail/wfs?",
+    "protocol"  : "wfs",
+    "version"   : "2.0.0",
+    "axisOrder" : "inverted",
+    "id"        : "testwfs",
+    "title"     : "BDTOPO_BDD_WLD_WGS84G:bati_remarquable,BDTOPO_BDD_WLD_WGS84G:bati_indifferencie",
+    "styleName" : "",
+    "extractStyle" : true,
+    "projection": "EPSG:4326",
+    "bbox"      : [-63.1533283, -21.3896308, 55.8366872, 51.1028253],
+    "ipr"       : "IGN",
+    "type"      : "bbox",
+    "options": {
+        "mimetype": "json",
+        "tileMatrixSet": "WGS84G"
+    }
+}

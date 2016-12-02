@@ -116,15 +116,6 @@ ApiGlobe.prototype.addImageryLayer = function (layer) {
     this.viewerDiv.dispatchEvent(eventLayerAdded);
 };
 
-ApiGlobe.prototype.addFeatureLayer = function (layer) {
-    preprocessLayer(layer, this.scene.managerCommand.getProtocolProvider(layer.protocol));
-
-    var map = this.scene.getMap();
-    map.layersConfiguration.addGeometryLayer(layer);
-    var featureLayer = map.createFeatureLayer(layer.id);
-    this.scene.gfxEngine.add3DScene(featureLayer.getMesh());
-};
-
 /**
  * This function adds an imagery layer to the scene using a JSON file. The layer id must be unique. The protocol rules wich parameters are then needed for the function.
  * @constructor
@@ -153,6 +144,59 @@ ApiGlobe.prototype.addImageryLayersFromJSONArray = function (urls) {
     }
 
     return Promise.all(proms).then(() => this.scene.getMap().layersConfiguration.getColorLayers());
+};
+
+ApiGlobe.prototype.addFeatureLayer = function (layer) {
+    preprocessLayer(layer, this.scene.managerCommand.getProtocolProvider(layer.protocol));
+
+    var map = this.scene.getMap();
+    map.layersConfiguration.addGeometryLayer(layer);
+    var featureLayer = map.createFeatureLayer(layer.id);
+    this.scene.gfxEngine.add3DScene(featureLayer.getMesh());
+};
+
+ApiGlobe.prototype.addFeatureLayerFromJSON = function (url) {
+    return Fetcher.json(url).then((result) => {
+        this.addFeatureLayer(result);
+    });
+};
+
+ApiGlobe.prototype.addFeatureLayersFromJSONArray = function (urls) {
+    var proms = [];
+    for (var i = 0; i < urls.length; i++) {
+        proms.push(Fetcher.json(urls[i]));
+    }
+    return Promise.all(proms).then((values) => {
+        for (var i = 0; i < urls.length; i++) {
+            this.addFeatureLayer(values[i]);
+        }
+        return this.scene.getMap().layersConfiguration.getGeometryLayers();
+    });
+};
+
+ApiGlobe.prototype.addFeature = function (options) {
+    if (options === undefined)
+        { throw new Error('options is required'); }
+    var map = this.scene.getMap();
+    map.addFeature(options);
+};
+
+ApiGlobe.prototype.addFeatureFromJSON = function (url) {
+    return Fetcher.json(url).then((result) => {
+        this.addFeature(result);
+    });
+};
+
+ApiGlobe.prototype.addFeaturesFromJSONArray = function (urls) {
+    var proms = [];
+    for (var i = 0; i < urls.length; i++) {
+        proms.push(Fetcher.json(urls[i]));
+    }
+    return Promise.all(proms).then((values) => {
+        for (var i = 0; i < urls.length; i++) {
+            this.addFeature(values[i]);
+        }
+    });
 };
 
 ApiGlobe.prototype.moveLayerUp = function (layerId) {
@@ -247,13 +291,6 @@ ApiGlobe.prototype.addElevationLayersFromJSON = function (url) {
  * @param {Layer} layer.
  * @return     {layer}  The Layers.
  */
-
-ApiGlobe.prototype.addFeature = function (options) {
-    if (options === undefined)
-        { throw new Error('options is required'); }
-    var map = this.scene.getMap();
-    map.addFeature(options);
-};
 
 ApiGlobe.prototype.addElevationLayersFromJSONArray = function (urls) {
     var proms = [];

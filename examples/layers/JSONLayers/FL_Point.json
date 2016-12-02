@@ -1,0 +1,22 @@
+{
+    "id"          : "testWfsPoint",
+    "protocol"    : "wfs",
+    "url"         : "https://download.data.grandlyon.com/wfs/rdata?",
+    "title"       : "jcd_jcdecaux.jcdvelov",
+    "crs"         : "EPSG:4326",
+    "type"        : "point",
+    "version"     : "2.0.0",
+    "axisOrder"   : "ordered",
+    "options": {
+        "mimetype"  : "geojson",
+        "tileMatrixSet": "WGS84G"
+    },
+    "params": {
+        "color": {
+            "property": "availability",
+            "testTab" : ["Vert", "Orange", "Bleu", "Gris"],
+            "colorTab": ["0x339933", "0xFF9900", "0x3399FF", "0x888888"]
+        },
+        "nbSegment"   : 8
+    }
+}
