@@ -64,6 +64,36 @@ and open the template in the editor.
                                          "examples/layers/JSONLayers/FL_Line.json"];
             var urlFeature = "examples/layers/JSONLayers/F_Line.json";
 
+            itowns.viewer.addTileMatrixSet({
+                id: "TOTO",
+                tileMatrixSet : "PM",
+                projection: "EPSG:3857",
+                tileMatrices: [
+                    {matrixId:"0", tileWidth:256, tileHeight:256, matrixWidth:1, matrixHeight:1, scaleDenominator:559082264.0287178958533332,topLeftCorner:[-20037508,20037508]},
+                    {matrixId:"1", tileWidth:256, tileHeight:256, matrixWidth:2, matrixHeight:2, scaleDenominator:279541132.0143588959472254,topLeftCorner:[-20037508,20037508]},
+                    {matrixId:"2", tileWidth:256, tileHeight:256, matrixWidth:4, matrixHeight:4, scaleDenominator:139770566.0071793960087234,topLeftCorner:[-20037508,20037508]},
+                    {matrixId:"3", tileWidth:256, tileHeight:256, matrixWidth:8, matrixHeight:8, scaleDenominator:69885283.0035897239868063,topLeftCorner:[-20037508,20037508]},
+                    {matrixId:"4", tileWidth:256, tileHeight:256, matrixWidth:16, matrixHeight:16, scaleDenominator:34942641.5017948619934032,topLeftCorner:[-20037508,20037508]},
+                    {matrixId:"5", tileWidth:256, tileHeight:256, matrixWidth:32, matrixHeight:32, scaleDenominator:17471320.7508974309967016,topLeftCorner:[-20037508,20037508]},
+                    {matrixId:"6", tileWidth:256, tileHeight:256, matrixWidth:64, matrixHeight:64, scaleDenominator:8735660.3754487154983508,topLeftCorner:[-20037508,20037508]},
+                    {matrixId:"7", tileWidth:256, tileHeight:256, matrixWidth:128, matrixHeight:128, scaleDenominator:4367830.1877243577491754,topLeftCorner:[-20037508,20037508]},
+                    {matrixId:"8", tileWidth:256, tileHeight:256, matrixWidth:256, matrixHeight:256, scaleDenominator:2183915.0938621788745877,topLeftCorner:[-20037508,20037508]},
+                    {matrixId:"9", tileWidth:256, tileHeight:256, matrixWidth:512, matrixHeight:512, scaleDenominator:1091957.5469310886252288,topLeftCorner:[-20037508,20037508]},
+                    {matrixId:"10", tileWidth:256, tileHeight:256, matrixWidth:1024, matrixHeight:1024, scaleDenominator:545978.7734655447186469,topLeftCorner:[-20037508,20037508]},
+                    {matrixId:"11", tileWidth:256, tileHeight:256, matrixWidth:2048, matrixHeight:2048, scaleDenominator:272989.3867327723085907,topLeftCorner:[-20037508,20037508]},
+                    {matrixId:"12", tileWidth:256, tileHeight:256, matrixWidth:4096, matrixHeight:4096, scaleDenominator:136494.6933663861796617,topLeftCorner:[-20037508,20037508]},
+                    {matrixId:"13", tileWidth:256, tileHeight:256, matrixWidth:8192, matrixHeight:8192, scaleDenominator:68247.3466831930771477,topLeftCorner:[-20037508,20037508]},
+                    {matrixId:"14", tileWidth:256, tileHeight:256, matrixWidth:16384, matrixHeight:16384, scaleDenominator:34123.6733415965449154,topLeftCorner:[-20037508,20037508]},
+                    {matrixId:"15", tileWidth:256, tileHeight:256, matrixWidth:32768, matrixHeight:32768, scaleDenominator:17061.8366707982724577,topLeftCorner:[-20037508,20037508]},
+                    {matrixId:"16", tileWidth:256, tileHeight:256, matrixWidth:65536, matrixHeight:65536, scaleDenominator:8530.9183353991362289,topLeftCorner:[-20037508,20037508]},
+                    {matrixId:"17", tileWidth:256, tileHeight:256, matrixWidth:131072, matrixHeight:131072, scaleDenominator:4265.4591676995681144,topLeftCorner:[-20037508,20037508]},
+                    {matrixId:"18", tileWidth:256, tileHeight:256, matrixWidth:262144, matrixHeight:262144, scaleDenominator:2132.7295838497840572,topLeftCorner:[-20037508,20037508]},
+                    {matrixId:"19", tileWidth:256, tileHeight:256, matrixWidth:524288, matrixHeight:524288, scaleDenominator:1066.3647919248918304,topLeftCorner:[-20037508,20037508]},
+                    {matrixId:"20", tileWidth:256, tileHeight:256, matrixWidth:1048576, matrixHeight:1048576, scaleDenominator:533.1823959624461134,topLeftCorner:[-20037508,20037508]},
+                    {matrixId:"21", tileWidth:256, tileHeight:256, matrixWidth:2097152, matrixHeight:2097152, scaleDenominator:266.5911979812228585,topLeftCorner:[-20037508,20037508]}
+                ]
+            });
+            
             itowns.viewer.addGeometryLayer(wgs84TileLayer);
             let imageryPromise = itowns.viewer.addImageryLayersFromJSONArray(urlImageryLayers);
             let elevationPromise = itowns.viewer.addElevationLayersFromJSONArray(urlElevationLayers);

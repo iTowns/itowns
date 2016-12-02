@@ -291,6 +291,15 @@ ApiGlobe.prototype.addElevationLayersFromJSON = function (url) {
  * @param {Layer} layer.
  * @return     {layer}  The Layers.
  */
+ApiGlobe.prototype.addTileMatrixSet = function (options) {
+    var provider = this.scene.managerCommand.getProtocolProvider('wmts');
+    provider.addTileMatrixSets(options);
+};
+
+ApiGlobe.prototype.getTileMatrixSet = function (id) {
+    var provider = this.scene.managerCommand.getProtocolProvider('wmts');
+    return provider.getTileMatrixSets(id);
+};
 
 ApiGlobe.prototype.addElevationLayersFromJSONArray = function (urls) {
     var proms = [];

@@ -22,6 +22,8 @@ function WMTS_Provider(options) {
     this.support = options.support || false;
     this.getTextureFloat = null;
 
+    this.tileMatriceSets = {};
+
     if (this.support)
         { this.getTextureFloat = function () {
             return new THREE.Texture();
@@ -57,6 +59,14 @@ WMTS_Provider.prototype.removeLayer = function (/* idLayer*/) {
 
 };
 
+WMTS_Provider.prototype.addTileMatrixSets = function (v) {
+    this.tileMatriceSets[v.id] = v;
+};
+
+WMTS_Provider.prototype.getTileMatrixSets = function (id) {
+    return this.tileMatriceSets[id];
+};
+
 WMTS_Provider.prototype.preprocessDataLayer = function (layer) {
     layer.fx = layer.fx || 0.0;
     if (layer.protocol === 'wmtsc') {
@@ -71,6 +81,13 @@ WMTS_Provider.prototype.preprocessDataLayer = function (layer) {
         options.mimetype = options.mimetype || 'image/png';
         options.style = options.style || 'normal';
         options.projection = options.projection || 'EPSG:3857';
+
+        // switch tileMatrixSet
+        var tileMatrixSetId = options.tileMatrixSet;
+        var tileMatrixSet = this.getTileMatrixSets(tileMatrixSetId);
+        if ((tileMatrixSet != undefined) && ((tileMatrixSetId != 'PM') || (tileMatrixSetId != 'WGS84G'))) {
+            options.tileMatrixSet = tileMatrixSet.tileMatrixSet;
+        }
         var newBaseUrl = `${layer.url
             }?LAYER=${options.name
             }&FORMAT=${options.mimetype
