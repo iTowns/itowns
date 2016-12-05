@@ -16,7 +16,7 @@ import Projection from 'Core/Geographic/Projection';
 import CustomEvent from 'custom-event';
 import Fetcher from 'Core/Commander/Providers/Fetcher';
 import { STRATEGY_MIN_NETWORK_TRAFFIC } from 'Scene/LayerUpdateStrategy';
-import Control from 'Core/Commander/Interfaces/Control';
+import Control from 'Core/Commander/Interfaces/Control/Control';
 
 var loaded = false;
 var eventLoaded = new CustomEvent('globe-loaded');
@@ -863,8 +863,13 @@ ApiGlobe.prototype.removeEventListenerLayerChanged = function removeEventListene
  * @param {object} Control - The Control object.
  */
 
-ApiGlobe.prototype.addControl = function addControl(control) {
+ApiGlobe.prototype.addControl = function (control) {
+    var index = this.controls.indexOf(control);
+    if (index > -1) {
+        this.controls.splice(index, 1);
+    }
     this.controls.push(control);
+    control.setMap(this.scene.map);
 };
 
 /**
@@ -882,12 +887,13 @@ ApiGlobe.prototype.getControls = function getControls() {
  * @constructor
  * @param {object} Control - The Control object.
  */
-// BUG
-ApiGlobe.prototype.removeControl = function removeControl(control) {
+
+ApiGlobe.prototype.removeControl = function (control) {
     var index = this.controls.indexOf(control);
     if (index > -1) {
         this.controls.splice(index, 1);
     }
+    control.setMap();
 };
 
 ApiGlobe.prototype.launchCommandApi = function launchCommandApi() {

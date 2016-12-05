@@ -101,22 +101,6 @@ and open the template in the editor.
            	itowns.viewer.addEventListener('globe-loaded', function() {
             	console.log("Globe Loaded");
 
-                var control = new itowns.viewer.Control(
-                    'Pick',
-                    document.getElementById('pickControl'),
-                    {
-                        div: document.getElementById('controlDiv')
-                    }
-                );
-
-                var callback = function () {
-                    itowns.viewer.removeControl(control);
-                    itowns.viewer.addControl(control);
-                    document.getElementById(control.options.div.id).appendChild(document.getElementById(control.pElement.id));
-
-                    document.getElementById(control.pElement.id).innerHTML = "longitude : " + itowns.viewer.pickPosition().coordinate[0] * 180 / 3.14 + " ; latitude : " + itowns.viewer.pickPosition().coordinate[1] * 180 / 3.14 + " ; altitude : " +  itowns.viewer.pickPosition().coordinate[2];
-                };
-
                 var controlR = new itowns.viewer.Control(
                     'Range',
                     document.getElementById('rangeControl'),
@@ -126,14 +110,32 @@ and open the template in the editor.
                 );
 
                 var callbackR = function () {
-                    itowns.viewer.removeControl(controlR);
                     itowns.viewer.addControl(controlR);
-                    document.getElementById(controlR.options.div.id).appendChild(document.getElementById(controlR.pElement.id));
-
                     document.getElementById(controlR.pElement.id).innerHTML = "Range : " + itowns.viewer.getRange();
                 };
 
-                itowns.viewer.removeControl(control);
+                var control = new itowns.viewer.Control(
+                    'Pick',
+                    document.getElementById('pickControl'),
+                    {
+                        div: document.getElementById('controlDiv')
+                    }
+                );
+
+                var callback = function () {
+                    itowns.viewer.addControl(control);
+                    control.setMap({
+                        "protocol": "wmtsc",
+                        "id": "DARK",
+                        "customUrl": "http://a.basemaps.cartocdn.com/dark_all/%TILEMATRIX/%COL/%ROW.png",
+                        "options": {
+                            "tileMatrixSet": "PM",
+                            "mimetype": "image/png"
+                        }
+                    });
+
+                    document.getElementById(control.pElement.id).innerHTML = "longitude : " + itowns.viewer.pickPosition().coordinate[0] * 180 / 3.14 + " ; latitude : " + itowns.viewer.pickPosition().coordinate[1] * 180 / 3.14 + " ; altitude : " +  itowns.viewer.pickPosition().coordinate[2];
+                };
 
                 itowns.viewer.addEventListener('mousedown', callback);
                 itowns.viewer.addEventListener('mousedown', callbackR);
