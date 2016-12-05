@@ -72,7 +72,7 @@ ThreeDTiles_Provider.prototype.getData = function(tile, layer, params) {
         urlSuffix: params.metadata.content ? params.metadata.content.url : undefined,
         maxChildrenNumber: params.metadata.children ? params.metadata.children.length : 0,
         tileId: params.metadata.tileId,
-        additive: false// params.metadata.refine === "add"
+        additive: params.metadata.refine === "add"
     };
 
     // Temporary transform from EPSG:3946 to world coordinates
@@ -178,8 +178,9 @@ ThreeDTiles_Provider.prototype.getData = function(tile, layer, params) {
             let dx = (parameters.bbox.east() - parameters.bbox.west()) / 2;
             let dy = (parameters.bbox.north() - parameters.bbox.south()) / 2;
             let dz = (parameters.bbox.top() - parameters.bbox.bottom()) / 2;
-            let radius = Math.sqrt(dx * dx + dy * dy + dz * dz);
+            let radius = 1;//Math.sqrt(dx * dx + dy * dy + dz * dz);
             let geometry = new THREE.SphereGeometry(radius);
+            // TODO: geometry should be empty
             geometry.applyMatrix(transform);
             geometry.computeBoundingSphere();
 
