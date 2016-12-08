@@ -80,9 +80,9 @@ and open the template in the editor.
 			var urlImageryLayers = [], urlElevationLayers = [];
 
             urlImageryLayers.push('examples/layers/JSONLayers/Ortho.json');
-            /* urlImageryLayers.push('examples/layers/JSONLayers/OrthosCRS.json');
+            urlImageryLayers.push('examples/layers/JSONLayers/OrthosCRS.json');
             urlImageryLayers.push('examples/layers/JSONLayers/ScanEX.json');
-            urlImageryLayers.push('examples/layers/JSONLayers/Region.json'); */
+            urlImageryLayers.push('examples/layers/JSONLayers/Region.json');
 
 		  	urlElevationLayers.push('examples/layers/JSONLayers/IGN_MNT.json');
             urlElevationLayers.push('examples/layers/JSONLayers/IGN_MNT_HIGHRES.json');
@@ -124,16 +124,6 @@ and open the template in the editor.
 
                 var callback = function () {
                     itowns.viewer.addControl(control);
-                    control.setMap({
-                        "protocol": "wmtsc",
-                        "id": "DARK",
-                        "customUrl": "http://a.basemaps.cartocdn.com/dark_all/%TILEMATRIX/%COL/%ROW.png",
-                        "options": {
-                            "tileMatrixSet": "PM",
-                            "mimetype": "image/png"
-                        }
-                    });
-
                     document.getElementById(control.pElement.id).innerHTML = "longitude : " + itowns.viewer.pickPosition().coordinate[0] * 180 / 3.14 + " ; latitude : " + itowns.viewer.pickPosition().coordinate[1] * 180 / 3.14 + " ; altitude : " +  itowns.viewer.pickPosition().coordinate[2];
                 };
 

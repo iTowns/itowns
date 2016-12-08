@@ -70,11 +70,11 @@ Control.prototype.listenToMap = function (pEventName, pCallback) {
     document.getElementById('viewerDiv').addEventListener(pEventName, pCallback, false);
 };
 
-Control.prototype.getMap = function () {
+Control.prototype.getGlobe = function () {
     return this.map_;
 };
 
-Control.prototype.setMap = function (map) {
+Control.prototype.setGlobe = function (map) {
     if (this.map_) {
         document.getElementById(this.options.div.id).removeChild(this.pElement);
     }

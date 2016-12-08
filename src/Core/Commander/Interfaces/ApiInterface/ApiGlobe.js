@@ -869,7 +869,7 @@ ApiGlobe.prototype.addControl = function (control) {
         this.controls.splice(index, 1);
     }
     this.controls.push(control);
-    control.setMap(this.scene.map);
+    control.setGlobe(this.scene.map);
 };
 
 /**
@@ -893,7 +893,7 @@ ApiGlobe.prototype.removeControl = function (control) {
     if (index > -1) {
         this.controls.splice(index, 1);
     }
-    control.setMap();
+    control.setGlobe();
 };
 
 ApiGlobe.prototype.launchCommandApi = function launchCommandApi() {
