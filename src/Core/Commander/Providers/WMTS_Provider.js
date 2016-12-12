@@ -23,11 +23,11 @@ function WMTS_Provider(options) {
     this.getTextureFloat = null;
 
     if (this.support)
-        { this.getTextureFloat = function () {
+        { this.getTextureFloat = function getTextureFloat() {
             return new THREE.Texture();
         }; }
     else
-        { this.getTextureFloat = function (buffer) {
+        { this.getTextureFloat = function getTextureFloat(buffer) {
             // Start float to RGBA uint8
             // var bufferUint = new Uint8Array(buffer.buffer);
             // var texture = new THREE.DataTexture(bufferUint, 256, 256);
@@ -43,7 +43,7 @@ WMTS_Provider.prototype = Object.create(Provider.prototype);
 
 WMTS_Provider.prototype.constructor = WMTS_Provider;
 
-WMTS_Provider.prototype.customUrl = function (layer, url, tilematrix, row, col) {
+WMTS_Provider.prototype.customUrl = function customUrl(layer, url, tilematrix, row, col) {
     const tm = Math.min(layer.zoom.max, tilematrix);
 
     let urld = url.replace('%TILEMATRIX', tm.toString());
@@ -53,11 +53,11 @@ WMTS_Provider.prototype.customUrl = function (layer, url, tilematrix, row, col) 
     return urld;
 };
 
-WMTS_Provider.prototype.removeLayer = function (/* idLayer*/) {
+WMTS_Provider.prototype.removeLayer = function removeLayer(/* idLayer*/) {
 
 };
 
-WMTS_Provider.prototype.preprocessDataLayer = function (layer) {
+WMTS_Provider.prototype.preprocessDataLayer = function preprocessDataLayer(layer) {
     layer.fx = layer.fx || 0.0;
     if (layer.protocol === 'wmtsc') {
         layer.zoom = {
@@ -98,7 +98,7 @@ WMTS_Provider.prototype.preprocessDataLayer = function (layer) {
  * @param {type} coWMTS
  * @returns {Object@call;create.urlOrtho.url|String}
  */
-WMTS_Provider.prototype.url = function (coWMTS, layer) {
+WMTS_Provider.prototype.url = function url(coWMTS, layer) {
     return this.customUrl(layer, layer.customUrl, coWMTS.zoom, coWMTS.row, coWMTS.col);
 };
 
@@ -107,7 +107,7 @@ WMTS_Provider.prototype.url = function (coWMTS, layer) {
  * @param {type} coWMTS : coord WMTS
  * @returns {WMTS_Provider_L15.WMTS_Provider.prototype@pro;_IoDriver@call;read@call;then}
  */
-WMTS_Provider.prototype.getXbilTexture = function (tile, layer, parameters) {
+WMTS_Provider.prototype.getXbilTexture = function getXbilTexture(tile, layer, parameters) {
     var cooWMTS = tile.matrixSet[layer.options.tileMatrixSet][0];
     var pitch = new THREE.Vector3(0.0, 0.0, 1.0);
 
@@ -186,7 +186,7 @@ WMTS_Provider.prototype.getXbilTexture = function (tile, layer, parameters) {
  * @param {type} id
  * @returns {WMTS_Provider_L15.WMTS_Provider.prototype@pro;ioDriverImage@call;read@call;then}
  */
-WMTS_Provider.prototype.getColorTexture = function (coWMTS, pitch, layer) {
+WMTS_Provider.prototype.getColorTexture = function getColorTexture(coWMTS, pitch, layer) {
     var result = {
         pitch,
     };
@@ -213,7 +213,7 @@ WMTS_Provider.prototype.getColorTexture = function (coWMTS, pitch, layer) {
     });
 };
 
-WMTS_Provider.prototype.executeCommand = function (command) {
+WMTS_Provider.prototype.executeCommand = function executeCommand(command) {
     var layer = command.paramsFunction.layer;
     var tile = command.requester;
 
@@ -233,7 +233,7 @@ WMTS_Provider.prototype.executeCommand = function (command) {
 };
 
 
-WMTS_Provider.prototype.computeLevelToDownload = function (tile, ancestor, layer) {
+WMTS_Provider.prototype.computeLevelToDownload = function computeLevelToDownload(tile, ancestor, layer) {
     // Use ancestor's level if valid, else fallback on tile's level
     var lvl = ancestor ? ancestor.level : tile.level;
 
@@ -244,14 +244,14 @@ WMTS_Provider.prototype.computeLevelToDownload = function (tile, ancestor, layer
             lvl));
 };
 
-WMTS_Provider.prototype.tileInsideLimit = function (tile, layer) {
+WMTS_Provider.prototype.tileInsideLimit = function tileInsideLimit(tile, layer) {
     // This layer provides data starting at level = layer.zoom.min
     // (the zoom.max property is used when building the url to make
     //  sure we don't use invalid levels)
     return layer.zoom.min <= tile.level;
 };
 
-WMTS_Provider.prototype.getColorTextures = function (tile, layer, parameters) {
+WMTS_Provider.prototype.getColorTextures = function getColorTextures(tile, layer, parameters) {
     var promises = [];
     if (tile.material === null) {
         return Promise.resolve();

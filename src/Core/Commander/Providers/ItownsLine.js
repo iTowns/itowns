@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import ItownsLineMaterial from 'Renderer/ItownsLineMaterial';
 
-var ItownsLine = function (options) {
+var ItownsLine = function ItownsLine(options) {
     THREE.Mesh.call(this);
 
     this.positions = [];
@@ -20,7 +20,7 @@ var ItownsLine = function (options) {
 ItownsLine.prototype = Object.create(THREE.Mesh.prototype);
 ItownsLine.prototype.constructor = ItownsLine;
 
-ItownsLine.prototype.setGeometry = function (g, c) {
+ItownsLine.prototype.setGeometry = function setGeometry(g, c) {
     this.widthCallback = c;
     this.positions = [];
 
@@ -48,25 +48,25 @@ ItownsLine.prototype.setGeometry = function (g, c) {
     this.process();
 };
 
-ItownsLine.prototype.addPoint = function (v) {
+ItownsLine.prototype.addPoint = function addPoint(v) {
     if (v instanceof THREE.Vector3) {
         this.positions.push(v.x, v.y, v.z);
         this.positions.push(v.x, v.y, v.z);
     }
 };
 
-ItownsLine.prototype.compareV3 = function (a, b) {
+ItownsLine.prototype.compareV3 = function compareV3(a, b) {
     var aa = a * 6;
     var ab = b * 6;
     return (this.positions[aa] === this.positions[ab]) && (this.positions[aa + 1] === this.positions[ab + 1]) && (this.positions[aa + 2] === this.positions[ab + 2]);
 };
 
-ItownsLine.prototype.copyV3 = function (a) {
+ItownsLine.prototype.copyV3 = function copyV3(a) {
     var aa = a * 6;
     return [this.positions[aa], this.positions[aa + 1], this.positions[aa + 2]];
 };
 
-ItownsLine.prototype.process = function () {
+ItownsLine.prototype.process = function process() {
     var l = this.positions.length / 6;
 
     this.previous = [];
@@ -144,7 +144,7 @@ ItownsLine.prototype.process = function () {
     this.geometry.setIndex(new THREE.BufferAttribute(new Uint16Array(this.indices_array), 1));
 };
 
-ItownsLine.prototype.createQuad = function (pt1, pt2) {
+ItownsLine.prototype.createQuad = function createQuad(pt1, pt2) {
 		// Définition propre a chaque géométrie
     var geometry = new THREE.BufferGeometry();
 
@@ -194,7 +194,7 @@ ItownsLine.prototype.createQuad = function (pt1, pt2) {
     return geometry;
 };
 
-ItownsLine.prototype.createSegments = function (pt1, pt2, pt3) {
+ItownsLine.prototype.createSegments = function createSegments(pt1, pt2, pt3) {
 		// Définition propre a chaque géométrie
     var geometry = new THREE.BufferGeometry();
     var point1 = new Float32Array([

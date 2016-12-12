@@ -14,13 +14,13 @@ import url from 'url';
 import Ellipsoid from 'Core/Math/Ellipsoid';
 import GeoCoordinate, { UNIT } from 'Core/Geographic/GeoCoordinate';
 
-window.requestAnimSelectionAlpha = (function () {
+window.requestAnimSelectionAlpha = (function getRequestAnimSelectionAlphaFn() {
     return window.requestAnimationFrame ||
         window.webkitRequestAnimationFrame ||
         window.mozRequestAnimationFrame ||
         window.oRequestAnimationFrame ||
         window.msRequestAnimationFrame ||
-        function (callback) {
+        function requestAnimSelectionAlpha(callback) {
             window.setTimeout(callback, 1000 / 60);
         };
 }());
@@ -35,7 +35,7 @@ var ProjectiveTexturingMaterial = {
 
     init(infos, panoInfo, pivot) {
         if (_initPromise == null) {
-            _initPromise = Ori.init(infos).then(function () {
+            _initPromise = Ori.init(infos).then(function thenCb() {
                 // compute Camera Frame Rotation
                 var matRotationFrame = this.getCameraFrameRotation(panoInfo);
                 this.createShaderMat(panoInfo, matRotationFrame, pivot);
@@ -131,7 +131,7 @@ var ProjectiveTexturingMaterial = {
         src = src.format(infos); // console.log("src: ",src);
         var img = new Image();
         img.crossOrigin = 'anonymous';
-        img.onload = function () {
+        img.onload = function onLoad() {
             var tex = new THREE.Texture(this, THREE.UVMapping,
                 THREE.RepeatWrapping, THREE.RepeatWrapping, THREE.LinearFilter, THREE.LinearFilter, THREE.RGBFormat);
             tex.needsUpdate = true;

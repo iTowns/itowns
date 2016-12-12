@@ -13,7 +13,7 @@ function TemplatesCommand() {
 
 /**
  */
-TemplatesCommand.prototype.xmlToCommands = function () {
+TemplatesCommand.prototype.xmlToCommands = function xmlToCommands() {
     // TODO: Implement Me
 
 };
@@ -21,7 +21,7 @@ TemplatesCommand.prototype.xmlToCommands = function () {
 
 /**
  */
-TemplatesCommand.prototype.specifiesCommand = function () {
+TemplatesCommand.prototype.specifiesCommand = function specifiesCommand() {
     // TODO: Implement Me
 
 };

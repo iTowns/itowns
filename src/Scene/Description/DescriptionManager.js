@@ -13,7 +13,7 @@ function DescriptionManager() {
 
 /**
  */
-DescriptionManager.prototype.descriptionToContent = function () {
+DescriptionManager.prototype.descriptionToContent = function descriptionToContent() {
     // TODO: Implement Me
 
 };

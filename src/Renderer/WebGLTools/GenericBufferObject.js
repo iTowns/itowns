@@ -12,7 +12,7 @@ function GenericBufferObject() {
 
 /**
  */
-GenericBufferObject.prototype.computeVertex = function () {
+GenericBufferObject.prototype.computeVertex = function computeVertex() {
     // TODO: Implement Me
 
 };

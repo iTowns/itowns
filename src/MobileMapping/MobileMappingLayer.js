@@ -43,7 +43,7 @@ MobileMappingLayer.prototype = Object.create(Layer.prototype);
 MobileMappingLayer.prototype.constructor = MobileMappingLayer;
 
 
-MobileMappingLayer.prototype.initiatePanoramic = function (imageOpt) {
+MobileMappingLayer.prototype.initiatePanoramic = function initiatePanoramic(imageOpt) {
     var imagesOptions = imageOpt || this.getDefaultOptions();
     // console.log(this.defaultOptions);
     // Create and add the MobileMappingLayer with Panoramic imagery
@@ -65,7 +65,7 @@ MobileMappingLayer.prototype.initiatePanoramic = function (imageOpt) {
 };
 
 
-MobileMappingLayer.prototype.updateData = function () {
+MobileMappingLayer.prototype.updateData = function updateData() {
     var pos = gfxEngine().controls.getPickingPosition();
     var posWGS84 = new Projection().cartesianToGeo(pos);
     var lonDeg = posWGS84.longitude / Math.PI * 180;
@@ -85,7 +85,7 @@ MobileMappingLayer.prototype.updateData = function () {
 };
 
 
-MobileMappingLayer.prototype.moveCameraToScanPosition = function (pos) {
+MobileMappingLayer.prototype.moveCameraToScanPosition = function moveCameraToScanPosition(pos) {
     var speedMove = 0.1;
     var currentPos = gfxEngine().camera.camera3D.position.clone();
 
@@ -104,7 +104,7 @@ MobileMappingLayer.prototype.moveCameraToScanPosition = function (pos) {
       }, 20); }
 };
 
-MobileMappingLayer.prototype.getDefaultOptions = function () {
+MobileMappingLayer.prototype.getDefaultOptions = function getDefaultOptions() {
     var o = {
         // HTTP access to itowns sample datasets
         // url : "../{lod}/images/{YYMMDD}/Paris-{YYMMDD}_0740-{cam.cam}-00001_{pano.pano:07}.jpg",

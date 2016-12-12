@@ -12,25 +12,25 @@ function Rectangle(options) {
     this._north = defaultValue(options.north(), 0);
 }
 
-Rectangle.prototype.getWest = function () {
+Rectangle.prototype.getWest = function getWest() {
     return this._west;
 };
 
-Rectangle.prototype.getSouth = function () {
+Rectangle.prototype.getSouth = function getSouth() {
     return this._south;
 };
 
-Rectangle.prototype.getEast = function () {
+Rectangle.prototype.getEast = function getEast() {
     return this._east;
 };
 
-Rectangle.prototype.getNorth = function () {
+Rectangle.prototype.getNorth = function getNorth() {
     return this._north;
 };
 
 // if Right2 < Right1 && Left2 > Left1 && Top2 < Top1 && Bottom2 > Bottom1
 // this is correct only for coordinate positive
-Rectangle.prototype.intersects = function (rect) {
+Rectangle.prototype.intersects = function intersects(rect) {
     if (rect.getEast() < this._west) return false;
     if (rect.getWest() > this._east) return false;
     if (rect.getNorth() < this._south) return false;
@@ -39,7 +39,7 @@ Rectangle.prototype.intersects = function (rect) {
     return true;
 };
 
-Rectangle.prototype.containsPoint = function (v) {
+Rectangle.prototype.containsPoint = function containsPoint(v) {
     if (!v) {
         throw new Error('point is required.');
     }

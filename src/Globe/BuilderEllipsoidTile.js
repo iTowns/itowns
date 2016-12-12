@@ -11,7 +11,7 @@ BuilderEllipsoidTile.prototype.constructor = BuilderEllipsoidTile;
 
 // prepare params
 // init projected object -> params.projected
-BuilderEllipsoidTile.prototype.Prepare = function (params) {
+BuilderEllipsoidTile.prototype.Prepare = function Prepare(params) {
     params.nbRow = Math.pow(2.0, params.zoom + 1.0);
 
     var st1 = this.projector.WGS84ToOneSubY(params.bbox.south());
@@ -31,34 +31,34 @@ BuilderEllipsoidTile.prototype.Prepare = function (params) {
 
 
 // get center tile in cartesian 3D
-BuilderEllipsoidTile.prototype.Center = function (params) {
+BuilderEllipsoidTile.prototype.Center = function Center(params) {
     params.center = this.ellipsoid.cartographicToCartesian(new GeoCoordinate(params.bbox.center.x, params.bbox.center.y, 0));
     return params.center;
 };
 
 // get position 3D cartesian
-BuilderEllipsoidTile.prototype.VertexPosition = function (params) {
+BuilderEllipsoidTile.prototype.VertexPosition = function VertexPosition(params) {
     params.cartesianPosition = this.ellipsoid.cartographicToCartesian(params.projected);
     return params.cartesianPosition;
 };
 
 // get normal for last vertex
-BuilderEllipsoidTile.prototype.VertexNormal = function (params) {
+BuilderEllipsoidTile.prototype.VertexNormal = function VertexNormal(params) {
     return params.cartesianPosition.clone().normalize();
 };
 
 // coord u tile to projected
-BuilderEllipsoidTile.prototype.uProjecte = function (u, params) {
+BuilderEllipsoidTile.prototype.uProjecte = function uProjecte(u, params) {
     this.projector.UnitaryToLongitudeWGS84(u, params.projected, params.bbox);
 };
 
 // coord v tile to projected
-BuilderEllipsoidTile.prototype.vProjecte = function (v, params) {
+BuilderEllipsoidTile.prototype.vProjecte = function vProjecte(v, params) {
     this.projector.UnitaryToLatitudeWGS84(v, params.projected, params.bbox);
 };
 
 // Compute uv 1, if isn't defined the uv1 isn't computed
-BuilderEllipsoidTile.prototype.getUV_PM = function (params) {
+BuilderEllipsoidTile.prototype.getUV_PM = function getUV_PM(params) {
     var t = this.projector.WGS84ToOneSubY(params.projected.latitude()) * params.nbRow;
 
     if (!isFinite(t))
@@ -68,7 +68,7 @@ BuilderEllipsoidTile.prototype.getUV_PM = function (params) {
 };
 
 // get oriented bounding box of tile
-BuilderEllipsoidTile.prototype.OBB = function (params) {
+BuilderEllipsoidTile.prototype.OBB = function OBBFn(params) {
     var cardinals = [];
 
     var normal = params.center.clone().normalize();

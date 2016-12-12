@@ -22,16 +22,16 @@ function SchemeTile() {
  * @returns {SchemeTile_L8.SchemeTile.prototype@pro;schemeBB@call;push}
  */
 
-SchemeTile.prototype.add = function (minLo, maxLo, minLa, maxLa) {
+SchemeTile.prototype.add = function add(minLo, maxLo, minLa, maxLa) {
     return this.schemeBB.push(new BoundingBox(minLo, maxLo, minLa, maxLa));
 };
 
 
-SchemeTile.prototype.rootCount = function () {
+SchemeTile.prototype.rootCount = function rootCount() {
     return this.schemeBB.length;
 };
 
-SchemeTile.prototype.getRoot = function (id) {
+SchemeTile.prototype.getRoot = function getRoot(id) {
     return this.schemeBB[id];
 };
 

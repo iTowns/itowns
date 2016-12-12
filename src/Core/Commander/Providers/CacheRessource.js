@@ -16,11 +16,11 @@ function CacheRessource() {
 /**
  * @param url
  */
-CacheRessource.prototype.getRessource = function (url) {
+CacheRessource.prototype.getRessource = function getRessource(url) {
     return this.cacheObjects[url];
 };
 
-CacheRessource.prototype.addRessource = function (url, ressource) {
+CacheRessource.prototype.addRessource = function addRessource(url, ressource) {
     this.cacheObjects[url] = ressource;
 };
 
@@ -28,7 +28,7 @@ CacheRessource.prototype.addRessource = function (url, ressource) {
 /**
  * @param id
  */
-CacheRessource.prototype.getRessourceByID = function (/* id*/) {
+CacheRessource.prototype.getRessourceByID = function getRessourceByID(/* id*/) {
     // TODO: Implement Me
 
 };

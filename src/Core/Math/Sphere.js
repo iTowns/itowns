@@ -7,18 +7,18 @@ function Sphere(center, radius) {
 
 Sphere.prototype.constructor = Sphere;
 
-Sphere.prototype.setCenter = function (center) {
+Sphere.prototype.setCenter = function setCenter(center) {
     this.center.copy(center);
 };
 
-Sphere.prototype.setRadius = function (radius) {
+Sphere.prototype.setRadius = function setRadius(radius) {
     this.radius = radius;
 };
 
 var vector = new THREE.Vector3();
 
 //
-Sphere.prototype.intersectWithRayNoMiss = function (ray) {
+Sphere.prototype.intersectWithRayNoMiss = function intersectWithRayNoMiss(ray) {
     let pc = ray.closestPointToPoint(this.center);
     let a = pc.length(),
         d,

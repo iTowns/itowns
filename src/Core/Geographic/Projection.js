@@ -15,15 +15,15 @@ function Projection() {
 
 }
 
-Projection.prototype.WGS84ToY = function (latitude) {
+Projection.prototype.WGS84ToY = function WGS84ToY(latitude) {
     return 0.5 - Math.log(Math.tan(MathExt.PI_OV_FOUR + latitude * 0.5)) * MathExt.INV_TWO_PI;
 };
 
-Projection.prototype.WGS84ToOneSubY = function (latitude) {
+Projection.prototype.WGS84ToOneSubY = function WGS84ToOneSubY(latitude) {
     return 0.5 + Math.log(Math.tan(MathExt.PI_OV_FOUR + latitude * 0.5)) * MathExt.INV_TWO_PI;
 };
 
-Projection.prototype.WGS84LatitudeClamp = function (latitude) {
+Projection.prototype.WGS84LatitudeClamp = function WGS84LatitudeClamp(latitude) {
     // var min = -68.1389  / 180 * Math.PI;
     var min = -86 / 180 * Math.PI;
     var max = 84 / 180 * Math.PI;
@@ -35,14 +35,14 @@ Projection.prototype.WGS84LatitudeClamp = function (latitude) {
 };
 
 
-Projection.prototype.getCoordWMTS_WGS84 = function (tileCoord, bbox, tileMatrixSet) {
+Projection.prototype.getCoordWMTS_WGS84 = function getCoordWMTS_WGS84(tileCoord, bbox, tileMatrixSet) {
     if (tileMatrixSet === 'PM')
         { return this.WMTS_WGS84ToWMTS_PM(tileCoord, bbox); }
     else if (tileMatrixSet === 'WGS84G')
         { return [tileCoord, tileCoord]; }
 };
 
-Projection.prototype.getAllCoordsWMTS = function (tileCoord, bbox, tileMatrixSets) {
+Projection.prototype.getAllCoordsWMTS = function getAllCoordsWMTS(tileCoord, bbox, tileMatrixSets) {
     var tilesMT = [];
 
     for (var key in tileMatrixSets)
@@ -52,7 +52,7 @@ Projection.prototype.getAllCoordsWMTS = function (tileCoord, bbox, tileMatrixSet
     return tilesMT;
 };
 
-Projection.prototype.getCoordsWMTS = function (tileCoord, bbox, tileMatrixSet) {
+Projection.prototype.getCoordsWMTS = function getCoordsWMTS(tileCoord, bbox, tileMatrixSet) {
     var box = this.getCoordWMTS_WGS84(tileCoord, bbox, tileMatrixSet);
     var tilesMT = [];
 
@@ -71,7 +71,7 @@ Projection.prototype.getCoordsWMTS = function (tileCoord, bbox, tileMatrixSet) {
  * @param {type} bbox
  * @returns {Array} coord WMTS array in pseudo mercator
  */
-Projection.prototype.WMTS_WGS84ToWMTS_PM = function (cWMTS, bbox) {
+Projection.prototype.WMTS_WGS84ToWMTS_PM = function WMTS_WGS84ToWMTS_PM(cWMTS, bbox) {
     var wmtsBox = [];
     var level = cWMTS.zoom + 1;
     var nbRow = Math.pow(2, level);
@@ -105,7 +105,7 @@ Projection.prototype.WMTS_WGS84ToWMTS_PM = function (cWMTS, bbox) {
     return wmtsBox;
 };
 
-Projection.prototype.WMTS_WGS84Parent = function (cWMTS, levelParent, pitch) {
+Projection.prototype.WMTS_WGS84Parent = function WMTS_WGS84Parent(cWMTS, levelParent, pitch) {
     var diffLevel = cWMTS.zoom - levelParent;
     var diff = Math.pow(2, diffLevel);
     var invDiff = 1 / diff;
@@ -120,7 +120,7 @@ Projection.prototype.WMTS_WGS84Parent = function (cWMTS, levelParent, pitch) {
     return new CoordWMTS(levelParent, r, c);
 };
 
-Projection.prototype.WMS_WGS84Parent = function (bbox, bboxParent) {
+Projection.prototype.WMS_WGS84Parent = function WMS_WGS84Parent(bbox, bboxParent) {
     var scale = bbox.dimension.x / bboxParent.dimension.x;
 
     var x =
@@ -135,7 +135,7 @@ Projection.prototype.WMS_WGS84Parent = function (bbox, bboxParent) {
     return new THREE.Vector3(x, y, scale);
 };
 
-Projection.prototype.WGS84toWMTS = function (bbox) {
+Projection.prototype.WGS84toWMTS = function WGS84toWMTS(bbox) {
     var zoom = Math.floor(Math.log(MathExt.PI / bbox.dimension.y) / MathExt.LOG_TWO + 0.5);
 
     var nY = Math.pow(2, zoom);
@@ -150,15 +150,15 @@ Projection.prototype.WGS84toWMTS = function (bbox) {
     return new CoordWMTS(zoom, row, col);
 };
 
-Projection.prototype.UnitaryToLongitudeWGS84 = function (u, projection, bbox) {
+Projection.prototype.UnitaryToLongitudeWGS84 = function UnitaryToLongitudeWGS84(u, projection, bbox) {
     projection.setLongitude(bbox.west() + u * bbox.dimension.x);
 };
 
-Projection.prototype.UnitaryToLatitudeWGS84 = function (v, projection, bbox) {
+Projection.prototype.UnitaryToLatitudeWGS84 = function UnitaryToLatitudeWGS84(v, projection, bbox) {
     projection.setLatitude(bbox.south() + v * bbox.dimension.y);
 };
 
-Projection.prototype.cartesianToGeo = function (position) {
+Projection.prototype.cartesianToGeo = function cartesianToGeo(position) {
     // TODO: warning switch coord
     var p = position.clone();
     p.x = position.x;
@@ -186,7 +186,7 @@ Projection.prototype.cartesianToGeo = function (position) {
     return new GeoCoordinate(-theta, phi, h);
 };
 
-Projection.prototype.wgs84_to_lambert93 = function (latitude, longitude) // , x93, y93)
+Projection.prototype.wgs84_to_lambert93 = function wgs84_to_lambert93(latitude, longitude) // , x93, y93)
     {
         /*
         rfrences :
@@ -202,7 +202,7 @@ Projection.prototype.wgs84_to_lambert93 = function (latitude, longitude) // , x9
     var e = 0.08181919106; // premire excentricit de l'ellipsoide
 
 
-    var deg2rad = function () {};
+    var deg2rad = function deg2rad() {};
 
         // paramtres de projections
         // var l0 =deg2rad(3);

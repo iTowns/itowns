@@ -12,7 +12,7 @@ function JavaTools() {
 
 JavaTools.prototype.constructor = JavaTools;
 
-JavaTools.prototype.freeArray = function (sourceArray) {
+JavaTools.prototype.freeArray = function freeArray(sourceArray) {
     var arr = sourceArray.slice();
 
     while (arr.length > 0) {

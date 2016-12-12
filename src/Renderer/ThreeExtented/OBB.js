@@ -38,7 +38,7 @@ function OBB(min, max, lookAt, translate) {
 OBB.prototype = Object.create(THREE.Object3D.prototype);
 OBB.prototype.constructor = OBB;
 
-OBB.prototype.update = function () {
+OBB.prototype.update = function update() {
     this.updateMatrix();
     this.updateMatrixWorld();
 
@@ -47,11 +47,11 @@ OBB.prototype.update = function () {
     this.pointsWorld = this.cPointsWorld(this.points());
 };
 
-OBB.prototype.quadInverse = function () {
+OBB.prototype.quadInverse = function quadInverse() {
     return this.quaInv;
 };
 
-OBB.prototype.addHeight = function (bbox) {
+OBB.prototype.addHeight = function addHeight(bbox) {
     var depth = Math.abs(this.natBox.min.z - this.natBox.max.z);
     //
     this.box3D.min.z = this.natBox.min.z + bbox.bottom();
@@ -77,7 +77,7 @@ OBB.prototype.addHeight = function (bbox) {
     // TODO <---- à vérifier
 };
 
-OBB.prototype.points = function () {
+OBB.prototype.points = function points() {
     var points = [
         new THREE.Vector3(),
         new THREE.Vector3(),
@@ -101,7 +101,7 @@ OBB.prototype.points = function () {
     return points;
 };
 
-OBB.prototype.cPointsWorld = function (points) {
+OBB.prototype.cPointsWorld = function cPointsWorld(points) {
     var m = this.matrixWorld;
 
     for (var i = 0, max = points.length; i < max; i++) {

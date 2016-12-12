@@ -7,7 +7,7 @@
 import * as THREE from 'three';
 
 
-var Sensor = function (infos) {
+var Sensor = function Sensor(infos) {
     this.infos = infos;
     this.position = new THREE.Vector3().fromArray(infos.position);
     this.rotation = new THREE.Matrix3().fromArray(infos.rotation);
@@ -39,7 +39,7 @@ var Sensor = function (infos) {
 };
 
 
-Sensor.prototype.getDistortion_r2max = function (disto) {
+Sensor.prototype.getDistortion_r2max = function getDistortion_r2max(disto) {
     // returned the square of the smallest positive root of the derivativeof the distortion polynomial
     // which tells where the distortion might no longer be bijective.
     var roots = this.cardan_cubic_roots(7 * disto.z, 5 * disto.y, 3 * disto.x, 1);
@@ -52,7 +52,7 @@ Sensor.prototype.getDistortion_r2max = function (disto) {
 
 
 // rotation * Photogram_JMM * getMatOrientationCapteur * photgramme_image
-Sensor.prototype.getMatOrientationTotal = function () {
+Sensor.prototype.getMatOrientationTotal = function getMatOrientationTotal() {
     var out = this.rotation.clone();
     out = new THREE.Matrix3().multiplyMatrices(out.clone(), this.Photogram_JMM.clone());
 
@@ -63,7 +63,7 @@ Sensor.prototype.getMatOrientationTotal = function () {
     return out;
 };
 
-Sensor.prototype.getMatOrientationCapteur = function () {
+Sensor.prototype.getMatOrientationCapteur = function getMatOrientationCapteur() {
     var ori0 = new THREE.Matrix3().set(0, -1, 0,
         1, 0, 0,
         0, 0, 1);
@@ -92,9 +92,9 @@ Sensor.prototype.getMatOrientationCapteur = function () {
 };
 
 
-Sensor.prototype.cardan_cubic_roots = function (a, b, c, d) {
+Sensor.prototype.cardan_cubic_roots = function cardan_cubic_roots(a, b, c, d) {
     // http://fr.wikipedia.org/wiki/Methode_de_Cardan  Thanks Bredif
-    var cardan_cubic_roots = function (a, b, c, d) {
+    var cardan_cubic_roots = function cardan_cubic_roots(a, b, c, d) {
         if (a === 0) return quadratic_roots(b, c, d);
         var vt = -b / (3 * a);
         var a2 = a * a;
@@ -132,7 +132,7 @@ Sensor.prototype.cardan_cubic_roots = function (a, b, c, d) {
         }
     };
 
-    var quadratic_roots = function (a, b, c) {
+    var quadratic_roots = function quadratic_roots(a, b, c) {
         var delta = b * b - 4 * a * c;
         if (delta < 0) return [];
         var x0 = -b / (2 * a);
@@ -141,11 +141,11 @@ Sensor.prototype.cardan_cubic_roots = function (a, b, c, d) {
         return [x0 - sqr_delta_2a, x0 + sqr_delta_2a];
     };
 
-    var sgn = function (x) {
+    var sgn = function sgn(x) {
         return (x > 0) - (x < 0);
     };
 
-    var cubic_root = function (x) {
+    var cubic_root = function cubic_root(x) {
         return sgn(x) * Math.pow(Math.abs(x), 1 / 3);
     };
 

@@ -25,7 +25,7 @@ var fooTexture;
 export const l_ELEVATION = 0;
 export const l_COLOR = 1;
 
-var getColorAtIdUv = function (nbTex) {
+var getColorAtIdUv = function getColorAtIdUv(nbTex) {
     if (!fooTexture) {
         fooTexture = 'vec4 colorAtIdUv(sampler2D dTextures[TEX_UNITS],vec3 offsetScale[TEX_UNITS],int id, vec2 uv){\n';
         fooTexture += ' if (id == 0) return texture2D(dTextures[0],  pitUV(uv,offsetScale[0]));\n';
@@ -42,17 +42,17 @@ var getColorAtIdUv = function (nbTex) {
 };
 
 // Array not suported in IE
-var fillArray = function (array, remp) {
+var fillArray = function fillArray(array, remp) {
     for (var i = 0; i < array.length; i++)
         { array[i] = remp; }
 };
 
-var moveElementArray = function (array, old_index, new_index)
+var moveElementArray = function moveElementArray(array, old_index, new_index)
 {
     array.splice(new_index, 0, array.splice(old_index, 1)[0]);
 };
 
-var moveElementsArray = function (array, index, howMany, toIndex) {
+var moveElementsArray = function moveElementsArray(array, index, howMany, toIndex) {
     if ((toIndex > index) && (toIndex <= index + howMany)) {
         toIndex = index + howMany;
     }
@@ -61,7 +61,7 @@ var moveElementsArray = function (array, index, howMany, toIndex) {
 };
 
 /* eslint-disable */
-var moveElementsArraySafe = function (array,index, howMany, toIndex) {
+var moveElementsArraySafe = function moveElementsArraySafe(array,index, howMany, toIndex) {
     index = parseInt(index) || 0;
     index = index < 0 ? array.length + index : index;
     toIndex = parseInt(toIndex) || 0;
@@ -76,7 +76,7 @@ var moveElementsArraySafe = function (array,index, howMany, toIndex) {
 };
 /* eslint-enable */
 
-var LayeredMaterial = function (id) {
+var LayeredMaterial = function LayeredMaterial(id) {
     BasicMaterial.call(this);
 
     const maxTexturesUnits = gfxEngine().glParams.maxTexturesUnits;
@@ -158,7 +158,7 @@ var LayeredMaterial = function (id) {
 LayeredMaterial.prototype = Object.create(BasicMaterial.prototype);
 LayeredMaterial.prototype.constructor = LayeredMaterial;
 
-LayeredMaterial.prototype.dispose = function () {
+LayeredMaterial.prototype.dispose = function dispose() {
     // TODO: WARNING  verify if textures to dispose aren't attached with ancestor
 
     this.dispatchEvent({
@@ -182,7 +182,7 @@ LayeredMaterial.prototype.dispose = function () {
     jT.freeArray(this.uniforms.dTextures_01.value);
 };
 
-LayeredMaterial.prototype.setSequence = function (sequenceLayer) {
+LayeredMaterial.prototype.setSequence = function setSequence(sequenceLayer) {
     let offsetLayer = 0;
     let offsetTexture = 0;
 
@@ -213,7 +213,7 @@ LayeredMaterial.prototype.setSequence = function (sequenceLayer) {
     this.uniforms.colorLayersCount.value = this.getColorLayersCount();
 };
 
-LayeredMaterial.prototype.removeColorLayer = function (layer) {
+LayeredMaterial.prototype.removeColorLayer = function removeColorLayer(layer) {
     const layerIndex = this.indexOfColorLayer(layer);
 
     if (layerIndex === -1) {
@@ -268,7 +268,7 @@ LayeredMaterial.prototype.removeColorLayer = function (layer) {
     this.uniforms.dTextures_01.value = this.textures[l_COLOR];
 };
 
-LayeredMaterial.prototype.setTexturesLayer = function (textures, layerType, layer) {
+LayeredMaterial.prototype.setTexturesLayer = function setTexturesLayer(textures, layerType, layer) {
     const index = this.indexOfColorLayer(layer);
     const slotOffset = this.getTextureOffsetByLayerIndex(index);
     for (let i = 0, max = textures.length; i < max; i++) {
@@ -283,7 +283,7 @@ LayeredMaterial.prototype.setTexturesLayer = function (textures, layerType, laye
     }
 };
 
-LayeredMaterial.prototype.setTexture = function (texture, layerType, slot, offsetScale) {
+LayeredMaterial.prototype.setTexture = function setTexture(texture, layerType, slot, offsetScale) {
     if (this.textures[layerType][slot] === undefined || this.textures[layerType][slot].image === undefined) {
         this.loadedTexturesCount[layerType] += 1;
     }
@@ -293,7 +293,7 @@ LayeredMaterial.prototype.setTexture = function (texture, layerType, slot, offse
     this.offsetScale[layerType][slot] = offsetScale ? offsetScale : new THREE.Vector3(0.0, 0.0, 1.0);
 };
 
-LayeredMaterial.prototype.setColorLayerParameters = function (params) {
+LayeredMaterial.prototype.setColorLayerParameters = function setColorLayerParameters(params) {
     if (this.getColorLayersCount() === 0) {
         for (let l = 0; l < params.length; l++) {
             this.pushLayer(params[l]);
@@ -301,7 +301,7 @@ LayeredMaterial.prototype.setColorLayerParameters = function (params) {
     }
 };
 
-LayeredMaterial.prototype.pushLayer = function (param) {
+LayeredMaterial.prototype.pushLayer = function pushLayer(param) {
     const newIndex = this.getColorLayersCount();
     const offset = newIndex === 0 ? 0 : this.getTextureOffsetByLayerIndex(newIndex - 1) + this.getTextureCountByLayerIndex(newIndex - 1);
 
@@ -318,65 +318,65 @@ LayeredMaterial.prototype.pushLayer = function (param) {
     this.uniforms.colorLayersCount.value = this.getColorLayersCount();
 };
 
-LayeredMaterial.prototype.indexOfColorLayer = function (layer) {
+LayeredMaterial.prototype.indexOfColorLayer = function indexOfColorLayer(layer) {
     return this.colorLayersId.indexOf(layer);
 };
 
-LayeredMaterial.prototype.getColorLayersCount = function () {
+LayeredMaterial.prototype.getColorLayersCount = function getColorLayersCount() {
     return this.colorLayersId.length;
 };
 
-LayeredMaterial.prototype.getTextureOffsetByLayerIndex = function (index) {
+LayeredMaterial.prototype.getTextureOffsetByLayerIndex = function getTextureOffsetByLayerIndex(index) {
     return this.uniforms.paramLayers.value[index].x;
 };
 
-LayeredMaterial.prototype.getTextureCountByLayerIndex = function (index) {
+LayeredMaterial.prototype.getTextureCountByLayerIndex = function getTextureCountByLayerIndex(index) {
     return this.layerTexturesCount[index];
 };
 
-LayeredMaterial.prototype.getLayerTextureOffset = function (layer) {
+LayeredMaterial.prototype.getLayerTextureOffset = function getLayerTextureOffset(layer) {
     const index = this.indexOfColorLayer(layer);
     return index > -1 ? this.getTextureOffsetByLayerIndex(index) : -1;
 };
 
-LayeredMaterial.prototype.setLightingOn = function (enable) {
+LayeredMaterial.prototype.setLightingOn = function setLightingOn(enable) {
     this.uniforms.lightingOn.value = enable;
 };
 
-LayeredMaterial.prototype.setLayerFx = function (index, fx) {
+LayeredMaterial.prototype.setLayerFx = function setLayerFx(index, fx) {
     this.uniforms.paramLayers.value[index].z = fx;
 };
 
-LayeredMaterial.prototype.setTextureOffsetByLayerIndex = function (index, offset) {
+LayeredMaterial.prototype.setTextureOffsetByLayerIndex = function setTextureOffsetByLayerIndex(index, offset) {
     this.uniforms.paramLayers.value[index].x = offset;
 };
 
-LayeredMaterial.prototype.setLayerUV = function (index, idUV) {
+LayeredMaterial.prototype.setLayerUV = function setLayerUV(index, idUV) {
     this.uniforms.paramLayers.value[index].y = idUV;
 };
 
-LayeredMaterial.prototype.setLayerOpacity = function (index, opacity) {
+LayeredMaterial.prototype.setLayerOpacity = function setLayerOpacity(index, opacity) {
     if (this.uniforms.paramLayers.value[index])
         { this.uniforms.paramLayers.value[index].w = opacity; }
 };
 
-LayeredMaterial.prototype.setLayerVisibility = function (index, visible) {
+LayeredMaterial.prototype.setLayerVisibility = function setLayerVisibility(index, visible) {
     this.uniforms.visibility.value[index] = visible;
 };
 
-LayeredMaterial.prototype.setLayerTexturesCount = function (index, count) {
+LayeredMaterial.prototype.setLayerTexturesCount = function setLayerTexturesCount(index, count) {
     this.layerTexturesCount[index] = count;
 };
 
-LayeredMaterial.prototype.getLoadedTexturesCount = function () {
+LayeredMaterial.prototype.getLoadedTexturesCount = function getLoadedTexturesCount() {
     return this.loadedTexturesCount[l_ELEVATION] + this.loadedTexturesCount[l_COLOR];
 };
 
-LayeredMaterial.prototype.isColorLayerDownscaled = function (layer, level) {
+LayeredMaterial.prototype.isColorLayerDownscaled = function isColorLayerDownscaled(layer, level) {
     return this.textures[l_COLOR][this.getLayerTextureOffset(layer)].level < level;
 };
 
-LayeredMaterial.prototype.isLayerTypeDownscaled = function (layerType, level) {
+LayeredMaterial.prototype.isLayerTypeDownscaled = function isLayerTypeDownscaled(layerType, level) {
     if (layerType === l_ELEVATION) {
         if (this.textures[l_ELEVATION][0].level < 0) {
             return false;
@@ -395,7 +395,7 @@ LayeredMaterial.prototype.isLayerTypeDownscaled = function (layerType, level) {
     return false;
 };
 
-LayeredMaterial.prototype.getColorLayerLevelById = function (colorLayerId) {
+LayeredMaterial.prototype.getColorLayerLevelById = function getColorLayerLevelById(colorLayerId) {
     let index = this.indexOfColorLayer(colorLayerId);
     // TODO: hiding the "colorLayerId is invalid", it's problem, needs new PR
     if (index === -1) {
@@ -407,11 +407,11 @@ LayeredMaterial.prototype.getColorLayerLevelById = function (colorLayerId) {
     return level;
 };
 
-LayeredMaterial.prototype.getElevationLayerLevel = function () {
+LayeredMaterial.prototype.getElevationLayerLevel = function getElevationLayerLevel() {
     return this.textures[l_ELEVATION][0].level;
 };
 
-LayeredMaterial.prototype.getLayerLevel = function (layerType, layer) {
+LayeredMaterial.prototype.getLayerLevel = function getLayerLevel(layerType, layer) {
     if (layerType == l_ELEVATION) {
         return this.getElevationLayerLevel();
     } else {

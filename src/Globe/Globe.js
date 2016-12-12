@@ -114,12 +114,12 @@ Globe.prototype.constructor = Globe;
  * @documentation: Rafrachi les materiaux en fonction du quadTree ORTHO
  *
  */
-Globe.prototype.QuadTreeToMaterial = function () {
+Globe.prototype.QuadTreeToMaterial = function QuadTreeToMaterial() {
     // TODO: Implement Me
 
 };
 
-Globe.prototype.SchemeTileWMTS = function (type) {
+Globe.prototype.SchemeTileWMTS = function SchemeTileWMTS(type) {
     if (type === 0) {
         // bbox longitude(0,360),latitude(-90,90)
         const schemeT = new SchemeTile();
@@ -140,33 +140,33 @@ Globe.prototype.SchemeTileWMTS = function (type) {
     }
 };
 
-Globe.prototype.showAtmosphere = function (show) {
+Globe.prototype.showAtmosphere = function showAtmosphere(show) {
     if (this.atmosphere !== undefined)
       { this.atmosphere.visible = show; }
 };
 
-Globe.prototype.showClouds = function (show, satelliteAnimation) {
+Globe.prototype.showClouds = function showClouds(show, satelliteAnimation) {
     if (/* this.clouds.live === false && */ show) {
         this.clouds.generate(satelliteAnimation);
     }
     this.clouds.visible = show;
 };
 
-Globe.prototype.showKML = function (show) {
+Globe.prototype.showKML = function showKML(show) {
     this.batiments.visible = show;
 
     this.batiments.children[0].visible = show;
 };
 
-Globe.prototype.updateLightingPos = function (pos) {
+Globe.prototype.updateLightingPos = function updateLightingPos(pos) {
     this.atmosphere.updateLightingPos(pos);
     this.clouds.updateLightingPos(pos);
 };
 
-Globe.prototype.setLayerOpacity = function (id, opacity) {
+Globe.prototype.setLayerOpacity = function setLayerOpacity(id, opacity) {
     this.layersConfiguration.setLayerOpacity(id, opacity);
 
-    var cO = function (object) {
+    var cO = function cO(object) {
         if (object.material.setLayerOpacity) {
             object.material.setLayerOpacity(object.getIndexLayerColor(id), opacity);
         }
@@ -176,10 +176,10 @@ Globe.prototype.setLayerOpacity = function (id, opacity) {
     this.tiles.children[0].traverse(cO);
 };
 
-Globe.prototype.setLayerVisibility = function (id, visible) {
+Globe.prototype.setLayerVisibility = function setLayerVisibility(id, visible) {
     this.layersConfiguration.setLayerVisibility(id, visible);
 
-    var cO = function (object) {
+    var cO = function cO(object) {
         if (object.material.setLayerOpacity) {
             object.material.setLayerVisibility(object.getIndexLayerColor(id), visible);
         }
@@ -189,10 +189,10 @@ Globe.prototype.setLayerVisibility = function (id, visible) {
     this.tiles.children[0].traverse(cO);
 };
 
-Globe.prototype.updateLayersOrdering = function () {
+Globe.prototype.updateLayersOrdering = function updateLayersOrdering() {
     var sequence = this.layersConfiguration.getColorLayersIdOrderedBySequence();
 
-    var cO = function (object) {
+    var cO = function cO(object) {
         if (object.changeSequenceLayers)
             { object.changeSequenceLayers(sequence); }
     };
@@ -200,8 +200,8 @@ Globe.prototype.updateLayersOrdering = function () {
     this.tiles.children[0].traverse(cO);
 };
 
-Globe.prototype.removeColorLayer = function (layer) {
-    var cO = function (object) {
+Globe.prototype.removeColorLayer = function removeColorLayer(layer) {
+    var cO = function cO(object) {
         if (object.removeColorLayer) {
             object.removeColorLayer(layer);
         }
@@ -210,10 +210,10 @@ Globe.prototype.removeColorLayer = function (layer) {
     this.tiles.children[0].traverse(cO);
 };
 
-Globe.prototype.getZoomLevel = function () {
-    var cO = (function () {
+Globe.prototype.getZoomLevel = function getZoomLevel() {
+    var cO = (function getCOFn() {
         var zoom = 0;
-        return function (object) {
+        return function cO(object) {
             if (object) {
                 zoom = Math.max(zoom, object.level);
             }
@@ -226,15 +226,15 @@ Globe.prototype.getZoomLevel = function () {
 };
 
 
-Globe.prototype.computeDistanceForZoomLevel = function (zoom, camera) {
+Globe.prototype.computeDistanceForZoomLevel = function computeDistanceForZoomLevel(zoom, camera) {
     return camera.preSSE * Math.pow(this.tiles.minLevel, (this.tiles.maxLevel - zoom + 1)) / SSE_SUBDIVISION_THRESHOLD;
 };
 
-Globe.prototype.getTile = function (coordinate) {
+Globe.prototype.getTile = function getTile(coordinate) {
     return this.tiles.getTile(coordinate);
 };
 
-Globe.prototype.setRealisticLightingOn = function (bool) {
+Globe.prototype.setRealisticLightingOn = function setRealisticLightingOn(bool) {
     this.atmosphere.setRealisticOn(bool);
     this.clouds.setLightingOn(bool);
 };

@@ -34,11 +34,11 @@ PaintingTool.prototype = Object.create(PaintingTool.prototype);
 
 PaintingTool.prototype.constructor = PaintingTool;
 
-PaintingTool.prototype.setTexture = function (texture) {
+PaintingTool.prototype.setTexture = function setTexture(texture) {
     this.texture = texture;
 };
 
-PaintingTool.prototype.addEffect = function (effect) {
+PaintingTool.prototype.addEffect = function addEffect(effect) {
     this.effects.push(effect);
 };
 
@@ -141,7 +141,7 @@ Style.prototype = Object.create(Style.prototype);
 
 Style.prototype.constructor = Style;
 
-Style.prototype.applyPalette = function (palette) {
+Style.prototype.applyPalette = function applyPalette(palette) {
     this.line.color = palette.colorLine;
     this.surface.color = palette.colorLine;
     this.surface.pen.color = palette.colorLineSurface;

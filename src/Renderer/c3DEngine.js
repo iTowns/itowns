@@ -51,7 +51,7 @@ function c3DEngine(scene, positionCamera, viewerDiv, debugMode, gLDebug) {
     this.pickingTexture.texture.generateMipmaps = false;
     this.pickingTexture.depthBuffer = true;
 
-    this.renderScene = function () {
+    this.renderScene = function renderScene() {
         if (this.camera.camHelper())
             { this.camera.camHelper().visible = false; }
 
@@ -83,13 +83,13 @@ function c3DEngine(scene, positionCamera, viewerDiv, debugMode, gLDebug) {
         }
     }.bind(this);
 
-    this.update = function () {
+    this.update = function update() {
         this.camera.update();
         this.updateControl();
         this.scene.notifyChange();
     }.bind(this);
 
-    this.onWindowResize = function () {
+    this.onWindowResize = function onWindowResize() {
         this.width = this.viewerDiv.clientWidth * (this.debug ? 0.5 : 1);
         this.height = this.viewerDiv.clientHeight;
         this.camera.resize(this.width, this.height);
@@ -199,7 +199,7 @@ function c3DEngine(scene, positionCamera, viewerDiv, debugMode, gLDebug) {
  * update control parameter in function of distance of globe
  * @returns {undefined}
  */
-c3DEngine.prototype.updateControl = function () {
+c3DEngine.prototype.updateControl = function updateControl() {
     var len = this.camera.position().length();
     var lim = this.size * 1.1;
 
@@ -211,7 +211,7 @@ c3DEngine.prototype.updateControl = function () {
         { this.renderer.setClearColor(0x030508); }
 };
 
-c3DEngine.prototype.enableRTC = function (enable) {
+c3DEngine.prototype.enableRTC = function enableRTC(enable) {
     for (var x = 0; x < this.scene3D.children.length; x++) {
         var node = this.scene3D.children[x];
 
@@ -227,10 +227,10 @@ c3DEngine.prototype.enableRTC = function (enable) {
  * @param {type} state new state to apply
  * @returns {undefined}
  */
-c3DEngine.prototype.changeStateNodesScene = function (state) {
+c3DEngine.prototype.changeStateNodesScene = function changeStateNodesScene(state) {
     // build traverse function
-    var changeStateFunction = (function () {
-        return function (object3D) {
+    var changeStateFunction = (function getChangeStateFunctionFn() {
+        return function changeStateFunction(object3D) {
             object3D.changeState(state);
         };
     }());
@@ -250,12 +250,12 @@ c3DEngine.prototype.changeStateNodesScene = function (state) {
     }
 };
 
-c3DEngine.prototype.rtcOn = function (obj3D) {
+c3DEngine.prototype.rtcOn = function rtcOn(obj3D) {
     obj3D.enableRTC(true);
     obj3D.matrixAutoUpdate = false;
 };
 
-c3DEngine.prototype.rtcOff = function (obj3D) {
+c3DEngine.prototype.rtcOff = function rtcOff(obj3D) {
     obj3D.enableRTC(false);
     obj3D.matrixWorldNeedsUpdate = true;
     obj3D.matrixAutoUpdate = true;
@@ -263,7 +263,7 @@ c3DEngine.prototype.rtcOff = function (obj3D) {
 
 /**
  */
-c3DEngine.prototype.style2Engine = function () {
+c3DEngine.prototype.style2Engine = function style2Engine() {
     // TODO: Implement Me
 
 };
@@ -274,7 +274,7 @@ c3DEngine.prototype.style2Engine = function () {
  * @param {type} texture
  * @returns {undefined}
  */
-c3DEngine.prototype.setTexture = function (mesh, texture) {
+c3DEngine.prototype.setTexture = function setTexture(mesh, texture) {
     // TODO: Implement Me
     mesh.material = new THREE.MeshBasicMaterial({
         color: 0xffffff,
@@ -287,7 +287,7 @@ c3DEngine.prototype.setTexture = function (mesh, texture) {
  * @param {type} node
  * @returns {undefined}
  */
-c3DEngine.prototype.add3DScene = function (node) {
+c3DEngine.prototype.add3DScene = function add3DScene(node) {
     if (Array.isArray(node))
 
         { this.scene3D.add.apply(this.scene3D, node); }
@@ -298,13 +298,13 @@ c3DEngine.prototype.add3DScene = function (node) {
 };
 
 
-c3DEngine.prototype.removeAll = function () {
+c3DEngine.prototype.removeAll = function removeAll() {
     this.scene3D.children = [];
 };
 
 /**
  */
-c3DEngine.prototype.precision = function () {
+c3DEngine.prototype.precision = function precision() {
     // TODO: Implement Me
 
 };
@@ -312,7 +312,7 @@ c3DEngine.prototype.precision = function () {
 /*
  * return
  */
-c3DEngine.prototype.getWindowSize = function () {
+c3DEngine.prototype.getWindowSize = function getWindowSize() {
     return new THREE.Vector2(this.width, this.height);
 };
 
@@ -320,11 +320,11 @@ c3DEngine.prototype.getWindowSize = function () {
  * return renderer THREE.js
  * @returns {undefined|c3DEngine_L7.THREE.WebGLRenderer}
  */
-c3DEngine.prototype.getRenderer = function () {
+c3DEngine.prototype.getRenderer = function getRenderer() {
     return this.renderer;
 };
 
-c3DEngine.prototype.setStateRender = function (stateRender) {
+c3DEngine.prototype.setStateRender = function setStateRender(stateRender) {
     if (this.stateRender !== stateRender) {
         this.stateRender = stateRender;
 
@@ -332,7 +332,7 @@ c3DEngine.prototype.setStateRender = function (stateRender) {
     }
 };
 
-c3DEngine.prototype.renderTobuffer = function (x, y, width, height, mode) {
+c3DEngine.prototype.renderTobuffer = function renderTobuffer(x, y, width, height, mode) {
     // TODO Deallocate render texture
     var originalState = this.stateRender;
     this.setStateRender(mode);
@@ -352,7 +352,7 @@ c3DEngine.prototype.renderTobuffer = function (x, y, width, height, mode) {
     return pixelBuffer;
 };
 
-c3DEngine.prototype.bufferToImage = function (pixelBuffer, width, height) {
+c3DEngine.prototype.bufferToImage = function bufferToImage(pixelBuffer, width, height) {
     var canvas = document.createElement('canvas');
     var ctx = canvas.getContext('2d');
 
@@ -374,13 +374,13 @@ c3DEngine.prototype.bufferToImage = function (pixelBuffer, width, height) {
     return image;
 };
 
-c3DEngine.prototype.updatePositionBuffer = function () {
+c3DEngine.prototype.updatePositionBuffer = function updatePositionBuffer() {
     this.camera.camera3D.updateMatrixWorld();
     this.positionBuffer = this.renderTobuffer(0, 0, this.width, this.height, RendererConstant.DEPTH);
     this.renderScene(); // TODO debug to remove white screen, but why?
 };
 
-c3DEngine.prototype.pickingInPositionBuffer = function (mouse, scene) {
+c3DEngine.prototype.pickingInPositionBuffer = function pickingInPositionBuffer(mouse, scene) {
     if (this.positionBuffer === null)
         { this.updatePositionBuffer(); }
 
@@ -407,7 +407,7 @@ c3DEngine.prototype.pickingInPositionBuffer = function (mouse, scene) {
  * @param {type} scene
  * @returns THREE.Vector3 position cartesien in world space
  * */
-c3DEngine.prototype.getPickingPosition = function (mouse, scene) {
+c3DEngine.prototype.getPickingPosition = function getPickingPosition(mouse, scene) {
     if (mouse === undefined)
         { mouse = new THREE.Vector2(Math.floor(this.width / 2), Math.floor(this.height / 2)); }
 
@@ -430,7 +430,7 @@ c3DEngine.prototype.getPickingPosition = function (mouse, scene) {
     return worldPosition;
 };
 
-var unpack1K = function (color, factor) {
+var unpack1K = function unpack1K(color, factor) {
     var bitSh = new THREE.Vector4(1.0 / (256.0 * 256.0 * 256.0), 1.0 / (256.0 * 256.0), 1.0 / 256.0, 1.0);
     return bitSh.dot(color) * factor;
 };
@@ -440,7 +440,7 @@ var unpack1K = function (color, factor) {
  * @param {Vecto2D} mouse : mouse position on screen in pixel
  * @returns {int} uuid's node
  * */
-c3DEngine.prototype.screenCoordsToNodeId = function (mouse) {
+c3DEngine.prototype.screenCoordsToNodeId = function screenCoordsToNodeId(mouse) {
     var camera = this.camera.camera3D;
 
     camera.updateMatrixWorld();
@@ -461,11 +461,11 @@ c3DEngine.prototype.screenCoordsToNodeId = function (mouse) {
  * @param {Vecto2D} mouse : mouse position on screen in pixel
  * Select node under mouse
  **/
-c3DEngine.prototype.selectNodeAt = function (mouse) {
+c3DEngine.prototype.selectNodeAt = function selectNodeAt(mouse) {
     this.scene.selectNodeId(this.screenCoordsToNodeId(mouse));
 };
 
-c3DEngine.prototype.getPickingPositionFromDepth = (function () {
+c3DEngine.prototype.getPickingPositionFromDepth = (function getGetPickingPosFromDepthFn() {
     var matrix = new THREE.Matrix4();
     matrix.elements = new Float64Array(16); // /!\ WARNING Matrix JS are in Float32Array
     var raycaster = new THREE.Raycaster();
@@ -474,7 +474,7 @@ c3DEngine.prototype.getPickingPositionFromDepth = (function () {
     var ray = new THREE.Ray();
     var depthRGBA = new THREE.Vector4();
 
-    return function (mouse) {
+    return function getPickingPositionFromDepth(mouse) {
         if (mouse === undefined)
             { mouse = new THREE.Vector2(Math.floor(this.width / 2), Math.floor(this.height / 2)); }
 
@@ -520,7 +520,7 @@ c3DEngine.prototype.getPickingPositionFromDepth = (function () {
     };
 }());
 
-c3DEngine.prototype.placeDummy = function (dummy, position) {
+c3DEngine.prototype.placeDummy = function placeDummy(dummy, position) {
     dummy.position.copy(position);
     var size = position.clone().sub(this.camera.position()).length() / 200; // TODO distance
     dummy.scale.copy(new THREE.Vector3(size, size, size));
@@ -531,7 +531,7 @@ c3DEngine.prototype.placeDummy = function (dummy, position) {
     dummy.updateMatrixWorld();
 };
 
-c3DEngine.prototype.getRTCMatrixFromCenter = function (center, camera) {
+c3DEngine.prototype.getRTCMatrixFromCenter = function getRTCMatrixFromCenter(center, camera) {
     var position = new THREE.Vector3().subVectors(camera.camera3D.position, center);
     var quaternion = new THREE.Quaternion().copy(camera.camera3D.quaternion);
     var matrix = new THREE.Matrix4().compose(position, quaternion, new THREE.Vector3(1, 1, 1));
@@ -541,7 +541,7 @@ c3DEngine.prototype.getRTCMatrixFromCenter = function (center, camera) {
     return new THREE.Matrix4().multiplyMatrices(camera.camera3D.projectionMatrix, mvc);
 };
 
-c3DEngine.prototype.getRTCMatrixFromNode = function (node, camera) {
+c3DEngine.prototype.getRTCMatrixFromNode = function getRTCMatrixFromNode(node, camera) {
     var camera3D = camera.camera3D;
     // var position = new THREE.Vector3().subVectors(camera3D.position, node.position);
     var positionWorld = new THREE.Vector3().setFromMatrixPosition(node.matrixWorld);
@@ -557,7 +557,7 @@ c3DEngine.prototype.getRTCMatrixFromNode = function (node, camera) {
     return new THREE.Matrix4().multiplyMatrices(camera3D.projectionMatrix, mvc);
 };
 
-c3DEngine.prototype.setLightingOn = function (value) {
+c3DEngine.prototype.setLightingOn = function setLightingOn(value) {
     this.lightingOn = value;
 };
 

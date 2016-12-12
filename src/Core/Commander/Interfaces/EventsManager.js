@@ -17,16 +17,16 @@ function EventsManager() {
  * @param pevent {[object Object]}
  * @param com {[object Object]}
  */
-EventsManager.prototype.connect = function (/* pevent, com*/) {
+EventsManager.prototype.connect = function connect(/* pevent, com*/) {
     // TODO: Implement Me
 
 };
 
-EventsManager.prototype.command = function () {
+EventsManager.prototype.command = function command() {
 
 };
 
-EventsManager.prototype.wait = function () {
+EventsManager.prototype.wait = function wait() {
     var waitTime = 250;
     if (this.timer === null) {
         this.timer = window.setTimeout(this.command, waitTime);
