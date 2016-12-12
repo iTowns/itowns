@@ -7,7 +7,7 @@
 import IoDriver from 'Core/Commander/Providers/IoDriver';
 
 
-var portableXBIL = function (buffer) {
+var portableXBIL = function portableXBIL(buffer) {
     this.floatArray = new Float32Array(buffer);
     this.max = -1000000;
     this.min = 1000000;
@@ -25,7 +25,7 @@ IoDriver_XBIL.prototype = Object.create(IoDriver.prototype);
 
 IoDriver_XBIL.prototype.constructor = IoDriver_XBIL;
 
-IoDriver_XBIL.prototype.computeMinMaxElevation = function (buffer, width, height, offsetScale) {
+IoDriver_XBIL.prototype.computeMinMaxElevation = function computeMinMaxElevation(buffer, width, height, offsetScale) {
     let min = 1000000;
     let max = -1000000;
 
@@ -53,7 +53,7 @@ IoDriver_XBIL.prototype.computeMinMaxElevation = function (buffer, width, height
     return { min, max };
 };
 
-IoDriver_XBIL.prototype.parseXBil = function (buffer, url) {
+IoDriver_XBIL.prototype.parseXBil = function parseXBil(buffer, url) {
     if (!buffer) {
         throw new Error('Error processing XBIL');
     }
@@ -75,7 +75,7 @@ IoDriver_XBIL.prototype.parseXBil = function (buffer, url) {
 };
 
 
-IoDriver_XBIL.prototype.read = function (url) {
+IoDriver_XBIL.prototype.read = function read(url) {
     return fetch(url).then((response) => {
         if (response.status < 200 || response.status >= 300) {
             throw new Error(`Error loading ${url}: status ${response.status}`);

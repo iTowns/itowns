@@ -28,7 +28,7 @@ Command.prototype.constructor = Command;
 
 /**
  */
-Command.prototype.instance = function () {
+Command.prototype.instance = function instance() {
     // TODO: Implement Me
 
 };

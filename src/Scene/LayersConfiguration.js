@@ -41,22 +41,22 @@ function defaultState(seq) {
     };
 }
 
-LayersConfiguration.prototype.addElevationLayer = function (layer) {
+LayersConfiguration.prototype.addElevationLayer = function addElevationLayer(layer) {
     this.elevationLayers.push(layer);
     this.layersState[layer.id] = defaultState();
 };
 
-LayersConfiguration.prototype.addColorLayer = function (layer) {
+LayersConfiguration.prototype.addColorLayer = function addColorLayer(layer) {
     this.colorLayers.push(layer);
     this.layersState[layer.id] = defaultState(this.colorLayers.length - 1);
 };
 
-LayersConfiguration.prototype.addGeometryLayer = function (layer) {
+LayersConfiguration.prototype.addGeometryLayer = function addGeometryLayer(layer) {
     this.geometryLayers.push(layer);
     this.layersState[layer.id] = defaultState();
 };
 
-LayersConfiguration.prototype.removeColorLayer = function (id) {
+LayersConfiguration.prototype.removeColorLayer = function removeColorLayer(id) {
     if (this.layersState[id]) {
         this.colorLayers = this.colorLayers.filter(l => l.id != id);
         delete this.layersState[id];
@@ -65,54 +65,54 @@ LayersConfiguration.prototype.removeColorLayer = function (id) {
     return false;
 };
 
-LayersConfiguration.prototype.getColorLayers = function () {
+LayersConfiguration.prototype.getColorLayers = function getColorLayers() {
     return this.colorLayers;
 };
 
-LayersConfiguration.prototype.getColorLayersId = function () {
+LayersConfiguration.prototype.getColorLayersId = function getColorLayersId() {
     return this.colorLayers.map(l => l.id);
 };
 
-LayersConfiguration.prototype.getGeometryLayers = function () {
+LayersConfiguration.prototype.getGeometryLayers = function getGeometryLayers() {
     return this.geometryLayers;
 };
 
-LayersConfiguration.prototype.getElevationLayers = function () {
+LayersConfiguration.prototype.getElevationLayers = function getElevationLayers() {
     return this.elevationLayers;
 };
 
-LayersConfiguration.prototype.setLayerOpacity = function (id, opacity) {
+LayersConfiguration.prototype.setLayerOpacity = function setLayerOpacity(id, opacity) {
     if (this.layersState[id]) {
         this.layersState[id].opacity = opacity;
     }
 };
 
-LayersConfiguration.prototype.setLayerVisibility = function (id, visible) {
+LayersConfiguration.prototype.setLayerVisibility = function setLayerVisibility(id, visible) {
     if (this.layersState[id]) {
         this.layersState[id].visible = visible;
     }
 };
 
-LayersConfiguration.prototype.isColorLayerVisible = function (id) {
+LayersConfiguration.prototype.isColorLayerVisible = function isColorLayerVisible(id) {
     return this.layersState[id].visible;
 };
 
-LayersConfiguration.prototype.getColorLayerOpacity = function (id) {
+LayersConfiguration.prototype.getColorLayerOpacity = function getColorLayerOpacity(id) {
     return this.layersState[id].opacity;
 };
 
-LayersConfiguration.prototype.setLayerFreeze = function (id, frozen) {
+LayersConfiguration.prototype.setLayerFreeze = function setLayerFreeze(id, frozen) {
     if (this.layersState[id]) {
         this.layersState[id].frozen = frozen;
     }
 };
 
-LayersConfiguration.prototype.isLayerFrozen = function (id) {
+LayersConfiguration.prototype.isLayerFrozen = function isLayerFrozen(id) {
     return this.layersState[id].frozen;
 };
 
 
-LayersConfiguration.prototype.moveLayerToIndex = function (id, new_index) {
+LayersConfiguration.prototype.moveLayerToIndex = function moveLayerToIndex(id, new_index) {
     if (this.layersState[id]) {
         var old_index = this.layersState[id].sequence;
         for (var i in this.layersState) {
@@ -128,19 +128,19 @@ LayersConfiguration.prototype.moveLayerToIndex = function (id, new_index) {
     }
 };
 
-LayersConfiguration.prototype.moveLayerDown = function (id) {
+LayersConfiguration.prototype.moveLayerDown = function moveLayerDown(id) {
     if (this.layersState[id] && this.layersState[id].sequence > 0) {
         this.moveLayerToIndex(id, this.layersState[id].sequence - 1);
     }
 };
 
-LayersConfiguration.prototype.moveLayerUp = function (id) {
+LayersConfiguration.prototype.moveLayerUp = function moveLayerUp(id) {
     if (this.layersState[id] && this.layersState[id].sequence < this.colorLayers.length - 1) {
         this.moveLayerToIndex(id, this.layersState[id].sequence + 1);
     }
 };
 
-LayersConfiguration.prototype.getColorLayersIdOrderedBySequence = function () {
+LayersConfiguration.prototype.getColorLayersIdOrderedBySequence = function getColorLayersIdOrderedBySequence() {
     var seq = this.colorLayers.map(l => l.id);
     seq.sort((a, b) => this.layersState[a].sequence - this.layersState[b].sequence);
     return seq;

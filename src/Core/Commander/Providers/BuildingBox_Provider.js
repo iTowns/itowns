@@ -43,7 +43,7 @@ BuildingBox_Provider.prototype.constructor = BuildingBox_Provider;
  * @param {type} coWMTS : coord WMTS
  * @returns {Object@call;create.url.url|String}
  */
-BuildingBox_Provider.prototype.url = function (longitude, latitude, radius) {
+BuildingBox_Provider.prototype.url = function url(longitude, latitude, radius) {
     // var key    = "wmybzw30d6zg563hjlq8eeqb";
     // var key    = coWMTS.zoom > 11 ? "va5orxd0pgzvq3jxutqfuy0b" : "wmybzw30d6zg563hjlq8eeqb"; // clef pro va5orxd0pgzvq3jxutqfuy0b
 
@@ -63,14 +63,14 @@ BuildingBox_Provider.prototype.url = function (longitude, latitude, radius) {
     return url;
 };
 
-BuildingBox_Provider.prototype.getData = function (bbox, altitude) {
+BuildingBox_Provider.prototype.getData = function getData(bbox, altitude) {
     return this.WFS_Provider.getData(bbox).then((data) => {
         this.generateMesh(data, bbox, altitude); // console.log(data);
         return this.geometry;
     });
 };
 
-BuildingBox_Provider.prototype.generateMesh = function (elements, bbox, altitude) {
+BuildingBox_Provider.prototype.generateMesh = function generateMesh(elements, bbox, altitude) {
     // console.log(elements);
 
     var _geometry = new THREE.Geometry(); // for the walls
@@ -187,7 +187,7 @@ BuildingBox_Provider.prototype.generateMesh = function (elements, bbox, altitude
 };
 
 
-BuildingBox_Provider.prototype.addRoad = function (geometry, bbox, altitude_road, ellipsoid) {
+BuildingBox_Provider.prototype.addRoad = function addRoad(geometry, bbox, altitude_road, ellipsoid) {
     // Version using SIMPLE PLANE ROAD for Click and Go
     var ratio = 0.2;
     var roadWidth = (bbox.east() - bbox.west()) * ratio;

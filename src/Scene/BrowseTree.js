@@ -18,23 +18,23 @@ function BrowseTree(engine) {
     this.selectedNodeId = -1;
     this.selectedNode = null;
 
-    this.selectNode = function (node) {
+    this.selectNode = function selectNode(node) {
         this._selectNode(node);
     };
 }
 
-BrowseTree.prototype.addNodeProcess = function (nodeProcess) {
+BrowseTree.prototype.addNodeProcess = function addNodeProcess(nodeProcess) {
     this.nodeProcess = nodeProcess;
 };
 
-BrowseTree.prototype.NodeProcess = function () {
+BrowseTree.prototype.NodeProcess = function NodeProcess() {
     return this.nodeProcess;
 };
 
-BrowseTree.prototype.uniformsProcess = (function () {
+BrowseTree.prototype.uniformsProcess = (function getUniformsProcessFn() {
     var positionWorld = new THREE.Vector3();
 
-    return function (node, camera) {
+    return function uniformsProcess(node, camera) {
         node.setMatrixRTC(this.gfxEngine.getRTCMatrixFromCenter(positionWorld.setFromMatrixPosition(node.matrixWorld), camera));
         node.setFog(this.fogDistance);
 
@@ -42,7 +42,7 @@ BrowseTree.prototype.uniformsProcess = (function () {
     };
 }());
 
-BrowseTree.prototype._selectNode = function (node) {
+BrowseTree.prototype._selectNode = function _selectNode(node) {
     if (node.id === this.selectedNodeId) {
         node.setSelected(node.visible && node.material.visible);
         if (this.selectedNode !== node) {
@@ -68,7 +68,7 @@ function applyFunctionToChildren(func, node) {
  * @param {type} optional   : optional process
  * @returns {undefined}
  */
-BrowseTree.prototype.browse = function (tree, camera, process, layersConfig) {
+BrowseTree.prototype.browse = function browse(tree, camera, process, layersConfig) {
     this.tree = tree;
 
     camera.updateMatrixWorld();
@@ -94,7 +94,7 @@ BrowseTree.prototype.browse = function (tree, camera, process, layersConfig) {
  * @param {type} optional   : optional process
  * @returns {undefined}
  */
-BrowseTree.prototype._browseDisplayableNode = function (node, camera, process, params) {
+BrowseTree.prototype._browseDisplayableNode = function _browseDisplayableNode(node, camera, process, params) {
     if (node.parent.isVisible() && process.processNode(node, camera, params)) {
         if (node.isDisplayed()) {
             this.uniformsProcess(node, camera);
@@ -110,7 +110,7 @@ BrowseTree.prototype._browseDisplayableNode = function (node, camera, process, p
     }
 };
 
-BrowseTree.prototype._browseNonDisplayableNode = function (node, level, process, camera, params) {
+BrowseTree.prototype._browseNonDisplayableNode = function _browseNonDisplayableNode(node, level, process, camera, params) {
     // update node's sse value
     node.sse = camera.computeNodeSSE(node);
     node.setDisplayed(false);
@@ -152,12 +152,12 @@ BrowseTree.prototype._browseNonDisplayableNode = function (node, level, process,
  * @documentation: Recursive traverse tree to update a material specific uniform
  * @returns {undefined}
  */
-BrowseTree.prototype.updateMaterialUniform = function (uniformName, value) {
+BrowseTree.prototype.updateMaterialUniform = function updateMaterialUniform(uniformName, value) {
     for (var a = 0; a < this.tree.children.length; ++a) {
         var root = this.tree.children[a];
         for (var c = 0; c < root.children.length; c++) {
             var node = root.children[c];
-            var lookMaterial = function (obj) {
+            var lookMaterial = function lookMaterial(obj) {
                 obj.material.uniforms[uniformName].value = value;
             };
 
@@ -167,7 +167,7 @@ BrowseTree.prototype.updateMaterialUniform = function (uniformName, value) {
     }
 };
 
-BrowseTree.prototype.updateLayer = function (layer, camera) {
+BrowseTree.prototype.updateLayer = function updateLayer(layer, camera) {
     if (!layer.visible)
         { return; }
 
@@ -176,10 +176,10 @@ BrowseTree.prototype.updateLayer = function (layer, camera) {
     for (var c = 0; c < root.children.length; c++) {
         var node = root.children[c];
 
-        var cRTC = function () {
+        var cRTC = function getCRtcFn() {
             var mRTC = this.gfxEngine.getRTCMatrixFromNode(node, camera);
 
-            return function (obj) {
+            return function cRTC(obj) {
                 if (obj.setMatrixRTC)
                   { obj.setMatrixRTC(mRTC); }
             };
@@ -189,7 +189,7 @@ BrowseTree.prototype.updateLayer = function (layer, camera) {
     }
 };
 
-BrowseTree.prototype.updateMobileMappingLayer = function (layer, camera) {
+BrowseTree.prototype.updateMobileMappingLayer = function updateMobileMappingLayer(layer, camera) {
     if (!layer.visible)
         { return; }
 
@@ -201,7 +201,7 @@ BrowseTree.prototype.updateMobileMappingLayer = function (layer, camera) {
     }
 };
 
-BrowseTree.prototype.updateQuadtree = function (layer, layersConfiguration, camera) {
+BrowseTree.prototype.updateQuadtree = function updateQuadtree(layer, layersConfiguration, camera) {
     var quadtree = layer.node.tiles;
 
     this.browse(quadtree, camera, layer.process, layersConfiguration);

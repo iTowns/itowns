@@ -282,7 +282,7 @@ function Atmosphere(ellipsoid) {
 Atmosphere.prototype = Object.create(NodeMesh.prototype);
 Atmosphere.prototype.constructor = Atmosphere;
 
-Atmosphere.prototype.setRealisticOn = function (bool) {
+Atmosphere.prototype.setRealisticOn = function setRealisticOn(bool) {
     this.realistic = bool;
     this.material.visible = !this.realistic;
     this.atmosphereIN.visible = !this.realistic;
@@ -294,7 +294,7 @@ Atmosphere.prototype.setRealisticOn = function (bool) {
     // this.sphereSun.visible     = this.realistic;
 };
 
-Atmosphere.prototype.updateLightingPos = function (pos) {
+Atmosphere.prototype.updateLightingPos = function updateLightingPos(pos) {
     this.ground.material.uniforms.v3LightPosition.value = pos.clone().normalize();
     this.sky.material.uniforms.v3LightPosition.value = pos.clone().normalize();
     //  this.sphereSun.position.copy(pos);

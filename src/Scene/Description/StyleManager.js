@@ -14,24 +14,24 @@ StyleManager.prototype = Object.create(StyleManager.prototype);
 
 StyleManager.prototype.constructor = StyleManager;
 
-StyleManager.prototype.getStyles = function () {
+StyleManager.prototype.getStyles = function getStyles() {
     return this.styles;
 };
 
-StyleManager.prototype.addStyle = function (style) {
+StyleManager.prototype.addStyle = function addStyle(style) {
     if (style instanceof Style)
 		{ this.styles.push(style); }
 };
 
-StyleManager.prototype.getStyle = function (idStyle) {
+StyleManager.prototype.getStyle = function getStyle(idStyle) {
     return this.styles.filter(element => element.name === idStyle).pop();
 };
 
-StyleManager.prototype.removeStyle = function (idStyle) {
+StyleManager.prototype.removeStyle = function removeStyle(idStyle) {
     this.styles = this.styles.filter(element => element.name === idStyle);
 };
 
-StyleManager.prototype.updateStyle = function () {
+StyleManager.prototype.updateStyle = function updateStyle() {
 
 
 };

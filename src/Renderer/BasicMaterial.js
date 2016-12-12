@@ -59,35 +59,35 @@ function BasicMaterial(color) {
 BasicMaterial.prototype = Object.create(THREE.RawShaderMaterial.prototype);
 BasicMaterial.prototype.constructor = BasicMaterial;
 
-BasicMaterial.prototype.enableRTC = function (enable) {
+BasicMaterial.prototype.enableRTC = function enableRTC(enable) {
     this.uniforms.useRTC.value = enable;
 };
 
-BasicMaterial.prototype.setDebug = function (debug_value) {
+BasicMaterial.prototype.setDebug = function setDebug(debug_value) {
     this.uniforms.debug.value = debug_value;
 };
 
-BasicMaterial.prototype.setMatrixRTC = function (rtc) {
+BasicMaterial.prototype.setMatrixRTC = function setMatrixRTC(rtc) {
     this.uniforms.mVPMatRTC.value = rtc;
 };
 
-BasicMaterial.prototype.getMatrixRTC = function () {
+BasicMaterial.prototype.getMatrixRTC = function getMatrixRTC() {
     return this.uniforms.mVPMatRTC.value;
 };
 
-BasicMaterial.prototype.setUuid = function (uuid) {
+BasicMaterial.prototype.setUuid = function setUuid(uuid) {
     this.uniforms.uuid.value = uuid;
 };
 
-BasicMaterial.prototype.getUuid = function () {
+BasicMaterial.prototype.getUuid = function getUuid() {
     return this.uniforms.uuid.value;
 };
 
-BasicMaterial.prototype.setFogDistance = function (df) {
+BasicMaterial.prototype.setFogDistance = function setFogDistance(df) {
     this.uniforms.distanceFog.value = df;
 };
 
-BasicMaterial.prototype.setSelected = function (selected) {
+BasicMaterial.prototype.setSelected = function setSelected(selected) {
     this.uniforms.selected.value = selected;
 };
 

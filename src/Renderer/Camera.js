@@ -41,15 +41,15 @@ Camera.prototype.constructor = Camera;
 
 /**
  */
-Camera.prototype.position = function () {
+Camera.prototype.position = function position() {
     return this.camera3D.position;
 };
 
-Camera.prototype.camHelper = function () {
+Camera.prototype.camHelper = function camHelper() {
     return this.cameraHelper;
 };
 
-Camera.prototype.updatePreSSE = function () {
+Camera.prototype.updatePreSSE = function updatePreSSE() {
     this.Hypotenuse = Math.sqrt(this.width * this.width + this.height * this.height);
     var radAngle = this.FOV * Math.PI / 180;
 
@@ -68,7 +68,7 @@ Camera.prototype.updatePreSSE = function () {
     */
 };
 
-Camera.prototype.createCamHelper = function () {
+Camera.prototype.createCamHelper = function createCamHelper() {
     this.cameraHelper = new THREE.CameraHelper(this.camera3D);
 
     var dir = new THREE.Vector3(0, 0, -1);
@@ -84,11 +84,11 @@ Camera.prototype.createCamHelper = function () {
     this.cameraHelper.add(this.arrowHelper);
 };
 
-Camera.prototype.matrixWorldInverse = function () {
+Camera.prototype.matrixWorldInverse = function matrixWorldInverse() {
     return this.camera3D.matrixWorldInverse;
 };
 
-Camera.prototype.resize = function (width, height) {
+Camera.prototype.resize = function resize(width, height) {
     this.width = width;
     this.height = height;
     this.ratio = width / height;
@@ -109,7 +109,7 @@ Camera.prototype.resize = function (width, height) {
     }
 };
 
-Camera.prototype.computeNodeSSE = function (node) {
+Camera.prototype.computeNodeSSE = function computeNodeSSE(node) {
     var boundingSphere = node.geometry.boundingSphere;
     var distance = Math.max(0.0, (this.camera3D.position.distanceTo(node.centerSphere) - boundingSphere.radius));
 
@@ -129,7 +129,7 @@ Camera.prototype.computeNodeSSE = function (node) {
     return SSE;
 };
 
-Camera.prototype.update = function () {
+Camera.prototype.update = function update() {
     var vector = new THREE.Vector3(0, 0, 1);
 
     this.direction = vector.applyQuaternion(this.camera3D.quaternion);
@@ -137,32 +137,32 @@ Camera.prototype.update = function () {
     this.frustum.setFromMatrix(new THREE.Matrix4().multiplyMatrices(this.camera3D.projectionMatrix, this.camera3D.matrixWorldInverse));
 };
 
-Camera.prototype.updateMatrixWorld = function () {
+Camera.prototype.updateMatrixWorld = function updateMatrixWorld() {
     this.camera3D.updateMatrix();
     this.camera3D.updateMatrixWorld(true);
     this.camera3D.matrixWorldInverse.getInverse(this.camera3D.matrixWorld);
 };
 
-Camera.prototype.getDistanceFromOrigin = function () {
+Camera.prototype.getDistanceFromOrigin = function getDistanceFromOrigin() {
     return this.camera3D.position.length();
 };
 
-Camera.prototype.setPosition = function (position) {
+Camera.prototype.setPosition = function setPosition(position) {
     this.camera3D.position.copy(position);
 };
 
-Camera.prototype.setRotation = function (rotation) {
+Camera.prototype.setRotation = function setRotation(rotation) {
     this.camera3D.quaternion.copy(rotation);
 };
 
-Camera.prototype.getFrustum = function () {
+Camera.prototype.getFrustum = function getFrustum() {
     this.updateMatrixWorld();
     this.frustum.setFromMatrix(new THREE.Matrix4().multiplyMatrices(this.camera3D.projectionMatrix, this.camera3D.matrixWorldInverse));
 
     return this.frustum;
 };
 
-Camera.prototype.getFrustumLocalSpace = function (position, quaternion) {
+Camera.prototype.getFrustumLocalSpace = function getFrustumLocalSpace(position, quaternion) {
     var m = new THREE.Matrix4();
 
     m.makeRotationFromQuaternion(quaternion.inverse());

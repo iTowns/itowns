@@ -16,7 +16,7 @@ KMZLoader.prototype = Object.create(KMZLoader.prototype);
 
 KMZLoader.prototype.constructor = KMZLoader;
 
-KMZLoader.prototype.parseCollada = function (buffer) {
+KMZLoader.prototype.parseCollada = function parseCollada(buffer) {
     var zip = new JSZip(buffer);
     var collada;
     var coordCarto;
@@ -40,7 +40,7 @@ KMZLoader.prototype.parseCollada = function (buffer) {
     return collada;
 };
 
-KMZLoader.prototype.load = function (url) {
+KMZLoader.prototype.load = function load(url) {
     return fetch(url).then((response) => {
         if (response.status < 200 || response.status >= 300) {
             throw new Error(`Error loading ${url}: status ${response.status}`);

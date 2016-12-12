@@ -45,7 +45,6 @@ module.exports = {
 
     // TODO reactivate all the following rules
 
-    'func-names': 'off',
     'no-mixed-operators': 'off',
     'no-use-before-define': 'off',
     'no-underscore-dangle': 'off',

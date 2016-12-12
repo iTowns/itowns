@@ -28,7 +28,7 @@ function WMS_Provider(/* options*/) {
     this.cache = CacheRessource();
     this.projection = new Projection();
 
-    this.getTextureFloat = function (buffer) {
+    this.getTextureFloat = function getTextureFloat(buffer) {
         // Start float to RGBA uint8
         var texture = new THREE.DataTexture(buffer, 256, 256, THREE.AlphaFormat, THREE.FloatType);
 
@@ -41,11 +41,11 @@ WMS_Provider.prototype = Object.create(Provider.prototype);
 
 WMS_Provider.prototype.constructor = WMS_Provider;
 
-WMS_Provider.prototype.url = function (bbox, layer) {
+WMS_Provider.prototype.url = function url(bbox, layer) {
     return this.customUrl(layer.customUrl, bbox);
 };
 
-WMS_Provider.prototype.customUrl = function (url, bbox) {
+WMS_Provider.prototype.customUrl = function customUrl(url, bbox) {
     var bboxDegS = `${bbox.south(UNIT.DEGREE)},${
                     bbox.west(UNIT.DEGREE)},${
                     bbox.north(UNIT.DEGREE)},${
@@ -56,7 +56,7 @@ WMS_Provider.prototype.customUrl = function (url, bbox) {
     return urld;
 };
 
-WMS_Provider.prototype.preprocessDataLayer = function (layer) {
+WMS_Provider.prototype.preprocessDataLayer = function preprocessDataLayer(layer) {
     if (!layer.name)
         { throw new Error('layerName is required.'); }
 
@@ -86,11 +86,11 @@ WMS_Provider.prototype.preprocessDataLayer = function (layer) {
                   }&HEIGHT=${layer.width}`;
 };
 
-WMS_Provider.prototype.tileInsideLimit = function (tile, layer) {
+WMS_Provider.prototype.tileInsideLimit = function tileInsideLimit(tile, layer) {
     return tile.level > 2 && layer.bbox.intersect(tile.bbox);
 };
 
-WMS_Provider.prototype.getColorTexture = function (tile, layer, bbox, pitch) {
+WMS_Provider.prototype.getColorTexture = function getColorTexture(tile, layer, bbox, pitch) {
     if (!this.tileInsideLimit(tile, layer) || tile.material === null) {
         return Promise.resolve();
     }
@@ -119,7 +119,7 @@ WMS_Provider.prototype.getColorTexture = function (tile, layer, bbox, pitch) {
     });
 };
 
-WMS_Provider.prototype.getXbilTexture = function (tile, layer, bbox, pitch) {
+WMS_Provider.prototype.getXbilTexture = function getXbilTexture(tile, layer, bbox, pitch) {
     var url = this.url(bbox, layer);
 
     // TODO: this is not optimal: if called again before the IoDriver resolves, it'll load the XBIL again
@@ -165,7 +165,7 @@ WMS_Provider.prototype.getXbilTexture = function (tile, layer, bbox, pitch) {
     });
 };
 
-WMS_Provider.prototype.executeCommand = function (command) {
+WMS_Provider.prototype.executeCommand = function executeCommand(command) {
     var layer = command.paramsFunction.layer;
     var tile = command.requester;
     var ancestor = command.paramsFunction.ancestor;
@@ -200,7 +200,7 @@ WMS_Provider.prototype.executeCommand = function (command) {
  * @param {BoundingBox} bbox: requested bounding box
  * @returns {WMS_Provider_L15.WMS_Provider.prototype@pro;_IoDriver@call;read@call;then}
  */
-WMS_Provider.prototype.getTexture = function (bbox) {
+WMS_Provider.prototype.getTexture = function getTexture(bbox) {
     if (bbox === undefined)
         { return Promise.resolve(-2); }
 
