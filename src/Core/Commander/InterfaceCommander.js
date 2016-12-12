@@ -11,14 +11,6 @@ function InterfaceCommander(type, priorityFunction) {
     this.managerCommands = ManagerCommands();
     this.priorityFunction = priorityFunction;
     this.type = type;
-
-    if (!Date.now) {
-        this.timestamp = function timestamp() {
-            return new Date().getTime();
-        };
-    } else {
-        this.timestamp = Date.now;
-    }
 }
 
 InterfaceCommander.prototype.constructor = InterfaceCommander;
@@ -38,7 +30,7 @@ InterfaceCommander.prototype.request = function request(parameters, requester, e
     command.paramsFunction = parameters;
     command.layer = parameters.layer;
     command.earlyDropFunction = earlyDropFunction;
-    command.timestamp = this.timestamp();
+    command.timestamp = Date.now();
 
     command.promise = new Promise((resolve, reject) => {
         command.resolve = resolve;
