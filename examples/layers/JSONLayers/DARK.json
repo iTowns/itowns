@@ -3,6 +3,12 @@
     "id": "DARK",
     "customUrl": "http://a.basemaps.cartocdn.com/dark_all/%TILEMATRIX/%COL/%ROW.png",
     "options": {
+    	"ipr": {
+    		"name":"CARTO",
+    		"url": "https://carto.com/",
+    		"logo":"",
+    		"description":""
+    	},
         "tileMatrixSet": "PM",
         "mimetype": "image/png"
     }

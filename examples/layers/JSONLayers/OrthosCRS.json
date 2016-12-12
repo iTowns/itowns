@@ -9,6 +9,12 @@
 	},
 	"options": {
 		"name": "ORTHOIMAGERY.ORTHOPHOTOS.CRS84",
+		"ipr" : {
+			"name":"IGN",
+			"url":"http://www.ign.fr/",
+			"description": "",
+			"logo":""
+		},
 		"mimetype": "image/jpeg",
 		"tileMatrixSet": "WGS84G",
 		"tileMatrixSetLimits": {

@@ -10,6 +10,12 @@
 		}
 	},
 	"options": {
+		"ipr" : {
+			"name":"IGN",
+			"url":"http://www.ign.fr/",
+			"description": "",
+			"logo":""
+		},
 		"name": "ELEVATION.ELEVATIONGRIDCOVERAGE",
 		"mimetype": "image/x-bil;bits=32",
 		"tileMatrixSet": "WGS84G",
