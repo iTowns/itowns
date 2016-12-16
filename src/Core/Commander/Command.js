@@ -26,11 +26,4 @@ function Command() {
 
 Command.prototype.constructor = Command;
 
-/**
- */
-Command.prototype.instance = function () {
-    // TODO: Implement Me
-
-};
-
 export default Command;

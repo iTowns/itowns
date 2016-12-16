@@ -44,7 +44,7 @@ PanoramicProvider.prototype = Object.create(Provider.prototype);
 PanoramicProvider.prototype.constructor = PanoramicProvider;
 
 
-PanoramicProvider.prototype.init = function (options) {
+PanoramicProvider.prototype.init = function init(options) {
     _urlPano = options.pano;
     _urlImage = options.url;
     _urlCam = options.cam;
@@ -57,14 +57,14 @@ PanoramicProvider.prototype.init = function (options) {
  * @param {type} distance
  * @returns {Promise}
  */
-PanoramicProvider.prototype.getMetaDataFromPos = function (longitude, latitude) {
+PanoramicProvider.prototype.getMetaDataFromPos = function getMetaDataFromPos(longitude, latitude) {
     if (_panoramicsMetaDataPromise == null) {
         var requestURL = _urlPano; // TODO : string_format
         _panoramicsMetaDataPromise = new Promise((resolve, reject) => {
             var req = new XMLHttpRequest();
             req.open('GET', requestURL);
 
-            req.onload = function () {
+            req.onload = function onloadFn() {
                 if (req.status === 200) {
                     resolve(JSON.parse(req.response));
                 } else {
@@ -72,7 +72,7 @@ PanoramicProvider.prototype.getMetaDataFromPos = function (longitude, latitude) 
                 }
             };
 
-            req.onerror = function () {
+            req.onerror = function onerrorFn() {
                 reject(Error('Network Error'));
             };
 
@@ -96,7 +96,7 @@ PanoramicProvider.prototype.getMetaDataFromPos = function (longitude, latitude) 
     });
 };
 
-PanoramicProvider.prototype.getTextureMaterial = function (panoInfo, pivot) {
+PanoramicProvider.prototype.getTextureMaterial = function getTextureMaterial(panoInfo, pivot) {
     return ProjectiveTexturingMaterial.init(_options, panoInfo, pivot); // Initialize itself Ori
 
     // ProjectiveTexturingMaterial.createShaderMat(_options);
@@ -104,12 +104,12 @@ PanoramicProvider.prototype.getTextureMaterial = function (panoInfo, pivot) {
 };
 
 
-PanoramicProvider.prototype.updateTextureMaterial = function (panoInfo, pivot) {
+PanoramicProvider.prototype.updateTextureMaterial = function updateTextureMaterial(panoInfo, pivot) {
     ProjectiveTexturingMaterial.updateUniforms(panoInfo, pivot);
 };
 
 
-PanoramicProvider.prototype.getGeometry = function (longitude, latitude, altitude) {
+PanoramicProvider.prototype.getGeometry = function getGeometry(longitude, latitude, altitude) {
     var w = 0.003;
     var bbox = {
         minCarto: {
@@ -143,14 +143,14 @@ PanoramicProvider.prototype.getGeometry = function (longitude, latitude, altitud
 // - Get Pano closest to lon lat (panoramic metadata)
 // - Get sensors informations (camera calibration)
 // - Get Building boxes from WFS
-PanoramicProvider.prototype.getTextureProjectiveMesh = function (longitude, latitude, distance) {
+PanoramicProvider.prototype.getTextureProjectiveMesh = function getTextureProjectiveMesh(longitude, latitude, distance) {
     return this.getMetaDataFromPos(longitude, latitude, distance).then(panoInfo => this.getGeometry(panoInfo.longitude, panoInfo.latitude, panoInfo.altitude)).then((data) => {
         this.geometry = data.geometry;
         this.absoluteCenter = data.pivot; // pivot in fact here, not absoluteCenter
         this.geometryRoof = data.roof;
 
         return this.getTextureMaterial(this.panoInfo, this.absoluteCenter);
-    }).then(function (shaderMaterial) {
+    }).then(function thenCb(shaderMaterial) {
         this.material = shaderMaterial; // new THREE.MeshBasicMaterial({color: 0xffffff, transparent: true, opacity: 0.8});
         // this.projectiveTexturedMesh = new THREE.Mesh(this.geometry, this.material);
         this.panoramicMesh = new PanoramicMesh(this.geometry, this.material, this.absoluteCenter);
@@ -169,7 +169,7 @@ PanoramicProvider.prototype.getTextureProjectiveMesh = function (longitude, lati
 };
 
 // Update existing panoramic mesh with new images look for the closest to parameters position
-PanoramicProvider.prototype.updateMaterialImages = function (longitude, latitude, distance) {
+PanoramicProvider.prototype.updateMaterialImages = function updateMaterialImages(longitude, latitude, distance) {
     return this.getMetaDataFromPos(longitude, latitude, distance).then((panoInfo) => {
         this.updateTextureMaterial(panoInfo, this.absoluteCenter);
         return panoInfo;
@@ -177,15 +177,15 @@ PanoramicProvider.prototype.updateMaterialImages = function (longitude, latitude
 };
 
 
-PanoramicProvider.prototype.getUrlImageFile = function () {
+PanoramicProvider.prototype.getUrlImageFile = function getUrlImageFile() {
     return _urlImage;
 };
 
-PanoramicProvider.prototype.getMetaDataSensorURL = function () {
+PanoramicProvider.prototype.getMetaDataSensorURL = function getMetaDataSensorURL() {
     return _urlCam;
 };
 
-PanoramicProvider.prototype.getMetaDataSensor = function () {
+PanoramicProvider.prototype.getMetaDataSensor = function getMetaDataSensor() {
 
 
 };

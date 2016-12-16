@@ -72,7 +72,7 @@ function ManagerCommands(scene) {
 
 ManagerCommands.prototype.constructor = ManagerCommands;
 
-ManagerCommands.prototype.runCommand = function (command, queue, executingCounterUpToDate) {
+ManagerCommands.prototype.runCommand = function runCommand(command, queue, executingCounterUpToDate) {
     var provider = this.providers[command.layer.protocol];
 
     if (!provider) {
@@ -96,7 +96,7 @@ ManagerCommands.prototype.runCommand = function (command, queue, executingCounte
     });
 };
 
-ManagerCommands.prototype.addCommand = function (command) {
+ManagerCommands.prototype.addCommand = function addCommand(command) {
     // parse host
     const layer = command.layer;
 
@@ -114,7 +114,7 @@ ManagerCommands.prototype.addCommand = function (command) {
         // increment before
         q.counters.executing++;
 
-        var runNow = function () {
+        var runNow = function runNow() {
             this.runCommand(command, q, true);
         }.bind(this);
 
@@ -128,15 +128,15 @@ ManagerCommands.prototype.addCommand = function (command) {
 };
 
 
-ManagerCommands.prototype.addProtocolProvider = function (protocol, provider) {
+ManagerCommands.prototype.addProtocolProvider = function addProtocolProvider(protocol, provider) {
     this.providers[protocol] = provider;
 };
 
-ManagerCommands.prototype.getProtocolProvider = function (protocol) {
+ManagerCommands.prototype.getProtocolProvider = function getProtocolProvider(protocol) {
     return this.providers[protocol];
 };
 
-ManagerCommands.prototype.commandsWaitingExecutionCount = function () {
+ManagerCommands.prototype.commandsWaitingExecutionCount = function commandsWaitingExecutionCount() {
     let sum = this.defaultQueue.storage.length + this.defaultQueue.counters.executing;
     for (var q of this.hostQueues) {
         sum += q[1].storage.length + q[1].counters.executing;
@@ -144,7 +144,7 @@ ManagerCommands.prototype.commandsWaitingExecutionCount = function () {
     return sum;
 };
 
-ManagerCommands.prototype.commandsRunningCount = function () {
+ManagerCommands.prototype.commandsRunningCount = function commandsRunningCount() {
     let sum = this.defaultQueue.counters.executing;
 
     for (var q of this.hostQueues) {
@@ -153,7 +153,7 @@ ManagerCommands.prototype.commandsRunningCount = function () {
     return sum;
 };
 
-ManagerCommands.prototype.resetCommandsCount = function (type) {
+ManagerCommands.prototype.resetCommandsCount = function resetCommandsCount(type) {
     let sum = this.defaultQueue.counters[type];
     this.defaultQueue.counters[type] = 0;
     for (var q of this.hostQueues) {
@@ -163,7 +163,7 @@ ManagerCommands.prototype.resetCommandsCount = function (type) {
     return sum;
 };
 
-ManagerCommands.prototype.getProviders = function () {
+ManagerCommands.prototype.getProviders = function getProviders() {
     var p = [];
 
     for (var protocol in this.providers) {
@@ -174,7 +174,7 @@ ManagerCommands.prototype.getProviders = function () {
 
 /**
  */
-ManagerCommands.prototype.deQueue = function (queue) {
+ManagerCommands.prototype.deQueue = function deQueue(queue) {
     var st = queue.storage;
     while (st.length > 0) {
         var cmd = st.dequeue();
@@ -192,7 +192,7 @@ ManagerCommands.prototype.deQueue = function (queue) {
 
 /**
  */
-ManagerCommands.prototype.wait = function () {
+ManagerCommands.prototype.wait = function wait() {
     this.eventsManager.wait();
 };
 

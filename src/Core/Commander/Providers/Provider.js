@@ -16,7 +16,7 @@ Provider.prototype.constructor = Provider;
 /**
  * @param url
  */
-Provider.prototype.get = function (/* url*/) {
+Provider.prototype.get = function get(/* url*/) {
     // TODO: Implement Me
 
 };
@@ -25,14 +25,14 @@ Provider.prototype.get = function (/* url*/) {
  * preprocessLayer will be called each time a layer is added.
  * Allows the Provider to perform precomputations on the layer
  */
-Provider.prototype.preprocessLayer = function (/* layer*/) {
+Provider.prototype.preprocessLayer = function preprocessLayer(/* layer*/) {
 
 };
 
 /**
  * @param url
  */
-Provider.prototype.getInCache = function (/* url*/) {
+Provider.prototype.getInCache = function getInCache(/* url*/) {
     // TODO: Implement Me
 
 };

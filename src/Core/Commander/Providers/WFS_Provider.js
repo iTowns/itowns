@@ -39,7 +39,7 @@ WFS_Provider.prototype.constructor = WFS_Provider;
  * &REQUEST=GetFeature&typeName=BDTOPO_BDD_WLD_WGS84G:bati_remarquable,BDTOPO_BDD_WLD_WGS84G:bati_indifferencie
  * &bbox=2.325,48.855,2.335,48.865,epsg:4326&outputFormat=json
  */
-WFS_Provider.prototype.url = function (bbox) {
+WFS_Provider.prototype.url = function url(bbox) {
     var url = `${this.baseUrl
         }SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature` +
         `&typeName=${this.typename}&BBOX=${
@@ -53,7 +53,7 @@ WFS_Provider.prototype.url = function (bbox) {
 /*
  * Return Data as Object (JSON parsed)
  */
-WFS_Provider.prototype.getData = function (bbox) {
+WFS_Provider.prototype.getData = function getData(bbox) {
     var url = this.url(bbox);
     return Fetcher.json(url);
 };

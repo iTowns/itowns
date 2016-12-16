@@ -6,17 +6,17 @@ var Binary = {};
 // Unsigned right-shifting is simple: just move the bits,
 // while shifting in zeros from the left.
 // The sign is not preserved, the result is always a Uint32
-Binary.ToUint32 = function (x) {
+Binary.ToUint32 = function ToUint32(x) {
     return x >>> 0;
 };
 
-Binary.ToInt32 = function (x) {
+Binary.ToInt32 = function ToInt32(x) {
     return x >> 0;
 };
 
 
 // Convert flag to char
-Binary.toChar = function (nMask) {
+Binary.toChar = function toChar(nMask) {
     var nFlag,
         nShifted = nMask,
         sMask = '';

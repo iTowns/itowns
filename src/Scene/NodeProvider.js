@@ -17,7 +17,7 @@ NodeProvider.prototype = new Provider();
 /**
  * @param type {int}
  */
-NodeProvider.prototype.createObject = function (/* type*/) {
+NodeProvider.prototype.createObject = function createObject(/* type*/) {
     // TODO: Implement Me
 
 };

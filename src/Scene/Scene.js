@@ -73,7 +73,7 @@ function Scene(coordinate, ellipsoid, viewerDiv, debugMode, gLDebug) {
 Scene.prototype.constructor = Scene;
 /**
  */
-Scene.prototype.updateCommand = function () {
+Scene.prototype.updateCommand = function updateCommand() {
     // TODO: Implement Me
 
 };
@@ -82,35 +82,35 @@ Scene.prototype.updateCommand = function () {
  * @documentation: return current camera
  * @returns {Scene_L7.Scene.gfxEngine.camera}
  */
-Scene.prototype.currentCamera = function () {
+Scene.prototype.currentCamera = function currentCamera() {
     return this.gfxEngine.camera;
 };
 
-Scene.prototype.currentControls = function () {
+Scene.prototype.currentControls = function currentControls() {
     return this.gfxEngine.controls;
 };
 
-Scene.prototype.getPickPosition = function (mouse) {
+Scene.prototype.getPickPosition = function getPickPosition(mouse) {
     return this.gfxEngine.getPickingPositionFromDepth(mouse);
 };
 
-Scene.prototype.getStyle = function (name) {
+Scene.prototype.getStyle = function getStyle(name) {
     return this.stylesManager.getStyle(name);
 };
 
-Scene.prototype.removeStyle = function (name) {
+Scene.prototype.removeStyle = function removeStyle(name) {
     return this.stylesManager.removeStyle(name);
 };
 
-Scene.prototype.getStyles = function () {
+Scene.prototype.getStyles = function getStyles() {
     return this.stylesManager.getStyles();
 };
 
-Scene.prototype.getEllipsoid = function () {
+Scene.prototype.getEllipsoid = function getEllipsoid() {
     return this.ellipsoid;
 };
 
-Scene.prototype.size = function () {
+Scene.prototype.size = function size() {
     return this.ellipsoid.size;
 };
 
@@ -118,7 +118,7 @@ Scene.prototype.size = function () {
  *
  * @returns {undefined}
  */
-Scene.prototype.updateScene3D = function () {
+Scene.prototype.updateScene3D = function updateScene3D() {
     this.gfxEngine.update();
 };
 
@@ -129,7 +129,7 @@ Scene.prototype.updateScene3D = function () {
  * Using a non-0 delay allows to delay update - useful to reduce CPU load for
  * non-interactive events (e.g: texture loaded)
  */
-Scene.prototype.notifyChange = function (delay) {
+Scene.prototype.notifyChange = function notifyChange(delay) {
     this.needsRedraw = true;
 
     window.clearInterval(this.timer);
@@ -141,7 +141,7 @@ Scene.prototype.notifyChange = function (delay) {
     }
 };
 
-Scene.prototype.scheduleUpdate = function () {
+Scene.prototype.scheduleUpdate = function scheduleUpdate() {
     if (this.renderingState !== RENDERING_ACTIVE) {
         this.renderingState = RENDERING_ACTIVE;
 
@@ -149,7 +149,7 @@ Scene.prototype.scheduleUpdate = function () {
     }
 };
 
-Scene.prototype.update = function () {
+Scene.prototype.update = function update() {
     for (var l = 0; l < this.layers.length; l++) {
         var layer = this.layers[l].node;
 
@@ -167,7 +167,7 @@ Scene.prototype.update = function () {
     }
 };
 
-Scene.prototype.step = function () {
+Scene.prototype.step = function step() {
     // update data-structure
     this.update();
 
@@ -202,11 +202,11 @@ Scene.prototype.step = function () {
 
 /**
  */
-Scene.prototype.renderScene3D = function () {
+Scene.prototype.renderScene3D = function renderScene3D() {
     this.gfxEngine.renderScene();
 };
 
-Scene.prototype.scene3D = function () {
+Scene.prototype.scene3D = function scene3D() {
     return this.gfxEngine.scene3D;
 };
 
@@ -215,7 +215,7 @@ Scene.prototype.scene3D = function () {
  *
  * @param node {[object Object]}
  */
-Scene.prototype.add = function (node, nodeProcess) {
+Scene.prototype.add = function add(node, nodeProcess) {
     if (node instanceof Globe) {
         this.map = node;
         nodeProcess = nodeProcess || new NodeProcess(this.currentCamera(), node.ellipsoid);
@@ -229,7 +229,7 @@ Scene.prototype.add = function (node, nodeProcess) {
     this.gfxEngine.add3DScene(node.getMesh());
 };
 
-Scene.prototype.getMap = function () {
+Scene.prototype.getMap = function getMap() {
     return this.map;
 };
 
@@ -238,7 +238,7 @@ Scene.prototype.getMap = function () {
  *
  * @param layer {[object Object]}
  */
-Scene.prototype.remove = function (/* layer*/) {
+Scene.prototype.remove = function remove(/* layer*/) {
     // TODO: Implement Me
 
 };
@@ -247,16 +247,16 @@ Scene.prototype.remove = function (/* layer*/) {
 /**
  * @param layers {[object Object]}
  */
-Scene.prototype.select = function (/* layers*/) {
+Scene.prototype.select = function select(/* layers*/) {
     // TODO: Implement Me
 
 };
 
-Scene.prototype.selectNodeId = function (id) {
+Scene.prototype.selectNodeId = function selectNodeId(id) {
     this.browserScene.selectedNodeId = id;
 };
 
-Scene.prototype.setStreetLevelImageryOn = function (value) {
+Scene.prototype.setStreetLevelImageryOn = function setStreetLevelImageryOn(value) {
     if (value) {
         if (this.layers[1]) {
             this.layers[1].node.visible = true;
@@ -277,7 +277,7 @@ Scene.prototype.setStreetLevelImageryOn = function (value) {
     this.updateScene3D();
 };
 
-Scene.prototype.setLightingPos = function (pos) {
+Scene.prototype.setLightingPos = function setLightingPos(pos) {
     if (pos)
         { this.lightingPos = pos; }
     else {
@@ -292,7 +292,7 @@ Scene.prototype.setLightingPos = function (pos) {
 };
 
 // Should be moved in time module: A single loop update registered object every n millisec
-Scene.prototype.animateTime = function (value) {
+Scene.prototype.animateTime = function animateTime(value) {
     if (value) {
         this.time += 4000;
 
@@ -318,7 +318,7 @@ Scene.prototype.animateTime = function (value) {
         { window.cancelAnimationFrame(this.rAF); }
 };
 
-Scene.prototype.orbit = function (value) {
+Scene.prototype.orbit = function orbit(value) {
     // this.gfxEngine.controls = null;
     this.orbitOn = value;
 };

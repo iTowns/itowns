@@ -18,7 +18,7 @@ Timeline.prototype = new EventsManager();
  * @documentation: Cette classe est un conteneur et gestionnaire de triggeurs
  *
  */
-Timeline.prototype.update = function () {
+Timeline.prototype.update = function update() {
     // TODO: Implement Me
 
 };

@@ -13,7 +13,7 @@ function Capabilities() {
 
 /**
  */
-Capabilities.prototype.getSystemCapabilities = function () {
+Capabilities.prototype.getSystemCapabilities = function getSystemCapabilities() {
     // TODO: Implement Me
     /*
     var memory = window.performance.memory;
@@ -24,7 +24,7 @@ Capabilities.prototype.getSystemCapabilities = function () {
 
 /**
  */
-Capabilities.prototype.getGpuCapabilities = function () {
+Capabilities.prototype.getGpuCapabilities = function getGpuCapabilities() {
     // TODO: Implement Me
 
 };
@@ -32,16 +32,16 @@ Capabilities.prototype.getGpuCapabilities = function () {
 
 /**
  */
-Capabilities.prototype.ioFile = function () {
+Capabilities.prototype.ioFile = function ioFile() {
     // TODO: Implement Me
 
 };
 
-Capabilities.prototype.isInternetExplorer = function () {
+Capabilities.prototype.isInternetExplorer = function isInternetExplorer() {
     return /* @cc_on!@*/ false || !!document.documentMode;
 };
 /*
-    Capabilities.prototype.checkVersion = function()
+    Capabilities.prototype.checkVersion = functioncheckVersion()
     {
       var msg = "You're not using Internet Explorer.";
       var ver = getInternetExplorerVersion();

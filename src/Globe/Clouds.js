@@ -62,7 +62,7 @@ Clouds.prototype = Object.create(NodeMesh.prototype);
 Clouds.prototype.constructor = Clouds;
 
 
-Clouds.prototype.generate = function (satelliteAnimation) {
+Clouds.prototype.generate = function generate(satelliteAnimation) {
     this.satelliteAnimation = satelliteAnimation;
     if (!satelliteAnimation) {
         this.live = true;
@@ -98,16 +98,16 @@ Clouds.prototype.generate = function (satelliteAnimation) {
 };
 
 
-Clouds.prototype.animate = function () {
+Clouds.prototype.animate = function animate() {
     if (!this.satelliteAnimation) this.material.uniforms.time.value += 0.01;
     requestAnimationFrame(this.animate.bind(this));
 };
 
-Clouds.prototype.setLightingOn = function (enable) {
+Clouds.prototype.setLightingOn = function setLightingOn(enable) {
     this.material.uniforms.lightingOn.value = enable;
 };
 
-Clouds.prototype.updateLightingPos = function (pos) {
+Clouds.prototype.updateLightingPos = function updateLightingPos(pos) {
     this.material.uniforms.lightPosition.value = pos.clone().normalize();
 };
 

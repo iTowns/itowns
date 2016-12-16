@@ -21,7 +21,7 @@ function SphereHelper(radius) {
 SphereHelper.prototype = Object.create(THREE.Mesh.prototype);
 SphereHelper.prototype.constructor = SphereHelper;
 
-SphereHelper.prototype.update = function (radius) {
+SphereHelper.prototype.update = function update(radius) {
     this.geometry.dispose();
     this.geometry = new THREE.SphereGeometry(radius, 8, 8);
 };

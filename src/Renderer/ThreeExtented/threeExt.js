@@ -9,7 +9,7 @@ import * as THREE from 'three';
 // mbredif: extend THREE.Matrix3 prototype to with some THREE.Matrix4 functionalities
 THREE.Matrix3.prototype.fromArray = THREE.Matrix4.prototype.fromArray;
 
-THREE.Matrix3.prototype.multiplyMatrices = function (a, b) {
+THREE.Matrix3.prototype.multiplyMatrices = function multiplyMatrices(a, b) {
     var ae = a.elements;
     var be = b.elements;
     var te = this.elements;
@@ -49,7 +49,7 @@ THREE.Matrix3.prototype.multiplyMatrices = function (a, b) {
     return this;
 };
 
-THREE.Matrix3.prototype.flattenToArray = function (flat) {
+THREE.Matrix3.prototype.flattenToArray = function flattenToArray(flat) {
     var te = this.elements;
     flat[0] = te[0];
     flat[1] = te[1];
@@ -64,7 +64,7 @@ THREE.Matrix3.prototype.flattenToArray = function (flat) {
     return flat;
 };
 
-THREE.Matrix3.prototype.flattenToArrayOffset = function (flat, offset) {
+THREE.Matrix3.prototype.flattenToArrayOffset = function flattenToArrayOffset(flat, offset) {
     var te = this.elements;
     flat[offset] = te[0];
     flat[offset + 1] = te[1];
@@ -81,7 +81,7 @@ THREE.Matrix3.prototype.flattenToArrayOffset = function (flat, offset) {
     return flat;
 };
 
-THREE.Matrix3.prototype.makeRotationFromQuaternion = function (q) {
+THREE.Matrix3.prototype.makeRotationFromQuaternion = function makeRotationFromQuaternion(q) {
     var te = this.elements;
 
     var x = q.x,
@@ -116,7 +116,7 @@ THREE.Matrix3.prototype.makeRotationFromQuaternion = function (q) {
     return this;
 };
 
-THREE.Matrix3.prototype.fromMatrix4 = function (m) {
+THREE.Matrix3.prototype.fromMatrix4 = function fromMatrix4(m) {
     // var out = this.elements;
     var c = m.elements;
 

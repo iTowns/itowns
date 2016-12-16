@@ -76,7 +76,7 @@ TileGeometry.prototype = Object.create(THREE.BufferGeometry.prototype);
 
 TileGeometry.prototype.constructor = TileGeometry;
 
-TileGeometry.prototype.computeBuffers = function (params, builder) {
+TileGeometry.prototype.computeBuffers = function computeBuffers(params, builder) {
     var javToo = new JavaTools();
     // Create output buffers.
     var outBuffers = new Buffers(params.segment);
@@ -115,18 +115,18 @@ TileGeometry.prototype.computeBuffers = function (params, builder) {
 
     builder.Prepare(params);
 
-    var UV_WGS84 = function () {};
-    var UV_PM = function () {};
+    var UV_WGS84 = function UV_WGS84() {};
+    var UV_PM = function UV_PM() {};
 
     // Define UV computation functions if needed
     if (outBuffers.uv.wgs84 === null) {
-        UV_WGS84 = function (out, id, u, v) {
+        UV_WGS84 = function UV_WGS84(out, id, u, v) {
             out.uv.wgs84[id * 2 + 0] = u;
             out.uv.wgs84[id * 2 + 1] = v;
         };
     }
     if (outBuffers.uv.pm === null && builder.getUV_PM) {
-        UV_PM = function (out, id, u) {
+        UV_PM = function UV_PM(out, id, u) {
             out.uv.pm[id] = u;
         };
     }
@@ -224,17 +224,17 @@ TileGeometry.prototype.computeBuffers = function (params, builder) {
 
     const r = 5 * ((20 - params.zoom) + 10);
 
-    var buildIndexSkirt = function () {};
-    var buildUVSkirt = function () {};
+    var buildIndexSkirt = function buildIndexSkirt() {};
+    var buildUVSkirt = function buildUVSkirt() {};
 
     if (outBuffers.index === null) {
-        buildIndexSkirt = function (id, v1, v2, v3, v4) {
+        buildIndexSkirt = function buildIndexSkirt(id, v1, v2, v3, v4) {
             id = bufferize(v1, v2, v3, id);
             id = bufferize(v1, v3, v4, id);
             return id;
         };
 
-        buildUVSkirt = function () {
+        buildUVSkirt = function buildUVSkirt() {
             scratchBuffers.uv.wgs84[idVertex * 2 + 0] = scratchBuffers.uv.wgs84[id * 2 + 0];
             scratchBuffers.uv.wgs84[idVertex * 2 + 1] = scratchBuffers.uv.wgs84[id * 2 + 1];
         };
