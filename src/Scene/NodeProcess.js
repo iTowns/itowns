@@ -33,7 +33,7 @@ function NodeProcess(camera, ellipsoid, bbox) {
  * @param {type} camera : camera for the culling
  * @returns {Boolean}
  */
-NodeProcess.prototype.backFaceCulling = function (node, camera) {
+NodeProcess.prototype.backFaceCulling = function backFaceCulling(node, camera) {
     var normal = camera.direction;
     for (var n = 0; n < node.normals().length; n++) {
         var dot = normal.dot(node.normals()[n]);
@@ -54,7 +54,7 @@ NodeProcess.prototype.backFaceCulling = function (node, camera) {
  * @param  {type} camera: the camera used for culling
  * @return {Boolean}      the culling attempt's result
  */
-NodeProcess.prototype.isCulled = function (node, camera) {
+NodeProcess.prototype.isCulled = function isCulled(node, camera) {
     return !(this.frustumCullingOBB(node, camera) && this.horizonCulling(node, camera));
 };
 
@@ -64,17 +64,17 @@ NodeProcess.prototype.isCulled = function (node, camera) {
  * @param {type} camera : camera for culling
  * @returns {unresolved}
  */
-NodeProcess.prototype.frustumCulling = function (node, camera) {
+NodeProcess.prototype.frustumCulling = function frustumCulling(node, camera) {
     var frustum = camera.frustum;
 
     return frustum.intersectsObject(node);
 };
 
-NodeProcess.prototype.checkNodeSSE = function (node) {
+NodeProcess.prototype.checkNodeSSE = function checkNodeSSE(node) {
     return SSE_SUBDIVISION_THRESHOLD < node.sse || node.level <= 2;
 };
 
-NodeProcess.prototype.subdivideNode = function (node, camera, params) {
+NodeProcess.prototype.subdivideNode = function subdivideNode(node, camera, params) {
     if (!node.pendingSubdivision && node.noChild()) {
         var bboxes = params.tree.subdivideNode(node);
         node.pendingSubdivision = true;
@@ -169,7 +169,7 @@ function refinementCommandCancellationFn(cmd) {
         cmd.requester.level >= 2;
 }
 
-NodeProcess.prototype.refineNodeLayers = function (node, camera, params) {
+NodeProcess.prototype.refineNodeLayers = function refineNodeLayers(node, camera, params) {
     // Elevation and Imagery updates require separate functions (for now):
     //   * a node can only have 1 elevation texture
     //   * a node inherits elevation texture from parent, even if tileInsideLimit(node)
@@ -191,7 +191,7 @@ NodeProcess.prototype.refineNodeLayers = function (node, camera, params) {
     }
 };
 
-NodeProcess.prototype.hideNodeChildren = function (node) {
+NodeProcess.prototype.hideNodeChildren = function hideNodeChildren(node) {
     for (var i = 0; i < node.children.length; i++) {
         var child = node.children[i];
         child.setDisplayed(false);
@@ -378,7 +378,7 @@ function updateNodeElevation(quadtree, node, layersConfig, force) {
 }
 
 
-NodeProcess.prototype.processNode = function (node, camera, params) {
+NodeProcess.prototype.processNode = function processNode(node, camera, params) {
     node.setDisplayed(false);
     node.setSelected(false);
 
@@ -419,7 +419,7 @@ NodeProcess.prototype.processNode = function (node, camera, params) {
 
 var quaternion = new THREE.Quaternion();
 
-NodeProcess.prototype.frustumCullingOBB = function (node, camera) {
+NodeProcess.prototype.frustumCullingOBB = function frustumCullingOBB(node, camera) {
     // position in local space
     var position = node.OBB().worldToLocal(camera.position().clone());
     position.z -= node.distance;
@@ -435,7 +435,7 @@ NodeProcess.prototype.frustumCullingOBB = function (node, camera) {
  * @param {type} camera
  * @returns {unresolved}
  */
-NodeProcess.prototype.frustumBB = function (node /* , camera*/) {
+NodeProcess.prototype.frustumBB = function frustumBB(node /* , camera*/) {
     return node.bbox.intersect(this.bbox);
 };
 
@@ -443,7 +443,7 @@ NodeProcess.prototype.frustumBB = function (node /* , camera*/) {
  * @documentation: Pre-computing for the upcoming processes
  * @param  {type} camera
  */
-NodeProcess.prototype.prepare = function (camera) {
+NodeProcess.prototype.prepare = function prepare(camera) {
     this.preHorizonCulling(camera);
 };
 
@@ -452,7 +452,7 @@ NodeProcess.prototype.prepare = function (camera) {
  * @param {type} camera
  * @returns {undefined}
  */
-NodeProcess.prototype.preHorizonCulling = function (camera) {
+NodeProcess.prototype.preHorizonCulling = function preHorizonCulling(camera) {
     this.cV.copy(camera.position()).divide(this.r);
     this.vhMagnitudeSquared = this.cV.lengthSq() - 1.0;
 };
@@ -462,7 +462,7 @@ NodeProcess.prototype.preHorizonCulling = function (camera) {
  * @param {type} pt
  * @returns {Boolean}
  */
-NodeProcess.prototype.pointHorizonCulling = function (pt) {
+NodeProcess.prototype.pointHorizonCulling = function pointHorizonCulling(pt) {
     var vT = pt.divide(this.r).sub(this.cV);
 
     var vtMagnitudeSquared = vT.lengthSq();
@@ -483,7 +483,7 @@ NodeProcess.prototype.pointHorizonCulling = function (pt) {
  */
 var point = new THREE.Vector3();
 
-NodeProcess.prototype.horizonCulling = function (node) {
+NodeProcess.prototype.horizonCulling = function horizonCulling(node) {
     // horizonCulling Oriented bounding box
     var points = node.OBB().pointsWorld;
     var isVisible = false;

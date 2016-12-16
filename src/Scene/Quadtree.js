@@ -54,7 +54,7 @@ function Quadtree(type, schemeTile, link) {
 
     rootNode.link = this.link;
 
-    rootNode.changeState = function () {
+    rootNode.changeState = function changeState() {
         return true;
     };
 
@@ -65,7 +65,7 @@ Quadtree.prototype = Object.create(Layer.prototype);
 
 Quadtree.prototype.constructor = Quadtree;
 
-Quadtree.prototype.init = function (geometryLayer) {
+Quadtree.prototype.init = function init(geometryLayer) {
     var rootNode = this.children[0];
 
     for (var i = 0; i < this.schemeTile.rootCount(); i++) {
@@ -73,23 +73,23 @@ Quadtree.prototype.init = function (geometryLayer) {
     }
 };
 
-Quadtree.prototype.northWest = function (node) {
+Quadtree.prototype.northWest = function northWest(node) {
     return node.children[0];
 };
 
-Quadtree.prototype.northEast = function (node) {
+Quadtree.prototype.northEast = function northEast(node) {
     return node.children[1];
 };
 
-Quadtree.prototype.southWest = function (node) {
+Quadtree.prototype.southWest = function southWest(node) {
     return node.children[2];
 };
 
-Quadtree.prototype.southEast = function (node) {
+Quadtree.prototype.southEast = function southEast(node) {
     return node.children[3];
 };
 
-Quadtree.prototype.requestNewTile = function (geometryLayer, bbox, parent) {
+Quadtree.prototype.requestNewTile = function requestNewTile(geometryLayer, bbox, parent) {
     var params = {
         layer: geometryLayer,
         bbox,
@@ -98,7 +98,7 @@ Quadtree.prototype.requestNewTile = function (geometryLayer, bbox, parent) {
     this.interCommand.request(params, parent);
 };
 
-Quadtree.prototype.canSubdivideNode = function (node) {
+Quadtree.prototype.canSubdivideNode = function canSubdivideNode(node) {
     return node.level < this.maxLevel;
 };
 
@@ -107,7 +107,7 @@ Quadtree.prototype.canSubdivideNode = function (node) {
  * @param {type} node
  * @returns {Array} an array of four bounding boxex
  */
-Quadtree.prototype.subdivideNode = function (node) {
+Quadtree.prototype.subdivideNode = function subdivideNode(node) {
     if (node.pendingSubdivision || !this.canSubdivideNode(node)) {
         return [];
     }
@@ -117,17 +117,17 @@ Quadtree.prototype.subdivideNode = function (node) {
     return [quad.northWest, quad.northEast, quad.southWest, quad.southEast];
 };
 
-Quadtree.prototype.traverse = function (foo, node)
+Quadtree.prototype.traverse = function traverse(foo, node)
 {
     if (foo(node))
       { for (var i = 0; i < node.children.length; i++)
         { this.traverse(foo, node.children[i]); } }
 };
 
-Quadtree.prototype.getTile = function (coordinate) {
+Quadtree.prototype.getTile = function getTile(coordinate) {
     var point = { x: coordinate.longitude(), y: coordinate.latitude() };
 
-    var gT = function (tile)
+    var gT = function gT(tile)
     {
         var inside = tile.bbox ? tile.bbox.isInside(point) : true;
 

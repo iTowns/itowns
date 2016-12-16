@@ -7,7 +7,7 @@
 
 import { Vector3 } from 'three';
 
-var defaultValue = function (value, def) {
+var defaultValue = function defaultValue(value, def) {
     return value === undefined ? def : value;
 };
 

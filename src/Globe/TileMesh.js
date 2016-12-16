@@ -74,7 +74,7 @@ TileMesh.prototype = Object.create(NodeMesh.prototype);
 
 TileMesh.prototype.constructor = TileMesh;
 
-TileMesh.prototype.buildHelper = function () {
+TileMesh.prototype.buildHelper = function buildHelper() {
     // TODO Dispose HELPER!!!
     var text = (this.level + 1).toString();
 
@@ -96,7 +96,7 @@ TileMesh.prototype.buildHelper = function () {
     this.link.add(this.helper);
 };
 
-TileMesh.prototype.dispose = function () {
+TileMesh.prototype.dispose = function dispose() {
     // TODO à mettre dans node mesh
     this.material.dispose();
     this.geometry.dispose();
@@ -104,17 +104,17 @@ TileMesh.prototype.dispose = function () {
     this.material = null;
 };
 
-TileMesh.prototype.setUuid = function (uuid) {
+TileMesh.prototype.setUuid = function setUuid(uuid) {
     this.id = uuid;
     this.materials[RendererConstant.FINAL].setUuid(uuid);
     this.materials[RendererConstant.ID].setUuid(uuid);
 };
 
-TileMesh.prototype.getUuid = function (uuid) {
+TileMesh.prototype.getUuid = function getUuid(uuid) {
     return this.materials[RendererConstant.ID].getUuid(uuid);
 };
 
-TileMesh.prototype.setColorLayerParameters = function (paramsTextureColor) {
+TileMesh.prototype.setColorLayerParameters = function setColorLayerParameters(paramsTextureColor) {
     if (!this.loaded) {
         this.materials[RendererConstant.FINAL].setColorLayerParameters(paramsTextureColor);
     }
@@ -122,7 +122,7 @@ TileMesh.prototype.setColorLayerParameters = function (paramsTextureColor) {
 /**
  *
  * @returns {undefined}     */
-TileMesh.prototype.disposeChildren = function () {
+TileMesh.prototype.disposeChildren = function disposeChildren() {
     this.pendingSubdivision = false;
 
     while (this.children.length > 0) {
@@ -132,7 +132,7 @@ TileMesh.prototype.disposeChildren = function () {
     }
 };
 
-TileMesh.prototype.setDisplayed = function (show) {
+TileMesh.prototype.setDisplayed = function setDisplayed(show) {
     for (var key in this.materials) {
         this.materials[key].visible = show;
     }
@@ -146,12 +146,12 @@ TileMesh.prototype.setDisplayed = function (show) {
     }
 };
 
-TileMesh.prototype.enableRTC = function (enable) {
+TileMesh.prototype.enableRTC = function enableRTC(enable) {
     this.materials[RendererConstant.FINAL].enableRTC(enable);
 };
 
 // switch material in function of state
-TileMesh.prototype.changeState = function (state) {
+TileMesh.prototype.changeState = function changeState(state) {
     if (state !== RendererConstant.FINAL) {
         this.materials[state].visible = this.materials[RendererConstant.FINAL].visible;
     }
@@ -159,25 +159,25 @@ TileMesh.prototype.changeState = function (state) {
     this.material = this.materials[state];
 };
 
-TileMesh.prototype.setFog = function (fog) {
+TileMesh.prototype.setFog = function setFog(fog) {
     this.materials[RendererConstant.FINAL].setFogDistance(fog);
 };
 
-TileMesh.prototype.setMatrixRTC = function (rtc) {
+TileMesh.prototype.setMatrixRTC = function setMatrixRTC(rtc) {
     for (var key in this.materials) {
         this.materials[key].setMatrixRTC(rtc);
     }
 };
 
-TileMesh.prototype.setDebug = function (enable) {
+TileMesh.prototype.setDebug = function setDebug(enable) {
     this.materials[RendererConstant.FINAL].setDebug(enable);
 };
 
-TileMesh.prototype.setSelected = function (select) {
+TileMesh.prototype.setSelected = function setSelected(select) {
     this.materials[RendererConstant.FINAL].setSelected(select);
 };
 
-TileMesh.prototype.setTextureElevation = function (elevation) {
+TileMesh.prototype.setTextureElevation = function setTextureElevation(elevation) {
     if (this.materials[RendererConstant.FINAL] === null) {
         return;
     }
@@ -198,7 +198,7 @@ TileMesh.prototype.setTextureElevation = function (elevation) {
     this.loadingCheck();
 };
 
-TileMesh.prototype.setBBoxZ = function (min, max) {
+TileMesh.prototype.setBBoxZ = function setBBoxZ(min, max) {
     if (Math.floor(min) !== Math.floor(this.bbox.bottom()) || Math.floor(max) !== Math.floor(this.bbox.top())) {
         this.bbox.setBBoxZ(min, max);
         var delta = this.geometry.OBB.addHeight(this.bbox);
@@ -218,7 +218,7 @@ TileMesh.prototype.setBBoxZ = function (min, max) {
     }
 };
 
-TileMesh.prototype.setTexturesLayer = function (textures, layerType, layer) {
+TileMesh.prototype.setTexturesLayer = function setTexturesLayer(textures, layerType, layer) {
     if (this.material === null) {
         return;
     }
@@ -228,52 +228,52 @@ TileMesh.prototype.setTexturesLayer = function (textures, layerType, layer) {
     this.loadingCheck();
 };
 
-TileMesh.prototype.isColorLayerDownscaled = function (layer) {
+TileMesh.prototype.isColorLayerDownscaled = function isColorLayerDownscaled(layer) {
     var mat = this.materials[RendererConstant.FINAL];
     return mat.isColorLayerDownscaled(layer, this.level);
 };
 
-TileMesh.prototype.isLayerTypeDownscaled = function (layerType) {
+TileMesh.prototype.isLayerTypeDownscaled = function isLayerTypeDownscaled(layerType) {
     var mat = this.materials[RendererConstant.FINAL];
     return mat.isLayerTypeDownscaled(layerType, this.level);
 };
 
-TileMesh.prototype.normals = function () {
+TileMesh.prototype.normals = function normals() {
     return this.geometry.normals;
 };
 
-TileMesh.prototype.fourCorners = function () {
+TileMesh.prototype.fourCorners = function fourCorners() {
     return this.geometry.fourCorners;
 };
 
-TileMesh.prototype.normal = function () {
+TileMesh.prototype.normal = function normal() {
     return this.geometry.normal;
 };
 
-TileMesh.prototype.center = function () {
+TileMesh.prototype.center = function center() {
     return this.geometry.center;
 };
 
-TileMesh.prototype.OBB = function () {
+TileMesh.prototype.OBB = function OBB() {
     return this.geometry.OBB;
 };
 
-TileMesh.prototype.allTexturesAreLoaded = function () {
+TileMesh.prototype.allTexturesAreLoaded = function allTexturesAreLoaded() {
     return this.texturesNeeded === this.materials[RendererConstant.FINAL].getLoadedTexturesCount();
 };
 
-TileMesh.prototype.loadingCheck = function () {
+TileMesh.prototype.loadingCheck = function loadingCheck() {
     if (this.allTexturesAreLoaded()) {
         this.loaded = true;
         this.parent.childrenLoaded();
     }
 };
 
-TileMesh.prototype.getIndexLayerColor = function (idLayer) {
+TileMesh.prototype.getIndexLayerColor = function getIndexLayerColor(idLayer) {
     return this.materials[RendererConstant.FINAL].indexOfColorLayer(idLayer);
 };
 
-TileMesh.prototype.removeColorLayer = function (idLayer) {
+TileMesh.prototype.removeColorLayer = function removeColorLayer(idLayer) {
     const index = this.materials[RendererConstant.FINAL].indexOfColorLayer(idLayer);
     const texturesCount = this.materials[RendererConstant.FINAL].getTextureCountByLayerIndex(index);
     this.materials[RendererConstant.FINAL].removeColorLayer(idLayer);
@@ -281,7 +281,7 @@ TileMesh.prototype.removeColorLayer = function (idLayer) {
     this.loadingCheck();
 };
 
-TileMesh.prototype.changeSequenceLayers = function (sequence) {
+TileMesh.prototype.changeSequenceLayers = function changeSequenceLayers(sequence) {
     var layerCount = this.materials[RendererConstant.FINAL].getColorLayersCount();
 
     // Quit if there is only one layer

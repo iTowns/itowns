@@ -13,7 +13,7 @@ function Timer() {
 
 /**
  */
-Timer.prototype.getTime = function () {
+Timer.prototype.getTime = function getTime() {
     // TODO: Implement Me
 
 };
@@ -21,7 +21,7 @@ Timer.prototype.getTime = function () {
 
 /**
  */
-Timer.prototype.stop = function () {
+Timer.prototype.stop = function stopTimer() {
     // TODO: Implement Me
 
 };
@@ -29,7 +29,7 @@ Timer.prototype.stop = function () {
 
 /**
  */
-Timer.prototype.start = function () {
+Timer.prototype.start = function start() {
     // TODO: Implement Me
 
 };
@@ -37,7 +37,7 @@ Timer.prototype.start = function () {
 
 /**
  */
-Timer.prototype.pause = function () {
+Timer.prototype.pause = function pause() {
     // TODO: Implement Me
 
 };

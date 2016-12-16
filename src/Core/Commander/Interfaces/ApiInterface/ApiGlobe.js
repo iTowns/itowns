@@ -43,7 +43,7 @@ ApiGlobe.prototype.constructor = ApiGlobe;
 /**
  * @param Command
  */
-ApiGlobe.prototype.add = function (/* Command*/) {
+ApiGlobe.prototype.add = function add(/* Command*/) {
     // TODO: Implement Me
 
 };
@@ -51,19 +51,19 @@ ApiGlobe.prototype.add = function (/* Command*/) {
 /**
  * @param commandTemplate
  */
-ApiGlobe.prototype.createCommand = function (/* commandTemplate*/) {
+ApiGlobe.prototype.createCommand = function createCommand(/* commandTemplate*/) {
     // TODO: Implement Me
 
 };
 
 /**
  */
-ApiGlobe.prototype.execute = function () {
+ApiGlobe.prototype.execute = function execute() {
     // TODO: Implement Me
 
 };
 
-ApiGlobe.prototype.getProtocolProvider = function (protocol) {
+ApiGlobe.prototype.getProtocolProvider = function getProtocolProvider(protocol) {
     return this.scene.managerCommand.getProtocolProvider(protocol);
 };
 
@@ -87,7 +87,7 @@ function preprocessLayer(layer, provider) {
 /**
  * Init the geometry layer of the Scene.
  */
-ApiGlobe.prototype.init = function () {
+ApiGlobe.prototype.init = function init() {
     const map = this.scene.getMap();
     map.tiles.init(map.layersConfiguration.getGeometryLayers()[0]);
 };
@@ -95,7 +95,7 @@ ApiGlobe.prototype.init = function () {
 /**
  * Add the geometry layer to the scene.
  */
-ApiGlobe.prototype.addGeometryLayer = function (layer) {
+ApiGlobe.prototype.addGeometryLayer = function addGeometryLayer(layer) {
     preprocessLayer(layer, this.scene.managerCommand.getProtocolProvider(layer.protocol));
     const map = this.scene.getMap();
     map.layersConfiguration.addGeometryLayer(layer);
@@ -106,7 +106,7 @@ ApiGlobe.prototype.addGeometryLayer = function (layer) {
  * @constructor
  * @param {Layer} layer.
  */
-ApiGlobe.prototype.addImageryLayer = function (layer) {
+ApiGlobe.prototype.addImageryLayer = function addImageryLayer(layer) {
     preprocessLayer(layer, this.scene.managerCommand.getProtocolProvider(layer.protocol));
 
     var map = this.scene.getMap();
@@ -122,7 +122,7 @@ ApiGlobe.prototype.addImageryLayer = function (layer) {
  * @return     {layer}  The Layer.
  */
 
-ApiGlobe.prototype.addImageryLayerFromJSON = function (url) {
+ApiGlobe.prototype.addImageryLayerFromJSON = function addImageryLayerFromJSON(url) {
     return Fetcher.json(url).then((result) => {
         this.addImageryLayer(result);
     });
@@ -135,7 +135,7 @@ ApiGlobe.prototype.addImageryLayerFromJSON = function (url) {
  * @return     {layer}  The Layers.
  */
 
-ApiGlobe.prototype.addImageryLayersFromJSONArray = function (urls) {
+ApiGlobe.prototype.addImageryLayersFromJSONArray = function addImageryLayersFromJSONArray(urls) {
     var proms = [];
 
     for (var i = 0; i < urls.length; i++) {
@@ -145,13 +145,13 @@ ApiGlobe.prototype.addImageryLayersFromJSONArray = function (urls) {
     return Promise.all(proms).then(() => this.scene.getMap().layersConfiguration.getColorLayers());
 };
 
-ApiGlobe.prototype.moveLayerUp = function (layerId) {
+ApiGlobe.prototype.moveLayerUp = function moveLayerUp(layerId) {
     this.scene.getMap().layersConfiguration.moveLayerUp(layerId);
     this.scene.getMap().updateLayersOrdering();
     this.scene.renderScene3D();
 };
 
-ApiGlobe.prototype.moveLayerDown = function (layerId) {
+ApiGlobe.prototype.moveLayerDown = function moveLayerDown(layerId) {
     this.scene.getMap().layersConfiguration.moveLayerDown(layerId);
     this.scene.getMap().updateLayersOrdering();
     this.scene.renderScene3D();
@@ -163,7 +163,7 @@ ApiGlobe.prototype.moveLayerDown = function (layerId) {
  * @param      {string}  layerId   The layer's idendifiant
  * @param      {number}  newIndex   The new index
  */
-ApiGlobe.prototype.moveLayerToIndex = function (layerId, newIndex) {
+ApiGlobe.prototype.moveLayerToIndex = function moveLayerToIndex(layerId, newIndex) {
     this.scene.getMap().layersConfiguration.moveLayerToIndex(layerId, newIndex);
     this.scene.getMap().updateLayersOrdering();
     this.scene.renderScene3D();
@@ -178,7 +178,7 @@ ApiGlobe.prototype.moveLayerToIndex = function (layerId, newIndex) {
  * @param      {string}   id      The identifier
  * @return     {boolean}  { description_of_the_return_value }
  */
-ApiGlobe.prototype.removeImageryLayer = function (id) {
+ApiGlobe.prototype.removeImageryLayer = function removeImageryLayer(id) {
     if (this.scene.getMap().layersConfiguration.removeColorLayer(id)) {
         this.scene.getMap().removeColorLayer(id);
         this.scene.renderScene3D();
@@ -200,7 +200,7 @@ ApiGlobe.prototype.removeImageryLayer = function (id) {
  * @param {Layer} layer.
  */
 
-ApiGlobe.prototype.addElevationLayer = function (layer) {
+ApiGlobe.prototype.addElevationLayer = function addElevationLayer(layer) {
     preprocessLayer(layer, this.scene.managerCommand.getProtocolProvider(layer.protocol));
 
     var map = this.scene.getMap();
@@ -220,7 +220,7 @@ ApiGlobe.prototype.addElevationLayer = function (layer) {
 * @return     {layer}  The Layers.
  */
 
-ApiGlobe.prototype.addElevationLayersFromJSON = function (url) {
+ApiGlobe.prototype.addElevationLayersFromJSON = function addElevationLayersFromJSON(url) {
     return Fetcher.json(url).then((result) => {
         this.addElevationLayer(result);
     });
@@ -238,7 +238,7 @@ ApiGlobe.prototype.addElevationLayersFromJSON = function (url) {
  * @return     {layer}  The Layers.
  */
 
-ApiGlobe.prototype.addElevationLayersFromJSONArray = function (urls) {
+ApiGlobe.prototype.addElevationLayersFromJSONArray = function addElevationLayersFromJSONArray(urls) {
     var proms = [];
 
     for (var i = 0; i < urls.length; i++) {
@@ -255,7 +255,7 @@ ApiGlobe.prototype.addElevationLayersFromJSONArray = function (urls) {
  * @param {index} index - The index of the layer.
  * @return     {number}  The min of the level.
  */
-ApiGlobe.prototype.getMinZoomLevel = function (index) {
+ApiGlobe.prototype.getMinZoomLevel = function getMinZoomLevel(index) {
     var layer = this.getImageryLayers()[index];
     if (layer && layer.zoom) {
         return layer.zoom.min;
@@ -278,7 +278,7 @@ ApiGlobe.prototype.getMinZoomLevel = function (index) {
  * @param {index} index - The index of the layer.
  * @return     {number}  The max of the level.
  */
-ApiGlobe.prototype.getMaxZoomLevel = function (index) {
+ApiGlobe.prototype.getMaxZoomLevel = function getMaxZoomLevel(index) {
     var layer = this.getImageryLayers()[index];
     if (layer && layer.zoom) {
         return layer.zoom.max;
@@ -299,7 +299,7 @@ ApiGlobe.prototype.getMaxZoomLevel = function (index) {
  * @constructor
  * @return     {layer}  The Layers.
  */
-ApiGlobe.prototype.getImageryLayers = function () {
+ApiGlobe.prototype.getImageryLayers = function getImageryLayers() {
     var map = this.scene.getMap();
     return map.layersConfiguration.getColorLayers();
 };
@@ -313,7 +313,7 @@ ApiGlobe.prototype.getImageryLayers = function () {
  * @params {Div} string.
  */
 
-ApiGlobe.prototype.createSceneGlobe = function (coordCarto, viewerDiv) {
+ApiGlobe.prototype.createSceneGlobe = function createSceneGlobe(coordCarto, viewerDiv) {
     // TODO: Normalement la creation de scene ne doit pas etre ici....
     // Deplacer plus tard
 
@@ -362,11 +362,11 @@ ApiGlobe.prototype.createSceneGlobe = function (coordCarto, viewerDiv) {
     return this.scene;
 };
 
-ApiGlobe.prototype.update = function () {
+ApiGlobe.prototype.update = function update() {
     this.scene.notifyChange();
 };
 
-// ApiGlobe.prototype.setLayerAtLevel = function(baseurl,layer/*,level*/) {
+// ApiGlobe.prototype.setLayerAtLevel = functionsetLayerAtLevel(baseurl,layer/*,level*/) {
 //     // TODO CLEAN AND GENERIC
 //     var wmtsProvider = new WMTS_Provider({url:baseurl, layer:layer});
 //     this.scene.managerCommand.providerMap[4] = wmtsProvider;
@@ -376,12 +376,12 @@ ApiGlobe.prototype.update = function () {
 //     this.scene.renderScene3D();
 // };
 
-ApiGlobe.prototype.showClouds = function (value, satelliteAnimation) {
+ApiGlobe.prototype.showClouds = function showClouds(value, satelliteAnimation) {
     this.scene.getMap().showClouds(value, satelliteAnimation);
     this.scene.renderScene3D();
 };
 
-ApiGlobe.prototype.setRealisticLightingOn = function (value) {
+ApiGlobe.prototype.setRealisticLightingOn = function setRealisticLightingOn(value) {
     this.scene.setLightingPos();
     this.scene.gfxEngine.setLightingOn(value);
     this.scene.getMap().setRealisticLightingOn(value);
@@ -396,7 +396,7 @@ ApiGlobe.prototype.setRealisticLightingOn = function (value) {
  * @params {visible} boolean.
  */
 
-ApiGlobe.prototype.setLayerVisibility = function (id, visible) {
+ApiGlobe.prototype.setLayerVisibility = function setLayerVisibility(id, visible) {
     this.scene.getMap().setLayerVisibility(id, visible);
     this.update();
     eventLayerChangedVisible.layerId = id;
@@ -404,11 +404,11 @@ ApiGlobe.prototype.setLayerVisibility = function (id, visible) {
     this.viewerDiv.dispatchEvent(eventLayerChangedVisible);
 };
 
-ApiGlobe.prototype.animateTime = function (value) {
+ApiGlobe.prototype.animateTime = function animateTime(value) {
     this.scene.animateTime(value);
 };
 
-ApiGlobe.prototype.orbit = function (value) {
+ApiGlobe.prototype.orbit = function orbit(value) {
     this.scene.orbit(value);
 };
 
@@ -419,7 +419,7 @@ ApiGlobe.prototype.orbit = function (value) {
  * @params {visible} boolean.
  */
 
-ApiGlobe.prototype.setLayerOpacity = function (id, opacity) {
+ApiGlobe.prototype.setLayerOpacity = function setLayerOpacity(id, opacity) {
     this.scene.getMap().setLayerOpacity(id, opacity);
     this.scene.renderScene3D();
     eventLayerChangedOpacity.layerId = id;
@@ -427,7 +427,7 @@ ApiGlobe.prototype.setLayerOpacity = function (id, opacity) {
     this.viewerDiv.dispatchEvent(eventLayerChangedOpacity);
 };
 
-ApiGlobe.prototype.setStreetLevelImageryOn = function (value) {
+ApiGlobe.prototype.setStreetLevelImageryOn = function setStreetLevelImageryOn(value) {
     this.scene.setStreetLevelImageryOn(value);
 };
 
@@ -436,7 +436,7 @@ ApiGlobe.prototype.setStreetLevelImageryOn = function (value) {
  * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/okfj460p/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
  * @constructor
  */
-ApiGlobe.prototype.getCameraOrientation = function () {
+ApiGlobe.prototype.getCameraOrientation = function getCameraOrientation() {
     var tiltCam = this.scene.currentControls().getTilt();
     var headingCam = this.scene.currentControls().getHeading();
     return [tiltCam, headingCam];
@@ -449,7 +449,7 @@ ApiGlobe.prototype.getCameraOrientation = function () {
  * @return {Position} position
  */
 
-ApiGlobe.prototype.getCameraLocation = function () {
+ApiGlobe.prototype.getCameraLocation = function getCameraLocation() {
     var cam = this.scene.currentCamera().camera3D;
     return this.projection.cartesianToGeo(cam.position);
 };
@@ -461,7 +461,7 @@ ApiGlobe.prototype.getCameraLocation = function () {
  * @return {Position} position
  */
 
-ApiGlobe.prototype.getCenter = function () {
+ApiGlobe.prototype.getCenter = function getCenter() {
     var controlCam = this.scene.currentControls();
     return this.projection.cartesianToGeo(controlCam.getTargetCameraPosition());
 };
@@ -473,7 +473,7 @@ ApiGlobe.prototype.getCenter = function () {
  * @param {Orientation} Param - The angle of the rotation in degrees.
  */
 
-ApiGlobe.prototype.setCameraOrientation = function (orientation /* param,pDisableAnimationopt*/) {
+ApiGlobe.prototype.setCameraOrientation = function setCameraOrientation(orientation /* param,pDisableAnimationopt*/) {
     this.setHeading(orientation.heading);
     this.setTilt(orientation.tilt);
     this.viewerDiv.dispatchEvent(eventOrientation);
@@ -486,7 +486,7 @@ ApiGlobe.prototype.setCameraOrientation = function (orientation /* param,pDisabl
  * @param {number | undefined} y - The y-position inside the Globe element.
  * @return {Position} postion
  */
-ApiGlobe.prototype.pickPosition = function (mouse, y) {
+ApiGlobe.prototype.pickPosition = function pickPosition(mouse, y) {
     if (mouse)
         { if (mouse.clientX) {
             mouse.x = mouse.clientX;
@@ -510,7 +510,7 @@ ApiGlobe.prototype.pickPosition = function (mouse, y) {
  * @return {Angle} number - The angle of the rotation in degrees.
  */
 
-ApiGlobe.prototype.getTilt = function () {
+ApiGlobe.prototype.getTilt = function getTilt() {
     var tiltCam = this.scene.currentControls().getTilt();
     return tiltCam;
 };
@@ -522,7 +522,7 @@ ApiGlobe.prototype.getTilt = function () {
  * @return {Angle} number - The angle of the rotation in degrees.
  */
 
-ApiGlobe.prototype.getHeading = function () {
+ApiGlobe.prototype.getHeading = function getHeading() {
     var headingCam = this.scene.currentControls().getHeading();
     return headingCam;
 };
@@ -534,11 +534,11 @@ ApiGlobe.prototype.getHeading = function () {
  * @return {Number} number
  */
 
-ApiGlobe.prototype.getRange = function () {
+ApiGlobe.prototype.getRange = function getRange() {
     return this.scene.currentControls().getRange();
 };
 
-ApiGlobe.prototype.getRangeFromEllipsoid = function () {
+ApiGlobe.prototype.getRangeFromEllipsoid = function getRangeFromEllipsoid() {
     // TODO: error is distance is big with ellipsoid.intersection(ray) because d < 0
     var controlCam = this.scene.currentControls();
     var ellipsoid = this.scene.getEllipsoid();
@@ -558,7 +558,7 @@ ApiGlobe.prototype.getRangeFromEllipsoid = function () {
  * @param {Boolean} [pDisableAnimation] - Used to force the non use of animation if its enable.
  */
 
-ApiGlobe.prototype.setTilt = function (tilt /* , bool*/) {
+ApiGlobe.prototype.setTilt = function setTilt(tilt /* , bool*/) {
     eventOrientation.oldTilt = this.getTilt();
     this.scene.currentControls().setTilt(tilt);
     this.viewerDiv.dispatchEvent(eventOrientation);
@@ -572,7 +572,7 @@ ApiGlobe.prototype.setTilt = function (tilt /* , bool*/) {
  * @param {Boolean} [pDisableAnimation] - Used to force the non use of animation if its enable.
  */
 
-ApiGlobe.prototype.setHeading = function (heading /* , bool*/) {
+ApiGlobe.prototype.setHeading = function setHeading(heading /* , bool*/) {
     eventOrientation.oldHeading = this.getHeading();
     this.scene.currentControls().setHeading(heading);
     this.viewerDiv.dispatchEvent(eventOrientation);
@@ -584,7 +584,7 @@ ApiGlobe.prototype.setHeading = function (heading /* , bool*/) {
  * @param {Boolean} [pDisableAnimation] - Used to force the non use of animation if its enable.
  */
 
-ApiGlobe.prototype.resetTilt = function (/* bool*/) {
+ApiGlobe.prototype.resetTilt = function resetTilt(/* bool*/) {
     this.scene.currentControls().setTilt(0);
     this.viewerDiv.dispatchEvent(eventOrientation);
 };
@@ -595,7 +595,7 @@ ApiGlobe.prototype.resetTilt = function (/* bool*/) {
  * @param {Boolean} [pDisableAnimation] - Used to force the non use of animation if its enable.
  */
 
-ApiGlobe.prototype.resetHeading = function (/* bool*/) {
+ApiGlobe.prototype.resetHeading = function resetHeading(/* bool*/) {
     this.scene.currentControls().setHeading(0);
     this.viewerDiv.dispatchEvent(eventOrientation);
 };
@@ -609,7 +609,7 @@ ApiGlobe.prototype.resetHeading = function (/* bool*/) {
  * @return {Number} distance
  */
 
-ApiGlobe.prototype.computeDistance = function (p1, p2) {
+ApiGlobe.prototype.computeDistance = function computeDistance(p1, p2) {
     return this.scene.getEllipsoid().computeDistance(new GeoCoordinate().copy(p1), new GeoCoordinate().copy(p2));
 };
 
@@ -619,7 +619,7 @@ ApiGlobe.prototype.computeDistance = function (p1, p2) {
  * @constructor
  * @param {coordinates} coordinates - Properties : longitude and latitude
  */
-ApiGlobe.prototype.setCenter = function (coordinates) {
+ApiGlobe.prototype.setCenter = function setCenter(coordinates) {
     eventCenter.oldCenter = this.getCenter();
     var position3D = this.scene.getEllipsoid().cartographicToCartesian(new GeoCoordinate(coordinates.longitude, coordinates.latitude, 0, UNIT.DEGREE));
     this.scene.currentControls().setCenter(position3D);
@@ -637,14 +637,14 @@ ApiGlobe.prototype.setCenter = function (coordinates) {
  * @param {Boolean} [pDisableAnimation] - Used to force the non use of animation if its enable.
  */
 
-ApiGlobe.prototype.setCenterAdvanced = function (pPosition /* , pDisableAnimationopt*/) {
+ApiGlobe.prototype.setCenterAdvanced = function setCenterAdvanced(pPosition /* , pDisableAnimationopt*/) {
     this.setCenter(pPosition.position);
     this.setRange(pPosition.range);
     this.setHeading(pPosition.heading);
     this.setTilt(pPosition.tilt);
 };
 
-var updateTargetCamera = function (api) {
+var updateTargetCamera = function updateTargetCamera(api) {
     api.scene.currentControls().updateCameraTransformation();
     api.viewerDiv.dispatchEvent(eventRange);
     api.removeEventListener('globe-loaded', updateTargetCamera);
@@ -656,7 +656,7 @@ var updateTargetCamera = function (api) {
  * @param {Number} pRange - The camera altitude.
  * @param {Boolean} [pDisableAnimation] - Used to force the non use of animation if its enable.
  */
-ApiGlobe.prototype.setRange = function (pRange /* , bool anim*/) {
+ApiGlobe.prototype.setRange = function setRange(pRange /* , bool anim*/) {
     eventRange.oldRange = this.getRange();
     loaded = false;
     this.scene.currentControls().setRange(pRange);
@@ -669,7 +669,7 @@ ApiGlobe.prototype.setRange = function (pRange /* , bool anim*/) {
  * @constructor
  * @param      {vector}  pVector  The vector
  */
-ApiGlobe.prototype.pan = function (pVector) {
+ApiGlobe.prototype.pan = function pan(pVector) {
     this.scene.currentControls().pan(pVector.x, pVector.y);
 };
 
@@ -678,7 +678,7 @@ ApiGlobe.prototype.pan = function (pVector) {
  * @constructor
  * @return     {number}  The zoom level.
  */
-ApiGlobe.prototype.getZoomLevel = function () {
+ApiGlobe.prototype.getZoomLevel = function getZoomLevel() {
     return this.scene.getMap().getZoomLevel();
 };
 
@@ -689,7 +689,7 @@ ApiGlobe.prototype.getZoomLevel = function () {
  * @constructor
  * @param      {number}  zoom    The zoom
  */
-ApiGlobe.prototype.setZoomLevel = function (zoom) {
+ApiGlobe.prototype.setZoomLevel = function setZoomLevel(zoom) {
     zoom = Math.max(this.getMinZoomLevel(), zoom);
     zoom = Math.min(this.getMaxZoomLevel(), zoom);
     const distance = this.scene.getMap().computeDistanceForZoomLevel(zoom, this.scene.currentCamera());
@@ -703,7 +703,7 @@ ApiGlobe.prototype.setZoomLevel = function (zoom) {
  * @param      {number}  pitch   Screen pitch, in millimeters ; 0.28 by default
  * @return     {number}  The zoom scale.
  */
-ApiGlobe.prototype.getZoomScale = function (pitch) {
+ApiGlobe.prototype.getZoomScale = function getZoomScale(pitch) {
     // TODO: Why error div size height in Chrome?
     // Screen pitch, in millimeters
     pitch = (pitch || 0.28) / 1000;
@@ -758,7 +758,7 @@ ApiGlobe.prototype.getZoomScale = function (pitch) {
  * @param      {number}  zoomScale  The zoom scale
  * @param      {number}  pitch      The pitch
  */
-ApiGlobe.prototype.setZoomScale = function (zoomScale, pitch) {
+ApiGlobe.prototype.setZoomScale = function setZoomScale(zoomScale, pitch) {
     // Screen pitch, in millimeters
     pitch = (pitch || 0.28) / 1000;
 
@@ -811,7 +811,7 @@ ApiGlobe.prototype.setZoomScale = function (zoomScale, pitch) {
  * @param {callback} Callback - The callback that is called when the event is heard.
  */
 
-ApiGlobe.prototype.addEventListener = function (eventname, callback) {
+ApiGlobe.prototype.addEventListener = function addEventListenerProto(eventname, callback) {
     if (eventname == 'layerchanged') {
         this.viewerDiv.addEventListener('layerchanged', callback, false);
         this.addEventListenerLayerChanged();
@@ -820,13 +820,13 @@ ApiGlobe.prototype.addEventListener = function (eventname, callback) {
     }
 };
 
-ApiGlobe.prototype.addEventListenerLayerChanged = function () {
+ApiGlobe.prototype.addEventListenerLayerChanged = function addEventListenerLayerChanged() {
     this.viewerDiv.addEventListener('layerchanged:visible', this.callbackLayerChanged, false);
     this.viewerDiv.addEventListener('layerchanged:opacity', this.callbackLayerChanged, false);
     this.viewerDiv.addEventListener('layerchanged:index', this.callbackLayerChanged, false);
 };
 
-ApiGlobe.prototype.callbackLayerChanged = function () {
+ApiGlobe.prototype.callbackLayerChanged = function callbackLayerChanged() {
     this.dispatchEvent(eventLayerChanged);
 };
 
@@ -837,7 +837,7 @@ ApiGlobe.prototype.callbackLayerChanged = function () {
  * @param {callback} Callback - The callback that is called when the event is heard.
  */
 
-ApiGlobe.prototype.removeEventListener = function (eventname, callback) {
+ApiGlobe.prototype.removeEventListener = function removeEventListenerProto(eventname, callback) {
     if (eventname == 'layerchanged') {
         this.viewerDiv.removeEventListener('layerchanged', callback, false);
         this.removeEventListenerLayerChanged();
@@ -846,13 +846,13 @@ ApiGlobe.prototype.removeEventListener = function (eventname, callback) {
     }
 };
 
-ApiGlobe.prototype.removeEventListenerLayerChanged = function () {
+ApiGlobe.prototype.removeEventListenerLayerChanged = function removeEventListenerLayerChanged() {
     this.viewerDiv.removeEventListener('layerchanged:visible', this.callbackLayerChanged, false);
     this.viewerDiv.removeEventListener('layerchanged:opacity', this.callbackLayerChanged, false);
     this.viewerDiv.removeEventListener('layerchanged:index', this.callbackLayerChanged, false);
 };
 
-ApiGlobe.prototype.launchCommandApi = function () {
+ApiGlobe.prototype.launchCommandApi = function launchCommandApi() {
 
     // this.removeImageryLayer('ScanEX');
 
@@ -892,14 +892,14 @@ ApiGlobe.prototype.launchCommandApi = function () {
     //        this.setCenterAdvanced({position:p2, /*range:10000,*/ heading:180, tilt:70});
 };
 
-//    ApiGlobe.prototype.testTilt = function (){
+//    ApiGlobe.prototype.testTilt = function testTilt(){
 //        this.setTilt(45);
 //        console.log(this.getTilt());
 //        this.resetTilt();
 //        console.log(this.getTilt());
 //    };
 //
-//    ApiGlobe.prototype.testHeading = function (){
+//    ApiGlobe.prototype.testHeading = function testHeading(){
 //        this.setHeading(90);
 //        console.log(this.getHeading());
 //        this.resetHeading();
@@ -907,19 +907,19 @@ ApiGlobe.prototype.launchCommandApi = function () {
 //    };
 
 
-ApiGlobe.prototype.selectNodeById = function (id) {
+ApiGlobe.prototype.selectNodeById = function selectNodeById(id) {
     this.scene.selectNodeId(id);
     this.scene.update();
     this.scene.renderScene3D();
 };
 
-ApiGlobe.prototype.showKML = function (value) {
+ApiGlobe.prototype.showKML = function showKML(value) {
     this.scene.getMap().showKML(value);
     this.scene.renderScene3D();
 };
 
 
-ApiGlobe.prototype.loadGPX = function (url) {
+ApiGlobe.prototype.loadGPX = function loadGPX(url) {
     loadGpx(url, this.scene.getEllipsoid()).then((gpx) => {
         if (gpx) {
             this.scene.getMap().gpxTracks.children[0].add(gpx);

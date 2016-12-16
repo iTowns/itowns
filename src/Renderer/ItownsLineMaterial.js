@@ -9,7 +9,7 @@ import BasicMaterial from 'Renderer/BasicMaterial';
 import LineVS from 'Renderer/Shader/LineVS.glsl';
 import LineFS from 'Renderer/Shader/LineFS.glsl';
 
-var ItownsLineMaterial = function (options) {
+var ItownsLineMaterial = function ItownsLineMaterial(options) {
     BasicMaterial.call(this);
 
     if (options === undefined)

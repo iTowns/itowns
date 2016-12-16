@@ -23,7 +23,7 @@ export const UNIT = {
     METER: 2,
 };
 
-var getCoordinateValue = function (unit, coord, id)
+var getCoordinateValue = function getCoordinateValue(unit, coord, id)
 {
     unit = defaultValue(unit, UNIT.RADIAN);
 
@@ -36,7 +36,7 @@ var getCoordinateValue = function (unit, coord, id)
   { return mE.radToDeg(coord[id]); }
 };
 
-var setCoordinateValue = function (unit, coord, id, value)
+var setCoordinateValue = function setCoordinateValue(unit, coord, id, value)
 {
     unit = defaultValue(unit, UNIT.RADIAN);
 
@@ -49,7 +49,7 @@ var setCoordinateValue = function (unit, coord, id, value)
   { return coord[id] = mE.degToRad(value); }
 };
 
-var setCoordinate = function (coordinate, longitude, latitude, altitude, unit) {
+var setCoordinate = function setCoordinate(coordinate, longitude, latitude, altitude, unit) {
     unit = defaultValue(unit, UNIT.RADIAN);
 
     setCoordinateValue(unit, coordinate, COORD.LONG, longitude);
@@ -66,45 +66,45 @@ function GeoCoordinate(longitude, latitude, altitude, unit) {
 
 GeoCoordinate.prototype.constructor = GeoCoordinate;
 
-GeoCoordinate.prototype.longitude = function (unit) {
+GeoCoordinate.prototype.longitude = function longitude(unit) {
     return getCoordinateValue(unit, this.coordinate, COORD.LONG);
 };
 
-GeoCoordinate.prototype.setLongitude = function (longitude, unit) {
+GeoCoordinate.prototype.setLongitude = function setLongitude(longitude, unit) {
     setCoordinateValue(unit, this.coordinate, COORD.LONG, longitude);
 };
 
-GeoCoordinate.prototype.latitude = function (unit) {
+GeoCoordinate.prototype.latitude = function latitude(unit) {
     return getCoordinateValue(unit, this.coordinate, COORD.LAT);
 };
 
-GeoCoordinate.prototype.setLatitude = function (latitude, unit) {
+GeoCoordinate.prototype.setLatitude = function setLatitude(latitude, unit) {
     setCoordinateValue(unit, this.coordinate, COORD.LAT, latitude);
 };
 
-GeoCoordinate.prototype.altitude = function () {
+GeoCoordinate.prototype.altitude = function altitude() {
     return this.coordinate[COORD.ALT];
 };
 
-GeoCoordinate.prototype.setAltitude = function (altitude) {
+GeoCoordinate.prototype.setAltitude = function setAltitude(altitude) {
     this.coordinate[COORD.ALT] = altitude;
 };
 
 
-GeoCoordinate.prototype.set = function (longitude, latitude, altitude, unit) {
+GeoCoordinate.prototype.set = function set(longitude, latitude, altitude, unit) {
     setCoordinate(this.coordinate, longitude, latitude, altitude, unit);
 
     return this;
 };
 
-GeoCoordinate.prototype.copy = function (coordinate, unit) {
+GeoCoordinate.prototype.copy = function copyCoordinate(coordinate, unit) {
     if (coordinate instanceof GeoCoordinate)
 		{ return this.set(coordinate.longitude(), coordinate.latitude(), coordinate.altitude(), unit); }
     else
 		{ return this.set(coordinate.longitude, coordinate.latitude, coordinate.altitude, unit); }
 };
 
-GeoCoordinate.prototype.clone = function () {
+GeoCoordinate.prototype.clone = function cloneCoordinate() {
     return new GeoCoordinate().copy(this);
 };
 

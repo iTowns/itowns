@@ -50,12 +50,12 @@ function OBBHelper(OBB, text) {
 OBBHelper.prototype = Object.create(THREE.LineSegments.prototype);
 OBBHelper.prototype.constructor = OBBHelper;
 
-OBBHelper.prototype.setMaterialVisibility = function (show) {
+OBBHelper.prototype.setMaterialVisibility = function setMaterialVisibility(show) {
     this.material.visible = show;
     this.textMesh.material.visible = show;
 };
 
-OBBHelper.prototype.update = function (OBB) {
+OBBHelper.prototype.update = function update(OBB) {
     var box = OBB.box3D;
     var min = box.min;
     var max = box.max;

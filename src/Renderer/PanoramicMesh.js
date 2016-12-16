@@ -9,7 +9,7 @@
 import NodeMesh from 'Renderer/NodeMesh';
 
 
-var PanoramicMesh = function (geom, mat, absC) {
+var PanoramicMesh = function PanoramicMesh(geom, mat, absC) {
     NodeMesh.call(this);
 
     this.matrixAutoUpdate = false;
@@ -30,28 +30,28 @@ PanoramicMesh.prototype = Object.create(NodeMesh.prototype);
 PanoramicMesh.prototype.constructor = PanoramicMesh;
 
 
-PanoramicMesh.prototype.setGeometry = function (geom) {
+PanoramicMesh.prototype.setGeometry = function setGeometry(geom) {
     this.geometry = geom;
 };
 
-PanoramicMesh.prototype.setMaterial = function (mat) {
+PanoramicMesh.prototype.setMaterial = function setMaterial(mat) {
     this.material = mat;
 };
 
-PanoramicMesh.prototype.setMatrixRTC = function (rtc) {
+PanoramicMesh.prototype.setMatrixRTC = function setMatrixRTC(rtc) {
     //  console.log(this.material);
     this.material.uniforms.mVPMatRTC.value = rtc;
 };
 
-PanoramicMesh.prototype.enableRTC = function () {
+PanoramicMesh.prototype.enableRTC = function enableRTC() {
     //  this.material.enableRTC(enable);
 };
 
-PanoramicMesh.prototype.setFog = function () {
+PanoramicMesh.prototype.setFog = function setFog() {
     //  this.material.setFogDistance(fog);
 };
 
-PanoramicMesh.prototype.setSelected = function () {
+PanoramicMesh.prototype.setSelected = function setSelected() {
     //  this.material.setSelected(select);
 };
 

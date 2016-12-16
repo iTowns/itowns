@@ -34,7 +34,7 @@ Layer.prototype = Object.create(Node.prototype);
 Layer.prototype.constructor = Layer;
 
 // Should be plural as it return an array of meshes
-Layer.prototype.getMesh = function () {
+Layer.prototype.getMesh = function getMesh() {
     var meshs = [];
 
     for (var i = 0; i < this.children.length; i++) {

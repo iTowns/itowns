@@ -20,7 +20,7 @@ function Ellipsoid(size) {
     this._radiiSquared = new THREE.Vector3(size.x * size.x, size.y * size.y, size.z * size.z);
 }
 
-Ellipsoid.prototype.geodeticSurfaceNormalCartographic = function (coordCarto) {
+Ellipsoid.prototype.geodeticSurfaceNormalCartographic = function geodeticSurfaceNormalCartographic(coordCarto) {
     var longitude = Math.PI * 2 - coordCarto.longitude();
     var latitude = coordCarto.latitude();
     var cosLatitude = Math.cos(latitude);
@@ -34,7 +34,7 @@ Ellipsoid.prototype.geodeticSurfaceNormalCartographic = function (coordCarto) {
     return result.normalize();
 };
 
-Ellipsoid.prototype.setSize = function (size) {
+Ellipsoid.prototype.setSize = function setSize(size) {
     this.rayon_1 = size.x;
     this.rayon_2 = size.y;
     this.rayon_3 = size.z;
@@ -43,7 +43,7 @@ Ellipsoid.prototype.setSize = function (size) {
 };
 
 
-Ellipsoid.prototype.cartographicToCartesian = function (coordCarto) {
+Ellipsoid.prototype.cartographicToCartesian = function cartographicToCartesian(coordCarto) {
     // var n;
     var k = new THREE.Vector3();
     var n = this.geodeticSurfaceNormalCartographic(coordCarto);
@@ -61,7 +61,7 @@ Ellipsoid.prototype.cartographicToCartesian = function (coordCarto) {
     return k.add(n);
 };
 
-Ellipsoid.prototype.cartographicToCartesianArray = function (coordCartoArray) {
+Ellipsoid.prototype.cartographicToCartesianArray = function cartographicToCartesianArray(coordCartoArray) {
     var cartesianArray = [];
     for (var i = 0; i < coordCartoArray.length; i++) {
         cartesianArray.push(this.cartographicToCartesian(coordCartoArray[i]));
@@ -70,7 +70,7 @@ Ellipsoid.prototype.cartographicToCartesianArray = function (coordCartoArray) {
     return cartesianArray;
 };
 
-Ellipsoid.prototype.intersection = function (ray) {
+Ellipsoid.prototype.intersection = function intersection(ray) {
     var EPSILON = 0.0001;
     var O_C = ray.origin;
     var dir = ray.direction;
@@ -123,7 +123,7 @@ Ellipsoid.prototype.intersection = function (ray) {
     */
 };
 
-Ellipsoid.prototype.computeDistance = function (coordCarto1, coordCarto2) {
+Ellipsoid.prototype.computeDistance = function computeDistance(coordCarto1, coordCarto2) {
     var longitude1 = coordCarto1.longitude() * Math.PI / 180;
     var latitude1 = coordCarto1.latitude() * Math.PI / 180;
     var longitude2 = coordCarto2.longitude() * Math.PI / 180;

@@ -36,11 +36,11 @@ TileProvider.prototype = Object.create(Provider.prototype);
 
 TileProvider.prototype.constructor = TileProvider;
 
-TileProvider.prototype.preprocessLayer = function (/* layer*/) {
+TileProvider.prototype.preprocessLayer = function preprocessLayer(/* layer*/) {
     /* no-op */
 };
 
-TileProvider.prototype.getGeometry = function (bbox, cooWMTS) {
+TileProvider.prototype.getGeometry = function getGeometry(bbox, cooWMTS) {
     var geometry;
     var n = Math.pow(2, cooWMTS.zoom + 1);
     var part = Math.PI * 2.0 / n;
@@ -63,7 +63,7 @@ TileProvider.prototype.getGeometry = function (bbox, cooWMTS) {
 };
 
 
-TileProvider.prototype.executeCommand = function (command) {
+TileProvider.prototype.executeCommand = function executeCommand(command) {
     var bbox = command.paramsFunction.bbox;
 
     // TODO not generic

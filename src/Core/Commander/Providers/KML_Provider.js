@@ -23,11 +23,11 @@ KML_Provider.prototype = Object.create(Provider.prototype);
 
 KML_Provider.prototype.constructor = KML_Provider;
 
-KML_Provider.prototype.loadKMZCenterInBBox = function (/* bbox*/) {
+KML_Provider.prototype.loadKMZCenterInBBox = function loadKMZCenterInBBox(/* bbox*/) {
 
 };
 
-KML_Provider.prototype.loadKMZ = function (longitude, latitude) {
+KML_Provider.prototype.loadKMZ = function loadKMZ(longitude, latitude) {
     return this.getUrlCollada(longitude, latitude).then((result) => {
         if (result === undefined)
             { return undefined; }
@@ -50,7 +50,7 @@ KML_Provider.prototype.loadKMZ = function (longitude, latitude) {
             child.updateMatrix();
             child.visible = false;
 
-            var changeMaterial = function (object3D) {
+            var changeMaterial = function changeMaterial(object3D) {
                 if (object3D.material instanceof THREE.MultiMaterial) {
                     object3D.material = new BasicMaterial(object3D.material.materials[0].color);
                 } else if (object3D.material)
@@ -66,7 +66,7 @@ KML_Provider.prototype.loadKMZ = function (longitude, latitude) {
     });
 };
 
-KML_Provider.prototype.parseKML = function (urlFile, longitude, latitude) {
+KML_Provider.prototype.parseKML = function parseKML(urlFile, longitude, latitude) {
     /* var longitude = 48.87;
     var south = 48.875;
     var east = -3.4900000000000046;
@@ -114,7 +114,7 @@ KML_Provider.prototype.parseKML = function (urlFile, longitude, latitude) {
 };
 
 
-KML_Provider.prototype.getUrlCollada = function (longitude, latitude) {
+KML_Provider.prototype.getUrlCollada = function getUrlCollada(longitude, latitude) {
     return Fetcher.xml('http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/vecteurtuile3d/BATI3D/BU.Building.kml').then((/* result_0*/) => {
         // get href's node value
         // var kml_0 = result_0.getElementsByTagName("href");

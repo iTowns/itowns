@@ -27,11 +27,11 @@ function Node() {
 }
 
 
-Node.prototype.setVisibility = function (show) {
+Node.prototype.setVisibility = function setVisibility(show) {
     this.visible = show;
 };
 
-Node.prototype.setDisplayed = function (/* show*/) {
+Node.prototype.setDisplayed = function setDisplayed(/* show*/) {
     // The default node has nothing to display
 };
 
@@ -40,15 +40,15 @@ Node.prototype.setDisplayed = function (/* show*/) {
  *
  * @return  {int}
  */
-Node.prototype.childrenCount = function () {
+Node.prototype.childrenCount = function childrenCount() {
     return this.children.length;
 };
 
-Node.prototype.noChild = function () {
+Node.prototype.noChild = function noChild() {
     return this.children.length === 0;
 };
 
-Node.prototype.childrenLoaded = function () {
+Node.prototype.childrenLoaded = function childrenLoaded() {
     // TODO: '4' is specific to Quadtree
     var fourChildren = this.children.length == 4;
 
@@ -74,7 +74,7 @@ Node.prototype.childrenLoaded = function () {
  * @documentation: Rafraichi le Node si le contenu ou  le style a été modifié.
  *
  */
-Node.prototype.update = function () {
+Node.prototype.update = function update() {
     // TODO: Implement Me
 
 };
@@ -84,7 +84,7 @@ Node.prototype.update = function () {
  * @param {type} level
  * @returns {undefined}
  */
-Node.prototype.getNodeAtLevel = function (level) {
+Node.prototype.getNodeAtLevel = function getNodeAtLevel(level) {
     if (level === this.level) {
         return this;
     }
@@ -102,7 +102,7 @@ Node.prototype.getNodeAtLevel = function (level) {
  *param
  * @return  {[object Object]}
  */
-Node.prototype.hydrate = function () {
+Node.prototype.hydrate = function hydrate() {
     // TODO: Implement Me
 
 };
@@ -113,7 +113,7 @@ Node.prototype.hydrate = function () {
  *
  * @param mem {[object Object]}
  */
-Node.prototype.dehydrate = function (/* mem*/) {
+Node.prototype.dehydrate = function dehydrate(/* mem*/) {
     // TODO: Implement Me
 
 };
@@ -123,7 +123,7 @@ Node.prototype.dehydrate = function (/* mem*/) {
  *
  * @param child {[object Object]}
  */
-Node.prototype.add = function (child) {
+Node.prototype.add = function add(child) {
     // TODO: Implement Me
     this.children.push(child);
     child.parent = this;
@@ -136,7 +136,7 @@ Node.prototype.add = function (child) {
  *
  * @param child {[object Object]}
  */
-Node.prototype.remove = function (/* child*/) {
+Node.prototype.remove = function remove(/* child*/) {
     // TODO: Implement Me
 
 };
@@ -148,7 +148,7 @@ Node.prototype.remove = function (/* child*/) {
  * @param childClass {Object}
  */
 
-Node.extend = function (childClass) {
+Node.extend = function extend(childClass) {
     function propName(prop, value) {
         for (var i in prop) {
             if (prop[i] === value) {

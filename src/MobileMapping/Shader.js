@@ -80,7 +80,7 @@ var Shader = {
             var request = new XMLHttpRequest();
             request.open('GET', currentShaderURL, true);
 
-            request.onload = function () {
+            request.onload = function onloadFn() {
                 if (request.status >= 200 && request.status < 400) {
                     // Success!
                     partialLoading(request.responseText, currentShaderURL.substr(currentShaderURL.lastIndexOf('/') + 1));
@@ -89,7 +89,7 @@ var Shader = {
                 }
             };
 
-            request.onerror = function () {
+            request.onerror = function onerrorFn() {
                 // console.error("no  connection, Unable to load shader from file" + currentShaderURL);
             };
 
