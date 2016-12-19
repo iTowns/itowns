@@ -863,7 +863,7 @@ ApiGlobe.prototype.removeEventListenerLayerChanged = function removeEventListene
  * @param {object} Control - The Control object.
  */
 
-ApiGlobe.prototype.addControl = function (control) {
+ApiGlobe.prototype.addControl = function addControl(control) {
     var index = this.controls.indexOf(control);
     if (index > -1) {
         this.controls.splice(index, 1);
@@ -888,7 +888,7 @@ ApiGlobe.prototype.getControls = function getControls() {
  * @param {object} Control - The Control object.
  */
 
-ApiGlobe.prototype.removeControl = function (control) {
+ApiGlobe.prototype.removeControl = function removeControl(control) {
     var index = this.controls.indexOf(control);
     if (index > -1) {
         this.controls.splice(index, 1);

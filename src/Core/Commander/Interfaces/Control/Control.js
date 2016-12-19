@@ -22,7 +22,7 @@ Control.prototype.constructor = Control;
  * @return     {name}  The name.
  */
 
-Control.prototype.getName = function () {
+Control.prototype.getName = function getName() {
     return this.pName;
 };
 
@@ -32,7 +32,7 @@ Control.prototype.getName = function () {
  * @return     {element}  The element.
 */
 
-Control.prototype.getElement = function () {
+Control.prototype.getElement = function getElement() {
     return this.pElement;
 };
 
@@ -42,7 +42,7 @@ Control.prototype.getElement = function () {
  * @return     {object}  Object.
  */
 
-Control.prototype.getOptions = function () {
+Control.prototype.getOptions = function getOptions() {
     this.options = this.options || '';
     return this.options;
 };
@@ -53,7 +53,7 @@ Control.prototype.getOptions = function () {
  * @param {object} pOptions - The new options of the conrtol.
  */
 
-Control.prototype.setOptions = function (pOptions) {
+Control.prototype.setOptions = function setOptions(pOptions) {
     this.pName = pOptions.name;
     this.pElement = pOptions.element;
     this.options = pOptions.options;
@@ -66,15 +66,15 @@ Control.prototype.setOptions = function (pOptions) {
  * @param {callback} Callback - The callback that is called when the event is heard.
  */
 
-Control.prototype.listenToMap = function (pEventName, pCallback) {
+Control.prototype.listenToMap = function listenToMap(pEventName, pCallback) {
     document.getElementById('viewerDiv').addEventListener(pEventName, pCallback, false);
 };
 
-Control.prototype.getGlobe = function () {
+Control.prototype.getGlobe = function getGlobe() {
     return this.map_;
 };
 
-Control.prototype.setGlobe = function (map) {
+Control.prototype.setGlobe = function setGlobe(map) {
     if (this.map_) {
         document.getElementById(this.options.div.id).removeChild(this.pElement);
     }
@@ -84,13 +84,5 @@ Control.prototype.setGlobe = function (map) {
         document.getElementById(this.options.div.id).appendChild(element);
     }
 };
-
-/* Control.prototype.onmapchange (pMap) {
-    if (this.map_) {
-
-    } else {
-
-    }
-}; */
 
 export default Control;
