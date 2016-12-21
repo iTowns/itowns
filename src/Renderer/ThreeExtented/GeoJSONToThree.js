@@ -94,7 +94,6 @@ GeoJSONToThree.setUpBarycentricCoordinates = function(geometry) {
     var edge = [ 0, 0 ];
     var hash = {};
     var face;
-    var numEdges = 0;
 
     for (var i = 0; i < positions.length/9; i++) {
         var a = i * 9;
@@ -118,7 +117,6 @@ GeoJSONToThree.setUpBarycentricCoordinates = function(geometry) {
                   face2vert1: undefined,
                   face2vert2: undefined
                 };
-                numEdges++;
             } else {
                 hash[ key ].face2 = a;
                 hash[ key ].face2vert1 = a + b;

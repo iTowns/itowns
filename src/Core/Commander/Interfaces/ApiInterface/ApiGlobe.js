@@ -219,8 +219,6 @@ ApiGlobe.prototype.getMaxZoomLevel = function(id) {
  * @params {Div} string.
  */
 
-import * as THREE from 'three'
-
 ApiGlobe.prototype.createSceneGlobe = function(coordCarto, viewerDiv) {
     // TODO: Normalement la creation de scene ne doit pas etre ici....
     // Deplacer plus tard

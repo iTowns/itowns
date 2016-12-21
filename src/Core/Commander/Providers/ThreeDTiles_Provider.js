@@ -72,7 +72,8 @@ ThreeDTiles_Provider.prototype.getData = function(tile, layer, params) {
         urlSuffix: params.metadata.content ? params.metadata.content.url : undefined,
         maxChildrenNumber: params.metadata.children ? params.metadata.children.length : 0,
         tileId: params.metadata.tileId,
-        additive: params.metadata.refine === "add"
+        additive: params.metadata.refine === "add",
+        geometricError: params.metadata.geometricError
     };
 
     // Temporary transform from EPSG:3946 to world coordinates
@@ -82,7 +83,7 @@ ThreeDTiles_Provider.prototype.getData = function(tile, layer, params) {
     let transform = new THREE.Matrix4();
     let center = new THREE.Vector3((parameters.bbox.west() + parameters.bbox.east()) / 2,
         (parameters.bbox.south() + parameters.bbox.north()) / 2,
-        (parameters.bbox.top() + parameters.bbox.bottom()) / 2);
+        0/*(parameters.bbox.top() + parameters.bbox.bottom()) / 2*/);
     let coordGlobe = proj4(proj3946, proj4326, [center.x, center.y]);
     let geoCoord = new GeoCoordinate(parseFloat(coordGlobe[0]), parseFloat(coordGlobe[1]), parseFloat(center.z), UNIT.DEGREE);
     let pgeo = ellipsoid.cartographicToCartesian(geoCoord);
@@ -113,33 +114,40 @@ ThreeDTiles_Provider.prototype.getData = function(tile, layer, params) {
                 let features = geoJson.geometries.features;
 
                 let geometry;
+                let color = /*new THREE.Color(Math.random(),Math.random(),Math.random());//*/new THREE.Color(180/255,147/255,128/255);
 
                 if(geoJson.geometries.features[0].properties.zmax !== undefined) {
                     let height = geoJson.geometries.features[0].properties.zmax - geoJson.geometries.features[0].properties.zmin;
                     let offset;
                     let shape = new THREE.Shape();
+                    var extrudeSettings = {
+                        amount: height,
+                        bevelEnabled: true,
+                        bevelThickness: height / 10,
+                        bevelSize: height / 10,
+                        bevelSegments: 2
+                    };
+
                     for(let r = 0; r < features.length; r++) {
                         let coords = features[r].geometry.coordinates;
                         for(let i = 0; i < coords.length; i++) {
                             let polygon = coords[i][0]; // TODO: support holes
                             let pathPoints = [];
                             offset = new THREE.Vector2(center.x, center.y)
-                            for (let j = 0; j < polygon.length - 2; ++j) {  // skip redundant point
+                            for (let j = 0; j < polygon.length - 1; ++j) {  // skip redundant point
                                 pathPoints[j] = (new THREE.Vector2(polygon[j][0], polygon[j][1])).sub(offset);
                             }
                             // shape creation
                             shape = new THREE.Shape(pathPoints);
+                            if (geometry) {
+                                geometry.merge(new THREE.ExtrudeGeometry( shape, extrudeSettings ))
+                            } else {
+                                geometry = new THREE.ExtrudeGeometry( shape, extrudeSettings );
+                            }
                         }
                     }
-                    var extrudeSettings = {
-                        amount: height,
-                        bevelEnabled: true,
-                    	bevelThickness: height / 10,
-                    	bevelSize: height / 10,
-                    	bevelSegments: 2
-                    };
 
-                    geometry = new THREE.ExtrudeGeometry( shape, extrudeSettings );
+                    geometry.translate(0, 0, geoJson.geometries.features[0].properties.zmin);
                     geometry.applyMatrix(transform);
                     geometry.computeBoundingSphere();
                 } else {
@@ -154,14 +162,12 @@ ThreeDTiles_Provider.prototype.getData = function(tile, layer, params) {
                 let mesh = new FeatureMesh({bbox: box}, builder);
                 mesh.setGeometry(geometry);
                 mesh.frustumCulled = false;
-                mesh.geometricError = 43500;
-                if(!parameters.urlSuffix.includes("D0")) mesh.geometricError = 43460;
+                mesh.geometricError = parameters.geometricError;
                 mesh.tileId = parameters.tileId;
                 mesh.maxChildrenNumber = parameters.maxChildrenNumber;
                 mesh.loaded = true;
                 mesh.additiveRefinement = parameters.additive;
-                mesh.material.uniforms.diffuseColor.value = new THREE.Color(Math.random(), Math.random(), Math.random());
-                console.log(mesh.material.uniforms.diffuseColor.value);
+                mesh.material.uniforms.diffuseColor.value = color;
 
                 tile.add(mesh);
 
@@ -174,10 +180,10 @@ ThreeDTiles_Provider.prototype.getData = function(tile, layer, params) {
             }
         }.bind(this));
     } else {
-        return new Promise(function(resolve, reject) {
-            let dx = (parameters.bbox.east() - parameters.bbox.west()) / 2;
+        return new Promise(function(resolve/*, reject*/) {
+            /*let dx = (parameters.bbox.east() - parameters.bbox.west()) / 2;
             let dy = (parameters.bbox.north() - parameters.bbox.south()) / 2;
-            let dz = (parameters.bbox.top() - parameters.bbox.bottom()) / 2;
+            let dz = (parameters.bbox.top() - parameters.bbox.bottom()) / 2;*/
             let radius = 1;//Math.sqrt(dx * dx + dy * dy + dz * dz);
             let geometry = new THREE.SphereGeometry(radius);
             // TODO: geometry should be empty
@@ -191,7 +197,7 @@ ThreeDTiles_Provider.prototype.getData = function(tile, layer, params) {
             mesh.maxChildrenNumber = parameters.maxChildrenNumber;
             mesh.loaded = true;
             mesh.additiveRefinement = parameters.additive;
-            mesh.geometricError = 43500; // TODO: temp
+            mesh.geometricError = parameters.geometricError;
             tile.add(mesh);
             resolve(mesh);
         })
