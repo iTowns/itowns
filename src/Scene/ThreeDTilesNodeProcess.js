@@ -68,7 +68,17 @@ ThreeDTilesNodeProcess.prototype.frustumCulling = function(node, camera) {
 };
 
 ThreeDTilesNodeProcess.prototype.checkNodeSSE = function(node) {
-    return 6.0 < node.sse || node.level <= 2;
+    return 6.0 < node.sse;
+};
+
+ThreeDTilesNodeProcess.prototype.computeNodeSSE = function(node, camera) {
+
+    var boundingSphere = node.geometry.boundingSphere;
+    var distance = Math.max(0.0, (camera.camera3D.position.distanceTo(boundingSphere.center)));
+    var SSE = camera.preSSE * (node.geometricError / distance);
+
+    return SSE;
+
 };
 
 ThreeDTilesNodeProcess.prototype.subdivideNode = function(node, camera, params) {
@@ -128,8 +138,7 @@ ThreeDTilesNodeProcess.prototype.processNode = function(node, camera, params) {
 
     if (isVisible) {
         // update node's sse value
-        node.sse = camera.computeNodeSSE(node);
-        //console.log("id: " + node.id + " sse: " + node.sse);
+        node.sse = this.computeNodeSSE(node, camera);
 
         let sse = this.checkNodeSSE(node);
         let hidden = !node.additiveRefinement && sse && node.childrenLoaded() && node.maxChildrenNumber !== 0;
