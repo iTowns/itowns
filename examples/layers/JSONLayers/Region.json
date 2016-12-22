@@ -17,6 +17,12 @@
 		"options": {}
 	},
 	"options": {
-		"mimetype"  : "image/png"
+		"mimetype"  : "image/png",
+		"ipr" : {
+			"name":"IGN",
+			"url":"http://www.ign.fr/",
+			"description": "",
+			"logo":""
+		}
 	}
 }

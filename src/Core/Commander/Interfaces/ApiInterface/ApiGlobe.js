@@ -324,6 +324,7 @@ ApiGlobe.prototype.createSceneGlobe = function createSceneGlobe(coordCarto, view
 
     viewerDiv.addEventListener('globe-built', () => {
         if (loaded == false) {
+            updateTargetCamera(this);
             loaded = true;
             viewerDiv.dispatchEvent(eventLoaded);
         } else {
@@ -565,6 +566,7 @@ ApiGlobe.prototype.setTilt = function setTilt(tilt /* , bool*/) {
     eventOrientation.oldTilt = this.getTilt();
     this.scene.currentControls().setTilt(tilt);
     this.viewerDiv.dispatchEvent(eventOrientation);
+    this.scene.notifyChange(10);
 };
 
 /**
@@ -579,6 +581,7 @@ ApiGlobe.prototype.setHeading = function setHeading(heading /* , bool*/) {
     eventOrientation.oldHeading = this.getHeading();
     this.scene.currentControls().setHeading(heading);
     this.viewerDiv.dispatchEvent(eventOrientation);
+    this.scene.notifyChange(10);
 };
 
 /**
@@ -627,6 +630,8 @@ ApiGlobe.prototype.setCenter = function setCenter(coordinates) {
     var position3D = this.scene.getEllipsoid().cartographicToCartesian(new GeoCoordinate(coordinates.longitude, coordinates.latitude, 0, UNIT.DEGREE));
     this.scene.currentControls().setCenter(position3D);
     this.viewerDiv.dispatchEvent(eventCenter);
+    this.addEventListener('globe-loaded', updateTargetCamera(this));
+    this.scene.notifyChange(10);
 };
 
 /**
@@ -664,6 +669,7 @@ ApiGlobe.prototype.setRange = function setRange(pRange /* , bool anim*/) {
     loaded = false;
     this.scene.currentControls().setRange(pRange);
     this.viewerDiv.dispatchEvent(eventRange);
+    this.scene.notifyChange(10);
     this.addEventListener('globe-loaded', updateTargetCamera(this));
 };
 
@@ -676,6 +682,7 @@ ApiGlobe.prototype.setRange = function setRange(pRange /* , bool anim*/) {
 ApiGlobe.prototype.pan = function pan(pVector) {
     this.scene.currentControls().pan(pVector.x, pVector.y);
     this.viewerDiv.dispatchEvent(eventCenter);
+    this.scene.notifyChange(10);
 };
 
 /**
@@ -894,6 +901,62 @@ ApiGlobe.prototype.removeControl = function removeControl(control) {
         this.controls.splice(index, 1);
     }
     control.setGlobe();
+};
+
+/**
+ * Get the IPR (Intellectual Property Rights) of all layers in the scene.
+ * @constructor
+ * @return {array}  An array of IPR.
+ */
+
+ApiGlobe.prototype.getLayersIPR = function getLayersIPR() {
+    var IPR = [];
+    var colorLayers = this.scene.getMap().layersConfiguration.getColorLayers();
+    for (var i = 0; i < colorLayers.length; i++) {
+        IPR.push(colorLayers[i].options.ipr);
+    }
+    var elevationLayers = this.scene.getMap().layersConfiguration.getElevationLayers();
+    for (var j = 0; j < elevationLayers.length; j++) {
+        IPR.push(elevationLayers[j].options.ipr);
+    }
+    // IPR = this.removeDuplicatesFromArray(IPR, 'name');
+    return IPR;
+};
+
+ApiGlobe.prototype.removeDuplicatesFromArray = function removeDuplicatesFromArray(originalArray, prop) {
+    var newArray = [];
+    var lookupObject = {};
+    for (var i in originalArray) {
+        lookupObject[originalArray[i][prop]] = originalArray[i];
+    }
+    for (i in lookupObject) {
+        newArray.push(lookupObject[i]);
+    }
+    return newArray;
+};
+
+/**
+ * Set the IPR for a layer.
+ * @constructor
+ * @param {param} Param - The id of the layer and the new IPR {id, ipr}.
+ */
+
+ApiGlobe.prototype.setLayerIPR = function setLayerIPR(param) {
+    if (param.ipr.name === undefined) {
+        throw new Error(`Missing parameter "param.ipr.name" : ${param.id}`);
+    }
+    var colorLayers = this.scene.getMap().layersConfiguration.getColorLayers();
+    for (var i = 0; i < colorLayers.length; i++) {
+        if (param.id === colorLayers[i].id) {
+            colorLayers[i].options.ipr = param.ipr;
+        }
+    }
+    var elevationLayers = this.scene.getMap().layersConfiguration.getElevationLayers();
+    for (var j = 0; j < elevationLayers.length; j++) {
+        if (param.id === elevationLayers[j].id) {
+            elevationLayers[j].options.ipr = param.ipr;
+        }
+    }
 };
 
 ApiGlobe.prototype.launchCommandApi = function launchCommandApi() {

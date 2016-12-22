@@ -31,6 +31,41 @@ and open the template in the editor.
                 top:0px;
                 margin-left: 0px;
             }
+            #footer-small-copyright {
+                display: flex;
+                position: absolute;
+                height: 30px;
+                width:100%;
+                background-color: #FFF;
+                bottom:0px;
+                padding: 10px 10px 0px 10px;
+                margin: auto;
+                font-size: 0.9em;
+            }
+            #footer-small-copyright ul {
+                list-style-type: none;
+                padding:0px 10px;
+                margin: 0px;
+            }
+            #footer-small-copyright p {
+                margin: 0px;
+                color
+            }
+            #footer-small-copyright li {
+                display: inline;
+                padding:0px 5px;
+            }
+            #footer-small-copyright li a {
+                color:inherit;
+                text-decoration: none;
+            }
+            #footer-attribution-container {
+                color: grey;
+                display: flex;
+                justify-content: center;
+                margin-left: auto;
+                margin-right: auto;
+            }
         </style>
         <meta charset="UTF-8">
 
@@ -41,6 +76,8 @@ and open the template in the editor.
         <div id="viewerDiv">
             <div id="controlDiv"></div>
         </div>
+        <div id="footer-small-copyright"></div>
+        <div id="footer-attribution-container"><p id="pIPR">Données Cartographique : &copy</p></div>
 
         <script src="examples/GUI/GuiTools.js"></script>
         <script src="dist/itowns2.js"> </script>
@@ -67,6 +104,8 @@ and open the template in the editor.
             urlImageryLayers.push('examples/layers/JSONLayers/OrthosCRS.json');
             urlImageryLayers.push('examples/layers/JSONLayers/ScanEX.json');
             urlImageryLayers.push('examples/layers/JSONLayers/Region.json');
+            urlImageryLayers.push('examples/layers/JSONLayers/OPENSM.json');
+            urlImageryLayers.push('examples/layers/JSONLayers/DARK.json');
 
 		  	urlElevationLayers.push('examples/layers/JSONLayers/IGN_MNT.json');
             urlElevationLayers.push('examples/layers/JSONLayers/IGN_MNT_HIGHRES.json');
@@ -82,8 +121,88 @@ and open the template in the editor.
 
             menuGlobe.addGUI('RealisticLighting',false,(newValue) => {itowns.viewer.setRealisticLightingOn(newValue);});
 
+            var loaded = true;
+
            	itowns.viewer.addEventListener('globe-loaded', function() {
-            	console.log("Globe Loaded");
+                if (loaded == true) {
+                    loaded = false;
+                    console.log("Globe Loaded");
+                    // console.log(itowns.viewer.getLayersIPR());
+
+                    var control = new itowns.viewer.Control(
+                        'IPR',
+                        document.getElementById('footer-attribution-container'),
+                        {
+                            div: document.getElementById('footer-small-copyright')
+                        }
+                    );
+
+                    var getLayersIPRNamesUrls = function () {
+                        var names = [];
+                        var urls = [];
+                        for (var i = 0; i < itowns.viewer.getLayersIPR().length; i++) {
+                            names.push(itowns.viewer.getLayersIPR()[i].name);
+                            urls.push(itowns.viewer.getLayersIPR()[i].url);
+                        }
+                        return [names, urls];
+                    }
+
+                    function makeUL(array) {
+                        var list = document.createElement('ul');
+                        list.id = "IPRList";
+                        for(var i = 0; i < getLayersIPRNamesUrls()[0].length; i++) {
+                            var item = document.createElement('li');
+                            item.id = getLayersIPRNamesUrls()[0][i];
+
+                            var a = document.createElement('a');
+                            a.textContent = getLayersIPRNamesUrls()[0][i];
+                            a.setAttribute('href', getLayersIPRNamesUrls()[1][i]);
+
+                            item.appendChild(a);
+                            list.appendChild(item);
+                        }
+                        return list;
+                    }
+
+                    var visible = function () {
+
+                        var lis = document.getElementById("IPRList").getElementsByTagName("li");
+                        var names = [];
+                        for (var i = 0; i < lis.length; i++) {
+                            names.push(lis[i].outerText);
+                        }
+                        /*var counts = {};
+                        names.forEach(function(x) { counts[x] = (counts[x] || 0)+1; });
+                        console.log(Object.values(counts));
+
+                        for(var key in counts) {
+                            console.log(key);
+                            var value = counts[key];
+
+                            if (value = 1) {*/
+                                for (var j = 0; j < control.getGlobe().layersConfiguration.colorLayers.length; j++) {
+                                    if (control.getGlobe().layersConfiguration.isColorLayerVisible(control.getGlobe().layersConfiguration.colorLayers[j].id) == false) {
+                                        if (document.contains(document.getElementById(getLayersIPRNamesUrls()[0][j]))) {
+                                            document.getElementById(getLayersIPRNamesUrls()[0][j]).remove();
+                                        }
+                                    }
+                                }
+                            //}
+                        //}
+                    }
+
+                    var callback = function () {
+                        if (document.contains(document.getElementById("IPRList"))) {
+                            document.getElementById("IPRList").remove();
+                        }
+                        itowns.viewer.addControl(control);
+                        document.getElementById('footer-attribution-container').appendChild(makeUL(getLayersIPRNamesUrls()[0]));
+                        visible();
+                    }
+
+                    itowns.viewer.addEventListener('layerchanged:visible', callback);
+                }
+
         	});
         </script>
     </body>

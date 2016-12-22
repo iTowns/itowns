@@ -4,6 +4,12 @@
     "fx" :2.5,
     "customUrl":  "http://b.tile.openstreetmap.fr/osmfr/%TILEMATRIX/%COL/%ROW.png",
     "options": {
+    	"ipr" : {
+			"name":"OpenStreetMap",
+			"url":"http://www.openstreetmap.org/",
+			"description": "",
+			"logo":""
+		},
 		"tileMatrixSet": "PM",
 		"mimetype": "image/png"
 	}
