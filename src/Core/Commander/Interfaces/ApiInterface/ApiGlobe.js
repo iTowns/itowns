@@ -903,62 +903,6 @@ ApiGlobe.prototype.removeControl = function removeControl(control) {
     control.setGlobe();
 };
 
-/**
- * Get the IPR (Intellectual Property Rights) of all layers in the scene.
- * @constructor
- * @return {array}  An array of IPR.
- */
-
-ApiGlobe.prototype.getLayersIPR = function getLayersIPR() {
-    var IPR = [];
-    var colorLayers = this.scene.getMap().layersConfiguration.getColorLayers();
-    for (var i = 0; i < colorLayers.length; i++) {
-        IPR.push(colorLayers[i].options.ipr);
-    }
-    var elevationLayers = this.scene.getMap().layersConfiguration.getElevationLayers();
-    for (var j = 0; j < elevationLayers.length; j++) {
-        IPR.push(elevationLayers[j].options.ipr);
-    }
-    // IPR = this.removeDuplicatesFromArray(IPR, 'name');
-    return IPR;
-};
-
-ApiGlobe.prototype.removeDuplicatesFromArray = function removeDuplicatesFromArray(originalArray, prop) {
-    var newArray = [];
-    var lookupObject = {};
-    for (var i in originalArray) {
-        lookupObject[originalArray[i][prop]] = originalArray[i];
-    }
-    for (i in lookupObject) {
-        newArray.push(lookupObject[i]);
-    }
-    return newArray;
-};
-
-/**
- * Set the IPR for a layer.
- * @constructor
- * @param {param} Param - The id of the layer and the new IPR {id, ipr}.
- */
-
-ApiGlobe.prototype.setLayerIPR = function setLayerIPR(param) {
-    if (param.ipr.name === undefined) {
-        throw new Error(`Missing parameter "param.ipr.name" : ${param.id}`);
-    }
-    var colorLayers = this.scene.getMap().layersConfiguration.getColorLayers();
-    for (var i = 0; i < colorLayers.length; i++) {
-        if (param.id === colorLayers[i].id) {
-            colorLayers[i].options.ipr = param.ipr;
-        }
-    }
-    var elevationLayers = this.scene.getMap().layersConfiguration.getElevationLayers();
-    for (var j = 0; j < elevationLayers.length; j++) {
-        if (param.id === elevationLayers[j].id) {
-            elevationLayers[j].options.ipr = param.ipr;
-        }
-    }
-};
-
 ApiGlobe.prototype.launchCommandApi = function launchCommandApi() {
 
     // this.removeImageryLayer('ScanEX');
