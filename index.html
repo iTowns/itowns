@@ -63,7 +63,7 @@ and open the template in the editor.
                 }
             );
 
-            var callback = function () {
+            var addMenu = function () {
 
                 itowns.viewer.addControl(controlGUI);
 
@@ -75,8 +75,8 @@ and open the template in the editor.
                 urlImageryLayers.push('examples/layers/JSONLayers/OrthosCRS.json');
                 urlImageryLayers.push('examples/layers/JSONLayers/ScanEX.json');
                 urlImageryLayers.push('examples/layers/JSONLayers/Region.json');
-                urlImageryLayers.push('examples/layers/JSONLayers/OPENSM.json');
-                urlImageryLayers.push('examples/layers/JSONLayers/DARK.json');
+                /* urlImageryLayers.push('examples/layers/JSONLayers/OPENSM.json');
+                urlImageryLayers.push('examples/layers/JSONLayers/DARK.json'); */
 
                 urlElevationLayers.push('examples/layers/JSONLayers/IGN_MNT.json');
                 urlElevationLayers.push('examples/layers/JSONLayers/IGN_MNT_HIGHRES.json');
@@ -97,12 +97,13 @@ and open the template in the editor.
             }
 
             itowns.viewer.createSceneGlobe(positionOnGlobe, viewerDiv);
-            itowns.viewer.addEventListener('click', callback);
 
             let wgs84TileLayer = {
                 protocol: 'tile',
                 id: 'wgs84'
             };
+
+            addMenu();
 
             var loaded = true;
 
