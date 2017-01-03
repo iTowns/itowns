@@ -68,7 +68,7 @@ ThreeDTilesNodeProcess.prototype.frustumCulling = function(node, camera) {
 };
 
 ThreeDTilesNodeProcess.prototype.checkNodeSSE = function(node) {
-    return 6.0 < node.sse;
+    return 1.0 < node.sse;
 };
 
 ThreeDTilesNodeProcess.prototype.computeNodeSSE = function(node, camera) {

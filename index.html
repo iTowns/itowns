@@ -605,8 +605,10 @@ and open the template in the editor.
             representations: "lod1,lod2",
             poids: "1,2",
             reload: function() {
-                var baseUrl = "http://localhost:9090/"
-                var suffix = "getScene?city=lyon&layer=buildings&representations=" + conf3dtiles.representations + "&weights=" + conf3dtiles.poids;
+                //var baseUrl = "http://localhost:9090/"
+                //var suffix = "getScene?city=lyon&layer=buildings&representations=" + conf3dtiles.representations + "&weights=" + conf3dtiles.poids;
+                var baseUrl = "http://localhost:8080/";
+                var suffix = "data/TilesetWithDiscreteLOD/tileset.json";
                 itowns.viewer.load3dtiles(baseUrl, suffix);
             }
         };

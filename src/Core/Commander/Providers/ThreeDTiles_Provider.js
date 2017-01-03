@@ -12,7 +12,7 @@ import IoDriver_JSON from 'Core/Commander/Providers/IoDriver_JSON';
 function ThreeDTiles_Provider(/*options*/) {
     //Constructor
 
-    Provider.call(this, new IoDriver_JSON());
+    Provider.call(this, new IoDriver_B3DM());
     this.cache = CacheRessource();
 }
 
@@ -56,6 +56,16 @@ ThreeDTiles_Provider.prototype.getBox = function(boundingVolume) {
     }
 }
 
+ThreeDTiles_Provider.prototype.getTransform = function(transform, parent) {
+    if(transform) {
+        let t = new THREE.Matrix4();
+        t.fromArray(transform);
+        return t.multiply(parent.matrix);
+    } else {
+        return parent && parent.transform ? parent.transform.clone() : new THREE.Matrix4();
+    }
+}
+
 ThreeDTiles_Provider.prototype.geojsonToMesh = function(geoJson, ellipsoid, parameters, builder) {
     // Temporary transform from EPSG:3946 to world coordinates
     let proj3946 = '+proj=lcc +lat_1=45.25 +lat_2=46.75 +lat_0=46 +lon_0=3 +x_0=1700000 +y_0=5200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs';
@@ -73,6 +83,7 @@ ThreeDTiles_Provider.prototype.geojsonToMesh = function(geoJson, ellipsoid, para
     let quat2 = (new THREE.Quaternion()).setFromAxisAngle(new THREE.Vector3(0,0,1), Math.atan(normal.y / normal.x));
     quat.multiply(quat2);
     transform.compose(pgeo, quat, new THREE.Vector3(1,1,1));
+    transform.premultiply(parameters.transform);
 
 
     let features = geoJson.geometries.features;
@@ -125,36 +136,20 @@ ThreeDTiles_Provider.prototype.geojsonToMesh = function(geoJson, ellipsoid, para
     let box = parameters.bbox;
     let mesh = new FeatureMesh({bbox: box}, builder);
     mesh.setGeometry(geometry);
-    mesh.frustumCulled = false;
-    mesh.geometricError = parameters.geometricError;
-    mesh.tileId = parameters.tileId;
-    mesh.maxChildrenNumber = parameters.maxChildrenNumber;
-    mesh.loaded = true;
-    mesh.additiveRefinement = parameters.additive;
     mesh.material.uniforms.diffuseColor.value = color;
 
     return mesh;
 };
 
 ThreeDTiles_Provider.prototype.b3dmToMesh = function(result, ellipsoid, parameters, builder/*, transform*/) {
-    var mesh = result.scene.children[0].children[1];
+    var mesh = result.scene.children[0].children[1];    // TODO: multiple geom?
+    //mesh.geometry.scale(1000, 1000, 1000);
 
-    mesh.geometry.scale(25000, 25000, 25000);
+    var t = (new THREE.Matrix4()).makeBasis(new THREE.Vector3(1,0,0), new THREE.Vector3(0,0,-1), new THREE.Vector3(0,1,0))
 
-    var matrix = new THREE.Matrix4();
-    matrix.makeRotationX(Math.PI / 2);
-
-    /*var transformMatrix = new THREE.Matrix4();
-    transformMatrix.set(transform[0], transform[1], transform[2], transform[3],
-        transform[4], transform[5], transform[6], transform[7],
-        transform[8], transform[9], transform[10], transform[11],
-        transform[12], transform[13], transform[14], transform[15]);*/
-    //transformMatrix.makeRotationZ(Math.PI / 2);
-    /*if(transform)
-        mesh.geometry.applyMatrix(transformMatrix);*/
-    //else
-    mesh.geometry.rotateZ(-Math.PI / 8);
-    mesh.geometry.translate(4501130, 4495279, -1000000);//-372353);
+    mesh.geometry.applyMatrix(t.transpose());
+    mesh.geometry.applyMatrix(parameters.transform);
+    mesh.geometry.applyMatrix(t.transpose());
 
     //Use ellipsoid to put data from ellipsoid to cartesian
     //var posArray = mesh.geometry.attributes.position.array;
@@ -173,11 +168,11 @@ ThreeDTiles_Provider.prototype.b3dmToMesh = function(result, ellipsoid, paramete
     }
     var fMesh = new FeatureMesh({bbox: box}, builder);
     fMesh.setGeometry(mesh.geometry);
-    fMesh.material.uniforms.uDiffuse = mesh.material.uniforms.u_diffuse;
+    fMesh.material.uniforms.diffuseColor = mesh.material.uniforms.u_diffuse;
     return fMesh;
 };
 
-ThreeDTiles_Provider.prototype.getData = function(tile, layer, params) {
+ThreeDTiles_Provider.prototype.getData = function(parent, layer, params) {
 
     var ellipsoid = new Ellipsoid({
         x: 6378137,
@@ -193,6 +188,7 @@ ThreeDTiles_Provider.prototype.getData = function(tile, layer, params) {
         maxChildrenNumber: params.metadata.children ? params.metadata.children.length : 0,
         tileId: params.metadata.tileId,
         additive: params.metadata.refine === "add",
+        transform: this.getTransform(params.metadata.transform, parent),
         geometricError: params.metadata.geometricError
     };
 
@@ -216,14 +212,23 @@ ThreeDTiles_Provider.prototype.getData = function(tile, layer, params) {
                     func = supportedFormats['geoJson'];
                 }
                 var mesh = func(result, ellipsoid, parameters, builder, layer.transform);
-                tile.add(mesh);
+                mesh.transform = parameters.transform;
+                mesh.frustumCulled = false;
+                mesh.geometricError = parameters.geometricError;
+                mesh.tileId = parameters.tileId;
+                mesh.maxChildrenNumber = parameters.maxChildrenNumber;
+                mesh.loaded = true;
+                mesh.additiveRefinement = parameters.additive;
+                parent.add(mesh);
                 this.cache.addRessource(url, result);
                 return mesh;
             } else {
                 this.cache.addRessource(url, null);
                 return null;
             }
-        }.bind(this));
+        }.bind(this), function(reject) {
+            console.log(reject);
+        });
     } else {
         return new Promise(function(resolve/*, reject*/) {
             // Temporary transform from EPSG:3946 to world coordinates
@@ -242,6 +247,7 @@ ThreeDTiles_Provider.prototype.getData = function(tile, layer, params) {
             let quat2 = (new THREE.Quaternion()).setFromAxisAngle(new THREE.Vector3(0,0,1), Math.atan(normal.y / normal.x));
             quat.multiply(quat2);
             transform.compose(pgeo, quat, new THREE.Vector3(1,1,1));
+            transform.premultiply(parameters.transform);
 
             /*let dx = (parameters.bbox.east() - parameters.bbox.west()) / 2;
             let dy = (parameters.bbox.north() - parameters.bbox.south()) / 2;
@@ -260,7 +266,8 @@ ThreeDTiles_Provider.prototype.getData = function(tile, layer, params) {
             mesh.loaded = true;
             mesh.additiveRefinement = parameters.additive;
             mesh.geometricError = parameters.geometricError;
-            tile.add(mesh);
+            mesh.transform = parameters.transform;
+            parent.add(mesh);
             resolve(mesh);
         })
     }
@@ -269,9 +276,9 @@ ThreeDTiles_Provider.prototype.getData = function(tile, layer, params) {
 ThreeDTiles_Provider.prototype.executeCommand = function(command) {
 
     var layer = command.paramsFunction.layer;
-    var tile = command.requester;
+    var parent = command.requester;
 
-    return this.getData(tile, layer, command.paramsFunction).then(function(result) {
+    return this.getData(parent, layer, command.paramsFunction).then(function(result) {
         return command.resolve(result);
     });
 };
