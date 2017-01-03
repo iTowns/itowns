@@ -826,7 +826,7 @@ GLTFParser.prototype.loadBuffers = function() {
 
 		if ( buffer.type === 'arraybuffer' ) {
 			if(this.options.binary) {
-				var array = this.options.binaryGltfArray.subarray(0, 41760);
+				var array = this.options.binaryGltfArray.subarray(0, buffer.bytelength);
 				return new Promise( function( resolve ) {
 					resolve(array);
 				}.bind( this ));
