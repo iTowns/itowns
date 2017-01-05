@@ -17,7 +17,6 @@ Sphere.prototype.setRadius = function setRadius(radius) {
 
 var vector = new THREE.Vector3();
 
-//
 Sphere.prototype.intersectWithRayNoMiss = function intersectWithRayNoMiss(ray) {
     let pc = ray.closestPointToPoint(this.center);
     let a = pc.length();
