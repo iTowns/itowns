@@ -47,9 +47,8 @@ BrowseTree.prototype._selectNode = function _selectNode(node) {
         node.setSelected(node.visible && node.material.visible);
         if (this.selectedNode !== node) {
             this.selectedNode = node;
-            /* eslint-disable no-alert, no-console */
+            // eslint-disable-next-line no-console
             console.info(node);
-            /* eslint-enable no-alert, no-console */
         }
     }
 };
