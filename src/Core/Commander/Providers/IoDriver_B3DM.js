@@ -1,10 +1,11 @@
 import IoDriver from 'Core/Commander/Providers/IoDriver';
+import * as THREE from 'three';
 import GltfLoader from 'Renderer/ThreeExtented/GLTFLoader';
 
 function IoDriver_B3DM() {
     // Constructor
     IoDriver.call(this);
-    this.GltfLoader = new GltfLoader();
+    this.GltfLoader = new THREE.GLTFLoader();
 }
 
 IoDriver_B3DM.prototype = Object.create(IoDriver.prototype);
@@ -68,6 +69,7 @@ IoDriver_B3DM.prototype.parseB3dm = function (buffer) {
         byteOffset += 4;
 
         if (bgltfHeader.magic) {
+            // TODO: this is wrong
 			// Version, length, contentLength and contentFormat types are uint32
             bgltfHeader.version = view.getUint32(byteOffset, true);
             byteOffset += Uint32Array.BYTES_PER_ELEMENT;
@@ -82,14 +84,14 @@ IoDriver_B3DM.prototype.parseB3dm = function (buffer) {
             byteOffset += Uint32Array.BYTES_PER_ELEMENT;
 
             if (bgltfHeader.contentLength > 0) {
-                var gltfText = this.decodeFromCharCode(array.subarray(byteOffset, byteOffset + bgltfHeader.contentLength));
-                var binaryGltfArray = array.subarray(byteOffset + bgltfHeader.contentLength, b3dmHeader.byteLength);
-                this.GltfLoader.binaryGltfArray = binaryGltfArray;
-                this.GltfLoader.binary = true;
-                return this.GltfLoader.parse(JSON.parse(gltfText)).then(data => ({
-                    scene: data.scene,
-                    magic: b3dmHeader.magic,
-                }));
+                return new Promise(function(resolve/*, reject*/) {
+                    let onload = (gltf) => {
+                        resolve(gltf);
+                    }
+                    var gltfText = this.decodeFromCharCode(array.subarray(byteOffset, byteOffset + bgltfHeader.contentLength));
+                    var binaryGltfArray = array.subarray(byteOffset + bgltfHeader.contentLength, b3dmHeader.byteLength);
+                    this.GltfLoader.parse(buffer.slice(24), onload);    // TODO: not alway 24 bytes
+                }.bind(this));
             } else
 				{ throw new Error('The binary gltf is not a valid one.'); }
         } else {

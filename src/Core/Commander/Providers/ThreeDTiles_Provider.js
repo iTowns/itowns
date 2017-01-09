@@ -142,34 +142,34 @@ ThreeDTiles_Provider.prototype.geojsonToMesh = function(geoJson, ellipsoid, para
 };
 
 ThreeDTiles_Provider.prototype.b3dmToMesh = function(result, ellipsoid, parameters, builder/*, transform*/) {
-    var mesh = result.scene.children[0].children[1];    // TODO: multiple geom?
-    //mesh.geometry.scale(1000, 1000, 1000);
+    try {
+        // TODO: go through scene and replace mesh and materials with our own
+        var mesh = result.scene.children[0].children[1];    // TODO: multiple geom?
+        mesh.geometry.scale(1000, 1000, 1000);
 
-    var t = (new THREE.Matrix4()).makeBasis(new THREE.Vector3(1,0,0), new THREE.Vector3(0,0,-1), new THREE.Vector3(0,1,0))
+        var t = (new THREE.Matrix4()).makeBasis(new THREE.Vector3(1,0,0), new THREE.Vector3(0,0,-1), new THREE.Vector3(0,1,0))
 
-    mesh.geometry.applyMatrix(t.transpose());
-    mesh.geometry.applyMatrix(parameters.transform);
-    mesh.geometry.applyMatrix(t.transpose());
+        mesh.geometry.applyMatrix(t.transpose());
+        mesh.geometry.applyMatrix(parameters.transform);
+        mesh.geometry.applyMatrix(t.transpose());
 
-    //Use ellipsoid to put data from ellipsoid to cartesian
-    //var posArray = mesh.geometry.attributes.position.array;
-    /*for (var i = 0; i < pos.length; i + 3) {
-
-    }*/
-
-    var box;
-    if(mesh.geometry.boundingBox != null)
-        box = new BoundingBox(mesh.bbox[0], mesh.bbox[2], mesh.bbox[1], mesh.bbox[3], mesh.bbox[4], mesh.bbox[5]);
-    else if(mesh.geometry.boundingSphere) {
-        var bs = mesh.geometry.boundingSphere;
-        var c = bs.center;
-        var r = bs.radius / 2;
-        box = new BoundingBox(c.x - r, c.x + r, c.y - r, c.y + r, c.z - r, c.z + r);
+        var box;
+        if(mesh.geometry.boundingBox != null)
+            box = new BoundingBox(mesh.bbox[0], mesh.bbox[2], mesh.bbox[1], mesh.bbox[3], mesh.bbox[4], mesh.bbox[5]);
+        else /*if(mesh.geometry.boundingSphere)*/ {
+            mesh.geometry.computeBoundingSphere();
+            var bs = mesh.geometry.boundingSphere;
+            var c = bs.center;
+            var r = bs.radius / 2;
+            box = new BoundingBox(c.x - r, c.x + r, c.y - r, c.y + r, c.z - r, c.z + r);
+        }
+        var fMesh = new FeatureMesh({bbox: box}, builder);
+        fMesh.setGeometry(mesh.geometry);
+        fMesh.material.uniforms.diffuseColor = mesh.material.uniforms.u_diffuse;
+        return fMesh;
+    } catch(e) {
+        console.log(e);
     }
-    var fMesh = new FeatureMesh({bbox: box}, builder);
-    fMesh.setGeometry(mesh.geometry);
-    fMesh.material.uniforms.diffuseColor = mesh.material.uniforms.u_diffuse;
-    return fMesh;
 };
 
 ThreeDTiles_Provider.prototype.getData = function(parent, layer, params) {
@@ -205,12 +205,8 @@ ThreeDTiles_Provider.prototype.getData = function(parent, layer, params) {
         // TODO: ioDrive should be binary?
         return this._IoDriver.read(url).then(function(result) {
             if (result !== undefined) {
-                var func;
-                if(result.magic) {
-                    func = supportedFormats['b3dm'];
-                } else {
-                    func = supportedFormats['geoJson'];
-                }
+                var func = supportedFormats['b3dm'];
+                /*func = supportedFormats['geoJson'];*/
                 var mesh = func(result, ellipsoid, parameters, builder, layer.transform);
                 mesh.transform = parameters.transform;
                 mesh.frustumCulled = false;
