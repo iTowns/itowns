@@ -182,8 +182,8 @@ TileMesh.prototype.setTextureElevation = function setTextureElevation(elevation)
         return;
     }
 
-    var texture,
-        offsetScale;
+    let texture;
+    let offsetScale;
 
     if (elevation) {
         texture = elevation.texture;

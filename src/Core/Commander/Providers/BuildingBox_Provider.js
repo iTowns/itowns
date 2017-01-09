@@ -125,9 +125,9 @@ BuildingBox_Provider.prototype.generateMesh = function generateMesh(elements, bb
         var triangles = CVML.TriangulatePoly(arrPoint2D);
         // var geometry = new THREE.Geometry();  // for the roof
         triangles.forEach((t) => {
-            var pt1 = t.getPoint(0),
-                pt2 = t.getPoint(1),
-                pt3 = t.getPoint(2);
+            const pt1 = t.getPoint(0);
+            const pt2 = t.getPoint(1);
+            const pt3 = t.getPoint(2);
 
             var coordCarto1 = new GeoCoordinate(pt1.y, pt1.x, z_min + hauteur, UNIT.DEGREE);
             var coordCarto2 = new GeoCoordinate(pt2.y, pt2.x, z_min + hauteur, UNIT.DEGREE); // + Math.random(1000) );

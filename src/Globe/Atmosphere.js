@@ -260,9 +260,9 @@ function Atmosphere(ellipsoid) {
     var textureFlare0 = textureLoader.load('data/textures/lensflare/lensflare0.png');
     var textureFlare2 = textureLoader.load('data/textures/lensflare/lensflare2.png');
     var textureFlare3 = textureLoader.load('data/textures/lensflare/lensflare3.png');
-    var h = 0.55,
-        s = 0.9,
-        l = 0.5;
+    const h = 0.55;
+    const s = 0.9;
+    const l = 0.5;
     //    var x=10000000, y=10000000, z=0;
     var flareColor = new THREE.Color(0xffffff);
     flareColor.setHSL(h, s, l + 0.5);
