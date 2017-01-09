@@ -82,15 +82,12 @@ Projection.prototype.WMTS_WGS84ToWMTS_PM = function WMTS_WGS84ToWMTS_PM(cWMTS, b
     var yMin = this.WGS84ToY(this.WGS84LatitudeClamp(bbox.north()));
     var yMax = this.WGS84ToY(this.WGS84LatitudeClamp(bbox.south()));
 
-    var minRow,
-        maxRow,
-        min,
-        max;
+    let maxRow;
 
-    min = yMin / sizeRow;
-    max = yMax / sizeRow;
+    const min = yMin / sizeRow;
+    const max = yMax / sizeRow;
 
-    minRow = Math.floor(min);
+    const minRow = Math.floor(min);
     maxRow = Math.floor(max);
 
     if (max - maxRow === 0.0 || maxRow === nbRow)

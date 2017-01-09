@@ -8,19 +8,19 @@ import GeoCoordinate, { UNIT } from 'Core/Geographic/GeoCoordinate';
 var CoordStars = {
 
     getSunPosition() {
-        var m = Math,
-            PI = m.PI,
-            sin = m.sin,
-            cos = m.cos,
-            tan = m.tan,
-            asin = m.asin,
-            atan = m.atan2;
+        const m = Math;
+        const PI = m.PI;
+        const sin = m.sin;
+        const cos = m.cos;
+        const tan = m.tan;
+        const asin = m.asin;
+        const atan = m.atan2;
 
-        var rad = PI / 180,
-            dayMs = 1000 * 60 * 60 * 24,
-            J1970 = 2440588,
-            J2000 = 2451545,
-            e = rad * 23.4397; // obliquity of the Earth
+        const rad = PI / 180;
+        const dayMs = 1000 * 60 * 60 * 24;
+        const J1970 = 2440588;
+        const J2000 = 2451545;
+        const e = rad * 23.4397; // obliquity of the Earth
 
         function toJulian(date) {
             return date.valueOf() / dayMs - 0.5 + J1970;
@@ -64,16 +64,16 @@ var CoordStars = {
         }
 
         return function getSunPosition(date, lat, lon) {
-            var lw = rad * -lon,
-                phi = rad * lat,
-                d = toDays(date),
-                M = getSolarMeanAnomaly(d),
-                C = getEquationOfCenter(M),
-                L = getEclipticLongitude(M, C),
-                D = getDeclination(L, 0),
-                A = getRightAscension(L, 0),
-                t = getSiderealTime(d, lw),
-                H = t - A;
+            const lw = rad * -lon;
+            const phi = rad * lat;
+            const d = toDays(date);
+            const M = getSolarMeanAnomaly(d);
+            const C = getEquationOfCenter(M);
+            const L = getEclipticLongitude(M, C);
+            const D = getDeclination(L, 0);
+            const A = getRightAscension(L, 0);
+            const t = getSiderealTime(d, lw);
+            const H = t - A;
 
             return {
                 EclipticLongitude: L,

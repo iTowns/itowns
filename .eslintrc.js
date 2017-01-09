@@ -42,6 +42,7 @@ module.exports = {
         body: 1
       }
     }],
+    'one-var': ['error', 'never'],
 
     // TODO reactivate all the following rules
 
@@ -53,8 +54,6 @@ module.exports = {
     'max-len': 'off',
     'no-param-reassign': 'off',
     'no-else-return': 'off',
-    // the following should be reactivated with 'one-var': 'never'
-    'one-var': 'off',
     'no-var': 'off',
     'vars-on-top': 'off',
     'no-shadow': 'off',

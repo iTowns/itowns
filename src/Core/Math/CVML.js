@@ -894,8 +894,8 @@ var SweepContext = function SweepContext(contour, options) {
  */
 SweepContext.prototype.addHole = function addHole(polyline) {
     this.initEdges(polyline);
-    var i,
-        len = polyline.length;
+    let i;
+    const len = polyline.length;
     for (i = 0; i < len; i++) {
         this.points_.push(polyline[i]);
     }
@@ -976,8 +976,8 @@ SweepContext.prototype.initTriangulation = function initTriangulation() {
     var ymin = this.points_[0].y;
 
     // Calculate bounds
-    var i,
-        len = this.points_.length;
+    let i;
+    const len = this.points_.length;
     for (i = 1; i < len; i++) {
         var p = this.points_[i];
         /* jshint expr:true */
@@ -999,8 +999,8 @@ SweepContext.prototype.initTriangulation = function initTriangulation() {
 };
 
 SweepContext.prototype.initEdges = function initEdges(polyline) {
-    var i,
-        len = polyline.length;
+    let i;
+    const len = polyline.length;
     for (i = 0; i < len; ++i) {
         this.edge_list.push(new Edge(polyline[i], polyline[(i + 1) % len]));
     }
@@ -1056,9 +1056,9 @@ SweepContext.prototype.mapTriangleToNodes = function mapTriangleToNodes(t) {
 };
 
 SweepContext.prototype.removeFromMap = function removeFromMap(triangle) {
-    var i,
-        map = this.map_,
-        len = map.length;
+    let i;
+    const map = this.map_;
+    const len = map.length;
     for (i = 0; i < len; i++) {
         if (map[i] === triangle) {
             map.splice(i, 1);
@@ -1070,9 +1070,9 @@ SweepContext.prototype.removeFromMap = function removeFromMap(triangle) {
 SweepContext.prototype.meshClean = function meshClean(triangle) {
     // New implementation avoids recursive calls and use a loop instead.
     // Cf. issues # 57, 65 and 69.
-    var triangles = [triangle],
-        t,
-        i;
+    const triangles = [triangle];
+    let t;
+    let i;
     /* jshint boss:true */
 
     t = triangles.pop();
@@ -1102,8 +1102,8 @@ Sweep.triangulate = function triangulate(tcx) {
 };
 
 Sweep.sweepPoints = function sweepPoints(tcx) {
-    var i,
-        len = tcx.pointCount();
+    let i;
+    const len = tcx.pointCount();
     for (i = 1; i < len; ++i) {
         var point = tcx.getPoint(i);
         var node = Sweep.pointEvent(tcx, point);
@@ -1403,32 +1403,20 @@ Sweep.inCircle = function inCircle(pa, pb, pc, pd) {
 };
 
 Sweep.rotateTrianglePair = function rotateTrianglePair(t, p, ot, op) {
-    var n1,
-        n2,
-        n3,
-        n4;
-    n1 = t.neighborCCW(p);
-    n2 = t.neighborCW(p);
-    n3 = ot.neighborCCW(op);
-    n4 = ot.neighborCW(op);
+    const n1 = t.neighborCCW(p);
+    const n2 = t.neighborCW(p);
+    const n3 = ot.neighborCCW(op);
+    const n4 = ot.neighborCW(op);
 
-    var ce1,
-        ce2,
-        ce3,
-        ce4;
-    ce1 = t.getConstrainedEdgeCCW(p);
-    ce2 = t.getConstrainedEdgeCW(p);
-    ce3 = ot.getConstrainedEdgeCCW(op);
-    ce4 = ot.getConstrainedEdgeCW(op);
+    const ce1 = t.getConstrainedEdgeCCW(p);
+    const ce2 = t.getConstrainedEdgeCW(p);
+    const ce3 = ot.getConstrainedEdgeCCW(op);
+    const ce4 = ot.getConstrainedEdgeCW(op);
 
-    var de1,
-        de2,
-        de3,
-        de4;
-    de1 = t.getDelaunayEdgeCCW(p);
-    de2 = t.getDelaunayEdgeCW(p);
-    de3 = ot.getDelaunayEdgeCCW(op);
-    de4 = ot.getDelaunayEdgeCW(op);
+    const de1 = t.getDelaunayEdgeCCW(p);
+    const de2 = t.getDelaunayEdgeCW(p);
+    const de3 = ot.getDelaunayEdgeCCW(op);
+    const de4 = ot.getDelaunayEdgeCW(op);
 
     t.legalize(p, op);
     ot.legalize(op, p);
@@ -1929,8 +1917,8 @@ CVML._dim = function _dim(x) {
 };
 
 CVML.dim = function dim(x) {
-    var y,
-        z;
+    let y;
+    let z;
     if (typeof x === 'object') {
         y = x[0];
         if (typeof y === 'object') {
@@ -1971,8 +1959,8 @@ CVML.clone = function cloneFn(A, k, n) {
     if (typeof n === 'undefined') {
         n = CVML.sdim(A).length;
     }
-    var i,
-        ret = Array(A.length);
+    let i;
+    const ret = Array(A.length);
     if (k === n - 1) {
         for (i in A) {
             if (A.hasOwnProperty(i)) ret[i] = A[i];
@@ -1989,9 +1977,9 @@ CVML.rep = function rep(s, v, k) {
     if (typeof k === 'undefined') {
         k = 0;
     }
-    var n = s[k],
-        ret = Array(n),
-        i;
+    const n = s[k];
+    const ret = Array(n);
+    let i;
     if (k === s.length - 1) {
         for (i = n - 2; i >= 0; i -= 2) {
             ret[i + 1] = v;
@@ -2009,11 +1997,10 @@ CVML.rep = function rep(s, v, k) {
 };
 
 CVML.transpose = function transpose(A) {
-    var ret = [],
-        /* n = A.length,*/
-        i,
-        j,
-        Ai;
+    const ret = [];
+    let i;
+    let j;
+    let Ai;
     for (i in A) {
         if (!(A.hasOwnProperty(i))) continue;
         Ai = A[i];
@@ -2064,12 +2051,12 @@ CVML.addVec = function addVec(vec, vec1) {
 
 
 CVML.dotMV = function dotMV(A, x) {
-    var p = A.length,
-        Ai,
-        i,
-        j;
-    var ret = Array(p),
-        accum;
+    const p = A.length;
+    let Ai;
+    let i;
+    let j;
+    const ret = Array(p);
+    let accum;
     for (i = p - 1; i >= 0; i--) {
         Ai = A[i];
         accum = 0;
@@ -2356,21 +2343,17 @@ CVML.svd = function svd(A) {
     };
 };
 CVML.dotMMsmall = function dotMMsmall(x, y) {
-    var i,
-        j,
-        k,
-        p,
-        q,
-        r,
-        ret,
-        foo,
-        bar,
-        woo,
-        i0; // ,k0,p0,r0;
-    p = x.length;
-    q = y.length;
-    r = y[0].length;
-    ret = Array(p);
+    let i;
+    let j;
+    let k;
+    let foo;
+    let bar;
+    let woo;
+    let i0;
+    const p = x.length;
+    const q = y.length;
+    const r = y[0].length;
+    const ret = Array(p);
     for (i = p - 1; i >= 0; i--) {
         foo = Array(r);
         bar = x[i];
@@ -2390,8 +2373,8 @@ CVML.dotMMsmall = function dotMMsmall(x, y) {
     return ret;
 };
 CVML._getCol = function _getCol(A, j, x) {
-    var n = A.length,
-        i;
+    const n = A.length;
+    let i;
     for (i = n - 1; i > 0; --i) {
         x[i] = A[i][j];
         --i;
@@ -2400,16 +2383,16 @@ CVML._getCol = function _getCol(A, j, x) {
     if (i === 0) x[0] = A[0][j];
 };
 CVML.dotMMbig = function dotMMbig(x, y) {
-    var gc = CVML._getCol,
-        p = y.length,
-        v = Array(p);
-    var m = x.length,
-        n = y[0].length,
-        A = new Array(m),
-        xj;
-    var VV = CVML.dotVV;
-    var i,
-        j; // k,z;
+    const gc = CVML._getCol;
+    let p = y.length;
+    const v = Array(p);
+    let m = x.length;
+    let n = y[0].length;
+    const A = new Array(m);
+    let xj;
+    const VV = CVML.dotVV;
+    let i;
+    let j; // k,z;
     --p;
     --m;
     for (i = m; i !== -1; --i) A[i] = Array(n);
@@ -2427,8 +2410,8 @@ CVML.dotMMbig = function dotMMbig(x, y) {
 
 CVML.dotMV = function dotMV(x, y) {
     var p = x.length; // , q = y.length,i;
-    var ret = Array(p),
-        dotVV = CVML.dotVV;
+    const ret = Array(p);
+    const dotVV = CVML.dotVV;
     for (var i = p - 1; i >= 0; i--) {
         ret[i] = dotVV(x[i], y);
     }
@@ -2436,16 +2419,13 @@ CVML.dotMV = function dotMV(x, y) {
 };
 
 CVML.dotVM = function dotVM(x, y) {
-    var /* i,*/ j,
-        k,
-        p,
-        q, /* r,*/
-        ret, /* foo,bar,*/
-        woo,
-        i0;
-    p = x.length;
-    q = y[0].length;
-    ret = Array(q);
+    let j;
+    let k;
+    let woo;
+    let i0;
+    const p = x.length;
+    const q = y[0].length;
+    const ret = Array(q);
     for (k = q - 1; k >= 0; k--) {
         woo = x[p - 1] * y[p - 1][k];
         for (j = p - 2; j >= 1; j -= 2) {
@@ -2461,10 +2441,10 @@ CVML.dotVM = function dotVM(x, y) {
 };
 
 CVML.dotVV = function dotVV(x, y) {
-    var i,
-        n = x.length,
-        i1,
-        ret = x[n - 1] * y[n - 1];
+    let i;
+    const n = x.length;
+    let i1;
+    let ret = x[n - 1] * y[n - 1];
     for (i = n - 2; i >= 1; i -= 2) {
         i1 = i - 1;
         ret += x[i] * y[i] + x[i1] * y[i1];

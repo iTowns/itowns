@@ -105,13 +105,13 @@ TileGeometry.prototype.computeBuffers = function computeBuffers(params, builder)
     var heightSegments = Math.max(2, Math.floor(nSeg) || 2);
 
     var idVertex = 0;
-    var x,
-        y,
-        vertices = [],
-        skirt = [],
-        skirtEnd = [];
-    var u,
-        v;
+    let x;
+    let y;
+    const vertices = [];
+    let skirt = [];
+    const skirtEnd = [];
+    let u;
+    let v;
 
     builder.Prepare(params);
 
@@ -131,11 +131,11 @@ TileGeometry.prototype.computeBuffers = function computeBuffers(params, builder)
         };
     }
 
-    let id_m3,
-        v1,
-        v2,
-        v3,
-        v4;
+    let id_m3;
+    let v1;
+    let v2;
+    let v3;
+    let v4;
 
     for (y = 0; y <= heightSegments; y++) {
         var verticesRow = [];
