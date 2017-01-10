@@ -17,11 +17,11 @@ import BasicMaterial from 'Renderer/BasicMaterial';
 import PanoramicMesh from 'Renderer/PanoramicMesh';
 
 
-var _options = null,
-    _urlPano = '',
-    _urlImage = '',
-    _urlCam = '',
-    _panoramicsMetaDataPromise;
+let _options = null;
+let _urlPano = '';
+let _urlImage = '';
+let _urlCam = '';
+let _panoramicsMetaDataPromise;
 
 
 function PanoramicProvider(options) {

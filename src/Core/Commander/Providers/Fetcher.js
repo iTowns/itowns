@@ -27,8 +27,8 @@ export default {
     },
 
     texture(url) {
-        let res,
-            rej;
+        let res;
+        let rej;
         const promise = new Promise((resolve, reject) => {
             res = resolve;
             rej = reject;
