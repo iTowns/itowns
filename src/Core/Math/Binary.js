@@ -17,9 +17,9 @@ Binary.ToInt32 = function ToInt32(x) {
 
 // Convert flag to char
 Binary.toChar = function toChar(nMask) {
-    var nFlag,
-        nShifted = nMask,
-        sMask = '';
+    let nFlag;
+    let nShifted = nMask;
+    let sMask = '';
     for (nFlag = 0; nFlag < 32; nFlag++) {
         sMask += String(nShifted >>> 31);
         nShifted <<= 1;

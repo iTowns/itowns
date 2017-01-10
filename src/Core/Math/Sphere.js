@@ -20,9 +20,9 @@ var vector = new THREE.Vector3();
 //
 Sphere.prototype.intersectWithRayNoMiss = function intersectWithRayNoMiss(ray) {
     let pc = ray.closestPointToPoint(this.center);
-    let a = pc.length(),
-        d,
-        b;
+    let a = pc.length();
+    let d;
+    let b;
 
     // TODO: recompute mirror ray
     // If the ray miss sphere, we recompute the new ray with point symetric to tangent sphere
