@@ -8,7 +8,6 @@
 import * as THREE from 'three';
 import BasicMaterial from 'Renderer/BasicMaterial';
 import gfxEngine from 'Renderer/c3DEngine';
-import JavaTools from 'Core/System/JavaTools';
 import GlobeVS from 'Renderer/Shader/GlobeVS.glsl';
 import GlobeFS from 'Renderer/Shader/GlobeFS.glsl';
 import pitUV from 'Renderer/Shader/Chunk/pitUV.glsl';
@@ -172,14 +171,6 @@ LayeredMaterial.prototype.dispose = function dispose() {
             }
         }
     }
-
-    var jT = new JavaTools();
-
-    jT.freeArray(this.textures[0]);
-    jT.freeArray(this.textures[1]);
-
-    jT.freeArray(this.uniforms.dTextures_00.value);
-    jT.freeArray(this.uniforms.dTextures_01.value);
 };
 
 LayeredMaterial.prototype.setSequence = function setSequence(sequenceLayer) {
