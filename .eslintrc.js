@@ -62,7 +62,7 @@ module.exports = {
     'prefer-spread': 'off',
     'default-case': 'off',
     'camelcase': 'off',
-    'block-scoped-var': 'off',
+    // 'block-scoped-var': 'off',
     'no-bitwise': 'off',
     'no-restricted-syntax': 'off',
     'guard-for-in': 'off',

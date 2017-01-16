@@ -166,14 +166,16 @@ var Shader = {
         idmask = idmask || [];
         iddisto = iddisto || [];
         var M = 0;
-        for (var i = 0; i < idmask.length; ++i)
-            { if (M <= idmask[i]) M = idmask[i] + 1; }
+        for (let i = 0; i < idmask.length; ++i) {
+            if (M <= idmask[i]) M = idmask[i] + 1;
+        }
         var D = 0;
-        for (i = 0; i < iddisto.length; ++i)
-            { if (D <= iddisto[i]) D = iddisto[i] + 1; }
+        for (let i = 0; i < iddisto.length; ++i) {
+            if (D <= iddisto[i]) D = iddisto[i] + 1;
+        }
 
         var mainLoop = '';
-        for (i = 0; i < N; ++i) {
+        for (let i = 0; i < N; ++i) {
             var m = idmask[i];
             var d = iddisto[i];
             mainLoop += [
