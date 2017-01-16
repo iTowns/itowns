@@ -3,7 +3,7 @@ import BasicMaterial from 'Renderer/BasicMaterial';
 import PointVS from 'Renderer/Shader/PointVS.glsl';
 import PointFS from 'Renderer/Shader/PointFS.glsl';
 
-var ItownsPointMaterial = function ItownsPointMaterial(options) {
+const ItownsPointMaterial = function ItownsPointMaterial(options) {
     BasicMaterial.call(this);
 
     if (options === undefined)

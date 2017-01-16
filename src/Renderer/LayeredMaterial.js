@@ -75,7 +75,7 @@ var moveElementsArraySafe = function moveElementsArraySafe(array,index, howMany,
 };
 /* eslint-enable */
 
-var LayeredMaterial = function LayeredMaterial(id) {
+const LayeredMaterial = function LayeredMaterial(id) {
     BasicMaterial.call(this);
 
     const maxTexturesUnits = gfxEngine().glParams.maxTexturesUnits;

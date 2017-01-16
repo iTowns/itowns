@@ -7,7 +7,7 @@
 import * as THREE from 'three';
 
 
-var Sensor = function Sensor(infos) {
+const Sensor = function Sensor(infos) {
     this.infos = infos;
     this.position = new THREE.Vector3().fromArray(infos.position);
     this.rotation = new THREE.Matrix3().fromArray(infos.rotation);
