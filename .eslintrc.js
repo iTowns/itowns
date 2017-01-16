@@ -79,6 +79,5 @@ module.exports = {
     /* import problems */
     'import/no-mutable-exports': 'off',
     'import/prefer-default-export': 'off',
-    'import/no-named-as-default-member': 'off',
   }
 }
