@@ -77,7 +77,6 @@ module.exports = {
     'operator-assignment': 'off',
     'no-return-assign': 'off',
     'no-useless-concat': 'off',
-    'no-loop-func': 'off',
 	'linebreak-style': 'off',
 
     /* import problems */

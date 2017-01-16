@@ -199,8 +199,8 @@ var ProjectiveTexturingMaterial = {
                 value: [],
             },
         };
-        var idmask = [];
-        var iddist = [];
+        const idmask = [];
+        const iddist = [];
         for (let i = 0; i < N; ++i) {
             const mat = Ori.getMatrix(i).clone();
             const mvpp = (new THREE.Matrix3().multiplyMatrices(rot, mat)).transpose();
@@ -239,19 +239,23 @@ var ProjectiveTexturingMaterial = {
                 // depthWrite: false
         });
 
+        function setMaskOnLoad(tex, m) {
+            _shaderMat.uniforms.mask.value[m] = tex;
+        }
+
+        function setTextureOnLoad(tex, i) {
+            _shaderMat.uniforms.texture.value[i] = tex;
+        }
+
         _infos.pano = panoInfo;
         _infos.lod = _infos.lods[0];
         for (let i = 0; i < N; ++i) {
             _infos.cam = Ori.sensors[i].infos; // console.log(_infos.cam);
             const m = idmask[i];
             if (m >= 0) {
-                this.loadTexture(Ori.getMask(i), {}, (tex, m) => {
-                    _shaderMat.uniforms.mask.value[m] = tex;
-                }, m);
+                this.loadTexture(Ori.getMask(i), {}, setMaskOnLoad, m);
             }
-            this.loadTexture(_infos.url, _infos, (tex, i) => {
-                _shaderMat.uniforms.texture.value[i] = tex;
-            }, i);
+            this.loadTexture(_infos.url, _infos, setTextureOnLoad, i);
         }
         this.changePanoTextureAfterloading(panoInfo, posFrameWithPivot, rot, 1);
 

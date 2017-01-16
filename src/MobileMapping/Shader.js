@@ -74,10 +74,10 @@ var Shader = {
             }
         }
 
-        for (var i = 0; i < that.shaderNum; i++) {
-            var currentShaderURL = that.shadersURL[i];
+        for (let i = 0; i < that.shaderNum; i++) {
+            const currentShaderURL = that.shadersURL[i];
 
-            var request = new XMLHttpRequest();
+            const request = new XMLHttpRequest();
             request.open('GET', currentShaderURL, true);
 
             request.onload = function onloadFn() {
