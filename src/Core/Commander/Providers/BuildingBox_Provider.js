@@ -80,25 +80,25 @@ BuildingBox_Provider.prototype.generateMesh = function generateMesh(elements, bb
     var features = elements.features;
     var altitude_ground = altitude - 1.5; // 35;  // truck height
 
-    for (var r = 0; r < features.length; r++) {
-        var hauteur = (features[r].properties.hauteur + suppHeight) || 0;
-        var z_min = altitude_ground; // features[r].properties.z_min;  // altitude_ground // force altitude ground
-        var polygon = features[r].geometry.coordinates[0][0];
+    for (const feature of features) {
+        const hauteur = (feature.properties.hauteur + suppHeight) || 0;
+        const z_min = altitude_ground; // features[r].properties.z_min;  // altitude_ground // force altitude ground
+        const polygon = feature.geometry.coordinates[0][0];
 
+        const arrPoint2D = [];
         if (polygon.length > 2) {
-            var arrPoint2D = [];
             // VERTICES
-            for (var j = 0; j < polygon.length - 1; ++j) {
-                var pt2DTab = polygon[j]; // .split(' ');
-                var p1 = new THREE.Vector3(parseFloat(pt2DTab[0]), 0, parseFloat(pt2DTab[1]));
+            for (let j = 0; j < polygon.length - 1; ++j) {
+                const pt2DTab = polygon[j]; // .split(' ');
+                const p1 = new THREE.Vector3(parseFloat(pt2DTab[0]), 0, parseFloat(pt2DTab[1]));
 
-                var coordCarto1 = new GeoCoordinate(p1.x, p1.z, z_min, UNIT.DEGREE);
-                var coordCarto2 = new GeoCoordinate(p1.x, p1.z, z_min + hauteur, UNIT.DEGREE); // + Math.random(1000) );
-                var pgeo1 = ellipsoid.cartographicToCartesian(coordCarto1); // {longitude:p1.z, latitude:p1.x, altitude: 0});
-                var pgeo2 = ellipsoid.cartographicToCartesian(coordCarto2);
+                const coordCarto1 = new GeoCoordinate(p1.x, p1.z, z_min, UNIT.DEGREE);
+                const coordCarto2 = new GeoCoordinate(p1.x, p1.z, z_min + hauteur, UNIT.DEGREE); // + Math.random(1000) );
+                const pgeo1 = ellipsoid.cartographicToCartesian(coordCarto1); // {longitude:p1.z, latitude:p1.x, altitude: 0});
+                const pgeo2 = ellipsoid.cartographicToCartesian(coordCarto2);
 
-                var vector3_1 = new THREE.Vector3(pgeo1.x, pgeo1.y, pgeo1.z); // - x temporary, bug
-                var vector3_2 = new THREE.Vector3(pgeo2.x, pgeo2.y, pgeo2.z);
+                const vector3_1 = new THREE.Vector3(pgeo1.x, pgeo1.y, pgeo1.z); // - x temporary, bug
+                const vector3_2 = new THREE.Vector3(pgeo2.x, pgeo2.y, pgeo2.z);
 
                 arrPoint2D.push(CVML.newPoint(p1.z, p1.x)); // -pgeo1.x, pgeo1.z)); //for roof
                 _geometry.vertices.push(vector3_1, vector3_2);
@@ -106,8 +106,8 @@ BuildingBox_Provider.prototype.generateMesh = function generateMesh(elements, bb
 
             // FACES
             // indice of the first point of the polygon 3D
-            for (var k = _geometry.vertices.length - ((polygon.length - 1) * 2); k < _geometry.vertices.length; k = k + 2) {
-                var l = k; // % (pts2DTab.length);
+            for (let k = _geometry.vertices.length - ((polygon.length - 1) * 2); k < _geometry.vertices.length; k = k + 2) {
+                let l = k; // % (pts2DTab.length);
                 if (l > _geometry.vertices.length - 4) {
                     l = _geometry.vertices.length - ((polygon.length - 1) * 2);
                 }
@@ -115,7 +115,7 @@ BuildingBox_Provider.prototype.generateMesh = function generateMesh(elements, bb
                 _geometry.faces.push(new THREE.Face3(l, l + 3, l + 2));
             }
 
-            var ll = _geometry.vertices.length - ((polygon.length - 1) * 2);
+            const ll = _geometry.vertices.length - ((polygon.length - 1) * 2);
             _geometry.faces.push(new THREE.Face3(ll, ll + 1, _geometry.vertices.length - 1));
             _geometry.faces.push(new THREE.Face3(ll, _geometry.vertices.length - 1, _geometry.vertices.length - 2));
         }
@@ -149,9 +149,9 @@ BuildingBox_Provider.prototype.generateMesh = function generateMesh(elements, bb
         });
     }
 
-    if (this.roadOn)
-        { this.addRoad(_geometry, bbox, altitude_ground, ellipsoid); }
-
+    if (this.roadOn) {
+        this.addRoad(_geometry, bbox, altitude_ground, ellipsoid);
+    }
 
     _geometry.computeFaceNormals(); // WARNING : VERY IMPORTANT WHILE WORKING WITH RAY CASTING ON CUSTOM MESH
     geometry.computeFaceNormals();
@@ -167,11 +167,11 @@ BuildingBox_Provider.prototype.generateMesh = function generateMesh(elements, bb
     if (this.rtcOn) {
         firstPos = _geometry.vertices[0].clone();
         // create pivot from 1st pos vertex
-        for (var i = 0; i < _geometry.vertices.length; ++i) {
-            _geometry.vertices[i].sub(firstPos);
+        for (const vertice of _geometry.vertices) {
+            vertice.sub(firstPos);
         }
-        for (i = 0; i < geometry.vertices.length; ++i) {
-            geometry.vertices[i].sub(firstPos);
+        for (const vertice of geometry.vertices) {
+            vertice.sub(firstPos);
         }
     }
 

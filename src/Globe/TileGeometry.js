@@ -232,7 +232,7 @@ TileGeometry.prototype.computeBuffers = function computeBuffers(params, builder)
             return id;
         };
 
-        buildUVSkirt = function buildUVSkirt() {
+        buildUVSkirt = function buildUVSkirt(id) {
             scratchBuffers.uv.wgs84[idVertex * 2 + 0] = scratchBuffers.uv.wgs84[id * 2 + 0];
             scratchBuffers.uv.wgs84[idVertex * 2 + 1] = scratchBuffers.uv.wgs84[id * 2 + 1];
         };
@@ -251,7 +251,7 @@ TileGeometry.prototype.computeBuffers = function computeBuffers(params, builder)
         scratchBuffers.normal[id_m3 + 1] = scratchBuffers.normal[id2_m3 + 1];
         scratchBuffers.normal[id_m3 + 2] = scratchBuffers.normal[id2_m3 + 2];
 
-        buildUVSkirt();
+        buildUVSkirt(id);
 
         scratchBuffers.uv.pm[idVertex] = scratchBuffers.uv.pm[id];
 
