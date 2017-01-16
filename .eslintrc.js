@@ -74,6 +74,5 @@ module.exports = {
     'operator-assignment': 'off',
     'no-return-assign': 'off',
     'no-useless-concat': 'off',
-	'linebreak-style': 'off',
   }
 }
