@@ -280,8 +280,8 @@ LayeredMaterial.prototype.setTexture = function setTexture(texture, layerType, s
     }
 
     // BEWARE: array [] -> size: 0; array [10]="wao" -> size: 11
-    this.textures[layerType][slot] = texture ? texture : emptyTexture;
-    this.offsetScale[layerType][slot] = offsetScale ? offsetScale : new THREE.Vector3(0.0, 0.0, 1.0);
+    this.textures[layerType][slot] = texture || emptyTexture;
+    this.offsetScale[layerType][slot] = offsetScale || new THREE.Vector3(0.0, 0.0, 1.0);
 };
 
 LayeredMaterial.prototype.setColorLayerParameters = function setColorLayerParameters(params) {
