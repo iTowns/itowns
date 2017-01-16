@@ -63,7 +63,6 @@ module.exports = {
     'no-bitwise': 'off',
     'no-restricted-syntax': 'off',
     'guard-for-in': 'off',
-    'no-tabs': 'off',
     'consistent-return': 'off',
     'brace-style': 'off',
     'new-cap': 'off',

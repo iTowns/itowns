@@ -94,7 +94,7 @@ var skyShader = {
         'const float n = 1.0003; // refractive index of air',
         'const float N = 2.545E25; // number of molecules per unit volume for air at',
         '// 288.15K and 1013mb (sea level -45 celsius)',
-        'const float pn = 0.035;	// depolatization factor for standard air',
+        'const float pn = 0.035; // depolatization factor for standard air',
 
         '// wavelength of used primaries, according to preetham',
         'const vec3 lambda = vec3(680E-9, 550E-9, 450E-9);',
@@ -133,10 +133,10 @@ var skyShader = {
         '}',
 
         'float rayleighPhase(float cosTheta)',
-        '{	 ',
+        '{ ',
         'return (3.0 / (16.0*pi)) * (1.0 + pow(cosTheta, 2.0));',
-        '//	return (1.0 / (3.0*pi)) * (1.0 + pow(cosTheta, 2.0));',
-        '//	return (3.0 / 4.0) * (1.0 + pow(cosTheta, 2.0));',
+        '// return (1.0 / (3.0*pi)) * (1.0 + pow(cosTheta, 2.0));',
+        '// return (3.0 / 4.0) * (1.0 + pow(cosTheta, 2.0));',
         '}',
 
         'vec3 totalMie(vec3 lambda, vec3 K, float T)',
@@ -157,7 +157,7 @@ var skyShader = {
 
         '// float logLuminance(vec3 c)',
         '// {',
-        '// 	return log(c.r * 0.2126 + c.g * 0.7152 + c.b * 0.0722);',
+        '//     return log(c.r * 0.2126 + c.g * 0.7152 + c.b * 0.0722);',
         '// }',
 
         '// Filmic ToneMapping http://filmicgames.com/archives/75',
@@ -203,7 +203,7 @@ var skyShader = {
         'float sM = mieZenithLength / (cos(zenithAngle) + 0.15 * pow(93.885 - ((zenithAngle * 180.0) / pi), -1.253));',
 
 
-        '// combined extinction factor	',
+        '// combined extinction factor',
         'vec3 Fex = exp(-(betaR * sR + betaM * sM));',
 
         '// in scattering',

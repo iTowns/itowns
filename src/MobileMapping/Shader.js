@@ -325,7 +325,7 @@ var Shader = {
 
         '         gl_FragColor = vec4(colorpoint,alpha);',
 
-        '      }	',
+        '      }',
 
 
     ],
@@ -373,7 +373,7 @@ var Shader = {
         '  vec4 color = vec4(1.,0.,0.,1.);',
 
         '  void main(void)',
-        ' {	',
+        ' {',
         '         vec2 uv = vUv;',
 
         '         if (matindice<0.9)      color = texture2D(u_textures[0],uv);',
