@@ -9,7 +9,7 @@
 import * as THREE from 'three';
 import Sensor from 'MobileMapping/Sensor';
 
-var Ori = {
+const Ori = {
 
     initiated: false,
     options: null,

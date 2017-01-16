@@ -13,7 +13,7 @@ import GlobeDepthVS from 'Renderer/Shader/GlobeDepthVS.glsl';
 // This material renders the id in RGBA Color
 // Warning the RGBA contains id in float pack in 4 unsigned char
 
-var MatteIdsMaterial = function MatteIdsMaterial(otherMaterial) {
+const MatteIdsMaterial = function MatteIdsMaterial(otherMaterial) {
     BasicMaterial.call(this);
 
     this.vertexShader = this.vertexShaderHeader + GlobeDepthVS;

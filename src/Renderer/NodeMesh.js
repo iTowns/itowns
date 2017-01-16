@@ -9,7 +9,7 @@ import Node from 'Scene/Node';
 import * as THREE from 'three';
 
 
-var NodeMesh = function NodeMesh() {
+const NodeMesh = function NodeMesh() {
     // Constructor
 
     Node.call(this);

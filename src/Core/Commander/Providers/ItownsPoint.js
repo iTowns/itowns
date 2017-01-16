@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import ItownsPointMaterial from 'Renderer/ItownsPointMaterial';
 
 
-var ItownsPoint = function ItownsPoint(options) {
+const ItownsPoint = function ItownsPoint(options) {
     THREE.Points.call(this);
 
     if (options === undefined)

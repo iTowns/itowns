@@ -10,7 +10,7 @@
  * @namespace
  * @alias MathExt
  */
-var MathExt = {};
+const MathExt = {};
 
 /**
  * pi
