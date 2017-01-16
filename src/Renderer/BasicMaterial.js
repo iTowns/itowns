@@ -63,8 +63,8 @@ BasicMaterial.prototype.enableRTC = function enableRTC(enable) {
     this.uniforms.useRTC.value = enable;
 };
 
-BasicMaterial.prototype.setDebug = function setDebug(debug_value) {
-    this.uniforms.debug.value = debug_value;
+BasicMaterial.prototype.setDebug = function setDebug(v) {
+    this.uniforms.debug.value = v;
 };
 
 BasicMaterial.prototype.setMatrixRTC = function setMatrixRTC(rtc) {

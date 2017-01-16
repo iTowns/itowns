@@ -46,9 +46,9 @@ var fillArray = function fillArray(array, remp) {
         { array[i] = remp; }
 };
 
-var moveElementArray = function moveElementArray(array, old_index, new_index)
+var moveElementArray = function moveElementArray(array, oldIndex, newIndex)
 {
-    array.splice(new_index, 0, array.splice(old_index, 1)[0]);
+    array.splice(newIndex, 0, array.splice(oldIndex, 1)[0]);
 };
 
 var moveElementsArray = function moveElementsArray(array, index, howMany, toIndex) {
