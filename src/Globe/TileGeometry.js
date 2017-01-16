@@ -8,7 +8,6 @@
 /* global Float32Array*/
 import * as THREE from 'three';
 import defaultValue from 'Core/defaultValue';
-import JavaTools from 'Core/System/JavaTools';
 import CacheRessource from 'Core/Commander/Providers/CacheRessource';
 
 // TODO Why? it's not necessary
@@ -77,7 +76,6 @@ TileGeometry.prototype = Object.create(THREE.BufferGeometry.prototype);
 TileGeometry.prototype.constructor = TileGeometry;
 
 TileGeometry.prototype.computeBuffers = function computeBuffers(params, builder) {
-    var javToo = new JavaTools();
     // Create output buffers.
     var outBuffers = new Buffers(params.segment);
     // Create temp buffers
@@ -284,8 +282,6 @@ TileGeometry.prototype.computeBuffers = function computeBuffers(params, builder)
         outBuffers.uv.wgs84 = new THREE.BufferAttribute(scratchBuffers.uv.wgs84, 2);
     }
     outBuffers.uv.pm = new THREE.BufferAttribute(scratchBuffers.uv.pm, 1);
-
-    javToo.freeArray(vertices);
 
     scratchBuffers.position = null;
     scratchBuffers.bufferIndex = null;
