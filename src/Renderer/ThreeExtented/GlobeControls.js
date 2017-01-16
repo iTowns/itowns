@@ -827,6 +827,8 @@ function GlobeControls(camera, domElement, engine) {
                 // WARNING loop !!!
                 keyS = true;
                 break;
+            default:
+                break;
 
         }
     };

@@ -59,7 +59,6 @@ module.exports = {
     'no-shadow': 'off',
     'no-restricted-properties': 'off',
     'prefer-spread': 'off',
-    'default-case': 'off',
     'camelcase': 'off',
     'no-bitwise': 'off',
     'no-restricted-syntax': 'off',
