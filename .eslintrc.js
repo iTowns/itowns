@@ -71,7 +71,6 @@ module.exports = {
     'no-cond-assign': 'off',
     'no-unused-expressions': 'off',
     'no-continue': 'off',
-    'no-lonely-if': 'off',
     'no-prototype-builtins': 'off',
     'no-throw-literal': 'off',
     'operator-assignment': 'off',

@@ -242,10 +242,8 @@ c3DEngine.prototype.changeStateNodesScene = function changeStateNodesScene(state
 
         if (node.changeState) {
             node.traverseVisible(changeStateFunction);
-        } else {
-            if (node.layer) {
-                node.visible = enable ? node.layer.visible : false;
-            }
+        } else if (node.layer) {
+            node.visible = enable ? node.layer.visible : false;
         }
     }
 };
