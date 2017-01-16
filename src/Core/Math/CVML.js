@@ -2079,7 +2079,7 @@ CVML.svd = function svd(A) {
     var q = new Array(n);
     for (i = 0; i < n; i++) e[i] = q[i] = 0.0;
     var v = CVML.rep([n, n], 0);
-    //	v.zero();
+    // v.zero();
 
     function pythag(a, b) {
         a = Math.abs(a);

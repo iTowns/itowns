@@ -19,8 +19,9 @@ StyleManager.prototype.getStyles = function getStyles() {
 };
 
 StyleManager.prototype.addStyle = function addStyle(style) {
-    if (style instanceof Style)
-		{ this.styles.push(style); }
+    if (style instanceof Style) {
+        this.styles.push(style);
+    }
 };
 
 StyleManager.prototype.getStyle = function getStyle(idStyle) {

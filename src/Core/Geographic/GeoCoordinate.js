@@ -27,26 +27,22 @@ var getCoordinateValue = function getCoordinateValue(unit, coord, id)
 {
     unit = defaultValue(unit, UNIT.RADIAN);
 
-    if (unit === UNIT.RADIAN)
-
-		{ return coord[id]; }
-
-    else if (unit === UNIT.DEGREE)
-
-  { return mE.radToDeg(coord[id]); }
+    if (unit === UNIT.RADIAN) {
+        return coord[id];
+    } else if (unit === UNIT.DEGREE) {
+        return mE.radToDeg(coord[id]);
+    }
 };
 
 var setCoordinateValue = function setCoordinateValue(unit, coord, id, value)
 {
     unit = defaultValue(unit, UNIT.RADIAN);
 
-    if (unit === UNIT.RADIAN)
-
-		{ return coord[id] = value; }
-
-    else if (unit === UNIT.DEGREE)
-
-  { return coord[id] = mE.degToRad(value); }
+    if (unit === UNIT.RADIAN) {
+        return coord[id] = value;
+    } else if (unit === UNIT.DEGREE) {
+        return coord[id] = mE.degToRad(value);
+    }
 };
 
 var setCoordinate = function setCoordinate(coordinate, longitude, latitude, altitude, unit) {
@@ -98,10 +94,11 @@ GeoCoordinate.prototype.set = function set(longitude, latitude, altitude, unit) 
 };
 
 GeoCoordinate.prototype.copy = function copyCoordinate(coordinate, unit) {
-    if (coordinate instanceof GeoCoordinate)
-		{ return this.set(coordinate.longitude(), coordinate.latitude(), coordinate.altitude(), unit); }
-    else
-		{ return this.set(coordinate.longitude, coordinate.latitude, coordinate.altitude, unit); }
+    if (coordinate instanceof GeoCoordinate) {
+        return this.set(coordinate.longitude(), coordinate.latitude(), coordinate.altitude(), unit);
+    } else {
+        return this.set(coordinate.longitude, coordinate.latitude, coordinate.altitude, unit);
+    }
 };
 
 GeoCoordinate.prototype.clone = function cloneCoordinate() {

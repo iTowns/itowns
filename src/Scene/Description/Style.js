@@ -6,11 +6,11 @@
 
 const STYLE =
     {
-	// State
+        // State
         ST_Active: 0,
         ST_Selected: 1,
         ST_Frozen: 2,
-	// Alignement
+        // Alignement
         AL_Left: 0,
         AL_Center: 1,
         AL_Right: 2,
@@ -53,7 +53,7 @@ Pen.prototype.constructor = Pen;
 
 function Font(color) {
     PaintingTool.call(this, color);
-	// Text alignment, valid values are "Left", "Right" and "Center"
+    // Text alignment, valid values are "Left", "Right" and "Center"
     this.alignment = STYLE.AL_Left;
 }
 
@@ -86,13 +86,13 @@ function TextStyle() {
 
     this.font = new Font();
 
-	// Alignement
+    // Alignement
     this.alignement = STYLE.AL_Left;
 
-	// The padding around the text for border computation, 1.0 is equal to font size. Default is 0.25
+    // The padding around the text for border computation, 1.0 is equal to font size. Default is 0.25
     this.framePadding = 0.25;
 
-	// Activate a border around the text
+    // Activate a border around the text
     this.borderEnabled = false;
 }
 
@@ -123,17 +123,17 @@ Extrusion.prototype.constructor = Extrusion;
 function Style(name) {
     this.name = name;
 
-	// Icon
+    // Icon
     this.iconStyle = new SurfaceStyle();
 
-	// Line
+    // Line
     this.line = new Pen();
 
-	// Surface
+    // Surface
     this.surface = new SurfaceStyle();
     this.surface.addEffect(new Extrusion());
 
-	// Text
+    // Text
     this.text = new TextStyle();
 }
 
