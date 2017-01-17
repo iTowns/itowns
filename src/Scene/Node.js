@@ -12,11 +12,8 @@ function Node() {
     this.children = [];
     this.bbox = null;
     this.url = null;
-    this.content = null;
     this.link = null;
-    this.description = null;
     this.id = null;
-    this.saveState = null;
     this.level = 0;
     this.screenSpaceError = 0.0;
     this.loaded = false;

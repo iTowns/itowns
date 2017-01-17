@@ -38,9 +38,6 @@ NodeMesh.prototype.isVisible = function isVisible() {
 NodeMesh.prototype.setVisibility = function setVisibility(show) {
     this.visible = show;
     this.showHelper(show);
-
-    if (this.content !== null)
-        { this.content.visible = show; }
 };
 
 NodeMesh.prototype.setDisplayed = function setDisplayed(show) {

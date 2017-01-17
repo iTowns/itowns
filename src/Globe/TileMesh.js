@@ -140,10 +140,6 @@ TileMesh.prototype.setDisplayed = function setDisplayed(show) {
     if (this.helper !== undefined) {
         this.helper.setMaterialVisibility(show);
     }
-
-    if (this.content !== null && show) {
-        this.content.visible = true;
-    }
 };
 
 TileMesh.prototype.enableRTC = function enableRTC(enable) {
