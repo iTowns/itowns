@@ -12,8 +12,8 @@
  */
 import Layer from 'Scene/Layer';
 import InterfaceCommander from 'Core/Commander/InterfaceCommander';
-import Quad from 'Core/Geographic/Quad';
 import NodeMesh from 'Renderer/NodeMesh';
+import BoundingBox from 'Scene/BoundingBox';
 import { SSE_SUBDIVISION_THRESHOLD } from 'Scene/NodeProcess';
 
 function commandQueuePriorityFunction(cmd) {
@@ -108,9 +108,15 @@ Quadtree.prototype.subdivideNode = function subdivideNode(node) {
         return [];
     }
 
-    var quad = new Quad(node.bbox);
+    const bbox = node.bbox;
 
-    return [quad.northWest, quad.northEast, quad.southWest, quad.southEast];
+    const northWest = new BoundingBox(bbox.west(), bbox.center.x, bbox.center.y, bbox.north());
+    const northEast = new BoundingBox(bbox.center.x, bbox.east(), bbox.center.y, bbox.north());
+    const southWest = new BoundingBox(bbox.west(), bbox.center.x, bbox.south(), bbox.center.y);
+    const southEast = new BoundingBox(bbox.center.x, bbox.east(), bbox.south(), bbox.center.y);
+
+
+    return [northWest, northEast, southWest, southEast];
 };
 
 Quadtree.prototype.traverse = function traverse(foo, node)
