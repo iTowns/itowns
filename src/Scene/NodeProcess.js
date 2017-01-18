@@ -72,29 +72,25 @@ NodeProcess.prototype.checkNodeSSE = function checkNodeSSE(node) {
 
 NodeProcess.prototype.subdivideNode = function subdivideNode(node, camera, params) {
     if (!node.pendingSubdivision && node.noChild()) {
-        var bboxes = params.tree.subdivideNode(node);
+        const bboxes = params.tree.subdivideNode(node);
         node.pendingSubdivision = true;
 
         for (var i = 0; i < bboxes.length; i++) {
-            var args = {
+            const args = {
                 layer: params.layersConfig.getGeometryLayers()[0],
                 bbox: bboxes[i],
             };
-            var quadtree = params.tree;
+            const quadtree = params.tree;
 
             quadtree.interCommand.request(args, node).then((child) => {
-                var colorTextureCount = 0;
-                var paramMaterial = [];
-                var layer;
-                var j;
+                let colorTextureCount = 0;
+                const paramMaterial = [];
 
                 // update wmts
-                var colorLayers = params.layersConfig.getColorLayers();
+                const colorLayers = params.layersConfig.getColorLayers();
 
                 // update Imagery wmts
-                for (j = 0; j < colorLayers.length; j++) {
-                    layer = colorLayers[j];
-
+                for (const layer of colorLayers) {
                     if (layer.tileInsideLimit(child, layer)) {
                         const texturesCount = layer.tileTextureCount ?
                             layer.tileTextureCount(child, layer) : 1;
@@ -113,10 +109,9 @@ NodeProcess.prototype.subdivideNode = function subdivideNode(node, camera, param
                 }
 
                 // update Imagery wmts
-                var elevationLayers = params.layersConfig.getElevationLayers();
-                var canHaveElevation = false;
-                for (j = 0; j < elevationLayers.length; j++) {
-                    layer = elevationLayers[j];
+                const elevationLayers = params.layersConfig.getElevationLayers();
+                let canHaveElevation = false;
+                for (const layer of elevationLayers) {
                     canHaveElevation |= layer.tileInsideLimit(child, layer);
                 }
 
