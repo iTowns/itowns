@@ -437,7 +437,7 @@ NodeProcess.prototype.frustumCullingOBB = function frustumCullingOBB(node, camer
     var position = node.OBB().worldToLocal(camera.position().clone());
     position.z -= node.distance;
 
-    quaternion.multiplyQuaternions(node.OBB().quadInverse(), camera.camera3D.quaternion);
+    quaternion.multiplyQuaternions(node.OBB().inverseQuaternion(), camera.camera3D.quaternion);
 
     return camera.getFrustumLocalSpace(position, quaternion).intersectsBox(node.OBB().box3D);
 };

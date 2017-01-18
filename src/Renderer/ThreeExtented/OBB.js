@@ -45,7 +45,7 @@ OBB.prototype.update = function update() {
     this.pointsWorld = this.cPointsWorld(this.points());
 };
 
-OBB.prototype.quadInverse = function quadInverse() {
+OBB.prototype.inverseQuaternion = function inverseQuaternion() {
     return this.quaInv;
 };
 
