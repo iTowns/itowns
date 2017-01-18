@@ -11,7 +11,7 @@
  * @returns {Quadtree_L13.Quadtree}
  */
 import Layer from 'Scene/Layer';
-import ManagerCommands from 'Core/Commander/ManagerCommands';
+import Scheduler from 'Core/Commander/Scheduler';
 import NodeMesh from 'Renderer/NodeMesh';
 import BoundingBox from 'Scene/BoundingBox';
 
@@ -19,7 +19,7 @@ function Quadtree(type, schemeTile, link) {
     Layer.call(this);
 
     this.type = type;
-    this.managerCommands = ManagerCommands();
+    this.scheduler = Scheduler();
     this.link = link;
     this.schemeTile = schemeTile;
     this.tileType = type;
@@ -81,7 +81,7 @@ Quadtree.prototype.requestNewTile = function requestNewTile(geometryLayer, bbox,
         level: 0,
     };
 
-    return this.managerCommands.execute(command);
+    return this.scheduler.execute(command);
 };
 
 Quadtree.prototype.canSubdivideNode = function canSubdivideNode(node) {

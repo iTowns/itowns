@@ -77,7 +77,7 @@ ApiGlobe.prototype.execute = function execute() {
 };
 
 ApiGlobe.prototype.getProtocolProvider = function getProtocolProvider(protocol) {
-    return this.scene.managerCommand.getProtocolProvider(protocol);
+    return this.scene.scheduler.getProtocolProvider(protocol);
 };
 
 /**
@@ -116,7 +116,7 @@ ApiGlobe.prototype.init = function init() {
  * Add the geometry layer to the scene.
  */
 ApiGlobe.prototype.addGeometryLayer = function addGeometryLayer(layer) {
-    preprocessLayer(layer, this.scene.managerCommand.getProtocolProvider(layer.protocol));
+    preprocessLayer(layer, this.scene.scheduler.getProtocolProvider(layer.protocol));
     const map = this.scene.getMap();
     map.layersConfiguration.addGeometryLayer(layer);
 };
@@ -127,7 +127,7 @@ ApiGlobe.prototype.addGeometryLayer = function addGeometryLayer(layer) {
  * @param {Layer} layer.
  */
 ApiGlobe.prototype.addImageryLayer = function addImageryLayer(layer) {
-    preprocessLayer(layer, this.scene.managerCommand.getProtocolProvider(layer.protocol));
+    preprocessLayer(layer, this.scene.scheduler.getProtocolProvider(layer.protocol));
 
     var map = this.scene.getMap();
 
@@ -221,7 +221,7 @@ ApiGlobe.prototype.removeImageryLayer = function removeImageryLayer(id) {
  */
 
 ApiGlobe.prototype.addElevationLayer = function addElevationLayer(layer) {
-    preprocessLayer(layer, this.scene.managerCommand.getProtocolProvider(layer.protocol));
+    preprocessLayer(layer, this.scene.scheduler.getProtocolProvider(layer.protocol));
 
     var map = this.scene.getMap();
     map.layersConfiguration.addElevationLayer(layer);
@@ -372,10 +372,10 @@ ApiGlobe.prototype.createSceneGlobe = function createSceneGlobe(coordCarto, view
         support: map.gLDebug,
     });
 
-    this.scene.managerCommand.addProtocolProvider('wmts', wmtsProvider);
-    this.scene.managerCommand.addProtocolProvider('wmtsc', wmtsProvider);
-    this.scene.managerCommand.addProtocolProvider('tile', new TileProvider(ellipsoid));
-    this.scene.managerCommand.addProtocolProvider('wms', new WMS_Provider({ support: map.gLDebug }));
+    this.scene.scheduler.addProtocolProvider('wmts', wmtsProvider);
+    this.scene.scheduler.addProtocolProvider('wmtsc', wmtsProvider);
+    this.scene.scheduler.addProtocolProvider('tile', new TileProvider(ellipsoid));
+    this.scene.scheduler.addProtocolProvider('wms', new WMS_Provider({ support: map.gLDebug }));
 
     this.sceneLoadedDeferred = defer();
     this.addEventListener('globe-loaded', () => {

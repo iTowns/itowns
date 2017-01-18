@@ -9,7 +9,7 @@ import RendererConstant from 'Renderer/RendererConstant';
 import { chooseNextLevelToFetch } from 'Scene/LayerUpdateStrategy';
 import { l_ELEVATION, l_COLOR } from 'Renderer/LayeredMaterial';
 import LayerUpdateState from 'Scene/LayerUpdateState';
-import { CancelledCommandException } from 'Core/Commander/ManagerCommands';
+import { CancelledCommandException } from 'Core/Commander/Scheduler';
 
 export const SSE_SUBDIVISION_THRESHOLD = 6.0;
 
@@ -87,7 +87,7 @@ NodeProcess.prototype.subdivideNode = function subdivideNode(node, camera, param
                 type: quadtree.type,
             };
 
-            quadtree.managerCommands.execute(command).then((child) => {
+            quadtree.scheduler.execute(command).then((child) => {
                 let colorTextureCount = 0;
                 const paramMaterial = [];
 
@@ -270,7 +270,7 @@ function updateNodeImagery(scene, quadtree, node, layersConfig, force) {
             ancestor,
         };
 
-        promises.push(quadtree.managerCommands.execute(command).then(
+        promises.push(quadtree.scheduler.execute(command).then(
             (result) => {
                 const level = ancestor ? ancestor.level : node.level;
                 // Assign .level to texture
@@ -395,7 +395,7 @@ function updateNodeElevation(scene, quadtree, node, layersConfig, force) {
             ancestor,
         };
 
-        quadtree.managerCommands.execute(command).then(
+        quadtree.scheduler.execute(command).then(
             (terrain) => {
                 node.layerUpdateState[bestLayer.id].success();
 
