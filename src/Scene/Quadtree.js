@@ -25,16 +25,12 @@ function commandQueuePriorityFunction(cmd) {
     // Prioritize subdivision request
     if (cmd.layer instanceof Quadtree) {
         return 10000;
+    } else if (!node.loaded) {
+        return 1000;
+    } else if (SSE_SUBDIVISION_THRESHOLD < node.sse) {
+        return 100;
     } else {
-        if (!node.loaded) {
-            return 1000;
-        } else {
-            if (SSE_SUBDIVISION_THRESHOLD < node.sse) {
-                return 100;
-            } else {
-                return 10;
-            }
-        }
+        return 10;
     }
 }
 

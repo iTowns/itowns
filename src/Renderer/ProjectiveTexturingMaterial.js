@@ -199,13 +199,13 @@ var ProjectiveTexturingMaterial = {
                 value: [],
             },
         };
-        var idmask = [];
-        var iddist = [];
-        for (var i = 0; i < N; ++i) {
-            var mat = Ori.getMatrix(i).clone();
-            var mvpp = (new THREE.Matrix3().multiplyMatrices(rot, mat)).transpose();
-            var trans = posFrameWithPivot.clone().add(Ori.getSommet(i).clone().applyMatrix3(rot));
-            var m = -1;
+        const idmask = [];
+        const iddist = [];
+        for (let i = 0; i < N; ++i) {
+            const mat = Ori.getMatrix(i).clone();
+            const mvpp = (new THREE.Matrix3().multiplyMatrices(rot, mat)).transpose();
+            const trans = posFrameWithPivot.clone().add(Ori.getSommet(i).clone().applyMatrix3(rot));
+            let m = -1;
             if (!_infos.noMask && Ori.getMask(i)) {
                 m = uniforms.mask.value.length;
                 uniforms.mask.value[m] = null;
@@ -239,19 +239,23 @@ var ProjectiveTexturingMaterial = {
                 // depthWrite: false
         });
 
+        function setMaskOnLoad(tex, m) {
+            _shaderMat.uniforms.mask.value[m] = tex;
+        }
+
+        function setTextureOnLoad(tex, i) {
+            _shaderMat.uniforms.texture.value[i] = tex;
+        }
+
         _infos.pano = panoInfo;
         _infos.lod = _infos.lods[0];
-        for (i = 0; i < N; ++i) {
+        for (let i = 0; i < N; ++i) {
             _infos.cam = Ori.sensors[i].infos; // console.log(_infos.cam);
-            m = idmask[i];
+            const m = idmask[i];
             if (m >= 0) {
-                this.loadTexture(Ori.getMask(i), {}, (tex, m) => {
-                    _shaderMat.uniforms.mask.value[m] = tex;
-                }, m);
+                this.loadTexture(Ori.getMask(i), {}, setMaskOnLoad, m);
             }
-            this.loadTexture(_infos.url, _infos, (tex, i) => {
-                _shaderMat.uniforms.texture.value[i] = tex;
-            }, i);
+            this.loadTexture(_infos.url, _infos, setTextureOnLoad, i);
         }
         this.changePanoTextureAfterloading(panoInfo, posFrameWithPivot, rot, 1);
 

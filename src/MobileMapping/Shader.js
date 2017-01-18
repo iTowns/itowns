@@ -74,10 +74,10 @@ var Shader = {
             }
         }
 
-        for (var i = 0; i < that.shaderNum; i++) {
-            var currentShaderURL = that.shadersURL[i];
+        for (let i = 0; i < that.shaderNum; i++) {
+            const currentShaderURL = that.shadersURL[i];
 
-            var request = new XMLHttpRequest();
+            const request = new XMLHttpRequest();
             request.open('GET', currentShaderURL, true);
 
             request.onload = function onloadFn() {
@@ -166,14 +166,16 @@ var Shader = {
         idmask = idmask || [];
         iddisto = iddisto || [];
         var M = 0;
-        for (var i = 0; i < idmask.length; ++i)
-            { if (M <= idmask[i]) M = idmask[i] + 1; }
+        for (let i = 0; i < idmask.length; ++i) {
+            if (M <= idmask[i]) M = idmask[i] + 1;
+        }
         var D = 0;
-        for (i = 0; i < iddisto.length; ++i)
-            { if (D <= iddisto[i]) D = iddisto[i] + 1; }
+        for (let i = 0; i < iddisto.length; ++i) {
+            if (D <= iddisto[i]) D = iddisto[i] + 1;
+        }
 
         var mainLoop = '';
-        for (i = 0; i < N; ++i) {
+        for (let i = 0; i < N; ++i) {
             var m = idmask[i];
             var d = iddisto[i];
             mainLoop += [
@@ -323,7 +325,7 @@ var Shader = {
 
         '         gl_FragColor = vec4(colorpoint,alpha);',
 
-        '      }	',
+        '      }',
 
 
     ],
@@ -371,7 +373,7 @@ var Shader = {
         '  vec4 color = vec4(1.,0.,0.,1.);',
 
         '  void main(void)',
-        ' {	',
+        ' {',
         '         vec2 uv = vUv;',
 
         '         if (matindice<0.9)      color = texture2D(u_textures[0],uv);',

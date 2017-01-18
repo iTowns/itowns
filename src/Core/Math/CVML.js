@@ -201,12 +201,10 @@ Point.cross = function cross(a, b) {
         } else {
             return new Point(-a * b.y, a * b.x);
         }
+    } else if (typeof (b) === 'number') {
+        return new Point(b * a.y, -b * a.x);
     } else {
-        if (typeof (b) === 'number') {
-            return new Point(b * a.y, -b * a.x);
-        } else {
-            return a.x * b.y - a.y * b.x;
-        }
+        return a.x * b.y - a.y * b.x;
     }
 };
 
@@ -1516,13 +1514,11 @@ Sweep.fillBasinReq = function fillBasinReq(tcx, node) {
             return;
         }
         node = node.prev;
-    } else {
+    } else if (node.prev.point.y < node.next.point.y) {
         // Continue with the neighbor node with lowest Y value
-        if (node.prev.point.y < node.next.point.y) {
-            node = node.prev;
-        } else {
-            node = node.next;
-        }
+        node = node.prev;
+    } else {
+        node = node.next;
     }
 
     Sweep.fillBasinReq(tcx, node);
@@ -1598,16 +1594,11 @@ Sweep.fillRightConvexEdgeEvent = function fillRightConvexEdgeEvent(tcx, edge, no
     if (orient2d(node.next.point, node.next.next.point, node.next.next.next.point) === Orientation.CCW) {
         // Concave
         Sweep.fillRightConcaveEdgeEvent(tcx, edge, node.next);
+    } else if (orient2d(edge.q, node.next.next.point, edge.p) === Orientation.CCW) {
+        // Convex Below edge
+        Sweep.fillRightConvexEdgeEvent(tcx, edge, node.next);
     } else {
-        // Convex
-        // Next above or below edge?
-        if (orient2d(edge.q, node.next.next.point, edge.p) === Orientation.CCW) {
-            // Below
-            Sweep.fillRightConvexEdgeEvent(tcx, edge, node.next);
-        } else {
-            // Above
-            /* jshint noempty:false */
-        }
+        // Convex Above edge
     }
 };
 
@@ -1641,16 +1632,11 @@ Sweep.fillLeftConvexEdgeEvent = function fillLeftConvexEdgeEvent(tcx, edge, node
     if (orient2d(node.prev.point, node.prev.prev.point, node.prev.prev.prev.point) === Orientation.CW) {
         // Concave
         Sweep.fillLeftConcaveEdgeEvent(tcx, edge, node.prev);
+    } else if (orient2d(edge.q, node.prev.prev.point, edge.p) === Orientation.CW) {
+        // Convex Below edge
+        Sweep.fillLeftConvexEdgeEvent(tcx, edge, node.prev);
     } else {
-        // Convex
-        // Next above or below edge?
-        if (orient2d(edge.q, node.prev.prev.point, edge.p) === Orientation.CW) {
-            // Below
-            Sweep.fillLeftConvexEdgeEvent(tcx, edge, node.prev);
-        } else {
-            // Above
-            /* jshint noempty:false */
-        }
+        // Convex Above edge
     }
 };
 
@@ -2093,7 +2079,7 @@ CVML.svd = function svd(A) {
     var q = new Array(n);
     for (i = 0; i < n; i++) e[i] = q[i] = 0.0;
     var v = CVML.rep([n, n], 0);
-    //	v.zero();
+    // v.zero();
 
     function pythag(a, b) {
         a = Math.abs(a);
