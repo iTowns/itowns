@@ -3,12 +3,7 @@
  * Class: GeoCoordinate
  * Description: Coordonnées cartographiques
  */
-/**
- *
- * @param {type} defaultValue
- * @returns {CoordCarto_L9.GeoCoordinate}
- */
-import defaultValue from 'Core/defaultValue';
+
 import mE from 'Core/Math/MathExtented';
 
 export const COORD = {
@@ -25,7 +20,7 @@ export const UNIT = {
 
 var getCoordinateValue = function getCoordinateValue(unit, coord, id)
 {
-    unit = defaultValue(unit, UNIT.RADIAN);
+    unit = unit || UNIT.RADIAN;
 
     if (unit === UNIT.RADIAN) {
         return coord[id];
@@ -36,7 +31,7 @@ var getCoordinateValue = function getCoordinateValue(unit, coord, id)
 
 var setCoordinateValue = function setCoordinateValue(unit, coord, id, value)
 {
-    unit = defaultValue(unit, UNIT.RADIAN);
+    unit = unit || UNIT.RADIAN;
 
     if (unit === UNIT.RADIAN) {
         coord[id] = value;
@@ -47,7 +42,7 @@ var setCoordinateValue = function setCoordinateValue(unit, coord, id, value)
 };
 
 var setCoordinate = function setCoordinate(coordinate, longitude, latitude, altitude, unit) {
-    unit = defaultValue(unit, UNIT.RADIAN);
+    unit = unit || UNIT.RADIAN;
 
     setCoordinateValue(unit, coordinate, COORD.LONG, longitude);
     setCoordinateValue(unit, coordinate, COORD.LAT, latitude);

@@ -21,7 +21,6 @@ import BrowseTree from 'Scene/BrowseTree';
 import NodeProcess from 'Scene/NodeProcess';
 import Quadtree from 'Scene/Quadtree';
 import CoordStars from 'Core/Geographic/CoordStars';
-import defaultValue from 'Core/defaultValue';
 import Layer from 'Scene/Layer';
 import MobileMappingLayer from 'MobileMapping/MobileMappingLayer';
 import CustomEvent from 'custom-event';
@@ -274,14 +273,12 @@ Scene.prototype.setStreetLevelImageryOn = function setStreetLevelImageryOn(value
 };
 
 Scene.prototype.setLightingPos = function setLightingPos(pos) {
-    if (pos)
-        { this.lightingPos = pos; }
-    else {
+    if (pos) {
+        this.lightingPos = pos;
+    } else {
         var coSun = CoordStars.getSunPositionInScene(this.getEllipsoid(), new Date().getTime(), 48.85, 2.35);
         this.lightingPos = coSun;
     }
-
-    defaultValue.lightingPos = this.lightingPos;
 
     this.browserScene.updateMaterialUniform('lightPosition', this.lightingPos.clone().normalize());
     this.layers[0].node.updateLightingPos(this.lightingPos);
