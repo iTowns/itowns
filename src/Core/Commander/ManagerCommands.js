@@ -101,11 +101,16 @@ ManagerCommands.prototype.runCommand = function runCommand(command, queue, execu
     });
 };
 
-ManagerCommands.prototype.addCommand = function addCommand(command) {
+ManagerCommands.prototype.execute = function execute(command) {
     // parse host
     const layer = command.layer;
 
     const host = layer.url ? new URL(layer.url).host : undefined;
+
+    command.promise = new Promise((resolve, reject) => {
+        command.resolve = resolve;
+        command.reject = reject;
+    });
 
     // init queue if needed
     if (host && !(this.hostQueues.has(host))) {
@@ -127,8 +132,11 @@ ManagerCommands.prototype.addCommand = function addCommand(command) {
         // queue mechanism (why setTimeout and not Promise? see tasks vs microtasks priorities)
         window.setTimeout(runNow, 0);
     } else {
+        command.timestamp = Date.now();
         q.storage.queue(command);
     }
+
+    return command.promise;
 };
 
 

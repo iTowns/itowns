@@ -76,13 +76,18 @@ NodeProcess.prototype.subdivideNode = function subdivideNode(node, camera, param
         node.pendingSubdivision = true;
 
         for (var i = 0; i < bboxes.length; i++) {
-            const args = {
-                layer: params.layersConfig.getGeometryLayers()[0],
-                bbox: bboxes[i],
-            };
             const quadtree = params.tree;
+            const command = {
+                /* mandatory */
+                requester: node,
+                layer: params.layersConfig.getGeometryLayers()[0],
+                priority: 10000,
+                /* specific params */
+                bbox: bboxes[i],
+                type: quadtree.type,
+            };
 
-            quadtree.interCommand.request(args, node).then((child) => {
+            quadtree.managerCommands.execute(command).then((child) => {
                 let colorTextureCount = 0;
                 const paramMaterial = [];
 
@@ -187,6 +192,20 @@ function findAncestorWithValidTextureForLayer(node, layerType, layer) {
     }
 }
 
+function nodeCommandQueuePriorityFunction(node) {
+    // We know that 'node' is visible because commands can only be
+    // issued for visible nodes.
+    //
+    // Prioritize subdivision request
+    if (!node.loaded) {
+        return 1000;
+    } else if (SSE_SUBDIVISION_THRESHOLD < node.sse) {
+        return 100;
+    } else {
+        return 10;
+    }
+}
+
 function updateNodeImagery(scene, quadtree, node, layersConfig, force) {
     const promises = [];
 
@@ -223,29 +242,37 @@ function updateNodeImagery(scene, quadtree, node, layersConfig, force) {
             }
         }
 
-        const args = {
-            layer,
-        };
+        let ancestor = null;
 
         const currentLevel = node.materials[RendererConstant.FINAL].getColorLayerLevelById(layer.id);
         // if this tile has no texture (level == -1), try use one from an ancestor
         if (currentLevel === -1) {
-            args.ancestor = findAncestorWithValidTextureForLayer(node, l_COLOR, layer);
+            ancestor = findAncestorWithValidTextureForLayer(node, l_COLOR, layer);
         } else {
             var targetLevel = chooseNextLevelToFetch(layer.updateStrategy.type, node.level, currentLevel, layer.updateStrategy.options);
             if (targetLevel === currentLevel) {
                 continue;
             }
             if (targetLevel < node.level) {
-                args.ancestor = node.getNodeAtLevel(targetLevel);
+                ancestor = node.getNodeAtLevel(targetLevel);
             }
         }
 
         node.layerUpdateState[layer.id].newTry();
 
-        promises.push(quadtree.interCommand.request(args, node, refinementCommandCancellationFn).then(
+        const command = {
+            /* mandatory */
+            layer,
+            requester: node,
+            priority: nodeCommandQueuePriorityFunction(node),
+            earlyDropFunction: refinementCommandCancellationFn,
+            /* specific params */
+            ancestor,
+        };
+
+        promises.push(quadtree.managerCommands.execute(command).then(
             (result) => {
-                const level = args.ancestor ? args.ancestor.level : node.level;
+                const level = ancestor ? ancestor.level : node.level;
                 // Assign .level to texture
                 if (Array.isArray(result)) {
                     for (let j = 0; j < result.length; j++) {
@@ -356,11 +383,19 @@ function updateNodeElevation(scene, quadtree, node, layersConfig, force) {
 
     // If we found a usable layer, perform a query
     if (bestLayer !== null) {
-        const args = { layer: bestLayer, ancestor };
-
         node.layerUpdateState[bestLayer.id].newTry();
 
-        quadtree.interCommand.request(args, node, refinementCommandCancellationFn).then(
+        const command = {
+            /* mandatory */
+            layer: bestLayer,
+            requester: node,
+            priority: nodeCommandQueuePriorityFunction(node),
+            earlyDropFunction: refinementCommandCancellationFn,
+            /* specific params */
+            ancestor,
+        };
+
+        quadtree.managerCommands.execute(command).then(
             (terrain) => {
                 node.layerUpdateState[bestLayer.id].success();
 

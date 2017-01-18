@@ -35,7 +35,7 @@ TileProvider.prototype.preprocessLayer = function preprocessLayer(/* layer*/) {
 };
 
 TileProvider.prototype.executeCommand = function executeCommand(command) {
-    var bbox = command.paramsFunction.bbox;
+    var bbox = command.bbox;
 
     var parent = command.requester;
 
