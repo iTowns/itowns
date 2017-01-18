@@ -215,7 +215,7 @@ function computeTileWMTSCoordinates(tile, wmtsLayer, projection) {
 }
 
 WMTS_Provider.prototype.executeCommand = function executeCommand(command) {
-    var layer = command.paramsFunction.layer;
+    var layer = command.layer;
     var tile = command.requester;
 
     computeTileWMTSCoordinates(tile, layer, this.projection);
@@ -229,7 +229,7 @@ WMTS_Provider.prototype.executeCommand = function executeCommand(command) {
 
     var func = supportedFormats[layer.options.mimetype];
     if (func) {
-        return func(tile, layer, command.paramsFunction);
+        return func(tile, layer, command);
     } else {
         return Promise.reject(new Error(`Unsupported mimetype ${layer.options.mimetype}`));
     }
