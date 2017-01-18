@@ -173,15 +173,16 @@ BrowseTree.prototype.updateLayer = function updateLayer(layer, camera) {
 
     var root = layer.children[0];
 
-    for (var c = 0; c < root.children.length; c++) {
-        var node = root.children[c];
+    for (let c = 0; c < root.children.length; c++) {
+        const node = root.children[c];
 
         var cRTC = function getCRtcFn() {
-            var mRTC = this.gfxEngine.getRTCMatrixFromNode(node, camera);
+            const mRTC = this.gfxEngine.getRTCMatrixFromNode(node, camera);
 
             return function cRTC(obj) {
-                if (obj.setMatrixRTC)
-                  { obj.setMatrixRTC(mRTC); }
+                if (obj.setMatrixRTC) {
+                    obj.setMatrixRTC(mRTC);
+                }
             };
         }.bind(this)();
 

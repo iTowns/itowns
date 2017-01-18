@@ -145,12 +145,10 @@ ItownsLine.prototype.process = function process() {
 };
 
 ItownsLine.prototype.createQuad = function createQuad(pt1, pt2) {
-		// Définition propre a chaque géométrie
+    // Définition propre a chaque géométrie
     var geometry = new THREE.BufferGeometry();
 
-		// les 6 points
-
-                        // var indices  =  new Int16Array([0,1,2,3,4,5]);
+    // les 6 points
     var vertices = new Float32Array([
         pt1.x, pt1.y, pt1.z, // -1
         pt2.x, pt2.y, pt2.z, // -1
@@ -161,12 +159,11 @@ ItownsLine.prototype.createQuad = function createQuad(pt1, pt2) {
         pt1.x, pt1.y, pt1.z,  // -1
     ]);
 
-		// pour chacun des six points, le point opposé correspondant
+    // pour chacun des six points, le point opposé correspondant
     var vertices2 = new Float32Array([
         pt2.x, pt2.y, pt2.z,
         pt1.x, pt1.y, pt1.z,
         pt1.x, pt1.y, pt1.z,
-
 
         pt1.x, pt1.y, pt1.z,
         pt2.x, pt2.y, pt2.z,
@@ -195,7 +192,7 @@ ItownsLine.prototype.createQuad = function createQuad(pt1, pt2) {
 };
 
 ItownsLine.prototype.createSegments = function createSegments(pt1, pt2, pt3) {
-		// Définition propre a chaque géométrie
+    // Définition propre a chaque géométrie
     var geometry = new THREE.BufferGeometry();
     var point1 = new Float32Array([
         pt1.x, pt1.y, pt1.z,

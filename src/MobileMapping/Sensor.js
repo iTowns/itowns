@@ -87,6 +87,7 @@ Sensor.prototype.getMatOrientationCapteur = function getMatOrientationCapteur() 
         case 2:
             return ori2;
         case 3:
+        default:
             return ori3;
     }
 };

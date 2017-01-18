@@ -147,7 +147,7 @@ function c3DEngine(scene, positionCamera, viewerDiv, debugMode, gLDebug) {
         canvas,
         antialias: true,
         alpha: true,
-        logarithmicDepthBuffer: this.gLDebug || !NOIE ? false : true,
+        logarithmicDepthBuffer: this.gLDebug || NOIE,
     });
     this.renderer.setPixelRatio(viewerDiv.devicePixelRatio);
     this.renderer.setSize(viewerDiv.clientWidth, viewerDiv.clientHeight);
@@ -242,10 +242,8 @@ c3DEngine.prototype.changeStateNodesScene = function changeStateNodesScene(state
 
         if (node.changeState) {
             node.traverseVisible(changeStateFunction);
-        } else {
-            if (node.layer) {
-                node.visible = enable ? node.layer.visible : false;
-            }
+        } else if (node.layer) {
+            node.visible = enable ? node.layer.visible : false;
         }
     }
 };
