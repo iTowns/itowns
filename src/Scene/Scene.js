@@ -6,17 +6,9 @@
 
 /* global window, requestAnimationFrame */
 
-/**
- *
- * @param {type} c3DEngine
- * @param {type} Globe
- * @param {type} ManagerCommands
- * @param {type} BrowseTree
- * @returns {Function}
- */
 import c3DEngine from 'Renderer/c3DEngine';
 import Globe from 'Globe/Globe';
-import ManagerCommands from 'Core/Commander/ManagerCommands';
+import Scheduler from 'Core/Commander/Scheduler';
 import BrowseTree from 'Scene/BrowseTree';
 import NodeProcess from 'Scene/NodeProcess';
 import Quadtree from 'Scene/Quadtree';
@@ -46,7 +38,7 @@ function Scene(coordinate, ellipsoid, viewerDiv, debugMode, gLDebug) {
 
     this.cameras = null;
     this.selectNodes = null;
-    this.managerCommand = ManagerCommands(this);
+    this.scheduler = Scheduler(this);
     this.orbitOn = false;
 
     this.stylesManager = new StyleManager();
@@ -170,8 +162,8 @@ Scene.prototype.step = function step() {
     // Check if we're done (no command left).
     // We need to make sure we didn't executed any commands because these commands
     // might spawn other commands in a next update turn.
-    const executedDuringUpdate = this.managerCommand.resetCommandsCount('executed');
-    if (this.managerCommand.commandsWaitingExecutionCount() == 0 && executedDuringUpdate == 0) {
+    const executedDuringUpdate = this.scheduler.resetCommandsCount('executed');
+    if (this.scheduler.commandsWaitingExecutionCount() == 0 && executedDuringUpdate == 0) {
         this.viewerDiv.dispatchEvent(new CustomEvent('globe-built'));
 
         // one last rendering before pausing
