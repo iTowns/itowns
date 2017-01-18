@@ -196,10 +196,13 @@ function nodeCommandQueuePriorityFunction(node) {
     // We know that 'node' is visible because commands can only be
     // issued for visible nodes.
     //
-    // Prioritize subdivision request
     if (!node.loaded) {
-        return 1000;
-    } else if (SSE_SUBDIVISION_THRESHOLD < node.sse) {
+        // Prioritize lower-level (ie: bigger) non-loaded nodes
+        // because we need them to be loaded to be able
+        // to subdivide.
+        return 1000 - node.level;
+    } else if (node.isDisplayed()) {
+        // Then prefer displayed() node over non-displayed one
         return 100;
     } else {
         return 10;
