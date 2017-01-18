@@ -36,7 +36,7 @@ function TileMesh(params, builder, geometryCache) {
     this.matrixAutoUpdate = false;
     this.rotationAutoUpdate = false;
 
-    this.level = params.zoom;
+    this.level = params.level;
     this.bbox = defaultValue(params.bbox, new BoundingBox());
 
     this.geometry = defaultValue(geometryCache, new TileGeometry(params, builder));

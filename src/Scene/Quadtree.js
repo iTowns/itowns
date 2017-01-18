@@ -89,6 +89,7 @@ Quadtree.prototype.requestNewTile = function requestNewTile(geometryLayer, bbox,
     var params = {
         layer: geometryLayer,
         bbox,
+        level: 0,
     };
 
     this.interCommand.request(params, parent);

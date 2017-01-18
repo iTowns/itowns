@@ -37,25 +37,20 @@ TileProvider.prototype.preprocessLayer = function preprocessLayer(/* layer*/) {
 TileProvider.prototype.executeCommand = function executeCommand(command) {
     var bbox = command.paramsFunction.bbox;
 
-    // TODO not generic
-    var tileCoord = this.projection.WGS84toWMTS(bbox);
     var parent = command.requester;
 
     // build tile
     var params = {
         bbox,
-        zoom: tileCoord.zoom,
+        level: (command.level === undefined) ? (parent.level + 1) : command.level,
         segment: 16,
-        center: null,
-        projected: null,
     };
 
     var tile = new command.type(params, this.builder);
 
-    tile.tileCoord = tileCoord;
     tile.setUuid(this.nNode++);
     tile.link = parent.link;
-    tile.geometricError = Math.pow(2, (18 - tileCoord.zoom));
+    tile.geometricError = Math.pow(2, (18 - params.level));
 
     parent.worldToLocal(params.center);
 

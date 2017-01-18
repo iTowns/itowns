@@ -12,7 +12,7 @@ BuilderEllipsoidTile.prototype.constructor = BuilderEllipsoidTile;
 // prepare params
 // init projected object -> params.projected
 BuilderEllipsoidTile.prototype.Prepare = function Prepare(params) {
-    params.nbRow = Math.pow(2.0, params.zoom + 1.0);
+    params.nbRow = Math.pow(2.0, params.level + 1.0);
 
     var st1 = this.projector.WGS84ToOneSubY(params.bbox.south());
 
