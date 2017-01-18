@@ -8,7 +8,6 @@ import BoundingBox from 'Scene/BoundingBox';
 import MathExt from 'Core/Math/MathExtented';
 import * as THREE from 'three';
 import defaultValue from 'Core/defaultValue';
-import Projection from 'Core/Geographic/Projection';
 import RendererConstant from 'Renderer/RendererConstant';
 import { chooseNextLevelToFetch } from 'Scene/LayerUpdateStrategy';
 import { l_ELEVATION, l_COLOR } from 'Renderer/LayeredMaterial';
@@ -26,7 +25,6 @@ function NodeProcess(scene, camera, ellipsoid, bbox) {
 
     this.r = defaultValue(ellipsoid.size, new THREE.Vector3());
     this.cV = new THREE.Vector3();
-    this.projection = new Projection();
 }
 
 /**
@@ -94,31 +92,19 @@ NodeProcess.prototype.subdivideNode = function subdivideNode(node, camera, param
                 var layer;
                 var j;
 
-                child.matrixSet = [];
-
                 // update wmts
                 var colorLayers = params.layersConfig.getColorLayers();
 
                 // update Imagery wmts
                 for (j = 0; j < colorLayers.length; j++) {
                     layer = colorLayers[j];
-                    const tileMatrixSet = layer.options.tileMatrixSet;
-
-                    if (tileMatrixSet && !child.matrixSet[tileMatrixSet]) {
-                        child.matrixSet[tileMatrixSet] = this.projection.getCoordWMTS_WGS84(child.tileCoord, child.bbox, tileMatrixSet);
-                    }
 
                     if (layer.tileInsideLimit(child, layer)) {
-                        let texturesCount;
-                        if (tileMatrixSet) {
-                            var bcoord = child.matrixSet[tileMatrixSet];
-                            texturesCount = bcoord[1].row - bcoord[0].row + 1;
-                        } else {
-                            texturesCount = 1;
-                        }
+                        const texturesCount = layer.tileTextureCount ?
+                            layer.tileTextureCount(child, layer) : 1;
 
                         paramMaterial.push({
-                            tileMT: tileMatrixSet,
+                            tileMT: layer.options.tileMatrixSet,
                             texturesCount,
                             visible: params.layersConfig.isColorLayerVisible(layer.id),
                             opacity: params.layersConfig.getColorLayerOpacity(layer.id),
@@ -135,11 +121,6 @@ NodeProcess.prototype.subdivideNode = function subdivideNode(node, camera, param
                 var canHaveElevation = false;
                 for (j = 0; j < elevationLayers.length; j++) {
                     layer = elevationLayers[j];
-                    const tileMatrixSet = layer.options.tileMatrixSet;
-
-                    if (tileMatrixSet && !child.matrixSet[tileMatrixSet]) {
-                        child.matrixSet[tileMatrixSet] = this.projection.getCoordWMTS_WGS84(child.tileCoord, child.bbox, tileMatrixSet);
-                    }
                     canHaveElevation |= layer.tileInsideLimit(child, layer);
                 }
 

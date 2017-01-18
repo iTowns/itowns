@@ -36,18 +36,22 @@ Projection.prototype.WGS84LatitudeClamp = function WGS84LatitudeClamp(latitude) 
 
 
 Projection.prototype.getCoordWMTS_WGS84 = function getCoordWMTS_WGS84(tileCoord, bbox, tileMatrixSet) {
-    if (tileMatrixSet === 'PM')
-        { return this.WMTS_WGS84ToWMTS_PM(tileCoord, bbox); }
-    else if (tileMatrixSet === 'WGS84G')
-        { return [tileCoord, tileCoord]; }
+    // TODO: PM, WGS84G are hard-coded reference to IGN's TileMatrixSet
+    if (tileMatrixSet === 'PM') {
+        return this.WMTS_WGS84ToWMTS_PM(tileCoord, bbox);
+    } else if (tileMatrixSet === 'WGS84G') {
+        return [tileCoord, tileCoord];
+    } else {
+        throw new Error(`Unsupported TileMatrixSet '${tileMatrixSet}'`);
+    }
 };
 
 Projection.prototype.getAllCoordsWMTS = function getAllCoordsWMTS(tileCoord, bbox, tileMatrixSets) {
     var tilesMT = [];
 
-    for (var key in tileMatrixSets)
-
-        { tilesMT[key] = this.getCoordsWMTS(tileCoord, bbox, key); }
+    for (var key in tileMatrixSets) {
+        tilesMT[key] = this.getCoordsWMTS(tileCoord, bbox, key);
+    }
 
     return tilesMT;
 };
@@ -56,10 +60,9 @@ Projection.prototype.getCoordsWMTS = function getCoordsWMTS(tileCoord, bbox, til
     var box = this.getCoordWMTS_WGS84(tileCoord, bbox, tileMatrixSet);
     var tilesMT = [];
 
-    for (var row = box[0].row; row < box[1].row + 1; row++)
-
-        { tilesMT.push(new CoordWMTS(box[0].zoom, row, box[0].col)); }
-
+    for (var row = box[0].row; row < box[1].row + 1; row++) {
+        tilesMT.push(new CoordWMTS(box[0].zoom, row, box[0].col));
+    }
 
     return tilesMT;
 };

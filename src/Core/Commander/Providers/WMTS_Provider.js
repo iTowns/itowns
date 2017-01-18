@@ -110,7 +110,7 @@ WMTS_Provider.prototype.url = function url(coWMTS, layer) {
  * @returns {WMTS_Provider_L15.WMTS_Provider.prototype@pro;_IoDriver@call;read@call;then}
  */
 WMTS_Provider.prototype.getXbilTexture = function getXbilTexture(tile, layer, parameters) {
-    var cooWMTS = tile.matrixSet[layer.options.tileMatrixSet][0];
+    var cooWMTS = tile.wmtsCoords[layer.options.tileMatrixSet][0];
     var pitch = new THREE.Vector3(0.0, 0.0, 1.0);
 
     if (parameters.ancestor) {
@@ -199,9 +199,26 @@ WMTS_Provider.prototype.getColorTexture = function getColorTexture(coWMTS, pitch
     });
 };
 
+function computeTileWMTSCoordinates(tile, wmtsLayer, projection) {
+    // Are WMTS coordinates ready?
+    if (!tile.wmtsCoords) {
+        tile.wmtsCoords = {};
+    }
+
+    const tileMatrixSet = wmtsLayer.options.tileMatrixSet;
+    if (!(tileMatrixSet in tile.wmtsCoords)) {
+        const tileCoord = projection.WGS84toWMTS(tile.bbox);
+
+        tile.wmtsCoords[tileMatrixSet] =
+            projection.getCoordWMTS_WGS84(tileCoord, tile.bbox, tileMatrixSet);
+    }
+}
+
 WMTS_Provider.prototype.executeCommand = function executeCommand(command) {
     var layer = command.paramsFunction.layer;
     var tile = command.requester;
+
+    computeTileWMTSCoordinates(tile, layer, this.projection);
 
     var supportedFormats = {
         'image/png': this.getColorTextures.bind(this),
@@ -230,6 +247,13 @@ WMTS_Provider.prototype.computeLevelToDownload = function computeLevelToDownload
             lvl));
 };
 
+WMTS_Provider.prototype.tileTextureCount = function tileTextureCount(tile, layer) {
+    computeTileWMTSCoordinates(tile, layer, this.projection);
+
+    const tileMatrixSet = layer.options.tileMatrixSet;
+    return tile.wmtsCoords[tileMatrixSet][1].row - tile.wmtsCoords[tileMatrixSet][0].row + 1;
+};
+
 WMTS_Provider.prototype.tileInsideLimit = function tileInsideLimit(tile, layer) {
     // This layer provides data starting at level = layer.zoom.min
     // (the zoom.max property is used when building the url to make
@@ -244,7 +268,7 @@ WMTS_Provider.prototype.getColorTextures = function getColorTextures(tile, layer
     }
     // Request parent's texture if no texture at all
     if (this.tileInsideLimit(tile, layer)) {
-        var bcoord = tile.matrixSet[layer.options.tileMatrixSet];
+        var bcoord = tile.wmtsCoords[layer.options.tileMatrixSet];
 
         // WARNING the direction textures is important
         for (var row = bcoord[1].row; row >= bcoord[0].row; row--) {

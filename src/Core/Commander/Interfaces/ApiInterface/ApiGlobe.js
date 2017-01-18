@@ -91,8 +91,15 @@ function preprocessLayer(layer, provider) {
         };
     }
 
-    if (provider.preprocessDataLayer) {
+    if (provider.tileInsideLimit) {
         layer.tileInsideLimit = provider.tileInsideLimit.bind(provider);
+    }
+
+    if (provider.tileTextureCount) {
+        layer.tileTextureCount = provider.tileTextureCount.bind(provider);
+    }
+
+    if (provider.preprocessDataLayer) {
         provider.preprocessDataLayer(layer);
     }
 }
