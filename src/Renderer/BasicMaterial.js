@@ -6,7 +6,6 @@
 
 
 import * as THREE from 'three';
-import defaultValue from 'Core/defaultValue';
 import c3DEngine from 'Renderer/c3DEngine';
 import SimpleVS from 'Renderer/Shader/SimpleVS.glsl';
 import SimpleFS from 'Renderer/Shader/SimpleFS.glsl';
@@ -45,7 +44,7 @@ function BasicMaterial(color) {
     this.fragmentShader = this.fragmentShaderHeader + SimpleFS;
 
     this.uniforms = {
-        diffuseColor: { value: defaultValue(color, new THREE.Color()) },
+        diffuseColor: { value: color || new THREE.Color() },
         useRTC: { value: true },
         mVPMatRTC: { value: new THREE.Matrix4() },
         distanceFog: { value: 1000000000.0 },

@@ -4,10 +4,7 @@
  * Description: NodeProcess effectue une opération sur un Node.
  */
 
-import BoundingBox from 'Scene/BoundingBox';
-import MathExt from 'Core/Math/MathExtented';
 import * as THREE from 'three';
-import defaultValue from 'Core/defaultValue';
 import RendererConstant from 'Renderer/RendererConstant';
 import { chooseNextLevelToFetch } from 'Scene/LayerUpdateStrategy';
 import { l_ELEVATION, l_COLOR } from 'Renderer/LayeredMaterial';
@@ -16,14 +13,13 @@ import { CancelledCommandException } from 'Core/Commander/ManagerCommands';
 
 export const SSE_SUBDIVISION_THRESHOLD = 6.0;
 
-function NodeProcess(scene, camera, ellipsoid, bbox) {
+function NodeProcess(scene, camera, ellipsoid) {
     // TODO: consider removing this.scene + replacing scene.notifyChange by an event
     this.scene = scene;
-    this.bbox = defaultValue(bbox, new BoundingBox(MathExt.PI_OV_TWO + MathExt.PI_OV_FOUR, MathExt.PI + MathExt.PI_OV_FOUR, 0, MathExt.PI_OV_TWO));
 
     this.vhMagnitudeSquared = 1.0;
 
-    this.r = defaultValue(ellipsoid.size, new THREE.Vector3());
+    this.r = ellipsoid.size || new THREE.Vector3();
     this.cV = new THREE.Vector3();
 }
 
@@ -449,16 +445,6 @@ NodeProcess.prototype.frustumCullingOBB = function frustumCullingOBB(node, camer
     quaternion.multiplyQuaternions(node.OBB().quadInverse(), camera.camera3D.quaternion);
 
     return camera.getFrustumLocalSpace(position, quaternion).intersectsBox(node.OBB().box3D);
-};
-
-/**
- * @documentation: Cull node with frustrum and the bounding box of node
- * @param {type} node
- * @param {type} camera
- * @returns {unresolved}
- */
-NodeProcess.prototype.frustumBB = function frustumBB(node /* , camera*/) {
-    return node.bbox.intersect(this.bbox);
 };
 
 /**
