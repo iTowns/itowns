@@ -17,11 +17,12 @@ import CustomEvent from 'custom-event';
 import Fetcher from 'Core/Commander/Providers/Fetcher';
 import { STRATEGY_MIN_NETWORK_TRAFFIC } from 'Scene/LayerUpdateStrategy';
 
-var loaded = false;
+var sceneIsLoaded = false;
 var eventLoaded = new CustomEvent('globe-loaded');
 var eventRange = new CustomEvent('rangeChanged');
 var eventCenter = new CustomEvent('centerchanged');
 var eventOrientation = new CustomEvent('orientationchanged');
+var eventPan = new CustomEvent('panchanged');
 var eventLayerAdded = new CustomEvent('layeradded');
 var eventLayerRemoved = new CustomEvent('layerremoved');
 var eventLayerChanged = new CustomEvent('layerchanged');
@@ -30,12 +31,24 @@ var eventLayerChangedOpacity = new CustomEvent('layerchanged:opacity');
 var eventLayerChangedIndex = new CustomEvent('layerchanged:index');
 var eventError = new CustomEvent('error');
 
+var enableAnimation = false;
+
+const defer = function defer() {
+    const deferedPromise = {};
+    deferedPromise.promise = new Promise((resolve, reject) => {
+        deferedPromise.resolve = resolve;
+        deferedPromise.reject = reject;
+    });
+    return deferedPromise;
+};
+
 function ApiGlobe() {
     // Constructor
     this.scene = null;
     this.commandsTree = null;
     this.projection = new Projection();
     this.viewerDiv = null;
+    this.callback = null;
 }
 
 ApiGlobe.prototype.constructor = ApiGlobe;
@@ -320,8 +333,10 @@ ApiGlobe.prototype.createSceneGlobe = function createSceneGlobe(coordCarto, view
     this.viewerDiv = viewerDiv;
 
     viewerDiv.addEventListener('globe-built', () => {
-        if (loaded == false) {
-            loaded = true;
+        if (sceneIsLoaded === false) {
+            sceneIsLoaded = true;
+            this.scene.currentControls().updateCameraTransformation();
+            this.scene.updateScene3D();
             viewerDiv.dispatchEvent(eventLoaded);
         } else {
             viewerDiv.dispatchEvent(eventError);
@@ -330,9 +345,6 @@ ApiGlobe.prototype.createSceneGlobe = function createSceneGlobe(coordCarto, view
 
     var gLDebug = false; // true to support GLInspector addon
     var debugMode = false;
-
-    // gLDebug = true; // true to support GLInspector addon
-    // debugMode = true;
 
     var ellipsoid = new Ellipsoid({
         x: 6378137,
@@ -358,6 +370,11 @@ ApiGlobe.prototype.createSceneGlobe = function createSceneGlobe(coordCarto, view
     this.scene.managerCommand.addProtocolProvider('tile', new TileProvider(ellipsoid));
     this.scene.managerCommand.addProtocolProvider('wms', new WMS_Provider({ support: map.gLDebug }));
 
+    this.sceneLoadedDeferred = defer();
+    this.addEventListener('globe-loaded', () => {
+        this.sceneLoadedDeferred.resolve();
+        this.sceneLoadedDeferred = defer();
+    });
 
     return this.scene;
 };
@@ -365,16 +382,6 @@ ApiGlobe.prototype.createSceneGlobe = function createSceneGlobe(coordCarto, view
 ApiGlobe.prototype.update = function update() {
     this.scene.notifyChange();
 };
-
-// ApiGlobe.prototype.setLayerAtLevel = functionsetLayerAtLevel(baseurl,layer/*,level*/) {
-//     // TODO CLEAN AND GENERIC
-//     var wmtsProvider = new WMTS_Provider({url:baseurl, layer:layer});
-//     this.scene.managerCommand.providerMap[4] = wmtsProvider;
-//     this.scene.managerCommand.providerMap[5] = wmtsProvider;
-//     this.scene.managerCommand.providerMap[this.scene.layers[0].node.meshTerrain.id].providerWMTS = wmtsProvider;
-//     this.scene.browserScene.updateNodeMaterial(wmtsProvider);
-//     this.scene.renderScene3D();
-// };
 
 ApiGlobe.prototype.showClouds = function showClouds(value, satelliteAnimation) {
     this.scene.getMap().showClouds(value, satelliteAnimation);
@@ -385,7 +392,7 @@ ApiGlobe.prototype.setRealisticLightingOn = function setRealisticLightingOn(valu
     this.scene.setLightingPos();
     this.scene.gfxEngine.setLightingOn(value);
     this.scene.getMap().setRealisticLightingOn(value);
-    this.scene.browserScene.updateMaterialUniform('lightingOn', value ? 1 : 0);
+    this.scene.browserScene.updateMaterialUniform('lightingOn', value);
     this.scene.renderScene3D();
 };
 
@@ -470,13 +477,14 @@ ApiGlobe.prototype.getCenter = function getCenter() {
  * Sets orientation angles of the current camera, in degrees.
  * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/9qr2mogh/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
  * @constructor
- * @param {Orientation} Param - The angle of the rotation in degrees.
+ * @param      {object}   orientation  The angle of the rotation in degrees
+ * @param      {boolean}  isAnimated   Indicates if animated
+ * @return     {Promise}   { description_of_the_return_value }
  */
-
-ApiGlobe.prototype.setCameraOrientation = function setCameraOrientation(orientation /* param,pDisableAnimationopt*/) {
-    this.setHeading(orientation.heading);
-    this.setTilt(orientation.tilt);
-    this.viewerDiv.dispatchEvent(eventOrientation);
+ApiGlobe.prototype.setCameraOrientation = function setCameraOrientation(orientation, isAnimated) {
+    return this.scene.currentControls().setOrbitalPosition(undefined, orientation.heading, orientation.tilt, isAnimated).then(() => {
+        this.viewerDiv.dispatchEvent(eventOrientation);
+    });
 };
 
 /**
@@ -551,17 +559,38 @@ ApiGlobe.prototype.getRangeFromEllipsoid = function getRangeFromEllipsoid() {
 };
 
 /**
+ * Sets the animation enabled.
+ * @constructor
+ * @param      {boolean}  enable  The enable
+ */
+ApiGlobe.prototype.setAnimationEnabled = function setAnimationEnabled(enable) {
+    enableAnimation = enable;
+};
+
+/**
+ * Determines if animation enabled.
+ *
+ * @return     {boolean}  True if animation enabled, False otherwise.
+ */
+ApiGlobe.prototype.isAnimationEnabled = function isAnimationEnabled() {
+    return enableAnimation;
+};
+
+/**
  * Change the tilt.
  * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/p6t76zox/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
  * @constructor
  * @param {Angle} Number - The angle.
- * @param {Boolean} [pDisableAnimation] - Used to force the non use of animation if its enable.
+ * @param      {boolean}  isAnimated  Indicates if animated
+ * @return     {Promise}
  */
-
-ApiGlobe.prototype.setTilt = function setTilt(tilt /* , bool*/) {
+ApiGlobe.prototype.setTilt = function setTilt(tilt, isAnimated) {
+    isAnimated = isAnimated || this.isAnimationEnabled();
     eventOrientation.oldTilt = this.getTilt();
-    this.scene.currentControls().setTilt(tilt);
-    this.viewerDiv.dispatchEvent(eventOrientation);
+    return this.scene.currentControls().setTilt(tilt, isAnimated).then(() => {
+        this.viewerDiv.dispatchEvent(eventOrientation);
+        this.scene.notifyChange(1);
+    });
 };
 
 /**
@@ -569,35 +598,38 @@ ApiGlobe.prototype.setTilt = function setTilt(tilt /* , bool*/) {
  * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/rxe4xgxj/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
  * @constructor
  * @param {Angle} Number - The angle.
- * @param {Boolean} [pDisableAnimation] - Used to force the non use of animation if its enable.
+ * @param      {boolean}  isAnimated  Indicates if animated
+ * @return     {Promise}
  */
-
-ApiGlobe.prototype.setHeading = function setHeading(heading /* , bool*/) {
+ApiGlobe.prototype.setHeading = function setHeading(heading, isAnimated) {
+    isAnimated = isAnimated || this.isAnimationEnabled();
     eventOrientation.oldHeading = this.getHeading();
-    this.scene.currentControls().setHeading(heading);
-    this.viewerDiv.dispatchEvent(eventOrientation);
+    return this.scene.currentControls().setHeading(heading, isAnimated).then(() => {
+        this.viewerDiv.dispatchEvent(eventOrientation);
+        this.scene.notifyChange(1);
+    });
 };
 
 /**
  * Resets camera tilt -> sets the tilt to 0°.
  * @constructor
- * @param {Boolean} [pDisableAnimation] - Used to force the non use of animation if its enable.
+ * @param      {boolean}  isAnimated  Indicates if animated
+ * @return     {Promise}
  */
-
-ApiGlobe.prototype.resetTilt = function resetTilt(/* bool*/) {
-    this.scene.currentControls().setTilt(0);
-    this.viewerDiv.dispatchEvent(eventOrientation);
+ApiGlobe.prototype.resetTilt = function resetTilt(isAnimated) {
+    isAnimated = isAnimated || this.isAnimationEnabled();
+    return this.scene.currentControls().setTilt(0, isAnimated);
 };
 
 /**
  * Resets camera heading -> sets the heading to 0°.
  * @constructor
- * @param {Boolean} [pDisableAnimation] - Used to force the non use of animation if its enable.
+ * @param      {boolean}  isAnimated  Indicates if animated
+ * @return     {Promise}
  */
-
-ApiGlobe.prototype.resetHeading = function resetHeading(/* bool*/) {
-    this.scene.currentControls().setHeading(0);
-    this.viewerDiv.dispatchEvent(eventOrientation);
+ApiGlobe.prototype.resetHeading = function resetHeading(isAnimated) {
+    isAnimated = isAnimated || this.isAnimationEnabled();
+    return this.scene.currentControls().setHeading(0, isAnimated);
 };
 
 /**
@@ -613,17 +645,31 @@ ApiGlobe.prototype.computeDistance = function computeDistance(p1, p2) {
     return this.scene.getEllipsoid().computeDistance(new GeoCoordinate().copy(p1), new GeoCoordinate().copy(p2));
 };
 
+ApiGlobe.prototype.setSceneLoaded = function setSceneLoaded() {
+    sceneIsLoaded = false;
+    return this.sceneLoadedDeferred.promise;
+};
+
 /**
  * Changes the center of the scene on screen to the specified coordinates.
  * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/x06yhbq6/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
  * @constructor
  * @param {coordinates} coordinates - Properties : longitude and latitude
+ * @param      {boolean}  isAnimated  Indicates if animated
+ * @return     {Promise}
  */
-ApiGlobe.prototype.setCenter = function setCenter(coordinates) {
+ApiGlobe.prototype.setCenter = function setCenter(coordinates, isAnimated) {
+    isAnimated = isAnimated || this.isAnimationEnabled();
     eventCenter.oldCenter = this.getCenter();
-    var position3D = this.scene.getEllipsoid().cartographicToCartesian(new GeoCoordinate(coordinates.longitude, coordinates.latitude, 0, UNIT.DEGREE));
-    this.scene.currentControls().setCenter(position3D);
-    this.viewerDiv.dispatchEvent(eventCenter);
+    const position3D = this.scene.getEllipsoid().cartographicToCartesian(new GeoCoordinate(coordinates.longitude, coordinates.latitude, 0, UNIT.DEGREE));
+    position3D.range = coordinates.range;
+    return this.scene.currentControls().setCenter(position3D, isAnimated).then(() => {
+        this.scene.notifyChange(1);
+        return this.setSceneLoaded().then(() => {
+            this.scene.currentControls().updateCameraTransformation();
+            this.viewerDiv.dispatchEvent(eventCenter);
+        });
+    });
 };
 
 /**
@@ -634,33 +680,36 @@ ApiGlobe.prototype.setCenter = function setCenter(coordinates) {
  * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/7yk0mpn0/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
  * @constructor
  * @param {Position} pPosition - The detailed position in the scene.
- * @param {Boolean} [pDisableAnimation] - Used to force the non use of animation if its enable.
+ * @param      {boolean}  isAnimated  Indicates if animated
+ * @return     {Promise}
  */
-
-ApiGlobe.prototype.setCenterAdvanced = function setCenterAdvanced(pPosition /* , pDisableAnimationopt*/) {
-    this.setCenter(pPosition.position);
-    this.setRange(pPosition.range);
-    this.setHeading(pPosition.heading);
-    this.setTilt(pPosition.tilt);
+ApiGlobe.prototype.setCenterAdvanced = function setCenterAdvanced(pPosition, isAnimated) {
+    isAnimated = isAnimated || this.isAnimationEnabled();
+    return this.setCenter(pPosition, isAnimated).then(() => {
+        const p = this.scene.currentControls().setOrbitalPosition(undefined, pPosition.heading, pPosition.tilt, isAnimated);
+        return p;
+    });
 };
 
-var updateTargetCamera = function updateTargetCamera(api) {
-    api.scene.currentControls().updateCameraTransformation();
-    api.viewerDiv.dispatchEvent(eventRange);
-    api.removeEventListener('globe-loaded', updateTargetCamera);
-};
 /**
  * Sets the "range": the distance in meters between the camera and the current central point on the screen.
  * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/Lt3jL5pd/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
  * @constructor
  * @param {Number} pRange - The camera altitude.
- * @param {Boolean} [pDisableAnimation] - Used to force the non use of animation if its enable.
+ * @param      {boolean}  isAnimated  Indicates if animated
+ * @return     {Promise}
  */
-ApiGlobe.prototype.setRange = function setRange(pRange /* , bool anim*/) {
+ApiGlobe.prototype.setRange = function setRange(pRange, isAnimated) {
+    isAnimated = isAnimated || this.isAnimationEnabled();
     eventRange.oldRange = this.getRange();
-    loaded = false;
-    this.scene.currentControls().setRange(pRange);
-    this.addEventListener('globe-loaded', updateTargetCamera(this));
+
+    return this.scene.currentControls().setRange(pRange, isAnimated).then(() => {
+        this.scene.notifyChange(1);
+        this.setSceneLoaded().then(() => {
+            this.scene.currentControls().updateCameraTransformation();
+            this.viewerDiv.dispatchEvent(eventRange);
+        });
+    });
 };
 
 /**
@@ -671,6 +720,11 @@ ApiGlobe.prototype.setRange = function setRange(pRange /* , bool anim*/) {
  */
 ApiGlobe.prototype.pan = function pan(pVector) {
     this.scene.currentControls().pan(pVector.x, pVector.y);
+    this.scene.notifyChange(1);
+    this.setSceneLoaded().then(() => {
+        this.scene.currentControls().updateCameraTransformation();
+        this.viewerDiv.dispatchEvent(eventPan);
+    });
 };
 
 /**
@@ -688,12 +742,14 @@ ApiGlobe.prototype.getZoomLevel = function getZoomLevel() {
  * The level is always in the [getMinZoomLevel(), getMaxZoomLevel()] range.
  * @constructor
  * @param      {number}  zoom    The zoom
+ * @param      {boolean}  isAnimated  Indicates if animated
+ * @return     {Promise}
  */
-ApiGlobe.prototype.setZoomLevel = function setZoomLevel(zoom) {
+ApiGlobe.prototype.setZoomLevel = function setZoomLevel(zoom, isAnimated) {
     zoom = Math.max(this.getMinZoomLevel(), zoom);
     zoom = Math.min(this.getMaxZoomLevel(), zoom);
     const distance = this.scene.getMap().computeDistanceForZoomLevel(zoom, this.scene.currentCamera());
-    this.setRange(distance);
+    return this.setRange(distance, isAnimated);
 };
 
 /**
@@ -757,8 +813,10 @@ ApiGlobe.prototype.getZoomScale = function getZoomScale(pitch) {
  * @constructor
  * @param      {number}  zoomScale  The zoom scale
  * @param      {number}  pitch      The pitch
+ * @param      {boolean}  isAnimated  Indicates if animated
+ * @return     {Promise}
  */
-ApiGlobe.prototype.setZoomScale = function setZoomScale(zoomScale, pitch) {
+ApiGlobe.prototype.setZoomScale = function setZoomScale(zoomScale, pitch, isAnimated) {
     // Screen pitch, in millimeters
     pitch = (pitch || 0.28) / 1000;
 
@@ -801,7 +859,7 @@ ApiGlobe.prototype.setZoomScale = function setZoomScale(zoomScale, pitch) {
     }
 
     const range = distance - rayon;
-    this.setRange(range);
+    return this.setRange(range, isAnimated);
 };
 
 /**
@@ -851,61 +909,6 @@ ApiGlobe.prototype.removeEventListenerLayerChanged = function removeEventListene
     this.viewerDiv.removeEventListener('layerchanged:opacity', this.callbackLayerChanged, false);
     this.viewerDiv.removeEventListener('layerchanged:index', this.callbackLayerChanged, false);
 };
-
-ApiGlobe.prototype.launchCommandApi = function launchCommandApi() {
-
-    // this.removeImageryLayer('ScanEX');
-
-    //        console.log(this.getMinZoomLevel("IGNPO"));
-    //        console.log(this.getMaxZoomLevel("IGN_MNT"));
-    //        console.log(this.getCenter());
-    //        console.log(this.getCameraLocation());
-    //        console.log(this.getCameraOrientation());
-    //        console.log(this.getZoomLevel());
-    //        console.log(this.pickPosition());
-    //        console.log(this.getTilt());
-    //        console.log(this.getHeading());
-    //       console.log(this.getRange());
-    //        this.setTilt(45);
-    //        this.setHeading(180);
-    //        this.resetTilt();
-    //        this.resetHeading();
-    //        var p1 = new GeoCoordinate(2.4347047,48.8472568,0);
-    //        var p2 = new GeoCoordinate(2.4345599,48.8450221,0);
-    //        console.log(this.computeDistance({longitude:2.4347047,latitude:48.8472568,altitude:0},{longitude:2.4345599,latitude:48.8450221,altitude:0}));
-
-    // var p = new GeoCoordinate(-74.0059700 ,40.7142700,0); //NY
-
-    //        var p = new GeoCoordinate(coordCarto.lon, coordCarto.lat, coordCarto.alt,UNIT.DEGREE)
-    //        var p = new GeoCoordinate(2,20,0,UNIT.DEGREE); //NY
-    //
-    //        this.setCenter(p);
-    //        var p2 = new GeoCoordinate().setFromDegree(2.4347047,48.8472568,0); //Paris
-    //        this.setCenter(p2);
-    //        this.setCenter({lon:-74,lat:40, alt:0});
-    //        this.testTilt();
-    //        this.testHeading();
-    // console.log("range 1  " + this.getRange());
-    //        this.setRange(1000);
-    //        console.log(this.getRange());
-    //        this.setCameraOrientation({heading:45,tilt:30});
-    //        this.setCenterAdvanced({position:p2, /*range:10000,*/ heading:180, tilt:70});
-};
-
-//    ApiGlobe.prototype.testTilt = function testTilt(){
-//        this.setTilt(45);
-//        console.log(this.getTilt());
-//        this.resetTilt();
-//        console.log(this.getTilt());
-//    };
-//
-//    ApiGlobe.prototype.testHeading = function testHeading(){
-//        this.setHeading(90);
-//        console.log(this.getHeading());
-//        this.resetHeading();
-//        console.log(this.getHeading());
-//    };
-
 
 ApiGlobe.prototype.selectNodeById = function selectNodeById(id) {
     this.scene.selectNodeId(id);

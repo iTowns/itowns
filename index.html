@@ -8,9 +8,9 @@ and open the template in the editor.
     <head>
         <title>Globe</title>
 
-	<style type="text/css">
+    <style type="text/css">
             html {height: 100%}
-	    body { margin: 0; overflow:hidden; height:100%}
+        body { margin: 0; overflow:hidden; height:100%}
 
             #viewerDiv {
                 margin : auto auto;
@@ -32,47 +32,51 @@ and open the template in the editor.
     <body>
         <div id="viewerDiv"></div>
         <script src="examples/GUI/GuiTools.js"></script>
-        <script src="dist/itowns2.js"> </script>
+        <script src="dist/itowns2.js"></script>
         <script type="text/javascript">
 
             /* global itowns,document,GuiTools*/
 
-            var positionOnGlobe = { longitude:2.3465, latitude: 48.88, altitude: 25000000};
+            const positionOnGlobe = { longitude: 2.3465, latitude: 48.88, altitude: 25000000 };
 
             // iTowns namespace defined here
-            var viewerDiv = document.getElementById('viewerDiv');
-            var menuGlobe = new GuiTools(itowns.viewer,'menuDiv');
+            const viewerDiv = document.getElementById('viewerDiv');
+            const menuGlobe = new GuiTools(itowns.viewer, 'menuDiv');
             itowns.viewer.createSceneGlobe(positionOnGlobe, viewerDiv);
 
-            let wgs84TileLayer = {
+            const wgs84TileLayer = {
                 protocol: 'tile',
-                id: 'wgs84'
+                id: 'wgs84',
             };
 
-			var urlImageryLayers = [], urlElevationLayers = [];
+            const urlImageryLayers = [];
+            const urlElevationLayers = [];
 
             urlImageryLayers.push('examples/layers/JSONLayers/Ortho.json');
             urlImageryLayers.push('examples/layers/JSONLayers/OrthosCRS.json');
             urlImageryLayers.push('examples/layers/JSONLayers/ScanEX.json');
             urlImageryLayers.push('examples/layers/JSONLayers/Region.json');
 
-		  	urlElevationLayers.push('examples/layers/JSONLayers/IGN_MNT.json');
+            urlElevationLayers.push('examples/layers/JSONLayers/IGN_MNT.json');
             urlElevationLayers.push('examples/layers/JSONLayers/IGN_MNT_HIGHRES.json');
 
             itowns.viewer.addGeometryLayer(wgs84TileLayer);
-            let imageryPromise = itowns.viewer.addImageryLayersFromJSONArray(urlImageryLayers);
-            let elevationPromise = itowns.viewer.addElevationLayersFromJSONArray(urlElevationLayers);
+            const imageryPromise = itowns.viewer.addImageryLayersFromJSONArray(urlImageryLayers);
+            const elevationPromise = itowns.viewer.addElevationLayersFromJSONArray(urlElevationLayers);
 
-            imageryPromise.then((layersColors) => menuGlobe.addImageryLayersGUI(layersColors));
-            elevationPromise.then((layersElevations) => {menuGlobe.addElevationLayersGUI(layersElevations);});
+            imageryPromise.then((layersColors) => { menuGlobe.addImageryLayersGUI(layersColors); });
+            elevationPromise.then((layersElevations) => { menuGlobe.addElevationLayersGUI(layersElevations); });
 
             Promise.all([imageryPromise, elevationPromise]).then(() => itowns.viewer.init());
 
-            menuGlobe.addGUI('RealisticLighting',false,function(newValue) {itowns.viewer.setRealisticLightingOn(newValue);});
+            menuGlobe.addGUI('RealisticLighting', false,
+                (newValue) => { itowns.viewer.setRealisticLightingOn(newValue); });
 
-           	itowns.viewer.addEventListener('globe-loaded', function() {
-            	console.log("Globe Loaded");
-        	});
-        </script>
+            itowns.viewer.addEventListener('globe-loaded', () => {
+                // eslint-disable-next-line no-console
+                console.info('Globe Loaded');
+            });
+
+</script>
     </body>
 </html>
