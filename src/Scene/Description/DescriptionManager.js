@@ -19,6 +19,4 @@ DescriptionManager.prototype.descriptionToContent = function descriptionToConten
 };
 
 
-export {
-    DescriptionManager,
-};
+export default DescriptionManager;

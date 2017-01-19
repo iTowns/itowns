@@ -149,6 +149,4 @@ Style.prototype.applyPalette = function applyPalette(palette) {
     this.surface.effects[0].color = palette.colorExtrusion;
 };
 
-export {
-    Style,
-};
+export default Style;
