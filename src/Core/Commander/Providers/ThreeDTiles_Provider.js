@@ -132,32 +132,45 @@ ThreeDTiles_Provider.prototype.geojsonToMesh = function(geoJson, parameters, bui
 
 ThreeDTiles_Provider.prototype.b3dmToMesh = function(data, parameters, builder, tempTransform) {
     return this.b3dmLoader.parse(data).then(function(result){
-        let transform = tempTransform;  // TODO :replace by parameters.transform
-        // TODO: go through scene and replace mesh and materials with our own
-        var mesh = result.scene.children[0].children[0];    // TODO: multiple geom?
-        //mesh.geometry.scale(1000, 1000, 1000);
+        try {
+            let transform = tempTransform;  // TODO :replace by parameters.transform
+            // TODO: go through scene and replace mesh and materials with our own
+            var mesh = result.scene.children[0].children[0];    // TODO: multiple geom?
+            //mesh.geometry.scale(1000, 1000, 1000);
 
-        /*var t = (new THREE.Matrix4()).makeBasis(new THREE.Vector3(1,0,0), new THREE.Vector3(0,0,-1), new THREE.Vector3(0,1,0))
+            /*var t = (new THREE.Matrix4()).makeBasis(new THREE.Vector3(1,0,0), new THREE.Vector3(0,0,-1), new THREE.Vector3(0,1,0))
 
-        mesh.geometry.applyMatrix(t.transpose());
-        mesh.geometry.applyMatrix(parameters.transform);
-        mesh.geometry.applyMatrix(t.transpose());*/
-        mesh.geometry.applyMatrix(transform);
+            mesh.geometry.applyMatrix(t.transpose());
+            mesh.geometry.applyMatrix(parameters.transform);
+            mesh.geometry.applyMatrix(t.transpose());*/
+            //mesh.geometry.applyMatrix(transform);
 
-        var box;
-        if(mesh.geometry.boundingBox != null)
-            box = new BoundingBox(mesh.bbox[0], mesh.bbox[2], mesh.bbox[1], mesh.bbox[3], mesh.bbox[4], mesh.bbox[5]);
-        else /*if(mesh.geometry.boundingSphere)*/ {
-            mesh.geometry.computeBoundingSphere();
-            var bs = mesh.geometry.boundingSphere;
-            var c = bs.center;
-            var r = bs.radius / 2;
-            box = new BoundingBox(c.x - r, c.x + r, c.y - r, c.y + r, c.z - r, c.z + r);
+            var box;
+            if(mesh.geometry.boundingBox != null)
+                box = new BoundingBox(mesh.bbox[0], mesh.bbox[2], mesh.bbox[1], mesh.bbox[3], mesh.bbox[4], mesh.bbox[5]);
+            else /*if(mesh.geometry.boundingSphere)*/ {
+                mesh.geometry.computeBoundingSphere();
+                var bs = mesh.geometry.boundingSphere;
+                var c = bs.center;
+                var r = bs.radius / 2;
+                box = new BoundingBox(c.x - r, c.x + r, c.y - r, c.y + r, c.z - r, c.z + r);
+            }
+            let position = new THREE.Vector3();
+            let quaternion = new THREE.Quaternion();
+            let scale = new THREE.Vector3();
+            transform.decompose(position, quaternion, scale);
+            var fMesh = new FeatureMesh({bbox: box}, builder);
+            fMesh.setGeometry(mesh.geometry);
+            fMesh.position.copy(position);
+            fMesh.quaternion.copy(quaternion);
+            fMesh.scale.copy(scale);
+            fMesh.updateMatrix();
+            fMesh.updateMatrixWorld();
+            //fMesh.material.uniforms.diffuseColor = mesh.material.uniforms.u_diffuse;
+            return fMesh;
+        } catch(error) {
+            console.log(error);
         }
-        var fMesh = new FeatureMesh({bbox: box}, builder);
-        fMesh.setGeometry(mesh.geometry);
-        //fMesh.material.uniforms.diffuseColor = mesh.material.uniforms.u_diffuse;
-        return fMesh;
     });
 };
 
@@ -169,6 +182,8 @@ function convertUint8ArrayToString(array) {
 		}
 		return s;
 }
+
+var test = 0;
 
 ThreeDTiles_Provider.prototype.getData = function(parent, layer, params) {
 
@@ -209,7 +224,8 @@ ThreeDTiles_Provider.prototype.getData = function(parent, layer, params) {
     transform.premultiply(parameters.transform);
     let globeTransform = transform;
 
-    if(parameters.urlSuffix) {
+    if(parameters.urlSuffix && test < 3) {
+        test ++;
         var url = layer.url + parameters.urlSuffix;
 
         var supportedFormats = {
@@ -219,7 +235,7 @@ ThreeDTiles_Provider.prototype.getData = function(parent, layer, params) {
 
         return Fetcher.arrayBuffer(url).then(function(result) {
             if (result !== undefined) {
-                var func = supportedFormats['b3dm'];
+                let func = supportedFormats['b3dm'];
                 let firstChar = String.fromCharCode((new Uint8Array(result, 0, 1))[0]);
                 if(firstChar === '{') {
                     func = supportedFormats['geoJson'];
@@ -235,6 +251,7 @@ ThreeDTiles_Provider.prototype.getData = function(parent, layer, params) {
                     mesh.loaded = true;
                     mesh.additiveRefinement = parameters.additive;
                     parent.add(mesh);
+                    console.log(mesh);
                     this.cache.addRessource(url, result);
                     return mesh;
                 });
