@@ -10,7 +10,7 @@ import StarGeometry from 'Renderer/ThreeExtented/StarGeometry';
 import * as THREE from 'three';
 
 
-var Star = function Star() {
+const Star = function Star() {
     NodeMesh.call(this);
 
     var geom = new StarGeometry();

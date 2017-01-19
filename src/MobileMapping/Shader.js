@@ -1,4 +1,4 @@
-var Shader = {
+const Shader = {
 
     shadersURL: null, // shadersURL;
     shaderNum: null, // shadersURL.length;

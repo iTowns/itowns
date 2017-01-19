@@ -13,6 +13,4 @@ function Description() {
 }
 
 
-export {
-    Description,
-};
+export default Description;

@@ -5,7 +5,7 @@
  */
 import GeoCoordinate, { UNIT } from 'Core/Geographic/GeoCoordinate';
 
-var CoordStars = {
+const CoordStars = {
 
     getSunPosition() {
         const m = Math;

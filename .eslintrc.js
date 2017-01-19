@@ -74,21 +74,5 @@ module.exports = {
     'operator-assignment': 'off',
     'no-return-assign': 'off',
     'no-useless-concat': 'off',
-	'linebreak-style': 'off',
-
-    /* import problems */
-    'import/no-mutable-exports': 'off',
-    'import/prefer-default-export': 'off',
-    'import/no-named-as-default-member': 'off',
-    'import/no-named-as-default': 'off',
-    'import/newline-after-import': 'off',
-    // the following 3 rules are actually real problems in the code but in
-    // module that are never used. Eg in Octree.js, we should import
-    // 'Scene/SpatialHash' and not 'SpatialHash'.
-    'import/no-extraneous-dependencies': 'off',
-    'import/no-unresolved': 'off',
-    'import/extensions': 'off',
-
-
   }
 }

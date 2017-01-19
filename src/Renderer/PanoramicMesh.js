@@ -9,7 +9,7 @@
 import NodeMesh from 'Renderer/NodeMesh';
 
 
-var PanoramicMesh = function PanoramicMesh(geom, mat, absC) {
+const PanoramicMesh = function PanoramicMesh(geom, mat, absC) {
     NodeMesh.call(this);
 
     this.matrixAutoUpdate = false;

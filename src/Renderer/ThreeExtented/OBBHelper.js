@@ -9,6 +9,7 @@ import * as THREE from 'three';
 
 // TODO regler le probleme glsl
 import fontJS from './fonts/optimer_regular.glsl';
+
 var font = new THREE.Font(JSON.parse(fontJS.substring(65, fontJS.length - 2)));
 
 function OBBHelper(OBB, text) {

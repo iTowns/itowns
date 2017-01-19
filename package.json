@@ -4,7 +4,7 @@
   "description": "A JS/WebGL framework for 3D geospatial data visualization",
   "main": "dist/itowns2.js",
   "scripts": {
-    "lint": "eslint \"src/**/*.js\" \"test/**/*.js\"",
+    "lint": "eslint \"src/**/*.js\" \"test/**/*.js\" \"examples/**/*.js\"",
     "doc": "jsdoc src/Core/Commander/Interfaces/ApiInterface/*",
     "doclint": "npm run doc -- -t templates/silent",
     "test": "npm run lint && npm run build && npm run doclint",

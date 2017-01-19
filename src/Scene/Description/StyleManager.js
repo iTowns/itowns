@@ -37,6 +37,4 @@ StyleManager.prototype.updateStyle = function updateStyle() {
 
 };
 
-export {
-    StyleManager,
-};
+export default StyleManager;
