@@ -1,4 +1,4 @@
-var Binary = {};
+const Binary = {};
 
 // For documentation see http://www.2ality.com/2012/02/js-integers.html
 

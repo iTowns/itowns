@@ -1,1 +1,8 @@
 *	text=auto
+*.js eol=lf
+*.css eol=lf
+*.glsl eol=lf
+*.html eol=lf
+*.md eol=lf
+*.json eol=lf
+*.yml eol=lf

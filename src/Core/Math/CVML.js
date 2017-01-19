@@ -3,7 +3,7 @@
  * Quoc-Dinh dot Nguyen at IGN dot com
  */
 
-var CVML = CVML || {
+const CVML = CVML || {
     REVISION: '1.0.0',
 };
 

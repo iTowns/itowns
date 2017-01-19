@@ -17,6 +17,4 @@ function Palette() {
 
 Palette.prototype.constructor = Palette;
 
-export {
-    Palette,
-};
+export default Palette;

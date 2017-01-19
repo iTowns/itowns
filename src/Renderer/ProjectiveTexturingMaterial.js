@@ -31,7 +31,7 @@ var _alpha = 1;
 var _infos = {};
 var ellipsoid = new Ellipsoid(new THREE.Vector3(6378137, 6356752.3142451793, 6378137));
 
-var ProjectiveTexturingMaterial = {
+const ProjectiveTexturingMaterial = {
 
     init(infos, panoInfo, pivot) {
         if (_initPromise == null) {

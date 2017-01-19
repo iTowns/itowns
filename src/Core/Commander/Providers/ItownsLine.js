@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import ItownsLineMaterial from 'Renderer/ItownsLineMaterial';
 
-var ItownsLine = function ItownsLine(options) {
+const ItownsLine = function ItownsLine(options) {
     THREE.Mesh.call(this);
 
     this.positions = [];
