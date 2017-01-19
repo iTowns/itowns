@@ -161,7 +161,7 @@ function c3DEngine(scene, positionCamera, viewerDiv, debugMode, gLDebug) {
     // Create Control
     //
     this.controls = new GlobeControls(this.camera.camera3D, this.renderer.domElement, this);
-    this.controls.rotateSpeed = 0.8;
+    this.controls.rotateSpeed = 0.25;
     this.controls.zoomSpeed = 2.0;
     this.controls.minDistance = 30;
     this.controls.maxDistance = this.size * 8.0;
