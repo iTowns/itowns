@@ -1,27 +1,21 @@
-import IoDriver from 'Core/Commander/Providers/IoDriver';
-import * as THREE from 'three';
 import GltfLoader from 'Renderer/ThreeExtented/GLTFLoader';
 
-function IoDriver_B3DM() {
-    // Constructor
-    IoDriver.call(this);
-    this.GltfLoader = new THREE.GLTFLoader();
+function B3dmLoader() {
+    this.glTFLoader = new GltfLoader();
 }
 
-IoDriver_B3DM.prototype = Object.create(IoDriver.prototype);
-
-IoDriver_B3DM.prototype.constructor = IoDriver_B3DM;
-
-IoDriver_B3DM.prototype.decodeFromCharCode = function (value) {
+var decodeFromCharCode = function (value) {
     var result = '';
-    for (var i = 0; i < value.length; i++)
-		{ result += String.fromCharCode(value[i]); }
+    for (var i = 0; i < value.length; i++) {
+        result += String.fromCharCode(value[i]);
+    }
     return result;
 };
 
-IoDriver_B3DM.prototype.parseB3dm = function (buffer) {
-    if (!buffer)
-        { throw new Error('Error processing B3DM'); }
+B3dmLoader.prototype.parse = function (buffer) {
+    if (!buffer) {
+        throw new Error('No array buffer provided.');
+    }
 
     var array = new Uint8Array(buffer);
     var view = new DataView(buffer);
@@ -30,7 +24,7 @@ IoDriver_B3DM.prototype.parseB3dm = function (buffer) {
     var b3dmHeader = {};
 
 	// Magic type is unsigned char [4]
-    b3dmHeader.magic = this.decodeFromCharCode(array.subarray(byteOffset, 4));
+    b3dmHeader.magic = decodeFromCharCode(array.subarray(byteOffset, 4));
     byteOffset += 4;
 
     if (b3dmHeader.magic) {
@@ -65,11 +59,11 @@ IoDriver_B3DM.prototype.parseB3dm = function (buffer) {
         var bgltfHeader = {};
 
 		// Magic type is unsigned char [4]
-        bgltfHeader.magic = this.decodeFromCharCode(array.subarray(byteOffset, byteOffset + 4));
+        bgltfHeader.magic = decodeFromCharCode(array.subarray(byteOffset, byteOffset + 4));
         byteOffset += 4;
 
         if (bgltfHeader.magic) {
-            // TODO: this is wrong
+            // TODO: missing batch table
 			// Version, length, contentLength and contentFormat types are uint32
             bgltfHeader.version = view.getUint32(byteOffset, true);
             byteOffset += Uint32Array.BYTES_PER_ELEMENT;
@@ -88,27 +82,17 @@ IoDriver_B3DM.prototype.parseB3dm = function (buffer) {
                     let onload = (gltf) => {
                         resolve(gltf);
                     }
-                    var gltfText = this.decodeFromCharCode(array.subarray(byteOffset, byteOffset + bgltfHeader.contentLength));
-                    var binaryGltfArray = array.subarray(byteOffset + bgltfHeader.contentLength, b3dmHeader.byteLength);
-                    this.GltfLoader.parse(buffer.slice(24), onload);    // TODO: not alway 24 bytes
+                    this.glTFLoader.parse(buffer.slice(24), onload);    // TODO: not alway 24 bytes
                 }.bind(this));
-            } else
-				{ throw new Error('The binary gltf is not a valid one.'); }
+            } else {
+                throw new Error('The embeded binary gltf is invalid.');
+             }
         } else {
-			// ToDo
-            throw new Error('The file might be a non binary gltf file.');
+            throw new Error('Invalid b3dm file.');
         }
-    } else
-		{ throw new Error('The b3dm is not a valid one'); }
+    } else {
+        throw new Error('Invalid b3dm file.');
+    }
 };
 
-IoDriver_B3DM.prototype.read = function (url) {
-    return fetch(url).then((response) => {
-        if (response.status < 200 || response.status >= 300) {
-            throw new Error(`Error loading ${url}: status ${response.status}`);
-        }
-        return response.arrayBuffer();
-    }).then(buffer => this.parseB3dm(buffer));
-};
-
-export default IoDriver_B3DM;
+export default B3dmLoader;
