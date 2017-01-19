@@ -380,7 +380,7 @@ ApiGlobe.prototype.createSceneGlobe = function createSceneGlobe(coordCarto, view
 };
 
 ApiGlobe.prototype.update = function update() {
-    this.scene.notifyChange();
+    this.scene.notifyChange(0, true);
 };
 
 ApiGlobe.prototype.showClouds = function showClouds(value, satelliteAnimation) {

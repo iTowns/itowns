@@ -12,12 +12,14 @@ import Projection from 'Core/Geographic/Projection';
 import RendererConstant from 'Renderer/RendererConstant';
 import { chooseNextLevelToFetch } from 'Scene/LayerUpdateStrategy';
 import { l_ELEVATION, l_COLOR } from 'Renderer/LayeredMaterial';
+import LayerUpdateState from 'Scene/LayerUpdateState';
+import { CancelledCommandException } from 'Core/Commander/ManagerCommands';
 
 export const SSE_SUBDIVISION_THRESHOLD = 6.0;
 
-function NodeProcess(camera, ellipsoid, bbox) {
-    // Constructor
-
+function NodeProcess(scene, camera, ellipsoid, bbox) {
+    // TODO: consider removing this.scene + replacing scene.notifyChange by an event
+    this.scene = scene;
     this.bbox = defaultValue(bbox, new BoundingBox(MathExt.PI_OV_TWO + MathExt.PI_OV_FOUR, MathExt.PI + MathExt.PI_OV_FOUR, 0, MathExt.PI_OV_TWO));
 
     this.vhMagnitudeSquared = 1.0;
@@ -181,12 +183,8 @@ NodeProcess.prototype.refineNodeLayers = function refineNodeLayers(node, camera,
     ];
 
     for (let typeLayer = 0; typeLayer < 2; typeLayer++) {
-        if (node.pendingLayers[typeLayer] === undefined && (!node.loaded || node.isLayerTypeDownscaled(typeLayer))) {
-            node.pendingLayers[typeLayer] = true;
-            layerFunctions[typeLayer](params.tree, node, params.layersConfig, !node.loaded)
-        // reset the flag, regardless of the request success/failure
-        .then(() => { node.pendingLayers[typeLayer] = undefined; },
-              () => { node.pendingLayers[typeLayer] = undefined; });
+        if (!node.loaded || node.isLayerTypeDownscaled(typeLayer)) {
+            layerFunctions[typeLayer](this.scene, params.tree, node, params.layersConfig, !node.loaded);
         }
     }
 };
@@ -217,9 +215,10 @@ function findAncestorWithValidTextureForLayer(node, layerType, layer) {
     }
 }
 
-function updateNodeImagery(quadtree, node, layersConfig, force) {
+function updateNodeImagery(scene, quadtree, node, layersConfig, force) {
     const promises = [];
 
+    const ts = Date.now();
     const colorLayers = layersConfig.getColorLayers();
     for (let i = 0; i < colorLayers.length; i++) {
         const layer = colorLayers[i];
@@ -231,6 +230,15 @@ function updateNodeImagery(quadtree, node, layersConfig, force) {
         if (!layer.tileInsideLimit(node, layer)) {
             continue;
         }
+
+        if (node.layerUpdateState[layer.id] === undefined) {
+            node.layerUpdateState[layer.id] = new LayerUpdateState();
+        }
+
+        if (!node.layerUpdateState[layer.id].canTryUpdate(ts)) {
+            continue;
+        }
+
         if (!force) {
             // does this tile needs a new texture?
             if (!node.isColorLayerDownscaled(layer.id)) {
@@ -261,6 +269,8 @@ function updateNodeImagery(quadtree, node, layersConfig, force) {
             }
         }
 
+        node.layerUpdateState[layer.id].newTry();
+
         promises.push(quadtree.interCommand.request(args, node, refinementCommandCancellationFn).then(
             (result) => {
                 const level = args.ancestor ? args.ancestor.level : node.level;
@@ -280,22 +290,32 @@ function updateNodeImagery(quadtree, node, layersConfig, force) {
                     // and stop retrying after X attempts.
                 }
 
+                node.layerUpdateState[layer.id].success();
+
                 return result;
+            },
+            (err) => {
+                if (err instanceof CancelledCommandException) {
+                    node.layerUpdateState[layer.id].success();
+                } else {
+                    node.layerUpdateState[layer.id].failure(Date.now());
+                    scene.notifyChange(node.layerUpdateState[layer.id].secondsUntilNextTry() * 1000, false);
+                }
             }));
     }
 
-    return Promise.all(promises).then(() => {
+    Promise.all(promises).then(() => {
         if (node.parent) {
             node.loadingCheck();
         }
-        return node;
     });
 }
 
-function updateNodeElevation(quadtree, node, layersConfig, force) {
+function updateNodeElevation(scene, quadtree, node, layersConfig, force) {
     // Elevation is currently handled differently from color layers.
     // This is caused by a LayeredMaterial limitation: only 1 elevation texture
     // can be used (where a tile can have N textures x M layers)
+    const ts = Date.now();
     const elevationLayers = layersConfig.getElevationLayers();
     let bestLayer = null;
     let ancestor = null;
@@ -305,7 +325,7 @@ function updateNodeElevation(quadtree, node, layersConfig, force) {
     // Step 0: currentElevevation is -1 BUT material.loadedTexturesCount[l_ELEVATION] is > 0
     // means that we already tried and failed to download an elevation texture
     if (currentElevation == -1 && node.material.loadedTexturesCount[l_ELEVATION] > 0) {
-        return Promise.resolve(node);
+        return;
     }
 
     // First step: if currentElevation is empty (level is -1), we *must* use the texture from
@@ -333,7 +353,20 @@ function updateNodeElevation(quadtree, node, layersConfig, force) {
             continue;
         }
 
+        if (node.layerUpdateState[layer.id] === undefined) {
+            node.layerUpdateState[layer.id] = new LayerUpdateState();
+        }
+
+        if (!node.layerUpdateState[layer.id].canTryUpdate(ts)) {
+            // If we'd use continue, we could have 2 parallel elevation layers updating
+            // at the same time. So we're forced to break here.
+            // TODO: if the first layer chosen ends up stalled in error we'll never try
+            // the second one...
+            break;
+        }
+
         const targetLevel = chooseNextLevelToFetch(layer.updateStrategy.type, node.level, currentElevation, layer.updateStrategy.options);
+
         if (targetLevel <= currentElevation) {
             continue;
         }
@@ -353,28 +386,36 @@ function updateNodeElevation(quadtree, node, layersConfig, force) {
     if (bestLayer !== null) {
         const args = { layer: bestLayer, ancestor };
 
-        return quadtree.interCommand.request(args, node, refinementCommandCancellationFn).then((terrain) => {
-            if (node.material === null) {
-                return;
-            }
+        node.layerUpdateState[bestLayer.id].newTry();
 
-            if (terrain && terrain.texture) {
-                terrain.texture.level = (ancestor || node).level;
-            }
+        quadtree.interCommand.request(args, node, refinementCommandCancellationFn).then(
+            (terrain) => {
+                node.layerUpdateState[bestLayer.id].success();
 
-            if (terrain && terrain.max === undefined) {
-                terrain.min = (ancestor || node).bbox.bottom();
-                terrain.max = (ancestor || node).bbox.top();
-            }
+                if (node.material === null) {
+                    return;
+                }
 
-            node.setTextureElevation(terrain);
+                if (terrain.texture) {
+                    terrain.texture.level = (ancestor || node).level;
+                }
 
-            return node;
-        });
+                if (terrain.max === undefined) {
+                    terrain.min = (ancestor || node).bbox.bottom();
+                    terrain.max = (ancestor || node).bbox.top();
+                }
+
+                node.setTextureElevation(terrain);
+            },
+            (err) => {
+                if (err instanceof CancelledCommandException) {
+                    node.layerUpdateState[bestLayer.id].success();
+                } else {
+                    node.layerUpdateState[bestLayer.id].failure(Date.now());
+                    scene.notifyChange(node.layerUpdateState[bestLayer.id].secondsUntilNextTry() * 1000, false);
+                }
+            });
     }
-
-    // No elevation texture available for this node, no need to wait for one.
-    return Promise.resolve(node);
 }
 
 

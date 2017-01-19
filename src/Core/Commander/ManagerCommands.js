@@ -22,9 +22,13 @@ function _instanciateQueue() {
             },
         }),
         counters: {
+            // commands in progress
             executing: 0,
+            // commands successfully executed
             executed: 0,
+            // commands failed
             failed: 0,
+            // commands cancelled
             cancelled: 0,
         },
         execute(cmd, provider, executingCounterUpToDate) {
@@ -36,15 +40,16 @@ function _instanciateQueue() {
             // Otherwise use a resolved Promise.
             var p = provider.executeCommand(cmd) || Promise.resolve();
 
-            return p.then(() => {
+            return p.then((result) => {
                 this.counters.executing--;
+                cmd.resolve(result);
+                // only count successul commands
                 this.counters.executed++;
-            },
-                        () => {
-                            this.counters.executing--;
-                            this.counters.executed++;
-                            this.counters.failed++;
-                        });
+            }, (err) => {
+                this.counters.executing--;
+                cmd.reject(err);
+                this.counters.failed++;
+            });
         },
     };
 }
@@ -84,7 +89,7 @@ ManagerCommands.prototype.runCommand = function runCommand(command, queue, execu
         // We allow the scene to delay the update/repaint up to 100ms
         // to reduce CPU load (no need to perform an update on completion if we
         // know there's another one ending soon)
-        this.scene.notifyChange(100);
+        this.scene.notifyChange(100, true);
 
         // try to execute next command
         if (queue.counters.executing < this.maxCommandsPerHost) {
@@ -119,8 +124,7 @@ ManagerCommands.prototype.addCommand = function addCommand(command) {
         }.bind(this);
 
         // We use a setTimeout to defer processing but we avoid the
-        // queue mechanism
-        // TODO: Why not use Promise?
+        // queue mechanism (why setTimeout and not Promise? see tasks vs microtasks priorities)
         window.setTimeout(runNow, 0);
     } else {
         q.storage.queue(command);
@@ -173,6 +177,17 @@ ManagerCommands.prototype.getProviders = function getProviders() {
 };
 
 /**
+ * Custom error thrown when cancelling commands. Allows the caller to act differently if needed.
+ */
+function CancelledCommandException(command) {
+    this.command = command;
+}
+
+CancelledCommandException.prototype.toString = function toString() {
+    return `Cancelled command ${this.command.requester.id}/${this.command.layer.id}`;
+};
+
+/**
  */
 ManagerCommands.prototype.deQueue = function deQueue(queue) {
     var st = queue.storage;
@@ -181,7 +196,7 @@ ManagerCommands.prototype.deQueue = function deQueue(queue) {
 
         if (cmd.earlyDropFunction && cmd.earlyDropFunction(cmd)) {
             queue.counters.cancelled++;
-            cmd.reject(new Error(`command canceled ${cmd.requester.id}/${cmd.layer.id}`));
+            cmd.reject(new CancelledCommandException(cmd));
         } else {
             return cmd;
         }
@@ -196,6 +211,7 @@ ManagerCommands.prototype.wait = function wait() {
     this.eventsManager.wait();
 };
 
+export { CancelledCommandException };
 
 export default function (scene) {
     instanceCommandManager = instanceCommandManager || new ManagerCommands(scene);
