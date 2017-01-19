@@ -38,22 +38,7 @@ Capabilities.prototype.ioFile = function ioFile() {
 };
 
 Capabilities.prototype.isInternetExplorer = function isInternetExplorer() {
-    return /* @cc_on!@*/ false || !!document.documentMode;
+    return false || !!document.documentMode;
 };
-/*
-    Capabilities.prototype.checkVersion = functioncheckVersion()
-    {
-      var msg = "You're not using Internet Explorer.";
-      var ver = getInternetExplorerVersion();
 
-      if ( ver > -1 )
-      {
-        if ( ver >= 8.0 )
-          msg = "You're using a recent copy of Internet Explorer.";
-        else
-          msg = "You should upgrade your copy of Internet Explorer.";
-      }
-      alert( msg );
-    };
-   */
 export default Capabilities;

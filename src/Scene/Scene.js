@@ -23,10 +23,9 @@ import Quadtree from 'Scene/Quadtree';
 import CoordStars from 'Core/Geographic/CoordStars';
 import defaultValue from 'Core/defaultValue';
 import Layer from 'Scene/Layer';
-import Capabilities from 'Core/System/Capabilities';
 import MobileMappingLayer from 'MobileMapping/MobileMappingLayer';
 import CustomEvent from 'custom-event';
-import { StyleManager } from 'Scene/Description/StyleManager';
+import StyleManager from 'Scene/Description/StyleManager';
 
 var instanceScene = null;
 
@@ -56,7 +55,6 @@ function Scene(coordinate, ellipsoid, viewerDiv, debugMode, gLDebug) {
     this.gLDebug = gLDebug;
     this.gfxEngine = c3DEngine(this, positionCamera, viewerDiv, debugMode, gLDebug);
     this.browserScene = new BrowseTree(this.gfxEngine);
-    this.cap = new Capabilities();
 
     this.needsRedraw = false;
     this.lastRenderTime = 0;
