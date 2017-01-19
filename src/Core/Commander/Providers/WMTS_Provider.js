@@ -13,6 +13,8 @@ import Fetcher from 'Core/Commander/Providers/Fetcher';
 import * as THREE from 'three';
 import CacheRessource from 'Core/Commander/Providers/CacheRessource';
 
+const SIZE_TEXTURE_TILE = 256;
+
 function WMTS_Provider(options) {
     // Constructor
 
@@ -32,7 +34,7 @@ function WMTS_Provider(options) {
             // var bufferUint = new Uint8Array(buffer.buffer);
             // var texture = new THREE.DataTexture(bufferUint, 256, 256);
 
-            var texture = new THREE.DataTexture(buffer, 256, 256, THREE.AlphaFormat, THREE.FloatType);
+            var texture = new THREE.DataTexture(buffer, SIZE_TEXTURE_TILE, SIZE_TEXTURE_TILE, THREE.AlphaFormat, THREE.FloatType);
 
             texture.needsUpdate = true;
             return texture;
@@ -128,20 +130,17 @@ WMTS_Provider.prototype.getXbilTexture = function getXbilTexture(tile, layer, pa
     var textureCache = this.cache.getRessource(url);
 
     if (textureCache !== undefined) {
-        if (textureCache) {
-            const minmax = this._IoDriver.computeMinMaxElevation(
-                textureCache.floatArray,
-                256, 256,
-                pitch);
-            return Promise.resolve(
-                {
-                    pitch,
-                    texture: textureCache.texture,
-                    min: minmax.min,
-                    max: minmax.max,
-                });
-        }
-        return Promise.resolve(null);
+        const minmax = this._IoDriver.computeMinMaxElevation(
+            textureCache.floatArray,
+            SIZE_TEXTURE_TILE, SIZE_TEXTURE_TILE,
+            pitch);
+        return Promise.resolve(
+            {
+                pitch,
+                texture: textureCache.texture,
+                min: minmax.min,
+                max: minmax.max,
+            });
     }
 
 
@@ -160,22 +159,9 @@ WMTS_Provider.prototype.getXbilTexture = function getXbilTexture(tile, layer, pa
         result.texture.generateMipmaps = false;
         result.texture.magFilter = THREE.LinearFilter;
         result.texture.minFilter = THREE.LinearFilter;
-
-        // To compare with level tile
-        result.texture.url = result.url;
-
-        // In RGBA elevation texture LinearFilter give some errors with nodata value.
-        // need to rewrite sample function in shader
-        // result.texture.magFilter = THREE.NearestFilter;
-        // result.texture.minFilter = THREE.NearestFilter;
-
         this.cache.addRessource(url, { texture: result.texture, floatArray: result.floatArray });
 
         return result;
-    }).catch(() => {
-        var texture = null;
-        this.cache.addRessource(url, texture);
-        return texture;
     });
 };
 
@@ -226,7 +212,7 @@ WMTS_Provider.prototype.executeCommand = function executeCommand(command) {
 
     var func = supportedFormats[layer.options.mimetype];
     if (func) {
-        return func(tile, layer, command.paramsFunction).then(result => command.resolve(result));
+        return func(tile, layer, command.paramsFunction);
     } else {
         return Promise.reject(new Error(`Unsupported mimetype ${layer.options.mimetype}`));
     }

@@ -84,7 +84,7 @@ function c3DEngine(scene, positionCamera, viewerDiv, debugMode, gLDebug) {
     this.update = function update() {
         this.camera.update();
         this.updateControl();
-        this.scene.notifyChange();
+        this.scene.notifyChange(0, true);
     }.bind(this);
 
     this.onWindowResize = function onWindowResize() {

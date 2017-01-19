@@ -126,20 +126,19 @@ Scene.prototype.updateScene3D = function updateScene3D() {
  * scene itself (e.g. camera movement).
  * Using a non-0 delay allows to delay update - useful to reduce CPU load for
  * non-interactive events (e.g: texture loaded)
+ * needsRedraw param indicates if notified change requires a full scene redraw.
  */
-Scene.prototype.notifyChange = function notifyChange(delay) {
-    this.needsRedraw = true;
-
-    window.clearInterval(this.timer);
-
+Scene.prototype.notifyChange = function notifyChange(delay, needsRedraw) {
     if (delay) {
-        this.timer = window.setTimeout(this.scheduleUpdate.bind(this), delay);
+        window.setTimeout(() => { this.scheduleUpdate(needsRedraw); }, delay);
     } else {
-        this.scheduleUpdate();
+        this.scheduleUpdate(needsRedraw);
     }
 };
 
-Scene.prototype.scheduleUpdate = function scheduleUpdate() {
+Scene.prototype.scheduleUpdate = function scheduleUpdate(forceRedraw) {
+    this.needsRedraw |= forceRedraw;
+
     if (this.renderingState !== RENDERING_ACTIVE) {
         this.renderingState = RENDERING_ACTIVE;
 
@@ -190,7 +189,6 @@ Scene.prototype.step = function step() {
             if (this.needsRedraw || executedDuringUpdate > 0) {
                 this.renderScene3D();
                 this.lastRenderTime = ts;
-                this.needsRedraw = false;
             }
         }
 
@@ -202,6 +200,7 @@ Scene.prototype.step = function step() {
  */
 Scene.prototype.renderScene3D = function renderScene3D() {
     this.gfxEngine.renderScene();
+    this.needsRedraw = false;
 };
 
 Scene.prototype.scene3D = function scene3D() {
@@ -216,8 +215,7 @@ Scene.prototype.scene3D = function scene3D() {
 Scene.prototype.add = function add(node, nodeProcess) {
     if (node instanceof Globe) {
         this.map = node;
-        nodeProcess = nodeProcess || new NodeProcess(this.currentCamera(), node.ellipsoid);
-        // this.quadTreeRequest(node.tiles, nodeProcess);
+        nodeProcess = nodeProcess || new NodeProcess(this, this.currentCamera(), node.ellipsoid);
     }
 
     this.layers.push({
