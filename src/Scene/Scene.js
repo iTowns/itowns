@@ -14,6 +14,7 @@ import LayersConfiguration from 'Scene/LayersConfiguration';
 import Camera from 'Renderer/Camera';
 import WMTS_Provider from 'Core/Commander/Providers/WMTS_Provider';
 import WMS_Provider from 'Core/Commander/Providers/WMS_Provider';
+import WFS_Provider from 'Core/Commander/Providers/WFS_Provider';
 import TileProvider from 'Core/Commander/Providers/TileProvider';
 import { STRATEGY_MIN_NETWORK_TRAFFIC } from 'Scene/LayerUpdateStrategy';
 
@@ -80,6 +81,7 @@ Scene.prototype.initDefaultProviders = function initDefaultProviders() {
     this.scheduler.addProtocolProvider('wmtsc', wmtsProvider);
     this.scheduler.addProtocolProvider('tile', new TileProvider());
     this.scheduler.addProtocolProvider('wms', new WMS_Provider({ support: gLDebug }));
+    this.scheduler.addProtocolProvider('wfs', new WFS_Provider());
 };
 
 
@@ -111,7 +113,7 @@ function preprocessLayer(scene, layer, provider) {
     }
 
     // probably not the best place to do this
-    if (provider instanceof TileProvider) {
+    if (provider instanceof WFS_Provider || provider instanceof TileProvider) {
         const threejsLayer = scene.getUniqueThreejsLayer();
         scene.layersConfiguration.setLayerAttribute(layer.id, 'threejsLayer', threejsLayer);
         // enable by default
