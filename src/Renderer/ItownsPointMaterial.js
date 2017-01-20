@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import BasicMaterial from 'Renderer/BasicMaterial';
+import Fetcher from 'Core/Commander/Providers/Fetcher';
 import PointVS from 'Renderer/Shader/PointVS.glsl';
 import PointFS from 'Renderer/Shader/PointFS.glsl';
 
@@ -13,13 +14,13 @@ const ItownsPointMaterial = function ItownsPointMaterial(options) {
     this.vertexShader = PointVS;
     this.fragmentShader = PointFS;
 
-    var texture = new THREE.TextureLoader().load(options.texture);
+    const texture = options.texture ? Fetcher.texture.load(options.texture) : undefined;
 
     this.uniforms.time = { value: options.time };
     this.uniforms.useTexture = { value: options.useTexture };
-    this.uniforms.texture = { type: 't', value: texture };
-    this.uniforms.color = { type: 'v3', value: options.color };
-    this.uniforms.opacity = { type: 'f', value: options.opacity };
+    this.uniforms.texture = { value: texture };
+    this.uniforms.color = { value: options.color };
+    this.uniforms.opacity = { value: options.opacity };
     this.uniforms.resolution = { value: new THREE.Vector2(window.innerWidth, window.innerHeight) };
     this.transparent = true;
 };
@@ -28,3 +29,4 @@ ItownsPointMaterial.prototype = Object.create(BasicMaterial.prototype);
 ItownsPointMaterial.prototype.constructor = ItownsPointMaterial;
 
 export default ItownsPointMaterial;
+

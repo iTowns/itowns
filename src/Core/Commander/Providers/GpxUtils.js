@@ -7,9 +7,8 @@
 import * as THREE from 'three';
 import Fetcher from 'Core/Commander/Providers/Fetcher';
 import GeoCoordinate, { UNIT } from 'Core/Geographic/GeoCoordinate';
-import ItownsLine from 'Core/Commander/Providers/ItownsLine';
-import ItownsPoint from 'Core/Commander/Providers/ItownsPoint';
-
+import Lines from 'Renderer/Lines';
+import Points from 'Renderer/Points';
 
 function _gpxToWayPointsArray(gpxXML) {
     return gpxXML.getElementsByTagName('wpt');
@@ -32,8 +31,7 @@ function _gpxToWayPointsMesh(gpxXML, ellipsoid) {
 
     if (wayPts.length) {
         var colorPoint = new THREE.Color('rgb(0, 255, 0)');
-        var points = new ItownsPoint({
-            time: 1.0,
+        var points = new Points({
             useTexture: false,
             texture: 'data/strokes/pstar1.png',
             color: [colorPoint.r, colorPoint.g, colorPoint.b],
@@ -57,13 +55,13 @@ function _gpxToWTrackPointsMesh(gpxXML, ellipsoid) {
 
     if (trackPts.length) {
         var colorLine = new THREE.Color('rgb(255, 0, 0)');
-        var line = new ItownsLine({
+        var line = new Lines({
             time: 1.0,
             linewidth: 100.0,
             texture: 'data/strokes/hway1.png',
             useTexture: false,
             opacity: 1.0,
-            sizeAttenuation: 1.0,
+            sizeAttenuation: true,
             color: [colorLine.r, colorLine.g, colorLine.b],
         });
 

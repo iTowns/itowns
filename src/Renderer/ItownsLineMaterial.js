@@ -6,33 +6,34 @@
 
 import * as THREE from 'three';
 import BasicMaterial from 'Renderer/BasicMaterial';
+import Fetcher from 'Core/Commander/Providers/Fetcher';
 import LineVS from 'Renderer/Shader/LineVS.glsl';
 import LineFS from 'Renderer/Shader/LineFS.glsl';
 
 const ItownsLineMaterial = function ItownsLineMaterial(options) {
     BasicMaterial.call(this);
 
-    if (options === undefined)
-                     { throw new Error('options is required'); }
+    if (options === undefined) {
+        throw new Error('options is required');
+    }
 
-
-    this.vertexShader = LineVS;
-    this.fragmentShader = LineFS;
+    this.fragmentShader = this.fragmentShaderHeader + LineFS;
+    this.vertexShader = this.vertexShaderHeader + LineVS;
 
     this.wireframe = false;
 
-    var texture = new THREE.TextureLoader().load(options.texture);
+    const texture = options.texture ? Fetcher.texture.load(options.texture) : undefined;
 
-    this.uniforms.time = { value: options.time };
     this.uniforms.THICKNESS = { value: options.linewidth };
-    this.uniforms.MITER_LIMIT = { value: 1.0 };
+    this.uniforms.MITER_LIMIT = { value: true };
     this.uniforms.WIN_SCALE = { value: new THREE.Vector2(window.innerWidth, window.innerHeight) };
-    this.uniforms.texture = { type: 't', value: texture };
-    this.uniforms.useTexture = { value: options.useTexture };
-    this.uniforms.opacity = { type: 'f', value: options.opacity };
-    this.uniforms.sizeAttenuation = { type: 'f', value: options.sizeAttenuation };
-    this.uniforms.color = { type: 'v3', value: options.color };
-
+    if (texture) {
+        this.uniforms.texture = { value: texture };
+    }
+    this.uniforms.useTexture = { value: texture ? options.useTexture : false };
+    this.uniforms.opacity = { value: options.opacity };
+    this.uniforms.sizeAttenuation = { value: options.sizeAttenuation };
+    this.uniforms.color = { value: options.color };
     this.transparent = true;
 };
 
