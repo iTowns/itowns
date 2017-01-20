@@ -526,6 +526,23 @@ c3DEngine.prototype.setLightingOn = function setLightingOn(value) {
     this.lightingOn = value;
 };
 
+
+const mouse = new THREE.Vector2();
+// Picking in tree 'root' from screenCoords
+c3DEngine.prototype.getPickObject3d = function getPickObject3d(screenCoords, root) {
+    // calculate mouse screenCoords in normalized device coordinates
+    // (-1 to +1) for both components
+    mouse.x = (screenCoords.x / window.innerWidth) * 2 - 1;
+    mouse.y = -(screenCoords.y / window.innerHeight) * 2 + 1;
+
+    const raycaster = new THREE.Raycaster();
+    const camera = this.scene.camera.camera3D;
+    raycaster.setFromCamera(mouse, camera);
+
+    // calculate objects intersecting the picking ray
+    return raycaster.intersectObjects(root, true);
+};
+
 export default function (scene, viewerDiv, debugMode, gLDebug) {
     instance3DEngine = instance3DEngine || new c3DEngine(scene, viewerDiv, debugMode, gLDebug);
     return instance3DEngine;
