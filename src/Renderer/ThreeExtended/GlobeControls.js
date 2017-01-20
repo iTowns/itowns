@@ -497,8 +497,8 @@ function GlobeControls(camera, domElement, engine) {
     {
         if (scene.getMap())
         {
-            var coord = scene.getMap().projection.cartesianToGeo(position);
-            var bbox = scene.getMap().getTile(coord).bbox;
+            var coord = scene.projection.cartesianToGeo(position);
+            var bbox = scene.getTile(coord).bbox;
             var delta = coord.altitude() - (bbox.top() + radiusCollision);
 
             if (delta < 0) {

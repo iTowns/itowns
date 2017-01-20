@@ -7,16 +7,11 @@
 /* global window, requestAnimationFrame */
 
 import c3DEngine from 'Renderer/c3DEngine';
-import Globe from 'Globe/Globe';
 import Scheduler from 'Core/Commander/Scheduler';
-import BrowseTree from 'Scene/BrowseTree';
-import NodeProcess from 'Scene/NodeProcess';
-import Quadtree from 'Scene/Quadtree';
 import CoordStars from 'Core/Geographic/CoordStars';
-import Layer from 'Scene/Layer';
-import MobileMappingLayer from 'MobileMapping/MobileMappingLayer';
 import CustomEvent from 'custom-event';
 import StyleManager from 'Scene/Description/StyleManager';
+import LayersConfiguration from 'Scene/LayersConfiguration';
 
 var instanceScene = null;
 
@@ -24,17 +19,10 @@ var instanceScene = null;
 const RENDERING_PAUSED = 0;
 const RENDERING_ACTIVE = 1;
 
-function Scene(coordinate, ellipsoid, viewerDiv, debugMode, gLDebug) {
+function Scene(positionCamera, size, viewerDiv, debugMode, gLDebug) {
     if (instanceScene !== null) {
         throw new Error('Cannot instantiate more than one Scene');
     }
-
-    this.ellipsoid = ellipsoid;
-
-    var positionCamera = this.ellipsoid.cartographicToCartesian(coordinate);
-
-    this.layers = [];
-    this.map = null;
 
     this.cameras = null;
     this.selectNodes = null;
@@ -44,8 +32,8 @@ function Scene(coordinate, ellipsoid, viewerDiv, debugMode, gLDebug) {
     this.stylesManager = new StyleManager();
 
     this.gLDebug = gLDebug;
+    this._size = size;
     this.gfxEngine = c3DEngine(this, positionCamera, viewerDiv, debugMode, gLDebug);
-    this.browserScene = new BrowseTree(this.gfxEngine);
 
     this.needsRedraw = false;
     this.lastRenderTime = 0;
@@ -57,15 +45,10 @@ function Scene(coordinate, ellipsoid, viewerDiv, debugMode, gLDebug) {
 
     this.viewerDiv = viewerDiv;
     this.renderingState = RENDERING_PAUSED;
+    this.layersConfiguration = new LayersConfiguration();
 }
 
 Scene.prototype.constructor = Scene;
-/**
- */
-Scene.prototype.updateCommand = function updateCommand() {
-    // TODO: Implement Me
-
-};
 
 /**
  * @documentation: return current camera
@@ -95,12 +78,8 @@ Scene.prototype.getStyles = function getStyles() {
     return this.stylesManager.getStyles();
 };
 
-Scene.prototype.getEllipsoid = function getEllipsoid() {
-    return this.ellipsoid;
-};
-
 Scene.prototype.size = function size() {
-    return this.ellipsoid.size;
+    return this._size;
 };
 
 /**
@@ -137,19 +116,60 @@ Scene.prototype.scheduleUpdate = function scheduleUpdate(forceRedraw) {
     }
 };
 
+
+function updateElement(context, layer, element, childrenStages) {
+    const elements = layer.update(context, layer, element);
+
+    if (elements) {
+        for (const element of elements) {
+            for (const s of childrenStages) {
+                updateElement(context, s.layer, element, s.grafted);
+            }
+        }
+    }
+}
+
 Scene.prototype.update = function update() {
-    for (var l = 0; l < this.layers.length; l++) {
-        var layer = this.layers[l].node;
+    this.gfxEngine.camera.updateMatrixWorld();
 
-        for (var sl = 0; sl < layer.children.length; sl++) {
-            var sLayer = layer.children[sl];
+    // Browse Layer tree
+    const config = this.layersConfiguration;
 
-            if (sLayer instanceof Quadtree) {
-                this.browserScene.updateQuadtree(this.layers[l], this.map.layersConfiguration, this.currentCamera());
-            } else if (sLayer instanceof MobileMappingLayer) {
-                this.browserScene.updateMobileMappingLayer(sLayer, this.currentCamera());
-            } else if (sLayer instanceof Layer) {
-                this.browserScene.updateLayer(sLayer, this.currentCamera());
+    // TODO?
+    const context = {
+        camera: this.gfxEngine.camera,
+        scheduler: this.scheduler,
+        scene: this,
+    };
+
+
+    // call pre-update on all layers
+    config.traverseLayers((layer) => {
+        if (layer.preUpdate) {
+            layer.preUpdate(context, layer);
+        }
+    });
+
+    // update layers
+    for (const stage of config.stages) {
+        const elements = [];
+        const layer = stage.layer;
+        // level 0 layers get a first element-less call
+        layer.update(context, layer).forEach(e => elements.push(e));
+
+        for (let i = 0; i < elements.length; i++) {
+            const element = elements[i];
+
+            // update this element
+            const newElements = layer.update(context, layer, element);
+
+            for (const s of stage.children) {
+                updateElement(context, s.layer, element, s.children);
+            }
+
+            // append elements to update queue
+            if (newElements) {
+                newElements.forEach(e => elements.push(e));
             }
         }
     }
@@ -199,28 +219,6 @@ Scene.prototype.scene3D = function scene3D() {
 };
 
 /**
- * @documentation: Ajoute des Layers dans la scène.
- *
- * @param node {[object Object]}
- */
-Scene.prototype.add = function add(node, nodeProcess) {
-    if (node instanceof Globe) {
-        this.map = node;
-        nodeProcess = nodeProcess || new NodeProcess(this, this.currentCamera(), node.ellipsoid);
-    }
-
-    this.layers.push({
-        node,
-        process: nodeProcess,
-    });
-    this.gfxEngine.add3DScene(node.getMesh());
-};
-
-Scene.prototype.getMap = function getMap() {
-    return this.map;
-};
-
-/**
  * @documentation: Retire des layers de la scène
  *
  * @param layer {[object Object]}
@@ -240,10 +238,18 @@ Scene.prototype.select = function select(/* layers*/) {
 };
 
 Scene.prototype.selectNodeId = function selectNodeId(id) {
-    this.browserScene.selectedNodeId = id;
+    // browse three.js scene, and mark selected node
+    this.gfxEngine.scene3D.traverse((node) => {
+        // only take of selectable nodes
+        if (node.setSelected) {
+            node.setSelected(node.id === id);
+        }
+    });
 };
 
-Scene.prototype.setStreetLevelImageryOn = function setStreetLevelImageryOn(value) {
+Scene.prototype.setStreetLevelImageryOn = function setStreetLevelImageryOn(/* value */) {
+    // TODO
+    /*
     if (value) {
         if (this.layers[1]) {
             this.layers[1].node.visible = true;
@@ -262,6 +268,7 @@ Scene.prototype.setStreetLevelImageryOn = function setStreetLevelImageryOn(value
     }
 
     this.updateScene3D();
+    */
 };
 
 Scene.prototype.setLightingPos = function setLightingPos(pos) {

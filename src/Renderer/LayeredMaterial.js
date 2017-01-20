@@ -20,7 +20,7 @@ emptyTexture.level = EMPTY_TEXTURE_LEVEL;
 const layerTypesCount = 2;
 var vector = new THREE.Vector3(0.0, 0.0, 0.0);
 var vector4 = new THREE.Vector4(0.0, 0.0, 0.0, 0.0);
-var showDebug = false;
+var showDebug = true;
 var fooTexture;
 
 export const l_ELEVATION = 0;

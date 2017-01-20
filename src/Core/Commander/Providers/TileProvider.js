@@ -14,16 +14,9 @@
  */
 
 import Provider from 'Core/Commander/Providers/Provider';
-import Projection from 'Core/Geographic/Projection';
-import BuilderEllipsoidTile from 'Globe/BuilderEllipsoidTile';
 
-function TileProvider(ellipsoid) {
+function TileProvider() {
     Provider.call(this, null);
-
-    this.projection = new Projection();
-    this.builder = new BuilderEllipsoidTile(ellipsoid, this.projection);
-
-    this.nNode = 0;
 }
 
 TileProvider.prototype = Object.create(Provider.prototype);
@@ -46,20 +39,23 @@ TileProvider.prototype.executeCommand = function executeCommand(command) {
         segment: 16,
     };
 
-    var tile = new command.type(params, this.builder);
+    var tile = new command.type(params, command.layer.builder);
 
-    tile.setUuid(this.nNode++);
-    tile.link = parent.link;
+    tile.layer = command.layer.id;
+    tile.layers.set(command.threejsLayer);
+    tile.setUuid();
     tile.geometricError = Math.pow(2, (18 - params.level));
 
-    parent.worldToLocal(params.center);
+    if (parent) {
+        parent.worldToLocal(params.center);
+    }
 
     tile.position.copy(params.center);
     tile.setVisibility(false);
-
-    parent.add(tile);
     tile.updateMatrix();
-    tile.updateMatrixWorld();
+
+    // TODO: copy textures from parent
+    // maybe add a compute_sub_uv command type?
 
     return Promise.resolve(tile);
 };

@@ -5,7 +5,6 @@
  */
 
 
-import NodeMesh from 'Renderer/NodeMesh';
 import * as THREE from 'three';
 import WMS_Provider from 'Core/Commander/Providers/WMS_Provider';
 import CloudsFS from 'Renderer/Shader/CloudsFS.glsl';
@@ -13,7 +12,7 @@ import CloudsVS from 'Renderer/Shader/CloudsVS.glsl';
 import { LIGHTING_POSITION } from 'Globe/Atmosphere';
 
 function Clouds(/* size*/) {
-    NodeMesh.call(this);
+    THREE.Mesh.call(this);
 
     this.providerWMS = new WMS_Provider({});
     this.loader = new THREE.TextureLoader();
@@ -58,7 +57,7 @@ function Clouds(/* size*/) {
     this.visible = false;
 }
 
-Clouds.prototype = Object.create(NodeMesh.prototype);
+Clouds.prototype = Object.create(THREE.Mesh.prototype);
 Clouds.prototype.constructor = Clouds;
 
 

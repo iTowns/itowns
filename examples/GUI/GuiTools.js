@@ -35,14 +35,14 @@ GuiTools.prototype.addImageryLayerGUI = function addImageryLayerGUI(layer) {
         this.api.setLayerOpacity(layer.id, value);
     });
     folder.add({ frozen: false }, 'frozen').onChange((value) => {
-        this.api.scene.getMap().layersConfiguration.setLayerFreeze(layer.id, value);
+        this.api.scene.layersConfiguration.setLayerFreeze(layer.id, value);
     });
 };
 
 GuiTools.prototype.addElevationLayerGUI = function addElevationLayerGUI(layer) {
     var folder = this.elevationGui.addFolder(layer.id);
     folder.add({ frozen: false }, 'frozen').onChange((value) => {
-        this.api.scene.getMap().layersConfiguration.setLayerFreeze(layer.id, value);
+        this.api.scene.layersConfiguration.setLayerFreeze(layer.id, value);
     });
 };
 

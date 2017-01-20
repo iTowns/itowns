@@ -5,7 +5,6 @@
  */
 
 
-import NodeMesh from 'Renderer/NodeMesh';
 import * as THREE from 'three';
 import Sky from 'Globe/SkyShader';
 import skyFS from 'Renderer/Shader/skyFS.glsl';
@@ -18,7 +17,7 @@ import GlowVS from 'Renderer/Shader/GlowVS.glsl';
 export const LIGHTING_POSITION = new THREE.Vector3(1, 0, 0);
 
 function Atmosphere(ellipsoid) {
-    NodeMesh.call(this);
+    THREE.Mesh.call(this);
 
     var size = ellipsoid.size;
 
@@ -274,7 +273,7 @@ function Atmosphere(ellipsoid) {
 */
 }
 
-Atmosphere.prototype = Object.create(NodeMesh.prototype);
+Atmosphere.prototype = Object.create(THREE.Mesh.prototype);
 Atmosphere.prototype.constructor = Atmosphere;
 
 Atmosphere.prototype.setRealisticOn = function setRealisticOn(bool) {

@@ -20,6 +20,7 @@ Projection.prototype.WGS84ToY = function WGS84ToY(latitude) {
 };
 
 Projection.prototype.WGS84ToOneSubY = function WGS84ToOneSubY(latitude) {
+    // TODO remove me
     return 0.5 + Math.log(Math.tan(MathExt.PI_OV_FOUR + latitude * 0.5)) * MathExt.INV_TWO_PI;
 };
 
