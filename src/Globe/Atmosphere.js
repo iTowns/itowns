@@ -6,7 +6,6 @@
 
 
 import * as THREE from 'three';
-import NodeMesh from '../Renderer/NodeMesh';
 import Sky from './SkyShader';
 import skyFS from '../Renderer/Shader/skyFS.glsl';
 import skyVS from '../Renderer/Shader/skyVS.glsl';
@@ -19,7 +18,7 @@ import { ellipsoidSizes } from '../Core/Geographic/Coordinates';
 export const LIGHTING_POSITION = new THREE.Vector3(1, 0, 0);
 
 function Atmosphere() {
-    NodeMesh.call(this);
+    THREE.Mesh.call(this);
 
     this.realistic = false;
     this.sphereSun = null;
@@ -178,7 +177,7 @@ function Atmosphere() {
     uniforms.up.value = new THREE.Vector3(); // no more necessary, estimate normal from cam..
 }
 
-Atmosphere.prototype = Object.create(NodeMesh.prototype);
+Atmosphere.prototype = Object.create(THREE.Mesh.prototype);
 Atmosphere.prototype.constructor = Atmosphere;
 
 Atmosphere.prototype.setRealisticOn = function setRealisticOn(bool) {

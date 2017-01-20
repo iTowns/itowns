@@ -43,13 +43,9 @@ and open the template in the editor.
             // iTowns namespace defined here
             const viewerDiv = document.getElementById('viewerDiv');
             const menuGlobe = new GuiTools(itowns.viewer, 'menuDiv');
-            const scene = itowns.viewer.createSceneGlobe(positionOnGlobe, viewerDiv);
-            itowns.debug = new Debug(scene);
 
-            const wgs84TileLayer = {
-                protocol: 'tile',
-                id: 'wgs84',
-            };
+            const globeLayer = itowns.viewer.createSceneGlobe('globe', positionOnGlobe, viewerDiv);
+            itowns.debug = new Debug(itowns.viewer.scene);
 
             const urlImageryLayers = [];
             const urlElevationLayers = [];
@@ -62,14 +58,11 @@ and open the template in the editor.
             urlElevationLayers.push('examples/layers/JSONLayers/IGN_MNT.json');
             urlElevationLayers.push('examples/layers/JSONLayers/IGN_MNT_HIGHRES.json');
 
-            itowns.viewer.addGeometryLayer(wgs84TileLayer);
-            const imageryPromise = itowns.viewer.addImageryLayersFromJSONArray(urlImageryLayers);
-            const elevationPromise = itowns.viewer.addElevationLayersFromJSONArray(urlElevationLayers);
+            const imageryPromise = itowns.viewer.addImageryLayersFromJSONArray(urlImageryLayers, globeLayer.id);
+            const elevationPromise = itowns.viewer.addElevationLayersFromJSONArray(urlElevationLayers, globeLayer.id);
 
             imageryPromise.then((layersColors) => { menuGlobe.addImageryLayersGUI(layersColors); });
             elevationPromise.then((layersElevations) => { menuGlobe.addElevationLayersGUI(layersElevations); });
-
-            Promise.all([imageryPromise, elevationPromise]).then(() => itowns.viewer.init());
 
             menuGlobe.addGUI('RealisticLighting', false,
                 (newValue) => { itowns.viewer.setRealisticLightingOn(newValue); });
@@ -78,6 +71,8 @@ and open the template in the editor.
                 // eslint-disable-next-line no-console
                 console.info('Globe initialized');
             });
+
+            itowns.viewer.update();
 
 </script>
     </body>

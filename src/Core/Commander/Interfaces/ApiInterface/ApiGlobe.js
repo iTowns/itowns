@@ -6,7 +6,7 @@
 
 import CustomEvent from 'custom-event';
 import Scene from '../../../../Scene/Scene';
-import Globe from '../../../../Globe/Globe';
+import { GeometryLayer, ImageryLayers } from '../../../../Scene/Layer';
 import WMTS_Provider from '../../Providers/WMTS_Provider';
 import WMS_Provider from '../../Providers/WMS_Provider';
 import TileProvider from '../../Providers/TileProvider';
@@ -15,6 +15,13 @@ import { C, ellipsoidSizes } from '../../../Geographic/Coordinates';
 import Fetcher from '../../Providers/Fetcher';
 import { STRATEGY_MIN_NETWORK_TRAFFIC } from '../../../../Scene/LayerUpdateStrategy';
 import GlobeControls from '../../../../Renderer/ThreeExtended/GlobeControls';
+import { processTiledGeometryNode, initTiledGeometryLayer } from '../../../../Process/TiledNodeProcessing';
+import { updateLayeredMaterialNodeImagery, updateLayeredMaterialNodeElevation } from '../../../../Process/LayeredMaterialNodeProcessing';
+import { globeCulling, preGlobeUpdate, globeSubdivisionControl, globeSchemeTileWMTS, globeSchemeTile1 } from '../../../../Process/GlobeTileProcessing';
+import BuilderEllipsoidTile from '../../../../Globe/BuilderEllipsoidTile';
+import Atmosphere from '../../../../Globe/Atmosphere';
+import Clouds from '../../../../Globe/Clouds';
+import CoordStars from '../../../../Core/Geographic/CoordStars';
 
 var sceneIsLoaded = false;
 export const INITIALIZED_EVENT = 'initialized';
@@ -75,29 +82,6 @@ function preprocessLayer(layer, provider) {
 }
 
 /**
- * Init the geometry layer of the Scene.
- */
-ApiGlobe.prototype.init = function init() {
-    const map = this.scene.getMap();
-    map.tiles.init(map.layersConfiguration.getGeometryLayers()[0], map.layersConfiguration.lightingLayers[0]);
-};
-
-/**
- * Add the geometry layer to the scene.
- */
-ApiGlobe.prototype.addGeometryLayer = function addGeometryLayer(layer) {
-    preprocessLayer(layer, this.scene.scheduler.getProtocolProvider(layer.protocol));
-    const map = this.scene.getMap();
-    if (this.getLayerById(layer.id)) {
-      // eslint-disable-next-line no-console
-        console.error(`Error : id "${layer.id}" already exist, WARNING your layer isn't added`);
-    } else {
-        map.layersConfiguration.addGeometryLayer(layer);
-        this.viewerDiv.dispatchEvent(eventLayerAdded);
-    }
-};
-
-/**
  * The intellectual property rights
  * @typedef {Object} Attribution
  * @property {string} name
@@ -148,16 +132,23 @@ ApiGlobe.prototype.addGeometryLayer = function addGeometryLayer(layer) {
 
 ApiGlobe.prototype.addImageryLayer = function addImageryLayer(layer) {
     preprocessLayer(layer, this.scene.scheduler.getProtocolProvider(layer.protocol));
-    if (this.getLayerById(layer.id)) {
-        // eslint-disable-next-line no-console
-        console.error(`Error : id "${layer.id}" already exist, WARNING your layer isn't added`);
-    } else {
-        this.scene.getMap().layersConfiguration.addColorLayer(layer);
-        this.scene.notifyChange(1, true);
-        this.setSceneLoaded().then(() => {
-            this.viewerDiv.dispatchEvent(eventLayerAdded);
-        });
-    }
+    // assume all imageryLayer for globe use LayeredMaterial
+    layer.update = updateLayeredMaterialNodeImagery;
+
+    this.scene._geometryLayers[0].attach(layer);
+    layer.type = 'color';
+    layer.frozen = false;
+    layer.visible = true;
+    layer.opacity = 1.0;
+    const colorLayerCount = this.scene.getAttachedLayers(l => l.type === 'color').length;
+    layer.sequence = colorLayerCount - 1;
+
+    this.scene.notifyChange(1, true);
+    this.setSceneLoaded().then(() => {
+        this.viewerDiv.dispatchEvent(eventLayerAdded);
+    });
+
+    return layer;
 };
 
 /**
@@ -168,9 +159,7 @@ ApiGlobe.prototype.addImageryLayer = function addImageryLayer(layer) {
  */
 
 ApiGlobe.prototype.addImageryLayerFromJSON = function addImageryLayerFromJSON(url) {
-    return Fetcher.json(url).then((result) => {
-        this.addImageryLayer(result);
-    });
+    return Fetcher.json(url).then(result => this.addImageryLayer(result));
 };
 
 /**
@@ -179,60 +168,14 @@ ApiGlobe.prototype.addImageryLayerFromJSON = function addImageryLayerFromJSON(ur
  * @param {Layers} array - An array of JSON files.
  * @return     {layer}  The Layers.
  */
-
 ApiGlobe.prototype.addImageryLayersFromJSONArray = function addImageryLayersFromJSONArray(urls) {
-    var proms = [];
+    const proms = [];
 
-    for (var i = 0; i < urls.length; i++) {
-        proms.push(Fetcher.json(urls[i]).then(this.addImageryLayer.bind(this)));
+    for (const url of urls) {
+        proms.push(Fetcher.json(url).then(layer => this.addImageryLayer(layer)));
     }
 
-    return Promise.all(proms).then(() => this.scene.getMap().layersConfiguration.getColorLayers());
-};
-
-ApiGlobe.prototype.moveLayerUp = function moveLayerUp(layerId) {
-    this.scene.getMap().layersConfiguration.moveLayerUp(layerId);
-    this.scene.getMap().updateLayersOrdering();
-    this.scene.renderScene3D();
-};
-
-ApiGlobe.prototype.moveLayerDown = function moveLayerDown(layerId) {
-    this.scene.getMap().layersConfiguration.moveLayerDown(layerId);
-    this.scene.getMap().updateLayersOrdering();
-    this.scene.renderScene3D();
-};
-
-/**
- * Moves a specific layer to a specific index in the layer list. This function has no effect if the layer is moved to its current index.
- * @constructor
- * @param      {string}  layerId   The layer's idendifiant
- * @param      {number}  newIndex   The new index
- */
-ApiGlobe.prototype.moveLayerToIndex = function moveLayerToIndex(layerId, newIndex) {
-    this.scene.getMap().layersConfiguration.moveLayerToIndex(layerId, newIndex);
-    this.scene.getMap().updateLayersOrdering();
-    this.scene.renderScene3D();
-    eventLayerChangedIndex.layerIndex = newIndex;
-    eventLayerChangedIndex.layerId = layerId;
-    this.viewerDiv.dispatchEvent(eventLayerChangedIndex);
-};
-
-/**
- * Removes a specific imagery layer from the current layer list. This removes layers inserted with addLayer().
- * @constructor
- * @param      {string}   id      The identifier
- * @return     {boolean}  { description_of_the_return_value }
- */
-ApiGlobe.prototype.removeImageryLayer = function removeImageryLayer(id) {
-    if (this.scene.getMap().layersConfiguration.removeColorLayer(id)) {
-        this.scene.getMap().removeColorLayer(id);
-        this.scene.renderScene3D();
-        eventLayerRemoved.layer = id;
-        this.viewerDiv.dispatchEvent(eventLayerRemoved);
-        return true;
-    }
-
-    return false;
+    return Promise.all(proms);
 };
 
 /**
@@ -249,18 +192,22 @@ ApiGlobe.prototype.addElevationLayer = function addElevationLayer(layer) {
     if (layer.protocol === 'wmts' && layer.options.tileMatrixSet !== 'WGS84G') {
         throw new Error('Only WGS84G tileMatrixSet is currently supported for WMTS elevation layers');
     }
-
     preprocessLayer(layer, this.scene.scheduler.getProtocolProvider(layer.protocol));
-    if (this.getLayerById(layer.id)) {
-      // eslint-disable-next-line no-console
-        console.error(`Error : id "${layer.id}" already exist, WARNING your layer isn't added`);
-    } else {
-        this.scene.getMap().layersConfiguration.addElevationLayer(layer);
-        this.scene.notifyChange(1, true);
-        this.setSceneLoaded().then(() => {
-            this.viewerDiv.dispatchEvent(eventLayerAdded);
-        });
-    }
+
+    // assume all elevation layer for globe use LayeredMaterial
+    layer.update = updateLayeredMaterialNodeElevation;
+
+    this.scene._geometryLayers[0].attach(layer);
+    layer.type = 'elevation';
+    layer.frozen = false;
+
+    this.scene.notifyChange(1, true);
+    this.setSceneLoaded().then(() => {
+        this.viewerDiv.dispatchEvent(eventLayerAdded);
+    });
+
+
+    return layer;
 };
 
 /**
@@ -276,9 +223,7 @@ ApiGlobe.prototype.addElevationLayer = function addElevationLayer(layer) {
  */
 
 ApiGlobe.prototype.addElevationLayersFromJSON = function addElevationLayersFromJSON(url) {
-    return Fetcher.json(url).then((result) => {
-        this.addElevationLayer(result);
-    });
+    return Fetcher.json(url).then(result => this.addElevationLayer(result));
 };
 
 /**
@@ -296,11 +241,86 @@ ApiGlobe.prototype.addElevationLayersFromJSON = function addElevationLayersFromJ
 ApiGlobe.prototype.addElevationLayersFromJSONArray = function addElevationLayersFromJSONArray(urls) {
     var proms = [];
 
-    for (var i = 0; i < urls.length; i++) {
-        proms.push(Fetcher.json(urls[i]).then(this.addElevationLayer.bind(this)));
+    for (const url of urls) {
+        proms.push(Fetcher.json(url).then(layer => this.addElevationLayer(layer)));
     }
 
-    return Promise.all(proms).then(() => this.scene.getMap().layersConfiguration.getElevationLayers());
+    return Promise.all(proms);
+};
+
+function updateLayersOrdering(geometryLayer, imageryLayers) {
+    var sequence = ImageryLayers.getColorLayersIdOrderedBySequence(imageryLayers);
+
+    var cO = function cO(object) {
+        if (object.changeSequenceLayers)
+            { object.changeSequenceLayers(sequence); }
+    };
+
+    for (const node of geometryLayer.level0Nodes) {
+        node.traverse(cO);
+    }
+}
+
+ApiGlobe.prototype.moveLayerUp = function moveLayerUp(layerId) {
+    const imageryLayers = this.scene.getAttachedLayers(l => l.type === 'color');
+    const layer = this.getLayerById(layerId);
+    ImageryLayers.moveLayerUp(layer, imageryLayers);
+    updateLayersOrdering(this.scene._geometryLayers[0], imageryLayers);
+    this.scene.renderScene3D();
+};
+
+ApiGlobe.prototype.moveLayerDown = function moveLayerDown(layerId) {
+    const imageryLayers = this.scene.getAttachedLayers(l => l.type === 'color');
+    const layer = this.getLayerById(layerId);
+    ImageryLayers.moveLayerDown(layer, imageryLayers);
+    updateLayersOrdering(this.scene._geometryLayers[0], imageryLayers);
+    this.scene.renderScene3D();
+};
+
+/**
+ * Moves a specific layer to a specific index in the layer list. This function has no effect if the layer is moved to its current index.
+ * @constructor
+ * @param      {string}  layerId   The layer's idendifiant
+ * @param      {number}  newIndex   The new index
+ */
+ApiGlobe.prototype.moveLayerToIndex = function moveLayerToIndex(layerId, newIndex) {
+    const imageryLayers = this.scene.getAttachedLayers(l => l.type === 'color');
+    const layer = this.getLayerById(layerId);
+    ImageryLayers.moveLayerToIndex(layer, newIndex, imageryLayers);
+    updateLayersOrdering(this.scene._geometryLayers[0], imageryLayers);
+    this.scene.renderScene3D();
+
+    eventLayerChangedIndex.layerIndex = newIndex;
+    eventLayerChangedIndex.layerId = layerId;
+    this.viewerDiv.dispatchEvent(eventLayerChangedIndex);
+};
+
+/**
+ * Removes a specific imagery layer from the current layer list. This removes layers inserted with addLayer().
+ * @constructor
+ * @param      {string}   id      The identifier
+ * @return     {boolean}  { description_of_the_return_value }
+ */
+ApiGlobe.prototype.removeImageryLayer = function removeImageryLayer(id) {
+    const layer = this.getLayerById(id);
+    if (this.scene._geometryLayers[0].detach(layer)) {
+        var cO = function cO(object) {
+            if (object.removeColorLayer) {
+                object.removeColorLayer(layer.id);
+            }
+        };
+
+        for (const root of this.scene._geometryLayers[0].level0Nodes) {
+            root.traverse(cO);
+        }
+
+        this.scene.renderScene3D();
+        eventLayerRemoved.layer = id;
+        this.viewerDiv.dispatchEvent(eventLayerRemoved);
+        return true;
+    }
+
+    return false;
 };
 
 /**
@@ -355,8 +375,21 @@ ApiGlobe.prototype.getMaxZoomLevel = function getMaxZoomLevel(index) {
  * @return     {layer}  The Layers.
  */
 ApiGlobe.prototype.getImageryLayers = function getImageryLayers() {
-    var map = this.scene.getMap();
-    return map.layersConfiguration.getColorLayers();
+    return this.scene.getAttachedLayers(layer => layer.type === 'color');
+};
+
+ApiGlobe.prototype.initProviders = function initProviders(scene) {
+    var gLDebug = false; // true to support GLInspector addon
+
+    // Register all providers
+    var wmtsProvider = new WMTS_Provider({
+        support: gLDebug,
+    });
+
+    scene.scheduler.addProtocolProvider('wmts', wmtsProvider);
+    scene.scheduler.addProtocolProvider('wmtsc', wmtsProvider);
+    scene.scheduler.addProtocolProvider('tile', new TileProvider());
+    scene.scheduler.addProtocolProvider('wms', new WMS_Provider({ support: gLDebug }));
 };
 
 /**
@@ -368,10 +401,10 @@ ApiGlobe.prototype.getImageryLayers = function getImageryLayers() {
  * @params {Div} string.
  */
 
-ApiGlobe.prototype.createSceneGlobe = function createSceneGlobe(coordCarto, viewerDiv) {
+ApiGlobe.prototype.createSceneGlobe = function createSceneGlobe(globeLayerId, coordCarto, viewerDiv) {
     // TODO: Normalement la creation de scene ne doit pas etre ici....
     // Deplacer plus tard
-
+    this.globeLayerId = globeLayerId;
     this.viewerDiv = viewerDiv;
     this.sceneLoadedDeferred = defer();
 
@@ -395,19 +428,7 @@ ApiGlobe.prototype.createSceneGlobe = function createSceneGlobe(coordCarto, view
     // https://github.com/iTowns/itowns2/pull/246
     this.scene = Scene('EPSG:4978', positionCamera, viewerDiv, debugMode, gLDebug);
 
-    var map = new Globe(gLDebug);
-
-    this.scene.add(map);
-
-    // Register all providers
-    var wmtsProvider = new WMTS_Provider({
-        support: map.gLDebug,
-    });
-
-    this.scene.scheduler.addProtocolProvider('wmts', wmtsProvider);
-    this.scene.scheduler.addProtocolProvider('wmtsc', wmtsProvider);
-    this.scene.scheduler.addProtocolProvider('tile', new TileProvider());
-    this.scene.scheduler.addProtocolProvider('wms', new WMS_Provider({ support: map.gLDebug }));
+    this.initProviders(this.scene);
 
     this.setSceneLoaded().then(() => {
         this.scene.currentControls().updateCameraTransformation();
@@ -438,7 +459,68 @@ ApiGlobe.prototype.createSceneGlobe = function createSceneGlobe(coordCarto, view
     this.scene.controls.maxDistance = size * 8.0;
     this.scene.controls.addEventListener('change', this.scene.gfxEngine.update);
 
-    return this.scene;
+    const nodeInitFn = function nodeInitFn(context, layer, parent, node) {
+        node.materials[0].setLightingOn(layer.lighting.enable);
+        node.materials[0].uniforms.lightPosition.value = layer.lighting.position;
+
+        if (__DEBUG__) {
+            node.material.uniforms.showOutline = { value: layer.showOutline || false };
+            node.material.wireframe = layer.wireframe || false;
+        }
+    };
+
+    const SSE_SUBDIVISION_THRESHOLD = 6.0;
+
+
+    // init globe layer with default parameter
+    const wgs84TileLayer = new GeometryLayer(globeLayerId);
+
+    const initLayer = initTiledGeometryLayer(globeSchemeTileWMTS(globeSchemeTile1));
+
+    wgs84TileLayer.preUpdate = (context, layer) => {
+        if (layer.level0Nodes === undefined) {
+            initLayer(context, layer);
+        }
+        preGlobeUpdate(context);
+        return layer.level0Nodes;
+    };
+    wgs84TileLayer.update =
+        processTiledGeometryNode(
+            globeCulling,
+            globeSubdivisionControl(2, 17, SSE_SUBDIVISION_THRESHOLD),
+            nodeInitFn);
+
+    // provider options
+    wgs84TileLayer.builder = new BuilderEllipsoidTile();
+
+    this.scene.addGeometryLayer(wgs84TileLayer);
+
+    const threejsLayer = this.scene.getUniqueThreejsLayer();
+    wgs84TileLayer.type = 'geometry';
+    wgs84TileLayer.protocol = 'tile';
+    wgs84TileLayer.threejsLayer = 'threejsLayer';
+    wgs84TileLayer.lighting = {
+        enable: false,
+        position: { x: -0.5, y: 0.0, z: 1.0 },
+    };
+
+    // enable by default
+    this.scene.currentCamera().camera3D.layers.enable(threejsLayer);
+
+    this.atmosphere = new Atmosphere();
+    this.clouds = new Clouds();
+    this.atmosphere.add(this.clouds);
+
+    const atmosphereLayer = this.scene.getUniqueThreejsLayer();
+    this.atmosphere.traverse((obj) => { obj.layers.set(atmosphereLayer); });
+    this.scene.currentCamera().camera3D.layers.enable(atmosphereLayer);
+
+    this.scene.gfxEngine.scene3D.add(this.atmosphere);
+
+    // enable only globe-rendering when performing picking
+    this.scene.controls.controlsActiveLayers = 1 << wgs84TileLayer.threejsLayer;
+
+    return wgs84TileLayer;
 };
 
 ApiGlobe.prototype.update = function update() {
@@ -446,26 +528,44 @@ ApiGlobe.prototype.update = function update() {
 };
 
 ApiGlobe.prototype.setRealisticLightingOn = function setRealisticLightingOn(value) {
-    this.scene.setLightingPos();
-    this.scene.getMap().setRealisticLightingOn(value);
-    const lightingLayers = this.scene.getMap().layersConfiguration.lightingLayers[0];
-    lightingLayers.enable = value;
-    lightingLayers.position = this.scene.lightingPos;
-    this.scene.browserScene.updateMaterialUniform('lightingEnabled', value);
+    const coSun = CoordStars.getSunPositionInScene(new Date().getTime(), 48.85, 2.35).normalize();
+
+    this.lightingPos = coSun.normalize();
+
+    const lighting = this.scene._geometryLayers[0].lighting;
+    lighting.enable = value;
+    lighting.position = coSun;
+
+    this.atmosphere.updateLightingPos(coSun);
+    this.atmosphere.setRealisticOn(value);
+    this.clouds.updateLightingPos(coSun);
+    this.clouds.setLightingOn(value);
+
+    this.scene.updateMaterialUniform('lightingEnabled', value);
+    this.scene.updateMaterialUniform('lightPosition', coSun);
     this.scene.renderScene3D();
 };
 
 /**
  * Sets the visibility of a layer. If the layer is not visible in the scene, this function will no effect until the camera looks at the layer.
  * @constructor
- * @param {id} string.
+ * @param {layer} a layer.
  * @params {visible} boolean.
  */
 
-ApiGlobe.prototype.setLayerVisibility = function setLayerVisibility(id, visible) {
-    this.scene.getMap().setLayerVisibility(id, visible);
-    this.update();
-    eventLayerChangedVisible.layerId = id;
+ApiGlobe.prototype.setLayerVisibility = function setLayerVisibility(layer, visible) {
+    layer.visible = visible;
+
+    if (layer.threejsLayer != undefined) {
+        if (visible) {
+            this.scene.camera.camera3D.layers.enable(layer.threejsLayer);
+        } else {
+            this.scene.camera.camera3D.layers.disable(layer.threejsLayer);
+        }
+    }
+
+    this.scene.notifyChange(0, true);
+    eventLayerChangedVisible.layerId = layer.id;
     eventLayerChangedVisible.visible = visible;
     this.viewerDiv.dispatchEvent(eventLayerChangedVisible);
 };
@@ -473,14 +573,14 @@ ApiGlobe.prototype.setLayerVisibility = function setLayerVisibility(id, visible)
 /**
  * Sets the opacity of a layer. If the layer is not visible in the scene, this function will no effect until the layer becomes visible.
  * @constructor
- * @param {id} string.
+ * @param {layer} a layer.
  * @params {visible} boolean.
  */
 
-ApiGlobe.prototype.setLayerOpacity = function setLayerOpacity(id, opacity) {
-    this.scene.getMap().setLayerOpacity(id, opacity);
-    this.scene.renderScene3D();
-    eventLayerChangedOpacity.layerId = id;
+ApiGlobe.prototype.setLayerOpacity = function setLayerOpacity(layer, opacity) {
+    layer.opacity = opacity;
+    this.scene.notifyChange(0, true);
+    eventLayerChangedOpacity.layerId = layer.id;
     eventLayerChangedOpacity.opacity = opacity;
     this.viewerDiv.dispatchEvent(eventLayerChangedOpacity);
 };
@@ -793,7 +893,7 @@ ApiGlobe.prototype.pan = function pan(pVector) {
  * @return     {number}  The zoom level.
  */
 ApiGlobe.prototype.getZoomLevel = function getZoomLevel() {
-    return this.scene.getMap().getZoomLevel();
+    return this.scene.getZoomLevel();
 };
 
 /**
@@ -985,9 +1085,8 @@ ApiGlobe.prototype.removeEventListenerLayerChanged = function removeEventListene
  */
 
 ApiGlobe.prototype.getLayersAttribution = function getLayersAttribution() {
-    const lc = this.scene.getMap().layersConfiguration;
     const map = new Map();
-    [...lc.getColorLayers(), ...lc.getElevationLayers()].forEach((l) => {
+    this.scene.getAttachedLayers().forEach((l) => {
         if (l.options.attribution) {
             map.set(l.options.attribution.name, l.options.attribution);
         }
@@ -1002,15 +1101,12 @@ ApiGlobe.prototype.getLayersAttribution = function getLayersAttribution() {
  */
 
 ApiGlobe.prototype.getLayers = function getLayers(type) {
-    const lc = this.scene.getMap().layersConfiguration;
-    if (!type) {
-        return lc.getLayers();
-    } else if (type === 'color') {
-        return lc.getColorLayers();
-    } else if (type === 'elevation') {
-        return lc.getElevationLayers();
-    } else if (type === 'geometry') {
-        return lc.getGeometryLayers();
+    if (type === undefined) {
+        return [...this.scene._geometryLayers, ...this.scene.getAttachedLayers()];
+    } else if (type == 'geometry') {
+        return this.scene._geometryLayers;
+    } else {
+        return this.scene.getAttachedLayers(l => l.type === type);
     }
 };
 
@@ -1020,14 +1116,22 @@ ApiGlobe.prototype.getLayers = function getLayers(type) {
  */
 
 ApiGlobe.prototype.getLayerById = function getLayerById(pId) {
-    const lc = this.scene.getMap().layersConfiguration.getLayers();
-    return lc.find(l => l.id === pId);
+    const att = this.scene.getAttachedLayers(l => l.id === pId);
+    if (att.length == 1) {
+        return att[0];
+    }
+    for (const geom of this.scene._geometryLayers) {
+        if (geom.id === pId) {
+            return geom;
+        }
+    }
+    throw new Error(`No layer with id = '${pId}' found`);
 };
 
 ApiGlobe.prototype.loadGPX = function loadGPX(url) {
     loadGpx(url).then((gpx) => {
         if (gpx) {
-            this.scene.getMap().gpxTracks.children[0].add(gpx);
+            this.scene.gpxTracks.children[0].add(gpx);
         }
     });
 

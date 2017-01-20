@@ -8,15 +8,8 @@
 
 import CustomEvent from 'custom-event';
 import c3DEngine from '../Renderer/c3DEngine';
-import Globe from '../Globe/Globe';
 import Scheduler from '../Core/Commander/Scheduler';
-import BrowseTree from './BrowseTree';
-import NodeProcess from './NodeProcess';
-import Quadtree from './Quadtree';
 import CoordStars from '../Core/Geographic/CoordStars';
-import { ellipsoidSizes } from '../Core/Geographic/Coordinates';
-import Layer from './Layer';
-import MobileMappingLayer from '../MobileMapping/MobileMappingLayer';
 import StyleManager from './Description/StyleManager';
 import Camera from '../Renderer/Camera';
 
@@ -52,9 +45,6 @@ function Scene(crs, positionCamera, viewerDiv, debugMode, gLDebug) {
         debugMode);
     this.camera.setPosition(positionCamera.as(crs).xyz());
 
-    this.layers = [];
-    this.map = null;
-
     this.cameras = null;
     this.selectNodes = null;
     this.scheduler = Scheduler(this);
@@ -65,7 +55,6 @@ function Scene(crs, positionCamera, viewerDiv, debugMode, gLDebug) {
     this.gLDebug = gLDebug;
 
     this.gfxEngine = c3DEngine(this, viewerDiv, debugMode, gLDebug);
-    this.browserScene = new BrowseTree(this.gfxEngine);
 
     this.needsRedraw = false;
     this.lastRenderTime = 0;
@@ -77,14 +66,11 @@ function Scene(crs, positionCamera, viewerDiv, debugMode, gLDebug) {
 
     this.viewerDiv = viewerDiv;
     this.renderingState = RENDERING_PAUSED;
-}
 
-Scene.prototype.constructor = Scene;
-/**
- */
-Scene.prototype.updateCommand = function updateCommand() {
-    // TODO: Implement Me
-};
+    this._geometryLayers = [];
+
+    this.nextThreejsLayer = 0;
+}
 
 /**
  * @documentation: return current camera
@@ -114,12 +100,8 @@ Scene.prototype.getStyles = function getStyles() {
     return this.stylesManager.getStyles();
 };
 
-Scene.prototype.getEllipsoid = function getEllipsoid() {
-    return this.ellipsoid;
-};
-
 Scene.prototype.size = function size() {
-    return ellipsoidSizes();
+    return this._size;
 };
 
 /**
@@ -151,28 +133,65 @@ Scene.prototype.scheduleUpdate = function scheduleUpdate(forceRedraw) {
 
     if (this.renderingState !== RENDERING_ACTIVE) {
         this.renderingState = RENDERING_ACTIVE;
+        if (__DEBUG__) {
+            document.title += ' ⌛';
+        }
 
         requestAnimationFrame(() => { this.step(); });
     }
 };
 
-Scene.prototype.update = function update() {
-    for (var l = 0; l < this.layers.length; l++) {
-        var layer = this.layers[l].node;
+Scene.prototype.addGeometryLayer = function addGeometryLayer(layer) {
+    if (typeof (layer.update) !== 'function') {
+        throw new Error('Cant add GeometryLayer: missing a update function');
+    }
+    if (typeof (layer.preUpdate) !== 'function') {
+        throw new Error('Cant add GeometryLayer: missing a preUpdate function');
+    }
+    this._geometryLayers.push(layer);
+};
 
-        for (var sl = 0; sl < layer.children.length; sl++) {
-            var sLayer = layer.children[sl];
-
-            if (sLayer instanceof Quadtree) {
-                this.browserScene.updateQuadtree(this.layers[l], this.map.layersConfiguration, this.currentCamera());
-            } else if (sLayer instanceof MobileMappingLayer) {
-                this.browserScene.updateMobileMappingLayer(sLayer, this.currentCamera());
-            } else if (sLayer instanceof Layer) {
-                this.browserScene.updateLayer(sLayer, this.currentCamera());
+Scene.prototype.getAttachedLayers = function getAttachedLayers(filter) {
+    const result = [];
+    for (const geometryLayer of this._geometryLayers) {
+        for (const attached of geometryLayer._attachedLayers) {
+            if (!filter || filter(attached, geometryLayer)) {
+                result.push(attached);
             }
         }
     }
+    return result;
 };
+
+function updateElements(context, geometryLayer, elements) {
+    if (!elements) {
+        return;
+    }
+    for (const element of elements) {
+        // update element
+        const newElementsToUpdate = geometryLayer.update(context, geometryLayer, element);
+
+        // update attached layers
+        for (const attachedLayer of geometryLayer._attachedLayers) {
+            attachedLayer.update(context, attachedLayer, element);
+        }
+        updateElements(context, geometryLayer, newElementsToUpdate);
+    }
+}
+
+Scene.prototype.update = function update() {
+    const context = {
+        camera: this.camera,
+        scheduler: this.scheduler,
+        scene: this,
+    };
+
+    for (const geometryLayer of this._geometryLayers) {
+        const elementsToUpdate = geometryLayer.preUpdate(context, geometryLayer);
+        updateElements(context, geometryLayer, elementsToUpdate);
+    }
+};
+
 
 Scene.prototype.step = function step() {
     // update data-structure
@@ -190,6 +209,10 @@ Scene.prototype.step = function step() {
 
         // reset rendering flag
         this.renderingState = RENDERING_PAUSED;
+
+        if (__DEBUG__) {
+            document.title = document.title.substr(0, document.title.length - 2);
+        }
     } else {
         const ts = Date.now();
 
@@ -217,82 +240,30 @@ Scene.prototype.scene3D = function scene3D() {
     return this.gfxEngine.scene3D;
 };
 
-/**
- * @documentation: Ajoute des Layers dans la scène.
- *
- * @param node {[object Object]}
- */
-Scene.prototype.add = function add(node, nodeProcess) {
-    if (node instanceof Globe) {
-        this.map = node;
-        nodeProcess = nodeProcess || new NodeProcess(this);
-    }
-
-    this.layers.push({
-        node,
-        process: nodeProcess,
-    });
-    this.gfxEngine.add3DScene(node.getMesh());
-};
-
-Scene.prototype.getMap = function getMap() {
-    return this.map;
-};
-
-/**
- * @documentation: Retire des layers de la scène
- *
- * @param layer {[object Object]}
- */
-Scene.prototype.remove = function remove(/* layer*/) {
-    // TODO: Implement Me
-
-};
-
-
-/**
- * @param layers {[object Object]}
- */
-Scene.prototype.select = function select(/* layers*/) {
-    // TODO: Implement Me
-
-};
-
 Scene.prototype.selectNodeId = function selectNodeId(id) {
-    this.browserScene.selectedNodeId = id;
-};
+    // browse three.js scene, and mark selected node
+    this.gfxEngine.scene3D.traverse((node) => {
+        // only take of selectable nodes
+        if (node.setSelected) {
+            node.setSelected(node.id === id);
 
-Scene.prototype.setStreetLevelImageryOn = function setStreetLevelImageryOn(value) {
-    if (value) {
-        if (this.layers[1]) {
-            this.layers[1].node.visible = true;
-            this.layers[1].node.children[0].visible = true;
-        } else {
-            var mobileMappingLayer = new MobileMappingLayer();
-            mobileMappingLayer.initiatePanoramic();
-
-            var immersive = new Layer();
-            immersive.add(mobileMappingLayer);
-            this.add(immersive);
+            if (node.id === id) {
+                // eslint-disable-next-line no-console
+                console.info(node);
+            }
         }
-    } else {
-        this.layers[1].node.visible = false;
-        this.layers[1].node.children[0].visible = false; // mobileMappingLayer
-    }
-
-    this.updateScene3D();
+    });
 };
 
-Scene.prototype.setLightingPos = function setLightingPos(pos) {
-    if (pos) {
-        this.lightingPos = pos;
-    } else {
-        const coSun = CoordStars.getSunPositionInScene(new Date().getTime(), 48.85, 2.35);
-        this.lightingPos = coSun.normalize();
-    }
-
-    this.browserScene.updateMaterialUniform('lightPosition', this.lightingPos.clone().normalize());
-    this.layers[0].node.updateLightingPos(this.lightingPos);
+Scene.prototype.updateMaterialUniform = function updateMaterialUniform(uniformName, value) {
+    this.gfxEngine.scene3D.traverse((obj) => {
+        if (!obj.material || !obj.material.uniforms) {
+            return;
+        }
+        if (uniformName in obj.material.uniforms) {
+            obj.material.uniforms[uniformName].value = value;
+        }
+    });
 };
 
 // Should be moved in time module: A single loop update registered object every n millisec
@@ -304,7 +275,7 @@ Scene.prototype.animateTime = function animateTime(value) {
             var nMilliSeconds = this.time;
             var coSun = CoordStars.getSunPositionInScene(new Date().getTime() + 3.6 * nMilliSeconds, 0, 0);
             this.lightingPos = coSun;
-            this.browserScene.updateMaterialUniform('lightPosition', this.lightingPos.clone().normalize());
+            this.updateMaterialUniform('lightPosition', this.lightingPos.clone().normalize());
             this.layers[0].node.updateLightingPos(this.lightingPos);
             if (this.orbitOn) { // ISS orbit is 0.0667 degree per second -> every 60th of sec: 0.00111;
                 var p = this.camera.camera3D.position;
@@ -325,6 +296,22 @@ Scene.prototype.animateTime = function animateTime(value) {
 Scene.prototype.orbit = function orbit(value) {
     // this.gfxEngine.controls = null;
     this.orbitOn = value;
+};
+
+Scene.prototype.getUniqueThreejsLayer = function getUniqueThreejsLayer() {
+    // We use three.js Object3D.layers feature to manage visibility of
+    // geometry layers; so we need an internal counter to assign a new
+    // one to each new geometry layer.
+    // Warning: only 32 ([0, 31]) different layers can exist.
+    if (this.nextThreejsLayer > 31) {
+        // eslint-disable-next-line no-console
+        console.warn('Too much three.js layers. Starting from now all of them will use layerMask = 31');
+        this.nextThreejsLayer = 31;
+    }
+
+    const result = this.nextThreejsLayer++;
+
+    return result;
 };
 
 export default function (crs, positionCamera, viewerDiv, debugMode, gLDebug) {

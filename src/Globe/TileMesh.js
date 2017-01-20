@@ -5,7 +5,6 @@
  */
 
 import * as THREE from 'three';
-import NodeMesh from '../Renderer/NodeMesh';
 import LayeredMaterial, { l_ELEVATION } from '../Renderer/LayeredMaterial';
 import GlobeDepthMaterial from '../Renderer/GlobeDepthMaterial';
 import MatteIdsMaterial from '../Renderer/MatteIdsMaterial';
@@ -14,7 +13,7 @@ import OGCWebServiceHelper from '../Core/Commander/Providers/OGCWebServiceHelper
 
 function TileMesh(geometry, params) {
     // Constructor
-    NodeMesh.call(this);
+    THREE.Mesh.call(this);
 
     this.matrixAutoUpdate = false;
     this.rotationAutoUpdate = false;
@@ -60,46 +59,31 @@ function TileMesh(geometry, params) {
 
     // Layer
     this.setDisplayed(false);
+
+    this.layerUpdateState = {};
 }
 
-TileMesh.prototype = Object.create(NodeMesh.prototype);
-
+TileMesh.prototype = Object.create(THREE.Mesh.prototype);
 TileMesh.prototype.constructor = TileMesh;
 
 TileMesh.prototype.dispose = function dispose() {
-    // TODO à mettre dans node mesh
     this.material.dispose();
     this.geometry.dispose();
     this.geometry = null;
     this.material = null;
 };
 
-TileMesh.prototype.setUuid = function setUuid(uuid) {
-    this.id = uuid;
-    this.materials[RendererConstant.FINAL].setUuid(uuid);
-    this.materials[RendererConstant.ID].setUuid(uuid);
+TileMesh.prototype.setUuid = function setUuid() {
+    this.materials[RendererConstant.FINAL].setUuid(this.id);
+    this.materials[RendererConstant.ID].setUuid(this.id);
 };
 
-TileMesh.prototype.getUuid = function getUuid(uuid) {
-    return this.materials[RendererConstant.ID].getUuid(uuid);
+TileMesh.prototype.getUuid = function getUuid() {
+    return this.materials[RendererConstant.ID].getUuid();
 };
 
-TileMesh.prototype.setLightingParameters = function setLightingParameters(lighting) {
-    const material = this.materials[RendererConstant.FINAL];
-    material.setLightingOn(lighting.enable);
-    material.uniforms.lightPosition.value = lighting.position;
-};
-/**
- *
- * @returns {undefined}     */
-TileMesh.prototype.disposeChildren = function disposeChildren() {
-    this.pendingSubdivision = false;
-
-    while (this.children.length > 0) {
-        const child = this.children[0];
-        this.remove(child);
-        child.dispose();
-    }
+TileMesh.prototype.isVisible = function isVisible() {
+    return this.visible;
 };
 
 TileMesh.prototype.setDisplayed = function setDisplayed(show) {
@@ -107,6 +91,15 @@ TileMesh.prototype.setDisplayed = function setDisplayed(show) {
         material.visible = show;
     }
 };
+
+TileMesh.prototype.setVisibility = function setVisibility(show) {
+    this.visible = show;
+};
+
+TileMesh.prototype.isDisplayed = function isDisplayed() {
+    return this.material.visible;
+};
+
 
 TileMesh.prototype.enableRTC = function enableRTC(enable) {
     this.materials[RendererConstant.FINAL].enableRTC(enable);
@@ -151,6 +144,7 @@ TileMesh.prototype.setTextureElevation = function setTextureElevation(elevation)
     this.materials[RendererConstant.DEPTH].uniforms.texturesCount.value = this.materials[RendererConstant.FINAL].loadedTexturesCount[0];
     this.materials[RendererConstant.ID].uniforms.texturesCount.value = this.materials[RendererConstant.FINAL].loadedTexturesCount[0];
 };
+
 
 TileMesh.prototype.setBBoxZ = function setBBoxZ(min, max) {
     if (Math.floor(min) !== Math.floor(this.bbox.bottom()) || Math.floor(max) !== Math.floor(this.bbox.top())) {

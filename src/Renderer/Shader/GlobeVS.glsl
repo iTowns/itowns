@@ -38,6 +38,8 @@ void main() {
 
         vec4 vPosition;
 
+        vNormal = normal;
+
         if(loadedTexturesCount[0] > 0)
         {
             vec2    vVv = vec2(
@@ -62,11 +64,10 @@ void main() {
                 float   dv  = max(texture2D( dTextures_00[0], vVv ).w, 0.);
             #endif
 
-            vNormal     = normal;
             vPosition   = vec4( position +  vNormal  * dv ,1.0 );
-        }
-        else
+        } else {
             vPosition = vec4( position ,1.0 );
+        }
 
         mat4 projModelViewMatrix = useRTC ? mVPMatRTC : projectionMatrix * modelViewMatrix;
 
