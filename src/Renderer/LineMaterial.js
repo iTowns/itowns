@@ -10,7 +10,7 @@ import Fetcher from 'Core/Commander/Providers/Fetcher';
 import LineVS from 'Renderer/Shader/LineVS.glsl';
 import LineFS from 'Renderer/Shader/LineFS.glsl';
 
-const ItownsLineMaterial = function ItownsLineMaterial(options) {
+const LineMaterial = function LineMaterial(options) {
     BasicMaterial.call(this);
 
     if (options === undefined) {
@@ -37,8 +37,8 @@ const ItownsLineMaterial = function ItownsLineMaterial(options) {
     this.transparent = true;
 };
 
-ItownsLineMaterial.prototype = Object.create(BasicMaterial.prototype);
-ItownsLineMaterial.prototype.constructor = ItownsLineMaterial;
+LineMaterial.prototype = Object.create(BasicMaterial.prototype);
+LineMaterial.prototype.constructor = LineMaterial;
 
-export default ItownsLineMaterial;
+export default LineMaterial;
 

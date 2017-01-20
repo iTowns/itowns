@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import ItownsLineMaterial from 'Renderer/ItownsLineMaterial';
+import LineMaterial from 'Renderer/LineMaterial';
 
 const Lines = function Lines(options) {
     THREE.Mesh.call(this);
@@ -13,7 +13,7 @@ const Lines = function Lines(options) {
     this.uvs = [];
 
     this.geometry = new THREE.BufferGeometry();
-    this.material = new ItownsLineMaterial(options);
+    this.material = new LineMaterial(options);
     this.widthCallback = null;
 };
 

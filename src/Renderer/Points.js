@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import ItownsPointMaterial from 'Renderer/ItownsPointMaterial';
+import PointMaterial from 'Renderer/PointMaterial';
 
 
 const Points = function Points(options) {
@@ -12,7 +12,7 @@ const Points = function Points(options) {
     this.colors = [];
     this.sizes = [];
     this.geometry = new THREE.BufferGeometry();
-    this.material = new ItownsPointMaterial(options);
+    this.material = new PointMaterial(options);
 };
 
 Points.prototype = Object.create(THREE.Points.prototype);
