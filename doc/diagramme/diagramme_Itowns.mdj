@@ -5577,7 +5577,7 @@
 													"height": 13,
 													"autoResize": false,
 													"underline": false,
-													"text": "(from ThreeExtented)",
+													"text": "(from ThreeExtended)",
 													"horizontalAlignment": 2,
 													"verticalAlignment": 5
 												},
@@ -36875,7 +36875,7 @@
 													"height": 13,
 													"autoResize": false,
 													"underline": false,
-													"text": "(from ThreeExtented)",
+													"text": "(from ThreeExtended)",
 													"horizontalAlignment": 2,
 													"verticalAlignment": 5
 												},
@@ -56825,7 +56825,7 @@
 													"height": 13,
 													"autoResize": false,
 													"underline": false,
-													"text": "ThreeExtented",
+													"text": "ThreeExtended",
 													"horizontalAlignment": 2,
 													"verticalAlignment": 5
 												},
@@ -67451,7 +67451,7 @@
 							"_parent": {
 								"$ref": "AAAAAAFP4Ip2qOhfKQo="
 							},
-							"name": "ThreeExtented",
+							"name": "ThreeExtended",
 							"ownedElements": [
 								{
 									"_type": "UMLClass",
@@ -107554,7 +107554,7 @@
 											"height": 13,
 											"autoResize": false,
 											"underline": false,
-											"text": "ThreeExtented",
+											"text": "ThreeExtended",
 											"horizontalAlignment": 2,
 											"verticalAlignment": 5
 										},

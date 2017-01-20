@@ -5,7 +5,7 @@
  */
 
 import CoordWMTS from 'Core/Geographic/CoordWMTS';
-import MathExt from 'Core/Math/MathExtented';
+import MathExt from 'Core/Math/MathExtended';
 import GeoCoordinate from 'Core/Geographic/GeoCoordinate';
 import * as THREE from 'three';
 
