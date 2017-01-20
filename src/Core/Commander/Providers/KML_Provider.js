@@ -8,7 +8,7 @@
 import Provider from 'Core/Commander/Providers/Provider';
 import Fetcher from 'Core/Commander/Providers/Fetcher';
 import * as THREE from 'three';
-import KMZLoader from 'Renderer/ThreeExtented/KMZLoader';
+import KMZLoader from 'Renderer/ThreeExtended/KMZLoader';
 import BasicMaterial from 'Renderer/BasicMaterial';
 
 

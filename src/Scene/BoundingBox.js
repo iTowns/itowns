@@ -4,7 +4,7 @@
  * Description: BoundingBox délimite une zone de l'espace. Cette zone est défnie  par des coordonées cartographiques.
  */
 
-import mE from 'Core/Math/MathExtented';
+import mE from 'Core/Math/MathExtended';
 import Point2D from 'Core/Math/Point2D';
 import * as THREE from 'three';
 import GeoCoordinate from 'Core/Geographic/GeoCoordinate';

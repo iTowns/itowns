@@ -4,7 +4,7 @@
  * Description: Coordonnées cartographiques
  */
 
-import mE from 'Core/Math/MathExtented';
+import mE from 'Core/Math/MathExtended';
 
 export const COORD = {
     LONG: 0,
