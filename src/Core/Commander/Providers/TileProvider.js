@@ -14,19 +14,13 @@
  */
 
 import Provider from './Provider';
-import Projection from '../../Geographic/Projection';
-import BuilderEllipsoidTile from '../../../Globe/BuilderEllipsoidTile';
 import TileGeometry from '../../../Globe/TileGeometry';
 import OGCWebServiceHelper, { SIZE_TEXTURE_TILE } from './OGCWebServiceHelper';
 import { EMPTY_TEXTURE_ZOOM, l_ELEVATION } from '../../../Renderer/LayeredMaterial';
+import TileMesh from '../../../Globe/TileMesh';
 
 function TileProvider() {
     Provider.call(this, null);
-
-    this.projection = new Projection();
-    this.builder = new BuilderEllipsoidTile(this.projection);
-
-    this.nNode = 0;
 }
 
 TileProvider.prototype = Object.create(Provider.prototype);
@@ -43,36 +37,44 @@ TileProvider.prototype.executeCommand = function executeCommand(command) {
         bbox,
         level: (command.level === undefined) ? (parent.level + 1) : command.level,
         segment: 16,
-        parentMaterial: parent.material,
-        parentWmtsCoords: parent.wmtsCoords,
+        parentMaterial: parent ? parent.material : null,
+        parentWmtsCoords: parent ? parent.wmtsCoords : null,
     };
 
-    const geometry = new TileGeometry(params, this.builder);
+    const geometry = new TileGeometry(params, command.layer.builder);
 
-    var tile = new command.type(geometry, params);
+    var tile = new TileMesh(geometry, params);
 
-    tile.setUuid(this.nNode++);
-    tile.link = parent.link;
+    tile.layer = command.layer.id;
+    tile.layers.set(command.threejsLayer);
+    tile.setUuid();
     tile.geometricError = Math.pow(2, (18 - params.level));
 
-    parent.worldToLocal(params.center);
+    if (parent) {
+        parent.worldToLocal(params.center);
+    }
 
     tile.position.copy(params.center);
     tile.setVisibility(false);
-
-    parent.add(tile);
     tile.updateMatrix();
-    tile.updateMatrixWorld();
-    tile.OBB().parent = tile;   // TODO: we should use tile.add(tile.OBB())
-    tile.OBB().update();
 
     // update bbox if node herits texture elevation from parent
     if (tile.material.getElevationLayerLevel() > EMPTY_TEXTURE_ZOOM) {
         const textureElevation = tile.material.getLayerTextures(l_ELEVATION)[0];
-        const { min, max } = OGCWebServiceHelper.ioDXBIL.computeMinMaxElevation(
-                textureElevation.image.data,
-                SIZE_TEXTURE_TILE, SIZE_TEXTURE_TILE,
-                tile.material.offsetScale[0][0]);
+
+        // If the texture resolution has a poor precision for this node, we don't
+        // extract min-max from the texture (too few information), we instead chose
+        // to use parent's min-max.
+        const useMinMaxFromParent = tile.level - tile.material.getElevationLayerLevel() > 6;
+
+        const { min, max } = useMinMaxFromParent ?
+        {
+            min: parent.bbox.minCoordinate.altitude(),
+            max: parent.bbox.maxCoordinate.altitude(),
+        } : OGCWebServiceHelper.ioDXBIL.computeMinMaxElevation(
+            textureElevation.image.data,
+            SIZE_TEXTURE_TILE, SIZE_TEXTURE_TILE,
+            tile.material.offsetScale[0][0]);
 
         if (min && max) {
             tile.setBBoxZ(min, max);

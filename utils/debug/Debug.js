@@ -218,25 +218,30 @@ function Debug(scene) {
     });
 
     function applyToNodeFirstMaterial(cb) {
-        scene.getMap().tiles.children[0].traverse((object) => {
+        scene.gfxEngine.scene3D.traverse((object) => {
             if (object.materials) {
                 cb(object.materials[0]);
             }
         });
-        scene.renderScene3D();
+        scene.notifyChange();
     }
 
     // tiles outline
     gui.add(state, 'showOutline').name('Show tiles outline').onChange((newValue) => {
-        scene.map.layersConfiguration.getGeometryLayers()[0].showOutline = newValue;
+        for (const geometryLayer of scene._geometryLayers) {
+            geometryLayer.showOutline = newValue;
+        }
         applyToNodeFirstMaterial((material) => {
             material.uniforms.showOutline = { value: newValue };
+            material.needsUpdate = true;
         });
     });
 
     // tiles wireframe
     gui.add(state, 'wireframe').name('Wireframe').onChange((newValue) => {
-        scene.map.layersConfiguration.getGeometryLayers()[0].wireframe = newValue;
+        for (const geometryLayer of scene._geometryLayers) {
+            geometryLayer.wireframe = newValue;
+        }
         applyToNodeFirstMaterial((material) => {
             material.wireframe = newValue;
         });

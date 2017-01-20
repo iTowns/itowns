@@ -6,11 +6,10 @@
  */
 
 
-import NodeMesh from './NodeMesh';
-
+import * as THREE from 'three';
 
 const PanoramicMesh = function PanoramicMesh(geom, mat, absC) {
-    NodeMesh.call(this);
+    THREE.Mesh.call(this);
 
     this.matrixAutoUpdate = false;
     this.rotationAutoUpdate = false;
@@ -26,7 +25,7 @@ const PanoramicMesh = function PanoramicMesh(geom, mat, absC) {
     // console.log("this.absoluteCenter",this.absoluteCenter);
 };
 
-PanoramicMesh.prototype = Object.create(NodeMesh.prototype);
+PanoramicMesh.prototype = Object.create(THREE.Mesh.prototype);
 PanoramicMesh.prototype.constructor = PanoramicMesh;
 
 

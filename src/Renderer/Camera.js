@@ -7,13 +7,8 @@
 /* global Float64Array*/
 
 import * as THREE from 'three';
-import Node from '../Scene/Node';
 
 function Camera(width, height, debug) {
-    // Constructor
-
-    Node.call(this);
-
     this.ratio = width / height;
     this.FOV = 30;
 
@@ -31,14 +26,8 @@ function Camera(width, height, debug) {
     this.width = width;
     this.height = height;
 
-    this.updatePreSSE();
-
     this.cameraHelper = debug ? new THREE.CameraHelper(this.camera3D) : undefined;
 }
-
-Camera.prototype = Object.create(Node.prototype);
-
-Camera.prototype.constructor = Camera;
 
 /**
  */
@@ -48,25 +37,6 @@ Camera.prototype.position = function position() {
 
 Camera.prototype.camHelper = function camHelper() {
     return this.cameraHelper;
-};
-
-Camera.prototype.updatePreSSE = function updatePreSSE() {
-    this.Hypotenuse = Math.sqrt(this.width * this.width + this.height * this.height);
-    var radAngle = this.FOV * Math.PI / 180;
-
-    this.HFOV = 2.0 * Math.atan(Math.tan(radAngle * 0.5) / this.ratio); // TODO: not correct -> see new preSSE
-    this.HYFOV = 2.0 * Math.atan(Math.tan(radAngle * 0.5) * this.Hypotenuse / this.width);
-    this.preSSE = this.Hypotenuse * (2.0 * Math.tan(this.HYFOV * 0.5));
-
-    /* TODO: New preSSE but problem on Windows
-    var d = this.height / (2*Math.tan(radAngle/2));
-
-    //TODO: Verify with arrow helper
-    this.HFOV = 2*Math.atan((this.width/2)/d);
-    this.HYFOV = 2*Math.atan((this.Hypotenuse/2)/d);
-
-    this.preSSE = this.Hypotenuse * (2.0 * Math.tan(this.HYFOV * 0.5));
-    */
 };
 
 Camera.prototype.createCamHelper = function createCamHelper() {
@@ -94,8 +64,6 @@ Camera.prototype.resize = function resize(width, height) {
     this.height = height;
     this.ratio = width / height;
 
-    this.updatePreSSE();
-
     this.camera3D.aspect = this.ratio;
     this.camera3D.updateProjectionMatrix();
 
@@ -108,26 +76,6 @@ Camera.prototype.resize = function resize(width, height) {
         this.arrowHelper.setDirection(dir);
         this.cameraHelper.update();
     }
-};
-
-Camera.prototype.computeNodeSSE = function computeNodeSSE(node) {
-    var boundingSphere = node.geometry.boundingSphere;
-    var distance = Math.max(0.0, (this.camera3D.position.distanceTo(node.centerSphere) - boundingSphere.radius));
-
-    // Removed because is false computation, it doesn't consider the altitude of node
-    // Added small oblique weight (distance is not enough, tile orientation is needed)
-    /*
-    var altiW = node.bbox.top() === 10000 ? 0. : node.bbox.bottom() / 10000.;
-    var dotProductW = Math.min(altiW + Math.abs(this.camera3D.getWorldDirection().dot(node.centerSphere.clone().normalize())), 1.);
-    if (this.camera3D.position.length() > 6463300) dotProductW = 1;
-    var SSE = Math.sqrt(dotProductW) * this.preSSE * (node.geometricError / distance);
-    */
-
-    // TODO: node.geometricError is computed using a hardcoded 18 level
-    // The computation of node.geometricError is surely false
-    var SSE = this.preSSE * (node.geometricError / distance);
-
-    return SSE;
 };
 
 Camera.prototype.update = function update() {

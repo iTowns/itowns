@@ -1,9 +1,10 @@
 import * as THREE from 'three';
 import { C, UNIT } from '../Core/Geographic/Coordinates';
 import OBB from '../Renderer/ThreeExtended/OBB';
+import Projection from '../Core/Geographic/Projection';
 
-function BuilderEllipsoidTile(projector) {
-    this.projector = projector;
+function BuilderEllipsoidTile() {
+    this.projector = new Projection();
 }
 
 BuilderEllipsoidTile.prototype.constructor = BuilderEllipsoidTile;

@@ -190,7 +190,9 @@ c3DEngine.prototype.changeStateNodesScene = function changeStateNodesScene(state
     // build traverse function
     var changeStateFunction = (function getChangeStateFunctionFn() {
         return function changeStateFunction(object3D) {
-            object3D.changeState(state);
+            if (object3D.changeState) {
+                object3D.changeState(state);
+            }
         };
     }());
 

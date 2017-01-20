@@ -1,54 +1,63 @@
-/**
- * Generated On: 2015-10-5
- * Class: Layer
- * Description: Le layer est une couche de données. Cette couche peut etre des images ou de l'information 3D. Les requètes de cette couche sont acheminées par une interfaceCommander.
- *
- */
+function GeometryLayer(i) {
+    this._attachedLayers = [];
 
-/**
- *
- * @param {type} Node
- * @param {type} InterfaceCommander
- * @param {type} Projection
- * @param {type} NodeMesh
- * @returns {Layer_L15.Layer}
- */
-import * as THREE from 'three';
-import Node from './Node';
-import Projection from '../Core/Geographic/Projection';
-import NodeMesh from '../Renderer/NodeMesh';
-
-function Layer() {
-    // Constructor
-
-    Node.call(this);
-    this.descriManager = null;
-    this.projection = new Projection();
-    this.id = Layer.count++;
+    Object.defineProperty(this, 'id', {
+        value: i,
+        writable: false,
+    });
 }
 
-Layer.count = 0;
-
-Layer.prototype = Object.create(Node.prototype);
-
-Layer.prototype.constructor = Layer;
-
-// Should be plural as it return an array of meshes
-Layer.prototype.getMesh = function getMesh() {
-    var meshs = [];
-
-    for (var i = 0; i < this.children.length; i++) {
-        var node = this.children[i];
-
-
-        if (node instanceof NodeMesh || node instanceof THREE.Mesh || node instanceof THREE.Object3D)
-            { meshs.push(node); }
-        else if (node instanceof Layer) {
-            meshs = meshs.concat(node.getMesh());
-        }
+GeometryLayer.prototype.attach = function attach(layer) {
+    if (!layer.update) {
+        throw new Error(`Missing 'update' function -> can't attach layer ${layer._id}`);
     }
-
-    return meshs;
+    this._attachedLayers.push(layer);
 };
 
-export default Layer;
+GeometryLayer.prototype.detach = function detach(layer) {
+    const count = this._attachedLayers.length;
+    this._attachedLayers = this._attachedLayers.filter(attached => attached.id != layer.id);
+    return this._attachedLayers.length < count;
+};
+
+
+function Layer(i) {
+    Object.defineProperty(this, 'id', {
+        value: i,
+        writable: false,
+    });
+}
+
+const ImageryLayers = {
+    moveLayerToIndex: function moveLayerToIndex(layer, newIndex, imageryLayers) {
+        var oldIndex = layer.sequence;
+        for (const imagery of imageryLayers) {
+            if (imagery.sequence === newIndex) {
+                imagery.sequence = oldIndex;
+                layer.sequence = newIndex;
+                break;
+            }
+        }
+    },
+
+    moveLayerDown: function moveLayerDown(layer, imageryLayers) {
+        if (layer.sequence > 0) {
+            this.moveLayerToIndex(layer, layer.sequence - 1, imageryLayers);
+        }
+    },
+
+    moveLayerUp: function moveLayerUp(layer, imageryLayers) {
+        const m = imageryLayers.length - 1;
+        if (layer.sequence < m) {
+            this.moveLayerToIndex(layer, layer.sequence + 1, imageryLayers);
+        }
+    },
+
+    getColorLayersIdOrderedBySequence: function getColorLayersIdOrderedBySequence(imageryLayers) {
+        const copy = Array.from(imageryLayers);
+        copy.sort((a, b) => a.sequence - b.sequence);
+        return copy.map(l => l.id);
+    },
+};
+
+export { GeometryLayer, Layer, ImageryLayers };
