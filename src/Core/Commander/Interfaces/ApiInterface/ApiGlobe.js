@@ -68,6 +68,10 @@ function preprocessLayer(layer, provider) {
         };
     }
 
+    if (!provider) {
+        return;
+    }
+
     if (provider.tileInsideLimit) {
         layer.tileInsideLimit = provider.tileInsideLimit.bind(provider);
     }
