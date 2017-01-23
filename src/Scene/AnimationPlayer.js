@@ -118,7 +118,7 @@ class AnimationPlayer {
         setPlayerState(this, PLAYER_STATE.PLAY);
         resetTimer(this);
         this.id = setInterval(this.frame.bind(this), FRAME_DURATION);
-        this.promise = new Promise(r => this.resolve = r);
+        this.promise = new Promise((r) => { this.resolve = r; });
         return this.promise;
     }
 
@@ -130,7 +130,7 @@ class AnimationPlayer {
      */
     playLater(animation, waitingFrame) {
         this.resolveWait = null;
-        const promise = new Promise(r => this.resolveWait = r);
+        const promise = new Promise((r) => { this.resolveWait = r; });
         const timew = Math.floor(FRAME_DURATION * waitingFrame);
         window.clearInterval(this.waitTimer);
         this.waitTimer = window.setTimeout(() => { this.play(animation).then(() => this.resolveWait()); }, timew);

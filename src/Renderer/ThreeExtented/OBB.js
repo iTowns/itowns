@@ -31,8 +31,6 @@ function OBB(min, max, lookAt, translate) {
     this.update();
 
     this.oPosition = this.position.clone();
-
-    this.pointsWorld;
 }
 
 OBB.prototype = Object.create(THREE.Object3D.prototype);

@@ -66,13 +66,6 @@ module.exports = {
     'consistent-return': 'off',
     'brace-style': 'off',
     'new-cap': 'off',
-    'no-cond-assign': 'off',
-    'no-unused-expressions': 'off',
     'no-continue': 'off',
-    'no-prototype-builtins': 'off',
-    'no-throw-literal': 'off',
-    'operator-assignment': 'off',
-    'no-return-assign': 'off',
-    'no-useless-concat': 'off',
   }
 }

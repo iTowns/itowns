@@ -119,7 +119,7 @@ BuilderEllipsoidTile.prototype.OBB = function OBBFn(params) {
         minV.min(cardin3DPlane[i]);
     }
 
-    maxHeight = maxHeight * 0.5;
+    maxHeight *= 0.5;
     var width = Math.abs(maxV.z - minV.z) * 0.5;
     var height = Math.abs(maxV.x - minV.x) * 0.5;
     var delta = height - Math.abs(cardin3DPlane[5].x);
