@@ -74,28 +74,6 @@ function TileMesh(params, builder, geometryCache) {
 TileMesh.prototype = Object.create(THREE.Mesh.prototype);
 TileMesh.prototype.constructor = TileMesh;
 
-TileMesh.prototype.buildHelper = function buildHelper() {
-    // TODO Dispose HELPER!!!
-    var text = (this.level + 1).toString();
-
-    var showHelperBox = true;
-
-    if (showHelperBox)
-        { this.helper = new OBBHelper(this.geometry.OBB, text); }
-    else
-        { this.helper = new SphereHelper(this.geometry.boundingSphere.radius); }
-
-    if (this.helper instanceof SphereHelper)
-
-        { this.helper.position.add(new THREE.Vector3().setFromMatrixPosition(this.matrixWorld)); }
-
-    else if (this.helper instanceof OBBHelper)
-
-        { this.helper.translateZ(this.distance); }
-
-    this.link.add(this.helper);
-};
-
 TileMesh.prototype.dispose = function dispose() {
     this.material.dispose();
     this.geometry.dispose();

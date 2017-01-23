@@ -23,6 +23,7 @@ import { globeCulling, preGlobeUpdate, globeSubdivisionControl, globeSchemeTileW
 import BuilderEllipsoidTile from 'Globe/BuilderEllipsoidTile';
 import Atmosphere from 'Globe/Atmosphere';
 import Clouds from 'Globe/Clouds';
+import OBBHelper from 'Renderer/ThreeExtended/OBBHelper';
 
 var sceneIsLoaded = false;
 var eventLoaded = new CustomEvent('globe-loaded');
@@ -96,6 +97,10 @@ function preprocessLayer(layer, provider) {
         layer.updateStrategy = {
             type: STRATEGY_MIN_NETWORK_TRAFFIC,
         };
+    }
+
+    if (!provider) {
+        return;
     }
 
     if (provider.tileInsideLimit) {
@@ -441,9 +446,37 @@ ApiGlobe.prototype.createSceneGlobe = function createSceneGlobe(globeLayerId, co
         ellipsoid,
     };
 
+    this.addGeometryLayer(wgs84TileLayer);
+
     const atmosphere = new Atmosphere(wgs84TileLayer.ellipsoid);
     atmosphere.add(new Clouds());
     this.scene.gfxEngine.scene3D.add(atmosphere);
+
+    const debugIdUpdate = function debugIdUpdate(context, layer, node) {
+        var n = node.children.filter(n => n.layer == debugLayer.id);
+        if (node.material.visible) {
+            if (n.length == 0) {
+                n = new OBBHelper(node.OBB(), `id:${node.id}`);
+                n.layer = debugLayer.id;
+                node.add(n);
+                n.update(node.OBB());
+            } else {
+                n = n[0];
+            }
+            n.setMaterialVisibility(true);
+        }
+        if (n.length > 0) {
+            n[0].setMaterialVisibility(false);
+        }
+    };
+
+    const debugLayer = {
+        id: 'tile_ids',
+        update: debugIdUpdate,
+    };
+
+    // uncomment next line to display boundingbox helpers drawn
+    // this.addGeometryLayer(debugLayer, wgs84TileLayer.id);
 
     return wgs84TileLayer;
 };

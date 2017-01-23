@@ -56,8 +56,6 @@ and open the template in the editor.
             urlElevationLayers.push('examples/layers/JSONLayers/IGN_MNT.json');
             urlElevationLayers.push('examples/layers/JSONLayers/IGN_MNT_HIGHRES.json');
 
-            itowns.viewer.addGeometryLayer(globeLayer);
-
             const imageryPromise = itowns.viewer.addImageryLayersFromJSONArray(urlImageryLayers, globeLayer.id);
             const elevationPromise = itowns.viewer.addElevationLayersFromJSONArray(urlElevationLayers, globeLayer.id);
 
