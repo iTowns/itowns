@@ -85,6 +85,7 @@ NodeProcess.prototype.subdivideNode = function subdivideNode(node, camera, param
                 /* specific params */
                 bbox: bboxes[i],
                 type: quadtree.type,
+                redraw: false,
             };
 
             quadtree.scheduler.execute(command).then((child) => {
@@ -271,6 +272,8 @@ function updateNodeImagery(scene, quadtree, node, layersConfig, force) {
             earlyDropFunction: refinementCommandCancellationFn,
             /* specific params */
             ancestor,
+            /* redraw only if we're aren't using a texture from our parent */
+            redraw: (ancestor == null),
         };
 
         promises.push(quadtree.scheduler.execute(command).then(
@@ -396,6 +399,8 @@ function updateNodeElevation(scene, quadtree, node, layersConfig, force) {
             earlyDropFunction: refinementCommandCancellationFn,
             /* specific params */
             ancestor,
+            /* redraw only if we're aren't using a texture from our parent */
+            redraw: (ancestor == null),
         };
 
         quadtree.scheduler.execute(command).then(
