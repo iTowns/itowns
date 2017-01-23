@@ -39,10 +39,11 @@ var setCoordinateValue = function setCoordinateValue(unit, coord, id, value)
     unit = defaultValue(unit, UNIT.RADIAN);
 
     if (unit === UNIT.RADIAN) {
-        return coord[id] = value;
+        coord[id] = value;
     } else if (unit === UNIT.DEGREE) {
-        return coord[id] = mE.degToRad(value);
+        coord[id] = mE.degToRad(value);
     }
+    return coord[id];
 };
 
 var setCoordinate = function setCoordinate(coordinate, longitude, latitude, altitude, unit) {
