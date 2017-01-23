@@ -131,8 +131,8 @@ TileMesh.prototype.disposeChildren = function disposeChildren() {
 };
 
 TileMesh.prototype.setDisplayed = function setDisplayed(show) {
-    for (var key in this.materials) {
-        this.materials[key].visible = show;
+    for (var material of this.materials) {
+        material.visible = show;
     }
 
     if (this.helper !== undefined) {
@@ -158,8 +158,8 @@ TileMesh.prototype.setFog = function setFog(fog) {
 };
 
 TileMesh.prototype.setMatrixRTC = function setMatrixRTC(rtc) {
-    for (var key in this.materials) {
-        this.materials[key].setMatrixRTC(rtc);
+    for (var material of this.materials) {
+        material.setMatrixRTC(rtc);
     }
 };
 

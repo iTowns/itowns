@@ -176,12 +176,7 @@ Scheduler.prototype.resetCommandsCount = function resetCommandsCount(type) {
 };
 
 Scheduler.prototype.getProviders = function getProviders() {
-    var p = [];
-
-    for (var protocol in this.providers) {
-        p.push(this.providers[protocol]);
-    }
-    return p;
+    return this.providers.slice();
 };
 
 /**

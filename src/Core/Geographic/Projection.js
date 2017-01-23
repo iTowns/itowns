@@ -50,7 +50,9 @@ Projection.prototype.getAllCoordsWMTS = function getAllCoordsWMTS(tileCoord, bbo
     var tilesMT = [];
 
     for (var key in tileMatrixSets) {
-        tilesMT[key] = this.getCoordsWMTS(tileCoord, bbox, key);
+        if (Object.prototype.hasOwnProperty.call(tileMatrixSets, key)) {
+            tilesMT[key] = this.getCoordsWMTS(tileCoord, bbox, key);
+        }
     }
 
     return tilesMT;
