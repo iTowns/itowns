@@ -1,3 +1,4 @@
+/* eslint-disable */
 /*
  * Computer vision and marchine learning tools
  * Quoc-Dinh dot Nguyen at IGN dot com
