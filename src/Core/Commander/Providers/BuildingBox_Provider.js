@@ -106,7 +106,7 @@ BuildingBox_Provider.prototype.generateMesh = function generateMesh(elements, bb
 
             // FACES
             // indice of the first point of the polygon 3D
-            for (let k = _geometry.vertices.length - ((polygon.length - 1) * 2); k < _geometry.vertices.length; k = k + 2) {
+            for (let k = _geometry.vertices.length - ((polygon.length - 1) * 2); k < _geometry.vertices.length; k += 2) {
                 let l = k; // % (pts2DTab.length);
                 if (l > _geometry.vertices.length - 4) {
                     l = _geometry.vertices.length - ((polygon.length - 1) * 2);

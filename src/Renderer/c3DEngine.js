@@ -22,8 +22,6 @@ function c3DEngine(scene, positionCamera, viewerDiv, debugMode, gLDebug) {
         throw new Error('Cannot instantiate more than one c3DEngine');
     }
 
-    THREE.ShaderChunk.logdepthbuf_pars_vertex;
-
     var caps = new Capabilities();
     var NOIE = !caps.isInternetExplorer();
     this.gLDebug = gLDebug;
