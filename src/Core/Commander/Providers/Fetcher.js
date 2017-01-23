@@ -2,6 +2,8 @@ import { TextureLoader } from 'three';
 
 const textureLoader = new TextureLoader();
 
+textureLoader.setCrossOrigin('anonymous');
+
 function checkResponse(response) {
     if (response.status < 200 || response.status >= 300) {
         var error = new Error(`Error loading ${response.url}: status ${response.status}`);

@@ -483,11 +483,11 @@ c3DEngine.prototype.getPickingPositionFromDepth = (function getGetPickingPosFrom
         ray.direction.set(screen.x, screen.y, 0.5);
         // Unproject
         matrix.multiplyMatrices(camera.matrixWorld, matrix.getInverse(camera.projectionMatrix));
-        ray.direction.applyProjection(matrix);
+        ray.direction.applyMatrix4(matrix);
         ray.direction.sub(ray.origin);
 
         direction.set(0, 0, 1.0);
-        direction.applyProjection(matrix);
+        direction.applyMatrix4(matrix);
         direction.sub(ray.origin);
 
         var angle = direction.angleTo(ray.direction);
