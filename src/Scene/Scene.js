@@ -18,6 +18,7 @@ import { ellipsoidSizes } from '../Core/Geographic/Coordinates';
 import Layer from './Layer';
 import MobileMappingLayer from '../MobileMapping/MobileMappingLayer';
 import StyleManager from './Description/StyleManager';
+import Camera from '../Renderer/Camera';
 
 var instanceScene = null;
 
@@ -45,13 +46,11 @@ function Scene(crs, positionCamera, viewerDiv, debugMode, gLDebug) {
     }
     this.referenceCrs = crs;
 
-    const positionTargetCamera = positionCamera.clone();
-    positionTargetCamera.setAltitude(0);
-
-    const controlOptions = {
-        position: positionCamera.as(crs).xyz(),
-        target: positionTargetCamera.as(crs).xyz(),
-    };
+    this.camera = new Camera(
+        viewerDiv.clientWidth * (debugMode ? 0.5 : 1.0),
+        viewerDiv.clientHeight,
+        debugMode);
+    this.camera.setPosition(positionCamera.as(crs).xyz());
 
     this.layers = [];
     this.map = null;
@@ -64,7 +63,8 @@ function Scene(crs, positionCamera, viewerDiv, debugMode, gLDebug) {
     this.stylesManager = new StyleManager();
 
     this.gLDebug = gLDebug;
-    this.gfxEngine = c3DEngine(this, controlOptions, viewerDiv, debugMode, gLDebug);
+
+    this.gfxEngine = c3DEngine(this, viewerDiv, debugMode, gLDebug);
     this.browserScene = new BrowseTree(this.gfxEngine);
 
     this.needsRedraw = false;
@@ -84,7 +84,6 @@ Scene.prototype.constructor = Scene;
  */
 Scene.prototype.updateCommand = function updateCommand() {
     // TODO: Implement Me
-
 };
 
 /**
@@ -92,11 +91,11 @@ Scene.prototype.updateCommand = function updateCommand() {
  * @returns {Scene_L7.Scene.gfxEngine.camera}
  */
 Scene.prototype.currentCamera = function currentCamera() {
-    return this.gfxEngine.camera;
+    return this.camera;
 };
 
 Scene.prototype.currentControls = function currentControls() {
-    return this.gfxEngine.controls;
+    return this.controls;
 };
 
 Scene.prototype.getPickPosition = function getPickPosition(mouse) {
@@ -308,7 +307,7 @@ Scene.prototype.animateTime = function animateTime(value) {
             this.browserScene.updateMaterialUniform('lightPosition', this.lightingPos.clone().normalize());
             this.layers[0].node.updateLightingPos(this.lightingPos);
             if (this.orbitOn) { // ISS orbit is 0.0667 degree per second -> every 60th of sec: 0.00111;
-                var p = this.gfxEngine.camera.camera3D.position;
+                var p = this.camera.camera3D.position;
                 var r = Math.sqrt(p.z * p.z + p.x * p.x);
                 var alpha = Math.atan2(p.z, p.x) + 0.0001;
                 p.x = r * Math.cos(alpha);
