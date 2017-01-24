@@ -12,6 +12,7 @@ import CoordStars from 'Core/Geographic/CoordStars';
 import CustomEvent from 'custom-event';
 import StyleManager from 'Scene/Description/StyleManager';
 import LayersConfiguration from 'Scene/LayersConfiguration';
+import Camera from 'Renderer/Camera';
 
 var instanceScene = null;
 
@@ -24,7 +25,12 @@ function Scene(positionCamera, size, viewerDiv, debugMode, gLDebug) {
         throw new Error('Cannot instantiate more than one Scene');
     }
 
-    this.cameras = null;
+    this.camera = new Camera(
+        viewerDiv.clientWidth * (debugMode ? 0.5 : 1.0),
+        viewerDiv.clientHeight,
+        debugMode);
+    this.camera.setPosition(positionCamera);
+
     this.selectNodes = null;
     this.scheduler = Scheduler(this);
     this.orbitOn = false;
@@ -33,7 +39,7 @@ function Scene(positionCamera, size, viewerDiv, debugMode, gLDebug) {
 
     this.gLDebug = gLDebug;
     this._size = size;
-    this.gfxEngine = c3DEngine(this, positionCamera, viewerDiv, debugMode, gLDebug);
+    this.gfxEngine = c3DEngine(this, viewerDiv, debugMode, gLDebug);
 
     this.needsRedraw = false;
     this.lastRenderTime = 0;
@@ -48,6 +54,13 @@ function Scene(positionCamera, size, viewerDiv, debugMode, gLDebug) {
     this.layersConfiguration = new LayersConfiguration();
 
     this.nextThreejsLayer = 0;
+
+    // default dummy controls
+    this.controls = {
+        updateCameraTransformation: function updateCameraTransformation() {},
+        moveTarget: function moveTarget() {},
+        updateCamera: function updateCamera() {},
+    };
 }
 
 Scene.prototype.constructor = Scene;
@@ -57,11 +70,11 @@ Scene.prototype.constructor = Scene;
  * @returns {Scene_L7.Scene.gfxEngine.camera}
  */
 Scene.prototype.currentCamera = function currentCamera() {
-    return this.gfxEngine.camera;
+    return this.camera;
 };
 
 Scene.prototype.currentControls = function currentControls() {
-    return this.gfxEngine.controls;
+    return this.controls;
 };
 
 Scene.prototype.getPickPosition = function getPickPosition(mouse) {
@@ -132,14 +145,14 @@ function updateElement(context, layer, element, childrenStages) {
 }
 
 Scene.prototype.update = function update() {
-    this.gfxEngine.camera.updateMatrixWorld();
+    this.camera.updateMatrixWorld();
 
     // Browse Layer tree
     const config = this.layersConfiguration;
 
     // TODO?
     const context = {
-        camera: this.gfxEngine.camera,
+        camera: this.camera,
         scheduler: this.scheduler,
         scene: this,
     };
@@ -297,7 +310,7 @@ Scene.prototype.animateTime = function animateTime(value) {
             this.browserScene.updateMaterialUniform('lightPosition', this.lightingPos.clone().normalize());
             this.layers[0].node.updateLightingPos(this.lightingPos);
             if (this.orbitOn) { // ISS orbit is 0.0667 degree per second -> every 60th of sec: 0.00111;
-                var p = this.gfxEngine.camera.camera3D.position;
+                var p = this.camera.camera3D.position;
                 var r = Math.sqrt(p.z * p.z + p.x * p.x);
                 var alpha = Math.atan2(p.z, p.x) + 0.0001;
                 p.x = r * Math.cos(alpha);

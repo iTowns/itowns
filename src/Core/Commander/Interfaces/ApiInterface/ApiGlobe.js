@@ -24,6 +24,7 @@ import BuilderEllipsoidTile from 'Globe/BuilderEllipsoidTile';
 import Atmosphere from 'Globe/Atmosphere';
 import Clouds from 'Globe/Clouds';
 import OBBHelper from 'Renderer/ThreeExtended/OBBHelper';
+import GlobeControls from 'Renderer/ThreeExtended/GlobeControls';
 
 var sceneIsLoaded = false;
 var eventLoaded = new CustomEvent('globe-loaded');
@@ -448,7 +449,7 @@ ApiGlobe.prototype.createSceneGlobe = function createSceneGlobe(globeLayerId, co
 
     this.addGeometryLayer(wgs84TileLayer);
 
-    const atmosphere = new Atmosphere(wgs84TileLayer.ellipsoid);
+    const atmosphere = new Atmosphere(ellipsoid);
     atmosphere.add(new Clouds());
     this.scene.gfxEngine.scene3D.add(atmosphere);
 
@@ -477,6 +478,17 @@ ApiGlobe.prototype.createSceneGlobe = function createSceneGlobe(globeLayerId, co
 
     // uncomment next line to display boundingbox helpers drawn
     // this.addGeometryLayer(debugLayer, wgs84TileLayer.id);
+
+    //
+    // Create Control
+    //
+    this.scene.controls = new GlobeControls(this.scene.camera.camera3D, this.scene.gfxEngine.renderer.domElement, this.scene.gfxEngine);
+    this.scene.controls.rotateSpeed = 0.25;
+    this.scene.controls.zoomSpeed = 2.0;
+    this.scene.controls.minDistance = 30;
+    this.scene.controls.maxDistance = ellipsoid.size.x * 8.0;
+
+    this.scene.controls.addEventListener('change', this.scene.gfxEngine.update);
 
     return wgs84TileLayer;
 };
