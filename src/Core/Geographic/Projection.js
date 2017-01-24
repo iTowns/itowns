@@ -132,7 +132,7 @@ Projection.prototype.WMS_WGS84Parent = function WMS_WGS84Parent(bbox, bboxParent
         Math.abs(
             bbox.south() + bbox.dimension.y -
             (bboxParent.south() + bboxParent.dimension.y)) /
-        bboxParent.dimension.x;
+        bboxParent.dimension.y;
 
     return new THREE.Vector3(x, y, scale);
 };
