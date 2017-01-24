@@ -9,7 +9,7 @@
     "doclint": "npm run doc -- -t templates/silent",
     "test": "npm run lint && npm run build && npm run doclint",
     "build": "webpack -p",
-    "start": "webpack-dev-server -d --inline --hot",
+    "start": "NODE_ENV=development webpack-dev-server -d --inline --hot",
     "prepublish": "npm run build"
   },
   "files": [

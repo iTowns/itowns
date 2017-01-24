@@ -68,5 +68,8 @@ module.exports = {
     'brace-style': 'off',
     'new-cap': 'off',
     'no-continue': 'off',
+  },
+  "globals": {
+    "__DEBUG__": false
   }
 }
