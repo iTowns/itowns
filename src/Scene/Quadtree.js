@@ -99,14 +99,22 @@ Quadtree.prototype.subdivideNode = function subdivideNode(node) {
     }
 
     const bbox = node.bbox;
+    const center = bbox.center();
 
-    const northWest = new BoundingBox(bbox.west(), bbox.center.x, bbox.center.y, bbox.north());
-    const northEast = new BoundingBox(bbox.center.x, bbox.east(), bbox.center.y, bbox.north());
-    const southWest = new BoundingBox(bbox.west(), bbox.center.x, bbox.south(), bbox.center.y);
-    const southEast = new BoundingBox(bbox.center.x, bbox.east(), bbox.south(), bbox.center.y);
+    const northWest = new BoundingBox(bbox.crs(), bbox.west(), center._values[0], center._values[1], bbox.north());
+    const northEast = new BoundingBox(bbox.crs(), center._values[0], bbox.east(), center._values[1], bbox.north());
+    const southWest = new BoundingBox(bbox.crs(), bbox.west(), center._values[0], bbox.south(), center._values[1]);
+    const southEast = new BoundingBox(bbox.crs(), center._values[0], bbox.east(), bbox.south(), center._values[1]);
 
+    // scheme tiles store their coordinates in radians internally,
+    // so we need to fix the new bboxes as well
+    const result = [northWest, northEast, southWest, southEast];
 
-    return [northWest, northEast, southWest, southEast];
+    for (const bbox of result) {
+        bbox.minCoordinate._internalStorageUnit = node.bbox.minCoordinate._internalStorageUnit;
+        bbox.maxCoordinate._internalStorageUnit = node.bbox.minCoordinate._internalStorageUnit;
+    }
+    return result;
 };
 
 Quadtree.prototype.traverse = function traverse(foo, node)

@@ -4,7 +4,7 @@
 
 import JSZip from 'jszip';
 import * as THREE from 'three';
-import GeoCoordinate, { UNIT } from '../../Core/Geographic/GeoCoordinate';
+import Coordinates from '../../Core/Geographic/Coordinates';
 
 function KMZLoader() {
     this.colladaLoader = new THREE.ColladaLoader();
@@ -32,7 +32,7 @@ KMZLoader.prototype.parseCollada = function parseCollada(buffer) {
             var latitude = Number(doc.getElementsByTagName('latitude')[0].childNodes[0].nodeValue);
             var altitude = Number(doc.getElementsByTagName('altitude')[0].childNodes[0].nodeValue);
 
-            coordCarto = new GeoCoordinate(longitude, latitude, altitude, UNIT.DEGREE);
+            coordCarto = new Coordinates('EPSG:4326', longitude, latitude, altitude);
         }
     }
 

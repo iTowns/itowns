@@ -1,10 +1,4 @@
 /**
- * Generated On: 2015-10-5
- * Class: GeoCoordinate
- * Description: Coordonées cartographiques
- */
-
-/**
  *
  * @param {type} zoom
  * @param {type} row
