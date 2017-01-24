@@ -33,6 +33,7 @@ function BoundingBox(west, east, south, north, minAltitude, maxAltitude, unit) {
         (maxAltitude || 0),
         unit);
 
+    this.unit = unit;
     this.dimension = new Point2D(Math.abs(this.east() - this.west()), Math.abs(this.north() - this.south()));
     this.halfDimension = new Point2D(this.dimension.x * 0.5, this.dimension.y * 0.5);
     this.center = new Point2D(this.west() + this.halfDimension.x, this.south() + this.halfDimension.y);
@@ -73,10 +74,13 @@ BoundingBox.prototype.isInside = function isInside(point) {
 };
 
 BoundingBox.prototype.BBoxIsInside = function BBoxIsInside(bbox) {
-    return bbox.east() <= this.east() && bbox.west() >= this.west() && bbox.north() <= this.north() && bbox.south() >= this.south();
+    return bbox.east(this.unit) <= this.east() && bbox.west(this.unit) >= this.west() && bbox.north(this.unit) <= this.north() && bbox.south(this.unit) >= this.south();
 };
 
 BoundingBox.prototype.offsetScale = function offsetScale(bbox) {
+    if (bbox.unit != this.unit) {
+        throw new Error(`unsupported offscale between 2 diff units: ${this.unit} / ${bbox.unit}`);
+    }
     var pitX = Math.abs(bbox.west() - this.west()) / this.dimension.x;
     var pitY = Math.abs(bbox.north() - this.north()) / this.dimension.y;
     var scale = bbox.dimension.x / this.dimension.x;
@@ -90,6 +94,7 @@ BoundingBox.prototype.offsetScale = function offsetScale(bbox) {
  * @returns {undefined}
  */
 BoundingBox.prototype.set = function set(center, halfDimension) {
+    // Really useful??
     this.halfDimension = halfDimension;
     this.center = center;
 };
@@ -111,7 +116,10 @@ BoundingBox.prototype.setBBoxZ = function setBBoxZ(min, max) {
  * @returns {Boolean}
  */
 BoundingBox.prototype.intersect = function intersect(bbox) {
-    return !(this.west() >= bbox.east() || this.east() <= bbox.west() || this.south() >= bbox.north() || this.north() <= bbox.south());
+    return !(this.west() >= bbox.east(this.unit) ||
+        this.east() <= bbox.west(this.unit) ||
+        this.south() >= bbox.north(this.unit) ||
+        this.north() <= bbox.south(this.unit));
 };
 
 export default BoundingBox;

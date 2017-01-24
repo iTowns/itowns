@@ -1,4 +1,4 @@
-import GeoCoordinate from 'Core/Geographic/GeoCoordinate';
+import GeoCoordinate, { UNIT } from 'Core/Geographic/GeoCoordinate';
 import * as THREE from 'three';
 import OBB from 'Renderer/ThreeExtended/OBB';
 
@@ -26,13 +26,13 @@ BuilderEllipsoidTile.prototype.Prepare = function Prepare(params) {
     params.deltaUV1 = (st1 - start) * params.nbRow;
 
     // /!\ init params.projected
-    params.projected = new GeoCoordinate();
+    params.projected = new GeoCoordinate(0, 0, 0, UNIT.RADIAN);
 };
 
 
 // get center tile in cartesian 3D
 BuilderEllipsoidTile.prototype.Center = function Center(params) {
-    params.center = this.ellipsoid.cartographicToCartesian(new GeoCoordinate(params.bbox.center.x, params.bbox.center.y, 0));
+    params.center = this.ellipsoid.cartographicToCartesian(new GeoCoordinate(params.bbox.center.x, params.bbox.center.y, 0, params.bbox.minCoordinate.unit));
     return params.center;
 };
 
@@ -85,14 +85,14 @@ BuilderEllipsoidTile.prototype.OBB = function OBBFn(params) {
     //      |       |
     //      6---5---4
 
-    cardinals.push(new GeoCoordinate(phiStart, thetaStart, 0));
-    cardinals.push(new GeoCoordinate(phiStart + params.bbox.halfDimension.x, thetaStart, 0));
-    cardinals.push(new GeoCoordinate(phiStart + phiLength, thetaStart, 0));
-    cardinals.push(new GeoCoordinate(phiStart + phiLength, thetaStart + params.bbox.halfDimension.y, 0));
-    cardinals.push(new GeoCoordinate(phiStart + phiLength, thetaStart + thetaLength, 0));
-    cardinals.push(new GeoCoordinate(phiStart + params.bbox.halfDimension.x, thetaStart + thetaLength, 0));
-    cardinals.push(new GeoCoordinate(phiStart, thetaStart + thetaLength, 0));
-    cardinals.push(new GeoCoordinate(phiStart, thetaStart + params.bbox.halfDimension.y, 0));
+    cardinals.push(new GeoCoordinate(phiStart, thetaStart, 0, UNIT.RADIAN));
+    cardinals.push(new GeoCoordinate(phiStart + params.bbox.halfDimension.x, thetaStart, 0, UNIT.RADIAN));
+    cardinals.push(new GeoCoordinate(phiStart + phiLength, thetaStart, 0, UNIT.RADIAN));
+    cardinals.push(new GeoCoordinate(phiStart + phiLength, thetaStart + params.bbox.halfDimension.y, 0, UNIT.RADIAN));
+    cardinals.push(new GeoCoordinate(phiStart + phiLength, thetaStart + thetaLength, 0, UNIT.RADIAN));
+    cardinals.push(new GeoCoordinate(phiStart + params.bbox.halfDimension.x, thetaStart + thetaLength, 0, UNIT.RADIAN));
+    cardinals.push(new GeoCoordinate(phiStart, thetaStart + thetaLength, 0, UNIT.RADIAN));
+    cardinals.push(new GeoCoordinate(phiStart, thetaStart + params.bbox.halfDimension.y, 0, UNIT.RADIAN));
 
     var cardinals3D = [];
     var cardin3DPlane = [];

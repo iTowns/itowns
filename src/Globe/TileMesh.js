@@ -18,7 +18,6 @@
  */
 import NodeMesh from 'Renderer/NodeMesh';
 import TileGeometry from 'Globe/TileGeometry';
-import BoundingBox from 'Scene/BoundingBox';
 import * as THREE from 'three';
 import OBBHelper from 'Renderer/ThreeExtended/OBBHelper';
 import SphereHelper from 'Renderer/ThreeExtended/SphereHelper';
@@ -34,8 +33,12 @@ function TileMesh(params, builder, geometryCache) {
     this.matrixAutoUpdate = false;
     this.rotationAutoUpdate = false;
 
+    if (!params.bbox) {
+        throw new Error('params.bbox is mandatory to build a TileMesh');
+    }
+
     this.level = params.level;
-    this.bbox = params.bbox || new BoundingBox();
+    this.bbox = params.bbox;
 
     this.geometry = geometryCache || new TileGeometry(params, builder);
     this.normal = params.center.clone().normalize();

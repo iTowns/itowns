@@ -22,8 +22,8 @@ function SchemeTile() {
  * @returns {SchemeTile_L8.SchemeTile.prototype@pro;schemeBB@call;push}
  */
 
-SchemeTile.prototype.add = function add(minLo, maxLo, minLa, maxLa) {
-    return this.schemeBB.push(new BoundingBox(minLo, maxLo, minLa, maxLa));
+SchemeTile.prototype.add = function add(minLo, maxLo, minLa, maxLa, unit) {
+    return this.schemeBB.push(new BoundingBox(minLo, maxLo, minLa, maxLa, 0, 0, unit));
 };
 
 

@@ -124,8 +124,8 @@ Globe.prototype.SchemeTileWMTS = function SchemeTileWMTS(type) {
         // bbox longitude(0,360),latitude(-90,90)
         const schemeT = new SchemeTile();
 
-        schemeT.add(0, MathExt.PI, -MathExt.PI_OV_TWO, MathExt.PI_OV_TWO);
-        schemeT.add(MathExt.PI, MathExt.TWO_PI, -MathExt.PI_OV_TWO, MathExt.PI_OV_TWO);
+        schemeT.add(0, MathExt.PI, -MathExt.PI_OV_TWO, MathExt.PI_OV_TWO, UNIT.RADIAN);
+        schemeT.add(MathExt.PI, MathExt.TWO_PI, -MathExt.PI_OV_TWO, MathExt.PI_OV_TWO, UNIT.RADIAN);
 
         return schemeT;
     }
@@ -133,8 +133,8 @@ Globe.prototype.SchemeTileWMTS = function SchemeTileWMTS(type) {
         // bbox longitude(-180,180),latitude(-90,90)
         const schemeT = new SchemeTile();
 
-        schemeT.add(-MathExt.PI, 0, -MathExt.PI_OV_TWO, MathExt.PI_OV_TWO);
-        schemeT.add(0, MathExt.PI, -MathExt.PI_OV_TWO, MathExt.PI_OV_TWO);
+        schemeT.add(-MathExt.PI, 0, -MathExt.PI_OV_TWO, MathExt.PI_OV_TWO, UNIT.RADIAN);
+        schemeT.add(0, MathExt.PI, -MathExt.PI_OV_TWO, MathExt.PI_OV_TWO, UNIT.RADIAN);
 
         return schemeT;
     }

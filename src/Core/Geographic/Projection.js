@@ -6,7 +6,7 @@
 
 import CoordWMTS from 'Core/Geographic/CoordWMTS';
 import MathExt from 'Core/Math/MathExtended';
-import GeoCoordinate from 'Core/Geographic/GeoCoordinate';
+import GeoCoordinate, { UNIT } from 'Core/Geographic/GeoCoordinate';
 import * as THREE from 'three';
 
 
@@ -153,11 +153,13 @@ Projection.prototype.WGS84toWMTS = function WGS84toWMTS(bbox) {
 };
 
 Projection.prototype.UnitaryToLongitudeWGS84 = function UnitaryToLongitudeWGS84(u, projection, bbox) {
-    projection.setLongitude(bbox.west() + u * bbox.dimension.x);
+    // TODO: we only support RADIAN as input
+    projection.setLongitude(bbox.west() + u * bbox.dimension.x, UNIT.RADIAN);
 };
 
 Projection.prototype.UnitaryToLatitudeWGS84 = function UnitaryToLatitudeWGS84(v, projection, bbox) {
-    projection.setLatitude(bbox.south() + v * bbox.dimension.y);
+    // TODO: we only support RADIAN as input
+    projection.setLatitude(bbox.south() + v * bbox.dimension.y, UNIT.RADIAN);
 };
 
 Projection.prototype.cartesianToGeo = function cartesianToGeo(position) {

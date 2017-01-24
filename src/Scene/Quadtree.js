@@ -100,10 +100,10 @@ Quadtree.prototype.subdivideNode = function subdivideNode(node) {
 
     const bbox = node.bbox;
 
-    const northWest = new BoundingBox(bbox.west(), bbox.center.x, bbox.center.y, bbox.north());
-    const northEast = new BoundingBox(bbox.center.x, bbox.east(), bbox.center.y, bbox.north());
-    const southWest = new BoundingBox(bbox.west(), bbox.center.x, bbox.south(), bbox.center.y);
-    const southEast = new BoundingBox(bbox.center.x, bbox.east(), bbox.south(), bbox.center.y);
+    const northWest = new BoundingBox(bbox.west(), bbox.center.x, bbox.center.y, bbox.north(), 0, 0, bbox.unit);
+    const northEast = new BoundingBox(bbox.center.x, bbox.east(), bbox.center.y, bbox.north(), 0, 0, bbox.unit);
+    const southWest = new BoundingBox(bbox.west(), bbox.center.x, bbox.south(), bbox.center.y, 0, 0, bbox.unit);
+    const southEast = new BoundingBox(bbox.center.x, bbox.east(), bbox.south(), bbox.center.y, 0, 0, bbox.unit);
 
 
     return [northWest, northEast, southWest, southEast];
