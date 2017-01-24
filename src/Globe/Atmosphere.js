@@ -254,8 +254,8 @@ function Atmosphere(ellipsoid) {
     uniforms.up.value = new THREE.Vector3(); // no more necessary, estimate normal from cam..
 
 
-    // LensFlare
-
+    // LensFlare. Deleted because accessing external texture in build causes pb
+/*
     var textureLoader = new THREE.TextureLoader();
     var textureFlare0 = textureLoader.load('data/textures/lensflare/lensflare0.png');
     var textureFlare2 = textureLoader.load('data/textures/lensflare/lensflare2.png');
@@ -277,6 +277,7 @@ function Atmosphere(ellipsoid) {
     this.lensFlare.add(textureFlare3, 70, 1.0, THREE.AdditiveBlending);
     this.lensFlare.visible = false;
     this.add(this.lensFlare);
+*/
 }
 
 Atmosphere.prototype = Object.create(NodeMesh.prototype);
@@ -289,7 +290,7 @@ Atmosphere.prototype.setRealisticOn = function setRealisticOn(bool) {
     this.ground.mesh.visible = this.realistic;
     this.sky.mesh.visible = this.realistic;
     this.skyDome.mesh.visible = this.realistic;
-    this.lensFlare.visible = this.realistic;
+    // this.lensFlare.visible = this.realistic;
 
     // this.sphereSun.visible     = this.realistic;
 };
@@ -299,7 +300,7 @@ Atmosphere.prototype.updateLightingPos = function updateLightingPos(pos) {
     this.sky.material.uniforms.v3LightPosition.value = pos.clone().normalize();
     //  this.sphereSun.position.copy(pos);
     this.skyDome.uniforms.sunPosition.value.copy(pos);
-    this.lensFlare.position.copy(pos);
+    // this.lensFlare.position.copy(pos);
 };
 
 
