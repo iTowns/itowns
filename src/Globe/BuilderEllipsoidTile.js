@@ -1,9 +1,8 @@
 import * as THREE from 'three';
-import GeoCoordinate from '../Core/Geographic/GeoCoordinate';
+import { C, UNIT } from '../Core/Geographic/Coordinates';
 import OBB from '../Renderer/ThreeExtended/OBB';
 
-function BuilderEllipsoidTile(model, projector) {
-    this.ellipsoid = model;
+function BuilderEllipsoidTile(projector) {
     this.projector = projector;
 }
 
@@ -25,41 +24,42 @@ BuilderEllipsoidTile.prototype.Prepare = function Prepare(params) {
 
     params.deltaUV1 = (st1 - start) * params.nbRow;
 
-    // /!\ init params.projected
-    params.projected = new GeoCoordinate();
+    // let's avoid building too much temp objects
+    params.projected = { longitudeRad: 0, latitudeRad: 0 };
 };
-
 
 // get center tile in cartesian 3D
 BuilderEllipsoidTile.prototype.Center = function Center(params) {
-    params.center = this.ellipsoid.cartographicToCartesian(new GeoCoordinate(params.bbox.center.x, params.bbox.center.y, 0));
+    params.center = params.bbox.center().as('EPSG:4978').xyz();
     return params.center;
 };
 
 // get position 3D cartesian
 BuilderEllipsoidTile.prototype.VertexPosition = function VertexPosition(params) {
-    params.cartesianPosition = this.ellipsoid.cartographicToCartesian(params.projected);
+    params.cartesianPosition = new C.EPSG_4326_Radians(
+        params.projected.longitudeRad,
+        params.projected.latitudeRad).as('EPSG:4978');
     return params.cartesianPosition;
 };
 
 // get normal for last vertex
 BuilderEllipsoidTile.prototype.VertexNormal = function VertexNormal(params) {
-    return params.cartesianPosition.clone().normalize();
+    return params.cartesianPosition.xyz().normalize();
 };
 
 // coord u tile to projected
 BuilderEllipsoidTile.prototype.uProjecte = function uProjecte(u, params) {
-    this.projector.UnitaryToLongitudeWGS84(u, params.projected, params.bbox);
+    params.projected.longitudeRad = this.projector.UnitaryToLongitudeWGS84(u, params.bbox);
 };
 
 // coord v tile to projected
 BuilderEllipsoidTile.prototype.vProjecte = function vProjecte(v, params) {
-    this.projector.UnitaryToLatitudeWGS84(v, params.projected, params.bbox);
+    params.projected.latitudeRad = this.projector.UnitaryToLatitudeWGS84(v, params.bbox);
 };
 
 // Compute uv 1, if isn't defined the uv1 isn't computed
 BuilderEllipsoidTile.prototype.getUV_PM = function getUV_PM(params) {
-    var t = this.projector.WGS84ToOneSubY(params.projected.latitude()) * params.nbRow;
+    var t = this.projector.WGS84ToOneSubY(params.projected.latitudeRad) * params.nbRow;
 
     if (!isFinite(t))
         { t = 0; }
@@ -73,11 +73,12 @@ BuilderEllipsoidTile.prototype.OBB = function OBBFn(params) {
 
     var normal = params.center.clone().normalize();
 
+    const bboxDimension = params.bbox.dimensions(UNIT.RADIAN);
     var phiStart = params.bbox.west();
-    var phiLength = params.bbox.dimension.x;
+    var phiLength = bboxDimension.x;
 
     var thetaStart = params.bbox.south();
-    var thetaLength = params.bbox.dimension.y;
+    var thetaLength = bboxDimension.y;
 
     //      0---1---2
     //      |       |
@@ -85,14 +86,14 @@ BuilderEllipsoidTile.prototype.OBB = function OBBFn(params) {
     //      |       |
     //      6---5---4
 
-    cardinals.push(new GeoCoordinate(phiStart, thetaStart, 0));
-    cardinals.push(new GeoCoordinate(phiStart + params.bbox.halfDimension.x, thetaStart, 0));
-    cardinals.push(new GeoCoordinate(phiStart + phiLength, thetaStart, 0));
-    cardinals.push(new GeoCoordinate(phiStart + phiLength, thetaStart + params.bbox.halfDimension.y, 0));
-    cardinals.push(new GeoCoordinate(phiStart + phiLength, thetaStart + thetaLength, 0));
-    cardinals.push(new GeoCoordinate(phiStart + params.bbox.halfDimension.x, thetaStart + thetaLength, 0));
-    cardinals.push(new GeoCoordinate(phiStart, thetaStart + thetaLength, 0));
-    cardinals.push(new GeoCoordinate(phiStart, thetaStart + params.bbox.halfDimension.y, 0));
+    cardinals.push(new C.EPSG_4326_Radians(phiStart, thetaStart));
+    cardinals.push(new C.EPSG_4326_Radians(phiStart + bboxDimension.x * 0.5, thetaStart));
+    cardinals.push(new C.EPSG_4326_Radians(phiStart + phiLength, thetaStart));
+    cardinals.push(new C.EPSG_4326_Radians(phiStart + phiLength, thetaStart + bboxDimension.y * 0.5));
+    cardinals.push(new C.EPSG_4326_Radians(phiStart + phiLength, thetaStart + thetaLength));
+    cardinals.push(new C.EPSG_4326_Radians(phiStart + bboxDimension.x * 0.5, thetaStart + thetaLength));
+    cardinals.push(new C.EPSG_4326_Radians(phiStart, thetaStart + thetaLength));
+    cardinals.push(new C.EPSG_4326_Radians(phiStart, thetaStart + bboxDimension.y * 0.5));
 
     var cardinals3D = [];
     var cardin3DPlane = [];
@@ -106,13 +107,13 @@ BuilderEllipsoidTile.prototype.OBB = function OBBFn(params) {
     var tangentPlane = new THREE.Plane(normal);
 
     planeZ.setFromUnitVectors(normal, new THREE.Vector3(0, 1, 0));
-    qRotY.setFromAxisAngle(new THREE.Vector3(0, 1, 0), -params.bbox.center.x);
+    qRotY.setFromAxisAngle(new THREE.Vector3(0, 1, 0), -params.bbox.center()._values[0]);
     qRotY.multiply(planeZ);
 
     for (var i = 0; i < cardinals.length; i++) {
-        cardinals3D.push(this.ellipsoid.cartographicToCartesian(cardinals[i]));
-        cardin3DPlane.push(tangentPlane.projectPoint(cardinals3D[i]));
-        vec.subVectors(cardinals3D[i], params.center);
+        cardinals3D.push(cardinals[i].as('EPSG:4978'));
+        cardin3DPlane.push(tangentPlane.projectPoint(cardinals3D[i].xyz()));
+        vec.subVectors(cardinals3D[i].xyz(), params.center);
         maxHeight = Math.max(maxHeight, cardin3DPlane[i].distanceTo(vec));
         cardin3DPlane[i].applyQuaternion(qRotY);
         maxV.max(cardin3DPlane[i]);

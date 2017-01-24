@@ -6,10 +6,9 @@
 
 import * as THREE from 'three';
 import Fetcher from './Fetcher';
-import GeoCoordinate, { UNIT } from '../../Geographic/GeoCoordinate';
+import Coordinates from '../../Geographic/Coordinates';
 import ItownsLine from './ItownsLine';
 import ItownsPoint from './ItownsPoint';
-
 
 function _gpxToWayPointsArray(gpxXML) {
     return gpxXML.getElementsByTagName('wpt');
@@ -19,15 +18,15 @@ function _gGpxToWTrackPointsArray(gpxXML) {
     return gpxXML.getElementsByTagName('trkpt');
 }
 
-function _gpxPtToCartesian(pt, ellipsoid) {
+function _gpxPtToCartesian(pt) {
     var longitude = Number(pt.attributes.lon.nodeValue);
     var latitude = Number(pt.attributes.lat.nodeValue);
     var elevation = Number(pt.getElementsByTagName('ele')[0].childNodes[0].nodeValue);
 
-    return ellipsoid.cartographicToCartesian(new GeoCoordinate(longitude, latitude, elevation, UNIT.DEGREE));
+    return new Coordinates('EPSG:4326', longitude, latitude, elevation).as('EPSG:4978').xyz();
 }
 
-function _gpxToWayPointsMesh(gpxXML, ellipsoid) {
+function _gpxToWayPointsMesh(gpxXML) {
     var wayPts = _gpxToWayPointsArray(gpxXML);
 
     if (wayPts.length) {
@@ -41,7 +40,7 @@ function _gpxToWayPointsMesh(gpxXML, ellipsoid) {
         });
 
         for (var i = 0; i < wayPts.length; i++) {
-            points.addPoint(_gpxPtToCartesian(wayPts[i], ellipsoid), colorPoint, 600.0);
+            points.addPoint(_gpxPtToCartesian(wayPts[i]), colorPoint, 600.0);
         }
 
         points.process();
@@ -52,7 +51,7 @@ function _gpxToWayPointsMesh(gpxXML, ellipsoid) {
     }
 }
 
-function _gpxToWTrackPointsMesh(gpxXML, ellipsoid) {
+function _gpxToWTrackPointsMesh(gpxXML) {
     var trackPts = _gGpxToWTrackPointsArray(gpxXML);
 
     if (trackPts.length) {
@@ -68,7 +67,7 @@ function _gpxToWTrackPointsMesh(gpxXML, ellipsoid) {
         });
 
         for (var k = 0; k < trackPts.length; k++) {
-            line.addPoint(_gpxPtToCartesian(trackPts[k], ellipsoid));
+            line.addPoint(_gpxPtToCartesian(trackPts[k]));
         }
 
         line.process();
@@ -79,7 +78,7 @@ function _gpxToWTrackPointsMesh(gpxXML, ellipsoid) {
     }
 }
 
-function _gpxToMesh(gpxXML, ellipsoid) {
+function _gpxToMesh(gpxXML) {
     if (!gpxXML) {
         return undefined;
     }
@@ -87,14 +86,14 @@ function _gpxToMesh(gpxXML, ellipsoid) {
     var gpxMesh = new THREE.Object3D();
 
     // Getting the track points
-    var trackPts = _gpxToWTrackPointsMesh(gpxXML, ellipsoid);
+    var trackPts = _gpxToWTrackPointsMesh(gpxXML);
 
     if (trackPts) {
         gpxMesh.add(trackPts);
     }
 
     // Getting the waypoint points
-    var wayPts = _gpxToWayPointsMesh(gpxXML, ellipsoid);
+    var wayPts = _gpxToWayPointsMesh(gpxXML);
 
     if (wayPts) {
         gpxMesh.add(wayPts);
@@ -103,7 +102,7 @@ function _gpxToMesh(gpxXML, ellipsoid) {
     return gpxMesh;
 }
 
-export default function loadGpx(urlFile, ellipsoid) {
-    return Fetcher.xml(urlFile).then(gpxXML => _gpxToMesh(gpxXML, ellipsoid));
+export default function loadGpx(urlFile) {
+    return Fetcher.xml(urlFile).then(gpxXML => _gpxToMesh(gpxXML));
 }
 

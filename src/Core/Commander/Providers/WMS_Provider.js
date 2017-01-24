@@ -11,9 +11,7 @@ import IoDriver_XBIL from './IoDriver_XBIL';
 import Fetcher from './Fetcher';
 import Projection from '../../Geographic/Projection';
 import CacheRessource from './CacheRessource';
-import mE from '../../Math/MathExtended';
 import BoundingBox from '../../../Scene/BoundingBox';
-import { UNIT } from '../../Geographic/GeoCoordinate';
 
 /**
  * Return url wmts MNT
@@ -42,37 +40,39 @@ WMS_Provider.prototype = Object.create(Provider.prototype);
 WMS_Provider.prototype.constructor = WMS_Provider;
 
 WMS_Provider.prototype.url = function url(bbox, layer) {
-    return this.customUrl(layer.customUrl, bbox);
-};
+    const box = bbox.as(layer.projection);
+    const v = [
+        box.west(),
+        box.south(),
+        box.east(),
+        box.north(),
+    ];
+    const bboxInUnit = layer.bbox_url === 'swne' ?
+        `${v[1]},${v[0]},${v[3]},${v[2]}` :
+        `${v[0]},${v[1]},${v[2]},${v[3]}`;
 
-WMS_Provider.prototype.customUrl = function customUrl(url, bbox) {
-    var bboxDegS = `${bbox.south(UNIT.DEGREE)},${
-                    bbox.west(UNIT.DEGREE)},${
-                    bbox.north(UNIT.DEGREE)},${
-                    bbox.east(UNIT.DEGREE)}`;
-
-    var urld = url.replace('%bbox', bboxDegS);
-
-    return urld;
+    return layer.customUrl.replace('%bbox', bboxInUnit);
 };
 
 WMS_Provider.prototype.preprocessDataLayer = function preprocessDataLayer(layer) {
-    if (!layer.name)
-        { throw new Error('layerName is required.'); }
-
-    if (layer.bbox)
-    {
-        mE.arrayDegToRad(layer.bbox);
-        layer.bbox = new BoundingBox(layer.bbox[0], layer.bbox[2], layer.bbox[1], layer.bbox[3]);
+    if (!layer.name) {
+        throw new Error('layerName is required.');
+    }
+    if (!layer.bbox) {
+        throw new Error('bbox is required');
     }
 
+    layer.bbox = new BoundingBox(
+        layer.projection,
+        layer.bbox[0], layer.bbox[1],
+        layer.bbox[2], layer.bbox[3]);
+
+    layer.bbox_url = layer.bbox_url || 'swne';
     layer.format = layer.options.mimetype || 'image/png';
-    layer.crs = layer.projection || 'EPSG:4326';
     layer.width = layer.heightMapWidth || 256;
     layer.version = layer.version || '1.3.0';
     layer.style = layer.style || '';
     layer.transparent = layer.transparent || false;
-    layer.bbox = layer.bbox || new BoundingBox();
 
     layer.customUrl = `${layer.url
                   }?SERVICE=WMS&REQUEST=GetMap&LAYERS=${layer.name
@@ -81,7 +81,7 @@ WMS_Provider.prototype.preprocessDataLayer = function preprocessDataLayer(layer)
                   }&FORMAT=${layer.format
                   }&TRANSPARENT=${layer.transparent
                   }&BBOX=%bbox` +
-                  `&CRS=${layer.crs
+                  `&CRS=${layer.projection
                   }&WIDTH=${layer.width
                   }&HEIGHT=${layer.width}`;
 };
@@ -95,7 +95,7 @@ WMS_Provider.prototype.getColorTexture = function getColorTexture(tile, layer, b
         return Promise.resolve();
     }
 
-    var url = this.url(bbox, layer);
+    var url = this.url(bbox.as('EPSG:4326'), layer);
 
     var result = { pitch };
     result.texture = this.cache.getRessource(url);

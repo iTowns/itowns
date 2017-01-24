@@ -3,7 +3,7 @@
  * Class: CoordStars
  * Description: get coord of stars like earth...
  */
-import GeoCoordinate, { UNIT } from './GeoCoordinate';
+import Coordinates from './Coordinates';
 
 const CoordStars = {
 
@@ -88,11 +88,12 @@ const CoordStars = {
     },
 
     // Return scene coordinate ({x,y,z}) of sun
-    getSunPositionInScene(ellipsoid, date, lat, lon) {
+    getSunPositionInScene(date, lat, lon) {
         var sun = CoordStars.getSunPosition()(date, lat, lon);
         var dayMilliSec = 24 * 3600000;
         var longitude = sun.ascension + ((date % dayMilliSec) / dayMilliSec) * -360 + 180; // cause midday
-        var coSunCarto = ellipsoid.cartographicToCartesian(new GeoCoordinate(longitude, lat, 50000000, UNIT.DEGREE));
+        var coSunCarto = new Coordinates('EPSG:4326', longitude, lat, 50000000)
+                                        .as('EPSG:4978').xyz();
 
         return coSunCarto;
     },

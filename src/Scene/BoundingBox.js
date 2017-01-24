@@ -5,9 +5,7 @@
  */
 
 import * as THREE from 'three';
-import mE from '../Core/Math/MathExtended';
-import Point2D from '../Core/Math/Point2D';
-import GeoCoordinate from '../Core/Geographic/GeoCoordinate';
+import Coordinates, { crsToUnit, crsIsGeographic, assertCrsIsValid } from '../Core/Geographic/Coordinates';
 
 /**
  *
@@ -21,46 +19,89 @@ import GeoCoordinate from '../Core/Geographic/GeoCoordinate';
  * @returns {BoundingBox_L7.BoundingBox}
  */
 
-function BoundingBox(west, east, south, north, minAltitude, maxAltitude, unit) {
-    this.minCoordinate = new GeoCoordinate(
-        (west === undefined ? -mE.PI : west),
-        (south === undefined ? -mE.PI_OV_TWO : south),
-        (minAltitude || 0),
-        unit);
-    this.maxCoordinate = new GeoCoordinate(
-        (east === undefined ? mE.PI : east),
-        (north === undefined ? mE.PI_OV_TWO : north),
-        (maxAltitude || 0),
-        unit);
+function BoundingBox(crs, west, east, south, north, minAltitude, maxAltitude) {
+    assertCrsIsValid(crs);
 
-    this.dimension = new Point2D(Math.abs(this.east() - this.west()), Math.abs(this.north() - this.south()));
-    this.halfDimension = new Point2D(this.dimension.x * 0.5, this.dimension.y * 0.5);
-    this.center = new Point2D(this.west() + this.halfDimension.x, this.south() + this.halfDimension.y);
-    this.size = Math.sqrt(this.dimension.x * this.dimension.x + this.dimension.y * this.dimension.y);
+    this.minCoordinate = new Coordinates(crs, west, south, minAltitude || 0);
+    this.maxCoordinate = new Coordinates(crs, east, north, maxAltitude || 0);
 }
 
+BoundingBox.prototype.as = function as(crs) {
+    const mi = this.minCoordinate.as(crs);
+    const ma = this.maxCoordinate.as(crs);
+    return new BoundingBox(crs,
+        mi._values[0], ma._values[0],
+        mi._values[1], ma._values[1],
+        mi._values[2], ma._values[2]);
+};
+
 BoundingBox.prototype.west = function west(unit) {
-    return this.minCoordinate.longitude(unit);
+    if (crsIsGeographic(this.crs())) {
+        return this.minCoordinate.longitude(unit);
+    } else {
+        return this.minCoordinate.x();
+    }
 };
 
 BoundingBox.prototype.east = function east(unit) {
-    return this.maxCoordinate.longitude(unit);
+    if (crsIsGeographic(this.crs())) {
+        return this.maxCoordinate.longitude(unit);
+    } else {
+        return this.maxCoordinate.x();
+    }
 };
 
 BoundingBox.prototype.north = function north(unit) {
-    return this.maxCoordinate.latitude(unit);
+    if (crsIsGeographic(this.crs())) {
+        return this.maxCoordinate.latitude(unit);
+    } else {
+        return this.maxCoordinate.y();
+    }
 };
 
 BoundingBox.prototype.south = function south(unit) {
-    return this.minCoordinate.latitude(unit);
+    if (crsIsGeographic(this.crs())) {
+        return this.minCoordinate.latitude(unit);
+    } else {
+        return this.minCoordinate.y();
+    }
 };
 
 BoundingBox.prototype.top = function top() {
-    return this.maxCoordinate.altitude();
+    if (crsIsGeographic(this.crs())) {
+        return this.maxCoordinate.altitude();
+    } else {
+        return this.maxCoordinate.z();
+    }
 };
 
 BoundingBox.prototype.bottom = function bottom() {
-    return this.minCoordinate.altitude();
+    if (crsIsGeographic(this.crs())) {
+        return this.minCoordinate.altitude();
+    } else {
+        return this.minCoordinate.z();
+    }
+};
+
+BoundingBox.prototype.crs = function crs() {
+    return this.minCoordinate.crs;
+};
+
+BoundingBox.prototype.center = function center() {
+    const c = this.minCoordinate.clone();
+    const dim = this.dimensions();
+    c._values[0] += dim.x * 0.5;
+    c._values[1] += dim.y * 0.5;
+    c._values[2] += dim.z * 0.5;
+    return c;
+};
+
+BoundingBox.prototype.dimensions = function dimensions(unit) {
+    return {
+        x: Math.abs(this.east(unit) - this.west(unit)),
+        y: Math.abs(this.north(unit) - this.south(unit)),
+        z: Math.abs(this.top() - this.bottom()),
+    };
 };
 
 /**
@@ -68,30 +109,39 @@ BoundingBox.prototype.bottom = function bottom() {
  *
  * @param point {[object Object]}
  */
-BoundingBox.prototype.isInside = function isInside(point) {
-    return point.x <= this.east() && point.x >= this.west() && point.y <= this.north() && point.y >= this.south();
+BoundingBox.prototype.isInside = function isInside(coord) {
+    const c = (this.crs() == coord.crs) ? coord : coord.as(this.crs());
+
+    // TODO this ignores altitude
+    if (crsIsGeographic(this.crs())) {
+        return c.longitude() <= this.east() &&
+               c.longitude() >= this.west() &&
+               c.latitude() <= this.north() &&
+               c.latitude() >= this.south();
+    } else {
+        return c.x() <= this.east() &&
+               c.x() >= this.west() &&
+               c.y() <= this.north() &&
+               c.y() >= this.south();
+    }
 };
 
 BoundingBox.prototype.BBoxIsInside = function BBoxIsInside(bbox) {
-    return bbox.east() <= this.east() && bbox.west() >= this.west() && bbox.north() <= this.north() && bbox.south() >= this.south();
+    const unit = crsToUnit(this.crs());
+    return bbox.east(unit) <= this.east() &&
+           bbox.west(unit) >= this.west() &&
+           bbox.north(unit) <= this.north() &&
+           bbox.south(unit) >= this.south();
 };
 
 BoundingBox.prototype.offsetScale = function offsetScale(bbox) {
-    var pitX = Math.abs(bbox.west() - this.west()) / this.dimension.x;
-    var pitY = Math.abs(bbox.north() - this.north()) / this.dimension.y;
-    var scale = bbox.dimension.x / this.dimension.x;
+    if (bbox.crs() != this.crs()) {
+        throw new Error('unsupported offscale between 2 diff crs');
+    }
+    var pitX = Math.abs(bbox.west() - this.west()) / this._dimension.x;
+    var pitY = Math.abs(bbox.north() - this.north()) / this._dimension.y;
+    var scale = bbox._dimension.x / this._dimension.x;
     return new THREE.Vector3(pitX, pitY, scale);
-};
-
-/**
- * @documentation: Set the bounding box with the center of the box and the half dimension of the box
- * @param {type} center : center of the box
- * @param {type} halfDimension : half dimension of box
- * @returns {undefined}
- */
-BoundingBox.prototype.set = function set(center, halfDimension) {
-    this.halfDimension = halfDimension;
-    this.center = center;
 };
 
 /**
@@ -101,8 +151,8 @@ BoundingBox.prototype.set = function set(center, halfDimension) {
  * @returns {undefined}
  */
 BoundingBox.prototype.setBBoxZ = function setBBoxZ(min, max) {
-    this.minCoordinate.setAltitude(min);
-    this.maxCoordinate.setAltitude(max);
+    this.minCoordinate._values[2] = min;
+    this.maxCoordinate._values[2] = max;
 };
 
 /**
@@ -111,7 +161,11 @@ BoundingBox.prototype.setBBoxZ = function setBBoxZ(min, max) {
  * @returns {Boolean}
  */
 BoundingBox.prototype.intersect = function intersect(bbox) {
-    return !(this.west() >= bbox.east() || this.east() <= bbox.west() || this.south() >= bbox.north() || this.north() <= bbox.south());
+    const other = (bbox.crs() == this.crs()) ? bbox : bbox.as(this.crs());
+    return !(this.west() >= other.east() ||
+             this.east() <= other.west() ||
+             this.south() >= other.north() ||
+             this.north() <= other.south());
 };
 
 export default BoundingBox;
