@@ -121,8 +121,23 @@ and open the template in the editor.
             scene.camera.camera3D.far = 10000;
             scene.camera.camera3D.updateProjectionMatrix();
 
-            scene.notifyChange();
+            var controls = scene.controls = new itowns.controls.planar(
+                scene.camera.camera3D,
+                scene.gfxEngine.renderer.domElement,
+                scene.gfxEngine
+            );
+            controls.target.copy(scene.camera.camera3D.position);
+            controls.target.z = 0;
 
+            controls.minDistanceUp = 0;
+            controls.maxDistanceUp = 20000;
+            controls.minScale      = 0.000001;
+            controls.maxScale      = 100.0;
+            controls.minZenithAngle = 0;
+            controls.maxZenithAngle = 1.57;
+            controls.update();
+
+            scene.notifyChange();
 </script>
     </body>
 </html>

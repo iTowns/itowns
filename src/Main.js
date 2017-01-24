@@ -14,6 +14,7 @@ import updateTreeLayer from 'Process/TreeLayerProcessing';
 import { processTiledGeometryNode, initTiledGeometryLayer } from 'Process/TiledNodeProcessing';
 import { updateLayeredMaterialNodeImagery, updateLayeredMaterialNodeElevation, initNewNode } from 'Process/LayeredMaterialNodeProcessing';
 import TileMesh from 'Globe/TileMesh';
+import PlanarCameraControls from 'Renderer/ThreeExtended/PlanarCameraControls';
 
 // browser execution or not ?
 const scope = typeof window !== 'undefined' ? window : {};
@@ -41,11 +42,15 @@ const itowns = scope.itowns || {
     builder: {
         planar: PlanarTileBuilder,
     },
+    controls: {
+        planar: PlanarCameraControls,
+    },
 };
 scope.itowns = itowns;
 export const viewer = itowns.viewer;
 export const processing = itowns.processing;
 export const builder = itowns.builder;
+export const controls = itowns.controls;
 export { Scene };
 export { UNIT };
 export { BoundingBox };
