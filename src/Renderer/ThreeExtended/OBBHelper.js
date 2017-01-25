@@ -26,7 +26,7 @@ function OBBHelper(OBB, text) {
         color: color.getHex(),
     }));
 
-    var size = OBB.box3D.size();
+    var size = OBB.box3D.getSize();
 
     var geometryText = new THREE.TextGeometry(text, {
 
@@ -95,7 +95,7 @@ OBBHelper.prototype.update = function update(OBB) {
     this.updateMatrix();
     this.updateMatrixWorld(true);
 
-    var size = OBB.box3D.size();
+    var size = OBB.box3D.getSize();
 
     if (this.textMesh) {
         this.textMesh.position.set(0, 0, 0);
