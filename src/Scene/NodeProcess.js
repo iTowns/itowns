@@ -130,6 +130,7 @@ NodeProcess.prototype.subdivideNode = function subdivideNode(node, camera, param
                 if (__DEBUG__) {
                     const geometryLayer = params.layersConfig.getGeometryLayers()[0];
                     child.material.uniforms.showOutline = { value: geometryLayer.showOutline || false };
+                    child.material.wireframe = geometryLayer.wireframe || false;
                 }
 
                 return 0;
