@@ -73,7 +73,6 @@ WMTS_Provider.prototype.preprocessDataLayer = function preprocessDataLayer(layer
         options.mimetype = options.mimetype || 'image/png';
         options.style = options.style || 'normal';
         options.projection = options.projection || 'EPSG:3857';
-        options.ipr = options.ipr || '';
         var newBaseUrl = `${layer.url
             }?LAYER=${options.name
             }&FORMAT=${options.mimetype

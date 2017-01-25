@@ -916,56 +916,36 @@ ApiGlobe.prototype.removeEventListenerLayerChanged = function removeEventListene
 };
 
 /**
- * Get the IPR (Intellectual Property Rights) of all layers in the scene.
- * @constructor
- * @return {array}  An array of IPR.
+ * Get the Attribution of all layers in the scene.
+ * @return {array}  An array of attribution.
  */
 
-ApiGlobe.prototype.getLayersIPR = function getLayersIPR() {
-    var IPR = [];
-    var colorLayers = this.scene.getMap().layersConfiguration.getColorLayers();
-    for (var i = 0; i < colorLayers.length; i++) {
-        IPR.push(colorLayers[i].options.ipr);
-    }
-    var elevationLayers = this.scene.getMap().layersConfiguration.getElevationLayers();
-    for (var j = 0; j < elevationLayers.length; j++) {
-        IPR.push(elevationLayers[j].options.ipr);
-    }
-    IPR = this.removeDuplicatesFromArray(IPR, 'name');
-    return IPR;
-};
-
-ApiGlobe.prototype.removeDuplicatesFromArray = function removeDuplicatesFromArray(originalArray, prop) {
-    var newArray = [];
-    var lookupObject = {};
-    for (var i in originalArray) {
-        lookupObject[originalArray[i][prop]] = originalArray[i];
-    }
-    for (i in lookupObject) {
-        newArray.push(lookupObject[i]);
-    }
-    return newArray;
+ApiGlobe.prototype.getLayersAttribution = function getLayersAttribution() {
+    const lc = this.scene.getMap().layersConfiguration;
+    const map = new Map();
+    [...lc.getColorLayers(), ...lc.getElevationLayers()].forEach((l) => {
+        if (l.options.attribution != undefined) {
+            map.set(l.options.attribution.name, l.options.attribution);
+        }
+    });
+    return map;
 };
 
 /**
- * Set the IPR for a layer.
- * @constructor
- * @param {param} Param - The id of the layer and the new IPR {id, ipr}.
+ * Set the attribution for a layer.
+ * @param {param} Param - The id of the layer and the new IPR {id, attribution}.
  */
 
-ApiGlobe.prototype.setLayerIPR = function setLayerIPR(param) {
-    var colorLayers = this.scene.getMap().layersConfiguration.getColorLayers();
-    for (var i = 0; i < colorLayers.length; i++) {
-        if (param.id === colorLayers[i].id) {
-            colorLayers[i].options.ipr = param.ipr;
-        }
+ApiGlobe.prototype.setLayerAttribution = function setLayerAttribution(param) {
+    if (param.attribution.name === undefined) {
+        throw new Error(`Missing parameter "param.attribution.name" : ${param.id}`);
     }
-    var elevationLayers = this.scene.getMap().layersConfiguration.getElevationLayers();
-    for (var j = 0; j < elevationLayers.length; j++) {
-        if (param.id === elevationLayers[j].id) {
-            elevationLayers[j].options.ipr = param.ipr;
+    const lc = this.scene.getMap().layersConfiguration;
+    [...lc.getColorLayers(), ...lc.getElevationLayers()].forEach((l) => {
+        if (param.id === l.id) {
+            l.options.attribution = param.attribution;
         }
-    }
+    });
 };
 
 ApiGlobe.prototype.selectNodeById = function selectNodeById(id) {

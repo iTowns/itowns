@@ -10,11 +10,9 @@
 		}
 	},
 	"options": {
-		"ipr" : {
+		"attribution" : {
 			"name":"IGN",
-			"url":"http://www.ign.fr/",
-			"description": "",
-			"logo":""
+			"url":"http://www.ign.fr/"
 		},
 		"name": "ELEVATION.ELEVATIONGRIDCOVERAGE.HIGHRES",
 		"mimetype": "image/x-bil;bits=32",
