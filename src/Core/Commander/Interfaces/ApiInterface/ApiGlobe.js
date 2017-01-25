@@ -91,18 +91,6 @@ ApiGlobe.prototype.addImageryLayer = function addImageryLayer(layer, parentLayer
 };
 
 /**
- * This function adds an feature layer to the scene. The layer id must be unique.
- * @constructor
- * @param {Layer} layer.
- */
-ApiGlobe.prototype.addFeatureLayer = function addFeatureLayer(layer) {
-    preprocessLayer(layer, this.scene.scheduler.getProtocolProvider(layer.protocol));
-    layer.update = updateFeaturesAtNode;
-    this.scene.layersConfiguration.addGeometryLayer(layer);
-    this.scene.gfxEngine.add3DScene(layer.root);
-};
-
-/**
  * This function adds an imagery layer to the scene using a JSON file. The layer id must be unique. The protocol rules wich parameters are then needed for the function.
  * @constructor
  * @param {Layer} layer.
@@ -1064,11 +1052,12 @@ ApiGlobe.prototype.addFeature = function addFeature(options) {
     if (options === undefined)
         { throw new Error('options is required'); }
 
-    const layer = this.scene.layersConfiguration.getLayers(l => l.id === options.layerId)[0];
-    if (options.geometry !== undefined && layer !== undefined) {
-        const tools = this.scene.scheduler.getProtocolProvider('wfs').featureToolBox;
-        this.scene.scene3D.add(tools.processingGeoJSON(this.ellipsoid, options.geometry));
-    }
+    // TODO
+    // const layer = this.scene.layersConfiguration.getLayers(l => l.id === options.layerId)[0];
+    // if (options.geometry !== undefined && layer !== undefined) {
+    //     const tools = this.scene.scheduler.getProtocolProvider('wfs').featureToolBox;
+    //     this.scene.scene3D.add(tools.processingGeoJSON(this.ellipsoid, options.geometry));
+    // }
 };
 
 ApiGlobe.prototype.pickFeature = function pickFeature(position, layerId) {
