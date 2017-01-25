@@ -9,7 +9,6 @@
  * @param {type} NodeMesh
  * @param {type} TileGeometry
  * @param {type} BoundingBox
- * @param {type} defaultValue
  * @param {type} THREE
  * @param {type} OBBHelper
  * @param {type} SphereHelper
@@ -20,10 +19,9 @@
 import NodeMesh from 'Renderer/NodeMesh';
 import TileGeometry from 'Globe/TileGeometry';
 import BoundingBox from 'Scene/BoundingBox';
-import defaultValue from 'Core/defaultValue';
 import * as THREE from 'three';
-import OBBHelper from 'Renderer/ThreeExtented/OBBHelper';
-import SphereHelper from 'Renderer/ThreeExtented/SphereHelper';
+import OBBHelper from 'Renderer/ThreeExtended/OBBHelper';
+import SphereHelper from 'Renderer/ThreeExtended/SphereHelper';
 import LayeredMaterial, { l_ELEVATION } from 'Renderer/LayeredMaterial';
 import GlobeDepthMaterial from 'Renderer/GlobeDepthMaterial';
 import MatteIdsMaterial from 'Renderer/MatteIdsMaterial';
@@ -36,10 +34,10 @@ function TileMesh(params, builder, geometryCache) {
     this.matrixAutoUpdate = false;
     this.rotationAutoUpdate = false;
 
-    this.level = params.zoom;
-    this.bbox = defaultValue(params.bbox, new BoundingBox());
+    this.level = params.level;
+    this.bbox = params.bbox || new BoundingBox();
 
-    this.geometry = defaultValue(geometryCache, new TileGeometry(params, builder));
+    this.geometry = geometryCache || new TileGeometry(params, builder);
     this.normal = params.center.clone().normalize();
 
     var worldNormal = new THREE.Vector3(0, 0, 1).applyQuaternion(this.OBB().getWorldQuaternion());
@@ -139,10 +137,6 @@ TileMesh.prototype.setDisplayed = function setDisplayed(show) {
 
     if (this.helper !== undefined) {
         this.helper.setMaterialVisibility(show);
-    }
-
-    if (this.content !== null && show) {
-        this.content.visible = true;
     }
 };
 

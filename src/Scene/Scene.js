@@ -6,22 +6,13 @@
 
 /* global window, requestAnimationFrame */
 
-/**
- *
- * @param {type} c3DEngine
- * @param {type} Globe
- * @param {type} ManagerCommands
- * @param {type} BrowseTree
- * @returns {Function}
- */
 import c3DEngine from 'Renderer/c3DEngine';
 import Globe from 'Globe/Globe';
-import ManagerCommands from 'Core/Commander/ManagerCommands';
+import Scheduler from 'Core/Commander/Scheduler';
 import BrowseTree from 'Scene/BrowseTree';
 import NodeProcess from 'Scene/NodeProcess';
 import Quadtree from 'Scene/Quadtree';
 import CoordStars from 'Core/Geographic/CoordStars';
-import defaultValue from 'Core/defaultValue';
 import Layer from 'Scene/Layer';
 import MobileMappingLayer from 'MobileMapping/MobileMappingLayer';
 import CustomEvent from 'custom-event';
@@ -47,7 +38,7 @@ function Scene(coordinate, ellipsoid, viewerDiv, debugMode, gLDebug) {
 
     this.cameras = null;
     this.selectNodes = null;
-    this.managerCommand = ManagerCommands(this);
+    this.scheduler = Scheduler(this);
     this.orbitOn = false;
 
     this.stylesManager = new StyleManager();
@@ -171,8 +162,8 @@ Scene.prototype.step = function step() {
     // Check if we're done (no command left).
     // We need to make sure we didn't executed any commands because these commands
     // might spawn other commands in a next update turn.
-    const executedDuringUpdate = this.managerCommand.resetCommandsCount('executed');
-    if (this.managerCommand.commandsWaitingExecutionCount() == 0 && executedDuringUpdate == 0) {
+    const executedDuringUpdate = this.scheduler.resetCommandsCount('executed');
+    if (this.scheduler.commandsWaitingExecutionCount() == 0 && executedDuringUpdate == 0) {
         this.viewerDiv.dispatchEvent(new CustomEvent('globe-built'));
 
         // one last rendering before pausing
@@ -274,14 +265,12 @@ Scene.prototype.setStreetLevelImageryOn = function setStreetLevelImageryOn(value
 };
 
 Scene.prototype.setLightingPos = function setLightingPos(pos) {
-    if (pos)
-        { this.lightingPos = pos; }
-    else {
+    if (pos) {
+        this.lightingPos = pos;
+    } else {
         var coSun = CoordStars.getSunPositionInScene(this.getEllipsoid(), new Date().getTime(), 48.85, 2.35);
         this.lightingPos = coSun;
     }
-
-    defaultValue.lightingPos = this.lightingPos;
 
     this.browserScene.updateMaterialUniform('lightPosition', this.lightingPos.clone().normalize());
     this.layers[0].node.updateLightingPos(this.lightingPos);

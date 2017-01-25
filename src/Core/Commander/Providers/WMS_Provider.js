@@ -11,7 +11,7 @@ import Fetcher from 'Core/Commander/Providers/Fetcher';
 import * as THREE from 'three';
 import Projection from 'Core/Geographic/Projection';
 import CacheRessource from 'Core/Commander/Providers/CacheRessource';
-import mE from 'Core/Math/MathExtented';
+import mE from 'Core/Math/MathExtended';
 import BoundingBox from 'Scene/BoundingBox';
 import { UNIT } from 'Core/Geographic/GeoCoordinate';
 
@@ -158,9 +158,9 @@ WMS_Provider.prototype.getXbilTexture = function getXbilTexture(tile, layer, bbo
 };
 
 WMS_Provider.prototype.executeCommand = function executeCommand(command) {
-    var layer = command.paramsFunction.layer;
+    var layer = command.layer;
     var tile = command.requester;
-    var ancestor = command.paramsFunction.ancestor;
+    var ancestor = command.ancestor;
 
     var supportedFormats = {
         'image/png': this.getColorTexture.bind(this),

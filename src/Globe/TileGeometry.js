@@ -7,7 +7,6 @@
  */
 /* global Float32Array*/
 import * as THREE from 'three';
-import defaultValue from 'Core/defaultValue';
 import CacheRessource from 'Core/Commander/Providers/CacheRessource';
 
 // TODO Why? it's not necessary
@@ -77,11 +76,11 @@ TileGeometry.prototype.constructor = TileGeometry;
 
 TileGeometry.prototype.computeBuffers = function computeBuffers(params, builder) {
     // Create output buffers.
-    var outBuffers = new Buffers(params.segment);
+    var outBuffers = new Buffers();
     // Create temp buffers
     var scratchBuffers = new Buffers();
 
-    var nSeg = defaultValue(params.segment, 32);
+    var nSeg = params.segment || 32;
     var nVertex = (nSeg + 1) * (nSeg + 1) + 8 * (nSeg - 1); // correct pour uniquement les vertex
     var triangles = (nSeg) * (nSeg) + 16 * (nSeg - 1); // correct pour uniquement les vertex
 
@@ -220,7 +219,7 @@ TileGeometry.prototype.computeBuffers = function computeBuffers(params, builder)
     // This size must be take into account the bbox's size
     // For the moment, I reduce the size to increase performance (pixel shader performance)
 
-    const r = 5 * ((20 - params.zoom) + 10);
+    const r = 5 * ((20 - params.level) + 10);
 
     var buildIndexSkirt = function buildIndexSkirt() {};
     var buildUVSkirt = function buildUVSkirt() {};

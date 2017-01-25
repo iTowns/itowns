@@ -7,7 +7,6 @@
 
 import Provider from 'Core/Commander/Providers/Provider';
 import Fetcher from 'Core/Commander/Providers/Fetcher';
-import defaultValue from 'Core/defaultValue';
 import CacheRessource from 'Core/Commander/Providers/CacheRessource';
 
 /**
@@ -22,7 +21,7 @@ function WFS_Provider(options) {
     this.baseUrl = options.url || '';
     this.layer = options.layer || '';
     this.typename = options.typename || '';
-    this.format = defaultValue(options.format, 'json');
+    this.format = options.format === undefined ? 'json' : options.format;
     this.epsgCode = options.epsgCode || 4326;
 }
 
