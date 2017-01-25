@@ -116,11 +116,13 @@ LayersConfiguration.prototype.moveLayerToIndex = function moveLayerToIndex(id, n
     if (this.layersState[id]) {
         var oldIndex = this.layersState[id].sequence;
         for (var i in this.layersState) {
-            var state = this.layersState[i];
-            if (state.sequence === newIndex) {
-                state.sequence = oldIndex;
-                this.layersState[id].sequence = newIndex;
-                break;
+            if (Object.prototype.hasOwnProperty.call(this.layersState, i)) {
+                var state = this.layersState[i];
+                if (state.sequence === newIndex) {
+                    state.sequence = oldIndex;
+                    this.layersState[id].sequence = newIndex;
+                    break;
+                }
             }
         }
 

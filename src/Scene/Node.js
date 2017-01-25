@@ -147,21 +147,10 @@ Node.prototype.remove = function remove(/* child*/) {
  */
 
 Node.extend = function extend(childClass) {
-    function propName(prop, value) {
-        for (var i in prop) {
-            if (prop[i] === value) {
-                return i;
-            }
-        }
-        return false;
-    }
-
-    for (var p in Node.prototype) {
-        var protoName = propName(Node.prototype, Node.prototype[p]);
-
-
-        if (protoName !== 'add' && protoName !== 'remove' & protoName !== 'setVisibility' && protoName !== 'setDisplayed') {
-            childClass.prototype[protoName] = Node.prototype[p];
+    const membersToIgnore = ['add', 'remove', 'setVisibility', 'setDisplayed'];
+    for (const p in Node.prototype) {
+        if (Object.prototype.hasOwnProperty.call(Node.prototype, p) && !membersToIgnore.includes(p)) {
+            childClass.prototype[p] = Node.prototype[p];
         }
     }
 };

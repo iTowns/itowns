@@ -62,7 +62,6 @@ module.exports = {
     'camelcase': 'off',
     'no-bitwise': 'off',
     'no-restricted-syntax': 'off',
-    'guard-for-in': 'off',
     'consistent-return': 'off',
     'brace-style': 'off',
     'new-cap': 'off',
