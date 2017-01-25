@@ -11,33 +11,15 @@
  * @returns {Quadtree_L13.Quadtree}
  */
 import Layer from 'Scene/Layer';
-import InterfaceCommander from 'Core/Commander/InterfaceCommander';
-import Quad from 'Core/Geographic/Quad';
+import Scheduler from 'Core/Commander/Scheduler';
 import NodeMesh from 'Renderer/NodeMesh';
-import { SSE_SUBDIVISION_THRESHOLD } from 'Scene/NodeProcess';
-
-function commandQueuePriorityFunction(cmd) {
-    var node = cmd.requester;
-
-    // We know that 'node' is visible because commands can only be
-    // issued for visible nodes.
-    //
-    // Prioritize subdivision request
-    if (cmd.layer instanceof Quadtree) {
-        return 10000;
-    } else if (!node.loaded) {
-        return 1000;
-    } else if (SSE_SUBDIVISION_THRESHOLD < node.sse) {
-        return 100;
-    } else {
-        return 10;
-    }
-}
+import BoundingBox from 'Scene/BoundingBox';
 
 function Quadtree(type, schemeTile, link) {
     Layer.call(this);
 
-    this.interCommand = new InterfaceCommander(type, commandQueuePriorityFunction);
+    this.type = type;
+    this.scheduler = Scheduler();
     this.link = link;
     this.schemeTile = schemeTile;
     this.tileType = type;
@@ -63,10 +45,12 @@ Quadtree.prototype.constructor = Quadtree;
 
 Quadtree.prototype.init = function init(geometryLayer) {
     var rootNode = this.children[0];
+    const promises = [];
 
     for (var i = 0; i < this.schemeTile.rootCount(); i++) {
-        this.requestNewTile(geometryLayer, this.schemeTile.getRoot(i), rootNode);
+        promises.push(this.requestNewTile(geometryLayer, this.schemeTile.getRoot(i), rootNode));
     }
+    return Promise.all(promises);
 };
 
 Quadtree.prototype.northWest = function northWest(node) {
@@ -86,12 +70,18 @@ Quadtree.prototype.southEast = function southEast(node) {
 };
 
 Quadtree.prototype.requestNewTile = function requestNewTile(geometryLayer, bbox, parent) {
-    var params = {
+    const command = {
+        /* mandatory */
+        requester: parent,
         layer: geometryLayer,
+        priority: 10000,
+        /* specific params */
         bbox,
+        type: this.type,
+        level: 0,
     };
 
-    this.interCommand.request(params, parent);
+    return this.scheduler.execute(command);
 };
 
 Quadtree.prototype.canSubdivideNode = function canSubdivideNode(node) {
@@ -108,9 +98,15 @@ Quadtree.prototype.subdivideNode = function subdivideNode(node) {
         return [];
     }
 
-    var quad = new Quad(node.bbox);
+    const bbox = node.bbox;
 
-    return [quad.northWest, quad.northEast, quad.southWest, quad.southEast];
+    const northWest = new BoundingBox(bbox.west(), bbox.center.x, bbox.center.y, bbox.north());
+    const northEast = new BoundingBox(bbox.center.x, bbox.east(), bbox.center.y, bbox.north());
+    const southWest = new BoundingBox(bbox.west(), bbox.center.x, bbox.south(), bbox.center.y);
+    const southEast = new BoundingBox(bbox.center.x, bbox.east(), bbox.south(), bbox.center.y);
+
+
+    return [northWest, northEast, southWest, southEast];
 };
 
 Quadtree.prototype.traverse = function traverse(foo, node)

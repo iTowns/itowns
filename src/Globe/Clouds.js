@@ -7,10 +7,10 @@
 
 import NodeMesh from 'Renderer/NodeMesh';
 import * as THREE from 'three';
-import defaultValue from 'Core/defaultValue';
 import WMS_Provider from 'Core/Commander/Providers/WMS_Provider';
 import CloudsFS from 'Renderer/Shader/CloudsFS.glsl';
 import CloudsVS from 'Renderer/Shader/CloudsVS.glsl';
+import { LIGHTING_POSITION } from 'Globe/Atmosphere';
 
 function Clouds(/* size*/) {
     NodeMesh.call(this);
@@ -35,7 +35,7 @@ function Clouds(/* size*/) {
         lightingOn: { value: false },
         lightPosition: {
             type: 'v3',
-            value: defaultValue.lightingPos.clone().normalize(),
+            value: LIGHTING_POSITION.clone().normalize(),
         },
     };
 

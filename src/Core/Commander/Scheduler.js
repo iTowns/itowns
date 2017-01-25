@@ -1,13 +1,13 @@
 /**
  * Generated On: 2015-10-5
- * Class: ManagerCommands
+ * Class: Scheduler
  * Description: Cette classe singleton gère les requetes/Commandes  de la scène. Ces commandes peuvent etre synchrone ou asynchrone. Elle permet d'executer, de prioriser  et d'annuler les commandes de la pile. Les commandes executées sont placées dans une autre file d'attente.
  */
 
 import EventsManager from 'Core/Commander/Interfaces/EventsManager';
 import PriorityQueue from 'js-priority-queue';
 
-var instanceCommandManager = null;
+var instanceScheduler = null;
 
 function _instanciateQueue() {
     return {
@@ -54,10 +54,10 @@ function _instanciateQueue() {
     };
 }
 
-function ManagerCommands(scene) {
+function Scheduler(scene) {
     // Constructor
-    if (instanceCommandManager !== null) {
-        throw new Error('Cannot instantiate more than one ManagerCommands');
+    if (instanceScheduler !== null) {
+        throw new Error('Cannot instantiate more than one Scheduler');
     }
 
     this.defaultQueue = _instanciateQueue();
@@ -70,14 +70,14 @@ function ManagerCommands(scene) {
     this.maxCommandsPerHost = 6;
 
     if (!scene)
-        { throw new Error('Cannot instantiate ManagerCommands without scene'); }
+        { throw new Error('Cannot instantiate Scheduler without scene'); }
 
     this.scene = scene;
 }
 
-ManagerCommands.prototype.constructor = ManagerCommands;
+Scheduler.prototype.constructor = Scheduler;
 
-ManagerCommands.prototype.runCommand = function runCommand(command, queue, executingCounterUpToDate) {
+Scheduler.prototype.runCommand = function runCommand(command, queue, executingCounterUpToDate) {
     var provider = this.providers[command.layer.protocol];
 
     if (!provider) {
@@ -101,11 +101,16 @@ ManagerCommands.prototype.runCommand = function runCommand(command, queue, execu
     });
 };
 
-ManagerCommands.prototype.addCommand = function addCommand(command) {
+Scheduler.prototype.execute = function execute(command) {
     // parse host
     const layer = command.layer;
 
     const host = layer.url ? new URL(layer.url).host : undefined;
+
+    command.promise = new Promise((resolve, reject) => {
+        command.resolve = resolve;
+        command.reject = reject;
+    });
 
     // init queue if needed
     if (host && !(this.hostQueues.has(host))) {
@@ -127,20 +132,23 @@ ManagerCommands.prototype.addCommand = function addCommand(command) {
         // queue mechanism (why setTimeout and not Promise? see tasks vs microtasks priorities)
         window.setTimeout(runNow, 0);
     } else {
+        command.timestamp = Date.now();
         q.storage.queue(command);
     }
+
+    return command.promise;
 };
 
 
-ManagerCommands.prototype.addProtocolProvider = function addProtocolProvider(protocol, provider) {
+Scheduler.prototype.addProtocolProvider = function addProtocolProvider(protocol, provider) {
     this.providers[protocol] = provider;
 };
 
-ManagerCommands.prototype.getProtocolProvider = function getProtocolProvider(protocol) {
+Scheduler.prototype.getProtocolProvider = function getProtocolProvider(protocol) {
     return this.providers[protocol];
 };
 
-ManagerCommands.prototype.commandsWaitingExecutionCount = function commandsWaitingExecutionCount() {
+Scheduler.prototype.commandsWaitingExecutionCount = function commandsWaitingExecutionCount() {
     let sum = this.defaultQueue.storage.length + this.defaultQueue.counters.executing;
     for (var q of this.hostQueues) {
         sum += q[1].storage.length + q[1].counters.executing;
@@ -148,7 +156,7 @@ ManagerCommands.prototype.commandsWaitingExecutionCount = function commandsWaiti
     return sum;
 };
 
-ManagerCommands.prototype.commandsRunningCount = function commandsRunningCount() {
+Scheduler.prototype.commandsRunningCount = function commandsRunningCount() {
     let sum = this.defaultQueue.counters.executing;
 
     for (var q of this.hostQueues) {
@@ -157,7 +165,7 @@ ManagerCommands.prototype.commandsRunningCount = function commandsRunningCount()
     return sum;
 };
 
-ManagerCommands.prototype.resetCommandsCount = function resetCommandsCount(type) {
+Scheduler.prototype.resetCommandsCount = function resetCommandsCount(type) {
     let sum = this.defaultQueue.counters[type];
     this.defaultQueue.counters[type] = 0;
     for (var q of this.hostQueues) {
@@ -167,7 +175,7 @@ ManagerCommands.prototype.resetCommandsCount = function resetCommandsCount(type)
     return sum;
 };
 
-ManagerCommands.prototype.getProviders = function getProviders() {
+Scheduler.prototype.getProviders = function getProviders() {
     var p = [];
 
     for (var protocol in this.providers) {
@@ -189,7 +197,7 @@ CancelledCommandException.prototype.toString = function toString() {
 
 /**
  */
-ManagerCommands.prototype.deQueue = function deQueue(queue) {
+Scheduler.prototype.deQueue = function deQueue(queue) {
     var st = queue.storage;
     while (st.length > 0) {
         var cmd = st.dequeue();
@@ -207,13 +215,13 @@ ManagerCommands.prototype.deQueue = function deQueue(queue) {
 
 /**
  */
-ManagerCommands.prototype.wait = function wait() {
+Scheduler.prototype.wait = function wait() {
     this.eventsManager.wait();
 };
 
 export { CancelledCommandException };
 
 export default function (scene) {
-    instanceCommandManager = instanceCommandManager || new ManagerCommands(scene);
-    return instanceCommandManager;
+    instanceScheduler = instanceScheduler || new Scheduler(scene);
+    return instanceScheduler;
 }

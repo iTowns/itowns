@@ -7,7 +7,6 @@
 
 import NodeMesh from 'Renderer/NodeMesh';
 import * as THREE from 'three';
-import defaultValue from 'Core/defaultValue';
 import Sky from 'Globe/SkyShader';
 import skyFS from 'Renderer/Shader/skyFS.glsl';
 import skyVS from 'Renderer/Shader/skyVS.glsl';
@@ -15,6 +14,8 @@ import groundFS from 'Renderer/Shader/groundFS.glsl';
 import groundVS from 'Renderer/Shader/groundVS.glsl';
 import GlowFS from 'Renderer/Shader/GlowFS.glsl';
 import GlowVS from 'Renderer/Shader/GlowVS.glsl';
+
+export const LIGHTING_POSITION = new THREE.Vector3(1, 0, 0);
 
 function Atmosphere(ellipsoid) {
     NodeMesh.call(this);
@@ -94,11 +95,10 @@ function Atmosphere(ellipsoid) {
         mieScaleDepth: 0.1,
     };
 
-
     var uniformsSky = {
         v3LightPosition: {
             type: 'v3',
-            value: defaultValue.lightingPos.clone().normalize(),
+            value: LIGHTING_POSITION.clone().normalize(),
         },
         v3InvWavelength: {
             type: 'v3',
@@ -219,12 +219,6 @@ function Atmosphere(ellipsoid) {
     this.sky.mesh.visible = false;
     this.add(this.ground.mesh);
     this.add(this.sky.mesh);
-    /*
-        this.sphereSun = new THREE.Mesh((new THREE.SphereGeometry( 1000000,32,32 )), new THREE.MeshBasicMaterial());
-        this.sphereSun.position.copy(defaultValue.lightingPos);
-        this.add(this.sphereSun);
-
-    */
 
     this.skyDome = new Sky();
     this.skyDome.mesh.frustumCulled = false;

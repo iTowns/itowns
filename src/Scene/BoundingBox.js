@@ -4,8 +4,7 @@
  * Description: BoundingBox délimite une zone de l'espace. Cette zone est défnie  par des coordonées cartographiques.
  */
 
-import defaultValue from 'Core/defaultValue';
-import mE from 'Core/Math/MathExtented';
+import mE from 'Core/Math/MathExtended';
 import Point2D from 'Core/Math/Point2D';
 import * as THREE from 'three';
 import GeoCoordinate from 'Core/Geographic/GeoCoordinate';
@@ -23,10 +22,16 @@ import GeoCoordinate from 'Core/Geographic/GeoCoordinate';
  */
 
 function BoundingBox(west, east, south, north, minAltitude, maxAltitude, unit) {
-    // Constructor
-
-    this.minCoordinate = new GeoCoordinate(defaultValue(west, -mE.PI), defaultValue(south, -mE.PI_OV_TWO), defaultValue(minAltitude, 0), unit);
-    this.maxCoordinate = new GeoCoordinate(defaultValue(east, mE.PI), defaultValue(north, mE.PI_OV_TWO), defaultValue(maxAltitude, 0), unit);
+    this.minCoordinate = new GeoCoordinate(
+        (west === undefined ? -mE.PI : west),
+        (south === undefined ? -mE.PI_OV_TWO : south),
+        (minAltitude || 0),
+        unit);
+    this.maxCoordinate = new GeoCoordinate(
+        (east === undefined ? mE.PI : east),
+        (north === undefined ? mE.PI_OV_TWO : north),
+        (maxAltitude || 0),
+        unit);
 
     this.dimension = new Point2D(Math.abs(this.east() - this.west()), Math.abs(this.north() - this.south()));
     this.halfDimension = new Point2D(this.dimension.x * 0.5, this.dimension.y * 0.5);

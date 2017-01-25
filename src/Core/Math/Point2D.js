@@ -4,14 +4,9 @@
  * and open the template in the editor.
  */
 
-
-import defaultValue from 'Core/defaultValue';
-
 function Point2D(x, y) {
-    // Constructor
-
-    this.x = defaultValue(x, 0);
-    this.y = defaultValue(y, 0);
+    this.x = x || 0;
+    this.y = y || 0;
 }
 
 export default Point2D;

@@ -4,29 +4,23 @@
  * Description: NodeProcess effectue une opération sur un Node.
  */
 
-import BoundingBox from 'Scene/BoundingBox';
-import MathExt from 'Core/Math/MathExtented';
 import * as THREE from 'three';
-import defaultValue from 'Core/defaultValue';
-import Projection from 'Core/Geographic/Projection';
 import RendererConstant from 'Renderer/RendererConstant';
 import { chooseNextLevelToFetch } from 'Scene/LayerUpdateStrategy';
 import { l_ELEVATION, l_COLOR } from 'Renderer/LayeredMaterial';
 import LayerUpdateState from 'Scene/LayerUpdateState';
-import { CancelledCommandException } from 'Core/Commander/ManagerCommands';
+import { CancelledCommandException } from 'Core/Commander/Scheduler';
 
 export const SSE_SUBDIVISION_THRESHOLD = 6.0;
 
-function NodeProcess(scene, camera, ellipsoid, bbox) {
+function NodeProcess(scene, camera, ellipsoid) {
     // TODO: consider removing this.scene + replacing scene.notifyChange by an event
     this.scene = scene;
-    this.bbox = defaultValue(bbox, new BoundingBox(MathExt.PI_OV_TWO + MathExt.PI_OV_FOUR, MathExt.PI + MathExt.PI_OV_FOUR, 0, MathExt.PI_OV_TWO));
 
     this.vhMagnitudeSquared = 1.0;
 
-    this.r = defaultValue(ellipsoid.size, new THREE.Vector3());
+    this.r = ellipsoid.size || new THREE.Vector3();
     this.cV = new THREE.Vector3();
-    this.projection = new Projection();
 }
 
 /**
@@ -78,47 +72,36 @@ NodeProcess.prototype.checkNodeSSE = function checkNodeSSE(node) {
 
 NodeProcess.prototype.subdivideNode = function subdivideNode(node, camera, params) {
     if (!node.pendingSubdivision && node.noChild()) {
-        var bboxes = params.tree.subdivideNode(node);
+        const bboxes = params.tree.subdivideNode(node);
         node.pendingSubdivision = true;
 
         for (var i = 0; i < bboxes.length; i++) {
-            var args = {
+            const quadtree = params.tree;
+            const command = {
+                /* mandatory */
+                requester: node,
                 layer: params.layersConfig.getGeometryLayers()[0],
+                priority: 10000,
+                /* specific params */
                 bbox: bboxes[i],
+                type: quadtree.type,
             };
-            var quadtree = params.tree;
 
-            quadtree.interCommand.request(args, node).then((child) => {
-                var colorTextureCount = 0;
-                var paramMaterial = [];
-                var layer;
-                var j;
-
-                child.matrixSet = [];
+            quadtree.scheduler.execute(command).then((child) => {
+                let colorTextureCount = 0;
+                const paramMaterial = [];
 
                 // update wmts
-                var colorLayers = params.layersConfig.getColorLayers();
+                const colorLayers = params.layersConfig.getColorLayers();
 
                 // update Imagery wmts
-                for (j = 0; j < colorLayers.length; j++) {
-                    layer = colorLayers[j];
-                    const tileMatrixSet = layer.options.tileMatrixSet;
-
-                    if (tileMatrixSet && !child.matrixSet[tileMatrixSet]) {
-                        child.matrixSet[tileMatrixSet] = this.projection.getCoordWMTS_WGS84(child.tileCoord, child.bbox, tileMatrixSet);
-                    }
-
+                for (const layer of colorLayers) {
                     if (layer.tileInsideLimit(child, layer)) {
-                        let texturesCount;
-                        if (tileMatrixSet) {
-                            var bcoord = child.matrixSet[tileMatrixSet];
-                            texturesCount = bcoord[1].row - bcoord[0].row + 1;
-                        } else {
-                            texturesCount = 1;
-                        }
+                        const texturesCount = layer.tileTextureCount ?
+                            layer.tileTextureCount(child, layer) : 1;
 
                         paramMaterial.push({
-                            tileMT: tileMatrixSet,
+                            tileMT: layer.options.tileMatrixSet,
                             texturesCount,
                             visible: params.layersConfig.isColorLayerVisible(layer.id),
                             opacity: params.layersConfig.getColorLayerOpacity(layer.id),
@@ -131,15 +114,9 @@ NodeProcess.prototype.subdivideNode = function subdivideNode(node, camera, param
                 }
 
                 // update Imagery wmts
-                var elevationLayers = params.layersConfig.getElevationLayers();
-                var canHaveElevation = false;
-                for (j = 0; j < elevationLayers.length; j++) {
-                    layer = elevationLayers[j];
-                    const tileMatrixSet = layer.options.tileMatrixSet;
-
-                    if (tileMatrixSet && !child.matrixSet[tileMatrixSet]) {
-                        child.matrixSet[tileMatrixSet] = this.projection.getCoordWMTS_WGS84(child.tileCoord, child.bbox, tileMatrixSet);
-                    }
+                const elevationLayers = params.layersConfig.getElevationLayers();
+                let canHaveElevation = false;
+                for (const layer of elevationLayers) {
                     canHaveElevation |= layer.tileInsideLimit(child, layer);
                 }
 
@@ -215,6 +192,23 @@ function findAncestorWithValidTextureForLayer(node, layerType, layer) {
     }
 }
 
+function nodeCommandQueuePriorityFunction(node) {
+    // We know that 'node' is visible because commands can only be
+    // issued for visible nodes.
+    //
+    if (!node.loaded) {
+        // Prioritize lower-level (ie: bigger) non-loaded nodes
+        // because we need them to be loaded to be able
+        // to subdivide.
+        return 1000 - node.level;
+    } else if (node.isDisplayed()) {
+        // Then prefer displayed() node over non-displayed one
+        return 100;
+    } else {
+        return 10;
+    }
+}
+
 function updateNodeImagery(scene, quadtree, node, layersConfig, force) {
     const promises = [];
 
@@ -251,29 +245,37 @@ function updateNodeImagery(scene, quadtree, node, layersConfig, force) {
             }
         }
 
-        const args = {
-            layer,
-        };
+        let ancestor = null;
 
         const currentLevel = node.materials[RendererConstant.FINAL].getColorLayerLevelById(layer.id);
         // if this tile has no texture (level == -1), try use one from an ancestor
         if (currentLevel === -1) {
-            args.ancestor = findAncestorWithValidTextureForLayer(node, l_COLOR, layer);
+            ancestor = findAncestorWithValidTextureForLayer(node, l_COLOR, layer);
         } else {
             var targetLevel = chooseNextLevelToFetch(layer.updateStrategy.type, node.level, currentLevel, layer.updateStrategy.options);
             if (targetLevel === currentLevel) {
                 continue;
             }
             if (targetLevel < node.level) {
-                args.ancestor = node.getNodeAtLevel(targetLevel);
+                ancestor = node.getNodeAtLevel(targetLevel);
             }
         }
 
         node.layerUpdateState[layer.id].newTry();
 
-        promises.push(quadtree.interCommand.request(args, node, refinementCommandCancellationFn).then(
+        const command = {
+            /* mandatory */
+            layer,
+            requester: node,
+            priority: nodeCommandQueuePriorityFunction(node),
+            earlyDropFunction: refinementCommandCancellationFn,
+            /* specific params */
+            ancestor,
+        };
+
+        promises.push(quadtree.scheduler.execute(command).then(
             (result) => {
-                const level = args.ancestor ? args.ancestor.level : node.level;
+                const level = ancestor ? ancestor.level : node.level;
                 // Assign .level to texture
                 if (Array.isArray(result)) {
                     for (let j = 0; j < result.length; j++) {
@@ -384,11 +386,19 @@ function updateNodeElevation(scene, quadtree, node, layersConfig, force) {
 
     // If we found a usable layer, perform a query
     if (bestLayer !== null) {
-        const args = { layer: bestLayer, ancestor };
-
         node.layerUpdateState[bestLayer.id].newTry();
 
-        quadtree.interCommand.request(args, node, refinementCommandCancellationFn).then(
+        const command = {
+            /* mandatory */
+            layer: bestLayer,
+            requester: node,
+            priority: nodeCommandQueuePriorityFunction(node),
+            earlyDropFunction: refinementCommandCancellationFn,
+            /* specific params */
+            ancestor,
+        };
+
+        quadtree.scheduler.execute(command).then(
             (terrain) => {
                 node.layerUpdateState[bestLayer.id].success();
 
@@ -465,19 +475,9 @@ NodeProcess.prototype.frustumCullingOBB = function frustumCullingOBB(node, camer
     var position = node.OBB().worldToLocal(camera.position().clone());
     position.z -= node.distance;
 
-    quaternion.multiplyQuaternions(node.OBB().quadInverse(), camera.camera3D.quaternion);
+    quaternion.multiplyQuaternions(node.OBB().inverseQuaternion(), camera.camera3D.quaternion);
 
     return camera.getFrustumLocalSpace(position, quaternion).intersectsBox(node.OBB().box3D);
-};
-
-/**
- * @documentation: Cull node with frustrum and the bounding box of node
- * @param {type} node
- * @param {type} camera
- * @returns {unresolved}
- */
-NodeProcess.prototype.frustumBB = function frustumBB(node /* , camera*/) {
-    return node.bbox.intersect(this.bbox);
 };
 
 /**
