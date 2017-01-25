@@ -119,7 +119,12 @@ ApiGlobe.prototype.addGeometryLayer = function addGeometryLayer(layer, parentLay
 
     this.scene.layersConfiguration.addLayer(layer, parentLayerId);
 
+    const threejsLayer = this.scene.getUniqueThreejsLayer();
     this.scene.layersConfiguration.setLayerAttribute(layer.id, 'type', 'geometry');
+    this.scene.layersConfiguration.setLayerAttribute(layer.id, 'threejsLayer', threejsLayer);
+
+    // enable by default
+    this.scene.camera.camera3D.layers.enable(threejsLayer);
 
     return layer;
 };
@@ -469,6 +474,15 @@ ApiGlobe.prototype.setRealisticLightingOn = function setRealisticLightingOn(valu
 
 ApiGlobe.prototype.setLayerVisibility = function setLayerVisibility(id, visible) {
     this.scene.layersConfiguration.setLayerAttribute(id, 'visible', visible);
+
+    const threejsLayer = this.scene.layersConfiguration.getLayerAttribute(id, 'threejsLayer');
+    if (threejsLayer != undefined) {
+        if (visible) {
+            this.scene.camera.camera3D.layers.enable(threejsLayer);
+        } else {
+            this.scene.camera.camera3D.layers.disable(threejsLayer);
+        }
+    }
 
     this.scene.notifyChange(0, true);
     eventLayerChangedVisible.layerId = id;
