@@ -46,7 +46,10 @@ WMS_Provider.prototype.url = function url(bbox, layer) {
         bbox.east(layer.unit),
         bbox.north(layer.unit),
     ];
-    const bboxInUnit = `${v[1]},${v[0]},${v[3]},${v[2]}`;
+
+    const bboxInUnit = layer.bbox_url == 'wsen' ?
+        `${v[0]},${v[1]},${v[2]},${v[3]}` :
+        `${v[1]},${v[0]},${v[3]},${v[2]}`;
 
     return layer.customUrl.replace('%bbox', bboxInUnit);
 };

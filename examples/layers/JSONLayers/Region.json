@@ -9,6 +9,7 @@
 	"transparent" : true,
     "unit"      : 1,
 	"bbox"      : [-61.80983300000002, 55.83665389999998, -21.38963079935857, 51.0890011990783],
+    "bbox_url"  : "swne",
 	"featureInfoMimeType" : "",
 	"dateTime"  : "",
 	"heightMapWidth" : 256,
