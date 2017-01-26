@@ -8,6 +8,7 @@ import PriorityQueue from 'js-priority-queue';
 import WMTS_Provider from './Providers/WMTS_Provider';
 import WMS_Provider from './Providers/WMS_Provider';
 import TileProvider from './Providers/TileProvider';
+import $3dTiles_Provider from './Providers/3dTiles_Provider';
 
 var instanceScheduler = null;
 
@@ -83,6 +84,7 @@ Scheduler.prototype.initDefaultProviders = function initDefaultProviders() {
     this.addProtocolProvider('wmtsc', wmtsProvider);
     this.addProtocolProvider('tile', new TileProvider());
     this.addProtocolProvider('wms', new WMS_Provider());
+    this.addProtocolProvider('3d-tiles', new $3dTiles_Provider());
 };
 
 
