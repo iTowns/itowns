@@ -33,6 +33,7 @@ and open the template in the editor.
         <div id="viewerDiv"></div>
         <script src="examples/GUI/GuiTools.js"></script>
         <script src="dist/itowns.js"></script>
+        <script src="dist/debug.js"></script>
         <script type="text/javascript">
 
             /* global itowns,document,GuiTools*/
@@ -42,7 +43,8 @@ and open the template in the editor.
             // iTowns namespace defined here
             const viewerDiv = document.getElementById('viewerDiv');
             const menuGlobe = new GuiTools(itowns.viewer, 'menuDiv');
-            itowns.viewer.createSceneGlobe(positionOnGlobe, viewerDiv);
+            const scene = itowns.viewer.createSceneGlobe(positionOnGlobe, viewerDiv);
+            itowns.debug = new Debug(scene);
 
             const wgs84TileLayer = {
                 protocol: 'tile',

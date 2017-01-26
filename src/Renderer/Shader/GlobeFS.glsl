@@ -25,7 +25,6 @@ uniform vec3        lightPosition;
 
 // Options global
 uniform bool        selected;
-uniform bool        debug;
 uniform bool        lightingOn;
 
 varying vec2        vUv_WGS84;
@@ -33,6 +32,7 @@ varying float       vUv_PM;
 varying vec3        vNormal;
 
 #if defined(DEBUG)
+    uniform bool showOutline;
     const float sLine = 0.008;
 #endif
 
@@ -51,7 +51,7 @@ void main() {
     #endif
 
     #if defined(DEBUG)
-         if(vUv_WGS84.x < sLine || vUv_WGS84.x > 1.0 - sLine || vUv_WGS84.y < sLine || vUv_WGS84.y > 1.0 - sLine)
+         if (showOutline && (vUv_WGS84.x < sLine || vUv_WGS84.x > 1.0 - sLine || vUv_WGS84.y < sLine || vUv_WGS84.y > 1.0 - sLine))
              gl_FragColor = CRed;
          else
     #endif
@@ -145,8 +145,4 @@ void main() {
             gl_FragColor.rgb *= light;
         }
     }
-
-    if(debug)
-       gl_FragColor = vec4( 1.0, 1.0, 0.0, 1.0);
-
 }
