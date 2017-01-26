@@ -127,6 +127,11 @@ NodeProcess.prototype.subdivideNode = function subdivideNode(node, camera, param
                 // request layers (imagery/elevation) update
                 this.refineNodeLayers(child, camera, params);
 
+                if (__DEBUG__) {
+                    const geometryLayer = params.layersConfig.getGeometryLayers()[0];
+                    child.material.uniforms.showOutline = { value: geometryLayer.showOutline || false };
+                }
+
                 return 0;
             });
         }

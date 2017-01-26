@@ -10,12 +10,15 @@ var definePlugin = new webpack.DefinePlugin({
 });
 
 module.exports = {
-  entry: [ 'es6-promise', 'whatwg-fetch', 'custom-event', path.resolve(__dirname, 'src/Main.js') ],
+  entry: {
+      itowns: [ 'es6-promise', 'whatwg-fetch', 'custom-event', path.resolve(__dirname, 'src/Main.js') ],
+      debug: [ path.resolve(__dirname, 'utils/debug/Debug.js') ]
+  },
   devtool: 'source-map',
   output: {
     path: path.resolve(__dirname, 'dist'),
-    filename: 'itowns.js',
-    library: 'itowns',
+    filename: '[name].js',
+    library: '[name]',
     libraryTarget: 'umd',
     umdNamedDefine: true
   },
@@ -25,7 +28,8 @@ module.exports = {
         test: /\.js$/,
         include: [
           path.resolve(__dirname, 'src'),
-          path.resolve(__dirname, 'test')
+          path.resolve(__dirname, 'test'),
+          path.resolve(__dirname, 'utils')
         ],
         loader: 'eslint'
       }
@@ -35,7 +39,8 @@ module.exports = {
         test: /\.js$/,
         include: [
           path.resolve(__dirname, 'src'),
-          path.resolve(__dirname, 'test')
+          path.resolve(__dirname, 'test'),
+          path.resolve(__dirname, 'utils')
         ],
         loader: 'babel'
       },
