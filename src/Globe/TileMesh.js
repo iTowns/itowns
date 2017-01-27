@@ -15,7 +15,6 @@
  * @returns {EllipsoidTileMesh_L20.TileMesh}
  */
 import NodeMesh from 'Renderer/NodeMesh';
-import TileGeometry from 'Globe/TileGeometry';
 import BoundingBox from 'Scene/BoundingBox';
 import * as THREE from 'three';
 import LayeredMaterial, { l_ELEVATION } from 'Renderer/LayeredMaterial';
@@ -23,7 +22,7 @@ import GlobeDepthMaterial from 'Renderer/GlobeDepthMaterial';
 import MatteIdsMaterial from 'Renderer/MatteIdsMaterial';
 import RendererConstant from 'Renderer/RendererConstant';
 
-function TileMesh(params, builder, geometryCache) {
+function TileMesh(geometry, params) {
     // Constructor
     NodeMesh.call(this);
 
@@ -33,7 +32,7 @@ function TileMesh(params, builder, geometryCache) {
     this.level = params.level;
     this.bbox = params.bbox || new BoundingBox();
 
-    this.geometry = geometryCache || new TileGeometry(params, builder);
+    this.geometry = geometry;
     this.normal = params.center.clone().normalize();
 
     // TODO Why move sphere center
