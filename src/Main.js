@@ -6,9 +6,10 @@
 
 import ApiGlobe from 'Core/Commander/Interfaces/ApiInterface/ApiGlobe';
 // browser execution or not ?
-var scope = typeof window !== 'undefined' ? window : {};
-var itowns = scope.itowns || {
+const scope = typeof window !== 'undefined' ? window : {};
+const itowns = scope.itowns || {
     viewer: new ApiGlobe(),
 };
 scope.itowns = itowns;
+export const viewer = itowns.viewer;
 export default scope.itowns;
