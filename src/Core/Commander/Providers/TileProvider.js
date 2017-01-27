@@ -60,6 +60,8 @@ TileProvider.prototype.executeCommand = function executeCommand(command) {
     parent.add(tile);
     tile.updateMatrix();
     tile.updateMatrixWorld();
+    tile.OBB().parent = tile;   // TODO: we should use tile.add(tile.OBB())
+    tile.OBB().update();
 
     return Promise.resolve(tile);
 };
