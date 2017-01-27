@@ -842,6 +842,8 @@ function GlobeControls(camera, domElement, engine) {
     };
 
     var ondblclick = function ondblclick(event) {
+        if (this.enabled === false) return;
+
         // Double click throws move camera's target with animation
         if (!keyCtrl && !keyShift) {
             ptScreenClick.x = event.clientX - event.target.offsetLeft;
