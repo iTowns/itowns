@@ -43,6 +43,8 @@ module.exports = {
       }
     }],
     'one-var': ['error', 'never'],
+    // TODO reactivate this rule once a proper npm package is made
+    'import/no-extraneous-dependencies': 'off',
 
     // TODO reactivate all the following rules
 
