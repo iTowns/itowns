@@ -10,8 +10,8 @@ module.exports = {
   devtool: 'source-map',
   output: {
     path: path.resolve(__dirname, 'dist'),
-    filename: 'itowns2.js',
-    library: 'itowns2',
+    filename: 'itowns.js',
+    library: 'itowns',
     libraryTarget: 'umd',
     umdNamedDefine: true
   },
