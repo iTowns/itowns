@@ -48,11 +48,8 @@ const defer = function defer() {
 };
 
 function ApiGlobe() {
-    // Constructor
     this.scene = null;
-    this.commandsTree = null;
     this.viewerDiv = null;
-    this.callback = null;
 }
 
 ApiGlobe.prototype.constructor = ApiGlobe;
@@ -549,6 +546,46 @@ ApiGlobe.prototype.setRealisticLightingOn = function setRealisticLightingOn(valu
     this.scene.renderScene3D();
 };
 
+ApiGlobe.prototype.setLightingPos = function setLightingPos(pos) {
+    const lightingPos = pos || CoordStars.getSunPositionInScene(this.ellipsoid, new Date().getTime(), 48.85, 2.35);
+
+    // TODO
+    this.scene.browserScene.updateMaterialUniform('lightPosition', lightingPos.clone().normalize());
+    this.layers[0].node.updateLightingPos(lightingPos);
+};
+
+ApiGlobe.prototype.animateTime = function animateTime(value) {
+    if (value) {
+        this.time += 4000;
+
+        if (this.time) {
+            var nMilliSeconds = this.time;
+            var coSun = CoordStars.getSunPositionInScene(this.ellipsoid, new Date().getTime() + 3.6 * nMilliSeconds, 0, 0);
+            this.lightingPos = coSun;
+            this.browserScene.updateMaterialUniform('lightPosition', this.lightingPos.clone().normalize());
+            // TODO this.layers[0].node.updateLightingPos(this.lightingPos);
+            if (this.orbitOn) { // ISS orbit is 0.0667 degree per second -> every 60th of sec: 0.00111;
+                var p = this.camera.camera3D.position;
+                var r = Math.sqrt(p.z * p.z + p.x * p.x);
+                var alpha = Math.atan2(p.z, p.x) + 0.0001;
+                p.x = r * Math.cos(alpha);
+                p.z = r * Math.sin(alpha);
+            }
+
+            this.scene.gfxEngine.update();
+        }
+        this.rAF = requestAnimationFrame(this.animateTime.bind(this));
+    } else {
+        window.cancelAnimationFrame(this.rAF);
+    }
+};
+
+ApiGlobe.prototype.orbit = function orbit(value) {
+    // this.gfxEngine.controls = null;
+    this.orbitOn = value;
+};
+
+
 /**
  * Sets the visibility of a layer. If the layer is not visible in the scene, this function will no effect until the camera looks at the layer.
  * @constructor
@@ -697,9 +734,8 @@ ApiGlobe.prototype.getRange = function getRange() {
 ApiGlobe.prototype.getRangeFromEllipsoid = function getRangeFromEllipsoid() {
     // TODO: error is distance is big with ellipsoid.intersection(ray) because d < 0
     var controlCam = this.scene.currentControls();
-    var ellipsoid = this.scene.getEllipsoid();
     var ray = controlCam.getRay();
-    var intersection = ellipsoid.intersection(ray);
+    var intersection = this.ellipsoid.intersection(ray);
     var camPosition = this.scene.currentCamera().position();
     var range = intersection.distanceTo(camPosition);
 
