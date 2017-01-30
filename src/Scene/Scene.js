@@ -8,7 +8,6 @@
 
 import c3DEngine from 'Renderer/c3DEngine';
 import Scheduler from 'Core/Commander/Scheduler';
-import CoordStars from 'Core/Geographic/CoordStars';
 import CustomEvent from 'custom-event';
 import StyleManager from 'Scene/Description/StyleManager';
 import LayersConfiguration from 'Scene/LayersConfiguration';
@@ -45,7 +44,6 @@ function Scene(positionCamera, size, viewerDiv, debugMode, gLDebug) {
     this.lastRenderTime = 0;
     this.maxFramePerSec = 60;
 
-    this.time = 0;
     this.orbitOn = false;
     this.rAF = null;
 
@@ -241,50 +239,6 @@ Scene.prototype.selectNodeId = function selectNodeId(id) {
             node.setSelected(node.id === id);
         }
     });
-};
-
-Scene.prototype.setLightingPos = function setLightingPos(pos) {
-    if (pos) {
-        this.lightingPos = pos;
-    } else {
-        var coSun = CoordStars.getSunPositionInScene(this.getEllipsoid(), new Date().getTime(), 48.85, 2.35);
-        this.lightingPos = coSun;
-    }
-
-    this.browserScene.updateMaterialUniform('lightPosition', this.lightingPos.clone().normalize());
-    this.layers[0].node.updateLightingPos(this.lightingPos);
-};
-
-// Should be moved in time module: A single loop update registered object every n millisec
-Scene.prototype.animateTime = function animateTime(value) {
-    if (value) {
-        this.time += 4000;
-
-        if (this.time) {
-            var nMilliSeconds = this.time;
-            var coSun = CoordStars.getSunPositionInScene(this.getEllipsoid(), new Date().getTime() + 3.6 * nMilliSeconds, 0, 0);
-            this.lightingPos = coSun;
-            this.browserScene.updateMaterialUniform('lightPosition', this.lightingPos.clone().normalize());
-            this.layers[0].node.updateLightingPos(this.lightingPos);
-            if (this.orbitOn) { // ISS orbit is 0.0667 degree per second -> every 60th of sec: 0.00111;
-                var p = this.camera.camera3D.position;
-                var r = Math.sqrt(p.z * p.z + p.x * p.x);
-                var alpha = Math.atan2(p.z, p.x) + 0.0001;
-                p.x = r * Math.cos(alpha);
-                p.z = r * Math.sin(alpha);
-            }
-
-            this.gfxEngine.update();
-            // this.gfxEngine.renderScene();
-        }
-        this.rAF = requestAnimationFrame(this.animateTime.bind(this));
-    } else
-        { window.cancelAnimationFrame(this.rAF); }
-};
-
-Scene.prototype.orbit = function orbit(value) {
-    // this.gfxEngine.controls = null;
-    this.orbitOn = value;
 };
 
 Scene.prototype.getUniqueThreejsLayer = function getUniqueThreejsLayer() {

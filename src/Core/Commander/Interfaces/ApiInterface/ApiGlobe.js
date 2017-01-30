@@ -25,6 +25,7 @@ import Atmosphere from 'Globe/Atmosphere';
 import Clouds from 'Globe/Clouds';
 import OBBHelper from 'Renderer/ThreeExtended/OBBHelper';
 import GlobeControls from 'Renderer/ThreeExtended/GlobeControls';
+import CoordStars from 'Core/Geographic/CoordStars';
 
 var sceneIsLoaded = false;
 var eventLoaded = new CustomEvent('globe-loaded');
@@ -375,7 +376,7 @@ ApiGlobe.prototype.createSceneGlobe = function createSceneGlobe(globeLayerId, co
     var gLDebug = false; // true to support GLInspector addon
     var debugMode = false;
 
-    var ellipsoid = new Ellipsoid({
+    this.ellipsoid = new Ellipsoid({
         x: 6378137,
         y: 6356752.3142451793,
         z: 6378137,
@@ -383,8 +384,8 @@ ApiGlobe.prototype.createSceneGlobe = function createSceneGlobe(globeLayerId, co
 
     var coordinate = new GeoCoordinate().copy(coordCarto, UNIT.DEGREE);
     // TODO: use GeoCoordinate conversion instead
-    var positionCamera = ellipsoid.cartographicToCartesian(coordinate);
-    this.scene = Scene(positionCamera, ellipsoid.size, viewerDiv, debugMode, gLDebug);
+    var positionCamera = this.ellipsoid.cartographicToCartesian(coordinate);
+    this.scene = Scene(positionCamera, this.ellipsoid.size, viewerDiv, debugMode, gLDebug);
 
     this.initProviders(this.scene);
 
@@ -403,7 +404,7 @@ ApiGlobe.prototype.createSceneGlobe = function createSceneGlobe(globeLayerId, co
         update: (context, layer, node) => updateTreeLayer(context, layer, node),
         // options for 'tile' protocol
         nodeType: TileMesh,
-        builder: new BuilderEllipsoidTile(ellipsoid, new Projection()),
+        builder: new BuilderEllipsoidTile(this.ellipsoid, new Projection()),
         // options for tree-based layer
         initLevel0Nodes: initTiledGeometryLayer(),
         processNode: processTiledGeometryNode,
@@ -414,12 +415,12 @@ ApiGlobe.prototype.createSceneGlobe = function createSceneGlobe(globeLayerId, co
         initNewNode,
         mustSubdivide: globeSubdivisionControl,
         // options for globe
-        ellipsoid,
+        ellipsoid: this.ellipsoid,
     };
 
     this.addGeometryLayer(wgs84TileLayer);
 
-    const atmosphere = new Atmosphere(ellipsoid);
+    const atmosphere = new Atmosphere(this.ellipsoid);
     atmosphere.add(new Clouds());
     this.scene.gfxEngine.scene3D.add(atmosphere);
 
@@ -456,7 +457,7 @@ ApiGlobe.prototype.createSceneGlobe = function createSceneGlobe(globeLayerId, co
     this.scene.controls.rotateSpeed = 0.25;
     this.scene.controls.zoomSpeed = 2.0;
     this.scene.controls.minDistance = 30;
-    this.scene.controls.maxDistance = ellipsoid.size.x * 8.0;
+    this.scene.controls.maxDistance = this.ellipsoid.size.x * 8.0;
 
     this.scene.controls.addEventListener('change', this.scene.gfxEngine.update);
 
@@ -467,18 +468,59 @@ ApiGlobe.prototype.update = function update() {
     this.scene.notifyChange(0, true);
 };
 
-ApiGlobe.prototype.showClouds = function showClouds(value, satelliteAnimation) {
-    this.scene.showClouds(value, satelliteAnimation);
+ApiGlobe.prototype.showClouds = function showClouds() {
+    // TODO
     this.scene.renderScene3D();
 };
 
 ApiGlobe.prototype.setRealisticLightingOn = function setRealisticLightingOn(value) {
-    this.scene.setLightingPos();
+    // TODO
+    this.setLightingPos();
     this.scene.gfxEngine.setLightingOn(value);
-    this.scene.setRealisticLightingOn(value);
+    this.setRealisticLightingOn(value);
     this.scene.browserScene.updateMaterialUniform('lightingOn', value);
     this.scene.renderScene3D();
 };
+
+ApiGlobe.prototype.setLightingPos = function setLightingPos(pos) {
+    const lightingPos = pos || CoordStars.getSunPositionInScene(this.ellipsoid, new Date().getTime(), 48.85, 2.35);
+
+    // TODO
+    this.scene.browserScene.updateMaterialUniform('lightPosition', lightingPos.clone().normalize());
+    this.layers[0].node.updateLightingPos(lightingPos);
+};
+
+ApiGlobe.prototype.animateTime = function animateTime(value) {
+    if (value) {
+        this.time += 4000;
+
+        if (this.time) {
+            var nMilliSeconds = this.time;
+            var coSun = CoordStars.getSunPositionInScene(this.ellipsoid, new Date().getTime() + 3.6 * nMilliSeconds, 0, 0);
+            this.lightingPos = coSun;
+            this.browserScene.updateMaterialUniform('lightPosition', this.lightingPos.clone().normalize());
+            // TODO this.layers[0].node.updateLightingPos(this.lightingPos);
+            if (this.orbitOn) { // ISS orbit is 0.0667 degree per second -> every 60th of sec: 0.00111;
+                var p = this.camera.camera3D.position;
+                var r = Math.sqrt(p.z * p.z + p.x * p.x);
+                var alpha = Math.atan2(p.z, p.x) + 0.0001;
+                p.x = r * Math.cos(alpha);
+                p.z = r * Math.sin(alpha);
+            }
+
+            this.scene.gfxEngine.update();
+        }
+        this.rAF = requestAnimationFrame(this.animateTime.bind(this));
+    } else {
+        window.cancelAnimationFrame(this.rAF);
+    }
+};
+
+ApiGlobe.prototype.orbit = function orbit(value) {
+    // this.gfxEngine.controls = null;
+    this.orbitOn = value;
+};
+
 
 /**
  * Sets the visibility of a layer. If the layer is not visible in the scene, this function will no effect until the camera looks at the layer.
@@ -503,14 +545,6 @@ ApiGlobe.prototype.setLayerVisibility = function setLayerVisibility(id, visible)
     eventLayerChangedVisible.layerId = id;
     eventLayerChangedVisible.visible = visible;
     this.viewerDiv.dispatchEvent(eventLayerChangedVisible);
-};
-
-ApiGlobe.prototype.animateTime = function animateTime(value) {
-    this.scene.animateTime(value);
-};
-
-ApiGlobe.prototype.orbit = function orbit(value) {
-    this.scene.orbit(value);
 };
 
 /**
@@ -643,9 +677,8 @@ ApiGlobe.prototype.getRange = function getRange() {
 ApiGlobe.prototype.getRangeFromEllipsoid = function getRangeFromEllipsoid() {
     // TODO: error is distance is big with ellipsoid.intersection(ray) because d < 0
     var controlCam = this.scene.currentControls();
-    var ellipsoid = this.scene.getEllipsoid();
     var ray = controlCam.getRay();
-    var intersection = ellipsoid.intersection(ray);
+    var intersection = this.ellipsoid.intersection(ray);
     var camPosition = this.scene.currentCamera().position();
     var range = intersection.distanceTo(camPosition);
 
@@ -736,7 +769,7 @@ ApiGlobe.prototype.resetHeading = function resetHeading(isAnimated) {
  */
 
 ApiGlobe.prototype.computeDistance = function computeDistance(p1, p2) {
-    return this.scene.getEllipsoid().computeDistance(new GeoCoordinate().copy(p1), new GeoCoordinate().copy(p2));
+    return this.ellipsoid.computeDistance(new GeoCoordinate().copy(p1), new GeoCoordinate().copy(p2));
 };
 
 ApiGlobe.prototype.setSceneLoaded = function setSceneLoaded() {
@@ -755,7 +788,7 @@ ApiGlobe.prototype.setSceneLoaded = function setSceneLoaded() {
 ApiGlobe.prototype.setCenter = function setCenter(coordinates, isAnimated) {
     isAnimated = isAnimated || this.isAnimationEnabled();
     eventCenter.oldCenter = this.getCenter();
-    const position3D = this.scene.getEllipsoid().cartographicToCartesian(new GeoCoordinate(coordinates.longitude, coordinates.latitude, 0, UNIT.DEGREE));
+    const position3D = this.ellipsoid.cartographicToCartesian(new GeoCoordinate(coordinates.longitude, coordinates.latitude, 0, UNIT.DEGREE));
     position3D.range = coordinates.range;
     return this.scene.currentControls().setCenter(position3D, isAnimated).then(() => {
         this.scene.notifyChange(1);
@@ -1016,7 +1049,7 @@ ApiGlobe.prototype.showKML = function showKML(value) {
 
 
 ApiGlobe.prototype.loadGPX = function loadGPX(url) {
-    loadGpx(url, this.scene.getEllipsoid()).then((gpx) => {
+    loadGpx(url, this.ellipsoid).then((gpx) => {
         if (gpx) {
             this.scene.gpxTracks.children[0].add(gpx);
         }
@@ -1024,6 +1057,5 @@ ApiGlobe.prototype.loadGPX = function loadGPX(url) {
 
     this.scene.renderScene3D();
 };
-
 
 export default ApiGlobe;
