@@ -52,42 +52,12 @@ const defer = function defer() {
 };
 
 function ApiGlobe() {
-    // Constructor
     this.scene = null;
-    this.commandsTree = null;
     this.projection = new Projection();
     this.viewerDiv = null;
-    this.callback = null;
 }
 
 ApiGlobe.prototype.constructor = ApiGlobe;
-
-/**
- * @param Command
- */
-ApiGlobe.prototype.add = function add(/* Command*/) {
-    // TODO: Implement Me
-
-};
-
-/**
- * @param commandTemplate
- */
-ApiGlobe.prototype.createCommand = function createCommand(/* commandTemplate*/) {
-    // TODO: Implement Me
-
-};
-
-/**
- */
-ApiGlobe.prototype.execute = function execute() {
-    // TODO: Implement Me
-
-};
-
-ApiGlobe.prototype.getProtocolProvider = function getProtocolProvider(protocol) {
-    return this.scene.scheduler.getProtocolProvider(protocol);
-};
 
 /**
  * This function gives a chance to the matching provider to pre-process some

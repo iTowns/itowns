@@ -233,25 +233,6 @@ Scene.prototype.scene3D = function scene3D() {
     return this.gfxEngine.scene3D;
 };
 
-/**
- * @documentation: Retire des layers de la scène
- *
- * @param layer {[object Object]}
- */
-Scene.prototype.remove = function remove(/* layer*/) {
-    // TODO: Implement Me
-
-};
-
-
-/**
- * @param layers {[object Object]}
- */
-Scene.prototype.select = function select(/* layers*/) {
-    // TODO: Implement Me
-
-};
-
 Scene.prototype.selectNodeId = function selectNodeId(id) {
     // browse three.js scene, and mark selected node
     this.gfxEngine.scene3D.traverse((node) => {
@@ -260,30 +241,6 @@ Scene.prototype.selectNodeId = function selectNodeId(id) {
             node.setSelected(node.id === id);
         }
     });
-};
-
-Scene.prototype.setStreetLevelImageryOn = function setStreetLevelImageryOn(/* value */) {
-    // TODO
-    /*
-    if (value) {
-        if (this.layers[1]) {
-            this.layers[1].node.visible = true;
-            this.layers[1].node.children[0].visible = true;
-        } else {
-            var mobileMappingLayer = new MobileMappingLayer();
-            mobileMappingLayer.initiatePanoramic();
-
-            var immersive = new Layer();
-            immersive.add(mobileMappingLayer);
-            this.add(immersive);
-        }
-    } else {
-        this.layers[1].node.visible = false;
-        this.layers[1].node.children[0].visible = false; // mobileMappingLayer
-    }
-
-    this.updateScene3D();
-    */
 };
 
 Scene.prototype.setLightingPos = function setLightingPos(pos) {
