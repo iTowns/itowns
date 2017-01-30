@@ -7,7 +7,7 @@
  */
 
 import * as THREE from 'three';
-import Sensor from 'MobileMapping/Sensor';
+import Sensor, { multiplyMatrices3x3 } from 'MobileMapping/Sensor';
 
 const Ori = {
 
@@ -19,7 +19,7 @@ const Ori = {
         var baseUrl = options.cam; // PanoramicProvider.getMetaDataSensorURL();
 
         return fetch(baseUrl).then((response) => {
-            if (response.status < 200 || response.status >= 300) {
+            if (response.status < 200 || response.status >= 400) {
                 throw new Error(`Error loading ${baseUrl}: status ${response.status}`);
             }
             return response.json();
@@ -41,11 +41,17 @@ const Ori = {
     // Pitch and Roll are in opposite
     computeMatOriFromHeadingPitchRoll(heading, pitch, roll) {
         heading = (180 - parseFloat(heading)) / 180 * Math.PI; // parseFloat(heading) / 180 * Math.PI;  // Deg to Rad // Axe Y
+        // pitch ~ constant (0)
         pitch = parseFloat(pitch) / 180 * Math.PI; // Deg to Rad // axe X
+        // roll ~ constant (0)
         roll = parseFloat(roll) / 180 * Math.PI; // Deg to Rad   // axe Z
         // With quaternion  //set rotation.order to "YXZ", which is equivalent to "heading, pitch, and roll"
         var q = new THREE.Quaternion().setFromEuler(new THREE.Euler(-pitch, heading, -roll, 'YXZ'), true);
-        return new THREE.Matrix3().makeRotationFromQuaternion(q);
+        const mat4 = new THREE.Matrix4();
+        mat4.makeRotationFromQuaternion(q);
+        const out = new THREE.Matrix3();
+        out.setFromMatrix4(mat4);
+        return out;
     },
 
     getPosition() {
@@ -78,7 +84,13 @@ const Ori = {
         return this.sensors[i].pps;
     },
     getMatrix(i) {
-        return new THREE.Matrix3().multiplyMatrices(this.getRotation(i), this.getProjection(i));
+        const out = new THREE.Matrix3();
+        if (1) {
+            multiplyMatrices3x3(this.getRotation(i), this.getProjection(i), out);
+        } else {
+            multiplyMatrices3x3(this.getProjection(i), this.getRotation(i), out);
+        }
+        return out;
     },
 };
 

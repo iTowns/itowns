@@ -107,7 +107,6 @@ export function processTiledGeometryNode(context, layer, node) {
     const isVisible = layer.cullingTest ? (!layer.cullingTest(node, context.camera)) : true;
     node.visible = isVisible;
 
-
     if (isVisible) {
         let requestChildrenUpdate = false;
 
@@ -127,7 +126,7 @@ export function processTiledGeometryNode(context, layer, node) {
             node.setMatrixRTC(
                 context.scene.gfxEngine.getRTCMatrixFromCenter(
                     positionWorld, context.camera));
-            node.setFog(1000000000);
+            // node.setFog(1000000000);
 
             if (!requestChildrenUpdate) {
                 _removeChildren(layer, node);

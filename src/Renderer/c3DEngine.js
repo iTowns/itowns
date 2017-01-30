@@ -304,7 +304,13 @@ c3DEngine.prototype.setStateRender = function setStateRender(stateRender) {
     }
 };
 
-c3DEngine.prototype.renderTobuffer = function renderTobuffer(x, y, width, height, mode) {
+c3DEngine.prototype.renderTobuffer = function renderTobuffer(x, y, width, height, mode, hack_please) {
+    // hack
+    const old = this.scene.camera.camera3D.layers.mask;
+    if (hack_please) {
+        this.scene.camera.camera3D.layers.mask = 1;
+    }
+
     // TODO Deallocate render texture
     const originalState = this.stateRender;
     this.setStateRender(mode);
@@ -314,6 +320,8 @@ c3DEngine.prototype.renderTobuffer = function renderTobuffer(x, y, width, height
     this.setStateRender(originalState);
     var pixelBuffer = new Uint8Array(4);
     this.renderer.readRenderTargetPixels(this.pickingTexture, x, y, width, height, pixelBuffer);
+
+    this.scene.camera.camera3D.layers.mask = old;
     return pixelBuffer;
 };
 
@@ -410,7 +418,7 @@ c3DEngine.prototype.screenCoordsToNodeId = function screenCoordsToNodeId(mouse) 
 
     camera.updateMatrixWorld();
 
-    var buffer = this.renderTobuffer(mouse.x, this.height - mouse.y, 1, 1, RendererConstant.ID);
+    var buffer = this.renderTobuffer(mouse.x, this.height - mouse.y, 1, 1, RendererConstant.ID, false);
 
     var depthRGBA = new THREE.Vector4().fromArray(buffer).divideScalar(255.0);
 
@@ -447,7 +455,11 @@ c3DEngine.prototype.getPickingPositionFromDepth = (function getGetPickingPosFrom
 
         camera.updateMatrixWorld();
 
+        // hackhack
+        const old = camera.layers.mask;
+        // camera.layers.mask = 1;
         var buffer = this.renderTobuffer(mouse.x, this.height - mouse.y, 1, 1, RendererConstant.DEPTH);
+        camera.layers.mask = old;
 
         screen.x = ((mouse.x) / this.width) * 2 - 1;
         screen.y = -((mouse.y) / this.height) * 2 + 1;

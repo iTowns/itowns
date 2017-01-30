@@ -260,7 +260,7 @@ const Shader = {
             '  if(color0.a>1.) color0 /= color0.a;',
             // if blending 2 images or more with sufficient opacity, return the normalized opaque color
             // else mix the alpha-weighted color with the non-alpha-weighted color
-            '  gl_FragColor = (blend>1 && color.a>amin) ? color/color.a : color/amin+(1.-color.a/amin)*color0; //vec4(1.,0.,0.,1.); ',
+            '  gl_FragColor = (blend>1 && color.a>amin) ? color/color.a : color/amin+(1.-color.a/amin)*color0; if (gl_FragColor.a <= 0.0) gl_FragColor.a = 0.3;//vec4(1.,0.,0.,1.); ',
             '} ',
 
         ].join('\n');

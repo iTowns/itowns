@@ -16,10 +16,11 @@ let domElement;
 const minFOV = 1;
 const maxFOV = 90;
 
-function PanoramaControls(_camera, _domElement) {
+function PanoramaControls(scene, _camera, _domElement) {
     this.wtf = true;
     camera = _camera;
     domElement = _domElement;
+    this.scene = scene;
 
     domElement.addEventListener('mousedown', onDocumentMouseDown, false);
     domElement.addEventListener('mousemove', onDocumentMouseMove.bind(this), false);
@@ -85,14 +86,16 @@ PanoramaControls.prototype.update = function update() {
     lat = Math.max(-85, Math.min(85, lat));
     phi = THREE.Math.degToRad(90 - lat);
     theta = THREE.Math.degToRad(lon);
-    target.x = 500 * Math.sin(phi) * Math.cos(theta);
-    target.y = 500 * Math.cos(phi);
-    target.z = 500 * Math.sin(phi) * Math.sin(theta);
-    camera.position.set(0, 0, 0);
+    target.x = camera.position.x + 500 * Math.sin(phi) * Math.cos(theta);
+    target.y = camera.position.y + 500 * Math.cos(phi);
+    target.z = camera.position.z + 500 * Math.sin(phi) * Math.sin(theta);
+
+    // camera.position.set(0, 0, 0);
     // camera.position.copy(target).negate();
     camera.lookAt(target);
 
     this.dispatchEvent({ type: 'change' });
+    this.scene.notifyChange(0, true);
 };
 
 export default PanoramaControls;

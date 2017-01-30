@@ -16,15 +16,17 @@ import GlobeDepthVS from 'Renderer/Shader/GlobeDepthVS.glsl';
 const MatteIdsMaterial = function MatteIdsMaterial(otherMaterial) {
     BasicMaterial.call(this);
 
-    this.vertexShader = this.vertexShaderHeader + GlobeDepthVS;
+    // this.vertexShader = this.vertexShaderHeader + GlobeDepthVS;
     this.fragmentShader = this.fragmentShaderHeader + MatteIdsFS;
 
-    this.uniforms.uuid.value = otherMaterial.uniforms.uuid.value;
     this.uniforms.diffuseColor.value = new THREE.Color(Math.random() * 0xffffff);// .setHex( Math.random() * 0xffffff );
 
-    this.uniforms.dTextures_00 = new THREE.Uniform(otherMaterial.textures[0]);
-    this.uniforms.texturesCount = new THREE.Uniform(otherMaterial.loadedTexturesCount[0]);
-    this.uniforms.offsetScale_L00 = new THREE.Uniform(otherMaterial.offsetScale[0]);
+    if (otherMaterial) {
+        this.uniforms.uuid.value = otherMaterial.uniforms.uuid.value;
+        this.uniforms.dTextures_00 = new THREE.Uniform(otherMaterial.textures[0]);
+        this.uniforms.texturesCount = new THREE.Uniform(otherMaterial.loadedTexturesCount[0]);
+        this.uniforms.offsetScale_L00 = new THREE.Uniform(otherMaterial.offsetScale[0]);
+    }
 };
 
 MatteIdsMaterial.prototype = Object.create(BasicMaterial.prototype);

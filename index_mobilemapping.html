@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>Lyon (plane mode)</title>
+
+    <style type="text/css">
+            html {height: 100%}
+        body { margin: 0; overflow:hidden; height:100%}
+
+            #viewerDiv {
+                margin : auto auto;
+                width: 100%;
+                height: 100%;
+                padding: 0;
+                /*margin-top: 50vh;
+                transform: translateY(-50%);*/
+            }
+            #menuDiv {position: absolute; top:0px; margin-left: 0px;}
+
+
+        </style>
+        <meta charset="UTF-8">
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.6.1/dat.gui.min.js"></script>
+    </head>
+    <body>
+        <div id="viewerDiv"></div>
+        <script src="examples/GUI/GuiTools.js"></script>
+        <script src="dist/itowns.js"></script>
+        <script type="text/javascript">
+
+            /* global itowns,document,GuiTools*/
+            const viewerDiv = document.getElementById('viewerDiv');
+
+            const ellipsoid = new itowns.Ellipsoid({
+                x: 6378137,
+                y: 6356752.3142451793,
+                z: 6378137,
+            });
+
+            const jsonUrl = 'dist/itowns-sample-data/panoramicsMetaData.json';
+
+            // first thing first, load a single panoInfo
+            fetch(jsonUrl).then(response => response.json()).then((panoInfo) => {
+                // create default scene
+                var scene = new itowns.Scene(viewerDiv, false, false);
+                scene.initProviders();
+
+                const panorama = panoInfo.filter(p => p.filename.indexOf('0000492') >= 0)[0];
+
+                // add shoebox
+                var geometry = new itowns.THREE.BoxGeometry(50, 50, 50, 10, 10, 10);
+                var material = new itowns.BasicMaterial(new itowns.THREE.Color('#C6BCB0'));
+                material.side = itowns.THREE.DoubleSide;
+                var cube = new itowns.THREE.Mesh( geometry, material );
+                cube.frustumCulled = false;
+
+                var posPanoWGS84 = new itowns.GeoCoordinate(panorama.longitude, panorama.latitude, panorama.altitude, itowns.UNIT.DEGREE);
+                const panoPosition  = ellipsoid.cartographicToCartesian(posPanoWGS84);
+                console.log(panoPosition);
+
+                cube.position.copy(panoPosition);
+                cube.updateMatrix();
+                scene.gfxEngine.scene3D.add(cube);
+                cube.updateMatrixWorld();
+                cube.matrixAutoUpdate = false;
+                cube.matrixWorldNeedsUpdate = false;
+
+                // add debug
+                const wireframe = new itowns.THREE.Mesh( geometry, new itowns.THREE.MeshBasicMaterial({
+                    color: 0x030303,
+                    side: itowns.THREE.DoubleSide,
+                    wireframe: true,
+                }));
+                wireframe.scale.set(0.99, 0.99, 0.99);
+                cube.add(wireframe);
+                wireframe.updateMatrixWorld();
+                var geometry = new itowns.THREE.SphereGeometry( 0.5, 32, 32 );
+                var material = new itowns.THREE.MeshBasicMaterial();
+                const colors = [
+                    new itowns.THREE.Color(0xff0000),
+                    new itowns.THREE.Color(0xffff00),
+                    new itowns.THREE.Color(0xf0f0f0),
+                    new itowns.THREE.Color(0x0000ff),
+                    new itowns.THREE.Color(0xff00ff),
+                    new itowns.THREE.Color(0x00ffff),
+                ];
+                const offsets = [
+                    new itowns.THREE.Vector3(0, 0, 25),
+                    new itowns.THREE.Vector3(0, 0, -25),
+                    new itowns.THREE.Vector3(0, 25, 0),
+                    new itowns.THREE.Vector3(0, -25, 0),
+                    new itowns.THREE.Vector3(25, 0, 0),
+                    new itowns.THREE.Vector3(-25, 0, 0),
+                ];
+                var spheres = [];
+                for (var i=0; i<6; i++) {
+                    var sphere = new itowns.THREE.Mesh( geometry, material.clone() );
+                    sphere.material.color = colors[i];
+                    sphere.position.copy(offsets[i]);
+                    cube.add(sphere);
+                    sphere.updateMatrixWorld();
+                    spheres.push(sphere);
+                }
+
+
+                const l = {
+                    id: 'cube',
+                    update: (context, layer, node) => {
+                        if (node) {
+                            const mat = context.scene.gfxEngine.getRTCMatrixFromCenter(panoPosition, context.camera);
+                            console.log('SET RTC', mat.elements);
+                            cube.material.setMatrixRTC(mat);
+
+                            return undefined;
+                        } else {
+                            return [cube];
+                        }
+                    },
+                };
+                scene.addLayer(l);
+
+                const mobileMappingLayer = {
+                    url: 'dist/itowns-sample-data/panoramicsMetaData.json',
+                    id: 'mobilemapping',
+                    preUpdate: itowns.processing.mobileMapping.preUpdate,
+                    update: itowns.processing.mobileMapping.update,
+                    ellipsoid,
+                };
+                // scene.addLayer(mobileMappingLayer, l.id);
+
+                // use panorama controls
+                scene.controls = new itowns.controls.panorama(scene, scene.camera.camera3D, scene.gfxEngine.renderer.domElement);
+
+                scene.camera.camera3D.position.copy(cube.position);
+                scene.camera.camera3D.near = 0.1;
+                scene.camera.camera3D.far = 1000;
+                scene.camera.camera3D.updateProjectionMatrix();
+
+                scene.notifyChange();
+
+                const options = {
+                    url : "{lod}/images/{YYMMDD2}/Paris-{YYMMDD2}_0740-{cam.cam}-00001_{splitIt}.jpg",
+                    cam: '/dist/itowns-sample-data/cameraCalibration.json',
+                    lods : ['/dist/itowns-sample-data'],
+
+                    YYMMDD2 : function() {
+                         return this.pano.filename.match("-(.*?)_")[1];
+                    },
+                    splitIt : function(){
+                        return this.pano.filename.split("_")[2];
+                    },
+                    YYMMDD : function() {
+                        var d = new Date(this.pano.date);
+                        return (""+d.getUTCFullYear()).slice(-2) + ("0"+(d.getUTCMonth()+1)).slice(-2) + ("0" + d.getUTCDate()).slice(-2);
+                    },
+                    UTCOffset : 15,
+                    seconds : function() {
+                        var d = new Date(this.pano.date);
+                        return (d.getUTCHours()*60 + d.getUTCMinutes())*60+d.getUTCSeconds()-this.UTCOffset;
+                    },
+                    visible: true
+
+                };
+
+                const materialPromise = itowns.ProjectiveTexturingMaterial.init(options, panorama, panoPosition).then((mat) => {
+                    cube.material = mat.shader;
+                    cube.material.needsUpdate = true;
+                    scene.notifyChange(0, true);
+
+                    // at this point we can initialize 1 camera per pano
+                    for (var i=0; i<cube.material.uniforms.mvpp.value.length; i++) {
+                        // '    for(int i=0; i<N; ++i) v_texcoord[i] = mvpp[i] * (position-translation[i]);',
+                        for (var j=0; j<spheres.length; j++) {
+                            var p = spheres[j].position.clone(); // position and not worldPos because RTC
+                            const off = offsets[j];
+                            p.applyMatrix3(cube.material.uniforms.mvpp.value[i]);
+                            console.log(`Image ${i}, sphere ${j}`, off, p);
+                        }
+
+
+
+                    }
+                });
+
+            });
+
+</script>
+    </body>
+</html>

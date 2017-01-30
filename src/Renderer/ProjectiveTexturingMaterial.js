@@ -9,6 +9,7 @@
 import graphicEngine from 'Renderer/c3DEngine';
 import * as THREE from 'three';
 import Ori from 'MobileMapping/Ori';
+import  { multiplyMatrices3x3 } from 'MobileMapping/Sensor';
 import Shader from 'MobileMapping/Shader';
 import url from 'url';
 import Ellipsoid from 'Core/Math/Ellipsoid';
@@ -30,16 +31,20 @@ var _initPromise = null;
 var _alpha = 1;
 var _infos = {};
 var ellipsoid = new Ellipsoid(new THREE.Vector3(6378137, 6356752.3142451793, 6378137));
-
+var _initiated = false;
 const ProjectiveTexturingMaterial = {
 
     init(infos, panoInfo, pivot) {
+        _infos = infos;
+        _infos.targetNbPanoramics = _infos.targetNbPanoramics || 1;
+        _initiated = true;
+
         if (_initPromise == null) {
-            _initPromise = Ori.init(infos).then(function thenCb() {
+            _initPromise = Ori.init(infos).then(() => {
                 // compute Camera Frame Rotation
                 var matRotationFrame = this.getCameraFrameRotation(panoInfo);
                 this.createShaderMat(panoInfo, matRotationFrame, pivot);
-                return _shaderMat;
+                return {shader: _shaderMat, sensors: Ori.sensors, matRotationFrame };
             });
         }
         return _initPromise;
@@ -75,6 +80,7 @@ const ProjectiveTexturingMaterial = {
         var posPanoCartesian = ellipsoid.cartographicToCartesian(posPanoWGS84);
 
         var normal = ellipsoid.geodeticSurfaceNormalCartographic(posPanoWGS84);
+
         var quaternion = new THREE.Quaternion();
         quaternion.setFromAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI / 2);
 
@@ -87,9 +93,15 @@ const ProjectiveTexturingMaterial = {
         // console.log("matrice originale", matRotation,"MAtrice normale",child.matrix, "normal vec", normal );
 
         var c = child.matrix; // .elements;
-        var m3 = new THREE.Matrix3().fromMatrix4(c);
+        var m3 = new THREE.Matrix3();
+        m3.setFromMatrix4(c);
         // console.log(m3);
-        var matRotationOnGlobe = new THREE.Matrix3().multiplyMatrices(matRotation.clone(), m3); // child.matrix);
+        var matRotationOnGlobe = new THREE.Matrix3();
+        if (1) {
+            multiplyMatrices3x3(matRotation, m3, matRotationOnGlobe);
+        } else {
+            multiplyMatrices3x3(/*matRotation,*/ m3, matRotation, matRotationOnGlobe); // child.matrix);
+        }
 
         return matRotationOnGlobe;
     },
@@ -127,8 +139,19 @@ const ProjectiveTexturingMaterial = {
     },
 
     loadTexture(src, infos, onload, data) {
-        //  console.log("src: ",src,"  infos: ",infos);
-        src = src.format(infos); // console.log("src: ",src);
+        src = src.replace('{lod}', infos.lod);
+        while (src.indexOf('{YYMMDD2}') >= 0) {
+            src = src.replace('{YYMMDD2}', infos.YYMMDD2());
+        }
+        if (src.indexOf('{cam.cam}') >= 0) {
+            src = src.replace('{cam.cam}', infos.cam.id);
+        }
+        if (src.indexOf('splitIt') >= 0) {
+            src = src.replace('{splitIt}', infos.splitIt());
+        }
+
+        // src = src.format(infos); //
+        console.log("src: ",src);
         var img = new Image();
         img.crossOrigin = 'anonymous';
         img.onload = function onLoad() {
@@ -142,19 +165,26 @@ const ProjectiveTexturingMaterial = {
         img.src = url.resolve(baseUrl, src);
     },
 
-    createShaderMat(panoInfo, rot, pivot) {
+    createShaderMat(panoInfo, worldFrameRotation, pivot) {
         var posPanoWGS84 = new GeoCoordinate(panoInfo.longitude, panoInfo.latitude, panoInfo.altitude, UNIT.DEGREE);
         var posPanoCartesian = ellipsoid.cartographicToCartesian(posPanoWGS84);
         // console.log("posPanoCartesian: ",posPanoCartesian);
-        var spherePosPano = new THREE.Mesh(new THREE.SphereGeometry(0.5, 12, 12), new THREE.MeshBasicMaterial({
-            side: THREE.DoubleSide,
-            color: 0xff00ff,
-        }));
-        spherePosPano.position.copy(posPanoCartesian);
-        graphicEngine().add3DScene(spherePosPano);
+        // var spherePosPano = new THREE.Mesh(new THREE.SphereGeometry(0.5, 12, 12), new THREE.MeshBasicMaterial({
+        //     side: THREE.DoubleSide,
+        //     color: 0xff00ff,
+        // }));
+        // spherePosPano.position.copy(posPanoCartesian);
+        // graphicEngine().add3DScene(spherePosPano);
 
+        // substract pivot point (why not a proper transformation ?)
+        // 1 : afficher les positions des appareils photos
+        // 2 : afficher le rectangle des photos ?
+        // TODO check me
+        // simplest: mvpp * translation => some in front, some behind
+        // draw extent of photos!!!
         var posPiv = posPanoCartesian.clone().sub(pivot);
         var posFrameWithPivot = new THREE.Vector4(posPiv.x, posPiv.y, posPiv.z, 1.0);
+
         var N = this.nbImages();
         var P = this.nbPanoramics();
         var uniforms = {
@@ -184,7 +214,7 @@ const ProjectiveTexturingMaterial = {
             },
             mvpp: {
                 type: 'm3v',
-                value: [],
+                value: [ new THREE.Matrix3(), new THREE.Matrix3(), new THREE.Matrix3(), new THREE.Matrix3(), new THREE.Matrix3() ],
             },
             translation: {
                 type: 'v3v',
@@ -203,41 +233,61 @@ const ProjectiveTexturingMaterial = {
         const iddist = [];
         for (let i = 0; i < N; ++i) {
             const mat = Ori.getMatrix(i).clone();
-            const mvpp = (new THREE.Matrix3().multiplyMatrices(rot, mat)).transpose();
-            const trans = posFrameWithPivot.clone().add(Ori.getSommet(i).clone().applyMatrix3(rot));
+            const mvpp = new THREE.Matrix3();
+
+            if (1) {
+                multiplyMatrices3x3(worldFrameRotation, mat, mvpp);
+                mvpp.transpose();
+            } else {
+                multiplyMatrices3x3(worldFrameRotation, Ori.getRotation(i), mvpp);
+                mvpp.getInverse(mvpp);
+                multiplyMatrices3x3(Ori.getProjection(i), mvpp, mvpp);
+
+            }
+
+            // const trans = Ori.getSommet(i).clone().applyMatrix3(worldFrameRotation);
+            const trans = posFrameWithPivot.clone().add(Ori.getSommet(i).clone().applyMatrix3(worldFrameRotation)) ;
+
             let m = -1;
             if (!_infos.noMask && Ori.getMask(i)) {
                 m = uniforms.mask.value.length;
                 uniforms.mask.value[m] = null;
             }
-            var d = -1;
+            let d = -1;
             if (!_infos.noDistortion && Ori.getDistortion(i)) {
                 d = uniforms.distortion.value.length;
                 uniforms.distortion.value[d] = Ori.getDistortion(i);
                 uniforms.pps.value[d] = Ori.getPPS(i);
             }
-            for (var pano = 0; pano < P; ++pano) {
-                var j = i + N * pano;
+            for (let pano = 0; pano < P; ++pano) {
+                let j = i + pano * N;
                 uniforms.size.value[j] = Ori.getSize(i);
-                uniforms.alpha.value[j] = _alpha * (1 - pano);
+                uniforms.alpha.value[j] = 1; //_alpha * (1 - pano);
                 uniforms.mvpp.value[j] = mvpp;
-                uniforms.translation.value[j] = trans;
+                uniforms.translation.value[j] = new THREE.Vector3(trans.x, trans.y, trans.z);
                 uniforms.texture.value[j] = null;
                 idmask[j] = m;
                 iddist[j] = d;
             }
         }
+        const vertexShader = Shader.shaderTextureProjectiveVS(P * N);
+
+        const fragmentShader = Shader.shaderTextureProjectiveFS(P * N, idmask, iddist);
 
         // create the shader material for Three
         _shaderMat = new THREE.ShaderMaterial({
             uniforms,
-            vertexShader: Shader.shaderTextureProjectiveVS(P * N),
-            fragmentShader: Shader.shaderTextureProjectiveFS(P * N, idmask, iddist),
+            vertexShader,
+            fragmentShader,
             side: THREE.DoubleSide, // THREE.BackSide,
             transparent: true,
                 // depthTest: false
                 // depthWrite: false
         });
+
+        _shaderMat.setMatrixRTC = function(rtc) {
+            this.uniforms.mVPMatRTC.value = rtc;
+        }
 
         function setMaskOnLoad(tex, m) {
             _shaderMat.uniforms.mask.value[m] = tex;
@@ -257,7 +307,7 @@ const ProjectiveTexturingMaterial = {
             }
             this.loadTexture(_infos.url, _infos, setTextureOnLoad, i);
         }
-        this.changePanoTextureAfterloading(panoInfo, posFrameWithPivot, rot, 1);
+        this.changePanoTextureAfterloading(panoInfo, posFrameWithPivot, worldFrameRotation, 1);
 
         return _shaderMat;
     },
@@ -309,6 +359,8 @@ const ProjectiveTexturingMaterial = {
     // Load an Image(html) then use it as a texture. Wait loading before passing to the shader to avoid black effect
     chargeOneImageCam() {
         if (this.todo.length == 0) return;
+        console.warn('Disabled stuff');
+        return;
         var todo = this.todo.shift();
         var i = todo.i;
         var lod = todo.l;
@@ -317,7 +369,9 @@ const ProjectiveTexturingMaterial = {
         _infos.lod = _infos.lods[todo.l];
         this.loadTexture(_infos.url, _infos, (tex) => {
             var mat = Ori.getMatrix(i).clone();
-            var mvpp = (new THREE.Matrix3().multiplyMatrices(that.rotation, mat)).transpose();
+            const mvpp = new THREE.Matrix3();
+            multiplyMatrices3x3(that.rotation, mat, mvpp);
+            mvpp.transpose();
             var trans = Ori.getSommet(i).clone().applyMatrix3(that.rotation);
             var j = i + that.nbImages();
             if (lod === 0 && j < _shaderMat.uniforms.mvpp.value.length) {
@@ -325,7 +379,7 @@ const ProjectiveTexturingMaterial = {
                 _shaderMat.uniforms.translation.value[j] = _shaderMat.uniforms.translation.value[i];
                 _shaderMat.uniforms.texture.value[j] = _shaderMat.uniforms.texture.value[i];
                 _shaderMat.uniforms.alpha.value[j] = _alpha;
-                _shaderMat.uniforms.alpha.value[i] = 0;
+                _shaderMat.uniforms.alpha.value[i] = 0;// ?
                 that.tweenIndiceTime(i);
             }
 

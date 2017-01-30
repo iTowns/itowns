@@ -296,9 +296,11 @@ Scene.prototype.scene3D = function scene3D() {
 };
 
 Scene.prototype.selectNodeId = function selectNodeId(id) {
+    console.log('SELECT NODE ID', id);
     // browse three.js scene, and mark selected node
     this.gfxEngine.scene3D.traverse((node) => {
         // only take of selectable nodes
+        node.selected = node.id === id;
         if (node.setSelected) {
             node.setSelected(node.id === id);
         }

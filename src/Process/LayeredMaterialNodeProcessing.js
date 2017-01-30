@@ -1,6 +1,6 @@
 import RendererConstant from 'Renderer/RendererConstant';
 import { chooseNextLevelToFetch } from 'Scene/LayerUpdateStrategy';
-import { l_ELEVATION, l_COLOR } from 'Renderer/LayeredMaterial';
+import LayeredMaterial, { l_ELEVATION, l_COLOR } from 'Renderer/LayeredMaterial';
 import LayerUpdateState from 'Scene/LayerUpdateState';
 import { CancelledCommandException } from 'Core/Commander/Scheduler';
 
@@ -86,6 +86,10 @@ export function updateLayeredMaterialNodeImagery(context, layer, node) {
 }
 
 function _updateLayeredMaterialNodeImagery(context, layer, node, parent) {
+    if (!(node.material instanceof LayeredMaterial)) {
+        return;
+    }
+
     // upate params
     const layerIndex = node.material.indexOfColorLayer(layer.id);
     node.material.setLayerVisibility(layerIndex, context.scene.layersConfiguration.getLayerAttribute(layer.id, 'visible'));
@@ -200,6 +204,10 @@ export function updateLayeredMaterialNodeElevation(context, layer, node) {
 }
 
 function _updateLayeredMaterialNodeElevation(context, layer, node, parent) {
+    if (!(node.material instanceof LayeredMaterial)) {
+        return;
+    }
+
     // TODO: we need either
     //  - compound or exclusive layers
     //  - support for multiple elevation layers

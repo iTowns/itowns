@@ -23,6 +23,7 @@ import OBBHelper from 'Renderer/ThreeExtended/OBBHelper';
 import GlobeControls from 'Renderer/ThreeExtended/GlobeControls';
 import CoordStars from 'Core/Geographic/CoordStars';
 import updateFeaturesAtNode from 'Process/FeatureProcessing';
+import { mobileMappingUpdate, mobileMappingPreUpdate } from 'Process/MobileMappingProcessing';
 
 var sceneIsLoaded = false;
 const eventLoaded = new CustomEvent('globe-loaded');
@@ -435,6 +436,8 @@ ApiGlobe.prototype.createSceneGlobe = function createSceneGlobe(globeLayerId, co
         id: 'tile_ids',
         update: debugIdUpdate,
     };
+
+
 
     // uncomment next line to display boundingbox helpers drawn
     // this.addGeometryLayer(debugLayer, wgs84TileLayer.id);

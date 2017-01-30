@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>Globe</title>
+
+    <style type="text/css">
+            html {height: 100%}
+        body { margin: 0; overflow:hidden; height:100%}
+
+            #viewerDiv {
+                margin : auto auto;
+                width: 100%;
+                height: 100%;
+                padding: 0;
+                /*margin-top: 50vh;
+                transform: translateY(-50%);*/
+            }
+            #menuDiv {position: absolute; top:0px; margin-left: 0px;}
+
+
+        </style>
+        <meta charset="UTF-8">
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        </script>
+    </head>
+    <body>
+        <div id="viewerDiv"></div>
+        <script src="examples/GUI/GuiTools.js"></script>
+        <script src="dist/itowns.js"></script>
+        <script type="text/javascript">
+
+            /* global itowns,document,GuiTools*/
+
+            const positionOnGlobe = { longitude: 2.3347781243, latitude: 48.8504060309, altitude: 25000000 };
+
+            // iTowns namespace defined here
+            const viewerDiv = document.getElementById('viewerDiv');
+            // const menuGlobe = new GuiTools(itowns.viewer, 'menuDiv');
+
+            const globeLayer = itowns.viewer.createSceneGlobe('globe', positionOnGlobe, viewerDiv);
+
+            const urlImageryLayers = [];
+            const urlElevationLayers = [];
+            const urlFeatureLayersArray = [];
+
+            urlImageryLayers.push('examples/layers/JSONLayers/Ortho.json');
+            // urlImageryLayers.push('examples/layers/JSONLayers/OrthosCRS.json');
+            // urlImageryLayers.push('examples/layers/JSONLayers/ScanEX.json');
+            // urlImageryLayers.push('examples/layers/JSONLayers/Region.json');
+
+            urlElevationLayers.push('examples/layers/JSONLayers/IGN_MNT.json');
+            urlElevationLayers.push('examples/layers/JSONLayers/IGN_MNT_HIGHRES.json');
+
+            urlFeatureLayersArray.push('examples/layers/JSONLayers/FL_Buildings.json');
+            urlFeatureLayersArray.push('examples/layers/JSONLayers/FL_Point.json');
+            urlFeatureLayersArray.push('examples/layers/JSONLayers/FL_Line.json');
+
+            const imageryPromise = itowns.viewer.addImageryLayersFromJSONArray(urlImageryLayers, globeLayer.id);
+            const elevationPromise = itowns.viewer.addElevationLayersFromJSONArray(urlElevationLayers, globeLayer.id);
+            const featurePromise = itowns.viewer.addFeatureLayersFromJSONArray(urlFeatureLayersArray, globeLayer.id);
+
+            // imageryPromise.then((layersColors) => { menuGlobe.addImageryLayersGUI(layersColors); });
+            // elevationPromise.then((layersElevations) => { menuGlobe.addElevationLayersGUI(layersElevations); });
+            // featurePromise.then((layersFeatures) => { menuGlobe.addFeatureLayersGUI(layersFeatures); });
+
+            var urlFeature = 'examples/layers/JSONLayers/F_Line.json';
+
+            const mobileMappingLayer = {
+                url: 'dist/itowns-sample-data/panoramicsMetaData.json',
+                id: 'mobilemapping',
+                preUpdate: itowns.processing.mobileMapping.pre_update,
+                update: itowns.processing.mobileMapping.update,
+                ellipsoid: itowns.viewer.ellipsoid,
+            };
+
+            itowns.viewer.addFeatureFromJSON(urlFeature).then(() => { itowns.viewer.addGeometryLayer(mobileMappingLayer, 'wfsBuilding'); });
+
+
+            // menuGlobe.addGUI('RealisticLighting', false,
+            //     (newValue) => { itowns.viewer.setRealisticLightingOn(newValue); });
+
+            var done = false;
+            itowns.viewer.addEventListener('globe-loaded', () => {
+                if (done)return;
+                // eslint-disable-next-line no-console
+                console.info('Globe Loaded');
+                done = true;
+
+                itowns.viewer.setCenter({
+                    longitude: 2.3347781243,
+                    latitude: 48.8504060309,
+                    altitude: 239.17028043232858,
+                });
+                itowns.viewer.setRange(10000);
+            });
+
+            itowns.viewer.update();
+        </script>
+    </body>
+</html>

@@ -22,5 +22,4 @@ void main() {
     #endif
 
     gl_FragColor = pack1K(float(uuid));
-
 }

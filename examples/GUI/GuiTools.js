@@ -6,16 +6,16 @@
 
  /* global dat,viewerDiv */
 
-dat.GUI.prototype.removeFolder = function removeFolder(name) {
-    var folder = this.__folders[name];
-    if (!folder) {
-        return;
-    }
-    folder.close();
-    this.__ul.removeChild(folder.domElement.parentNode);
-    delete this.__folders[name];
-    this.onResize();
-};
+// dat.GUI.prototype.removeFolder = function removeFolder(name) {
+//     var folder = this.__folders[name];
+//     if (!folder) {
+//         return;
+//     }
+//     folder.close();
+//     this.__ul.removeChild(folder.domElement.parentNode);
+//     delete this.__folders[name];
+//     this.onResize();
+// };
 
 function GuiTools(api, domId) {
     this.api = api;

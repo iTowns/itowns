@@ -1,5 +1,7 @@
 import LayerUpdateState from 'Scene/LayerUpdateState';
 import { CancelledCommandException } from 'Core/Commander/Scheduler';
+import MatteIdsMaterial from 'Renderer/MatteIdsMaterial';
+import GlobeDepthMaterial from 'Renderer/GlobeDepthMaterial';
 
 function updateFeatureRTC(feature, mat) {
     if (feature.material) {
@@ -19,7 +21,7 @@ export default function updateFeaturesAtNode(context, layer, node) {
     if (features.length > 0) {
         const mat = context.scene.gfxEngine.getRTCMatrixFromNode(features[0], context.camera);
         updateFeatureRTC(features[0], mat);
-        return;
+        return features;
     }
 
 
@@ -54,6 +56,26 @@ export default function updateFeaturesAtNode(context, layer, node) {
             node.add(result.feature);
             result.feature.frustumCulled = false;
             result.feature.visible = true;
+
+            // make selection work
+            if (result.feature) {
+                for (const c of result.feature.children) {
+                    c.frustumCulled = false;
+                    c.unselectedColor = Object.assign({}, c.material.uniforms.diffuseColor.value);
+                    c.materials = [];
+                    c.materials.push(c.material);
+                    c.materials.push(new GlobeDepthMaterial());
+                    c.materials.push(new MatteIdsMaterial());
+                    c.materials[1].uniforms.useRTC = false;
+                    c.materials[2].uniforms.uuid.value = c.id;
+                    c.materials[2].uniforms.useRTC = false;
+
+                    c.changeState = function(state) {
+                        this.material = this.materials[state];
+                    }
+
+                }
+            }
 
             const mat = context.scene.gfxEngine.getRTCMatrixFromNode(result.feature, context.camera);
             updateFeatureRTC(result.feature, mat);

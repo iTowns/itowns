@@ -188,7 +188,7 @@ Projection.prototype.cartesianToGeo = function cartesianToGeo(position) {
     var h = (rsqXY * Math.cos(phi)) + p.z * Math.sin(phi) - a * Math.sqrt(1 - e * e * Math.sin(phi) * Math.sin(phi));
 
     // TODO: return only WGS84 coordinate
-    return new GeoCoordinate(-theta, phi, h);
+    return new GeoCoordinate(-theta, phi, h, UNIT.RADIAN);
 };
 
 Projection.prototype.wgs84_to_lambert93 = function wgs84_to_lambert93(latitude, longitude) // , x93, y93)
