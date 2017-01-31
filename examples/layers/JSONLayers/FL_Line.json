@@ -8,6 +8,7 @@
     "version"     : "2.0.0",
     "axisOrder"   : "ordered",
     "level"       : 18,
+    "bbox"        : [4.568, 45.437, 5.18, 46.03],
     "options": {
         "mimetype"  : "geojson",
         "tileMatrixSet": "WGS84G"
