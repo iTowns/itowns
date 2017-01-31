@@ -7,6 +7,7 @@
     "type"        : "line",
     "version"     : "2.0.0",
     "axisOrder"   : "ordered",
+    "level"       : 18,
     "options": {
         "mimetype"  : "geojson",
         "tileMatrixSet": "WGS84G"

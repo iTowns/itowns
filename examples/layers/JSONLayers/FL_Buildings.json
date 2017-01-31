@@ -7,6 +7,7 @@
     "title"     : "BDTOPO_BDD_WLD_WGS84G:bati_remarquable,BDTOPO_BDD_WLD_WGS84G:bati_indifferencie,BDTOPO_BDD_WLD_WGS84G:bati_industriel",
     "styleName" : "",
     "extractStyle" : true,
+    "level"       : 18,
     "projection": "EPSG:4326",
     "bbox"      : [-63.1533283, -21.3896308, 55.8366872, 51.1028253],
     "ipr"       : "IGN",

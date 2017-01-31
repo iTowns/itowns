@@ -5,6 +5,7 @@
     "title"       : "jcd_jcdecaux.jcdvelov",
     "crs"         : "EPSG:4326",
     "type"        : "point",
+    "level"       : 18,
     "version"     : "2.0.0",
     "axisOrder"   : "ordered",
     "options": {

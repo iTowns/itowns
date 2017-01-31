@@ -52,7 +52,7 @@ WFS_Provider.prototype.preprocessDataLayer = function preprocessDataLayer(layer)
 WFS_Provider.prototype.tileInsideLimit = function tileInsideLimit(tile, layer) {
     const bbox = new BoundingBox(layer.bbox[0], layer.bbox[2], layer.bbox[1], layer.bbox[3], 0, 0, UNIT.DEGREE);
 
-    return (tile.level === 16) && bbox.intersect(tile.bbox);
+    return (layer.level === undefined || tile.level === layer.level) && bbox.intersect(tile.bbox);
 };
 
 WFS_Provider.prototype.executeCommand = function executeCommand(command) {
