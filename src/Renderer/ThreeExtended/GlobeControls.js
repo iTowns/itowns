@@ -260,7 +260,7 @@ function SnapCamera(camera) {
         ray.origin.copy(this.position);
         ray.direction.set(mouse.x, mouse.y, 0.5);
         matrix.multiplyMatrices(this.matrixWorld, this.invProjectionMatrix);
-        ray.direction.applyProjection(matrix);
+        ray.direction.applyMatrix4(matrix);
         ray.direction.sub(ray.origin).normalize();
     };
 }
