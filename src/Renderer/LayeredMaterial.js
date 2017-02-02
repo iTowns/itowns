@@ -7,9 +7,8 @@
 
 import * as THREE from 'three';
 import BasicMaterial from './BasicMaterial';
-import gfxEngine from './c3DEngine';
-import GlobeVS from './Shader/GlobeVS.glsl';
-import GlobeFS from './Shader/GlobeFS.glsl';
+import TileVS from './Shader/TileVS.glsl';
+import TileFS from './Shader/TileFS.glsl';
 import pitUV from './Shader/Chunk/pitUV.glsl';
 
 export const EMPTY_TEXTURE_ZOOM = -1;
@@ -93,9 +92,9 @@ var moveElementsArraySafe = function moveElementsArraySafe(array,index, howMany,
 const LayeredMaterial = function LayeredMaterial(material, coordsDestination, coordsSource) {
     BasicMaterial.call(this);
 
-    const maxTexturesUnits = gfxEngine().glParams.maxTexturesUnits;
+    const maxTexturesUnits = itowns._capabilities.maxTexturesUnits;
     const nbSamplers = Math.min(maxTexturesUnits - 1, 16 - 1);
-    this.vertexShader = GlobeVS;
+    this.vertexShader = TileVS;
 
     this.fragmentShaderHeader += `const int   TEX_UNITS   = ${nbSamplers.toString()};\n`;
     this.fragmentShaderHeader += pitUV;
@@ -107,8 +106,8 @@ const LayeredMaterial = function LayeredMaterial(material, coordsDestination, co
     // see GLOBE FS
     this.fragmentShaderHeader += getColorAtIdUv(nbSamplers);
 
-    this.fragmentShader = this.fragmentShaderHeader + GlobeFS;
-    this.vertexShader = this.vertexShaderHeader + GlobeVS;
+    this.fragmentShader = this.fragmentShaderHeader + TileFS;
+    this.vertexShader = this.vertexShaderHeader + TileVS;
 
     // handle on textures uniforms
     this.textures = [];

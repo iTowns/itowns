@@ -54,7 +54,7 @@ function _instanciateQueue() {
     };
 }
 
-function Scheduler(scene) {
+function Scheduler() {
     // Constructor
     if (instanceScheduler !== null) {
         throw new Error('Cannot instantiate more than one Scheduler');
@@ -68,11 +68,6 @@ function Scheduler(scene) {
     this.eventsManager = new EventsManager();
     this.maxConcurrentCommands = 16;
     this.maxCommandsPerHost = 6;
-
-    if (!scene)
-        { throw new Error('Cannot instantiate Scheduler without scene'); }
-
-    this.scene = scene;
 }
 
 Scheduler.prototype.constructor = Scheduler;
@@ -85,11 +80,11 @@ Scheduler.prototype.runCommand = function runCommand(command, queue, executingCo
     }
 
     queue.execute(command, provider, executingCounterUpToDate).then(() => {
-        // notify scene that one command ended.
-        // We allow the scene to delay the update/repaint up to 100ms
+        // notify view that one command ended.
+        // We allow the view to delay the update/repaint up to 100ms
         // to reduce CPU load (no need to perform an update on completion if we
         // know there's another one ending soon)
-        this.scene.notifyChange(100, 'redraw' in command ? command.redraw : true);
+        command.view.notifyChange(100, 'redraw' in command ? command.redraw : true);
 
         // try to execute next command
         if (queue.counters.executing < this.maxCommandsPerHost) {
@@ -102,6 +97,9 @@ Scheduler.prototype.runCommand = function runCommand(command, queue, executingCo
 };
 
 Scheduler.prototype.execute = function execute(command) {
+    // TODO: check for mandatory commands fields
+
+
     // parse host
     const layer = command.layer;
 
@@ -208,15 +206,5 @@ Scheduler.prototype.deQueue = function deQueue(queue) {
     return undefined;
 };
 
-/**
- */
-Scheduler.prototype.wait = function wait() {
-    this.eventsManager.wait();
-};
-
 export { CancelledCommandException };
-
-export default function (scene) {
-    instanceScheduler = instanceScheduler || new Scheduler(scene);
-    return instanceScheduler;
-}
+export default Scheduler;

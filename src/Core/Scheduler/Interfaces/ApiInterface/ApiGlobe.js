@@ -5,23 +5,12 @@
  */
 
 import CustomEvent from 'custom-event';
-import Scene from '../../../../Scene/Scene';
-import { GeometryLayer, ImageryLayers } from '../../../../Scene/Layer';
-import WMTS_Provider from '../../Providers/WMTS_Provider';
-import WMS_Provider from '../../Providers/WMS_Provider';
-import TileProvider from '../../Providers/TileProvider';
+import { ImageryLayers } from '../../../Layer/Layer';
+import { C } from '../../../Geographic/Coordinates';
 import loadGpx from '../../Providers/GpxUtils';
-import { C, ellipsoidSizes } from '../../../Geographic/Coordinates';
 import Fetcher from '../../Providers/Fetcher';
-import { STRATEGY_MIN_NETWORK_TRAFFIC } from '../../../../Scene/LayerUpdateStrategy';
-import GlobeControls from '../../../../Renderer/ThreeExtended/GlobeControls';
-import { processTiledGeometryNode, initTiledGeometryLayer } from '../../../../Process/TiledNodeProcessing';
-import { updateLayeredMaterialNodeImagery, updateLayeredMaterialNodeElevation } from '../../../../Process/LayeredMaterialNodeProcessing';
-import { globeCulling, preGlobeUpdate, globeSubdivisionControl, globeSchemeTileWMTS, globeSchemeTile1 } from '../../../../Process/GlobeTileProcessing';
-import BuilderEllipsoidTile from '../../../../Globe/BuilderEllipsoidTile';
-import Atmosphere from '../../../../Globe/Atmosphere';
-import Clouds from '../../../../Globe/Clouds';
-import CoordStars from '../../../../Core/Geographic/CoordStars';
+import CoordStars from '../../../Geographic/CoordStars';
+import GlobeView from '../../../Prefab/GlobeView';
 
 var sceneIsLoaded = false;
 export const INITIALIZED_EVENT = 'initialized';
@@ -53,34 +42,6 @@ function ApiGlobe() {
 }
 
 ApiGlobe.prototype.constructor = ApiGlobe;
-
-/**
- * This function gives a chance to the matching provider to pre-process some
- * values for a layer.
- */
-function preprocessLayer(layer, provider) {
-    if (!layer.updateStrategy) {
-        layer.updateStrategy = {
-            type: STRATEGY_MIN_NETWORK_TRAFFIC,
-        };
-    }
-
-    if (!provider) {
-        return;
-    }
-
-    if (provider.tileInsideLimit) {
-        layer.tileInsideLimit = provider.tileInsideLimit.bind(provider);
-    }
-
-    if (provider.tileTextureCount) {
-        layer.tileTextureCount = provider.tileTextureCount.bind(provider);
-    }
-
-    if (provider.preprocessDataLayer) {
-        provider.preprocessDataLayer(layer);
-    }
-}
 
 /**
  * The intellectual property rights
@@ -123,6 +84,16 @@ function preprocessLayer(layer, provider) {
  * @property {Object} layer.updateStrategy strategy to load imagery files
  * @property {OptionsWmts|OptionsWms} layer.options WMTS or WMS options
  */
+ /*
+ * Add the geometry layer to the scene.
+ */
+ApiGlobe.prototype.addGeometryLayer = function addGeometryLayer(layer, parentLayer) {
+    layer.protocol = 'tile';
+
+    this.scene.attach(layer, parentLayer);
+    layer.type = 'geometry';
+    return layer;
+};
 
 /**
  * This function adds an imagery layer to the scene. The layer id must be unique.
@@ -130,21 +101,17 @@ function preprocessLayer(layer, provider) {
  * @constructor
  * @param {Layer} Layer
  */
-
 ApiGlobe.prototype.addImageryLayer = function addImageryLayer(layer) {
-    preprocessLayer(layer, this.scene.scheduler.getProtocolProvider(layer.protocol));
-    // assume all imageryLayer for globe use LayeredMaterial
-    layer.update = updateLayeredMaterialNodeImagery;
-
-    this.scene._geometryLayers[0].attach(layer);
-    layer.type = 'color';
+    layer.type = 'color'
+    ;
+    this.globeview.addLayer(layer);
     layer.frozen = false;
     layer.visible = true;
     layer.opacity = 1.0;
-    const colorLayerCount = this.scene.getAttachedLayers(l => l.type === 'color').length;
+    const colorLayerCount = this.globeview.getLayers(l => l.type === 'color').length;
     layer.sequence = colorLayerCount - 1;
 
-    this.scene.notifyChange(1, true);
+    this.globeview.notifyChange(1, true);
     this.setSceneLoaded().then(() => {
         this.viewerDiv.dispatchEvent(eventLayerAdded);
     });
@@ -193,20 +160,16 @@ ApiGlobe.prototype.addElevationLayer = function addElevationLayer(layer) {
     if (layer.protocol === 'wmts' && layer.options.tileMatrixSet !== 'WGS84G') {
         throw new Error('Only WGS84G tileMatrixSet is currently supported for WMTS elevation layers');
     }
-    preprocessLayer(layer, this.scene.scheduler.getProtocolProvider(layer.protocol));
 
-    // assume all elevation layer for globe use LayeredMaterial
-    layer.update = updateLayeredMaterialNodeElevation;
-
-    this.scene._geometryLayers[0].attach(layer);
     layer.type = 'elevation';
+
+    this.globeview.addLayer(layer);
     layer.frozen = false;
 
-    this.scene.notifyChange(1, true);
+    this.globeview.notifyChange(1, true);
     this.setSceneLoaded().then(() => {
         this.viewerDiv.dispatchEvent(eventLayerAdded);
     });
-
 
     return layer;
 };
@@ -297,7 +260,7 @@ ApiGlobe.prototype.moveLayerToIndex = function moveLayerToIndex(layerId, newInde
 };
 
 /**
- * Removes a specific imagery layer from the current layer list. This removes layers inserted with addLayer().
+ * Removes a specific imagery layer from the current layer list. This removes layers inserted with attach().
  * @constructor
  * @param      {string}   id      The identifier
  * @return     {boolean}  { description_of_the_return_value }
@@ -379,20 +342,6 @@ ApiGlobe.prototype.getImageryLayers = function getImageryLayers() {
     return this.scene.getAttachedLayers(layer => layer.type === 'color');
 };
 
-ApiGlobe.prototype.initProviders = function initProviders(scene) {
-    var gLDebug = false; // true to support GLInspector addon
-
-    // Register all providers
-    var wmtsProvider = new WMTS_Provider({
-        support: gLDebug,
-    });
-
-    scene.scheduler.addProtocolProvider('wmts', wmtsProvider);
-    scene.scheduler.addProtocolProvider('wmtsc', wmtsProvider);
-    scene.scheduler.addProtocolProvider('tile', new TileProvider());
-    scene.scheduler.addProtocolProvider('wms', new WMS_Provider({ support: gLDebug }));
-};
-
 /**
  * Creates the scene (the globe of iTowns).
  * The first parameter is the coordinates on wich the globe will be centered at the initialization.
@@ -403,9 +352,6 @@ ApiGlobe.prototype.initProviders = function initProviders(scene) {
  */
 
 ApiGlobe.prototype.createSceneGlobe = function createSceneGlobe(globeLayerId, coordCarto, viewerDiv) {
-    // TODO: Normalement la creation de scene ne doit pas etre ici....
-    // Deplacer plus tard
-    this.globeLayerId = globeLayerId;
     this.viewerDiv = viewerDiv;
     this.sceneLoadedDeferred = defer();
 
@@ -417,115 +363,19 @@ ApiGlobe.prototype.createSceneGlobe = function createSceneGlobe(globeLayerId, co
         }
     }, false);
 
-    var gLDebug = false; // true to support GLInspector addon
-    var debugMode = false;
-
-    var positionCamera = new C.EPSG_4326(
-        coordCarto.longitude,
-        coordCarto.latitude,
-        coordCarto.altitude);
-
-    // FIXME: the scene is not really in EPSG:4978 atm, some axis are inverted, see
-    // https://github.com/iTowns/itowns2/pull/246
-    this.scene = Scene('EPSG:4978', positionCamera, viewerDiv, debugMode, gLDebug);
-
-    this.initProviders(this.scene);
+    this.globeview = new GlobeView(viewerDiv, coordCarto);
 
     this.setSceneLoaded().then(() => {
-        this.scene.currentControls().updateCameraTransformation();
-        this.scene.updateScene3D();
+        this.globeview.controls.updateCameraTransformation();
+        this.globeview.notifyChange(0, true);
         this.viewerDiv.dispatchEvent(new CustomEvent(INITIALIZED_EVENT));
     });
 
-    const size = ellipsoidSizes().x;
-
-    // Init camera
-    this.scene.camera.camera3D.near = Math.max(15.0, 0.000002352 * size);
-    this.scene.camera.camera3D.far = size * 10;
-    this.scene.camera.camera3D.updateProjectionMatrix();
-    this.scene.camera.camera3D.updateMatrixWorld(true);
-
-    // Create Control
-    const positionTargetCamera = positionCamera.clone();
-    positionTargetCamera.setAltitude(0);
-
-    this.scene.controls = new GlobeControls(
-        this.scene.camera.camera3D,
-        positionTargetCamera.as('EPSG:4978').xyz(),
-        this.scene.gfxEngine.renderer.domElement,
-        this.scene.gfxEngine);
-    this.scene.controls.rotateSpeed = 0.25;
-    this.scene.controls.zoomSpeed = 2.0;
-    this.scene.controls.minDistance = 30;
-    this.scene.controls.maxDistance = size * 8.0;
-    this.scene.controls.addEventListener('change', this.scene.gfxEngine.update);
-
-    const nodeInitFn = function nodeInitFn(context, layer, parent, node) {
-        node.materials[0].setLightingOn(layer.lighting.enable);
-        node.materials[0].uniforms.lightPosition.value = layer.lighting.position;
-
-        if (__DEBUG__) {
-            node.material.uniforms.showOutline = { value: layer.showOutline || false };
-            node.material.wireframe = layer.wireframe || false;
-        }
-    };
-
-    const SSE_SUBDIVISION_THRESHOLD = 6.0;
-
-
-    // init globe layer with default parameter
-    const wgs84TileLayer = new GeometryLayer(globeLayerId);
-
-    const initLayer = initTiledGeometryLayer(globeSchemeTileWMTS(globeSchemeTile1));
-
-    wgs84TileLayer.preUpdate = (context, layer) => {
-        if (layer.level0Nodes === undefined) {
-            initLayer(context, layer);
-        }
-        preGlobeUpdate(context);
-        return layer.level0Nodes;
-    };
-    wgs84TileLayer.update =
-        processTiledGeometryNode(
-            globeCulling,
-            globeSubdivisionControl(2, 17, SSE_SUBDIVISION_THRESHOLD),
-            nodeInitFn);
-
-    // provider options
-    wgs84TileLayer.builder = new BuilderEllipsoidTile();
-
-    this.scene.addGeometryLayer(wgs84TileLayer);
-
-    const threejsLayer = this.scene.getUniqueThreejsLayer();
-    wgs84TileLayer.type = 'geometry';
-    wgs84TileLayer.protocol = 'tile';
-    wgs84TileLayer.threejsLayer = 'threejsLayer';
-    wgs84TileLayer.lighting = {
-        enable: false,
-        position: { x: -0.5, y: 0.0, z: 1.0 },
-    };
-
-    // enable by default
-    this.scene.currentCamera().camera3D.layers.enable(threejsLayer);
-
-    this.atmosphere = new Atmosphere();
-    this.clouds = new Clouds();
-    this.atmosphere.add(this.clouds);
-
-    const atmosphereLayer = this.scene.getUniqueThreejsLayer();
-    this.atmosphere.traverse((obj) => { obj.layers.set(atmosphereLayer); });
-    this.scene.currentCamera().camera3D.layers.enable(atmosphereLayer);
-
-    this.scene.gfxEngine.scene3D.add(this.atmosphere);
-
-    // enable only globe-rendering when performing picking
-    this.scene.controls.controlsActiveLayers = 1 << wgs84TileLayer.threejsLayer;
-
-    return wgs84TileLayer;
+    return this.globeview;
 };
 
 ApiGlobe.prototype.update = function update() {
-    this.scene.notifyChange(0, true);
+    this.globeview.notifyChange(0, true);
 };
 
 ApiGlobe.prototype.setRealisticLightingOn = function setRealisticLightingOn(value) {
@@ -827,6 +677,7 @@ ApiGlobe.prototype.resetHeading = function resetHeading(isAnimated) {
  */
 
 ApiGlobe.prototype.setSceneLoaded = function setSceneLoaded() {
+    return Promise.resolve();
     sceneIsLoaded = false;
     return this.sceneLoadedDeferred.promise;
 };
@@ -1079,6 +930,8 @@ ApiGlobe.prototype.getRangeFromScale = function getRangeFromScale(zoomScale, pit
  */
 
 ApiGlobe.prototype.addEventListener = function addEventListenerProto(eventname, callback) {
+    console.error('TODO');
+    return;
     if (eventname == 'layerchanged') {
         this.viewerDiv.addEventListener('layerchanged', callback, false);
         this.addEventListenerLayerChanged();

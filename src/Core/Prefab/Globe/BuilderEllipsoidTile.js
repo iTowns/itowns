@@ -1,7 +1,7 @@
 import * as THREE from 'three';
-import { C, UNIT } from '../Core/Geographic/Coordinates';
-import OBB from '../Renderer/ThreeExtended/OBB';
-import Projection from '../Core/Geographic/Projection';
+import { C, UNIT } from '../../Geographic/Coordinates';
+import Projection from '../../Geographic/Projection';
+import OBB from '../../../Renderer/ThreeExtended/OBB';
 
 function BuilderEllipsoidTile() {
     this.projector = new Projection();

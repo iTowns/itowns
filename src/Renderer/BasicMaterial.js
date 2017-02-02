@@ -6,7 +6,6 @@
 
 
 import * as THREE from 'three';
-import c3DEngine from './c3DEngine';
 import SimpleVS from './Shader/SimpleVS.glsl';
 import SimpleFS from './Shader/SimpleFS.glsl';
 import LogDepthBuffer from './Shader/Chunk/LogDepthBuffer.glsl';
@@ -19,7 +18,7 @@ function BasicMaterial(color) {
     this.vertexShaderHeader = '';
     this.fragmentShaderHeader = '';
 
-    var logarithmicDepthBuffer = c3DEngine().renderer.capabilities.logarithmicDepthBuffer;
+    var logarithmicDepthBuffer = itowns._capabilities.logarithmicDepthBuffer;
 
     if (logarithmicDepthBuffer)
     {

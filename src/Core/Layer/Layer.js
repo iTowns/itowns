@@ -9,7 +9,7 @@ function GeometryLayer(i) {
 
 GeometryLayer.prototype.attach = function attach(layer) {
     if (!layer.update) {
-        throw new Error(`Missing 'update' function -> can't attach layer ${layer._id}`);
+        throw new Error(`Missing 'update' function -> can't attach layer ${layer.id}`);
     }
     this._attachedLayers.push(layer);
 };

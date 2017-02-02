@@ -7,7 +7,7 @@
  */
 /* global Float32Array*/
 import * as THREE from 'three';
-import CacheRessource from '../Core/Commander/Providers/CacheRessource';
+import CacheRessource from './Scheduler/Providers/CacheRessource';
 
 // TODO Why? it's not necessary
 

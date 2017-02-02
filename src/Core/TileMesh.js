@@ -6,10 +6,10 @@
 
 import * as THREE from 'three';
 import LayeredMaterial, { l_ELEVATION } from '../Renderer/LayeredMaterial';
-import GlobeDepthMaterial from '../Renderer/GlobeDepthMaterial';
+import TileDepthMaterial from '../Renderer/TileDepthMaterial';
 import MatteIdsMaterial from '../Renderer/MatteIdsMaterial';
 import RendererConstant from '../Renderer/RendererConstant';
-import OGCWebServiceHelper from '../Core/Commander/Providers/OGCWebServiceHelper';
+import OGCWebServiceHelper from '../Core/Scheduler/Providers/OGCWebServiceHelper';
 
 function TileMesh(geometry, params) {
     // Constructor
@@ -49,7 +49,7 @@ function TileMesh(geometry, params) {
     this.materials[RendererConstant.FINAL] = new LayeredMaterial(params.parentMaterial, this.wmtsCoords, params.parentWmtsCoords);
 
     // Depth : return the distance between projection point and the node
-    this.materials[RendererConstant.DEPTH] = new GlobeDepthMaterial(this.materials[RendererConstant.FINAL]);
+    this.materials[RendererConstant.DEPTH] = new TileDepthMaterial(this.materials[RendererConstant.FINAL]);
     // ID : return id color in RGBA (float Pack in RGBA)
     this.materials[RendererConstant.ID] = new MatteIdsMaterial(this.materials[RendererConstant.FINAL]);
     // Set current material in Final Rendering

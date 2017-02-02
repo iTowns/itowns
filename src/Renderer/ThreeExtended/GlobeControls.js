@@ -7,12 +7,9 @@
 //    Pan - right mouse, or arrow keys / touch: three finter swipe
 
 import * as THREE from 'three';
-import CustomEvent from 'custom-event';
 import Sphere from '../../Core/Math/Sphere';
-import AnimationPlayer, { Animation, AnimatedExpression } from '../../Scene/AnimationPlayer';
-import { C } from '../../Core/Geographic/Coordinates';
-
-var selectClick = new CustomEvent('selectClick');
+import AnimationPlayer, { Animation, AnimatedExpression } from '../../Core/AnimationPlayer';
+import Coordinates, { C } from '../../Core/Geographic/Coordinates';
 
 // TODO:
 // Recast touch for globe
@@ -277,10 +274,10 @@ var snapShotCamera = null;
 
 /* globals document,window */
 
-function GlobeControls(camera, target, domElement, engine) {
+function GlobeControls(camera, target, domElement, engine, radius, referenceCrs, getPickingPosition) {
     player = new AnimationPlayer(domElement);
-    const scene = engine.scene;
     this.camera = camera;
+    this.referenceCrs = referenceCrs;
     snapShotCamera = new SnapCamera(camera);
 
     this.domElement = (domElement !== undefined) ? domElement : document;
@@ -330,8 +327,6 @@ function GlobeControls(camera, target, domElement, engine) {
     // Enable Damping
     this.enableDamping = true;
 
-    this.controlsActiveLayers = undefined;
-
     if (enableTargetHelper) {
         this.pickingHelper = new THREE.AxisHelper(500000);
     }
@@ -344,7 +339,7 @@ function GlobeControls(camera, target, domElement, engine) {
     };
 
     // Radius tangent sphere
-    tSphere.setRadius(engine.size);
+    tSphere.setRadius(radius);
     spherical.radius = tSphere.radius;
 
     sizeRendering.set(engine.width, engine.height);
@@ -366,10 +361,10 @@ function GlobeControls(camera, target, domElement, engine) {
         type: 'end',
     };
 
-    this.updateCamera = function updateCamera(camera) {
+    this.updateCamera = function updateCamera(camera, width, height) {
         snapShotCamera.init(camera.camera3D);
-        sizeRendering.width = camera.width;
-        sizeRendering.height = camera.height;
+        sizeRendering.width = width;
+        sizeRendering.height = height;
     };
 
     this.getAutoRotationAngle = function getAutoRotationAngle() {
@@ -483,49 +478,6 @@ function GlobeControls(camera, target, domElement, engine) {
             // console.warn('WARNING: GlobeControls.js encountered an unknown camera type - dolly/zoom disabled.');
 
         }
-    };
-
-    const getPickingPosition = function getPickingPosition(controlsActiveLayers, coords) {
-        if (enableTargetHelper) {
-            pickingHelper.visible = false;
-            cameraTargetOnGlobe.visible = false;
-        }
-
-        const prev = engine.scene.camera.camera3D.layers.mask;
-        if (controlsActiveLayers) {
-            engine.scene.camera.camera3D.layers.mask = controlsActiveLayers;
-        }
-
-        const position = engine.getPickingPositionFromDepth(coords);
-
-        engine.scene.camera.camera3D.layers.mask = prev;
-        engine.renderScene();
-
-        if (enableTargetHelper) {
-            pickingHelper.visible = true;
-            cameraTargetOnGlobe.visible = true;
-        }
-
-        return position;
-    };
-
-    // introduction collision
-    // Not use for the moment
-    // eslint-disable-next-line
-    var collision = function collision(position)
-    {
-        if (scene.getMap())
-        {
-            var coord = scene.projection.cartesianToGeo(position);
-            var bbox = scene.getTile(coord).bbox;
-            var delta = coord.altitude() - (bbox.top() + radiusCollision);
-
-            if (delta < 0) {
-                position.setLength(position.length() - delta);
-            }
-        }
-
-        return position;
     };
 
     const quaterPano = new THREE.Quaternion();
@@ -663,10 +615,10 @@ function GlobeControls(camera, target, domElement, engine) {
     const cT = new THREE.Vector3();
 
     const updateCameraTargetOnGlobe = function updateCameraTargetOnGlobe() {
-        const oldCoord = C.fromXYZ(scene.referenceCrs, cameraTargetOnGlobe.position);
+        const oldCoord = new Coordinates(referenceCrs, cameraTargetOnGlobe.position);
 
         // Get distance camera DME
-        const pickingPosition = getPickingPosition(this.controlsActiveLayers);
+        const pickingPosition = getPickingPosition();
 
         if (!pickingPosition) {
             return;
@@ -694,7 +646,7 @@ function GlobeControls(camera, target, domElement, engine) {
         this.dispatchEvent({
             type: 'camera-target-updated',
             oldCameraTargetPosition: oldCoord,
-            newCameraTargetPosition: C.fromXYZ(scene.referenceCrs, cameraTargetOnGlobe.position),
+            newCameraTargetPosition: new Coordinates(this.referenceCrs, cameraTargetOnGlobe.position),
         });
     };
 
@@ -722,11 +674,14 @@ function GlobeControls(camera, target, domElement, engine) {
 
             snapShotCamera.updateRay(ray, mouse);
             // pick position on tSphere
-            tSphere.picking.position.copy(tSphere.intersectWithRay(ray));
-            tSphere.picking.normal = tSphere.picking.position.clone().normalize();
+            const its = tSphere.intersectWithRay(ray);
+            if (its != undefined) {
+                tSphere.picking.position.copy(its);
+                tSphere.picking.normal = tSphere.picking.position.clone().normalize();
 
-            lastRotation.push(tSphere.picking.normal);
-            updateHelper.bind(this)(tSphere.picking.position, pickingHelper);
+                lastRotation.push(tSphere.picking.normal);
+                updateHelper.bind(this)(tSphere.picking.position, pickingHelper);
+            }
         };
     }());
 
@@ -828,16 +783,18 @@ function GlobeControls(camera, target, domElement, engine) {
                     state = CONTROL_STATE.PANORAMIC;
                 } else if (keyS) {
                     // If the key 'S' is down, the engine selects node under mouse
-                    selectClick.mouse = new THREE.Vector2(event.clientX - event.target.offsetLeft, event.clientY - event.target.offsetTop);
+                    const selectClickEvent = {
+                        type: 'selectClick',
+                    };
+                    selectClickEvent.mouse = new THREE.Vector2(event.clientX - event.target.offsetLeft, event.clientY - event.target.offsetTop);
 
-                    domElement.dispatchEvent(selectClick);
+                    this.dispatchEvent(selectClickEvent);
                 } else {
                     snapShotCamera.shot(this.camera);
                     ptScreenClick.x = event.clientX - event.target.offsetLeft;
                     ptScreenClick.y = event.clientY - event.target.offsetTop;
 
-                    const point = getPickingPosition(
-                        this.controlsActiveLayers, ptScreenClick);
+                    const point = getPickingPosition(ptScreenClick);
                     lastRotation = [];
                     // update tangent sphere which passes through the point
                     if (point) {
@@ -879,7 +836,7 @@ function GlobeControls(camera, target, domElement, engine) {
             ptScreenClick.x = event.clientX - event.target.offsetLeft;
             ptScreenClick.y = event.clientY - event.target.offsetTop;
 
-            const point = getPickingPosition(this.controlsActiveLayers, ptScreenClick);
+            const point = getPickingPosition(ptScreenClick);
 
             if (point) {
                 animatedScale = 0.6;
@@ -1295,9 +1252,9 @@ GlobeControls.prototype.setCameraTargetPosition = function setCameraTargetPositi
     if (position.range) {
         // Compensation of the altitude from the approximation of the ellipsoid by a sphere
         // This approximation comes from the movements around the ellipsoid, are rotations with constant radius
-        const currentTargetPosition = C.fromXYZ('EPSG:4978', center).as('EPSG:4326');
+        const currentTargetPosition = new Coordinates(this.referenceCrs, center).as('EPSG:4326');
         const targetOnEllipsoid = new C.EPSG_4326(currentTargetPosition.longitude(), currentTargetPosition.latitude(), 0)
-            .as('EPSG:4978').xyz();
+            .as(this.referenceCrs).xyz();
         const compensation = position.length() - targetOnEllipsoid.length();
         position.range += compensation;
     }

@@ -14,10 +14,10 @@
  */
 
 import Provider from './Provider';
-import TileGeometry from '../../../Globe/TileGeometry';
+import TileGeometry from '../../TileGeometry';
 import OGCWebServiceHelper, { SIZE_TEXTURE_TILE } from './OGCWebServiceHelper';
 import { EMPTY_TEXTURE_ZOOM, l_ELEVATION } from '../../../Renderer/LayeredMaterial';
-import TileMesh from '../../../Globe/TileMesh';
+import TileMesh from '../../TileMesh';
 
 function TileProvider() {
     Provider.call(this, null);

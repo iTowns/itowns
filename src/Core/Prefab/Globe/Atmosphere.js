@@ -7,13 +7,13 @@
 
 import * as THREE from 'three';
 import Sky from './SkyShader';
-import skyFS from '../Renderer/Shader/skyFS.glsl';
-import skyVS from '../Renderer/Shader/skyVS.glsl';
-import groundFS from '../Renderer/Shader/groundFS.glsl';
-import groundVS from '../Renderer/Shader/groundVS.glsl';
-import GlowFS from '../Renderer/Shader/GlowFS.glsl';
-import GlowVS from '../Renderer/Shader/GlowVS.glsl';
-import { ellipsoidSizes } from '../Core/Geographic/Coordinates';
+import skyFS from './Shaders/skyFS.glsl';
+import skyVS from './Shaders/skyVS.glsl';
+import groundFS from './Shaders/groundFS.glsl';
+import groundVS from './Shaders/groundVS.glsl';
+import GlowFS from './Shaders/GlowFS.glsl';
+import GlowVS from './Shaders/GlowVS.glsl';
+import { ellipsoidSizes } from '../../Geographic/Coordinates';
 
 export const LIGHTING_POSITION = new THREE.Vector3(1, 0, 0);
 

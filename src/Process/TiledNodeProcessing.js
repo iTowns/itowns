@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import BoundingBox from '../Scene/BoundingBox';
+import BoundingBox from '../Core/Math/BoundingBox';
 
 
 function subdivisionBoundingBoxes(bbox) {
@@ -21,9 +21,10 @@ function subdivisionBoundingBoxes(bbox) {
     return result;
 }
 
-function requestNewTile(scheduler, geometryLayer, bbox, parent, level) {
+function requestNewTile(view, scheduler, geometryLayer, bbox, parent, level) {
     const command = {
         /* mandatory */
+        view,
         requester: parent,
         layer: geometryLayer,
         priority: 10000,
@@ -50,7 +51,7 @@ function subdivideNode(context, layer, node, initNewNode) {
         const children = [];
         for (const bbox of bboxes) {
             promises.push(
-                requestNewTile(context.scheduler, layer, bbox, node).then((child) => {
+                requestNewTile(context.view, context.scheduler, layer, bbox, node).then((child) => {
                     children.push(child);
                     initNewNode(context, layer, node, child);
                     return node;
@@ -73,7 +74,7 @@ function subdivideNode(context, layer, node, initNewNode) {
             }
             */
             node.pendingSubdivision = false;
-            context.scene.notifyChange(0, false);
+            context.view.notifyChange(0, false);
         }, (err) => {
             node.pendingSubdivision = false;
             throw new Error(err);
@@ -92,7 +93,7 @@ export function initTiledGeometryLayer(schemeTile) {
 
         for (let i = 0; i < schemeTile.rootCount(); i++) {
             _promises.push(
-                requestNewTile(context.scheduler, layer, schemeTile.getRoot(i), undefined, 0));
+                requestNewTile(context.view, context.scheduler, layer, schemeTile.getRoot(i), undefined, 0));
         }
         Promise.all(_promises).then((level0s) => {
             layer.level0Nodes = level0s;
@@ -100,7 +101,7 @@ export function initTiledGeometryLayer(schemeTile) {
                 // TODO: support a layer.root attribute, to be able
                 // to add a layer to a three.js node, e.g:
                 // layer.root.add(level0);
-                context.scene.gfxEngine.scene3D.add(level0);
+                context.engine.scene3D.add(level0);
                 level0.updateMatrixWorld();
             }
         });
@@ -151,7 +152,7 @@ export function processTiledGeometryNode(cullingTest, subdivisionTest, initNewNo
                 const positionWorld = new THREE.Vector3();
                 positionWorld.setFromMatrixPosition(node.matrixWorld);
                 node.setMatrixRTC(
-                    context.scene.gfxEngine.getRTCMatrixFromCenter(
+                    context.engine.getRTCMatrixFromCenter(
                         positionWorld, context.camera));
                 node.setFog(1000000000);
 
