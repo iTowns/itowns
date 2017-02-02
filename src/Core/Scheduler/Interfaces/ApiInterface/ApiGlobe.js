@@ -5,23 +5,13 @@
  */
 
 import CustomEvent from 'custom-event';
-import Scene from '../../../../Scene/Scene';
-import { GeometryLayer, ImageryLayers } from '../../../../Scene/Layer';
-import WMTS_Provider from '../../Providers/WMTS_Provider';
-import WMS_Provider from '../../Providers/WMS_Provider';
-import TileProvider from '../../Providers/TileProvider';
+import { ImageryLayers } from '../../../Layer/Layer';
+import { C } from '../../../Geographic/Coordinates';
 import loadGpx from '../../Providers/GpxUtils';
-import { C, ellipsoidSizes } from '../../../Geographic/Coordinates';
 import Fetcher from '../../Providers/Fetcher';
-import { STRATEGY_MIN_NETWORK_TRAFFIC } from '../../../../Scene/LayerUpdateStrategy';
-import GlobeControls from '../../../../Renderer/ThreeExtended/GlobeControls';
-import { processTiledGeometryNode, initTiledGeometryLayer } from '../../../../Process/TiledNodeProcessing';
-import { updateLayeredMaterialNodeImagery, updateLayeredMaterialNodeElevation } from '../../../../Process/LayeredMaterialNodeProcessing';
-import { globeCulling, preGlobeUpdate, globeSubdivisionControl, globeSchemeTileWMTS, globeSchemeTile1, computeTileZoomFromDistanceCamera, computeDistanceCameraFromTileZoom } from '../../../../Process/GlobeTileProcessing';
-import BuilderEllipsoidTile from '../../../../Globe/BuilderEllipsoidTile';
-import Atmosphere from '../../../../Globe/Atmosphere';
-import Clouds from '../../../../Globe/Clouds';
-import CoordStars from '../../../../Core/Geographic/CoordStars';
+import { computeTileZoomFromDistanceCamera, computeDistanceCameraFromTileZoom } from '../../../../Process/GlobeTileProcessing';
+import CoordStars from '../../../Geographic/CoordStars';
+import GlobeView from '../../../Prefab/GlobeView';
 
 var sceneIsLoaded = false;
 export const INITIALIZED_EVENT = 'initialized';
@@ -53,34 +43,6 @@ function ApiGlobe() {
 }
 
 ApiGlobe.prototype.constructor = ApiGlobe;
-
-/**
- * This function gives a chance to the matching provider to pre-process some
- * values for a layer.
- */
-function preprocessLayer(layer, provider) {
-    if (!layer.updateStrategy) {
-        layer.updateStrategy = {
-            type: STRATEGY_MIN_NETWORK_TRAFFIC,
-        };
-    }
-
-    if (!provider) {
-        return;
-    }
-
-    if (provider.tileInsideLimit) {
-        layer.tileInsideLimit = provider.tileInsideLimit.bind(provider);
-    }
-
-    if (provider.tileTextureCount) {
-        layer.tileTextureCount = provider.tileTextureCount.bind(provider);
-    }
-
-    if (provider.preprocessDataLayer) {
-        provider.preprocessDataLayer(layer);
-    }
-}
 
 /**
  * The intellectual property rights
@@ -123,6 +85,16 @@ function preprocessLayer(layer, provider) {
  * @property {Object} layer.updateStrategy strategy to load imagery files
  * @property {OptionsWmts|OptionsWms} layer.options WMTS or WMS options
  */
+ /*
+ * Add the geometry layer to the scene.
+ */
+ApiGlobe.prototype.addGeometryLayer = function addGeometryLayer(layer, parentLayer) {
+    layer.protocol = 'tile';
+
+    this.scene.attach(layer, parentLayer);
+    layer.type = 'geometry';
+    return layer;
+};
 
 /**
  * This function adds an imagery layer to the scene. The layer id must be unique.
@@ -130,21 +102,17 @@ function preprocessLayer(layer, provider) {
  * @constructor
  * @param {Layer} Layer
  */
-
 ApiGlobe.prototype.addImageryLayer = function addImageryLayer(layer) {
-    preprocessLayer(layer, this.scene.scheduler.getProtocolProvider(layer.protocol));
-    // assume all imageryLayer for globe use LayeredMaterial
-    layer.update = updateLayeredMaterialNodeImagery;
-
-    this.scene._geometryLayers[0].attach(layer);
-    layer.type = 'color';
+    layer.type = 'color'
+    ;
+    this.globeview.addLayer(layer);
     layer.frozen = false;
     layer.visible = true;
     layer.opacity = 1.0;
-    const colorLayerCount = this.scene.getAttachedLayers(l => l.type === 'color').length;
+    const colorLayerCount = this.globeview.getLayers(l => l.type === 'color').length;
     layer.sequence = colorLayerCount - 1;
 
-    this.scene.notifyChange(1, true);
+    this.globeview.notifyChange(1, true);
     this.setSceneLoaded().then(() => {
         this.viewerDiv.dispatchEvent(eventLayerAdded);
     });
@@ -193,20 +161,16 @@ ApiGlobe.prototype.addElevationLayer = function addElevationLayer(layer) {
     if (layer.protocol === 'wmts' && layer.options.tileMatrixSet !== 'WGS84G') {
         throw new Error('Only WGS84G tileMatrixSet is currently supported for WMTS elevation layers');
     }
-    preprocessLayer(layer, this.scene.scheduler.getProtocolProvider(layer.protocol));
 
-    // assume all elevation layer for globe use LayeredMaterial
-    layer.update = updateLayeredMaterialNodeElevation;
-
-    this.scene._geometryLayers[0].attach(layer);
     layer.type = 'elevation';
+
+    this.globeview.addLayer(layer);
     layer.frozen = false;
 
-    this.scene.notifyChange(1, true);
+    this.globeview.notifyChange(1, true);
     this.setSceneLoaded().then(() => {
         this.viewerDiv.dispatchEvent(eventLayerAdded);
     });
-
 
     return layer;
 };
@@ -297,7 +261,7 @@ ApiGlobe.prototype.moveLayerToIndex = function moveLayerToIndex(layerId, newInde
 };
 
 /**
- * Removes a specific imagery layer from the current layer list. This removes layers inserted with addLayer().
+ * Removes a specific imagery layer from the current layer list. This removes layers inserted with attach().
  * @constructor
  * @param      {string}   id      The identifier
  * @return     {boolean}  { description_of_the_return_value }
@@ -379,20 +343,6 @@ ApiGlobe.prototype.getImageryLayers = function getImageryLayers() {
     return this.scene.getAttachedLayers(layer => layer.type === 'color');
 };
 
-ApiGlobe.prototype.initProviders = function initProviders(scene) {
-    var gLDebug = false; // true to support GLInspector addon
-
-    // Register all providers
-    var wmtsProvider = new WMTS_Provider({
-        support: gLDebug,
-    });
-
-    scene.scheduler.addProtocolProvider('wmts', wmtsProvider);
-    scene.scheduler.addProtocolProvider('wmtsc', wmtsProvider);
-    scene.scheduler.addProtocolProvider('tile', new TileProvider());
-    scene.scheduler.addProtocolProvider('wms', new WMS_Provider({ support: gLDebug }));
-};
-
 /**
  * Creates the scene (the globe of iTowns).
  * The first parameter is the coordinates on wich the globe will be centered at the initialization.
@@ -403,9 +353,6 @@ ApiGlobe.prototype.initProviders = function initProviders(scene) {
  */
 
 ApiGlobe.prototype.createSceneGlobe = function createSceneGlobe(globeLayerId, coordCarto, viewerDiv) {
-    // TODO: Normalement la creation de scene ne doit pas etre ici....
-    // Deplacer plus tard
-    this.globeLayerId = globeLayerId;
     this.viewerDiv = viewerDiv;
     this.sceneLoadedDeferred = defer();
 
@@ -417,114 +364,19 @@ ApiGlobe.prototype.createSceneGlobe = function createSceneGlobe(globeLayerId, co
         }
     }, false);
 
-    var gLDebug = false; // true to support GLInspector addon
-    var debugMode = false;
-
-    var positionCamera = new C.EPSG_4326(
-        coordCarto.longitude,
-        coordCarto.latitude,
-        coordCarto.altitude);
-
-    // FIXME: the scene is not really in EPSG:4978 atm, some axis are inverted, see
-    // https://github.com/iTowns/itowns2/pull/246
-    this.scene = Scene('EPSG:4978', positionCamera, viewerDiv, debugMode, gLDebug);
-
-    this.initProviders(this.scene);
+    this.globeview = new GlobeView(viewerDiv, coordCarto);
 
     this.setSceneLoaded().then(() => {
-        this.scene.currentControls().updateCameraTransformation();
-        this.scene.updateScene3D();
+        this.globeview.controls.updateCameraTransformation();
+        this.globeview.notifyChange(0, true);
         this.viewerDiv.dispatchEvent(new CustomEvent(INITIALIZED_EVENT));
     });
 
-    const size = ellipsoidSizes().x;
-
-    // Init camera
-    this.scene.camera.camera3D.near = Math.max(15.0, 0.000002352 * size);
-    this.scene.camera.camera3D.far = size * 10;
-    this.scene.camera.camera3D.updateProjectionMatrix();
-    this.scene.camera.camera3D.updateMatrixWorld(true);
-
-    // Create Control
-    const positionTargetCamera = positionCamera.clone();
-    positionTargetCamera.setAltitude(0);
-
-    this.scene.controls = new GlobeControls(
-        this.scene.camera.camera3D,
-        positionTargetCamera.as('EPSG:4978').xyz(),
-        this.scene.gfxEngine.renderer.domElement,
-        this.scene.gfxEngine);
-    this.scene.controls.rotateSpeed = 0.25;
-    this.scene.controls.zoomSpeed = 2.0;
-    this.scene.controls.minDistance = 30;
-    this.scene.controls.maxDistance = size * 8.0;
-    this.scene.controls.addEventListener('change', this.scene.gfxEngine.update);
-
-    const nodeInitFn = function nodeInitFn(context, layer, parent, node) {
-        node.materials[0].setLightingOn(layer.lighting.enable);
-        node.materials[0].uniforms.lightPosition.value = layer.lighting.position;
-
-        if (__DEBUG__) {
-            node.material.uniforms.showOutline = { value: layer.showOutline || false };
-            node.material.wireframe = layer.wireframe || false;
-        }
-    };
-
-    const SSE_SUBDIVISION_THRESHOLD = 1.0;
-
-    // init globe layer with default parameter
-    const wgs84TileLayer = new GeometryLayer(globeLayerId);
-
-    const initLayer = initTiledGeometryLayer(globeSchemeTileWMTS(globeSchemeTile1));
-
-    wgs84TileLayer.preUpdate = (context, layer) => {
-        if (layer.level0Nodes === undefined) {
-            initLayer(context, layer);
-        }
-        preGlobeUpdate(context);
-        return layer.level0Nodes;
-    };
-    wgs84TileLayer.update =
-        processTiledGeometryNode(
-            globeCulling,
-            globeSubdivisionControl(2, 17, SSE_SUBDIVISION_THRESHOLD),
-            nodeInitFn);
-
-    // provider options
-    wgs84TileLayer.builder = new BuilderEllipsoidTile();
-
-    this.scene.addGeometryLayer(wgs84TileLayer);
-
-    const threejsLayer = this.scene.getUniqueThreejsLayer();
-    wgs84TileLayer.type = 'geometry';
-    wgs84TileLayer.protocol = 'tile';
-    wgs84TileLayer.threejsLayer = 'threejsLayer';
-    wgs84TileLayer.lighting = {
-        enable: false,
-        position: { x: -0.5, y: 0.0, z: 1.0 },
-    };
-
-    // enable by default
-    this.scene.currentCamera().camera3D.layers.enable(threejsLayer);
-
-    this.atmosphere = new Atmosphere();
-    this.clouds = new Clouds();
-    this.atmosphere.add(this.clouds);
-
-    const atmosphereLayer = this.scene.getUniqueThreejsLayer();
-    this.atmosphere.traverse((obj) => { obj.layers.set(atmosphereLayer); });
-    this.scene.currentCamera().camera3D.layers.enable(atmosphereLayer);
-
-    this.scene.gfxEngine.scene3D.add(this.atmosphere);
-
-    // enable only globe-rendering when performing picking
-    this.scene.controls.controlsActiveLayers = 1 << wgs84TileLayer.threejsLayer;
-
-    return wgs84TileLayer;
+    return this.globeview;
 };
 
 ApiGlobe.prototype.update = function update() {
-    this.scene.notifyChange(0, true);
+    this.globeview.notifyChange(0, true);
 };
 
 ApiGlobe.prototype.setRealisticLightingOn = function setRealisticLightingOn(value) {
@@ -532,18 +384,18 @@ ApiGlobe.prototype.setRealisticLightingOn = function setRealisticLightingOn(valu
 
     this.lightingPos = coSun.normalize();
 
-    const lighting = this.scene._geometryLayers[0].lighting;
+    const lighting = this.globeview.wgs84TileLayer.lighting;
     lighting.enable = value;
     lighting.position = coSun;
 
-    this.atmosphere.updateLightingPos(coSun);
-    this.atmosphere.setRealisticOn(value);
-    this.clouds.updateLightingPos(coSun);
-    this.clouds.setLightingOn(value);
+    this.globeview.atmosphere.updateLightingPos(coSun);
+    this.globeview.atmosphere.setRealisticOn(value);
+    this.globeview.clouds.updateLightingPos(coSun);
+    this.globeview.clouds.setLightingOn(value);
 
-    this.scene.updateMaterialUniform('lightingEnabled', value);
-    this.scene.updateMaterialUniform('lightPosition', coSun);
-    this.scene.renderScene3D();
+    this.globeview.updateMaterialUniform('lightingEnabled', value);
+    this.globeview.updateMaterialUniform('lightPosition', coSun);
+    this.globeview.notifyChange(0, true);
 };
 
 ApiGlobe.prototype.setLightingPos = function setLightingPos(pos) {
@@ -553,38 +405,6 @@ ApiGlobe.prototype.setLightingPos = function setLightingPos(pos) {
     this.scene.browserScene.updateMaterialUniform('lightPosition', lightingPos.clone().normalize());
     this.layers[0].node.updateLightingPos(lightingPos);
 };
-
-ApiGlobe.prototype.animateTime = function animateTime(value) {
-    if (value) {
-        this.time += 4000;
-
-        if (this.time) {
-            var nMilliSeconds = this.time;
-            var coSun = CoordStars.getSunPositionInScene(this.ellipsoid, new Date().getTime() + 3.6 * nMilliSeconds, 0, 0);
-            this.lightingPos = coSun;
-            this.browserScene.updateMaterialUniform('lightPosition', this.lightingPos.clone().normalize());
-            // TODO this.layers[0].node.updateLightingPos(this.lightingPos);
-            if (this.orbitOn) { // ISS orbit is 0.0667 degree per second -> every 60th of sec: 0.00111;
-                var p = this.camera.camera3D.position;
-                var r = Math.sqrt(p.z * p.z + p.x * p.x);
-                var alpha = Math.atan2(p.z, p.x) + 0.0001;
-                p.x = r * Math.cos(alpha);
-                p.z = r * Math.sin(alpha);
-            }
-
-            this.scene.gfxEngine.update();
-        }
-        this.rAF = requestAnimationFrame(this.animateTime.bind(this));
-    } else {
-        window.cancelAnimationFrame(this.rAF);
-    }
-};
-
-ApiGlobe.prototype.orbit = function orbit(value) {
-    // this.gfxEngine.controls = null;
-    this.orbitOn = value;
-};
-
 
 /**
  * Sets the visibility of a layer. If the layer is not visible in the scene, this function will no effect until the camera looks at the layer.
@@ -598,13 +418,13 @@ ApiGlobe.prototype.setLayerVisibility = function setLayerVisibility(layer, visib
 
     if (layer.threejsLayer != undefined) {
         if (visible) {
-            this.scene.camera.camera3D.layers.enable(layer.threejsLayer);
+            this.globeview.camera.camera3D.layers.enable(layer.threejsLayer);
         } else {
-            this.scene.camera.camera3D.layers.disable(layer.threejsLayer);
+            this.globeview.camera.camera3D.layers.disable(layer.threejsLayer);
         }
     }
 
-    this.scene.notifyChange(0, true);
+    this.globeview.notifyChange(0, true);
     eventLayerChangedVisible.layerId = layer.id;
     eventLayerChangedVisible.visible = visible;
     this.viewerDiv.dispatchEvent(eventLayerChangedVisible);
@@ -619,7 +439,7 @@ ApiGlobe.prototype.setLayerVisibility = function setLayerVisibility(layer, visib
 
 ApiGlobe.prototype.setLayerOpacity = function setLayerOpacity(layer, opacity) {
     layer.opacity = opacity;
-    this.scene.notifyChange(0, true);
+    this.globeview.notifyChange(0, true);
     eventLayerChangedOpacity.layerId = layer.id;
     eventLayerChangedOpacity.opacity = opacity;
     this.viewerDiv.dispatchEvent(eventLayerChangedOpacity);
@@ -631,8 +451,8 @@ ApiGlobe.prototype.setLayerOpacity = function setLayerOpacity(layer, opacity) {
  * @constructor
  */
 ApiGlobe.prototype.getCameraOrientation = function getCameraOrientation() {
-    var tiltCam = this.scene.currentControls().getTilt();
-    var headingCam = this.scene.currentControls().getHeading();
+    var tiltCam = this.globeview.controls.getTilt();
+    var headingCam = this.globeview.controls.getHeading();
     return [tiltCam, headingCam];
 };
 
@@ -644,7 +464,7 @@ ApiGlobe.prototype.getCameraOrientation = function getCameraOrientation() {
  */
 
 ApiGlobe.prototype.getCameraLocation = function getCameraLocation() {
-    return C.fromXYZ('EPSG:4978', this.scene.currentCamera().camera3D.position).as('EPSG:4326');
+    return C.fromXYZ('EPSG:4978', this.globeview.camera.camera3D.position).as('EPSG:4326');
 };
 
 /**
@@ -655,7 +475,7 @@ ApiGlobe.prototype.getCameraLocation = function getCameraLocation() {
  */
 
 ApiGlobe.prototype.getCameraTargetGeoPosition = function getCameraTargetGeoPosition() {
-    return C.fromXYZ('EPSG:4978', this.scene.currentControls().getCameraTargetPosition()).as('EPSG:4326');
+    return C.fromXYZ('EPSG:4978', this.globeview.controls.getCameraTargetPosition()).as('EPSG:4326');
 };
 
 /**
@@ -667,7 +487,7 @@ ApiGlobe.prototype.getCameraTargetGeoPosition = function getCameraTargetGeoPosit
  * @return     {Promise}   { description_of_the_return_value }
  */
 ApiGlobe.prototype.setCameraOrientation = function setCameraOrientation(orientation, isAnimated) {
-    return this.scene.currentControls().setOrbitalPosition(undefined, orientation.heading, orientation.tilt, isAnimated).then(() => {
+    return this.globeview.controls.setOrbitalPosition(undefined, orientation.heading, orientation.tilt, isAnimated).then(() => {
         this.viewerDiv.dispatchEvent(eventOrientation);
     });
 };
@@ -704,7 +524,7 @@ ApiGlobe.prototype.pickPosition = function pickPosition(mouse, y) {
  */
 
 ApiGlobe.prototype.getTilt = function getTilt() {
-    var tiltCam = this.scene.currentControls().getTilt();
+    var tiltCam = this.globeview.controls.getTilt();
     return tiltCam;
 };
 
@@ -716,7 +536,7 @@ ApiGlobe.prototype.getTilt = function getTilt() {
  */
 
 ApiGlobe.prototype.getHeading = function getHeading() {
-    var headingCam = this.scene.currentControls().getHeading();
+    var headingCam = this.globeview.controls.getHeading();
     return headingCam;
 };
 
@@ -728,15 +548,15 @@ ApiGlobe.prototype.getHeading = function getHeading() {
  */
 
 ApiGlobe.prototype.getRange = function getRange() {
-    return this.scene.currentControls().getRange();
+    return this.globeview.controls.getRange();
 };
 
 ApiGlobe.prototype.getRangeFromEllipsoid = function getRangeFromEllipsoid() {
     // TODO: error is distance is big with ellipsoid.intersection(ray) because d < 0
-    var controlCam = this.scene.currentControls();
+    var controlCam = this.globeview.controls;
     var ray = controlCam.getRay();
     var intersection = this.ellipsoid.intersection(ray);
-    var camPosition = this.scene.currentCamera().position();
+    var camPosition = this.globeview.camera.position();
     var range = intersection.distanceTo(camPosition);
 
     return range;
@@ -771,9 +591,9 @@ ApiGlobe.prototype.isAnimationEnabled = function isAnimationEnabled() {
 ApiGlobe.prototype.setTilt = function setTilt(tilt, isAnimated) {
     isAnimated = isAnimated || this.isAnimationEnabled();
     eventOrientation.oldTilt = this.getTilt();
-    return this.scene.currentControls().setTilt(tilt, isAnimated).then(() => {
+    return this.globeview.controls.setTilt(tilt, isAnimated).then(() => {
         this.viewerDiv.dispatchEvent(eventOrientation);
-        this.scene.notifyChange(1);
+        this.globeview.notifyChange(1, true);
     });
 };
 
@@ -788,9 +608,9 @@ ApiGlobe.prototype.setTilt = function setTilt(tilt, isAnimated) {
 ApiGlobe.prototype.setHeading = function setHeading(heading, isAnimated) {
     isAnimated = isAnimated || this.isAnimationEnabled();
     eventOrientation.oldHeading = this.getHeading();
-    return this.scene.currentControls().setHeading(heading, isAnimated).then(() => {
+    return this.globeview.controls.setHeading(heading, isAnimated).then(() => {
         this.viewerDiv.dispatchEvent(eventOrientation);
-        this.scene.notifyChange(1);
+        this.globeview.notifyChange(1, true);
     });
 };
 
@@ -802,7 +622,7 @@ ApiGlobe.prototype.setHeading = function setHeading(heading, isAnimated) {
  */
 ApiGlobe.prototype.resetTilt = function resetTilt(isAnimated) {
     isAnimated = isAnimated || this.isAnimationEnabled();
-    return this.scene.currentControls().setTilt(0, isAnimated);
+    return this.globeview.controls.setTilt(0, isAnimated);
 };
 
 /**
@@ -813,7 +633,7 @@ ApiGlobe.prototype.resetTilt = function resetTilt(isAnimated) {
  */
 ApiGlobe.prototype.resetHeading = function resetHeading(isAnimated) {
     isAnimated = isAnimated || this.isAnimationEnabled();
-    return this.scene.currentControls().setHeading(0, isAnimated);
+    return this.globeview.controls.setHeading(0, isAnimated);
 };
 
 /**
@@ -842,13 +662,12 @@ ApiGlobe.prototype.setSceneLoaded = function setSceneLoaded() {
  */
 ApiGlobe.prototype.setCameraTargetGeoPosition = function setCameraTargetGeoPosition(coordinates, isAnimated) {
     isAnimated = isAnimated || this.isAnimationEnabled();
-    const position3D = new C.EPSG_4326(coordinates.longitude, coordinates.latitude, 0)
-        .as('EPSG:4978').xyz();
+    const position3D = coordinates.as('EPSG:4978').xyz();
     position3D.range = coordinates.range;
-    return this.scene.currentControls().setCameraTargetPosition(position3D, isAnimated).then(() => {
-        this.scene.notifyChange(1);
+    return this.globeview.controls.setCameraTargetPosition(position3D, isAnimated).then(() => {
+        this.globeview.notifyChange(1, true);
         return this.setSceneLoaded().then(() => {
-            this.scene.currentControls().updateCameraTransformation();
+            this.globeview.controls.updateCameraTransformation();
         });
     });
 };
@@ -881,10 +700,10 @@ ApiGlobe.prototype.setCameraTargetGeoPositionAdvanced = function setCameraTarget
         position.range = position.range || this.getRange();
         position.tilt = position.tilt || this.getTilt();
         position.heading = position.heading || this.getHeading();
-        return this.scene.currentControls().setOrbitalPosition(position.range, position.heading, position.tilt, isAnimated).then(() => {
-            this.scene.notifyChange(1);
+        return this.globeview.controls.setOrbitalPosition(position.range, position.heading, position.tilt, isAnimated).then(() => {
+            this.globeview.notifyChange(1);
             return this.setSceneLoaded().then(() => {
-                this.scene.currentControls().updateCameraTransformation();
+                this.globeview.controls.updateCameraTransformation();
             });
         });
     });
@@ -902,10 +721,10 @@ ApiGlobe.prototype.setRange = function setRange(pRange, isAnimated) {
     isAnimated = isAnimated || this.isAnimationEnabled();
     eventRange.oldRange = this.getRange();
 
-    return this.scene.currentControls().setRange(pRange, isAnimated).then(() => {
-        this.scene.notifyChange(1);
+    return this.globeview.controls.setRange(pRange, isAnimated).then(() => {
+        this.globeview.notifyChange(1);
         return this.setSceneLoaded().then(() => {
-            this.scene.currentControls().updateCameraTransformation();
+            this.globeview.controls.updateCameraTransformation();
             this.viewerDiv.dispatchEvent(eventRange);
         });
     });
@@ -918,10 +737,10 @@ ApiGlobe.prototype.setRange = function setRange(pRange, isAnimated) {
  * @param      {vector}  pVector  The vector
  */
 ApiGlobe.prototype.pan = function pan(pVector) {
-    this.scene.currentControls().pan(pVector.x, pVector.y);
-    this.scene.notifyChange(1);
+    this.globeview.controls.pan(pVector.x, pVector.y);
+    this.globeview.notifyChange(1);
     this.setSceneLoaded().then(() => {
-        this.scene.currentControls().updateCameraTransformation();
+        this.globeview.controls.updateCameraTransformation();
         this.viewerDiv.dispatchEvent(eventPan);
     });
 };
@@ -960,7 +779,7 @@ ApiGlobe.prototype.getZoomScale = function getZoomScale(pitch) {
     // TODO: Why error div size height in Chrome?
     // Screen pitch, in millimeters
     pitch = (pitch || 0.28) / 1000;
-    const camera = this.scene.currentCamera();
+    const camera = this.globeview.camera;
     const FOV = camera.FOV / 180 * Math.PI * 0.5;
     // projection one unit on screen
     const unitProjection = camera.height / (2 * this.getRange() * Math.tan(FOV));
@@ -985,7 +804,7 @@ ApiGlobe.prototype.getRangeFromScale = function getRangeFromScale(zoomScale, pit
     // Screen pitch, in millimeters
     pitch = (pitch || 0.28) / 1000;
 
-    const camera = this.scene.currentCamera();
+    const camera = this.globeview.camera;
     const alpha = camera.FOV / 180 * Math.PI * 0.5;
     // Invert one unit projection (see getZoomScale)
     const range = pitch * camera.height / (zoomScale * 2 * Math.tan(alpha));

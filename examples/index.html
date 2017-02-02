@@ -39,10 +39,10 @@ and open the template in the editor.
 
             const positionOnGlobe = { longitude: 2.3465, latitude: 48.88, altitude: 25000000 };
 
-            // iTowns namespace defined here
             const viewerDiv = document.getElementById('viewerDiv');
-            const menuGlobe = new GuiTools(itowns.viewer, 'menuDiv');
-            itowns.viewer.createSceneGlobe('globe', positionOnGlobe, viewerDiv);
+            const apiGlobe = new itowns.ApiGlobe();
+            const menuGlobe = new GuiTools(apiGlobe, 'menuDiv');
+            apiGlobe.createSceneGlobe('globe', positionOnGlobe, viewerDiv);
 
             const urlImageryLayers = [];
             const urlElevationLayers = [];
@@ -52,21 +52,21 @@ and open the template in the editor.
             urlElevationLayers.push('examples/layers/JSONLayers/IGN_MNT.json');
             urlElevationLayers.push('examples/layers/JSONLayers/IGN_MNT_HIGHRES.json');
 
-            const imageryPromise = itowns.viewer.addImageryLayersFromJSONArray(urlImageryLayers);
-            const elevationPromise = itowns.viewer.addElevationLayersFromJSONArray(urlElevationLayers);
+            const imageryPromise = apiGlobe.addImageryLayersFromJSONArray(urlImageryLayers);
+            const elevationPromise = apiGlobe.addElevationLayersFromJSONArray(urlElevationLayers);
 
             imageryPromise.then((layersColors) => { menuGlobe.addImageryLayersGUI(layersColors); });
             elevationPromise.then((layersElevations) => { menuGlobe.addElevationLayersGUI(layersElevations); });
 
             menuGlobe.addGUI('RealisticLighting', false,
-                (newValue) => { itowns.viewer.setRealisticLightingOn(newValue); });
+                (newValue) => { apiGlobe.setRealisticLightingOn(newValue); });
 
-            itowns.viewer.addEventListener(itowns.viewer.INITIALIZED_EVENT, () => {
+            apiGlobe.addEventListener(itowns.INITIALIZED_EVENT, () => {
                 // eslint-disable-next-line no-console
                 console.info('Globe initialized');
             });
 
-            itowns.viewer.update();
+            apiGlobe.update();
 
 </script>
     </body>

@@ -8,7 +8,17 @@
 import * as THREE from 'three';
 import BasicMaterial from './BasicMaterial';
 import MatteIdsFS from './Shader/MatteIdsFS.glsl';
-import GlobeDepthVS from './Shader/GlobeDepthVS.glsl';
+import TileDepthVS from './Shader/TileDepthVS.glsl';
+
+export function unpack1K(color, factor) {
+    var bitSh = new THREE.Vector4(
+        1.0 / (256.0 * 256.0 * 256.0),
+        1.0 / (256.0 * 256.0),
+        1.0 / 256.0,
+        1.0);
+    return bitSh.dot(color) * factor;
+}
+
 
 // This material renders the id in RGBA Color
 // Warning the RGBA contains id in float pack in 4 unsigned char
@@ -16,7 +26,7 @@ import GlobeDepthVS from './Shader/GlobeDepthVS.glsl';
 const MatteIdsMaterial = function MatteIdsMaterial(otherMaterial) {
     BasicMaterial.call(this);
 
-    this.vertexShader = this.vertexShaderHeader + GlobeDepthVS;
+    this.vertexShader = this.vertexShaderHeader + TileDepthVS;
     this.fragmentShader = this.fragmentShaderHeader + MatteIdsFS;
 
     this.uniforms.uuid.value = otherMaterial.uniforms.uuid.value;

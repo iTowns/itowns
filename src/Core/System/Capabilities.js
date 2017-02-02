@@ -1,44 +1,32 @@
-/**
- * Generated On: 2015-10-5
- * Class: Capabilities
- */
+// default values
+let logDepthBufferSupported = false;
+let maxTexturesUnits = 8;
+const internetExplorer = false || !!document.documentMode;
 
-function Capabilities() {
-    // Constructor
+export default {
+    isLogDepthBufferSupported() {
+        return logDepthBufferSupported;
+    },
+    isInternetExplorer() {
+        return internetExplorer;
+    },
+    getMaxTextureUnitsCount() {
+        return maxTexturesUnits;
+    },
+    updateCapabilities(renderer) {
+        const gl = renderer.context;
+        maxTexturesUnits = gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS);
 
-    this._systemCap = null;
-    this._gpuCap = null;
-}
+        const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+        if (debugInfo !== null) {
+            const vendor = gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL);
+            if (vendor.indexOf('mesa') > -1 || vendor.indexOf('Mesa') > -1) {
+                maxTexturesUnits = Math.min(16, maxTexturesUnits);
+            }
+        } else {
+            maxTexturesUnits = Math.min(16, maxTexturesUnits);
+        }
 
-
-/**
- */
-Capabilities.prototype.getSystemCapabilities = function getSystemCapabilities() {
-    // TODO: Implement Me
-    /*
-    var memory = window.performance.memory;
-    console.log(memory.totalJSHeapSize / (1024 * 1024) + '/' + memory.jsHeapSizeLimit / (1024 * 1024));
-    */
+        logDepthBufferSupported = renderer.capabilities.logarithmicDepthBuffer;
+    },
 };
-
-
-/**
- */
-Capabilities.prototype.getGpuCapabilities = function getGpuCapabilities() {
-    // TODO: Implement Me
-
-};
-
-
-/**
- */
-Capabilities.prototype.ioFile = function ioFile() {
-    // TODO: Implement Me
-
-};
-
-Capabilities.prototype.isInternetExplorer = function isInternetExplorer() {
-    return false || !!document.documentMode;
-};
-
-export default Capabilities;

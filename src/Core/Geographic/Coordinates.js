@@ -149,11 +149,18 @@ function Coordinates(crs, ...coordinates) {
     _crsToUnitWithError(crs);
     this.crs = crs;
     this._values = new Float64Array(3);
-    for (let i = 0; i < coordinates.length && i < 3; i++) {
-        this._values[i] = coordinates[i];
-    }
-    for (let i = coordinates.length; i < 3; i++) {
-        this._values[i] = 0;
+
+    if (coordinates.length == 1 && coordinates[0] instanceof THREE.Vector3) {
+        this._values[0] = coordinates[0].x;
+        this._values[1] = coordinates[0].y;
+        this._values[2] = coordinates[0].z;
+    } else {
+        for (let i = 0; i < coordinates.length && i < 3; i++) {
+            this._values[i] = coordinates[i];
+        }
+        for (let i = coordinates.length; i < 3; i++) {
+            this._values[i] = 0;
+        }
     }
     this._internalStorageUnit = crsToUnit(crs);
 }
@@ -225,9 +232,6 @@ export const C = {
      * @param {number} position.y - the y component of the position
      * @param {number} position.z - the z component of the position
      */
-    fromXYZ: function fromXYZ(crs, position) {
-        return new Coordinates(crs, position.x, position.y, position.z);
-    },
     EPSG_4326: function EPSG_4326(...args) {
         return new Coordinates('EPSG:4326', ...args);
     },
