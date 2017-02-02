@@ -271,7 +271,7 @@ var snapShotCamera = null;
 
 /* globals document,window */
 
-function GlobeControls(camera, domElement, engine) {
+function GlobeControls(camera, domElement, engine, radius) {
     player = new AnimationPlayer(domElement);
     const scene = engine.scene;
     this.camera = camera;
@@ -336,7 +336,7 @@ function GlobeControls(camera, domElement, engine) {
     };
 
     // Radius tangent sphere
-    tSphere.setRadius(engine.size);
+    tSphere.setRadius(radius);
     spherical.radius = tSphere.radius;
 
     sizeRendering.set(engine.width, engine.height);
@@ -692,11 +692,14 @@ function GlobeControls(camera, domElement, engine) {
 
             snapShotCamera.updateRay(ray, mouse);
             // pick position on tSphere
-            tSphere.picking.position.copy(tSphere.intersectWithRay(ray));
-            tSphere.picking.normal = tSphere.picking.position.clone().normalize();
+            const its = tSphere.intersectWithRay(ray);
+            if (its != undefined) {
+                tSphere.picking.position.copy(its);
+                tSphere.picking.normal = tSphere.picking.position.clone().normalize();
 
-            lastRotation.push(tSphere.picking.normal);
-            updateHelper.bind(this)(tSphere.picking.position, this.pickingHelper);
+                lastRotation.push(tSphere.picking.normal);
+                updateHelper.bind(this)(tSphere.picking.position, this.pickingHelper);
+            }
         };
     }());
 

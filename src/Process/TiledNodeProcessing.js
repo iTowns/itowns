@@ -77,6 +77,7 @@ export function initTiledGeometryLayer() {
                 // layer.root.add(level0);
                 context.scene.gfxEngine.scene3D.add(level0);
                 level0.updateMatrixWorld();
+                // context.scene.updateExtents();
             }
         });
     };

@@ -385,7 +385,8 @@ ApiGlobe.prototype.createSceneGlobe = function createSceneGlobe(globeLayerId, co
     var coordinate = new GeoCoordinate().copy(coordCarto, UNIT.DEGREE);
     // TODO: use GeoCoordinate conversion instead
     var positionCamera = this.ellipsoid.cartographicToCartesian(coordinate);
-    this.scene = Scene(positionCamera, this.ellipsoid.size, viewerDiv, debugMode, gLDebug);
+    this.scene = Scene(viewerDiv, debugMode, gLDebug);
+    this.scene.camera.setPosition(positionCamera);
 
     this.initProviders(this.scene);
 
@@ -450,18 +451,55 @@ ApiGlobe.prototype.createSceneGlobe = function createSceneGlobe(globeLayerId, co
     // uncomment next line to display boundingbox helpers drawn
     // this.addGeometryLayer(debugLayer, wgs84TileLayer.id);
 
+    const size = this.ellipsoid.size.x;
     //
     // Create Control
     //
-    this.scene.controls = new GlobeControls(this.scene.camera.camera3D, this.scene.gfxEngine.renderer.domElement, this.scene.gfxEngine);
+    this.scene.controls = new GlobeControls(this.scene.camera.camera3D, this.scene.gfxEngine.renderer.domElement, this.scene.gfxEngine, this.ellipsoid.size.x);
     this.scene.controls.rotateSpeed = 0.25;
     this.scene.controls.zoomSpeed = 2.0;
     this.scene.controls.minDistance = 30;
-    this.scene.controls.maxDistance = this.ellipsoid.size.x * 8.0;
+    this.scene.controls.maxDistance = size * 8.0;
+
+    // Init camera
+    this.scene.camera.camera3D.near = Math.max(15.0, 0.000002352 * size);
+    this.scene.camera.camera3D.far = size * 10;
+    this.scene.camera.camera3D.updateProjectionMatrix();
+    this.scene.camera.camera3D.updateMatrixWorld(true);
 
     this.scene.controls.addEventListener('change', this.scene.gfxEngine.update);
 
     return wgs84TileLayer;
+};
+
+ApiGlobe.prototype.createScene = function createScene(viewerDiv) {
+    this.viewerDiv = viewerDiv;
+
+    viewerDiv.addEventListener('globe-built', () => {
+        if (sceneIsLoaded === false) {
+            sceneIsLoaded = true;
+            this.scene.currentControls().updateCameraTransformation();
+            this.scene.updateScene3D();
+            viewerDiv.dispatchEvent(eventLoaded);
+        } else {
+            viewerDiv.dispatchEvent(eventError);
+        }
+    }, false);
+
+    var gLDebug = false; // true to support GLInspector addon
+    var debugMode = false;
+
+    this.scene = Scene(viewerDiv, debugMode, gLDebug);
+
+    this.initProviders(this.scene);
+
+    this.sceneLoadedDeferred = defer();
+    this.addEventListener('globe-loaded', () => {
+        this.sceneLoadedDeferred.resolve();
+        this.sceneLoadedDeferred = defer();
+    });
+
+    return this.scene;
 };
 
 ApiGlobe.prototype.update = function update() {

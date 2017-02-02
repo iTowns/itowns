@@ -55,6 +55,8 @@ function c3DEngine(scene, viewerDiv, debugMode, gLDebug) {
         this.renderer.render(this.scene3D, this.scene.camera.camera3D);
 
         if (this.debug) {
+            // TODO: fix and move this code to debug specific file
+            const size = -1; // bogus value
             this.enableRTC(false);
             this.scene.camera.camHelper().visible = true;
 
@@ -62,10 +64,14 @@ function c3DEngine(scene, viewerDiv, debugMode, gLDebug) {
             var position = this.scene.camera.position();
             var posDebug = new THREE.Vector3().subVectors(position, target);
 
+            // fixme
             posDebug.setLength(posDebug.length() * 2.0);
             posDebug.add(target);
-            posDebug.setLength((posDebug.length() - this.size) * 3.0 + this.size);
+            posDebug.setLength((posDebug.length() - size) * 3.0 + size);
 
+            this.camDebug.near = this.scene.camera.camera3D.near;
+            this.camDebug.far = this.scene.camera.camera3D.far;
+            this.camDebug.updateProjectionMatrix();
             this.camDebug.position.copy(posDebug);
             this.camDebug.lookAt(target);
             this.camDebug.translateX(posDebug.length() / 2);
@@ -80,7 +86,7 @@ function c3DEngine(scene, viewerDiv, debugMode, gLDebug) {
 
     this.update = function update() {
         this.scene.camera.update();
-        this.updateControl();
+        // this.updateControl(this.scene.extents().getSize().x * 0.5);
         this.scene.notifyChange(0, true);
     }.bind(this);
 
@@ -100,30 +106,14 @@ function c3DEngine(scene, viewerDiv, debugMode, gLDebug) {
         this.update();
     }.bind(this);
 
-    this.size = this.scene.size().x;
-
-    //
-    // init camera
-    //
-    this.scene.camera.camera3D.near = this.size * 2.333; // if near is too small --> bug no camera helper
-    this.scene.camera.camera3D.far = this.size * 10;
-    this.scene.camera.camera3D.updateProjectionMatrix();
-    this.scene.camera.camera3D.updateMatrixWorld(true);
-
     if (this.debug) {
-        this.camDebug.position.x = this.size * 6;
         this.camDebug.lookAt(new THREE.Vector3(0, 0, 0));
-        this.camDebug.near = this.size * 0.1;
-        this.camDebug.far = this.size * 10;
         this.camDebug.updateProjectionMatrix();
         this.scene.camera.createCamHelper();
         this.scene3D.add(this.scene.camera.camHelper());
-        var axisHelper = new THREE.AxisHelper(this.size * 1.33);
+        var axisHelper = new THREE.AxisHelper(10);
         this.scene3D.add(axisHelper);
     }
-
-    this.scene.camera.camera3D.near = Math.max(15.0, 0.000002352 * this.size);
-    this.scene.camera.camera3D.updateProjectionMatrix();
 
     //
     // Create canvas
@@ -182,17 +172,18 @@ function c3DEngine(scene, viewerDiv, debugMode, gLDebug) {
  * update control parameter in function of distance of globe
  * @returns {undefined}
  */
-c3DEngine.prototype.updateControl = function updateControl() {
+ /*
+c3DEngine.prototype.updateControl = function updateControl(size) {
     var len = this.scene.camera.position().length();
-    var lim = this.size * 1.1;
+    var lim = size * 1.1;
 
     if (len < lim) {
-        var t = Math.pow(Math.cos((lim - len) / (lim - this.size * 0.9981) * Math.PI * 0.5), 1.5);
+        var t = Math.pow(Math.cos((lim - len) / (lim - size * 0.9981) * Math.PI * 0.5), 1.5);
         var color = new THREE.Color(0x93d5f8);
         this.renderer.setClearColor(color.multiplyScalar(1.0 - t));
     } else if (len >= lim)
         { this.renderer.setClearColor(0x030508); }
-};
+};*/
 
 c3DEngine.prototype.enableRTC = function enableRTC(enable) {
     for (var x = 0; x < this.scene3D.children.length; x++) {

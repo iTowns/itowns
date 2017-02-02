@@ -19,7 +19,7 @@ var instanceScene = null;
 const RENDERING_PAUSED = 0;
 const RENDERING_ACTIVE = 1;
 
-function Scene(positionCamera, size, viewerDiv, debugMode, gLDebug) {
+function Scene(viewerDiv, debugMode, gLDebug) {
     if (instanceScene !== null) {
         throw new Error('Cannot instantiate more than one Scene');
     }
@@ -28,7 +28,6 @@ function Scene(positionCamera, size, viewerDiv, debugMode, gLDebug) {
         viewerDiv.clientWidth * (debugMode ? 0.5 : 1.0),
         viewerDiv.clientHeight,
         debugMode);
-    this.camera.setPosition(positionCamera);
 
     this.selectNodes = null;
     this.scheduler = Scheduler(this);
@@ -37,7 +36,6 @@ function Scene(positionCamera, size, viewerDiv, debugMode, gLDebug) {
     this.stylesManager = new StyleManager();
 
     this.gLDebug = gLDebug;
-    this._size = size;
     this.gfxEngine = c3DEngine(this, viewerDiv, debugMode, gLDebug);
 
     this.needsRedraw = false;
@@ -62,6 +60,7 @@ function Scene(positionCamera, size, viewerDiv, debugMode, gLDebug) {
 }
 
 Scene.prototype.constructor = Scene;
+
 
 /**
  * @documentation: return current camera
@@ -89,10 +88,6 @@ Scene.prototype.removeStyle = function removeStyle(name) {
 
 Scene.prototype.getStyles = function getStyles() {
     return this.stylesManager.getStyles();
-};
-
-Scene.prototype.size = function size() {
-    return this._size;
 };
 
 /**
@@ -257,7 +252,7 @@ Scene.prototype.getUniqueThreejsLayer = function getUniqueThreejsLayer() {
     return result;
 };
 
-export default function (coordinate, ellipsoid, viewerDiv, debugMode, gLDebug) {
-    instanceScene = instanceScene || new Scene(coordinate, ellipsoid, viewerDiv, debugMode, gLDebug);
+export default function (viewerDiv, debugMode, gLDebug) {
+    instanceScene = instanceScene || new Scene(viewerDiv, debugMode, gLDebug);
     return instanceScene;
 }
