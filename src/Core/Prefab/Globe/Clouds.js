@@ -6,9 +6,9 @@
 
 
 import * as THREE from 'three';
-import WMS_Provider from '../Core/Commander/Providers/WMS_Provider';
-import CloudsFS from '../Renderer/Shader/CloudsFS.glsl';
-import CloudsVS from '../Renderer/Shader/CloudsVS.glsl';
+import WMS_Provider from '../../Scheduler/Providers/WMS_Provider';
+import CloudsFS from './Shaders/CloudsFS.glsl';
+import CloudsVS from './Shaders/CloudsVS.glsl';
 import { LIGHTING_POSITION } from './Atmosphere';
 
 function Clouds(/* size*/) {

@@ -8,7 +8,7 @@
 
 import * as THREE from 'three';
 
-function Camera(width, height, debug) {
+function Camera(width, height) {
     this.ratio = width / height;
     this.FOV = 30;
 
@@ -25,38 +25,12 @@ function Camera(width, height, debug) {
     this.viewMatrix = new THREE.Matrix4();
     this.width = width;
     this.height = height;
-
-    this.cameraHelper = debug ? new THREE.CameraHelper(this.camera3D) : undefined;
 }
 
 /**
  */
 Camera.prototype.position = function position() {
     return this.camera3D.position;
-};
-
-Camera.prototype.camHelper = function camHelper() {
-    return this.cameraHelper;
-};
-
-Camera.prototype.createCamHelper = function createCamHelper() {
-    this.cameraHelper = new THREE.CameraHelper(this.camera3D);
-
-    var dir = new THREE.Vector3(0, 0, -1);
-    var quaternion = new THREE.Quaternion();
-
-    quaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), this.HFOV / 2);
-    dir.applyQuaternion(quaternion);
-    var origin = new THREE.Vector3();
-    var length = 100000000;
-    var hex = 0xffff00;
-
-    this.arrowHelper = new THREE.ArrowHelper(dir, origin, length, hex);
-    this.cameraHelper.add(this.arrowHelper);
-};
-
-Camera.prototype.matrixWorldInverse = function matrixWorldInverse() {
-    return this.camera3D.matrixWorldInverse;
 };
 
 Camera.prototype.resize = function resize(width, height) {

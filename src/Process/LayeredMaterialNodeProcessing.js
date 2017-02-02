@@ -1,10 +1,10 @@
 import RendererConstant from '../Renderer/RendererConstant';
-import { chooseNextLevelToFetch } from '../Scene/LayerUpdateStrategy';
 import { l_ELEVATION, l_COLOR, EMPTY_TEXTURE_ZOOM } from '../Renderer/LayeredMaterial';
-import LayerUpdateState from '../Scene/LayerUpdateState';
-import { CancelledCommandException } from '../Core/Commander/Scheduler';
-import { ImageryLayers } from '../Scene/Layer';
-import OGCWebServiceHelper from '../Core/Commander/Providers/OGCWebServiceHelper';
+import { chooseNextLevelToFetch } from '../Core/Layer/LayerUpdateStrategy';
+import LayerUpdateState from '../Core/Layer/LayerUpdateState';
+import { ImageryLayers } from '../Core/Layer/Layer';
+import { CancelledCommandException } from '../Core/Scheduler/Scheduler';
+import OGCWebServiceHelper from '../Core/Scheduler/Providers/OGCWebServiceHelper';
 
 
 function nodeCommandQueuePriorityFunction(node) {
@@ -77,7 +77,7 @@ export function updateLayeredMaterialNodeImagery(context, layer, node) {
         };
 
         material.pushLayer(paramMaterial);
-        const imageryLayers = context.scene.getAttachedLayers(l => l.type === 'color');
+        const imageryLayers = context.view.getLayers(l => l.type === 'color');
         const sequence = ImageryLayers.getColorLayersIdOrderedBySequence(imageryLayers);
         material.setSequence(sequence);
     }
@@ -105,6 +105,7 @@ export function updateLayeredMaterialNodeImagery(context, layer, node) {
     node.layerUpdateState[layer.id].newTry();
     const command = {
         /* mandatory */
+        view: context.view,
         layer,
         requester: node,
         priority: nodeCommandQueuePriorityFunction(node),
@@ -139,7 +140,7 @@ export function updateLayeredMaterialNodeImagery(context, layer, node) {
                 node.layerUpdateState[layer.id].success();
             } else {
                 node.layerUpdateState[layer.id].failure(Date.now());
-                context.scene.notifyChange(node.layerUpdateState[layer.id].secondsUntilNextTry() * 1000, false);
+                context.view.notifyChange(node.layerUpdateState[layer.id].secondsUntilNextTry() * 1000, false);
             }
         });
 }
@@ -163,7 +164,7 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, force) 
 
     // If currentElevevation is EMPTY_TEXTURE_ZOOM but material.loadedTexturesCount[l_ELEVATION] is > 0
     // means that we already tried and failed to download an elevation texture
-    if (currentElevation == EMPTY_TEXTURE_ZOOM && node.material.loadedTexturesCount[l_ELEVATION] > 0) {
+    if (currentElevation == EMPTY_TEXTURE_ZOOM && node.materials[0].loadedTexturesCount[l_ELEVATION] > 0) {
         return Promise.resolve();
     }
     if (layer.frozen && !force) {
@@ -210,6 +211,7 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, force) 
 
     const command = {
         /* mandatory */
+        view: context.view,
         layer,
         requester: node,
         targetLevel,
@@ -233,7 +235,7 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, force) 
                 node.layerUpdateState[layer.id].success();
             } else {
                 node.layerUpdateState[layer.id].failure(Date.now());
-                context.scene.notifyChange(node.layerUpdateState[layer.id].secondsUntilNextTry() * 1000, false);
+                context.view.notifyChange(node.layerUpdateState[layer.id].secondsUntilNextTry() * 1000, false);
             }
         });
 }

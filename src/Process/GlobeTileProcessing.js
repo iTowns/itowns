@@ -1,9 +1,9 @@
 import * as THREE from 'three';
-import SchemeTile from '../Scene/SchemeTile';
 import MathExt from '../Core/Math/MathExtended';
+import SchemeTile from '../Core/Geographic/SchemeTile';
 import { UNIT, ellipsoidSizes } from '../Core/Geographic/Coordinates';
-import BoundingBox from '../Scene/BoundingBox';
-import { SIZE_TEXTURE_TILE } from '../Core/Commander/Providers/OGCWebServiceHelper';
+import { SIZE_TEXTURE_TILE } from '../Core/Scheduler/Providers/OGCWebServiceHelper';
+import BoundingBox from '../Core/Math/BoundingBox';
 
 const cV = new THREE.Vector3();
 let vhMagnitudeSquared;
@@ -19,12 +19,13 @@ export function preGlobeUpdate(context) {
     vhMagnitudeSquared = cV.lengthSq() - 1.0;
 
     // pre-sse
-    const hypotenuse = Math.sqrt(context.camera.width * context.camera.width + context.camera.height * context.camera.height);
+    const canvasSize = context.engine.getWindowSize();
+    const hypotenuse = canvasSize.length();
     const radAngle = context.camera.FOV * Math.PI / 180;
 
      // TODO: not correct -> see new preSSE
     // const HFOV = 2.0 * Math.atan(Math.tan(radAngle * 0.5) / context.camera.ratio);
-    const HYFOV = 2.0 * Math.atan(Math.tan(radAngle * 0.5) * hypotenuse / context.camera.width);
+    const HYFOV = 2.0 * Math.atan(Math.tan(radAngle * 0.5) * hypotenuse / canvasSize.x);
 
     preSSE = hypotenuse * (2.0 * Math.tan(HYFOV * 0.5));
 }

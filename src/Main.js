@@ -1,19 +1,25 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+// Modules using `default` export must be imported...
+import * as THREE from 'three';
+import proj4 from 'proj4';
+import ApiGlobe, { INITIALIZED_EVENT } from './Core/Scheduler/Interfaces/ApiInterface/ApiGlobe';
+import View from './Core/View';
+import GlobeView from './Core/Prefab/GlobeView';
+import Coordinates from './Core/Geographic/Coordinates';
 
-import ApiGlobe from './Core/Commander/Interfaces/ApiInterface/ApiGlobe';
-// browser execution or not ?
-const scope = typeof window !== 'undefined' ? window : {};
-const itowns = scope.itowns || {
-    viewer: new ApiGlobe(),
-};
-scope.itowns = itowns;
+// Then exported as non-default here.
+export { ApiGlobe, INITIALIZED_EVENT };
+export { View };
+export { GlobeView };
+export { Coordinates };
 
-export const viewer = itowns.viewer;
-export { INITIALIZED_EVENT } from './Core/Commander/Interfaces/ApiInterface/ApiGlobe';
-export { C } from './Core/Geographic/Coordinates';
-export { Coordinates } from './Core/Geographic/Coordinates';
-export default scope.itowns;
+// Others can be directly exported
+export { UNIT } from './Core/Geographic/Coordinates';
+export { processTiledGeometryNode, initTiledGeometryLayer } from './Process/TiledNodeProcessing';
+export { updateLayeredMaterialNodeImagery, updateLayeredMaterialNodeElevation } from './Process/LayeredMaterialNodeProcessing';
+export { GeometryLayer } from './Core/Layer/Layer';
+
+// This is temporary, until we're able to build a vendor.js
+// containing our dependencies.
+export { THREE };
+export { proj4 };
+

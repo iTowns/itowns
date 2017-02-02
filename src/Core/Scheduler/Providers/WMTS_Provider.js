@@ -142,14 +142,16 @@ WMTS_Provider.prototype.tileInsideLimit = function tileInsideLimit(tile, layer) 
     // (the zoom.max property is used when building the url to make
     //  sure we don't use invalid levels)
     for (const c of tile.wmtsCoords[layer.options.tileMatrixSet]) {
-        if (!(c.zoom in layer.options.tileMatrixSetLimits)) {
-            return false;
-        }
-        if (c.row < layer.options.tileMatrixSetLimits[c.zoom].minTileRow ||
-            c.row > layer.options.tileMatrixSetLimits[c.zoom].maxTileRow ||
-            c.col < layer.options.tileMatrixSetLimits[c.zoom].minTileCol ||
-            c.col > layer.options.tileMatrixSetLimits[c.zoom].maxTileCol) {
-            return false;
+        if (layer.options.tileMatrixSetLimits) {
+            if (!(c.zoom in layer.options.tileMatrixSetLimits)) {
+                return false;
+            }
+            if (c.row < layer.options.tileMatrixSetLimits[c.zoom].minTileRow ||
+                c.row > layer.options.tileMatrixSetLimits[c.zoom].maxTileRow ||
+                c.col < layer.options.tileMatrixSetLimits[c.zoom].minTileCol ||
+                c.col > layer.options.tileMatrixSetLimits[c.zoom].maxTileCol) {
+                return false;
+            }
         }
     }
     return true;

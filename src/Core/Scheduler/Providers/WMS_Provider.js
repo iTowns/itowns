@@ -6,7 +6,7 @@
 
 
 import * as THREE from 'three';
-import BoundingBox from '../../../Scene/BoundingBox';
+import BoundingBox from '../../Math/BoundingBox';
 import OGCWebServiceHelper from './OGCWebServiceHelper';
 
 /**
