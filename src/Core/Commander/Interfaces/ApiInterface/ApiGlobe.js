@@ -5,9 +5,6 @@
  */
 
 import Scene from 'Scene/Scene';
-import WMTS_Provider from 'Core/Commander/Providers/WMTS_Provider';
-import WMS_Provider from 'Core/Commander/Providers/WMS_Provider';
-import TileProvider from 'Core/Commander/Providers/TileProvider';
 import loadGpx from 'Core/Commander/Providers/GpxUtils';
 import GeoCoordinate, { UNIT } from 'Core/Geographic/GeoCoordinate';
 import Ellipsoid from 'Core/Math/Ellipsoid';
@@ -15,7 +12,6 @@ import Projection from 'Core/Geographic/Projection';
 import CustomEvent from 'custom-event';
 import Fetcher from 'Core/Commander/Providers/Fetcher';
 import TileMesh from 'Globe/TileMesh';
-import { STRATEGY_MIN_NETWORK_TRAFFIC } from 'Scene/LayerUpdateStrategy';
 import updateTreeLayer from 'Process/TreeLayerProcessing';
 import { processTiledGeometryNode, initTiledGeometryLayer } from 'Process/TiledNodeProcessing';
 import { updateLayeredMaterialNodeImagery, updateLayeredMaterialNodeElevation, initNewNode } from 'Process/LayeredMaterialNodeProcessing';
@@ -61,48 +57,11 @@ function ApiGlobe() {
 ApiGlobe.prototype.constructor = ApiGlobe;
 
 /**
- * This function gives a chance to the matching provider to pre-process some
- * values for a layer.
- */
-function preprocessLayer(layer, provider) {
-    if (!layer.updateStrategy) {
-        layer.updateStrategy = {
-            type: STRATEGY_MIN_NETWORK_TRAFFIC,
-        };
-    }
-
-    if (!provider) {
-        return;
-    }
-
-    if (provider.tileInsideLimit) {
-        layer.tileInsideLimit = provider.tileInsideLimit.bind(provider);
-    }
-
-    if (provider.tileTextureCount) {
-        layer.tileTextureCount = provider.tileTextureCount.bind(provider);
-    }
-
-    if (provider.preprocessDataLayer) {
-        provider.preprocessDataLayer(layer);
-    }
-}
-
-/**
  * Add the geometry layer to the scene.
  */
 ApiGlobe.prototype.addGeometryLayer = function addGeometryLayer(layer, parentLayerId) {
-    preprocessLayer(layer, this.scene.scheduler.getProtocolProvider(layer.protocol));
-
-    this.scene.layersConfiguration.addLayer(layer, parentLayerId);
-
-    const threejsLayer = this.scene.getUniqueThreejsLayer();
+    this.scene.addLayer(layer, parentLayerId);
     this.scene.layersConfiguration.setLayerAttribute(layer.id, 'type', 'geometry');
-    this.scene.layersConfiguration.setLayerAttribute(layer.id, 'threejsLayer', threejsLayer);
-
-    // enable by default
-    this.scene.camera.camera3D.layers.enable(threejsLayer);
-
     return layer;
 };
 
@@ -112,12 +71,11 @@ ApiGlobe.prototype.addGeometryLayer = function addGeometryLayer(layer, parentLay
  * @param {Layer} layer.
  */
 ApiGlobe.prototype.addImageryLayer = function addImageryLayer(layer, parentLayerId) {
-    preprocessLayer(layer, this.scene.scheduler.getProtocolProvider(layer.protocol));
-
     // assume all imageryLayer for globe use LayeredMaterial
     layer.update = updateLayeredMaterialNodeImagery;
 
-    this.scene.layersConfiguration.addLayer(layer, parentLayerId);
+    this.scene.addLayer(layer, parentLayerId);
+
     this.scene.layersConfiguration.setLayerAttribute(layer.id, 'type', 'color');
     this.scene.layersConfiguration.setLayerAttribute(layer.id, 'frozen', false);
     this.scene.layersConfiguration.setLayerAttribute(layer.id, 'visible', true);
@@ -169,12 +127,10 @@ ApiGlobe.prototype.addImageryLayersFromJSONArray = function addImageryLayersFrom
  */
 
 ApiGlobe.prototype.addElevationLayer = function addElevationLayer(layer, parentLayerId) {
-    preprocessLayer(layer, this.scene.scheduler.getProtocolProvider(layer.protocol));
-
     // assume all imageryLayer for globe use LayeredMaterial
     layer.update = updateLayeredMaterialNodeElevation;
 
-    this.scene.layersConfiguration.addLayer(layer, parentLayerId);
+    this.scene.addLayer(layer, parentLayerId);
     this.scene.layersConfiguration.setLayerAttribute(layer.id, 'type', 'elevation');
     this.scene.layersConfiguration.setLayerAttribute(layer.id, 'frozen', false);
 
@@ -333,20 +289,6 @@ ApiGlobe.prototype.getImageryLayers = function getImageryLayers() {
     return this.scene.layersConfiguration.getLayers((layer, attributes) => attributes.type === 'color');
 };
 
-ApiGlobe.prototype.initProviders = function initProviders(scene) {
-    var gLDebug = false; // true to support GLInspector addon
-
-    // Register all providers
-    var wmtsProvider = new WMTS_Provider({
-        support: gLDebug,
-    });
-
-    scene.scheduler.addProtocolProvider('wmts', wmtsProvider);
-    scene.scheduler.addProtocolProvider('wmtsc', wmtsProvider);
-    scene.scheduler.addProtocolProvider('tile', new TileProvider());
-    scene.scheduler.addProtocolProvider('wms', new WMS_Provider({ support: gLDebug }));
-};
-
 /**
  * Creates the scene (the globe of iTowns).
  * The first parameter is the coordinates on wich the globe will be centered at the initialization.
@@ -385,10 +327,10 @@ ApiGlobe.prototype.createSceneGlobe = function createSceneGlobe(globeLayerId, co
     var coordinate = new GeoCoordinate().copy(coordCarto, UNIT.DEGREE);
     // TODO: use GeoCoordinate conversion instead
     var positionCamera = this.ellipsoid.cartographicToCartesian(coordinate);
-    this.scene = Scene(viewerDiv, debugMode, gLDebug);
+    this.scene = new Scene(viewerDiv, debugMode, gLDebug);
     this.scene.camera.setPosition(positionCamera);
 
-    this.initProviders(this.scene);
+    this.scene.initDefaultProviders(this.scene);
 
     this.sceneLoadedDeferred = defer();
     this.addEventListener('globe-loaded', () => {
@@ -470,36 +412,6 @@ ApiGlobe.prototype.createSceneGlobe = function createSceneGlobe(globeLayerId, co
     this.scene.controls.addEventListener('change', this.scene.gfxEngine.update);
 
     return wgs84TileLayer;
-};
-
-ApiGlobe.prototype.createScene = function createScene(viewerDiv) {
-    this.viewerDiv = viewerDiv;
-
-    viewerDiv.addEventListener('globe-built', () => {
-        if (sceneIsLoaded === false) {
-            sceneIsLoaded = true;
-            this.scene.currentControls().updateCameraTransformation();
-            this.scene.updateScene3D();
-            viewerDiv.dispatchEvent(eventLoaded);
-        } else {
-            viewerDiv.dispatchEvent(eventError);
-        }
-    }, false);
-
-    var gLDebug = false; // true to support GLInspector addon
-    var debugMode = false;
-
-    this.scene = Scene(viewerDiv, debugMode, gLDebug);
-
-    this.initProviders(this.scene);
-
-    this.sceneLoadedDeferred = defer();
-    this.addEventListener('globe-loaded', () => {
-        this.sceneLoadedDeferred.resolve();
-        this.sceneLoadedDeferred = defer();
-    });
-
-    return this.scene;
 };
 
 ApiGlobe.prototype.update = function update() {

@@ -5,6 +5,8 @@
  */
 
 import ApiGlobe from 'Core/Commander/Interfaces/ApiInterface/ApiGlobe';
+import Scene from 'Scene/Scene';
+
 // browser execution or not ?
 const scope = typeof window !== 'undefined' ? window : {};
 const itowns = scope.itowns || {
@@ -12,4 +14,5 @@ const itowns = scope.itowns || {
 };
 scope.itowns = itowns;
 export const viewer = itowns.viewer;
+export { Scene };
 export default scope.itowns;
