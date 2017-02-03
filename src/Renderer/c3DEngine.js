@@ -21,6 +21,7 @@ function c3DEngine(scene, viewerDiv, debugMode, gLDebug) {
 
     var caps = new Capabilities();
     var NOIE = !caps.isInternetExplorer();
+    THREE.Object3D.DefaultUp.set(0, 0, 1);
     this.gLDebug = gLDebug;
     this.viewerDiv = viewerDiv;
     this.debug = debugMode;
