@@ -42,7 +42,12 @@ module.exports = {
           path.resolve(__dirname, 'test'),
           path.resolve(__dirname, 'utils')
         ],
-        loader: 'babel'
+        loader: 'babel',
+        query: {
+          presets: ['es2015'],
+          plugins: ['transform-runtime'],
+          babelrc: false
+        },
       },
        {
         test: /\.glsl$/,
