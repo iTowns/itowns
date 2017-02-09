@@ -4,12 +4,16 @@ import proj4 from 'proj4';
 import ApiGlobe, { INITIALIZED_EVENT } from './Core/Scheduler/Interfaces/ApiInterface/ApiGlobe';
 import View from './Core/View';
 import GlobeView from './Core/Prefab/GlobeView';
+import PlanarView from './Core/Prefab/PlanarView';
+import Extent from './Core/Geographic/Extent';
 import Coordinates from './Core/Geographic/Coordinates';
 
 // Then exported as non-default here.
 export { ApiGlobe, INITIALIZED_EVENT };
 export { View };
 export { GlobeView };
+export { PlanarView };
+export { Extent };
 export { Coordinates };
 
 // Others can be directly exported
