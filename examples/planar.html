@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>Lyon (plane mode)</title>
+
+    <style type="text/css">
+            html {height: 100%}
+        body { margin: 0; overflow:hidden; height:100%}
+
+            #viewerDiv {
+                margin : auto auto;
+                width: 100%;
+                height: 100%;
+                padding: 0;
+                /*margin-top: 50vh;
+                transform: translateY(-50%);*/
+            }
+            #menuDiv {position: absolute; top:0px; margin-left: 0px;}
+
+
+        </style>
+        <meta charset="UTF-8">
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.6.1/dat.gui.min.js"></script>
+    </head>
+    <body>
+        <div id="viewerDiv"></div>
+        <script src="/examples/GUI/GuiTools.js"></script>
+        <script src="/dist/itowns.js"></script>
+        <script src="/dist/debug.js"></script>
+        <script type="text/javascript">
+
+            /* global itowns,document,GuiTools*/
+            const viewerDiv = document.getElementById('viewerDiv');
+
+            itowns.proj4.defs('EPSG:3946',
+                '+proj=lcc +lat_1=45.25 +lat_2=46.75 +lat_0=46 +lon_0=3 +x_0=1700000 +y_0=5200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
+
+            const menuGlobe = new GuiTools(itowns.viewer, 'menuDiv');
+
+            const bbox = new itowns.Extent(
+                'EPSG:3946',
+                1837816.94334, 1847692.32501,
+                5170036.4587, 5178412.82698);
+
+            var view = new itowns.PlanarView(viewerDiv, bbox);
+            view.tileLayer.materialOptions = {
+                useColorTextureElevation: true,
+                colorTextureElevationMinZ: 148,
+                colorTextureElevationMaxZ: 622,
+            };
+            view.tileLayer.disableSkirt = true;
+
+            view.addLayer({
+                url       : "https://download.data.grandlyon.com/wms/grandlyon",
+                type      : "color",
+                protocol  : 'wms',
+                version   : '1.3.0',
+                id        : 'wms_imagery',
+                name      : 'Ortho2009_vue_ensemble_16cm_CC46',
+                style      : "",
+                projection : "EPSG:3946",
+                transparent : false,
+                bbox      : [bbox.west(), bbox.east(), bbox.south(), bbox.north()],
+                bbox_url  : "wsen",
+                featureInfoMimeType : "",
+                dateTime  : "",
+                heightMapWidth : 256,
+                waterMask      : false,
+                updateStrategy: {
+                    type: 0,
+                    options: {}
+                },
+                options: {
+                    mimetype  : "image/jpeg"
+                }
+            });
+
+            view.addLayer({
+                url       : "https://download.data.grandlyon.com/wms/grandlyon",
+                type      : "elevation",
+                protocol  : 'wms',
+                version   : '1.3.0',
+                id        : 'wms_elevation',
+                name      : 'MNT2012_Altitude_10m_CC46',
+                style      : "",
+                projection : "EPSG:3946",
+                transparent : false,
+                bbox      : [bbox.west(), bbox.east(), bbox.south(), bbox.north()],
+                bbox_url  : "wsen",
+                featureInfoMimeType : "",
+                dateTime  : "",
+                heightMapWidth : 256,
+                waterMask      : false,
+                options: {
+                    minmaxElevation: [0, 255],
+                    mimetype  : "image/jpeg"
+                }
+            });
+
+            view.camera.camera3D.up.z = 1;
+            view.camera.camera3D.up.y = 0;
+
+            function moveCamera() {
+                var t = Date.now() / 3000;
+                var radius = Math.min(bbox.dimensions().x, bbox.dimensions().y);
+
+                const center = bbox.center().xyz();
+                var x = center.x + Math.cos(t) * radius;
+                var y = center.y + Math.sin(t) * radius;
+
+                const c2 = new itowns.Coordinates('EPSG:3946', 1847692.32501, 5178412, 0);
+                view.camera.camera3D.position.set(x, y, 4000);// + Math.sin(t) * 100);
+                view.camera.camera3D.lookAt(center);
+                view.camera.camera3D.updateMatrix();
+                view.camera.camera3D.updateMatrixWorld(true);
+
+                view.notifyChange(20, true);
+            }
+
+            view.onAfterRender = () => {
+                moveCamera();
+            };
+            view.notifyChange(0, true);
+        </script>
+    </body>
+</html>
