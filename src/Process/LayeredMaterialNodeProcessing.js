@@ -290,6 +290,8 @@ function _updateLayeredMaterialNodeElevation(context, layer, node, parent) {
                 terrain.texture.level = (ancestor || node).level;
             }
 
+            terrain.min = 0;
+            terrain.max = 255;
             if (terrain.max === undefined) {
                 terrain.min = (ancestor || node).bbox.bottom();
                 terrain.max = (ancestor || node).bbox.top();

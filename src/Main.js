@@ -6,13 +6,48 @@
 
 import ApiGlobe from 'Core/Commander/Interfaces/ApiInterface/ApiGlobe';
 import Scene from 'Scene/Scene';
+import { UNIT } from 'Core/Geographic/GeoCoordinate';
+import BoundingBox from 'Scene/BoundingBox';
+import PlanarTileBuilder from 'Plane/PlanarTileBuilder';
+import { planeCulling, planeSubdivisionControl, planeSchemeTile } from 'Process/PlaneTileProcessing';
+import updateTreeLayer from 'Process/TreeLayerProcessing';
+import { processTiledGeometryNode, initTiledGeometryLayer } from 'Process/TiledNodeProcessing';
+import { updateLayeredMaterialNodeImagery, updateLayeredMaterialNodeElevation, initNewNode } from 'Process/LayeredMaterialNodeProcessing';
+import TileMesh from 'Globe/TileMesh';
 
 // browser execution or not ?
 const scope = typeof window !== 'undefined' ? window : {};
 const itowns = scope.itowns || {
     viewer: new ApiGlobe(),
+    processing: {
+        plane: {
+            culling: planeCulling,
+            subdivisionControl: planeSubdivisionControl,
+            schemeTile: planeSchemeTile,
+        },
+        tree: {
+            update: updateTreeLayer,
+        },
+        tile: {
+            update: processTiledGeometryNode,
+            init: initTiledGeometryLayer,
+        },
+        layeredMaterial: {
+            init: initNewNode,
+            update_imagery: updateLayeredMaterialNodeImagery,
+            update_elevation: updateLayeredMaterialNodeElevation,
+        },
+    },
+    builder: {
+        planar: PlanarTileBuilder,
+    },
 };
 scope.itowns = itowns;
 export const viewer = itowns.viewer;
+export const processing = itowns.processing;
+export const builder = itowns.builder;
 export { Scene };
+export { UNIT };
+export { BoundingBox };
+export { TileMesh };
 export default scope.itowns;

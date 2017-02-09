@@ -93,7 +93,7 @@ WMS_Provider.prototype.preprocessDataLayer = function preprocessDataLayer(layer)
 };
 
 WMS_Provider.prototype.tileInsideLimit = function tileInsideLimit(tile, layer) {
-    return tile.level > 2 && layer.bbox.intersect(tile.bbox);
+    return layer.bbox.intersect(tile.bbox);
 };
 
 WMS_Provider.prototype.getColorTexture = function getColorTexture(tile, layer, bbox, pitch) {

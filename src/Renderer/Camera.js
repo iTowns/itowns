@@ -63,8 +63,6 @@ Camera.prototype.resize = function resize(width, height) {
     this.height = height;
     this.ratio = width / height;
 
-    this.updatePreSSE();
-
     this.camera3D.aspect = this.ratio;
     this.camera3D.updateProjectionMatrix();
 
