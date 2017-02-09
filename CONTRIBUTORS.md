@@ -11,6 +11,8 @@ The following people have contributed to iTowns 2.
 * [Oslandia](http://www.oslandia.com)
   * [Vincent Picavet](https://github.com/vpicavet)
   * [Jérémy Gaillard](https://github.com/Jeremy-Gaillard)
+  * [Pierre-Éric Pelloux-Prayer](https://github.com/peppsac)
+  * [Augustin Trancart](https://github.com/autra)
 
 * [AtolCD](http://www.atolcd.com)
   * [Thomas Broyer](https://github.com/tbroyer)
