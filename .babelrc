@@ -1,3 +1,4 @@
+// please consider modifying babel-loader configuration in webpack.config.js
 {
     "presets": ["es2015"],
     "plugins": [
