@@ -7,7 +7,8 @@ module.exports = {
   },
   module: {
     loaders: [
-       {
+      // please consider modifying corresponding loaders in webpack.config.js too
+      {
         test: /\.glsl$/,
         include: [
           path.resolve(__dirname, 'src'),
