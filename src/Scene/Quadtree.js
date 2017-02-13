@@ -10,10 +10,10 @@
  * @param {type} Quad
  * @returns {Quadtree_L13.Quadtree}
  */
-import Layer from 'Scene/Layer';
-import Scheduler from 'Core/Commander/Scheduler';
-import NodeMesh from 'Renderer/NodeMesh';
-import BoundingBox from 'Scene/BoundingBox';
+import Layer from './Layer';
+import Scheduler from '../Core/Commander/Scheduler';
+import NodeMesh from '../Renderer/NodeMesh';
+import BoundingBox from './BoundingBox';
 
 function Quadtree(type, schemeTile, link) {
     Layer.call(this);

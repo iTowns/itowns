@@ -5,8 +5,8 @@
  */
 
 
-import Node from 'Scene/Node';
 import * as THREE from 'three';
+import Node from '../Scene/Node';
 
 
 const NodeMesh = function NodeMesh() {

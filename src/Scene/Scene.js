@@ -6,17 +6,17 @@
 
 /* global window, requestAnimationFrame */
 
-import c3DEngine from 'Renderer/c3DEngine';
-import Globe from 'Globe/Globe';
-import Scheduler from 'Core/Commander/Scheduler';
-import BrowseTree from 'Scene/BrowseTree';
-import NodeProcess from 'Scene/NodeProcess';
-import Quadtree from 'Scene/Quadtree';
-import CoordStars from 'Core/Geographic/CoordStars';
-import Layer from 'Scene/Layer';
-import MobileMappingLayer from 'MobileMapping/MobileMappingLayer';
 import CustomEvent from 'custom-event';
-import StyleManager from 'Scene/Description/StyleManager';
+import c3DEngine from '../Renderer/c3DEngine';
+import Globe from '../Globe/Globe';
+import Scheduler from '../Core/Commander/Scheduler';
+import BrowseTree from './BrowseTree';
+import NodeProcess from './NodeProcess';
+import Quadtree from './Quadtree';
+import CoordStars from '../Core/Geographic/CoordStars';
+import Layer from './Layer';
+import MobileMappingLayer from '../MobileMapping/MobileMappingLayer';
+import StyleManager from './Description/StyleManager';
 
 var instanceScene = null;
 

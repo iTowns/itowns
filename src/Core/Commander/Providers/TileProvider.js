@@ -13,10 +13,10 @@
  *
  */
 
-import Provider from 'Core/Commander/Providers/Provider';
-import Projection from 'Core/Geographic/Projection';
-import BuilderEllipsoidTile from 'Globe/BuilderEllipsoidTile';
-import TileGeometry from 'Globe/TileGeometry';
+import Provider from './Provider';
+import Projection from '../../Geographic/Projection';
+import BuilderEllipsoidTile from '../../../Globe/BuilderEllipsoidTile';
+import TileGeometry from '../../../Globe/TileGeometry';
 
 function TileProvider(ellipsoid) {
     Provider.call(this, null);

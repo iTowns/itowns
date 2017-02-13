@@ -7,9 +7,9 @@
 //    Pan - right mouse, or arrow keys / touch: three finter swipe
 
 import * as THREE from 'three';
-import Sphere from 'Core/Math/Sphere';
 import CustomEvent from 'custom-event';
-import AnimationPlayer, { Animation, AnimatedExpression } from 'Scene/AnimationPlayer';
+import Sphere from '../../Core/Math/Sphere';
+import AnimationPlayer, { Animation, AnimatedExpression } from '../../Scene/AnimationPlayer';
 
 var selectClick = new CustomEvent('selectClick');
 

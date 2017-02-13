@@ -10,11 +10,11 @@
 /* global Promise*/
 
 import * as THREE from 'three';
-import Provider from 'Core/Commander/Providers/Provider';
-import BuildingBox_Provider from 'Core/Commander/Providers/BuildingBox_Provider';
-import ProjectiveTexturingMaterial from 'Renderer/ProjectiveTexturingMaterial';
-import BasicMaterial from 'Renderer/BasicMaterial';
-import PanoramicMesh from 'Renderer/PanoramicMesh';
+import Provider from './Provider';
+import BuildingBox_Provider from './BuildingBox_Provider';
+import ProjectiveTexturingMaterial from '../../../Renderer/ProjectiveTexturingMaterial';
+import BasicMaterial from '../../../Renderer/BasicMaterial';
+import PanoramicMesh from '../../../Renderer/PanoramicMesh';
 
 
 let _options = null;

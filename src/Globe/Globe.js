@@ -4,19 +4,19 @@
  * Description: Le globe est le noeud du globe (node) principale.
  */
 
-import Layer from 'Scene/Layer';
-import Quadtree from 'Scene/Quadtree';
-import SchemeTile from 'Scene/SchemeTile';
-import MathExt from 'Core/Math/MathExtended';
-import TileMesh from 'Globe/TileMesh';
-import Atmosphere from 'Globe/Atmosphere';
-import Clouds from 'Globe/Clouds';
-import Capabilities from 'Core/System/Capabilities';
-import GeoCoordinate, { UNIT } from 'Core/Geographic/GeoCoordinate';
-import BasicMaterial from 'Renderer/BasicMaterial';
-import LayersConfiguration from 'Scene/LayersConfiguration';
 import * as THREE from 'three';
-import { SSE_SUBDIVISION_THRESHOLD } from 'Scene/NodeProcess';
+import Layer from '../Scene/Layer';
+import Quadtree from '../Scene/Quadtree';
+import SchemeTile from '../Scene/SchemeTile';
+import MathExt from '../Core/Math/MathExtended';
+import TileMesh from './TileMesh';
+import Atmosphere from './Atmosphere';
+import Clouds from './Clouds';
+import Capabilities from '../Core/System/Capabilities';
+import GeoCoordinate, { UNIT } from '../Core/Geographic/GeoCoordinate';
+import BasicMaterial from '../Renderer/BasicMaterial';
+import LayersConfiguration from '../Scene/LayersConfiguration';
+import { SSE_SUBDIVISION_THRESHOLD } from '../Scene/NodeProcess';
 
 
 /* eslint-disable */

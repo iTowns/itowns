@@ -5,15 +5,15 @@
  */
 
 
-import Provider from 'Core/Commander/Providers/Provider';
-import IoDriver_XBIL from 'Core/Commander/Providers/IoDriver_XBIL';
-import Fetcher from 'Core/Commander/Providers/Fetcher';
 import * as THREE from 'three';
-import Projection from 'Core/Geographic/Projection';
-import CacheRessource from 'Core/Commander/Providers/CacheRessource';
-import mE from 'Core/Math/MathExtended';
-import BoundingBox from 'Scene/BoundingBox';
-import { UNIT } from 'Core/Geographic/GeoCoordinate';
+import Provider from './Provider';
+import IoDriver_XBIL from './IoDriver_XBIL';
+import Fetcher from './Fetcher';
+import Projection from '../../Geographic/Projection';
+import CacheRessource from './CacheRessource';
+import mE from '../../Math/MathExtended';
+import BoundingBox from '../../../Scene/BoundingBox';
+import { UNIT } from '../../Geographic/GeoCoordinate';
 
 /**
  * Return url wmts MNT

@@ -6,7 +6,7 @@
  */
 
 
-import NodeMesh from 'Renderer/NodeMesh';
+import NodeMesh from './NodeMesh';
 
 
 const PanoramicMesh = function PanoramicMesh(geom, mat, absC) {

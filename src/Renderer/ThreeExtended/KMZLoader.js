@@ -4,7 +4,7 @@
 
 import JSZip from 'jszip';
 import * as THREE from 'three';
-import GeoCoordinate, { UNIT } from 'Core/Geographic/GeoCoordinate';
+import GeoCoordinate, { UNIT } from '../../Core/Geographic/GeoCoordinate';
 
 function KMZLoader() {
     this.colladaLoader = new THREE.ColladaLoader();
