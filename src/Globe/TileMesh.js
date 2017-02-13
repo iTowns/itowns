@@ -14,13 +14,13 @@
  * @param {type} GeoCoordinate
  * @returns {EllipsoidTileMesh_L20.TileMesh}
  */
-import NodeMesh from 'Renderer/NodeMesh';
-import BoundingBox from 'Scene/BoundingBox';
 import * as THREE from 'three';
-import LayeredMaterial, { l_ELEVATION } from 'Renderer/LayeredMaterial';
-import GlobeDepthMaterial from 'Renderer/GlobeDepthMaterial';
-import MatteIdsMaterial from 'Renderer/MatteIdsMaterial';
-import RendererConstant from 'Renderer/RendererConstant';
+import NodeMesh from '../Renderer/NodeMesh';
+import BoundingBox from '../Scene/BoundingBox';
+import LayeredMaterial, { l_ELEVATION } from '../Renderer/LayeredMaterial';
+import GlobeDepthMaterial from '../Renderer/GlobeDepthMaterial';
+import MatteIdsMaterial from '../Renderer/MatteIdsMaterial';
+import RendererConstant from '../Renderer/RendererConstant';
 
 function TileMesh(geometry, params) {
     // Constructor

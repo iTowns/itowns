@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import ItownsPointMaterial from 'Renderer/ItownsPointMaterial';
+import ItownsPointMaterial from '../../../Renderer/ItownsPointMaterial';
 
 
 const ItownsPoint = function ItownsPoint(options) {

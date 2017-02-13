@@ -5,11 +5,11 @@
  */
 
 import * as THREE from 'three';
-import RendererConstant from 'Renderer/RendererConstant';
-import { chooseNextLevelToFetch } from 'Scene/LayerUpdateStrategy';
-import { l_ELEVATION, l_COLOR } from 'Renderer/LayeredMaterial';
-import LayerUpdateState from 'Scene/LayerUpdateState';
-import { CancelledCommandException } from 'Core/Commander/Scheduler';
+import RendererConstant from '../Renderer/RendererConstant';
+import { chooseNextLevelToFetch } from './LayerUpdateStrategy';
+import { l_ELEVATION, l_COLOR } from '../Renderer/LayeredMaterial';
+import LayerUpdateState from './LayerUpdateState';
+import { CancelledCommandException } from '../Core/Commander/Scheduler';
 
 export const SSE_SUBDIVISION_THRESHOLD = 6.0;
 

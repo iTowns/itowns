@@ -5,13 +5,13 @@
  */
 
 
-import Provider from 'Core/Commander/Providers/Provider';
-import Projection from 'Core/Geographic/Projection';
-import CoordWMTS from 'Core/Geographic/CoordWMTS';
-import IoDriver_XBIL from 'Core/Commander/Providers/IoDriver_XBIL';
-import Fetcher from 'Core/Commander/Providers/Fetcher';
 import * as THREE from 'three';
-import CacheRessource from 'Core/Commander/Providers/CacheRessource';
+import Provider from './Provider';
+import Projection from '../../Geographic/Projection';
+import CoordWMTS from '../../Geographic/CoordWMTS';
+import IoDriver_XBIL from './IoDriver_XBIL';
+import Fetcher from './Fetcher';
+import CacheRessource from './CacheRessource';
 
 const SIZE_TEXTURE_TILE = 256;
 

@@ -4,10 +4,10 @@
  * Description: Outils de projections cartographiques et de convertion
  */
 
-import CoordWMTS from 'Core/Geographic/CoordWMTS';
-import MathExt from 'Core/Math/MathExtended';
-import GeoCoordinate from 'Core/Geographic/GeoCoordinate';
 import * as THREE from 'three';
+import CoordWMTS from './CoordWMTS';
+import MathExt from '../Math/MathExtended';
+import GeoCoordinate from './GeoCoordinate';
 
 
 function Projection() {
