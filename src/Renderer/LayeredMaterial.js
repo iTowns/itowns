@@ -382,7 +382,7 @@ LayeredMaterial.prototype.isLayerTypeDownscaled = function isLayerTypeDownscaled
             return false;
         }
         //   - regular texture
-        return tex.level < this.level;
+        return tex.level < level;
     } else if (layerType === l_COLOR) {
         // browse each layer
         for (let index = 0, max = this.colorLayersId.length; index < max; index++) {
