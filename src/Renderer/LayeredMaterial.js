@@ -20,7 +20,6 @@ emptyTexture.level = EMPTY_TEXTURE_LEVEL;
 const layerTypesCount = 2;
 var vector = new THREE.Vector3(0.0, 0.0, 0.0);
 var vector4 = new THREE.Vector4(0.0, 0.0, 0.0, 0.0);
-var showDebug = false;
 var fooTexture;
 
 export const l_ELEVATION = 0;
@@ -87,8 +86,9 @@ const LayeredMaterial = function LayeredMaterial(id) {
     this.fragmentShaderHeader += `const int   TEX_UNITS   = ${nbSamplers.toString()};\n`;
     this.fragmentShaderHeader += pitUV;
 
-    if (showDebug)
-        { this.fragmentShaderHeader += '#define DEBUG\n'; }
+    if (__DEBUG__) {
+        this.fragmentShaderHeader += '#define DEBUG\n';
+    }
 
     // see GLOBE FS
     this.fragmentShaderHeader += getColorAtIdUv(nbSamplers);

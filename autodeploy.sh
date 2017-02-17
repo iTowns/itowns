@@ -41,7 +41,8 @@ cp -R dist out/
 # generate the API documentation
 npm run doc -- -d out/API_Doc
 # Copy demo
-cp index.html out/
+cp examples/index.html out/
+cp node_modules/dat.gui/build/dat.gui.min.js out/
 # Copy examples
 cp -R examples out/
 # Copy the decoded deploy key (decoding made with openssl command in .travis.yml)
