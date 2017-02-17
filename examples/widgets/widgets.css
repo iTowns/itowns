@@ -1,0 +1,10 @@
+#widgets {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      width: 20rem;
+      box-shadow: 1px 1px 10px #555;
+      font: 11px Lucida Grande,sans-serif;
+      color: #eee;
+      padding: 0.5rem;
+}
