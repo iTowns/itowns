@@ -56,7 +56,7 @@ git config user.name "$COMMIT_AUTHOR_NAME"
 git config user.email "$COMMIT_AUTHOR_EMAIL"
 
 # Commit the "changes", i.e. the new version.
-git add dist index.html API_Doc examples
+git add dist index.html API_Doc examples dat.gui.min.js
 git commit -m "Deploy to GitHub Pages: ${SHA}"
 
 chmod 600 deploy_key
