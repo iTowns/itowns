@@ -44,6 +44,10 @@ module.exports = {
     }],
     'one-var': ['error', 'never'],
     // TODO reactivate this rule once a proper npm package is made
+    // a good configuration might be:
+    /*'import/no-extraneous-dependencies': ['error', {
+      devDependencies: ['test/**', 'tests/**', 'examples/**'],
+    }],*/
     'import/no-extraneous-dependencies': 'off',
 
     // TODO reactivate all the following rules
@@ -68,5 +72,8 @@ module.exports = {
     'brace-style': 'off',
     'new-cap': 'off',
     'no-continue': 'off',
+  },
+  "globals": {
+    "__DEBUG__": false
   }
 }
