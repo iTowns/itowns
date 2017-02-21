@@ -67,13 +67,13 @@ WMTS_Provider.prototype.preprocessDataLayer = function preprocessDataLayer(layer
             max: 20,
         };
     } else {
-        var options = layer.options;
+        const options = layer.options;
         options.version = options.version || '1.0.0';
         options.tileMatrixSet = options.tileMatrixSet || 'WGS84';
         options.mimetype = options.mimetype || 'image/png';
         options.style = options.style || 'normal';
         options.projection = options.projection || 'EPSG:3857';
-        var newBaseUrl = `${layer.url
+        let newBaseUrl = `${layer.url
             }?LAYER=${options.name
             }&FORMAT=${options.mimetype
             }&SERVICE=WMTS` +
@@ -81,16 +81,24 @@ WMTS_Provider.prototype.preprocessDataLayer = function preprocessDataLayer(layer
             `&REQUEST=GetTile&STYLE=normal&TILEMATRIXSET=${options.tileMatrixSet}`;
 
         newBaseUrl += '&TILEMATRIX=%TILEMATRIX&TILEROW=%ROW&TILECOL=%COL';
-        var arrayLimits = Object.keys(options.tileMatrixSetLimits);
 
-        var size = arrayLimits.length;
-        var maxZoom = Number(arrayLimits[size - 1]);
-        var minZoom = maxZoom - size + 1;
+        if (options.tileMatrixSetLimits) {
+            const arrayLimits = Object.keys(options.tileMatrixSetLimits);
 
-        layer.zoom = {
-            min: minZoom,
-            max: maxZoom,
-        };
+            const size = arrayLimits.length;
+            const maxZoom = Number(arrayLimits[size - 1]);
+            const minZoom = maxZoom - size + 1;
+
+            layer.zoom = {
+                min: minZoom,
+                max: maxZoom,
+            };
+        } else {
+            layer.zoom = {
+                min: 2,
+                max: 20,
+            };
+        }
         layer.customUrl = newBaseUrl;
     }
 };
