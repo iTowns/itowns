@@ -57,7 +57,7 @@ WMTS_Provider.prototype.preprocessDataLayer = function preprocessDataLayer(layer
 
         newBaseUrl += '&TILEMATRIX=%TILEMATRIX&TILEROW=%ROW&TILECOL=%COL';
 
-        if (!layer.options.zoom) {
+        if (!layer.options.zoom && options.tileMatrixSetLimits) {
             const arrayLimits = Object.keys(options.tileMatrixSetLimits);
             const size = arrayLimits.length;
             const maxZoom = Number(arrayLimits[size - 1]);
@@ -66,6 +66,11 @@ WMTS_Provider.prototype.preprocessDataLayer = function preprocessDataLayer(layer
             layer.options.zoom = {
                 min: minZoom,
                 max: maxZoom,
+            };
+        } else {
+            layer.options.zoom = {
+                min: 2,
+                max: 20,
             };
         }
         layer.customUrl = newBaseUrl;
