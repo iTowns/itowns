@@ -917,35 +917,18 @@ ApiGlobe.prototype.removeEventListenerLayerChanged = function removeEventListene
 
 /**
  * Get the Attribution of all layers in the scene.
- * @return {array}  An array of attribution.
+ * @return {map}  A Map of attribution.
  */
 
 ApiGlobe.prototype.getLayersAttribution = function getLayersAttribution() {
     const lc = this.scene.getMap().layersConfiguration;
     const map = new Map();
     [...lc.getColorLayers(), ...lc.getElevationLayers()].forEach((l) => {
-        if (l.options.attribution != undefined) {
+        if (l.options.attribution) {
             map.set(l.options.attribution.name, l.options.attribution);
         }
     });
     return map;
-};
-
-/**
- * Set the attribution for a layer.
- * @param {param} Param - The id of the layer and the new IPR {id, attribution}.
- */
-
-ApiGlobe.prototype.setLayerAttribution = function setLayerAttribution(param) {
-    if (param.attribution.name === undefined) {
-        throw new Error(`Missing parameter "param.attribution.name" : ${param.id}`);
-    }
-    const lc = this.scene.getMap().layersConfiguration;
-    [...lc.getColorLayers(), ...lc.getElevationLayers()].forEach((l) => {
-        if (param.id === l.id) {
-            l.options.attribution = param.attribution;
-        }
-    });
 };
 
 ApiGlobe.prototype.selectNodeById = function selectNodeById(id) {
