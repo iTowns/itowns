@@ -27,6 +27,7 @@ function Camera(width, height, debug) {
 
     this.direction = new THREE.Vector3();
     this.frustum = new THREE.Frustum();
+    this.viewMatrix = new THREE.Matrix4();
     this.width = width;
     this.height = height;
 
@@ -134,7 +135,9 @@ Camera.prototype.update = function update() {
 
     this.direction = vector.applyQuaternion(this.camera3D.quaternion);
 
-    this.frustum.setFromMatrix(new THREE.Matrix4().multiplyMatrices(this.camera3D.projectionMatrix, this.camera3D.matrixWorldInverse));
+    this.updateMatrixWorld();
+    this.viewMatrix.multiplyMatrices(this.camera3D.projectionMatrix, this.camera3D.matrixWorldInverse);
+    this.frustum.setFromMatrix(this.viewMatrix);
 };
 
 Camera.prototype.updateMatrixWorld = function updateMatrixWorld() {

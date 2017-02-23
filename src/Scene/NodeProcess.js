@@ -21,7 +21,6 @@ function NodeProcess(scene, camera, ellipsoid) {
 
     this.r = ellipsoid.size || new THREE.Vector3();
     this.cV = new THREE.Vector3();
-    this.cameraViewMatrix = new THREE.Matrix4();
 }
 
 /**
@@ -483,9 +482,9 @@ NodeProcess.prototype.processNode = function processNode(node, camera, params) {
 const frustum = new THREE.Frustum();
 const obbViewMatrix = new THREE.Matrix4();
 
-NodeProcess.prototype.frustumCullingOBB = function frustumCullingOBB(node) {
+NodeProcess.prototype.frustumCullingOBB = function frustumCullingOBB(node, camera) {
     // Move camera in OBB local space
-    obbViewMatrix.multiplyMatrices(this.cameraViewMatrix, node.OBB().matrixWorld);
+    obbViewMatrix.multiplyMatrices(camera.viewMatrix, node.OBB().matrixWorld);
 
     frustum.setFromMatrix(obbViewMatrix);
 
@@ -498,7 +497,6 @@ NodeProcess.prototype.frustumCullingOBB = function frustumCullingOBB(node) {
  */
 NodeProcess.prototype.prepare = function prepare(camera) {
     this.preHorizonCulling(camera);
-    this.cameraViewMatrix.multiplyMatrices(camera.camera3D.projectionMatrix, camera.camera3D.matrixWorldInverse);
 };
 
 /**
