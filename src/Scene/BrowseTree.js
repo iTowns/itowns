@@ -70,8 +70,6 @@ function applyFunctionToChildren(func, node) {
 BrowseTree.prototype.browse = function browse(tree, camera, process, layersConfig) {
     this.tree = tree;
 
-    camera.updateMatrixWorld();
-
     this.fogDistance = this.mfogDistance * Math.pow((camera.getDistanceFromOrigin() - 6300000) / 25000000, 1.6);
 
     process.prepare(camera);
