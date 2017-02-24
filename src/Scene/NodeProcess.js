@@ -479,16 +479,16 @@ NodeProcess.prototype.processNode = function processNode(node, camera, params) {
  * @returns {NodeProcess_L7.NodeProcess.prototype.frustumCullingOBB.node@pro;camera@call;getFrustum@call;intersectsBox}
  */
 
-var quaternion = new THREE.Quaternion();
+const frustum = new THREE.Frustum();
+const obbViewMatrix = new THREE.Matrix4();
 
 NodeProcess.prototype.frustumCullingOBB = function frustumCullingOBB(node, camera) {
-    // position in local space
-    var position = node.OBB().worldToLocal(camera.position().clone());
-    position.z -= node.distance;
+    // Move camera in OBB local space
+    obbViewMatrix.multiplyMatrices(camera.viewMatrix, node.OBB().matrixWorld);
 
-    quaternion.multiplyQuaternions(node.OBB().inverseQuaternion(), camera.camera3D.quaternion);
+    frustum.setFromMatrix(obbViewMatrix);
 
-    return camera.getFrustumLocalSpace(position, quaternion).intersectsBox(node.OBB().box3D);
+    return frustum.intersectsBox(node.OBB().box3D);
 };
 
 /**
@@ -540,9 +540,8 @@ NodeProcess.prototype.horizonCulling = function horizonCulling(node) {
     var points = node.OBB().pointsWorld;
     var isVisible = false;
 
-    var nodePosition = new THREE.Vector3().setFromMatrixPosition(node.matrixWorld);
     for (var i = 0, max = points.length; i < max; i++) {
-        point.addVectors(nodePosition, points[i]);
+        point = points[i].clone();
         if (!this.pointHorizonCulling(point)) {
             isVisible = true;
             break;

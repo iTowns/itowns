@@ -18,24 +18,73 @@ function Debug(scene) {
 
     scene.viewerDiv.appendChild(chartDiv);
 
+    const leftChart = document.createElement('div');
+    leftChart.id = 'chart-div-left';
+    leftChart.style = 'position: absolute; bottom: 0; left: 0; width: 50vw; height: 20rem; background-color: white; display: flex';
+    chartDiv.appendChild(leftChart);
+    const rightChart = document.createElement('div');
+    rightChart.id = 'chart-div-right';
+    rightChart.style = 'position: absolute; bottom: 0; left: 50vw; width: 50vw; height: 20rem; background-color: white; display: flex';
+    chartDiv.appendChild(rightChart);
+
     // line graph for nb elements
     const nbObjectsCanvas = document.createElement('canvas');
     nbObjectsCanvas.heigth = '20rem';
-    nbObjectsCanvas.width = '40rem';
+    nbObjectsCanvas.width = '50vw';
     nbObjectsCanvas.id = 'nb-objects';
-    chartDiv.appendChild(nbObjectsCanvas);
+    leftChart.appendChild(nbObjectsCanvas);
+
+    // bar graph for nb visible elements
+    const nbVisibleCanvas = document.createElement('canvas');
+    nbVisibleCanvas.heigth = '20rem';
+    nbVisibleCanvas.width = '50vw';
+    nbVisibleCanvas.id = 'nb-visible';
+    rightChart.appendChild(nbVisibleCanvas);
 
     const timestamp = Date.now();
-    const nbObjectsDataset = { label: 'Number of object in Scene', data: [{ x: 0, y: 0 }] };
+    const nbObjectsDataset = { label: 'Number of objects in Scene', data: [{ x: 0, y: 0 }] };
+    const nbVisibleDataset = { label: 'Number of visible objects in Scene', data: [{ x: 0, y: 0 }], borderColor: 'rgba(75,192,192,1)' };
+    const nbDisplayedDataset = { label: 'Number of displayed objects in Scene', data: [{ x: 0, y: 0 }], borderColor: 'rgba(153, 102, 255, 1)' };
     const nbObjectsChartLabel = ['0s'];
     const nbObjectsChart = new Chart('nb-objects', {
         type: 'line',
         data: {
             labels: nbObjectsChartLabel,
-            datasets: [nbObjectsDataset],
+            datasets: [nbObjectsDataset, nbVisibleDataset, nbDisplayedDataset],
         },
         options: {
             animation: { duration: 10 },
+            scales: {
+                yAxes: [{
+                    display: true,
+                    ticks: {
+                        suggestedMin: 0, // minimum will be 0, unless there is a lower value.
+                    },
+                }],
+            },
+        },
+    });
+    const nbVisibleLabels = [];
+    const nbVisibleData = [];
+    const nbDisplayedData = [];
+    const nbVisibleChart = new Chart('nb-visible', {
+        type: 'bar',
+        data: {
+            labels: nbVisibleLabels,
+            datasets: [
+                {
+                    label: 'Visible node per level',
+                    data: nbVisibleData,
+                    backgroundColor: 'rgba(75, 192, 192, 1)',
+                },
+                {
+                    label: 'Diplayed node per level',
+                    data: nbDisplayedData,
+                    backgroundColor: 'rgba(153, 102, 255, 1)',
+                },
+            ],
+        },
+        options: {
             scales: {
                 yAxes: [{
                     display: true,
@@ -61,18 +110,64 @@ function Debug(scene) {
             return count;
         }
 
-        const timeInS = Math.floor((Date.now() - timestamp) / 1000);
+        function countVisible(node, stats) {
+            if (!node || !node.visible) {
+                return;
+            }
+            if (node.level) {
+                if (stats[node.level]) {
+                    stats[node.level][0] += 1;
+                } else {
+                    stats[node.level] = [1, 0];
+                }
+                if (node.material.visible) {
+                    stats[node.level][1] += 1;
+                }
+            }
+            if (node.children) {
+                for (const child of node.children) {
+                    countVisible(child, stats);
+                }
+            }
+        }
 
-        const limit = 50;
+        // update bar graph
+        const stats = {};
+        countVisible(scene.gfxEngine.scene3D, stats);
+        let totalVisible = 0;
+        let totalDisplayed = 0;
+        nbVisibleLabels.length = 0;
+        nbVisibleData.length = 0;
+        for (const level in stats) {
+            if ({}.hasOwnProperty.call(stats, level)) {
+                nbVisibleLabels[level - 1] = `${level}`;
+                nbVisibleData[level - 1] = stats[level][0];
+                nbDisplayedData[level - 1] = stats[level][1];
+                totalVisible += stats[level][0];
+                totalDisplayed += stats[level][1];
+            }
+        }
+
+        // update time
+        const limit = 25;
+        const timeInS = Math.floor((Date.now() - timestamp) / 1000);
         nbObjectsChartLabel.push(`${timeInS}s`);
         if (nbObjectsChartLabel.length > limit) {
             nbObjectsChartLabel.shift();
         }
+
+        // update line graph
         nbObjectsDataset.data.push({ x: timeInS, y: countElem(scene.gfxEngine.scene3D) });
+        nbVisibleDataset.data.push({ x: timeInS, y: totalVisible });
+        nbDisplayedDataset.data.push({ x: timeInS, y: totalDisplayed });
         if (nbObjectsDataset.data.length > limit) {
             nbObjectsDataset.data.shift();
+            nbVisibleDataset.data.shift();
+            nbDisplayedDataset.data.shift();
         }
+
         nbObjectsChart.update();
+        nbVisibleChart.update();
     }
 
     // hook that to scene.update

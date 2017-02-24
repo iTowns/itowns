@@ -16,6 +16,7 @@
 import Provider from 'Core/Commander/Providers/Provider';
 import Projection from 'Core/Geographic/Projection';
 import BuilderEllipsoidTile from 'Globe/BuilderEllipsoidTile';
+import TileGeometry from 'Globe/TileGeometry';
 
 function TileProvider(ellipsoid) {
     Provider.call(this, null);
@@ -46,7 +47,9 @@ TileProvider.prototype.executeCommand = function executeCommand(command) {
         segment: 16,
     };
 
-    var tile = new command.type(params, this.builder);
+    const geometry = new TileGeometry(params, this.builder);
+
+    var tile = new command.type(geometry, params);
 
     tile.setUuid(this.nNode++);
     tile.link = parent.link;
@@ -60,6 +63,8 @@ TileProvider.prototype.executeCommand = function executeCommand(command) {
     parent.add(tile);
     tile.updateMatrix();
     tile.updateMatrixWorld();
+    tile.OBB().parent = tile;   // TODO: we should use tile.add(tile.OBB())
+    tile.OBB().update();
 
     return Promise.resolve(tile);
 };
