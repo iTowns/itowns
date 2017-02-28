@@ -4,18 +4,18 @@
  * Description: Classe façade pour attaquer les fonctionnalités du code.
  */
 
-import Scene from 'Scene/Scene';
-import Globe from 'Globe/Globe';
-import WMTS_Provider from 'Core/Commander/Providers/WMTS_Provider';
-import WMS_Provider from 'Core/Commander/Providers/WMS_Provider';
-import TileProvider from 'Core/Commander/Providers/TileProvider';
-import loadGpx from 'Core/Commander/Providers/GpxUtils';
-import GeoCoordinate, { UNIT } from 'Core/Geographic/GeoCoordinate';
-import Ellipsoid from 'Core/Math/Ellipsoid';
-import Projection from 'Core/Geographic/Projection';
 import CustomEvent from 'custom-event';
-import Fetcher from 'Core/Commander/Providers/Fetcher';
-import { STRATEGY_MIN_NETWORK_TRAFFIC } from 'Scene/LayerUpdateStrategy';
+import Scene from '../../../../Scene/Scene';
+import Globe from '../../../../Globe/Globe';
+import WMTS_Provider from '../../Providers/WMTS_Provider';
+import WMS_Provider from '../../Providers/WMS_Provider';
+import TileProvider from '../../Providers/TileProvider';
+import loadGpx from '../../Providers/GpxUtils';
+import GeoCoordinate, { UNIT } from '../../../Geographic/GeoCoordinate';
+import Ellipsoid from '../../../Math/Ellipsoid';
+import Projection from '../../../Geographic/Projection';
+import Fetcher from '../../Providers/Fetcher';
+import { STRATEGY_MIN_NETWORK_TRAFFIC } from '../../../../Scene/LayerUpdateStrategy';
 
 var sceneIsLoaded = false;
 var eventLoaded = new CustomEvent('globe-loaded');

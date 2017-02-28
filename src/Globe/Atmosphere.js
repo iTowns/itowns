@@ -5,15 +5,15 @@
  */
 
 
-import NodeMesh from 'Renderer/NodeMesh';
 import * as THREE from 'three';
-import Sky from 'Globe/SkyShader';
-import skyFS from 'Renderer/Shader/skyFS.glsl';
-import skyVS from 'Renderer/Shader/skyVS.glsl';
-import groundFS from 'Renderer/Shader/groundFS.glsl';
-import groundVS from 'Renderer/Shader/groundVS.glsl';
-import GlowFS from 'Renderer/Shader/GlowFS.glsl';
-import GlowVS from 'Renderer/Shader/GlowVS.glsl';
+import NodeMesh from '../Renderer/NodeMesh';
+import Sky from './SkyShader';
+import skyFS from '../Renderer/Shader/skyFS.glsl';
+import skyVS from '../Renderer/Shader/skyVS.glsl';
+import groundFS from '../Renderer/Shader/groundFS.glsl';
+import groundVS from '../Renderer/Shader/groundVS.glsl';
+import GlowFS from '../Renderer/Shader/GlowFS.glsl';
+import GlowVS from '../Renderer/Shader/GlowVS.glsl';
 
 export const LIGHTING_POSITION = new THREE.Vector3(1, 0, 0);
 

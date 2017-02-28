@@ -5,11 +5,11 @@
  */
 /* global Promise*/
 
-import Provider from 'Core/Commander/Providers/Provider';
-import Fetcher from 'Core/Commander/Providers/Fetcher';
 import * as THREE from 'three';
-import KMZLoader from 'Renderer/ThreeExtended/KMZLoader';
-import BasicMaterial from 'Renderer/BasicMaterial';
+import Provider from './Provider';
+import Fetcher from './Fetcher';
+import KMZLoader from '../../../Renderer/ThreeExtended/KMZLoader';
+import BasicMaterial from '../../../Renderer/BasicMaterial';
 
 
 function KML_Provider(ellipsoid) {

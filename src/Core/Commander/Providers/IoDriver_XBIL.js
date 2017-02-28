@@ -4,7 +4,7 @@
  */
 /* global Float32Array*/
 
-import IoDriver from 'Core/Commander/Providers/IoDriver';
+import IoDriver from './IoDriver';
 
 
 var portableXBIL = function portableXBIL(buffer) {

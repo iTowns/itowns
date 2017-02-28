@@ -6,11 +6,11 @@
 
 
 import * as THREE from 'three';
-import BasicMaterial from 'Renderer/BasicMaterial';
-import gfxEngine from 'Renderer/c3DEngine';
-import GlobeVS from 'Renderer/Shader/GlobeVS.glsl';
-import GlobeFS from 'Renderer/Shader/GlobeFS.glsl';
-import pitUV from 'Renderer/Shader/Chunk/pitUV.glsl';
+import BasicMaterial from './BasicMaterial';
+import gfxEngine from './c3DEngine';
+import GlobeVS from './Shader/GlobeVS.glsl';
+import GlobeFS from './Shader/GlobeFS.glsl';
+import pitUV from './Shader/Chunk/pitUV.glsl';
 
 const EMPTY_TEXTURE_LEVEL = -1;
 

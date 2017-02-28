@@ -1,4 +1,8 @@
+// please consider modifying babel-loader configuration in webpack.config.js
 {
-  "presets": ["es2015"],
-  "plugins": ["transform-runtime"]
+    "presets": ["es2015"],
+    "plugins": [
+        "transform-runtime",
+        [ "babel-plugin-webpack-loaders", { "config": "./webpack-babel.config.js", "verbose": false }]
+    ]
 }

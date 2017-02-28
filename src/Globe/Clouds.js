@@ -5,12 +5,12 @@
  */
 
 
-import NodeMesh from 'Renderer/NodeMesh';
 import * as THREE from 'three';
-import WMS_Provider from 'Core/Commander/Providers/WMS_Provider';
-import CloudsFS from 'Renderer/Shader/CloudsFS.glsl';
-import CloudsVS from 'Renderer/Shader/CloudsVS.glsl';
-import { LIGHTING_POSITION } from 'Globe/Atmosphere';
+import NodeMesh from '../Renderer/NodeMesh';
+import WMS_Provider from '../Core/Commander/Providers/WMS_Provider';
+import CloudsFS from '../Renderer/Shader/CloudsFS.glsl';
+import CloudsVS from '../Renderer/Shader/CloudsVS.glsl';
+import { LIGHTING_POSITION } from './Atmosphere';
 
 function Clouds(/* size*/) {
     NodeMesh.call(this);

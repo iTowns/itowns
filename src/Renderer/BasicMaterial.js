@@ -6,10 +6,10 @@
 
 
 import * as THREE from 'three';
-import c3DEngine from 'Renderer/c3DEngine';
-import SimpleVS from 'Renderer/Shader/SimpleVS.glsl';
-import SimpleFS from 'Renderer/Shader/SimpleFS.glsl';
-import LogDepthBuffer from 'Renderer/Shader/Chunk/LogDepthBuffer.glsl';
+import c3DEngine from './c3DEngine';
+import SimpleVS from './Shader/SimpleVS.glsl';
+import SimpleFS from './Shader/SimpleFS.glsl';
+import LogDepthBuffer from './Shader/Chunk/LogDepthBuffer.glsl';
 
 function BasicMaterial(color) {
     // Constructor

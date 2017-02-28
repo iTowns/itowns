@@ -42,9 +42,18 @@ module.exports = {
           path.resolve(__dirname, 'test'),
           path.resolve(__dirname, 'utils')
         ],
-        loader: 'babel'
+        loader: 'babel',
+        // Please consider modifying .babelrc too
+        // .babelrc is used for transpiling src/ into lib/ in the prepublish
+        // phase, see package.json
+        query: {
+          presets: ['es2015'],
+          plugins: ['transform-runtime'],
+          babelrc: false
+        },
       },
-       {
+      {
+        // please consider modifying corresponding loaders in webpack-babel.config.js too
         test: /\.glsl$/,
         include: [
           path.resolve(__dirname, 'src'),
@@ -66,7 +75,6 @@ module.exports = {
     ]
   },
   resolve: {
-    root: path.resolve(__dirname, 'src'),
     extensions: ['', '.js']
   },
   devServer: {
