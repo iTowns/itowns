@@ -4,7 +4,7 @@ import Fetcher from '../Core/Commander/Providers/Fetcher';
 import PointVS from './Shader/PointVS.glsl';
 import PointFS from './Shader/PointFS.glsl';
 
-const ItownsPointMaterial = function ItownsPointMaterial(options) {
+const PointMaterial = function PointMaterial(options) {
     BasicMaterial.call(this);
 
     if (options === undefined)
@@ -25,8 +25,8 @@ const ItownsPointMaterial = function ItownsPointMaterial(options) {
     this.transparent = true;
 };
 
-ItownsPointMaterial.prototype = Object.create(BasicMaterial.prototype);
-ItownsPointMaterial.prototype.constructor = ItownsPointMaterial;
+PointMaterial.prototype = Object.create(BasicMaterial.prototype);
+PointMaterial.prototype.constructor = PointMaterial;
 
-export default ItownsPointMaterial;
+export default PointMaterial;
 
