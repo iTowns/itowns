@@ -7,7 +7,7 @@
  */
 
 import * as THREE from 'three';
-import Sensor from 'MobileMapping/Sensor';
+import Sensor from './Sensor';
 
 const Ori = {
 

@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import ItownsLineMaterial from 'Renderer/ItownsLineMaterial';
+import ItownsLineMaterial from '../../../Renderer/ItownsLineMaterial';
 
 const ItownsLine = function ItownsLine(options) {
     THREE.Mesh.call(this);

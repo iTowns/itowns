@@ -5,7 +5,7 @@
  */
 
 
-import BoundingBox from 'Scene/BoundingBox';
+import BoundingBox from './BoundingBox';
 
 function SchemeTile() {
     // Constructor

@@ -5,9 +5,9 @@
  */
 
 import * as THREE from 'three';
-import BasicMaterial from 'Renderer/BasicMaterial';
-import LineVS from 'Renderer/Shader/LineVS.glsl';
-import LineFS from 'Renderer/Shader/LineFS.glsl';
+import BasicMaterial from './BasicMaterial';
+import LineVS from './Shader/LineVS.glsl';
+import LineFS from './Shader/LineFS.glsl';
 
 const ItownsLineMaterial = function ItownsLineMaterial(options) {
     BasicMaterial.call(this);

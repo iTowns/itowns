@@ -1,7 +1,7 @@
 import * as THREE from 'three';
-import BasicMaterial from 'Renderer/BasicMaterial';
-import GlobeDepthFS from 'Renderer/Shader/GlobeDepthFS.glsl';
-import GlobeDepthVS from 'Renderer/Shader/GlobeDepthVS.glsl';
+import BasicMaterial from './BasicMaterial';
+import GlobeDepthFS from './Shader/GlobeDepthFS.glsl';
+import GlobeDepthVS from './Shader/GlobeDepthVS.glsl';
 
 const GlobeDepthMaterial = function GlobeDepthMaterial(otherMaterial) {
     BasicMaterial.call(this);

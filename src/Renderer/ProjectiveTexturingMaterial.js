@@ -6,13 +6,13 @@
  * and its projective camera information.
  */
 
-import graphicEngine from 'Renderer/c3DEngine';
 import * as THREE from 'three';
-import Ori from 'MobileMapping/Ori';
-import Shader from 'MobileMapping/Shader';
 import url from 'url';
-import Ellipsoid from 'Core/Math/Ellipsoid';
-import GeoCoordinate, { UNIT } from 'Core/Geographic/GeoCoordinate';
+import graphicEngine from './c3DEngine';
+import Ori from '../MobileMapping/Ori';
+import Shader from '../MobileMapping/Shader';
+import Ellipsoid from '../Core/Math/Ellipsoid';
+import GeoCoordinate, { UNIT } from '../Core/Geographic/GeoCoordinate';
 
 window.requestAnimSelectionAlpha = (function getRequestAnimSelectionAlphaFn() {
     return window.requestAnimationFrame ||

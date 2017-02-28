@@ -4,8 +4,8 @@
  * Description: Cette classe singleton gère les requetes/Commandes  de la scène. Ces commandes peuvent etre synchrone ou asynchrone. Elle permet d'executer, de prioriser  et d'annuler les commandes de la pile. Les commandes executées sont placées dans une autre file d'attente.
  */
 
-import EventsManager from 'Core/Commander/Interfaces/EventsManager';
 import PriorityQueue from 'js-priority-queue';
+import EventsManager from './Interfaces/EventsManager';
 
 var instanceScheduler = null;
 

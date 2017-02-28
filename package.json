@@ -2,7 +2,7 @@
   "name": "itowns",
   "version": "0.0.0-alpha",
   "description": "A JS/WebGL framework for 3D geospatial data visualization",
-  "main": "dist/itowns.js",
+  "main": "lib/Main.js",
   "scripts": {
     "lint": "eslint \"src/**/*.js\" \"test/**/*.js\" \"examples/**/*.js\"",
     "doc": "jsdoc src/Core/Commander/Interfaces/ApiInterface/*",
@@ -10,11 +10,12 @@
     "test": "npm run lint && npm run build && npm run doclint",
     "build": "webpack -p",
     "start": "cross-env NODE_ENV=development webpack-dev-server -d --inline --hot",
-    "prepublish": "npm run build"
+    "prepublish": "npm run build && BABEL_DISABLE_CACHE=1 babel src --out-dir lib"
   },
   "files": [
     "*.md",
     "dist",
+    "lib",
     "doc",
     "examples"
   ],
@@ -27,16 +28,23 @@
     "url": "https://github.com/iTowns/itowns2/issues"
   },
   "homepage": "https://itowns.github.io/",
+  "dependencies": {
+    "babel-runtime": "^6.20.0",
+    "custom-event": "^1.0.1",
+    "es6-promise": "^4.0.5",
+    "js-priority-queue": "^0.1.5",
+    "jszip": "^3.1.3",
+    "three": "^0.84.0",
+    "whatwg-fetch": "^2.0.2"
+  },
   "devDependencies": {
     "babel-cli": "^6.22.2",
     "babel-core": "^6.22.1",
     "babel-loader": "^6.2.10",
     "babel-plugin-transform-runtime": "^6.22.0",
+    "babel-plugin-webpack-loaders": "^0.8.0",
     "babel-preset-es2015": "^6.22.0",
-    "babel-runtime": "^6.20.0",
     "cross-env": "^3.1.4",
-    "custom-event": "^1.0.1",
-    "es6-promise": "^4.0.5",
     "eslint": "^3.14.0",
     "eslint-config-airbnb-base": "^11.0.1",
     "eslint-import-resolver-webpack": "^0.8.1",
@@ -45,16 +53,9 @@
     "eslint-loader": "^1.6.1",
     "eslint-plugin-import": "^2.2.0",
     "imports-loader": "^0.7.0",
-    "js-priority-queue": "^0.1.5",
     "jsdoc": "^3.4.3",
-    "jszip": "^3.1.3",
-    "paralleljs": "^0.2.1",
     "raw-loader": "^0.5.1",
-    "simd": "^2.0.0",
-    "string_format": "^0.0.6",
-    "three": "^0.84.0",
     "webpack": "^1.14.0",
-    "webpack-dev-server": "^1.16.2",
-    "whatwg-fetch": "^2.0.2"
+    "webpack-dev-server": "^1.16.2"
   }
 }

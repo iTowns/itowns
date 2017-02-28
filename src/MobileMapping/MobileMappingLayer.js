@@ -4,13 +4,13 @@
  * Description: Layer for mobileMappingData
  */
 
-import Layer from 'Scene/Layer';
 import * as THREE from 'three';
-import gfxEngine from 'Renderer/c3DEngine';
-import Projection from 'Core/Geographic/Projection';
-import PanoramicProvider from 'Core/Commander/Providers/PanoramicProvider';
-import Ellipsoid from 'Core/Math/Ellipsoid';
-import GeoCoordinate, { UNIT } from 'Core/Geographic/GeoCoordinate';
+import Layer from '../Scene/Layer';
+import gfxEngine from '../Renderer/c3DEngine';
+import Projection from '../Core/Geographic/Projection';
+import PanoramicProvider from '../Core/Commander/Providers/PanoramicProvider';
+import Ellipsoid from '../Core/Math/Ellipsoid';
+import GeoCoordinate, { UNIT } from '../Core/Geographic/GeoCoordinate';
 
 /**
  * Layer for MobileMapping data. Up to now it is used for panoramic imagery

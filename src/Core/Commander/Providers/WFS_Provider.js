@@ -5,9 +5,9 @@
  */
 
 
-import Provider from 'Core/Commander/Providers/Provider';
-import Fetcher from 'Core/Commander/Providers/Fetcher';
-import CacheRessource from 'Core/Commander/Providers/CacheRessource';
+import Provider from './Provider';
+import Fetcher from './Fetcher';
+import CacheRessource from './CacheRessource';
 
 /**
  * Return url wmts MNT

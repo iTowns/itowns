@@ -5,9 +5,9 @@
  */
 
 
-import NodeMesh from 'Renderer/NodeMesh';
-import StarGeometry from 'Renderer/ThreeExtended/StarGeometry';
 import * as THREE from 'three';
+import NodeMesh from '../Renderer/NodeMesh';
+import StarGeometry from '../Renderer/ThreeExtended/StarGeometry';
 
 
 const Star = function Star() {

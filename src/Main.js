@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-import ApiGlobe from 'Core/Commander/Interfaces/ApiInterface/ApiGlobe';
+import ApiGlobe from './Core/Commander/Interfaces/ApiInterface/ApiGlobe';
 // browser execution or not ?
 const scope = typeof window !== 'undefined' ? window : {};
 const itowns = scope.itowns || {

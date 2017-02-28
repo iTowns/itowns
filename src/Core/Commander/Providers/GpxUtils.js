@@ -5,10 +5,10 @@
  */
 
 import * as THREE from 'three';
-import Fetcher from 'Core/Commander/Providers/Fetcher';
-import GeoCoordinate, { UNIT } from 'Core/Geographic/GeoCoordinate';
-import ItownsLine from 'Core/Commander/Providers/ItownsLine';
-import ItownsPoint from 'Core/Commander/Providers/ItownsPoint';
+import Fetcher from './Fetcher';
+import GeoCoordinate, { UNIT } from '../../Geographic/GeoCoordinate';
+import ItownsLine from './ItownsLine';
+import ItownsPoint from './ItownsPoint';
 
 
 function _gpxToWayPointsArray(gpxXML) {

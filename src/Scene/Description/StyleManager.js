@@ -4,7 +4,7 @@
  * Description:
  */
 
-import { Style } from 'Scene/Description/Style';
+import { Style } from './Style';
 
 function StyleManager() {
     this.styles = [];
