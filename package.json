@@ -10,7 +10,7 @@
     "test": "npm run lint && npm run build && npm run doclint",
     "build": "webpack -p",
     "start": "cross-env NODE_ENV=development webpack-dev-server -d --inline --hot",
-    "prepublish": "npm run build && BABEL_DISABLE_CACHE=1 babel src --out-dir lib"
+    "prepublish": "npm run build && cross-env BABEL_DISABLE_CACHE=1 babel src --out-dir lib"
   },
   "files": [
     "*.md",
