@@ -15,6 +15,8 @@ import { C } from '../../../Geographic/Coordinates';
 import Projection from '../../../Geographic/Projection';
 import Fetcher from '../../Providers/Fetcher';
 import { STRATEGY_MIN_NETWORK_TRAFFIC } from '../../../../Scene/LayerUpdateStrategy';
+import ErrorFormater from '../../../../../utils/ErrorFormater';
+import ParameterError from '../../../../../utils/ParameterError';
 
 var sceneIsLoaded = false;
 var eventLoaded = new CustomEvent('globe-loaded');
@@ -28,6 +30,7 @@ var eventLayerChanged = new CustomEvent('layerchanged');
 var eventLayerChangedVisible = new CustomEvent('layerchanged:visible');
 var eventLayerChangedOpacity = new CustomEvent('layerchanged:opacity');
 var eventLayerChangedIndex = new CustomEvent('layerchanged:index');
+// FIXME a garder ?
 var eventError = new CustomEvent('error');
 
 var enableAnimation = false;
@@ -40,6 +43,8 @@ const defer = function defer() {
     });
     return deferedPromise;
 };
+
+var errorFormater = new ErrorFormater();
 
 function ApiGlobe() {
     // Constructor
@@ -57,6 +62,13 @@ ApiGlobe.prototype.constructor = ApiGlobe;
  * values for a layer.
  */
 function preprocessLayer(layer, provider) {
+    if (typeof layer === 'undefined') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_MISSING', 'layer'));
+    }
+    if (typeof provider === 'undefined') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_MISSING', 'provider'));
+    }
+
     if (!layer.updateStrategy) {
         layer.updateStrategy = {
             type: STRATEGY_MIN_NETWORK_TRAFFIC,
@@ -88,6 +100,10 @@ ApiGlobe.prototype.init = function init() {
  * Add the geometry layer to the scene.
  */
 ApiGlobe.prototype.addGeometryLayer = function addGeometryLayer(layer) {
+    if (typeof layer === 'undefined') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_MISSING', 'layer'));
+    }
+
     preprocessLayer(layer, this.scene.scheduler.getProtocolProvider(layer.protocol));
     const map = this.scene.getMap();
     map.layersConfiguration.addGeometryLayer(layer);
@@ -99,6 +115,10 @@ ApiGlobe.prototype.addGeometryLayer = function addGeometryLayer(layer) {
  * @param {Layer} layer.
  */
 ApiGlobe.prototype.addImageryLayer = function addImageryLayer(layer) {
+    if (typeof layer === 'undefined') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_MISSING', 'layer'));
+    }
+
     preprocessLayer(layer, this.scene.scheduler.getProtocolProvider(layer.protocol));
 
     var map = this.scene.getMap();
@@ -115,6 +135,16 @@ ApiGlobe.prototype.addImageryLayer = function addImageryLayer(layer) {
  */
 
 ApiGlobe.prototype.addImageryLayerFromJSON = function addImageryLayerFromJSON(url) {
+    if (typeof url === 'undefined') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_MISSING', 'url'));
+    }
+    if (typeof url !== 'string') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_TYPE', 'url'));
+    }
+    if (url === '') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_EMPTY', 'url'));
+    }
+
     return Fetcher.json(url).then((result) => {
         this.addImageryLayer(result);
     });
@@ -128,6 +158,13 @@ ApiGlobe.prototype.addImageryLayerFromJSON = function addImageryLayerFromJSON(ur
  */
 
 ApiGlobe.prototype.addImageryLayersFromJSONArray = function addImageryLayersFromJSONArray(urls) {
+    if (typeof urls === 'undefined') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_MISSING', 'urls'));
+    }
+    if (!Array.isArray(urls)) {
+        throw new ParameterError(errorFormater.getMessage('PARAM_TYPE', 'urls'));
+    }
+
     var proms = [];
 
     for (var i = 0; i < urls.length; i++) {
@@ -138,12 +175,32 @@ ApiGlobe.prototype.addImageryLayersFromJSONArray = function addImageryLayersFrom
 };
 
 ApiGlobe.prototype.moveLayerUp = function moveLayerUp(layerId) {
+    if (typeof layerId === 'undefined') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_MISSING', 'layerId'));
+    }
+    if (typeof layerId !== 'string') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_TYPE', 'layerId'));
+    }
+    if (layerId === '') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_EMPTY', 'layerId'));
+    }
+
     this.scene.getMap().layersConfiguration.moveLayerUp(layerId);
     this.scene.getMap().updateLayersOrdering();
     this.scene.renderScene3D();
 };
 
 ApiGlobe.prototype.moveLayerDown = function moveLayerDown(layerId) {
+    if (typeof layerId === 'undefined') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_MISSING', 'layerId'));
+    }
+    if (typeof layerId !== 'string') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_TYPE', 'layerId'));
+    }
+    if (layerId === '') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_EMPTY', 'layerId'));
+    }
+
     this.scene.getMap().layersConfiguration.moveLayerDown(layerId);
     this.scene.getMap().updateLayersOrdering();
     this.scene.renderScene3D();
@@ -156,6 +213,27 @@ ApiGlobe.prototype.moveLayerDown = function moveLayerDown(layerId) {
  * @param      {number}  newIndex   The new index
  */
 ApiGlobe.prototype.moveLayerToIndex = function moveLayerToIndex(layerId, newIndex) {
+    if (typeof layerId === 'undefined') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_MISSING', 'layerId'));
+    }
+    if (typeof layerId !== 'string') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_TYPE', 'layerId'));
+    }
+    if (layerId === '') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_EMPTY', 'layerId'));
+    }
+    if (typeof newIndex === 'undefined') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_MISSING', 'newIndex'));
+    }
+    if (typeof newIndex !== 'number') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_TYPE', 'newIndex'));
+    }
+
+    // FIXME a verifier
+    if (newIndex < 0 || newIndex > this.getImageryLayers().length - 1) {
+        throw new ParameterError(errorFormater.getMessage('PARAM_NOT_SUPPORT', 'newIndex'));
+    }
+
     this.scene.getMap().layersConfiguration.moveLayerToIndex(layerId, newIndex);
     this.scene.getMap().updateLayersOrdering();
     this.scene.renderScene3D();
@@ -171,6 +249,16 @@ ApiGlobe.prototype.moveLayerToIndex = function moveLayerToIndex(layerId, newInde
  * @return     {boolean}  { description_of_the_return_value }
  */
 ApiGlobe.prototype.removeImageryLayer = function removeImageryLayer(id) {
+    if (typeof id === 'undefined') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_MISSING', 'id'));
+    }
+    if (typeof id !== 'string') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_TYPE', 'id'));
+    }
+    if (!this.layersState[id]) {
+        throw new ParameterError(errorFormater.getMessage('PARAM_UNKNOWN', 'id'));
+    }
+
     if (this.scene.getMap().layersConfiguration.removeColorLayer(id)) {
         this.scene.getMap().removeColorLayer(id);
         this.scene.renderScene3D();
@@ -193,6 +281,10 @@ ApiGlobe.prototype.removeImageryLayer = function removeImageryLayer(id) {
  */
 
 ApiGlobe.prototype.addElevationLayer = function addElevationLayer(layer) {
+    if (typeof layer === 'undefined') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_MISSING', 'layer'));
+    }
+
     preprocessLayer(layer, this.scene.scheduler.getProtocolProvider(layer.protocol));
 
     var map = this.scene.getMap();
@@ -213,6 +305,16 @@ ApiGlobe.prototype.addElevationLayer = function addElevationLayer(layer) {
  */
 
 ApiGlobe.prototype.addElevationLayersFromJSON = function addElevationLayersFromJSON(url) {
+    if (typeof url === 'undefined') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_MISSING', 'url'));
+    }
+    if (typeof url !== 'string') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_TYPE', 'url'));
+    }
+    if (url === '') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_EMPTY', 'url'));
+    }
+
     return Fetcher.json(url).then((result) => {
         this.addElevationLayer(result);
     });
@@ -231,6 +333,13 @@ ApiGlobe.prototype.addElevationLayersFromJSON = function addElevationLayersFromJ
  */
 
 ApiGlobe.prototype.addElevationLayersFromJSONArray = function addElevationLayersFromJSONArray(urls) {
+    if (typeof urls === 'undefined') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_MISSING', 'urls'));
+    }
+    if (!Array.isArray(urls)) {
+        throw new ParameterError(errorFormater.getMessage('PARAM_TYPE', 'urls'));
+    }
+
     var proms = [];
 
     for (var i = 0; i < urls.length; i++) {
@@ -248,6 +357,18 @@ ApiGlobe.prototype.addElevationLayersFromJSONArray = function addElevationLayers
  * @return     {number}  The min of the level.
  */
 ApiGlobe.prototype.getMinZoomLevel = function getMinZoomLevel(index) {
+    if (typeof index === 'undefined') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_MISSING', 'index'));
+    }
+    if (typeof index !== 'number') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_TYPE', 'index'));
+    }
+
+    // FIXME a verifier
+    if (index < 0 || index > this.getImageryLayers().length - 1) {
+        throw new ParameterError(errorFormater.getMessage('PARAM_NOT_SUPPORT', 'index'));
+    }
+
     var layer = this.getImageryLayers()[index];
     if (layer && layer.zoom) {
         return layer.zoom.min;
@@ -271,6 +392,18 @@ ApiGlobe.prototype.getMinZoomLevel = function getMinZoomLevel(index) {
  * @return     {number}  The max of the level.
  */
 ApiGlobe.prototype.getMaxZoomLevel = function getMaxZoomLevel(index) {
+    if (typeof index === 'undefined') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_MISSING', 'index'));
+    }
+    if (typeof index !== 'number') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_TYPE', 'index'));
+    }
+
+    // FIXME a verifier
+    if (index < 0 || index > this.getImageryLayers().length - 1) {
+        throw new ParameterError(errorFormater.getMessage('PARAM_NOT_SUPPORT', 'index'));
+    }
+
     var layer = this.getImageryLayers()[index];
     if (layer && layer.zoom) {
         return layer.zoom.max;
@@ -306,6 +439,21 @@ ApiGlobe.prototype.getImageryLayers = function getImageryLayers() {
  */
 
 ApiGlobe.prototype.createSceneGlobe = function createSceneGlobe(coordCarto, viewerDiv) {
+    if (typeof coordCarto === 'undefined' ||
+        !Object.prototype.hasOwnProperty.call(coordCarto, 'longitude') ||
+        !Object.prototype.hasOwnProperty.call(coordCarto, 'latitude') ||
+        !Object.prototype.hasOwnProperty.call(coordCarto, 'altitude')) {
+        throw new ParameterError(errorFormater.getMessage('PARAM_MISSING', 'coordCarto'));
+    }
+    if (typeof coordCarto.longitude !== 'number' ||
+        typeof coordCarto.latitude !== 'number' ||
+        typeof coordCarto.altitude !== 'number') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_TYPE', 'coordCarto'));
+    }
+    if (typeof viewerDiv === 'undefined') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_MISSING', 'viewerDiv'));
+    }
+
     // TODO: Normalement la creation de scene ne doit pas etre ici....
     // Deplacer plus tard
 
@@ -318,6 +466,7 @@ ApiGlobe.prototype.createSceneGlobe = function createSceneGlobe(coordCarto, view
             this.scene.updateScene3D();
             viewerDiv.dispatchEvent(eventLoaded);
         } else {
+            // FIXME a garder ?
             viewerDiv.dispatchEvent(eventError);
         }
     }, false);
@@ -357,6 +506,13 @@ ApiGlobe.prototype.update = function update() {
 };
 
 ApiGlobe.prototype.setRealisticLightingOn = function setRealisticLightingOn(value) {
+    if (typeof value === 'undefined') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_MISSING', 'value'));
+    }
+    if (typeof value !== 'boolean') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_TYPE', 'value'));
+    }
+
     this.scene.setLightingPos();
     this.scene.getMap().setRealisticLightingOn(value);
     const lightingLayers = this.scene.getMap().layersConfiguration.lightingLayers[0];
@@ -374,6 +530,22 @@ ApiGlobe.prototype.setRealisticLightingOn = function setRealisticLightingOn(valu
  */
 
 ApiGlobe.prototype.setLayerVisibility = function setLayerVisibility(id, visible) {
+    if (typeof id === 'undefined') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_MISSING', 'id'));
+    }
+    if (typeof id !== 'string') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_TYPE', 'id'));
+    }
+    if (!this.layersState[id]) {
+        throw new ParameterError(errorFormater.getMessage('PARAM_UNKNOWN', 'id'));
+    }
+    if (typeof visible === 'undefined') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_MISSING', 'visible'));
+    }
+    if (typeof visible !== 'boolean') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_TYPE', 'visible'));
+    }
+
     this.scene.getMap().setLayerVisibility(id, visible);
     this.update();
     eventLayerChangedVisible.layerId = id;
@@ -385,10 +557,30 @@ ApiGlobe.prototype.setLayerVisibility = function setLayerVisibility(id, visible)
  * Sets the opacity of a layer. If the layer is not visible in the scene, this function will no effect until the layer becomes visible.
  * @constructor
  * @param {id} string.
- * @params {visible} boolean.
+ * @params {opacity} number.
  */
 
 ApiGlobe.prototype.setLayerOpacity = function setLayerOpacity(id, opacity) {
+    if (typeof id === 'undefined') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_MISSING', 'id'));
+    }
+    if (typeof id !== 'string') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_TYPE', 'id'));
+    }
+    if (!this.layersState[id]) {
+        throw new ParameterError(errorFormater.getMessage('PARAM_UNKNOWN', 'id'));
+    }
+    if (typeof opacity === 'undefined') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_MISSING', 'opacity'));
+    }
+    if (typeof opacity !== 'number') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_TYPE', 'opacity'));
+    }
+    // FIXME a verifier
+    if (opacity < 0 || opacity > 1) {
+        throw new ParameterError(errorFormater.getMessage('PARAM_NOT_SUPPORT', 'opacity'));
+    }
+
     this.scene.getMap().setLayerOpacity(id, opacity);
     this.scene.renderScene3D();
     eventLayerChangedOpacity.layerId = id;
@@ -440,6 +632,22 @@ ApiGlobe.prototype.getCenter = function getCenter() {
  * @return     {Promise}   { description_of_the_return_value }
  */
 ApiGlobe.prototype.setCameraOrientation = function setCameraOrientation(orientation, isAnimated) {
+    if (typeof orientation === 'undefined' ||
+        !Object.prototype.hasOwnProperty.call(orientation, 'heading') ||
+        !Object.prototype.hasOwnProperty.call(orientation, 'tilt')) {
+        throw new ParameterError(errorFormater.getMessage('PARAM_MISSING', 'orientation'));
+    }
+    if (typeof orientation.heading !== 'number' || typeof orientation.tilt !== 'number') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_TYPE', 'orientation'));
+    }
+    // FIXME valeur par defaut de isAnimated ??
+    if (typeof isAnimated === 'undefined') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_MISSING', 'isAnimated'));
+    }
+    if (typeof isAnimated !== 'boolean') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_TYPE', 'isAnimated'));
+    }
+
     return this.scene.currentControls().setOrbitalPosition(undefined, orientation.heading, orientation.tilt, isAnimated).then(() => {
         this.viewerDiv.dispatchEvent(eventOrientation);
     });
@@ -453,6 +661,21 @@ ApiGlobe.prototype.setCameraOrientation = function setCameraOrientation(orientat
  * @return {Position} position
  */
 ApiGlobe.prototype.pickPosition = function pickPosition(mouse, y) {
+    if (typeof mouse === 'undefined') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_MISSING', 'x|mouse'));
+    }
+    if (typeof mouse !== 'object' && typeof mouse !== 'number') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_TYPE', 'x|mouse'));
+    }
+    if (typeof mouse === 'number') {
+        if (typeof y === 'undefined') {
+            throw new ParameterError(errorFormater.getMessage('PARAM_MISSING', 'y'));
+        }
+        if (typeof y !== 'number') {
+            throw new ParameterError(errorFormater.getMessage('PARAM_TYPE', 'y'));
+        }
+    }
+
     var screenCoords = {
         x: mouse.clientX || mouse,
         y: mouse.clientY || y,
@@ -522,6 +745,13 @@ ApiGlobe.prototype.getRangeFromEllipsoid = function getRangeFromEllipsoid() {
  * @param      {boolean}  enable  The enable
  */
 ApiGlobe.prototype.setAnimationEnabled = function setAnimationEnabled(enable) {
+    if (typeof enable === 'undefined') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_MISSING', 'enable'));
+    }
+    if (typeof enable !== 'boolean') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_TYPE', 'enable'));
+    }
+
     enableAnimation = enable;
 };
 
@@ -543,6 +773,16 @@ ApiGlobe.prototype.isAnimationEnabled = function isAnimationEnabled() {
  * @return     {Promise}
  */
 ApiGlobe.prototype.setTilt = function setTilt(tilt, isAnimated) {
+    if (typeof tilt === 'undefined') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_MISSING', 'tilt'));
+    }
+    if (typeof tilt !== 'number') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_TYPE', 'tilt'));
+    }
+    if (typeof isAnimated !== 'undefined' && typeof isAnimated !== 'boolean') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_TYPE', 'isAnimated'));
+    }
+
     isAnimated = isAnimated || this.isAnimationEnabled();
     eventOrientation.oldTilt = this.getTilt();
     return this.scene.currentControls().setTilt(tilt, isAnimated).then(() => {
@@ -560,6 +800,16 @@ ApiGlobe.prototype.setTilt = function setTilt(tilt, isAnimated) {
  * @return     {Promise}
  */
 ApiGlobe.prototype.setHeading = function setHeading(heading, isAnimated) {
+    if (typeof heading === 'undefined') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_MISSING', 'heading'));
+    }
+    if (typeof heading !== 'number') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_TYPE', 'heading'));
+    }
+    if (typeof isAnimated !== 'undefined' && typeof isAnimated !== 'boolean') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_TYPE', 'isAnimated'));
+    }
+
     isAnimated = isAnimated || this.isAnimationEnabled();
     eventOrientation.oldHeading = this.getHeading();
     return this.scene.currentControls().setHeading(heading, isAnimated).then(() => {
@@ -575,6 +825,10 @@ ApiGlobe.prototype.setHeading = function setHeading(heading, isAnimated) {
  * @return     {Promise}
  */
 ApiGlobe.prototype.resetTilt = function resetTilt(isAnimated) {
+    if (typeof isAnimated !== 'undefined' && typeof isAnimated !== 'boolean') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_TYPE', 'isAnimated'));
+    }
+
     isAnimated = isAnimated || this.isAnimationEnabled();
     return this.scene.currentControls().setTilt(0, isAnimated);
 };
@@ -586,6 +840,10 @@ ApiGlobe.prototype.resetTilt = function resetTilt(isAnimated) {
  * @return     {Promise}
  */
 ApiGlobe.prototype.resetHeading = function resetHeading(isAnimated) {
+    if (typeof isAnimated !== 'undefined' && typeof isAnimated !== 'boolean') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_TYPE', 'isAnimated'));
+    }
+
     isAnimated = isAnimated || this.isAnimationEnabled();
     return this.scene.currentControls().setHeading(0, isAnimated);
 };
@@ -613,6 +871,18 @@ ApiGlobe.prototype.setSceneLoaded = function setSceneLoaded() {
  * @return     {Promise}
  */
 ApiGlobe.prototype.setCenter = function setCenter(coordinates, isAnimated) {
+    if (typeof coordinates === 'undefined' ||
+        !Object.prototype.hasOwnProperty.call(coordinates, 'longitude') ||
+        !Object.prototype.hasOwnProperty.call(coordinates, 'latitude')) {
+        throw new ParameterError(errorFormater.getMessage('PARAM_MISSING', 'coordinates'));
+    }
+    if (typeof coordinates.longitude !== 'number' || typeof coordinates.latitude !== 'number') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_TYPE', 'coordinates'));
+    }
+    if (typeof isAnimated !== 'undefined' && typeof isAnimated !== 'boolean') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_TYPE', 'isAnimated'));
+    }
+
     isAnimated = isAnimated || this.isAnimationEnabled();
     eventCenter.oldCenter = this.getCenter();
     const position3D = new C.EPSG_4326(coordinates.longitude, coordinates.latitude, 0)
@@ -639,6 +909,23 @@ ApiGlobe.prototype.setCenter = function setCenter(coordinates, isAnimated) {
  * @return     {Promise}
  */
 ApiGlobe.prototype.setCenterAdvanced = function setCenterAdvanced(pPosition, isAnimated) {
+    if (typeof pPosition === 'undefined' ||
+        !Object.prototype.hasOwnProperty.call(pPosition, 'heading') ||
+        !Object.prototype.hasOwnProperty.call(pPosition, 'tilt') ||
+        !Object.prototype.hasOwnProperty.call(pPosition, 'longitude') ||
+        !Object.prototype.hasOwnProperty.call(pPosition, 'latitude')) {
+        throw new ParameterError(errorFormater.getMessage('PARAM_MISSING', 'pPosition'));
+    }
+    if (typeof pPosition.heading !== 'number' ||
+        typeof pPosition.tilt !== 'number' ||
+        typeof pPosition.longitude !== 'number' ||
+        typeof pPosition.latitude !== 'number') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_TYPE', 'pPosition'));
+    }
+    if (typeof isAnimated !== 'undefined' && typeof isAnimated !== 'boolean') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_TYPE', 'isAnimated'));
+    }
+
     isAnimated = isAnimated || this.isAnimationEnabled();
     return this.setCenter(pPosition, isAnimated).then(() => {
         const p = this.scene.currentControls().setOrbitalPosition(undefined, pPosition.heading, pPosition.tilt, isAnimated);
@@ -655,6 +942,16 @@ ApiGlobe.prototype.setCenterAdvanced = function setCenterAdvanced(pPosition, isA
  * @return     {Promise}
  */
 ApiGlobe.prototype.setRange = function setRange(pRange, isAnimated) {
+    if (typeof pRange === 'undefined') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_MISSING', 'pRange'));
+    }
+    if (typeof pRange !== 'number') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_TYPE', 'pRange'));
+    }
+    if (typeof isAnimated !== 'undefined' && typeof isAnimated !== 'boolean') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_TYPE', 'isAnimated'));
+    }
+
     isAnimated = isAnimated || this.isAnimationEnabled();
     eventRange.oldRange = this.getRange();
 
@@ -674,6 +971,16 @@ ApiGlobe.prototype.setRange = function setRange(pRange, isAnimated) {
  * @param      {vector}  pVector  The vector
  */
 ApiGlobe.prototype.pan = function pan(pVector) {
+    if (typeof pVector === 'undefined' ||
+        !Object.prototype.hasOwnProperty.call(pVector, 'x') ||
+        !Object.prototype.hasOwnProperty.call(pVector, 'y')) {
+        throw new ParameterError(errorFormater.getMessage('PARAM_MISSING', 'pVector'));
+    }
+    if (typeof pVector.x !== 'number' ||
+        typeof pVector.y !== 'number') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_TYPE', 'pVector'));
+    }
+
     this.scene.currentControls().pan(pVector.x, pVector.y);
     this.scene.notifyChange(1);
     this.setSceneLoaded().then(() => {
@@ -701,6 +1008,16 @@ ApiGlobe.prototype.getZoomLevel = function getZoomLevel() {
  * @return     {Promise}
  */
 ApiGlobe.prototype.setZoomLevel = function setZoomLevel(zoom, isAnimated) {
+    if (typeof zoom === 'undefined') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_MISSING', 'zoom'));
+    }
+    if (typeof zoom !== 'number') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_TYPE', 'zoom'));
+    }
+    if (typeof isAnimated !== 'undefined' && typeof isAnimated !== 'boolean') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_TYPE', 'isAnimated'));
+    }
+
     zoom = Math.max(this.getMinZoomLevel(), zoom);
     zoom = Math.min(this.getMaxZoomLevel(), zoom);
     const distance = this.scene.getMap().computeDistanceForZoomLevel(zoom, this.scene.currentCamera());
@@ -715,6 +1032,13 @@ ApiGlobe.prototype.setZoomLevel = function setZoomLevel(zoom, isAnimated) {
  * @return     {number}  The zoom scale.
  */
 ApiGlobe.prototype.getZoomScale = function getZoomScale(pitch) {
+    if (typeof pitch === 'undefined') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_MISSING', 'pitch'));
+    }
+    if (typeof pitch !== 'number') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_TYPE', 'pitch'));
+    }
+
     // TODO: Why error div size height in Chrome?
     // Screen pitch, in millimeters
     pitch = (pitch || 0.28) / 1000;
@@ -772,6 +1096,22 @@ ApiGlobe.prototype.getZoomScale = function getZoomScale(pitch) {
  * @return     {Promise}
  */
 ApiGlobe.prototype.setZoomScale = function setZoomScale(zoomScale, pitch, isAnimated) {
+    if (typeof zoomScale === 'undefined') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_MISSING', 'zoomScale'));
+    }
+    if (typeof zoomScale !== 'number') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_TYPE', 'zoomScale'));
+    }
+    if (typeof pitch === 'undefined') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_MISSING', 'pitch'));
+    }
+    if (typeof pitch !== 'number') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_TYPE', 'pitch'));
+    }
+    if (typeof isAnimated !== 'undefined' && typeof isAnimated !== 'boolean') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_TYPE', 'isAnimated'));
+    }
+
     // Screen pitch, in millimeters
     pitch = (pitch || 0.28) / 1000;
 
@@ -825,6 +1165,22 @@ ApiGlobe.prototype.setZoomScale = function setZoomScale(zoomScale, pitch, isAnim
  */
 
 ApiGlobe.prototype.addEventListener = function addEventListenerProto(eventname, callback) {
+    if (typeof eventname === 'undefined') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_MISSING', 'eventname'));
+    }
+    if (typeof eventname !== 'string') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_TYPE', 'eventname'));
+    }
+    if (eventname === '') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_EMPTY', 'eventname'));
+    }
+    if (typeof callback === 'undefined') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_MISSING', 'callback'));
+    }
+    if (typeof callback !== 'function') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_TYPE', 'callback'));
+    }
+
     if (eventname == 'layerchanged') {
         this.viewerDiv.addEventListener('layerchanged', callback, false);
         this.addEventListenerLayerChanged();
@@ -851,6 +1207,22 @@ ApiGlobe.prototype.callbackLayerChanged = function callbackLayerChanged() {
  */
 
 ApiGlobe.prototype.removeEventListener = function removeEventListenerProto(eventname, callback) {
+    if (typeof eventname === 'undefined') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_MISSING', 'eventname'));
+    }
+    if (typeof eventname !== 'string') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_TYPE', 'eventname'));
+    }
+    if (eventname === '') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_EMPTY', 'eventname'));
+    }
+    if (typeof callback === 'undefined') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_MISSING', 'callback'));
+    }
+    if (typeof callback !== 'function') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_TYPE', 'callback'));
+    }
+
     if (eventname == 'layerchanged') {
         this.viewerDiv.removeEventListener('layerchanged', callback, false);
         this.removeEventListenerLayerChanged();
@@ -911,6 +1283,16 @@ ApiGlobe.prototype.getLayerById = function getLayerById(pId) {
 };
 
 ApiGlobe.prototype.loadGPX = function loadGPX(url) {
+    if (typeof url === 'undefined') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_MISSING', 'url'));
+    }
+    if (typeof url !== 'string') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_TYPE', 'url'));
+    }
+    if (url === '') {
+        throw new ParameterError(errorFormater.getMessage('PARAM_EMPTY', 'url'));
+    }
+
     loadGpx(url).then((gpx) => {
         if (gpx) {
             this.scene.getMap().gpxTracks.children[0].add(gpx);
