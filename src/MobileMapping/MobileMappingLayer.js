@@ -9,8 +9,7 @@ import Layer from '../Scene/Layer';
 import gfxEngine from '../Renderer/c3DEngine';
 import Projection from '../Core/Geographic/Projection';
 import PanoramicProvider from '../Core/Commander/Providers/PanoramicProvider';
-import Ellipsoid from '../Core/Math/Ellipsoid';
-import GeoCoordinate, { UNIT } from '../Core/Geographic/GeoCoordinate';
+import Coordinates from '../Core/Geographic/Coordinates';
 
 /**
  * Layer for MobileMapping data. Up to now it is used for panoramic imagery
@@ -56,9 +55,8 @@ MobileMappingLayer.prototype.initiatePanoramic = function initiatePanoramic(imag
 
         // Move camera to panoramic center
         var panoInfo = this.panoramicProvider.panoInfo;
-        var ellipsoid = new Ellipsoid(new THREE.Vector3(6378137, 6356752.3142451793, 6378137)); // Should be computed elsewhere
-        var posPanoWGS84 = new GeoCoordinate(panoInfo.longitude, panoInfo.latitude, panoInfo.altitude, UNIT.DEGREE);
-        var posPanoCartesian = ellipsoid.cartographicToCartesian(posPanoWGS84);
+        var posPanoWGS84 = new Coordinates('EPSG:4326', panoInfo.longitude, panoInfo.latitude, panoInfo.altitude);
+        var posPanoCartesian = posPanoWGS84.as('EPSG:4978').xyz();
 
         this.moveCameraToScanPosition(posPanoCartesian);
     });
@@ -76,9 +74,8 @@ MobileMappingLayer.prototype.updateData = function updateData() {
     this.panoramicProvider.updateMaterialImages(lonDeg, latDeg, 1000).then((panoInfo) => {
         // Move camera to new pos
         //   var panoInfo = panoInfo; //this.panoramicProvider.panoInfo;
-        var ellipsoid = new Ellipsoid(new THREE.Vector3(6378137, 6356752.3142451793, 6378137)); // Should be computed elsewhere
-        var posPanoWGS84 = new GeoCoordinate(panoInfo.longitude, panoInfo.latitude, panoInfo.altitude, UNIT.DEGREE);
-        var posPanoCartesian = ellipsoid.cartographicToCartesian(posPanoWGS84);
+        var posPanoWGS84 = new Coordinates('EPSG:4326', panoInfo.longitude, panoInfo.latitude, panoInfo.altitude);
+        var posPanoCartesian = posPanoWGS84.as('EPSG:4978').xyz();
 
         this.moveCameraToScanPosition(posPanoCartesian);
     });

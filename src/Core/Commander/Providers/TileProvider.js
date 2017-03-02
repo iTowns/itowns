@@ -18,11 +18,11 @@ import Projection from '../../Geographic/Projection';
 import BuilderEllipsoidTile from '../../../Globe/BuilderEllipsoidTile';
 import TileGeometry from '../../../Globe/TileGeometry';
 
-function TileProvider(ellipsoid) {
+function TileProvider() {
     Provider.call(this, null);
 
     this.projection = new Projection();
-    this.builder = new BuilderEllipsoidTile(ellipsoid, this.projection);
+    this.builder = new BuilderEllipsoidTile(this.projection);
 
     this.nNode = 0;
 }

@@ -17,8 +17,7 @@ import * as THREE from 'three';
 import Earcut from 'earcut';
 import Provider from './Provider';
 import WFS_Provider from './WFS_Provider';
-import Ellipsoid from '../../Math/Ellipsoid';
-import GeoCoordinate, { UNIT } from '../../Geographic/GeoCoordinate';
+import Coordinates, { C } from '../../Geographic/Coordinates';
 
 function BuildingBox_Provider(options) {
     // Constructor
@@ -74,7 +73,6 @@ BuildingBox_Provider.prototype.generateMesh = function generateMesh(elements, bb
     var _geometry = new THREE.Geometry(); // for the walls
     var geometry = new THREE.Geometry(); // for the roof
     var suppHeight = 10; // So we don't cut the roof
-    var ellipsoid = new Ellipsoid(new THREE.Vector3(6378137, 6356752.3142451793, 6378137));
     var features = elements.features;
     var altitude_ground = altitude - 1.5; // 35;  // truck height
 
@@ -90,10 +88,10 @@ BuildingBox_Provider.prototype.generateMesh = function generateMesh(elements, bb
                 const pt2DTab = polygon[j]; // .split(' ');
                 const p1 = new THREE.Vector3(parseFloat(pt2DTab[0]), 0, parseFloat(pt2DTab[1]));
 
-                const coordCarto1 = new GeoCoordinate(p1.x, p1.z, z_min, UNIT.DEGREE);
-                const coordCarto2 = new GeoCoordinate(p1.x, p1.z, z_min + hauteur, UNIT.DEGREE); // + Math.random(1000) );
-                const pgeo1 = ellipsoid.cartographicToCartesian(coordCarto1); // {longitude:p1.z, latitude:p1.x, altitude: 0});
-                const pgeo2 = ellipsoid.cartographicToCartesian(coordCarto2);
+                const coordCarto1 = new Coordinates('EPSG:4326', p1.x, p1.z, z_min);
+                const coordCarto2 = new Coordinates('EPSG:4326', p1.x, p1.z, z_min + hauteur); // + Math.random(1000) );
+                const pgeo1 = coordCarto1.as('EPSG:4978').xyz();
+                const pgeo2 = coordCarto2.as('EPSG:4978').xyz();
 
                 const vector3_1 = new THREE.Vector3(pgeo1.x, pgeo1.y, pgeo1.z); // - x temporary, bug
                 const vector3_2 = new THREE.Vector3(pgeo2.x, pgeo2.y, pgeo2.z);
@@ -126,17 +124,13 @@ BuildingBox_Provider.prototype.generateMesh = function generateMesh(elements, bb
             const pt1 = new THREE.Vector2(arrPoint2D[triangles[w] * 2], arrPoint2D[triangles[w] * 2 + 1]);
             const pt2 = new THREE.Vector2(arrPoint2D[triangles[w + 1] * 2], arrPoint2D[triangles[w + 1] * 2 + 1]);
             const pt3 = new THREE.Vector2(arrPoint2D[triangles[w + 2] * 2], arrPoint2D[triangles[w + 2] * 2 + 1]);
-            const c1 = new GeoCoordinate(pt1.x, pt1.y, z_min + hauteur, UNIT.DEGREE);
-            const c2 = new GeoCoordinate(pt2.x, pt2.y, z_min + hauteur, UNIT.DEGREE);
-            const c3 = new GeoCoordinate(pt3.x, pt3.y, z_min + hauteur, UNIT.DEGREE);
+            const c1 = new C.EPSG_4326(pt1.x, pt1.y, z_min + hauteur);
+            const c2 = new C.EPSG_4326(pt2.x, pt2.y, z_min + hauteur);
+            const c3 = new C.EPSG_4326(pt3.x, pt3.y, z_min + hauteur);
 
-            const pc1 = this.ellipsoid.cartographicToCartesian(c1); // {longitude:p1.z, latitude:p1.x, altitude: 0});
-            const pc2 = this.ellipsoid.cartographicToCartesian(c2);
-            const pc3 = this.ellipsoid.cartographicToCartesian(c3);
-
-            roofGeometry.vertices.push(new THREE.Vector3(pc1.x, pc1.y, pc1.z));
-            roofGeometry.vertices.push(new THREE.Vector3(pc2.x, pc2.y, pc2.z));
-            roofGeometry.vertices.push(new THREE.Vector3(pc3.x, pc3.y, pc3.z));
+            roofGeometry.vertices.push(c1.as('EPSG:4978').xyz());
+            roofGeometry.vertices.push(c2.as('EPSG:4978').xyz());
+            roofGeometry.vertices.push(c3.as('EPSG:4978').xyz());
 
             var face = new THREE.Face3(geometry.vertices.length - 3,
                                      geometry.vertices.length - 2,
@@ -146,7 +140,7 @@ BuildingBox_Provider.prototype.generateMesh = function generateMesh(elements, bb
     }
 
     if (this.roadOn) {
-        this.addRoad(_geometry, bbox, altitude_ground, ellipsoid);
+        this.addRoad(_geometry, bbox, altitude_ground);
     }
 
     _geometry.computeFaceNormals(); // WARNING : VERY IMPORTANT WHILE WORKING WITH RAY CASTING ON CUSTOM MESH
@@ -183,7 +177,7 @@ BuildingBox_Provider.prototype.generateMesh = function generateMesh(elements, bb
 };
 
 
-BuildingBox_Provider.prototype.addRoad = function addRoad(geometry, bbox, altitude_road, ellipsoid) {
+BuildingBox_Provider.prototype.addRoad = function addRoad(geometry, bbox, altitude_road) {
     // Version using SIMPLE PLANE ROAD for Click and Go
     var ratio = 0.2;
     var roadWidth = (bbox.east() - bbox.west()) * ratio;
@@ -191,15 +185,15 @@ BuildingBox_Provider.prototype.addRoad = function addRoad(geometry, bbox, altitu
     var pos = new THREE.Vector3((bbox.south() + bbox.north()) / 2,
         altitude_road, (bbox.west() + bbox.east()) / 2); // 48.8505774,  altitude_sol, 2.3348124);
 
-    var coordCarto1 = new GeoCoordinate(pos.x - roadWidth, pos.z - roadHeight, altitude_road, UNIT.DEGREE);
-    var coordCarto2 = new GeoCoordinate(pos.x - roadWidth, pos.z + roadHeight, altitude_road, UNIT.DEGREE);
-    var coordCarto3 = new GeoCoordinate(pos.x + roadWidth, pos.z + roadHeight, altitude_road, UNIT.DEGREE);
-    var coordCarto4 = new GeoCoordinate(pos.x + roadWidth, pos.z - roadHeight, altitude_road, UNIT.DEGREE);
+    var coordCarto1 = new Coordinates('EPSG:4326', pos.x - roadWidth, pos.z - roadHeight, altitude_road);
+    var coordCarto2 = new Coordinates('EPSG:4326', pos.x - roadWidth, pos.z + roadHeight, altitude_road);
+    var coordCarto3 = new Coordinates('EPSG:4326', pos.x + roadWidth, pos.z + roadHeight, altitude_road);
+    var coordCarto4 = new Coordinates('EPSG:4326', pos.x + roadWidth, pos.z - roadHeight, altitude_road);
 
-    var pgeo1 = ellipsoid.cartographicToCartesian(coordCarto1);
-    var pgeo2 = ellipsoid.cartographicToCartesian(coordCarto2);
-    var pgeo3 = ellipsoid.cartographicToCartesian(coordCarto3);
-    var pgeo4 = ellipsoid.cartographicToCartesian(coordCarto4);
+    var pgeo1 = coordCarto1.as('EPSG:4978').xyz();
+    var pgeo2 = coordCarto2.as('EPSG:4978').xyz();
+    var pgeo3 = coordCarto3.as('EPSG:4978').xyz();
+    var pgeo4 = coordCarto4.as('EPSG:4978').xyz();
 
     geometry.vertices.push(new THREE.Vector3(pgeo1.x, pgeo1.y, pgeo1.z));
     geometry.vertices.push(new THREE.Vector3(pgeo2.x, pgeo2.y, pgeo2.z));

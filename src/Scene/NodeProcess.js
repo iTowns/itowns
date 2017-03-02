@@ -10,16 +10,17 @@ import { chooseNextLevelToFetch } from './LayerUpdateStrategy';
 import { l_ELEVATION, l_COLOR } from '../Renderer/LayeredMaterial';
 import LayerUpdateState from './LayerUpdateState';
 import { CancelledCommandException } from '../Core/Commander/Scheduler';
+import { ellipsoidSizes } from '../Core/Geographic/Coordinates';
 
 export const SSE_SUBDIVISION_THRESHOLD = 6.0;
 
-function NodeProcess(scene, camera, ellipsoid) {
+function NodeProcess(scene) {
     // TODO: consider removing this.scene + replacing scene.notifyChange by an event
     this.scene = scene;
 
     this.vhMagnitudeSquared = 1.0;
 
-    this.r = ellipsoid.size || new THREE.Vector3();
+    this.r = ellipsoidSizes();
     this.cV = new THREE.Vector3();
 }
 
