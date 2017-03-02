@@ -11,8 +11,7 @@ import WMTS_Provider from '../../Providers/WMTS_Provider';
 import WMS_Provider from '../../Providers/WMS_Provider';
 import TileProvider from '../../Providers/TileProvider';
 import loadGpx from '../../Providers/GpxUtils';
-import GeoCoordinate, { UNIT } from '../../../Geographic/GeoCoordinate';
-import Ellipsoid from '../../../Math/Ellipsoid';
+import { C } from '../../../Geographic/Coordinates';
 import Projection from '../../../Geographic/Projection';
 import Fetcher from '../../Providers/Fetcher';
 import { STRATEGY_MIN_NETWORK_TRAFFIC } from '../../../../Scene/LayerUpdateStrategy';
@@ -353,17 +352,11 @@ ApiGlobe.prototype.createSceneGlobe = function createSceneGlobe(coordCarto, view
     var gLDebug = false; // true to support GLInspector addon
     var debugMode = false;
 
-    var ellipsoid = new Ellipsoid({
-        x: 6378137,
-        y: 6356752.3142451793,
-        z: 6378137,
-    });
+    var coordinate = new C.EPSG_4326(coordCarto.longitude, coordCarto.latitude, coordCarto.altitude);
 
-    var coordinate = new GeoCoordinate().copy(coordCarto, UNIT.DEGREE);
+    this.scene = Scene(coordinate, viewerDiv, debugMode, gLDebug);
 
-    this.scene = Scene(coordinate, ellipsoid, viewerDiv, debugMode, gLDebug);
-
-    var map = new Globe(ellipsoid, gLDebug);
+    var map = new Globe(gLDebug);
 
     this.scene.add(map);
 
@@ -374,7 +367,7 @@ ApiGlobe.prototype.createSceneGlobe = function createSceneGlobe(coordCarto, view
 
     this.scene.scheduler.addProtocolProvider('wmts', wmtsProvider);
     this.scene.scheduler.addProtocolProvider('wmtsc', wmtsProvider);
-    this.scene.scheduler.addProtocolProvider('tile', new TileProvider(ellipsoid));
+    this.scene.scheduler.addProtocolProvider('tile', new TileProvider());
     this.scene.scheduler.addProtocolProvider('wms', new WMS_Provider({ support: map.gLDebug }));
 
     this.sceneLoadedDeferred = defer();
@@ -649,7 +642,9 @@ ApiGlobe.prototype.resetHeading = function resetHeading(isAnimated) {
  */
 
 ApiGlobe.prototype.computeDistance = function computeDistance(p1, p2) {
-    return this.scene.getEllipsoid().computeDistance(new GeoCoordinate().copy(p1), new GeoCoordinate().copy(p2));
+    return this.scene.getEllipsoid().computeDistance(
+        new C.EPSG_4326(p1.lon, p1.lat, p1.alt),
+        new C.EPSG_4326(p2.lon, p2.lat, p2.alt));
 };
 
 ApiGlobe.prototype.setSceneLoaded = function setSceneLoaded() {
@@ -668,7 +663,8 @@ ApiGlobe.prototype.setSceneLoaded = function setSceneLoaded() {
 ApiGlobe.prototype.setCenter = function setCenter(coordinates, isAnimated) {
     isAnimated = isAnimated || this.isAnimationEnabled();
     eventCenter.oldCenter = this.getCenter();
-    const position3D = this.scene.getEllipsoid().cartographicToCartesian(new GeoCoordinate(coordinates.longitude, coordinates.latitude, 0, UNIT.DEGREE));
+    const position3D = new C.EPSG_4326(coordinates.longitude, coordinates.latitude, 0)
+        .as('EPSG:4978').xyz();
     position3D.range = coordinates.range;
     return this.scene.currentControls().setCenter(position3D, isAnimated).then(() => {
         this.scene.notifyChange(1);
@@ -930,7 +926,7 @@ ApiGlobe.prototype.showKML = function showKML(value) {
 
 
 ApiGlobe.prototype.loadGPX = function loadGPX(url) {
-    loadGpx(url, this.scene.getEllipsoid()).then((gpx) => {
+    loadGpx(url).then((gpx) => {
         if (gpx) {
             this.scene.getMap().gpxTracks.children[0].add(gpx);
         }

@@ -14,13 +14,12 @@ import groundFS from '../Renderer/Shader/groundFS.glsl';
 import groundVS from '../Renderer/Shader/groundVS.glsl';
 import GlowFS from '../Renderer/Shader/GlowFS.glsl';
 import GlowVS from '../Renderer/Shader/GlowVS.glsl';
+import { ellipsoidSizes } from '../Core/Geographic/Coordinates';
 
 export const LIGHTING_POSITION = new THREE.Vector3(1, 0, 0);
 
-function Atmosphere(ellipsoid) {
+function Atmosphere() {
     NodeMesh.call(this);
-
-    var size = ellipsoid.size;
 
     this.realistic = false;
     this.sphereSun = null;
@@ -48,6 +47,7 @@ function Atmosphere(ellipsoid) {
 
     });
 
+    var size = ellipsoidSizes();
     var geometry = (new THREE.SphereGeometry(1.14, 128, 128)).scale(size.x, size.y, size.z);
 
 

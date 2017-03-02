@@ -3,11 +3,10 @@
  * Class: Projection
  * Description: Outils de projections cartographiques et de convertion
  */
-
 import * as THREE from 'three';
 import CoordWMTS from './CoordWMTS';
 import MathExt from '../Math/MathExtended';
-import GeoCoordinate from './GeoCoordinate';
+import Coordinates, { UNIT } from './Coordinates';
 
 
 function Projection() {
@@ -84,8 +83,8 @@ Projection.prototype.WMTS_WGS84ToWMTS_PM = function WMTS_WGS84ToWMTS_PM(cWMTS, b
     // var sY      = this.WGS84ToY(this.WGS84LatitudeClamp(-Math.PI*0.5)) - this.WGS84ToY(this.WGS84LatitudeClamp(Math.PI*0.5));
     var sizeRow = 1.0 / nbRow;
 
-    var yMin = this.WGS84ToY(this.WGS84LatitudeClamp(bbox.north()));
-    var yMax = this.WGS84ToY(this.WGS84LatitudeClamp(bbox.south()));
+    var yMin = this.WGS84ToY(this.WGS84LatitudeClamp(bbox.north(UNIT.RADIAN)));
+    var yMax = this.WGS84ToY(this.WGS84LatitudeClamp(bbox.south(UNIT.RADIAN)));
 
     let maxRow;
 
@@ -123,22 +122,26 @@ Projection.prototype.WMTS_WGS84Parent = function WMTS_WGS84Parent(cWMTS, levelPa
 };
 
 Projection.prototype.WMS_WGS84Parent = function WMS_WGS84Parent(bbox, bboxParent) {
-    var scale = bbox.dimension.x / bboxParent.dimension.x;
+    const dim = bbox.dimensions(UNIT.RADIAN);
+    const dimParent = bboxParent.dimensions(UNIT.RADIAN);
+    var scale = dim.x / dimParent.x;
 
     var x =
-        Math.abs(bbox.west() - bboxParent.west()) /
-        bboxParent.dimension.x;
+        Math.abs(bbox.west(UNIT.RADIAN) - bboxParent.west(UNIT.RADIAN)) /
+        dimParent.x;
     var y =
         Math.abs(
-            bbox.south() + bbox.dimension.y -
-            (bboxParent.south() + bboxParent.dimension.y)) /
-        bboxParent.dimension.y;
+            bbox.south(UNIT.RADIAN) + dim.y -
+            (bboxParent.south(UNIT.RADIAN) + dimParent.y)) /
+        dimParent.y;
 
     return new THREE.Vector3(x, y, scale);
 };
 
 Projection.prototype.WGS84toWMTS = function WGS84toWMTS(bbox) {
-    var zoom = Math.floor(Math.log(MathExt.PI / bbox.dimension.y) / MathExt.LOG_TWO + 0.5);
+    const dim = bbox.dimensions(UNIT.RADIAN);
+
+    var zoom = Math.floor(Math.log(MathExt.PI / dim.y) / MathExt.LOG_TWO + 0.5);
 
     var nY = Math.pow(2, zoom);
     var nX = 2 * nY;
@@ -146,18 +149,21 @@ Projection.prototype.WGS84toWMTS = function WGS84toWMTS(bbox) {
     var uX = MathExt.TWO_PI / nX;
     var uY = MathExt.PI / nY;
 
-    var col = Math.floor(((MathExt.PI + bbox.center.x) % (2 * Math.PI)) / uX);
-    var row = Math.floor(nY - (MathExt.PI_OV_TWO + bbox.center.y) / uY);
+    const center = bbox.center();
+    var col = Math.floor(((MathExt.PI + center.longitude(UNIT.RADIAN)) % (2 * Math.PI)) / uX);
+    var row = Math.floor(nY - (MathExt.PI_OV_TWO + center.latitude(UNIT.RADIAN)) / uY);
 
     return new CoordWMTS(zoom, row, col);
 };
 
-Projection.prototype.UnitaryToLongitudeWGS84 = function UnitaryToLongitudeWGS84(u, projection, bbox) {
-    projection.setLongitude(bbox.west() + u * bbox.dimension.x);
+Projection.prototype.UnitaryToLongitudeWGS84 = function UnitaryToLongitudeWGS84(u, bbox) {
+    const dim = bbox.dimensions(UNIT.RADIAN);
+    return bbox.west(UNIT.RADIAN) + u * dim.x;
 };
 
-Projection.prototype.UnitaryToLatitudeWGS84 = function UnitaryToLatitudeWGS84(v, projection, bbox) {
-    projection.setLatitude(bbox.south() + v * bbox.dimension.y);
+Projection.prototype.UnitaryToLatitudeWGS84 = function UnitaryToLatitudeWGS84(v, bbox) {
+    const dim = bbox.dimensions(UNIT.RADIAN);
+    return bbox.south(UNIT.RADIAN) + v * dim.y;
 };
 
 Projection.prototype.cartesianToGeo = function cartesianToGeo(position) {
@@ -184,8 +190,7 @@ Projection.prototype.cartesianToGeo = function cartesianToGeo(position) {
 
     var h = (rsqXY * Math.cos(phi)) + p.z * Math.sin(phi) - a * Math.sqrt(1 - e * e * Math.sin(phi) * Math.sin(phi));
 
-    // TODO: return only WGS84 coordinate
-    return new GeoCoordinate(-theta, phi, h);
+    return new Coordinates('EPSG:4326', -theta, phi, h);
 };
 
 Projection.prototype.wgs84_to_lambert93 = function wgs84_to_lambert93(latitude, longitude) // , x93, y93)

@@ -6,6 +6,7 @@
 
 
 import * as THREE from 'three';
+import { UNIT } from '../Geographic/Coordinates';
 
 function Ellipsoid(size) {
     // Constructor
@@ -21,8 +22,8 @@ function Ellipsoid(size) {
 }
 
 Ellipsoid.prototype.geodeticSurfaceNormalCartographic = function geodeticSurfaceNormalCartographic(coordCarto) {
-    var longitude = Math.PI * 2 - coordCarto.longitude();
-    var latitude = coordCarto.latitude();
+    var longitude = Math.PI * 2 - coordCarto.longitude(UNIT.RADIAN);
+    var latitude = coordCarto.latitude(UNIT.RADIAN);
     var cosLatitude = Math.cos(latitude);
 
     var x = cosLatitude * Math.cos(longitude);

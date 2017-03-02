@@ -13,11 +13,11 @@ import TileMesh from './TileMesh';
 import Atmosphere from './Atmosphere';
 import Clouds from './Clouds';
 import Capabilities from '../Core/System/Capabilities';
-import GeoCoordinate, { UNIT } from '../Core/Geographic/GeoCoordinate';
+import Coordinates, { UNIT } from '../Core/Geographic/Coordinates';
 import BasicMaterial from '../Renderer/BasicMaterial';
 import LayersConfiguration from '../Scene/LayersConfiguration';
 import { SSE_SUBDIVISION_THRESHOLD } from '../Scene/NodeProcess';
-
+import BoundingBox from '../Scene/BoundingBox';
 
 /* eslint-disable */
 // bbox longitude(0,360),latitude(-90,90)
@@ -34,7 +34,6 @@ function Globe(ellipsoid, gLDebug) {
     var caps = new Capabilities();
     this.NOIE = !caps.isInternetExplorer();
     this.gLDebug = gLDebug;
-    this.ellipsoid = ellipsoid;
 
     this.batiments = new Layer();
     this.layerWGS84Zup = new Layer();
@@ -55,7 +54,7 @@ function Globe(ellipsoid, gLDebug) {
     this.tiles = new Quadtree(TileMesh, this.SchemeTileWMTS(schemeTile_1), kml);
     this.layersConfiguration = new LayersConfiguration();
 
-    this.atmosphere = this.NOIE ? new Atmosphere(this.ellipsoid) : undefined;
+    this.atmosphere = this.NOIE ? new Atmosphere(ellipsoid) : undefined;
     this.clouds = new Clouds();
 
     var material = new BasicMaterial(new THREE.Color(1, 0, 0));
@@ -63,13 +62,7 @@ function Globe(ellipsoid, gLDebug) {
     var geometry = new THREE.SphereGeometry(5);
     var batiment = new THREE.Mesh(geometry, material);
 
-    var position = this.ellipsoid.cartographicToCartesian(new GeoCoordinate(0, 48.87, 200, UNIT.DEGREE));
-
-    position = new THREE.Vector3(4201215.424138484, 171429.945145441, 4779294.873914789);
-
-    // http://www.apsalin.com/convert-geodetic-to-cartesian.aspx
-    // 48.846931,2.337219,50
-    position = new THREE.Vector3(4201801.65418896, 171495.727885073, 4779411.45896233);
+    const position = new Coordinates('EPSG:4326', 48.846931, 2.337219, 50).as('EPSG:4978').xyz();
 
     batiment.frustumCulled = false;
     // material.wireframe      = true;
@@ -78,7 +71,7 @@ function Globe(ellipsoid, gLDebug) {
     var material2 = new BasicMaterial(new THREE.Color(1, 0.5, 1));
     material2.visible = false;
     var batiment2 = new THREE.Mesh(geometry, material2);
-    var position2 = this.ellipsoid.cartographicToCartesian(new GeoCoordinate(0.001, 48.87, 100, UNIT.DEGREE));
+    var position2 = new Coordinates('EPSG:4326', 0.001, 48.87, 100).as('EPSG:4978').xyz();
     batiment2.frustumCulled = false;
     material2.wireframe = true;
     batiment2.position.copy(position2);
@@ -120,24 +113,23 @@ Globe.prototype.QuadTreeToMaterial = function QuadTreeToMaterial() {
 };
 
 Globe.prototype.SchemeTileWMTS = function SchemeTileWMTS(type) {
+    const schemeT = new SchemeTile();
+
     if (type === 0) {
         // bbox longitude(0,360),latitude(-90,90)
-        const schemeT = new SchemeTile();
-
-        schemeT.add(0, MathExt.PI, -MathExt.PI_OV_TWO, MathExt.PI_OV_TWO);
-        schemeT.add(MathExt.PI, MathExt.TWO_PI, -MathExt.PI_OV_TWO, MathExt.PI_OV_TWO);
-
-        return schemeT;
-    }
-    else if (type === 1) {
+        schemeT.add(new BoundingBox('EPSG:4326', 0, MathExt.PI, -MathExt.PI_OV_TWO, MathExt.PI_OV_TWO));
+        schemeT.add(new BoundingBox('EPSG:4326', MathExt.PI, MathExt.TWO_PI, -MathExt.PI_OV_TWO, MathExt.PI_OV_TWO));
+    } else if (type == 1) {
         // bbox longitude(-180,180),latitude(-90,90)
-        const schemeT = new SchemeTile();
-
-        schemeT.add(-MathExt.PI, 0, -MathExt.PI_OV_TWO, MathExt.PI_OV_TWO);
-        schemeT.add(0, MathExt.PI, -MathExt.PI_OV_TWO, MathExt.PI_OV_TWO);
-
-        return schemeT;
+        schemeT.add(new BoundingBox('EPSG:4326', -MathExt.PI, 0, -MathExt.PI_OV_TWO, MathExt.PI_OV_TWO));
+        schemeT.add(new BoundingBox('EPSG:4326', 0, MathExt.PI, -MathExt.PI_OV_TWO, MathExt.PI_OV_TWO));
     }
+    // store internally as Radians to avoid doing too much deg->rad conversions
+    for (const bbox of schemeT.schemeBB) {
+        bbox.minCoordinate._internalStorageUnit = UNIT.RADIAN;
+        bbox.maxCoordinate._internalStorageUnit = UNIT.RADIAN;
+    }
+    return schemeT;
 };
 
 Globe.prototype.showAtmosphere = function showAtmosphere(show) {

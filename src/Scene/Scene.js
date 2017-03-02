@@ -14,6 +14,7 @@ import BrowseTree from './BrowseTree';
 import NodeProcess from './NodeProcess';
 import Quadtree from './Quadtree';
 import CoordStars from '../Core/Geographic/CoordStars';
+import { ellipsoidSizes } from '../Core/Geographic/Coordinates';
 import Layer from './Layer';
 import MobileMappingLayer from '../MobileMapping/MobileMappingLayer';
 import StyleManager from './Description/StyleManager';
@@ -24,14 +25,12 @@ var instanceScene = null;
 const RENDERING_PAUSED = 0;
 const RENDERING_ACTIVE = 1;
 
-function Scene(coordinate, ellipsoid, viewerDiv, debugMode, gLDebug) {
+function Scene(coordinate, viewerDiv, debugMode, gLDebug) {
     if (instanceScene !== null) {
         throw new Error('Cannot instantiate more than one Scene');
     }
 
-    this.ellipsoid = ellipsoid;
-
-    var positionCamera = this.ellipsoid.cartographicToCartesian(coordinate);
+    var positionCamera = coordinate.as('EPSG:4978');
 
     this.layers = [];
     this.map = null;
@@ -44,7 +43,7 @@ function Scene(coordinate, ellipsoid, viewerDiv, debugMode, gLDebug) {
     this.stylesManager = new StyleManager();
 
     this.gLDebug = gLDebug;
-    this.gfxEngine = c3DEngine(this, positionCamera, viewerDiv, debugMode, gLDebug);
+    this.gfxEngine = c3DEngine(this, positionCamera.xyz(), viewerDiv, debugMode, gLDebug);
     this.browserScene = new BrowseTree(this.gfxEngine);
 
     this.needsRedraw = false;
@@ -100,7 +99,7 @@ Scene.prototype.getEllipsoid = function getEllipsoid() {
 };
 
 Scene.prototype.size = function size() {
-    return this.ellipsoid.size;
+    return ellipsoidSizes();
 };
 
 /**
@@ -206,7 +205,7 @@ Scene.prototype.scene3D = function scene3D() {
 Scene.prototype.add = function add(node, nodeProcess) {
     if (node instanceof Globe) {
         this.map = node;
-        nodeProcess = nodeProcess || new NodeProcess(this, this.currentCamera(), node.ellipsoid);
+        nodeProcess = nodeProcess || new NodeProcess(this);
     }
 
     this.layers.push({
@@ -268,7 +267,7 @@ Scene.prototype.setLightingPos = function setLightingPos(pos) {
     if (pos) {
         this.lightingPos = pos;
     } else {
-        var coSun = CoordStars.getSunPositionInScene(this.getEllipsoid(), new Date().getTime(), 48.85, 2.35);
+        var coSun = CoordStars.getSunPositionInScene(new Date().getTime(), 48.85, 2.35);
         this.lightingPos = coSun;
     }
 
@@ -283,7 +282,7 @@ Scene.prototype.animateTime = function animateTime(value) {
 
         if (this.time) {
             var nMilliSeconds = this.time;
-            var coSun = CoordStars.getSunPositionInScene(this.getEllipsoid(), new Date().getTime() + 3.6 * nMilliSeconds, 0, 0);
+            var coSun = CoordStars.getSunPositionInScene(new Date().getTime() + 3.6 * nMilliSeconds, 0, 0);
             this.lightingPos = coSun;
             this.browserScene.updateMaterialUniform('lightPosition', this.lightingPos.clone().normalize());
             this.layers[0].node.updateLightingPos(this.lightingPos);
@@ -308,7 +307,7 @@ Scene.prototype.orbit = function orbit(value) {
     this.orbitOn = value;
 };
 
-export default function (coordinate, ellipsoid, viewerDiv, debugMode, gLDebug) {
-    instanceScene = instanceScene || new Scene(coordinate, ellipsoid, viewerDiv, debugMode, gLDebug);
+export default function (coordinate, viewerDiv, debugMode, gLDebug) {
+    instanceScene = instanceScene || new Scene(coordinate, viewerDiv, debugMode, gLDebug);
     return instanceScene;
 }

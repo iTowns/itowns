@@ -12,7 +12,7 @@ import graphicEngine from './c3DEngine';
 import Ori from '../MobileMapping/Ori';
 import Shader from '../MobileMapping/Shader';
 import Ellipsoid from '../Core/Math/Ellipsoid';
-import GeoCoordinate, { UNIT } from '../Core/Geographic/GeoCoordinate';
+import Coordinates from '../Core/Geographic/Coordinates';
 
 window.requestAnimSelectionAlpha = (function getRequestAnimSelectionAlphaFn() {
     return window.requestAnimationFrame ||
@@ -71,8 +71,8 @@ const ProjectiveTexturingMaterial = {
 
         // Then correct with position on ellipsoid
         // Orientation on normal
-        var posPanoWGS84 = new GeoCoordinate(panoInfo.longitude, panoInfo.latitude, panoInfo.altitude, UNIT.DEGREE);
-        var posPanoCartesian = ellipsoid.cartographicToCartesian(posPanoWGS84);
+        var posPanoWGS84 = new Coordinates('EPSG:4326', panoInfo.longitude, panoInfo.latitude, panoInfo.altitude);
+        var posPanoCartesian = posPanoWGS84.as('EPSG:4978').xyz();
 
         var normal = ellipsoid.geodeticSurfaceNormalCartographic(posPanoWGS84);
         var quaternion = new THREE.Quaternion();
@@ -143,8 +143,8 @@ const ProjectiveTexturingMaterial = {
     },
 
     createShaderMat(panoInfo, rot, pivot) {
-        var posPanoWGS84 = new GeoCoordinate(panoInfo.longitude, panoInfo.latitude, panoInfo.altitude, UNIT.DEGREE);
-        var posPanoCartesian = ellipsoid.cartographicToCartesian(posPanoWGS84);
+        var posPanoWGS84 = new Coordinates('EPSG:4326', panoInfo.longitude, panoInfo.latitude, panoInfo.altitude);
+        var posPanoCartesian = posPanoWGS84.as('EPSG:4978').xyz();
         // console.log("posPanoCartesian: ",posPanoCartesian);
         var spherePosPano = new THREE.Mesh(new THREE.SphereGeometry(0.5, 12, 12), new THREE.MeshBasicMaterial({
             side: THREE.DoubleSide,
@@ -266,8 +266,8 @@ const ProjectiveTexturingMaterial = {
         var matRotationFrame = this.getCameraFrameRotation(panoInfo);
 
         // compute translation
-        var posPanoWGS84 = new GeoCoordinate(panoInfo.longitude, panoInfo.latitude, panoInfo.altitude, UNIT.DEGREE);
-        var posPanoCartesian = ellipsoid.cartographicToCartesian(posPanoWGS84);
+        var posPanoWGS84 = new Coordinates('EPSG:4326', panoInfo.longitude, panoInfo.latitude, panoInfo.altitude);
+        var posPanoCartesian = posPanoWGS84.as('EPSG:4978').xyz();
         var posPiv = posPanoCartesian.clone().sub(pivot);
         var posFrameWithPivot = new THREE.Vector4(posPiv.x, posPiv.y, posPiv.z, 1.0);
 

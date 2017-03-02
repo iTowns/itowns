@@ -4,19 +4,8 @@
  * Description: Tuile de maillage, noeud du quadtree MNT. Le Materiel est issus du QuadTree ORTHO.
  */
 
-/**
- *
- * @param {type} NodeMesh
- * @param {type} TileGeometry
- * @param {type} BoundingBox
- * @param {type} THREE
- * @param {type} LayeredMaterial
- * @param {type} GeoCoordinate
- * @returns {EllipsoidTileMesh_L20.TileMesh}
- */
 import * as THREE from 'three';
 import NodeMesh from '../Renderer/NodeMesh';
-import BoundingBox from '../Scene/BoundingBox';
 import LayeredMaterial, { l_ELEVATION } from '../Renderer/LayeredMaterial';
 import GlobeDepthMaterial from '../Renderer/GlobeDepthMaterial';
 import MatteIdsMaterial from '../Renderer/MatteIdsMaterial';
@@ -29,8 +18,12 @@ function TileMesh(geometry, params) {
     this.matrixAutoUpdate = false;
     this.rotationAutoUpdate = false;
 
+    if (!params.bbox) {
+        throw new Error('params.bbox is mandatory to build a TileMesh');
+    }
+
     this.level = params.level;
-    this.bbox = params.bbox || new BoundingBox();
+    this.bbox = params.bbox;
 
     this.geometry = geometry;
     this.normal = params.center.clone().normalize();
