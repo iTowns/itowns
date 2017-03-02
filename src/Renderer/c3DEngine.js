@@ -37,7 +37,6 @@ function c3DEngine(scene, positionCamera, viewerDiv, debugMode, gLDebug) {
     this.dfar = 0.0;
     this.stateRender = RendererConstant.FINAL;
     this.positionBuffer = null;
-    this.lightingOn = false;
 
     this.camera = new Camera(this.width, this.height, this.debug);
 
@@ -545,10 +544,6 @@ c3DEngine.prototype.getRTCMatrixFromNode = function getRTCMatrixFromNode(node, c
     var centerEye = new THREE.Vector4().applyMatrix4(matrixInv);
     var mvc = matrixInv.setPosition(centerEye);
     return new THREE.Matrix4().multiplyMatrices(camera3D.projectionMatrix, mvc);
-};
-
-c3DEngine.prototype.setLightingOn = function setLightingOn(value) {
-    this.lightingOn = value;
 };
 
 export default function (scene, positionCamera, viewerDiv, debugMode, gLDebug) {

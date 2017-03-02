@@ -25,7 +25,7 @@ uniform vec3        lightPosition;
 
 // Options global
 uniform bool        selected;
-uniform bool        lightingOn;
+uniform bool        lightingEnabled;
 
 varying vec2        vUv_WGS84;
 varying float       vUv_PM;
@@ -140,7 +140,7 @@ void main() {
         // Fog
         gl_FragColor = mix(CFog, diffuseColor, fogIntensity);
 
-        if(lightingOn) {   // Add lighting
+        if(lightingEnabled) {   // Add lighting
             float light = min(2. * dot(vNormal, lightPosition),1.);
             gl_FragColor.rgb *= light;
         }

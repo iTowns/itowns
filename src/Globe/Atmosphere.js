@@ -54,9 +54,6 @@ function Atmosphere() {
     this.geometry = geometry;
     this.material = material;
 
-    // this.atmosphereOUT    = new THREE.Mesh(geometry,material);
-    // this.add(this.atmosphereOUT);
-
     this.uniformsIn = {
         atmoIN: {
             type: 'i',
@@ -96,95 +93,28 @@ function Atmosphere() {
     };
 
     var uniformsSky = {
-        v3LightPosition: {
-            type: 'v3',
-            value: LIGHTING_POSITION.clone().normalize(),
-        },
-        v3InvWavelength: {
-            type: 'v3',
-            value: new THREE.Vector3(1 / Math.pow(atmosphere.wavelength[0], 4), 1 / Math.pow(atmosphere.wavelength[1], 4), 1 / Math.pow(atmosphere.wavelength[2], 4)),
-        },
-        fCameraHeight: {
-            type: 'f',
-            value: 0.0,
-        },
-        fCameraHeight2: {
-            type: 'f',
-            value: 0.0,
-        },
-        fInnerRadius: {
-            type: 'f',
-            value: atmosphere.innerRadius,
-        },
-        fInnerRadius2: {
-            type: 'f',
-            value: atmosphere.innerRadius * atmosphere.innerRadius,
-        },
-        fOuterRadius: {
-            type: 'f',
-            value: atmosphere.outerRadius,
-        },
-        fOuterRadius2: {
-            type: 'f',
-            value: atmosphere.outerRadius * atmosphere.outerRadius,
-        },
-        fKrESun: {
-            type: 'f',
-            value: atmosphere.Kr * atmosphere.ESun,
-        },
-        fKmESun: {
-            type: 'f',
-            value: atmosphere.Km * atmosphere.ESun,
-        },
-        fKr4PI: {
-            type: 'f',
-            value: atmosphere.Kr * 4.0 * Math.PI,
-        },
-        fKm4PI: {
-            type: 'f',
-            value: atmosphere.Km * 4.0 * Math.PI,
-        },
-        fScale: {
-            type: 'f',
-            value: 1 / (atmosphere.outerRadius - atmosphere.innerRadius),
-        },
-        fScaleDepth: {
-            type: 'f',
-            value: atmosphere.scaleDepth,
-        },
-        fScaleOverScaleDepth: {
-            type: 'f',
-            value: 1 / (atmosphere.outerRadius - atmosphere.innerRadius) / atmosphere.scaleDepth,
-        },
-        g: {
-            type: 'f',
-            value: atmosphere.g,
-        },
-        g2: {
-            type: 'f',
-            value: atmosphere.g * atmosphere.g,
-        },
-        nSamples: {
-            type: 'i',
-            value: 3,
-        },
-        fSamples: {
-            type: 'f',
-            value: 3.0,
-        },
-
-        tDisplacement: {
-            type: 't',
-            value: new THREE.Texture(),
-        },
-        tSkyboxDiffuse: {
-            type: 't',
-            value: new THREE.Texture(),
-        },
-        fNightScale: {
-            type: 'f',
-            value: 1.0,
-        },
+        v3LightPosition: { value: LIGHTING_POSITION.clone().normalize() },
+        v3InvWavelength: { value: new THREE.Vector3(1 / Math.pow(atmosphere.wavelength[0], 4), 1 / Math.pow(atmosphere.wavelength[1], 4), 1 / Math.pow(atmosphere.wavelength[2], 4)) },
+        fCameraHeight: { value: 0.0 },
+        fCameraHeight2: { value: 0.0 },
+        fInnerRadius: { value: atmosphere.innerRadius },
+        fInnerRadius2: { value: atmosphere.innerRadius * atmosphere.innerRadius },
+        fOuterRadius: { value: atmosphere.outerRadius },
+        fOuterRadius2: { value: atmosphere.outerRadius * atmosphere.outerRadius },
+        fKrESun: { value: atmosphere.Kr * atmosphere.ESun },
+        fKmESun: { value: atmosphere.Km * atmosphere.ESun },
+        fKr4PI: { value: atmosphere.Kr * 4.0 * Math.PI },
+        fKm4PI: { value: atmosphere.Km * 4.0 * Math.PI },
+        fScale: { value: 1 / (atmosphere.outerRadius - atmosphere.innerRadius) },
+        fScaleDepth: { value: atmosphere.scaleDepth },
+        fScaleOverScaleDepth: { value: 1 / (atmosphere.outerRadius - atmosphere.innerRadius) / atmosphere.scaleDepth },
+        g: { value: atmosphere.g },
+        g2: { value: atmosphere.g * atmosphere.g },
+        nSamples: { value: 3 },
+        fSamples: { value: 3.0 },
+        tDisplacement: { value: new THREE.Texture() },
+        tSkyboxDiffuse: { value: new THREE.Texture() },
+        fNightScale: { value: 1.0 },
     };
 
     this.ground = {
@@ -246,32 +176,6 @@ function Atmosphere() {
     uniforms.mieCoefficient.value = effectController.mieCoefficient;
     uniforms.mieDirectionalG.value = effectController.mieDirectionalG;
     uniforms.up.value = new THREE.Vector3(); // no more necessary, estimate normal from cam..
-
-
-    // LensFlare. Deleted because accessing external texture in build causes pb
-/*
-    var textureLoader = new THREE.TextureLoader();
-    var textureFlare0 = textureLoader.load('data/textures/lensflare/lensflare0.png');
-    var textureFlare2 = textureLoader.load('data/textures/lensflare/lensflare2.png');
-    var textureFlare3 = textureLoader.load('data/textures/lensflare/lensflare3.png');
-    const h = 0.55;
-    const s = 0.9;
-    const l = 0.5;
-    //    var x=10000000, y=10000000, z=0;
-    var flareColor = new THREE.Color(0xffffff);
-    flareColor.setHSL(h, s, l + 0.5);
-
-    this.lensFlare = new THREE.LensFlare(textureFlare0, 700, 0.0, THREE.AdditiveBlending, flareColor);
-    this.lensFlare.add(textureFlare2, 512, 0.0, THREE.AdditiveBlending);
-    this.lensFlare.add(textureFlare2, 512, 0.0, THREE.AdditiveBlending);
-    this.lensFlare.add(textureFlare2, 512, 0.0, THREE.AdditiveBlending);
-    this.lensFlare.add(textureFlare3, 60, 0.6, THREE.AdditiveBlending);
-    this.lensFlare.add(textureFlare3, 70, 0.7, THREE.AdditiveBlending);
-    this.lensFlare.add(textureFlare3, 120, 0.9, THREE.AdditiveBlending);
-    this.lensFlare.add(textureFlare3, 70, 1.0, THREE.AdditiveBlending);
-    this.lensFlare.visible = false;
-    this.add(this.lensFlare);
-*/
 }
 
 Atmosphere.prototype = Object.create(NodeMesh.prototype);
@@ -296,6 +200,5 @@ Atmosphere.prototype.updateLightingPos = function updateLightingPos(pos) {
     this.skyDome.uniforms.sunPosition.value.copy(pos);
     // this.lensFlare.position.copy(pos);
 };
-
 
 export default Atmosphere;

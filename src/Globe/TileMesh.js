@@ -74,9 +74,12 @@ TileMesh.prototype.getUuid = function getUuid(uuid) {
     return this.materials[RendererConstant.ID].getUuid(uuid);
 };
 
-TileMesh.prototype.setColorLayerParameters = function setColorLayerParameters(paramsTextureColor) {
+TileMesh.prototype.setColorLayerParameters = function setColorLayerParameters(paramsTextureColor, lighting) {
     if (!this.loaded) {
-        this.materials[RendererConstant.FINAL].setColorLayerParameters(paramsTextureColor);
+        const material = this.materials[RendererConstant.FINAL];
+        material.setLightingOn(lighting.enable);
+        material.uniforms.lightPosition.value = lighting.position;
+        material.setColorLayerParameters(paramsTextureColor);
     }
 };
 /**
