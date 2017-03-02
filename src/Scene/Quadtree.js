@@ -43,12 +43,12 @@ Quadtree.prototype = Object.create(Layer.prototype);
 
 Quadtree.prototype.constructor = Quadtree;
 
-Quadtree.prototype.init = function init(geometryLayer) {
+Quadtree.prototype.init = function init(geometryLayer, lightingLayer) {
     var rootNode = this.children[0];
     const promises = [];
 
     for (var i = 0; i < this.schemeTile.rootCount(); i++) {
-        promises.push(this.requestNewTile(geometryLayer, this.schemeTile.getRoot(i), rootNode));
+        promises.push(this.requestNewTile(geometryLayer, this.schemeTile.getRoot(i), rootNode, lightingLayer));
     }
     return Promise.all(promises);
 };
@@ -69,7 +69,7 @@ Quadtree.prototype.southEast = function southEast(node) {
     return node.children[3];
 };
 
-Quadtree.prototype.requestNewTile = function requestNewTile(geometryLayer, bbox, parent) {
+Quadtree.prototype.requestNewTile = function requestNewTile(geometryLayer, bbox, parent, lightingLayer) {
     const command = {
         /* mandatory */
         requester: parent,
@@ -79,6 +79,7 @@ Quadtree.prototype.requestNewTile = function requestNewTile(geometryLayer, bbox,
         bbox,
         type: this.type,
         level: 0,
+        light: lightingLayer,
     };
 
     return this.scheduler.execute(command);

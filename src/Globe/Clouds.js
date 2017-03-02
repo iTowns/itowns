@@ -32,7 +32,7 @@ function Clouds(/* size*/) {
             type: 'f',
             value: 0.0,
         },
-        lightingOn: { value: false },
+        lightingEnabled: { value: false },
         lightPosition: {
             type: 'v3',
             value: LIGHTING_POSITION.clone().normalize(),
@@ -104,7 +104,7 @@ Clouds.prototype.animate = function animate() {
 };
 
 Clouds.prototype.setLightingOn = function setLightingOn(enable) {
-    this.material.uniforms.lightingOn.value = enable;
+    this.material.uniforms.lightingEnabled.value = enable;
 };
 
 Clouds.prototype.updateLightingPos = function updateLightingPos(pos) {

@@ -108,7 +108,7 @@ function preprocessLayer(layer, provider) {
  */
 ApiGlobe.prototype.init = function init() {
     const map = this.scene.getMap();
-    map.tiles.init(map.layersConfiguration.getGeometryLayers()[0]);
+    map.tiles.init(map.layersConfiguration.getGeometryLayers()[0], map.layersConfiguration.lightingLayers[0]);
 };
 
 /**
@@ -390,9 +390,11 @@ ApiGlobe.prototype.showClouds = function showClouds(value, satelliteAnimation) {
 
 ApiGlobe.prototype.setRealisticLightingOn = function setRealisticLightingOn(value) {
     this.scene.setLightingPos();
-    this.scene.gfxEngine.setLightingOn(value);
     this.scene.getMap().setRealisticLightingOn(value);
-    this.scene.browserScene.updateMaterialUniform('lightingOn', value);
+    const lightingLayers = this.scene.getMap().layersConfiguration.lightingLayers[0];
+    lightingLayers.enable = value;
+    lightingLayers.position = this.scene.lightingPos;
+    this.scene.browserScene.updateMaterialUniform('lightingEnabled', value);
     this.scene.renderScene3D();
 };
 

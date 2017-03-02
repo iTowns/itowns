@@ -158,7 +158,7 @@ PanoramicProvider.prototype.getTextureProjectiveMesh = function getTextureProjec
         roofMesh.material.side = THREE.DoubleSide;
         roofMesh.material.transparent = true;
         roofMesh.setDisplayed(true);
-        roofMesh.material.uniforms.lightOn.value = false;
+        roofMesh.material.uniforms.lightingEnabled.value = false;
 
         this.panoramicMesh.add(roofMesh);
 

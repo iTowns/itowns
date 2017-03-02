@@ -143,9 +143,6 @@ const LayeredMaterial = function LayeredMaterial(id) {
     // Color texture cropping
     this.uniforms.offsetScale_L01 = new THREE.Uniform(this.offsetScale[l_COLOR]);
 
-    // Switch light
-    this.uniforms.lightingOn = new THREE.Uniform(gfxEngine().lightingOn);
-
     // Light position
     this.uniforms.lightPosition = new THREE.Uniform(new THREE.Vector3(-0.5, 0.0, 1.0));
 
@@ -333,7 +330,7 @@ LayeredMaterial.prototype.getLayerTextureOffset = function getLayerTextureOffset
 };
 
 LayeredMaterial.prototype.setLightingOn = function setLightingOn(enable) {
-    this.uniforms.lightingOn.value = enable;
+    this.uniforms.lightingEnabled.value = enable;
 };
 
 LayeredMaterial.prototype.setLayerFx = function setLayerFx(index, fx) {

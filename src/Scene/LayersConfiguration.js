@@ -18,6 +18,12 @@ function LayersConfiguration() {
     this.geometryLayers = [];
     this.colorLayers = [];
     this.elevationLayers = [];
+    this.lightingLayers = [];
+
+    this.lightingLayers[0] = {
+        enable: false,
+        position: { x: -0.5, y: 0.0, z: 1.0 },
+    };
 
     // layers state (visibility, opacity)
     this.layersState = {};
@@ -30,7 +36,6 @@ function defaultState(seq) {
         // / shared attributes
         // if true, stop fetching new data
         frozen: false,
-
         // / color layers only attributes
         // is this layer displayed
         visible: true,
