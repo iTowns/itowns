@@ -42,73 +42,50 @@
 
             itowns.Fetcher.json('layers/JSONLayers/Ortho.json').then(result => globe.addLayer(result));
 
-            // TODO: temporary, move elsewhere
-            fetch('http://localhost:8003/tilesets/TilesetWithDiscreteLOD/tileset.json').then((response) => {
-                response.json().then((tileset) => {
-                    const tileset2dict = function(root, dict) {
-                        let id = 0;
-                        const recurse = function(node) {
-                            dict[id] = node;
-                            node.tileId = id;
-                            id++
-                            for(let child in node.children) {
-                                recurse(node.children[child], dict)
-                            }
-                        }
-                        recurse(root);
+            // add 3d-tiles layer
+            const $3dTilesLayer = new itowns.GeometryLayer('3d-tiles');
+
+            $3dTilesLayer.preUpdate = (context, layer) => {
+                if(layer.root === undefined) {
+                    itowns.init3dTilesLayer(context, layer);
+                    return [];
+                }
+                itowns.pre3dTilesUpdate(context, layer);
+                return [layer.root];
+            };
+            $3dTilesLayer.update = itowns.process3dTilesNode(
+                itowns.$3dTilesCulling,
+                itowns.$3dTilesSubdivisionControl
+            );
+            $3dTilesLayer.url = 'http://localhost:8003/tilesets/TilesetWithDiscreteLOD/tileset.json';
+            $3dTilesLayer.protocol = '3d-tiles'
+            $3dTilesLayer.overrideMaterials = true;  // custom cesium shaders are not functional
+
+            itowns.View.prototype.addLayer.call(globe, $3dTilesLayer);
+
+            // debug
+            const debug3dt = new itowns.GeometryLayer('debug-3d-tiles');
+
+            debug3dt.update = function(context, layer, node) {
+                var n = node.children.filter(n => n.layer == debug3dt.id);
+                if (node.visible) {
+                    if (n.length == 0) {
+                        n = new itowns.THREE.BoxHelper(node.boundingVolume.box);
+                        n.layer = debug3dt.id;
+                        node.add(n);
+                        n.updateMatrix();
+                        n.updateMatrixWorld();
+                    } else {
+                        n = n[0];
                     }
+                    n.visible = true;
+                }
+                if (n.length > 0) {
+                    n[0].visible = false;
+                }
+            }
 
-                    let tileIndex = {};
-                    tileset2dict(tileset.root, tileIndex);
-
-                    // add 3d-tiles layer
-                    const $3dTilesLayer = new itowns.GeometryLayer('3d-tiles');
-
-                    $3dTilesLayer.preUpdate = (context, layer) => {
-                        if(layer.root === undefined) {
-                            itowns.init3dTilesLayer(context, layer);
-                            return [];
-                        }
-                        itowns.pre3dTilesUpdate(context, layer);
-                        return [layer.root];
-                    };
-                    $3dTilesLayer.update = itowns.process3dTilesNode(
-                        itowns.$3dTilesCulling,
-                        itowns.$3dTilesSubdivisionControl
-                    );
-                    $3dTilesLayer.url = 'http://localhost:8003/tilesets/TilesetWithDiscreteLOD/';
-                    $3dTilesLayer.protocol = '3d-tiles'
-                    $3dTilesLayer.tileIndex = tileIndex;
-                    $3dTilesLayer.tilesetRoot = tileset.root
-                    $3dTilesLayer.overrideMaterials = true;  // custom cesium shaders are not functional
-
-                    itowns.View.prototype.addLayer.call(globe, $3dTilesLayer);
-
-                    // debug
-                    const debug3dt = new itowns.GeometryLayer('debug-3d-tiles');
-
-                    debug3dt.update = function(context, layer, node) {
-                        var n = node.children.filter(n => n.layer == debug3dt.id);
-                        if (node.visible) {
-                            if (n.length == 0) {
-                                n = new itowns.THREE.BoxHelper(node.boundingVolume.box);
-                                n.layer = debug3dt.id;
-                                node.add(n);
-                                n.updateMatrix();
-                                n.updateMatrixWorld();
-                            } else {
-                                n = n[0];
-                            }
-                            n.visible = true;
-                        }
-                        if (n.length > 0) {
-                            n[0].visible = false;
-                        }
-                    };
-
-                    itowns.View.prototype.addLayer.call(globe, debug3dt, $3dTilesLayer);
-                })
-            });
+            itowns.View.prototype.addLayer.call(globe, debug3dt, $3dTilesLayer);
 
 </script>
     </body>
