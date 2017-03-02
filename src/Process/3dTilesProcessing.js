@@ -1,3 +1,6 @@
+import Fetcher from '../Core/Scheduler/Providers/Fetcher';
+import { $3dTilesIndex } from '../Core/Scheduler/Providers/3dTiles_Provider';
+
 function requestNewTile(view, scheduler, geometryLayer, metadata, parent) {
     const command = {
         /* mandatory */
@@ -17,7 +20,7 @@ function subdivideNode(context, layer, node) {
     if (!node.pendingSubdivision && node.children.filter(n => n.layer == layer.id).length == 0) {
         node.pendingSubdivision = true;
 
-        const childrenTiles = layer.tileIndex[node.tileId].children;
+        const childrenTiles = layer.tileIndex.index[node.tileId].children;
         if (childrenTiles === undefined) {
             return;
         }
@@ -92,14 +95,16 @@ export function init3dTilesLayer(context, layer) {
     }
     layer.initialised = true;
 
-    requestNewTile(context.view, context.scheduler, layer, layer.tilesetRoot, undefined).then(
-        (tile) => {
-            // TODO: support a layer.root attribute, to be able
-            // to add a layer to a three.js node
-            context.view.scene.add(tile);
-            tile.updateMatrixWorld();
-            layer.root = tile;
-        });
+    Fetcher.json(layer.url).then((tileset) => {
+        const urlPrefix = layer.url.slice(0, layer.url.lastIndexOf('/') + 1);
+        layer.tileIndex = new $3dTilesIndex(tileset, urlPrefix);
+        requestNewTile(context.view, context.scheduler, layer, tileset.root, undefined).then(
+            (tile) => {
+                context.view.scene.add(tile);
+                tile.updateMatrixWorld();
+                layer.root = tile;
+            });
+    });
 }
 
 export function process3dTilesNode(cullingTest, subdivisionTest) {

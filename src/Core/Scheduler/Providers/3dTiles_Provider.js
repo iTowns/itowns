@@ -4,6 +4,29 @@ import B3dmLoader from '../../../Renderer/ThreeExtended/B3dmLoader';
 import Fetcher from './Fetcher';
 import BasicMaterial from '../../../Renderer/BasicMaterial';
 
+
+export function $3dTilesIndex(tileset, urlPrefix) {
+    let counter = 0;
+    this.index = {};
+    const recurse = function recurse_f(node, urlPrefix) {
+        this.index[counter] = node;
+        node.tileId = counter;
+        node.urlPrefix = urlPrefix;
+        counter++;
+        if (node.children) {
+            for (const child of node.children) {
+                recurse(child, urlPrefix);
+            }
+        }
+    }.bind(this);
+    recurse(tileset.root, urlPrefix);
+
+    this.extendTileset = function extendTileset(tileset, nodeId, urlPrefix) {
+        recurse(tileset.root, urlPrefix);
+        this.index[nodeId].children = [tileset.root];
+    };
+}
+
 function $3dTiles_Provider(/* options*/) {
     // Constructor
 
@@ -25,11 +48,15 @@ $3dTiles_Provider.prototype.preprocessDataLayer = function preprocessDataLayer(/
 
 function getBox(boundingVolume) {
     if (boundingVolume.region) {
-        // TODO: unsupported
-        return { region: boundingVolume.region };
+        throw new Error('Region bounding volume not supported yet');
+        // return { region: boundingVolume.region };
     } else if (boundingVolume.box) {
         // TODO: only works for axis aligned boxes
         const box = boundingVolume.box;
+        // box[0], box[1], box[2] = center of the box
+        // box[3], box[4], box[5] = x axis direction and half-length
+        // box[6], box[7], box[8] = y axis direction and half-length
+        // box[9], box[10], box[11] = z axis direction and half-length
         const center = new THREE.Vector3(box[0], box[1], box[2]);
         const w = center.x - box[3];
         const e = center.x + box[3];
@@ -40,8 +67,8 @@ function getBox(boundingVolume) {
 
         return { box: new THREE.Box3(new THREE.Vector3(w, s, b), new THREE.Vector3(e, n, t)) };
     } else if (boundingVolume.sphere) {
-        // TODO
-        return { sphere: undefined };
+        throw new Error('Sphere bounding volume not supported yet');
+        // return { sphere: undefined };
     }
 }
 
@@ -74,13 +101,14 @@ function configureTile(tile, layer, metadata) {
     tile.boundingVolume = getBox(metadata.boundingVolume);
 }
 
+const textDecoder = new TextDecoder('utf-8');
 $3dTiles_Provider.prototype.executeCommand = function executeCommand(command) {
     const layer = command.layer;
     const metadata = command.metadata;
 
     const urlSuffix = metadata.content ? metadata.content.url : undefined;
     if (urlSuffix) {
-        const url = layer.url + urlSuffix;
+        const url = metadata.urlPrefix + urlSuffix;
 
         const supportedFormats = {
             b3dm: this.b3dmToMesh.bind(this),
@@ -89,11 +117,15 @@ $3dTiles_Provider.prototype.executeCommand = function executeCommand(command) {
         return Fetcher.arrayBuffer(url).then((result) => {
             if (result !== undefined) {
                 let func;
-                const magic = new TextDecoder('utf-8').decode(new Uint8Array(result, 0, 4));
+                const magic = textDecoder.decode(new Uint8Array(result, 0, 4));
                 if (magic[0] === '{') {
-                    // TODO: handle additional tileset
+                    result = JSON.parse(textDecoder.decode(new Uint8Array(result)));
+                    const newPrefix = url.slice(0, url.lastIndexOf('/') + 1);
+                    layer.tileIndex.extendTileset(result, metadata.tileId, newPrefix);
                 } else if (magic == 'b3dm') {
                     func = supportedFormats.b3dm;
+                } else {
+                    Promise.reject(`Unsupported magic code ${magic}`);
                 }
                 if (func) {
                     return func(result, layer).then((tile) => {
