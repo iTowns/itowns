@@ -267,8 +267,8 @@ Scene.prototype.setLightingPos = function setLightingPos(pos) {
     if (pos) {
         this.lightingPos = pos;
     } else {
-        var coSun = CoordStars.getSunPositionInScene(new Date().getTime(), 48.85, 2.35);
-        this.lightingPos = coSun;
+        const coSun = CoordStars.getSunPositionInScene(new Date().getTime(), 48.85, 2.35);
+        this.lightingPos = coSun.normalize();
     }
 
     this.browserScene.updateMaterialUniform('lightPosition', this.lightingPos.clone().normalize());

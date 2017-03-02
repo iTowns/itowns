@@ -51,7 +51,7 @@ function BasicMaterial(color) {
         uuid: { value: 0 },
         debug: { value: false },
         selected: { value: false },
-        lightOn: { value: true },
+        lightingEnabled: { value: true },
     };
 }
 
