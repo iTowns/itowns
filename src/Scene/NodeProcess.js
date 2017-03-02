@@ -122,7 +122,7 @@ NodeProcess.prototype.subdivideNode = function subdivideNode(node, camera, param
                     canHaveElevation |= layer.tileInsideLimit(child, layer);
                 }
 
-                child.setColorLayerParameters(paramMaterial);
+                child.setColorLayerParameters(paramMaterial, params.layersConfig.lightingLayers[0]);
                 child.texturesNeeded = colorTextureCount + canHaveElevation;
 
                 // request layers (imagery/elevation) update

@@ -31,10 +31,6 @@ TileProvider.prototype = Object.create(Provider.prototype);
 
 TileProvider.prototype.constructor = TileProvider;
 
-TileProvider.prototype.preprocessLayer = function preprocessLayer(/* layer*/) {
-    /* no-op */
-};
-
 TileProvider.prototype.executeCommand = function executeCommand(command) {
     var bbox = command.bbox;
 
