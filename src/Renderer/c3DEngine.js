@@ -30,6 +30,7 @@ function c3DEngine(scene, viewerDiv, debugMode, gLDebug) {
     this.scene3D.sortObjects = false;
     this.width = this.debug ? viewerDiv.clientWidth * 0.5 : viewerDiv.clientWidth;
     this.height = viewerDiv.clientHeight;
+    this.viewerDiv.size = new THREE.Vector2(this.width, this.height);
     this.camDebug = undefined;
     this.dnear = 0.0;
     this.dfar = 0.0;
@@ -86,6 +87,7 @@ function c3DEngine(scene, viewerDiv, debugMode, gLDebug) {
     this.onWindowResize = function onWindowResize() {
         this.width = this.viewerDiv.clientWidth * (this.debug ? 0.5 : 1);
         this.height = this.viewerDiv.clientHeight;
+        this.viewerDiv.size.set(this.width, this.height);
         this.scene.camera.resize(this.width, this.height);
         this.scene.controls.updateCamera(this.scene.camera);
 
