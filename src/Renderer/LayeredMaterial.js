@@ -12,10 +12,10 @@ import GlobeVS from './Shader/GlobeVS.glsl';
 import GlobeFS from './Shader/GlobeFS.glsl';
 import pitUV from './Shader/Chunk/pitUV.glsl';
 
-const EMPTY_TEXTURE_LEVEL = -1;
+const EMPTY_TEXTURE_ZOOM = -1;
 
 var emptyTexture = new THREE.Texture();
-emptyTexture.level = EMPTY_TEXTURE_LEVEL;
+emptyTexture.coordWMTS = { zoom: EMPTY_TEXTURE_ZOOM };
 
 const layerTypesCount = 2;
 var vector = new THREE.Vector3(0.0, 0.0, 0.0);
@@ -239,7 +239,7 @@ LayeredMaterial.prototype.removeColorLayer = function removeColorLayer(layer) {
     const removedTexturesLayer = this.textures[l_COLOR].splice(offset, texturesCount);
     this.offsetScale[l_COLOR].splice(offset, texturesCount);
 
-    const loadedTexturesLayerCount = removedTexturesLayer.reduce((sum, texture) => sum + (texture.level > -1), 0);
+    const loadedTexturesLayerCount = removedTexturesLayer.reduce((sum, texture) => sum + (texture.coordWMTS.zoom > -1), 0);
 
     // refill remove textures
     for (let i = 0, max = texturesCount; i < max; i++) {
@@ -308,8 +308,8 @@ LayeredMaterial.prototype.pushLayer = function pushLayer(param) {
     this.uniforms.colorLayersCount.value = this.getColorLayersCount();
 };
 
-LayeredMaterial.prototype.indexOfColorLayer = function indexOfColorLayer(layer) {
-    return this.colorLayersId.indexOf(layer);
+LayeredMaterial.prototype.indexOfColorLayer = function indexOfColorLayer(layerId) {
+    return this.colorLayersId.indexOf(layerId);
 };
 
 LayeredMaterial.prototype.getColorLayersCount = function getColorLayersCount() {
@@ -324,8 +324,8 @@ LayeredMaterial.prototype.getTextureCountByLayerIndex = function getTextureCount
     return this.layerTexturesCount[index];
 };
 
-LayeredMaterial.prototype.getLayerTextureOffset = function getLayerTextureOffset(layer) {
-    const index = this.indexOfColorLayer(layer);
+LayeredMaterial.prototype.getLayerTextureOffset = function getLayerTextureOffset(layerId) {
+    const index = this.indexOfColorLayer(layerId);
     return index > -1 ? this.getTextureOffsetByLayerIndex(index) : -1;
 };
 
@@ -362,29 +362,29 @@ LayeredMaterial.prototype.getLoadedTexturesCount = function getLoadedTexturesCou
     return this.loadedTexturesCount[l_ELEVATION] + this.loadedTexturesCount[l_COLOR];
 };
 
-LayeredMaterial.prototype.isColorLayerDownscaled = function isColorLayerDownscaled(layer, level) {
-    return this.textures[l_COLOR][this.getLayerTextureOffset(layer)].level < level;
+LayeredMaterial.prototype.isColorLayerDownscaled = function isColorLayerDownscaled(layerId, level) {
+    if (this.textures[l_COLOR][this.getLayerTextureOffset(layerId)]) {
+        return this.textures[l_COLOR][this.getLayerTextureOffset(layerId)].coordWMTS.zoom < level;
+    } else {
+        return false;
+    }
 };
 
 LayeredMaterial.prototype.isLayerTypeDownscaled = function isLayerTypeDownscaled(layerType, level) {
     if (layerType === l_ELEVATION) {
         const tex = this.textures[l_ELEVATION][0];
-        // 3 possible cases
-        //   - initialization (no texture)
-        if (tex === undefined) {
-            return true;
-        }
         //   - blank texture (eg: empty xbil texture)
-        if (tex.level === EMPTY_TEXTURE_LEVEL) {
+        if (tex.coordWMTS.zoom === EMPTY_TEXTURE_ZOOM) {
             return false;
         }
         //   - regular texture
-        return tex.level < level;
+        return tex.coordWMTS.zoom < level;
     } else if (layerType === l_COLOR) {
         // browse each layer
         for (let index = 0, max = this.colorLayersId.length; index < max; index++) {
             const offset = this.getTextureOffsetByLayerIndex(index);
-            if (this.textures[l_COLOR][offset].level < level) {
+            const texture = this.textures[l_COLOR][offset];
+            if (texture.coordWMTS.zoom < level) {
                 return true;
             }
         }
@@ -394,26 +394,41 @@ LayeredMaterial.prototype.isLayerTypeDownscaled = function isLayerTypeDownscaled
 };
 
 LayeredMaterial.prototype.getColorLayerLevelById = function getColorLayerLevelById(colorLayerId) {
-    let index = this.indexOfColorLayer(colorLayerId);
-    // TODO: hiding the "colorLayerId is invalid", it's problem, needs new PR
+    const index = this.indexOfColorLayer(colorLayerId);
     if (index === -1) {
-        index = 0;
+        return -1;
     }
     const slot = this.getTextureOffsetByLayerIndex(index);
-    const tex = this.textures[l_COLOR][slot];
+    const texture = this.textures[l_COLOR][slot];
 
-    return tex ? tex.level : EMPTY_TEXTURE_LEVEL;
+    return texture ? texture.coordWMTS.zoom : EMPTY_TEXTURE_ZOOM;
 };
 
 LayeredMaterial.prototype.getElevationLayerLevel = function getElevationLayerLevel() {
-    return this.textures[l_ELEVATION][0].level;
+    return this.textures[l_ELEVATION][0].coordWMTS.zoom;
 };
 
-LayeredMaterial.prototype.getLayerLevel = function getLayerLevel(layerType, layer) {
+LayeredMaterial.prototype.getLayerLevel = function getLayerLevel(layerType, layerId) {
     if (layerType == l_ELEVATION) {
         return this.getElevationLayerLevel();
     } else {
-        return this.getColorLayerLevelById(layer);
+        return this.getColorLayerLevelById(layerId);
+    }
+};
+
+LayeredMaterial.prototype.getLayerTextures = function getLayerTextures(layerType, layerId) {
+    if (layerType === l_ELEVATION) {
+        return this.textures[l_ELEVATION];
+    }
+
+    const index = this.indexOfColorLayer(layerId);
+
+    if (index !== -1) {
+        const count = this.getTextureCountByLayerIndex(index);
+        const textureIndex = this.getTextureOffsetByLayerIndex(index);
+        return this.textures[l_COLOR].slice(textureIndex, textureIndex + count);
+    } else {
+        throw new Error('No known layer :', layerId);
     }
 };
 
