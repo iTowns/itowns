@@ -28,7 +28,7 @@ function WMS_Provider(/* options*/) {
 
     this.getTextureFloat = function getTextureFloat(buffer) {
         // Start float to RGBA uint8
-        var texture = new THREE.DataTexture(buffer, 256, 256, THREE.AlphaFormat, THREE.FloatType);
+        const texture = new THREE.DataTexture(buffer, 256, 256, THREE.AlphaFormat, THREE.FloatType);
 
         texture.needsUpdate = true;
         return texture;
@@ -73,6 +73,9 @@ WMS_Provider.prototype.preprocessDataLayer = function preprocessDataLayer(layer)
     layer.version = layer.version || '1.3.0';
     layer.style = layer.style || '';
     layer.transparent = layer.transparent || false;
+    layer.bbox = layer.bbox || new BoundingBox();
+    layer.options = {};
+    layer.options.tileMatrixSet = layer.tileMatrixSet || 'WGS84G';
 
     layer.customUrl = `${layer.url
                   }?SERVICE=WMS&REQUEST=GetMap&LAYERS=${layer.name
@@ -90,14 +93,29 @@ WMS_Provider.prototype.tileInsideLimit = function tileInsideLimit(tile, layer) {
     return tile.level > 2 && layer.bbox.intersect(tile.bbox);
 };
 
+function computeTileWMTSCoordinates(tile, wmtsLayer, projection) {
+    // Are WMTS coordinates ready?
+    if (!tile.wmtsCoords) {
+        tile.wmtsCoords = {};
+    }
+
+    const tileMatrixSet = wmtsLayer.options.tileMatrixSet;
+    if (!(tileMatrixSet in tile.wmtsCoords)) {
+        const tileCoord = projection.WGS84toWMTS(tile.bbox);
+
+        tile.wmtsCoords[tileMatrixSet] =
+            projection.getCoordWMTS_WGS84(tileCoord, tile.bbox, tileMatrixSet);
+    }
+}
+
 WMS_Provider.prototype.getColorTexture = function getColorTexture(tile, layer, bbox, pitch) {
     if (!this.tileInsideLimit(tile, layer) || tile.material === null) {
         return Promise.resolve();
     }
 
-    var url = this.url(bbox.as('EPSG:4326'), layer);
+    const url = this.url(bbox.as('EPSG:4326'), layer);
+    const result = { pitch };
 
-    var result = { pitch };
     result.texture = this.cache.getRessource(url);
 
     if (result.texture !== undefined) {
@@ -111,6 +129,8 @@ WMS_Provider.prototype.getColorTexture = function getColorTexture(tile, layer, b
     result.texture.magFilter = THREE.LinearFilter;
     result.texture.minFilter = THREE.LinearFilter;
     result.texture.anisotropy = 16;
+    result.texture.coordWMTS = tile.wmtsCoords[layer.options.tileMatrixSet][0];
+    result.texture.bbox = bbox;
 
     return promise.then(() => {
         this.cache.addRessource(url, result.texture);
@@ -120,10 +140,10 @@ WMS_Provider.prototype.getColorTexture = function getColorTexture(tile, layer, b
 };
 
 WMS_Provider.prototype.getXbilTexture = function getXbilTexture(tile, layer, bbox, pitch) {
-    var url = this.url(bbox, layer);
+    const url = this.url(bbox, layer);
 
     // TODO: this is not optimal: if called again before the IoDriver resolves, it'll load the XBIL again
-    var textureCache = this.cache.getRessource(url);
+    const textureCache = this.cache.getRessource(url);
 
     if (textureCache !== undefined) {
         return Promise.resolve({
@@ -134,19 +154,12 @@ WMS_Provider.prototype.getXbilTexture = function getXbilTexture(tile, layer, bbo
         });
     }
 
-    // bug #74
-    // var limits = layer.tileMatrixSetLimits[coWMTS.zoom];
-    // if (!limits || !coWMTS.isInside(limits)) {
-    //     var texture = -1;
-    //     this.cache.addRessource(url, texture);
-    //     return Promise.resolve(texture);
-    // }
-    // -> bug #74
     return this._IoDriver.read(url).then((result) => {
         result.texture = this.getTextureFloat(result.floatArray);
         result.texture.generateMipmaps = false;
         result.texture.magFilter = THREE.LinearFilter;
         result.texture.minFilter = THREE.LinearFilter;
+        result.texture.coordWMTS = tile.wmtsCoords[layer.options.tileMatrixSet][0];
         result.pitch = pitch;
 
         // In RGBA elevation texture LinearFilter give some errors with nodata value.
@@ -158,62 +171,37 @@ WMS_Provider.prototype.getXbilTexture = function getXbilTexture(tile, layer, bbo
 };
 
 WMS_Provider.prototype.executeCommand = function executeCommand(command) {
-    var layer = command.layer;
-    var tile = command.requester;
-    var ancestor = command.ancestor;
+    const layer = command.layer;
+    const tile = command.requester;
 
-    var supportedFormats = {
+    computeTileWMTSCoordinates(tile, layer, this.projection);
+
+    const supportedFormats = {
         'image/png': this.getColorTexture.bind(this),
         'image/jpg': this.getColorTexture.bind(this),
         'image/jpeg': this.getColorTexture.bind(this),
         'image/x-bil;bits=32': this.getXbilTexture.bind(this),
     };
 
-    var func = supportedFormats[layer.format];
+    const func = supportedFormats[layer.format];
     if (func) {
-        var pitch = ancestor ?
-            this.projection.WMS_WGS84Parent(tile.bbox, ancestor.bbox) :
-            new THREE.Vector3(0, 0, 1);
+        const searchInParent = tile.materials[0].getColorLayerLevelById(layer.id) < 0 && tile.parent.materials[0].getColorLayerLevelById(layer.id) > -1;
+        let pitch = new THREE.Vector3(0, 0, 1);
+        let bbox = tile.bbox;
 
-        var bbox = ancestor ?
-            ancestor.bbox :
-            tile.bbox;
-
+        if (searchInParent) {
+            const texture = tile.parent.material.getLayerTextures(layer.type, layer.id)[0];
+            if (texture) {
+                bbox = texture.bbox;
+                pitch = this.projection.WMS_WGS84Parent(tile.bbox, bbox);
+                return Promise.resolve({ pitch, texture });
+            }
+        }
 
         return func(tile, layer, bbox, pitch);
     } else {
         return Promise.reject(new Error(`Unsupported mimetype ${layer.format}`));
     }
-};
-
-
-/**
- * Returns a texture from the WMS stream with the specified bounding box
- * @param {BoundingBox} bbox: requested bounding box
- * @returns {WMS_Provider_L15.WMS_Provider.prototype@pro;_IoDriver@call;read@call;then}
- */
-WMS_Provider.prototype.getTexture = function getTexture(bbox) {
-    if (bbox === undefined)
-        { return Promise.resolve(-2); }
-
-    var url = this.url(bbox);
-
-    // TODO: this is not optimal: if called again before ioDriverImage resolves, it'll load the image again
-    var textureCache = this.cache.getRessource(url);
-
-    if (textureCache !== undefined) {
-        return Promise.resolve(textureCache);
-    }
-    return this.ioDriverImage.read(url).then((image) => {
-        var result = {};
-        result.texture = new THREE.Texture(image);
-        result.texture.generateMipmaps = false;
-        result.texture.magFilter = THREE.LinearFilter;
-        result.texture.minFilter = THREE.LinearFilter;
-        result.texture.anisotropy = 16;
-        this.cache.addRessource(url, result.texture);
-        return result.texture;
-    });
 };
 
 export default WMS_Provider;

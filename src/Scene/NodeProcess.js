@@ -181,25 +181,6 @@ NodeProcess.prototype.hideNodeChildren = function hideNodeChildren(node) {
     }
 };
 
-/**
- * Return an ancestor of node if it has a texture for this layer
- * that matches its level (not downsampled).
- * Returns null otherwise
- */
-function findAncestorWithValidTextureForLayer(node, layerType, layer) {
-    var parent = node.parent;
-    if (parent && parent.material && parent.material.getLayerLevel) {
-        var level = parent.material.getLayerLevel(layerType, layer ? layer.id : undefined);
-        if (level >= 0) {
-            return node.getNodeAtLevel(level);
-        } else {
-            return findAncestorWithValidTextureForLayer(parent, layerType, layer);
-        }
-    } else {
-        return null;
-    }
-}
-
 function nodeCommandQueuePriorityFunction(node) {
     // We know that 'node' is visible because commands can only be
     // issued for visible nodes.
@@ -253,22 +234,6 @@ function updateNodeImagery(scene, quadtree, node, layersConfig, force) {
             }
         }
 
-        let ancestor = null;
-
-        const currentLevel = node.materials[RendererConstant.FINAL].getColorLayerLevelById(layer.id);
-        // if this tile has no texture (level == -1), try use one from an ancestor
-        if (currentLevel === -1) {
-            ancestor = findAncestorWithValidTextureForLayer(node, l_COLOR, layer);
-        } else {
-            var targetLevel = chooseNextLevelToFetch(layer.updateStrategy.type, node.level, currentLevel, layer.updateStrategy.options);
-            if (targetLevel === currentLevel) {
-                continue;
-            }
-            if (targetLevel < node.level) {
-                ancestor = node.getNodeAtLevel(targetLevel);
-            }
-        }
-
         node.layerUpdateState[layer.id].newTry();
 
         const command = {
@@ -277,24 +242,13 @@ function updateNodeImagery(scene, quadtree, node, layersConfig, force) {
             requester: node,
             priority: nodeCommandQueuePriorityFunction(node),
             earlyDropFunction: refinementCommandCancellationFn,
-            /* specific params */
-            ancestor,
-            /* redraw only if we're aren't using a texture from our parent */
-            redraw: (ancestor == null),
         };
 
         promises.push(quadtree.scheduler.execute(command).then(
             (result) => {
-                const level = ancestor ? ancestor.level : node.level;
-                // Assign .level to texture
                 if (Array.isArray(result)) {
-                    for (let j = 0; j < result.length; j++) {
-                        result[j].texture.level = level;
-                    }
-
                     node.setTexturesLayer(result, l_COLOR, layer.id);
                 } else if (result.texture) {
-                    result.texture.level = level;
                     node.setTexturesLayer([result], l_COLOR, layer.id);
                 } else {
                     // TODO: null texture is probably an error
@@ -330,7 +284,6 @@ function updateNodeElevation(scene, quadtree, node, layersConfig, force) {
     const ts = Date.now();
     const elevationLayers = layersConfig.getElevationLayers();
     let bestLayer = null;
-    let ancestor = null;
 
     const currentElevation = node.materials[RendererConstant.FINAL].getElevationLayerLevel();
 
@@ -338,14 +291,6 @@ function updateNodeElevation(scene, quadtree, node, layersConfig, force) {
     // means that we already tried and failed to download an elevation texture
     if (currentElevation == -1 && node.material.loadedTexturesCount[l_ELEVATION] > 0) {
         return;
-    }
-
-    // First step: if currentElevation is empty (level is -1), we *must* use the texture from
-    // one of our parent. This allows for smooth transitions when subdividing
-    // We don't care about layer status (isLayerFrozen) or limits (tileInsideLimit) because
-    // we simply want to use ancestor's texture with a different pitch
-    if (currentElevation == -1) {
-        ancestor = findAncestorWithValidTextureForLayer(node, l_ELEVATION);
     }
 
     // We don't have a texture to reuse. This can happen in two cases:
@@ -383,13 +328,6 @@ function updateNodeElevation(scene, quadtree, node, layersConfig, force) {
             continue;
         }
 
-        // ancestor is not enough: we also need to know from which layer we're going to request the elevation texture (see how this is done for color texture).
-        // Right now this is done in the `for` loop below but this is hacky because there's no real warranty that bestLayer and ancestor really match.
-        // FIXME: we need to be able to set both ancestor and bestLayer at the same time
-        if (ancestor === null) {
-            ancestor = node.getNodeAtLevel(targetLevel);
-        }
-
         bestLayer = layer;
         break;
     }
@@ -404,10 +342,6 @@ function updateNodeElevation(scene, quadtree, node, layersConfig, force) {
             requester: node,
             priority: nodeCommandQueuePriorityFunction(node),
             earlyDropFunction: refinementCommandCancellationFn,
-            /* specific params */
-            ancestor,
-            /* redraw only if we're aren't using a texture from our parent */
-            redraw: (ancestor == null),
         };
 
         quadtree.scheduler.execute(command).then(
@@ -418,13 +352,9 @@ function updateNodeElevation(scene, quadtree, node, layersConfig, force) {
                     return;
                 }
 
-                if (terrain.texture) {
-                    terrain.texture.level = (ancestor || node).level;
-                }
-
                 if (terrain.max === undefined) {
-                    terrain.min = (ancestor || node).bbox.bottom();
-                    terrain.max = (ancestor || node).bbox.top();
+                    terrain.min = (node.parent || node).bbox.bottom();
+                    terrain.max = (node.parent || node).bbox.top();
                 }
 
                 node.setTextureElevation(terrain);
