@@ -159,19 +159,34 @@ TileMesh.prototype.setBBoxZ = function setBBoxZ(min, max) {
     }
 };
 
-TileMesh.prototype.setTexturesLayer = function setTexturesLayer(textures, layerType, layer) {
+TileMesh.prototype.setTexturesLayer = function setTexturesLayer(textures, layerType, layerId) {
     if (this.material === null) {
         return;
     }
     if (textures) {
-        this.material.setTexturesLayer(textures, layerType, layer);
+        this.material.setTexturesLayer(textures, layerType, layerId);
     }
     this.loadingCheck();
 };
 
-TileMesh.prototype.isColorLayerDownscaled = function isColorLayerDownscaled(layer) {
+TileMesh.prototype.getLayerTextures = function getLayerTextures(layerType, layerId) {
     var mat = this.materials[RendererConstant.FINAL];
-    return mat.isColorLayerDownscaled(layer, this.level);
+    return mat.getLayerTextures(layerType, layerId);
+};
+
+TileMesh.prototype.isColorLayerLoaded = function isColorLayerLoaded(layerId) {
+    var mat = this.materials[RendererConstant.FINAL];
+    return mat.getColorLayerLevelById(layerId) > -1;
+};
+
+TileMesh.prototype.isElevationLayerLoaded = function isElevationLayerLoaded() {
+    var mat = this.materials[RendererConstant.FINAL];
+    return mat.getElevationLayerLevel() > -1;
+};
+
+TileMesh.prototype.isColorLayerDownscaled = function isColorLayerDownscaled(layerId) {
+    var mat = this.materials[RendererConstant.FINAL];
+    return mat.isColorLayerDownscaled(layerId, this.level);
 };
 
 TileMesh.prototype.isLayerTypeDownscaled = function isLayerTypeDownscaled(layerType) {

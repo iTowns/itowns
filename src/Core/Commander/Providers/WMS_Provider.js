@@ -78,33 +78,42 @@ WMS_Provider.prototype.tileInsideLimit = function tileInsideLimit(tile, layer) {
     return tile.level > 2 && layer.bbox.intersect(tile.bbox);
 };
 
-WMS_Provider.prototype.getColorTexture = function getColorTexture(tile, layer, bbox, pitch) {
+WMS_Provider.prototype.getColorTexture = function getColorTexture(tile, layer) {
     if (!this.tileInsideLimit(tile, layer) || tile.material === null) {
         return Promise.resolve();
     }
 
-    const url = this.url(bbox.as('EPSG:4326'), layer);
+    const url = this.url(tile.bbox.as('EPSG:4326'), layer);
+    const pitch = new THREE.Vector3(0, 0, 1);
     const result = { pitch };
 
     return this.getColorTextureByUrl(url).then((texture) => {
         result.texture = texture;
         result.texture.coordWMTS = tile.wmtsCoords[layer.options.tileMatrixSet][0];
-        result.texture.bbox = bbox;
+        result.texture.bbox = tile.bbox;
         return result;
     });
 };
 
-WMS_Provider.prototype.getXbilTexture = function getXbilTexture(tile, layer, bbox, pitch) {
-    const url = this.url(bbox, layer);
-    return this.getXBilTextureByUrl(url, pitch).then((result) => {
+WMS_Provider.prototype.getXbilTexture = function getXbilTexture(tile, layer) {
+    const url = this.url(tile.bbox, layer);
+    return this.getXBilTextureByUrl(url, new THREE.Vector3(0, 0, 1)).then((result) => {
         result.texture.coordWMTS = tile.wmtsCoords[layer.options.tileMatrixSet][0];
         return result;
     });
 };
 
 WMS_Provider.prototype.executeCommand = function executeCommand(command) {
-    const layer = command.layer;
+    const parentTextures = command.parentTextures;
     const tile = command.requester;
+
+    if (parentTextures) {
+        const texture = parentTextures[0];
+        const pitch = this.projection.WMS_WGS84Parent(tile.bbox, texture.bbox);
+        return Promise.resolve({ pitch, texture });
+    }
+
+    const layer = command.layer;
 
     computeTileWMTSCoordinates(tile, layer, this.projection);
 
@@ -116,24 +125,13 @@ WMS_Provider.prototype.executeCommand = function executeCommand(command) {
     };
 
     const func = supportedFormats[layer.format];
+
     if (func) {
-        const searchInParent = tile.materials[0].getColorLayerLevelById(layer.id) < 0 && tile.parent.materials[0].getColorLayerLevelById(layer.id) > -1;
-        let pitch = new THREE.Vector3(0, 0, 1);
-        let bbox = tile.bbox;
-
-        if (searchInParent) {
-            const texture = tile.parent.material.getLayerTextures(layer.type, layer.id)[0];
-            if (texture) {
-                bbox = texture.bbox;
-                pitch = this.projection.WMS_WGS84Parent(tile.bbox, bbox);
-                return Promise.resolve({ pitch, texture });
-            }
-        }
-
-        return func(tile, layer, bbox, pitch);
+        return func(tile, layer);
     } else {
         return Promise.reject(new Error(`Unsupported mimetype ${layer.format}`));
     }
 };
+
 
 export default WMS_Provider;

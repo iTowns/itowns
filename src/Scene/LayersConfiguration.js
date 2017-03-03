@@ -4,7 +4,6 @@
  * Description: Le layer est une couche de données. Cette couche peut etre des images ou de l'information 3D. Les requètes de cette couche sont acheminées par une interfaceCommander.
  *
  */
-import { l_COLOR, l_ELEVATION } from '../Renderer/LayeredMaterial';
 
 /**
  *
@@ -48,13 +47,11 @@ function defaultState(seq) {
 }
 
 LayersConfiguration.prototype.addElevationLayer = function addElevationLayer(layer) {
-    layer.type = l_ELEVATION;
     this.elevationLayers.push(layer);
     this.layersState[layer.id] = defaultState();
 };
 
 LayersConfiguration.prototype.addColorLayer = function addColorLayer(layer) {
-    layer.type = l_COLOR;
     this.colorLayers.push(layer);
     this.layersState[layer.id] = defaultState(this.colorLayers.length - 1);
 };
