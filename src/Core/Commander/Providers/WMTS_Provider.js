@@ -15,10 +15,26 @@ import CacheRessource from './CacheRessource';
 
 const SIZE_TEXTURE_TILE = 256;
 
-function WMTS_Provider(options) {
-    // Constructor
+export function computeTileWMTSCoordinates(tile, wmtsLayer, projection) {
+    // Are WMTS coordinates ready?
+    if (!tile.wmtsCoords) {
+        tile.wmtsCoords = {};
+    }
 
+    const tileMatrixSet = wmtsLayer.options.tileMatrixSet;
+    if (!(tileMatrixSet in tile.wmtsCoords)) {
+        const tileCoord = projection.WGS84toWMTS(tile.bbox);
+
+        tile.wmtsCoords[tileMatrixSet] =
+            projection.getCoordWMTS_WGS84(tileCoord, tile.bbox, tileMatrixSet);
+    }
+}
+
+function WMTS_Provider(options) {
     Provider.call(this, new IoDriver_XBIL());
+
+    // CacheRessource is necessary for neighboring PM textures
+    // Info : THREE.js have cache image https://github.com/mrdoob/three.js/blob/master/src/loaders/ImageLoader.js#L25
     this.cache = CacheRessource();
     this.projection = new Projection();
     this.support = options.support || false;
@@ -33,9 +49,7 @@ function WMTS_Provider(options) {
             // Start float to RGBA uint8
             // var bufferUint = new Uint8Array(buffer.buffer);
             // var texture = new THREE.DataTexture(bufferUint, 256, 256);
-
             const texture = new THREE.DataTexture(buffer, SIZE_TEXTURE_TILE, SIZE_TEXTURE_TILE, THREE.AlphaFormat, THREE.FloatType);
-
             texture.needsUpdate = true;
             return texture;
         }; }
@@ -53,10 +67,6 @@ WMTS_Provider.prototype.customUrl = function customUrl(layer, url, tilematrix, r
     urld = urld.replace('%COL', col.toString());
 
     return urld;
-};
-
-WMTS_Provider.prototype.removeLayer = function removeLayer(/* idLayer*/) {
-
 };
 
 WMTS_Provider.prototype.preprocessDataLayer = function preprocessDataLayer(layer) {
@@ -104,6 +114,21 @@ WMTS_Provider.prototype.url = function url(coWMTS, layer) {
     return this.customUrl(layer, layer.customUrl, coWMTS.zoom, coWMTS.row, coWMTS.col);
 };
 
+
+WMTS_Provider.prototype.cropXbilTexture = function cropXbilTexture(texture, pitch) {
+    const minmax = this._IoDriver.computeMinMaxElevation(
+                texture.image.data,
+                SIZE_TEXTURE_TILE, SIZE_TEXTURE_TILE,
+                pitch);
+    return Promise.resolve(
+        {
+            pitch,
+            texture,
+            min: minmax.min,
+            max: minmax.max,
+        });
+};
+
 /**
  * return texture float alpha THREE.js of MNT
  * @param {type} coWMTS : coord WMTS
@@ -121,47 +146,37 @@ WMTS_Provider.prototype.getXbilTexture = function getXbilTexture(tile, layer) {
                 coordWMTS,
                 Math.max(layer.zoom.min, parentZoom),
                 pitch);
-            const texture = tile.parent.material.textures[0][0];
-            const minmax = this._IoDriver.computeMinMaxElevation(
-                texture.image.data,
-                SIZE_TEXTURE_TILE, SIZE_TEXTURE_TILE,
-                pitch);
-            return Promise.resolve(
-                {
-                    pitch,
-                    texture,
-                    min: minmax.min,
-                    max: minmax.max,
-                });
+            const texture = tile.parent.material.getLayerTextures(layer.type)[0];
+            return this.cropXbilTexture(texture, pitch);
         }
     }
 
     const url = this.url(coordWMTS, layer);
 
+    return this.getXBilTextureByUrl(url, pitch).then((result) => {
+        result.texture.coordWMTS = coordWMTS;
+        return result;
+    });
+};
+
+WMTS_Provider.prototype.getXBilTextureByUrl = function getXBilTextureByUrl(url, pitch) {
     const textureCache = this.cache.getRessource(url);
 
     if (textureCache !== undefined) {
-        const minmax = this._IoDriver.computeMinMaxElevation(
-            textureCache.floatArray,
-            SIZE_TEXTURE_TILE, SIZE_TEXTURE_TILE,
-            pitch);
-        return Promise.resolve(
-            {
-                pitch,
-                texture: textureCache.texture,
-                min: minmax.min,
-                max: minmax.max,
-            });
+        return this.cropXbilTexture(textureCache, pitch);
     }
 
     return this._IoDriver.read(url).then((result) => {
-        result.pitch = pitch;
+        // RGBA is needed for navigator with no support in texture float
+        // In RGBA elevation texture LinearFilter give some errors with nodata value.
+        // need to rewrite sample function in shader
         result.texture = this.getTextureFloat(result.floatArray);
         result.texture.generateMipmaps = false;
         result.texture.magFilter = THREE.LinearFilter;
         result.texture.minFilter = THREE.LinearFilter;
-        result.texture.coordWMTS = coordWMTS;
-        this.cache.addRessource(url, { texture: result.texture, floatArray: result.floatArray });
+        result.pitch = pitch;
+
+        this.cache.addRessource(url, result.texture);
 
         return result;
     });
@@ -178,44 +193,35 @@ WMTS_Provider.prototype.getColorTexture = function getColorTexture(coordWMTS, pi
     const result = {
         pitch,
     };
+
     const url = this.url(coordWMTS, layer);
 
-    result.texture = this.cache.getRessource(url);
-
-    if (result.texture !== undefined) {
-        return Promise.resolve(result);
-    }
-
-    const { texture, promise } = Fetcher.texture(url);
-
-    result.texture = texture;
-    result.texture.generateMipmaps = false;
-    result.texture.magFilter = THREE.LinearFilter;
-    result.texture.minFilter = THREE.LinearFilter;
-    result.texture.anisotropy = 16;
-    result.texture.coordWMTS = coordWMTS;
-
-    return promise.then(() => {
-        this.cache.addRessource(url, result.texture);
-        result.texture.needsUpdate = true;
+    return this.getColorTextureByUrl(url).then((texture) => {
+        result.texture = texture;
+        result.texture.coordWMTS = coordWMTS;
         return result;
     });
 };
 
-function computeTileWMTSCoordinates(tile, wmtsLayer, projection) {
-    // Are WMTS coordinates ready?
-    if (!tile.wmtsCoords) {
-        tile.wmtsCoords = {};
+WMTS_Provider.prototype.getColorTextureByUrl = function getColorTextureByUrl(url) {
+    const textureCached = this.cache.getRessource(url);
+
+    if (textureCached !== undefined) {
+        return Promise.resolve(textureCached);
     }
 
-    const tileMatrixSet = wmtsLayer.options.tileMatrixSet;
-    if (!(tileMatrixSet in tile.wmtsCoords)) {
-        const tileCoord = projection.WGS84toWMTS(tile.bbox);
+    const { texture, promise } = Fetcher.texture(url);
 
-        tile.wmtsCoords[tileMatrixSet] =
-            projection.getCoordWMTS_WGS84(tileCoord, tile.bbox, tileMatrixSet);
-    }
-}
+    texture.generateMipmaps = false;
+    texture.magFilter = THREE.LinearFilter;
+    texture.minFilter = THREE.LinearFilter;
+    texture.anisotropy = 16;
+
+    return promise.then(() => {
+        this.cache.addRessource(url, texture);
+        return texture;
+    });
+};
 
 WMTS_Provider.prototype.executeCommand = function executeCommand(command) {
     const layer = command.layer;
