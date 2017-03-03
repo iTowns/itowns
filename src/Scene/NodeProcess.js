@@ -235,13 +235,14 @@ function updateNodeImagery(scene, quadtree, node, layersConfig, force) {
         }
 
         node.layerUpdateState[layer.id].newTry();
-
+        const searchInParent = !node.isColorLayerLoaded(layer.id) && node.parent.isColorLayerLoaded(layer.id);
         const command = {
             /* mandatory */
             layer,
             requester: node,
             priority: nodeCommandQueuePriorityFunction(node),
             earlyDropFunction: refinementCommandCancellationFn,
+            parentTextures: searchInParent ? node.parent.getLayerTextures(l_COLOR, layer.id) : undefined,
         };
 
         promises.push(quadtree.scheduler.execute(command).then(
@@ -336,12 +337,15 @@ function updateNodeElevation(scene, quadtree, node, layersConfig, force) {
     if (bestLayer !== null) {
         node.layerUpdateState[bestLayer.id].newTry();
 
+        const searchInParent = (!node.isElevationLayerLoaded() && node.parent.isElevationLayerLoaded()) || (node.level > bestLayer.zoom.max);
+
         const command = {
             /* mandatory */
             layer: bestLayer,
             requester: node,
             priority: nodeCommandQueuePriorityFunction(node),
             earlyDropFunction: refinementCommandCancellationFn,
+            parentTextures: searchInParent ? node.parent.getLayerTextures(l_ELEVATION) : undefined,
         };
 
         quadtree.scheduler.execute(command).then(
