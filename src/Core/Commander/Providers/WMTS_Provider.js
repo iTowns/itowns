@@ -134,21 +134,16 @@ WMTS_Provider.prototype.cropXbilTexture = function cropXbilTexture(texture, pitc
  * @param {type} coWMTS : coord WMTS
  * @returns {WMTS_Provider_L15.WMTS_Provider.prototype@pro;_IoDriver@call;read@call;then}
  */
-WMTS_Provider.prototype.getXbilTexture = function getXbilTexture(tile, layer) {
+WMTS_Provider.prototype.getXbilTexture = function getXbilTexture(tile, layer, parentTextures) {
     let coordWMTS = tile.wmtsCoords[layer.options.tileMatrixSet][0];
     const pitch = new THREE.Vector3(0.0, 0.0, 1.0);
-    const searchInParent = tile.material.getElevationLayerLevel() < 0;
 
-    if (searchInParent || coordWMTS.zoom > layer.zoom.max) {
-        const parentZoom = tile.parent.material.getElevationLayerLevel();
-        if (parentZoom > -1) {
-            coordWMTS = this.projection.WMTS_WGS84Parent(
-                coordWMTS,
-                Math.max(layer.zoom.min, parentZoom),
-                pitch);
-            const texture = tile.parent.material.getLayerTextures(layer.type)[0];
-            return this.cropXbilTexture(texture, pitch);
-        }
+    if (parentTextures) {
+        coordWMTS = this.projection.WMTS_WGS84Parent(
+            coordWMTS,
+            parentTextures[0].coordWMTS.zoom,
+            pitch);
+        return this.cropXbilTexture(parentTextures[0], pitch);
     }
 
     const url = this.url(coordWMTS, layer);
@@ -189,16 +184,14 @@ WMTS_Provider.prototype.getXBilTextureByUrl = function getXBilTextureByUrl(url, 
  * @param {type} id
  * @returns {WMTS_Provider_L15.WMTS_Provider.prototype@pro;ioDriverImage@call;read@call;then}
  */
-WMTS_Provider.prototype.getColorTexture = function getColorTexture(coordWMTS, pitch, layer) {
-    const result = {
-        pitch,
-    };
-
+WMTS_Provider.prototype.getColorTexture = function getColorTexture(coordWMTS, layer) {
     const url = this.url(coordWMTS, layer);
-
     return this.getColorTextureByUrl(url).then((texture) => {
+        const result = {};
         result.texture = texture;
         result.texture.coordWMTS = coordWMTS;
+        result.pitch = new THREE.Vector3(0, 0, 1);
+
         return result;
     });
 };
@@ -226,6 +219,7 @@ WMTS_Provider.prototype.getColorTextureByUrl = function getColorTextureByUrl(url
 WMTS_Provider.prototype.executeCommand = function executeCommand(command) {
     const layer = command.layer;
     const tile = command.requester;
+    const parentTextures = command.parentTextures;
 
     computeTileWMTSCoordinates(tile, layer, this.projection);
 
@@ -238,7 +232,7 @@ WMTS_Provider.prototype.executeCommand = function executeCommand(command) {
 
     const func = supportedFormats[layer.options.mimetype];
     if (func) {
-        return func(tile, layer);
+        return func(tile, layer, parentTextures);
     } else {
         return Promise.reject(new Error(`Unsupported mimetype ${layer.options.mimetype}`));
     }
@@ -258,7 +252,7 @@ WMTS_Provider.prototype.tileInsideLimit = function tileInsideLimit(tile, layer) 
     return layer.zoom.min <= tile.level;
 };
 
-WMTS_Provider.prototype.getColorTextures = function getColorTextures(tile, layer) {
+WMTS_Provider.prototype.getColorTextures = function getColorTextures(tile, layer, parentTextures) {
     const promises = [];
     if (tile.material === null) {
         return Promise.resolve();
@@ -267,30 +261,18 @@ WMTS_Provider.prototype.getColorTextures = function getColorTextures(tile, layer
     // Request parent's texture if no texture at all
     if (this.tileInsideLimit(tile, layer)) {
         const bcoord = tile.wmtsCoords[layer.options.tileMatrixSet];
-        let parentZoom = layer.zoom.min;
-        let searchInParent = tile.material.getColorLayerLevelById(layer.id) < 0;
-        let texturesParent;
-
-        if (searchInParent) {
-            parentZoom = tile.parent.material.getColorLayerLevelById(layer.id);
-            if (parentZoom < 0) {
-                searchInParent = false;
-            } else {
-                texturesParent = tile.parent.material.getLayerTextures(layer.type, layer.id);
-            }
-        }
 
         for (let row = bcoord[1].row; row >= bcoord[0].row; row--) {
             let coordWMTS = new CoordWMTS(bcoord[0].zoom, row, bcoord[0].col);
-            const pitch = new THREE.Vector3(0.0, 0.0, 1.0);
 
-            if (searchInParent) {
-                coordWMTS = this.projection.WMTS_WGS84Parent(coordWMTS, parentZoom, pitch);
+            if (parentTextures) {
+                const pitch = new THREE.Vector3();
+                coordWMTS = this.projection.WMTS_WGS84Parent(coordWMTS, parentTextures[0].coordWMTS.zoom, pitch);
                 promises.push(Promise.resolve({ pitch,
-                    texture: texturesParent.find(texture => texture.coordWMTS.equals(coordWMTS)),
+                    texture: parentTextures.find(texture => texture.coordWMTS.equals(coordWMTS)),
                 }));
             } else {
-                promises.push(this.getColorTexture(coordWMTS, pitch, layer));
+                promises.push(this.getColorTexture(coordWMTS, layer));
             }
         }
     }
