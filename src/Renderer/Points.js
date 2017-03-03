@@ -1,8 +1,8 @@
 import * as THREE from 'three';
-import ItownsPointMaterial from '../../../Renderer/ItownsPointMaterial';
+import ItownsPointMaterial from './ItownsPointMaterial';
 
 
-const ItownsPoint = function ItownsPoint(options) {
+const Points = function Points(options) {
     THREE.Points.call(this);
 
     if (options === undefined)
@@ -15,10 +15,10 @@ const ItownsPoint = function ItownsPoint(options) {
     this.material = new ItownsPointMaterial(options);
 };
 
-ItownsPoint.prototype = Object.create(THREE.Points.prototype);
-ItownsPoint.prototype.constructor = ItownsPoint;
+Points.prototype = Object.create(THREE.Points.prototype);
+Points.prototype.constructor = Points;
 
-ItownsPoint.prototype.addPoint = function addPoint(v, c, s) {
+Points.prototype.addPoint = function addPoint(v, c, s) {
     if (v instanceof THREE.Vector3) {
         this.positions.push(v.x, v.y, v.z);
 
@@ -29,12 +29,12 @@ ItownsPoint.prototype.addPoint = function addPoint(v, c, s) {
     }
 };
 
-ItownsPoint.prototype.process = function process() {
+Points.prototype.process = function process() {
     this.geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(this.positions), 3));
     this.geometry.addAttribute('customColor', new THREE.BufferAttribute(new Float32Array(this.colors), 3));
     this.geometry.addAttribute('size', new THREE.BufferAttribute(new Float32Array(this.sizes), 1));
 };
 
 
-export default ItownsPoint;
+export default Points;
 

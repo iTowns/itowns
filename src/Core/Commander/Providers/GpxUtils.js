@@ -7,8 +7,8 @@
 import * as THREE from 'three';
 import Fetcher from './Fetcher';
 import Coordinates from '../../Geographic/Coordinates';
-import ItownsLine from './ItownsLine';
-import ItownsPoint from './ItownsPoint';
+import Lines from '../../../Renderer/Lines';
+import Points from '../../../Renderer/Points';
 
 function _gpxToWayPointsArray(gpxXML) {
     return gpxXML.getElementsByTagName('wpt');
@@ -31,16 +31,17 @@ function _gpxToWayPointsMesh(gpxXML) {
 
     if (wayPts.length) {
         var colorPoint = new THREE.Color('rgb(0, 255, 0)');
-        var points = new ItownsPoint({
-            time: 1.0,
+        var points = new Points({
             useTexture: false,
-            texture: 'data/strokes/pstar1.png',
             color: [colorPoint.r, colorPoint.g, colorPoint.b],
             opacity: 1.0,
         });
 
         for (var i = 0; i < wayPts.length; i++) {
-            points.addPoint(_gpxPtToCartesian(wayPts[i]), colorPoint, 600.0);
+            if (gpxXML.center === undefined) {
+                gpxXML.center = _gpxPtToCartesian(wayPts[0]);
+            }
+            points.addPoint(_gpxPtToCartesian(wayPts[i]).sub(gpxXML.center), colorPoint, 600.0);
         }
 
         points.process();
@@ -56,18 +57,19 @@ function _gpxToWTrackPointsMesh(gpxXML) {
 
     if (trackPts.length) {
         var colorLine = new THREE.Color('rgb(255, 0, 0)');
-        var line = new ItownsLine({
-            time: 1.0,
-            linewidth: 100.0,
-            texture: 'data/strokes/hway1.png',
+        var line = new Lines({
+            linewidth: 20.0,
             useTexture: false,
             opacity: 1.0,
-            sizeAttenuation: 1.0,
+            sizeAttenuation: false,
             color: [colorLine.r, colorLine.g, colorLine.b],
         });
 
         for (var k = 0; k < trackPts.length; k++) {
-            line.addPoint(_gpxPtToCartesian(trackPts[k]));
+            if (gpxXML.center === undefined) {
+                gpxXML.center = _gpxPtToCartesian(trackPts[0]);
+            }
+            line.addPoint(_gpxPtToCartesian(trackPts[k]).sub(gpxXML.center));
         }
 
         line.process();
@@ -98,6 +100,14 @@ function _gpxToMesh(gpxXML) {
     if (wayPts) {
         gpxMesh.add(wayPts);
     }
+
+    gpxMesh.matrixWorld.elements = new Float64Array(16);
+    gpxMesh.matrix.elements = new Float64Array(16);
+    gpxMesh.position.copy(gpxXML.center);
+    gpxMesh.updateMatrix();
+    gpxMesh.updateMatrixWorld(true);
+    gpxMesh.matrixAutoUpdate = false;
+    gpxMesh.matrixWorldNeedsUpdate = false;
 
     return gpxMesh;
 }
