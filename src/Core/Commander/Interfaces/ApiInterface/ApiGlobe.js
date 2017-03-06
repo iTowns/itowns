@@ -255,7 +255,7 @@ ApiGlobe.prototype.removeImageryLayer = function removeImageryLayer(id) {
     if (typeof id !== 'string') {
         throw new ParameterError(errorFormater.getMessage('PARAM_TYPE', 'id'));
     }
-    if (!this.layersState[id]) {
+    if (!this.scene.getMap().layersConfiguration.layersState[id]) {
         throw new ParameterError(errorFormater.getMessage('PARAM_UNKNOWN', 'id'));
     }
 
@@ -536,7 +536,7 @@ ApiGlobe.prototype.setLayerVisibility = function setLayerVisibility(id, visible)
     if (typeof id !== 'string') {
         throw new ParameterError(errorFormater.getMessage('PARAM_TYPE', 'id'));
     }
-    if (!this.layersState[id]) {
+    if (!this.scene.getMap().layersConfiguration.layersState[id]) {
         throw new ParameterError(errorFormater.getMessage('PARAM_UNKNOWN', 'id'));
     }
     if (typeof visible === 'undefined') {
@@ -567,7 +567,7 @@ ApiGlobe.prototype.setLayerOpacity = function setLayerOpacity(id, opacity) {
     if (typeof id !== 'string') {
         throw new ParameterError(errorFormater.getMessage('PARAM_TYPE', 'id'));
     }
-    if (!this.layersState[id]) {
+    if (!this.scene.getMap().layersConfiguration.layersState[id]) {
         throw new ParameterError(errorFormater.getMessage('PARAM_UNKNOWN', 'id'));
     }
     if (typeof opacity === 'undefined') {
