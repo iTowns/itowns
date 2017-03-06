@@ -16,6 +16,33 @@ This version includes a globe visualization mode.
 
 ![iTowns screenshot](http://www.itowns.fr/videos/itowns2.jpg)
 
+## How to use Itowns in your project
+
+You can use it through npm (the preferred way) or download a bundle from our github release page.
+
+### With NPM
+
+In your project:
+
+```bash
+npm install --save itowns
+```
+This package contains the ES5-compatible sources of Itowns.
+
+If you're using a module bundler (like wepback), you can directly `require('itowns')` in your code.
+
+Alternatively, we provide a bundle you can directly include in your html files that exposes `itowns` in  `window`:
+```html
+<script src="node_modules/itowns/dist/itowns.js"></script>
+```
+
+**/!\ Please note that this bundle also contains the dependencies**.
+
+### From a release bundle
+
+See our [release page](https://github.com/iTowns/itowns2/releases) (coming soon).
+
+
 ## Supported data types
 
 - Aerial photography 

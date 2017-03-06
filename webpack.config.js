@@ -22,6 +22,7 @@ module.exports = {
     libraryTarget: 'umd',
     umdNamedDefine: true
   },
+  plugins: [definePlugin, new webpack.optimize.CommonsChunkPlugin({ name: 'itowns' }) ],
   module: {
     preLoaders: [
       {
@@ -80,5 +81,4 @@ module.exports = {
   devServer: {
     publicPath: '/dist/'
   },
-  plugins: [definePlugin]
 };
