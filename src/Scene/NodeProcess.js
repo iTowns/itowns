@@ -127,6 +127,7 @@ NodeProcess.prototype.subdivideNode = function subdivideNode(node, camera, param
 
                 // request layers (imagery/elevation) update
                 this.refineNodeLayers(child, camera, params);
+                this.fetchContentLayers(child, camera, params);
 
                 if (__DEBUG__) {
                     const geometryLayer = params.layersConfig.getGeometryLayers()[0];
@@ -174,6 +175,12 @@ NodeProcess.prototype.refineNodeLayers = function refineNodeLayers(node, camera,
     }
 };
 
+NodeProcess.prototype.fetchContentLayers = function fetchContentLayers(node, camera, params) {
+    if ((node.content.size < params.layersConfig.getGeometryLayers().length)) {
+        updateNodeFeature(this.scene, params.tree, node, params.layersConfig, !node.loaded);
+    }
+};
+
 NodeProcess.prototype.hideNodeChildren = function hideNodeChildren(node) {
     for (var i = 0; i < node.children.length; i++) {
         var child = node.children[i];
@@ -215,6 +222,60 @@ function nodeCommandQueuePriorityFunction(node) {
     } else {
         return 10;
     }
+}
+
+const nullMesh = new THREE.Mesh();
+
+function updateNodeFeature(scene, quadtree, node, layersConfig) {
+    const featureLayers = layersConfig.getGeometryLayers();
+    const promises = [];
+    const ts = Date.now();
+    for (let i = 0; i < featureLayers.length; i++) {
+        const layer = featureLayers[i];
+        const protocol = layer.protocol;
+        if (protocol.toLowerCase() == 'wfs') {
+            if (layer.tileInsideLimit(node, layer) && !node.content.get(layer.id)) {
+                if (node.layerUpdateState[layer.id] === undefined) {
+                    node.layerUpdateState[layer.id] = new LayerUpdateState();
+                }
+
+                if (!node.layerUpdateState[layer.id].canTryUpdate(ts)) {
+                    continue;
+                }
+
+                node.layerUpdateState[layer.id].newTry();
+
+                const command = {
+                    /* mandatory */
+                    layer,
+                    requester: node,
+                    priority: nodeCommandQueuePriorityFunction(node),
+                    earlyDropFunction: refinementCommandCancellationFn,
+                };
+
+                promises.push(quadtree.scheduler.execute(command).then((result) => {
+                    // if request return empty json, WFS_Provider.getFeatures return undefined
+                    if (result && result.feature) {
+                        result.feature.layer.root.add(result.feature);
+                        node.content.set(layer.id, result.feature);
+                    }
+                    else {
+                        node.content.set(layer.id, nullMesh);
+                    }
+                    node.layerUpdateState[layer.id].success();
+                },
+                (err) => {
+                    if (err instanceof CancelledCommandException) {
+                        node.layerUpdateState[layer.id].success();
+                    } else {
+                        node.layerUpdateState[layer.id].failure(Date.now());
+                        scene.notifyChange(node.layerUpdateState[layer.id].secondsUntilNextTry() * 1000, false);
+                    }
+                }));
+            }
+        }
+    }
+    return Promise.all(promises).then(() => node);
 }
 
 function updateNodeImagery(scene, quadtree, node, layersConfig, force) {
@@ -464,6 +525,10 @@ NodeProcess.prototype.processNode = function processNode(node, camera, params) {
             // so try to refine its textures
             this.refineNodeLayers(node, camera, params);
         }
+
+        // Content needs to be fetched even if the tile is hidden.
+        // Because content is always visible and is same for superior level.
+        this.fetchContentLayers(node, camera, params);
 
         // display children if possible
         node.setDisplayed(!hidden);

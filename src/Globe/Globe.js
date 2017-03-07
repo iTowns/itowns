@@ -13,8 +13,7 @@ import TileMesh from './TileMesh';
 import Atmosphere from './Atmosphere';
 import Clouds from './Clouds';
 import Capabilities from '../Core/System/Capabilities';
-import Coordinates, { UNIT } from '../Core/Geographic/Coordinates';
-import BasicMaterial from '../Renderer/BasicMaterial';
+import { UNIT } from '../Core/Geographic/Coordinates';
 import LayersConfiguration from '../Scene/LayersConfiguration';
 import { SSE_SUBDIVISION_THRESHOLD } from '../Scene/NodeProcess';
 import BoundingBox from '../Scene/BoundingBox';
@@ -35,61 +34,25 @@ function Globe(ellipsoid, gLDebug) {
     this.NOIE = !caps.isInternetExplorer();
     this.gLDebug = gLDebug;
 
-    this.batiments = new Layer();
-    this.layerWGS84Zup = new Layer();
-
-    var kml = new THREE.Object3D();
-    this.batiments.add(kml);
-
-    this.batiments.visible = false;
-
-    kml.visible = false;
-
     this.gpxTracks = new Layer();
     var gpx = new THREE.Object3D();
     this.gpxTracks.add(gpx);
     this.gpxTracks.visible = true;
     gpx.visible = true;
 
-    this.tiles = new Quadtree(TileMesh, this.SchemeTileWMTS(schemeTile_1), kml);
+    this.tiles = new Quadtree(TileMesh, this.SchemeTileWMTS(schemeTile_1), null);
     this.layersConfiguration = new LayersConfiguration();
 
     this.atmosphere = this.NOIE ? new Atmosphere(ellipsoid) : undefined;
     this.clouds = new Clouds();
 
-    var material = new BasicMaterial(new THREE.Color(1, 0, 0));
-
-    var geometry = new THREE.SphereGeometry(5);
-    var batiment = new THREE.Mesh(geometry, material);
-
-    const position = new Coordinates('EPSG:4326', 48.846931, 2.337219, 50).as('EPSG:4978').xyz();
-
-    batiment.frustumCulled = false;
-    // material.wireframe      = true;
-    batiment.position.copy(position);
-
-    var material2 = new BasicMaterial(new THREE.Color(1, 0.5, 1));
-    material2.visible = false;
-    var batiment2 = new THREE.Mesh(geometry, material2);
-    var position2 = new Coordinates('EPSG:4326', 0.001, 48.87, 100).as('EPSG:4978').xyz();
-    batiment2.frustumCulled = false;
-    material2.wireframe = true;
-    batiment2.position.copy(position2);
-
-    // kml.add( batiment );
-    // kml.add( batiment2 );
-
     var zUp = new THREE.Object3D();
-
     zUp.quaternion.multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), -Math.PI / 2));
     zUp.quaternion.multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), Math.PI));
-
+    this.layerWGS84Zup = new Layer();
     this.layerWGS84Zup.add(zUp);
-    zUp.add(new THREE.AxisHelper(10000000));
-    zUp.add(batiment);
 
     this.add(this.tiles);
-    this.add(this.batiments);
     this.add(this.gpxTracks);
     // this.add(this.layerWGS84Zup);
 
@@ -144,12 +107,6 @@ Globe.prototype.showClouds = function showClouds(show, satelliteAnimation) {
     this.clouds.visible = show;
 };
 
-Globe.prototype.showKML = function showKML(show) {
-    this.batiments.visible = show;
-
-    this.batiments.children[0].visible = show;
-};
-
 Globe.prototype.updateLightingPos = function updateLightingPos(pos) {
     this.atmosphere.updateLightingPos(pos);
     this.clouds.updateLightingPos(pos);
@@ -171,14 +128,20 @@ Globe.prototype.setLayerOpacity = function setLayerOpacity(id, opacity) {
 Globe.prototype.setLayerVisibility = function setLayerVisibility(id, visible) {
     this.layersConfiguration.setLayerVisibility(id, visible);
 
-    var cO = function cO(object) {
-        if (object.material.setLayerOpacity) {
-            object.material.setLayerVisibility(object.getIndexLayerColor(id), visible);
-        }
-    };
+    var featureLayer = this.layersConfiguration.getGeometryLayerById(id);
+    if (featureLayer != undefined) {
+        featureLayer.root.layer.visible = visible;
+        featureLayer.root.visible = visible;
+    } else {
+        var cO = function cO(object) {
+            if (object.material.setLayerVisibility) {
+                object.material.setLayerVisibility(object.getIndexLayerColor(id), visible);
+            }
+        };
 
-    // children[0] is rootNode
-    this.tiles.children[0].traverse(cO);
+        // children[0] is rootNode
+        this.tiles.children[0].traverse(cO);
+    }
 };
 
 Globe.prototype.updateLayersOrdering = function updateLayersOrdering() {
@@ -216,7 +179,6 @@ Globe.prototype.getZoomLevel = function getZoomLevel() {
     this.tiles.children[0].traverseVisible(cO);
     return cO();
 };
-
 
 Globe.prototype.computeDistanceForZoomLevel = function computeDistanceForZoomLevel(zoom, camera) {
     return camera.preSSE * Math.pow(this.tiles.minLevel, (this.tiles.maxLevel - zoom + 1)) / SSE_SUBDIVISION_THRESHOLD;
