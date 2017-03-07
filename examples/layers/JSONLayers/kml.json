@@ -1,0 +1,7 @@
+{
+    "protocol": "kml",
+    "id": "Kml",
+    "style": "myStyle",
+    "local": "true",
+    "url": "file:///./examples/layers/croquis.kml"
+}

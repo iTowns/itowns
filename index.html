@@ -10,7 +10,7 @@ and open the template in the editor.
 
     <style type="text/css">
             html {height: 100%}
-        body { margin: 0; overflow:hidden; height:100%}
+            body { margin: 0; overflow:hidden; height:100%}
 
             #viewerDiv {
                 margin : auto auto;
@@ -22,6 +22,34 @@ and open the template in the editor.
             }
             #menuDiv {position: absolute; top:0px; margin-left: 0px;}
 
+            .couponcode:hover .coupontooltip {
+                display: block;
+            }
+
+            .coupontooltip {
+                display: none;
+                background-image: linear-gradient(rgba(231, 185, 27,0.95), rgba(200, 155, 0,0.95));
+                box-shadow: -1px 2px 5px 1px rgba(0, 0, 0, 0.5);
+                margin-top: 28px;
+                margin-left: 28px;
+                padding: 10px;
+                position: absolute;
+                z-index: 1000;
+                width:200px;
+                height:60px;
+                color: #685206;
+                font-family: 'Open Sans',
+                sans-serif;
+                font-size: 14px;
+                font-weight: 300;
+                line-height: 20px;
+                text-align: left;
+            }
+
+            .couponcode {
+                margin:100px;
+            }
+
 
         </style>
         <meta charset="UTF-8">
@@ -30,7 +58,9 @@ and open the template in the editor.
         <script src="node_modules/dat.gui/build/dat.gui.min.js"></script>
     </head>
     <body>
-        <div id="viewerDiv"></div>
+        <div id="viewerDiv" class="couponcode">
+            <span class="coupontooltip"> Globe </span>
+        </div>
         <script src="examples/GUI/GuiTools.js"></script>
         <script src="dist/itowns.js"></script>
         <script src="dist/debug.js"></script>
@@ -66,6 +96,7 @@ and open the template in the editor.
             urlFeatureLayersArray.push('examples/layers/JSONLayers/FL_Buildings.json');
             urlFeatureLayersArray.push('examples/layers/JSONLayers/FL_Point.json');
             urlFeatureLayersArray.push('examples/layers/JSONLayers/FL_Line.json');
+            urlFeatureLayersArray.push('examples/layers/JSONLayers/kml.json');
 
             itowns.viewer.addGeometryLayer(wgs84TileLayer);
             const imageryPromise = itowns.viewer.addImageryLayersFromJSONArray(urlImageryLayers);
@@ -153,6 +184,56 @@ and open the template in the editor.
                 console.info('Globe initialized');
             });
 
-</script>
-</body>
+            const ptScreenClick = {};
+            itowns.viewer.addEventListener('mousedown', () => {
+                ptScreenClick.x = event.clientX - event.target.offsetLeft;
+                ptScreenClick.y = event.clientY - event.target.offsetTop;
+                const objs = itowns.viewer.pickFeature(ptScreenClick, 'wfsBuilding');
+                if (objs[0]) {
+                    objs[0].object.visible = false;
+                    console.log(objs[0].object);
+                }
+            });
+            var tooltip = document.querySelectorAll('.coupontooltip')[0];
+            var visibleTooltip = false;
+
+            document.addEventListener('mousemove', fn, false);
+
+            var mouseDown = 0;
+
+            document.body.onmousedown = function () {
+                ++mouseDown;
+            };
+            document.body.onmouseup = function () {
+                --mouseDown;
+            };
+
+            function fn(e) {
+                if (visibleTooltip) {
+                    const geoCoord = itowns.viewer.pickPosition(e.clientX, e.clientY);
+                    var textTool = '<b>To infinity... and beyond!</b>';
+
+                    if (geoCoord && mouseDown === 0) {
+                        const geo = 'long/lat : ' + geoCoord.longitude(1).toFixed(4) + '/' + geoCoord.latitude(1).toFixed(4)
+                        + '<br> altitude : ' + geoCoord.altitude().toFixed(2);
+
+                        const feature = itowns.viewer.pickFeatureLayer('Kml', { x: geoCoord.longitude(1), y: geoCoord.latitude(1) });
+                        const expression = '<b>' + (feature === undefined ? ' Globe' : feature) + '</b>' + '<br>';
+                        textTool = expression + geo;
+                    }
+
+                    if (!mouseDown) tooltip.innerHTML = textTool;
+                    tooltip.style.left = `${e.pageX}px`;
+                    tooltip.style.top = `${e.pageY}px`;
+                }
+            }
+
+            tooltip.style.visibility = 'hidden';
+
+            menuGlobe.addGUI('ShowToolTip', false, (newValue) => {
+                visibleTooltip = newValue;
+                tooltip.style.visibility = newValue ? 'visible' : 'hidden';
+            });
+        </script>
+    </body>
 </html>

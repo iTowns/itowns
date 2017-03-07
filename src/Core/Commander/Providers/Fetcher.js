@@ -22,6 +22,7 @@ export default {
     },
 
     xml(url) {
+        url = url.replace('file:///', '');
         return fetch(url).then((response) => {
             checkResponse(response);
             return response.text();
