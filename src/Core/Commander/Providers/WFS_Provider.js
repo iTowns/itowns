@@ -70,8 +70,12 @@ WFS_Provider.prototype.preprocessDataLayer = function preprocessDataLayer(layer)
     layer.root = new NodeMesh();
     var featureLayer = new Layer();
     featureLayer.add(layer.root);
-    layer.format = layer.options.mimetype || 'json';
-    layer.crs = layer.projection;
+    if (layer.protocol === 'geojson') {
+        layer.format = 'geojson';
+    } else {
+        layer.format = layer.options.mimetype || 'json';
+    }
+    layer.crs = layer.projection || 'EPSG:4326';
     layer.version = layer.version || '1.3.0';
     layer.customUrl = `${layer.url
                       }SERVICE=WFS&REQUEST=GetFeature&typeName=${layer.title
@@ -122,6 +126,7 @@ WFS_Provider.prototype.getFeatures = function getFeatures(tile, layer) {
             const pointOrder = this.getPointOrder(crs);
             if (pointOrder !== undefined) {
                 const features = feature.features;
+                features.style = features.style || layer.style;
                 if (layer.type == 'poly') {
                     result.feature = this.featureToolBox.GeoJSON2Polygon(features, pointOrder);
                 } else if (layer.type == 'bbox') {

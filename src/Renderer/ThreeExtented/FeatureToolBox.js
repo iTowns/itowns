@@ -66,36 +66,52 @@ FeatureToolBox.prototype.GeoJSON2Polygon = function GeoJSON2Polygon(features, po
 };
 
 FeatureToolBox.prototype.GeoJSON2Box = function GeoJSON2Box(features, pointOrder) {
+    pointOrder = pointOrder || { long: 0, lat: 1 };
     const bboxGroup = new THREE.Object3D();
     const wallGeometry = new THREE.Geometry(); // for the walls
     const roofGeometry = new THREE.Geometry(); // for the roof
-    const center = this.geoArrayTo3D(features[0].geometry.coordinates[0][0][0], 0, pointOrder);
 
-    for (let r = 0; r < features.length; r++) {
-        const height = features[r].properties.hauteur;
-        const altitude = features[r].properties.z_min;
+    // FIXME : see with geojson standard
+    // to get coordinates
+    const typeCoords = !isNaN(features[0].geometry.coordinates[0][0][0][0]);
+    const cc = typeCoords ? features[0].geometry.coordinates[0][0][0] : features[0].geometry.coordinates[0][0];
+    const center = this.geoArrayTo3D(cc, 0, pointOrder);
+
+    for (const feature of features) {
+        const height = feature.height || feature.properties.hauteur;
+        let altitude = 0;
+        if (feature.properties) {
+            altitude = feature.properties.z_min - height;
+        }
+
         const arrPoint2D = [];
-        const polygon = features[r].geometry.coordinates[0][0];
-        const type = features[r].id.substr(0, features[r].id.indexOf('.'));
+        const polygon = typeCoords ? feature.geometry.coordinates[0][0] : feature.geometry.coordinates[0];
 
-        var white;
-        var black;
-        if (type === 'bati_indifferencie') {
+        let white;
+        let black;
+
+        if (!isNaN(feature.id)) {
             white = new THREE.Color(0xffffff);
             black = new THREE.Color(0x000000);
-        } else if (type === 'bati_remarquable') {
-            white = new THREE.Color(0x5555ff);
-            black = new THREE.Color(0x000055);
-        } else if (type === 'bati_industriel') {
-            white = new THREE.Color(0xff5555);
-            black = new THREE.Color(0x550000);
+        } else {
+            const type = feature.id.substr(0, feature.id.indexOf('.'));
+            if (type === 'bati_indifferencie') {
+                white = new THREE.Color(0xffffff);
+                black = new THREE.Color(0x000000);
+            } else if (type === 'bati_remarquable') {
+                white = new THREE.Color(0x5555ff);
+                black = new THREE.Color(0x000055);
+            } else if (type === 'bati_industriel') {
+                white = new THREE.Color(0xff5555);
+                black = new THREE.Color(0x550000);
+            }
         }
 
         if (polygon.length > 2) {
             // VERTICES
             for (let j = 0; j < polygon.length - 1; ++j) {
-                const pgeo2 = this.geoArrayTo3D(polygon[j], altitude, pointOrder).sub(center);
-                const pgeo1 = this.geoArrayTo3D(polygon[j], altitude - height, pointOrder).sub(center);
+                const pgeo2 = this.geoArrayTo3D(polygon[j], altitude + height, pointOrder).sub(center);
+                const pgeo1 = this.geoArrayTo3D(polygon[j], altitude, pointOrder).sub(center);
 
                 arrPoint2D.push(parseFloat(polygon[j][pointOrder.long]), parseFloat(polygon[j][pointOrder.lat]));
                 wallGeometry.vertices.push(pgeo1, pgeo2);
@@ -136,14 +152,16 @@ FeatureToolBox.prototype.GeoJSON2Box = function GeoJSON2Box(features, pointOrder
         // TODO: Use wall building to build roof, and remove cartographicToCartesian using
         const triangles = Earcut(arrPoint2D);
         for (let i = 0; i < triangles.length; i += 3) {
-            roofGeometry.vertices.push(this.geoCoordTo3D(arrPoint2D[triangles[i] * 2], arrPoint2D[triangles[i] * 2 + 1], altitude).sub(center));
-            roofGeometry.vertices.push(this.geoCoordTo3D(arrPoint2D[triangles[i + 1] * 2], arrPoint2D[triangles[i + 1] * 2 + 1], altitude).sub(center));
-            roofGeometry.vertices.push(this.geoCoordTo3D(arrPoint2D[triangles[i + 2] * 2], arrPoint2D[triangles[i + 2] * 2 + 1], altitude).sub(center));
+            roofGeometry.vertices.push(this.geoCoordTo3D(arrPoint2D[triangles[i] * 2], arrPoint2D[triangles[i] * 2 + 1], altitude + height).sub(center));
+            roofGeometry.vertices.push(this.geoCoordTo3D(arrPoint2D[triangles[i + 1] * 2], arrPoint2D[triangles[i + 1] * 2 + 1], altitude + height).sub(center));
+            roofGeometry.vertices.push(this.geoCoordTo3D(arrPoint2D[triangles[i + 2] * 2], arrPoint2D[triangles[i + 2] * 2 + 1], altitude + height).sub(center));
 
             const face = new THREE.Face3(
                 roofGeometry.vertices.length - 3,
                 roofGeometry.vertices.length - 2,
                 roofGeometry.vertices.length - 1);
+
+            face.vertexColors = [white, white, white];
 
             roofGeometry.faces.push(face);
         }
@@ -151,11 +169,21 @@ FeatureToolBox.prototype.GeoJSON2Box = function GeoJSON2Box(features, pointOrder
 
     roofGeometry.computeFaceNormals();
 
-    const wallMat = new BasicMaterial(new THREE.Color('#C6BCB0'));
-    const roofMat = new BasicMaterial(new THREE.Color('#839498'));
+    const wallMat = new BasicMaterial(
+        new THREE.Color(features.style.color || '#C6BCB0'),
+        features.style.opacity || 1.0);
+
+    const roofMat = new BasicMaterial(new THREE.Color(features.style.colorRoof || '#839498'),
+        features.style.opacity || 1.0);
 
     wallMat.uniforms.lightingEnabled.value = true;
     roofMat.uniforms.lightingEnabled.value = false;
+
+    wallMat.uniforms.enabledCutColor.value = false;
+    roofMat.uniforms.enabledCutColor.value = false;
+
+    wallMat.transparent = true;
+    roofMat.transparent = true;
 
     const wall = new THREE.Mesh(wallGeometry, wallMat);
     wall.frustumCulled = false;
@@ -163,7 +191,7 @@ FeatureToolBox.prototype.GeoJSON2Box = function GeoJSON2Box(features, pointOrder
     roof.frustumCulled = false;
 
     bboxGroup.add(wall);
-    bboxGroup.add(roof);
+    wall.add(roof);
 
     prepareToRtc(bboxGroup, center);
 
@@ -394,51 +422,143 @@ FeatureToolBox.prototype.processingGeoJSON = function processingGeoJSON(json) {
     var bpoint = false;
     var coordinate_array = [];
 
-    const jsonFeaturesToVertex = function jsonFeaturesToVertex(jsonFeatures, alti) {
-        coordinate_array = this.createCoordinateArray(jsonFeatures.coordinates);
-
-        for (let point_num = 0; point_num < coordinate_array.length; point_num++) {
-            geometry.vertices.push(this.geoArrayTo3D(coordinate_array[point_num], alti, pointOrder));
+    const jsonFeaturesToVertex = function jsonFeaturesToVertex(coordinates, alti, geom) {
+        coordinate_array = this.createCoordinateArray(coordinates);
+        for (const coordinate of coordinate_array) {
+            const v = this.geoArrayTo3D(coordinate, alti, pointOrder);
+            if (geom) {
+                geom.vertices.push(v);
+            } else {
+                geometry.vertices.push(v);
+            }
         }
     }.bind(this);
 
-    for (let nFeature = 0; nFeature < jsonFeatures.length; nFeature++) {
-        const altitude = json.features[nFeature].altitude;
-        if (jsonFeatures[nFeature].type == 'Point') {
-            const vertex = this.geoArrayTo3D(jsonFeatures[nFeature].coordinates, altitude, pointOrder);
+    let center;
+    const poly = new THREE.Object3D();
+
+    for (const feature of jsonFeatures) {
+        const altitude = feature.altitude || json.altitude;
+        if (feature.type == 'Point') {
+            const vertex = this.geoArrayTo3D(feature.coordinates, altitude, pointOrder);
             geometry.vertices.push(vertex);
             bpoint = true;
-        } else if (jsonFeatures[nFeature].type == 'MultiPoint') {
-            for (let point_num = 0; point_num < jsonFeatures[nFeature].coordinates.length; point_num++) {
-                coordinate_array = jsonFeatures[nFeature].coordinates[point_num];
+        } else if (feature.type == 'MultiPoint') {
+            for (let point_num = 0; point_num < feature.coordinates.length; point_num++) {
+                coordinate_array = feature.coordinates[point_num];
                 const vertex = this.geoArrayTo3D(coordinate_array, altitude, pointOrder);
                 geometry.vertices.push(vertex);
             }
             bpoint = true;
-        } else if (jsonFeatures[nFeature].type == 'LineString') {
-            jsonFeaturesToVertex(jsonFeatures[nFeature], altitude);
-        } else if (jsonFeatures[nFeature].type == 'Polygon') {
-            for (let segment_num = 0; segment_num < jsonFeatures[nFeature].coordinates.length; segment_num++) {
-                jsonFeaturesToVertex(jsonFeatures[nFeature]);
+        } else if (feature.type == 'LineString') {
+            jsonFeaturesToVertex(feature.coordinates, altitude);
+        } else if (feature.type == 'Polygon') {
+            for (const coords of feature.coordinates) {
+                const colorLine = new THREE.Color(json.stroke || 0xff0000);
+                const line = new Lines({
+                    linewidth: json.strokeWidth || 1.0,
+                    useTexture: false,
+                    opacity: json.strokeOpacity || 1.0,
+                    sizeAttenuation: false,
+                    color: colorLine,
+                });
+
+                for (const coord of coords) {
+                    if (!center) {
+                        center = this.geoArrayTo3D(coord, altitude, pointOrder);
+                    }
+                    const pt = this.geoArrayTo3D(coord, altitude, pointOrder);
+                    pt.sub(center);
+                    line.addPoint(pt);
+                }
+
+                line.process();
+                poly.add(line);
             }
-        } else if (jsonFeatures[nFeature].type == 'MultiLineString') {
-            for (let segment_num = 0; segment_num < jsonFeatures[nFeature].coordinates.length; segment_num++) {
-                jsonFeaturesToVertex(jsonFeatures[nFeature], altitude);
+        } else if (feature.type == 'MultiLineString') {
+            for (let segment_num = 0; segment_num < feature.coordinates.length; segment_num++) {
+                jsonFeaturesToVertex(feature.coordinates, altitude);
             }
-        } else if (jsonFeatures[nFeature].type == 'MultiPolygon') {
-            for (let polygon_num = 0; polygon_num < jsonFeatures[nFeature].coordinates.length; polygon_num++) {
-                for (let segment_num = 0; segment_num < jsonFeatures[nFeature].coordinates[polygon_num].length; segment_num++) {
-                    jsonFeaturesToVertex(jsonFeatures[nFeature], altitude);
+        } else if (feature.type == 'MultiPolygon') {
+            const geometry = new THREE.Geometry();
+            const bboxGroup = new THREE.Object3D();
+            const normal = new THREE.Vector3();
+            const center = new THREE.Vector3();
+            let cc = true;
+            let minALtitude = 100000;
+            for (const polygons of feature.coordinates) {
+                for (const polygon of polygons) {
+                    let vertexs = [];
+                    for (const vertex of polygon) {
+                        minALtitude = Math.min(minALtitude, vertex[2]);
+                        const cartesien = this.geoCoordTo3D(vertex[0], vertex[1], vertex[2]);
+                        if (cc) {
+                            cc = false;
+                            center.copy(cartesien);
+                            normal.copy(center).normalize();
+                            bboxGroup.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), normal);
+                            prepareToRtc(bboxGroup, center);
+                        }
+                        bboxGroup.worldToLocal(cartesien);
+                        vertexs = vertexs.concat(cartesien.toArray());
+                    }
+
+                    const triangles = Earcut(vertexs, null, 3);
+                    for (let i = 0; i < triangles.length; i += 3) {
+                        const v1 = new THREE.Vector3(vertexs[triangles[i] * 3], vertexs[triangles[i] * 3 + 1], vertexs[triangles[i] * 3 + 2]);
+                        const v2 = new THREE.Vector3(vertexs[triangles[i + 1] * 3], vertexs[triangles[i + 1] * 3 + 1], vertexs[triangles[i + 1] * 3 + 2]);
+                        const v3 = new THREE.Vector3(vertexs[triangles[i + 2] * 3], vertexs[triangles[i + 2] * 3 + 1], vertexs[triangles[i + 2] * 3 + 2]);
+                        geometry.vertices.push(v1);
+                        geometry.vertices.push(v2);
+                        geometry.vertices.push(v3);
+
+                        const face = new THREE.Face3(
+                            geometry.vertices.length - 3,
+                            geometry.vertices.length - 2,
+                            geometry.vertices.length - 1);
+
+                        geometry.faces.push(face);
+                    }
                 }
             }
+
+            geometry.computeFaceNormals();
+
+            const wallMat = new BasicMaterial(
+                new THREE.Color(json.stroke),
+                1.0);
+
+            wallMat.side = THREE.DoubleSide;
+            wallMat.uniforms.lightOn.value = true;
+            wallMat.uniforms.enabledCutColor.value = true;
+            wallMat.transparent = true;
+
+            const wall = new THREE.Mesh(geometry, wallMat);
+            wall.frustumCulled = false;
+
+            bboxGroup.add(wall);
+
+            minALtitude -= (json.translate || 0.0);
+
+            bboxGroup.translateOnAxis(new THREE.Vector3(0, 1, 0), -minALtitude);
+            wall.translateOnAxis(new THREE.Vector3(0, 1, 0), -minALtitude);
+            bboxGroup.updateMatrixWorld(true);
+
+            return bboxGroup;
         } else {
             throw new Error('The geoJSON is not valid.');
         }
     }
 
+    if (poly.children.length) {
+        prepareToRtc(poly, center);
+        return poly;
+    }
+
     if (!bpoint) {
-        const material = new THREE.LineBasicMaterial({ color: 0xff0000 });
-        return new THREE.Line(geometry, material);
+        const material = new THREE.LineBasicMaterial({ color: 0xff0000, linewidth: 1 });
+        const line = new THREE.Line(geometry, material);
+        return line;
     } else {
         const material = new THREE.PointsMaterial({ color: 0xff0000, size: 100 });
         return new THREE.Points(geometry, material);
