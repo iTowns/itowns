@@ -148,13 +148,50 @@ ApiGlobe.prototype.addImageryLayerFromJSON = function addImageryLayerFromJSON(ur
  */
 
 ApiGlobe.prototype.addImageryLayersFromJSONArray = function addImageryLayersFromJSONArray(urls) {
-    var proms = [];
+    const proms = [];
 
-    for (var i = 0; i < urls.length; i++) {
-        proms.push(Fetcher.json(urls[i]).then(this.addImageryLayer.bind(this)));
+    for (const url of urls) {
+        proms.push(Fetcher.json(url).then(this.addImageryLayer.bind(this)));
     }
 
     return Promise.all(proms).then(() => this.scene.getMap().layersConfiguration.getColorLayers());
+};
+
+ApiGlobe.prototype.addFeatureLayerFromJSON = function addFeatureLayerFromJSON(url) {
+    return Fetcher.json(url).then((result) => {
+        this.addFeatureLayer(result);
+    });
+};
+
+ApiGlobe.prototype.addFeatureLayersFromJSONArray = function addFeatureLayersFromJSONArray(urls) {
+    const proms = [];
+    for (const url of urls) {
+        proms.push(Fetcher.json(url));
+    }
+    return Promise.all(proms).then((layers) => {
+        for (const layer of layers) {
+            this.addFeatureLayer(layer);
+        }
+        return this.scene.getMap().layersConfiguration.getGeometryLayers();
+    });
+};
+
+ApiGlobe.prototype.addFeatureFromJSON = function addFeatureFromJSON(url) {
+    return Fetcher.json(url).then((result) => {
+        this.addFeature(result);
+    });
+};
+
+ApiGlobe.prototype.addFeaturesFromJSONArray = function addFeaturesFromJSONArray(urls) {
+    const proms = [];
+    for (const url of urls) {
+        proms.push(Fetcher.json(url));
+    }
+    return Promise.all(proms).then((features) => {
+        for (const feature of features) {
+            this.addFeature(feature);
+        }
+    });
 };
 
 ApiGlobe.prototype.moveLayerUp = function moveLayerUp(layerId) {
