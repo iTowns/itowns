@@ -24,6 +24,7 @@ function GuiTools(api, domId) {
     viewerDiv.appendChild(this.gui.domElement);
     this.colorGui = this.gui.addFolder('Color Layers');
     this.elevationGui = this.gui.addFolder('Elevation Layers');
+    this.featureGui = this.gui.addFolder('Feature Layers');
 }
 
 GuiTools.prototype.addImageryLayerGUI = function addImageryLayerGUI(layer) {
@@ -46,6 +47,14 @@ GuiTools.prototype.addElevationLayerGUI = function addElevationLayerGUI(layer) {
     });
 };
 
+GuiTools.prototype.addFeatureLayerGUI = function addFeatureLayerGUI(layer) {
+    if (layer.id.match(/.*[wW]fs.*/)) {
+        var folder = this.featureGui.addFolder(layer.id);
+        folder.add({ visible: true }, 'visible').onChange(value =>
+            this.api.setLayerVisibility(layer.id, value));
+    }
+};
+
 GuiTools.prototype.addImageryLayersGUI = function addImageryLayersGUI(layers) {
     for (var i = 0; i < layers.length; i++) {
         this.addImageryLayerGUI(layers[i]);
@@ -55,6 +64,12 @@ GuiTools.prototype.addImageryLayersGUI = function addImageryLayersGUI(layers) {
 GuiTools.prototype.addElevationLayersGUI = function addElevationLayersGUI(layers) {
     for (var i = 0; i < layers.length; i++) {
         this.addElevationLayerGUI(layers[i]);
+    }
+};
+
+GuiTools.prototype.addFeatureLayersGUI = function addFeatureLayersGUI(layers) {
+    for (var i = 0; i < layers.length; i++) {
+        this.addFeatureLayerGUI(layers[i]);
     }
 };
 
