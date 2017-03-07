@@ -182,6 +182,16 @@ BrowseTree.prototype.updateLayer = function updateLayer(layer, camera) {
             return function cRTC(obj) {
                 if (obj.setMatrixRTC) {
                     obj.setMatrixRTC(mRTC);
+                } else if (obj.material && obj.material.setMatrixRTC) {
+                    obj.material.setMatrixRTC(mRTC);
+                } else {
+                    obj.updateMatrix();
+                    if (obj.parent === null) {
+                        obj.matrixWorld.copy(obj.matrix);
+                    } else {
+                        obj.matrixWorld.multiplyMatrices(obj.parent.matrixWorld, obj.matrix);
+                    }
+                    obj.matrixWorldNeedsUpdate = false;
                 }
             };
         }.bind(this)();

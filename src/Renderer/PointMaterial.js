@@ -14,7 +14,7 @@ const PointMaterial = function PointMaterial(options) {
     this.vertexShader = PointVS;
     this.fragmentShader = PointFS;
 
-    const texture = options.texture ? Fetcher.texture.load(options.texture) : undefined;
+    const texture = options.texture ? Fetcher.texture(options.texture) : undefined;
 
     this.uniforms.time = { value: options.time };
     this.uniforms.useTexture = { value: options.useTexture };
