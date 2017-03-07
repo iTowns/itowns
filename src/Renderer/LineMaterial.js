@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-import * as THREE from 'three';
+import c3DEngine from './c3DEngine';
 import BasicMaterial from './BasicMaterial';
 import Fetcher from '../Core/Commander/Providers/Fetcher';
 import LineVS from './Shader/LineVS.glsl';
@@ -22,11 +22,11 @@ const LineMaterial = function LineMaterial(options) {
 
     this.wireframe = false;
 
-    const texture = options.texture ? Fetcher.texture.load(options.texture) : undefined;
+    const texture = options.texture ? Fetcher.texture(options.texture) : undefined;
 
     this.uniforms.THICKNESS = { value: options.linewidth };
-    this.uniforms.MITER_LIMIT = { value: true };
-    this.uniforms.WIN_SCALE = { value: new THREE.Vector2(window.innerWidth, window.innerHeight) };
+    this.uniforms.MITER_LIMIT = { value: 1.0 };
+    this.uniforms.WIN_SCALE = { value: c3DEngine().viewerDiv.size };
     if (texture) {
         this.uniforms.texture = { value: texture };
     }
