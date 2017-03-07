@@ -148,9 +148,6 @@ Lines.prototype.createQuad = function createQuad(pt1, pt2) {
     // Définition propre a chaque géométrie
     var geometry = new THREE.BufferGeometry();
 
-    // les 6 points
-
-    // var indices  =  new Int16Array([0,1,2,3,4,5]);
     var vertices = new Float32Array([
         pt1.x, pt1.y, pt1.z, // -1
         pt2.x, pt2.y, pt2.z, // -1

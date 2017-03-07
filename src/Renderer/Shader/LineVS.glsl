@@ -6,14 +6,14 @@ attribute float side;
 attribute float width;
 attribute vec2 uv;
 
-uniform bool        useRTC;
+uniform bool useRTC;
 
 uniform mat4 mVPMatRTC;
 uniform mat4 projectionMatrix;
 uniform mat4 modelViewMatrix;
 
 uniform float THICKNESS;  // the thickness of the line in pixels
-uniform bool MITER_LIMIT;    // 1.0: always miter, -1.0: never miter, 0.75: default
+uniform float MITER_LIMIT;    // 1.0: always miter, -1.0: never miter, 0.75: default
 uniform vec2 WIN_SCALE;  // the size of the viewport in pixels
 
 uniform float opacity;
@@ -93,7 +93,7 @@ void main() {
     else {
              //get directions from (C - B) and (B - A)
              vec2 dirA = normalize((currentScreen - previousScreen));
-             if (MITER_LIMIT) {
+             if (MITER_LIMIT == 1.0) {
                     vec2 dirB = normalize(nextScreen - currentScreen);
                     //now compute the miter join normal and length
                     vec2 tangent = normalize(dirA + dirB);
