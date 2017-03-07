@@ -10,6 +10,7 @@ import Globe from '../../../../Globe/Globe';
 import WMTS_Provider from '../../Providers/WMTS_Provider';
 import WMS_Provider from '../../Providers/WMS_Provider';
 import TileProvider from '../../Providers/TileProvider';
+import KML_Provider from '../../Providers/KML_Provider';
 import WFS_Provider from '../../Providers/WFS_Provider';
 import loadGpx from '../../Providers/GpxUtils';
 import { C } from '../../../Geographic/Coordinates';
@@ -162,15 +163,37 @@ ApiGlobe.prototype.addImageryLayer = function addImageryLayer(layer) {
 
 /**
  * This function adds an feature layer to the scene. The layer id must be unique.
+ * Add a feature Layer to the scene graph. Handle vector data such as GPX, KML, GeoJSON,...
+ * Needs to be rewrited to have a singleton kml provider for n feature layers
  * @constructor
  * @param {Layer} layer.
  */
 ApiGlobe.prototype.addFeatureLayer = function addFeatureLayer(layer) {
-    preprocessLayer(layer, this.scene.scheduler.getProtocolProvider(layer.protocol));
+    const provider = this.scene.scheduler.getProtocolProvider(layer.protocol);
+    preprocessLayer(layer, provider);
     const map = this.scene.getMap();
     map.layersConfiguration.addGeometryLayer(layer);
     map.add(layer.root.parent);
     this.scene.gfxEngine.add3DScene(layer.root);
+
+    if (layer.local && layer.protocol === 'kml') {
+        provider.parseKML(layer.url).then((obj) => {
+            const state = this.scene.getMap().layersConfiguration.layersState[layer.id];
+            state.polygons = obj.objLinesPolyToRaster.polygons;
+            layer.root.add(obj.geoFeat);
+        });
+    }
+};
+
+ApiGlobe.prototype.pickFeatureLayer = function pickFeatureLayer(layerId, geoCoord) {
+    const polygons = this.scene.getMap().layersConfiguration.layersState[layerId].polygons;
+    if (polygons) {
+        const tools = this.scene.scheduler.getProtocolProvider('wfs').featureToolBox;
+        const attributes = tools.showFeatureAttributesAtPos(geoCoord, polygons);
+        if (attributes) {
+            return attributes;
+        }
+    }
 };
 
 /**
@@ -460,6 +483,7 @@ ApiGlobe.prototype.createSceneGlobe = function createSceneGlobe(coordCarto, view
     const featureProvider = new WFS_Provider();
     this.scene.scheduler.addProtocolProvider('wfs', featureProvider);
     this.scene.scheduler.addProtocolProvider('geojson', featureProvider);
+    this.scene.scheduler.addProtocolProvider('kml', new KML_Provider());
 
     this.setSceneLoaded().then(() => {
         this.scene.currentControls().updateCameraTransformation();

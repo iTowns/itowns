@@ -1,0 +1,154 @@
+<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.opengis.net/kml/2.2 https://developers.google.com/kml/schema/kml22gx.xsd">
+	<Document>
+		<Placemark>
+			<description>AAAAA</description>
+			<Style>
+				<LineStyle>
+					<color>ff502a00</color>
+					<width>3</width>
+				</LineStyle>
+			</Style>
+			<LineString>
+				<coordinates>6.799142360687256,45.892069199496945 6.800193786621094,45.89127764938186 6.801609992980957,45.89084453227963 6.802875995635986,45.889739321609994 6.804699897766112,45.88875357462058 6.808111667633055,45.88673721947211 6.808776855468748,45.88619951240429 6.817381381988524,45.88884318870615 6.815793514251708,45.89032180024441 6.813154220581053,45.89360746273849 6.811995506286619,45.89525022109379 6.808905601501465,45.89619105172082 6.803433895111084,45.89560863464075 6.8010735511779785,45.894891805233556 6.799185276031494,45.89208413429634</coordinates>
+			</LineString>
+		</Placemark>
+		<Placemark>
+			<Style>
+				<LineStyle>
+					<color>ff502a00</color>
+					<width>3</width>
+				</LineStyle>
+			</Style>
+			<LineString>
+				<coordinates>6.812317371368407,45.89529502291367 6.81624412536621,45.89009777072329 6.817660331726073,45.88894773828994 6.817874908447264,45.888634088948265 6.816351413726806,45.888335373642946</coordinates>
+			</LineString>
+		</Placemark>
+		<Placemark>
+			<description>Zone Aiguillette des Houches</description>
+			<Style>
+				<LineStyle>
+					<color>ff502a00</color>
+					<width>3</width>
+				</LineStyle>
+				<PolyStyle>
+					<color>7f98b700</color>
+				</PolyStyle>
+			</Style>
+			<Polygon>
+				<outerBoundaryIs>
+					<LinearRing>
+						<coordinates>6.792984008789062,45.89329383971017 6.7845726013183585,45.89896864914374 6.778392791748047,45.90518040717396 6.772813796997068,45.917124142306136 6.77101135253906,45.9299607909779 6.787405014038084,45.934617073466626 6.80843353271484,45.93819856321477 6.836156845092771,45.9290653072203 6.847915649414061,45.91879606012043 6.847743988037107,45.9114511885945 6.8334960937499964,45.902492712557546 6.826801300048825,45.90129813985021 6.824140548706055,45.89932703869076 6.8202781677246085,45.90058138388861 6.8108367919921875,45.90052165380743 6.80577278137207,45.89878945350276 6.80027961730957,45.89568330383855 6.792984008789062,45.89329383971017</coordinates>
+					</LinearRing>
+				</outerBoundaryIs>
+			</Polygon>
+		</Placemark>
+		<Placemark>
+			<description>Zone Le Châtelard</description>
+			<Style>
+				<LineStyle>
+					<color>ff502a00</color>
+					<width>3</width>
+				</LineStyle>
+				<PolyStyle>
+					<color>7f98b700</color>
+				</PolyStyle>
+			</Style>
+			<Polygon>
+				<outerBoundaryIs>
+					<LinearRing>
+						<coordinates>6.755905151367188,45.92822950933618 6.7533302307128915,45.93085626027823 6.743459701538086,45.934497686491255 6.738739013671873,45.9363481557271 6.727666854858397,45.93318441279922 6.7305850982666,45.926557875786216 6.749811172485352,45.91957229055308 6.755304336547852,45.91569102979847 6.765861511230468,45.91515360306613 6.762943267822266,45.92339357435796 6.761655807495117,45.92613995952749 6.759166717529296,45.92834890980498 6.758136749267577,45.92822950933615 6.755905151367188,45.92822950933618</coordinates>
+					</LinearRing>
+				</outerBoundaryIs>
+			</Polygon>
+		</Placemark>
+		<Placemark>
+			<description>spot 1</description>
+			<Style>
+				<IconStyle>
+					<Icon>
+						<href>data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACIAAAAsCAYAAAAATWqyAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAABTtJREFUeNq8WGtsFUUU/rb3gtdCAykFG9AUDTQUKimhxUewEusrJYoBo4FfEgoqotHERH6oP9TGmJhIrIlWAf9hjAaEiME2pgFfVVpFii8sWqIQLLSx3EJLW7p+Z2Z2b2l7d/b23vZLTmZ2duacb2fmnDk7DlKA67rXs1hJKacsohRQppjXFygnKT9TDlH2O47zFzIFGnco91EOuqnjoBnr2Ow4FhIlLN6m3DykFTh3BGj/Doj/CfSe082xPCDnBmDWTUBeyXDVjZTHOUNHUiZCEs+weI0ySTV0/w0c2wa07gIungn+vOx8YN46oPhpYOp1Xms/5TmSeSMUERKImFnYqBoGuPRNL5LEW8BgX2rrmjWZZLYApS8BUW8r4T0zO5eTEjFr+S6lSjV0HgPqVwNdf6S30abNB+7aDeQWey3bKZtIxvU5DxvyrE/izJfAvuXpkxCIDtElOjWqjK2RM8LZWMbiG0oEnUc5kB7a14WMYvI04H56du5ieZKluZWz8r0/IyQh5TuKRH8cqFuTeRIC0Sm6xYbYok1j21+ahyhLVO3wC8D5VowbRLfY0FhibOulIavDLEoRZyD8sJDeMWBXKG5ZsIobsdDsg+OMq3u1m1u9KQo8zP45EqjRxOUpk6i50IRl4FuGjpZtwUoiMYa314GFj/EzIsN8n8v+C1e4kfvwcm+wnhsZY27xQ8oiWZpKrWRQB6tAElfxpKnjsCdGklDzG9HvpI/0DYLYEpsalVnmAAM6fgR62oMHl70C5N9mn3rpI32DILbEpkZ5ljlFgbPNFtebzij5VPhNKX1lTBASNtXSzPZ3cxCuvVOH7FTCu4yxeZDGbCES0z5+PniQ3uGpwTYmYTOWCPGTpgYP6u9OnYhtzBCbQkSH0NiM4EEdP6VOxDYmYbNLiJxQ1elFwYPaG3XQCn3QHddjgpCweUKI6K2bvzw4YROf//rJob6fZl/H2FRoFiINfqo3qyzYwD8MVIeYLw32J+8j76SP9A2C2BKbGg1CZL+EF/W4YKP9a3/fCeyhkrY9DOOXEu1SlzZ5J31sSNjqURm/OfQkY9qgvkYOvXhbuH0g505Oga7HT9rPF9+t5+pDL0ulwzt46FV5ROax+JUSRRtP0LoHMK64+xNg7iqVEVOKSKRVxRGpsKhRnaRD4SPjR0J0axKCGmP7ilQxm4X8d8xXmfvHJZlPkCR3WfODl9FLMlxCIhevSJ5Nwzo1XdKxYpe3hpmB6BKdmoS43VqPxIgsni+aWOg8biZ3f+nLmSMiuvKWek/P01az7QdLyNVT7lC/l59WAKcb0iMxhzpW1nvmvpDtSiKD1l9OkpnDgv8UyMWFU9wvTP8vdY6NhJwnD1JVtso2OiiLSeL0iJUbNfg6zikVVwRTyOn2HWOfjfLtHgnBhtFIJCViyNDZUatdmnGlaFPqJIoe1WM1aqlz71ivJbLNobgAA9zgu7nZ/vstHAk5WVdzaPRqmGC5lER6kjpV4OWJdq+1kkshSk4VH9izcy/bV66qSPQZV+0J9G7rTY6+XNmqHmYwyJVV24kse1X31dhKHdasygkzy+a64oC4nWr47F4e858nSbLv4V/KAe9JKpVDrx/SImLIXMOiRUKdujESl+49O8xVZxpXzVc/C/I/RxL/hgq8YYkYhev9q6kVO4d9B+sr3vdICNaHJTHWW8Ya/87wqy2uWwstUk/gTYw3aCRGOarMDfS67kfFWqSuIe9imAjQEC272nJHixYNaSvGRIIGN49ywbsZEw1zI11N6TZSHeaGORn+F2AAJtRIMx4t+hUAAAAASUVORK5CYII=</href>
+						<gx:w>34</gx:w>
+						<gx:h>44</gx:h>
+					</Icon>
+					<hotSpot x="17" y="0" xunits="pixels" yunits="pixels"/>
+				</IconStyle>
+			</Style>
+			<Point>
+				<coordinates>6.751785278320312,45.90135786909602,4000</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<description>spot 2</description>
+			<Style>
+				<IconStyle>
+					<Icon>
+						<href>data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACIAAAAsCAYAAAAATWqyAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAABTtJREFUeNq8WGtsFUUU/rb3gtdCAykFG9AUDTQUKimhxUewEusrJYoBo4FfEgoqotHERH6oP9TGmJhIrIlWAf9hjAaEiME2pgFfVVpFii8sWqIQLLSx3EJLW7p+Z2Z2b2l7d/b23vZLTmZ2duacb2fmnDk7DlKA67rXs1hJKacsohRQppjXFygnKT9TDlH2O47zFzIFGnco91EOuqnjoBnr2Ow4FhIlLN6m3DykFTh3BGj/Doj/CfSe082xPCDnBmDWTUBeyXDVjZTHOUNHUiZCEs+weI0ySTV0/w0c2wa07gIungn+vOx8YN46oPhpYOp1Xms/5TmSeSMUERKImFnYqBoGuPRNL5LEW8BgX2rrmjWZZLYApS8BUW8r4T0zO5eTEjFr+S6lSjV0HgPqVwNdf6S30abNB+7aDeQWey3bKZtIxvU5DxvyrE/izJfAvuXpkxCIDtElOjWqjK2RM8LZWMbiG0oEnUc5kB7a14WMYvI04H56du5ieZKluZWz8r0/IyQh5TuKRH8cqFuTeRIC0Sm6xYbYok1j21+ahyhLVO3wC8D5VowbRLfY0FhibOulIavDLEoRZyD8sJDeMWBXKG5ZsIobsdDsg+OMq3u1m1u9KQo8zP45EqjRxOUpk6i50IRl4FuGjpZtwUoiMYa314GFj/EzIsN8n8v+C1e4kfvwcm+wnhsZY27xQ8oiWZpKrWRQB6tAElfxpKnjsCdGklDzG9HvpI/0DYLYEpsalVnmAAM6fgR62oMHl70C5N9mn3rpI32DILbEpkZ5ljlFgbPNFtebzij5VPhNKX1lTBASNtXSzPZ3cxCuvVOH7FTCu4yxeZDGbCES0z5+PniQ3uGpwTYmYTOWCPGTpgYP6u9OnYhtzBCbQkSH0NiM4EEdP6VOxDYmYbNLiJxQ1elFwYPaG3XQCn3QHddjgpCweUKI6K2bvzw4YROf//rJob6fZl/H2FRoFiINfqo3qyzYwD8MVIeYLw32J+8j76SP9A2C2BKbGg1CZL+EF/W4YKP9a3/fCeyhkrY9DOOXEu1SlzZ5J31sSNjqURm/OfQkY9qgvkYOvXhbuH0g505Oga7HT9rPF9+t5+pDL0ulwzt46FV5ROax+JUSRRtP0LoHMK64+xNg7iqVEVOKSKRVxRGpsKhRnaRD4SPjR0J0axKCGmP7ilQxm4X8d8xXmfvHJZlPkCR3WfODl9FLMlxCIhevSJ5Nwzo1XdKxYpe3hpmB6BKdmoS43VqPxIgsni+aWOg8biZ3f+nLmSMiuvKWek/P01az7QdLyNVT7lC/l59WAKcb0iMxhzpW1nvmvpDtSiKD1l9OkpnDgv8UyMWFU9wvTP8vdY6NhJwnD1JVtso2OiiLSeL0iJUbNfg6zikVVwRTyOn2HWOfjfLtHgnBhtFIJCViyNDZUatdmnGlaFPqJIoe1WM1aqlz71ivJbLNobgAA9zgu7nZ/vstHAk5WVdzaPRqmGC5lER6kjpV4OWJdq+1kkshSk4VH9izcy/bV66qSPQZV+0J9G7rTY6+XNmqHmYwyJVV24kse1X31dhKHdasygkzy+a64oC4nWr47F4e858nSbLv4V/KAe9JKpVDrx/SImLIXMOiRUKdujESl+49O8xVZxpXzVc/C/I/RxL/hgq8YYkYhev9q6kVO4d9B+sr3vdICNaHJTHWW8Ya/87wqy2uWwstUk/gTYw3aCRGOarMDfS67kfFWqSuIe9imAjQEC272nJHixYNaSvGRIIGN49ywbsZEw1zI11N6TZSHeaGORn+F2AAJtRIMx4t+hUAAAAASUVORK5CYII=</href>
+						<gx:w>34</gx:w>
+						<gx:h>44</gx:h>
+					</Icon>
+					<hotSpot x="17" y="0" xunits="pixels" yunits="pixels"/>
+				</IconStyle>
+			</Style>
+			<Point>
+				<coordinates>6.836328506469725,45.894727530524534,3000</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>  Houches-Prarion  </name>
+			<Style>
+				<IconStyle>
+					<Icon>
+						<href>data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNiYAAAAAkAAxkR2eQAAAAASUVORK5CYII=</href>
+						<gx:w>1</gx:w>
+						<gx:h>1</gx:h>
+					</Icon>
+				</IconStyle>
+				<LabelStyle>
+					<color>ff000000</color>
+					<LabelStyleSimpleExtensionGroup fontFamily="Sans" haloColor="ffFFFFFF" haloRadius="3" haloOpacity="1"/>
+				</LabelStyle>
+			</Style>
+			<Point>
+				<coordinates>6.752471923828124,45.88648330289428,4000</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+		<description>Zone Lavouets</description>
+		<Style>
+			<LineStyle>
+				<color>ff5fa5eb</color>
+				<width>3</width>
+			</LineStyle>
+			<PolyStyle>
+				<color>7ffe3dfe</color>
+			</PolyStyle>
+		</Style>
+		<Polygon>
+			<outerBoundaryIs>
+				<LinearRing>
+					<coordinates>6.762771606445312,45.889589967130036 6.800365447998046,45.88588584754444 6.8051719665527335,45.87799883470274 6.785602569580078,45.87775981683541 6.782684326171874,45.88457142315619 6.773414611816406,45.88086696891651 6.7696380615234375,45.88457142315619 6.762771606445312,45.889589967130036</coordinates>
+				</LinearRing>
+			</outerBoundaryIs>
+		</Polygon>
+	</Placemark>
+		<Placemark>
+			<name>  PlanPraz  </name>
+			<Style>
+				<IconStyle>
+					<Icon>
+						<href>data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNiYAAAAAkAAxkR2eQAAAAASUVORK5CYII=</href>
+						<gx:w>1</gx:w>
+						<gx:h>1</gx:h>
+					</Icon>
+				</IconStyle>
+				<LabelStyle>
+					<color>ff000000</color>
+					<LabelStyleSimpleExtensionGroup fontFamily="Sans" haloColor="ffFFFFFF" haloRadius="3" haloOpacity="1"/>
+				</LabelStyle>
+			</Style>
+			<Point>
+				<coordinates>6.84946060180664,45.93706444982149,4000</coordinates>
+			</Point>
+		</Placemark>
+	</Document>
+</kml>

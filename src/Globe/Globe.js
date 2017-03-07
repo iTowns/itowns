@@ -144,6 +144,19 @@ Globe.prototype.setLayerVisibility = function setLayerVisibility(id, visible) {
     }
 };
 
+// TEMP
+Globe.prototype.setFeatureLayerVisibility = function setFeatureLayerVisibility(id, visible) {
+    this.layersConfiguration.setLayerVisibility(id, visible);
+
+    var cO = function cO(object) {
+        if (object.material.setFeatureLayerVisibility) {
+            object.material.setFeatureLayerVisibility(visible);
+        }
+    };
+    // children[0] is rootNode
+    this.tiles.children[0].traverse(cO);
+};
+
 Globe.prototype.updateLayersOrdering = function updateLayersOrdering() {
     var sequence = this.layersConfiguration.getColorLayersIdOrderedBySequence();
 

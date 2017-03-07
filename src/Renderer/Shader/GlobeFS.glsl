@@ -13,6 +13,7 @@ const vec4 CRed = vec4( 1.0, 0.0, 0.0, 1.0);
 
 uniform sampler2D   dTextures_01[TEX_UNITS];
 uniform vec3        offsetScale_L01[TEX_UNITS];
+uniform sampler2D   featureTexture;
 
 // offset texture | Projection | fx | Opacity
 uniform vec4        paramLayers[8];
@@ -21,9 +22,11 @@ uniform bool        visibility[8];
 
 uniform float       distanceFog;
 uniform int         colorLayersCount;
+
 uniform vec3        lightPosition;
 
 // Options global
+uniform bool        rasterFeatures;
 uniform bool        selected;
 uniform bool        lightingEnabled;
 
@@ -144,6 +147,11 @@ void main() {
         if(lightingEnabled) {   // Add lighting
             float light = min(2. * dot(vNormal, lightPosition),1.);
             gl_FragColor.rgb *= light;
+        }
+
+        if(rasterFeatures){
+            vec4 featureColor = texture2D(featureTexture, vUv_WGS84);
+            gl_FragColor = mix(gl_FragColor, featureColor , featureColor.a);
         }
     }
 }
