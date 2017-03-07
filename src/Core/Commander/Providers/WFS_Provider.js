@@ -123,6 +123,7 @@ WFS_Provider.prototype.getFeatures = function getFeatures(tile, layer) {
             const pointOrder = this.getPointOrder(crs);
             if (pointOrder !== undefined) {
                 const features = feature.features;
+                features.style = features.style || layer.style;
                 if (layer.type == 'poly') {
                     result.feature = this.featureToolBox.GeoJSON2Polygon(features, pointOrder);
                 } else if (layer.type == 'bbox') {
