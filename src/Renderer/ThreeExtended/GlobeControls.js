@@ -773,7 +773,12 @@ function GlobeControls(camera, target, domElement, engine) {
                 this.mouseToPan(panDelta.x, panDelta.y);
 
                 panStart.copy(panEnd);
-            } else if (state === CONTROL_STATE.MOVE_GLOBE) {
+            } else if (keyS) {
+                // If the key 'S' is down, the engine selects node under mouse
+                selectClick.mouse = new THREE.Vector2(event.clientX - event.target.offsetLeft, event.clientY - event.target.offsetTop);
+                domElement.dispatchEvent(selectClick);
+            }
+            else if (state === CONTROL_STATE.MOVE_GLOBE) {
                 mouse.x = ((event.clientX - event.target.offsetLeft) / sizeRendering.width) * 2 - 1;
                 mouse.y = -((event.clientY - event.target.offsetTop) / sizeRendering.height) * 2 + 1;
 
@@ -949,6 +954,7 @@ function GlobeControls(camera, target, domElement, engine) {
         keyCtrl = false;
         keyShift = false;
         keyS = false;
+        this.domElement.removeEventListener('mousemove', _handlerMouseMove, false);
     };
 
     var onKeyDown = function onKeyDown(event) {
@@ -1319,6 +1325,10 @@ GlobeControls.prototype.setCameraTargetPosition = function setCameraTargetPositi
         this.updateCameraTransformation(CONTROL_STATE.MOVE_GLOBE);
         return Promise.resolve();
     }
+};
+
+GlobeControls.prototype.getState = function getState() {
+    return state;
 };
 
 GlobeControls.prototype.getRange = function getRange() {
