@@ -11,7 +11,7 @@ import SimpleVS from './Shader/SimpleVS.glsl';
 import SimpleFS from './Shader/SimpleFS.glsl';
 import LogDepthBuffer from './Shader/Chunk/LogDepthBuffer.glsl';
 
-function BasicMaterial(color) {
+function BasicMaterial(color, opacity) {
     // Constructor
 
     THREE.RawShaderMaterial.call(this);
@@ -52,6 +52,8 @@ function BasicMaterial(color) {
         debug: { value: false },
         selected: { value: false },
         lightingEnabled: { value: true },
+        opacity: { value: opacity || 1.0 },
+        enabledCutColor: { value: false },
     };
 }
 
