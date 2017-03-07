@@ -21,7 +21,6 @@ import StyleManager from './Description/StyleManager';
 
 var instanceScene = null;
 
-
 const RENDERING_PAUSED = 0;
 const RENDERING_ACTIVE = 1;
 
@@ -113,10 +112,6 @@ Scene.prototype.removeStyle = function removeStyle(name) {
 
 Scene.prototype.getStyles = function getStyles() {
     return this.stylesManager.getStyles();
-};
-
-Scene.prototype.getEllipsoid = function getEllipsoid() {
-    return this.ellipsoid;
 };
 
 Scene.prototype.size = function size() {

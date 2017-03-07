@@ -22,7 +22,7 @@ function c3DEngine(scene, controlOptions, viewerDiv, debugMode, gLDebug) {
         throw new Error('Cannot instantiate more than one c3DEngine');
     }
 
-    var caps = new Capabilities();
+    const caps = new Capabilities();
     var NOIE = !caps.isInternetExplorer();
     this.gLDebug = gLDebug;
     this.viewerDiv = viewerDiv;
