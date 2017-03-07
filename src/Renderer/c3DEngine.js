@@ -548,6 +548,22 @@ c3DEngine.prototype.getRTCMatrixFromNode = function getRTCMatrixFromNode(node, c
     return new THREE.Matrix4().multiplyMatrices(camera3D.projectionMatrix, mvc);
 };
 
+const mouse = new THREE.Vector2();
+// Picking in tree 'root' from screenCoords
+c3DEngine.prototype.getPickObject3d = function getPickObject3d(screenCoords, root) {
+    // calculate mouse screenCoords in normalized device coordinates
+    // (-1 to +1) for both components
+    mouse.x = (screenCoords.x / this.width) * 2 - 1;
+    mouse.y = -(screenCoords.y / this.height) * 2 + 1;
+
+    const raycaster = new THREE.Raycaster();
+    const camera = this.camera.camera3D;
+    raycaster.setFromCamera(mouse, camera);
+
+    // calculate objects intersecting the picking ray
+    return raycaster.intersectObjects(root, true);
+};
+
 export default function (scene, positionCamera, viewerDiv, debugMode, gLDebug) {
     instance3DEngine = instance3DEngine || new c3DEngine(scene, positionCamera, viewerDiv, debugMode, gLDebug);
     return instance3DEngine;

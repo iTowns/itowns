@@ -17,6 +17,8 @@ const NodeMesh = function NodeMesh() {
 
     this.sse = 0.0;
     this.pendingSubdivision = false;
+    // content is Map where keys are layer.id
+    this.content = new Map();
     this.helper = undefined;
 };
 
@@ -38,6 +40,9 @@ NodeMesh.prototype.isVisible = function isVisible() {
 NodeMesh.prototype.setVisibility = function setVisibility(show) {
     this.visible = show;
     this.showHelper(show);
+    this.content.forEach((element) => {
+        element.visible = show;
+    });
 };
 
 NodeMesh.prototype.setDisplayed = function setDisplayed(show) {
@@ -45,8 +50,11 @@ NodeMesh.prototype.setDisplayed = function setDisplayed(show) {
     if (this.helper !== undefined)
         { this.helper.setMaterialVisibility(show); }
 
-    if (this.content !== null && show)
-        { this.content.visible = true; }
+    if (show) {
+        this.content.forEach((element) => {
+            element.visible = true;
+        });
+    }
 };
 
 NodeMesh.prototype.isDisplayed = function isDisplayed() {

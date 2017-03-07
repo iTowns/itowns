@@ -86,6 +86,10 @@ LayersConfiguration.prototype.getGeometryLayers = function getGeometryLayers() {
     return this.geometryLayers;
 };
 
+LayersConfiguration.prototype.getGeometryLayerById = function getGeometryLayerById(id) {
+    return this.geometryLayers.filter(l => l.id === id)[0];
+};
+
 LayersConfiguration.prototype.getElevationLayers = function getElevationLayers() {
     return this.elevationLayers;
 };
