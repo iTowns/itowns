@@ -14,6 +14,9 @@ import Capabilities from '../Core/System/Capabilities';
 import RendererConstant from './RendererConstant';
 
 var instance3DEngine = null;
+var bufferNeedUpdate = [];
+bufferNeedUpdate[RendererConstant.DEPTH] = true;
+bufferNeedUpdate[RendererConstant.ID] = true;
 
 function c3DEngine(scene, controlOptions, viewerDiv, debugMode, gLDebug) {
     // Constructor
@@ -45,9 +48,15 @@ function c3DEngine(scene, controlOptions, viewerDiv, debugMode, gLDebug) {
         this.camDebug = new THREE.PerspectiveCamera(30, this.camera.ratio);
     }
 
+    // TODO: verify if this.pickingTexture is used
+    this.pixelBuffer = [];
+    this.pixelBuffer[RendererConstant.DEPTH] = new Uint8Array(this.width * this.height * 4);
+    this.pixelBuffer[RendererConstant.ID] = new Uint8Array(this.width * this.height * 4);
+
     this.pickingTexture = new THREE.WebGLRenderTarget(this.width, this.height);
     this.pickingTexture.texture.minFilter = THREE.LinearFilter;
     this.pickingTexture.texture.generateMipmaps = false;
+    this.pickingTexture.depthBuffer = false;
 
     this.renderScene = function renderScene() {
         if (this.camera.camHelper())
@@ -172,7 +181,6 @@ function c3DEngine(scene, controlOptions, viewerDiv, debugMode, gLDebug) {
     var debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
     if (debugInfo !== null) {
         var vendor = gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL);
-        // var renderer = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
 
         if (vendor.indexOf('mesa') > -1 || vendor.indexOf('Mesa') > -1)
             { maxTexturesUnits = Math.min(16, maxTexturesUnits); }
@@ -185,12 +193,25 @@ function c3DEngine(scene, controlOptions, viewerDiv, debugMode, gLDebug) {
     };
 
     window.addEventListener('resize', this.onWindowResize, false);
-    this.controls.addEventListener('change', this.update);
+
+    var allBuffersNeedUpdate = function allBuffersNeedUpdate() {
+        bufferNeedUpdate[RendererConstant.DEPTH] = true;
+        bufferNeedUpdate[RendererConstant.ID] = true;
+    };
+
+    this.controls.addEventListener('change', () => {
+        if (this.controls.getState() === -1) allBuffersNeedUpdate();
+        this.update();
+    }, false);
 
     // select
     this.renderer.domElement.addEventListener('selectClick', (event) => {
         this.selectNodeAt(event.mouse);
         this.update();
+    }, false);
+
+    this.renderer.domElement.addEventListener('mouseup', () => {
+        allBuffersNeedUpdate();
     }, false);
 }
 
@@ -329,18 +350,27 @@ c3DEngine.prototype.setStateRender = function setStateRender(stateRender) {
         this.changeStateNodesScene(stateRender);
     }
 };
+c3DEngine.prototype.readTobuffer = function readTobuffer(x, y, width, height, mode) {
+    const id = y * this.width + x;
+    const pix = this.pixelBuffer[mode].slice(id * 4, id * 4 + 4);
+    return pix;
+};
 
 c3DEngine.prototype.renderTobuffer = function renderTobuffer(x, y, width, height, mode) {
-    // TODO Deallocate render texture
+    const resized = this.pixelBuffer[mode].length !== this.width * this.height * 4;
+    if (!bufferNeedUpdate[mode] && !resized) return;
     const originalState = this.stateRender;
     this.setStateRender(mode);
     this.renderer.clear();
-    this.renderer.setViewport(x, y, width, height);
+    this.renderer.setViewport(0, 0, this.width, this.height);
     this.renderer.render(this.scene3D, this.camera.camera3D, this.pickingTexture);
     this.setStateRender(originalState);
-    var pixelBuffer = new Uint8Array(4);
-    this.renderer.readRenderTargetPixels(this.pickingTexture, x, y, width, height, pixelBuffer);
-    return pixelBuffer;
+    if (resized) {
+        this.pixelBuffer[mode] = new Uint8Array(this.width * this.height * 4);
+    }
+    this.renderer.readRenderTargetPixels(this.pickingTexture, 0, 0, this.width, this.height, this.pixelBuffer[mode]);
+    this.scene.renderScene3D();
+    bufferNeedUpdate[mode] = false;
 };
 
 c3DEngine.prototype.bufferToImage = function bufferToImage(pixelBuffer, width, height) {
@@ -365,64 +395,9 @@ c3DEngine.prototype.bufferToImage = function bufferToImage(pixelBuffer, width, h
     return image;
 };
 
-c3DEngine.prototype.updatePositionBuffer = function updatePositionBuffer() {
-    this.camera.camera3D.updateMatrixWorld();
-    this.positionBuffer = this.renderTobuffer(0, 0, this.width, this.height, RendererConstant.DEPTH);
-    this.renderScene(); // TODO debug to remove white screen, but why?
-};
-
-c3DEngine.prototype.pickingInPositionBuffer = function pickingInPositionBuffer(mouse, scene) {
-    if (this.positionBuffer === null)
-        { this.updatePositionBuffer(); }
-
-    if (mouse === undefined)
-        { mouse = new THREE.Vector2(Math.floor(this.width / 2), Math.floor(this.height / 2)); }
-
-    var coord = new THREE.Vector2(mouse.x, this.height - mouse.y);
-
-    var i = (coord.y * this.width + coord.x) * 4;
-
-    if (scene)
-        { scene.selectNodeId(this.positionBuffer[i + 3]); }
-
-    var glslPosition = new THREE.Vector3(this.positionBuffer[i + 0], this.positionBuffer[i + 1], this.positionBuffer[i + 2]);
-
-    var worldPosition = glslPosition.applyMatrix4(this.camera.camera3D.matrixWorld);
-
-    return worldPosition;
-};
-
-/**
- *
- * @param {type} mouse : mouse position on screen in pixel
- * @param {type} scene
- * @returns THREE.Vector3 position cartesien in world space
- * */
-c3DEngine.prototype.getPickingPosition = function getPickingPosition(mouse, scene) {
-    if (mouse === undefined)
-        { mouse = new THREE.Vector2(Math.floor(this.width / 2), Math.floor(this.height / 2)); }
-
-    var camera = this.camera.camera3D;
-
-    camera.updateMatrixWorld();
-
-    var buffer = this.renderTobuffer(mouse.x, this.height - mouse.y, 1, 1, RendererConstant.DEPTH);
-
-    var glslPosition = new THREE.Vector3().fromArray(buffer);
-
-    if (scene)
-        { scene.selectNodeId(buffer[3]); }
-
-    var worldPosition = glslPosition.applyMatrix4(camera.matrixWorld);
-
-    if (worldPosition.length() > 10000000)
-        { return undefined; }
-
-    return worldPosition;
-};
+const bitSh = new THREE.Vector4(1.0 / (256.0 * 256.0 * 256.0), 1.0 / (256.0 * 256.0), 1.0 / 256.0, 1.0);
 
 var unpack1K = function unpack1K(color, factor) {
-    var bitSh = new THREE.Vector4(1.0 / (256.0 * 256.0 * 256.0), 1.0 / (256.0 * 256.0), 1.0 / 256.0, 1.0);
     return bitSh.dot(color) * factor;
 };
 
@@ -436,7 +411,9 @@ c3DEngine.prototype.screenCoordsToNodeId = function screenCoordsToNodeId(mouse) 
 
     camera.updateMatrixWorld();
 
-    var buffer = this.renderTobuffer(mouse.x, this.height - mouse.y, 1, 1, RendererConstant.ID);
+    this.renderTobuffer(mouse.x, this.height - mouse.y, 1, 1, RendererConstant.ID);
+
+    var buffer = this.readTobuffer(mouse.x, this.height - mouse.y, 1, 1, RendererConstant.ID);
 
     var depthRGBA = new THREE.Vector4().fromArray(buffer).divideScalar(255.0);
 
@@ -445,7 +422,6 @@ c3DEngine.prototype.screenCoordsToNodeId = function screenCoordsToNodeId(mouse) 
 
     return Math.round(unpack);
 };
-
 
 /**
  *
@@ -473,7 +449,9 @@ c3DEngine.prototype.getPickingPositionFromDepth = (function getGetPickingPosFrom
 
         camera.updateMatrixWorld();
 
-        var buffer = this.renderTobuffer(mouse.x, this.height - mouse.y, 1, 1, RendererConstant.DEPTH);
+        this.renderTobuffer(mouse.x, this.height - mouse.y, 1, 1, RendererConstant.DEPTH);
+
+        var buffer = this.readTobuffer(mouse.x, this.height - mouse.y, 1, 1, RendererConstant.DEPTH);
 
         screen.x = ((mouse.x) / this.width) * 2 - 1;
         screen.y = -((mouse.y) / this.height) * 2 + 1;

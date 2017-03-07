@@ -3,8 +3,8 @@
 // runconformance/glsl/bugs/conditional-discard-in-loop.html
 // conformance/glsl/bugs/nested-loops-with-break-and-continue.html
 // Resolve CHROME unstable 52
-
-const vec4 CFog = vec4( 0.76, 0.85, 1.0, 1.0);
+// rgb(207.0/255.0, 214.0/255.0, 218.0/255.0)
+const vec4 CFog = vec4( 207.0/255.0, 214.0/255.0, 228.0/255.0, 1.0);
 const vec4 CWhite = vec4(1.0,1.0,1.0,1.0);
 const vec4 CBlueOcean = vec4( 0.04, 0.23, 0.35, 1.0);
 const vec4 COrange = vec4( 1.0, 0.3, 0.0, 1.0);
@@ -68,7 +68,7 @@ void main() {
 
         #if defined(USE_LOGDEPTHBUF) && defined(USE_LOGDEPTHBUF_EXT)
             float depth = gl_FragDepthEXT / gl_FragCoord.w;
-            float fogIntensity = 1.0/(exp(depth/distanceFog));
+            float fogIntensity = 1.0/(exp(1.2*depth/distanceFog));
         #else
             float fogIntensity = 1.0;
         #endif

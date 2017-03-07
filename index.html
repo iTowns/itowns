@@ -201,10 +201,10 @@ and open the template in the editor.
 
             var mouseDown = 0;
 
-            document.body.onmousedown = function () {
+            document.body.onmousedown = function onmousedown() {
                 ++mouseDown;
             };
-            document.body.onmouseup = function () {
+            document.body.onmouseup = function onmouseup() {
                 --mouseDown;
             };
 
