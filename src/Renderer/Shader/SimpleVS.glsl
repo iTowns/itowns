@@ -12,6 +12,7 @@ uniform bool       useRTC;
 uniform bool       lightingEnabled;
 varying float      light;
 varying vec3       vColor;
+varying vec3       vPosition;
 
 // IE error : Initializer for const variable must initialize to a constant value
 //const vec3 dir =  normalize(vec3(1.0,1.0,0.5));
@@ -21,6 +22,7 @@ void main()
   vec3 dir =  normalize(vec3(1.0,1.0,0.5));
 
   vColor = color;
+  vPosition = position;
 
   if (useRTC) {
         gl_Position = mVPMatRTC * vec4( position ,1.0 );

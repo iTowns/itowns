@@ -176,8 +176,9 @@ ApiGlobe.prototype.addFeatureLayersFromJSONArray = function addFeatureLayersFrom
     });
 };
 
-ApiGlobe.prototype.addFeatureFromJSON = function addFeatureFromJSON(url) {
+ApiGlobe.prototype.addFeatureFromJSON = function addFeatureFromJSON(url, options) {
     return Fetcher.json(url).then((result) => {
+        Object.assign(result, options);
         this.addFeature(result);
     });
 };
@@ -405,7 +406,10 @@ ApiGlobe.prototype.createSceneGlobe = function createSceneGlobe(coordCarto, view
     this.scene.scheduler.addProtocolProvider('wmtsc', wmtsProvider);
     this.scene.scheduler.addProtocolProvider('tile', new TileProvider());
     this.scene.scheduler.addProtocolProvider('wms', new WMS_Provider({ support: map.gLDebug }));
-    this.scene.scheduler.addProtocolProvider('wfs', new WFS_Provider());
+
+    const featureProvider = new WFS_Provider();
+    this.scene.scheduler.addProtocolProvider('wfs', featureProvider);
+    this.scene.scheduler.addProtocolProvider('geojson', featureProvider);
 
     this.sceneLoadedDeferred = defer();
     this.addEventListener('globe-loaded', () => {
@@ -982,13 +986,15 @@ ApiGlobe.prototype.loadGPX = function loadGPX(url) {
 };
 
 ApiGlobe.prototype.addFeature = function addFeature(options) {
-    if (options === undefined)
-        { throw new Error('options is required'); }
+    if (options === undefined) {
+        throw new Error('options is required');
+    }
     const map = this.scene.getMap();
     const layer = map.layersConfiguration.getGeometryLayerById(options.layerId);
-    if (options.geometry !== undefined && layer !== undefined) {
+    if (options.type && layer) {
         const tools = this.scene.scheduler.getProtocolProvider('wfs').featureToolBox;
-        layer.root.add(tools.processingGeoJSON(options.geometry));
+        const featureMesh = tools.processingGeoJSON(options);
+        layer.root.add(featureMesh);
     }
 };
 

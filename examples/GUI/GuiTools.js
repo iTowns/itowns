@@ -48,7 +48,8 @@ GuiTools.prototype.addElevationLayerGUI = function addElevationLayerGUI(layer) {
 };
 
 GuiTools.prototype.addFeatureLayerGUI = function addFeatureLayerGUI(layer) {
-    if (layer.id.match(/.*[wW]fs.*/)) {
+    // if (layer.id.match(/.*[wW]fs.*/)) {
+    if (layer.id !== 'wgs84') {
         var folder = this.featureGui.addFolder(layer.id);
         folder.add({ visible: true }, 'visible').onChange(value =>
             this.api.setLayerVisibility(layer.id, value));

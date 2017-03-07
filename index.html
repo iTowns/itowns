@@ -56,9 +56,9 @@ and open the template in the editor.
             const urlFeatureLayersArray = [];
 
             urlImageryLayers.push('examples/layers/JSONLayers/Ortho.json');
-            urlImageryLayers.push('examples/layers/JSONLayers/OrthosCRS.json');
-            urlImageryLayers.push('examples/layers/JSONLayers/ScanEX.json');
-            urlImageryLayers.push('examples/layers/JSONLayers/Region.json');
+            // urlImageryLayers.push('examples/layers/JSONLayers/OrthosCRS.json');
+            // urlImageryLayers.push('examples/layers/JSONLayers/ScanEX.json');
+            // urlImageryLayers.push('examples/layers/JSONLayers/Region.json');
 
             urlElevationLayers.push('examples/layers/JSONLayers/IGN_MNT.json');
             urlElevationLayers.push('examples/layers/JSONLayers/IGN_MNT_HIGHRES.json');
@@ -81,6 +81,70 @@ and open the template in the editor.
             var urlFeature = 'examples/layers/JSONLayers/F_Line.json';
             itowns.viewer.addFeatureFromJSON(urlFeature);
 
+ /*
+            const featureLayer = {
+                protocol: 'geojson',
+                id: 'parcelle',
+                title: 'parcelle',
+            };
+
+            const featureLayerSimulation = {
+                protocol: 'geojson',
+                id: 'simulation',
+                title: 'simulation',
+            };
+
+            const featureLayersaisie2D = {
+                protocol: 'geojson',
+                id: 'saisie2D',
+                title: 'saisie2D',
+            };
+
+            itowns.viewer.addFeatureLayer(featureLayer);
+            itowns.viewer.addFeatureLayer(featureLayerSimulation);
+            itowns.viewer.addFeatureLayer(featureLayersaisie2D);
+
+            const urlParcelle = 'examples/geojson/parcelleSaintAubin.geojson';
+            itowns.viewer.addFeatureFromJSON(urlParcelle, {
+                layerId: 'parcelle',
+                altitude: 0.1,
+                stroke: '#FD8934',
+                strokeWidth: 10.0,
+                strokeOpacity: 1.0,
+            });
+
+            const urlParcelleParcking = 'examples/geojson/parcelleParckingSaintAubin.geojson';
+            itowns.viewer.addFeatureFromJSON(urlParcelleParcking, {
+                layerId: 'parcelle',
+                altitude: 0.15,
+                stroke: '#2594CE',
+                strokeWidth: 20.0,
+                strokeOpacity: 1.0,
+            });
+
+            const urlBatiment = 'examples/geojson/saintAubinSimulation.json';
+            itowns.viewer.addFeatureFromJSON(urlBatiment, {
+                layerId: 'simulation',
+                translate: -0.4,
+                stroke: '#60FF5A',
+                strokeWidth: 15.0,
+                strokeOpacity: 0.6,
+                animated: true,
+                cutColor: true,
+            });
+
+            const urlExtrude = 'examples/geojson/bati_saisi_metrique.geojson';
+            itowns.viewer.addFeatureFromJSON(urlExtrude, {
+                layerId: 'saisie2D',
+                altitude: 0.25,
+                stroke: '#9AB7BF',
+                strokeWidth: 15.0,
+                strokeOpacity: 0.6,
+                animated: true,
+                cutColor: true,
+            });
+*/
+
             menuGlobe.addGUI('RealisticLighting', false,
                 (newValue) => { itowns.viewer.setRealisticLightingOn(newValue); });
 
@@ -89,6 +153,6 @@ and open the template in the editor.
                 console.info('Globe Loaded');
             });
 
-        </script>
-    </body>
+</script>
+</body>
 </html>

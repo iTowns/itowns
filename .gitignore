@@ -4,5 +4,7 @@
 # See https://github.com/github/gitignore/tree/master/Global for a list of global ignore rules.
 
 /node_modules/
-/dist/
+/dist/debug.js
+/dist/debug.js.map
+/dist/itowns.js.map
 /lib/
