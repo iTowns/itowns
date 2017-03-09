@@ -259,14 +259,14 @@ ApiGlobe.prototype.addElevationLayersFromJSONArray = function addElevationLayers
  */
 ApiGlobe.prototype.getMinZoomLevel = function getMinZoomLevel(index) {
     var layer = this.getImageryLayers()[index];
-    if (layer && layer.zoom) {
-        return layer.zoom.min;
+    if (layer && layer.options.zoom) {
+        return layer.options.zoom.min;
     } else {
         var layers = this.getImageryLayers();
         let min = Infinity;
         for (var i = layers.length - 1; i >= 0; i--) {
-            if (layers[i].zoom) {
-                min = Math.min(min, layers[i].zoom.min);
+            if (layers[i].options.zoom) {
+                min = Math.min(min, layers[i].options.zoom.min);
             }
         }
         return min;
@@ -282,14 +282,14 @@ ApiGlobe.prototype.getMinZoomLevel = function getMinZoomLevel(index) {
  */
 ApiGlobe.prototype.getMaxZoomLevel = function getMaxZoomLevel(index) {
     var layer = this.getImageryLayers()[index];
-    if (layer && layer.zoom) {
-        return layer.zoom.max;
+    if (layer && layer.options.zoom) {
+        return layer.options.zoom.max;
     } else {
         var layers = this.getImageryLayers();
         let max = 0;
         for (var i = layers.length - 1; i >= 0; i--) {
-            if (layers[i].zoom) {
-                max = Math.max(max, layers[i].zoom.max);
+            if (layers[i].options.zoom) {
+                max = Math.max(max, layers[i].options.zoom.max);
             }
         }
         return max;
