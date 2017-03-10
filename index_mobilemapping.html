@@ -50,7 +50,7 @@ and open the template in the editor.
             fetch(jsonUrl).then(response => response.json()).then((panoInfo) => {
                 // create default scene
                 var scene = new itowns.Scene(viewerDiv, false, false);
-                scene.initProviders();
+                scene.initDefaultProviders();
 
                 const panorama = panoInfo.filter(p => p.filename.indexOf('0000492') >= 0)[0];
 
