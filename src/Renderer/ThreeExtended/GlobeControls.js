@@ -217,6 +217,11 @@ var keyS = false;
 
 // Set to true to enable target helper
 const enableTargetHelper = false;
+let pickingHelper;
+
+if (enableTargetHelper) {
+    pickingHelper = new THREE.AxisHelper(500000);
+}
 
 // Handle function
 var _handlerMouseMove;
@@ -324,10 +329,6 @@ function GlobeControls(camera, domElement, engine) {
 
     // Enable Damping
     this.enableDamping = true;
-
-    if (enableTargetHelper) {
-        this.pickingHelper = new THREE.AxisHelper(500000);
-    }
 
     // Mouse buttons
     this.mouseButtons = {
@@ -478,18 +479,22 @@ function GlobeControls(camera, domElement, engine) {
         }
     };
 
-    var getPickingPosition = (function getGetPickingPositionFn() {
-        var engineGfx = engine;
-        var position;
+    const getPickingPosition = function getPickingPosition(coords) {
+        if (enableTargetHelper) {
+            pickingHelper.visible = false;
+            cameraTargetOnGlobe.visible = false;
+        }
 
-        return function getPickingPosition(coords)
-        {
-            position = engineGfx.getPickingPositionFromDepth(coords);
-            engineGfx.renderScene();
+        const position = engine.getPickingPositionFromDepth(coords);
+        engine.renderScene();
 
-            return position;
-        };
-    }());
+        if (enableTargetHelper) {
+            pickingHelper.visible = true;
+            cameraTargetOnGlobe.visible = true;
+        }
+
+        return position;
+    };
 
     // introduction collision
     // Not use for the moment
@@ -530,6 +535,7 @@ function GlobeControls(camera, domElement, engine) {
         } else if (state === CONTROL_STATE.PAN) {
             this.camera.position.add(panVector);
             movingCameraTargetOnGlobe.add(panVector);
+            this.camera.up.copy(movingCameraTargetOnGlobe.clone().normalize());
         // PANORAMIC
         // Move target camera
         } else if (state === CONTROL_STATE.PANORAMIC) {
@@ -669,6 +675,9 @@ function GlobeControls(camera, domElement, engine) {
         spherical.setFromVector3(offset);
         state = CONTROL_STATE.NONE;
         lastRotation = [];
+        if (enableTargetHelper) {
+            this.dispatchEvent(this.changeEvent);
+        }
 
         this.dispatchEvent({
             type: 'camera-target-updated',
@@ -705,7 +714,7 @@ function GlobeControls(camera, domElement, engine) {
             tSphere.picking.normal = tSphere.picking.position.clone().normalize();
 
             lastRotation.push(tSphere.picking.normal);
-            updateHelper.bind(this)(tSphere.picking.position, this.pickingHelper);
+            updateHelper.bind(this)(tSphere.picking.position, pickingHelper);
         };
     }());
 
@@ -1182,7 +1191,7 @@ function GlobeControls(camera, domElement, engine) {
 
     if (enableTargetHelper) {
         cameraTargetOnGlobe.add(new THREE.AxisHelper(500000));
-        engine.scene3D.add(this.pickingHelper);
+        engine.scene3D.add(pickingHelper);
     }
 
     // Start position
