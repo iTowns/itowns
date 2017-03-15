@@ -915,6 +915,22 @@ ApiGlobe.prototype.removeEventListenerLayerChanged = function removeEventListene
     this.viewerDiv.removeEventListener('layerchanged:index', this.callbackLayerChanged, false);
 };
 
+/**
+ * Get the Attribution of all layers in the scene.
+ * @return {map}  A Map of attribution.
+ */
+
+ApiGlobe.prototype.getLayersAttribution = function getLayersAttribution() {
+    const lc = this.scene.getMap().layersConfiguration;
+    const map = new Map();
+    [...lc.getColorLayers(), ...lc.getElevationLayers()].forEach((l) => {
+        if (l.options.attribution) {
+            map.set(l.options.attribution.name, l.options.attribution);
+        }
+    });
+    return map;
+};
+
 ApiGlobe.prototype.selectNodeById = function selectNodeById(id) {
     this.scene.selectNodeId(id);
     this.scene.update();

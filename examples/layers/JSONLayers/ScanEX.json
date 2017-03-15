@@ -8,6 +8,10 @@
 		"options": {}
 	},
 	"options": {
+		"attribution" : {
+			"name":"IGN",
+			"url":"http://www.ign.fr/"
+		},
 		"name": "GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN-EXPRESS.STANDARD",
 		"mimetype": "image/jpeg",
 		"tileMatrixSet": "PM",

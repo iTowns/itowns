@@ -17,6 +17,10 @@
 		"options": {}
 	},
 	"options": {
-		"mimetype"  : "image/png"
+		"mimetype"  : "image/png",
+		"attribution" : {
+			"name":"IGN",
+			"url":"http://www.ign.fr/"
+		}
 	}
 }
