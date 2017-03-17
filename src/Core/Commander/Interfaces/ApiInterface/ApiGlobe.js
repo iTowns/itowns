@@ -494,21 +494,21 @@ ApiGlobe.prototype.setCameraOrientation = function setCameraOrientation(orientat
  * @constructor
  * @param {Number | MouseEvent} x|event - The x-position inside the Globe element or a mouse event.
  * @param {number | undefined} y - The y-position inside the Globe element.
- * @return {Position} postion
+ * @return {Position} position
  */
 ApiGlobe.prototype.pickPosition = function pickPosition(mouse, y) {
-    if (mouse)
-        { if (mouse.clientX) {
-            mouse.x = mouse.clientX;
-            mouse.y = mouse.clientY;
-        } else {
-            mouse.x = mouse;
-            mouse.y = y;
-        } }
+    var screenCoords = {
+        x: mouse.clientX || mouse,
+        y: mouse.clientY || y,
+    };
 
-    var pickedPosition = this.scene.getPickPosition(mouse);
+    var pickedPosition = this.scene.getPickPosition(screenCoords);
 
     this.scene.renderScene3D();
+
+    if (!pickedPosition) {
+        return;
+    }
 
     return this.projection.cartesianToGeo(pickedPosition);
 };
