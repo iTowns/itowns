@@ -931,6 +931,36 @@ ApiGlobe.prototype.getLayersAttribution = function getLayersAttribution() {
     return map;
 };
 
+/**
+ * Return all the layers in the scene.
+ * The type can be 'color', 'elevation' and 'geometry'. If the type is not specified, the function return all the layers.
+ * @param {type} Type - The type of the layers wanted.
+ */
+
+ApiGlobe.prototype.getLayers = function getLayers(type) {
+    const lc = this.scene.getMap().layersConfiguration;
+    if (!type) {
+        return lc.getLayers();
+    } else if (type === 'color') {
+        return lc.getColorLayers();
+    } else if (type === 'elevation') {
+        return lc.getElevationLayers();
+    } else if (type === 'geometry') {
+        return lc.getGeometryLayers();
+    }
+};
+
+/**
+ * Return a layer by its id.
+ * @param {id} ID - The id of the layer wanted.
+ */
+
+ApiGlobe.prototype.getLayerById = function getLayerById(pId) {
+    const lc = this.scene.getMap().layersConfiguration.getLayers();
+    return lc.find(l => l.id === pId);
+};
+
+
 ApiGlobe.prototype.selectNodeById = function selectNodeById(id) {
     this.scene.selectNodeId(id);
     this.scene.update();
