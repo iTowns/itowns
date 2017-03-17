@@ -70,6 +70,10 @@ LayersConfiguration.prototype.removeColorLayer = function removeColorLayer(id) {
     return false;
 };
 
+LayersConfiguration.prototype.getLayers = function getLayers() {
+    return [...this.colorLayers, ...this.elevationLayers, ...this.geometryLayers];
+};
+
 LayersConfiguration.prototype.getColorLayers = function getColorLayers() {
     return this.colorLayers;
 };
