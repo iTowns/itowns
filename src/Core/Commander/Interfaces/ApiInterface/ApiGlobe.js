@@ -53,33 +53,6 @@ function ApiGlobe() {
 ApiGlobe.prototype.constructor = ApiGlobe;
 
 /**
- * @param Command
- */
-ApiGlobe.prototype.add = function add(/* Command*/) {
-    // TODO: Implement Me
-
-};
-
-/**
- * @param commandTemplate
- */
-ApiGlobe.prototype.createCommand = function createCommand(/* commandTemplate*/) {
-    // TODO: Implement Me
-
-};
-
-/**
- */
-ApiGlobe.prototype.execute = function execute() {
-    // TODO: Implement Me
-
-};
-
-ApiGlobe.prototype.getProtocolProvider = function getProtocolProvider(protocol) {
-    return this.scene.scheduler.getProtocolProvider(protocol);
-};
-
-/**
  * This function gives a chance to the matching provider to pre-process some
  * values for a layer.
  */
@@ -383,11 +356,6 @@ ApiGlobe.prototype.update = function update() {
     this.scene.notifyChange(0, true);
 };
 
-ApiGlobe.prototype.showClouds = function showClouds(value, satelliteAnimation) {
-    this.scene.getMap().showClouds(value, satelliteAnimation);
-    this.scene.renderScene3D();
-};
-
 ApiGlobe.prototype.setRealisticLightingOn = function setRealisticLightingOn(value) {
     this.scene.setLightingPos();
     this.scene.getMap().setRealisticLightingOn(value);
@@ -413,14 +381,6 @@ ApiGlobe.prototype.setLayerVisibility = function setLayerVisibility(id, visible)
     this.viewerDiv.dispatchEvent(eventLayerChangedVisible);
 };
 
-ApiGlobe.prototype.animateTime = function animateTime(value) {
-    this.scene.animateTime(value);
-};
-
-ApiGlobe.prototype.orbit = function orbit(value) {
-    this.scene.orbit(value);
-};
-
 /**
  * Sets the opacity of a layer. If the layer is not visible in the scene, this function will no effect until the layer becomes visible.
  * @constructor
@@ -434,10 +394,6 @@ ApiGlobe.prototype.setLayerOpacity = function setLayerOpacity(id, opacity) {
     eventLayerChangedOpacity.layerId = id;
     eventLayerChangedOpacity.opacity = opacity;
     this.viewerDiv.dispatchEvent(eventLayerChangedOpacity);
-};
-
-ApiGlobe.prototype.setStreetLevelImageryOn = function setStreetLevelImageryOn(value) {
-    this.scene.setStreetLevelImageryOn(value);
 };
 
 /**
@@ -642,12 +598,6 @@ ApiGlobe.prototype.resetHeading = function resetHeading(isAnimated) {
  * @param {Position} Second - Position.
  * @return {Number} distance
  */
-
-ApiGlobe.prototype.computeDistance = function computeDistance(p1, p2) {
-    return this.scene.getEllipsoid().computeDistance(
-        new C.EPSG_4326(p1.lon, p1.lat, p1.alt),
-        new C.EPSG_4326(p2.lon, p2.lat, p2.alt));
-};
 
 ApiGlobe.prototype.setSceneLoaded = function setSceneLoaded() {
     sceneIsLoaded = false;
@@ -960,19 +910,6 @@ ApiGlobe.prototype.getLayerById = function getLayerById(pId) {
     return lc.find(l => l.id === pId);
 };
 
-
-ApiGlobe.prototype.selectNodeById = function selectNodeById(id) {
-    this.scene.selectNodeId(id);
-    this.scene.update();
-    this.scene.renderScene3D();
-};
-
-ApiGlobe.prototype.showKML = function showKML(value) {
-    this.scene.getMap().showKML(value);
-    this.scene.renderScene3D();
-};
-
-
 ApiGlobe.prototype.loadGPX = function loadGPX(url) {
     loadGpx(url).then((gpx) => {
         if (gpx) {
@@ -982,6 +919,5 @@ ApiGlobe.prototype.loadGPX = function loadGPX(url) {
 
     this.scene.renderScene3D();
 };
-
 
 export default ApiGlobe;
