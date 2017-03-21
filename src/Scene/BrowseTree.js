@@ -4,8 +4,6 @@
  * Description: BrowseTree parcourt un arbre de Node. Lors du parcours un ou plusieur NodeProcess peut etre appliqué sur certains Node.
  */
 
-import * as THREE from 'three';
-
 function BrowseTree(engine) {
     // Constructor
 
@@ -32,10 +30,13 @@ BrowseTree.prototype.NodeProcess = function NodeProcess() {
 };
 
 BrowseTree.prototype.uniformsProcess = (function getUniformsProcessFn() {
-    var positionWorld = new THREE.Vector3();
+    // var positionWorld = new THREE.Vector3();
 
     return function uniformsProcess(node, camera) {
-        node.setMatrixRTC(this.gfxEngine.getRTCMatrixFromCenter(positionWorld.setFromMatrixPosition(node.matrixWorld), camera));
+        // node.setMatrixRTC(this.gfxEngine.getRTCMatrixFromCenter(positionWorld.setFromMatrixPosition(node.matrixWorld), camera));
+
+        node.setMatrixRTC(this.gfxEngine.getRTCMatrixFromNode(node, camera));
+
         node.setFog(this.fogDistance);
 
         this.selectNode(node);

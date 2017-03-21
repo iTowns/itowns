@@ -137,6 +137,16 @@ TileGeometry.prototype.computeBuffers = function computeBuffers(params, builder)
     let v3;
     let v4;
 
+    params.transformation = new THREE.Object3D();
+    const normalTile = this.center.clone().normalize();
+    params.transformation.matrixWorld.elements = new Float64Array(16);
+    params.transformation.matrix.elements = new Float64Array(16);
+    params.transformation.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), normalTile);
+    params.transformation.position.copy(this.center);
+    params.transformation.updateMatrixWorld();
+    params.transformation.matrixAutoUpdate = false;
+    params.transformation.matrixWorldNeedsUpdate = false;
+
     for (y = 0; y <= heightSegments; y++) {
         var verticesRow = [];
 
@@ -151,15 +161,19 @@ TileGeometry.prototype.computeBuffers = function computeBuffers(params, builder)
 
             builder.uProjecte(u, params);
 
-            var vertex = builder.VertexPosition(params, params.projected);
+            const vertex = builder.VertexPosition(params).xyz();
+            params.transformation.worldToLocal(vertex);
 
             id_m3 = idVertex * 3;
 
-            scratchBuffers.position[id_m3 + 0] = vertex.x() - this.center.x;
-            scratchBuffers.position[id_m3 + 1] = vertex.y() - this.center.y;
-            scratchBuffers.position[id_m3 + 2] = vertex.z() - this.center.z;
+            scratchBuffers.position[id_m3 + 0] = vertex.x;
+            scratchBuffers.position[id_m3 + 1] = vertex.y;
+            scratchBuffers.position[id_m3 + 2] = vertex.z;
 
-            var normal = builder.VertexNormal(params);
+            const normal = builder.VertexNormal(params);
+
+            normal.applyQuaternion(params.transformation.quaternion);
+            // params.transformation.worldToLocal(normal);
 
             scratchBuffers.normal[id_m3 + 0] = normal.x;
             scratchBuffers.normal[id_m3 + 1] = normal.y;
