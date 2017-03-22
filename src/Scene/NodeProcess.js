@@ -12,6 +12,7 @@ import LayerUpdateState from './LayerUpdateState';
 import { CancelledCommandException } from '../Core/Commander/Scheduler';
 import { ellipsoidSizes } from '../Core/Geographic/Coordinates';
 import OGCWebServiceHelper from '../Core/Commander/Providers/OGCWebServiceHelper';
+import OBBHelper from '../Renderer/ThreeExtended/OBBHelper';
 
 export const SSE_SUBDIVISION_THRESHOLD = 6.0;
 
@@ -101,6 +102,10 @@ NodeProcess.prototype.subdivideNode = function subdivideNode(node, camera, param
                     }
                 }
                 if (__DEBUG__) {
+                    if (child.level > 2) {
+                        const obbH = new OBBHelper(child.OBB());
+                        this.scene.gfxEngine.scene3D.add(obbH);
+                    }
                     const geometryLayer = params.layersConfig.getGeometryLayers()[0];
                     child.material.uniforms.showOutline = { value: geometryLayer.showOutline || false };
                     child.material.wireframe = geometryLayer.wireframe || false;

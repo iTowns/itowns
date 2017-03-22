@@ -127,7 +127,7 @@ BuilderEllipsoidTile.prototype.OBB = function OBBFn(params) {
     var max = new THREE.Vector3(width, height, maxHeight);
     var min = new THREE.Vector3(-width, -height, -maxHeight);
 
-    var translate = new THREE.Vector3(0, delta, -maxHeight);
+    var translate = new THREE.Vector3(0, delta, -maxHeight + params.center.length());
     var obb = new OBB(min, max, normal, translate);
 
     return obb;

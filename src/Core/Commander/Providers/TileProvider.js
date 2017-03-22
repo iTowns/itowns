@@ -12,7 +12,7 @@
  *
  *
  */
-import { Quaternion, Vector3 } from 'three';
+// import { Quaternion, Vector3 } from 'three';
 import Provider from './Provider';
 import Projection from '../../Geographic/Projection';
 import BuilderEllipsoidTile from '../../../Globe/BuilderEllipsoidTile';
@@ -67,7 +67,10 @@ TileProvider.prototype.executeCommand = function executeCommand(command) {
 
     // ATTENTION La world matrix est calculer une fois pour toute ici -->
     tile.updateMatrixWorld(true);
-    tile.OBB().parent = tile;   // TODO: we should use tile.add(tile.OBB())
+    parent.add(tile);
+
+
+    // tile.OBB().parent = tile;   // TODO: we should use tile.add(tile.OBB())
     tile.OBB().update();
 
     // update bbox if node herits texture elevation from parent
@@ -83,7 +86,6 @@ TileProvider.prototype.executeCommand = function executeCommand(command) {
         }
     }
 
-	parent.add(tile);
     return Promise.resolve(tile);
 };
 

@@ -38,7 +38,7 @@ OBB.prototype.constructor = OBB;
 
 OBB.prototype.update = function update() {
     this.updateMatrix();
-    this.updateMatrixWorld();
+    this.updateMatrixWorld(true);
 
     this.quaInv = this.quaternion.clone().inverse();
 

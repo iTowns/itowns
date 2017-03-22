@@ -142,6 +142,7 @@ TileGeometry.prototype.computeBuffers = function computeBuffers(params, builder)
     params.transformation.matrixWorld.elements = new Float64Array(16);
     params.transformation.matrix.elements = new Float64Array(16);
     params.transformation.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), normalTile);
+    params.transformation.invquaternion = params.transformation.quaternion.clone().inverse();
     params.transformation.position.copy(this.center);
     params.transformation.updateMatrixWorld();
     params.transformation.matrixAutoUpdate = false;
@@ -171,9 +172,8 @@ TileGeometry.prototype.computeBuffers = function computeBuffers(params, builder)
             scratchBuffers.position[id_m3 + 2] = vertex.z;
 
             const normal = builder.VertexNormal(params);
-
-            normal.applyQuaternion(params.transformation.quaternion);
-            // params.transformation.worldToLocal(normal);
+            // ??
+            normal.applyQuaternion(params.transformation.invquaternion);
 
             scratchBuffers.normal[id_m3 + 0] = normal.x;
             scratchBuffers.normal[id_m3 + 1] = normal.y;
