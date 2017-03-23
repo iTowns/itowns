@@ -139,6 +139,7 @@ void main() {
 
         // Fog
         gl_FragColor = mix(CFog, diffuseColor, fogIntensity);
+        gl_FragColor.a = 1.0;
 
         if(lightingEnabled) {   // Add lighting
             float light = min(2. * dot(vNormal, lightPosition),1.);
