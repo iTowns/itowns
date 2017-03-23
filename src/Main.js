@@ -12,4 +12,5 @@ const itowns = scope.itowns || {
 };
 scope.itowns = itowns;
 export const viewer = itowns.viewer;
+export const projection = itowns.viewer.projection;
 export default scope.itowns;
