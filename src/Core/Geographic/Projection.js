@@ -167,28 +167,23 @@ Projection.prototype.UnitaryToLatitudeWGS84 = function UnitaryToLatitudeWGS84(v,
 };
 
 Projection.prototype.cartesianToGeo = function cartesianToGeo(position) {
-    // TODO: warning switch coord
-    var p = position.clone();
-    p.x = position.x;
-    p.y = position.z;
-    p.z = position.y;
+    // FIXME: warning switch coord
+    const R = position.length();
+    const a = 6378137;
+    const b = 6356752.3142451793;
+    const e = Math.sqrt((a * a - b * b) / (a * a));
+    const f = 1 - Math.sqrt(1 - e * e);
+    const rsqXY = Math.sqrt(position.x * position.x + position.z * position.z);
 
-    var R = p.length();
-    var a = 6378137;
-    var b = 6356752.3142451793;
-    var e = Math.sqrt((a * a - b * b) / (a * a));
-    var f = 1 - Math.sqrt(1 - e * e);
-    var rsqXY = Math.sqrt(p.x * p.x + p.y * p.y);
+    const theta = Math.atan2(position.z, position.x);
+    const nu = Math.atan(position.y / rsqXY * ((1 - f) + e * e * a / R));
 
-    var theta = Math.atan2(p.y, p.x);
-    var nu = Math.atan(p.z / rsqXY * ((1 - f) + e * e * a / R));
+    const sinu = Math.sin(nu);
+    const cosu = Math.cos(nu);
 
-    var sinu = Math.sin(nu);
-    var cosu = Math.cos(nu);
+    const phi = Math.atan((position.y * (1 - f) + e * e * a * sinu * sinu * sinu) / ((1 - f) * (rsqXY - e * e * a * cosu * cosu * cosu)));
 
-    var phi = Math.atan((p.z * (1 - f) + e * e * a * sinu * sinu * sinu) / ((1 - f) * (rsqXY - e * e * a * cosu * cosu * cosu)));
-
-    var h = (rsqXY * Math.cos(phi)) + p.z * Math.sin(phi) - a * Math.sqrt(1 - e * e * Math.sin(phi) * Math.sin(phi));
+    const h = (rsqXY * Math.cos(phi)) + position.y * Math.sin(phi) - a * Math.sqrt(1 - e * e * Math.sin(phi) * Math.sin(phi));
 
     return new Coordinates('EPSG:4326', -theta, phi, h);
 };
