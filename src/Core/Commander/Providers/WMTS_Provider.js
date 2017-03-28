@@ -6,7 +6,7 @@
 
 import * as THREE from 'three';
 import CoordWMTS from '../../Geographic/CoordWMTS';
-import Tish from './TiledImageTools';
+import TileImageTools from './TiledImageTools';
 
 function WMTS_Provider() {
 }
@@ -78,16 +78,16 @@ WMTS_Provider.prototype.getXbilTexture = function getXbilTexture(tile, layer, pa
     const pitch = new THREE.Vector3(0.0, 0.0, 1.0);
 
     if (parentTextures) {
-        coordWMTS = Tish.WMTS_WGS84Parent(
+        coordWMTS = TileImageTools.WMTS_WGS84Parent(
             coordWMTS,
             parentTextures[0].coordWMTS.zoom,
             pitch);
-        return Tish.cropXbilTexture(parentTextures[0], pitch);
+        return TileImageTools.cropXbilTexture(parentTextures[0], pitch);
     }
 
     const url = this.url(coordWMTS, layer);
 
-    return Tish.getXBilTextureByUrl(url, pitch).then((result) => {
+    return TileImageTools.getXBilTextureByUrl(url, pitch).then((result) => {
         result.texture.coordWMTS = coordWMTS;
         return result;
     });
@@ -102,7 +102,7 @@ WMTS_Provider.prototype.getXbilTexture = function getXbilTexture(tile, layer, pa
  */
 WMTS_Provider.prototype.getColorTexture = function getColorTexture(coordWMTS, layer) {
     const url = this.url(coordWMTS, layer);
-    return Tish.getColorTextureByUrl(url).then((texture) => {
+    return TileImageTools.getColorTextureByUrl(url).then((texture) => {
         const result = {};
         result.texture = texture;
         result.texture.coordWMTS = coordWMTS;
@@ -158,7 +158,7 @@ WMTS_Provider.prototype.getColorTextures = function getColorTextures(tile, layer
 
             if (parentTextures) {
                 const pitch = new THREE.Vector3();
-                coordWMTS = Tish.WMTS_WGS84Parent(coordWMTS, parentTextures[0].coordWMTS.zoom, pitch);
+                coordWMTS = TileImageTools.WMTS_WGS84Parent(coordWMTS, parentTextures[0].coordWMTS.zoom, pitch);
                 promises.push(Promise.resolve({ pitch,
                     texture: parentTextures.find(texture => texture.coordWMTS.equals(coordWMTS)),
                 }));

@@ -29,9 +29,6 @@ const _cropXbilTexture = function _cropXbilTexture(texture, pitch) {
 };
 
 const getTextureFloat = function getTextureFloat(buffer) {
-    // Start float to RGBA uint8
-    // var bufferUint = new Uint8Array(buffer.buffer);
-    // var texture = new THREE.DataTexture(bufferUint, 256, 256);
     const texture = new THREE.DataTexture(buffer, SIZE_TEXTURE_TILE, SIZE_TEXTURE_TILE, THREE.AlphaFormat, THREE.FloatType);
     texture.needsUpdate = true;
     return texture;
@@ -88,7 +85,7 @@ export default {
             tile.wmtsCoords = {};
         }
 
-        const tileMatrixSet = wmtsLayer.options.tileMatrixSet;
+        const tileMatrixSet = wmtsLayer.options.tileMatrixSet || 'WGS84G';
         if (!(tileMatrixSet in tile.wmtsCoords)) {
             const tileCoord = projection.WGS84toWMTS(tile.bbox);
 

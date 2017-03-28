@@ -428,7 +428,7 @@ LayeredMaterial.prototype.getLayerTextures = function getLayerTextures(layerType
         const textureIndex = this.getTextureOffsetByLayerIndex(index);
         return this.textures[l_COLOR].slice(textureIndex, textureIndex + count);
     } else {
-        throw new Error('No known layer :', layerId);
+        throw new Error(`Invalid layer id "${layerId}"`);
     }
 };
 

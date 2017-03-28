@@ -59,7 +59,6 @@ WMS_Provider.prototype.preprocessDataLayer = function preprocessDataLayer(layer)
     layer.style = layer.style || '';
     layer.transparent = layer.transparent || false;
     layer.options = {};
-    layer.options.tileMatrixSet = layer.tileMatrixSet || 'WGS84G';
 
     layer.customUrl = `${layer.url
                   }?SERVICE=WMS&REQUEST=GetMap&LAYERS=${layer.name

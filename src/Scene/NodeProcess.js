@@ -239,6 +239,15 @@ function updateNodeImagery(scene, quadtree, node, layersConfig, force) {
 
         node.layerUpdateState[layer.id].newTry();
         const searchInParent = !node.isColorLayerLoaded(layer.id) && node.parent.isColorLayerLoaded(layer.id);
+        const currentLevel = node.materials[RendererConstant.FINAL].getColorLayerLevelById(layer.id);
+
+        if (currentLevel > -1) {
+            var targetLevel = chooseNextLevelToFetch(layer.updateStrategy.type, node.level, currentLevel, layer.updateStrategy.options);
+            if (targetLevel <= currentLevel) {
+                continue;
+            }
+        }
+
         const command = {
             /* mandatory */
             layer,
@@ -246,6 +255,8 @@ function updateNodeImagery(scene, quadtree, node, layersConfig, force) {
             priority: nodeCommandQueuePriorityFunction(node),
             earlyDropFunction: refinementCommandCancellationFn,
             parentTextures: searchInParent ? node.parent.getLayerTextures(l_COLOR, layer.id) : undefined,
+            /* redraw only if we're aren't using a texture from our parent */
+            redraw: (!searchInParent),
         };
 
         promises.push(quadtree.scheduler.execute(command).then(
@@ -254,7 +265,7 @@ function updateNodeImagery(scene, quadtree, node, layersConfig, force) {
                     node.setTexturesLayer(result, l_COLOR, layer.id);
                 } else if (result.texture) {
                     if (!result.texture.coordWMTS) {
-                        result.texture.coordWMTS = node.wmtsCoords[layer.options.tileMatrixSet][0];
+                        result.texture.coordWMTS = node.wmtsCoords[layer.options.tileMatrixSet || 'WGS84G'][0];
                     }
                     node.setTexturesLayer([result], l_COLOR, layer.id);
                 } else {
@@ -343,6 +354,7 @@ function updateNodeElevation(scene, quadtree, node, layersConfig, force) {
     if (bestLayer !== null) {
         node.layerUpdateState[bestLayer.id].newTry();
 
+        // Elevation layer search in parent, from the moment it exceeds its maximum zoom
         const searchInParent = (!node.isElevationLayerLoaded() && node.parent.isElevationLayerLoaded()) || (node.level > bestLayer.zoom.max);
 
         const command = {
@@ -352,6 +364,8 @@ function updateNodeElevation(scene, quadtree, node, layersConfig, force) {
             priority: nodeCommandQueuePriorityFunction(node),
             earlyDropFunction: refinementCommandCancellationFn,
             parentTextures: searchInParent ? node.parent.getLayerTextures(l_ELEVATION) : undefined,
+            /* redraw only if we're aren't using a texture from our parent */
+            redraw: (!searchInParent),
         };
 
         quadtree.scheduler.execute(command).then(

@@ -199,6 +199,10 @@ ApiGlobe.prototype.removeImageryLayer = function removeImageryLayer(id) {
  */
 
 ApiGlobe.prototype.addElevationLayer = function addElevationLayer(layer) {
+    if (layer.protocol === 'wmts' && layer.options.tileMatrixSet !== 'WGS84G') {
+        throw new Error('Elevation layer with wmts protocol support only WGS84G projection');
+    }
+
     preprocessLayer(layer, this.scene.scheduler.getProtocolProvider(layer.protocol));
     const map = this.scene.getMap();
     if (this.getLayerById(layer.id)) {
