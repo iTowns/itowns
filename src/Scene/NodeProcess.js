@@ -11,6 +11,7 @@ import { l_ELEVATION, l_COLOR } from '../Renderer/LayeredMaterial';
 import LayerUpdateState from './LayerUpdateState';
 import { CancelledCommandException } from '../Core/Commander/Scheduler';
 import { ellipsoidSizes } from '../Core/Geographic/Coordinates';
+import TiledImageTools from '../Core/Commander/Providers/TiledImageTools';
 
 export const SSE_SUBDIVISION_THRESHOLD = 6.0;
 
@@ -99,6 +100,7 @@ NodeProcess.prototype.subdivideNode = function subdivideNode(node, camera, param
                 // update Imagery wmts
                 for (const layer of colorLayers) {
                     if (layer.tileInsideLimit(child, layer)) {
+                        TiledImageTools.computeTileWMTSCoordinates(child, layer);
                         const texturesCount = layer.tileTextureCount ?
                             layer.tileTextureCount(child, layer) : 1;
 
@@ -119,6 +121,7 @@ NodeProcess.prototype.subdivideNode = function subdivideNode(node, camera, param
                 const elevationLayers = params.layersConfig.getElevationLayers();
                 let canHaveElevation = false;
                 for (const layer of elevationLayers) {
+                    TiledImageTools.computeTileWMTSCoordinates(child, layer);
                     canHaveElevation |= layer.tileInsideLimit(child, layer);
                 }
 
@@ -250,6 +253,9 @@ function updateNodeImagery(scene, quadtree, node, layersConfig, force) {
                 if (Array.isArray(result)) {
                     node.setTexturesLayer(result, l_COLOR, layer.id);
                 } else if (result.texture) {
+                    if (!result.texture.coordWMTS) {
+                        result.texture.coordWMTS = node.wmtsCoords[layer.options.tileMatrixSet][0];
+                    }
                     node.setTexturesLayer([result], l_COLOR, layer.id);
                 } else {
                     // TODO: null texture is probably an error

@@ -7,7 +7,7 @@
 
 import * as THREE from 'three';
 import BoundingBox from '../../../Scene/BoundingBox';
-import WMTS_Provider, { computeTileWMTSCoordinates } from './WMTS_Provider';
+import TiledImageTools from './TiledImageTools';
 
 /**
  * Return url wmts MNT
@@ -16,11 +16,8 @@ import WMTS_Provider, { computeTileWMTSCoordinates } from './WMTS_Provider';
  * @param {String} options.format: image format (default: format/jpeg)
  * @returns {Object@call;create.url.url|String}
  */
-function WMS_Provider(options) {
-    WMTS_Provider.call(this, options);
+function WMS_Provider() {
 }
-
-WMS_Provider.prototype = Object.create(WMTS_Provider.prototype);
 
 WMS_Provider.prototype.constructor = WMS_Provider;
 
@@ -46,6 +43,9 @@ WMS_Provider.prototype.preprocessDataLayer = function preprocessDataLayer(layer)
     if (!layer.bbox) {
         throw new Error('bbox is required');
     }
+    if (!layer.projection) {
+        throw new Error('projection is required');
+    }
 
     layer.bbox = new BoundingBox(
         layer.projection,
@@ -58,7 +58,6 @@ WMS_Provider.prototype.preprocessDataLayer = function preprocessDataLayer(layer)
     layer.version = layer.version || '1.3.0';
     layer.style = layer.style || '';
     layer.transparent = layer.transparent || false;
-    layer.bbox = layer.bbox || new BoundingBox();
     layer.options = {};
     layer.options.tileMatrixSet = layer.tileMatrixSet || 'WGS84G';
 
@@ -83,24 +82,20 @@ WMS_Provider.prototype.getColorTexture = function getColorTexture(tile, layer) {
         return Promise.resolve();
     }
 
-    const url = this.url(tile.bbox.as('EPSG:4326'), layer);
+    const url = this.url(tile.bbox.as(layer.projection), layer);
     const pitch = new THREE.Vector3(0, 0, 1);
     const result = { pitch };
 
-    return this.getColorTextureByUrl(url).then((texture) => {
+    return TiledImageTools.getColorTextureByUrl(url).then((texture) => {
         result.texture = texture;
-        result.texture.coordWMTS = tile.wmtsCoords[layer.options.tileMatrixSet][0];
         result.texture.bbox = tile.bbox;
         return result;
     });
 };
 
 WMS_Provider.prototype.getXbilTexture = function getXbilTexture(tile, layer) {
-    const url = this.url(tile.bbox, layer);
-    return this.getXBilTextureByUrl(url, new THREE.Vector3(0, 0, 1)).then((result) => {
-        result.texture.coordWMTS = tile.wmtsCoords[layer.options.tileMatrixSet][0];
-        return result;
-    });
+    const url = this.url(tile.bbox.as(layer.projection), layer);
+    return this.getXBilTextureByUrl(url, new THREE.Vector3(0, 0, 1));
 };
 
 WMS_Provider.prototype.executeCommand = function executeCommand(command) {
@@ -109,14 +104,11 @@ WMS_Provider.prototype.executeCommand = function executeCommand(command) {
 
     if (parentTextures) {
         const texture = parentTextures[0];
-        const pitch = this.projection.WMS_WGS84Parent(tile.bbox, texture.bbox);
+        const pitch = TiledImageTools.WMS_WGS84Parent(tile.bbox, texture.bbox);
         return Promise.resolve({ pitch, texture });
     }
 
     const layer = command.layer;
-
-    computeTileWMTSCoordinates(tile, layer, this.projection);
-
     const supportedFormats = {
         'image/png': this.getColorTexture.bind(this),
         'image/jpg': this.getColorTexture.bind(this),
@@ -132,6 +124,5 @@ WMS_Provider.prototype.executeCommand = function executeCommand(command) {
         return Promise.reject(new Error(`Unsupported mimetype ${layer.format}`));
     }
 };
-
 
 export default WMS_Provider;
