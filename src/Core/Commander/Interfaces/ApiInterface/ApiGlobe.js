@@ -243,6 +243,10 @@ ApiGlobe.prototype.removeImageryLayer = function removeImageryLayer(id) {
  */
 
 ApiGlobe.prototype.addElevationLayer = function addElevationLayer(layer) {
+    if (layer.protocol === 'wmts' && layer.options.tileMatrixSet !== 'WGS84G') {
+        throw new Error('Only WGS84G tileMatrixSet is currently supported for WMTS elevation layers');
+    }
+
     preprocessLayer(layer, this.scene.scheduler.getProtocolProvider(layer.protocol));
     const map = this.scene.getMap();
     if (this.getLayerById(layer.id)) {

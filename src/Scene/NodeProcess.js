@@ -11,6 +11,7 @@ import { l_ELEVATION, l_COLOR } from '../Renderer/LayeredMaterial';
 import LayerUpdateState from './LayerUpdateState';
 import { CancelledCommandException } from '../Core/Commander/Scheduler';
 import { ellipsoidSizes } from '../Core/Geographic/Coordinates';
+import OGCWebServiceHelper from '../Core/Commander/Providers/OGCWebServiceHelper';
 
 export const SSE_SUBDIVISION_THRESHOLD = 6.0;
 
@@ -99,6 +100,7 @@ NodeProcess.prototype.subdivideNode = function subdivideNode(node, camera, param
                 // update Imagery wmts
                 for (const layer of colorLayers) {
                     if (layer.tileInsideLimit(child, layer)) {
+                        OGCWebServiceHelper.computeTileMatrixSetCoordinates(child, layer);
                         const texturesCount = layer.tileTextureCount ?
                             layer.tileTextureCount(child, layer) : 1;
 
@@ -119,6 +121,7 @@ NodeProcess.prototype.subdivideNode = function subdivideNode(node, camera, param
                 const elevationLayers = params.layersConfig.getElevationLayers();
                 let canHaveElevation = false;
                 for (const layer of elevationLayers) {
+                    OGCWebServiceHelper.computeTileMatrixSetCoordinates(child, layer);
                     canHaveElevation |= layer.tileInsideLimit(child, layer);
                 }
 
@@ -234,8 +237,17 @@ function updateNodeImagery(scene, quadtree, node, layersConfig, force) {
             }
         }
 
-        node.layerUpdateState[layer.id].newTry();
         const searchInParent = !node.isColorLayerLoaded(layer.id) && node.parent.isColorLayerLoaded(layer.id);
+        const currentLevel = node.materials[RendererConstant.FINAL].getColorLayerLevelById(layer.id);
+
+        if (currentLevel > -1) {
+            var targetLevel = chooseNextLevelToFetch(layer.updateStrategy.type, node.level, currentLevel, layer.updateStrategy.options);
+            if (targetLevel <= currentLevel) {
+                continue;
+            }
+        }
+
+        node.layerUpdateState[layer.id].newTry();
         const command = {
             /* mandatory */
             layer,
@@ -243,13 +255,18 @@ function updateNodeImagery(scene, quadtree, node, layersConfig, force) {
             priority: nodeCommandQueuePriorityFunction(node),
             earlyDropFunction: refinementCommandCancellationFn,
             parentTextures: searchInParent ? node.parent.getLayerTextures(l_COLOR, layer.id) : undefined,
+            /* redraw only if we're aren't using a texture from our parent */
+            redraw: (!searchInParent),
         };
 
-        promises.push(quadtree.scheduler.execute(command).then(
+        promises.push(quadtree.scheduler.execute(command, searchInParent).then(
             (result) => {
                 if (Array.isArray(result)) {
                     node.setTexturesLayer(result, l_COLOR, layer.id);
                 } else if (result.texture) {
+                    if (!result.texture.coordWMTS) {
+                        result.texture.coordWMTS = node.wmtsCoords[layer.options.tileMatrixSet || 'WGS84G'][0];
+                    }
                     node.setTexturesLayer([result], l_COLOR, layer.id);
                 } else {
                     // TODO: null texture is probably an error
@@ -337,7 +354,8 @@ function updateNodeElevation(scene, quadtree, node, layersConfig, force) {
     if (bestLayer !== null) {
         node.layerUpdateState[bestLayer.id].newTry();
 
-        const searchInParent = (!node.isElevationLayerLoaded() && node.parent.isElevationLayerLoaded()) || (node.level > bestLayer.zoom.max);
+        // Elevation layer search in parent, from the moment it exceeds its maximum zoom
+        const searchInParent = (bestLayer.zoom.max < node.level) || (!node.isElevationLayerLoaded() && node.parent.isElevationLayerLoaded());
 
         const command = {
             /* mandatory */
@@ -346,9 +364,11 @@ function updateNodeElevation(scene, quadtree, node, layersConfig, force) {
             priority: nodeCommandQueuePriorityFunction(node),
             earlyDropFunction: refinementCommandCancellationFn,
             parentTextures: searchInParent ? node.parent.getLayerTextures(l_ELEVATION) : undefined,
+            /* redraw only if we're aren't using a texture from our parent */
+            redraw: (!searchInParent),
         };
 
-        quadtree.scheduler.execute(command).then(
+        quadtree.scheduler.execute(command, searchInParent).then(
             (terrain) => {
                 node.layerUpdateState[bestLayer.id].success();
 
@@ -357,8 +377,8 @@ function updateNodeElevation(scene, quadtree, node, layersConfig, force) {
                 }
 
                 if (terrain.max === undefined) {
-                    terrain.min = (node.parent || node).bbox.bottom();
-                    terrain.max = (node.parent || node).bbox.top();
+                    terrain.min = (searchInParent ? node.parent : node).bbox.bottom();
+                    terrain.max = (searchInParent ? node.parent : node).bbox.top();
                 }
 
                 node.setTextureElevation(terrain);
