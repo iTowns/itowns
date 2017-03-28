@@ -363,11 +363,8 @@ LayeredMaterial.prototype.getLoadedTexturesCount = function getLoadedTexturesCou
 };
 
 LayeredMaterial.prototype.isColorLayerDownscaled = function isColorLayerDownscaled(layerId, level) {
-    if (this.textures[l_COLOR][this.getLayerTextureOffset(layerId)]) {
-        return this.textures[l_COLOR][this.getLayerTextureOffset(layerId)].coordWMTS.zoom < level;
-    } else {
-        return false;
-    }
+    return this.textures[l_COLOR][this.getLayerTextureOffset(layerId)] &&
+        this.textures[l_COLOR][this.getLayerTextureOffset(layerId)].coordWMTS.zoom < level;
 };
 
 LayeredMaterial.prototype.isLayerTypeDownscaled = function isLayerTypeDownscaled(layerType, level) {
@@ -408,14 +405,6 @@ LayeredMaterial.prototype.getElevationLayerLevel = function getElevationLayerLev
     return this.textures[l_ELEVATION][0].coordWMTS.zoom;
 };
 
-LayeredMaterial.prototype.getLayerLevel = function getLayerLevel(layerType, layerId) {
-    if (layerType == l_ELEVATION) {
-        return this.getElevationLayerLevel();
-    } else {
-        return this.getColorLayerLevelById(layerId);
-    }
-};
-
 LayeredMaterial.prototype.getLayerTextures = function getLayerTextures(layerType, layerId) {
     if (layerType === l_ELEVATION) {
         return this.textures[l_ELEVATION];
@@ -428,7 +417,7 @@ LayeredMaterial.prototype.getLayerTextures = function getLayerTextures(layerType
         const textureIndex = this.getTextureOffsetByLayerIndex(index);
         return this.textures[l_COLOR].slice(textureIndex, textureIndex + count);
     } else {
-        throw new Error('No known layer :', layerId);
+        throw new Error(`Invalid layer id "${layerId}"`);
     }
 };
 
