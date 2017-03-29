@@ -473,7 +473,7 @@ ApiGlobe.prototype.createSceneGlobe = function createSceneGlobe(globeLayerId, co
         }
     };
 
-    const SSE_SUBDIVISION_THRESHOLD = 6.0;
+    const SSE_SUBDIVISION_THRESHOLD = 1.0;
 
 
     // init globe layer with default parameter

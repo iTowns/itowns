@@ -9,7 +9,7 @@ import LayeredMaterial, { l_ELEVATION } from '../Renderer/LayeredMaterial';
 import GlobeDepthMaterial from '../Renderer/GlobeDepthMaterial';
 import MatteIdsMaterial from '../Renderer/MatteIdsMaterial';
 import RendererConstant from '../Renderer/RendererConstant';
-import OGCWebServiceHelper from '../Core/Commander/Providers/OGCWebServiceHelper';
+import OGCWebServiceHelper, { SIZE_TEXTURE_TILE } from '../Core/Commander/Providers/OGCWebServiceHelper';
 
 function TileMesh(geometry, params) {
     // Constructor
@@ -56,6 +56,8 @@ function TileMesh(geometry, params) {
     this.material = this.materials[RendererConstant.FINAL];
 
     this.frustumCulled = false;
+
+    this.updateGeometricError();
 
     // Layer
     this.setDisplayed(false);
@@ -153,8 +155,15 @@ TileMesh.prototype.setBBoxZ = function setBBoxZ(min, max) {
         const trans = this.normal.clone().setLength(delta.y);
 
         this.geometry.boundingSphere.radius = Math.sqrt(delta.x * delta.x + this.oSphere.radius * this.oSphere.radius);
+        this.updateGeometricError();
         this.centerSphere = new THREE.Vector3().addVectors(this.oSphere.center, trans);
     }
+};
+
+TileMesh.prototype.updateGeometricError = function updateGeometricError() {
+    // The geometric error is calculated to have a correct texture display.
+    // For the projection of a texture's texel to be less than or equal to one pixel
+    this.geometricError = this.geometry.boundingSphere.radius / SIZE_TEXTURE_TILE;
 };
 
 TileMesh.prototype.setTexturesLayer = function setTexturesLayer(textures, layerType, layerId) {
