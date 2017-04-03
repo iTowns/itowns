@@ -52,6 +52,7 @@ function BasicMaterial(color) {
         debug: { value: false },
         selected: { value: false },
         lightingEnabled: { value: true },
+        mouse3D: { value: new THREE.Vector3() },
     };
 }
 

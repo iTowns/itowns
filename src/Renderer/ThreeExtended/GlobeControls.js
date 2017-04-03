@@ -485,7 +485,7 @@ function GlobeControls(camera, domElement, engine) {
         {
             position = engineGfx.getPickingPositionFromDepth(coords);
             engineGfx.renderScene();
-
+            scene.browserScene.updateMaterialUniform('mouse3D', position );
             return position;
         };
     }());
@@ -713,7 +713,12 @@ function GlobeControls(camera, domElement, engine) {
             if (this.enabled === false) return;
 
             event.preventDefault();
+            
+                    ptScreenClick.x = event.clientX - event.target.offsetLeft;
+                    ptScreenClick.y = event.clientY - event.target.offsetTop;
 
+                    const point = getPickingPosition(ptScreenClick);
+                    
             if (state === CONTROL_STATE.ORBIT || state === CONTROL_STATE.PANORAMIC) {
                 if (this.enableRotate === false) return;
 
@@ -861,7 +866,7 @@ function GlobeControls(camera, domElement, engine) {
     var onMouseUp = function onMouseUp(/* event */) {
         if (this.enabled === false) return;
 
-        this.domElement.removeEventListener('mousemove', _handlerMouseMove, false);
+      //  this.domElement.removeEventListener('mousemove', _handlerMouseMove, false);
         this.domElement.removeEventListener('mouseup', _handlerMouseUp, false);
         this.domElement.removeEventListener('mouseleave', _handlerMouseUp, false);
         this.dispatchEvent(this.endEvent);
@@ -1138,7 +1143,8 @@ function GlobeControls(camera, domElement, engine) {
         this.domElement.removeEventListener('mouseup', onMouseUp, false);
 
         window.removeEventListener('keydown', onKeyDown, false);
-
+        
+        
         // this.dispatchEvent( { type: 'dispose' } ); // should this be added here?
     };
 

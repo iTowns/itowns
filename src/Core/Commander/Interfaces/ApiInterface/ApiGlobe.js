@@ -389,6 +389,9 @@ ApiGlobe.prototype.showClouds = function showClouds(value, satelliteAnimation) {
 };
 
 ApiGlobe.prototype.setRealisticLightingOn = function setRealisticLightingOn(value) {
+    
+    this.scene.browserScene.updateMaterialUniform('mouse3D', {x:Math.random()*100000,y:0,z:0} );
+    /*
     this.scene.setLightingPos();
     this.scene.getMap().setRealisticLightingOn(value);
     const lightingLayers = this.scene.getMap().layersConfiguration.lightingLayers[0];
@@ -396,8 +399,16 @@ ApiGlobe.prototype.setRealisticLightingOn = function setRealisticLightingOn(valu
     lightingLayers.position = this.scene.lightingPos;
     this.scene.browserScene.updateMaterialUniform('lightingEnabled', value);
     this.scene.renderScene3D();
+    */
+    
 };
+/*
 
+ApiGlobe.prototype.updateMousePos = function updateMousePos() {
+    
+    
+}
+*/
 /**
  * Sets the visibility of a layer. If the layer is not visible in the scene, this function will no effect until the camera looks at the layer.
  * @constructor

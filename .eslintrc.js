@@ -72,6 +72,7 @@ module.exports = {
     'brace-style': 'off',
     'new-cap': 'off',
     'no-continue': 'off',
+    'linebreak-style': 'off'
   },
   "globals": {
     "__DEBUG__": false

@@ -26,10 +26,15 @@ uniform vec3        lightPosition;
 // Options global
 uniform bool        selected;
 uniform bool        lightingEnabled;
+uniform vec3        mouse3D;
 
 varying vec2        vUv_WGS84;
 varying float       vUv_PM;
 varying vec3        vNormal;
+varying vec4        pos;
+varying float       dist;
+varying float       height;
+varying float       kindaHeightMouse3D;
 
 #if defined(DEBUG)
     uniform bool showOutline;
@@ -145,4 +150,18 @@ void main() {
             gl_FragColor.rgb *= light;
         }
     }
+
+    if(mouse3D.x != 0.)  {
+      //  if(dist < 1000.) {
+            //gl_FragColor.rgb -= vec3(dist/1000.,0.,0.);
+            float h = mod(height, 10.) < 2. ? 0.5 : 0.;
+     //       if( kindaHeightMouse3D < height) gl_FragColor.xyz -= 0.2;
+    //        if( kindaHeightMouse3D < height + 20. && kindaHeightMouse3D > height - 20.) gl_FragColor.xyz = vec3(0.);
+     //       gl_FragColor.rgb +=  vec3(h, h, h);
+     //       gl_FragColor.rgb += vec3(0.2,0.2,0.2);
+        
+//}
+}
+
+//  if(pos.y>0.) gl_FragColor.rgb = vec3(0.,1.,0.);
 }

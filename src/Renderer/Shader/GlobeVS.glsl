@@ -16,11 +16,17 @@ uniform mat4        mVPMatRTC;
 
 uniform mat4        projectionMatrix;
 uniform mat4        modelViewMatrix;
+uniform mat4        modelMatrix;
+
+uniform vec3        mouse3D;
 
 varying vec2        vUv_WGS84;
 varying float       vUv_PM;
 varying vec3        vNormal;
 varying vec4        pos;
+varying float       dist;
+varying float       height;
+varying float       kindaHeightMouse3D;
 
 highp float decode32(highp vec4 rgba) {
     highp float Sign = 1.0 - step(128.0,rgba[0])*2.0;
@@ -31,12 +37,12 @@ highp float decode32(highp vec4 rgba) {
 }
 
 //#define RGBA_ELEVATION
-
+float dv;
 void main() {
 
         vUv_WGS84 = uv_wgs84;
         vUv_PM = uv_pm;
-
+        
         vec4 vPosition;
 
         if(loadedTexturesCount[0] > 0)
@@ -51,7 +57,7 @@ void main() {
 
                 rgba.rgba = rgba.abgr;
 
-                float dv = max(decode32(rgba),0.0);
+                dv = max(decode32(rgba),0.0);
 
                 // In RGBA elevation texture LinearFilter give some errors with nodata value.
                 // need to rewrite sample function in shader
@@ -60,18 +66,35 @@ void main() {
                     dv = 0.0;
 
             #else
-                float   dv  = max(texture2D( dTextures_00[0], vVv ).w, 0.);
+                 dv  = max(texture2D( dTextures_00[0], vVv ).w, 0.);
             #endif
 
             vNormal     = normal;
             vPosition   = vec4( position +  vNormal  * dv ,1.0 );
+            height = dv;
         }
         else
             vPosition = vec4( position ,1.0 );
 
+
+        pos = modelMatrix *  vPosition ;
+        dist = distance(mouse3D, pos.xyz);
+  //      if(dist < 1000.) {
+            vec3 alpes = vec3(4491078.446235264, 4500291.881522427, -361203.25638397987);
+            kindaHeightMouse3D = length(mouse3D) - length(alpes) + 300.;
+           // float coef =  1. + (1000. - dist) / 10000.;
+            float coef =  1.2;// + (1000. - dist) / 10000.;
+           // vPosition   = vec4( position +  vNormal  * dv * coef ,1.0 );
+            height = dv;
+
+         //   if(height > kindaHeightMouse3D + 20.) vPosition   = vec4( position +  vNormal  * dv * coef ,1.0 );
+             if(height <  1200.) vPosition   = vec4( position +  vNormal   ,1.0 );
+            //vPosition.y += (1000. - dist) / 10.;
+  //      }
         mat4 projModelViewMatrix = useRTC ? mVPMatRTC : projectionMatrix * modelViewMatrix;
 
         gl_Position = projModelViewMatrix * vPosition;
+        
 
         #ifdef USE_LOGDEPTHBUF
 
