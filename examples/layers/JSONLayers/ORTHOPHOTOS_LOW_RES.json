@@ -1,0 +1,87 @@
+{
+    "protocol":   "wmts",
+    "id":         "OrthoLOW_RES",
+    "url":        "http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/geoportail/wmts",
+    "fx" :        1.0,
+    "updateStrategy": {
+        "type": 0,
+        "options": {}
+    },
+    "options": {
+        "name": "ORTHOIMAGERY.ORTHOPHOTOS.LOW_RES.CRS84",
+        "attribution" : {
+            "name":"IGN",
+            "url":"http://www.ign.fr/"
+        },
+        "mimetype": "image/jpeg",
+        "tileMatrixSet": "WGS84G",
+        "tileMatrixSetLimits": {
+            "2" : {
+                "MinTileRow" : 0,
+                "MaxTileRow" : 3,
+                "MinTileCol" : 0,
+                "MaxTileCol" : 8
+            },
+            "3" : {
+                "MinTileRow" : 0,
+                "MaxTileRow" : 7,
+                "MinTileCol" : 0,
+                "MaxTileCol" : 16
+            },
+            "4" : {
+                "MinTileRow" : 0,
+                "MaxTileRow" : 15,
+                "MinTileCol" : 0,
+                "MaxTileCol" : 32
+            },
+            "5" : {
+                "MinTileRow" : 1,
+                "MaxTileRow" : 31,
+                "MinTileCol" : 0,
+                "MaxTileCol" : 64
+            },
+            "6" : {
+                "MinTileRow" : 2,
+                "MaxTileRow" : 62,
+                "MinTileCol" : 0,
+                "MaxTileCol" : 128
+            },
+            "7" : {
+                "MinTileRow" : 4,
+                "MaxTileRow" : 125,
+                "MinTileCol" : 0,
+                "MaxTileCol" : 256
+            },
+            "8" : {
+                "MinTileRow" : 8,
+                "MaxTileRow" : 250,
+                "MinTileCol" : 0,
+                "MaxTileCol" : 512
+            },
+            "9" : {
+                "MinTileRow" : 17,
+                "MaxTileRow" : 500,
+                "MinTileCol" : 0,
+                "MaxTileCol" : 1024
+            },
+            "10" : {
+                "MinTileRow" : 34,
+                "MaxTileRow" : 1001,
+                "MinTileCol" : 0,
+                "MaxTileCol" : 2048
+            },
+            "11" : {
+                "MinTileRow" : 68,
+                "MaxTileRow" : 2002,
+                "MinTileCol" : 0,
+                "MaxTileCol" : 4096
+            },
+            "12" : {
+                "MinTileRow" : 136,
+                "MaxTileRow" : 4004,
+                "MinTileCol" : 0,
+                "MaxTileCol" : 8192
+            }
+        }
+    }
+}
