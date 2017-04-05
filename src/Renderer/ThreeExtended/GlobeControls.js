@@ -13,6 +13,11 @@ import AnimationPlayer, { Animation, AnimatedExpression } from '../../Scene/Anim
 import { C } from '../../Core/Geographic/Coordinates';
 
 var selectClick = new CustomEvent('selectClick');
+var eventAnimationStarted = new CustomEvent('animationstarted');
+var eventAnimationStopped = new CustomEvent('animationstopped');
+var eventCenter = new CustomEvent('centercontrolchanged');
+var eventZoomChanged = new CustomEvent('zoomcontrolchanged');
+var eventOrientationChanged = new CustomEvent('orientationcontrolchanged');
 
 // TODO:
 // Recast touch for globe
@@ -659,6 +664,15 @@ function GlobeControls(camera, target, domElement, engine) {
             return;
         }
 
+        var targt = {};
+        targt.x = globeTarget.position.x;
+        targt.y = globeTarget.position.y;
+
+        var sphe = {};
+        sphe.phi = spherical.phi;
+        sphe.phi = spherical.phi;
+        sphe.radius = spherical.radius;
+
         const distanceTarget = pickingPosition.distanceTo(this.camera.position);
 
         // Position movingCameraTargetOnGlobe on DME
@@ -920,8 +934,14 @@ function GlobeControls(camera, target, domElement, engine) {
 
             if (delta > 0) {
                 this.dollyOut();
+                if (event.wheelDelta) {
+                    this.domElement.parentNode.dispatchEvent(eventZoomChanged);
+                }
             } else if (delta < 0) {
                 this.dollyIn();
+                if (event.wheelDelta) {
+                    this.domElement.parentNode.dispatchEvent(eventZoomChanged);
+                }
             }
 
             update();
@@ -1237,6 +1257,7 @@ const destSpherical = new THREE.Spherical();
 GlobeControls.prototype.moveOrbitalPosition = function moveOrbitalPosition(deltaRange, deltaTheta, deltaPhi, isAnimated) {
     const range = deltaRange + this.getRange();
     if (isAnimated) {
+        this.domElement.parentNode.dispatchEvent(eventAnimationStarted);
         destSpherical.theta = deltaTheta + spherical.theta;
         destSpherical.phi = deltaPhi + spherical.phi;
         sphericalTo.radius = range;
@@ -1247,6 +1268,9 @@ GlobeControls.prototype.moveOrbitalPosition = function moveOrbitalPosition(delta
             // To correct errors at animation's end
             if (player.isEnded()) {
                 this.moveOrbitalPosition(0, destSpherical.theta - spherical.theta, destSpherical.phi - spherical.phi);
+                this.domElement.parentNode.dispatchEvent(eventAnimationStopped);
+            } else if (player.isStopped()) {
+                this.domElement.parentNode.dispatchEvent(eventAnimationStopped);
             }
             this.resetControls();
         });
@@ -1297,12 +1321,20 @@ GlobeControls.prototype.setCameraTargetPosition = function setCameraTargetPositi
     const vTo = position.normalize();
 
     if (isAnimated) {
+        this.domElement.parentNode.dispatchEvent(eventAnimationStarted);
         ctrl.qDelta.setFromUnitVectors(vFrom, vTo);
         if (position.range) {
             animatedScale = 1.0 - position.range / this.getRange();
         }
         state = CONTROL_STATE.MOVE_GLOBE;
         return player.play(animationZoomCenter).then(() => {
+            if (player.isEnded()) {
+                this.domElement.parentNode.dispatchEvent(eventAnimationStopped);
+                this.domElement.parentNode.dispatchEvent(eventZoomChanged);
+            } else if (player.isStopped()) {
+                this.domElement.parentNode.dispatchEvent(eventAnimationStopped);
+                this.domElement.parentNode.dispatchEvent(eventZoomChanged);
+            }
             animatedScale = 0.0;
             this.resetControls();
         });
