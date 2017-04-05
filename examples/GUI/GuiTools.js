@@ -31,7 +31,7 @@ GuiTools.prototype.addImageryLayerGUI = function addImageryLayerGUI(layer) {
     folder.add({ visible: true }, 'visible').onChange((value) => {
         this.api.setLayerVisibility(layer.id, value);
     });
-    folder.add({ opacity: 1.0 }, 'opacity').min(0.0).max(1.0).onChange((value) => {
+    folder.add({ opacity: 1.0 }, 'opacity').min(0.0).max(1.0).onFinishChange((value) => {
         this.api.setLayerOpacity(layer.id, value);
     });
     folder.add({ frozen: false }, 'frozen').onChange((value) => {
