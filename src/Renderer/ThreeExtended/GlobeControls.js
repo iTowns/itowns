@@ -10,6 +10,7 @@ import * as THREE from 'three';
 import CustomEvent from 'custom-event';
 import Sphere from '../../Core/Math/Sphere';
 import AnimationPlayer, { Animation, AnimatedExpression } from '../../Scene/AnimationPlayer';
+import { C } from '../../Core/Geographic/Coordinates';
 
 var selectClick = new CustomEvent('selectClick');
 
@@ -644,7 +645,7 @@ function GlobeControls(camera, domElement, engine) {
     const cT = new THREE.Vector3();
 
     const updateCameraTargetOnGlobe = function updateCameraTargetOnGlobe() {
-        const oldCameraTargetPosition = cameraTargetOnGlobe.position.clone();
+        const oldCoord = C.fromXYZ(scene.referenceCrs, cameraTargetOnGlobe.position);
 
         // Get distance camera DME
         const pickingPosition = getPickingPosition();
@@ -671,8 +672,8 @@ function GlobeControls(camera, domElement, engine) {
 
         this.dispatchEvent({
             type: 'camera-target-updated',
-            oldCameraTargetPosition,
-            newCameraTargetPosition: cameraTargetOnGlobe.position.clone(),
+            oldCameraTargetPosition: oldCoord,
+            newCameraTargetPosition: C.fromXYZ(scene.referenceCrs, cameraTargetOnGlobe.position),
         });
     };
 

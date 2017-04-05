@@ -1,5 +1,6 @@
 /* global menuGlobe */
 import Chart from 'chart.js';
+import { C } from '../../src/Core/Geographic/Coordinates';
 
 /**
  * Create a debug instance attached to an itowns instance
@@ -10,7 +11,6 @@ import Chart from 'chart.js';
  */
 // disabling eslint errors as it is the exported constructor
 function Debug(scene) {
-    const projection = window.itowns.projection;
     // CHARTS
     // create charts div
     const chartDiv = document.createElement('div');
@@ -231,25 +231,25 @@ function Debug(scene) {
                 eventFolder = gui.addFolder('Events');
 
                 // camera-target-updated event
-                const initialPosition = projection.cartesianToGeo(controls.getCameraTargetPosition());
+                const initialPosition = C.fromXYZ(scene.referenceCrs, controls.getCameraTargetPosition()).as('EPSG:4326');
                 const roundedLat = Math.round(initialPosition.latitude() * 10000) / 10000;
                 const roundedLon = Math.round(initialPosition.longitude() * 10000) / 10000;
                 state.cameraTargetUpdated = `lat: ${roundedLat} lon: ${roundedLon}`;
                 const cameraTargetUpdatedController = eventFolder.add(state, 'cameraTargetUpdated').name('camera-target-updated');
                 const cameraTargetListener = (ev) => {
-                    const positionGeo = projection.cartesianToGeo(ev.newCameraTargetPosition);
+                    const positionGeo = ev.newCameraTargetPosition.as('EPSG:4326');
                     const roundedLat = Math.round(positionGeo.latitude() * 10000) / 10000;
                     const roundedLon = Math.round(positionGeo.longitude() * 10000) / 10000;
                     state.cameraTargetUpdated = `lat: ${roundedLat} lon: ${roundedLon}`;
                     cameraTargetUpdatedController.updateDisplay();
                 };
                 controls.addEventListener('camera-target-updated', cameraTargetListener);
-                listeners.push({ type: 'camera-target-updated', fn: cameraTargetListener });
+                listeners.push({ type: 'camera-target-updated', stateName: 'cameraTargetUpdated', fn: cameraTargetListener });
             } else {
                 for (const listener of listeners) {
                     controls.removeEventListener(listener.type, listener.fn);
+                    delete state[listener.stateName];
                 }
-                delete state.cameraTargetUpdated;
                 gui.removeFolder('Events');
             }
         };
