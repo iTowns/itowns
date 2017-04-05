@@ -12,7 +12,6 @@ import WMS_Provider from '../../Providers/WMS_Provider';
 import TileProvider from '../../Providers/TileProvider';
 import loadGpx from '../../Providers/GpxUtils';
 import { C } from '../../../Geographic/Coordinates';
-import Projection from '../../../Geographic/Projection';
 import Fetcher from '../../Providers/Fetcher';
 import { STRATEGY_MIN_NETWORK_TRAFFIC } from '../../../../Scene/LayerUpdateStrategy';
 
@@ -44,7 +43,6 @@ function ApiGlobe() {
     // Constructor
     this.scene = null;
     this.commandsTree = null;
-    this.projection = new Projection();
     this.viewerDiv = null;
     this.callback = null;
 }
@@ -429,8 +427,7 @@ ApiGlobe.prototype.getCameraOrientation = function getCameraOrientation() {
  */
 
 ApiGlobe.prototype.getCameraLocation = function getCameraLocation() {
-    var cam = this.scene.currentCamera().camera3D;
-    return this.projection.cartesianToGeo(cam.position);
+    return C.fromXYZ('EPSG:4978', this.scene.currentCamera().camera3D.position).as('EPSG:4326');
 };
 
 /**
@@ -441,8 +438,7 @@ ApiGlobe.prototype.getCameraLocation = function getCameraLocation() {
  */
 
 ApiGlobe.prototype.getCameraTargetGeoPosition = function getCameraTargetGeoPosition() {
-    var controlCam = this.scene.currentControls();
-    return this.projection.cartesianToGeo(controlCam.getCameraTargetPosition());
+    return C.fromXYZ('EPSG:4978', this.scene.currentControls().getCameraTargetPosition()).as('EPSG:4326');
 };
 
 /**
@@ -480,7 +476,7 @@ ApiGlobe.prototype.pickPosition = function pickPosition(mouse, y) {
         return;
     }
 
-    return this.projection.cartesianToGeo(pickedPosition);
+    return C.fromXYZ('EPSG:4978', pickedPosition).as('EPSG:4326');
 };
 
 /**
