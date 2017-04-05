@@ -6,7 +6,7 @@
 import * as THREE from 'three';
 import CoordWMTS from './CoordWMTS';
 import MathExt from '../Math/MathExtended';
-import Coordinates, { UNIT } from './Coordinates';
+import { UNIT } from './Coordinates';
 
 
 function Projection() {
@@ -164,28 +164,6 @@ Projection.prototype.UnitaryToLongitudeWGS84 = function UnitaryToLongitudeWGS84(
 Projection.prototype.UnitaryToLatitudeWGS84 = function UnitaryToLatitudeWGS84(v, bbox) {
     const dim = bbox.dimensions(UNIT.RADIAN);
     return bbox.south(UNIT.RADIAN) + v * dim.y;
-};
-
-Projection.prototype.cartesianToGeo = function cartesianToGeo(position) {
-    // FIXME: warning switch coord
-    const R = position.length();
-    const a = 6378137;
-    const b = 6356752.3142451793;
-    const e = Math.sqrt((a * a - b * b) / (a * a));
-    const f = 1 - Math.sqrt(1 - e * e);
-    const rsqXY = Math.sqrt(position.x * position.x + position.z * position.z);
-
-    const theta = Math.atan2(position.z, position.x);
-    const nu = Math.atan(position.y / rsqXY * ((1 - f) + e * e * a / R));
-
-    const sinu = Math.sin(nu);
-    const cosu = Math.cos(nu);
-
-    const phi = Math.atan((position.y * (1 - f) + e * e * a * sinu * sinu * sinu) / ((1 - f) * (rsqXY - e * e * a * cosu * cosu * cosu)));
-
-    const h = (rsqXY * Math.cos(phi)) + position.y * Math.sin(phi) - a * Math.sqrt(1 - e * e * Math.sin(phi) * Math.sin(phi));
-
-    return new Coordinates('EPSG:4326', -theta, phi, h);
 };
 
 Projection.prototype.wgs84_to_lambert93 = function wgs84_to_lambert93(latitude, longitude) // , x93, y93)
