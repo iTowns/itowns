@@ -339,7 +339,9 @@ ApiGlobe.prototype.createSceneGlobe = function createSceneGlobe(coordCarto, view
 
     var coordinate = new C.EPSG_4326(coordCarto.longitude, coordCarto.latitude, coordCarto.altitude);
 
-    this.scene = Scene(coordinate, viewerDiv, debugMode, gLDebug);
+    // FIXME: the scene is not really in EPSG:4978 atm, some axis are inverted, see
+    // https://github.com/iTowns/itowns2/pull/246
+    this.scene = Scene('EPSG:4978', coordinate, viewerDiv, debugMode, gLDebug);
 
     var map = new Globe(gLDebug);
 

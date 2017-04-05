@@ -25,12 +25,25 @@ var instanceScene = null;
 const RENDERING_PAUSED = 0;
 const RENDERING_ACTIVE = 1;
 
-function Scene(coordinate, viewerDiv, debugMode, gLDebug) {
+/**
+ * Constructs an Itowns Scene instance
+ *
+ * @param {string} crs - The default CRS of Three.js coordinates. Should be a cartesian CRS.
+ * @param {Coordinates} positionCamera - The initial position of the camera
+ * @param {DOMElement} viewerDiv - Where to instanciate the Three.js scene in the DOM
+ * @param {boolean} debugMode - activate debug mode
+ * @param {boolean} glDebug - debug gl code
+ * @constructor
+ */
+ /* TODO:
+ * - remove debug boolean, replace by if __DEBUG__ and checkboxes in debug UI
+ * - Scene (and subobjects) should be instanciable several times.
+ */
+function Scene(crs, positionCamera, viewerDiv, debugMode, gLDebug) {
     if (instanceScene !== null) {
         throw new Error('Cannot instantiate more than one Scene');
     }
-
-    var positionCamera = coordinate.as('EPSG:4978');
+    this.referenceCrs = crs;
 
     this.layers = [];
     this.map = null;
@@ -43,7 +56,7 @@ function Scene(coordinate, viewerDiv, debugMode, gLDebug) {
     this.stylesManager = new StyleManager();
 
     this.gLDebug = gLDebug;
-    this.gfxEngine = c3DEngine(this, positionCamera.xyz(), viewerDiv, debugMode, gLDebug);
+    this.gfxEngine = c3DEngine(this, positionCamera.as(crs).xyz(), viewerDiv, debugMode, gLDebug);
     this.browserScene = new BrowseTree(this.gfxEngine);
 
     this.needsRedraw = false;
@@ -307,7 +320,7 @@ Scene.prototype.orbit = function orbit(value) {
     this.orbitOn = value;
 };
 
-export default function (coordinate, viewerDiv, debugMode, gLDebug) {
-    instanceScene = instanceScene || new Scene(coordinate, viewerDiv, debugMode, gLDebug);
+export default function (crs, positionCamera, viewerDiv, debugMode, gLDebug) {
+    instanceScene = instanceScene || new Scene(crs, positionCamera, viewerDiv, debugMode, gLDebug);
     return instanceScene;
 }
