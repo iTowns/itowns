@@ -62,6 +62,45 @@ Ellipsoid.prototype.cartographicToCartesian = function cartographicToCartesian(c
     return k.add(n);
 };
 
+/**
+ * @typedef {Object} EllipsoidCoordinate
+ * @property {number} latitude
+ * @property {number} longitude
+ * @property {number} h - height
+ */
+/**
+ * Convert cartesian coordinates to geographic according to the current ellipsoid of revolution.
+ *
+ * @param {Object} position - The coordinate to convert
+ * @param {number} position.x
+ * @param {number} position.y
+ * @param {number} position.z
+ * @returns {EllipsoidCoordinate} an object describing the coordinates on the reference ellipsoid, angles are in degree
+ */
+Ellipsoid.prototype.cartesianToCartographic = function cartesianToGeo(position) {
+    // for details, see for example http://www.linz.govt.nz/data/geodetic-system/coordinate-conversion/geodetic-datum-conversions/equations-used-datum
+    // FIXME: warning switch coord
+    // TODO the following is only valable for oblate ellipsoid of revolution. do we want to support triaxial ellipsoid?
+    const R = Math.sqrt(position.x * position.x + position.y * position.y + position.z * position.z);
+    const a = 6378137;
+    const b = 6356752.3142451793;
+    const e = Math.sqrt((a * a - b * b) / (a * a));
+    const f = 1 - Math.sqrt(1 - e * e);
+    const rsqXY = Math.sqrt(position.x * position.x + position.z * position.z);
+
+    const theta = Math.atan2(position.z, position.x);
+    const nu = Math.atan(position.y / rsqXY * ((1 - f) + e * e * a / R));
+
+    const sinu = Math.sin(nu);
+    const cosu = Math.cos(nu);
+
+    const phi = Math.atan((position.y * (1 - f) + e * e * a * sinu * sinu * sinu) / ((1 - f) * (rsqXY - e * e * a * cosu * cosu * cosu)));
+
+    const h = (rsqXY * Math.cos(phi)) + position.y * Math.sin(phi) - a * Math.sqrt(1 - e * e * Math.sin(phi) * Math.sin(phi));
+
+    return { longitude: -theta * 180 / Math.PI, latitude: phi * 180 / Math.PI, h };
+};
+
 Ellipsoid.prototype.cartographicToCartesianArray = function cartographicToCartesianArray(coordCartoArray) {
     var cartesianArray = [];
     for (var i = 0; i < coordCartoArray.length; i++) {
