@@ -11,7 +11,6 @@ uniform sampler2D   dTextures_00[1];
 uniform vec3        offsetScale_L00[1];
 uniform int         loadedTexturesCount[8];
 uniform bool        useRTC;
-uniform float       periArcLati;
 uniform mat4        mVPMatRTC;
 
 uniform mat4        projectionMatrix;
