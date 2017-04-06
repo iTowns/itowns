@@ -24,18 +24,17 @@ module.exports = {
     },
     plugins: [definePlugin, new webpack.optimize.CommonsChunkPlugin({ name: 'itowns' })],
     module: {
-        preLoaders: [
+        rules: [
             {
                 test: /\.js$/,
+                enforce: 'pre',
                 include: [
                     path.resolve(__dirname, 'src'),
                     path.resolve(__dirname, 'test'),
                     path.resolve(__dirname, 'utils'),
                 ],
-                loader: 'eslint',
+                loader: 'eslint-loader',
             },
-        ],
-        loaders: [
             {
                 test: /\.js$/,
                 include: [
@@ -43,11 +42,11 @@ module.exports = {
                     path.resolve(__dirname, 'test'),
                     path.resolve(__dirname, 'utils'),
                 ],
-                loader: 'babel',
+                loader: 'babel-loader',
                 // Please consider modifying .babelrc too
                 // .babelrc is used for transpiling src/ into lib/ in the prepublish
                 // phase, see package.json
-                query: {
+                options: {
                     presets: ['es2015'],
                     plugins: ['transform-runtime'],
                     babelrc: false,
@@ -60,7 +59,7 @@ module.exports = {
                     path.resolve(__dirname, 'src'),
                     path.resolve(__dirname, 'test'),
                 ],
-                loader: 'raw',
+                loader: 'raw-loader',
             },
             {
                 // please consider modifying corresponding loaders in webpack-babel.config.js too
@@ -68,23 +67,16 @@ module.exports = {
                 include: [
                     path.resolve(__dirname, 'utils'),
                 ],
-                loader: 'raw',
+                loader: 'raw-loader',
             },
             {
                 test: /node_modules[/\\]three[/\\]examples[/\\].*\.js$/,
-                loader: 'imports',
-                query: {
+                loader: 'imports-loader',
+                options: {
                     THREE: 'three',
                 },
             },
         ],
-        noParse: [
-            /js-priority-queue[\\/]file\.js$/,
-            path.join(__dirname, 'node_modules', 'js-priority-queue'),
-        ],
-    },
-    resolve: {
-        extensions: ['', '.js'],
     },
     devServer: {
         publicPath: '/dist/',
