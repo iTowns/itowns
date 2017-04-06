@@ -90,7 +90,13 @@ ApiGlobe.prototype.init = function init() {
 ApiGlobe.prototype.addGeometryLayer = function addGeometryLayer(layer) {
     preprocessLayer(layer, this.scene.scheduler.getProtocolProvider(layer.protocol));
     const map = this.scene.getMap();
-    map.layersConfiguration.addGeometryLayer(layer);
+    if (this.getLayerById(layer.id)) {
+      // eslint-disable-next-line no-console
+        console.error(`Error : id "${layer.id}" already exist, WARNING your layer isn't added`);
+    } else {
+        map.layersConfiguration.addGeometryLayer(layer);
+        this.viewerDiv.dispatchEvent(eventLayerAdded);
+    }
 };
 
 /**
@@ -100,11 +106,14 @@ ApiGlobe.prototype.addGeometryLayer = function addGeometryLayer(layer) {
  */
 ApiGlobe.prototype.addImageryLayer = function addImageryLayer(layer) {
     preprocessLayer(layer, this.scene.scheduler.getProtocolProvider(layer.protocol));
-
-    var map = this.scene.getMap();
-
-    map.layersConfiguration.addColorLayer(layer);
-    this.viewerDiv.dispatchEvent(eventLayerAdded);
+    const map = this.scene.getMap();
+    if (this.getLayerById(layer.id)) {
+      // eslint-disable-next-line no-console
+        console.error(`Error : id "${layer.id}" already exist, WARNING your layer isn't added`);
+    } else {
+        map.layersConfiguration.addColorLayer(layer);
+        this.viewerDiv.dispatchEvent(eventLayerAdded);
+    }
 };
 
 /**
@@ -194,10 +203,14 @@ ApiGlobe.prototype.removeImageryLayer = function removeImageryLayer(id) {
 
 ApiGlobe.prototype.addElevationLayer = function addElevationLayer(layer) {
     preprocessLayer(layer, this.scene.scheduler.getProtocolProvider(layer.protocol));
-
-    var map = this.scene.getMap();
-    map.layersConfiguration.addElevationLayer(layer);
-    this.viewerDiv.dispatchEvent(eventLayerAdded);
+    const map = this.scene.getMap();
+    if (this.getLayerById(layer.id)) {
+      // eslint-disable-next-line no-console
+        console.error(`Error : id "${layer.id}" already exist, WARNING your layer isn't added`);
+    } else {
+        map.layersConfiguration.addElevationLayer(layer);
+        this.viewerDiv.dispatchEvent(eventLayerAdded);
+    }
 };
 
 /**
