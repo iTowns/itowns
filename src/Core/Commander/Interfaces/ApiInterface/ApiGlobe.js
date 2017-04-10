@@ -103,13 +103,17 @@ ApiGlobe.prototype.addGeometryLayer = function addGeometryLayer(layer) {
  */
 ApiGlobe.prototype.addImageryLayer = function addImageryLayer(layer) {
     preprocessLayer(layer, this.scene.scheduler.getProtocolProvider(layer.protocol));
-    const map = this.scene.getMap();
     if (this.getLayerById(layer.id)) {
       // eslint-disable-next-line no-console
         console.error(`Error : id "${layer.id}" already exist, WARNING your layer isn't added`);
     } else {
+        const map = this.scene.getMap();
         map.layersConfiguration.addColorLayer(layer);
-        this.viewerDiv.dispatchEvent(eventLayerAdded);
+        this.scene.getMap().update();
+        this.scene.notifyChange(1, true);
+        this.setSceneLoaded().then(() => {
+            this.viewerDiv.dispatchEvent(eventLayerAdded);
+        });
     }
 };
 

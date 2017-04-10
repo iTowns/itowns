@@ -90,31 +90,6 @@ NodeProcess.prototype.subdivideNode = function subdivideNode(node, camera, param
             };
 
             quadtree.scheduler.execute(command).then((child) => {
-                let colorTextureCount = 0;
-                const paramMaterial = [];
-
-                // update wmts
-                const colorLayers = params.layersConfig.getColorLayers();
-
-                // update Imagery wmts
-                for (const layer of colorLayers) {
-                    if (layer.tileInsideLimit(child, layer)) {
-                        const texturesCount = layer.tileTextureCount ?
-                            layer.tileTextureCount(child, layer) : 1;
-
-                        paramMaterial.push({
-                            tileMT: layer.options.tileMatrixSet,
-                            texturesCount,
-                            visible: params.layersConfig.isColorLayerVisible(layer.id),
-                            opacity: params.layersConfig.getColorLayerOpacity(layer.id),
-                            fx: layer.fx,
-                            idLayer: layer.id,
-                        });
-
-                        colorTextureCount += texturesCount;
-                    }
-                }
-
                 // update Imagery wmts
                 const elevationLayers = params.layersConfig.getElevationLayers();
                 let canHaveElevation = false;
@@ -122,8 +97,8 @@ NodeProcess.prototype.subdivideNode = function subdivideNode(node, camera, param
                     canHaveElevation |= layer.tileInsideLimit(child, layer);
                 }
 
-                child.setColorLayerParameters(paramMaterial, params.layersConfig.lightingLayers[0]);
-                child.texturesNeeded = colorTextureCount + canHaveElevation;
+                child.setLightingParameters(params.layersConfig.lightingLayers[0]);
+                child.texturesNeeded = canHaveElevation ? 1 : 0;
 
                 // request layers (imagery/elevation) update
                 this.refineNodeLayers(child, camera, params);
@@ -241,6 +216,25 @@ function updateNodeImagery(scene, quadtree, node, layersConfig, force) {
             continue;
         }
 
+        const material = node.materials[RendererConstant.FINAL];
+
+        if (material.indexOfColorLayer(layer.id) === -1) {
+            const texturesCount = layer.tileTextureCount ?
+                layer.tileTextureCount(node, layer) : 1;
+
+            const paramMaterial = {
+                tileMT: layer.options.tileMatrixSet,
+                texturesCount,
+                visible: layersConfig.isColorLayerVisible(layer.id),
+                opacity: layersConfig.getColorLayerOpacity(layer.id),
+                fx: layer.fx,
+                idLayer: layer.id,
+            };
+
+            material.pushLayer(paramMaterial);
+            node.texturesNeeded += texturesCount;
+        }
+
         if (!force) {
             // does this tile needs a new texture?
             if (!node.isColorLayerDownscaled(layer.id)) {
@@ -255,7 +249,7 @@ function updateNodeImagery(scene, quadtree, node, layersConfig, force) {
 
         let ancestor = null;
 
-        const currentLevel = node.materials[RendererConstant.FINAL].getColorLayerLevelById(layer.id);
+        const currentLevel = material.getColorLayerLevelById(layer.id);
         // if this tile has no texture (level == -1), try use one from an ancestor
         if (currentLevel === -1) {
             ancestor = findAncestorWithValidTextureForLayer(node, l_COLOR, layer);

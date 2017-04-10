@@ -202,6 +202,16 @@ Globe.prototype.removeColorLayer = function removeColorLayer(layer) {
     this.tiles.children[0].traverse(cO);
 };
 
+Globe.prototype.update = function update() {
+    var cO = function cO(object) {
+        if (object.loaded !== undefined) {
+            object.loaded = false;
+        }
+    };
+
+    this.tiles.children[0].traverse(cO);
+};
+
 Globe.prototype.getZoomLevel = function getZoomLevel() {
     var cO = (function getCOFn() {
         var zoom = 0;
