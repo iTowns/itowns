@@ -275,6 +275,8 @@ Scene.prototype.setLightingPos = function setLightingPos(pos) {
     this.layers[0].node.updateLightingPos(this.lightingPos);
 };
 
+
+
 // Should be moved in time module: A single loop update registered object every n millisec
 Scene.prototype.animateTime = function animateTime(value) {
     if (value) {
@@ -285,6 +287,7 @@ Scene.prototype.animateTime = function animateTime(value) {
             var coSun = CoordStars.getSunPositionInScene(new Date().getTime() + 3.6 * nMilliSeconds, 0, 0);
             this.lightingPos = coSun;
             this.browserScene.updateMaterialUniform('lightPosition', this.lightingPos.clone().normalize());
+            this.browserScene.updateMaterialUniform('timing', this.time / 10000000.);
             this.layers[0].node.updateLightingPos(this.lightingPos);
             if (this.orbitOn) { // ISS orbit is 0.0667 degree per second -> every 60th of sec: 0.00111;
                 var p = this.gfxEngine.camera.camera3D.position;

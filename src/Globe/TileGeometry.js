@@ -219,7 +219,7 @@ TileGeometry.prototype.computeBuffers = function computeBuffers(params, builder)
     // This size must be take into account the bbox's size
     // For the moment, I reduce the size to increase performance (pixel shader performance)
 
-    const r = 5 * ((20 - params.level) + 10);
+    const r = 50 * ((20 - params.level) + 10);
 
     var buildIndexSkirt = function buildIndexSkirt() {};
     var buildUVSkirt = function buildUVSkirt() {};

@@ -22,6 +22,7 @@ uniform bool        visibility[8];
 uniform float       distanceFog;
 uniform int         colorLayersCount;
 uniform vec3        lightPosition;
+uniform float       timing;
 
 // Options global
 uniform bool        selected;
@@ -35,6 +36,7 @@ varying vec4        pos;
 varying float       dist;
 varying float       height;
 varying float       kindaHeightMouse3D;
+varying float       lightIntensity;
 
 #if defined(DEBUG)
     uniform bool showOutline;
@@ -63,7 +65,11 @@ void main() {
     {
         // Reconstruct PM uv and PM subtexture id (see TileGeometry)
         vec2 uvPM ;
-        uvPM.x             = vUv_WGS84.x;
+
+        vec4 cc = colorAtIdUv(dTextures_01, offsetScale_L01, 0, vUv_WGS84);
+        float t = mod(timing, 1.);
+        uvPM.x  = vUv_WGS84.x; //(vUv_WGS84.x > t  ? 2. * t -  vUv_WGS84.x: vUv_WGS84.x);   //0.5 - vUv_WGS84.x + timing / 2.; //mod(vUv_WGS84.x - timing  ,1.); //vUv_WGS84.x ;//mod(vUv_WGS84.x + cc.r * timing /* * lightIntensity*/ ,1.);
+
         float y            = vUv_PM;
         int pmSubTextureIndex = int(floor(y));
         uvPM.y             = y - float(pmSubTextureIndex);
@@ -116,8 +122,17 @@ void main() {
                                 lum = 1.0-pow(abs(a),paramsA.z);
                             }
 
-                            diffuseColor = mix( diffuseColor,layerColor, lum*paramsA.w * layerColor.a);
-
+                      /* Dynamic Road highlighting */
+                       /*     if(layer == 1) {
+                                float currentY = mod(timing * 10., 1.);
+                                float distToCurrentY = abs(gl_FragCoord.y / 1094. - currentY);
+                                if(distToCurrentY < 0.2) layerColor.a = min(4. * (0.2  - distToCurrentY), 1.); else layerColor.a = 0.;
+                                if(layerColor.b > 0.1) layerColor.a = 0.;    
+                                if(layerColor.r <0.2 && layerColor.g < 0.2 && layerColor.b < 0.2) layerColor.a = 0.; 
+                            }*/
+                      /*****************************/
+                            diffuseColor = mix( diffuseColor, layerColor, lum*paramsA.w * layerColor.a);
+                            
                         }
                     }
                 }
@@ -152,16 +167,21 @@ void main() {
     }
 
     if(mouse3D.x != 0.)  {
-      //  if(dist < 1000.) {
-            //gl_FragColor.rgb -= vec3(dist/1000.,0.,0.);
-            float h = mod(height, 10.) < 2. ? 0.5 : 0.;
+        if(dist < 1000.) {
+        //    gl_FragColor.rgb -= vec3(dist/1000.,0.,0.);
+         //   float h = mod(height, 10.) < 2. ? 0.5 : 0.;
      //       if( kindaHeightMouse3D < height) gl_FragColor.xyz -= 0.2;
-    //        if( kindaHeightMouse3D < height + 20. && kindaHeightMouse3D > height - 20.) gl_FragColor.xyz = vec3(0.);
+     //       if( kindaHeightMouse3D < height + 20. && kindaHeightMouse3D > height - 20.) gl_FragColor.xyz = vec3(0.);
      //       gl_FragColor.rgb +=  vec3(h, h, h);
      //       gl_FragColor.rgb += vec3(0.2,0.2,0.2);
         
-//}
-}
-
+         //    gl_FragColor.rgb += 0.5; 
+        }
+    }
+    //if( mod(height, 100.) > 99.) gl_FragColor.rgb = vec3(0.,1.,0.); 
+   // gl_FragColor.rgb *= min(.5 + lightIntensity, 1.);
+   // gl_FragColor.rgb -= lightIntensity;
+    //gl_FragColor.rgb = mix(gl_FragColor.rgb, vec3(1.,0.,0.), lightIntensity);
+    
 //  if(pos.y>0.) gl_FragColor.rgb = vec3(0.,1.,0.);
 }

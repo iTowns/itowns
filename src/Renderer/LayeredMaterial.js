@@ -147,6 +147,8 @@ const LayeredMaterial = function LayeredMaterial(id) {
     this.uniforms.lightPosition = new THREE.Uniform(new THREE.Vector3(-0.5, 0.0, 1.0));
 
     this.uniforms.mouse3D = new THREE.Uniform(new THREE.Vector3());
+    
+    this.uniforms.timing = new THREE.Uniform(0.);
 
     this.setUuid(id || 0);
     this.wireframe = false;

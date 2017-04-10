@@ -55,10 +55,10 @@ and open the template in the editor.
             const urlElevationLayers = [];
 
             urlImageryLayers.push('examples/layers/JSONLayers/Ortho.json');
-     /*       urlImageryLayers.push('examples/layers/JSONLayers/OrthosCRS.json');
-            urlImageryLayers.push('examples/layers/JSONLayers/ScanEX.json');
-            urlImageryLayers.push('examples/layers/JSONLayers/Region.json');
-*/
+            // urlImageryLayers.push('examples/layers/JSONLayers/OrthosCRS.json');
+            // urlImageryLayers.push('examples/layers/JSONLayers/ScanEX.json');
+            // urlImageryLayers.push('examples/layers/JSONLayers/Region.json');
+
             urlElevationLayers.push('examples/layers/JSONLayers/IGN_MNT.json');
             urlElevationLayers.push('examples/layers/JSONLayers/IGN_MNT_HIGHRES.json');
 
@@ -76,6 +76,7 @@ and open the template in the editor.
 
             itowns.viewer.addEventListener('globe-loaded', () => {
                 // eslint-disable-next-line no-console
+                itowns.viewer.animateTime(true);
                 console.info('Globe Loaded');
             });
 
