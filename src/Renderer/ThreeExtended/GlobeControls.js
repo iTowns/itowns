@@ -10,6 +10,7 @@ import * as THREE from 'three';
 import CustomEvent from 'custom-event';
 import Sphere from '../../Core/Math/Sphere';
 import AnimationPlayer, { Animation, AnimatedExpression } from '../../Scene/AnimationPlayer';
+import { C } from '../../Core/Geographic/Coordinates';
 
 var selectClick = new CustomEvent('selectClick');
 
@@ -133,8 +134,8 @@ const dollyDelta = new THREE.Vector2();
 
 // Globe move
 const quatGlobe = new THREE.Quaternion();
-const globeTarget = new THREE.Object3D();
-const movingGlobeTarget = new THREE.Vector3();
+const cameraTargetOnGlobe = new THREE.Object3D();
+const movingCameraTargetOnGlobe = new THREE.Vector3();
 var animatedScale = 0.0;
 
 const ctrl = {
@@ -182,9 +183,9 @@ const animationOrbit = new AnimatedExpression({ duration: 30, root: orbit, expre
 const dampingOrbitalMvt = new Animation({ duration: 60, name: 'orbit damping' });
 
 // Replace matrix float by matrix double
-globeTarget.matrixWorld.elements = new Float64Array(16);
-globeTarget.matrixWorldInverse = new THREE.Matrix4();
-globeTarget.matrixWorldInverse.elements = new Float64Array(16);
+cameraTargetOnGlobe.matrixWorld.elements = new Float64Array(16);
+cameraTargetOnGlobe.matrixWorldInverse = new THREE.Matrix4();
+cameraTargetOnGlobe.matrixWorldInverse.elements = new Float64Array(16);
 
 // Pan Move
 const panVector = new THREE.Vector3();
@@ -205,7 +206,7 @@ var initialZoom;
 const ptScreenClick = new THREE.Vector2();
 const sizeRendering = new THREE.Vector2();
 
-// Tangent sphere to ellispoid
+// Tangent sphere to ellipsoid
 const tSphere = new Sphere();
 tSphere.picking = { position: new THREE.Vector3(), normal: new THREE.Vector3() };
 
@@ -419,7 +420,7 @@ function GlobeControls(camera, domElement, engine) {
             var position = this.camera.position;
 
             // var offset = position.clone().sub(this.target);
-            var offset = position.clone().sub(this.getTargetCameraPosition());
+            var offset = position.clone().sub(this.getCameraTargetPosition());
 
             var targetDistance = offset.length();
 
@@ -517,28 +518,28 @@ function GlobeControls(camera, domElement, engine) {
         // MOVE_GLOBE
         // Rotate globe with mouse
         if (state === CONTROL_STATE.MOVE_GLOBE) {
-            movingGlobeTarget.copy(this.getTargetCameraPosition()).applyQuaternion(quatGlobe);
+            movingCameraTargetOnGlobe.copy(this.getCameraTargetPosition()).applyQuaternion(quatGlobe);
             this.camera.position.copy(snapShotCamera.position).applyQuaternion(quatGlobe);
             // combine zoom with move globe
             if (ctrl.progress > 0) {
-                this.camera.position.lerp(movingGlobeTarget, ctrl.progress * animatedScale);
+                this.camera.position.lerp(movingCameraTargetOnGlobe, ctrl.progress * animatedScale);
             }
-            this.camera.up.copy(movingGlobeTarget.clone().normalize());
+            this.camera.up.copy(movingCameraTargetOnGlobe.clone().normalize());
         // PAN
         // Move camera in projection plan
         } else if (state === CONTROL_STATE.PAN) {
             this.camera.position.add(panVector);
-            movingGlobeTarget.add(panVector);
+            movingCameraTargetOnGlobe.add(panVector);
         // PANORAMIC
         // Move target camera
         } else if (state === CONTROL_STATE.PANORAMIC) {
             // TODO: this part must be reworked
-            this.camera.worldToLocal(movingGlobeTarget);
+            this.camera.worldToLocal(movingCameraTargetOnGlobe);
             var normal = this.camera.position.clone().normalize().applyQuaternion(this.camera.quaternion.clone().inverse());
             quaterPano.setFromAxisAngle(normal, sphericalDelta.theta).multiply(quaterAxis.setFromAxisAngle(axisX, sphericalDelta.phi));
-            movingGlobeTarget.applyQuaternion(quaterPano);
-            this.camera.localToWorld(movingGlobeTarget);
-            this.camera.up.copy(movingGlobeTarget.clone().normalize());
+            movingCameraTargetOnGlobe.applyQuaternion(quaterPano);
+            this.camera.localToWorld(movingCameraTargetOnGlobe);
+            this.camera.up.copy(movingCameraTargetOnGlobe.clone().normalize());
         } else {
             // ZOOM/ORBIT
             // Move Camera around the target camera
@@ -547,7 +548,7 @@ function GlobeControls(camera, domElement, engine) {
             // offset.applyQuaternion( quat );
 
             // get camera position in local space of target
-            offset.copy(this.camera.position).applyMatrix4(globeTarget.matrixWorldInverse);
+            offset.copy(this.camera.position).applyMatrix4(cameraTargetOnGlobe.matrixWorldInverse);
 
             // angle from z-axis around y-axis
             if (sphericalDelta.theta || sphericalDelta.phi) {
@@ -580,10 +581,10 @@ function GlobeControls(camera, domElement, engine) {
             // rotate point back to "camera-up-vector-is-up" space
             // offset.applyQuaternion( quatInverse );
 
-            this.camera.position.copy(globeTarget.localToWorld(offset));
+            this.camera.position.copy(cameraTargetOnGlobe.localToWorld(offset));
         }
 
-        this.camera.lookAt(movingGlobeTarget);
+        this.camera.lookAt(movingCameraTargetOnGlobe);
 
         if (!this.enableDamping) {
             sphericalDelta.theta = 0;
@@ -633,17 +634,19 @@ function GlobeControls(camera, domElement, engine) {
         };
     }());
 
-    // set new globe target
-    var setGlobleTarget = function setGlobleTarget(newPosition) {
-        // Compute the new target center position
-        positionObject(newPosition, globeTarget);
+    // set new camera target on globe
+    const setCameraTargetObjectPosition = function setCameraTargetObjectPosition(newPosition) {
+        // Compute the new target position
+        positionObject(newPosition, cameraTargetOnGlobe);
 
-        globeTarget.matrixWorldInverse.getInverse(globeTarget.matrixWorld);
+        cameraTargetOnGlobe.matrixWorldInverse.getInverse(cameraTargetOnGlobe.matrixWorld);
     };
 
     const cT = new THREE.Vector3();
-    // update globe target
-    var updateGlobeTarget = function updateGlobeTarget() {
+
+    const updateCameraTargetOnGlobe = function updateCameraTargetOnGlobe() {
+        const oldCoord = C.fromXYZ(scene.referenceCrs, cameraTargetOnGlobe.position);
+
         // Get distance camera DME
         const pickingPosition = getPickingPosition();
 
@@ -653,20 +656,25 @@ function GlobeControls(camera, domElement, engine) {
 
         const distanceTarget = pickingPosition.distanceTo(this.camera.position);
 
-        // Position movingGlobeTarget on DME
-        cT.subVectors(movingGlobeTarget, this.camera.position);
+        // Position movingCameraTargetOnGlobe on DME
+        cT.subVectors(movingCameraTargetOnGlobe, this.camera.position);
         cT.setLength(distanceTarget);
-        movingGlobeTarget.addVectors(this.camera.position, cT);
+        movingCameraTargetOnGlobe.addVectors(this.camera.position, cT);
 
-        // set new globe target
-        setGlobleTarget(movingGlobeTarget);
+        setCameraTargetObjectPosition(movingCameraTargetOnGlobe);
 
         // update spherical from target
         offset.copy(this.camera.position);
-        offset.applyMatrix4(globeTarget.matrixWorldInverse);
+        offset.applyMatrix4(cameraTargetOnGlobe.matrixWorldInverse);
         spherical.setFromVector3(offset);
         state = CONTROL_STATE.NONE;
         lastRotation = [];
+
+        this.dispatchEvent({
+            type: 'camera-target-updated',
+            oldCameraTargetPosition: oldCoord,
+            newCameraTargetPosition: C.fromXYZ(scene.referenceCrs, cameraTargetOnGlobe.position),
+        });
     };
 
     // Update helper
@@ -853,7 +861,7 @@ function GlobeControls(camera, domElement, engine) {
 
             if (point) {
                 animatedScale = 0.6;
-                this.setCenter(point, true);
+                this.setCameraTargetPosition(point, true);
             }
         }
     };
@@ -878,10 +886,10 @@ function GlobeControls(camera, domElement, engine) {
                 ctrl.qDelta.setFromUnitVectors(lastRotation[1], lastRotation[0]);
                 player.play(animationDampingMove).then(() => this.resetControls());
             } else {
-                updateGlobeTarget.bind(this)();
+                updateCameraTargetOnGlobe.bind(this)();
             }
         } else {
-            updateGlobeTarget.bind(this)();
+            updateCameraTargetOnGlobe.bind(this)();
         }
     };
 
@@ -921,7 +929,7 @@ function GlobeControls(camera, domElement, engine) {
 
         if (state === CONTROL_STATE.PAN)
         {
-            updateGlobeTarget.bind(this)();
+            updateCameraTargetOnGlobe.bind(this)();
         }
 
         keyCtrl = false;
@@ -1110,7 +1118,7 @@ function GlobeControls(camera, domElement, engine) {
     this.resetControls = function resetControls() {
         lastRotation.splice(0);
         ctrl.progress = 0;
-        updateGlobeTarget.bind(this)();
+        updateCameraTargetOnGlobe.bind(this)();
     };
 
     // update object camera position
@@ -1120,7 +1128,7 @@ function GlobeControls(camera, domElement, engine) {
         this.enableDamping = false;
         state = controlState || CONTROL_STATE.ORBIT;
         update();
-        updateGlobeTarget.bind(this)();
+        updateCameraTargetOnGlobe.bind(this)();
         this.enableDamping = bkDamping;
     };
 
@@ -1162,23 +1170,23 @@ function GlobeControls(camera, domElement, engine) {
     window.addEventListener('keydown', onKeyDown.bind(this), false);
     window.addEventListener('keyup', onKeyUp.bind(this), false);
 
-    // Initialisation Globe Target and movingGlobeTarget
+    // Initialisation camera target on globe and movingCameraTargetOnGlobe
     var positionTarget = new THREE.Vector3().copy(camera.position).setLength(tSphere.radius);
-    setGlobleTarget(positionTarget);
-    movingGlobeTarget.copy(positionTarget);
+    setCameraTargetObjectPosition(positionTarget);
+    movingCameraTargetOnGlobe.copy(positionTarget);
     this.camera.up.copy(positionTarget.normalize());
-    engine.scene3D.add(globeTarget);
+    engine.scene3D.add(cameraTargetOnGlobe);
     spherical.radius = camera.position.length();
 
     update();
 
     if (enableTargetHelper) {
-        globeTarget.add(new THREE.AxisHelper(500000));
+        cameraTargetOnGlobe.add(new THREE.AxisHelper(500000));
         engine.scene3D.add(this.pickingHelper);
     }
 
     // Start position
-    initialTarget = globeTarget.clone();
+    initialTarget = cameraTargetOnGlobe.clone();
     initialPosition = this.camera.position.clone();
     initialZoom = this.camera.zoom;
 
@@ -1244,16 +1252,22 @@ GlobeControls.prototype.moveOrbitalPosition = function moveOrbitalPositionfuncti
 };
 
 /**
- * Gets camera's target position
- *
- * @return     {Vecto3}
+ * Returns the coordinates of the globe point targeted by the camera.
+ * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/4tjgnv7z/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
+ * @return {THREE.Vector3} position
  */
-GlobeControls.prototype.getTargetCameraPosition = function getTargetCameraPosition() {
-    return globeTarget.position;
+GlobeControls.prototype.getCameraTargetPosition = function getCameraTargetPosition() {
+    return cameraTargetOnGlobe.position;
 };
 
-GlobeControls.prototype.setCenter = function setCenter(position, isAnimated) {
-    const center = this.getTargetCameraPosition();
+/**
+ * Make the camera aim a point in the globe
+ *
+ * @param {THREE.Vector3} position - the position on the globe to aim, in EPSG:4978 projection
+ * @param {boolean} isAnimated - if we should animate the move
+ */
+GlobeControls.prototype.setCameraTargetPosition = function setCameraTargetPosition(position, isAnimated) {
+    const center = this.getCameraTargetPosition();
 
     snapShotCamera.shot(this.camera);
 
@@ -1277,12 +1291,12 @@ GlobeControls.prototype.setCenter = function setCenter(position, isAnimated) {
     else {
         quatGlobe.setFromUnitVectors(vFrom, vTo);
         this.updateCameraTransformation(CONTROL_STATE.MOVE_GLOBE);
-        return new Promise((r) => { r(); });
+        return Promise.resolve();
     }
 };
 
 GlobeControls.prototype.getRange = function getRange() {
-    return this.getTargetCameraPosition().distanceTo(this.camera.position);
+    return this.getCameraTargetPosition().distanceTo(this.camera.position);
 };
 
 // TODO idea : remove this? used in API
@@ -1324,7 +1338,7 @@ GlobeControls.prototype.getAzimuthalAngle = function getAzimuthalAngle() {
 };
 
 GlobeControls.prototype.moveTarget = function moveTarget() {
-    return movingGlobeTarget;
+    return movingCameraTargetOnGlobe;
 };
 
 GlobeControls.prototype.pan = function pan(deltaX, deltaY) {
