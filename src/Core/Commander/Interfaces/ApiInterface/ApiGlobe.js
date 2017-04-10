@@ -97,10 +97,54 @@ ApiGlobe.prototype.addGeometryLayer = function addGeometryLayer(layer) {
 };
 
 /**
- * This function adds an imagery layer to the scene. The layer id must be unique. The protocol rules wich parameters are then needed for the function.
- * @constructor
- * @param {Layer} layer.
+ * The intellectual property rights
+ * @typedef {Object} Attribution
+ * @property {string} name
+ * @property {string} url
  */
+
+/**
+ * Options to wms protocol
+ * @typedef {Object} OptionsWms
+ * @property {Attribution} attribution The intellectual property rights for the layer
+ * @property {string} name
+ * @property {string} mimetype
+ */
+
+/**
+ * Options to wtms protocol
+ * @typedef {Object} OptionsWmts
+ * @property {Attribution} attribution The intellectual property rights for the layer
+ * @property {string} name
+ * @property {string} mimetype
+ * @property {string} tileMatrixSet
+ * @property {Array.<Object>} tileMatrixSetLimits The limits for the tile matrix set
+ * @property {number} tileMatrixSetLimits.minTileRow Minimum row for tiles at the level
+ * @property {number} tileMatrixSetLimits.maxTileRow Maximum row for tiles at the level
+ * @property {number} tileMatrixSetLimits.minTileCol Minimum col for tiles at the level
+ * @property {number} tileMatrixSetLimits.maxTileCol Maximum col for tiles at the level
+ * @property {Object} [zoom]
+ * @property {Object} [zoom.min] layer's zoom minimum
+ * @property {Object} [zoom.max] layer's zoom maximum
+ */
+
+/**
+ * Layer
+ * @typedef {Object} Layer
+ * @property {string} id Unique layer's id
+ * @property {string} layer.protocol wmts and wms (wmtsc for custom deprecated)
+ * @property {string} layer.url Base URL of the repository or of the file(s) to load
+ * @property {Object} layer.updateStrategy strategy to load imagery files
+ * @property {OptionsWmts|OptionsWms} layer.options WMTS or WMS options
+ */
+
+/**
+ * This function adds an imagery layer to the scene. The layer id must be unique.
+ * The protocol rules wich parameters are then needed for the function.
+ * @constructor
+ * @param {Layer} Layer
+ */
+
 ApiGlobe.prototype.addImageryLayer = function addImageryLayer(layer) {
     preprocessLayer(layer, this.scene.scheduler.getProtocolProvider(layer.protocol));
     const map = this.scene.getMap();
@@ -195,7 +239,7 @@ ApiGlobe.prototype.removeImageryLayer = function removeImageryLayer(id) {
  * The layer id must be unique amongst all layers already inserted.
  * The protocol rules which parameters are then needed for the function.
  * @constructor
- * @param {Layer} layer.
+ * @param {Layer} layer
  */
 
 ApiGlobe.prototype.addElevationLayer = function addElevationLayer(layer) {
@@ -456,7 +500,7 @@ ApiGlobe.prototype.setCameraOrientation = function setCameraOrientation(orientat
 /**
  * Pick a position on the globe at the given position.
  * @constructor
- * @param {Number | MouseEvent} x|event - The x-position inside the Globe element or a mouse event.
+ * @param {number | MouseEvent} x|event - The x-position inside the Globe element or a mouse event.
  * @param {number | undefined} y - The y-position inside the Globe element.
  * @return {Position} position
  */
@@ -505,7 +549,7 @@ ApiGlobe.prototype.getHeading = function getHeading() {
  * Returns the "range": the distance in meters between the camera and the current central point on the screen.
  * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/Lbt1vfek/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
  * @constructor
- * @return {Number} number
+ * @return {number} number
  */
 
 ApiGlobe.prototype.getRange = function getRange() {
@@ -642,13 +686,13 @@ ApiGlobe.prototype.setCameraTargetGeoPosition = function setCameraTargetGeoPosit
  * The zoom level and the scale can't be set at the same time.
  * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/7yk0mpn0/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
  * @param {Position} position
- * @param {Number}  position.longitude  Coordinate longitude WGS84 in degree
- * @param {Number}  position.latitude  Coordinate latitude WGS84 in degree
- * @param {Number}  [position.tilt]  Camera tilt in degree
- * @param {Number}  [position.heading]  Camera heading in degree
- * @param {Number}  [position.range]  The camera distance to the target center
- * @param {Number}  [position.level]  level,  ignored if range is set
- * @param {Number}  [position.scale]  scale,  ignored if the zoom level or range is set. For a scale of 1/500 it is necessary to write 0,002.
+ * @param {number}  position.longitude  Coordinate longitude WGS84 in degree
+ * @param {number}  position.latitude  Coordinate latitude WGS84 in degree
+ * @param {number}  [position.tilt]  Camera tilt in degree
+ * @param {number}  [position.heading]  Camera heading in degree
+ * @param {number}  [position.range]  The camera distance to the target center
+ * @param {number}  [position.level]  level,  ignored if range is set
+ * @param {number}  [position.scale]  scale,  ignored if the zoom level or range is set. For a scale of 1/500 it is necessary to write 0,002.
  * @param {boolean}  isAnimated  Indicates if animated
  * @return {Promise}
  */
