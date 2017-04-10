@@ -12,14 +12,12 @@ import WMS_Provider from '../../Providers/WMS_Provider';
 import TileProvider from '../../Providers/TileProvider';
 import loadGpx from '../../Providers/GpxUtils';
 import { C } from '../../../Geographic/Coordinates';
-import Projection from '../../../Geographic/Projection';
 import Fetcher from '../../Providers/Fetcher';
 import { STRATEGY_MIN_NETWORK_TRAFFIC } from '../../../../Scene/LayerUpdateStrategy';
 
 var sceneIsLoaded = false;
 var eventLoaded = new CustomEvent('globe-loaded');
 var eventRange = new CustomEvent('rangeChanged');
-var eventCenter = new CustomEvent('centerchanged');
 var eventOrientation = new CustomEvent('orientationchanged');
 var eventPan = new CustomEvent('panchanged');
 var eventLayerAdded = new CustomEvent('layeradded');
@@ -45,7 +43,6 @@ function ApiGlobe() {
     // Constructor
     this.scene = null;
     this.commandsTree = null;
-    this.projection = new Projection();
     this.viewerDiv = null;
     this.callback = null;
 }
@@ -340,7 +337,9 @@ ApiGlobe.prototype.createSceneGlobe = function createSceneGlobe(coordCarto, view
 
     var coordinate = new C.EPSG_4326(coordCarto.longitude, coordCarto.latitude, coordCarto.altitude);
 
-    this.scene = Scene(coordinate, viewerDiv, debugMode, gLDebug);
+    // FIXME: the scene is not really in EPSG:4978 atm, some axis are inverted, see
+    // https://github.com/iTowns/itowns2/pull/246
+    this.scene = Scene('EPSG:4978', coordinate, viewerDiv, debugMode, gLDebug);
 
     var map = new Globe(gLDebug);
 
@@ -428,8 +427,7 @@ ApiGlobe.prototype.getCameraOrientation = function getCameraOrientation() {
  */
 
 ApiGlobe.prototype.getCameraLocation = function getCameraLocation() {
-    var cam = this.scene.currentCamera().camera3D;
-    return this.projection.cartesianToGeo(cam.position);
+    return C.fromXYZ('EPSG:4978', this.scene.currentCamera().camera3D.position).as('EPSG:4326');
 };
 
 /**
@@ -439,9 +437,8 @@ ApiGlobe.prototype.getCameraLocation = function getCameraLocation() {
  * @return {Position} position
  */
 
-ApiGlobe.prototype.getCenter = function getCenter() {
-    var controlCam = this.scene.currentControls();
-    return this.projection.cartesianToGeo(controlCam.getTargetCameraPosition());
+ApiGlobe.prototype.getCameraTargetGeoPosition = function getCameraTargetGeoPosition() {
+    return C.fromXYZ('EPSG:4978', this.scene.currentControls().getCameraTargetPosition()).as('EPSG:4326');
 };
 
 /**
@@ -479,7 +476,7 @@ ApiGlobe.prototype.pickPosition = function pickPosition(mouse, y) {
         return;
     }
 
-    return this.projection.cartesianToGeo(pickedPosition);
+    return C.fromXYZ('EPSG:4978', pickedPosition).as('EPSG:4326');
 };
 
 /**
@@ -620,22 +617,22 @@ ApiGlobe.prototype.setSceneLoaded = function setSceneLoaded() {
 /**
  * Changes the center of the scene on screen to the specified coordinates.
  * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/x06yhbq6/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
- * @constructor
- * @param {coordinates} coordinates - Properties : longitude and latitude
- * @param      {boolean}  isAnimated  Indicates if animated
- * @return     {Promise}
+ * @param {Object} coordinates - The globe coordinates in EPSG_4326 projection to aim to
+ * @param {number} coordinates.latitude
+ * @param {number} coordinates.longitude
+ * @param {number} coordinates.range
+ * @param {boolean}  isAnimated - if the movement should be animated
+ * @return {Promise} A promise that resolves when the next 'globe-loaded' event fires.
  */
-ApiGlobe.prototype.setCenter = function setCenter(coordinates, isAnimated) {
+ApiGlobe.prototype.setCameraTargetGeoPosition = function setCameraTargetGeoPosition(coordinates, isAnimated) {
     isAnimated = isAnimated || this.isAnimationEnabled();
-    eventCenter.oldCenter = this.getCenter();
     const position3D = new C.EPSG_4326(coordinates.longitude, coordinates.latitude, 0)
         .as('EPSG:4978').xyz();
     position3D.range = coordinates.range;
-    return this.scene.currentControls().setCenter(position3D, isAnimated).then(() => {
+    return this.scene.currentControls().setCameraTargetPosition(position3D, isAnimated).then(() => {
         this.scene.notifyChange(1);
         return this.setSceneLoaded().then(() => {
             this.scene.currentControls().updateCameraTransformation();
-            this.viewerDiv.dispatchEvent(eventCenter);
         });
     });
 };
@@ -646,14 +643,13 @@ ApiGlobe.prototype.setCenter = function setCenter(coordinates, isAnimated) {
  * The level has to be between the [getMinZoomLevel(), getMaxZoomLevel()].
  * The zoom level and the scale can't be set at the same time.
  * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/7yk0mpn0/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
- * @constructor
  * @param {Position} pPosition - The detailed position in the scene.
  * @param      {boolean}  isAnimated  Indicates if animated
  * @return     {Promise}
  */
-ApiGlobe.prototype.setCenterAdvanced = function setCenterAdvanced(pPosition, isAnimated) {
+ApiGlobe.prototype.setCameraTargetGeoPositionAdvanced = function setCameraTargetGeoPositionAdvanced(pPosition, isAnimated) {
     isAnimated = isAnimated || this.isAnimationEnabled();
-    return this.setCenter(pPosition, isAnimated).then(() => {
+    return this.setCameraTargetGeoPosition(pPosition, isAnimated).then(() => {
         const p = this.scene.currentControls().setOrbitalPosition(undefined, pPosition.heading, pPosition.tilt, isAnimated);
         return p;
     });
@@ -738,7 +734,7 @@ ApiGlobe.prototype.getZoomScale = function getZoomScale(pitch) {
     //     * Globe is inside the frustrum camera
     //     * Globe intersects with the frustrum camera
     const camera = this.scene.currentCamera();
-    const center = this.scene.currentControls().getTargetCameraPosition();
+    const center = this.scene.currentControls().getCameraTargetPosition();
     const rayon = center.length();
     const range = center.distanceTo(camera.camera3D.position);
     // compute distance camera/globe's center
@@ -797,7 +793,7 @@ ApiGlobe.prototype.setZoomScale = function setZoomScale(zoomScale, pitch, isAnim
 
     const camera = this.scene.currentCamera();
     const projection = camera.height * pitch / zoomScale;
-    const rayon = this.scene.currentControls().getTargetCameraPosition().length();
+    const rayon = this.scene.currentControls().getCameraTargetPosition().length();
     const alpha = camera.FOV / 180 * Math.PI * 0.5;
     // distance camera/globe's center
     let distance;

@@ -12,4 +12,6 @@ const itowns = scope.itowns || {
 };
 scope.itowns = itowns;
 export const viewer = itowns.viewer;
+export { C } from './Core/Geographic/Coordinates';
+export { Coordinates } from './Core/Geographic/Coordinates';
 export default scope.itowns;

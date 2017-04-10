@@ -106,6 +106,15 @@ function _convert(coordsIn, newCrs) {
                                    cartesian.x, cartesian.y, cartesian.z);
         }
 
+        if (coordsIn.crs === 'EPSG:4978' && newCrs === 'EPSG:4326') {
+            const geo = ellipsoid.cartesianToCartographic({
+                x: coordsIn._values[0],
+                y: coordsIn._values[1],
+                z: coordsIn._values[2],
+            });
+            return new Coordinates(newCrs, geo.longitude, geo.latitude, geo.h);
+        }
+
         if (coordsIn.crs in proj4.defs && newCrs in proj4.defs) {
             const p = proj4(coordsIn.crs, newCrs, [coordsIn._values[0], coordsIn._values[1]]);
             return new Coordinates(newCrs,
@@ -148,8 +157,6 @@ function Coordinates(crs, ...coordinates) {
     }
     this._internalStorageUnit = crsToUnit(crs);
 }
-
-Coordinates.prototype.constructor = Coordinates;
 
 Coordinates.prototype.clone = function clone() {
     const r = new Coordinates(this.crs, ...this._values);
@@ -202,6 +209,20 @@ Coordinates.prototype.as = function as(crs) {
 };
 
 export const C = {
+
+    /**
+     * Return a Coordinates object from a position object. The object just
+     * needs to have x, y, z properties.
+     *
+     * @param {string} crs - The crs of the original position
+     * @param {Object} position - the position to transform
+     * @param {number} position.x - the x component of the position
+     * @param {number} position.y - the y component of the position
+     * @param {number} position.z - the z component of the position
+     */
+    fromXYZ: function fromXYZ(crs, position) {
+        return new Coordinates(crs, position.x, position.y, position.z);
+    },
     EPSG_4326: function EPSG_4326(...args) {
         return new Coordinates('EPSG:4326', ...args);
     },
