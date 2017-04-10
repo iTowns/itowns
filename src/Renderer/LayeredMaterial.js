@@ -151,6 +151,7 @@ const LayeredMaterial = function LayeredMaterial(id) {
     // this.wireframe = true;
 
     this.colorLayersId = [];
+    this.elevationLayersId = [];
 };
 
 LayeredMaterial.prototype = Object.create(BasicMaterial.prototype);

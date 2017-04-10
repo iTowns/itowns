@@ -210,7 +210,11 @@ ApiGlobe.prototype.addElevationLayer = function addElevationLayer(layer) {
         console.error(`Error : id "${layer.id}" already exist, WARNING your layer isn't added`);
     } else {
         map.layersConfiguration.addElevationLayer(layer);
-        this.viewerDiv.dispatchEvent(eventLayerAdded);
+        this.scene.getMap().update();
+        this.scene.notifyChange(1, true);
+        this.setSceneLoaded().then(() => {
+            this.viewerDiv.dispatchEvent(eventLayerAdded);
+        });
     }
 };
 
