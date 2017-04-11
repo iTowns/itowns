@@ -12,6 +12,15 @@ import Camera from './Camera';
 import Atmosphere from '../Globe/Atmosphere';
 import Capabilities from '../Core/System/Capabilities';
 import RendererConstant from './RendererConstant';
+import fontJS from './ThreeExtended/fonts/optimer_regular.glsl';
+
+/* eslint-disable */
+THREE.CopyShader = require('imports?THREE=three!exports?THREE.CopyShader!../../node_modules/three/examples/js/shaders/CopyShader.js');
+THREE.EffectComposer = require('imports?THREE=three!exports?THREE.EffectComposer!../../node_modules/three/examples/js/postprocessing/EffectComposer.js');
+THREE.ShaderPass = require('imports?THREE=three!exports?THREE.ShaderPass!../../node_modules/three/examples/js/postprocessing/ShaderPass.js');
+THREE.RenderPass = require('imports?THREE=three!exports?THREE.RenderPass!../../node_modules/three/examples/js/postprocessing/RenderPass.js');
+
+/* eslint-enable */
 
 var instance3DEngine = null;
 
@@ -28,6 +37,7 @@ function c3DEngine(scene, positionCamera, viewerDiv, debugMode, gLDebug) {
     this.viewerDiv = viewerDiv;
     this.debug = debugMode;
     this.scene3D = new THREE.Scene();
+    this.sceneStencil = new THREE.Scene();
     this.scene3D.autoUpdate = false;
     this.scene3D.sortObjects = false;
     this.width = this.debug ? viewerDiv.clientWidth * 0.5 : viewerDiv.clientWidth;
@@ -39,6 +49,36 @@ function c3DEngine(scene, positionCamera, viewerDiv, debugMode, gLDebug) {
     this.positionBuffer = null;
 
     this.camera = new Camera(this.width, this.height, this.debug);
+
+    var font = new THREE.Font(JSON.parse(fontJS.substring(65, fontJS.length - 2)));
+
+    var geometryText = new THREE.TextGeometry('iTowns', {
+        font,
+        size: 900000,
+        height: 500000,
+        curveSegments: 1,
+
+    });
+
+    this.textMesh = new THREE.Mesh(geometryText, new THREE.MeshBasicMaterial({
+        color: new THREE.Color(1, 0, 0),
+    }));
+
+    this.textMesh.position.set(-2000000, 0, 6000000);
+    this.textMesh.updateMatrix();
+    this.textMesh.updateMatrixWorld(true);
+
+    var geometry = new THREE.SphereGeometry(3000000, 128, 128);
+    var material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+    this.ring = new THREE.Mesh(geometry, material);
+    this.ring.position.set(6500000, 0, 0);
+    this.ring.updateMatrix();
+    this.ring.updateMatrixWorld(true);
+    this.ring.matrixAutoUpdate = false;
+    this.textMesh.matrixAutoUpdate = false;
+    this.sceneStencil.add(this.textMesh, this.ring);
+    this.sceneStencil.autoUpdate = false;
+    this.sceneStencil.sortObjects = false;
 
     if (this.debug) {
         this.camDebug = new THREE.PerspectiveCamera(30, this.camera.ratio);
@@ -52,9 +92,49 @@ function c3DEngine(scene, positionCamera, viewerDiv, debugMode, gLDebug) {
         if (this.camera.camHelper())
             { this.camera.camHelper().visible = false; }
 
+        // 0) normal
+
+        // this.renderer.clear();
+        // this.renderer.setViewport(0, 0, this.width, this.height);
+        // this.renderer.render(this.scene3D, this.camera.camera3D);
+
+        // 1) stencil
+
         this.renderer.clear();
+
+        var gl = this.renderer.context;
+
+        // enable stencil test
+        this.renderer.state.setStencilTest(true);
         this.renderer.setViewport(0, 0, this.width, this.height);
+
+        // const originalState = this.stateRender;
+        // this.setStateRender(RendererConstant.DEPTH);
+        // config the stencil buffer to collect data for testing
+        this.renderer.setFaceCulling(THREE.CullFaceBack);
+        this.renderer.state.setStencilFunc(gl.ALWAYS, 1, 0xff);
+        this.renderer.state.setStencilOp(gl.KEEP, gl.KEEP, gl.INCR);
         this.renderer.render(this.scene3D, this.camera.camera3D);
+        // this.setStateRender(originalState);
+
+        this.renderer.setFaceCulling(THREE.CullFaceFront);
+        this.renderer.state.setStencilFunc(gl.EQUAL, 1, 0xff);
+        this.renderer.state.setStencilOp(gl.KEEP, gl.KEEP, gl.DECR);
+        this.renderer.render(this.sceneStencil, this.camera.camera3D);
+
+        this.renderer.clear(true, true, false);
+        this.renderer.setFaceCulling(THREE.CullFaceBack);
+        this.renderer.state.setStencilFunc(gl.EQUAL, 1, 0xff);
+        this.renderer.state.setStencilOp(gl.KEEP, gl.KEEP, gl.KEEP);
+        this.renderer.render(this.sceneStencil, this.camera.camera3D);
+
+        this.renderer.state.setStencilTest(false);
+        this.renderer.setFaceCulling(THREE.CullFaceBack);
+        this.renderer.render(this.scene3D, this.camera.camera3D);
+
+
+        // 2) test with composer
+        // this.composer.render();
 
         if (this.debug) {
             this.enableRTC(false);
@@ -141,7 +221,6 @@ function c3DEngine(scene, positionCamera, viewerDiv, debugMode, gLDebug) {
     //
 
     this.renderer = new THREE.WebGLRenderer({
-        canvas,
         antialias: true,
         alpha: true,
         logarithmicDepthBuffer: this.gLDebug || NOIE,
@@ -150,6 +229,16 @@ function c3DEngine(scene, positionCamera, viewerDiv, debugMode, gLDebug) {
     this.renderer.setSize(viewerDiv.clientWidth, viewerDiv.clientHeight);
     this.renderer.setClearColor(0x030508);
     this.renderer.autoClear = false;
+
+    this.composer = new THREE.EffectComposer(this.renderer);
+    this.composer.addPass(new THREE.RenderPass(this.scene3D, this.camera.camera3D));
+
+    var effect = new THREE.ShaderPass(THREE.CopyShader);
+    effect.renderToScreen = true;
+    this.composer.addPass(effect);
+
+    this.renderer.setSize(this.width, this.height);
+    this.composer.setSize(this.width, this.height);
 
     // this.viewerDiv.appendChild(canvas);
     viewerDiv.appendChild(this.renderer.domElement);
