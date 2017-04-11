@@ -45,6 +45,14 @@ function Scene(crs, positionCamera, viewerDiv, debugMode, gLDebug) {
     }
     this.referenceCrs = crs;
 
+    const positionTargetCamera = positionCamera.clone();
+    positionTargetCamera.setAltitude(0);
+
+    const controlOptions = {
+        position: positionCamera.as(crs).xyz(),
+        target: positionTargetCamera.as(crs).xyz(),
+    };
+
     this.layers = [];
     this.map = null;
 
@@ -56,7 +64,7 @@ function Scene(crs, positionCamera, viewerDiv, debugMode, gLDebug) {
     this.stylesManager = new StyleManager();
 
     this.gLDebug = gLDebug;
-    this.gfxEngine = c3DEngine(this, positionCamera.as(crs).xyz(), viewerDiv, debugMode, gLDebug);
+    this.gfxEngine = c3DEngine(this, controlOptions, viewerDiv, debugMode, gLDebug);
     this.browserScene = new BrowseTree(this.gfxEngine);
 
     this.needsRedraw = false;

@@ -277,7 +277,7 @@ var snapShotCamera = null;
 
 /* globals document,window */
 
-function GlobeControls(camera, domElement, engine) {
+function GlobeControls(camera, target, domElement, engine) {
     player = new AnimationPlayer(domElement);
     const scene = engine.scene;
     this.camera = camera;
@@ -1179,11 +1179,10 @@ function GlobeControls(camera, domElement, engine) {
     window.addEventListener('keydown', onKeyDown.bind(this), false);
     window.addEventListener('keyup', onKeyUp.bind(this), false);
 
-    // Initialisation camera target on globe and movingCameraTargetOnGlobe
-    var positionTarget = new THREE.Vector3().copy(camera.position).setLength(tSphere.radius);
-    setCameraTargetObjectPosition(positionTarget);
-    movingCameraTargetOnGlobe.copy(positionTarget);
-    this.camera.up.copy(positionTarget.normalize());
+    // Initialisation Globe Target and movingGlobeTarget
+    setCameraTargetObjectPosition(target);
+    movingCameraTargetOnGlobe.copy(target);
+    this.camera.up.copy(target.clone().normalize());
     engine.scene3D.add(cameraTargetOnGlobe);
     spherical.radius = camera.position.length();
 
