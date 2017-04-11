@@ -643,15 +643,34 @@ ApiGlobe.prototype.setCameraTargetGeoPosition = function setCameraTargetGeoPosit
  * The level has to be between the [getMinZoomLevel(), getMaxZoomLevel()].
  * The zoom level and the scale can't be set at the same time.
  * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/7yk0mpn0/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
- * @param {Position} pPosition - The detailed position in the scene.
- * @param      {boolean}  isAnimated  Indicates if animated
- * @return     {Promise}
+ * @param {Position} position
+ * @param {Number}  position.longitude  Coordinate longitude WGS84 in degree
+ * @param {Number}  position.latitude  Coordinate latitude WGS84 in degree
+ * @param {Number}  [position.tilt]  Camera tilt in degree
+ * @param {Number}  [position.heading]  Camera heading in degree
+ * @param {Number}  [position.range]  The camera distance to the target center
+ * @param {Number}  [position.level]  level,  ignored if range is set
+ * @param {Number}  [position.scale]  scale,  ignored if the zoom level or range is set. For a scale of 1/500 it is necessary to write 0,002.
+ * @param {boolean}  isAnimated  Indicates if animated
+ * @return {Promise}
  */
-ApiGlobe.prototype.setCameraTargetGeoPositionAdvanced = function setCameraTargetGeoPositionAdvanced(pPosition, isAnimated) {
+ApiGlobe.prototype.setCameraTargetGeoPositionAdvanced = function setCameraTargetGeoPositionAdvanced(position, isAnimated) {
     isAnimated = isAnimated || this.isAnimationEnabled();
-    return this.setCameraTargetGeoPosition(pPosition, isAnimated).then(() => {
-        const p = this.scene.currentControls().setOrbitalPosition(undefined, pPosition.heading, pPosition.tilt, isAnimated);
-        return p;
+    if (position.level) {
+        position.range = this.getRangeFromZoomLevel(position.level);
+    } else if (position.scale) {
+        position.range = this.getRangeFromScale(position.scale);
+    }
+    return this.setCameraTargetGeoPosition(position, isAnimated).then(() => {
+        position.range = position.range || this.getRange();
+        position.tilt = position.tilt || this.getTilt();
+        position.heading = position.heading || this.getHeading();
+        return this.scene.currentControls().setOrbitalPosition(position.range, position.heading, position.tilt, isAnimated).then(() => {
+            this.scene.notifyChange(1);
+            return this.setSceneLoaded().then(() => {
+                this.scene.currentControls().updateCameraTransformation();
+            });
+        });
     });
 };
 
@@ -710,10 +729,14 @@ ApiGlobe.prototype.getZoomLevel = function getZoomLevel() {
  * @return     {Promise}
  */
 ApiGlobe.prototype.setZoomLevel = function setZoomLevel(zoom, isAnimated) {
-    zoom = Math.max(this.getMinZoomLevel(), zoom);
-    zoom = Math.min(this.getMaxZoomLevel(), zoom);
-    const distance = this.scene.getMap().computeDistanceForZoomLevel(zoom, this.scene.currentCamera());
-    return this.setRange(distance, isAnimated);
+    const range = this.getRangeFromZoomLevel(zoom);
+    return this.setRange(range, isAnimated);
+};
+
+ApiGlobe.prototype.getRangeFromZoomLevel = function getRangeFromZoomLevel(zoom) {
+    // FIXME : The distance computed is incorrect, (Fixed in PR 279)
+    const range = this.scene.getMap().computeDistanceForZoomLevel(zoom, this.scene.currentCamera());
+    return range;
 };
 
 /**
@@ -781,6 +804,11 @@ ApiGlobe.prototype.getZoomScale = function getZoomScale(pitch) {
  * @return     {Promise}
  */
 ApiGlobe.prototype.setZoomScale = function setZoomScale(zoomScale, pitch, isAnimated) {
+    const range = this.getRangeFromScale(zoomScale);
+    return this.setRange(range, isAnimated);
+};
+
+ApiGlobe.prototype.getRangeFromScale = function getRangeFromScale(zoomScale, pitch) {
     // Screen pitch, in millimeters
     pitch = (pitch || 0.28) / 1000;
 
@@ -823,7 +851,7 @@ ApiGlobe.prototype.setZoomScale = function setZoomScale(zoomScale, pitch, isAnim
     }
 
     const range = distance - rayon;
-    return this.setRange(range, isAnimated);
+    return range;
 };
 
 /**

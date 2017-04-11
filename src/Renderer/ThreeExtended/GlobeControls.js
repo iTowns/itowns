@@ -1269,6 +1269,16 @@ GlobeControls.prototype.getCameraTargetPosition = function getCameraTargetPositi
 GlobeControls.prototype.setCameraTargetPosition = function setCameraTargetPosition(position, isAnimated) {
     const center = this.getCameraTargetPosition();
 
+    if (position.range) {
+        // Compensation of the altitude from the approximation of the ellipsoid by a sphere
+        // This approximation comes from the movements around the ellipsoid, are rotations with constant radius
+        const currentTargetPosition = C.fromXYZ('EPSG:4978', center).as('EPSG:4326');
+        const targetOnEllipsoid = new C.EPSG_4326(currentTargetPosition.longitude(), currentTargetPosition.latitude(), 0)
+            .as('EPSG:4978').xyz();
+        const compensation = position.length() - targetOnEllipsoid.length();
+        position.range += compensation;
+    }
+
     snapShotCamera.shot(this.camera);
 
     ptScreenClick.x = this.domElement.width / 2;
