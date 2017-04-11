@@ -49,6 +49,19 @@ varying float       lightIntensity;
 //     return textureIndex;
 // }
 
+// 4 connex averaging using weighted (distance parameter)
+vec4 AverageColor( sampler2D dTextures[TEX_UNITS],vec3 offsetScale[TEX_UNITS],int id, vec2 uv, float dist){
+
+    float distMax = min(dist/50000., 0.02);
+    vec4 cc1 = colorAtIdUv(dTextures, offsetScale, id, vec2(clamp(uv.x + distMax,0.,1.), uv.y));
+    vec4 cc2 = colorAtIdUv(dTextures, offsetScale, id, vec2(clamp(uv.x - distMax,0.,1.), uv.y));
+    vec4 cc3 = colorAtIdUv(dTextures, offsetScale, id, vec2(uv.x, uv.y + clamp(distMax,0.,1.)));
+    vec4 cc4 = colorAtIdUv(dTextures, offsetScale, id, vec2(uv.x, uv.y - clamp(distMax,0.,1.)));
+
+    return (cc1 + cc2 + cc3 + cc4)  / 4.;
+}
+
+
 void main() {
 
     #if defined(USE_LOGDEPTHBUF) && defined(USE_LOGDEPTHBUF_EXT)
@@ -108,6 +121,16 @@ void main() {
                             offsetScale_L01,
                             textureIndex,
                             projWGS84 ? vUv_WGS84 : uvPM);
+                        
+                
+                    /* // Bokeh effect
+                        vec4 layerColor = AverageColor(
+                            dTextures_01,
+                            offsetScale_L01,
+                            textureIndex,
+                            projWGS84 ? vUv_WGS84 : uvPM,
+                            dist);
+                    */
 
                         if (layerColor.a > 0.0) {
                             validTexture = true;

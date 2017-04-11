@@ -17,6 +17,7 @@ uniform mat4        mVPMatRTC;
 uniform mat4        projectionMatrix;
 uniform mat4        modelViewMatrix;
 uniform mat4        modelMatrix;
+uniform vec3        cameraPosition;
 
 uniform vec3        mouse3D;
 uniform float       timing;
@@ -242,10 +243,11 @@ void main() {
 
 
         pos = modelMatrix *  vPosition ;
-        dist = distance(mouse3D, pos.xyz);
+        // dist = distance(mouse3D, pos.xyz);  // Distance between mouse3D and vertex position
+        dist = abs(distance(mouse3D, cameraPosition) - distance(cameraPosition, pos.xyz)); // Distance for 'real' bokeh effect
+        
 
-
-   
+        
 
 
   //      if(dist < 1000.) {
