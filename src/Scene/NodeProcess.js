@@ -11,7 +11,7 @@ import { l_ELEVATION, l_COLOR } from '../Renderer/LayeredMaterial';
 import LayerUpdateState from './LayerUpdateState';
 import { CancelledCommandException } from '../Core/Commander/Scheduler';
 import { ellipsoidSizes } from '../Core/Geographic/Coordinates';
-import TiledImageTools from '../Core/Commander/Providers/TiledImageTools';
+import OGCWebServiceHelper from '../Core/Commander/Providers/OGCWebServiceHelper';
 
 export const SSE_SUBDIVISION_THRESHOLD = 6.0;
 
@@ -100,7 +100,7 @@ NodeProcess.prototype.subdivideNode = function subdivideNode(node, camera, param
                 // update Imagery wmts
                 for (const layer of colorLayers) {
                     if (layer.tileInsideLimit(child, layer)) {
-                        TiledImageTools.computeTileWMTSCoordinates(child, layer);
+                        OGCWebServiceHelper.computeTileWMTSCoordinates(child, layer);
                         const texturesCount = layer.tileTextureCount ?
                             layer.tileTextureCount(child, layer) : 1;
 
@@ -121,7 +121,7 @@ NodeProcess.prototype.subdivideNode = function subdivideNode(node, camera, param
                 const elevationLayers = params.layersConfig.getElevationLayers();
                 let canHaveElevation = false;
                 for (const layer of elevationLayers) {
-                    TiledImageTools.computeTileWMTSCoordinates(child, layer);
+                    OGCWebServiceHelper.computeTileWMTSCoordinates(child, layer);
                     canHaveElevation |= layer.tileInsideLimit(child, layer);
                 }
 
@@ -237,7 +237,6 @@ function updateNodeImagery(scene, quadtree, node, layersConfig, force) {
             }
         }
 
-        node.layerUpdateState[layer.id].newTry();
         const searchInParent = !node.isColorLayerLoaded(layer.id) && node.parent.isColorLayerLoaded(layer.id);
         const currentLevel = node.materials[RendererConstant.FINAL].getColorLayerLevelById(layer.id);
 
@@ -248,6 +247,7 @@ function updateNodeImagery(scene, quadtree, node, layersConfig, force) {
             }
         }
 
+        node.layerUpdateState[layer.id].newTry();
         const command = {
             /* mandatory */
             layer,
@@ -355,7 +355,7 @@ function updateNodeElevation(scene, quadtree, node, layersConfig, force) {
         node.layerUpdateState[bestLayer.id].newTry();
 
         // Elevation layer search in parent, from the moment it exceeds its maximum zoom
-        const searchInParent = (!node.isElevationLayerLoaded() && node.parent.isElevationLayerLoaded()) || (node.level > bestLayer.zoom.max);
+        const searchInParent = (!node.isElevationLayerLoaded() && node.parent.isElevationLayerLoaded()) || (bestLayer.zoom.max < node.level);
 
         const command = {
             /* mandatory */

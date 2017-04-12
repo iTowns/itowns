@@ -6,12 +6,25 @@
 
 import * as THREE from 'three';
 import CoordWMTS from '../../Geographic/CoordWMTS';
-import TileImageTools from './TiledImageTools';
+import OGCWebServiceHelper from './OGCWebServiceHelper';
+
+const WMTS_WGS84Parent = function WMTS_WGS84Parent(cWMTS, levelParent, pitch) {
+    const diffLevel = cWMTS.zoom - levelParent;
+    const diff = Math.pow(2, diffLevel);
+    const invDiff = 1 / diff;
+
+    const r = (cWMTS.row - (cWMTS.row % diff)) * invDiff;
+    const c = (cWMTS.col - (cWMTS.col % diff)) * invDiff;
+
+    pitch.x = cWMTS.col * invDiff - c;
+    pitch.y = cWMTS.row * invDiff - r;
+    pitch.z = invDiff;
+
+    return new CoordWMTS(levelParent, r, c);
+};
 
 function WMTS_Provider() {
 }
-
-WMTS_Provider.prototype.constructor = WMTS_Provider;
 
 WMTS_Provider.prototype.customUrl = function customUrl(layer, url, tilematrix, row, col) {
     const tm = Math.min(layer.zoom.max, tilematrix);
@@ -78,16 +91,16 @@ WMTS_Provider.prototype.getXbilTexture = function getXbilTexture(tile, layer, pa
     const pitch = new THREE.Vector3(0.0, 0.0, 1.0);
 
     if (parentTextures) {
-        coordWMTS = TileImageTools.WMTS_WGS84Parent(
+        coordWMTS = WMTS_WGS84Parent(
             coordWMTS,
             parentTextures[0].coordWMTS.zoom,
             pitch);
-        return TileImageTools.cropXbilTexture(parentTextures[0], pitch);
+        return OGCWebServiceHelper.cropXbilTexture(parentTextures[0], pitch);
     }
 
     const url = this.url(coordWMTS, layer);
 
-    return TileImageTools.getXBilTextureByUrl(url, pitch).then((result) => {
+    return OGCWebServiceHelper.getXBilTextureByUrl(url, pitch).then((result) => {
         result.texture.coordWMTS = coordWMTS;
         return result;
     });
@@ -102,7 +115,7 @@ WMTS_Provider.prototype.getXbilTexture = function getXbilTexture(tile, layer, pa
  */
 WMTS_Provider.prototype.getColorTexture = function getColorTexture(coordWMTS, layer) {
     const url = this.url(coordWMTS, layer);
-    return TileImageTools.getColorTextureByUrl(url).then((texture) => {
+    return OGCWebServiceHelper.getColorTextureByUrl(url).then((texture) => {
         const result = {};
         result.texture = texture;
         result.texture.coordWMTS = coordWMTS;
@@ -158,7 +171,7 @@ WMTS_Provider.prototype.getColorTextures = function getColorTextures(tile, layer
 
             if (parentTextures) {
                 const pitch = new THREE.Vector3();
-                coordWMTS = TileImageTools.WMTS_WGS84Parent(coordWMTS, parentTextures[0].coordWMTS.zoom, pitch);
+                coordWMTS = WMTS_WGS84Parent(coordWMTS, parentTextures[0].coordWMTS.zoom, pitch);
                 promises.push(Promise.resolve({ pitch,
                     texture: parentTextures.find(texture => texture.coordWMTS.equals(coordWMTS)),
                 }));

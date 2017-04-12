@@ -7,7 +7,25 @@
 
 import * as THREE from 'three';
 import BoundingBox from '../../../Scene/BoundingBox';
-import TiledImageTools from './TiledImageTools';
+import OGCWebServiceHelper from './OGCWebServiceHelper';
+import { UNIT } from '../../Geographic/Coordinates';
+
+const WMS_WGS84Parent = function WMS_WGS84Parent(bbox, bboxParent) {
+    const dim = bbox.dimensions(UNIT.RADIAN);
+    const dimParent = bboxParent.dimensions(UNIT.RADIAN);
+    const scale = dim.x / dimParent.x;
+
+    const x =
+        Math.abs(bbox.west(UNIT.RADIAN) - bboxParent.west(UNIT.RADIAN)) /
+        dimParent.x;
+    const y =
+        Math.abs(
+            bbox.south(UNIT.RADIAN) + dim.y -
+            (bboxParent.south(UNIT.RADIAN) + dimParent.y)) /
+        dimParent.y;
+
+    return new THREE.Vector3(x, y, scale);
+};
 
 /**
  * Return url wmts MNT
@@ -18,8 +36,6 @@ import TiledImageTools from './TiledImageTools';
  */
 function WMS_Provider() {
 }
-
-WMS_Provider.prototype.constructor = WMS_Provider;
 
 WMS_Provider.prototype.url = function url(bbox, layer) {
     const box = bbox.as(layer.projection);
@@ -85,7 +101,7 @@ WMS_Provider.prototype.getColorTexture = function getColorTexture(tile, layer) {
     const pitch = new THREE.Vector3(0, 0, 1);
     const result = { pitch };
 
-    return TiledImageTools.getColorTextureByUrl(url).then((texture) => {
+    return OGCWebServiceHelper.getColorTextureByUrl(url).then((texture) => {
         result.texture = texture;
         result.texture.bbox = tile.bbox;
         return result;
@@ -103,7 +119,7 @@ WMS_Provider.prototype.executeCommand = function executeCommand(command) {
 
     if (parentTextures) {
         const texture = parentTextures[0];
-        const pitch = TiledImageTools.WMS_WGS84Parent(tile.bbox, texture.bbox);
+        const pitch = WMS_WGS84Parent(tile.bbox, texture.bbox);
         return Promise.resolve({ pitch, texture });
     }
 

@@ -363,11 +363,8 @@ LayeredMaterial.prototype.getLoadedTexturesCount = function getLoadedTexturesCou
 };
 
 LayeredMaterial.prototype.isColorLayerDownscaled = function isColorLayerDownscaled(layerId, level) {
-    if (this.textures[l_COLOR][this.getLayerTextureOffset(layerId)]) {
-        return this.textures[l_COLOR][this.getLayerTextureOffset(layerId)].coordWMTS.zoom < level;
-    } else {
-        return false;
-    }
+    return this.textures[l_COLOR][this.getLayerTextureOffset(layerId)] &&
+        this.textures[l_COLOR][this.getLayerTextureOffset(layerId)].coordWMTS.zoom < level;
 };
 
 LayeredMaterial.prototype.isLayerTypeDownscaled = function isLayerTypeDownscaled(layerType, level) {
