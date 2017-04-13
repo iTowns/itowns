@@ -39,6 +39,10 @@ const defer = function defer() {
     return deferedPromise;
 };
 
+/**
+ * @constructor
+ */
+
 function ApiGlobe() {
     // Constructor
     this.scene = null;
@@ -98,7 +102,6 @@ ApiGlobe.prototype.addGeometryLayer = function addGeometryLayer(layer) {
 
 /**
  * This function adds an imagery layer to the scene. The layer id must be unique. The protocol rules wich parameters are then needed for the function.
- * @constructor
  * @param {Layer} layer.
  */
 ApiGlobe.prototype.addImageryLayer = function addImageryLayer(layer) {
@@ -115,7 +118,6 @@ ApiGlobe.prototype.addImageryLayer = function addImageryLayer(layer) {
 
 /**
  * This function adds an imagery layer to the scene using a JSON file. The layer id must be unique. The protocol rules wich parameters are then needed for the function.
- * @constructor
  * @param {Layer} layer.
  * @return     {layer}  The Layer.
  */
@@ -128,7 +130,6 @@ ApiGlobe.prototype.addImageryLayerFromJSON = function addImageryLayerFromJSON(ur
 
 /**
  * This function adds an imagery layer to the scene using an array of JSON files. The layer id must be unique. The protocol rules wich parameters are then needed for the function.
- * @constructor
  * @param {Layers} array - An array of JSON files.
  * @return     {layer}  The Layers.
  */
@@ -157,7 +158,6 @@ ApiGlobe.prototype.moveLayerDown = function moveLayerDown(layerId) {
 
 /**
  * Moves a specific layer to a specific index in the layer list. This function has no effect if the layer is moved to its current index.
- * @constructor
  * @param      {string}  layerId   The layer's idendifiant
  * @param      {number}  newIndex   The new index
  */
@@ -172,7 +172,6 @@ ApiGlobe.prototype.moveLayerToIndex = function moveLayerToIndex(layerId, newInde
 
 /**
  * Removes a specific imagery layer from the current layer list. This removes layers inserted with addLayer().
- * @constructor
  * @param      {string}   id      The identifier
  * @return     {boolean}  { description_of_the_return_value }
  */
@@ -194,7 +193,6 @@ ApiGlobe.prototype.removeImageryLayer = function removeImageryLayer(id) {
  * with best resolution is used (or the first one is resolution are identical).
  * The layer id must be unique amongst all layers already inserted.
  * The protocol rules which parameters are then needed for the function.
- * @constructor
  * @param {Layer} layer.
  */
 
@@ -217,7 +215,6 @@ ApiGlobe.prototype.addElevationLayer = function addElevationLayer(layer) {
  * with best resolution is used (or the first one is resolution are identical).
  * The layer id must be unique amongst all layers already inserted.
  * The protocol rules which parameters are then needed for the function.
- * @constructor
  * @param {Layers} array - An array of JSON files.
 * @return     {layer}  The Layers.
  */
@@ -235,7 +232,6 @@ ApiGlobe.prototype.addElevationLayersFromJSON = function addElevationLayersFromJ
  * with best resolution is used (or the first one is resolution are identical).
  * The layer id must be unique amongst all layers already inserted.
  * The protocol rules which parameters are then needed for the function.
- * @constructor
  * @param {Layer} layer.
  * @return     {layer}  The Layers.
  */
@@ -253,7 +249,6 @@ ApiGlobe.prototype.addElevationLayersFromJSONArray = function addElevationLayers
 /**
  * Gets the minimum zoom level of the chosen layer.
  * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/66r8ugq0/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
- * @constructor
  * @param {index} index - The index of the layer.
  * @return     {number}  The min of the level.
  */
@@ -276,7 +271,6 @@ ApiGlobe.prototype.getMinZoomLevel = function getMinZoomLevel(index) {
 /**
  * Gets the maximun zoom level of the chosen layer.
  * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/y1xcqv4s/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
- * @constructor
  * @param {index} index - The index of the layer.
  * @return     {number}  The max of the level.
  */
@@ -298,7 +292,6 @@ ApiGlobe.prototype.getMaxZoomLevel = function getMaxZoomLevel(index) {
 
 /**
  * Return the list of all layers in the scene in the order of how they are stacked on top of each other.
- * @constructor
  * @return     {layer}  The Layers.
  */
 ApiGlobe.prototype.getImageryLayers = function getImageryLayers() {
@@ -310,7 +303,6 @@ ApiGlobe.prototype.getImageryLayers = function getImageryLayers() {
  * Creates the scene (the globe of iTowns).
  * The first parameter is the coordinates on wich the globe will be centered at the initialization.
  * The second one is the HTML div in wich the scene will be created.
- * @constructor
  * @param {Coords} coords.
  * @params {Div} string.
  */
@@ -380,7 +372,6 @@ ApiGlobe.prototype.setRealisticLightingOn = function setRealisticLightingOn(valu
 
 /**
  * Sets the visibility of a layer. If the layer is not visible in the scene, this function will no effect until the camera looks at the layer.
- * @constructor
  * @param {id} string.
  * @params {visible} boolean.
  */
@@ -395,7 +386,6 @@ ApiGlobe.prototype.setLayerVisibility = function setLayerVisibility(id, visible)
 
 /**
  * Sets the opacity of a layer. If the layer is not visible in the scene, this function will no effect until the layer becomes visible.
- * @constructor
  * @param {id} string.
  * @params {visible} boolean.
  */
@@ -411,7 +401,6 @@ ApiGlobe.prototype.setLayerOpacity = function setLayerOpacity(id, opacity) {
 /**
  * Returns the orientation angles of the current camera, in degrees.
  * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/okfj460p/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
- * @constructor
  */
 ApiGlobe.prototype.getCameraOrientation = function getCameraOrientation() {
     var tiltCam = this.scene.currentControls().getTilt();
@@ -422,7 +411,6 @@ ApiGlobe.prototype.getCameraOrientation = function getCameraOrientation() {
 /**
  * Returns the camera location projected on the ground in lat,lon.
  * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/mjv7ha02/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
- * @constructor
  * @return {Position} position
  */
 
@@ -433,7 +421,6 @@ ApiGlobe.prototype.getCameraLocation = function getCameraLocation() {
 /**
  * Retuns the coordinates of the central point on screen.
  * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/4tjgnv7z/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
- * @constructor
  * @return {Position} position
  */
 
@@ -444,7 +431,6 @@ ApiGlobe.prototype.getCameraTargetGeoPosition = function getCameraTargetGeoPosit
 /**
  * Sets orientation angles of the current camera, in degrees.
  * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/9qr2mogh/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
- * @constructor
  * @param      {object}   orientation  The angle of the rotation in degrees
  * @param      {boolean}  isAnimated   Indicates if animated
  * @return     {Promise}   { description_of_the_return_value }
@@ -457,7 +443,6 @@ ApiGlobe.prototype.setCameraOrientation = function setCameraOrientation(orientat
 
 /**
  * Pick a position on the globe at the given position.
- * @constructor
  * @param {Number | MouseEvent} x|event - The x-position inside the Globe element or a mouse event.
  * @param {number | undefined} y - The y-position inside the Globe element.
  * @return {Position} position
@@ -482,7 +467,6 @@ ApiGlobe.prototype.pickPosition = function pickPosition(mouse, y) {
 /**
  * Returns the tilt in degrees.
  * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/kcx0of9j/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
- * @constructor
  * @return {Angle} number - The angle of the rotation in degrees.
  */
 
@@ -494,7 +478,6 @@ ApiGlobe.prototype.getTilt = function getTilt() {
 /**
  * Returns the heading in degrees.
  * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/pxv1Lw16/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
- * @constructor
  * @return {Angle} number - The angle of the rotation in degrees.
  */
 
@@ -506,7 +489,6 @@ ApiGlobe.prototype.getHeading = function getHeading() {
 /**
  * Returns the "range": the distance in meters between the camera and the current central point on the screen.
  * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/Lbt1vfek/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
- * @constructor
  * @return {Number} number
  */
 
@@ -528,7 +510,6 @@ ApiGlobe.prototype.getRangeFromEllipsoid = function getRangeFromEllipsoid() {
 
 /**
  * Sets the animation enabled.
- * @constructor
  * @param      {boolean}  enable  The enable
  */
 ApiGlobe.prototype.setAnimationEnabled = function setAnimationEnabled(enable) {
@@ -537,7 +518,6 @@ ApiGlobe.prototype.setAnimationEnabled = function setAnimationEnabled(enable) {
 
 /**
  * Determines if animation enabled.
- *
  * @return     {boolean}  True if animation enabled, False otherwise.
  */
 ApiGlobe.prototype.isAnimationEnabled = function isAnimationEnabled() {
@@ -547,7 +527,6 @@ ApiGlobe.prototype.isAnimationEnabled = function isAnimationEnabled() {
 /**
  * Change the tilt.
  * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/p6t76zox/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
- * @constructor
  * @param {Angle} Number - The angle.
  * @param      {boolean}  isAnimated  Indicates if animated
  * @return     {Promise}
@@ -564,7 +543,6 @@ ApiGlobe.prototype.setTilt = function setTilt(tilt, isAnimated) {
 /**
  * Change the heading.
  * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/rxe4xgxj/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
- * @constructor
  * @param {Angle} Number - The angle.
  * @param      {boolean}  isAnimated  Indicates if animated
  * @return     {Promise}
@@ -580,7 +558,6 @@ ApiGlobe.prototype.setHeading = function setHeading(heading, isAnimated) {
 
 /**
  * Resets camera tilt -> sets the tilt to 0°.
- * @constructor
  * @param      {boolean}  isAnimated  Indicates if animated
  * @return     {Promise}
  */
@@ -591,7 +568,6 @@ ApiGlobe.prototype.resetTilt = function resetTilt(isAnimated) {
 
 /**
  * Resets camera heading -> sets the heading to 0°.
- * @constructor
  * @param      {boolean}  isAnimated  Indicates if animated
  * @return     {Promise}
  */
@@ -603,7 +579,6 @@ ApiGlobe.prototype.resetHeading = function resetHeading(isAnimated) {
 /**
  * Returns the distance in meter between two geographic positions.
  * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/0nLhws5u/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
- * @constructor
  * @param {Position} First - Position.
  * @param {Position} Second - Position.
  * @return {Number} distance
@@ -658,7 +633,6 @@ ApiGlobe.prototype.setCameraTargetGeoPositionAdvanced = function setCameraTarget
 /**
  * Sets the "range": the distance in meters between the camera and the current central point on the screen.
  * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/Lt3jL5pd/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
- * @constructor
  * @param {Number} pRange - The camera altitude.
  * @param      {boolean}  isAnimated  Indicates if animated
  * @return     {Promise}
@@ -679,7 +653,6 @@ ApiGlobe.prototype.setRange = function setRange(pRange, isAnimated) {
 /**
  * Displaces the central point to a specific amount of pixels from its current position.
  * The view flies to the desired coordinate, i.e.is not teleported instantly. Note : The results can be strange in some cases, if ever possible, when e.g.the camera looks horizontally or if the displaced center would not pick the ground once displaced.
- * @constructor
  * @param      {vector}  pVector  The vector
  */
 ApiGlobe.prototype.pan = function pan(pVector) {
@@ -693,7 +666,6 @@ ApiGlobe.prototype.pan = function pan(pVector) {
 
 /**
  * Returns the actual zoom level. The level will always be between the [getMinZoomLevel(), getMaxZoomLevel()].
- * @constructor
  * @return     {number}  The zoom level.
  */
 ApiGlobe.prototype.getZoomLevel = function getZoomLevel() {
@@ -704,7 +676,6 @@ ApiGlobe.prototype.getZoomLevel = function getZoomLevel() {
  * Gets the current zoom level, which is an index in the logical scales predefined for the application.
  * The higher the level, the closer to the ground.
  * The level is always in the [getMinZoomLevel(), getMaxZoomLevel()] range.
- * @constructor
  * @param      {number}  zoom    The zoom
  * @param      {boolean}  isAnimated  Indicates if animated
  * @return     {Promise}
@@ -719,7 +690,6 @@ ApiGlobe.prototype.setZoomLevel = function setZoomLevel(zoom, isAnimated) {
 /**
  * Return the current zoom scale at the central point of the view.
  * This function compute the scale of a map
- * @constructor
  * @param      {number}  pitch   Screen pitch, in millimeters ; 0.28 by default
  * @return     {number}  The zoom scale.
  */
@@ -774,7 +744,6 @@ ApiGlobe.prototype.getZoomScale = function getZoomScale(pitch) {
 /**
  * Changes the zoom level of the central point of screen so that screen acts as a map with a specified scale.
  *  The view flies to the desired zoom scale;
- * @constructor
  * @param      {number}  zoomScale  The zoom scale
  * @param      {number}  pitch      The pitch
  * @param      {boolean}  isAnimated  Indicates if animated
@@ -828,7 +797,6 @@ ApiGlobe.prototype.setZoomScale = function setZoomScale(zoomScale, pitch, isAnim
 
 /**
  * Some event return the old value before the change. The available events are centerchanged, zoomchanged, orientationchanged, layerchanged:opacity, layerchanged:visible, layerchanged:ipr and layerchanged:index.
- * @constructor
  * @param {string} Eventname - The name of the event.
  * @param {callback} Callback - The callback that is called when the event is heard.
  */
@@ -854,7 +822,6 @@ ApiGlobe.prototype.callbackLayerChanged = function callbackLayerChanged() {
 
 /**
  * Remove the event of events listener from the event target.
- * @constructor
  * @param {string} Eventname - The name of the event.
  * @param {callback} Callback - The callback that is called when the event is heard.
  */

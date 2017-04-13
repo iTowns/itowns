@@ -6,7 +6,7 @@
   "scripts": {
     "lint": "eslint \"src/**/*.js\" \"test/**/*.js\" \"examples/**/*.js\"",
     "doc": "jsdoc src/Core/Commander/Interfaces/ApiInterface/*",
-    "doclint": "npm run doc -- -t templates/silent",
+    "doclint": "npm run doc -- -t ../minami",
     "test": "npm run lint && npm run build && npm run doclint",
     "build": "webpack -p",
     "start": "cross-env NODE_ENV=development webpack-dev-server -d --inline --hot",
@@ -56,6 +56,7 @@
     "eslint-plugin-import": "^2.2.0",
     "imports-loader": "^0.7.0",
     "jsdoc": "^3.4.3",
+    "minami": "^1.0.24",
     "raw-loader": "^0.5.1",
     "webpack": "^1.14.0",
     "webpack-dev-server": "^1.16.2"
