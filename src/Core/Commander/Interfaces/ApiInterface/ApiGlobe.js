@@ -130,6 +130,7 @@ ApiGlobe.prototype.addImageryLayerFromJSON = function addImageryLayerFromJSON(ur
 
 /**
  * This function adds an imagery layer to the scene using an array of JSON files. The layer id must be unique. The protocol rules wich parameters are then needed for the function.
+ * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/763trrk8/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
  * @param {Layers} array - An array of JSON files.
  * @return     {layer}  The Layers.
  */
@@ -232,6 +233,7 @@ ApiGlobe.prototype.addElevationLayersFromJSON = function addElevationLayersFromJ
  * with best resolution is used (or the first one is resolution are identical).
  * The layer id must be unique amongst all layers already inserted.
  * The protocol rules which parameters are then needed for the function.
+  * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/763trrk8/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
  * @param {Layer} layer.
  * @return     {layer}  The Layers.
  */
@@ -372,6 +374,7 @@ ApiGlobe.prototype.setRealisticLightingOn = function setRealisticLightingOn(valu
 
 /**
  * Sets the visibility of a layer. If the layer is not visible in the scene, this function will no effect until the camera looks at the layer.
+ * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/6jd7r3nn/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
  * @param {id} string.
  * @params {visible} boolean.
  */
@@ -386,6 +389,7 @@ ApiGlobe.prototype.setLayerVisibility = function setLayerVisibility(id, visible)
 
 /**
  * Sets the opacity of a layer. If the layer is not visible in the scene, this function will no effect until the layer becomes visible.
+ * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/7mkb84hs/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
  * @param {id} string.
  * @params {visible} boolean.
  */
@@ -576,14 +580,6 @@ ApiGlobe.prototype.resetHeading = function resetHeading(isAnimated) {
     return this.scene.currentControls().setHeading(0, isAnimated);
 };
 
-/**
- * Returns the distance in meter between two geographic positions.
- * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/0nLhws5u/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
- * @param {Position} First - Position.
- * @param {Position} Second - Position.
- * @return {Number} distance
- */
-
 ApiGlobe.prototype.setSceneLoaded = function setSceneLoaded() {
     sceneIsLoaded = false;
     return this.sceneLoadedDeferred.promise;
@@ -591,7 +587,7 @@ ApiGlobe.prototype.setSceneLoaded = function setSceneLoaded() {
 
 /**
  * Changes the center of the scene on screen to the specified coordinates.
- * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/x06yhbq6/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
+ * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/zrdgzz26/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
  * @param {Object} coordinates - The globe coordinates in EPSG_4326 projection to aim to
  * @param {number} coordinates.latitude
  * @param {number} coordinates.longitude
@@ -617,7 +613,7 @@ ApiGlobe.prototype.setCameraTargetGeoPosition = function setCameraTargetGeoPosit
  * This function allows to change the central position, the zoom level, the range, the scale and the camera orientation at the same time.
  * The level has to be between the [getMinZoomLevel(), getMaxZoomLevel()].
  * The zoom level and the scale can't be set at the same time.
- * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/7yk0mpn0/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
+ * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/9su6v2qz/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
  * @param {Position} pPosition - The detailed position in the scene.
  * @param      {boolean}  isAnimated  Indicates if animated
  * @return     {Promise}
@@ -653,6 +649,7 @@ ApiGlobe.prototype.setRange = function setRange(pRange, isAnimated) {
 /**
  * Displaces the central point to a specific amount of pixels from its current position.
  * The view flies to the desired coordinate, i.e.is not teleported instantly. Note : The results can be strange in some cases, if ever possible, when e.g.the camera looks horizontally or if the displaced center would not pick the ground once displaced.
+ * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/1z7q3c4z/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
  * @param      {vector}  pVector  The vector
  */
 ApiGlobe.prototype.pan = function pan(pVector) {
@@ -666,6 +663,7 @@ ApiGlobe.prototype.pan = function pan(pVector) {
 
 /**
  * Returns the actual zoom level. The level will always be between the [getMinZoomLevel(), getMaxZoomLevel()].
+ * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/o3Lvanfe/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
  * @return     {number}  The zoom level.
  */
 ApiGlobe.prototype.getZoomLevel = function getZoomLevel() {
@@ -676,6 +674,7 @@ ApiGlobe.prototype.getZoomLevel = function getZoomLevel() {
  * Gets the current zoom level, which is an index in the logical scales predefined for the application.
  * The higher the level, the closer to the ground.
  * The level is always in the [getMinZoomLevel(), getMaxZoomLevel()] range.
+ * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/7cvno086/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
  * @param      {number}  zoom    The zoom
  * @param      {boolean}  isAnimated  Indicates if animated
  * @return     {Promise}
@@ -690,6 +689,7 @@ ApiGlobe.prototype.setZoomLevel = function setZoomLevel(zoom, isAnimated) {
 /**
  * Return the current zoom scale at the central point of the view.
  * This function compute the scale of a map
+ * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/0p609qbu/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
  * @param      {number}  pitch   Screen pitch, in millimeters ; 0.28 by default
  * @return     {number}  The zoom scale.
  */
@@ -744,6 +744,7 @@ ApiGlobe.prototype.getZoomScale = function getZoomScale(pitch) {
 /**
  * Changes the zoom level of the central point of screen so that screen acts as a map with a specified scale.
  *  The view flies to the desired zoom scale;
+ * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/0w4mfdb6/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
  * @param      {number}  zoomScale  The zoom scale
  * @param      {number}  pitch      The pitch
  * @param      {boolean}  isAnimated  Indicates if animated
@@ -843,6 +844,7 @@ ApiGlobe.prototype.removeEventListenerLayerChanged = function removeEventListene
 
 /**
  * Get the Attribution of all layers in the scene.
+ * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/ggtfo0Lv/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
  * @return {map}  A Map of attribution.
  */
 
@@ -860,6 +862,7 @@ ApiGlobe.prototype.getLayersAttribution = function getLayersAttribution() {
 /**
  * Return all the layers in the scene.
  * The type can be 'color', 'elevation' and 'geometry'. If the type is not specified, the function return all the layers.
+ * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/6oho8exv/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
  * @param {type} Type - The type of the layers wanted.
  */
 
@@ -878,6 +881,7 @@ ApiGlobe.prototype.getLayers = function getLayers(type) {
 
 /**
  * Return a layer by its id.
+ * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/ho2zsqh0/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
  * @param {id} ID - The id of the layer wanted.
  */
 
