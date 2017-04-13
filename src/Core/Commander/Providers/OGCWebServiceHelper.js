@@ -5,7 +5,7 @@ import IoDriver_XBIL from './IoDriver_XBIL';
 import Projection from '../../Geographic/Projection';
 
 
-const SIZE_TEXTURE_TILE = 256;
+export const SIZE_TEXTURE_TILE = 256;
 
 // CacheRessource is necessary for neighboring PM textures
 // The PM textures overlap several tiles WGS84, it is to avoid net requests
@@ -14,15 +14,6 @@ const cache = CacheRessource();
 const ioDXBIL = new IoDriver_XBIL();
 const projection = new Projection();
 
-
-const cropXbilTexture = function _cropXbilTexture(texture, pitch) {
-    const { min, max } = ioDXBIL.computeMinMaxElevation(
-        texture.image.data,
-        SIZE_TEXTURE_TILE, SIZE_TEXTURE_TILE,
-        pitch);
-    return Promise.resolve({ pitch, texture, min, max });
-};
-
 const getTextureFloat = function getTextureFloat(buffer) {
     const texture = new THREE.DataTexture(buffer, SIZE_TEXTURE_TILE, SIZE_TEXTURE_TILE, THREE.AlphaFormat, THREE.FloatType);
     texture.needsUpdate = true;
@@ -30,7 +21,7 @@ const getTextureFloat = function getTextureFloat(buffer) {
 };
 
 export default {
-    cropXbilTexture,
+    ioDXBIL,
     getColorTextureByUrl(url) {
         const cachedTexture = cache.getRessource(url);
 
@@ -54,7 +45,11 @@ export default {
         const textureCache = cache.getRessource(url);
 
         if (textureCache !== undefined) {
-            return cropXbilTexture(textureCache, pitch);
+            const { min, max } = ioDXBIL.computeMinMaxElevation(
+                textureCache.image.data,
+                SIZE_TEXTURE_TILE, SIZE_TEXTURE_TILE,
+                pitch);
+            return Promise.resolve({ pitch, textureCache, min, max });
         }
 
         return ioDXBIL.read(url).then((result) => {
@@ -72,7 +67,7 @@ export default {
             return result;
         });
     },
-    computeTileWMTSCoordinates(tile, wmtsLayer) {
+    computeTileMatrixSetCoordinates(tile, wmtsLayer) {
         // Are WMTS coordinates ready?
         if (!tile.wmtsCoords) {
             tile.wmtsCoords = {};

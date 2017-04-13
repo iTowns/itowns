@@ -6,7 +6,7 @@
 
 import * as THREE from 'three';
 import CoordWMTS from '../../Geographic/CoordWMTS';
-import OGCWebServiceHelper from './OGCWebServiceHelper';
+import OGCWebServiceHelper, { SIZE_TEXTURE_TILE } from './OGCWebServiceHelper';
 
 const WMTS_WGS84Parent = function WMTS_WGS84Parent(cWMTS, levelParent, pitch) {
     const diffLevel = cWMTS.zoom - levelParent;
@@ -95,7 +95,11 @@ WMTS_Provider.prototype.getXbilTexture = function getXbilTexture(tile, layer, pa
             coordWMTS,
             parentTextures[0].coordWMTS.zoom,
             pitch);
-        return OGCWebServiceHelper.cropXbilTexture(parentTextures[0], pitch);
+        const { min, max } = OGCWebServiceHelper.ioDXBIL.computeMinMaxElevation(
+                parentTextures[0].image.data,
+                SIZE_TEXTURE_TILE, SIZE_TEXTURE_TILE,
+                pitch);
+        return Promise.resolve({ pitch, texture: parentTextures[0], min, max });
     }
 
     const url = this.url(coordWMTS, layer);

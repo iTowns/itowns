@@ -100,7 +100,7 @@ NodeProcess.prototype.subdivideNode = function subdivideNode(node, camera, param
                 // update Imagery wmts
                 for (const layer of colorLayers) {
                     if (layer.tileInsideLimit(child, layer)) {
-                        OGCWebServiceHelper.computeTileWMTSCoordinates(child, layer);
+                        OGCWebServiceHelper.computeTileMatrixSetCoordinates(child, layer);
                         const texturesCount = layer.tileTextureCount ?
                             layer.tileTextureCount(child, layer) : 1;
 
@@ -121,7 +121,7 @@ NodeProcess.prototype.subdivideNode = function subdivideNode(node, camera, param
                 const elevationLayers = params.layersConfig.getElevationLayers();
                 let canHaveElevation = false;
                 for (const layer of elevationLayers) {
-                    OGCWebServiceHelper.computeTileWMTSCoordinates(child, layer);
+                    OGCWebServiceHelper.computeTileMatrixSetCoordinates(child, layer);
                     canHaveElevation |= layer.tileInsideLimit(child, layer);
                 }
 
@@ -259,7 +259,7 @@ function updateNodeImagery(scene, quadtree, node, layersConfig, force) {
             redraw: (!searchInParent),
         };
 
-        promises.push(quadtree.scheduler.execute(command).then(
+        promises.push(quadtree.scheduler.execute(command, searchInParent).then(
             (result) => {
                 if (Array.isArray(result)) {
                     node.setTexturesLayer(result, l_COLOR, layer.id);
@@ -355,7 +355,7 @@ function updateNodeElevation(scene, quadtree, node, layersConfig, force) {
         node.layerUpdateState[bestLayer.id].newTry();
 
         // Elevation layer search in parent, from the moment it exceeds its maximum zoom
-        const searchInParent = (!node.isElevationLayerLoaded() && node.parent.isElevationLayerLoaded()) || (bestLayer.zoom.max < node.level);
+        const searchInParent = (bestLayer.zoom.max < node.level) || (!node.isElevationLayerLoaded() && node.parent.isElevationLayerLoaded());
 
         const command = {
             /* mandatory */
@@ -368,7 +368,7 @@ function updateNodeElevation(scene, quadtree, node, layersConfig, force) {
             redraw: (!searchInParent),
         };
 
-        quadtree.scheduler.execute(command).then(
+        quadtree.scheduler.execute(command, searchInParent).then(
             (terrain) => {
                 node.layerUpdateState[bestLayer.id].success();
 
@@ -377,8 +377,8 @@ function updateNodeElevation(scene, quadtree, node, layersConfig, force) {
                 }
 
                 if (terrain.max === undefined) {
-                    terrain.min = (node.parent || node).bbox.bottom();
-                    terrain.max = (node.parent || node).bbox.top();
+                    terrain.min = (searchInParent ? node.parent : node).bbox.bottom();
+                    terrain.max = (searchInParent ? node.parent : node).bbox.top();
                 }
 
                 node.setTextureElevation(terrain);

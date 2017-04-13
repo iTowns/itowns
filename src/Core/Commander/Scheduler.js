@@ -101,7 +101,7 @@ Scheduler.prototype.runCommand = function runCommand(command, queue, executingCo
     });
 };
 
-Scheduler.prototype.execute = function execute(command) {
+Scheduler.prototype.execute = function execute(command, forceRunNow) {
     // parse host
     const layer = command.layer;
 
@@ -120,7 +120,10 @@ Scheduler.prototype.execute = function execute(command) {
     const q = host ? this.hostQueues.get(host) : this.defaultQueue;
 
     // execute command now if possible
-    if (q.counters.executing < this.maxCommandsPerHost) {
+    if (forceRunNow) {
+        q.counters.executing++;
+        this.runCommand(command, q, true);
+    } else if (q.counters.executing < this.maxCommandsPerHost) {
         // increment before
         q.counters.executing++;
 
