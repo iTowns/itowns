@@ -94,7 +94,7 @@ const LayeredMaterial = function LayeredMaterial(id) {
     this.fragmentShaderHeader += getColorAtIdUv(nbSamplers);
 
     this.fragmentShader = this.fragmentShaderHeader + GlobeFS;
-    this.vertexShader = this.vertexShaderHeader + GlobeVS;
+    this.vertexShader = this.vertexShaderHeader + `const int   TEX_UNITS   = ${nbSamplers.toString()};\n `+ pitUV + getColorAtIdUv(nbSamplers) + GlobeVS;
 
     // handle on textures uniforms
     this.textures = [];

@@ -40,7 +40,7 @@ TileProvider.prototype.executeCommand = function executeCommand(command) {
     var params = {
         bbox,
         level: (command.level === undefined) ? (parent.level + 1) : command.level,
-        segment: 16,
+        segment: 128,
     };
 
     const geometry = new TileGeometry(params, this.builder);

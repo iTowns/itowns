@@ -1,15 +1,24 @@
 const float PI          = 3.14159265359;
 const float INV_TWO_PI  = 1.0 / (2.0*PI);
 const float PI4         = 0.78539816339;
+const vec4 CWhite = vec4(1.0,1.0,1.0,1.0);
 
 attribute float     uv_pm;
 attribute vec2      uv_wgs84;
 attribute vec3      position;
 attribute vec3      normal;
 
+/** adddeeeeed for tests purposes only  **/
 uniform sampler2D   dTextures_00[1];
-uniform vec3        offsetScale_L00[1];
+uniform sampler2D   dTextures_01[TEX_UNITS];
+uniform vec3        offsetScale_L01[TEX_UNITS];
+uniform vec4        paramLayers[8];
 uniform int         loadedTexturesCount[8];
+uniform bool        visibility[8];
+uniform int         colorLayersCount;
+/*****************************************/
+
+uniform vec3        offsetScale_L00[1];
 uniform bool        useRTC;
 uniform float       periArcLati;
 uniform mat4        mVPMatRTC;
@@ -150,13 +159,38 @@ float turbulence( vec3 p ) {
     return t;
 }
 
+
+
+/************************************************************/
+
+vec3 rgb2hsv(vec3 c)
+{
+    vec4 K = vec4(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);
+    vec4 p = mix(vec4(c.bg, K.wz), vec4(c.gb, K.xy), step(c.b, c.g));
+    vec4 q = mix(vec4(p.xyw, c.r), vec4(c.r, p.yzx), step(p.x, c.r));
+
+    float d = q.x - min(q.w, q.y);
+    float e = 1.0e-10;
+    return vec3(abs(q.z + (q.w - q.y) / (6.0 * d + e)), d / (q.x + e), q.x);
+}
+
+
 float getHeightAt(vec2 uv){
 
     return max(texture2D( dTextures_00[0], uv).w, 0.);
 }
 
+// 4 connex averaging using weighted (distance parameter)
+vec4 AverageColor( sampler2D dTextures[TEX_UNITS],vec3 offsetScale[TEX_UNITS],int id, vec2 uv, float dist){
 
-/************************************************************/
+    float distMax = min(dist/50000., 0.02);
+    vec4 cc1 = colorAtIdUv(dTextures, offsetScale, id, vec2(clamp(uv.x + distMax,0.,1.), uv.y));
+    vec4 cc2 = colorAtIdUv(dTextures, offsetScale, id, vec2(clamp(uv.x - distMax,0.,1.), uv.y));
+    vec4 cc3 = colorAtIdUv(dTextures, offsetScale, id, vec2(uv.x, uv.y + clamp(distMax,0.,1.)));
+    vec4 cc4 = colorAtIdUv(dTextures, offsetScale, id, vec2(uv.x, uv.y - clamp(distMax,0.,1.)));
+
+    return (cc1 + cc2 + cc3 + cc4)  / 4.;
+}
 
 //#define RGBA_ELEVATION
 float dv;
@@ -164,9 +198,83 @@ void main() {
 
         vUv_WGS84 = uv_wgs84;
         vUv_PM = uv_pm;
-        
+        vec2 uvPM ;
+        uvPM.x  = vUv_WGS84.x;
+
         vec4 vPosition;
         mat4 projModelViewMatrix = useRTC ? mVPMatRTC : projectionMatrix * modelViewMatrix;
+
+        /* imagery texture work   */
+        float y            = vUv_PM;
+        int pmSubTextureIndex = int(floor(y));
+        uvPM.y             = y - float(pmSubTextureIndex);
+
+
+        vec4 diffuseColor = vec4(0.,0.,0.,1.);
+        bool validTexture = false;
+        vec4 cc = vec4(0.,0.,0.,1.);
+        float dist1 = 0.05;
+        vec4 featureColor = vec4(0.,0.,0.,1.);
+        float featureTree = 0.;
+        for (int layer = 0; layer < 8; layer++) {
+     
+             if(true /*visibility[layer] */) {
+                vec4 paramsA = paramLayers[layer];
+                if(paramsA.w > 0.0) {
+                    bool projWGS84 = paramsA.y == 0.0;
+                    int textureIndex = int(paramsA.x) + (projWGS84 ? 0 : pmSubTextureIndex);
+
+                    vec4 layerColor = AverageColor(
+                            dTextures_01,
+                            offsetScale_L01,
+                            textureIndex,
+                            projWGS84 ? vUv_WGS84 : uvPM,
+                            dist1);
+                    featureColor = layerColor; 
+                    
+                    if (layerColor.a > 0.0 ) {
+                        validTexture = true;
+                        float lum = 1.0;
+
+                        if( paramsA.z > 0.0  ) {
+                            float a = max(0.05,1.0 - length(layerColor.xyz-CWhite.xyz));
+                            if(paramsA.z > 2.0) {
+                                a = (layerColor.r + layerColor.g + layerColor.b)*0.333333333;
+                                layerColor*= layerColor*layerColor;
+                            }
+                            lum = 1.0-pow(abs(a),paramsA.z);
+                        }
+                        if(layer == 1) {
+                            cc = layerColor;
+                            cc.a = 0.;
+                                        //  cc.a = 20.;   // for roads
+                                        // if(layerColor.b > 0.1) cc.a = 0.;    
+                                        //  if(layerColor.r <0.2 && layerColor.g < 0.2 && layerColor.b < 0.2) cc.a = 0.; 
+
+                            
+                            // for buildings
+                            if(featureColor.a>0.1)
+                                cc.a = 10. + (featureColor.r + featureColor.g + featureColor.b) * 4.;
+                           // if(featureColor.r >= 0.95 && featureColor.g >= 0.40 && featureColor.g <= 0.55 && featureColor.b >= 0.3  && featureColor.b <= 0.7) cc.a = 14.;   
+     
+                        }
+
+                         if(layer == 2) {
+                            cc = layerColor;
+                            cc.a = 0.;
+                            // for trees
+                            if(featureColor.r >= 0.1 || featureColor.g >= 0.1 || featureColor.b >= 0.1) featureTree = 9. + diffuseColor.r*10. + mod(timing * diffuseColor.g * 100.,5.);   
+     
+                        }
+                        diffuseColor = mix( diffuseColor,layerColor, lum*paramsA.w * layerColor.a);
+                    }
+
+                }
+            }
+        }
+
+
+        /**************************/
 
         if(loadedTexturesCount[0] > 0)
         {
@@ -183,11 +291,11 @@ void main() {
         // Compute normal from local heightMap
             //float x = viewportCoord.x;
             //float y = viewportCoord.y;
-            float dist = 1. / 128.;////16.;
-            float xP1y = getHeightAt(vec2(vVv.x + dist, vVv.y));
-            float xM1y = getHeightAt(vec2(vVv.x - dist, vVv.y));
-            float xyP1 = getHeightAt(vec2(vVv.x, vVv.y + dist));
-            float xyM1 = getHeightAt(vec2(vVv.x, vVv.y - dist));
+            float dist1 = 1. / 128.;////16.;
+            float xP1y = getHeightAt(vec2(vVv.x + dist1, vVv.y));
+            float xM1y = getHeightAt(vec2(vVv.x - dist1, vVv.y));
+            float xyP1 = getHeightAt(vec2(vVv.x, vVv.y + dist1));
+            float xyM1 = getHeightAt(vec2(vVv.x, vVv.y - dist1));
             float dxdz = 1. * (xP1y - xM1y)/2.0;
             float dydz = 1. * (xyP1 - xyM1)/2.0;
 
@@ -214,7 +322,7 @@ void main() {
         vec2 viewportCoord = ndc.xy * 0.5 + 0.5; //ndc is -1 to 1 in GL. scale for 0 to 1
 
         // get a turbulent 3d noise using the normal, normal to high freq
-        noise = 1.0 *  -.10 * turbulence( .5 * direction);// normal );
+        noise = 1.0 *  -.1 * turbulence( .5 * direction);// normal );
 
         // get a 3d noise using the position, low frequency
                         //  float b = 2.0 * pnoise( /*0.05 * position + */ vVv.x * vec3( 2.0 * timing), vec3( 10.0 ) );
@@ -235,7 +343,8 @@ void main() {
             float dvD = dv; //floor(dv / (timing*100.)) * timing *100.;
 
             vNormal     = normal;
-            vPosition   = vec4( position +  vNormal  * dv  /** (.9 + abs(b))*/, 1.0 );
+            float jump = abs(mod(timing * 10., 1.) - viewportCoord.y) < 0.2 ? 0.2 - abs(mod(timing * 10., 1.) - viewportCoord.y) : 0.;
+            vPosition   = vec4( position +  vNormal  /* * dv */   *  (dv + cc.a + featureTree  /* * jump * 3.*/) , 1.0 );
             height = dv;
         }
         else
