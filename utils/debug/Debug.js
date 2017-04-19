@@ -223,11 +223,13 @@ function Debug(scene) {
             if (arr.length > limit) {
                 arr.shift();
             }
-        }
+        }nbObjectsChart
 
-        nbObjectsChart.update();
-        nbVisibleChart.update();
-        textureFetchChart.update();
+        if (chartDiv.style.display != 'none') {
+            nbObjectsChart.update();
+            nbVisibleChart.update();
+            textureFetchChart.update();
+        }
     }
 
     // hook that to scene.update
