@@ -1,6 +1,7 @@
 /* global menuGlobe */
 import Chart from 'chart.js';
 import { C } from '../../src/Core/Geographic/Coordinates';
+import Fetcher from '../../src/Core/Commander/Providers/Fetcher';
 
 /**
  * Create a debug instance attached to an itowns instance
@@ -9,6 +10,23 @@ import { C } from '../../src/Core/Geographic/Coordinates';
  * @param {Scene} scene the itowns Scene
  * @return {Debug} a debug instance
  */
+
+function _makeCanvas(container, id, chartsWidth, chartsLeft) {
+    const div = document.createElement('div');
+    div.id = `${id}-div`;
+    div.style = `position: absolute; bottom: 0; left: ${chartsLeft}vw; width: ${chartsWidth}vw; height: 20rem; background-color: white; display: flex;`;
+
+    const canvas = document.createElement('canvas');
+    canvas.heigth = '20rem';
+    canvas.width = `${chartsWidth}vw`;
+    canvas.id = id;
+
+    container.appendChild(div);
+    div.appendChild(canvas);
+
+    return canvas;
+}
+
 // disabling eslint errors as it is the exported constructor
 function Debug(scene) {
     // CHARTS
@@ -19,28 +37,19 @@ function Debug(scene) {
 
     scene.viewerDiv.appendChild(chartDiv);
 
-    const leftChart = document.createElement('div');
-    leftChart.id = 'chart-div-left';
-    leftChart.style = 'position: absolute; bottom: 0; left: 0; width: 50vw; height: 20rem; background-color: white; display: flex';
-    chartDiv.appendChild(leftChart);
-    const rightChart = document.createElement('div');
-    rightChart.id = 'chart-div-right';
-    rightChart.style = 'position: absolute; bottom: 0; left: 50vw; width: 50vw; height: 20rem; background-color: white; display: flex';
-    chartDiv.appendChild(rightChart);
+    const chartsCount = 3;
+    const chartsWidth = 100 / chartsCount;
+    let   chartsLeft = 0;
 
     // line graph for nb elements
-    const nbObjectsCanvas = document.createElement('canvas');
-    nbObjectsCanvas.heigth = '20rem';
-    nbObjectsCanvas.width = '50vw';
-    nbObjectsCanvas.id = 'nb-objects';
-    leftChart.appendChild(nbObjectsCanvas);
-
+    _makeCanvas(chartDiv, 'nb-objects', chartsWidth, chartsLeft);
+    chartsLeft += chartsWidth;
     // bar graph for nb visible elements
-    const nbVisibleCanvas = document.createElement('canvas');
-    nbVisibleCanvas.heigth = '20rem';
-    nbVisibleCanvas.width = '50vw';
-    nbVisibleCanvas.id = 'nb-visible';
-    rightChart.appendChild(nbVisibleCanvas);
+    _makeCanvas(chartDiv, 'nb-visible', chartsWidth, chartsLeft);
+    chartsLeft += chartsWidth;
+    // line graph for network fetches
+    _makeCanvas(chartDiv, 'texture-fetches', chartsWidth, chartsLeft);
+    chartsLeft += chartsWidth;
 
     const timestamp = Date.now();
     const nbObjectsDataset = { label: 'Number of objects in Scene', data: [{ x: 0, y: 0 }] };
@@ -97,7 +106,29 @@ function Debug(scene) {
         },
     });
 
-    function updateNbObjectsChart() {
+    const nbFetchXLabel = [];
+    const nbFetchesDataset = { label: 'Number texture fetched', data: [{ x: 0, y: 0 }] };
+    const nbRedrawsDataset = { label: 'Number redraws', data: [{ x: 0, y: 0 }] };
+    const textureFetchChart = new Chart('texture-fetches', {
+        type: 'line',
+        data: {
+            labels: nbFetchXLabel,
+            datasets: [nbFetchesDataset, nbRedrawsDataset],
+        },
+        options: {
+            animation: { duration: 10 },
+            scales: {
+                yAxes: [{
+                    display: true,
+                    ticks: {
+                        suggestedMin: 0, // minimum will be 0, unless there is a lower value.
+                    },
+                }],
+            },
+        },
+    });
+
+    function updateCharts() {
         function countElem(node) {
             if (!node) {
                 return 0;
@@ -149,33 +180,61 @@ function Debug(scene) {
             }
         }
 
+
+        // update line graph
+        let yCount = countElem(scene.gfxEngine.scene3D);
+        if (nbObjectsDataset.data.length > 1 &&
+            nbObjectsDataset.data[nbObjectsDataset.data.length - 1].y == yCount &&
+            nbObjectsDataset.data[nbObjectsDataset.data.length - 2].y == yCount) {
+            nbObjectsChartLabel.pop();
+        } else {
+            nbObjectsDataset.data.push({ x: timeInS, y: yCount });
+        }
         // update time
         const limit = 25;
         const timeInS = Math.floor((Date.now() - timestamp) / 1000);
         nbObjectsChartLabel.push(`${timeInS}s`);
-        if (nbObjectsChartLabel.length > limit) {
-            nbObjectsChartLabel.shift();
-        }
 
-        // update line graph
-        nbObjectsDataset.data.push({ x: timeInS, y: countElem(scene.gfxEngine.scene3D) });
+        // update visible graph
         nbVisibleDataset.data.push({ x: timeInS, y: totalVisible });
         nbDisplayedDataset.data.push({ x: timeInS, y: totalDisplayed });
-        if (nbObjectsDataset.data.length > limit) {
-            nbObjectsDataset.data.shift();
-            nbVisibleDataset.data.shift();
-            nbDisplayedDataset.data.shift();
+
+        // update network graph
+        yCount = Fetcher.textureRequestCount();
+        if (nbFetchesDataset.data.length > 1 &&
+            nbFetchesDataset.data[nbFetchesDataset.data.length - 1].y == yCount &&
+            nbFetchesDataset.data[nbFetchesDataset.data.length - 2].y == yCount && false) {
+            nbFetchXLabel.pop();
+        } else {
+            nbFetchesDataset.data.push({ x: timeInS, y: yCount });
+        }
+        nbRedrawsDataset.data.push({x: timeInS, y: scene._redrawCount });
+        // update time
+        nbFetchXLabel.push(`${timeInS}s`);
+
+        for (let arr of [nbObjectsChartLabel,
+                         nbFetchXLabel,
+                         nbObjectsDataset.data,
+                         nbVisibleDataset.data,
+                         nbDisplayedDataset.data,
+                         nbFetchesDataset.data,
+                         nbRedrawsDataset.data
+                         ]) {
+            if (arr.length > limit) {
+                arr.shift();
+            }
         }
 
         nbObjectsChart.update();
         nbVisibleChart.update();
+        textureFetchChart.update();
     }
 
     // hook that to scene.update
     const oldUpdate = Object.getPrototypeOf(scene).update.bind(scene);
     scene.update = function debugUpdate() {
         oldUpdate();
-        updateNbObjectsChart();
+        updateCharts();
     };
 
     // DEBUG CONTROLS

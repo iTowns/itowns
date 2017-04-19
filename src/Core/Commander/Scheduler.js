@@ -89,7 +89,17 @@ Scheduler.prototype.runCommand = function runCommand(command, queue, executingCo
         // We allow the scene to delay the update/repaint up to 100ms
         // to reduce CPU load (no need to perform an update on completion if we
         // know there's another one ending soon)
-        this.scene.notifyChange(100, 'redraw' in command ? command.redraw : true);
+        let redraw = 'redraw' in command ? command.redraw : true;
+        // if (command.requester) {
+        //     if (true || command.requester.loaded) {
+        //         if (!command.requester.visible) {
+        //             redraw = false;
+        //         } else if (command.requester.material && !command.requester.material.visible) {
+        //             redraw = false;
+        //         }
+        //     }
+        // }
+        this.scene.notifyChange(100, redraw);
 
         // try to execute next command
         if (queue.counters.executing < this.maxCommandsPerHost) {

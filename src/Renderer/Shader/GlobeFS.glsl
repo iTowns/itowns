@@ -13,6 +13,7 @@ const vec4 CRed = vec4( 1.0, 0.0, 0.0, 1.0);
 
 uniform sampler2D   dTextures_01[TEX_UNITS];
 uniform vec3        offsetScale_L01[TEX_UNITS];
+uniform float       colorTextureWeight[TEX_UNITS];
 
 // offset texture | Projection | fx | Opacity
 uniform vec4        paramLayers[8];
@@ -93,9 +94,19 @@ void main() {
                         // Strangely it's work with function returning a global variable, doesn't work on Chrome Windows
                         // vec4 layerColor = texture2D(dTextures_01[getTextureIndex()],  pitUV(projWGS84 ? vUv_WGS84 : uvPM,pitScale_L01[getTextureIndex()]));
                         vec4 layerColor = colorAtIdUv(
+                            colorTextureWeight,
                             dTextures_01,
                             offsetScale_L01,
                             textureIndex,
+                            // vec2(step(0.5, uvPM.x), ste p(0.5, uvPM.y)));
+                            projWGS84 ? vUv_WGS84 : uvPM);
+
+                        layerColor += colorAtIdUv(
+                            colorTextureWeight,
+                            dTextures_01,
+                            offsetScale_L01,
+                            8 + textureIndex,
+                            // vec2(step(0.5, uvPM.x), step(0.5, uvPM.y)));
                             projWGS84 ? vUv_WGS84 : uvPM);
 
                         if (layerColor.a > 0.0) {
@@ -138,7 +149,8 @@ void main() {
         }
 
         // Fog
-        gl_FragColor = mix(CFog, diffuseColor, fogIntensity);
+        gl_FragColor =mix(CFog, diffuseColor, fogIntensity);
+
 
         if(lightingEnabled) {   // Add lighting
             float light = min(2. * dot(vNormal, lightPosition),1.);

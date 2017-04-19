@@ -7,9 +7,10 @@ attribute vec2      uv_wgs84;
 attribute vec3      position;
 attribute vec3      normal;
 
-uniform sampler2D   dTextures_00[1];
-uniform vec3        offsetScale_L00[1];
-uniform int         loadedTexturesCount[8];
+uniform sampler2D   dTextures_00[2];
+uniform float       elevationTextureWeight[2];
+uniform vec3        offsetScale_L00[2];
+
 uniform bool        useRTC;
 uniform mat4        mVPMatRTC;
 
@@ -29,44 +30,27 @@ highp float decode32(highp vec4 rgba) {
     return Result;
 }
 
-//#define RGBA_ELEVATION
+float dvFromTexture(int idx) {
+    if (elevationTextureWeight[idx] <= 0.0) {
+        return 0.0;
+    }
+    vec2  vVv = vec2(
+        uv_wgs84.x * offsetScale_L00[idx].z + offsetScale_L00[idx].x,
+        (1.0 - vUv_WGS84.y) * offsetScale_L00[idx].z + offsetScale_L00[idx].y);
+
+    return elevationTextureWeight[idx] *
+              max(texture2D(dTextures_00[idx], vVv).w, 0.);
+}
 
 void main() {
 
         vUv_WGS84 = uv_wgs84;
         vUv_PM = uv_pm;
+        vNormal     = normal;
 
-        vec4 vPosition;
+        float dv = dvFromTexture(0) + dvFromTexture(1);
 
-        if(loadedTexturesCount[0] > 0)
-        {
-            vec2    vVv = vec2(
-                vUv_WGS84.x * offsetScale_L00[0].z + offsetScale_L00[0].x,
-                (1.0 - vUv_WGS84.y) * offsetScale_L00[0].z + offsetScale_L00[0].y);
-
-
-            #ifdef RGBA_ELEVATION
-                vec4 rgba = texture2D( dTextures_00[0], vVv ) * 255.0;
-
-                rgba.rgba = rgba.abgr;
-
-                float dv = max(decode32(rgba),0.0);
-
-                // TODO In RGBA elevation texture LinearFilter give some errors with nodata value.
-                // need to rewrite sample function in shader
-                // simple solution
-                if(dv>5000.0)
-                    dv = 0.0;
-
-            #else
-                float   dv  = max(texture2D( dTextures_00[0], vVv ).w, 0.);
-            #endif
-
-            vNormal     = normal;
-            vPosition   = vec4( position +  vNormal  * dv ,1.0 );
-        }
-        else
-            vPosition = vec4( position ,1.0 );
+        vec4 vPosition   = vec4( position +  vNormal  * dv ,1.0 );
 
         mat4 projModelViewMatrix = useRTC ? mVPMatRTC : projectionMatrix * modelViewMatrix;
 

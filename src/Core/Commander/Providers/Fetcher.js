@@ -12,6 +12,8 @@ function checkResponse(response) {
     }
 }
 
+let _textureRequestCount = 0;
+
 export default {
 
     json(url) {
@@ -36,7 +38,15 @@ export default {
             rej = reject;
         });
 
+        if (__DEBUG__) {
+            _textureRequestCount++;
+        }
+
         const texture = textureLoader.load(url, res, () => {}, rej);
         return { texture, promise };
+    },
+
+    textureRequestCount() {
+        return _textureRequestCount;
     },
 };

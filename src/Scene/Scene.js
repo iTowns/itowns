@@ -189,7 +189,7 @@ Scene.prototype.step = function step() {
         // update rendering
         if ((1000.0 / this.maxFramePerSec) < (ts - this.lastRenderTime)) {
             // only perform rendering if needed
-            if (this.needsRedraw || executedDuringUpdate > 0) {
+            if (this.needsRedraw) { // } || executedDuringUpdate > 0) {
                 this.renderScene3D();
                 this.lastRenderTime = ts;
             }
@@ -202,6 +202,9 @@ Scene.prototype.step = function step() {
 /**
  */
 Scene.prototype.renderScene3D = function renderScene3D() {
+    if (__DEBUG__) {
+        this._redrawCount = (this._redrawCount || 0) + 1;
+    }
     this.gfxEngine.renderScene();
     this.needsRedraw = false;
 };

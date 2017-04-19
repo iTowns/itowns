@@ -27,12 +27,12 @@ export const l_COLOR = 1;
 
 var getColorAtIdUv = function getColorAtIdUv(nbTex) {
     if (!fooTexture) {
-        fooTexture = 'vec4 colorAtIdUv(sampler2D dTextures[TEX_UNITS],vec3 offsetScale[TEX_UNITS],int id, vec2 uv){\n';
-        fooTexture += ' if (id == 0) return texture2D(dTextures[0],  pitUV(uv,offsetScale[0]));\n';
+        fooTexture = 'vec4 colorAtIdUv(float colorTextureWeight[TEX_UNITS], sampler2D dTextures[TEX_UNITS],vec3 offsetScale[TEX_UNITS],int id, vec2 uv){\n';
+        fooTexture += ' if (id == 0) return colorTextureWeight[0] * texture2D(dTextures[0],  pitUV(uv,offsetScale[0]));\n';
 
         for (var l = 1; l < nbTex; l++) {
             var sL = l.toString();
-            fooTexture += `    else if (id == ${sL}) return texture2D(dTextures[${sL}],  pitUV(uv,offsetScale[${sL}]));\n`;
+            fooTexture += `    else if (id == ${sL}) return colorTextureWeight[${sL}] * texture2D(dTextures[${sL}],  pitUV(uv,offsetScale[${sL}]));\n`;
         }
 
         fooTexture += 'else return vec4(0.0,0.0,0.0,0.0);}\n';
@@ -103,18 +103,22 @@ const LayeredMaterial = function LayeredMaterial(id) {
     // handle Loaded textures count by layer's type uniforms
     this.loadedTexturesCount = [0, 0];
 
+    this.elevationTextureWeight = [0.0, 0.0];
+    this.colorTextureWeight = Array(nbSamplers);
+
     // Uniform three js needs no empty array
     // WARNING TODO: prevent empty slot, but it's not the solution
     this.offsetScale[l_COLOR] = Array(nbSamplers);
-    this.offsetScale[l_ELEVATION] = [vector];
+    this.offsetScale[l_ELEVATION] = [vector, vector];
     fillArray(this.offsetScale[l_COLOR], vector);
 
-    this.textures[l_ELEVATION] = [emptyTexture];
+    this.textures[l_ELEVATION] = [emptyTexture, emptyTexture];
     this.textures[l_COLOR] = Array(nbSamplers);
     var paramLayers = Array(8);
     this.layerTexturesCount = Array(8);
 
     fillArray(this.textures[l_COLOR], emptyTexture);
+    fillArray(this.colorTextureWeight, 0.0);
     fillArray(paramLayers, vector4);
     fillArray(this.layerTexturesCount, 0);
 
@@ -123,6 +127,9 @@ const LayeredMaterial = function LayeredMaterial(id) {
 
     // Color textures's layer
     this.uniforms.dTextures_01 = new THREE.Uniform(this.textures[l_COLOR]);
+
+    this.uniforms.elevationTextureWeight = new THREE.Uniform(this.elevationTextureWeight);
+    this.uniforms.colorTextureWeight = new THREE.Uniform(this.colorTextureWeight);
 
     // Visibility layer
     this.uniforms.visibility = new THREE.Uniform([true, true, true, true, true, true, true, true]);
@@ -278,6 +285,35 @@ LayeredMaterial.prototype.setTexture = function setTexture(texture, layerType, s
         this.loadedTexturesCount[layerType] += 1;
     }
 
+
+    if (layerType == l_ELEVATION) {
+        if (this.textures[layerType][0].image) {
+            // remember old texture&
+            this.textures[layerType][1] = this.textures[layerType][0];
+            this.offsetScale[l_ELEVATION][1] = this.offsetScale[l_ELEVATION][0];
+            // change weights
+            this.elevationTextureWeight[0] = 0;
+            this.elevationTextureWeight[1] = 1;
+        } else {
+            this.elevationTextureWeight[0] = 1;
+            this.elevationTextureWeight[1] = 0;
+        }
+        this.startElevationTransition = Date.now();
+    } else {
+        if (this.textures[layerType][slot].image) {
+            // remember old texture&
+            this.textures[layerType][8 + slot] = this.textures[layerType][slot];
+            this.offsetScale[layerType][8 + slot] = this.offsetScale[l_COLOR][slot];
+            // change weights
+            this.colorTextureWeight[slot] = 0;
+            this.colorTextureWeight[8 + slot] = 1;
+        } else {
+            this.colorTextureWeight[slot] = 1;
+            this.colorTextureWeight[8 + slot] = 0;
+        }
+        this.startColorTransition = Date.now();
+    }
+
     // BEWARE: array [] -> size: 0; array [10]="wao" -> size: 11
     this.textures[layerType][slot] = texture || emptyTexture;
     this.offsetScale[layerType][slot] = offsetScale || new THREE.Vector3(0.0, 0.0, 1.0);
@@ -369,6 +405,10 @@ LayeredMaterial.prototype.isColorLayerDownscaled = function isColorLayerDownscal
 
 LayeredMaterial.prototype.isLayerTypeDownscaled = function isLayerTypeDownscaled(layerType, level) {
     if (layerType === l_ELEVATION) {
+        if (this.elevationTextureWeight[1] > 0) {
+            return false;
+        }
+
         const tex = this.textures[l_ELEVATION][0];
         //   - blank texture (eg: empty xbil texture)
         if (tex.coordWMTS.zoom === EMPTY_TEXTURE_ZOOM) {
@@ -381,6 +421,11 @@ LayeredMaterial.prototype.isLayerTypeDownscaled = function isLayerTypeDownscaled
         for (let index = 0, max = this.colorLayersId.length; index < max; index++) {
             const offset = this.getTextureOffsetByLayerIndex(index);
             const texture = this.textures[l_COLOR][offset];
+
+            if (this.colorTextureWeight[8 + offset] > 0) {
+                return false;
+            }
+
             if (texture.coordWMTS.zoom < level) {
                 return true;
             }

@@ -422,6 +422,42 @@ NodeProcess.prototype.processNode = function processNode(node, camera, params) {
         // display children if possible
         node.setDisplayed(!hidden);
         // todo uniformsProcess
+
+        if (!hidden) {
+            const changeDuration = 0.5; // seconds
+            if (node.materials[0].elevationTextureWeight[0] < 1 && node.materials[0].loadedTexturesCount[0] > 0) {
+                const dt = (Date.now() - node.materials[0].startElevationTransition) * 0.001;
+                const evolution = dt / changeDuration;
+                node.materials[0].elevationTextureWeight[1] = 1.0 - evolution;
+                node.materials[0].elevationTextureWeight[0] = evolution;
+                if (node.materials[0].elevationTextureWeight[0] >= 1) {
+                    node.materials[0].elevationTextureWeight[0] = 1;
+                }
+                if (node.materials[0].elevationTextureWeight[1] < 0) {
+                    node.materials[0].elevationTextureWeight[1] = 0;
+                }
+
+                scene.notifyChange(30, true);
+            }
+            for (var i=0; i<8; i++) {
+                if (node.materials[0].colorTextureWeight[i] < 1 &&
+                    node.materials[0].colorTextureWeight[8 + i] > 0) {
+                    const dt = (Date.now() - node.materials[0].startColorTransition) * 0.001;
+                    const evolution = dt / changeDuration;
+                    node.materials[0].colorTextureWeight[8+i] = 1.0 - evolution;
+                    node.materials[0].colorTextureWeight[i] = evolution;
+                    if (node.materials[0].colorTextureWeight[i] >= 1) {
+                        node.materials[0].colorTextureWeight[i] = 1;
+                    }
+                    if (node.materials[0].colorTextureWeight[8+i] < 0) {
+                        node.materials[0].colorTextureWeight[8+i] = 0;
+                    }
+
+                    scene.notifyChange(30, true);
+                }
+
+            }
+        }
     }
 
     return isVisible;
