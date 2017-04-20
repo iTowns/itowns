@@ -23,7 +23,7 @@ function _gpxPtToCartesian(pt) {
     var latitude = Number(pt.attributes.lat.nodeValue);
     var elevation = Number(pt.getElementsByTagName('ele')[0].childNodes[0].nodeValue);
 
-    return new Coordinates('EPSG:4326', longitude, latitude, elevation).as('EPSG:4978').xyz();
+    return new Coordinates('EPSG:4326', longitude, latitude, elevation);
 }
 
 function _gpxToWayPointsMesh(gpxXML) {
@@ -55,7 +55,29 @@ function _gpxToWTrackPointsMesh(gpxXML) {
     var trackPts = _gGpxToWTrackPointsArray(gpxXML);
 
     if (trackPts.length) {
-        var colorLine = new THREE.Color('rgb(255, 0, 0)');
+        var geometry = new THREE.BufferGeometry();
+        var material = new THREE.LineBasicMaterial({ color: 0x0000ff, linewidth: 2 });
+        var positions = new Float32Array( trackPts.length * 3 );
+
+        const geo = [];
+        for (var k = 0; k < trackPts.length; k++) {
+            const g = _gpxPtToCartesian(trackPts[k]);
+
+            geo.push(g);
+            const xyz = g.as('EPSG:4978').xyz();
+            positions[3*k] = xyz.x;
+            positions[3*k+1] = xyz.y;
+            positions[3*k+2] = xyz.z;
+        }
+
+        geometry.addAttribute( 'position', new THREE.BufferAttribute( positions, 3 ) );
+        geometry.computeBoundingSphere();
+        const result = new THREE.Line( geometry, material );
+        result.positionsGeo = geo;
+        return result;
+
+
+        var colorLine = new THREE.Color('rgb(0, 0, 255)');
         var line = new ItownsLine({
             time: 1.0,
             linewidth: 100.0,

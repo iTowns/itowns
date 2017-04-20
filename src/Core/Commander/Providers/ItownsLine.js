@@ -4,6 +4,7 @@ import ItownsLineMaterial from '../../../Renderer/ItownsLineMaterial';
 const ItownsLine = function ItownsLine(options) {
     THREE.Mesh.call(this);
 
+    this.frustumCulled = false;
     this.positions = [];
     this.previous = [];
     this.next = [];
@@ -15,6 +16,8 @@ const ItownsLine = function ItownsLine(options) {
     this.geometry = new THREE.BufferGeometry();
     this.material = new ItownsLineMaterial(options);
     this.widthCallback = null;
+
+    this.positionsGeo = [];
 };
 
 ItownsLine.prototype = Object.create(THREE.Mesh.prototype);
@@ -48,11 +51,14 @@ ItownsLine.prototype.setGeometry = function setGeometry(g, c) {
     this.process();
 };
 
-ItownsLine.prototype.addPoint = function addPoint(v) {
-    if (v instanceof THREE.Vector3) {
+ItownsLine.prototype.addPoint = function addPoint(coordinates) {
+    // if (v instanceof THREE.Vector3) {
+        this.positionsGeo.push(coordinates);
+
+        const v = coordinates.as('EPSG:4978').xyz();
         this.positions.push(v.x, v.y, v.z);
         this.positions.push(v.x, v.y, v.z);
-    }
+    // }
 };
 
 ItownsLine.prototype.compareV3 = function compareV3(a, b) {

@@ -216,6 +216,76 @@ Scene.prototype.scheduleUpdate = function scheduleUpdate(forceRedraw) {
     }
 };
 
+Scene.prototype.geoToCartoWithAltitude = function(pt) {
+    let smallest = null;
+    function tileAt(tile) {
+        if (tile.bbox) {
+            if (!tile.bbox.isInside(pt)) {
+                return;
+            }
+
+            if (!smallest || smallest.level < tile.level) {
+                const pitscale = tile.materials[0].offsetScale[0][0];
+                if (tile.material.visible /* pitscale.z == 1.0 */) {
+                    smallest = tile;
+                }
+            }
+        }
+
+        for (const c of tile.children) {
+            tileAt(c);
+        }
+    }
+    tileAt(this.map.tiles);
+
+    if (!smallest) {
+        return pt;
+    }
+
+    const n = new Coordinates('EPSG:4326', pt.longitude(UNIT.RADIAN), pt.latitude(UNIT.RADIAN));
+    n._values[0] -= /*MathExt.radToDeg*/(smallest.bbox.minCoordinate._values[0]);
+    n._values[1] -= /*MathExt.radToDeg*/(smallest.bbox.minCoordinate._values[1]);
+
+
+    const dim = smallest.bbox.dimensions();
+    const dx = /*MathExt.radToDeg*/(dim.x);
+    const dy = /*MathExt.radToDeg*/(dim.y);
+    // offset cf GlobeVS.glsl
+    const pitscale = smallest.materials[0].offsetScale[0][0];
+    let u = n._values[0] / dx;
+    u = u * pitscale.z + pitscale.x;
+    let v = n._values[1] / dy;
+    v = pitscale.y + (1 - v) * pitscale.z;
+    /// v = pitscale.y + pitscale.z * v;//(1 - v);
+
+    // read elevation texture, filtering the 4 nearest value
+    // todo: weight
+    let uis= [
+        Math.max(Math.min(Math.floor(u * 255), 255), 0),
+        Math.max(Math.min(Math.ceil(u * 255), 255), 0)
+    ];
+
+    let vis = [
+        Math.max(Math.min(Math.floor(v * 255), 255), 0),
+        Math.max(Math.min(Math.ceil(v * 255), 255), 0)
+    ];
+
+
+    let z = 0;
+    for (const ui of uis) {
+        for (const vi of vis) {
+            const idx =  vi * 256 + ui;
+            z += smallest.materials[0].textures[0][0].image.data[idx];
+        }
+    }
+
+
+
+    const end = pt.clone();
+    end._values[2] = z / 4.0;
+    return end;
+}
+
 Scene.prototype.update = function update() {
     for (var l = 0; l < this.layers.length; l++) {
         var layer = this.layers[l].node;
@@ -233,66 +303,28 @@ Scene.prototype.update = function update() {
         }
     }
 
+
+    // update gpx track
+    for (const track of this.map.gpxTracks.children[0].children) {
+        const line = track.children[0];
+        for (let i=0; i<line.positionsGeo.length; i++) {
+            const corrected = this.geoToCartoWithAltitude(line.positionsGeo[i]);
+            const xyz = corrected.as('EPSG:4978').xyz();
+            line.geometry.attributes.position.array[3*i] = xyz.x;
+            line.geometry.attributes.position.array[3*i+1] = xyz.y;
+            line.geometry.attributes.position.array[3*i+2] = xyz.z;
+        }
+        line.geometry.attributes.position.needsUpdate = true;
+        line.material.color.g = 1;
+        line.material.color.b = 0;
+        break;
+    }
+
+
     for (const obj of this.foo) {
-        const pt = obj.crsPosition;
-        let smallest = null;
-        function tileAt(tile) {
-            if (tile.bbox) {
-                if (!tile.bbox.isInside(pt)) {
-                    return;
-                }
-
-                if (!smallest || smallest.level < tile.level) {
-                    const pitscale = tile.materials[0].offsetScale[0][0];
-                    if (/*tile.material.visible) { */ pitscale.z == 1.0) {
-                        smallest = tile;
-                    }
-                }
-            }
-
-            for (const c of tile.children) {
-                tileAt(c);
-            }
-        }
-        tileAt(this.map.tiles);
-        // smallest = obj.owner;
-
-        if (smallest && smallest.materials[0].textures[0][0].image) {
-            const n = obj.crsPosition.clone();
-            n._values[0] -= /*MathExt.radToDeg*/(smallest.bbox.minCoordinate._values[0]);
-            n._values[1] -= /*MathExt.radToDeg*/(smallest.bbox.minCoordinate._values[1]);
-
-
-            const dim = smallest.bbox.dimensions();
-            const dx = /*MathExt.radToDeg*/(dim.x);
-            const dy = /*MathExt.radToDeg*/(dim.y);
-            // offset cf GlobeVS.glsl
-            const pitscale = smallest.materials[0].offsetScale[0][0];
-            let u = n._values[0] / dx;
-            u = u * pitscale.z + pitscale.x;
-            let v = n._values[1] / dy;
-            v = pitscale.y + (1 - v) * pitscale.z;
-            /// v = pitscale.y + pitscale.z * v;//(1 - v);
-
-            // read elevation texture
-
-            let ui = Math.max(Math.min(Math.round(u * 255), 255), 0);
-            let vi = Math.max(Math.min(Math.round(v * 255), 255), 0);
-            const idx =  vi * 256 + ui;
-            // obj.material.color.r = v;
-            // obj.material.color.g = 0;
-            // obj.material.color.b = 0;
-
-            const z1 = smallest.materials[0].textures[0][0].image.data[idx];
-
-            const end = obj.crsPosition.clone();
-            end._values[2] = z1;
-
-            obj.position.copy(end.as('EPSG:4978').xyz());
-            obj.updateMatrixWorld(true);
-        }
-
-        // console.log(smallest.id);
+        const end = this.geoToCartoWithAltitude(obj.crsPosition);
+        obj.position.copy(end.as('EPSG:4978').xyz());
+        obj.updateMatrixWorld(true);
     }
 };
 
