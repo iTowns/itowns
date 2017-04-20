@@ -32,6 +32,8 @@ varying vec2        vUv_WGS84;
 varying float       vUv_PM;
 varying vec3        vNormal;
 
+varying float altitude;
+
 #if defined(DEBUG)
     uniform bool showOutline;
     const float sLine = 0.008;
@@ -146,6 +148,23 @@ void main() {
         // Selected
         if(selected) {
             diffuseColor = mix(COrange, diffuseColor, 0.5 );
+        }
+
+        for (int i=2; i<15; i++) {
+            if (abs(altitude - 100.0 * float(i)) < 0.5) {
+                diffuseColor = (i > 2) ? CWhite : CRed;
+                break;
+            }
+            if (abs(altitude - (50.0 + 100.0 * float(i))) < 0.25) {
+                diffuseColor = COrange;
+                break;
+            }
+            for (int j=1; j<10; j++) {
+                if (abs(altitude - (10.0 * float(j) + 100.0 * float(i))) < 0.125) {
+                    diffuseColor = CBlueOcean;
+                    break;
+                }
+            }
         }
 
         // Fog

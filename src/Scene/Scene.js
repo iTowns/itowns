@@ -14,10 +14,12 @@ import BrowseTree from './BrowseTree';
 import NodeProcess from './NodeProcess';
 import Quadtree from './Quadtree';
 import CoordStars from '../Core/Geographic/CoordStars';
-import { ellipsoidSizes } from '../Core/Geographic/Coordinates';
+import Coordinates, { UNIT, ellipsoidSizes } from '../Core/Geographic/Coordinates';
 import Layer from './Layer';
 import MobileMappingLayer from '../MobileMapping/MobileMappingLayer';
 import StyleManager from './Description/StyleManager';
+import * as THREE from 'three';
+import MathExt from '../Core/Math/MathExtended';
 
 var instanceScene = null;
 
@@ -69,6 +71,10 @@ function Scene(crs, positionCamera, viewerDiv, debugMode, gLDebug) {
 
     this.viewerDiv = viewerDiv;
     this.renderingState = RENDERING_PAUSED;
+    this.foo = [];
+
+
+
 }
 
 Scene.prototype.constructor = Scene;
@@ -77,6 +83,67 @@ Scene.prototype.constructor = Scene;
 Scene.prototype.updateCommand = function updateCommand() {
     // TODO: Implement Me
 
+};
+
+Scene.prototype.addPointOnTileSurface = function(tile) {
+
+    const dx = tile.bbox.dimensions().x;
+    const dy = tile.bbox.dimensions().y;
+
+    const coords = [];
+
+    const COUNT_X = 10;
+    const COUNT_Y = 10; // 256;
+    for (let i=0; i<COUNT_Y;i++) {
+        for (let j=0; j<COUNT_X; j++) {
+            const c = tile.bbox.minCoordinate.clone();
+            c._values[0] += j * dx / (COUNT_X - 1);
+            c._values[1] += i * dy / (COUNT_Y - 1);
+            c._values[2] = 0;
+
+            coords.push(c);
+        }
+    }
+
+    let i=0;
+    for (const c of coords) {
+        c._internalStorageUnit = UNIT.RADIAN;
+        var geometry = new THREE.SphereGeometry(3, 3, 2);
+        var col = 0;//i / (coords.length - 1.0);
+        var material = new THREE.MeshBasicMaterial( {color: new THREE.Color(col, col, col)} );
+        var cube = new THREE.Group();// Mesh( geometry, material );
+
+        var geometry = new THREE.Geometry();
+        geometry.vertices.push(tile.normal.clone().negate());
+        geometry.vertices.push(tile.normal.clone().negate().multiplyScalar(1000));
+        var line = new THREE.Line(geometry, new THREE.LineBasicMaterial(
+            { linewidth: 3 ,color: material.color }));
+        cube.add(line);
+
+        var geometry = new THREE.Geometry();
+        geometry.vertices.push(new THREE.Vector3(0, 0, 0));
+        geometry.vertices.push(tile.normal);
+        var line = new THREE.Line(geometry, new THREE.LineBasicMaterial(
+        { linewidth: 5 ,color: 0xff0000 }));
+        cube.add(line);
+
+        var geometry = new THREE.Geometry();
+        geometry.vertices.push(tile.normal);
+        geometry.vertices.push(tile.normal.clone().multiplyScalar(1000));
+        var line = new THREE.Line(geometry, new THREE.LineBasicMaterial(
+        { linewidth: 3 ,color: 0xffffff }));
+        cube.add(line);
+
+
+        cube.crsPosition = c.clone();
+        cube.crsPosition._values[2] = 0;
+        cube.foo = `${i} ${tile.id}`;
+        i++;
+
+        this.gfxEngine.scene3D.add(cube);
+        this.foo.push(cube);
+        cube.owner = tile;
+    }
 };
 
 /**
@@ -164,6 +231,68 @@ Scene.prototype.update = function update() {
                 this.browserScene.updateLayer(sLayer, this.currentCamera());
             }
         }
+    }
+
+    for (const obj of this.foo) {
+        const pt = obj.crsPosition;
+        let smallest = null;
+        function tileAt(tile) {
+            if (tile.bbox) {
+                if (!tile.bbox.isInside(pt)) {
+                    return;
+                }
+
+                if (!smallest || smallest.level < tile.level) {
+                    const pitscale = tile.materials[0].offsetScale[0][0];
+                    if (/*tile.material.visible) { */ pitscale.z == 1.0) {
+                        smallest = tile;
+                    }
+                }
+            }
+
+            for (const c of tile.children) {
+                tileAt(c);
+            }
+        }
+        tileAt(this.map.tiles);
+        // smallest = obj.owner;
+
+        if (smallest && smallest.materials[0].textures[0][0].image) {
+            const n = obj.crsPosition.clone();
+            n._values[0] -= /*MathExt.radToDeg*/(smallest.bbox.minCoordinate._values[0]);
+            n._values[1] -= /*MathExt.radToDeg*/(smallest.bbox.minCoordinate._values[1]);
+
+
+            const dim = smallest.bbox.dimensions();
+            const dx = /*MathExt.radToDeg*/(dim.x);
+            const dy = /*MathExt.radToDeg*/(dim.y);
+            // offset cf GlobeVS.glsl
+            const pitscale = smallest.materials[0].offsetScale[0][0];
+            let u = n._values[0] / dx;
+            u = u * pitscale.z + pitscale.x;
+            let v = n._values[1] / dy;
+            v = pitscale.y + (1 - v) * pitscale.z;
+            /// v = pitscale.y + pitscale.z * v;//(1 - v);
+
+            // read elevation texture
+
+            let ui = Math.max(Math.min(Math.round(u * 255), 255), 0);
+            let vi = Math.max(Math.min(Math.round(v * 255), 255), 0);
+            const idx =  vi * 256 + ui;
+            // obj.material.color.r = v;
+            // obj.material.color.g = 0;
+            // obj.material.color.b = 0;
+
+            const z1 = smallest.materials[0].textures[0][0].image.data[idx];
+
+            const end = obj.crsPosition.clone();
+            end._values[2] = z1;
+
+            obj.position.copy(end.as('EPSG:4978').xyz());
+            obj.updateMatrixWorld(true);
+        }
+
+        // console.log(smallest.id);
     }
 };
 
@@ -256,6 +385,13 @@ Scene.prototype.select = function select(/* layers*/) {
 
 Scene.prototype.selectNodeId = function selectNodeId(id) {
     this.browserScene.selectedNodeId = id;
+
+
+    this.map.tiles.children[0].traverse((t) => {
+        if (t && t.id == id) {
+            this.addPointOnTileSurface(t);
+        }
+    });
 };
 
 Scene.prototype.setStreetLevelImageryOn = function setStreetLevelImageryOn(value) {

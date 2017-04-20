@@ -111,13 +111,14 @@ BoundingBox.prototype.dimensions = function dimensions(unit) {
  */
 BoundingBox.prototype.isInside = function isInside(coord) {
     const c = (this.crs() == coord.crs) ? coord : coord.as(this.crs());
+    const unit = crsToUnit(this.crs());
 
     // TODO this ignores altitude
     if (crsIsGeographic(this.crs())) {
-        return c.longitude() <= this.east() &&
-               c.longitude() >= this.west() &&
-               c.latitude() <= this.north() &&
-               c.latitude() >= this.south();
+        return c.longitude(unit) <= this.east(unit) &&
+               c.longitude(unit) >= this.west(unit) &&
+               c.latitude(unit) <= this.north(unit) &&
+               c.latitude(unit) >= this.south(unit);
     } else {
         return c.x() <= this.east() &&
                c.x() >= this.west() &&

@@ -22,6 +22,8 @@ varying float       vUv_PM;
 varying vec3        vNormal;
 varying vec4        pos;
 
+varying float altitude;
+
 highp float decode32(highp vec4 rgba) {
     highp float Sign = 1.0 - step(128.0,rgba[0])*2.0;
     highp float Exponent = 2.0 * mod(rgba[0],128.0) + step(128.0,rgba[1]) - 127.0;
@@ -49,6 +51,7 @@ void main() {
         vNormal     = normal;
 
         float dv = dvFromTexture(0) + dvFromTexture(1);
+        altitude = dv;
 
         vec4 vPosition   = vec4( position +  vNormal  * dv ,1.0 );
 
