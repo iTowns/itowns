@@ -208,6 +208,11 @@ Coordinates.prototype.as = function as(crs) {
     return _convert(this, crs);
 };
 
+
+Coordinates.prototype.getEllipsoid = function(){
+    return ellipsoid;
+}
+
 export const C = {
 
     /**

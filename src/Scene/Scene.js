@@ -15,10 +15,13 @@ import NodeProcess from './NodeProcess';
 import Quadtree from './Quadtree';
 import CoordStars from '../Core/Geographic/CoordStars';
 import { ellipsoidSizes } from '../Core/Geographic/Coordinates';
+import Ellipsoid from '../Core/Math/Ellipsoid';
 import Layer from './Layer';
 import MobileMappingLayer from '../MobileMapping/MobileMappingLayer';
 import StyleManager from './Description/StyleManager';
 
+import * as THREE from 'three'; 
+import Coordinates from '../Core/Geographic/Coordinates';
 var instanceScene = null;
 
 
@@ -319,6 +322,126 @@ Scene.prototype.orbit = function orbit(value) {
     // this.gfxEngine.controls = null;
     this.orbitOn = value;
 };
+
+
+
+
+// Test function to display grib data 
+Scene.prototype.displayGrib = function orbit(data) {
+    
+    console.log("displayGrib", data);
+    var gribLayer = new Layer();
+//    this.gfxEngine.add3DScene(gribLayer.getMesh());
+ //   console.log(data[0].data.length);
+    var meteoArray = [];
+    var Ucomponent = data[0];
+    var Vcomponent = data[1];
+    var speed = 0.;
+    var arrayVectorFields = [];
+    var arrayLines = [];
+    var arrayVectorFieldsGeoRef = [];
+    var arrayLinesGeoRef = [];
+    //myArr.reduce((rows, key, index) => (index % 3 == 0 ? rows.push([key]) : rows[rows.length-1].push(key)) && rows, []);
+    //Ucomponent.header.nx * Ucomponent.header.ny
+    var ellipsoid = new Ellipsoid(ellipsoidSizes());
+    var particlesGeometry = new THREE.Geometry();
+    var particlesMaterial = new THREE.PointsMaterial( { color: 0x888888 } );
+    
+    for(var i = 0; i< Ucomponent.header.numberPoints; ++i){
+        
+        if(i % (Ucomponent.header.nx ) === 0 && i> 0){ 
+            arrayVectorFields.push(arrayLines.slice(0));
+            arrayVectorFieldsGeoRef.push(arrayLinesGeoRef.slice(0));
+            arrayLines = [];
+            arrayLinesGeoRef = [];
+        }
+        
+        var gribCoords = new THREE.Vector3(Ucomponent.data[i], Vcomponent.data[i], speed);
+        arrayLines.push(gribCoords);
+        var altitude = 200000;
+        
+    //    if(/*arrayLines.length % 2 == 0 && arrayVectorFields.length % 2 == 0 &&*/ arrayLines.length >300  ||  arrayLines.length <60 && arrayVectorFields.length >20 && arrayVectorFields.length < 160){
+            
+            var posWGS84 = new Coordinates('EPSG:4326', arrayLines.length, 90- arrayVectorFields.length, altitude);
+            var posCartesian = posWGS84.as('EPSG:4978').xyz();
+            
+            // Test avec calcul angulaire de la direction
+            var posWGS84_2 = new Coordinates('EPSG:4326', arrayLines.length + gribCoords.x, 90 - arrayVectorFields.length + gribCoords.y, altitude);
+            var posCartesian_2 = posWGS84_2.as('EPSG:4978').xyz();
+                    
+            var vecDirection = posCartesian_2.clone().sub(posCartesian).normalize();
+            var magnitude = Math.sqrt(gribCoords.x * gribCoords.x + gribCoords.y * gribCoords.y);
+        //    var arrowHelper = new THREE.ArrowHelper( vecDirection, posCartesian, 100000, new THREE.Color("hsl("+ magnitude *5+", 100%, 50%)") );
+        //    this.gfxEngine.add3DScene(arrowHelper);
+      /*      
+            var geometry = new THREE.Geometry();
+            geometry.vertices.push(    
+                    posCartesian,
+                    posCartesian_2
+            );
+            var line = new THREE.Mesh(geometry, new THREE.LineBasicMaterial({color:0xFF0000, depthTest: false, side: THREE.DoubleSide})); 
+            this.gfxEngine.add3DScene(line);
+            
+      //      console.log(posCartesian, posCartesian_2);
+      */
+           /*    
+               var sphereMesh = new THREE.Mesh( new THREE.SphereGeometry(10000, 4, 4), new THREE.MeshBasicMaterial({color:0xFF0000})); 
+               sphereMesh.position.copy(posCartesian);
+               this.gfxEngine.add3DScene(sphereMesh);
+               
+              
+              var geometry = new THREE.Geometry();
+              geometry.vertices.push(
+                        new THREE.Vector3( 0, 0, 0 ),
+                        new THREE.Vector3( 0, 100000, 0)//gribCoords.x * 10000, gribCoords.y*10000, 0 )
+              );
+             
+              var line = new THREE.Mesh(geometry, new THREE.LineBasicMaterial({color:0xFF0000, depthTest: false, side: THREE.DoubleSide})); 
+              line.position.copy(posCartesian);
+              */
+             
+              
+              
+            // Particle version
+            
+            particlesGeometry.vertices.push( posCartesian )
+            
+            
+            
+                    /*            
+
+                          // Get orientation on globe        // Then correct with position on ellipsoid
+                            // Orientation on normal
+
+                            var normal = ellipsoid.geodeticSurfaceNormalCartographic(posWGS84);
+                            var quaternion = new THREE.Quaternion();
+                            quaternion.setFromAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI / 2);
+
+                            var child = new THREE.Object3D();
+                            var localTarget = new THREE.Vector3().addVectors(posCartesian.clone(), normal);
+                            child.lookAt(localTarget);
+                            child.quaternion.multiply(quaternion);
+                            // child.position.copy(posCartesien.clone());
+                            child.updateMatrix();
+                            var c = child.matrix; // .elements;
+                            var m3 = new THREE.Matrix3().fromMatrix4(c);
+                            // console.log(m3);
+                          //  var matRotationOnGlobe = new THREE.Matrix3().multiplyMatrices(matRotation.clone(), m3); // child.matrix);
+                      */    
+              
+  //      }
+        
+    }
+    var particlesField = new THREE.Points( particlesGeometry, particlesMaterial );
+    this.gfxEngine.add3DScene( particlesField );
+            
+    
+  //  this.gfxEngine.add3DScene(gribLayer);
+    
+    console.log(arrayVectorFields);
+};
+
+
 
 export default function (crs, positionCamera, viewerDiv, debugMode, gLDebug) {
     instanceScene = instanceScene || new Scene(crs, positionCamera, viewerDiv, debugMode, gLDebug);

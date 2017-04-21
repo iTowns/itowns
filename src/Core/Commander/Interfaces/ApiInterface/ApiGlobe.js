@@ -852,6 +852,20 @@ ApiGlobe.prototype.callbackLayerChanged = function callbackLayerChanged() {
     this.dispatchEvent(eventLayerChanged);
 };
 
+// Test function to load Grib meteo data (previously converted to json)
+ApiGlobe.prototype.loadGrib = function callbackLayerChanged(filename) {
+    
+    return Fetcher.json(filename).then((result) => {
+        
+       // console.log(result);
+        this.scene.displayGrib(result);
+        
+    });
+};
+
+
+
+
 /**
  * Remove the event of events listener from the event target.
  * @constructor

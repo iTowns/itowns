@@ -28,7 +28,7 @@ function c3DEngine(scene, positionCamera, viewerDiv, debugMode, gLDebug) {
     this.viewerDiv = viewerDiv;
     this.debug = debugMode;
     this.scene3D = new THREE.Scene();
-    this.scene3D.autoUpdate = false;
+    this.scene3D.autoUpdate = true;   // Modify for meteo test!
     this.scene3D.sortObjects = false;
     this.width = this.debug ? viewerDiv.clientWidth * 0.5 : viewerDiv.clientWidth;
     this.height = viewerDiv.clientHeight;
