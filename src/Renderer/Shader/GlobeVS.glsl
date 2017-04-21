@@ -371,7 +371,10 @@ void main() {
          //    if(height <  1200.) vPosition   = vec4( position +  vNormal   ,1.0 );
             //vPosition.y += (1000. - dist) / 10.;
   //      }
-        
+/*
+        if (abs(distance(pos.xyz, cameraPosition)) < 10000.)
+            vPosition.y += 0.5* distance(pos.xyz, cameraPosition);
+*/
 
         gl_Position = projModelViewMatrix * vPosition;
         
@@ -391,5 +394,7 @@ void main() {
             #endif
 
         #endif
+
+
 
 }

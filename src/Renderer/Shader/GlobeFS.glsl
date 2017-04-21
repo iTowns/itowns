@@ -229,13 +229,14 @@ void main() {
                         // get value in array, the index must be constant
                         // Strangely it's work with function returning a global variable, doesn't work on Chrome Windows
                         // vec4 layerColor = texture2D(dTextures_01[getTextureIndex()],  pitUV(projWGS84 ? vUv_WGS84 : uvPM,pitScale_L01[getTextureIndex()]));
-                  /*      vec4 layerColor = colorAtIdUv(
+                        vec4 layerColor = colorAtIdUv(
                             dTextures_01,
                             offsetScale_L01,
                             textureIndex,
                             projWGS84 ? vUv_WGS84 : uvPM);
+                           // vec2(sin(2. * 3.1416 * mod(timing,1.) * vUv_WGS84.y), sin(2. * 3.1416 * mod(timing,1.) * vUv_WGS84.x)));  //(sin(2πy),sin(2πx)),  //vUv_WGS84 : uvPM);
                         
-                */
+                /*
                      // Bokeh effect
                         vec4 layerColor = AverageColor(
                             dTextures_01,
@@ -243,7 +244,7 @@ void main() {
                             textureIndex,
                             projWGS84 ? vUv_WGS84 : uvPM,
                             dist);
-                    
+                */  
 
                         if (layerColor.a > 0.0) {
                             validTexture = true;
