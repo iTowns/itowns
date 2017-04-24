@@ -13,21 +13,23 @@
 
 #define EPSILON 1e-6
 
-uniform vec3  lightPosition;
-varying vec2  vUv;
-varying vec3 vNormal;
-varying vec3 pos;
-vec3 normalES;
-vec3 normalCAMES;
-
+attribute vec3 colorCustom;
+attribute vec3 arrival;
+attribute float delay;
+uniform float timing;
+varying vec3 vColor;
+varying float currentTimeDelayed;
 
 void main()
 {
+    vColor = colorCustom;
+    gl_PointSize = 2.;
 
-    vUv = uv;
-    vNormal = normal;
-    pos = position;
-    gl_Position = projectionMatrix * modelViewMatrix * vec4( position,  1.0 );
+   
+    vec3 dist = arrival - position;
+    currentTimeDelayed = mod(timing + delay , 1.);
+    vec3 currentPos = position + currentTimeDelayed * dist; //(position + arrival) / 2.;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4( currentPos,  1.0 );
 
 
     #ifdef USE_LOGDEPTHBUF
@@ -45,6 +47,7 @@ void main()
         #endif
 
     #endif
+
 
 }
 

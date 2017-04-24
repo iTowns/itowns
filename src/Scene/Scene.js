@@ -22,6 +22,8 @@ import StyleManager from './Description/StyleManager';
 
 import * as THREE from 'three'; 
 import Coordinates from '../Core/Geographic/Coordinates';
+import vectorFieldVS from '../Renderer/Shader/vectorFieldVS.glsl';
+import vectorFieldFS from '../Renderer/Shader/vectorFieldFS.glsl';
 var instanceScene = null;
 
 
@@ -72,6 +74,10 @@ function Scene(crs, positionCamera, viewerDiv, debugMode, gLDebug) {
 
     this.viewerDiv = viewerDiv;
     this.renderingState = RENDERING_PAUSED;
+    
+    
+    this.particlesField = null;
+    this.timing = 0.;
 }
 
 Scene.prototype.constructor = Scene;
@@ -329,7 +335,7 @@ Scene.prototype.orbit = function orbit(value) {
 // Test function to display grib data 
 Scene.prototype.displayGrib = function orbit(data) {
     
-    console.log("displayGrib", data);
+ //   console.log("displayGrib", data);
     var gribLayer = new Layer();
 //    this.gfxEngine.add3DScene(gribLayer.getMesh());
  //   console.log(data[0].data.length);
@@ -347,7 +353,30 @@ Scene.prototype.displayGrib = function orbit(data) {
     var particlesGeometry = new THREE.Geometry();
     var particlesMaterial = new THREE.PointsMaterial( { color: 0x888888 } );
     
-    for(var i = 0; i< Ucomponent.header.numberPoints; ++i){
+    
+    var	uniforms = {
+                    timing : {value:this.timing}
+                    //color:     { value: new THREE.Color( 0xffffff ) },
+			};
+
+    var bgeometry = new THREE.BufferGeometry();
+    var nbParticles = Ucomponent.header.numberPoints;
+    var positions = new Float32Array( nbParticles *3);
+    var arrivals = new Float32Array( nbParticles *3);
+    var colors = new Float32Array( nbParticles *3);
+    var delays = new Float32Array( nbParticles *1);
+    
+    var shaderMaterial = new THREE.ShaderMaterial( {
+				uniforms:       uniforms,
+				vertexShader:   vectorFieldVS,
+				fragmentShader: vectorFieldFS,
+				//blending:       THREE.AdditiveBlending,
+				//depthTest:      false,
+                                transparent:    true
+			});
+
+    var inc = 0;
+    for(var i = 0; i< nbParticles; ++i){
         
         if(i % (Ucomponent.header.nx ) === 0 && i> 0){ 
             arrayVectorFields.push(arrayLines.slice(0));
@@ -360,85 +389,65 @@ Scene.prototype.displayGrib = function orbit(data) {
         arrayLines.push(gribCoords);
         var altitude = 200000;
         
-    //    if(/*arrayLines.length % 2 == 0 && arrayVectorFields.length % 2 == 0 &&*/ arrayLines.length >300  ||  arrayLines.length <60 && arrayVectorFields.length >20 && arrayVectorFields.length < 160){
-            
-            var posWGS84 = new Coordinates('EPSG:4326', arrayLines.length, 90- arrayVectorFields.length, altitude);
-            var posCartesian = posWGS84.as('EPSG:4978').xyz();
-            
-            // Test avec calcul angulaire de la direction
-            var posWGS84_2 = new Coordinates('EPSG:4326', arrayLines.length + gribCoords.x, 90 - arrayVectorFields.length + gribCoords.y, altitude);
-            var posCartesian_2 = posWGS84_2.as('EPSG:4978').xyz();
+       var posWGS84 = new Coordinates('EPSG:4326', arrayLines.length, 90- arrayVectorFields.length, altitude);
+       var posCartesian = posWGS84.as('EPSG:4978').xyz();
+
+
+        // Test avec calcul angulaire de la direction
+        var posWGS84_2 = new Coordinates('EPSG:4326', arrayLines.length + gribCoords.x, 90 - arrayVectorFields.length + gribCoords.y, altitude);
+        var posCartesian_2 = posWGS84_2.as('EPSG:4978').xyz();
+
+        var vecDirection = posCartesian_2.clone().sub(posCartesian).normalize();
+        var magnitude = Math.sqrt(gribCoords.x * gribCoords.x + gribCoords.y * gribCoords.y);
+        var color = new THREE.Color("hsl("+ magnitude *5+", 100%, 50%)");
                     
-            var vecDirection = posCartesian_2.clone().sub(posCartesian).normalize();
-            var magnitude = Math.sqrt(gribCoords.x * gribCoords.x + gribCoords.y * gribCoords.y);
-        //    var arrowHelper = new THREE.ArrowHelper( vecDirection, posCartesian, 100000, new THREE.Color("hsl("+ magnitude *5+", 100%, 50%)") );
-        //    this.gfxEngine.add3DScene(arrowHelper);
-      /*      
-            var geometry = new THREE.Geometry();
-            geometry.vertices.push(    
-                    posCartesian,
-                    posCartesian_2
-            );
-            var line = new THREE.Mesh(geometry, new THREE.LineBasicMaterial({color:0xFF0000, depthTest: false, side: THREE.DoubleSide})); 
-            this.gfxEngine.add3DScene(line);
-            
-      //      console.log(posCartesian, posCartesian_2);
-      */
-           /*    
-               var sphereMesh = new THREE.Mesh( new THREE.SphereGeometry(10000, 4, 4), new THREE.MeshBasicMaterial({color:0xFF0000})); 
-               sphereMesh.position.copy(posCartesian);
-               this.gfxEngine.add3DScene(sphereMesh);
-               
-              
-              var geometry = new THREE.Geometry();
-              geometry.vertices.push(
-                        new THREE.Vector3( 0, 0, 0 ),
-                        new THREE.Vector3( 0, 100000, 0)//gribCoords.x * 10000, gribCoords.y*10000, 0 )
-              );
-             
-              var line = new THREE.Mesh(geometry, new THREE.LineBasicMaterial({color:0xFF0000, depthTest: false, side: THREE.DoubleSide})); 
-              line.position.copy(posCartesian);
-              */
-             
-              
-              
-            // Particle version
-            
-            particlesGeometry.vertices.push( posCartesian )
-            
-            
-            
-                    /*            
-
-                          // Get orientation on globe        // Then correct with position on ellipsoid
-                            // Orientation on normal
-
-                            var normal = ellipsoid.geodeticSurfaceNormalCartographic(posWGS84);
-                            var quaternion = new THREE.Quaternion();
-                            quaternion.setFromAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI / 2);
-
-                            var child = new THREE.Object3D();
-                            var localTarget = new THREE.Vector3().addVectors(posCartesian.clone(), normal);
-                            child.lookAt(localTarget);
-                            child.quaternion.multiply(quaternion);
-                            // child.position.copy(posCartesien.clone());
-                            child.updateMatrix();
-                            var c = child.matrix; // .elements;
-                            var m3 = new THREE.Matrix3().fromMatrix4(c);
-                            // console.log(m3);
-                          //  var matRotationOnGlobe = new THREE.Matrix3().multiplyMatrices(matRotation.clone(), m3); // child.matrix);
-                      */    
-              
-  //      }
+        positions[ inc + 0 ] = posCartesian.x;
+        positions[ inc + 1 ] = posCartesian.y;
+        positions[ inc + 2 ] = posCartesian.z;
         
+        arrivals[ inc + 0 ] = posCartesian_2.x;
+        arrivals[ inc + 1 ] = posCartesian_2.y;
+        arrivals[ inc + 2 ] = posCartesian_2.z;
+        
+        colors[ inc + 0 ] = color.r;
+        colors[ inc + 1 ] = color.g;
+        colors[ inc + 2 ] = color.b;
+        
+        delays[ inc / 3 ] = Math.random();
+
+    //    var arrowHelper = new THREE.ArrowHelper( vecDirection, posCartesian, 100000, new THREE.Color("hsl("+ magnitude *5+", 100%, 50%)") );
+    //    this.gfxEngine.add3DScene(arrowHelper);
+
+        // Particle version old one
+        particlesGeometry.vertices.push( posCartesian );
+   
+        inc +=3;
     }
+    /*
     var particlesField = new THREE.Points( particlesGeometry, particlesMaterial );
     this.gfxEngine.add3DScene( particlesField );
-            
+    */
+       
+    bgeometry.addAttribute( 'position', new THREE.BufferAttribute( positions, 3 ) );
+    bgeometry.addAttribute( 'arrival',  new THREE.BufferAttribute( arrivals, 3 ) );
+    bgeometry.addAttribute( 'delay',  new THREE.BufferAttribute( delays, 1 ) );
+    bgeometry.addAttribute( 'colorCustom',  new THREE.BufferAttribute( colors, 3 ) );
     
+    this.particlesField = new THREE.Points( bgeometry, shaderMaterial );
+    this.gfxEngine.add3DScene( this.particlesField );
   //  this.gfxEngine.add3DScene(gribLayer);
+  
+    this.animateTiming();
+   // this.browserScene.updateMaterialUniform('lightPosition', this.lightingPos.clone().normalize());
+  //  console.log(arrayVectorFields);
+};
+
+Scene.prototype.animateTiming = function(){
     
-    console.log(arrayVectorFields);
+    requestAnimationFrame(this.animateTiming.bind(this));
+    this.timing += 0.001;
+    this.particlesField.material.uniforms.timing.value = this.timing;
+    this.gfxEngine.update();
 };
 
 
