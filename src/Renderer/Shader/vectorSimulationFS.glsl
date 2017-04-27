@@ -9,7 +9,7 @@ varying float vParticleLife;
 
 const float radius = 6450000.;//6378137.;
 const float PI     = 3.14159265359;
-const float distMax = 0.01;
+const float distMax = 0.005;
 
 float atan2(in float y, in float x)
 {

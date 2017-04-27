@@ -29,6 +29,6 @@ void main()
         discard;
 
 
-    gl_FragColor = vec4( vec3( 1., vSpeed, 0. ), .3 );
+    gl_FragColor = vec4( vec3( 1.-vSpeed,1.,  1.), .2 );
 
 }

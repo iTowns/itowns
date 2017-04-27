@@ -86,8 +86,8 @@ function Scene(crs, positionCamera, viewerDiv, debugMode, gLDebug) {
     this._rtt = null;
     this.simulationMesh = null;
     // ARF
-    this.width = 1024;
-    this.height = 1024;
+    this.width = 512;
+    this.height = 512;
     this.arrayRTT = new Float32Array( this.width * this.height * 4 );
     this.dataTexture = null;
     this.originalVectorsTexture = null;
