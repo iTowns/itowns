@@ -233,10 +233,11 @@ c3DEngine.prototype.changeStateNodesScene = function changeStateNodesScene(state
         };
     }());
 
-    var enable = state === RendererConstant.FINAL;
+    var enable = state === RendererConstant.FINAL; 
 
     for (var x = 0; x < this.scene3D.children.length; x++) {
         var node = this.scene3D.children[x];
+        if(node.name === "particlesField") node.visible = (state === RendererConstant.FINAL);  // DIRTY ADDED FOR EXPE VECTOR FIELD
 
         if (node.changeState) {
             node.traverseVisible(changeStateFunction);

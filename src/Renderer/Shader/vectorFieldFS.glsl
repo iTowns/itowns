@@ -12,20 +12,23 @@
 #endif
 
 
-varying vec3 vColor;
-varying float currentTimeDelayed;
+uniform sampler2D gribVectors;
+varying float vSpeed;
 
 void main()
 {
-     
+
     #if defined(USE_LOGDEPTHBUF) && defined(USE_LOGDEPTHBUF_EXT)
-        gl_FragDepthEXT = log2(vFragDepth) * logDepthBufFC * 0.5;
+
+	   gl_FragDepthEXT = log2(vFragDepth) * logDepthBufFC * 0.5;
+
     #endif
 
-
- vec2 coord = gl_PointCoord - vec2(0.5);  //from [0,1] to [-0.5,0.5]
+    vec2 coord = gl_PointCoord - vec2(0.5);  //from [0,1] to [-0.5,0.5]
     if(length(coord) > 0.5)                  //outside of circle radius?
         discard;
 
-    gl_FragColor = vec4(vColor, 0.8 *(1. - currentTimeDelayed));//vec4( 1.0, 0.0, 1.0, 1.0 );
+
+    gl_FragColor = vec4( vec3( 1., vSpeed, 0. ), .3 );
+
 }

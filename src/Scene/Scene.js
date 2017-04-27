@@ -24,6 +24,8 @@ import * as THREE from 'three';
 import Coordinates from '../Core/Geographic/Coordinates';
 import vectorFieldVS from '../Renderer/Shader/vectorFieldVS.glsl';
 import vectorFieldFS from '../Renderer/Shader/vectorFieldFS.glsl';
+import vectorSimulationVS from '../Renderer/Shader/vectorSimulationVS.glsl';
+import vectorSimulationFS from '../Renderer/Shader/vectorSimulationFS.glsl';
 var instanceScene = null;
 
 
@@ -75,9 +77,23 @@ function Scene(crs, positionCamera, viewerDiv, debugMode, gLDebug) {
     this.viewerDiv = viewerDiv;
     this.renderingState = RENDERING_PAUSED;
     
-    
+    //****** Vector Fields dirty tests
     this.particlesField = null;
     this.timing = 0.;
+    this._orthoCamera = null;
+    this._scene = null;
+    this._renderer = null;
+    this._rtt = null;
+    this.simulationMesh = null;
+    // ARF
+    this.width = 1024;
+    this.height = 1024;
+    this.arrayRTT = new Float32Array( this.width * this.height * 4 );
+    this.dataTexture = null;
+    this.originalVectorsTexture = null;
+    
+    this.fbTexture1 = null;
+    this.fbTexture2 = null;
 }
 
 Scene.prototype.constructor = Scene;
@@ -329,42 +345,330 @@ Scene.prototype.orbit = function orbit(value) {
     this.orbitOn = value;
 };
 
+var radius = 6450000;
+// Return angular coord from angular 3D cartesian coordinates  (spheric estimation)
+// coord lon lat  (x is lon , y is lat)
+function get3DPosFromCoord(coord){
 
+   var c = new THREE.Vector2( -coord.x , coord.y);
+   var x = radius * Math.cos(c.x) * Math.sin(c.y);
+   var y = radius * Math.cos(c.y);
+   var z = radius * Math.sin(c.x) * Math.sin(c.y);
+
+   return new THREE.Vector3(x,y,z); 
+};
+
+function getOneDegreeRepartition( width, height, size ){
+
+    var len = width * height * 4;
+    var data = new Float32Array( len );
+    //   while( len-- )  data[len] = ( Math.random() * 2 - 1 ) * size ;     
+    var altitude = 8000;
+    for(var a=0; a< len ; a+=4) {
+        
+        var posCartesian = get3DPosFromCoord(new THREE.Vector2( Math.random() * 2 * Math.PI, Math.random() * Math.PI) );
+        
+          //  var posWGS84 = new Coordinates('EPSG:4326', 180 - Math.random() * 360, 90 - Math.random() * 180, altitude);//arrayLines.length, 90- arrayVectorFields.length, altitude);
+          //  var posCartesian = posWGS84.as('EPSG:4978').xyz();
+        
+        // Version basic spheric
+          
+        data[a + 0] = posCartesian.x;
+        data[a + 1] = posCartesian.y;
+        data[a + 2] = posCartesian.z;
+        data[a + 3] = 1.;
+    } 
+    return data;
+ };
+
+// Create a texture equirectangular from grib data.
+// Each Pixel will have Ucomponent, Vcomponent and speed.
+Scene.prototype.createGribTexture = function orbit(data) {
+    
+    console.log(data);
+    var meteoArray = [];
+    var Ucomponent = data[0];
+    var Vcomponent = data[1];
+    var speed = 0.;
+    var nbX = Ucomponent.header.nx;
+    var nbY = Ucomponent.header.ny;
+   
+    var nbParticles = Ucomponent.header.numberPoints;
+    var len = nbParticles * 4;
+    var dataVF = new Float32Array( len );
+  
+    for(var i = 0; i< nbParticles; ++i){
+        var inc = i*4;
+        dataVF[inc + 0] = Ucomponent.data[i + 0];
+        dataVF[inc + 1] = Vcomponent.data[i + 0];
+        dataVF[inc + 2] = Math.sqrt(Ucomponent.data[i + 0] * Ucomponent.data[i + 0] + Vcomponent.data[i + 0] * Vcomponent.data[i + 0]); // speed
+        dataVF[inc + 3] = 1.;  // bonus value
+    }
+   
+  /*
+    // FOR DEBUG JUST GO RIGHT
+    for(var i = 0; i< nbParticles; ++i){
+        var inc = i*4;
+        dataVF[inc + 0] = 0.;
+        dataVF[inc + 1] = -10.;
+        dataVF[inc + 2] = 0.; // speed
+        dataVF[inc + 3] = 1.;  // bonus value
+    }
+ */   
+     // convertes it to a FloatTexture 
+     console.log(nbX, nbY);
+     this.drawVectorsAsArrows(data);
+     //    this.drawVectorsAsArrowsEllipsoidal(data);
+     
+    return new THREE.DataTexture( dataVF, nbX, nbY, THREE.RGBAFormat, THREE.FloatType ); 
+}
 
 
 // Test function to display grib data 
 Scene.prototype.displayGrib = function orbit(data) {
     
- //   console.log("displayGrib", data);
-    var gribLayer = new Layer();
-//    this.gfxEngine.add3DScene(gribLayer.getMesh());
- //   console.log(data[0].data.length);
+    this.originalVectorsTexture = this.createGribTexture(data);
+    this.originalVectorsTexture.needsUpdate = true;
+    console.log("this.originalVectorsTexture", this.originalVectorsTexture);
+    
+    var bgeometry = new THREE.BufferGeometry();
+  //  var width  = 512;
+  //  var height = 512;
+    this._scene = new THREE.Scene();
+    this._orthoCamera = new THREE.OrthographicCamera(-1,1,1,-1, 1/Math.pow( 2, 53 ),1);
+
+    this._renderer = new THREE.WebGLRenderer({ preserveDrawingBuffer: true, autoClear : false, alpha:true} );
+    this._renderer.autoClear = false;
+    this._renderer.setSize(this.width, this.height);
+    this._renderer.setPixelRatio( window.devicePixelRatio );
+
+    // Original position of particules. (random as a start)
+    var data = getOneDegreeRepartition( this.width, this.height, 256 );
+    // convertes it to a FloatTexture
+    var textureVecPositions = new THREE.DataTexture( data, this.width, this.height, THREE.RGBAFormat, THREE.FloatType );
+    textureVecPositions.needsUpdate = true;
+    this.fixedPositionsTexture = new THREE.DataTexture( data.slice(0), this.width, this.height, THREE.RGBAFormat, THREE.FloatType );
+    this.fixedPositionsTexture.needsUpdate = true;
+    console.log(textureVecPositions);
+    
+    //create a target texture
+    var options = {
+        minFilter: THREE.NearestFilter,//important as we want to sample square pixels
+        magFilter: THREE.NearestFilter,//
+        format: THREE.RGBAFormat,//could be RGBAFormat 
+        type: THREE.FloatType,//important as we need precise coordinates (not ints)
+        generateMipmaps: false
+    };
+    this._rtt = new THREE.WebGLRenderTarget( this.width, this.height, options);
+    
+    // Particle life in second... Should be done with distance travelled in shader but bug..
+    var particleLife = new Float32Array(this.width * this.height);
+    for ( var i = 0; i < this.width * this.height; i++ ) {
+            particleLife[ i ] = Math.random();
+    }
+    
+    //the simulation:
+    //create a bi-unit quadrilateral and uses the simulation material to update the Float Texture
+    var geom = new THREE.BufferGeometry();
+    geom.addAttribute( 'position', new THREE.BufferAttribute( new Float32Array([   -1,-1,0, 1,-1,0, 1,1,0, -1,-1, 0, 1, 1, 0, -1,1,0 ]), 3 ) );
+    geom.addAttribute( 'uv', new THREE.BufferAttribute( new Float32Array([   0,1, 1,1, 1,0,     0,1, 1,0, 0,0 ]), 2 ) );
+    geom.addAttribute( 'particleLife', new THREE.BufferAttribute( particleLife, 1 ) );
+    
+    
+    //simulation shader used to update the particles' positions
+    var simulationMaterial = new THREE.ShaderMaterial({
+        uniforms:{ 
+            timing:    { type: "f", value: this.timing }, 
+            positions: { type: "t", value: textureVecPositions }, 
+            gribVectors: { type: "t", value: this.originalVectorsTexture }, 
+            initPositions: { type: "t", value: this.fixedPositionsTexture } 
+        },
+        vertexShader:   vectorSimulationVS,
+        fragmentShader: vectorSimulationFS,
+       // depthWrite: false
+    });
+    
+    this.simulationMesh =  new THREE.Mesh( geom, simulationMaterial );
+    this._scene.add( this.simulationMesh );
+
+    this._renderer.render( this._scene, this._orthoCamera, this._rtt, true );  //this.gfxEngine.renderer.
+    console.log(this._rtt);
+    this._renderer.readRenderTargetPixels( this._rtt, 0, 0, this.width, this.height, this.arrayRTT );
+    this.dataTexture = new THREE.DataTexture( this.arrayRTT, this.width, this.height, THREE.RGBAFormat, THREE.FloatType );
+    // Should NOT be necessary!!!!
+   
+    //render shader to display the particles on screen
+    //the 'positions' uniform will be set after the FBO.update() call
+    var renderMaterial = new THREE.ShaderMaterial( {
+        uniforms: {
+            positions: { type: "t", value: this.dataTexture},//textureTest}//this._rtt.texture }//this._rtt}//textureTest
+            gribVectors: { type: "t", value: this.originalVectorsTexture } 
+        },
+        vertexShader: vectorFieldVS,   
+        fragmentShader: vectorFieldFS,
+        transparent: true,
+        blending:THREE.AdditiveBlending,
+        generateMipmaps: false,
+        depthTest:      true
+    } );
+
+    // The particles
+    // create a vertex buffer of size width * height with normalized coordinates
+    var positionsHazard = new Float32Array(this.width * this.height *3);
+    for ( var i = 0; i < this.width * this.height; i++ ) {
+            var i3 = i * 3;
+            positionsHazard[ i3 ] = ( i % this.width ) / this.width ;
+            positionsHazard[ i3 + 1 ] = ( i / this.width ) / this.height;
+    }
+    
+
+    bgeometry.addAttribute( 'position', new THREE.BufferAttribute( positionsHazard, 3) ); //positions, 3 ) );
+
+    this.particlesField = new THREE.Points( bgeometry, renderMaterial);//shaderMaterial );
+    this.particlesField.frustumCulled = false;
+    this.particlesField.name = "particlesField";
+    //  this.particlesField.material.uniforms.positions.value = this._rtt.texture; // textureVecPositions; 
+    this.gfxEngine.add3DScene( this.particlesField );
+    //  this.gfxEngine.add3DScene(gribLayer);
+    this.animateTiming();
+    //this.particlesField.material.uniforms.positions.value.needsUpdate = true;
+};
+
+
+// Ugly to avoid bug, we use a readRenderTargetPixels and then pass it to the uniform as a dataTexture...
+Scene.prototype.updateTextureFBO = function(){
+    
+    //this._renderer.clear();
+    this._renderer.render( this._scene, this._orthoCamera, this._rtt, true );
+    this._renderer.readRenderTargetPixels( this._rtt, 0, 0, this.width, this.height, this.arrayRTT );
+    this.simulationMesh.material.uniforms.positions.value = this.dataTexture;
+    this.dataTexture.needsUpdate = true;
+}
+
+Scene.prototype.animateTiming = function(){
+     
+    
+    this.timing += 0.001;
+    this.simulationMesh.material.uniforms.timing.value = this.timing;
+    this.updateTextureFBO();
+    this.gfxEngine.update();
+    requestAnimationFrame(this.animateTiming.bind(this));
+    // this._renderer.render( this._scene, this._orthoCamera, this._rtt, true );
+    // this.particlesField.material.uniforms.positions.value = this._rtt.texture;
+    // this.gfxEngine.renderer.clear();
+};
+
+
+
+Scene.prototype.drawVectorsAsArrows = function orbit(data) {
+    
+    console.log(data);
     var meteoArray = [];
     var Ucomponent = data[0];
     var Vcomponent = data[1];
     var speed = 0.;
-    var arrayVectorFields = [];
-    var arrayLines = [];
-    var arrayVectorFieldsGeoRef = [];
-    var arrayLinesGeoRef = [];
-    //myArr.reduce((rows, key, index) => (index % 3 == 0 ? rows.push([key]) : rows[rows.length-1].push(key)) && rows, []);
-    //Ucomponent.header.nx * Ucomponent.header.ny
-    var ellipsoid = new Ellipsoid(ellipsoidSizes());
-    var particlesGeometry = new THREE.Geometry();
-    var particlesMaterial = new THREE.PointsMaterial( { color: 0x888888 } );
-    
-    
-    var	uniforms = {
-                    timing : {value:this.timing}
-                    //color:     { value: new THREE.Color( 0xffffff ) },
-			};
-
-    var bgeometry = new THREE.BufferGeometry();
+    var nbX = Ucomponent.header.nx;
+    var nbY = Ucomponent.header.ny;
+   
     var nbParticles = Ucomponent.header.numberPoints;
-    var positions = new Float32Array( nbParticles *3);
-    var arrivals = new Float32Array( nbParticles *3);
-    var colors = new Float32Array( nbParticles *3);
-    var delays = new Float32Array( nbParticles *1);
+    var len = nbParticles * 4;
+    var dataVF = new Float32Array( len );
+  
+    for(var i = 0; i< nbParticles; ++i){
+        
+        var inc = i*4;
+        dataVF[inc + 0] = Ucomponent.data[i + 0];
+        dataVF[inc + 1] = Vcomponent.data[i + 0];
+        dataVF[inc + 2] = Math.sqrt(Ucomponent.data[i + 0] * Ucomponent.data[i + 0] + Vcomponent.data[i + 0] * Vcomponent.data[i + 0]); // speed
+        dataVF[inc + 3] = 1.;  // bonus value
+        
+        var x = (i % nbX) / nbX;
+        var y = Math.floor(i / nbX) / nbY;
+        var posCartesian  = get3DPosFromCoord( new THREE.Vector2( x * 2 * Math.PI, y * Math.PI));
+        var posCartesian2 =  get3DPosFromCoord(new THREE.Vector2( (x + Ucomponent.data[i] / 100) * 2 * Math.PI , (y - Vcomponent.data[i] / 100) * Math.PI)); //get3DPosFromCoord( new THREE.Vector2( (x +.1) * Math.PI, (y+.1) * Math.PI));//
+        
+        var vecDirection = posCartesian2.clone().sub(posCartesian).normalize();
+        var magnitude = dataVF[inc + 2];
+        var color = new THREE.Color("hsl("+ magnitude *5+", 100%, 50%)");
+        
+        var arrowHelper = new THREE.ArrowHelper( vecDirection, posCartesian, 100000, color );
+        if( !(x > 0.2 && x < 0.8) && y < 0.5 && y > 0.15 ){
+            this.gfxEngine.add3DScene(arrowHelper);
+        }
+    }
+   /*
+    // FOR DEBUG JUST GO RIGHT
+    for(var i = 0; i< nbParticles; ++i){
+        var inc = i*4;
+        data[inc + 0] = 10.;
+        data[inc + 1] = 0.;
+        data[inc + 2] = 0.; // speed
+        data[inc + 3] = 1.;  // bonus value
+    }
+    */
+     // convertes it to a FloatTexture 
+     console.log(nbX, nbY);
+     
+ //    this.drawVectorsAsArrowsEllipsoidal(data);
+     
+    return new THREE.DataTexture( dataVF, nbX, nbY, THREE.RGBAFormat, THREE.FloatType ); 
+}
+
+Scene.prototype.drawVectorsAsArrowsEllipsoidal = function(data){
+    
+    var meteoArray = [];
+    var arrayLines = [];
+    var arrayLinesGeoRef = [];
+    var arrayVectorFields = [];
+    var arrayVectorFieldsGeoRef = [];
+    var Ucomponent = data[0];
+    var Vcomponent = data[1];
+    var speed = 0.;
+
+    var nbParticles = Ucomponent.header.numberPoints;
+    var len = nbParticles * 4;
+    var data = new Float32Array( len );
+    
+    for(var i = 0; i< nbParticles; ++i){
+        
+        if(i % (Ucomponent.header.nx ) === 0 && i> 0){ 
+            arrayVectorFields.push(arrayLines.slice(0));
+            arrayVectorFieldsGeoRef.push(arrayLinesGeoRef.slice(0));
+            arrayLines = [];
+            arrayLinesGeoRef = [];
+        }
+        
+         var gribCoords = new THREE.Vector3(Ucomponent.data[i], Vcomponent.data[i], speed);
+        arrayLines.push(gribCoords);
+        var altitude = 200000;
+        
+       var posWGS84 = new Coordinates('EPSG:4326', arrayLines.length, 90- arrayVectorFields.length, altitude);
+       var posCartesian = posWGS84.as('EPSG:4978').xyz();
+
+
+        // Test avec calcul angulaire de la direction
+        var posWGS84_2 = new Coordinates('EPSG:4326', arrayLines.length + gribCoords.x, 90 - arrayVectorFields.length + gribCoords.y, altitude);
+        var posCartesian_2 = posWGS84_2.as('EPSG:4978').xyz();
+
+        var vecDirection = posCartesian_2.clone().sub(posCartesian).normalize();
+        var magnitude = Math.sqrt(gribCoords.x * gribCoords.x + gribCoords.y * gribCoords.y);
+        var color = new THREE.Color("hsl("+ magnitude *5+", 100%, 50%)");
+        
+       var arrowHelper = new THREE.ArrowHelper( vecDirection, posCartesian, 100000, new THREE.Color("hsl("+ magnitude *5+", 100%, 50%)") );
+       if(i % 16 == 0)
+        this.gfxEngine.add3DScene(arrowHelper);
+    }
+    
+};
+
+
+  /*
+   
+    bgeometry.addAttribute( 'arrival',  new THREE.BufferAttribute( arrivals, 3 ) );
+    bgeometry.addAttribute( 'delay',  new THREE.BufferAttribute( delays, 1 ) );
+    bgeometry.addAttribute( 'colorCustom',  new THREE.BufferAttribute( colors, 3 ) );
+
+
     
     var shaderMaterial = new THREE.ShaderMaterial( {
 				uniforms:       uniforms,
@@ -423,34 +727,8 @@ Scene.prototype.displayGrib = function orbit(data) {
    
         inc +=3;
     }
-    /*
-    var particlesField = new THREE.Points( particlesGeometry, particlesMaterial );
-    this.gfxEngine.add3DScene( particlesField );
-    */
-       
-    bgeometry.addAttribute( 'position', new THREE.BufferAttribute( positions, 3 ) );
-    bgeometry.addAttribute( 'arrival',  new THREE.BufferAttribute( arrivals, 3 ) );
-    bgeometry.addAttribute( 'delay',  new THREE.BufferAttribute( delays, 1 ) );
-    bgeometry.addAttribute( 'colorCustom',  new THREE.BufferAttribute( colors, 3 ) );
-    
-    this.particlesField = new THREE.Points( bgeometry, shaderMaterial );
-    this.gfxEngine.add3DScene( this.particlesField );
-  //  this.gfxEngine.add3DScene(gribLayer);
-  
-    this.animateTiming();
-   // this.browserScene.updateMaterialUniform('lightPosition', this.lightingPos.clone().normalize());
-  //  console.log(arrayVectorFields);
-};
 
-Scene.prototype.animateTiming = function(){
-    
-    requestAnimationFrame(this.animateTiming.bind(this));
-    this.timing += 0.001;
-    this.particlesField.material.uniforms.timing.value = this.timing;
-    this.gfxEngine.update();
-};
-
-
+*/
 
 export default function (crs, positionCamera, viewerDiv, debugMode, gLDebug) {
     instanceScene = instanceScene || new Scene(crs, positionCamera, viewerDiv, debugMode, gLDebug);
