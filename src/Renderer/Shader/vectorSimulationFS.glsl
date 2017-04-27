@@ -9,6 +9,7 @@ varying float vParticleLife;
 
 const float radius = 6450000.;//6378137.;
 const float PI     = 3.14159265359;
+const float distMax = 0.01;
 
 float atan2(in float y, in float x)
 {
@@ -37,9 +38,14 @@ vec3 get3DPosFromCoord(vec2 coord){
 }
 
 
-vec2 getInterpolatedVectorField(uv){
+vec2 getInterpolatedVectorField(vec2 uv){
     
-    
+    vec2 cc1 = texture2D(gribVectors, vec2(clamp(uv.x + distMax,0.,1.), uv.y)).rg;
+    vec2 cc2 = texture2D(gribVectors, vec2(clamp(uv.x - distMax,0.,1.), uv.y)).rg;
+    vec2 cc3 = texture2D(gribVectors, vec2(uv.x, uv.y + clamp(distMax,0.,1.))).rg;
+    vec2 cc4 = texture2D(gribVectors, vec2(uv.x, uv.y - clamp(distMax,0.,1.))).rg;
+
+    return (cc1 + cc2 + cc3 + cc4)  / 4.;
     
 }
 
@@ -51,7 +57,7 @@ vec3 computeNewPosition(vec3 p){
 
     vec2 currentAngularPos = getUVCoordFrom3DPos(p);
     float longitude = currentAngularPos.x < 0. ? 2. * PI + currentAngularPos.x : currentAngularPos.x;
-    vec2 currentAngularVectorField = texture2D( gribVectors, vec2( longitude / (2. * PI), currentAngularPos.y / PI) ).rg;
+    vec2 currentAngularVectorField = getInterpolatedVectorField(vec2(longitude / (2. * PI), currentAngularPos.y / PI));
     vec2 newAngularPos = currentAngularPos + vec2(currentAngularVectorField.x, -currentAngularVectorField.y) / 10000.;
     vec3 new3DPos = get3DPosFromCoord(newAngularPos);
         //  vec3 initPos = texture2D( initPositions, vUv).rgb;

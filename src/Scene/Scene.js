@@ -417,7 +417,7 @@ Scene.prototype.createGribTexture = function orbit(data) {
  */   
      // convertes it to a FloatTexture 
      console.log(nbX, nbY);
-     this.drawVectorsAsArrows(data);
+    // this.drawVectorsAsArrows(data);
      //    this.drawVectorsAsArrowsEllipsoidal(data);
      
     return new THREE.DataTexture( dataVF, nbX, nbY, THREE.RGBAFormat, THREE.FloatType ); 
