@@ -16,7 +16,8 @@ import Fetcher from '../../Providers/Fetcher';
 import { STRATEGY_MIN_NETWORK_TRAFFIC } from '../../../../Scene/LayerUpdateStrategy';
 
 var sceneIsLoaded = false;
-var eventLoaded = new CustomEvent('globe-loaded');
+export const INITIALIZED_EVENT = 'initialized';
+
 var eventRange = new CustomEvent('rangeChanged');
 var eventOrientation = new CustomEvent('orientationchanged');
 var eventPan = new CustomEvent('panchanged');
@@ -26,7 +27,6 @@ var eventLayerChanged = new CustomEvent('layerchanged');
 var eventLayerChangedVisible = new CustomEvent('layerchanged:visible');
 var eventLayerChangedOpacity = new CustomEvent('layerchanged:opacity');
 var eventLayerChangedIndex = new CustomEvent('layerchanged:index');
-var eventError = new CustomEvent('error');
 
 var enableAnimation = false;
 
@@ -320,15 +320,13 @@ ApiGlobe.prototype.createSceneGlobe = function createSceneGlobe(coordCarto, view
     // Deplacer plus tard
 
     this.viewerDiv = viewerDiv;
+    this.sceneLoadedDeferred = defer();
 
     viewerDiv.addEventListener('globe-built', () => {
-        if (sceneIsLoaded === false) {
+        if (!sceneIsLoaded) {
             sceneIsLoaded = true;
-            this.scene.currentControls().updateCameraTransformation();
-            this.scene.updateScene3D();
-            viewerDiv.dispatchEvent(eventLoaded);
-        } else {
-            viewerDiv.dispatchEvent(eventError);
+            this.sceneLoadedDeferred.resolve();
+            this.sceneLoadedDeferred = defer();
         }
     }, false);
 
@@ -355,10 +353,10 @@ ApiGlobe.prototype.createSceneGlobe = function createSceneGlobe(coordCarto, view
     this.scene.scheduler.addProtocolProvider('tile', new TileProvider());
     this.scene.scheduler.addProtocolProvider('wms', new WMS_Provider({ support: map.gLDebug }));
 
-    this.sceneLoadedDeferred = defer();
-    this.addEventListener('globe-loaded', () => {
-        this.sceneLoadedDeferred.resolve();
-        this.sceneLoadedDeferred = defer();
+    this.setSceneLoaded().then(() => {
+        this.scene.currentControls().updateCameraTransformation();
+        this.scene.updateScene3D();
+        this.viewerDiv.dispatchEvent(new CustomEvent(INITIALIZED_EVENT));
     });
 
     return this.scene;

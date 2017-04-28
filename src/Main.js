@@ -11,7 +11,9 @@ const itowns = scope.itowns || {
     viewer: new ApiGlobe(),
 };
 scope.itowns = itowns;
+
 export const viewer = itowns.viewer;
+export { INITIALIZED_EVENT } from './Core/Commander/Interfaces/ApiInterface/ApiGlobe';
 export { C } from './Core/Geographic/Coordinates';
 export { Coordinates } from './Core/Geographic/Coordinates';
 export default scope.itowns;
