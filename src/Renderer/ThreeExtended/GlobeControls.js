@@ -1131,13 +1131,15 @@ function GlobeControls(camera, target, domElement, engine) {
     };
 
     // update object camera position
-    this.updateCameraTransformation = function updateCameraTransformation(controlState)
+    this.updateCameraTransformation = function updateCameraTransformation(controlState, updateCameraTarget = true)
     {
         const bkDamping = this.enableDamping;
         this.enableDamping = false;
         state = controlState || CONTROL_STATE.ORBIT;
         update();
-        updateCameraTargetOnGlobe.bind(this)();
+        if (updateCameraTarget) {
+            updateCameraTargetOnGlobe.bind(this)();
+        }
         this.enableDamping = bkDamping;
     };
 
@@ -1233,7 +1235,7 @@ GlobeControls.prototype.setOrbitalPosition = function setOrbitalPosition(range, 
 
 const destSpherical = new THREE.Spherical();
 
-GlobeControls.prototype.moveOrbitalPosition = function moveOrbitalPositionfunction(deltaRange, deltaTheta, deltaPhi, isAnimated) {
+GlobeControls.prototype.moveOrbitalPosition = function moveOrbitalPosition(deltaRange, deltaTheta, deltaPhi, isAnimated) {
     const range = deltaRange + this.getRange();
     if (isAnimated) {
         destSpherical.theta = deltaTheta + spherical.theta;
@@ -1254,8 +1256,8 @@ GlobeControls.prototype.moveOrbitalPosition = function moveOrbitalPositionfuncti
         sphericalDelta.theta = deltaTheta;
         sphericalDelta.phi = deltaPhi;
         orbit.scale = range / this.getRange();
-        this.updateCameraTransformation();
-        return new Promise((r) => { r(); });
+        this.updateCameraTransformation(CONTROL_STATE.ORBIT, false);
+        return Promise.resolve();
     }
 };
 
