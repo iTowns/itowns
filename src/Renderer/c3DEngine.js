@@ -15,7 +15,7 @@ import RendererConstant from './RendererConstant';
 
 var instance3DEngine = null;
 
-function c3DEngine(scene, positionCamera, viewerDiv, debugMode, gLDebug) {
+function c3DEngine(scene, controlOptions, viewerDiv, debugMode, gLDebug) {
     // Constructor
 
     if (instance3DEngine !== null) {
@@ -108,7 +108,7 @@ function c3DEngine(scene, positionCamera, viewerDiv, debugMode, gLDebug) {
     //
     // init camera
     //
-    this.camera.setPosition(positionCamera);
+    this.camera.setPosition(controlOptions.position);
     this.camera.camera3D.near = this.size * 2.333; // if near is too small --> bug no camera helper
     this.camera.camera3D.far = this.size * 10;
     this.camera.camera3D.updateProjectionMatrix();
@@ -157,7 +157,7 @@ function c3DEngine(scene, positionCamera, viewerDiv, debugMode, gLDebug) {
     //
     // Create Control
     //
-    this.controls = new GlobeControls(this.camera.camera3D, this.renderer.domElement, this);
+    this.controls = new GlobeControls(this.camera.camera3D, controlOptions.target, this.renderer.domElement, this);
     this.controls.rotateSpeed = 0.25;
     this.controls.zoomSpeed = 2.0;
     this.controls.minDistance = 30;

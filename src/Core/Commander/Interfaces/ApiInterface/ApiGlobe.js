@@ -16,7 +16,8 @@ import Fetcher from '../../Providers/Fetcher';
 import { STRATEGY_MIN_NETWORK_TRAFFIC } from '../../../../Scene/LayerUpdateStrategy';
 
 var sceneIsLoaded = false;
-var eventLoaded = new CustomEvent('globe-loaded');
+export const INITIALIZED_EVENT = 'initialized';
+
 var eventRange = new CustomEvent('rangeChanged');
 var eventOrientation = new CustomEvent('orientationchanged');
 var eventPan = new CustomEvent('panchanged');
@@ -26,7 +27,6 @@ var eventLayerChanged = new CustomEvent('layerchanged');
 var eventLayerChangedVisible = new CustomEvent('layerchanged:visible');
 var eventLayerChangedOpacity = new CustomEvent('layerchanged:opacity');
 var eventLayerChangedIndex = new CustomEvent('layerchanged:index');
-var eventError = new CustomEvent('error');
 
 var enableAnimation = false;
 
@@ -97,10 +97,54 @@ ApiGlobe.prototype.addGeometryLayer = function addGeometryLayer(layer) {
 };
 
 /**
- * This function adds an imagery layer to the scene. The layer id must be unique. The protocol rules wich parameters are then needed for the function.
- * @constructor
- * @param {Layer} layer.
+ * The intellectual property rights
+ * @typedef {Object} Attribution
+ * @property {string} name
+ * @property {string} url
  */
+
+/**
+ * Options to wms protocol
+ * @typedef {Object} OptionsWms
+ * @property {Attribution} attribution The intellectual property rights for the layer
+ * @property {string} name
+ * @property {string} mimetype
+ */
+
+/**
+ * Options to wtms protocol
+ * @typedef {Object} OptionsWmts
+ * @property {Attribution} attribution The intellectual property rights for the layer
+ * @property {string} name
+ * @property {string} mimetype
+ * @property {string} tileMatrixSet
+ * @property {Array.<Object>} tileMatrixSetLimits The limits for the tile matrix set
+ * @property {number} tileMatrixSetLimits.minTileRow Minimum row for tiles at the level
+ * @property {number} tileMatrixSetLimits.maxTileRow Maximum row for tiles at the level
+ * @property {number} tileMatrixSetLimits.minTileCol Minimum col for tiles at the level
+ * @property {number} tileMatrixSetLimits.maxTileCol Maximum col for tiles at the level
+ * @property {Object} [zoom]
+ * @property {Object} [zoom.min] layer's zoom minimum
+ * @property {Object} [zoom.max] layer's zoom maximum
+ */
+
+/**
+ * Layer
+ * @typedef {Object} Layer
+ * @property {string} id Unique layer's id
+ * @property {string} layer.protocol wmts and wms (wmtsc for custom deprecated)
+ * @property {string} layer.url Base URL of the repository or of the file(s) to load
+ * @property {Object} layer.updateStrategy strategy to load imagery files
+ * @property {OptionsWmts|OptionsWms} layer.options WMTS or WMS options
+ */
+
+/**
+ * This function adds an imagery layer to the scene. The layer id must be unique.
+ * The protocol rules wich parameters are then needed for the function.
+ * @constructor
+ * @param {Layer} Layer
+ */
+
 ApiGlobe.prototype.addImageryLayer = function addImageryLayer(layer) {
     preprocessLayer(layer, this.scene.scheduler.getProtocolProvider(layer.protocol));
     const map = this.scene.getMap();
@@ -195,7 +239,7 @@ ApiGlobe.prototype.removeImageryLayer = function removeImageryLayer(id) {
  * The layer id must be unique amongst all layers already inserted.
  * The protocol rules which parameters are then needed for the function.
  * @constructor
- * @param {Layer} layer.
+ * @param {Layer} layer
  */
 
 ApiGlobe.prototype.addElevationLayer = function addElevationLayer(layer) {
@@ -259,14 +303,14 @@ ApiGlobe.prototype.addElevationLayersFromJSONArray = function addElevationLayers
  */
 ApiGlobe.prototype.getMinZoomLevel = function getMinZoomLevel(index) {
     var layer = this.getImageryLayers()[index];
-    if (layer && layer.zoom) {
-        return layer.zoom.min;
+    if (layer && layer.options.zoom) {
+        return layer.options.zoom.min;
     } else {
         var layers = this.getImageryLayers();
         let min = Infinity;
         for (var i = layers.length - 1; i >= 0; i--) {
-            if (layers[i].zoom) {
-                min = Math.min(min, layers[i].zoom.min);
+            if (layers[i].options.zoom) {
+                min = Math.min(min, layers[i].options.zoom.min);
             }
         }
         return min;
@@ -282,14 +326,14 @@ ApiGlobe.prototype.getMinZoomLevel = function getMinZoomLevel(index) {
  */
 ApiGlobe.prototype.getMaxZoomLevel = function getMaxZoomLevel(index) {
     var layer = this.getImageryLayers()[index];
-    if (layer && layer.zoom) {
-        return layer.zoom.max;
+    if (layer && layer.options.zoom) {
+        return layer.options.zoom.max;
     } else {
         var layers = this.getImageryLayers();
         let max = 0;
         for (var i = layers.length - 1; i >= 0; i--) {
-            if (layers[i].zoom) {
-                max = Math.max(max, layers[i].zoom.max);
+            if (layers[i].options.zoom) {
+                max = Math.max(max, layers[i].options.zoom.max);
             }
         }
         return max;
@@ -320,15 +364,13 @@ ApiGlobe.prototype.createSceneGlobe = function createSceneGlobe(coordCarto, view
     // Deplacer plus tard
 
     this.viewerDiv = viewerDiv;
+    this.sceneLoadedDeferred = defer();
 
     viewerDiv.addEventListener('globe-built', () => {
-        if (sceneIsLoaded === false) {
+        if (!sceneIsLoaded) {
             sceneIsLoaded = true;
-            this.scene.currentControls().updateCameraTransformation();
-            this.scene.updateScene3D();
-            viewerDiv.dispatchEvent(eventLoaded);
-        } else {
-            viewerDiv.dispatchEvent(eventError);
+            this.sceneLoadedDeferred.resolve();
+            this.sceneLoadedDeferred = defer();
         }
     }, false);
 
@@ -355,10 +397,10 @@ ApiGlobe.prototype.createSceneGlobe = function createSceneGlobe(coordCarto, view
     this.scene.scheduler.addProtocolProvider('tile', new TileProvider());
     this.scene.scheduler.addProtocolProvider('wms', new WMS_Provider({ support: map.gLDebug }));
 
-    this.sceneLoadedDeferred = defer();
-    this.addEventListener('globe-loaded', () => {
-        this.sceneLoadedDeferred.resolve();
-        this.sceneLoadedDeferred = defer();
+    this.setSceneLoaded().then(() => {
+        this.scene.currentControls().updateCameraTransformation();
+        this.scene.updateScene3D();
+        this.viewerDiv.dispatchEvent(new CustomEvent(INITIALIZED_EVENT));
     });
 
     return this.scene;
@@ -458,7 +500,7 @@ ApiGlobe.prototype.setCameraOrientation = function setCameraOrientation(orientat
 /**
  * Pick a position on the globe at the given position.
  * @constructor
- * @param {Number | MouseEvent} x|event - The x-position inside the Globe element or a mouse event.
+ * @param {number | MouseEvent} x|event - The x-position inside the Globe element or a mouse event.
  * @param {number | undefined} y - The y-position inside the Globe element.
  * @return {Position} position
  */
@@ -507,7 +549,7 @@ ApiGlobe.prototype.getHeading = function getHeading() {
  * Returns the "range": the distance in meters between the camera and the current central point on the screen.
  * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/Lbt1vfek/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
  * @constructor
- * @return {Number} number
+ * @return {number} number
  */
 
 ApiGlobe.prototype.getRange = function getRange() {
@@ -643,15 +685,34 @@ ApiGlobe.prototype.setCameraTargetGeoPosition = function setCameraTargetGeoPosit
  * The level has to be between the [getMinZoomLevel(), getMaxZoomLevel()].
  * The zoom level and the scale can't be set at the same time.
  * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/7yk0mpn0/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
- * @param {Position} pPosition - The detailed position in the scene.
- * @param      {boolean}  isAnimated  Indicates if animated
- * @return     {Promise}
+ * @param {Position} position
+ * @param {number}  position.longitude  Coordinate longitude WGS84 in degree
+ * @param {number}  position.latitude  Coordinate latitude WGS84 in degree
+ * @param {number}  [position.tilt]  Camera tilt in degree
+ * @param {number}  [position.heading]  Camera heading in degree
+ * @param {number}  [position.range]  The camera distance to the target center
+ * @param {number}  [position.level]  level,  ignored if range is set
+ * @param {number}  [position.scale]  scale,  ignored if the zoom level or range is set. For a scale of 1/500 it is necessary to write 0,002.
+ * @param {boolean}  isAnimated  Indicates if animated
+ * @return {Promise}
  */
-ApiGlobe.prototype.setCameraTargetGeoPositionAdvanced = function setCameraTargetGeoPositionAdvanced(pPosition, isAnimated) {
+ApiGlobe.prototype.setCameraTargetGeoPositionAdvanced = function setCameraTargetGeoPositionAdvanced(position, isAnimated) {
     isAnimated = isAnimated || this.isAnimationEnabled();
-    return this.setCameraTargetGeoPosition(pPosition, isAnimated).then(() => {
-        const p = this.scene.currentControls().setOrbitalPosition(undefined, pPosition.heading, pPosition.tilt, isAnimated);
-        return p;
+    if (position.level) {
+        position.range = this.getRangeFromZoomLevel(position.level);
+    } else if (position.scale) {
+        position.range = this.getRangeFromScale(position.scale);
+    }
+    return this.setCameraTargetGeoPosition(position, isAnimated).then(() => {
+        position.range = position.range || this.getRange();
+        position.tilt = position.tilt || this.getTilt();
+        position.heading = position.heading || this.getHeading();
+        return this.scene.currentControls().setOrbitalPosition(position.range, position.heading, position.tilt, isAnimated).then(() => {
+            this.scene.notifyChange(1);
+            return this.setSceneLoaded().then(() => {
+                this.scene.currentControls().updateCameraTransformation();
+            });
+        });
     });
 };
 
@@ -669,7 +730,7 @@ ApiGlobe.prototype.setRange = function setRange(pRange, isAnimated) {
 
     return this.scene.currentControls().setRange(pRange, isAnimated).then(() => {
         this.scene.notifyChange(1);
-        this.setSceneLoaded().then(() => {
+        return this.setSceneLoaded().then(() => {
             this.scene.currentControls().updateCameraTransformation();
             this.viewerDiv.dispatchEvent(eventRange);
         });
@@ -710,10 +771,14 @@ ApiGlobe.prototype.getZoomLevel = function getZoomLevel() {
  * @return     {Promise}
  */
 ApiGlobe.prototype.setZoomLevel = function setZoomLevel(zoom, isAnimated) {
-    zoom = Math.max(this.getMinZoomLevel(), zoom);
-    zoom = Math.min(this.getMaxZoomLevel(), zoom);
-    const distance = this.scene.getMap().computeDistanceForZoomLevel(zoom, this.scene.currentCamera());
-    return this.setRange(distance, isAnimated);
+    const range = this.getRangeFromZoomLevel(zoom);
+    return this.setRange(range, isAnimated);
+};
+
+ApiGlobe.prototype.getRangeFromZoomLevel = function getRangeFromZoomLevel(zoom) {
+    // FIXME : The distance computed is incorrect, (Fixed in PR 279)
+    const range = this.scene.getMap().computeDistanceForZoomLevel(zoom, this.scene.currentCamera());
+    return range;
 };
 
 /**
@@ -781,6 +846,11 @@ ApiGlobe.prototype.getZoomScale = function getZoomScale(pitch) {
  * @return     {Promise}
  */
 ApiGlobe.prototype.setZoomScale = function setZoomScale(zoomScale, pitch, isAnimated) {
+    const range = this.getRangeFromScale(zoomScale);
+    return this.setRange(range, isAnimated);
+};
+
+ApiGlobe.prototype.getRangeFromScale = function getRangeFromScale(zoomScale, pitch) {
     // Screen pitch, in millimeters
     pitch = (pitch || 0.28) / 1000;
 
@@ -823,7 +893,7 @@ ApiGlobe.prototype.setZoomScale = function setZoomScale(zoomScale, pitch, isAnim
     }
 
     const range = distance - rayon;
-    return this.setRange(range, isAnimated);
+    return range;
 };
 
 /**

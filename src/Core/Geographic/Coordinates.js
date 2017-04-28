@@ -179,6 +179,11 @@ Coordinates.prototype.altitude = function altitude() {
     return this._values[2];
 };
 
+Coordinates.prototype.setAltitude = function setAltitude(altitude) {
+    _assertIsGeographic(this.crs);
+    this._values[2] = altitude;
+};
+
 Coordinates.prototype.x = function x() {
     _assertIsGeocentric(this.crs);
     return this._values[0];
