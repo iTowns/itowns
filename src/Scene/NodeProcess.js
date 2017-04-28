@@ -90,40 +90,7 @@ NodeProcess.prototype.subdivideNode = function subdivideNode(node, camera, param
             };
 
             quadtree.scheduler.execute(command).then((child) => {
-                let colorTextureCount = 0;
-                const paramMaterial = [];
-
-                // update wmts
-                const colorLayers = params.layersConfig.getColorLayers();
-
-                // update Imagery wmts
-                for (const layer of colorLayers) {
-                    if (layer.tileInsideLimit(child, layer)) {
-                        const texturesCount = layer.tileTextureCount ?
-                            layer.tileTextureCount(child, layer) : 1;
-
-                        paramMaterial.push({
-                            tileMT: layer.options.tileMatrixSet,
-                            texturesCount,
-                            visible: params.layersConfig.isColorLayerVisible(layer.id),
-                            opacity: params.layersConfig.getColorLayerOpacity(layer.id),
-                            fx: layer.fx,
-                            idLayer: layer.id,
-                        });
-
-                        colorTextureCount += texturesCount;
-                    }
-                }
-
-                // update Imagery wmts
-                const elevationLayers = params.layersConfig.getElevationLayers();
-                let canHaveElevation = false;
-                for (const layer of elevationLayers) {
-                    canHaveElevation |= layer.tileInsideLimit(child, layer);
-                }
-
-                child.setColorLayerParameters(paramMaterial, params.layersConfig.lightingLayers[0]);
-                child.texturesNeeded = colorTextureCount + canHaveElevation;
+                child.setLightingParameters(params.layersConfig.lightingLayers[0]);
 
                 // request layers (imagery/elevation) update
                 this.refineNodeLayers(child, camera, params);
@@ -241,6 +208,25 @@ function updateNodeImagery(scene, quadtree, node, layersConfig, force) {
             continue;
         }
 
+        const material = node.materials[RendererConstant.FINAL];
+
+        if (material.indexOfColorLayer(layer.id) === -1) {
+            const texturesCount = layer.tileTextureCount ?
+                layer.tileTextureCount(node, layer) : 1;
+
+            const paramMaterial = {
+                tileMT: layer.options.tileMatrixSet,
+                texturesCount,
+                visible: layersConfig.isColorLayerVisible(layer.id),
+                opacity: layersConfig.getColorLayerOpacity(layer.id),
+                fx: layer.fx,
+                idLayer: layer.id,
+            };
+
+            material.pushLayer(paramMaterial);
+            node.texturesNeeded += texturesCount;
+        }
+
         if (!force) {
             // does this tile needs a new texture?
             if (!node.isColorLayerDownscaled(layer.id)) {
@@ -255,7 +241,7 @@ function updateNodeImagery(scene, quadtree, node, layersConfig, force) {
 
         let ancestor = null;
 
-        const currentLevel = node.materials[RendererConstant.FINAL].getColorLayerLevelById(layer.id);
+        const currentLevel = material.getColorLayerLevelById(layer.id);
         // if this tile has no texture (level == -1), try use one from an ancestor
         if (currentLevel === -1) {
             ancestor = findAncestorWithValidTextureForLayer(node, l_COLOR, layer);
@@ -332,7 +318,8 @@ function updateNodeElevation(scene, quadtree, node, layersConfig, force) {
     let bestLayer = null;
     let ancestor = null;
 
-    const currentElevation = node.materials[RendererConstant.FINAL].getElevationLayerLevel();
+    const material = node.materials[RendererConstant.FINAL];
+    const currentElevation = material.getElevationLayerLevel();
 
     // Step 0: currentElevevation is -1 BUT material.loadedTexturesCount[l_ELEVATION] is > 0
     // means that we already tried and failed to download an elevation texture
@@ -394,8 +381,13 @@ function updateNodeElevation(scene, quadtree, node, layersConfig, force) {
         break;
     }
 
+
     // If we found a usable layer, perform a query
     if (bestLayer !== null) {
+        if (material.elevationLayersId.length === 0) {
+            material.elevationLayersId.push(bestLayer.id);
+            node.texturesNeeded++;
+        }
         node.layerUpdateState[bestLayer.id].newTry();
 
         const command = {
