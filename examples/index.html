@@ -69,9 +69,9 @@ and open the template in the editor.
             menuGlobe.addGUI('RealisticLighting', false,
                 (newValue) => { itowns.viewer.setRealisticLightingOn(newValue); });
 
-            itowns.viewer.addEventListener('globe-loaded', () => {
+            itowns.viewer.addEventListener(itowns.viewer.INITIALIZED_EVENT, () => {
                 // eslint-disable-next-line no-console
-                console.info('Globe Loaded');
+                console.info('Globe initialized');
             });
 
 </script>
