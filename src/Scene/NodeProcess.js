@@ -116,16 +116,11 @@ function refinementCommandCancellationFn(cmd) {
     if (!cmd.requester.parent || !cmd.requester.material) {
         return true;
     }
-    // If node A is divided into A1, A2, A3, A4 and the user zooms fast enough on A2
-    // We might end up in a situation where:
-    //    - commands for A1, A3 or A4 are canceled because they're not visible anymore
-    //    - A2 A2 cannot be displayed because A won't be hidden until all of its
-    //      children are loaded.
+    if (cmd.force) {
+        return false;
+    }
 
-    // allow cancellation of the command if the node isn't visible anymore
-    return cmd.requester.parent.childrenLoaded() &&
-        cmd.requester.visible === false &&
-        cmd.requester.level >= 2 && !cmd.force;
+    return !cmd.requester.isDisplayed();
 }
 
 NodeProcess.prototype.refineNodeLayers = function refineNodeLayers(node, camera, params) {
