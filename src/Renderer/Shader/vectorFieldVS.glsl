@@ -20,7 +20,7 @@ varying float vSpeed;
 
 void main()
 {
-    gl_PointSize = 3.; 
+    gl_PointSize = 1.; 
 
 
     //the mesh is a normalized square so the uvs = the xy positions of the vertices

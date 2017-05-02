@@ -26,11 +26,14 @@ import vectorFieldVS from '../Renderer/Shader/vectorFieldVS.glsl';
 import vectorFieldFS from '../Renderer/Shader/vectorFieldFS.glsl';
 import vectorSimulationVS from '../Renderer/Shader/vectorSimulationVS.glsl';
 import vectorSimulationFS from '../Renderer/Shader/vectorSimulationFS.glsl';
+import particleQuadShaderVS from '../Renderer/Shader/particleQuadShaderVS.glsl';
+import particleQuadShaderFS from '../Renderer/Shader/particleQuadShaderFS.glsl';
 var instanceScene = null;
 
 
 const RENDERING_PAUSED = 0;
 const RENDERING_ACTIVE = 1;
+
 
 /**
  * Constructs an Itowns Scene instance
@@ -94,6 +97,29 @@ function Scene(crs, positionCamera, viewerDiv, debugMode, gLDebug) {
     
     this.fbTexture1 = null;
     this.fbTexture2 = null;
+
+    // Particle accumulation
+    this._particleScene = null;
+    this._particleRenderTarget = null;
+    this.particledataTexture = null;
+    this.particleArrayRTT = new Uint8Array(this.gfxEngine.width * this.gfxEngine.height * 4 );
+
+    this._particleRenderTarget_OLD = null;
+    this.particledataTexture_OLD = null;
+    this.particleArrayRTT_OLD = new Uint8Array(this.gfxEngine.width * this.gfxEngine.height * 4 );
+
+    this.particleQuadRenderer = null;
+    this.inc = 0;
+
+
+    this.quadRenderer = null;
+    this.quadScene = null;
+    this.quadRenderTarget = null;
+    this.quadDataTexture = null;
+    this.quadArrayRTT = new Uint8Array(this.gfxEngine.width * this.gfxEngine.height * 4 );
+
+
+
 }
 
 Scene.prototype.constructor = Scene;
@@ -442,6 +468,68 @@ Scene.prototype.displayGrib = function orbit(data) {
     this._renderer.setSize(this.width, this.height);
     this._renderer.setPixelRatio( window.devicePixelRatio );
 
+
+
+
+// Test with a special scene just for particle to do accumulation *********
+    this.particleQuadRenderer = new THREE.WebGLRenderer({ preserveDrawingBuffer: true, autoClear : false, alpha:true} );
+    this.particleQuadRenderer.autoClear = false;
+    this.particleQuadRenderer.setSize(this.gfxEngine.width, this.gfxEngine.height);
+    this.particleQuadRenderer.setPixelRatio( window.devicePixelRatio );
+
+
+
+    this._particleScene = new THREE.Scene();
+    this._particleRenderTarget = new THREE.WebGLRenderTarget( this.gfxEngine.width, this.gfxEngine.height);
+    this._particleRenderTarget_OLD = new THREE.WebGLRenderTarget( this.gfxEngine.width, this.gfxEngine.height);
+
+    this.particledataTexture = new THREE.DataTexture( this.particleArrayRTT, this.gfxEngine.width, this.gfxEngine.height, THREE.RGBAFormat);
+    this.particledataTexture.needsUpdate = true;
+
+    this.particledataTexture_OLD = new THREE.DataTexture( this.particleArrayRTT_OLD, this.gfxEngine.width, this.gfxEngine.height, THREE.RGBAFormat);
+    this.particledataTexture_OLD.needsUpdate = true;
+
+
+    this.quadRenderer = new THREE.WebGLRenderer({ preserveDrawingBuffer: true, autoClear : false, alpha:true} );
+    this.quadRenderer.autoClear = false;
+    this.quadRenderer.setSize(this.gfxEngine.width, this.gfxEngine.height);
+    this.quadRenderer.setPixelRatio( window.devicePixelRatio );
+
+    this.quadScene = new THREE.Scene();
+    this.quadRenderTarget = new THREE.WebGLRenderTarget( this.gfxEngine.width, this.gfxEngine.height);
+    this.quadDataTexture = new THREE.DataTexture( this.quadArrayRTT, this.gfxEngine.width, this.gfxEngine.height, THREE.RGBAFormat);
+    this.quadDataTexture.needsUpdate = true;
+
+    //simulation shader used to update the particles' positions
+    var quadParticleRenderingMaterial = new THREE.ShaderMaterial({
+        uniforms:{ 
+            particleTexture : { type: "t", value: this.particledataTexture }, //this.quadDataTexture/*this.particledataTexture*/},
+            particleTextureOld : { type: "t", value: this.quadDataTexture}, //this.particledataTexture_OLD},
+        },
+        vertexShader:   particleQuadShaderVS,
+        fragmentShader: particleQuadShaderFS,
+            side:THREE.DoubleSide,
+            depthTest:false,
+            depthWrite:false,
+            transparent: true,
+    });
+    
+    this.plane = new THREE.Mesh(
+        new THREE.PlaneBufferGeometry(2, 2),
+        quadParticleRenderingMaterial 
+    );
+    this.plane.name = "quad";
+
+    //this.gfxEngine.add3DScene(this.plane);
+    this.quadScene.add(this.plane);
+
+
+    this.gfxEngine.add3DScene(this.plane);
+
+//*************************************
+
+
+  
     // Original position of particules. (random as a start)
     var data = getOneDegreeRepartition( this.width, this.height, 256 );
     // convertes it to a FloatTexture
@@ -528,7 +616,30 @@ Scene.prototype.displayGrib = function orbit(data) {
     this.particlesField.frustumCulled = false;
     this.particlesField.name = "particlesField";
     //  this.particlesField.material.uniforms.positions.value = this._rtt.texture; // textureVecPositions; 
-    this.gfxEngine.add3DScene( this.particlesField );
+  
+
+    this._particleScene.add(this.particlesField);
+
+ //   this.gfxEngine.add3DScene( this.particlesField );
+
+  //  this.gfxEngine.renderer.render(this._particleScene, this.gfxEngine.camera.camera3D, this._particleRenderTarget, true);
+
+    this._renderer.render( this._scene, this._orthoCamera, this._rtt, true );
+    this._renderer.readRenderTargetPixels( this._rtt, 0, 0, this.width, this.height, this.arrayRTT );
+    this.simulationMesh.material.uniforms.positions.value = this.dataTexture;
+    this.dataTexture.needsUpdate = true;
+
+
+
+/*
+    this.gfxEngine.update(); 
+
+    this.gfxEngine.renderer.render(this._particleScene, this.gfxEngine.camera.camera3D, this._particleRenderTarget, true);
+    this.gfxEngine.renderer.readRenderTargetPixels( this._particleRenderTarget_OLD, 0, 0, this.gfxEngine.width, this.gfxEngine.height, this.particleArrayRTT_OLD );
+    this.particledataTexture_OLD.needsUpdate = true;
+  */  
+  
+
     //  this.gfxEngine.add3DScene(gribLayer);
     this.animateTiming();
     //this.particlesField.material.uniforms.positions.value.needsUpdate = true;
@@ -538,12 +649,52 @@ Scene.prototype.displayGrib = function orbit(data) {
 // Ugly to avoid bug, we use a readRenderTargetPixels and then pass it to the uniform as a dataTexture...
 Scene.prototype.updateTextureFBO = function(){
     
-    //this._renderer.clear();
+    this.inc++;
+// if(this.inc % 4 == 0){
+  /*  
+    this.particleArrayRTT_OLD = this.quadArrayRTT.slice(0);//this.particleArrayRTT.slice(0);
+    var tex = new THREE.DataTexture( this.particleArrayRTT_OLD, this.gfxEngine.width, this.gfxEngine.height, THREE.RGBAFormat);
+    tex.needsUpdate = true;
+    this.plane.material.uniforms.particleTextureOld.value = tex;
+*/
+
+    // Simulation shaders
     this._renderer.render( this._scene, this._orthoCamera, this._rtt, true );
     this._renderer.readRenderTargetPixels( this._rtt, 0, 0, this.width, this.height, this.arrayRTT );
     this.simulationMesh.material.uniforms.positions.value = this.dataTexture;
     this.dataTexture.needsUpdate = true;
-}
+
+
+
+    // Render shaders for particle
+    this.particleQuadRenderer.render(this._particleScene, this.gfxEngine.camera.camera3D, this._particleRenderTarget, true);
+    this.particleQuadRenderer.readRenderTargetPixels( this._particleRenderTarget, 0, 0, this.gfxEngine.width, this.gfxEngine.height, this.particleArrayRTT );
+    this.particledataTexture.needsUpdate = true;  
+
+
+    this.gfxEngine.renderer.render( this.quadScene, this.gfxEngine.camera.camera3D, this.quadRenderTarget, true);
+    this.gfxEngine.renderer.readRenderTargetPixels( this.quadRenderTarget, 0, 0, this.gfxEngine.width, this.gfxEngine.height, this.quadArrayRTT);
+    var tex = new THREE.DataTexture( this.quadArrayRTT, this.gfxEngine.width, this.gfxEngine.height, THREE.RGBAFormat);
+    tex.needsUpdate = true;
+    this.plane.material.uniforms.particleTextureOld.value = this.particledataTexture;
+
+
+/*
+    // Quad shader for accumulation
+    this.quadRenderer.render( this.quadScene, this.gfxEngine.camera.camera3D, this.quadRenderTarget, true);
+    this.quadRenderer.readRenderTargetPixels( this.quadRenderTarget, 0, 0, this.gfxEngine.width, this.gfxEngine.height, this.quadArrayRTT);
+    var tex = new THREE.DataTexture( this.quadArrayRTT, this.gfxEngine.width, this.gfxEngine.height, THREE.RGBAFormat);
+    tex.needsUpdate = true;
+    this.plane.material.uniforms.particleTextureOld.value = tex;
+*/
+   // this.quadDataTexture.needsUpdate = true;
+    
+
+
+
+    this.gfxEngine.renderer.render(this.gfxEngine.scene3D, this.gfxEngine.camera.camera3D);
+
+};
 
 Scene.prototype.animateTiming = function(){
      
@@ -551,12 +702,17 @@ Scene.prototype.animateTiming = function(){
     this.timing += 0.001;
     this.simulationMesh.material.uniforms.timing.value = this.timing;
     this.updateTextureFBO();
-    this.gfxEngine.update();
+
+    //this.gfxEngine.update();
+
     requestAnimationFrame(this.animateTiming.bind(this));
     // this._renderer.render( this._scene, this._orthoCamera, this._rtt, true );
     // this.particlesField.material.uniforms.positions.value = this._rtt.texture;
     // this.gfxEngine.renderer.clear();
 };
+
+
+
 
 
 
