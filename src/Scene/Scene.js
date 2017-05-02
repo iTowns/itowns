@@ -19,6 +19,7 @@ import Layer from './Layer';
 import MobileMappingLayer from '../MobileMapping/MobileMappingLayer';
 import StyleManager from './Description/StyleManager';
 
+import * as THREE from 'three';
 var instanceScene = null;
 
 
@@ -319,6 +320,24 @@ Scene.prototype.orbit = function orbit(value) {
     // this.gfxEngine.controls = null;
     this.orbitOn = value;
 };
+
+// Example function that adds a sphere at a 3D cartesian coordinate
+Scene.prototype.addPinAtLocation = function (coordinate3D) {
+    
+    // We create a layer for our pin
+    var pinLayer = new Layer();
+    this.parentMesh = new THREE.Object3D();  // Geometry parent of the layer
+    pinLayer.add(this.parentMesh);
+    this.add(pinLayer);  // We add the layer to the scene
+    
+    // We create the sphere using three basic geometry
+    // A mesh is always defined like this: a geometry and a material. 
+    var sphere = new THREE.Mesh(new THREE.SphereGeometry(10000, 16, 16), new THREE.MeshBasicMaterial());  
+    sphere.position.copy(coordinate3D);
+    sphere.updateMatrixWorld();   // We update the matrixWorld with the new position
+    this.parentMesh.add(sphere);  // We then add the sphere to the parent geometry of the layer
+    
+}
 
 export default function (crs, positionCamera, viewerDiv, debugMode, gLDebug) {
     instanceScene = instanceScene || new Scene(crs, positionCamera, viewerDiv, debugMode, gLDebug);

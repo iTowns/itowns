@@ -15,6 +15,7 @@ import { C } from '../../../Geographic/Coordinates';
 import Fetcher from '../../Providers/Fetcher';
 import { STRATEGY_MIN_NETWORK_TRAFFIC } from '../../../../Scene/LayerUpdateStrategy';
 
+
 var sceneIsLoaded = false;
 var eventLoaded = new CustomEvent('globe-loaded');
 var eventRange = new CustomEvent('rangeChanged');
@@ -928,5 +929,13 @@ ApiGlobe.prototype.loadGPX = function loadGPX(url) {
 
     this.scene.renderScene3D();
 };
+
+
+
+ApiGlobe.prototype.addPinAtLocation = function (coordCarto){
+    
+    var coordinate3D = new C.EPSG_4326(coordCarto.longitude, coordCarto.latitude, coordCarto.altitude).as('EPSG:4978').xyz();
+    this.scene.addPinAtLocation(coordinate3D);
+}
 
 export default ApiGlobe;
