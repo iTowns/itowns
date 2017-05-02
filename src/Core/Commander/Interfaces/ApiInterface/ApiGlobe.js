@@ -23,50 +23,6 @@ var status = function status() {
 var sceneIsLoaded = false;
 export const INITIALIZED_EVENT = 'initialized';
 
-var eventRange = new CustomEvent('rangeChanged', {
-    detail: new status(),
-});
-var eventCenter = new CustomEvent('centerchanged', {
-    detail: new status(),
-});
-var _handlerCenter;
-var eventOrientation = new CustomEvent('orientationchanged', {
-    detail: new status(),
-});
-var _handlerOrientation;
-var eventPan = new CustomEvent('panchanged');
-var eventLayerAdded = new CustomEvent('layeradded', {
-    detail: { layerId: {} },
-});
-var eventLayerRemoved = new CustomEvent('layerremoved', {
-    detail: { layerId: {} },
-});
-var eventLayerChanged = new CustomEvent('layerchanged', {
-    detail: {
-        layerId: {},
-        visibility: new status(),
-        opacity: new status(),
-        index: new status(),
-    },
-});
-var eventLayerChangedVisible = new CustomEvent('layerchanged:visible', {
-    detail: {
-        layerId: {},
-        visibility: new status(),
-    },
-});
-var eventLayerChangedOpacity = new CustomEvent('layerchanged:opacity', {
-    detail: {
-        layerId: {},
-        opacity: new status(),
-    },
-});
-var eventLayerChangedIndex = new CustomEvent('layerchanged:index', {
-    detail: {
-        layerId: {},
-        index: new status(),
-    },
-});
 var eventZoom = new CustomEvent('zoomchanged', {
     detail: new status(),
 });
@@ -136,7 +92,6 @@ ApiGlobe.prototype.addGeometryLayer = function addGeometryLayer(layer) {
         console.error(`Error : id "${layer.id}" already exist, WARNING your layer isn't added`);
     } else {
         map.layersConfiguration.addGeometryLayer(layer);
-        this.viewerDiv.dispatchEvent(eventLayerAdded);
     }
 };
 
@@ -197,9 +152,6 @@ ApiGlobe.prototype.addImageryLayer = function addImageryLayer(layer) {
     } else {
         this.scene.getMap().layersConfiguration.addColorLayer(layer);
         this.scene.notifyChange(1, true);
-        this.setSceneLoaded().then(() => {
-            this.viewerDiv.dispatchEvent(eventLayerAdded);
-        });
     }
 };
 
@@ -234,21 +186,15 @@ ApiGlobe.prototype.addImageryLayersFromJSONArray = function addImageryLayersFrom
 };
 
 ApiGlobe.prototype.moveLayerUp = function moveLayerUp(layerId) {
-    this.getLayerStatus(layerId, 'old');
     this.scene.getMap().layersConfiguration.moveLayerUp(layerId);
     this.scene.getMap().updateLayersOrdering();
     this.scene.renderScene3D();
-    this.getLayerStatus(layerId, 'new');
-    this.viewerDiv.dispatchEvent(eventLayerChangedIndex);
 };
 
 ApiGlobe.prototype.moveLayerDown = function moveLayerDown(layerId) {
-    this.getLayerStatus(layerId, 'old');
     this.scene.getMap().layersConfiguration.moveLayerDown(layerId);
     this.scene.getMap().updateLayersOrdering();
     this.scene.renderScene3D();
-    this.getLayerStatus(layerId, 'new');
-    this.viewerDiv.dispatchEvent(eventLayerChangedIndex);
 };
 
 /**
@@ -258,12 +204,9 @@ ApiGlobe.prototype.moveLayerDown = function moveLayerDown(layerId) {
  * @param      {number}  newIndex   The new index
  */
 ApiGlobe.prototype.moveLayerToIndex = function moveLayerToIndex(layerId, newIndex) {
-    this.getLayerStatus(layerId, 'old');
     this.scene.getMap().layersConfiguration.moveLayerToIndex(layerId, newIndex);
     this.scene.getMap().updateLayersOrdering();
     this.scene.renderScene3D();
-    this.getLayerStatus(layerId, 'new');
-    this.viewerDiv.dispatchEvent(eventLayerChangedIndex);
 };
 
 /**
@@ -276,8 +219,6 @@ ApiGlobe.prototype.removeImageryLayer = function removeImageryLayer(id) {
     if (this.scene.getMap().layersConfiguration.removeColorLayer(id)) {
         this.scene.getMap().removeColorLayer(id);
         this.scene.renderScene3D();
-        eventLayerRemoved.detail.layerId = id;
-        this.viewerDiv.dispatchEvent(eventLayerRemoved);
         return true;
     }
 
@@ -306,9 +247,6 @@ ApiGlobe.prototype.addElevationLayer = function addElevationLayer(layer) {
     } else {
         this.scene.getMap().layersConfiguration.addElevationLayer(layer);
         this.scene.notifyChange(1, true);
-        this.setSceneLoaded().then(() => {
-            this.viewerDiv.dispatchEvent(eventLayerAdded);
-        });
     }
 };
 
@@ -504,19 +442,6 @@ ApiGlobe.prototype.setRealisticLightingOn = function setRealisticLightingOn(valu
     this.scene.renderScene3D();
 };
 
-ApiGlobe.prototype.getLayerStatus = function getLayerStatus(layerId, status) {
-    eventLayerChanged.detail.index[status] = this.scene.getMap().layersConfiguration.layersState[layerId].sequence;
-    eventLayerChanged.detail.opacity[status] = this.scene.getMap().layersConfiguration.getColorLayerOpacity(layerId);
-    eventLayerChanged.detail.visibility[status] = this.scene.getMap().layersConfiguration.isColorLayerVisible(layerId);
-    eventLayerChanged.detail.layerId = layerId;
-    eventLayerChangedVisible.detail.layerId = layerId;
-    eventLayerChangedIndex.detail.layerId = layerId;
-    eventLayerChangedOpacity.detail.layerId = layerId;
-    eventLayerChangedVisible.detail.visibility[status] = this.scene.getMap().layersConfiguration.isColorLayerVisible(layerId);
-    eventLayerChangedIndex.detail.index[status] = this.scene.getMap().layersConfiguration.layersState[layerId].sequence;
-    eventLayerChangedOpacity.detail.opacity[status] = this.scene.getMap().layersConfiguration.getColorLayerOpacity(layerId);
-};
-
 /**
  * Sets the visibility of a layer. If the layer is not visible in the scene, this function will no effect until the camera looks at the layer.
  * @constructor
@@ -525,11 +450,8 @@ ApiGlobe.prototype.getLayerStatus = function getLayerStatus(layerId, status) {
  */
 
 ApiGlobe.prototype.setLayerVisibility = function setLayerVisibility(id, visible) {
-    this.getLayerStatus(id, 'old');
     this.scene.getMap().setLayerVisibility(id, visible);
     this.update();
-    this.getLayerStatus(id, 'new');
-    this.viewerDiv.dispatchEvent(eventLayerChangedVisible);
 };
 
 /**
@@ -540,11 +462,8 @@ ApiGlobe.prototype.setLayerVisibility = function setLayerVisibility(id, visible)
  */
 
 ApiGlobe.prototype.setLayerOpacity = function setLayerOpacity(id, opacity) {
-    this.getLayerStatus(id, 'old');
     this.scene.getMap().setLayerOpacity(id, opacity);
     this.scene.renderScene3D();
-    this.getLayerStatus(id, 'new');
-    this.viewerDiv.dispatchEvent(eventLayerChangedOpacity);
 };
 
 /**
@@ -580,11 +499,6 @@ ApiGlobe.prototype.getCameraTargetGeoPosition = function getCameraTargetGeoPosit
     return C.fromXYZ('EPSG:4978', this.scene.currentControls().getCameraTargetPosition()).as('EPSG:4326');
 };
 
-ApiGlobe.prototype.getStatusOrientation = function getStatusOrientation(state) {
-    eventOrientation.detail[state].tilt = this.getTilt();
-    eventOrientation.detail[state].heading = this.getHeading();
-};
-
 /**
  * Sets orientation angles of the current camera, in degrees.
  * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/9qr2mogh/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
@@ -594,11 +508,7 @@ ApiGlobe.prototype.getStatusOrientation = function getStatusOrientation(state) {
  * @return     {Promise}   { description_of_the_return_value }
  */
 ApiGlobe.prototype.setCameraOrientation = function setCameraOrientation(orientation, isAnimated) {
-    this.getStatusOrientation('old');
-    return this.scene.currentControls().setOrbitalPosition(undefined, orientation.heading, orientation.tilt, isAnimated).then(() => {
-        this.getStatusOrientation('new');
-        this.viewerDiv.dispatchEvent(eventOrientation);
-    });
+    return this.scene.currentControls().setOrbitalPosition(undefined, orientation.heading, orientation.tilt, isAnimated);
 };
 
 /**
@@ -700,10 +610,7 @@ ApiGlobe.prototype.isAnimationEnabled = function isAnimationEnabled() {
  */
 ApiGlobe.prototype.setTilt = function setTilt(tilt, isAnimated) {
     isAnimated = isAnimated || this.isAnimationEnabled();
-    this.getStatusOrientation('old');
     return this.scene.currentControls().setTilt(tilt, isAnimated).then(() => {
-        this.getStatusOrientation('new');
-        this.viewerDiv.dispatchEvent(eventOrientation);
         this.scene.notifyChange(1);
     });
 };
@@ -718,10 +625,7 @@ ApiGlobe.prototype.setTilt = function setTilt(tilt, isAnimated) {
  */
 ApiGlobe.prototype.setHeading = function setHeading(heading, isAnimated) {
     isAnimated = isAnimated || this.isAnimationEnabled();
-    this.getStatusOrientation('old');
     return this.scene.currentControls().setHeading(heading, isAnimated).then(() => {
-        this.getStatusOrientation('new');
-        this.viewerDiv.dispatchEvent(eventOrientation);
         this.scene.notifyChange(1);
     });
 };
@@ -760,11 +664,6 @@ ApiGlobe.prototype.resetHeading = function resetHeading(isAnimated) {
 ApiGlobe.prototype.setSceneLoaded = function setSceneLoaded() {
     sceneIsLoaded = false;
     return this.sceneLoadedDeferred.promise;
-};
-
-ApiGlobe.prototype.getCenterStatus = function getCenterStatus(state) {
-    eventCenter.detail[state].longitude = this.getCenter().longitude;
-    eventCenter.detail[state].latitude = this.getCenter().latitude;
 };
 
 /**
@@ -837,16 +736,12 @@ ApiGlobe.prototype.setCameraTargetGeoPositionAdvanced = function setCameraTarget
  */
 ApiGlobe.prototype.setRange = function setRange(pRange, isAnimated) {
     isAnimated = isAnimated || this.isAnimationEnabled();
-    eventRange.detail.old = this.getRange();
-    eventZoom.detail.old = this.getZoomLevel();
 
     return this.scene.currentControls().setRange(pRange, isAnimated).then(() => {
         this.scene.notifyChange(1);
         return this.setSceneLoaded().then(() => {
             this.scene.currentControls().updateCameraTransformation();
             eventZoom.detail.new = this.getZoomLevel();
-            eventRange.detail.new = this.getRange();
-            this.viewerDiv.dispatchEvent(eventRange);
         });
     });
 };
@@ -862,7 +757,6 @@ ApiGlobe.prototype.pan = function pan(pVector) {
     this.scene.notifyChange(1);
     this.setSceneLoaded().then(() => {
         this.scene.currentControls().updateCameraTransformation();
-        this.viewerDiv.dispatchEvent(eventPan);
     });
 };
 
@@ -1018,46 +912,13 @@ ApiGlobe.prototype.getRangeFromScale = function getRangeFromScale(zoomScale, pit
  */
 
 ApiGlobe.prototype.addEventListener = function addEventListenerProto(eventname, callback) {
-    if (eventname == 'layerchanged') {
-        this.viewerDiv.addEventListener('layerchanged', callback, false);
-        this.addEventListenerLayerChanged();
-    } else if (eventname == 'centerchanged') {
-        _handlerCenter = this.callbackCenterChanged.bind(this);
-        this.viewerDiv.addEventListener('centerchanged', callback, false);
-        this.addEventListenerCenterChanged();
-    } else if (eventname == 'zoomchanged') {
+    if (eventname == 'zoomchanged') {
         _handlerZoom = this.callbackZoomChanged.bind(this);
         this.viewerDiv.addEventListener('zoomchanged', callback, false);
         this.addEventListenerZoomChanged();
-    } else if (eventname == 'orientationchanged') {
-        _handlerOrientation = this.callbackOrientationChanged.bind(this);
-        this.viewerDiv.addEventListener('orientationchanged', callback, false);
-        this.addEventListenerOrientationChanged();
     } else {
         this.viewerDiv.addEventListener(eventname, callback, false);
     }
-};
-
-ApiGlobe.prototype.addEventListenerLayerChanged = function addEventListenerLayerChanged() {
-    this.viewerDiv.addEventListener('layerchanged:visible', this.callbackLayerChanged, false);
-    this.viewerDiv.addEventListener('layerchanged:opacity', this.callbackLayerChanged, false);
-    this.viewerDiv.addEventListener('layerchanged:index', this.callbackLayerChanged, false);
-};
-
-ApiGlobe.prototype.callbackLayerChanged = function callbackLayerChanged() {
-    this.dispatchEvent(eventLayerChanged);
-};
-
-ApiGlobe.prototype.addEventListenerCenterChanged = function addEventListenerCenterChanged() {
-    this.getCenterStatus('new');
-    this.viewerDiv.addEventListener('centercontrolchanged', _handlerCenter, false);
-};
-
-ApiGlobe.prototype.callbackCenterChanged = function callbackCenterChanged() {
-    eventCenter.detail.old.longitude = eventCenter.detail.new.longitude;
-    eventCenter.detail.old.latitude = eventCenter.detail.new.latitude;
-    this.getCenterStatus('new');
-    this.viewerDiv.dispatchEvent(eventCenter);
 };
 
 ApiGlobe.prototype.addEventListenerZoomChanged = function addEventListenerZoomChanged() {
@@ -1071,18 +932,6 @@ ApiGlobe.prototype.callbackZoomChanged = function callbackZoomChanged() {
     this.viewerDiv.dispatchEvent(eventZoom);
 };
 
-ApiGlobe.prototype.addEventListenerOrientationChanged = function addEventListenerOrientationChanged() {
-    this.getStatusOrientation('new');
-    this.viewerDiv.addEventListener('orientationcontrolchanged', _handlerOrientation, false);
-};
-
-ApiGlobe.prototype.callbackOrientationChanged = function callbackOrientationChanged() {
-    eventOrientation.detail.old.tilt = eventOrientation.detail.new.tilt;
-    eventOrientation.detail.old.heading = eventOrientation.detail.new.heading;
-    this.getStatusOrientation('new');
-    this.viewerDiv.dispatchEvent(eventOrientation);
-};
-
 /**
  * Remove the event of events listener from the event target.
  * @constructor
@@ -1091,18 +940,9 @@ ApiGlobe.prototype.callbackOrientationChanged = function callbackOrientationChan
  */
 
 ApiGlobe.prototype.removeEventListener = function removeEventListenerProto(eventname, callback) {
-    if (eventname == 'layerchanged') {
-        this.viewerDiv.removeEventListener('layerchanged', callback, false);
-        this.removeEventListenerLayerChanged();
-    } else if (eventname == 'centerchanged') {
-        this.viewerDiv.removeEventListener('centerchanged', callback, false);
-        this.removeEventListenerCenterChanged();
-    } else if (eventname == 'zoomchanged') {
+    if (eventname == 'zoomchanged') {
         this.viewerDiv.removeEventListener('zoomchanged', callback, false);
         this.removeEventListenerZoomChanged();
-    } else if (eventname == 'orientationchanged') {
-        this.viewerDiv.removeEventListener('orientationchanged', callback, false);
-        this.removeEventListenerOrientationChanged();
     } else {
         this.viewerDiv.removeEventListener(eventname, callback, false);
     }
@@ -1114,14 +954,8 @@ ApiGlobe.prototype.removeEventListenerLayerChanged = function removeEventListene
     this.viewerDiv.removeEventListener('layerchanged:index', this.callbackLayerChanged, false);
 };
 
-ApiGlobe.prototype.removeEventListenerCenterChanged = function removeEventListenerCenterChanged() {
-    this.viewerDiv.removeEventListener('centercontrolchanged', _handlerCenter, false);
-};
 ApiGlobe.prototype.removeEventListenerZoomChanged = function removeEventListenerZoomChanged() {
     this.viewerDiv.removeEventListener('zoomcontrolchanged', _handlerZoom, false);
-};
-ApiGlobe.prototype.removeEventListenerOrientationChanged = function removeEventListenerOrientationChanged() {
-    this.viewerDiv.removeEventListener('orientationcontrolchanged', _handlerOrientation, false);
 };
 
 /**
