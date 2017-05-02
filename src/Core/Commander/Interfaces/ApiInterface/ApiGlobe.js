@@ -931,7 +931,7 @@ ApiGlobe.prototype.loadGPX = function loadGPX(url) {
 };
 
 
-
+// AddPin to specific location using scene function
 ApiGlobe.prototype.addPinAtLocation = function (coordCarto){
     
     var coordinate3D = new C.EPSG_4326(coordCarto.longitude, coordCarto.latitude, coordCarto.altitude).as('EPSG:4978').xyz();
