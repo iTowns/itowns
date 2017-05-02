@@ -86,26 +86,25 @@ WMTS_Provider.prototype.url = function url(coWMTS, layer) {
  * @param {type} coWMTS : coord WMTS
  * @returns {WMTS_Provider_L15.WMTS_Provider.prototype@pro;_IoDriver@call;read@call;then}
  */
-WMTS_Provider.prototype.getXbilTexture = function getXbilTexture(tile, layer, parentTextures) {
-    const coordWMTS = tile.wmtsCoords[layer.options.tileMatrixSet][0];
+WMTS_Provider.prototype.getXbilTexture = function getXbilTexture(tile, layer, targetZoom) {
     const pitch = new THREE.Vector3(0.0, 0.0, 1.0);
+    let coordWMTS = tile.wmtsCoords[layer.options.tileMatrixSet][0];
 
-    if (parentTextures) {
-        WMTS_WGS84Parent(
-            coordWMTS,
-            parentTextures[0].coordWMTS.zoom,
-            pitch);
-        const { min, max } = OGCWebServiceHelper.ioDXBIL.computeMinMaxElevation(
-                parentTextures[0].image.data,
-                SIZE_TEXTURE_TILE, SIZE_TEXTURE_TILE,
-                pitch);
-        return Promise.resolve({ pitch, texture: parentTextures[0], min, max });
+    if (targetZoom && targetZoom !== coordWMTS.zoom) {
+        coordWMTS = WMTS_WGS84Parent(coordWMTS, targetZoom, pitch);
     }
 
     const url = this.url(coordWMTS, layer);
 
-    return OGCWebServiceHelper.getXBilTextureByUrl(url, pitch).then((result) => {
+    return OGCWebServiceHelper.getXBilTextureByUrl(url).then((result) => {
+        const { min, max } = OGCWebServiceHelper.ioDXBIL.computeMinMaxElevation(
+        result.texture.image.data,
+        SIZE_TEXTURE_TILE, SIZE_TEXTURE_TILE,
+        pitch);
+        result.min = min === undefined ? 0 : min;
+        result.max = max === undefined ? 0 : max;
         result.texture.coordWMTS = coordWMTS;
+        result.pitch = pitch;
         return result;
     });
 };
@@ -132,7 +131,7 @@ WMTS_Provider.prototype.getColorTexture = function getColorTexture(coordWMTS, la
 WMTS_Provider.prototype.executeCommand = function executeCommand(command) {
     const layer = command.layer;
     const tile = command.requester;
-    const parentTextures = command.parentTextures;
+
     const supportedFormats = {
         'image/png': this.getColorTextures.bind(this),
         'image/jpg': this.getColorTextures.bind(this),
@@ -142,7 +141,7 @@ WMTS_Provider.prototype.executeCommand = function executeCommand(command) {
 
     const func = supportedFormats[layer.options.mimetype];
     if (func) {
-        return func(tile, layer, parentTextures);
+        return func(tile, layer, command.targetLevel);
     } else {
         return Promise.reject(new Error(`Unsupported mimetype ${layer.options.mimetype}`));
     }
@@ -157,38 +156,22 @@ WMTS_Provider.prototype.tileInsideLimit = function tileInsideLimit(tile, layer) 
     // This layer provides data starting at level = layer.options.zoom.min
     // (the zoom.max property is used when building the url to make
     //  sure we don't use invalid levels)
-    return layer.options.zoom.min <= tile.level;
+    return layer.options.zoom.min <= tile.wmtsCoords[layer.options.tileMatrixSet][0].zoom; // && tile.level <= layer.zoom.max;
 };
 
-WMTS_Provider.prototype.getColorTextures = function getColorTextures(tile, layer, parentTextures) {
-    const promises = [];
+WMTS_Provider.prototype.getColorTextures = function getColorTextures(tile, layer) {
     if (tile.material === null) {
         return Promise.resolve();
     }
+    const promises = [];
+    const bcoord = tile.wmtsCoords[layer.options.tileMatrixSet];
 
-    // Request parent's texture if no texture at all
-    if (this.tileInsideLimit(tile, layer)) {
-        const bcoord = tile.wmtsCoords[layer.options.tileMatrixSet];
-
-        for (let row = bcoord[1].row; row >= bcoord[0].row; row--) {
-            let coordWMTS = new CoordWMTS(bcoord[0].zoom, row, bcoord[0].col);
-
-            if (parentTextures) {
-                const pitch = new THREE.Vector3();
-                coordWMTS = WMTS_WGS84Parent(coordWMTS, parentTextures[0].coordWMTS.zoom, pitch);
-                promises.push(Promise.resolve({ pitch,
-                    texture: parentTextures.find(texture => texture.coordWMTS.equals(coordWMTS)),
-                }));
-            } else {
-                promises.push(this.getColorTexture(coordWMTS, layer));
-            }
-        }
+    for (let row = bcoord[1].row; row >= bcoord[0].row; row--) {
+        const coordWMTS = new CoordWMTS(bcoord[0].zoom, row, bcoord[0].col);
+        promises.push(this.getColorTexture(coordWMTS, layer));
     }
 
-    if (promises.length)
-        { return Promise.all(promises); }
-    else
-        { return Promise.resolve(); }
+    return Promise.all(promises);
 };
 
 export default WMTS_Provider;

@@ -147,13 +147,15 @@ ApiGlobe.prototype.addGeometryLayer = function addGeometryLayer(layer) {
 
 ApiGlobe.prototype.addImageryLayer = function addImageryLayer(layer) {
     preprocessLayer(layer, this.scene.scheduler.getProtocolProvider(layer.protocol));
-    const map = this.scene.getMap();
     if (this.getLayerById(layer.id)) {
-      // eslint-disable-next-line no-console
+        // eslint-disable-next-line no-console
         console.error(`Error : id "${layer.id}" already exist, WARNING your layer isn't added`);
     } else {
-        map.layersConfiguration.addColorLayer(layer);
-        this.viewerDiv.dispatchEvent(eventLayerAdded);
+        this.scene.getMap().layersConfiguration.addColorLayer(layer);
+        this.scene.notifyChange(1, true);
+        this.setSceneLoaded().then(() => {
+            this.viewerDiv.dispatchEvent(eventLayerAdded);
+        });
     }
 };
 
@@ -248,13 +250,15 @@ ApiGlobe.prototype.addElevationLayer = function addElevationLayer(layer) {
     }
 
     preprocessLayer(layer, this.scene.scheduler.getProtocolProvider(layer.protocol));
-    const map = this.scene.getMap();
     if (this.getLayerById(layer.id)) {
       // eslint-disable-next-line no-console
         console.error(`Error : id "${layer.id}" already exist, WARNING your layer isn't added`);
     } else {
-        map.layersConfiguration.addElevationLayer(layer);
-        this.viewerDiv.dispatchEvent(eventLayerAdded);
+        this.scene.getMap().layersConfiguration.addElevationLayer(layer);
+        this.scene.notifyChange(1, true);
+        this.setSceneLoaded().then(() => {
+            this.viewerDiv.dispatchEvent(eventLayerAdded);
+        });
     }
 };
 

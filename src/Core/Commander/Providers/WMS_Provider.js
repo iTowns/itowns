@@ -8,24 +8,6 @@
 import * as THREE from 'three';
 import BoundingBox from '../../../Scene/BoundingBox';
 import OGCWebServiceHelper from './OGCWebServiceHelper';
-import { UNIT } from '../../Geographic/Coordinates';
-
-const WMS_WGS84Parent = function WMS_WGS84Parent(bbox, bboxParent) {
-    const dim = bbox.dimensions(UNIT.RADIAN);
-    const dimParent = bboxParent.dimensions(UNIT.RADIAN);
-    const scale = dim.x / dimParent.x;
-
-    const x =
-        Math.abs(bbox.west(UNIT.RADIAN) - bboxParent.west(UNIT.RADIAN)) /
-        dimParent.x;
-    const y =
-        Math.abs(
-            bbox.south(UNIT.RADIAN) + dim.y -
-            (bboxParent.south(UNIT.RADIAN) + dimParent.y)) /
-        dimParent.y;
-
-    return new THREE.Vector3(x, y, scale);
-};
 
 /**
  * Return url wmts MNT
@@ -113,14 +95,7 @@ WMS_Provider.prototype.getXbilTexture = function getXbilTexture(tile, layer) {
 };
 
 WMS_Provider.prototype.executeCommand = function executeCommand(command) {
-    const parentTextures = command.parentTextures;
     const tile = command.requester;
-
-    if (parentTextures) {
-        const texture = parentTextures[0];
-        const pitch = WMS_WGS84Parent(tile.bbox, texture.bbox);
-        return Promise.resolve({ pitch, texture });
-    }
 
     const layer = command.layer;
     const supportedFormats = {
