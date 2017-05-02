@@ -7,7 +7,7 @@
 import * as THREE from 'three';
 import RendererConstant from '../Renderer/RendererConstant';
 import { chooseNextLevelToFetch } from './LayerUpdateStrategy';
-import { l_ELEVATION, l_COLOR } from '../Renderer/LayeredMaterial';
+import { l_ELEVATION, l_COLOR, EMPTY_TEXTURE_ZOOM } from '../Renderer/LayeredMaterial';
 import LayerUpdateState from './LayerUpdateState';
 import { CancelledCommandException } from '../Core/Commander/Scheduler';
 import { ellipsoidSizes } from '../Core/Geographic/Coordinates';
@@ -68,8 +68,10 @@ NodeProcess.prototype.frustumCulling = function frustumCulling(node, camera) {
     return frustum.intersectsObject(node);
 };
 
+const MIN_ZOOM_DISPLAYED_TILE = 2;
+
 NodeProcess.prototype.checkNodeSSE = function checkNodeSSE(node) {
-    return SSE_SUBDIVISION_THRESHOLD < node.sse || node.level <= 2;
+    return SSE_SUBDIVISION_THRESHOLD < node.sse || node.level < MIN_ZOOM_DISPLAYED_TILE;
 };
 
 NodeProcess.prototype.subdivideNode = function subdivideNode(node, camera, params) {
@@ -91,46 +93,13 @@ NodeProcess.prototype.subdivideNode = function subdivideNode(node, camera, param
             };
 
             quadtree.scheduler.execute(command).then((child) => {
-                let colorTextureCount = 0;
-                const paramMaterial = [];
-
-                // update wmts
-                const colorLayers = params.layersConfig.getColorLayers();
-
-                // update Imagery wmts
-                for (const layer of colorLayers) {
-                    if (layer.tileInsideLimit(child, layer)) {
-                        OGCWebServiceHelper.computeTileMatrixSetCoordinates(child, layer);
-                        const texturesCount = layer.tileTextureCount ?
-                            layer.tileTextureCount(child, layer) : 1;
-
-                        paramMaterial.push({
-                            tileMT: layer.options.tileMatrixSet,
-                            texturesCount,
-                            visible: params.layersConfig.isColorLayerVisible(layer.id),
-                            opacity: params.layersConfig.getColorLayerOpacity(layer.id),
-                            fx: layer.fx,
-                            idLayer: layer.id,
-                        });
-
-                        colorTextureCount += texturesCount;
+                child.setLightingParameters(params.layersConfig.lightingLayers[0]);
+                if (child.material.elevationLayersId.length) {
+                    // need to force update elevation when delta is important
+                    if (child.level - child.material.getElevationLayerLevel() > 6) {
+                        updateNodeElevation(this.scene, params.tree, child, params.layersConfig, true);
                     }
                 }
-
-                // update Imagery wmts
-                const elevationLayers = params.layersConfig.getElevationLayers();
-                let canHaveElevation = false;
-                for (const layer of elevationLayers) {
-                    OGCWebServiceHelper.computeTileMatrixSetCoordinates(child, layer);
-                    canHaveElevation |= layer.tileInsideLimit(child, layer);
-                }
-
-                child.setColorLayerParameters(paramMaterial, params.layersConfig.lightingLayers[0]);
-                child.texturesNeeded = colorTextureCount + canHaveElevation;
-
-                // request layers (imagery/elevation) update
-                this.refineNodeLayers(child, camera, params);
-
                 if (__DEBUG__) {
                     const geometryLayer = params.layersConfig.getGeometryLayers()[0];
                     child.material.uniforms.showOutline = { value: geometryLayer.showOutline || false };
@@ -156,7 +125,7 @@ function refinementCommandCancellationFn(cmd) {
     // allow cancellation of the command if the node isn't visible anymore
     return cmd.requester.parent.childrenLoaded() &&
         cmd.requester.visible === false &&
-        cmd.requester.level >= 2;
+        cmd.requester.level >= 2 && !cmd.force;
 }
 
 NodeProcess.prototype.refineNodeLayers = function refineNodeLayers(node, camera, params) {
@@ -170,9 +139,11 @@ NodeProcess.prototype.refineNodeLayers = function refineNodeLayers(node, camera,
         updateNodeImagery,
     ];
 
-    for (let typeLayer = 0; typeLayer < 2; typeLayer++) {
-        if (!node.loaded || node.isLayerTypeDownscaled(typeLayer)) {
-            layerFunctions[typeLayer](this.scene, params.tree, node, params.layersConfig, !node.loaded);
+    // Priorize color layer
+    for (let typeLayer = 1; typeLayer >= 0; typeLayer--) {
+        // node.layerUpdateState.length === 0 means Layers haven't been never refined
+        if (!node.layerUpdateState.length || node.isLayerTypeDownscaled(typeLayer)) {
+            layerFunctions[typeLayer](this.scene, params.tree, node, params.layersConfig);
         }
     }
 };
@@ -187,13 +158,9 @@ NodeProcess.prototype.hideNodeChildren = function hideNodeChildren(node) {
 function nodeCommandQueuePriorityFunction(node) {
     // We know that 'node' is visible because commands can only be
     // issued for visible nodes.
-    //
-    if (!node.loaded) {
-        // Prioritize lower-level (ie: bigger) non-loaded nodes
-        // because we need them to be loaded to be able
-        // to subdivide.
-        return 1000 - node.level;
-    } else if (node.isDisplayed()) {
+
+    // TODO: need priorization of displayed nodes
+    if (node.isDisplayed()) {
         // Then prefer displayed() node over non-displayed one
         return 100;
     } else {
@@ -209,6 +176,7 @@ function updateNodeImagery(scene, quadtree, node, layersConfig, force) {
     for (let i = 0; i < colorLayers.length; i++) {
         const layer = colorLayers[i];
 
+        OGCWebServiceHelper.computeTileMatrixSetCoordinates(node, layer.options.tileMatrixSet);
         // is tile covered by this layer?
         // We test early (rather than after chooseNextLevelToFetch like elevation)
         // because colorParams only exist for tiles where tileInsideLimit is true
@@ -225,6 +193,25 @@ function updateNodeImagery(scene, quadtree, node, layersConfig, force) {
             continue;
         }
 
+        const material = node.materials[RendererConstant.FINAL];
+
+
+        if (material.indexOfColorLayer(layer.id) === -1) {
+            const texturesCount = layer.tileTextureCount ?
+                layer.tileTextureCount(node, layer) : 1;
+
+            const paramMaterial = {
+                tileMT: layer.options.tileMatrixSet,
+                texturesCount,
+                visible: layersConfig.isColorLayerVisible(layer.id),
+                opacity: layersConfig.getColorLayerOpacity(layer.id),
+                fx: layer.fx,
+                idLayer: layer.id,
+            };
+
+            material.pushLayer(paramMaterial);
+        }
+
         if (!force) {
             // does this tile needs a new texture?
             if (!node.isColorLayerDownscaled(layer.id)) {
@@ -237,11 +224,11 @@ function updateNodeImagery(scene, quadtree, node, layersConfig, force) {
             }
         }
 
-        const searchInParent = !node.isColorLayerLoaded(layer.id) && node.parent.isColorLayerLoaded(layer.id);
         const currentLevel = node.materials[RendererConstant.FINAL].getColorLayerLevelById(layer.id);
 
-        if (currentLevel > -1) {
-            var targetLevel = chooseNextLevelToFetch(layer.updateStrategy.type, node.level, currentLevel, layer.updateStrategy.options);
+        if (currentLevel > EMPTY_TEXTURE_ZOOM) {
+            const zoom = node.wmtsCoords[layer.options.tileMatrixSet || 'WGS84G'][1].zoom;
+            var targetLevel = chooseNextLevelToFetch(layer.updateStrategy.type, zoom, currentLevel, layer.updateStrategy.options);
             if (targetLevel <= currentLevel) {
                 continue;
             }
@@ -254,12 +241,9 @@ function updateNodeImagery(scene, quadtree, node, layersConfig, force) {
             requester: node,
             priority: nodeCommandQueuePriorityFunction(node),
             earlyDropFunction: refinementCommandCancellationFn,
-            parentTextures: searchInParent ? node.parent.getLayerTextures(l_COLOR, layer.id) : undefined,
-            /* redraw only if we're aren't using a texture from our parent */
-            redraw: (!searchInParent),
         };
 
-        promises.push(quadtree.scheduler.execute(command, searchInParent).then(
+        promises.push(quadtree.scheduler.execute(command).then(
             (result) => {
                 if (Array.isArray(result)) {
                     node.setTexturesLayer(result, l_COLOR, layer.id);
@@ -288,11 +272,7 @@ function updateNodeImagery(scene, quadtree, node, layersConfig, force) {
             }));
     }
 
-    Promise.all(promises).then(() => {
-        if (node.parent) {
-            node.loadingCheck();
-        }
-    });
+    Promise.all(promises);
 }
 
 function updateNodeElevation(scene, quadtree, node, layersConfig, force) {
@@ -303,11 +283,12 @@ function updateNodeElevation(scene, quadtree, node, layersConfig, force) {
     const elevationLayers = layersConfig.getElevationLayers();
     let bestLayer = null;
 
-    const currentElevation = node.materials[RendererConstant.FINAL].getElevationLayerLevel();
+    const material = node.materials[RendererConstant.FINAL];
+    const currentElevation = material.getElevationLayerLevel();
 
-    // Step 0: currentElevevation is -1 BUT material.loadedTexturesCount[l_ELEVATION] is > 0
+    // Step 0: currentElevevation is EMPTY_TEXTURE_ZOOM BUT material.loadedTexturesCount[l_ELEVATION] is > 0
     // means that we already tried and failed to download an elevation texture
-    if (currentElevation == -1 && node.material.loadedTexturesCount[l_ELEVATION] > 0) {
+    if (currentElevation == EMPTY_TEXTURE_ZOOM && node.material.loadedTexturesCount[l_ELEVATION] > 0) {
         return;
     }
 
@@ -317,8 +298,11 @@ function updateNodeElevation(scene, quadtree, node, layersConfig, force) {
     // Again, LayeredMaterial's 1 elevation texture limitation forces us to `break` as soon
     // as one layer can supply a texture for this node. So ordering of elevation layers is important.
     // Ordering way of loop is important to find the best layer with tileInsideLimit
+    let targetLevel;
     for (let i = elevationLayers.length - 1; i >= 0; i--) {
         const layer = elevationLayers[i];
+
+        OGCWebServiceHelper.computeTileMatrixSetCoordinates(node, layer.options.tileMatrixSet);
 
         if (!layer.tileInsideLimit(node, layer)) {
             continue;
@@ -332,7 +316,7 @@ function updateNodeElevation(scene, quadtree, node, layersConfig, force) {
             node.layerUpdateState[layer.id] = new LayerUpdateState();
         }
 
-        if (!node.layerUpdateState[layer.id].canTryUpdate(ts)) {
+        if (!node.layerUpdateState[layer.id].canTryUpdate(ts) && !force) {
             // If we'd use continue, we could have 2 parallel elevation layers updating
             // at the same time. So we're forced to break here.
             // TODO: if the first layer chosen ends up stalled in error we'll never try
@@ -340,9 +324,11 @@ function updateNodeElevation(scene, quadtree, node, layersConfig, force) {
             break;
         }
 
-        const targetLevel = chooseNextLevelToFetch(layer.updateStrategy.type, node.level, currentElevation, layer.updateStrategy.options);
 
-        if (targetLevel <= currentElevation) {
+        const zoom = node.wmtsCoords[layer.options.tileMatrixSet][1].zoom;
+        targetLevel = chooseNextLevelToFetch(layer.updateStrategy.type, zoom, currentElevation, layer.updateStrategy.options);
+
+        if (targetLevel <= currentElevation || layer.options.zoom.max < targetLevel) {
             continue;
         }
 
@@ -350,35 +336,30 @@ function updateNodeElevation(scene, quadtree, node, layersConfig, force) {
         break;
     }
 
+
     // If we found a usable layer, perform a query
     if (bestLayer !== null) {
+        if (material.elevationLayersId.length === 0) {
+            material.elevationLayersId.push(bestLayer.id);
+        }
         node.layerUpdateState[bestLayer.id].newTry();
-
-        // Elevation layer search in parent, from the moment it exceeds its maximum zoom
-        const searchInParent = (bestLayer.zoom.max < node.level) || (!node.isElevationLayerLoaded() && node.parent.isElevationLayerLoaded());
 
         const command = {
             /* mandatory */
             layer: bestLayer,
             requester: node,
+            targetLevel,
             priority: nodeCommandQueuePriorityFunction(node),
             earlyDropFunction: refinementCommandCancellationFn,
-            parentTextures: searchInParent ? node.parent.getLayerTextures(l_ELEVATION) : undefined,
-            /* redraw only if we're aren't using a texture from our parent */
-            redraw: (!searchInParent),
+            force,
         };
 
-        quadtree.scheduler.execute(command, searchInParent).then(
+        quadtree.scheduler.execute(command).then(
             (terrain) => {
                 node.layerUpdateState[bestLayer.id].success();
 
                 if (node.material === null) {
                     return;
-                }
-
-                if (terrain.max === undefined) {
-                    terrain.min = (searchInParent ? node.parent : node).bbox.bottom();
-                    terrain.max = (searchInParent ? node.parent : node).bbox.top();
                 }
 
                 node.setTextureElevation(terrain);
@@ -410,6 +391,9 @@ NodeProcess.prototype.processNode = function processNode(node, camera, params) {
         const sse = this.checkNodeSSE(node);
         const hidden = sse && node.childrenLoaded();
 
+        // display children if possible
+        node.setDisplayed(!hidden);
+
         if (sse && params.tree.canSubdivideNode(node)) {
             // big screen space error: subdivide node, display children if possible
             this.subdivideNode(node, camera, params);
@@ -418,9 +402,6 @@ NodeProcess.prototype.processNode = function processNode(node, camera, params) {
             // so try to refine its textures
             this.refineNodeLayers(node, camera, params);
         }
-
-        // display children if possible
-        node.setDisplayed(!hidden);
         // todo uniformsProcess
     }
 

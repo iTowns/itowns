@@ -17,6 +17,10 @@ Projection.prototype.WGS84ToY = function WGS84ToY(latitude) {
     return 0.5 - Math.log(Math.tan(MathExt.PI_OV_FOUR + latitude * 0.5)) * MathExt.INV_TWO_PI;
 };
 
+Projection.prototype.YToWGS84 = function YToWGS84(y) {
+    return 2 * (Math.atan(Math.exp(-(y - 0.5) / MathExt.INV_TWO_PI)) - MathExt.PI_OV_FOUR);
+};
+
 Projection.prototype.WGS84ToOneSubY = function WGS84ToOneSubY(latitude) {
     return 0.5 + Math.log(Math.tan(MathExt.PI_OV_FOUR + latitude * 0.5)) * MathExt.INV_TWO_PI;
 };
@@ -92,7 +96,7 @@ Projection.prototype.WMTS_WGS84ToWMTS_PM = function WMTS_WGS84ToWMTS_PM(cWMTS, b
     const minRow = Math.floor(min);
     maxRow = Math.floor(max);
 
-    if (max - maxRow === 0.0 || maxRow === nbRow)
+    if (Number.isInteger(max))
         { maxRow--; }
 
     var minCol = cWMTS.col;

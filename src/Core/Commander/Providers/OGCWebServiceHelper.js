@@ -11,6 +11,7 @@ export const SIZE_TEXTURE_TILE = 256;
 // The PM textures overlap several tiles WGS84, it is to avoid net requests
 // Info : THREE.js have cache image https://github.com/mrdoob/three.js/blob/master/src/loaders/ImageLoader.js#L25
 const cache = CacheRessource();
+const cachePending = new Map();
 const ioDXBIL = new IoDriver_XBIL();
 const projection = new Projection();
 
@@ -37,43 +38,52 @@ export default {
         texture.anisotropy = 16;
 
         return promise.then(() => {
-            cache.addRessource(url, texture);
+            if (!cache.getRessource(url)) {
+                cache.addRessource(url, texture);
+            }
             return texture;
         });
     },
-    getXBilTextureByUrl(url, pitch) {
+    getXBilTextureByUrl(url) {
         const textureCache = cache.getRessource(url);
 
         if (textureCache !== undefined) {
-            const { min, max } = ioDXBIL.computeMinMaxElevation(
-                textureCache.image.data,
-                SIZE_TEXTURE_TILE, SIZE_TEXTURE_TILE,
-                pitch);
-            return Promise.resolve({ pitch, textureCache, min, max });
+            return Promise.resolve({ texture: textureCache });
         }
 
-        return ioDXBIL.read(url).then((result) => {
+        const promiseXBil = (cachePending.get(url) || ioDXBIL.read(url)).then((result) => {
             // TODO  RGBA is needed for navigator with no support in texture float
             // In RGBA elevation texture LinearFilter give some errors with nodata value.
             // need to rewrite sample function in shader
+
+            // loading concurrence
+            const textureConcurrence = cache.getRessource(url);
+            if (textureConcurrence) {
+                cachePending.delete(url);
+                return textureConcurrence;
+            }
+
             result.texture = getTextureFloat(result.floatArray);
             result.texture.generateMipmaps = false;
             result.texture.magFilter = THREE.LinearFilter;
             result.texture.minFilter = THREE.LinearFilter;
-            result.pitch = pitch;
-
             cache.addRessource(url, result.texture);
+            cachePending.delete(url);
 
             return result;
         });
+
+        cachePending.set(url, promiseXBil);
+
+        return promiseXBil;
     },
-    computeTileMatrixSetCoordinates(tile, layer) {
+    computeTileMatrixSetCoordinates(tile, tileMatrixSet) {
         // Are WMTS coordinates ready?
         if (!tile.wmtsCoords) {
             tile.wmtsCoords = {};
         }
 
-        const tileMatrixSet = layer.options.tileMatrixSet || 'WGS84G';
+        tileMatrixSet = tileMatrixSet || 'WGS84G';
         if (!(tileMatrixSet in tile.wmtsCoords)) {
             const tileCoord = projection.WGS84toWMTS(tile.bbox);
 
