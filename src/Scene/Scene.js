@@ -197,7 +197,7 @@ Scene.prototype.step = function step() {
         // update rendering
         if ((1000.0 / this.maxFramePerSec) < (ts - this.lastRenderTime)) {
             // only perform rendering if needed
-            if (this.needsRedraw || executedDuringUpdate > 0) {
+            if (this.needsRedraw) {
                 this.renderScene3D();
                 this.lastRenderTime = ts;
             }
