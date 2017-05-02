@@ -138,10 +138,17 @@ BoundingBox.prototype.offsetScale = function offsetScale(bbox) {
     if (bbox.crs() != this.crs()) {
         throw new Error('unsupported offscale between 2 diff crs');
     }
-    var pitX = Math.abs(bbox.west() - this.west()) / this._dimension.x;
-    var pitY = Math.abs(bbox.north() - this.north()) / this._dimension.y;
-    var scale = bbox._dimension.x / this._dimension.x;
-    return new THREE.Vector3(pitX, pitY, scale);
+
+    const dimension = {
+        x: Math.abs(this.east() - this.west()),
+        y: Math.abs(this.north() - this.south()),
+    };
+
+    var originX = (bbox.west() - this.west()) / dimension.x;
+    var originY = (bbox.north() - this.north()) / dimension.y;
+
+    var scale = Math.abs(bbox.east() - bbox.west()) / dimension.x;
+    return new THREE.Vector3(originX, originY, scale);
 };
 
 /**

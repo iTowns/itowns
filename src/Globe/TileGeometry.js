@@ -81,6 +81,9 @@ TileGeometry.prototype.computeBuffers = function computeBuffers(params, builder)
     var scratchBuffers = new Buffers();
 
     var nSeg = params.segment || 32;
+    // segments count :
+    // Tile : (nSeg + 1) * (nSeg + 1)
+    // Skirt : 8 * (nSeg - 1)
     var nVertex = (nSeg + 1) * (nSeg + 1) + 8 * (nSeg - 1); // correct pour uniquement les vertex
     var triangles = (nSeg) * (nSeg) + 16 * (nSeg - 1); // correct pour uniquement les vertex
 
