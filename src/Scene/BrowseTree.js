@@ -113,14 +113,6 @@ BrowseTree.prototype._browseNonDisplayableNode = function _browseNonDisplayableN
     node.setDisplayed(false);
 
     const sse = process.checkNodeSSE(node);
-    if (!node.loaded) {
-        // Make sure this node is not stuck in a !loaded state
-        // TODO: we could be smarter and do this only for visible tiles for instance
-        // but we need to be careful due to the number of possible states for a tile (pendingSubdivision,
-        // loaded, disposed etc). Also: once this is fixed we should be able to simplify the commandC
-        // cancellation function to something like: `return !node.isVisible()`
-        process.refineNodeLayers(node, camera, params);
-    }
 
     // recursively clean children
     if (node.children.length > 0) {

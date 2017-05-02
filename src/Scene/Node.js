@@ -16,7 +16,6 @@ function Node() {
     this.id = null;
     this.level = 0;
     this.screenSpaceError = 0.0;
-    this.loaded = false;
     // TODO: remove pendingSubdivision and use layerUpdateState instead
     this.pendingSubdivision = false;
     this.layerUpdateState = {};

@@ -12,10 +12,24 @@ import GlobeVS from './Shader/GlobeVS.glsl';
 import GlobeFS from './Shader/GlobeFS.glsl';
 import pitUV from './Shader/Chunk/pitUV.glsl';
 
-const EMPTY_TEXTURE_LEVEL = -1;
+export const EMPTY_TEXTURE_ZOOM = -1;
+
+const offsetToParent = function offsetToParent(cWMTS, levelParent) {
+    const diffLevel = cWMTS.zoom - levelParent;
+    const diff = Math.pow(2, diffLevel);
+    const invDiff = 1 / diff;
+
+    const r = (cWMTS.row - (cWMTS.row % diff)) * invDiff;
+    const c = (cWMTS.col - (cWMTS.col % diff)) * invDiff;
+
+    return new THREE.Vector3(
+        cWMTS.col * invDiff - c,
+        cWMTS.row * invDiff - r,
+        invDiff);
+};
 
 var emptyTexture = new THREE.Texture();
-emptyTexture.level = EMPTY_TEXTURE_LEVEL;
+emptyTexture.coordWMTS = { zoom: EMPTY_TEXTURE_ZOOM };
 
 const layerTypesCount = 2;
 var vector = new THREE.Vector3(0.0, 0.0, 0.0);
@@ -76,7 +90,7 @@ var moveElementsArraySafe = function moveElementsArraySafe(array,index, howMany,
 };
 /* eslint-enable */
 
-const LayeredMaterial = function LayeredMaterial(id) {
+const LayeredMaterial = function LayeredMaterial(material, coordsDestination, coordsSource) {
     BasicMaterial.call(this);
 
     const maxTexturesUnits = gfxEngine().glParams.maxTexturesUnits;
@@ -146,11 +160,76 @@ const LayeredMaterial = function LayeredMaterial(id) {
     // Light position
     this.uniforms.lightPosition = new THREE.Uniform(new THREE.Vector3(-0.5, 0.0, 1.0));
 
-    this.setUuid(id || 0);
-    this.wireframe = false;
-    // this.wireframe = true;
-
     this.colorLayersId = [];
+    this.elevationLayersId = [];
+
+    if (material instanceof LayeredMaterial) {
+        // inherit parent's elevation texture
+        if (material.getElevationLayerLevel() > EMPTY_TEXTURE_ZOOM) {
+            this.textures[l_ELEVATION][0] = material.textures[l_ELEVATION][0];
+            this.offsetScale[l_ELEVATION][0] = offsetToParent(coordsDestination.WGS84G[1], this.textures[l_ELEVATION][0].coordWMTS.zoom);
+            this.loadedTexturesCount[l_ELEVATION] = 1;
+            this.elevationLayersId = material.elevationLayersId;
+        }
+
+        // inherit parent's lighting
+        this.uniforms.lightPosition.value = material.uniforms.lightPosition.value;
+        this.uniforms.lightingEnabled.value = material.uniforms.lightingEnabled.value;
+
+        // inherit parent's color texture
+        let offsetTextures = 0;
+        // for all color layers
+        for (let i = 0; i < material.colorLayersId.length; i++) {
+            const layerId = material.colorLayersId[i];
+            // if parent's color layer is loaded
+            if (material.getColorLayerLevelById(layerId) > EMPTY_TEXTURE_ZOOM) {
+                // 1) ADD color layer to child
+                this.colorLayersId.push(layerId);
+                // Get new layer index
+                const index = this.colorLayersId.length - 1;
+
+                // 2) UPDATE Params layer
+                this.setLayerVisibility(material.uniforms.visibility.value[i]);
+                // Copy param layer
+                paramLayers[index] = new THREE.Vector4().copy(material.uniforms.paramLayers.value[i]);
+                const params = paramLayers[index];
+                // update offset texture
+                params.x = offsetTextures;
+
+                // 3) CONNECT parent's textures to child
+                const tileMatrixSet = params.y;
+                const coordSource = tileMatrixSet ? coordsSource.PM : coordsSource.WGS84G;
+                // Compute first row from destination
+                const firstRowParent = Math.pow(2, coordSource[0].zoom) - coordSource[1].row - 1;
+
+                const texturesCount = tileMatrixSet ? coordsDestination.PM[1].row - coordsDestination.PM[0].row + 1 : 1;
+
+                const coordDest = tileMatrixSet ? coordsDestination.PM[1].clone() : coordsDestination.WGS84G[1].clone();
+                // Count all destination row
+                const rowDestCount = Math.pow(2, coordDest.zoom);
+                // Get texture from parent
+                for (let t = params.x; t < params.x + texturesCount; t++) {
+                    // Compute texture destination's row
+                    const row = rowDestCount - coordDest.row - 1;
+                    // Compute texture source's row
+                    const rowSource = Math.trunc(row * 0.5);
+                    const slotSource = rowSource - firstRowParent + material.getTextureOffsetByLayerIndex(i);
+
+                    // Connect texture source to destination
+                    this.textures[l_COLOR][t] = material.textures[l_COLOR][slotSource];
+                    // Compute offset
+                    this.offsetScale[l_COLOR][t] = offsetToParent(coordDest, this.textures[l_COLOR][t].coordWMTS.zoom);
+                    // TODO reverse storage textures in Array Textures
+                    coordDest.row--;
+                }
+
+                this.layerTexturesCount[index] = texturesCount;
+                offsetTextures += texturesCount;
+            }
+        }
+        this.loadedTexturesCount[l_COLOR] = offsetTextures;
+        this.uniforms.colorLayersCount.value = this.colorLayersId.length;
+    }
 };
 
 LayeredMaterial.prototype = Object.create(BasicMaterial.prototype);
@@ -239,7 +318,7 @@ LayeredMaterial.prototype.removeColorLayer = function removeColorLayer(layer) {
     const removedTexturesLayer = this.textures[l_COLOR].splice(offset, texturesCount);
     this.offsetScale[l_COLOR].splice(offset, texturesCount);
 
-    const loadedTexturesLayerCount = removedTexturesLayer.reduce((sum, texture) => sum + (texture.level > -1), 0);
+    const loadedTexturesLayerCount = removedTexturesLayer.reduce((sum, texture) => sum + (texture.coordWMTS.zoom > EMPTY_TEXTURE_ZOOM), 0);
 
     // refill remove textures
     for (let i = 0, max = texturesCount; i < max; i++) {
@@ -308,8 +387,8 @@ LayeredMaterial.prototype.pushLayer = function pushLayer(param) {
     this.uniforms.colorLayersCount.value = this.getColorLayersCount();
 };
 
-LayeredMaterial.prototype.indexOfColorLayer = function indexOfColorLayer(layer) {
-    return this.colorLayersId.indexOf(layer);
+LayeredMaterial.prototype.indexOfColorLayer = function indexOfColorLayer(layerId) {
+    return this.colorLayersId.indexOf(layerId);
 };
 
 LayeredMaterial.prototype.getColorLayersCount = function getColorLayersCount() {
@@ -324,8 +403,8 @@ LayeredMaterial.prototype.getTextureCountByLayerIndex = function getTextureCount
     return this.layerTexturesCount[index];
 };
 
-LayeredMaterial.prototype.getLayerTextureOffset = function getLayerTextureOffset(layer) {
-    const index = this.indexOfColorLayer(layer);
+LayeredMaterial.prototype.getLayerTextureOffset = function getLayerTextureOffset(layerId) {
+    const index = this.indexOfColorLayer(layerId);
     return index > -1 ? this.getTextureOffsetByLayerIndex(index) : -1;
 };
 
@@ -345,6 +424,10 @@ LayeredMaterial.prototype.setLayerUV = function setLayerUV(index, idUV) {
     this.uniforms.paramLayers.value[index].y = idUV;
 };
 
+LayeredMaterial.prototype.getLayerUV = function setLayerUV(index) {
+    return this.uniforms.paramLayers.value[index].y;
+};
+
 LayeredMaterial.prototype.setLayerOpacity = function setLayerOpacity(index, opacity) {
     if (this.uniforms.paramLayers.value[index])
         { this.uniforms.paramLayers.value[index].w = opacity; }
@@ -362,29 +445,29 @@ LayeredMaterial.prototype.getLoadedTexturesCount = function getLoadedTexturesCou
     return this.loadedTexturesCount[l_ELEVATION] + this.loadedTexturesCount[l_COLOR];
 };
 
-LayeredMaterial.prototype.isColorLayerDownscaled = function isColorLayerDownscaled(layer, level) {
-    return this.textures[l_COLOR][this.getLayerTextureOffset(layer)].level < level;
+LayeredMaterial.prototype.isColorLayerDownscaled = function isColorLayerDownscaled(layerId, scaledCoords) {
+    const index = this.indexOfColorLayer(layerId);
+    const zoom = this.uniforms.paramLayers.value[index].y ? scaledCoords.PM[0].zoom : scaledCoords.WGS84G[0].zoom;
+    return this.textures[l_COLOR][this.getLayerTextureOffset(layerId)] &&
+        this.textures[l_COLOR][this.getLayerTextureOffset(layerId)].coordWMTS.zoom < zoom;
 };
 
-LayeredMaterial.prototype.isLayerTypeDownscaled = function isLayerTypeDownscaled(layerType, level) {
+LayeredMaterial.prototype.isLayerTypeDownscaled = function isLayerTypeDownscaled(layerType, scaledCoords) {
     if (layerType === l_ELEVATION) {
         const tex = this.textures[l_ELEVATION][0];
-        // 3 possible cases
-        //   - initialization (no texture)
-        if (tex === undefined) {
-            return true;
-        }
         //   - blank texture (eg: empty xbil texture)
-        if (tex.level === EMPTY_TEXTURE_LEVEL) {
+        if (tex.coordWMTS.zoom === EMPTY_TEXTURE_ZOOM) {
             return false;
         }
         //   - regular texture
-        return tex.level < level;
+        return tex.coordWMTS.zoom < scaledCoords.WGS84G[0].zoom;
     } else if (layerType === l_COLOR) {
         // browse each layer
         for (let index = 0, max = this.colorLayersId.length; index < max; index++) {
             const offset = this.getTextureOffsetByLayerIndex(index);
-            if (this.textures[l_COLOR][offset].level < level) {
+            const texture = this.textures[l_COLOR][offset];
+            const zoom = this.uniforms.paramLayers.value[index].y ? scaledCoords.PM[0].zoom : scaledCoords.WGS84G[0].zoom;
+            if (texture.coordWMTS.zoom < zoom) {
                 return true;
             }
         }
@@ -394,26 +477,33 @@ LayeredMaterial.prototype.isLayerTypeDownscaled = function isLayerTypeDownscaled
 };
 
 LayeredMaterial.prototype.getColorLayerLevelById = function getColorLayerLevelById(colorLayerId) {
-    let index = this.indexOfColorLayer(colorLayerId);
-    // TODO: hiding the "colorLayerId is invalid", it's problem, needs new PR
+    const index = this.indexOfColorLayer(colorLayerId);
     if (index === -1) {
-        index = 0;
+        return EMPTY_TEXTURE_ZOOM;
     }
     const slot = this.getTextureOffsetByLayerIndex(index);
-    const tex = this.textures[l_COLOR][slot];
+    const texture = this.textures[l_COLOR][slot];
 
-    return tex ? tex.level : EMPTY_TEXTURE_LEVEL;
+    return texture ? texture.coordWMTS.zoom : EMPTY_TEXTURE_ZOOM;
 };
 
 LayeredMaterial.prototype.getElevationLayerLevel = function getElevationLayerLevel() {
-    return this.textures[l_ELEVATION][0].level;
+    return this.textures[l_ELEVATION][0].coordWMTS.zoom;
 };
 
-LayeredMaterial.prototype.getLayerLevel = function getLayerLevel(layerType, layer) {
-    if (layerType == l_ELEVATION) {
-        return this.getElevationLayerLevel();
+LayeredMaterial.prototype.getLayerTextures = function getLayerTextures(layerType, layerId) {
+    if (layerType === l_ELEVATION) {
+        return this.textures[l_ELEVATION];
+    }
+
+    const index = this.indexOfColorLayer(layerId);
+
+    if (index !== -1) {
+        const count = this.getTextureCountByLayerIndex(index);
+        const textureIndex = this.getTextureOffsetByLayerIndex(index);
+        return this.textures[l_COLOR].slice(textureIndex, textureIndex + count);
     } else {
-        return this.getColorLayerLevelById(layer);
+        throw new Error(`Invalid layer id "${layerId}"`);
     }
 };
 

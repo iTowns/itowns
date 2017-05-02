@@ -3,7 +3,6 @@
  * Class: Projection
  * Description: Outils de projections cartographiques et de convertion
  */
-import * as THREE from 'three';
 import CoordWMTS from './CoordWMTS';
 import MathExt from '../Math/MathExtended';
 import { UNIT } from './Coordinates';
@@ -16,6 +15,10 @@ function Projection() {
 
 Projection.prototype.WGS84ToY = function WGS84ToY(latitude) {
     return 0.5 - Math.log(Math.tan(MathExt.PI_OV_FOUR + latitude * 0.5)) * MathExt.INV_TWO_PI;
+};
+
+Projection.prototype.YToWGS84 = function YToWGS84(y) {
+    return 2 * (Math.atan(Math.exp(-(y - 0.5) / MathExt.INV_TWO_PI)) - MathExt.PI_OV_FOUR);
 };
 
 Projection.prototype.WGS84ToOneSubY = function WGS84ToOneSubY(latitude) {
@@ -32,7 +35,6 @@ Projection.prototype.WGS84LatitudeClamp = function WGS84LatitudeClamp(latitude) 
 
     return latitude;
 };
-
 
 Projection.prototype.getCoordWMTS_WGS84 = function getCoordWMTS_WGS84(tileCoord, bbox, tileMatrixSet) {
     // TODO: PM, WGS84G are hard-coded reference to IGN's TileMatrixSet
@@ -94,7 +96,7 @@ Projection.prototype.WMTS_WGS84ToWMTS_PM = function WMTS_WGS84ToWMTS_PM(cWMTS, b
     const minRow = Math.floor(min);
     maxRow = Math.floor(max);
 
-    if (max - maxRow === 0.0 || maxRow === nbRow)
+    if (Number.isInteger(max))
         { maxRow--; }
 
     var minCol = cWMTS.col;
@@ -104,38 +106,6 @@ Projection.prototype.WMTS_WGS84ToWMTS_PM = function WMTS_WGS84ToWMTS_PM(cWMTS, b
     wmtsBox.push(new CoordWMTS(level, maxRow, maxCol));
 
     return wmtsBox;
-};
-
-Projection.prototype.WMTS_WGS84Parent = function WMTS_WGS84Parent(cWMTS, levelParent, pitch) {
-    var diffLevel = cWMTS.zoom - levelParent;
-    var diff = Math.pow(2, diffLevel);
-    var invDiff = 1 / diff;
-
-    var r = (cWMTS.row - (cWMTS.row % diff)) * invDiff;
-    var c = (cWMTS.col - (cWMTS.col % diff)) * invDiff;
-
-    pitch.x = cWMTS.col * invDiff - c;
-    pitch.y = cWMTS.row * invDiff - r;
-    pitch.z = invDiff;
-
-    return new CoordWMTS(levelParent, r, c);
-};
-
-Projection.prototype.WMS_WGS84Parent = function WMS_WGS84Parent(bbox, bboxParent) {
-    const dim = bbox.dimensions(UNIT.RADIAN);
-    const dimParent = bboxParent.dimensions(UNIT.RADIAN);
-    var scale = dim.x / dimParent.x;
-
-    var x =
-        Math.abs(bbox.west(UNIT.RADIAN) - bboxParent.west(UNIT.RADIAN)) /
-        dimParent.x;
-    var y =
-        Math.abs(
-            bbox.south(UNIT.RADIAN) + dim.y -
-            (bboxParent.south(UNIT.RADIAN) + dimParent.y)) /
-        dimParent.y;
-
-    return new THREE.Vector3(x, y, scale);
 };
 
 Projection.prototype.WGS84toWMTS = function WGS84toWMTS(bbox) {

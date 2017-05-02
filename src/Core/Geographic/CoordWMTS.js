@@ -21,4 +21,8 @@ CoordWMTS.prototype.isInside = function isInside(limit) {
     return this.row >= limit.minTileRow && this.row <= limit.maxTileRow && this.col <= limit.maxTileCol && this.col >= limit.minTileCol;
 };
 
+CoordWMTS.prototype.equals = function equals(coordWMTS) {
+    return this.row === coordWMTS.row && this.zoom === coordWMTS.zoom && this.col === coordWMTS.col;
+};
+
 export default CoordWMTS;

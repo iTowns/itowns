@@ -52,7 +52,7 @@ void main() {
 
                 float dv = max(decode32(rgba),0.0);
 
-                // In RGBA elevation texture LinearFilter give some errors with nodata value.
+                // TODO In RGBA elevation texture LinearFilter give some errors with nodata value.
                 // need to rewrite sample function in shader
                 // simple solution
                 if(dv>5000.0)
