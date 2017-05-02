@@ -672,13 +672,8 @@ Scene.prototype.displayGrib = function orbit(data) {
 // Ugly to avoid bug, we use a readRenderTargetPixels and then pass it to the uniform as a dataTexture...
 Scene.prototype.updateTextureFBO = function(){
     
-    this.inc++;
-    
-    this.particleArrayRTT_OLD = this.quadArrayRTT.slice(0);//this.particleArrayRTT.slice(0);
-    var tex = new THREE.DataTexture( this.particleArrayRTT_OLD, this.gfxEngine.width, this.gfxEngine.height, THREE.RGBAFormat);
-    tex.needsUpdate = true;
-    this.plane.material.uniforms.particleTextureOld.value = tex;
-
+    // We use last rendered whole screen as the old texture to do accumulation in the quadScene rendering
+    this.plane.material.uniforms.particleTextureOld.value = this.quadDataTexture;
 
     // Simulation shaders
     this._renderer.render( this._scene, this._orthoCamera, this._rtt, true );
@@ -686,36 +681,29 @@ Scene.prototype.updateTextureFBO = function(){
     this.simulationMesh.material.uniforms.positions.value = this.dataTexture;
     this.dataTexture.needsUpdate = true;
 
-
-
     // Render shaders for particle
     this.particleQuadRenderer.render(this._particleScene, this.gfxEngine.camera.camera3D, this._particleRenderTarget, true);
     this.particleQuadRenderer.readRenderTargetPixels( this._particleRenderTarget, 0, 0, this.gfxEngine.width, this.gfxEngine.height, this.particleArrayRTT );
     this.particledataTexture.needsUpdate = true;  
 
-
+    // Quad renderer to accumulate particles positions on screen texture
     this.quadRenderer.render( this.quadScene, this.gfxEngine.camera.camera3D, this.quadRenderTarget, true);
     this.quadRenderer.readRenderTargetPixels( this.quadRenderTarget, 0, 0, this.gfxEngine.width, this.gfxEngine.height, this.quadArrayRTT);
     this.quadDataTexture.needsUpdate = true; 
 
-
+    // Final rendering of the whole scene to screen
     this.gfxEngine.renderer.render(this.gfxEngine.scene3D, this.gfxEngine.camera.camera3D);
-
 };
 
+
 Scene.prototype.animateTiming = function(){
-     
-    
+        
     this.timing += 0.001;
     this.simulationMesh.material.uniforms.timing.value = this.timing;
     this.updateTextureFBO();
 
-    //this.gfxEngine.update();
-
     requestAnimationFrame(this.animateTiming.bind(this));
-    // this._renderer.render( this._scene, this._orthoCamera, this._rtt, true );
-    // this.particlesField.material.uniforms.positions.value = this._rtt.texture;
-    // this.gfxEngine.renderer.clear();
+
 };
 
 
