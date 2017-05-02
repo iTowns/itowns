@@ -551,7 +551,6 @@ Scene.prototype.displayGrib = function orbit(data) {
 
 //**********************************************************************************************************************
 
-
   
     // Original position of particules. (random as a start)
     var data = getOneDegreeRepartition( this.width, this.height, 256 );
@@ -619,7 +618,6 @@ Scene.prototype.displayGrib = function orbit(data) {
         fragmentShader: vectorFieldFS,
         transparent: true,
         blending:THREE.AdditiveBlending,
-        generateMipmaps: false,
         depthTest:      true
     } );
 
@@ -639,29 +637,17 @@ Scene.prototype.displayGrib = function orbit(data) {
     this.particlesField.frustumCulled = false;
     this.particlesField.name = "particlesField";
     //  this.particlesField.material.uniforms.positions.value = this._rtt.texture; // textureVecPositions; 
-  
 
+    var sphereMask = new THREE.Mesh(new THREE.SphereGeometry(radius - 10000, 64, 64), new THREE.MeshBasicMaterial({color: 0x000000}) );
+    //sphereMask.depthTest = false;
+    //sphereMask.frustumCulled = true;
+    this._particleScene.add(sphereMask); // to hide particle behind earth
     this._particleScene.add(this.particlesField);
-
- //   this.gfxEngine.add3DScene( this.particlesField );
-
-  //  this.gfxEngine.renderer.render(this._particleScene, this.gfxEngine.camera.camera3D, this._particleRenderTarget, true);
 
     this._renderer.render( this._scene, this._orthoCamera, this._rtt, true );
     this._renderer.readRenderTargetPixels( this._rtt, 0, 0, this.width, this.height, this.arrayRTT );
     this.simulationMesh.material.uniforms.positions.value = this.dataTexture;
     this.dataTexture.needsUpdate = true;
-
-
-
-/*
-    this.gfxEngine.update(); 
-
-    this.gfxEngine.renderer.render(this._particleScene, this.gfxEngine.camera.camera3D, this._particleRenderTarget, true);
-    this.gfxEngine.renderer.readRenderTargetPixels( this._particleRenderTarget_OLD, 0, 0, this.gfxEngine.width, this.gfxEngine.height, this.particleArrayRTT_OLD );
-    this.particledataTexture_OLD.needsUpdate = true;
-  */  
-  
 
     //  this.gfxEngine.add3DScene(gribLayer);
     this.animateTiming();
@@ -692,6 +678,7 @@ Scene.prototype.updateTextureFBO = function(){
     this.quadDataTexture.needsUpdate = true; 
 
     // Final rendering of the whole scene to screen
+    this.gfxEngine.renderer.clear();
     this.gfxEngine.renderer.render(this.gfxEngine.scene3D, this.gfxEngine.camera.camera3D);
 };
 

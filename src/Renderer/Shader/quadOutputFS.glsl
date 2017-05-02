@@ -6,9 +6,9 @@ void main()
 {
 
 
-     vec3 currentColor = texture2D(quadTexture, vUv).rgb;
+     vec4 currentColor = texture2D(quadTexture, vUv);
 
-     gl_FragColor = vec4(currentColor, 1.0);
+     gl_FragColor = vec4(currentColor.rgb, currentColor.a);
 
  
  }
