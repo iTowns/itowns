@@ -189,7 +189,8 @@ const LayeredMaterial = function LayeredMaterial(material, coordsDestination, co
                 const index = this.colorLayersId.length - 1;
 
                 // 2) UPDATE Params layer
-                this.setLayerVisibility(material.uniforms.visibility.value[i]);
+                this.setLayerVisibility(index, material.uniforms.visibility.value[i]);
+
                 // Copy param layer
                 paramLayers[index] = new THREE.Vector4().copy(material.uniforms.paramLayers.value[i]);
                 const params = paramLayers[index];
