@@ -167,8 +167,10 @@ function Debug(scene) {
             nbDisplayedDataset.data.shift();
         }
 
-        nbObjectsChart.update();
-        nbVisibleChart.update();
+        if (chartDiv.style.display != 'none') {
+            nbObjectsChart.update();
+            nbVisibleChart.update();
+        }
     }
 
     // hook that to scene.update
