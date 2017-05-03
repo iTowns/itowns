@@ -149,6 +149,25 @@ function Debug(scene) {
             }
         }
 
+
+        // update line graph
+        const newCount = countElem(scene.gfxEngine.scene3D);
+
+        // test if we values didn't change
+        if (nbObjectsDataset.data.length > 1) {
+            const last = nbObjectsDataset.data.length - 1;
+            if (nbObjectsDataset.data[last].y === newCount &&
+                nbVisibleDataset.data[last].y === totalVisible &&
+                nbDisplayedDataset.data[last].y === totalDisplayed) {
+                // nothing change: drop the last point, to keep more interesting (changing)
+                // data displayed
+                nbObjectsDataset.data.pop();
+                nbVisibleDataset.data.pop();
+                nbDisplayedDataset.data.pop();
+                nbObjectsChartLabel.pop();
+            }
+        }
+
         // update time
         const limit = 25;
         const timeInS = Math.floor((Date.now() - timestamp) / 1000);
@@ -157,8 +176,7 @@ function Debug(scene) {
             nbObjectsChartLabel.shift();
         }
 
-        // update line graph
-        nbObjectsDataset.data.push({ x: timeInS, y: countElem(scene.gfxEngine.scene3D) });
+        nbObjectsDataset.data.push({ x: timeInS, y: newCount });
         nbVisibleDataset.data.push({ x: timeInS, y: totalVisible });
         nbDisplayedDataset.data.push({ x: timeInS, y: totalDisplayed });
         if (nbObjectsDataset.data.length > limit) {
