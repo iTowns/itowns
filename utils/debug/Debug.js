@@ -247,7 +247,7 @@ function Debug(view, viewerDiv) {
     gui.add(state, 'eventsDebug').name('Debug event').onChange((() => {
         let eventFolder;
         return (newValue) => {
-            const controls = view.currentControls();
+            const controls = view.controls;
             const listeners = [];
             if (newValue) {
                 eventFolder = gui.addFolder('Events');
@@ -257,16 +257,16 @@ function Debug(view, viewerDiv) {
                 const roundedLat = Math.round(initialPosition.latitude() * 10000) / 10000;
                 const roundedLon = Math.round(initialPosition.longitude() * 10000) / 10000;
                 state.cameraTargetUpdated = `lat: ${roundedLat} lon: ${roundedLon}`;
-                const cameraTargetUpdatedController = eventFolder.add(state, 'cameraTargetUpdated').name('camera-target-updated');
+                const cameraTargetUpdatedController = eventFolder.add(state, 'cameraTargetUpdated').name('camera-target-changed');
                 const cameraTargetListener = (ev) => {
-                    const positionGeo = ev.newCameraTargetPosition.as('EPSG:4326');
+                    const positionGeo = ev.new.cameraTarget.as('EPSG:4326');
                     const roundedLat = Math.round(positionGeo.latitude() * 10000) / 10000;
                     const roundedLon = Math.round(positionGeo.longitude() * 10000) / 10000;
                     state.cameraTargetUpdated = `lat: ${roundedLat} lon: ${roundedLon}`;
                     cameraTargetUpdatedController.updateDisplay();
                 };
-                controls.addEventListener('camera-target-updated', cameraTargetListener);
-                listeners.push({ type: 'camera-target-updated', stateName: 'cameraTargetUpdated', fn: cameraTargetListener });
+                controls.addEventListener('camera-target-changed', cameraTargetListener);
+                listeners.push({ type: 'camera-target-changed', stateName: 'cameraTargetUpdated', fn: cameraTargetListener });
             } else {
                 for (const listener of listeners) {
                     controls.removeEventListener(listener.type, listener.fn);
