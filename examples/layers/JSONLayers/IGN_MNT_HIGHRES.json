@@ -26,9 +26,9 @@
 			},
 			"7": {
 				"minTileRow": 27,
-				"maxTileRow": 73,
-				"minTileCol": 124,
-				"maxTileCol": 160
+				"maxTileRow": 79,
+				"minTileCol": 84,
+				"maxTileCol": 167
 			},
 			"8": {
 				"minTileRow": 55,
@@ -50,9 +50,9 @@
 			},
 			"11": {
 				"minTileRow": 442,
-				"maxTileRow": 1171,
-				"minTileCol": 1989,
-				"maxTileCol": 2563
+				"maxTileRow": 1267,
+				"minTileCol": 1344,
+				"maxTileCol": 2683
 			},
 			"12": {
 				"minTileRow": 885,

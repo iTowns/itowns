@@ -228,6 +228,7 @@ function updateNodeImagery(scene, quadtree, node, layersConfig, force) {
                 continue;
             }
         }
+        // TODO: targetLevel shouldn't be ignored
 
         node.layerUpdateState[layer.id].newTry();
         const command = {
@@ -294,14 +295,11 @@ function updateNodeElevation(scene, quadtree, node, layersConfig, force) {
     // as one layer can supply a texture for this node. So ordering of elevation layers is important.
     // Ordering way of loop is important to find the best layer with tileInsideLimit
     let targetLevel;
-    for (let i = elevationLayers.length - 1; i >= 0; i--) {
+    for (let i = elevationLayers.length - 1; i >= 0 && !bestLayer; i--) {
+        let originalCoords = null;
         const layer = elevationLayers[i];
 
         OGCWebServiceHelper.computeTileMatrixSetCoordinates(node, layer.options.tileMatrixSet);
-
-        if (!layer.tileInsideLimit(node, layer)) {
-            continue;
-        }
 
         if (layersConfig.isLayerFrozen(layer.id) && !force) {
             continue;
@@ -319,16 +317,26 @@ function updateNodeElevation(scene, quadtree, node, layersConfig, force) {
             break;
         }
 
-
+        // TODO: WMTS specific
         const zoom = node.wmtsCoords[layer.options.tileMatrixSet][1].zoom;
         targetLevel = chooseNextLevelToFetch(layer.updateStrategy.type, zoom, currentElevation, layer.updateStrategy.options);
 
-        if (targetLevel <= currentElevation || layer.options.zoom.max < targetLevel) {
-            continue;
+        if (targetLevel < zoom) {
+            // Update wmts coord to match the requested level
+            originalCoords = node.wmtsCoords[layer.options.tileMatrixSet];
+            node.wmtsCoords[layer.options.tileMatrixSet] = [];
+            for (const c of originalCoords) {
+                const modified = OGCWebServiceHelper.WMTS_WGS84Parent(c, targetLevel);
+                node.wmtsCoords[layer.options.tileMatrixSet].push(modified);
+            }
         }
-
-        bestLayer = layer;
-        break;
+        if (currentElevation < targetLevel && layer.tileInsideLimit(node, layer)) {
+            bestLayer = layer;
+        }
+        if (originalCoords) {
+            // restore
+            node.wmtsCoords[layer.options.tileMatrixSet] = originalCoords;
+        }
     }
 
 

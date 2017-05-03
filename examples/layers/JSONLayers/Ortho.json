@@ -29,7 +29,7 @@
 			},
 			"4": {
 				"minTileRow": 0,
-				"maxTileRow": 6,
+				"maxTileRow": 16,
 				"minTileCol": 0,
 				"maxTileCol": 16
 			},
@@ -47,7 +47,7 @@
 			},
 			"7": {
 				"minTileRow": 3,
-				"maxTileRow": 28,
+				"maxTileRow": 128,
 				"minTileCol": 0,
 				"maxTileCol": 128
 			},
@@ -95,7 +95,7 @@
 			},
 			"15": {
 				"minTileRow": 10956,
-				"maxTileRow": 8513,
+				"maxTileRow": 18513,
 				"minTileCol": 165,
 				"maxTileCol": 31670
 			},
@@ -113,7 +113,7 @@
 			},
 			"18": {
 				"minTileRow": 87651,
-				"maxTileRow": 48105,
+				"maxTileRow": 148105,
 				"minTileCol": 1320,
 				"maxTileCol": 253366
 			},

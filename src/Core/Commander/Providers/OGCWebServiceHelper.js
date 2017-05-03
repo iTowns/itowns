@@ -3,6 +3,7 @@ import Fetcher from './Fetcher';
 import CacheRessource from './CacheRessource';
 import IoDriver_XBIL from './IoDriver_XBIL';
 import Projection from '../../Geographic/Projection';
+import CoordWMTS from '../../Geographic/CoordWMTS';
 
 
 export const SIZE_TEXTURE_TILE = 256;
@@ -90,5 +91,21 @@ export default {
             tile.wmtsCoords[tileMatrixSet] =
                 projection.getCoordWMTS_WGS84(tileCoord, tile.bbox, tileMatrixSet);
         }
+    },
+    WMTS_WGS84Parent(cWMTS, levelParent, pitch) {
+        const diffLevel = cWMTS.zoom - levelParent;
+        const diff = Math.pow(2, diffLevel);
+        const invDiff = 1 / diff;
+
+        const r = (cWMTS.row - (cWMTS.row % diff)) * invDiff;
+        const c = (cWMTS.col - (cWMTS.col % diff)) * invDiff;
+
+        if (pitch) {
+            pitch.x = cWMTS.col * invDiff - c;
+            pitch.y = cWMTS.row * invDiff - r;
+            pitch.z = invDiff;
+        }
+
+        return new CoordWMTS(levelParent, r, c);
     },
 };

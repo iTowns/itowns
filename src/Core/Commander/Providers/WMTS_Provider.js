@@ -8,21 +8,6 @@ import * as THREE from 'three';
 import CoordWMTS from '../../Geographic/CoordWMTS';
 import OGCWebServiceHelper, { SIZE_TEXTURE_TILE } from './OGCWebServiceHelper';
 
-const WMTS_WGS84Parent = function WMTS_WGS84Parent(cWMTS, levelParent, pitch) {
-    const diffLevel = cWMTS.zoom - levelParent;
-    const diff = Math.pow(2, diffLevel);
-    const invDiff = 1 / diff;
-
-    const r = (cWMTS.row - (cWMTS.row % diff)) * invDiff;
-    const c = (cWMTS.col - (cWMTS.col % diff)) * invDiff;
-
-    pitch.x = cWMTS.col * invDiff - c;
-    pitch.y = cWMTS.row * invDiff - r;
-    pitch.z = invDiff;
-
-    return new CoordWMTS(levelParent, r, c);
-};
-
 function WMTS_Provider() {
 }
 
@@ -91,7 +76,7 @@ WMTS_Provider.prototype.getXbilTexture = function getXbilTexture(tile, layer, ta
     let coordWMTS = tile.wmtsCoords[layer.options.tileMatrixSet][0];
 
     if (targetZoom && targetZoom !== coordWMTS.zoom) {
-        coordWMTS = WMTS_WGS84Parent(coordWMTS, targetZoom, pitch);
+        coordWMTS = OGCWebServiceHelper.WMTS_WGS84Parent(coordWMTS, targetZoom, pitch);
     }
 
     const url = this.url(coordWMTS, layer);
@@ -156,7 +141,18 @@ WMTS_Provider.prototype.tileInsideLimit = function tileInsideLimit(tile, layer) 
     // This layer provides data starting at level = layer.options.zoom.min
     // (the zoom.max property is used when building the url to make
     //  sure we don't use invalid levels)
-    return layer.options.zoom.min <= tile.wmtsCoords[layer.options.tileMatrixSet][0].zoom; // && tile.level <= layer.zoom.max;
+    for (const c of tile.wmtsCoords[layer.options.tileMatrixSet]) {
+        if (!(c.zoom in layer.options.tileMatrixSetLimits)) {
+            return false;
+        }
+        if (c.row < layer.options.tileMatrixSetLimits[c.zoom].minTileRow ||
+            c.row > layer.options.tileMatrixSetLimits[c.zoom].maxTileRow ||
+            c.col < layer.options.tileMatrixSetLimits[c.zoom].minTileCol ||
+            c.col > layer.options.tileMatrixSetLimits[c.zoom].maxTileCol) {
+            return false;
+        }
+    }
+    return true;
 };
 
 WMTS_Provider.prototype.getColorTextures = function getColorTextures(tile, layer) {
