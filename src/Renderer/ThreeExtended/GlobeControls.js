@@ -12,7 +12,8 @@ import Sphere from '../../Core/Math/Sphere';
 import AnimationPlayer, { Animation, AnimatedExpression } from '../../Scene/AnimationPlayer';
 import { C } from '../../Core/Geographic/Coordinates';
 
-var selectClick = new CustomEvent('selectClick');
+const selectClick = new CustomEvent('selectClick');
+const clickDown = new CustomEvent('clickDown');
 
 // TODO:
 // Recast touch for globe
@@ -47,7 +48,6 @@ const CONTROL_KEYS = {
     S: 83,
 };
 
-// TODO: can be optimize for some uses
 var presiceSlerp = function presiceSlerp(qb, t) {
     if (t === 0) {
         return this;
@@ -773,7 +773,12 @@ function GlobeControls(camera, target, domElement, engine) {
                 this.mouseToPan(panDelta.x, panDelta.y);
 
                 panStart.copy(panEnd);
-            } else if (state === CONTROL_STATE.MOVE_GLOBE) {
+            } else if (keyS) {
+                // If the key 'S' is down, the engine selects node under mouse
+                selectClick.mouse = new THREE.Vector2(event.clientX - event.target.offsetLeft, event.clientY - event.target.offsetTop);
+                domElement.dispatchEvent(selectClick);
+            }
+            else if (state === CONTROL_STATE.MOVE_GLOBE) {
                 mouse.x = ((event.clientX - event.target.offsetLeft) / sizeRendering.width) * 2 - 1;
                 mouse.y = -((event.clientY - event.target.offsetTop) / sizeRendering.height) * 2 + 1;
 
@@ -825,6 +830,11 @@ function GlobeControls(camera, target, domElement, engine) {
                     ptScreenClick.y = event.clientY - event.target.offsetTop;
 
                     const point = getPickingPosition(ptScreenClick);
+                    // Dispatch 3D position of click for any services that need it
+                    clickDown.mouse = new THREE.Vector2(ptScreenClick.x, ptScreenClick.y);
+                    clickDown.coord3d = point;
+                    domElement.dispatchEvent(clickDown);
+
                     lastRotation = [];
                     // update tangent sphere which passes through the point
                     if (point) {
@@ -944,6 +954,7 @@ function GlobeControls(camera, target, domElement, engine) {
         keyCtrl = false;
         keyShift = false;
         keyS = false;
+        this.domElement.removeEventListener('mousemove', _handlerMouseMove, false);
     };
 
     var onKeyDown = function onKeyDown(event) {
@@ -990,6 +1001,7 @@ function GlobeControls(camera, target, domElement, engine) {
                 case CONTROL_KEYS.S:
                     // WARNING loop !!!
                     keyS = true;
+                    this.domElement.addEventListener('mousemove', _handlerMouseMove, false);
                     break;
                 default:
             }
@@ -1313,6 +1325,10 @@ GlobeControls.prototype.setCameraTargetPosition = function setCameraTargetPositi
         this.updateCameraTransformation(CONTROL_STATE.MOVE_GLOBE);
         return Promise.resolve();
     }
+};
+
+GlobeControls.prototype.getState = function getState() {
+    return state;
 };
 
 GlobeControls.prototype.getRange = function getRange() {

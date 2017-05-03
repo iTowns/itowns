@@ -189,6 +189,11 @@ TileMesh.prototype.setTexturesLayer = function setTexturesLayer(textures, layerT
     }
 };
 
+TileMesh.prototype.setTextureFeatures = function setTextureFeatures(texture) {
+    this.material.uniforms.rasterFeatures.value = true;
+    this.material.uniforms.featureTexture.value = texture;
+};
+
 TileMesh.prototype.getLayerTextures = function getLayerTextures(layerType, layerId) {
     const mat = this.materials[RendererConstant.FINAL];
     return mat.getLayerTextures(layerType, layerId);

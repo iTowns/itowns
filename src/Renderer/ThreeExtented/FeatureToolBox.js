@@ -6,7 +6,7 @@
 
 import * as THREE from 'three';
 import Earcut from 'earcut';
-import { C, ellipsoidSizes } from '../../Core/Geographic/Coordinates';
+import { UNIT, C, ellipsoidSizes } from '../../Core/Geographic/Coordinates';
 import Ellipsoid from '../../Core/Math/Ellipsoid';
 import BasicMaterial from '../../Renderer/BasicMaterial';
 import Lines from '../../Renderer/Lines';
@@ -412,6 +412,215 @@ FeatureToolBox.prototype.createCoordinateArray = function createCoordinateArray(
     return temp_array;
 };
 
+FeatureToolBox.prototype.intersectsegment = function intersectsegment(a, b, i, p) {
+    var d = new THREE.Vector2();
+    var e = new THREE.Vector2();
+    d.x = b.x - a.x;
+    d.y = b.y - a.y;
+    e.x = p.x - i.x;
+    e.y = p.y - i.y;
+    var denom = d.x * e.y - d.y * e.x;
+    if (denom == 0.0)
+       { return -1; }   // erreur, cas limite
+    var t = -(a.x * e.y - i.x * e.y - e.x * a.y + e.x * i.y) / denom;
+    if (t < 0.0 || t >= 1.0)
+      { return 0; }
+    var u = -(-d.x * a.y + d.x * i.y + d.y * a.x - d.y * i.x) / denom;
+    if (u < 0.0 || u >= 1.0)
+      { return 0; }
+    return 1;
+};
+
+/*
+ * Function that tests if a point p is inside a polygon using the classic
+ * Ray Casting algorithm
+ * @param {type} posGeo
+ * @returns {undefined}
+ */
+FeatureToolBox.prototype.inPolygon = function inPolygon(p, arrPoints) {
+    var k = new THREE.Vector2(6.0, 75.0); // This point should be out of the polygon
+    var nbintersections = 0;
+    for (var i = 0; i < arrPoints.length - 1; i++) {
+        var a = arrPoints[i];
+        var b = arrPoints[i + 1];// .xy;
+        var iseg = this.intersectsegment(a, b, k, p);
+        nbintersections += iseg;
+    }
+    return ((nbintersections % 2) === 1);
+};
+
+/**
+ *
+ * display feature attribute information at position p (lonlat)
+ */
+FeatureToolBox.prototype.showFeatureAttributesAtPos = function showFeatureAttributesAtPos(p, polygons) {
+    var intersect = false;
+    var properties;
+    var i = 0;
+    polygons = polygons || this.arrPolygons;
+    while (!intersect && i < polygons.length) {
+        intersect = this.inPolygon(p, polygons[i].polygon);
+        i++;
+    }
+
+    i--;
+    if (intersect && polygons[i].properties.description !== undefined) {
+        properties = polygons[i].properties;
+    }
+
+    if (!intersect) return undefined;
+
+    return properties;
+};
+
+
+FeatureToolBox.prototype.drawLine = function drawLine(coordOrigin, tileWH, p1, p2, thickness, ctx, prop) {
+    var tilePx = 256;
+    ctx.strokeStyle = prop.stroke; // "rgba(255, 0, 255, 0.5)";//"rgba(1,1,0,1)";
+    ctx.lineWidth = prop['stroke-width'];
+    ctx.globalAlpha = prop['stroke-opacity'];
+    ctx.beginPath();
+    var a = p1.sub(coordOrigin);
+    var b = p2.sub(coordOrigin);
+    a.divideScalar(tileWH.x).multiplyScalar(tilePx);
+    b.divideScalar(tileWH.x).multiplyScalar(tilePx);
+   //      console.log("aa",coordOrigin,tileWH,p1,p2,a,b);
+      //       if( (a.x>=0 && a.x<= tilePx && a.y >=0 && a.y <=tilePx)
+      //          && (b.x>=0 && b.x<= tilePx && b.y >=0 && b.y <=tilePx)){
+    ctx.moveTo(a.x, tilePx - a.y);
+    ctx.lineTo(b.x, tilePx - b.y);
+    ctx.stroke();
+    ctx.globalAlpha = 1.0;
+      //      }
+   // }
+};
+
+/*
+ * Draw 2D polygon in tile (rasterized)
+ * @param {type} polygon
+ * @param {type} coordOrigin
+ * @param {type} tileWH
+ * @param {type} ctx
+ * @param {type} prop
+ * @returns {undefined}
+ */
+FeatureToolBox.prototype.drawPolygon = function drawPolygon(polygon, coordOrigin, tileWH, ctx, prop) {
+    var tilePx = 256;
+    ctx.strokeStyle = prop.stroke;
+    ctx.lineWidth = prop['stroke-width'];
+    ctx.fillStyle = prop.fill; // "rgba(255, 0, 255, 0.5)";//"rgba(1,1,0,1)";
+    ctx.globalAlpha = prop['fill-opacity'];
+    // ctx["stroke-opacity"] = 0.8;
+    // console.log(ctx.strokeStyle);
+    ctx.beginPath();
+
+    for (var i = 0; i < polygon.length - 1; ++i) {
+        var p1 = polygon[i];
+        var p2 = polygon[i + 1];
+        var a = p1.clone().sub(coordOrigin);
+        var b = p2.clone().sub(coordOrigin);
+
+        a.divideScalar(tileWH.x).multiplyScalar(tilePx);
+        b.divideScalar(tileWH.x).multiplyScalar(tilePx);
+
+        if (i === 0) {
+            ctx.moveTo(a.x, tilePx - a.y);
+            ctx.lineTo(b.x, tilePx - b.y);
+        } else {
+            ctx.lineTo(b.x, tilePx - b.y);
+        }
+    }
+    ctx.closePath();
+    ctx.globalAlpha = prop['fill-opacity'];
+    ctx.fill();
+    ctx.globalAlpha = prop['stroke-opacity'];
+    ctx.stroke();
+    ctx.globalAlpha = 1.0;
+};
+
+
+// parameters in deg, vec2
+FeatureToolBox.prototype.createRasterImage = function createRasterImage(bbox, features) {
+    const origin = new THREE.Vector2(bbox.west(UNIT.DEGREE), bbox.south(UNIT.DEGREE));
+    const dimension = bbox.dimensions(UNIT.RADIAN);
+    const size = new THREE.Vector2(dimension.x, dimension.y).divideScalar(Math.PI / 180);
+
+    var c = document.createElement('canvas');
+    c.width = 256;
+    c.height = 256;
+    var ctx = c.getContext('2d');
+    // Lines
+    for (let j = 0; j < features.lines.length; ++j) {
+        var line = features.lines[j].line;
+        var properties = features.lines[j].properties;
+        for (let i = 0; i < line.length - 1; ++i) {
+            this.drawLine(origin, size, line[i].clone(), line[i + 1].clone(), 4, ctx, properties);
+        }
+    }
+    // Polygon
+    for (let i = 0; i < features.polygons.length; ++i) {
+        this.drawPolygon(features.polygons[i].polygon, origin, size, ctx, features.polygons[i].properties);
+    }
+
+    var texture = new THREE.Texture(c);
+    texture.flipY = true;  // FALSE by default on THREE.DataTexture but True by default for THREE.Texture!
+    texture.needsUpdate = true;
+    texture.name = 'featureRaster';
+    return texture;
+};
+
+
+ // Extract polygons and lines for raster rendering in GPU
+FeatureToolBox.prototype.extractFeatures = function extractFeatures(json) {
+    var arrPolygons = [];
+    var arrLines = [];
+
+    for (var nFeature = 0; nFeature < json.features.length; nFeature++) {
+        var feat = json.features[nFeature];
+        if (feat.geometry.type === 'LineString') {
+            var arrLine = [];
+            for (let point_num = 0; point_num < feat.geometry.coordinates.length; point_num++) {
+                const v = feat.geometry.coordinates[point_num];
+                arrLine.push(new THREE.Vector2(v[0], v[1]));
+            }
+            arrLines.push({ line: arrLine, properties: feat.properties });
+        }
+
+        if (feat.geometry.type === 'Polygon') {
+            var arrPolygon = [];
+            for (let point_num = 0; point_num < feat.geometry.coordinates.length; point_num++) {
+                for (var p = 0; p < feat.geometry.coordinates[point_num].length; ++p) {
+                    const v = feat.geometry.coordinates[point_num][p];
+                    arrPolygon.push(new THREE.Vector2(v[0], v[1]));
+                }
+            }
+            arrPolygons.push({ polygon: arrPolygon, properties: feat.properties });
+        }
+    }
+    this.arrPolygons = arrPolygons;
+    this.arrLines = arrLines;
+    return { lines: arrLines, polygons: arrPolygons };
+};
+
+
+FeatureToolBox.prototype.createFeaturesPoints = function createFeaturesPoints(json) {
+    var globalObject = new THREE.Object3D();
+    const pointOrder = { long: 0, lat: 1 };
+
+    for (var nFeature = 0; nFeature < json.features.length; nFeature++) {
+        var feat = json.features[nFeature];
+        if (feat.geometry.type === 'Point') {
+            var vertex = this.geoArrayTo3D(feat.geometry.coordinates, feat.geometry.coordinates[2], pointOrder);
+            if (feat.properties.name != null) {
+                globalObject.add(this.createText(vertex, feat.properties));
+            } else {
+                globalObject.add(this.createIcon(vertex));
+            }
+        }
+    }
+    return globalObject;
+};
+
 FeatureToolBox.prototype.processingGeoJSON = function processingGeoJSON(json) {
     // TODO: Why this function?
     // There are GeoJSON2Line and GeoJSON2Point
@@ -564,5 +773,112 @@ FeatureToolBox.prototype.processingGeoJSON = function processingGeoJSON(json) {
         return new THREE.Points(geometry, material);
     }
 };
+
+/*
+ * Create icon at position for point geometry
+ * Icon size should be constant. -> need a specific shader
+ * @returns {FeatureToolBox.prototype.createIcon.texture|THREE.Texture}
+ */
+FeatureToolBox.prototype.createIcon = function createIcon(pos) {
+    var image = document.createElement('img');
+    var texture = new THREE.Texture(image);
+    image.onload = function onload() {
+        texture.needsUpdate = true;
+    };
+    image.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH4AsVDRIojx5s5AAABPVJREFUWMOtlmtsk1UYx3+nb7uVdu0ulg2oso2xjXF1kzmMsE3GRQSBRRMxJvhBY0xITKYoKHzx8sEoihIjGoyJBiKoYMQwQwK4DVHwE1nGpbKxdVvoZrbR0W20b9v3+KGdtHTbu1X+ycmbN+fy/5/ncp5HSCkZDxK4NXSbyy3NtLW1UbyowtHe0b6ipDC3qtBpW2IW/izQDCEx7Za7T716saX199y8gt86W5s7rBYzS8sfITPDhkGMS4HQEzDoG8HlcqUrqWkvz7YPbc0ePjOf7nPQdxmp9oPUECY7ZBaCs4KhzFW97f7ZP3oH+vcWF81tc2Rl/D8B3mGtVAkN7LO7v1pOy37o74xMKoAhulADwtEN1gyYt4XbxXXukWmFdRnTxE+KIXkBNdpg6yGl4YUc3E1gihJPBA0IApn5aNVfhLh/zesG+CQZAQvxdZzi10059DSDmclDAAHAnA7rfgjiXL0VODwVAVbC/nrqN1TSfjqRXAKh6FdEv8YYl4xCBewPQG1DH7Y5jwEtdxMleCcYDCFhC66vK+kYgzwIKCmQvxat9BUtXPpqiOKnwXJfhDD2PinAYBf8tdsB1PkDqtC1wOCw6rTTd1wcX1nGgCvi99gbOSvwLXz7kq1w7YIEu53eAlePRKwhYmJCpMLGkz6PqaxipsN2ZUILDPvVGtlz9kEGXJGDRhECchZC7XnGJAeoOQwlz0WsFMugBqDjmE1VA4/ruiDNFKwSNxoNEeUxPscA1R/f0A3AlQchLTty89ig9FzAYQk/qivAnhouFjdd8TMhIGcJTF89azJJIHPXRfaMQgF8HViN/jm6AggOW2WgL3FmetGkszCYXuKL2y+AoBfUWxZ9AYoxjFDio3mqkJq4e79EAaFougK6+oLXySiKPK2xN/jnyqT5Td5LaXECwiDS8+jyal26Ai619TSEndUScZcPe5uh+1ifLnugq0m4T8SnrwbMWkZbj/+croBF84tOiRnVraRNv2MFEV15drsj6G1tmlBAw7ZKRrzxGaQImLlGnVc096SugFnZWddk+rzvKNicGMn97ZhObqwc/vto55iur38Crv0SeQFjMyh7EWrOqobsrIyLk60F87l5uZGj5Q5CI4kpaVTAuQIcJWBIAe916D4LI95404++nmu+0WTR1uelph00GAyTroZ7aHrpNS4eGL8Yxf4rY5RqFZjxEGxuOo/RUh2tkTppeAcfUrqzG3tOPNloTJhiRsoY5DJatJbuDmG07BqLXE9AL7Y5eyh7IxLFU30XAkBhLeQ++T1wJqmOCLCiBU5wYm0V7sb44JoIYcCSA09d8JCWWwVcG29pggWklLFjGEPqW1R8MESKJf5xmqiRDAHL3oG03PcmItdzwSj+IPvh9ynfDWGh7woVKK7F53z2Z03T9usdniBACBE3oviIxXVNFGyIEIyHEJAxGyo/77nuvrEjGFTllAWMAz+KeRvLP/Vgn5mYFf91PkZYsU9inlGXbjW7DAaFeyUAoAVb/k6W7wVhjm84RnvFsu2Qt+lL4HBeXi4mk+meCgD4loJnDlC+I77t8gMF66H83T+BXVMr3fFRP5mRKcOBRlm/Xsp9SPkZUh7Kl3LI7ZFSLpjqeckIQEo5V454OuWRxVLuT5HScy4spdyYzFnJCkBKuU72nvfJtiNSSvlmsufovYR6qAOWAC8ydm7o4l8IO+JWe1h9JQAAAABJRU5ErkJggg==';
+    var materialS = new THREE.SpriteMaterial({ map: texture, color: 0xffffff, depthTest: false });
+    var sprite = new THREE.Sprite(materialS);
+    sprite.scale.set(500, 500, 500);
+    sprite.position.copy(pos);
+
+    var material = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: false }); // side:THREE.DoubleSide, , linewidth: 5
+    var geometry = new THREE.Geometry();
+    geometry.vertices.push(new THREE.Vector3(), new THREE.Vector3(-pos.x, -pos.y, -pos.z).divideScalar(1000));
+    var line = new THREE.Line(geometry, material);
+    sprite.add(line);
+    return sprite;
+};
+
+FeatureToolBox.prototype.createText = function createText(pos, prop) {
+    var sprite = makeTextSprite(prop.name);
+    sprite.position.copy(pos);
+
+    var material = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: false }); // side:THREE.DoubleSide, , linewidth: 5,
+    var geometry = new THREE.Geometry();
+    geometry.vertices.push(new THREE.Vector3(), new THREE.Vector3(-pos.x, -pos.y, -pos.z).divideScalar(1000));
+    var line = new THREE.Line(geometry, material);
+    sprite.add(line);
+
+    return sprite;
+};
+
+function makeTextSprite(message, parameters) {
+    if (parameters === undefined) parameters = {};
+    var fontface = {}.propertyIsEnumerable.call(parameters, 'fontface') ?
+            parameters.fontface : 'Arial';
+
+    var fontsize = {}.propertyIsEnumerable.call(parameters, 'fontsize') ?
+            parameters.fontsize : 22;
+
+    var borderThickness = {}.propertyIsEnumerable.call(parameters, 'borderThickness') ?
+            parameters.borderThickness : 4;
+
+    var borderColor = {}.propertyIsEnumerable.call(parameters, 'borderColor') ?
+            parameters.borderColor : { r: 0, g: 0, b: 0, a: 1.0 };
+
+    var backgroundColor = {}.propertyIsEnumerable.call(parameters, 'backgroundColor') ?
+            parameters.backgroundColor : { r: 255, g: 255, b: 255, a: 0.8 };
+
+    // var spriteAlignment = THREE.SpriteAlignment.topLeft;
+
+    var canvas = document.createElement('canvas');
+    canvas.width = 256;
+    canvas.height = 128;
+    var context = canvas.getContext('2d');
+    context.font = `Bold ${fontsize}px ${fontface}`;
+
+    // get size data (height depends only on font size)
+    var metrics = context.measureText(message);
+    var textWidth = metrics.width;
+
+    // background color
+    context.fillStyle = `rgba(${backgroundColor.r},${backgroundColor.g},${
+                              backgroundColor.b},${backgroundColor.a})`;
+    // border color
+    context.strokeStyle = `rgba(${borderColor.r},${borderColor.g},${
+                              borderColor.b},${borderColor.a})`;
+    context.lineWidth = borderThickness;
+    roundRect(context, borderThickness / 2, borderThickness / 2, textWidth + borderThickness, fontsize * 1.4 + borderThickness, 6);
+    // 1.4 is extra height factor for text below baseline: g,j,p,q.
+    // text color
+    context.fillStyle = 'rgba(0, 0, 0, 1.0)';
+    context.fillText(message, borderThickness, fontsize + borderThickness);
+    // canvas contents will be used for a texture
+    var texture = new THREE.Texture(canvas);
+    texture.needsUpdate = true;
+
+    var spriteMaterial = new THREE.SpriteMaterial({ map: texture, color: 0xffffff, depthTest: false });// , useScreenCoordinates: false} );
+    var sprite = new THREE.Sprite(spriteMaterial);
+    sprite.scale.set(1000, 1000, 1000);// 100,50,1.0);
+    return sprite;
+}
+
+// function for drawing rounded rectangles
+function roundRect(ctx, x, y, w, h, r)
+{
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+}
 
 export default FeatureToolBox;

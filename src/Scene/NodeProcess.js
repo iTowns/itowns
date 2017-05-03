@@ -328,6 +328,31 @@ function updateNodeImagery(scene, quadtree, node, layersConfig, force) {
             }));
     }
 
+    const featuresLayers = layersConfig.getGeometryLayers().filter(l => l.protocol === 'kml');
+
+    for (let i = 0; i < featuresLayers.length; i++) {
+        const layer = featuresLayers[i];
+
+        if (!layersConfig.isColorLayerVisible(layer.id) ||
+            layersConfig.isLayerFrozen(layer.id)) {
+            continue;
+        }
+
+        const command = {
+            /* mandatory */
+            layer,
+            requester: node,
+            // priority: nodeCommandQueuePriorityFunction(node),
+            // FIXME why refinementCommandCancellationFn crash
+            // earlyDropFunction: refinementCommandCancellationFn,
+        };
+
+        promises.push(quadtree.scheduler.execute(command).then(
+            (texture) => {
+                node.setTextureFeatures(texture);
+            }));
+    }
+
     Promise.all(promises);
 }
 
