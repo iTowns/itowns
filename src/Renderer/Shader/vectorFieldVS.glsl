@@ -18,17 +18,23 @@ uniform sampler2D gribVectors;
 
 varying float vSpeed;
 
+varying float opacity;
 void main()
 {
-    gl_PointSize = 1.; 
+    gl_PointSize = 2.; 
 
 
     //the mesh is a normalized square so the uvs = the xy positions of the vertices
     vec4 posAndSpeed = texture2D( positions, position.xy );  // xyz:pos, w:speed
+
+    float distToCam = distance(posAndSpeed.xyz, cameraPosition);
+    opacity = distToCam > length(cameraPosition) ? 0. : 1.;  // If points are on the back side of the sphere
+
     vSpeed = posAndSpeed.w;
     //pos now contains a 3D position in space, we can use it as a regular vertex
     //regular projection of our position
     gl_Position = projectionMatrix * modelViewMatrix * vec4( posAndSpeed.xyz, 1.0 );
+
 
 
 

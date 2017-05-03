@@ -11,9 +11,9 @@ void main()
      vec4 currentColor = texture2D(particleTexture, vUv);
      vec4 oldColor     = texture2D(particleTextureOld, vUv);
 
-     float alpha = 1.; //currentColor.a + oldColor.a * 0.99;   // 1.;
-     if(length(currentColor.rgb) + length(oldColor.rgb) < 0.5) alpha = 0.;
+     float alpha = 1.; 	
+     if(length(currentColor.rgb) + length(oldColor.rgb) < 0.2) alpha = 0.5 * length(currentColor.rgb) + length(oldColor.rgb); //0.;
 
-     gl_FragColor = vec4(vec3(currentColor.rgb + oldColor.rgb * 0.99), alpha);
+     gl_FragColor = vec4(vec3(currentColor.rgb + oldColor.rgb * 0.98), alpha);
 
 }

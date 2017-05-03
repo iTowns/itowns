@@ -91,8 +91,8 @@ function Scene(crs, positionCamera, viewerDiv, debugMode, gLDebug) {
     this._rtt = null;
     this.simulationMesh = null;
     // ARF
-    this.width = 128;
-    this.height = 128;
+    this.width = 256;
+    this.height = 256;
     this.arrayRTT = new Float32Array( this.width * this.height * 4 );
     this.dataTexture = null;
     this.originalVectorsTexture = null;
@@ -638,10 +638,10 @@ Scene.prototype.displayGrib = function orbit(data) {
     this.particlesField.name = "particlesField";
     //  this.particlesField.material.uniforms.positions.value = this._rtt.texture; // textureVecPositions; 
 
-    var sphereMask = new THREE.Mesh(new THREE.SphereGeometry(radius - 10000, 64, 64), new THREE.MeshBasicMaterial({color: 0x000000}) );
+    var sphereMask = new THREE.Mesh(new THREE.SphereGeometry(2000000, 32, 32), new THREE.MeshBasicMaterial({color: 0x000000}) );
     //sphereMask.depthTest = false;
     //sphereMask.frustumCulled = true;
-    this._particleScene.add(sphereMask); // to hide particle behind earth
+//    this._particleScene.add(sphereMask); // to hide particle behind earth
     this._particleScene.add(this.particlesField);
 
     this._renderer.render( this._scene, this._orthoCamera, this._rtt, true );
@@ -659,7 +659,10 @@ Scene.prototype.displayGrib = function orbit(data) {
 Scene.prototype.updateTextureFBO = function(){
     
     // We use last rendered whole screen as the old texture to do accumulation in the quadScene rendering
-    this.plane.material.uniforms.particleTextureOld.value = this.quadDataTexture;
+    if(this.renderingState != 0) // Camera is moving so we erase the accumulated texture
+        this.plane.material.uniforms.particleTextureOld.value = null;
+    else
+        this.plane.material.uniforms.particleTextureOld.value = this.quadDataTexture;
 
     // Simulation shaders
     this._renderer.render( this._scene, this._orthoCamera, this._rtt, true );

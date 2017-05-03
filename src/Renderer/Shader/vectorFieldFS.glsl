@@ -14,6 +14,7 @@
 
 uniform sampler2D gribVectors;
 varying float vSpeed;
+varying float opacity;
 
 void main()
 {
@@ -24,12 +25,12 @@ void main()
 
     #endif
 
-/*
+
     vec2 coord = gl_PointCoord - vec2(0.5);  //from [0,1] to [-0.5,0.5]
     if(length(coord) > 0.5)                  //outside of circle radius?
         discard;
-*/
 
-    gl_FragColor =  vec4( vec3( 1.-vSpeed,1.,  1.), .8); //vec4( vec3( 1.-vSpeed,0.,  0.), 1.);  //  
+    
 
+    gl_FragColor =  vec4( vec3( 1. -vSpeed , 1.,  1.), opacity); 
 }

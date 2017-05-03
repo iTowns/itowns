@@ -11,6 +11,8 @@ const float radius = 6450000.;//6378137.;
 const float PI     = 3.14159265359;
 const float distMax = 0.01;
 
+vec2 _currentAngularVectorField;
+
 float atan2(in float y, in float x)
 {
     return x == 0.0 ? sign(y)*PI/2. : atan(y, x);
@@ -57,8 +59,8 @@ vec3 computeNewPosition(vec3 p){
 
     vec2 currentAngularPos = getUVCoordFrom3DPos(p);
     float longitude = currentAngularPos.x < 0. ? 2. * PI + currentAngularPos.x : currentAngularPos.x;
-    vec2 currentAngularVectorField = getInterpolatedVectorField(vec2(longitude / (2. * PI), currentAngularPos.y / PI));
-    vec2 newAngularPos = currentAngularPos + vec2(currentAngularVectorField.x, -currentAngularVectorField.y) / 10000.;
+    _currentAngularVectorField = getInterpolatedVectorField(vec2(longitude / (2. * PI), currentAngularPos.y / PI));
+    vec2 newAngularPos = currentAngularPos + vec2(_currentAngularVectorField.x, -_currentAngularVectorField.y) / 10000.;
     vec3 new3DPos = get3DPosFromCoord(newAngularPos);
         //  vec3 initPos = texture2D( initPositions, vUv).rgb;
         //  if(distance(new3DPos, initPos) > 1000000.) new3DPos = initPos;
@@ -77,7 +79,7 @@ void main()
     vec3 newPos = computeNewPosition(pos);
     if( distance(mod(timing,1.), vParticleLife) < 0.001) newPos = texture2D( initPositions, vUv).rgb;
 
-    float speed = distance(newPos, pos) / 5000.;
+    float speed = length(_currentAngularVectorField) / 10.;//distance(newPos, pos) / 10000.;
     //vec3 posIntermediate = pos + min(timing*5., 1.) * (newPos - pos);     //newPos - pos);
     gl_FragColor = vec4(newPos, speed); //vParticleLife); //1.0);  
 
