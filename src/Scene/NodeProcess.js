@@ -205,6 +205,7 @@ function updateNodeImagery(scene, quadtree, node, layersConfig, force) {
             };
 
             material.pushLayer(paramMaterial);
+            material.setSequence(layersConfig.getColorLayersIdOrderedBySequence());
         }
 
         if (!force) {
