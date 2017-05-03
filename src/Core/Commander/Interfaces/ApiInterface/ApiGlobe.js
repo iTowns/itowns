@@ -17,7 +17,7 @@ import { STRATEGY_MIN_NETWORK_TRAFFIC } from '../../../../Scene/LayerUpdateStrat
 import GlobeControls from '../../../../Renderer/ThreeExtended/GlobeControls';
 import { processTiledGeometryNode, initTiledGeometryLayer } from '../../../../Process/TiledNodeProcessing';
 import { updateLayeredMaterialNodeImagery, updateLayeredMaterialNodeElevation } from '../../../../Process/LayeredMaterialNodeProcessing';
-import { globeCulling, preGlobeUpdate, globeSubdivisionControl, globeSchemeTileWMTS, globeSchemeTile1 } from '../../../../Process/GlobeTileProcessing';
+import { globeCulling, preGlobeUpdate, globeSubdivisionControl, globeSchemeTileWMTS, globeSchemeTile1, computeTileZoomFromDistanceCamera, computeDistanceCameraFromTileZoom } from '../../../../Process/GlobeTileProcessing';
 import BuilderEllipsoidTile from '../../../../Globe/BuilderEllipsoidTile';
 import Atmosphere from '../../../../Globe/Atmosphere';
 import Clouds from '../../../../Globe/Clouds';
@@ -475,7 +475,6 @@ ApiGlobe.prototype.createSceneGlobe = function createSceneGlobe(globeLayerId, co
 
     const SSE_SUBDIVISION_THRESHOLD = 1.0;
 
-
     // init globe layer with default parameter
     const wgs84TileLayer = new GeometryLayer(globeLayerId);
 
@@ -838,7 +837,7 @@ ApiGlobe.prototype.setCameraTargetGeoPosition = function setCameraTargetGeoPosit
 ApiGlobe.prototype.setCameraTargetGeoPositionAdvanced = function setCameraTargetGeoPositionAdvanced(position, isAnimated) {
     isAnimated = isAnimated || this.isAnimationEnabled();
     if (position.level) {
-        position.range = this.getRangeFromZoomLevel(position.level);
+        position.range = computeDistanceCameraFromTileZoom(position.level);
     } else if (position.scale) {
         position.range = this.getRangeFromScale(position.scale);
     }
@@ -897,7 +896,7 @@ ApiGlobe.prototype.pan = function pan(pVector) {
  * @return     {number}  The zoom level.
  */
 ApiGlobe.prototype.getZoomLevel = function getZoomLevel() {
-    return this.scene.getZoomLevel();
+    return computeTileZoomFromDistanceCamera(this.scene.currentCamera(), this.getRange());
 };
 
 /**
@@ -910,14 +909,8 @@ ApiGlobe.prototype.getZoomLevel = function getZoomLevel() {
  * @return     {Promise}
  */
 ApiGlobe.prototype.setZoomLevel = function setZoomLevel(zoom, isAnimated) {
-    const range = this.getRangeFromZoomLevel(zoom);
+    const range = computeDistanceCameraFromTileZoom(zoom);
     return this.setRange(range, isAnimated);
-};
-
-ApiGlobe.prototype.getRangeFromZoomLevel = function getRangeFromZoomLevel(zoom) {
-    // FIXME : The distance computed is incorrect, (Fixed in PR 279)
-    const range = this.scene.getMap().computeDistanceForZoomLevel(zoom, this.scene.currentCamera());
-    return range;
 };
 
 /**

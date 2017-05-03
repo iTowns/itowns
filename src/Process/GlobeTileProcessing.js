@@ -3,13 +3,14 @@ import SchemeTile from '../Scene/SchemeTile';
 import MathExt from '../Core/Math/MathExtended';
 import { UNIT, ellipsoidSizes } from '../Core/Geographic/Coordinates';
 import BoundingBox from '../Scene/BoundingBox';
+import { SIZE_TEXTURE_TILE } from '../Core/Commander/Providers/OGCWebServiceHelper';
 
 const cV = new THREE.Vector3();
 let vhMagnitudeSquared;
 let radius;
 
 let preSSE;
-
+let SSE_SUBDIVISION_THRESHOLD;
 
 export function preGlobeUpdate(context) {
     radius = ellipsoidSizes();
@@ -94,6 +95,7 @@ function computeNodeSSE(camera, node) {
 }
 
 export function globeSubdivisionControl(minLevel, maxLevel, sseThreshold) {
+    SSE_SUBDIVISION_THRESHOLD = sseThreshold;
     return function _globeSubdivisionControl(context, layer, node) {
         if (node.level < minLevel) {
             return true;
@@ -104,7 +106,7 @@ export function globeSubdivisionControl(minLevel, maxLevel, sseThreshold) {
 
         const sse = computeNodeSSE(context.camera, node);
 
-        return sseThreshold < sse;
+        return SSE_SUBDIVISION_THRESHOLD < sse;
     };
 }
 
@@ -131,4 +133,31 @@ export function globeSchemeTileWMTS(type) {
         bbox.maxCoordinate._internalStorageUnit = UNIT.RADIAN;
     }
     return schemeT;
+}
+
+export function computeTileZoomFromDistanceCamera(camera, distance) {
+    const sizeEllipsoid = ellipsoidSizes().x;
+    const preSinus = SIZE_TEXTURE_TILE * (SSE_SUBDIVISION_THRESHOLD * 0.5) / preSSE / sizeEllipsoid;
+
+    let sinus = distance * preSinus;
+    let zoom = Math.log(Math.PI / (2.0 * Math.asin(sinus))) / Math.log(2);
+
+    const delta = Math.PI / Math.pow(2, zoom);
+    const circleChord = 2.0 * sizeEllipsoid * Math.sin(delta * 0.5);
+    const radius = circleChord * 0.5;
+
+    // adjust with bounding sphere rayon
+    sinus = (distance - radius) * preSinus;
+    zoom = Math.log(Math.PI / (2.0 * Math.asin(sinus))) / Math.log(2);
+
+    return isNaN(zoom) ? 0 : Math.round(zoom);
+}
+
+export function computeDistanceCameraFromTileZoom(zoom) {
+    const delta = Math.PI / Math.pow(2, zoom);
+    const circleChord = 2.0 * ellipsoidSizes().x * Math.sin(delta * 0.5);
+    const radius = circleChord * 0.5;
+    const error = radius / SIZE_TEXTURE_TILE;
+
+    return preSSE * error / (SSE_SUBDIVISION_THRESHOLD * 0.5) + radius;
 }
