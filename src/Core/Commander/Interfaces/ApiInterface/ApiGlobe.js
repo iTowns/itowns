@@ -694,18 +694,6 @@ ApiGlobe.prototype.getRange = function getRange() {
     return this.scene.currentControls().getRange();
 };
 
-ApiGlobe.prototype.getRangeFromEllipsoid = function getRangeFromEllipsoid() {
-    // TODO: error is distance is big with ellipsoid.intersection(ray) because d < 0
-    var controlCam = this.scene.currentControls();
-    var ellipsoid = this.scene.getEllipsoid();
-    var ray = controlCam.getRay();
-    var intersection = ellipsoid.intersection(ray);
-    var camPosition = this.scene.currentCamera().position();
-    var range = intersection.distanceTo(camPosition);
-
-    return range;
-};
-
 /**
  * Sets the animation enabled.
  * @constructor

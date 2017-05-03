@@ -1332,18 +1332,6 @@ GlobeControls.prototype.getRange = function getRange() {
     return this.getCameraTargetPosition().distanceTo(this.camera.position);
 };
 
-// TODO idea : remove this? used in API
-GlobeControls.prototype.getRay = function getRay() {
-    var direction = new THREE.Vector3(0, 0, 1);
-    this.camera.localToWorld(direction);
-    direction.sub(this.camera.position).negate().normalize();
-
-    return {
-        origin: this.camera.position,
-        direction,
-    };
-};
-
 GlobeControls.prototype.getTilt = function getTilt() {
     return spherical.phi * 180 / Math.PI;
 };
