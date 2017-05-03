@@ -91,8 +91,8 @@ function Scene(crs, positionCamera, viewerDiv, debugMode, gLDebug) {
     this._rtt = null;
     this.simulationMesh = null;
     // ARF
-    this.width = 256;
-    this.height = 256;
+    this.width = 512;
+    this.height = 512;
     this.arrayRTT = new Float32Array( this.width * this.height * 4 );
     this.dataTexture = null;
     this.originalVectorsTexture = null;
@@ -375,7 +375,7 @@ Scene.prototype.orbit = function orbit(value) {
     this.orbitOn = value;
 };
 
-var radius = 6450000;
+var radius = 6400000;
 // Return angular coord from angular 3D cartesian coordinates  (spheric estimation)
 // coord lon lat  (x is lon , y is lat)
 function get3DPosFromCoord(coord){
@@ -387,6 +387,17 @@ function get3DPosFromCoord(coord){
 
    return new THREE.Vector3(x,y,z); 
 };
+
+// Return angular coord from angular 3D cartesian coordinates  (spheric estimation)
+function getUVCoordFrom3DPos(p){
+
+    var r = radius ;  //length(p);
+    var teta = Math.atan(p.z, p.x);
+    var gamma = Math.acos(p.y / r);
+
+    return new THREE.Vector2( -teta, gamma);
+}
+
 
 function getOneDegreeRepartition( width, height, size ){
 
@@ -446,8 +457,8 @@ Scene.prototype.createGribTexture = function orbit(data) {
     }
  */   
      // convertes it to a FloatTexture 
-     console.log(nbX, nbY);
-    // this.drawVectorsAsArrows(data);
+    // console.log(nbX, nbY);
+     this.drawVectorsAsArrows(data);
      //    this.drawVectorsAsArrowsEllipsoidal(data);
      
     return new THREE.DataTexture( dataVF, nbX, nbY, THREE.RGBAFormat, THREE.FloatType ); 
@@ -512,7 +523,7 @@ Scene.prototype.displayGrib = function orbit(data) {
         },
         vertexShader:   particleQuadShaderVS,
         fragmentShader: particleQuadShaderFS,
-            side:THREE.DoubleSide,
+           // side:THREE.DoubleSide,
             depthTest:false,
             depthWrite:false,
             transparent: true,
@@ -526,6 +537,7 @@ Scene.prototype.displayGrib = function orbit(data) {
 
     //this.gfxEngine.add3DScene(this.plane);
     this.quadScene.add(this.plane);
+     this.plane.frustumCulled = false;
   //  this.gfxEngine.add3DScene(this.plane);
 
 
@@ -536,7 +548,7 @@ Scene.prototype.displayGrib = function orbit(data) {
         },
         vertexShader:   quadOutputVS,
         fragmentShader: quadOutputFS,
-            side:THREE.DoubleSide,
+          //  side:THREE.DoubleSide,
             depthTest:false,
             depthWrite:false,
             transparent: true,
@@ -547,6 +559,9 @@ Scene.prototype.displayGrib = function orbit(data) {
         quadParticleRenderingMaterialFinal
     );
     this.planeFinal.name = "quad";
+    this.planeFinal.frustumCulled = false;
+    //this.planeFinal.position.copy(new THREE.Vector3(20813293.05914312, 23449744.74793067, -852867.7527697382));
+    console.log(this.gfxEngine.camera.camera3D.position);
     this.gfxEngine.add3DScene(this.planeFinal);
 
 //**********************************************************************************************************************
@@ -714,10 +729,23 @@ Scene.prototype.drawVectorsAsArrows = function orbit(data) {
     var nbParticles = Ucomponent.header.numberPoints;
     var len = nbParticles * 4;
     var dataVF = new Float32Array( len );
+   //var parentGeometry = new THREE.Geometry();
   
+                var geometry = new THREE.BufferGeometry();
+
+                var material = new THREE.LineBasicMaterial({ vertexColors: THREE.VertexColors, transparent:true, opacity:0.9 });
+
+                var positions = new Float32Array( nbParticles * 6 * 3 );
+                var colors = new Float32Array( nbParticles * 6 * 3 );
+
+                var r = 800;
+
+
+    var incLine = 0;
     for(var i = 0; i< nbParticles; ++i){
         
         var inc = i*4;
+        
         dataVF[inc + 0] = Ucomponent.data[i + 0];
         dataVF[inc + 1] = Vcomponent.data[i + 0];
         dataVF[inc + 2] = Math.sqrt(Ucomponent.data[i + 0] * Ucomponent.data[i + 0] + Vcomponent.data[i + 0] * Vcomponent.data[i + 0]); // speed
@@ -726,17 +754,110 @@ Scene.prototype.drawVectorsAsArrows = function orbit(data) {
         var x = (i % nbX) / nbX;
         var y = Math.floor(i / nbX) / nbY;
         var posCartesian  = get3DPosFromCoord( new THREE.Vector2( x * 2 * Math.PI, y * Math.PI));
-        var posCartesian2 =  get3DPosFromCoord(new THREE.Vector2( (x + Ucomponent.data[i] / 100) * 2 * Math.PI , (y - Vcomponent.data[i] / 100) * Math.PI)); //get3DPosFromCoord( new THREE.Vector2( (x +.1) * Math.PI, (y+.1) * Math.PI));//
+        var posCartesian2 = get3DPosFromCoord( new THREE.Vector2( (x + Ucomponent.data[i] / 1000) * 2 * Math.PI , (y - Vcomponent.data[i] / 1000) * Math.PI)); //get3DPosFromCoord( new THREE.Vector2( (x +.1) * Math.PI, (y+.1) * Math.PI));//
         
-        var vecDirection = posCartesian2.clone().sub(posCartesian).normalize();
+        var vecDirection = posCartesian2.clone().sub(posCartesian.clone()).normalize();
         var magnitude = dataVF[inc + 2];
-        var color = new THREE.Color("hsl("+ magnitude *5+", 100%, 50%)");
-        
-        var arrowHelper = new THREE.ArrowHelper( vecDirection, posCartesian, 100000, color );
-        if( !(x > 0.2 && x < 0.8) && y < 0.5 && y > 0.15 ){
-            this.gfxEngine.add3DScene(arrowHelper);
-        }
+        var color = new THREE.Color("hsl("+ magnitude *5+", 88%, 70%)");
+        var p2 = new THREE.Vector3( posCartesian.x + vecDirection.x * 60000., posCartesian.y + vecDirection.y * 60000., posCartesian.z + vecDirection.z * 60000.);
+        var d = p2.clone().sub(posCartesian);  // Real dif vector cartesian
+        var disPointeX = 0.2;
+        var dArrow = 0.2 * d;
+        // UGLY TEST
+        var angularP1 = getUVCoordFrom3DPos(posCartesian);
+        var angularP2 = getUVCoordFrom3DPos(p2);
+        var difAngle  = angularP2.clone().sub(angularP1);
+      //  var angularP3 = new THREE.Vector2(angularP2.x - 0.2 * difAngle.x, angularP2.y - 0.05 * dif)
+
+
+
+        var arrow1Pos = new THREE.Vector3( p2.x - disPointeX * d.x,
+                                           p2.y + disPointeX * Math.cos(Math.PI/4),
+                                           p2.z
+            );
+        var arrow2Pos = new THREE.Vector3( p2.x - disPointeX * d.x,
+                                           p2.y + disPointeX * Math.cos(-Math.PI/4),
+                                           p2.z 
+            );
+
+
+        //var arrowHelper = new THREE.ArrowHelper( vecDirection, posCartesian, 100000, color );
+   //     if( !(x > 0.2 && x < 0.8) && y < 0.5 && y > 0.15 && i % 16 == 0){
+
+                    positions[ incLine * 3 ]     = posCartesian.x;
+                    positions[ incLine * 3 + 1 ] = posCartesian.y;
+                    positions[ incLine * 3 + 2 ] = posCartesian.z;
+
+                    positions[ (incLine + 1) * 3 ]     = p2.x;
+                    positions[ (incLine + 1) * 3 + 1 ] = p2.y;
+                    positions[ (incLine + 1) * 3 + 2 ] = p2.z;
+                   /* 
+
+                    positions[ (incLine + 2) * 3 ]     = p2.x;
+                    positions[ (incLine + 2) * 3 + 1 ] = p2.y;
+                    positions[ (incLine + 2) * 3 + 2 ] = p2.z;
+
+                    positions[ (incLine + 3) * 3 ]     = arrow1Pos.x;
+                    positions[ (incLine + 3) * 3 + 1 ] = arrow1Pos.y;
+                    positions[ (incLine + 3) * 3 + 2 ] = arrow1Pos.z;
+
+
+                    positions[ (incLine + 4) * 3 ]     = p2.x;
+                    positions[ (incLine + 4) * 3 + 1 ] = p2.y;
+                    positions[ (incLine + 4) * 3 + 2 ] = p2.z;
+
+                    positions[ (incLine + 5) * 3 ]     = arrow2Pos.x;
+                    positions[ (incLine + 5) * 3 + 1 ] = arrow2Pos.y;
+                    positions[ (incLine + 5) * 3 + 2 ] = arrow2Pos.z;
+*/
+
+
+                    // colors
+                    colors[ incLine * 3 ]     = color.r;
+                    colors[ incLine * 3 + 1 ] = color.g;
+                    colors[ incLine * 3 + 2 ] = color.b;
+
+                    // colors
+                    colors[ (incLine + 1) * 3 ]     = color.r;
+                    colors[ (incLine + 1) * 3 + 1 ] = color.g;
+                    colors[ (incLine + 1) * 3 + 2 ] = color.b;
+
+                      // colors
+                    colors[ (incLine + 2) * 3 ]     = color.r;
+                    colors[ (incLine + 2) * 3 + 1 ] = color.g;
+                    colors[ (incLine + 2) * 3 + 2 ] = color.b;
+
+                      // colors
+                    colors[ (incLine + 3) * 3 ]     = color.r;
+                    colors[ (incLine + 3) * 3 + 1 ] = color.g;
+                    colors[ (incLine + 3) * 3 + 2 ] = color.b;
+
+                      // colors
+                    colors[ (incLine + 4) * 3 ]     = color.r;
+                    colors[ (incLine + 4) * 3 + 1 ] = color.g;
+                    colors[ (incLine + 4) * 3 + 2 ] = color.b;
+
+                      // colors
+                    colors[ (incLine + 5) * 3 ]     = color.r;
+                    colors[ (incLine + 5) * 3 + 1 ] = color.g;
+                    colors[ (incLine + 5) * 3 + 2 ] = color.b;
+
+                    incLine +=6;
+            //this.gfxEngine.add3DScene(arrowHelper);
+           // arrowHelper.updateMatrix(); // as needed
+           //parentGeometry.merge(arrowHelper.line.geometry, arrowHelper.matrix);
+           
+    //    }
     }
+
+    geometry.addAttribute( 'position', new THREE.BufferAttribute( positions, 3 ) );
+    geometry.addAttribute( 'color', new THREE.BufferAttribute( colors, 3 ) );
+
+    geometry.computeBoundingSphere();
+
+    var mesh = new THREE.LineSegments( geometry, material );
+    this.gfxEngine.add3DScene( mesh );
+
    /*
     // FOR DEBUG JUST GO RIGHT
     for(var i = 0; i< nbParticles; ++i){

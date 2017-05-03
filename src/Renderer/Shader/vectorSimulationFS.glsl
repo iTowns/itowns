@@ -7,9 +7,9 @@ uniform sampler2D initPositions;  // Data Texture: Initial positions for start o
 varying vec2 vUv;
 varying float vParticleLife;
 
-const float radius = 6450000.;//6378137.;
+const float radius = 6400000.;//6378137.;
 const float PI     = 3.14159265359;
-const float distMax = 0.01;
+const float distMax = 0.008;
 
 vec2 _currentAngularVectorField;
 
@@ -18,7 +18,8 @@ float atan2(in float y, in float x)
     return x == 0.0 ? sign(y)*PI/2. : atan(y, x);
 }
 
-// Return 3D cartesian coordinates from angular coord (spheric estimation)
+
+// Return angular coord from angular 3D cartesian coordinates  (spheric estimation)
 vec2 getUVCoordFrom3DPos(vec3 p){
 
     float r = radius ;  //length(p);
@@ -28,7 +29,7 @@ vec2 getUVCoordFrom3DPos(vec3 p){
 }
 
 
-// Return angular coord from angular 3D cartesian coordinates  (spheric estimation)
+// Return 3D cartesian coordinates from angular coord (spheric estimation)
 // coord lon lat  (x is lon , y is lat)
 vec3 get3DPosFromCoord(vec2 coord){
 
@@ -42,10 +43,10 @@ vec3 get3DPosFromCoord(vec2 coord){
 
 vec2 getInterpolatedVectorField(vec2 uv){
     
-    vec2 cc1 = texture2D(gribVectors, vec2(clamp(uv.x + distMax,0.,1.), uv.y)).rg;
-    vec2 cc2 = texture2D(gribVectors, vec2(clamp(uv.x - distMax,0.,1.), uv.y)).rg;
-    vec2 cc3 = texture2D(gribVectors, vec2(uv.x, uv.y + clamp(distMax,0.,1.))).rg;
-    vec2 cc4 = texture2D(gribVectors, vec2(uv.x, uv.y - clamp(distMax,0.,1.))).rg;
+    vec2 cc1 = texture2D(gribVectors, vec2(mod(uv.x + distMax,1.), uv.y)).rg;
+    vec2 cc2 = texture2D(gribVectors, vec2(mod(uv.x - distMax,1.), uv.y)).rg;
+    vec2 cc3 = texture2D(gribVectors, vec2(uv.x, mod(uv.y + distMax,1.))).rg;
+    vec2 cc4 = texture2D(gribVectors, vec2(uv.x, mod(uv.y - distMax,1.))).rg;
 
     return (cc1 + cc2 + cc3 + cc4)  / 4.;
     
