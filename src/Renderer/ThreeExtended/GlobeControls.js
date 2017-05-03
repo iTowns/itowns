@@ -10,6 +10,7 @@ import * as THREE from 'three';
 import Sphere from '../../Core/Math/Sphere';
 import AnimationPlayer, { Animation, AnimatedExpression } from '../../Core/AnimationPlayer';
 import Coordinates, { C } from '../../Core/Geographic/Coordinates';
+import { computeTileZoomFromDistanceCamera, computeDistanceCameraFromTileZoom } from '../../Process/GlobeTileProcessing';
 
 // TODO:
 // Recast touch for globe
@@ -107,6 +108,7 @@ const rotateStart = new THREE.Vector2();
 const rotateEnd = new THREE.Vector2();
 const rotateDelta = new THREE.Vector2();
 const spherical = new THREE.Spherical(1.0, 0.01, Math.PI * 0.5);
+const snapShotSpherical = new THREE.Spherical(1.0, 0.01, Math.PI * 0.5);
 const sphericalDelta = new THREE.Spherical(1.0, 0, 0);
 const sphericalTo = new THREE.Spherical();
 const orbit = {
@@ -145,6 +147,10 @@ const ctrl = {
 ctrl.qDelta.presiceSlerp = presiceSlerp;
 quatGlobe.presiceSlerp = presiceSlerp;
 
+// Animation
+
+let enableAnimation = true;
+
 // Animation player
 var player = null;
 // Save 2 last rotation globe for damping
@@ -174,10 +180,10 @@ var animationOrbitExpression = function animationOrbitExpression(root, progress)
 };
 
 // Animations
-const animationDampingMove = new AnimatedExpression({ duration: 120, root: ctrl, expression: dampingMoveAnimatedExpression, name: 'Damping Move' });
+const animationDampingMove = new AnimatedExpression({ duration: 120, root: ctrl, expression: dampingMoveAnimatedExpression, name: 'damping-move' });
 const animationZoomCenter = new AnimatedExpression({ duration: 45, root: ctrl, expression: zoomCenterAnimatedExpression, name: 'Zoom Center' });
 const animationOrbit = new AnimatedExpression({ duration: 30, root: orbit, expression: animationOrbitExpression, name: 'set Orbit' });
-const dampingOrbitalMvt = new Animation({ duration: 60, name: 'orbit damping' });
+const dampingOrbitalMvt = new Animation({ duration: 60, name: 'damping-orbit' });
 
 // Replace matrix float by matrix double
 cameraTargetOnGlobe.matrixWorld.elements = new Float64Array(16);
@@ -224,8 +230,21 @@ if (enableTargetHelper) {
 var _handlerMouseMove;
 var _handlerMouseUp;
 
+let getPickingPosition;
+
 // Pseudo collision
 const radiusCollision = 50;
+
+
+// Event
+let enableEventPositionChanged = true;
+
+export const CONTROL_EVENTS = {
+    PAN_CHANGED: 'pan-changed',
+    ORIENTATION_CHANGED: 'orientation-changed',
+    RANGE_CHANGED: 'range-changed',
+    CAMERA_TARGET_CHANGED: 'camera-target-changed',
+};
 
 // SnapCamera saves transformation's camera
 // It's use to globe move
@@ -270,17 +289,33 @@ function SnapCamera(camera) {
 
 var snapShotCamera = null;
 
-// ///////////////////////
+function defer() {
+    const deferedPromise = {};
+    deferedPromise.promise = new Promise((resolve, reject) => {
+        deferedPromise.resolve = resolve;
+        deferedPromise.reject = reject;
+    });
+    return deferedPromise;
+}
 
 /* globals document,window */
 
-function GlobeControls(camera, target, domElement, engine, radius, referenceCrs, getPickingPosition) {
-    player = new AnimationPlayer(domElement);
+/** @class GlobeControls */
+function GlobeControls(camera, target, domElement, viewerDiv, engine, radius, referenceCrs, getPickingPosition) {
+    player = new AnimationPlayer();
     this.camera = camera;
     this.referenceCrs = referenceCrs;
     snapShotCamera = new SnapCamera(camera);
 
     this.domElement = (domElement !== undefined) ? domElement : document;
+
+    this.waitSceneLoaded = function waitSceneLoaded() {
+        const deferedPromise = defer();
+        viewerDiv.addEventListener('globe-built', () => {
+            deferedPromise.resolve();
+        });
+        return deferedPromise.promise;
+    };
 
     // Set to false to disable this control
     this.enabled = true;
@@ -343,7 +378,7 @@ function GlobeControls(camera, target, domElement, engine, radius, referenceCrs,
     spherical.radius = tSphere.radius;
 
     sizeRendering.set(engine.width, engine.height);
-
+    sizeRendering.FOV = camera.fov;
     // Note A
     // TODO: test before remove test code
     // so camera.up is the orbit axis
@@ -365,13 +400,14 @@ function GlobeControls(camera, target, domElement, engine, radius, referenceCrs,
         snapShotCamera.init(camera.camera3D);
         sizeRendering.width = width;
         sizeRendering.height = height;
+        sizeRendering.FOV = camera.fov;
     };
 
     this.getAutoRotationAngle = function getAutoRotationAngle() {
         return 2 * Math.PI / 60 / 60 * this.autoRotateSpeed;
     };
 
-    this.getZoomScale = function getZoomScale() {
+    this.getDollyScale = function getDollyScale() {
         return Math.pow(0.95, this.zoomSpeed);
     };
 
@@ -446,7 +482,7 @@ function GlobeControls(camera, target, domElement, engine, radius, referenceCrs,
 
     this.dollyIn = function dollyIn(dollyScale) {
         if (dollyScale === undefined) {
-            dollyScale = this.getZoomScale();
+            dollyScale = this.getDollyScale();
         }
 
         if (this.camera instanceof THREE.PerspectiveCamera) {
@@ -464,7 +500,7 @@ function GlobeControls(camera, target, domElement, engine, radius, referenceCrs,
 
     this.dollyOut = function dollyOut(dollyScale) {
         if (dollyScale === undefined) {
-            dollyScale = this.getZoomScale();
+            dollyScale = this.getDollyScale();
         }
 
         if (this.camera instanceof THREE.PerspectiveCamera) {
@@ -613,9 +649,10 @@ function GlobeControls(camera, target, domElement, engine, radius, referenceCrs,
     };
 
     const cT = new THREE.Vector3();
+    const delta = 0.001;
 
     const updateCameraTargetOnGlobe = function updateCameraTargetOnGlobe() {
-        const oldCoord = new Coordinates(referenceCrs, cameraTargetOnGlobe.position);
+        const previousCameraTargetOnGlobe = cameraTargetOnGlobe.position.clone();
 
         // Get distance camera DME
         const pickingPosition = getPickingPosition();
@@ -637,17 +674,51 @@ function GlobeControls(camera, target, domElement, engine, radius, referenceCrs,
         offset.copy(this.camera.position);
         offset.applyMatrix4(cameraTargetOnGlobe.matrixWorldInverse);
         spherical.setFromVector3(offset);
+
+        if (enableEventPositionChanged) {
+            if (state === CONTROL_STATE.ORBIT && (Math.abs(snapShotSpherical.phi - spherical.phi) > delta || Math.abs(snapShotSpherical.theta - spherical.theta) > delta)) {
+                this.dispatchEvent({
+                    type: CONTROL_EVENTS.ORIENTATION_CHANGED,
+                    previous: {
+                        tilt: snapShotSpherical.phi * 180 / Math.PI,
+                        heading: snapShotSpherical.theta * 180 / Math.PI,
+                    },
+                    new: {
+                        tilt: spherical.phi * 180 / Math.PI,
+                        heading: spherical.theta * 180 / Math.PI,
+                    },
+                });
+            } else if (state === CONTROL_STATE.PAN) {
+                this.dispatchEvent({
+                    type: CONTROL_EVENTS.PAN_CHANGED,
+                });
+            }
+
+            const previousRange = snapShotSpherical.radius;
+            const newRange = this.getRange();
+            if (Math.abs(newRange - previousRange) / previousRange > 0.001) {
+                this.dispatchEvent({
+                    type: CONTROL_EVENTS.RANGE_CHANGED,
+                    previous: { range: previousRange },
+                    new: { range: newRange },
+                });
+            }
+
+            if (cameraTargetOnGlobe.position.distanceTo(previousCameraTargetOnGlobe) / spherical.radius > delta) {
+                this.dispatchEvent({
+                    type: CONTROL_EVENTS.CAMERATARGET_CHANGED,
+                    previous: { cameraTarget: new Coordinates(this.referenceCrs, previousCameraTargetOnGlobe) },
+                    new: { cameraTarget: new Coordinates(this.referenceCrs, cameraTargetOnGlobe.position) },
+                });
+            }
+            snapShotSpherical.copy(spherical);
+        }
+
         state = CONTROL_STATE.NONE;
         lastRotation = [];
         if (enableTargetHelper) {
             this.dispatchEvent(this.changeEvent);
         }
-
-        this.dispatchEvent({
-            type: 'camera-target-updated',
-            oldCameraTargetPosition: oldCoord,
-            newCameraTargetPosition: new Coordinates(this.referenceCrs, cameraTargetOnGlobe.position),
-        });
     };
 
     // Update helper
@@ -840,7 +911,7 @@ function GlobeControls(camera, target, domElement, engine, radius, referenceCrs,
 
             if (point) {
                 animatedScale = 0.6;
-                this.setCameraTargetPosition(point, true);
+                this.setCameraTargetPosition(point, this.isAnimationEnabled());
             }
         }
     };
@@ -895,7 +966,17 @@ function GlobeControls(camera, target, domElement, engine, radius, referenceCrs,
                 this.dollyIn();
             }
 
+            const previousRange = this.getRange();
             update();
+            const newRange = this.getRange();
+            if (Math.abs(newRange - previousRange) / previousRange > 0.001 && enableEventPositionChanged) {
+                this.dispatchEvent({
+                    type: CONTROL_EVENTS.RANGE_CHANGED,
+                    previous: { range: previousRange },
+                    new: { range: newRange },
+                });
+            }
+            snapShotSpherical.copy(spherical);
 
             this.dispatchEvent(this.startEvent);
             this.dispatchEvent(this.endEvent);
@@ -1145,7 +1226,27 @@ function GlobeControls(camera, target, domElement, engine, radius, referenceCrs,
     this.domElement.addEventListener('touchmove', onTouchMove.bind(this), false);
 
     // refresh control for each animation's frame
-    this.domElement.addEventListener('frameAnimation', update.bind(this), false);
+    player.addEventListener('animation-frame', update.bind(this));
+
+    function isAnimationWithoutDamping(animation) {
+        return animation && !(animation.name === 'damping-move' || animation.name === 'damping-orbit');
+    }
+
+    player.addEventListener('animation-started', (e) => {
+        if (isAnimationWithoutDamping(e.animation)) {
+            this.dispatchEvent({
+                type: 'animation-started',
+            });
+        }
+    });
+
+    player.addEventListener('animation-ended', (e) => {
+        if (isAnimationWithoutDamping(e.animation)) {
+            this.dispatchEvent({
+                type: 'animation-ended',
+            });
+        }
+    });
 
     // TODO: Why windows
     window.addEventListener('keydown', onKeyDown.bind(this), false);
@@ -1169,43 +1270,89 @@ function GlobeControls(camera, target, domElement, engine, radius, referenceCrs,
     initialTarget = cameraTargetOnGlobe.clone();
     initialPosition = this.camera.position.clone();
     initialZoom = this.camera.zoom;
+    snapShotSpherical.copy(spherical);
 
     _handlerMouseMove = onMouseMove.bind(this);
     _handlerMouseUp = onMouseUp.bind(this);
+
+    this.waitSceneLoaded().then(() => {
+        this.updateCameraTransformation();
+        this.dispatchEvent(this.changeEvent);
+    });
 }
 
 GlobeControls.prototype = Object.create(THREE.EventDispatcher.prototype);
 GlobeControls.prototype.constructor = GlobeControls;
 
+function getRangeFromScale(scale, pitch) {
+    // Screen pitch, in millimeters
+    pitch = (pitch || 0.28) / 1000;
+    const alpha = sizeRendering.FOV / 180 * Math.PI * 0.5;
+    // Invert one unit projection (see getDollyScale)
+    const range = pitch * sizeRendering.height / (scale * 2 * Math.tan(alpha));
+
+    return range;
+}
 
 // # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-// API Function
 
+/**
+ * Change the tilt.
+ * <!--<iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/p6t76zox/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>-->
+ * @param {Angle} Number - The angle.
+ * @param      {boolean}  isAnimated  Indicates if animated
+ * @return     {Promise}
+ */
 GlobeControls.prototype.setTilt = function setTilt(tilt, isAnimated) {
-    const deltaPhi = (tilt * Math.PI / 180 - this.getTiltRad());
-    return this.moveOrbitalPosition(0, 0, deltaPhi, isAnimated);
+    return this.setOrbitalPosition({ tilt }, isAnimated);
 };
 
+/**
+ * <!--<iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/rxe4xgxj/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>-->
+ * Change the heading.
+ * @param {Angle} Number - The angle.
+ * @param      {boolean}  isAnimated  Indicates if animated
+ * @return     {Promise}
+ */
 GlobeControls.prototype.setHeading = function setHeading(heading, isAnimated) {
-    const deltaTheta = (heading * Math.PI / 180 - this.getHeadingRad());
-    return this.moveOrbitalPosition(0, deltaTheta, 0, isAnimated);
+    return this.setOrbitalPosition({ heading }, isAnimated);
 };
 
-GlobeControls.prototype.setRange = function setRange(pRange, isAnimated) {
-    const deltaRange = pRange - this.getRange();
-    return this.moveOrbitalPosition(deltaRange, 0, 0, isAnimated);
+/**
+ * Sets the "range": the distance in meters between the camera and the current central point on the screen.
+ * <!--<iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/Lt3jL5pd/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>-->
+ * @param {Number} pRange - The camera altitude.
+ * @param      {boolean}  isAnimated  Indicates if animated
+ * @return     {Promise}
+ */
+GlobeControls.prototype.setRange = function setRange(range, isAnimated) {
+    return this.setOrbitalPosition({ range }, isAnimated);
 };
 
-GlobeControls.prototype.setOrbitalPosition = function setOrbitalPosition(range, heading, tilt, isAnimated) {
-    const deltaPhi = tilt ? tilt * Math.PI / 180 - this.getTiltRad() : 0;
-    const deltaTheta = heading ? heading * Math.PI / 180 - this.getHeadingRad() : 0;
-    const deltaRange = range ? range - this.getRange() : 0;
-    return this.moveOrbitalPosition(deltaRange, deltaTheta, deltaPhi, isAnimated);
+/**
+ * Sets orientation angles of the current camera, in degrees.
+ * <!--<iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/9qr2mogh/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>-->
+ * @param      {object}   orientation  The angle of the rotation in degrees
+ * @param      {boolean}  isAnimated   Indicates if animated
+ * @return     {Promise}   { description_of_the_return_value }
+ */
+GlobeControls.prototype.setOrbitalPosition = function setOrbitalPosition(position, isAnimated) {
+    isAnimated = isAnimated === undefined ? this.isAnimationEnabled() : isAnimated;
+    const deltaPhi = position.tilt === undefined ? 0 : position.tilt * Math.PI / 180 - this.getTiltRad();
+    const deltaTheta = position.heading === undefined ? 0 : position.heading * Math.PI / 180 - this.getHeadingRad();
+    const deltaRange = position.range === undefined ? 0 : position.range - this.getRange();
+    return this.moveOrbitalPosition(deltaRange, deltaTheta, deltaPhi, isAnimated).then(() => {
+        this.dispatchEvent(this.changeEvent);
+        return this.waitSceneLoaded().then(() => {
+            this.updateCameraTransformation();
+        });
+    });
 };
 
 const destSpherical = new THREE.Spherical();
 
 GlobeControls.prototype.moveOrbitalPosition = function moveOrbitalPosition(deltaRange, deltaTheta, deltaPhi, isAnimated) {
+    isAnimated = isAnimated === undefined ? this.isAnimationEnabled() : isAnimated;
     const range = deltaRange + this.getRange();
     if (isAnimated) {
         destSpherical.theta = deltaTheta + spherical.theta;
@@ -1216,8 +1363,9 @@ GlobeControls.prototype.moveOrbitalPosition = function moveOrbitalPosition(delta
         state = CONTROL_STATE.ORBIT;
         return player.play(animationOrbit).then(() => {
             // To correct errors at animation's end
+            // TODO : find other solution to correct error
             if (player.isEnded()) {
-                this.moveOrbitalPosition(0, destSpherical.theta - spherical.theta, destSpherical.phi - spherical.phi);
+                this.moveOrbitalPosition(0, destSpherical.theta - spherical.theta, destSpherical.phi - spherical.phi, false);
             }
             this.resetControls();
         });
@@ -1233,7 +1381,7 @@ GlobeControls.prototype.moveOrbitalPosition = function moveOrbitalPosition(delta
 
 /**
  * Returns the coordinates of the globe point targeted by the camera.
- * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/4tjgnv7z/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
+ * <!--<iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/4tjgnv7z/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>-->
  * @return {THREE.Vector3} position
  */
 GlobeControls.prototype.getCameraTargetPosition = function getCameraTargetPosition() {
@@ -1247,6 +1395,7 @@ GlobeControls.prototype.getCameraTargetPosition = function getCameraTargetPositi
  * @param {boolean} isAnimated - if we should animate the move
  */
 GlobeControls.prototype.setCameraTargetPosition = function setCameraTargetPosition(position, isAnimated) {
+    isAnimated = isAnimated === undefined ? this.isAnimationEnabled() : isAnimated;
     const center = this.getCameraTargetPosition();
 
     if (position.range) {
@@ -1256,7 +1405,10 @@ GlobeControls.prototype.setCameraTargetPosition = function setCameraTargetPositi
         const targetOnEllipsoid = new C.EPSG_4326(currentTargetPosition.longitude(), currentTargetPosition.latitude(), 0)
             .as(this.referenceCrs).xyz();
         const compensation = position.length() - targetOnEllipsoid.length();
-        position.range += compensation;
+        // FIX ME error with compensation negative
+        if (compensation > 0) {
+            position.range += compensation;
+        }
     }
 
     snapShotCamera.shot(this.camera);
@@ -1267,13 +1419,15 @@ GlobeControls.prototype.setCameraTargetPosition = function setCameraTargetPositi
     const vFrom = center.clone().normalize();
     const vTo = position.normalize();
 
+    let promise;
+
     if (isAnimated) {
         ctrl.qDelta.setFromUnitVectors(vFrom, vTo);
         if (position.range) {
             animatedScale = 1.0 - position.range / this.getRange();
         }
         state = CONTROL_STATE.MOVE_GLOBE;
-        return player.play(animationZoomCenter).then(() => {
+        promise = player.play(animationZoomCenter).then(() => {
             animatedScale = 0.0;
             this.resetControls();
         });
@@ -1281,35 +1435,46 @@ GlobeControls.prototype.setCameraTargetPosition = function setCameraTargetPositi
     else {
         quatGlobe.setFromUnitVectors(vFrom, vTo);
         this.updateCameraTransformation(CONTROL_STATE.MOVE_GLOBE);
-        return Promise.resolve();
+        if (animatedScale > 0.0 && animatedScale < 1.0) {
+            this.setRange(this.getRange() * animatedScale);
+        }
+        promise = Promise.resolve();
     }
+
+    return promise.then(() => {
+        this.dispatchEvent(this.changeEvent);
+        return this.waitSceneLoaded().then(() => {
+            this.updateCameraTransformation();
+        });
+    });
 };
 
+/**
+ * Returns the "range": the distance in meters between the camera and the current central point on the screen.
+ * <!--<iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/Lbt1vfek/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>-->
+ * @return {number} number
+ */
 GlobeControls.prototype.getRange = function getRange() {
     return this.getCameraTargetPosition().distanceTo(this.camera.position);
 };
 
-// TODO idea : remove this? used in API
-GlobeControls.prototype.getRay = function getRay() {
-    var direction = new THREE.Vector3(0, 0, 1);
-    this.camera.localToWorld(direction);
-    direction.sub(this.camera.position).negate().normalize();
-
-    return {
-        origin: this.camera.position,
-        direction,
-    };
-};
-
+/**
+ * Returns the tilt in degrees.
+ * <!--<iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/kcx0of9j/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>-->
+ * @return {Angle} number - The angle of the rotation in degrees.
+ */
 GlobeControls.prototype.getTilt = function getTilt() {
     return spherical.phi * 180 / Math.PI;
 };
 
+/**
+ * Returns the heading in degrees.
+ * <!--<iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/pxv1Lw16/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>-->
+ * @return {Angle} number - The angle of the rotation in degrees.
+ */
 GlobeControls.prototype.getHeading = function getHeading() {
     return spherical.theta * 180 / Math.PI;
 };
-
-// Same functions
 
 GlobeControls.prototype.getTiltRad = function getTiltRad() {
     return spherical.phi;
@@ -1331,17 +1496,194 @@ GlobeControls.prototype.moveTarget = function moveTarget() {
     return movingCameraTargetOnGlobe;
 };
 
-GlobeControls.prototype.pan = function pan(deltaX, deltaY) {
-    this.mouseToPan(deltaX, deltaY);
+/**
+ * Displaces the central point to a specific amount of pixels from its current position.
+ * The view flies to the desired coordinate, i.e.is not teleported instantly. Note : The results can be strange in some cases, if ever possible, when e.g.the camera looks horizontally or if the displaced center would not pick the ground once displaced.
+ * @param      {vector}  pVector  The vector
+ */
+GlobeControls.prototype.pan = function pan(pVector) {
+    this.mouseToPan(pVector.x, pVector.y);
     this.updateCameraTransformation(CONTROL_STATE.PAN);
+    this.dispatchEvent(this.changeEvent);
+    return this.waitSceneLoaded().then(() => {
+        this.updateCameraTransformation();
+    });
 };
 
-// End API functions
+/**
+ * Returns the orientation angles of the current camera, in degrees.
+ * <!--<iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/okfj460p/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>-->
+ */
+GlobeControls.prototype.getCameraOrientation = function getCameraOrientation() {
+    var tiltCam = this.getTilt();
+    var headingCam = this.getHeading();
+    return [tiltCam, headingCam];
+};
+
+/**
+ * Returns the camera location projected on the ground in lat,lon.
+ * <!--<iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/mjv7ha02/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>-->
+ * @return {Position} position
+ */
+
+GlobeControls.prototype.getCameraLocation = function getCameraLocation() {
+    return new Coordinates('EPSG:4978', this.camera.position).as('EPSG:4326');
+};
+
+/**
+ * Retuns the coordinates of the central point on screen.
+ * <!--<iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/4tjgnv7z/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>-->
+ * @return {Position} position
+ */
+
+GlobeControls.prototype.getCameraTargetGeoPosition = function getCameraTargetGeoPosition() {
+    return new Coordinates(this.referenceCrs, this.getCameraTargetPosition()).as('EPSG:4326');
+};
+
+/**
+ * Sets the animation enabled.
+ * @param      {boolean}  enable  enable
+ */
+GlobeControls.prototype.setAnimationEnabled = function setAnimationEnabled(enable) {
+    enableAnimation = enable;
+};
+
+/**
+ * Determines if animation enabled.
+ * @return     {boolean}  True if animation enabled, False otherwise.
+ */
+GlobeControls.prototype.isAnimationEnabled = function isAnimationEnabled() {
+    return enableAnimation;
+};
+
+/**
+ * Returns the actual zoom. The zoom will always be between the [getMinZoom(), getMaxZoom()].
+ * @return     {number}  The zoom .
+ */
+GlobeControls.prototype.getZoom = function getZoom() {
+    return computeTileZoomFromDistanceCamera(this.getRange());
+};
+
+/**
+ * Gets the current zoom, which is an index in the logical scales predefined for the application.
+ * The higher the zoom, the closer to the ground.
+ * The zoom is always in the [getMinZoom(), getMaxZoom()] range.
+ * @param      {number}  zoom    The zoom
+ * @param      {boolean}  isAnimated  Indicates if animated
+ * @return     {Promise}
+ */
+GlobeControls.prototype.setZoom = function setZoom(zoom, isAnimated) {
+    isAnimated = isAnimated === undefined ? this.isAnimationEnabled() : isAnimated;
+    const range = computeDistanceCameraFromTileZoom(zoom);
+    return this.setRange(range, isAnimated);
+};
+
+/**
+ * Return the current zoom scale at the central point of the view.
+ * This function compute the scale of a map
+ * @param      {number}  pitch   Screen pitch, in millimeters ; 0.28 by default
+ * @return     {number}  The zoom scale.
+ */
+GlobeControls.prototype.getScale = function getScale(pitch) {
+    // TODO: Why error div size height in Chrome?
+    // Screen pitch, in millimeters
+    pitch = (pitch || 0.28) / 1000;
+    const FOV = sizeRendering.FOV / 180 * Math.PI * 0.5;
+    // projection one unit on screen
+    const unitProjection = sizeRendering.height / (2 * this.getRange() * Math.tan(FOV));
+    return pitch * unitProjection;
+};
+
+/**
+ * Changes the zoom of the central point of screen so that screen acts as a map with a specified scale.
+ *  The view flies to the desired zoom scale;
+ * @param      {number}  scale  The scale
+ * @param      {number}  pitch  The pitch
+ * @param      {boolean}  isAnimated  Indicates if animated
+ * @return     {Promise}
+ */
+ // TODO pas de scale supérieur à 0.05....
+GlobeControls.prototype.setScale = function setScale(scale, pitch, isAnimated) {
+    isAnimated = isAnimated === undefined ? this.isAnimationEnabled() : isAnimated;
+    const range = getRangeFromScale(scale);
+    return this.setRange(range, isAnimated);
+};
+
+/**
+ * Changes the center of the scene on screen to the specified coordinates.
+ * <!--<iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/x06yhbq6/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>-->
+ * @function
+ * @memberOf GlobeControls
+ * @param {Object} coordinates - The globe coordinates in EPSG_4326 projection to aim to
+ * @param {number} coordinates.latitude
+ * @param {number} coordinates.longitude
+ * @param {number} coordinates.range
+ * @param {boolean}  isAnimated - if the movement should be animated
+ * @return {Promise} A promise that resolves when the next 'globe-loaded' event fires.
+ */
+GlobeControls.prototype.setCameraTargetGeoPosition = function setCameraTargetGeoPosition(coordinates, isAnimated) {
+    isAnimated = isAnimated === undefined ? this.isAnimationEnabled() : isAnimated;
+    const position = new C.EPSG_4326(coordinates.longitude, coordinates.latitude, 0)
+        .as('EPSG:4978').xyz();
+    position.range = coordinates.range;
+    return this.setCameraTargetPosition(position, isAnimated);
+};
+
+/**
+ * Changes the center of the scene on screen to the specified coordinates.
+ * This function allows to change the central position, the zoom  the range, the scale and the camera orientation at the same time.
+ * The zoom has to be between the [getMinZoom(), getMaxZoom()].
+ * The zoom and the scale can't be set at the same time.
+ * <!--<iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/7yk0mpn0/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>-->-->
+ * @param {Position} position
+ * @param {number}  position.longitude  Coordinate longitude WGS84 in degree
+ * @param {number}  position.latitude  Coordinate latitude WGS84 in degree
+ * @param {number}  [position.tilt]  Camera tilt in degree
+ * @param {number}  [position.heading]  Camera heading in degree
+ * @param {number}  [position.range]  The camera distance to the target center
+ * @param {number}  [position.zoom]  zoom,  ignored if range is set
+ * @param {number}  [position.scale]  scale,  ignored if the zoom zoom or range is set. For a scale of 1/500 it is necessary to write 0,002.
+ * @param {boolean}  isAnimated  Indicates if animated
+ * @return {Promise}
+ */
+GlobeControls.prototype.setCameraTargetGeoPositionAdvanced = function setCameraTargetGeoPositionAdvanced(position, isAnimated) {
+    isAnimated = isAnimated === undefined ? this.isAnimationEnabled() : isAnimated;
+    if (position.zoom) {
+        position.range = computeDistanceCameraFromTileZoom(position.zoom);
+    } else if (position.scale) {
+        position.range = getRangeFromScale(position.scale);
+    }
+    enableEventPositionChanged = false;
+    return this.setCameraTargetGeoPosition(position, isAnimated).then(() => {
+        enableEventPositionChanged = true;
+        return this.setOrbitalPosition(position, isAnimated); });
+};
+
+/**
+ * Pick a position on the globe at the given position.
+ * @param {number | MouseEvent} x|event - The x-position inside the Globe element or a mouse event.
+ * @param {number | undefined} y - The y-position inside the Globe element.
+ * @return {Position} position
+ */
+GlobeControls.prototype.pickGeoPosition = function pickGeoPosition(mouse, y) {
+    var screenCoords = {
+        x: mouse.clientX || mouse,
+        y: mouse.clientY || y,
+    };
+
+    var pickedPosition = getPickingPosition(this.controlsActiveLayers, screenCoords);
+
+    if (!pickedPosition) {
+        return;
+    }
+
+    return new Coordinates('EPSG:4978', pickedPosition).as('EPSG:4326');
+};
+
 // # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 GlobeControls.prototype.reset = function reset() {
     // TODO not reset target globe
-
     state = CONTROL_STATE.NONE;
 
     this.target.copy(initialTarget);
