@@ -924,48 +924,11 @@ ApiGlobe.prototype.getZoomScale = function getZoomScale(pitch) {
     // TODO: Why error div size height in Chrome?
     // Screen pitch, in millimeters
     pitch = (pitch || 0.28) / 1000;
-
-    // To compute scale, we must to calculate the maximum vertical distance (in meter) perceived by the camera
-    // the maximum vertical distance 2xHS (look at the explanations below 'HS segment')
-    // There's two state
-    //     * Globe is inside the frustrum camera
-    //     * Globe intersects with the frustrum camera
     const camera = this.scene.currentCamera();
-    const center = this.scene.currentControls().getCameraTargetPosition();
-    const rayon = center.length();
-    const range = center.distanceTo(camera.camera3D.position);
-    // compute distance camera/globe's center
-    const distance = rayon + range;
-    // Three points C,G and S
-    // C : Camera's position
-    // G : Globe's center
-    // S : The furthest interesection[camera verical frustrum, globe surface] from line CG
-    // HS is triangle CSG's altitude going through S and H is in GC segment
-    // alpha is angle GCS
-    // phi is angle CSG
-    const alpha = camera.FOV / 180 * Math.PI * 0.5;
-    const phi = Math.PI - Math.asin(distance / rayon * Math.sin(alpha));
-    // projection is projection segment HS on camera
-    let projection;
-
-    if (isNaN(phi)) {
-        // Globe is inside the frustrum camera
-        projection = distance * 2 * Math.tan(alpha);
-    } else {
-        // Globe intersects with the frustrum camera
-
-        // develop operation
-        // {
-        //     var beta = Math.PI - ( phi + alpha);
-        //     projection = rayon * Math.sin(beta) * 2.0;
-        // }
-        // factorisation ->
-        projection = 2.0 * rayon * Math.sin(phi + alpha);
-    }
-
-    const zoomScale = camera.height * pitch / projection;
-
-    return zoomScale;
+    const FOV = camera.FOV / 180 * Math.PI * 0.5;
+    // projection one unit on screen
+    const unitProjection = camera.height / (2 * this.getRange() * Math.tan(FOV));
+    return pitch * unitProjection;
 };
 
 /**
@@ -986,45 +949,11 @@ ApiGlobe.prototype.getRangeFromScale = function getRangeFromScale(zoomScale, pit
     // Screen pitch, in millimeters
     pitch = (pitch || 0.28) / 1000;
 
-    // To set scale, we must to calculate the maximum vertical distance (in meter) perceived by the camera
-    // the maximum vertical distance 2xHS (look at the explanations below 'HS segment')
-    // projection is projection segment HS on camera
-    // There's two state
-    //     * Globe is inside the frustrum camera
-    //     * Globe intersects with the frustrum camera
-
     const camera = this.scene.currentCamera();
-    const projection = camera.height * pitch / zoomScale;
-    const rayon = this.scene.currentControls().getCameraTargetPosition().length();
     const alpha = camera.FOV / 180 * Math.PI * 0.5;
-    // distance camera/globe's center
-    let distance;
-    // Three points C,G and S
-    // C camera's position
-    // G globe's center
-    // S = the furthest interesection[camera verical frustrum, globe surface] from line CG
-    // HS is triangle CSG's altitude going through S and H is in GC segment
-    // alpha is angle GCS
-    // phi is angle CSG
-    // beta is angle SGC
-    const sinBeta = projection / (2 * rayon);
+    // Invert one unit projection (see getZoomScale)
+    const range = pitch * camera.height / (zoomScale * 2 * Math.tan(alpha));
 
-    if (sinBeta < 1.0) {
-        // Globe is inside the frustrum camera
-        const beta = Math.asin(sinBeta);
-        // develop operation
-        //  {
-        //      let phi = Math.PI - ( beta + alpha);
-        //      distance  = rayon * Math.sin(phi) / Math.sin(alpha) ;
-        //  }
-        //  factorisation ->
-        distance = rayon * Math.sin(beta + alpha) / Math.sin(alpha);
-    } else {
-        // Globe is inside the frustrum camera
-        distance = rayon / Math.tan(alpha) * sinBeta;
-    }
-
-    const range = distance - rayon;
     return range;
 };
 
