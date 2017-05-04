@@ -54,8 +54,7 @@ bool beyondHorizon(vec3 p, vec3 camera, vec3 center)
     // VT dot VC is the inverse of VT dot CV
     float vtDotVc = -(vtX * cvX + vtY * cvY + vtZ * cvZ);
 
-    return vtDotVc > vhMagnitudeSquared &&
-                 vtDotVc * vtDotVc / vtMagnitudeSquared > vhMagnitudeSquared;
+    return vtDotVc > vhMagnitudeSquared; // && vtDotVc * vtDotVc / vtMagnitudeSquared > vhMagnitudeSquared;
 
 }
 
