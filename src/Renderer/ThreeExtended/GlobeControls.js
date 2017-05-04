@@ -13,6 +13,7 @@ import AnimationPlayer, { Animation, AnimatedExpression } from '../../Scene/Anim
 import { C } from '../../Core/Geographic/Coordinates';
 
 var selectClick = new CustomEvent('selectClick');
+var eventZoomChanged = new CustomEvent('zoomcontrolchanged');
 
 // TODO:
 // Recast touch for globe
@@ -110,10 +111,12 @@ const rotateStart = new THREE.Vector2();
 const rotateEnd = new THREE.Vector2();
 const rotateDelta = new THREE.Vector2();
 const spherical = new THREE.Spherical(1.0, 0.01, 0);
+const snapShotSpherical = new THREE.Spherical(1.0, 0.01, 0);
 const sphericalDelta = new THREE.Spherical(1.0, 0, 0);
 const sphericalTo = new THREE.Spherical();
 const orbit = {
     spherical,
+    snapShotSpherical,
     sphericalDelta,
     sphericalTo,
     scale: 1,
@@ -441,6 +444,9 @@ function GlobeControls(camera, target, domElement, engine) {
             // console.warn('WARNING: GlobeControls.js encountered an unknown camera type - this.mouseToPan disabled.');
 
         }
+        this.dispatchEvent({
+            type: 'panchanged',
+        });
     };
 
     this.dollyIn = function dollyIn(dollyScale) {
@@ -648,6 +654,8 @@ function GlobeControls(camera, target, domElement, engine) {
     };
 
     const cT = new THREE.Vector3();
+    const deltaOri = 0.000001;
+    const deltaCenter = 1;
 
     const updateCameraTargetOnGlobe = function updateCameraTargetOnGlobe() {
         const oldCoord = C.fromXYZ(scene.referenceCrs, cameraTargetOnGlobe.position);
@@ -678,11 +686,31 @@ function GlobeControls(camera, target, domElement, engine) {
             this.dispatchEvent(this.changeEvent);
         }
 
-        this.dispatchEvent({
-            type: 'camera-target-updated',
-            oldCameraTargetPosition: oldCoord,
-            newCameraTargetPosition: C.fromXYZ(scene.referenceCrs, cameraTargetOnGlobe.position),
-        });
+        const newCoord = C.fromXYZ(scene.referenceCrs, cameraTargetOnGlobe.position);
+
+        if (Math.abs(oldCoord.x() - newCoord.x()) > deltaCenter || Math.abs(oldCoord.z() - newCoord.z()) > deltaCenter) {
+            this.dispatchEvent({
+                type: 'camera-target-updated',
+                old: { CameraTargetPosition: oldCoord },
+                new: { CameraTargetPosition: newCoord },
+            });
+        }
+
+        if (Math.abs(snapShotSpherical.phi - spherical.phi) > deltaOri || Math.abs(snapShotSpherical.theta - spherical.theta) > deltaOri) {
+            this.dispatchEvent({
+                type: 'orientationchanged',
+                old: {
+                    tilt: snapShotSpherical.phi * 180 / Math.PI,
+                    heading: snapShotSpherical.theta * 180 / Math.PI,
+                },
+                new: {
+                    tilt: spherical.phi * 180 / Math.PI,
+                    heading: spherical.theta * 180 / Math.PI,
+                },
+            });
+            snapShotSpherical.phi = spherical.phi;
+            snapShotSpherical.theta = spherical.theta;
+        }
     };
 
     // Update helper
@@ -902,6 +930,7 @@ function GlobeControls(camera, target, domElement, engine) {
     };
 
     var onMouseWheel = function onMouseWheel(event) {
+        // const oldZoom = Globe.getZoomLevel();
         player.stop().then(() => {
             if (this.enabled === false || this.enableZoom === false/* || state !== CONTROL_STATE.NONE*/) return;
 
@@ -920,8 +949,14 @@ function GlobeControls(camera, target, domElement, engine) {
 
             if (delta > 0) {
                 this.dollyOut();
+                if (event.wheelDelta) {
+                    this.domElement.parentNode.dispatchEvent(eventZoomChanged);
+                }
             } else if (delta < 0) {
                 this.dollyIn();
+                if (event.wheelDelta) {
+                    this.domElement.parentNode.dispatchEvent(eventZoomChanged);
+                }
             }
 
             update();
@@ -1198,6 +1233,7 @@ function GlobeControls(camera, target, domElement, engine) {
     initialTarget = cameraTargetOnGlobe.clone();
     initialPosition = this.camera.position.clone();
     initialZoom = this.camera.zoom;
+    snapShotSpherical.copy(spherical);
 
     _handlerMouseMove = onMouseMove.bind(this);
     _handlerMouseUp = onMouseUp.bind(this);
@@ -1221,8 +1257,15 @@ GlobeControls.prototype.setHeading = function setHeading(heading, isAnimated) {
 };
 
 GlobeControls.prototype.setRange = function setRange(pRange, isAnimated) {
+    const oldRange = this.getRange();
     const deltaRange = pRange - this.getRange();
-    return this.moveOrbitalPosition(deltaRange, 0, 0, isAnimated);
+    return this.moveOrbitalPosition(deltaRange, 0, 0, isAnimated).then(() => {
+        this.dispatchEvent({
+            type: 'rangechanged',
+            old: { range: oldRange },
+            new: { range: this.getRange() },
+        });
+    });
 };
 
 GlobeControls.prototype.setOrbitalPosition = function setOrbitalPosition(range, heading, tilt, isAnimated) {
@@ -1234,9 +1277,16 @@ GlobeControls.prototype.setOrbitalPosition = function setOrbitalPosition(range, 
 
 const destSpherical = new THREE.Spherical();
 
+GlobeControls.prototype.dispatchAnimationEvent = function dispatchAnimationEvent(eventname) {
+    this.dispatchEvent({
+        type: eventname,
+    });
+};
+
 GlobeControls.prototype.moveOrbitalPosition = function moveOrbitalPosition(deltaRange, deltaTheta, deltaPhi, isAnimated) {
     const range = deltaRange + this.getRange();
     if (isAnimated) {
+        this.dispatchAnimationEvent('animationstarted');
         destSpherical.theta = deltaTheta + spherical.theta;
         destSpherical.phi = deltaPhi + spherical.phi;
         sphericalTo.radius = range;
@@ -1247,6 +1297,9 @@ GlobeControls.prototype.moveOrbitalPosition = function moveOrbitalPosition(delta
             // To correct errors at animation's end
             if (player.isEnded()) {
                 this.moveOrbitalPosition(0, destSpherical.theta - spherical.theta, destSpherical.phi - spherical.phi);
+                this.dispatchAnimationEvent('animationstopped');
+            } else if (player.isStopped()) {
+                this.dispatchAnimationEvent('animationstopped');
             }
             this.resetControls();
         });
@@ -1297,12 +1350,20 @@ GlobeControls.prototype.setCameraTargetPosition = function setCameraTargetPositi
     const vTo = position.normalize();
 
     if (isAnimated) {
+        this.dispatchAnimationEvent('animationstarted');
         ctrl.qDelta.setFromUnitVectors(vFrom, vTo);
         if (position.range) {
             animatedScale = 1.0 - position.range / this.getRange();
         }
         state = CONTROL_STATE.MOVE_GLOBE;
         return player.play(animationZoomCenter).then(() => {
+            if (player.isEnded()) {
+                this.dispatchAnimationEvent('animationstopped');
+                this.domElement.parentNode.dispatchEvent(eventZoomChanged);
+            } else if (player.isStopped()) {
+                this.dispatchAnimationEvent('animationstopped');
+                this.domElement.parentNode.dispatchEvent(eventZoomChanged);
+            }
             animatedScale = 0.0;
             this.resetControls();
         });
