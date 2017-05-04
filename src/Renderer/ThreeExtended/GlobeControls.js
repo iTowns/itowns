@@ -148,6 +148,10 @@ const ctrl = {
 ctrl.qDelta.presiceSlerp = presiceSlerp;
 quatGlobe.presiceSlerp = presiceSlerp;
 
+// Animation
+
+let enableAnimation = true;
+
 // Animation player
 var player = null;
 // Save 2 last rotation globe for damping
@@ -883,7 +887,7 @@ function GlobeControls(camera, target, domElement, engine) {
 
             if (point) {
                 animatedScale = 0.6;
-                this.setCameraTargetPosition(point, true);
+                this.setCameraTargetPosition(point, this.isAnimationEnabled());
             }
         }
     };
@@ -1225,21 +1229,25 @@ GlobeControls.prototype.constructor = GlobeControls;
 // API Function
 
 GlobeControls.prototype.setTilt = function setTilt(tilt, isAnimated) {
+    isAnimated = isAnimated === undefined ? this.isAnimationEnabled() : isAnimated;
     const deltaPhi = (tilt * Math.PI / 180 - this.getTiltRad());
     return this.moveOrbitalPosition(0, 0, deltaPhi, isAnimated);
 };
 
 GlobeControls.prototype.setHeading = function setHeading(heading, isAnimated) {
+    isAnimated = isAnimated === undefined ? this.isAnimationEnabled() : isAnimated;
     const deltaTheta = (heading * Math.PI / 180 - this.getHeadingRad());
     return this.moveOrbitalPosition(0, deltaTheta, 0, isAnimated);
 };
 
 GlobeControls.prototype.setRange = function setRange(pRange, isAnimated) {
+    isAnimated = isAnimated === undefined ? this.isAnimationEnabled() : isAnimated;
     const deltaRange = pRange - this.getRange();
     return this.moveOrbitalPosition(deltaRange, 0, 0, isAnimated);
 };
 
 GlobeControls.prototype.setOrbitalPosition = function setOrbitalPosition(range, heading, tilt, isAnimated) {
+    isAnimated = isAnimated === undefined ? this.isAnimationEnabled() : isAnimated;
     const deltaPhi = tilt ? tilt * Math.PI / 180 - this.getTiltRad() : 0;
     const deltaTheta = heading ? heading * Math.PI / 180 - this.getHeadingRad() : 0;
     const deltaRange = range ? range - this.getRange() : 0;
@@ -1249,6 +1257,7 @@ GlobeControls.prototype.setOrbitalPosition = function setOrbitalPosition(range, 
 const destSpherical = new THREE.Spherical();
 
 GlobeControls.prototype.moveOrbitalPosition = function moveOrbitalPosition(deltaRange, deltaTheta, deltaPhi, isAnimated) {
+    isAnimated = isAnimated === undefined ? this.isAnimationEnabled() : isAnimated;
     const range = deltaRange + this.getRange();
     if (isAnimated) {
         destSpherical.theta = deltaTheta + spherical.theta;
@@ -1260,7 +1269,7 @@ GlobeControls.prototype.moveOrbitalPosition = function moveOrbitalPosition(delta
         return player.play(animationOrbit).then(() => {
             // To correct errors at animation's end
             if (player.isEnded()) {
-                this.moveOrbitalPosition(0, destSpherical.theta - spherical.theta, destSpherical.phi - spherical.phi);
+                this.moveOrbitalPosition(0, destSpherical.theta - spherical.theta, destSpherical.phi - spherical.phi, false);
             }
             this.resetControls();
         });
@@ -1290,6 +1299,7 @@ GlobeControls.prototype.getCameraTargetPosition = function getCameraTargetPositi
  * @param {boolean} isAnimated - if we should animate the move
  */
 GlobeControls.prototype.setCameraTargetPosition = function setCameraTargetPosition(position, isAnimated) {
+    isAnimated = isAnimated === undefined ? this.isAnimationEnabled() : isAnimated;
     const center = this.getCameraTargetPosition();
 
     if (position.range) {
@@ -1324,6 +1334,9 @@ GlobeControls.prototype.setCameraTargetPosition = function setCameraTargetPositi
     else {
         quatGlobe.setFromUnitVectors(vFrom, vTo);
         this.updateCameraTransformation(CONTROL_STATE.MOVE_GLOBE);
+        if (animatedScale < 1.0) {
+            this.setRange(this.getRange() * animatedScale);
+        }
         return Promise.resolve();
     }
 };
@@ -1365,6 +1378,24 @@ GlobeControls.prototype.moveTarget = function moveTarget() {
 GlobeControls.prototype.pan = function pan(deltaX, deltaY) {
     this.mouseToPan(deltaX, deltaY);
     this.updateCameraTransformation(CONTROL_STATE.PAN);
+};
+
+/**
+ * Sets the animation enabled.
+ * @constructor
+ * @param      {boolean}  enable  enable
+ */
+GlobeControls.prototype.setAnimationEnabled = function setAnimationEnabled(enable) {
+    enableAnimation = enable;
+};
+
+/**
+ * Determines if animation enabled.
+ *
+ * @return     {boolean}  True if animation enabled, False otherwise.
+ */
+GlobeControls.prototype.isAnimationEnabled = function isAnimationEnabled() {
+    return enableAnimation;
 };
 
 // End API functions

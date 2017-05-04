@@ -36,8 +36,6 @@ var eventLayerChangedVisible = new CustomEvent('layerchanged:visible');
 var eventLayerChangedOpacity = new CustomEvent('layerchanged:opacity');
 var eventLayerChangedIndex = new CustomEvent('layerchanged:index');
 
-var enableAnimation = false;
-
 const defer = function defer() {
     const deferedPromise = {};
     deferedPromise.promise = new Promise((resolve, reject) => {
@@ -700,7 +698,7 @@ ApiGlobe.prototype.getRange = function getRange() {
  * @param      {boolean}  enable  The enable
  */
 ApiGlobe.prototype.setAnimationEnabled = function setAnimationEnabled(enable) {
-    enableAnimation = enable;
+    this.scene.currentControls().setAnimationEnabled(enable);
 };
 
 /**
@@ -709,7 +707,7 @@ ApiGlobe.prototype.setAnimationEnabled = function setAnimationEnabled(enable) {
  * @return     {boolean}  True if animation enabled, False otherwise.
  */
 ApiGlobe.prototype.isAnimationEnabled = function isAnimationEnabled() {
-    return enableAnimation;
+    return this.scene.currentControls().isAnimationEnabled();
 };
 
 /**
@@ -721,7 +719,6 @@ ApiGlobe.prototype.isAnimationEnabled = function isAnimationEnabled() {
  * @return     {Promise}
  */
 ApiGlobe.prototype.setTilt = function setTilt(tilt, isAnimated) {
-    isAnimated = isAnimated || this.isAnimationEnabled();
     eventOrientation.oldTilt = this.getTilt();
     return this.scene.currentControls().setTilt(tilt, isAnimated).then(() => {
         this.viewerDiv.dispatchEvent(eventOrientation);
@@ -738,8 +735,6 @@ ApiGlobe.prototype.setTilt = function setTilt(tilt, isAnimated) {
  * @return     {Promise}
  */
 ApiGlobe.prototype.setHeading = function setHeading(heading, isAnimated) {
-    isAnimated = isAnimated || this.isAnimationEnabled();
-    eventOrientation.oldHeading = this.getHeading();
     return this.scene.currentControls().setHeading(heading, isAnimated).then(() => {
         this.viewerDiv.dispatchEvent(eventOrientation);
         this.scene.notifyChange(1);
@@ -753,7 +748,6 @@ ApiGlobe.prototype.setHeading = function setHeading(heading, isAnimated) {
  * @return     {Promise}
  */
 ApiGlobe.prototype.resetTilt = function resetTilt(isAnimated) {
-    isAnimated = isAnimated || this.isAnimationEnabled();
     return this.scene.currentControls().setTilt(0, isAnimated);
 };
 
@@ -764,7 +758,6 @@ ApiGlobe.prototype.resetTilt = function resetTilt(isAnimated) {
  * @return     {Promise}
  */
 ApiGlobe.prototype.resetHeading = function resetHeading(isAnimated) {
-    isAnimated = isAnimated || this.isAnimationEnabled();
     return this.scene.currentControls().setHeading(0, isAnimated);
 };
 
@@ -793,7 +786,6 @@ ApiGlobe.prototype.setSceneLoaded = function setSceneLoaded() {
  * @return {Promise} A promise that resolves when the next 'globe-loaded' event fires.
  */
 ApiGlobe.prototype.setCameraTargetGeoPosition = function setCameraTargetGeoPosition(coordinates, isAnimated) {
-    isAnimated = isAnimated || this.isAnimationEnabled();
     const position3D = new C.EPSG_4326(coordinates.longitude, coordinates.latitude, 0)
         .as('EPSG:4978').xyz();
     position3D.range = coordinates.range;
@@ -823,7 +815,6 @@ ApiGlobe.prototype.setCameraTargetGeoPosition = function setCameraTargetGeoPosit
  * @return {Promise}
  */
 ApiGlobe.prototype.setCameraTargetGeoPositionAdvanced = function setCameraTargetGeoPositionAdvanced(position, isAnimated) {
-    isAnimated = isAnimated || this.isAnimationEnabled();
     if (position.level) {
         position.range = computeDistanceCameraFromTileZoom(position.level);
     } else if (position.scale) {
@@ -851,9 +842,7 @@ ApiGlobe.prototype.setCameraTargetGeoPositionAdvanced = function setCameraTarget
  * @return     {Promise}
  */
 ApiGlobe.prototype.setRange = function setRange(pRange, isAnimated) {
-    isAnimated = isAnimated || this.isAnimationEnabled();
     eventRange.oldRange = this.getRange();
-
     return this.scene.currentControls().setRange(pRange, isAnimated).then(() => {
         this.scene.notifyChange(1);
         return this.setSceneLoaded().then(() => {
