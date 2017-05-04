@@ -7,17 +7,14 @@
 /* global Uint8Array, Float64Array, document, window, Image */
 
 import * as THREE from 'three';
-import GlobeControls from './ThreeExtended/GlobeControls';
-import Camera from './Camera';
 import Atmosphere from '../Globe/Atmosphere';
 import Capabilities from '../Core/System/Capabilities';
 import RendererConstant from './RendererConstant';
+import { ellipsoidSizes } from '../Core/Geographic/Coordinates';
 
 var instance3DEngine = null;
 
-function c3DEngine(scene, controlOptions, viewerDiv, debugMode, gLDebug) {
-    // Constructor
-
+function c3DEngine(scene, viewerDiv, debugMode, gLDebug) {
     if (instance3DEngine !== null) {
         throw new Error('Cannot instantiate more than one c3DEngine');
     }
@@ -37,11 +34,10 @@ function c3DEngine(scene, controlOptions, viewerDiv, debugMode, gLDebug) {
     this.dfar = 0.0;
     this.stateRender = RendererConstant.FINAL;
     this.positionBuffer = null;
-
-    this.camera = new Camera(this.width, this.height, this.debug);
+    this.scene = scene;
 
     if (this.debug) {
-        this.camDebug = new THREE.PerspectiveCamera(30, this.camera.ratio);
+        this.camDebug = new THREE.PerspectiveCamera(30, this.scene.camera.ratio);
     }
 
     this.pickingTexture = new THREE.WebGLRenderTarget(this.width, this.height);
@@ -49,19 +45,19 @@ function c3DEngine(scene, controlOptions, viewerDiv, debugMode, gLDebug) {
     this.pickingTexture.texture.generateMipmaps = false;
 
     this.renderScene = function renderScene() {
-        if (this.camera.camHelper())
-            { this.camera.camHelper().visible = false; }
+        if (this.scene.camera.camHelper())
+            { this.scene.camera.camHelper().visible = false; }
 
         this.renderer.clear();
         this.renderer.setViewport(0, 0, this.width, this.height);
-        this.renderer.render(this.scene3D, this.camera.camera3D);
+        this.renderer.render(this.scene3D, this.scene.camera.camera3D);
 
         if (this.debug) {
             this.enableRTC(false);
-            this.camera.camHelper().visible = true;
+            this.scene.camera.camHelper().visible = true;
 
             var target = this.controls.moveTarget();
-            var position = this.camera.position();
+            var position = this.scene.camera.position();
             var posDebug = new THREE.Vector3().subVectors(position, target);
 
             posDebug.setLength(posDebug.length() * 2.0);
@@ -76,12 +72,12 @@ function c3DEngine(scene, controlOptions, viewerDiv, debugMode, gLDebug) {
             this.renderer.render(this.scene3D, this.camDebug);
 
             this.enableRTC(true);
-            this.camera.camHelper().visible = false;
+            this.scene.camera.camHelper().visible = false;
         }
     }.bind(this);
 
     this.update = function update() {
-        this.camera.update();
+        this.scene.camera.update();
         this.updateControl();
         this.scene.notifyChange(0, true);
     }.bind(this);
@@ -89,11 +85,11 @@ function c3DEngine(scene, controlOptions, viewerDiv, debugMode, gLDebug) {
     this.onWindowResize = function onWindowResize() {
         this.width = this.viewerDiv.clientWidth * (this.debug ? 0.5 : 1);
         this.height = this.viewerDiv.clientHeight;
-        this.camera.resize(this.width, this.height);
-        this.controls.updateCamera(this.camera);
+        this.scene.camera.resize(this.width, this.height);
+        this.scene.controls.updateCamera(this.scene.camera);
 
         if (this.camDebug) {
-            this.camDebug.aspect = this.camera.ratio;
+            this.camDebug.aspect = this.scene.camera.ratio;
             this.camDebug.updateProjectionMatrix();
         }
 
@@ -102,32 +98,8 @@ function c3DEngine(scene, controlOptions, viewerDiv, debugMode, gLDebug) {
         this.update();
     }.bind(this);
 
-    this.scene = scene;
-    this.size = this.scene.size().x;
-
-    //
-    // init camera
-    //
-    this.camera.setPosition(controlOptions.position);
-    this.camera.camera3D.near = this.size * 2.333; // if near is too small --> bug no camera helper
-    this.camera.camera3D.far = this.size * 10;
-    this.camera.camera3D.updateProjectionMatrix();
-    this.camera.camera3D.updateMatrixWorld(true);
-
-    if (this.debug) {
-        this.camDebug.position.x = this.size * 6;
-        this.camDebug.lookAt(new THREE.Vector3(0, 0, 0));
-        this.camDebug.near = this.size * 0.1;
-        this.camDebug.far = this.size * 10;
-        this.camDebug.updateProjectionMatrix();
-        this.camera.createCamHelper();
-        this.scene3D.add(this.camera.camHelper());
-        var axisHelper = new THREE.AxisHelper(this.size * 1.33);
-        this.scene3D.add(axisHelper);
-    }
-
-    this.camera.camera3D.near = Math.max(15.0, 0.000002352 * this.size);
-    this.camera.camera3D.updateProjectionMatrix();
+    // TODO: remove globe dependency
+    this.size = ellipsoidSizes().x;
 
     //
     // Create canvas
@@ -154,16 +126,6 @@ function c3DEngine(scene, controlOptions, viewerDiv, debugMode, gLDebug) {
     // this.viewerDiv.appendChild(canvas);
     viewerDiv.appendChild(this.renderer.domElement);
 
-    //
-    // Create Control
-    //
-    this.controls = new GlobeControls(this.camera.camera3D, controlOptions.target, this.renderer.domElement, this);
-    this.controls.rotateSpeed = 0.25;
-    this.controls.zoomSpeed = 2.0;
-    this.controls.minDistance = 30;
-    this.controls.maxDistance = this.size * 8.0;
-    this.camera.update();
-
     var gl = this.renderer.context;
     var maxTexturesUnits = gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS);
 
@@ -183,7 +145,6 @@ function c3DEngine(scene, controlOptions, viewerDiv, debugMode, gLDebug) {
     };
 
     window.addEventListener('resize', this.onWindowResize, false);
-    this.controls.addEventListener('change', this.update);
 
     // select
     this.renderer.domElement.addEventListener('selectClick', (event) => {
@@ -198,7 +159,7 @@ function c3DEngine(scene, controlOptions, viewerDiv, debugMode, gLDebug) {
  * @returns {undefined}
  */
 c3DEngine.prototype.updateControl = function updateControl() {
-    var len = this.camera.position().length();
+    var len = this.scene.camera.position().length();
     var lim = this.size * 1.1;
 
     if (len < lim) {
@@ -334,7 +295,7 @@ c3DEngine.prototype.renderTobuffer = function renderTobuffer(x, y, width, height
     this.setStateRender(mode);
     this.renderer.clear();
     this.renderer.setViewport(x, y, width, height);
-    this.renderer.render(this.scene3D, this.camera.camera3D, this.pickingTexture);
+    this.renderer.render(this.scene3D, this.scene.camera.camera3D, this.pickingTexture);
     this.setStateRender(originalState);
     var pixelBuffer = new Uint8Array(4);
     this.renderer.readRenderTargetPixels(this.pickingTexture, x, y, width, height, pixelBuffer);
@@ -364,7 +325,7 @@ c3DEngine.prototype.bufferToImage = function bufferToImage(pixelBuffer, width, h
 };
 
 c3DEngine.prototype.updatePositionBuffer = function updatePositionBuffer() {
-    this.camera.camera3D.updateMatrixWorld();
+    this.scene.camera.camera3D.updateMatrixWorld();
     this.positionBuffer = this.renderTobuffer(0, 0, this.width, this.height, RendererConstant.DEPTH);
     this.renderScene(); // TODO debug to remove white screen, but why?
 };
@@ -385,7 +346,7 @@ c3DEngine.prototype.pickingInPositionBuffer = function pickingInPositionBuffer(m
 
     var glslPosition = new THREE.Vector3(this.positionBuffer[i + 0], this.positionBuffer[i + 1], this.positionBuffer[i + 2]);
 
-    var worldPosition = glslPosition.applyMatrix4(this.camera.camera3D.matrixWorld);
+    var worldPosition = glslPosition.applyMatrix4(this.scene.camera.camera3D.matrixWorld);
 
     return worldPosition;
 };
@@ -400,7 +361,7 @@ c3DEngine.prototype.getPickingPosition = function getPickingPosition(mouse, scen
     if (mouse === undefined)
         { mouse = new THREE.Vector2(Math.floor(this.width / 2), Math.floor(this.height / 2)); }
 
-    var camera = this.camera.camera3D;
+    var camera = this.scene.camera.camera3D;
 
     camera.updateMatrixWorld();
 
@@ -430,7 +391,7 @@ var unpack1K = function unpack1K(color, factor) {
  * @returns {int} uuid's node
  * */
 c3DEngine.prototype.screenCoordsToNodeId = function screenCoordsToNodeId(mouse) {
-    var camera = this.camera.camera3D;
+    var camera = this.scene.camera.camera3D;
 
     camera.updateMatrixWorld();
 
@@ -467,7 +428,7 @@ c3DEngine.prototype.getPickingPositionFromDepth = (function getGetPickingPosFrom
         if (mouse === undefined)
             { mouse = new THREE.Vector2(Math.floor(this.width / 2), Math.floor(this.height / 2)); }
 
-        var camera = this.camera.camera3D;
+        var camera = this.scene.camera.camera3D;
 
         camera.updateMatrixWorld();
 
@@ -509,7 +470,7 @@ c3DEngine.prototype.getPickingPositionFromDepth = (function getGetPickingPosFrom
 
 c3DEngine.prototype.placeDummy = function placeDummy(dummy, position) {
     dummy.position.copy(position);
-    var size = position.clone().sub(this.camera.position()).length() / 200; // TODO distance
+    var size = position.clone().sub(this.scene.camera.position()).length() / 200; // TODO distance
     dummy.scale.copy(new THREE.Vector3(size, size, size));
     dummy.lookAt(new THREE.Vector3());
     dummy.quaternion.multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), -Math.PI / 2));
@@ -546,7 +507,7 @@ c3DEngine.prototype.getRTCMatrixFromNode = function getRTCMatrixFromNode(node, c
     return new THREE.Matrix4().multiplyMatrices(camera3D.projectionMatrix, mvc);
 };
 
-export default function (scene, positionCamera, viewerDiv, debugMode, gLDebug) {
-    instance3DEngine = instance3DEngine || new c3DEngine(scene, positionCamera, viewerDiv, debugMode, gLDebug);
+export default function (scene, viewerDiv, debugMode, gLDebug) {
+    instance3DEngine = instance3DEngine || new c3DEngine(scene, viewerDiv, debugMode, gLDebug);
     return instance3DEngine;
 }

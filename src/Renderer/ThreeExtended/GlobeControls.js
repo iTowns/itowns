@@ -586,7 +586,6 @@ function GlobeControls(camera, target, domElement, engine) {
 
             // rotate point back to "camera-up-vector-is-up" space
             // offset.applyQuaternion( quatInverse );
-
             this.camera.position.copy(cameraTargetOnGlobe.localToWorld(offset));
         }
 
