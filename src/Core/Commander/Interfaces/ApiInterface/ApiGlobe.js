@@ -11,9 +11,10 @@ import WMTS_Provider from '../../Providers/WMTS_Provider';
 import WMS_Provider from '../../Providers/WMS_Provider';
 import TileProvider from '../../Providers/TileProvider';
 import loadGpx from '../../Providers/GpxUtils';
-import { C } from '../../../Geographic/Coordinates';
+import { C, ellipsoidSizes } from '../../../Geographic/Coordinates';
 import Fetcher from '../../Providers/Fetcher';
 import { STRATEGY_MIN_NETWORK_TRAFFIC } from '../../../../Scene/LayerUpdateStrategy';
+import GlobeControls from '../../../../Renderer/ThreeExtended/GlobeControls';
 
 var sceneIsLoaded = false;
 export const INITIALIZED_EVENT = 'initialized';
@@ -385,11 +386,14 @@ ApiGlobe.prototype.createSceneGlobe = function createSceneGlobe(coordCarto, view
     var gLDebug = false; // true to support GLInspector addon
     var debugMode = false;
 
-    var coordinate = new C.EPSG_4326(coordCarto.longitude, coordCarto.latitude, coordCarto.altitude);
+    var positionCamera = new C.EPSG_4326(
+        coordCarto.longitude,
+        coordCarto.latitude,
+        coordCarto.altitude);
 
     // FIXME: the scene is not really in EPSG:4978 atm, some axis are inverted, see
     // https://github.com/iTowns/itowns2/pull/246
-    this.scene = Scene('EPSG:4978', coordinate, viewerDiv, debugMode, gLDebug);
+    this.scene = Scene('EPSG:4978', positionCamera, viewerDiv, debugMode, gLDebug);
 
     var map = new Globe(gLDebug);
 
@@ -410,6 +414,29 @@ ApiGlobe.prototype.createSceneGlobe = function createSceneGlobe(coordCarto, view
         this.scene.updateScene3D();
         this.viewerDiv.dispatchEvent(new CustomEvent(INITIALIZED_EVENT));
     });
+
+    const size = ellipsoidSizes().x;
+
+    // Init camera
+    this.scene.camera.camera3D.near = Math.max(15.0, 0.000002352 * size);
+    this.scene.camera.camera3D.far = size * 10;
+    this.scene.camera.camera3D.updateProjectionMatrix();
+    this.scene.camera.camera3D.updateMatrixWorld(true);
+
+    // Create Control
+    const positionTargetCamera = positionCamera.clone();
+    positionTargetCamera.setAltitude(0);
+
+    this.scene.controls = new GlobeControls(
+        this.scene.camera.camera3D,
+        positionTargetCamera.as('EPSG:4978').xyz(),
+        this.scene.gfxEngine.renderer.domElement,
+        this.scene.gfxEngine);
+    this.scene.controls.rotateSpeed = 0.25;
+    this.scene.controls.zoomSpeed = 2.0;
+    this.scene.controls.minDistance = 30;
+    this.scene.controls.maxDistance = size * 8.0;
+    this.scene.controls.addEventListener('change', this.scene.gfxEngine.update);
 
     return this.scene;
 };
