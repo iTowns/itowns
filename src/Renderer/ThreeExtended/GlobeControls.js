@@ -278,6 +278,24 @@ function SnapCamera(camera) {
 
 var snapShotCamera = null;
 
+let globeIsLoaded = false;
+
+const defer = function defer() {
+    const deferedPromise = {};
+    deferedPromise.promise = new Promise((resolve, reject) => {
+        deferedPromise.resolve = resolve;
+        deferedPromise.reject = reject;
+    });
+    return deferedPromise;
+};
+
+let globeLoadedDeferred = defer();
+
+function setSceneLoaded() {
+    globeIsLoaded = false;
+    return globeLoadedDeferred.promise;
+}
+
 // ///////////////////////
 
 /* globals document,window */
@@ -289,6 +307,14 @@ function GlobeControls(camera, target, domElement, engine) {
     snapShotCamera = new SnapCamera(camera);
 
     this.domElement = (domElement !== undefined) ? domElement : document;
+
+    domElement.addEventListener('globe-built', () => {
+        if (!globeIsLoaded) {
+            globeIsLoaded = true;
+            globeLoadedDeferred.resolve();
+            globeLoadedDeferred = defer();
+        }
+    }, false);
 
     // Set to false to disable this control
     this.enabled = true;
@@ -1284,6 +1310,11 @@ function GlobeControls(camera, target, domElement, engine) {
 
     _handlerMouseMove = onMouseMove.bind(this);
     _handlerMouseUp = onMouseUp.bind(this);
+
+    setSceneLoaded().then(() => {
+        this.updateCameraTransformation();
+        this.dispatchEvent(this.changeEvent);
+    });
 }
 
 GlobeControls.prototype = Object.create(THREE.EventDispatcher.prototype);
@@ -1316,7 +1347,12 @@ GlobeControls.prototype.setOrbitalPosition = function setOrbitalPosition(range, 
     const deltaPhi = tilt ? tilt * Math.PI / 180 - this.getTiltRad() : 0;
     const deltaTheta = heading ? heading * Math.PI / 180 - this.getHeadingRad() : 0;
     const deltaRange = range ? range - this.getRange() : 0;
-    return this.moveOrbitalPosition(deltaRange, deltaTheta, deltaPhi, isAnimated);
+    return this.moveOrbitalPosition(deltaRange, deltaTheta, deltaPhi, isAnimated).then(() => {
+        this.dispatchEvent(this.changeEvent);
+        return setSceneLoaded().then(() => {
+            this.updateCameraTransformation();
+        });
+    });
 };
 
 const destSpherical = new THREE.Spherical();
@@ -1385,13 +1421,15 @@ GlobeControls.prototype.setCameraTargetPosition = function setCameraTargetPositi
     const vFrom = center.clone().normalize();
     const vTo = position.normalize();
 
+    let promise;
+
     if (isAnimated) {
         ctrl.qDelta.setFromUnitVectors(vFrom, vTo);
         if (position.range) {
             animatedScale = 1.0 - position.range / this.getRange();
         }
         state = CONTROL_STATE.MOVE_GLOBE;
-        return player.play(animationZoomCenter).then(() => {
+        promise = player.play(animationZoomCenter).then(() => {
             animatedScale = 0.0;
             this.resetControls();
         });
@@ -1402,8 +1440,15 @@ GlobeControls.prototype.setCameraTargetPosition = function setCameraTargetPositi
         if (animatedScale < 1.0) {
             this.setRange(this.getRange() * animatedScale);
         }
-        return Promise.resolve();
+        promise = Promise.resolve();
     }
+
+    return promise.then(() => {
+        this.dispatchEvent(this.changeEvent);
+        return setSceneLoaded().then(() => {
+            this.updateCameraTransformation();
+        });
+    });
 };
 
 GlobeControls.prototype.getRange = function getRange() {
@@ -1443,6 +1488,9 @@ GlobeControls.prototype.moveTarget = function moveTarget() {
 GlobeControls.prototype.pan = function pan(deltaX, deltaY) {
     this.mouseToPan(deltaX, deltaY);
     this.updateCameraTransformation(CONTROL_STATE.PAN);
+    return setSceneLoaded().then(() => {
+        this.updateCameraTransformation();
+    });
 };
 
 /**
