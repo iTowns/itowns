@@ -330,6 +330,12 @@ function GlobeControls(camera, target, domElement, engine) {
     // Enable Damping
     this.enableDamping = true;
 
+    this.controlsActiveLayers = undefined;
+
+    if (enableTargetHelper) {
+        this.pickingHelper = new THREE.AxisHelper(500000);
+    }
+
     // Mouse buttons
     this.mouseButtons = {
         PANORAMIC: THREE.MOUSE.LEFT,
@@ -479,13 +485,20 @@ function GlobeControls(camera, target, domElement, engine) {
         }
     };
 
-    const getPickingPosition = function getPickingPosition(coords) {
+    const getPickingPosition = function getPickingPosition(controlsActiveLayers, coords) {
         if (enableTargetHelper) {
             pickingHelper.visible = false;
             cameraTargetOnGlobe.visible = false;
         }
 
+        const prev = engine.scene.camera.camera3D.layers.mask;
+        if (controlsActiveLayers) {
+            engine.scene.camera.camera3D.layers.mask = controlsActiveLayers;
+        }
+
         const position = engine.getPickingPositionFromDepth(coords);
+
+        engine.scene.camera.camera3D.layers.mask = prev;
         engine.renderScene();
 
         if (enableTargetHelper) {
@@ -503,8 +516,8 @@ function GlobeControls(camera, target, domElement, engine) {
     {
         if (scene.getMap())
         {
-            var coord = scene.getMap().projection.cartesianToGeo(position);
-            var bbox = scene.getMap().getTile(coord).bbox;
+            var coord = scene.projection.cartesianToGeo(position);
+            var bbox = scene.getTile(coord).bbox;
             var delta = coord.altitude() - (bbox.top() + radiusCollision);
 
             if (delta < 0) {
@@ -653,7 +666,7 @@ function GlobeControls(camera, target, domElement, engine) {
         const oldCoord = C.fromXYZ(scene.referenceCrs, cameraTargetOnGlobe.position);
 
         // Get distance camera DME
-        const pickingPosition = getPickingPosition();
+        const pickingPosition = getPickingPosition(this.controlsActiveLayers);
 
         if (!pickingPosition) {
             return;
@@ -823,7 +836,8 @@ function GlobeControls(camera, target, domElement, engine) {
                     ptScreenClick.x = event.clientX - event.target.offsetLeft;
                     ptScreenClick.y = event.clientY - event.target.offsetTop;
 
-                    const point = getPickingPosition(ptScreenClick);
+                    const point = getPickingPosition(
+                        this.controlsActiveLayers, ptScreenClick);
                     lastRotation = [];
                     // update tangent sphere which passes through the point
                     if (point) {
@@ -865,7 +879,7 @@ function GlobeControls(camera, target, domElement, engine) {
             ptScreenClick.x = event.clientX - event.target.offsetLeft;
             ptScreenClick.y = event.clientY - event.target.offsetTop;
 
-            const point = getPickingPosition(ptScreenClick);
+            const point = getPickingPosition(this.controlsActiveLayers, ptScreenClick);
 
             if (point) {
                 animatedScale = 0.6;

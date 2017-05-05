@@ -29,20 +29,20 @@ function GuiTools(api, domId) {
 GuiTools.prototype.addImageryLayerGUI = function addImageryLayerGUI(layer) {
     var folder = this.colorGui.addFolder(layer.id);
     folder.add({ visible: true }, 'visible').onChange((value) => {
-        this.api.setLayerVisibility(layer.id, value);
+        this.api.setLayerVisibility(layer, value);
     });
     folder.add({ opacity: 1.0 }, 'opacity').min(0.0).max(1.0).onChange((value) => {
-        this.api.setLayerOpacity(layer.id, value);
+        this.api.setLayerOpacity(layer, value);
     });
     folder.add({ frozen: false }, 'frozen').onChange((value) => {
-        this.api.scene.getMap().layersConfiguration.setLayerFreeze(layer.id, value);
+        layer.frozen = value;
     });
 };
 
 GuiTools.prototype.addElevationLayerGUI = function addElevationLayerGUI(layer) {
     var folder = this.elevationGui.addFolder(layer.id);
     folder.add({ frozen: false }, 'frozen').onChange((value) => {
-        this.api.scene.getMap().layersConfiguration.setLayerFreeze(layer.id, value);
+        layer.frozen = value;
     });
 };
 
