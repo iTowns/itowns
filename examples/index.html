@@ -47,10 +47,10 @@ and open the template in the editor.
             const urlImageryLayers = [];
             const urlElevationLayers = [];
 
-            urlImageryLayers.push('/examples/layers/JSONLayers/Ortho.json');
+            urlImageryLayers.push('examples/layers/JSONLayers/Ortho.json');
 
-            urlElevationLayers.push('/examples/layers/JSONLayers/IGN_MNT.json');
-            urlElevationLayers.push('/examples/layers/JSONLayers/IGN_MNT_HIGHRES.json');
+            urlElevationLayers.push('examples/layers/JSONLayers/IGN_MNT.json');
+            urlElevationLayers.push('examples/layers/JSONLayers/IGN_MNT_HIGHRES.json');
 
             const imageryPromise = itowns.viewer.addImageryLayersFromJSONArray(urlImageryLayers);
             const elevationPromise = itowns.viewer.addElevationLayersFromJSONArray(urlElevationLayers);
