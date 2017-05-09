@@ -22,13 +22,13 @@ function Ellipsoid(size) {
 }
 
 Ellipsoid.prototype.geodeticSurfaceNormalCartographic = function geodeticSurfaceNormalCartographic(coordCarto) {
-    var longitude = Math.PI * 2 - coordCarto.longitude(UNIT.RADIAN);
+    var longitude = coordCarto.longitude(UNIT.RADIAN);
     var latitude = coordCarto.latitude(UNIT.RADIAN);
     var cosLatitude = Math.cos(latitude);
 
     var x = cosLatitude * Math.cos(longitude);
-    var z = cosLatitude * Math.sin(longitude);
-    var y = Math.sin(latitude);
+    var y = cosLatitude * Math.sin(longitude);
+    var z = Math.sin(latitude);
 
     var result = new THREE.Vector3(x, y, z);
 
@@ -79,24 +79,23 @@ Ellipsoid.prototype.cartographicToCartesian = function cartographicToCartesian(c
  */
 Ellipsoid.prototype.cartesianToCartographic = function cartesianToGeo(position) {
     // for details, see for example http://www.linz.govt.nz/data/geodetic-system/coordinate-conversion/geodetic-datum-conversions/equations-used-datum
-    // FIXME: warning switch coord
     // TODO the following is only valable for oblate ellipsoid of revolution. do we want to support triaxial ellipsoid?
     const R = Math.sqrt(position.x * position.x + position.y * position.y + position.z * position.z);
     const a = 6378137;
     const b = 6356752.3142451793;
     const e = Math.sqrt((a * a - b * b) / (a * a));
     const f = 1 - Math.sqrt(1 - e * e);
-    const rsqXY = Math.sqrt(position.x * position.x + position.z * position.z);
+    const rsqXY = Math.sqrt(position.x * position.x + position.y * position.y);
 
-    const theta = Math.atan2(position.z, position.x);
-    const nu = Math.atan(position.y / rsqXY * ((1 - f) + e * e * a / R));
+    const theta = Math.atan2(position.y, position.x);
+    const nu = Math.atan(position.z / rsqXY * ((1 - f) + e * e * a / R));
 
     const sinu = Math.sin(nu);
     const cosu = Math.cos(nu);
 
-    const phi = Math.atan((position.y * (1 - f) + e * e * a * sinu * sinu * sinu) / ((1 - f) * (rsqXY - e * e * a * cosu * cosu * cosu)));
+    const phi = Math.atan((position.z * (1 - f) + e * e * a * sinu * sinu * sinu) / ((1 - f) * (rsqXY - e * e * a * cosu * cosu * cosu)));
 
-    const h = (rsqXY * Math.cos(phi)) + position.y * Math.sin(phi) - a * Math.sqrt(1 - e * e * Math.sin(phi) * Math.sin(phi));
+    const h = (rsqXY * Math.cos(phi)) + position.z * Math.sin(phi) - a * Math.sqrt(1 - e * e * Math.sin(phi) * Math.sin(phi));
 
     return { longitude: -theta * 180 / Math.PI, latitude: phi * 180 / Math.PI, h };
 };

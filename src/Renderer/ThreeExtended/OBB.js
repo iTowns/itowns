@@ -15,9 +15,9 @@ function OBB(min, max, lookAt, translate) {
 
     this.quaInv = this.quaternion.clone().inverse();
 
-
-    if (lookAt)
-        { this.lookAt(lookAt); }
+    if (lookAt) {
+        this.lookAt(lookAt);
+    }
 
 
     if (translate) {
