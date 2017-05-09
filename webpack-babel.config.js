@@ -15,6 +15,13 @@ module.exports = {
         ],
         loader: 'raw'
       },
+      {
+        test: /\.json$/,
+        include: [
+          path.resolve(__dirname, 'utils'),
+        ],
+        loader: 'raw'
+      },
     ],
   },
 };

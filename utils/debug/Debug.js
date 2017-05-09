@@ -1,7 +1,7 @@
 /* global menuGlobe */
 import Chart from 'chart.js';
 import { C } from '../../src/Core/Geographic/Coordinates';
-
+import OBBHelper from './OBBHelper';
 /**
  * Create a debug instance attached to an itowns instance
  *
@@ -97,7 +97,7 @@ function Debug(scene) {
         },
     });
 
-    function updateNbObjectsChart() {
+    function debugChartUpdate() {
         function countElem(node) {
             if (!node) {
                 return 0;
@@ -191,13 +191,6 @@ function Debug(scene) {
         }
     }
 
-    // hook that to scene.update
-    const oldUpdate = Object.getPrototypeOf(scene).update.bind(scene);
-    scene.update = function debugUpdate() {
-        oldUpdate();
-        updateNbObjectsChart();
-    };
-
     // DEBUG CONTROLS
     const gui = menuGlobe.gui.addFolder('Debug Tools');
 
@@ -279,5 +272,90 @@ function Debug(scene) {
             }
         };
     })());
+
+    // hook that to scene.update
+    const oldUpdate = Object.getPrototypeOf(scene).update.bind(scene);
+    scene.update = function debugUpdate() {
+        // regular itowns update
+        oldUpdate();
+        // debug graphs update
+        debugChartUpdate();
+        // obb layer update
+        for (const gLayer of scene._geometryLayers) {
+            const obbLayerAlreadyAdded =
+                scene.getAttachedLayers(
+                    (a, l) => l.id == gLayer.id && a.id.indexOf('_obb_debug') >= 0).length > 0;
+
+            // missing obb layer -> add it
+            if (!obbLayerAlreadyAdded) {
+                addGeometryLayerDebugFeatures(gLayer, scene, gui, state);
+            }
+        }
+    };
 }
+
+
+function addGeometryLayerDebugFeatures(layer, scene, gui, state) {
+    const obb_layer_id = `${layer.id}_obb_debug`;
+
+    // itowns layer definition
+    const debugIdUpdate = function debugIdUpdate(context, layer, node) {
+        var n = node.children.filter(n => n.layer == obb_layer_id);
+
+        if (node.material.visible) {
+            if (n.length == 0) {
+                const l = context.scene.getAttachedLayers(l => l.id === obb_layer_id)[0];
+                const helper = new OBBHelper(node.OBB(), `id:${node.id}`);
+                helper.layer = obb_layer_id;
+                const l3js = l.threejsLayer;
+                helper.layers.set(l3js);
+                helper.children[0].layers.set(l3js);
+                node.add(helper);
+                helper.updateMatrixWorld(true);
+
+                n = helper;
+            } else {
+                n = n[0];
+            }
+
+            n.setMaterialVisibility(true);
+        } else if (n.length > 0) {
+            n[0].setMaterialVisibility(false);
+        }
+    };
+    const debugLayer = {
+        id: obb_layer_id,
+        update: debugIdUpdate,
+    };
+
+    const threeLayer = scene.getUniqueThreejsLayer();
+    layer.attach(debugLayer);
+    debugLayer.threejsLayer = threeLayer;
+    scene.currentCamera().camera3D.layers.disable(threeLayer);
+
+    // add to debug gui
+    const folder = gui.addFolder(`Geometry Layer: ${layer.id}`);
+
+    const enabled = scene.currentCamera().camera3D.layers.test({ mask: 1 << layer.threeLayer });
+    state[layer.id] = enabled;
+    folder.add(state, layer.id).name('Visible').onChange((newValue) => {
+        if (newValue) {
+            scene.currentCamera().camera3D.layers.enable(layer.threeLayer);
+        } else {
+            scene.currentCamera().camera3D.layers.disable(layer.threeLayer);
+        }
+        scene.notifyChange();
+    });
+
+    state[debugLayer.id] = false;
+    folder.add(state, debugLayer.id).name('OBB visible').onChange((newValue) => {
+        if (newValue) {
+            scene.currentCamera().camera3D.layers.enable(debugLayer.threejsLayer);
+        } else {
+            scene.currentCamera().camera3D.layers.disable(debugLayer.threejsLayer);
+        }
+        scene.notifyChange();
+    });
+}
+
 window.Debug = Debug;
