@@ -8,9 +8,9 @@
 import * as THREE from 'three';
 
 // TODO regler le probleme glsl
-import fontJS from './fonts/optimer_regular.glsl';
+import fontJS from './fonts/optimer_regular.json';
 
-var font = new THREE.Font(JSON.parse(fontJS.substring(65, fontJS.length - 2)));
+var font = new THREE.Font(JSON.parse(fontJS));
 
 function OBBHelper(OBB, text) {
     var indices = new Uint16Array([0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 6, 6, 7, 7, 4, 0, 4, 1, 5, 2, 6, 3, 7]);
@@ -25,6 +25,8 @@ function OBBHelper(OBB, text) {
     THREE.LineSegments.call(this, geometry, new THREE.LineBasicMaterial({
         color: color.getHex(),
     }));
+
+    this.frustumCulled = false;
 
     var size = OBB.box3D.getSize();
 
@@ -43,6 +45,7 @@ function OBBHelper(OBB, text) {
     }));
 
     this.add(this.textMesh);
+    this.textMesh.frustumCulled = false;
 
     if (OBB !== undefined)
       { this.update(OBB); }

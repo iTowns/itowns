@@ -63,6 +63,14 @@ module.exports = {
         loader: 'raw'
       },
       {
+        // please consider modifying corresponding loaders in webpack-babel.config.js too
+        test: /\.json$/,
+        include: [
+          path.resolve(__dirname, 'utils'),
+        ],
+        loader: 'raw'
+      },
+      {
         test: /node_modules[\/\\]three[\/\\]examples[\/\\].*\.js$/,
         loader: 'imports',
         query: {
