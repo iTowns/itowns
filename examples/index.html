@@ -27,12 +27,12 @@ and open the template in the editor.
         <meta charset="UTF-8">
 
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <script src="/node_modules/dat.gui/build/dat.gui.min.js"></script>
+        <script src="dat.gui.min.js"></script>
     </head>
     <body>
         <div id="viewerDiv"></div>
-        <script src="/examples/GUI/GuiTools.js"></script>
-        <script src="/dist/itowns.js"></script>
+        <script src="examples/GUI/GuiTools.js"></script>
+        <script src="dist/itowns.js"></script>
         <script type="text/javascript">
 
             /* global itowns,document,GuiTools*/
@@ -58,8 +58,6 @@ and open the template in the editor.
             imageryPromise.then((layersColors) => { menuGlobe.addImageryLayersGUI(layersColors); });
             elevationPromise.then((layersElevations) => { menuGlobe.addElevationLayersGUI(layersElevations); });
 
-            Promise.all([imageryPromise, elevationPromise]).then(() => itowns.viewer.init());
-
             menuGlobe.addGUI('RealisticLighting', false,
                 (newValue) => { itowns.viewer.setRealisticLightingOn(newValue); });
 
@@ -67,6 +65,8 @@ and open the template in the editor.
                 // eslint-disable-next-line no-console
                 console.info('Globe initialized');
             });
+
+            itowns.viewer.update();
 
 </script>
     </body>
