@@ -48,7 +48,6 @@ TileProvider.prototype.executeCommand = function executeCommand(command) {
     tile.layer = command.layer.id;
     tile.layers.set(command.threejsLayer);
     tile.setUuid();
-    tile.geometricError = Math.pow(2, (18 - params.level));
 
     if (parent) {
         parent.worldToLocal(params.center);

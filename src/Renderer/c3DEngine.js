@@ -394,11 +394,15 @@ var unpack1K = function unpack1K(color, factor) {
  * @returns {int} uuid's node
  * */
 c3DEngine.prototype.screenCoordsToNodeId = function screenCoordsToNodeId(mouse) {
+    if (mouse === undefined)
+        { mouse = new THREE.Vector2(Math.floor(this.width / 2), Math.floor(this.height / 2)); }
+
     var camera = this.scene.camera.camera3D;
 
     camera.updateMatrixWorld();
 
     var buffer = this.renderTobuffer(mouse.x, this.height - mouse.y, 1, 1, RendererConstant.ID);
+    this.renderScene();
 
     var depthRGBA = new THREE.Vector4().fromArray(buffer).divideScalar(255.0);
 

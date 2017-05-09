@@ -17,7 +17,7 @@ import { STRATEGY_MIN_NETWORK_TRAFFIC } from '../../../../Scene/LayerUpdateStrat
 import GlobeControls from '../../../../Renderer/ThreeExtended/GlobeControls';
 import { processTiledGeometryNode, initTiledGeometryLayer } from '../../../../Process/TiledNodeProcessing';
 import { updateLayeredMaterialNodeImagery, updateLayeredMaterialNodeElevation } from '../../../../Process/LayeredMaterialNodeProcessing';
-import { globeCulling, preGlobeUpdate, globeSubdivisionControl, globeSchemeTileWMTS, globeSchemeTile1 } from '../../../../Process/GlobeTileProcessing';
+import { globeCulling, preGlobeUpdate, globeSubdivisionControl, globeSchemeTileWMTS, globeSchemeTile1, computeTileZoomFromDistanceCamera, computeDistanceCameraFromTileZoom } from '../../../../Process/GlobeTileProcessing';
 import BuilderEllipsoidTile from '../../../../Globe/BuilderEllipsoidTile';
 import Atmosphere from '../../../../Globe/Atmosphere';
 import Clouds from '../../../../Globe/Clouds';
@@ -473,8 +473,7 @@ ApiGlobe.prototype.createSceneGlobe = function createSceneGlobe(globeLayerId, co
         }
     };
 
-    const SSE_SUBDIVISION_THRESHOLD = 6.0;
-
+    const SSE_SUBDIVISION_THRESHOLD = 1.0;
 
     // init globe layer with default parameter
     const wgs84TileLayer = new GeometryLayer(globeLayerId);
@@ -838,7 +837,7 @@ ApiGlobe.prototype.setCameraTargetGeoPosition = function setCameraTargetGeoPosit
 ApiGlobe.prototype.setCameraTargetGeoPositionAdvanced = function setCameraTargetGeoPositionAdvanced(position, isAnimated) {
     isAnimated = isAnimated || this.isAnimationEnabled();
     if (position.level) {
-        position.range = this.getRangeFromZoomLevel(position.level);
+        position.range = computeDistanceCameraFromTileZoom(position.level);
     } else if (position.scale) {
         position.range = this.getRangeFromScale(position.scale);
     }
@@ -897,7 +896,7 @@ ApiGlobe.prototype.pan = function pan(pVector) {
  * @return     {number}  The zoom level.
  */
 ApiGlobe.prototype.getZoomLevel = function getZoomLevel() {
-    return this.scene.getZoomLevel();
+    return computeTileZoomFromDistanceCamera(this.scene.currentCamera(), this.getRange());
 };
 
 /**
@@ -910,14 +909,8 @@ ApiGlobe.prototype.getZoomLevel = function getZoomLevel() {
  * @return     {Promise}
  */
 ApiGlobe.prototype.setZoomLevel = function setZoomLevel(zoom, isAnimated) {
-    const range = this.getRangeFromZoomLevel(zoom);
+    const range = computeDistanceCameraFromTileZoom(zoom);
     return this.setRange(range, isAnimated);
-};
-
-ApiGlobe.prototype.getRangeFromZoomLevel = function getRangeFromZoomLevel(zoom) {
-    // FIXME : The distance computed is incorrect, (Fixed in PR 279)
-    const range = this.scene.getMap().computeDistanceForZoomLevel(zoom, this.scene.currentCamera());
-    return range;
 };
 
 /**
@@ -931,48 +924,11 @@ ApiGlobe.prototype.getZoomScale = function getZoomScale(pitch) {
     // TODO: Why error div size height in Chrome?
     // Screen pitch, in millimeters
     pitch = (pitch || 0.28) / 1000;
-
-    // To compute scale, we must to calculate the maximum vertical distance (in meter) perceived by the camera
-    // the maximum vertical distance 2xHS (look at the explanations below 'HS segment')
-    // There's two state
-    //     * Globe is inside the frustrum camera
-    //     * Globe intersects with the frustrum camera
     const camera = this.scene.currentCamera();
-    const center = this.scene.currentControls().getCameraTargetPosition();
-    const rayon = center.length();
-    const range = center.distanceTo(camera.camera3D.position);
-    // compute distance camera/globe's center
-    const distance = rayon + range;
-    // Three points C,G and S
-    // C : Camera's position
-    // G : Globe's center
-    // S : The furthest interesection[camera verical frustrum, globe surface] from line CG
-    // HS is triangle CSG's altitude going through S and H is in GC segment
-    // alpha is angle GCS
-    // phi is angle CSG
-    const alpha = camera.FOV / 180 * Math.PI * 0.5;
-    const phi = Math.PI - Math.asin(distance / rayon * Math.sin(alpha));
-    // projection is projection segment HS on camera
-    let projection;
-
-    if (isNaN(phi)) {
-        // Globe is inside the frustrum camera
-        projection = distance * 2 * Math.tan(alpha);
-    } else {
-        // Globe intersects with the frustrum camera
-
-        // develop operation
-        // {
-        //     var beta = Math.PI - ( phi + alpha);
-        //     projection = rayon * Math.sin(beta) * 2.0;
-        // }
-        // factorisation ->
-        projection = 2.0 * rayon * Math.sin(phi + alpha);
-    }
-
-    const zoomScale = camera.height * pitch / projection;
-
-    return zoomScale;
+    const FOV = camera.FOV / 180 * Math.PI * 0.5;
+    // projection one unit on screen
+    const unitProjection = camera.height / (2 * this.getRange() * Math.tan(FOV));
+    return pitch * unitProjection;
 };
 
 /**
@@ -993,45 +949,11 @@ ApiGlobe.prototype.getRangeFromScale = function getRangeFromScale(zoomScale, pit
     // Screen pitch, in millimeters
     pitch = (pitch || 0.28) / 1000;
 
-    // To set scale, we must to calculate the maximum vertical distance (in meter) perceived by the camera
-    // the maximum vertical distance 2xHS (look at the explanations below 'HS segment')
-    // projection is projection segment HS on camera
-    // There's two state
-    //     * Globe is inside the frustrum camera
-    //     * Globe intersects with the frustrum camera
-
     const camera = this.scene.currentCamera();
-    const projection = camera.height * pitch / zoomScale;
-    const rayon = this.scene.currentControls().getCameraTargetPosition().length();
     const alpha = camera.FOV / 180 * Math.PI * 0.5;
-    // distance camera/globe's center
-    let distance;
-    // Three points C,G and S
-    // C camera's position
-    // G globe's center
-    // S = the furthest interesection[camera verical frustrum, globe surface] from line CG
-    // HS is triangle CSG's altitude going through S and H is in GC segment
-    // alpha is angle GCS
-    // phi is angle CSG
-    // beta is angle SGC
-    const sinBeta = projection / (2 * rayon);
+    // Invert one unit projection (see getZoomScale)
+    const range = pitch * camera.height / (zoomScale * 2 * Math.tan(alpha));
 
-    if (sinBeta < 1.0) {
-        // Globe is inside the frustrum camera
-        const beta = Math.asin(sinBeta);
-        // develop operation
-        //  {
-        //      let phi = Math.PI - ( beta + alpha);
-        //      distance  = rayon * Math.sin(phi) / Math.sin(alpha) ;
-        //  }
-        //  factorisation ->
-        distance = rayon * Math.sin(beta + alpha) / Math.sin(alpha);
-    } else {
-        // Globe is inside the frustrum camera
-        distance = rayon / Math.tan(alpha) * sinBeta;
-    }
-
-    const range = distance - rayon;
     return range;
 };
 
