@@ -121,7 +121,7 @@ Projection.prototype.WGS84toWMTS = function WGS84toWMTS(bbox) {
     var uY = MathExt.PI / nY;
 
     const center = bbox.center();
-    var col = Math.floor(((MathExt.PI + center.longitude(UNIT.RADIAN)) % (2 * Math.PI)) / uX);
+    var col = Math.floor((MathExt.PI + center.longitude(UNIT.RADIAN)) / uX);
     var row = Math.floor(nY - (MathExt.PI_OV_TWO + center.latitude(UNIT.RADIAN)) / uY);
 
     return new CoordWMTS(zoom, row, col);
