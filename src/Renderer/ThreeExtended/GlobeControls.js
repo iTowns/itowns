@@ -303,6 +303,7 @@ function setSceneLoaded() {
 
 /* globals document,window */
 
+/** @class GlobeControls */
 function GlobeControls(camera, target, domElement, engine) {
     player = new AnimationPlayer();
     const scene = engine.scene;
@@ -1338,8 +1339,7 @@ function getRangeFromScale(scale, pitch) {
 
 /**
  * Change the tilt.
- * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/p6t76zox/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
- * @constructor
+ * <!--<iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/p6t76zox/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>-->
  * @param {Angle} Number - The angle.
  * @param      {boolean}  isAnimated  Indicates if animated
  * @return     {Promise}
@@ -1351,9 +1351,8 @@ GlobeControls.prototype.setTilt = function setTilt(tilt, isAnimated) {
 };
 
 /**
+ * <!--<iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/rxe4xgxj/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>-->
  * Change the heading.
- * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/rxe4xgxj/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
- * @constructor
  * @param {Angle} Number - The angle.
  * @param      {boolean}  isAnimated  Indicates if animated
  * @return     {Promise}
@@ -1366,8 +1365,7 @@ GlobeControls.prototype.setHeading = function setHeading(heading, isAnimated) {
 
 /**
  * Sets the "range": the distance in meters between the camera and the current central point on the screen.
- * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/Lt3jL5pd/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
- * @constructor
+ * <!--<iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/Lt3jL5pd/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>-->
  * @param {Number} pRange - The camera altitude.
  * @param      {boolean}  isAnimated  Indicates if animated
  * @return     {Promise}
@@ -1380,8 +1378,7 @@ GlobeControls.prototype.setRange = function setRange(pRange, isAnimated) {
 
 /**
  * Sets orientation angles of the current camera, in degrees.
- * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/9qr2mogh/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
- * @constructor
+ * <!--<iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/9qr2mogh/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>-->
  * @param      {object}   orientation  The angle of the rotation in degrees
  * @param      {boolean}  isAnimated   Indicates if animated
  * @return     {Promise}   { description_of_the_return_value }
@@ -1430,7 +1427,7 @@ GlobeControls.prototype.moveOrbitalPosition = function moveOrbitalPosition(delta
 
 /**
  * Returns the coordinates of the globe point targeted by the camera.
- * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/4tjgnv7z/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
+ * <!--<iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/4tjgnv7z/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>-->
  * @return {THREE.Vector3} position
  */
 GlobeControls.prototype.getCameraTargetPosition = function getCameraTargetPosition() {
@@ -1497,8 +1494,7 @@ GlobeControls.prototype.setCameraTargetPosition = function setCameraTargetPositi
 
 /**
  * Returns the "range": the distance in meters between the camera and the current central point on the screen.
- * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/Lbt1vfek/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
- * @constructor
+ * <!--<iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/Lbt1vfek/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>-->
  * @return {number} number
  */
 GlobeControls.prototype.getRange = function getRange() {
@@ -1507,8 +1503,7 @@ GlobeControls.prototype.getRange = function getRange() {
 
 /**
  * Returns the tilt in degrees.
- * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/kcx0of9j/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
- * @constructor
+ * <!--<iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/kcx0of9j/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>-->
  * @return {Angle} number - The angle of the rotation in degrees.
  */
 GlobeControls.prototype.getTilt = function getTilt() {
@@ -1517,8 +1512,7 @@ GlobeControls.prototype.getTilt = function getTilt() {
 
 /**
  * Returns the heading in degrees.
- * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/pxv1Lw16/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
- * @constructor
+ * <!--<iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/pxv1Lw16/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>-->
  * @return {Angle} number - The angle of the rotation in degrees.
  */
 GlobeControls.prototype.getHeading = function getHeading() {
@@ -1548,7 +1542,6 @@ GlobeControls.prototype.moveTarget = function moveTarget() {
 /**
  * Displaces the central point to a specific amount of pixels from its current position.
  * The view flies to the desired coordinate, i.e.is not teleported instantly. Note : The results can be strange in some cases, if ever possible, when e.g.the camera looks horizontally or if the displaced center would not pick the ground once displaced.
- * @constructor
  * @param      {vector}  pVector  The vector
  */
 GlobeControls.prototype.pan = function pan(pVector) {
@@ -1562,8 +1555,7 @@ GlobeControls.prototype.pan = function pan(pVector) {
 
 /**
  * Returns the orientation angles of the current camera, in degrees.
- * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/okfj460p/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
- * @constructor
+ * <!--<iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/okfj460p/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>-->
  */
 GlobeControls.prototype.getCameraOrientation = function getCameraOrientation() {
     var tiltCam = this.getTilt();
@@ -1573,8 +1565,7 @@ GlobeControls.prototype.getCameraOrientation = function getCameraOrientation() {
 
 /**
  * Returns the camera location projected on the ground in lat,lon.
- * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/mjv7ha02/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
- * @constructor
+ * <!--<iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/mjv7ha02/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>-->
  * @return {Position} position
  */
 
@@ -1584,8 +1575,7 @@ GlobeControls.prototype.getCameraLocation = function getCameraLocation() {
 
 /**
  * Retuns the coordinates of the central point on screen.
- * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/4tjgnv7z/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
- * @constructor
+ * <!--<iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/4tjgnv7z/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>-->
  * @return {Position} position
  */
 
@@ -1595,7 +1585,6 @@ GlobeControls.prototype.getCameraTargetGeoPosition = function getCameraTargetGeo
 
 /**
  * Sets the animation enabled.
- * @constructor
  * @param      {boolean}  enable  enable
  */
 GlobeControls.prototype.setAnimationEnabled = function setAnimationEnabled(enable) {
@@ -1604,17 +1593,14 @@ GlobeControls.prototype.setAnimationEnabled = function setAnimationEnabled(enabl
 
 /**
  * Determines if animation enabled.
- *
  * @return     {boolean}  True if animation enabled, False otherwise.
  */
 GlobeControls.prototype.isAnimationEnabled = function isAnimationEnabled() {
     return enableAnimation;
 };
 
-
 /**
  * Returns the actual zoom level. The level will always be between the [getMinZoomLevel(), getMaxZoomLevel()].
- * @constructor
  * @return     {number}  The zoom level.
  */
 GlobeControls.prototype.getZoomLevel = function getZoomLevel() {
@@ -1625,7 +1611,6 @@ GlobeControls.prototype.getZoomLevel = function getZoomLevel() {
  * Gets the current zoom level, which is an index in the logical scales predefined for the application.
  * The higher the level, the closer to the ground.
  * The level is always in the [getMinZoomLevel(), getMaxZoomLevel()] range.
- * @constructor
  * @param      {number}  zoom    The zoom
  * @param      {boolean}  isAnimated  Indicates if animated
  * @return     {Promise}
@@ -1639,7 +1624,6 @@ GlobeControls.prototype.setZoomLevel = function setZoomLevel(zoom, isAnimated) {
 /**
  * Return the current zoom scale at the central point of the view.
  * This function compute the scale of a map
- * @constructor
  * @param      {number}  pitch   Screen pitch, in millimeters ; 0.28 by default
  * @return     {number}  The zoom scale.
  */
@@ -1669,7 +1653,9 @@ GlobeControls.prototype.setScale = function setScale(scale, pitch, isAnimated) {
 
 /**
  * Changes the center of the scene on screen to the specified coordinates.
- * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/x06yhbq6/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
+ * <!--<iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/x06yhbq6/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>-->
+ * @function
+ * @memberOf GlobeControls
  * @param {Object} coordinates - The globe coordinates in EPSG_4326 projection to aim to
  * @param {number} coordinates.latitude
  * @param {number} coordinates.longitude
@@ -1690,7 +1676,7 @@ GlobeControls.prototype.setCameraTargetGeoPosition = function setCameraTargetGeo
  * This function allows to change the central position, the zoom level, the range, the scale and the camera orientation at the same time.
  * The level has to be between the [getMinZoomLevel(), getMaxZoomLevel()].
  * The zoom level and the scale can't be set at the same time.
- * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/7yk0mpn0/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
+ * <!--<iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/7yk0mpn0/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>-->-->
  * @param {Position} position
  * @param {number}  position.longitude  Coordinate longitude WGS84 in degree
  * @param {number}  position.latitude  Coordinate latitude WGS84 in degree
@@ -1715,7 +1701,6 @@ GlobeControls.prototype.setCameraTargetGeoPositionAdvanced = function setCameraT
 
 /**
  * Pick a position on the globe at the given position.
- * @constructor
  * @param {number | MouseEvent} x|event - The x-position inside the Globe element or a mouse event.
  * @param {number | undefined} y - The y-position inside the Globe element.
  * @return {Position} position
@@ -1735,12 +1720,10 @@ GlobeControls.prototype.pickGeoPosition = function pickGeoPosition(mouse, y) {
     return C.fromXYZ('EPSG:4978', pickedPosition).as('EPSG:4326');
 };
 
-// End API functions
 // # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 GlobeControls.prototype.reset = function reset() {
     // TODO not reset target globe
-
     state = CONTROL_STATE.NONE;
 
     this.target.copy(initialTarget);

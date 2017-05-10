@@ -32,6 +32,12 @@ var eventLayerChangedVisible = new CustomEvent('layerchanged:visible');
 var eventLayerChangedOpacity = new CustomEvent('layerchanged:opacity');
 var eventLayerChangedIndex = new CustomEvent('layerchanged:index');
 
+
+/**
+ * Api
+ * @deprecated for the release
+ * @constructor
+ */
 function ApiGlobe() {
     // Constructor
     this.scene = null;
@@ -115,7 +121,6 @@ function preprocessLayer(layer, provider) {
 /**
  * This function adds an imagery layer to the scene. The layer id must be unique.
  * The protocol rules wich parameters are then needed for the function.
- * @constructor
  * @param {Layer} Layer
  */
 
@@ -140,7 +145,6 @@ ApiGlobe.prototype.addImageryLayer = function addImageryLayer(layer) {
 
 /**
  * This function adds an imagery layer to the scene using a JSON file. The layer id must be unique. The protocol rules wich parameters are then needed for the function.
- * @constructor
  * @param {Layer} layer.
  * @return     {layer}  The Layer.
  */
@@ -151,7 +155,6 @@ ApiGlobe.prototype.addImageryLayerFromJSON = function addImageryLayerFromJSON(ur
 
 /**
  * This function adds an imagery layer to the scene using an array of JSON files. The layer id must be unique. The protocol rules wich parameters are then needed for the function.
- * @constructor
  * @param {Layers} array - An array of JSON files.
  * @return     {layer}  The Layers.
  */
@@ -171,7 +174,6 @@ ApiGlobe.prototype.addImageryLayersFromJSONArray = function addImageryLayersFrom
  * with best resolution is used (or the first one is resolution are identical).
  * The layer id must be unique amongst all layers already inserted.
  * The protocol rules which parameters are then needed for the function.
- * @constructor
  * @param {Layer} layer
  */
 
@@ -200,7 +202,6 @@ ApiGlobe.prototype.addElevationLayer = function addElevationLayer(layer) {
  * with best resolution is used (or the first one is resolution are identical).
  * The layer id must be unique amongst all layers already inserted.
  * The protocol rules which parameters are then needed for the function.
- * @constructor
  * @param {Layers} array - An array of JSON files.
 * @return     {layer}  The Layers.
  */
@@ -216,7 +217,6 @@ ApiGlobe.prototype.addElevationLayersFromJSON = function addElevationLayersFromJ
  * with best resolution is used (or the first one is resolution are identical).
  * The layer id must be unique amongst all layers already inserted.
  * The protocol rules which parameters are then needed for the function.
- * @constructor
  * @param {Layer} layer.
  * @return     {layer}  The Layers.
  */
@@ -262,7 +262,6 @@ ApiGlobe.prototype.moveLayerDown = function moveLayerDown(layerId) {
 
 /**
  * Moves a specific layer to a specific index in the layer list. This function has no effect if the layer is moved to its current index.
- * @constructor
  * @param      {string}  layerId   The layer's idendifiant
  * @param      {number}  newIndex   The new index
  */
@@ -280,7 +279,6 @@ ApiGlobe.prototype.moveLayerToIndex = function moveLayerToIndex(layerId, newInde
 
 /**
  * Removes a specific imagery layer from the current layer list. This removes layers inserted with addLayer().
- * @constructor
  * @param      {string}   id      The identifier
  * @return     {boolean}  { description_of_the_return_value }
  */
@@ -309,7 +307,6 @@ ApiGlobe.prototype.removeImageryLayer = function removeImageryLayer(id) {
 /**
  * Gets the minimum zoom level of the chosen layer.
  * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/66r8ugq0/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
- * @constructor
  * @param {index} index - The index of the layer.
  * @return     {number}  The min of the level.
  */
@@ -332,7 +329,6 @@ ApiGlobe.prototype.getMinZoomLevel = function getMinZoomLevel(index) {
 /**
  * Gets the maximun zoom level of the chosen layer.
  * <iframe width="100%" height="400" src="//jsfiddle.net/iTownsIGN/y1xcqv4s/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
- * @constructor
  * @param {index} index - The index of the layer.
  * @return     {number}  The max of the level.
  */
@@ -354,7 +350,6 @@ ApiGlobe.prototype.getMaxZoomLevel = function getMaxZoomLevel(index) {
 
 /**
  * Return the list of all layers in the scene in the order of how they are stacked on top of each other.
- * @constructor
  * @return     {layer}  The Layers.
  */
 ApiGlobe.prototype.getImageryLayers = function getImageryLayers() {
@@ -379,7 +374,6 @@ ApiGlobe.prototype.initProviders = function initProviders(scene) {
  * Creates the scene (the globe of iTowns).
  * The first parameter is the coordinates on wich the globe will be centered at the initialization.
  * The second one is the HTML div in wich the scene will be created.
- * @constructor
  * @param {Coords} coords.
  * @params {Div} string.
  */
@@ -520,7 +514,6 @@ ApiGlobe.prototype.setRealisticLightingOn = function setRealisticLightingOn(valu
 
 /**
  * Sets the visibility of a layer. If the layer is not visible in the scene, this function will no effect until the camera looks at the layer.
- * @constructor
  * @param {layer} a layer.
  * @params {visible} boolean.
  */
@@ -544,11 +537,9 @@ ApiGlobe.prototype.setLayerVisibility = function setLayerVisibility(layer, visib
 
 /**
  * Sets the opacity of a layer. If the layer is not visible in the scene, this function will no effect until the layer becomes visible.
- * @constructor
  * @param {layer} a layer.
  * @params {visible} boolean.
  */
-
 ApiGlobe.prototype.setLayerOpacity = function setLayerOpacity(layer, opacity) {
     layer.opacity = opacity;
     this.scene.notifyChange(0, true);
@@ -559,11 +550,9 @@ ApiGlobe.prototype.setLayerOpacity = function setLayerOpacity(layer, opacity) {
 
 /**
  * Some event return the old value before the change. The available events are centerchanged, zoomchanged, orientationchanged, layerchanged:opacity, layerchanged:visible, layerchanged:ipr and layerchanged:index.
- * @constructor
  * @param {string} Eventname - The name of the event.
  * @param {callback} Callback - The callback that is called when the event is heard.
  */
-
 ApiGlobe.prototype.addEventListener = function addEventListenerProto(eventname, callback) {
     if (eventname == 'layerchanged') {
         this.viewerDiv.addEventListener('layerchanged', callback, false);
@@ -585,7 +574,6 @@ ApiGlobe.prototype.callbackLayerChanged = function callbackLayerChanged() {
 
 /**
  * Remove the event of events listener from the event target.
- * @constructor
  * @param {string} Eventname - The name of the event.
  * @param {callback} Callback - The callback that is called when the event is heard.
  */
@@ -625,7 +613,6 @@ ApiGlobe.prototype.getLayersAttribution = function getLayersAttribution() {
  * The type can be 'color', 'elevation' and 'geometry'. If the type is not specified, the function return all the layers.
  * @param {type} Type - The type of the layers wanted.
  */
-
 ApiGlobe.prototype.getLayers = function getLayers(type) {
     if (type === undefined) {
         return [...this.scene._geometryLayers, ...this.scene.getAttachedLayers()];
