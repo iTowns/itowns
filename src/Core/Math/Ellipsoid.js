@@ -77,27 +77,27 @@ Ellipsoid.prototype.cartographicToCartesian = function cartographicToCartesian(c
  * @param {number} position.z
  * @returns {EllipsoidCoordinate} an object describing the coordinates on the reference ellipsoid, angles are in degree
  */
-Ellipsoid.prototype.cartesianToCartographic = function cartesianToGeo(position) {
+Ellipsoid.prototype.cartesianToCartographic = function cartesianToCartographic(position) {
     // for details, see for example http://www.linz.govt.nz/data/geodetic-system/coordinate-conversion/geodetic-datum-conversions/equations-used-datum
     // TODO the following is only valable for oblate ellipsoid of revolution. do we want to support triaxial ellipsoid?
     const R = Math.sqrt(position.x * position.x + position.y * position.y + position.z * position.z);
-    const a = 6378137;
-    const b = 6356752.3142451793;
-    const e = Math.sqrt((a * a - b * b) / (a * a));
-    const f = 1 - Math.sqrt(1 - e * e);
+    const a = this.rayon_1; // x
+    const b = this.rayon_3; // z
+    const e = Math.abs((a * a - b * b) / (a * a));
+    const f = 1 - Math.sqrt(1 - e);
     const rsqXY = Math.sqrt(position.x * position.x + position.y * position.y);
 
     const theta = Math.atan2(position.y, position.x);
-    const nu = Math.atan(position.z / rsqXY * ((1 - f) + e * e * a / R));
+    const nu = Math.atan(position.z / rsqXY * ((1 - f) + e * a / R));
 
     const sinu = Math.sin(nu);
     const cosu = Math.cos(nu);
 
-    const phi = Math.atan((position.z * (1 - f) + e * e * a * sinu * sinu * sinu) / ((1 - f) * (rsqXY - e * e * a * cosu * cosu * cosu)));
+    const phi = Math.atan((position.z * (1 - f) + e * a * sinu * sinu * sinu) / ((1 - f) * (rsqXY - e * a * cosu * cosu * cosu)));
 
-    const h = (rsqXY * Math.cos(phi)) + position.z * Math.sin(phi) - a * Math.sqrt(1 - e * e * Math.sin(phi) * Math.sin(phi));
+    const h = (rsqXY * Math.cos(phi)) + position.z * Math.sin(phi) - a * Math.sqrt(1 - e * Math.sin(phi) * Math.sin(phi));
 
-    return { longitude: -theta * 180 / Math.PI, latitude: phi * 180 / Math.PI, h };
+    return { longitude: theta * 180 / Math.PI, latitude: phi * 180 / Math.PI, h };
 };
 
 Ellipsoid.prototype.cartographicToCartesianArray = function cartographicToCartesianArray(coordCartoArray) {
@@ -171,7 +171,7 @@ Ellipsoid.prototype.computeDistance = function computeDistance(coordCarto1, coor
     var distRad = Math.acos(Math.sin(latitude1) * Math.sin(latitude2) + Math.cos(latitude1) * Math.cos(latitude2) * Math.cos(longitude2 - longitude1));
 
     var a = this.rayon_1;
-    var b = this.rayon_2;
+    var b = this.rayon_3;
     var e = Math.sqrt((a * a - b * b) / (a * a));
     var latMoy = (latitude1 + latitude2) / 2;
     var rho = (a * (1 - e * e)) / Math.sqrt(1 - e * e * Math.sin(latMoy) * Math.sin(latMoy));
