@@ -12,8 +12,8 @@ import Ellipsoid from '../Math/Ellipsoid';
 export function ellipsoidSizes() {
     return {
         x: 6378137,
-        y: 6356752.3142451793,
-        z: 6378137,
+        y: 6378137,
+        z: 6356752.3142451793,
     };
 }
 
