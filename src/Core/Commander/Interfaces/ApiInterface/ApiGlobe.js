@@ -218,6 +218,43 @@ ApiGlobe.prototype.addImageryLayersFromJSONArray = function addImageryLayersFrom
     return Promise.all(proms);
 };
 
+ApiGlobe.prototype.addFeatureLayerFromJSON = function addFeatureLayerFromJSON(url) {
+    return Fetcher.json(url).then((result) => {
+        this.addFeatureLayer(result);
+    });
+};
+
+ApiGlobe.prototype.addFeatureLayersFromJSONArray = function addFeatureLayersFromJSONArray(urls) {
+    const proms = [];
+    for (const url of urls) {
+        proms.push(Fetcher.json(url));
+    }
+    return Promise.all(proms).then((layers) => {
+        for (const layer of layers) {
+            this.addFeatureLayer(layer);
+        }
+        return layers;
+    });
+};
+
+ApiGlobe.prototype.addFeatureFromJSON = function addFeatureFromJSON(url) {
+    return Fetcher.json(url).then((result) => {
+        this.addFeature(result);
+    });
+};
+
+ApiGlobe.prototype.addFeaturesFromJSONArray = function addFeaturesFromJSONArray(urls) {
+    const proms = [];
+    for (const url of urls) {
+        proms.push(Fetcher.json(url));
+    }
+    return Promise.all(proms).then((features) => {
+        for (const feature of features) {
+            this.addFeature(feature);
+        }
+    });
+};
+
 /**
  * Add an elevation layer to the map. Elevations layers are used to build the terrain.
  * Only one elevation layer is used, so if multiple layers cover the same area, the one
