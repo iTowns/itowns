@@ -9,7 +9,7 @@ import LayeredMaterial, { l_ELEVATION } from '../Renderer/LayeredMaterial';
 import TileDepthMaterial from '../Renderer/TileDepthMaterial';
 import MatteIdsMaterial from '../Renderer/MatteIdsMaterial';
 import RendererConstant from '../Renderer/RendererConstant';
-import OGCWebServiceHelper, { SIZE_TEXTURE_TILE } from '../Core/Scheduler/Providers/OGCWebServiceHelper';
+import OGCWebServiceHelper, { SIZE_TEXTURE_TILE } from './Scheduler/Providers/OGCWebServiceHelper';
 
 function TileMesh(geometry, params) {
     // Constructor
@@ -35,18 +35,9 @@ function TileMesh(geometry, params) {
 
     this.materials = [];
 
-    if (params.parentMaterial instanceof LayeredMaterial) {
-        if (params.parentMaterial.getElevationLayerLevel() > -1) {
-            OGCWebServiceHelper.computeTileMatrixSetCoordinates(this);
-        }
-        for (let i = params.parentMaterial.colorLayersId.length - 1; i >= 0; i--) {
-            const projection = params.parentMaterial.getLayerUV(i);
-            OGCWebServiceHelper.computeTileMatrixSetCoordinates(this, projection ? 'PM' : 'WGS84G');
-        }
-    }
     // instantiations all state materials : final, depth, id
     // Final rendering : return layered color + fog
-    this.materials[RendererConstant.FINAL] = new LayeredMaterial(params.parentMaterial, this.wmtsCoords, params.parentWmtsCoords);
+    this.materials[RendererConstant.FINAL] = new LayeredMaterial();
 
     // Depth : return the distance between projection point and the node
     this.materials[RendererConstant.DEPTH] = new TileDepthMaterial(this.materials[RendererConstant.FINAL]);
@@ -149,6 +140,9 @@ TileMesh.prototype.setTextureElevation = function setTextureElevation(elevation)
 
 
 TileMesh.prototype.setBBoxZ = function setBBoxZ(min, max) {
+    if (min == undefined && max == undefined) {
+        return;
+    }
     if (Math.floor(min) !== Math.floor(this.bbox.bottom()) || Math.floor(max) !== Math.floor(this.bbox.top())) {
         this.bbox.setBBoxZ(min, max);
         const delta = this.geometry.OBB.addHeight(this.bbox);
@@ -190,14 +184,9 @@ TileMesh.prototype.isElevationLayerLoaded = function isElevationLayerLoaded() {
     return mat.getElevationLayerLevel() > -1;
 };
 
-TileMesh.prototype.isColorLayerDownscaled = function isColorLayerDownscaled(layerId) {
+TileMesh.prototype.isColorLayerDownscaled = function isColorLayerDownscaled(layer) {
     const mat = this.materials[RendererConstant.FINAL];
-    return mat.isColorLayerDownscaled(layerId, this.wmtsCoords);
-};
-
-TileMesh.prototype.isLayerTypeDownscaled = function isLayerTypeDownscaled(layerType) {
-    const mat = this.materials[RendererConstant.FINAL];
-    return mat.isLayerTypeDownscaled(layerType, this.wmtsCoords);
+    return mat.isColorLayerDownscaled(layer.id, this.getZoomForLayer(layer));
 };
 
 TileMesh.prototype.normals = function normals() {
@@ -237,6 +226,24 @@ TileMesh.prototype.changeSequenceLayers = function changeSequenceLayers(sequence
     }
 
     this.materials[RendererConstant.FINAL].setSequence(sequence);
+};
+
+TileMesh.prototype.getCoordsForLayer = function getCoordsForLayer(layer) {
+    if (layer.protocol.indexOf('wmts') == 0) {
+        OGCWebServiceHelper.computeTileMatrixSetCoordinates(this, layer.options.tileMatrixSet);
+        return this.wmtsCoords[layer.options.tileMatrixSet];
+    } else {
+        return [this.bbox];
+    }
+};
+
+TileMesh.prototype.getZoomForLayer = function getCoordsForLayer(layer) {
+    if (layer.protocol.indexOf('wmts') == 0) {
+        OGCWebServiceHelper.computeTileMatrixSetCoordinates(this, layer.options.tileMatrixSet);
+        return this.wmtsCoords[layer.options.tileMatrixSet][0].zoom;
+    } else {
+        return this.level;
+    }
 };
 
 export default TileMesh;

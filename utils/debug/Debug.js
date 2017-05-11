@@ -328,6 +328,7 @@ function addGeometryLayerDebugFeatures(layer, view, gui, state) {
     };
     const debugLayer = {
         id: obb_layer_id,
+        type: 'debug',
         update: debugIdUpdate,
     };
 

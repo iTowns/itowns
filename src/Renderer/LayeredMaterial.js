@@ -14,22 +14,8 @@ import Capabilities from '../Core/System/Capabilities';
 
 export const EMPTY_TEXTURE_ZOOM = -1;
 
-const offsetToParent = function offsetToParent(cWMTS, levelParent) {
-    const diffLevel = cWMTS.zoom - levelParent;
-    const diff = Math.pow(2, diffLevel);
-    const invDiff = 1 / diff;
-
-    const r = (cWMTS.row - (cWMTS.row % diff)) * invDiff;
-    const c = (cWMTS.col - (cWMTS.col % diff)) * invDiff;
-
-    return new THREE.Vector3(
-        cWMTS.col * invDiff - c,
-        cWMTS.row * invDiff - r,
-        invDiff);
-};
-
 var emptyTexture = new THREE.Texture();
-emptyTexture.coordWMTS = { zoom: EMPTY_TEXTURE_ZOOM };
+emptyTexture.coords = { zoom: EMPTY_TEXTURE_ZOOM };
 
 const layerTypesCount = 2;
 var vector = new THREE.Vector3(0.0, 0.0, 0.0);
@@ -90,7 +76,7 @@ var moveElementsArraySafe = function moveElementsArraySafe(array,index, howMany,
 };
 /* eslint-enable */
 
-const LayeredMaterial = function LayeredMaterial(material, coordsDestination, coordsSource) {
+const LayeredMaterial = function LayeredMaterial() {
     BasicMaterial.call(this);
 
     const maxTexturesUnits = Capabilities.getMaxTextureUnitsCount();
@@ -162,75 +148,6 @@ const LayeredMaterial = function LayeredMaterial(material, coordsDestination, co
 
     this.colorLayersId = [];
     this.elevationLayersId = [];
-
-    if (material instanceof LayeredMaterial) {
-        // inherit parent's elevation texture
-        if (material.getElevationLayerLevel() > EMPTY_TEXTURE_ZOOM) {
-            this.textures[l_ELEVATION][0] = material.textures[l_ELEVATION][0];
-            this.offsetScale[l_ELEVATION][0] = offsetToParent(coordsDestination.WGS84G[1], this.textures[l_ELEVATION][0].coordWMTS.zoom);
-            this.loadedTexturesCount[l_ELEVATION] = 1;
-            this.elevationLayersId = material.elevationLayersId;
-        }
-
-        // inherit parent's lighting
-        this.uniforms.lightPosition.value = material.uniforms.lightPosition.value;
-        this.uniforms.lightingEnabled.value = material.uniforms.lightingEnabled.value;
-
-        // inherit parent's color texture
-        let offsetTextures = 0;
-        // for all color layers
-        for (let i = 0; i < material.colorLayersId.length; i++) {
-            const layerId = material.colorLayersId[i];
-            // if parent's color layer is loaded
-            if (material.getColorLayerLevelById(layerId) > EMPTY_TEXTURE_ZOOM) {
-                // 1) ADD color layer to child
-                this.colorLayersId.push(layerId);
-                // Get new layer index
-                const index = this.colorLayersId.length - 1;
-
-                // 2) UPDATE Params layer
-                this.setLayerVisibility(index, material.uniforms.visibility.value[i]);
-
-                // Copy param layer
-                paramLayers[index] = new THREE.Vector4().copy(material.uniforms.paramLayers.value[i]);
-                const params = paramLayers[index];
-                // update offset texture
-                params.x = offsetTextures;
-
-                // 3) CONNECT parent's textures to child
-                const tileMatrixSet = params.y;
-                const coordSource = tileMatrixSet ? coordsSource.PM : coordsSource.WGS84G;
-                // Compute first row from destination
-                const firstRowParent = Math.pow(2, coordSource[0].zoom) - coordSource[1].row - 1;
-
-                const texturesCount = tileMatrixSet ? coordsDestination.PM[1].row - coordsDestination.PM[0].row + 1 : 1;
-
-                const coordDest = tileMatrixSet ? coordsDestination.PM[1].clone() : coordsDestination.WGS84G[1].clone();
-                // Count all destination row
-                const rowDestCount = Math.pow(2, coordDest.zoom);
-                // Get texture from parent
-                for (let t = params.x; t < params.x + texturesCount; t++) {
-                    // Compute texture destination's row
-                    const row = rowDestCount - coordDest.row - 1;
-                    // Compute texture source's row
-                    const rowSource = Math.trunc(row * 0.5);
-                    const slotSource = rowSource - firstRowParent + material.getTextureOffsetByLayerIndex(i);
-
-                    // Connect texture source to destination
-                    this.textures[l_COLOR][t] = material.textures[l_COLOR][slotSource];
-                    // Compute offset
-                    this.offsetScale[l_COLOR][t] = offsetToParent(coordDest, this.textures[l_COLOR][t].coordWMTS.zoom);
-                    // TODO reverse storage textures in Array Textures
-                    coordDest.row--;
-                }
-
-                this.layerTexturesCount[index] = texturesCount;
-                offsetTextures += texturesCount;
-            }
-        }
-        this.loadedTexturesCount[l_COLOR] = offsetTextures;
-        this.uniforms.colorLayersCount.value = this.colorLayersId.length;
-    }
 };
 
 LayeredMaterial.prototype = Object.create(BasicMaterial.prototype);
@@ -319,7 +236,7 @@ LayeredMaterial.prototype.removeColorLayer = function removeColorLayer(layer) {
     const removedTexturesLayer = this.textures[l_COLOR].splice(offset, texturesCount);
     this.offsetScale[l_COLOR].splice(offset, texturesCount);
 
-    const loadedTexturesLayerCount = removedTexturesLayer.reduce((sum, texture) => sum + (texture.coordWMTS.zoom > EMPTY_TEXTURE_ZOOM), 0);
+    const loadedTexturesLayerCount = removedTexturesLayer.reduce((sum, texture) => sum + (texture.coords.zoom > EMPTY_TEXTURE_ZOOM), 0);
 
     // refill remove textures
     for (let i = 0, max = texturesCount; i < max; i++) {
@@ -446,35 +363,9 @@ LayeredMaterial.prototype.getLoadedTexturesCount = function getLoadedTexturesCou
     return this.loadedTexturesCount[l_ELEVATION] + this.loadedTexturesCount[l_COLOR];
 };
 
-LayeredMaterial.prototype.isColorLayerDownscaled = function isColorLayerDownscaled(layerId, scaledCoords) {
-    const index = this.indexOfColorLayer(layerId);
-    const zoom = this.uniforms.paramLayers.value[index].y ? scaledCoords.PM[0].zoom : scaledCoords.WGS84G[0].zoom;
+LayeredMaterial.prototype.isColorLayerDownscaled = function isColorLayerDownscaled(layerId, zoom) {
     return this.textures[l_COLOR][this.getLayerTextureOffset(layerId)] &&
-        this.textures[l_COLOR][this.getLayerTextureOffset(layerId)].coordWMTS.zoom < zoom;
-};
-
-LayeredMaterial.prototype.isLayerTypeDownscaled = function isLayerTypeDownscaled(layerType, scaledCoords) {
-    if (layerType === l_ELEVATION) {
-        const tex = this.textures[l_ELEVATION][0];
-        //   - blank texture (eg: empty xbil texture)
-        if (tex.coordWMTS.zoom === EMPTY_TEXTURE_ZOOM) {
-            return false;
-        }
-        //   - regular texture
-        return tex.coordWMTS.zoom < scaledCoords.WGS84G[0].zoom;
-    } else if (layerType === l_COLOR) {
-        // browse each layer
-        for (let index = 0, max = this.colorLayersId.length; index < max; index++) {
-            const offset = this.getTextureOffsetByLayerIndex(index);
-            const texture = this.textures[l_COLOR][offset];
-            const zoom = this.uniforms.paramLayers.value[index].y ? scaledCoords.PM[0].zoom : scaledCoords.WGS84G[0].zoom;
-            if (texture.coordWMTS.zoom < zoom) {
-                return true;
-            }
-        }
-    }
-
-    return false;
+        this.textures[l_COLOR][this.getLayerTextureOffset(layerId)].coords.zoom < zoom;
 };
 
 LayeredMaterial.prototype.getColorLayerLevelById = function getColorLayerLevelById(colorLayerId) {
@@ -485,11 +376,11 @@ LayeredMaterial.prototype.getColorLayerLevelById = function getColorLayerLevelBy
     const slot = this.getTextureOffsetByLayerIndex(index);
     const texture = this.textures[l_COLOR][slot];
 
-    return texture ? texture.coordWMTS.zoom : EMPTY_TEXTURE_ZOOM;
+    return texture ? texture.coords.zoom : EMPTY_TEXTURE_ZOOM;
 };
 
 LayeredMaterial.prototype.getElevationLayerLevel = function getElevationLayerLevel() {
-    return this.textures[l_ELEVATION][0].coordWMTS.zoom;
+    return this.textures[l_ELEVATION][0].coords.zoom;
 };
 
 LayeredMaterial.prototype.getLayerTextures = function getLayerTextures(layerType, layerId) {
