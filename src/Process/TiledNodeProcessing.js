@@ -1,20 +1,20 @@
 import * as THREE from 'three';
-import BoundingBox from '../Core/Math/BoundingBox';
+import Extent from '../Core/Geographic/Extent';
 
 
-function subdivisionBoundingBoxes(bbox) {
+function subdivisionExtents(bbox) {
     const center = bbox.center();
 
-    const northWest = new BoundingBox(bbox.crs(),
+    const northWest = new Extent(bbox.crs(),
         bbox.west(), center._values[0],
         center._values[1], bbox.north());
-    const northEast = new BoundingBox(bbox.crs(),
+    const northEast = new Extent(bbox.crs(),
         center._values[0], bbox.east(),
         center._values[1], bbox.north());
-    const southWest = new BoundingBox(bbox.crs(),
+    const southWest = new Extent(bbox.crs(),
         bbox.west(), center._values[0],
         bbox.south(), center._values[1]);
-    const southEast = new BoundingBox(bbox.crs(),
+    const southEast = new Extent(bbox.crs(),
         center._values[0], bbox.east(),
         bbox.south(), center._values[1]);
 
@@ -28,7 +28,7 @@ function subdivisionBoundingBoxes(bbox) {
     return result;
 }
 
-function requestNewTile(view, scheduler, geometryLayer, bbox, parent, level) {
+function requestNewTile(view, scheduler, geometryLayer, extent, parent, level) {
     const command = {
         /* mandatory */
         view,
@@ -36,7 +36,7 @@ function requestNewTile(view, scheduler, geometryLayer, bbox, parent, level) {
         layer: geometryLayer,
         priority: 10000,
         /* specific params */
-        bbox,
+        extent,
         level,
         redraw: false,
         threejsLayer: geometryLayer.threejsLayer,
@@ -50,15 +50,15 @@ function requestNewTile(view, scheduler, geometryLayer, bbox, parent, level) {
 
 function subdivideNode(context, layer, node, initNewNode) {
     if (!node.pendingSubdivision && !node.children.some(n => n.layer == layer.id)) {
-        const bboxes = subdivisionBoundingBoxes(node.bbox);
+        const extents = subdivisionExtents(node.extent);
         // TODO: pendingSubdivision mechanism is fragile, get rid of it
         node.pendingSubdivision = true;
 
         const promises = [];
         const children = [];
-        for (const bbox of bboxes) {
+        for (const extent of extents) {
             promises.push(
-                requestNewTile(context.view, context.scheduler, layer, bbox, node).then((child) => {
+                requestNewTile(context.view, context.scheduler, layer, extent, node).then((child) => {
                     children.push(child);
                     initNewNode(context, layer, node, child);
                     return node;

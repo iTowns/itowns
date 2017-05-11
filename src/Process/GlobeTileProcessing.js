@@ -3,7 +3,7 @@ import MathExt from '../Core/Math/MathExtended';
 import SchemeTile from '../Core/Geographic/SchemeTile';
 import { UNIT, ellipsoidSizes } from '../Core/Geographic/Coordinates';
 import { SIZE_TEXTURE_TILE } from '../Core/Scheduler/Providers/OGCWebServiceHelper';
-import BoundingBox from '../Core/Math/BoundingBox';
+import Extent from '../Core/Geographic/Extent';
 
 const cV = new THREE.Vector3();
 let vhMagnitudeSquared;
@@ -121,12 +121,12 @@ export function globeSchemeTileWMTS(type) {
 
     if (type === 0) {
         // bbox longitude(0,360),latitude(-90,90)
-        schemeT.add(new BoundingBox('EPSG:4326', 0, MathExt.PI, -MathExt.PI_OV_TWO, MathExt.PI_OV_TWO));
-        schemeT.add(new BoundingBox('EPSG:4326', MathExt.PI, MathExt.TWO_PI, -MathExt.PI_OV_TWO, MathExt.PI_OV_TWO));
+        schemeT.add(new Extent('EPSG:4326', 0, MathExt.PI, -MathExt.PI_OV_TWO, MathExt.PI_OV_TWO));
+        schemeT.add(new Extent('EPSG:4326', MathExt.PI, MathExt.TWO_PI, -MathExt.PI_OV_TWO, MathExt.PI_OV_TWO));
     } else if (type == 1) {
         // bbox longitude(-180,180),latitude(-90,90)
-        schemeT.add(new BoundingBox('EPSG:4326', -MathExt.PI, 0, -MathExt.PI_OV_TWO, MathExt.PI_OV_TWO));
-        schemeT.add(new BoundingBox('EPSG:4326', 0, MathExt.PI, -MathExt.PI_OV_TWO, MathExt.PI_OV_TWO));
+        schemeT.add(new Extent('EPSG:4326', -MathExt.PI, 0, -MathExt.PI_OV_TWO, MathExt.PI_OV_TWO));
+        schemeT.add(new Extent('EPSG:4326', 0, MathExt.PI, -MathExt.PI_OV_TWO, MathExt.PI_OV_TWO));
     }
     // store internally as Radians to avoid doing too much deg->rad conversions
     for (const bbox of schemeT.schemeBB) {

@@ -18,12 +18,12 @@ function TileMesh(geometry, params) {
     this.matrixAutoUpdate = false;
     this.rotationAutoUpdate = false;
 
-    if (!params.bbox) {
-        throw new Error('params.bbox is mandatory to build a TileMesh');
+    if (!params.extent) {
+        throw new Error('params.extent is mandatory to build a TileMesh');
     }
 
     this.level = params.level;
-    this.bbox = params.bbox;
+    this.extent = params.extent;
 
     this.geometry = geometry;
     this.normal = params.center.clone().normalize();
@@ -143,9 +143,8 @@ TileMesh.prototype.setBBoxZ = function setBBoxZ(min, max) {
     if (min == undefined && max == undefined) {
         return;
     }
-    if (Math.floor(min) !== Math.floor(this.bbox.bottom()) || Math.floor(max) !== Math.floor(this.bbox.top())) {
-        this.bbox.setBBoxZ(min, max);
-        const delta = this.geometry.OBB.addHeight(this.bbox);
+    if (Math.floor(min) !== Math.floor(this.geometry.OBB.z.min) || Math.floor(max) !== Math.floor(this.geometry.OBB.z.max)) {
+        const delta = this.geometry.OBB.updateZ(min, max);
         const trans = this.normal.clone().setLength(delta.y);
 
         this.geometry.boundingSphere.radius = Math.sqrt(delta.x * delta.x + this.oSphere.radius * this.oSphere.radius);
@@ -233,7 +232,7 @@ TileMesh.prototype.getCoordsForLayer = function getCoordsForLayer(layer) {
         OGCWebServiceHelper.computeTileMatrixSetCoordinates(this, layer.options.tileMatrixSet);
         return this.wmtsCoords[layer.options.tileMatrixSet];
     } else {
-        return [this.bbox];
+        return [this.extent];
     }
 };
 

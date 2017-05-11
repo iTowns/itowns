@@ -1,17 +1,16 @@
-/**
- * Generated On: 2015-10-5
- * Class: BoundingBox
- * Description: BoundingBox délimite une zone de l'espace. Cette zone est défnie  par des coordonées cartographiques.
- */
-
 import * as THREE from 'three';
 import Coordinates, { crsToUnit, crsIsGeographic, assertCrsIsValid, convertValueToUnit } from '../Geographic/Coordinates';
+
+/**
+ * Extent is a SIG-area (so 2D)
+ * It can use explicit coordinates (e.g: lon/lat) or implicit (WMTS coordinates)
+ */
 
 function _crsIsWMTS(crs) {
     return crs.indexOf('WMTS:') == 0;
 }
 
-function BoundingBox(crs, ...values) {
+function Extent(crs, ...values) {
     this._crs = crs;
 
     if (_crsIsWMTS(crs)) {
@@ -21,7 +20,7 @@ function BoundingBox(crs, ...values) {
             this._col = values[2];
 
             if (this._zoom < 0) {
-                throw new Error('cuck');
+                throw new Error(`invlid WTMS values ${values}`);
             }
 
             Object.defineProperty(this,
@@ -45,27 +44,22 @@ function BoundingBox(crs, ...values) {
         if (values.length === 2 &&
             values[0] instanceof Coordinates &&
             values[1] instanceof Coordinates) {
-            this._values = new Float64Array(6);
+            this._values = new Float64Array(4);
             for (let i = 0; i < values.length; i++) {
-                for (let j = 0; j < 3; j++) {
-                    this._values[3 * i + j] = values[i][j];
+                for (let j = 0; j < 2; j++) {
+                    this._values[2 * i + j] = values[i][j];
                 }
             }
         } else if (values.length == 1 && values[0].west != undefined) {
-            this._values = new Float64Array(6);
+            this._values = new Float64Array(4);
             this._values[0] = values[0].west;
             this._values[1] = values[0].east;
             this._values[2] = values[0].south;
             this._values[3] = values[0].north;
-            this._values[4] = values[0].minAltitude || 0;
-            this._values[5] = values[0].maxAltitude || 0;
-        } else if (values.length >= 4) {
-            this._values = new Float64Array(6);
-            for (let i = 0; i < values.length; i++) {
+        } else if (values.length == 4) {
+            this._values = new Float64Array(4);
+            for (let i = 0; i < 4; i++) {
                 this._values[i] = values[i];
-            }
-            for (let i = values.length; i < 6; i++) {
-                this._values[i] = 0;
             }
         } else {
             throw new Error(`Unsupported constructor args '${values}'`);
@@ -73,17 +67,17 @@ function BoundingBox(crs, ...values) {
     }
 }
 
-BoundingBox.prototype.clone = function clone() {
+Extent.prototype.clone = function clone() {
     if (_crsIsWMTS(this._crs)) {
-        return new BoundingBox(this._crs, this.zoom, this.row, this.col);
+        return new Extent(this._crs, this.zoom, this.row, this.col);
     } else {
-        const result = BoundingBox(this._crs, ...this._values);
+        const result = Extent(this._crs, ...this._values);
         result._internalStorageUnit = this._internalStorageUnit;
         return result;
     }
 };
 
-BoundingBox.prototype.as = function as(crs) {
+Extent.prototype.as = function as(crs) {
     assertCrsIsValid(crs);
     if (this._crs != crs) {
         throw new Error('Unsupported yet');
@@ -92,17 +86,15 @@ BoundingBox.prototype.as = function as(crs) {
         throw new Error('Unsupported yet');
     }
 
-    return new BoundingBox(crs, {
+    return new Extent(crs, {
         west: this.west(crsToUnit(crs)),
         east: this.east(crsToUnit(crs)),
         north: this.north(crsToUnit(crs)),
         south: this.south(crsToUnit(crs)),
-        minAltitude: this.bottom(crsToUnit(crs)),
-        maxAltitude: this.top(crsToUnit(crs)),
     });
 };
 
-BoundingBox.prototype.offsetToParent = function offsetToParent(other) {
+Extent.prototype.offsetToParent = function offsetToParent(other) {
     if (this.crs() != other.crs()) {
         throw new Error('unsupported mix');
     }
@@ -136,7 +128,7 @@ BoundingBox.prototype.offsetToParent = function offsetToParent(other) {
     return new THREE.Vector3(originX, originY, scale);
 };
 
-BoundingBox.prototype.west = function west(unit) {
+Extent.prototype.west = function west(unit) {
     if (crsIsGeographic(this.crs())) {
         return convertValueToUnit(this._internalStorageUnit, unit, this._values[0]);
     } else {
@@ -144,7 +136,7 @@ BoundingBox.prototype.west = function west(unit) {
     }
 };
 
-BoundingBox.prototype.east = function east(unit) {
+Extent.prototype.east = function east(unit) {
     if (crsIsGeographic(this.crs())) {
         return convertValueToUnit(this._internalStorageUnit, unit, this._values[1]);
     } else {
@@ -152,7 +144,7 @@ BoundingBox.prototype.east = function east(unit) {
     }
 };
 
-BoundingBox.prototype.north = function north(unit) {
+Extent.prototype.north = function north(unit) {
     if (crsIsGeographic(this.crs())) {
         return convertValueToUnit(this._internalStorageUnit, unit, this._values[3]);
     } else {
@@ -160,7 +152,7 @@ BoundingBox.prototype.north = function north(unit) {
     }
 };
 
-BoundingBox.prototype.south = function south(unit) {
+Extent.prototype.south = function south(unit) {
     if (crsIsGeographic(this.crs())) {
         return convertValueToUnit(this._internalStorageUnit, unit, this._values[2]);
     } else {
@@ -168,36 +160,26 @@ BoundingBox.prototype.south = function south(unit) {
     }
 };
 
-BoundingBox.prototype.top = function top() {
-    return this._values[5];
-};
-
-BoundingBox.prototype.bottom = function bottom() {
-    return this._values[4];
-};
-
-BoundingBox.prototype.crs = function crs() {
+Extent.prototype.crs = function crs() {
     return this._crs;
 };
 
-BoundingBox.prototype.center = function center() {
+Extent.prototype.center = function center() {
     if (_crsIsWMTS(this._crs)) {
         throw new Error('Invalid operation for WMTS bbox');
     }
-    const c = new Coordinates(this._crs, this._values[0], this._values[2], this._values[4]);
+    const c = new Coordinates(this._crs, this._values[0], this._values[2]);
     c._internalStorageUnit = this._internalStorageUnit;
     const dim = this.dimensions();
     c._values[0] += dim.x * 0.5;
     c._values[1] += dim.y * 0.5;
-    c._values[2] += dim.z * 0.5;
     return c;
 };
 
-BoundingBox.prototype.dimensions = function dimensions(unit) {
+Extent.prototype.dimensions = function dimensions(unit) {
     return {
         x: Math.abs(this.east(unit) - this.west(unit)),
         y: Math.abs(this.north(unit) - this.south(unit)),
-        z: Math.abs(this.top() - this.bottom()),
     };
 };
 
@@ -206,7 +188,7 @@ BoundingBox.prototype.dimensions = function dimensions(unit) {
  *
  * @param point {[object Object]}
  */
-BoundingBox.prototype.isInside = function isInside(coord) {
+Extent.prototype.isInside = function isInside(coord) {
     const c = (this.crs() == coord.crs) ? coord : coord.as(this.crs());
 
     // TODO this ignores altitude
@@ -223,7 +205,7 @@ BoundingBox.prototype.isInside = function isInside(coord) {
     }
 };
 
-BoundingBox.prototype.isInside = function isInside(other) {
+Extent.prototype.isInside = function isInside(other) {
     if (_crsIsWMTS(this.crs())) {
         if (this._zoom == other._zoom) {
             return this._row == other._row &&
@@ -249,7 +231,7 @@ BoundingBox.prototype.isInside = function isInside(other) {
     }
 };
 
-BoundingBox.prototype.offsetScale = function offsetScale(bbox) {
+Extent.prototype.offsetScale = function offsetScale(bbox) {
     if (bbox.crs() != this.crs()) {
         throw new Error('unsupported offscale between 2 diff crs');
     }
@@ -267,25 +249,11 @@ BoundingBox.prototype.offsetScale = function offsetScale(bbox) {
 };
 
 /**
- * @documentation: Set altitude of bounding box
- * @param {type} min : minimum altitude
- * @param {type} max : maximum altitude
- * @returns {undefined}
- */
-BoundingBox.prototype.setBBoxZ = function setBBoxZ(min, max) {
-    if (_crsIsWMTS(this._crs)) {
-        throw new Error('Invalid operation for WMTS bbox');
-    }
-    this._values[4] = min;
-    this._values[5] = max;
-};
-
-/**
  * @documentation: Return true if this bounding box intersect with the bouding box parameter
  * @param {type} bbox
  * @returns {Boolean}
  */
-BoundingBox.prototype.intersect = function intersect(bbox) {
+Extent.prototype.intersect = function intersect(bbox) {
     const other = bbox.as(this.crs());
     return !(this.west() >= other.east(this._internalStorageUnit) ||
              this.east() <= other.west(this._internalStorageUnit) ||
@@ -293,4 +261,4 @@ BoundingBox.prototype.intersect = function intersect(bbox) {
              this.north() <= other.south(this._internalStorageUnit));
 };
 
-export default BoundingBox;
+export default Extent;

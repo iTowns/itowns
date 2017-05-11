@@ -31,6 +31,7 @@ function OBB(min, max, lookAt, translate) {
     this.update();
 
     this.oPosition = this.position.clone();
+    this.z = { min: 0, max: 0 };
 }
 
 OBB.prototype = Object.create(THREE.Object3D.prototype);
@@ -49,11 +50,16 @@ OBB.prototype.inverseQuaternion = function inverseQuaternion() {
     return this.quaInv;
 };
 
-OBB.prototype.addHeight = function addHeight(bbox) {
+OBB.prototype.updateZ = function updateZ(min, max) {
+    this.z = { min, max };
+    return this.addHeight(min, max);
+};
+
+OBB.prototype.addHeight = function addHeight(minz, maxz) {
     var depth = Math.abs(this.natBox.min.z - this.natBox.max.z);
     //
-    this.box3D.min.z = this.natBox.min.z + bbox.bottom();
-    this.box3D.max.z = this.natBox.max.z + bbox.top();
+    this.box3D.min.z = this.natBox.min.z + minz;
+    this.box3D.max.z = this.natBox.max.z + maxz;
 
     // TODO à vérifier --->
 
