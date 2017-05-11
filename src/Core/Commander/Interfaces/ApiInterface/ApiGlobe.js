@@ -3,7 +3,7 @@
  * Class: ApiGlobe
  * Description: Classe façade pour attaquer les fonctionnalités du code.
  */
-
+import * as THREE from 'three';
 import CustomEvent from 'custom-event';
 import Scene from '../../../../Scene/Scene';
 import { GeometryLayer, ImageryLayers } from '../../../../Scene/Layer';
@@ -1057,7 +1057,37 @@ ApiGlobe.prototype.getLayerById = function getLayerById(pId) {
 ApiGlobe.prototype.loadGPX = function loadGPX(url) {
     loadGpx(url).then((gpx) => {
         if (gpx) {
-            this.scene.gpxTracks.children[0].add(gpx);
+            const idLayer = 'gpx';
+            let gpxLayer = this.scene._geometryLayers.filter(n => n.id === idLayer)[0];
+            if (!gpxLayer) {
+                gpxLayer = new GeometryLayer(idLayer);
+                gpxLayer.type = 'geometry';
+
+                gpxLayer.update = function updateGpx(context, layer, node) {
+                    const mRTC = context.scene.gfxEngine.getRTCMatrixFromNode(node, context.camera);
+                    for (const child of node.children) {
+                        child.material.setMatrixRTC(mRTC);
+                    }
+                };
+
+                gpxLayer.preUpdate = (context, layer) => {
+                    if (layer.level0Nodes === undefined) {
+                        layer.level0Nodes = new THREE.Object3D();
+                        gpxLayer.level0Nodes.add(gpx);
+                        context.scene.gfxEngine.scene3D.add(layer.level0Nodes);
+                    }
+
+                    return layer.level0Nodes.children;
+                };
+
+                this.scene.addGeometryLayer(gpxLayer);
+
+                const threeLayer = this.scene.getUniqueThreejsLayer();
+                gpxLayer.threeLayer = threeLayer;
+                this.scene.currentCamera().camera3D.layers.enable(threeLayer);
+            } else {
+                gpxLayer.level0Nodes.add(gpx);
+            }
         }
     });
 
