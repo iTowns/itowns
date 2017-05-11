@@ -302,7 +302,7 @@ function addGeometryLayerDebugFeatures(layer, scene, gui, state) {
     const debugIdUpdate = function debugIdUpdate(context, layer, node) {
         var n = node.children.filter(n => n.layer == obb_layer_id);
 
-        if (node.material.visible) {
+        if (node && node.material && node.material.visible && node.OBB) {
             if (n.length == 0) {
                 const l = context.scene.getAttachedLayers(l => l.id === obb_layer_id)[0];
                 const helper = new OBBHelper(node.OBB(), `id:${node.id}`);

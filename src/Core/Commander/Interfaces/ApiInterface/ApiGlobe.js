@@ -3,13 +3,14 @@
  * Class: ApiGlobe
  * Description: Classe façade pour attaquer les fonctionnalités du code.
  */
-
+import * as THREE from 'three';
 import CustomEvent from 'custom-event';
 import Scene from '../../../../Scene/Scene';
 import { GeometryLayer, ImageryLayers } from '../../../../Scene/Layer';
 import WMTS_Provider from '../../Providers/WMTS_Provider';
 import WMS_Provider from '../../Providers/WMS_Provider';
 import TileProvider from '../../Providers/TileProvider';
+import WFS_Provider from '../../Providers/WFS_Provider';
 import loadGpx from '../../Providers/GpxUtils';
 import { C, ellipsoidSizes } from '../../../Geographic/Coordinates';
 import Fetcher from '../../Providers/Fetcher';
@@ -22,19 +23,20 @@ import BuilderEllipsoidTile from '../../../../Globe/BuilderEllipsoidTile';
 import Atmosphere from '../../../../Globe/Atmosphere';
 import Clouds from '../../../../Globe/Clouds';
 import CoordStars from '../../../../Core/Geographic/CoordStars';
+import updateFeaturesAtNode from '../../../../Process/FeatureProcessing';
 
 var sceneIsLoaded = false;
 export const INITIALIZED_EVENT = 'initialized';
 
-var eventRange = new CustomEvent('rangeChanged');
-var eventOrientation = new CustomEvent('orientationchanged');
-var eventPan = new CustomEvent('panchanged');
-var eventLayerAdded = new CustomEvent('layeradded');
-var eventLayerRemoved = new CustomEvent('layerremoved');
-var eventLayerChanged = new CustomEvent('layerchanged');
-var eventLayerChangedVisible = new CustomEvent('layerchanged:visible');
-var eventLayerChangedOpacity = new CustomEvent('layerchanged:opacity');
-var eventLayerChangedIndex = new CustomEvent('layerchanged:index');
+const eventRange = new CustomEvent('rangeChanged');
+const eventOrientation = new CustomEvent('orientationchanged');
+const eventPan = new CustomEvent('panchanged');
+const eventLayerAdded = new CustomEvent('layeradded');
+const eventLayerRemoved = new CustomEvent('layerremoved');
+const eventLayerChanged = new CustomEvent('layerchanged');
+const eventLayerChangedVisible = new CustomEvent('layerchanged:visible');
+const eventLayerChangedOpacity = new CustomEvent('layerchanged:opacity');
+const eventLayerChangedIndex = new CustomEvent('layerchanged:index');
 
 var enableAnimation = false;
 
@@ -156,6 +158,40 @@ ApiGlobe.prototype.addImageryLayer = function addImageryLayer(layer) {
 };
 
 /**
+ * This function adds an feature layer to the scene. The layer id must be unique.
+ * @constructor
+ * @param {Layer} layer.
+ */
+
+/* ApiGlobe.prototype.addFeatureLayer = function addFeature(options) {
+    if (options === undefined) {
+        throw new Error('options is required');
+    }
+    const map = this.scene.getMap();
+    const layer = map.layersConfiguration.getGeometryLayerById(options.layerId);
+    if (options.type && layer) {
+        const tools = this.scene.scheduler.getProtocolProvider('wfs').featureToolBox;
+        const featureMesh = tools.processingGeoJSON(options);
+        layer.root.add(featureMesh);
+    }
+};
+*/
+
+ApiGlobe.prototype.addFeatureLayer = function addFeatureLayer(layer) {
+    preprocessLayer(layer, this.scene.scheduler.getProtocolProvider(layer.protocol));
+
+    layer.update = updateFeaturesAtNode;
+    this.scene._geometryLayers[0].attach(layer);
+
+    layer.type = 'bbox';
+    layer.threejsLayer = this.scene.getUniqueThreejsLayer();
+    layer.level = 16;
+    this.scene.currentCamera().camera3D.layers.enable(layer.threejsLayer);
+
+    return layer;
+};
+
+/**
  * This function adds an imagery layer to the scene using a JSON file. The layer id must be unique. The protocol rules wich parameters are then needed for the function.
  * @constructor
  * @param {Layer} layer.
@@ -180,6 +216,44 @@ ApiGlobe.prototype.addImageryLayersFromJSONArray = function addImageryLayersFrom
     }
 
     return Promise.all(proms);
+};
+
+ApiGlobe.prototype.addFeatureLayerFromJSON = function addFeatureLayerFromJSON(url) {
+    return Fetcher.json(url).then((result) => {
+        this.addFeatureLayer(result);
+    });
+};
+
+ApiGlobe.prototype.addFeatureLayersFromJSONArray = function addFeatureLayersFromJSONArray(urls) {
+    const proms = [];
+    for (const url of urls) {
+        proms.push(Fetcher.json(url));
+    }
+    return Promise.all(proms).then((layers) => {
+        for (const layer of layers) {
+            this.addFeatureLayer(layer);
+        }
+        return layers;
+    });
+};
+
+ApiGlobe.prototype.addFeatureFromJSON = function addFeatureFromJSON(url, options) {
+    return Fetcher.json(url).then((result) => {
+        Object.assign(result, options);
+        this.addFeature(result);
+    });
+};
+
+ApiGlobe.prototype.addFeaturesFromJSONArray = function addFeaturesFromJSONArray(urls) {
+    const proms = [];
+    for (const url of urls) {
+        proms.push(Fetcher.json(url));
+    }
+    return Promise.all(proms).then((features) => {
+        for (const feature of features) {
+            this.addFeature(feature);
+        }
+    });
 };
 
 /**
@@ -394,6 +468,10 @@ ApiGlobe.prototype.initProviders = function initProviders(scene) {
     scene.scheduler.addProtocolProvider('wmtsc', wmtsProvider);
     scene.scheduler.addProtocolProvider('tile', new TileProvider());
     scene.scheduler.addProtocolProvider('wms', new WMS_Provider({ support: gLDebug }));
+
+    const featureProvider = new WFS_Provider();
+    scene.scheduler.addProtocolProvider('wfs', featureProvider);
+    scene.scheduler.addProtocolProvider('geojson', featureProvider);
 };
 
 /**
@@ -1057,11 +1135,71 @@ ApiGlobe.prototype.getLayerById = function getLayerById(pId) {
 ApiGlobe.prototype.loadGPX = function loadGPX(url) {
     loadGpx(url).then((gpx) => {
         if (gpx) {
-            this.scene.gpxTracks.children[0].add(gpx);
+            const idLayer = 'gpx';
+            let gpxLayer = this.scene._geometryLayers.filter(n => n.id === idLayer)[0];
+            if (!gpxLayer) {
+                gpxLayer = new GeometryLayer(idLayer);
+                gpxLayer.type = 'geometry';
+
+                gpxLayer.update = function updateGpx(context, layer, node) {
+                    const mRTC = context.scene.gfxEngine.getRTCMatrixFromNode(node, context.camera);
+                    for (const child of node.children) {
+                        child.material.setMatrixRTC(mRTC);
+                    }
+                };
+
+                gpxLayer.preUpdate = (context, layer) => {
+                    if (layer.level0Nodes === undefined) {
+                        layer.level0Nodes = new THREE.Object3D();
+                        gpxLayer.level0Nodes.add(gpx);
+                        context.scene.gfxEngine.scene3D.add(layer.level0Nodes);
+                    }
+
+                    return layer.level0Nodes.children;
+                };
+
+                this.scene.addGeometryLayer(gpxLayer);
+
+                const threeLayer = this.scene.getUniqueThreejsLayer();
+                gpxLayer.threeLayer = threeLayer;
+                this.scene.currentCamera().camera3D.layers.enable(threeLayer);
+            } else {
+                gpxLayer.level0Nodes.add(gpx);
+            }
         }
     });
 
     this.scene.renderScene3D();
+};
+
+ApiGlobe.prototype.addFeature = function addFeature(options) {
+    if (options === undefined) {
+        throw new Error('options is required');
+    }
+    const map = this.scene.getMap();
+    const layer = map.layersConfiguration.getGeometryLayerById(options.layerId);
+    if (options.type && layer) {
+        const tools = this.scene.scheduler.getProtocolProvider('wfs').featureToolBox;
+        const featureMesh = tools.processingGeoJSON(options);
+        layer.root.add(featureMesh);
+    }
+};
+
+ApiGlobe.prototype.pickFeature = function pickFeature(position, layerId) {
+    if (position == undefined)
+        { throw new Error('position is required'); }
+    const map = this.scene.getMap();
+    const layer = map.layersConfiguration.getGeometryLayerById(layerId);
+    return this.scene.gfxEngine.getPickObject3d(position, layer.root.children);
+};
+
+ApiGlobe.prototype.removeFeature = function removeFeature(feature) {
+    const featureId = feature.featureId;
+    const layerId = feature.layerId;
+    const map = this.scene.getMap();
+    const layer = map.layersConfiguration.getGeometryLayerById(layerId);
+    // FIXME: don't work?
+    layer.root.children.splice(featureId, 1);
 };
 
 export default ApiGlobe;
