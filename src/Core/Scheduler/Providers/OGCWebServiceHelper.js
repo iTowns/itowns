@@ -3,7 +3,7 @@ import Fetcher from './Fetcher';
 import CacheRessource from './CacheRessource';
 import IoDriver_XBIL from './IoDriver_XBIL';
 import Projection from '../../Geographic/Projection';
-import CoordWMTS from '../../Geographic/CoordWMTS';
+import BoundingBox from '../../Math/BoundingBox';
 
 
 export const SIZE_TEXTURE_TILE = 256;
@@ -106,6 +106,6 @@ export default {
             pitch.z = invDiff;
         }
 
-        return new CoordWMTS(levelParent, r, c);
+        return new BoundingBox(cWMTS.crs(), levelParent, r, c);
     },
 };

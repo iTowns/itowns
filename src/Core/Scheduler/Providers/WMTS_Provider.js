@@ -5,7 +5,6 @@
  */
 
 import * as THREE from 'three';
-import CoordWMTS from '../../Geographic/CoordWMTS';
 import OGCWebServiceHelper, { SIZE_TEXTURE_TILE } from './OGCWebServiceHelper';
 
 function WMTS_Provider() {
@@ -88,7 +87,7 @@ WMTS_Provider.prototype.getXbilTexture = function getXbilTexture(tile, layer, ta
         pitch);
         result.min = min === undefined ? 0 : min;
         result.max = max === undefined ? 0 : max;
-        result.texture.coordWMTS = coordWMTS;
+        result.texture.coords = coordWMTS;
         result.pitch = pitch;
         return result;
     });
@@ -106,7 +105,7 @@ WMTS_Provider.prototype.getColorTexture = function getColorTexture(coordWMTS, la
     return OGCWebServiceHelper.getColorTextureByUrl(url).then((texture) => {
         const result = {};
         result.texture = texture;
-        result.texture.coordWMTS = coordWMTS;
+        result.texture.coords = coordWMTS;
         result.pitch = new THREE.Vector3(0, 0, 1);
 
         return result;
@@ -134,15 +133,22 @@ WMTS_Provider.prototype.executeCommand = function executeCommand(command) {
 
 WMTS_Provider.prototype.tileTextureCount = function tileTextureCount(tile, layer) {
     const tileMatrixSet = layer.options.tileMatrixSet;
-    return tile.wmtsCoords[tileMatrixSet][1].row - tile.wmtsCoords[tileMatrixSet][0].row + 1;
+    OGCWebServiceHelper.computeTileMatrixSetCoordinates(tile, tileMatrixSet);
+    return tile.wmtsCoords[tileMatrixSet].length;
 };
 
-WMTS_Provider.prototype.tileInsideLimit = function tileInsideLimit(tile, layer) {
+WMTS_Provider.prototype.tileInsideLimit = function tileInsideLimit(tile, layer, targetLevel) {
     // This layer provides data starting at level = layer.options.zoom.min
     // (the zoom.max property is used when building the url to make
     //  sure we don't use invalid levels)
-    for (const c of tile.wmtsCoords[layer.options.tileMatrixSet]) {
+    for (const coord of tile.wmtsCoords[layer.options.tileMatrixSet]) {
         if (layer.options.tileMatrixSetLimits) {
+            let c = coord;
+            // override
+            if (targetLevel < c.zoom) {
+                c = OGCWebServiceHelper.WMTS_WGS84Parent(coord, targetLevel);
+            }
+
             if (!(c.zoom in layer.options.tileMatrixSetLimits)) {
                 return false;
             }
@@ -164,8 +170,7 @@ WMTS_Provider.prototype.getColorTextures = function getColorTextures(tile, layer
     const promises = [];
     const bcoord = tile.wmtsCoords[layer.options.tileMatrixSet];
 
-    for (let row = bcoord[1].row; row >= bcoord[0].row; row--) {
-        const coordWMTS = new CoordWMTS(bcoord[0].zoom, row, bcoord[0].col);
+    for (const coordWMTS of bcoord) {
         promises.push(this.getColorTexture(coordWMTS, layer));
     }
 

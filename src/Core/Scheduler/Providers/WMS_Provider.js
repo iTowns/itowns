@@ -78,13 +78,18 @@ WMS_Provider.prototype.getColorTexture = function getColorTexture(tile, layer) {
         return Promise.resolve();
     }
 
-    const url = this.url(tile.bbox.as(layer.projection), layer);
+    const coords = tile.bbox.as(layer.projection);
+    const url = this.url(coords, layer);
     const pitch = new THREE.Vector3(0, 0, 1);
     const result = { pitch };
 
     return OGCWebServiceHelper.getColorTextureByUrl(url).then((texture) => {
         result.texture = texture;
         result.texture.bbox = tile.bbox;
+        result.texture.coords = coords;
+        // LayeredMaterial expects coords.zoom to exist, and describe the
+        // precision of the texture (a la WMTS).
+        result.texture.coords.zoom = tile.level;
         return result;
     });
 };

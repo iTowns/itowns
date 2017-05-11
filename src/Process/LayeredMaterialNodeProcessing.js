@@ -4,8 +4,72 @@ import { chooseNextLevelToFetch } from '../Core/Layer/LayerUpdateStrategy';
 import LayerUpdateState from '../Core/Layer/LayerUpdateState';
 import { ImageryLayers } from '../Core/Layer/Layer';
 import { CancelledCommandException } from '../Core/Scheduler/Scheduler';
-import OGCWebServiceHelper from '../Core/Scheduler/Providers/OGCWebServiceHelper';
+import OGCWebServiceHelper, { SIZE_TEXTURE_TILE } from '../Core/Scheduler/Providers/OGCWebServiceHelper';
 
+function initNodeImageryTexturesFromParent(node, parent, layer) {
+    if (parent.material && parent.material.getColorLayerLevelById(layer.id) > EMPTY_TEXTURE_ZOOM) {
+        const coords = node.getCoordsForLayer(layer);
+        const offsetTextures = node.material.getLayerTextureOffset(layer.id);
+
+        let textureIndex = offsetTextures;
+        for (const c of coords) {
+            for (const texture of parent.materials[0].getLayerTextures(l_COLOR, layer.id)) {
+                if (c.isInside(texture.coords)) {
+                    const result = c.offsetToParent(texture.coords);
+                    node.material.textures[l_COLOR][textureIndex] = texture;
+                    node.material.offsetScale[l_COLOR][textureIndex] = result;
+                    textureIndex++;
+                    break;
+                }
+            }
+        }
+
+        if (__DEBUG__) {
+            if ((textureIndex - offsetTextures) != coords.length) {
+                /* eslint-disable */
+                console.error(`non-coherent result ${textureIndex} ${offsetTextures} vs ${coords.length}. ${coords}`);
+                /* eslint-enable */
+            }
+        }
+        const index = node.material.colorLayersId.length - 1;
+        node.material.layerTexturesCount[index] = coords.length;
+        node.material.loadedTexturesCount[l_COLOR] += coords.length;
+    }
+}
+
+function initNodeElevationTextureFromParent(node, parent, layer) {
+    // inherit parent's elevation texture
+    if (parent.material && parent.material.getElevationLayerLevel() > EMPTY_TEXTURE_ZOOM) {
+        const coords = node.getCoordsForLayer(layer);
+
+        const texture = parent.material.textures[l_ELEVATION][0];
+        const pitch = coords[0].offsetToParent(parent.material.textures[l_ELEVATION][0].coords);
+        // If the texture resolution has a poor precision for this node, we don't
+        // extract min-max from the texture (too few information), we instead chose
+        // to use parent's min-max.
+        const useMinMaxFromParent = node.level - texture.coords.zoom > 6;
+
+        const { min, max } = useMinMaxFromParent ?
+        {
+            min: parent.bbox.bottom(),
+            max: parent.bbox.top(),
+        } : OGCWebServiceHelper.ioDXBIL.computeMinMaxElevation(
+            texture.image.data,
+            SIZE_TEXTURE_TILE, SIZE_TEXTURE_TILE,
+            pitch);
+
+        const elevation = {
+            texture,
+            pitch,
+            min,
+            max,
+        };
+
+        node.setTextureElevation(elevation);
+        node.material.elevationLayersId =
+            parent.material.elevationLayersId;
+    }
+}
 
 function nodeCommandQueuePriorityFunction(node) {
     // We know that 'node' is visible because commands can only be
@@ -36,31 +100,6 @@ export function updateLayeredMaterialNodeImagery(context, layer, node) {
         return;
     }
 
-    // upate params
-    const layerIndex = node.materials[0].indexOfColorLayer(layer.id);
-    node.materials[0].setLayerVisibility(layerIndex, layer.visible);
-    node.materials[0].setLayerOpacity(layerIndex, layer.opacity);
-
-    const ts = Date.now();
-
-    OGCWebServiceHelper.computeTileMatrixSetCoordinates(node, layer.options.tileMatrixSet);
-
-    // is tile covered by this layer?
-    // We test early (rather than after chooseNextLevelToFetch like elevation)
-    // because colorParams only exist for tiles where tileInsideLimit is true
-    // (see `subdivideNode`)
-    if (!layer.tileInsideLimit(node, layer)) {
-        return Promise.resolve();
-    }
-
-    if (node.layerUpdateState[layer.id] === undefined) {
-        node.layerUpdateState[layer.id] = new LayerUpdateState();
-    }
-
-    if (!node.layerUpdateState[layer.id].canTryUpdate(ts)) {
-        return Promise.resolve();
-    }
-
     const material = node.materials[RendererConstant.FINAL];
 
     if (material.indexOfColorLayer(layer.id) === -1) {
@@ -80,10 +119,37 @@ export function updateLayeredMaterialNodeImagery(context, layer, node) {
         const imageryLayers = context.view.getLayers(l => l.type === 'color');
         const sequence = ImageryLayers.getColorLayersIdOrderedBySequence(imageryLayers);
         material.setSequence(sequence);
+
+        initNodeImageryTexturesFromParent(node, node.parent, layer);
+    }
+
+    // upate params
+    const layerIndex = material.indexOfColorLayer(layer.id);
+    material.setLayerVisibility(layerIndex, layer.visible);
+    material.setLayerOpacity(layerIndex, layer.opacity);
+
+    const ts = Date.now();
+
+    // OGCWebServiceHelper.computeTileMatrixSetCoordinates(node, layer.options.tileMatrixSet);
+
+    // is tile covered by this layer?
+    // We test early (rather than after chooseNextLevelToFetch like elevation)
+    // because colorParams only exist for tiles where tileInsideLimit is true
+    // (see `subdivideNode`)
+    if (!layer.tileInsideLimit(node, layer)) {
+        return Promise.resolve();
+    }
+
+    if (node.layerUpdateState[layer.id] === undefined) {
+        node.layerUpdateState[layer.id] = new LayerUpdateState();
+    }
+
+    if (!node.layerUpdateState[layer.id].canTryUpdate(ts)) {
+        return Promise.resolve();
     }
 
     // does this tile needs a new texture?
-    if (!node.isColorLayerDownscaled(layer.id)) {
+    if (!node.isColorLayerDownscaled(layer)) {
         return Promise.resolve();
     }
     // is fetching data from this layer disabled?
@@ -94,7 +160,7 @@ export function updateLayeredMaterialNodeImagery(context, layer, node) {
     const currentLevel = node.materials[RendererConstant.FINAL].getColorLayerLevelById(layer.id);
 
     if (currentLevel > EMPTY_TEXTURE_ZOOM) {
-        const zoom = node.wmtsCoords[layer.options.tileMatrixSet || 'WGS84G'][1].zoom;
+        const zoom = node.getCoordsForLayer(layer).zoom || node.level;
         var targetLevel = chooseNextLevelToFetch(layer.updateStrategy.type, zoom, currentLevel, layer.updateStrategy.options);
         if (targetLevel <= currentLevel) {
             return Promise.resolve();
@@ -121,9 +187,6 @@ export function updateLayeredMaterialNodeImagery(context, layer, node) {
             if (Array.isArray(result)) {
                 node.setTexturesLayer(result, l_COLOR, layer.id);
             } else if (result.texture) {
-                if (!result.texture.coordWMTS) {
-                    result.texture.coordWMTS = node.wmtsCoords[layer.options.tileMatrixSet || 'WGS84G'][0];
-                }
                 node.setTexturesLayer([result], l_COLOR, layer.id);
             } else {
                 // TODO: null texture is probably an error
@@ -173,33 +236,20 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, force) 
 
     if (node.layerUpdateState[layer.id] === undefined) {
         node.layerUpdateState[layer.id] = new LayerUpdateState();
+        initNodeElevationTextureFromParent(node, node.parent, layer);
     }
 
     if (!node.layerUpdateState[layer.id].canTryUpdate(ts)) {
         return Promise.resolve();
     }
 
-    OGCWebServiceHelper.computeTileMatrixSetCoordinates(node, layer.options.tileMatrixSet);
+    // OGCWebServiceHelper.computeTileMatrixSetCoordinates(node, layer.options.tileMatrixSet);
 
-    // TODO: WMTS specific
-    const zoom = node.wmtsCoords[layer.options.tileMatrixSet][1].zoom;
+    const c = node.getCoordsForLayer(layer);
+    const zoom = c.zoom || node.level;
     const targetLevel = chooseNextLevelToFetch(layer.updateStrategy.type, zoom, currentElevation, layer.updateStrategy.options);
-    const originalCoords = node.wmtsCoords[layer.options.tileMatrixSet];
 
-    if (targetLevel < zoom) {
-        // Update wmts coord to match the requested level
-        node.wmtsCoords[layer.options.tileMatrixSet] = [];
-        for (const c of originalCoords) {
-            const modified = OGCWebServiceHelper.WMTS_WGS84Parent(c, targetLevel);
-            node.wmtsCoords[layer.options.tileMatrixSet].push(modified);
-        }
-    }
-    const inside = layer.tileInsideLimit(node, layer);
-
-    // restore wmts coords
-    node.wmtsCoords[layer.options.tileMatrixSet] = originalCoords;
-
-    if (targetLevel <= currentElevation || !inside) {
+    if (targetLevel <= currentElevation || !layer.tileInsideLimit(node, layer, targetLevel)) {
         return Promise.resolve();
     }
 
@@ -227,6 +277,19 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, force) 
             }
 
             node.layerUpdateState[layer.id].success();
+
+/* TODO
+            if (terrain.texture) {
+                terrain.texture.level = (ancestor || node).level;
+            }
+
+            terrain.min = 0;
+            terrain.max = 255;
+            if (terrain.max === undefined) {
+                terrain.min = (ancestor || node).bbox.bottom();
+                terrain.max = (ancestor || node).bbox.top();
+            }
+*/
 
             node.setTextureElevation(terrain);
         },

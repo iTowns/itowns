@@ -5,18 +5,25 @@ import BoundingBox from '../Core/Math/BoundingBox';
 function subdivisionBoundingBoxes(bbox) {
     const center = bbox.center();
 
-    const northWest = new BoundingBox(bbox.crs(), bbox.west(), center._values[0], center._values[1], bbox.north());
-    const northEast = new BoundingBox(bbox.crs(), center._values[0], bbox.east(), center._values[1], bbox.north());
-    const southWest = new BoundingBox(bbox.crs(), bbox.west(), center._values[0], bbox.south(), center._values[1]);
-    const southEast = new BoundingBox(bbox.crs(), center._values[0], bbox.east(), bbox.south(), center._values[1]);
+    const northWest = new BoundingBox(bbox.crs(),
+        bbox.west(), center._values[0],
+        center._values[1], bbox.north());
+    const northEast = new BoundingBox(bbox.crs(),
+        center._values[0], bbox.east(),
+        center._values[1], bbox.north());
+    const southWest = new BoundingBox(bbox.crs(),
+        bbox.west(), center._values[0],
+        bbox.south(), center._values[1]);
+    const southEast = new BoundingBox(bbox.crs(),
+        center._values[0], bbox.east(),
+        bbox.south(), center._values[1]);
 
     // scheme tiles store their coordinates in radians internally,
     // so we need to fix the new bboxes as well
     const result = [northWest, northEast, southWest, southEast];
 
     for (const r of result) {
-        r.minCoordinate._internalStorageUnit = bbox.minCoordinate._internalStorageUnit;
-        r.maxCoordinate._internalStorageUnit = bbox.minCoordinate._internalStorageUnit;
+        r._internalStorageUnit = bbox._internalStorageUnit;
     }
     return result;
 }

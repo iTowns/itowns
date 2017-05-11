@@ -127,7 +127,7 @@ function _convert(coordsIn, newCrs) {
     }
 }
 
-function _convertValue(unitIn, unitOut, value) {
+export function convertValueToUnit(unitIn, unitOut, value) {
     if (unitOut == undefined || unitIn == unitOut) {
         return value;
     } else {
@@ -173,12 +173,12 @@ Coordinates.prototype.clone = function clone() {
 
 Coordinates.prototype.longitude = function longitude(unit) {
     _assertIsGeographic(this.crs);
-    return _convertValue(this._internalStorageUnit, unit, this._values[0]);
+    return convertValueToUnit(this._internalStorageUnit, unit, this._values[0]);
 };
 
 Coordinates.prototype.latitude = function latitude(unit) {
     _assertIsGeographic(this.crs);
-    return _convertValue(this._internalStorageUnit, unit, this._values[1]);
+    return convertValueToUnit(this._internalStorageUnit, unit, this._values[1]);
 };
 
 Coordinates.prototype.altitude = function altitude() {
