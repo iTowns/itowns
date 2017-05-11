@@ -217,8 +217,9 @@ function updateLayersOrdering(geometryLayer, imageryLayers) {
     var sequence = ImageryLayers.getColorLayersIdOrderedBySequence(imageryLayers);
 
     var cO = function cO(object) {
-        if (object.changeSequenceLayers)
-            { object.changeSequenceLayers(sequence); }
+        if (object.changeSequenceLayers) {
+            object.changeSequenceLayers(sequence);
+        }
     };
 
     for (const node of geometryLayer.level0Nodes) {
@@ -227,19 +228,19 @@ function updateLayersOrdering(geometryLayer, imageryLayers) {
 }
 
 ApiGlobe.prototype.moveLayerUp = function moveLayerUp(layerId) {
-    const imageryLayers = this.scene.getAttachedLayers(l => l.type === 'color');
+    const imageryLayers = this.getImageryLayers();
     const layer = this.getLayerById(layerId);
     ImageryLayers.moveLayerUp(layer, imageryLayers);
-    updateLayersOrdering(this.scene._geometryLayers[0], imageryLayers);
-    this.scene.renderScene3D();
+    updateLayersOrdering(this.globeview.wgs84TileLayer, imageryLayers);
+    this.globeview.notifyChange(0, true);
 };
 
 ApiGlobe.prototype.moveLayerDown = function moveLayerDown(layerId) {
-    const imageryLayers = this.scene.getAttachedLayers(l => l.type === 'color');
+    const imageryLayers = this.getImageryLayers();
     const layer = this.getLayerById(layerId);
     ImageryLayers.moveLayerDown(layer, imageryLayers);
-    updateLayersOrdering(this.scene._geometryLayers[0], imageryLayers);
-    this.scene.renderScene3D();
+    updateLayersOrdering(this.globeview.wgs84TileLayer, imageryLayers);
+    this.globeview.notifyChange(0, true);
 };
 
 /**
@@ -249,11 +250,11 @@ ApiGlobe.prototype.moveLayerDown = function moveLayerDown(layerId) {
  * @param      {number}  newIndex   The new index
  */
 ApiGlobe.prototype.moveLayerToIndex = function moveLayerToIndex(layerId, newIndex) {
-    const imageryLayers = this.scene.getAttachedLayers(l => l.type === 'color');
+    const imageryLayers = this.getImageryLayers();
     const layer = this.getLayerById(layerId);
     ImageryLayers.moveLayerToIndex(layer, newIndex, imageryLayers);
-    updateLayersOrdering(this.scene._geometryLayers[0], imageryLayers);
-    this.scene.renderScene3D();
+    updateLayersOrdering(this.globeview.wgs84TileLayer, imageryLayers);
+    this.globeview.notifyChange(0, true);
 
     eventLayerChangedIndex.layerIndex = newIndex;
     eventLayerChangedIndex.layerId = layerId;
@@ -268,18 +269,24 @@ ApiGlobe.prototype.moveLayerToIndex = function moveLayerToIndex(layerId, newInde
  */
 ApiGlobe.prototype.removeImageryLayer = function removeImageryLayer(id) {
     const layer = this.getLayerById(id);
-    if (this.scene._geometryLayers[0].detach(layer)) {
+    if (this.globeview.wgs84TileLayer.detach(layer)) {
         var cO = function cO(object) {
             if (object.removeColorLayer) {
-                object.removeColorLayer(layer.id);
+                object.removeColorLayer(id);
             }
         };
 
-        for (const root of this.scene._geometryLayers[0].level0Nodes) {
+        for (const root of this.globeview.wgs84TileLayer.level0Nodes) {
             root.traverse(cO);
         }
 
-        this.scene.renderScene3D();
+        for (const color of this.getImageryLayers()) {
+            if (color.sequence > layer.sequence) {
+                color.sequence--;
+            }
+        }
+
+        this.globeview.notifyChange(0, true);
         eventLayerRemoved.layer = id;
         this.viewerDiv.dispatchEvent(eventLayerRemoved);
         return true;
@@ -340,7 +347,7 @@ ApiGlobe.prototype.getMaxZoomLevel = function getMaxZoomLevel(index) {
  * @return     {layer}  The Layers.
  */
 ApiGlobe.prototype.getImageryLayers = function getImageryLayers() {
-    return this.scene.getAttachedLayers(layer => layer.type === 'color');
+    return this.getLayers('color');
 };
 
 /**
@@ -751,7 +758,7 @@ ApiGlobe.prototype.pan = function pan(pVector) {
  * @return     {number}  The zoom level.
  */
 ApiGlobe.prototype.getZoomLevel = function getZoomLevel() {
-    return computeTileZoomFromDistanceCamera(this.scene.currentCamera(), this.getRange());
+    return computeTileZoomFromDistanceCamera(this.globeview.camera, this.getRange());
 };
 
 /**
@@ -867,7 +874,7 @@ ApiGlobe.prototype.removeEventListenerLayerChanged = function removeEventListene
 
 ApiGlobe.prototype.getLayersAttribution = function getLayersAttribution() {
     const map = new Map();
-    this.scene.getAttachedLayers().forEach((l) => {
+    this.globeview.getLayers().forEach((l) => {
         if (l.options.attribution) {
             map.set(l.options.attribution.name, l.options.attribution);
         }
@@ -883,11 +890,11 @@ ApiGlobe.prototype.getLayersAttribution = function getLayersAttribution() {
 
 ApiGlobe.prototype.getLayers = function getLayers(type) {
     if (type === undefined) {
-        return [...this.scene._geometryLayers, ...this.scene.getAttachedLayers()];
+        return this.globeview.getLayers();
     } else if (type == 'geometry') {
-        return this.scene._geometryLayers;
+        return this.globeview.getLayers((f, g) => !g);
     } else {
-        return this.scene.getAttachedLayers(l => l.type === type);
+        return this.globeview.getLayers(l => l.type === type);
     }
 };
 
@@ -897,14 +904,9 @@ ApiGlobe.prototype.getLayers = function getLayers(type) {
  */
 
 ApiGlobe.prototype.getLayerById = function getLayerById(pId) {
-    const att = this.scene.getAttachedLayers(l => l.id === pId);
+    const att = this.globeview.getLayers(l => l.id === pId);
     if (att.length == 1) {
         return att[0];
-    }
-    for (const geom of this.scene._geometryLayers) {
-        if (geom.id === pId) {
-            return geom;
-        }
     }
     throw new Error(`No layer with id = '${pId}' found`);
 };

@@ -15,8 +15,6 @@
 
 import Provider from './Provider';
 import TileGeometry from '../../TileGeometry';
-import OGCWebServiceHelper, { SIZE_TEXTURE_TILE } from './OGCWebServiceHelper';
-import { EMPTY_TEXTURE_ZOOM, l_ELEVATION } from '../../../Renderer/LayeredMaterial';
 import TileMesh from '../../TileMesh';
 
 function TileProvider() {
@@ -37,8 +35,6 @@ TileProvider.prototype.executeCommand = function executeCommand(command) {
         bbox,
         level: (command.level === undefined) ? (parent.level + 1) : command.level,
         segment: 16,
-        parentMaterial: parent ? parent.material : null,
-        parentWmtsCoords: parent ? parent.wmtsCoords : null,
     };
 
     const geometry = new TileGeometry(params, command.layer.builder);
@@ -56,28 +52,8 @@ TileProvider.prototype.executeCommand = function executeCommand(command) {
     tile.position.copy(params.center);
     tile.setVisibility(false);
     tile.updateMatrix();
-
-    // update bbox if node herits texture elevation from parent
-    if (tile.material.getElevationLayerLevel() > EMPTY_TEXTURE_ZOOM) {
-        const textureElevation = tile.material.getLayerTextures(l_ELEVATION)[0];
-
-        // If the texture resolution has a poor precision for this node, we don't
-        // extract min-max from the texture (too few information), we instead chose
-        // to use parent's min-max.
-        const useMinMaxFromParent = tile.level - tile.material.getElevationLayerLevel() > 6;
-
-        const { min, max } = useMinMaxFromParent ?
-        {
-            min: parent.bbox.minCoordinate.altitude(),
-            max: parent.bbox.maxCoordinate.altitude(),
-        } : OGCWebServiceHelper.ioDXBIL.computeMinMaxElevation(
-            textureElevation.image.data,
-            SIZE_TEXTURE_TILE, SIZE_TEXTURE_TILE,
-            tile.material.offsetScale[0][0]);
-
-        if (min && max) {
-            tile.setBBoxZ(min, max);
-        }
+    if (parent) {
+        tile.setBBoxZ(parent.bbox.bottom(), parent.bbox.top());
     }
 
     return Promise.resolve(tile);

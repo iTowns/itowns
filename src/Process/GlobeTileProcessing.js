@@ -130,8 +130,7 @@ export function globeSchemeTileWMTS(type) {
     }
     // store internally as Radians to avoid doing too much deg->rad conversions
     for (const bbox of schemeT.schemeBB) {
-        bbox.minCoordinate._internalStorageUnit = UNIT.RADIAN;
-        bbox.maxCoordinate._internalStorageUnit = UNIT.RADIAN;
+        bbox._internalStorageUnit = UNIT.RADIAN;
     }
     return schemeT;
 }
