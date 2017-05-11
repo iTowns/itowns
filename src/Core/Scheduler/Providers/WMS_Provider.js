@@ -6,7 +6,7 @@
 
 
 import * as THREE from 'three';
-import BoundingBox from '../../Math/BoundingBox';
+import Extent from '../../Geographic/Extent';
 import OGCWebServiceHelper from './OGCWebServiceHelper';
 
 /**
@@ -45,7 +45,7 @@ WMS_Provider.prototype.preprocessDataLayer = function preprocessDataLayer(layer)
         throw new Error('projection is required');
     }
 
-    layer.bbox = new BoundingBox(
+    layer.extent = new Extent(
         layer.projection,
         layer.bbox[0], layer.bbox[1],
         layer.bbox[2], layer.bbox[3]);
@@ -70,7 +70,7 @@ WMS_Provider.prototype.preprocessDataLayer = function preprocessDataLayer(layer)
 };
 
 WMS_Provider.prototype.tileInsideLimit = function tileInsideLimit(tile, layer) {
-    return tile.level > 2 && layer.bbox.intersect(tile.bbox);
+    return tile.level > 2 && layer.extent.intersect(tile.bbox);
 };
 
 WMS_Provider.prototype.getColorTexture = function getColorTexture(tile, layer) {
@@ -81,14 +81,14 @@ WMS_Provider.prototype.getColorTexture = function getColorTexture(tile, layer) {
         return Promise.resolve();
     }
 
-    const coords = tile.bbox.as(layer.projection);
+    const coords = tile.extent.as(layer.projection);
     const url = this.url(coords, layer);
     const pitch = new THREE.Vector3(0, 0, 1);
     const result = { pitch };
 
     return OGCWebServiceHelper.getColorTextureByUrl(url).then((texture) => {
         result.texture = texture;
-        result.texture.bbox = tile.bbox;
+        result.texture.extent = tile.extent; // useless?
         result.texture.coords = coords;
         // LayeredMaterial expects coords.zoom to exist, and describe the
         // precision of the texture (a la WMTS).
@@ -98,7 +98,7 @@ WMS_Provider.prototype.getColorTexture = function getColorTexture(tile, layer) {
 };
 
 WMS_Provider.prototype.getXbilTexture = function getXbilTexture(tile, layer) {
-    const url = this.url(tile.bbox.as(layer.projection), layer);
+    const url = this.url(tile.extent.as(layer.projection), layer);
     return this.getXBilTextureByUrl(url, new THREE.Vector3(0, 0, 1));
 };
 

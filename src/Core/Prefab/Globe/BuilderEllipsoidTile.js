@@ -14,7 +14,7 @@ BuilderEllipsoidTile.prototype.constructor = BuilderEllipsoidTile;
 BuilderEllipsoidTile.prototype.Prepare = function Prepare(params) {
     params.nbRow = Math.pow(2.0, params.level + 1.0);
 
-    var st1 = this.projector.WGS84ToOneSubY(params.bbox.south());
+    var st1 = this.projector.WGS84ToOneSubY(params.extent.south());
 
     if (!isFinite(st1))
         { st1 = 0; }
@@ -31,7 +31,7 @@ BuilderEllipsoidTile.prototype.Prepare = function Prepare(params) {
 
 // get center tile in cartesian 3D
 BuilderEllipsoidTile.prototype.Center = function Center(params) {
-    params.center = params.bbox.center().as('EPSG:4978').xyz();
+    params.center = params.extent.center().as('EPSG:4978').xyz();
     return params.center;
 };
 
@@ -50,12 +50,12 @@ BuilderEllipsoidTile.prototype.VertexNormal = function VertexNormal(params) {
 
 // coord u tile to projected
 BuilderEllipsoidTile.prototype.uProjecte = function uProjecte(u, params) {
-    params.projected.longitudeRad = this.projector.UnitaryToLongitudeWGS84(u, params.bbox);
+    params.projected.longitudeRad = this.projector.UnitaryToLongitudeWGS84(u, params.extent);
 };
 
 // coord v tile to projected
 BuilderEllipsoidTile.prototype.vProjecte = function vProjecte(v, params) {
-    params.projected.latitudeRad = this.projector.UnitaryToLatitudeWGS84(v, params.bbox);
+    params.projected.latitudeRad = this.projector.UnitaryToLatitudeWGS84(v, params.extent);
 };
 
 // Compute uv 1, if isn't defined the uv1 isn't computed
@@ -74,11 +74,11 @@ BuilderEllipsoidTile.prototype.OBB = function OBBFn(params) {
 
     var normal = params.center.clone().normalize();
 
-    const bboxDimension = params.bbox.dimensions(UNIT.RADIAN);
-    var phiStart = params.bbox.west();
+    const bboxDimension = params.extent.dimensions(UNIT.RADIAN);
+    var phiStart = params.extent.west();
     var phiLength = bboxDimension.x;
 
-    var thetaStart = params.bbox.south();
+    var thetaStart = params.extent.south();
     var thetaLength = bboxDimension.y;
 
     //      0---1---2
@@ -108,7 +108,7 @@ BuilderEllipsoidTile.prototype.OBB = function OBBFn(params) {
     var tangentPlane = new THREE.Plane(normal);
 
     planeZ.setFromUnitVectors(normal, new THREE.Vector3(0, 0, 1));
-    qRotY.setFromAxisAngle(new THREE.Vector3(0, 0, 1), -params.bbox.center()._values[0]);
+    qRotY.setFromAxisAngle(new THREE.Vector3(0, 0, 1), -params.extent.center()._values[0]);
     qRotY.multiply(planeZ);
 
     for (var i = 0; i < cardinals.length; i++) {

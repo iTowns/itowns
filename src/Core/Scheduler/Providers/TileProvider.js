@@ -26,13 +26,13 @@ TileProvider.prototype = Object.create(Provider.prototype);
 TileProvider.prototype.constructor = TileProvider;
 
 TileProvider.prototype.executeCommand = function executeCommand(command) {
-    var bbox = command.bbox;
+    var extent = command.extent;
 
     var parent = command.requester;
 
     // build tile
     var params = {
-        bbox,
+        extent,
         level: (command.level === undefined) ? (parent.level + 1) : command.level,
         segment: 16,
     };
@@ -53,7 +53,7 @@ TileProvider.prototype.executeCommand = function executeCommand(command) {
     tile.setVisibility(false);
     tile.updateMatrix();
     if (parent) {
-        tile.setBBoxZ(parent.bbox.bottom(), parent.bbox.top());
+        tile.setBBoxZ(parent.OBB().z.min, parent.OBB().z.max);
     }
 
     return Promise.resolve(tile);
