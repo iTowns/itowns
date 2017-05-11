@@ -10,6 +10,7 @@ import { GeometryLayer, ImageryLayers } from '../../../../Scene/Layer';
 import WMTS_Provider from '../../Providers/WMTS_Provider';
 import WMS_Provider from '../../Providers/WMS_Provider';
 import TileProvider from '../../Providers/TileProvider';
+import WFS_Provider from '../../Providers/WFS_Provider';
 import loadGpx from '../../Providers/GpxUtils';
 import { C, ellipsoidSizes } from '../../../Geographic/Coordinates';
 import Fetcher from '../../Providers/Fetcher';
@@ -22,19 +23,20 @@ import BuilderEllipsoidTile from '../../../../Globe/BuilderEllipsoidTile';
 import Atmosphere from '../../../../Globe/Atmosphere';
 import Clouds from '../../../../Globe/Clouds';
 import CoordStars from '../../../../Core/Geographic/CoordStars';
+import updateFeaturesAtNode from '../../../../Process/FeatureProcessing';
 
 var sceneIsLoaded = false;
 export const INITIALIZED_EVENT = 'initialized';
 
-var eventRange = new CustomEvent('rangeChanged');
-var eventOrientation = new CustomEvent('orientationchanged');
-var eventPan = new CustomEvent('panchanged');
-var eventLayerAdded = new CustomEvent('layeradded');
-var eventLayerRemoved = new CustomEvent('layerremoved');
-var eventLayerChanged = new CustomEvent('layerchanged');
-var eventLayerChangedVisible = new CustomEvent('layerchanged:visible');
-var eventLayerChangedOpacity = new CustomEvent('layerchanged:opacity');
-var eventLayerChangedIndex = new CustomEvent('layerchanged:index');
+const eventRange = new CustomEvent('rangeChanged');
+const eventOrientation = new CustomEvent('orientationchanged');
+const eventPan = new CustomEvent('panchanged');
+const eventLayerAdded = new CustomEvent('layeradded');
+const eventLayerRemoved = new CustomEvent('layerremoved');
+const eventLayerChanged = new CustomEvent('layerchanged');
+const eventLayerChangedVisible = new CustomEvent('layerchanged:visible');
+const eventLayerChangedOpacity = new CustomEvent('layerchanged:opacity');
+const eventLayerChangedIndex = new CustomEvent('layerchanged:index');
 
 var enableAnimation = false;
 
@@ -151,6 +153,40 @@ ApiGlobe.prototype.addImageryLayer = function addImageryLayer(layer) {
     this.setSceneLoaded().then(() => {
         this.viewerDiv.dispatchEvent(eventLayerAdded);
     });
+
+    return layer;
+};
+
+/**
+ * This function adds an feature layer to the scene. The layer id must be unique.
+ * @constructor
+ * @param {Layer} layer.
+ */
+
+/* ApiGlobe.prototype.addFeatureLayer = function addFeature(options) {
+    if (options === undefined) {
+        throw new Error('options is required');
+    }
+    const map = this.scene.getMap();
+    const layer = map.layersConfiguration.getGeometryLayerById(options.layerId);
+    if (options.type && layer) {
+        const tools = this.scene.scheduler.getProtocolProvider('wfs').featureToolBox;
+        const featureMesh = tools.processingGeoJSON(options);
+        layer.root.add(featureMesh);
+    }
+};
+*/
+
+ApiGlobe.prototype.addFeatureLayer = function addFeatureLayer(layer) {
+    preprocessLayer(layer, this.scene.scheduler.getProtocolProvider(layer.protocol));
+
+    layer.update = updateFeaturesAtNode;
+    this.scene._geometryLayers[0].attach(layer);
+
+    layer.type = 'bbox';
+    layer.threejsLayer = this.scene.getUniqueThreejsLayer();
+    layer.level = 16;
+    this.scene.currentCamera().camera3D.layers.enable(layer.threejsLayer);
 
     return layer;
 };
@@ -394,6 +430,7 @@ ApiGlobe.prototype.initProviders = function initProviders(scene) {
     scene.scheduler.addProtocolProvider('wmtsc', wmtsProvider);
     scene.scheduler.addProtocolProvider('tile', new TileProvider());
     scene.scheduler.addProtocolProvider('wms', new WMS_Provider({ support: gLDebug }));
+    scene.scheduler.addProtocolProvider('wfs', new WFS_Provider());
 };
 
 /**
@@ -1092,6 +1129,34 @@ ApiGlobe.prototype.loadGPX = function loadGPX(url) {
     });
 
     this.scene.renderScene3D();
+};
+
+ApiGlobe.prototype.addFeature = function addFeature(options) {
+    if (options === undefined)
+        { throw new Error('options is required'); }
+    const map = this.scene.getMap();
+    const layer = map.layersConfiguration.getGeometryLayerById(options.layerId);
+    if (options.geometry !== undefined && layer !== undefined) {
+        const tools = this.scene.scheduler.getProtocolProvider('wfs').featureToolBox;
+        layer.root.add(tools.processingGeoJSON(options.geometry));
+    }
+};
+
+ApiGlobe.prototype.pickFeature = function pickFeature(position, layerId) {
+    if (position == undefined)
+        { throw new Error('position is required'); }
+    const map = this.scene.getMap();
+    const layer = map.layersConfiguration.getGeometryLayerById(layerId);
+    return this.scene.gfxEngine.getPickObject3d(position, layer.root.children);
+};
+
+ApiGlobe.prototype.removeFeature = function removeFeature(feature) {
+    const featureId = feature.featureId;
+    const layerId = feature.layerId;
+    const map = this.scene.getMap();
+    const layer = map.layersConfiguration.getGeometryLayerById(layerId);
+    // FIXME: don't work?
+    layer.root.children.splice(featureId, 1);
 };
 
 export default ApiGlobe;

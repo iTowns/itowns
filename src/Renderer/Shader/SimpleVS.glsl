@@ -9,7 +9,7 @@ uniform mat4        modelViewMatrix;
 
 uniform mat4       mVPMatRTC;
 uniform bool       useRTC;
-uniform bool       lightOn;
+uniform bool       lightingEnabled;
 varying float      light;
 varying vec3       vColor;
 
@@ -29,7 +29,7 @@ void main()
         gl_Position = projectionMatrix * modelViewMatrix * vec4( position,  1.0 );
   }
 
-    if (lightOn) {
+    if (lightingEnabled) {
         light = (0.666 + 0.333 * dot(dir,normal));
     }
 

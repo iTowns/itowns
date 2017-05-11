@@ -19,7 +19,7 @@ function c3DEngine(scene, viewerDiv, debugMode, gLDebug) {
         throw new Error('Cannot instantiate more than one c3DEngine');
     }
 
-    var caps = new Capabilities();
+    const caps = new Capabilities();
     var NOIE = !caps.isInternetExplorer();
     THREE.Object3D.DefaultUp.set(0, 0, 1);
     this.gLDebug = gLDebug;
@@ -514,6 +514,22 @@ c3DEngine.prototype.getRTCMatrixFromNode = function getRTCMatrixFromNode(node, c
     var centerEye = new THREE.Vector4().applyMatrix4(matrixInv);
     var mvc = matrixInv.setPosition(centerEye);
     return new THREE.Matrix4().multiplyMatrices(camera3D.projectionMatrix, mvc);
+};
+
+const mouse = new THREE.Vector2();
+// Picking in tree 'root' from screenCoords
+c3DEngine.prototype.getPickObject3d = function getPickObject3d(screenCoords, root) {
+    // calculate mouse screenCoords in normalized device coordinates
+    // (-1 to +1) for both components
+    mouse.x = (screenCoords.x / this.width) * 2 - 1;
+    mouse.y = -(screenCoords.y / this.height) * 2 + 1;
+
+    const raycaster = new THREE.Raycaster();
+    const camera = this.camera.camera3D;
+    raycaster.setFromCamera(mouse, camera);
+
+    // calculate objects intersecting the picking ray
+    return raycaster.intersectObjects(root, true);
 };
 
 export default function (scene, viewerDiv, debugMode, gLDebug) {
