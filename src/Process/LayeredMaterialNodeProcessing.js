@@ -278,6 +278,14 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, force) 
 
             node.layerUpdateState[layer.id].success();
 
+            if (terrain.texture && terrain.texture.flipY) {
+                // DataTexture default to false, so make sure other Texture types
+                // do the same (eg image texture)
+                // See UV construction for more details
+                terrain.texture.flipY = false;
+                terrain.texture.needsUpdate = true;
+            }
+
 /* TODO
             if (terrain.texture) {
                 terrain.texture.level = (ancestor || node).level;

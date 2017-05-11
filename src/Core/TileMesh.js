@@ -37,7 +37,7 @@ function TileMesh(geometry, params) {
 
     // instantiations all state materials : final, depth, id
     // Final rendering : return layered color + fog
-    this.materials[RendererConstant.FINAL] = new LayeredMaterial();
+    this.materials[RendererConstant.FINAL] = new LayeredMaterial(params.materialOptions);
 
     // Depth : return the distance between projection point and the node
     this.materials[RendererConstant.DEPTH] = new TileDepthMaterial(this.materials[RendererConstant.FINAL]);
