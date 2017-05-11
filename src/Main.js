@@ -3,13 +3,13 @@ import * as THREE from 'three';
 import proj4 from 'proj4';
 import ApiGlobe from './Core/Scheduler/Interfaces/ApiInterface/ApiGlobe';
 import GlobeView from './Core/Prefab/GlobeView';
-import BoundingBox from './Core/Math/BoundingBox';
+import Extent from './Core/Geographic/Extent';
 import Coordinates from './Core/Geographic/Coordinates';
 
 // Then exported as non-default here.
 export { ApiGlobe };
 export { GlobeView };
-export { BoundingBox };
+export { Extent };
 export { Coordinates };
 
 // Others can be directly exported

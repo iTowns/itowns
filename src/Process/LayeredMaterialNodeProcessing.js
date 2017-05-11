@@ -51,8 +51,8 @@ function initNodeElevationTextureFromParent(node, parent, layer) {
 
         const { min, max } = useMinMaxFromParent ?
         {
-            min: parent.bbox.bottom(),
-            max: parent.bbox.top(),
+            min: parent.OBB().z.min,
+            max: parent.OBB().z.max,
         } : OGCWebServiceHelper.ioDXBIL.computeMinMaxElevation(
             texture.image.data,
             SIZE_TEXTURE_TILE, SIZE_TEXTURE_TILE,

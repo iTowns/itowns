@@ -5,7 +5,7 @@
  */
 import MathExt from '../Math/MathExtended';
 import { UNIT } from './Coordinates';
-import BoundingBox from '../Math/BoundingBox';
+import Extent from './Extent';
 
 
 function Projection() {
@@ -65,7 +65,7 @@ Projection.prototype.getCoordsWMTS = function getCoordsWMTS(tileCoord, bbox, til
     var tilesMT = [];
 
     for (var row = box[0].row; row < box[1].row + 1; row++) {
-        tilesMT.push(new BoundingBox(`WMTS:${tileMatrixSet}`, box[0].zoom, row, box[0].col));
+        tilesMT.push(new Extent(`WMTS:${tileMatrixSet}`, box[0].zoom, row, box[0].col));
     }
 
     return tilesMT;
@@ -105,7 +105,7 @@ Projection.prototype.WMTS_WGS84ToWMTS_PM = function WMTS_WGS84ToWMTS_PM(cWMTS, b
 
     for (let r = maxRow; r >= minRow; r--) {
         for (let c = minCol; c <= maxCol; c++) {
-            wmtsBox.push(new BoundingBox('WMTS:PM', level, r, c));
+            wmtsBox.push(new Extent('WMTS:PM', level, r, c));
         }
     }
 
@@ -127,7 +127,7 @@ Projection.prototype.WGS84toWMTS = function WGS84toWMTS(bbox) {
     var col = Math.floor(((MathExt.PI + center.longitude(UNIT.RADIAN)) % (2 * Math.PI)) / uX);
     var row = Math.floor(nY - (MathExt.PI_OV_TWO + center.latitude(UNIT.RADIAN)) / uY);
 
-    return new BoundingBox('WMTS:WGS84G', zoom, row, col);
+    return new Extent('WMTS:WGS84G', zoom, row, col);
 };
 
 Projection.prototype.UnitaryToLongitudeWGS84 = function UnitaryToLongitudeWGS84(u, bbox) {

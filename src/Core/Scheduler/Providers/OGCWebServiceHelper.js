@@ -3,7 +3,7 @@ import Fetcher from './Fetcher';
 import CacheRessource from './CacheRessource';
 import IoDriver_XBIL from './IoDriver_XBIL';
 import Projection from '../../Geographic/Projection';
-import BoundingBox from '../../Math/BoundingBox';
+import Extent from '../../Geographic/Extent';
 
 
 export const SIZE_TEXTURE_TILE = 256;
@@ -86,10 +86,10 @@ export default {
 
         tileMatrixSet = tileMatrixSet || 'WGS84G';
         if (!(tileMatrixSet in tile.wmtsCoords)) {
-            const tileCoord = projection.WGS84toWMTS(tile.bbox);
+            const tileCoord = projection.WGS84toWMTS(tile.extent);
 
             tile.wmtsCoords[tileMatrixSet] =
-                projection.getCoordWMTS_WGS84(tileCoord, tile.bbox, tileMatrixSet);
+                projection.getCoordWMTS_WGS84(tileCoord, tile.extent, tileMatrixSet);
         }
     },
     WMTS_WGS84Parent(cWMTS, levelParent, pitch) {
@@ -106,6 +106,6 @@ export default {
             pitch.z = invDiff;
         }
 
-        return new BoundingBox(cWMTS.crs(), levelParent, r, c);
+        return new Extent(cWMTS.crs(), levelParent, r, c);
     },
 };
