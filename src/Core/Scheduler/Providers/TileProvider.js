@@ -35,10 +35,9 @@ TileProvider.prototype.executeCommand = function executeCommand(command) {
         extent,
         level: (command.level === undefined) ? (parent.level + 1) : command.level,
         segment: 16,
+        materialOptions: command.layer.materialOptions,
+        disableSkirt: command.layer.disableSkirt,
     };
-    if (command.layer.materialOptions) {
-        params.materialOptions = command.layer.materialOptions;
-    }
 
     const geometry = new TileGeometry(params, command.layer.builder);
 
