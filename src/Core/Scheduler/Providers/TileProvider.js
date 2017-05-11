@@ -36,6 +36,9 @@ TileProvider.prototype.executeCommand = function executeCommand(command) {
         level: (command.level === undefined) ? (parent.level + 1) : command.level,
         segment: 16,
     };
+    if (command.layer.materialOptions) {
+        params.materialOptions = command.layer.materialOptions;
+    }
 
     const geometry = new TileGeometry(params, command.layer.builder);
 
@@ -54,6 +57,8 @@ TileProvider.prototype.executeCommand = function executeCommand(command) {
     tile.updateMatrix();
     if (parent) {
         tile.setBBoxZ(parent.OBB().z.min, parent.OBB().z.max);
+    } else if (command.layer.materialOptions && command.layer.materialOptions.useColorTextureElevation) {
+        tile.setBBoxZ(command.layer.materialOptions.colorTextureElevationMinZ, command.layer.materialOptions.colorTextureElevationMaxZ);
     }
 
     return Promise.resolve(tile);

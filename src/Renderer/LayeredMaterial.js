@@ -76,7 +76,7 @@ var moveElementsArraySafe = function moveElementsArraySafe(array,index, howMany,
 };
 /* eslint-enable */
 
-const LayeredMaterial = function LayeredMaterial() {
+const LayeredMaterial = function LayeredMaterial(options) {
     BasicMaterial.call(this);
 
     const maxTexturesUnits = Capabilities.getMaxTextureUnitsCount();
@@ -90,11 +90,24 @@ const LayeredMaterial = function LayeredMaterial() {
         this.fragmentShaderHeader += '#define DEBUG\n';
     }
 
+    options = options || { };
+    let vsOptions = '';
+    if (options.useRgbaTextureElevation) {
+        throw new Error('Restore this feature');
+    } else if (options.useColorTextureElevation) {
+        vsOptions = '\n#define COLOR_TEXTURE_ELEVATION\n';
+        vsOptions += `\nconst float _minElevation = ${options.colorTextureElevationMinZ.toFixed(1)};\n`;
+        vsOptions += `\nconst float _maxElevation = ${options.colorTextureElevationMaxZ.toFixed(1)};\n`;
+    } else {
+        // default
+        vsOptions = '\n#define DATA_TEXTURE_ELEVATION\n';
+    }
+
     // see GLOBE FS
     this.fragmentShaderHeader += getColorAtIdUv(nbSamplers);
 
     this.fragmentShader = this.fragmentShaderHeader + TileFS;
-    this.vertexShader = this.vertexShaderHeader + TileVS;
+    this.vertexShader = this.vertexShaderHeader + vsOptions + TileVS;
 
     // handle on textures uniforms
     this.textures = [];

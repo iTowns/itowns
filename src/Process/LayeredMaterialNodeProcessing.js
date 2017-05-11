@@ -280,19 +280,13 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, force) 
 
             node.layerUpdateState[layer.id].success();
 
-/* TODO
-            if (terrain.texture) {
-                terrain.texture.level = (ancestor || node).level;
+            if (terrain.texture && terrain.texture.flipY) {
+                // DataTexture default to false, so make sure other Texture types
+                // do the same (eg image texture)
+                // See UV construction for more details
+                terrain.texture.flipY = false;
+                terrain.texture.needsUpdate = true;
             }
-
-            terrain.min = 0;
-            terrain.max = 255;
-            if (terrain.max === undefined) {
-                terrain.min = (ancestor || node).bbox.bottom();
-                terrain.max = (ancestor || node).bbox.top();
-            }
-*/
-
             node.setTextureElevation(terrain);
         },
         (err) => {

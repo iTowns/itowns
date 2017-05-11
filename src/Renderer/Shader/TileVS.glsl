@@ -29,8 +29,6 @@ highp float decode32(highp vec4 rgba) {
     return Result;
 }
 
-//#define RGBA_ELEVATION
-
 void main() {
 
         vUv_WGS84 = uv_wgs84;
@@ -47,7 +45,7 @@ void main() {
                 (1.0 - vUv_WGS84.y) * offsetScale_L00[0].z + offsetScale_L00[0].y);
 
 
-            #ifdef RGBA_ELEVATION
+            #if defined(RGBA_TEXTURE_ELEVATION)
                 vec4 rgba = texture2D( dTextures_00[0], vVv ) * 255.0;
 
                 rgba.rgba = rgba.abgr;
@@ -60,8 +58,14 @@ void main() {
                 if(dv>5000.0)
                     dv = 0.0;
 
-            #else
+            #elif defined(DATA_TEXTURE_ELEVATION)
                 float   dv  = max(texture2D( dTextures_00[0], vVv ).w, 0.);
+            #elif defined(COLOR_TEXTURE_ELEVATION)
+                float   dv  = max(texture2D( dTextures_00[0], vVv ).r, 0.);
+                dv = _minElevation + dv * (_maxElevation - _minElevation);
+            #else
+
+            #error Must define either RGBA_TEXTURE_ELEVATION, DATA_TEXTURE_ELEVATION or COLOR_TEXTURE_ELEVATION
             #endif
 
             vPosition   = vec4( position +  vNormal  * dv ,1.0 );
