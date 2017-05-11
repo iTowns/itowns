@@ -168,11 +168,13 @@ TileGeometry.prototype.computeBuffers = function computeBuffers(params, builder)
             UV_WGS84(scratchBuffers, idVertex, u, v);
             UV_PM(scratchBuffers, idVertex, uv_pm);
 
-            if (y !== 0 && y !== heightSegments) {
-                if (x === widthSegments) {
-                    skirt.push(idVertex);
-                } else if (x === 0) {
-                    skirtEnd.push(idVertex);
+            if (!params.disableSkirt) {
+                if (y !== 0 && y !== heightSegments) {
+                    if (x === widthSegments) {
+                        skirt.push(idVertex);
+                    } else if (x === 0) {
+                        skirtEnd.push(idVertex);
+                    }
                 }
             }
 
@@ -190,7 +192,9 @@ TileGeometry.prototype.computeBuffers = function computeBuffers(params, builder)
         }
     }
 
-    skirt = skirt.concat(skirtEnd.reverse());
+    if (!params.disableSkirt) {
+        skirt = skirt.concat(skirtEnd.reverse());
+    }
 
     function bufferize(va, vb, vc, idVertex) {
         scratchBuffers.index[idVertex + 0] = va;
@@ -222,55 +226,57 @@ TileGeometry.prototype.computeBuffers = function computeBuffers(params, builder)
     // This size must be take into account the bbox's size
     // For the moment, I reduce the size to increase performance (pixel shader performance)
 
-    const r = 5 * ((20 - params.level) + 10);
+    if (!params.disableSkirt) {
+        const r = 5 * ((20 - params.level) + 10);
 
-    var buildIndexSkirt = function buildIndexSkirt() {};
-    var buildUVSkirt = function buildUVSkirt() {};
+        var buildIndexSkirt = function buildIndexSkirt() {};
+        var buildUVSkirt = function buildUVSkirt() {};
 
-    if (outBuffers.index === null) {
-        buildIndexSkirt = function buildIndexSkirt(id, v1, v2, v3, v4) {
-            id = bufferize(v1, v2, v3, id);
-            id = bufferize(v1, v3, v4, id);
-            return id;
-        };
+        if (outBuffers.index === null) {
+            buildIndexSkirt = function buildIndexSkirt(id, v1, v2, v3, v4) {
+                id = bufferize(v1, v2, v3, id);
+                id = bufferize(v1, v3, v4, id);
+                return id;
+            };
 
-        buildUVSkirt = function buildUVSkirt(id) {
-            scratchBuffers.uv.wgs84[idVertex * 2 + 0] = scratchBuffers.uv.wgs84[id * 2 + 0];
-            scratchBuffers.uv.wgs84[idVertex * 2 + 1] = scratchBuffers.uv.wgs84[id * 2 + 1];
-        };
-    }
-
-    for (var i = 0; i < skirt.length; i++) {
-        var id = skirt[i];
-        id_m3 = idVertex * 3;
-        var id2_m3 = id * 3;
-
-        scratchBuffers.position[id_m3 + 0] = scratchBuffers.position[id2_m3 + 0] - scratchBuffers.normal[id2_m3 + 0] * r;
-        scratchBuffers.position[id_m3 + 1] = scratchBuffers.position[id2_m3 + 1] - scratchBuffers.normal[id2_m3 + 1] * r;
-        scratchBuffers.position[id_m3 + 2] = scratchBuffers.position[id2_m3 + 2] - scratchBuffers.normal[id2_m3 + 2] * r;
-
-        scratchBuffers.normal[id_m3 + 0] = scratchBuffers.normal[id2_m3 + 0];
-        scratchBuffers.normal[id_m3 + 1] = scratchBuffers.normal[id2_m3 + 1];
-        scratchBuffers.normal[id_m3 + 2] = scratchBuffers.normal[id2_m3 + 2];
-
-        buildUVSkirt(id);
-
-        scratchBuffers.uv.pm[idVertex] = scratchBuffers.uv.pm[id];
-
-        var idf = (i + 1) % skirt.length;
-
-        v1 = id;
-        v2 = idVertex;
-        v3 = idVertex + 1;
-        v4 = skirt[idf];
-
-        if (idf === 0) {
-            v3 = iStart;
+            buildUVSkirt = function buildUVSkirt(id) {
+                scratchBuffers.uv.wgs84[idVertex * 2 + 0] = scratchBuffers.uv.wgs84[id * 2 + 0];
+                scratchBuffers.uv.wgs84[idVertex * 2 + 1] = scratchBuffers.uv.wgs84[id * 2 + 1];
+            };
         }
 
-        idVertex2 = buildIndexSkirt(idVertex2, v1, v2, v3, v4);
+        for (var i = 0; i < skirt.length; i++) {
+            var id = skirt[i];
+            id_m3 = idVertex * 3;
+            var id2_m3 = id * 3;
 
-        idVertex++;
+            scratchBuffers.position[id_m3 + 0] = scratchBuffers.position[id2_m3 + 0] - scratchBuffers.normal[id2_m3 + 0] * r;
+            scratchBuffers.position[id_m3 + 1] = scratchBuffers.position[id2_m3 + 1] - scratchBuffers.normal[id2_m3 + 1] * r;
+            scratchBuffers.position[id_m3 + 2] = scratchBuffers.position[id2_m3 + 2] - scratchBuffers.normal[id2_m3 + 2] * r;
+
+            scratchBuffers.normal[id_m3 + 0] = scratchBuffers.normal[id2_m3 + 0];
+            scratchBuffers.normal[id_m3 + 1] = scratchBuffers.normal[id2_m3 + 1];
+            scratchBuffers.normal[id_m3 + 2] = scratchBuffers.normal[id2_m3 + 2];
+
+            buildUVSkirt(id);
+
+            scratchBuffers.uv.pm[idVertex] = scratchBuffers.uv.pm[id];
+
+            var idf = (i + 1) % skirt.length;
+
+            v1 = id;
+            v2 = idVertex;
+            v3 = idVertex + 1;
+            v4 = skirt[idf];
+
+            if (idf === 0) {
+                v3 = iStart;
+            }
+
+            idVertex2 = buildIndexSkirt(idVertex2, v1, v2, v3, v4);
+
+            idVertex++;
+        }
     }
 
     // Copy missing buffer in outBuffers from scratchBuffers
