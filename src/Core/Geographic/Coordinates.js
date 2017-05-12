@@ -51,6 +51,16 @@ export function crsToUnit(crs) {
     }
 }
 
+export function reasonnableEpsilonForUnit(unit) {
+    switch (unit) {
+        case UNIT.RADIAN: return 0.00001;
+        case UNIT.DEGREE: return 0.01;
+        case UNIT.METER: return 0.001;
+        default:
+            return 0;
+    }
+}
+
 function _crsToUnitWithError(crs) {
     const u = crsToUnit(crs);
     if (crs === undefined || u === undefined) {
