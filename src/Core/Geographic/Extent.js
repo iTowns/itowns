@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import Coordinates, { crsToUnit, crsIsGeographic, assertCrsIsValid, convertValueToUnit } from '../Geographic/Coordinates';
+import Coordinates, { crsToUnit, crsIsGeographic, assertCrsIsValid, convertValueToUnit, reasonnableEpsilonForUnit } from '../Geographic/Coordinates';
 
 /**
  * Extent is a SIG-area (so 2D)
@@ -205,7 +205,7 @@ Extent.prototype.isInside = function isInside(coord) {
     }
 };
 
-Extent.prototype.isInside = function isInside(other) {
+Extent.prototype.isInside = function isInside(other, epsilon) {
     if (_crsIsWMTS(this.crs())) {
         if (this._zoom == other._zoom) {
             return this._row == other._row &&
@@ -223,11 +223,12 @@ Extent.prototype.isInside = function isInside(other) {
         }
     } else {
         const o = other.as(this._crs);
-
-        return this.east() <= o.east(this._internalStorageUnit) &&
-               this.west() >= o.west(this._internalStorageUnit) &&
-               this.north() <= o.north(this._internalStorageUnit) &&
-               this.south() >= o.south(this._internalStorageUnit);
+        epsilon = epsilon == undefined ? reasonnableEpsilonForUnit(o._internalStorageUnit) : epsilon;
+        // compare use crs' default storage unit
+        return this.east(o._internalStorageUnit) - o.east() <= epsilon &&
+               o.west() - this.west(o._internalStorageUnit) <= epsilon &&
+               this.north(o._internalStorageUnit) - o.north() <= epsilon &&
+               o.south() - this.south(o._internalStorageUnit) <= epsilon;
     }
 };
 
