@@ -16,6 +16,7 @@
 import Provider from './Provider';
 import TileGeometry from '../../TileGeometry';
 import TileMesh from '../../TileMesh';
+import { CancelledCommandException } from '../Scheduler';
 
 function TileProvider() {
     Provider.call(this, null);
@@ -27,8 +28,14 @@ TileProvider.prototype.constructor = TileProvider;
 
 TileProvider.prototype.executeCommand = function executeCommand(command) {
     var extent = command.extent;
+    if (command.requester &&
+        !command.requester.material) {
+        // request has been deleted
+        return Promise.reject(new CancelledCommandException(command));
+    }
 
     var parent = command.requester;
+
 
     // build tile
     var params = {
