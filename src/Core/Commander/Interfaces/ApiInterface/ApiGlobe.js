@@ -26,9 +26,6 @@ import CoordStars from '../../../../Core/Geographic/CoordStars';
 var sceneIsLoaded = false;
 export const INITIALIZED_EVENT = 'initialized';
 
-var eventRange = new CustomEvent('rangeChanged');
-var eventOrientation = new CustomEvent('orientationchanged');
-var eventPan = new CustomEvent('panchanged');
 var eventLayerAdded = new CustomEvent('layeradded');
 var eventLayerRemoved = new CustomEvent('layerremoved');
 var eventLayerChanged = new CustomEvent('layerchanged');
@@ -628,9 +625,7 @@ ApiGlobe.prototype.getCameraTargetGeoPosition = function getCameraTargetGeoPosit
  * @return     {Promise}   { description_of_the_return_value }
  */
 ApiGlobe.prototype.setCameraOrientation = function setCameraOrientation(orientation, isAnimated) {
-    return this.scene.currentControls().setOrbitalPosition(undefined, orientation.heading, orientation.tilt, isAnimated).then(() => {
-        this.viewerDiv.dispatchEvent(eventOrientation);
-    });
+    return this.scene.currentControls().setOrbitalPosition(undefined, orientation.heading, orientation.tilt, isAnimated);
 };
 
 /**
@@ -719,9 +714,7 @@ ApiGlobe.prototype.isAnimationEnabled = function isAnimationEnabled() {
  * @return     {Promise}
  */
 ApiGlobe.prototype.setTilt = function setTilt(tilt, isAnimated) {
-    eventOrientation.oldTilt = this.getTilt();
     return this.scene.currentControls().setTilt(tilt, isAnimated).then(() => {
-        this.viewerDiv.dispatchEvent(eventOrientation);
         this.scene.notifyChange(1);
     });
 };
@@ -736,7 +729,6 @@ ApiGlobe.prototype.setTilt = function setTilt(tilt, isAnimated) {
  */
 ApiGlobe.prototype.setHeading = function setHeading(heading, isAnimated) {
     return this.scene.currentControls().setHeading(heading, isAnimated).then(() => {
-        this.viewerDiv.dispatchEvent(eventOrientation);
         this.scene.notifyChange(1);
     });
 };
@@ -842,12 +834,10 @@ ApiGlobe.prototype.setCameraTargetGeoPositionAdvanced = function setCameraTarget
  * @return     {Promise}
  */
 ApiGlobe.prototype.setRange = function setRange(pRange, isAnimated) {
-    eventRange.oldRange = this.getRange();
     return this.scene.currentControls().setRange(pRange, isAnimated).then(() => {
         this.scene.notifyChange(1);
         return this.setSceneLoaded().then(() => {
             this.scene.currentControls().updateCameraTransformation();
-            this.viewerDiv.dispatchEvent(eventRange);
         });
     });
 };
@@ -863,7 +853,6 @@ ApiGlobe.prototype.pan = function pan(pVector) {
     this.scene.notifyChange(1);
     this.setSceneLoaded().then(() => {
         this.scene.currentControls().updateCameraTransformation();
-        this.viewerDiv.dispatchEvent(eventPan);
     });
 };
 

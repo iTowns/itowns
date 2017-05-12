@@ -1,3 +1,5 @@
+import * as THREE from 'three';
+
 const FRAMERATE = 60;
 const FRAME_DURATION = 1000 / FRAMERATE;
 // if is true console.log are enabled to sniff animation'state
@@ -54,6 +56,16 @@ const resetTimer = function resetTimer(player) {
 // finish animation and re-init parameter
 const finishAnimation = function finishAnimation(player) {
     resetTimer(player);
+    if (player.isEnded()) {
+        player.dispatchEvent({
+            type: 'animation-ended',
+            animation: player.animation,
+        });
+    }
+    player.dispatchEvent({
+        type: 'animation-stopped',
+        animation: player.animation,
+    });
     player.animation = null;
     if (player.resolve) {
         player.resolve();
@@ -67,10 +79,6 @@ const setPlayerState = function setPlayerState(player, state) {
     _DEBUG(debugMsg[state], player.animation);
 };
 
-const frameEvent = new CustomEvent('frameAnimation');
-const stopEvent = new CustomEvent('stopAnimation');
-const endEvent = new CustomEvent('endAnimation');
-
 /**
  * AnimationPlayer
  * It can play, pause or stop Animation or AnimationExpression (See below).
@@ -80,9 +88,9 @@ const endEvent = new CustomEvent('endAnimation');
  *       - when Animation is stopped
  *       - when Animation is ending
  */
-class AnimationPlayer {
-    constructor(dom) {
-        this.dom = dom;
+class AnimationPlayer extends THREE.EventDispatcher {
+    constructor() {
+        super();
         this.id = null;
         this.keyframe = 0;
         this.animation = null;
@@ -115,6 +123,9 @@ class AnimationPlayer {
      */
     play(animation) {
         this.animation = animation;
+        this.dispatchEvent({
+            type: 'animation-started',
+            animation });
         setPlayerState(this, PLAYER_STATE.PLAY);
         resetTimer(this);
         this.id = setInterval(this.frame.bind(this), FRAME_DURATION);
@@ -145,7 +156,6 @@ class AnimationPlayer {
     stop() {
         setPlayerState(this, PLAYER_STATE.STOP);
         finishAnimation(this);
-        this.dom.dispatchEvent(stopEvent);
         // needed to return promise to wait sync
         return Promise.resolve();
     }
@@ -159,12 +169,13 @@ class AnimationPlayer {
                 this.animation.animate(this.keyframe);
             }
             this.keyframe++;
-            this.dom.dispatchEvent(frameEvent);
+            this.dispatchEvent({
+                type: 'animation-frame',
+            });
         }
         else {
             setPlayerState(this, PLAYER_STATE.END);
             finishAnimation(this);
-            this.dom.dispatchEvent(endEvent);
         }
     }
 }

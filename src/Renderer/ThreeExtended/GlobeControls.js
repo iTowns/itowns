@@ -110,6 +110,7 @@ const rotateStart = new THREE.Vector2();
 const rotateEnd = new THREE.Vector2();
 const rotateDelta = new THREE.Vector2();
 const spherical = new THREE.Spherical(1.0, 0.01, Math.PI * 0.5);
+const snapShotSpherical = new THREE.Spherical(1.0, 0.01, Math.PI * 0.5);
 const sphericalDelta = new THREE.Spherical(1.0, 0, 0);
 const sphericalTo = new THREE.Spherical();
 const orbit = {
@@ -181,10 +182,10 @@ var animationOrbitExpression = function animationOrbitExpression(root, progress)
 };
 
 // Animations
-const animationDampingMove = new AnimatedExpression({ duration: 120, root: ctrl, expression: dampingMoveAnimatedExpression, name: 'Damping Move' });
+const animationDampingMove = new AnimatedExpression({ duration: 120, root: ctrl, expression: dampingMoveAnimatedExpression, name: 'damping-move' });
 const animationZoomCenter = new AnimatedExpression({ duration: 45, root: ctrl, expression: zoomCenterAnimatedExpression, name: 'Zoom Center' });
 const animationOrbit = new AnimatedExpression({ duration: 30, root: orbit, expression: animationOrbitExpression, name: 'set Orbit' });
-const dampingOrbitalMvt = new Animation({ duration: 60, name: 'orbit damping' });
+const dampingOrbitalMvt = new Animation({ duration: 60, name: 'damping-orbit' });
 
 // Replace matrix float by matrix double
 cameraTargetOnGlobe.matrixWorld.elements = new Float64Array(16);
@@ -282,7 +283,7 @@ var snapShotCamera = null;
 /* globals document,window */
 
 function GlobeControls(camera, target, domElement, engine) {
-    player = new AnimationPlayer(domElement);
+    player = new AnimationPlayer();
     const scene = engine.scene;
     this.camera = camera;
     snapShotCamera = new SnapCamera(camera);
@@ -665,9 +666,10 @@ function GlobeControls(camera, target, domElement, engine) {
     };
 
     const cT = new THREE.Vector3();
+    const delta = 0.001;
 
     const updateCameraTargetOnGlobe = function updateCameraTargetOnGlobe() {
-        const oldCoord = C.fromXYZ(scene.referenceCrs, cameraTargetOnGlobe.position);
+        const previousCameraTargetOnGlobe = cameraTargetOnGlobe.position.clone();
 
         // Get distance camera DME
         const pickingPosition = getPickingPosition(this.controlsActiveLayers);
@@ -689,17 +691,49 @@ function GlobeControls(camera, target, domElement, engine) {
         offset.copy(this.camera.position);
         offset.applyMatrix4(cameraTargetOnGlobe.matrixWorldInverse);
         spherical.setFromVector3(offset);
+
+        if (state === CONTROL_STATE.ORBIT && (Math.abs(snapShotSpherical.phi - spherical.phi) > delta || Math.abs(snapShotSpherical.theta - spherical.theta) > delta)) {
+            this.dispatchEvent({
+                type: 'orientation-changed',
+                previous: {
+                    tilt: snapShotSpherical.phi * 180 / Math.PI,
+                    heading: snapShotSpherical.theta * 180 / Math.PI,
+                },
+                new: {
+                    tilt: spherical.phi * 180 / Math.PI,
+                    heading: spherical.theta * 180 / Math.PI,
+                },
+            });
+        } else if (state === CONTROL_STATE.PAN) {
+            this.dispatchEvent({
+                type: 'pan-changed',
+            });
+        }
+
+        const previousRange = snapShotSpherical.radius;
+        const newRange = this.getRange();
+        if (Math.abs(newRange - previousRange) / previousRange > 0.001) {
+            this.dispatchEvent({
+                type: 'range-changed',
+                previous: { range: previousRange },
+                new: { range: newRange },
+            });
+        }
+
         state = CONTROL_STATE.NONE;
         lastRotation = [];
         if (enableTargetHelper) {
             this.dispatchEvent(this.changeEvent);
         }
 
-        this.dispatchEvent({
-            type: 'camera-target-updated',
-            oldCameraTargetPosition: oldCoord,
-            newCameraTargetPosition: C.fromXYZ(scene.referenceCrs, cameraTargetOnGlobe.position),
-        });
+        if (cameraTargetOnGlobe.position.distanceTo(previousCameraTargetOnGlobe) / spherical.radius > delta) {
+            this.dispatchEvent({
+                type: 'camera-target-changed',
+                previous: { cameraTarget: C.fromXYZ(scene.referenceCrs, previousCameraTargetOnGlobe) },
+                new: { cameraTarget: C.fromXYZ(scene.referenceCrs, cameraTargetOnGlobe.position) },
+            });
+        }
+        snapShotSpherical.copy(spherical);
     };
 
     // Update helper
@@ -942,7 +976,17 @@ function GlobeControls(camera, target, domElement, engine) {
                 this.dollyIn();
             }
 
+            const previousRange = this.getRange();
             update();
+            const newRange = this.getRange();
+            if (Math.abs(newRange - previousRange) / previousRange > 0.001) {
+                this.dispatchEvent({
+                    type: 'range-changed',
+                    previous: { range: previousRange },
+                    new: { range: newRange },
+                });
+            }
+            snapShotSpherical.copy(spherical);
 
             this.dispatchEvent(this.startEvent);
             this.dispatchEvent(this.endEvent);
@@ -1192,7 +1236,27 @@ function GlobeControls(camera, target, domElement, engine) {
     this.domElement.addEventListener('touchmove', onTouchMove.bind(this), false);
 
     // refresh control for each animation's frame
-    this.domElement.addEventListener('frameAnimation', update.bind(this), false);
+    player.addEventListener('animation-frame', update.bind(this));
+
+    function isAnimationWithoutDamping(animation) {
+        return animation && !(animation.name === 'damping-move' || animation.name === 'damping-orbit');
+    }
+
+    player.addEventListener('animation-started', (e) => {
+        if (isAnimationWithoutDamping(e.animation)) {
+            this.dispatchEvent({
+                type: 'animation-started',
+            });
+        }
+    });
+
+    player.addEventListener('animation-ended', (e) => {
+        if (isAnimationWithoutDamping(e.animation)) {
+            this.dispatchEvent({
+                type: 'animation-ended',
+            });
+        }
+    });
 
     // TODO: Why windows
     window.addEventListener('keydown', onKeyDown.bind(this), false);
@@ -1216,6 +1280,7 @@ function GlobeControls(camera, target, domElement, engine) {
     initialTarget = cameraTargetOnGlobe.clone();
     initialPosition = this.camera.position.clone();
     initialZoom = this.camera.zoom;
+    snapShotSpherical.copy(spherical);
 
     _handlerMouseMove = onMouseMove.bind(this);
     _handlerMouseUp = onMouseUp.bind(this);
