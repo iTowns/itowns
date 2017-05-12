@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import Extent from '../Core/Geographic/Extent';
-
+import { CancelledCommandException } from '../Core/Scheduler/Scheduler';
 
 function subdivisionExtents(bbox) {
     const center = bbox.center();
@@ -87,7 +87,9 @@ function subdivideNode(context, layer, node, initNewNode) {
             context.view.notifyChange(0, false);
         }, (err) => {
             node.pendingSubdivision = false;
-            throw new Error(err);
+            if (!(err instanceof CancelledCommandException)) {
+                throw new Error(err);
+            }
         });
     }
 }
