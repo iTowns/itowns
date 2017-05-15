@@ -1603,7 +1603,7 @@ GlobeControls.prototype.isAnimationEnabled = function isAnimationEnabled() {
  * Returns the actual zoom level. The level will always be between the [getMinZoomLevel(), getMaxZoomLevel()].
  * @return     {number}  The zoom level.
  */
-GlobeControls.prototype.getZoomLevel = function getZoomLevel() {
+GlobeControls.prototype.getZoom = function getZoom() {
     return computeTileZoomFromDistanceCamera(this.getRange());
 };
 
@@ -1615,7 +1615,7 @@ GlobeControls.prototype.getZoomLevel = function getZoomLevel() {
  * @param      {boolean}  isAnimated  Indicates if animated
  * @return     {Promise}
  */
-GlobeControls.prototype.setZoomLevel = function setZoomLevel(zoom, isAnimated) {
+GlobeControls.prototype.setZoom = function setZoom(zoom, isAnimated) {
     isAnimated = isAnimated === undefined ? this.isAnimationEnabled() : isAnimated;
     const range = computeDistanceCameraFromTileZoom(zoom);
     return this.setRange(range, isAnimated);
@@ -1690,8 +1690,8 @@ GlobeControls.prototype.setCameraTargetGeoPosition = function setCameraTargetGeo
  */
 GlobeControls.prototype.setCameraTargetGeoPositionAdvanced = function setCameraTargetGeoPositionAdvanced(position, isAnimated) {
     isAnimated = isAnimated === undefined ? this.isAnimationEnabled() : isAnimated;
-    if (position.level) {
-        position.range = computeDistanceCameraFromTileZoom(position.level);
+    if (position.zoom) {
+        position.range = computeDistanceCameraFromTileZoom(position.zoom);
     } else if (position.scale) {
         position.range = getRangeFromScale(position.scale);
     }

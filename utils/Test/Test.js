@@ -58,7 +58,7 @@ function Test(api) {
             if (Object.prototype.hasOwnProperty.call(askedPosition, key)) {
                 if (askedPosition[key]) {
                     delta[key] = resultPosition[key] - askedPosition[key];
-                    const relativeError = Math.abs(delta[key]) / askedPosition[key];
+                    const relativeError = Math.abs(delta[key] / askedPosition[key]);
                     const unitTest = relativeError < maxRelativeError;
                     tables[key] = { result: unitTest };
                     if (!unitTest) {
@@ -71,6 +71,7 @@ function Test(api) {
         if (showTablesResult) {
             console.table(tables);
         }
+
         return resultTest;
     };
 
@@ -82,8 +83,8 @@ function Test(api) {
             range: this.api.getRange(),
             tilt: this.api.getTilt(),
             heading: this.api.getHeading(),
-            scale: this.api.getZoomScale(),
-            level: this.api.getZoomLevel(),
+            scale: this.api.getScale(),
+            zoom: this.api.getZoom(),
         };
         return configuration;
     };
@@ -94,10 +95,18 @@ function Test(api) {
             isLaunched = true;
 
             const promises = [
+                // premier test pas pris en compte voir ISSUE #300
+                { fn: this.setCameraTargetGeoPosition,
+                    params: [{
+                        longitude: 0,
+                        latitude: 0,
+                    }],
+                    mandatory: false,
+                },
                 { fn: this.setCameraTargetGeoPosition,
                     params: [{
                         longitude: randomValue(-180, 180),
-                        latitude: randomValue(-70, 70),
+                        latitude: randomValue(-50, 50),
                     }],
                 },
                 { fn: this.setCameraTargetGeoPositionAdvanced,
@@ -125,12 +134,12 @@ function Test(api) {
                     params: [{
                         longitude: 1,
                         latitude: 46,
-                        level: 8,
+                        zoom: 8,
                         tilt: 45,
                         heading: 30,
                     }],
                     mandatory: false,
-                    message: 'with level parameter (Not mandatory because setZoomLevel need fix)',
+                    message: 'with zoom parameter (Not mandatory because setZoom need fix)',
                 },
                 { fn: this.setRange,
                     params: [20000],
@@ -142,6 +151,19 @@ function Test(api) {
                 },
                 { fn: this.setHeading,
                     params: [randomValue(0, 180)],
+                },
+                { fn: this.setZoom,
+                    params: [Math.floor(randomValue(2, 20))],
+                },
+                { fn: this.setScale,
+                    params: [0.0005],
+                },
+                { fn: this.setOrbitalPosition,
+                    params: [{
+                        tilt: 60,
+                        heading: 60,
+                        range: 20000,
+                    }],
                 },
             ];
 
@@ -187,6 +209,10 @@ function Test(api) {
     buildTestPosition(this.api.setTilt);
     buildTestPosition(this.api.setRange);
     buildTestPosition(this.api.setCameraTargetGeoPositionAdvanced);
+    buildTestPosition(this.api.setZoom);
+    buildTestPosition(this.api.setScale);
+    /* buildTestPosition(this.api.pan);*/
+    buildTestPosition(this.api.setOrbitalPosition);
 }
 /* eslint-enable no-console*/
 

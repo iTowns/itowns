@@ -47,7 +47,7 @@ and open the template in the editor.
 
             const globeLayer = itowns.viewer.createSceneGlobe('globe', positionOnGlobe, viewerDiv);
             itowns.debug = new Debug(itowns.viewer.scene);
-            itowns.test = new Test(itowns.viewer);
+            itowns.test = new Test(itowns.viewer.scene.controls);
 
             const urlImageryLayers = [];
             const urlElevationLayers = [];
