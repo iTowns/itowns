@@ -59,16 +59,8 @@ function horizonCulling(node) {
     return isVisible;
 }
 
-const frustum = new THREE.Frustum();
-const obbViewMatrix = new THREE.Matrix4();
-
 function frustumCullingOBB(node, camera) {
-    // Move camera in OBB local space
-    obbViewMatrix.multiplyMatrices(camera.viewMatrix, node.OBB().matrixWorld);
-
-    frustum.setFromMatrix(obbViewMatrix);
-
-    return frustum.intersectsBox(node.OBB().box3D);
+    return camera.isBox3DVisible(node.OBB().box3D, node.OBB().matrixWorld);
 }
 
 export function globeCulling(node, camera) {
