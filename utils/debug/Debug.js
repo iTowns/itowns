@@ -329,6 +329,7 @@ function addGeometryLayerDebugFeatures(layer, view, gui, state) {
             }
 
             n.setMaterialVisibility(true);
+            n.update(node.OBB());
         } else if (n.length > 0) {
             n[0].setMaterialVisibility(false);
         }
@@ -355,7 +356,7 @@ function addGeometryLayerDebugFeatures(layer, view, gui, state) {
         } else {
             view.camera.camera3D.layers.disable(layer.threeLayer);
         }
-        view.notifyChange();
+        view.notifyChange(0, true);
     });
 
     state[debugLayer.id] = false;
@@ -365,7 +366,7 @@ function addGeometryLayerDebugFeatures(layer, view, gui, state) {
         } else {
             view.camera.camera3D.layers.disable(debugLayer.threejsLayer);
         }
-        view.notifyChange();
+        view.notifyChange(0, true);
     });
 
     var consistencyCheck = { click: () => {

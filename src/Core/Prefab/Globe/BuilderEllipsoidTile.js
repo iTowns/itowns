@@ -95,40 +95,44 @@ BuilderEllipsoidTile.prototype.OBB = function OBBFn(params) {
     cardinals.push(new C.EPSG_4326_Radians(phiStart + bboxDimension.x * 0.5, thetaStart + thetaLength));
     cardinals.push(new C.EPSG_4326_Radians(phiStart, thetaStart + thetaLength));
     cardinals.push(new C.EPSG_4326_Radians(phiStart, thetaStart + bboxDimension.y * 0.5));
+    cardinals.push(params.extent.center());
 
-    var cardinals3D = [];
     var cardin3DPlane = [];
 
     var maxV = new THREE.Vector3(-1000, -1000, -1000);
     var minV = new THREE.Vector3(1000, 1000, 1000);
-    var maxHeight = 0;
+    var halfMaxHeight = 0;
     var planeZ = new THREE.Quaternion();
     var qRotY = new THREE.Quaternion();
     var vec = new THREE.Vector3();
-    var tangentPlane = new THREE.Plane(normal);
+    var tangentPlaneAtOrigin = new THREE.Plane(normal);
 
     planeZ.setFromUnitVectors(normal, new THREE.Vector3(0, 0, 1));
-    qRotY.setFromAxisAngle(new THREE.Vector3(0, 0, 1), -params.extent.center()._values[0]);
+    qRotY.setFromAxisAngle(
+        new THREE.Vector3(0, 0, 1), -params.extent.center().longitude(UNIT.RADIAN));
     qRotY.multiply(planeZ);
 
     for (var i = 0; i < cardinals.length; i++) {
-        cardinals3D.push(cardinals[i].as('EPSG:4978'));
-        cardin3DPlane.push(tangentPlane.projectPoint(cardinals3D[i].xyz()));
-        vec.subVectors(cardinals3D[i].xyz(), params.center);
-        maxHeight = Math.max(maxHeight, cardin3DPlane[i].distanceTo(vec));
+        const cardinal3D = cardinals[i].as('EPSG:4978').xyz().sub(params.center);
+        cardin3DPlane.push(tangentPlaneAtOrigin.projectPoint(cardinal3D));
+        // compute height max
+        const d = cardin3DPlane[i].distanceTo(vec);
+        halfMaxHeight = Math.max(halfMaxHeight, d * 0.5);
+        // compute tile's min/max
         cardin3DPlane[i].applyQuaternion(qRotY);
         maxV.max(cardin3DPlane[i]);
         minV.min(cardin3DPlane[i]);
     }
 
-    maxHeight *= 0.5;
-    var width = Math.abs(maxV.y - minV.y) * 0.5;
-    var height = Math.abs(maxV.x - minV.x) * 0.5;
-    var delta = height - Math.abs(cardin3DPlane[5].x);
-    var max = new THREE.Vector3(width, height, maxHeight);
-    var min = new THREE.Vector3(-width, -height, -maxHeight);
+    var halfLength = Math.abs(maxV.y - minV.y) * 0.5;
+    var halfWidth = Math.abs(maxV.x - minV.x) * 0.5;
+    var max = new THREE.Vector3(halfLength, halfWidth, halfMaxHeight);
+    var min = new THREE.Vector3(-halfLength, -halfWidth, -halfMaxHeight);
 
-    var translate = new THREE.Vector3(0, delta, -maxHeight);
+    // delta is the distance between line `([6],[4])` and the point `[5]`
+    // These points [6],[5],[4] aren't aligned because of the ellipsoid shape
+    var delta = halfWidth - Math.abs(cardin3DPlane[5].x);
+    var translate = new THREE.Vector3(0, delta, -halfMaxHeight);
     var obb = new OBB(min, max, normal, translate);
 
     return obb;
