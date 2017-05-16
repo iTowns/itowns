@@ -230,6 +230,7 @@ function Debug(view, viewerDiv) {
             material.uniforms.showOutline = { value: newValue };
             material.needsUpdate = true;
         });
+        view.notifyChange(0, true);
     });
 
     // tiles wireframe
@@ -240,6 +241,7 @@ function Debug(view, viewerDiv) {
         applyToNodeFirstMaterial((material) => {
             material.wireframe = newValue;
         });
+        view.notifyChange(0, true);
     });
 
     gui.add(state, 'eventsDebug').name('Debug event').onChange((() => {
@@ -303,6 +305,11 @@ function addGeometryLayerDebugFeatures(layer, view, gui, state) {
 
     // itowns layer definition
     const debugIdUpdate = function debugIdUpdate(context, layer, node) {
+        const enabled = view.camera.camera3D.layers.test({ mask: 1 << layer.threejsLayer });
+
+        if (!enabled) {
+            return;
+        }
         var n = node.children.filter(n => n.layer == obb_layer_id);
 
         if (node.material.visible) {
@@ -340,7 +347,7 @@ function addGeometryLayerDebugFeatures(layer, view, gui, state) {
     // add to debug gui
     const folder = gui.addFolder(`Geometry Layer: ${layer.id}`);
 
-    const enabled = view.camera.camera3D.layers.test({ mask: 1 << layer.threeLayer });
+    const enabled = view.camera.camera3D.layers.test({ mask: 1 << layer.threejsLayer });
     state[layer.id] = enabled;
     folder.add(state, layer.id).name('Visible').onChange((newValue) => {
         if (newValue) {
@@ -361,7 +368,7 @@ function addGeometryLayerDebugFeatures(layer, view, gui, state) {
         view.notifyChange();
     });
 
-    var consistencyCheck = { click: function() {
+    var consistencyCheck = { click: () => {
         const imageryLayers = view.getLayers(a => a.type == 'color');
         for (const node of layer.level0Nodes) {
             node.traverse((n) => {
@@ -370,7 +377,7 @@ function addGeometryLayerDebugFeatures(layer, view, gui, state) {
                 }
             });
         }
-    }};
+    } };
     folder.add(consistencyCheck, 'click').name('Check textures');
 }
 
