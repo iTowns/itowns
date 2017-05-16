@@ -360,6 +360,18 @@ function addGeometryLayerDebugFeatures(layer, view, gui, state) {
         }
         view.notifyChange();
     });
+
+    var consistencyCheck = { click: function() {
+        const imageryLayers = view.getLayers(a => a.type == 'color');
+        for (const node of layer.level0Nodes) {
+            node.traverse((n) => {
+                if (n.materials && n.materials[0].visible) {
+                    n.materials[0].checkLayersConsistency(n, imageryLayers);
+                }
+            });
+        }
+    }};
+    folder.add(consistencyCheck, 'click').name('Check textures');
 }
 
 export default Debug;

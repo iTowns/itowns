@@ -52,14 +52,6 @@ var moveElementArray = function moveElementArray(array, oldIndex, newIndex)
     array.splice(newIndex, 0, array.splice(oldIndex, 1)[0]);
 };
 
-var moveElementsArray = function moveElementsArray(array, index, howMany, toIndex) {
-    if ((toIndex > index) && (toIndex <= index + howMany)) {
-        toIndex = index + howMany;
-    }
-
-    array.splice.apply(array, [toIndex, 0].concat(array.splice(index, howMany)));
-};
-
 /* eslint-disable */
 var moveElementsArraySafe = function moveElementsArraySafe(array,index, howMany, toIndex) {
     index = parseInt(index) || 0;
@@ -161,6 +153,41 @@ const LayeredMaterial = function LayeredMaterial(options) {
 
     this.colorLayersId = [];
     this.elevationLayersId = [];
+
+    if (__DEBUG__) {
+        this.checkLayersConsistency = function checkLayersConsistency(node, imageryLayers) {
+            for (const layer of imageryLayers) {
+                const index = this.indexOfColorLayer(layer.id);
+                if (index < 0) {
+                    continue;
+                }
+
+                const offset = this.getTextureOffsetByLayerIndex(index);
+                const count = this.getTextureCountByLayerIndex(index);
+                let total = 0;
+                for (let i = 0; i < this.loadedTexturesCount[1]; i++) {
+                    if (!this.uniforms.dTextures_01.value[i].image) {
+                        throw new Error(`${node.id} - Missing texture at index ${i} for layer ${layer.id}`);
+                    }
+
+                    const critere1 = (offset <= i && i < (offset + count));
+                    const search = layer.name ? `LAYERS=${layer.name}&` : `LAYER=${layer.options.name}&`;
+                    const critere2 = this.uniforms.dTextures_01.value[i].image.currentSrc.indexOf(search) > 0;
+
+                    if (critere1 && !critere2) {
+                        throw new Error(`${node.id} - Texture should belong to ${layer.id} but comes from ${this.uniforms.dTextures_01.value[i].image.currentSrc}`);
+                    } else if (!critere1 && critere2) {
+                        throw new Error(`${node.id} - Texture shouldn't belong to ${layer.id}`);
+                    } else if (critere1) {
+                        total++;
+                    }
+                }
+                if (total != count) {
+                    throw new Error(`${node.id} - Invalid total texture count. Found: ${total}, expected: ${count} for ${layer.id}`);
+                }
+            }
+        };
+    }
 };
 
 LayeredMaterial.prototype = Object.create(BasicMaterial.prototype);
@@ -186,6 +213,9 @@ LayeredMaterial.prototype.setSequence = function setSequence(sequenceLayer) {
     let offsetLayer = 0;
     let offsetTexture = 0;
 
+    const originalOffsets = new Array(...this.uniforms.offsetScale_L01.value);
+    const originalTextures = new Array(...this.uniforms.dTextures_01.value);
+
     for (let l = 0; l < sequenceLayer.length; l++) {
         const layer = sequenceLayer[l];
         const oldIndex = this.indexOfColorLayer(layer);
@@ -193,15 +223,20 @@ LayeredMaterial.prototype.setSequence = function setSequence(sequenceLayer) {
             const newIndex = l - offsetLayer;
             const texturesCount = this.layerTexturesCount[oldIndex];
 
+            // individual values are swapped in place
             if (newIndex !== oldIndex) {
                 moveElementArray(this.colorLayersId, oldIndex, newIndex);
                 moveElementArray(this.layerTexturesCount, oldIndex, newIndex);
                 moveElementArray(this.uniforms.paramLayers.value, oldIndex, newIndex);
                 moveElementArray(this.uniforms.visibility.value, oldIndex, newIndex);
-                const oldOffset = this.getTextureOffsetByLayerIndex(newIndex);
-                moveElementsArray(this.uniforms.offsetScale_L01.value, oldOffset, texturesCount, offsetTexture);
-                moveElementsArray(this.uniforms.dTextures_01.value, oldOffset, texturesCount, offsetTexture);
             }
+            const oldOffset = this.getTextureOffsetByLayerIndex(newIndex);
+            // consecutive values are copied from original
+            for (let i = 0; i < texturesCount; i++) {
+                this.uniforms.offsetScale_L01.value[offsetTexture + i] = originalOffsets[oldOffset + i];
+                this.uniforms.dTextures_01.value[offsetTexture + i] = originalTextures[oldOffset + i];
+            }
+
 
             this.setTextureOffsetByLayerIndex(newIndex, offsetTexture);
             offsetTexture += texturesCount;
