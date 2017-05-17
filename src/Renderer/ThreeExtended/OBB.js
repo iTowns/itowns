@@ -1,10 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
-
 import * as THREE from 'three';
 
 function OBB(min, max, lookAt, translate) {
@@ -12,8 +5,6 @@ function OBB(min, max, lookAt, translate) {
     this.box3D = new THREE.Box3(min, max);
 
     this.natBox = this.box3D.clone();
-
-    this.quaInv = this.quaternion.clone().inverse();
 
     if (lookAt) {
         this.lookAt(lookAt);
@@ -38,16 +29,9 @@ OBB.prototype = Object.create(THREE.Object3D.prototype);
 OBB.prototype.constructor = OBB;
 
 OBB.prototype.update = function update() {
-    this.updateMatrix();
     this.updateMatrixWorld(true);
 
-    this.quaInv = this.quaternion.clone().inverse();
-
-    this.pointsWorld = this.cPointsWorld(this.points());
-};
-
-OBB.prototype.inverseQuaternion = function inverseQuaternion() {
-    return this.quaInv;
+    this.pointsWorld = this._cPointsWorld(this._points());
 };
 
 OBB.prototype.updateZ = function updateZ(min, max) {
@@ -69,8 +53,6 @@ OBB.prototype.addHeight = function addHeight(minz, maxz) {
     this.box3D.max.z = nHalfSize;
 
     this.position.copy(this.oPosition);
-    //    this.updateMatrix();
-    //    this.updateMatrixWorld(true);
 
     this.translateZ(translaZ);
 
@@ -81,7 +63,7 @@ OBB.prototype.addHeight = function addHeight(minz, maxz) {
     // TODO <---- à vérifier
 };
 
-OBB.prototype.points = function points() {
+OBB.prototype._points = function _points() {
     var points = [
         new THREE.Vector3(),
         new THREE.Vector3(),
@@ -93,19 +75,19 @@ OBB.prototype.points = function points() {
         new THREE.Vector3(),
     ];
 
-    points[0].set(this.box3D.min.x, this.box3D.min.y, this.box3D.min.z);
-    points[1].set(this.box3D.min.x, this.box3D.min.y, this.box3D.max.z);
-    points[2].set(this.box3D.min.x, this.box3D.max.y, this.box3D.min.z);
-    points[3].set(this.box3D.min.x, this.box3D.max.y, this.box3D.max.z);
-    points[4].set(this.box3D.max.x, this.box3D.min.y, this.box3D.min.z);
-    points[5].set(this.box3D.max.x, this.box3D.min.y, this.box3D.max.z);
-    points[6].set(this.box3D.max.x, this.box3D.max.y, this.box3D.min.z);
-    points[7].set(this.box3D.max.x, this.box3D.max.y, this.box3D.max.z);
+    points[0].set(this.box3D.max.x, this.box3D.max.y, this.box3D.max.z);
+    points[1].set(this.box3D.min.x, this.box3D.max.y, this.box3D.max.z);
+    points[2].set(this.box3D.min.x, this.box3D.min.y, this.box3D.max.z);
+    points[3].set(this.box3D.max.x, this.box3D.min.y, this.box3D.max.z);
+    points[4].set(this.box3D.max.x, this.box3D.max.y, this.box3D.min.z);
+    points[5].set(this.box3D.min.x, this.box3D.max.y, this.box3D.min.z);
+    points[6].set(this.box3D.min.x, this.box3D.min.y, this.box3D.min.z);
+    points[7].set(this.box3D.max.x, this.box3D.min.y, this.box3D.min.z);
 
     return points;
 };
 
-OBB.prototype.cPointsWorld = function cPointsWorld(points) {
+OBB.prototype._cPointsWorld = function _cPointsWorld(points) {
     var m = this.matrixWorld;
 
     for (var i = 0, max = points.length; i < max; i++) {
