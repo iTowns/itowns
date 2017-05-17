@@ -1,6 +1,7 @@
 // default values
 let logDepthBufferSupported = false;
 let maxTexturesUnits = 8;
+let maxTextureSize;
 
 export default {
     isLogDepthBufferSupported() {
@@ -13,9 +14,13 @@ export default {
     getMaxTextureUnitsCount() {
         return maxTexturesUnits;
     },
+    getMaxTextureSize() {
+        return maxTextureSize;
+    },
     updateCapabilities(renderer) {
         const gl = renderer.context;
         maxTexturesUnits = gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS);
+        maxTextureSize = renderer.capabilities.maxTextureSize;
 
         const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
         if (debugInfo !== null) {

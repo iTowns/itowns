@@ -100,7 +100,7 @@ TileMesh.prototype.setTextureElevation = function setTextureElevation(elevation)
     const offsetScale = elevation.pitch || new THREE.Vector4(0, 0, 1, 1);
     this.setBBoxZ(elevation.min, elevation.max);
 
-    this.material.setTexture(elevation.texture, l_ELEVATION, 0, offsetScale);
+    this.material.setElevationTexture(elevation.texture, offsetScale);
 };
 
 
@@ -121,18 +121,13 @@ TileMesh.prototype.updateGeometricError = function updateGeometricError() {
     this.geometricError = this.boundingSphere.radius / SIZE_TEXTURE_TILE;
 };
 
-TileMesh.prototype.setTexturesLayer = function setTexturesLayer(textures, layerType, layerId) {
+TileMesh.prototype.setTexturesLayer = function setTexturesLayer(textures, layerType, layer) {
     if (this.material === null) {
         return;
     }
     if (textures) {
-        this.material.setTexturesLayer(textures, layerType, layerId);
+        this.material.setTexturesLayer(textures, layerType, layer);
     }
-};
-
-TileMesh.prototype.getLayerTextures = function getLayerTextures(layerType, layerId) {
-    const mat = this.material;
-    return mat.getLayerTextures(layerType, layerId);
 };
 
 TileMesh.prototype.isColorLayerLoaded = function isColorLayerLoaded(layerId) {

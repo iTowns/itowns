@@ -1,4 +1,5 @@
 import { l_ELEVATION, l_COLOR, EMPTY_TEXTURE_ZOOM } from '../Renderer/LayeredMaterialConstants';
+import { acquireTexture, releaseTexture } from '../Renderer/LayeredMaterial';
 import { chooseNextLevelToFetch } from '../Core/Layer/LayerUpdateStrategy';
 import LayerUpdateState from '../Core/Layer/LayerUpdateState';
 import { ImageryLayers } from '../Core/Layer/Layer';
@@ -11,30 +12,46 @@ const MAX_RETRY = 4;
 function initNodeImageryTexturesFromParent(node, parent, layer) {
     if (parent.material && parent.material.getColorLayerLevelById(layer.id) > EMPTY_TEXTURE_ZOOM) {
         const coords = node.getCoordsForLayer(layer);
-        const offsetTextures = node.material.getLayerTextureOffset(layer.id);
 
-        let textureIndex = offsetTextures;
+        const indexInNode = node.material.indexOfColorLayer(layer.id);
+        const indexInParent = parent.material.indexOfColorLayer(layer.id);
+
+        const offsetScale = node.material.offsetScale[l_COLOR][layer.id];
+
+        let found = 0;
+        const atlas = parent.material.uniforms.atlasTextures.value[indexInParent];
         for (const c of coords) {
-            for (const texture of parent.material.getLayerTextures(l_COLOR, layer.id)) {
-                if (c.isInside(texture.coords)) {
-                    const result = c.offsetToParent(texture.coords);
-                    node.material.textures[l_COLOR][textureIndex] = texture;
-                    node.material.offsetScale[l_COLOR][textureIndex] = result;
-                    textureIndex++;
+            for (let i = 0; i < atlas.coords.length; i++) {
+                const parentCoords = atlas.coords[i];
+
+                if (c.isInside(parentCoords)) {
+                    const result = c.offsetToParent(parentCoords);
+
+                    const p = atlas.uv[i];
+
+                    const idx = coords.indexOf(c);
+                    offsetScale[idx] = p.clone();
+                    offsetScale[idx].x += result.x * p.z;
+                    offsetScale[idx].y += result.y * p.w;
+                    offsetScale[idx].z *= result.z;
+                    offsetScale[idx].w *= result.z;
+
+                    found++;
                     break;
                 }
             }
         }
 
         if (__DEBUG__) {
-            if ((textureIndex - offsetTextures) != coords.length) {
+            if (found != coords.length) {
                 /* eslint-disable */
-                console.error(`non-coherent result ${textureIndex} ${offsetTextures} vs ${coords.length}. ${coords}`);
+                console.error(`non-coherent result ${textureIndex} ${found} vs ${coords.length}. ${coords}`);
                 /* eslint-enable */
             }
         }
-        const index = node.material.indexOfColorLayer(layer.id);
-        node.material.layerTexturesCount[index] = coords.length;
+
+        releaseTexture(node.material.uniforms.atlasTextures.value[indexInNode]);
+        node.material.uniforms.atlasTextures.value[indexInNode] = acquireTexture(atlas);
         node.material.loadedTexturesCount[l_COLOR] += coords.length;
     }
 }
@@ -58,7 +75,7 @@ function initNodeElevationTextureFromParent(node, parent, layer) {
         // extract min-max from the texture (too few information), we instead chose
         // to use parent's min-max.
         const useMinMaxFromParent = node.level - texture.coords.zoom > 6;
-        if (!useMinMaxFromParent) {
+        if (!useMinMaxFromParent && layer.options.mimetype.indexOf('x-bil') > 0) {
             const { min, max } = OGCWebServiceHelper.ioDXBIL.computeMinMaxElevation(
                 texture.image.data,
                 SIZE_TEXTURE_TILE, SIZE_TEXTURE_TILE,
@@ -147,6 +164,7 @@ export function updateLayeredMaterialNodeImagery(context, layer, node) {
     }
 
     const material = node.material;
+    let index = material.indexOfColorLayer(layer.id);
 
     // Initialisation
     if (node.layerUpdateState[layer.id] === undefined) {
@@ -243,6 +261,7 @@ export function updateLayeredMaterialNodeImagery(context, layer, node) {
         priority: nodeCommandQueuePriorityFunction(node),
         earlyDropFunction: refinementCommandCancellationFn,
         targetLevel,
+        rawImage: true, // color textures use atlas so we request an img, not a texture
     };
 
     return context.scheduler.execute(command).then(
@@ -252,9 +271,9 @@ export function updateLayeredMaterialNodeImagery(context, layer, node) {
             }
 
             if (Array.isArray(result)) {
-                node.setTexturesLayer(result, l_COLOR, layer.id);
+                node.setTexturesLayer(result, l_COLOR, layer);
             } else if (result.texture) {
-                node.setTexturesLayer([result], l_COLOR, layer.id);
+                node.setTexturesLayer([result], l_COLOR, layer);
             } else {
                 // TODO: null texture is probably an error
                 // Maybe add an error counter for the node/layer,
