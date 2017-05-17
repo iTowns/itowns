@@ -1,9 +1,9 @@
 import * as THREE from 'three';
-import SchemeTile from '../Scene/SchemeTile';
 import MathExt from '../Core/Math/MathExtended';
+import SchemeTile from '../Core/Geographic/SchemeTile';
 import { UNIT, ellipsoidSizes } from '../Core/Geographic/Coordinates';
-import BoundingBox from '../Scene/BoundingBox';
-import { SIZE_TEXTURE_TILE } from '../Core/Commander/Providers/OGCWebServiceHelper';
+import { SIZE_TEXTURE_TILE } from '../Core/Scheduler/Providers/OGCWebServiceHelper';
+import Extent from '../Core/Geographic/Extent';
 
 const cV = new THREE.Vector3();
 let vhMagnitudeSquared;
@@ -19,12 +19,13 @@ export function preGlobeUpdate(context) {
     vhMagnitudeSquared = cV.lengthSq() - 1.0;
 
     // pre-sse
-    const hypotenuse = Math.sqrt(context.camera.width * context.camera.width + context.camera.height * context.camera.height);
+    const canvasSize = context.engine.getWindowSize();
+    const hypotenuse = canvasSize.length();
     const radAngle = context.camera.FOV * Math.PI / 180;
 
      // TODO: not correct -> see new preSSE
     // const HFOV = 2.0 * Math.atan(Math.tan(radAngle * 0.5) / context.camera.ratio);
-    const HYFOV = 2.0 * Math.atan(Math.tan(radAngle * 0.5) * hypotenuse / context.camera.width);
+    const HYFOV = 2.0 * Math.atan(Math.tan(radAngle * 0.5) * hypotenuse / canvasSize.x);
 
     preSSE = hypotenuse * (2.0 * Math.tan(HYFOV * 0.5));
 }
@@ -58,16 +59,8 @@ function horizonCulling(node) {
     return isVisible;
 }
 
-const frustum = new THREE.Frustum();
-const obbViewMatrix = new THREE.Matrix4();
-
 function frustumCullingOBB(node, camera) {
-    // Move camera in OBB local space
-    obbViewMatrix.multiplyMatrices(camera.viewMatrix, node.OBB().matrixWorld);
-
-    frustum.setFromMatrix(obbViewMatrix);
-
-    return frustum.intersectsBox(node.OBB().box3D);
+    return camera.isBox3DVisible(node.OBB().box3D, node.OBB().matrixWorld);
 }
 
 export function globeCulling(node, camera) {
@@ -120,17 +113,16 @@ export function globeSchemeTileWMTS(type) {
 
     if (type === 0) {
         // bbox longitude(0,360),latitude(-90,90)
-        schemeT.add(new BoundingBox('EPSG:4326', 0, MathExt.PI, -MathExt.PI_OV_TWO, MathExt.PI_OV_TWO));
-        schemeT.add(new BoundingBox('EPSG:4326', MathExt.PI, MathExt.TWO_PI, -MathExt.PI_OV_TWO, MathExt.PI_OV_TWO));
+        schemeT.add(new Extent('EPSG:4326', 0, MathExt.PI, -MathExt.PI_OV_TWO, MathExt.PI_OV_TWO));
+        schemeT.add(new Extent('EPSG:4326', MathExt.PI, MathExt.TWO_PI, -MathExt.PI_OV_TWO, MathExt.PI_OV_TWO));
     } else if (type == 1) {
         // bbox longitude(-180,180),latitude(-90,90)
-        schemeT.add(new BoundingBox('EPSG:4326', -MathExt.PI, 0, -MathExt.PI_OV_TWO, MathExt.PI_OV_TWO));
-        schemeT.add(new BoundingBox('EPSG:4326', 0, MathExt.PI, -MathExt.PI_OV_TWO, MathExt.PI_OV_TWO));
+        schemeT.add(new Extent('EPSG:4326', -MathExt.PI, 0, -MathExt.PI_OV_TWO, MathExt.PI_OV_TWO));
+        schemeT.add(new Extent('EPSG:4326', 0, MathExt.PI, -MathExt.PI_OV_TWO, MathExt.PI_OV_TWO));
     }
     // store internally as Radians to avoid doing too much deg->rad conversions
     for (const bbox of schemeT.schemeBB) {
-        bbox.minCoordinate._internalStorageUnit = UNIT.RADIAN;
-        bbox.maxCoordinate._internalStorageUnit = UNIT.RADIAN;
+        bbox._internalStorageUnit = UNIT.RADIAN;
     }
     return schemeT;
 }

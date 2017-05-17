@@ -51,6 +51,16 @@ export function crsToUnit(crs) {
     }
 }
 
+export function reasonnableEpsilonForUnit(unit) {
+    switch (unit) {
+        case UNIT.RADIAN: return 0.00001;
+        case UNIT.DEGREE: return 0.01;
+        case UNIT.METER: return 0.001;
+        default:
+            return 0;
+    }
+}
+
 function _crsToUnitWithError(crs) {
     const u = crsToUnit(crs);
     if (crs === undefined || u === undefined) {
@@ -127,7 +137,7 @@ function _convert(coordsIn, newCrs) {
     }
 }
 
-function _convertValue(unitIn, unitOut, value) {
+export function convertValueToUnit(unitIn, unitOut, value) {
     if (unitOut == undefined || unitIn == unitOut) {
         return value;
     } else {
@@ -149,11 +159,18 @@ function Coordinates(crs, ...coordinates) {
     _crsToUnitWithError(crs);
     this.crs = crs;
     this._values = new Float64Array(3);
-    for (let i = 0; i < coordinates.length && i < 3; i++) {
-        this._values[i] = coordinates[i];
-    }
-    for (let i = coordinates.length; i < 3; i++) {
-        this._values[i] = 0;
+
+    if (coordinates.length == 1 && coordinates[0] instanceof THREE.Vector3) {
+        this._values[0] = coordinates[0].x;
+        this._values[1] = coordinates[0].y;
+        this._values[2] = coordinates[0].z;
+    } else {
+        for (let i = 0; i < coordinates.length && i < 3; i++) {
+            this._values[i] = coordinates[i];
+        }
+        for (let i = coordinates.length; i < 3; i++) {
+            this._values[i] = 0;
+        }
     }
     this._internalStorageUnit = crsToUnit(crs);
 }
@@ -166,12 +183,12 @@ Coordinates.prototype.clone = function clone() {
 
 Coordinates.prototype.longitude = function longitude(unit) {
     _assertIsGeographic(this.crs);
-    return _convertValue(this._internalStorageUnit, unit, this._values[0]);
+    return convertValueToUnit(this._internalStorageUnit, unit, this._values[0]);
 };
 
 Coordinates.prototype.latitude = function latitude(unit) {
     _assertIsGeographic(this.crs);
-    return _convertValue(this._internalStorageUnit, unit, this._values[1]);
+    return convertValueToUnit(this._internalStorageUnit, unit, this._values[1]);
 };
 
 Coordinates.prototype.altitude = function altitude() {
@@ -225,9 +242,6 @@ export const C = {
      * @param {number} position.y - the y component of the position
      * @param {number} position.z - the z component of the position
      */
-    fromXYZ: function fromXYZ(crs, position) {
-        return new Coordinates(crs, position.x, position.y, position.z);
-    },
     EPSG_4326: function EPSG_4326(...args) {
         return new Coordinates('EPSG:4326', ...args);
     },

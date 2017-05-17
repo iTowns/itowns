@@ -1,7 +1,9 @@
 /* global menuGlobe */
 import Chart from 'chart.js';
-import { C } from '../../src/Core/Geographic/Coordinates';
+import Coordinates from '../../src/Core/Geographic/Coordinates';
 import OBBHelper from './OBBHelper';
+import View from '../../src/Core/View';
+
 /**
  * Create a debug instance attached to an itowns instance
  *
@@ -10,14 +12,14 @@ import OBBHelper from './OBBHelper';
  * @return {Debug} a debug instance
  */
 // disabling eslint errors as it is the exported constructor
-function Debug(scene) {
+function Debug(view, viewerDiv) {
     // CHARTS
     // create charts div
     const chartDiv = document.createElement('div');
     chartDiv.id = 'chart-div';
     chartDiv.style = 'position: absolute; bottom: 0; left: 0; width: 100vw; height: 20rem; background-color: white; display: none';
 
-    scene.viewerDiv.appendChild(chartDiv);
+    viewerDiv.appendChild(chartDiv);
 
     const leftChart = document.createElement('div');
     leftChart.id = 'chart-div-left';
@@ -134,7 +136,7 @@ function Debug(scene) {
 
         // update bar graph
         const stats = {};
-        countVisible(scene.gfxEngine.scene3D, stats);
+        countVisible(view.mainLoop.gfxEngine.scene3D, stats);
         let totalVisible = 0;
         let totalDisplayed = 0;
         nbVisibleLabels.length = 0;
@@ -151,7 +153,7 @@ function Debug(scene) {
 
 
         // update line graph
-        const newCount = countElem(scene.gfxEngine.scene3D);
+        const newCount = countElem(view.mainLoop.gfxEngine.scene3D);
 
         // test if we values didn't change
         if (nbObjectsDataset.data.length > 1) {
@@ -211,45 +213,47 @@ function Debug(scene) {
     });
 
     function applyToNodeFirstMaterial(cb) {
-        scene.gfxEngine.scene3D.traverse((object) => {
+        view.mainLoop.gfxEngine.scene3D.traverse((object) => {
             if (object.materials) {
                 cb(object.materials[0]);
             }
         });
-        scene.notifyChange();
+        view.notifyChange();
     }
 
     // tiles outline
     gui.add(state, 'showOutline').name('Show tiles outline').onChange((newValue) => {
-        for (const geometryLayer of scene._geometryLayers) {
+        for (const geometryLayer of view._layers) {
             geometryLayer.showOutline = newValue;
         }
         applyToNodeFirstMaterial((material) => {
             material.uniforms.showOutline = { value: newValue };
             material.needsUpdate = true;
         });
+        view.notifyChange(0, true);
     });
 
     // tiles wireframe
     gui.add(state, 'wireframe').name('Wireframe').onChange((newValue) => {
-        for (const geometryLayer of scene._geometryLayers) {
+        for (const geometryLayer of view._layers) {
             geometryLayer.wireframe = newValue;
         }
         applyToNodeFirstMaterial((material) => {
             material.wireframe = newValue;
         });
+        view.notifyChange(0, true);
     });
 
     gui.add(state, 'eventsDebug').name('Debug event').onChange((() => {
         let eventFolder;
         return (newValue) => {
-            const controls = scene.currentControls();
+            const controls = view.currentControls();
             const listeners = [];
             if (newValue) {
                 eventFolder = gui.addFolder('Events');
 
                 // camera-target-updated event
-                const initialPosition = C.fromXYZ(scene.referenceCrs, controls.getCameraTargetPosition()).as('EPSG:4326');
+                const initialPosition = new Coordinates(view.referenceCrs, controls.getCameraTargetPosition()).as('EPSG:4326');
                 const roundedLat = Math.round(initialPosition.latitude() * 10000) / 10000;
                 const roundedLon = Math.round(initialPosition.longitude() * 10000) / 10000;
                 state.cameraTargetUpdated = `lat: ${roundedLat} lon: ${roundedLon}`;
@@ -274,37 +278,43 @@ function Debug(scene) {
     })());
 
     // hook that to scene.update
-    const oldUpdate = Object.getPrototypeOf(scene).update.bind(scene);
-    scene.update = function debugUpdate() {
+    const ml = view.mainLoop;
+    const oldUpdate = Object.getPrototypeOf(ml)._update.bind(ml);
+    ml._update = function debugUpdate(view) {
         // regular itowns update
-        oldUpdate();
+        oldUpdate(view);
         // debug graphs update
         debugChartUpdate();
         // obb layer update
-        for (const gLayer of scene._geometryLayers) {
+        for (const gLayer of view._layers) {
             const obbLayerAlreadyAdded =
-                scene.getAttachedLayers(
-                    (a, l) => l.id == gLayer.id && a.id.indexOf('_obb_debug') >= 0).length > 0;
+                view.getLayers(
+                    (a, l) => l && l.id == gLayer.id && a.id.indexOf('_obb_debug') >= 0).length > 0;
 
             // missing obb layer -> add it
             if (!obbLayerAlreadyAdded) {
-                addGeometryLayerDebugFeatures(gLayer, scene, gui, state);
+                addGeometryLayerDebugFeatures(gLayer, view, gui, state);
             }
         }
     };
 }
 
 
-function addGeometryLayerDebugFeatures(layer, scene, gui, state) {
+function addGeometryLayerDebugFeatures(layer, view, gui, state) {
     const obb_layer_id = `${layer.id}_obb_debug`;
 
     // itowns layer definition
     const debugIdUpdate = function debugIdUpdate(context, layer, node) {
+        const enabled = view.camera.camera3D.layers.test({ mask: 1 << layer.threejsLayer });
+
+        if (!enabled) {
+            return;
+        }
         var n = node.children.filter(n => n.layer == obb_layer_id);
 
         if (node.material.visible) {
             if (n.length == 0) {
-                const l = context.scene.getAttachedLayers(l => l.id === obb_layer_id)[0];
+                const l = context.view.getLayers(l => l.id === obb_layer_id)[0];
                 const helper = new OBBHelper(node.OBB(), `id:${node.id}`);
                 helper.layer = obb_layer_id;
                 const l3js = l.threejsLayer;
@@ -325,37 +335,50 @@ function addGeometryLayerDebugFeatures(layer, scene, gui, state) {
     };
     const debugLayer = {
         id: obb_layer_id,
+        type: 'debug',
         update: debugIdUpdate,
     };
 
-    const threeLayer = scene.getUniqueThreejsLayer();
-    layer.attach(debugLayer);
+    const threeLayer = view.mainLoop.gfxEngine.getUniqueThreejsLayer();
+    View.prototype.addLayer.call(view, debugLayer, layer);
     debugLayer.threejsLayer = threeLayer;
-    scene.currentCamera().camera3D.layers.disable(threeLayer);
+    view.camera.camera3D.layers.disable(threeLayer);
 
     // add to debug gui
     const folder = gui.addFolder(`Geometry Layer: ${layer.id}`);
 
-    const enabled = scene.currentCamera().camera3D.layers.test({ mask: 1 << layer.threeLayer });
+    const enabled = view.camera.camera3D.layers.test({ mask: 1 << layer.threejsLayer });
     state[layer.id] = enabled;
     folder.add(state, layer.id).name('Visible').onChange((newValue) => {
         if (newValue) {
-            scene.currentCamera().camera3D.layers.enable(layer.threeLayer);
+            view.camera.camera3D.layers.enable(layer.threeLayer);
         } else {
-            scene.currentCamera().camera3D.layers.disable(layer.threeLayer);
+            view.camera.camera3D.layers.disable(layer.threeLayer);
         }
-        scene.notifyChange();
+        view.notifyChange();
     });
 
     state[debugLayer.id] = false;
     folder.add(state, debugLayer.id).name('OBB visible').onChange((newValue) => {
         if (newValue) {
-            scene.currentCamera().camera3D.layers.enable(debugLayer.threejsLayer);
+            view.camera.camera3D.layers.enable(debugLayer.threejsLayer);
         } else {
-            scene.currentCamera().camera3D.layers.disable(debugLayer.threejsLayer);
+            view.camera.camera3D.layers.disable(debugLayer.threejsLayer);
         }
-        scene.notifyChange();
+        view.notifyChange();
     });
+
+    var consistencyCheck = { click: () => {
+        const imageryLayers = view.getLayers(a => a.type == 'color');
+        for (const node of layer.level0Nodes) {
+            node.traverse((n) => {
+                if (n.materials && n.materials[0].visible) {
+                    n.materials[0].checkLayersConsistency(n, imageryLayers);
+                }
+            });
+        }
+    } };
+    folder.add(consistencyCheck, 'click').name('Check textures');
 }
 
-window.Debug = Debug;
+export default Debug;
