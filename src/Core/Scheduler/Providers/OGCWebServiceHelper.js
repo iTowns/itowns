@@ -40,7 +40,6 @@ export default {
         texture.minFilter = THREE.LinearFilter;
         texture.anisotropy = 16;
 
-
         cachePending.set(url, { texture, promise });
 
         return promise.then(() => {
@@ -49,6 +48,28 @@ export default {
             }
             cachePending.delete(url);
             return texture;
+        });
+    },
+    getColorImgByUrl(url, networkOptions) {
+        const key = `img-${url}`;
+        const cachedTexture = cache.getRessource(key);
+
+        if (cachedTexture) {
+            return Promise.resolve(cachedTexture);
+        }
+
+        const promise = cachePending.has(key) ?
+            cachePending.get(key) :
+            Fetcher.img(url, networkOptions);
+
+        cachePending.set(key, promise);
+
+        return promise.then((img) => {
+            if (!cache.getRessource(key)) {
+                cache.addRessource(key, img);
+            }
+            cachePending.delete(key);
+            return img;
         });
     },
     getXBilTextureByUrl(url) {

@@ -86,4 +86,17 @@ export default {
             return response.arrayBuffer();
         });
     },
+
+    img(url, options = {}) {
+        return new Promise((resolve, reject) => {
+            var image = new Image();
+
+            image.onload = () => resolve(image);
+
+            image.onerror = () => reject(new Error(`Error loading ${url}`));
+
+            image.crossOrigin = options.crossOrigin;
+            image.src = url;
+        });
+    },
 };

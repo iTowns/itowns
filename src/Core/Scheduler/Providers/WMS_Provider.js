@@ -75,7 +75,7 @@ WMS_Provider.prototype.tileInsideLimit = function tileInsideLimit(tile, layer) {
     return tile.level >= layer.options.zoom.min && tile.level <= layer.options.zoom.max && layer.extent.intersect(tile.extent);
 };
 
-WMS_Provider.prototype.getColorTexture = function getColorTexture(tile, layer) {
+WMS_Provider.prototype.getColorTexture = function getColorTexture(tile, layer, rawImage) {
     if (!this.tileInsideLimit(tile, layer)) {
         return Promise.reject(`Tile '${tile}' is outside layer bbox ${layer.extent}`);
     }
@@ -88,7 +88,8 @@ WMS_Provider.prototype.getColorTexture = function getColorTexture(tile, layer) {
     const pitch = new THREE.Vector3(0, 0, 1);
     const result = { pitch };
 
-    return OGCWebServiceHelper.getColorTextureByUrl(url, layer.networkOptions).then((texture) => {
+    return (rawImage ? OGCWebServiceHelper.getColorImgByUrl(url, layer.networkOptions) : OGCWebServiceHelper.getColorTextureByUrl(url, layer.networkOptions))
+    .then((texture) => {
         result.texture = texture;
         result.texture.extent = tile.extent; // useless?
         result.texture.coords = coords;
@@ -118,7 +119,7 @@ WMS_Provider.prototype.executeCommand = function executeCommand(command) {
     const func = supportedFormats[layer.format];
 
     if (func) {
-        return func(tile, layer);
+        return func(tile, layer, command.rawImage);
     } else {
         return Promise.reject(new Error(`Unsupported mimetype ${layer.format}`));
     }

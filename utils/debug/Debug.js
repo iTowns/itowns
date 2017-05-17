@@ -249,6 +249,7 @@ function Debug(view, viewerDiv) {
         showOutline: false,
         wireframe: false,
         displayCharts: false,
+        displayCanvas: false,
         eventsDebug: false,
     };
 
@@ -260,6 +261,21 @@ function Debug(view, viewerDiv) {
             chartDiv.style.display = 'none';
         }
     });
+
+    const canvasDiv = document.createElement('div');
+    canvasDiv.id = 'canvasDebug';
+    canvasDiv.style = 'position: absolute; top: 0; right: 0; height: 100%; overflow: auto; width: 25%; background-color: white; display: none; border-width: 0 0 3px 3px; border-style:solid; border-color: black;';
+    viewerDiv.appendChild(canvasDiv);
+    document.styleSheets[0].insertRule('#canvasDebug > canvas { width: 100%; border-width: 3px 0; border-style:solid; border-color: black; }', 1);
+
+    gui.add(state, 'displayCanvas').name('Display canvas').onChange((newValue) => {
+        if (newValue) {
+            canvasDiv.style.display = 'block';
+        } else {
+            canvasDiv.style.display = 'none';
+        }
+    });
+
 
     function applyToNodeFirstMaterial(cb) {
         view.scene.traverse((object) => {
@@ -411,18 +427,6 @@ function addGeometryLayerDebugFeatures(layer, view, gui, state) {
         debugLayer.visible = newValue;
         view.notifyChange(true);
     });
-
-    var consistencyCheck = { click: () => {
-        const imageryLayers = view.getLayers(a => a.type == 'color');
-        for (const node of layer.level0Nodes) {
-            node.traverse((n) => {
-                if (n.material && n.material.visible) {
-                    n.material.checkLayersConsistency(n, imageryLayers);
-                }
-            });
-        }
-    } };
-    folder.add(consistencyCheck, 'click').name('Check textures');
 }
 
 // eslint-disable-next-line import/prefer-default-export
