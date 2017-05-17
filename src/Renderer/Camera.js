@@ -8,7 +8,7 @@
 
 import * as THREE from 'three';
 
-function Camera(width, height, debug) {
+function Camera(width, height) {
     this.ratio = width / height;
     this.FOV = 30;
 
@@ -20,43 +20,16 @@ function Camera(width, height, debug) {
     this.camera3D.matrixAutoUpdate = false;
     this.camera3D.rotationAutoUpdate = false;
 
-    this.direction = new THREE.Vector3();
-    this.frustum = new THREE.Frustum();
-    this.viewMatrix = new THREE.Matrix4();
+    this._viewMatrix = new THREE.Matrix4();
+    this._visibilityTestingOffset = new THREE.Vector3();
     this.width = width;
     this.height = height;
-
-    this.cameraHelper = debug ? new THREE.CameraHelper(this.camera3D) : undefined;
 }
 
 /**
  */
 Camera.prototype.position = function position() {
     return this.camera3D.position;
-};
-
-Camera.prototype.camHelper = function camHelper() {
-    return this.cameraHelper;
-};
-
-Camera.prototype.createCamHelper = function createCamHelper() {
-    this.cameraHelper = new THREE.CameraHelper(this.camera3D);
-
-    var dir = new THREE.Vector3(0, 0, -1);
-    var quaternion = new THREE.Quaternion();
-
-    quaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), this.HFOV / 2);
-    dir.applyQuaternion(quaternion);
-    var origin = new THREE.Vector3();
-    var length = 100000000;
-    var hex = 0xffff00;
-
-    this.arrowHelper = new THREE.ArrowHelper(dir, origin, length, hex);
-    this.cameraHelper.add(this.arrowHelper);
-};
-
-Camera.prototype.matrixWorldInverse = function matrixWorldInverse() {
-    return this.camera3D.matrixWorldInverse;
 };
 
 Camera.prototype.resize = function resize(width, height) {
@@ -79,19 +52,19 @@ Camera.prototype.resize = function resize(width, height) {
 };
 
 Camera.prototype.update = function update() {
-    var vector = new THREE.Vector3(0, 0, 1);
-
-    this.direction = vector.applyQuaternion(this.camera3D.quaternion);
-
-    this.updateMatrixWorld();
-    this.viewMatrix.multiplyMatrices(this.camera3D.projectionMatrix, this.camera3D.matrixWorldInverse);
-    this.frustum.setFromMatrix(this.viewMatrix);
-};
-
-Camera.prototype.updateMatrixWorld = function updateMatrixWorld() {
+    // update matrix
     this.camera3D.updateMatrix();
-    this.camera3D.updateMatrixWorld(true);
-    this.camera3D.matrixWorldInverse.getInverse(this.camera3D.matrixWorld);
+    this.camera3D.updateMatrixWorld();
+
+    // keep our visibility testing matrix ready
+    this._visibilityTestingOffset.setFromMatrixPosition(this.camera3D.matrixWorld);
+    const c = this.camera3D.matrixWorld;
+    // cancel out translation
+    c.setPosition({ x: 0, y: 0, z: 0 });
+    this._viewMatrix.getInverse(c);
+    this._viewMatrix.premultiply(this.camera3D.projectionMatrix);
+    // restore translation
+    c.setPosition(this._visibilityTestingOffset);
 };
 
 Camera.prototype.getDistanceFromOrigin = function getDistanceFromOrigin() {
@@ -106,23 +79,21 @@ Camera.prototype.setRotation = function setRotation(rotation) {
     this.camera3D.quaternion.copy(rotation);
 };
 
-Camera.prototype.getFrustum = function getFrustum() {
-    this.updateMatrixWorld();
-    this.frustum.setFromMatrix(new THREE.Matrix4().multiplyMatrices(this.camera3D.projectionMatrix, this.camera3D.matrixWorldInverse));
+const temp = new THREE.Vector3();
+const frustum = new THREE.Frustum();
+const obbViewMatrix = new THREE.Matrix4();
+Camera.prototype.isBox3DVisible = function isBox3DVisible(box3d, matrixWorld) {
+    temp.setFromMatrixPosition(matrixWorld);
+    matrixWorld.elements[12] -= this._visibilityTestingOffset.x;
+    matrixWorld.elements[13] -= this._visibilityTestingOffset.y;
+    matrixWorld.elements[14] -= this._visibilityTestingOffset.z;
 
-    return this.frustum;
+    obbViewMatrix.multiplyMatrices(this._viewMatrix, matrixWorld);
+
+    matrixWorld.setPosition(temp);
+
+    frustum.setFromMatrix(obbViewMatrix);
+    return frustum.intersectsBox(box3d);
 };
-
-Camera.prototype.getFrustumLocalSpace = function getFrustumLocalSpace(position, quaternion) {
-    var m = new THREE.Matrix4();
-
-    m.makeRotationFromQuaternion(quaternion.inverse());
-    m.setPosition(position.negate().applyQuaternion(quaternion));
-
-    var f = new THREE.Frustum();
-    f.setFromMatrix(m.premultiply(this.camera3D.projectionMatrix));
-    return f;
-};
-
 
 export default Camera;

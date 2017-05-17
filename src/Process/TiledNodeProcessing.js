@@ -1,34 +1,42 @@
 import * as THREE from 'three';
-import BoundingBox from '../Scene/BoundingBox';
+import Extent from '../Core/Geographic/Extent';
+import { CancelledCommandException } from '../Core/Scheduler/Scheduler';
 
-
-function subdivisionBoundingBoxes(bbox) {
+function subdivisionExtents(bbox) {
     const center = bbox.center();
 
-    const northWest = new BoundingBox(bbox.crs(), bbox.west(), center._values[0], center._values[1], bbox.north());
-    const northEast = new BoundingBox(bbox.crs(), center._values[0], bbox.east(), center._values[1], bbox.north());
-    const southWest = new BoundingBox(bbox.crs(), bbox.west(), center._values[0], bbox.south(), center._values[1]);
-    const southEast = new BoundingBox(bbox.crs(), center._values[0], bbox.east(), bbox.south(), center._values[1]);
+    const northWest = new Extent(bbox.crs(),
+        bbox.west(), center._values[0],
+        center._values[1], bbox.north());
+    const northEast = new Extent(bbox.crs(),
+        center._values[0], bbox.east(),
+        center._values[1], bbox.north());
+    const southWest = new Extent(bbox.crs(),
+        bbox.west(), center._values[0],
+        bbox.south(), center._values[1]);
+    const southEast = new Extent(bbox.crs(),
+        center._values[0], bbox.east(),
+        bbox.south(), center._values[1]);
 
     // scheme tiles store their coordinates in radians internally,
     // so we need to fix the new bboxes as well
     const result = [northWest, northEast, southWest, southEast];
 
     for (const r of result) {
-        r.minCoordinate._internalStorageUnit = bbox.minCoordinate._internalStorageUnit;
-        r.maxCoordinate._internalStorageUnit = bbox.minCoordinate._internalStorageUnit;
+        r._internalStorageUnit = bbox._internalStorageUnit;
     }
     return result;
 }
 
-function requestNewTile(scheduler, geometryLayer, bbox, parent, level) {
+function requestNewTile(view, scheduler, geometryLayer, extent, parent, level) {
     const command = {
         /* mandatory */
+        view,
         requester: parent,
         layer: geometryLayer,
         priority: 10000,
         /* specific params */
-        bbox,
+        extent,
         level,
         redraw: false,
         threejsLayer: geometryLayer.threejsLayer,
@@ -42,15 +50,15 @@ function requestNewTile(scheduler, geometryLayer, bbox, parent, level) {
 
 function subdivideNode(context, layer, node, initNewNode) {
     if (!node.pendingSubdivision && !node.children.some(n => n.layer == layer.id)) {
-        const bboxes = subdivisionBoundingBoxes(node.bbox);
+        const extents = subdivisionExtents(node.extent);
         // TODO: pendingSubdivision mechanism is fragile, get rid of it
         node.pendingSubdivision = true;
 
         const promises = [];
         const children = [];
-        for (const bbox of bboxes) {
+        for (const extent of extents) {
             promises.push(
-                requestNewTile(context.scheduler, layer, bbox, node).then((child) => {
+                requestNewTile(context.view, context.scheduler, layer, extent, node).then((child) => {
                     children.push(child);
                     initNewNode(context, layer, node, child);
                     return node;
@@ -62,6 +70,9 @@ function subdivideNode(context, layer, node, initNewNode) {
                 node.add(child);
                 child.updateMatrixWorld(true);
                 child.OBB().update();
+
+                child.material.uniforms.lightPosition.value = node.material.uniforms.lightPosition.value;
+                child.material.uniforms.lightingEnabled.value = node.material.uniforms.lightingEnabled.value;
             }
             // TODO
             /*
@@ -73,10 +84,12 @@ function subdivideNode(context, layer, node, initNewNode) {
             }
             */
             node.pendingSubdivision = false;
-            context.scene.notifyChange(0, false);
+            context.view.notifyChange(0, false);
         }, (err) => {
             node.pendingSubdivision = false;
-            throw new Error(err);
+            if (!(err instanceof CancelledCommandException)) {
+                throw new Error(err);
+            }
         });
     }
 }
@@ -92,7 +105,7 @@ export function initTiledGeometryLayer(schemeTile) {
 
         for (let i = 0; i < schemeTile.rootCount(); i++) {
             _promises.push(
-                requestNewTile(context.scheduler, layer, schemeTile.getRoot(i), undefined, 0));
+                requestNewTile(context.view, context.scheduler, layer, schemeTile.getRoot(i), undefined, 0));
         }
         Promise.all(_promises).then((level0s) => {
             layer.level0Nodes = level0s;
@@ -100,7 +113,7 @@ export function initTiledGeometryLayer(schemeTile) {
                 // TODO: support a layer.root attribute, to be able
                 // to add a layer to a three.js node, e.g:
                 // layer.root.add(level0);
-                context.scene.gfxEngine.scene3D.add(level0);
+                context.engine.scene3D.add(level0);
                 level0.updateMatrixWorld();
             }
         });
@@ -151,7 +164,7 @@ export function processTiledGeometryNode(cullingTest, subdivisionTest, initNewNo
                 const positionWorld = new THREE.Vector3();
                 positionWorld.setFromMatrixPosition(node.matrixWorld);
                 node.setMatrixRTC(
-                    context.scene.gfxEngine.getRTCMatrixFromCenter(
+                    context.engine.getRTCMatrixFromCenter(
                         positionWorld, context.camera));
                 node.setFog(1000000000);
 

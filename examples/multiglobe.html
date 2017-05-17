@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>Globe</title>
+
+    <style type="text/css">
+            html {height: 100%}
+        body { margin: 0; overflow:hidden; height:100%}
+
+            div {
+                margin : auto auto;
+                width: 100%;
+                padding: 0;
+                height: 50%
+                /*margin-top: 50vh;
+                transform: translateY(-50%);*/
+            }
+            #menuDiv {position: absolute; top:0px; margin-left: 0px;}
+
+
+        </style>
+        <meta charset="UTF-8">
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="/node_modules/dat.gui/build/dat.gui.min.js"></script>
+    </head>
+    <body>
+        <div id="viewerDiv"></div>
+        <div id="viewerDiv2"></div>
+        <script src="/examples/GUI/GuiTools.js"></script>
+        <script src="/dist/itowns.js"></script>
+        <script src="/dist/debug.js"></script>
+        <script type="text/javascript">
+            /* global itowns,document,GuiTools*/
+
+            const positionOnGlobe = { longitude: 2.351323, latitude: 48.856712, altitude: 25000000 };
+
+            // iTowns namespace defined here
+            const viewerDiv = document.getElementById('viewerDiv');
+
+            const apiGlobe = new itowns.ApiGlobe();
+            let menuGlobe = new GuiTools(apiGlobe, 'menuDiv');
+            const globeView = apiGlobe.createSceneGlobe('globe', positionOnGlobe, viewerDiv);
+            // itowns.debug = new Debug(itowns.viewer.scene);
+
+            const urlImageryLayers = [];
+            const urlElevationLayers = [];
+
+            urlImageryLayers.push('/examples/layers/JSONLayers/Ortho.json');
+            urlImageryLayers.push('/examples/layers/JSONLayers/OrthosCRS.json');
+            urlImageryLayers.push('/examples/layers/JSONLayers/ScanEX.json');
+            urlImageryLayers.push('/examples/layers/JSONLayers/Region.json');
+
+            urlElevationLayers.push('/examples/layers/JSONLayers/IGN_MNT.json');
+            urlElevationLayers.push('/examples/layers/JSONLayers/IGN_MNT_HIGHRES.json');
+
+            const imageryPromise = apiGlobe.addImageryLayersFromJSONArray(urlImageryLayers);
+            const elevationPromise = apiGlobe.addElevationLayersFromJSONArray(urlElevationLayers);
+
+            imageryPromise.then((layersColors) => { menuGlobe.addImageryLayersGUI(layersColors); });
+            elevationPromise.then((layersElevations) => { menuGlobe.addElevationLayersGUI(layersElevations); });
+
+            menuGlobe.addGUI('RealisticLighting', false,
+                (newValue) => { apiGlobe.setRealisticLightingOn(newValue); });
+
+            apiGlobe.addEventListener(itowns.INITIALIZED_EVENT, () => {
+                // eslint-disable-next-line no-console
+                console.info('Globe initialized');
+            });
+
+            apiGlobe.update();
+
+
+            // hack: not searched why yet
+            setTimeout(() => {
+                // hack because Debug access directly menuGlobe global var...
+                menuGlobe = new GuiTools(apiGlobe, 'menuDiv2');
+                const viewerDiv2 = document.getElementById('viewerDiv2');
+                const globe2 = apiGlobe.createSceneGlobe('globe', positionOnGlobe, viewerDiv2);
+
+                for (const layer of globeView.getLayers((l) => l.type == 'color' || l.type == 'elevation')) {
+                    globe2.addLayer(layer);
+                }
+
+                const e = {
+                    "type": 'color',
+                    "protocol": "wmtsc",
+                    "id": "DARK",
+                    "opacity": 0.5,
+                    "customUrl": "http://a.basemaps.cartocdn.com/dark_all/%TILEMATRIX/%COL/%ROW.png",
+                    "options": {
+                        "attribution": {
+                            "name":"CARTO",
+                            "url": "https://carto.com/"
+                        },
+                        "tileMatrixSet": "PM",
+                        "mimetype": "image/png"
+                    }
+                }
+                globe2.addLayer(e);
+                globe2.notifyChange();
+            }, 500);
+</script>
+    </body>
+</html>
