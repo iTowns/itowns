@@ -5,9 +5,10 @@ import RendererConstant from '../../Renderer/RendererConstant';
 import GlobeControls from '../../Renderer/ThreeExtended/GlobeControls';
 import { unpack1K } from '../../Renderer/MatteIdsMaterial';
 
-import { GeometryLayer } from '../Layer/Layer';
+import { GeometryLayer, ImageryLayers } from '../Layer/Layer';
 
 import Atmosphere from './Globe/Atmosphere';
+import CoordStars from '../Geographic/CoordStars';
 import Clouds from './Globe/Clouds';
 
 import { C, ellipsoidSizes } from '../Geographic/Coordinates';
@@ -16,7 +17,67 @@ import { updateLayeredMaterialNodeImagery, updateLayeredMaterialNodeElevation } 
 import { globeCulling, preGlobeUpdate, globeSubdivisionControl, globeSchemeTileWMTS, globeSchemeTile1 } from '../../Process/GlobeTileProcessing';
 import BuilderEllipsoidTile from './Globe/BuilderEllipsoidTile';
 
+export const GLOBE_VIEW_EVENTS = {
+    GLOBE_INITIALIZED: 'initialized',
+    LAYER_ADDED: 'layer-added',
+    LAYER_REMOVED: 'layer-removed',
+    LAYER_CHANGED: 'layer-changed',
+    LAYER_VISIBILITY_CHANGED: 'layer-visibility-changed',
+    LAYER_OPACITY_CHANGED: 'layer-opacity-changed',
+    LAYER_INDEX_CHANGED: 'layer-index-changed',
+};
 
+/**
+ * The intellectual property rights
+ * @typedef {Object} Attribution
+ * @property {string} name
+ * @property {string} url
+ */
+
+/**
+ * Options to wms protocol
+ * @typedef {Object} OptionsWms
+ * @property {Attribution} attribution The intellectual property rights for the layer
+ * @property {string} name
+ * @property {string} mimetype
+ */
+
+/**
+ * Options to wtms protocol
+ * @typedef {Object} OptionsWmts
+ * @property {Attribution} attribution The intellectual property rights for the layer
+ * @property {string} name
+ * @property {string} mimetype
+ * @property {string} tileMatrixSet
+ * @property {Array.<Object>} tileMatrixSetLimits The limits for the tile matrix set
+ * @property {number} tileMatrixSetLimits.minTileRow Minimum row for tiles at the level
+ * @property {number} tileMatrixSetLimits.maxTileRow Maximum row for tiles at the level
+ * @property {number} tileMatrixSetLimits.minTileCol Minimum col for tiles at the level
+ * @property {number} tileMatrixSetLimits.maxTileCol Maximum col for tiles at the level
+ * @property {Object} [zoom]
+ * @property {Object} [zoom.min] layer's zoom minimum
+ * @property {Object} [zoom.max] layer's zoom maximum
+ */
+
+/**
+ * Layer
+ * @typedef {Object} Layer
+ * @property {string} id Unique layer's id
+ * @property {string} layer.protocol wmts and wms (wmtsc for custom deprecated)
+ * @property {string} layer.url Base URL of the repository or of the file(s) to load
+ * @property {Object} layer.updateStrategy strategy to load imagery files
+ * @property {OptionsWmts|OptionsWms} layer.options WMTS or WMS options
+ */
+
+
+/**
+ * Creates the viewer Globe (the globe of iTowns).
+ * The first parameter is the coordinates on wich the globe will be centered at the initialization.
+ * The second one is the HTML div in wich the scene will be created.
+ * @constructor
+ * @params {Div} string.
+ * @param {Coords} coords.
+ */
 function GlobeView(viewerDiv, coordCarto, options) {
     THREE.Object3D.DefaultUp.set(0, 0, 1);
     const size = ellipsoidSizes().x;
@@ -175,25 +236,185 @@ function GlobeView(viewerDiv, coordCarto, options) {
     this.wgs84TileLayer = wgs84TileLayer;
 
     this.mainLoop.addEventListener('command-queue-empty', () => {
-        viewerDiv.dispatchEvent(new CustomEvent('globe-built'));
+        this.dispatchEvent({ type: 'globe-built' });
     });
+
+    const fn = () => {
+        this.removeEventListener('globe-built', fn);
+        this.dispatchEvent({ type: 'initialized' });
+    };
+
+    this.addEventListener('globe-built', fn);
 
     window.addEventListener('resize', () => {
         this.controls.updateCamera(this.camera, this.viewerDiv.clientWidth, this.viewerDiv.clientHeight);
     }, false);
+
+    this.notifyChange(0, true);
 }
 
 GlobeView.prototype = Object.create(View.prototype);
 GlobeView.prototype.constructor = GlobeView;
 
+/**
+ * Add an elevation layer to the map. Elevations layers are used to build the terrain.
+ * Only one elevation layer is used, so if multiple layers cover the same area, the one
+ * with best resolution is used (or the first one is resolution are identical).
+ * The layer id must be unique amongst all layers already inserted.
+ * The protocol rules which parameters are then needed for the function.
+ * @param {Layer} layer
+ */
+/**
+ * This function adds an imagery layer to the scene. The layer id must be unique.
+ * The protocol rules wich parameters are then needed for the function.
+ * @param {Layer} Layer
+ */
 GlobeView.prototype.addLayer = function addLayer(layer) {
     if (layer.type == 'color') {
+        layer.frozen = false;
+        layer.visible = true;
+        layer.opacity = 1.0;
+        const colorLayerCount = this.getLayers(l => l.type === 'color').length;
+        layer.sequence = colorLayerCount - 1;
         layer.update = updateLayeredMaterialNodeImagery;
     } else if (layer.type == 'elevation') {
+        if (layer.protocol === 'wmts' && layer.options.tileMatrixSet !== 'WGS84G') {
+            throw new Error('Only WGS84G tileMatrixSet is currently supported for WMTS elevation layers');
+        }
+        layer.frozen = false;
         layer.update = updateLayeredMaterialNodeElevation;
     }
     View.prototype.addLayer.call(this, layer, this.wgs84TileLayer);
-    // we probably want to move some code from ApiGlobe.prototype.addImageryLayer|ApiGlobeView.prototype.addElevationLayer here
+
+    this.dispatchEvent({ type: GLOBE_VIEW_EVENTS.LAYER_ADDED });
+
+    return layer;
+};
+
+/**
+ * Removes a specific imagery layer from the current layer list. This removes layers inserted with attach().
+ * @param      {string}   layerId      The identifier
+ * @return     {boolean}  { description_of_the_return_value }
+ */
+GlobeView.prototype.removeLayer = function removeImageryLayer(layerId) {
+    const layer = this.getLayer(l => l.id === layerId);
+    if (layer.type === 'color' && this.wgs84TileLayer.detach(layer)) {
+        var cO = function cO(object) {
+            if (object.removeColorLayer) {
+                object.removeColorLayer(layerId);
+            }
+        };
+
+        for (const root of this.wgs84TileLayer.level0Nodes) {
+            root.traverse(cO);
+        }
+
+        for (const color of this.getImageryLayers()) {
+            if (color.sequence > layer.sequence) {
+                color.sequence--;
+            }
+        }
+
+        this.notifyChange(0, true);
+        this.dispatchEvent({
+            type: GLOBE_VIEW_EVENTS.LAYER_REMOVED,
+            layerId,
+        });
+
+        return true;
+    } else {
+        throw new Error('Only remove color layer');
+    }
+};
+
+function updateLayersOrdering(geometryLayer, imageryLayers) {
+    var sequence = ImageryLayers.getColorLayersIdOrderedBySequence(imageryLayers);
+
+    var cO = function cO(object) {
+        if (object.changeSequenceLayers) {
+            object.changeSequenceLayers(sequence);
+        }
+    };
+
+    for (const node of geometryLayer.level0Nodes) {
+        node.traverse(cO);
+    }
+}
+
+GlobeView.prototype.moveLayerUp = function moveLayerUp(layerId) {
+    const imageryLayers = this.getImageryLayers();
+    const layer = this.getLayer(l => l.id === layerId);
+    ImageryLayers.moveLayerUp(layer, imageryLayers);
+    updateLayersOrdering(this.wgs84TileLayer, imageryLayers);
+    this.notifyChange(0, true);
+};
+
+GlobeView.prototype.moveLayerDown = function moveLayerDown(layerId) {
+    const imageryLayers = this.getImageryLayers();
+    const layer = this.getLayer(l => l.id === layerId);
+    ImageryLayers.moveLayerDown(layer, imageryLayers);
+    updateLayersOrdering(this.wgs84TileLayer, imageryLayers);
+    this.notifyChange(0, true);
+};
+
+/**
+ * Moves a specific layer to a specific index in the layer list. This function has no effect if the layer is moved to its current index.
+ * @param      {string}  layerId   The layer's idendifiant
+ * @param      {number}  newIndex   The new index
+ */
+GlobeView.prototype.moveLayerToIndex = function moveLayerToIndex(layerId, newIndex) {
+    const imageryLayers = this.getImageryLayers();
+    const layer = this.getLayer(l => l.id === layerId);
+    ImageryLayers.moveLayerToIndex(layer, newIndex, imageryLayers);
+    updateLayersOrdering(this.wgs84TileLayer, imageryLayers);
+    this.notifyChange(0, true);
+
+    this.dispatchEvent({ type: GLOBE_VIEW_EVENTS.LAYER_CHANGED });
+    this.dispatchEvent({
+        type: GLOBE_VIEW_EVENTS.LAYER_OPACITY_CHANGED,
+        layerId,
+        layerIndex: newIndex,
+    });
+};
+
+/**
+ * Sets the visibility of a layer. If the layer is not visible in the scene, this function will no effect until the camera looks at the layer.
+ * @param {layer} a layer.
+ * @params {visible} boolean.
+ */
+GlobeView.prototype.setLayerVisibility = function setLayerVisibility(layer, visible) {
+    layer.visible = visible;
+
+    if (layer.threejsLayer != undefined) {
+        if (visible) {
+            this.camera.camera3D.layers.enable(layer.threejsLayer);
+        } else {
+            this.camera.camera3D.layers.disable(layer.threejsLayer);
+        }
+    }
+    this.notifyChange(0, true);
+    this.dispatchEvent({ type: GLOBE_VIEW_EVENTS.LAYER_CHANGED });
+    this.dispatchEvent({
+        type: GLOBE_VIEW_EVENTS.LAYER_VISIBILITY_CHANGED,
+        layerId: layer.id,
+        visible,
+    });
+};
+
+/**
+ * Sets the opacity of a layer. If the layer is not visible in the scene, this function will no effect until the layer becomes visible.
+ * @param {layer} a layer.
+ * @params {visible} boolean.
+ */
+GlobeView.prototype.setLayerOpacity = function setLayerOpacity(layer, opacity) {
+    layer.opacity = opacity;
+    this.notifyChange(0, true);
+    this.dispatchEvent({ type: GLOBE_VIEW_EVENTS.LAYER_CHANGED });
+    this.dispatchEvent({
+        type: GLOBE_VIEW_EVENTS.LAYER_OPACITY_CHANGED,
+        layerId: layer.id,
+        opacity,
+    });
 };
 
 GlobeView.prototype.selectNodeAt = function selectNodeAt(mouse) {
@@ -246,7 +467,6 @@ GlobeView.prototype.screenCoordsToNodeId = function screenCoordsToNodeId(mouse) 
 
     return Math.round(unpack);
 };
-
 
 const matrix = new THREE.Matrix4();
 matrix.elements = new Float64Array(16); // /!\ WARNING Matrix JS are in Float32Array
@@ -335,6 +555,32 @@ GlobeView.prototype.changeRenderState = function changeRenderState(newRenderStat
     this._renderState = newRenderState;
 };
 
+GlobeView.prototype.setRealisticLightingOn = function setRealisticLightingOn(value) {
+    const coSun = CoordStars.getSunPositionInScene(new Date().getTime(), 48.85, 2.35).normalize();
+
+    this.lightingPos = coSun.normalize();
+
+    const lighting = this.wgs84TileLayer.lighting;
+    lighting.enable = value;
+    lighting.position = coSun;
+
+    this.atmosphere.updateLightingPos(coSun);
+    this.atmosphere.setRealisticOn(value);
+    this.clouds.updateLightingPos(coSun);
+    this.clouds.setLightingOn(value);
+
+    this.updateMaterialUniform('lightingEnabled', value);
+    this.updateMaterialUniform('lightPosition', coSun);
+    this.notifyChange(0, true);
+};
+
+GlobeView.prototype.setLightingPos = function setLightingPos(pos) {
+    const lightingPos = pos || CoordStars.getSunPositionInScene(this.ellipsoid, new Date().getTime(), 48.85, 2.35);
+
+    this.updateMaterialUniform('lightPosition', lightingPos.clone().normalize());
+    this.notifyChange(0, true);
+};
+
 GlobeView.prototype.updateMaterialUniform = function updateMaterialUniform(uniformName, value) {
     for (const n of this.wgs84TileLayer.level0Nodes) {
         n.traverse((obj) => {
@@ -347,6 +593,5 @@ GlobeView.prototype.updateMaterialUniform = function updateMaterialUniform(unifo
         });
     }
 };
-
 
 export default GlobeView;

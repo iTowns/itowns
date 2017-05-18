@@ -1,21 +1,22 @@
 // Modules using `default` export must be imported...
 import * as THREE from 'three';
 import proj4 from 'proj4';
-import ApiGlobe, { INITIALIZED_EVENT } from './Core/Scheduler/Interfaces/ApiInterface/ApiGlobe';
 import { CONTROL_EVENTS } from './Renderer/ThreeExtended/GlobeControls';
 import View from './Core/View';
-import GlobeView from './Core/Prefab/GlobeView';
+import GlobeView, { GLOBE_VIEW_EVENTS } from './Core/Prefab/GlobeView';
 import PlanarView from './Core/Prefab/PlanarView';
 import Extent from './Core/Geographic/Extent';
 import Coordinates from './Core/Geographic/Coordinates';
+import Fetcher from './Core/Scheduler/Providers/Fetcher';
 
 // Then exported as non-default here.
-export { ApiGlobe, INITIALIZED_EVENT, CONTROL_EVENTS };
+export { GLOBE_VIEW_EVENTS, CONTROL_EVENTS };
 export { View };
 export { GlobeView };
 export { PlanarView };
 export { Extent };
 export { Coordinates };
+export { Fetcher };
 
 // Others can be directly exported
 export { UNIT } from './Core/Geographic/Coordinates';

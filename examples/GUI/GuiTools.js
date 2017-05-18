@@ -17,8 +17,7 @@ dat.GUI.prototype.removeFolder = function removeFolder(name) {
     this.onResize();
 };
 
-function GuiTools(api, domId) {
-    this.api = api;
+function GuiTools(domId) {
     this.gui = new dat.GUI({ autoPlace: false });
     this.gui.domElement.id = domId;
     viewerDiv.appendChild(this.gui.domElement);

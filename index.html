@@ -39,39 +39,27 @@ and open the template in the editor.
 
             // iTowns namespace defined here
             const viewerDiv = document.getElementById('viewerDiv');
+            const menuGlobe = new GuiTools('menuDiv');
+            const globeView = new itowns.GlobeView(viewerDiv, positionOnGlobe);
+            menuGlobe.api = globeView;
 
-            const apiGlobe = new itowns.ApiGlobe();
-            const menuGlobe = new GuiTools(apiGlobe, 'menuDiv');
-            apiGlobe.createSceneGlobe('globe', positionOnGlobe, viewerDiv);
-            // itowns.debug = new Debug(itowns.viewer.scene);
+            itowns.Fetcher.json('examples/layers/JSONLayers/Ortho.json').then(result => globeView.addLayer(result));
+            itowns.Fetcher.json('examples/layers/JSONLayers/OrthosCRS.json').then(result => globeView.addLayer(result));
+            itowns.Fetcher.json('examples/layers/JSONLayers/ScanEX.json').then(result => globeView.addLayer(result));
+            itowns.Fetcher.json('examples/layers/JSONLayers/Region.json').then(result => globeView.addLayer(result));
 
-            const urlImageryLayers = [];
-            const urlElevationLayers = [];
-
-            urlImageryLayers.push('examples/layers/JSONLayers/Ortho.json');
-            urlImageryLayers.push('examples/layers/JSONLayers/OrthosCRS.json');
-            urlImageryLayers.push('examples/layers/JSONLayers/ScanEX.json');
-            urlImageryLayers.push('examples/layers/JSONLayers/Region.json');
-
-            urlElevationLayers.push('examples/layers/JSONLayers/IGN_MNT.json');
-            urlElevationLayers.push('examples/layers/JSONLayers/IGN_MNT_HIGHRES.json');
-
-            const imageryPromise = apiGlobe.addImageryLayersFromJSONArray(urlImageryLayers);
-            const elevationPromise = apiGlobe.addElevationLayersFromJSONArray(urlElevationLayers);
-
-            imageryPromise.then((layersColors) => { menuGlobe.addImageryLayersGUI(layersColors); });
-            elevationPromise.then((layersElevations) => { menuGlobe.addElevationLayersGUI(layersElevations); });
+            itowns.Fetcher.json('examples/layers/JSONLayers/IGN_MNT.json').then(result => globeView.addLayer(result));
+            itowns.Fetcher.json('examples/layers/JSONLayers/IGN_MNT_HIGHRES.json').then(result => globeView.addLayer(result));
 
             menuGlobe.addGUI('RealisticLighting', false,
-                (newValue) => { apiGlobe.setRealisticLightingOn(newValue); });
+                (newValue) => { globeView.setRealisticLightingOn(newValue); });
 
-            apiGlobe.addEventListener(itowns.INITIALIZED_EVENT, () => {
+            globeView.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, () => {
                 // eslint-disable-next-line no-console
                 console.info('Globe initialized');
             });
 
-            apiGlobe.update();
-            window.apiGlobe = apiGlobe;
+            window.globeView = globeView;
 </script>
     </body>
 </html>
