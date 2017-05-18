@@ -1,3 +1,4 @@
+import * as THREE from 'three';
 import Fetcher from '../Core/Scheduler/Providers/Fetcher';
 import { $3dTilesIndex } from '../Core/Scheduler/Providers/3dTiles_Provider';
 
@@ -98,6 +99,14 @@ export function init3dTilesLayer(context, layer) {
     Fetcher.json(layer.url).then((tileset) => {
         const urlPrefix = layer.url.slice(0, layer.url.lastIndexOf('/') + 1);
         layer.tileIndex = new $3dTilesIndex(tileset, urlPrefix);
+        layer.asset = tileset.asset;
+        if (tileset.asset.gltfUpAxis === undefined || tileset.asset.gltfUpAxis === 'Y') {
+            layer.glTFRotation = (new THREE.Matrix4()).makeRotationX(Math.PI / 2);
+        } else if (tileset.asset.gltfUpAxis === 'X') {
+            layer.glTFRotation = (new THREE.Matrix4()).makeRotationZ(-Math.PI / 2);
+        } else if (tileset.asset.gltfUpAxis === 'Z') {
+            layer.glTFRotation = new THREE.Matrix4();
+        }
         requestNewTile(context.view, context.scheduler, layer, tileset.root, undefined).then(
             (tile) => {
                 context.view.scene.add(tile);
