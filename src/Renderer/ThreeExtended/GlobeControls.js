@@ -230,7 +230,7 @@ if (enableTargetHelper) {
 var _handlerMouseMove;
 var _handlerMouseUp;
 
-let getPickingPosition;
+let _getPickingPosition;
 
 // Pseudo collision
 const radiusCollision = 50;
@@ -307,6 +307,7 @@ function GlobeControls(view, target, domElement, viewerDiv, radius, getPickingPo
     this.camera = view.camera.camera3D;
 
     snapShotCamera = new SnapCamera(this.camera);
+    _getPickingPosition = getPickingPosition;
 
     this.domElement = (domElement !== undefined) ? domElement : document;
 
@@ -707,7 +708,7 @@ function GlobeControls(view, target, domElement, viewerDiv, radius, getPickingPo
 
             if (cameraTargetOnGlobe.position.distanceTo(previousCameraTargetOnGlobe) / spherical.radius > delta) {
                 this.dispatchEvent({
-                    type: CONTROL_EVENTS.CAMERATARGET_CHANGED,
+                    type: CONTROL_EVENTS.CAMERA_TARGET_CHANGED,
                     previous: { cameraTarget: new Coordinates(this._view.referenceCrs, previousCameraTargetOnGlobe) },
                     new: { cameraTarget: new Coordinates(this._view.referenceCrs, cameraTargetOnGlobe.position) },
                 });
@@ -1672,7 +1673,7 @@ GlobeControls.prototype.pickGeoPosition = function pickGeoPosition(mouse, y) {
         y: mouse.clientY || y,
     };
 
-    var pickedPosition = getPickingPosition(this.controlsActiveLayers, screenCoords);
+    var pickedPosition = _getPickingPosition(this.controlsActiveLayers, screenCoords);
 
     if (!pickedPosition) {
         return;
