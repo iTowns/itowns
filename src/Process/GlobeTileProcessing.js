@@ -31,6 +31,7 @@ export function preGlobeUpdate(context) {
 }
 
 function pointHorizonCulling(pt) {
+    // see https://cesiumjs.org/2013/04/25/Horizon-culling/
     var vT = pt.divide(radius).sub(cV);
 
     var vtMagnitudeSquared = vT.lengthSq();
@@ -55,7 +56,6 @@ function horizonCulling(node) {
             break;
         }
     }
-
     return isVisible;
 }
 
@@ -63,8 +63,10 @@ function frustumCullingOBB(node, camera) {
     return camera.isBox3DVisible(node.OBB().box3D, node.OBB().matrixWorld);
 }
 
-export function globeCulling(node, camera) {
-    return !(frustumCullingOBB(node, camera) && horizonCulling(node));
+export function globeCulling(minLevelForHorizonCulling) {
+    return function _globeCulling(node, camera) {
+        return !(frustumCullingOBB(node, camera) && (node.level < minLevelForHorizonCulling || horizonCulling(node)));
+    };
 }
 
 function computeNodeSSE(camera, node) {
