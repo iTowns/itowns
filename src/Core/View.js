@@ -5,7 +5,7 @@
  */
 
 /* global window, requestAnimationFrame */
-import { Scene } from 'three';
+import { Scene, EventDispatcher } from 'three';
 import Camera from '../Renderer/Camera';
 import MainLoop from './MainLoop';
 import c3DEngine from '../Renderer/c3DEngine';
@@ -62,6 +62,9 @@ function View(crs, viewerDiv, options = {}) {
 
     this._changeSources = new Set();
 }
+
+View.prototype = Object.create(EventDispatcher.prototype);
+View.prototype.constructor = View;
 
 function _preprocessLayer(view, layer, provider) {
     if (!layer.updateStrategy) {
