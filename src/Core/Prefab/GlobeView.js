@@ -112,7 +112,7 @@ function GlobeView(viewerDiv, coordCarto) {
 
     wgs84TileLayer.update =
         processTiledGeometryNode(
-            globeCulling,
+            globeCulling(2),
             globeSubdivisionControl(2, 17, SSE_SUBDIVISION_THRESHOLD),
             nodeInitFn);
     wgs84TileLayer.builder = new BuilderEllipsoidTile();
