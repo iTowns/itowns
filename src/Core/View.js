@@ -51,6 +51,8 @@ function View(crs, viewerDiv, mainLoop) {
     }, false);
 
     this.onAfterRender = () => {};
+
+    this._changeSources = new Set();
 }
 
 function _preprocessLayer(view, layer, provider) {
@@ -108,10 +110,14 @@ View.prototype.addLayer = function addLayer(layer, parentLayer) {
  * non-interactive events (e.g: texture loaded)
  * needsRedraw param indicates if notified change requires a full scene redraw.
  */
-View.prototype.notifyChange = function notifyChange(delay, needsRedraw) {
+View.prototype.notifyChange = function notifyChange(delay, needsRedraw, changeSource) {
     if (delay) {
-        window.setTimeout(() => { this.mainLoop.scheduleViewUpdate(this, needsRedraw); }, delay);
+        window.setTimeout(() => {
+            this._changeSources.add(changeSource);
+            this.mainLoop.scheduleViewUpdate(this, needsRedraw);
+        }, delay);
     } else {
+        this._changeSources.add(changeSource);
         this.mainLoop.scheduleViewUpdate(this, needsRedraw);
     }
 };

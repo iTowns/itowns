@@ -56,12 +56,56 @@ function PlanarView(viewerDiv, boundingbox) {
     const tileLayer = new GeometryLayer('planar');
     const initLayer = initTiledGeometryLayer(planarSchemeTile(boundingbox));
 
-    tileLayer.preUpdate = (context, layer) => {
+    function _commonAncestorLookup(a, b) {
+        if (!a || !b) {
+            return undefined;
+        }
+        if (a.level == b.level) {
+            if (a.id == b.id) {
+                return a;
+            } else if (a.level != 0) {
+                return _commonAncestorLookup(a.parent, b.parent);
+            } else {
+                return undefined;
+            }
+        } else if (a.level < b.level) {
+            return _commonAncestorLookup(a, b.parent);
+        } else {
+            return _commonAncestorLookup(a.parent, b);
+        }
+    }
+
+    tileLayer.preUpdate = (context, layer, changeSources) => {
+        this._latestUpdateStartingLevel = 0;
         if (layer.level0Nodes === undefined) {
             initLayer(context, layer);
         }
-        return layer.level0Nodes;
+
+        if (changeSources.has(undefined) || changeSources.size == 0) {
+            return layer.level0Nodes;
+        }
+        let commonAncestor;
+        for (const source of changeSources.values()) {
+            if (!commonAncestor) {
+                commonAncestor = source;
+            } else {
+                commonAncestor = _commonAncestorLookup(commonAncestor, source);
+                if (!commonAncestor) {
+                    return layer.level0Nodes;
+                }
+            }
+            if (commonAncestor.material == null) {
+                commonAncestor = undefined;
+            }
+        }
+        if (commonAncestor) {
+            this._latestUpdateStartingLevel = commonAncestor.level;
+            return [commonAncestor];
+        } else {
+            return [];
+        }
     };
+
     tileLayer.update =
         processTiledGeometryNode(
             planarCulling,
