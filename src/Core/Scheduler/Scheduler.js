@@ -98,7 +98,7 @@ Scheduler.prototype.runCommand = function runCommand(command, queue, executingCo
         // We allow the view to delay the update/repaint up to 100ms
         // to reduce CPU load (no need to perform an update on completion if we
         // know there's another one ending soon)
-        command.view.notifyChange(100, 'redraw' in command ? command.redraw : true);
+        command.view.notifyChange(100, 'redraw' in command ? command.redraw : true, command.requester);
 
         // try to execute next command
         if (queue.counters.executing < this.maxCommandsPerHost) {

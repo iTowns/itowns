@@ -58,15 +58,58 @@ function GlobeView(viewerDiv, coordCarto) {
     };
     const SSE_SUBDIVISION_THRESHOLD = 1.0;
 
+    function _commonAncestorLookup(a, b) {
+        if (!a || !b) {
+            return undefined;
+        }
+        if (a.level == b.level) {
+            if (a.id == b.id) {
+                return a;
+            } else if (a.level != 0) {
+                return _commonAncestorLookup(a.parent, b.parent);
+            } else {
+                return undefined;
+            }
+        } else if (a.level < b.level) {
+            return _commonAncestorLookup(a, b.parent);
+        } else {
+            return _commonAncestorLookup(a.parent, b);
+        }
+    }
+
     const wgs84TileLayer = new GeometryLayer('globe');
     const initLayer = initTiledGeometryLayer(globeSchemeTileWMTS(globeSchemeTile1));
-    wgs84TileLayer.preUpdate = (context, layer) => {
+    wgs84TileLayer.preUpdate = (context, layer, changeSources) => {
+        this._latestUpdateStartingLevel = 0;
         if (layer.level0Nodes === undefined) {
             initLayer(context, layer);
         }
         preGlobeUpdate(context);
-        return layer.level0Nodes;
+        if (changeSources.has(undefined) || changeSources.size == 0) {
+            return layer.level0Nodes;
+        }
+        let commonAncestor;
+        for (const source of changeSources.values()) {
+            if (!commonAncestor) {
+                commonAncestor = source;
+            } else {
+                commonAncestor = _commonAncestorLookup(commonAncestor, source);
+                if (!commonAncestor) {
+                    return layer.level0Nodes;
+                }
+            }
+            if (commonAncestor.material == null) {
+                commonAncestor = undefined;
+            }
+        }
+        if (commonAncestor) {
+            this._latestUpdateStartingLevel = commonAncestor.level;
+            return [commonAncestor];
+        } else {
+            return [];
+        }
     };
+
     wgs84TileLayer.update =
         processTiledGeometryNode(
             globeCulling,

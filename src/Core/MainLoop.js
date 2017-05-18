@@ -8,8 +8,6 @@ function MainLoop(scheduler, engine) {
     this.needsRedraw = false;
     this.scheduler = scheduler;
     this.gfxEngine = engine; // TODO: remove me
-
-    this._viewsToUpdate = new Set();
 }
 
 MainLoop.prototype = Object.create(EventDispatcher.prototype);
@@ -54,7 +52,7 @@ MainLoop.prototype._update = function _update(view) {
 
     for (const geometryLayer of view.getLayers((x, y) => !y)) {
         context.geometryLayer = geometryLayer;
-        const elementsToUpdate = geometryLayer.preUpdate(context, geometryLayer);
+        const elementsToUpdate = geometryLayer.preUpdate(context, geometryLayer, view._changeSources);
         updateElements(context, geometryLayer, elementsToUpdate);
     }
 };
@@ -81,6 +79,7 @@ MainLoop.prototype._step = function _step(view) {
         document.title = document.title.substr(0, document.title.length - 2);
     }
     this.renderingState = RENDERING_PAUSED;
+    view._changeSources.clear();
 };
 
 /**
