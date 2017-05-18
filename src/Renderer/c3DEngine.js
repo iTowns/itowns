@@ -22,9 +22,9 @@ function c3DEngine(viewerDiv) {
     this.positionBuffer = null;
     this._nextThreejsLayer = 0;
 
-    this.pickingTexture = new THREE.WebGLRenderTarget(this.width, this.height);
-    this.pickingTexture.texture.minFilter = THREE.LinearFilter;
-    this.pickingTexture.texture.generateMipmaps = false;
+    this.fullSizeRenderTarget = new THREE.WebGLRenderTarget(this.width, this.height);
+    this.fullSizeRenderTarget.texture.minFilter = THREE.LinearFilter;
+    this.fullSizeRenderTarget.texture.generateMipmaps = false;
 
     this.renderScene = function renderScene(camera) {
         this.renderer.setViewport(0, 0, this.width, this.height);
@@ -35,7 +35,7 @@ function c3DEngine(viewerDiv) {
     this.onWindowResize = function onWindowResize() {
         this.width = this.viewerDiv.clientWidth;
         this.height = this.viewerDiv.clientHeight;
-        this.pickingTexture.setSize(this.width, this.height);
+        this.fullSizeRenderTarget.setSize(this.width, this.height);
         this.renderer.setSize(this.viewerDiv.clientWidth, this.height);
     }.bind(this);
 
@@ -102,15 +102,15 @@ c3DEngine.prototype.getRenderer = function getRenderer() {
     return this.renderer;
 };
 
-c3DEngine.prototype.renderTobuffer = function renderTobuffer(camera, x, y, width, height) {
+c3DEngine.prototype.renderTobuffer = function renderTobuffer(camera, buffer, x, y, width, height) {
     // TODO Deallocate render texture
     const current = this.renderer.getCurrentRenderTarget();
-    this.renderer.setRenderTarget(this.pickingTexture);
+    this.renderer.setRenderTarget(buffer);
     this.renderer.setViewport(x, y, width, height);
     this.renderer.clear();
-    this.renderer.render(this.scene3D, camera, this.pickingTexture);
+    this.renderer.render(this.scene3D, camera, buffer);
     var pixelBuffer = new Uint8Array(4 * width * height);
-    this.renderer.readRenderTargetPixels(this.pickingTexture, x, y, width, height, pixelBuffer);
+    this.renderer.readRenderTargetPixels(buffer, x, y, width, height, pixelBuffer);
     this.renderer.setRenderTarget(current);
 
     return pixelBuffer;

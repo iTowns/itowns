@@ -245,6 +245,7 @@ GlobeView.prototype.screenCoordsToNodeId = function screenCoordsToNodeId(mouse) 
 
     var buffer = this.engine.renderTobuffer(
         camera,
+        this.engine.fullSizeRenderTarget,
         mouse.x, dim.y - mouse.y,
         1, 1);
 
@@ -285,6 +286,7 @@ GlobeView.prototype.getPickingPositionFromDepth = function getPickingPositionFro
     // Render to buffer
     var buffer = this.engine.renderTobuffer(
         camera,
+        this.engine.fullSizeRenderTarget,
         mouse.x, dim.y - mouse.y,
         1, 1);
 

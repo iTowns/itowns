@@ -92,7 +92,13 @@ MainLoop.prototype._renderView = function _renderView(view) {
     if (view.preRender) {
         view.preRender();
     }
-    this.gfxEngine.renderScene(view.camera);
+
+    if (view.render) {
+        view.render();
+    } else {
+        // use default rendering method
+        this.gfxEngine.renderScene(view.camera);
+    }
     this.needsRedraw = false;
 
     // Mimic three Object3D.onAfterRender (which sadly doesn't work on Scene)
