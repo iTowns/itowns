@@ -127,7 +127,7 @@ export function globeSchemeTileWMTS(type) {
     return schemeT;
 }
 
-export function computeTileZoomFromDistanceCamera(camera, distance) {
+export function computeTileZoomFromDistanceCamera(distance) {
     const sizeEllipsoid = ellipsoidSizes().x;
     const preSinus = SIZE_TEXTURE_TILE * (SSE_SUBDIVISION_THRESHOLD * 0.5) / preSSE / sizeEllipsoid;
 

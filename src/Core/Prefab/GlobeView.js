@@ -106,6 +106,7 @@ function GlobeView(viewerDiv, coordCarto) {
         this.camera.camera3D,
         positionTargetCamera.as('EPSG:4978').xyz(),
         engine.renderer.domElement,
+        viewerDiv,
         engine,
         size,
         'EPSG:4978',
@@ -144,6 +145,10 @@ function GlobeView(viewerDiv, coordCarto) {
     this.mainLoop.addEventListener('command-queue-empty', () => {
         viewerDiv.dispatchEvent(new CustomEvent('globe-built'));
     });
+
+    window.addEventListener('resize', () => {
+        this.controls.updateCamera(this.camera, this.viewerDiv.clientWidth, this.viewerDiv.clientHeight);
+    }, false);
 }
 
 GlobeView.prototype = Object.create(View.prototype);

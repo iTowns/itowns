@@ -2,6 +2,7 @@
 import * as THREE from 'three';
 import proj4 from 'proj4';
 import ApiGlobe, { INITIALIZED_EVENT } from './Core/Scheduler/Interfaces/ApiInterface/ApiGlobe';
+import { CONTROL_EVENTS } from './Renderer/ThreeExtended/GlobeControls';
 import View from './Core/View';
 import GlobeView from './Core/Prefab/GlobeView';
 import PlanarView from './Core/Prefab/PlanarView';
@@ -9,7 +10,7 @@ import Extent from './Core/Geographic/Extent';
 import Coordinates from './Core/Geographic/Coordinates';
 
 // Then exported as non-default here.
-export { ApiGlobe, INITIALIZED_EVENT };
+export { ApiGlobe, INITIALIZED_EVENT, CONTROL_EVENTS };
 export { View };
 export { GlobeView };
 export { PlanarView };
