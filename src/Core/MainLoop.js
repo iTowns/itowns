@@ -97,7 +97,7 @@ MainLoop.prototype._renderView = function _renderView(view) {
         view.render();
     } else {
         // use default rendering method
-        this.gfxEngine.renderScene(view.camera);
+        this.gfxEngine.renderView(view);
     }
     this.needsRedraw = false;
 

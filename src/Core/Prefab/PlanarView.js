@@ -144,7 +144,6 @@ PlanarView.prototype.addLayer = function addLayer(layer) {
 };
 
 PlanarView.prototype.selectNodeAt = function selectNodeAt(mouse) {
-    // this.scene.selectNodeId(
     const selectedId = this.screenCoordsToNodeId(mouse);
 
     for (const n of this.tileLayer.level0Nodes) {
@@ -166,16 +165,14 @@ PlanarView.prototype.selectNodeAt = function selectNodeAt(mouse) {
 
 PlanarView.prototype.screenCoordsToNodeId = function screenCoordsToNodeId(mouse) {
     const dim = this.engine.getWindowSize();
-    var camera = this.camera.camera3D;
 
     this.camera.update();
-    // camera.updateMatrixWorld();
 
     const previousRenderState = this._renderState;
     this.changeRenderState(RendererConstant.ID);
 
-    var buffer = this.engine.renderTobuffer(
-        camera,
+    var buffer = this.engine.renderViewTobuffer(
+        this,
         this.engine.fullSizeRenderTarget,
         mouse.x, dim.y - mouse.y,
         1, 1);
@@ -215,8 +212,8 @@ PlanarView.prototype.getPickingPositionFromDepth = function getPickingPositionFr
     this.changeRenderState(RendererConstant.DEPTH);
 
     // Render to buffer
-    var buffer = this.engine.renderTobuffer(
-        camera,
+    var buffer = this.engine.renderViewTobuffer(
+        this,
         this.engine.fullSizeRenderTarget,
         mouse.x, dim.y - mouse.y,
         1, 1);
