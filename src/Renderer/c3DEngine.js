@@ -13,29 +13,26 @@ function c3DEngine(viewerDiv) {
     var NOIE = !Capabilities.isInternetExplorer();
     this.viewerDiv = viewerDiv;
 
-    this.scene3D = new THREE.Scene();
-    this.scene3D.autoUpdate = false;
-
     this.width = viewerDiv.clientWidth;
     this.height = viewerDiv.clientHeight;
 
     this.positionBuffer = null;
     this._nextThreejsLayer = 0;
 
-    this.pickingTexture = new THREE.WebGLRenderTarget(this.width, this.height);
-    this.pickingTexture.texture.minFilter = THREE.LinearFilter;
-    this.pickingTexture.texture.generateMipmaps = false;
+    this.fullSizeRenderTarget = new THREE.WebGLRenderTarget(this.width, this.height);
+    this.fullSizeRenderTarget.texture.minFilter = THREE.LinearFilter;
+    this.fullSizeRenderTarget.texture.generateMipmaps = false;
 
-    this.renderScene = function renderScene(camera) {
+    this.renderView = function renderScene(view) {
         this.renderer.setViewport(0, 0, this.width, this.height);
         this.renderer.clear();
-        this.renderer.render(this.scene3D, camera.camera3D);
+        this.renderer.render(view.scene, view.camera.camera3D);
     }.bind(this);
 
     this.onWindowResize = function onWindowResize() {
         this.width = this.viewerDiv.clientWidth;
         this.height = this.viewerDiv.clientHeight;
-        this.pickingTexture.setSize(this.width, this.height);
+        this.fullSizeRenderTarget.setSize(this.width, this.height);
         this.renderer.setSize(this.viewerDiv.clientWidth, this.height);
     }.bind(this);
 
@@ -66,27 +63,6 @@ function c3DEngine(viewerDiv) {
     viewerDiv.appendChild(this.renderer.domElement);
 }
 
-c3DEngine.prototype.enableRTC = function enableRTC(enable) {
-    for (var x = 0; x < this.scene3D.children.length; x++) {
-        var node = this.scene3D.children[x];
-
-        if (node.enableRTC) {
-            node.traverseVisible(enable ? this.rtcOn.bind(this) : this.rtcOff.bind(this));
-        }
-    }
-};
-
-c3DEngine.prototype.rtcOn = function rtcOn(obj3D) {
-    obj3D.enableRTC(true);
-    obj3D.matrixAutoUpdate = false;
-};
-
-c3DEngine.prototype.rtcOff = function rtcOff(obj3D) {
-    obj3D.enableRTC(false);
-    obj3D.matrixWorldNeedsUpdate = true;
-    obj3D.matrixAutoUpdate = true;
-};
-
 /*
  * return
  */
@@ -102,15 +78,15 @@ c3DEngine.prototype.getRenderer = function getRenderer() {
     return this.renderer;
 };
 
-c3DEngine.prototype.renderTobuffer = function renderTobuffer(camera, x, y, width, height) {
+c3DEngine.prototype.renderViewTobuffer = function renderViewTobuffer(view, buffer, x, y, width, height) {
     // TODO Deallocate render texture
     const current = this.renderer.getCurrentRenderTarget();
-    this.renderer.setRenderTarget(this.pickingTexture);
+    this.renderer.setRenderTarget(buffer);
     this.renderer.setViewport(x, y, width, height);
     this.renderer.clear();
-    this.renderer.render(this.scene3D, camera, this.pickingTexture);
+    this.renderer.render(view.scene, view.camera.camera3D, buffer);
     var pixelBuffer = new Uint8Array(4 * width * height);
-    this.renderer.readRenderTargetPixels(this.pickingTexture, x, y, width, height, pixelBuffer);
+    this.renderer.readRenderTargetPixels(buffer, x, y, width, height, pixelBuffer);
     this.renderer.setRenderTarget(current);
 
     return pixelBuffer;

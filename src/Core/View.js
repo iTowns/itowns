@@ -5,7 +5,7 @@
  */
 
 /* global window, requestAnimationFrame */
-
+import { Scene } from 'three';
 import Camera from '../Renderer/Camera';
 import MainLoop from './MainLoop';
 import c3DEngine from '../Renderer/c3DEngine';
@@ -17,9 +17,12 @@ import Debug from '../../utils/debug/Debug';
  * Constructs an Itowns Scene instance
  *
  * @param {string} crs - The default CRS of Three.js coordinates. Should be a cartesian CRS.
- * @param {Coordinates} positionCamera - The initial position of the camera
  * @param {DOMElement} viewerDiv - Where to instanciate the Three.js scene in the DOM
- * @param {boolean} debugMode - activate debug mode
+ * @param {boolean} options - Optional properties. May contain:
+ *    - mainLoop: {MainLoop} instance to use, otherwise a default one will be constructed
+ *    - renderer: {WebGLRenderer} instance to use, otherwise a default one will be constructed. If
+ *    not present, a new <canvas> will be created and added to viewerDiv (mutually exclusive with mainLoop)
+ *    - scene3D: {Scene} instance to use, otherwise a default one will be constructed
  * @param {boolean} glDebug - debug gl code
  * @constructor
  */
@@ -27,10 +30,15 @@ import Debug from '../../utils/debug/Debug';
  * - remove debug boolean, replace by if __DEBUG__ and checkboxes in debug UI
  * - Scene (and subobjects) should be instanciable several times.
  */
-function View(crs, viewerDiv, mainLoop) {
+function View(crs, viewerDiv, options = {}) {
     this.referenceCrs = crs;
 
-    this.mainLoop = mainLoop || new MainLoop(new Scheduler(), new c3DEngine(viewerDiv));
+    this.mainLoop = options.mainLoop || new MainLoop(new Scheduler(), new c3DEngine(viewerDiv, options.renderer));
+
+    this.scene = options.scene3D || new Scene();
+    if (!options.scene3D) {
+        this.scene.autoUpdate = false;
+    }
 
     this.camera = new Camera(
         viewerDiv.clientWidth,
@@ -141,33 +149,6 @@ View.prototype.getLayers = function getLayers(filter) {
         }
     }
     return result;
-};
-
-
-View.prototype.selectNodeId = function selectNodeId(id) {
-    // browse three.js scene, and mark selected node
-    this.mainLoop.gfxEngine.scene3D.traverse((node) => {
-        // only take of selectable nodes
-        if (node.setSelected) {
-            node.setSelected(node.id === id);
-
-            if (node.id === id) {
-                // eslint-disable-next-line no-console
-                console.info(node);
-            }
-        }
-    });
-};
-
-View.prototype.updateMaterialUniform = function updateMaterialUniform(uniformName, value) {
-    this.mainLoop.gfxEngine.scene3D.traverse((obj) => {
-        if (!obj.material || !obj.material.uniforms) {
-            return;
-        }
-        if (uniformName in obj.material.uniforms) {
-            obj.material.uniforms[uniformName].value = value;
-        }
-    });
 };
 
 export default View;

@@ -301,11 +301,12 @@ function defer() {
 /* globals document,window */
 
 /** @class GlobeControls */
-function GlobeControls(camera, target, domElement, viewerDiv, engine, radius, referenceCrs, getPickingPosition) {
+function GlobeControls(view, target, domElement, viewerDiv, radius, getPickingPosition) {
     player = new AnimationPlayer();
-    this.camera = camera;
-    this.referenceCrs = referenceCrs;
-    snapShotCamera = new SnapCamera(camera);
+    this._view = view;
+    this.camera = view.camera.camera3D;
+
+    snapShotCamera = new SnapCamera(this.camera);
 
     this.domElement = (domElement !== undefined) ? domElement : document;
 
@@ -377,8 +378,8 @@ function GlobeControls(camera, target, domElement, viewerDiv, engine, radius, re
     tSphere.setRadius(radius);
     spherical.radius = tSphere.radius;
 
-    sizeRendering.set(engine.width, engine.height);
-    sizeRendering.FOV = camera.fov;
+    sizeRendering.copy(view.mainLoop.gfxEngine.getWindowSize());
+    sizeRendering.FOV = this.camera.fov;
     // Note A
     // TODO: test before remove test code
     // so camera.up is the orbit axis
@@ -707,8 +708,8 @@ function GlobeControls(camera, target, domElement, viewerDiv, engine, radius, re
             if (cameraTargetOnGlobe.position.distanceTo(previousCameraTargetOnGlobe) / spherical.radius > delta) {
                 this.dispatchEvent({
                     type: CONTROL_EVENTS.CAMERATARGET_CHANGED,
-                    previous: { cameraTarget: new Coordinates(this.referenceCrs, previousCameraTargetOnGlobe) },
-                    new: { cameraTarget: new Coordinates(this.referenceCrs, cameraTargetOnGlobe.position) },
+                    previous: { cameraTarget: new Coordinates(this._view.referenceCrs, previousCameraTargetOnGlobe) },
+                    new: { cameraTarget: new Coordinates(this._view.referenceCrs, cameraTargetOnGlobe.position) },
                 });
             }
             snapShotSpherical.copy(spherical);
@@ -1256,14 +1257,14 @@ function GlobeControls(camera, target, domElement, viewerDiv, engine, radius, re
     setCameraTargetObjectPosition(target);
     movingCameraTargetOnGlobe.copy(target);
     this.camera.up.copy(target.clone().normalize());
-    engine.scene3D.add(cameraTargetOnGlobe);
-    spherical.radius = camera.position.length();
+    this._view.scene.add(cameraTargetOnGlobe);
+    spherical.radius = this.camera.position.length();
 
     update();
 
     if (enableTargetHelper) {
         cameraTargetOnGlobe.add(new THREE.AxisHelper(500000));
-        engine.scene3D.add(pickingHelper);
+        this._view.scene.add(pickingHelper);
     }
 
     // Start position
@@ -1401,9 +1402,9 @@ GlobeControls.prototype.setCameraTargetPosition = function setCameraTargetPositi
     if (position.range) {
         // Compensation of the altitude from the approximation of the ellipsoid by a sphere
         // This approximation comes from the movements around the ellipsoid, are rotations with constant radius
-        const currentTargetPosition = new Coordinates(this.referenceCrs, center).as('EPSG:4326');
+        const currentTargetPosition = new Coordinates(this._view.referenceCrs, center).as('EPSG:4326');
         const targetOnEllipsoid = new C.EPSG_4326(currentTargetPosition.longitude(), currentTargetPosition.latitude(), 0)
-            .as(this.referenceCrs).xyz();
+            .as(this._view.referenceCrs).xyz();
         const compensation = position.length() - targetOnEllipsoid.length();
         // FIX ME error with compensation negative
         if (compensation > 0) {
@@ -1537,7 +1538,7 @@ GlobeControls.prototype.getCameraLocation = function getCameraLocation() {
  */
 
 GlobeControls.prototype.getCameraTargetGeoPosition = function getCameraTargetGeoPosition() {
-    return new Coordinates(this.referenceCrs, this.getCameraTargetPosition()).as('EPSG:4326');
+    return new Coordinates(this._view.referenceCrs, this.getCameraTargetPosition()).as('EPSG:4326');
 };
 
 /**

@@ -1,9 +1,6 @@
 import * as THREE from 'three';
 
 import View from '../View';
-import MainLoop from '../MainLoop';
-import c3DEngine from '../../Renderer/c3DEngine';
-import Scheduler from '../Scheduler/Scheduler';
 import RendererConstant from '../../Renderer/RendererConstant';
 import { unpack1K } from '../../Renderer/MatteIdsMaterial';
 
@@ -15,16 +12,11 @@ import { planarCulling, planarSubdivisionControl, planarSchemeTile } from '../..
 import PlanarTileBuilder from './Planar/PlanarTileBuilder';
 
 
-function PlanarView(viewerDiv, boundingbox) {
+function PlanarView(viewerDiv, boundingbox, options) {
     THREE.Object3D.DefaultUp.set(0, 0, 1);
 
-    const scheduler = new Scheduler();
-    const engine = new c3DEngine(viewerDiv);
-
-    this.engine = engine;
-
     // Setup View
-    View.call(this, boundingbox.crs(), viewerDiv, new MainLoop(scheduler, engine));
+    View.call(this, boundingbox.crs(), viewerDiv, options);
 
     // Configure camera
     const dim = boundingbox.dimensions();
@@ -113,7 +105,7 @@ function PlanarView(viewerDiv, boundingbox) {
             nodeInitFn);
     tileLayer.builder = new PlanarTileBuilder();
 
-    const threejsLayer = engine.getUniqueThreejsLayer();
+    const threejsLayer = this.mainLoop.gfxEngine.getUniqueThreejsLayer();
     tileLayer.type = 'geometry';
     tileLayer.protocol = 'tile';
     tileLayer.threejsLayer = threejsLayer;
@@ -144,7 +136,6 @@ PlanarView.prototype.addLayer = function addLayer(layer) {
 };
 
 PlanarView.prototype.selectNodeAt = function selectNodeAt(mouse) {
-    // this.scene.selectNodeId(
     const selectedId = this.screenCoordsToNodeId(mouse);
 
     for (const n of this.tileLayer.level0Nodes) {
@@ -165,17 +156,16 @@ PlanarView.prototype.selectNodeAt = function selectNodeAt(mouse) {
 };
 
 PlanarView.prototype.screenCoordsToNodeId = function screenCoordsToNodeId(mouse) {
-    const dim = this.engine.getWindowSize();
-    var camera = this.camera.camera3D;
+    const dim = this.mainLoop.gfxEngine.getWindowSize();
 
     this.camera.update();
-    // camera.updateMatrixWorld();
 
     const previousRenderState = this._renderState;
     this.changeRenderState(RendererConstant.ID);
 
-    var buffer = this.engine.renderTobuffer(
-        camera,
+    var buffer = this.mainLoop.gfxEngine.renderViewTobuffer(
+        this,
+        this.mainLoop.gfxEngine.fullSizeRenderTarget,
         mouse.x, dim.y - mouse.y,
         1, 1);
 
@@ -198,7 +188,7 @@ const ray = new THREE.Ray();
 const direction = new THREE.Vector3();
 const depthRGBA = new THREE.Vector4();
 PlanarView.prototype.getPickingPositionFromDepth = function getPickingPositionFromDepth(mouse) {
-    const dim = this.engine.getWindowSize();
+    const dim = this.mainLoop.gfxEngine.getWindowSize();
     mouse = mouse || dim.clone().multiplyScalar(0.5);
 
 
@@ -214,8 +204,9 @@ PlanarView.prototype.getPickingPositionFromDepth = function getPickingPositionFr
     this.changeRenderState(RendererConstant.DEPTH);
 
     // Render to buffer
-    var buffer = this.engine.renderTobuffer(
-        camera,
+    var buffer = this.mainLoop.gfxEngine.renderViewTobuffer(
+        this,
+        this.mainLoop.gfxEngine.fullSizeRenderTarget,
         mouse.x, dim.y - mouse.y,
         1, 1);
 
