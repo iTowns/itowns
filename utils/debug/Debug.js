@@ -122,7 +122,7 @@ function Debug(view, viewerDiv) {
 
         // update bar graph
         const stats = {};
-        countVisible(view.mainLoop.gfxEngine.scene3D, stats);
+        countVisible(view.scene, stats);
         nbVisibleLabels.length = 0;
         nbVisibleData.length = 0;
         for (const level in stats) {
@@ -185,7 +185,7 @@ function Debug(view, viewerDiv) {
     });
 
     function applyToNodeFirstMaterial(cb) {
-        view.mainLoop.gfxEngine.scene3D.traverse((object) => {
+        view.scene.traverse((object) => {
             if (object.materials) {
                 cb(object.materials[0]);
             }

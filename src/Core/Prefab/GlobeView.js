@@ -138,7 +138,7 @@ function GlobeView(viewerDiv, coordCarto) {
     this.atmosphere.traverse((obj) => { obj.layers.set(atmosphereLayer); });
     this.camera.camera3D.layers.enable(atmosphereLayer);
 
-    this.engine.scene3D.add(this.atmosphere);
+    this.scene.add(this.atmosphere);
 
 
     // Configure controls
@@ -146,13 +146,11 @@ function GlobeView(viewerDiv, coordCarto) {
     positionTargetCamera.setAltitude(0);
 
     this.controls = new GlobeControls(
-        this.camera.camera3D,
+        this,
         positionTargetCamera.as('EPSG:4978').xyz(),
         engine.renderer.domElement,
         viewerDiv,
-        engine,
         size,
-        'EPSG:4978',
         this.getPickingPositionFromDepth.bind(this));
     this.controls.rotateSpeed = 0.25;
     this.controls.zoomSpeed = 2.0;
@@ -208,7 +206,6 @@ GlobeView.prototype.addLayer = function addLayer(layer) {
 };
 
 GlobeView.prototype.selectNodeAt = function selectNodeAt(mouse) {
-    // this.scene.selectNodeId(
     const selectedId = this.screenCoordsToNodeId(mouse);
 
     for (const n of this.wgs84TileLayer.level0Nodes) {
@@ -230,7 +227,6 @@ GlobeView.prototype.selectNodeAt = function selectNodeAt(mouse) {
 
 GlobeView.prototype.screenCoordsToNodeId = function screenCoordsToNodeId(mouse) {
     const dim = this.engine.getWindowSize();
-    var camera = this.camera.camera3D;
 
     mouse = mouse || new THREE.Vector2(Math.floor(dim.x / 2), Math.floor(dim.y / 2));
 
@@ -243,8 +239,8 @@ GlobeView.prototype.screenCoordsToNodeId = function screenCoordsToNodeId(mouse) 
     const prev = this.camera.camera3D.layers.mask;
     this.camera.camera3D.layers.mask = 1 << this.wgs84TileLayer.threejsLayer;
 
-    var buffer = this.engine.renderTobuffer(
-        camera,
+    var buffer = this.engine.renderViewTobuffer(
+        this,
         this.engine.fullSizeRenderTarget,
         mouse.x, dim.y - mouse.y,
         1, 1);
@@ -284,8 +280,8 @@ GlobeView.prototype.getPickingPositionFromDepth = function getPickingPositionFro
     this.changeRenderState(RendererConstant.DEPTH);
 
     // Render to buffer
-    var buffer = this.engine.renderTobuffer(
-        camera,
+    var buffer = this.engine.renderViewTobuffer(
+        this,
         this.engine.fullSizeRenderTarget,
         mouse.x, dim.y - mouse.y,
         1, 1);
@@ -347,5 +343,19 @@ GlobeView.prototype.changeRenderState = function changeRenderState(newRenderStat
     }
     this._renderState = newRenderState;
 };
+
+GlobeView.prototype.updateMaterialUniform = function updateMaterialUniform(uniformName, value) {
+    for (const n of this.wgs84TileLayer.level0Nodes) {
+        n.traverse((obj) => {
+            if (!obj.material || !obj.material.uniforms) {
+                return;
+            }
+            if (uniformName in obj.material.uniforms) {
+                obj.material.uniforms[uniformName].value = value;
+            }
+        });
+    }
+};
+
 
 export default GlobeView;
