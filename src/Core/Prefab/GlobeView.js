@@ -1,9 +1,6 @@
 import * as THREE from 'three';
 
 import View from '../View';
-import MainLoop from '../MainLoop';
-import c3DEngine from '../../Renderer/c3DEngine';
-import Scheduler from '../Scheduler/Scheduler';
 import RendererConstant from '../../Renderer/RendererConstant';
 import GlobeControls from '../../Renderer/ThreeExtended/GlobeControls';
 import { unpack1K } from '../../Renderer/MatteIdsMaterial';
@@ -20,17 +17,11 @@ import { globeCulling, preGlobeUpdate, globeSubdivisionControl, globeSchemeTileW
 import BuilderEllipsoidTile from './Globe/BuilderEllipsoidTile';
 
 
-function GlobeView(viewerDiv, coordCarto) {
+function GlobeView(viewerDiv, coordCarto, options) {
     THREE.Object3D.DefaultUp.set(0, 0, 1);
-
-    const scheduler = new Scheduler();
-    const engine = new c3DEngine(viewerDiv);
-
-    this.engine = engine;
-
     const size = ellipsoidSizes().x;
     // Setup View
-    View.call(this, 'EPSG:4978', viewerDiv, new MainLoop(scheduler, engine));
+    View.call(this, 'EPSG:4978', viewerDiv, options);
 
     // Configure camera
     const positionCamera = new C.EPSG_4326(
@@ -117,7 +108,7 @@ function GlobeView(viewerDiv, coordCarto) {
             nodeInitFn);
     wgs84TileLayer.builder = new BuilderEllipsoidTile();
 
-    const threejsLayer = engine.getUniqueThreejsLayer();
+    const threejsLayer = this.mainLoop.gfxEngine.getUniqueThreejsLayer();
     wgs84TileLayer.type = 'geometry';
     wgs84TileLayer.protocol = 'tile';
     wgs84TileLayer.threejsLayer = threejsLayer;
@@ -134,7 +125,7 @@ function GlobeView(viewerDiv, coordCarto) {
     this.clouds = new Clouds();
     this.atmosphere.add(this.clouds);
 
-    const atmosphereLayer = this.engine.getUniqueThreejsLayer();
+    const atmosphereLayer = this.mainLoop.gfxEngine.getUniqueThreejsLayer();
     this.atmosphere.traverse((obj) => { obj.layers.set(atmosphereLayer); });
     this.camera.camera3D.layers.enable(atmosphereLayer);
 
@@ -148,7 +139,7 @@ function GlobeView(viewerDiv, coordCarto) {
     this.controls = new GlobeControls(
         this,
         positionTargetCamera.as('EPSG:4978').xyz(),
-        engine.renderer.domElement,
+        this.mainLoop.gfxEngine.renderer.domElement,
         viewerDiv,
         size,
         this.getPickingPositionFromDepth.bind(this));
@@ -175,9 +166,9 @@ function GlobeView(viewerDiv, coordCarto) {
         if (len < lim) {
             var t = Math.pow(Math.cos((lim - len) / (lim - size * 0.9981) * Math.PI * 0.5), 1.5);
             var color = new THREE.Color(0x93d5f8);
-            this.engine.renderer.setClearColor(color.multiplyScalar(1.0 - t));
+            this.mainLoop.gfxEngine.renderer.setClearColor(color.multiplyScalar(1.0 - t));
         } else if (len >= lim) {
-            this.engine.renderer.setClearColor(0x030508);
+            this.mainLoop.gfxEngine.renderer.setClearColor(0x030508);
         }
     };
 
@@ -226,7 +217,7 @@ GlobeView.prototype.selectNodeAt = function selectNodeAt(mouse) {
 };
 
 GlobeView.prototype.screenCoordsToNodeId = function screenCoordsToNodeId(mouse) {
-    const dim = this.engine.getWindowSize();
+    const dim = this.mainLoop.gfxEngine.getWindowSize();
 
     mouse = mouse || new THREE.Vector2(Math.floor(dim.x / 2), Math.floor(dim.y / 2));
 
@@ -239,9 +230,9 @@ GlobeView.prototype.screenCoordsToNodeId = function screenCoordsToNodeId(mouse) 
     const prev = this.camera.camera3D.layers.mask;
     this.camera.camera3D.layers.mask = 1 << this.wgs84TileLayer.threejsLayer;
 
-    var buffer = this.engine.renderViewTobuffer(
+    var buffer = this.mainLoop.gfxEngine.renderViewTobuffer(
         this,
-        this.engine.fullSizeRenderTarget,
+        this.mainLoop.gfxEngine.fullSizeRenderTarget,
         mouse.x, dim.y - mouse.y,
         1, 1);
 
@@ -265,7 +256,7 @@ const ray = new THREE.Ray();
 const direction = new THREE.Vector3();
 const depthRGBA = new THREE.Vector4();
 GlobeView.prototype.getPickingPositionFromDepth = function getPickingPositionFromDepth(mouse) {
-    const dim = this.engine.getWindowSize();
+    const dim = this.mainLoop.gfxEngine.getWindowSize();
     mouse = mouse || dim.clone().multiplyScalar(0.5);
 
 
@@ -280,9 +271,9 @@ GlobeView.prototype.getPickingPositionFromDepth = function getPickingPositionFro
     this.changeRenderState(RendererConstant.DEPTH);
 
     // Render to buffer
-    var buffer = this.engine.renderViewTobuffer(
+    var buffer = this.mainLoop.gfxEngine.renderViewTobuffer(
         this,
-        this.engine.fullSizeRenderTarget,
+        this.mainLoop.gfxEngine.fullSizeRenderTarget,
         mouse.x, dim.y - mouse.y,
         1, 1);
 
