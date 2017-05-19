@@ -503,11 +503,11 @@ ApiGlobe.prototype.getLayerById = function getLayerById(pId) {
 ApiGlobe.prototype.loadGPX = function loadGPX(url) {
     loadGpx(url).then((gpx) => {
         if (gpx) {
-            this.scene.gpxTracks.children[0].add(gpx);
+            this.globeview.scene.add(gpx);
         }
     });
 
-    this.scene.renderScene3D();
+    this.globeview.notifyChange(0, true);
 };
 
 export default ApiGlobe;

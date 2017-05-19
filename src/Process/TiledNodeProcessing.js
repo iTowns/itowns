@@ -113,7 +113,7 @@ export function initTiledGeometryLayer(schemeTile) {
                 // TODO: support a layer.root attribute, to be able
                 // to add a layer to a three.js node, e.g:
                 // layer.root.add(level0);
-                context.engine.scene3D.add(level0);
+                context.view.scene.add(level0);
                 level0.updateMatrixWorld();
             }
         });
