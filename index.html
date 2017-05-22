@@ -32,8 +32,9 @@ and open the template in the editor.
         <script src="examples/GUI/GuiTools.js"></script>
         <script src="dist/itowns.js"></script>
         <script src="dist/debug.js"></script>
+        <script src="dist/test.js"></script>
         <script type="text/javascript">
-            /* global itowns,document,GuiTools*/
+            /* global itowns,document,GuiTools,Test*/
 
             const positionOnGlobe = { longitude: 2.351323, latitude: 48.856712, altitude: 25000000 };
 
@@ -42,16 +43,17 @@ and open the template in the editor.
 
             const apiGlobe = new itowns.ApiGlobe();
             const menuGlobe = new GuiTools(apiGlobe, 'menuDiv');
-            apiGlobe.createSceneGlobe('globe', positionOnGlobe, viewerDiv);
+            const globeView = apiGlobe.createSceneGlobe('globe', positionOnGlobe, viewerDiv);
             // itowns.debug = new Debug(itowns.viewer.scene);
+            itowns.test = new Test(globeView.controls);
 
             const urlImageryLayers = [];
             const urlElevationLayers = [];
 
             urlImageryLayers.push('examples/layers/JSONLayers/Ortho.json');
-            urlImageryLayers.push('examples/layers/JSONLayers/OrthosCRS.json');
-            urlImageryLayers.push('examples/layers/JSONLayers/ScanEX.json');
-            urlImageryLayers.push('examples/layers/JSONLayers/Region.json');
+            // urlImageryLayers.push('examples/layers/JSONLayers/OrthosCRS.json');
+            // urlImageryLayers.push('examples/layers/JSONLayers/ScanEX.json');
+            // urlImageryLayers.push('examples/layers/JSONLayers/Region.json');
 
             urlElevationLayers.push('examples/layers/JSONLayers/IGN_MNT.json');
             urlElevationLayers.push('examples/layers/JSONLayers/IGN_MNT_HIGHRES.json');
@@ -68,6 +70,11 @@ and open the template in the editor.
             apiGlobe.addEventListener(itowns.INITIALIZED_EVENT, () => {
                 // eslint-disable-next-line no-console
                 console.info('Globe initialized');
+                // console.info('Globe Loaded');
+                // Uncomment next line to launch Tests
+                // eslint-disable-next-line no-console
+                itowns.test.launch();
+                // itowns.viewer.scene.controls.addEventListener(itowns.CONTROL_EVENT.RANGE_CHANGED, e => console.log('RANGE : ', e.previous.range, e.new.range));
             });
 
             apiGlobe.update();
