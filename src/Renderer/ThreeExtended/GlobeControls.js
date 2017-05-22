@@ -239,6 +239,15 @@ const radiusCollision = 50;
 // Event
 let enableEventPositionChanged = true;
 
+/**
+ * globe controls events
+ * @property PAN_CHANGED {string} emit after camera pan
+ * @property ORIENTATION_CHANGED {string} emit when camera's orientation is changed
+ * @property RANGE_CHANGED {string} emit when camera's range to target is changed
+ * @property CAMERA_TARGET_CHANGED {string} emit when camera's target is changed
+ * @example
+ * viewer.controls.addEventListener(itowns.CONTROL_EVENTS.PAN_CHANGED, (event) => console.log(event));
+ */
 export const CONTROL_EVENTS = {
     PAN_CHANGED: 'pan-changed',
     ORIENTATION_CHANGED: 'orientation-changed',
@@ -313,7 +322,7 @@ function GlobeControls(view, target, domElement, viewerDiv, radius, getPickingPo
 
     this.waitSceneLoaded = function waitSceneLoaded() {
         const deferedPromise = defer();
-        viewerDiv.addEventListener('globe-built', () => {
+        this._view.mainLoop.addEventListener('command-queue-empty', () => {
             deferedPromise.resolve();
         });
         return deferedPromise.promise;

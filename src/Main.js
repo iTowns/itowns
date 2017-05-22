@@ -11,6 +11,7 @@ import Fetcher from './Core/Scheduler/Providers/Fetcher';
 
 // Then exported as non-default here.
 export { GLOBE_VIEW_EVENTS, CONTROL_EVENTS };
+export { ColorLayersOrdering } from './Renderer/ColorLayersOrdering';
 export { View };
 export { GlobeView };
 export { PlanarView };

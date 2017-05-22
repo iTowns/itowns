@@ -41,7 +41,7 @@ and open the template in the editor.
             const viewerDiv = document.getElementById('viewerDiv');
             const menuGlobe = new GuiTools('menuDiv');
             const globeView = new itowns.GlobeView(viewerDiv, positionOnGlobe);
-            menuGlobe.api = globeView;
+            menuGlobe.view = globeView;
 
             itowns.Fetcher.json('examples/layers/JSONLayers/Ortho.json').then(result => globeView.addLayer(result));
             itowns.Fetcher.json('examples/layers/JSONLayers/OrthosCRS.json').then(result => globeView.addLayer(result));
@@ -57,6 +57,8 @@ and open the template in the editor.
             globeView.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, () => {
                 // eslint-disable-next-line no-console
                 console.info('Globe initialized');
+                menuGlobe.addImageryLayersGUI(globeView.getLayers(l => l.type === 'color'));
+                menuGlobe.addElevationLayersGUI(globeView.getLayers(l => l.type === 'elevation'));
             });
 
             window.globeView = globeView;
