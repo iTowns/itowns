@@ -309,38 +309,29 @@ function addGeometryLayerDebugFeatures(layer, view, gui, state) {
             n[0].setMaterialVisibility(false);
         }
     };
-    const debugLayer = {
+    let debugLayer = {
         id: obb_layer_id,
         type: 'debug',
         update: debugIdUpdate,
+        visible: false,
     };
 
-    const threeLayer = view.mainLoop.gfxEngine.getUniqueThreejsLayer();
-    View.prototype.addLayer.call(view, debugLayer, layer);
-    debugLayer.threejsLayer = threeLayer;
-    view.camera.camera3D.layers.disable(threeLayer);
+    debugLayer = View.prototype.addLayer.call(view, debugLayer, layer);
 
     // add to debug gui
     const folder = gui.addFolder(`Geometry Layer: ${layer.id}`);
 
     const enabled = view.camera.camera3D.layers.test({ mask: 1 << layer.threejsLayer });
     state[layer.id] = enabled;
+
     folder.add(state, layer.id).name('Visible').onChange((newValue) => {
-        if (newValue) {
-            view.camera.camera3D.layers.enable(layer.threeLayer);
-        } else {
-            view.camera.camera3D.layers.disable(layer.threeLayer);
-        }
+        layer.visible = newValue;
         view.notifyChange(0, true);
     });
 
     state[debugLayer.id] = false;
     folder.add(state, debugLayer.id).name('OBB visible').onChange((newValue) => {
-        if (newValue) {
-            view.camera.camera3D.layers.enable(debugLayer.threejsLayer);
-        } else {
-            view.camera.camera3D.layers.disable(debugLayer.threejsLayer);
-        }
+        debugLayer.visible = newValue;
         view.notifyChange(0, true);
     });
 

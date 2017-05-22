@@ -10,6 +10,7 @@ import Camera from '../Renderer/Camera';
 import MainLoop from './MainLoop';
 import c3DEngine from '../Renderer/c3DEngine';
 import { STRATEGY_MIN_NETWORK_TRAFFIC } from './Layer/LayerUpdateStrategy';
+import { GeometryLayer, Layer, defineLayerProperty } from './Layer/Layer';
 import Scheduler from './Scheduler/Scheduler';
 import Debug from '../../utils/debug/Debug';
 
@@ -25,6 +26,15 @@ import Debug from '../../utils/debug/Debug';
  *    - scene3D: {Scene} instance to use, otherwise a default one will be constructed
  * @param {boolean} glDebug - debug gl code
  * @constructor
+ * @example
+ * // How add gpx object
+ * itowns.loadGpx(url).then((gpx) => {
+ *      if (gpx) {
+ *         viewer.scene.add(gpx);
+ *      }
+ * });
+ *
+ * viewer.notifyChange(0, true);
  */
  /* TODO:
  * - remove debug boolean, replace by if __DEBUG__ and checkboxes in debug UI
@@ -66,7 +76,21 @@ function View(crs, viewerDiv, options = {}) {
 View.prototype = Object.create(EventDispatcher.prototype);
 View.prototype.constructor = View;
 
+const _syncThreejsLayer = function _syncThreejsLayer(layer, view) {
+    if (layer.visible) {
+        view.camera.camera3D.layers.enable(layer.threejsLayer);
+    } else {
+        view.camera.camera3D.layers.disable(layer.threejsLayer);
+    }
+};
+
 function _preprocessLayer(view, layer, provider) {
+    if (!(layer instanceof Layer) && !(layer instanceof GeometryLayer)) {
+        const nlayer = new Layer(layer.id);
+        delete layer.id;
+        layer = Object.assign(nlayer, layer);
+    }
+
     if (!layer.updateStrategy) {
         layer.updateStrategy = {
             type: STRATEGY_MIN_NETWORK_TRAFFIC,
@@ -89,16 +113,75 @@ function _preprocessLayer(view, layer, provider) {
 
     // probably not the best place to do this
     if (layer.type == 'color') {
-        layer.frozen = layer.frozen || false;
-        layer.visible = layer.visible == undefined ? true : layer.visible;
-        layer.opacity = layer.opacity == undefined ? 1.0 : layer.opacity;
-        layer.sequence = 0;
+        defineLayerProperty(layer, 'frozen', false);
+        defineLayerProperty(layer, 'visible', true);
+        defineLayerProperty(layer, 'opacity', 1.0);
+        defineLayerProperty(layer, 'sequence', 0);
     } else if (layer.type == 'elevation') {
-        layer.frozen = layer.frozen || false;
+        defineLayerProperty(layer, 'frozen', false);
+    } else if (layer.type == 'geometry' || layer.type == 'debug') {
+        layer.threejsLayer = view.mainLoop.gfxEngine.getUniqueThreejsLayer();
+        defineLayerProperty(layer, 'visible', true, () => _syncThreejsLayer(layer, view));
+        _syncThreejsLayer(layer, view);
     }
+    return layer;
 }
 
+/**
+ * Options to wms protocol
+ * @typedef {Object} OptionsWms
+ * @property {Attribution} attribution The intellectual property rights for the layer
+ * @property {string} name
+ * @property {string} mimetype
+ */
+
+/**
+ * Options to wtms protocol
+ * @typedef {Object} OptionsWmts
+ * @property {Attribution} attribution The intellectual property rights for the layer
+ * @property {string} name
+ * @property {string} mimetype
+ * @property {string} tileMatrixSet
+ * @property {Array.<Object>} tileMatrixSetLimits The limits for the tile matrix set
+ * @property {number} tileMatrixSetLimits.minTileRow Minimum row for tiles at the level
+ * @property {number} tileMatrixSetLimits.maxTileRow Maximum row for tiles at the level
+ * @property {number} tileMatrixSetLimits.minTileCol Minimum col for tiles at the level
+ * @property {number} tileMatrixSetLimits.maxTileCol Maximum col for tiles at the level
+ * @property {Object} [zoom]
+ * @property {Object} [zoom.min] layer's zoom minimum
+ * @property {Object} [zoom.max] layer's zoom maximum
+ */
+
+/**
+ * LayerOptions
+ * @typedef {Object} LayerOptions
+ * @property {string} id Unique layer's id
+ * @property {string} type the layer's type : 'color', 'elevation', 'geometry'
+ * @property {string} layer.protocol wmts and wms (wmtsc for custom deprecated)
+ * @property {string} layer.url Base URL of the repository or of the file(s) to load
+ * @property {Object} layer.updateStrategy strategy to load imagery files
+ * @property {OptionsWmts|OptionsWms} layer.options WMTS or WMS options
+ */
+
+/**
+ * Add layer in viewer.
+ * The layer id must be unique.
+ *
+ * @example
+ * // Add Color Layer
+ * view.addLayer({
+ *      type: 'color',
+ *      id: 'iColor',
+ * });
+ * // Add Elevation Layer
+ * view.addLayer({
+ *      type: 'elevation',
+ *      id: 'iElevation',
+ * });
+ * @param {LayerOptions} layer option
+ */
 View.prototype.addLayer = function addLayer(layer, parentLayer) {
+    layer = _preprocessLayer(this, layer, this.mainLoop.scheduler.getProtocolProvider(layer.protocol));
     if (parentLayer) {
         parentLayer.attach(layer);
     } else {
@@ -111,15 +194,16 @@ View.prototype.addLayer = function addLayer(layer, parentLayer) {
 
         this._layers.push(layer);
     }
-    _preprocessLayer(this, layer, this.mainLoop.scheduler.getProtocolProvider(layer.protocol));
+
+    return layer;
 };
 
 /**
  * Notifies the scene it needs to be updated due to changes exterior to the
  * scene itself (e.g. camera movement).
- * Using a non-0 delay allows to delay update - useful to reduce CPU load for
+ * @param {Number} delay Using a non-0 delay allows to delay update - useful to reduce CPU load for
  * non-interactive events (e.g: texture loaded)
- * needsRedraw param indicates if notified change requires a full scene redraw.
+ * @param {Boolean} needsRedraw indicates if notified change requires a full scene redraw.
  */
 View.prototype.notifyChange = function notifyChange(delay, needsRedraw, changeSource) {
     if (delay) {
@@ -133,11 +217,18 @@ View.prototype.notifyChange = function notifyChange(delay, needsRedraw, changeSo
     }
 };
 
-/*
+/**
  * Get all layers, with an optionnal filter applied.
  * The filter method will be called with 2 args:
  *   - 1st: current layer
  *   - 2nd: (optional) the geometry layer to which the current layer is attached
+ * @example
+ * // get all color layers
+ * view.getLayers(layer => layer.type === 'color')
+ * // get one layer with id
+ * view.getLayers(layer => layer.id === 'itt')
+ * @param {function} filter
+ * @returns {Array}  array of Layer
  */
 View.prototype.getLayers = function getLayers(filter) {
     const result = [];
