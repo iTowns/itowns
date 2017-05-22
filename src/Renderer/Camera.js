@@ -96,4 +96,15 @@ Camera.prototype.isBox3DVisible = function isBox3DVisible(box3d, matrixWorld) {
     return frustum.intersectsBox(box3d);
 };
 
+Camera.prototype.box3DSizeOnScreen = function box3DSizeOnScreen(box3d, matrixWorld) {
+    const c = box3d.clone();
+    const m = matrixWorld ? matrixWorld.clone() : new THREE.Matrix4();
+    m.elements[12] -= this._visibilityTestingOffset.x;
+    m.elements[13] -= this._visibilityTestingOffset.y;
+    m.elements[14] -= this._visibilityTestingOffset.z;
+    m.premultiply(this._viewMatrix);
+
+    return c.applyMatrix4(m);
+};
+
 export default Camera;
