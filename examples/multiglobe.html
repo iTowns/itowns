@@ -43,48 +43,39 @@ and open the template in the editor.
             // iTowns namespace defined here
             const viewerDiv = document.getElementById('viewerDiv');
 
-            const apiGlobe = new itowns.ApiGlobe();
-            let menuGlobe = new GuiTools(apiGlobe, 'menuDiv');
-            const globeView = apiGlobe.createSceneGlobe('globe', positionOnGlobe, viewerDiv);
-            // itowns.debug = new Debug(itowns.viewer.scene);
 
-            const urlImageryLayers = [];
-            const urlElevationLayers = [];
+            let menuGlobe = new GuiTools('menuDiv');
+            const globeView = new itowns.GlobeView(viewerDiv, positionOnGlobe);
+            menuGlobe.view = globeView;
 
-            urlImageryLayers.push('/examples/layers/JSONLayers/Ortho.json');
-            urlImageryLayers.push('/examples/layers/JSONLayers/OrthosCRS.json');
-            urlImageryLayers.push('/examples/layers/JSONLayers/ScanEX.json');
-            urlImageryLayers.push('/examples/layers/JSONLayers/Region.json');
+            itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(result => globeView.addLayer(result));
+            itowns.Fetcher.json('./layers/JSONLayers/OrthosCRS.json').then(result => globeView.addLayer(result));
+            itowns.Fetcher.json('./layers/JSONLayers/ScanEX.json').then(result => globeView.addLayer(result));
+            itowns.Fetcher.json('./layers/JSONLayers/Region.json').then(result => globeView.addLayer(result));
 
-            urlElevationLayers.push('/examples/layers/JSONLayers/IGN_MNT.json');
-            urlElevationLayers.push('/examples/layers/JSONLayers/IGN_MNT_HIGHRES.json');
-
-            const imageryPromise = apiGlobe.addImageryLayersFromJSONArray(urlImageryLayers);
-            const elevationPromise = apiGlobe.addElevationLayersFromJSONArray(urlElevationLayers);
-
-            imageryPromise.then((layersColors) => { menuGlobe.addImageryLayersGUI(layersColors); });
-            elevationPromise.then((layersElevations) => { menuGlobe.addElevationLayersGUI(layersElevations); });
+            itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT.json').then(result => globeView.addLayer(result));
+            itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(result => globeView.addLayer(result));
 
             menuGlobe.addGUI('RealisticLighting', false,
-                (newValue) => { apiGlobe.setRealisticLightingOn(newValue); });
+                (newValue) => { globeView.setRealisticLightingOn(newValue); });
 
-            apiGlobe.addEventListener(itowns.INITIALIZED_EVENT, () => {
+            globeView.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, () => {
                 // eslint-disable-next-line no-console
                 console.info('Globe initialized');
+                menuGlobe.addImageryLayersGUI(globeView.getLayers(l => l.type === 'color'));
+                menuGlobe.addElevationLayersGUI(globeView.getLayers(l => l.type === 'elevation'));
             });
-
-            apiGlobe.update();
 
 
             // hack: not searched why yet
             setTimeout(() => {
                 // hack because Debug access directly menuGlobe global var...
-                menuGlobe = new GuiTools(apiGlobe, 'menuDiv2');
+                menuGlobe = new GuiTools('menuDiv2');
                 const viewerDiv2 = document.getElementById('viewerDiv2');
-                const globe2 = apiGlobe.createSceneGlobe('globe', positionOnGlobe, viewerDiv2);
+                const globeView2 = new itowns.GlobeView(viewerDiv2, positionOnGlobe);
 
-                for (const layer of globeView.getLayers((l) => l.type == 'color' || l.type == 'elevation')) {
-                    globe2.addLayer(layer);
+                for (const layer of globeView.getLayers(l => l.type == 'color' || l.type == 'elevation')) {
+                    globeView2.addLayer(layer);
                 }
 
                 const e = {
@@ -101,9 +92,9 @@ and open the template in the editor.
                         "tileMatrixSet": "PM",
                         "mimetype": "image/png"
                     }
-                }
-                globe2.addLayer(e);
-                globe2.notifyChange();
+                };
+                globeView2.addLayer(e);
+                globeView2.notifyChange();
             }, 500);
 </script>
     </body>

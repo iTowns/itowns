@@ -68,26 +68,23 @@
 
             // iTowns namespace defined here
             const viewerDiv = document.getElementById('viewerDiv');
+            const menuGlobe = new GuiTools('menuDiv');
+            const globeView = new itowns.GlobeView(viewerDiv, positionOnGlobe);
+            menuGlobe.view = globeView;
 
-            const apiGlobe = new itowns.ApiGlobe();
-            const menuGlobe = new GuiTools(apiGlobe, 'menuDiv');
-            apiGlobe.createSceneGlobe('globe', positionOnGlobe, viewerDiv);
-            // itowns.debug = new Debug(itowns.viewer.scene);
+            itowns.Fetcher.json('layers/JSONLayers/Ortho.json').then(result => globeView.addLayer(result));
+            itowns.Fetcher.json('layers/JSONLayers/IGN_MNT.json').then(result => globeView.addLayer(result));
 
-            const urlImageryLayers = [];
-            const urlElevationLayers = [];
-
-            urlImageryLayers.push('/examples/layers/JSONLayers/Ortho.json');
-            urlElevationLayers.push('/examples/layers/JSONLayers/IGN_MNT.json');
-
-            const imageryPromise = apiGlobe.addImageryLayersFromJSONArray(urlImageryLayers);
-            const elevationPromise = apiGlobe.addElevationLayersFromJSONArray(urlElevationLayers);
-
-            imageryPromise.then((layersColors) => { menuGlobe.addImageryLayersGUI(layersColors); });
-            elevationPromise.then((layersElevations) => { menuGlobe.addElevationLayersGUI(layersElevations); });
 
             menuGlobe.addGUI('RealisticLighting', false,
-                (newValue) => { apiGlobe.setRealisticLightingOn(newValue); });
+                (newValue) => { globeView.setRealisticLightingOn(newValue); });
+
+            globeView.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, () => {
+                // eslint-disable-next-line no-console
+                console.info('Globe initialized');
+                menuGlobe.addImageryLayersGUI(globeView.getLayers(l => l.type === 'color'));
+                menuGlobe.addElevationLayersGUI(globeView.getLayers(l => l.type === 'elevation'));
+            });
 
 
             // Simple postprocessing setup
@@ -109,15 +106,15 @@
             postprocessScene.add(quad);
             const cam = new itowns.THREE.OrthographicCamera(-1, 1, 1, -1, 0, 10);
 
-            apiGlobe.globeview.render = () => {
-                const g = apiGlobe.globeview.mainLoop.gfxEngine;
+            globeView.render = () => {
+                const g = globeView.mainLoop.gfxEngine;
                 const r = g.renderer;
                 r.setRenderTarget(g.fullSizeRenderTarget);
                 r.clear();
                 r.setViewport(0, 0, g.getWindowSize().x, g.getWindowSize().y);
                 r.render(
-                    apiGlobe.globeview.scene,
-                    apiGlobe.globeview.camera.camera3D, g.fullSizeRenderTarget);
+                    globeView.scene,
+                    globeView.camera.camera3D, g.fullSizeRenderTarget);
 
                 quad.material.uniforms["tDiffuse"].value = g.fullSizeRenderTarget.texture;
                 quad.material.uniforms["tSize"].value.set(
@@ -129,9 +126,7 @@
                 r.render(
                     postprocessScene,
                     cam);
-            }
-            apiGlobe.update();
-            window.apiGlobe = apiGlobe;
+            };
 </script>
     </body>
 </html>
