@@ -1,3 +1,25 @@
+import { EventDispatcher } from 'three';
+
+
+export const defineLayerProperty = function defineLayerProperty(layer, propertyName, defaultValue, onChange) {
+    var property = layer[propertyName] == undefined ? defaultValue : layer[propertyName];
+    Object.defineProperty(layer,
+        propertyName,
+        { get: () => property,
+            set: (newValue) => {
+                if (property !== newValue) {
+                    const event = { type: `${propertyName}-property-changed`, previous: {}, new: {} };
+                    event.previous[propertyName] = property;
+                    event.new[propertyName] = newValue;
+                    property = newValue;
+                    if (onChange) {
+                        onChange(layer, propertyName);
+                    }
+                    layer.dispatchEvent(event);
+                }
+            } });
+};
+
 function GeometryLayer(i) {
     this._attachedLayers = [];
 
@@ -6,6 +28,9 @@ function GeometryLayer(i) {
         writable: false,
     });
 }
+
+GeometryLayer.prototype = Object.create(EventDispatcher.prototype);
+GeometryLayer.prototype.constructor = GeometryLayer;
 
 GeometryLayer.prototype.attach = function attach(layer) {
     if (!layer.update) {
@@ -20,13 +45,40 @@ GeometryLayer.prototype.detach = function detach(layer) {
     return this._attachedLayers.length < count;
 };
 
-
+/**
+ * @class      Layer (name)
+ * Don't use directly constructor to instance a new Layer
+ * use addLayer in {@link View}
+ * @example
+ * // add and create a new Layer
+ * const newLayer = view.addLayer({options});
+ *
+ * // Change layer's visibilty
+ * const layerToChange = view.getLayers(layer => layer.id == 'idLayerToChange')[0];
+ * layerToChange.visible = false;
+ * view.notifyChange(0,true); // update viewer
+ *
+ * // Change layer's opacity
+ * const layerToChange = view.getLayers(layer => layer.id == 'idLayerToChange')[0];
+ * layerToChange.opacity = 0.5;
+ * view.notifyChange(0,true); // update viewer
+ *
+ * // Listen properties
+ * const layerToListen = view.getLayers(layer => layer.id == 'idLayerToListen')[0];
+ * layerToListen.addEventListener('visible-property-changed', (event) => console.log(event));
+ * layerToListen.addEventListener('opacity-property-changed', (event) => console.log(event));
+ * @protected
+ * @param      {String}  id
+ */
 function Layer(i) {
     Object.defineProperty(this, 'id', {
         value: i,
         writable: false,
     });
 }
+
+Layer.prototype = Object.create(EventDispatcher.prototype);
+Layer.prototype.constructor = Layer;
 
 const ImageryLayers = {
     moveLayerToIndex: function moveLayerToIndex(layer, newIndex, imageryLayers) {

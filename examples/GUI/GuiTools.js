@@ -17,8 +17,7 @@ dat.GUI.prototype.removeFolder = function removeFolder(name) {
     this.onResize();
 };
 
-function GuiTools(api, domId) {
-    this.api = api;
+function GuiTools(domId) {
     this.gui = new dat.GUI({ autoPlace: false });
     this.gui.domElement.id = domId;
     viewerDiv.appendChild(this.gui.domElement);
@@ -29,13 +28,16 @@ function GuiTools(api, domId) {
 GuiTools.prototype.addImageryLayerGUI = function addImageryLayerGUI(layer) {
     var folder = this.colorGui.addFolder(layer.id);
     folder.add({ visible: true }, 'visible').onChange((value) => {
-        this.api.setLayerVisibility(layer, value);
+        layer.visible = value;
+        this.view.notifyChange(0, true);
     });
     folder.add({ opacity: 1.0 }, 'opacity').min(0.0).max(1.0).onChange((value) => {
-        this.api.setLayerOpacity(layer, value);
+        layer.opacity = value;
+        this.view.notifyChange(0, true);
     });
     folder.add({ frozen: false }, 'frozen').onChange((value) => {
         layer.frozen = value;
+        this.view.notifyChange(0, true);
     });
 };
 
