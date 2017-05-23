@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Clamp to Ground demo</title>
+
+        <style type="text/css">
+            html {height: 100%}
+            body { margin: 0; overflow:hidden; height:100%}
+
+            #viewerDiv {
+                margin : auto auto;
+                width: 100%;
+                height: 100%;
+                padding: 0;
+            }
+        </style>
+        <meta charset="UTF-8">
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body>
+        <div id="viewerDiv"></div>
+        <script src="/dist/itowns.js"></script>
+        <script type="text/javascript">
+            const positionOnGlobe = { longitude: 2.351323, latitude: 48.856712, altitude: 25000000 };
+
+            // iTowns namespace defined here
+            const viewerDiv = document.getElementById('viewerDiv');
+            const globeView = new itowns.GlobeView(viewerDiv, positionOnGlobe);
+
+            itowns.Fetcher.json('/examples/layers/JSONLayers/Ortho.json').then(result => globeView.addLayer(result));
+
+            itowns.Fetcher.json('/examples/layers/JSONLayers/IGN_MNT.json').then(result => globeView.addLayer(result));
+            itowns.Fetcher.json('/examples/layers/JSONLayers/IGN_MNT_HIGHRES.json').then(result => globeView.addLayer(result));
+
+
+            const clamped = new itowns.THREE.Group();
+
+            const l = new itowns.GeometryLayer('outline');
+            l.type = 'geometry';
+            l.preUpdate = (context, layer, sources) => {
+                return clamped.children || [];
+            };
+            l.update = (context, layer, obj) => {
+                if (obj.geometry instanceof itowns.THREE.ConeGeometry) {
+                    itowns.placeObjectOnGround(globeView.referenceCrs, globeView.wgs84TileLayer, globeView.wgs84TileLayer.level0Nodes, obj, {
+                        offset: 250,
+                    });
+                } else {
+                    itowns.placeObjectOnGround(globeView.referenceCrs, globeView.wgs84TileLayer, globeView.wgs84TileLayer.level0Nodes, obj, {
+                        modifyGeometry: true,
+                        offset: 10,
+                    });
+                }
+                // update RTC matrix
+                obj.material.setMatrixRTC(
+                        context.engine.getRTCMatrixFromNode(obj, context.camera));
+            };
+            itowns.View.prototype.addLayer.call(globeView, l);
+
+            // setup click listener
+            viewerDiv.addEventListener('contextmenu', (evt) => {
+                const carto = new itowns.Coordinates('EPSG:4978', globeView.getPickingPositionFromDepth({ x: evt.clientX, y: evt.clientY }));
+
+                var geometry = new itowns.THREE.ConeGeometry(100, 500);
+                var material = new itowns.BasicMaterial(new itowns.THREE.Color(0xff0000));
+                material.side = itowns.THREE.DoubleSide;
+                var cone = new itowns.THREE.Mesh(geometry, material);
+                cone.frustumCulled = false;
+                cone.updateMatrix();
+                cone.layers.set(l.threejsLayer);
+
+                const p = carto.xyz();
+                cone.lookAt(p);
+                cone.rotateX(-Math.PI * 0.5);
+                cone.position.copy(p);
+
+                cone.updateMatrix();
+                cone.updateMatrixWorld(true);
+
+                clamped.add(cone);
+
+                globeView.notifyChange(true);
+                return false;
+            });
+
+            globeView.scene.add(clamped);
+
+        </script>
+    </body>
+</html>
