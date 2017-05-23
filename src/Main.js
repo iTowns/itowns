@@ -25,3 +25,4 @@ export { default as FlyControls } from './Renderer/ThreeExtended/FlyControls';
 export { default as FirstPersonControls } from './Renderer/ThreeExtended/FirstPersonControls';
 export { default as GeoJSON2Three } from './Renderer/ThreeExtended/GeoJSON2Three';
 export { CONTROL_EVENTS } from './Renderer/ThreeExtended/GlobeControls';
+export { default as DEMUtils } from './utils/DEMUtils';
