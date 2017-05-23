@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>Globe</title>
+
+    <style type="text/css">
+            html {height: 100%}
+        body { margin: 0; overflow:hidden; height:100%}
+
+            #viewerDiv {
+                margin : auto auto;
+                width: 100%;
+                height: 100%;
+                padding: 0;
+            }
+            #menuDiv {position: absolute; top:0px; margin-left: 0px;}
+
+            #altitude {
+                position: absolute;
+            }
+        </style>
+        <meta charset="UTF-8">
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="/node_modules/dat.gui/build/dat.gui.min.js"></script>
+    </head>
+    <body>
+        <div id="viewerDiv"></div>
+        <div id="altitude"></div>
+        <script src="/examples/GUI/GuiTools.js"></script>
+        <script src="/dist/itowns.js"></script>
+        <script src="/dist/debug.js"></script>
+        <script type="text/javascript">
+            /* global itowns,document,GuiTools*/
+
+            const positionOnGlobe = { longitude: 2.351323, latitude: 48.856712, altitude: 25000000 };
+
+            // iTowns namespace defined here
+            const viewerDiv = document.getElementById('viewerDiv');
+            const menuGlobe = new GuiTools('menuDiv');
+            const globeView = new itowns.GlobeView(viewerDiv, positionOnGlobe);
+            menuGlobe.view = globeView;
+
+            itowns.Fetcher.json('/examples/layers/JSONLayers/Ortho.json').then(result => globeView.addLayer(result));
+
+            itowns.Fetcher.json('/examples/layers/JSONLayers/IGN_MNT.json').then(result => globeView.addLayer(result));
+            itowns.Fetcher.json('/examples/layers/JSONLayers/IGN_MNT_HIGHRES.json').then(result => globeView.addLayer(result));
+
+            menuGlobe.addGUI('RealisticLighting', false,
+                (newValue) => { globeView.setRealisticLightingOn(newValue); });
+
+            globeView.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, () => {
+                // eslint-disable-next-line no-console
+                console.info('Globe initialized');
+                menuGlobe.addImageryLayersGUI(globeView.getLayers(l => l.type === 'color'));
+                menuGlobe.addElevationLayersGUI(globeView.getLayers(l => l.type === 'elevation'));
+            });
+
+            window.globeView = globeView;
+
+            const contour = new itowns.THREE.Group();
+
+            const l = new itowns.GeometryLayer('outline');
+            l.type = 'geometry';
+            l.preUpdate = (context, layer, sources) => {
+                return contour.children || [];
+            };
+            l.update = (context, layer, line) => {
+                itowns.placeObjectOnGround(globeView.referenceCrs, globeView.wgs84TileLayer, globeView.wgs84TileLayer.level0Nodes, line);
+            };
+            itowns.View.prototype.addLayer.call(globeView, l);
+
+            for (const pt of [[4, 45], [5, 48]]) {
+                var group = new itowns.THREE.Group();
+
+                // red cylinder above the ground
+                var geometry = new itowns.THREE.BoxGeometry( 10, 10, 500);
+                var material = new itowns.THREE.MeshBasicMaterial( {color: 0xff0000} );
+                var cylinder = new itowns.THREE.Mesh( geometry, material );
+                cylinder.frustumCulled = false;
+                cylinder.position.z = 250;
+                cylinder.updateMatrix();
+                cylinder.layers.set(l.threejsLayer);
+                group.add(cylinder);
+
+                // black cylinder under the ground
+                material = new itowns.THREE.MeshBasicMaterial( {color: 0x000000} );
+                cylinder = new itowns.THREE.Mesh( geometry, material );
+                cylinder.position.z = -250;
+                cylinder.frustumCulled = false;
+                cylinder.layers.set(l.threejsLayer);
+                cylinder.updateMatrix();
+                group.add(cylinder);
+
+
+                const p = new itowns.Coordinates('EPSG:4326', pt[0], pt[1]).as('EPSG:4978').xyz();
+                group.lookAt(p);
+                group.position.copy(p);
+                group.updateMatrix();
+
+                group.updateMatrixWorld(true);
+                contour.add(group);
+            }
+
+            globeView.scene.add(contour);
+            globeView.controls.setCameraTargetGeoPosition({longitude:4, latitude: 45}).then(() => {
+                globeView.controls.setRange(10000); });
+        </script>
+    </body>
+</html>

@@ -25,6 +25,8 @@ export { processTiledGeometryNode, initTiledGeometryLayer } from './Process/Tile
 export { updateLayeredMaterialNodeImagery, updateLayeredMaterialNodeElevation } from './Process/LayeredMaterialNodeProcessing';
 export { GeometryLayer } from './Core/Layer/Layer';
 
+export { default as placeObjectOnGround } from './Process/PlaceOnGroundProcessing';
+
 // This is temporary, until we're able to build a vendor.js
 // containing our dependencies.
 export { THREE };
