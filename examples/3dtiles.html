@@ -60,6 +60,8 @@
             $3dTilesLayer.url = 'http://localhost:8003/tilesets/TilesetWithDiscreteLOD/tileset.json';
             $3dTilesLayer.protocol = '3d-tiles'
             $3dTilesLayer.overrideMaterials = true;  // custom cesium shaders are not functional
+            $3dTilesLayer.type = 'geometry';
+            $3dTilesLayer.visible = true;
 
             itowns.View.prototype.addLayer.call(globe, $3dTilesLayer);
 
