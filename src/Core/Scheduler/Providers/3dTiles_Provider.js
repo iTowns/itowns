@@ -79,8 +79,6 @@ $3dTiles_Provider.prototype.b3dmToMesh = function b3dmToMesh(data, layer) {
                 mesh.material = new BasicMaterial();
                 mesh.material.uniforms.useRTC.value = false;
             }
-            mesh.updateMatrix();
-            mesh.updateMatrixWorld();
         };
         result.scene.applyMatrix(layer.glTFRotation);
         result.scene.traverse(init);
@@ -110,6 +108,9 @@ $3dTiles_Provider.prototype.executeCommand = function executeCommand(command) {
     const tile = new THREE.Object3D();
     configureTile(tile, layer, metadata);
     const urlSuffix = metadata.content ? metadata.content.url : undefined;
+    const setLayer = (obj) => {
+        obj.layers.set(layer.threejsLayer);
+    };
     if (urlSuffix) {
         const url = metadata.urlPrefix + urlSuffix;
 
@@ -133,15 +134,18 @@ $3dTiles_Provider.prototype.executeCommand = function executeCommand(command) {
                 if (func) {
                     return func(result, layer).then((content) => {
                         tile.add(content);
+                        tile.traverse(setLayer);
                         return tile;
                     });
                 }
             }
 
+            tile.traverse(setLayer);
             return tile;
         });
     } else {
         return new Promise((resolve/* , reject*/) => {
+            tile.traverse(setLayer);
             resolve(tile);
         });
     }
