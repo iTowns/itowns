@@ -230,7 +230,7 @@ if (enableTargetHelper) {
 var _handlerMouseMove;
 var _handlerMouseUp;
 
-let getPickingPosition;
+let _getPickingPosition;
 
 // Pseudo collision
 const radiusCollision = 50;
@@ -239,6 +239,15 @@ const radiusCollision = 50;
 // Event
 let enableEventPositionChanged = true;
 
+/**
+ * globe controls events
+ * @property PAN_CHANGED {string} emit after camera pan
+ * @property ORIENTATION_CHANGED {string} emit when camera's orientation is changed
+ * @property RANGE_CHANGED {string} emit when camera's range to target is changed
+ * @property CAMERA_TARGET_CHANGED {string} emit when camera's target is changed
+ * @example
+ * viewer.controls.addEventListener(itowns.CONTROL_EVENTS.PAN_CHANGED, (event) => console.log(event));
+ */
 export const CONTROL_EVENTS = {
     PAN_CHANGED: 'pan-changed',
     ORIENTATION_CHANGED: 'orientation-changed',
@@ -307,12 +316,13 @@ function GlobeControls(view, target, domElement, viewerDiv, radius, getPickingPo
     this.camera = view.camera.camera3D;
 
     snapShotCamera = new SnapCamera(this.camera);
+    _getPickingPosition = getPickingPosition;
 
     this.domElement = (domElement !== undefined) ? domElement : document;
 
     this.waitSceneLoaded = function waitSceneLoaded() {
         const deferedPromise = defer();
-        viewerDiv.addEventListener('globe-built', () => {
+        this._view.mainLoop.addEventListener('command-queue-empty', () => {
             deferedPromise.resolve();
         });
         return deferedPromise.promise;
@@ -707,7 +717,7 @@ function GlobeControls(view, target, domElement, viewerDiv, radius, getPickingPo
 
             if (cameraTargetOnGlobe.position.distanceTo(previousCameraTargetOnGlobe) / spherical.radius > delta) {
                 this.dispatchEvent({
-                    type: CONTROL_EVENTS.CAMERATARGET_CHANGED,
+                    type: CONTROL_EVENTS.CAMERA_TARGET_CHANGED,
                     previous: { cameraTarget: new Coordinates(this._view.referenceCrs, previousCameraTargetOnGlobe) },
                     new: { cameraTarget: new Coordinates(this._view.referenceCrs, cameraTargetOnGlobe.position) },
                 });
@@ -1672,7 +1682,7 @@ GlobeControls.prototype.pickGeoPosition = function pickGeoPosition(mouse, y) {
         y: mouse.clientY || y,
     };
 
-    var pickedPosition = getPickingPosition(this.controlsActiveLayers, screenCoords);
+    var pickedPosition = _getPickingPosition(this.controlsActiveLayers, screenCoords);
 
     if (!pickedPosition) {
         return;

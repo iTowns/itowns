@@ -1,4 +1,5 @@
 {
+    "type": "color",
     "protocol":   "wmtsc",
     "id":         "OPENSM",
     "fx" :2.5,

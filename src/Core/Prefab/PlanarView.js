@@ -105,15 +105,13 @@ function PlanarView(viewerDiv, boundingbox, options) {
             nodeInitFn);
     tileLayer.builder = new PlanarTileBuilder();
 
-    const threejsLayer = this.mainLoop.gfxEngine.getUniqueThreejsLayer();
     tileLayer.type = 'geometry';
     tileLayer.protocol = 'tile';
-    tileLayer.threejsLayer = threejsLayer;
+    tileLayer.visible = true;
     tileLayer.lighting = {
         enable: false,
         position: { x: -0.5, y: 0.0, z: 1.0 },
     };
-    this.camera.camera3D.layers.enable(threejsLayer);
 
     this.addLayer(tileLayer);
 

@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 
 import View from '../View';
+import { COLOR_LAYERS_ORDER_CHANGED } from '../../Renderer/ColorLayersOrdering';
 import RendererConstant from '../../Renderer/RendererConstant';
 import GlobeControls from '../../Renderer/ThreeExtended/GlobeControls';
 import { unpack1K } from '../../Renderer/MatteIdsMaterial';
@@ -8,6 +9,7 @@ import { unpack1K } from '../../Renderer/MatteIdsMaterial';
 import { GeometryLayer } from '../Layer/Layer';
 
 import Atmosphere from './Globe/Atmosphere';
+import CoordStars from '../Geographic/CoordStars';
 import Clouds from './Globe/Clouds';
 
 import { C, ellipsoidSizes } from '../Geographic/Coordinates';
@@ -17,6 +19,32 @@ import { globeCulling, preGlobeUpdate, globeSubdivisionControl, globeSchemeTileW
 import BuilderEllipsoidTile from './Globe/BuilderEllipsoidTile';
 
 
+/**
+ * Globe's EVENT
+ * @property GLOBE_INITIALIZED {string} emit one time when globe is initialized
+ * @property LAYER_ADDED {string} emit when layer id added in viewer
+ * @property LAYER_REMOVED {string} emit when layer id removed in viewer
+ * @property COLOR_LAYERS_ORDER_CHANGED {string} emit when  color layers order change
+ * @example
+ * viewer.addEventListener(itowns.GLOBE_VIEW_EVENTS.LAYER_REMOVED, (event) => console.log(event));
+ */
+
+export const GLOBE_VIEW_EVENTS = {
+    GLOBE_INITIALIZED: 'initialized',
+    LAYER_ADDED: 'layer-added',
+    LAYER_REMOVED: 'layer-removed',
+    COLOR_LAYERS_ORDER_CHANGED,
+};
+
+/**
+ * Creates the viewer Globe (the globe of iTowns).
+ * The first parameter is the coordinates on wich the globe will be centered at the initialization.
+ * The second one is the HTML div in wich the scene will be created.
+ * @constructor
+ * @augments View
+ * @params {Div} string.
+ * @param {Coords} coords.
+ */
 function GlobeView(viewerDiv, coordCarto, options) {
     THREE.Object3D.DefaultUp.set(0, 0, 1);
     const size = ellipsoidSizes().x;
@@ -108,15 +136,13 @@ function GlobeView(viewerDiv, coordCarto, options) {
             nodeInitFn);
     wgs84TileLayer.builder = new BuilderEllipsoidTile();
 
-    const threejsLayer = this.mainLoop.gfxEngine.getUniqueThreejsLayer();
     wgs84TileLayer.type = 'geometry';
     wgs84TileLayer.protocol = 'tile';
-    wgs84TileLayer.threejsLayer = threejsLayer;
+    wgs84TileLayer.visible = true;
     wgs84TileLayer.lighting = {
         enable: false,
         position: { x: -0.5, y: 0.0, z: 1.0 },
     };
-    this.camera.camera3D.layers.enable(threejsLayer);
 
     this.addLayer(wgs84TileLayer);
 
@@ -174,13 +200,18 @@ function GlobeView(viewerDiv, coordCarto, options) {
 
     this.wgs84TileLayer = wgs84TileLayer;
 
-    this.mainLoop.addEventListener('command-queue-empty', () => {
-        viewerDiv.dispatchEvent(new CustomEvent('globe-built'));
-    });
+    const fn = () => {
+        this.mainLoop.removeEventListener('command-queue-empty', fn);
+        this.dispatchEvent({ type: GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED });
+    };
+
+    this.mainLoop.addEventListener('command-queue-empty', fn);
 
     window.addEventListener('resize', () => {
         this.controls.updateCamera(this.camera, this.viewerDiv.clientWidth, this.viewerDiv.clientHeight);
     }, false);
+
+    this.notifyChange(0, true);
 }
 
 GlobeView.prototype = Object.create(View.prototype);
@@ -188,12 +219,56 @@ GlobeView.prototype.constructor = GlobeView;
 
 GlobeView.prototype.addLayer = function addLayer(layer) {
     if (layer.type == 'color') {
+        const colorLayerCount = this.getLayers(l => l.type === 'color').length;
+        layer.sequence = colorLayerCount - 1;
         layer.update = updateLayeredMaterialNodeImagery;
     } else if (layer.type == 'elevation') {
+        if (layer.protocol === 'wmts' && layer.options.tileMatrixSet !== 'WGS84G') {
+            throw new Error('Only WGS84G tileMatrixSet is currently supported for WMTS elevation layers');
+        }
         layer.update = updateLayeredMaterialNodeElevation;
     }
     View.prototype.addLayer.call(this, layer, this.wgs84TileLayer);
-    // we probably want to move some code from ApiGlobe.prototype.addImageryLayer|ApiGlobeView.prototype.addElevationLayer here
+
+    this.dispatchEvent({ type: GLOBE_VIEW_EVENTS.LAYER_ADDED });
+
+    return layer;
+};
+
+/**
+ * Removes a specific imagery layer from the current layer list. This removes layers inserted with attach().
+ * @param      {string}   layerId      The identifier
+ * @return     {boolean}
+ */
+GlobeView.prototype.removeLayer = function removeImageryLayer(layerId) {
+    const layer = this.getLayers(l => l.id === layerId)[0];
+    if (layer && layer.type === 'color' && this.wgs84TileLayer.detach(layer)) {
+        var cO = function cO(object) {
+            if (object.removeColorLayer) {
+                object.removeColorLayer(layerId);
+            }
+        };
+
+        for (const root of this.wgs84TileLayer.level0Nodes) {
+            root.traverse(cO);
+        }
+        const imageryLayers = this.getLayers(l => l.type === 'color');
+        for (const color of imageryLayers) {
+            if (color.sequence > layer.sequence) {
+                color.sequence--;
+            }
+        }
+
+        this.notifyChange(0, true);
+        this.dispatchEvent({
+            type: GLOBE_VIEW_EVENTS.LAYER_REMOVED,
+            layerId,
+        });
+
+        return true;
+    } else {
+        throw new Error(`${layerId} isn't color layer`);
+    }
 };
 
 GlobeView.prototype.selectNodeAt = function selectNodeAt(mouse) {
@@ -246,7 +321,6 @@ GlobeView.prototype.screenCoordsToNodeId = function screenCoordsToNodeId(mouse) 
 
     return Math.round(unpack);
 };
-
 
 const matrix = new THREE.Matrix4();
 matrix.elements = new Float64Array(16); // /!\ WARNING Matrix JS are in Float32Array
@@ -335,6 +409,32 @@ GlobeView.prototype.changeRenderState = function changeRenderState(newRenderStat
     this._renderState = newRenderState;
 };
 
+GlobeView.prototype.setRealisticLightingOn = function setRealisticLightingOn(value) {
+    const coSun = CoordStars.getSunPositionInScene(new Date().getTime(), 48.85, 2.35).normalize();
+
+    this.lightingPos = coSun.normalize();
+
+    const lighting = this.wgs84TileLayer.lighting;
+    lighting.enable = value;
+    lighting.position = coSun;
+
+    this.atmosphere.updateLightingPos(coSun);
+    this.atmosphere.setRealisticOn(value);
+    this.clouds.updateLightingPos(coSun);
+    this.clouds.setLightingOn(value);
+
+    this.updateMaterialUniform('lightingEnabled', value);
+    this.updateMaterialUniform('lightPosition', coSun);
+    this.notifyChange(0, true);
+};
+
+GlobeView.prototype.setLightingPos = function setLightingPos(pos) {
+    const lightingPos = pos || CoordStars.getSunPositionInScene(this.ellipsoid, new Date().getTime(), 48.85, 2.35);
+
+    this.updateMaterialUniform('lightPosition', lightingPos.clone().normalize());
+    this.notifyChange(0, true);
+};
+
 GlobeView.prototype.updateMaterialUniform = function updateMaterialUniform(uniformName, value) {
     for (const n of this.wgs84TileLayer.level0Nodes) {
         n.traverse((obj) => {
@@ -347,6 +447,5 @@ GlobeView.prototype.updateMaterialUniform = function updateMaterialUniform(unifo
         });
     }
 };
-
 
 export default GlobeView;
