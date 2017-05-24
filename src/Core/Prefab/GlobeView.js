@@ -26,7 +26,41 @@ import BuilderEllipsoidTile from './Globe/BuilderEllipsoidTile';
  * @property LAYER_REMOVED {string} emit when layer id removed in viewer
  * @property COLOR_LAYERS_ORDER_CHANGED {string} emit when  color layers order change
  * @example
+ * viewer.addEventListener(itowns.GLOBE_VIEW_EVENTS.LAYER_ADDED, (event) => console.log(event));
+ * // or
+ * viewer.addEventListener('layer-added', (event) => console.log(event));
+ * // returns:
+ * // Object {type: "layer-added", target: GlobeView}
+ * //   target: viewer
+ * //   type: 'layer-added'
+ *
  * viewer.addEventListener(itowns.GLOBE_VIEW_EVENTS.LAYER_REMOVED, (event) => console.log(event));
+ * // or
+ * viewer.addEventListener('layer-removed', (event) => console.log(event));
+ * // returns:
+ * // Object {type: "layer-added", target: GlobeView}
+ * //   layerId: 'layerId'
+ * //   target: viewer
+ * //   type: 'layer-removed'
+ *
+ * viewer.addEventListener(itowns.GLOBE_VIEW_EVENTS.COLOR_LAYERS_ORDER_CHANGED, (event) => console.log(event));
+ * // or
+ * viewer.addEventListener('layers-order-changed', (event) => console.log(event));
+ * itowns.ColorLayersOrdering.moveLayerDown(viewer, 'layer3'); //with 3 layers in the view: layer1, layer2 and layer3
+ * // returns:
+ * // Object {type: "layers-order-changed", previous: Object, new: Object, target: GlobeView}
+ * //   new: Object
+ * //       sequence: Array(3)
+ * //           0: layer1
+ * //           1: layer3
+ * //           2: layer2
+ * //   previous: Object
+ * //       sequence: Array(3)
+ * //           0: layer1
+ * //           1: layer2
+ * //           2: layer3
+ * //   target: viewer
+ * //   type: 'layers-order-changed'
  */
 
 export const GLOBE_VIEW_EVENTS = {
@@ -41,6 +75,8 @@ export const GLOBE_VIEW_EVENTS = {
  * The first parameter is the coordinates on wich the globe will be centered at the initialization.
  * The second one is the HTML div in wich the scene will be created.
  * @constructor
+ * @example view = new GlobeView(viewer, positionOnGlobe);
+ * // positionOnGlobe in latitude, longitude and altitude
  * @augments View
  * @params {Div} string.
  * @param {Coords} coords.
@@ -237,6 +273,8 @@ GlobeView.prototype.addLayer = function addLayer(layer) {
 
 /**
  * Removes a specific imagery layer from the current layer list. This removes layers inserted with attach().
+ * @example
+ * view.removeLayer('layerId');
  * @param      {string}   layerId      The identifier
  * @return     {boolean}
  */
