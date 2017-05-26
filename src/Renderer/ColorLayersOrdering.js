@@ -22,7 +22,7 @@ export const ColorLayersOrdering = {
      * @param      {View}  view the viewer
      * @param      {string}  layerId   The layer's idendifiant
      * @example
-     * itowns.moveLayerUp(viewer, 'idLayerToUp');
+     * itowns.ColorLayersOrdering.moveLayerUp(viewer, 'idLayerToUp');
      */
     moveLayerUp: function moveLayerUp(view, layerId) {
         const imageryLayers = view.getLayers(l => l.type === 'color');
@@ -46,7 +46,7 @@ export const ColorLayersOrdering = {
      * @param      {View}  view the viewer
      * @param      {string}  layerId   The layer's idendifiant
      * @example
-     * itowns.moveLayerDown(viewer, 'idLayerToDown');
+     * itowns.ColorLayersOrdering.moveLayerDown(viewer, 'idLayerToDown');
      */
     moveLayerDown: function moveLayerDown(view, layerId) {
         const imageryLayers = view.getLayers(l => l.type === 'color');
@@ -71,7 +71,7 @@ export const ColorLayersOrdering = {
      * @param      {string}  layerId   The layer's idendifiant
      * @param      {number}  newIndex   The new index
      * @example
-     * itowns.moveLayerToIndex(viewer, 'idLayerToChangeIndex', 2);
+     * itowns.ColorLayersOrdering.moveLayerToIndex(viewer, 'idLayerToChangeIndex', 2);
      */
     moveLayerToIndex: function moveLayerToIndex(view, layerId, newIndex) {
         const imageryLayers = view.getLayers(l => l.type === 'color');
