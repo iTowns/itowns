@@ -139,6 +139,8 @@ function _preprocessLayer(view, layer, provider) {
  * Options to wtms protocol
  * @typedef {Object} OptionsWmts
  * @property {Attribution} attribution The intellectual property rights for the layer
+ * @property {string} attribution.name The name of the owner of the data
+ * @property {string} attribution.url The website of the owner of the data
  * @property {string} name
  * @property {string} mimetype
  * @property {string} tileMatrixSet
@@ -170,9 +172,27 @@ function _preprocessLayer(view, layer, provider) {
  * @example
  * // Add Color Layer
  * view.addLayer({
- *      type: 'color',
- *      id: 'iColor',
+ *      type: 'elevation',
+ *      id: 'iElevation',
  * });
+ *
+ * // Example to add an OPENSM Layer
+ * view.addLayer({
+ *   type: 'color',
+ *   protocol:   'wmtsc',
+ *   id:         'OPENSM',
+ *   fx: 2.5,
+ *   customUrl:  'http://b.tile.openstreetmap.fr/osmfr/%TILEMATRIX/%COL/%ROW.png',
+ *   options: {
+ *       attribution : {
+ *           name: 'OpenStreetMap',
+ *           url: 'http://www.openstreetmap.org/',
+ *       },
+ *       tileMatrixSet: 'PM',
+ *       mimetype: 'image/png',
+ *    },
+ * });
+ *
  * // Add Elevation Layer
  * view.addLayer({
  *      type: 'elevation',
@@ -223,10 +243,16 @@ View.prototype.notifyChange = function notifyChange(delay, needsRedraw, changeSo
  *   - 1st: current layer
  *   - 2nd: (optional) the geometry layer to which the current layer is attached
  * @example
+ * // get all layers
+ * view.getLayers();
  * // get all color layers
- * view.getLayers(layer => layer.type === 'color')
+ * view.getLayers(layer => layer.type === 'color');
+ * // get all elevation layers
+ * view.getLayers(layer => layer.type === 'elevation');
+ * // get all geometry layers
+ * view.getLayers(layer => layer.type === 'geometry');
  * // get one layer with id
- * view.getLayers(layer => layer.id === 'itt')
+ * view.getLayers(layer => layer.id === 'itt');
  * @param {function} filter
  * @returns {Array}  array of Layer
  */
