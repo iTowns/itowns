@@ -28,11 +28,15 @@
             const positionOnGlobe = { longitude: 2.351323, latitude: 48.856712, altitude: 25000000 };
 
             const scene = new itowns.THREE.Scene();
-            const renderer = new itowns.THREE.WebGLRenderer();
+            const renderer = new itowns.THREE.WebGLRenderer({
+                logarithmicDepthBuffer: true,
+            });
 
             // iTowns namespace defined here
             const viewerDiv = document.getElementById('viewerDiv');
             viewerDiv.appendChild(renderer.domElement);
+            renderer.domElement.width = viewerDiv.clientWidth * 0.5;
+            renderer.domElement.height = viewerDiv.clientHeight * 0.5;
 
             const globeView = new itowns.GlobeView(viewerDiv, positionOnGlobe, { scene3D: scene, renderer });
 
