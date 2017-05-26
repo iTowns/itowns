@@ -9,12 +9,12 @@
 import * as THREE from 'three';
 import Capabilities from '../Core/System/Capabilities';
 
-function c3DEngine(viewerDiv) {
+function c3DEngine(viewerDiv, renderer) {
     var NOIE = !Capabilities.isInternetExplorer();
     this.viewerDiv = viewerDiv;
 
-    this.width = viewerDiv.clientWidth;
-    this.height = viewerDiv.clientHeight;
+    this.width = (renderer ? renderer.domElement : viewerDiv).clientWidth;
+    this.height = (renderer ? renderer.domElement : viewerDiv).clientHeight;
 
     this.positionBuffer = null;
     this._nextThreejsLayer = 0;
@@ -44,7 +44,7 @@ function c3DEngine(viewerDiv) {
     //
     // Create renderer
     //
-    this.renderer = new THREE.WebGLRenderer({
+    this.renderer = renderer || new THREE.WebGLRenderer({
         canvas,
         antialias: true,
         alpha: true,
@@ -53,14 +53,15 @@ function c3DEngine(viewerDiv) {
 
     Capabilities.updateCapabilities(this.renderer);
 
-    this.renderer.setPixelRatio(viewerDiv.devicePixelRatio);
-    this.renderer.setSize(viewerDiv.clientWidth, viewerDiv.clientHeight);
     this.renderer.setClearColor(0x030508);
     this.renderer.autoClear = false;
     this.renderer.sortObjects = false;
 
-    // this.viewerDiv.appendChild(canvas);
-    viewerDiv.appendChild(this.renderer.domElement);
+    if (!renderer) {
+        this.renderer.setPixelRatio(viewerDiv.devicePixelRatio);
+        this.renderer.setSize(viewerDiv.clientWidth, viewerDiv.clientHeight);
+        viewerDiv.appendChild(this.renderer.domElement);
+    }
 }
 
 /*
