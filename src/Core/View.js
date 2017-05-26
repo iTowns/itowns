@@ -1,8 +1,10 @@
-/**
- * Generated On: 2015-10-5
- * Class: Scene
- * Description: La Scene est l'instance principale du client. Elle est le chef orchestre de l'application.
- */
+// *View* holds a reference to everything needed to display GIS data
+//   - layers: contains all data (geometry, images, etc) (see Layer*)
+//   - update loop: manage the update cycle (see MainLoop*)
+//   - scene: Three.js Scene with all objects ready to be sent to the GPU for display (see [Scene](https://threejs.org/docs/#api/scenes/Scene)).
+//   - camera: a thin wrapper (see Camera*) around Three.js camera (see [Camera](https://threejs.org/docs/#api/cameras/Camera))
+//   - referenceCrs: objects in the scene (camera included) positions are expressed in this CRS (must be a cartesian CRS)
+//
 
 /* global window, requestAnimationFrame */
 import { Scene, EventDispatcher } from 'three';
@@ -14,32 +16,29 @@ import { GeometryLayer, Layer, defineLayerProperty } from './Layer/Layer';
 import Scheduler from './Scheduler/Scheduler';
 import Debug from '../../utils/debug/Debug';
 
-/**
- * Constructs an Itowns Scene instance
- *
- * @param {string} crs - The default CRS of Three.js coordinates. Should be a cartesian CRS.
- * @param {DOMElement} viewerDiv - Where to instanciate the Three.js scene in the DOM
- * @param {boolean} options - Optional properties. May contain:
- *    - mainLoop: {MainLoop} instance to use, otherwise a default one will be constructed
- *    - renderer: {WebGLRenderer} instance to use, otherwise a default one will be constructed. If
- *    not present, a new <canvas> will be created and added to viewerDiv (mutually exclusive with mainLoop)
- *    - scene3D: {Scene} instance to use, otherwise a default one will be constructed
- * @param {boolean} glDebug - debug gl code
- * @constructor
- * @example
- * // How add gpx object
- * itowns.loadGpx(url).then((gpx) => {
- *      if (gpx) {
- *         viewer.scene.add(gpx);
- *      }
- * });
- *
- * viewer.notifyChange(0, true);
- */
- /* TODO:
- * - remove debug boolean, replace by if __DEBUG__ and checkboxes in debug UI
- * - Scene (and subobjects) should be instanciable several times.
- */
+
+// ### View
+// Parameters:
+//   - *crs:* View's referenceCrs
+//   - *viewerDiv:* DOM container of View's `<canvas>`
+//   - *options*:
+//     - *mainLoop:* MainLoop* instance to use, otherwise a default one will be constructed.
+//     - *renderer:* [WebGLRenderer](https://threejs.org/docs/#api/renderers/WebGLRenderer) instance to use,
+//        otherwise a default one will be constructed. If not present, a new `<canvas>` will be created and
+//        added to *viewerDiv* (mutually exclusive with mainLoop).
+//     - *scene3D:* [Scene](https://threejs.org/docs/#api/scenes/Scene) instance to use, otherwise a default one will be constructed
+//
+// ```js
+// itowns.loadGpx(url).then((gpx) => {
+//      if (gpx) {
+//         viewer.scene.add(gpx);
+//      }
+// });
+//
+// viewer.notifyChange(0, true);
+// ```
+/* TODO: */
+/* - remove debug boolean, replace by if __DEBUG__ and checkboxes in debug UI */
 function View(crs, viewerDiv, options = {}) {
     this.referenceCrs = crs;
 
@@ -51,6 +50,7 @@ function View(crs, viewerDiv, options = {}) {
     }
 
     this.camera = new Camera(
+        crs,
         viewerDiv.clientWidth,
         viewerDiv.clientHeight);
 
@@ -75,6 +75,95 @@ function View(crs, viewerDiv, options = {}) {
 
 View.prototype = Object.create(EventDispatcher.prototype);
 View.prototype.constructor = View;
+
+// ### addLayer
+// Add *layer* in viewer.
+//
+// The layer id must be unique.
+//
+// ```js
+// // Add Color Layer
+// view.addLayer({
+//      type: 'color',
+//      id: 'iColor',
+// });
+// // Add Elevation Layer
+// view.addLayer({
+//      type: 'elevation',
+//      id: 'iElevation',
+// });
+// ```
+View.prototype.addLayer = function addLayer(layer, parentLayer) {
+    layer = _preprocessLayer(this, layer, this.mainLoop.scheduler.getProtocolProvider(layer.protocol));
+    if (parentLayer) {
+        parentLayer.attach(layer);
+    } else {
+        if (typeof (layer.update) !== 'function') {
+            throw new Error('Cant add GeometryLayer: missing a update function');
+        }
+        if (typeof (layer.preUpdate) !== 'function') {
+            throw new Error('Cant add GeometryLayer: missing a preUpdate function');
+        }
+
+        this._layers.push(layer);
+    }
+
+    return layer;
+};
+
+// ### notifyChange
+// Notifies the scene it needs to be updated due to changes exterior to the
+// scene itself (e.g. camera movement).
+//
+// Arguments:
+// - *delay*: using a non-0 delay allows to delay update - useful to reduce CPU load for
+// non-interactive events (e.g: texture loaded)
+// - *needsRedraw*: indicate that the change introduce a visual difference, so a redraw
+// of the View should be done
+// - *changeSource*: who's causing the change (a tile with a new texture, a camera moving, etc)
+// This knowledge can help the various update mechanism to make smarter decisions on what
+// really needs to be updated.
+View.prototype.notifyChange = function notifyChange(delay, needsRedraw, changeSource) {
+    if (delay) {
+        window.setTimeout(() => {
+            this._changeSources.add(changeSource);
+            this.mainLoop.scheduleViewUpdate(this, needsRedraw);
+        }, delay);
+    } else {
+        this._changeSources.add(changeSource);
+        this.mainLoop.scheduleViewUpdate(this, needsRedraw);
+    }
+};
+
+// ### getLayers
+// Get all layers, with an optionnal filter applied.
+// The filter method will be called with 2 args:
+//   - 1st: current layer
+//   - 2nd: (optional) the geometry layer to which the current layer is attached
+//
+// ```js
+// // get all color layers
+// view.getLayers(layer => layer.type === 'color')
+// // get one layer with id
+// view.getLayers(layer => layer.id === 'itt')
+// ```
+View.prototype.getLayers = function getLayers(filter) {
+    const result = [];
+    for (const geometryLayer of this._layers) {
+        if (!filter || filter(geometryLayer)) {
+            result.push(geometryLayer);
+        }
+        for (const attached of geometryLayer._attachedLayers) {
+            if (!filter || filter(attached, geometryLayer)) {
+                result.push(attached);
+            }
+        }
+    }
+    return result;
+};
+
+// #### Private API
+
 
 const _syncThreejsLayer = function _syncThreejsLayer(layer, view) {
     if (layer.visible) {
@@ -111,7 +200,7 @@ function _preprocessLayer(view, layer, provider) {
         }
     }
 
-    // probably not the best place to do this
+    /* probably not the best place to do this */
     if (layer.type == 'color') {
         defineLayerProperty(layer, 'frozen', false);
         defineLayerProperty(layer, 'visible', true);
@@ -127,122 +216,5 @@ function _preprocessLayer(view, layer, provider) {
     return layer;
 }
 
-/**
- * Options to wms protocol
- * @typedef {Object} OptionsWms
- * @property {Attribution} attribution The intellectual property rights for the layer
- * @property {string} name
- * @property {string} mimetype
- */
-
-/**
- * Options to wtms protocol
- * @typedef {Object} OptionsWmts
- * @property {Attribution} attribution The intellectual property rights for the layer
- * @property {string} name
- * @property {string} mimetype
- * @property {string} tileMatrixSet
- * @property {Array.<Object>} tileMatrixSetLimits The limits for the tile matrix set
- * @property {number} tileMatrixSetLimits.minTileRow Minimum row for tiles at the level
- * @property {number} tileMatrixSetLimits.maxTileRow Maximum row for tiles at the level
- * @property {number} tileMatrixSetLimits.minTileCol Minimum col for tiles at the level
- * @property {number} tileMatrixSetLimits.maxTileCol Maximum col for tiles at the level
- * @property {Object} [zoom]
- * @property {Object} [zoom.min] layer's zoom minimum
- * @property {Object} [zoom.max] layer's zoom maximum
- */
-
-/**
- * LayerOptions
- * @typedef {Object} LayerOptions
- * @property {string} id Unique layer's id
- * @property {string} type the layer's type : 'color', 'elevation', 'geometry'
- * @property {string} layer.protocol wmts and wms (wmtsc for custom deprecated)
- * @property {string} layer.url Base URL of the repository or of the file(s) to load
- * @property {Object} layer.updateStrategy strategy to load imagery files
- * @property {OptionsWmts|OptionsWms} layer.options WMTS or WMS options
- */
-
-/**
- * Add layer in viewer.
- * The layer id must be unique.
- *
- * @example
- * // Add Color Layer
- * view.addLayer({
- *      type: 'color',
- *      id: 'iColor',
- * });
- * // Add Elevation Layer
- * view.addLayer({
- *      type: 'elevation',
- *      id: 'iElevation',
- * });
- * @param {LayerOptions} layer option
- */
-View.prototype.addLayer = function addLayer(layer, parentLayer) {
-    layer = _preprocessLayer(this, layer, this.mainLoop.scheduler.getProtocolProvider(layer.protocol));
-    if (parentLayer) {
-        parentLayer.attach(layer);
-    } else {
-        if (typeof (layer.update) !== 'function') {
-            throw new Error('Cant add GeometryLayer: missing a update function');
-        }
-        if (typeof (layer.preUpdate) !== 'function') {
-            throw new Error('Cant add GeometryLayer: missing a preUpdate function');
-        }
-
-        this._layers.push(layer);
-    }
-
-    return layer;
-};
-
-/**
- * Notifies the scene it needs to be updated due to changes exterior to the
- * scene itself (e.g. camera movement).
- * @param {Number} delay Using a non-0 delay allows to delay update - useful to reduce CPU load for
- * non-interactive events (e.g: texture loaded)
- * @param {Boolean} needsRedraw indicates if notified change requires a full scene redraw.
- */
-View.prototype.notifyChange = function notifyChange(delay, needsRedraw, changeSource) {
-    if (delay) {
-        window.setTimeout(() => {
-            this._changeSources.add(changeSource);
-            this.mainLoop.scheduleViewUpdate(this, needsRedraw);
-        }, delay);
-    } else {
-        this._changeSources.add(changeSource);
-        this.mainLoop.scheduleViewUpdate(this, needsRedraw);
-    }
-};
-
-/**
- * Get all layers, with an optionnal filter applied.
- * The filter method will be called with 2 args:
- *   - 1st: current layer
- *   - 2nd: (optional) the geometry layer to which the current layer is attached
- * @example
- * // get all color layers
- * view.getLayers(layer => layer.type === 'color')
- * // get one layer with id
- * view.getLayers(layer => layer.id === 'itt')
- * @param {function} filter
- * @returns {Array}  array of Layer
- */
-View.prototype.getLayers = function getLayers(filter) {
-    const result = [];
-    for (const geometryLayer of this._layers) {
-        if (!filter || filter(geometryLayer)) {
-            result.push(geometryLayer);
-        }
-        for (const attached of geometryLayer._attachedLayers) {
-            if (!filter || filter(attached, geometryLayer)) {
-                result.push(attached);
-            }
-        }
-    }
-    return result;
-};
-
 export default View;
+

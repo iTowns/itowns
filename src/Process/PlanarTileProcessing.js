@@ -10,7 +10,7 @@ export function planarCulling(node, camera) {
 }
 
 function computeNodeSSE(camera, node) {
-    var vFOV = camera.FOV * Math.PI / 180;
+    var vFOV = camera.camera3D.fov * Math.PI / 180;
 
     const tmp1 = new THREE.Vector3();
     tmp1.setFromMatrixPosition(node.matrixWorld);

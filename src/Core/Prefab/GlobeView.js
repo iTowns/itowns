@@ -57,7 +57,7 @@ function GlobeView(viewerDiv, coordCarto, options) {
         coordCarto.latitude,
         coordCarto.altitude);
 
-    this.camera.setPosition(positionCamera.as('EPSG:4978').xyz());
+    this.camera.camera3D.position.copy(positionCamera.as('EPSG:4978').xyz());
     this.camera.camera3D.lookAt({ x: 0, y: 0, z: 0 });
     this.camera.camera3D.near = Math.max(15.0, 0.000002352 * size);
     this.camera.camera3D.far = size * 10;
@@ -186,7 +186,7 @@ function GlobeView(viewerDiv, coordCarto, options) {
     this._renderState = RendererConstant.FINAL;
 
     this.preRender = () => {
-        var len = this.camera.position().length();
+        var len = this.camera.camera3D.position.length();
         var lim = size * 1.1;
 
         if (len < lim) {

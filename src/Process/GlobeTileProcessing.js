@@ -15,13 +15,13 @@ let SSE_SUBDIVISION_THRESHOLD;
 export function preGlobeUpdate(context) {
     radius = ellipsoidSizes();
     // pre-horizon culling
-    cV.copy(context.camera.position()).divide(radius);
+    cV.copy(context.camera.camera3D.position).divide(radius);
     vhMagnitudeSquared = cV.lengthSq() - 1.0;
 
     // pre-sse
     const canvasSize = context.engine.getWindowSize();
     const hypotenuse = canvasSize.length();
-    const radAngle = context.camera.FOV * Math.PI / 180;
+    const radAngle = context.camera.camera3D.fov * Math.PI / 180;
 
      // TODO: not correct -> see new preSSE
     // const HFOV = 2.0 * Math.atan(Math.tan(radAngle * 0.5) / context.camera.ratio);

@@ -1,7 +1,20 @@
+// `MainLoop` is the owner of the update cycle.
+//
+// Its the sole place in iTowns using `requestAnimationFrame()` and it must be
+// used when you want to update *something* (layers, controls, etc).
+// MainLoop is a bit of a misnamer since it will **pause** as soon as possible,
+// to avoid unnecessary CPU/battery usage.
+//
+// Note that `MainLoop` is rarely used directly and you'll often just need
+// to call [View.notifyChange](View.html#notifychange) to execute an update.
+
 import { EventDispatcher } from 'three';
 
-const RENDERING_PAUSED = 0;
-const RENDERING_ACTIVE = 1;
+// ### MainLoop
+// Constructor.
+// Arguments:
+// - *scheduler* is a Scheduler* instance
+// - *engine* is a c3DEngine* instance
 
 function MainLoop(scheduler, engine) {
     this.renderingState = RENDERING_PAUSED;
@@ -13,6 +26,10 @@ function MainLoop(scheduler, engine) {
 MainLoop.prototype = Object.create(EventDispatcher.prototype);
 MainLoop.prototype.constructor = MainLoop;
 
+// ### scheduleViewUpdate
+// Call this function when you want to update iTowns.
+// It will resume MainLoop if it's currently paused, otherwise it's ignored.
+// If `forceRedraw` the `view` will be rendered at the end of the update cycle.
 MainLoop.prototype.scheduleViewUpdate = function scheduleViewUpdate(view, forceRedraw) {
     this.needsRedraw |= forceRedraw;
 
@@ -26,15 +43,18 @@ MainLoop.prototype.scheduleViewUpdate = function scheduleViewUpdate(view, forceR
     }
 };
 
+
+// #### Private API
+
 function updateElements(context, geometryLayer, elements) {
     if (!elements) {
         return;
     }
     for (const element of elements) {
-        // update element
+        /* update element */
         const newElementsToUpdate = geometryLayer.update(context, geometryLayer, element);
 
-        // update attached layers
+        /* update attached layers */
         for (const attachedLayer of geometryLayer._attachedLayers) {
             attachedLayer.update(context, attachedLayer, element);
         }
@@ -58,18 +78,18 @@ MainLoop.prototype._update = function _update(view) {
 };
 
 MainLoop.prototype._step = function _step(view) {
-    // update data-structure
+    /* update data-structure */
     this._update(view);
 
     if (this.scheduler.commandsWaitingExecutionCount() == 0) {
         this.dispatchEvent({ type: 'command-queue-empty' });
     }
 
-    // Redraw *only* if needed.
-    // (redraws only happen when this.needsRedraw is true, which in turn only happens when
-    // view.notifyChange() is called with redraw=true)
-    // As such there's no continuous update-loop, instead we use a ad-hoc update/render
-    // mechanism.
+    /* Redraw *only* if needed. */
+    /* (redraws only happen when this.needsRedraw is true, which in turn only happens when */
+    /* view.notifyChange() is called with redraw=true) */
+    /* As such there's no continuous update-loop, instead we use a ad-hoc update/render */
+    /* mechanism. */
     if (this.needsRedraw) {
         this._renderView(view);
         this.needsRedraw = false;
@@ -96,13 +116,21 @@ MainLoop.prototype._renderView = function _renderView(view) {
     if (view.render) {
         view.render();
     } else {
-        // use default rendering method
+        /* use default rendering method */
         this.gfxEngine.renderView(view);
     }
     this.needsRedraw = false;
 
-    // Mimic three Object3D.onAfterRender (which sadly doesn't work on Scene)
+    /* Mimic three Object3D.onAfterRender (which sadly doesn't work on Scene) */
     view.onAfterRender();
 };
+
+// RENDERING_PAUSED means no update is taking place. Nothing will happen until
+// `scheduleViewUpdate` is called
+const RENDERING_PAUSED = 0;
+// RENDERING_ACTIVE means there's an update pending or in-progress. Calls to
+// `scheduleViewUpdate` do not execute a new `requestAnimationFrame`.
+const RENDERING_ACTIVE = 1;
+
 
 export default MainLoop;
