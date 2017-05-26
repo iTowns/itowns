@@ -2,22 +2,24 @@ import { EventDispatcher } from 'three';
 
 
 export const defineLayerProperty = function defineLayerProperty(layer, propertyName, defaultValue, onChange) {
-    var property = layer[propertyName] == undefined ? defaultValue : layer[propertyName];
-    Object.defineProperty(layer,
-        propertyName,
-        { get: () => property,
-            set: (newValue) => {
-                if (property !== newValue) {
-                    const event = { type: `${propertyName}-property-changed`, previous: {}, new: {} };
-                    event.previous[propertyName] = property;
-                    event.new[propertyName] = newValue;
-                    property = newValue;
-                    if (onChange) {
-                        onChange(layer, propertyName);
+    if (!Object.getOwnPropertyDescriptor(layer, propertyName)) {
+        var property = layer[propertyName] == undefined ? defaultValue : layer[propertyName];
+        Object.defineProperty(layer,
+            propertyName,
+            { get: () => property,
+                set: (newValue) => {
+                    if (property !== newValue) {
+                        const event = { type: `${propertyName}-property-changed`, previous: {}, new: {} };
+                        event.previous[propertyName] = property;
+                        event.new[propertyName] = newValue;
+                        property = newValue;
+                        if (onChange) {
+                            onChange(layer, propertyName);
+                        }
+                        layer.dispatchEvent(event);
                     }
-                    layer.dispatchEvent(event);
-                }
-            } });
+                } });
+    }
 };
 
 function GeometryLayer(i) {
