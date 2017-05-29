@@ -39,4 +39,11 @@ export default {
         const texture = textureLoader.load(url, res, () => {}, rej);
         return { texture, promise };
     },
+
+    arrayBuffer(url) {
+        return fetch(url).then((response) => {
+            checkResponse(response);
+            return response.arrayBuffer();
+        });
+    },
 };

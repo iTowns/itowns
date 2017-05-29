@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>3d-tiles example</title>
+
+    <style type="text/css">
+            html {height: 100%}
+        body { margin: 0; overflow:hidden; height:100%}
+
+            div {
+                margin : auto auto;
+                width: 100%;
+                padding: 0;
+                height: 100%
+            }
+            #menuDiv {position: absolute; top:0px; margin-left: 0px;}
+
+
+        </style>
+        <meta charset="UTF-8">
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="/node_modules/dat.gui/build/dat.gui.min.js"></script>
+    </head>
+    <body>
+        <div id="viewerDiv"></div>
+        <div id="viewerDiv2"></div>
+        <script src="/examples/GUI/GuiTools.js"></script>
+        <script src="/dist/itowns.js"></script>
+        <script src="/dist/debug.js"></script>
+        <script type="text/javascript">
+            /* global itowns,document,GuiTools*/
+
+            const positionOnGlobe = { longitude: -75.65044586, latitude: 40.062840764, altitude: 100000 };
+
+            // iTowns namespace defined here
+            const viewerDiv = document.getElementById('viewerDiv');
+
+            const menuGlobe = new GuiTools('menuDiv');
+            const globe = new itowns.GlobeView(viewerDiv, positionOnGlobe);
+            menuGlobe.view = globe;
+
+            itowns.Fetcher.json('layers/JSONLayers/Ortho.json').then(result => globe.addLayer(result));
+
+            // add 3d-tiles layer
+            const $3dTilesLayer = new itowns.GeometryLayer('3d-tiles');
+
+            $3dTilesLayer.preUpdate = (context, layer) => {
+                if(layer.root === undefined) {
+                    itowns.init3dTilesLayer(context, layer);
+                    return [];
+                }
+                itowns.pre3dTilesUpdate(context, layer);
+                return [layer.root];
+            };
+            $3dTilesLayer.update = itowns.process3dTilesNode(
+                itowns.$3dTilesCulling,
+                itowns.$3dTilesSubdivisionControl
+            );
+            $3dTilesLayer.url = 'http://localhost:8003/tilesets/TilesetWithDiscreteLOD/tileset.json';
+            $3dTilesLayer.protocol = '3d-tiles'
+            $3dTilesLayer.overrideMaterials = true;  // custom cesium shaders are not functional
+            $3dTilesLayer.type = 'geometry';
+            $3dTilesLayer.visible = true;
+
+            itowns.View.prototype.addLayer.call(globe, $3dTilesLayer);
+
+            // debug
+            const debug3dt = new itowns.GeometryLayer('debug-3d-tiles');
+
+            debug3dt.update = function(context, layer, node) {
+                var n = node.children.filter(n => n.layer == debug3dt.id);
+                if (node.visible) {
+                    if (n.length == 0) {
+                        n = new itowns.THREE.BoxHelper(node.boundingVolume.box);
+                        n.layer = debug3dt.id;
+                        node.add(n);
+                        n.updateMatrix();
+                        n.updateMatrixWorld();
+                    } else {
+                        n = n[0];
+                    }
+                    n.visible = true;
+                }
+                if (n.length > 0) {
+                    n[0].visible = false;
+                }
+            }
+
+            itowns.View.prototype.addLayer.call(globe, debug3dt, $3dTilesLayer);
+
+</script>
+    </body>
+</html>
