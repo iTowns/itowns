@@ -212,7 +212,7 @@ function GlobeView(viewerDiv, coordCarto, options) {
 
     this.controls.addEventListener('change', () => {
         this.camera.update();
-        this.notifyChange(0, true);
+        this.notifyChange(true);
     });
 
     this.controls.addEventListener('selectClick', (event) => {
@@ -247,7 +247,7 @@ function GlobeView(viewerDiv, coordCarto, options) {
         this.controls.updateCamera(this.camera, this.viewerDiv.clientWidth, this.viewerDiv.clientHeight);
     }, false);
 
-    this.notifyChange(0, true);
+    this.notifyChange(true);
 }
 
 GlobeView.prototype = Object.create(View.prototype);
@@ -297,7 +297,7 @@ GlobeView.prototype.removeLayer = function removeImageryLayer(layerId) {
             }
         }
 
-        this.notifyChange(0, true);
+        this.notifyChange(true);
         this.dispatchEvent({
             type: GLOBE_VIEW_EVENTS.LAYER_REMOVED,
             layerId,
@@ -326,7 +326,7 @@ GlobeView.prototype.selectNodeAt = function selectNodeAt(mouse) {
         });
     }
 
-    this.notifyChange(0, true);
+    this.notifyChange(true);
 };
 
 GlobeView.prototype.screenCoordsToNodeId = function screenCoordsToNodeId(mouse) {
@@ -463,14 +463,14 @@ GlobeView.prototype.setRealisticLightingOn = function setRealisticLightingOn(val
 
     this.updateMaterialUniform('lightingEnabled', value);
     this.updateMaterialUniform('lightPosition', coSun);
-    this.notifyChange(0, true);
+    this.notifyChange(true);
 };
 
 GlobeView.prototype.setLightingPos = function setLightingPos(pos) {
     const lightingPos = pos || CoordStars.getSunPositionInScene(this.ellipsoid, new Date().getTime(), 48.85, 2.35);
 
     this.updateMaterialUniform('lightPosition', lightingPos.clone().normalize());
-    this.notifyChange(0, true);
+    this.notifyChange(true);
 };
 
 GlobeView.prototype.updateMaterialUniform = function updateMaterialUniform(uniformName, value) {
