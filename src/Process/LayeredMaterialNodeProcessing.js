@@ -207,7 +207,9 @@ export function updateLayeredMaterialNodeImagery(context, layer, node) {
                 node.layerUpdateState[layer.id].success();
             } else {
                 node.layerUpdateState[layer.id].failure(Date.now());
-                context.view.notifyChange(node.layerUpdateState[layer.id].secondsUntilNextTry() * 1000, false);
+                window.setTimeout(() => {
+                    context.view.notifyChange(false, node);
+                }, node.layerUpdateState[layer.id].secondsUntilNextTry() * 1000);
             }
         });
 }
@@ -294,7 +296,9 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, force) 
                 node.layerUpdateState[layer.id].success();
             } else {
                 node.layerUpdateState[layer.id].failure(Date.now());
-                context.view.notifyChange(node.layerUpdateState[layer.id].secondsUntilNextTry() * 1000, false);
+                window.setTimeout(() => {
+                    context.view.notifyChange(false, node);
+                }, node.layerUpdateState[layer.id].secondsUntilNextTry() * 1000);
             }
         });
 }
