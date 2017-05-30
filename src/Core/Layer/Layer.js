@@ -2,7 +2,8 @@ import { EventDispatcher } from 'three';
 
 
 export const defineLayerProperty = function defineLayerProperty(layer, propertyName, defaultValue, onChange) {
-    if (!Object.getOwnPropertyDescriptor(layer, propertyName)) {
+    const existing = Object.getOwnPropertyDescriptor(layer, propertyName);
+    if (!existing || !existing.set) {
         var property = layer[propertyName] == undefined ? defaultValue : layer[propertyName];
         Object.defineProperty(layer,
             propertyName,
