@@ -13,18 +13,14 @@
                 height: 100%;
                 padding: 0;
             }
-            #menuDiv {position: absolute; top:0px; margin-left: 0px;}
         </style>
         <meta charset="UTF-8">
 
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.6.1/dat.gui.min.js"></script>
     </head>
     <body>
         <div id="viewerDiv"></div>
-        <script src="/examples/GUI/GuiTools.js"></script>
         <script src="/dist/itowns.js"></script>
-        <script src="/dist/debug.js"></script>
         <!-- from https://github.com/mrdoob/three.js/blob/master/examples/js/shaders/DotScreenShader.js -->
         <script type="x-shader/x-vertex" id="vertexshader">
             varying vec2 vUv;
@@ -68,23 +64,10 @@
 
             // iTowns namespace defined here
             const viewerDiv = document.getElementById('viewerDiv');
-            const menuGlobe = new GuiTools('menuDiv');
             const globeView = new itowns.GlobeView(viewerDiv, positionOnGlobe);
-            menuGlobe.view = globeView;
 
             itowns.Fetcher.json('layers/JSONLayers/Ortho.json').then(result => globeView.addLayer(result));
             itowns.Fetcher.json('layers/JSONLayers/IGN_MNT.json').then(result => globeView.addLayer(result));
-
-
-            menuGlobe.addGUI('RealisticLighting', false,
-                (newValue) => { globeView.setRealisticLightingOn(newValue); });
-
-            globeView.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, () => {
-                // eslint-disable-next-line no-console
-                console.info('Globe initialized');
-                menuGlobe.addImageryLayersGUI(globeView.getLayers(l => l.type === 'color'));
-                menuGlobe.addElevationLayersGUI(globeView.getLayers(l => l.type === 'elevation'));
-            });
 
 
             // Simple postprocessing setup
