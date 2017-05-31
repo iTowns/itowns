@@ -12,7 +12,6 @@ import c3DEngine from '../Renderer/c3DEngine';
 import { STRATEGY_MIN_NETWORK_TRAFFIC } from './Layer/LayerUpdateStrategy';
 import { GeometryLayer, Layer, defineLayerProperty } from './Layer/Layer';
 import Scheduler from './Scheduler/Scheduler';
-import Debug from '../../utils/debug/Debug';
 
 /**
  * Constructs an Itowns Scene instance
@@ -55,10 +54,6 @@ function View(crs, viewerDiv, options = {}) {
         viewerDiv.clientHeight);
 
     this._layers = [];
-
-    if (__DEBUG__) {
-        Debug(this, viewerDiv);
-    }
 
     this.viewerDiv = viewerDiv;
     window.addEventListener('resize', () => {
