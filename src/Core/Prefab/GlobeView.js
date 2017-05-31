@@ -258,7 +258,7 @@ GlobeView.prototype.constructor = GlobeView;
 GlobeView.prototype.addLayer = function addLayer(layer) {
     if (layer.type == 'color') {
         const colorLayerCount = this.getLayers(l => l.type === 'color').length;
-        layer.sequence = colorLayerCount - 1;
+        layer.sequence = colorLayerCount;
         layer.update = updateLayeredMaterialNodeImagery;
     } else if (layer.type == 'elevation') {
         if (layer.protocol === 'wmts' && layer.options.tileMatrixSet !== 'WGS84G') {
