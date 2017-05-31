@@ -61,6 +61,8 @@ and open the template in the editor.
                 menuGlobe.addElevationLayersGUI(globeView.getLayers(l => l.type === 'elevation'));
             });
 
+            new debug.Debug(globeView, viewerDiv);
+
             window.globeView = globeView;
 </script>
     </body>
