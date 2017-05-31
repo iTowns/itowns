@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-import View from '../View';
+import View, { VIEW_EVENTS } from '../View';
 import { COLOR_LAYERS_ORDER_CHANGED } from '../../Renderer/ColorLayersOrdering';
 import RendererConstant from '../../Renderer/RendererConstant';
 import GlobeControls from '../../Renderer/ThreeExtended/GlobeControls';
@@ -69,6 +69,7 @@ export const GLOBE_VIEW_EVENTS = {
     LAYER_ADDED: 'layer-added',
     LAYER_REMOVED: 'layer-removed',
     COLOR_LAYERS_ORDER_CHANGED,
+    UPDATED: VIEW_EVENTS.UPDATED,
 };
 
 /**

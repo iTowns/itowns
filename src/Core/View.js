@@ -13,6 +13,10 @@ import { STRATEGY_MIN_NETWORK_TRAFFIC } from './Layer/LayerUpdateStrategy';
 import { GeometryLayer, Layer, defineLayerProperty } from './Layer/Layer';
 import Scheduler from './Scheduler/Scheduler';
 
+export const VIEW_EVENTS = {
+    UPDATED: 'view-updated',
+};
+
 /**
  * Constructs an Itowns Scene instance
  *
@@ -125,6 +129,7 @@ function _preprocessLayer(view, layer, provider) {
  * Options to wms protocol
  * @typedef {Object} OptionsWms
  * @property {Attribution} attribution The intellectual property rights for the layer
+ * @property {Object} extent is bbox or extent
  * @property {string} name
  * @property {string} mimetype
  */
@@ -224,6 +229,9 @@ View.prototype.addLayer = function addLayer(layer, parentLayer) {
 View.prototype.notifyChange = function notifyChange(needsRedraw, changeSource) {
     this._changeSources.add(changeSource);
     this.mainLoop.scheduleViewUpdate(this, needsRedraw);
+    if (needsRedraw) {
+        this.dispatchEvent({ type: VIEW_EVENTS.UPDATED });
+    }
 };
 
 /**
