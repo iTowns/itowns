@@ -149,7 +149,6 @@ export function processTiledGeometryNode(cullingTest, subdivisionTest, initNewNo
         const isVisible = cullingTest ? (!cullingTest(node, context.camera)) : true;
         node.visible = isVisible;
 
-
         if (isVisible) {
             let requestChildrenUpdate = false;
 
