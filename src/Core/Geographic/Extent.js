@@ -6,6 +6,13 @@ import Coordinates, { crsToUnit, crsIsGeographic, assertCrsIsValid, convertValue
  * It can use explicit coordinates (e.g: lon/lat) or implicit (WMTS coordinates)
  */
 
+const CARDINAL = {
+    WEST: 0,
+    EAST: 1,
+    SOUTH: 2,
+    NORTH: 3,
+};
+
 function _crsIsWMTS(crs) {
     return crs.indexOf('WMTS:') == 0;
 }
@@ -52,15 +59,16 @@ function Extent(crs, ...values) {
             }
         } else if (values.length == 1 && values[0].west != undefined) {
             this._values = new Float64Array(4);
-            this._values[0] = values[0].west;
-            this._values[1] = values[0].east;
-            this._values[2] = values[0].south;
-            this._values[3] = values[0].north;
+            this._values[CARDINAL.WEST] = values[0].west;
+            this._values[CARDINAL.EAST] = values[0].east;
+            this._values[CARDINAL.SOUTH] = values[0].south;
+            this._values[CARDINAL.NORTH] = values[0].north;
         } else if (values.length == 4) {
             this._values = new Float64Array(4);
-            for (let i = 0; i < 4; i++) {
-                this._values[i] = values[i];
-            }
+            Object.keys(CARDINAL).forEach((key) => {
+                const cardinal = CARDINAL[key];
+                this._values[cardinal] = values[cardinal];
+            });
         } else {
             throw new Error(`Unsupported constructor args '${values}'`);
         }
@@ -132,7 +140,7 @@ Extent.prototype.west = function west(unit) {
     if (crsIsGeographic(this.crs())) {
         return convertValueToUnit(this._internalStorageUnit, unit, this._values[0]);
     } else {
-        return this._values[0];
+        return this._values[CARDINAL.WEST];
     }
 };
 
@@ -140,7 +148,7 @@ Extent.prototype.east = function east(unit) {
     if (crsIsGeographic(this.crs())) {
         return convertValueToUnit(this._internalStorageUnit, unit, this._values[1]);
     } else {
-        return this._values[1];
+        return this._values[CARDINAL.EAST];
     }
 };
 
@@ -148,7 +156,7 @@ Extent.prototype.north = function north(unit) {
     if (crsIsGeographic(this.crs())) {
         return convertValueToUnit(this._internalStorageUnit, unit, this._values[3]);
     } else {
-        return this._values[3];
+        return this._values[CARDINAL.NORTH];
     }
 };
 
@@ -156,7 +164,7 @@ Extent.prototype.south = function south(unit) {
     if (crsIsGeographic(this.crs())) {
         return convertValueToUnit(this._internalStorageUnit, unit, this._values[2]);
     } else {
-        return this._values[2];
+        return this._values[CARDINAL.SOUTH];
     }
 };
 
@@ -261,6 +269,38 @@ Extent.prototype.intersect = function intersect(bbox) {
              this.east() <= other.west(this._internalStorageUnit) ||
              this.south() >= other.north(this._internalStorageUnit) ||
              this.north() <= other.south(this._internalStorageUnit));
+};
+
+Extent.prototype.set = function set(west, east, south, north) {
+    this._values[CARDINAL.WEST] = west;
+    this._values[CARDINAL.EAST] = east;
+    this._values[CARDINAL.SOUTH] = south;
+    this._values[CARDINAL.NORTH] = north;
+};
+
+Extent.prototype.merge = function merge(extent) {
+    if (extent.crs() != this.crs()) {
+        throw new Error('unsupported merge between 2 diff crs');
+    }
+    const west = extent.west(this._internalStorageUnit);
+    if (west < this.west()) {
+        this._values[CARDINAL.WEST] = west;
+    }
+
+    const east = extent.east(this._internalStorageUnit);
+    if (east > this.east()) {
+        this._values[CARDINAL.EAST] = east;
+    }
+
+    const south = extent.south(this._internalStorageUnit);
+    if (south < this.south()) {
+        this._values[CARDINAL.SOUTH] = south;
+    }
+
+    const north = extent.north(this._internalStorageUnit);
+    if (north > this.north()) {
+        this._values[CARDINAL.NORTH] = north;
+    }
 };
 
 export default Extent;
