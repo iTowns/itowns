@@ -220,6 +220,8 @@ TileMesh.prototype.getCoordsForLayer = function getCoordsForLayer(layer) {
     if (layer.protocol.indexOf('wmts') == 0) {
         OGCWebServiceHelper.computeTileMatrixSetCoordinates(this, layer.options.tileMatrixSet);
         return this.wmtsCoords[layer.options.tileMatrixSet];
+    } else if (layer.protocol == 'tms') {
+        return OGCWebServiceHelper.computeTMSCoordinates(this, layer.extent);
     } else {
         return [this.extent];
     }
