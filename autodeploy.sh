@@ -53,9 +53,6 @@ cp -R dist/*.js out/itowns2/dist/
 # generate the API documentation
 npm run doc -- -d out/itowns2/API_Doc
 
-# Copy demo
-mkdir -p out/itowns2/node_modules/dat.gui/build/
-cp node_modules/dat.gui/build/dat.gui.min.js out/itowns2/node_modules/dat.gui/build/
 # Copy examples
 cp -R examples out/itowns2/
 
