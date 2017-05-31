@@ -98,6 +98,25 @@ export default {
                 projection.getCoordWMTS_WGS84(tileCoord, tile.extent, tileMatrixSet);
         }
     },
+    computeTMSCoordinates(tile, extent) {
+        if (tile.extent.crs() != extent.crs()) {
+            throw new Error('Unsupported configuration. TMS is only supported when geometry has the same crs than TMS layer');
+        }
+        const c = tile.extent.center();
+        const layerDimension = extent.dimensions();
+
+        // Each level has 2^n * 2^n tiles...
+        // ... so we count how many tiles of the same width as tile we can fit in the layer
+        const tileCount = Math.round(layerDimension.x / tile.extent.dimensions().x);
+        // ... 2^zoom = tilecount => zoom = log2(tilecount)
+        const zoom = Math.floor(Math.log2(tileCount));
+
+        // Now that we have computed zoom, we can deduce x and y (or row / column)
+        const x = (c.x() - extent.west()) / layerDimension.x;
+        const y = (extent.north() - c.y()) / layerDimension.y;
+
+        return [new Extent('TMS', zoom, Math.floor(y * tileCount), Math.floor(x * tileCount))];
+    },
     WMTS_WGS84Parent(cWMTS, levelParent, pitch) {
         const diffLevel = cWMTS.zoom - levelParent;
         const diff = Math.pow(2, diffLevel);
