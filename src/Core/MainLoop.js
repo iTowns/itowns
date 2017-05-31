@@ -42,7 +42,7 @@ function updateElements(context, geometryLayer, elements) {
     }
 }
 
-MainLoop.prototype._update = function _update(view) {
+MainLoop.prototype._update = function _update(view, updateSources) {
     const context = {
         camera: view.camera,
         engine: this.gfxEngine,
@@ -52,14 +52,23 @@ MainLoop.prototype._update = function _update(view) {
 
     for (const geometryLayer of view.getLayers((x, y) => !y)) {
         context.geometryLayer = geometryLayer;
-        const elementsToUpdate = geometryLayer.preUpdate(context, geometryLayer, view._changeSources);
+        const elementsToUpdate = geometryLayer.preUpdate(context, geometryLayer, updateSources);
         updateElements(context, geometryLayer, elementsToUpdate);
     }
 };
 
 MainLoop.prototype._step = function _step(view) {
+    const willRedraw = this.needsRedraw;
+
+    // Reset internal state before calling _update (so future calls to View.notifyChange()
+    // can properly change it)
+    this.needsRedraw = false;
+    this.renderingState = RENDERING_PAUSED;
+    const updateSources = new Set(view._changeSources);
+    view._changeSources.clear();
+
     // update data-structure
-    this._update(view);
+    this._update(view, updateSources);
 
     if (this.scheduler.commandsWaitingExecutionCount() == 0) {
         this.dispatchEvent({ type: 'command-queue-empty' });
@@ -70,16 +79,13 @@ MainLoop.prototype._step = function _step(view) {
     // view.notifyChange() is called with redraw=true)
     // As such there's no continuous update-loop, instead we use a ad-hoc update/render
     // mechanism.
-    if (this.needsRedraw) {
+    if (willRedraw) {
         this._renderView(view);
-        this.needsRedraw = false;
     }
 
     if (__DEBUG__) {
         document.title = document.title.substr(0, document.title.length - 2);
     }
-    this.renderingState = RENDERING_PAUSED;
-    view._changeSources.clear();
 };
 
 /**

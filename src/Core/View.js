@@ -34,7 +34,7 @@ import Debug from '../../utils/debug/Debug';
  *      }
  * });
  *
- * viewer.notifyChange(0, true);
+ * viewer.notifyChange(true);
  */
  /* TODO:
  * - remove debug boolean, replace by if __DEBUG__ and checkboxes in debug UI
@@ -65,7 +65,7 @@ function View(crs, viewerDiv, options = {}) {
         this.mainLoop.gfxEngine.onWindowResize();
         this.camera.resize(this.viewerDiv.clientWidth, this.viewerDiv.clientHeight);
         this.camera.update();
-        this.notifyChange(0, true);
+        this.notifyChange(true);
     }, false);
 
     this.onAfterRender = () => {};
@@ -221,20 +221,12 @@ View.prototype.addLayer = function addLayer(layer, parentLayer) {
 /**
  * Notifies the scene it needs to be updated due to changes exterior to the
  * scene itself (e.g. camera movement).
- * @param {Number} delay Using a non-0 delay allows to delay update - useful to reduce CPU load for
  * non-interactive events (e.g: texture loaded)
  * @param {Boolean} needsRedraw indicates if notified change requires a full scene redraw.
  */
-View.prototype.notifyChange = function notifyChange(delay, needsRedraw, changeSource) {
-    if (delay) {
-        window.setTimeout(() => {
-            this._changeSources.add(changeSource);
-            this.mainLoop.scheduleViewUpdate(this, needsRedraw);
-        }, delay);
-    } else {
-        this._changeSources.add(changeSource);
-        this.mainLoop.scheduleViewUpdate(this, needsRedraw);
-    }
+View.prototype.notifyChange = function notifyChange(needsRedraw, changeSource) {
+    this._changeSources.add(changeSource);
+    this.mainLoop.scheduleViewUpdate(this, needsRedraw);
 };
 
 /**

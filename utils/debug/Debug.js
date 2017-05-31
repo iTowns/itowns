@@ -202,7 +202,7 @@ function Debug(view, viewerDiv) {
             material.uniforms.showOutline = { value: newValue };
             material.needsUpdate = true;
         });
-        view.notifyChange(0, true);
+        view.notifyChange(true);
     });
 
     // tiles wireframe
@@ -213,7 +213,7 @@ function Debug(view, viewerDiv) {
         applyToNodeFirstMaterial((material) => {
             material.wireframe = newValue;
         });
-        view.notifyChange(0, true);
+        view.notifyChange(true);
     });
 
     gui.add(state, 'eventsDebug').name('Debug event').onChange((() => {
@@ -326,13 +326,13 @@ function addGeometryLayerDebugFeatures(layer, view, gui, state) {
 
     folder.add(state, layer.id).name('Visible').onChange((newValue) => {
         layer.visible = newValue;
-        view.notifyChange(0, true);
+        view.notifyChange(true);
     });
 
     state[debugLayer.id] = false;
     folder.add(state, debugLayer.id).name('OBB visible').onChange((newValue) => {
         debugLayer.visible = newValue;
-        view.notifyChange(0, true);
+        view.notifyChange(true);
     });
 
     var consistencyCheck = { click: () => {
