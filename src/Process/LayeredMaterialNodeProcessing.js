@@ -165,7 +165,7 @@ export function updateLayeredMaterialNodeImagery(context, layer, node) {
 
     if (currentLevel > EMPTY_TEXTURE_ZOOM) {
         const zoom = node.getCoordsForLayer(layer)[0].zoom || node.level;
-        var targetLevel = chooseNextLevelToFetch(layer.updateStrategy.type, zoom, currentLevel, layer.updateStrategy.options);
+        var targetLevel = chooseNextLevelToFetch(layer.updateStrategy.type, node, zoom, currentLevel, layer.updateStrategy.options);
         if (targetLevel <= currentLevel) {
             return Promise.resolve();
         }
@@ -251,7 +251,7 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, force) 
 
     const c = node.getCoordsForLayer(layer)[0];
     const zoom = c.zoom || node.level;
-    const targetLevel = chooseNextLevelToFetch(layer.updateStrategy.type, zoom, currentElevation, layer.updateStrategy.options);
+    const targetLevel = chooseNextLevelToFetch(layer.updateStrategy.type, node, zoom, currentElevation, layer.updateStrategy.options);
 
     if (targetLevel <= currentElevation || !layer.tileInsideLimit(node, layer, targetLevel)) {
         return Promise.resolve();

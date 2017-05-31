@@ -31,17 +31,23 @@ export default {
             return Promise.resolve(cachedTexture);
         }
 
-        const { texture, promise } = Fetcher.texture(url);
+        const { texture, promise } = (cachePending.has(url)) ?
+            cachePending.get(url) :
+            Fetcher.texture(url);
 
         texture.generateMipmaps = false;
         texture.magFilter = THREE.LinearFilter;
         texture.minFilter = THREE.LinearFilter;
         texture.anisotropy = 16;
 
+
+        cachePending.set(url, { texture, promise });
+
         return promise.then(() => {
             if (!cache.getRessource(url)) {
                 cache.addRessource(url, texture);
             }
+            cachePending.delete(url);
             return texture;
         });
     },
