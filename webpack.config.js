@@ -1,10 +1,6 @@
 var path = require('path');
 var webpack = require('webpack');
 
-// THREE js replace
-// "three": "^0.74.0" -> "three": "mrdoob/three.js#35a5994828da7cebc0d8442062f784b3f9e1f818",
-//                                               #idcommit
-
 var definePlugin = new webpack.DefinePlugin({
     __DEBUG__: JSON.stringify(process.env.NODE_ENV === 'development'),
 });
