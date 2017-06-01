@@ -426,4 +426,4 @@ function addGeometryLayerDebugFeatures(layer, view, gui, state) {
 }
 
 // eslint-disable-next-line import/prefer-default-export
-export { Debug };
+export { Debug, OBBHelper };
