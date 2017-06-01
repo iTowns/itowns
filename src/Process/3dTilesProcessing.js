@@ -46,6 +46,27 @@ function subdivideNode(context, layer, node) {
 }
 
 export function $3dTilesCulling(node, camera) {
+    // For viewer Request Volume https://github.com/AnalyticalGraphicsInc/3d-tiles-samples/tree/master/tilesets/TilesetWithRequestVolume
+    if (node.viewerRequestVolume) {
+        const nodeViewer = node.viewerRequestVolume;
+        if (nodeViewer.region) {
+            // TODO
+            return true;
+        }
+        if (nodeViewer.box) {
+            // TODO
+            return true;
+        }
+        if (nodeViewer.sphere) {
+            const worldCoordinateCenter = nodeViewer.sphere.center.clone();
+            worldCoordinateCenter.applyMatrix4(node.matrixWorld);
+            // To check the distance between the center sphere and the camera
+            if (!(camera.camera3D.position.distanceTo(worldCoordinateCenter) <= nodeViewer.sphere.radius)) {
+                return true;
+            }
+        }
+    }
+
     // For bounding volume
     if (node.boundingVolume) {
         const boundingVolume = node.boundingVolume;
@@ -66,7 +87,7 @@ let preSSE;
 export function pre3dTilesUpdate(context) {
     // pre-sse
     const hypotenuse = Math.sqrt(context.camera.width * context.camera.width + context.camera.height * context.camera.height);
-    const radAngle = context.camera.FOV * Math.PI / 180;
+    const radAngle = context.camera.camera3D.fov * Math.PI / 180;
 
      // TODO: not correct -> see new preSSE
     // const HFOV = 2.0 * Math.atan(Math.tan(radAngle * 0.5) / context.camera.ratio);
