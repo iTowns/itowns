@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import Extent from '../Core/Geographic/Extent';
 import { CancelledCommandException } from '../Core/Scheduler/Scheduler';
+import RendererConstant from '../Renderer/RendererConstant';
 
 function subdivisionExtents(bbox) {
     const center = bbox.center();
@@ -71,8 +72,10 @@ function subdivideNode(context, layer, node, initNewNode) {
                 child.updateMatrixWorld(true);
                 child.OBB().update();
 
-                child.material.uniforms.lightPosition.value = node.material.uniforms.lightPosition.value;
-                child.material.uniforms.lightingEnabled.value = node.material.uniforms.lightingEnabled.value;
+                child.materials[RendererConstant.FINAL].uniforms.lightPosition.value =
+                    node.materials[RendererConstant.FINAL].uniforms.lightPosition.value;
+                child.materials[RendererConstant.FINAL].uniforms.lightingEnabled.value =
+                    node.materials[RendererConstant.FINAL].uniforms.lightingEnabled.value;
             }
             // TODO
             /*
@@ -84,7 +87,7 @@ function subdivideNode(context, layer, node, initNewNode) {
             }
             */
             node.pendingSubdivision = false;
-            context.view.notifyChange(false);
+            context.view.notifyChange(false, node);
         }, (err) => {
             node.pendingSubdivision = false;
             if (!(err instanceof CancelledCommandException)) {
