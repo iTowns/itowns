@@ -43,7 +43,6 @@ function PlanarView(viewerDiv, boundingbox, options) {
             node.material.wireframe = layer.wireframe || false;
         }
     };
-    const SSE_SUBDIVISION_THRESHOLD = 6.0;
 
     const tileLayer = new GeometryLayer('planar');
     const initLayer = initTiledGeometryLayer(planarSchemeTile(boundingbox));
@@ -101,7 +100,7 @@ function PlanarView(viewerDiv, boundingbox, options) {
     tileLayer.update =
         processTiledGeometryNode(
             planarCulling,
-            planarSubdivisionControl(4, SSE_SUBDIVISION_THRESHOLD),
+            planarSubdivisionControl(options.maxSubdivisionLevel || 5),
             nodeInitFn);
     tileLayer.builder = new PlanarTileBuilder();
 

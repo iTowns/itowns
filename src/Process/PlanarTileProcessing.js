@@ -1,4 +1,3 @@
-import * as THREE from 'three';
 import SchemeTile from '../Core/Geographic/SchemeTile';
 
 function frustumCullingOBB(node, camera) {
@@ -9,47 +8,29 @@ export function planarCulling(node, camera) {
     return !frustumCullingOBB(node, camera);
 }
 
-function computeNodeSSE(camera, node) {
-    var vFOV = camera.FOV * Math.PI / 180;
+function _isTileBigOnScreen(camera, node) {
+    const onScreen = camera.box3DSizeOnScreen(node.geometry.OBB.box3D, node.matrixWorld);
 
-    const tmp1 = new THREE.Vector3();
-    tmp1.setFromMatrixPosition(node.matrixWorld);
-    const tmp2 = new THREE.Vector3();
-    tmp2.setFromMatrixPosition(camera.camera3D.matrixWorld);
-    var diff = tmp2.sub(tmp1);
-    const dim = node.extent.dimensions();
+    // onScreen.x/y/z are [-1, 1] so divide by 2
+    // (so x = 0.4 means the object width on screen is 40% of the total screen width)
+    const dim = {
+        x: 0.5 * (onScreen.max.x - onScreen.min.x),
+        y: 0.5 * (onScreen.max.y - onScreen.min.y),
+    };
 
-    var d = Math.max(0.1, diff.length() - (new THREE.Vector3(dim.x, dim.y, dim.z)).length() * 0.5);
-    var height = 2 * Math.tan(vFOV / 2) * d;
-
-    var dot = diff.normalize().z;
-
-    var ratio = (dim.x * dot) / height;
-
-    if (ratio >= 0.25) {
-        return 7;
-    }
-    return 1;
+    // subdivide if on-screen width (and resp. height) is bigger than 30% of the screen width (resp. height)
+    // TODO: the 30% value is arbitrary and needs to be configurable by the user
+    // TODO: we might want to use texture resolution here as well
+    return (dim.x >= 0.3 && dim.y >= 0.3);
 }
 
-export function planarSubdivisionControl(maxLevel, threshold) {
+export function planarSubdivisionControl(maxLevel) {
     return function _planarSubdivisionControl(context, layer, node) {
         if (maxLevel <= node.level) {
             return false;
         }
-        // don't allow subdivision if tile does'nt have at least:
-        //  - 1 elevation texture
-        if (!node.isElevationLayerLoaded()) {
-            return false;
-        }
-        //  - 1 color texture
-        if (node.materials[0].loadedTexturesCount[1] == 0) {
-            return false;
-        }
 
-        const sse = computeNodeSSE(context.camera, node);
-
-        return threshold < sse;
+        return _isTileBigOnScreen(context.camera, node);
     };
 }
 

@@ -24,18 +24,14 @@ global.fetch = function _fetch(url) {
 
     // try reading as a file
     fs.readFile(process.env.PWD + url, 'utf-8', (err, content) => {
-        if (!content) {
+        if (!content || err) {
             counters.fetch.push(url);
         }
-        var fn = function _fn() {
-            res({
-                buffer: () => content || {},
-                json: () => JSON.parse(content),
-                arrayBuffer: () => content || {},
-            });
-        };
-
-        setTimeout(fn, 1);
+        res({
+            buffer: () => content || {},
+            json: () => JSON.parse(content),
+            arrayBuffer: () => content || {},
+        });
     });
     return pr;
 };
