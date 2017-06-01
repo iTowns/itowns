@@ -30,7 +30,6 @@
   "homepage": "https://itowns.github.io/",
   "dependencies": {
     "babel-runtime": "^6.20.0",
-    "custom-event": "^1.0.1",
     "earcut": "^2.1.1",
     "es6-promise": "^4.0.5",
     "js-priority-queue": "^0.1.5",
