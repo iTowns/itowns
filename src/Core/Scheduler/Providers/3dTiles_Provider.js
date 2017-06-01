@@ -113,6 +113,7 @@ function configureTile(tile, layer, metadata) {
     tile.tileId = metadata.tileId;
     tile.additiveRefinement = (metadata.refine === 'add');
     tile.boundingVolume = getBox(metadata.boundingVolume);
+    tile.viewerRequestVolume = metadata.viewerRequestVolume ? getBox(metadata.viewerRequestVolume) : undefined;
 }
 
 const textDecoder = new TextDecoder('utf-8');
@@ -150,6 +151,7 @@ $3dTiles_Provider.prototype.executeCommand = function executeCommand(command) {
                     Promise.reject(`Unsupported magic code ${magic}`);
                 }
                 if (func) {
+                    // TODO: request should be delayed if there is a viewerRequestVolume
                     return func(result, layer).then((content) => {
                         tile.add(content);
                         tile.traverse(setLayer);
