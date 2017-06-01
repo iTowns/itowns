@@ -11,7 +11,7 @@ var definePlugin = new webpack.DefinePlugin({
 
 module.exports = {
     entry: {
-        itowns: ['es6-promise', 'whatwg-fetch', 'custom-event', path.resolve(__dirname, 'src/Main.js')],
+        itowns: ['es6-promise', 'whatwg-fetch', path.resolve(__dirname, 'src/Main.js')],
         debug: [path.resolve(__dirname, 'utils/debug/Debug.js')],
     },
     devtool: 'source-map',
