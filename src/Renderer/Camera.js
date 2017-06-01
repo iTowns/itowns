@@ -119,4 +119,18 @@ Camera.prototype.box3DSizeOnScreen = function box3DSizeOnScreen(box3d, matrixWor
     return tempBox3d.applyMatrix4(tempMatrix);
 };
 
+Camera.prototype.isSphereVisible = function isSphereVisible(sphere, matrixWorld) {
+    temp.setFromMatrixPosition(matrixWorld);
+    matrixWorld.elements[12] -= this._visibilityTestingOffset.x;
+    matrixWorld.elements[13] -= this._visibilityTestingOffset.y;
+    matrixWorld.elements[14] -= this._visibilityTestingOffset.z;
+
+    obbViewMatrix.multiplyMatrices(this._viewMatrix, matrixWorld);
+
+    matrixWorld.setPosition(temp);
+
+    frustum.setFromMatrix(obbViewMatrix);
+    return frustum.intersectsSphere(sphere);
+};
+
 export default Camera;

@@ -46,13 +46,18 @@ function subdivideNode(context, layer, node) {
 }
 
 export function $3dTilesCulling(node, camera) {
-    if (node.boundingVolume.region) {
-        // TODO
-    }
-    if (node.boundingVolume.box) {
-        return !camera.isBox3DVisible(node.boundingVolume.box, node.matrixWorld);
-    } else if (node.boundingVolume.sphere) {
-        // TODO return !camera.isSphereVisible(node.boundingVolume.sphere, node.matrixWorld);
+    // For bounding volume
+    if (node.boundingVolume) {
+        const boundingVolume = node.boundingVolume;
+        if (boundingVolume.region) {
+            return !camera.isBox3DVisible(boundingVolume.region.box3D, boundingVolume.region.matrixWorld);
+        }
+        if (boundingVolume.box) {
+            return !camera.isBox3DVisible(boundingVolume.box, node.matrixWorld);
+        }
+        if (boundingVolume.sphere) {
+            return !camera.isSphereVisible(boundingVolume.sphere, node.matrixWorld);
+        }
     }
     return false;
 }
@@ -69,9 +74,13 @@ export function pre3dTilesUpdate(context) {
     preSSE = hypotenuse * (2.0 * Math.tan(HYFOV * 0.5));
 }
 
+// Improved zoom geometry
 function computeNodeSSE(camera, node) {
     if (node.boundingVolume.region) {
-        // TODO
+        const worldCoordinateCenter = node.boundingVolume.region.centerWorld;
+        worldCoordinateCenter.applyMatrix4(node.matrixWorld);
+        const distance = camera.camera3D.position.distanceTo(worldCoordinateCenter);
+        return preSSE * (node.geometricError / distance);
     }
     if (node.boundingVolume.box) {
         // TODO: compute proper distance
@@ -80,7 +89,7 @@ function computeNodeSSE(camera, node) {
         const distance = camera.camera3D.position.distanceTo(worldCoordinateCenter);
         return preSSE * (node.geometricError / distance);
     } else if (node.boundingVolume.sphere) {
-        const worldCoordinateCenter = node.boundingVolume.sphere.center;
+        const worldCoordinateCenter = node.boundingVolume.sphere.center.clone();
         worldCoordinateCenter.applyMatrix4(node.matrixWorld);
         const distance = Math.max(
             0.0,
