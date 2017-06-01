@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import Provider from './Provider';
 import B3dmLoader from '../../../Renderer/ThreeExtended/B3dmLoader';
+import PntsLoader from '../../../Renderer/ThreeExtended/PntsLoader';
 import Fetcher from './Fetcher';
 import BasicMaterial from '../../../Renderer/BasicMaterial';
 import OBB from '../../../Renderer/ThreeExtended/OBB';
@@ -94,6 +95,12 @@ $3dTiles_Provider.prototype.b3dmToMesh = function b3dmToMesh(data, layer) {
     });
 };
 
+$3dTiles_Provider.prototype.pntsParse = function pntsParse(data) {
+    return new Promise((resolve) => {
+        resolve(PntsLoader.parse(data));
+    });
+};
+
 function configureTile(tile, layer, metadata) {
     tile.frustumCulled = false;
     tile.loaded = true;
@@ -124,6 +131,7 @@ $3dTiles_Provider.prototype.executeCommand = function executeCommand(command) {
 
         const supportedFormats = {
             b3dm: this.b3dmToMesh.bind(this),
+            pnts: this.pntsParse.bind(this),
         };
 
         return Fetcher.arrayBuffer(url).then((result) => {
@@ -136,6 +144,8 @@ $3dTiles_Provider.prototype.executeCommand = function executeCommand(command) {
                     layer.tileIndex.extendTileset(result, metadata.tileId, newPrefix);
                 } else if (magic == 'b3dm') {
                     func = supportedFormats.b3dm;
+                } else if (magic == 'pnts') {
+                    func = supportedFormats.pnts;
                 } else {
                     Promise.reject(`Unsupported magic code ${magic}`);
                 }
