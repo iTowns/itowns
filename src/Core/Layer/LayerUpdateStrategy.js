@@ -1,3 +1,4 @@
+import { EMPTY_TEXTURE_ZOOM } from '../../Renderer/LayeredMaterial';
 /**
  * This modules implements various layer update strategies.
  *
@@ -36,23 +37,26 @@ function _progressive(nodeLevel, currentLevel, options) {
 // Load textures at mid-point between current level and node's level.
 // This produces smoother transitions and a single fetch updates multiple
 // tiles thanks to caching.
-function _dichotomy(nodeLevel, currentLevel /* , options */) {
+function _dichotomy(nodeLevel, currentLevel, options) {
+    if (currentLevel == EMPTY_TEXTURE_ZOOM) {
+        return options.zoom.min;
+    }
     return Math.min(
         nodeLevel,
         Math.ceil((currentLevel + nodeLevel) / 2));
 }
 
-export function chooseNextLevelToFetch(strategy, node, nodeLevel, currentLevel, options) {
+export function chooseNextLevelToFetch(strategy, node, nodeLevel, currentLevel, layer) {
     switch (strategy) {
         case STRATEGY_GROUP:
-            return _group(nodeLevel, currentLevel, options);
+            return _group(nodeLevel, currentLevel, layer.updateStrategy.options);
         case STRATEGY_PROGRESSIVE:
-            return _progressive(nodeLevel, currentLevel, options);
+            return _progressive(nodeLevel, currentLevel, layer.updateStrategy.options);
         case STRATEGY_DICHOTOMY:
-            return _dichotomy(nodeLevel, currentLevel, options);
+            return _dichotomy(nodeLevel, currentLevel, layer.options);
         // default strategy
         case STRATEGY_MIN_NETWORK_TRAFFIC:
         default:
-            return _minimizeNetworkTraffic(node, nodeLevel, currentLevel, options);
+            return _minimizeNetworkTraffic(node, nodeLevel, currentLevel);
     }
 }
