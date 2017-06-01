@@ -163,14 +163,11 @@ export function updateLayeredMaterialNodeImagery(context, layer, node) {
 
     const currentLevel = node.materials[RendererConstant.FINAL].getColorLayerLevelById(layer.id);
 
-    if (currentLevel > EMPTY_TEXTURE_ZOOM) {
-        const zoom = node.getCoordsForLayer(layer)[0].zoom || node.level;
-        var targetLevel = chooseNextLevelToFetch(layer.updateStrategy.type, node, zoom, currentLevel, layer.updateStrategy.options);
-        if (targetLevel <= currentLevel) {
-            return Promise.resolve();
-        }
+    const zoom = node.getCoordsForLayer(layer)[0].zoom || node.level;
+    const targetLevel = chooseNextLevelToFetch(layer.updateStrategy.type, node, zoom, currentLevel, layer);
+    if (targetLevel <= currentLevel) {
+        return Promise.resolve();
     }
-    // TODO: targetLevel shouldn't be ignored
 
     node.layerUpdateState[layer.id].newTry();
     const command = {
@@ -180,6 +177,7 @@ export function updateLayeredMaterialNodeImagery(context, layer, node) {
         requester: node,
         priority: nodeCommandQueuePriorityFunction(node),
         earlyDropFunction: refinementCommandCancellationFn,
+        targetLevel,
     };
 
     return context.scheduler.execute(command).then(
@@ -251,7 +249,7 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, force) 
 
     const c = node.getCoordsForLayer(layer)[0];
     const zoom = c.zoom || node.level;
-    const targetLevel = chooseNextLevelToFetch(layer.updateStrategy.type, node, zoom, currentElevation, layer.updateStrategy.options);
+    const targetLevel = chooseNextLevelToFetch(layer.updateStrategy.type, node, zoom, currentElevation, layer);
 
     if (targetLevel <= currentElevation || !layer.tileInsideLimit(node, layer, targetLevel)) {
         return Promise.resolve();
