@@ -17,13 +17,12 @@ import Scheduler from './Scheduler/Scheduler';
  * Constructs an Itowns Scene instance
  *
  * @param {string} crs - The default CRS of Three.js coordinates. Should be a cartesian CRS.
- * @param {DOMElement} viewerDiv - Where to instanciate the Three.js scene in the DOM
- * @param {boolean} options - Optional properties. May contain:
- *    - mainLoop: {MainLoop} instance to use, otherwise a default one will be constructed
- *    - renderer: {WebGLRenderer} instance to use, otherwise a default one will be constructed. If
+ * @param {HTMLElement} viewerDiv - Where to instanciate the Three.js scene in the DOM
+ * @param {Object=} options - Optional properties.
+ * @param {?MainLoop} options.mainLoop - {@link MainLoop} instance to use, otherwise a default one will be constructed
+ * @param {?WebGLRenderer} options.renderer - {@link WebGLRenderer} instance to use, otherwise a default one will be constructed. If
  *    not present, a new <canvas> will be created and added to viewerDiv (mutually exclusive with mainLoop)
- *    - scene3D: {Scene} instance to use, otherwise a default one will be constructed
- * @param {boolean} glDebug - debug gl code
+ * @param {?Scene} options.scene3D - {@link Scene} instance to use, otherwise a default one will be constructed
  * @constructor
  * @example
  * // How add gpx object
@@ -150,14 +149,13 @@ function _preprocessLayer(view, layer, provider) {
  */
 
 /**
- * LayerOptions
  * @typedef {Object} LayerOptions
  * @property {string} id Unique layer's id
  * @property {string} type the layer's type : 'color', 'elevation', 'geometry'
- * @property {string} layer.protocol wmts and wms (wmtsc for custom deprecated)
- * @property {string} layer.url Base URL of the repository or of the file(s) to load
- * @property {Object} layer.updateStrategy strategy to load imagery files
- * @property {OptionsWmts|OptionsWms} layer.options WMTS or WMS options
+ * @property {string} protocol wmts and wms (wmtsc for custom deprecated)
+ * @property {string} url Base URL of the repository or of the file(s) to load
+ * @property {Object} updateStrategy strategy to load imagery files
+ * @property {OptionsWmts|OptionsWms} options WMTS or WMS options
  */
 
 /**
@@ -193,7 +191,10 @@ function _preprocessLayer(view, layer, provider) {
  *      type: 'elevation',
  *      id: 'iElevation',
  * });
- * @param {LayerOptions} layer option
+ *
+ * @param {LayerOptions|Layer|GeometryLayer} layer
+ * @param {Layer=} parentLayer
+ * @return {Layer|GeometryLayer}
  */
 View.prototype.addLayer = function addLayer(layer, parentLayer) {
     layer = _preprocessLayer(this, layer, this.mainLoop.scheduler.getProtocolProvider(layer.protocol));
@@ -217,7 +218,8 @@ View.prototype.addLayer = function addLayer(layer, parentLayer) {
  * Notifies the scene it needs to be updated due to changes exterior to the
  * scene itself (e.g. camera movement).
  * non-interactive events (e.g: texture loaded)
- * @param {Boolean} needsRedraw indicates if notified change requires a full scene redraw.
+ * @param {boolean} needsRedraw - indicates if notified change requires a full scene redraw.
+ * @param {*} changeSource
  */
 View.prototype.notifyChange = function notifyChange(needsRedraw, changeSource) {
     this._changeSources.add(changeSource);
@@ -240,8 +242,8 @@ View.prototype.notifyChange = function notifyChange(needsRedraw, changeSource) {
  * view.getLayers(layer => layer.type === 'geometry');
  * // get one layer with id
  * view.getLayers(layer => layer.id === 'itt');
- * @param {function} filter
- * @returns {Array}  array of Layer
+ * @param {function(Layer):boolean} filter
+ * @returns {Array<Layer>}
  */
 View.prototype.getLayers = function getLayers(filter) {
     const result = [];

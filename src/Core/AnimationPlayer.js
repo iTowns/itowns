@@ -80,7 +80,6 @@ const setPlayerState = function setPlayerState(player, state) {
 };
 
 /**
- * AnimationPlayer
  * It can play, pause or stop Animation or AnimationExpression (See below).
  * AnimationPlayer is needed to use Animation or AnimationExpression
  * AnimationPlayer emits events :
@@ -115,11 +114,11 @@ class AnimationPlayer extends THREE.EventDispatcher {
     // Public functions
 
     /**
-     * { Start animation }
-     * this function play one animation.
-     * If another animation is playing, it's stopped and the new animation is played
-     * @param      {Animation} The animation to play
-     * @return     {Promise}  Promise is resolved when animation is stopped or finished
+     * Play one animation.
+     * If another animation is playing, it's stopped and the new animation is played.
+     *
+     * @param {Animation} animation - The animation to play
+     * @return {Promise<void>} - Promise is resolved when animation is stopped or finished
      */
     play(animation) {
         this.animation = animation;
@@ -134,10 +133,11 @@ class AnimationPlayer extends THREE.EventDispatcher {
     }
 
     /**
-     * { The animation is played after a number of frames }
+     * Play an animation after a number of frames.
      *
      * @param      {Animation}  animation    The animation to play
-     * @param      {Number}  waitingTime  The waiting time before start animation (time in frame)
+     * @param      {number}  waitingFrame    The waiting time before start animation (time in frame)
+     * @return     {Promise<void>} Promise is resolved when animation is stopped or finished
      */
     playLater(animation, waitingFrame) {
         this.resolveWait = null;
@@ -149,9 +149,9 @@ class AnimationPlayer extends THREE.EventDispatcher {
     }
 
     /**
-     * { Stop current animation }
+     * Stop the current animation.
      *
-     * @return  {Promise}  Promise is resolved when animation is stopped or finished
+     * @return  {Promise<void>}  Promise is resolved when animation is stopped or finished
      */
     stop() {
         setPlayerState(this, PLAYER_STATE.STOP);
@@ -161,7 +161,9 @@ class AnimationPlayer extends THREE.EventDispatcher {
     }
 
     /**
-     * { this function is executed with each frame }
+     * Executed for each frame.
+     *
+     * @private
      */
     frame() {
         if (this.keyframe < this.animation.duration) {
@@ -181,15 +183,16 @@ class AnimationPlayer extends THREE.EventDispatcher {
 }
 
 /**
- * { Animation }
- * Animation is play by the AnimationPlayer during the time of duration
- * During playback, the AnimationPlayer emits event for each frame
+ * Animation is played by the AnimationPlayer during the time of duration
+ * During playback, the AnimationPlayer emits events for each frame
  * Animation is used to execute a callback to each frame
- * @class      Animation
- * @param      {Number}  duration  The animation's duration in number of frames. FRAMERATE is number of frames in one seconde.
- * @param      {String}  name      The animation's name. It's used for debug message.
  */
 class Animation {
+    /**
+     * @param {Object}  params
+     * @param {?number} params.duration - The animation's duration in number of frames. {@link FRAMERATE} is number of frames in one seconde.
+     * @param {string}  params.name     - The animation's name. It's used for debug message.
+     */
     constructor(params) {
         this.duration = params.duration || FRAMERATE;
         this.name = params.name;
@@ -197,19 +200,19 @@ class Animation {
 }
 
 /**
- * { function_description }
- * AnimatedExpression is play by the AnimationPlayer during the time of duration
+ * AnimatedExpression is played by the AnimationPlayer during the time of duration
  * During playback, the AnimationPlayer emits event for each frame and
  * it applies expression on root.
  * AnimatedExpression is used to change object's values for each frame
- * @class      AnimatedExpression (name)
- * @param      {Number}   duration    The animation's duration in number of frames. FRAMERATE is number of frames in one seconde.
- * @param      {Object}   root        The root is the object in scene to animate
- * @param      {Function} expression  The expression is function applied to root with each frame
- * @param      {String}   name        The animation's name. It's used for debug message
-  */
-
+ */
 class AnimatedExpression extends Animation {
+    /**
+     * @param {Object}   params
+     * @param {?number}  params.duration   - Duration in number of frames. {@link FRAMERATE} is number of frames in one seconde.
+     * @param {Object}   params.root       - Object in scene to animate
+     * @param {function(Object,number):void} params.expression - Function applied to root for each frame, arguments are the root object and the ratio of completion.
+     * @param {string}   params.name       - The animation's name. It's used for debug message
+     */
     constructor(params) {
         super(params);
         this.root = params.root;

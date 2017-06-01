@@ -13,9 +13,6 @@ function CacheRessource() {
     this._maximumSize = null;
 }
 
-/**
- * @param url
- */
 CacheRessource.prototype.getRessource = function getRessource(url) {
     return this.cacheObjects[url];
 };
@@ -25,9 +22,6 @@ CacheRessource.prototype.addRessource = function addRessource(url, ressource) {
 };
 
 
-/**
- * @param id
- */
 CacheRessource.prototype.getRessourceByID = function getRessourceByID(/* id*/) {
     // TODO: Implement Me
 

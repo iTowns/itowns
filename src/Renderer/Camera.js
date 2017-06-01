@@ -26,8 +26,6 @@ function Camera(width, height) {
     this.height = height;
 }
 
-/**
- */
 Camera.prototype.position = function position() {
     return this.camera3D.position;
 };

@@ -11,10 +11,11 @@ import CacheRessource from './CacheRessource';
 
 /**
  * Return url wmts MNT
- * @param {String} options.url: service base url
- * @param {String} options.layer: requested data layer
- * @param {String} options.format: image format (default: format/jpeg)
- * @returns {Object@call;create.url.url|String}
+ * @param {Object} options
+ * @param {?string} options.url - service base url
+ * @param {?string} options.layer - requested data layer
+ * @param {?string} options.format - image format (default: format/jpeg)
+ * @constructor
  */
 function WFS_Provider(options) {
     this.cache = CacheRessource();
