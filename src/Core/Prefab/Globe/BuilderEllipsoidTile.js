@@ -1,5 +1,4 @@
-import * as THREE from 'three';
-import { C, UNIT } from '../../Geographic/Coordinates';
+import { C } from '../../Geographic/Coordinates';
 import Projection from '../../Geographic/Projection';
 import OBB from '../../../Renderer/ThreeExtended/OBB';
 
@@ -68,72 +67,9 @@ BuilderEllipsoidTile.prototype.getUV_PM = function getUV_PM(params) {
     return t - params.deltaUV1;
 };
 
-// get oriented bounding box of tile
+// use for region for adaptation boundingVolume
 BuilderEllipsoidTile.prototype.OBB = function OBBFn(params) {
-    var cardinals = [];
-
-    var normal = params.center.clone().normalize();
-
-    const bboxDimension = params.extent.dimensions(UNIT.RADIAN);
-    var phiStart = params.extent.west();
-    var phiLength = bboxDimension.x;
-
-    var thetaStart = params.extent.south();
-    var thetaLength = bboxDimension.y;
-
-    //      0---1---2
-    //      |       |
-    //      7       3
-    //      |       |
-    //      6---5---4
-
-    cardinals.push(new C.EPSG_4326_Radians(phiStart, thetaStart));
-    cardinals.push(new C.EPSG_4326_Radians(phiStart + bboxDimension.x * 0.5, thetaStart));
-    cardinals.push(new C.EPSG_4326_Radians(phiStart + phiLength, thetaStart));
-    cardinals.push(new C.EPSG_4326_Radians(phiStart + phiLength, thetaStart + bboxDimension.y * 0.5));
-    cardinals.push(new C.EPSG_4326_Radians(phiStart + phiLength, thetaStart + thetaLength));
-    cardinals.push(new C.EPSG_4326_Radians(phiStart + bboxDimension.x * 0.5, thetaStart + thetaLength));
-    cardinals.push(new C.EPSG_4326_Radians(phiStart, thetaStart + thetaLength));
-    cardinals.push(new C.EPSG_4326_Radians(phiStart, thetaStart + bboxDimension.y * 0.5));
-    cardinals.push(params.extent.center());
-
-    var cardin3DPlane = [];
-
-    var maxV = new THREE.Vector3(-1000, -1000, -1000);
-    var minV = new THREE.Vector3(1000, 1000, 1000);
-    var halfMaxHeight = 0;
-    var planeZ = new THREE.Quaternion();
-    var qRotY = new THREE.Quaternion();
-    var tangentPlaneAtOrigin = new THREE.Plane(normal);
-
-    planeZ.setFromUnitVectors(normal, new THREE.Vector3(0, 0, 1));
-    qRotY.setFromAxisAngle(
-        new THREE.Vector3(0, 0, 1), -params.extent.center().longitude(UNIT.RADIAN));
-    qRotY.multiply(planeZ);
-
-    for (var i = 0; i < cardinals.length; i++) {
-        const cardinal3D = cardinals[i].as('EPSG:4978').xyz();
-        cardin3DPlane.push(tangentPlaneAtOrigin.projectPoint(cardinal3D));
-        const d = cardin3DPlane[i].distanceTo(cardinal3D.sub(params.center));
-        halfMaxHeight = Math.max(halfMaxHeight, d * 0.5);
-        // compute tile's min/max
-        cardin3DPlane[i].applyQuaternion(qRotY);
-        maxV.max(cardin3DPlane[i]);
-        minV.min(cardin3DPlane[i]);
-    }
-
-    var halfLength = Math.abs(maxV.y - minV.y) * 0.5;
-    var halfWidth = Math.abs(maxV.x - minV.x) * 0.5;
-    var max = new THREE.Vector3(halfLength, halfWidth, halfMaxHeight);
-    var min = new THREE.Vector3(-halfLength, -halfWidth, -halfMaxHeight);
-
-    // delta is the distance between line `([6],[4])` and the point `[5]`
-    // These points [6],[5],[4] aren't aligned because of the ellipsoid shape
-    var delta = halfWidth - Math.abs(cardin3DPlane[5].x);
-    var translate = new THREE.Vector3(0, delta, -halfMaxHeight);
-    var obb = new OBB(min, max, normal, translate);
-
-    return obb;
+    return OBB.extentToOBB(params.extent);
 };
 
 export default BuilderEllipsoidTile;
