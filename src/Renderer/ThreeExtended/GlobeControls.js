@@ -1749,7 +1749,7 @@ GlobeControls.prototype.pickGeoPosition = function pickGeoPosition(mouse, y) {
         y: mouse.clientY || y,
     };
 
-    var pickedPosition = _getPickingPosition(this.controlsActiveLayers, screenCoords);
+    var pickedPosition = _getPickingPosition(screenCoords);
 
     if (!pickedPosition) {
         return;
