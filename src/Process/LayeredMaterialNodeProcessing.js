@@ -7,13 +7,13 @@ import { CancelledCommandException } from '../Core/Scheduler/Scheduler';
 import OGCWebServiceHelper, { SIZE_TEXTURE_TILE } from '../Core/Scheduler/Providers/OGCWebServiceHelper';
 
 function initNodeImageryTexturesFromParent(node, parent, layer) {
-    if (parent.material && parent.material.getColorLayerLevelById(layer.id) > EMPTY_TEXTURE_ZOOM) {
+    if (parent.materials && parent.materials[RendererConstant.FINAL].getColorLayerLevelById(layer.id) > EMPTY_TEXTURE_ZOOM) {
         const coords = node.getCoordsForLayer(layer);
-        const offsetTextures = node.material.getLayerTextureOffset(layer.id);
+        const offsetTextures = node.materials[RendererConstant.FINAL].getLayerTextureOffset(layer.id);
 
         let textureIndex = offsetTextures;
         for (const c of coords) {
-            for (const texture of parent.materials[0].getLayerTextures(l_COLOR, layer.id)) {
+            for (const texture of parent.materials[RendererConstant.FINAL].getLayerTextures(l_COLOR, layer.id)) {
                 if (c.isInside(texture.coords)) {
                     const result = c.offsetToParent(texture.coords);
                     node.material.textures[l_COLOR][textureIndex] = texture;
@@ -39,10 +39,10 @@ function initNodeImageryTexturesFromParent(node, parent, layer) {
 
 function initNodeElevationTextureFromParent(node, parent, layer) {
     // inherit parent's elevation texture
-    if (parent.material && parent.material.getElevationLayerLevel() > EMPTY_TEXTURE_ZOOM) {
+    if (parent.materials && parent.materials[RendererConstant.FINAL].getElevationLayerLevel() > EMPTY_TEXTURE_ZOOM) {
         const coords = node.getCoordsForLayer(layer);
 
-        const texture = parent.material.textures[l_ELEVATION][0];
+        const texture = parent.materials[RendererConstant.FINAL].textures[l_ELEVATION][0];
         const pitch = coords[0].offsetToParent(parent.material.textures[l_ELEVATION][0].coords);
         const elevation = {
             texture,
