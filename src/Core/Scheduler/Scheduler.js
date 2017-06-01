@@ -192,6 +192,8 @@ Scheduler.prototype.getProviders = function getProviders() {
 
 /**
  * Custom error thrown when cancelling commands. Allows the caller to act differently if needed.
+ * @constructor
+ * @param {Command} command
  */
 function CancelledCommandException(command) {
     this.command = command;
@@ -201,8 +203,6 @@ CancelledCommandException.prototype.toString = function toString() {
     return `Cancelled command ${this.command.requester.id}/${this.command.layer.id}`;
 };
 
-/**
- */
 Scheduler.prototype.deQueue = function deQueue(queue) {
     var st = queue.storage;
     while (st.length > 0) {

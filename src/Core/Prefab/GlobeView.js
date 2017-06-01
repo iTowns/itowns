@@ -78,8 +78,9 @@ export const GLOBE_VIEW_EVENTS = {
  * @example view = new GlobeView(viewer, positionOnGlobe);
  * // positionOnGlobe in latitude, longitude and altitude
  * @augments View
- * @params {Div} string.
- * @param {Coords} coords.
+ * @param {HTMLDivElement} viewerDiv - Where to instanciate the Three.js scene in the DOM
+ * @param {object} coordCarto
+ * @param {object=} options - see {@link View}
  */
 function GlobeView(viewerDiv, coordCarto, options) {
     THREE.Object3D.DefaultUp.set(0, 0, 1);

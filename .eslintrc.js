@@ -43,6 +43,11 @@ module.exports = {
       }
     }],
     'one-var': ['error', 'never'],
+    'valid-jsdoc': ['error', {
+      requireReturn: false,
+      requireParamDescription: false,
+      requireReturnDescription: false,
+    }],
     // TODO reactivate this rule once a proper npm package is made
     // a good configuration might be:
     /*'import/no-extraneous-dependencies': ['error', {

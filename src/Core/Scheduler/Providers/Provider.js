@@ -13,9 +13,6 @@ function Provider(iodriver) {
 
 Provider.prototype.constructor = Provider;
 
-/**
- * @param url
- */
 Provider.prototype.get = function get(/* url*/) {
     // TODO: Implement Me
 
@@ -29,9 +26,6 @@ Provider.prototype.preprocessLayer = function preprocessLayer(/* layer*/) {
 
 };
 
-/**
- * @param url
- */
 Provider.prototype.getInCache = function getInCache(/* url*/) {
     // TODO: Implement Me
 

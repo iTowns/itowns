@@ -38,8 +38,10 @@ BuildingBox_Provider.prototype.constructor = BuildingBox_Provider;
 
 /**
  * Return url wmts MNT
- * @param {type} coWMTS : coord WMTS
- * @returns {Object@call;create.url.url|String}
+ * @param {number} longitude
+ * @param {number} latitude
+ * @param {number} radius
+ * @returns {string}
  */
 BuildingBox_Provider.prototype.url = function url(longitude, latitude, radius) {
     // var key    = "wmybzw30d6zg563hjlq8eeqb";

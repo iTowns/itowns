@@ -49,7 +49,6 @@ GeometryLayer.prototype.detach = function detach(layer) {
 };
 
 /**
- * @class      Layer (name)
  * Don't use directly constructor to instance a new Layer
  * use addLayer in {@link View}
  * @example
@@ -70,12 +69,13 @@ GeometryLayer.prototype.detach = function detach(layer) {
  * const layerToListen = view.getLayers(layer => layer.id == 'idLayerToListen')[0];
  * layerToListen.addEventListener('visible-property-changed', (event) => console.log(event));
  * layerToListen.addEventListener('opacity-property-changed', (event) => console.log(event));
+ * @constructor
  * @protected
  * @param      {String}  id
  */
-function Layer(i) {
+function Layer(id) {
     Object.defineProperty(this, 'id', {
-        value: i,
+        value: id,
         writable: false,
     });
 }
