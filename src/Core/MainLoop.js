@@ -103,7 +103,6 @@ MainLoop.prototype._renderView = function _renderView(view) {
         // use default rendering method
         this.gfxEngine.renderView(view);
     }
-    this.needsRedraw = false;
 
     // Mimic three Object3D.onAfterRender (which sadly doesn't work on Scene)
     view.onAfterRender();
