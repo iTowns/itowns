@@ -88,8 +88,6 @@ MainLoop.prototype._step = function _step(view) {
     }
 };
 
-/**
- */
 MainLoop.prototype._renderView = function _renderView(view) {
     const dim = this.gfxEngine.getWindowSize();
     view.camera.resize(dim.x, dim.y);

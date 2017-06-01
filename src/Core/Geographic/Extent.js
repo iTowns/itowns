@@ -184,9 +184,10 @@ Extent.prototype.dimensions = function dimensions(unit) {
 };
 
 /**
- * @documentation: Retourne True if point is inside the bounding box
+ * Return true if coord is inside the bounding box.
  *
- * @param point {[object Object]}
+ * @param {Coordinates} coord
+ * @return {boolean}
  */
 Extent.prototype.isInside = function isInside(coord) {
     const c = (this.crs() == coord.crs) ? coord : coord.as(this.crs());

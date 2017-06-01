@@ -58,8 +58,9 @@ WMTS_Provider.prototype.preprocessDataLayer = function preprocessDataLayer(layer
 
 /**
  * Return url wmts orthophoto
- * @param {type} coWMTS
- * @returns {Object@call;create.urlOrtho.url|String}
+ * @param {{zoom:number,row:number,col:number}} coWMTS
+ * @param {Layer} layer
+ * @returns {string}
  */
 WMTS_Provider.prototype.url = function url(coWMTS, layer) {
     return this.customUrl(layer, layer.customUrl, coWMTS.zoom, coWMTS.row, coWMTS.col);
@@ -67,8 +68,10 @@ WMTS_Provider.prototype.url = function url(coWMTS, layer) {
 
 /**
  * return texture float alpha THREE.js of MNT
- * @param {type} coWMTS : coord WMTS
- * @returns {WMTS_Provider_L15.WMTS_Provider.prototype@pro;_IoDriver@call;read@call;then}
+ * @param {TileMesh} tile
+ * @param {Layer} layer
+ * @param {number} targetZoom
+ * @returns {Promise<portableXBIL>}
  */
 WMTS_Provider.prototype.getXbilTexture = function getXbilTexture(tile, layer, targetZoom) {
     const pitch = new THREE.Vector3(0.0, 0.0, 1.0);
@@ -96,9 +99,9 @@ WMTS_Provider.prototype.getXbilTexture = function getXbilTexture(tile, layer, ta
 /**
  * Return texture RGBA THREE.js of orthophoto
  * TODO : RGBA --> RGB remove alpha canal
- * @param {type} coordWMTS
- * @param {type} id
- * @returns {WMTS_Provider_L15.WMTS_Provider.prototype@pro;ioDriverImage@call;read@call;then}
+ * @param {{zoom:number,row:number,col:number}} coordWMTS
+ * @param {Layer} layer
+ * @returns {Promise<Texture>}
  */
 WMTS_Provider.prototype.getColorTexture = function getColorTexture(coordWMTS, layer) {
     const url = this.url(coordWMTS, layer);

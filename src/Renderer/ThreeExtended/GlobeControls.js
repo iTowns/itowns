@@ -357,7 +357,15 @@ function defer() {
 
 /* globals document,window */
 
-/** @class GlobeControls */
+/**
+ * @class
+ * @param {View} view
+ * @param {*} target
+ * @param {HTMLElement} domElement
+ * @param {HTMLElement} viewerDiv
+ * @param {number} radius
+ * @param {function(THREE.Vector2):THREE.Vector2} getPickingPosition
+ */
 function GlobeControls(view, target, domElement, viewerDiv, radius, getPickingPosition) {
     player = new AnimationPlayer();
     this._view = view;
@@ -1358,9 +1366,9 @@ function getRangeFromScale(scale, pitch) {
 /**
  * Changes the tilt of the current camera, in degrees.
  * <iframe width="100%" height="400" src="http://jsfiddle.net/iTownsIGN/p6t76zox/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
- * @param {Angle} Number - The angle.
- * @param      {boolean}  isAnimated  Indicates if animated
- * @return     {Promise}
+ * @param {number}  tilt
+ * @param {boolean} isAnimated
+ * @return {Promise<void>}
  */
 GlobeControls.prototype.setTilt = function setTilt(tilt, isAnimated) {
     return this.setOrbitalPosition({ tilt }, isAnimated);
@@ -1369,9 +1377,9 @@ GlobeControls.prototype.setTilt = function setTilt(tilt, isAnimated) {
 /**
  * Changes the heading of the current camera, in degrees.
  * <iframe width="100%" height="400" src="http://jsfiddle.net/iTownsIGN/rxe4xgxj/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
- * @param {Angle} Number - The angle.
- * @param      {boolean}  isAnimated  Indicates if animated
- * @return     {Promise}
+ * @param {number} heading
+ * @param {boolean} isAnimated
+ * @return {Promise<void>}
  */
 GlobeControls.prototype.setHeading = function setHeading(heading, isAnimated) {
     return this.setOrbitalPosition({ heading }, isAnimated);
@@ -1380,9 +1388,9 @@ GlobeControls.prototype.setHeading = function setHeading(heading, isAnimated) {
 /**
  * Sets the "range": the distance in meters between the camera and the current central point on the screen.
  * <iframe width="100%" height="400" src="http://jsfiddle.net/iTownsIGN/Lt3jL5pd/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
- * @param {Number} pRange - The camera altitude.
- * @param      {boolean}  isAnimated  Indicates if animated
- * @return     {Promise}
+ * @param {number} range
+ * @param {boolean} isAnimated
+ * @return {Promise<void>}
  */
 GlobeControls.prototype.setRange = function setRange(range, isAnimated) {
     return this.setOrbitalPosition({ range }, isAnimated);
@@ -1391,9 +1399,9 @@ GlobeControls.prototype.setRange = function setRange(range, isAnimated) {
 /**
  * Sets orientation angles of the current camera, in degrees.
  * <iframe width="100%" height="400" src="http://jsfiddle.net/iTownsIGN/9qr2mogh/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
- * @param      {object}   orientation  The angle of the rotation in degrees
- * @param      {boolean}  isAnimated   Indicates if animated
- * @return     {Promise}   { description_of_the_return_value }
+ * @param {{tilt:number,heading:number,range:number}} position
+ * @param {boolean}  isAnimated
+ * @return {Promise<void>}
  */
 GlobeControls.prototype.setOrbitalPosition = function setOrbitalPosition(position, isAnimated) {
     isAnimated = isAnimated === undefined ? this.isAnimationEnabled() : isAnimated;
@@ -1452,6 +1460,7 @@ GlobeControls.prototype.getCameraTargetPosition = function getCameraTargetPositi
  *
  * @param {THREE.Vector3} position - the position on the globe to aim, in EPSG:4978 projection
  * @param {boolean} isAnimated - if we should animate the move
+ * @return {Promise<void>}
  */
 GlobeControls.prototype.setCameraTargetPosition = function setCameraTargetPosition(position, isAnimated) {
     isAnimated = isAnimated === undefined ? this.isAnimationEnabled() : isAnimated;
@@ -1560,6 +1569,7 @@ GlobeControls.prototype.moveTarget = function moveTarget() {
  * <iframe width="100%" height="400" src="http://jsfiddle.net/iTownsIGN/1z7q3c4z/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
  * The view flies to the desired coordinate, i.e.is not teleported instantly. Note : The results can be strange in some cases, if ever possible, when e.g.the camera looks horizontally or if the displaced center would not pick the ground once displaced.
  * @param      {vector}  pVector  The vector
+ * @return {Promise<void>}
  */
 GlobeControls.prototype.pan = function pan(pVector) {
     this.mouseToPan(pVector.x, pVector.y);
@@ -1573,6 +1583,7 @@ GlobeControls.prototype.pan = function pan(pVector) {
 /**
  * Returns the orientation angles of the current camera, in degrees.
  * <iframe width="100%" height="400" src="http://jsfiddle.net/iTownsIGN/okfj460p/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
+ * @return {Array<number>}
  */
 GlobeControls.prototype.getCameraOrientation = function getCameraOrientation() {
     var tiltCam = this.getTilt();
@@ -1583,7 +1594,7 @@ GlobeControls.prototype.getCameraOrientation = function getCameraOrientation() {
 /**
  * Returns the camera location projected on the ground in lat,lon. See {@linkcode Coordinates} for conversion.
  * <iframe width="100%" height="400" src="http://jsfiddle.net/iTownsIGN/mjv7ha02/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
- * @return {Position} position
+ * @return {Coordinates} position
  */
 
 GlobeControls.prototype.getCameraLocation = function getCameraLocation() {
@@ -1726,9 +1737,9 @@ GlobeControls.prototype.setCameraTargetGeoPositionAdvanced = function setCameraT
 
 /**
  * Pick a position on the globe at the given position in lat,lon. See {@linkcode Coordinates} for conversion.
- * @param {number | MouseEvent} x|event - The x-position inside the Globe element or a mouse event.
- * @param {number | undefined} y - The y-position inside the Globe element.
- * @return {Position} position
+ * @param {number | MouseEvent} mouse - The x-position inside the Globe element or a mouse event.
+ * @param {number=} y - The y-position inside the Globe element.
+ * @return {Coordinates} position
  */
 GlobeControls.prototype.pickGeoPosition = function pickGeoPosition(mouse, y) {
     var screenCoords = {

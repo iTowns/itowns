@@ -10,6 +10,7 @@ const PAUSE_BETWEEN_ERRORS = [1.0, 3.0, 7.0, 60.0];
  * LayerUpdateState is the update state of a layer, for a given object (e.g tile).
  * It stores information to allow smart update decisions, and especially network
  * error handling.
+ * @constructor
  */
 function LayerUpdateState() {
     this.state = UPDATE_STATE.IDLE;

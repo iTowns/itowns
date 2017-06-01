@@ -436,6 +436,7 @@ export const C = {
      * @param {number} position.x - the x component of the position
      * @param {number} position.y - the y component of the position
      * @param {number} position.z - the z component of the position
+     * @return {Coordinates}
      */
     EPSG_4326: function EPSG_4326(...args) {
         return new Coordinates('EPSG:4326', ...args);
