@@ -25,6 +25,8 @@ export { processTiledGeometryNode, initTiledGeometryLayer } from './Process/Tile
 export { updateLayeredMaterialNodeImagery, updateLayeredMaterialNodeElevation } from './Process/LayeredMaterialNodeProcessing';
 export { GeometryLayer, ImageryLayers } from './Core/Layer/Layer';
 export { process3dTilesNode, init3dTilesLayer, $3dTilesCulling, $3dTilesSubdivisionControl, pre3dTilesUpdate } from './Process/3dTilesProcessing';
+export { STRATEGY_MIN_NETWORK_TRAFFIC, STRATEGY_GROUP, STRATEGY_PROGRESSIVE, STRATEGY_DICHOTOMY } from './Core/Layer/LayerUpdateStrategy';
+
 
 // This is temporary, until we're able to build a vendor.js
 // containing our dependencies.
