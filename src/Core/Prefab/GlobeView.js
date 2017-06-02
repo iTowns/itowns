@@ -18,6 +18,43 @@ import { updateLayeredMaterialNodeImagery, updateLayeredMaterialNodeElevation } 
 import { globeCulling, preGlobeUpdate, globeSubdivisionControl, globeSchemeTileWMTS, globeSchemeTile1 } from '../../Process/GlobeTileProcessing';
 import BuilderEllipsoidTile from './Globe/BuilderEllipsoidTile';
 
+/**
+ * Fires when the view is completely loaded. Controls and view's functions can be called then.
+ * @event GlobeView#initialized
+ * @property target {view} dispatched on view
+ * @property type {string} initialized
+ */
+/**
+ * Fires when a layer is added
+ * @event GlobeView#layer-added
+ * @property layerId {string} the id of the layer
+ * @property target {view} dispatched on view
+ * @property type {string} layers-added
+ */
+/**
+ * Fires when a layer is removed
+ * @event GlobeView#layer-removed
+ * @property layerId {string} the id of the layer
+ * @property target {view} dispatched on view
+ * @property type {string} layers-added
+ */
+/**
+ * Fires when the layers oder has changed
+ * @event GlobeView#layers-order-changed
+ * @property new {object}
+ * @property new.sequence {array}
+ * @property new.sequence.0 {number} the new layer at position 0
+ * @property new.sequence.1 {number} the new layer at position 1
+ * @property new.sequence.2 {number} the new layer at position 2
+ * @property previous {object}
+ * @property previous.sequence {array}
+ * @property previous.sequence.0 {number} the previous layer at position 0
+ * @property previous.sequence.1 {number} the previous layer at position 1
+ * @property previous.sequence.2 {number} the previous layer at position 2
+ * @property target {view} dispatched on view
+ * @property type {string} layers-order-changed
+ */
+
 
 /**
  * Globe's EVENT
@@ -25,43 +62,6 @@ import BuilderEllipsoidTile from './Globe/BuilderEllipsoidTile';
  * @property LAYER_ADDED {string} emit when layer id added in viewer
  * @property LAYER_REMOVED {string} emit when layer id removed in viewer
  * @property COLOR_LAYERS_ORDER_CHANGED {string} emit when  color layers order change
- * @example
- * viewer.addEventListener(itowns.GLOBE_VIEW_EVENTS.LAYER_ADDED, (event) => console.log(event));
- * // or
- * viewer.addEventListener('layer-added', (event) => console.log(event));
- * // returns:
- * // Object {type: "layer-added", layerId: "layerId", target: GlobeView}
- * //   layerId: layerId,
- * //   target: viewer
- * //   type: 'layer-added'
- *
- * viewer.addEventListener(itowns.GLOBE_VIEW_EVENTS.LAYER_REMOVED, (event) => console.log(event));
- * // or
- * viewer.addEventListener('layer-removed', (event) => console.log(event));
- * // returns:
- * // Object {type: "layer-added", target: GlobeView}
- * //   layerId: 'layerId'
- * //   target: viewer
- * //   type: 'layer-removed'
- *
- * viewer.addEventListener(itowns.GLOBE_VIEW_EVENTS.COLOR_LAYERS_ORDER_CHANGED, (event) => console.log(event));
- * // or
- * viewer.addEventListener('layers-order-changed', (event) => console.log(event));
- * itowns.ColorLayersOrdering.moveLayerDown(viewer, 'layer3'); //with 3 layers in the view: layer1, layer2 and layer3
- * // returns:
- * // Object {type: "layers-order-changed", previous: Object, new: Object, target: GlobeView}
- * //   new: Object
- * //       sequence: Array(3)
- * //           0: layer1
- * //           1: layer3
- * //           2: layer2
- * //   previous: Object
- * //       sequence: Array(3)
- * //           0: layer1
- * //           1: layer2
- * //           2: layer3
- * //   target: viewer
- * //   type: 'layers-order-changed'
  */
 
 export const GLOBE_VIEW_EVENTS = {
