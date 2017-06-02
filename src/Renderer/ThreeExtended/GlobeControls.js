@@ -240,59 +240,61 @@ const radiusCollision = 50;
 let enableEventPositionChanged = true;
 
 /**
+ * Globe control pan event. Fires after camera pan
+ * @event GlobeControls#pan-changed
+ * @property target {GlobeControls} dispatched on controls
+ * @property type {string} orientation-changed
+ */
+/**
+ * Globe control orientation event. Fires when camera's orientation change
+ * @event GlobeControls#orientation-changed
+ * @property new {object}
+ * @property new.tilt {number} the new value of the tilt of the camera
+ * @property new.heading {number} the new value of the heading of the camera
+ * @property previous {object}
+ * @property previous.tilt {number} the previous value of the tilt of the camera
+ * @property previous.heading {number} the previous value of the heading of the camera
+ * @property target {GlobeControls} dispatched on controls
+ * @property type {string} orientation-changed
+ */
+ /**
+ * Globe control range event. Fires when camera's range to target change
+ * @event GlobeControls#range-changed
+ * @property new {object}
+ * @property new.range {number} the new value of the range
+ * @property previous {object}
+ * @property previous.range {number} the previous value of the range
+ * @property target {GlobeControls} dispatched on controls
+ * @property type {string} range-changed
+ */
+ /**
+ * Globe control camera's target event. Fires when camera's target change
+ * @event GlobeControls#camera-target-changed
+ * @property new {object}
+ * @property new.cameraTarget {Coordinates} the new camera's target coordinates
+ * @property new.cameraTarget.crs {string} the crs of the camera's target coordinates
+ * @property new.cameraTarget.values {array}
+ * @property new.cameraTarget.values.0 {number} the new X coordinates
+ * @property new.cameraTarget.values.1 {number} the new Y coordinates
+ * @property new.cameraTarget.values.2 {number} the new Z coordinates
+ * @property new.heading {number} the new value of the heading of the camera
+ * @property previous {object}
+ * @property previous.cameraTarget {Coordinates} the previous camera's target coordinates
+ * @property previous.cameraTarget.crs {string} the crs of the camera's target coordinates
+ * @property previous.cameraTarget.values {array}
+ * @property previous.cameraTarget.values.0 {number} the previous X coordinates
+ * @property previous.cameraTarget.values.1 {number} the previous Y coordinates
+ * @property previous.cameraTarget.values.2 {number} the previous Z coordinates
+ * @property target {GlobeControls} dispatched on controls
+ * @property type {string} camera-target-changed
+ */
+
+/**
  * globe controls events
- * @property PAN_CHANGED {string} emit after camera pan
- * @property ORIENTATION_CHANGED {string} emit when camera's orientation is changed
- * @property RANGE_CHANGED {string} emit when camera's range to target is changed
- * @property CAMERA_TARGET_CHANGED {string} emit when camera's target is changed
- * @example
- * viewer.controls.addEventListener(itowns.CONTROL_EVENTS.ORIENTATION_CHANGED, (event) => console.log(event));
- * // or
- * viewer.controls.addEventListener('orientation-changed', (event) => console.log(event));
- * // returns:
- * // Object {type: "orientation-changed", previous: Object, new: Object, target: GlobeControls}
- * //   new: Object
- * //       heading:    'new heading'
- * //       tilt:       'new tilt'
- * //   previous: Object
- * //       heading:    'previous heading'
- * //       tilt:       'previous tilt'
- * //   target: GlobeControls
- * //   type: "orientation-changed"
- *
- * viewer.controls.addEventListener(itowns.CONTROL_EVENTS.RANGE_CHANGED, (event) => console.log(event));
- * // or
- * viewer.controls.addEventListener('range-changed', (event) => console.log(event));
- * // returns:
- * // Object {type: "orientation-changed", previous: Object, new: Object, target: GlobeControls}
- * //   new: Object
- * //       range:    'new range'
- * //   previous: Object
- * //       range:    'previous range'
- * //   target: GlobeControls
- * //   type: "range-changed"
- *
- * viewer.controls.addEventListener(itowns.CONTROL_EVENTS.CAMERA_TARGET_CHANGED, (event) => console.log(event));
- * // or
- * viewer.controls.addEventListener('camera-target-changed', (event) => console.log(event));
- * // returns:
- * // Object {type: "orientation-changed", previous: Object, new: Object, target: GlobeControls}
- * //   new: Object
- * //       cameraTarget: Coordinates
- * //           crs:    'EPSG:4978'
- * //           values:    Float64Array(3)
- * //               0:    'new X value'
- * //               1:    'new Y value'
- * //               2:    'new Z value'
- * //   previous: Object
- * //       cameraTarget: Coordinates
- * //           crs:    'EPSG:4978'
- * //           values:    Float64Array(3)
- * //               0:    'previous X value'
- * //               1:    'previous Y value'
- * //               2:    'previous Z value'
- * //   target: GlobeControls
- * //   type: "camera-target-changed"
+ * @property PAN_CHANGED {string} Fires after camera pan
+ * @property ORIENTATION_CHANGED {string} Fires when camera's orientation change
+ * @property RANGE_CHANGED {string} Fires when camera's range to target change
+ * @property CAMERA_TARGET_CHANGED {string} Fires when camera's target change
  */
 
 export const CONTROL_EVENTS = {
