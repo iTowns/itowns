@@ -30,7 +30,8 @@ import BuilderEllipsoidTile from './Globe/BuilderEllipsoidTile';
  * // or
  * viewer.addEventListener('layer-added', (event) => console.log(event));
  * // returns:
- * // Object {type: "layer-added", target: GlobeView}
+ * // Object {type: "layer-added", layerId: "layerId", target: GlobeView}
+ * //   layerId: layerId,
  * //   target: viewer
  * //   type: 'layer-added'
  *
@@ -265,9 +266,13 @@ GlobeView.prototype.addLayer = function addLayer(layer) {
         }
         layer.update = updateLayeredMaterialNodeElevation;
     }
+    const layerId = layer.id;
     View.prototype.addLayer.call(this, layer, this.wgs84TileLayer);
 
-    this.dispatchEvent({ type: GLOBE_VIEW_EVENTS.LAYER_ADDED });
+    this.dispatchEvent({
+        type: GLOBE_VIEW_EVENTS.LAYER_ADDED,
+        layerId,
+    });
 
     return layer;
 };
