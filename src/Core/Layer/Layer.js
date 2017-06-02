@@ -1,5 +1,35 @@
 import { EventDispatcher } from 'three';
 
+/**
+ * Fires when layer sequence change (meaning when the order of the layer changes in the view)
+ * @event Layer#sequence-property-changed
+ * @property new {object}
+ * @property new.sequence {number} the new value of the layer sequence
+ * @property previous {object}
+ * @property previous.sequence {number} the previous value of the layer sequence
+ * @property target {Layer} dispatched on layer
+ * @property type {string} sequence-property-changed
+*/
+/**
+ * Fires when layer opacity change
+ * @event Layer#opacity-property-changed
+ * @property new {object}
+ * @property new.opacity {object} the new value of the layer opacity
+ * @property previous {object}
+ * @property previous.opacity {object} the previous value of the layer opacity
+ * @property target {Layer} dispatched on layer
+ * @property type {string} opacity-property-changed
+*/
+/**
+ * Fires when layer visibility change
+ * @event Layer#visible-property-changed
+ * @property new {object}
+ * @property new.visible {object} the new value of the layer visibility
+ * @property previous {object}
+ * @property previous.visible {object} the previous value of the layer visibility
+ * @property target {Layer} dispatched on layer
+ * @property type {string} visible-property-changed
+*/
 
 export const defineLayerProperty = function defineLayerProperty(layer, propertyName, defaultValue, onChange) {
     const existing = Object.getOwnPropertyDescriptor(layer, propertyName);
