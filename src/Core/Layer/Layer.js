@@ -115,12 +115,17 @@ Layer.prototype.constructor = Layer;
 
 const ImageryLayers = {
     moveLayerToIndex: function moveLayerToIndex(layer, newIndex, imageryLayers) {
-        var oldIndex = layer.sequence;
+        newIndex = Math.min(newIndex, imageryLayers.length - 1);
+        newIndex = Math.max(newIndex, 0);
+        const oldIndex = layer.sequence;
+
         for (const imagery of imageryLayers) {
-            if (imagery.sequence === newIndex) {
-                imagery.sequence = oldIndex;
-                layer.sequence = newIndex;
-                break;
+            if (imagery.id === layer.id) {
+                imagery.sequence = newIndex;
+            } else if (imagery.sequence > oldIndex && imagery.sequence <= newIndex) {
+                imagery.sequence--;
+            } else if (imagery.sequence >= newIndex && imagery.sequence < oldIndex) {
+                imagery.sequence++;
             }
         }
     },
