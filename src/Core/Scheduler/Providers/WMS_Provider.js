@@ -46,6 +46,10 @@ WMS_Provider.prototype.preprocessDataLayer = function preprocessDataLayer(layer)
 
     layer.extent = new Extent(layer.projection, layer.extent);
 
+    if (!layer.options.zoom) {
+        layer.options.zoom = { min: 0, max: 21 };
+    }
+
     layer.bbox_url = layer.bbox_url || 'swne';
     layer.format = layer.options.mimetype || 'image/png';
     layer.width = layer.heightMapWidth || 256;
