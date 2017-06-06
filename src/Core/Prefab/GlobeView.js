@@ -9,6 +9,7 @@ import { unpack1K } from '../../Renderer/MatteIdsMaterial';
 import { GeometryLayer } from '../Layer/Layer';
 
 import Atmosphere from './Globe/Atmosphere';
+import MiniGlobe from './Globe/MiniGlobe';
 import CoordStars from '../Geographic/CoordStars';
 import Clouds from './Globe/Clouds';
 
@@ -249,6 +250,21 @@ function GlobeView(viewerDiv, coordCarto, options) {
     window.addEventListener('resize', () => {
         this.controls.updateCamera(this.camera, this.viewerDiv.clientWidth, this.viewerDiv.clientHeight);
     }, false);
+
+    this.miniGlobeOptions = {
+        visible: true,
+        size: 120,
+        position: {
+            x: 10,
+            y: 10,
+        },
+    };
+
+    const miniGlobeView = MiniGlobe(this, wgs84TileLayer);
+
+    this.onAfterRender = () => {
+        miniGlobeView.render(this.mainLoop.gfxEngine.renderer);
+    };
 
     this.notifyChange(true);
 }
