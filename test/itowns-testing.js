@@ -132,6 +132,7 @@ global.renderer = {
     },
     setScissor: () => {},
     setScissorTest: () => {},
+    clearDepth: () => {},
 };
 
 global.itowns = itowns;

@@ -9,6 +9,7 @@ import { unpack1K } from '../../Renderer/MatteIdsMaterial';
 import { GeometryLayer } from '../Layer/Layer';
 
 import Atmosphere from './Globe/Atmosphere';
+import MiniGlobe from './Globe/MiniGlobe';
 import CoordStars from '../Geographic/CoordStars';
 import Clouds from './Globe/Clouds';
 
@@ -55,6 +56,13 @@ import BuilderEllipsoidTile from './Globe/BuilderEllipsoidTile';
  * @property type {string} layers-order-changed
  */
 
+/**
+ * Options to wtms protocol
+ * @typedef {Object} MiniGlobeOptions
+ * @property {boolean} visible vibility of rendering miniglobe
+ * @property {number} size size of rendering miniglobe
+ * @property {Object} position position {x, y} in screen of rendering miniglobe
+ */
 
 /**
  * Globe's EVENT
@@ -76,6 +84,7 @@ export const GLOBE_VIEW_EVENTS = {
  * The first parameter is the coordinates on wich the globe will be centered at the initialization.
  * The second one is the HTML div in wich the scene will be created.
  * @constructor
+ * @property {MiniGlobeOptions} miniGlobeOptions mini-globe's options
  * @example view = new GlobeView(viewer, positionOnGlobe);
  * // positionOnGlobe in latitude, longitude and altitude
  * @augments View
@@ -248,6 +257,21 @@ function GlobeView(viewerDiv, coordCarto, options) {
     window.addEventListener('resize', () => {
         this.controls.updateCamera(this.camera, this.viewerDiv.clientWidth, this.viewerDiv.clientHeight);
     }, false);
+
+    this.miniGlobeOptions = {
+        visible: true,
+        size: 120,
+        position: {
+            x: 10,
+            y: 10,
+        },
+    };
+
+    const miniGlobeView = MiniGlobe(this, wgs84TileLayer);
+
+    this.onAfterRender = () => {
+        miniGlobeView.render(this.mainLoop.gfxEngine.renderer);
+    };
 
     this.notifyChange(true);
 }
