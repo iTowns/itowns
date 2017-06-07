@@ -23,7 +23,7 @@ export { Fetcher };
 export { UNIT } from './Core/Geographic/Coordinates';
 export { processTiledGeometryNode, initTiledGeometryLayer } from './Process/TiledNodeProcessing';
 export { updateLayeredMaterialNodeImagery, updateLayeredMaterialNodeElevation } from './Process/LayeredMaterialNodeProcessing';
-export { GeometryLayer } from './Core/Layer/Layer';
+export { GeometryLayer, ImageryLayers } from './Core/Layer/Layer';
 export { process3dTilesNode, init3dTilesLayer, $3dTilesCulling, $3dTilesSubdivisionControl, pre3dTilesUpdate } from './Process/3dTilesProcessing';
 
 // This is temporary, until we're able to build a vendor.js
