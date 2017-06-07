@@ -22,6 +22,10 @@ emptyTexture.coords = { zoom: EMPTY_TEXTURE_ZOOM };
 var emptyAtlas = new THREE.Texture();
 emptyAtlas.coords = [{ zoom: EMPTY_TEXTURE_ZOOM }];
 
+// make sure we never release empty textures
+acquireTexture(emptyTexture);
+acquireTexture(emptyAtlas);
+
 var vector = new THREE.Vector3(0.0, 0.0, 0.0);
 var vector4 = new THREE.Vector4(0.0, 0.0, 0.0, 0.0);
 
@@ -37,6 +41,24 @@ export function unpack1K(color, factor) {
         UnpackDownscale / 256.0,
         1.0);
     return bitSh.dot(color) * factor;
+}
+
+export function acquireTexture(texture) {
+    texture._ownerCount = (texture._ownerCount || 0) + 1;
+    return texture;
+}
+
+export function releaseTexture(texture) {
+    texture._ownerCount--;
+    if (__DEBUG__) {
+        if (texture._ownerCount < 0) {
+            throw new Error('ref counting bug for texture', texture);
+        }
+    }
+    if (texture._ownerCount == 0) {
+        texture.dispose();
+        texture.image = undefined;
+    }
 }
 
 // Array not suported in IE
@@ -77,7 +99,7 @@ const LayeredMaterial = function LayeredMaterial(options) {
     this.offsetScale[l_COLOR] = {};
     this.offsetScale[l_ELEVATION] = [vector];
 
-    this.textures[l_ELEVATION] = [emptyTexture];
+    this.textures[l_ELEVATION] = [acquireTexture(emptyTexture)];
     var paramLayers = new Array(8);
     fillArray(paramLayers, vector);
 
@@ -124,8 +146,12 @@ const LayeredMaterial = function LayeredMaterial(options) {
     }
 
     const atlasTextures = new Array(8);
-    fillArray(atlasTextures, emptyAtlas);
+    for (let i = 0; i < 8; i++) {
+        atlasTextures[i] = acquireTexture(emptyAtlas);
+    }
     this.uniforms.atlasTextures = new THREE.Uniform(atlasTextures);
+
+    this._updateFragmentShader();
 };
 
 LayeredMaterial.prototype = Object.create(THREE.RawShaderMaterial.prototype);
@@ -181,15 +207,16 @@ LayeredMaterial.prototype._updateFragmentShader = function _updateFragmentShader
 LayeredMaterial.prototype.dispose = function dispose() {
     THREE.Material.prototype.dispose.call(this);
 
-    // TODO: WARNING  verify if textures to dispose aren't attached with ancestor
-    // TODO: dispose atlas textures as well
-    for (let l = 0; l < 1; l++) {
-        for (let i = 0, max = this.textures[l].length; i < max; i++) {
-            if (this.textures[l][i] instanceof THREE.Texture) {
-                this.textures[l][i].dispose();
-            }
-        }
+    // note: releasing texture deallocates that associates GL texture (deallocateTexture in three.js)
+    // So releasing an in-use texture cause unnecessary cpu/gpu usage but won't cause
+    // visible artifacts.
+    releaseTexture(this.textures[l_ELEVATION][0]);
+
+    // release texture atlas
+    for (const atlas of this.uniforms.atlasTextures.value) {
+        releaseTexture(atlas);
     }
+    this.uniforms.atlasTextures.value = [];
 };
 
 function _swapIndices(array, newIndices) {
@@ -240,15 +267,11 @@ LayeredMaterial.prototype.removeColorLayer = function removeColorLayer(layerId) 
     this.uniforms.paramLayers.value.splice(layerIndex, 1);
     this.uniforms.paramLayers.value.push(vector);
 
-    // Dispose Layers textures
-    // for (let i = offset, max = offset + texturesCount; i < max; i++) {
-    //     if (this.textures[l_COLOR][i] instanceof THREE.Texture) {
-    //         this.textures[l_COLOR][i].dispose();
-    //     }
-    // }
+    const atlas = this.uniforms.atlasTextures.value[layerIndex];
+    releaseTexture(atlas);
 
     this.uniforms.atlasTextures.value.splice(layerIndex, 1);
-    this.uniforms.atlasTextures.value.push(emptyAtlas);
+    this.uniforms.atlasTextures.value.push(acquireTexture(emptyAtlas));
 
     delete this.uniforms[`offsetScale_${layerId}`];
     delete this.offsetScale[l_COLOR][layerId];
@@ -267,7 +290,9 @@ LayeredMaterial.prototype.setTexturesLayer = function setTexturesLayer(textures,
         this.offsetScale[l_COLOR][layer.id][i] = atlas.uv[i];
     }
 
-    this.uniforms.atlasTextures.value[index] = atlas;
+
+    releaseTexture(this.uniforms.atlasTextures.value[index]);
+    this.uniforms.atlasTextures.value[index] = acquireTexture(atlas);
     this.loadedTexturesCount[l_COLOR] += textures.length;
 
     this._updateFragmentShader();
@@ -278,7 +303,8 @@ LayeredMaterial.prototype.setElevationTexture = function setElevationTexture(tex
         this.loadedTexturesCount[l_ELEVATION] += 1;
     }
 
-    this.textures[l_ELEVATION][0] = texture || emptyTexture;
+    releaseTexture(this.textures[l_ELEVATION][0]);
+    this.textures[l_ELEVATION][0] = acquireTexture(texture || emptyTexture);
     this.offsetScale[l_ELEVATION][0] = offsetScale || new THREE.Vector3(0.0, 0.0, 1.0);
 };
 

@@ -1,4 +1,4 @@
-import { l_ELEVATION, l_COLOR, EMPTY_TEXTURE_ZOOM } from '../Renderer/LayeredMaterial';
+import { l_ELEVATION, l_COLOR, EMPTY_TEXTURE_ZOOM, acquireTexture, releaseTexture } from '../Renderer/LayeredMaterial';
 import { chooseNextLevelToFetch } from '../Core/Layer/LayerUpdateStrategy';
 import LayerUpdateState from '../Core/Layer/LayerUpdateState';
 import { ImageryLayers } from '../Core/Layer/Layer';
@@ -46,7 +46,8 @@ function initNodeImageryTexturesFromParent(node, parent, layer) {
             }
         }
 
-        node.material.uniforms.atlasTextures.value[indexInNode] = atlas;
+        releaseTexture(node.material.uniforms.atlasTextures.value[indexInNode]);
+        node.material.uniforms.atlasTextures.value[indexInNode] = acquireTexture(atlas);
         node.material.loadedTexturesCount[l_COLOR] += coords.length;
     }
 }
