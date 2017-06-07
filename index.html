@@ -20,15 +20,39 @@ and open the template in the editor.
             }
             #menuDiv {position: absolute; top:0px; margin-left: 0px;}
 
+            .divScaleWidget {
+                border: 2px solid black;
+                border-top: none;
+                text-align: center;
+                display: block;
+                background-image: linear-gradient(rgba(200, 200, 200, 0.3), rgba(200, 200, 200, 0.3));
+                margin-bottom: 20px;
+                margin-right: 20px;
+                position: absolute;
+                width:200px;
+                height:18px;
+                color: black;
+                font-family: 'Open Sans',
+                sans-serif;
+                font-size: 16px;
+                right: 0;
+                bottom: 0;
+            }
+
+            .couponcode {
+                margin:100px;
+            }
 
         </style>
         <meta charset="UTF-8">
 
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="viewport" content="width=device-width, initial-divScaleWidget=1.0">
         <script src="node_modules/dat.gui/build/dat.gui.min.js"></script>
     </head>
     <body>
-        <div id="viewerDiv"></div>
+        <div id="viewerDiv">
+            <span class="divScaleWidget"> Scale </span>
+        </div>
         <script src="examples/GUI/GuiTools.js"></script>
         <script src="dist/itowns.js"></script>
         <script src="dist/debug.js"></script>
@@ -54,15 +78,39 @@ and open the template in the editor.
             menuGlobe.addGUI('RealisticLighting', false,
                 (newValue) => { globeView.setRealisticLightingOn(newValue); });
 
+            const divScaleWidget = document.querySelectorAll('.divScaleWidget')[0];
+
+            const fn = function fn() {
+                const pitch = 0.28;
+                const size = 200 * pitch;
+                const scaled = globeView.controls.getScale();
+                let mm = size / scaled / 1000;
+                mm = Math.floor(mm);
+                const digit = Math.pow(10, mm.toString().length - 1);
+                const mmr = Math.round(mm / digit) * digit;
+                const pix = Math.floor(mmr * scaled / pitch * 1000);
+                if (mmr > 1000) {
+                    divScaleWidget.innerHTML = `${Math.floor(mmr / 1000)} km`;
+                } else {
+                    divScaleWidget.innerHTML = `${mmr} m`;
+                }
+
+                divScaleWidget.style.width = `${pix}px`;
+            };
+
             globeView.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, () => {
                 // eslint-disable-next-line no-console
                 console.info('Globe initialized');
                 menuGlobe.addImageryLayersGUI(globeView.getLayers(l => l.type === 'color'));
                 menuGlobe.addElevationLayersGUI(globeView.getLayers(l => l.type === 'elevation'));
+                fn();
+            });
+
+            globeView.controls.addEventListener(itowns.CONTROL_EVENTS.RANGE_CHANGED, () => {
+                fn();
             });
 
             new debug.Debug(globeView, viewerDiv);
-
             window.globeView = globeView;
 </script>
     </body>

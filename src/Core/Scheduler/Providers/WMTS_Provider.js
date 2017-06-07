@@ -6,6 +6,7 @@
 
 import * as THREE from 'three';
 import OGCWebServiceHelper, { SIZE_TEXTURE_TILE } from './OGCWebServiceHelper';
+import Extent from '../../Geographic/Extent';
 
 function WMTS_Provider() {
 }
@@ -51,6 +52,9 @@ WMTS_Provider.prototype.preprocessDataLayer = function preprocessDataLayer(layer
                 min: minZoom,
                 max: maxZoom,
             };
+        }
+        if (layer.options.extent) {
+            layer.extent = new Extent('EPSG:4326', layer.options.extent);
         }
         layer.customUrl = newBaseUrl;
     }

@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-import View from '../View';
+import View, { VIEW_EVENTS } from '../View';
 import { COLOR_LAYERS_ORDER_CHANGED } from '../../Renderer/ColorLayersOrdering';
 import RendererConstant from '../../Renderer/RendererConstant';
 import GlobeControls from '../../Renderer/ThreeExtended/GlobeControls';
@@ -9,6 +9,7 @@ import { unpack1K } from '../../Renderer/MatteIdsMaterial';
 import { GeometryLayer } from '../Layer/Layer';
 
 import Atmosphere from './Globe/Atmosphere';
+import MiniGlobe from './Globe/MiniGlobe';
 import CoordStars from '../Geographic/CoordStars';
 import Clouds from './Globe/Clouds';
 
@@ -69,6 +70,7 @@ export const GLOBE_VIEW_EVENTS = {
     LAYER_ADDED: 'layer-added',
     LAYER_REMOVED: 'layer-removed',
     COLOR_LAYERS_ORDER_CHANGED,
+    UPDATED: VIEW_EVENTS.UPDATED,
 };
 
 /**
@@ -249,6 +251,21 @@ function GlobeView(viewerDiv, coordCarto, options) {
         this.controls.updateCamera(this.camera, this.viewerDiv.clientWidth, this.viewerDiv.clientHeight);
     }, false);
 
+    this.miniGlobeOptions = {
+        visible: true,
+        size: 120,
+        position: {
+            x: 10,
+            y: 10,
+        },
+    };
+
+    const miniGlobeView = MiniGlobe(this, wgs84TileLayer);
+
+    this.onAfterRender = () => {
+        miniGlobeView.render(this.mainLoop.gfxEngine.renderer);
+    };
+
     this.notifyChange(true);
 }
 
@@ -258,7 +275,7 @@ GlobeView.prototype.constructor = GlobeView;
 GlobeView.prototype.addLayer = function addLayer(layer) {
     if (layer.type == 'color') {
         const colorLayerCount = this.getLayers(l => l.type === 'color').length;
-        layer.sequence = colorLayerCount - 1;
+        layer.sequence = colorLayerCount;
         layer.update = updateLayeredMaterialNodeImagery;
     } else if (layer.type == 'elevation') {
         if (layer.protocol === 'wmts' && layer.options.tileMatrixSet !== 'WGS84G') {
