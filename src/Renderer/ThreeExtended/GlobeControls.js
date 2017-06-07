@@ -469,7 +469,7 @@ function GlobeControls(view, target, domElement, viewerDiv, radius, getPickingPo
         snapShotCamera.init(camera.camera3D);
         sizeRendering.width = width;
         sizeRendering.height = height;
-        sizeRendering.FOV = camera.fov;
+        sizeRendering.FOV = camera.camera3D.fov;
     };
 
     this.getAutoRotationAngle = function getAutoRotationAngle() {
