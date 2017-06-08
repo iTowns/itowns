@@ -104,7 +104,6 @@ BuilderEllipsoidTile.prototype.OBB = function OBBFn(params) {
     var halfMaxHeight = 0;
     var planeZ = new THREE.Quaternion();
     var qRotY = new THREE.Quaternion();
-    var vec = new THREE.Vector3();
     var tangentPlaneAtOrigin = new THREE.Plane(normal);
 
     planeZ.setFromUnitVectors(normal, new THREE.Vector3(0, 0, 1));
@@ -113,10 +112,9 @@ BuilderEllipsoidTile.prototype.OBB = function OBBFn(params) {
     qRotY.multiply(planeZ);
 
     for (var i = 0; i < cardinals.length; i++) {
-        const cardinal3D = cardinals[i].as('EPSG:4978').xyz().sub(params.center);
+        const cardinal3D = cardinals[i].as('EPSG:4978').xyz();
         cardin3DPlane.push(tangentPlaneAtOrigin.projectPoint(cardinal3D));
-        // compute height max
-        const d = cardin3DPlane[i].distanceTo(vec);
+        const d = cardin3DPlane[i].distanceTo(cardinal3D.sub(params.center));
         halfMaxHeight = Math.max(halfMaxHeight, d * 0.5);
         // compute tile's min/max
         cardin3DPlane[i].applyQuaternion(qRotY);
