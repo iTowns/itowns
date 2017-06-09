@@ -44,7 +44,9 @@ WMS_Provider.prototype.preprocessDataLayer = function preprocessDataLayer(layer)
         throw new Error('projection is required');
     }
 
-    layer.extent = new Extent(layer.projection, layer.extent);
+    if (!(layer.extent instanceof Extent)) {
+        layer.extent = new Extent(layer.projection, layer.extent);
+    }
 
     if (!layer.options.zoom) {
         layer.options.zoom = { min: 0, max: 21 };
