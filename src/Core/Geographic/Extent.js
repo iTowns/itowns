@@ -54,7 +54,7 @@ function Extent(crs, ...values) {
             this._values = new Float64Array(4);
             for (let i = 0; i < values.length; i++) {
                 for (let j = 0; j < 2; j++) {
-                    this._values[2 * i + j] = values[i][j];
+                    this._values[2 * i + j] = values[i]._values[j];
                 }
             }
         } else if (values.length == 1 && values[0].west != undefined) {
@@ -133,6 +133,7 @@ Extent.prototype.offsetToParent = function offsetToParent(other) {
     const scale =
         Math.abs(
             this.east(other._internalStorageUnit) - this.west(other._internalStorageUnit)) / dimension.x;
+
     return new THREE.Vector3(originX, originY, scale);
 };
 
@@ -197,7 +198,7 @@ Extent.prototype.dimensions = function dimensions(unit) {
  * @param {Coordinates} coord
  * @return {boolean}
  */
-Extent.prototype.isInside = function isInside(coord) {
+Extent.prototype.pointIsInside = function pointIsInside(coord) {
     const c = (this.crs() == coord.crs) ? coord : coord.as(this.crs());
 
     // TODO this ignores altitude

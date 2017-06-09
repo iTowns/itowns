@@ -105,6 +105,51 @@
                 }
             });
 
+            const contour = new itowns.THREE.Group();
+
+            const l = new itowns.GeometryLayer('outline');
+            l.type = 'geometry';
+            l.preUpdate = (context, layer, sources) => {
+                return contour.children || [];
+            };
+            l.update = (context, layer, line) => {
+                itowns.placeObjectOnGround(view.referenceCrs, view.tileLayer, view.tileLayer.level0Nodes, line);
+            };
+            itowns.View.prototype.addLayer.call(view, l);
+
+            for (const coords of [bbox.center()]) {
+                var group = new itowns.THREE.Group();
+
+                // red cylinder above the ground
+                var geometry = new itowns.THREE.BoxGeometry( 10, 10, 500);
+                var material = new itowns.THREE.MeshBasicMaterial( {color: 0xff0000} );
+                var cylinder = new itowns.THREE.Mesh( geometry, material );
+                cylinder.frustumCulled = false;
+                cylinder.position.z = 250;
+                cylinder.updateMatrix();
+                cylinder.layers.set(l.threejsLayer);
+                group.add(cylinder);
+
+                // white cylinder under the ground
+                material = new itowns.THREE.MeshBasicMaterial( {color: 0xffffff} );
+                cylinder = new itowns.THREE.Mesh( geometry, material );
+                cylinder.position.z = -250;
+                cylinder.frustumCulled = false;
+                cylinder.layers.set(l.threejsLayer);
+                cylinder.updateMatrix();
+                group.add(cylinder);
+
+
+                const p = coords.xyz();
+                group.position.copy(p);
+                group.updateMatrix();
+
+                group.updateMatrixWorld(true);
+                contour.add(group);
+            }
+            view.scene.add(contour);
+
+
             new debug.Debug(view, viewerDiv);
         </script>
     </body>

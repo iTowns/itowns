@@ -26,6 +26,9 @@ export { updateLayeredMaterialNodeImagery, updateLayeredMaterialNodeElevation } 
 export { GeometryLayer, ImageryLayers } from './Core/Layer/Layer';
 export { process3dTilesNode, init3dTilesLayer, $3dTilesCulling, $3dTilesSubdivisionControl, pre3dTilesUpdate } from './Process/3dTilesProcessing';
 
+export { default as placeObjectOnGround } from './Process/PlaceOnGroundProcessing';
+export { default as BasicMaterial } from './Renderer/BasicMaterial';
+
 // This is temporary, until we're able to build a vendor.js
 // containing our dependencies.
 export { THREE };
