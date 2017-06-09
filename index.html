@@ -39,8 +39,8 @@ and open the template in the editor.
 
             // iTowns namespace defined here
             const viewerDiv = document.getElementById('viewerDiv');
-            const menuGlobe = new GuiTools('menuDiv');
             const globeView = new itowns.GlobeView(viewerDiv, positionOnGlobe);
+            const menuGlobe = new GuiTools('menuDiv', globeView);
             menuGlobe.view = globeView;
 
             itowns.Fetcher.json('examples/layers/JSONLayers/Ortho.json').then(result => globeView.addLayer(result));
