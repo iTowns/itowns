@@ -68,6 +68,32 @@ function initNodeElevationTextureFromParent(node, parent, layer) {
     }
 }
 
+function getIndiceWithPitch(i, pitch, w) {
+    // Return corresponding indice in parent tile using pitch
+    const currentX = (i % w) / w;  // normalized
+    const currentY = Math.floor(i / w) / w; // normalized
+    const newX = pitch.x + currentX * pitch.z;
+    const newY = pitch.y + currentY * pitch.z;
+    const newIndice = Math.floor(newY * w) * w + Math.floor(newX * w);
+    return newIndice;
+}
+
+function insertSignificantValuesFromParent(texture, node, parent, layer) {
+    if (parent.material && parent.material.getElevationLayerLevel() > EMPTY_TEXTURE_ZOOM) {
+        const coords = node.getCoordsForLayer(layer);
+        const textureParent = parent.material.textures[l_ELEVATION][0];
+        const pitch = coords[0].offsetToParent(parent.material.textures[l_ELEVATION][0].coords);
+        const tData = texture.image.data;
+        const l = tData.length;
+
+        for (var i = 0; i < l; ++i) {
+            if (tData[i] === layer.noDataValue) {
+                tData[i] = textureParent.image.data[getIndiceWithPitch(i, pitch, 256)];
+            }
+        }
+    }
+}
+
 function nodeCommandQueuePriorityFunction(node) {
     // We know that 'node' is visible because commands can only be
     // issued for visible nodes.
@@ -90,6 +116,16 @@ function refinementCommandCancellationFn(cmd) {
     }
 
     return !cmd.requester.isDisplayed();
+}
+
+function checkNodeElevationTextureValidity(texture, noDataValue) {
+    // We check if the elevation texture has some significant values through corners
+    const tData = texture.image.data;
+    const l = tData.length;
+    return tData[0] > noDataValue &&
+           tData[l - 1] > noDataValue &&
+           tData[Math.sqrt(l) - 1] > noDataValue &&
+           tData[l - Math.sqrt(l)] > noDataValue;
 }
 
 export function updateLayeredMaterialNodeImagery(context, layer, node) {
@@ -287,6 +323,14 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, force) 
                 terrain.texture.flipY = false;
                 terrain.texture.needsUpdate = true;
             }
+
+            if (terrain.texture.image.data && !checkNodeElevationTextureValidity(terrain.texture, layer.noDataValue)) {
+                // Quick check to avoid using elevation texture with no data value
+                // If we have no data values, we use value from the parent tile
+                // We should later implement multi elevation layer to choose the one to use at each level
+                insertSignificantValuesFromParent(terrain.texture, node, node.parent, layer);
+            }
+
             node.setTextureElevation(terrain);
         },
         (err) => {

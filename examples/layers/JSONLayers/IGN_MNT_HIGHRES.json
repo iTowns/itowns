@@ -7,7 +7,7 @@
 	"updateStrategy": {
 		"type": 1,
 		"options": {
-			"groups": [3, 7, 11, 14]
+			"groups": [11, 14]
 		}
 	},
 	"options": {
@@ -19,36 +19,6 @@
 		"mimetype": "image/x-bil;bits=32",
 		"tileMatrixSet": "WGS84G",
 		"tileMatrixSetLimits": {
-			"6": {
-				"minTileRow": 13,
-				"maxTileRow": 36,
-				"minTileCol": 62,
-				"maxTileCol": 80
-			},
-			"7": {
-				"minTileRow": 27,
-				"maxTileRow": 79,
-				"minTileCol": 84,
-				"maxTileCol": 167
-			},
-			"8": {
-				"minTileRow": 55,
-				"maxTileRow": 146,
-				"minTileCol": 248,
-				"maxTileCol": 320
-			},
-			"9": {
-				"minTileRow": 110,
-				"maxTileRow": 292,
-				"minTileCol": 497,
-				"maxTileCol": 640
-			},
-			"10": {
-				"minTileRow": 221,
-				"maxTileRow": 585,
-				"minTileCol": 994,
-				"maxTileCol": 1281
-			},
 			"11": {
 				"minTileRow": 442,
 				"maxTileRow": 1267,
