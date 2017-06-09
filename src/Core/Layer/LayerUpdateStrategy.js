@@ -10,7 +10,10 @@ export const STRATEGY_GROUP = 1;
 export const STRATEGY_PROGRESSIVE = 2;
 export const STRATEGY_DICHOTOMY = 3;
 
-function _minimizeNetworkTraffic(nodeLevel /* , currentLevel, options */) {
+function _minimizeNetworkTraffic(node, nodeLevel, currentLevel) {
+    if (node.pendingSubdivision) {
+        return currentLevel;
+    }
     return nodeLevel;
 }
 
@@ -39,7 +42,7 @@ function _dichotomy(nodeLevel, currentLevel /* , options */) {
         Math.ceil((currentLevel + nodeLevel) / 2));
 }
 
-export function chooseNextLevelToFetch(strategy, nodeLevel, currentLevel, options) {
+export function chooseNextLevelToFetch(strategy, node, nodeLevel, currentLevel, options) {
     switch (strategy) {
         case STRATEGY_GROUP:
             return _group(nodeLevel, currentLevel, options);
@@ -50,6 +53,6 @@ export function chooseNextLevelToFetch(strategy, nodeLevel, currentLevel, option
         // default strategy
         case STRATEGY_MIN_NETWORK_TRAFFIC:
         default:
-            return _minimizeNetworkTraffic(nodeLevel, currentLevel, options);
+            return _minimizeNetworkTraffic(node, nodeLevel, currentLevel, options);
     }
 }

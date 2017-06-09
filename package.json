@@ -7,7 +7,8 @@
     "lint": "eslint \"src/**/*.js\" \"test/**/*.js\" \"examples/**/*.js\"",
     "doc": "jsdoc src/Core/View.js src/Core/Prefab/GlobeView.js src/Core/Layer/Layer.js src/Renderer/ColorLayersOrdering.js src/Renderer/ThreeExtended/GlobeControls.js src/Core/Geographic/Coordinates.js",
     "doclint": "npm run doc -- -t templates/silent",
-    "test": "npm run lint && npm run build && npm run doclint",
+    "test": "npm run lint && npm run build && npm run test-examples",
+    "test-examples": "mocha test/globe_test.js && mocha test/planar_test.js && mocha test/postprocessing_test.js && mocha test/externalscene_test.js",
     "build": "webpack -p",
     "start": "cross-env NODE_ENV=development webpack-dev-server -d --inline --hot",
     "prepublish": "npm run build && cross-env BABEL_DISABLE_CACHE=1 babel src --out-dir lib"
@@ -55,7 +56,10 @@
     "eslint-plugin-import": "^2.2.0",
     "imports-loader": "^0.7.1",
     "jsdoc": "^3.4.3",
+    "mocha": "^3.4.2",
+    "node-fetch": "^1.7.0",
     "raw-loader": "^0.5.1",
+    "require-from-string": "^1.2.1",
     "webpack": "^2.6.1",
     "webpack-dev-server": "^2.4.5"
   }
