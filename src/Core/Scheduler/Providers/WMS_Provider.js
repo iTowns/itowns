@@ -37,17 +37,18 @@ WMS_Provider.prototype.preprocessDataLayer = function preprocessDataLayer(layer)
     if (!layer.name) {
         throw new Error('layerName is required.');
     }
-    if (!layer.bbox) {
-        throw new Error('bbox is required');
+    if (!layer.extent) {
+        throw new Error('extent is required');
     }
     if (!layer.projection) {
         throw new Error('projection is required');
     }
 
-    layer.extent = new Extent(
-        layer.projection,
-        layer.bbox[0], layer.bbox[1],
-        layer.bbox[2], layer.bbox[3]);
+    layer.extent = new Extent(layer.projection, layer.extent);
+
+    if (!layer.options.zoom) {
+        layer.options.zoom = { min: 0, max: 21 };
+    }
 
     layer.bbox_url = layer.bbox_url || 'swne';
     layer.format = layer.options.mimetype || 'image/png';
@@ -69,7 +70,7 @@ WMS_Provider.prototype.preprocessDataLayer = function preprocessDataLayer(layer)
 };
 
 WMS_Provider.prototype.tileInsideLimit = function tileInsideLimit(tile, layer) {
-    return layer.extent.intersect(tile.extent);
+    return tile.level >= layer.options.zoom.min && tile.level <= layer.options.zoom.max && layer.extent.intersect(tile.extent);
 };
 
 WMS_Provider.prototype.getColorTexture = function getColorTexture(tile, layer) {

@@ -17,6 +17,14 @@ dat.GUI.prototype.removeFolder = function removeFolder(name) {
     this.onResize();
 };
 
+dat.GUI.prototype.hideFolder = function hideFolder(name, value) {
+    var folder = this.__folders[name];
+    if (!folder) {
+        return;
+    }
+    folder.__ul.hidden = value;
+};
+
 function GuiTools(domId, view) {
     this.gui = new dat.GUI({ autoPlace: false });
     this.gui.domElement.id = domId;
@@ -87,3 +95,6 @@ GuiTools.prototype.addGUI = function addGUI(name, value, callback) {
     this.gui.add(this, name).onChange(callback);
 };
 
+GuiTools.prototype.hideFolder = function hideFolder(nameLayer, value) {
+    this.colorGui.hideFolder(nameLayer, value);
+};

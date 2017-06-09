@@ -125,6 +125,7 @@ function _preprocessLayer(view, layer, provider) {
  * Options to wms protocol
  * @typedef {Object} OptionsWms
  * @property {Attribution} attribution The intellectual property rights for the layer
+ * @property {Object} extent Geographic extent of the service
  * @property {string} name
  * @property {string} mimetype
  */
