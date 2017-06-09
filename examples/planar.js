@@ -28,7 +28,7 @@ view.addLayer({
     name: 'Ortho2009_vue_ensemble_16cm_CC46',
     projection: 'EPSG:3946',
     transparent: false,
-    bbox: [extent.west(), extent.east(), extent.south(), extent.north()],
+    extent,
     bbox_url: 'wsen',
     updateStrategy: {
         type: 0,
@@ -50,7 +50,7 @@ view.addLayer({
     style: '',
     projection: 'EPSG:3946',
     transparent: false,
-    bbox: [extent.west(), extent.east(), extent.south(), extent.north()],
+    extent,
     bbox_url: 'wsen',
     heightMapWidth: 256,
     options: {
