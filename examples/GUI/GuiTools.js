@@ -4,7 +4,7 @@
  * Description: Classe pour créer un menu.
  */
 
- /* global dat,viewerDiv */
+ /* global dat,viewerDiv, itowns */
 
 dat.GUI.prototype.removeFolder = function removeFolder(name) {
     var folder = this.__folders[name];
@@ -17,12 +17,23 @@ dat.GUI.prototype.removeFolder = function removeFolder(name) {
     this.onResize();
 };
 
-function GuiTools(domId) {
+function GuiTools(domId, view) {
     this.gui = new dat.GUI({ autoPlace: false });
     this.gui.domElement.id = domId;
     viewerDiv.appendChild(this.gui.domElement);
     this.colorGui = this.gui.addFolder('Color Layers');
     this.elevationGui = this.gui.addFolder('Elevation Layers');
+
+    if (view) {
+        view.addEventListener('layers-order-changed', () => {
+            for (const layer of view.getLayers(l => l.type === 'color')) {
+                this.removeLayersGUI(layer.id);
+            }
+
+            const colorLayers = view.getLayers(l => l.type === 'color');
+            this.addImageryLayersGUI(colorLayers);
+        });
+    }
 }
 
 GuiTools.prototype.addImageryLayerGUI = function addImageryLayerGUI(layer) {
@@ -49,8 +60,10 @@ GuiTools.prototype.addElevationLayerGUI = function addElevationLayerGUI(layer) {
 };
 
 GuiTools.prototype.addImageryLayersGUI = function addImageryLayersGUI(layers) {
-    for (var i = 0; i < layers.length; i++) {
-        this.addImageryLayerGUI(layers[i]);
+    const seq = itowns.ImageryLayers.getColorLayersIdOrderedBySequence(layers);
+
+    for (const layer of layers.sort((a, b) => seq.indexOf(a.id) < seq.indexOf(b.id))) {
+        this.addImageryLayerGUI(layer);
     }
 };
 
@@ -66,9 +79,7 @@ GuiTools.prototype.addLayersGUI = function addLayersGUI(imageryLayers, elevation
 };
 
 GuiTools.prototype.removeLayersGUI = function removeLayersGUI(nameLayer) {
-    if (this.api.removeImageryLayer(nameLayer)) {
-        this.colorGui.removeFolder(nameLayer);
-    }
+    this.colorGui.removeFolder(nameLayer);
 };
 
 GuiTools.prototype.addGUI = function addGUI(name, value, callback) {

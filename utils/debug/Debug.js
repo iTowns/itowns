@@ -4,54 +4,31 @@ import Coordinates from '../../src/Core/Geographic/Coordinates';
 import OBBHelper from './OBBHelper';
 import View from '../../src/Core/View';
 
-/**
- * Create a debug instance attached to an itowns instance
- *
- * @Constructor
- * @param {Scene} scene the itowns Scene
- * @return {Debug} a debug instance
- */
-// disabling eslint errors as it is the exported constructor
-function Debug(view, viewerDiv) {
-    // CHARTS
-    // create charts div
-    const chartDiv = document.createElement('div');
-    chartDiv.id = 'chart-div';
-    chartDiv.style = 'position: absolute; bottom: 0; left: 0; width: 100vw; height: 20rem; background-color: white; display: none';
 
-    viewerDiv.appendChild(chartDiv);
+function createChartContainer(chartDiv, width, left, chartId) {
+    const div = document.createElement('div');
+    div.style = `position: absolute; bottom: 0; left: ${left}vw; width: ${width}vw; height: 20rem; background-color: white;`;
+    chartDiv.appendChild(div);
 
-    const leftChart = document.createElement('div');
-    leftChart.id = 'chart-div-left';
-    leftChart.style = 'position: absolute; bottom: 0; left: 0; width: 50vw; height: 20rem; background-color: white; display: flex';
-    chartDiv.appendChild(leftChart);
-    const rightChart = document.createElement('div');
-    rightChart.id = 'chart-div-right';
-    rightChart.style = 'position: absolute; bottom: 0; left: 50vw; width: 50vw; height: 20rem; background-color: white; display: flex';
-    chartDiv.appendChild(rightChart);
+    const chartCanvas = document.createElement('canvas');
+    chartCanvas.heigth = '20rem';
+    chartCanvas.width = `${width}vw`;
+    chartCanvas.id = chartId;
+    div.appendChild(chartCanvas);
+}
 
-    // line graph for nb elements
-    const viewChartCanvas = document.createElement('canvas');
-    viewChartCanvas.heigth = '20rem';
-    viewChartCanvas.width = '50vw';
-    viewChartCanvas.id = 'nb-objects';
-    leftChart.appendChild(viewChartCanvas);
+function ObjectsChart(chartDiv, width, left) {
+    createChartContainer(chartDiv, width, left, 'nb-objects');
 
-    // bar graph for nb visible elements
-    const nbVisibleCanvas = document.createElement('canvas');
-    nbVisibleCanvas.heigth = '20rem';
-    nbVisibleCanvas.width = '50vw';
-    nbVisibleCanvas.id = 'nb-visible';
-    rightChart.appendChild(nbVisibleCanvas);
-
+    let lastValidCompareIndex = 0;
     const timestamp = Date.now();
     const viewLevelStartDataset = { label: 'Update 1st level', data: [{ x: 0, y: 0 }] };
     const viewUpdateDurationDataset = { label: 'Update duration (ms)', data: [{ x: 0, y: 0 }], borderColor: 'rgba(75,192,192,1)' };
-    const viewInfoChartLabel = ['0s'];
+    const label = ['0s'];
     const nbObjectsChart = new Chart('nb-objects', {
         type: 'line',
         data: {
-            labels: viewInfoChartLabel,
+            labels: label,
             datasets: [viewLevelStartDataset, viewUpdateDurationDataset],
         },
         options: {
@@ -66,6 +43,42 @@ function Debug(view, viewerDiv) {
             },
         },
     });
+
+    this.update = (displayed, updateStartLevel, updateDuration) => {
+        // update line graph
+        // update time
+        const limit = 60;
+        const timeInS = Math.floor((Date.now() - timestamp) / 1000);
+        const lbl = `${timeInS}s`;
+        const identical = (lastValidCompareIndex > 0 && label[lastValidCompareIndex] == lbl);
+        if (identical) {
+            label.push('');
+        } else {
+            label.push(lbl);
+            lastValidCompareIndex = label.length - 1;
+        }
+
+        if (label.length > limit) {
+            label.shift();
+            lastValidCompareIndex--;
+        }
+
+        viewLevelStartDataset.data.push({ x: 0, y: updateStartLevel });
+        viewUpdateDurationDataset.data.push({ x: 0, y: updateDuration });
+        if (viewLevelStartDataset.data.length > limit) {
+            viewLevelStartDataset.data.shift();
+            viewUpdateDurationDataset.data.shift();
+        }
+
+        if (displayed) {
+            nbObjectsChart.update();
+        }
+    };
+}
+
+function LevelsChart(chartDiv, width, left) {
+    createChartContainer(chartDiv, width, left, 'nb-visible');
+
     const nbVisibleLabels = [];
     const nbVisibleData = [];
     const nbDisplayedData = [];
@@ -98,7 +111,7 @@ function Debug(view, viewerDiv) {
         },
     });
 
-    function debugChartUpdate(updateStartLevel, updateDuration) {
+    this.update = (displayed, view) => {
         function countVisible(node, stats) {
             if (!node || !node.visible) {
                 return;
@@ -133,36 +146,100 @@ function Debug(view, viewerDiv) {
             }
         }
 
+        if (displayed) {
+            nbVisibleChart.update();
+        }
+    };
+}
 
-        // update line graph
-        // update time
+function ThreeStats(chartDiv, width, left) {
+    createChartContainer(chartDiv, width, left, 'three-info');
+
+    let lastValidCompareIndex = -1;
+    const timestamp = Date.now();
+    const textureDataset = { label: 'texture count', data: [{ x: 0, y: 0 }] };
+    const geometryDataset = { label: 'geometry count', data: [{ x: 0, y: 0 }], borderColor: 'rgba(75,192,192,1)' };
+    const label = ['0s'];
+    const chart = new Chart('three-info', {
+        type: 'line',
+        data: {
+            labels: label,
+            datasets: [textureDataset, geometryDataset],
+        },
+        options: {
+            animation: { duration: 10 },
+            scales: {
+                yAxes: [{
+                    display: true,
+                    ticks: {
+                        suggestedMin: 0, // minimum will be 0, unless there is a lower value.
+                    },
+                }],
+            },
+        },
+    });
+
+    this.update = (displayed, view) => {
         const limit = 60;
         const timeInS = Math.floor((Date.now() - timestamp) / 1000);
         const lbl = `${timeInS}s`;
-        const identical = (viewInfoChartLabel.lastValidCompareIndex > 0 && viewInfoChartLabel[viewInfoChartLabel.lastValidCompareIndex] == lbl);
+
+        const identical = (lastValidCompareIndex > 0 && label[lastValidCompareIndex] == lbl);
         if (identical) {
-            viewInfoChartLabel.push('');
+            label.push('');
         } else {
-            viewInfoChartLabel.push(lbl);
-            viewInfoChartLabel.lastValidCompareIndex = viewInfoChartLabel.length - 1;
+            label.push(lbl);
+            lastValidCompareIndex = label.length - 1;
         }
 
-        if (viewInfoChartLabel.length > limit) {
-            viewInfoChartLabel.shift();
-            viewInfoChartLabel.lastValidCompareIndex--;
+        if (label.length > limit) {
+            label.shift();
+            lastValidCompareIndex--;
         }
 
-        viewLevelStartDataset.data.push({ x: timeInS, y: updateStartLevel });
-        viewUpdateDurationDataset.data.push({ x: timeInS, y: updateDuration });
-        if (viewLevelStartDataset.data.length > limit) {
-            viewLevelStartDataset.data.shift();
-            viewUpdateDurationDataset.data.shift();
+        const memory = view.mainLoop.gfxEngine.renderer.info.memory;
+        textureDataset.data.push({ x: timeInS, y: memory.textures });
+        geometryDataset.data.push({ x: timeInS, y: memory.geometries });
+        if (textureDataset.data.length > limit) {
+            textureDataset.data.shift();
+            geometryDataset.data.shift();
         }
 
-        if (chartDiv.style.display != 'none') {
-            nbObjectsChart.update();
-            nbVisibleChart.update();
+        if (displayed) {
+            chart.update();
         }
+    };
+}
+
+
+/**
+ * Create a debug instance attached to an itowns instance
+ *
+ * @Constructor
+ * @param {Scene} scene the itowns Scene
+ * @return {Debug} a debug instance
+ */
+
+// disabling eslint errors as it is the exported constructor
+function Debug(view, viewerDiv) {
+    // CHARTS
+    // create charts div
+    const chartDiv = document.createElement('div');
+    chartDiv.id = 'chart-div';
+    chartDiv.style = 'position: absolute; bottom: 0; left: 0; width: 100vw; height: 20rem; background-color: white; display: none';
+
+    viewerDiv.appendChild(chartDiv);
+
+    const objectChart = new ObjectsChart(chartDiv, 33, 0);
+    const levelsChart = new LevelsChart(chartDiv, 33, 33);
+    const threeStats = new ThreeStats(chartDiv, 33, 66);
+
+    function debugChartUpdate(updateStartLevel, updateDuration) {
+        const displayed = chartDiv.style.display != 'none';
+
+        objectChart.update(displayed, updateStartLevel, updateDuration);
+        levelsChart.update(displayed, view);
+        threeStats.update(displayed, view);
     }
 
     // DEBUG CONTROLS
