@@ -45,8 +45,6 @@ function BasicMaterial(color) {
 
     this.uniforms = {
         diffuseColor: { value: color || new THREE.Color() },
-        useRTC: { value: true },
-        mVPMatRTC: { value: new THREE.Matrix4() },
         distanceFog: { value: 1000000000.0 },
         uuid: { value: 0 },
         debug: { value: false },
@@ -58,20 +56,8 @@ function BasicMaterial(color) {
 BasicMaterial.prototype = Object.create(THREE.RawShaderMaterial.prototype);
 BasicMaterial.prototype.constructor = BasicMaterial;
 
-BasicMaterial.prototype.enableRTC = function enableRTC(enable) {
-    this.uniforms.useRTC.value = enable;
-};
-
 BasicMaterial.prototype.setDebug = function setDebug(v) {
     this.uniforms.debug.value = v;
-};
-
-BasicMaterial.prototype.setMatrixRTC = function setMatrixRTC(rtc) {
-    this.uniforms.mVPMatRTC.value = rtc;
-};
-
-BasicMaterial.prototype.getMatrixRTC = function getMatrixRTC() {
-    return this.uniforms.mVPMatRTC.value;
 };
 
 BasicMaterial.prototype.setUuid = function setUuid(uuid) {

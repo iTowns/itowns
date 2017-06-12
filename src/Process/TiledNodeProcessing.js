@@ -1,4 +1,3 @@
-import * as THREE from 'three';
 import Extent from '../Core/Geographic/Extent';
 import { CancelledCommandException } from '../Core/Scheduler/Scheduler';
 import RendererConstant from '../Renderer/RendererConstant';
@@ -163,11 +162,6 @@ export function processTiledGeometryNode(cullingTest, subdivisionTest, initNewNo
 
             if (node.material.visible) {
                 // update uniforms
-                const positionWorld = new THREE.Vector3();
-                positionWorld.setFromMatrixPosition(node.matrixWorld);
-                node.setMatrixRTC(
-                    context.engine.getRTCMatrixFromCenter(
-                        positionWorld, context.camera));
                 node.setFog(1000000000);
 
                 if (!requestChildrenUpdate) {

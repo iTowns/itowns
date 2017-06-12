@@ -5,8 +5,6 @@ attribute vec3      normal;
 uniform mat4        projectionMatrix;
 uniform mat4        modelViewMatrix;
 
-uniform mat4       mVPMatRTC;
-uniform bool       useRTC;
 varying float      light;
 
 // IE error : Initializer for const variable must initialize to a constant value
@@ -16,14 +14,7 @@ void main()
 {
     vec3 dir =  normalize(vec3(1.0, 1.0, 0.5));
 
-    if(useRTC)
-    {
-        gl_Position = mVPMatRTC * vec4(position, 1.0);
-    }
-    else
-    {
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-    }
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
 
     light = max(0.15 ,dot(dir,normal));
 
