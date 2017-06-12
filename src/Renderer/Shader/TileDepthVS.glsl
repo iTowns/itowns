@@ -2,10 +2,12 @@ attribute vec2      uv_wgs84;
 attribute vec3      position;
 attribute vec3      normal;
 
+uniform mat4        projectionMatrix;
+uniform mat4        modelViewMatrix;
+
 uniform sampler2D   dTextures_00[1];
 uniform vec3        offsetScale_L00[1];
 uniform int         texturesCount;
-uniform mat4        mVPMatRTC;
 
 void main() {
 
@@ -22,7 +24,7 @@ void main() {
             vPosition = vec4(position, 1.0);
         }
 
-        gl_Position = mVPMatRTC * vPosition;
+        gl_Position = projectionMatrix * modelViewMatrix * vPosition;
 
         #ifdef USE_LOGDEPTHBUF
 

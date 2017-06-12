@@ -37,15 +37,6 @@ PanoramicMesh.prototype.setMaterial = function setMaterial(mat) {
     this.material = mat;
 };
 
-PanoramicMesh.prototype.setMatrixRTC = function setMatrixRTC(rtc) {
-    //  console.log(this.material);
-    this.material.uniforms.mVPMatRTC.value = rtc;
-};
-
-PanoramicMesh.prototype.enableRTC = function enableRTC() {
-    //  this.material.enableRTC(enable);
-};
-
 PanoramicMesh.prototype.setFog = function setFog() {
     //  this.material.setFogDistance(fog);
 };
