@@ -93,11 +93,6 @@ TileMesh.prototype.isDisplayed = function isDisplayed() {
     return this.material.visible;
 };
 
-
-TileMesh.prototype.enableRTC = function enableRTC(enable) {
-    this.materials[RendererConstant.FINAL].enableRTC(enable);
-};
-
 // switch material in function of state
 TileMesh.prototype.changeState = function changeState(state) {
     if (state !== RendererConstant.FINAL) {
@@ -109,12 +104,6 @@ TileMesh.prototype.changeState = function changeState(state) {
 
 TileMesh.prototype.setFog = function setFog(fog) {
     this.materials[RendererConstant.FINAL].setFogDistance(fog);
-};
-
-TileMesh.prototype.setMatrixRTC = function setMatrixRTC(rtc) {
-    for (const material of this.materials) {
-        material.setMatrixRTC(rtc);
-    }
 };
 
 TileMesh.prototype.setDebug = function setDebug(enable) {

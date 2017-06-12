@@ -10,8 +10,6 @@ attribute vec3      normal;
 uniform sampler2D   dTextures_00[1];
 uniform vec3        offsetScale_L00[1];
 uniform int         loadedTexturesCount[8];
-uniform bool        useRTC;
-uniform mat4        mVPMatRTC;
 
 uniform mat4        projectionMatrix;
 uniform mat4        modelViewMatrix;
@@ -73,9 +71,7 @@ void main() {
             vPosition = vec4( position ,1.0 );
         }
 
-        mat4 projModelViewMatrix = useRTC ? mVPMatRTC : projectionMatrix * modelViewMatrix;
-
-        gl_Position = projModelViewMatrix * vPosition;
+        gl_Position = projectionMatrix * modelViewMatrix * vPosition;
 
         #ifdef USE_LOGDEPTHBUF
 

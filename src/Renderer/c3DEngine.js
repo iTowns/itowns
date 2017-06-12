@@ -81,7 +81,7 @@ c3DEngine.prototype.getRenderer = function getRenderer() {
 
 c3DEngine.prototype.renderViewTobuffer = function renderViewTobuffer(view, buffer, x, y, width, height) {
     // TODO Deallocate render texture
-    const current = this.renderer.getCurrentRenderTarget();
+    const current = this.renderer.getRenderTarget();
     this.renderer.setRenderTarget(buffer);
     this.renderer.setViewport(0, 0, buffer.width, buffer.height);
     this.renderer.setScissor(x, y, width, height);
@@ -116,34 +116,6 @@ c3DEngine.prototype.bufferToImage = function bufferToImage(pixelBuffer, width, h
     image.src = canvas.toDataURL();
 
     return image;
-};
-
-c3DEngine.prototype.getRTCMatrixFromCenter = (function getRTCMatrixFromCenterFn() {
-    const position = new THREE.Vector3();
-    const matrix = new THREE.Matrix4();
-    return function getRTCMatrixFromCenter(center, camera) {
-        position.subVectors(camera.camera3D.position, center);
-        matrix.copy(camera.camera3D.matrixWorld);
-        matrix.setPosition(position);
-        matrix.getInverse(matrix);
-        return new THREE.Matrix4().multiplyMatrices(camera.camera3D.projectionMatrix, matrix);
-    };
-}());
-
-c3DEngine.prototype.getRTCMatrixFromNode = function getRTCMatrixFromNode(node, camera) {
-    // TODO: Simplify this function like getRTCMatrixFromCenter()
-    var camera3D = camera.camera3D;
-    var positionWorld = new THREE.Vector3().setFromMatrixPosition(node.matrixWorld);
-    var position = new THREE.Vector3().subVectors(camera3D.position, positionWorld);
-    var quaternion = new THREE.Quaternion().copy(camera3D.quaternion);
-    var matrix = new THREE.Matrix4().compose(position, quaternion, new THREE.Vector3(1, 1, 1));
-    var matrixInv = new THREE.Matrix4().getInverse(matrix);
-    var model = node.matrixWorld.clone().setPosition(new THREE.Vector3());
-    matrixInv.multiply(model);
-
-    var centerEye = new THREE.Vector4().applyMatrix4(matrixInv);
-    var mvc = matrixInv.setPosition(centerEye);
-    return new THREE.Matrix4().multiplyMatrices(camera3D.projectionMatrix, mvc);
 };
 
 c3DEngine.prototype.getUniqueThreejsLayer = function getUniqueThreejsLayer() {

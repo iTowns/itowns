@@ -86,7 +86,6 @@ $3dTiles_Provider.prototype.b3dmToMesh = function b3dmToMesh(data, layer) {
         const init = function f_init(mesh) {
             if (layer.overrideMaterials) {
                 mesh.material = new BasicMaterial();
-                mesh.material.uniforms.useRTC.value = false;
             }
         };
         result.scene.applyMatrix(layer.glTFRotation);

@@ -40,8 +40,4 @@ const MatteIdsMaterial = function MatteIdsMaterial(otherMaterial) {
 MatteIdsMaterial.prototype = Object.create(BasicMaterial.prototype);
 MatteIdsMaterial.prototype.constructor = MatteIdsMaterial;
 
-MatteIdsMaterial.prototype.setMatrixRTC = function setMatrixRTC(rtc) {
-    this.uniforms.mVPMatRTC.value = rtc;
-};
-
 export default MatteIdsMaterial;
