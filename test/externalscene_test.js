@@ -2,8 +2,8 @@
 var itownsTesting = require('./itowns-testing.js');
 var example = require('../examples/externalscene.js');
 
-describe('External Scene', () => {
-    it('should use the user constructed scene', (done) => {
+describe('External Scene', function () {
+    it('should use the user constructed scene', function (done) {
         example.globeView.mainLoop.addEventListener('command-queue-empty', () => {
             assert.equal(example.globeView.scene, example.scene);
 
