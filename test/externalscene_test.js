@@ -3,6 +3,7 @@ var itownsTesting = require('./itowns-testing.js');
 var example = require('../examples/externalscene.js');
 
 describe('External Scene', function () {
+    this.timeout(10000);
     it('should use the user constructed scene', function (done) {
         example.globeView.mainLoop.addEventListener('command-queue-empty', () => {
             assert.equal(example.globeView.scene, example.scene);
