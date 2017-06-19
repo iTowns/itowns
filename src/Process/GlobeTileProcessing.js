@@ -21,7 +21,7 @@ export function preGlobeUpdate(context) {
     // pre-sse
     const canvasSize = context.engine.getWindowSize();
     const hypotenuse = canvasSize.length();
-    const radAngle = context.camera.FOV * Math.PI / 180;
+    const radAngle = context.camera.camera3D.fov * Math.PI / 180;
 
      // TODO: not correct -> see new preSSE
     // const HFOV = 2.0 * Math.atan(Math.tan(radAngle * 0.5) / context.camera.ratio);
