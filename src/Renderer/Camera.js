@@ -8,17 +8,19 @@
 
 import * as THREE from 'three';
 
-function Camera(width, height) {
+function Camera(width, height, options = {}) {
     this.ratio = width / height;
-    this.FOV = 30;
 
-    this.camera3D = new THREE.PerspectiveCamera(this.FOV, this.ratio);
+    this.camera3D = options.camera ? options.camera : new THREE.PerspectiveCamera(30, this.ratio);
 
-    // /!\ WARNING Matrix JS are in Float32Array
-    this.camera3D.matrixWorld.elements = new Float64Array(16);
 
-    this.camera3D.matrixAutoUpdate = false;
-    this.camera3D.rotationAutoUpdate = false;
+    if (!options.camera) {
+        // do not modify a camera we don't own fully
+        // /!\ WARNING Matrix JS are in Float32Array
+        this.camera3D.matrixWorld.elements = new Float64Array(16);
+        this.camera3D.matrixAutoUpdate = false;
+        this.camera3D.rotationAutoUpdate = false;
+    }
 
     this._viewMatrix = new THREE.Matrix4();
     this._visibilityTestingOffset = new THREE.Vector3();
@@ -35,18 +37,16 @@ Camera.prototype.resize = function resize(width, height) {
     this.height = height;
     this.ratio = width / height;
 
-    this.camera3D.aspect = this.ratio;
-    this.camera3D.updateProjectionMatrix();
-
-    if (this.cameraHelper) {
-        var dir = new THREE.Vector3(0, 0, -1);
-        var quaternion = new THREE.Quaternion();
-        quaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), this.HFOV / 2);
-        dir.applyQuaternion(quaternion);
-
-        this.arrowHelper.setDirection(dir);
-        this.cameraHelper.update();
+    if (this.camera3D.aspect !== this.ratio) {
+        this.camera3D.aspect = this.ratio;
+        if (this.camera3D.isOrthographicCamera) {
+            const halfH = (this.camera3D.right - this.camera3D.left) * 0.5 / this.ratio;
+            this.camera3D.top = halfH;
+            this.camera3D.bottom = -halfH;
+        }
     }
+
+    this.camera3D.updateProjectionMatrix();
 };
 
 Camera.prototype.update = function update() {
