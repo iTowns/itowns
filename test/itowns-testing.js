@@ -121,7 +121,7 @@ global.renderer = {
     clear: () => {},
     render: () => { counters.redraw++; },
     domElement: document.getElementById(),
-    getCurrentRenderTarget: () => 0,
+    getRenderTarget: () => 0,
     setRenderTarget: () => {},
     readRenderTargetPixels: (b, x, y, w, h, out) => {
         out.fill(0);

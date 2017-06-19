@@ -186,9 +186,7 @@ const animationOrbit = new AnimatedExpression({ duration: 30, root: orbit, expre
 const dampingOrbitalMvt = new Animation({ duration: 60, name: 'damping-orbit' });
 
 // Replace matrix float by matrix double
-cameraTargetOnGlobe.matrixWorld.elements = new Float64Array(16);
 cameraTargetOnGlobe.matrixWorldInverse = new THREE.Matrix4();
-cameraTargetOnGlobe.matrixWorldInverse.elements = new Float64Array(16);
 
 // Pan Move
 const panVector = new THREE.Vector3();
@@ -315,13 +313,9 @@ function SnapCamera(camera) {
     this.invProjectionMatrix = new THREE.Matrix4();
     this.position = new THREE.Vector3();
 
-    this.matrixWorld.elements = new Float64Array(16);
-    this.projectionMatrix.elements = new Float64Array(16);
-    this.invProjectionMatrix.elements = new Float64Array(16);
-
     this.init = function init(camera) {
-        this.matrixWorld.elements.set(camera.matrixWorld.elements);
-        this.projectionMatrix.elements.set(camera.projectionMatrix.elements);
+        this.matrixWorld.copy(camera.matrixWorld);
+        this.projectionMatrix.copy(camera.projectionMatrix);
         this.position.copy(camera.position);
         this.invProjectionMatrix.getInverse(this.projectionMatrix);
     };
@@ -330,12 +324,11 @@ function SnapCamera(camera) {
 
     this.shot = function shot(objectToSnap) {
         objectToSnap.updateMatrixWorld();
-        this.matrixWorld.elements.set(objectToSnap.matrixWorld.elements);
+        this.matrixWorld.copy(objectToSnap.matrixWorld);
         this.position.copy(objectToSnap.position);
     };
 
     const matrix = new THREE.Matrix4();
-    matrix.elements = new Float64Array(16);
 
     this.updateRay = function updateRay(ray, mouse) {
         ray.origin.copy(this.position);

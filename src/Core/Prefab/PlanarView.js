@@ -178,7 +178,6 @@ PlanarView.prototype.screenCoordsToNodeId = function screenCoordsToNodeId(mouse)
 
 
 const matrix = new THREE.Matrix4();
-matrix.elements = new Float64Array(16); // /!\ WARNING Matrix JS are in Float32Array
 const screen = new THREE.Vector2();
 const pickWorldPosition = new THREE.Vector3();
 const ray = new THREE.Ray();

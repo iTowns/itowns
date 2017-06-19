@@ -86,7 +86,7 @@ c3DEngine.prototype.renderViewTobuffer = function renderViewTobuffer(view, buffe
     this.renderer.setViewport(0, 0, buffer.width, buffer.height);
     this.renderer.setScissor(x, y, width, height);
     this.renderer.setScissorTest(true);
-    this.renderer.clear();
+    this.renderer.clearTarget(buffer, true, true, false);
     this.renderer.render(view.scene, view.camera.camera3D, buffer);
     this.renderer.setScissorTest(false);
     var pixelBuffer = new Uint8Array(4 * width * height);
