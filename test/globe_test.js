@@ -19,8 +19,8 @@ function afterSetRange() {
 
 var initialState = true;
 
-describe('Globe example', () => {
-    it('should subdivide like expected', (done) => {
+describe('Globe example', function () {
+    it('should subdivide like expected', function (done) {
         example.view.mainLoop.addEventListener('command-queue-empty', () => {
             itownsTesting.counters.visible_at_level = [];
             itownsTesting.counters.displayed_at_level = [];

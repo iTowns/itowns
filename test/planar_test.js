@@ -2,7 +2,7 @@
 var itownsTesting = require('./itowns-testing.js');
 var example = require('../examples/planar.js');
 
-describe('Planar example', () => {
+describe('Planar example', function () {
     it('should run...', (done) => {
         example.view.mainLoop.addEventListener('command-queue-empty', () => {
             itownsTesting.counters.displayed_at_level = [];
