@@ -50,7 +50,8 @@ function View(crs, viewerDiv, options = {}) {
 
     this.camera = new Camera(
         this.mainLoop.gfxEngine.getWindowSize().x,
-        this.mainLoop.gfxEngine.getWindowSize().y);
+        this.mainLoop.gfxEngine.getWindowSize().y,
+        options);
 
     this._layers = [];
 
