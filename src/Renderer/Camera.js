@@ -80,29 +80,43 @@ Camera.prototype.setRotation = function setRotation(rotation) {
 const temp = new THREE.Vector3();
 const frustum = new THREE.Frustum();
 const obbViewMatrix = new THREE.Matrix4();
+const tempMatrix = new THREE.Matrix4();
+const tempBox3d = new THREE.Box3();
+
+function _prepareBox3AndMatrix(box3d, matrixWorld, visibilityTestingOffset) {
+    if (matrixWorld) {
+        tempMatrix.copy(matrixWorld);
+    } else {
+        tempMatrix.identity();
+    }
+
+    box3d.getCenter(temp);
+    // temp is -center
+    temp.negate();
+    // shift the box3d toward origin
+    tempBox3d.copy(box3d);
+    tempBox3d.translate(temp);
+
+    // modify position: substract camera.position and add box3d.min
+    tempMatrix.elements[12] -= visibilityTestingOffset.x + temp.x;
+    tempMatrix.elements[13] -= visibilityTestingOffset.y + temp.y;
+    tempMatrix.elements[14] -= visibilityTestingOffset.z + temp.z;
+}
+
 Camera.prototype.isBox3DVisible = function isBox3DVisible(box3d, matrixWorld) {
-    temp.setFromMatrixPosition(matrixWorld);
-    matrixWorld.elements[12] -= this._visibilityTestingOffset.x;
-    matrixWorld.elements[13] -= this._visibilityTestingOffset.y;
-    matrixWorld.elements[14] -= this._visibilityTestingOffset.z;
+    _prepareBox3AndMatrix(box3d, matrixWorld, this._visibilityTestingOffset);
 
-    obbViewMatrix.multiplyMatrices(this._viewMatrix, matrixWorld);
-
-    matrixWorld.setPosition(temp);
-
+    obbViewMatrix.multiplyMatrices(this._viewMatrix, tempMatrix);
     frustum.setFromMatrix(obbViewMatrix);
-    return frustum.intersectsBox(box3d);
+
+    return frustum.intersectsBox(tempBox3d);
 };
 
 Camera.prototype.box3DSizeOnScreen = function box3DSizeOnScreen(box3d, matrixWorld) {
-    const c = box3d.clone();
-    const m = matrixWorld ? matrixWorld.clone() : new THREE.Matrix4();
-    m.elements[12] -= this._visibilityTestingOffset.x;
-    m.elements[13] -= this._visibilityTestingOffset.y;
-    m.elements[14] -= this._visibilityTestingOffset.z;
-    m.premultiply(this._viewMatrix);
+    _prepareBox3AndMatrix(box3d, matrixWorld, this._visibilityTestingOffset);
+    tempMatrix.premultiply(this._viewMatrix);
 
-    return c.applyMatrix4(m);
+    return tempBox3d.applyMatrix4(tempMatrix);
 };
 
 export default Camera;
