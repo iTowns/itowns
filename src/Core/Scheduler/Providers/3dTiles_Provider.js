@@ -84,6 +84,7 @@ function getBox(volume) {
 $3dTiles_Provider.prototype.b3dmToMesh = function b3dmToMesh(data, layer) {
     return this.b3dmLoader.parse(data).then((result) => {
         const init = function f_init(mesh) {
+            mesh.frustumCulled = false;
             if (layer.overrideMaterials) {
                 mesh.material = new BasicMaterial();
             }
