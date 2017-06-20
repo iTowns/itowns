@@ -66,8 +66,12 @@
                         n.updateMatrixWorld();
                       }
                       if (node.boundingVolume.box) {
-                        n = new itowns.THREE.BoxHelper(node.boundingVolume.box);
+                        const size = node.boundingVolume.box.getSize();
+                        const g = new itowns.THREE.BoxGeometry(size.x, size.y, size.z);
+                        const material = new itowns.THREE.MeshBasicMaterial({ wireframe: true });
+                        n = new itowns.THREE.Mesh(g, material);
                         node.add(n);
+                        n.frustumCulled = false;
                         n.layer = debug3dt.id;
                         n.layers.set(layer.threejsLayer);
                         n.updateMatrix();

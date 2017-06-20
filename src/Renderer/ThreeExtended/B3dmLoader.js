@@ -5,6 +5,29 @@ function B3dmLoader() {
     this.glTFLoader = new THREE.GLTFLoader();
 }
 
+function filterUnsupportedSemantics(obj) {
+    // see GLTFLoader GLTFShader.prototype.update function
+    const supported = [
+        'MODELVIEW',
+        'MODELVIEWINVERSETRANSPOSE',
+        'PROJECTION',
+        'JOINTMATRIX'];
+
+    if (obj.gltfShader) {
+        const names = [];
+        // eslint-disable-next-line guard-for-in
+        for (const name in obj.gltfShader.boundUniforms) {
+            names.push(name);
+        }
+        for (const name of names) {
+            const semantic = obj.gltfShader.boundUniforms[name];
+            if (supported.indexOf(semantic) < 0) {
+                delete obj.gltfShader.boundUniforms[name];
+            }
+        }
+    }
+}
+
 const textDecoder = new TextDecoder('utf-8');
 B3dmLoader.prototype.parse = function parse(buffer) {
     if (!buffer) {
@@ -54,6 +77,9 @@ B3dmLoader.prototype.parse = function parse(buffer) {
         // TODO: missing feature and batch table
         return new Promise((resolve/* , reject*/) => {
             const onload = (gltf) => {
+                for (const scene of gltf.scenes) {
+                    scene.traverse(filterUnsupportedSemantics);
+                }
                 resolve(gltf);
             };
             this.glTFLoader.parse(buffer.slice(28 + b3dmHeader.FTJSONLength +
