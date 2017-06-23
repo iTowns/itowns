@@ -79,23 +79,30 @@ Camera.prototype.setRotation = function setRotation(rotation) {
 
 const temp = new THREE.Vector3();
 const frustum = new THREE.Frustum();
-const obbViewMatrix = new THREE.Matrix4();
+const localViewMatrix = new THREE.Matrix4();
 const tempMatrix = new THREE.Matrix4();
 const tempBox3d = new THREE.Box3();
-
-function _prepareBox3AndMatrix(box3d, matrixWorld, visibilityTestingOffset) {
+const tempSphere3d = new THREE.Sphere();
+function _prepareMatrix(matrixWorld, visibilityTestingOffset, volumes3D, tempContainer) {
     if (matrixWorld) {
         tempMatrix.copy(matrixWorld);
     } else {
         tempMatrix.identity();
     }
-
-    box3d.getCenter(temp);
+    if (volumes3D.getCenter) {
+        // THREE.Box objects have a .getCenter method
+        volumes3D.getCenter(temp);
+    } else if (volumes3D.center) {
+        // THREE.Sphere objects have a .center property
+        temp.copy(volumes3D.center);
+    } else {
+        throw new Error(`Unsupported volume object ${volumes3D}`);
+    }
     // temp is -center
     temp.negate();
-    // shift the box3d toward origin
-    tempBox3d.copy(box3d);
-    tempBox3d.translate(temp);
+    // shift the volumes3D toward origin
+    tempContainer.copy(volumes3D);
+    tempContainer.translate(temp);
 
     // modify position: substract camera.position and add box3d.min
     tempMatrix.elements[12] -= visibilityTestingOffset.x + temp.x;
@@ -104,16 +111,23 @@ function _prepareBox3AndMatrix(box3d, matrixWorld, visibilityTestingOffset) {
 }
 
 Camera.prototype.isBox3DVisible = function isBox3DVisible(box3d, matrixWorld) {
-    _prepareBox3AndMatrix(box3d, matrixWorld, this._visibilityTestingOffset);
+    _prepareMatrix(matrixWorld, this._visibilityTestingOffset, box3d, tempBox3d);
 
-    obbViewMatrix.multiplyMatrices(this._viewMatrix, tempMatrix);
-    frustum.setFromMatrix(obbViewMatrix);
-
+    localViewMatrix.multiplyMatrices(this._viewMatrix, tempMatrix);
+    frustum.setFromMatrix(localViewMatrix);
     return frustum.intersectsBox(tempBox3d);
 };
 
+Camera.prototype.isSphereVisible = function isSphereVisible(sphere, matrixWorld) {
+    _prepareMatrix(matrixWorld, this._visibilityTestingOffset, sphere, tempSphere3d);
+
+    localViewMatrix.multiplyMatrices(this._viewMatrix, tempMatrix);
+    frustum.setFromMatrix(localViewMatrix);
+    return frustum.intersectsSphere(tempSphere3d);
+};
+
 Camera.prototype.box3DSizeOnScreen = function box3DSizeOnScreen(box3d, matrixWorld) {
-    _prepareBox3AndMatrix(box3d, matrixWorld, this._visibilityTestingOffset);
+    _prepareMatrix(matrixWorld, this._visibilityTestingOffset, box3d, tempBox3d);
     tempMatrix.premultiply(this._viewMatrix);
 
     return tempBox3d.applyMatrix4(tempMatrix);
