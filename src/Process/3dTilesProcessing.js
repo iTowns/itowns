@@ -46,13 +46,39 @@ function subdivideNode(context, layer, node) {
 }
 
 export function $3dTilesCulling(node, camera) {
-    if (node.boundingVolume.region) {
-        // TODO
+    // For viewer Request Volume https://github.com/AnalyticalGraphicsInc/3d-tiles-samples/tree/master/tilesets/TilesetWithRequestVolume
+    if (node.viewerRequestVolume) {
+        const nodeViewer = node.viewerRequestVolume;
+        if (nodeViewer.region) {
+            // TODO
+            return true;
+        }
+        if (nodeViewer.box) {
+            // TODO
+            return true;
+        }
+        if (nodeViewer.sphere) {
+            const worldCoordinateCenter = nodeViewer.sphere.center.clone();
+            worldCoordinateCenter.applyMatrix4(node.matrixWorld);
+            // To check the distance between the center sphere and the camera
+            if (!(camera.camera3D.position.distanceTo(worldCoordinateCenter) <= nodeViewer.sphere.radius)) {
+                return true;
+            }
+        }
     }
-    if (node.boundingVolume.box) {
-        return !camera.isBox3DVisible(node.boundingVolume.box, node.matrixWorld);
-    } else if (node.boundingVolume.sphere) {
-        // TODO return !camera.isSphereVisible(node.boundingVolume.sphere, node.matrixWorld);
+
+    // For bounding volume
+    if (node.boundingVolume) {
+        const boundingVolume = node.boundingVolume;
+        if (boundingVolume.region) {
+            return !camera.isBox3DVisible(boundingVolume.region.box3D, boundingVolume.region.matrixWorld);
+        }
+        if (boundingVolume.box) {
+            return !camera.isBox3DVisible(boundingVolume.box, node.matrixWorld);
+        }
+        if (boundingVolume.sphere) {
+            return !camera.isSphereVisible(boundingVolume.sphere, node.matrixWorld);
+        }
     }
     return false;
 }
@@ -61,7 +87,7 @@ let preSSE;
 export function pre3dTilesUpdate(context) {
     // pre-sse
     const hypotenuse = Math.sqrt(context.camera.width * context.camera.width + context.camera.height * context.camera.height);
-    const radAngle = context.camera.FOV * Math.PI / 180;
+    const radAngle = context.camera.camera3D.fov * Math.PI / 180;
 
      // TODO: not correct -> see new preSSE
     // const HFOV = 2.0 * Math.atan(Math.tan(radAngle * 0.5) / context.camera.ratio);
@@ -69,9 +95,13 @@ export function pre3dTilesUpdate(context) {
     preSSE = hypotenuse * (2.0 * Math.tan(HYFOV * 0.5));
 }
 
+// Improved zoom geometry
 function computeNodeSSE(camera, node) {
     if (node.boundingVolume.region) {
-        // TODO
+        const worldCoordinateCenter = node.boundingVolume.region.centerWorld;
+        worldCoordinateCenter.applyMatrix4(node.matrixWorld);
+        const distance = camera.camera3D.position.distanceTo(worldCoordinateCenter);
+        return preSSE * (node.geometricError / distance);
     }
     if (node.boundingVolume.box) {
         // TODO: compute proper distance
@@ -80,7 +110,7 @@ function computeNodeSSE(camera, node) {
         const distance = camera.camera3D.position.distanceTo(worldCoordinateCenter);
         return preSSE * (node.geometricError / distance);
     } else if (node.boundingVolume.sphere) {
-        const worldCoordinateCenter = node.boundingVolume.sphere.center;
+        const worldCoordinateCenter = node.boundingVolume.sphere.center.clone();
         worldCoordinateCenter.applyMatrix4(node.matrixWorld);
         const distance = Math.max(
             0.0,

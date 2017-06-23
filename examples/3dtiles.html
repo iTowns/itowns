@@ -30,9 +30,7 @@
         <script src="/dist/debug.js"></script>
         <script type="text/javascript">
             /* global itowns,document,GuiTools*/
-
             const positionOnGlobe = { longitude: -75.65044586, latitude: 40.062840764, altitude: 100000 };
-
             // iTowns namespace defined here
             const viewerDiv = document.getElementById('viewerDiv');
 
@@ -42,10 +40,11 @@
 
             itowns.Fetcher.json('layers/JSONLayers/Ortho.json').then(result => globe.addLayer(result));
 
-            // add 3d-tiles layer
-            const $3dTilesLayer = new itowns.GeometryLayer('3d-tiles');
 
-            $3dTilesLayer.preUpdate = (context, layer) => {
+
+            // function use :
+            // For preupdate Layer geomtry :
+            const preUpdateGeo = (context, layer) => {
                 if(layer.root === undefined) {
                     itowns.init3dTilesLayer(context, layer);
                     return [];
@@ -53,30 +52,27 @@
                 itowns.pre3dTilesUpdate(context, layer);
                 return [layer.root];
             };
-            $3dTilesLayer.update = itowns.process3dTilesNode(
-                itowns.$3dTilesCulling,
-                itowns.$3dTilesSubdivisionControl
-            );
-            $3dTilesLayer.url = 'http://localhost:8003/tilesets/TilesetWithDiscreteLOD/tileset.json';
-            $3dTilesLayer.protocol = '3d-tiles'
-            $3dTilesLayer.overrideMaterials = true;  // custom cesium shaders are not functional
-            $3dTilesLayer.type = 'geometry';
-            $3dTilesLayer.visible = true;
-
-            itowns.View.prototype.addLayer.call(globe, $3dTilesLayer);
-
-            // debug
-            const debug3dt = new itowns.GeometryLayer('debug-3d-tiles');
-
-            debug3dt.update = function(context, layer, node) {
+            // For Debug update :
+            const updateDebug = function(context, layer, node) {
                 var n = node.children.filter(n => n.layer == debug3dt.id);
                 if (node.visible) {
                     if (n.length == 0) {
-                        n = new itowns.THREE.BoxHelper(node.boundingVolume.box);
-                        n.layer = debug3dt.id;
+                      if (node.boundingVolume.region) {
+                        n = new debug.OBBHelper(node.boundingVolume.region, '');
                         node.add(n);
+                        n.layer = debug3dt.id;
+                        n.layers.set(layer.threejsLayer);
                         n.updateMatrix();
                         n.updateMatrixWorld();
+                      }
+                      if (node.boundingVolume.box) {
+                        n = new itowns.THREE.BoxHelper(node.boundingVolume.box);
+                        node.add(n);
+                        n.layer = debug3dt.id;
+                        n.layers.set(layer.threejsLayer);
+                        n.updateMatrix();
+                        n.updateMatrixWorld();
+                      }
                     } else {
                         n = n[0];
                     }
@@ -87,9 +83,73 @@
                 }
             }
 
+            // Create a new Layer 3d-tiles For DiscreteLOD
+           // ------------------------------------------------------
+            const $3dTilesLayerDiscreteLOD = new itowns.GeometryLayer('3d-tiles');
+
+            $3dTilesLayerDiscreteLOD.preUpdate = preUpdateGeo;
+            $3dTilesLayerDiscreteLOD.update = itowns.process3dTilesNode(
+                itowns.$3dTilesCulling,
+                itowns.$3dTilesSubdivisionControl
+            );
+            $3dTilesLayerDiscreteLOD.name = 'DiscreteLOD';
+            $3dTilesLayerDiscreteLOD.url = 'http://localhost:8003/tilesets/TilesetWithDiscreteLOD/tileset.json';
+            $3dTilesLayerDiscreteLOD.protocol = '3d-tiles'
+            $3dTilesLayerDiscreteLOD.overrideMaterials = true;  // custom cesium shaders are not functional
+            $3dTilesLayerDiscreteLOD.type = 'geometry';
+            $3dTilesLayerDiscreteLOD.visible = false;
+
+            itowns.View.prototype.addLayer.call(globe, $3dTilesLayerDiscreteLOD);
+
+            // debug for DiscreteLOD
+            const debug3dt = new itowns.GeometryLayer('debug-3d-tiles');
+            debug3dt.type = 'debug';
+            debug3dt.update = updateDebug;
+
+            // for have the same bool for visible
+            debug3dt.visible = $3dTilesLayerDiscreteLOD.visible;
+            itowns.View.prototype.addLayer.call(globe, debug3dt, $3dTilesLayerDiscreteLOD);
+
+            // Create a new Layer 3d-tiles For Viewer Request Volume
+            // ------------------------------------------------------
+            const $3dTilesLayerRequestVolume = new itowns.GeometryLayer('3d-tiles');
+
+            $3dTilesLayerRequestVolume.preUpdate = preUpdateGeo;
+            $3dTilesLayerRequestVolume.update = itowns.process3dTilesNode(
+                itowns.$3dTilesCulling,
+                itowns.$3dTilesSubdivisionControl
+            );
+
+            $3dTilesLayerRequestVolume.name = 'RequestVolume';
+            $3dTilesLayerRequestVolume.url = 'http://localhost:8003/tilesets/TilesetWithRequestVolume/tileset.json';
+            $3dTilesLayerRequestVolume.protocol = '3d-tiles'
+            $3dTilesLayerRequestVolume.overrideMaterials = true;  // custom cesium shaders are not functional
+            $3dTilesLayerRequestVolume.type = 'geometry';
+            $3dTilesLayerRequestVolume.visible = false;
+
+            itowns.View.prototype.addLayer.call(globe, $3dTilesLayerRequestVolume);
+
+            // debug for RequestVolume
+            const debug3dtRequest = new itowns.GeometryLayer('debug-3d-tiles');
+            debug3dtRequest.type = 'debug';
+            debug3dtRequest.update = updateDebug;
+            itowns.View.prototype.addLayer.call(globe, debug3dtRequest, $3dTilesLayerRequestVolume);
+
+            // for have the same bool for visible
+            debug3dtRequest.visible = $3dTilesLayerRequestVolume.visible;
+
+            // Add the UI Debug
             new debug.Debug(globe, viewerDiv);
 
-            itowns.View.prototype.addLayer.call(globe, debug3dt, $3dTilesLayer);
+            // for add an UI for select the layer
+            for (let i = 1; i < globe._layers.length; i++) {
+                menuGlobe.addGUI(globe._layers[i].name, false, (newValue) => {
+                        globe._layers[i].visible = newValue;
+                        globe._layers[i]._attachedLayers[0].visible = newValue;
+                        globe.notifyChange(true);
+                    });
+            }
+
 
 </script>
     </body>

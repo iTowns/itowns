@@ -1,8 +1,12 @@
 import * as THREE from 'three';
 import Provider from './Provider';
 import B3dmLoader from '../../../Renderer/ThreeExtended/B3dmLoader';
+import PntsLoader from '../../../Renderer/ThreeExtended/PntsLoader';
 import Fetcher from './Fetcher';
 import BasicMaterial from '../../../Renderer/BasicMaterial';
+import OBB from '../../../Renderer/ThreeExtended/OBB';
+import Extent from '../../Geographic/Extent';
+import MathExtended from '../../Math/MathExtended';
 
 
 export function $3dTilesIndex(tileset, urlPrefix) {
@@ -46,13 +50,18 @@ $3dTiles_Provider.prototype.preprocessDataLayer = function preprocessDataLayer(/
 
 };
 
-function getBox(boundingVolume) {
-    if (boundingVolume.region) {
-        throw new Error('Region bounding volume not supported yet');
-        // return { region: boundingVolume.region };
-    } else if (boundingVolume.box) {
+function getBox(volume) {
+    if (volume.region) {
+        const region = volume.region;
+        const extent = new Extent('EPSG:4326', MathExtended.radToDeg(region[0]), MathExtended.radToDeg(region[2]), MathExtended.radToDeg(region[1]), MathExtended.radToDeg(region[3]));
+        const box = OBB.extentToOBB(extent, region[4], region[5]);
+        box.position.copy(box.centerWorld);
+        box.updateMatrix();
+        box.updateMatrixWorld();
+        return { region: box };
+    } else if (volume.box) {
         // TODO: only works for axis aligned boxes
-        const box = boundingVolume.box;
+        const box = volume.box;
         // box[0], box[1], box[2] = center of the box
         // box[3], box[4], box[5] = x axis direction and half-length
         // box[6], box[7], box[8] = y axis direction and half-length
@@ -66,9 +75,9 @@ function getBox(boundingVolume) {
         const t = center.z + box[11];
 
         return { box: new THREE.Box3(new THREE.Vector3(w, s, b), new THREE.Vector3(e, n, t)) };
-    } else if (boundingVolume.sphere) {
-        throw new Error('Sphere bounding volume not supported yet');
-        // return { sphere: undefined };
+    } else if (volume.sphere) {
+        const sphere = new THREE.Sphere(new THREE.Vector3(volume.sphere[0], volume.sphere[1], volume.sphere[2]), volume.sphere[3]);
+        return { sphere };
     }
 }
 
@@ -86,6 +95,12 @@ $3dTiles_Provider.prototype.b3dmToMesh = function b3dmToMesh(data, layer) {
     });
 };
 
+$3dTiles_Provider.prototype.pntsParse = function pntsParse(data) {
+    return new Promise((resolve) => {
+        resolve(PntsLoader.parse(data));
+    });
+};
+
 function configureTile(tile, layer, metadata) {
     tile.frustumCulled = false;
     tile.loaded = true;
@@ -98,6 +113,7 @@ function configureTile(tile, layer, metadata) {
     tile.tileId = metadata.tileId;
     tile.additiveRefinement = (metadata.refine === 'add');
     tile.boundingVolume = getBox(metadata.boundingVolume);
+    tile.viewerRequestVolume = metadata.viewerRequestVolume ? getBox(metadata.viewerRequestVolume) : undefined;
 }
 
 const textDecoder = new TextDecoder('utf-8');
@@ -116,6 +132,7 @@ $3dTiles_Provider.prototype.executeCommand = function executeCommand(command) {
 
         const supportedFormats = {
             b3dm: this.b3dmToMesh.bind(this),
+            pnts: this.pntsParse.bind(this),
         };
 
         return Fetcher.arrayBuffer(url).then((result) => {
@@ -128,10 +145,13 @@ $3dTiles_Provider.prototype.executeCommand = function executeCommand(command) {
                     layer.tileIndex.extendTileset(result, metadata.tileId, newPrefix);
                 } else if (magic == 'b3dm') {
                     func = supportedFormats.b3dm;
+                } else if (magic == 'pnts') {
+                    func = supportedFormats.pnts;
                 } else {
                     Promise.reject(`Unsupported magic code ${magic}`);
                 }
                 if (func) {
+                    // TODO: request should be delayed if there is a viewerRequestVolume
                     return func(result, layer).then((content) => {
                         tile.add(content);
                         tile.traverse(setLayer);
