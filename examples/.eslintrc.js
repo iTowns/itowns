@@ -50,6 +50,7 @@ module.exports = {
         'object-shorthand': 'off',
         'no-param-reassign': ['error', { 'props': false }],
         'no-mixed-operators': ['error', { allowSamePrecedence: true }],
+        'prefer-template': 'off',
 
         // deactivated rules for `examples/`
         'no-console': 'off',

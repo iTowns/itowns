@@ -501,5 +501,4 @@ function addGeometryLayerDebugFeatures(layer, view, gui, state) {
     folder.add(consistencyCheck, 'click').name('Check textures');
 }
 
-// eslint-disable-next-line import/prefer-default-export
-export { Debug, OBBHelper };
+export default Debug;
