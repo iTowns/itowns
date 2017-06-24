@@ -9,8 +9,18 @@
 import * as THREE from 'three';
 import Capabilities from '../Core/System/Capabilities';
 
-function c3DEngine(rendererOrDiv) {
-    var NOIE = !Capabilities.isInternetExplorer();
+function c3DEngine(rendererOrDiv, options = {}) {
+    const NOIE = !Capabilities.isInternetExplorer();
+    // pick sensible default options
+    if (options.antialias === undefined) {
+        options.antialias = true;
+    }
+    if (options.alpha === undefined) {
+        options.alpha = true;
+    }
+    if (options.logarithmicDepthBuffer === undefined) {
+        options.logarithmicDepthBuffer = this.gLDebug || NOIE;
+    }
 
     const renderer = rendererOrDiv.domElement ? rendererOrDiv : undefined;
     const viewerDiv = renderer ? undefined : rendererOrDiv;
@@ -41,9 +51,9 @@ function c3DEngine(rendererOrDiv) {
     // Create renderer
     this.renderer = renderer || new THREE.WebGLRenderer({
         canvas: document.createElement('canvas'),
-        antialias: true,
-        alpha: true,
-        logarithmicDepthBuffer: this.gLDebug || NOIE,
+        antialias: options.antialias,
+        alpha: options.alpha,
+        logarithmicDepthBuffer: options.logarithmicDepthBuffer,
     });
 
     // Let's allow our canvas to take focus

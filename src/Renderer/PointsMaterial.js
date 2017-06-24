@@ -1,0 +1,30 @@
+import { Color, Uniform, Vector2, NoBlending, NormalBlending, RawShaderMaterial } from 'three';
+import PointsVS from './Shader/PointsVS.glsl';
+import PointsFS from './Shader/PointsFS.glsl';
+
+class PointsMaterial extends RawShaderMaterial {
+    constructor(size = 0) {
+        super();
+        this.vertexShader = PointsVS;
+        this.fragmentShader = PointsFS;
+
+        this.uniforms.size = new Uniform(size);
+        this.uniforms.resolution = new Uniform(new Vector2(window.innerWidth, window.innerHeight));
+        this.uniforms.pickingMode = new Uniform(false);
+        this.uniforms.density = new Uniform(0.01);
+
+        if (__DEBUG__) {
+            this.uniforms.useDebugColor = new Uniform(false);
+            this.uniforms.debugColor = new Uniform(new Color());
+            this.defines.DEBUG = 1;
+        }
+    }
+
+    enablePicking(v) {
+        // we don't want pixels to blend over already drawn pixels
+        this.blending = v ? NoBlending : NormalBlending;
+        this.uniforms.pickingMode.value = v;
+    }
+}
+
+export default PointsMaterial;

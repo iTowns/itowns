@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Point Cloud Viewer</title>
+
+        <style type="text/css">
+            html {
+                height: 100%;
+            }
+
+            body {
+                margin: 0;
+                overflow:hidden;
+                height:100%;
+            }
+
+            #viewerDiv {
+                margin : auto auto;
+                width: 100%;
+                height: 100%;
+                padding: 0;
+                display: none;
+            }
+
+            #info {
+                color: black;
+                position: absolute;
+                top: 0;
+                left: 0;
+                margin-left: 15px;
+                padding: 0.3rem;
+                z-index: 100;
+                background-color: white;
+                border: 2px solid black;
+                border-radius: 5px;
+            }
+
+            .centered {
+                margin-left: auto;
+                margin-right: auto;
+                max-width: 25rem;
+                border: 2px solid black;
+                padding: 1rem;
+                background: rgba(128, 168, 197, 1);
+                border-radius: 5px;
+            }
+
+            input {
+                margin-top: 1rem;
+                font-size: 1rem;
+            }
+
+            #url {
+                width: calc(100% - 1rem);
+            }
+
+            #submit {
+                margin-left: 25%;
+                margin-right: 25%;
+                width: 50%;
+            }
+
+            /* lopocs result display */
+            table {
+                margin-top: 3rem;
+                width: 100%;
+                border-collapse: collapse;
+            }
+            th, td {
+                padding: 0.3rem;
+                text-align: center;
+            }
+            tr:nth-child(even) {
+                background-color: #c6cfd5;
+            }
+            tr:nth-child(odd) {
+                background-color: #9fc0d5;
+            }
+            #result {
+                display: none;
+            }
+        </style>
+
+        <meta charset="UTF-8">
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body>
+        <div id="viewerDiv"></div>
+        <div id="info"></div>
+
+        <div class="centered">
+            <div id="lopocs"> </div>
+            <div id="itowns"> </div>
+            <h2>Point cloud absolute URL: </h2>
+            <h4>(file.js from PotreeConverter or Lopocs url)</h4>
+            <input id="url" type="url" value="https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/pointclouds/eglise_saint_blaise_arles/eglise_saint_blaise_arles.js">
+            <input id="submit" type="submit" value="Connect">
+            <div id="result">
+                <h3>Available pointclouds:</h3>
+                <table id="dropdown"></table>
+            </div>
+
+            <!-- POINTCLOUD TABLE SELECTION -->
+            <script type="text/javascript">
+                function createResultRow(serverUrl, table) {
+                    var tr = document.createElement('tr');
+                    var td = document.createElement('td');
+                    td.textContent = table;
+                    var td2 = document.createElement('td');
+                    var i = document.createElement('input');
+                    i.value = 'Display';
+                    i.type = 'submit';
+
+                    function onDisplayClicked() {
+                        showPointcloud(serverUrl, undefined, table, false);
+                    }
+
+                    i.addEventListener('click', onDisplayClicked);
+
+                    td2.appendChild(i);
+                    tr.appendChild(td);
+                    tr.appendChild(td2);
+                    return tr;
+                }
+
+                function buildLopocsResultTable(serverUrl, metadata) {
+                    document.getElementById('result').style.display = 'block';
+                    var dd = document.getElementById('dropdown');
+                    // clean table
+                    while (dd.firstChild) {
+                        dd.removeChild(dd.firstChild);
+                    }
+                    var i;
+                    for (i = 0; i < metadata.length; i++) {
+                        dd.appendChild(createResultRow(serverUrl, metadata[i].table));
+                    }
+                }
+
+                function onConnectClicked() {
+                    var url = document.getElementById('url').value;
+
+                    // assume that "url ends with .js" == potreeconverter
+                    // no .endsWith() in ES5...
+                    if (url.indexOf('.js') === (url.length - 3)) {
+                        var lastSlashIndex = url.lastIndexOf('/');
+                        var filename = url.substr(lastSlashIndex + 1);
+
+                        showPointcloud(url.substr(0, lastSlashIndex), filename, undefined, true);
+                    } else {
+                        itowns.Fetcher.json(url + '/infos/sources').then(function(meta) { buildLopocsResultTable(url, meta); });
+                    }
+                }
+                document.getElementById('submit').addEventListener('click', onConnectClicked);
+            </script>
+            <script src="GUI/dat.gui/dat.gui.min.js"></script>
+            <script src="../dist/itowns.js"></script>
+            <script src="../dist/debug.js"></script>
+            <script src="./pointcloud.js"></script>
+    </body>
+</html>
+

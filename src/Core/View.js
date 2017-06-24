@@ -20,8 +20,10 @@ import Scheduler from './Scheduler/Scheduler';
  * @param {HTMLElement} viewerDiv - Where to instanciate the Three.js scene in the DOM
  * @param {Object=} options - Optional properties.
  * @param {?MainLoop} options.mainLoop - {@link MainLoop} instance to use, otherwise a default one will be constructed
- * @param {?WebGLRenderer} options.renderer - {@link WebGLRenderer} instance to use, otherwise a default one will be constructed. If
- *    not present, a new <canvas> will be created and added to viewerDiv (mutually exclusive with mainLoop)
+ * @param {?(WebGLRenderer|object)} options.renderer - {@link WebGLRenderer} instance to use, otherwise
+ * a default one will be constructed. In this case, if options.renderer is an object, it will be used to
+ * configure the renderer (see {@link c3DEngine}.  If not present, a new <canvas> will be created and
+ * added to viewerDiv (mutually exclusive with mainLoop)
  * @param {?Scene} options.scene3D - {@link Scene} instance to use, otherwise a default one will be constructed
  * @constructor
  * @example
@@ -44,7 +46,17 @@ function View(crs, viewerDiv, options = {}) {
 
     this.referenceCrs = crs;
 
-    this.mainLoop = options.mainLoop || new MainLoop(new Scheduler(), new c3DEngine(options.renderer || viewerDiv));
+    let engine;
+    // options.renderer can be 2 separate things:
+    //   - an actual renderer (in this case we don't use viewerDiv)
+    //   - options for the renderer to be created
+    if (options.renderer && options.renderer.domElement) {
+        engine = new c3DEngine(options.renderer);
+    } else {
+        engine = new c3DEngine(viewerDiv, options.renderer);
+    }
+
+    this.mainLoop = options.mainLoop || new MainLoop(new Scheduler(), engine);
 
     this.scene = options.scene3D || new Scene();
     if (!options.scene3D) {

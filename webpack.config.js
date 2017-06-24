@@ -13,7 +13,7 @@ var providePlugin = new webpack.ProvidePlugin({
 module.exports = {
     entry: {
         itowns: ['es6-promise', 'whatwg-fetch', path.resolve(__dirname, 'src/Main.js')],
-        debug: [path.resolve(__dirname, 'utils/debug/Debug.js')],
+        debug: [path.resolve(__dirname, 'utils/debug/Main.js')],
     },
     devtool: 'source-map',
     output: {
