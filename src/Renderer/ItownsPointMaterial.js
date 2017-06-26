@@ -1,10 +1,9 @@
 import * as THREE from 'three';
-import BasicMaterial from './BasicMaterial';
 import PointVS from './Shader/PointVS.glsl';
 import PointFS from './Shader/PointFS.glsl';
 
 const ItownsPointMaterial = function ItownsPointMaterial(options) {
-    BasicMaterial.call(this);
+    THREE.RawShaderMaterial.call(this);
 
     if (options === undefined)
                  { throw new Error('options is required'); }
@@ -24,7 +23,7 @@ const ItownsPointMaterial = function ItownsPointMaterial(options) {
     this.transparent = true;
 };
 
-ItownsPointMaterial.prototype = Object.create(BasicMaterial.prototype);
+ItownsPointMaterial.prototype = Object.create(THREE.RawShaderMaterial.prototype);
 ItownsPointMaterial.prototype.constructor = ItownsPointMaterial;
 
 export default ItownsPointMaterial;

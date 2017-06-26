@@ -9,8 +9,6 @@ import * as THREE from 'three';
 import Provider from './Provider';
 import Fetcher from './Fetcher';
 import KMZLoader from '../../../Renderer/ThreeExtended/KMZLoader';
-import BasicMaterial from '../../../Renderer/BasicMaterial';
-
 
 function KML_Provider(ellipsoid) {
     // Constructor
@@ -52,9 +50,9 @@ KML_Provider.prototype.loadKMZ = function loadKMZ(longitude, latitude) {
 
             var changeMaterial = function changeMaterial(object3D) {
                 if (object3D.material instanceof THREE.MultiMaterial) {
-                    object3D.material = new BasicMaterial(object3D.material.materials[0].color);
+                    object3D.material = new THREE.MeshBasicMaterial({ color: object3D.material.materials[0].color });
                 } else if (object3D.material)
-                    { object3D.material = new BasicMaterial(object3D.material.color); }
+                    { object3D.material = new THREE.MeshBasicMaterial({ color: object3D.material.color }); }
             };
 
 

@@ -6,10 +6,10 @@
 
 
 import * as THREE from 'three';
-import BasicMaterial from './BasicMaterial';
 import TileVS from './Shader/TileVS.glsl';
 import TileFS from './Shader/TileFS.glsl';
 import pitUV from './Shader/Chunk/pitUV.glsl';
+import PrecisionQualifier from './Shader/Chunk/PrecisionQualifier.glsl';
 import Capabilities from '../Core/System/Capabilities';
 
 export const EMPTY_TEXTURE_ZOOM = -1;
@@ -24,6 +24,17 @@ var fooTexture;
 
 export const l_ELEVATION = 0;
 export const l_COLOR = 1;
+
+// from three.js packDepthToRGBA
+const UnpackDownscale = 255 / 256; // 0..1 -> fraction (excluding 1)
+export function unpack1K(color, factor) {
+    var bitSh = new THREE.Vector4(
+        UnpackDownscale / (256.0 * 256.0 * 256.0),
+        UnpackDownscale / (256.0 * 256.0),
+        UnpackDownscale / 256.0,
+        1.0);
+    return bitSh.dot(color) * factor;
+}
 
 var getColorAtIdUv = function getColorAtIdUv(nbTex) {
     if (!fooTexture) {
@@ -69,13 +80,13 @@ var moveElementsArraySafe = function moveElementsArraySafe(array,index, howMany,
 /* eslint-enable */
 
 const LayeredMaterial = function LayeredMaterial(options) {
-    BasicMaterial.call(this);
+    THREE.RawShaderMaterial.call(this);
 
     const maxTexturesUnits = Capabilities.getMaxTextureUnitsCount();
     const nbSamplers = Math.min(maxTexturesUnits - 1, 16 - 1);
     this.vertexShader = TileVS;
 
-    this.fragmentShaderHeader += `const int   TEX_UNITS   = ${nbSamplers.toString()};\n`;
+    this.fragmentShaderHeader = `${PrecisionQualifier}\nconst int   TEX_UNITS   = ${nbSamplers.toString()};\n`;
     this.fragmentShaderHeader += pitUV;
 
     if (__DEBUG__) {
@@ -99,7 +110,7 @@ const LayeredMaterial = function LayeredMaterial(options) {
     this.fragmentShaderHeader += getColorAtIdUv(nbSamplers);
 
     this.fragmentShader = this.fragmentShaderHeader + TileFS;
-    this.vertexShader = this.vertexShaderHeader + vsOptions + TileVS;
+    this.vertexShader = PrecisionQualifier + vsOptions + TileVS;
 
     // handle on textures uniforms
     this.textures = [];
@@ -151,8 +162,25 @@ const LayeredMaterial = function LayeredMaterial(options) {
     // Light position
     this.uniforms.lightPosition = new THREE.Uniform(new THREE.Vector3(-0.5, 0.0, 1.0));
 
+    this.uniforms.distanceFog = new THREE.Uniform(1000000000.0);
+
+    this.uniforms.uuid = new THREE.Uniform(0);
+
+    this.uniforms.selected = new THREE.Uniform(false);
+
+    this.uniforms.lightingEnabled = new THREE.Uniform(false);
+
     this.colorLayersId = [];
     this.elevationLayersId = [];
+
+    if (Capabilities.isLogDepthBufferSupported()) {
+        this.defines = {
+            USE_LOGDEPTHBUF: 1,
+            USE_LOGDEPTHBUF_EXT: 1,
+        };
+    } else {
+        this.defines = {};
+    }
 
     if (__DEBUG__) {
         this.checkLayersConsistency = function checkLayersConsistency(node, imageryLayers) {
@@ -190,7 +218,7 @@ const LayeredMaterial = function LayeredMaterial(options) {
     }
 };
 
-LayeredMaterial.prototype = Object.create(BasicMaterial.prototype);
+LayeredMaterial.prototype = Object.create(THREE.RawShaderMaterial.prototype);
 LayeredMaterial.prototype.constructor = LayeredMaterial;
 
 LayeredMaterial.prototype.dispose = function dispose() {
@@ -446,5 +474,18 @@ LayeredMaterial.prototype.getLayerTextures = function getLayerTextures(layerType
         throw new Error(`Invalid layer id "${layerId}"`);
     }
 };
+
+LayeredMaterial.prototype.setUuid = function setUuid(uuid) {
+    this.uniforms.uuid.value = uuid;
+};
+
+LayeredMaterial.prototype.setFogDistance = function setFogDistance(df) {
+    this.uniforms.distanceFog.value = df;
+};
+
+LayeredMaterial.prototype.setSelected = function setSelected(selected) {
+    this.uniforms.selected.value = selected;
+};
+
 
 export default LayeredMaterial;

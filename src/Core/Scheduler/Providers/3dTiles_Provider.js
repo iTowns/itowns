@@ -3,7 +3,6 @@ import Provider from './Provider';
 import B3dmLoader from '../../../Renderer/ThreeExtended/B3dmLoader';
 import PntsLoader from '../../../Renderer/ThreeExtended/PntsLoader';
 import Fetcher from './Fetcher';
-import BasicMaterial from '../../../Renderer/BasicMaterial';
 import OBB from '../../../Renderer/ThreeExtended/OBB';
 import Extent from '../../Geographic/Extent';
 import MathExtended from '../../Math/MathExtended';
@@ -86,7 +85,7 @@ $3dTiles_Provider.prototype.b3dmToMesh = function b3dmToMesh(data, layer) {
         const init = function f_init(mesh) {
             mesh.frustumCulled = false;
             if (layer.overrideMaterials) {
-                mesh.material = new BasicMaterial();
+                mesh.material = new THREE.MeshLambertMaterial(0xffffff);
             }
         };
         result.scene.applyMatrix(layer.glTFRotation);
