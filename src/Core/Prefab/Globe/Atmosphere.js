@@ -35,7 +35,6 @@ function Atmosphere() {
     };
 
     var material = new THREE.ShaderMaterial({
-
         uniforms: this.uniformsOut,
         vertexShader: GlowVS,
         fragmentShader: GlowFS,
@@ -43,12 +42,10 @@ function Atmosphere() {
         blending: THREE.AdditiveBlending,
         transparent: true,
         wireframe: false,
-
     });
 
     var size = ellipsoidSizes();
     var geometry = (new THREE.SphereGeometry(1.14, 128, 128)).scale(size.x, size.y, size.z);
-
 
     this.geometry = geometry;
     this.material = material;
@@ -65,14 +62,12 @@ function Atmosphere() {
     };
 
     var materialAtmoIn = new THREE.ShaderMaterial({
-
         uniforms: this.uniformsIn,
         vertexShader: GlowVS,
         fragmentShader: GlowFS,
         side: THREE.FrontSide,
         blending: THREE.AdditiveBlending,
         transparent: true,
-
     });
 
     this.atmosphereIN = new THREE.Mesh((new THREE.SphereGeometry(1.002, 64, 64)).scale(size.x, size.y, size.z), materialAtmoIn);

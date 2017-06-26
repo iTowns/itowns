@@ -88,7 +88,6 @@ Clouds.prototype.generate = function generate(satelliteAnimation) {
         this.texture.magFilter = THREE.LinearFilter;
         this.texture.format = THREE.RGBFormat;
 
-        // this.material = new THREE.MeshBasicMaterial( { color: 0xffffff, map: this.texture});//, transparent : true, opacity:0.8});
         this.material.blending = THREE.AdditiveBlending;
         this.material.uniforms.diffuse.value = this.texture;
         this.material.uniforms.diffuse.needsUpdate = true;

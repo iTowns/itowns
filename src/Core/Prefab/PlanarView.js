@@ -2,7 +2,7 @@ import * as THREE from 'three';
 
 import View from '../View';
 import RendererConstant from '../../Renderer/RendererConstant';
-import { unpack1K } from '../../Renderer/MatteIdsMaterial';
+import { unpack1K } from '../../Renderer/LayeredMaterial';
 
 import { GeometryLayer } from '../Layer/Layer';
 
@@ -35,8 +35,8 @@ function PlanarView(viewerDiv, boundingbox, options) {
 
     // Configure tiles
     const nodeInitFn = function nodeInitFn(context, layer, parent, node) {
-        node.materials[0].setLightingOn(layer.lighting.enable);
-        node.materials[0].uniforms.lightPosition.value = layer.lighting.position;
+        node.material.setLightingOn(layer.lighting.enable);
+        node.material.uniforms.lightPosition.value = layer.lighting.position;
 
         if (__DEBUG__) {
             node.material.uniforms.showOutline = { value: layer.showOutline || false };

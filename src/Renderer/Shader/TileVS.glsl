@@ -1,3 +1,6 @@
+#include <logdepthbuf_pars_vertex>
+#define EPSILON 1e-6
+
 const float PI          = 3.14159265359;
 const float INV_TWO_PI  = 1.0 / (2.0*PI);
 const float PI4         = 0.78539816339;
@@ -36,12 +39,10 @@ void main() {
 
         vNormal = normal;
 
-        if(loadedTexturesCount[0] > 0)
-        {
+        if(loadedTexturesCount[0] > 0) {
             vec2    vVv = vec2(
                 vUv_WGS84.x * offsetScale_L00[0].z + offsetScale_L00[0].x,
                 (1.0 - vUv_WGS84.y) * offsetScale_L00[0].z + offsetScale_L00[0].y);
-
 
             #if defined(RGBA_TEXTURE_ELEVATION)
                 vec4 rgba = texture2D( dTextures_00[0], vVv ) * 255.0;
@@ -53,8 +54,9 @@ void main() {
                 // TODO In RGBA elevation texture LinearFilter give some errors with nodata value.
                 // need to rewrite sample function in shader
                 // simple solution
-                if(dv>5000.0)
+                if(dv>5000.0) {
                     dv = 0.0;
+                }
 
             #elif defined(DATA_TEXTURE_ELEVATION)
                 float   dv  = max(texture2D( dTextures_00[0], vVv ).w, 0.);
@@ -66,27 +68,11 @@ void main() {
             #error Must define either RGBA_TEXTURE_ELEVATION, DATA_TEXTURE_ELEVATION or COLOR_TEXTURE_ELEVATION
             #endif
 
-            vPosition   = vec4( position +  vNormal  * dv ,1.0 );
+            vPosition = vec4( position +  vNormal  * dv ,1.0 );
         } else {
             vPosition = vec4( position ,1.0 );
         }
 
         gl_Position = projectionMatrix * modelViewMatrix * vPosition;
-
-        #ifdef USE_LOGDEPTHBUF
-
-            gl_Position.z = log2(max( EPSILON, gl_Position.w + 1.0 )) * logDepthBufFC;
-
-            #ifdef USE_LOGDEPTHBUF_EXT
-
-                vFragDepth = 1.0 + gl_Position.w;
-
-            #else
-
-                gl_Position.z = (gl_Position.z - 1.0) * gl_Position.w;
-
-            #endif
-
-        #endif
-
+        #include <logdepthbuf_vertex>
 }

@@ -1,3 +1,5 @@
+#include <logdepthbuf_pars_fragment>
+
 // BUG CHROME 50 UBUNTU 16.04
 // Lose context on compiling shader with too many IF STATEMENT
 // runconformance/glsl/bugs/conditional-discard-in-loop.html
@@ -36,19 +38,25 @@ varying vec3        vNormal;
     const float sLine = 0.008;
 #endif
 
-// Note see after in code
-// int textureIndex = 0;
-// int getTextureIndex() {
-//     return textureIndex;
-// }
+#if defined(MATTE_ID_MODE) || defined(DEPTH_MODE)
+#include <packing>
+uniform int  uuid;
+#endif
 
 void main() {
+    #include <logdepthbuf_fragment>
 
-    #if defined(USE_LOGDEPTHBUF) && defined(USE_LOGDEPTHBUF_EXT)
+    #if defined(MATTE_ID_MODE)
+        gl_FragColor = packDepthToRGBA(float(uuid) / (256.0 * 256.0 * 256.0));
+    #elif defined(DEPTH_MODE)
+        #if defined(USE_LOGDEPTHBUF) && defined(USE_LOGDEPTHBUF_EXT)
+            float z = 1.0/ gl_FragCoord.w ;
+        #else
+            float z = gl_FragCoord.z / gl_FragCoord.w;
+        #endif
+        gl_FragColor = packDepthToRGBA(z / 100000000.0);
+    #else
 
-	   gl_FragDepthEXT = log2(vFragDepth) * logDepthBufFC * 0.5;
-
-    #endif
 
     #if defined(DEBUG)
          if (showOutline && (vUv_WGS84.x < sLine || vUv_WGS84.x > 1.0 - sLine || vUv_WGS84.y < sLine || vUv_WGS84.y > 1.0 - sLine))
@@ -116,13 +124,6 @@ void main() {
                         }
                     }
                 }
-    // #if defined(DEBUG)
-    //                 else {
-    //                     // Invalid texture -> error color
-    //                     diffuseColor = vec4(1.0, 0.0, 1.0, 1.0);
-    //                 }
-    // #endif
-
             }
         }
 
@@ -146,4 +147,5 @@ void main() {
             gl_FragColor.rgb *= light;
         }
     }
+    #endif
 }

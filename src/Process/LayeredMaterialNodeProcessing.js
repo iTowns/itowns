@@ -1,4 +1,3 @@
-import RendererConstant from '../Renderer/RendererConstant';
 import { l_ELEVATION, l_COLOR, EMPTY_TEXTURE_ZOOM } from '../Renderer/LayeredMaterial';
 import { chooseNextLevelToFetch } from '../Core/Layer/LayerUpdateStrategy';
 import LayerUpdateState from '../Core/Layer/LayerUpdateState';
@@ -7,13 +6,13 @@ import { CancelledCommandException } from '../Core/Scheduler/Scheduler';
 import OGCWebServiceHelper, { SIZE_TEXTURE_TILE } from '../Core/Scheduler/Providers/OGCWebServiceHelper';
 
 function initNodeImageryTexturesFromParent(node, parent, layer) {
-    if (parent.materials && parent.materials[RendererConstant.FINAL].getColorLayerLevelById(layer.id) > EMPTY_TEXTURE_ZOOM) {
+    if (parent.material && parent.material.getColorLayerLevelById(layer.id) > EMPTY_TEXTURE_ZOOM) {
         const coords = node.getCoordsForLayer(layer);
-        const offsetTextures = node.materials[RendererConstant.FINAL].getLayerTextureOffset(layer.id);
+        const offsetTextures = node.material.getLayerTextureOffset(layer.id);
 
         let textureIndex = offsetTextures;
         for (const c of coords) {
-            for (const texture of parent.materials[RendererConstant.FINAL].getLayerTextures(l_COLOR, layer.id)) {
+            for (const texture of parent.material.getLayerTextures(l_COLOR, layer.id)) {
                 if (c.isInside(texture.coords)) {
                     const result = c.offsetToParent(texture.coords);
                     node.material.textures[l_COLOR][textureIndex] = texture;
@@ -39,10 +38,10 @@ function initNodeImageryTexturesFromParent(node, parent, layer) {
 
 function initNodeElevationTextureFromParent(node, parent, layer) {
     // inherit parent's elevation texture
-    if (parent.materials && parent.materials[RendererConstant.FINAL].getElevationLayerLevel() > EMPTY_TEXTURE_ZOOM) {
+    if (parent.material && parent.material.getElevationLayerLevel() > EMPTY_TEXTURE_ZOOM) {
         const coords = node.getCoordsForLayer(layer);
 
-        const texture = parent.materials[RendererConstant.FINAL].textures[l_ELEVATION][0];
+        const texture = parent.material.textures[l_ELEVATION][0];
         const pitch = coords[0].offsetToParent(parent.material.textures[l_ELEVATION][0].coords);
         const elevation = {
             texture,
@@ -134,6 +133,7 @@ export function updateLayeredMaterialNodeImagery(context, layer, node) {
         // because even if this tile is outside of the layer, it could inherit it's
         // parent texture
         if (node.parent &&
+            node.parent.material &&
             node.parent.getIndexLayerColor &&
             node.parent.getIndexLayerColor(layer.id) >= 0) {
             // ok, we're going to inherint our parent's texture
@@ -142,7 +142,7 @@ export function updateLayeredMaterialNodeImagery(context, layer, node) {
         }
     }
 
-    const material = node.materials[RendererConstant.FINAL];
+    const material = node.material;
 
     if (material.indexOfColorLayer(layer.id) === -1) {
         const texturesCount = layer.tileTextureCount ?
@@ -197,7 +197,7 @@ export function updateLayeredMaterialNodeImagery(context, layer, node) {
         return Promise.resolve();
     }
 
-    const currentLevel = node.materials[RendererConstant.FINAL].getColorLayerLevelById(layer.id);
+    const currentLevel = node.material.getColorLayerLevelById(layer.id);
 
     const zoom = node.getCoordsForLayer(layer)[0].zoom || node.level;
     const targetLevel = chooseNextLevelToFetch(layer.updateStrategy.type, node, zoom, currentLevel, layer);
@@ -258,12 +258,12 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, force) 
     // can be used (where a tile can have N textures x M layers)
     const ts = Date.now();
 
-    const material = node.materials[RendererConstant.FINAL];
+    const material = node.material;
     let currentElevation = material.getElevationLayerLevel();
 
     // If currentElevevation is EMPTY_TEXTURE_ZOOM but material.loadedTexturesCount[l_ELEVATION] is > 0
     // means that we already tried and failed to download an elevation texture
-    if (currentElevation == EMPTY_TEXTURE_ZOOM && node.materials[0].loadedTexturesCount[l_ELEVATION] > 0) {
+    if (currentElevation == EMPTY_TEXTURE_ZOOM && node.material.loadedTexturesCount[l_ELEVATION] > 0) {
         return Promise.resolve();
     }
     if (layer.frozen && !force) {
