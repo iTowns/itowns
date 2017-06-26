@@ -5,12 +5,11 @@
  */
 
 import * as THREE from 'three';
-import BasicMaterial from './BasicMaterial';
 import LineVS from './Shader/LineVS.glsl';
 import LineFS from './Shader/LineFS.glsl';
 
 const ItownsLineMaterial = function ItownsLineMaterial(options) {
-    BasicMaterial.call(this);
+    THREE.RawShaderMaterial.call(this);
 
     if (options === undefined)
                      { throw new Error('options is required'); }
@@ -36,7 +35,7 @@ const ItownsLineMaterial = function ItownsLineMaterial(options) {
     this.transparent = true;
 };
 
-ItownsLineMaterial.prototype = Object.create(BasicMaterial.prototype);
+ItownsLineMaterial.prototype = Object.create(THREE.RawShaderMaterial.prototype);
 ItownsLineMaterial.prototype.constructor = ItownsLineMaterial;
 
 export default ItownsLineMaterial;

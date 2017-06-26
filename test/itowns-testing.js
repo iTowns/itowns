@@ -135,14 +135,14 @@ global.itowns = itowns;
 global.assert = assert;
 
 exports.countVisibleAndDisplayed = (node) => {
-    if (node.materials) {
+    if (node.material) {
         if (node.visible) {
             while (counters.visible_at_level.length <= node.level) {
                 counters.visible_at_level.push(0);
             }
             counters.visible_at_level[node.level]++;
 
-            if (node.materials[0].visible) {
+            if (node.material.visible) {
                 while (counters.displayed_at_level.length <= node.level) {
                     counters.displayed_at_level.push(0);
                 }

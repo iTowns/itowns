@@ -52,7 +52,6 @@ TileProvider.prototype.executeCommand = function executeCommand(command) {
 
     tile.layer = command.layer.id;
     tile.layers.set(command.threejsLayer);
-    tile.setUuid();
 
     if (parent) {
         parent.worldToLocal(params.center);

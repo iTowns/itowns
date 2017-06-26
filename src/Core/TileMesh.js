@@ -6,8 +6,6 @@
 
 import * as THREE from 'three';
 import LayeredMaterial, { l_ELEVATION } from '../Renderer/LayeredMaterial';
-import TileDepthMaterial from '../Renderer/TileDepthMaterial';
-import MatteIdsMaterial from '../Renderer/MatteIdsMaterial';
 import RendererConstant from '../Renderer/RendererConstant';
 import OGCWebServiceHelper, { SIZE_TEXTURE_TILE } from './Scheduler/Providers/OGCWebServiceHelper';
 
@@ -33,18 +31,7 @@ function TileMesh(geometry, params) {
 
     this.oSphere = new THREE.Sphere(this.centerSphere.clone(), this.geometry.boundingSphere.radius);
 
-    this.materials = [];
-
-    // instantiations all state materials : final, depth, id
-    // Final rendering : return layered color + fog
-    this.materials[RendererConstant.FINAL] = new LayeredMaterial(params.materialOptions);
-
-    // Depth : return the distance between projection point and the node
-    this.materials[RendererConstant.DEPTH] = new TileDepthMaterial(this.materials[RendererConstant.FINAL]);
-    // ID : return id color in RGBA (float Pack in RGBA)
-    this.materials[RendererConstant.ID] = new MatteIdsMaterial(this.materials[RendererConstant.FINAL]);
-    // Set current material in Final Rendering
-    this.material = this.materials[RendererConstant.FINAL];
+    this.material = new LayeredMaterial(params.materialOptions);
 
     this.frustumCulled = false;
 
@@ -54,6 +41,8 @@ function TileMesh(geometry, params) {
     this.setDisplayed(false);
 
     this.layerUpdateState = {};
+
+    this.material.setUuid(this.id);
 }
 
 TileMesh.prototype = Object.create(THREE.Mesh.prototype);
@@ -66,23 +55,12 @@ TileMesh.prototype.dispose = function dispose() {
     this.material = null;
 };
 
-TileMesh.prototype.setUuid = function setUuid() {
-    this.materials[RendererConstant.FINAL].setUuid(this.id);
-    this.materials[RendererConstant.ID].setUuid(this.id);
-};
-
-TileMesh.prototype.getUuid = function getUuid() {
-    return this.materials[RendererConstant.ID].getUuid();
-};
-
 TileMesh.prototype.isVisible = function isVisible() {
     return this.visible;
 };
 
 TileMesh.prototype.setDisplayed = function setDisplayed(show) {
-    for (const material of this.materials) {
-        material.visible = show;
-    }
+    this.material.visible = show;
 };
 
 TileMesh.prototype.setVisibility = function setVisibility(show) {
@@ -95,36 +73,37 @@ TileMesh.prototype.isDisplayed = function isDisplayed() {
 
 // switch material in function of state
 TileMesh.prototype.changeState = function changeState(state) {
-    if (state !== RendererConstant.FINAL) {
-        this.materials[state].visible = this.materials[RendererConstant.FINAL].visible;
+    if (state == RendererConstant.DEPTH) {
+        this.material.defines.DEPTH_MODE = 1;
+        delete this.material.defines.MATTE_ID_MODE;
+    } else if (state == RendererConstant.ID) {
+        this.material.defines.MATTE_ID_MODE = 1;
+        delete this.material.defines.DEPTH_MODE;
+    } else {
+        delete this.material.defines.MATTE_ID_MODE;
+        delete this.material.defines.DEPTH_MODE;
     }
 
-    this.material = this.materials[state];
+    this.material.needsUpdate = true;
 };
 
 TileMesh.prototype.setFog = function setFog(fog) {
-    this.materials[RendererConstant.FINAL].setFogDistance(fog);
-};
-
-TileMesh.prototype.setDebug = function setDebug(enable) {
-    this.materials[RendererConstant.FINAL].setDebug(enable);
+    this.material.setFogDistance(fog);
 };
 
 TileMesh.prototype.setSelected = function setSelected(select) {
-    this.materials[RendererConstant.FINAL].setSelected(select);
+    this.material.setSelected(select);
 };
 
 TileMesh.prototype.setTextureElevation = function setTextureElevation(elevation) {
-    if (this.materials[RendererConstant.FINAL] === null) {
+    if (this.material === null) {
         return;
     }
 
     const offsetScale = elevation.pitch || new THREE.Vector3(0, 0, 1);
     this.setBBoxZ(elevation.min, elevation.max);
 
-    this.materials[RendererConstant.FINAL].setTexture(elevation.texture, l_ELEVATION, 0, offsetScale);
-    this.materials[RendererConstant.DEPTH].uniforms.texturesCount.value = this.materials[RendererConstant.FINAL].loadedTexturesCount[0];
-    this.materials[RendererConstant.ID].uniforms.texturesCount.value = this.materials[RendererConstant.FINAL].loadedTexturesCount[0];
+    this.material.setTexture(elevation.texture, l_ELEVATION, 0, offsetScale);
 };
 
 
@@ -158,22 +137,22 @@ TileMesh.prototype.setTexturesLayer = function setTexturesLayer(textures, layerT
 };
 
 TileMesh.prototype.getLayerTextures = function getLayerTextures(layerType, layerId) {
-    const mat = this.materials[RendererConstant.FINAL];
+    const mat = this.material;
     return mat.getLayerTextures(layerType, layerId);
 };
 
 TileMesh.prototype.isColorLayerLoaded = function isColorLayerLoaded(layerId) {
-    const mat = this.materials[RendererConstant.FINAL];
+    const mat = this.material;
     return mat.getColorLayerLevelById(layerId) > -1;
 };
 
 TileMesh.prototype.isElevationLayerLoaded = function isElevationLayerLoaded() {
-    const mat = this.materials[RendererConstant.FINAL];
+    const mat = this.material;
     return mat.getElevationLayerLevel() > -1;
 };
 
 TileMesh.prototype.isColorLayerDownscaled = function isColorLayerDownscaled(layer) {
-    const mat = this.materials[RendererConstant.FINAL];
+    const mat = this.material;
     return mat.isColorLayerDownscaled(layer.id, this.getZoomForLayer(layer));
 };
 
@@ -198,22 +177,22 @@ TileMesh.prototype.OBB = function OBB() {
 };
 
 TileMesh.prototype.getIndexLayerColor = function getIndexLayerColor(idLayer) {
-    return this.materials[RendererConstant.FINAL].indexOfColorLayer(idLayer);
+    return this.material.indexOfColorLayer(idLayer);
 };
 
 TileMesh.prototype.removeColorLayer = function removeColorLayer(idLayer) {
-    this.materials[RendererConstant.FINAL].removeColorLayer(idLayer);
+    this.material.removeColorLayer(idLayer);
 };
 
 TileMesh.prototype.changeSequenceLayers = function changeSequenceLayers(sequence) {
-    const layerCount = this.materials[RendererConstant.FINAL].getColorLayersCount();
+    const layerCount = this.material.getColorLayersCount();
 
     // Quit if there is only one layer
     if (layerCount < 2) {
         return;
     }
 
-    this.materials[RendererConstant.FINAL].setSequence(sequence);
+    this.material.setSequence(sequence);
 };
 
 TileMesh.prototype.getCoordsForLayer = function getCoordsForLayer(layer) {

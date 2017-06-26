@@ -263,8 +263,8 @@ function Debug(view, viewerDiv) {
 
     function applyToNodeFirstMaterial(cb) {
         view.scene.traverse((object) => {
-            if (object.materials) {
-                cb(object.materials[0]);
+            if (object.material) {
+                cb(object.material);
             }
         });
         view.notifyChange();
@@ -416,8 +416,8 @@ function addGeometryLayerDebugFeatures(layer, view, gui, state) {
         const imageryLayers = view.getLayers(a => a.type == 'color');
         for (const node of layer.level0Nodes) {
             node.traverse((n) => {
-                if (n.materials && n.materials[0].visible) {
-                    n.materials[0].checkLayersConsistency(n, imageryLayers);
+                if (n.material && n.material.visible) {
+                    n.material.checkLayersConsistency(n, imageryLayers);
                 }
             });
         }

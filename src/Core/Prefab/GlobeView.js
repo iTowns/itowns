@@ -4,7 +4,7 @@ import View from '../View';
 import { COLOR_LAYERS_ORDER_CHANGED } from '../../Renderer/ColorLayersOrdering';
 import RendererConstant from '../../Renderer/RendererConstant';
 import GlobeControls from '../../Renderer/ThreeExtended/GlobeControls';
-import { unpack1K } from '../../Renderer/MatteIdsMaterial';
+import { unpack1K } from '../../Renderer/LayeredMaterial';
 
 import { GeometryLayer } from '../Layer/Layer';
 
@@ -105,8 +105,8 @@ function GlobeView(viewerDiv, coordCarto, options) {
 
     // Configure tiles
     const nodeInitFn = function nodeInitFn(context, layer, parent, node) {
-        node.materials[0].setLightingOn(layer.lighting.enable);
-        node.materials[0].uniforms.lightPosition.value = layer.lighting.position;
+        node.material.setLightingOn(layer.lighting.enable);
+        node.material.uniforms.lightPosition.value = layer.lighting.position;
 
         if (__DEBUG__) {
             node.material.uniforms.showOutline = { value: layer.showOutline || false };
@@ -181,6 +181,11 @@ function GlobeView(viewerDiv, coordCarto, options) {
         enable: false,
         position: { x: -0.5, y: 0.0, z: 1.0 },
     };
+
+    const sun = new THREE.DirectionalLight();
+    sun.position.set(-0.5, 0, 1);
+    sun.updateMatrixWorld(true);
+    this.scene.add(sun);
 
     this.addLayer(wgs84TileLayer);
 
@@ -361,7 +366,7 @@ GlobeView.prototype.screenCoordsToNodeId = function screenCoordsToNodeId(mouse) 
     var depthRGBA = new THREE.Vector4().fromArray(buffer).divideScalar(255.0);
 
     // unpack RGBA to float
-    var unpack = unpack1K(depthRGBA, 10000);
+    var unpack = unpack1K(depthRGBA, Math.pow(256, 3));
 
     return Math.round(unpack);
 };
