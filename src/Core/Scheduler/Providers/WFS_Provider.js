@@ -17,9 +17,11 @@ import CacheRessource from './CacheRessource';
  * @param {?string} options.format - image format (default: format/jpeg)
  * @constructor
  */
+// TODO should be refit to adhere the same logic as other providers (ie one instance for all layers)
 function WFS_Provider(options) {
     this.cache = CacheRessource();
     this.baseUrl = options.url || '';
+    this.networkOptions = options.fetchOptions;
     this.layer = options.layer || '';
     this.typename = options.typename || '';
     this.format = options.format === undefined ? 'json' : options.format;
@@ -55,7 +57,7 @@ WFS_Provider.prototype.url = function url(bbox) {
  */
 WFS_Provider.prototype.getData = function getData(bbox) {
     var url = this.url(bbox);
-    return Fetcher.json(url);
+    return Fetcher.json(url, this.networkOptions);
 };
 
 
