@@ -7,8 +7,6 @@
 import * as THREE from 'three';
 import Fetcher from './Fetcher';
 import Coordinates from '../../Geographic/Coordinates';
-import ItownsLine from './ItownsLine';
-import ItownsPoint from './ItownsPoint';
 
 function _gpxToWayPointsArray(gpxXML) {
     return gpxXML.getElementsByTagName('wpt');
@@ -30,21 +28,14 @@ function _gpxToWayPointsMesh(gpxXML) {
     var wayPts = _gpxToWayPointsArray(gpxXML);
 
     if (wayPts.length) {
-        var colorPoint = new THREE.Color('rgb(0, 255, 0)');
-        var points = new ItownsPoint({
-            time: 1.0,
-            useTexture: false,
-            texture: 'data/strokes/pstar1.png',
-            color: [colorPoint.r, colorPoint.g, colorPoint.b],
-            opacity: 1.0,
-        });
-
+        const positions = new Float32Array(wayPts.length * 3);
         for (var i = 0; i < wayPts.length; i++) {
-            points.addPoint(_gpxPtToCartesian(wayPts[i]), colorPoint, 600.0);
+            const pos = _gpxPtToCartesian(wayPts[i]);
+            pos.toArray(positions, 3 * i);
         }
-
-        points.process();
-
+        const points = new THREE.Points();
+        points.geometry.addAttribute('position', new THREE.BufferAttribute(positions, 3));
+        points.material.color.setRGB(0, 1, 0);
         return points;
     } else {
         return null;
@@ -55,22 +46,16 @@ function _gpxToWTrackPointsMesh(gpxXML) {
     var trackPts = _gGpxToWTrackPointsArray(gpxXML);
 
     if (trackPts.length) {
-        var colorLine = new THREE.Color('rgb(255, 0, 0)');
-        var line = new ItownsLine({
-            time: 1.0,
-            linewidth: 100.0,
-            texture: 'data/strokes/hway1.png',
-            useTexture: false,
-            opacity: 1.0,
-            sizeAttenuation: 1.0,
-            color: [colorLine.r, colorLine.g, colorLine.b],
-        });
-
-        for (var k = 0; k < trackPts.length; k++) {
-            line.addPoint(_gpxPtToCartesian(trackPts[k]));
+        const positions = new Float32Array(trackPts.length * 3);
+        for (var i = 0; i < trackPts.length; i++) {
+            const pos = _gpxPtToCartesian(trackPts[i]);
+            pos.toArray(positions, 3 * i);
         }
 
-        line.process();
+        const line = new THREE.Line();
+        line.geometry.addAttribute('position', new THREE.BufferAttribute(positions, 3));
+        line.material.color.setRGB(1, 0, 0);
+        line.material.linewidth = 100;
 
         return line;
     } else {
