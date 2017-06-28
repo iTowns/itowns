@@ -2,6 +2,16 @@ import * as THREE from 'three';
 import Capabilities from '../Core/System/Capabilities';
 import fit from './Packer';
 
+const availableCanvas = [];
+
+function getCanvas() {
+    if (availableCanvas.length) {
+        return availableCanvas.pop();
+    }
+    const canvas = document.createElement('canvas');
+    return canvas;
+}
+
 /**
  * Build a texture atlas from N images.
  *
@@ -18,7 +28,8 @@ import fit from './Packer';
  */
 export default function pack(images, uvs, needsPixelSeparation) {
     // pick an available canvas, or build a new one
-    const atlasCanvas = document.createElement('canvas');
+    const atlasCanvas = getCanvas();
+
     // Use a 1 pixel border to avoid color bleed when sampling at the edges
     // of the texture
     const colorBleedHalfOffset = (!needsPixelSeparation || images.length == 1) ? 0 : 1;
@@ -129,6 +140,11 @@ export default function pack(images, uvs, needsPixelSeparation) {
     atlas.minFilter = THREE.LinearFilter;
     atlas.anisotropy = 1;
     atlas.uv = uv;
+
+    atlas.onUpdate = () => {
+        availableCanvas.push(atlasCanvas);
+        atlas.onUpdate = undefined;
+    };
 
     return atlas;
 }
