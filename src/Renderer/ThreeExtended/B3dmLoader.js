@@ -20,7 +20,7 @@ function filterUnsupportedSemantics(obj) {
             names.push(name);
         }
         for (const name of names) {
-            const semantic = obj.gltfShader.boundUniforms[name];
+            const semantic = obj.gltfShader.boundUniforms[name].semantic;
             if (supported.indexOf(semantic) < 0) {
                 delete obj.gltfShader.boundUniforms[name];
             }

@@ -119,6 +119,7 @@ global.renderer = {
     setClearColor: () => {},
     setViewport: () => {},
     clear: () => {},
+    clearTarget: () => {},
     render: () => { counters.redraw++; },
     domElement: document.getElementById(),
     getRenderTarget: () => 0,
