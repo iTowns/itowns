@@ -223,6 +223,7 @@ View.prototype.addLayer = function addLayer(layer, parentLayer) {
         this._layers.push(layer);
     }
 
+    this.notifyChange(true);
     return layer;
 };
 
