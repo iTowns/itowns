@@ -262,21 +262,6 @@ function Debug(view, viewerDiv) {
         }
     });
 
-    const canvasDiv = document.createElement('div');
-    canvasDiv.id = 'canvasDebug';
-    canvasDiv.style = 'position: absolute; top: 0; right: 0; height: 100%; overflow: auto; width: 25%; background-color: white; display: none; border-width: 0 0 3px 3px; border-style:solid; border-color: black;';
-    viewerDiv.appendChild(canvasDiv);
-    document.styleSheets[0].insertRule('#canvasDebug > canvas { width: 100%; border-width: 3px 0; border-style:solid; border-color: black; }', 1);
-
-    gui.add(state, 'displayCanvas').name('Display canvas').onChange((newValue) => {
-        if (newValue) {
-            canvasDiv.style.display = 'block';
-        } else {
-            canvasDiv.style.display = 'none';
-        }
-    });
-
-
     function applyToNodeFirstMaterial(cb) {
         view.scene.traverse((object) => {
             if (object.material) {

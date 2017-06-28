@@ -2,16 +2,18 @@ import * as THREE from 'three';
 import Capabilities from '../Core/System/Capabilities';
 import fit from './Packer';
 
-const availableCanvas = [];
+const existingCanvas = [];
 
 function getCanvas() {
-    if (availableCanvas.length > 0) {
-        return availableCanvas.pop();
+    for (const c of existingCanvas) {
+        if (c.texture._ownerCount == 0 ||
+            (c.texture._listeners && c.texture._listeners.dispose.length > 0)) {
+            delete c.texture;
+            return c;
+        }
     }
     const canvas = document.createElement('canvas');
-    canvas.onDispose = (c) => {
-        availableCanvas.push(c);
-    };
+    existingCanvas.push(canvas);
     return canvas;
 }
 
@@ -133,6 +135,7 @@ export default function pack(images, uvs) {
     }
 
     const atlas = new THREE.CanvasTexture(atlasCanvas);
+    atlasCanvas.texture = atlas;
 
     atlas.generateMipmaps = false;
     atlas.magFilter = THREE.LinearFilter;
