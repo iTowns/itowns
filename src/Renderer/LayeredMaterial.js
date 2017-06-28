@@ -56,6 +56,9 @@ export function releaseTexture(texture) {
         }
     }
     if (texture._ownerCount == 0) {
+        if (texture.image && texture.image.onDispose) {
+            texture.image.onDispose(texture.image);
+        }
         texture.dispose();
         texture.image = undefined;
     }

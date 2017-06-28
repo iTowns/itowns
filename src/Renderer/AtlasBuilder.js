@@ -2,6 +2,19 @@ import * as THREE from 'three';
 import Capabilities from '../Core/System/Capabilities';
 import fit from './Packer';
 
+const availableCanvas = [];
+
+function getCanvas() {
+    if (availableCanvas.length > 0) {
+        return availableCanvas.pop();
+    }
+    const canvas = document.createElement('canvas');
+    canvas.onDispose = (c) => {
+        availableCanvas.push(c);
+    };
+    return canvas;
+}
+
 /**
  * Build a texture atlas from N images.
  *
@@ -15,7 +28,8 @@ import fit from './Packer';
  * @return {THREE.CanvasTexture}
  */
 export default function pack(images, uvs) {
-    const atlasCanvas = document.createElement('canvas');
+    // pick an available canvas, or build a new one
+    const atlasCanvas = getCanvas();
     // Use a 1 pixel border to avoid color bleed when sampling at the edges
     // of the texture
     const colorBleedHalfOffset = (images.length == 1) ? 0 : 1;
