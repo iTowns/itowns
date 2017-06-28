@@ -135,7 +135,7 @@ $3dTiles_Provider.prototype.executeCommand = function executeCommand(command) {
             pnts: this.pntsParse.bind(this),
         };
 
-        return Fetcher.arrayBuffer(url).then((result) => {
+        return Fetcher.arrayBuffer(url, layer.networkOptions).then((result) => {
             if (result !== undefined) {
                 let func;
                 const magic = textDecoder.decode(new Uint8Array(result, 0, 4));

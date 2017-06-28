@@ -105,7 +105,7 @@ WMTS_Provider.prototype.getXbilTexture = function getXbilTexture(tile, layer, ta
  */
 WMTS_Provider.prototype.getColorTexture = function getColorTexture(coordWMTS, layer) {
     const url = this.url(coordWMTS, layer);
-    return OGCWebServiceHelper.getColorTextureByUrl(url).then((texture) => {
+    return OGCWebServiceHelper.getColorTextureByUrl(url, layer.networkOptions).then((texture) => {
         const result = {};
         result.texture = texture;
         result.texture.coords = coordWMTS;

@@ -151,11 +151,21 @@ function _preprocessLayer(view, layer, provider) {
  */
 
 /**
+ * @typedef {Object} NetworkOptions - Options for fetching resources over the
+ * network. For json or xml fetching, this object is passed as it is to fetch
+ * as the init object, see [fetch documentation]{@link https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Parameters}.
+ * @property {string} crossOrigin For textures, only this property is used. Its
+ * value is directly assigned to the crossorigin property of html tags.
+ * @property * Same properties as the init parameter of fetch
+ */
+
+/**
  * @typedef {Object} LayerOptions
  * @property {string} id Unique layer's id
  * @property {string} type the layer's type : 'color', 'elevation', 'geometry'
  * @property {string} protocol wmts and wms (wmtsc for custom deprecated)
  * @property {string} url Base URL of the repository or of the file(s) to load
+ * @property {NetworkOptions} networkOptions Options for fetching resources over network
  * @property {Object} updateStrategy strategy to load imagery files
  * @property {OptionsWmts|OptionsWms} options WMTS or WMS options
  */

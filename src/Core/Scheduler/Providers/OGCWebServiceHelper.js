@@ -24,7 +24,7 @@ const getTextureFloat = function getTextureFloat(buffer) {
 
 export default {
     ioDXBIL,
-    getColorTextureByUrl(url) {
+    getColorTextureByUrl(url, networkOptions) {
         const cachedTexture = cache.getRessource(url);
 
         if (cachedTexture) {
@@ -33,7 +33,7 @@ export default {
 
         const { texture, promise } = (cachePending.has(url)) ?
             cachePending.get(url) :
-            Fetcher.texture(url);
+            Fetcher.texture(url, networkOptions);
 
         texture.generateMipmaps = false;
         texture.magFilter = THREE.LinearFilter;

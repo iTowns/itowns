@@ -66,7 +66,7 @@ KML_Provider.prototype.loadKMZ = function loadKMZ(longitude, latitude) {
     });
 };
 
-KML_Provider.prototype.parseKML = function parseKML(urlFile, longitude, latitude) {
+KML_Provider.prototype.parseKML = function parseKML(urlFile, longitude, latitude, networkOptions) {
     /* var longitude = 48.87;
     var south = 48.875;
     var east = -3.4900000000000046;
@@ -77,7 +77,7 @@ KML_Provider.prototype.parseKML = function parseKML(urlFile, longitude, latitude
     var west = longitude;
     var key = 'va5orxd0pgzvq3jxutqfuy0b';
     var url = `http://wxs.ign.fr/${key}/vecteurtuile3d/BATI3D/FXX/`;
-    return Fetcher.xml(urlFile).then((result) => {
+    return Fetcher.xml(urlFile, networkOptions).then((result) => {
         var NetworkLink = [];
         NetworkLink = result.getElementsByTagName('NetworkLink');
 
