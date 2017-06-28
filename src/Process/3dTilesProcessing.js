@@ -126,7 +126,7 @@ export function init3dTilesLayer(context, layer) {
     }
     layer.initialised = true;
 
-    Fetcher.json(layer.url).then((tileset) => {
+    Fetcher.json(layer.url, layer.networkOptions).then((tileset) => {
         const urlPrefix = layer.url.slice(0, layer.url.lastIndexOf('/') + 1);
         layer.tileIndex = new $3dTilesIndex(tileset, urlPrefix);
         layer.asset = tileset.asset;

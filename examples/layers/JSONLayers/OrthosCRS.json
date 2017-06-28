@@ -3,6 +3,9 @@
     "protocol":   "wmts",
     "id":         "OrthoCRS",
     "url":        "http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/geoportail/wmts",
+    "networkOptions": {
+        "crossOrigin": "omit"
+    },
     "fx" :        1.0,
     "updateStrategy": {
         "type": 0,

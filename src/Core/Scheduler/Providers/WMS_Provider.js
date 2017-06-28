@@ -88,7 +88,7 @@ WMS_Provider.prototype.getColorTexture = function getColorTexture(tile, layer) {
     const pitch = new THREE.Vector3(0, 0, 1);
     const result = { pitch };
 
-    return OGCWebServiceHelper.getColorTextureByUrl(url).then((texture) => {
+    return OGCWebServiceHelper.getColorTextureByUrl(url, layer.networkOptions).then((texture) => {
         result.texture = texture;
         result.texture.extent = tile.extent; // useless?
         result.texture.coords = coords;
