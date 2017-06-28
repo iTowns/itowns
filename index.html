@@ -43,22 +43,27 @@ and open the template in the editor.
             const menuGlobe = new GuiTools('menuDiv', globeView);
             menuGlobe.view = globeView;
 
-            itowns.Fetcher.json('examples/layers/JSONLayers/Ortho.json').then(result => globeView.addLayer(result));
-            itowns.Fetcher.json('examples/layers/JSONLayers/OrthosCRS.json').then(result => globeView.addLayer(result));
-            itowns.Fetcher.json('examples/layers/JSONLayers/ScanEX.json').then(result => globeView.addLayer(result));
-            itowns.Fetcher.json('examples/layers/JSONLayers/Region.json').then(result => globeView.addLayer(result));
+            let promises = []
+            promises.push(itowns.Fetcher.json('examples/layers/JSONLayers/Ortho.json').then(result => globeView.addLayer(result)));
+            promises.push(itowns.Fetcher.json('examples/layers/JSONLayers/OrthosCRS.json').then(result => globeView.addLayer(result)));
+            promises.push(itowns.Fetcher.json('examples/layers/JSONLayers/ScanEX.json').then(result => globeView.addLayer(result)));
+            promises.push(itowns.Fetcher.json('examples/layers/JSONLayers/Region.json').then(result => globeView.addLayer(result)));
 
-            itowns.Fetcher.json('examples/layers/JSONLayers/WORLD_DTM.json').then(result => globeView.addLayer(result));
-            itowns.Fetcher.json('examples/layers/JSONLayers/IGN_MNT_HIGHRES.json').then(result => globeView.addLayer(result));
+            promises.push(itowns.Fetcher.json('examples/layers/JSONLayers/WORLD_DTM.json').then(result => globeView.addLayer(result)));
+            promises.push(itowns.Fetcher.json('examples/layers/JSONLayers/IGN_MNT_HIGHRES.json').then(result => globeView.addLayer(result)));
 
             menuGlobe.addGUI('RealisticLighting', false,
                 (newValue) => { globeView.setRealisticLightingOn(newValue); });
 
+            Promise.all(promises).then(() => {
+                menuGlobe.addImageryLayersGUI(globeView.getLayers(l => l.type === 'color'));
+                menuGlobe.addElevationLayersGUI(globeView.getLayers(l => l.type === 'elevation'));
+                console.info('menuGlobe initialized');
+            }).catch( e => console.error(e));
+
             globeView.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, () => {
                 // eslint-disable-next-line no-console
                 console.info('Globe initialized');
-                menuGlobe.addImageryLayersGUI(globeView.getLayers(l => l.type === 'color'));
-                menuGlobe.addElevationLayersGUI(globeView.getLayers(l => l.type === 'elevation'));
             });
 
             new debug.Debug(globeView, viewerDiv);
