@@ -3,7 +3,7 @@ import { TextureLoader } from 'three';
 const textureLoader = new TextureLoader();
 
 function checkResponse(response) {
-    if (response.status < 200 || response.status >= 300) {
+    if (!response.ok) {
         var error = new Error(`Error loading ${response.url}: status ${response.status}`);
         error.status = response.status;
         throw error;

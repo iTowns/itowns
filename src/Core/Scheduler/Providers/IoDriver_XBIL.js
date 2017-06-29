@@ -5,6 +5,7 @@
 /* global Float32Array*/
 
 import IoDriver from './IoDriver';
+import Fetcher from './Fetcher';
 
 
 var portableXBIL = function portableXBIL(buffer) {
@@ -74,13 +75,8 @@ IoDriver_XBIL.prototype.parseXBil = function parseXBil(buffer, url) {
 };
 
 
-IoDriver_XBIL.prototype.read = function read(url) {
-    return fetch(url).then((response) => {
-        if (response.status < 200 || response.status >= 300) {
-            throw new Error(`Error loading ${url}: status ${response.status}`);
-        }
-        return response.arrayBuffer();
-    }).then(buffer => this.parseXBil(buffer, url));
+IoDriver_XBIL.prototype.read = function read(url, networkOptions) {
+    return Fetcher.arrayBuffer(url, networkOptions).then(buffer => this.parseXBil(buffer, url));
 };
 
 

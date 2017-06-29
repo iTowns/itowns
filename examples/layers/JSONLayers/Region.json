@@ -2,7 +2,7 @@
     "type": "color",
     "url"       : "https://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/geoportail/v/wms",
     "networkOptions": {
-        "crossOrigin": "omit"
+        "crossOrigin": "anonymous"
     },
     "protocol"  : "wms",
     "version"   : "1.3.0",
