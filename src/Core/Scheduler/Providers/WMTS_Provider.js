@@ -83,7 +83,7 @@ WMTS_Provider.prototype.getXbilTexture = function getXbilTexture(tile, layer, ta
 
     const url = this.url(coordWMTS, layer);
 
-    return OGCWebServiceHelper.getXBilTextureByUrl(url).then((result) => {
+    return OGCWebServiceHelper.getXBilTextureByUrl(url, layer.networkOptions).then((result) => {
         const { min, max } = OGCWebServiceHelper.ioDXBIL.computeMinMaxElevation(
         result.texture.image.data,
         SIZE_TEXTURE_TILE, SIZE_TEXTURE_TILE,

@@ -3,9 +3,6 @@
 	"protocol":   "wmts",
 	"id":         "IGN_MNT_HIGHRES",
 	"url":        "http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/geoportail/wmts",
-    "networkOptions": {
-        "crossOrigin": "omit"
-    },
 	"noDataValue" : -99999,
 	"updateStrategy": {
 		"type": 1,
