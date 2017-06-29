@@ -1,34 +1,21 @@
-// Modules using `default` export must be imported...
 import * as THREE from 'three';
-import proj4 from 'proj4';
-import { CONTROL_EVENTS } from './Renderer/ThreeExtended/GlobeControls';
-import View from './Core/View';
-import GlobeView, { GLOBE_VIEW_EVENTS } from './Core/Prefab/GlobeView';
-import PlanarView from './Core/Prefab/PlanarView';
-import Extent from './Core/Geographic/Extent';
-import Coordinates from './Core/Geographic/Coordinates';
-import Fetcher from './Core/Scheduler/Providers/Fetcher';
-
-// Then exported as non-default here.
-export { GLOBE_VIEW_EVENTS, CONTROL_EVENTS };
-export { ColorLayersOrdering } from './Renderer/ColorLayersOrdering';
-export { View };
-export { GlobeView };
-export { PlanarView };
-export { Extent };
-export { Coordinates };
-export { Fetcher };
-
-// Others can be directly exported
-export { UNIT } from './Core/Geographic/Coordinates';
-export { processTiledGeometryNode, initTiledGeometryLayer } from './Process/TiledNodeProcessing';
-export { updateLayeredMaterialNodeImagery, updateLayeredMaterialNodeElevation } from './Process/LayeredMaterialNodeProcessing';
-export { GeometryLayer, ImageryLayers } from './Core/Layer/Layer';
-export { process3dTilesNode, init3dTilesLayer, $3dTilesCulling, $3dTilesSubdivisionControl, pre3dTilesUpdate } from './Process/3dTilesProcessing';
-export { STRATEGY_MIN_NETWORK_TRAFFIC, STRATEGY_GROUP, STRATEGY_PROGRESSIVE, STRATEGY_DICHOTOMY } from './Core/Layer/LayerUpdateStrategy';
-
 
 // This is temporary, until we're able to build a vendor.js
 // containing our dependencies.
 export { THREE };
-export { proj4 };
+export { default as proj4 } from 'proj4';
+
+export { default as Coordinates, UNIT } from './Core/Geographic/Coordinates';
+export { default as Extent } from './Core/Geographic/Extent';
+export { GeometryLayer, ImageryLayers } from './Core/Layer/Layer';
+export { STRATEGY_MIN_NETWORK_TRAFFIC, STRATEGY_GROUP, STRATEGY_PROGRESSIVE, STRATEGY_DICHOTOMY } from './Core/Layer/LayerUpdateStrategy';
+export { default as GlobeView, GLOBE_VIEW_EVENTS } from './Core/Prefab/GlobeView';
+export { default as PlanarView } from './Core/Prefab/PlanarView';
+export { default as Fetcher } from './Core/Scheduler/Providers/Fetcher';
+export { default as View } from './Core/View';
+export { process3dTilesNode, init3dTilesLayer, $3dTilesCulling, $3dTilesSubdivisionControl, pre3dTilesUpdate } from './Process/3dTilesProcessing';
+export { updateLayeredMaterialNodeImagery, updateLayeredMaterialNodeElevation } from './Process/LayeredMaterialNodeProcessing';
+export { processTiledGeometryNode, initTiledGeometryLayer } from './Process/TiledNodeProcessing';
+export { ColorLayersOrdering } from './Renderer/ColorLayersOrdering';
+export { CONTROL_EVENTS } from './Renderer/ThreeExtended/GlobeControls';
+
