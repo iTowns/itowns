@@ -4,7 +4,7 @@
     "id":         "Ortho",
     "url":        "http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/geoportail/wmts",
     "networkOptions": {
-        "crossOrigin": "omit"
+        "crossOrigin": "anonymous"
     },
     "updateStrategy": {
         "type": "0",

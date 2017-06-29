@@ -21,7 +21,7 @@ import CacheRessource from './CacheRessource';
 function WFS_Provider(options) {
     this.cache = CacheRessource();
     this.baseUrl = options.url || '';
-    this.networkOptions = options.fetchOptions;
+    this.networkOptions = options.networkOptions;
     this.layer = options.layer || '';
     this.typename = options.typename || '';
     this.format = options.format === undefined ? 'json' : options.format;

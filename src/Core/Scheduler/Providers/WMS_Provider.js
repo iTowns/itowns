@@ -101,7 +101,7 @@ WMS_Provider.prototype.getColorTexture = function getColorTexture(tile, layer) {
 
 WMS_Provider.prototype.getXbilTexture = function getXbilTexture(tile, layer) {
     const url = this.url(tile.extent.as(layer.projection), layer);
-    return this.getXBilTextureByUrl(url, new THREE.Vector3(0, 0, 1));
+    return OGCWebServiceHelper.getXBilTextureByUrl(url, layer.networkOptions);
 };
 
 WMS_Provider.prototype.executeCommand = function executeCommand(command) {

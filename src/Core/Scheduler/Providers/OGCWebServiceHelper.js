@@ -51,14 +51,14 @@ export default {
             return texture;
         });
     },
-    getXBilTextureByUrl(url) {
+    getXBilTextureByUrl(url, networkOptions) {
         const textureCache = cache.getRessource(url);
 
         if (textureCache !== undefined) {
             return Promise.resolve({ texture: textureCache });
         }
 
-        const promiseXBil = (cachePending.get(url) || ioDXBIL.read(url)).then((result) => {
+        const promiseXBil = (cachePending.get(url) || ioDXBIL.read(url, networkOptions)).then((result) => {
             // TODO  RGBA is needed for navigator with no support in texture float
             // In RGBA elevation texture LinearFilter give some errors with nodata value.
             // need to rewrite sample function in shader
