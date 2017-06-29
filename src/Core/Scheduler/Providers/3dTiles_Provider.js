@@ -6,6 +6,8 @@ import Fetcher from './Fetcher';
 import OBB from '../../../Renderer/ThreeExtended/OBB';
 import Extent from '../../Geographic/Extent';
 import MathExtended from '../../Math/MathExtended';
+import Capabilities from '../../System/Capabilities';
+import PrecisionQualifier from '../../../Renderer/Shader/Chunk/PrecisionQualifier.glsl';
 
 
 export function $3dTilesIndex(tileset, urlPrefix) {
@@ -80,12 +82,50 @@ function getBox(volume) {
     }
 }
 
+const rePosition = new RegExp('gl_Position.*(?![^]*gl_Position)');
+const reMain = new RegExp('[^\\w]*main[^\\w]*(void)?[^\\w]*{');
+function patchMaterial(material) {
+    // Check if the shader does not already use the log depth buffer
+    if (material.vertexShader.indexOf('USE_LOGDEPTHBUF') !== -1
+        || material.vertexShader.indexOf('logdepthbuf_pars_vertex') !== -1) {
+        return;
+    }
+
+    // Add vertex shader log depth buffer header
+    material.vertexShader = `#include <logdepthbuf_pars_vertex>\n#define EPSILON 1e-6\n${material.vertexShader}`;
+    // Add log depth buffer code snippet after last gl_Position modification
+    let re = rePosition.exec(material.vertexShader);
+    let idx = re[0].length + re.index;
+    material.vertexShader = `${material.vertexShader.slice(0, idx)}\n#include <logdepthbuf_vertex>\n${material.vertexShader.slice(idx)}`;
+
+    // Add fragment shader log depth buffer header
+    material.fragmentShader = `${PrecisionQualifier}\n#include <logdepthbuf_pars_fragment>\n${material.fragmentShader}`;
+    // Add log depth buffer code snippet at the first line of the main function
+    re = reMain.exec(material.fragmentShader);
+    idx = re[0].length + re.index;
+    material.fragmentShader = `${material.fragmentShader.slice(0, idx)}\n#include <logdepthbuf_fragment>\n${material.fragmentShader.slice(idx)}`;
+
+    material.defines = {
+        USE_LOGDEPTHBUF: 1,
+        USE_LOGDEPTHBUF_EXT: 1,
+    };
+
+    // eslint-disable-next-line no-console
+    console.warn('b3dm shader has been patched to add log depth buffer support');
+}
+
 $3dTiles_Provider.prototype.b3dmToMesh = function b3dmToMesh(data, layer) {
     return this.b3dmLoader.parse(data).then((result) => {
         const init = function f_init(mesh) {
             mesh.frustumCulled = false;
-            if (layer.overrideMaterials) {
-                mesh.material = new THREE.MeshLambertMaterial(0xffffff);
+            if (mesh.material) {
+                if (layer.overrideMaterials) {
+                    mesh.material = new THREE.MeshLambertMaterial(0xffffff);
+                } else if (Capabilities.isLogDepthBufferSupported()
+                            && mesh.material.isRawShaderMaterial
+                            && !layer.doNotPatchMaterial) {
+                    patchMaterial(mesh.material);
+                }
             }
         };
         result.scene.applyMatrix(layer.glTFRotation);
