@@ -34,9 +34,10 @@
             const globeView = new itowns.GlobeView(viewerDiv, positionOnGlobe);
             menuGlobe.view = globeView;
 
-            itowns.Fetcher.json('layers/JSONLayers/Ortho.json').then(result => globeView.addLayer(result));
-            itowns.Fetcher.json('layers/JSONLayers/Region.json').then(result => globeView.addLayer(result));
-            itowns.Fetcher.json('layers/JSONLayers/IGN_MNT.json').then(result => globeView.addLayer(result));
+            const promises = [];
+            promises.push(itowns.Fetcher.json('layers/JSONLayers/Ortho.json').then(result => globeView.addLayer(result)));
+            promises.push(itowns.Fetcher.json('layers/JSONLayers/Region.json').then(result => globeView.addLayer(result)));
+            promises.push(itowns.Fetcher.json('layers/JSONLayers/IGN_MNT.json').then(result => globeView.addLayer(result)));
 
             function getLayersColorVisible(node, layers) {
                 if (!node || !node.visible) {
@@ -61,8 +62,10 @@
             globeView.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, () => {
                 // eslint-disable-next-line no-console
                 console.info('Globe initialized');
-                menuGlobe.addImageryLayersGUI(globeView.getLayers(l => l.type === 'color'));
-                menuGlobe.addElevationLayersGUI(globeView.getLayers(l => l.type === 'elevation'));
+                Promise.all(promises).then(() => {
+                    menuGlobe.addImageryLayersGUI(globeView.getLayers(l => l.type === 'color'));
+                    menuGlobe.addElevationLayersGUI(globeView.getLayers(l => l.type === 'elevation'));
+                });
             });
 
             // Use preRender to update menu before rendering
