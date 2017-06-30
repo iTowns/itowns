@@ -1,6 +1,7 @@
 {
     "type": "color",
     "protocol": "wmtsc",
+	"networkOptions": { "crossOrigin" : "anonymous" },
     "id": "DARK",
     "customUrl": "http://a.basemaps.cartocdn.com/dark_all/%TILEMATRIX/%COL/%ROW.png",
     "options": {
