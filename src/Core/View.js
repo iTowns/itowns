@@ -5,7 +5,7 @@
  */
 
 /* global window, requestAnimationFrame */
-import { Scene, EventDispatcher } from 'three';
+import { Scene, EventDispatcher, Vector2 } from 'three';
 import Camera from '../Renderer/Camera';
 import MainLoop from './MainLoop';
 import c3DEngine from '../Renderer/c3DEngine';
@@ -36,12 +36,15 @@ import Scheduler from './Scheduler/Scheduler';
  */
  /* TODO:
  * - remove debug boolean, replace by if __DEBUG__ and checkboxes in debug UI
- * - Scene (and subobjects) should be instanciable several times.
  */
 function View(crs, viewerDiv, options = {}) {
+    if (!viewerDiv) {
+        throw new Error('Invalid viewerDiv parameter (must non be null/undefined)');
+    }
+
     this.referenceCrs = crs;
 
-    this.mainLoop = options.mainLoop || new MainLoop(new Scheduler(), new c3DEngine(viewerDiv, options.renderer));
+    this.mainLoop = options.mainLoop || new MainLoop(new Scheduler(), new c3DEngine(options.renderer || viewerDiv));
 
     this.scene = options.scene3D || new Scene();
     if (!options.scene3D) {
@@ -55,10 +58,12 @@ function View(crs, viewerDiv, options = {}) {
 
     this._layers = [];
 
-    this.viewerDiv = viewerDiv;
     window.addEventListener('resize', () => {
-        this.mainLoop.gfxEngine.onWindowResize();
-        this.camera.resize(this.viewerDiv.clientWidth, this.viewerDiv.clientHeight);
+        // If the user gave us a container (<div>) then itowns' size is
+        // the container's size. Otherwise we use window' size.
+        const newSize = new Vector2(viewerDiv.clientWidth, viewerDiv.clientHeight);
+        this.mainLoop.gfxEngine.onWindowResize(newSize.x, newSize.y);
+        this.camera.resize(newSize.x, newSize.y);
         this.camera.update();
         this.notifyChange(true);
     }, false);

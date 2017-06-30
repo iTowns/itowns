@@ -9,9 +9,11 @@
 import * as THREE from 'three';
 import Capabilities from '../Core/System/Capabilities';
 
-function c3DEngine(viewerDiv, renderer) {
+function c3DEngine(rendererOrDiv) {
     var NOIE = !Capabilities.isInternetExplorer();
-    this.viewerDiv = viewerDiv;
+
+    const renderer = rendererOrDiv.domElement ? rendererOrDiv : undefined;
+    const viewerDiv = renderer ? undefined : rendererOrDiv;
 
     this.width = (renderer ? renderer.domElement : viewerDiv).clientWidth;
     this.height = (renderer ? renderer.domElement : viewerDiv).clientHeight;
@@ -29,23 +31,18 @@ function c3DEngine(viewerDiv, renderer) {
         this.renderer.render(view.scene, view.camera.camera3D);
     }.bind(this);
 
-    this.onWindowResize = function onWindowResize() {
-        this.width = this.viewerDiv.clientWidth;
-        this.height = this.viewerDiv.clientHeight;
+    this.onWindowResize = function onWindowResize(w, h) {
+        this.width = w;
+        this.height = h;
         this.fullSizeRenderTarget.setSize(this.width, this.height);
-        this.renderer.setSize(this.viewerDiv.clientWidth, this.height);
+        this.renderer.setSize(this.width, this.height);
     }.bind(this);
-
-    //
-    // Create canvas
-    //
-    var canvas = document.createElement('canvas');
 
     //
     // Create renderer
     //
     this.renderer = renderer || new THREE.WebGLRenderer({
-        canvas,
+        canvas: document.createElement('canvas'),
         antialias: true,
         alpha: true,
         logarithmicDepthBuffer: this.gLDebug || NOIE,
