@@ -28,9 +28,10 @@ global.fetch = function _fetch(url) {
             counters.fetch.push(url);
         }
         res({
-            buffer: () => content || {},
-            json: () => JSON.parse(content),
-            arrayBuffer: () => content || {},
+            buffer: () => Promise.resolve(content || {}),
+            json: () => Promise.resolve(JSON.parse(content)),
+            arrayBuffer: () => Promise.resolve(content || {}),
+            ok: true,
         });
     });
     return pr;
