@@ -1,10 +1,17 @@
 <html>
     <head>
-        <title>Globe</title>
+        <title>Itowns - Planar example</title>
 
         <style type="text/css">
-            html {height: 100%}
-            body { margin: 0; overflow:hidden; height:100%}
+            html {
+                height: 100%;
+            }
+
+            body {
+                margin: 0;
+                overflow: hidden;
+                height: 100%;
+            }
 
             #viewerDiv {
                 margin : auto auto;
@@ -12,25 +19,6 @@
                 height: 100%;
                 padding: 0;
             }
-            .ytp-button {
-                position: absolute;
-                top: 0px;
-                right: 0px;
-               outline: none;
-               border: 0px solid;
-               background: transparent;
-            }
-
-            .ytp-play-button {
-               fill: #fff;
-               opacity: 0.85;
-            }
-
-            .ytp-play-button:hover {
-               cursor: pointer;
-               opacity: 1;
-            }
-
         </style>
         <meta charset="UTF-8">
 
@@ -38,74 +26,10 @@
     </head>
     <body>
         <div id="viewerDiv"></div>
-        <button class="ytp-play-button ytp-button" id="play-button" tabindex="32">
-           <svg width="100%" height="100%" viewBox="0 0 36 36" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-              <defs>
-                 <path id="ytp-12" d="M 11 10 L 17 10 L 17 26 L 11 26 M 20 10 L 26 10 L 26 26 L 20 26">
-                    <animate id="animation" begin="indefinite" attributeType="XML" attributeName="d" fill="freeze" from="M11,10 L17,10 17,26 11,26 M20,10 L26,10 26,26 20,26" to="M11,10 L18,13.74 18,22.28 11,26 M18,13.74 L26,18 26,18 18,22.28" dur="0.1s" keySplines=".4 0 1 1"
-                    repeatCount="1"></animate>
-                 </path>
-              </defs>
-              <use xlink:href="#ytp-12" class="ytp-svg-shadow"></use>
-              <use xlink:href="#ytp-12" class="ytp-svg-fill"></use>
-           </svg>
-        </button>
-
         <script src="/dist/itowns.js"></script>
         <script type="text/javascript">
             let renderer; let exports = {};
         </script>
         <script src="planar.js"></script>
-        <script type="text/javascript">
-            var animationEnabled = true;
-
-            let previous = Date.now();
-            let dt = 0;
-            function moveCamera() {
-                const now = Date.now();
-                dt += now - previous;
-                var t = dt / 3000;
-                previous = now;
-
-                var radius = Math.min(extent.dimensions().x, extent.dimensions().y);// / 2;
-
-                const center = extent.center().xyz();
-                var x = center.x + Math.cos(t) * radius;
-                var y = center.y + Math.sin(t) * radius;
-
-                const c2 = new itowns.Coordinates('EPSG:3946', 1842500, 5175500, 0);
-                view.camera.camera3D.position.set(x, y, 3000 + Math.sin(t) * 100);
-                view.camera.camera3D.lookAt(c2.xyz());
-                view.camera.camera3D.updateMatrix();
-                view.camera.camera3D.updateMatrixWorld(true);
-
-                view.notifyChange(true);
-            }
-
-            view.onAfterRender = () => {
-                if (animationEnabled) {
-                    moveCamera();
-                }
-            };
-            moveCamera();
-
-            // play-pause button from https://codepen.io/mistkaes/pen/WvPrJL
-            pause = "M11,10 L18,13.74 18,22.28 11,26 M18,13.74 L26,18 26,18 18,22.28",
-            play = "M11,10 L17,10 17,26 11,26 M20,10 L26,10 26,26 20,26",
-            animation = document.getElementById('animation');
-
-            document.getElementById("play-button").addEventListener('click', function() {
-                animationEnabled = !animationEnabled;
-                animation.setAttribute("from", animationEnabled ? pause : play);
-                animation.setAttribute("to", animationEnabled ? play : pause);
-                animation.beginElement();
-                if (animationEnabled) {
-                    view.notifyChange(true);
-                    previous = Date.now();
-                }
-            });
-
-            new debug.Debug(view, viewerDiv);
-        </script>
     </body>
 </html>
