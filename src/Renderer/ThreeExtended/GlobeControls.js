@@ -155,6 +155,8 @@ let enableAnimation = true;
 var player = null;
 // Save 2 last rotation globe for damping
 var lastRotation = [];
+// Save the last time of mouse move for damping
+var lastTimeMouseMove = 0;
 
 // Expression used to damp camera's moves
 var dampingMoveAnimatedExpression = (function getDampMoveAniExprFn() {
@@ -887,6 +889,7 @@ function GlobeControls(view, target, domElement, viewerDiv, radius, getPickingPo
                     quatGlobe.setFromUnitVectors(normalizedIntersection, tSphere.picking.normal);
                     // backups last move globe for damping
                     lastRotation.push(normalizedIntersection.clone());
+                    lastTimeMouseMove = Date.now();
                     // Remove unnecessary movements backups
                     if (lastRotation.length > 2) {
                         lastRotation.splice(0, 1);
@@ -994,7 +997,8 @@ function GlobeControls(view, target, domElement, viewerDiv, radius, getPickingPo
         if (this.enableDamping) {
             if (state === CONTROL_STATE.ORBIT && (sphericalDelta.theta > EPS || sphericalDelta.phi > EPS)) {
                 player.play(dampingOrbitalMvt).then(() => this.resetControls());
-            } else if (state === CONTROL_STATE.MOVE_GLOBE && lastRotation.length === 2 && !(lastRotation[1].equals(lastRotation[0]))) {
+            } else if (state === CONTROL_STATE.MOVE_GLOBE && lastRotation.length === 2 && (Date.now() - lastTimeMouseMove < 50) && !(lastRotation[1].equals(lastRotation[0]))) {
+                // animation since mouse up event occurs less than 50ms after the last mouse move
                 ctrl.qDelta.setFromUnitVectors(lastRotation[1], lastRotation[0]);
                 player.play(animationDampingMove).then(() => this.resetControls());
             } else {
