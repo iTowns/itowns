@@ -20,6 +20,18 @@ and open the template in the editor.
             }
             #menuDiv {position: absolute; top:0px; margin-left: 0px;}
 
+		    #splitSlider {
+		        position: absolute;
+		        left: 50%;
+		        top: 0px;
+		        width: 4px;
+		        height: 100%;
+		        background-color: #FFFFFF;
+		    }
+
+		    #splitSlider:hover {
+		        cursor: ew-resize;
+		    }
 
         </style>
         <meta charset="UTF-8">
@@ -28,7 +40,8 @@ and open the template in the editor.
         <script src="node_modules/dat.gui/build/dat.gui.min.js"></script>
     </head>
     <body>
-        <div id="viewerDiv"></div>
+        <div id="viewerDiv"><div id="splitSlider"></div></div>
+
         <script src="examples/GUI/GuiTools.js"></script>
         <script src="dist/itowns.js"></script>
         <script src="dist/debug.js"></script>
@@ -45,9 +58,7 @@ and open the template in the editor.
 
             let promises = []
             promises.push(itowns.Fetcher.json('examples/layers/JSONLayers/Ortho.json').then(result => globeView.addLayer(result)));
-            promises.push(itowns.Fetcher.json('examples/layers/JSONLayers/OrthosCRS.json').then(result => globeView.addLayer(result)));
-            promises.push(itowns.Fetcher.json('examples/layers/JSONLayers/ScanEX.json').then(result => globeView.addLayer(result)));
-            promises.push(itowns.Fetcher.json('examples/layers/JSONLayers/Region.json').then(result => globeView.addLayer(result)));
+            promises.push(itowns.Fetcher.json('examples/layers/JSONLayers/OPENSM.json').then(result => globeView.addLayer(result)));
 
             promises.push(itowns.Fetcher.json('examples/layers/JSONLayers/WORLD_DTM.json').then(result => globeView.addLayer(result)));
             promises.push(itowns.Fetcher.json('examples/layers/JSONLayers/IGN_MNT_HIGHRES.json').then(result => globeView.addLayer(result)));
@@ -64,6 +75,27 @@ and open the template in the editor.
             globeView.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, () => {
                 // eslint-disable-next-line no-console
                 console.info('Globe initialized');
+
+				var splitSlider = document.getElementById('splitSlider');
+				globeView.setSplitLayerPosition(splitSlider.offsetLeft / splitSlider.parentElement.offsetWidth * window.innerWidth);
+				document.getElementById('splitSlider').addEventListener('mousedown', mouseDown, false);
+				window.addEventListener('mouseup', mouseUp, false);
+
+				var xD = 0;
+				function mouseDown(evt) {
+				  xD = evt.clientX - splitSlider.offsetLeft;
+				  window.addEventListener('mousemove', splitSliderMove, true);
+				}
+
+				function splitSliderMove(evt) {
+				  var splitPosition = (evt.clientX - xD) / splitSlider.parentElement.offsetWidth;
+				  splitSlider.style.left = 100.0 * splitPosition + "%";
+				  globeView.setSplitLayerPosition(splitPosition * window.innerWidth);
+				}
+
+				function mouseUp() {
+				  window.removeEventListener('mousemove', splitSliderMove, true);
+				}
             });
 
             new debug.Debug(globeView, viewerDiv);

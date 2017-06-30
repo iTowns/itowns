@@ -483,6 +483,11 @@ GlobeView.prototype.setLightingPos = function setLightingPos(pos) {
     this.notifyChange(true);
 };
 
+GlobeView.prototype.setSplitLayerPosition = function setSplitLayerPosition(pos) {
+    this.updateMaterialUniform('splitPos', pos);
+    this.notifyChange(true);
+};
+
 GlobeView.prototype.updateMaterialUniform = function updateMaterialUniform(uniformName, value) {
     for (const n of this.wgs84TileLayer.level0Nodes) {
         n.traverse((obj) => {

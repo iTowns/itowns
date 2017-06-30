@@ -28,6 +28,7 @@ uniform vec3        lightPosition;
 // Options global
 uniform bool        selected;
 uniform bool        lightingEnabled;
+uniform float       splitPos;
 
 varying vec2        vUv_WGS84;
 varying float       vUv_PM;
@@ -90,7 +91,7 @@ void main() {
             if(visibility[layer]) {
                 vec4 paramsA = paramLayers[layer];
 
-                if(paramsA.w > 0.0) {
+                if(paramsA.w > 0.0) { 
                     bool projWGS84 = paramsA.y == 0.0;
                     int textureIndex = int(paramsA.x) + (projWGS84 ? 0 : pmSubTextureIndex);
 
@@ -106,12 +107,16 @@ void main() {
                             textureIndex,
                             projWGS84 ? vUv_WGS84 : uvPM);
 
-                        if (layerColor.a > 0.0) {
+                        if(layer == 1 && gl_FragCoord.x < splitPos){
+                            diffuseColor = layerColor;
+                        } else
+                        if (layerColor.a > 0.0 && layer != 1) {
                             validTexture = true;
                             float lum = 1.0;
 
                             if(paramsA.z > 0.0) {
                                 float a = max(0.05,1.0 - length(layerColor.xyz-CWhite.xyz));
+
                                 if(paramsA.z > 2.0) {
                                     a = (layerColor.r + layerColor.g + layerColor.b)*0.333333333;
                                     layerColor*= layerColor*layerColor;
@@ -119,7 +124,7 @@ void main() {
                                 lum = 1.0-pow(abs(a),paramsA.z);
                             }
 
-                            diffuseColor = mix( diffuseColor,layerColor, lum*paramsA.w * layerColor.a);
+                            diffuseColor = mix( diffuseColor, layerColor, lum*paramsA.w * layerColor.a);
 
                         }
                     }

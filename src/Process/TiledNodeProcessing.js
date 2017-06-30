@@ -74,6 +74,9 @@ function subdivideNode(context, layer, node, initNewNode) {
                     node.material.uniforms.lightPosition.value;
                 child.material.uniforms.lightingEnabled.value =
                     node.material.uniforms.lightingEnabled.value;
+
+                child.material.uniforms.splitPos.value =
+                    node.material.uniforms.splitPos.value;
             }
             // TODO
             /*
