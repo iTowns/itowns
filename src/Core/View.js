@@ -102,7 +102,12 @@ function _preprocessLayer(view, layer, provider) {
         }
 
         if (provider.preprocessDataLayer) {
-            provider.preprocessDataLayer(layer);
+            const preprocessingResult = provider.preprocessDataLayer(layer);
+            if (preprocessingResult && preprocessingResult.then) {
+                layer.preprocessedPromise = preprocessingResult;
+            } else {
+                layer.preprocessedPromise = Promise.resolve();
+            }
         }
     }
 

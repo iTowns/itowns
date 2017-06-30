@@ -13,9 +13,7 @@ function updateLayersOrdering(geometryLayer, imageryLayers) {
     }
 }
 
-export const COLOR_LAYERS_ORDER_CHANGED = 'layers-order-changed';
-
-export const ColorLayersOrdering = {
+const ColorLayersOrdering = {
     /**
      * Moves up in the layer list. This function has no effect if the layer is moved to its current index.
      * @function moveLayerUp
@@ -28,13 +26,8 @@ export const ColorLayersOrdering = {
         const imageryLayers = view.getLayers(l => l.type === 'color');
         const layer = view.getLayers(l => l.id === layerId)[0];
         if (layer) {
-            const previousSequence = ImageryLayers.getColorLayersIdOrderedBySequence(imageryLayers);
             ImageryLayers.moveLayerUp(layer, imageryLayers);
             updateLayersOrdering(view.wgs84TileLayer, imageryLayers);
-            view.dispatchEvent({ type: COLOR_LAYERS_ORDER_CHANGED,
-                previous: { sequence: previousSequence },
-                new: { sequence: ImageryLayers.getColorLayersIdOrderedBySequence(imageryLayers) },
-            });
             view.notifyChange(true);
         } else {
             throw new Error(`${layerId} isn't color layer`);
@@ -52,20 +45,17 @@ export const ColorLayersOrdering = {
         const imageryLayers = view.getLayers(l => l.type === 'color');
         const layer = view.getLayers(l => l.id === layerId)[0];
         if (layer) {
-            const previousSequence = ImageryLayers.getColorLayersIdOrderedBySequence(imageryLayers);
             ImageryLayers.moveLayerDown(layer, imageryLayers);
             updateLayersOrdering(view.wgs84TileLayer, imageryLayers);
-            view.dispatchEvent({ type: COLOR_LAYERS_ORDER_CHANGED,
-                previous: { sequence: previousSequence },
-                new: { sequence: ImageryLayers.getColorLayersIdOrderedBySequence(imageryLayers) },
-            });
             view.notifyChange(true);
         } else {
             throw new Error(`${layerId} isn't color layer`);
         }
     },
     /**
-     * Moves a specific layer to a specific index in the layer list. This function has no effect if the layer is moved to its current index.
+     * Moves a specific layer to a specific index in the layer list. This
+     * function has no effect if the layer is moved to its current index.
+     *
      * @function moveLayerToIndex
      * @param      {View}  view the viewer
      * @param      {string}  layerId   The layer's idendifiant
@@ -77,16 +67,12 @@ export const ColorLayersOrdering = {
         const imageryLayers = view.getLayers(l => l.type === 'color');
         const layer = view.getLayers(l => l.id === layerId)[0];
         if (layer) {
-            const previousSequence = ImageryLayers.getColorLayersIdOrderedBySequence(imageryLayers);
             ImageryLayers.moveLayerToIndex(layer, newIndex, imageryLayers);
             updateLayersOrdering(view.wgs84TileLayer, imageryLayers);
-            view.dispatchEvent({ type: COLOR_LAYERS_ORDER_CHANGED,
-                previous: { sequence: previousSequence },
-                new: { sequence: ImageryLayers.getColorLayersIdOrderedBySequence(imageryLayers) },
-            });
             view.notifyChange(true);
         } else {
             throw new Error(`${layerId} isn't color layer`);
         }
     },
 };
+export default ColorLayersOrdering;
