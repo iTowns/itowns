@@ -1,5 +1,6 @@
 /* global menuGlobe */
 import Chart from 'chart.js';
+import * as THREE from 'three';
 import Coordinates from '../../src/Core/Geographic/Coordinates';
 import OBBHelper from './OBBHelper';
 import View from '../../src/Core/View';
@@ -276,8 +277,10 @@ function Debug(view, viewerDiv) {
             geometryLayer.showOutline = newValue;
         }
         applyToNodeFirstMaterial((material) => {
-            material.uniforms.showOutline = { value: newValue };
-            material.needsUpdate = true;
+            if (material.uniforms) {
+                material.uniforms.showOutline = { value: newValue };
+                material.needsUpdate = true;
+            }
         });
         view.notifyChange(true);
     });
@@ -362,28 +365,74 @@ function addGeometryLayerDebugFeatures(layer, view, gui, state) {
         if (!enabled) {
             return;
         }
-        var n = node.children.filter(n => n.layer == obb_layer_id);
+        var obbChildren = node.children.filter(n => n.layer == obb_layer_id);
 
-        if (node.material.visible) {
-            if (n.length == 0) {
+        // FIXME there seem to be quite a lot of way to control/test visibility for nodes...
+        if (node.material && node.material.visible) {
+            console.log('protocol', layer);
+            let helper;
+            if (obbChildren.length == 0) {
                 const l = context.view.getLayers(l => l.id === obb_layer_id)[0];
-                const helper = new OBBHelper(node.OBB(), `id:${node.id}`);
+                helper = new OBBHelper(node.OBB(), `id:${node.id}`);
                 helper.layer = obb_layer_id;
                 const l3js = l.threejsLayer;
                 helper.layers.set(l3js);
                 helper.children[0].layers.set(l3js);
                 node.add(helper);
                 helper.updateMatrixWorld(true);
-
-                n = helper;
             } else {
-                n = n[0];
+                helper = obbChildren[0];
             }
-
-            n.setMaterialVisibility(true);
-            n.update(node.OBB());
-        } else if (n.length > 0) {
-            n[0].setMaterialVisibility(false);
+            helper.setMaterialVisibility(true);
+            helper.update(node.OBB());
+        } else if (node.visible && node.boundingVolume) {
+            // 3dTiles case
+            let helper;
+            if (obbChildren.length == 0) {
+                // 3dtiles with region
+                if (node.boundingVolume.region) {
+                    helper = new OBBHelper(node.boundingVolume.region, `id:${node.id}`);
+                    node.add(helper);
+                    helper.layer = obb_layer_id;
+                    // add the ability to hide all the debug obj for one layer at once
+                    const l = context.view.getLayers(l => l.id === obb_layer_id)[0];
+                    const l3js = l.threejsLayer;
+                    helper.layers.set(l3js);
+                    helper.children[0].layers.set(l3js);
+                    helper.updateMatrix();
+                    helper.updateMatrixWorld();
+                }
+                // 3dtiles with box
+                if (node.boundingVolume.box) {
+                    const size = node.boundingVolume.box.getSize();
+                    const g = new THREE.BoxGeometry(size.x, size.y, size.z);
+                    const material = new THREE.MeshBasicMaterial({ wireframe: true });
+                    helper = new THREE.Mesh(g, material);
+                    node.add(helper);
+                    helper.frustumCulled = false;
+                    helper.layer = obb_layer_id;
+                    // add the ability to hide all the debug obj for one layer at once
+                    const l = context.view.getLayers(l => l.id === obb_layer_id)[0];
+                    const l3js = l.threejsLayer;
+                    helper.layers.set(l3js);
+                    helper.updateMatrix();
+                    helper.updateMatrixWorld();
+                }
+                // TODO deal with the bounding sphere case
+            } else {
+                helper = obbChildren[0];
+            }
+            if (helper) {
+                helper.visible = true;
+            }
+        } else {
+            // hide obb children
+            for (const child of node.children.filter(n => n.layer == obb_layer_id)) {
+                if (typeof child.setMaterialVisibility === 'function') {
+                    child.setMaterialVisibility(false);
+                }
+                child.visible = false;
+            }
         }
     };
     let debugLayer = {
