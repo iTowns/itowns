@@ -121,26 +121,6 @@ export function initTiledGeometryLayer(schemeTile) {
     };
 }
 
-function _removeChildren(node) {
-    // remove all children from a node
-    for (const c of node.children) {
-        _removeChildren(c);
-
-        if (typeof c.dispose === 'function') {
-            c.dispose();
-        } else {
-            if (c.geometry) {
-                c.geometry.dispose();
-            }
-            if (c.material) {
-                c.material.dispose();
-            }
-        }
-    }
-
-    node.children = [];
-}
-
 export function processTiledGeometryNode(cullingTest, subdivisionTest, initNewNode) {
     return function _processTiledGeometryNode(context, layer, node) {
     // early exit if parent' subdivision is in progress
@@ -171,7 +151,7 @@ export function processTiledGeometryNode(cullingTest, subdivisionTest, initNewNo
                 node.setFog(1000000000);
 
                 if (!requestChildrenUpdate) {
-                    _removeChildren(node);
+                    node.removeChildren();
                 }
             }
 
@@ -180,7 +160,7 @@ export function processTiledGeometryNode(cullingTest, subdivisionTest, initNewNo
         }
 
         node.setDisplayed(false);
-        _removeChildren(node);
+        node.removeChildren();
 
         return undefined;
     };

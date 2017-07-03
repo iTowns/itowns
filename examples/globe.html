@@ -1,10 +1,17 @@
 <html>
     <head>
-        <title>Globe</title>
+        <title>Itowns - Globe</title>
 
         <style type="text/css">
-            html {height: 100%}
-            body { margin: 0; overflow:hidden; height:100%}
+            html {
+                height: 100%;
+            }
+
+            body {
+                margin: 0;
+                overflow:hidden;
+                height:100%;
+            }
 
             #viewerDiv {
                 margin : auto auto;
@@ -12,13 +19,18 @@
                 height: 600px;
                 padding: 0;
             }
-                        #menuDiv {position: absolute; top:0px; margin-left: 0px;}
+
+            #menuDiv {
+                position: absolute;
+                top:0px;
+                margin-left: 0px;
+            }
 
         </style>
         <meta charset="UTF-8">
 
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.6.1/dat.gui.min.js"></script>
+        <script src="/node_modules/dat.gui/build/dat.gui.min.js"></script>
     </head>
     <body>
         <div id="viewerDiv"></div>
@@ -27,7 +39,7 @@
         <script src="/dist/itowns.js"></script>
         <script src="/dist/debug.js"></script>
         <script type="text/javascript">
-            let renderer; let exports = {};
+            let exports = {};
         </script>
         <script src="globe.js"></script>
         <script type="text/javascript">

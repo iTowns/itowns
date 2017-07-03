@@ -1,21 +1,30 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Globe</title>
+        <title>Itowns - Using an external scene</title>
 
         <style type="text/css">
-            html {height: 100%}
-            body { margin: 0; overflow:hidden; height:100%}
+            html {
+                height: 100%;
+            }
+            body {
+                margin: 0;
+                overflow: hidden;
+                height: 100%;
+            }
 
             #viewerDiv {
                 margin : auto auto;
-                width: 100%;
-                height: 100%;
-                padding: 0;
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            }
+
+            #viewerDiv > canvas {
+                display: block;
             }
         </style>
         <meta charset="UTF-8">
-
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
     </head>
     <body>
@@ -23,7 +32,8 @@
         </div>
         <script src="/dist/itowns.js"></script>
         <script type="text/javascript">
-            let renderer; let exports = {};
+            let renderer;
+            let exports = {};
         </script>
         <script src="/examples/externalscene.js"></script>
     </body>
