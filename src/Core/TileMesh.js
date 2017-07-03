@@ -48,6 +48,32 @@ function TileMesh(geometry, params) {
 TileMesh.prototype = Object.create(THREE.Mesh.prototype);
 TileMesh.prototype.constructor = TileMesh;
 
+TileMesh.prototype.removeChildren = function removeChildren() {
+    // remove all children from a node from same layer
+    let i = this.children.length;
+    while (i--) {
+        const c = this.children[i];
+        if (c.layer !== this.layer) {
+            continue;
+        }
+        if (typeof c.removeChildren === 'function') {
+            c.removeChildren();
+        }
+
+        if (typeof c.dispose === 'function') {
+            c.dispose();
+        } else {
+            if (c.geometry) {
+                c.geometry.dispose();
+            }
+            if (c.material) {
+                c.material.dispose();
+            }
+        }
+        this.children.splice(i, 1);
+    }
+};
+
 TileMesh.prototype.dispose = function dispose() {
     this.material.dispose();
     this.geometry.dispose();
