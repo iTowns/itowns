@@ -6,23 +6,31 @@ and open the template in the editor.
 -->
 <html>
     <head>
-        <title>Globe</title>
+        <title>Itowns - multiglobe</title>
 
-    <style type="text/css">
-            html {height: 100%}
-        body { margin: 0; overflow:hidden; height:100%}
+        <style type="text/css">
+            html {
+                height: 100%;
+            }
+
+            body {
+                margin: 0;
+                overflow: hidden;
+                height: 100%;
+            }
 
             div {
                 margin : auto auto;
                 width: 100%;
                 padding: 0;
                 height: 50%
-                /*margin-top: 50vh;
-                transform: translateY(-50%);*/
             }
-            #menuDiv {position: absolute; top:0px; margin-left: 0px;}
 
-
+            #menuDiv {
+                position: absolute;
+                top: 0px;
+                margin-left: 0px;
+            }
         </style>
         <meta charset="UTF-8">
 
@@ -100,6 +108,6 @@ and open the template in the editor.
                 globeView2.addLayer(e);
                 globeView2.notifyChange();
             }, 500);
-</script>
+        </script>
     </body>
 </html>

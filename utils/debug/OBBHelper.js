@@ -60,6 +60,16 @@ OBBHelper.prototype.setMaterialVisibility = function setMaterialVisibility(show)
     this.textMesh.material.visible = show;
 };
 
+OBBHelper.prototype.dispose = function removeChildren() {
+    this.material.dispose();
+    this.geometry.dispose();
+    if (this.textMesh) {
+        this.textMesh.material.dispose();
+        this.textMesh.geometry.dispose();
+        delete this.textMesh;
+    }
+};
+
 OBBHelper.prototype.update = function update(OBB) {
     var position = this.geometry.attributes.position;
     var array = position.array;

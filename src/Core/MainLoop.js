@@ -32,6 +32,8 @@ function updateElements(context, geometryLayer, elements) {
     }
     for (const element of elements) {
         // update element
+        // TODO find a way to notify attachedLayers when geometryLayer deletes some elements
+        // and then update Debug.js:addGeometryLayerDebugFeatures
         const newElementsToUpdate = geometryLayer.update(context, geometryLayer, element);
 
         // update attached layers

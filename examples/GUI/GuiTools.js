@@ -25,8 +25,8 @@ dat.GUI.prototype.hideFolder = function hideFolder(name, value) {
     folder.__ul.hidden = value;
 };
 
-function GuiTools(domId, view) {
-    this.gui = new dat.GUI({ autoPlace: false });
+function GuiTools(domId, view, width = 245) {
+    this.gui = new dat.GUI({ autoPlace: false, width });
     this.gui.domElement.id = domId;
     viewerDiv.appendChild(this.gui.domElement);
     this.colorGui = this.gui.addFolder('Color Layers');
@@ -79,11 +79,6 @@ GuiTools.prototype.addElevationLayersGUI = function addElevationLayersGUI(layers
     for (var i = 0; i < layers.length; i++) {
         this.addElevationLayerGUI(layers[i]);
     }
-};
-
-GuiTools.prototype.addLayersGUI = function addLayersGUI(imageryLayers, elevationLayers) {
-    this.addImageryLayersGUI(imageryLayers);
-    this.addElevationLayersGUI(elevationLayers);
 };
 
 GuiTools.prototype.removeLayersGUI = function removeLayersGUI(nameLayer) {
