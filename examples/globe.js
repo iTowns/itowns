@@ -12,7 +12,7 @@ const globeView = new itowns.GlobeView(viewerDiv, positionOnGlobe, { renderer })
 
 // Add one imagery layer to the scene
 // This layer is defined in a json file but it could be defined as a plain js object. See Layer* for more info.
-itowns.Fetcher.json('/examples/layers/JSONLayers/Ortho.json').then(result => globeView.addLayer(result));
+itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(result => globeView.addLayer(result));
 // Add two elevation layers.
 // These will deform iTowns globe geometry to represent terrain elevation.
 // itowns.Fetcher.json('/examples/layers/JSONLayers/IGN_MNT.json').then(result => globeView.addLayer(result));
