@@ -9,7 +9,6 @@ if [ "$TRAVIS_NODE_VERSION" != "node" ]; then
 fi
 
 SOURCE_BRANCH="master"
-TARGET_BRANCH="gh-pages"
 
 if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
     echo "Skipping deploy for a pull request"
@@ -24,29 +23,38 @@ fi
 
 # Save some useful information
 REPO=`git config remote.origin.url`
-SSH_REPO=${REPO/https:\/\/github.com\//git@github.com:}
+SITE_REPO=git@github.com:iTowns/itowns.github.io.git
 SHA=`git rev-parse --verify HEAD`
 COMMIT_AUTHOR_EMAIL=`git show  --pretty=format:"%ae" -q`
 COMMIT_AUTHOR_NAME=`git show  --pretty=format:"%an" -q`
 
-# Clone the existing gh-pages for this repo into out/
-git clone $REPO --single-branch --branch $TARGET_BRANCH out
+# Clone the existing master for the website into out/
+# (using master because https://help.github.com/articles/user-organization-and-project-pages/)
+git clone $SITE_REPO --single-branch --branch master out
 
-pushd out
+# We're going to rewrite all the content of out/itowns2
+
 # Remove everything then recreate the content, to avoid keeping stale files
-git rm -rf dist index.html API_Doc examples
-popd
+if [ -d out/itowns2 ]; then
+    pushd out
+    git rm -rf itowns2
+    popd
+fi
+
+mkdir -p out/itowns2/dist
+
 # Copy build results
-cp -R dist out/
+cp -R dist/*.js out/itowns2/dist/
 # generate the API documentation
-npm run doc -- -d out/API_Doc
+npm run doc -- -d out/itowns2/API_Doc
+
 # Copy demo
-cp examples/index.html out/
-cp node_modules/dat.gui/build/dat.gui.min.js out/
+mkdir -p out/itowns2/node_modules/dat.gui/build/
+cp node_modules/dat.gui/build/dat.gui.min.js out/itowns2/node_modules/dat.gui/build/
 # Copy examples
-cp -R examples out/
+cp -R examples out/itowns2/
 # Copy the decoded deploy key (decoding made with openssl command in .travis.yml)
-cp deploy_key out/
+cp deploy_key out/itowns2/
 # Deleting the JS files in examples/layers
 #git rm -f examples/layers/\ *.js
 
@@ -56,11 +64,11 @@ git config user.name "$COMMIT_AUTHOR_NAME"
 git config user.email "$COMMIT_AUTHOR_EMAIL"
 
 # Commit the "changes", i.e. the new version.
-git add dist index.html API_Doc examples dat.gui.min.js
-git commit -m "Deploy to GitHub Pages: ${SHA}"
+git add itowns2
+git commit -m "Deploy from itowns2 to GitHub Pages: ${SHA}"
 
-chmod 600 deploy_key
+chmod 600 itowns2/deploy_key
 eval `ssh-agent -s`
-ssh-add deploy_key
+ssh-add itowns2/deploy_key
 # Now that we're all set up, we can push.
-git push $SSH_REPO $TARGET_BRANCH
+git push $SITE_REPO

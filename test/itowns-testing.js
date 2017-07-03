@@ -23,7 +23,7 @@ global.fetch = function _fetch(url) {
     });
 
     // try reading as a file
-    fs.readFile(process.env.PWD + url, 'utf-8', (err, content) => {
+    fs.readFile(`${process.env.PWD}/examples/${url}`, 'utf-8', (err, content) => {
         if (!content || err) {
             counters.fetch.push(url);
         }
