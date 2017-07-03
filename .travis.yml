@@ -3,5 +3,5 @@ node_js:
   - "lts/*"
   - "node"
 after_success:
-  - openssl aes-256-cbc -K $encrypted_d96e3d89b2d4_key -iv $encrypted_d96e3d89b2d4_iv -in deploy_key.enc -out deploy_key -d
+  - openssl aes-256-cbc -K $encrypted_822645c864aa_key -iv $encrypted_822645c864aa_iv -in deploy_key.enc -out deploy_key -d
   - bash autodeploy.sh
