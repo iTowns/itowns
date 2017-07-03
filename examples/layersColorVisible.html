@@ -21,7 +21,7 @@
     </head>
     <body>
         <div id="viewerDiv"></div>
-        <script src="GUI/GuiTools.js"></script>
+        <script src="./GUI/GuiTools.js"></script>
         <script src="../dist/itowns.js"></script>
         <script type="text/javascript">
             /* global itowns,document,GuiTools*/
@@ -35,9 +35,9 @@
             menuGlobe.view = globeView;
 
             const promises = [];
-            promises.push(itowns.Fetcher.json('layers/JSONLayers/Ortho.json').then(result => globeView.addLayer(result)));
-            promises.push(itowns.Fetcher.json('layers/JSONLayers/Region.json').then(result => globeView.addLayer(result)));
-            promises.push(itowns.Fetcher.json('layers/JSONLayers/IGN_MNT.json').then(result => globeView.addLayer(result)));
+            promises.push(itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(result => globeView.addLayer(result)));
+            promises.push(itowns.Fetcher.json('./layers/JSONLayers/Region.json').then(result => globeView.addLayer(result)));
+            promises.push(itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT.json').then(result => globeView.addLayer(result)));
 
             function getLayersColorVisible(node, layers) {
                 if (!node || !node.visible) {

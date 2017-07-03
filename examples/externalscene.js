@@ -9,8 +9,8 @@ const globeView = new itowns.GlobeView(viewerDiv, positionOnGlobe, { scene3D: sc
 
 globeView.mainLoop.name = 'external-ML';
 
-itowns.Fetcher.json('/examples/layers/JSONLayers/Ortho.json').then(result => globeView.addLayer(result));
-itowns.Fetcher.json('/examples/layers/JSONLayers/IGN_MNT.json').then(result => globeView.addLayer(result));
+itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(result => globeView.addLayer(result));
+itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT.json').then(result => globeView.addLayer(result));
 
 exports.globeView = globeView;
 exports.scene = scene;
