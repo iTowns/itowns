@@ -369,17 +369,35 @@ function addGeometryLayerDebugFeatures(layer, view, gui, state) {
 
         // FIXME there seem to be quite a lot of way to control/test visibility for nodes...
         if (node.material && node.material.visible) {
-            console.log('protocol', layer);
             let helper;
             if (obbChildren.length == 0) {
-                const l = context.view.getLayers(l => l.id === obb_layer_id)[0];
                 helper = new OBBHelper(node.OBB(), `id:${node.id}`);
                 helper.layer = obb_layer_id;
+                // add the ability to hide all the debug obj for one layer at once
+                const l = context.view.getLayers(l => l.id === obb_layer_id)[0];
                 const l3js = l.threejsLayer;
                 helper.layers.set(l3js);
                 helper.children[0].layers.set(l3js);
                 node.add(helper);
                 helper.updateMatrixWorld(true);
+
+                // if we don't do that, our OBBHelper will never get removed,
+                // because once a node is invisible, children are not removed
+                // any more
+                // FIXME a proper way of notifying tile deletion to children layers should be implemented
+                node.setDisplayed = function setDisplayed(show) {
+                    this.material.visible = show;
+                    if (!show) {
+                        let i = this.children.length;
+                        while (i--) {
+                            const c = this.children[i];
+                            if (c.layer === obb_layer_id) {
+                                c.dispose();
+                                this.children.splice(i, 1);
+                            }
+                        }
+                    }
+                };
             } else {
                 helper = obbChildren[0];
             }
