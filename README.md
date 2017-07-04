@@ -7,12 +7,20 @@
 
 ## What is it?
 
-iTowns is a web framework written in Javascript/WebGL for visualisation of 3D geographic data allowing precise measurements in 3D.
-Its first purpose was the visualisation of street view images and terrestrial lidar point cloud. It has then been extended to handle more data types.
+iTowns is a [Three.js](https://threejs.org/)-based framework written in Javascript/WebGL for visualizing 3D geospatial data.
 
-The V2 of iTowns Open Source is a refactoring of [iTowns V1](https://github.com/iTowns/itowns)
+It can connect to WMS/WMTS/TMS servers including elevation data and load many different data format (3dTiles, gpx, KML and much much more).
 
-This version includes a globe visualization mode.
+The V2 of iTowns Open Source is a refactoring of [iTowns V1](https://github.com/iTowns/itowns-legacy).
+
+**[Documentation](http://www.itowns-project.org/itowns2/API_Doc/)**
+
+**Examples**
+
+- [Globe](http://www.itowns-project.org/itowns2/examples/globe.html)
+- [Plane](http://www.itowns-project.org/itowns2/examples/planar.html)
+- [Scene postprocessing](http://www.itowns-project.org/itowns2/examples/postprocessing.html)
+- [3dtiles](http://www.itowns-project.org/itowns2/examples/3dtiles.html)
 
 ![iTowns screenshot](http://www.itowns.fr/videos/itowns2.jpg)
 
@@ -40,7 +48,7 @@ Alternatively, we provide a bundle you can directly include in your html files t
 
 ### From a release bundle
 
-See our [release page](https://github.com/iTowns/itowns2/releases) (coming soon).
+See our [release page](https://github.com/iTowns/itowns/releases) (coming soon).
 
 
 ## Supported data types
@@ -54,14 +62,6 @@ See our [release page](https://github.com/iTowns/itowns2/releases) (coming soon)
 You can find an API documentation here [http://www.itowns-project.org/itowns2/API_Doc/]
 
 If you want to play with a demonstration, please see [http://www.itowns-project.org/itowns2/]
-
-## In Progress
-
-- Coding main classes
-- Documentation
-- Tutorial / Examples
-
-Latest changes can be found in [CHANGES.md](CHANGES.md)
 
 ## Licence
 
