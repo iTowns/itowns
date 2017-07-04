@@ -76,5 +76,5 @@ git push $SITE_REPO
 
 # clean key
 cd ..
-ssh add -d ./deploy_key
+ssh-add -d ./deploy_key
 rm ./deploy_key
