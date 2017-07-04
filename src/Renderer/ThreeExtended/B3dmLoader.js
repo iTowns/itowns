@@ -27,6 +27,18 @@ function filterUnsupportedSemantics(obj) {
         }
     }
 }
+// parse for RTC values
+function parseInternalRTC(data, gltf) {
+    const headerView = new DataView(data, 0, 20);
+    const contentArray = new Uint8Array(data, 20, headerView.getUint32(12, true));
+    const content = textDecoder.decode(new Uint8Array(contentArray));
+    const json = JSON.parse(content);
+    if (json.extensions.CESIUM_RTC) {
+        gltf.position.set(json.extensions.CESIUM_RTC.center[0], json.extensions.CESIUM_RTC.center[1], json.extensions.CESIUM_RTC.center[2]);
+        gltf.updateMatrix(true);
+        gltf.updateMatrixWorld(true);
+    }
+}
 
 const textDecoder = new TextDecoder('utf-8');
 B3dmLoader.prototype.parse = function parse(buffer) {
@@ -41,7 +53,6 @@ B3dmLoader.prototype.parse = function parse(buffer) {
 
     // Magic type is unsigned char [4]
     b3dmHeader.magic = textDecoder.decode(new Uint8Array(buffer, 0, 4));
-
     if (b3dmHeader.magic) {
         // Version, byteLength, batchTableJSONByteLength, batchTableBinaryByteLength and batchTable types are uint32
         b3dmHeader.version = view.getUint32(byteOffset, true);
@@ -62,24 +73,15 @@ B3dmLoader.prototype.parse = function parse(buffer) {
         b3dmHeader.BTBinaryLength = view.getUint32(byteOffset, true);
         byteOffset += Uint32Array.BYTES_PER_ELEMENT;
 
-        // To test with a binary which possess a batch table
-        /* if(result.header.batchTableJSONByteLength > 0) {
-            var batchedTableString = this.decodeFromCharCode(array.subarray(result.byteOffset, result.byteOffset + result.header.batchTableJSONByteLength));
-            result.body.batchTableJSON = JSON.parse(batchedTableString);
-            result.byteOffset += result.header.batchTableJSONByteLength;
-        }
-        if(result.header.batchTableBinaryByteLength > 0) {
-            var batchTableBinary = new Uint8Array(buffer, result.byteOffset, result.batchTableBinaryByteLength);
-            batchTableBinary = new Uint8Array(batchTableBinary);
-            result.byteOffset += result.header.batchTableBinaryByteLength;
-        }*/
-
         // TODO: missing feature and batch table
         return new Promise((resolve/* , reject*/) => {
             const onload = (gltf) => {
                 for (const scene of gltf.scenes) {
                     scene.traverse(filterUnsupportedSemantics);
                 }
+                parseInternalRTC(buffer.slice(28 + b3dmHeader.FTJSONLength +
+                    b3dmHeader.FTBinaryLength + b3dmHeader.BTJSONLength +
+                    b3dmHeader.BTBinaryLength), gltf.scene);
                 resolve(gltf);
             };
             this.glTFLoader.parse(buffer.slice(28 + b3dmHeader.FTJSONLength +
