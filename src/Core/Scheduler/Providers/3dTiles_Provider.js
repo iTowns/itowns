@@ -10,24 +10,24 @@ import Capabilities from '../../System/Capabilities';
 import PrecisionQualifier from '../../../Renderer/Shader/Chunk/PrecisionQualifier.glsl';
 
 
-export function $3dTilesIndex(tileset, urlPrefix) {
+export function $3dTilesIndex(tileset, baseURL) {
     let counter = 0;
     this.index = {};
-    const recurse = function recurse_f(node, urlPrefix) {
+    const recurse = function recurse_f(node, baseURL) {
         this.index[counter] = node;
         node.tileId = counter;
-        node.urlPrefix = urlPrefix;
+        node.baseURL = baseURL;
         counter++;
         if (node.children) {
             for (const child of node.children) {
-                recurse(child, urlPrefix);
+                recurse(child, baseURL);
             }
         }
     }.bind(this);
-    recurse(tileset.root, urlPrefix);
+    recurse(tileset.root, baseURL);
 
-    this.extendTileset = function extendTileset(tileset, nodeId, urlPrefix) {
-        recurse(tileset.root, urlPrefix);
+    this.extendTileset = function extendTileset(tileset, nodeId, baseURL) {
+        recurse(tileset.root, baseURL);
         this.index[nodeId].children = [tileset.root];
     };
 }
@@ -162,18 +162,17 @@ $3dTiles_Provider.prototype.executeCommand = function executeCommand(command) {
 
     const tile = new THREE.Object3D();
     configureTile(tile, layer, metadata);
-    const urlSuffix = metadata.content ? metadata.content.url : undefined;
+    const path = metadata.content ? metadata.content.url : undefined;
     const setLayer = (obj) => {
         obj.layers.set(layer.threejsLayer);
     };
-    if (urlSuffix) {
-        const url = metadata.urlPrefix + urlSuffix;
-
+    if (path) {
+        // Check if we have relative or absolute url (with tileset's lopocs for example)
+        const url = path.startsWith('http') ? path : metadata.baseURL + path;
         const supportedFormats = {
             b3dm: this.b3dmToMesh.bind(this),
             pnts: this.pntsParse.bind(this),
         };
-
         return Fetcher.arrayBuffer(url, layer.networkOptions).then((result) => {
             if (result !== undefined) {
                 let func;
@@ -198,7 +197,6 @@ $3dTiles_Provider.prototype.executeCommand = function executeCommand(command) {
                     });
                 }
             }
-
             tile.traverse(setLayer);
             return tile;
         });
