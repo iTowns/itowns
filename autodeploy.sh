@@ -28,6 +28,11 @@ SHA=`git rev-parse --verify HEAD`
 COMMIT_AUTHOR_EMAIL=`git show  --pretty=format:"%ae" -q`
 COMMIT_AUTHOR_NAME=`git show  --pretty=format:"%an" -q`
 
+# Give me the right to push/pull on itowns.github.io
+chmod 600 ./deploy_key
+eval `ssh-agent -s`
+ssh-add ./deploy_key
+
 # Clone the existing master for the website into out/
 # (using master because https://help.github.com/articles/user-organization-and-project-pages/)
 git clone $SITE_REPO --single-branch --branch master out
@@ -53,8 +58,7 @@ mkdir -p out/itowns2/node_modules/dat.gui/build/
 cp node_modules/dat.gui/build/dat.gui.min.js out/itowns2/node_modules/dat.gui/build/
 # Copy examples
 cp -R examples out/itowns2/
-# Copy the decoded deploy key (decoding made with openssl command in .travis.yml)
-cp deploy_key out/itowns2/
+
 # Deleting the JS files in examples/layers
 #git rm -f examples/layers/\ *.js
 
@@ -67,8 +71,10 @@ git config user.email "$COMMIT_AUTHOR_EMAIL"
 git add itowns2
 git commit -m "Deploy from itowns2 to GitHub Pages: ${SHA}"
 
-chmod 600 itowns2/deploy_key
-eval `ssh-agent -s`
-ssh-add itowns2/deploy_key
 # Now that we're all set up, we can push.
 git push $SITE_REPO
+
+# clean key
+cd ..
+ssh add -d ./deploy_key
+rm ./deploy_key
