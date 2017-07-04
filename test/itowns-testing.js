@@ -87,6 +87,7 @@ global.window = {
     setTimeout,
 };
 global.Event = Object;
+global.__DEBUG__ = false;
 
 let testStarted = false;
 let firstCallback;
@@ -102,7 +103,7 @@ global.requestAnimationFrame = (cb) => {
 };
 
 // eslint-disable-next-line import/no-dynamic-require
-const itowns = require(`${process.env.PWD}/dist/itowns`);
+const itowns = require(`${process.env.PWD}/lib/Main.js`);
 
 global.renderer = {
     context: {
