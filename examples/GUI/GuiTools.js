@@ -31,17 +31,6 @@ function GuiTools(domId, view, width = 245) {
     viewerDiv.appendChild(this.gui.domElement);
     this.colorGui = this.gui.addFolder('Color Layers');
     this.elevationGui = this.gui.addFolder('Elevation Layers');
-
-    if (view) {
-        view.addEventListener('layers-order-changed', () => {
-            for (const layer of view.getLayers(l => l.type === 'color')) {
-                this.removeLayersGUI(layer.id);
-            }
-
-            const colorLayers = view.getLayers(l => l.type === 'color');
-            this.addImageryLayersGUI(colorLayers);
-        });
-    }
 }
 
 GuiTools.prototype.addImageryLayerGUI = function addImageryLayerGUI(layer) {

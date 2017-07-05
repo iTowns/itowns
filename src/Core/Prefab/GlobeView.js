@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 
 import View from '../View';
-import { COLOR_LAYERS_ORDER_CHANGED } from '../../Renderer/ColorLayersOrdering';
 import RendererConstant from '../../Renderer/RendererConstant';
 import GlobeControls from '../../Renderer/ThreeExtended/GlobeControls';
 import { unpack1K } from '../../Renderer/LayeredMaterial';
@@ -24,51 +23,14 @@ import BuilderEllipsoidTile from './Globe/BuilderEllipsoidTile';
  * @property target {view} dispatched on view
  * @property type {string} initialized
  */
-/**
- * Fires when a layer is added
- * @event GlobeView#layer-added
- * @property layerId {string} the id of the layer
- * @property target {view} dispatched on view
- * @property type {string} layers-added
- */
-/**
- * Fires when a layer is removed
- * @event GlobeView#layer-removed
- * @property layerId {string} the id of the layer
- * @property target {view} dispatched on view
- * @property type {string} layers-added
- */
-/**
- * Fires when the layers oder has changed
- * @event GlobeView#layers-order-changed
- * @property new {object}
- * @property new.sequence {array}
- * @property new.sequence.0 {number} the new layer at position 0
- * @property new.sequence.1 {number} the new layer at position 1
- * @property new.sequence.2 {number} the new layer at position 2
- * @property previous {object}
- * @property previous.sequence {array}
- * @property previous.sequence.0 {number} the previous layer at position 0
- * @property previous.sequence.1 {number} the previous layer at position 1
- * @property previous.sequence.2 {number} the previous layer at position 2
- * @property target {view} dispatched on view
- * @property type {string} layers-order-changed
- */
-
 
 /**
  * Globe's EVENT
  * @property GLOBE_INITIALIZED {string} emit one time when globe is initialized
- * @property LAYER_ADDED {string} emit when layer id added in viewer
- * @property LAYER_REMOVED {string} emit when layer id removed in viewer
- * @property COLOR_LAYERS_ORDER_CHANGED {string} emit when  color layers order change
  */
 
 export const GLOBE_VIEW_EVENTS = {
     GLOBE_INITIALIZED: 'initialized',
-    LAYER_ADDED: 'layer-added',
-    LAYER_REMOVED: 'layer-removed',
-    COLOR_LAYERS_ORDER_CHANGED,
 };
 
 /**
@@ -271,15 +233,7 @@ GlobeView.prototype.addLayer = function addLayer(layer) {
         }
         layer.update = updateLayeredMaterialNodeElevation;
     }
-    const layerId = layer.id;
-    View.prototype.addLayer.call(this, layer, this.wgs84TileLayer);
-
-    this.dispatchEvent({
-        type: GLOBE_VIEW_EVENTS.LAYER_ADDED,
-        layerId,
-    });
-
-    return layer;
+    return View.prototype.addLayer.call(this, layer, this.wgs84TileLayer);
 };
 
 /**
