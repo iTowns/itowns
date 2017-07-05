@@ -1,10 +1,4 @@
 <!DOCTYPE html>
-<!--
-    README:
-    To use this file, you need a server for 3d-tiles-samples. Clone this repo
-    git@github.com:AnalyticalGraphicsInc/3d-tiles-samples.git
-    And follow instructions in the README.
--->
 <html>
     <head>
         <title>Itowns - 3d-tiles example</title>
@@ -78,7 +72,7 @@
                 itowns.$3dTilesSubdivisionControl
             );
             $3dTilesLayerDiscreteLOD.name = 'DiscreteLOD';
-            $3dTilesLayerDiscreteLOD.url = 'http://localhost:8003/tilesets/TilesetWithDiscreteLOD/tileset.json';
+            $3dTilesLayerDiscreteLOD.url = 'https://raw.githubusercontent.com/AnalyticalGraphicsInc/3d-tiles-samples/master/tilesets/TilesetWithDiscreteLOD/tileset.json';
             $3dTilesLayerDiscreteLOD.protocol = '3d-tiles'
             $3dTilesLayerDiscreteLOD.overrideMaterials = true;  // custom cesium shaders are not functional
             $3dTilesLayerDiscreteLOD.type = 'geometry';
@@ -97,7 +91,7 @@
             );
 
             $3dTilesLayerRequestVolume.name = 'RequestVolume';
-            $3dTilesLayerRequestVolume.url = 'http://localhost:8003/tilesets/TilesetWithRequestVolume/tileset.json';
+            $3dTilesLayerRequestVolume.url = 'https://raw.githubusercontent.com/AnalyticalGraphicsInc/3d-tiles-samples/master/tilesets/TilesetWithRequestVolume/tileset.json';
             $3dTilesLayerRequestVolume.protocol = '3d-tiles'
             $3dTilesLayerRequestVolume.overrideMaterials = true;  // custom cesium shaders are not functional
             $3dTilesLayerRequestVolume.type = 'geometry';
