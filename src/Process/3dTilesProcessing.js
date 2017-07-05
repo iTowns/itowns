@@ -176,7 +176,7 @@ export function process3dTilesNode(cullingTest, subdivisionTest) {
                 node.material.visible = true;
             }
 
-            if ((node.material === undefined || node.material.visible) && !node.additiveRefinement) {
+            if ((node.material === undefined || node.material.visible)) {
                 for (const n of node.children.filter(n => n.layer == layer.id)) {
                     n.visible = false;
                     if (n.material) {
