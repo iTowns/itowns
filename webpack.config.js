@@ -65,13 +65,6 @@ module.exports = {
                 ],
                 loader: 'raw-loader',
             },
-            {
-                test: /node_modules[/\\]three[/\\]examples[/\\].*\.js$/,
-                loader: 'imports-loader',
-                options: {
-                    THREE: 'three',
-                },
-            },
         ],
     },
     devServer: {

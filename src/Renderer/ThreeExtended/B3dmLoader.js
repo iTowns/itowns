@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import 'three/examples/js/loaders/GLTFLoader';
+import './GLTFLoader';
 
 function B3dmLoader() {
     this.glTFLoader = new THREE.GLTFLoader();
