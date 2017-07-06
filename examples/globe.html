@@ -15,8 +15,8 @@
 
             #viewerDiv {
                 margin : auto auto;
-                width: 800px;
-                height: 600px;
+                width: 100%;
+                height: 100%;
                 padding: 0;
             }
 
@@ -34,7 +34,6 @@
     </head>
     <body>
         <div id="viewerDiv"></div>
-
         <script src="GUI/GuiTools.js"></script>
         <script src="../dist/itowns.js"></script>
         <script src="../dist/debug.js"></script>
@@ -43,10 +42,5 @@
             let exports = {};
         </script>
         <script src="globe.js"></script>
-        <script type="text/javascript">
-            const menuGlobe = new GuiTools('menuDiv');
-            new debug.Debug(globeView, viewerDiv);
-        </script>
-
     </body>
 </html>
