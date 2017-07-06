@@ -95,10 +95,10 @@ Projection.prototype.WMTS_WGS84ToWMTS_PM = function WMTS_WGS84ToWMTS_PM(cWMTS, b
     const max = yMax / sizeRow;
 
     const minRow = Math.floor(min);
-    maxRow = Math.floor(max);
-
-    if (max - maxRow === 0.0 || maxRow === nbRow)
-        { maxRow--; }
+    // ]N; N+1] => N
+    maxRow = Math.ceil(max) - 1;
+    // make sure we don't exceed boundaries
+    maxRow = Math.min(maxRow, nbRow - 1);
 
     var minCol = cWMTS.col;
     var maxCol = minCol;
