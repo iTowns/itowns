@@ -10,18 +10,15 @@ const viewerDiv = document.getElementById('viewerDiv');
 // Instanciate iTowns GlobeView*
 const globeView = new itowns.GlobeView(viewerDiv, positionOnGlobe, { renderer });
 
+const promises = [];
+
 // Add one imagery layer to the scene
 // This layer is defined in a json file but it could be defined as a plain js object. See Layer* for more info.
-itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(result => globeView.addLayer(result));
+promises.push(itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(result => globeView.addLayer(result)));
 // Add two elevation layers.
 // These will deform iTowns globe geometry to represent terrain elevation.
-// itowns.Fetcher.json('/examples/layers/JSONLayers/IGN_MNT.json').then(result => globeView.addLayer(result));
-
-// Listen for globe full initialisation event
-globeView.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, () => {
-    // eslint-disable-next-line no-console
-    console.info('Globe initialized');
-});
+promises.push(itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(result => globeView.addLayer(result)));
+promises.push(itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(result => globeView.addLayer(result)));
 
 exports.view = globeView;
 exports.initialPosition = positionOnGlobe;
