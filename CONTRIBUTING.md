@@ -22,7 +22,7 @@ The mailing list archives are here :
 
 If you cannot find any information on your problem in the archive, you can start a new thread sending an email to the list, and someone will probably answer with a solution. Please indicate clearly in your email title that you work with iTowns version 2 :  *[iTownsV2]*
 
-If you think you've found a bug in iTowns, first search the [itowns issues](https://github.com/iTowns/itowns2/issues).  If an issue already exists, please add a comment expressing your interest and any additional information. This helps prioritize issues.
+If you think you've found a bug in iTowns, first search the [itowns issues](https://github.com/iTowns/itowns/issues).  If an issue already exists, please add a comment expressing your interest and any additional information. This helps prioritize issues.
 
 If a related issue does not exist, submit a new one.  Please be concise and include as much of the following information as is relevant :
 * Sample data to reproduce the issue
@@ -40,15 +40,15 @@ In addition to contributing core iTowns code, we appreciate many types of contri
 
 * Being active on the iTowns mailing lists (see above ) by answering questions and providing input on iTowns direction.
 * Showcasing your application built with iTowns : submit an issue with a link to your demo on the [iTowns website repository](https://github.com/iTowns/itowns.github.io/issues). Tag it with the *demo* label.
-* Writing tutorials, creating examples, and improving the reference documentation. See the issues labeled [doc](https://github.com/iTowns/itowns2/labels/doc).
+* Writing tutorials, creating examples, and improving the reference documentation. See the issues labeled [doc](https://github.com/iTowns/itowns/labels/doc).
 * Submitting issues as [described above](#submitting-an-issue).
-* Triaging issues. Browse the [issues](https://github.com/iTowns/itowns2/issues) and comment on issues that are no longer reproducible or on issues for which you have additional information.
+* Triaging issues. Browse the [issues](https://github.com/iTowns/itowns/issues) and comment on issues that are no longer reproducible or on issues for which you have additional information.
 * Creating ecosystem projects for [glTF](https://github.com/KhronosGroup/glTF/issues/456), [3D Tiles](https://github.com/AnalyticalGraphicsInc/3d-tiles).
 
 For ideas for iTowns code contributions, see:
 
-* issues labeled [beginner](https://github.com/iTowns/itowns2/labels/beginner)
-* issues labeled [help_wanted](https://github.com/iTowns/itowns2/label/help_wanted)
+* issues labeled [beginner](https://github.com/iTowns/itowns/labels/beginner)
+* issues labeled [help_wanted](https://github.com/iTowns/itowns/label/help_wanted)
 
 See the [Build Guide](BUILDING.md) for how to build and run iTowns on your system.
 
@@ -87,7 +87,7 @@ You should also do an IP review for your contribution, to ensure that you have a
 Code quality matters. Here are some advices to read before submitting a Pull Request.
 
 * Review the various documents for contributors
-* If this is your first contribution to iTowns, add your name to [CONTRIBUTORS.md](https://github.com/iTowns/itowns2/blob/master/CONTRIBUTORS.md).
+* If this is your first contribution to iTowns, add your name to [CONTRIBUTORS.md](https://github.com/iTowns/itowns/blob/master/CONTRIBUTORS.md).
 * Pull request tips
    * If your pull request fixes an existing issue, include a link to the issue in the description.  Likewise, if your pull request fixes an issue reported on the iTowns mailing list, include a link to the thread in the list archive.
    * If your pull request needs additional work, include a [task list](https://github.com/blog/1375%0A-task-lists-in-gfm-issues-pulls-comments).

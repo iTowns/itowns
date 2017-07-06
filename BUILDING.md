@@ -19,23 +19,11 @@ iTowns is managed on the GitHub platform. You should start with [creating a GitH
 
 iTowns uses NPM as the build tool. If you haven't already, install Node.js: https://nodejs.org/
 
-## Get the code
-
-* Have commit access to iTowns 2 ?
-   * No
-      * Fork [iTowns](https://github.com/iTowns/itowns2).
-      * Use the [GitHub website](https://github.com/iTowns/itowns2/branches/all) to delete all branches in your fork except `master`.
-      * Clone your fork, e.g., `git clone git@github.com:yourusername/itowns2.git`.
-      * Make changes in a branch, e.g., `git checkout -b my-feature`.
-   * Yes
-      * Clone the iTowns repo, e.g., `git clone git@github.com:iTowns/itowns2.git`
-      * Make changes in a branch, e.g., `git checkout -b my-feature`.
-
 ## Build the code
 
 * Download dependencies: `npm install`
 * Run the dev server:
-   * `npm start` (you can change the port: `npm start -- --port 3000` if you obtain an error message that is not related to the port being in use, please check that your npm version is >2.0 `npm --vesrion`)
+   * `npm start` (you can change the port: `npm start -- --port 3000`. if you obtain an error message that is not related to the port being in use, please update to last lts or stable version).
    * Open `http://localhost:8080/`
    * Make changes in the code, the browser will automatically reload on save
 * Build iTowns to produce a single independent script:
