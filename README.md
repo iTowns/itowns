@@ -48,7 +48,7 @@ Alternatively, we provide a bundle you can directly include in your html files t
 
 ### From a release bundle
 
-See our [release page](https://github.com/iTowns/itowns/releases) (coming soon).
+See our [release page](https://github.com/iTowns/itowns/releases).
 
 
 ## Supported data types
