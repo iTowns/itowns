@@ -115,7 +115,7 @@ function patchMaterial(material) {
 }
 
 $3dTiles_Provider.prototype.b3dmToMesh = function b3dmToMesh(data, layer) {
-    return this.b3dmLoader.parse(data).then((result) => {
+    return this.b3dmLoader.parse(data, layer.asset.gltfUpAxis).then((result) => {
         const init = function f_init(mesh) {
             mesh.frustumCulled = false;
             if (mesh.material) {
@@ -128,7 +128,6 @@ $3dTiles_Provider.prototype.b3dmToMesh = function b3dmToMesh(data, layer) {
                 }
             }
         };
-        result.scene.applyMatrix(layer.glTFRotation);
         result.scene.traverse(init);
         return result.scene;
     });

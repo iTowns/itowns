@@ -96,8 +96,7 @@ function parseFeatureBinary(array, byteOffset, FTJSONLength) {
 
     // Add RTC feature
     if (parseJSON.RTC_CENTER) {
-        geometry.RTC = parseJSON.RTC_CENTER;
-        points.position.fromArray(geometry.RTC);
+        points.position.fromArray(parseJSON.RTC_CENTER);
     }
 
     return points;

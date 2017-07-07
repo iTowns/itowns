@@ -1,6 +1,10 @@
 import * as THREE from 'three';
 import './GLTFLoader';
 
+const matrixChangeUpVectorZtoY = (new THREE.Matrix4()).makeRotationX(Math.PI / 2);
+// For gltf rotation
+const matrixChangeUpVectorZtoX = (new THREE.Matrix4()).makeRotationZ(-Math.PI / 2);
+
 function B3dmLoader() {
     this.glTFLoader = new THREE.GLTFLoader();
 }
@@ -28,20 +32,19 @@ function filterUnsupportedSemantics(obj) {
     }
 }
 // parse for RTC values
-function parseInternalRTC(data, gltf) {
+function applyOptionalCesiumRTC(data, gltf) {
     const headerView = new DataView(data, 0, 20);
     const contentArray = new Uint8Array(data, 20, headerView.getUint32(12, true));
     const content = textDecoder.decode(new Uint8Array(contentArray));
     const json = JSON.parse(content);
     if (json.extensions.CESIUM_RTC) {
-        gltf.position.set(json.extensions.CESIUM_RTC.center[0], json.extensions.CESIUM_RTC.center[1], json.extensions.CESIUM_RTC.center[2]);
-        gltf.updateMatrix(true);
+        gltf.position.fromArray(json.extensions.CESIUM_RTC.center);
         gltf.updateMatrixWorld(true);
     }
 }
 
 const textDecoder = new TextDecoder('utf-8');
-B3dmLoader.prototype.parse = function parse(buffer) {
+B3dmLoader.prototype.parse = function parse(buffer, gltfUpAxis) {
     if (!buffer) {
         throw new Error('No array buffer provided.');
     }
@@ -79,7 +82,15 @@ B3dmLoader.prototype.parse = function parse(buffer) {
                 for (const scene of gltf.scenes) {
                     scene.traverse(filterUnsupportedSemantics);
                 }
-                parseInternalRTC(buffer.slice(28 + b3dmHeader.FTJSONLength +
+                // Rotation managed
+                if (gltfUpAxis === undefined || gltfUpAxis === 'Y') {
+                    gltf.scene.applyMatrix(matrixChangeUpVectorZtoY);
+                } else if (gltfUpAxis === 'X') {
+                    gltf.scene.applyMatrix(matrixChangeUpVectorZtoX);
+                }
+
+                // RTC managed
+                applyOptionalCesiumRTC(buffer.slice(28 + b3dmHeader.FTJSONLength +
                     b3dmHeader.FTBinaryLength + b3dmHeader.BTJSONLength +
                     b3dmHeader.BTBinaryLength), gltf.scene);
                 resolve(gltf);
