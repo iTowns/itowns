@@ -33,14 +33,14 @@ function subdivideNode(context, layer, node) {
                     node.add(tile);
                     tile.updateMatrixWorld();
                     if (node.additiveRefinement) {
-                        context.view.notifyChange(0, true);
+                        context.view.notifyChange(true);
                     }
                 }));
         }
 
         Promise.all(promises).then(() => {
             node.pendingSubdivision = false;
-            context.view.notifyChange(0, true);
+            context.view.notifyChange(true);
         });
     }
 }
