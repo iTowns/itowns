@@ -1,13 +1,14 @@
 import { EventDispatcher } from 'three';
 
 const RENDERING_PAUSED = 0;
-const RENDERING_ACTIVE = 1;
+const RENDERING_SCHEDULED = 1;
 
 function MainLoop(scheduler, engine) {
     this.renderingState = RENDERING_PAUSED;
     this.needsRedraw = false;
     this.scheduler = scheduler;
     this.gfxEngine = engine; // TODO: remove me
+    this._updateLoopRestarted = true;
 }
 
 MainLoop.prototype = Object.create(EventDispatcher.prototype);
@@ -16,13 +17,14 @@ MainLoop.prototype.constructor = MainLoop;
 MainLoop.prototype.scheduleViewUpdate = function scheduleViewUpdate(view, forceRedraw) {
     this.needsRedraw |= forceRedraw;
 
-    if (this.renderingState !== RENDERING_ACTIVE) {
-        this.renderingState = RENDERING_ACTIVE;
+    if (this.renderingState !== RENDERING_SCHEDULED) {
+        this.renderingState = RENDERING_SCHEDULED;
+
         if (__DEBUG__) {
             document.title += ' ⌛';
         }
 
-        requestAnimationFrame(() => { this._step(view); });
+        requestAnimationFrame((timestamp) => { this._step(view, timestamp); });
     }
 };
 
@@ -44,13 +46,24 @@ function updateElements(context, geometryLayer, elements) {
     }
 }
 
-MainLoop.prototype._update = function _update(view, updateSources) {
+MainLoop.prototype._update = function _update(view, updateSources, dt) {
     const context = {
         camera: view.camera,
         engine: this.gfxEngine,
         scheduler: this.scheduler,
         view,
     };
+
+    // notify the frameRequesters
+    // Frame requesters should keep calling view.notifyChange in their update
+    // function if they want requestAnimationFrame to go on.
+    if (view._frameRequesters.length > 0) {
+        for (const frameRequester of view._frameRequesters) {
+            if (frameRequester.update) {
+                frameRequester.update(dt, this._updateLoopRestarted);
+            }
+        }
+    }
 
     for (const geometryLayer of view.getLayers((x, y) => !y)) {
         context.geometryLayer = geometryLayer;
@@ -59,8 +72,10 @@ MainLoop.prototype._update = function _update(view, updateSources) {
     }
 };
 
-MainLoop.prototype._step = function _step(view) {
+MainLoop.prototype._step = function _step(view, timestamp) {
     const willRedraw = this.needsRedraw;
+    const dt = timestamp - this._lastTimestamp;
+    this._lastTimestamp = timestamp;
 
     // Reset internal state before calling _update (so future calls to View.notifyChange()
     // can properly change it)
@@ -70,7 +85,7 @@ MainLoop.prototype._step = function _step(view) {
     view._changeSources.clear();
 
     // update data-structure
-    this._update(view, updateSources);
+    this._update(view, updateSources, dt);
 
     if (this.scheduler.commandsWaitingExecutionCount() == 0) {
         this.dispatchEvent({ type: 'command-queue-empty' });
@@ -84,6 +99,9 @@ MainLoop.prototype._step = function _step(view) {
     if (willRedraw) {
         this._renderView(view);
     }
+
+    // next time, we'll consider that we've just started the loop if we are still PAUSED now
+    this._updateLoopRestarted = this.renderingState === RENDERING_PAUSED;
 
     if (__DEBUG__) {
         document.title = document.title.substr(0, document.title.length - 2);
