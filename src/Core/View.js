@@ -14,7 +14,7 @@ import { GeometryLayer, Layer, defineLayerProperty } from './Layer/Layer';
 import Scheduler from './Scheduler/Scheduler';
 
 /**
- * Constructs an Itowns Scene instance
+ * Constructs an Itowns View instance
  *
  * @param {string} crs - The default CRS of Three.js coordinates. Should be a cartesian CRS.
  * @param {HTMLElement} viewerDiv - Where to instanciate the Three.js scene in the DOM
@@ -56,6 +56,7 @@ function View(crs, viewerDiv, options = {}) {
         this.mainLoop.gfxEngine.getWindowSize().y,
         options);
 
+    this._frameRequesters = [];
     this._layers = [];
 
     window.addEventListener('resize', () => {
@@ -276,6 +277,51 @@ View.prototype.getLayers = function getLayers(filter) {
         }
     }
     return result;
+};
+
+/**
+ * @typedef {object} FrameRequester
+ * @property {Function(dt, updateLoopRestarted)} update - Method that will be called each
+ * time the MainLoop updates. This function will be given as parameter the
+ * delta (in ms) between this update and the previous one, and whether or not
+ * we just started to render again. This update is considered as the "next"
+ * update if view.notifyChange was called during a precedent update. If
+ * view.notifyChange has been called by something else (other micro/macrotask,
+ * UI events etc...), then this update is considered as being the "first".
+ *
+ * This means that if a FrameRequester.update function wants to animate
+ * something, it should keep on calling view.notifyChange until its task is
+ * done.
+ *
+ * Implementors of FrameRequester.update should keep in mind that this function
+ * will be potentially called at each frame, thus care should be given about
+ * performance.
+ *
+ * Typical FrameRequesters are controls, module wanting to animate moves or UI
+ * elements etc... Basically anything that would want to call
+ * requestAnimationFrame.
+ */
+/**
+ * Add a frame requester to this view.
+ *
+ * FrameRequesters can activate the MainLoop update by calling view.notifyChange.
+ *
+ * @param {FrameRequester} frameRequester
+ * @param {Function} frameRequester.update - update will be called at each
+ * MainLoop update with the time delta between last update, or 0 if the
+ * MainLoop has just been relaunched.
+ */
+View.prototype.addFrameRequester = function addFrameRequester(frameRequester) {
+    this._frameRequesters.push(frameRequester);
+};
+
+/**
+ * Remove a frameRequester.
+ *
+ * @param {FrameRequester} frameRequester
+ */
+View.prototype.removeFrameRequester = function removeFrameRequester(frameRequester) {
+    this._frameRequesters.slice(this._frameRequesters.indexOf(frameRequester), 1);
 };
 
 export default View;
