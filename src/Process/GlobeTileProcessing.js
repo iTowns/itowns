@@ -60,7 +60,7 @@ function horizonCulling(node) {
 }
 
 function frustumCullingOBB(node, camera) {
-    return camera.isBox3DVisible(node.OBB().box3D, node.OBB().matrixWorld);
+    return camera.isBox3Visible(node.OBB().box3D, node.OBB().matrixWorld);
 }
 
 export function globeCulling(minLevelForHorizonCulling) {
