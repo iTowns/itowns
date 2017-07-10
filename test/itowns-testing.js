@@ -102,6 +102,10 @@ global.requestAnimationFrame = (cb) => {
     }
 };
 
+// Fix: process.env.PWD is undefined for Windows
+if (!process.env.PWD) {
+    process.env.PWD = process.cwd();
+}
 // eslint-disable-next-line import/no-dynamic-require
 const itowns = require(`${process.env.PWD}/lib/Main.js`);
 
