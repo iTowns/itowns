@@ -417,7 +417,6 @@ function addGeometryLayerDebugFeatures(layer, view, gui, state) {
                     const l3js = l.threejsLayer;
                     helper.layers.set(l3js);
                     helper.children[0].layers.set(l3js);
-                    helper.updateMatrix();
                     helper.updateMatrixWorld();
                 }
                 // 3dtiles with box
@@ -427,16 +426,26 @@ function addGeometryLayerDebugFeatures(layer, view, gui, state) {
                     const material = new THREE.MeshBasicMaterial({ wireframe: true });
                     helper = new THREE.Mesh(g, material);
                     node.add(helper);
-                    helper.frustumCulled = false;
                     helper.layer = obb_layer_id;
                     // add the ability to hide all the debug obj for one layer at once
                     const l = context.view.getLayers(l => l.id === obb_layer_id)[0];
                     const l3js = l.threejsLayer;
                     helper.layers.set(l3js);
-                    helper.updateMatrix();
                     helper.updateMatrixWorld();
                 }
-                // TODO deal with the bounding sphere case
+                // 3dtiles with Sphere
+                if (node.boundingVolume.sphere) {
+                    const geometry = new THREE.SphereGeometry(node.boundingVolume.sphere.radius, 32, 32);
+                    const material = new THREE.MeshBasicMaterial({ wireframe: true });
+                    helper = new THREE.Mesh(geometry, material);
+                    node.add(helper);
+                    helper.layer = obb_layer_id;
+                    // add the ability to hide all the debug obj for one layer at once
+                    const l = context.view.getLayers(l => l.id === obb_layer_id)[0];
+                    const l3js = l.threejsLayer;
+                    helper.layers.set(l3js);
+                    helper.updateMatrixWorld();
+                }
             } else {
                 helper = obbChildren[0];
             }
