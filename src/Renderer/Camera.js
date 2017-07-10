@@ -12,7 +12,6 @@ function Camera(width, height, options = {}) {
     this.camera3D = options.camera ? options.camera : new THREE.PerspectiveCamera(30, this.ratio);
 
     this._viewMatrix = new THREE.Matrix4();
-    this._visibilityTestingOffset = new THREE.Vector3();
     this.width = width;
     this.height = height;
 }
@@ -35,7 +34,9 @@ Camera.prototype.resize = function resize(width, height) {
         }
     }
 
-    this.camera3D.updateProjectionMatrix();
+    if (this.camera3D.updateProjectionMatrix) {
+        this.camera3D.updateProjectionMatrix();
+    }
 };
 
 Camera.prototype.update = function update() {
@@ -43,14 +44,7 @@ Camera.prototype.update = function update() {
     this.camera3D.updateMatrixWorld();
 
     // keep our visibility testing matrix ready
-    this._visibilityTestingOffset.setFromMatrixPosition(this.camera3D.matrixWorld);
-    const c = this.camera3D.matrixWorld;
-    // cancel out translation
-    c.setPosition({ x: 0, y: 0, z: 0 });
-    this._viewMatrix.getInverse(c);
-    this._viewMatrix.premultiply(this.camera3D.projectionMatrix);
-    // restore translation
-    c.setPosition(this._visibilityTestingOffset);
+    this._viewMatrix.multiplyMatrices(this.camera3D.projectionMatrix, this.camera3D.matrixWorldInverse);
 };
 
 Camera.prototype.getDistanceFromOrigin = function getDistanceFromOrigin() {
@@ -65,60 +59,42 @@ Camera.prototype.setRotation = function setRotation(rotation) {
     this.camera3D.quaternion.copy(rotation);
 };
 
-const temp = new THREE.Vector3();
-const frustum = new THREE.Frustum();
-const localViewMatrix = new THREE.Matrix4();
-const tempMatrix = new THREE.Matrix4();
-const tempBox3d = new THREE.Box3();
-const tempSphere3d = new THREE.Sphere();
-function _prepareMatrix(matrixWorld, visibilityTestingOffset, volumes3D, tempContainer) {
+const tmp = {
+    frustum: new THREE.Frustum(),
+    matrix: new THREE.Matrix4(),
+    box3: new THREE.Box3(),
+};
+
+Camera.prototype.isBox3Visible = function isBox3Visible(box3, matrixWorld) {
     if (matrixWorld) {
-        tempMatrix.copy(matrixWorld);
+        tmp.matrix.multiplyMatrices(this._viewMatrix, matrixWorld);
+        tmp.frustum.setFromMatrix(tmp.matrix);
     } else {
-        tempMatrix.identity();
+        tmp.frustum.setFromMatrix(this._viewMatrix);
     }
-    if (volumes3D.getCenter) {
-        // THREE.Box objects have a .getCenter method
-        volumes3D.getCenter(temp);
-    } else if (volumes3D.center) {
-        // THREE.Sphere objects have a .center property
-        temp.copy(volumes3D.center);
-    } else {
-        throw new Error(`Unsupported volume object ${volumes3D}`);
-    }
-    // temp is -center
-    temp.negate();
-    // shift the volumes3D toward origin
-    tempContainer.copy(volumes3D);
-    tempContainer.translate(temp);
-
-    // modify position: substract camera.position and add box3d.min
-    tempMatrix.elements[12] -= visibilityTestingOffset.x + temp.x;
-    tempMatrix.elements[13] -= visibilityTestingOffset.y + temp.y;
-    tempMatrix.elements[14] -= visibilityTestingOffset.z + temp.z;
-}
-
-Camera.prototype.isBox3DVisible = function isBox3DVisible(box3d, matrixWorld) {
-    _prepareMatrix(matrixWorld, this._visibilityTestingOffset, box3d, tempBox3d);
-
-    localViewMatrix.multiplyMatrices(this._viewMatrix, tempMatrix);
-    frustum.setFromMatrix(localViewMatrix);
-    return frustum.intersectsBox(tempBox3d);
+    return tmp.frustum.intersectsBox(box3);
 };
 
 Camera.prototype.isSphereVisible = function isSphereVisible(sphere, matrixWorld) {
-    _prepareMatrix(matrixWorld, this._visibilityTestingOffset, sphere, tempSphere3d);
-
-    localViewMatrix.multiplyMatrices(this._viewMatrix, tempMatrix);
-    frustum.setFromMatrix(localViewMatrix);
-    return frustum.intersectsSphere(tempSphere3d);
+    if (matrixWorld) {
+        tmp.matrix.multiplyMatrices(this._viewMatrix, matrixWorld);
+        tmp.frustum.setFromMatrix(tmp.matrix);
+    } else {
+        tmp.frustum.setFromMatrix(this._viewMatrix);
+    }
+    return tmp.frustum.intersectsSphere(sphere);
 };
 
-Camera.prototype.box3DSizeOnScreen = function box3DSizeOnScreen(box3d, matrixWorld) {
-    _prepareMatrix(matrixWorld, this._visibilityTestingOffset, box3d, tempBox3d);
-    tempMatrix.premultiply(this._viewMatrix);
+Camera.prototype.box3SizeOnScreen = function box3SizeOnScreen(box3, matrixWorld) {
+    tmp.box3.copy(box3);
 
-    return tempBox3d.applyMatrix4(tempMatrix);
+    if (matrixWorld) {
+        tmp.matrix.multiplyMatrices(this._viewMatrix, matrixWorld);
+        tmp.box3.applyMatrix4(tmp.matrix);
+    } else {
+        tmp.box3.applyMatrix4(this._viewMatrix);
+    }
+    return tmp.box3;
 };
 
 export default Camera;

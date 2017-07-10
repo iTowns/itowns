@@ -70,10 +70,10 @@ export function $3dTilesCulling(node, camera) {
     if (node.boundingVolume) {
         const boundingVolume = node.boundingVolume;
         if (boundingVolume.region) {
-            return !camera.isBox3DVisible(boundingVolume.region.box3D, boundingVolume.region.matrixWorld);
+            return !camera.isBox3Visible(boundingVolume.region.box3D, boundingVolume.region.matrixWorld);
         }
         if (boundingVolume.box) {
-            return !camera.isBox3DVisible(boundingVolume.box, node.matrixWorld);
+            return !camera.isBox3Visible(boundingVolume.box, node.matrixWorld);
         }
         if (boundingVolume.sphere) {
             return !camera.isSphereVisible(boundingVolume.sphere, node.matrixWorld);
