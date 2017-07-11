@@ -251,7 +251,7 @@ function GlobeView(viewerDiv, coordCarto, options) {
     this.mainLoop.addEventListener('command-queue-empty', fn);
 
     window.addEventListener('resize', () => {
-        this.controls.updateCamera(this.camera, this.viewerDiv.clientWidth, this.viewerDiv.clientHeight);
+        this.controls.updateCamera(this.camera, viewerDiv.clientWidth, viewerDiv.clientHeight);
     }, false);
 
     this.notifyChange(true);
