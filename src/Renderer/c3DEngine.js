@@ -38,15 +38,22 @@ function c3DEngine(rendererOrDiv) {
         this.renderer.setSize(this.width, this.height);
     }.bind(this);
 
-    //
     // Create renderer
-    //
     this.renderer = renderer || new THREE.WebGLRenderer({
         canvas: document.createElement('canvas'),
         antialias: true,
         alpha: true,
         logarithmicDepthBuffer: this.gLDebug || NOIE,
     });
+
+    // Let's allow our canvas to take focus
+    // The condition below looks weird, but it's correct: querying tabIndex
+    // returns -1 if not set, but we still need to explicitly set it to force
+    // the tabindex focus flag to true (see
+    // https://www.w3.org/TR/html5/editing.html#specially-focusable)
+    if (this.renderer.domElement.tabIndex === -1) {
+        this.renderer.domElement.tabIndex = -1;
+    }
 
     Capabilities.updateCapabilities(this.renderer);
 
