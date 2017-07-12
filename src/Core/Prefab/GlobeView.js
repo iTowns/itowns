@@ -83,7 +83,7 @@ export const GLOBE_VIEW_EVENTS = {
  * @param {object} coordCarto
  * @param {object=} options - see {@link View}
  */
-function GlobeView(viewerDiv, coordCarto, options) {
+function GlobeView(viewerDiv, coordCarto, options = {}) {
     THREE.Object3D.DefaultUp.set(0, 0, 1);
     const size = ellipsoidSizes().x;
     // Setup View
@@ -213,26 +213,11 @@ function GlobeView(viewerDiv, coordCarto, options) {
     const positionTargetCamera = positionCamera.clone();
     positionTargetCamera.setAltitude(0);
 
-    this.controls = new GlobeControls(
-        this,
-        positionTargetCamera.as('EPSG:4978').xyz(),
-        this.mainLoop.gfxEngine.renderer.domElement,
-        viewerDiv,
-        size,
-        this.getPickingPositionFromDepth.bind(this));
-    this.controls.rotateSpeed = 0.25;
-    this.controls.zoomSpeed = 2.0;
-    this.controls.minDistance = 30;
-    this.controls.maxDistance = size * 8.0;
-
-    this.controls.addEventListener('change', () => {
-        this.camera.update();
-        this.notifyChange(true);
-    });
-
-    this.controls.addEventListener('selectClick', (event) => {
-        this.selectNodeAt(event.mouse);
-    }, false);
+    if (options.noControls) {
+        this.camera.camera3D.lookAt(positionTargetCamera.as('EPSG:4978').xyz());
+    } else {
+        this.controls = new GlobeControls(this, positionTargetCamera.as('EPSG:4978').xyz(), size);
+    }
 
     this._renderState = RendererConstant.FINAL;
 
@@ -257,10 +242,6 @@ function GlobeView(viewerDiv, coordCarto, options) {
     };
 
     this.mainLoop.addEventListener('command-queue-empty', fn);
-
-    window.addEventListener('resize', () => {
-        this.controls.updateCamera(this.camera, viewerDiv.clientWidth, viewerDiv.clientHeight);
-    }, false);
 
     this.notifyChange(true);
 }
