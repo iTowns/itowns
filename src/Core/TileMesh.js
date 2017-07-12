@@ -26,10 +26,9 @@ function TileMesh(geometry, params) {
     this.geometry = geometry;
     this.normal = params.center.clone().normalize();
 
-    // TODO Why move sphere center
-    this.centerSphere = new THREE.Vector3().addVectors(this.geometry.boundingSphere.center, params.center);
+    this.boundingSphereOffset = new THREE.Vector3();
 
-    this.oSphere = new THREE.Sphere(this.centerSphere.clone(), this.geometry.boundingSphere.radius);
+    this.oSphere = new THREE.Sphere(this.geometry.boundingSphere.center.clone(), this.geometry.boundingSphere.radius);
 
     this.material = new LayeredMaterial(params.materialOptions);
 
@@ -79,6 +78,11 @@ TileMesh.prototype.dispose = function dispose() {
     this.geometry.dispose();
     this.geometry = null;
     this.material = null;
+};
+
+TileMesh.prototype.updateMatrixWorld = function updateMatrixWorld(force) {
+    THREE.Mesh.prototype.updateMatrixWorld.call(this, force);
+    this.geometry.OBB.update();
 };
 
 TileMesh.prototype.isVisible = function isVisible() {
@@ -143,7 +147,7 @@ TileMesh.prototype.setBBoxZ = function setBBoxZ(min, max) {
 
         this.geometry.boundingSphere.radius = Math.sqrt(delta.x * delta.x + this.oSphere.radius * this.oSphere.radius);
         this.updateGeometricError();
-        this.centerSphere = new THREE.Vector3().addVectors(this.oSphere.center, trans);
+        this.boundingSphereOffset = trans;
     }
 };
 

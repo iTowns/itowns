@@ -111,10 +111,7 @@ export function initTiledGeometryLayer(schemeTile) {
         Promise.all(_promises).then((level0s) => {
             layer.level0Nodes = level0s;
             for (const level0 of level0s) {
-                // TODO: support a layer.root attribute, to be able
-                // to add a layer to a three.js node, e.g:
-                // layer.root.add(level0);
-                context.view.scene.add(level0);
+                layer.object3d.add(level0);
                 level0.updateMatrixWorld();
             }
         });

@@ -38,6 +38,7 @@ describe('Globe example', function () {
                         example.initialPosition.longitude,
                         example.initialPosition.latitude,
                         10000).as('EPSG:4978').xyz());
+                example.view.camera.update();
                 example.view.notifyChange(true);
             } else {
                 afterSetRange();

@@ -135,7 +135,7 @@ function GlobeView(viewerDiv, coordCarto, options = {}) {
         }
     }
 
-    const wgs84TileLayer = new GeometryLayer('globe');
+    const wgs84TileLayer = new GeometryLayer('globe', options.object3d || this.scene);
     const initLayer = initTiledGeometryLayer(globeSchemeTileWMTS(globeSchemeTile1));
     wgs84TileLayer.preUpdate = (context, layer, changeSources) => {
         SubdivisionControl.preUpdate(context, layer);
@@ -144,7 +144,7 @@ function GlobeView(viewerDiv, coordCarto, options = {}) {
         if (layer.level0Nodes === undefined) {
             initLayer(context, layer);
         }
-        preGlobeUpdate(context);
+        preGlobeUpdate(context, layer);
         if (changeSources.has(undefined) || changeSources.size == 0) {
             return layer.level0Nodes;
         }
@@ -203,7 +203,7 @@ function GlobeView(viewerDiv, coordCarto, options = {}) {
     const sun = new THREE.DirectionalLight();
     sun.position.set(-0.5, 0, 1);
     sun.updateMatrixWorld(true);
-    this.scene.add(sun);
+    wgs84TileLayer.object3d.add(sun);
 
     this.addLayer(wgs84TileLayer);
 
@@ -216,7 +216,8 @@ function GlobeView(viewerDiv, coordCarto, options = {}) {
     this.atmosphere.traverse((obj) => { obj.layers.set(atmosphereLayer); });
     this.camera.camera3D.layers.enable(atmosphereLayer);
 
-    this.scene.add(this.atmosphere);
+    wgs84TileLayer.object3d.add(this.atmosphere);
+    this.atmosphere.updateMatrixWorld(true);
 
 
     // Configure controls
@@ -232,11 +233,14 @@ function GlobeView(viewerDiv, coordCarto, options = {}) {
     this._renderState = RendererConstant.FINAL;
 
     this.preRender = () => {
-        var len = this.camera.position().length();
-        var lim = size * 1.1;
+        const v = new THREE.Vector3();
+        v.setFromMatrixPosition(wgs84TileLayer.object3d.matrixWorld);
+        var len = v.distanceTo(this.camera.position());
+        v.setFromMatrixScale(wgs84TileLayer.object3d.matrixWorld);
+        var lim = v.x * size * 1.1;
 
         if (len < lim) {
-            var t = Math.pow(Math.cos((lim - len) / (lim - size * 0.9981) * Math.PI * 0.5), 1.5);
+            var t = Math.pow(Math.cos((lim - len) / (lim - v.x * size * 0.9981) * Math.PI * 0.5), 1.5);
             var color = new THREE.Color(0x93d5f8);
             this.mainLoop.gfxEngine.renderer.setClearColor(color.multiplyScalar(1.0 - t));
         } else if (len >= lim) {

@@ -54,7 +54,7 @@ TileProvider.prototype.executeCommand = function executeCommand(command) {
     tile.layers.set(command.threejsLayer);
 
     if (parent) {
-        parent.worldToLocal(params.center);
+        params.center.sub(parent.geometry.center);
     }
 
     tile.position.copy(params.center);
