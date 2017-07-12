@@ -2,23 +2,42 @@
 // # Orthographic viewer
 
 // Define geographic extent: CRS, min/max X, min/max Y
-const extent = new itowns.Extent(
+var extent = new itowns.Extent(
     'EPSG:3857',
     -20026376.39, 20026376.39,
     -20048966.10, 20048966.10);
 
 // `viewerDiv` will contain iTowns' rendering area (`<canvas>`)
-const viewerDiv = document.getElementById('viewerDiv');
+var viewerDiv = document.getElementById('viewerDiv');
 
-
-const r = viewerDiv.clientWidth / viewerDiv.clientHeight;
-const camera = new itowns.THREE.OrthographicCamera(
+var r = viewerDiv.clientWidth / viewerDiv.clientHeight;
+var camera = new itowns.THREE.OrthographicCamera(
     extent.west(), extent.east(),
     extent.east() / r, extent.west() / r,
     0, 1000);
 
 // Instanciate PlanarView
-var view = new itowns.PlanarView(viewerDiv, extent, { renderer, maxSubdivisionLevel: 10, camera });
+var view = new itowns.PlanarView(
+        viewerDiv, extent, { renderer: renderer, maxSubdivisionLevel: 10, camera: camera });
+
+var onMouseWheel = function onMouseWheel(event) {
+    var change = 1 - (Math.sign(event.wheelDelta || -event.detail) * 0.1);
+
+    var halfNewWidth = (view.camera.camera3D.right - view.camera.camera3D.left) * change * 0.5;
+    var halfNewHeight = (view.camera.camera3D.top - view.camera.camera3D.bottom) * change * 0.5;
+    var cx = (view.camera.camera3D.right + view.camera.camera3D.left) * 0.5;
+    var cy = (view.camera.camera3D.top + view.camera.camera3D.bottom) * 0.5;
+
+    view.camera.camera3D.left = cx - halfNewWidth;
+    view.camera.camera3D.right = cx + halfNewWidth;
+    view.camera.camera3D.top = cy + halfNewHeight;
+    view.camera.camera3D.bottom = cy - halfNewHeight;
+
+    view.notifyChange(true);
+};
+
+var dragStartPosition;
+var dragCameraStart;
 
 // By default itowns' tiles geometry have a "skirt" (ie they have a height),
 // but in case of orthographic we don't need this feature, so disable it
@@ -45,27 +64,10 @@ view.addLayer({
     },
 });
 
-var onMouseWheel = (event) => {
-    const change = 1 - (Math.sign(event.wheelDelta || -event.detail) * 0.1);
-
-    const halfNewWidth = (view.camera.camera3D.right - view.camera.camera3D.left) * change * 0.5;
-    const halfNewHeight = (view.camera.camera3D.top - view.camera.camera3D.bottom) * change * 0.5;
-    const cx = (view.camera.camera3D.right + view.camera.camera3D.left) * 0.5;
-    const cy = (view.camera.camera3D.top + view.camera.camera3D.bottom) * 0.5;
-
-    view.camera.camera3D.left = cx - halfNewWidth;
-    view.camera.camera3D.right = cx + halfNewWidth;
-    view.camera.camera3D.top = cy + halfNewHeight;
-    view.camera.camera3D.bottom = cy - halfNewHeight;
-
-    view.notifyChange(true);
-};
 viewerDiv.addEventListener('DOMMouseScroll', onMouseWheel);
 viewerDiv.addEventListener('mousewheel', onMouseWheel);
 
-let dragStartPosition;
-let dragCameraStart;
-viewerDiv.addEventListener('mousedown', (event) => {
+viewerDiv.addEventListener('mousedown', function mouseDown(event) {
     dragStartPosition = new itowns.THREE.Vector2(event.clientX, event.clientY);
     dragCameraStart = {
         left: view.camera.camera3D.left,
@@ -74,11 +76,14 @@ viewerDiv.addEventListener('mousedown', (event) => {
         bottom: view.camera.camera3D.bottom,
     };
 });
-viewerDiv.addEventListener('mousemove', (event) => {
+viewerDiv.addEventListener('mousemove', function mouseMove(event) {
+    var width;
+    var deltaX;
+    var deltaY;
     if (dragStartPosition) {
-        const width = view.camera.camera3D.right - view.camera.camera3D.left;
-        const deltaX = width * (event.clientX - dragStartPosition.x) / -viewerDiv.clientWidth;
-        const deltaY = width * (event.clientY - dragStartPosition.y) / viewerDiv.clientHeight;
+        width = view.camera.camera3D.right - view.camera.camera3D.left;
+        deltaX = width * (event.clientX - dragStartPosition.x) / -viewerDiv.clientWidth;
+        deltaY = width * (event.clientY - dragStartPosition.y) / viewerDiv.clientHeight;
 
         view.camera.camera3D.left = dragCameraStart.left + deltaX;
         view.camera.camera3D.right = dragCameraStart.right + deltaX;
@@ -87,7 +92,7 @@ viewerDiv.addEventListener('mousemove', (event) => {
         view.notifyChange(true);
     }
 });
-viewerDiv.addEventListener('mouseup', () => {
+viewerDiv.addEventListener('mouseup', function mouseUp() {
     dragStartPosition = undefined;
 });
 

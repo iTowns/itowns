@@ -26,18 +26,34 @@
         <script type="text/javascript">
             /* global itowns,document,GuiTools*/
 
-            const positionOnGlobe = { longitude: 2.351323, latitude: 48.856712, altitude: 25000000 };
+            var positionOnGlobe = { longitude: 2.351323, latitude: 48.856712, altitude: 25000000 };
 
             // iTowns namespace defined here
-            const viewerDiv = document.getElementById('viewerDiv');
-            const menuGlobe = new GuiTools('menuDiv');
-            const globeView = new itowns.GlobeView(viewerDiv, positionOnGlobe);
+            var viewerDiv = document.getElementById('viewerDiv');
+            var menuGlobe = new GuiTools('menuDiv');
+            var globeView = new itowns.GlobeView(viewerDiv, positionOnGlobe);
             menuGlobe.view = globeView;
 
-            const promises = [];
-            promises.push(itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(result => globeView.addLayer(result)));
-            promises.push(itowns.Fetcher.json('./layers/JSONLayers/Region.json').then(result => globeView.addLayer(result)));
-            promises.push(itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT.json').then(result => globeView.addLayer(result)));
+            function addLayerCb(layer) {
+                return globeView.addLayer(layer);
+            }
+
+            var promises = [];
+            promises.push(itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(addLayerCb));
+            promises.push(itowns.Fetcher.json('./layers/JSONLayers/Region.json').then(addLayerCb));
+            promises.push(itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT.json').then(addLayerCb));
+
+            function removeDups(a) {
+                var temp = {};
+                for (var i = 0; i < a.length; i++) {
+                    temp[a[i]] = true;
+                }
+                var result = [];
+                for (var val in temp) {
+                    result.push(val);
+                }
+                return result;
+            }
 
             function getLayersColorVisible(node, layers) {
                 if (!node || !node.visible) {
@@ -48,35 +64,37 @@
                     // if node.material.colorLayersId is defined then the node have color layers
                     if (node.material.visible && node.material.colorLayersId) {
                         // get all node's color layers
-                        const tileColorLayers = node.material.colorLayersId;
-                        layers.id = [...new Set(layers.id.concat(tileColorLayers))];
+                        var tileColorLayers = node.material.colorLayersId;
+                        layers.id = removeDups(layers.id.concat(tileColorLayers));
                     }
                 }
                 if (node.children) {
-                    for (const child of node.children) {
+                    for (var child of node.children) {
                         getLayersColorVisible(child, layers);
                     }
                 }
             }
 
-            globeView.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, () => {
+            globeView.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
                 // eslint-disable-next-line no-console
                 console.info('Globe initialized');
-                Promise.all(promises).then(() => {
-                    menuGlobe.addImageryLayersGUI(globeView.getLayers(l => l.type === 'color'));
-                    menuGlobe.addElevationLayersGUI(globeView.getLayers(l => l.type === 'elevation'));
+                Promise.all(promises).then(function () {
+                    menuGlobe.addImageryLayersGUI(globeView.getLayers(function(l) { return l.type === 'color'; }));
+                    menuGlobe.addElevationLayersGUI(globeView.getLayers(function (l) { return l.type === 'elevation'; }));
                 });
             });
 
             // Use preRender to update menu before rendering
-            globeView.preRender = () => {
-                const layers = { id: [] };
+            globeView.preRender = function () {
+                var layers = { id: [] };
                 // globeView.scene is THREE.js scene
                 getLayersColorVisible(globeView.scene, layers);
-                const colorLayers = globeView.getLayers(l => l.type == 'color');
+                console.log('layers', layers);
+                var colorLayers = globeView.getLayers(function (l) { return l.type == 'color'; });
 
-                colorLayers.forEach(layer =>
-                    menuGlobe.hideFolder(layer.id, layers.id.indexOf(layer.id) == -1));
+                colorLayers.forEach(function (layer) {
+                    menuGlobe.hideFolder(layer.id, layers.id.indexOf(layer.id) == -1)
+                });
             };
         </script>
     </body>
