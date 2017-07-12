@@ -53,11 +53,22 @@ export const defineLayerProperty = function defineLayerProperty(layer, propertyN
     }
 };
 
-function GeometryLayer(i) {
+function GeometryLayer(id, object3d) {
+    if (!id) {
+        throw new Error('Missing id parameter (GeometryLayer must have a unique id defined)');
+    }
+    if (!object3d || !object3d.isObject3D) {
+        throw new Error('Missing/Invalid object3d parameter (must be a three.js Object3D instance)');
+    }
     this._attachedLayers = [];
 
+    Object.defineProperty(this, 'object3d', {
+        value: object3d,
+        writable: false,
+    });
+
     Object.defineProperty(this, 'id', {
-        value: i,
+        value: id,
         writable: false,
     });
 }

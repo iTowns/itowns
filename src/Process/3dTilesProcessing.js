@@ -131,7 +131,7 @@ export function init3dTilesLayer(context, layer) {
         layer.asset = tileset.asset;
         requestNewTile(context.view, context.scheduler, layer, tileset.root, undefined).then(
             (tile) => {
-                context.view.scene.add(tile);
+                layer.object3d.add(tile);
                 tile.updateMatrixWorld();
                 layer.root = tile;
             });

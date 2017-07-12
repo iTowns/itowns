@@ -12,7 +12,7 @@ import { planarCulling, planarSubdivisionControl, planarSchemeTile } from '../..
 import PlanarTileBuilder from './Planar/PlanarTileBuilder';
 import SubdivisionControl from '../../Process/SubdivisionControl';
 
-function PlanarView(viewerDiv, boundingbox, options) {
+function PlanarView(viewerDiv, boundingbox, options = {}) {
     THREE.Object3D.DefaultUp.set(0, 0, 1);
 
     // Setup View
@@ -44,7 +44,7 @@ function PlanarView(viewerDiv, boundingbox, options) {
         }
     };
 
-    const tileLayer = new GeometryLayer('planar');
+    const tileLayer = new GeometryLayer('planar', options.object3d || this.scene);
     const initLayer = initTiledGeometryLayer(planarSchemeTile(boundingbox));
 
     function _commonAncestorLookup(a, b) {

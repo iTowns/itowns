@@ -43,7 +43,7 @@ function TileGeometry(params, builder) {
     // Constructor
     THREE.BufferGeometry.call(this);
 
-    this.center = builder.Center(params);
+    this.center = builder.Center(params).clone();
     this.OBB = builder.OBB(params);
 
     // TODO : free array

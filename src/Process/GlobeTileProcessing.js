@@ -7,13 +7,15 @@ import Extent from '../Core/Geographic/Extent';
 
 const cV = new THREE.Vector3();
 let vhMagnitudeSquared;
-let radius;
+const radius = new THREE.Vector3();
 
 let preSSE;
 let SSE_SUBDIVISION_THRESHOLD;
 
-export function preGlobeUpdate(context) {
-    radius = ellipsoidSizes();
+export function preGlobeUpdate(context, layer) {
+    radius.setFromMatrixScale(layer.object3d.matrixWorld);
+    radius.multiply(ellipsoidSizes());
+
     // pre-horizon culling
     cV.copy(context.camera.position()).divide(radius);
     vhMagnitudeSquared = cV.lengthSq() - 1.0;
@@ -70,10 +72,12 @@ export function globeCulling(minLevelForHorizonCulling) {
 }
 
 function computeNodeSSE(camera, node) {
-    const boundingSphere = node.geometry.boundingSphere;
+    const v = new THREE.Vector3();
+    v.setFromMatrixScale(node.matrixWorld);
+    const boundingSphereCenter = new THREE.Vector3().addVectors(node.geometry.boundingSphere.center, node.boundingSphereOffset).applyMatrix4(node.matrixWorld);
     const distance = Math.max(
         0.0,
-        camera.camera3D.position.distanceTo(node.centerSphere) - boundingSphere.radius);
+        camera.camera3D.position.distanceTo(boundingSphereCenter) - node.geometry.boundingSphere.radius * v.x);
 
     // Removed because is false computation, it doesn't consider the altitude of node
     // Added small oblique weight (distance is not enough, tile orientation is needed)
@@ -86,7 +90,7 @@ function computeNodeSSE(camera, node) {
 
     // TODO: node.geometricError is computed using a hardcoded 18 level
     // The computation of node.geometricError is surely false
-    return preSSE * (node.geometricError / distance);
+    return preSSE * (node.geometricError * v.x) / distance;
 }
 
 export function globeSubdivisionControl(minLevel, maxLevel, sseThreshold) {
