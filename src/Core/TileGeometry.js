@@ -191,6 +191,9 @@ TileGeometry.prototype.computeBuffers = function computeBuffers(params, builder)
             skirt = skirt.concat(verticesRow.slice().reverse());
         }
     }
+    // We compute the actual size of tile segment to use later for the skirt.
+    const segmentSize = new THREE.Vector3().fromArray(scratchBuffers.position).distanceTo(
+        new THREE.Vector3().fromArray(scratchBuffers.position, 3));
 
     if (!params.disableSkirt) {
         skirt = skirt.concat(skirtEnd.reverse());
@@ -222,12 +225,10 @@ TileGeometry.prototype.computeBuffers = function computeBuffers(params, builder)
     var iStart = idVertex;
 
     // TODO: WARNING beware skirt's size influences performance
-    // Fix Me: Compute correct the skirt's size : minimize the size without crack between tiles
-    // This size must be take into account the bbox's size
-    // For the moment, I reduce the size to increase performance (pixel shader performance)
-
+    // The size of the skirt is now a ratio of the size of the tile.
+    // To be perfect it should depend on the real elevation delta but too heavy to compute
     if (!params.disableSkirt) {
-        const r = 5 * ((20 - params.level) + 10);
+        const r = segmentSize; // Tile size divided by the number of segments
 
         var buildIndexSkirt = function buildIndexSkirt() {};
         var buildUVSkirt = function buildUVSkirt() {};
