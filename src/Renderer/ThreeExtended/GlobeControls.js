@@ -230,12 +230,6 @@ if (enableTargetHelper) {
 var _handlerMouseMove;
 var _handlerMouseUp;
 
-let _getPickingPosition;
-
-// Pseudo collision
-const radiusCollision = 50;
-
-
 // Event
 let enableEventPositionChanged = true;
 
@@ -356,22 +350,18 @@ function defer() {
 
 /**
  * @class
- * @param {View} view
+ * @param {GlobeView} view
  * @param {*} target
- * @param {HTMLElement} domElement
- * @param {HTMLElement} viewerDiv
  * @param {number} radius
- * @param {function(THREE.Vector2):THREE.Vector2} getPickingPosition
+ * @param {options} options
  */
-function GlobeControls(view, target, domElement, viewerDiv, radius, getPickingPosition) {
+function GlobeControls(view, target, radius, options = {}) {
     player = new AnimationPlayer();
     this._view = view;
     this.camera = view.camera.camera3D;
+    this.domElement = view.mainLoop.gfxEngine.renderer.domElement;
 
     snapShotCamera = new SnapCamera(this.camera);
-    _getPickingPosition = getPickingPosition;
-
-    this.domElement = (domElement !== undefined) ? domElement : document;
 
     this.waitSceneLoaded = function waitSceneLoaded() {
         const deferedPromise = defer();
@@ -387,11 +377,11 @@ function GlobeControls(view, target, domElement, viewerDiv, radius, getPickingPo
     // This option actually enables dollying in and out; left as "zoom" for
     // backwards compatibility
     this.enableZoom = true;
-    this.zoomSpeed = 1.0;
+    this.zoomSpeed = options.zoomSpeed || 2.0;
 
     // Limits to how far you can dolly in and out ( PerspectiveCamera only )
-    this.minDistance = radiusCollision;
-    this.maxDistance = Infinity;
+    this.minDistance = options.minDistance || 30;
+    this.maxDistance = options.maxDistance || radius * 8.0;
 
     // Limits to how far you can zoom in and out ( OrthographicCamera only )
     this.minZoom = 0;
@@ -399,7 +389,7 @@ function GlobeControls(view, target, domElement, viewerDiv, radius, getPickingPo
 
     // Set to true to disable this control
     this.enableRotate = true;
-    this.rotateSpeed = 1.0;
+    this.rotateSpeed = options.rotateSpeed || 0.25;
 
     // Set to true to disable this control
     this.enablePan = true;
@@ -449,10 +439,6 @@ function GlobeControls(view, target, domElement, viewerDiv, radius, getPickingPo
     // var quat = new THREE.Quaternion().setFromUnitVectors(camera.up, new THREE.Vector3(0, 1, 0));
     // var quatInverse = quat.clone().inverse();
 
-    // events
-    this.changeEvent = {
-        type: 'change',
-    };
     this.startEvent = {
         type: 'start',
     };
@@ -460,12 +446,14 @@ function GlobeControls(view, target, domElement, viewerDiv, radius, getPickingPo
         type: 'end',
     };
 
-    this.updateCamera = function updateCamera(camera, width, height) {
-        snapShotCamera.init(camera.camera3D);
-        sizeRendering.width = width;
-        sizeRendering.height = height;
-        sizeRendering.FOV = camera.fov;
+    this.updateCamera = function updateCamera() {
+        snapShotCamera.init(this.camera);
+        sizeRendering.width = view.viewerDiv.clientWidth;
+        sizeRendering.height = view.viewerDiv.clientHeight;
+        sizeRendering.FOV = this.camera.fov;
     };
+
+    window.addEventListener('resize', this.updateCamera.bind(this), false);
 
     this.getAutoRotationAngle = function getAutoRotationAngle() {
         return 2 * Math.PI / 60 / 60 * this.autoRotateSpeed;
@@ -554,7 +542,7 @@ function GlobeControls(view, target, domElement, viewerDiv, radius, getPickingPo
         } else if (this.camera instanceof THREE.OrthographicCamera) {
             this.camera.zoom = Math.max(this.minZoom, Math.min(this.maxZoom, this.camera.zoom * dollyScale));
             this.camera.updateProjectionMatrix();
-            this.dispatchEvent(this.changeEvent);
+            this._view.notifyChange(true, this.camera);
         } else {
 
             // console.warn('WARNING: GlobeControls.js encountered an unknown camera type - dolly/zoom disabled.');
@@ -572,7 +560,7 @@ function GlobeControls(view, target, domElement, viewerDiv, radius, getPickingPo
         } else if (this.camera instanceof THREE.OrthographicCamera) {
             this.camera.zoom = Math.max(this.minZoom, Math.min(this.maxZoom, this.camera.zoom / dollyScale));
             this.camera.updateProjectionMatrix();
-            this.dispatchEvent(this.changeEvent);
+            this._view.notifyChange(true, this.camera);
         } else {
 
             // console.warn('WARNING: GlobeControls.js encountered an unknown camera type - dolly/zoom disabled.');
@@ -672,7 +660,7 @@ function GlobeControls(view, target, domElement, viewerDiv, radius, getPickingPo
         // using small-angle approximation cos(x/2) = 1 - x^2 / 8
 
         if (lastPosition.distanceToSquared(this.camera.position) > EPS || 8 * (1 - lastQuaternion.dot(this.camera.quaternion)) > EPS) {
-            this.dispatchEvent(this.changeEvent);
+            this._view.notifyChange(true, this.camera);
 
             lastPosition.copy(this.camera.position);
             lastQuaternion.copy(this.camera.quaternion);
@@ -719,7 +707,7 @@ function GlobeControls(view, target, domElement, viewerDiv, radius, getPickingPo
         const previousCameraTargetOnGlobe = cameraTargetOnGlobe.position.clone();
 
         // Get distance camera DME
-        const pickingPosition = getPickingPosition();
+        const pickingPosition = view.getPickingPositionFromDepth();
 
         if (!pickingPosition) {
             return;
@@ -781,14 +769,14 @@ function GlobeControls(view, target, domElement, viewerDiv, radius, getPickingPo
         state = CONTROL_STATE.NONE;
         lastRotation = [];
         if (enableTargetHelper) {
-            this.dispatchEvent(this.changeEvent);
+            this._view.notifyChange(true, cameraTargetOnGlobe);
         }
     };
 
     // Update helper
     var updateHelper = enableTargetHelper ? function updateHelper(position, helper) {
         positionObject(position, helper);
-        this.dispatchEvent(this.changeEvent);
+        this._view.notifyChange(true, cameraTargetOnGlobe);
     } : function empty() {};
 
     this.getPickingPositionOnSphere = function getPickingPositionOnSphere() {
@@ -919,18 +907,13 @@ function GlobeControls(view, target, domElement, viewerDiv, radius, getPickingPo
                     state = CONTROL_STATE.PANORAMIC;
                 } else if (keyS) {
                     // If the key 'S' is down, the engine selects node under mouse
-                    const selectClickEvent = {
-                        type: 'selectClick',
-                    };
-                    selectClickEvent.mouse = new THREE.Vector2(event.clientX - event.target.offsetLeft, event.clientY - event.target.offsetTop);
-
-                    this.dispatchEvent(selectClickEvent);
+                    this._view.selectNodeAt(new THREE.Vector2(event.clientX - event.target.offsetLeft, event.clientY - event.target.offsetTop));
                 } else {
                     snapShotCamera.shot(this.camera);
                     ptScreenClick.x = event.clientX - event.target.offsetLeft;
                     ptScreenClick.y = event.clientY - event.target.offsetTop;
 
-                    const point = getPickingPosition(ptScreenClick);
+                    const point = view.getPickingPositionFromDepth(ptScreenClick);
                     lastRotation = [];
                     // update tangent sphere which passes through the point
                     if (point) {
@@ -972,7 +955,7 @@ function GlobeControls(view, target, domElement, viewerDiv, radius, getPickingPo
             ptScreenClick.x = event.clientX - event.target.offsetLeft;
             ptScreenClick.y = event.clientY - event.target.offsetTop;
 
-            const point = getPickingPosition(ptScreenClick);
+            const point = view.getPickingPositionFromDepth(ptScreenClick);
 
             if (point) {
                 animatedScale = 0.6;
@@ -1343,7 +1326,7 @@ function GlobeControls(view, target, domElement, viewerDiv, radius, getPickingPo
 
     this.waitSceneLoaded().then(() => {
         this.updateCameraTransformation();
-        this.dispatchEvent(this.changeEvent);
+        this._view.notifyChange(true, this.camera);
     });
 }
 
@@ -1408,7 +1391,7 @@ GlobeControls.prototype.setOrbitalPosition = function setOrbitalPosition(positio
     const deltaTheta = position.heading === undefined ? 0 : position.heading * Math.PI / 180 - this.getHeadingRad();
     const deltaRange = position.range === undefined ? 0 : position.range - this.getRange();
     return this.moveOrbitalPosition(deltaRange, deltaTheta, deltaPhi, isAnimated).then(() => {
-        this.dispatchEvent(this.changeEvent);
+        this._view.notifyChange(true);
         return this.waitSceneLoaded().then(() => {
             this.updateCameraTransformation();
         });
@@ -1509,7 +1492,7 @@ GlobeControls.prototype.setCameraTargetPosition = function setCameraTargetPositi
     }
 
     return promise.then(() => {
-        this.dispatchEvent(this.changeEvent);
+        this._view.notifyChange(true);
         return this.waitSceneLoaded().then(() => {
             this.updateCameraTransformation();
         });
@@ -1573,7 +1556,7 @@ GlobeControls.prototype.moveTarget = function moveTarget() {
 GlobeControls.prototype.pan = function pan(pVector) {
     this.mouseToPan(pVector.x, pVector.y);
     this.updateCameraTransformation(CONTROL_STATE.PAN);
-    this.dispatchEvent(this.changeEvent);
+    this._view.notifyChange(true);
     return this.waitSceneLoaded().then(() => {
         this.updateCameraTransformation();
     });
@@ -1746,7 +1729,7 @@ GlobeControls.prototype.pickGeoPosition = function pickGeoPosition(mouse, y) {
         y: mouse.clientY || y,
     };
 
-    var pickedPosition = _getPickingPosition(screenCoords);
+    var pickedPosition = this._view.getPickingPositionFromDepth(screenCoords);
 
     if (!pickedPosition) {
         return;
@@ -1766,7 +1749,7 @@ GlobeControls.prototype.reset = function reset() {
     this.camera.zoom = initialZoom;
 
     this.camera.updateProjectionMatrix();
-    this.dispatchEvent(this.changeEvent);
+    this._view.notifyChange(true);
 
     this.updateCameraTransformation();
 };
