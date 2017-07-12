@@ -5,6 +5,11 @@ var definePlugin = new webpack.DefinePlugin({
     __DEBUG__: JSON.stringify(process.env.NODE_ENV === 'development'),
 });
 
+var providePlugin = new webpack.ProvidePlugin({
+    TextDecoder: ['text-encoding', 'TextDecoder'],
+    TextEncoder: ['text-encoding', 'TextEncoder'],
+});
+
 module.exports = {
     entry: {
         itowns: ['es6-promise', 'whatwg-fetch', path.resolve(__dirname, 'src/Main.js')],
@@ -18,7 +23,10 @@ module.exports = {
         libraryTarget: 'umd',
         umdNamedDefine: true,
     },
-    plugins: [definePlugin, new webpack.optimize.CommonsChunkPlugin({ name: 'itowns' })],
+    plugins: [
+        definePlugin,
+        providePlugin,
+        new webpack.optimize.CommonsChunkPlugin({ name: 'itowns' })],
     module: {
         rules: [
             {
