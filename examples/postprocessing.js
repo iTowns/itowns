@@ -1,14 +1,16 @@
 /* global itowns, document, renderer */
-const positionOnGlobe = { longitude: 2.351323, latitude: 48.856712, altitude: 25000000 };
+var positionOnGlobe = { longitude: 2.351323, latitude: 48.856712, altitude: 25000000 };
 
 // iTowns namespace defined here
-const viewerDiv = document.getElementById('viewerDiv');
-const globeView = new itowns.GlobeView(viewerDiv, positionOnGlobe, { renderer });
+var viewerDiv = document.getElementById('viewerDiv');
+var globeView = new itowns.GlobeView(viewerDiv, positionOnGlobe, { renderer: renderer });
 
 // Simple postprocessing setup
 //
-const postprocessScene = new itowns.THREE.Scene();
-const quad = new itowns.THREE.Mesh(new itowns.THREE.PlaneBufferGeometry(2, 2), null);
+var postprocessScene = new itowns.THREE.Scene();
+var quad = new itowns.THREE.Mesh(new itowns.THREE.PlaneBufferGeometry(2, 2), null);
+var cam = new itowns.THREE.OrthographicCamera(-1, 1, 1, -1, 0, 10);
+
 quad.frustumCulled = false;
 quad.material = new itowns.THREE.ShaderMaterial({
     uniforms: {
@@ -22,11 +24,10 @@ quad.material = new itowns.THREE.ShaderMaterial({
     fragmentShader: document.getElementById('fragmentshader').textContent,
 });
 postprocessScene.add(quad);
-const cam = new itowns.THREE.OrthographicCamera(-1, 1, 1, -1, 0, 10);
 
-globeView.render = () => {
-    const g = globeView.mainLoop.gfxEngine;
-    const r = g.renderer;
+globeView.render = function render() {
+    var g = globeView.mainLoop.gfxEngine;
+    var r = g.renderer;
     r.setRenderTarget(g.fullSizeRenderTarget);
     r.clear();
     r.setViewport(0, 0, g.getWindowSize().x, g.getWindowSize().y);
@@ -46,8 +47,12 @@ globeView.render = () => {
         cam);
 };
 
-itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(result => globeView.addLayer(result));
-itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT.json').then(result => globeView.addLayer(result));
+function addLayerCb(layer) {
+    return globeView.addLayer(layer);
+}
+
+itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(addLayerCb);
+itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT.json').then(addLayerCb);
 
 exports.globeView = globeView;
 exports.postprocessScene = postprocessScene;

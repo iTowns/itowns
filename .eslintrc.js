@@ -57,8 +57,11 @@ module.exports = {
 
     // TODO reactivate all the following rules
 
+    // maybe 'no-mixed-operators': ['error', { allowSamePrecedence: true }],
     'no-mixed-operators': 'off',
     'no-use-before-define': 'off',
+    // should probably be
+    // 'no-underscore-dangle': ['error', { allowAfterThis: true, allowAfterSuper: true }],
     'no-underscore-dangle': 'off',
     'eqeqeq': 'off',
     // what len ? Airbnb does 100. github wraps line above 80

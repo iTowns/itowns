@@ -42,18 +42,18 @@
         <script src="../dist/debug.js"></script>
         <script type="text/javascript">
             /* global itowns,document,GuiTools*/
-            const positionOnGlobe = { longitude: -75.61, latitude: 40.04, altitude: 50000 }
+            var positionOnGlobe = { longitude: -75.61, latitude: 40.04, altitude: 50000 }
             // iTowns namespace defined here
-            const viewerDiv = document.getElementById('viewerDiv');
+            var viewerDiv = document.getElementById('viewerDiv');
 
-            const globe = new itowns.GlobeView(viewerDiv, positionOnGlobe);
-            const menuGlobe = new GuiTools('menuDiv', globe, 300);
+            var globe = new itowns.GlobeView(viewerDiv, positionOnGlobe);
+            var menuGlobe = new GuiTools('menuDiv', globe, 300);
 
-            itowns.Fetcher.json('layers/JSONLayers/Ortho.json').then(result => globe.addLayer(result));
+            itowns.Fetcher.json('layers/JSONLayers/Ortho.json').then(function (result) { return globe.addLayer(result) });
 
             // function use :
             // For preupdate Layer geomtry :
-            const preUpdateGeo = (context, layer) => {
+            var preUpdateGeo = function (context, layer) {
                 if(layer.root === undefined) {
                     itowns.init3dTilesLayer(context, layer);
                     return [];
@@ -64,7 +64,7 @@
 
             // Create a new Layer 3d-tiles For DiscreteLOD
             // -------------------------------------------
-            const $3dTilesLayerDiscreteLOD = new itowns.GeometryLayer('3d-tiles-discrete-lod');
+            var $3dTilesLayerDiscreteLOD = new itowns.GeometryLayer('3d-tiles-discrete-lod');
 
             $3dTilesLayerDiscreteLOD.preUpdate = preUpdateGeo;
             $3dTilesLayerDiscreteLOD.update = itowns.process3dTilesNode(
@@ -82,7 +82,7 @@
 
             // Create a new Layer 3d-tiles For Viewer Request Volume
             // -----------------------------------------------------
-            const $3dTilesLayerRequestVolume = new itowns.GeometryLayer('3d-tiles-request-volume');
+            var $3dTilesLayerRequestVolume = new itowns.GeometryLayer('3d-tiles-request-volume');
 
             $3dTilesLayerRequestVolume.preUpdate = preUpdateGeo;
             $3dTilesLayerRequestVolume.update = itowns.process3dTilesNode(

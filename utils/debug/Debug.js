@@ -8,7 +8,7 @@ import View from '../../src/Core/View';
 
 function createChartContainer(chartDiv, width, left, chartId) {
     const div = document.createElement('div');
-    div.style = `position: absolute; bottom: 0; left: ${left}vw; width: ${width}vw; height: 20rem; background-color: white;`;
+    div.style.cssText = `position: absolute; bottom: 0; left: ${left}vw; width: ${width}vw; height: 20rem; background-color: white;`;
     chartDiv.appendChild(div);
 
     const chartCanvas = document.createElement('canvas');
@@ -227,7 +227,7 @@ function Debug(view, viewerDiv) {
     // create charts div
     const chartDiv = document.createElement('div');
     chartDiv.id = 'chart-div';
-    chartDiv.style = 'position: absolute; bottom: 0; left: 0; width: 100vw; height: 20rem; background-color: white; display: none';
+    chartDiv.style.cssText = 'position: absolute; bottom: 0; left: 0; width: 100vw; height: 20rem; background-color: white; display: none';
 
     viewerDiv.appendChild(chartDiv);
 

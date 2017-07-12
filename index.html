@@ -35,33 +35,33 @@ and open the template in the editor.
         <script type="text/javascript">
             /* global itowns,document,GuiTools*/
 
-            const positionOnGlobe = { longitude: 2.351323, latitude: 48.856712, altitude: 25000000 };
+            var positionOnGlobe = { longitude: 2.351323, latitude: 48.856712, altitude: 25000000 };
 
             // iTowns namespace defined here
-            const viewerDiv = document.getElementById('viewerDiv');
-            const globeView = new itowns.GlobeView(viewerDiv, positionOnGlobe);
-            const menuGlobe = new GuiTools('menuDiv', globeView);
+            var viewerDiv = document.getElementById('viewerDiv');
+            var globeView = new itowns.GlobeView(viewerDiv, positionOnGlobe);
+            var menuGlobe = new GuiTools('menuDiv', globeView);
             menuGlobe.view = globeView;
 
-            let promises = []
-            promises.push(itowns.Fetcher.json('examples/layers/JSONLayers/Ortho.json').then(result => globeView.addLayer(result)));
-            promises.push(itowns.Fetcher.json('examples/layers/JSONLayers/OrthosCRS.json').then(result => globeView.addLayer(result)));
-            promises.push(itowns.Fetcher.json('examples/layers/JSONLayers/ScanEX.json').then(result => globeView.addLayer(result)));
-            promises.push(itowns.Fetcher.json('examples/layers/JSONLayers/Region.json').then(result => globeView.addLayer(result)));
+            var promises = []
+            promises.push(itowns.Fetcher.json('examples/layers/JSONLayers/Ortho.json').then(function(result) { return globeView.addLayer(result); }));
+            promises.push(itowns.Fetcher.json('examples/layers/JSONLayers/OrthosCRS.json').then(function(result) { return globeView.addLayer(result); }));
+            promises.push(itowns.Fetcher.json('examples/layers/JSONLayers/ScanEX.json').then(function(result) { return globeView.addLayer(result); }));
+            promises.push(itowns.Fetcher.json('examples/layers/JSONLayers/Region.json').then(function(result) { return globeView.addLayer(result); }));
 
-            promises.push(itowns.Fetcher.json('examples/layers/JSONLayers/WORLD_DTM.json').then(result => globeView.addLayer(result)));
-            promises.push(itowns.Fetcher.json('examples/layers/JSONLayers/IGN_MNT_HIGHRES.json').then(result => globeView.addLayer(result)));
+            promises.push(itowns.Fetcher.json('examples/layers/JSONLayers/WORLD_DTM.json').then(function(result) { return globeView.addLayer(result); }));
+            promises.push(itowns.Fetcher.json('examples/layers/JSONLayers/IGN_MNT_HIGHRES.json').then(function(result) { return globeView.addLayer(result); }));
 
             menuGlobe.addGUI('RealisticLighting', false,
-                (newValue) => { globeView.setRealisticLightingOn(newValue); });
+                function(newValue) { globeView.setRealisticLightingOn(newValue); });
 
-            Promise.all(promises).then(() => {
-                menuGlobe.addImageryLayersGUI(globeView.getLayers(l => l.type === 'color'));
-                menuGlobe.addElevationLayersGUI(globeView.getLayers(l => l.type === 'elevation'));
+            Promise.all(promises).then(function () {
+                menuGlobe.addImageryLayersGUI(globeView.getLayers(function (l) { return l.type === 'color'; }));
+                menuGlobe.addElevationLayersGUI(globeView.getLayers(function(l) { return l.type === 'elevation'; }));
                 console.info('menuGlobe initialized');
-            }).catch( e => console.error(e));
+            }).catch( function (e) { console.error(e) });
 
-            globeView.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, () => {
+            globeView.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
                 // eslint-disable-next-line no-console
                 console.info('Globe initialized');
             });

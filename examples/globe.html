@@ -38,21 +38,21 @@
         <script src="../dist/itowns.js"></script>
         <script src="../dist/debug.js"></script>
         <script type="text/javascript">
-            let renderer;
-            let exports = {};
+            var renderer;
+            var exports = {};
         </script>
         <script src="globe.js"></script>
         <script type="text/javascript">
             /* global itowns, document, GuiTools, globeView, promises */
-            const menuGlobe = new GuiTools('menuDiv');
+            var menuGlobe = new GuiTools('menuDiv');
             menuGlobe.view = globeView;
             // Listen for globe full initialisation event
-            globeView.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, () => {
+            globeView.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
                 // eslint-disable-next-line no-console
                 console.info('Globe initialized');
-                Promise.all(promises).then(() => {
-                    menuGlobe.addImageryLayersGUI(globeView.getLayers(l => l.type === 'color'));
-                    menuGlobe.addElevationLayersGUI(globeView.getLayers(l => l.type === 'elevation'));
+                Promise.all(promises).then(function () {
+                    menuGlobe.addImageryLayersGUI(globeView.getLayers(function (l) { return l.type === 'color'; }));
+                    menuGlobe.addElevationLayersGUI(globeView.getLayers(function (l) { return l.type === 'elevation'; }));
                 });
             });
         </script>
