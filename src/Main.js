@@ -18,5 +18,6 @@ export { process3dTilesNode, init3dTilesLayer, $3dTilesCulling, $3dTilesSubdivis
 export { updateLayeredMaterialNodeImagery, updateLayeredMaterialNodeElevation } from './Process/LayeredMaterialNodeProcessing';
 export { processTiledGeometryNode, initTiledGeometryLayer } from './Process/TiledNodeProcessing';
 export { ColorLayersOrdering } from './Renderer/ColorLayersOrdering';
+export { default as FlyControls } from './Renderer/ThreeExtended/FlyControls';
 export { CONTROL_EVENTS } from './Renderer/ThreeExtended/GlobeControls';
 
