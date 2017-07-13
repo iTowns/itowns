@@ -37,7 +37,7 @@ function applyOptionalCesiumRTC(data, gltf) {
     const contentArray = new Uint8Array(data, 20, headerView.getUint32(12, true));
     const content = textDecoder.decode(new Uint8Array(contentArray));
     const json = JSON.parse(content);
-    if (json.extensions.CESIUM_RTC) {
+    if (json.extensions && json.extensions.CESIUM_RTC) {
         gltf.position.fromArray(json.extensions.CESIUM_RTC.center);
         gltf.updateMatrixWorld(true);
     }
