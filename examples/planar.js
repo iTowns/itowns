@@ -5,6 +5,7 @@ var extent;
 var viewerDiv;
 var view;
 var c;
+var flyControls;
 
 // Define projection that we will use (taken from https://epsg.io/3946, Proj4js section)
 itowns.proj4.defs('EPSG:3946',
@@ -22,6 +23,10 @@ viewerDiv = document.getElementById('viewerDiv');
 // Instanciate PlanarView*
 view = new itowns.PlanarView(viewerDiv, extent, { renderer: renderer });
 view.tileLayer.disableSkirt = true;
+
+// instanciate controls
+flyControls = new itowns.FlyControls(view, { focusOnClick: true });
+flyControls.moveSpeed = 1000;
 
 // Add an WMS imagery layer (see WMS_Provider* for valid options)
 view.addLayer({

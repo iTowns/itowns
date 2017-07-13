@@ -1,6 +1,6 @@
 <html>
     <head>
-        <title>Itowns - Planar example</title>
+        <title>Itowns - Globe with FlyControls</title>
 
         <style type="text/css">
             html {
@@ -9,8 +9,8 @@
 
             body {
                 margin: 0;
-                overflow: hidden;
-                height: 100%;
+                overflow:hidden;
+                height:100%;
             }
 
             #viewerDiv {
@@ -20,11 +20,17 @@
                 padding: 0;
             }
 
+            #menuDiv {
+                position: absolute;
+                top:0px;
+                margin-left: 0px;
+            }
+
             #help {
                 position: absolute;
                 z-index: 0;
                 top: 0;
-                left: 0;
+                right: 0;
                 color: white;
                 color: #eee;
                 font: 11px 'Lucida Grande',sans-serif;
@@ -47,10 +53,11 @@
         <meta charset="UTF-8">
 
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.6.5/dat.gui.min.js"></script>
     </head>
     <body>
         <div id="help">
-            <p>Key bindings</p>
+            <p>Key bindings:</p>
             <ul>
               <li>↑ ↓ : forward / backward</li>
               <li>← → : strafe left / right</li>
@@ -59,15 +66,27 @@
             </ul>
         </div>
         <div id="viewerDiv"></div>
+        <script src="GUI/GuiTools.js"></script>
         <script src="../dist/itowns.js"></script>
-        <script src="../node_modules/dat.gui/build/dat.gui.min.js"></script>
-        <script type="text/javascript">
-            var renderer; var exports = {};
-        </script>
-        <script src="planar.js"></script>
+        <script src="../dist/debug.js"></script>
         <script>
-            var gui = new dat.GUI({ autoplace: false });
-            gui.add(flyControls, 'moveSpeed', 10, 1000).name('Move speed');
+            var exports = {};
+        </script>
+        <script src="globe_fly.js"></script>
+        <script type="text/javascript">
+            /* global itowns, document, GuiTools, globeView, promises */
+            var menuGlobe = new GuiTools('menuDiv');
+            menuGlobe.view = globeView;
+            flyControls.moveSpeed = 10000000;
+            menuGlobe.gui.add(flyControls, 'moveSpeed', 10, 10000000).name('Movement speed');
+            // Listen for globe full initialisation event
+            globeView.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
+                console.info('Globe initialized');
+                Promise.all(promises).then(function () {
+                    menuGlobe.addImageryLayersGUI(globeView.getLayers(function (l) { return l.type === 'color'; }));
+                    menuGlobe.addElevationLayersGUI(globeView.getLayers(function (l) { return l.type === 'elevation'; }));
+                });
+            });
         </script>
     </body>
 </html>
