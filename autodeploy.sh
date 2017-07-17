@@ -76,5 +76,7 @@ git push $SITE_REPO
 
 # clean key
 cd ..
-ssh-add -d ./deploy_key
 rm ./deploy_key
+
+# See https://github.com/travis-ci/travis-ci/issues/8082#issuecomment-315151953
+ssh-agent -k
