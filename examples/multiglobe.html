@@ -25,73 +25,34 @@ and open the template in the editor.
                 padding: 0;
                 height: 50%
             }
-
-            #menuDiv {
-                position: absolute;
-                top: 0px;
-                margin-left: 0px;
-            }
         </style>
         <meta charset="UTF-8">
 
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <script src="GUI/dat.gui/dat.gui.min.js"></script>
     </head>
     <body>
         <div id="viewerDiv"></div>
         <div id="viewerDiv2"></div>
-        <script src="GUI/GuiTools.js"></script>
         <script src="../dist/itowns.js"></script>
-        <script src="../dist/debug.js"></script>
         <script type="text/javascript">
             /* global itowns,document,GuiTools*/
-
-            var positionOnGlobe = { longitude: 2.351323, latitude: 48.856712, altitude: 25000000 };
+            var positionOnGlobe = { longitude: 2.351323, latitude: 48.856712, altitude: 10000000 };
 
             // iTowns namespace defined here
             var viewerDiv = document.getElementById('viewerDiv');
-
-
-            var menuGlobe = new GuiTools('menuDiv');
-            var globeView = new itowns.GlobeView(viewerDiv, positionOnGlobe);
-            menuGlobe.view = globeView;
+            var globeView = new itowns.GlobeView(viewerDiv, positionOnGlobe, { noControls: true });
 
             function addLayerCb(layer) {
                 return globeView.addLayer(layer);
             }
 
-            var promises = [];
-            promises.push(itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(addLayerCb));
-            promises.push(itowns.Fetcher.json('./layers/JSONLayers/OrthosCRS.json').then(addLayerCb));
-            promises.push(itowns.Fetcher.json('./layers/JSONLayers/ScanEX.json').then(addLayerCb));
-            promises.push(itowns.Fetcher.json('./layers/JSONLayers/Region.json').then(addLayerCb));
-
-            promises.push(itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT.json').then(addLayerCb));
-            promises.push(itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addLayerCb));
-
-            menuGlobe.addGUI('RealisticLighting', false,
-                function (newValue) { globeView.setRealisticLightingOn(newValue); });
-
-            globeView.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
-                // eslint-disable-next-line no-console
-                console.info('Globe initialized');
-                Promise.all(promises).then(function () {
-                    menuGlobe.addImageryLayersGUI(globeView.getLayers(function (l) { return l.type === 'color'; }));
-                    menuGlobe.addElevationLayersGUI(globeView.getLayers(function(l) { return l.type === 'elevation'; }));
-                });
-            });
-
+            itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(addLayerCb);
+            itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT.json').then(addLayerCb);
 
             // hack: not searched why yet
             setTimeout(function () {
-                // hack because Debug access directly menuGlobe global var...
-                menuGlobe = new GuiTools('menuDiv2');
                 var viewerDiv2 = document.getElementById('viewerDiv2');
                 var globeView2 = new itowns.GlobeView(viewerDiv2, positionOnGlobe);
-
-                for (var layer of globeView.getLayers(function (l) { return l.type == 'color' || l.type == 'elevation'; })) {
-                    globeView2.addLayer(layer);
-                }
 
                 var e = {
                     "type": 'color',
@@ -110,7 +71,7 @@ and open the template in the editor.
                     }
                 };
                 globeView2.addLayer(e);
-                globeView2.notifyChange();
+                globeView2.notifyChange(true);
             }, 500);
         </script>
     </body>
