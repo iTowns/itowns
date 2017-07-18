@@ -1,19 +1,21 @@
 
 <p align="center">
-<img src="http://www.itowns.fr/images/logo-itowns2XS.png" />
+<img src="https://raw.githubusercontent.com/iTowns/itowns.github.io/master/images/itowns_logo_300x134.png" />
 </p>
-
-# iTowns V2
 
 ## What is it?
 
 iTowns is a [Three.js](https://threejs.org/)-based framework written in Javascript/WebGL for visualizing 3D geospatial data.
 
-It can connect to WMS/WMTS/TMS servers including elevation data and load many different data format (3dTiles, gpx, KML and much much more).
+It can connect to WMS/WMTS/TMS servers including elevation data and load many different data formats (3dTiles, gpx, KML and much much more).
 
-The V2 of iTowns Open Source is a refactoring of [iTowns V1](https://github.com/iTowns/itowns-legacy).
+iTowns has been redesigned from this [early version](https://github.com/iTowns/itowns-legacy).
 
-**[Documentation](http://www.itowns-project.org/itowns2/API_Doc/)**
+![iTowns screenshot](https://raw.githubusercontent.com/iTowns/itowns.github.io/master/images/itownsReleaseXS.jpg)
+
+## API documentation and examples
+**[API Documentation](http://www.itowns-project.org/itowns2/API_Doc/)**
+
 
 **Examples**
 
@@ -22,7 +24,7 @@ The V2 of iTowns Open Source is a refactoring of [iTowns V1](https://github.com/
 - [Scene postprocessing](http://www.itowns-project.org/itowns2/examples/postprocessing.html)
 - [3dtiles](http://www.itowns-project.org/itowns2/examples/3dtiles.html)
 
-![iTowns screenshot](http://www.itowns.fr/videos/itowns2.jpg)
+
 
 ## How to use Itowns in your project
 
@@ -53,15 +55,10 @@ See our [release page](https://github.com/iTowns/itowns/releases).
 
 ## Supported data types
 
-- Aerial photography 
-- DTM
-- Buildings
+- Imagery from WMTS/WMS/TMS
+- Elevation (DTM/DSM) from WMTS
+- 3D Tiles 
 
-## API documentation and demo 
-
-You can find an API documentation here [http://www.itowns-project.org/itowns2/API_Doc/]
-
-If you want to play with a demonstration, please see [http://www.itowns-project.org/itowns2/]
 
 ## Licence
 
@@ -80,7 +77,12 @@ If you are interested in contributing to iTowns, please read [CONTRIBUTING.md](C
 iTowns is an original work from French IGN, MATIS research laboratory.
 It has been funded through various research programs involving the French National Research Agency, Cap Digital, UPMC, Mines ParisTec, CNRS, LCPC.
 
-iTowns is currently maintained by IGN ( http://www.ign.fr ) and Oslandia ( http://www.oslandia.com )
+iTowns is currently maintained by IGN ( http://www.ign.fr ), Oslandia ( http://www.oslandia.com ) and AtolCD ( https://www.atolcd.com )
 
-![IGN Logo](https://raw.githubusercontent.com/iTowns/itowns/master/images/IGN_logo_2012.png)
-![Oslandia Logo](https://raw.githubusercontent.com/iTowns/itowns/master/images/Oslandia_logo.png)
+<p align="center">
+<a href="http://www.ign.fr"><img src="https://raw.githubusercontent.com/iTowns/itowns.github.io/master/images/logo_ign.png" height="150" /></a>&nbsp;
+<a href="http://www.oslandia.com"><img src="https://raw.githubusercontent.com/iTowns/itowns.github.io/master/images/logo_oslandia.png" height="150" /></a>&nbsp;
+<a href="https://www.atolcd.com"><img src="https://raw.githubusercontent.com/iTowns/itowns.github.io/master/images/logo_atolcd.jpg" height="150" /></a>&nbsp;
+</p>
+
+
