@@ -84,6 +84,11 @@ MainLoop.prototype._step = function _step(view, timestamp) {
     const updateSources = new Set(view._changeSources);
     view._changeSources.clear();
 
+    // update camera
+    const dim = this.gfxEngine.getWindowSize();
+    view.camera.resize(dim.x, dim.y);
+    view.camera.update();
+
     // update data-structure
     this._update(view, updateSources, dt);
 
@@ -109,10 +114,6 @@ MainLoop.prototype._step = function _step(view, timestamp) {
 };
 
 MainLoop.prototype._renderView = function _renderView(view) {
-    const dim = this.gfxEngine.getWindowSize();
-    view.camera.resize(dim.x, dim.y);
-    view.camera.update();
-
     if (view.preRender) {
         view.preRender();
     }
