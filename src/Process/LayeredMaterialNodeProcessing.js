@@ -165,11 +165,7 @@ export function updateLayeredMaterialNodeImagery(context, layer, node) {
         initNodeImageryTexturesFromParent(node, node.parent, layer);
     }
 
-    if (!node.isDisplayed()) {
-        return;
-    }
-
-    if (!layer.tileInsideLimit(node, layer)) {
+    if (!node.isDisplayed() || !layer.tileInsideLimit(node, layer)) {
         return Promise.resolve();
     }
 
@@ -198,7 +194,6 @@ export function updateLayeredMaterialNodeImagery(context, layer, node) {
     }
 
     const currentLevel = node.material.getColorLayerLevelById(layer.id);
-
     const zoom = node.getCoordsForLayer(layer)[0].zoom || node.level;
     const targetLevel = chooseNextLevelToFetch(layer.updateStrategy.type, node, zoom, currentLevel, layer);
     if (targetLevel <= currentLevel) {
@@ -276,7 +271,7 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, force) 
         currentElevation = material.getElevationLayerLevel();
     }
     if (!node.isDisplayed()) {
-        return;
+        return Promise.resolve();
     }
 
     if (!node.layerUpdateState[layer.id].canTryUpdate(ts)) {

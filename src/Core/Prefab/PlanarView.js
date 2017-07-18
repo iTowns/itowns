@@ -10,7 +10,7 @@ import { processTiledGeometryNode, initTiledGeometryLayer } from '../../Process/
 import { updateLayeredMaterialNodeImagery, updateLayeredMaterialNodeElevation } from '../../Process/LayeredMaterialNodeProcessing';
 import { planarCulling, planarSubdivisionControl, planarSchemeTile } from '../../Process/PlanarTileProcessing';
 import PlanarTileBuilder from './Planar/PlanarTileBuilder';
-
+import SubdivisionControl from '../../Process/SubdivisionControl';
 
 function PlanarView(viewerDiv, boundingbox, options) {
     THREE.Object3D.DefaultUp.set(0, 0, 1);
@@ -67,6 +67,8 @@ function PlanarView(viewerDiv, boundingbox, options) {
     }
 
     tileLayer.preUpdate = (context, layer, changeSources) => {
+        SubdivisionControl.preUpdate(context, layer);
+
         this._latestUpdateStartingLevel = 0;
         if (layer.level0Nodes === undefined) {
             initLayer(context, layer);
@@ -105,10 +107,18 @@ function PlanarView(viewerDiv, boundingbox, options) {
         }
     };
 
+
+    function subdivision(context, layer, node) {
+        if (SubdivisionControl.hasEnoughTexturesToSubdivide(context, layer, node)) {
+            return planarSubdivisionControl(options.maxSubdivisionLevel || 5)(context, layer, node);
+        }
+        return false;
+    }
+
     tileLayer.update =
         processTiledGeometryNode(
             planarCulling,
-            planarSubdivisionControl(options.maxSubdivisionLevel || 5),
+            subdivision,
             nodeInitFn);
     tileLayer.builder = new PlanarTileBuilder();
 

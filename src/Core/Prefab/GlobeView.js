@@ -17,6 +17,7 @@ import { processTiledGeometryNode, initTiledGeometryLayer } from '../../Process/
 import { updateLayeredMaterialNodeImagery, updateLayeredMaterialNodeElevation } from '../../Process/LayeredMaterialNodeProcessing';
 import { globeCulling, preGlobeUpdate, globeSubdivisionControl, globeSchemeTileWMTS, globeSchemeTile1 } from '../../Process/GlobeTileProcessing';
 import BuilderEllipsoidTile from './Globe/BuilderEllipsoidTile';
+import SubdivisionControl from '../../Process/SubdivisionControl';
 
 /**
  * Fires when the view is completely loaded. Controls and view's functions can be called then.
@@ -137,6 +138,8 @@ function GlobeView(viewerDiv, coordCarto, options = {}) {
     const wgs84TileLayer = new GeometryLayer('globe');
     const initLayer = initTiledGeometryLayer(globeSchemeTileWMTS(globeSchemeTile1));
     wgs84TileLayer.preUpdate = (context, layer, changeSources) => {
+        SubdivisionControl.preUpdate(context, layer);
+
         this._latestUpdateStartingLevel = 0;
         if (layer.level0Nodes === undefined) {
             initLayer(context, layer);
@@ -175,10 +178,17 @@ function GlobeView(viewerDiv, coordCarto, options = {}) {
         }
     };
 
+    function subdivision(context, layer, node) {
+        if (SubdivisionControl.hasEnoughTexturesToSubdivide(context, layer, node)) {
+            return globeSubdivisionControl(2, 17, SSE_SUBDIVISION_THRESHOLD)(context, layer, node);
+        }
+        return false;
+    }
+
     wgs84TileLayer.update =
         processTiledGeometryNode(
             globeCulling(2),
-            globeSubdivisionControl(2, 17, SSE_SUBDIVISION_THRESHOLD),
+            subdivision,
             nodeInitFn);
     wgs84TileLayer.builder = new BuilderEllipsoidTile();
 
