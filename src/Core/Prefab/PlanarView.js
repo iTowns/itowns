@@ -77,23 +77,31 @@ function PlanarView(viewerDiv, boundingbox, options) {
         }
         let commonAncestor;
         for (const source of changeSources.values()) {
-            if (!commonAncestor) {
-                commonAncestor = source;
-            } else {
-                commonAncestor = _commonAncestorLookup(commonAncestor, source);
-                if (!commonAncestor) {
-                    return layer.level0Nodes;
-                }
+            if (source.isCamera) {
+                // if the change is caused by a camera move, no need to bother
+                // to find common ancestor: we need to update the whole tree:
+                // some invisible tiles may now be visible
+                return layer.level0Nodes;
             }
-            if (commonAncestor.material == null) {
-                commonAncestor = undefined;
+            if (source.layer === layer.id) {
+                if (!commonAncestor) {
+                    commonAncestor = source;
+                } else {
+                    commonAncestor = _commonAncestorLookup(commonAncestor, source);
+                    if (!commonAncestor) {
+                        return layer.level0Nodes;
+                    }
+                }
+                if (commonAncestor.material == null) {
+                    commonAncestor = undefined;
+                }
             }
         }
         if (commonAncestor) {
             this._latestUpdateStartingLevel = commonAncestor.level;
             return [commonAncestor];
         } else {
-            return [];
+            return layer.level0Nodes;
         }
     };
 
