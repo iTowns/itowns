@@ -7,7 +7,7 @@
                 height: 200px;
                 border: none;
             }
-            div {
+            .exampleContainer {
                 width: 350px;
                 display: inline-block;
             }
@@ -18,33 +18,56 @@
         <p>
         (click on title to open fullscreen)
         </p>
-        <div>
+        <div class="exampleContainer">
             <h3><a href='./orthographic.html'>Orthographic</a></h3>
-            <iframe src="./orthographic.html"></iframe>
+            <img src='screenshots/orthographic.jpg'>
+            <iframe src="" style="display: none;"></iframe>
         </div>
-        <div>
+        <div class="exampleContainer">
             <h3><a href='./planar.html'>Planar mode</a></h3>
-            <iframe src="./planar.html"></iframe>
+            <img src='screenshots/planar.jpg'>
+            <iframe src="" style="display: none;"></iframe>
         </div>
-        <div>
+        <div class="exampleContainer">
             <h3><a href='./globe.html'>Globe</a></h3>
-            <iframe src="./globe.html"></iframe>
+            <img src='screenshots/globe.jpg'>
+            <iframe src="" style="display: none;"></iframe>
         </div>
-        <div>
+        <div class="exampleContainer">
             <h3><a href='./postprocessing.html'>Post processing</a></h3>
-            <iframe src="./postprocessing.html"></iframe>
+            <img src='screenshots/postprocessing.jpg'>
+            <iframe src="" style="display: none;"></iframe>
         </div>
-        <div>
+        <div class="exampleContainer">
             <h3><a href='./3dtiles.html'>3d tiles</a></h3>
-            <iframe src="./3dtiles.html"></iframe>
+            <img src='screenshots/3dtiles.jpg'>
+            <iframe src="" style="display: none;"></iframe>
         </div>
-        <div>
+        <div class="exampleContainer">
             <h3><a href='./multiglobe.html'>Multiple globe</a></h3>
-            <iframe src="./multiglobe.html"></iframe>
+            <img src='screenshots/multiglobe.jpg'>
+            <iframe src="" style="display: none;"></iframe>
         </div>
-        <div>
+        <div class="exampleContainer">
             <h3><a href='./layersColorVisible.html'>Layer visibility</a></h3>
-            <iframe src="./layersColorVisible.html"></iframe>
+            <img src='screenshots/globe.jpg'>
+            <iframe src="" style="display: none;"></iframe>
         </div>
+
+        <script type="text/javascript">
+            function enableOnClick(evt) {
+                this.getElementsByTagName('img')[0].style.display = 'none';
+                this.getElementsByTagName('iframe')[0].style.display = '';
+                this.getElementsByTagName('iframe')[0].src = this.getElementsByTagName('a')[0].href;
+            }
+
+            var divs = document.getElementsByClassName('exampleContainer');
+            var i;
+            for (i=0; i<divs.length; i++) {
+                divs[i].addEventListener('click', enableOnClick.bind(divs[i]));
+            }
+
+
+        </script>
     </body>
 </html>
