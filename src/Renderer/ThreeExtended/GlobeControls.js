@@ -448,8 +448,8 @@ function GlobeControls(view, target, radius, options = {}) {
 
     this.updateCamera = function updateCamera() {
         snapShotCamera.init(this.camera);
-        sizeRendering.width = view.viewerDiv.clientWidth;
-        sizeRendering.height = view.viewerDiv.clientHeight;
+        sizeRendering.width = this.domElement.clientWidth;
+        sizeRendering.height = this.domElement.clientHeight;
         sizeRendering.FOV = this.camera.fov;
     };
 
