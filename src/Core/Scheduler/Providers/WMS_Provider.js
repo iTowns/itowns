@@ -99,11 +99,6 @@ WMS_Provider.prototype.getColorTexture = function getColorTexture(tile, layer) {
     });
 };
 
-WMS_Provider.prototype.getXbilTexture = function getXbilTexture(tile, layer) {
-    const url = this.url(tile.extent.as(layer.projection), layer);
-    return OGCWebServiceHelper.getXBilTextureByUrl(url, layer.networkOptions);
-};
-
 WMS_Provider.prototype.executeCommand = function executeCommand(command) {
     const tile = command.requester;
 
@@ -112,7 +107,6 @@ WMS_Provider.prototype.executeCommand = function executeCommand(command) {
         'image/png': this.getColorTexture.bind(this),
         'image/jpg': this.getColorTexture.bind(this),
         'image/jpeg': this.getColorTexture.bind(this),
-        'image/x-bil;bits=32': this.getXbilTexture.bind(this),
     };
 
     const func = supportedFormats[layer.format];

@@ -55,10 +55,15 @@ export default {
         const textureCache = cache.getRessource(url);
 
         if (textureCache !== undefined) {
-            return Promise.resolve({ texture: textureCache });
+            return Promise.resolve(textureCache);
         }
 
-        const promiseXBil = (cachePending.get(url) || ioDXBIL.read(url, networkOptions)).then((result) => {
+        const pending = cachePending.get(url);
+        if (pending) {
+            return pending;
+        }
+
+        const promiseXBil = ioDXBIL.read(url, networkOptions).then((result) => {
             // TODO  RGBA is needed for navigator with no support in texture float
             // In RGBA elevation texture LinearFilter give some errors with nodata value.
             // need to rewrite sample function in shader
@@ -70,14 +75,14 @@ export default {
                 return textureConcurrence;
             }
 
-            result.texture = getTextureFloat(result.floatArray);
-            result.texture.generateMipmaps = false;
-            result.texture.magFilter = THREE.LinearFilter;
-            result.texture.minFilter = THREE.LinearFilter;
-            cache.addRessource(url, result.texture);
+            const texture = getTextureFloat(result.floatArray);
+            texture.generateMipmaps = false;
+            texture.magFilter = THREE.LinearFilter;
+            texture.minFilter = THREE.LinearFilter;
+            cache.addRessource(url, texture);
             cachePending.delete(url);
 
-            return result;
+            return texture;
         });
 
         cachePending.set(url, promiseXBil);

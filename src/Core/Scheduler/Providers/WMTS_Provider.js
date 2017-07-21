@@ -83,16 +83,20 @@ WMTS_Provider.prototype.getXbilTexture = function getXbilTexture(tile, layer, ta
 
     const url = this.url(coordWMTS, layer);
 
-    return OGCWebServiceHelper.getXBilTextureByUrl(url, layer.networkOptions).then((result) => {
+    return OGCWebServiceHelper.getXBilTextureByUrl(url, layer.networkOptions).then((texture) => {
         const { min, max } = OGCWebServiceHelper.ioDXBIL.computeMinMaxElevation(
-        result.texture.image.data,
-        SIZE_TEXTURE_TILE, SIZE_TEXTURE_TILE,
-        pitch);
-        result.min = min === undefined ? 0 : min;
-        result.max = max === undefined ? 0 : max;
-        result.texture.coords = coordWMTS;
-        result.pitch = pitch;
-        return result;
+            texture.image.data,
+            SIZE_TEXTURE_TILE, SIZE_TEXTURE_TILE,
+            pitch);
+
+        texture.coords = coordWMTS;
+
+        return {
+            texture,
+            pitch,
+            min: min === undefined ? 0 : min,
+            max: max === undefined ? 0 : max,
+        };
     });
 };
 
