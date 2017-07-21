@@ -235,6 +235,10 @@ export function updateLayeredMaterialNodeImagery(context, layer, node) {
             if (err instanceof CancelledCommandException) {
                 node.layerUpdateState[layer.id].success();
             } else {
+                if (__DEBUG__) {
+                    // eslint-disable-next-line no-console
+                    console.warn(`Imagery texture update error for ${node}: ${err}`);
+                }
                 node.layerUpdateState[layer.id].failure(Date.now());
                 window.setTimeout(() => {
                     context.view.notifyChange(false, node);
@@ -319,7 +323,7 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, force) 
                 terrain.texture.needsUpdate = true;
             }
 
-            if (terrain.texture.image.data && !checkNodeElevationTextureValidity(terrain.texture, layer.noDataValue)) {
+            if (terrain.texture && terrain.texture.image.data && !checkNodeElevationTextureValidity(terrain.texture, layer.noDataValue)) {
                 // Quick check to avoid using elevation texture with no data value
                 // If we have no data values, we use value from the parent tile
                 // We should later implement multi elevation layer to choose the one to use at each level
@@ -332,6 +336,10 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, force) 
             if (err instanceof CancelledCommandException) {
                 node.layerUpdateState[layer.id].success();
             } else {
+                if (__DEBUG__) {
+                    // eslint-disable-next-line no-console
+                    console.warn(`Elevation texture update error for ${node}: ${err}`);
+                }
                 node.layerUpdateState[layer.id].failure(Date.now());
                 window.setTimeout(() => {
                     context.view.notifyChange(false, node);
