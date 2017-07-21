@@ -188,6 +188,7 @@ $3dTiles_Provider.prototype.executeCommand = function executeCommand(command) {
                 if (func) {
                     // TODO: request should be delayed if there is a viewerRequestVolume
                     return func(result, layer).then((content) => {
+                        tile.content = content;
                         tile.add(content);
                         tile.traverse(setLayer);
                         return tile;

@@ -138,15 +138,20 @@ export function init3dTilesLayer(context, layer) {
     });
 }
 
+function setDisplayed(node, display) {
+    // The geometry of the tile is not in node, but in node.content
+    // To change the display state, we change node.content.visible instead of
+    // node.material.visible
+    if (node.content) {
+        node.content.visible = display;
+    }
+}
+
 export function process3dTilesNode(cullingTest, subdivisionTest) {
     return function _process3dTilesNodes(context, layer, node) {
-        // early exit if parent' subdivision is in progress
+        // early exit if parent's subdivision is in progress
         if (node.parent.pendingSubdivision && !node.parent.additiveRefinement) {
             node.visible = false;
-            // TODO: node.setDisplayed(false)?
-            if (node.material) {
-                node.material.visible = false;
-            }
             return undefined;
         }
 
@@ -160,28 +165,19 @@ export function process3dTilesNode(cullingTest, subdivisionTest) {
             if (node.pendingSubdivision || subdivisionTest(context, layer, node)) {
                 subdivideNode(context, layer, node);
                 // display iff children aren't ready
-                if (node.material) {
-                    node.material.visible = node.pendingSubdivision || node.additiveRefinement;
-                }
+                setDisplayed(node, node.pendingSubdivision || node.additiveRefinement);
                 returnValue = node.children.filter(n => n.layer == layer.id);
-            } else if (node.material) {
-                node.material.visible = true;
+            } else {
+                setDisplayed(node, true);
             }
 
             if ((node.material === undefined || node.material.visible)) {
                 for (const n of node.children.filter(n => n.layer == layer.id)) {
                     n.visible = false;
-                    if (n.material) {
-                        n.material.visible = false;
-                    }
                 }
             }
 
             return returnValue;
-        }
-
-        if (node.material) {
-            node.material.visible = false;
         }
 
         // TODO: cleanup tree
