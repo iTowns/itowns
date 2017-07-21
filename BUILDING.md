@@ -2,19 +2,6 @@
 
 ## Environment setup
 
-### GitHub
-
-iTowns is managed on the GitHub platform. You should start with [creating a GitHub account](https://github.com/signup/free).
-
-### Git
-
-* Setup Git if it isn't already ([link](https://help.github.com/articles/set-up-git/#platform-all)).
-   * Make sure your SSH keys are configured ([linux](https://help.github.com/articles/generating-ssh-keys#platform-linux) | [mac](https://help.github.com/articles/generating-ssh-keys#platform-mac) | [windows](https://help.github.com/articles/generating-ssh-keys#platform-windows)).
-   * Double-check your settings for name and email: `git config --get-regexp user.*`.
-   * Recommended Git settings:
-      * `git config --global pull.rebase preserve` - when pulling remote changes, rebase your local changes on top of the remote changes, to avoid unnecessary merge commits.
-      * `git config --global fetch.prune true` - when fetching remote changes, remove any remote branches that no longer exist on the remote.
-
 ### Node.js
 
 iTowns uses NPM as the build tool. If you haven't already, install Node.js: https://nodejs.org/
@@ -32,6 +19,12 @@ iTowns uses NPM as the build tool. If you haven't already, install Node.js: http
    * You can run the built script to verify it works OK:
       * `python -m SimpleHTTPServer 8080` (change the port at your convenience)
       * Open `http://localhost:8080/`
+* Transpile itowns to ES5 to require it in your code:
+   * `npm run transpile`
+   * The transpiled source are in `lib/`.
+   * You can then require `src/Main.js` in your code.
+* Test and lint changes: see test, lint and test-examples npm script.
+
 
 ## Contribute back
 
