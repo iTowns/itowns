@@ -71,6 +71,8 @@ function GeometryLayer(id, object3d) {
         value: id,
         writable: false,
     });
+
+    this.postUpdate = () => {};
 }
 
 GeometryLayer.prototype = Object.create(EventDispatcher.prototype);
