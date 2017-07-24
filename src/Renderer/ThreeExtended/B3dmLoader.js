@@ -77,7 +77,7 @@ B3dmLoader.prototype.parse = function parse(buffer, gltfUpAxis) {
         byteOffset += Uint32Array.BYTES_PER_ELEMENT;
 
         // TODO: missing feature and batch table
-        return new Promise((resolve/* , reject*/) => {
+        return new Promise((resolve/* , reject */) => {
             const onload = (gltf) => {
                 for (const scene of gltf.scenes) {
                     scene.traverse(filterUnsupportedSemantics);

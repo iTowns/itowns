@@ -1,17 +1,9 @@
-/**
- * Generated On: 2016-01-20
- * Class: KML_Provider
- * Description: Parseur de KML jusqu'à obtention du collada
- */
-/* global Promise*/
-
 import * as THREE from 'three';
 import Provider from './Provider';
 import Fetcher from './Fetcher';
 import KMZLoader from '../../../Renderer/ThreeExtended/KMZLoader';
 
 function KML_Provider(ellipsoid) {
-    // Constructor
     this.ellipsoid = ellipsoid;
     this.kmzLoader = new KMZLoader();
     this.cache = new Map();
@@ -20,10 +12,6 @@ function KML_Provider(ellipsoid) {
 KML_Provider.prototype = Object.create(Provider.prototype);
 
 KML_Provider.prototype.constructor = KML_Provider;
-
-KML_Provider.prototype.loadKMZCenterInBBox = function loadKMZCenterInBBox(/* bbox*/) {
-
-};
 
 KML_Provider.prototype.loadKMZ = function loadKMZ(longitude, latitude) {
     return this.getUrlCollada(longitude, latitude).then((result) => {
@@ -65,10 +53,6 @@ KML_Provider.prototype.loadKMZ = function loadKMZ(longitude, latitude) {
 };
 
 KML_Provider.prototype.parseKML = function parseKML(urlFile, longitude, latitude, networkOptions) {
-    /* var longitude = 48.87;
-    var south = 48.875;
-    var east = -3.4900000000000046;
-    var west = -3.4940000000000044;*/
     var north = latitude;
     var south = latitude;
     var east = longitude;
@@ -113,7 +97,7 @@ KML_Provider.prototype.parseKML = function parseKML(urlFile, longitude, latitude
 
 
 KML_Provider.prototype.getUrlCollada = function getUrlCollada(longitude, latitude) {
-    return Fetcher.xml('http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/vecteurtuile3d/BATI3D/BU.Building.kml').then((/* result_0*/) => {
+    return Fetcher.xml('http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/vecteurtuile3d/BATI3D/BU.Building.kml').then(() => {
         // get href's node value
         // var kml_0 = result_0.getElementsByTagName("href");
         var url_href_1;

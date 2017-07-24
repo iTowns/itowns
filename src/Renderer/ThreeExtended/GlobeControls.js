@@ -994,7 +994,7 @@ function GlobeControls(view, target, radius, options = {}) {
 
     var onMouseWheel = function onMouseWheel(event) {
         player.stop().then(() => {
-            if (this.enabled === false || this.enableZoom === false/* || state !== CONTROL_STATE.NONE*/) return;
+            if (this.enabled === false || this.enableZoom === false) return;
 
             event.preventDefault();
             event.stopPropagation();
@@ -1032,7 +1032,7 @@ function GlobeControls(view, target, radius, options = {}) {
         });
     };
 
-    var onKeyUp = function onKeyUp(/* event*/) {
+    var onKeyUp = function onKeyUp() {
         if (this.enabled === false || this.enableKeys === false || this.enablePan === false) return;
 
 

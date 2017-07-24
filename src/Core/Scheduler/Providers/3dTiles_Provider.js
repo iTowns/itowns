@@ -32,9 +32,7 @@ export function $3dTilesIndex(tileset, baseURL) {
     };
 }
 
-function $3dTiles_Provider(/* options*/) {
-    // Constructor
-
+function $3dTiles_Provider() {
     Provider.call(this);
     this.b3dmLoader = new B3dmLoader();
 }
@@ -43,11 +41,11 @@ $3dTiles_Provider.prototype = Object.create(Provider.prototype);
 
 $3dTiles_Provider.prototype.constructor = $3dTiles_Provider;
 
-$3dTiles_Provider.prototype.removeLayer = function removeLayer(/* idLayer*/) {
+$3dTiles_Provider.prototype.removeLayer = function removeLayer() {
 
 };
 
-$3dTiles_Provider.prototype.preprocessDataLayer = function preprocessDataLayer(/* layer*/) {
+$3dTiles_Provider.prototype.preprocessDataLayer = function preprocessDataLayer() {
 
 };
 
@@ -200,7 +198,7 @@ $3dTiles_Provider.prototype.executeCommand = function executeCommand(command) {
             return tile;
         });
     } else {
-        return new Promise((resolve/* , reject*/) => {
+        return new Promise((resolve) => {
             tile.traverse(setLayer);
             resolve(tile);
         });

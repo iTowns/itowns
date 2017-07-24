@@ -1,18 +1,7 @@
-/* global  Uint32Array */
-
-/**
- * Generated On: 2015-10-5
- * Class: TileGeometry
- * Description: Tuile géométrique. Buffer des vertex et des faces
- */
-/* global Float32Array*/
 import * as THREE from 'three';
 import CacheRessource from './Scheduler/Providers/CacheRessource';
 
-// TODO Why? it's not necessary
-
-var cache = CacheRessource(); // TODO /!\ singleton
-
+const cache = CacheRessource(); // TODO /!\ singleton
 
 function Buffers() {
     this.index = null;

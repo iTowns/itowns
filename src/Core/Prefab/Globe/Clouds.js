@@ -1,17 +1,10 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
-
 import * as THREE from 'three';
 import WMS_Provider from '../../Scheduler/Providers/WMS_Provider';
 import CloudsFS from './Shaders/CloudsFS.glsl';
 import CloudsVS from './Shaders/CloudsVS.glsl';
 import { LIGHTING_POSITION } from './Atmosphere';
 
-function Clouds(/* size*/) {
+function Clouds() {
     THREE.Mesh.call(this);
 
     this.providerWMS = new WMS_Provider({});

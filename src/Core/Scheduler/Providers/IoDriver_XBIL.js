@@ -1,10 +1,3 @@
-/**
- * Generated On: 2015-10-5
- * Class: IoDriver_XBIL
- */
-/* global Float32Array*/
-
-import IoDriver from './IoDriver';
 import Fetcher from './Fetcher';
 
 
@@ -17,13 +10,7 @@ var portableXBIL = function portableXBIL(buffer) {
 
 
 function IoDriver_XBIL() {
-    // Constructor
-    IoDriver.call(this);
 }
-
-IoDriver_XBIL.prototype = Object.create(IoDriver.prototype);
-
-IoDriver_XBIL.prototype.constructor = IoDriver_XBIL;
 
 IoDriver_XBIL.prototype.computeMinMaxElevation = function computeMinMaxElevation(buffer, width, height, offsetScale) {
     let min = 1000000;

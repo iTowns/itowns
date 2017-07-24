@@ -1,14 +1,6 @@
-/**
- * Generated On: 2015-10-5
- * Class: CacheRessource
- * Description: Cette classe singleton est un cache des ressources et services
- */
-
 var instanceCache = null;
 
 function CacheRessource() {
-    // Constructor
-
     this.cacheObjects = [];
     this._maximumSize = null;
 }
@@ -22,7 +14,7 @@ CacheRessource.prototype.addRessource = function addRessource(url, ressource) {
 };
 
 
-CacheRessource.prototype.getRessourceByID = function getRessourceByID(/* id*/) {
+CacheRessource.prototype.getRessourceByID = function getRessourceByID(/* id */) {
     // TODO: Implement Me
 
 };
