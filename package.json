@@ -51,7 +51,7 @@
     "chart.js": "^2.4.0",
     "cross-env": "^3.1.4",
     "eslint": "^3.14.0",
-    "eslint-config-airbnb-base": "^11.0.1",
+    "eslint-config-airbnb-base": "^11.3.0",
     "eslint-import-resolver-webpack": "^0.8.1",
     "eslint-loader": "^1.7.1",
     "eslint-plugin-import": "^2.2.0",
