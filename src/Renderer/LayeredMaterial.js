@@ -32,7 +32,7 @@ export function unpack1K(color, factor) {
         UnpackDownscale / (256.0 * 256.0 * 256.0),
         UnpackDownscale / (256.0 * 256.0),
         UnpackDownscale / 256.0,
-        1.0);
+        UnpackDownscale);
     return bitSh.dot(color) * factor;
 }
 
