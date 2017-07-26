@@ -149,7 +149,7 @@ export default {
         layer.postUpdate = PointCloudProcessing.postUpdate;
 
 
-        Fetcher.json(`${layer.url}/${layer.file}`, layer.fetchOptions).then((cloud) => {
+        return Fetcher.json(`${layer.url}/${layer.file}`, layer.fetchOptions).then((cloud) => {
             layer.metadata = cloud;
 
             let bbox;
@@ -184,16 +184,15 @@ export default {
             }
 
 
-            parseOctree(
+            return parseOctree(
                     layer,
                     layer.metadata.hierarchyStepSize,
-                    { baseurl: `${layer.url}/${cloud.octreeDir}/r`, name: '', bbox })
-            .then((root) => {
-                // eslint-disable-next-line no-console
-                console.log('LAYER metadata:', root);
-                layer.root = root;
-                layer.dispatchEvent({ type: 'preprocessed' });
-            });
+                    { baseurl: `${layer.url}/${cloud.octreeDir}/r`, name: '', bbox });
+        }).then((root) => {
+            // eslint-disable-next-line no-console
+            console.log('LAYER metadata:', root);
+            layer.root = root;
+            return layer;
         });
     },
 

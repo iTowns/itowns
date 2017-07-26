@@ -3,6 +3,7 @@
 // eslint-disable-next-line no-unused-vars
 function showPointcloud(serverUrl, fileName, lopocsTable) {
     var pointcloud;
+    var oldPostUpdate;
     var viewerDiv;
     var debugGui;
     var view;
@@ -29,15 +30,6 @@ function showPointcloud(serverUrl, fileName, lopocsTable) {
     pointcloud.protocol = 'potreeconverter';
     pointcloud.url = serverUrl;
     pointcloud.table = lopocsTable;
-
-    // update stats window
-    view.preRender = function preRender() {
-        var info = document.getElementById('info');
-        info.textContent = 'Nb points: ' +
-            pointcloud.counters.displayedCount.toLocaleString() + ' (' +
-            Math.floor(100 * pointcloud.counters.displayedCount / pointcloud.counters.pointCount) + '%) (' +
-            view.mainLoop.gfxEngine.renderer.info.memory.geometries + ')';
-    };
 
     // point selection on double-click
     function dblClickHandler(event) {
@@ -67,7 +59,7 @@ function showPointcloud(serverUrl, fileName, lopocsTable) {
     }
 
     // add pointcloud to scene
-    function onLayerPreprocessed() {
+    function onLayerReady() {
         var ratio;
         var position;
         var lookAt;
@@ -84,7 +76,19 @@ function showPointcloud(serverUrl, fileName, lopocsTable) {
         placeCamera(position, lookAt);
         flyControls.moveSpeed = pointcloud.root.bbox.getSize().length() / 3;
 
+        // update stats window
+        oldPostUpdate = pointcloud.postUpdate;
+        pointcloud.postUpdate = function postUpdate() {
+            var info = document.getElementById('info');
+            oldPostUpdate.apply(pointcloud, arguments);
+            info.textContent = 'Nb points: ' +
+                pointcloud.counters.displayedCount.toLocaleString() + ' (' +
+                Math.floor(100 * pointcloud.counters.displayedCount / pointcloud.counters.pointCount) + '%) (' +
+                view.mainLoop.gfxEngine.renderer.info.memory.geometries + ')';
+        };
+
+
         view.notifyChange(true);
     }
-    view.addLayer(pointcloud).addEventListener('preprocessed', onLayerPreprocessed);
+    view.addLayer(pointcloud).then(onLayerReady);
 }
