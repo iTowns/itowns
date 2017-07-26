@@ -67,12 +67,14 @@ MainLoop.prototype._update = function _update(view, updateSources, dt) {
 
     for (const geometryLayer of view.getLayers((x, y) => !y)) {
         context.geometryLayer = geometryLayer;
-        // `preUpdate` returns an array of elements to update
-        const elementsToUpdate = geometryLayer.preUpdate(context, geometryLayer, updateSources);
-        // `update` is called in `updateElements`.
-        updateElements(context, geometryLayer, elementsToUpdate);
-        // `postUpdate` is called when this geom layer update process is finished
-        geometryLayer.postUpdate(context, geometryLayer, updateSources);
+        if (geometryLayer.ready) {
+            // `preUpdate` returns an array of elements to update
+            const elementsToUpdate = geometryLayer.preUpdate(context, geometryLayer, updateSources);
+            // `update` is called in `updateElements`.
+            updateElements(context, geometryLayer, elementsToUpdate);
+            // `postUpdate` is called when this geom layer update process is finished
+            geometryLayer.postUpdate(context, geometryLayer, updateSources);
+        }
     }
 };
 
