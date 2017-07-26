@@ -58,14 +58,7 @@
 
             // function use :
             // For preupdate Layer geomtry :
-            var preUpdateGeo = function (context, layer) {
-                if(layer.root === undefined) {
-                    itowns.init3dTilesLayer(context, layer);
-                    return [];
-                }
-                itowns.pre3dTilesUpdate(context, layer);
-                return [layer.root];
-            };
+            var preUpdateGeo = itowns.pre3dTilesUpdate;
 
             // Create a new Layer 3d-tiles For DiscreteLOD
             // -------------------------------------------

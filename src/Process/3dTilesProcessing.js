@@ -1,6 +1,3 @@
-import Fetcher from '../Core/Scheduler/Providers/Fetcher';
-import { $3dTilesIndex } from '../Core/Scheduler/Providers/3dTiles_Provider';
-
 function requestNewTile(view, scheduler, geometryLayer, metadata, parent) {
     const command = {
         /* mandatory */
@@ -83,7 +80,7 @@ export function $3dTilesCulling(node, camera) {
 }
 
 let preSSE;
-export function pre3dTilesUpdate(context) {
+export function pre3dTilesUpdate(context, layer) {
     // pre-sse
     const hypotenuse = Math.sqrt(context.camera.width * context.camera.width + context.camera.height * context.camera.height);
     const radAngle = context.camera.camera3D.fov * Math.PI / 180;
@@ -92,6 +89,7 @@ export function pre3dTilesUpdate(context) {
     // const HFOV = 2.0 * Math.atan(Math.tan(radAngle * 0.5) / context.camera.ratio);
     const HYFOV = 2.0 * Math.atan(Math.tan(radAngle * 0.5) * hypotenuse / context.camera.width);
     preSSE = hypotenuse * (2.0 * Math.tan(HYFOV * 0.5));
+    return [layer.root];
 }
 
 // Improved zoom geometry
@@ -119,23 +117,13 @@ function computeNodeSSE(camera, node) {
     return Infinity;
 }
 
-export function init3dTilesLayer(context, layer) {
-    if (layer.initialised) {
-        return;
-    }
-    layer.initialised = true;
-
-    Fetcher.json(layer.url, layer.networkOptions).then((tileset) => {
-        const urlPrefix = layer.url.slice(0, layer.url.lastIndexOf('/') + 1);
-        layer.tileIndex = new $3dTilesIndex(tileset, urlPrefix);
-        layer.asset = tileset.asset;
-        requestNewTile(context.view, context.scheduler, layer, tileset.root, undefined).then(
+export function init3dTilesLayer(view, scheduler, layer) {
+    return requestNewTile(view, scheduler, layer, layer.tileset.root).then(
             (tile) => {
                 layer.object3d.add(tile);
                 tile.updateMatrixWorld();
                 layer.root = tile;
             });
-    });
 }
 
 function setDisplayed(node, display) {
