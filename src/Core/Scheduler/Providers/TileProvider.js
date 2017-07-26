@@ -17,6 +17,7 @@ import Provider from './Provider';
 import TileGeometry from '../../TileGeometry';
 import TileMesh from '../../TileMesh';
 import { CancelledCommandException } from '../Scheduler';
+import { requestNewTile } from '../../../Process/TiledNodeProcessing';
 
 function TileProvider() {
     Provider.call(this, null);
@@ -25,6 +26,27 @@ function TileProvider() {
 TileProvider.prototype = Object.create(Provider.prototype);
 
 TileProvider.prototype.constructor = TileProvider;
+
+TileProvider.prototype.preprocessDataLayer = function preprocessLayer(layer, view, scheduler) {
+    if (!layer.schemeTile) {
+        throw new Error(`Cannot init tiled layer without schemeTile for layer ${layer.id}`);
+    }
+
+    layer.level0Nodes = [];
+
+    const promises = [];
+
+    for (const root of layer.schemeTile) {
+        promises.push(requestNewTile(view, scheduler, layer, root, undefined, 0));
+    }
+    return Promise.all(promises).then((level0s) => {
+        layer.level0Nodes = level0s;
+        for (const level0 of level0s) {
+            layer.object3d.add(level0);
+            level0.updateMatrixWorld();
+        }
+    });
+};
 
 TileProvider.prototype.executeCommand = function executeCommand(command) {
     var extent = command.extent;

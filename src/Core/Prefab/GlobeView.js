@@ -13,7 +13,7 @@ import CoordStars from '../Geographic/CoordStars';
 import Clouds from './Globe/Clouds';
 
 import { C, ellipsoidSizes } from '../Geographic/Coordinates';
-import { processTiledGeometryNode, initTiledGeometryLayer } from '../../Process/TiledNodeProcessing';
+import { processTiledGeometryNode } from '../../Process/TiledNodeProcessing';
 import { updateLayeredMaterialNodeImagery, updateLayeredMaterialNodeElevation } from '../../Process/LayeredMaterialNodeProcessing';
 import { globeCulling, preGlobeUpdate, globeSubdivisionControl, globeSchemeTileWMTS, globeSchemeTile1 } from '../../Process/GlobeTileProcessing';
 import BuilderEllipsoidTile from './Globe/BuilderEllipsoidTile';
@@ -105,13 +105,10 @@ export function createGlobeLayer(id, options) {
     }
 
     const wgs84TileLayer = new GeometryLayer(id, options.object3d);
-    const initLayer = initTiledGeometryLayer(globeSchemeTileWMTS(globeSchemeTile1));
+    wgs84TileLayer.schemeTile = globeSchemeTileWMTS(globeSchemeTile1);
     wgs84TileLayer.preUpdate = (context, layer, changeSources) => {
         SubdivisionControl.preUpdate(context, layer);
 
-        if (layer.level0Nodes === undefined) {
-            initLayer(context, layer);
-        }
         preGlobeUpdate(context, layer);
         if (changeSources.has(undefined) || changeSources.size == 0) {
             return layer.level0Nodes;

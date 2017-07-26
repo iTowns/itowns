@@ -1,6 +1,5 @@
 import * as THREE from 'three';
 import MathExt from '../Core/Math/MathExtended';
-import SchemeTile from '../Core/Geographic/SchemeTile';
 import { UNIT, ellipsoidSizes } from '../Core/Geographic/Coordinates';
 import { SIZE_TEXTURE_TILE } from '../Core/Scheduler/Providers/OGCWebServiceHelper';
 import Extent from '../Core/Geographic/Extent';
@@ -115,19 +114,19 @@ export const globeSchemeTile0 = 0;
 export const globeSchemeTile1 = 1;
 
 export function globeSchemeTileWMTS(type) {
-    const schemeT = new SchemeTile();
+    const schemeT = [];
 
     if (type === 0) {
         // bbox longitude(0,360),latitude(-90,90)
-        schemeT.add(new Extent('EPSG:4326', 0, MathExt.PI, -MathExt.PI_OV_TWO, MathExt.PI_OV_TWO));
-        schemeT.add(new Extent('EPSG:4326', MathExt.PI, MathExt.TWO_PI, -MathExt.PI_OV_TWO, MathExt.PI_OV_TWO));
+        schemeT.push(new Extent('EPSG:4326', 0, MathExt.PI, -MathExt.PI_OV_TWO, MathExt.PI_OV_TWO));
+        schemeT.push(new Extent('EPSG:4326', MathExt.PI, MathExt.TWO_PI, -MathExt.PI_OV_TWO, MathExt.PI_OV_TWO));
     } else if (type == 1) {
         // bbox longitude(-180,180),latitude(-90,90)
-        schemeT.add(new Extent('EPSG:4326', -MathExt.PI, 0, -MathExt.PI_OV_TWO, MathExt.PI_OV_TWO));
-        schemeT.add(new Extent('EPSG:4326', 0, MathExt.PI, -MathExt.PI_OV_TWO, MathExt.PI_OV_TWO));
+        schemeT.push(new Extent('EPSG:4326', -MathExt.PI, 0, -MathExt.PI_OV_TWO, MathExt.PI_OV_TWO));
+        schemeT.push(new Extent('EPSG:4326', 0, MathExt.PI, -MathExt.PI_OV_TWO, MathExt.PI_OV_TWO));
     }
     // store internally as Radians to avoid doing too much deg->rad conversions
-    for (const bbox of schemeT.schemeBB) {
+    for (const bbox of schemeT) {
         bbox._internalStorageUnit = UNIT.RADIAN;
     }
     return schemeT;

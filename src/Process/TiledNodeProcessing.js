@@ -27,7 +27,7 @@ function subdivisionExtents(bbox) {
     return result;
 }
 
-function requestNewTile(view, scheduler, geometryLayer, extent, parent, level) {
+export function requestNewTile(view, scheduler, geometryLayer, extent, parent, level) {
     const command = {
         /* mandatory */
         view,
@@ -93,29 +93,6 @@ function subdivideNode(context, layer, node, initNewNode) {
             }
         });
     }
-}
-
-export function initTiledGeometryLayer(schemeTile) {
-    const _promises = [];
-    return function _initTiledGeometryLayer(context, layer) {
-        if (_promises.length > 0) {
-            return;
-        }
-
-        layer.level0Nodes = [];
-
-        for (let i = 0; i < schemeTile.rootCount(); i++) {
-            _promises.push(
-                requestNewTile(context.view, context.scheduler, layer, schemeTile.getRoot(i), undefined, 0));
-        }
-        Promise.all(_promises).then((level0s) => {
-            layer.level0Nodes = level0s;
-            for (const level0 of level0s) {
-                layer.object3d.add(level0);
-                level0.updateMatrixWorld();
-            }
-        });
-    };
 }
 
 export function processTiledGeometryNode(cullingTest, subdivisionTest, initNewNode) {

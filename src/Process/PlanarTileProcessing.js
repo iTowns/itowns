@@ -1,5 +1,3 @@
-import SchemeTile from '../Core/Geographic/SchemeTile';
-
 function frustumCullingOBB(node, camera) {
     return camera.isBox3Visible(node.OBB().box3D, node.OBB().matrixWorld);
 }
@@ -32,10 +30,4 @@ export function planarSubdivisionControl(maxLevel) {
 
         return _isTileBigOnScreen(context.camera, node);
     };
-}
-
-export function planarSchemeTile(bbox) {
-    const planeSchemeTile = new SchemeTile();
-    planeSchemeTile.add(bbox);
-    return planeSchemeTile;
 }
