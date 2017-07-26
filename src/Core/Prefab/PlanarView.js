@@ -6,15 +6,15 @@ import { unpack1K } from '../../Renderer/LayeredMaterial';
 
 import { GeometryLayer } from '../Layer/Layer';
 
-import { processTiledGeometryNode, initTiledGeometryLayer } from '../../Process/TiledNodeProcessing';
+import { processTiledGeometryNode } from '../../Process/TiledNodeProcessing';
 import { updateLayeredMaterialNodeImagery, updateLayeredMaterialNodeElevation } from '../../Process/LayeredMaterialNodeProcessing';
-import { planarCulling, planarSubdivisionControl, planarSchemeTile } from '../../Process/PlanarTileProcessing';
+import { planarCulling, planarSubdivisionControl } from '../../Process/PlanarTileProcessing';
 import PlanarTileBuilder from './Planar/PlanarTileBuilder';
 import SubdivisionControl from '../../Process/SubdivisionControl';
 
 export function createPlanarLayer(id, extent, options) {
     const tileLayer = new GeometryLayer(id, options.object3d);
-    const initLayer = initTiledGeometryLayer(planarSchemeTile(extent));
+    tileLayer.schemeTile = [extent];
 
     // Configure tiles
     const nodeInitFn = function nodeInitFn(context, layer, parent, node) {
@@ -49,9 +49,6 @@ export function createPlanarLayer(id, extent, options) {
     tileLayer.preUpdate = (context, layer, changeSources) => {
         SubdivisionControl.preUpdate(context, layer);
 
-        if (layer.level0Nodes === undefined) {
-            initLayer(context, layer);
-        }
 
         if (changeSources.has(undefined) || changeSources.size == 0) {
             return layer.level0Nodes;
