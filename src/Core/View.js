@@ -119,8 +119,21 @@ function _preprocessLayer(view, layer, provider) {
             layer.tileTextureCount = provider.tileTextureCount.bind(provider);
         }
 
-        if (provider.preprocessDataLayer) {
-            provider.preprocessDataLayer(layer);
+        if (!layer.whenReady) {
+            if (provider.preprocessDataLayer) {
+                const preprocessingResult = provider.preprocessDataLayer(layer, view, view.mainLoop.scheduler);
+                if (preprocessingResult && preprocessingResult.then) {
+                    layer.whenReady = preprocessingResult;
+                } else {
+                    layer.whenReady = Promise.resolve();
+                }
+            } else {
+                layer.whenReady = Promise.resolve();
+            }
+            layer.whenReady.then(() => {
+                layer.ready = true;
+                return layer;
+            });
         }
     }
 
@@ -192,6 +205,11 @@ function _preprocessLayer(view, layer, provider) {
  * Add layer in viewer.
  * The layer id must be unique.
  *
+ * This function calls `preprocessDataLayer` of the relevant provider with this
+ * layer and set `layer.whenReady` to a promise that resolves when
+ * the preprocessing operation is done. This promise is also returned by
+ * `addLayer` allowing to chain call.
+ *
  * @example
  * // Add Color Layer
  * view.addLayer({
@@ -216,15 +234,18 @@ function _preprocessLayer(view, layer, provider) {
  *    },
  * });
  *
- * // Add Elevation Layer
- * view.addLayer({
+ * // Add Elevation Layer and do something once it's ready
+ * var layer = view.addLayer({
  *      type: 'elevation',
  *      id: 'iElevation',
- * });
+ * }).then(() => { .... });
+ *
+ * // One can also attach a callback to the same promise with a layer instance.
+ * layer.whenReady.then(() => { ... });
  *
  * @param {LayerOptions|Layer|GeometryLayer} layer
  * @param {Layer=} parentLayer
- * @return {Layer|GeometryLayer}
+ * @return {Promise} a promise resolved with the new layer object when it is fully initialized
  */
 View.prototype.addLayer = function addLayer(layer, parentLayer) {
     const duplicate = this.getLayers((l => l.id == layer.id));
@@ -247,7 +268,7 @@ View.prototype.addLayer = function addLayer(layer, parentLayer) {
     }
 
     this.notifyChange(true);
-    return layer;
+    return layer.whenReady;
 };
 
 /**
