@@ -8,9 +8,10 @@ import Extent from '../../Geographic/Extent';
 import MathExtended from '../../Math/MathExtended';
 import Capabilities from '../../System/Capabilities';
 import PrecisionQualifier from '../../../Renderer/Shader/Chunk/PrecisionQualifier.glsl';
+import { init3dTilesLayer } from '../../../Process/3dTilesProcessing';
 
 
-export function $3dTilesIndex(tileset, baseURL) {
+function $3dTilesIndex(tileset, baseURL) {
     let counter = 0;
     this.index = {};
     const recurse = function recurse_f(node, baseURL) {
@@ -45,8 +46,14 @@ $3dTiles_Provider.prototype.removeLayer = function removeLayer() {
 
 };
 
-$3dTiles_Provider.prototype.preprocessDataLayer = function preprocessDataLayer() {
-
+$3dTiles_Provider.prototype.preprocessDataLayer = function preprocessDataLayer(layer, view, scheduler) {
+    return Fetcher.json(layer.url, layer.networkOptions).then((tileset) => {
+        layer.tileset = tileset;
+        const urlPrefix = layer.url.slice(0, layer.url.lastIndexOf('/') + 1);
+        layer.tileIndex = new $3dTilesIndex(tileset, urlPrefix);
+        layer.asset = tileset.asset;
+        return init3dTilesLayer(view, scheduler, layer, tileset.root);
+    });
 };
 
 function getBox(volume) {
