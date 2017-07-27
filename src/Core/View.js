@@ -338,7 +338,7 @@ View.prototype.addFrameRequester = function addFrameRequester(frameRequester) {
  * @param {FrameRequester} frameRequester
  */
 View.prototype.removeFrameRequester = function removeFrameRequester(frameRequester) {
-    this._frameRequesters.slice(this._frameRequesters.indexOf(frameRequester), 1);
+    this._frameRequesters.splice(this._frameRequesters.indexOf(frameRequester), 1);
 };
 
 export default View;
