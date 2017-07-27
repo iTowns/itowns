@@ -227,6 +227,11 @@ function _preprocessLayer(view, layer, provider) {
  * @return {Layer|GeometryLayer}
  */
 View.prototype.addLayer = function addLayer(layer, parentLayer) {
+    const duplicate = this.getLayers((l => l.id == layer.id));
+    if (duplicate.length > 0) {
+        throw new Error(`Invalid id '${layer.id}': id already used`);
+    }
+
     layer = _preprocessLayer(this, layer, this.mainLoop.scheduler.getProtocolProvider(layer.protocol));
     if (parentLayer) {
         parentLayer.attach(layer);
