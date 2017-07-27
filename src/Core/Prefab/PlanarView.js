@@ -49,6 +49,9 @@ export function createPlanarLayer(id, extent, options) {
     tileLayer.preUpdate = (context, layer, changeSources) => {
         SubdivisionControl.preUpdate(context, layer);
 
+        if (__DEBUG__) {
+            layer._latestUpdateStartingLevel = 0;
+        }
 
         if (changeSources.has(undefined) || changeSources.size == 0) {
             return layer.level0Nodes;
@@ -77,6 +80,9 @@ export function createPlanarLayer(id, extent, options) {
             }
         }
         if (commonAncestor) {
+            if (__DEBUG__) {
+                layer._latestUpdateStartingLevel = commonAncestor.level;
+            }
             return [commonAncestor];
         } else {
             return layer.level0Nodes;

@@ -1,217 +1,5 @@
-/* global menuGlobe */
-import Chart from 'chart.js';
-import * as THREE from 'three';
 import Coordinates from '../../src/Core/Geographic/Coordinates';
-import OBBHelper from './OBBHelper';
-import View from '../../src/Core/View';
-
-
-function createChartContainer(chartDiv, width, left, chartId) {
-    const div = document.createElement('div');
-    div.style.cssText = `position: absolute; bottom: 0; left: ${left}vw; width: ${width}vw; height: 20rem; background-color: white;`;
-    chartDiv.appendChild(div);
-
-    const chartCanvas = document.createElement('canvas');
-    chartCanvas.heigth = '20rem';
-    chartCanvas.width = `${width}vw`;
-    chartCanvas.id = chartId;
-    div.appendChild(chartCanvas);
-}
-
-function ObjectsChart(chartDiv, width, left) {
-    createChartContainer(chartDiv, width, left, 'nb-objects');
-
-    let lastValidCompareIndex = 0;
-    const timestamp = Date.now();
-    const viewLevelStartDataset = { label: 'Update 1st level', data: [{ x: 0, y: 0 }] };
-    const viewUpdateDurationDataset = { label: 'Update duration (ms)', data: [{ x: 0, y: 0 }], borderColor: 'rgba(75,192,192,1)' };
-    const label = ['0s'];
-    const nbObjectsChart = new Chart('nb-objects', {
-        type: 'line',
-        data: {
-            labels: label,
-            datasets: [viewLevelStartDataset, viewUpdateDurationDataset],
-        },
-        options: {
-            animation: { duration: 10 },
-            scales: {
-                yAxes: [{
-                    display: true,
-                    ticks: {
-                        suggestedMin: 0, // minimum will be 0, unless there is a lower value.
-                    },
-                }],
-            },
-        },
-    });
-
-    this.update = (displayed, updateStartLevel, updateDuration) => {
-        // update line graph
-        // update time
-        const limit = 60;
-        const timeInS = Math.floor((Date.now() - timestamp) / 1000);
-        const lbl = `${timeInS}s`;
-        const identical = (lastValidCompareIndex > 0 && label[lastValidCompareIndex] == lbl);
-        if (identical) {
-            label.push('');
-        } else {
-            label.push(lbl);
-            lastValidCompareIndex = label.length - 1;
-        }
-
-        if (label.length > limit) {
-            label.shift();
-            lastValidCompareIndex--;
-        }
-
-        viewLevelStartDataset.data.push({ x: 0, y: updateStartLevel });
-        viewUpdateDurationDataset.data.push({ x: 0, y: updateDuration });
-        if (viewLevelStartDataset.data.length > limit) {
-            viewLevelStartDataset.data.shift();
-            viewUpdateDurationDataset.data.shift();
-        }
-
-        if (displayed) {
-            nbObjectsChart.update();
-        }
-    };
-}
-
-function LevelsChart(chartDiv, width, left) {
-    createChartContainer(chartDiv, width, left, 'nb-visible');
-
-    const nbVisibleLabels = [];
-    const nbVisibleData = [];
-    const nbDisplayedData = [];
-    const nbVisibleChart = new Chart('nb-visible', {
-        type: 'bar',
-        data: {
-            labels: nbVisibleLabels,
-            datasets: [
-                {
-                    label: 'Visible node per level',
-                    data: nbVisibleData,
-                    backgroundColor: 'rgba(75, 192, 192, 1)',
-                },
-                {
-                    label: 'Diplayed node per level',
-                    data: nbDisplayedData,
-                    backgroundColor: 'rgba(153, 102, 255, 1)',
-                },
-            ],
-        },
-        options: {
-            scales: {
-                yAxes: [{
-                    display: true,
-                    ticks: {
-                        suggestedMin: 0, // minimum will be 0, unless there is a lower value.
-                    },
-                }],
-            },
-        },
-    });
-
-    this.update = (displayed, view) => {
-        function countVisible(node, stats) {
-            if (!node || !node.visible) {
-                return;
-            }
-            if (node.level) {
-                if (stats[node.level]) {
-                    stats[node.level][0] += 1;
-                } else {
-                    stats[node.level] = [1, 0];
-                }
-                if (node.material.visible) {
-                    stats[node.level][1] += 1;
-                }
-            }
-            if (node.children) {
-                for (const child of node.children) {
-                    countVisible(child, stats);
-                }
-            }
-        }
-
-        // update bar graph
-        const stats = {};
-        countVisible(view.scene, stats);
-        nbVisibleLabels.length = 0;
-        nbVisibleData.length = 0;
-        for (const level in stats) {
-            if ({}.hasOwnProperty.call(stats, level)) {
-                nbVisibleLabels[level - 1] = `${level}`;
-                nbVisibleData[level - 1] = stats[level][0];
-                nbDisplayedData[level - 1] = stats[level][1];
-            }
-        }
-
-        if (displayed) {
-            nbVisibleChart.update();
-        }
-    };
-}
-
-function ThreeStats(chartDiv, width, left) {
-    createChartContainer(chartDiv, width, left, 'three-info');
-
-    let lastValidCompareIndex = -1;
-    const timestamp = Date.now();
-    const textureDataset = { label: 'texture count', data: [{ x: 0, y: 0 }] };
-    const geometryDataset = { label: 'geometry count', data: [{ x: 0, y: 0 }], borderColor: 'rgba(75,192,192,1)' };
-    const label = ['0s'];
-    const chart = new Chart('three-info', {
-        type: 'line',
-        data: {
-            labels: label,
-            datasets: [textureDataset, geometryDataset],
-        },
-        options: {
-            animation: { duration: 10 },
-            scales: {
-                yAxes: [{
-                    display: true,
-                    ticks: {
-                        suggestedMin: 0, // minimum will be 0, unless there is a lower value.
-                    },
-                }],
-            },
-        },
-    });
-
-    this.update = (displayed, view) => {
-        const limit = 60;
-        const timeInS = Math.floor((Date.now() - timestamp) / 1000);
-        const lbl = `${timeInS}s`;
-
-        const identical = (lastValidCompareIndex > 0 && label[lastValidCompareIndex] == lbl);
-        if (identical) {
-            label.push('');
-        } else {
-            label.push(lbl);
-            lastValidCompareIndex = label.length - 1;
-        }
-
-        if (label.length > limit) {
-            label.shift();
-            lastValidCompareIndex--;
-        }
-
-        const memory = view.mainLoop.gfxEngine.renderer.info.memory;
-        textureDataset.data.push({ x: timeInS, y: memory.textures });
-        geometryDataset.data.push({ x: timeInS, y: memory.geometries });
-        if (textureDataset.data.length > limit) {
-            textureDataset.data.shift();
-            geometryDataset.data.shift();
-        }
-
-        if (displayed) {
-            chart.update();
-        }
-    };
-}
-
+import ThreeStatsChart from './charts/ThreeStatsChart';
 
 /**
  * Create a debug instance attached to an itowns instance
@@ -222,33 +10,34 @@ function ThreeStats(chartDiv, width, left) {
  */
 
 // disabling eslint errors as it is the exported constructor
-function Debug(view, viewerDiv) {
+function Debug(view, datDebugTool, chartDivContainer) {
     // CHARTS
-    // create charts div
-    const chartDiv = document.createElement('div');
-    chartDiv.id = 'chart-div';
-    chartDiv.style.cssText = 'position: absolute; bottom: 0; left: 0; width: 100vw; height: 20rem; background-color: white; display: none';
+    // Create default charts div if missing
+    if (!chartDivContainer) {
+        chartDivContainer = document.createElement('div');
+        chartDivContainer.id = 'chart-div';
+        chartDivContainer.style.cssText = 'position: absolute; bottom: 0; left: 0; width: 100vw; height: 20rem; background-color: white; display: none';
+        document.body.appendChild(chartDivContainer);
+    }
 
-    viewerDiv.appendChild(chartDiv);
+    this.chartDivContainer = chartDivContainer;
+    this.createChartContainer('three-info');
 
-    const objectChart = new ObjectsChart(chartDiv, 33, 0);
-    const levelsChart = new LevelsChart(chartDiv, 33, 33);
-    const threeStats = new ThreeStats(chartDiv, 33, 66);
+    this.charts = [];
 
-    function debugChartUpdate(updateStartLevel, updateDuration) {
-        const displayed = chartDiv.style.display != 'none';
+    this.charts.push(new ThreeStatsChart('three-info', view.mainLoop.gfxEngine.renderer));
 
-        objectChart.update(displayed, updateStartLevel, updateDuration);
-        levelsChart.update(displayed, view);
-        threeStats.update(displayed, view);
+    const charts = this.charts;
+
+    function debugChartUpdate(updateDuration) {
+        const displayed = chartDivContainer.style.display != 'none';
+        charts.forEach(c => c.update(displayed, updateDuration));
     }
 
     // DEBUG CONTROLS
-    const gui = menuGlobe.gui.addFolder('Debug Tools');
+    const gui = datDebugTool.addFolder('Debug Tools');
 
     const state = {
-        showOutline: false,
-        wireframe: false,
         displayCharts: false,
         eventsDebug: false,
     };
@@ -256,44 +45,10 @@ function Debug(view, viewerDiv) {
     // charts
     gui.add(state, 'displayCharts').name('Display charts').onChange((newValue) => {
         if (newValue) {
-            chartDiv.style.display = 'flex';
+            chartDivContainer.style.display = 'flex';
         } else {
-            chartDiv.style.display = 'none';
+            chartDivContainer.style.display = 'none';
         }
-    });
-
-    function applyToNodeFirstMaterial(cb) {
-        view.scene.traverse((object) => {
-            if (object.material) {
-                cb(object.material);
-            }
-        });
-        view.notifyChange();
-    }
-
-    // tiles outline
-    gui.add(state, 'showOutline').name('Show tiles outline').onChange((newValue) => {
-        for (const geometryLayer of view._layers) {
-            geometryLayer.showOutline = newValue;
-        }
-        applyToNodeFirstMaterial((material) => {
-            if (material.uniforms) {
-                material.uniforms.showOutline = { value: newValue };
-                material.needsUpdate = true;
-            }
-        });
-        view.notifyChange(true);
-    });
-
-    // tiles wireframe
-    gui.add(state, 'wireframe').name('Wireframe').onChange((newValue) => {
-        for (const geometryLayer of view._layers) {
-            geometryLayer.wireframe = newValue;
-        }
-        applyToNodeFirstMaterial((material) => {
-            material.wireframe = newValue;
-        });
-        view.notifyChange(true);
     });
 
     gui.add(state, 'eventsDebug').name('Debug event').onChange((() => {
@@ -338,167 +93,39 @@ function Debug(view, viewerDiv) {
         oldUpdate(view, ...args);
         const duration = Date.now() - before;
         // debug graphs update
-        debugChartUpdate(view._latestUpdateStartingLevel, duration);
-
-        // obb layer update
-        for (const gLayer of view._layers) {
-            const obbLayerAlreadyAdded =
-                view.getLayers(
-                    (a, l) => l && l.id == gLayer.id && a.id.indexOf('_obb_debug') >= 0).length > 0;
-
-            // missing obb layer -> add it
-            if (!obbLayerAlreadyAdded) {
-                addGeometryLayerDebugFeatures(gLayer, view, gui, state);
-            }
-        }
+        debugChartUpdate(duration);
     };
 }
 
 
-function addGeometryLayerDebugFeatures(layer, view, gui, state) {
-    const obb_layer_id = `${layer.id}_obb_debug`;
+Debug.prototype.createChartContainer = function createChartContainer(chartId) {
+    const div = document.createElement('div');
+    div.style.cssText = 'width: 100%; height: 100%; background-color: white;';
+    this.chartDivContainer.appendChild(div);
 
-    // itowns layer definition
-    const debugIdUpdate = function debugIdUpdate(context, layer, node) {
-        const enabled = view.camera.camera3D.layers.test({ mask: 1 << layer.threejsLayer });
+    const chartCanvas = document.createElement('canvas');
+    chartCanvas.height = '20rem';
+    chartCanvas.id = chartId;
+    div.appendChild(chartCanvas);
+};
 
-        if (!enabled) {
-            return;
+Debug.prototype.updateChartDivSize = function updateChartDivSize() {
+    let count = 0;
+    for (const div of this.chartDivContainer.getElementsByTagName('div')) {
+        if (div.style.display !== 'none') {
+            count++;
         }
-        var obbChildren = node.children.filter(n => n.layer == obb_layer_id);
-
-        // FIXME there seem to be quite a lot of way to control/test visibility for nodes...
-        if (node.material && node.material.visible) {
-            let helper;
-            if (obbChildren.length == 0) {
-                helper = new OBBHelper(node.OBB(), `id:${node.id}`);
-                helper.layer = obb_layer_id;
-                // add the ability to hide all the debug obj for one layer at once
-                const l = context.view.getLayers(l => l.id === obb_layer_id)[0];
-                const l3js = l.threejsLayer;
-                helper.layers.set(l3js);
-                helper.children[0].layers.set(l3js);
-                node.add(helper);
-                helper.updateMatrixWorld(true);
-
-                // if we don't do that, our OBBHelper will never get removed,
-                // because once a node is invisible, children are not removed
-                // any more
-                // FIXME a proper way of notifying tile deletion to children layers should be implemented
-                node.setDisplayed = function setDisplayed(show) {
-                    this.material.visible = show;
-                    if (!show) {
-                        let i = this.children.length;
-                        while (i--) {
-                            const c = this.children[i];
-                            if (c.layer === obb_layer_id) {
-                                c.dispose();
-                                this.children.splice(i, 1);
-                            }
-                        }
-                    }
-                };
-            } else {
-                helper = obbChildren[0];
-            }
-            helper.setMaterialVisibility(true);
-            helper.update(node.OBB());
-        } else if (node.visible && node.boundingVolume) {
-            // 3dTiles case
-            let helper;
-            if (obbChildren.length == 0) {
-                // 3dtiles with region
-                if (node.boundingVolume.region) {
-                    helper = new OBBHelper(node.boundingVolume.region, `id:${node.id}`);
-                    node.add(helper);
-                    helper.layer = obb_layer_id;
-                    // add the ability to hide all the debug obj for one layer at once
-                    const l = context.view.getLayers(l => l.id === obb_layer_id)[0];
-                    const l3js = l.threejsLayer;
-                    helper.layers.set(l3js);
-                    helper.children[0].layers.set(l3js);
-                    helper.updateMatrixWorld();
-                }
-                // 3dtiles with box
-                if (node.boundingVolume.box) {
-                    const size = node.boundingVolume.box.getSize();
-                    const g = new THREE.BoxGeometry(size.x, size.y, size.z);
-                    const material = new THREE.MeshBasicMaterial({ wireframe: true });
-                    helper = new THREE.Mesh(g, material);
-                    node.add(helper);
-                    helper.layer = obb_layer_id;
-                    // add the ability to hide all the debug obj for one layer at once
-                    const l = context.view.getLayers(l => l.id === obb_layer_id)[0];
-                    const l3js = l.threejsLayer;
-                    helper.layers.set(l3js);
-                    helper.updateMatrixWorld();
-                }
-                // 3dtiles with Sphere
-                if (node.boundingVolume.sphere) {
-                    const geometry = new THREE.SphereGeometry(node.boundingVolume.sphere.radius, 32, 32);
-                    const material = new THREE.MeshBasicMaterial({ wireframe: true });
-                    helper = new THREE.Mesh(geometry, material);
-                    node.add(helper);
-                    helper.layer = obb_layer_id;
-                    // add the ability to hide all the debug obj for one layer at once
-                    const l = context.view.getLayers(l => l.id === obb_layer_id)[0];
-                    const l3js = l.threejsLayer;
-                    helper.layers.set(l3js);
-                    helper.updateMatrixWorld();
-                }
-            } else {
-                helper = obbChildren[0];
-            }
-            if (helper) {
-                helper.visible = true;
-            }
-        } else {
-            // hide obb children
-            for (const child of node.children.filter(n => n.layer == obb_layer_id)) {
-                if (typeof child.setMaterialVisibility === 'function') {
-                    child.setMaterialVisibility(false);
-                }
-                child.visible = false;
-            }
+    }
+    const size = Math.floor(100 / count);
+    for (const div of this.chartDivContainer.getElementsByTagName('div')) {
+        if (div.style.display !== 'none') {
+            div.style.width = `${size}%`;
         }
-    };
-    let debugLayer = {
-        id: obb_layer_id,
-        type: 'debug',
-        update: debugIdUpdate,
-        visible: false,
-    };
-
-    debugLayer = View.prototype.addLayer.call(view, debugLayer, layer);
-
-    // add to debug gui
-    const folder = gui.addFolder(`Geometry Layer: ${layer.id}`);
-
-    const enabled = view.camera.camera3D.layers.test({ mask: 1 << layer.threejsLayer });
-    state[layer.id] = enabled;
-
-    folder.add(state, layer.id).name('Visible').onChange((newValue) => {
-        layer.visible = newValue;
-        view.notifyChange(true);
+    }
+    this.charts.forEach((c) => {
+        c.resize();
+        c.update();
     });
-
-    state[debugLayer.id] = false;
-    folder.add(state, debugLayer.id).name('OBB visible').onChange((newValue) => {
-        debugLayer.visible = newValue;
-        view.notifyChange(true);
-    });
-
-    var consistencyCheck = { click: () => {
-        const imageryLayers = view.getLayers(a => a.type == 'color');
-        for (const node of layer.level0Nodes) {
-            node.traverse((n) => {
-                if (n.material && n.material.visible) {
-                    n.material.checkLayersConsistency(n, imageryLayers);
-                }
-            });
-        }
-    } };
-    folder.add(consistencyCheck, 'click').name('Check textures');
-}
+};
 
 export default Debug;

@@ -98,7 +98,10 @@
             itowns.View.prototype.addLayer.call(globe, $3dTilesLayerRequestVolume);
 
             // Add the UI Debug
-            new debug.Debug(globe, viewerDiv);
+            const d = new debug.Debug(globe, menuGlobe.gui);
+            debug.createTileDebug(menuGlobe.gui, globe, globe.wgs84TileLayer, d);
+            debug.create3dTilesDebugUI(menuGlobe.gui, globe, $3dTilesLayerDiscreteLOD, d);
+            debug.create3dTilesDebugUI(menuGlobe.gui, globe, $3dTilesLayerRequestVolume, d);
 
         </script>
     </body>

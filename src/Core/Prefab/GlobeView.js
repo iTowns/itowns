@@ -109,6 +109,10 @@ export function createGlobeLayer(id, options) {
     wgs84TileLayer.preUpdate = (context, layer, changeSources) => {
         SubdivisionControl.preUpdate(context, layer);
 
+        if (__DEBUG__) {
+            layer._latestUpdateStartingLevel = 0;
+        }
+
         preGlobeUpdate(context, layer);
         if (changeSources.has(undefined) || changeSources.size == 0) {
             return layer.level0Nodes;
@@ -136,6 +140,9 @@ export function createGlobeLayer(id, options) {
             }
         }
         if (commonAncestor) {
+            if (__DEBUG__) {
+                layer._latestUpdateStartingLevel = commonAncestor.level;
+            }
             return [commonAncestor];
         } else {
             return layer.level0Nodes;
