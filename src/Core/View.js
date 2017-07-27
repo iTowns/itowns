@@ -122,23 +122,22 @@ function _preprocessLayer(view, layer, provider) {
         if (provider.tileTextureCount) {
             layer.tileTextureCount = provider.tileTextureCount.bind(provider);
         }
+    }
 
-        if (!layer.whenReady) {
-            let preprocessingResult;
-            if (provider.preprocessDataLayer) {
-                preprocessingResult = provider.preprocessDataLayer(layer, view, view.mainLoop.scheduler);
-                if (!(preprocessingResult && preprocessingResult.then)) {
-                    preprocessingResult = Promise.resolve();
-                }
-            } else {
-                preprocessingResult = Promise.resolve();
+    if (!layer.whenReady) {
+        let providerPreprocessing = Promise.resolve();
+        if (provider && provider.preprocessDataLayer) {
+            providerPreprocessing = provider.preprocessDataLayer(layer, view, view.mainLoop.scheduler);
+            if (!(providerPreprocessing && providerPreprocessing.then)) {
+                providerPreprocessing = Promise.resolve();
             }
-            // the last promise in the chain must return the layer
-            layer.whenReady = preprocessingResult.then(() => {
-                layer.ready = true;
-                return layer;
-            });
         }
+
+        // the last promise in the chain must return the layer
+        layer.whenReady = providerPreprocessing.then(() => {
+            layer.ready = true;
+            return layer;
+        });
     }
 
     // probably not the best place to do this
