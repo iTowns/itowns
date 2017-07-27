@@ -72,38 +72,8 @@ export const GLOBE_VIEW_EVENTS = {
     COLOR_LAYERS_ORDER_CHANGED,
 };
 
-/**
- * Creates the viewer Globe (the globe of iTowns).
- * The first parameter is the coordinates on wich the globe will be centered at the initialization.
- * The second one is the HTML div in wich the scene will be created.
- * @constructor
- * @example view = new GlobeView(viewer, positionOnGlobe);
- * // positionOnGlobe in latitude, longitude and altitude
- * @augments View
- * @param {HTMLDivElement} viewerDiv - Where to instanciate the Three.js scene in the DOM
- * @param {object} coordCarto
- * @param {object=} options - see {@link View}
- */
-function GlobeView(viewerDiv, coordCarto, options = {}) {
-    THREE.Object3D.DefaultUp.set(0, 0, 1);
-    const size = ellipsoidSizes().x;
-    // Setup View
-    View.call(this, 'EPSG:4978', viewerDiv, options);
 
-    // Configure camera
-    const positionCamera = new C.EPSG_4326(
-        coordCarto.longitude,
-        coordCarto.latitude,
-        coordCarto.altitude);
-
-    this.camera.setPosition(positionCamera.as('EPSG:4978').xyz());
-    this.camera.camera3D.lookAt({ x: 0, y: 0, z: 0 });
-    this.camera.camera3D.near = Math.max(15.0, 0.000002352 * size);
-    this.camera.camera3D.far = size * 10;
-    this.camera.camera3D.updateProjectionMatrix();
-    this.camera.camera3D.updateMatrixWorld(true);
-
-
+export function createGlobeLayer(id, options) {
     // Configure tiles
     const nodeInitFn = function nodeInitFn(context, layer, parent, node) {
         node.material.setLightingOn(layer.lighting.enable);
@@ -114,7 +84,6 @@ function GlobeView(viewerDiv, coordCarto, options = {}) {
             node.material.wireframe = layer.wireframe || false;
         }
     };
-    const SSE_SUBDIVISION_THRESHOLD = 1.0;
 
     function _commonAncestorLookup(a, b) {
         if (!a || !b) {
@@ -135,12 +104,11 @@ function GlobeView(viewerDiv, coordCarto, options = {}) {
         }
     }
 
-    const wgs84TileLayer = new GeometryLayer('globe', options.object3d || this.scene);
+    const wgs84TileLayer = new GeometryLayer(id, options.object3d);
     const initLayer = initTiledGeometryLayer(globeSchemeTileWMTS(globeSchemeTile1));
     wgs84TileLayer.preUpdate = (context, layer, changeSources) => {
         SubdivisionControl.preUpdate(context, layer);
 
-        this._latestUpdateStartingLevel = 0;
         if (layer.level0Nodes === undefined) {
             initLayer(context, layer);
         }
@@ -171,7 +139,6 @@ function GlobeView(viewerDiv, coordCarto, options = {}) {
             }
         }
         if (commonAncestor) {
-            this._latestUpdateStartingLevel = commonAncestor.level;
             return [commonAncestor];
         } else {
             return layer.level0Nodes;
@@ -180,7 +147,7 @@ function GlobeView(viewerDiv, coordCarto, options = {}) {
 
     function subdivision(context, layer, node) {
         if (SubdivisionControl.hasEnoughTexturesToSubdivide(context, layer, node)) {
-            return globeSubdivisionControl(2, 17, SSE_SUBDIVISION_THRESHOLD)(context, layer, node);
+            return globeSubdivisionControl(2, options.maxSubdivisionLevel || 17, options.sseSubdivisionThreshold || 1.0)(context, layer, node);
         }
         return false;
     }
@@ -199,6 +166,43 @@ function GlobeView(viewerDiv, coordCarto, options = {}) {
         enable: false,
         position: { x: -0.5, y: 0.0, z: 1.0 },
     };
+    return wgs84TileLayer;
+}
+
+/**
+ * Creates the viewer Globe (the globe of iTowns).
+ * The first parameter is the coordinates on wich the globe will be centered at the initialization.
+ * The second one is the HTML div in wich the scene will be created.
+ * @constructor
+ * @example view = new GlobeView(viewer, positionOnGlobe);
+ * // positionOnGlobe in latitude, longitude and altitude
+ * @augments View
+ * @param {HTMLDivElement} viewerDiv - Where to instanciate the Three.js scene in the DOM
+ * @param {object} coordCarto
+ * @param {object=} options - see {@link View}
+ */
+function GlobeView(viewerDiv, coordCarto, options = {}) {
+    THREE.Object3D.DefaultUp.set(0, 0, 1);
+    const size = ellipsoidSizes().x;
+    // Setup View
+    View.call(this, 'EPSG:4978', viewerDiv, options);
+
+    options.object3d = options.object3d || this.scene;
+
+    // Configure camera
+    const positionCamera = new C.EPSG_4326(
+        coordCarto.longitude,
+        coordCarto.latitude,
+        coordCarto.altitude);
+
+    this.camera.setPosition(positionCamera.as('EPSG:4978').xyz());
+    this.camera.camera3D.lookAt({ x: 0, y: 0, z: 0 });
+    this.camera.camera3D.near = Math.max(15.0, 0.000002352 * size);
+    this.camera.camera3D.far = size * 10;
+    this.camera.camera3D.updateProjectionMatrix();
+    this.camera.camera3D.updateMatrixWorld(true);
+
+    const wgs84TileLayer = createGlobeLayer('globe', options);
 
     const sun = new THREE.DirectionalLight();
     sun.position.set(-0.5, 0, 1);

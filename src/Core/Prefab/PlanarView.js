@@ -12,26 +12,9 @@ import { planarCulling, planarSubdivisionControl, planarSchemeTile } from '../..
 import PlanarTileBuilder from './Planar/PlanarTileBuilder';
 import SubdivisionControl from '../../Process/SubdivisionControl';
 
-function PlanarView(viewerDiv, boundingbox, options = {}) {
-    THREE.Object3D.DefaultUp.set(0, 0, 1);
-
-    // Setup View
-    View.call(this, boundingbox.crs(), viewerDiv, options);
-
-    // Configure camera
-    const dim = boundingbox.dimensions();
-    const positionCamera = boundingbox.center().clone();
-    positionCamera._values[2] = Math.max(dim.x, dim.y);
-    const lookat = positionCamera.xyz();
-    lookat.z = 0;
-
-    this.camera.setPosition(positionCamera.xyz());
-    this.camera.camera3D.lookAt(lookat);
-    this.camera.camera3D.near = 0.1;
-    this.camera.camera3D.far = 2 * Math.max(dim.x, dim.y);
-    this.camera.camera3D.updateProjectionMatrix();
-    this.camera.camera3D.updateMatrixWorld(true);
-
+export function createPlanarLayer(id, extent, options) {
+    const tileLayer = new GeometryLayer(id, options.object3d);
+    const initLayer = initTiledGeometryLayer(planarSchemeTile(extent));
 
     // Configure tiles
     const nodeInitFn = function nodeInitFn(context, layer, parent, node) {
@@ -43,9 +26,6 @@ function PlanarView(viewerDiv, boundingbox, options = {}) {
             node.material.wireframe = layer.wireframe || false;
         }
     };
-
-    const tileLayer = new GeometryLayer('planar', options.object3d || this.scene);
-    const initLayer = initTiledGeometryLayer(planarSchemeTile(boundingbox));
 
     function _commonAncestorLookup(a, b) {
         if (!a || !b) {
@@ -69,7 +49,6 @@ function PlanarView(viewerDiv, boundingbox, options = {}) {
     tileLayer.preUpdate = (context, layer, changeSources) => {
         SubdivisionControl.preUpdate(context, layer);
 
-        this._latestUpdateStartingLevel = 0;
         if (layer.level0Nodes === undefined) {
             initLayer(context, layer);
         }
@@ -77,6 +56,7 @@ function PlanarView(viewerDiv, boundingbox, options = {}) {
         if (changeSources.has(undefined) || changeSources.size == 0) {
             return layer.level0Nodes;
         }
+
         let commonAncestor;
         for (const source of changeSources.values()) {
             if (source.isCamera) {
@@ -100,7 +80,6 @@ function PlanarView(viewerDiv, boundingbox, options = {}) {
             }
         }
         if (commonAncestor) {
-            this._latestUpdateStartingLevel = commonAncestor.level;
             return [commonAncestor];
         } else {
             return layer.level0Nodes;
@@ -129,6 +108,33 @@ function PlanarView(viewerDiv, boundingbox, options = {}) {
         enable: false,
         position: { x: -0.5, y: 0.0, z: 1.0 },
     };
+
+    return tileLayer;
+}
+
+function PlanarView(viewerDiv, extent, options = {}) {
+    THREE.Object3D.DefaultUp.set(0, 0, 1);
+
+    // Setup View
+    View.call(this, extent.crs(), viewerDiv, options);
+
+    options.object3d = options.object3d || this.scene;
+
+    // Configure camera
+    const dim = extent.dimensions();
+    const positionCamera = extent.center().clone();
+    positionCamera._values[2] = Math.max(dim.x, dim.y);
+    const lookat = positionCamera.xyz();
+    lookat.z = 0;
+
+    this.camera.setPosition(positionCamera.xyz());
+    this.camera.camera3D.lookAt(lookat);
+    this.camera.camera3D.near = 0.1;
+    this.camera.camera3D.far = 2 * Math.max(dim.x, dim.y);
+    this.camera.camera3D.updateProjectionMatrix();
+    this.camera.camera3D.updateMatrixWorld(true);
+
+    const tileLayer = createPlanarLayer('planar', extent, options);
 
     this.addLayer(tileLayer);
 
