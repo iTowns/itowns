@@ -1,9 +1,4 @@
 <!DOCTYPE html>
-<!--
-To change this license header, choose License Headers in Project Properties.
-To change this template file, choose Tools | Templates
-and open the template in the editor.
--->
 <html>
     <head>
         <title>Itowns - multiglobe</title>
@@ -23,7 +18,16 @@ and open the template in the editor.
                 margin : auto auto;
                 width: 100%;
                 padding: 0;
-                height: 50%
+                height: 100%
+            }
+
+            #help {
+                position: absolute;
+                top: 0;
+                width: 100%;
+                color: white;
+                font-size: 2em;
+                text-align: center;
             }
         </style>
         <meta charset="UTF-8">
@@ -32,47 +36,125 @@ and open the template in the editor.
     </head>
     <body>
         <div id="viewerDiv"></div>
-        <div id="viewerDiv2"></div>
+        <span id="help">Press <em>Space</em> to switch globe</span>
         <script src="../dist/itowns.js"></script>
         <script type="text/javascript">
             /* global itowns,document,GuiTools*/
-            var positionOnGlobe = { longitude: 2.351323, latitude: 48.856712, altitude: 10000000 };
+            var positionOnGlobe = { longitude: 2.351323, latitude: 48.856712, altitude: 35000000 };
 
             // iTowns namespace defined here
             var viewerDiv = document.getElementById('viewerDiv');
-            var globeView = new itowns.GlobeView(viewerDiv, positionOnGlobe, { noControls: true });
+
+            //
+            var layers = [];
+            var front = 0;
+
+            // Create 2 three object to which attach the 2 globes
+            var ref = [];
+            ref.push(new itowns.THREE.Object3D());
+            ref.push(new itowns.THREE.Object3D());
+            ref[1].scale.divideScalar(3);
+            ref[1].position.y = 10000000;
+            ref[1].updateMatrixWorld();
+
+            // Create the first globe
+            var globeView = new itowns.GlobeView(viewerDiv, positionOnGlobe, { noControls: true, object3d: ref[0] });
+            layers.push(globeView.wgs84TileLayer);
 
             function addLayerCb(layer) {
                 return globeView.addLayer(layer);
             }
-
             itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(addLayerCb);
-            itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT.json').then(addLayerCb);
 
-            // hack: not searched why yet
-            setTimeout(function () {
-                var viewerDiv2 = document.getElementById('viewerDiv2');
-                var globeView2 = new itowns.GlobeView(viewerDiv2, positionOnGlobe);
+            // create a second smaller globe
+            const globe2 = itowns.createGlobeLayer('globe2', { object3d: ref[1] });
+            layers.push(globe2);
 
-                var e = {
-                    "type": 'color',
-                    "protocol": "wmtsc",
-                    "id": "DARK",
-                    "opacity": 0.5,
-                    "customUrl": "http://a.basemaps.cartocdn.com/dark_all/%TILEMATRIX/%COL/%ROW.png",
-                    "networkOptions": { crossOrigin: 'anonymous' },
-                    "options": {
-                        "attribution": {
-                            "name":"CARTO",
-                            "url": "https://carto.com/"
-                        },
-                        "tileMatrixSet": "PM",
-                        "mimetype": "image/png"
+            // Defines pole texture
+            globe2.noTextureColor = new itowns.THREE.Color(0xd0d5d8);
+
+            // add it to the view so it gets updated
+            itowns.View.prototype.addLayer.call(globeView, globe2);
+            itowns.View.prototype.addLayer.call(globeView, {
+                update: itowns.updateLayeredMaterialNodeImagery,
+                type: 'color',
+                protocol: "wmtsc",
+                id: "DARK",
+                customUrl: "http://a.basemaps.cartocdn.com/light_all/%TILEMATRIX/%COL/%ROW.png",
+                networkOptions: { crossOrigin: 'anonymous' },
+                options: {
+                    attribution: {
+                        "name":"CARTO",
+                        "url": "https://carto.com/"
+                    },
+                    tileMatrixSet: "PM",
+                    mimetype: "image/png"
+                },
+            }, globe2);
+
+            // Globe animation
+            var animator = {
+                t: 0,
+                update: function(dt, ignore) {
+                    this.t = ignore ? 0 : Math.min(1, dt / 1000 + this.t);
+
+                    layers[front].object3d.position.y = itowns.THREE.Math.lerp(front ? 10000000 : -10000000, 0, this.t);
+                    layers[front].object3d.scale.setScalar(itowns.THREE.Math.lerp(0.3, 1, this.t));
+
+                    layers[1 - front].object3d.position.y = itowns.THREE.Math.lerp(front ? -10000000 : 10000000, 0, 1 - this.t);
+                    layers[1 - front].object3d.scale.setScalar(itowns.THREE.Math.lerp(0.3, 1, 1 - this.t));
+
+                    layers[0].object3d.updateMatrixWorld(true);
+                    layers[1].object3d.updateMatrixWorld(true);
+
+                    if (this.t < 1) {
+                        globeView.notifyChange(true);
+                    } else {
+                        globeView.removeFrameRequester(animator);
                     }
-                };
-                globeView2.addLayer(e);
-                globeView2.notifyChange(true);
-            }, 500);
+                }
+            };
+
+            // Last but not least, add 'ref' object to three.js scene, otherwise our globes
+            // won't be displayed
+            globeView.scene.add(ref[0]);
+            globeView.scene.add(ref[1]);
+
+
+            // Swap globe place on 'space' key
+            function onKeyPress(evt) {
+                if (evt.keyCode == 32) {
+                    front = 1 - front;
+
+                    animator.t = 0;
+                    globeView.addFrameRequester(animator);
+                    globeView.notifyChange(true);
+                }
+            }
+            viewerDiv.focus();
+            viewerDiv.addEventListener('keyup', onKeyPress);
+
+            // Zoom on mouse-wheel
+            var onMouseWheel = function onMouseWheel(event) {
+                var geo = new itowns.Coordinates('EPSG:4978', globeView.camera.camera3D.position).as('EPSG:4326');
+                // WebKit / Opera / Explorer 9
+                if (event.wheelDelta !== undefined) {
+                    delta = event.wheelDelta;
+                // Firefox
+                } else if (event.detail !== undefined) {
+                    delta = -event.detail;
+                }
+
+                if (delta > 0) {
+                    geo.setAltitude(geo.altitude() * 0.9);
+                } else {
+                    geo.setAltitude(geo.altitude() * 1.1);
+                }
+                globeView.camera.camera3D.position.copy(geo.as('EPSG:4978').xyz());
+                globeView.notifyChange(true);
+            };
+            viewerDiv.addEventListener('DOMMouseScroll', onMouseWheel);
+            viewerDiv.addEventListener('mousewheel', onMouseWheel);
         </script>
     </body>
 </html>
