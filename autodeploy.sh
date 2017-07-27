@@ -37,24 +37,24 @@ ssh-add ./deploy_key
 # (using master because https://help.github.com/articles/user-organization-and-project-pages/)
 git clone $SITE_REPO --single-branch --branch master out
 
-# We're going to rewrite all the content of out/itowns2
+# We're going to rewrite all the content of out/itowns
 
 # Remove everything then recreate the content, to avoid keeping stale files
-if [ -d out/itowns2 ]; then
+if [ -d out/itowns ]; then
     pushd out
-    git rm -rf itowns2
+    git rm -rf itowns
     popd
 fi
 
-mkdir -p out/itowns2/dist
+mkdir -p out/itowns/dist
 
 # Copy build results
-cp -R dist/*.js out/itowns2/dist/
+cp -R dist/*.js out/itowns/dist/
 # generate the API documentation
-npm run doc -- -d out/itowns2/API_Doc
+npm run doc -- -d out/itowns/API_Doc
 
 # Copy examples
-cp -R examples out/itowns2/
+cp -R examples out/itowns/
 
 # Deleting the JS files in examples/layers
 #git rm -f examples/layers/\ *.js
@@ -65,8 +65,8 @@ git config user.name "$COMMIT_AUTHOR_NAME"
 git config user.email "$COMMIT_AUTHOR_EMAIL"
 
 # Commit the "changes", i.e. the new version.
-git add itowns2
-git commit -m "Deploy from itowns2 to GitHub Pages: ${SHA}"
+git add itowns
+git commit -m "Deploy from itowns to GitHub Pages: ${SHA}"
 
 # Now that we're all set up, we can push.
 git push $SITE_REPO
