@@ -17,7 +17,7 @@ export function createPlanarLayer(id, extent, options) {
     tileLayer.schemeTile = [extent];
 
     // Configure tiles
-    const nodeInitFn = function nodeInitFn(context, layer, parent, node) {
+    const nodeInitFn = function nodeInitFn(layer, parent, node) {
         node.material.setLightingOn(layer.lighting.enable);
         node.material.uniforms.lightPosition.value = layer.lighting.position;
 
@@ -91,13 +91,9 @@ export function createPlanarLayer(id, extent, options) {
         return false;
     }
 
-    tileLayer.update =
-        processTiledGeometryNode(
-            planarCulling,
-            subdivision,
-            nodeInitFn);
+    tileLayer.update = processTiledGeometryNode(planarCulling, subdivision);
     tileLayer.builder = new PlanarTileBuilder();
-
+    tileLayer.onTileCreated = nodeInitFn;
     tileLayer.type = 'geometry';
     tileLayer.protocol = 'tile';
     tileLayer.visible = true;
