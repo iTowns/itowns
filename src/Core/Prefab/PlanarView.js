@@ -149,8 +149,7 @@ PlanarView.prototype.addLayer = function addLayer(layer) {
     } else if (layer.type == 'elevation') {
         layer.update = updateLayeredMaterialNodeElevation;
     }
-    View.prototype.addLayer.call(this, layer, this.tileLayer);
-    // we probably want to move some code from ApiGlobe.prototype.addImageryLayer|ApiPlanarView.prototype.addElevationLayer here
+    return View.prototype.addLayer.call(this, layer, this.tileLayer);
 };
 
 PlanarView.prototype.selectNodeAt = function selectNodeAt(mouse) {
