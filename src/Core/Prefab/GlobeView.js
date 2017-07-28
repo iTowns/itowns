@@ -75,7 +75,7 @@ export const GLOBE_VIEW_EVENTS = {
 
 export function createGlobeLayer(id, options) {
     // Configure tiles
-    const nodeInitFn = function nodeInitFn(context, layer, parent, node) {
+    const nodeInitFn = function nodeInitFn(layer, parent, node) {
         node.material.setLightingOn(layer.lighting.enable);
         node.material.uniforms.lightPosition.value = layer.lighting.position;
 
@@ -156,13 +156,9 @@ export function createGlobeLayer(id, options) {
         return false;
     }
 
-    wgs84TileLayer.update =
-        processTiledGeometryNode(
-            globeCulling(2),
-            subdivision,
-            nodeInitFn);
+    wgs84TileLayer.update = processTiledGeometryNode(globeCulling(2), subdivision);
     wgs84TileLayer.builder = new BuilderEllipsoidTile();
-
+    wgs84TileLayer.onTileCreated = nodeInitFn;
     wgs84TileLayer.type = 'geometry';
     wgs84TileLayer.protocol = 'tile';
     wgs84TileLayer.visible = true;

@@ -43,11 +43,12 @@ export function requestNewTile(view, scheduler, geometryLayer, extent, parent, l
 
     return scheduler.execute(command).then((node) => {
         node.add(node.OBB());
+        geometryLayer.onTileCreated(geometryLayer, parent, node);
         return node;
     });
 }
 
-function subdivideNode(context, layer, node, initNewNode) {
+function subdivideNode(context, layer, node) {
     if (!node.pendingSubdivision && !node.children.some(n => n.layer == layer.id)) {
         const extents = subdivisionExtents(node.extent);
         // TODO: pendingSubdivision mechanism is fragile, get rid of it
@@ -59,7 +60,6 @@ function subdivideNode(context, layer, node, initNewNode) {
             promises.push(
                 requestNewTile(context.view, context.scheduler, layer, extent, node).then((child) => {
                     children.push(child);
-                    initNewNode(context, layer, node, child);
                     return node;
                 }));
         }
@@ -95,7 +95,7 @@ function subdivideNode(context, layer, node, initNewNode) {
     }
 }
 
-export function processTiledGeometryNode(cullingTest, subdivisionTest, initNewNode) {
+export function processTiledGeometryNode(cullingTest, subdivisionTest) {
     return function _processTiledGeometryNode(context, layer, node) {
     // early exit if parent' subdivision is in progress
         if (node.parent.pendingSubdivision) {
@@ -112,7 +112,7 @@ export function processTiledGeometryNode(cullingTest, subdivisionTest, initNewNo
             let requestChildrenUpdate = false;
 
             if (node.pendingSubdivision || subdivisionTest(context, layer, node)) {
-                subdivideNode(context, layer, node, initNewNode);
+                subdivideNode(context, layer, node);
                 // display iff children aren't ready
                 node.setDisplayed(node.pendingSubdivision);
                 requestChildrenUpdate = true;

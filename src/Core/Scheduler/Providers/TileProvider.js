@@ -33,6 +33,7 @@ TileProvider.prototype.preprocessDataLayer = function preprocessLayer(layer, vie
     }
 
     layer.level0Nodes = [];
+    layer.onTileCreated = layer.onTileCreated || (() => {});
 
     const promises = [];
 
