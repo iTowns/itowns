@@ -8,7 +8,6 @@
 
 const vec4 CFog = vec4( 0.76, 0.85, 1.0, 1.0);
 const vec4 CWhite = vec4(1.0,1.0,1.0,1.0);
-const vec4 CBlueOcean = vec4( 0.04, 0.23, 0.35, 1.0);
 const vec4 COrange = vec4( 1.0, 0.3, 0.0, 1.0);
 const vec4 CRed = vec4( 1.0, 0.0, 0.0, 1.0);
 
@@ -24,6 +23,8 @@ uniform bool        visibility[8];
 uniform float       distanceFog;
 uniform int         colorLayersCount;
 uniform vec3        lightPosition;
+
+uniform vec3        noTextureColor;
 
 // Options global
 uniform bool        selected;
@@ -129,8 +130,7 @@ void main() {
 
         // No texture color
         if (!validTexture) {
-
-            diffuseColor = CBlueOcean;
+            diffuseColor.rgb = noTextureColor;
         }
 
         // Selected

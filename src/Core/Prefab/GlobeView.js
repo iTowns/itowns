@@ -78,6 +78,9 @@ export function createGlobeLayer(id, options) {
     const nodeInitFn = function nodeInitFn(layer, parent, node) {
         node.material.setLightingOn(layer.lighting.enable);
         node.material.uniforms.lightPosition.value = layer.lighting.position;
+        if (layer.noTextureColor) {
+            node.material.uniforms.noTextureColor.value.copy(layer.noTextureColor);
+        }
 
         if (__DEBUG__) {
             node.material.uniforms.showOutline = { value: layer.showOutline || false };
