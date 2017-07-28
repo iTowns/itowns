@@ -6,8 +6,8 @@ var definePlugin = new webpack.DefinePlugin({
 });
 
 var providePlugin = new webpack.ProvidePlugin({
-    TextDecoder: ['text-encoding', 'TextDecoder'],
-    TextEncoder: ['text-encoding', 'TextEncoder'],
+    TextDecoder: [path.resolve(__dirname, 'src/utils/polyfill'), 'TextDecoder'],
+    TextEncoder: [path.resolve(__dirname, 'src/utils/polyfill'), 'TextEncoder'],
 });
 
 module.exports = {
@@ -26,7 +26,8 @@ module.exports = {
     plugins: [
         definePlugin,
         providePlugin,
-        new webpack.optimize.CommonsChunkPlugin({ name: 'itowns' })],
+        new webpack.optimize.CommonsChunkPlugin({ name: 'itowns' }),
+    ],
     module: {
         rules: [
             {
