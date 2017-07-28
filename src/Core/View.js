@@ -100,8 +100,12 @@ const _syncThreejsLayer = function _syncThreejsLayer(layer, view) {
 function _preprocessLayer(view, layer, provider) {
     if (!(layer instanceof Layer) && !(layer instanceof GeometryLayer)) {
         const nlayer = new Layer(layer.id);
-        delete layer.id;
+        // nlayer.id is read-only so delete it from layer before Object.assign
+        const tmp = layer;
+        delete tmp.id;
         layer = Object.assign(nlayer, layer);
+        // restore layer.id in user provider layer object
+        tmp.id = layer.id;
     }
 
     if (!layer.updateStrategy) {
