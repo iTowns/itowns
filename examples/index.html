@@ -19,6 +19,7 @@
         <p>
         (click on title to open fullscreen)
         </p>
+        <div id="error-nowebgl"></div>
         <div class="exampleContainer">
             <h3><a href='./orthographic.html' target='_blank'>Orthographic</a></h3>
             <img src='screenshots/orthographic.jpg'>
@@ -69,20 +70,23 @@
             <iframe src="" style="display: none;"></iframe>
         </div>
 
+        <script src="https://unpkg.com/three@0.86.0/examples/js/Detector.js"></script>
         <script type="text/javascript">
-            function enableOnClick(evt) {
-                this.getElementsByTagName('img')[0].style.display = 'none';
-                this.getElementsByTagName('iframe')[0].style.display = '';
-                this.getElementsByTagName('iframe')[0].src = this.getElementsByTagName('a')[0].href;
+            if (!Detector.webgl) {
+                Detector.addGetWebGLMessage({ parent: document.getElementById('error-nowebgl') });
+            } else {
+                function enableOnClick(evt) {
+                    this.getElementsByTagName('img')[0].style.display = 'none';
+                    this.getElementsByTagName('iframe')[0].style.display = '';
+                    this.getElementsByTagName('iframe')[0].src = this.getElementsByTagName('a')[0].href;
+                }
+
+                    var divs = document.getElementsByClassName('exampleContainer');
+                    var i;
+                    for (i=0; i<divs.length; i++) {
+                        divs[i].addEventListener('click', enableOnClick.bind(divs[i]));
+                }
             }
-
-            var divs = document.getElementsByClassName('exampleContainer');
-            var i;
-            for (i=0; i<divs.length; i++) {
-                divs[i].addEventListener('click', enableOnClick.bind(divs[i]));
-            }
-
-
         </script>
     </body>
 </html>
