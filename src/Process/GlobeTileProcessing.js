@@ -6,17 +6,27 @@ import Extent from '../Core/Geographic/Extent';
 
 const cV = new THREE.Vector3();
 let vhMagnitudeSquared;
-const radius = new THREE.Vector3();
 
 let preSSE;
 let SSE_SUBDIVISION_THRESHOLD;
 
+const worldToScaledEllipsoid = new THREE.Matrix4();
+
 export function preGlobeUpdate(context, layer) {
-    radius.setFromMatrixScale(layer.object3d.matrixWorld);
-    radius.multiply(ellipsoidSizes());
+    // We're going to use the method described here:
+    //    https://cesiumjs.org/2013/04/25/Horizon-culling/
+    // This method assumes that the globe is a unit sphere at 0,0,0 so
+    // we setup a world-to-scaled-ellipsoid matrix4
+    worldToScaledEllipsoid.getInverse(layer.object3d.matrixWorld);
+    worldToScaledEllipsoid.premultiply(
+        new THREE.Matrix4().makeScale(
+            1 / ellipsoidSizes().x,
+            1 / ellipsoidSizes().y,
+            1 / ellipsoidSizes().z));
 
     // pre-horizon culling
-    cV.copy(context.camera.position()).divide(radius);
+    // cV is camera's position in worldToScaledEllipsoid system
+    cV.copy(context.camera.camera3D.position).applyMatrix4(worldToScaledEllipsoid);
     vhMagnitudeSquared = cV.lengthSq() - 1.0;
 
     // pre-sse
@@ -33,31 +43,28 @@ export function preGlobeUpdate(context, layer) {
 
 function pointHorizonCulling(pt) {
     // see https://cesiumjs.org/2013/04/25/Horizon-culling/
-    var vT = pt.divide(radius).sub(cV);
+    const vT = pt.applyMatrix4(worldToScaledEllipsoid).sub(cV);
 
-    var vtMagnitudeSquared = vT.lengthSq();
+    const vtMagnitudeSquared = vT.lengthSq();
 
-    var dot = -vT.dot(cV);
+    const dot = -vT.dot(cV);
 
-    var isOccluded =
+    const isOccluded =
         vhMagnitudeSquared < dot &&
-        vhMagnitudeSquared < dot * dot / vtMagnitudeSquared;
+        vhMagnitudeSquared < ((dot * dot) / vtMagnitudeSquared);
 
     return isOccluded;
 }
 
 function horizonCulling(node) {
-    // horizonCulling Oriented bounding box
-    var points = node.OBB().pointsWorld;
-    var isVisible = false;
+    const points = node.OBB().pointsWorld;
 
     for (const point of points) {
         if (!pointHorizonCulling(point.clone())) {
-            isVisible = true;
-            break;
+            return true;
         }
     }
-    return isVisible;
+    return false;
 }
 
 function frustumCullingOBB(node, camera) {
