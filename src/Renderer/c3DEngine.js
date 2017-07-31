@@ -49,12 +49,44 @@ function c3DEngine(rendererOrDiv, options = {}) {
     }.bind(this);
 
     // Create renderer
-    this.renderer = renderer || new THREE.WebGLRenderer({
-        canvas: document.createElement('canvas'),
-        antialias: options.antialias,
-        alpha: options.alpha,
-        logarithmicDepthBuffer: options.logarithmicDepthBuffer,
-    });
+    try {
+        this.renderer = renderer || new THREE.WebGLRenderer({
+            canvas: document.createElement('canvas'),
+            antialias: options.antialias,
+            alpha: options.alpha,
+            logarithmicDepthBuffer: options.logarithmicDepthBuffer,
+        });
+    } catch (ex) {
+        // eslint-disable-next-line no-console
+        console.error('Failed to create WebGLRenderer', ex);
+        this.renderer = null;
+    }
+
+    if (!this.renderer) {
+        // from Detector.js
+        const element = document.createElement('div');
+        element.id = 'webgl-error-message';
+        element.style.fontFamily = 'monospace';
+        element.style.fontSize = '13px';
+        element.style.fontWeight = 'normal';
+        element.style.textAlign = 'center';
+        element.style.background = '#fff';
+        element.style.color = '#000';
+        element.style.padding = '1.5em';
+        element.style.width = '400px';
+        element.style.margin = '5em auto 0';
+        element.innerHTML = window.WebGLRenderingContext ? [
+            'Your graphics card does not seem to support <a href="http://khronos.org/webgl/wiki/Getting_a_WebGL_Implementation" style="color:#000">WebGL</a>.<br />',
+            'Find out how to get it <a href="http://get.webgl.org/" style="color:#000">here</a>.<br>',
+            'See also <a href="https://www.khronos.org/webgl/wiki/BlacklistsAndWhitelists">graphics card blacklisting</a>',
+        ].join('\n') : [
+            'Your browser does not seem to support <a href="http://khronos.org/webgl/wiki/Getting_a_WebGL_Implementation" style="color:#000">WebGL</a>.<br/>',
+            'Find out how to get it <a href="http://get.webgl.org/" style="color:#000">here</a>.<br>',
+            'You can also try another browser like Firefox or Chrome.',
+        ].join('\n');
+        viewerDiv.appendChild(element);
+        throw new Error('WebGL unsupported');
+    }
 
     // Let's allow our canvas to take focus
     // The condition below looks weird, but it's correct: querying tabIndex
