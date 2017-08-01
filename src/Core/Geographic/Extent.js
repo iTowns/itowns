@@ -88,11 +88,37 @@ Extent.prototype.clone = function clone() {
 
 Extent.prototype.as = function as(crs) {
     assertCrsIsValid(crs);
-    if (this._crs != crs) {
-        throw new Error('Unsupported yet');
-    }
+
     if (_isTiledCRS(this._crs)) {
         throw new Error('Unsupported yet');
+    }
+
+    if (this._crs != crs) {
+        // Compute min/max in x/y by projecting 8 cardinal points,
+        // and then taking the min/max of each coordinates.
+        const cardinals = [];
+        const c = this.center();
+        cardinals.push(new Coordinates(this._crs, this.west(), this.north()));
+        cardinals.push(new Coordinates(this._crs, c._values[0], this.north()));
+        cardinals.push(new Coordinates(this._crs, this.east(), this.north()));
+        cardinals.push(new Coordinates(this._crs, this.east(), c._values[1]));
+        cardinals.push(new Coordinates(this._crs, this.east(), this.south()));
+        cardinals.push(new Coordinates(this._crs, c._values[0], this.south()));
+        cardinals.push(new Coordinates(this._crs, this.west(), this.south()));
+        cardinals.push(new Coordinates(this._crs, this.west(), c._values[1]));
+
+        let north = -Infinity;
+        let south = Infinity;
+        let east = -Infinity;
+        let west = Infinity;
+        for (let i = 0; i < cardinals.length; i++) {
+            cardinals[i] = cardinals[i].as(crs);
+            north = Math.max(north, cardinals[i]._values[1]);
+            south = Math.min(south, cardinals[i]._values[1]);
+            east = Math.max(east, cardinals[i]._values[0]);
+            west = Math.min(west, cardinals[i]._values[0]);
+        }
+        return new Extent(crs, { north, south, east, west });
     }
 
     return new Extent(crs, {
