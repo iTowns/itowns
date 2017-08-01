@@ -99,7 +99,7 @@
 
             // Add the UI Debug
             const d = new debug.Debug(globe, menuGlobe.gui);
-            debug.createTileDebug(menuGlobe.gui, globe, globe.wgs84TileLayer, d);
+            debug.createTileDebugUI(menuGlobe.gui, globe, globe.wgs84TileLayer, d);
             debug.create3dTilesDebugUI(menuGlobe.gui, globe, $3dTilesLayerDiscreteLOD, d);
             debug.create3dTilesDebugUI(menuGlobe.gui, globe, $3dTilesLayerRequestVolume, d);
 
