@@ -128,6 +128,9 @@ function checkNodeElevationTextureValidity(texture, noDataValue) {
 }
 
 export function updateLayeredMaterialNodeImagery(context, layer, node) {
+    if (!node.parent) {
+        return;
+    }
     if (!layer.tileInsideLimit(node, layer)) {
         // we also need to check that tile's parent doesn't have a texture for this layer,
         // because even if this tile is outside of the layer, it could inherit it's
@@ -248,6 +251,9 @@ export function updateLayeredMaterialNodeImagery(context, layer, node) {
 }
 
 export function updateLayeredMaterialNodeElevation(context, layer, node, force) {
+    if (!node.parent) {
+        return;
+    }
     // TODO: we need either
     //  - compound or exclusive layers
     //  - support for multiple elevation layers

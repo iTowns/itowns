@@ -1,5 +1,6 @@
 import Extent from '../Core/Geographic/Extent';
 import { CancelledCommandException } from '../Core/Scheduler/Scheduler';
+import ObjectRemovalHelper from './ObjectRemovalHelper';
 
 function subdivisionExtents(bbox) {
     const center = bbox.center();
@@ -97,7 +98,10 @@ function subdivideNode(context, layer, node) {
 
 export function processTiledGeometryNode(cullingTest, subdivisionTest) {
     return function _processTiledGeometryNode(context, layer, node) {
-    // early exit if parent' subdivision is in progress
+        if (!node.parent) {
+            return ObjectRemovalHelper.removeChildrenAndCleanup(layer.id, node);
+        }
+        // early exit if parent' subdivision is in progress
         if (node.parent.pendingSubdivision) {
             node.visible = false;
             node.setDisplayed(false);
@@ -125,7 +129,7 @@ export function processTiledGeometryNode(cullingTest, subdivisionTest) {
                 node.setFog(1000000000);
 
                 if (!requestChildrenUpdate) {
-                    node.removeChildren();
+                    return ObjectRemovalHelper.removeChildren(layer.id, node);
                 }
             }
 
@@ -134,8 +138,6 @@ export function processTiledGeometryNode(cullingTest, subdivisionTest) {
         }
 
         node.setDisplayed(false);
-        node.removeChildren();
-
-        return undefined;
+        return ObjectRemovalHelper.removeChildren(layer.id, node);
     };
 }
