@@ -11,6 +11,7 @@ import TileProvider from './Providers/TileProvider';
 import $3dTiles_Provider from './Providers/3dTiles_Provider';
 import TMS_Provider from './Providers/TMS_Provider';
 import PointCloudProvider from './Providers/PointCloudProvider';
+import WFS_Provider from './Providers/WFS_Provider';
 
 var instanceScheduler = null;
 
@@ -89,6 +90,7 @@ Scheduler.prototype.initDefaultProviders = function initDefaultProviders() {
     this.addProtocolProvider('3d-tiles', new $3dTiles_Provider());
     this.addProtocolProvider('tms', new TMS_Provider());
     this.addProtocolProvider('potreeconverter', PointCloudProvider);
+    this.addProtocolProvider('wfs', new WFS_Provider());
 };
 
 

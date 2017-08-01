@@ -20,28 +20,27 @@ function WMS_Provider() {
 
 WMS_Provider.prototype.url = function url(bbox, layer) {
     const box = bbox.as(layer.projection);
-    const v = [
-        box.west(),
-        box.south(),
-        box.east(),
-        box.north(),
-    ];
-    const bboxInUnit = layer.bbox_url === 'swne' ?
-        `${v[1]},${v[0]},${v[3]},${v[2]}` :
-        `${v[0]},${v[1]},${v[2]},${v[3]}`;
+    const w = box.west();
+    const s = box.south();
+    const e = box.east();
+    const n = box.north();
+
+    const bboxInUnit = layer.axisOrder === 'swne' ?
+        `${s},${w},${n},${e}` :
+        `${w},${s},${e},${n}`;
 
     return layer.customUrl.replace('%bbox', bboxInUnit);
 };
 
 WMS_Provider.prototype.preprocessDataLayer = function preprocessDataLayer(layer) {
     if (!layer.name) {
-        throw new Error('layerName is required.');
+        throw new Error('layer.name is required.');
     }
     if (!layer.extent) {
-        throw new Error('extent is required');
+        throw new Error('layer.extent is required');
     }
     if (!layer.projection) {
-        throw new Error('projection is required');
+        throw new Error('layer.projection is required');
     }
 
     if (!(layer.extent instanceof Extent)) {
@@ -52,7 +51,7 @@ WMS_Provider.prototype.preprocessDataLayer = function preprocessDataLayer(layer)
         layer.options.zoom = { min: 0, max: 21 };
     }
 
-    layer.bbox_url = layer.bbox_url || 'swne';
+    layer.axisOrder = layer.axisOrder || 'swne';
     layer.format = layer.options.mimetype || 'image/png';
     layer.width = layer.heightMapWidth || 256;
     layer.version = layer.version || '1.3.0';
