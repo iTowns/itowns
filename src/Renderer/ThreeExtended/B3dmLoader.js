@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import './GLTFLoader';
+import BatchTable from './BatchTable';
 
 const matrixChangeUpVectorZtoY = (new THREE.Matrix4()).makeRotationX(Math.PI / 2);
 // For gltf rotation
@@ -53,6 +54,7 @@ B3dmLoader.prototype.parse = function parse(buffer, gltfUpAxis) {
 
     let byteOffset = 0;
     const b3dmHeader = {};
+    let batchTable = {};
 
     // Magic type is unsigned char [4]
     b3dmHeader.magic = textDecoder.decode(new Uint8Array(buffer, 0, 4));
@@ -76,6 +78,10 @@ B3dmLoader.prototype.parse = function parse(buffer, gltfUpAxis) {
         b3dmHeader.BTBinaryLength = view.getUint32(byteOffset, true);
         byteOffset += Uint32Array.BYTES_PER_ELEMENT;
 
+        if (b3dmHeader.BTJSONLength > 0) {
+            const sizeBegin = 28 + b3dmHeader.FTJSONLength + b3dmHeader.FTBinaryLength;
+            batchTable = BatchTable.parse(buffer.slice(sizeBegin, b3dmHeader.BTJSONLength + sizeBegin));
+        }
         // TODO: missing feature and batch table
         return new Promise((resolve/* , reject */) => {
             const onload = (gltf) => {
@@ -93,7 +99,9 @@ B3dmLoader.prototype.parse = function parse(buffer, gltfUpAxis) {
                 applyOptionalCesiumRTC(buffer.slice(28 + b3dmHeader.FTJSONLength +
                     b3dmHeader.FTBinaryLength + b3dmHeader.BTJSONLength +
                     b3dmHeader.BTBinaryLength), gltf.scene);
-                resolve(gltf);
+
+                const b3dm = { gltf, batchTable };
+                resolve(b3dm);
             };
             this.glTFLoader.parse(buffer.slice(28 + b3dmHeader.FTJSONLength +
                 b3dmHeader.FTBinaryLength + b3dmHeader.BTJSONLength +

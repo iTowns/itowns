@@ -142,14 +142,14 @@ $3dTiles_Provider.prototype.b3dmToMesh = function b3dmToMesh(data, layer) {
                 }
             }
         };
-        result.scene.traverse(init);
-        return result.scene;
+        result.gltf.scene.traverse(init);
+        return result.gltf.scene;
     });
 };
 
 $3dTiles_Provider.prototype.pntsParse = function pntsParse(data) {
     return new Promise((resolve) => {
-        resolve(PntsLoader.parse(data));
+        resolve(PntsLoader.parse(data).point);
     });
 };
 

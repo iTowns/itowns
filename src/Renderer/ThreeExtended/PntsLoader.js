@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import BT from './BatchTable';
 
 const textDecoder = new TextDecoder('utf-8');
 export default {
@@ -10,6 +11,8 @@ export default {
 
         let byteOffset = 0;
         const pntsHeader = {};
+        let batchTable = {};
+        let point = {};
 
         // Magic type is unsigned char [4]
         pntsHeader.magic = textDecoder.decode(new Uint8Array(buffer, byteOffset, 4));
@@ -37,13 +40,17 @@ export default {
 
             // binary table
             if (pntsHeader.FTBinaryLength > 0) {
-                return parseFeatureBinary(buffer, byteOffset, pntsHeader.FTJSONLength);
+                point = parseFeatureBinary(buffer, byteOffset, pntsHeader.FTJSONLength);
             }
 
             // batch table
-            if (pntsHeader.BTBinaryLength > 0) {
-                throw new Error('For pnts loader, BTBinaryLength: not yet managed');
+            if (pntsHeader.BTJSONLength > 0) {
+                const sizeBegin = 28 + pntsHeader.FTJSONLength + pntsHeader.FTBinaryLength;
+                batchTable = BT.parseBatchTableJSON(buffer.slice(sizeBegin, pntsHeader.BTJSONLength + sizeBegin));
             }
+
+            const pnts = { point, batchTable };
+            return pnts;
         } else {
             throw new Error('Invalid pnts file.');
         }
