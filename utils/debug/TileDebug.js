@@ -2,6 +2,7 @@ import OBBHelper from './OBBHelper';
 import TileObjectChart from './charts/TileObjectChart';
 import TileVisibilityChart from './charts/TileVisibilityChart';
 import View from '../../src/Core/View';
+import ObjectRemovalHelper from '../../src/Process/ObjectRemovalHelper';
 
 function applyToNodeFirstMaterial(view, root, layerId, cb) {
     root.traverse((object) => {
@@ -78,6 +79,11 @@ export default function createTileDebugUI(datDebugTool, view, layer, debugInstan
 
     const debugIdUpdate = function debugIdUpdate(context, layer, node) {
         const enabled = context.camera.camera3D.layers.test({ mask: 1 << layer.threejsLayer });
+
+        if (!node.parent || !enabled) {
+            ObjectRemovalHelper.removeChildrenAndCleanupRecursively(layer.id, node);
+            return;
+        }
 
         if (!enabled) {
             return;
