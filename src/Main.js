@@ -15,11 +15,12 @@ export { default as PlanarView, createPlanarLayer } from './Core/Prefab/PlanarVi
 export { default as Fetcher } from './Core/Scheduler/Providers/Fetcher';
 export { default as View } from './Core/View';
 export { process3dTilesNode, init3dTilesLayer, $3dTilesCulling, $3dTilesSubdivisionControl, pre3dTilesUpdate } from './Process/3dTilesProcessing';
+export { default as FeatureProcessing } from './Process/FeatureProcessing';
 export { updateLayeredMaterialNodeImagery, updateLayeredMaterialNodeElevation } from './Process/LayeredMaterialNodeProcessing';
 export { processTiledGeometryNode, initTiledGeometryLayer } from './Process/TiledNodeProcessing';
 export { ColorLayersOrdering } from './Renderer/ColorLayersOrdering';
 export { default as PointsMaterial } from './Renderer/PointsMaterial';
 export { default as PointCloudProcessing } from './Process/PointCloudProcessing';
 export { default as FlyControls } from './Renderer/ThreeExtended/FlyControls';
+export { default as GeoJSON2Three } from './Renderer/ThreeExtended/GeoJSON2Three';
 export { CONTROL_EVENTS } from './Renderer/ThreeExtended/GlobeControls';
-
