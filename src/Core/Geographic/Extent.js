@@ -80,7 +80,7 @@ Extent.prototype.clone = function clone() {
     if (_isTiledCRS(this._crs)) {
         return new Extent(this._crs, this.zoom, this.row, this.col);
     } else {
-        const result = Extent(this._crs, ...this._values);
+        const result = new Extent(this._crs, ...this._values);
         result._internalStorageUnit = this._internalStorageUnit;
         return result;
     }
