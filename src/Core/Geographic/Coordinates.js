@@ -9,6 +9,8 @@ import proj4 from 'proj4';
 import mE from '../Math/MathExtended';
 import Ellipsoid from '../Math/Ellipsoid';
 
+const projectionCache = {};
+
 export function ellipsoidSizes() {
     return {
         x: 6378137,
@@ -93,6 +95,20 @@ function _assertIsGeocentric(crs) {
     }
 }
 
+function instanceProj4(crsIn, crsOut) {
+    if (projectionCache[crsIn]) {
+        const p = projectionCache[crsIn];
+        if (p[crsOut]) {
+            return p[crsOut];
+        }
+    } else {
+        projectionCache[crsIn] = {};
+    }
+    const p = proj4(crsIn, crsOut);
+    projectionCache[crsIn][crsOut] = p;
+    return p;
+}
+
 // Only support explicit conversions
 function _convert(coordsIn, newCrs) {
     if (newCrs === coordsIn.crs) {
@@ -126,7 +142,7 @@ function _convert(coordsIn, newCrs) {
         }
 
         if (coordsIn.crs in proj4.defs && newCrs in proj4.defs) {
-            const p = proj4(coordsIn.crs, newCrs, [coordsIn._values[0], coordsIn._values[1]]);
+            const p = instanceProj4(coordsIn.crs, newCrs).forward([coordsIn._values[0], coordsIn._values[1]]);
             return new Coordinates(newCrs,
                                    p[0],
                                    p[1],
