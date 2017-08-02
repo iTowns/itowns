@@ -152,7 +152,6 @@ class FlyControls extends THREE.EventDispatcher {
         }
 
         if (this.moves.size > 0 || this._isMouseDown) {
-            this.view.camera.update();
             this.view.notifyChange(true, this._camera3D);
 
             for (const move of this.moves) {

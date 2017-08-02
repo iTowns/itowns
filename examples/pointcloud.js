@@ -55,7 +55,7 @@ function showPointcloud(serverUrl, fileName, lopocsTable) {
     function placeCamera(position, lookAt) {
         view.camera.camera3D.position.set(position.x, position.y, position.z);
         view.camera.camera3D.lookAt(lookAt);
-        view.camera.update();
+        view.notifyChange(true);
     }
 
     // add pointcloud to scene
@@ -86,9 +86,7 @@ function showPointcloud(serverUrl, fileName, lopocsTable) {
                 Math.floor(100 * pointcloud.counters.displayedCount / pointcloud.counters.pointCount) + '%) (' +
                 view.mainLoop.gfxEngine.renderer.info.memory.geometries + ')';
         };
-
-
-        view.notifyChange(true);
     }
+
     view.addLayer(pointcloud).then(onLayerReady);
 }

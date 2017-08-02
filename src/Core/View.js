@@ -64,6 +64,7 @@ function View(crs, viewerDiv, options = {}) {
     }
 
     this.camera = new Camera(
+        this.referenceCrs,
         this.mainLoop.gfxEngine.getWindowSize().x,
         this.mainLoop.gfxEngine.getWindowSize().y,
         options);
@@ -76,8 +77,6 @@ function View(crs, viewerDiv, options = {}) {
         // the container's size. Otherwise we use window' size.
         const newSize = new Vector2(viewerDiv.clientWidth, viewerDiv.clientHeight);
         this.mainLoop.gfxEngine.onWindowResize(newSize.x, newSize.y);
-        this.camera.resize(newSize.x, newSize.y);
-        this.camera.update();
         this.notifyChange(true);
     }, false);
 

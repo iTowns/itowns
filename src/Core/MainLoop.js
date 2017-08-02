@@ -92,8 +92,8 @@ MainLoop.prototype._step = function _step(view, timestamp) {
 
     // update camera
     const dim = this.gfxEngine.getWindowSize();
-    view.camera.resize(dim.x, dim.y);
-    view.camera.update();
+
+    view.camera.update(dim.x, dim.y);
 
     // update data-structure
     this._update(view, updateSources, dt);

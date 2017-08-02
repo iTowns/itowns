@@ -131,7 +131,7 @@ function PlanarView(viewerDiv, extent, options = {}) {
     const lookat = positionCamera.xyz();
     lookat.z = 0;
 
-    this.camera.setPosition(positionCamera.xyz());
+    this.camera.setPosition(positionCamera);
     this.camera.camera3D.lookAt(lookat);
     this.camera.camera3D.near = 0.1;
     this.camera.camera3D.far = 2 * Math.max(dim.x, dim.y);
@@ -182,8 +182,6 @@ PlanarView.prototype.selectNodeAt = function selectNodeAt(mouse) {
 PlanarView.prototype.screenCoordsToNodeId = function screenCoordsToNodeId(mouse) {
     const dim = this.mainLoop.gfxEngine.getWindowSize();
 
-    this.camera.update();
-
     const previousRenderState = this._renderState;
     this.changeRenderState(RendererConstant.ID);
 
@@ -214,10 +212,7 @@ PlanarView.prototype.getPickingPositionFromDepth = function getPickingPositionFr
     const dim = this.mainLoop.gfxEngine.getWindowSize();
     mouse = mouse || dim.clone().multiplyScalar(0.5);
 
-
     var camera = this.camera.camera3D;
-    this.camera.update();
-    // camera.updateMatrixWorld();
 
     // Prepare state
     const prev = this.camera.camera3D.layers.mask;
@@ -235,8 +230,6 @@ PlanarView.prototype.getPickingPositionFromDepth = function getPickingPositionFr
 
     screen.x = (mouse.x / dim.x) * 2 - 1;
     screen.y = -(mouse.y / dim.y) * 2 + 1;
-
-    camera.matrixWorld.setPosition(camera.position);
 
     // Origin
     ray.origin.copy(camera.position);
@@ -263,7 +256,6 @@ PlanarView.prototype.getPickingPositionFromDepth = function getPickingPositionFr
     // Restore initial state
     this.changeRenderState(previousRenderState);
     camera.layers.mask = prev;
-    camera.updateMatrixWorld(true);
 
     if (pickWorldPosition.length() > 10000000)
         { return undefined; }
