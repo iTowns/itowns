@@ -202,7 +202,7 @@ function GlobeView(viewerDiv, coordCarto, options = {}) {
         coordCarto.latitude,
         coordCarto.altitude);
 
-    this.camera.setPosition(positionCamera.as('EPSG:4978').xyz());
+    this.camera.setPosition(positionCamera);
     this.camera.camera3D.lookAt({ x: 0, y: 0, z: 0 });
     this.camera.camera3D.near = Math.max(15.0, 0.000002352 * size);
     this.camera.camera3D.far = size * 10;
@@ -246,7 +246,7 @@ function GlobeView(viewerDiv, coordCarto, options = {}) {
     this.preRender = () => {
         const v = new THREE.Vector3();
         v.setFromMatrixPosition(wgs84TileLayer.object3d.matrixWorld);
-        var len = v.distanceTo(this.camera.position());
+        var len = v.distanceTo(this.camera.camera3D.position);
         v.setFromMatrixScale(wgs84TileLayer.object3d.matrixWorld);
         var lim = v.x * size * 1.1;
 
@@ -359,8 +359,6 @@ GlobeView.prototype.screenCoordsToNodeId = function screenCoordsToNodeId(mouse) 
 
     mouse = mouse || new THREE.Vector2(Math.floor(dim.x / 2), Math.floor(dim.y / 2));
 
-    this.camera.update();
-
     const previousRenderState = this._renderState;
     this.changeRenderState(RendererConstant.ID);
 
@@ -395,9 +393,7 @@ GlobeView.prototype.getPickingPositionFromDepth = function getPickingPositionFro
     const dim = this.mainLoop.gfxEngine.getWindowSize();
     mouse = mouse || dim.clone().multiplyScalar(0.5);
 
-
     var camera = this.camera.camera3D;
-    this.camera.update();
 
     // Prepare state
     const prev = this.camera.camera3D.layers.mask;
@@ -415,8 +411,6 @@ GlobeView.prototype.getPickingPositionFromDepth = function getPickingPositionFro
 
     screen.x = (mouse.x / dim.x) * 2 - 1;
     screen.y = -(mouse.y / dim.y) * 2 + 1;
-
-    camera.matrixWorld.setPosition(camera.position);
 
     // Origin
     ray.origin.copy(camera.position);
@@ -443,7 +437,6 @@ GlobeView.prototype.getPickingPositionFromDepth = function getPickingPositionFro
     // Restore initial state
     this.changeRenderState(previousRenderState);
     camera.layers.mask = prev;
-    camera.updateMatrixWorld(true);
 
     if (pickWorldPosition.length() > 10000000)
         { return undefined; }

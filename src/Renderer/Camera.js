@@ -1,45 +1,42 @@
 /**
- * Generated On: 2015-10-5
- * Class: Camera
- * Description: La camera scene, interface avec la camera du 3DEngine.
+ * Wrapper around three.js camera to expose some geographic helpers.
  */
 
 import * as THREE from 'three';
+import Coordinates from '../Core/Geographic/Coordinates';
 
-function Camera(width, height, options = {}) {
-    this.ratio = width / height;
+function Camera(crs, width, height, options = {}) {
+    Object.defineProperty(this, 'crs', { get: () => crs });
 
-    this.camera3D = options.camera ? options.camera : new THREE.PerspectiveCamera(30, this.ratio);
+    this.camera3D = options.camera ? options.camera : new THREE.PerspectiveCamera(30, width / height);
 
     this._viewMatrix = new THREE.Matrix4();
     this.width = width;
     this.height = height;
 }
 
-Camera.prototype.position = function position() {
-    return this.camera3D.position;
-};
+function resize(camera, width, height) {
+    camera.width = width;
+    camera.height = height;
+    const ratio = width / height;
 
-Camera.prototype.resize = function resize(width, height) {
-    this.width = width;
-    this.height = height;
-    this.ratio = width / height;
-
-    if (this.camera3D.aspect !== this.ratio) {
-        this.camera3D.aspect = this.ratio;
-        if (this.camera3D.isOrthographicCamera) {
-            const halfH = (this.camera3D.right - this.camera3D.left) * 0.5 / this.ratio;
-            this.camera3D.top = halfH;
-            this.camera3D.bottom = -halfH;
+    if (camera.camera3D.aspect !== ratio) {
+        camera.camera3D.aspect = ratio;
+        if (camera.camera3D.isOrthographicCamera) {
+            const halfH = (camera.camera3D.right - camera.camera3D.left) * 0.5 / ratio;
+            camera.camera3D.top = halfH;
+            camera.camera3D.bottom = -halfH;
         }
     }
 
-    if (this.camera3D.updateProjectionMatrix) {
-        this.camera3D.updateProjectionMatrix();
+    if (camera.camera3D.updateProjectionMatrix) {
+        camera.camera3D.updateProjectionMatrix();
     }
-};
+}
 
-Camera.prototype.update = function update() {
+Camera.prototype.update = function update(width, height) {
+    resize(this, width, height);
+
     // update matrix
     this.camera3D.updateMatrixWorld();
 
@@ -47,16 +44,22 @@ Camera.prototype.update = function update() {
     this._viewMatrix.multiplyMatrices(this.camera3D.projectionMatrix, this.camera3D.matrixWorldInverse);
 };
 
-Camera.prototype.getDistanceFromOrigin = function getDistanceFromOrigin() {
-    return this.camera3D.position.length();
+/**
+ * Return the position in the requested CRS, or in camera's CRS if undefined.
+ * @param {string} crs if defined (e.g 'EPSG:4236') the camera position will be returned in this CRS
+ * @return {Coordinates} Coordinates object holding camera's position
+ */
+Camera.prototype.position = function position(crs) {
+    return new Coordinates(this.crs, this.camera3D.position).as(crs || this.crs);
 };
 
+/**
+ * Set the position of the camera using a Coordinates object.
+ * If you want to modify the position directly using x,y,z value then use camera.camera3D.position.set(x, y, z)
+ * @param {Coordinates} position the new position of the camera
+ */
 Camera.prototype.setPosition = function setPosition(position) {
-    this.camera3D.position.copy(position);
-};
-
-Camera.prototype.setRotation = function setRotation(rotation) {
-    this.camera3D.quaternion.copy(rotation);
+    this.camera3D.position.copy(position.as(this.crs).xyz());
 };
 
 const tmp = {
