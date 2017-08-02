@@ -14,6 +14,7 @@ import SubdivisionControl from '../../Process/SubdivisionControl';
 
 export function createPlanarLayer(id, extent, options) {
     const tileLayer = new GeometryLayer(id, options.object3d);
+    tileLayer.extent = extent;
     tileLayer.schemeTile = [extent];
 
     // Configure tiles

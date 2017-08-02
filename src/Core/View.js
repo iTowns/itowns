@@ -256,6 +256,10 @@ View.prototype.addLayer = function addLayer(layer, parentLayer) {
         throw new Error(`Invalid id '${layer.id}': id already used`);
     }
 
+    if (parentLayer && !layer.extent) {
+        layer.extent = parentLayer.extent;
+    }
+
     layer = _preprocessLayer(this, layer, this.mainLoop.scheduler.getProtocolProvider(layer.protocol));
     if (parentLayer) {
         parentLayer.attach(layer);

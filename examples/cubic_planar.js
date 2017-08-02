@@ -104,13 +104,7 @@ for (index = 0; index < wmsLayers.length; index++) {
         id: 'wms_imagery' + wms + index,
         name: wms,
         projection: 'EPSG:3946',
-        transparent: false,
-        extent: extent,
         bbox_url: 'wsen',
-        updateStrategy: {
-            type: 0,
-            options: {},
-        },
         options: {
             mimetype: 'image/jpeg',
         },
@@ -125,10 +119,7 @@ for (index = 0; index < wmsLayers.length; index++) {
         version: '1.3.0',
         id: 'wms_elevation' + wms + index,
         name: 'MNT2012_Altitude_10m_CC46',
-        style: '',
         projection: 'EPSG:3946',
-        transparent: false,
-        extent: extent,
         bbox_url: 'wsen',
         heightMapWidth: 256,
         options: {
