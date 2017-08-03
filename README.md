@@ -14,15 +14,15 @@ iTowns has been redesigned from this [early version](https://github.com/iTowns/i
 ![iTowns screenshot](https://raw.githubusercontent.com/iTowns/itowns.github.io/master/images/itownsReleaseXS.jpg)
 
 ## API documentation and examples
-**[API Documentation](http://www.itowns-project.org/itowns2/API_Doc/)**
+**[API Documentation](http://www.itowns-project.org/itowns/API_Doc/)**
 
 
 **Examples**
 
-- [Globe](http://www.itowns-project.org/itowns2/examples/globe.html)
-- [Plane](http://www.itowns-project.org/itowns2/examples/planar.html)
-- [Scene postprocessing](http://www.itowns-project.org/itowns2/examples/postprocessing.html)
-- [3dtiles](http://www.itowns-project.org/itowns2/examples/3dtiles.html)
+- [Globe](http://www.itowns-project.org/itowns/examples/globe.html)
+- [Plane](http://www.itowns-project.org/itowns/examples/planar.html)
+- [Scene postprocessing](http://www.itowns-project.org/itowns/examples/postprocessing.html)
+- [3dtiles](http://www.itowns-project.org/itowns/examples/3dtiles.html)
 
 
 
