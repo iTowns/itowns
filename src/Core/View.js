@@ -250,9 +250,10 @@ function _preprocessLayer(view, layer, provider) {
  * @param {Layer=} parentLayer
  * @return {Promise} a promise resolved with the new layer object when it is fully initialized
  */
+
 View.prototype.addLayer = function addLayer(layer, parentLayer) {
     const duplicate = this.getLayers((l => l.id == layer.id));
-    if (duplicate.length > 0) {
+    if (duplicate.length > 0 && !parentLayer) {
         throw new Error(`Invalid id '${layer.id}': id already used`);
     }
 
@@ -316,7 +317,7 @@ View.prototype.getLayers = function getLayers(filter) {
             result.push(geometryLayer);
         }
         for (const attached of geometryLayer._attachedLayers) {
-            if (!filter || filter(attached, geometryLayer)) {
+            if ((!filter || filter(attached, geometryLayer)) && !result.filter(l => l.id === attached.id).length) {
                 result.push(attached);
             }
         }
