@@ -196,8 +196,6 @@ OBB.extentToOBB = function extentToOBB(extent, minHeight = 0, maxHeight = 0) {
     if (minHeight !== 0 || maxHeight !== 0) {
         obb.addHeight(minHeight, maxHeight);
     }
-    obb.centerWorld = centerWorld;
-
     return obb;
 };
 export default OBB;

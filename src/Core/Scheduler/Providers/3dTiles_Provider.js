@@ -56,14 +56,24 @@ $3dTiles_Provider.prototype.preprocessDataLayer = function preprocessDataLayer(l
     });
 };
 
-function getBox(volume) {
+function getBox(volume, inverseTileTransform) {
     if (volume.region) {
         const region = volume.region;
         const extent = new Extent('EPSG:4326', MathExtended.radToDeg(region[0]), MathExtended.radToDeg(region[2]), MathExtended.radToDeg(region[1]), MathExtended.radToDeg(region[3]));
         const box = OBB.extentToOBB(extent, region[4], region[5]);
-        box.position.copy(box.centerWorld);
+        // update position
+        box.position.add(extent.center().as('EPSG:4978').xyz());
+        // compute box.matrix from box.position/rotation.
         box.updateMatrix();
-        box.updateMatrixWorld();
+        // at this point box.matrix = box.epsg4978_from_local, so
+        // we transform it in parent_from_local by using parent's epsg4978_from_local
+        // which from our point of view is epsg4978_from_parent.
+        // box.matrix = (epsg4978_from_parent ^ -1) * epsg4978_from_local
+        //            =  parent_from_epsg4978 * epsg4978_from_local
+        //            =  parent_from_local
+        box.matrix.premultiply(inverseTileTransform);
+        // update position, rotation and scale
+        box.matrix.decompose(box.position, box.quaternion, box.scale);
         return { region: box };
     } else if (volume.box) {
         // TODO: only works for axis aligned boxes
@@ -144,7 +154,7 @@ $3dTiles_Provider.prototype.pntsParse = function pntsParse(data) {
     });
 };
 
-function configureTile(tile, layer, metadata) {
+function configureTile(tile, layer, metadata, parent) {
     tile.frustumCulled = false;
     tile.loaded = true;
     tile.layer = layer.id;
@@ -155,17 +165,24 @@ function configureTile(tile, layer, metadata) {
     tile.geometricError = metadata.geometricError;
     tile.tileId = metadata.tileId;
     tile.additiveRefinement = (metadata.refine === 'add');
-    tile.boundingVolume = getBox(metadata.boundingVolume);
-    tile.viewerRequestVolume = metadata.viewerRequestVolume ? getBox(metadata.viewerRequestVolume) : undefined;
+    tile.parentFromLocalTransform = tile.transform;
+    tile.worldFromLocalTransform = new THREE.Matrix4().multiplyMatrices(parent ? parent.worldFromLocalTransform : new THREE.Matrix4(), tile.parentFromLocalTransform);
+    const m = new THREE.Matrix4();
+    m.getInverse(tile.worldFromLocalTransform);
+    tile.viewerRequestVolume = metadata.viewerRequestVolume ? getBox(metadata.viewerRequestVolume, m) : undefined;
+    tile.boundingVolume = getBox(metadata.boundingVolume, m);
+    if (tile.boundingVolume.region) {
+        tile.add(tile.boundingVolume.region);
+    }
+    tile.updateMatrixWorld();
 }
 
 const textDecoder = new TextDecoder('utf-8');
 $3dTiles_Provider.prototype.executeCommand = function executeCommand(command) {
     const layer = command.layer;
     const metadata = command.metadata;
-
     const tile = new THREE.Object3D();
-    configureTile(tile, layer, metadata);
+    configureTile(tile, layer, metadata, command.requester);
     const path = metadata.content ? metadata.content.url : undefined;
     const setLayer = (obj) => {
         obj.layers.set(layer.threejsLayer);
