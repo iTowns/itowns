@@ -1,3 +1,5 @@
+import * as THREE from 'three';
+
 function requestNewTile(view, scheduler, geometryLayer, metadata, parent) {
     const command = {
         /* mandatory */
@@ -95,8 +97,8 @@ export function pre3dTilesUpdate(context, layer) {
 // Improved zoom geometry
 function computeNodeSSE(camera, node) {
     if (node.boundingVolume.region) {
-        const worldCoordinateCenter = node.boundingVolume.region.centerWorld;
-        worldCoordinateCenter.applyMatrix4(node.matrixWorld);
+        const worldCoordinateCenter = new THREE.Vector3();
+        worldCoordinateCenter.applyMatrix4(node.boundingVolume.region.matrixWorld);
         const distance = camera.camera3D.position.distanceTo(worldCoordinateCenter);
         return preSSE * (node.geometricError / distance);
     }
