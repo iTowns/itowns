@@ -274,19 +274,23 @@ function GlobeView(viewerDiv, coordCarto, options = {}) {
 GlobeView.prototype = Object.create(View.prototype);
 GlobeView.prototype.constructor = GlobeView;
 
-GlobeView.prototype.addLayer = function addLayer(layer) {
-    if (layer.type == 'color') {
-        const colorLayerCount = this.getLayers(l => l.type === 'color').length;
-        layer.sequence = colorLayerCount;
-        layer.update = updateLayeredMaterialNodeImagery;
-    } else if (layer.type == 'elevation') {
-        if (layer.protocol === 'wmts' && layer.options.tileMatrixSet !== 'WGS84G') {
-            throw new Error('Only WGS84G tileMatrixSet is currently supported for WMTS elevation layers');
+GlobeView.prototype.addLayer = function addLayer(layer, parent) {
+    const duplicate = this.getLayers(l => l.id == layer.id);
+    if (duplicate.length === 0) {
+        if (layer.type == 'color') {
+            const colorLayerCount = this.getLayers(l => l.type === 'color').length;
+            layer.sequence = colorLayerCount;
+            layer.update = updateLayeredMaterialNodeImagery;
+        } else if (layer.type == 'elevation') {
+            if (layer.protocol === 'wmts' && layer.options.tileMatrixSet !== 'WGS84G') {
+                throw new Error('Only WGS84G tileMatrixSet is currently supported for WMTS elevation layers');
+            }
+            layer.update = updateLayeredMaterialNodeElevation;
         }
-        layer.update = updateLayeredMaterialNodeElevation;
     }
+
     const layerId = layer.id;
-    const layerPromise = View.prototype.addLayer.call(this, layer, this.wgs84TileLayer);
+    const layerPromise = View.prototype.addLayer.call(this, layer, parent === undefined ? this.wgs84TileLayer : parent);
 
     this.dispatchEvent({
         type: GLOBE_VIEW_EVENTS.LAYER_ADDED,

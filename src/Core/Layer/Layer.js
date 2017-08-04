@@ -81,6 +81,8 @@ GeometryLayer.prototype.constructor = GeometryLayer;
 GeometryLayer.prototype.attach = function attach(layer) {
     if (!layer.update) {
         throw new Error(`Missing 'update' function -> can't attach layer ${layer.id}`);
+    } else if (this._attachedLayers.filter(l => l.id === layer.id).length > 0) {
+        throw new Error(`Layer is already attach layer ${layer.id}`);
     }
     this._attachedLayers.push(layer);
 };
