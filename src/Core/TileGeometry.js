@@ -144,9 +144,9 @@ TileGeometry.prototype.computeBuffers = function computeBuffers(params, builder)
 
             id_m3 = idVertex * 3;
 
-            scratchBuffers.position[id_m3 + 0] = vertex.x() - this.center.x;
-            scratchBuffers.position[id_m3 + 1] = vertex.y() - this.center.y;
-            scratchBuffers.position[id_m3 + 2] = vertex.z() - this.center.z;
+            scratchBuffers.position[id_m3 + 0] = vertex.x - this.center.x;
+            scratchBuffers.position[id_m3 + 1] = vertex.y - this.center.y;
+            scratchBuffers.position[id_m3 + 2] = vertex.z - this.center.z;
 
             var normal = builder.VertexNormal(params);
 
