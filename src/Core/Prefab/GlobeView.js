@@ -10,7 +10,6 @@ import { GeometryLayer } from '../Layer/Layer';
 
 import Atmosphere from './Globe/Atmosphere';
 import CoordStars from '../Geographic/CoordStars';
-import Clouds from './Globe/Clouds';
 
 import { C, ellipsoidSizes } from '../Geographic/Coordinates';
 import { processTiledGeometryNode } from '../../Process/TiledNodeProcessing';
@@ -220,8 +219,6 @@ function GlobeView(viewerDiv, coordCarto, options = {}) {
 
     // Atmosphere
     this.atmosphere = new Atmosphere();
-    this.clouds = new Clouds();
-    this.atmosphere.add(this.clouds);
     this.atmosphere.layers.set(this.mainLoop.gfxEngine.getUniqueThreejsLayer());
 
     const atmosphereLayer = this.mainLoop.gfxEngine.getUniqueThreejsLayer();
@@ -476,8 +473,6 @@ GlobeView.prototype.setRealisticLightingOn = function setRealisticLightingOn(val
 
     this.atmosphere.updateLightingPos(coSun);
     this.atmosphere.setRealisticOn(value);
-    this.clouds.updateLightingPos(coSun);
-    this.clouds.setLightingOn(value);
 
     this.updateMaterialUniform('lightingEnabled', value);
     this.updateMaterialUniform('lightPosition', coSun);
