@@ -1,9 +1,18 @@
+import * as THREE from 'three';
 import { C } from '../../Geographic/Coordinates';
 import Projection from '../../Geographic/Projection';
 import OBB from '../../../Renderer/ThreeExtended/OBB';
 
 function BuilderEllipsoidTile() {
     this.projector = new Projection();
+
+    this.tmp = {
+        coords: [
+            C.EPSG_4326_Radians(0, 0),
+            C.EPSG_4326_Radians(0, 0)],
+        position: new THREE.Vector3(),
+        normal: new THREE.Vector3(),
+    };
 }
 
 BuilderEllipsoidTile.prototype.constructor = BuilderEllipsoidTile;
@@ -30,21 +39,24 @@ BuilderEllipsoidTile.prototype.Prepare = function Prepare(params) {
 
 // get center tile in cartesian 3D
 BuilderEllipsoidTile.prototype.Center = function Center(params) {
-    params.center = params.extent.center().as('EPSG:4978').xyz();
+    params.center = params.extent.center(this.tmp.coords[0])
+        .as('EPSG:4978', this.tmp.coords[1]).xyz();
     return params.center;
 };
 
 // get position 3D cartesian
 BuilderEllipsoidTile.prototype.VertexPosition = function VertexPosition(params) {
-    params.cartesianPosition = new C.EPSG_4326_Radians(
-        params.projected.longitudeRad,
-        params.projected.latitudeRad).as('EPSG:4978');
-    return params.cartesianPosition;
+    this.tmp.coords[0]._values[0] = params.projected.longitudeRad;
+    this.tmp.coords[0]._values[1] = params.projected.latitudeRad;
+
+    this.tmp.coords[0].as('EPSG:4978', this.tmp.coords[1]).xyz(this.tmp.position);
+    this.tmp.normal.copy(this.tmp.position).normalize();
+    return this.tmp.position;
 };
 
 // get normal for last vertex
-BuilderEllipsoidTile.prototype.VertexNormal = function VertexNormal(params) {
-    return params.cartesianPosition.xyz().normalize();
+BuilderEllipsoidTile.prototype.VertexNormal = function VertexNormal() {
+    return this.tmp.normal;
 };
 
 // coord u tile to projected

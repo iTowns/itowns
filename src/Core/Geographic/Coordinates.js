@@ -206,8 +206,14 @@ function Coordinates(crs, ...coordinates) {
     this._internalStorageUnit = crsToUnit(crs);
 }
 
-Coordinates.prototype.clone = function clone() {
-    const r = new Coordinates(this.crs, ...this._values);
+Coordinates.prototype.clone = function clone(target) {
+    let r;
+    if (target) {
+        Coordinates.call(target, this.crs, ...this._values);
+        r = target;
+    } else {
+        r = new Coordinates(this.crs, ...this._values);
+    }
     r._internalStorageUnit = this._internalStorageUnit;
     return r;
 };
@@ -401,9 +407,9 @@ Coordinates.prototype.z = function z() {
  * @return     {Position} - position
  */
 
-Coordinates.prototype.xyz = function xyz() {
+Coordinates.prototype.xyz = function xyz(target) {
     _assertIsGeocentric(this.crs);
-    const v = new THREE.Vector3();
+    const v = target || new THREE.Vector3();
     v.fromArray(this._values);
     return v;
 };

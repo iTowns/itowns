@@ -3,7 +3,11 @@ import OBB from '../../../Renderer/ThreeExtended/OBB';
 import Coordinates from '../../Geographic/Coordinates';
 
 function PlanarTileBuilder() {
-
+    this.tmp = {
+        coords: new Coordinates('EPSG:4326', 0, 0),
+        position: new THREE.Vector3(),
+        normal: new THREE.Vector3(0, 0, 1),
+    };
 }
 
 PlanarTileBuilder.prototype.constructor = PlanarTileBuilder;
@@ -18,18 +22,20 @@ PlanarTileBuilder.prototype.Prepare = function Prepare(params) {
 
 // get center tile in cartesian 3D
 PlanarTileBuilder.prototype.Center = function Center(params) {
-    params.center = new THREE.Vector3(params.extent.center().x(), params.extent.center().y(), 0);
+    params.extent.center(this.tmp.coords);
+    params.center = new THREE.Vector3(this.tmp.coords.x(), this.tmp.coords.y(), 0);
     return params.center;
 };
 
 // get position 3D cartesian
 PlanarTileBuilder.prototype.VertexPosition = function VertexPosition(params) {
-    return new Coordinates(params.extent.crs(), params.projected.x, params.projected.y);
+    this.tmp.position.set(params.projected.x, params.projected.y, 0);
+    return this.tmp.position;
 };
 
 // get normal for last vertex
-PlanarTileBuilder.prototype.VertexNormal = function VertexNormal(/* params */) {
-    return new THREE.Vector3(0.0, 0.0, 1.0);
+PlanarTileBuilder.prototype.VertexNormal = function VertexNormal() {
+    return this.tmp.normal;
 };
 
 // coord u tile to projected
@@ -45,7 +51,7 @@ PlanarTileBuilder.prototype.vProjecte = function vProjecte(v, params)
 
 // get oriented bounding box of tile
 PlanarTileBuilder.prototype.OBB = function _OBB(params) {
-    const center = params.extent.center().xyz();
+    const center = params.center;
     const max = new THREE.Vector3(
         params.extent.east(),
         params.extent.north(),

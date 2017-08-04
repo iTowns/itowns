@@ -199,11 +199,17 @@ Extent.prototype.crs = function crs() {
     return this._crs;
 };
 
-Extent.prototype.center = function center() {
+Extent.prototype.center = function center(target) {
     if (_isTiledCRS(this._crs)) {
         throw new Error('Invalid operation for WMTS bbox');
     }
-    const c = new Coordinates(this._crs, this._values[0], this._values[2]);
+    let c;
+    if (target) {
+        Coordinates.call(target, this._crs, this._values[0], this._values[2]);
+        c = target;
+    } else {
+        c = new Coordinates(this._crs, this._values[0], this._values[2]);
+    }
     c._internalStorageUnit = this._internalStorageUnit;
     const dim = this.dimensions();
     c._values[0] += dim.x * 0.5;
