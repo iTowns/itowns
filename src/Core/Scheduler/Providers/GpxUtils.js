@@ -22,7 +22,9 @@ function _gGpxToWTrackPointsArray(gpxXML) {
 function _gpxPtToCartesian(pt, crs) {
     var longitude = Number(pt.attributes.lon.nodeValue);
     var latitude = Number(pt.attributes.lat.nodeValue);
-    var elevation = Number(pt.getElementsByTagName('ele')[0].childNodes[0].nodeValue);
+    // TODO: get elevation with terrain
+    const elem = pt.getElementsByTagName('ele')[0];
+    const elevation = elem ? Number(elem.childNodes[0].nodeValue) : 0;
 
     return new Coordinates('EPSG:4326', longitude, latitude, elevation).as(crs).xyz();
 }
