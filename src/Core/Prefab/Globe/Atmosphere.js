@@ -18,10 +18,8 @@ import { ellipsoidSizes } from '../../Geographic/Coordinates';
 export const LIGHTING_POSITION = new THREE.Vector3(1, 0, 0);
 
 function Atmosphere() {
-    THREE.Mesh.call(this);
-
+    // default to non-realistic lightning
     this.realistic = false;
-    this.sphereSun = null;
 
     this.uniformsOut = {
         atmoIN: {
@@ -45,10 +43,9 @@ function Atmosphere() {
     });
 
     var size = ellipsoidSizes();
-    var geometry = (new THREE.SphereGeometry(1.14, 128, 128)).scale(size.x, size.y, size.z);
+    var geometry = (new THREE.SphereGeometry(1.14, 64, 64)).scale(size.x, size.y, size.z);
 
-    this.geometry = geometry;
-    this.material = material;
+    THREE.Mesh.call(this, geometry, material);
 
     this.uniformsIn = {
         atmoIN: {
@@ -73,7 +70,12 @@ function Atmosphere() {
     this.atmosphereIN = new THREE.Mesh((new THREE.SphereGeometry(1.002, 64, 64)).scale(size.x, size.y, size.z), materialAtmoIn);
 
     this.add(this.atmosphereIN);
+}
 
+Atmosphere.prototype = Object.create(THREE.Mesh.prototype);
+Atmosphere.prototype.constructor = Atmosphere;
+
+Atmosphere.prototype._initRealisticLighning = function _initRealisticLighning() {
     var atmosphere = {
         Kr: 0.0025,
         Km: 0.0010,
@@ -141,16 +143,19 @@ function Atmosphere() {
 
     this.ground.mesh.visible = false;
     this.sky.mesh.visible = false;
-    this.add(this.ground.mesh);
-    this.add(this.sky.mesh);
 
     this.skyDome = new Sky();
     this.skyDome.mesh.frustumCulled = false;
     this.skyDome.mesh.material.transparent = true;
     this.skyDome.mesh.visible = false;
     this.skyDome.mesh.material.depthWrite = false;
-    this.add(this.skyDome.mesh);
 
+    this.ground.mesh.layers.mask = this.layers.mask;
+    this.sky.mesh.layers.mask = this.layers.mask;
+    this.skyDome.mesh.layers.mask = this.layers.mask;
+    this.add(this.ground.mesh);
+    this.add(this.sky.mesh);
+    this.add(this.skyDome.mesh);
 
     var effectController = {
         turbidity: 10,
@@ -170,29 +175,26 @@ function Atmosphere() {
     uniforms.mieCoefficient.value = effectController.mieCoefficient;
     uniforms.mieDirectionalG.value = effectController.mieDirectionalG;
     uniforms.up.value = new THREE.Vector3(); // no more necessary, estimate normal from cam..
-}
-
-Atmosphere.prototype = Object.create(THREE.Mesh.prototype);
-Atmosphere.prototype.constructor = Atmosphere;
+};
 
 Atmosphere.prototype.setRealisticOn = function setRealisticOn(bool) {
+    if (bool && !this.sky) {
+        this._initRealisticLighning();
+    }
     this.realistic = bool;
     this.material.visible = !this.realistic;
     this.atmosphereIN.visible = !this.realistic;
     this.ground.mesh.visible = this.realistic;
     this.sky.mesh.visible = this.realistic;
     this.skyDome.mesh.visible = this.realistic;
-    // this.lensFlare.visible = this.realistic;
-
-    // this.sphereSun.visible     = this.realistic;
 };
 
 Atmosphere.prototype.updateLightingPos = function updateLightingPos(pos) {
-    this.ground.material.uniforms.v3LightPosition.value = pos.clone().normalize();
-    this.sky.material.uniforms.v3LightPosition.value = pos.clone().normalize();
-    //  this.sphereSun.position.copy(pos);
-    this.skyDome.uniforms.sunPosition.value.copy(pos);
-    // this.lensFlare.position.copy(pos);
+    if (this.realistic) {
+        this.ground.material.uniforms.v3LightPosition.value = pos.clone().normalize();
+        this.sky.material.uniforms.v3LightPosition.value = pos.clone().normalize();
+        this.skyDome.uniforms.sunPosition.value.copy(pos);
+    }
 };
 
 export default Atmosphere;
