@@ -222,6 +222,7 @@ function GlobeView(viewerDiv, coordCarto, options = {}) {
     this.atmosphere = new Atmosphere();
     this.clouds = new Clouds();
     this.atmosphere.add(this.clouds);
+    this.atmosphere.layers.set(this.mainLoop.gfxEngine.getUniqueThreejsLayer());
 
     const atmosphereLayer = this.mainLoop.gfxEngine.getUniqueThreejsLayer();
     this.atmosphere.traverse((obj) => { obj.layers.set(atmosphereLayer); });
