@@ -219,7 +219,6 @@ function GlobeView(viewerDiv, coordCarto, options = {}) {
 
     // Atmosphere
     this.atmosphere = new Atmosphere();
-    this.atmosphere.layers.set(this.mainLoop.gfxEngine.getUniqueThreejsLayer());
 
     const atmosphereLayer = this.mainLoop.gfxEngine.getUniqueThreejsLayer();
     this.atmosphere.traverse((obj) => { obj.layers.set(atmosphereLayer); });
@@ -471,8 +470,8 @@ GlobeView.prototype.setRealisticLightingOn = function setRealisticLightingOn(val
     lighting.enable = value;
     lighting.position = coSun;
 
-    this.atmosphere.updateLightingPos(coSun);
     this.atmosphere.setRealisticOn(value);
+    this.atmosphere.updateLightingPos(coSun);
 
     this.updateMaterialUniform('lightingEnabled', value);
     this.updateMaterialUniform('lightPosition', coSun);
