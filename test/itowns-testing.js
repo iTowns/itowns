@@ -123,6 +123,7 @@ global.renderer = {
         logarithmicDepthBuffer: true,
     },
     setClearColor: () => {},
+    getClearAlpha: () => {},
     setViewport: () => {},
     clear: () => {},
     clearTarget: () => {},
