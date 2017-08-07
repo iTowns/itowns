@@ -239,7 +239,7 @@ function GlobeView(viewerDiv, coordCarto, options = {}) {
     }
 
     this._renderState = RendererConstant.FINAL;
-
+    const renderer = this.mainLoop.gfxEngine.renderer;
     this.preRender = () => {
         const v = new THREE.Vector3();
         v.setFromMatrixPosition(wgs84TileLayer.object3d.matrixWorld);
@@ -250,9 +250,9 @@ function GlobeView(viewerDiv, coordCarto, options = {}) {
         if (len < lim) {
             var t = Math.pow(Math.cos((lim - len) / (lim - v.x * size * 0.9981) * Math.PI * 0.5), 1.5);
             var color = new THREE.Color(0x93d5f8);
-            this.mainLoop.gfxEngine.renderer.setClearColor(color.multiplyScalar(1.0 - t));
+            renderer.setClearColor(color.multiplyScalar(1.0 - t), renderer.getClearAlpha());
         } else if (len >= lim) {
-            this.mainLoop.gfxEngine.renderer.setClearColor(0x030508);
+            renderer.setClearColor(0x030508, renderer.getClearAlpha());
         }
     };
 
