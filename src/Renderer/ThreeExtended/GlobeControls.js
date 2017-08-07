@@ -1651,6 +1651,30 @@ GlobeControls.prototype.getScale = function getScale(pitch) {
 };
 
 /**
+ * To convert the projection in meters on the globe of a number of pixels of screen
+ * @param      {number} pixels count pixels to project
+ * @param      {number} pixelPitch Screen pixel pitch, in millimeters (default = 0.28 mm / standard pixel size of 0.28 millimeters as defined by the OGC)
+ * @return     {number} projection in meters on globe
+ */
+GlobeControls.prototype.pixelsToMeters = function pixelsToMeters(pixels, pixelPitch = 0.28) {
+    const scaled = this.getScale(pixelPitch);
+    const size = pixels * pixelPitch;
+    return size / scaled / 1000;
+};
+
+/**
+ * Projection on screen in pixels of length in meter on globe
+ * @param      {number}  value Length in meter on globe
+ * @param      {number}  pixelPitch Screen pixel pitch, in millimeters (default = 0.28 mm / standard pixel size of 0.28 millimeters as defined by the OGC)
+ * @return     {number}  projection in pixels on screen
+ */
+GlobeControls.prototype.metersToPixels = function metersToPixels(value, pixelPitch = 0.28) {
+    const scaled = this.getScale(pixelPitch);
+    pixelPitch /= 1000;
+    return value * scaled / pixelPitch;
+};
+
+/**
  * Changes the zoom of the central point of screen so that screen acts as a map with a specified scale.
  *  The view flies to the desired zoom scale;
  * <iframe width="100%" height="400" src="http://jsfiddle.net/iTownsIGN/0w4mfdb6/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
