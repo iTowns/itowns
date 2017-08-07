@@ -110,26 +110,32 @@ function instanceProj4(crsIn, crsOut) {
 }
 
 // Only support explicit conversions
-function _convert(coordsIn, newCrs) {
+function _convert(coordsIn, newCrs, target) {
+    target = target || new Coordinates(newCrs, 0, 0);
     if (newCrs === coordsIn.crs) {
         const refUnit = crsToUnit(newCrs);
         if (coordsIn._internalStorageUnit != refUnit) {
             // custom internal unit
             if (coordsIn._internalStorageUnit == UNIT.DEGREE && refUnit == UNIT.RADIAN) {
-                return new Coordinates(newCrs, ...coordsIn._values.map(x => mE.degToRad(x)));
+                return target.set(
+                    newCrs,
+                    mE.degToRad(coordsIn._values[0]),
+                    mE.degToRad(coordsIn._values[1]),
+                    coordsIn._values[2]);
             } else if (coordsIn._internalStorageUnit == UNIT.RADIAN && refUnit == UNIT.DEGREE) {
-                return new Coordinates(newCrs, ...coordsIn._values.map(x => mE.radToDeg(x)));
+                return target.set(
+                    newCrs,
+                    mE.radToDeg(coordsIn._values[0]),
+                    mE.radToDeg(coordsIn._values[1]),
+                    coordsIn._values[2]);
             }
         } else {
-            // No need to create a new object as Coordinates objects are mostly
-            // immutable (there's no .setLongitude() method etc)
-            return coordsIn;
+            return target.copy(coordsIn);
         }
     } else {
         if (coordsIn.crs === 'EPSG:4326' && newCrs === 'EPSG:4978') {
             const cartesian = ellipsoid.cartographicToCartesian(coordsIn);
-            return new Coordinates(newCrs,
-                                   cartesian.x, cartesian.y, cartesian.z);
+            return target.set(newCrs, cartesian);
         }
 
         if (coordsIn.crs === 'EPSG:4978' && newCrs === 'EPSG:4326') {
@@ -138,15 +144,12 @@ function _convert(coordsIn, newCrs) {
                 y: coordsIn._values[1],
                 z: coordsIn._values[2],
             });
-            return new Coordinates(newCrs, geo.longitude, geo.latitude, geo.h);
+            return target.set(newCrs, geo.longitude, geo.latitude, geo.h);
         }
 
         if (coordsIn.crs in proj4.defs && newCrs in proj4.defs) {
             const p = instanceProj4(coordsIn.crs, newCrs).forward([coordsIn._values[0], coordsIn._values[1]]);
-            return new Coordinates(newCrs,
-                                   p[0],
-                                   p[1],
-                                   coordsIn._values[2]);
+            return target.set(newCrs, p[0], p[1], coordsIn._values[2]);
         }
 
         throw new Error(`Cannot convert from crs ${coordsIn.crs} (unit=${coordsIn._internalStorageUnit}) to ${newCrs}`);
@@ -187,9 +190,13 @@ export function convertValueToUnit(unitIn, unitOut, value) {
  */
 
 function Coordinates(crs, ...coordinates) {
+    this._values = new Float64Array(3);
+    this.set(crs, ...coordinates);
+}
+
+Coordinates.prototype.set = function set(crs, ...coordinates) {
     _crsToUnitWithError(crs);
     this.crs = crs;
-    this._values = new Float64Array(3);
 
     if (coordinates.length == 1 && coordinates[0] instanceof THREE.Vector3) {
         this._values[0] = coordinates[0].x;
@@ -204,7 +211,8 @@ function Coordinates(crs, ...coordinates) {
         }
     }
     this._internalStorageUnit = crsToUnit(crs);
-}
+    return this;
+};
 
 Coordinates.prototype.clone = function clone(target) {
     let r;
@@ -216,6 +224,12 @@ Coordinates.prototype.clone = function clone(target) {
     }
     r._internalStorageUnit = this._internalStorageUnit;
     return r;
+};
+
+Coordinates.prototype.copy = function copy(src) {
+    this.set(src.crs, src._values);
+    this._internalStorageUnit = src._internalStorageUnit;
+    return this;
 };
 
 /**
@@ -440,11 +454,11 @@ Coordinates.prototype.xyz = function xyz(target) {
  * @return     {Position} - position
  */
 
-Coordinates.prototype.as = function as(crs) {
+Coordinates.prototype.as = function as(crs, target) {
     if (crs === undefined || !crsToUnit(crs)) {
         throw new Error(`Invalid crs paramater value '${crs}'`);
     }
-    return _convert(this, crs);
+    return _convert(this, crs, target);
 };
 
 export const C = {
