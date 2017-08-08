@@ -153,7 +153,8 @@ function _gpxToMesh(gpxXML, crs) {
     return gpxMesh;
 }
 
-export default function loadGpx(urlFile, crs, networkOptions) {
-    return Fetcher.xml(urlFile, networkOptions).then(gpxXML => _gpxToMesh(gpxXML, crs));
-}
-
+export default {
+    load(urlFile, crs, networkOptions) {
+        return Fetcher.xml(urlFile, networkOptions).then(gpxXML => _gpxToMesh(gpxXML, crs));
+    },
+};
