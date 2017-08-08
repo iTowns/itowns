@@ -10,7 +10,7 @@ export { default as Extent } from './Core/Geographic/Extent';
 export { GeometryLayer, ImageryLayers } from './Core/Layer/Layer';
 export { STRATEGY_MIN_NETWORK_TRAFFIC, STRATEGY_GROUP, STRATEGY_PROGRESSIVE, STRATEGY_DICHOTOMY } from './Core/Layer/LayerUpdateStrategy';
 export { default as GlobeView, GLOBE_VIEW_EVENTS, createGlobeLayer } from './Core/Prefab/GlobeView';
-export { default as loadGpx } from './Core/Scheduler/Providers/GpxUtils';
+export { default as GpxUtils } from './Core/Scheduler/Providers/GpxUtils';
 export { default as PlanarView, createPlanarLayer } from './Core/Prefab/PlanarView';
 export { default as Fetcher } from './Core/Scheduler/Providers/Fetcher';
 export { default as View } from './Core/View';
