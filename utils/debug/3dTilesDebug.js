@@ -66,6 +66,12 @@ export default function create3dTilesDebugUI(datDebugTool, view, layer) {
             }
             if (helper) {
                 helper.visible = true;
+                for (const child of node.children.filter(n => n.layer == obb_layer_id)) {
+                    if (typeof child.setMaterialVisibility === 'function') {
+                        child.setMaterialVisibility(true);
+                    }
+                    child.visible = true;
+                }
             }
         } else {
             // hide obb children
