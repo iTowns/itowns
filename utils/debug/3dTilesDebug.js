@@ -39,6 +39,7 @@ export default function create3dTilesDebugUI(datDebugTool, view, layer) {
                     const g = new THREE.BoxGeometry(size.x, size.y, size.z);
                     const material = new THREE.MeshBasicMaterial({ wireframe: true });
                     helper = new THREE.Mesh(g, material);
+                    node.boundingVolume.box.getCenter(helper.position);
                     node.add(helper);
                     helper.layer = obb_layer_id;
                     // add the ability to hide all the debug obj for one layer at once
