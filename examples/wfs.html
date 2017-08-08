@@ -1,6 +1,6 @@
 <html>
     <head>
-        <title>Itowns - Planar example</title>
+        <title>Itowns - WFS (geojson) example</title>
 
         <style type="text/css">
             html {
@@ -61,20 +61,15 @@
             <ul>
               <li>↑ ↓ : forward / backward</li>
               <li>← → : strafe left / right</li>
-              <li>⇞ (PageUp), ⇟ (PageDown) : roll right / left</li>
+              <li>⇞ (PageUp), ⇟ (PageDown) : move up / down</li>
               <li>mouse Clic + drag : camera rotation</li>
             </ul>
         </div>
         <div id="viewerDiv"></div>
         <script src="../dist/itowns.js"></script>
-        <script src="GUI/dat.gui/dat.gui.min.js"></script>
         <script type="text/javascript">
             var renderer; var exports = {};
         </script>
         <script src="wfs.js"></script>
-        <script>
-            var gui = new dat.GUI({ autoplace: false });
-            gui.add(flyControls, 'moveSpeed', 10, 1000).name('Move speed');
-        </script>
     </body>
 </html>

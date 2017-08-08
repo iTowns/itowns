@@ -7,7 +7,7 @@ function showPointcloud(serverUrl, fileName, lopocsTable) {
     var viewerDiv;
     var debugGui;
     var view;
-    var flyControls;
+    var controls;
 
     viewerDiv = document.getElementById('viewerDiv');
     viewerDiv.style.display = 'block';
@@ -47,14 +47,14 @@ function showPointcloud(serverUrl, fileName, lopocsTable) {
     }
     view.mainLoop.gfxEngine.renderer.domElement.addEventListener('dblclick', dblClickHandler);
 
-    // create fly controls
-    flyControls = new itowns.FlyControls(view, { focusOnClick: true });
-    debugGui.add(flyControls, 'moveSpeed', 1, 100).name('Movement speed');
-
 
     function placeCamera(position, lookAt) {
         view.camera.camera3D.position.set(position.x, position.y, position.z);
         view.camera.camera3D.lookAt(lookAt);
+        // create controls
+        controls = new itowns.FirstPersonControls(view, { focusOnClick: true });
+        debugGui.add(controls, 'moveSpeed', 1, 100).name('Movement speed');
+
         view.notifyChange(true);
     }
 
@@ -74,7 +74,7 @@ function showPointcloud(serverUrl, fileName, lopocsTable) {
         lookAt = pointcloud.root.bbox.getCenter();
         lookAt.z = pointcloud.root.bbox.min.z;
         placeCamera(position, lookAt);
-        flyControls.moveSpeed = pointcloud.root.bbox.getSize().length() / 3;
+        controls.moveSpeed = pointcloud.root.bbox.getSize().length() / 3;
 
         // update stats window
         oldPostUpdate = pointcloud.postUpdate;

@@ -4,8 +4,6 @@
 var extent;
 var viewerDiv;
 var view;
-var c;
-var flyControls;
 
 // Define projection that we will use (taken from https://epsg.io/3946, Proj4js section)
 itowns.proj4.defs('EPSG:3946',
@@ -23,10 +21,6 @@ viewerDiv = document.getElementById('viewerDiv');
 // Instanciate PlanarView*
 view = new itowns.PlanarView(viewerDiv, extent, { renderer: renderer });
 view.tileLayer.disableSkirt = true;
-
-// instanciate controls
-flyControls = new itowns.FlyControls(view, { focusOnClick: true });
-flyControls.moveSpeed = 1000;
 
 // Add an WMS imagery layer (see WMS_Provider* for valid options)
 view.addLayer({
@@ -67,12 +61,13 @@ view.tileLayer.materialOptions = {
     colorTextureElevationMaxZ: 240,
 };
 
-// Since PlanarView doesn't create default controls, we manipulate directly three.js camera
-// Position the camera at south-west corner
-c = new itowns.Coordinates('EPSG:3946', extent.west(), extent.south(), 2000);
-view.camera.camera3D.position.copy(c.xyz());
+view.camera.setPosition(new itowns.Coordinates('EPSG:3946', extent.west(), extent.south(), 2000));
 // Then look at extent's center
 view.camera.camera3D.lookAt(extent.center().xyz());
+
+// instanciate controls
+// eslint-disable-next-line no-new
+new itowns.FirstPersonControls(view, { focusOnClick: true, moveSpeed: 1000 });
 
 // Request redraw
 view.notifyChange(true);
