@@ -227,7 +227,7 @@ Coordinates.prototype.clone = function clone(target) {
 };
 
 Coordinates.prototype.copy = function copy(src) {
-    this.set(src.crs, src._values);
+    this.set(src.crs, ...src._values);
     this._internalStorageUnit = src._internalStorageUnit;
     return this;
 };
