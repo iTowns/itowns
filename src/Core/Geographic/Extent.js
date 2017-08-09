@@ -55,7 +55,7 @@ function Extent(crs, ...values) {
             this._values = new Float64Array(4);
             for (let i = 0; i < values.length; i++) {
                 for (let j = 0; j < 2; j++) {
-                    this._values[2 * i + j] = values[i][j];
+                    this._values[2 * i + j] = values[i]._values[j];
                 }
             }
         } else if (values.length == 1 && values[0].west != undefined) {
