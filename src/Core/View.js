@@ -28,7 +28,7 @@ import Scheduler from './Scheduler/Scheduler';
  * @constructor
  * @example
  * // How add gpx object
- * itowns.loadGpx(url).then((gpx) => {
+ * itowns.GpxUtils.load(url, viewer.referenceCrs).then((gpx) => {
  *      if (gpx) {
  *         viewer.scene.add(gpx);
  *      }
