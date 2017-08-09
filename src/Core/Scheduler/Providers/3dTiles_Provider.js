@@ -99,7 +99,7 @@ function getBox(volume, inverseTileTransform) {
 
 const rePosition = new RegExp('gl_Position.*(?![^]*gl_Position)');
 const reMain = new RegExp('[^\\w]*main[^\\w]*(void)?[^\\w]*{');
-function patchMaterial(material) {
+export function patchMaterialForLogDepthSupport(material) {
     // Check if the shader does not already use the log depth buffer
     if (material.vertexShader.indexOf('USE_LOGDEPTHBUF') !== -1
         || material.vertexShader.indexOf('logdepthbuf_pars_vertex') !== -1) {
@@ -124,9 +124,6 @@ function patchMaterial(material) {
         USE_LOGDEPTHBUF: 1,
         USE_LOGDEPTHBUF_EXT: 1,
     };
-
-    // eslint-disable-next-line no-console
-    console.warn('b3dm shader has been patched to add log depth buffer support');
 }
 
 $3dTiles_Provider.prototype.b3dmToMesh = function b3dmToMesh(data, layer) {
@@ -139,7 +136,9 @@ $3dTiles_Provider.prototype.b3dmToMesh = function b3dmToMesh(data, layer) {
                 } else if (Capabilities.isLogDepthBufferSupported()
                             && mesh.material.isRawShaderMaterial
                             && !layer.doNotPatchMaterial) {
-                    patchMaterial(mesh.material);
+                    patchMaterialForLogDepthSupport(mesh.material);
+                    // eslint-disable-next-line no-console
+                    console.warn('b3dm shader has been patched to add log depth buffer support');
                 }
             }
         };
