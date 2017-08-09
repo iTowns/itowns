@@ -81,16 +81,16 @@ function updatePath(renderer, scene, camera) {
     this.material.uniforms.resolution.value.set(size.width, size.height);
 }
 
-function _gpxToWTrackPointsMesh(gpxXML, crs) {
+function _gpxToWTrackPointsMesh(gpxXML, options) {
     var trackPts = _gGpxToWTrackPointsArray(gpxXML);
 
     if (trackPts.length) {
-        gpxXML.center = gpxXML.center || _gpxPtToCartesian(trackPts[0], crs);
+        gpxXML.center = gpxXML.center || _gpxPtToCartesian(trackPts[0], options.crs);
 
         var geometry = new THREE.Geometry();
 
         for (const trackPt of trackPts) {
-            const point = _gpxPtToCartesian(trackPt, crs).sub(gpxXML.center);
+            const point = _gpxPtToCartesian(trackPt, options.crs).sub(gpxXML.center);
             geometry.vertices.push(point);
         }
 
@@ -98,10 +98,10 @@ function _gpxToWTrackPointsMesh(gpxXML, crs) {
         line.setGeometry(geometry);
         // Due to limitations in the ANGLE layer,
         // with the WebGL renderer on Windows platforms
-        // linewidth will always be 1 regardless of the set value
+        // lineWidth will always be 1 regardless of the set value
         // Use MeshLine to fix it
         var material = new Line.MeshLineMaterial({
-            lineWidth: 12,
+            lineWidth: options.lineWidth || 12,
             sizeAttenuation: 0,
             color: new THREE.Color(0xFF0000),
         });
@@ -124,25 +124,31 @@ function _gpxToWTrackPointsMesh(gpxXML, crs) {
     }
 }
 
-function _gpxToMesh(gpxXML, crs) {
+function _gpxToMesh(gpxXML, options = {}) {
     if (!gpxXML) {
         return undefined;
+    }
+
+    if (options.enablePin == undefined) {
+        options.enablePin = true;
     }
 
     var gpxMesh = new THREE.Object3D();
 
     // Getting the track points
-    var trackPts = _gpxToWTrackPointsMesh(gpxXML, crs);
+    var trackPts = _gpxToWTrackPointsMesh(gpxXML, options);
 
     if (trackPts) {
         gpxMesh.add(trackPts);
     }
 
-    // Getting the waypoint points
-    var wayPts = _gpxToWayPointsMesh(gpxXML, crs);
+    if (options.enablePin) {
+        // Getting the waypoint points
+        var wayPts = _gpxToWayPointsMesh(gpxXML, options.crs);
 
-    if (wayPts) {
-        gpxMesh.add(wayPts);
+        if (wayPts) {
+            gpxMesh.add(wayPts);
+        }
     }
 
     gpxMesh.position.copy(gpxXML.center);
@@ -154,7 +160,28 @@ function _gpxToMesh(gpxXML, crs) {
 }
 
 export default {
-    load(urlFile, crs, networkOptions) {
-        return Fetcher.xml(urlFile, networkOptions).then(gpxXML => _gpxToMesh(gpxXML, crs));
+    /** @module gpxUtils */
+    /** Load gpx file and convert to THREE.Mesh
+     * @function load
+     * @param {string} urlFile  The url of gpx file
+     * @param {string} crs - The default CRS of Three.js coordinates. Should be a cartesian CRS.
+     * @param {Object=} options Optional properties.
+     * @param {boolean=} [options.enablePin=true] draw pin for way points
+     * @param {NetworkOptions=} options.networkOptions Options for fetching resources over network
+     * @param {number=} [options.lineWidth=12] set line width to track line
+     * @return {THREE.Mesh} Three.js Mesh see {@link https://threejs.org/docs/#api/objects/Mesh}
+     * @example
+     * // How add gpx object
+     * itowns.GpxUtils.load(url, viewer.referenceCrs).then((gpx) => {
+     *      if (gpx) {
+     *         viewer.scene.add(gpx);
+     *         viewer.notifyChange(true);
+     *      }
+     * });
+     *
+     */
+    load(urlFile, crs, options = {}) {
+        options.crs = crs;
+        return Fetcher.xml(urlFile, options.networkOptions).then(gpxXML => _gpxToMesh(gpxXML, options));
     },
 };
