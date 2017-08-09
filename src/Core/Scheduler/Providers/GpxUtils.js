@@ -19,12 +19,12 @@ function _gGpxToWTrackPointsArray(gpxXML) {
     return gpxXML.getElementsByTagName('trkpt');
 }
 
-function _gpxPtToCartesian(pt) {
+function _gpxPtToCartesian(pt, crs) {
     var longitude = Number(pt.attributes.lon.nodeValue);
     var latitude = Number(pt.attributes.lat.nodeValue);
     var elevation = Number(pt.getElementsByTagName('ele')[0].childNodes[0].nodeValue);
 
-    return new Coordinates('EPSG:4326', longitude, latitude, elevation).as('EPSG:4978').xyz();
+    return new Coordinates('EPSG:4326', longitude, latitude, elevation).as(crs).xyz();
 }
 
 const geometryPoint = new THREE.BoxGeometry(1, 1, 80);
@@ -44,7 +44,7 @@ function updatePointScale(renderer, scene, camera) {
     this.updateMatrixWorld();
 }
 
-function _gpxToWayPointsMesh(gpxXML) {
+function _gpxToWayPointsMesh(gpxXML, crs) {
     var wayPts = _gpxToWayPointsArray(gpxXML);
 
     if (wayPts.length) {
@@ -55,7 +55,7 @@ function _gpxToWayPointsMesh(gpxXML) {
         const lookAt = gpxXML.center.clone().negate();
 
         for (const wayPt of wayPts) {
-            const position = _gpxPtToCartesian(wayPt).sub(gpxXML.center);
+            const position = _gpxPtToCartesian(wayPt, crs).sub(gpxXML.center);
             // use Pin to make it more visible
             const mesh = new THREE.Mesh(geometryPoint, materialPoint);
             mesh.position.copy(position);
@@ -79,7 +79,7 @@ function updatePath(renderer, scene, camera) {
     this.material.uniforms.resolution.value.set(size.width, size.height);
 }
 
-function _gpxToWTrackPointsMesh(gpxXML) {
+function _gpxToWTrackPointsMesh(gpxXML, crs) {
     var trackPts = _gGpxToWTrackPointsArray(gpxXML);
 
     if (trackPts.length) {
@@ -122,7 +122,7 @@ function _gpxToWTrackPointsMesh(gpxXML) {
     }
 }
 
-function _gpxToMesh(gpxXML) {
+function _gpxToMesh(gpxXML, crs) {
     if (!gpxXML) {
         return undefined;
     }
@@ -130,14 +130,14 @@ function _gpxToMesh(gpxXML) {
     var gpxMesh = new THREE.Object3D();
 
     // Getting the track points
-    var trackPts = _gpxToWTrackPointsMesh(gpxXML);
+    var trackPts = _gpxToWTrackPointsMesh(gpxXML, crs);
 
     if (trackPts) {
         gpxMesh.add(trackPts);
     }
 
     // Getting the waypoint points
-    var wayPts = _gpxToWayPointsMesh(gpxXML);
+    var wayPts = _gpxToWayPointsMesh(gpxXML, crs);
 
     if (wayPts) {
         gpxMesh.add(wayPts);
@@ -151,7 +151,7 @@ function _gpxToMesh(gpxXML) {
     return gpxMesh;
 }
 
-export default function loadGpx(urlFile, networkOptions) {
-    return Fetcher.xml(urlFile, networkOptions).then(gpxXML => _gpxToMesh(gpxXML));
+export default function loadGpx(urlFile, crs, networkOptions) {
+    return Fetcher.xml(urlFile, networkOptions).then(gpxXML => _gpxToMesh(gpxXML, crs));
 }
 
