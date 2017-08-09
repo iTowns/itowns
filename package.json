@@ -40,6 +40,7 @@
     "proj4": "^2.4.3",
     "text-encoding-utf-8": "^1.0.1",
     "three": "^0.86.0",
+    "three.meshline": "^1.0.3",
     "whatwg-fetch": "^2.0.2"
   },
   "devDependencies": {

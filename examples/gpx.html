@@ -1,0 +1,54 @@
+<html>
+    <head>
+        <title>Itowns - Globe/Gpx</title>
+
+        <style type="text/css">
+            html {
+                height: 100%;
+            }
+
+            body {
+                margin: 0;
+                overflow:hidden;
+                height:100%;
+            }
+
+            #viewerDiv {
+                margin : auto auto;
+                width: 100%;
+                height: 100%;
+                padding: 0;
+            }
+
+            @media (max-width: 600px) {
+                #menuDiv {
+                    display: none;
+                }
+            }
+        </style>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body>
+        <div id="viewerDiv"></div>
+        <script src="../dist/itowns.js"></script>
+        <script type="text/javascript">
+            var renderer;
+            var exports = {};
+        </script>
+        <script src="gpx.js"></script>
+        <script type="text/javascript">
+            /* global itowns, document, globeView */
+            // Listen for globe full initialisation event
+            globeView.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
+                console.info('Globe initialized');
+                itowns.loadGpx('https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/ULTRA2009.gpx').then(function (gpx) {
+                    if (gpx) {
+                        globeView.scene.add(gpx);
+                        globeView.controls.setTilt(45, true);
+                    }
+                });
+            });
+        </script>
+    </body>
+</html>

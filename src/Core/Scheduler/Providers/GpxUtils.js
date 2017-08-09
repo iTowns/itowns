@@ -5,8 +5,11 @@
  */
 
 import * as THREE from 'three';
+import Line from 'three.meshline';
 import Fetcher from './Fetcher';
 import Coordinates from '../../Geographic/Coordinates';
+import Capabilities from '../../System/Capabilities';
+import { patchMaterialForLogDepthSupport } from './3dTiles_Provider';
 
 function _gpxToWayPointsArray(gpxXML) {
     return gpxXML.getElementsByTagName('wpt');
@@ -24,40 +27,96 @@ function _gpxPtToCartesian(pt) {
     return new Coordinates('EPSG:4326', longitude, latitude, elevation).as('EPSG:4978').xyz();
 }
 
+const geometryPoint = new THREE.BoxGeometry(1, 1, 80);
+const materialPoint = new THREE.MeshBasicMaterial({ color: 0xffffff });
+const positionCamera = new THREE.Vector3();
+
+function getDistance(object, camera) {
+    const point = object.geometry.boundingSphere.center.clone().applyMatrix4(object.matrixWorld);
+    positionCamera.setFromMatrixPosition(camera.matrixWorld);
+    return positionCamera.distanceTo(point);
+}
+
+function updatePointScale(renderer, scene, camera) {
+    const distance = getDistance(this, camera);
+    const scale = Math.max(2, Math.min(100, distance / renderer.getSize().height));
+    this.scale.set(scale, scale, scale);
+    this.updateMatrixWorld();
+}
+
 function _gpxToWayPointsMesh(gpxXML) {
     var wayPts = _gpxToWayPointsArray(gpxXML);
 
     if (wayPts.length) {
-        const positions = new Float32Array(wayPts.length * 3);
-        for (var i = 0; i < wayPts.length; i++) {
-            const pos = _gpxPtToCartesian(wayPts[i]);
-            pos.toArray(positions, 3 * i);
+        const points = new THREE.Group();
+
+        gpxXML.center = gpxXML.center || _gpxPtToCartesian(wayPts[0], crs);
+
+        const lookAt = gpxXML.center.clone().negate();
+
+        for (const wayPt of wayPts) {
+            const position = _gpxPtToCartesian(wayPt).sub(gpxXML.center);
+            // use Pin to make it more visible
+            const mesh = new THREE.Mesh(geometryPoint, materialPoint);
+            mesh.position.copy(position);
+            mesh.lookAt(lookAt);
+
+            // Scale pin in function of distance
+            mesh.onBeforeRender = updatePointScale;
+
+            points.add(mesh);
         }
-        const points = new THREE.Points();
-        points.geometry.addAttribute('position', new THREE.BufferAttribute(positions, 3));
-        points.material.color.setRGB(0, 1, 0);
         return points;
     } else {
         return null;
     }
 }
 
+function updatePath(renderer, scene, camera) {
+    const distance = getDistance(this, camera);
+    this.material.depthTest = distance < this.geometry.boundingSphere.radius * 2;
+    const size = renderer.getSize();
+    this.material.uniforms.resolution.value.set(size.width, size.height);
+}
+
 function _gpxToWTrackPointsMesh(gpxXML) {
     var trackPts = _gGpxToWTrackPointsArray(gpxXML);
 
     if (trackPts.length) {
-        const positions = new Float32Array(trackPts.length * 3);
-        for (var i = 0; i < trackPts.length; i++) {
-            const pos = _gpxPtToCartesian(trackPts[i]);
-            pos.toArray(positions, 3 * i);
+        gpxXML.center = gpxXML.center || _gpxPtToCartesian(trackPts[0], crs);
+
+        var geometry = new THREE.Geometry();
+
+        for (const trackPt of trackPts) {
+            const point = _gpxPtToCartesian(trackPt, crs).sub(gpxXML.center);
+            geometry.vertices.push(point);
         }
 
-        const line = new THREE.Line();
-        line.geometry.addAttribute('position', new THREE.BufferAttribute(positions, 3));
-        line.material.color.setRGB(1, 0, 0);
-        line.material.linewidth = 100;
+        var line = new Line.MeshLine();
+        line.setGeometry(geometry);
+        // Due to limitations in the ANGLE layer,
+        // with the WebGL renderer on Windows platforms
+        // linewidth will always be 1 regardless of the set value
+        // Use MeshLine to fix it
+        var material = new Line.MeshLineMaterial({
+            lineWidth: 12,
+            sizeAttenuation: 0,
+            color: new THREE.Color(0xFF0000),
+        });
 
-        return line;
+        if (Capabilities.isLogDepthBufferSupported()) {
+            material.fragmentShader = material.fragmentShader.replace(/.*/, '').substr(1);
+            patchMaterialForLogDepthSupport(material);
+            // eslint-disable-next-line no-console
+            console.warn('MeshLineMaterial shader has been patched to add log depth buffer support');
+        }
+
+        const pathMesh = new THREE.Mesh(line.geometry, material);
+        // update size screen uniform
+        // update depth test for visibilty path, because of the proximity of the terrain and gpx mesh
+        pathMesh.onBeforeRender = updatePath;
+
+        return pathMesh;
     } else {
         return null;
     }
@@ -83,6 +142,11 @@ function _gpxToMesh(gpxXML) {
     if (wayPts) {
         gpxMesh.add(wayPts);
     }
+
+    gpxMesh.position.copy(gpxXML.center);
+    gpxMesh.updateMatrixWorld();
+    // gpxMesh is static data, it doens't need matrix update
+    gpxMesh.matrixAutoUpdate = false;
 
     return gpxMesh;
 }
