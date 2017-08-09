@@ -196,7 +196,7 @@ PlanarView.prototype.screenCoordsToNodeId = function screenCoordsToNodeId(mouse)
     var depthRGBA = new THREE.Vector4().fromArray(buffer).divideScalar(255.0);
 
     // unpack RGBA to float
-    var unpack = unpack1K(depthRGBA, 10000);
+    var unpack = unpack1K(depthRGBA, Math.pow(256, 3));
 
     return Math.round(unpack);
 };
