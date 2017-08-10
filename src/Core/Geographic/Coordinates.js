@@ -461,6 +461,34 @@ Coordinates.prototype.as = function as(crs, target) {
     return _convert(this, crs, target);
 };
 
+/**
+ * Returns the normalized offset from top-left in extent of this Coordinates
+ * e.g: extent.center().offsetInExtent(extent) would return (0.5, 0.5).
+ * @param {Extent} extent
+ * @param {Vector2} target optional Vector2 target. If not present a new one will be created
+ * @return {Vector2} normalized offset in extent
+ */
+Coordinates.prototype.offsetInExtent = function offsetInExtent(extent, target) {
+    if (this.crs != extent.crs()) {
+        throw new Error('unsupported mix');
+    }
+
+    const dimension = {
+        x: Math.abs(extent.east() - extent.west()),
+        y: Math.abs(extent.north() - extent.south()),
+    };
+
+    const x = extent._internalStorageUnit == UNIT.METER ? this.x() : this.longitude(extent._internalStorageUnit);
+    const y = extent._internalStorageUnit == UNIT.METER ? this.y() : this.latitude(extent._internalStorageUnit);
+
+    const originX = (x - extent.west()) / dimension.x;
+    const originY = (extent.north() - y) / dimension.y;
+
+    target = target || new THREE.Vector2();
+    target.set(originX, originY);
+    return target;
+};
+
 export const C = {
 
     /**
