@@ -1,5 +1,6 @@
 // This file is copy pasted from THREE
 /* CUSTOM ITOWNS */
+/* Add the extention _BATCHID */
 /* eslint-disable */
 import * as THREE from 'three';
 /* END CUSTOM ITOWNS */
@@ -1661,6 +1662,9 @@ THREE.GLTFLoader = ( function () {
 									geometry.addAttribute( 'skinIndex', bufferAttribute );
 									break;
 
+								case '_BATCHID':
+									geometry.addAttribute( '_BATCHID', bufferAttribute );
+									break;
 							}
 
 						}
