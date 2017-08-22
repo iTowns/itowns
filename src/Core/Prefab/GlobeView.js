@@ -332,6 +332,7 @@ GlobeView.prototype.removeLayer = function removeImageryLayer(layerId) {
 };
 
 GlobeView.prototype.selectNodeAt = function selectNodeAt(mouse) {
+    // update the picking ray with the camera and mouse position
     const selectedId = this.screenCoordsToNodeId(mouse);
 
     for (const n of this.wgs84TileLayer.level0Nodes) {

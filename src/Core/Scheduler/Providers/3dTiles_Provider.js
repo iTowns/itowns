@@ -143,13 +143,15 @@ $3dTiles_Provider.prototype.b3dmToMesh = function b3dmToMesh(data, layer) {
             }
         };
         result.gltf.scene.traverse(init);
-        return result.gltf.scene;
+        const batchTable = result.batchTable;
+        const object3d = result.gltf.scene;
+        return { batchTable, object3d };
     });
 };
 
 $3dTiles_Provider.prototype.pntsParse = function pntsParse(data) {
     return new Promise((resolve) => {
-        resolve(PntsLoader.parse(data).point);
+        resolve({ object3d: PntsLoader.parse(data).point });
     });
 };
 
@@ -211,8 +213,11 @@ $3dTiles_Provider.prototype.executeCommand = function executeCommand(command) {
                 if (func) {
                     // TODO: request should be delayed if there is a viewerRequestVolume
                     return func(result, layer).then((content) => {
-                        tile.content = content;
-                        tile.add(content);
+                        tile.content = content.object3d;
+                        if (content.batchTable) {
+                            tile.batchTable = content.batchTable;
+                        }
+                        tile.add(content.object3d);
                         tile.traverse(setLayer);
                         return tile;
                     });

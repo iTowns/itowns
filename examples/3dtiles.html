@@ -14,14 +14,42 @@
                 height:100%;
             }
 
-            div {
+
+            #batchInformationDiv {
+                position: absolute;
+                z-index: 0;
+                top: 0;
+                right: 0;
+                color: white;
+                color: #eee;
+                font: 11px 'Lucida Grande',sans-serif;
+                line-height: normal;
+                text-shadow: 0 -1px 0 #111;
+                padding: 0 1rem;
+                background: #1a1a1a;
+                border: 1px solid #2c2c2c;
+                opacity: 0.8;
+            }
+
+            #batchInformationDiv > p {
+                margin: 0.5rem 0;
+            }
+
+            #batchInformationDiv > ul {
+                padding: 0 1rem;
+            }
+
+            @media (max-width: 600px) {
+                #batchInformationDiv {
+                    display: none;
+                }
+            }
+            #menuDiv {
                 margin : auto auto;
                 width: 100%;
                 padding: 0;
                 height: 100%;
-            }
 
-            #menuDiv {
                 position: absolute;
                 top:0px;
                 margin-left: 0px;
@@ -32,6 +60,12 @@
                 }
             }
 
+            #viewerDiv {
+                margin : auto auto;
+                width: 100%;
+                padding: 0;
+                height: 100%;
+            }
             #viewerDiv > canvas {
                 display: block;
             }
@@ -80,7 +114,9 @@
 
             // Create a new Layer 3d-tiles For Viewer Request Volume
             // -----------------------------------------------------
-            var $3dTilesLayerRequestVolume = new itowns.GeometryLayer('3d-tiles-request-volume', globe.scene);
+
+            var container = new itowns.THREE.Group();
+            var $3dTilesLayerRequestVolume = new itowns.GeometryLayer('3d-tiles-request-volume', container);
 
             $3dTilesLayerRequestVolume.preUpdate = preUpdateGeo;
             $3dTilesLayerRequestVolume.update = itowns.process3dTilesNode(
@@ -94,15 +130,68 @@
             $3dTilesLayerRequestVolume.overrideMaterials = true;  // custom cesium shaders are not functional
             $3dTilesLayerRequestVolume.type = 'geometry';
             $3dTilesLayerRequestVolume.visible = true;
+            // add an event for have information when you move your mouse on a building
+            itowns.View.prototype.addLayer.call(globe, $3dTilesLayerRequestVolume).then(function _() { window.addEventListener('mousemove', picking, false); })
 
-            itowns.View.prototype.addLayer.call(globe, $3dTilesLayerRequestVolume);
+            globe.scene.add(container);
 
             // Add the UI Debug
-            const d = new debug.Debug(globe, menuGlobe.gui);
+            var d = new debug.Debug(globe, menuGlobe.gui);
             debug.createTileDebugUI(menuGlobe.gui, globe, globe.wgs84TileLayer, d);
             debug.create3dTilesDebugUI(menuGlobe.gui, globe, $3dTilesLayerDiscreteLOD, d);
             debug.create3dTilesDebugUI(menuGlobe.gui, globe, $3dTilesLayerRequestVolume, d);
 
+
+
+// Picking example - - - - - - - - - - -- - - - -- - - - -- - - - -- - - - -- - - - -- - - - -
+            function findBatchTableParent(object) {
+                if (object.batchTable) {
+                    return object.batchTable;
+                }
+                else if (object.parent) {
+                    return findBatchTableParent(object.parent);
+                } else {
+                    return undefined;
+                }
+            }
+            function picking(event) {
+                // Pick an object with batch id
+                var mouse = new itowns.THREE.Vector2((event.clientX / window.innerWidth) * 2 - 1, -(event.clientY / window.innerHeight) * 2 + 1);
+                var raycaster = new itowns.THREE.Raycaster();
+                var htmlInfo = document.getElementById('info');
+                htmlInfo.innerHTML = ' ';
+
+                raycaster.setFromCamera(mouse, globe.camera.camera3D);
+                // calculate objects intersecting the picking ray
+                var intersects = raycaster.intersectObjects(container.children, true);
+                for (var i = 0; i < intersects.length; i++) {
+                    var interAttributes = intersects[i].object.geometry.attributes;
+                    if (interAttributes) {
+                        if (interAttributes._BATCHID) {
+                            var face = intersects[i].face.a;
+                            var batchID = interAttributes._BATCHID.array[face];
+                            var batchTable = findBatchTableParent(intersects[i].object);
+
+                            htmlInfo.innerHTML +='<li><b> Batch id: </b>'+ batchID +'</li>';
+                            Object.keys(batchTable).map(function(objectKey) {
+                                var value = batchTable[objectKey][batchID];
+                                // if the value is a integer or not
+                                var info = Number.isInteger(value) ? value.toString() : value.toFixed(3).toString();
+                                htmlInfo.innerHTML +='<li><b>' + objectKey.toString() + ': </b>'+ info +'</li>';
+                                return true;
+                            });
+
+                            return;
+                        }
+                    }
+                }
+            }
+
         </script>
+        <div id="batchInformationDiv">
+            <p><b>Information Batch Table: </b></p>
+            <ul id="info">
+            </ul>
+        </div>
     </body>
 </html>
