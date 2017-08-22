@@ -1,6 +1,7 @@
 import { Color, Uniform, Vector2, NoBlending, NormalBlending, RawShaderMaterial } from 'three';
 import PointsVS from './Shader/PointsVS.glsl';
 import PointsFS from './Shader/PointsFS.glsl';
+import Capabilities from '../Core/System/Capabilities';
 
 class PointsMaterial extends RawShaderMaterial {
     constructor(size = 0) {
@@ -17,6 +18,13 @@ class PointsMaterial extends RawShaderMaterial {
             this.uniforms.useDebugColor = new Uniform(false);
             this.uniforms.debugColor = new Uniform(new Color());
             this.defines.DEBUG = 1;
+        }
+
+        if (Capabilities.isLogDepthBufferSupported()) {
+            this.defines = {
+                USE_LOGDEPTHBUF: 1,
+                USE_LOGDEPTHBUF_EXT: 1,
+            };
         }
     }
 
