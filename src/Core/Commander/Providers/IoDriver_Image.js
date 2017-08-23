@@ -27,7 +27,7 @@ IoDriver_Image.prototype.read = function(url) {
 
         image.onerror = () => reject(new Error(`Error loading ${url}`));
 
-        image.crossOrigin = '';
+       // image.crossOrigin = '*';
         image.src = url;
 
     });
