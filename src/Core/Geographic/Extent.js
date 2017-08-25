@@ -311,9 +311,9 @@ Extent.prototype.set = function set(west, east, south, north) {
     this._values[CARDINAL.NORTH] = north;
 };
 
-Extent.prototype.merge = function merge(extent) {
+Extent.prototype.union = function union(extent) {
     if (extent.crs() != this.crs()) {
-        throw new Error('unsupported merge between 2 diff crs');
+        throw new Error('unsupported union between 2 diff crs');
     }
     const west = extent.west(this._internalStorageUnit);
     if (west < this.west()) {
@@ -333,6 +333,31 @@ Extent.prototype.merge = function merge(extent) {
     const north = extent.north(this._internalStorageUnit);
     if (north > this.north()) {
         this._values[CARDINAL.NORTH] = north;
+    }
+};
+
+/**
+ * expandByPoint performs the minimum extension for
+ * a coordinates to belong to the extended
+ *
+ * @param {Coordinates} coordinates  The coordinates to belong
+ */
+Extent.prototype.expandByPoint = function expandByPoint(coordinates) {
+    const coords = coordinates.as(this.crs());
+    const unit = coords._internalStorageUnit;
+    const we = convertValueToUnit(unit, this._internalStorageUnit, coords._values[0]);
+    if (we < this.west()) {
+        this._values[CARDINAL.WEST] = we;
+    }
+    if (we > this.east()) {
+        this._values[CARDINAL.EAST] = we;
+    }
+    const sn = convertValueToUnit(unit, this._internalStorageUnit, coords._values[1]);
+    if (sn < this.south()) {
+        this._values[CARDINAL.SOUTH] = sn;
+    }
+    if (sn > this.north()) {
+        this._values[CARDINAL.NORTH] = sn;
     }
 };
 
