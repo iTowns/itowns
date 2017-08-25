@@ -1,0 +1,78 @@
+<html>
+    <head>
+        <title>Itowns - Planar kml + geojson file example</title>
+
+        <style type="text/css">
+            html {
+                height: 100%;
+            }
+
+            body {
+                margin: 0;
+                overflow: hidden;
+                height: 100%;
+            }
+
+            #viewerDiv {
+                margin : auto auto;
+                width: 100%;
+                height: 100%;
+                padding: 0;
+            }
+
+            #help {
+                position: absolute;
+                z-index: 0;
+                top: 0;
+                left: 0;
+                color: white;
+                color: #eee;
+                font: 11px 'Lucida Grande',sans-serif;
+                line-height: normal;
+                text-shadow: 0 -1px 0 #111;
+                padding: 0 1rem;
+                background: #1a1a1a;
+                border: 1px solid #2c2c2c;
+                opacity: 0.8;
+            }
+
+            #help > p {
+                margin: 0.5rem 0;
+            }
+
+            #help > ul {
+                padding: 0 1rem;
+            }
+
+            @media (max-width: 600px) {
+                #help {
+                    display: none;
+                }
+            }
+
+        </style>
+        <meta charset="UTF-8">
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body>
+        <div id="help">
+            <p>Key bindings</p>
+            <ul>
+              <li>Left-Click: camera translation (drag)</li>
+              <li>Right-Click: camera translation (pan)</li>
+              <li>Ctrl + Left-Click: camera rotation (orbit)</li>
+              <li>Spacebar / Wheel-Click: smart zoom</li>
+              <li>Mouse Wheel: zoom in/out</li>
+              <li>T: orient camera to a top view</li>
+              <li>Y: move camera to start position</li>
+            </ul>
+        </div>
+        <div id="viewerDiv"></div>
+        <script src="../dist/itowns.js"></script>
+        <script type="text/javascript">
+            var renderer; var exports = {};
+        </script>
+        <script src="planar_vector.js"></script>
+    </body>
+</html>
