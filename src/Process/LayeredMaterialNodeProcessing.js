@@ -135,7 +135,8 @@ export function updateLayeredMaterialNodeImagery(context, layer, node) {
         // we also need to check that tile's parent doesn't have a texture for this layer,
         // because even if this tile is outside of the layer, it could inherit it's
         // parent texture
-        if (node.parent &&
+        if (!layer.noTextureParentOutsideLimit &&
+            node.parent &&
             node.parent.material &&
             node.parent.getIndexLayerColor &&
             node.parent.getIndexLayerColor(layer.id) >= 0) {

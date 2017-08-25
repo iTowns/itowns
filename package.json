@@ -41,6 +41,7 @@
     "text-encoding-utf-8": "^1.0.1",
     "three": "^0.86.0",
     "three.meshline": "^1.0.3",
+    "togeojson": "^0.16.0",
     "whatwg-fetch": "^2.0.2"
   },
   "devDependencies": {

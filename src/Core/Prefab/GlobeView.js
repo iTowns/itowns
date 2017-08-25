@@ -110,7 +110,7 @@ export function createGlobeLayer(id, options) {
     wgs84TileLayer.schemeTile = globeSchemeTileWMTS(globeSchemeTile1);
     wgs84TileLayer.extent = wgs84TileLayer.schemeTile[0].clone();
     for (let i = 1; i < wgs84TileLayer.schemeTile.length; i++) {
-        wgs84TileLayer.extent.merge(wgs84TileLayer.schemeTile[i]);
+        wgs84TileLayer.extent.union(wgs84TileLayer.schemeTile[i]);
     }
     wgs84TileLayer.preUpdate = (context, layer, changeSources) => {
         SubdivisionControl.preUpdate(context, layer);
@@ -276,6 +276,9 @@ GlobeView.prototype.addLayer = function addLayer(layer) {
         const colorLayerCount = this.getLayers(l => l.type === 'color').length;
         layer.sequence = colorLayerCount;
         layer.update = updateLayeredMaterialNodeImagery;
+        if (layer.protocol === 'rasterizer') {
+            layer.reprojection = 'EPSG:4326';
+        }
     } else if (layer.type == 'elevation') {
         if (layer.protocol === 'wmts' && layer.options.tileMatrixSet !== 'WGS84G') {
             throw new Error('Only WGS84G tileMatrixSet is currently supported for WMTS elevation layers');
