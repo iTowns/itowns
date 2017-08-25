@@ -17,7 +17,8 @@ const keys = {
     CTRL: 17,
     SPACE: 32,
     S: 83,
-    T: 84 };
+    T: 84,
+};
 
 const mouseButtons = {
     LEFTCLICK: THREE.MOUSE.LEFT,
@@ -45,12 +46,11 @@ function PlanarControls(view, options = {}) {
     this.view = view;
     this.camera = view.camera.camera3D;
     this.domElement = view.mainLoop.gfxEngine.renderer.domElement;
-    this.position = this.camera.position;
 
     this.rotateSpeed = options.rotateSpeed || 2.0;
 
     // minPanSpeed when close to the ground, maxPanSpeed when close to maxAltitude
-    this.maxPanSpeed = options.maxPanSpeed || 10;
+    this.maxPanSpeed = options.maxPanSpeed || 15;
     this.minPanSpeed = options.minPanSpeed || 0.05;
 
     // animation duration for the zoom
@@ -138,17 +138,22 @@ function PlanarControls(view, options = {}) {
     /**
     * PlanarControl update
     * Updates the view and camera if needed, and handles the animated travel
+    * @param {number} dt : deltatime given by mainLoop
+    * @param {boolean} updateLoopRestarted : given by mainLoop
     */
-    this.update = function update() {
-        this.deltaTime = this.clock.getElapsedTime() - this.lastElapsedTime;
-        this.lastElapsedTime = this.clock.getElapsedTime();
-
-        if (this.state === STATE.TRAVEL) {
-            this.handleTravel(this.deltaTime);
+    this.update = function update(dt, updateLoopRestarted) {
+        // dt will not be relevant when we just started rendering, we consider a 1-frame move in this case
+        if (updateLoopRestarted) {
+            dt = 16;
         }
-        if (this.state !== STATE.NONE) {
-            this.view.camera.update(window.innerWidth, window.innerHeight);
+        if (this.state === STATE.TRAVEL) {
+            this.handleTravel(dt / 1000);
             this.view.notifyChange(true);
+        }
+        // drag movement needs to be synchronous with update
+        if (this.state === STATE.DRAG) {
+            this.camera.position.add(this.dragDelta);
+            this.dragDelta.set(0, 0, 0);
         }
     };
 
@@ -180,12 +185,6 @@ function PlanarControls(view, options = {}) {
 
         // the difference between start and end cursor position
         this.dragDelta.subVectors(this.dragStart, this.dragEnd);
-
-        // new camera position
-        this.position.add(this.dragDelta);
-
-        // request update
-        this.update();
     };
 
     /**
@@ -202,24 +201,21 @@ function PlanarControls(view, options = {}) {
     */
     this.handlePanMovement = function handlePanMovement() {
         // normalized (betwwen 0 and 1) distance between groundLevel and maxAltitude
-        const distToGround = THREE.Math.clamp((this.position.z - this.groundLevel) / this.maxAltitude, 0, 1);
+        const distToGround = THREE.Math.clamp((this.camera.position.z - this.groundLevel) / this.maxAltitude, 0, 1);
 
         // pan movement speed, adujsted according to altitude
         const panSpeed = THREE.Math.lerp(this.minPanSpeed, this.maxPanSpeed, distToGround);
 
         // lateral movement (local x axis)
-        this.position.copy(this.camera.localToWorld(new THREE.Vector3(panSpeed * -1 * this.deltaMousePosition.x, 0, 0)));
+        this.camera.position.copy(this.camera.localToWorld(new THREE.Vector3(panSpeed * -1 * this.deltaMousePosition.x, 0, 0)));
 
         // vertical movement (world z axis)
-        const newAltitude = this.position.z + panSpeed * this.deltaMousePosition.y;
+        const newAltitude = this.camera.position.z + panSpeed * this.deltaMousePosition.y;
 
         // check if altitude is valid
         if (newAltitude < this.maxAltitude && newAltitude > this.groundLevel) {
-            this.position.z = newAltitude;
+            this.camera.position.z = newAltitude;
         }
-
-        // request update
-        this.update();
     };
 
     /**
@@ -232,8 +228,8 @@ function PlanarControls(view, options = {}) {
 
         this.centerPoint.copy(this.getWorldPointAtScreenXY(screenCenter));
 
-        const r = this.position.distanceTo(this.centerPoint);
-        this.phi = Math.acos((this.position.z - this.centerPoint.z) / r);
+        const r = this.camera.position.distanceTo(this.centerPoint);
+        this.phi = Math.acos((this.camera.position.z - this.centerPoint.z) / r);
     };
 
     /**
@@ -249,7 +245,7 @@ function PlanarControls(view, options = {}) {
         const phiDelta = -this.rotateSpeed * this.deltaMousePosition.y / window.innerHeight;
 
         // the vector from centerPoint (focus point) to camera position
-        const offset = this.position.clone().sub(this.centerPoint);
+        const offset = this.camera.position.clone().sub(this.centerPoint);
 
         const quat = new THREE.Quaternion().setFromUnitVectors(this.camera.up, new THREE.Vector3(0, 0, 1));
         const quatInverse = quat.clone().inverse();
@@ -279,11 +275,9 @@ function PlanarControls(view, options = {}) {
             }
         }
 
-        this.position.copy(offset).add(this.centerPoint);
+        this.camera.position.copy(offset).add(this.centerPoint);
 
         this.camera.lookAt(this.centerPoint);
-
-        this.update();
     };
 
     /**
@@ -309,14 +303,14 @@ function PlanarControls(view, options = {}) {
         // Zoom IN
         if (delta > 0) {
             // target position
-            newPos.lerpVectors(this.position, pointUnderCursor, this.zoomInFactor);
+            newPos.lerpVectors(this.camera.position, pointUnderCursor, this.zoomInFactor);
             // initiate travel
             this.initiateTravel(newPos, this.zoomTravelTime, 'none', false);
         }
         // Zoom OUT
-        else if (delta < 0 && this.position.z < this.maxAltitude) {
+        else if (delta < 0 && this.camera.position.z < this.maxAltitude) {
             // target position
-            newPos.lerpVectors(this.position, pointUnderCursor, -1 * this.zoomOutFactor);
+            newPos.lerpVectors(this.camera.position, pointUnderCursor, -1 * this.zoomOutFactor);
             // initiate travel
             this.initiateTravel(newPos, this.zoomTravelTime, 'none', false);
         }
@@ -332,11 +326,11 @@ function PlanarControls(view, options = {}) {
 
         // direction of the movement, projected on xy plane and normalized
         const dir = new THREE.Vector3();
-        dir.copy(pointUnderCursor).sub(this.position);
+        dir.copy(pointUnderCursor).sub(this.camera.position);
         dir.z = 0;
         dir.normalize();
 
-        const distanceToPoint = this.position.distanceTo(pointUnderCursor);
+        const distanceToPoint = this.camera.position.distanceTo(pointUnderCursor);
 
         // camera height (altitude above ground) at the end of the travel
         const targetHeight = THREE.Math.lerp(this.smartZoomHeightMin, this.smartZoomHeightMax, Math.min(distanceToPoint / 5000, 1));
@@ -366,7 +360,9 @@ function PlanarControls(view, options = {}) {
     */
     this.initiateTravel = function initiateTravel(targetPos, travelTime, targetOrientation, useSmooth) {
         this.state = STATE.TRAVEL;
-
+        this.view.notifyChange(true);
+        // the progress of the travel (animation alpha)
+        this.travelAlpha = 0;
         // update cursor
         this.updateMouseCursorType();
 
@@ -374,7 +370,7 @@ function PlanarControls(view, options = {}) {
         this.travelUseSmooth = useSmooth;
 
         // start position (current camera position)
-        this.travelStartPos.copy(this.position);
+        this.travelStartPos.copy(this.camera.position);
 
         // start rotation (current camera rotation)
         this.travelStartRot.copy(this.camera.quaternion);
@@ -393,18 +389,18 @@ function PlanarControls(view, options = {}) {
                 this.camera.quaternion.copy(this.travelStartRot);
             }
             else {
-                this.position.copy(targetPos);
+                this.camera.position.copy(targetPos);
                 this.camera.lookAt(targetOrientation);
                 this.travelEndRot.copy(this.camera.quaternion);
                 this.camera.quaternion.copy(this.travelStartRot);
-                this.position.copy(this.travelStartPos);
+                this.camera.position.copy(this.travelStartPos);
             }
         }
 
         // end position
         this.travelEndPos.copy(targetPos);
 
-        // beginning of the travel duration setup ===
+        // beginning of the travel duration setup
 
         if (this.instantTravel) {
             this.travelDuration = 0;
@@ -414,7 +410,7 @@ function PlanarControls(view, options = {}) {
         // depending on travel distance and travel angular difference
         else if (travelTime === 'auto') {
             // a value between 0 and 1 according to the travel distance. Adjusted by autoTravelTimeDist parameter
-            const normalizedDistance = Math.min(1, targetPos.distanceTo(this.position) / this.autoTravelTimeDist);
+            const normalizedDistance = Math.min(1, targetPos.distanceTo(this.camera.position) / this.autoTravelTimeDist);
 
             this.travelDuration = THREE.Math.lerp(this.autoTravelTimeMin, this.autoTravelTimeMax, normalizedDistance);
 
@@ -433,19 +429,13 @@ function PlanarControls(view, options = {}) {
         else {
             this.travelDuration = travelTime;
         }
-        // end of travel duration setup ===
-
-        // the progress of the travel (animation alpha)
-        this.travelAlpha = 0;
-
-        this.update();
     };
 
-    /** =
+    /**
     * Resume normal behavior after a travel is completed
     */
     this.endTravel = function endTravel() {
-        this.position.copy(this.travelEndPos);
+        this.camera.position.copy(this.travelEndPos);
 
         if (this.travelUseRotation) {
             this.camera.quaternion.copy(this.travelEndRot);
@@ -454,8 +444,6 @@ function PlanarControls(view, options = {}) {
         this.state = STATE.NONE;
 
         this.updateMouseCursorType();
-
-        this.update();
     };
 
     /**
@@ -469,7 +457,7 @@ function PlanarControls(view, options = {}) {
         const alpha = (this.travelUseSmooth) ? smooth(this.travelAlpha) : this.travelAlpha;
 
         // new position
-        this.position.lerpVectors(this.travelStartPos, this.travelEndPos, alpha);
+        this.camera.position.lerpVectors(this.travelStartPos, this.travelEndPos, alpha);
 
         // new rotation
         if (this.travelUseRotation === true) {
@@ -490,7 +478,7 @@ function PlanarControls(view, options = {}) {
         const screenCenter = new THREE.Vector2(0.5 * window.innerWidth, 0.5 * window.innerHeight);
 
         topViewPos.copy(this.getWorldPointAtScreenXY(screenCenter));
-        topViewPos.z += Math.min(this.maxAltitude, this.position.distanceTo(topViewPos));
+        topViewPos.z += Math.min(this.maxAltitude, this.camera.position.distanceTo(topViewPos));
 
         targetQuat.setFromAxisAngle(new THREE.Vector3(1, 0, 0), 0);
 
@@ -516,9 +504,9 @@ function PlanarControls(view, options = {}) {
         const vector = new THREE.Vector3();
         vector.set((posXY.x / window.innerWidth) * 2 - 1, -(posXY.y / window.innerHeight) * 2 + 1, 0.5);
         vector.unproject(this.camera);
-        const dir = vector.sub(this.position).normalize();
-        const distance = (altitude - this.position.z) / dir.z;
-        const pointUnderCursor = this.position.clone().add(dir.multiplyScalar(distance));
+        const dir = vector.sub(this.camera.position).normalize();
+        const distance = (altitude - this.camera.position.z) / dir.z;
+        const pointUnderCursor = this.camera.position.clone().add(dir.multiplyScalar(distance));
 
         return pointUnderCursor;
     };
@@ -599,10 +587,10 @@ function PlanarControls(view, options = {}) {
 
     // starting position and lookAt target can be set outside this class, before instanciating PlanarControls
     // or they can be set with options : startPosition and startLookAt
-    this.startPosition = options.startPosition || this.position.clone();
+    this.startPosition = options.startPosition || this.camera.position.clone();
     this.startLook = options.startLook || this.camera.quaternion.clone();
 
-    this.position.copy(this.startPosition);
+    this.camera.position.copy(this.startPosition);
     this.camera.quaternion.copy(this.startLook);
 
     // event listeners for user input
@@ -669,12 +657,19 @@ var onMouseMove = function onMouseMove(event) {
 
     this.lastMousePosition.copy(this.mousePosition);
 
-    if (this.state === STATE.ROTATE)
-    { this.handleRotation(); }
-    else if (this.state === STATE.DRAG)
-    { this.handleDragMovement(); }
-    else if (this.state === STATE.PAN)
-    { this.handlePanMovement(); }
+    // notify change if moving
+    if (this.state !== STATE.NONE) {
+        this.view.notifyChange(true);
+    }
+    if (this.state === STATE.ROTATE) {
+        this.handleRotation();
+    }
+    else if (this.state === STATE.DRAG) {
+        this.handleDragMovement();
+    }
+    else if (this.state === STATE.PAN) {
+        this.handlePanMovement();
+    }
 };
 
 /**
