@@ -259,7 +259,11 @@ View.prototype.addLayer = function addLayer(layer, parentLayer) {
         layer.extent = parentLayer.extent;
     }
 
-    layer = _preprocessLayer(this, layer, this.mainLoop.scheduler.getProtocolProvider(layer.protocol));
+    const provider = this.mainLoop.scheduler.getProtocolProvider(layer.protocol);
+    if (layer.protocol && !provider) {
+        throw new Error(`${layer.protocol} is not a recognized protocol name.`);
+    }
+    layer = _preprocessLayer(this, layer, provider);
     if (parentLayer) {
         parentLayer.attach(layer);
     } else {
