@@ -4,10 +4,9 @@
 * Ctrl + left mouse : rotate (orbit) around the camera's focus point.
 * Scroll wheel : zooms toward cursor position (animated).
 * Middle mouse button (wheel click) : 'smart zoom' at cursor location (animated).
-* S : go to start view (animated)
+* Y : go to start view (animated)
 * T : go to top view (animated)
 * How to use : instanciate PlanarControls after camera setup (setPosition and lookAt)
-* or you can also setup the camera with options.startPosition and options.startLook
 */
 
 import * as THREE from 'three';
@@ -16,8 +15,8 @@ import * as THREE from 'three';
 const keys = {
     CTRL: 17,
     SPACE: 32,
-    S: 83,
     T: 84,
+    Y: 89,
 };
 
 const mouseButtons = {
@@ -84,6 +83,12 @@ function PlanarControls(view, options = {}) {
 
     // should be less than 90 deg (90 = parallel to the ground)
     this.maxZenithAngle = (options.maxZenithAngle || 82.5) * Math.PI / 180;
+
+    // starting camera position and orientation target are setup before instanciating PlanarControls
+    // using: view.camera.setPosition() and view.camera.lookAt()
+    // startPosition and startQuaternion are stored to be able to return to the start view
+    this.startPosition = this.camera.position.clone();
+    this.startQuaternion = this.camera.quaternion.clone();
 
     // prevent the default contextmenu from appearing when right-clicking
     // this allows to use right-click for input without the menu appearing
@@ -490,7 +495,7 @@ function PlanarControls(view, options = {}) {
     * Triggers an animated movement (travel) to set the camera to starting view
     */
     this.goToStartView = function goToStartView() {
-        this.initiateTravel(this.startPosition, 'auto', this.startLook, true);
+        this.initiateTravel(this.startPosition, 'auto', this.startQuaternion, true);
     };
 
     /**
@@ -585,14 +590,6 @@ function PlanarControls(view, options = {}) {
     PlanarControls.prototype = Object.create(THREE.EventDispatcher.prototype);
     PlanarControls.prototype.constructor = PlanarControls;
 
-    // starting position and lookAt target can be set outside this class, before instanciating PlanarControls
-    // or they can be set with options : startPosition and startLookAt
-    this.startPosition = options.startPosition || this.camera.position.clone();
-    this.startLook = options.startLook || this.camera.quaternion.clone();
-
-    this.camera.position.copy(this.startPosition);
-    this.camera.quaternion.copy(this.startLook);
-
     // event listeners for user input
     this.addInputListeners();
 }
@@ -628,8 +625,7 @@ var onMouseDown = function onMouseDown(event) {
 };
 
 /**
-* Catch the event when a touch on the mouse is uped. Reinit the state of the controller and disable.
-* the listener on the move mouse event.
+* Catch the event when a touch on the mouse is uped.
 * @param {event} event : the current event
 */
 var onMouseUp = function onMouseUp(event) {
@@ -693,7 +689,7 @@ var onKeyDown = function onKeyDown(event) {
     if (event.keyCode === keys.T) {
         this.goToTopView();
     }
-    if (event.keyCode === keys.S) {
+    if (event.keyCode === keys.Y) {
         this.goToStartView();
     }
     if (event.keyCode === keys.SPACE) {
@@ -725,7 +721,6 @@ var onMouseWheel = function onMouseWheel(event) {
 var onContextMenu = function onContextMenu(event) {
     event.preventDefault();
 };
-
 
 /**
 * smoothing function (sigmoid) : based on h01 Hermite function
