@@ -60,7 +60,7 @@ function PlanarControls(view, options = {}) {
     this.zoomOutFactor = options.zoomOutFactor || 0.4;
 
     // pan movement is clamped between maxAltitude and groundLevel
-    this.maxAltitude = options.maxAltitude || 20000;
+    this.maxAltitude = options.maxAltitude || 15000;
 
     // approximate ground altitude value
     this.groundLevel = options.groundLevel || 200;
