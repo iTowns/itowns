@@ -337,9 +337,8 @@ Extent.prototype.union = function union(extent) {
 };
 
 /**
- * expandByPoint performs the minimum extension for
- * a coordinates to belong to the extended
- *
+ * expandByPoint perfoms the minimal extension
+ * for the point to belong to this Extent object
  * @param {Coordinates} coordinates  The coordinates to belong
  */
 Extent.prototype.expandByPoint = function expandByPoint(coordinates) {

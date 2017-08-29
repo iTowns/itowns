@@ -11,14 +11,18 @@ function drawPolygon(ctx, vertices, origin, dimension, properties, style = {}) {
     //
     const scale = new THREE.Vector2(ctx.canvas.width / dimension.x, ctx.canvas.width / dimension.y);
     ctx.beginPath();
-    pt.subVectors(vertices[0], origin).multiply(scale);
+    pt.x = vertices[0]._values[0] - origin.x;
+    pt.y = vertices[0]._values[1] - origin.y;
+    pt.multiply(scale);
     // Place the first point
     ctx.moveTo(pt.x, pt.y);
     vertices.shift();
 
     // build path
     for (const vertice of vertices) {
-        pt.subVectors(vertice, origin).multiply(scale);
+        pt.x = vertice._values[0] - origin.x;
+        pt.y = vertice._values[1] - origin.y;
+        pt.multiply(scale);
         ctx.lineTo(pt.x, pt.y);
     }
 
@@ -41,7 +45,9 @@ function drawPolygon(ctx, vertices, origin, dimension, properties, style = {}) {
 
 function drawPoint(ctx, vertice, origin, dimension, style = {}) {
     const scale = new THREE.Vector2(ctx.canvas.width / dimension.x, ctx.canvas.width / dimension.y);
-    pt.subVectors(vertice, origin).multiply(scale);
+    pt.x = vertice._values[0] - origin.x;
+    pt.y = vertice._values[1] - origin.y;
+    pt.multiply(scale);
 
     ctx.beginPath();
     ctx.arc(pt.x, pt.y, style.radius || 3, 0, 2 * Math.PI, false);
@@ -54,28 +60,28 @@ function drawPoint(ctx, vertice, origin, dimension, style = {}) {
 
 function drawFeature(ctx, feature, origin, dimension, extent, style = {}) {
     const properties = feature.properties.properties;
-    const vertices = feature.geometry.vertices.slice();
+    const coordinates = feature.geometry.coordinates.slice();
     if (feature.geometry.type === 'point') {
-        drawPoint(ctx, vertices[0], origin, dimension, style);
+        drawPoint(ctx, coordinates[0], origin, dimension, style);
     } else if (feature.geometry.extent.intersect(extent)) {
         ctx.globalCompositeOperation = 'destination-over';
-        drawPolygon(ctx, vertices, origin, dimension, properties, style);
+        drawPolygon(ctx, coordinates, origin, dimension, properties, style);
     }
 }
 
 function drawFeatureCollection(ctx, collection, origin, dimension, extent, style = {}) {
-    for (const features of collection.children) {
+    for (const features of collection.geometries) {
         /* eslint-disable guard-for-in */
         if (features.extent.intersect(extent)) {
             for (const id in features.featureVertices) {
                 const polygon = features.featureVertices[id];
                 const properties = collection.features[id].properties.properties;
-                const vertices = features.vertices.slice(polygon.offset, polygon.offset + polygon.count);
+                const coordinates = features.coordinates.slice(polygon.offset, polygon.offset + polygon.count);
                 if (features.type === 'point') {
-                    drawPoint(ctx, vertices[0], origin, dimension, style);
+                    drawPoint(ctx, coordinates[0], origin, dimension, style);
                 } else if (polygon.extent.intersect(extent)) {
                     ctx.globalCompositeOperation = 'destination-over';
-                    drawPolygon(ctx, vertices, origin, dimension, properties, style);
+                    drawPolygon(ctx, coordinates, origin, dimension, properties, style);
                 }
             }
         }
@@ -96,7 +102,7 @@ export default {
         const ctx = c.getContext('2d');
 
         // Draw the canvas
-        if (geojson.children) {
+        if (geojson.geometries) {
             drawFeatureCollection(ctx, geojson, origin, dimension, extent, style);
         } else {
             drawFeature(ctx, geojson, origin, dimension, extent, style);
