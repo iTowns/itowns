@@ -47,6 +47,7 @@ $3dTiles_Provider.prototype.removeLayer = function removeLayer() {
 };
 
 $3dTiles_Provider.prototype.preprocessDataLayer = function preprocessDataLayer(layer, view, scheduler) {
+    layer.sseThreshold = layer.sseThreshold || 16;
     return Fetcher.json(layer.url, layer.networkOptions).then((tileset) => {
         layer.tileset = tileset;
         const urlPrefix = layer.url.slice(0, layer.url.lastIndexOf('/') + 1);

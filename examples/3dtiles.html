@@ -130,6 +130,7 @@
             $3dTilesLayerRequestVolume.overrideMaterials = true;  // custom cesium shaders are not functional
             $3dTilesLayerRequestVolume.type = 'geometry';
             $3dTilesLayerRequestVolume.visible = true;
+            $3dTilesLayerRequestVolume.sseThreshold = 1;            
             // add an event for have information when you move your mouse on a building
             itowns.View.prototype.addLayer.call(globe, $3dTilesLayerRequestVolume).then(function _() { window.addEventListener('mousemove', picking, false); })
 

@@ -96,6 +96,11 @@ export default function create3dTilesDebugUI(datDebugTool, view, layer) {
             });
         });
 
+    // The sse Threshold for each tile
+    gui.add(layer, 'sseThreshold', 0, 100).name('sseThreshold').onChange(() => {
+        view.notifyChange(true);
+    });
+
     gui.add(layer, 'visible').name('Visible').onChange(() => {
         view.notifyChange(true);
     });

@@ -179,5 +179,5 @@ export function process3dTilesNode(cullingTest, subdivisionTest) {
 
 export function $3dTilesSubdivisionControl(context, layer, node) {
     const sse = computeNodeSSE(context.camera, node);
-    return sse > 1.0;
+    return sse > layer.sseThreshold;
 }
