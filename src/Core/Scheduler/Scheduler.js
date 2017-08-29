@@ -12,7 +12,7 @@ import $3dTiles_Provider from './Providers/3dTiles_Provider';
 import TMS_Provider from './Providers/TMS_Provider';
 import PointCloudProvider from './Providers/PointCloudProvider';
 import WFS_Provider from './Providers/WFS_Provider';
-import VectorToColor_Provider from './Providers/VectorToColor_Provider';
+import Raster_Provider from './Providers/Raster_Provider';
 
 var instanceScheduler = null;
 
@@ -92,7 +92,7 @@ Scheduler.prototype.initDefaultProviders = function initDefaultProviders() {
     this.addProtocolProvider('tms', new TMS_Provider());
     this.addProtocolProvider('potreeconverter', PointCloudProvider);
     this.addProtocolProvider('wfs', new WFS_Provider());
-    this.addProtocolProvider('rasterizer', VectorToColor_Provider);
+    this.addProtocolProvider('rasterizer', Raster_Provider);
 };
 
 Scheduler.prototype.runCommand = function runCommand(command, queue, executingCounterUpToDate) {

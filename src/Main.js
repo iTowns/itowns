@@ -24,6 +24,6 @@ export { default as PointCloudProcessing } from './Process/PointCloudProcessing'
 export { default as FlyControls } from './Renderer/ThreeExtended/FlyControls';
 export { default as FirstPersonControls } from './Renderer/ThreeExtended/FirstPersonControls';
 export { default as PlanarControls } from './Renderer/ThreeExtended/PlanarControls';
-export { default as GeoJSON2Three } from './Renderer/ThreeExtended/GeoJSON2Three';
+export { default as GeoJSON2Feature } from './Renderer/ThreeExtended/GeoJSON2Feature';
 export { CONTROL_EVENTS } from './Renderer/ThreeExtended/GlobeControls';
 export { default as DEMUtils } from './utils/DEMUtils';
