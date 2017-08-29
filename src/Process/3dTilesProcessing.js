@@ -1,5 +1,3 @@
-import * as THREE from 'three';
-
 function requestNewTile(view, scheduler, geometryLayer, metadata, parent) {
     const command = {
         /* mandatory */
@@ -97,23 +95,27 @@ export function pre3dTilesUpdate(context, layer) {
 // Improved zoom geometry
 function computeNodeSSE(camera, node) {
     if (node.boundingVolume.region) {
-        const worldCoordinateCenter = new THREE.Vector3();
-        worldCoordinateCenter.applyMatrix4(node.boundingVolume.region.matrixWorld);
-        const distance = camera.camera3D.position.distanceTo(worldCoordinateCenter);
+        const cameraLocalPosition = camera.camera3D.position.clone();
+        cameraLocalPosition.x -= node.boundingVolume.region.matrixWorld.elements[12];
+        cameraLocalPosition.y -= node.boundingVolume.region.matrixWorld.elements[13];
+        cameraLocalPosition.z -= node.boundingVolume.region.matrixWorld.elements[14];
+        const distance = node.boundingVolume.region.box3D.distanceToPoint(cameraLocalPosition);
         return preSSE * (node.geometricError / distance);
     }
     if (node.boundingVolume.box) {
-        // TODO: compute proper distance
-        const worldCoordinateCenter = node.boundingVolume.box.getCenter();
-        worldCoordinateCenter.applyMatrix4(node.matrixWorld);
-        const distance = camera.camera3D.position.distanceTo(worldCoordinateCenter);
+        const cameraLocalPosition = camera.camera3D.position.clone();
+        cameraLocalPosition.x -= node.matrixWorld.elements[12];
+        cameraLocalPosition.y -= node.matrixWorld.elements[13];
+        cameraLocalPosition.z -= node.matrixWorld.elements[14];
+        const distance = node.boundingVolume.box.distanceToPoint(cameraLocalPosition);
         return preSSE * (node.geometricError / distance);
-    } else if (node.boundingVolume.sphere) {
-        const worldCoordinateCenter = node.boundingVolume.sphere.center.clone();
-        worldCoordinateCenter.applyMatrix4(node.matrixWorld);
-        const distance = Math.max(
-            0.0,
-            camera.camera3D.position.distanceTo(worldCoordinateCenter) - node.boundingVolume.sphere.radius);
+    }
+    if (node.boundingVolume.sphere) {
+        const cameraLocalPosition = camera.camera3D.position.clone();
+        cameraLocalPosition.x -= node.matrixWorld.elements[12];
+        cameraLocalPosition.y -= node.matrixWorld.elements[13];
+        cameraLocalPosition.z -= node.matrixWorld.elements[14];
+        const distance = node.boundingVolume.sphere.distanceToPoint(cameraLocalPosition);
         return preSSE * (node.geometricError / distance);
     }
     return Infinity;
@@ -177,6 +179,5 @@ export function process3dTilesNode(cullingTest, subdivisionTest) {
 
 export function $3dTilesSubdivisionControl(context, layer, node) {
     const sse = computeNodeSSE(context.camera, node);
-
     return sse > 1.0;
 }
