@@ -7,7 +7,6 @@ import Extent from '../Core/Geographic/Extent';
 const cV = new THREE.Vector3();
 let vhMagnitudeSquared;
 
-let preSSE;
 let SSE_SUBDIVISION_THRESHOLD;
 
 const worldToScaledEllipsoid = new THREE.Matrix4();
@@ -21,7 +20,7 @@ function _preSSE(view) {
     // const HFOV = 2.0 * Math.atan(Math.tan(radAngle * 0.5) / context.camera.ratio);
     const HYFOV = 2.0 * Math.atan(Math.tan(radAngle * 0.5) * hypotenuse / canvasSize.x);
 
-    preSSE = hypotenuse * (2.0 * Math.tan(HYFOV * 0.5));
+    return hypotenuse * (2.0 * Math.tan(HYFOV * 0.5));
 }
 
 export function preGlobeUpdate(context, layer) {
@@ -42,7 +41,7 @@ export function preGlobeUpdate(context, layer) {
     vhMagnitudeSquared = cV.lengthSq() - 1.0;
 
     // pre-sse
-    _preSSE(context.view);
+    context.camera.preSSE = _preSSE(context.view);
 }
 
 function pointHorizonCulling(pt) {
@@ -100,7 +99,7 @@ function computeNodeSSE(camera, node) {
 
     // TODO: node.geometricError is computed using a hardcoded 18 level
     // The computation of node.geometricError is surely false
-    return preSSE * (node.geometricError * v.x) / distance;
+    return camera.preSSE * (node.geometricError * v.x) / distance;
 }
 
 export function globeSubdivisionControl(minLevel, maxLevel, sseThreshold) {
@@ -144,9 +143,8 @@ export function globeSchemeTileWMTS(type) {
 }
 
 export function computeTileZoomFromDistanceCamera(distance, view) {
-    _preSSE(view);
     const sizeEllipsoid = ellipsoidSizes().x;
-    const preSinus = SIZE_TEXTURE_TILE * (SSE_SUBDIVISION_THRESHOLD * 0.5) / preSSE / sizeEllipsoid;
+    const preSinus = SIZE_TEXTURE_TILE * (SSE_SUBDIVISION_THRESHOLD * 0.5) / view.camera.preSSE / sizeEllipsoid;
 
     let sinus = distance * preSinus;
     let zoom = Math.log(Math.PI / (2.0 * Math.asin(sinus))) / Math.log(2);
@@ -162,11 +160,11 @@ export function computeTileZoomFromDistanceCamera(distance, view) {
     return isNaN(zoom) ? 0 : Math.round(zoom);
 }
 
-export function computeDistanceCameraFromTileZoom(zoom) {
+export function computeDistanceCameraFromTileZoom(zoom, view) {
     const delta = Math.PI / Math.pow(2, zoom);
     const circleChord = 2.0 * ellipsoidSizes().x * Math.sin(delta * 0.5);
     const radius = circleChord * 0.5;
     const error = radius / SIZE_TEXTURE_TILE;
 
-    return preSSE * error / (SSE_SUBDIVISION_THRESHOLD * 0.5) + radius;
+    return view.camera.preSSE * error / (SSE_SUBDIVISION_THRESHOLD * 0.5) + radius;
 }

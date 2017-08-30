@@ -1629,7 +1629,7 @@ GlobeControls.prototype.getZoom = function getZoom() {
  */
 GlobeControls.prototype.setZoom = function setZoom(zoom, isAnimated) {
     isAnimated = isAnimated === undefined ? this.isAnimationEnabled() : isAnimated;
-    const range = computeDistanceCameraFromTileZoom(zoom);
+    const range = computeDistanceCameraFromTileZoom(zoom, this._view);
     return this.setRange(range, isAnimated);
 };
 
@@ -1731,7 +1731,7 @@ GlobeControls.prototype.setCameraTargetGeoPosition = function setCameraTargetGeo
 GlobeControls.prototype.setCameraTargetGeoPositionAdvanced = function setCameraTargetGeoPositionAdvanced(position, isAnimated) {
     isAnimated = isAnimated === undefined ? this.isAnimationEnabled() : isAnimated;
     if (position.zoom) {
-        position.range = computeDistanceCameraFromTileZoom(position.zoom);
+        position.range = computeDistanceCameraFromTileZoom(position.zoom, this._view);
     } else if (position.scale) {
         position.range = getRangeFromScale(position.scale);
     }
