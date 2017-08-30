@@ -79,7 +79,6 @@ export function $3dTilesCulling(node, camera) {
     return false;
 }
 
-let preSSE;
 export function pre3dTilesUpdate(context, layer) {
     // pre-sse
     const hypotenuse = Math.sqrt(context.camera.width * context.camera.width + context.camera.height * context.camera.height);
@@ -88,7 +87,7 @@ export function pre3dTilesUpdate(context, layer) {
      // TODO: not correct -> see new preSSE
     // const HFOV = 2.0 * Math.atan(Math.tan(radAngle * 0.5) / context.camera.ratio);
     const HYFOV = 2.0 * Math.atan(Math.tan(radAngle * 0.5) * hypotenuse / context.camera.width);
-    preSSE = hypotenuse * (2.0 * Math.tan(HYFOV * 0.5));
+    context.camera.preSSE = hypotenuse * (2.0 * Math.tan(HYFOV * 0.5));
     return [layer.root];
 }
 
@@ -100,7 +99,7 @@ function computeNodeSSE(camera, node) {
         cameraLocalPosition.y -= node.boundingVolume.region.matrixWorld.elements[13];
         cameraLocalPosition.z -= node.boundingVolume.region.matrixWorld.elements[14];
         const distance = node.boundingVolume.region.box3D.distanceToPoint(cameraLocalPosition);
-        return preSSE * (node.geometricError / distance);
+        return camera.preSSE * (node.geometricError / distance);
     }
     if (node.boundingVolume.box) {
         const cameraLocalPosition = camera.camera3D.position.clone();
@@ -108,7 +107,7 @@ function computeNodeSSE(camera, node) {
         cameraLocalPosition.y -= node.matrixWorld.elements[13];
         cameraLocalPosition.z -= node.matrixWorld.elements[14];
         const distance = node.boundingVolume.box.distanceToPoint(cameraLocalPosition);
-        return preSSE * (node.geometricError / distance);
+        return camera.preSSE * (node.geometricError / distance);
     }
     if (node.boundingVolume.sphere) {
         const cameraLocalPosition = camera.camera3D.position.clone();
@@ -116,7 +115,7 @@ function computeNodeSSE(camera, node) {
         cameraLocalPosition.y -= node.matrixWorld.elements[13];
         cameraLocalPosition.z -= node.matrixWorld.elements[14];
         const distance = node.boundingVolume.sphere.distanceToPoint(cameraLocalPosition);
-        return preSSE * (node.geometricError / distance);
+        return camera.preSSE * (node.geometricError / distance);
     }
     return Infinity;
 }
