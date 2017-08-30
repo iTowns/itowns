@@ -16,7 +16,6 @@ import { computeTileZoomFromDistanceCamera, computeDistanceCameraFromTileZoom } 
 // Recast touch for globe
 // Fix target problem with pan and panoramic (when target isn't on globe)
 // Fix problem with space
-// Add real collision
 
 // FIXME:
 // when move globe in damping orbit, there isn't move!!
@@ -410,6 +409,10 @@ function GlobeControls(view, target, radius, options = {}) {
     this.minAzimuthAngle = -Infinity; // radians
     this.maxAzimuthAngle = Infinity; // radians
 
+    // Set collision options
+    this.handleCollision = typeof (options.handleCollision) !== 'undefined' ? options.handleCollision : true;
+    this.minDistanceCollision = 100;
+
     // Set to true to disable use of the keys
     this.enableKeys = true;
 
@@ -573,6 +576,10 @@ function GlobeControls(view, target, radius, options = {}) {
     const axisX = new THREE.Vector3(1, 0, 0);
 
     var update = function update() {
+        // We test if camera collide to geometry layer or too close to ground and ajust it's altitude in case
+        if (this.handleCollision) { // We check distance to the ground/surface geometry. (Could be another geometry layer)
+            this._view.camera.adjustAltitudeToAvoidCollisionWithLayer(this._view, view.getLayers(layer => layer.type === 'geometry')[0], this.minDistanceCollision);
+        }
         // MOVE_GLOBE
         // Rotate globe with mouse
         if (state === CONTROL_STATE.MOVE_GLOBE) {

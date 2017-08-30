@@ -4,6 +4,7 @@
 
 import * as THREE from 'three';
 import Coordinates from '../Core/Geographic/Coordinates';
+import DEMUtils from '../utils/DEMUtils';
 
 function Camera(crs, width, height, options = {}) {
     Object.defineProperty(this, 'crs', { get: () => crs });
@@ -98,6 +99,31 @@ Camera.prototype.box3SizeOnScreen = function box3SizeOnScreen(box3, matrixWorld)
         tmp.box3.applyMatrix4(this._viewMatrix);
     }
     return tmp.box3;
+};
+
+ /**
+ * Test for collision between camera and a geometry layer (DTM/DSM) to adjust camera position
+ * It could be modified later to handle an array of geometry layers
+ * TODO Improve Coordinates class to handle altitude for any coordinate system (even projected one)
+ * @param {view} view where we test the collision between geometry layers and the camera
+ * @param {elevationLayer} elevationLayer (DTM/DSM) used to test the collision with the camera. Could be another geometry layer
+ * @param {minDistanceCollision} minDistanceCollision the minimum distance allowed between the camera and the surface
+ */
+Camera.prototype.adjustAltitudeToAvoidCollisionWithLayer = function adjustAltitudeToAvoidCollisionWithLayer(view, elevationLayer, minDistanceCollision) {
+    // We put the camera location in geographic by default to easily handle altitude. (Should be improved in Coordinates class for all ref)
+    const camLocation = view.camera.position().as('EPSG:4326');
+    if (elevationLayer !== undefined) {
+        const elevationUnderCamera = DEMUtils.getElevationValueAt(elevationLayer, camLocation);
+        if (elevationUnderCamera != undefined) {
+            const difElevation = camLocation.altitude() - (elevationUnderCamera.z + minDistanceCollision);
+            // We move the camera to avoid collisions if too close to terrain
+            if (difElevation < 0) {
+                camLocation.setAltitude(elevationUnderCamera.z + minDistanceCollision);
+                view.camera.camera3D.position.copy(camLocation.as(view.referenceCrs).xyz());
+                view.notifyChange(true);
+            }
+        }
+    }
 };
 
 export default Camera;
