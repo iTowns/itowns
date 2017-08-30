@@ -146,7 +146,6 @@ function PlanarControls(view, options = {}) {
     // with this, PlanarControl.update() will be called each frame
     this.view.addFrameRequester(this);
 
-
     // Updates the view and camera if needed, and handles the animated travel
     this.update = function update(dt, updateLoopRestarted) {
         // dt will not be relevant when we just started rendering, we consider a 1-frame move in this case
@@ -215,24 +214,29 @@ function PlanarControls(view, options = {}) {
     * The drag movement is previously initiated by initiatePan()
     * Compute the pan value and update the camera controls.
     */
-    this.handlePanMovement = function handlePanMovement() {
-        // normalized (betwwen 0 and 1) distance between groundLevel and maxAltitude
-        const distToGround = THREE.Math.clamp((this.camera.position.z - this.groundLevel) / this.maxAltitude, 0, 1);
+    this.handlePanMovement = (() => {
+        const vec = new THREE.Vector3();
 
-        // pan movement speed, adujsted according to altitude
-        const panSpeed = THREE.Math.lerp(this.minPanSpeed, this.maxPanSpeed, distToGround);
+        return () => {
+            // normalized (betwwen 0 and 1) distance between groundLevel and maxAltitude
+            const distToGround = THREE.Math.clamp((this.camera.position.z - this.groundLevel) / this.maxAltitude, 0, 1);
 
-        // lateral movement (local x axis)
-        this.camera.position.copy(this.camera.localToWorld(new THREE.Vector3(panSpeed * -1 * deltaMousePosition.x, 0, 0)));
+            // pan movement speed, adujsted according to altitude
+            const panSpeed = THREE.Math.lerp(this.minPanSpeed, this.maxPanSpeed, distToGround);
 
-        // vertical movement (world z axis)
-        const newAltitude = this.camera.position.z + panSpeed * deltaMousePosition.y;
+            // lateral movement (local x axis)
+            vec.set(panSpeed * -1 * deltaMousePosition.x, 0, 0);
+            this.camera.position.copy(this.camera.localToWorld(vec));
 
-        // check if altitude is valid
-        if (newAltitude < this.maxAltitude && newAltitude > this.groundLevel) {
-            this.camera.position.z = newAltitude;
-        }
-    };
+            // vertical movement (world z axis)
+            const newAltitude = this.camera.position.z + panSpeed * deltaMousePosition.y;
+
+            // check if altitude is valid
+            if (newAltitude < this.maxAltitude && newAltitude > this.groundLevel) {
+                this.camera.position.z = newAltitude;
+            }
+        };
+    })();
 
     /**
     * Initiate a rotate (orbit) movement
@@ -253,8 +257,8 @@ function PlanarControls(view, options = {}) {
     * Compute the new position value and update the camera controls.
     */
     this.handleRotation = (() => {
+        const vec = new THREE.Vector3();
         const quat = new THREE.Quaternion();
-        let quatInverse = new THREE.Quaternion();
 
         return () => {
             // angle deltas
@@ -265,31 +269,30 @@ function PlanarControls(view, options = {}) {
             // the vector from centerPoint (focus point) to camera position
             const offset = this.camera.position.clone().sub(centerPoint);
 
-            quat.setFromUnitVectors(this.camera.up, new THREE.Vector3(0, 0, 1));
-            quatInverse = quat.clone().inverse();
-
             if (thetaDelta !== 0 || phiDelta !== 0) {
                 if ((phi + phiDelta >= this.minZenithAngle)
                 && (phi + phiDelta <= this.maxZenithAngle)
                 && phiDelta !== 0) {
                     // rotation around X (altitude)
                     phi += phiDelta;
+
+                    vec.set(0, 0, 1);
+                    quat.setFromUnitVectors(this.camera.up, vec);
                     offset.applyQuaternion(quat);
 
-                    const rotationXQuaternion = new THREE.Quaternion();
-                    const vector = new THREE.Vector3();
+                    vec.setFromMatrixColumn(this.camera.matrix, 0);
+                    quat.setFromAxisAngle(vec, phiDelta);
+                    offset.applyQuaternion(quat);
 
-                    vector.setFromMatrixColumn(this.camera.matrix, 0);
-                    rotationXQuaternion.setFromAxisAngle(vector, phiDelta);
-                    offset.applyQuaternion(rotationXQuaternion);
-                    offset.applyQuaternion(quatInverse);
+                    vec.set(0, 0, 1);
+                    quat.setFromUnitVectors(this.camera.up, vec).inverse();
+                    offset.applyQuaternion(quat);
                 }
                 if (thetaDelta !== 0) {
                     // rotation around Z (azimuth)
-
-                    const rotationZQuaternion = new THREE.Quaternion();
-                    rotationZQuaternion.setFromAxisAngle(new THREE.Vector3(0, 0, 1), thetaDelta);
-                    offset.applyQuaternion(rotationZQuaternion);
+                    vec.set(0, 0, 1);
+                    quat.setFromAxisAngle(vec, thetaDelta);
+                    offset.applyQuaternion(quat);
                 }
             }
 
@@ -528,16 +531,15 @@ function PlanarControls(view, options = {}) {
     */
     this.getWorldPointFromMathPlaneAtScreenXY = (() => {
         const vector = new THREE.Vector3();
-        let dir = new THREE.Vector3();
-        let pointUnderCursor = new THREE.Vector3();
         return (posXY, altitude) => {
             vector.set((posXY.x / this.domElement.clientWidth) * 2 - 1, -(posXY.y / this.domElement.clientHeight) * 2 + 1, 0.5);
             vector.unproject(this.camera);
-            dir = vector.sub(this.camera.position).normalize();
+            // dir = direction toward the point on the plane
+            const dir = vector.sub(this.camera.position).normalize();
+            // distance from camera to point on the plane
             const distance = (altitude - this.camera.position.z) / dir.z;
-            pointUnderCursor = this.camera.position.clone().add(dir.multiplyScalar(distance));
 
-            return pointUnderCursor;
+            return this.camera.position.clone().add(dir.multiplyScalar(distance));
         };
     })();
 
@@ -548,21 +550,17 @@ function PlanarControls(view, options = {}) {
     * @param {THREE.Vector2} posXY : the mouse position in screen space (unit : pixel)
     * @returns {THREE.Vector3}
     */
-    this.getWorldPointAtScreenXY = (() => {
-        // the returned value
-        const pointUnderCursor = new THREE.Vector3();
-        return (posXY) => {
-            // check if there is valid geometry under cursor
-            if (typeof this.view.getPickingPositionFromDepth(posXY) !== 'undefined') {
-                pointUnderCursor.copy(this.view.getPickingPositionFromDepth(posXY));
-            }
-            // if not, we use the mathematical plane at altitude = groundLevel
-            else {
-                pointUnderCursor.copy(this.getWorldPointFromMathPlaneAtScreenXY(posXY, this.groundLevel));
-            }
+    this.getWorldPointAtScreenXY = function getWorldPointAtScreenXY(posXY) {
+        const pointUnderCursor = this.view.getPickingPositionFromDepth(posXY);
+        // check if there is valid geometry under cursor
+        if (pointUnderCursor) {
             return pointUnderCursor;
-        };
-    })();
+        }
+        // if not, we use the mathematical plane at altitude = groundLevel
+        else {
+            return this.getWorldPointFromMathPlaneAtScreenXY(posXY, this.groundLevel);
+        }
+    };
 
     this.updateMousePositionAndDelta = function updateMousePositionAndDelta(event) {
         mousePosition.set(event.clientX, event.clientY);
@@ -623,12 +621,10 @@ function PlanarControls(view, options = {}) {
         }
     };
 
-    PlanarControls.prototype = Object.create(THREE.EventDispatcher.prototype);
-    PlanarControls.prototype.constructor = PlanarControls;
-
-    // event listeners for user input
+    // event listeners for user input (to activate the controls)
     this.addInputListeners();
 }
+// ===== end of PlanarControls constructor =====
 
 /**
 * Catch and manage the event when a touch on the mouse is down.
@@ -735,7 +731,7 @@ var onContextMenu = function onContextMenu(event) {
 * @returns {number}
 */
 var smooth = function smooth(value) {
-    // p between 1.0 and 1.5
+    // p between 1.0 and 1.5 (empirical)
     const p = 1.20;
     return Math.pow((value * value * (3 - 2 * value)), p);
 };
