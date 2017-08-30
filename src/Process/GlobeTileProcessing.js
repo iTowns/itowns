@@ -12,6 +12,18 @@ let SSE_SUBDIVISION_THRESHOLD;
 
 const worldToScaledEllipsoid = new THREE.Matrix4();
 
+function _preSSE(view) {
+    const canvasSize = view.mainLoop.gfxEngine.getWindowSize();
+    const hypotenuse = canvasSize.length();
+    const radAngle = view.camera.camera3D.fov * Math.PI / 180;
+
+     // TODO: not correct -> see new preSSE
+    // const HFOV = 2.0 * Math.atan(Math.tan(radAngle * 0.5) / context.camera.ratio);
+    const HYFOV = 2.0 * Math.atan(Math.tan(radAngle * 0.5) * hypotenuse / canvasSize.x);
+
+    preSSE = hypotenuse * (2.0 * Math.tan(HYFOV * 0.5));
+}
+
 export function preGlobeUpdate(context, layer) {
     // We're going to use the method described here:
     //    https://cesiumjs.org/2013/04/25/Horizon-culling/
@@ -30,15 +42,7 @@ export function preGlobeUpdate(context, layer) {
     vhMagnitudeSquared = cV.lengthSq() - 1.0;
 
     // pre-sse
-    const canvasSize = context.engine.getWindowSize();
-    const hypotenuse = canvasSize.length();
-    const radAngle = context.camera.camera3D.fov * Math.PI / 180;
-
-     // TODO: not correct -> see new preSSE
-    // const HFOV = 2.0 * Math.atan(Math.tan(radAngle * 0.5) / context.camera.ratio);
-    const HYFOV = 2.0 * Math.atan(Math.tan(radAngle * 0.5) * hypotenuse / canvasSize.x);
-
-    preSSE = hypotenuse * (2.0 * Math.tan(HYFOV * 0.5));
+    _preSSE(context.view);
 }
 
 function pointHorizonCulling(pt) {
@@ -139,7 +143,8 @@ export function globeSchemeTileWMTS(type) {
     return schemeT;
 }
 
-export function computeTileZoomFromDistanceCamera(distance) {
+export function computeTileZoomFromDistanceCamera(distance, view) {
+    _preSSE(view);
     const sizeEllipsoid = ellipsoidSizes().x;
     const preSinus = SIZE_TEXTURE_TILE * (SSE_SUBDIVISION_THRESHOLD * 0.5) / preSSE / sizeEllipsoid;
 

@@ -1615,7 +1615,7 @@ GlobeControls.prototype.isAnimationEnabled = function isAnimationEnabled() {
  * @return     {number}  The zoom .
  */
 GlobeControls.prototype.getZoom = function getZoom() {
-    return computeTileZoomFromDistanceCamera(this.getRange());
+    return computeTileZoomFromDistanceCamera(this.getRange(), this._view);
 };
 
 /**
