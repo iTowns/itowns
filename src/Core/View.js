@@ -1,9 +1,3 @@
-/**
- * Generated On: 2015-10-5
- * Class: Scene
- * Description: La Scene est l'instance principale du client. Elle est le chef orchestre de l'application.
- */
-
 /* global window, requestAnimationFrame */
 import { Scene, EventDispatcher, Vector2 } from 'three';
 import Camera from '../Renderer/Camera';

@@ -88,6 +88,10 @@ function PlanarControls(view, options = {}) {
     this.focusOnMouseOver = options.focusOnMouseOver || true;
     this.focusOnMouseClick = options.focusOnMouseClick || true;
 
+    // Set collision options
+    this.handleCollision = typeof (options.handleCollision) !== 'undefined' ? options.handleCollision : true;
+    this.minDistanceCollision = 30;
+
     // starting camera position and orientation target are setup before instanciating PlanarControls
     // using: view.camera.setPosition() and view.camera.lookAt()
     // startPosition and startQuaternion are stored to be able to return to the start view
@@ -148,6 +152,10 @@ function PlanarControls(view, options = {}) {
 
     // Updates the view and camera if needed, and handles the animated travel
     this.update = function update(dt, updateLoopRestarted) {
+        // We test if camera collide to geometry layer or too close to ground and ajust it's altitude in case
+        if (this.handleCollision) { // We check distance to the ground/surface geometry. (Could be another geometry layer)
+            this.view.camera.adjustAltitudeToAvoidCollisionWithLayer(this.view, view.getLayers(layer => layer.type === 'geometry')[0], this.minDistanceCollision);
+        }
         // dt will not be relevant when we just started rendering, we consider a 1-frame move in this case
         if (updateLoopRestarted) {
             dt = 16;

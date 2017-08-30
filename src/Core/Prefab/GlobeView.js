@@ -237,6 +237,7 @@ function GlobeView(viewerDiv, coordCarto, options = {}) {
         this.camera.camera3D.lookAt(positionTargetCamera.as('EPSG:4978').xyz());
     } else {
         this.controls = new GlobeControls(this, positionTargetCamera.as('EPSG:4978').xyz(), size);
+        this.controls.handleCollision = typeof (options.handleCollision) !== 'undefined' ? options.handleCollision : true;
     }
 
     this._renderState = RendererConstant.FINAL;
