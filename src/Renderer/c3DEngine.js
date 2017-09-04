@@ -8,6 +8,7 @@
 
 import * as THREE from 'three';
 import Capabilities from '../Core/System/Capabilities';
+import { unpack1K } from './LayeredMaterial';
 
 function c3DEngine(rendererOrDiv, options = {}) {
     const NOIE = !Capabilities.isInternetExplorer();
@@ -179,5 +180,22 @@ c3DEngine.prototype.getUniqueThreejsLayer = function getUniqueThreejsLayer() {
 
     return result;
 };
+
+const depthRGBA = new THREE.Vector4();
+c3DEngine.prototype.depthBufferRGBAValueToOrthoZ = function depthBufferRGBAValueToOrthoZ(depthBufferRGBA, camera) {
+    depthRGBA.fromArray(depthBufferRGBA).divideScalar(255.0);
+
+    if (Capabilities.isLogDepthBufferSupported()) {
+        const gl_FragDepthEXT = unpack1K(depthRGBA);
+        const logDepthBufFC = 2.0 / (Math.log(camera.far + 1.0) / Math.LN2);
+        // invert function : gl_FragDepthEXT = log2(vFragDepth) * logDepthBufFC * 0.5;
+        return Math.pow(2.0, 2.0 * gl_FragDepthEXT / logDepthBufFC);
+    } else {
+        let gl_FragCoord_Z = unpack1K(depthRGBA);
+        gl_FragCoord_Z = gl_FragCoord_Z * 2.0 - 1.0;
+        return 2.0 * camera.near * camera.far / (camera.far + camera.near - gl_FragCoord_Z * (camera.far - camera.near));
+    }
+};
+
 
 export default c3DEngine;

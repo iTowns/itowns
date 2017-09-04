@@ -389,7 +389,6 @@ const screen = new THREE.Vector2();
 const pickWorldPosition = new THREE.Vector3();
 const ray = new THREE.Ray();
 const direction = new THREE.Vector3();
-const depthRGBA = new THREE.Vector4();
 GlobeView.prototype.getPickingPositionFromDepth = function getPickingPositionFromDepth(mouse) {
     const dim = this.mainLoop.gfxEngine.getWindowSize();
     mouse = mouse || dim.clone().multiplyScalar(0.5);
@@ -427,13 +426,11 @@ GlobeView.prototype.getPickingPositionFromDepth = function getPickingPositionFro
     direction.applyMatrix4(matrix);
     direction.sub(ray.origin);
 
-    var angle = direction.angleTo(ray.direction);
+    const angle = direction.angleTo(ray.direction);
+    const orthoZ = this.mainLoop.gfxEngine.depthBufferRGBAValueToOrthoZ(buffer, camera);
+    const length = orthoZ / Math.cos(angle);
 
-    depthRGBA.fromArray(buffer).divideScalar(255.0);
-
-    var depth = unpack1K(depthRGBA, 100000000.0) / Math.cos(angle);
-
-    pickWorldPosition.addVectors(camera.position, ray.direction.setLength(depth));
+    pickWorldPosition.addVectors(camera.position, ray.direction.setLength(length));
 
     // Restore initial state
     this.changeRenderState(previousRenderState);
