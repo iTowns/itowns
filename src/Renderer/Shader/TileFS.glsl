@@ -51,11 +51,11 @@ void main() {
         gl_FragColor = packDepthToRGBA(float(uuid) / (256.0 * 256.0 * 256.0));
     #elif defined(DEPTH_MODE)
         #if defined(USE_LOGDEPTHBUF) && defined(USE_LOGDEPTHBUF_EXT)
-            float z = 1.0/ gl_FragCoord.w ;
+            float z = gl_FragDepthEXT ;
         #else
-            float z = gl_FragCoord.z / gl_FragCoord.w;
+            float z = gl_FragCoord.z;
         #endif
-        gl_FragColor = packDepthToRGBA(z / 100000000.0);
+        gl_FragColor = packDepthToRGBA(z);
     #else
 
 
