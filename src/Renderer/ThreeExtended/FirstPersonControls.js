@@ -1,7 +1,5 @@
 import * as THREE from 'three';
 
-const MAX_FOV = 90;
-
 // Note: we could use existing three.js controls (like https://github.com/mrdoob/three.js/blob/dev/examples/js/controls/FirstPersonControls.js)
 // but including these controls in itowns allows use to integrate them tightly with itowns.
 // Especially the existing controls are expecting a continuous update loop while we have a pausable one (so our controls use .notifyChange when needed)
@@ -12,15 +10,18 @@ function onDocumentMouseDown(event) {
 
     this._onMouseDownMouseX = event.clientX;
     this._onMouseDownMouseY = event.clientY;
-    this._onMouseDownPhi = this._phi;
-    this._onMouseDownTheta = this._theta;
+    this._onMouseDownRotZ = this.camera.rotation.z;
+    this._onMouseDownRotX = this.camera.rotation.x;
 }
 
 function onDocumentMouseMove(event) {
     if (this._isUserInteracting === true) {
-        const fovCorrection = this.camera.fov / MAX_FOV; // 1 at MAX_FOV
-        this._phi = (this._onMouseDownMouseX - event.clientX) * 0.13 * fovCorrection + this._onMouseDownPhi;
-        this._theta = (event.clientY - this._onMouseDownMouseY) * 0.13 * fovCorrection + this._onMouseDownTheta;
+        // in rigor we have tan(theta) = tan(cameraFOV) * deltaH / H
+        // (where deltaH is the vertical amount we moved, and H the renderer height)
+        // we loosely approximate tan(x) by x
+        const pxToAngleRatio = THREE.Math.degToRad(this.camera.fov) / this.view.mainLoop.gfxEngine.height;
+        this.camera.rotation.z = (this._onMouseDownMouseX - event.clientX) * pxToAngleRatio + this._onMouseDownRotZ;
+        this.camera.rotation.x = (event.clientY - this._onMouseDownMouseY) * pxToAngleRatio + this._onMouseDownRotX;
         this.view.notifyChange(false);
     }
 }
@@ -67,14 +68,10 @@ class FirstPersonControls extends THREE.EventDispatcher {
         this._isUserInteracting = false;
         this._onMouseDownMouseX = 0;
         this._onMouseDownMouseY = 0;
-        this._onMouseDownPhi = 0;
-        this._onMouseDownTheta = 0;
+        this._onMouseDownRotZ = 0;
+        this._onMouseDownRotX = 0;
 
-        // init from camera rotation
         this.camera.rotation.reorder('ZYX');
-        this._theta = THREE.Math.radToDeg(this.camera.rotation.x);
-        this._phi = THREE.Math.radToDeg(this.camera.rotation.z);
-        this.updateAngles();
 
         const domElement = view.mainLoop.gfxEngine.renderer.domElement;
         domElement.addEventListener('mousedown', onDocumentMouseDown.bind(this), false);
@@ -98,14 +95,6 @@ class FirstPersonControls extends THREE.EventDispatcher {
         return this.moves.size !== 0;
     }
 
-    updateAngles() {
-        this.camera.rotation.order = 'ZYX';
-        this.camera.rotation.x = THREE.Math.degToRad(this._theta);
-        this.camera.rotation.z = THREE.Math.degToRad(this._phi);
-
-        this.view.notifyChange(true);
-    }
-
     update(dt, updateLoopRestarted) {
         // if we are in a keypressed state, then update position
 
@@ -123,7 +112,7 @@ class FirstPersonControls extends THREE.EventDispatcher {
         }
 
         if (this.moves.size || this._isUserInteracting) {
-            this.updateAngles();
+            this.view.notifyChange(true);
         }
     }
 }
