@@ -518,7 +518,7 @@ function GlobeControls(view, target, radius, options = {}) {
             targetDistance *= Math.tan((this.camera.fov / 2) * Math.PI / 180.0);
 
             // we actually don't use screenWidth, since perspective camera is fixed to screen height
-            this.panLeft(2 * deltaX * targetDistance / element.clientHeight);
+            this.panLeft(2 * deltaX * targetDistance * this.camera.aspect / element.clientWidth);
             this.panUp(2 * deltaY * targetDistance / element.clientHeight);
         } else if (this.camera instanceof THREE.OrthographicCamera) {
             // orthographic
