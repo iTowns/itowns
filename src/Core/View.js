@@ -282,6 +282,27 @@ View.prototype.addLayer = function addLayer(layer, parentLayer) {
 };
 
 /**
+ * Removes a layer from the view
+ * @param {string} layerId - the id of the layer to remove
+ */
+View.prototype.removeLayer = function removeLayer(layerId) {
+    const layers = this.getLayers((l => l.id == layerId));
+    if (layers.length === 0) {
+        throw new Error(`No layer with id '${layerId}' to remove`);
+    }
+    const toRemove = this.scene.children.filter((c => c.layer == layerId));
+    for (const obj of toRemove) {
+        const idx = this.scene.children.indexOf(obj);
+        this.scene.children.splice(idx, 1);
+    }
+
+    const idx = this._layers.indexOf(layers[0]);
+    this._layers.splice(idx, 1);
+
+    this.notifyChange(true);
+};
+
+/**
  * Notifies the scene it needs to be updated due to changes exterior to the
  * scene itself (e.g. camera movement).
  * non-interactive events (e.g: texture loaded)
