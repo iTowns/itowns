@@ -73,7 +73,7 @@ export default {
                     // We don't use node.matrixWorld here, because feature coordinates are
                     // expressed in crs coordinates (which may be different than world coordinates,
                     // if node's layer is attached to an Object with a non-identity transformation)
-                    const tmp = node.extent.center().xyz().negate();
+                    const tmp = node.extent.center().as(context.view.referenceCrs).xyz().negate();
                     applyOffset(result, tmp);
                     if (colorFunction) {
                         colorFunction(layer, node, result);
