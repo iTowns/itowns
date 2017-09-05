@@ -166,7 +166,11 @@ function configureTile(tile, layer, metadata, parent) {
     tile.applyMatrix(tile.transform);
     tile.geometricError = metadata.geometricError;
     tile.tileId = metadata.tileId;
-    tile.additiveRefinement = (metadata.refine === 'add');
+    if (metadata.refine) {
+        tile.additiveRefinement = (metadata.refine.toUpperCase() === 'ADD');
+    } else {
+        tile.additiveRefinement = parent ? (parent.additiveRefinement) : false;
+    }
     tile.parentFromLocalTransform = tile.transform;
     tile.worldFromLocalTransform = new THREE.Matrix4().multiplyMatrices(parent ? parent.worldFromLocalTransform : new THREE.Matrix4(), tile.parentFromLocalTransform);
     const m = new THREE.Matrix4();
