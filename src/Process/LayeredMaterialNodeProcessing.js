@@ -5,6 +5,9 @@ import { ImageryLayers } from '../Core/Layer/Layer';
 import { CancelledCommandException } from '../Core/Scheduler/Scheduler';
 import OGCWebServiceHelper, { SIZE_TEXTURE_TILE } from '../Core/Scheduler/Providers/OGCWebServiceHelper';
 
+// max retry loading before changing the status to definitiveError
+const MAX_RETRY = 4;
+
 function initNodeImageryTexturesFromParent(node, parent, layer) {
     if (parent.material && parent.material.getColorLayerLevelById(layer.id) > EMPTY_TEXTURE_ZOOM) {
         const coords = node.getCoordsForLayer(layer);
@@ -243,10 +246,13 @@ export function updateLayeredMaterialNodeImagery(context, layer, node) {
                     // eslint-disable-next-line no-console
                     console.warn(`Imagery texture update error for ${node}: ${err}`);
                 }
-                node.layerUpdateState[layer.id].failure(Date.now());
-                window.setTimeout(() => {
-                    context.view.notifyChange(false, node);
-                }, node.layerUpdateState[layer.id].secondsUntilNextTry() * 1000);
+                const definitiveError = node.layerUpdateState[layer.id].errorCount > MAX_RETRY;
+                node.layerUpdateState[layer.id].failure(Date.now(), definitiveError);
+                if (!definitiveError) {
+                    window.setTimeout(() => {
+                        context.view.notifyChange(false, node);
+                    }, node.layerUpdateState[layer.id].secondsUntilNextTry() * 1000);
+                }
             }
         });
 }
@@ -347,10 +353,13 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, force) 
                     // eslint-disable-next-line no-console
                     console.warn(`Elevation texture update error for ${node}: ${err}`);
                 }
-                node.layerUpdateState[layer.id].failure(Date.now());
-                window.setTimeout(() => {
-                    context.view.notifyChange(false, node);
-                }, node.layerUpdateState[layer.id].secondsUntilNextTry() * 1000);
+                const definitiveError = node.layerUpdateState[layer.id].errorCount > MAX_RETRY;
+                node.layerUpdateState[layer.id].failure(Date.now(), definitiveError);
+                if (!definitiveError) {
+                    window.setTimeout(() => {
+                        context.view.notifyChange(false, node);
+                    }, node.layerUpdateState[layer.id].secondsUntilNextTry() * 1000);
+                }
             }
         });
 }

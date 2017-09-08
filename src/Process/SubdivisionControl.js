@@ -11,6 +11,10 @@ export default {
         // and if node doesn't have a elevation texture yet.
         for (const e of context.elevationLayers) {
             if (!e.frozen && e.tileInsideLimit(node, e) && !node.isElevationLayerLoaded()) {
+                // no stop subdivision in the case of a loading error
+                if (node.layerUpdateState[e.id] && node.layerUpdateState[e.id].inError()) {
+                    continue;
+                }
                 return false;
             }
         }
@@ -20,11 +24,14 @@ export default {
             if (c.frozen || !c.visible) {
                 continue;
             }
+            // no stop subdivision in the case of a loading error
+            if (node.layerUpdateState[c.id] && node.layerUpdateState[c.id].inError()) {
+                continue;
+            }
             if (c.tileInsideLimit(node, c) && !node.isColorLayerLoaded(c.id)) {
                 return false;
             }
         }
-
         return true;
     },
 };
