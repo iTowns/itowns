@@ -90,9 +90,9 @@ function drawFeatureCollection(ctx, collection, origin, dimension, extent, style
 }
 
 export default {
-    createTextureFromGeoson(geojson, extent, sizeTexture, style) {
+    createTextureFromFeature(feature, extent, sizeTexture, style) {
         // A texture is instancied drawn canvas
-        // origin and dimension are used to transform the geojson's coordinates to canvas's space
+        // origin and dimension are used to transform the feature's coordinates to canvas's space
         const origin = new THREE.Vector2(extent.west(UNIT.DEGREE), extent.south(UNIT.DEGREE));
         const dimension = extent.dimensions(UNIT.DEGREE);
         const c = document.createElement('canvas');
@@ -102,10 +102,10 @@ export default {
         const ctx = c.getContext('2d');
 
         // Draw the canvas
-        if (geojson.geometries) {
-            drawFeatureCollection(ctx, geojson, origin, dimension, extent, style);
+        if (feature.geometries) {
+            drawFeatureCollection(ctx, feature, origin, dimension, extent, style);
         } else {
-            drawFeature(ctx, geojson, origin, dimension, extent, style);
+            drawFeature(ctx, feature, origin, dimension, extent, style);
         }
 
         const texture = new THREE.Texture(c);
