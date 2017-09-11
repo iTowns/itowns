@@ -20,12 +20,10 @@ WMTS_Provider.prototype.customUrl = function customUrl(layer, url, tilematrix, r
 
 WMTS_Provider.prototype.preprocessDataLayer = function preprocessDataLayer(layer) {
     layer.fx = layer.fx || 0.0;
-    if (layer.protocol === 'wmtsc') {
-        layer.options.zoom = {
-            min: 2,
-            max: 20,
-        };
-    } else {
+
+    layer.options = layer.options || {};
+
+    if (layer.protocol === 'wmts') {
         const options = layer.options;
         options.version = options.version || '1.0.0';
         options.tileMatrixSet = options.tileMatrixSet || 'WGS84';
@@ -54,6 +52,7 @@ WMTS_Provider.prototype.preprocessDataLayer = function preprocessDataLayer(layer
         }
         layer.customUrl = newBaseUrl;
     }
+    layer.options.zoom = layer.options.zoom || { min: 2, max: 20 };
 };
 
 /**
@@ -149,16 +148,15 @@ WMTS_Provider.prototype.tileInsideLimit = function tileInsideLimit(tile, layer, 
     // (the zoom.max property is used when building the url to make
     //  sure we don't use invalid levels)
     for (const coord of tile.getCoordsForLayer(layer)) {
+        let c = coord;
+        // override
+        if (targetLevel < c.zoom) {
+            c = OGCWebServiceHelper.WMTS_WGS84Parent(coord, targetLevel);
+        }
+        if (c.zoom < layer.options.zoom.min || c.zoom > layer.options.zoom.max) {
+            return false;
+        }
         if (layer.options.tileMatrixSetLimits) {
-            let c = coord;
-            // override
-            if (targetLevel < c.zoom) {
-                c = OGCWebServiceHelper.WMTS_WGS84Parent(coord, targetLevel);
-            }
-
-            if (!(c.zoom in layer.options.tileMatrixSetLimits)) {
-                return false;
-            }
             if (c.row < layer.options.tileMatrixSetLimits[c.zoom].minTileRow ||
                 c.row > layer.options.tileMatrixSetLimits[c.zoom].maxTileRow ||
                 c.col < layer.options.tileMatrixSetLimits[c.zoom].minTileCol ||
