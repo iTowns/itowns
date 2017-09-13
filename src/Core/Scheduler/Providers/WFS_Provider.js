@@ -68,7 +68,10 @@ WFS_Provider.prototype.executeCommand = function executeCommand(command) {
 
     const func = supportedFormats[layer.format];
     if (func) {
-        return func(destinationCrs, tile, layer, command).then(result => command.resolve(result));
+        return func(destinationCrs, tile, layer, command).then(result => command.resolve(result)).catch((error) => {
+            // eslint-disable-next-line no-console
+            console.error(error.stack);
+        });
     } else {
         return Promise.reject(new Error(`Unsupported mimetype ${layer.format}`));
     }
