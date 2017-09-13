@@ -95,6 +95,16 @@ MainLoop.prototype._step = function _step(view, timestamp) {
 
     view.camera.update(dim.x, dim.y);
 
+    // Disable camera's matrix auto update to make sure the camera's
+    // world matrix is never updated mid-update.
+    // Otherwise inconsistencies can appear because object visibility
+    // testing and object drawing could be performed using different
+    // camera matrixWorld.
+    // Note: this is required at least because WEBGLRenderer calls
+    // camera.updateMatrixWorld()
+    const oldAutoUpdate = view.camera.camera3D.matrixAutoUpdate;
+    view.camera.camera3D.matrixAutoUpdate = false;
+
     // update data-structure
     this._update(view, updateSources, dt);
 
@@ -117,6 +127,8 @@ MainLoop.prototype._step = function _step(view, timestamp) {
     if (__DEBUG__) {
         document.title = document.title.substr(0, document.title.length - 2);
     }
+
+    view.camera.camera3D.matrixAutoUpdate = oldAutoUpdate;
 };
 
 MainLoop.prototype._renderView = function _renderView(view) {
