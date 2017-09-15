@@ -52,7 +52,7 @@ WFS_Provider.prototype.preprocessDataLayer = function preprocessDataLayer(layer)
 };
 
 WFS_Provider.prototype.tileInsideLimit = function tileInsideLimit(tile, layer) {
-    return (layer.level === undefined || tile.level === layer.level) && layer.extent.intersect(tile.extent);
+    return (layer.level === undefined || tile.level === layer.level) && layer.extent.intersectsExtent(tile.extent);
 };
 
 WFS_Provider.prototype.executeCommand = function executeCommand(command) {

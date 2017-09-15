@@ -137,7 +137,7 @@ export default {
         }
     },
     tileInsideLimit(tile, layer) {
-        return layer.ready && tile.level >= layer.options.zoom.min && tile.level <= layer.options.zoom.max && layer.extent.intersect(tile.extent);
+        return layer.ready && tile.level >= layer.options.zoom.min && tile.level <= layer.options.zoom.max && layer.extent.intersectsExtent(tile.extent);
     },
     executeCommand(command) {
         const layer = command.layer;

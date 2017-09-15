@@ -296,13 +296,30 @@ Extent.prototype.offsetScale = function offsetScale(bbox) {
  * @param {type} bbox
  * @returns {Boolean}
  */
-Extent.prototype.intersect = function intersect(bbox) {
+Extent.prototype.intersectsExtent = function intersectsExtent(bbox) {
     const other = bbox.as(this.crs());
     return !(this.west() >= other.east(this._internalStorageUnit) ||
              this.east() <= other.west(this._internalStorageUnit) ||
              this.south() >= other.north(this._internalStorageUnit) ||
              this.north() <= other.south(this._internalStorageUnit));
 };
+
+/**
+ * @documentation: Return the intersection of this extent with another one
+ * @param {type} other
+ * @returns {Boolean}
+ */
+Extent.prototype.intersect = function intersect(other) {
+    if (!this.intersectsExtent(other)) {
+        return new Extent(this.crs(), 0, 0, 0, 0);
+    }
+    return new Extent(this.crs(),
+        Math.max(this.west(), other.west(this._internalStorageUnit)),
+        Math.min(this.east(), other.east(this._internalStorageUnit)),
+        Math.max(this.south(), other.south(this._internalStorageUnit)),
+        Math.min(this.north(), other.north(this._internalStorageUnit)));
+};
+
 
 Extent.prototype.set = function set(west, east, south, north) {
     this._values[CARDINAL.WEST] = west;

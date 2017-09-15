@@ -63,7 +63,7 @@ function drawFeature(ctx, feature, origin, dimension, extent, style = {}) {
     const coordinates = feature.geometry.coordinates.slice();
     if (feature.geometry.type === 'point') {
         drawPoint(ctx, coordinates[0], origin, dimension, style);
-    } else if (feature.geometry.extent.intersect(extent)) {
+    } else if (feature.geometry.extent.intersectsExtent(extent)) {
         ctx.globalCompositeOperation = 'destination-over';
         drawPolygon(ctx, coordinates, origin, dimension, properties, style);
     }
@@ -72,14 +72,14 @@ function drawFeature(ctx, feature, origin, dimension, extent, style = {}) {
 function drawFeatureCollection(ctx, collection, origin, dimension, extent, style = {}) {
     for (const features of collection.geometries) {
         /* eslint-disable guard-for-in */
-        if (features.extent.intersect(extent)) {
+        if (features.extent.intersectsExtent(extent)) {
             for (const id in features.featureVertices) {
                 const polygon = features.featureVertices[id];
                 const properties = collection.features[id].properties.properties;
                 const coordinates = features.coordinates.slice(polygon.offset, polygon.offset + polygon.count);
                 if (features.type === 'point') {
                     drawPoint(ctx, coordinates[0], origin, dimension, style);
-                } else if (polygon.extent.intersect(extent)) {
+                } else if (polygon.extent.intersectsExtent(extent)) {
                     ctx.globalCompositeOperation = 'destination-over';
                     drawPolygon(ctx, coordinates, origin, dimension, properties, style);
                 }
