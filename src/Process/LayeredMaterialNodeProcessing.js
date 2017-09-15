@@ -192,9 +192,16 @@ export function updateLayeredMaterialNodeImagery(context, layer, node) {
     }
 
     // does this tile needs a new texture?
-    if (!node.isColorLayerDownscaled(layer)) {
+    if (layer.canTileTextureBeImproved) {
+        // if the layer has a custom method -> use it
+        if (!layer.canTileTextureBeImproved(layer, node)) {
+            return Promise.resolve();
+        }
+    } else if (!node.isColorLayerDownscaled(layer)) {
+        // default decision method
         return Promise.resolve();
     }
+
     // is fetching data from this layer disabled?
     if (!layer.visible || layer.frozen) {
         return Promise.resolve();
