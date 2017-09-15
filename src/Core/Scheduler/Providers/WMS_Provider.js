@@ -5,7 +5,6 @@
  */
 
 
-import * as THREE from 'three';
 import Extent from '../../Geographic/Extent';
 import OGCWebServiceHelper from './OGCWebServiceHelper';
 
@@ -76,7 +75,7 @@ WMS_Provider.prototype.tileInsideLimit = function tileInsideLimit(tile, layer) {
         layer.extent.intersectsExtent(tile.extent);
 };
 
-WMS_Provider.prototype.getColorTexture = function getColorTexture(tile, layer) {
+WMS_Provider.prototype.getColorTexture = function getColorTexture(tile, layer, targetLevel) {
     if (!this.tileInsideLimit(tile, layer)) {
         return Promise.reject(`Tile '${tile}' is outside layer bbox ${layer.extent}`);
     }
@@ -84,18 +83,34 @@ WMS_Provider.prototype.getColorTexture = function getColorTexture(tile, layer) {
         return Promise.resolve();
     }
 
-    const coords = tile.extent.as(layer.projection);
+    let extent = tile.extent;
+    // if no specific level requester, use tile.level
+    if (targetLevel === undefined) {
+        targetLevel = tile.level;
+    } else {
+        let parentAtLevel = tile;
+        while (parentAtLevel && parentAtLevel.level > targetLevel) {
+            parentAtLevel = parentAtLevel.parent;
+        }
+        if (!parentAtLevel) {
+            return Promise.reject(`Invalid targetLevel requested ${targetLevel}`);
+        }
+        extent = parentAtLevel.extent;
+        targetLevel = parentAtLevel.level;
+    }
+
+    const coords = extent.as(layer.projection);
     const url = this.url(coords, layer);
-    const pitch = new THREE.Vector3(0, 0, 1);
+    const pitch = tile.extent.offsetToParent(extent);
     const result = { pitch };
 
     return OGCWebServiceHelper.getColorTextureByUrl(url, layer.networkOptions).then((texture) => {
         result.texture = texture;
-        result.texture.extent = tile.extent; // useless?
+        result.texture.extent = extent;
         result.texture.coords = coords;
         // LayeredMaterial expects coords.zoom to exist, and describe the
         // precision of the texture (a la WMTS).
-        result.texture.coords.zoom = tile.level;
+        result.texture.coords.zoom = targetLevel;
         return result;
     });
 };
@@ -113,7 +128,7 @@ WMS_Provider.prototype.executeCommand = function executeCommand(command) {
     const func = supportedFormats[layer.format];
 
     if (func) {
-        return func(tile, layer);
+        return func(tile, layer, command.targetLevel);
     } else {
         return Promise.reject(new Error(`Unsupported mimetype ${layer.format}`));
     }
