@@ -36,6 +36,10 @@ view.addLayer({
     options: {
         mimetype: 'image/jpeg',
     },
+    updateStrategy: {
+        type: itowns.STRATEGY_DICHOTOMY,
+        options: {},
+    },
 });
 
 // Add an WMS elevation layer (see WMS_Provider* for valid options)
