@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 
 import View from '../View';
+import { RENDERING_PAUSED } from '../MainLoop';
 import RendererConstant from '../../Renderer/RendererConstant';
 import { unpack1K } from '../../Renderer/LayeredMaterial';
 
@@ -143,6 +144,7 @@ function PlanarView(viewerDiv, extent, options = {}) {
     this.addLayer(tileLayer);
 
     this._renderState = RendererConstant.FINAL;
+    this._fullSizeDepthBuffer = null;
 
     this.tileLayer = tileLayer;
 }
@@ -204,6 +206,14 @@ PlanarView.prototype.screenCoordsToNodeId = function screenCoordsToNodeId(mouse)
     return Math.round(unpack);
 };
 
+PlanarView.prototype.readDepthBuffer = function readDepthBuffer(x, y, width, height) {
+    const g = this.mainLoop.gfxEngine;
+    const previousRenderState = this._renderState;
+    this.changeRenderState(RendererConstant.DEPTH);
+    const buffer = g.renderViewTobuffer(this, g.fullSizeRenderTarget, x, y, width, height);
+    this.changeRenderState(previousRenderState);
+    return buffer;
+};
 
 const matrix = new THREE.Matrix4();
 const screen = new THREE.Vector2();
@@ -211,24 +221,29 @@ const pickWorldPosition = new THREE.Vector3();
 const ray = new THREE.Ray();
 const direction = new THREE.Vector3();
 PlanarView.prototype.getPickingPositionFromDepth = function getPickingPositionFromDepth(mouse) {
-    const dim = this.mainLoop.gfxEngine.getWindowSize();
-    mouse = mouse || dim.clone().multiplyScalar(0.5);
+    const l = this.mainLoop;
+    const viewPaused = l.scheduler.commandsWaitingExecutionCount() == 0 && l.renderingState == RENDERING_PAUSED;
+    const g = l.gfxEngine;
+    const dim = g.getWindowSize();
+    const camera = this.camera.camera3D;
 
-    var camera = this.camera.camera3D;
+    mouse = mouse || dim.clone().multiplyScalar(0.5);
+    mouse.x = Math.floor(mouse.x);
+    mouse.y = Math.floor(mouse.y);
 
     // Prepare state
-    const prev = this.camera.camera3D.layers.mask;
-    this.camera.camera3D.layers.mask = 1 << this.tileLayer.threejsLayer;
+    const prev = camera.layers.mask;
+    camera.layers.mask = 1 << this.tileLayer.threejsLayer;
 
-    const previousRenderState = this._renderState;
-    this.changeRenderState(RendererConstant.DEPTH);
-
-    // Render to buffer
-    var buffer = this.mainLoop.gfxEngine.renderViewTobuffer(
-        this,
-        this.mainLoop.gfxEngine.fullSizeRenderTarget,
-        mouse.x, dim.y - mouse.y,
-        1, 1);
+     // Render/Read to buffer
+    let buffer;
+    if (viewPaused) {
+        this._fullSizeDepthBuffer = this._fullSizeDepthBuffer || this.readDepthBuffer(0, 0, dim.x, dim.y);
+        const id = ((dim.y - mouse.y - 1) * dim.x + mouse.x) * 4;
+        buffer = this._fullSizeDepthBuffer.slice(id, id + 4);
+    } else {
+        buffer = this.readDepthBuffer(mouse.x, dim.y - mouse.y - 1, 1, 1);
+    }
 
     screen.x = (mouse.x / dim.x) * 2 - 1;
     screen.y = -(mouse.y / dim.y) * 2 + 1;
@@ -248,13 +263,11 @@ PlanarView.prototype.getPickingPositionFromDepth = function getPickingPositionFr
     direction.sub(ray.origin);
 
     const angle = direction.angleTo(ray.direction);
-    const orthoZ = this.mainLoop.gfxEngine.depthBufferRGBAValueToOrthoZ(buffer, camera);
+    const orthoZ = g.depthBufferRGBAValueToOrthoZ(buffer, camera);
     const length = orthoZ / Math.cos(angle);
 
     pickWorldPosition.addVectors(camera.position, ray.direction.setLength(length));
 
-    // Restore initial state
-    this.changeRenderState(previousRenderState);
     camera.layers.mask = prev;
 
     if (pickWorldPosition.length() > 10000000)
