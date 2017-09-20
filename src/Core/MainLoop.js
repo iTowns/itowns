@@ -1,7 +1,7 @@
 import { EventDispatcher } from 'three';
 
-const RENDERING_PAUSED = 0;
-const RENDERING_SCHEDULED = 1;
+export const RENDERING_PAUSED = 0;
+export const RENDERING_SCHEDULED = 1;
 
 function MainLoop(scheduler, engine) {
     this.renderingState = RENDERING_PAUSED;
