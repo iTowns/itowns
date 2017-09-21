@@ -112,6 +112,7 @@ Extent.prototype.as = function as(crs) {
         let east = -Infinity;
         let west = Infinity;
         for (let i = 0; i < cardinals.length; i++) {
+            cardinals[i]._internalStorageUnit = this._internalStorageUnit;
             cardinals[i] = cardinals[i].as(crs);
             north = Math.max(north, cardinals[i]._values[1]);
             south = Math.min(south, cardinals[i]._values[1]);
