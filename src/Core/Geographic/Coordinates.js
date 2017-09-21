@@ -9,6 +9,8 @@ import proj4 from 'proj4';
 import mE from '../Math/MathExtended';
 import Ellipsoid from '../Math/Ellipsoid';
 
+proj4.defs('EPSG:4978', '+proj=geocent +datum=WGS84 +units=m +no_defs');
+
 const projectionCache = {};
 
 export function ellipsoidSizes() {
@@ -148,8 +150,22 @@ function _convert(coordsIn, newCrs, target) {
         }
 
         if (coordsIn.crs in proj4.defs && newCrs in proj4.defs) {
-            const p = instanceProj4(coordsIn.crs, newCrs).forward([coordsIn._values[0], coordsIn._values[1]]);
-            return target.set(newCrs, p[0], p[1], coordsIn._values[2]);
+            // little hack due to our choice to use Radian for the EPSG:4326 projection (instead of the standard EPSG:4326 in Degree)
+            const needToHack = coordsIn.crs === 'EPSG:4326' && coordsIn._internalStorageUnit == UNIT.RADIAN;
+            const val0 = needToHack ? mE.radToDeg(coordsIn._values[0]) : coordsIn._values[0];
+            const val1 = needToHack ? mE.radToDeg(coordsIn._values[1]) : coordsIn._values[1];
+
+            // there is a bug for converting anything to 4978 with proj4
+            if (newCrs == 'EPSG:4978') {
+                // the workaround is to use an intermediate projection, like EPSG:4326
+                const p = instanceProj4(coordsIn.crs, 'EPSG:4326').forward([val0, val1]);
+                target.set('EPSG:4326', p[0], p[1], coordsIn._values[2]);
+                return target.as('EPSG:4978');
+            } else {
+                // here is the normal case with proj4
+                const p = instanceProj4(coordsIn.crs, newCrs).forward([val0, val1]);
+                return target.set(newCrs, p[0], p[1], coordsIn._values[2]);
+            }
         }
 
         throw new Error(`Cannot convert from crs ${coordsIn.crs} (unit=${coordsIn._internalStorageUnit}) to ${newCrs}`);
