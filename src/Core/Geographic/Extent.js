@@ -111,7 +111,11 @@ Extent.prototype.as = function as(crs) {
         let south = Infinity;
         let east = -Infinity;
         let west = Infinity;
+        // loop over the coordinates
         for (let i = 0; i < cardinals.length; i++) {
+            // add the internalStorageUnit to the coordinate.
+            cardinals[i]._internalStorageUnit = this._internalStorageUnit;
+            // convert the coordinate.
             cardinals[i] = cardinals[i].as(crs);
             north = Math.max(north, cardinals[i]._values[1]);
             south = Math.min(south, cardinals[i]._values[1]);
