@@ -134,8 +134,11 @@ function _convert(coordsIn, newCrs, target) {
         }
     } else {
         if (coordsIn.crs === 'EPSG:4326' && newCrs === 'EPSG:4978') {
-            const cartesian = ellipsoid.cartographicToCartesian(coordsIn);
-            return target.set(newCrs, cartesian);
+            const normal = new THREE.Vector3();
+            const cartesian = ellipsoid.cartographicToCartesian(coordsIn, normal);
+            target.set(newCrs, cartesian);
+            target.normal = normal;
+            return target;
         }
 
         if (coordsIn.crs === 'EPSG:4978' && newCrs === 'EPSG:4326') {
@@ -149,7 +152,8 @@ function _convert(coordsIn, newCrs, target) {
 
         if (coordsIn.crs in proj4.defs && newCrs in proj4.defs) {
             const p = instanceProj4(coordsIn.crs, newCrs).forward([coordsIn._values[0], coordsIn._values[1]]);
-            return target.set(newCrs, p[0], p[1], coordsIn._values[2]);
+            target.set(newCrs, p[0], p[1], coordsIn._values[2]);
+            return target;
         }
 
         throw new Error(`Cannot convert from crs ${coordsIn.crs} (unit=${coordsIn._internalStorageUnit}) to ${newCrs}`);
