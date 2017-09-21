@@ -44,7 +44,7 @@ view.camera.camera3D.position.set(1839739, 5171618, 910);
 view.camera.camera3D.lookAt(new itowns.THREE.Vector3(1840839, 5172718, 0));
 
 // eslint-disable-next-line no-new
-new itowns.FirstPersonControls(view, { focusOnClick: true, moveSpeed: 1000 });
+new itowns.PlanarControls(view, {});
 
 // Request redraw
 view.notifyChange(true);
