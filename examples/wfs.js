@@ -110,6 +110,7 @@ function colorFunctionBuildings(layer, node, featureCollection) {
 }
 
 view.addLayer({
+    type: 'geometry',
     update: itowns.FeatureProcessing.update(colorFunctionBuildings),
     url: 'http://wxs.ign.fr/72hpsel8j8nhb5qgdh07gcyp/geoportail/wfs?',
     protocol: 'wfs',
@@ -123,6 +124,9 @@ view.addLayer({
         east: 5.18,
         south: 45.437,
         north: 46.03,
+    },
+    style: {
+        extrude: function extrude(properties) { return properties.hauteur; },
     },
     ipr: 'IGN',
     options: {
