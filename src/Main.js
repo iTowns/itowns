@@ -14,6 +14,7 @@ export { processTiledGeometryNode, initTiledGeometryLayer } from './Process/Tile
 export { ColorLayersOrdering } from './Renderer/ColorLayersOrdering';
 export { default as PointsMaterial } from './Renderer/PointsMaterial';
 export { default as PointCloudProcessing } from './Process/PointCloudProcessing';
+export { default as Feature2Mesh } from './Renderer/ThreeExtended/Feature2Mesh';
 export { default as FlyControls } from './Renderer/ThreeExtended/FlyControls';
 export { default as FirstPersonControls } from './Renderer/ThreeExtended/FirstPersonControls';
 export { default as PlanarControls } from './Renderer/ThreeExtended/PlanarControls';
