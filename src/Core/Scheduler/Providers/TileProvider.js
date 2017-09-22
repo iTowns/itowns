@@ -81,6 +81,8 @@ TileProvider.prototype.executeCommand = function executeCommand(command) {
     }
 
     tile.position.copy(params.center);
+    tile.material.transparent = command.layer.opacity < 1.0;
+    tile.material.uniforms.opacity.value = command.layer.opacity;
     tile.setVisibility(false);
     tile.updateMatrix();
     if (parent) {

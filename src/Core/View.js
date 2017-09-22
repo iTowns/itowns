@@ -145,6 +145,14 @@ function _preprocessLayer(view, layer, provider) {
         layer.threejsLayer = view.mainLoop.gfxEngine.getUniqueThreejsLayer();
         defineLayerProperty(layer, 'visible', true, () => _syncThreejsLayer(layer, view));
         _syncThreejsLayer(layer, view);
+        defineLayerProperty(layer, 'opacity', 1.0, () => {
+            layer.object3d.traverse((o) => {
+                if (o.material && o.material.uniforms.opacity) {
+                    o.material.transparent = layer.opacity < 1.0;
+                    o.material.uniforms.opacity.value = layer.opacity;
+                }
+            });
+        });
     }
     return layer;
 }

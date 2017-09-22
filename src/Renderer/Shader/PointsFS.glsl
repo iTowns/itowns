@@ -5,6 +5,7 @@ precision highp int;
 
 varying vec4 vColor;
 uniform bool pickingMode;
+uniform float opacity;
 
 #ifdef DEBUG
 uniform bool useDebugColor;
@@ -21,6 +22,8 @@ void main() {
     }
 
     gl_FragColor = vColor;
+    gl_FragColor.a = opacity;
+
 #ifdef DEBUG
     if (useDebugColor && !pickingMode) {
         gl_FragColor = mix(vColor, vec4(debugColor, 1.0), 0.5);

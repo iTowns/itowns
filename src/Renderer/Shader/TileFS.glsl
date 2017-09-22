@@ -34,6 +34,8 @@ varying vec2        vUv_WGS84;
 varying float       vUv_PM;
 varying vec3        vNormal;
 
+uniform float opacity;
+
 #if defined(DEBUG)
     uniform bool showOutline;
     const float sLine = 0.008;
@@ -147,5 +149,6 @@ void main() {
             gl_FragColor.rgb *= light;
         }
     }
+    gl_FragColor.a = opacity;
     #endif
 }

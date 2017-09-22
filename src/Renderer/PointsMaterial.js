@@ -13,6 +13,7 @@ class PointsMaterial extends RawShaderMaterial {
         this.uniforms.resolution = new Uniform(new Vector2(window.innerWidth, window.innerHeight));
         this.uniforms.pickingMode = new Uniform(false);
         this.uniforms.density = new Uniform(0.01);
+        this.uniforms.opacity = new Uniform(1.0);
 
         if (__DEBUG__) {
             this.uniforms.useDebugColor = new Uniform(false);
