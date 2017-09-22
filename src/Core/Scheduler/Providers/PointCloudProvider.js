@@ -223,6 +223,8 @@ export default {
             points.tightbbox.max.y *= layer.metadata.scale;
             points.tightbbox.max.z *= layer.metadata.scale;
             points.tightbbox.translate(node.bbox.min);
+            points.material.transparent = layer.opacity < 1.0;
+            points.material.uniforms.opacity.value = layer.opacity;
             points.updateMatrix();
             points.updateMatrixWorld(true);
             points.layers.set(layer.threejsLayer);
