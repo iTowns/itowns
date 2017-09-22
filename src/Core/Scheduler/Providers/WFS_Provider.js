@@ -101,7 +101,7 @@ WFS_Provider.prototype.getFeatures = function getFeatures(crs, tile, layer) {
     if (result.feature !== undefined) {
         return Promise.resolve(result);
     }
-    return Fetcher.json(url, layer.networkOptions).then(geojson => assignLayer(Feature2Mesh.convert(GeoJSON2Feature.parse(crs, geojson, tile.extent)), layer));
+    return Fetcher.json(url, layer.networkOptions).then(geojson => assignLayer(Feature2Mesh.convert(GeoJSON2Feature.parse(crs, geojson, tile.extent), layer.style), layer));
 };
 
 WFS_Provider.prototype.getPointOrder = function getPointOrder(crs) {

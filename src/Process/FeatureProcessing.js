@@ -105,17 +105,25 @@ export default {
     assignColorsToFeatureCollection(featureCollection, mesh, colors) {
         // add color attribute to the merged mesh
         const colorAttribute = new Uint8Array(mesh.geometry.attributes.position.count * 3);
+        // if mesh is extruded, there is twice as many vertices.
+        const numVerticesMultiplier = mesh.isExtruded ? 2 : 1;
 
         for (let i = 0; i < featureCollection.features.length; i++) {
             const featureProperties = featureCollection.features[i].properties;
 
             const featureVertices = mesh.featureVertices[featureProperties._idx];
             if (featureVertices) {
-                for (let j = 0; j < featureVertices.count; j++) {
-                    const baseIdx = 3 * (featureVertices.offset + j);
-                    colorAttribute[baseIdx + 0] = colors[i].r * 255;
-                    colorAttribute[baseIdx + 1] = colors[i].g * 255;
-                    colorAttribute[baseIdx + 2] = colors[i].b * 255;
+                // compute the number of vertices
+                const numVertices = featureVertices.count * numVerticesMultiplier;
+                for (let j = 0; j < numVertices; j++) {
+                    const baseIdx = 3 * (featureVertices.offset * numVerticesMultiplier + j);
+                    // if mesh is extruded, we make the bottom vertices darker than top vertices to create a pretty shadow effect.
+                    // and the bottom vertices are positionned after the top vertices.
+                    const brightness = (mesh.isExtruded && j >= featureVertices.count) ? 150 : 255;
+
+                    colorAttribute[baseIdx + 0] = colors[i].r * brightness;
+                    colorAttribute[baseIdx + 1] = colors[i].g * brightness;
+                    colorAttribute[baseIdx + 2] = colors[i].b * brightness;
                 }
             }
         }
