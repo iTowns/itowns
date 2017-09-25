@@ -68,7 +68,10 @@ WFS_Provider.prototype.executeCommand = function executeCommand(command) {
 
     const func = supportedFormats[layer.format];
     if (func) {
-        return func(destinationCrs, tile, layer, command).then(result => command.resolve(result));
+        return func(destinationCrs, tile, layer, command).then(result => command.resolve(result)).catch((error) => {
+            // eslint-disable-next-line no-console
+            console.error(error.stack);
+        });
     } else {
         return Promise.reject(new Error(`Unsupported mimetype ${layer.format}`));
     }
@@ -98,7 +101,7 @@ WFS_Provider.prototype.getFeatures = function getFeatures(crs, tile, layer) {
     if (result.feature !== undefined) {
         return Promise.resolve(result);
     }
-    return Fetcher.json(url, layer.networkOptions).then(geojson => assignLayer(Feature2Mesh.convert(GeoJSON2Feature.parse(crs, geojson, tile.extent)), layer));
+    return Fetcher.json(url, layer.networkOptions).then(geojson => assignLayer(Feature2Mesh.convert(GeoJSON2Feature.parse(crs, geojson, tile.extent), layer.style), layer));
 };
 
 WFS_Provider.prototype.getPointOrder = function getPointOrder(crs) {

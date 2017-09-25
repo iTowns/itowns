@@ -1,0 +1,69 @@
+<html>
+    <head>
+        <title>Itowns - Globe + WFS</title>
+
+        <style type="text/css">
+            html {
+                height: 100%;
+            }
+
+            body {
+                margin: 0;
+                overflow:hidden;
+                height:100%;
+            }
+
+            #viewerDiv {
+                margin : auto auto;
+                width: 100%;
+                height: 100%;
+                padding: 0;
+            }
+            #menuDiv {
+                position: absolute;
+                top:0px;
+                margin-left: 0px;
+            }
+            @media (max-width: 600px) {
+                #menuDiv {
+                    display: none;
+                }
+            }
+        </style>
+        <meta charset="UTF-8">
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="GUI/dat.gui/dat.gui.min.js"></script>
+    </head>
+    <body>
+        <div id="viewerDiv"></div>
+        <script src="GUI/GuiTools.js"></script>
+        <script src="../dist/itowns.js"></script>
+        <script src="../dist/debug.js"></script>
+        <script type="text/javascript">
+            var renderer;
+            var exports = {};
+        </script>
+        <script src="globe_wfs_extruded.js"></script>
+        <script type="text/javascript">
+            /* global itowns, document, GuiTools, globeView, promises */
+            var menuGlobe = new GuiTools('menuDiv');
+            menuGlobe.view = globeView;
+            // Listen for globe full initialisation event
+            globeView.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
+                // eslint-disable-next-line no-console
+                console.info('Globe initialized');
+                Promise.all(promises).then(function () {
+                    menuGlobe.addImageryLayersGUI(globeView.getLayers(function (l) { return l.type === 'color'; }));
+                    menuGlobe.addElevationLayersGUI(globeView.getLayers(function (l) { return l.type === 'elevation'; }));
+
+                    globeView.controls.setTilt(75, true);
+                });
+            });
+            const d = new debug.Debug(globeView, menuGlobe.gui);
+            debug.createTileDebugUI(menuGlobe.gui, globeView, globeView.wgs84TileLayer, d);
+
+
+        </script>
+    </body>
+</html>
