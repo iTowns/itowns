@@ -106,7 +106,7 @@ const GeometryToCoordinates = {
     multiLineString(crsIn, crsOut, coordsIn, filteringExtent, options) {
         let result;
         for (const line of coordsIn) {
-            const l = this.lineString(crsIn, crsOut, line, options);
+            const l = this.lineString(crsIn, crsOut, line, filteringExtent, options);
             if (!l) {
                 return;
             }
