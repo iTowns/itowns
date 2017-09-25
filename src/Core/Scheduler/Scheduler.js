@@ -56,6 +56,10 @@ function _instanciateQueue() {
                 this.counters.executing--;
                 cmd.reject(err);
                 this.counters.failed++;
+                if (__DEBUG__) {
+                    // eslint-disable-next-line no-console
+                    console.error(err);
+                }
             });
         },
     };
