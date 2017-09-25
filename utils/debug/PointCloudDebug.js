@@ -97,7 +97,7 @@ export default {
                 if (layer._currentDbgNode) {
                     for (const n of layer._currentDbgNode) {
                         if (n.obj) {
-                            n.obj.material.uniforms.useDebugColor.value = false;
+                            n.obj.material.uniforms.useCustomColor.value = false;
                         }
                     }
                 }
@@ -116,7 +116,7 @@ export default {
             // hook update
             layer.update = (context, layer, elt) => {
                 if (elt.obj) {
-                    elt.obj.material.uniforms.useDebugColor.value = false;
+                    elt.obj.material.uniforms.useCustomColor.value = false;
                     if (elt.obj.boxHelper) {
                         elt.obj.boxHelper.material.visible = false;
                     }
@@ -142,8 +142,8 @@ export default {
                     if (stickies.indexOf(elt.name) >= 0) { // is this node the sticky node?
                         layer._currentDbgNode.push(elt);
                         if (elt.obj) {
-                            elt.obj.material.uniforms.useDebugColor.value = true;
-                            elt.obj.material.uniforms.debugColor.value = new itowns.THREE.Color(layer.dbgStickyNodeColor);
+                            elt.obj.material.uniforms.useCustomColor.value = true;
+                            elt.obj.material.uniforms.customColor.value = new itowns.THREE.Color(layer.dbgStickyNodeColor);
                         }
                     } else {
                         for (const name of stickies) {
@@ -159,27 +159,27 @@ export default {
                     }
                 } else if (layer.dbgEnablePointCount) {
                     if (elt.obj && elt.obj.material.visible) {
-                        elt.obj.material.uniforms.useDebugColor.value = true;
+                        elt.obj.material.uniforms.useCustomColor.value = true;
 
                         const pc = elt.obj.geometry.drawRange.count;
                         if (pc < layer.dbgPointCountThreshold1) {
-                            elt.obj.material.uniforms.debugColor.value.setRGB(1, 0, 0);
+                            elt.obj.material.uniforms.customColor.value.setRGB(1, 0, 0);
                             if (layer.dbgDisplayType != 'all' && layer.dbgDisplayType != 'red') {
                                 elt.obj.material.visible = false;
                             }
                         } else if (pc < layer.dbgPointCountThreshold2) {
-                            elt.obj.material.uniforms.debugColor.value.setRGB(0, 1, 0);
+                            elt.obj.material.uniforms.customColor.value.setRGB(0, 1, 0);
                             if (layer.dbgDisplayType != 'all' && layer.dbgDisplayType != 'green') {
                                 elt.obj.material.visible = false;
                             }
                         } else {
-                            elt.obj.material.uniforms.debugColor.value.setRGB(0, 0, 1);
+                            elt.obj.material.uniforms.customColor.value.setRGB(0, 0, 1);
                             if (layer.dbgDisplayType != 'all' && layer.dbgDisplayType != 'blue') {
                                 elt.obj.material.visible = false;
                             }
                         }
                         if (elt.obj.boxHelper) {
-                            elt.obj.boxHelper.material.color.copy(elt.obj.material.uniforms.debugColor.value);
+                            elt.obj.boxHelper.material.color.copy(elt.obj.material.uniforms.customColor.value);
                         }
                     }
                 }
