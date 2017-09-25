@@ -93,7 +93,19 @@ void main() {
 
                 if(paramsA.w > 0.0) {
                     bool projWGS84 = paramsA.y == 0.0;
+                    int pmTextureCount = int(paramsA.y);
                     int textureIndex = int(paramsA.x) + (projWGS84 ? 0 : pmSubTextureIndex);
+
+                    if (!projWGS84 && pmTextureCount <= textureIndex) {
+                        continue;
+                    }
+
+                    #if defined(DEBUG)
+                    if (showOutline && !projWGS84 && (uvPM.x < sLine || uvPM.x > 1.0 - sLine || uvPM.y < sLine || uvPM.y > 1.0 - sLine)) {
+                        gl_FragColor = COrange;
+                        return;
+                    }
+                    #endif
 
                     /* if (0 <= textureIndex && textureIndex < loadedTexturesCount[1]) */ {
 
