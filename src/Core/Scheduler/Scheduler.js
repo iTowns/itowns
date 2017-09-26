@@ -56,7 +56,7 @@ function _instanciateQueue() {
                 this.counters.executing--;
                 cmd.reject(err);
                 this.counters.failed++;
-                if (__DEBUG__) {
+                if (__DEBUG__ && this.counters.failed < 3) {
                     // eslint-disable-next-line no-console
                     console.error(err);
                 }
