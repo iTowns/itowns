@@ -9,6 +9,8 @@ import proj4 from 'proj4';
 import mE from '../Math/MathExtended';
 import Ellipsoid from '../Math/Ellipsoid';
 
+proj4.defs('EPSG:4978', '+proj=geocent +datum=WGS84 +units=m +no_defs');
+
 const projectionCache = {};
 
 export function ellipsoidSizes() {
@@ -148,8 +150,38 @@ function _convert(coordsIn, newCrs, target) {
         }
 
         if (coordsIn.crs in proj4.defs && newCrs in proj4.defs) {
-            const p = instanceProj4(coordsIn.crs, newCrs).forward([coordsIn._values[0], coordsIn._values[1]]);
-            return target.set(newCrs, p[0], p[1], coordsIn._values[2]);
+            let val0 = coordsIn._values[0];
+            let val1 = coordsIn._values[1];
+
+            // Verify that coordinates are stored in reference unit.
+            const refUnit = crsToUnit(coordsIn.crs);
+            if (coordsIn._internalStorageUnit != coordsIn.crs) {
+                if (coordsIn._internalStorageUnit == UNIT.DEGREE && refUnit == UNIT.RADIAN) {
+                    val0 = coordsIn.longitude(UNIT.RADIAN);
+                    val1 = coordsIn.latitude(UNIT.RADIAN);
+                } else if (coordsIn._internalStorageUnit == UNIT.RADIAN && refUnit == UNIT.DEGREE) {
+                    val0 = coordsIn.longitude(UNIT.DEGREE);
+                    val1 = coordsIn.latitude(UNIT.DEGREE);
+                }
+            }
+
+            // there is a bug for converting anything from and to 4978 with proj4
+            // https://github.com/proj4js/proj4js/issues/195
+            // the workaround is to use an intermediate projection, like EPSG:4326
+            if (newCrs == 'EPSG:4978') {
+                const p = instanceProj4(coordsIn.crs, 'EPSG:4326').forward([val0, val1]);
+                target.set('EPSG:4326', p[0], p[1], coordsIn._values[2]);
+                return target.as('EPSG:4978');
+            } else if (coordsIn.crs === 'EPSG:4978') {
+                const coordsInInter = coordsIn.as('EPSG:4326');
+                const p = instanceProj4(coordsInInter.crs, newCrs).forward([coordsInInter._values[0], coordsInInter._values[1]]);
+                target.set(newCrs, p[0], p[1], coordsInInter._values[2]);
+                return target;
+            } else {
+                // here is the normal case with proj4
+                const p = instanceProj4(coordsIn.crs, newCrs).forward([val0, val1]);
+                return target.set(newCrs, p[0], p[1], coordsIn._values[2]);
+            }
         }
 
         throw new Error(`Cannot convert from crs ${coordsIn.crs} (unit=${coordsIn._internalStorageUnit}) to ${newCrs}`);
