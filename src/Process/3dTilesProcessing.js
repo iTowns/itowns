@@ -15,12 +15,12 @@ function requestNewTile(view, scheduler, geometryLayer, metadata, parent) {
 
 function subdivideNode(context, layer, node) {
     if (!node.pendingSubdivision && node.children.filter(n => n.layer == layer.id).length == 0) {
-        node.pendingSubdivision = true;
-
         const childrenTiles = layer.tileIndex.index[node.tileId].children;
-        if (childrenTiles === undefined) {
+        if (childrenTiles === undefined || childrenTiles.length === 0) {
             return;
         }
+
+        node.pendingSubdivision = true;
 
         const promises = [];
         for (let i = 0; i < childrenTiles.length; i++) {
