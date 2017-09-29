@@ -145,11 +145,29 @@ function _preprocessLayer(view, layer, provider) {
         layer.threejsLayer = view.mainLoop.gfxEngine.getUniqueThreejsLayer();
         defineLayerProperty(layer, 'visible', true, () => _syncThreejsLayer(layer, view));
         _syncThreejsLayer(layer, view);
-        defineLayerProperty(layer, 'opacity', 1.0, () => {
-            layer.object3d.traverse((o) => {
-                if (o.material && o.material.uniforms.opacity) {
+
+        const changeOpacity = (o) => {
+            if (o.material) {
+                // != undefined: we want the test to pass if opacity is 0
+                if (o.material.opacity != undefined) {
+                    o.material.transparent = layer.opacity < 1.0;
+                    o.material.opacity = layer.opacity;
+                }
+                if (o.material.uniforms && o.material.uniforms.opacity != undefined) {
                     o.material.transparent = layer.opacity < 1.0;
                     o.material.uniforms.opacity.value = layer.opacity;
+                }
+            }
+        };
+        defineLayerProperty(layer, 'opacity', 1.0, () => {
+            layer.object3d.traverse((o) => {
+                if (o.layer !== layer.id) {
+                    return;
+                }
+                changeOpacity(o);
+                // 3dtiles layers store scenes in children's content property
+                if (o.content) {
+                    o.content.traverse(changeOpacity);
                 }
             });
         });

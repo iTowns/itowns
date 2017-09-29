@@ -65,6 +65,7 @@ function Atmosphere() {
         side: THREE.FrontSide,
         blending: THREE.AdditiveBlending,
         transparent: true,
+        depthWrite: false,
     });
 
     this.atmosphereIN = new THREE.Mesh((new THREE.SphereGeometry(1.002, 64, 64)).scale(size.x, size.y, size.z), materialAtmoIn);
