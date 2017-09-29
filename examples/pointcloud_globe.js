@@ -1,5 +1,5 @@
 /* global itowns, debug, dat */
-
+var promises = [];
 // eslint-disable-next-line no-unused-vars
 function showPointcloud(serverUrl, fileName, lopocsTable) {
     var pointcloud;
@@ -19,10 +19,15 @@ function showPointcloud(serverUrl, fileName, lopocsTable) {
         '+y_0=5200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
 
     debugGui = new dat.GUI();
+    
+    var positionOnGlobe = { longitude: 2.351323, latitude: 48.856712, altitude: 25000000 };
+    view = new itowns.GlobeView(viewerDiv, positionOnGlobe, { renderer: renderer });
 
-    // TODO: do we really need to disable logarithmicDepthBuffer ?
-    view = new itowns.View('EPSG:3946', viewerDiv, { renderer: { logarithmicDepthBuffer: true } });
+    function addLayerCb(layer) {
+    return view.addLayer(layer);
+}
     view.mainLoop.gfxEngine.renderer.setClearColor(0xcccccc);
+
 
     // Configure Point Cloud layer
     pointcloud = new itowns.GeometryLayer('pointcloud', view.scene);
@@ -51,10 +56,6 @@ function showPointcloud(serverUrl, fileName, lopocsTable) {
     function placeCamera(position, lookAt) {
         view.camera.camera3D.position.set(position.x, position.y, position.z);
         view.camera.camera3D.lookAt(lookAt);
-        // create controls
-        controls = new itowns.FirstPersonControls(view, { focusOnClick: true });
-        debugGui.add(controls, 'moveSpeed', 1, 100).name('Movement speed');
-
         view.notifyChange(true);
     }
 
@@ -87,6 +88,6 @@ function showPointcloud(serverUrl, fileName, lopocsTable) {
                 view.mainLoop.gfxEngine.renderer.info.memory.geometries + ')';
         };
     }
-
-    view.addLayer(pointcloud).then(onLayerReady);
+    promises.push(itowns.Fetcher.json('./layers/JSONLayers/OPENSM.json').then(addLayerCb));
+    view.addLayer(pointcloud);//.then(onLayerReady);
 }
