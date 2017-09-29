@@ -40,7 +40,7 @@ BuilderEllipsoidTile.prototype.Prepare = function Prepare(params) {
 // get center tile in cartesian 3D
 BuilderEllipsoidTile.prototype.Center = function Center(params) {
     params.center = params.extent.center(this.tmp.coords[0])
-        .as('EPSG:4978', this.tmp.coords[1]).xyz();
+        .as(params.crs, this.tmp.coords[1]).xyz();
     return params.center;
 };
 
@@ -49,7 +49,7 @@ BuilderEllipsoidTile.prototype.VertexPosition = function VertexPosition(params) 
     this.tmp.coords[0]._values[0] = params.projected.longitudeRad;
     this.tmp.coords[0]._values[1] = params.projected.latitudeRad;
 
-    this.tmp.coords[0].as('EPSG:4978', this.tmp.coords[1]).xyz(this.tmp.position);
+    this.tmp.coords[0].as(params.crs, this.tmp.coords[1]).xyz(this.tmp.position);
     this.tmp.normal.copy(this.tmp.position).normalize();
     return this.tmp.position;
 };

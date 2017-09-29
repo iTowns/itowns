@@ -67,6 +67,7 @@ TileProvider.prototype.executeCommand = function executeCommand(command) {
         segment: 16,
         materialOptions: command.layer.materialOptions,
         disableSkirt: command.layer.disableSkirt,
+        crs: command.view.referenceCrs,
     };
 
     const geometry = new TileGeometry(params, command.layer.builder);

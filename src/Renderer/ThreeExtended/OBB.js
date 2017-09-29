@@ -123,11 +123,6 @@ OBB.extentToOBB = function extentToOBB(extent, minHeight = 0, maxHeight = 0) {
         throw new Error('The extent crs is not a Geographic Coordinates (EPSG:4326)');
     }
 
-    // Calcule the center world position with the extent.
-    extent.center(tmp.cardinals[8]);
-    const centerWorld = tmp.cardinals[8].as('EPSG:4978', tmp.epsg4978).xyz();
-    tmp.normal.copy(centerWorld).normalize();
-
     const bboxDimension = extent.dimensions(UNIT.RADIAN);
     const phiStart = extent.west(UNIT.RADIAN);
     const phiLength = bboxDimension.x;
@@ -155,8 +150,17 @@ OBB.extentToOBB = function extentToOBB(extent, minHeight = 0, maxHeight = 0) {
     tmp.cardinals[6]._values[1] = thetaStart + thetaLength;
     tmp.cardinals[7]._values[0] = phiStart;
     tmp.cardinals[7]._values[1] = thetaStart + bboxDimension.y * 0.5;
+    extent.center(tmp.cardinals[8]);
 
+    return OBB.cardinals4978ToOBB(tmp.cardinals, minHeight, maxHeight);
+};
+
+OBB.cardinals4978ToOBB = function cardinals4978ToOBB(cardinals, minHeight = 0, maxHeight = 0) {
     var cardin3DPlane = [];
+
+    // Calcule the center world position with the extent.
+    const centerWorld = cardinals[8].as('EPSG:4978', tmp.epsg4978).xyz();
+    tmp.normal.copy(centerWorld).normalize();
 
     tmp.maxV.set(-1000, -1000, -1000);
     tmp.minV.set(1000, 1000, 1000);
@@ -168,8 +172,8 @@ OBB.extentToOBB = function extentToOBB(extent, minHeight = 0, maxHeight = 0) {
         new THREE.Vector3(0, 0, 1), -tmp.cardinals[8].longitude(UNIT.RADIAN));
     tmp.qRotY.multiply(tmp.planeZ);
 
-    for (var i = 0; i < tmp.cardinals.length; i++) {
-        tmp.cardinals[i].as('EPSG:4978', tmp.epsg4978).xyz(tmp.cardinal3D);
+    for (var i = 0; i < cardinals.length; i++) {
+        cardinals[i].as('EPSG:4978', tmp.epsg4978).xyz(tmp.cardinal3D);
         cardin3DPlane.push(tmp.tangentPlaneAtOrigin.projectPoint(tmp.cardinal3D));
         const d = cardin3DPlane[i].distanceTo(tmp.cardinal3D.sub(centerWorld));
         halfMaxHeight = Math.max(halfMaxHeight, d * 0.5);
