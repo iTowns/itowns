@@ -1,0 +1,50 @@
+{
+    "type": "color",
+    "protocol":   "wmts",
+    "id":         "Ortho",
+    "url":        "localcolors/jpg/%TILEMATRIX/localcolors_%COL_%ROW.jpg",
+    "networkOptions": {
+        "crossOrigin": "anonymous"
+    },
+    "updateStrategy": {
+        "type": "0",
+        "options": {}
+    },
+    "options": {
+        "mimetype": "image/png",
+        "tileMatrixSet": "PM",
+    
+        "tileMatrixSetLimits": {
+            "0": {
+                "minTileRow": 0,
+                "maxTileRow": 1,
+                "minTileCol": 0,
+                "maxTileCol": 0
+            },
+            "1": {
+                "minTileRow": 0,
+                "maxTileRow": 3,
+                "minTileCol": 0,
+                "maxTileCol": 1
+            },
+            "2": {
+                "minTileRow": 0,
+                "maxTileRow": 7,
+                "minTileCol": 0,
+                "maxTileCol": 3
+            },
+            "3": {
+                "minTileRow": 0,
+                "maxTileRow": 15,
+                "minTileCol": 0,
+                "maxTileCol": 7
+            },
+            "4": {
+                "minTileRow": 0,
+                "maxTileRow": 31,
+                "minTileCol": 0,
+                "maxTileCol": 15
+            }
+        }
+    }
+}
