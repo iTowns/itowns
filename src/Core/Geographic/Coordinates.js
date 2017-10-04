@@ -224,6 +224,29 @@ export function convertValueToUnit(unitIn, unitOut, value) {
 function Coordinates(crs, ...coordinates) {
     this._values = new Float64Array(3);
     this.set(crs, ...coordinates);
+
+    Object.defineProperty(this, 'geodesicNormal',
+        {
+            configurable: true,
+            get: () => {
+                this._normal = this._normal || computeGeodesicNormal(this);
+                return this._normal;
+            },
+        });
+}
+
+const planarNormal = new THREE.Vector3(0, 0, 1);
+
+function computeGeodesicNormal(coord) {
+    if (coord.crs == 'EPSG:4326') {
+        return ellipsoid.geodeticSurfaceNormalCartographic(coord);
+    }
+    // In globe mode (EPSG:4978), we compute the normal.
+    if (coord.crs == 'EPSG:4978') {
+        return ellipsoid.geodeticSurfaceNormal(coord);
+    }
+    // In planar mode, normal is the up vector.
+    return planarNormal;
 }
 
 Coordinates.prototype.set = function set(crs, ...coordinates) {
