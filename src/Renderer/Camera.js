@@ -25,8 +25,9 @@ function resize(camera, width, height) {
         camera.camera3D.aspect = ratio;
         if (camera.camera3D.isOrthographicCamera) {
             const halfH = (camera.camera3D.right - camera.camera3D.left) * 0.5 / ratio;
-            camera.camera3D.top = halfH;
-            camera.camera3D.bottom = -halfH;
+            const y = (camera.camera3D.top + camera.camera3D.bottom) * 0.5;
+            camera.camera3D.top = y + halfH;
+            camera.camera3D.bottom = y - halfH;
         }
     }
 
