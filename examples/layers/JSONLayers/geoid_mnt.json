@@ -6,9 +6,8 @@
     "noDataValue" : -99999,
     "zFactor" : 12000,
     "updateStrategy": {
-        "type": 1,
+        "type": 0,
         "options": {
-            "groups": [3, 7, 11]
         }
     },
     

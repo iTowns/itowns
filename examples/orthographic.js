@@ -61,7 +61,7 @@ view.addLayer({
     },
     updateStrategy: {
         type: itowns.STRATEGY_DICHOTOMY,
-    },
+    }
 });
 
 viewerDiv.addEventListener('DOMMouseScroll', onMouseWheel);

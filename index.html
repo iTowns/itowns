@@ -43,6 +43,7 @@ and open the template in the editor.
             var menuGlobe = new GuiTools('menuDiv', globeView);
             menuGlobe.view = globeView;
 
+
             var promises = []
             promises.push(itowns.Fetcher.json('examples/layers/JSONLayers/geoid_texture.json').then(function(result) { return globeView.addLayer(result); }));
             //promises.push(itowns.Fetcher.json('examples/layers/JSONLayers/OrthosCRS.json').then(function(result) { return globeView.addLayer(result); }));

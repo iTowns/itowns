@@ -172,6 +172,9 @@ const LayeredMaterial = function LayeredMaterial(options) {
 
     this.uniforms.noTextureColor = new THREE.Uniform(new THREE.Color(0.04, 0.23, 0.35));
 
+    this.uniforms.zFactor = new THREE.Uniform(12000);
+    this.uniforms.noData = new THREE.Uniform(0.);
+
     this.colorLayersId = [];
     this.elevationLayersId = [];
 

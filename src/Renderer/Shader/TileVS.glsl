@@ -14,6 +14,9 @@ uniform sampler2D   dTextures_00[1];
 uniform vec3        offsetScale_L00[1];
 uniform int         loadedTexturesCount[8];
 
+uniform float       zFactor;
+uniform float       noData;
+
 uniform mat4        projectionMatrix;
 uniform mat4        modelViewMatrix;
 
@@ -50,7 +53,6 @@ void main() {
                 rgba.rgba = rgba.abgr;
 
                 float dv = max(decode32(rgba),0.0);
-
                 // TODO In RGBA elevation texture LinearFilter give some errors with nodata value.
                 // need to rewrite sample function in shader
                 // simple solution
@@ -59,7 +61,9 @@ void main() {
                 }
 
             #elif defined(DATA_TEXTURE_ELEVATION)
-                float   dv  = max(texture2D( dTextures_00[0], vVv ).w, 0.);
+                //float   dv  = max(texture2D( dTextures_00[0], vVv ).w, 0.);
+                float   dv  = texture2D( dTextures_00[0], vVv ).w;
+                if(dv==noData) dv = 0.;
             #elif defined(COLOR_TEXTURE_ELEVATION)
                 float   dv  = max(texture2D( dTextures_00[0], vVv ).r, 0.);
                 dv = _minElevation + dv * (_maxElevation - _minElevation);
@@ -67,6 +71,8 @@ void main() {
 
             #error Must define either RGBA_TEXTURE_ELEVATION, DATA_TEXTURE_ELEVATION or COLOR_TEXTURE_ELEVATION
             #endif
+            
+            dv *=zFactor;
 
             vPosition = vec4( position +  vNormal  * dv ,1.0 );
         } else {

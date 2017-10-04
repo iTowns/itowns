@@ -13,7 +13,7 @@
     "options": {
         "mimetype": "image/png",
         "tileMatrixSet": "PM",
-    
+        
         "tileMatrixSetLimits": {
             "0": {
                 "minTileRow": 0,
