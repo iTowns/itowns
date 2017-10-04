@@ -219,7 +219,7 @@ class AnimatedExpression extends Animation {
         this.expression = params.expression;
     }
     animate(keyFrame) {
-        this.expression(this.root, keyFrame / this.duration);
+        this.expression(this.root, keyFrame / (this.duration - 1));
     }
 }
 
