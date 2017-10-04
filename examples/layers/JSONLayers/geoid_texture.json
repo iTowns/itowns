@@ -6,6 +6,7 @@
     "networkOptions": {
         "crossOrigin": "anonymous"
     },
+    "fx" :        1.0,
     "updateStrategy": {
         "type": "0",
         "options": {}
