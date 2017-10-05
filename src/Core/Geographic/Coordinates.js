@@ -136,8 +136,11 @@ function _convert(coordsIn, newCrs, target) {
         }
     } else {
         if (coordsIn.crs === 'EPSG:4326' && newCrs === 'EPSG:4978') {
-            const cartesian = ellipsoid.cartographicToCartesian(coordsIn);
-            return target.set(newCrs, cartesian);
+            const normal = ellipsoid.geodeticSurfaceNormalCartographic(coordsIn);
+            const cartesian = ellipsoid.cartographicToCartesian(coordsIn, normal);
+            target.set(newCrs, cartesian);
+            target._normal = normal;
+            return target;
         }
 
         if (coordsIn.crs === 'EPSG:4978' && newCrs === 'EPSG:4326') {
