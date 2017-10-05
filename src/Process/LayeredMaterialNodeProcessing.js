@@ -279,6 +279,9 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, force) 
 
     const material = node.material;
     let currentElevation = material.getElevationLayerLevel();
+    
+    //update zFactor
+    material.setLayerZFactor(layer.zFactor);
 
     // If currentElevevation is EMPTY_TEXTURE_ZOOM but material.loadedTexturesCount[l_ELEVATION] is > 0
     // means that we already tried and failed to download an elevation texture

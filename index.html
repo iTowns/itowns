@@ -46,7 +46,7 @@ and open the template in the editor.
 
             var promises = []
             promises.push(itowns.Fetcher.json('examples/layers/JSONLayers/geoid_texture.json').then(function(result) { return globeView.addLayer(result); }));
-            //promises.push(itowns.Fetcher.json('examples/layers/JSONLayers/OrthosCRS.json').then(function(result) { return globeView.addLayer(result); }));
+           // promises.push(itowns.Fetcher.json('examples/layers/JSONLayers/Ortho.json').then(function(result) { return globeView.addLayer(result); }));
             //promises.push(itowns.Fetcher.json('examples/layers/JSONLayers/ScanEX.json').then(function(result) { return globeView.addLayer(result); }));
             //promises.push(itowns.Fetcher.json('examples/layers/JSONLayers/Region.json').then(function(result) { return globeView.addLayer(result); }));
 
@@ -68,7 +68,7 @@ and open the template in the editor.
             });
 
             const d = new debug.Debug(globeView, menuGlobe.gui);
-            debug.createTileDebugUI(menuGlobe.gui, globeView, globeView.wgs84TileLayer, d);
+            debug.createGeoidDebugUI(menuGlobe.gui, globeView, globeView.wgs84TileLayer, d);
             window.globeView = globeView;
 </script>
     </body>

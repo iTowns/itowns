@@ -1,50 +1,49 @@
 {
     "type": "color",
     "protocol":   "wmts",
-    "id":         "Ortho",
+    "id":         "GeoIDTex",
     "url":        "localcolors/jpg/%TILEMATRIX/localcolors_%COL_%ROW.jpg",
     "networkOptions": {
         "crossOrigin": "anonymous"
     },
-    "fx" :        1.0,
+    "fx" :        0.0,
     "updateStrategy": {
         "type": "0",
         "options": {}
     },
     "options": {
         "mimetype": "image/png",
-        "tileMatrixSet": "PM",
-        
+        "tileMatrixSet": "WGS84G",
         "tileMatrixSetLimits": {
             "0": {
                 "minTileRow": 0,
-                "maxTileRow": 1,
-                "minTileCol": 0,
-                "maxTileCol": 0
-            },
-            "1": {
-                "minTileRow": 0,
-                "maxTileRow": 3,
+                "maxTileRow": 0,
                 "minTileCol": 0,
                 "maxTileCol": 1
             },
-            "2": {
+            "1": {
                 "minTileRow": 0,
-                "maxTileRow": 7,
+                "maxTileRow": 1,
                 "minTileCol": 0,
                 "maxTileCol": 3
             },
-            "3": {
+            "2": {
                 "minTileRow": 0,
-                "maxTileRow": 15,
+                "maxTileRow": 3,
                 "minTileCol": 0,
                 "maxTileCol": 7
             },
-            "4": {
+            "3": {
                 "minTileRow": 0,
-                "maxTileRow": 31,
+                "maxTileRow": 7,
                 "minTileCol": 0,
                 "maxTileCol": 15
+            },
+            "4": {
+                "minTileRow": 0,
+                "maxTileRow": 15,
+                "minTileCol": 0,
+                "maxTileCol": 31
             }
         }
     }

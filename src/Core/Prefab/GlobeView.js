@@ -501,6 +501,11 @@ GlobeView.prototype.setRealisticLightingOn = function setRealisticLightingOn(val
     this.notifyChange(true);
 };
 
+GlobeView.prototype.setZFactor = function setZFactor(value) {
+    this.updateMaterialUniform('zFactor', value);
+    this.notifyChange(true);
+};
+
 GlobeView.prototype.setLightingPos = function setLightingPos(pos) {
     const lightingPos = pos || CoordStars.getSunPositionInScene(this.ellipsoid, new Date().getTime(), 48.85, 2.35);
 

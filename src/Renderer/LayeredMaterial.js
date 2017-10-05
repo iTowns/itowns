@@ -172,7 +172,7 @@ const LayeredMaterial = function LayeredMaterial(options) {
 
     this.uniforms.noTextureColor = new THREE.Uniform(new THREE.Color(0.04, 0.23, 0.35));
 
-    this.uniforms.zFactor = new THREE.Uniform(12000);
+    this.uniforms.zFactor = new THREE.Uniform(19000);
     this.uniforms.noData = new THREE.Uniform(0.);
 
     this.colorLayersId = [];
@@ -434,6 +434,10 @@ LayeredMaterial.prototype.setLayerOpacity = function setLayerOpacity(index, opac
 
 LayeredMaterial.prototype.setLayerVisibility = function setLayerVisibility(index, visible) {
     this.uniforms.visibility.value[index] = visible;
+};
+
+LayeredMaterial.prototype.setLayerZFactor = function setLayerZFactor(zFactor) {
+    this.uniforms.zFactor.value = zFactor;
 };
 
 LayeredMaterial.prototype.setLayerTexturesCount = function setLayerTexturesCount(index, count) {
