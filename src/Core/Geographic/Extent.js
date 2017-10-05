@@ -232,22 +232,22 @@ Extent.prototype.dimensions = function dimensions(unit) {
  * Return true if coord is inside the bounding box.
  *
  * @param {Coordinates} coord
+ * @param {number} epsilon coord is inside the extent (+/- epsilon)
  * @return {boolean}
  */
-Extent.prototype.isPointInside = function isPointInside(coord) {
+Extent.prototype.isPointInside = function isPointInside(coord, epsilon = 0) {
     const c = (this.crs() == coord.crs) ? coord : coord.as(this.crs());
-
     // TODO this ignores altitude
     if (crsIsGeographic(this.crs())) {
-        return c.longitude(this._internalStorageUnit) <= this.east() &&
-               c.longitude(this._internalStorageUnit) >= this.west() &&
-               c.latitude(this._internalStorageUnit) <= this.north() &&
-               c.latitude(this._internalStorageUnit) >= this.south();
+        return c.longitude(this._internalStorageUnit) <= this.east() + epsilon &&
+               c.longitude(this._internalStorageUnit) >= this.west() - epsilon &&
+               c.latitude(this._internalStorageUnit) <= this.north() + epsilon &&
+               c.latitude(this._internalStorageUnit) >= this.south() - epsilon;
     } else {
-        return c.x() <= this.east() &&
-               c.x() >= this.west() &&
-               c.y() <= this.north() &&
-               c.y() >= this.south();
+        return c.x() <= this.east() + epsilon &&
+               c.x() >= this.west() - epsilon &&
+               c.y() <= this.north() + epsilon &&
+               c.y() >= this.south() - epsilon;
     }
 };
 
