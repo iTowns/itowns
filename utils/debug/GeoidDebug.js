@@ -136,11 +136,6 @@ export default function createGeoidDebugUI(datDebugTool, view, layer, debugInsta
         }
     };
     
-        // The sse Threshold for each tile
-    gui.add(layer, 'zFactor', 0, 100).name('zFactor').onChange(() => {
-        view.notifyChange(true);
-    });
-
 
     gui.add(layer, 'visible').name('Visible').onChange(() => {
         view.notifyChange(true);
