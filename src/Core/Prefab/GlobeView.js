@@ -225,8 +225,8 @@ function GlobeView(viewerDiv, coordCarto, options = {}) {
     this.atmosphere.traverse((obj) => { obj.layers.set(atmosphereLayer); });
     this.camera.camera3D.layers.enable(atmosphereLayer);
 
-    wgs84TileLayer.object3d.add(this.atmosphere);
-    this.atmosphere.updateMatrixWorld(true);
+   // wgs84TileLayer.object3d.add(this.atmosphere);
+   // this.atmosphere.updateMatrixWorld(true);
 
 
     // Configure controls
