@@ -14,21 +14,51 @@ import { init3dTilesLayer } from '../../../Process/3dTilesProcessing';
 function $3dTilesIndex(tileset, baseURL) {
     let counter = 0;
     this.index = {};
-    const recurse = function recurse_f(node, baseURL) {
+    const inverseTileTransform = new THREE.Matrix4();
+    const recurse = function recurse_f(node, baseURL, parent) {
+        // compute transform (will become Object3D.matrix when the object is downloaded)
+        node.transform = node.transform ? (new THREE.Matrix4()).fromArray(node.transform) : undefined;
+
+        // The only reason to store _worldFromLocalTransform is because of extendTileset where we need the
+        // transform chain for one node.
+        node._worldFromLocalTransform = node.transform;
+        if (parent && parent._worldFromLocalTransform) {
+            if (node.transform) {
+                node._worldFromLocalTransform = new THREE.Matrix4().multiplyMatrices(
+                    parent._worldFromLocalTransform, node.transform);
+            } else {
+                node._worldFromLocalTransform = parent._worldFromLocalTransform;
+            }
+        }
+
+        // getBox only use inverseTileTransform for volume.region so let's not
+        // compute the inverse matrix each time
+        if ((node.viewerRequestVolume && node.viewerRequestVolume.region)
+            || (node.boundingVolume && node.boundingVolume.region)) {
+            if (node._worldFromLocalTransform) {
+                inverseTileTransform.getInverse(node._worldFromLocalTransform);
+            } else {
+                inverseTileTransform.identity();
+            }
+        }
+
+        node.viewerRequestVolume = node.viewerRequestVolume ? getBox(node.viewerRequestVolume, inverseTileTransform) : undefined;
+        node.boundingVolume = getBox(node.boundingVolume, inverseTileTransform);
+
         this.index[counter] = node;
         node.tileId = counter;
         node.baseURL = baseURL;
         counter++;
         if (node.children) {
             for (const child of node.children) {
-                recurse(child, baseURL);
+                recurse(child, baseURL, node);
             }
         }
     }.bind(this);
     recurse(tileset.root, baseURL);
 
     this.extendTileset = function extendTileset(tileset, nodeId, baseURL) {
-        recurse(tileset.root, baseURL);
+        recurse(tileset.root, baseURL, this.index[nodeId]);
         this.index[nodeId].children = [tileset.root];
     };
 }
@@ -170,8 +200,9 @@ function configureTile(tile, layer, metadata, parent) {
     tile.layer = layer.id;
 
     // parse metadata
-    tile.transform = metadata.transform ? (new THREE.Matrix4()).fromArray(metadata.transform) : new THREE.Matrix4();
-    tile.applyMatrix(tile.transform);
+    if (metadata.transform) {
+        tile.applyMatrix(metadata.transform);
+    }
     tile.geometricError = metadata.geometricError;
     tile.tileId = metadata.tileId;
     if (metadata.refine) {
@@ -179,12 +210,8 @@ function configureTile(tile, layer, metadata, parent) {
     } else {
         tile.additiveRefinement = parent ? (parent.additiveRefinement) : false;
     }
-    tile.parentFromLocalTransform = tile.transform;
-    tile.worldFromLocalTransform = new THREE.Matrix4().multiplyMatrices(parent ? parent.worldFromLocalTransform : new THREE.Matrix4(), tile.parentFromLocalTransform);
-    const m = new THREE.Matrix4();
-    m.getInverse(tile.worldFromLocalTransform);
-    tile.viewerRequestVolume = metadata.viewerRequestVolume ? getBox(metadata.viewerRequestVolume, m) : undefined;
-    tile.boundingVolume = getBox(metadata.boundingVolume, m);
+    tile.viewerRequestVolume = metadata.viewerRequestVolume;
+    tile.boundingVolume = metadata.boundingVolume;
     if (tile.boundingVolume.region) {
         tile.add(tile.boundingVolume.region);
     }

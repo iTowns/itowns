@@ -1,4 +1,6 @@
-function requestNewTile(view, scheduler, geometryLayer, metadata, parent) {
+import * as THREE from 'three';
+
+function requestNewTile(view, scheduler, geometryLayer, metadata, parent, redraw) {
     const command = {
         /* mandatory */
         view,
@@ -7,25 +9,67 @@ function requestNewTile(view, scheduler, geometryLayer, metadata, parent) {
         priority: parent ? 1.0 / (parent.distance + 1) : 100,
         /* specific params */
         metadata,
-        redraw: false,
+        redraw,
     };
 
     return scheduler.execute(command);
 }
 
-function subdivideNode(context, layer, node) {
+function subdivideNode(context, layer, node, cullingTest) {
+    if (node.additiveRefinement) {
+        // Additive refinement can only fetch visible children.
+        _subdivideNodeAdditive(context, layer, node, cullingTest);
+    } else {
+        // Substractive refinement on the other hand requires to replace
+        // node with all of its children
+        _subdivideNodeSubstractive(context, layer, node);
+    }
+}
+
+const tmpMatrix = new THREE.Matrix4();
+function _subdivideNodeAdditive(context, layer, node, cullingTest) {
+    for (const child of layer.tileIndex.index[node.tileId].children) {
+        // child being downloaded => skip
+        if (child.promise || child.loaded) {
+            continue;
+        }
+
+        // 'child' is only metadata (it's *not* a THREE.Object3D). 'cullingTest' needs
+        // a matrixWorld, so we compute it: it's node's matrixWorld x child's transform
+        let overrideMatrixWorld = node.matrixWorld;
+        if (child.transform) {
+            overrideMatrixWorld = tmpMatrix.multiplyMatrices(node.matrixWorld, child.transform);
+        }
+
+        const isVisible = cullingTest ? !cullingTest(context.camera, child, overrideMatrixWorld) : true;
+
+        // child is not visible => skip
+        if (!isVisible) {
+            continue;
+        }
+        child.promise = requestNewTile(context.view, context.scheduler, layer, child, node, true).then((tile) => {
+            node.add(tile);
+            tile.updateMatrixWorld();
+            context.view.notifyChange(true);
+            child.loaded = true;
+            delete child.promise;
+        });
+    }
+}
+
+function _subdivideNodeSubstractive(context, layer, node) {
     if (!node.pendingSubdivision && node.children.filter(n => n.layer == layer.id).length == 0) {
         const childrenTiles = layer.tileIndex.index[node.tileId].children;
         if (childrenTiles === undefined || childrenTiles.length === 0) {
             return;
         }
-
         node.pendingSubdivision = true;
 
         const promises = [];
         for (let i = 0; i < childrenTiles.length; i++) {
             promises.push(
-                requestNewTile(context.view, context.scheduler, layer, childrenTiles[i], node).then((tile) => {
+                requestNewTile(context.view, context.scheduler, layer, childrenTiles[i], node, false).then((tile) => {
+                    childrenTiles[i].loaded = true;
                     node.add(tile);
                     tile.updateMatrixWorld();
                     if (node.additiveRefinement) {
@@ -33,7 +77,6 @@ function subdivideNode(context, layer, node) {
                     }
                 }));
         }
-
         Promise.all(promises).then(() => {
             node.pendingSubdivision = false;
             context.view.notifyChange(true);
@@ -41,7 +84,7 @@ function subdivideNode(context, layer, node) {
     }
 }
 
-export function $3dTilesCulling(node, camera) {
+export function $3dTilesCulling(camera, node, tileMatrixWorld) {
     // For viewer Request Volume https://github.com/AnalyticalGraphicsInc/3d-tiles-samples/tree/master/tilesets/TilesetWithRequestVolume
     if (node.viewerRequestVolume) {
         const nodeViewer = node.viewerRequestVolume;
@@ -55,7 +98,7 @@ export function $3dTilesCulling(node, camera) {
         }
         if (nodeViewer.sphere) {
             const worldCoordinateCenter = nodeViewer.sphere.center.clone();
-            worldCoordinateCenter.applyMatrix4(node.matrixWorld);
+            worldCoordinateCenter.applyMatrix4(tileMatrixWorld);
             // To check the distance between the center sphere and the camera
             if (!(camera.camera3D.position.distanceTo(worldCoordinateCenter) <= nodeViewer.sphere.radius)) {
                 return true;
@@ -67,13 +110,14 @@ export function $3dTilesCulling(node, camera) {
     if (node.boundingVolume) {
         const boundingVolume = node.boundingVolume;
         if (boundingVolume.region) {
-            return !camera.isBox3Visible(boundingVolume.region.box3D, boundingVolume.region.matrixWorld);
+            return !camera.isBox3Visible(boundingVolume.region.box3D,
+                tileMatrixWorld.clone().multiply(boundingVolume.region.matrix));
         }
         if (boundingVolume.box) {
-            return !camera.isBox3Visible(boundingVolume.box, node.matrixWorld);
+            return !camera.isBox3Visible(boundingVolume.box, tileMatrixWorld);
         }
         if (boundingVolume.sphere) {
-            return !camera.isSphereVisible(boundingVolume.sphere, node.matrixWorld);
+            return !camera.isSphereVisible(boundingVolume.sphere, tileMatrixWorld);
         }
     }
     return false;
@@ -124,8 +168,9 @@ function computeNodeSSE(camera, node) {
 }
 
 export function init3dTilesLayer(view, scheduler, layer) {
-    return requestNewTile(view, scheduler, layer, layer.tileset.root).then(
+    return requestNewTile(view, scheduler, layer, layer.tileset.root, undefined, true).then(
             (tile) => {
+                delete layer.tileset;
                 layer.object3d.add(tile);
                 tile.updateMatrixWorld();
                 layer.root = tile;
@@ -150,14 +195,14 @@ export function process3dTilesNode(cullingTest, subdivisionTest) {
         }
 
         // do proper culling
-        const isVisible = cullingTest ? (!cullingTest(node, context.camera)) : true;
+        const isVisible = cullingTest ? (!cullingTest(context.camera, node, node.matrixWorld)) : true;
         node.visible = isVisible;
 
         let returnValue;
 
         if (isVisible) {
             if (node.pendingSubdivision || subdivisionTest(context, layer, node)) {
-                subdivideNode(context, layer, node);
+                subdivideNode(context, layer, node, cullingTest);
                 // display iff children aren't ready
                 setDisplayed(node, node.pendingSubdivision || node.additiveRefinement);
                 returnValue = node.children.filter(n => n.layer == layer.id);
