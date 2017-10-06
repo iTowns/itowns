@@ -194,8 +194,6 @@ function GlobeView(viewerDiv, coordCarto, options = {}) {
     // Setup View
     View.call(this, 'EPSG:4978', viewerDiv, options);
 
-    options.object3d = options.object3d || this.scene;
-
     // Configure camera
     const positionCamera = new C.EPSG_4326(
         coordCarto.longitude,

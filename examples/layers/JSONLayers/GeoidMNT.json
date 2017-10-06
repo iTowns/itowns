@@ -2,9 +2,9 @@
     "type":       "elevation",
     "protocol":   "wmts",
     "id":         "GEOIDMNT",
-    "url":        "geoid/bil/%TILEMATRIX/geoid_%COL_%ROW.bil",
+    "url":        "https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/geoid/geoid/bil/%TILEMATRIX/geoid_%COL_%ROW.bil",
     "noDataValue" : -99999,
-    "zFactor" : 12000,
+    "zFactor" : 1,
     "updateStrategy": {
         "type": 0,
         "options": {

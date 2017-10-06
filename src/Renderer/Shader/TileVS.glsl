@@ -40,7 +40,6 @@ void main() {
         vec4 vPosition;
 
         vNormal = normal;
-
         if(loadedTexturesCount[0] > 0) {
             vec2    vVv = vec2(
                 vUv_WGS84.x * offsetScale_L00[0].z + offsetScale_L00[0].x,
@@ -52,7 +51,6 @@ void main() {
                 rgba.rgba = rgba.abgr;
 
                 float dv = max(decode32(rgba),0.0);
-
                 // TODO In RGBA elevation texture LinearFilter give some errors with nodata value.
                 // need to rewrite sample function in shader
                 // simple solution
@@ -67,12 +65,11 @@ void main() {
                 dv = _minElevation + dv * (_maxElevation - _minElevation);
             #else
 
-            dv *=zFactor;
-
             #error Must define either RGBA_TEXTURE_ELEVATION, DATA_TEXTURE_ELEVATION or COLOR_TEXTURE_ELEVATION
             #endif
 
-            vPosition = vec4( position +  vNormal  * dv ,1.0 );
+            dv *=zFactor;
+            vPosition = vec4( position +  vNormal  * dv ,1.0 );            
         } else {
             vPosition = vec4( position ,1.0 );
         }

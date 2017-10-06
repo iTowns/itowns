@@ -2,7 +2,7 @@
     "type": "color",
     "protocol":   "wmts",
     "id":         "GeoIDTex",
-    "url":        "localcolors/jpg/%TILEMATRIX/localcolors_%COL_%ROW.jpg",
+    "url":        "https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/geoid/localcolors/jpg/%TILEMATRIX/localcolors_%COL_%ROW.jpg",
     "networkOptions": {
         "crossOrigin": "anonymous"
     },
@@ -12,7 +12,7 @@
         "options": {}
     },
     "options": {
-        "mimetype": "image/png",
+        "mimetype": "image/jpg",
         "tileMatrixSet": "WGS84G",
         "tileMatrixSetLimits": {
             "0": {

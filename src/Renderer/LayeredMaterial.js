@@ -488,9 +488,4 @@ LayeredMaterial.prototype.setSelected = function setSelected(selected) {
     this.uniforms.selected.value = selected;
 };
 
-LayeredMaterial.prototype.setLayerZFactor = function setLayerZFactor(zFactor) {
-    this.uniforms.zFactor.value = zFactor;
-};
-
-
 export default LayeredMaterial;
