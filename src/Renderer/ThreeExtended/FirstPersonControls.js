@@ -20,7 +20,7 @@ function onDocumentMouseMove(event) {
         // (where deltaH is the vertical amount we moved, and H the renderer height)
         // we loosely approximate tan(x) by x
         const pxToAngleRatio = THREE.Math.degToRad(this.camera.fov) / this.view.mainLoop.gfxEngine.height;
-        this.camera.rotation.z = (this._onMouseDownMouseX - event.clientX) * pxToAngleRatio + this._onMouseDownRotZ;
+        this.camera.rotation.z = (event.clientX - this._onMouseDownMouseX) * pxToAngleRatio + this._onMouseDownRotZ;
         this.camera.rotation.x = (event.clientY - this._onMouseDownMouseY) * pxToAngleRatio + this._onMouseDownRotX;
         this.view.notifyChange(false);
     }
