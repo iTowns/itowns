@@ -136,8 +136,11 @@ function _convert(coordsIn, newCrs, target) {
         }
     } else {
         if (coordsIn.crs === 'EPSG:4326' && newCrs === 'EPSG:4978') {
-            const cartesian = ellipsoid.cartographicToCartesian(coordsIn);
-            return target.set(newCrs, cartesian);
+            const normal = ellipsoid.geodeticSurfaceNormalCartographic(coordsIn);
+            const cartesian = ellipsoid.cartographicToCartesian(coordsIn, normal);
+            target.set(newCrs, cartesian);
+            target._normal = normal;
+            return target;
         }
 
         if (coordsIn.crs === 'EPSG:4978' && newCrs === 'EPSG:4326') {
@@ -224,7 +227,31 @@ export function convertValueToUnit(unitIn, unitOut, value) {
 function Coordinates(crs, ...coordinates) {
     this._values = new Float64Array(3);
     this.set(crs, ...coordinates);
+
+    Object.defineProperty(this, 'surfaceNormal',
+        {
+            configurable: true,
+            get: () => {
+                const result = this._normal || this.computeSurfaceNormal();
+                return result;
+            },
+        });
 }
+
+Coordinates.prototype.computeSurfaceNormal = function computeSurfaceNormal() {
+    // compute a normal only for cartesian coordinate.
+    if (this._internalStorageUnit != UNIT.METER) {
+        throw (new Error('You can only compute cartesian normal when unit is METER'));
+    }
+    // In globe mode (EPSG:4978), we compute the normal.
+    if (this.crs == 'EPSG:4978') {
+        this._normal = ellipsoid.geodeticSurfaceNormal(this);
+        return this._normal;
+    }
+    // In planar mode, normal is the up vector.
+    this._normal = THREE.Object3D.DefaultUp;
+    return this._normal;
+};
 
 Coordinates.prototype.set = function set(crs, ...coordinates) {
     _crsToUnitWithError(crs);

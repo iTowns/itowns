@@ -1,4 +1,5 @@
 /* global describe, it */
+import * as THREE from 'three';
 import proj4 from 'proj4';
 import assert from 'assert';
 import Coordinates, { UNIT } from '../src/Core/Geographic/Coordinates';
@@ -41,7 +42,7 @@ describe('Coordinate conversions', function () {
         assertCoordEqual(coord1, coord3);
     });
     // This case happend in iTowns when we convert the tile extent (4326 radian) to a target WFS server (EPSG:3946 for example) to request Lyon bus line in WFS.
-    it('Coordinate conversion from EPSG:4326 Radian (tiles extent) to EPSG:3946 (Lyon WFS) and back to EPSG:4326 (degrees)', function () {
+    it('should correctly convert from EPSG:4326 Radian (tiles extent) to EPSG:3946 (Lyon WFS) and back to EPSG:4326 (degrees)', function () {
         // geographic example for EPSG 4326 in degrees
         var longIn = 4.82212;
         var latIn = 45.723722;
@@ -58,5 +59,31 @@ describe('Coordinate conversions', function () {
         // verify coordinates
         assertFloatEqual(longIn, coord3.longitude());
         assertFloatEqual(latIn, coord3.latitude());
+    });
+});
+
+describe('Coordinate surface normale property', function () {
+    it('should correctly compute a surface normal ', function () {
+        const coord0 = new Coordinates('EPSG:4326', 15.0, 12.0).as('EPSG:4978');
+        const normal0 = coord0.surfaceNormal;
+
+        assertFloatEqual(normal0.x, 0.944818029);
+        assertFloatEqual(normal0.y, 0.253163227);
+        assertFloatEqual(normal0.z, 0.207911690);
+
+        const coord1 = new Coordinates('EPSG:4978', 6027050.95, 1614943.43, 1317402.53);
+        const normal1 = coord1.surfaceNormal;
+
+        assertFloatEqual(normal0.x, normal1.x);
+        assertFloatEqual(normal0.y, normal1.y);
+        assertFloatEqual(normal0.z, normal1.z);
+    });
+    it('should correctly return the default up vector for planar mode ', function () {
+        const coord0 = new Coordinates('EPSG:4326', 15.0, 12.0);
+        coord0._internalStorageUnit = UNIT.METER;
+
+        const normal0 = coord0.surfaceNormal;
+
+        assert.equal(normal0, THREE.Object3D.DefaultUp);
     });
 });
