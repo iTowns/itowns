@@ -4,24 +4,24 @@ import * as THREE from 'three';
 // but including these controls in itowns allows use to integrate them tightly with itowns.
 // Especially the existing controls are expecting a continuous update loop while we have a pausable one (so our controls use .notifyChange when needed)
 
-function onDocumentMouseDown(event) {
+function onPointerDown(event, pointerX, pointerY) {
     event.preventDefault();
     this._isUserInteracting = true;
 
-    this._onMouseDownMouseX = event.clientX;
-    this._onMouseDownMouseY = event.clientY;
+    this._onMouseDownMouseX = pointerX;
+    this._onMouseDownMouseY = pointerY;
     this._onMouseDownRotZ = this.camera.rotation.z;
     this._onMouseDownRotX = this.camera.rotation.x;
 }
 
-function onDocumentMouseMove(event) {
+function onPointerMove(pointerX, pointerY) {
     if (this._isUserInteracting === true) {
         // in rigor we have tan(theta) = tan(cameraFOV) * deltaH / H
         // (where deltaH is the vertical amount we moved, and H the renderer height)
         // we loosely approximate tan(x) by x
         const pxToAngleRatio = THREE.Math.degToRad(this.camera.fov) / this.view.mainLoop.gfxEngine.height;
-        this.camera.rotation.z = (event.clientX - this._onMouseDownMouseX) * pxToAngleRatio + this._onMouseDownRotZ;
-        this.camera.rotation.x = (event.clientY - this._onMouseDownMouseY) * pxToAngleRatio + this._onMouseDownRotX;
+        this.camera.rotation.z = (pointerX - this._onMouseDownMouseX) * pxToAngleRatio + this._onMouseDownRotZ;
+        this.camera.rotation.x = (pointerY - this._onMouseDownMouseY) * pxToAngleRatio + this._onMouseDownRotX;
         this.view.notifyChange(false);
     }
 }
@@ -74,9 +74,14 @@ class FirstPersonControls extends THREE.EventDispatcher {
         this.camera.rotation.reorder('ZYX');
 
         const domElement = view.mainLoop.gfxEngine.renderer.domElement;
-        domElement.addEventListener('mousedown', onDocumentMouseDown.bind(this), false);
-        domElement.addEventListener('mousemove', onDocumentMouseMove.bind(this), false);
+        const bindedPD = onPointerDown.bind(this);
+        domElement.addEventListener('mousedown', e => bindedPD(e, e.clientX, e.clientY), false);
+        domElement.addEventListener('touchstart', e => bindedPD(e, e.touches[0].pageX, e.touches[0].pageY), false);
+        const bindedPM = onPointerMove.bind(this);
+        domElement.addEventListener('mousemove', e => bindedPM(e.clientX, e.clientY), false);
+        domElement.addEventListener('touchmove', e => bindedPM(e.touches[0].pageX, e.touches[0].pageY), false);
         domElement.addEventListener('mouseup', onDocumentMouseUp.bind(this), false);
+        domElement.addEventListener('touchend', onDocumentMouseUp.bind(this), false);
         domElement.addEventListener('keyup', onKeyUp.bind(this), true);
         domElement.addEventListener('keydown', onKeyDown.bind(this), true);
 
