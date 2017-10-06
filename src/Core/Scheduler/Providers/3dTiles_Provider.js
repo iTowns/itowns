@@ -133,7 +133,13 @@ $3dTiles_Provider.prototype.b3dmToMesh = function b3dmToMesh(data, layer) {
             mesh.frustumCulled = false;
             if (mesh.material) {
                 if (layer.overrideMaterials) {
-                    mesh.material = new THREE.MeshLambertMaterial(0xffffff);
+                    mesh.material.dispose();
+                    if (typeof (layer.overrideMaterials) === 'object' &&
+                        layer.overrideMaterials.isMaterial) {
+                        mesh.material = layer.overrideMaterials.clone();
+                    } else {
+                        mesh.material = new THREE.MeshLambertMaterial({ color: 0xffffff });
+                    }
                 } else if (Capabilities.isLogDepthBufferSupported()
                             && mesh.material.isRawShaderMaterial
                             && !layer.doNotPatchMaterial) {
