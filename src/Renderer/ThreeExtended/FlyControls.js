@@ -1,8 +1,5 @@
 import * as THREE from 'three';
 
-const maxFOV = 90;
-const rotationFactor = 0.0022; // determined empirically
-
 const MOVEMENTS = {
     38: { method: 'translateZ', sign: -1 }, // FORWARD: up key
     40: { method: 'translateZ', sign: 1 }, // BACKWARD: down key
@@ -33,9 +30,12 @@ function onTouchStart(event) {
 
 function onPointerMove(pointerX, pointerY) {
     if (this._isMouseDown === true) {
-        const fovCorrection = this._camera3D.fov / maxFOV; // 1 at maxFOV
-        this._camera3D.rotateY((pointerX - this._onMouseDownMouseX) * rotationFactor * fovCorrection);
-        this._camera3D.rotateX((pointerY - this._onMouseDownMouseY) * rotationFactor * fovCorrection);
+        // in rigor we have tan(theta) = tan(cameraFOV) * deltaH / H
+        // (where deltaH is the vertical amount we moved, and H the renderer height)
+        // we loosely approximate tan(x) by x
+        const pxToAngleRatio = THREE.Math.degToRad(this._camera3D.fov) / this.view.mainLoop.gfxEngine.height;
+        this._camera3D.rotateY((pointerX - this._onMouseDownMouseX) * pxToAngleRatio);
+        this._camera3D.rotateX((pointerY - this._onMouseDownMouseY) * pxToAngleRatio);
         this._onMouseDownMouseX = pointerX;
         this._onMouseDownMouseY = pointerY;
         this.view.notifyChange(false, this._camera3D);
