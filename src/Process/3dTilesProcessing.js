@@ -4,7 +4,7 @@ function requestNewTile(view, scheduler, geometryLayer, metadata, parent) {
         view,
         requester: parent,
         layer: geometryLayer,
-        priority: 10000,
+        priority: parent ? 1.0 / (parent.distance + 1) : 100,
         /* specific params */
         metadata,
         redraw: false,
@@ -99,6 +99,7 @@ function computeNodeSSE(camera, node) {
         cameraLocalPosition.y -= node.boundingVolume.region.matrixWorld.elements[13];
         cameraLocalPosition.z -= node.boundingVolume.region.matrixWorld.elements[14];
         const distance = node.boundingVolume.region.box3D.distanceToPoint(cameraLocalPosition);
+        node.distance = distance;
         return camera.preSSE * (node.geometricError / distance);
     }
     if (node.boundingVolume.box) {
@@ -107,6 +108,7 @@ function computeNodeSSE(camera, node) {
         cameraLocalPosition.y -= node.matrixWorld.elements[13];
         cameraLocalPosition.z -= node.matrixWorld.elements[14];
         const distance = node.boundingVolume.box.distanceToPoint(cameraLocalPosition);
+        node.distance = distance;
         return camera.preSSE * (node.geometricError / distance);
     }
     if (node.boundingVolume.sphere) {
@@ -115,6 +117,7 @@ function computeNodeSSE(camera, node) {
         cameraLocalPosition.y -= node.matrixWorld.elements[13];
         cameraLocalPosition.z -= node.matrixWorld.elements[14];
         const distance = node.boundingVolume.sphere.distanceToPoint(cameraLocalPosition);
+        node.distance = distance;
         return camera.preSSE * (node.geometricError / distance);
     }
     return Infinity;
