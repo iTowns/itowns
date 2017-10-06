@@ -78,6 +78,9 @@ $3dTiles_Provider.prototype.removeLayer = function removeLayer() {
 
 $3dTiles_Provider.prototype.preprocessDataLayer = function preprocessDataLayer(layer, view, scheduler) {
     layer.sseThreshold = layer.sseThreshold || 16;
+    layer.cleanupDelay = layer.cleanupDelay || 1000;
+
+    layer._cleanableTiles = [];
     return Fetcher.json(layer.url, layer.networkOptions).then((tileset) => {
         layer.tileset = tileset;
         const urlPrefix = layer.url.slice(0, layer.url.lastIndexOf('/') + 1);
@@ -196,7 +199,6 @@ $3dTiles_Provider.prototype.pntsParse = function pntsParse(data) {
 
 function configureTile(tile, layer, metadata, parent) {
     tile.frustumCulled = false;
-    tile.loaded = true;
     tile.layer = layer.id;
 
     // parse metadata

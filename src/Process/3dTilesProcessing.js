@@ -75,6 +75,7 @@ function _subdivideNodeSubstractive(context, layer, node) {
                     if (node.additiveRefinement) {
                         context.view.notifyChange(true);
                     }
+                    layer.tileIndex.index[tile.tileId].loaded = true;
                 }));
         }
         Promise.all(promises).then(() => {
@@ -123,7 +124,74 @@ export function $3dTilesCulling(camera, node, tileMatrixWorld) {
     return false;
 }
 
+// Cleanup all 3dtiles|three.js starting from a given node n.
+// n's children can be of 2 types:
+//   - have a 'content' attribute -> it's a tileset and must
+//     be cleaned with cleanup3dTileset()
+//   - doesn't have 'content' -> it's a raw Object3D object,
+//     and must be cleaned with _cleanupObject3D()
+function cleanup3dTileset(layer, n, depth = 0) {
+    // If this layer is not using additive refinement, we can only
+    // clean a tile if all its neighbours are cleaned as well because
+    // a tile can only be in 2 states:
+    //   - displayed and no children displayed
+    //   - hidden and all of its children displayed
+    // So here we implement a conservative measure: if T is cleanable
+    // we actually only clean its children tiles.
+    const canCleanCompletely = n.additiveRefinement || depth > 0;
+
+    for (let i = 0; i < n.children.length; i++) {
+        // skip non-tiles elements
+        if (!n.children[i].content) {
+            if (canCleanCompletely) {
+                n.children[i].traverse(_cleanupObject3D);
+            }
+        } else {
+            cleanup3dTileset(layer, n.children[i], depth + 1);
+        }
+    }
+
+
+    if (canCleanCompletely) {
+        if (n.dispose) {
+            n.dispose();
+        }
+        delete n.content;
+        layer.tileIndex.index[n.tileId].loaded = false;
+        n.remove(...n.children);
+
+        // and finally remove from parent
+        if (depth == 0 && n.parent) {
+            n.parent.remove(n);
+        }
+    } else {
+        const tiles = n.children.filter(n => n.tileId != undefined);
+        n.remove(...tiles);
+    }
+}
+
+// This function is used to cleanup a Object3D hierarchy.
+// (no 3dtiles spectific code here because this is managed by cleanup3dTileset)
+function _cleanupObject3D(n) {
+    // all children of 'n' are raw Object3D
+    for (const child of n.children) {
+        _cleanupObject3D(child);
+    }
+    // free resources
+    if (n.material) {
+        n.material.dispose();
+    }
+    if (n.geometry) {
+        n.geometry.dispose();
+    }
+    n.remove(...n.children);
+}
+
 export function pre3dTilesUpdate(context, layer) {
+    if (!layer.visible) {
+        return [];
+    }
+
     // pre-sse
     const hypotenuse = Math.sqrt(context.camera.width * context.camera.width + context.camera.height * context.camera.height);
     const radAngle = context.camera.camera3D.fov * Math.PI / 180;
@@ -132,6 +200,23 @@ export function pre3dTilesUpdate(context, layer) {
     // const HFOV = 2.0 * Math.atan(Math.tan(radAngle * 0.5) / context.camera.ratio);
     const HYFOV = 2.0 * Math.atan(Math.tan(radAngle * 0.5) * hypotenuse / context.camera.width);
     context.camera.preSSE = hypotenuse * (2.0 * Math.tan(HYFOV * 0.5));
+
+    // once in a while, garbage collect
+    if (Math.random() > 0.98) {
+        // Make sure we don't clean root tile
+        layer.root.cleanableSince = undefined;
+
+        // Browse
+        const now = Date.now();
+
+        for (const elt of layer._cleanableTiles) {
+            if ((now - elt.cleanableSince) > layer.cleanupDelay) {
+                cleanup3dTileset(layer, elt);
+            }
+        }
+        layer._cleanableTiles = layer._cleanableTiles.filter(n => (layer.tileIndex.index[n.tileId].loaded && n.cleanableSince));
+    }
+
     return [layer.root];
 }
 
@@ -173,6 +258,7 @@ export function init3dTilesLayer(view, scheduler, layer) {
                 delete layer.tileset;
                 layer.object3d.add(tile);
                 tile.updateMatrixWorld();
+                layer.tileIndex.index[tile.tileId].loaded = true;
                 layer.root = tile;
             });
 }
@@ -183,6 +269,13 @@ function setDisplayed(node, display) {
     // node.material.visible
     if (node.content) {
         node.content.visible = display;
+    }
+}
+
+function markForDeletion(layer, elt) {
+    if (!elt.cleanableSince) {
+        elt.cleanableSince = Date.now();
+        layer._cleanableTiles.push(elt);
     }
 }
 
@@ -198,9 +291,11 @@ export function process3dTilesNode(cullingTest, subdivisionTest) {
         const isVisible = cullingTest ? (!cullingTest(context.camera, node, node.matrixWorld)) : true;
         node.visible = isVisible;
 
-        let returnValue;
 
         if (isVisible) {
+            node.cleanableSince = undefined;
+
+            let returnValue;
             if (node.pendingSubdivision || subdivisionTest(context, layer, node)) {
                 subdivideNode(context, layer, node, cullingTest);
                 // display iff children aren't ready
@@ -208,18 +303,17 @@ export function process3dTilesNode(cullingTest, subdivisionTest) {
                 returnValue = node.children.filter(n => n.layer == layer.id);
             } else {
                 setDisplayed(node, true);
-            }
 
-            if ((node.material === undefined || node.material.visible)) {
                 for (const n of node.children.filter(n => n.layer == layer.id)) {
                     n.visible = false;
+                    markForDeletion(layer, n);
                 }
             }
-
             return returnValue;
         }
 
-        // TODO: cleanup tree
+        markForDeletion(layer, node);
+
         return undefined;
     };
 }
