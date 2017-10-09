@@ -1319,8 +1319,15 @@ function GlobeControls(view, target, radius, options = {}) {
     update();
 
     if (enableTargetHelper) {
-        cameraTargetOnGlobe.add(new THREE.AxisHelper(500000));
+        const helperTarget = new THREE.AxisHelper(500000);
+        cameraTargetOnGlobe.add(helperTarget);
         this._view.scene.add(pickingHelper);
+        const layerTHREEjs = view.mainLoop.gfxEngine.getUniqueThreejsLayer();
+        cameraTargetOnGlobe.layers.set(layerTHREEjs);
+        helperTarget.layers.set(layerTHREEjs);
+        pickingHelper.layers.set(layerTHREEjs);
+        cameraTargetOnGlobe.layers.set(layerTHREEjs);
+        this.camera.layers.enable(layerTHREEjs);
     }
 
     // Start position
