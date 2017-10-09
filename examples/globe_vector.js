@@ -28,6 +28,7 @@ promises.push(globeView.addLayer({
     url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/croquis.kml',
     protocol: 'rasterizer',
     id: 'Kml',
+    name: 'kml',
 }));
 
 promises.push(globeView.addLayer({
@@ -35,6 +36,7 @@ promises.push(globeView.addLayer({
     url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/ULTRA2009.gpx',
     protocol: 'rasterizer',
     id: 'Gpx',
+    name: 'Ultra 2009',
 }));
 
 promises.push(globeView.addLayer({
