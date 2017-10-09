@@ -29,6 +29,31 @@
                     display: none;
                 }
             }
+            .viewer:hover .tooltip {
+                display: block;
+            }
+            .tooltip {
+                display: none;
+                background-image: linear-gradient(rgba(80, 80, 80,0.95), rgba(60, 60, 60,0.95));
+                box-shadow: -1px 2px 5px 1px rgba(0, 0, 0, 0.5);
+                margin-top: 20px;
+                margin-left: 20px;
+                padding: 10px;
+                position: absolute;
+                z-index: 1000;
+                color: #CECECE;
+                font-family: 'Open Sans',
+                sans-serif;
+                font-size: 14px;
+                line-height: 18px;
+                text-align: left;
+            }
+            .coord {
+                font-size: 12px;
+                padding-left:20px;
+                color: #93B7C0;
+                text-shadow: 0px 1px 0px rgba(200,200,200,.3), 0px -1px 0px rgba(30,30,30,.7);
+            }
         </style>
         <meta charset="UTF-8">
 
@@ -36,7 +61,9 @@
         <script src="GUI/dat.gui/dat.gui.min.js"></script>
     </head>
     <body>
-        <div id="viewerDiv"></div>
+        <div id="viewerDiv" class="viewer">
+            <span id="tooltipDiv" class="tooltip"></span>
+        </div>
         <script src="GUI/GuiTools.js"></script>
         <script src="../dist/itowns.js"></script>
         <script type="text/javascript">
@@ -44,11 +71,14 @@
             var exports = {};
         </script>
         <script src="globe_vector.js"></script>
+        <script src="FeatureToolTip.js"></script>
         <script type="text/javascript">
-            /* global itowns, document, GuiTools, globeView, promises */
+            /* global itowns, document, GuiTools, globeView, promises, ToolTip */
             var menuGlobe = new GuiTools('menuDiv');
+
             menuGlobe.view = globeView;
             // Listen for globe full initialisation event
+
             globeView.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
                 // eslint-disable-next-line no-console
                 console.info('Globe initialized');
@@ -56,8 +86,14 @@
                     menuGlobe.addImageryLayersGUI(globeView.getLayers(function (l) { return l.type === 'color'; }));
                     menuGlobe.addElevationLayersGUI(globeView.getLayers(function (l) { return l.type === 'elevation'; }));
                     itowns.ColorLayersOrdering.moveLayerToIndex(globeView, 'Ortho', 0);
+
+                    new ToolTip(globeView, document.getElementById('viewerDiv'), document.getElementById('tooltipDiv'));
                 });
+
+
             });
         </script>
     </body>
 </html>
+
+
