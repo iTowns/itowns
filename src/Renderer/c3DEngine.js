@@ -30,7 +30,7 @@ function c3DEngine(rendererOrDiv, options = {}) {
     this.height = (renderer ? renderer.domElement : viewerDiv).clientHeight;
 
     this.positionBuffer = null;
-    this._nextThreejsLayer = 0;
+    this._nextThreejsLayer = 1;
 
     this.fullSizeRenderTarget = new THREE.WebGLRenderTarget(this.width, this.height);
     this.fullSizeRenderTarget.texture.minFilter = THREE.LinearFilter;
