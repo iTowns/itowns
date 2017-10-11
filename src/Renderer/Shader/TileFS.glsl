@@ -98,7 +98,7 @@ void main() {
                     int pmTextureCount = int(paramsA.y);
                     int textureIndex = int(paramsA.x) + (projWGS84 ? 0 : pmSubTextureIndex);
 
-                    if (!projWGS84 && pmTextureCount <= textureIndex) {
+                    if (!projWGS84 && pmTextureCount <= pmSubTextureIndex) {
                         continue;
                     }
 
