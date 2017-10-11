@@ -8,7 +8,7 @@ import Extent from '../../Geographic/Extent';
 import Provider from './Provider';
 import Fetcher from './Fetcher';
 import CacheRessource from './CacheRessource';
-import GeoJSON2Feature from '../../../Renderer/ThreeExtended/GeoJSON2Feature';
+import GeoJSON2Features from '../../../Renderer/ThreeExtended/GeoJSON2Features';
 import Feature2Mesh from '../../../Renderer/ThreeExtended/Feature2Mesh';
 
 function WFS_Provider() {
@@ -98,7 +98,7 @@ WFS_Provider.prototype.getFeatures = function getFeatures(crs, tile, layer) {
     if (result.feature !== undefined) {
         return Promise.resolve(result);
     }
-    return Fetcher.json(url, layer.networkOptions).then(geojson => assignLayer(Feature2Mesh.convert(GeoJSON2Feature.parse(crs, geojson, tile.extent)), layer));
+    return Fetcher.json(url, layer.networkOptions).then(geojson => assignLayer(Feature2Mesh.convert(GeoJSON2Features.parse(crs, geojson, tile.extent)), layer));
 };
 
 WFS_Provider.prototype.getPointOrder = function getPointOrder(crs) {

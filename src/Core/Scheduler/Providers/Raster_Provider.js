@@ -8,7 +8,7 @@ import * as THREE from 'three';
 import togeojson from 'togeojson';
 import Extent from '../../Geographic/Extent';
 import Feature2Texture from '../../../Renderer/ThreeExtended/Feature2Texture';
-import GeoJSON2Feature from '../../../Renderer/ThreeExtended/GeoJSON2Feature';
+import GeoJSON2Features from '../../../Renderer/ThreeExtended/GeoJSON2Features';
 import Fetcher from './Fetcher';
 
 const supportedFormats = [
@@ -115,20 +115,20 @@ export default {
                 const options = { buildExtent: true, crsIn: layer.projection };
 
                 if (layer.options.mimetype === 'vector/geojson') {
-                    layer.geojson = GeoJSON2Feature.parse(layer.reprojection, file, layer.extent, options);
+                    layer.geojson = GeoJSON2Features.parse(layer.reprojection, file, layer.extent, options);
                     layer.extent = layer.geojson.extent || layer.geojson.geometry.extent;
                 } else if (layer.options.mimetype === 'vector/kml') {
                     const geojson = togeojson.kml(file);
-                    layer.geojson = GeoJSON2Feature.parse(layer.reprojection, geojson, layer.extent, options);
+                    layer.geojson = GeoJSON2Features.parse(layer.reprojection, geojson, layer.extent, options);
                     layer.extent = layer.geojson.extent;
                 } else if (layer.options.mimetype === 'vector/gpx') {
                     const geojson = togeojson.gpx(file);
                     layer.style.stroke = layer.style.stroke || 'red';
                     layer.extent = getExtentFromGpxFile(file);
-                    layer.geojson = GeoJSON2Feature.parse(layer.reprojection, geojson, layer.extent, options);
+                    layer.geojson = GeoJSON2Features.parse(layer.reprojection, geojson, layer.extent, options);
                     layer.extent = layer.geojson.extent;
                 }
-                // GeoJSON2Feature.parse reprojects in local tile texture space
+                // GeoJSON2Features.parse reprojects in local tile texture space
                 // Rasterizer gives textures in this new reprojection space
                 // layer.projection is now reprojection
                 layer.originalprojection = layer.projection;
