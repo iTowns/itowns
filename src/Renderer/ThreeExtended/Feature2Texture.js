@@ -59,7 +59,7 @@ function drawPoint(ctx, vertice, origin, dimension, style = {}) {
 }
 
 function drawFeature(ctx, feature, origin, dimension, extent, style = {}) {
-    const properties = feature.properties.properties;
+    const properties = feature.properties;
     const coordinates = feature.geometry.coordinates.slice();
     if (feature.geometry.type === 'point') {
         drawPoint(ctx, coordinates[0], origin, dimension, style);
@@ -75,7 +75,7 @@ function drawFeatureCollection(ctx, collection, origin, dimension, extent, style
         if (features.extent.intersectsExtent(extent)) {
             for (const id in features.featureVertices) {
                 const polygon = features.featureVertices[id];
-                const properties = collection.features[id].properties.properties;
+                const properties = collection.features[id].properties;
                 const coordinates = features.coordinates.slice(polygon.offset, polygon.offset + polygon.count);
                 if (features.type === 'point') {
                     drawPoint(ctx, coordinates[0], origin, dimension, style);
