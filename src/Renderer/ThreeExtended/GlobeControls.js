@@ -1048,7 +1048,9 @@ function GlobeControls(view, target, radius, options = {}) {
         }
     };
 
+    let wheelTimer;
     var onMouseWheel = function onMouseWheel(event) {
+        clearTimeout(wheelTimer);
         player.stop().then(() => {
             if (!this.enabled || !this.states.DOLLY.enable) return;
 
@@ -1082,6 +1084,15 @@ function GlobeControls(view, target, radius, options = {}) {
                 });
             }
             snapShotSpherical.copy(spherical);
+
+            // Prevent updating target as long as the wheel rotates
+            wheelTimer = setTimeout(() => {
+                this.waitSceneLoaded().then(() => {
+                    if (state == this.states.NONE) {
+                        this.updateCameraTransformation();
+                    }
+                });
+            }, 250);
 
             this.dispatchEvent(this.startEvent);
             this.dispatchEvent(this.endEvent);
