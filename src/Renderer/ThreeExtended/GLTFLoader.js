@@ -80,8 +80,6 @@ THREE.GLTFLoader = ( function () {
 
 			}
 
-			console.time( 'GLTFLoader' );
-
 			var parser = new GLTFParser( json, extensions, {
 
 				path: path || this.path,
@@ -90,8 +88,6 @@ THREE.GLTFLoader = ( function () {
 			} );
 
 			parser.parse( function ( scene, scenes, cameras, animations ) {
-
-				console.timeEnd( 'GLTFLoader' );
 
 				var glTF = {
 					"scene": scene,
@@ -428,6 +424,8 @@ THREE.GLTFLoader = ( function () {
 		SAMPLER_2D: 35678,
 		TRIANGLES: 4,
 		LINES: 1,
+		LINE_LOOP: 2,
+		LINE_STRIP: 3,
 		UNSIGNED_BYTE: 5121,
 		UNSIGNED_SHORT: 5123,
 
@@ -1685,7 +1683,9 @@ THREE.GLTFLoader = ( function () {
 
 						group.add( meshNode );
 
-					} else if ( primitive.mode === WEBGL_CONSTANTS.LINES ) {
+						} else if ( primitive.mode === WEBGL_CONSTANTS.LINES
+							|| primitive.mode === WEBGL_CONSTANTS.LINE_STRIP
+							|| primitive.mode === WEBGL_CONSTANTS.LINE_LOOP ) {
 
 						var geometry = new THREE.BufferGeometry();
 
@@ -1726,8 +1726,13 @@ THREE.GLTFLoader = ( function () {
 							meshNode = new THREE.LineSegments( geometry, material );
 
 						} else {
-
-							meshNode = new THREE.Line( geometry, material );
+							if (primitive.mode === WEBGL_CONSTANTS.LINES ) {
+								meshNode = new THREE.LineSegments( geometry, material );
+							} else if (primitive.mode === WEBGL_CONSTANTS.LINE_LOOP) {
+								meshNode = new THREE.LineLoop( geometry, material );
+							} else {
+								meshNode = new THREE.Line( geometry, material );
+							}
 
 						}
 

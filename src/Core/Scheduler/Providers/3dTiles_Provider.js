@@ -133,7 +133,13 @@ $3dTiles_Provider.prototype.b3dmToMesh = function b3dmToMesh(data, layer) {
             mesh.frustumCulled = false;
             if (mesh.material) {
                 if (layer.overrideMaterials) {
-                    mesh.material = new THREE.MeshLambertMaterial(0xffffff);
+                    mesh.material.dispose();
+                    if (typeof (layer.overrideMaterials) === 'object' &&
+                        layer.overrideMaterials.isMaterial) {
+                        mesh.material = layer.overrideMaterials.clone();
+                    } else {
+                        mesh.material = new THREE.MeshLambertMaterial({ color: 0xffffff });
+                    }
                 } else if (Capabilities.isLogDepthBufferSupported()
                             && mesh.material.isRawShaderMaterial
                             && !layer.doNotPatchMaterial) {
@@ -141,6 +147,8 @@ $3dTiles_Provider.prototype.b3dmToMesh = function b3dmToMesh(data, layer) {
                     // eslint-disable-next-line no-console
                     console.warn('b3dm shader has been patched to add log depth buffer support');
                 }
+                mesh.material.transparent = layer.opacity < 1.0;
+                mesh.material.opacity = layer.opacity;
             }
         };
         result.gltf.scene.traverse(init);

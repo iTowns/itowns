@@ -139,6 +139,8 @@ export default function createTileDebugUI(datDebugTool, view, layer, debugInstan
     gui.add(layer, 'visible').name('Visible').onChange(() => {
         view.notifyChange(true);
     });
+    gui.add(layer, 'opacity', 0, 1).name('Opacity')
+        .onChange(() => view.notifyChange(true));
 
     View.prototype.addLayer.call(view,
         {
