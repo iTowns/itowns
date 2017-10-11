@@ -359,6 +359,7 @@ function GlobeControls(view, target, radius, options = {}) {
     snapShotCamera = new SnapCamera(this.camera);
 
     this.waitSceneLoaded = function waitSceneLoaded() {
+        this._view.notifyChange();
         const deferedPromise = defer();
         this._view.mainLoop.addEventListener('command-queue-empty', () => {
             deferedPromise.resolve();
@@ -1433,14 +1434,31 @@ GlobeControls.prototype.setRange = function setRange(range, isAnimated) {
  */
 GlobeControls.prototype.setOrbitalPosition = function setOrbitalPosition(position, isAnimated) {
     return initPromise.then(() => {
+        const geoPosition = this.getCameraTargetGeoPosition();
+        let altitude = geoPosition.altitude();
         isAnimated = isAnimated === undefined ? this.isAnimationEnabled() : isAnimated;
         const deltaPhi = position.tilt === undefined ? 0 : position.tilt * Math.PI / 180 - this.getTiltRad();
         const deltaTheta = position.heading === undefined ? 0 : position.heading * Math.PI / 180 - this.getHeadingRad();
         const deltaRange = position.range === undefined ? 0 : position.range - this.getRange();
+        if (position.range) {
+            this._view.wgs84TileLayer.postUpdate = () => {
+                updateAltitudeCoordinate(geoPosition, this._view.wgs84TileLayer);
+                const errorRange = altitude - geoPosition.altitude();
+                if (errorRange != 0) {
+                    if (isAnimated && player.isPlaying()) {
+                        sphericalTo.radius -= errorRange;
+                    } else {
+                        position.range -= errorRange;
+                        this.moveOrbitalPosition(position.range - this.getRange(), 0, 0, false);
+                    }
+                    altitude = geoPosition.altitude();
+                }
+            };
+        }
         return this.moveOrbitalPosition(deltaRange, deltaTheta, deltaPhi, isAnimated).then(() => {
-            this._view.notifyChange(true);
-            return this.waitSceneLoaded().then(() => {
+            this.waitSceneLoaded().then(() => {
                 this.updateCameraTransformation();
+                this._view.wgs84TileLayer.postUpdate = () => {};
             });
         });
     });
@@ -1451,20 +1469,19 @@ const destSpherical = new THREE.Spherical();
 GlobeControls.prototype.moveOrbitalPosition = function moveOrbitalPosition(deltaRange, deltaTheta, deltaPhi, isAnimated) {
     isAnimated = isAnimated === undefined ? this.isAnimationEnabled() : isAnimated;
     const range = deltaRange + this.getRange();
+    const cd = this.enableDamping;
+    this.enableDamping = false;
     if (isAnimated) {
         destSpherical.theta = deltaTheta + spherical.theta;
         destSpherical.phi = deltaPhi + spherical.phi;
         sphericalTo.radius = range;
-        sphericalTo.theta = deltaTheta / (animationOrbit.duration - 1);
-        sphericalTo.phi = deltaPhi / (animationOrbit.duration - 1);
+        sphericalTo.theta = deltaTheta / animationOrbit.duration;
+        sphericalTo.phi = deltaPhi / animationOrbit.duration;
         state = this.states.ORBIT;
         return player.play(animationOrbit).then(() => {
-            // To correct errors at animation's end
-            // TODO : find other solution to correct error
-            if (player.isEnded()) {
-                this.moveOrbitalPosition(0, destSpherical.theta - spherical.theta, destSpherical.phi - spherical.phi, false);
-            }
-            this.resetControls();
+            sphericalTo.theta = 0;
+            sphericalTo.phi = 0;
+            this.enableDamping = cd;
         });
     }
     else {
@@ -1472,6 +1489,7 @@ GlobeControls.prototype.moveOrbitalPosition = function moveOrbitalPosition(delta
         sphericalDelta.phi = deltaPhi;
         orbit.scale = range / this.getRange();
         this.updateCameraTransformation(this.states.ORBIT, false);
+        this.enableDamping = cd;
         return Promise.resolve();
     }
 };
@@ -1604,7 +1622,6 @@ GlobeControls.prototype.moveTarget = function moveTarget() {
 GlobeControls.prototype.pan = function pan(pVector) {
     this.mouseToPan(pVector.x, pVector.y);
     this.updateCameraTransformation(this.states.PAN);
-    this._view.notifyChange(true);
     return this.waitSceneLoaded().then(() => {
         this.updateCameraTransformation();
     });
