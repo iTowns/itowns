@@ -104,4 +104,6 @@ export default function create3dTilesDebugUI(datDebugTool, view, layer) {
     gui.add(layer, 'visible').name('Visible').onChange(() => {
         view.notifyChange(true);
     });
+
+    gui.add(layer, 'opacity', 0, 1).name('Opacity').onChange(() => view.notifyChange(true));
 }

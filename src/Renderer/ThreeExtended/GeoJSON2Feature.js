@@ -132,6 +132,9 @@ const GeometryToCoordinates = {
 };
 
 function readGeometry(crsIn, crsOut, json, filteringExtent, options) {
+    if (json.coordinates.length == 0) {
+        return;
+    }
     switch (json.type.toLowerCase()) {
         case 'point':
             return GeometryToCoordinates.point(crsIn, crsOut, [json.coordinates], filteringExtent, options);
