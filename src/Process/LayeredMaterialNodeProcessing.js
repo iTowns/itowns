@@ -296,6 +296,16 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, force) 
         initNodeElevationTextureFromParent(node, node.parent, layer);
         currentElevation = material.getElevationLayerLevel();
     }
+
+    // does this tile needs a new texture?
+    if (layer.canTileTextureBeImproved) {
+        // if the layer has a custom method -> use it
+        if (!layer.canTileTextureBeImproved(layer, node)) {
+            node.layerUpdateState[layer.id].noMoreUpdatePossible();
+            return Promise.resolve();
+        }
+    }
+
     if (!node.isDisplayed()) {
         return Promise.resolve();
     }

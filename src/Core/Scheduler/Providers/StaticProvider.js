@@ -2,7 +2,7 @@ import { Vector3 } from 'three';
 import Extent from '../../Geographic/Extent';
 import OGCWebServiceHelper from './OGCWebServiceHelper';
 import Fetcher from './Fetcher';
-import { l_COLOR } from '../../../Renderer/LayeredMaterial';
+import { l_COLOR, l_ELEVATION } from '../../../Renderer/LayeredMaterial';
 
 // select the smallest image entirely covering the tile
 function selectBestImageForExtent(images, extent) {
@@ -23,7 +23,7 @@ function selectBestImageForExtent(images, extent) {
     return selection;
 }
 
-function getColorTexture(tile, layer) {
+function getTexture(tile, layer) {
     if (!layer.tileInsideLimit(tile, layer)) {
         return Promise.reject(`Tile '${tile}' is outside layer bbox ${layer.extent}`);
     }
@@ -43,7 +43,8 @@ function getColorTexture(tile, layer) {
     }
 
     const url = layer.url.href.substr(0, layer.url.href.lastIndexOf('/') + 1) + selection.image;
-    return OGCWebServiceHelper.getColorTextureByUrl(url, layer.networkOptions).then((texture) => {
+    const fn = layer.type === 'color' ? OGCWebServiceHelper.getColorTextureByUrl : OGCWebServiceHelper.getXBilTextureByUrl;
+    return fn(url, layer.networkOptions).then((texture) => {
         // adjust pitch
         const result = {
             texture,
@@ -111,13 +112,16 @@ export default {
     },
 
     canTileTextureBeImproved(layer, tile) {
+        if (!layer.images) {
+            return false;
+        }
         const s = selectBestImageForExtent(layer.images, tile.extent);
         if (!s) {
             return false;
         }
         const mat = tile.material;
-        const idx = mat.getLayerTextureOffset(layer.id);
-        const currentTexture = mat.textures[l_COLOR][idx];
+        const layerType = layer.type === 'color' ? l_COLOR : l_ELEVATION;
+        const currentTexture = mat.getLayerTextures(layerType, layer.id)[0];
         if (!currentTexture.file) {
             return true;
         }
@@ -127,6 +131,6 @@ export default {
     executeCommand(command) {
         const tile = command.requester;
         const layer = command.layer;
-        return getColorTexture(tile, layer);
+        return getTexture(tile, layer);
     },
 };
