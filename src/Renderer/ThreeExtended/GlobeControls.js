@@ -456,7 +456,17 @@ function GlobeControls(view, target, radius, options = {}) {
         sizeRendering.FOV = this.camera.fov;
     };
 
-    window.addEventListener('resize', this.updateCamera.bind(this), false);
+    const self = this;
+    const resizeHandler = {
+        update() {
+            const dim = self._view.mainLoop.gfxEngine.getWindowSize();
+            const sizeDiff = (dim.width != sizeRendering.width || dim.height != sizeRendering.height);
+            if (sizeDiff) {
+                self.updateCamera();
+            }
+        },
+    };
+    this._view.addFrameRequester(resizeHandler);
 
     this.getAutoRotationAngle = function getAutoRotationAngle() {
         return 2 * Math.PI / 60 / 60 * this.autoRotateSpeed;
