@@ -94,7 +94,7 @@ const EPS = 0.000001;
 const rotateStart = new THREE.Vector2();
 const rotateEnd = new THREE.Vector2();
 const rotateDelta = new THREE.Vector2();
-const spherical = new THREE.Spherical(1.0, 0.01, Math.PI * 0.5);
+const spherical = new THREE.Spherical(1.0, 0.01, 0);
 const snapShotSpherical = new THREE.Spherical(1.0, 0.01, Math.PI * 0.5);
 const sphericalDelta = new THREE.Spherical(1.0, 0, 0);
 const sphericalTo = new THREE.Spherical();
@@ -128,8 +128,8 @@ var animatedScale = 0.0;
 const positionObject = (function getPositionObjectFn()
 {
     const quaterionX = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI / 2);
-    return function positionObject(newPosition, object)
-    {
+    return function positionObject(newPosition, object) {
+        object.up = THREE.Object3D.DefaultUp;
         object.position.copy(newPosition);
         object.lookAt(newPosition.clone().multiplyScalar(1.1));
         object.quaternion.multiply(quaterionX);
@@ -1603,7 +1603,7 @@ GlobeControls.prototype.getTilt = function getTilt() {
  * @return {Angle} number - The angle of the rotation in degrees.
  */
 GlobeControls.prototype.getHeading = function getHeading() {
-    return spherical.theta * 180 / Math.PI;
+    return (THREE.Math.radToDeg(spherical.theta) + 360) % 360;
 };
 
 GlobeControls.prototype.getTiltRad = function getTiltRad() {
