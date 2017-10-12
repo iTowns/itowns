@@ -119,6 +119,12 @@ function _preprocessLayer(view, layer, provider) {
     }
 
     if (!layer.whenReady) {
+        if (layer.type == 'geometry' || layer.type == 'debug') {
+            // layer.threejsLayer *must* be assigned before preprocessing,
+            // because TileProvider.preprocessDataLayer function uses it.
+            layer.threejsLayer = view.mainLoop.gfxEngine.getUniqueThreejsLayer();
+        }
+
         let providerPreprocessing = Promise.resolve();
         if (provider && provider.preprocessDataLayer) {
             providerPreprocessing = provider.preprocessDataLayer(layer, view, view.mainLoop.scheduler);
@@ -143,7 +149,6 @@ function _preprocessLayer(view, layer, provider) {
     } else if (layer.type == 'elevation') {
         defineLayerProperty(layer, 'frozen', false);
     } else if (layer.type == 'geometry' || layer.type == 'debug') {
-        layer.threejsLayer = view.mainLoop.gfxEngine.getUniqueThreejsLayer();
         defineLayerProperty(layer, 'visible', true, () => _syncThreejsLayer(layer, view));
         _syncThreejsLayer(layer, view);
 
