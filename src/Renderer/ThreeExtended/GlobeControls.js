@@ -11,6 +11,7 @@ import Sphere from '../../Core/Math/Sphere';
 import AnimationPlayer, { Animation, AnimatedExpression } from '../../Core/AnimationPlayer';
 import Coordinates, { C, ellipsoidSizes } from '../../Core/Geographic/Coordinates';
 import { computeTileZoomFromDistanceCamera, computeDistanceCameraFromTileZoom } from '../../Process/GlobeTileProcessing';
+import DEMUtils from './../../utils/DEMUtils';
 
 // TODO:
 // Recast touch for globe
@@ -152,6 +153,17 @@ var dampingMoveAnimatedExpression = (function getDampMoveAniExprFn() {
         root.quatGlobe.multiply(root.qDelta);
     };
 }());
+
+function updateAltitudeCoordinate(coordinate, layer) {
+    // TODO : save last tile to boost compute
+    const result = DEMUtils.getElevationValueAt(layer, coordinate);
+    let diffAltitude = 0;
+    if (result && result.z != coordinate._values[2]) {
+        diffAltitude = coordinate.altitude() - result.z;
+        coordinate._values[2] = result.z < 0 ? 0 : result.z;
+    }
+    return diffAltitude;
+}
 
 // Expression used to animate camera's moves and zoom
 var zoomCenterAnimatedExpression = function zoomCenterAnimatedExpression(root, progress) {
@@ -687,25 +699,32 @@ function GlobeControls(view, target, radius, options = {}) {
         cameraTargetOnGlobe.matrixWorldInverse.getInverse(cameraTargetOnGlobe.matrixWorld);
     };
 
-    const cT = new THREE.Vector3();
+    const direction = new THREE.Vector3();
+    const coordTarget = new Coordinates(this._view.referenceCrs, 0, 0, 0);
+    const coordTile = new Coordinates(this._view.referenceCrs, 0, 0, 0);
+    const reposition = new THREE.Vector3();
     const delta = 0.001;
 
     const updateCameraTargetOnGlobe = function updateCameraTargetOnGlobe() {
         const previousCameraTargetOnGlobe = cameraTargetOnGlobe.position.clone();
 
-        // Get distance camera DME
+        direction.subVectors(movingCameraTargetOnGlobe, this.camera.position);
+
         const pickingPosition = view.getPickingPositionFromDepth();
 
-        if (!pickingPosition) {
-            return;
-        }
-
-        const distanceTarget = pickingPosition.distanceTo(this.camera.position);
-
         // Position movingCameraTargetOnGlobe on DME
-        cT.subVectors(movingCameraTargetOnGlobe, this.camera.position);
-        cT.setLength(distanceTarget);
-        movingCameraTargetOnGlobe.addVectors(this.camera.position, cT);
+        if (pickingPosition) {
+            const distanceTarget = pickingPosition.distanceTo(this.camera.position);
+            direction.setLength(distanceTarget);
+            movingCameraTargetOnGlobe.addVectors(this.camera.position, direction);
+        }
+        // correction of depth error
+        const tileCrs = this._view.wgs84TileLayer.extent.crs();
+        coordTarget.set(this._view.referenceCrs, movingCameraTargetOnGlobe).as(tileCrs, coordTile);
+        updateAltitudeCoordinate(coordTile, this._view.wgs84TileLayer);
+        coordTile.as(this._view.referenceCrs).xyz(reposition);
+        direction.setLength(reposition.distanceTo(this.camera.position));
+        movingCameraTargetOnGlobe.addVectors(this.camera.position, direction);
 
         setCameraTargetObjectPosition(movingCameraTargetOnGlobe);
 
@@ -1327,7 +1346,7 @@ function GlobeControls(view, target, radius, options = {}) {
     movingCameraTargetOnGlobe.copy(target);
     this.camera.up.copy(target.clone().normalize());
     this._view.scene.add(cameraTargetOnGlobe);
-    spherical.radius = this.camera.position.length();
+    spherical.radius = movingCameraTargetOnGlobe.distanceTo(this.camera.position);
 
     update();
 
