@@ -3,6 +3,16 @@
     "presets": ["es2015"],
     "plugins": [
         "transform-runtime",
-        [ "babel-plugin-webpack-loaders", { "config": "./webpack-babel.config.js", "verbose": false }]
+        [ "babel-plugin-webpack-loaders", { "config": "./webpack-babel.config.js", "verbose": false }],
+        ["minify-replace", {
+            "replacements": [{
+                "identifierName": "__DEBUG__",
+                "replacement": {
+                    "type": "booleanLiteral",
+                    "value": false
+                }
+            }]
+        }],
+        ["minify-dead-code-elimination"]
     ]
 }
