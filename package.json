@@ -40,10 +40,12 @@
     "monotone-convex-hull-2d": "^1.0.1",
     "proj4": "^2.4.3",
     "text-encoding-utf-8": "^1.0.1",
-    "three": "^0.87.0",
-    "three.meshline": "^1.0.3",
     "togeojson": "^0.16.0",
     "whatwg-fetch": "^2.0.2"
+  },
+  "peerDependencies": {
+    "three": "^0.87.0",
+    "three.meshline": "^1.0.3"
   },
   "devDependencies": {
     "babel-cli": "^6.22.2",
@@ -67,6 +69,8 @@
     "node-fetch": "^1.7.0",
     "raw-loader": "^0.5.1",
     "require-from-string": "^1.2.1",
+    "three": "^0.87.0",
+    "three.meshline": "^1.0.3",
     "webpack": "^2.6.1",
     "webpack-dev-server": "^2.4.5"
   }
