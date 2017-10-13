@@ -8,7 +8,7 @@
     "doc": "jsdoc src/Core/View.js src/Core/Prefab/GlobeView.js src/Core/Layer/Layer.js src/Renderer/ColorLayersOrdering.js src/Renderer/ThreeExtended/GlobeControls.js src/Core/Geographic/Coordinates.js src/Core/Scheduler/Providers/GpxUtils.js",
     "doclint": "npm run doc -- -t templates/silent",
     "test": "npm run lint && npm run build && npm run test-examples && npm run test-unit",
-    "test-unit": "mocha --compilers js:babel-core/register test/*unit_test.js",
+    "test-unit": "cross-env BABEL_DISABLE_CACHE=1 mocha --compilers js:babel-core/register test/*unit_test.js",
     "test-examples": "npm run transpile && mocha test/globe_test.js && mocha test/planar_test.js && mocha test/postprocessing_test.js && mocha test/externalscene_test.js",
     "build": "webpack -p",
     "transpile": "cross-env BABEL_DISABLE_CACHE=1 babel src --out-dir lib",
