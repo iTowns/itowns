@@ -177,6 +177,9 @@ TileMesh.prototype.getIndexLayerColor = function getIndexLayerColor(idLayer) {
 };
 
 TileMesh.prototype.removeColorLayer = function removeColorLayer(idLayer) {
+    if (this.layerUpdateState && this.layerUpdateState[idLayer]) {
+        delete this.layerUpdateState[idLayer];
+    }
     this.material.removeColorLayer(idLayer);
 };
 
