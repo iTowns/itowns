@@ -5,6 +5,7 @@ export { STRATEGY_MIN_NETWORK_TRAFFIC, STRATEGY_GROUP, STRATEGY_PROGRESSIVE, STR
 export { default as GlobeView, GLOBE_VIEW_EVENTS, createGlobeLayer } from './Core/Prefab/GlobeView';
 export { default as GpxUtils } from './Core/Scheduler/Providers/GpxUtils';
 export { default as PlanarView, createPlanarLayer } from './Core/Prefab/PlanarView';
+export { default as PanoramaView, createPanoramaLayer } from './Core/Prefab/PanoramaView';
 export { default as Fetcher } from './Core/Scheduler/Providers/Fetcher';
 export { default as View } from './Core/View';
 export { process3dTilesNode, init3dTilesLayer, $3dTilesCulling, $3dTilesSubdivisionControl, pre3dTilesUpdate } from './Process/3dTilesProcessing';
