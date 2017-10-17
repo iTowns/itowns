@@ -233,6 +233,10 @@ export default {
                         isLeaf: elt.childrenBitField == 0,
                         earlyDropFunction: cmd => cmd.requester.shouldBeLoaded <= 0,
                     }).then((pts) => {
+                        if (layer.onPointsCreated) {
+                            layer.onPointsCreated(layer, pts);
+                        }
+
                         elt.obj = pts;
                         // store tightbbox to avoid ping-pong (bbox = larger => visible, tight => invisible)
                         elt.tightbbox = pts.tightbbox;
