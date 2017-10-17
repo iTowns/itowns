@@ -228,6 +228,7 @@ export default {
             points.updateMatrix();
             points.updateMatrixWorld(true);
             points.layers.set(layer.threejsLayer);
+            points.layer = layer.id;
             return points;
         });
     },
