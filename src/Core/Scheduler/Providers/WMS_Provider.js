@@ -4,7 +4,7 @@
  * Description: Provides data from a WMS stream
  */
 
-
+import * as THREE from 'three';
 import Extent from '../../Geographic/Extent';
 import OGCWebServiceHelper from './OGCWebServiceHelper';
 
@@ -29,6 +29,16 @@ WMS_Provider.prototype.url = function url(bbox, layer) {
         `${w},${s},${e},${n}`;
 
     return layer.customUrl.replace('%bbox', bboxInUnit);
+};
+
+WMS_Provider.prototype.tileTextureCount = function tileTextureCount(tile, layer) {
+    if (tile.extent.crs() == layer.projection) {
+        return 1;
+    } else {
+        const tileMatrixSet = layer.options.tileMatrixSet;
+        OGCWebServiceHelper.computeTileMatrixSetCoordinates(tile, tileMatrixSet);
+        return tile.getCoordsForLayer(layer).length;
+    }
 };
 
 WMS_Provider.prototype.preprocessDataLayer = function preprocessDataLayer(layer) {
@@ -57,6 +67,10 @@ WMS_Provider.prototype.preprocessDataLayer = function preprocessDataLayer(layer)
     layer.style = layer.style || '';
     layer.transparent = layer.transparent || false;
 
+    if (layer.projection == 'EPSG:3857') {
+        layer.axisOrder = 'wsen';
+    }
+
     layer.customUrl = `${layer.url
                   }?SERVICE=WMS&REQUEST=GetMap&LAYERS=${layer.name
                   }&VERSION=${layer.version
@@ -75,7 +89,7 @@ WMS_Provider.prototype.tileInsideLimit = function tileInsideLimit(tile, layer) {
         layer.extent.intersectsExtent(tile.extent);
 };
 
-WMS_Provider.prototype.getColorTexture = function getColorTexture(tile, layer, targetLevel) {
+WMS_Provider.prototype.getColorTexture = function getColorTexture(tile, layer, targetLevel, tileCoords) {
     if (!this.tileInsideLimit(tile, layer)) {
         return Promise.reject(`Tile '${tile}' is outside layer bbox ${layer.extent}`);
     }
@@ -83,11 +97,11 @@ WMS_Provider.prototype.getColorTexture = function getColorTexture(tile, layer, t
         return Promise.resolve();
     }
 
-    let extent = tile.extent;
+    let extent = tileCoords ? tileCoords.as(layer.projection) : tile.extent;
     // if no specific level requester, use tile.level
     if (targetLevel === undefined) {
         targetLevel = tile.level;
-    } else {
+    } else if (!tileCoords) {
         let parentAtLevel = tile;
         while (parentAtLevel && parentAtLevel.level > targetLevel) {
             parentAtLevel = parentAtLevel.parent;
@@ -101,16 +115,20 @@ WMS_Provider.prototype.getColorTexture = function getColorTexture(tile, layer, t
 
     const coords = extent.as(layer.projection);
     const url = this.url(coords, layer);
-    const pitch = tile.extent.offsetToParent(extent);
+    const pitch = tileCoords ? new THREE.Vector3(0, 0, 1) : tile.extent.offsetToParent(extent);
     const result = { pitch };
 
     return OGCWebServiceHelper.getColorTextureByUrl(url, layer.networkOptions).then((texture) => {
         result.texture = texture;
         result.texture.extent = extent;
-        result.texture.coords = coords;
-        // LayeredMaterial expects coords.zoom to exist, and describe the
-        // precision of the texture (a la WMTS).
-        result.texture.coords.zoom = targetLevel;
+        if (tileCoords) {
+            result.texture.coords = tileCoords;
+        } else {
+            result.texture.coords = coords;
+            // LayeredMaterial expects coords.zoom to exist, and describe the
+            // precision of the texture (a la WMTS).
+            result.texture.coords.zoom = targetLevel;
+        }
         return result;
     });
 };
@@ -119,10 +137,11 @@ WMS_Provider.prototype.executeCommand = function executeCommand(command) {
     const tile = command.requester;
 
     const layer = command.layer;
+    const getTextureFunction = tile.extent.crs() == layer.projection ? this.getColorTexture : this.getColorTextures;
     const supportedFormats = {
-        'image/png': this.getColorTexture.bind(this),
-        'image/jpg': this.getColorTexture.bind(this),
-        'image/jpeg': this.getColorTexture.bind(this),
+        'image/png': getTextureFunction.bind(this),
+        'image/jpg': getTextureFunction.bind(this),
+        'image/jpeg': getTextureFunction.bind(this),
     };
 
     const func = supportedFormats[layer.format];
@@ -132,6 +151,20 @@ WMS_Provider.prototype.executeCommand = function executeCommand(command) {
     } else {
         return Promise.reject(new Error(`Unsupported mimetype ${layer.format}`));
     }
+};
+
+// In the case where the tilematrixset of the tile don't correspond to the projection of the layer
+// when the projection of the layer corresponds to a tilematrixset inside the tile, like the PM
+WMS_Provider.prototype.getColorTextures = function getColorTextures(tile, layer, targetLevel) {
+    if (tile.material === null) {
+        return Promise.resolve();
+    }
+    const promises = [];
+    for (const coord of tile.getCoordsForLayer(layer)) {
+        promises.push(this.getColorTexture(tile, layer, targetLevel, coord));
+    }
+
+    return Promise.all(promises);
 };
 
 export default WMS_Provider;

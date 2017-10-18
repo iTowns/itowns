@@ -198,6 +198,14 @@ TileMesh.prototype.getCoordsForLayer = function getCoordsForLayer(layer) {
     if (layer.protocol.indexOf('wmts') == 0) {
         OGCWebServiceHelper.computeTileMatrixSetCoordinates(this, layer.options.tileMatrixSet);
         return this.wmtsCoords[layer.options.tileMatrixSet];
+    } else if (layer.protocol == 'wms' && this.extent.crs() != layer.projection) {
+        if (layer.projection == 'EPSG:3857') {
+            const tilematrixset = 'PM';
+            OGCWebServiceHelper.computeTileMatrixSetCoordinates(this, tilematrixset);
+            return this.wmtsCoords[tilematrixset];
+        } else {
+            throw new Error('unsupported projection wms for this viewer');
+        }
     } else if (layer.protocol == 'tms') {
         return OGCWebServiceHelper.computeTMSCoordinates(this, layer.extent);
     } else {

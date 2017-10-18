@@ -156,7 +156,7 @@ export function updateLayeredMaterialNodeImagery(context, layer, node) {
             layer.tileTextureCount(node, layer) : 1;
 
         const paramMaterial = {
-            tileMT: layer.options.tileMatrixSet,
+            tileMT: layer.options.tileMatrixSet || node.getCoordsForLayer(layer)[0].crs(),
             texturesCount,
             visible: layer.visible,
             opacity: layer.opacity,
