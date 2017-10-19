@@ -3,11 +3,11 @@
     "protocol": "wmtsc",
     "networkOptions": { "crossOrigin" : "anonymous" },
     "id": "OPENSM",
-    "customUrl": "http://a.basemaps.cartocdn.com/voyager/%TILEMATRIX/%COL/%ROW.png",
+    "customUrl": "http://3d.oslandia.com:8080/styles/klokantech-basic/%TILEMATRIX/%COL/%ROW.png",
     "options": {
         "attribution": {
-            "name":"CARTO",
-            "url": "https://carto.com/"
+            "name":"OpenStreetMap",
+            "url": "http://www.openstreetmap.org/"
         },
         "tileMatrixSet": "PM",
         "mimetype": "image/png"
