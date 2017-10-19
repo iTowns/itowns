@@ -107,7 +107,7 @@ export function createGlobeLayer(id, options) {
         }
     }
 
-    const wgs84TileLayer = new GeometryLayer(id, options.object3d);
+    const wgs84TileLayer = new GeometryLayer(id, options.object3d || new THREE.Group());
     wgs84TileLayer.schemeTile = globeSchemeTileWMTS(globeSchemeTile1);
     wgs84TileLayer.extent = wgs84TileLayer.schemeTile[0].clone();
     for (let i = 1; i < wgs84TileLayer.schemeTile.length; i++) {
@@ -194,8 +194,6 @@ function GlobeView(viewerDiv, coordCarto, options = {}) {
     // Setup View
     View.call(this, 'EPSG:4978', viewerDiv, options);
 
-    options.object3d = options.object3d || this.scene;
-
     // Configure camera
     const positionCamera = new C.EPSG_4326(
         coordCarto.longitude,
@@ -210,6 +208,8 @@ function GlobeView(viewerDiv, coordCarto, options = {}) {
     this.camera.camera3D.updateMatrixWorld(true);
 
     const wgs84TileLayer = createGlobeLayer('globe', options);
+
+    this.scene.add(wgs84TileLayer.object3d);
 
     const sun = new THREE.DirectionalLight();
     sun.position.set(-0.5, 0, 1);

@@ -82,11 +82,17 @@ function View(crs, viewerDiv, options = {}) {
 View.prototype = Object.create(EventDispatcher.prototype);
 View.prototype.constructor = View;
 
-const _syncThreejsLayer = function _syncThreejsLayer(layer, view) {
-    if (layer.visible) {
-        view.camera.camera3D.layers.enable(layer.threejsLayer);
-    } else {
-        view.camera.camera3D.layers.disable(layer.threejsLayer);
+const _syncGeometryLayerVisibility = function _syncGeometryLayerVisibility(layer, view) {
+    if (layer.object3d) {
+        layer.object3d.visible = layer.visible;
+    }
+
+    if (layer.threejsLayer) {
+        if (layer.visible) {
+            view.camera.camera3D.layers.enable(layer.threejsLayer);
+        } else {
+            view.camera.camera3D.layers.disable(layer.threejsLayer);
+        }
     }
 };
 
@@ -119,11 +125,12 @@ function _preprocessLayer(view, layer, provider) {
 
     if (!layer.whenReady) {
         if (layer.type == 'geometry' || layer.type == 'debug') {
-            // layer.threejsLayer *must* be assigned before preprocessing,
-            // because TileProvider.preprocessDataLayer function uses it.
-            layer.threejsLayer = view.mainLoop.gfxEngine.getUniqueThreejsLayer();
+            if (!layer.object3d) {
+                // layer.threejsLayer *must* be assigned before preprocessing,
+                // because TileProvider.preprocessDataLayer function uses it.
+                layer.threejsLayer = view.mainLoop.gfxEngine.getUniqueThreejsLayer();
+            }
         }
-
         let providerPreprocessing = Promise.resolve();
         if (provider && provider.preprocessDataLayer) {
             providerPreprocessing = provider.preprocessDataLayer(layer, view, view.mainLoop.scheduler);
@@ -148,8 +155,8 @@ function _preprocessLayer(view, layer, provider) {
     } else if (layer.type == 'elevation') {
         defineLayerProperty(layer, 'frozen', false);
     } else if (layer.type == 'geometry' || layer.type == 'debug') {
-        defineLayerProperty(layer, 'visible', true, () => _syncThreejsLayer(layer, view));
-        _syncThreejsLayer(layer, view);
+        defineLayerProperty(layer, 'visible', true, () => _syncGeometryLayerVisibility(layer, view));
+        _syncGeometryLayerVisibility(layer, view);
 
         const changeOpacity = (o) => {
             if (o.material) {

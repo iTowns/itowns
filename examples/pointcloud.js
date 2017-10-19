@@ -25,7 +25,8 @@ function showPointcloud(serverUrl, fileName, lopocsTable) {
     view.mainLoop.gfxEngine.renderer.setClearColor(0xcccccc);
 
     // Configure Point Cloud layer
-    pointcloud = new itowns.GeometryLayer('pointcloud', view.scene);
+    pointcloud = new itowns.GeometryLayer('pointcloud', new itowns.THREE.Group());
+    view.scene.add(pointcloud.object3d);
     pointcloud.file = fileName || 'infos/sources';
     pointcloud.protocol = 'potreeconverter';
     pointcloud.url = serverUrl;
