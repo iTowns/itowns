@@ -14,7 +14,7 @@ import PlanarTileBuilder from './Planar/PlanarTileBuilder';
 import SubdivisionControl from '../../Process/SubdivisionControl';
 
 export function createPlanarLayer(id, extent, options) {
-    const tileLayer = new GeometryLayer(id, options.object3d);
+    const tileLayer = new GeometryLayer(id, options.object3d || new THREE.Group());
     tileLayer.extent = extent;
     tileLayer.schemeTile = [extent];
 
@@ -123,8 +123,6 @@ function PlanarView(viewerDiv, extent, options = {}) {
     // Setup View
     View.call(this, extent.crs(), viewerDiv, options);
 
-    options.object3d = options.object3d || this.scene;
-
     // Configure camera
     const dim = extent.dimensions();
     const positionCamera = extent.center().clone();
@@ -140,6 +138,8 @@ function PlanarView(viewerDiv, extent, options = {}) {
     this.camera.camera3D.updateMatrixWorld(true);
 
     const tileLayer = createPlanarLayer('planar', extent, options);
+
+    this.scene.add(tileLayer.object3d);
 
     this.addLayer(tileLayer);
 

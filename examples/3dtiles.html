@@ -96,7 +96,7 @@
 
             // Create a new Layer 3d-tiles For DiscreteLOD
             // -------------------------------------------
-            var $3dTilesLayerDiscreteLOD = new itowns.GeometryLayer('3d-tiles-discrete-lod', globe.scene);
+            var $3dTilesLayerDiscreteLOD = new itowns.GeometryLayer('3d-tiles-discrete-lod', new itowns.THREE.Group());
 
             $3dTilesLayerDiscreteLOD.preUpdate = preUpdateGeo;
             $3dTilesLayerDiscreteLOD.update = itowns.process3dTilesNode(
@@ -111,12 +111,12 @@
             $3dTilesLayerDiscreteLOD.visible = true;
 
             itowns.View.prototype.addLayer.call(globe, $3dTilesLayerDiscreteLOD);
+            globe.scene.add($3dTilesLayerDiscreteLOD.object3d);
 
             // Create a new Layer 3d-tiles For Viewer Request Volume
             // -----------------------------------------------------
 
-            var container = new itowns.THREE.Group();
-            var $3dTilesLayerRequestVolume = new itowns.GeometryLayer('3d-tiles-request-volume', container);
+            var $3dTilesLayerRequestVolume = new itowns.GeometryLayer('3d-tiles-request-volume', new itowns.THREE.Group());
 
             $3dTilesLayerRequestVolume.preUpdate = preUpdateGeo;
             $3dTilesLayerRequestVolume.update = itowns.process3dTilesNode(
@@ -133,8 +133,7 @@
             $3dTilesLayerRequestVolume.sseThreshold = 1;
             // add an event for have information when you move your mouse on a building
             itowns.View.prototype.addLayer.call(globe, $3dTilesLayerRequestVolume).then(function _() { window.addEventListener('mousemove', picking, false); })
-
-            globe.scene.add(container);
+            globe.scene.add($3dTilesLayerRequestVolume.object3d);
 
             // Add the UI Debug
             var d = new debug.Debug(globe, menuGlobe.gui);
@@ -164,7 +163,7 @@
 
                 raycaster.setFromCamera(mouse, globe.camera.camera3D);
                 // calculate objects intersecting the picking ray
-                var intersects = raycaster.intersectObjects(container.children, true);
+                var intersects = raycaster.intersectObjects($3dTilesLayerRequestVolume.object3d.children, true);
                 for (var i = 0; i < intersects.length; i++) {
                     var interAttributes = intersects[i].object.geometry.attributes;
                     if (interAttributes) {
