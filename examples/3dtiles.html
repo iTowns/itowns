@@ -111,7 +111,6 @@
             $3dTilesLayerDiscreteLOD.visible = true;
 
             itowns.View.prototype.addLayer.call(globe, $3dTilesLayerDiscreteLOD);
-            globe.scene.add($3dTilesLayerDiscreteLOD.object3d);
 
             // Create a new Layer 3d-tiles For Viewer Request Volume
             // -----------------------------------------------------
@@ -133,7 +132,6 @@
             $3dTilesLayerRequestVolume.sseThreshold = 1;
             // add an event for have information when you move your mouse on a building
             itowns.View.prototype.addLayer.call(globe, $3dTilesLayerRequestVolume).then(function _() { window.addEventListener('mousemove', picking, false); })
-            globe.scene.add($3dTilesLayerRequestVolume.object3d);
 
             // Add the UI Debug
             var d = new debug.Debug(globe, menuGlobe.gui);

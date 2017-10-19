@@ -209,8 +209,6 @@ function GlobeView(viewerDiv, coordCarto, options = {}) {
 
     const wgs84TileLayer = createGlobeLayer('globe', options);
 
-    this.scene.add(wgs84TileLayer.object3d);
-
     const sun = new THREE.DirectionalLight();
     sun.position.set(-0.5, 0, 1);
     sun.updateMatrixWorld(true);

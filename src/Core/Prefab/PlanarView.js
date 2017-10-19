@@ -139,8 +139,6 @@ function PlanarView(viewerDiv, extent, options = {}) {
 
     const tileLayer = createPlanarLayer('planar', extent, options);
 
-    this.scene.add(tileLayer.object3d);
-
     this.addLayer(tileLayer);
 
     this._renderState = RendererConstant.FINAL;
