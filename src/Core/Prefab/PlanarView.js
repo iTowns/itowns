@@ -144,13 +144,13 @@ function PlanarView(viewerDiv, extent, options = {}) {
     this._renderState = RendererConstant.FINAL;
     this._fullSizeDepthBuffer = null;
 
-    this.tileLayer = tileLayer;
+    this.baseLayer = tileLayer;
 }
 
 PlanarView.prototype = Object.create(View.prototype);
 PlanarView.prototype.constructor = PlanarView;
 
-PlanarView.prototype.addLayer = function addLayer(layer) {
+PlanarView.prototype._preAddLayer = function _preAddLayer(layer) {
     if (layer.type == 'color') {
         layer.update = updateLayeredMaterialNodeImagery;
         if (layer.protocol === 'rasterizer') {
@@ -159,13 +159,12 @@ PlanarView.prototype.addLayer = function addLayer(layer) {
     } else if (layer.type == 'elevation') {
         layer.update = updateLayeredMaterialNodeElevation;
     }
-    return View.prototype.addLayer.call(this, layer, this.tileLayer);
 };
 
 PlanarView.prototype.selectNodeAt = function selectNodeAt(mouse) {
     const selectedId = this.screenCoordsToNodeId(mouse);
 
-    for (const n of this.tileLayer.level0Nodes) {
+    for (const n of this.baseLayer.level0Nodes) {
         n.traverse((node) => {
             // only take of selectable nodes
             if (node.setSelected) {
@@ -231,7 +230,7 @@ PlanarView.prototype.getPickingPositionFromDepth = function getPickingPositionFr
 
     // Prepare state
     const prev = camera.layers.mask;
-    camera.layers.mask = 1 << this.tileLayer.threejsLayer;
+    camera.layers.mask = 1 << this.baseLayer.threejsLayer;
 
      // Render/Read to buffer
     let buffer;
@@ -275,7 +274,7 @@ PlanarView.prototype.getPickingPositionFromDepth = function getPickingPositionFr
 };
 
 PlanarView.prototype.changeRenderState = function changeRenderState(newRenderState) {
-    if (this._renderState == newRenderState || !this.tileLayer.level0Nodes) {
+    if (this._renderState == newRenderState || !this.baseLayer.level0Nodes) {
         return;
     }
 
@@ -288,7 +287,7 @@ PlanarView.prototype.changeRenderState = function changeRenderState(newRenderSta
         };
     }());
 
-    for (const n of this.tileLayer.level0Nodes) {
+    for (const n of this.baseLayer.level0Nodes) {
         n.traverseVisible(changeStateFunction);
     }
     this._renderState = newRenderState;

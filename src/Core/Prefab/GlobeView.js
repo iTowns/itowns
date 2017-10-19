@@ -7,17 +7,11 @@ import RendererConstant from '../../Renderer/RendererConstant';
 import GlobeControls from '../../Renderer/ThreeExtended/GlobeControls';
 import { unpack1K } from '../../Renderer/LayeredMaterial';
 
-import { GeometryLayer } from '../Layer/Layer';
-
 import Atmosphere from './Globe/Atmosphere';
 import CoordStars from '../Geographic/CoordStars';
 
 import { C, ellipsoidSizes } from '../Geographic/Coordinates';
-import { processTiledGeometryNode } from '../../Process/TiledNodeProcessing';
-import { updateLayeredMaterialNodeImagery, updateLayeredMaterialNodeElevation } from '../../Process/LayeredMaterialNodeProcessing';
-import { globeCulling, preGlobeUpdate, globeSubdivisionControl, globeSchemeTileWMTS, globeSchemeTile1 } from '../../Process/GlobeTileProcessing';
-import BuilderEllipsoidTile from './Globe/BuilderEllipsoidTile';
-import SubdivisionControl from '../../Process/SubdivisionControl';
+import { createGlobe } from '../DefaultGeometryLayers';
 
 /**
  * Fires when the view is completely loaded. Controls and view's functions can be called then.
@@ -73,109 +67,6 @@ export const GLOBE_VIEW_EVENTS = {
 };
 
 
-export function createGlobeLayer(id, options) {
-    // Configure tiles
-    const nodeInitFn = function nodeInitFn(layer, parent, node) {
-        node.material.setLightingOn(layer.lighting.enable);
-        node.material.uniforms.lightPosition.value = layer.lighting.position;
-        if (layer.noTextureColor) {
-            node.material.uniforms.noTextureColor.value.copy(layer.noTextureColor);
-        }
-
-        if (__DEBUG__) {
-            node.material.uniforms.showOutline = { value: layer.showOutline || false };
-            node.material.wireframe = layer.wireframe || false;
-        }
-    };
-
-    function _commonAncestorLookup(a, b) {
-        if (!a || !b) {
-            return undefined;
-        }
-        if (a.level == b.level) {
-            if (a.id == b.id) {
-                return a;
-            } else if (a.level != 0) {
-                return _commonAncestorLookup(a.parent, b.parent);
-            } else {
-                return undefined;
-            }
-        } else if (a.level < b.level) {
-            return _commonAncestorLookup(a, b.parent);
-        } else {
-            return _commonAncestorLookup(a.parent, b);
-        }
-    }
-
-    const wgs84TileLayer = new GeometryLayer(id, options.object3d || new THREE.Group());
-    wgs84TileLayer.schemeTile = globeSchemeTileWMTS(globeSchemeTile1);
-    wgs84TileLayer.extent = wgs84TileLayer.schemeTile[0].clone();
-    for (let i = 1; i < wgs84TileLayer.schemeTile.length; i++) {
-        wgs84TileLayer.extent.union(wgs84TileLayer.schemeTile[i]);
-    }
-    wgs84TileLayer.preUpdate = (context, layer, changeSources) => {
-        SubdivisionControl.preUpdate(context, layer);
-
-        if (__DEBUG__) {
-            layer._latestUpdateStartingLevel = 0;
-        }
-
-        preGlobeUpdate(context, layer);
-        if (changeSources.has(undefined) || changeSources.size == 0) {
-            return layer.level0Nodes;
-        }
-        let commonAncestor;
-        for (const source of changeSources.values()) {
-            if (source.isCamera) {
-                // if the change is caused by a camera move, no need to bother
-                // to find common ancestor: we need to update the whole tree:
-                // some invisible tiles may now be visible
-                return layer.level0Nodes;
-            }
-            if (source.layer === layer.id) {
-                if (!commonAncestor) {
-                    commonAncestor = source;
-                } else {
-                    commonAncestor = _commonAncestorLookup(commonAncestor, source);
-                    if (!commonAncestor) {
-                        return layer.level0Nodes;
-                    }
-                }
-                if (commonAncestor.material == null) {
-                    commonAncestor = undefined;
-                }
-            }
-        }
-        if (commonAncestor) {
-            if (__DEBUG__) {
-                layer._latestUpdateStartingLevel = commonAncestor.level;
-            }
-            return [commonAncestor];
-        } else {
-            return layer.level0Nodes;
-        }
-    };
-
-    function subdivision(context, layer, node) {
-        if (SubdivisionControl.hasEnoughTexturesToSubdivide(context, layer, node)) {
-            return globeSubdivisionControl(2, options.maxSubdivisionLevel || 17, options.sseSubdivisionThreshold || 1.0)(context, layer, node);
-        }
-        return false;
-    }
-
-    wgs84TileLayer.update = processTiledGeometryNode(globeCulling(2), subdivision);
-    wgs84TileLayer.builder = new BuilderEllipsoidTile();
-    wgs84TileLayer.onTileCreated = nodeInitFn;
-    wgs84TileLayer.type = 'geometry';
-    wgs84TileLayer.protocol = 'tile';
-    wgs84TileLayer.visible = true;
-    wgs84TileLayer.lighting = {
-        enable: false,
-        position: { x: -0.5, y: 0.0, z: 1.0 },
-    };
-    return wgs84TileLayer;
-}
-
 /**
  * Creates the viewer Globe (the globe of iTowns).
  * The first parameter is the coordinates on wich the globe will be centered at the initialization.
@@ -207,7 +98,7 @@ function GlobeView(viewerDiv, coordCarto, options = {}) {
     this.camera.camera3D.updateProjectionMatrix();
     this.camera.camera3D.updateMatrixWorld(true);
 
-    const wgs84TileLayer = createGlobeLayer('globe', options);
+    const wgs84TileLayer = createGlobe('globe', options);
 
     const sun = new THREE.DirectionalLight();
     sun.position.set(-0.5, 0, 1);
@@ -271,7 +162,7 @@ function GlobeView(viewerDiv, coordCarto, options = {}) {
         }
     };
 
-    this.wgs84TileLayer = wgs84TileLayer;
+    this.baseLayer = wgs84TileLayer;
 
     const fn = () => {
         this.mainLoop.removeEventListener('command-queue-empty', fn);
@@ -286,11 +177,8 @@ function GlobeView(viewerDiv, coordCarto, options = {}) {
 GlobeView.prototype = Object.create(View.prototype);
 GlobeView.prototype.constructor = GlobeView;
 
-GlobeView.prototype.addLayer = function addLayer(layer) {
+GlobeView.prototype._preAddLayer = function _preAddLayer(layer) {
     if (layer.type == 'color') {
-        const colorLayerCount = this.getLayers(l => l.type === 'color').length;
-        layer.sequence = colorLayerCount;
-        layer.update = updateLayeredMaterialNodeImagery;
         if (layer.protocol === 'rasterizer') {
             layer.reprojection = 'EPSG:4326';
         }
@@ -298,17 +186,12 @@ GlobeView.prototype.addLayer = function addLayer(layer) {
         if (layer.protocol === 'wmts' && layer.options.tileMatrixSet !== 'WGS84G') {
             throw new Error('Only WGS84G tileMatrixSet is currently supported for WMTS elevation layers');
         }
-        layer.update = updateLayeredMaterialNodeElevation;
     }
-    const layerId = layer.id;
-    const layerPromise = View.prototype.addLayer.call(this, layer, this.wgs84TileLayer);
 
     this.dispatchEvent({
         type: GLOBE_VIEW_EVENTS.LAYER_ADDED,
-        layerId,
+        layerId: layer.id,
     });
-
-    return layerPromise;
 };
 
 /**
@@ -320,14 +203,14 @@ GlobeView.prototype.addLayer = function addLayer(layer) {
  */
 GlobeView.prototype.removeLayer = function removeImageryLayer(layerId) {
     const layer = this.getLayers(l => l.id === layerId)[0];
-    if (layer && layer.type === 'color' && this.wgs84TileLayer.detach(layer)) {
+    if (layer && layer.type === 'color' && this.baseLayer.detach(layer)) {
         var cO = function cO(object) {
             if (object.removeColorLayer) {
                 object.removeColorLayer(layerId);
             }
         };
 
-        for (const root of this.wgs84TileLayer.level0Nodes) {
+        for (const root of this.baseLayer.level0Nodes) {
             root.traverse(cO);
         }
         const imageryLayers = this.getLayers(l => l.type === 'color');
@@ -353,7 +236,7 @@ GlobeView.prototype.selectNodeAt = function selectNodeAt(mouse) {
     // update the picking ray with the camera and mouse position
     const selectedId = this.screenCoordsToNodeId(mouse);
 
-    for (const n of this.wgs84TileLayer.level0Nodes) {
+    for (const n of this.baseLayer.level0Nodes) {
         n.traverse((node) => {
             // only take of selectable nodes
             if (node.setSelected) {
@@ -380,7 +263,7 @@ GlobeView.prototype.screenCoordsToNodeId = function screenCoordsToNodeId(mouse) 
 
     // Prepare state
     const prev = this.camera.camera3D.layers.mask;
-    this.camera.camera3D.layers.mask = 1 << this.wgs84TileLayer.threejsLayer;
+    this.camera.camera3D.layers.mask = 1 << this.baseLayer.threejsLayer;
 
     var buffer = this.mainLoop.gfxEngine.renderViewTobuffer(
         this,
@@ -425,7 +308,7 @@ GlobeView.prototype.getPickingPositionFromDepth = function getPickingPositionFro
     mouse.y = Math.floor(mouse.y);
 
     const prev = camera.layers.mask;
-    camera.layers.mask = 1 << this.wgs84TileLayer.threejsLayer;
+    camera.layers.mask = 1 << this.baseLayer.threejsLayer;
 
     // Render/Read to buffer
     let buffer;
@@ -469,7 +352,7 @@ GlobeView.prototype.getPickingPositionFromDepth = function getPickingPositionFro
 };
 
 GlobeView.prototype.changeRenderState = function changeRenderState(newRenderState) {
-    if (this._renderState == newRenderState || !this.wgs84TileLayer.level0Nodes) {
+    if (this._renderState == newRenderState || !this.baseLayer.level0Nodes) {
         return;
     }
 
@@ -482,7 +365,7 @@ GlobeView.prototype.changeRenderState = function changeRenderState(newRenderStat
         };
     }());
 
-    for (const n of this.wgs84TileLayer.level0Nodes) {
+    for (const n of this.baseLayer.level0Nodes) {
         n.traverseVisible(changeStateFunction);
     }
     this._renderState = newRenderState;
@@ -493,7 +376,7 @@ GlobeView.prototype.setRealisticLightingOn = function setRealisticLightingOn(val
 
     this.lightingPos = coSun.normalize();
 
-    const lighting = this.wgs84TileLayer.lighting;
+    const lighting = this.baseLayer.lighting;
     lighting.enable = value;
     lighting.position = coSun;
 
@@ -513,7 +396,7 @@ GlobeView.prototype.setLightingPos = function setLightingPos(pos) {
 };
 
 GlobeView.prototype.updateMaterialUniform = function updateMaterialUniform(uniformName, value) {
-    for (const n of this.wgs84TileLayer.level0Nodes) {
+    for (const n of this.baseLayer.level0Nodes) {
         n.traverse((obj) => {
             if (!obj.material || !obj.material.uniforms) {
                 return;

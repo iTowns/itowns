@@ -7,7 +7,7 @@ describe('Planar example', function () {
         example.view.mainLoop.addEventListener('command-queue-empty', () => {
             itownsTesting.counters.displayed_at_level = [];
 
-            for (var obj of example.view.tileLayer.level0Nodes) {
+            for (var obj of example.view.baseLayer.level0Nodes) {
                 itownsTesting.countVisibleAndDisplayed(obj);
             }
 

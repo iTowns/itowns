@@ -22,3 +22,5 @@ export { default as GeoJSON2Features } from './Renderer/ThreeExtended/GeoJSON2Fe
 export { default as FeaturesUtils } from './Renderer/ThreeExtended/FeaturesUtils';
 export { CONTROL_EVENTS } from './Renderer/ThreeExtended/GlobeControls';
 export { default as DEMUtils } from './utils/DEMUtils';
+
+export { createGlobe, createPlane, create3dTiles, createPointcloud } from './Core/DefaultGeometryLayers';

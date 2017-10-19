@@ -47,12 +47,8 @@ globeView.render = function render() {
         cam);
 };
 
-function addLayerCb(layer) {
-    return globeView.addLayer(layer);
-}
-
-itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(addLayerCb);
-itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT.json').then(addLayerCb);
+itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(globeView.baseLayer.addColorLayer);
+itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT.json').then(globeView.baseLayer.addElevationLayer);
 
 exports.globeView = globeView;
 exports.postprocessScene = postprocessScene;

@@ -59,24 +59,20 @@
 
             // Create the first globe
             var globeView = new itowns.GlobeView(viewerDiv, positionOnGlobe, { noControls: true, object3d: ref[0] });
-            layers.push(globeView.wgs84TileLayer);
+            layers.push(globeView.baseLayer);
 
-            function addLayerCb(layer) {
-                return globeView.addLayer(layer);
-            }
-            itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(addLayerCb);
+            itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(globeView.baseLayer.addColorLayer);
 
             // create a second smaller globe
-            const globe2 = itowns.createGlobeLayer('globe2', { object3d: ref[1] });
+            const globe2 = itowns.createGlobe('globe2', { object3d: ref[1] });
             layers.push(globe2);
 
             // Defines pole texture
             globe2.noTextureColor = new itowns.THREE.Color(0xd0d5d8);
 
             // add it to the view so it gets updated
-            itowns.View.prototype.addLayer.call(globeView, globe2);
-            itowns.View.prototype.addLayer.call(globeView, {
-                update: itowns.updateLayeredMaterialNodeImagery,
+            globeView.addLayer(globe2);
+            globe2.addColorLayer({
                 type: 'color',
                 protocol: "wmtsc",
                 id: "DARK",
@@ -90,7 +86,7 @@
                     tileMatrixSet: "PM",
                     mimetype: "image/png"
                 },
-            }, globe2);
+            });
 
             // Globe animation
             var animator = {

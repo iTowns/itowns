@@ -18,6 +18,7 @@ import TileGeometry from '../../TileGeometry';
 import TileMesh from '../../TileMesh';
 import CancelledCommandException from '../CancelledCommandException';
 import { requestNewTile } from '../../../Process/TiledNodeProcessing';
+import { updateLayeredMaterialNodeImagery, updateLayeredMaterialNodeElevation } from '../../../Process/LayeredMaterialNodeProcessing';
 
 function TileProvider() {
     Provider.call(this, null);
@@ -31,6 +32,31 @@ TileProvider.prototype.preprocessDataLayer = function preprocessLayer(layer, vie
     if (!layer.schemeTile) {
         throw new Error(`Cannot init tiled layer without schemeTile for layer ${layer.id}`);
     }
+
+    layer.addColorLayer = (colorLayer) => {
+        if (colorLayer.protocol === 'rasterizer') {
+            colorLayer.reprojection = 'EPSG:4326';
+        }
+        if (!colorLayer.update) {
+            const colorLayerCount = view.getLayers(l => l.type === 'color').length;
+            colorLayer.sequence = colorLayerCount;
+            colorLayer.update = updateLayeredMaterialNodeImagery;
+        }
+
+        return view.addLayer(colorLayer, layer);
+    };
+
+    layer.addElevationLayer = (elevationLayer) => {
+        if (elevationLayer.protocol === 'wmts' && elevationLayer.options.tileMatrixSet !== 'WGS84G') {
+            throw new Error('Only WGS84G tileMatrixSet is currently supported for WMTS elevation layers');
+        }
+
+        elevationLayer.update = elevationLayer.update || updateLayeredMaterialNodeElevation;
+
+        return view.addLayer(elevationLayer, layer);
+    };
+
+    layer.addFeatureLayer = featureLayer => view.addLayer(featureLayer, layer);
 
     layer.level0Nodes = [];
     layer.onTileCreated = layer.onTileCreated || (() => {});

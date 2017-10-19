@@ -97,6 +97,10 @@ const _syncGeometryLayerVisibility = function _syncGeometryLayerVisibility(layer
 };
 
 function _preprocessLayer(view, layer, provider) {
+    if (view._preAddLayer) {
+        view._preAddLayer(layer);
+    }
+
     if (!(layer instanceof Layer) && !(layer instanceof GeometryLayer)) {
         const nlayer = new Layer(layer.id);
         // nlayer.id is read-only so delete it from layer before Object.assign

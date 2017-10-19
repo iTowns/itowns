@@ -25,7 +25,7 @@ describe('Globe example', function () {
             itownsTesting.counters.visible_at_level = [];
             itownsTesting.counters.displayed_at_level = [];
 
-            for (var obj of example.view.wgs84TileLayer.level0Nodes) {
+            for (var obj of example.view.baseLayer.level0Nodes) {
                 itownsTesting.countVisibleAndDisplayed(obj);
             }
 

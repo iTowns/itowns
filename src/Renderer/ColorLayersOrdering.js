@@ -30,7 +30,7 @@ export const ColorLayersOrdering = {
         if (layer) {
             const previousSequence = ImageryLayers.getColorLayersIdOrderedBySequence(imageryLayers);
             ImageryLayers.moveLayerUp(layer, imageryLayers);
-            updateLayersOrdering(view.wgs84TileLayer, imageryLayers);
+            updateLayersOrdering(view.baseLayer, imageryLayers);
             view.dispatchEvent({ type: COLOR_LAYERS_ORDER_CHANGED,
                 previous: { sequence: previousSequence },
                 new: { sequence: ImageryLayers.getColorLayersIdOrderedBySequence(imageryLayers) },
@@ -54,7 +54,7 @@ export const ColorLayersOrdering = {
         if (layer) {
             const previousSequence = ImageryLayers.getColorLayersIdOrderedBySequence(imageryLayers);
             ImageryLayers.moveLayerDown(layer, imageryLayers);
-            updateLayersOrdering(view.wgs84TileLayer, imageryLayers);
+            updateLayersOrdering(view.baseLayer, imageryLayers);
             view.dispatchEvent({ type: COLOR_LAYERS_ORDER_CHANGED,
                 previous: { sequence: previousSequence },
                 new: { sequence: ImageryLayers.getColorLayersIdOrderedBySequence(imageryLayers) },
@@ -79,7 +79,7 @@ export const ColorLayersOrdering = {
         if (layer) {
             const previousSequence = ImageryLayers.getColorLayersIdOrderedBySequence(imageryLayers);
             ImageryLayers.moveLayerToIndex(layer, newIndex, imageryLayers);
-            updateLayersOrdering(view.wgs84TileLayer, imageryLayers);
+            updateLayersOrdering(view.baseLayer, imageryLayers);
             view.dispatchEvent({ type: COLOR_LAYERS_ORDER_CHANGED,
                 previous: { sequence: previousSequence },
                 new: { sequence: ImageryLayers.getColorLayersIdOrderedBySequence(imageryLayers) },

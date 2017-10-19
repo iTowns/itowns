@@ -41,10 +41,10 @@ var dragCameraStart;
 
 // By default itowns' tiles geometry have a "skirt" (ie they have a height),
 // but in case of orthographic we don't need this feature, so disable it
-view.tileLayer.disableSkirt = true;
+view.baseLayer.disableSkirt = true;
 
 // Add an TMS imagery layer
-view.addLayer({
+view.baseLayer.addColorLayer({
     type: 'color',
     protocol: 'tms',
     id: 'OPENSM',
