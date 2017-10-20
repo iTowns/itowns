@@ -60,15 +60,26 @@ WMS_Provider.prototype.preprocessDataLayer = function preprocessDataLayer(layer)
         layer.options.zoom = { min: 0, max: 21 };
     }
 
-    layer.axisOrder = layer.axisOrder || 'swne';
     layer.format = layer.options.mimetype || 'image/png';
     layer.width = layer.heightMapWidth || 256;
     layer.version = layer.version || '1.3.0';
     layer.style = layer.style || '';
     layer.transparent = layer.transparent || false;
 
-    if (layer.projection == 'EPSG:3857') {
-        layer.axisOrder = 'wsen';
+    if (!layer.axisOrder) {
+        // 4326 (lat/long) axis order depends on the WMS version used
+        if (layer.projection == 'EPSG:4326') {
+            // EPSG 4326 x = lat, long = y
+            // version 1.1.0 long/lat while version 1.3.0 mandates xy (so lat,long)
+            layer.axisOrder = (layer.version === '1.1.0' ? 'wsen' : 'swne');
+        } else {
+            // xy,xy order
+            layer.axisOrder = 'wsen';
+        }
+    }
+    let crsPropName = 'SRS';
+    if (layer.version === '1.3.0') {
+        crsPropName = 'CRS';
     }
 
     layer.customUrl = `${layer.url
@@ -78,7 +89,7 @@ WMS_Provider.prototype.preprocessDataLayer = function preprocessDataLayer(layer)
                   }&FORMAT=${layer.format
                   }&TRANSPARENT=${layer.transparent
                   }&BBOX=%bbox` +
-                  `&CRS=${layer.projection
+                  `&${crsPropName}=${layer.projection
                   }&WIDTH=${layer.width
                   }&HEIGHT=${layer.width}`;
 };

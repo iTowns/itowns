@@ -104,7 +104,6 @@ for (index = 0; index < wmsLayers.length; index++) {
         id: 'wms_imagery' + wms + index,
         name: wms,
         projection: 'EPSG:3946',
-        axisOrder: 'wsen',
         options: {
             mimetype: 'image/jpeg',
         },
@@ -120,7 +119,6 @@ for (index = 0; index < wmsLayers.length; index++) {
         id: 'wms_elevation' + wms + index,
         name: 'MNT2012_Altitude_10m_CC46',
         projection: 'EPSG:3946',
-        axisOrder: 'wsen',
         heightMapWidth: 256,
         options: {
             mimetype: 'image/jpeg',
