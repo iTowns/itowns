@@ -32,7 +32,6 @@ view.addLayer({
     id: 'wms_imagery',
     name: 'Ortho2009_vue_ensemble_16cm_CC46',
     projection: 'EPSG:3946',
-    axisOrder: 'wsen',
     options: {
         mimetype: 'image/jpeg',
     },
@@ -48,11 +47,9 @@ view.addLayer({
     type: 'elevation',
     protocol: 'wms',
     networkOptions: { crossOrigin: 'anonymous' },
-    version: '1.3.0',
     id: 'wms_elevation',
     name: 'MNT2012_Altitude_10m_CC46',
     projection: 'EPSG:3946',
-    axisOrder: 'wsen',
     heightMapWidth: 256,
     options: {
         mimetype: 'image/jpeg',

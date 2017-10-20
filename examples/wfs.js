@@ -34,7 +34,6 @@ view.addLayer({
     projection: 'EPSG:3946',
     transparent: false,
     extent: extent,
-    axisOrder: 'wsen',
     options: {
         mimetype: 'image/jpeg',
     },
