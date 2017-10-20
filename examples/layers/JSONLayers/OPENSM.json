@@ -3,7 +3,7 @@
     "protocol": "wmtsc",
     "networkOptions": { "crossOrigin" : "anonymous" },
     "id": "OPENSM",
-    "customUrl": "http://3d.oslandia.com:8080/styles/klokantech-basic/%TILEMATRIX/%COL/%ROW.png",
+    "customUrl": "http://osm.oslandia.io/styles/klokantech-basic/%TILEMATRIX/%COL/%ROW.png",
     "options": {
         "attribution": {
             "name":"OpenStreetMap",
