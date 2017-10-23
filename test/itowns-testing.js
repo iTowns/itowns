@@ -2,6 +2,9 @@ const fs = require('fs');
 const url = require('url');
 const assert = require('assert');
 
+global.proj4 = require('proj4');
+global.THREE = require('three');
+
 const counters = {
     redraw: 0,
     fetch: [],

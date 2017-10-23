@@ -14,7 +14,7 @@ var providePlugin = new webpack.ProvidePlugin({
 
 module.exports = {
     entry: {
-        itowns: ['es6-promise', 'whatwg-fetch', path.resolve(__dirname, 'src/Main.js')],
+        itowns: ['es6-promise', 'whatwg-fetch', path.resolve(__dirname, 'src/MainBundle.js')],
         debug: [path.resolve(__dirname, 'utils/debug/Main.js')],
     },
     devtool: 'source-map',
@@ -54,7 +54,7 @@ module.exports = {
                 // .babelrc is used for transpiling src/ into lib/ in the prepublish
                 // phase, see package.json
                 options: {
-                    presets: ['es2015'],
+                    presets: [['es2015', { modules: false } ]],
                     plugins: ['transform-runtime'],
                     babelrc: false,
                 },
