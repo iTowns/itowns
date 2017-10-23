@@ -1,10 +1,3 @@
-import * as THREE from 'three';
-
-// This is temporary, until we're able to build a vendor.js
-// containing our dependencies.
-export { THREE };
-export { default as proj4 } from 'proj4';
-
 export { default as Coordinates, UNIT } from './Core/Geographic/Coordinates';
 export { default as Extent } from './Core/Geographic/Extent';
 export { GeometryLayer, ImageryLayers } from './Core/Layer/Layer';
