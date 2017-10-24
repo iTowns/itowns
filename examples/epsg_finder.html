@@ -71,9 +71,7 @@
                     const extent = geoExtent.as(code);
                     console.log('New extent', extent);
 
-                    const epsgLayer = itowns.createPlanarLayer(extent.crs(), extent, {
-                        object3d: globeView.scene,
-                    });
+                    const epsgLayer = itowns.createPlanarLayer(extent.crs(), extent, { });
                     epsgLayer.noTextureColor = new itowns.THREE.Color(0xeedeae);
                     epsgLayer.disableSkirt = true;
 
@@ -95,7 +93,6 @@
                         id: 'osm' + extent.crs(),
                         name: 'positron',
                         projection: 'EPSG:3857',
-                        axisOrder: 'wsen',
                         options: {
                             mimetype: 'image/jpeg',
                         }
