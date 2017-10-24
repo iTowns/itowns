@@ -203,23 +203,8 @@ GlobeView.prototype._preAddLayer = function _preAddLayer(layer) {
  */
 GlobeView.prototype.removeLayer = function removeImageryLayer(layerId) {
     const layer = this.getLayers(l => l.id === layerId)[0];
-    if (layer && layer.type === 'color' && this.baseLayer.detach(layer)) {
-        var cO = function cO(object) {
-            if (object.removeColorLayer) {
-                object.removeColorLayer(layerId);
-            }
-        };
-
-        for (const root of this.baseLayer.level0Nodes) {
-            root.traverse(cO);
-        }
-        const imageryLayers = this.getLayers(l => l.type === 'color');
-        for (const color of imageryLayers) {
-            if (color.sequence > layer.sequence) {
-                color.sequence--;
-            }
-        }
-
+    if (layer && layer.type === 'color') {
+        this.baseLayer.removeColorLayer(layer);
         this.notifyChange(true);
         this.dispatchEvent({
             type: GLOBE_VIEW_EVENTS.LAYER_REMOVED,

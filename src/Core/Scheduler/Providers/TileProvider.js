@@ -18,6 +18,7 @@ import TileGeometry from '../../TileGeometry';
 import TileMesh from '../../TileMesh';
 import CancelledCommandException from '../CancelledCommandException';
 import { requestNewTile } from '../../../Process/TiledNodeProcessing';
+import ObjectRemovalHelper from '../../../Process/ObjectRemovalHelper';
 import { updateLayeredMaterialNodeImagery, updateLayeredMaterialNodeElevation } from '../../../Process/LayeredMaterialNodeProcessing';
 
 function TileProvider() {
@@ -45,6 +46,32 @@ TileProvider.prototype.preprocessDataLayer = function preprocessLayer(layer, vie
 
         return view.addLayer(colorLayer, layer);
     };
+    layer.removeColorLayer = (colorLayerOrId) => {
+        const layerId = colorLayerOrId.id === undefined ? colorLayerOrId : colorLayerOrId.id;
+        const colorLayer = view.getLayers(l => l.id === layerId)[0];
+        if (colorLayer && colorLayer.type === 'color' && layer.detach(colorLayer)) {
+            // remove layer from all tiles
+            for (const root of layer.level0Nodes) {
+                root.traverse((tile) => {
+                    if (tile.removeColorLayer) {
+                        tile.removeColorLayer(layerId);
+                    }
+                });
+            }
+            // update color sequence of other color layers
+            const imageryLayers = view.getLayers((l, p) => (p.id == layer.id && l.type === 'color'));
+            for (const color of imageryLayers) {
+                if (color.sequence > colorLayer.sequence) {
+                    color.sequence--;
+                }
+            }
+            return true;
+        } else {
+            // eslint-disable-next-line no-console
+            console.error(`${colorLayerOrId} isn't a color layer`);
+            return false;
+        }
+    };
 
     layer.addElevationLayer = (elevationLayer) => {
         if (elevationLayer.protocol === 'wmts' && elevationLayer.options.tileMatrixSet !== 'WGS84G') {
@@ -55,8 +82,47 @@ TileProvider.prototype.preprocessDataLayer = function preprocessLayer(layer, vie
 
         return view.addLayer(elevationLayer, layer);
     };
+    layer.removeElevationLayer = (elevationLayerOrId) => {
+        const layerId = elevationLayerOrId.id === undefined ? elevationLayerOrId : elevationLayerOrId.id;
+        const elevationLayer = view.getLayers(l => l.id === layerId)[0];
+        if (elevationLayer && elevationLayer.type === 'elevation' && layer.detach(elevationLayer)) {
+            // TODO: cleanup elevation textures
+            return true;
+        } else {
+            // eslint-disable-next-line no-console
+            console.error(`${elevationLayerOrId} isn't an elevation layer`);
+            return false;
+        }
+    };
 
     layer.addFeatureLayer = featureLayer => view.addLayer(featureLayer, layer);
+    layer.removeFeatureLayer = (featureLayerOrId) => {
+        const layerId = featureLayerOrId.id === undefined ? featureLayerOrId : featureLayerOrId.id;
+        const featureLayer = view.getLayers(l => l.id === layerId)[0];
+        if (featureLayer && layer.detach(featureLayer)) {
+            const fn = (tile) => { ObjectRemovalHelper.removeChildrenAndCleanupRecursively(layerId, tile); };
+            for (const root of layer.level0Nodes) {
+                root.traverse(fn);
+            }
+            return true;
+        } else {
+            // eslint-disable-next-line no-console
+            console.error(`${featureLayerOrId} isn't a feature layer`);
+            return false;
+        }
+    };
+
+    layer.removeLayer = (layerOrId) => {
+        const layerId = layerOrId.id === undefined ? layerOrId : layerOrId.id;
+        const toRemove = view.getLayers(l => l.id === layerId)[0];
+        if (layer.type === 'color') {
+            return layer.removeColorLayer(toRemove);
+        } else if (layer.type === 'elevation') {
+            return layer.removeElevationLayer(toRemove);
+        } else {
+            return layer.removeFeatureLayer(toRemove);
+        }
+    };
 
     layer.level0Nodes = [];
     layer.onTileCreated = layer.onTileCreated || (() => {});
