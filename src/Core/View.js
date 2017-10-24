@@ -330,10 +330,28 @@ View.prototype.removeLayer = function removeLayer(layerId) {
     if (layers.length === 0) {
         throw new Error(`No layer with id '${layerId}' to remove`);
     }
-    const toRemove = this.scene.children.filter((c => c.layer == layerId));
-    for (const obj of toRemove) {
-        const idx = this.scene.children.indexOf(obj);
-        this.scene.children.splice(idx, 1);
+    const layer = layers[0];
+
+    for (const l of layer._attachedLayers) {
+        layer.removeLayer(l);
+    }
+
+    // default removal strategy
+    layer.object3d.traverse((elt) => {
+        if (elt.geometry) {
+            elt.geometry.dispose();
+        }
+        if (elt.material) {
+            elt.material.dispose();
+        }
+        elt.parent = null;
+    });
+    layer.object3d.remove(...layer.object3d.children);
+
+    this.scene.remove(layer.object3d);
+
+    if (layerId == this.baseLayer.id) {
+        delete this.baseLayer;
     }
 
     const idx = this._layers.indexOf(layers[0]);
