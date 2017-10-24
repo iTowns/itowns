@@ -32,13 +32,7 @@ WMS_Provider.prototype.url = function url(bbox, layer) {
 };
 
 WMS_Provider.prototype.tileTextureCount = function tileTextureCount(tile, layer) {
-    if (tile.extent.crs() == layer.projection) {
-        return 1;
-    } else {
-        const tileMatrixSet = layer.options.tileMatrixSet;
-        OGCWebServiceHelper.computeTileMatrixSetCoordinates(tile, tileMatrixSet);
-        return tile.getCoordsForLayer(layer).length;
-    }
+    return tile.extent.crs() == layer.projection ? 1 : tile.getCoordsForLayer(layer).length;
 };
 
 WMS_Provider.prototype.preprocessDataLayer = function preprocessDataLayer(layer) {
