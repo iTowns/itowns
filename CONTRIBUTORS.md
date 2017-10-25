@@ -5,8 +5,10 @@ The following people have contributed to iTowns 2.
 * [IGN](http://www.ign.fr)
   * [Gérald Choqueux](https://github.com/gchoqueux)
   * [Alexandre Devaux](https://github.com/nosy-b)
-  * [Victor C](https://github.com/VictorCo)
+  * [Victor Coindet](https://github.com/VictorCo)
   * [Quoc Dinh Nguyen](https://github.com/qdnguyen)
+  * [Grégoire Maillet](https://github.com/gmaillet)
+  * [Guillaume Liégard](https://github.com/gliegard)
 
 * [Oslandia](http://www.oslandia.com)
   * [Vincent Picavet](https://github.com/vpicavet)
@@ -16,7 +18,7 @@ The following people have contributed to iTowns 2.
 
 * [AtolCD](http://www.atolcd.com)
   * [Thomas Broyer](https://github.com/tbroyer)
-  
+
 * [LIRIS](https://liris.cnrs.fr/)
   * [Nicolas Saul](https://github.com/NikoSaul)
   * [Emmanuel Schmück](https://github.com/EmmanuelSchmuck/)
