@@ -45,9 +45,7 @@ if (!renderer) {
     };
 
     // Add one imagery layer to the miniview
-    itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(layer) {
-        miniView.baseLayer.addColorLayer(layer);
-    });
+    itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(miniView.baseLayer.addColorLayer);
 }
 
 // Add one imagery layer to the scene
