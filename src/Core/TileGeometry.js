@@ -73,8 +73,8 @@ TileGeometry.prototype.computeBuffers = function computeBuffers(params, builder)
     // segments count :
     // Tile : (nSeg + 1) * (nSeg + 1)
     // Skirt : 8 * (nSeg - 1)
-    var nVertex = (nSeg + 1) * (nSeg + 1) + 8 * (nSeg - 1); // correct pour uniquement les vertex
-    var triangles = (nSeg) * (nSeg) + 16 * (nSeg - 1); // correct pour uniquement les vertex
+    var nVertex = (nSeg + 1) * (nSeg + 1) + (params.disableSkirt ? 0 : 8 * (nSeg - 1)); // correct pour uniquement les vertex
+    var triangles = (nSeg) * (nSeg) * 2 + (params.disableSkirt ? 0 : 16 * (nSeg - 1) * 2); // correct pour uniquement les vertex
 
     scratchBuffers.position = new Float32Array(nVertex * 3);
     scratchBuffers.normal = new Float32Array(nVertex * 3);
@@ -86,7 +86,7 @@ TileGeometry.prototype.computeBuffers = function computeBuffers(params, builder)
         outBuffers.index = cachedBuffers.index;
         outBuffers.uv.wgs84 = cachedBuffers.uv.wgs84;
     } else {
-        scratchBuffers.index = new Uint32Array(triangles * 3 * 2);
+        scratchBuffers.index = new Uint32Array(triangles * 3);
         scratchBuffers.uv.wgs84 = new Float32Array(nVertex * 2);
     }
 
