@@ -134,86 +134,89 @@ export function updateLayeredMaterialNodeImagery(context, layer, node) {
     if (!node.parent) {
         return;
     }
-    if (!layer.tileInsideLimit(node, layer)) {
-        // we also need to check that tile's parent doesn't have a texture for this layer,
-        // because even if this tile is outside of the layer, it could inherit it's
-        // parent texture
-        if (!layer.noTextureParentOutsideLimit &&
-            node.parent &&
-            node.parent.material &&
-            node.parent.getIndexLayerColor &&
-            node.parent.getIndexLayerColor(layer.id) >= 0) {
-            // ok, we're going to inherint our parent's texture
-        } else {
-            return Promise.resolve();
-        }
-    }
 
     const material = node.material;
 
-    if (material.indexOfColorLayer(layer.id) === -1) {
-        const texturesCount = layer.tileTextureCount ?
-            layer.tileTextureCount(node, layer) : 1;
+    // Initialisation
+    if (node.layerUpdateState[layer.id] === undefined) {
+        node.layerUpdateState[layer.id] = new LayerUpdateState();
 
-        const paramMaterial = {
-            tileMT: layer.options.tileMatrixSet || node.getCoordsForLayer(layer)[0].crs(),
-            texturesCount,
-            visible: layer.visible,
-            opacity: layer.opacity,
-            fx: layer.fx,
-            idLayer: layer.id,
-        };
+        if (!layer.tileInsideLimit(node, layer)) {
+            // we also need to check that tile's parent doesn't have a texture for this layer,
+            // because even if this tile is outside of the layer, it could inherit it's
+            // parent texture
+            if (!layer.noTextureParentOutsideLimit &&
+                node.parent &&
+                node.parent.material &&
+                node.parent.getIndexLayerColor &&
+                node.parent.getIndexLayerColor(layer.id) >= 0) {
+                // ok, we're going to inherit our parent's texture
+            } else {
+                node.layerUpdateState[layer.id].noMoreUpdatePossible();
+                return;
+            }
+        }
 
-        material.pushLayer(paramMaterial);
-        const imageryLayers = context.view.getLayers(l => l.type === 'color');
-        const sequence = ImageryLayers.getColorLayersIdOrderedBySequence(imageryLayers);
-        material.setSequence(sequence);
+        if (material.indexOfColorLayer(layer.id) === -1) {
+            const texturesCount = layer.tileTextureCount ?
+                layer.tileTextureCount(node, layer) : 1;
 
-        initNodeImageryTexturesFromParent(node, node.parent, layer);
+            const paramMaterial = {
+                tileMT: layer.options.tileMatrixSet || node.getCoordsForLayer(layer)[0].crs(),
+                texturesCount,
+                visible: layer.visible,
+                opacity: layer.opacity,
+                fx: layer.fx,
+                idLayer: layer.id,
+            };
+
+            material.pushLayer(paramMaterial);
+            const imageryLayers = context.view.getLayers(l => l.type === 'color');
+            const sequence = ImageryLayers.getColorLayersIdOrderedBySequence(imageryLayers);
+            material.setSequence(sequence);
+
+            initNodeImageryTexturesFromParent(node, node.parent, layer);
+        }
+    }
+    // An update is pending / or impossible -> abort
+    if (!node.layerUpdateState[layer.id].canTryUpdate(ts)) {
+        return;
     }
 
-    if (!node.isDisplayed() || !layer.tileInsideLimit(node, layer)) {
-        return Promise.resolve();
+    // Node is hidden, no need to update it
+    if (!node.isDisplayed() || !layer.visible) {
+        return;
     }
 
-    // upate params
+    // Update material parameters
     const layerIndex = material.indexOfColorLayer(layer.id);
     material.setLayerVisibility(layerIndex, layer.visible);
     material.setLayerOpacity(layerIndex, layer.opacity);
 
     const ts = Date.now();
-
-    if (node.layerUpdateState[layer.id] === undefined) {
-        node.layerUpdateState[layer.id] = new LayerUpdateState();
-    }
-
-    if (!node.layerUpdateState[layer.id].canTryUpdate(ts)) {
-        return Promise.resolve();
-    }
-
     // does this tile needs a new texture?
     if (layer.canTileTextureBeImproved) {
         // if the layer has a custom method -> use it
         if (!layer.canTileTextureBeImproved(layer, node)) {
             node.layerUpdateState[layer.id].noMoreUpdatePossible();
-            return Promise.resolve();
+            return;
         }
     } else if (!node.isColorLayerDownscaled(layer)) {
         // default decision method
         node.layerUpdateState[layer.id].noMoreUpdatePossible();
-        return Promise.resolve();
+        return;
     }
 
     // is fetching data from this layer disabled?
-    if (!layer.visible || layer.frozen) {
-        return Promise.resolve();
+    if (layer.frozen) {
+        return;
     }
 
     const currentLevel = node.material.getColorLayerLevelById(layer.id);
     const zoom = node.getCoordsForLayer(layer)[0].zoom || node.level;
     const targetLevel = chooseNextLevelToFetch(layer.updateStrategy.type, node, zoom, currentLevel, layer);
     if (targetLevel <= currentLevel) {
-        return Promise.resolve();
+        return;
     }
 
     node.layerUpdateState[layer.id].newTry();
