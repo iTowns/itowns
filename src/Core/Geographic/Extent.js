@@ -175,10 +175,10 @@ Extent.prototype.offsetToParent = function offsetToParent(other) {
         const r = (this._row - (this._row % diff)) * invDiff;
         const c = (this._col - (this._col % diff)) * invDiff;
 
-        return new THREE.Vector3(
+        return new THREE.Vector4(
             this._col * invDiff - c,
             this._row * invDiff - r,
-            invDiff);
+            invDiff, invDiff);
     }
 
     const dimension = {
@@ -191,10 +191,15 @@ Extent.prototype.offsetToParent = function offsetToParent(other) {
     const originY =
         (other.north() - this.north(other._internalStorageUnit)) / dimension.y;
 
-    const scale =
+    const scaleX =
         Math.abs(
             this.east(other._internalStorageUnit) - this.west(other._internalStorageUnit)) / dimension.x;
-    return new THREE.Vector3(originX, originY, scale);
+
+    const scaleY =
+        Math.abs(
+            this.north(other._internalStorageUnit) - this.south(other._internalStorageUnit)) / dimension.y;
+
+    return new THREE.Vector4(originX, originY, scaleX, scaleY);
 };
 
 Extent.prototype.west = function west(unit) {
@@ -321,8 +326,10 @@ Extent.prototype.offsetScale = function offsetScale(bbox) {
     var originX = (bbox.west(this._internalStorageUnit) - this.west()) / dimension.x;
     var originY = (bbox.north(this._internalStorageUnit) - this.north()) / dimension.y;
 
-    var scale = Math.abs(bbox.east(this._internalStorageUnit) - bbox.west(this._internalStorageUnit)) / dimension.x;
-    return new THREE.Vector3(originX, originY, scale);
+    var scaleX = Math.abs(bbox.east(this._internalStorageUnit) - bbox.west(this._internalStorageUnit)) / dimension.x;
+    var scaleY = Math.abs(bbox.north(this._internalStorageUnit) - bbox.south(this._internalStorageUnit)) / dimension.y;
+
+    return new THREE.Vector4(originX, originY, scaleX, scaleY);
 };
 
 /**

@@ -18,7 +18,6 @@ var emptyTexture = new THREE.Texture();
 emptyTexture.coords = { zoom: EMPTY_TEXTURE_ZOOM };
 
 const layerTypesCount = 2;
-var vector = new THREE.Vector3(0.0, 0.0, 0.0);
 var vector4 = new THREE.Vector4(0.0, 0.0, 0.0, 0.0);
 var fooTexture;
 
@@ -38,7 +37,7 @@ export function unpack1K(color, factor) {
 
 var getColorAtIdUv = function getColorAtIdUv(nbTex) {
     if (!fooTexture) {
-        fooTexture = 'vec4 colorAtIdUv(sampler2D dTextures[TEX_UNITS],vec3 offsetScale[TEX_UNITS],int id, vec2 uv){\n';
+        fooTexture = 'vec4 colorAtIdUv(sampler2D dTextures[TEX_UNITS],vec4 offsetScale[TEX_UNITS],int id, vec2 uv){\n';
         fooTexture += ' if (id == 0) return texture2D(dTextures[0],  pitUV(uv,offsetScale[0]));\n';
 
         for (var l = 1; l < nbTex; l++) {
@@ -122,8 +121,8 @@ const LayeredMaterial = function LayeredMaterial(options) {
     // Uniform three js needs no empty array
     // WARNING TODO: prevent empty slot, but it's not the solution
     this.offsetScale[l_COLOR] = Array(nbSamplers);
-    this.offsetScale[l_ELEVATION] = [vector];
-    fillArray(this.offsetScale[l_COLOR], vector);
+    this.offsetScale[l_ELEVATION] = [vector4];
+    fillArray(this.offsetScale[l_COLOR], vector4);
 
     this.textures[l_ELEVATION] = [emptyTexture];
     this.textures[l_COLOR] = Array(nbSamplers);
@@ -321,7 +320,7 @@ LayeredMaterial.prototype.removeColorLayer = function removeColorLayer(layer) {
     // refill remove textures
     for (let i = 0, max = texturesCount; i < max; i++) {
         this.textures[l_COLOR].push(emptyTexture);
-        this.offsetScale[l_COLOR].push(vector);
+        this.offsetScale[l_COLOR].push(vector4);
     }
 
     // Update slot start texture layer
@@ -357,7 +356,7 @@ LayeredMaterial.prototype.setTexture = function setTexture(texture, layerType, s
 
     // BEWARE: array [] -> size: 0; array [10]="wao" -> size: 11
     this.textures[layerType][slot] = texture || emptyTexture;
-    this.offsetScale[layerType][slot] = offsetScale || new THREE.Vector3(0.0, 0.0, 1.0);
+    this.offsetScale[layerType][slot] = offsetScale || new THREE.Vector4(0.0, 0.0, 1.0, 1.0);
 };
 
 LayeredMaterial.prototype.setColorLayerParameters = function setColorLayerParameters(params) {

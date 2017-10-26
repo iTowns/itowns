@@ -13,7 +13,7 @@ const vec4 CRed = vec4( 1.0, 0.0, 0.0, 1.0);
 
 
 uniform sampler2D   dTextures_01[TEX_UNITS];
-uniform vec3        offsetScale_L01[TEX_UNITS];
+uniform vec4        offsetScale_L01[TEX_UNITS];
 
 // offset texture | Projection | fx | Opacity
 uniform vec4        paramLayers[8];
