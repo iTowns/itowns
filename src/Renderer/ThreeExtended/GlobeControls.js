@@ -1626,6 +1626,7 @@ GlobeControls.prototype.setCameraTargetPosition = function setCameraTargetPositi
     } else {
         ctrl.progress = 1.0;
         quatGlobe.setFromUnitVectors(vFrom, vTo);
+        this.updateCameraTransformation(this.states.MOVE_GLOBE, false);
         this._view.wgs84TileLayer.postUpdate = () => {
             clampToGround(ctrl);
             this.updateCameraTransformation(this.states.MOVE_GLOBE, false);
