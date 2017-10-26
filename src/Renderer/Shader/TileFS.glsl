@@ -76,10 +76,11 @@ void main() {
 
         #if defined(USE_LOGDEPTHBUF) && defined(USE_LOGDEPTHBUF_EXT)
             float depth = gl_FragDepthEXT / gl_FragCoord.w;
-            float fogIntensity = 1.0/(exp(depth/distanceFog));
         #else
-            float fogIntensity = 1.0;
+            float depth = gl_FragCoord.z / gl_FragCoord.w;
         #endif
+
+        float fogIntensity = 1.0/(exp(depth/distanceFog));
 
         vec4 diffuseColor = CWhite;
         bool validTexture = false;
