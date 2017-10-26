@@ -179,10 +179,20 @@ GlobeView.prototype.constructor = GlobeView;
 
 GlobeView.prototype._preAddLayer = function _preAddLayer(layer) {
     if (layer.type == 'color') {
+        if (!layer.update) {
+            // Note: remove this when GlobeView.addLayer is removed
+            this.baseLayer.addColorLayer(layer, false);
+        }
+
         if (layer.protocol === 'rasterizer') {
             layer.reprojection = 'EPSG:4326';
         }
     } else if (layer.type == 'elevation') {
+        if (!layer.update) {
+            // Note: remove this when GlobeView.addLayer is removed
+            this.baseLayer.addElevationLayer(layer, false);
+        }
+
         if (layer.protocol === 'wmts' && layer.options.tileMatrixSet !== 'WGS84G') {
             throw new Error('Only WGS84G tileMatrixSet is currently supported for WMTS elevation layers');
         }
@@ -192,6 +202,22 @@ GlobeView.prototype._preAddLayer = function _preAddLayer(layer) {
         type: GLOBE_VIEW_EVENTS.LAYER_ADDED,
         layerId: layer.id,
     });
+};
+
+/**
+ * Calls View.addLayer using this.baseLayer as the parent layer
+ * @param {Layer} layer: layer to attach to the planar geometry
+ * @deprecated
+ * @return {Promise} see View.addLayer
+ */
+GlobeView.prototype.addLayer = function addLayer(layer) {
+    if (!this._warnAddLayerDeprecated) {
+        // eslint-disable-next-line no-console
+        console.warn('globeView.addLayer(colorLayer) has been deprecated.\n' +
+            'Use globeView.baseLayer.[addColorLayer|addElevationLayer|addFeatureLayer](layer) instead.');
+        this._warnAddLayerDeprecated = true;
+    }
+    return View.prototype.addLayer.call(this, layer, this.baseLayer);
 };
 
 /**

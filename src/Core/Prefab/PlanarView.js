@@ -8,7 +8,6 @@ import { unpack1K } from '../../Renderer/LayeredMaterial';
 import { GeometryLayer } from '../Layer/Layer';
 
 import { processTiledGeometryNode } from '../../Process/TiledNodeProcessing';
-import { updateLayeredMaterialNodeImagery, updateLayeredMaterialNodeElevation } from '../../Process/LayeredMaterialNodeProcessing';
 import { planarCulling, planarSubdivisionControl } from '../../Process/PlanarTileProcessing';
 import PlanarTileBuilder from './Planar/PlanarTileBuilder';
 import SubdivisionControl from '../../Process/SubdivisionControl';
@@ -152,13 +151,33 @@ PlanarView.prototype.constructor = PlanarView;
 
 PlanarView.prototype._preAddLayer = function _preAddLayer(layer) {
     if (layer.type == 'color') {
-        layer.update = updateLayeredMaterialNodeImagery;
+        if (!layer.update) {
+            this.baseLayer.addColorLayer(layer, false);
+        }
         if (layer.protocol === 'rasterizer') {
             layer.reprojection = this.referenceCrs;
         }
     } else if (layer.type == 'elevation') {
-        layer.update = updateLayeredMaterialNodeElevation;
+        if (!layer.update) {
+            this.baseLayer.addElevationLayer(layer, false);
+        }
     }
+};
+
+/**
+ * Calls View.addLayer using this.baseLayer as the parent layer
+ * @param {Layer} layer: layer to attach to the planar geometry
+ * @deprecated
+ * @return {Promise} see View.addLayer
+ */
+PlanarView.prototype.addLayer = function addLayer(layer) {
+    if (!this._warnAddLayerDeprecated) {
+        // eslint-disable-next-line no-console
+        console.warn('globeView.addLayer(colorLayer) has been deprecated.\n' +
+            'Use globeView.baseLayer.[addColorLayer|addElevationLayer|addFeatureLayer](layer) instead.');
+        this._warnAddLayerDeprecated = true;
+    }
+    return View.prototype.addLayer.call(this, layer, this.baseLayer);
 };
 
 PlanarView.prototype.selectNodeAt = function selectNodeAt(mouse) {

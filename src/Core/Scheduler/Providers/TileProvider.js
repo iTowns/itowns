@@ -34,7 +34,7 @@ TileProvider.prototype.preprocessDataLayer = function preprocessLayer(layer, vie
         throw new Error(`Cannot init tiled layer without schemeTile for layer ${layer.id}`);
     }
 
-    layer.addColorLayer = (colorLayer) => {
+    layer.addColorLayer = (colorLayer, addToView = true) => {
         if (colorLayer.protocol === 'rasterizer') {
             colorLayer.reprojection = 'EPSG:4326';
         }
@@ -44,7 +44,9 @@ TileProvider.prototype.preprocessDataLayer = function preprocessLayer(layer, vie
             colorLayer.update = updateLayeredMaterialNodeImagery;
         }
 
-        return view.addLayer(colorLayer, layer);
+        if (addToView) {
+            return view.addLayer(colorLayer, layer);
+        }
     };
     layer.removeColorLayer = (colorLayerOrId) => {
         const layerId = colorLayerOrId.id === undefined ? colorLayerOrId : colorLayerOrId.id;
@@ -73,14 +75,16 @@ TileProvider.prototype.preprocessDataLayer = function preprocessLayer(layer, vie
         }
     };
 
-    layer.addElevationLayer = (elevationLayer) => {
+    layer.addElevationLayer = (elevationLayer, addToView = true) => {
         if (elevationLayer.protocol === 'wmts' && elevationLayer.options.tileMatrixSet !== 'WGS84G') {
             throw new Error('Only WGS84G tileMatrixSet is currently supported for WMTS elevation layers');
         }
 
         elevationLayer.update = elevationLayer.update || updateLayeredMaterialNodeElevation;
 
-        return view.addLayer(elevationLayer, layer);
+        if (addToView) {
+            return view.addLayer(elevationLayer, layer);
+        }
     };
     layer.removeElevationLayer = (elevationLayerOrId) => {
         const layerId = elevationLayerOrId.id === undefined ? elevationLayerOrId : elevationLayerOrId.id;
