@@ -73,7 +73,7 @@ WMTS_Provider.prototype.url = function url(coWMTS, layer) {
  * @returns {Promise<portableXBIL>}
  */
 WMTS_Provider.prototype.getXbilTexture = function getXbilTexture(tile, layer, targetZoom) {
-    const pitch = new THREE.Vector3(0.0, 0.0, 1.0);
+    const pitch = new THREE.Vector4(0.0, 0.0, 1.0, 1.0);
     let coordWMTS = tile.getCoordsForLayer(layer)[0];
 
     if (targetZoom && targetZoom !== coordWMTS.zoom) {
@@ -112,7 +112,7 @@ WMTS_Provider.prototype.getColorTexture = function getColorTexture(coordWMTS, la
         const result = {};
         result.texture = texture;
         result.texture.coords = coordWMTS;
-        result.pitch = new THREE.Vector3(0, 0, 1);
+        result.pitch = new THREE.Vector4(0, 0, 1, 1);
 
         return result;
     });

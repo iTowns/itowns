@@ -45,7 +45,7 @@ TMS_Provider.prototype.executeCommand = function executeCommand(command) {
         result.texture.coords = coordTMSParent || coordTMS;
         result.pitch = coordTMSParent ?
             coordTMS.offsetToParent(coordTMSParent) :
-            new THREE.Vector3(0, 0, 1);
+            new THREE.Vector4(0, 0, 1, 1);
         return result;
     });
 };

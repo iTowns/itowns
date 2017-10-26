@@ -97,7 +97,7 @@ TileMesh.prototype.setTextureElevation = function setTextureElevation(elevation)
         return;
     }
 
-    const offsetScale = elevation.pitch || new THREE.Vector3(0, 0, 1);
+    const offsetScale = elevation.pitch || new THREE.Vector4(0, 0, 1, 1);
     this.setBBoxZ(elevation.min, elevation.max);
 
     this.material.setTexture(elevation.texture, l_ELEVATION, 0, offsetScale);

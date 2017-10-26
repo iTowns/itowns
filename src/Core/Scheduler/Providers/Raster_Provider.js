@@ -52,7 +52,7 @@ function createTextureFromVector(tile, layer) {
 
     if (layer.type == 'color') {
         const coords = tile.extent.as(layer.projection);
-        const result = { pitch: new THREE.Vector3(0, 0, 1) };
+        const result = { pitch: new THREE.Vector4(0, 0, 1, 1) };
         result.texture = Feature2Texture.createTextureFromFeature(layer.feature, tile.extent, 256, layer.style);
         result.texture.extent = tile.extent;
         result.texture.coords = coords;

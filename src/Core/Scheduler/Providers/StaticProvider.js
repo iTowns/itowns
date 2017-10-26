@@ -1,4 +1,4 @@
-import { Vector3 } from 'three';
+import { Vector4 } from 'three';
 import Extent from '../../Geographic/Extent';
 import OGCWebServiceHelper from './OGCWebServiceHelper';
 import Fetcher from './Fetcher';
@@ -48,7 +48,7 @@ function getTexture(tile, layer) {
         // adjust pitch
         const result = {
             texture,
-            pitch: new Vector3(0, 0, 1),
+            pitch: new Vector4(0, 0, 1, 1),
         };
 
         result.texture.extent = selection.extent;
