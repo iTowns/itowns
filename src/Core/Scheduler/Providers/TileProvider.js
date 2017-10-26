@@ -61,7 +61,7 @@ TileProvider.prototype.preprocessDataLayer = function preprocessLayer(layer, vie
                 });
             }
             // update color sequence of other color layers
-            const imageryLayers = view.getLayers((l, p) => (p.id == layer.id && l.type === 'color'));
+            const imageryLayers = view.getLayers((l, p) => (p && p.id == layer.id && l.type === 'color'));
             for (const color of imageryLayers) {
                 if (color.sequence > colorLayer.sequence) {
                     color.sequence--;
