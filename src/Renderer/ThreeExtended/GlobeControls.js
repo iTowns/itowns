@@ -415,7 +415,7 @@ function GlobeControls(view, target, radius, options = {}) {
     this.zoomSpeed = options.zoomSpeed || 2.0;
 
     // Limits to how far you can dolly in and out ( PerspectiveCamera only )
-    this.minDistance = options.minDistance || 30;
+    this.minDistance = options.minDistance || 300;
     this.maxDistance = options.maxDistance || radius * 8.0;
 
     // Limits to how far you can zoom in and out ( OrthographicCamera only )
@@ -436,7 +436,7 @@ function GlobeControls(view, target, radius, options = {}) {
     // Range is 0 to Math.PI radians.
     // TODO Warning minPolarAngle = 0.01 -> it isn't possible to be perpendicular on Globe
     this.minPolarAngle = 0.01; // radians
-    this.maxPolarAngle = Math.PI * 0.5; // radians
+    this.maxPolarAngle = Math.PI * 0.47; // radians
 
     // How far you can orbit horizontally, upper and lower limits.
     // If set, must be a sub-interval of the interval [ - Math.PI, Math.PI ].
@@ -445,7 +445,7 @@ function GlobeControls(view, target, radius, options = {}) {
 
     // Set collision options
     this.handleCollision = typeof (options.handleCollision) !== 'undefined' ? options.handleCollision : true;
-    this.minDistanceCollision = 100;
+    this.minDistanceCollision = 60;
 
     // Set to true to disable use of the keys
     this.enableKeys = true;
@@ -611,15 +611,44 @@ function GlobeControls(view, target, radius, options = {}) {
     const quaterPano = new THREE.Quaternion();
     const quaterAxis = new THREE.Quaternion();
     const axisX = new THREE.Vector3(1, 0, 0);
+    let minDistanceZ = 0;
+
+    const getMinDistanceCameraBoundingSphereObbsUp = (tile) => {
+        if (tile.level > 10 && tile.children.length == 1 && tile.geometry) {
+            const obb = tile.OBB();
+            const sphereCamera = { position: this.camera.position.clone(), radius: this.minDistanceCollision };
+            if (obb.isSphereAboveXYBox(sphereCamera)) {
+                minDistanceZ = Math.min(sphereCamera.position.z - obb.box3D.max.z, minDistanceZ);
+            }
+        }
+    };
 
     var update = function update() {
-        // We test if camera collide to geometry layer or too close to ground and ajust it's altitude in case
-        if (this.handleCollision) { // We check distance to the ground/surface geometry. (Could be another geometry layer)
-            this._view.camera.adjustAltitudeToAvoidCollisionWithLayer(this._view, view.getLayers(layer => layer.type === 'geometry')[0], this.minDistanceCollision);
+        // We compute distance between camera's bounding sphere and geometry's obb up face
+        if (this.handleCollision) { // We check distance to the ground/surface geometry
+            // add minDistanceZ between camera's bounding and tiles's oriented bounding box (up face only)
+            // Depending on the distance of the camera with obbs, we add a slowdown or constrain to the movement.
+            // this constraint or deceleration is suitable for two types of movement MOVE_GLOBE and ORBIT.
+            // This constraint or deceleration inversely proportional to the camera/obb distance
+            if (this._view.wgs84TileLayer) {
+                minDistanceZ = Infinity;
+                for (const tile of this._view.wgs84TileLayer.level0Nodes) {
+                    tile.traverse(getMinDistanceCameraBoundingSphereObbsUp);
+                }
+            }
         }
         // MOVE_GLOBE
         // Rotate globe with mouse
         if (state === this.states.MOVE_GLOBE) {
+            if (minDistanceZ < 0) {
+                cameraTargetOnGlobe.translateY(-minDistanceZ);
+                snapShotCamera.position.setLength(snapShotCamera.position.length() - minDistanceZ);
+            } else if (minDistanceZ < this.minDistanceCollision) {
+                const inerty = 1.0 - minDistanceZ / this.minDistanceCollision;
+                const translateY = this.minDistanceCollision * inerty;
+                cameraTargetOnGlobe.translateY(translateY);
+                snapShotCamera.position.setLength(snapShotCamera.position.length() + translateY);
+            }
             movingCameraTargetOnGlobe.copy(this.getCameraTargetPosition()).applyQuaternion(quatGlobe);
             this.camera.position.copy(snapShotCamera.position).applyQuaternion(quatGlobe);
             // combine zoom with move globe
@@ -661,7 +690,31 @@ function GlobeControls(view, target, radius, options = {}) {
             if (this.autoRotate && state === this.states.NONE) {
                 this.rotateLeft(this.getAutoRotationAngle());
             }
+            // far underground
+            const dynamicRadius = spherical.radius * Math.sin(this.minPolarAngle);
+            const slowdownLimit = dynamicRadius * 8;
+            const contraryLimit = dynamicRadius * 2;
+            const minContraintPhi = -0.01;
 
+            if (minDistanceZ < slowdownLimit && minDistanceZ > contraryLimit && sphericalDelta.phi > 0) {
+                // slowdown zone : slowdown sphericalDelta.phi
+                const slowdownZone = slowdownLimit - contraryLimit;
+                // the deeper the camera is in this zone, the bigger the factor is
+                const slowdownFactor = 1 - (slowdownZone - (minDistanceZ - contraryLimit)) / slowdownZone;
+                // apply slowdown factor on tilt mouvement
+                sphericalDelta.phi *= slowdownFactor * slowdownFactor;
+            } else if (minDistanceZ < contraryLimit && minDistanceZ > -contraryLimit && sphericalDelta.phi > minContraintPhi) {
+                // contraint zone : contraint sphericalDelta.phi
+                const contraryZone = 2 * contraryLimit;
+                // calculation of the angle of rotation which allows to leave this zone
+                let contraryPhi = -Math.asin((contraryLimit - minDistanceZ) * 0.25 / spherical.radius);
+                // clamp contraryPhi to make a less brutal exit
+                contraryPhi = THREE.Math.clamp(contraryPhi, minContraintPhi, 0);
+                // the deeper the camera is in this zone, the bigger the factor is
+                const contraryFactor = 1 - (contraryLimit - minDistanceZ) / contraryZone;
+                sphericalDelta.phi = THREE.Math.lerp(sphericalDelta.phi, contraryPhi, contraryFactor);
+                minDistanceZ -= Math.sin(sphericalDelta.phi) * spherical.radius;
+            }
             spherical.theta += sphericalDelta.theta;
             spherical.phi += sphericalDelta.phi;
 
@@ -680,6 +733,13 @@ function GlobeControls(view, target, radius, options = {}) {
             spherical.radius = Math.max(this.minDistance, Math.min(this.maxDistance, spherical.radius));
 
             offset.setFromSpherical(spherical);
+
+            // if camera is underground, so move up camera
+            if (minDistanceZ < 0) {
+                offset.y -= minDistanceZ;
+                spherical.setFromVector3(offset);
+                sphericalDelta.phi = 0;
+            }
 
             // rotate point back to "camera-up-vector-is-up" space
             // offset.applyQuaternion( quatInverse );

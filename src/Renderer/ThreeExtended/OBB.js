@@ -98,6 +98,25 @@ OBB.prototype._cPointsWorld = function _cPointsWorld(points) {
     return points;
 };
 
+/**
+ * Determines if the sphere is above the XY space of the box
+ *
+ * @param      {Sphere}   sphere  The sphere
+ * @return     {boolean}  True if sphere is above the XY space of the box, False otherwise.
+ */
+OBB.prototype.isSphereAboveXYBox = function isSphereAboveXYBox(sphere) {
+    const localSpherePosition = this.worldToLocal(sphere.position);
+    // get obb closest point to sphere center by clamping
+    const x = Math.max(this.box3D.min.x, Math.min(localSpherePosition.x, this.box3D.max.x));
+    const y = Math.max(this.box3D.min.y, Math.min(localSpherePosition.y, this.box3D.max.y));
+
+    // this is the same as isPointInsideSphere.position
+    const distance = Math.sqrt((x - localSpherePosition.x) * (x - localSpherePosition.x) +
+                           (y - localSpherePosition.y) * (y - localSpherePosition.y));
+
+    return distance < sphere.radius;
+};
+
 // Allocate these variables once and for all
 const tmp = {
     epsg4978: new Coordinates('EPSG:4978', 0, 0),
