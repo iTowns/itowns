@@ -197,11 +197,6 @@ GlobeView.prototype._preAddLayer = function _preAddLayer(layer) {
             throw new Error('Only WGS84G tileMatrixSet is currently supported for WMTS elevation layers');
         }
     }
-
-    this.dispatchEvent({
-        type: GLOBE_VIEW_EVENTS.LAYER_ADDED,
-        layerId: layer.id,
-    });
 };
 
 /**
@@ -217,7 +212,12 @@ GlobeView.prototype.addLayer = function addLayer(layer) {
             'Use globeView.baseLayer.[addColorLayer|addElevationLayer|addFeatureLayer](layer) instead.');
         this._warnAddLayerDeprecated = true;
     }
-    return View.prototype.addLayer.call(this, layer, this.baseLayer);
+    const result = View.prototype.addLayer.call(this, layer, this.baseLayer);
+    this.dispatchEvent({
+        type: GLOBE_VIEW_EVENTS.LAYER_ADDED,
+        layerId: layer.id,
+    });
+    return result;
 };
 
 /**
