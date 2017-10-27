@@ -102,6 +102,11 @@ export default {
         if (!layer.images) {
             return false;
         }
+        // images search is quite costly so let's try to take a shortcut
+        if (layer.id in tile.layerUpdateState) {
+            return true;
+        }
+
         for (const entry of layer.images) {
             if (tile.extent.isInside(entry.extent)) {
                 return true;
