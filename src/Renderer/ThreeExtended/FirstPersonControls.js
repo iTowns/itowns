@@ -4,32 +4,83 @@ import * as THREE from 'three';
 // but including these controls in itowns allows use to integrate them tightly with itowns.
 // Especially the existing controls are expecting a continuous update loop while we have a pausable one (so our controls use .notifyChange when needed)
 
-function onPointerDown(event, pointerX, pointerY) {
+
+// Mouse movement handling
+function onDocumentMouseDown(event, pointerX, pointerY) {
     event.preventDefault();
-    this._isUserInteracting = true;
+    this._isMouseDown = true;
 
     this._onMouseDownMouseX = pointerX;
     this._onMouseDownMouseY = pointerY;
-    this._onMouseDownRotZ = this.camera.rotation.z;
-    this._onMouseDownRotX = this.camera.rotation.x;
+
+    this._stateOnMouseDown = this._state.snapshot();
+}
+
+function limitRotation(camera3D, rot, verticalFOV) {
+    // Limit vertical rotation (look up/down) to make sure the user cannot see
+    // outside of the cone defined by verticalFOV
+    const limit = THREE.Math.degToRad(verticalFOV - camera3D.fov) * 0.5;
+    return THREE.Math.clamp(rot, -limit, limit);
 }
 
 function onPointerMove(pointerX, pointerY) {
-    if (this._isUserInteracting === true) {
+    if (this._isMouseDown === true) {
         // in rigor we have tan(theta) = tan(cameraFOV) * deltaH / H
         // (where deltaH is the vertical amount we moved, and H the renderer height)
         // we loosely approximate tan(x) by x
         const pxToAngleRatio = THREE.Math.degToRad(this.camera.fov) / this.view.mainLoop.gfxEngine.height;
-        this.camera.rotation.z = (pointerX - this._onMouseDownMouseX) * pxToAngleRatio + this._onMouseDownRotZ;
-        this.camera.rotation.x = (pointerY - this._onMouseDownMouseY) * pxToAngleRatio + this._onMouseDownRotX;
-        this.view.notifyChange(false);
+
+        // update state based on pointer movement
+        this._state.rotateY = ((pointerX - this._onMouseDownMouseX) * pxToAngleRatio) + this._stateOnMouseDown.rotateY;
+        this._state.rotateX = limitRotation(
+            this.camera,
+            ((pointerY - this._onMouseDownMouseY) * pxToAngleRatio) + this._stateOnMouseDown.rotateX,
+        this.options.verticalFOV);
+
+        applyRotation(this.view, this.camera, this._state);
     }
 }
 
-function onDocumentMouseUp() {
-    this._isUserInteracting = false;
+function applyRotation(view, camera3D, state) {
+    camera3D.quaternion.setFromUnitVectors(
+        new THREE.Vector3(0, 1, 0), camera3D.up);
+
+    camera3D.rotateY(state.rotateY);
+    camera3D.rotateX(state.rotateX);
+
+    view.notifyChange(true, camera3D);
 }
 
+// Mouse wheel
+function onDocumentMouseWheel(event) {
+    let delta = 0;
+    if (event.wheelDelta !== undefined) {
+        delta = -event.wheelDelta;
+    // Firefox
+    } else if (event.detail !== undefined) {
+        delta = event.detail;
+    }
+
+    this.camera.fov =
+        THREE.Math.clamp(this.camera.fov + Math.sign(delta),
+            10,
+            Math.min(100, this.options.verticalFOV));
+
+    this.camera.updateProjectionMatrix();
+
+    this._state.rotateX = limitRotation(
+        this.camera,
+        this._state.rotateX,
+        this.options.verticalFOV);
+
+    applyRotation(this.view, this.camera, this._state);
+}
+
+function onDocumentMouseUp() {
+    this._isMouseDown = false;
+}
+
+// Keyboard handling
 function onKeyUp(e) {
     const move = MOVEMENTS[e.keyCode];
     if (move) {
@@ -59,22 +110,59 @@ const MOVEMENTS = {
 
 
 class FirstPersonControls extends THREE.EventDispatcher {
+    /**
+     * @Constructor
+     * @param {View} view
+     * @param {object} options
+     * @param {boolean} options.focusOnClick - whether or not to focus the renderer domElement on click
+     * @param {boolean} options.focusOnMouseOver - whether or not to focus when the mouse is over the domElement
+     * @param {boolean} options.moveSpeed - if > 0, pressing the arrow keys will move the camera
+     * @param {number} options.verticalFOV - define the max visible vertical angle of the scene in degrees (default 180)
+     * @param {number} options.panoramaRatio - alternative way to specify the max vertical angle when using a panorama.
+     * You can specify the panorama width/height ratio and the verticalFOV will be computed automatically
+     */
     constructor(view, options = {}) {
         super();
         this.camera = view.camera.camera3D;
         this.view = view;
         this.moves = new Set();
-        this.moveSpeed = options.moveSpeed || 10; // backward or forward move speed in m/s
-        this._isUserInteracting = false;
+        if (options.panoramaRatio) {
+            const radius = (options.panoramaRatio * 200) / (2 * Math.PI);
+            options.verticalFOV =
+                options.panoramaRatio == 2 ? 180 : THREE.Math.radToDeg(2 * Math.atan(200 / (2 * radius)));
+        }
+        options.verticalFOV = options.verticalFOV || 180;
+        options.moveSpeed = options.moveSpeed === undefined ? 10 : options.moveSpeed; // backward or forward move speed in m/s
+        this.options = options;
+
+        this._isMouseDown = false;
         this._onMouseDownMouseX = 0;
         this._onMouseDownMouseY = 0;
-        this._onMouseDownRotZ = 0;
-        this._onMouseDownRotX = 0;
 
-        this.camera.rotation.reorder('ZYX');
+        // Compute the correct init state, given the calculus in applyRotation:
+        // cam.quaternion = q * r
+        // => r = inverse(q) * cam.quaterion
+        // q is the quaternion derived from the up vector
+        const q = new THREE.Quaternion().setFromUnitVectors(
+            new THREE.Vector3(0, 1, 0), this.camera.up);
+        q.inverse();
+        // compute r
+        const r = this.camera.quaternion.clone().premultiply(q);
+        // tranform it to euler
+        const e = new THREE.Euler(0, 0, 0, 'YXZ').setFromQuaternion(r);
+        // and use it as the initial state
+        const self = this;
+        this._state = {
+            rotateX: e.x,
+            rotateY: e.y,
+
+            snapshot() {
+                return { rotateX: self._state.rotateX, rotateY: self._state.rotateY };
+            },
+        };
 
         const domElement = view.mainLoop.gfxEngine.renderer.domElement;
-        const bindedPD = onPointerDown.bind(this);
+        const bindedPD = onDocumentMouseDown.bind(this);
         domElement.addEventListener('mousedown', e => bindedPD(e, e.clientX, e.clientY), false);
         domElement.addEventListener('touchstart', e => bindedPD(e, e.touches[0].pageX, e.touches[0].pageY), false);
         const bindedPM = onPointerMove.bind(this);
@@ -84,6 +172,8 @@ class FirstPersonControls extends THREE.EventDispatcher {
         domElement.addEventListener('touchend', onDocumentMouseUp.bind(this), false);
         domElement.addEventListener('keyup', onKeyUp.bind(this), true);
         domElement.addEventListener('keydown', onKeyDown.bind(this), true);
+        domElement.addEventListener('mousewheel', onDocumentMouseWheel.bind(this), false);
+        domElement.addEventListener('DOMMouseScroll', onDocumentMouseWheel.bind(this), false); // firefox
 
         this.view.addFrameRequester(this);
 
@@ -97,7 +187,7 @@ class FirstPersonControls extends THREE.EventDispatcher {
     }
 
     isUserInteracting() {
-        return this.moves.size !== 0;
+        return this.moves.size !== 0 && !this._isMouseDown;
     }
 
     update(dt, updateLoopRestarted) {
@@ -116,7 +206,7 @@ class FirstPersonControls extends THREE.EventDispatcher {
             }
         }
 
-        if (this.moves.size || this._isUserInteracting) {
+        if (this.moves.size || this._isMouseDown) {
             this.view.notifyChange(true);
         }
     }

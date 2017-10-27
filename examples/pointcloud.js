@@ -53,7 +53,7 @@ function showPointcloud(serverUrl, fileName, lopocsTable) {
         view.camera.camera3D.lookAt(lookAt);
         // create controls
         controls = new itowns.FirstPersonControls(view, { focusOnClick: true });
-        debugGui.add(controls, 'moveSpeed', 1, 100).name('Movement speed');
+        debugGui.add(controls.options, 'moveSpeed', 1, 100).name('Movement speed');
 
         view.notifyChange(true);
     }
