@@ -309,7 +309,7 @@ View.prototype.addLayer = function addLayer(layer, parentLayer) {
         this._layers.push(layer);
     }
 
-    if (layer.object3d && !layer.object3d.parent) {
+    if (layer.object3d && !layer.object3d.parent && layer.object3d !== this.scene) {
         this.scene.add(layer.object3d);
     }
 
