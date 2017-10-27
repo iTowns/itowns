@@ -16,6 +16,10 @@ describe('Planar example', function () {
             assert.equal(itownsTesting.counters.displayed_at_level[4], 20);
 
             done();
+
+            // test layer removal
+            assert.ok(example.view.removeLayer('wms_imagery'));
+            assert.equal(2, example.view.getLayers().length);
         });
         itownsTesting.runTest();
     });

@@ -21,7 +21,7 @@ var initialState = true;
 
 describe('Globe example', function () {
     it('should subdivide like expected', function (done) {
-        example.view.mainLoop.addEventListener('command-queue-empty', () => {
+        var testFn = function _() {
             itownsTesting.counters.visible_at_level = [];
             itownsTesting.counters.displayed_at_level = [];
 
@@ -41,14 +41,19 @@ describe('Globe example', function () {
                 example.view.notifyChange(true);
             } else {
                 afterSetRange();
+
+                // test layer removal
+                assert.ok(example.view.removeLayer('Ortho'));
+
+                assert.equal(3, example.view.getLayers().length);
+
                 done();
-                // 'command-queue-empty' can fire multiple times, because GlobeView
-                // fires a notifyChange() event when it receives 'command-queue-empty'
-                // Until this is fixed, we exit() the test here, to make sure we don't
-                // call done() twice
-                process.exit(0);
+
+                example.view.mainLoop.removeEventListener('command-queue-empty', testFn);
             }
-        });
+        };
+        example.view.mainLoop.addEventListener('command-queue-empty', testFn);
+
         itownsTesting.runTest();
     });
 });
