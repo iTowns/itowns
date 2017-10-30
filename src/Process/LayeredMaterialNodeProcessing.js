@@ -178,20 +178,24 @@ export function updateLayeredMaterialNodeImagery(context, layer, node) {
             initNodeImageryTexturesFromParent(node, node.parent, layer);
         }
     }
-    // An update is pending / or impossible -> abort
-    if (!node.layerUpdateState[layer.id].canTryUpdate(ts)) {
-        return;
-    }
 
     // Node is hidden, no need to update it
     if (!node.isDisplayed() || !layer.visible) {
         return;
     }
 
+    // TODO: move this to defineLayerProperty() declaration
+    // to avoid mixing layer's network updates and layer's params
     // Update material parameters
     const layerIndex = material.indexOfColorLayer(layer.id);
     material.setLayerVisibility(layerIndex, layer.visible);
     material.setLayerOpacity(layerIndex, layer.opacity);
+
+    // An update is pending / or impossible -> abort
+    if (!node.layerUpdateState[layer.id].canTryUpdate(ts)) {
+        return;
+    }
+
 
     const ts = Date.now();
     // does this tile needs a new texture?
