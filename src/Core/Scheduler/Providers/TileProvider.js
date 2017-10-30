@@ -62,6 +62,7 @@ TileProvider.prototype.executeCommand = function executeCommand(command) {
 
     // build tile
     var params = {
+        layerId: command.layer.id,
         extent,
         level: (command.level === undefined) ? (parent.level + 1) : command.level,
         segment: 16,
