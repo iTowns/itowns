@@ -103,7 +103,7 @@ function _tiledPreUpdate(preUpdateSpecialisation) {
  * by this layer
  * @param {number} [options.maxSubdivisionLevel=17] - The geometry subdivision max depth
  *
- * @return a {GeometryLayer} preconfigured to display a globe.
+ * @return {GeometryLayer} a GeometryLayer preconfigured to display a globe.
  * The returned instance implements the {@link CanDisplayColorLayer},
  * {@link CanDisplayElevationLayer} and {@link CanDisplayFeatureLayer} interfaces.
  */
@@ -149,7 +149,7 @@ export function createGlobe(id, options = {}) {
  * by this layer
  * @param {number} [options.maxSubdivisionLevel=5] - The geometry subdivision max depth
  *
- * @return a {GeometryLayer} preconfigured to display a planar extent.
+ * @return {GeometryLayer} a GeometryLayer preconfigured to display a planar extent.
  * The returned instance implements the {@link CanDisplayColorLayer},
  * {@link CanDisplayElevationLayer} and {@link CanDisplayFeatureLayer} interfaces.
  */
@@ -192,7 +192,7 @@ export function createPlane(id, extent, options) {
  * @param {number} [options.cleanupDelay = 1000] - delay (in ms) after which unused
  * tiles are removed.
  *
- * @return a {GeometryLayer} instance
+ * @return {GeometryLayer}
  */
 export function create3dTiles(id, options) {
     if (options.url) {
@@ -229,7 +229,7 @@ export function create3dTiles(id, options) {
  * @param {string} [options.file = cloud.js] the file containging the metadata
  * @param {Object} [options.fetchOptions] see {@link Fetcher}
  *
- * @return a {GeometryLayer} instance
+ * @return {GeometryLayer}
  */
 export function createPointcloud(id, options) {
     if (options.url) {

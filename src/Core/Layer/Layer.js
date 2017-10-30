@@ -186,7 +186,6 @@ const ImageryLayers = {
  * Interface implemented by {@link GeometryLayer} instances capable of displaying color layers
  * @interface
  */
-function CanDisplayColorLayer() {}
 /**
  * Add a color layer to display on this geometry
  *
@@ -212,7 +211,6 @@ function CanDisplayColorLayer() {}
  * Interface implemented by {@link GeometryLayer} instances capable of displaying color layers
  * @interface
  */
-function CanDisplayElevationLayer() {}
 /**
  * Use an elevation data source to deform the underlying geometry
  *
@@ -238,7 +236,6 @@ function CanDisplayElevationLayer() {}
  * Interface implemented by {@link GeometryLayer} instances capable of displaying a feature layers
  * @interface
  */
-function CanDisplayFeatureLayer() {}
 /**
  * Display a feature layers on the underlying geometry
  *
