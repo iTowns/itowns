@@ -94,14 +94,14 @@ function _tiledPreUpdate(preUpdateSpecialisation) {
 }
 
 /**
- * Creates a Globe geometry, which can be used to draw other layers (color, elevation, ...)
+ * Creates a globe geometry on which other layers (color, elevation, ...) can be drawn
  *
  * @function
  * @param {string} id - identifer (must be unique amongst all layers id)
  * @param {Object} [options]
  * @param {Object} [options.object3d=THREE.Group] - The THREE.Object3D that will be the parent of all Object3D built
  * by this layer
- * @param {number} [options.maxSubdivisionLevel=17] - The geometry subdivision max depth
+ * @param {number} [options.maxSubdivisionLevel=17] - The geometry subdivision's max depth
  *
  * @return {GeometryLayer} a GeometryLayer preconfigured to display a globe.
  * The returned instance implements the {@link CanDisplayColorLayer},
@@ -147,7 +147,7 @@ export function createGlobe(id, options = {}) {
  * @param {Object} [options]
  * @param {Object} [options.object3d=THREE.Group] - The THREE.Object3D that will be the parent of all Object3D built
  * by this layer
- * @param {number} [options.maxSubdivisionLevel=5] - The geometry subdivision max depth
+ * @param {number} [options.maxSubdivisionLevel=5] - The geometry subdivision's max depth
  *
  * @return {GeometryLayer} a GeometryLayer preconfigured to display a planar extent.
  * The returned instance implements the {@link CanDisplayColorLayer},
@@ -187,7 +187,7 @@ export function createPlane(id, extent, options) {
  * @function
  * @param {string} id - identifer (must be unique amongst all layers id)
  * @param {Object} options
- * @param {URL} options.url - url to the tileset
+ * @param {URL} options.url - URL of the tileset
  * @param {number} [options.sseThreshold = 16] - refinement threshold
  * @param {number} [options.cleanupDelay = 1000] - delay (in ms) after which unused
  * tiles are removed.
@@ -225,7 +225,7 @@ export function create3dTiles(id, options) {
  * @function
  * @param {string} id - identifer (must be unique amongst all layers id)
  * @param {Object} options
- * @param {string} options.url URL to the folder containing options.file
+ * @param {string} options.url URL of the folder containing options.file
  * @param {string} [options.file = cloud.js] the file containging the metadata
  * @param {Object} [options.fetchOptions] see {@link Fetcher}
  *

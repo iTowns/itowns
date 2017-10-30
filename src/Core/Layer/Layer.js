@@ -55,10 +55,10 @@ export const defineLayerProperty = function defineLayerProperty(layer, propertyN
 
 /**
  * A GeometryLayer defines a geometry: globe, plane or pointcloud.
- * This geometry can then be used to display other datas, like color layers.
+ * This geometry can then be used to display other data, like color layers.
  * @constructor
  * @param {string} id - unique id
- * @param {Object} object3d - the THREE.Object3D will be the parent of the object hierarchy
+ * @param {Object} object3d - the THREE.Object3D that will be the parent of the layer's object hierarchy
  */
 function GeometryLayer(id, object3d) {
     if (!id) {
@@ -194,7 +194,7 @@ const ImageryLayers = {
  * @param {Object} colorLayer - property bag defining the layer to display.
  * @param {string} colorLayer.id - unique identifier of this layer
  * @param {string} colorLayer.protocol - one of wms, wmts, wmtsc, tms, static.
- * Each protocol has a set of specific options that are documented in XXX.
+ * Each protocol has a set of specific options that are documented in their respective providers.
  * @param {Extent} extent - Extent covered by the layer. Note that it can be different
  * than the extent of the underlying geometry.
  * @param {number} colorLayer.strategy.type - Strategy to use to download elements.
@@ -219,7 +219,7 @@ const ImageryLayers = {
  * @param {Object} elevationLayer - property bag defining the layer to display.
  * @param {string} elevationLayer.id - unique identifier of this layer
  * @param {string} elevationLayer.protocol - one of wms, wmts, wmtsc, static.
- * Each protocol has a set of specific options that are documented in XXX.
+ * Each protocol has a set of specific options that are documented in their respective providers.
  * @param {Extent} extent - Extent covered by the layer. Note that it can be different
  * than the extent of the underlying geometry.
  * @param {number} elevationLayer.strategy.type - Strategy to use to download elements.
