@@ -15,6 +15,9 @@ function updateLayersOrdering(geometryLayer, imageryLayers) {
 
 export const COLOR_LAYERS_ORDER_CHANGED = 'layers-order-changed';
 
+/**
+ * @module ColorLayersOrdering
+ */
 export const ColorLayersOrdering = {
     /**
      * Moves up in the layer list. This function has no effect if the layer is moved to its current index.

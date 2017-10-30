@@ -93,7 +93,21 @@ function _tiledPreUpdate(preUpdateSpecialisation) {
     };
 }
 
-export function createGlobe(id, options) {
+/**
+ * Creates a Globe geometry, which can be used to draw other layers (color, elevation, ...)
+ *
+ * @function
+ * @param {string} id - identifer (must be unique amongst all layers id)
+ * @param {Object} [options]
+ * @param {Object} [options.object3d=THREE.Group] - The THREE.Object3D that will be the parent of all Object3D built
+ * by this layer
+ * @param {number} [options.maxSubdivisionLevel=17] - The geometry subdivision max depth
+ *
+ * @return a {GeometryLayer} preconfigured to display a globe.
+ * The returned instance implements the {@link CanDisplayColorLayer},
+ * {@link CanDisplayElevationLayer} and {@link CanDisplayFeatureLayer} interfaces.
+ */
+export function createGlobe(id, options = {}) {
     // Configure tiles
     const wgs84TileLayer = new GeometryLayer(id, options.object3d || new THREE.Group());
     wgs84TileLayer.schemeTile = globeSchemeTileWMTS(globeSchemeTile1);
@@ -124,7 +138,21 @@ export function createGlobe(id, options) {
     return wgs84TileLayer;
 }
 
-
+/**
+ * Creates a planar geometry, which can be used to draw other layers (color, elevation, ...)
+ *
+ * @function
+ * @param {string} id - identifer (must be unique amongst all layers id)
+ * @param {Extent} extent - the extent of the planar geometry
+ * @param {Object} [options]
+ * @param {Object} [options.object3d=THREE.Group] - The THREE.Object3D that will be the parent of all Object3D built
+ * by this layer
+ * @param {number} [options.maxSubdivisionLevel=5] - The geometry subdivision max depth
+ *
+ * @return a {GeometryLayer} preconfigured to display a planar extent.
+ * The returned instance implements the {@link CanDisplayColorLayer},
+ * {@link CanDisplayElevationLayer} and {@link CanDisplayFeatureLayer} interfaces.
+ */
 export function createPlane(id, extent, options) {
     const tileLayer = new GeometryLayer(id, options.object3d || new THREE.Group());
     tileLayer.extent = extent;
@@ -153,6 +181,19 @@ export function createPlane(id, extent, options) {
     return tileLayer;
 }
 
+/**
+ * Creates a 3d-tiles layer to display a tileset.
+ *
+ * @function
+ * @param {string} id - identifer (must be unique amongst all layers id)
+ * @param {Object} options
+ * @param {URL} options.url - url to the tileset
+ * @param {number} [options.sseThreshold = 16] - refinement threshold
+ * @param {number} [options.cleanupDelay = 1000] - delay (in ms) after which unused
+ * tiles are removed.
+ *
+ * @return a {GeometryLayer} instance
+ */
 export function create3dTiles(id, options) {
     if (options.url) {
         options.url = new URL(options.url, document.location);
@@ -168,14 +209,28 @@ export function create3dTiles(id, options) {
 
     layer.url = options.url.href;
     layer.protocol = '3d-tiles';
-    layer.overrideMaterials = true;  // custom cesium shaders are not functional
+    layer.overrideMaterials = options.overrideMaterials === undefined ? true : options.overrideMaterials;
     layer.type = 'geometry';
     layer.visible = true;
-    layer.sseThreshold = 1;
+    layer.sseThreshold = options.sseThreshold || 16;
+    layer.cleanupDelay = options.cleanupDelay || 1000;
 
     return layer;
 }
 
+/**
+ * Creates a geometry layer to display a pointcloud.
+ * The pointcloud data must have been prepared using PotreeConverter.
+ *
+ * @function
+ * @param {string} id - identifer (must be unique amongst all layers id)
+ * @param {Object} options
+ * @param {string} options.url URL to the folder containing options.file
+ * @param {string} [options.file = cloud.js] the file containging the metadata
+ * @param {Object} [options.fetchOptions] see {@link Fetcher}
+ *
+ * @return a {GeometryLayer} instance
+ */
 export function createPointcloud(id, options) {
     if (options.url) {
         options.url = new URL(options.url, document.location);

@@ -53,6 +53,13 @@ export const defineLayerProperty = function defineLayerProperty(layer, propertyN
     }
 };
 
+/**
+ * A GeometryLayer defines a geometry: globe, plane or pointcloud.
+ * This geometry can then be used to display other datas, like color layers.
+ * @constructor
+ * @param {string} id - unique id
+ * @param {Object} object3d - the THREE.Object3D will be the parent of the object hierarchy
+ */
 function GeometryLayer(id, object3d) {
     if (!id) {
         throw new Error('Missing id parameter (GeometryLayer must have a unique id defined)');
@@ -174,5 +181,78 @@ const ImageryLayers = {
         return copy.map(l => l.id);
     },
 };
+
+/**
+ * Interface implemented by {@link GeometryLayer} instances capable of displaying color layers
+ * @interface
+ */
+function CanDisplayColorLayer() {}
+/**
+ * Add a color layer to display on this geometry
+ *
+ * @function
+ * @name CanDisplayColorLayer#addColorLayer
+ * @param {Object} colorLayer - property bag defining the layer to display.
+ * @param {string} colorLayer.id - unique identifier of this layer
+ * @param {string} colorLayer.protocol - one of wms, wmts, wmtsc, tms, static.
+ * Each protocol has a set of specific options that are documented in XXX.
+ * @param {Extent} extent - Extent covered by the layer. Note that it can be different
+ * than the extent of the underlying geometry.
+ * @param {number} colorLayer.strategy.type - Strategy to use to download elements.
+ */
+/**
+ * Remove a displayed color layer
+ *
+ * @function
+ * @name CanDisplayColorLayer#removeColorLayer
+ * @param {({Layer}|string)} - the layer to remove or its id
+ */
+
+ /**
+ * Interface implemented by {@link GeometryLayer} instances capable of displaying color layers
+ * @interface
+ */
+function CanDisplayElevationLayer() {}
+/**
+ * Use an elevation data source to deform the underlying geometry
+ *
+ * @function
+ * @name CanDisplayElevationLayer#addElevationLayer
+ * @param {Object} elevationLayer - property bag defining the layer to display.
+ * @param {string} elevationLayer.id - unique identifier of this layer
+ * @param {string} elevationLayer.protocol - one of wms, wmts, wmtsc, static.
+ * Each protocol has a set of specific options that are documented in XXX.
+ * @param {Extent} extent - Extent covered by the layer. Note that it can be different
+ * than the extent of the underlying geometry.
+ * @param {number} elevationLayer.strategy.type - Strategy to use to download elements.
+ */
+/**
+ * Remove an elevation layer
+ *
+ * @function
+ * @name CanDisplayElevationLayer#removeElevationLayer
+ * @param {({Layer}|string)} - the layer to remove or its id
+ */
+
+ /**
+ * Interface implemented by {@link GeometryLayer} instances capable of displaying a feature layers
+ * @interface
+ */
+function CanDisplayFeatureLayer() {}
+/**
+ * Display a feature layers on the underlying geometry
+ *
+ * @function
+ * @name CanDisplayFeatureLayer#addFeatureLayer
+ * @param {Object} featureLayer - property bag defining the layer to display.
+ * @param {string} featureLayer.id - unique identifier of this layer. See FeatureProvider for valid options.
+ */
+/**
+ * Remove a feature layer
+ *
+ * @function
+ * @name CanDisplayFeatureLayer#removeFeatureLayer
+ * @param {({Layer}|string)} - the layer to remove or its id
+ */
 
 export { GeometryLayer, Layer, ImageryLayers };
