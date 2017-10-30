@@ -12,7 +12,7 @@ import CoordStars from '../Geographic/CoordStars';
 
 import { C, ellipsoidSizes } from '../Geographic/Coordinates';
 import { createGlobe } from '../DefaultGeometryLayers';
-
+import { GeometryLayer } from '../Layer/Layer';
 /**
  * Fires when the view is completely loaded. Controls and view's functions can be called then.
  * @event GlobeView#initialized
@@ -206,6 +206,10 @@ GlobeView.prototype._preAddLayer = function _preAddLayer(layer) {
  * @return {Promise} see View.addLayer
  */
 GlobeView.prototype.addLayer = function addLayer(layer) {
+    if (layer instanceof GeometryLayer) {
+        return View.prototype.addLayer.call(this, layer);
+    }
+
     if (!this._warnAddLayerDeprecated) {
         // eslint-disable-next-line no-console
         console.warn('globeView.addLayer(colorLayer) has been deprecated.\n' +

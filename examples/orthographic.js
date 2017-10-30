@@ -45,7 +45,6 @@ view.baseLayer.disableSkirt = true;
 
 // Add an TMS imagery layer
 view.baseLayer.addColorLayer({
-    type: 'color',
     protocol: 'tms',
     id: 'OPENSM',
     // eslint-disable-next-line no-template-curly-in-string

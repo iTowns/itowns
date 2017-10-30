@@ -35,6 +35,8 @@ TileProvider.prototype.preprocessDataLayer = function preprocessLayer(layer, vie
     }
 
     layer.addColorLayer = (colorLayer, addToView = true) => {
+        colorLayer.type = 'color';
+
         if (colorLayer.protocol === 'rasterizer') {
             colorLayer.reprojection = 'EPSG:4326';
         }
@@ -80,6 +82,8 @@ TileProvider.prototype.preprocessDataLayer = function preprocessLayer(layer, vie
             throw new Error('Only WGS84G tileMatrixSet is currently supported for WMTS elevation layers');
         }
 
+        elevationLayer.type = 'elevation';
+
         elevationLayer.update = elevationLayer.update || updateLayeredMaterialNodeElevation;
 
         if (addToView) {
@@ -99,7 +103,10 @@ TileProvider.prototype.preprocessDataLayer = function preprocessLayer(layer, vie
         }
     };
 
-    layer.addFeatureLayer = featureLayer => view.addLayer(featureLayer, layer);
+    layer.addFeatureLayer = (featureLayer) => {
+        featureLayer.type = 'feature';
+        view.addLayer(featureLayer, layer);
+    };
     layer.removeFeatureLayer = (featureLayerOrId) => {
         const layerId = featureLayerOrId.id === undefined ? featureLayerOrId : featureLayerOrId.id;
         const featureLayer = view.getLayers(l => l.id === layerId)[0];
@@ -123,8 +130,11 @@ TileProvider.prototype.preprocessDataLayer = function preprocessLayer(layer, vie
             return layer.removeColorLayer(toRemove);
         } else if (layer.type === 'elevation') {
             return layer.removeElevationLayer(toRemove);
-        } else {
+        } else if (layer.type === 'feature') {
             return layer.removeFeatureLayer(toRemove);
+        } else {
+            // eslint-disable-next-line no-console
+            console.warn(`Unknwown layer type ${layer.type}`);
         }
     };
 

@@ -26,7 +26,6 @@ view.baseLayer.disableSkirt = true;
 view.baseLayer.addColorLayer({
     url: 'https://download.data.grandlyon.com/wms/grandlyon',
     networkOptions: { crossOrigin: 'anonymous' },
-    type: 'color',
     protocol: 'wms',
     version: '1.3.0',
     id: 'wms_imagery',
@@ -40,7 +39,6 @@ view.baseLayer.addColorLayer({
 // Add an WMS elevation layer (see WMS_Provider* for valid options)
 view.baseLayer.addElevationLayer({
     url: 'https://download.data.grandlyon.com/wms/grandlyon',
-    type: 'elevation',
     protocol: 'wms',
     networkOptions: { crossOrigin: 'anonymous' },
     version: '1.3.0',
@@ -54,7 +52,6 @@ view.baseLayer.addElevationLayer({
 });
 
 view.baseLayer.addColorLayer({
-    type: 'color',
     url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/lyon.kml',
     protocol: 'rasterizer',
     id: 'Kml',
@@ -63,7 +60,6 @@ view.baseLayer.addColorLayer({
 });
 
 view.baseLayer.addColorLayer({
-    type: 'color',
     url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/lyon.gpx',
     protocol: 'rasterizer',
     options: { zoom: { min: 0, max: 6 } },
@@ -74,7 +70,6 @@ view.baseLayer.addColorLayer({
 });
 
 view.baseLayer.addColorLayer({
-    type: 'color',
     url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/lyon.geojson',
     protocol: 'rasterizer',
     projection: 'EPSG:3946',

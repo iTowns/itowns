@@ -291,6 +291,10 @@ View.prototype.addLayer = function addLayer(layer, parentLayer) {
         throw new Error(`Invalid id '${layer.id}': id already used`);
     }
 
+    if (typeof layer.type != 'string') {
+        throw new Error('layer.type must be a valid string');
+    }
+
     if (parentLayer && !layer.extent) {
         layer.extent = parentLayer.extent;
     }

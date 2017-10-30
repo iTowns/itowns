@@ -97,7 +97,6 @@ for (index = 0; index < wmsLayers.length; index++) {
     tileLayer.addColorLayer({
         url: 'https://download.data.grandlyon.com/wms/grandlyon',
         networkOptions: { crossOrigin: 'anonymous' },
-        type: 'color',
         protocol: 'wms',
         version: '1.3.0',
         id: 'wms_imagery' + wms + index,
@@ -110,7 +109,6 @@ for (index = 0; index < wmsLayers.length; index++) {
 
     tileLayer.addElevationLayer({
         url: 'https://download.data.grandlyon.com/wms/grandlyon',
-        type: 'elevation',
         protocol: 'wms',
         networkOptions: { crossOrigin: 'anonymous' },
         version: '1.3.0',

@@ -1,5 +1,4 @@
 {
-    "type": "color",
     "protocol": "wmtsc",
     "networkOptions": { "crossOrigin" : "anonymous" },
     "id": "OPENSM",

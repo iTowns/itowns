@@ -26,7 +26,6 @@ view.baseLayer.disableSkirt = true;
 view.baseLayer.addColorLayer({
     url: 'https://download.data.grandlyon.com/wms/grandlyon',
     networkOptions: { crossOrigin: 'anonymous' },
-    type: 'color',
     protocol: 'wms',
     version: '1.3.0',
     id: 'wms_imagery',
@@ -44,7 +43,6 @@ view.baseLayer.addColorLayer({
 // Add an WMS elevation layer (see WMS_Provider* for valid options)
 view.baseLayer.addElevationLayer({
     url: 'https://download.data.grandlyon.com/wms/grandlyon',
-    type: 'elevation',
     protocol: 'wms',
     networkOptions: { crossOrigin: 'anonymous' },
     id: 'wms_elevation',

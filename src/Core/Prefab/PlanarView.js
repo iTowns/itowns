@@ -171,6 +171,9 @@ PlanarView.prototype._preAddLayer = function _preAddLayer(layer) {
  * @return {Promise} see View.addLayer
  */
 PlanarView.prototype.addLayer = function addLayer(layer) {
+    if (layer instanceof GeometryLayer) {
+        return View.prototype.addLayer.call(this, layer);
+    }
     if (!this._warnAddLayerDeprecated) {
         // eslint-disable-next-line no-console
         console.warn('globeView.addLayer(colorLayer) has been deprecated.\n' +

@@ -1,5 +1,4 @@
 {
-    "type": "color",
     "protocol":   "wmts",
     "id":         "Ortho",
     "url":        "http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/geoportail/wmts",

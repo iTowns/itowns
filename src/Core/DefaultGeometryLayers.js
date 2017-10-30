@@ -187,7 +187,7 @@ export function createPlane(id, extent, options) {
  * @function
  * @param {string} id - identifer (must be unique amongst all layers id)
  * @param {Object} options
- * @param {URL} options.url - URL of the tileset
+ * @param {string} options.url - URL of the tileset
  * @param {number} [options.sseThreshold = 16] - refinement threshold
  * @param {number} [options.cleanupDelay = 1000] - delay (in ms) after which unused
  * tiles are removed.
@@ -242,6 +242,7 @@ export function createPointcloud(id, options) {
     const layer = new GeometryLayer(id, options.object3d || new THREE.Group());
     layer.file = options.file;
     layer.protocol = 'potreeconverter';
+    layer.type = 'pointcloud';
     layer.url = options.url.href;
     layer.table = options.lopocsTable;
 
