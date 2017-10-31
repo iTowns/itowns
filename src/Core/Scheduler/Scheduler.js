@@ -14,6 +14,7 @@ import PointCloudProvider from './Providers/PointCloudProvider';
 import WFS_Provider from './Providers/WFS_Provider';
 import Raster_Provider from './Providers/Raster_Provider';
 import StaticProvider from './Providers/StaticProvider';
+import CancelledCommandException from './CancelledCommandException';
 
 var instanceScheduler = null;
 
@@ -202,19 +203,6 @@ Scheduler.prototype.getProviders = function getProviders() {
     return this.providers.slice();
 };
 
-/**
- * Custom error thrown when cancelling commands. Allows the caller to act differently if needed.
- * @constructor
- * @param {Command} command
- */
-function CancelledCommandException(command) {
-    this.command = command;
-}
-
-CancelledCommandException.prototype.toString = function toString() {
-    return `Cancelled command ${this.command.requester.id}/${this.command.layer.id}`;
-};
-
 Scheduler.prototype.deQueue = function deQueue(queue) {
     var st = queue.storage;
     while (st.length > 0) {
@@ -231,5 +219,4 @@ Scheduler.prototype.deQueue = function deQueue(queue) {
     return undefined;
 };
 
-export { CancelledCommandException };
 export default Scheduler;

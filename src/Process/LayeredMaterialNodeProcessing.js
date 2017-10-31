@@ -1,8 +1,8 @@
-import { l_ELEVATION, l_COLOR, EMPTY_TEXTURE_ZOOM } from '../Renderer/LayeredMaterial';
+import { l_ELEVATION, l_COLOR, EMPTY_TEXTURE_ZOOM } from '../Renderer/LayeredMaterialConstants';
 import { chooseNextLevelToFetch } from '../Core/Layer/LayerUpdateStrategy';
 import LayerUpdateState from '../Core/Layer/LayerUpdateState';
 import { ImageryLayers } from '../Core/Layer/Layer';
-import { CancelledCommandException } from '../Core/Scheduler/Scheduler';
+import CancelledCommandException from '../Core/Scheduler/CancelledCommandException';
 import OGCWebServiceHelper, { SIZE_TEXTURE_TILE } from '../Core/Scheduler/Providers/OGCWebServiceHelper';
 
 // max retry loading before changing the status to definitiveError

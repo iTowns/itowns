@@ -11,8 +11,7 @@ import TileFS from './Shader/TileFS.glsl';
 import pitUV from './Shader/Chunk/pitUV.glsl';
 import PrecisionQualifier from './Shader/Chunk/PrecisionQualifier.glsl';
 import Capabilities from '../Core/System/Capabilities';
-
-export const EMPTY_TEXTURE_ZOOM = -1;
+import { l_COLOR, l_ELEVATION, EMPTY_TEXTURE_ZOOM } from './LayeredMaterialConstants';
 
 var emptyTexture = new THREE.Texture();
 emptyTexture.coords = { zoom: EMPTY_TEXTURE_ZOOM };
@@ -20,9 +19,6 @@ emptyTexture.coords = { zoom: EMPTY_TEXTURE_ZOOM };
 const layerTypesCount = 2;
 var vector4 = new THREE.Vector4(0.0, 0.0, 0.0, 0.0);
 var fooTexture;
-
-export const l_ELEVATION = 0;
-export const l_COLOR = 1;
 
 // from three.js packDepthToRGBA
 const UnpackDownscale = 255 / 256; // 0..1 -> fraction (excluding 1)

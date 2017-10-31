@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import Coordinates from '../Core/Geographic/Coordinates';
-import { l_ELEVATION } from '../Renderer/LayeredMaterial';
+import { l_ELEVATION } from '../Renderer/LayeredMaterialConstants';
 
 const FAST_READ_Z = 0;
 const PRECISE_READ_Z = 1;

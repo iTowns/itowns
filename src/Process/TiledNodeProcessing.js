@@ -1,5 +1,5 @@
 import Extent from '../Core/Geographic/Extent';
-import { CancelledCommandException } from '../Core/Scheduler/Scheduler';
+import CancelledCommandException from '../Core/Scheduler/CancelledCommandException';
 import ObjectRemovalHelper from './ObjectRemovalHelper';
 
 function subdivisionExtents(bbox) {
