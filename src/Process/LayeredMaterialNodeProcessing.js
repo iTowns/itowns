@@ -180,7 +180,7 @@ export function updateLayeredMaterialNodeImagery(context, layer, node) {
     }
 
     // Node is hidden, no need to update it
-    if (!node.isDisplayed() || !layer.visible) {
+    if (!node.isDisplayed()) {
         return;
     }
 
@@ -192,7 +192,7 @@ export function updateLayeredMaterialNodeImagery(context, layer, node) {
     material.setLayerOpacity(layerIndex, layer.opacity);
 
     // An update is pending / or impossible -> abort
-    if (!node.layerUpdateState[layer.id].canTryUpdate(ts)) {
+    if (!layer.visible || !node.layerUpdateState[layer.id].canTryUpdate(ts)) {
         return;
     }
 

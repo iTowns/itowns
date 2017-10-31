@@ -5,7 +5,8 @@ import { updateLayeredMaterialNodeImagery } from '../src/Process/LayeredMaterial
 const assert = require('assert');
 
 describe('material state vs layer state', function () {
-    let opacity = 0.0;
+    let opacity;
+    let visible;
 
     const node = {
         parent: { },
@@ -14,7 +15,7 @@ describe('material state vs layer state', function () {
         },
         material: {
             indexOfColorLayer: () => 0,
-            setLayerVisibility: () => {},
+            setLayerVisibility: (idx, v) => { visible = v; },
             setLayerOpacity: (idx, o) => { opacity = o; },
         },
         isDisplayed: () => true,
@@ -25,20 +26,24 @@ describe('material state vs layer state', function () {
         opacity: 1.0,
     };
 
-    it('should correctly initialize opacity', () => {
+    it('should correctly initialize opacity & visibility', () => {
         node.layerUpdateState.test.failure(new Date());
         updateLayeredMaterialNodeImagery(null, layer, node);
         assert.equal(opacity, layer.opacity);
+        assert.equal(visible, layer.visible);
     });
-    it('should update material opacity', () => {
+    it('should update material opacity & visibility', () => {
         layer.opacity = 0.5;
+        layer.visible = false;
         updateLayeredMaterialNodeImagery(null, layer, node);
         assert.equal(opacity, layer.opacity);
+        assert.equal(visible, layer.visible);
     });
-    it('should update material opacity even if layer is cannot be updated', () => {
+    it('should update material opacity & visibility even if layer is cannot be updated', () => {
         node.layerUpdateState.test.noMoreUpdatePossible();
         layer.opacity = 0.75;
         updateLayeredMaterialNodeImagery(null, layer, node);
         assert.equal(opacity, layer.opacity);
+        assert.equal(visible, layer.visible);
     });
 });
