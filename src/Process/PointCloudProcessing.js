@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import convexHull from 'monotone-convex-hull-2d';
-import { CancelledCommandException } from '../Core/Scheduler/Scheduler';
+import CancelledCommandException from '../Core/Scheduler/CancelledCommandException';
 
 // Draw a cube with lines (12 lines).
 function cube(size) {

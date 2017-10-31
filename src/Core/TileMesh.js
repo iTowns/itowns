@@ -5,7 +5,8 @@
  */
 
 import * as THREE from 'three';
-import LayeredMaterial, { l_ELEVATION } from '../Renderer/LayeredMaterial';
+import LayeredMaterial from '../Renderer/LayeredMaterial';
+import { l_ELEVATION } from '../Renderer/LayeredMaterialConstants';
 import RendererConstant from '../Renderer/RendererConstant';
 import OGCWebServiceHelper, { SIZE_TEXTURE_TILE } from './Scheduler/Providers/OGCWebServiceHelper';
 

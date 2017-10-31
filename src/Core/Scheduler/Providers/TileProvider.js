@@ -16,7 +16,7 @@
 import Provider from './Provider';
 import TileGeometry from '../../TileGeometry';
 import TileMesh from '../../TileMesh';
-import { CancelledCommandException } from '../Scheduler';
+import CancelledCommandException from '../CancelledCommandException';
 import { requestNewTile } from '../../../Process/TiledNodeProcessing';
 
 function TileProvider() {

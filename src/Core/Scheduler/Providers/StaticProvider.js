@@ -2,7 +2,7 @@ import { Vector4 } from 'three';
 import Extent from '../../Geographic/Extent';
 import OGCWebServiceHelper from './OGCWebServiceHelper';
 import Fetcher from './Fetcher';
-import { l_COLOR, l_ELEVATION } from '../../../Renderer/LayeredMaterial';
+import { l_COLOR, l_ELEVATION } from '../../../Renderer/LayeredMaterialConstants';
 
 // select the smallest image entirely covering the tile
 function selectBestImageForExtent(images, extent) {
