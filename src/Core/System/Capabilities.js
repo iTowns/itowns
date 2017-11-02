@@ -1,13 +1,13 @@
 // default values
 let logDepthBufferSupported = false;
 let maxTexturesUnits = 8;
-const internetExplorer = false || !!document.documentMode;
 
 export default {
     isLogDepthBufferSupported() {
         return logDepthBufferSupported;
     },
     isInternetExplorer() {
+        const internetExplorer = false || !!document.documentMode;
         return internetExplorer;
     },
     getMaxTextureUnitsCount() {
