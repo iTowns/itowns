@@ -1105,6 +1105,12 @@ function GlobeControls(view, target, radius, options = {}) {
     var ondblclick = function ondblclick(event) {
         if (this.enabled === false) return;
 
+        if (!this.isAnimationEnabled()) {
+             // eslint-disable-next-line no-console
+            console.warn('double click without animation is disabled, waiting fix in future refactoring');
+            return;
+        }
+
         // Double click throws move camera's target with animation
         if (!currentKey) {
             ptScreenClick.x = event.clientX - event.target.offsetLeft;
@@ -1114,7 +1120,7 @@ function GlobeControls(view, target, radius, options = {}) {
 
             if (point) {
                 animatedScale = 0.6;
-                this.setCameraTargetPosition(point, this.isAnimationEnabled());
+                this.setCameraTargetPosition(point);
             }
         }
     };
@@ -1619,8 +1625,11 @@ GlobeControls.prototype.setCameraTargetPosition = function setCameraTargetPositi
         return player.play(animationZoomCenter).then(() => {
             this.resetControls();
             this.waitSceneLoaded().then(() => {
-                this.updateCameraTransformation();
-                ctrl.targetGeoPosition = null;
+                animatedScale = 0;
+                if (player.isStopped()) {
+                    this.updateCameraTransformation();
+                    ctrl.targetGeoPosition = null;
+                }
             });
         });
     } else {
