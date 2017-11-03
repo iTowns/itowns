@@ -1428,6 +1428,12 @@ function GlobeControls(view, target, radius, options = {}) {
     window.addEventListener('keydown', onKeyDown.bind(this), false);
     window.addEventListener('keyup', onKeyUp.bind(this), false);
 
+    // Reset key/mouse when window loose focus
+    window.addEventListener('blur', () => {
+        onKeyUp.bind(this)();
+        onMouseUp.bind(this)();
+    });
+
     // Initialisation Globe Target and movingGlobeTarget
     setCameraTargetObjectPosition(target);
     movingCameraTargetOnGlobe.copy(target);
