@@ -226,7 +226,6 @@ export default {
             points.material.transparent = layer.opacity < 1.0;
             points.material.uniforms.opacity.value = layer.opacity;
             points.updateMatrix();
-            points.updateMatrixWorld(true);
             points.layers.set(layer.threejsLayer);
             points.layer = layer.id;
             return points;
