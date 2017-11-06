@@ -608,7 +608,7 @@ function GlobeControls(view, target, radius, options = {}) {
     const quaterPano = new THREE.Quaternion();
     const quaterAxis = new THREE.Quaternion();
     const axisX = new THREE.Vector3(1, 0, 0);
-    let minDistanceZ = 0;
+    let minDistanceZ = Infinity;
 
     const getMinDistanceCameraBoundingSphereObbsUp = (tile) => {
         if (tile.level > 10 && tile.children.length == 1 && tile.geometry) {
