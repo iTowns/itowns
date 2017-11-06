@@ -98,7 +98,7 @@ export function createPlanarLayer(id, extent, options) {
 
     function subdivision(context, layer, node) {
         if (SubdivisionControl.hasEnoughTexturesToSubdivide(context, layer, node)) {
-            return planarSubdivisionControl(options.maxSubdivisionLevel || 5)(context, layer, node);
+            return planarSubdivisionControl(options.maxSubdivisionLevel === undefined ? 5 : options.maxSubdivisionLevel)(context, layer, node);
         }
         return false;
     }

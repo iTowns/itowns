@@ -1,0 +1,110 @@
+<html>
+    <head>
+        <title>Itowns - Globe</title>
+
+        <style type="text/css">
+            html {
+                height: 100%;
+            }
+
+            body {
+                margin: 0;
+                overflow:hidden;
+                height:100%;
+            }
+
+            #viewerDiv {
+                margin : auto auto;
+                width: 100%;
+                height: 100%;
+                padding: 0;
+            }
+        </style>
+        <meta charset="UTF-8">
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="GUI/dat.gui/dat.gui.min.js"></script>
+    </head>
+    <body>
+        <div id='viewerDiv'></div>
+        <script src="../dist/itowns.js"></script>
+        <script type="text/javascript">
+        // Define initial camera position
+        var positionOnGlobe = { longitude: 2.351323, latitude: 48.856712, altitude: 5000000 };
+        var promises = [];
+        var minDistance = 10000000;
+        var maxDistance = 30000000;
+
+        // `viewerDiv` will contain iTowns' rendering area (`<canvas>`)
+        var viewerDiv = document.getElementById('viewerDiv');
+
+        // Instanciate iTowns GlobeView*
+        var globeView = new itowns.GlobeView(viewerDiv, positionOnGlobe);
+        function addLayerCb(layer) {
+            return globeView.addLayer(layer);
+        }
+
+        globeView.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function _() {
+            var gui = new dat.GUI();
+            var state = {
+                epsg: '3946',
+                view: viewFunction
+            };
+            gui.add(state, 'epsg').name('EPSG Code');
+            gui.add(state, 'view').name('View');
+
+            function viewFunction() {
+                itowns.Fetcher.json(`http://epsg.io/?q=${state.epsg}&format=json`).then(function (content) {
+                    const code = `EPSG:${state.epsg}`;
+                    if (!itowns.proj4.defs[code]) {
+                        itowns.proj4.defs(code, content.results[0].proj4);
+                    }
+
+                    console.log(content.results[0].bbox);
+
+                    const geoExtent = new itowns.Extent(
+                        'EPSG:4326',
+                            content.results[0].bbox[1],
+                            content.results[0].bbox[3],
+                            content.results[0].bbox[2],
+                            content.results[0].bbox[0]);
+                    const extent = geoExtent.as(code);
+                    console.log('New extent', extent);
+
+                    const epsgLayer = itowns.createPlanarLayer(extent.crs(), extent, { });
+                    epsgLayer.noTextureColor = new itowns.THREE.Color(0xeedeae);
+                    epsgLayer.disableSkirt = true;
+
+                    const oldOnTileCreated = epsgLayer.onTileCreated;
+                    epsgLayer.onTileCreated = function _t(layer, parent, node) {
+                        node.material.depthTest = false;
+                    };
+
+                    epsgLayer.opacity = 0.75;
+
+                    itowns.View.prototype.addLayer.call(globeView, epsgLayer);
+                    itowns.View.prototype.addLayer.call(globeView, {
+                        update: itowns.updateLayeredMaterialNodeImagery,
+                        url: 'http://osm.oslandia.io/services/wms',
+                        type: 'color',
+                        protocol: 'wms',
+                        networkOptions: { crossOrigin: 'anonymous' },
+                        version: '1.1.1',
+                        id: 'osm' + extent.crs(),
+                        name: 'positron',
+                        projection: 'EPSG:3857',
+                        options: {
+                            mimetype: 'image/jpeg',
+                        }
+                    }, epsgLayer);
+
+                    globeView.controls.setCameraTargetGeoPosition(
+                        {longitude: geoExtent.center().longitude(), latitude: geoExtent.center().latitude()});
+                });
+            }
+        });
+
+        promises.push(itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(addLayerCb));
+        </script>
+    </body>
+</html>

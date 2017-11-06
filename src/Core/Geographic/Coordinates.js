@@ -24,9 +24,12 @@ export function ellipsoidSizes() {
 const ellipsoid = new Ellipsoid(ellipsoidSizes());
 
 export const UNIT = {
+    // angle units
     RADIAN: 0,
     DEGREE: 1,
+    // distance units
     METER: 2,
+    FT_US: 3,
 };
 
 function _unitFromProj4Unit(projunit) {
@@ -36,7 +39,11 @@ function _unitFromProj4Unit(projunit) {
         return UNIT.METER;
     } else if (projunit === 'radians') {
         return UNIT.RADIAN;
+    } else if (projunit === 'us-ft') {
+        return UNIT.FT_US;
     } else {
+        // eslint-disable-next-line no-console
+        console.error('Unsupported CRS unit', projunit);
         return undefined;
     }
 }
@@ -60,6 +67,7 @@ export function reasonnableEpsilonForUnit(unit) {
         case UNIT.RADIAN: return 0.00001;
         case UNIT.DEGREE: return 0.01;
         case UNIT.METER: return 0.001;
+        case UNIT.FT_US: return 0.001;
         default:
             return 0;
     }
@@ -78,11 +86,11 @@ export function assertCrsIsValid(crs) {
 }
 
 export function crsIsGeographic(crs) {
-    return (_crsToUnitWithError(crs) != UNIT.METER);
+    return (_crsToUnitWithError(crs) < UNIT.METER);
 }
 
 export function crsIsGeocentric(crs) {
-    return (_crsToUnitWithError(crs) == UNIT.METER);
+    return (_crsToUnitWithError(crs) >= UNIT.METER);
 }
 
 function _assertIsGeographic(crs) {
@@ -537,8 +545,8 @@ Coordinates.prototype.offsetInExtent = function offsetInExtent(extent, target) {
         y: Math.abs(extent.north() - extent.south()),
     };
 
-    const x = extent._internalStorageUnit == UNIT.METER ? this.x() : this.longitude(extent._internalStorageUnit);
-    const y = extent._internalStorageUnit == UNIT.METER ? this.y() : this.latitude(extent._internalStorageUnit);
+    const x = extent._internalStorageUnit >= UNIT.METER ? this.x() : this.longitude(extent._internalStorageUnit);
+    const y = extent._internalStorageUnit >= UNIT.METER ? this.y() : this.latitude(extent._internalStorageUnit);
 
     const originX = (x - extent.west()) / dimension.x;
     const originY = (extent.north() - y) / dimension.y;

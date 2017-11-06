@@ -163,9 +163,10 @@ Extent.prototype.as = function as(crs) {
     });
 };
 
-Extent.prototype.offsetToParent = function offsetToParent(other) {
+Extent.prototype.offsetToParent = function offsetToParent(_other) {
+    let other = _other;
     if (this.crs() != other.crs()) {
-        throw new Error('unsupported mix');
+        other = _other.as(this.crs());
     }
     if (_isTiledCRS(this.crs())) {
         const diffLevel = this._zoom - other.zoom;

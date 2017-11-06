@@ -16,21 +16,27 @@ PlanarTileBuilder.prototype.constructor = PlanarTileBuilder;
 // init projected object -> params.projected
 PlanarTileBuilder.prototype.Prepare = function Prepare(params) {
     params.nbRow = Math.pow(2.0, params.zoom + 1.0);
-    params.projected = new THREE.Vector3();
+    params.projected = new Coordinates(params.extent.crs(), 0, 0, 0);
 };
 
 
 // get center tile in cartesian 3D
 PlanarTileBuilder.prototype.Center = function Center(params) {
     params.extent.center(this.tmp.coords);
-    params.center = new THREE.Vector3(this.tmp.coords.x(), this.tmp.coords.y(), 0);
+    if (params.extent.crs() !== params.crs) {
+        this.tmp.coords = this.tmp.coords.as(params.crs);
+    }
+    params.center = this.tmp.coords.xyz();
     return params.center;
 };
 
 // get position 3D cartesian
 PlanarTileBuilder.prototype.VertexPosition = function VertexPosition(params) {
-    this.tmp.position.set(params.projected.x, params.projected.y, 0);
-    return this.tmp.position;
+    if (params.extent.crs() !== params.crs) {
+        return params.projected.as(params.crs).xyz();
+    } else {
+        return params.projected.xyz();
+    }
 };
 
 // get normal for last vertex
@@ -40,17 +46,33 @@ PlanarTileBuilder.prototype.VertexNormal = function VertexNormal() {
 
 // coord u tile to projected
 PlanarTileBuilder.prototype.uProjecte = function uProjecte(u, params) {
-    params.projected.x = params.extent.west() + u * (params.extent.east() - params.extent.west());
+    params.projected._values[2] = 100;
+    params.projected._values[0] = params.extent.west() + u * (params.extent.east() - params.extent.west());
 };
 
 // coord v tile to projected
 PlanarTileBuilder.prototype.vProjecte = function vProjecte(v, params)
 {
-    params.projected.y = params.extent.south() + v * (params.extent.north() - params.extent.south());
+    params.projected._values[1] = params.extent.south() + v * (params.extent.north() - params.extent.south());
 };
 
 // get oriented bounding box of tile
 PlanarTileBuilder.prototype.OBB = function _OBB(params) {
+    if (params.crs == 'EPSG:4978') {
+        const c = params.extent.center();
+        const cardinals = [
+            new Coordinates(params.extent.crs(), params.extent.west(), params.extent.north()).as('EPSG:4978'),
+            new Coordinates(params.extent.crs(), c.x(), params.extent.north()).as('EPSG:4978'),
+            new Coordinates(params.extent.crs(), params.extent.east(), params.extent.north()).as('EPSG:4978'),
+            new Coordinates(params.extent.crs(), params.extent.east(), c.y()).as('EPSG:4978'),
+            new Coordinates(params.extent.crs(), params.extent.east(), params.extent.south()).as('EPSG:4978'),
+            new Coordinates(params.extent.crs(), c.x(), params.extent.south()).as('EPSG:4978'),
+            new Coordinates(params.extent.crs(), params.extent.west(), params.extent.south()).as('EPSG:4978'),
+            new Coordinates(params.extent.crs(), params.extent.west(), c.y()).as('EPSG:4978'),
+            c.as('EPSG:4978')];
+        return OBB.cardinals4978ToOBB(cardinals);
+    }
+    // FIXME
     const center = params.center;
     const max = new THREE.Vector3(
         params.extent.east(),
