@@ -175,16 +175,6 @@ export default {
             return [];
         }
 
-        if (!layer.group) {
-            layer.group = new THREE.Group();
-            layer.object3d.add(layer.group);
-        }
-
-        if (!layer.bboxes) {
-            layer.bboxes = new THREE.Group();
-            layer.object3d.add(layer.bboxes);
-        }
-
         // Start updating from hierarchy root
         return [layer.root];
     },
