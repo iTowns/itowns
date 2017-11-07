@@ -135,6 +135,18 @@ export default {
         if (!layer.file) {
             layer.file = 'cloud.js';
         }
+        if (!layer.group) {
+            layer.group = new THREE.Group();
+            layer.object3d.add(layer.group);
+            layer.group.updateMatrixWorld();
+        }
+
+        if (!layer.bboxes) {
+            layer.bboxes = new THREE.Group();
+            layer.object3d.add(layer.bboxes);
+            layer.bboxes.updateMatrixWorld();
+        }
+
         // default options
         layer.fetchOptions = layer.fetchOptions || {};
         layer.octreeDepthLimit = layer.octreeDepthLimit || -1;
