@@ -33,7 +33,7 @@ function filterUnsupportedSemantics(obj) {
     }
 }
 // parse for RTC values
-function applyOptionalCesiumRTC(data, gltf) {
+function applyOptionalCesiumRTC(data, gltf, textDecoder) {
     const headerView = new DataView(data, 0, 20);
     const contentArray = new Uint8Array(data, 20, headerView.getUint32(12, true));
     const content = textDecoder.decode(new Uint8Array(contentArray));
@@ -44,8 +44,7 @@ function applyOptionalCesiumRTC(data, gltf) {
     }
 }
 
-const textDecoder = new TextDecoder('utf-8');
-B3dmLoader.prototype.parse = function parse(buffer, gltfUpAxis) {
+B3dmLoader.prototype.parse = function parse(buffer, gltfUpAxis, textDecoder) {
     if (!buffer) {
         throw new Error('No array buffer provided.');
     }
@@ -80,7 +79,9 @@ B3dmLoader.prototype.parse = function parse(buffer, gltfUpAxis) {
 
         if (b3dmHeader.BTJSONLength > 0) {
             const sizeBegin = 28 + b3dmHeader.FTJSONLength + b3dmHeader.FTBinaryLength;
-            batchTable = BatchTable.parse(buffer.slice(sizeBegin, b3dmHeader.BTJSONLength + sizeBegin));
+            batchTable = BatchTable.parse(
+                buffer.slice(sizeBegin, b3dmHeader.BTJSONLength + sizeBegin),
+                textDecoder);
         }
         // TODO: missing feature and batch table
         return new Promise((resolve/* , reject */) => {
@@ -98,7 +99,7 @@ B3dmLoader.prototype.parse = function parse(buffer, gltfUpAxis) {
                 // RTC managed
                 applyOptionalCesiumRTC(buffer.slice(28 + b3dmHeader.FTJSONLength +
                     b3dmHeader.FTBinaryLength + b3dmHeader.BTJSONLength +
-                    b3dmHeader.BTBinaryLength), gltf.scene);
+                    b3dmHeader.BTBinaryLength), gltf.scene, textDecoder);
 
                 const b3dm = { gltf, batchTable };
                 resolve(b3dm);
