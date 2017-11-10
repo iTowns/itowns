@@ -117,6 +117,14 @@ function refinementCommandCancellationFn(cmd) {
         return false;
     }
 
+    // Cancel the command if the tile already has a better texture.
+    // This is only needed for elevation layers, because we may have several
+    // concurrent layers but we can only use one texture.
+    if (cmd.layer.type == 'elevation' &&
+        cmd.targetLevel <= cmd.requester.material.getElevationLayerLevel()) {
+        return true;
+    }
+
     return !cmd.requester.isDisplayed();
 }
 
@@ -349,6 +357,14 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, force) 
     return context.scheduler.execute(command).then(
         (terrain) => {
             if (node.material === null) {
+                return;
+            }
+
+            // Do not apply the new texture if its level is < than the current one.
+            // This is only needed for elevation layers, because we may have several
+            // concurrent layers but we can only use one texture.
+            if (targetLevel <= node.material.getElevationLayerLevel()) {
+                node.layerUpdateState[layer.id].noMoreUpdatePossible();
                 return;
             }
 
