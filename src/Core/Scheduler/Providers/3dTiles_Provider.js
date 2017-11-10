@@ -65,7 +65,6 @@ function $3dTilesIndex(tileset, baseURL) {
 
 function $3dTiles_Provider() {
     Provider.call(this);
-    this.b3dmLoader = new B3dmLoader();
 }
 
 $3dTiles_Provider.prototype = Object.create(Provider.prototype);
@@ -161,7 +160,8 @@ export function patchMaterialForLogDepthSupport(material) {
 }
 
 $3dTiles_Provider.prototype.b3dmToMesh = function b3dmToMesh(data, layer) {
-    return this.b3dmLoader.parse(data, layer.asset.gltfUpAxis).then((result) => {
+    this._b3dmLoader = this._b3dmLoader || new B3dmLoader();
+    return this._b3dmLoader.parse(data, layer.asset.gltfUpAxis, this._textDecoder).then((result) => {
         const init = function f_init(mesh) {
             mesh.frustumCulled = false;
             if (mesh.material) {
@@ -193,7 +193,7 @@ $3dTiles_Provider.prototype.b3dmToMesh = function b3dmToMesh(data, layer) {
 
 $3dTiles_Provider.prototype.pntsParse = function pntsParse(data) {
     return new Promise((resolve) => {
-        resolve({ object3d: PntsLoader.parse(data).point });
+        resolve({ object3d: PntsLoader.parse(data, this._textDecoder).point });
     });
 };
 
@@ -220,13 +220,15 @@ function configureTile(tile, layer, metadata, parent) {
     tile.updateMatrixWorld();
 }
 
-const textDecoder = new TextDecoder('utf-8');
 $3dTiles_Provider.prototype.executeCommand = function executeCommand(command) {
     const layer = command.layer;
     const metadata = command.metadata;
     const tile = new THREE.Object3D();
     configureTile(tile, layer, metadata, command.requester);
     const path = metadata.content ? metadata.content.url : undefined;
+    this._textDecoder = this._textDecoder || new TextDecoder('utf-8');
+    const textDecoder = this._textDecoder;
+
     const setLayer = (obj) => {
         obj.layers.set(layer.threejsLayer);
     };

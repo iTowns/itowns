@@ -1,9 +1,8 @@
 import * as THREE from 'three';
 import BT from './BatchTable';
 
-const textDecoder = new TextDecoder('utf-8');
 export default {
-    parse: function parse(buffer) {
+    parse: function parse(buffer, textDecoder) {
         if (!buffer) {
             throw new Error('No array buffer provided.');
         }
@@ -40,13 +39,15 @@ export default {
 
             // binary table
             if (pntsHeader.FTBinaryLength > 0) {
-                point = parseFeatureBinary(buffer, byteOffset, pntsHeader.FTJSONLength);
+                point = parseFeatureBinary(buffer, byteOffset, pntsHeader.FTJSONLength, textDecoder);
             }
 
             // batch table
             if (pntsHeader.BTJSONLength > 0) {
                 const sizeBegin = 28 + pntsHeader.FTJSONLength + pntsHeader.FTBinaryLength;
-                batchTable = BT.parseBatchTableJSON(buffer.slice(sizeBegin, pntsHeader.BTJSONLength + sizeBegin));
+                batchTable = BT.parse(
+                    buffer.slice(sizeBegin, pntsHeader.BTJSONLength + sizeBegin),
+                    textDecoder);
             }
 
             const pnts = { point, batchTable };
@@ -57,7 +58,7 @@ export default {
     },
 };
 
-function parseFeatureBinary(array, byteOffset, FTJSONLength) {
+function parseFeatureBinary(array, byteOffset, FTJSONLength, textDecoder) {
     // Init geometry
     const geometry = new THREE.BufferGeometry();
     const material = new THREE.PointsMaterial({ size: 0.05, vertexColors: THREE.VertexColors, sizeAttenuation: true });
