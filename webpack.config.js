@@ -14,7 +14,7 @@ var providePlugin = new webpack.ProvidePlugin({
 
 module.exports = {
     entry: {
-        itowns: ['es6-promise', 'whatwg-fetch', path.resolve(__dirname, 'src/MainBundle.js')],
+        itowns: ['babel-polyfill', 'url-polyfill', 'whatwg-fetch', path.resolve(__dirname, 'src/MainBundle.js')],
         debug: [path.resolve(__dirname, 'utils/debug/Main.js')],
     },
     devtool: 'source-map',
