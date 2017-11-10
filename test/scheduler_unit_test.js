@@ -31,9 +31,9 @@ function cmd(layerId = 'foo', prio = 0) {
         layer: {
             id: layerId,
             protocol: 'test',
+            priority: prio,
         },
         view,
-        priority: prio,
     };
 }
 
@@ -55,6 +55,27 @@ describe('Command execution', function () {
             for (const cmd of commands) {
                 assert.ok(cmd.done);
             }
+            done();
+        });
+    });
+
+    it('should execute balance commands between layers', function (done) {
+        const results = [];
+        const promises = [];
+        for (let i = 0; i < 50; i++) {
+            promises.push(scheduler.execute(cmd('layer0', 1)).then(
+                (c) => { results.push(c.layer.id); }));
+            promises.push(scheduler.execute(cmd('layer1', 5)).then(
+                (c) => { results.push(c.layer.id); }));
+            promises.push(scheduler.execute(cmd('layer2', 10)).then(
+                (c) => { results.push(c.layer.id); }));
+        }
+
+        Promise.all(promises).then(() => {
+            // layer2 commands must be all finished before layer1 commands
+            assert.ok(results.lastIndexOf('layer2') < results.lastIndexOf('layer1'));
+            // layer1 commands must be all finished before layer0 commands
+            assert.ok(results.lastIndexOf('layer1') < results.lastIndexOf('layer0'));
             done();
         });
     });
