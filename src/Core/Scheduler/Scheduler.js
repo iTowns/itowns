@@ -18,18 +18,59 @@ import CancelledCommandException from './CancelledCommandException';
 
 var instanceScheduler = null;
 
+function queueOrdering(a, b) {
+    const cmp = b.priority - a.priority;
+    // Prioritize recent commands
+    if (cmp === 0) {
+        return b.timestamp - a.timestamp;
+    }
+    return cmp;
+}
+
+function drawNextLayer(storages) {
+    // Dithering algorithm to select the next layer
+    // see https://gamedev.stackexchange.com/a/95696 for more details
+    let sum = 0;
+    let selected;
+    let max;
+    for (const item of storages) {
+        const st = item[1];
+        if (st.q.length > 0) {
+            sum += st.priority;
+            st.accumulator += st.priority;
+            // Select the biggest accumulator
+            if (!selected || st.accumulator > max) {
+                selected = st;
+                max = st.accumulator;
+            }
+        }
+    }
+
+    if (selected) {
+        selected.accumulator -= sum;
+        return selected.q;
+    }
+}
+
 function _instanciateQueue() {
     return {
-        storage: new PriorityQueue({
-            comparator(a, b) {
-                var cmp = b.priority - a.priority;
-                // Prioritize recent commands
-                if (cmp === 0) {
-                    return b.timestamp - a.timestamp;
-                }
-                return cmp;
-            },
-        }),
+        queue(command) {
+            const layer = command.layer;
+            let st = this.storages.get(layer.id);
+            if (!st) {
+                st = {
+                    q: new PriorityQueue({ comparator: queueOrdering }),
+                    priority: 1,
+                    accumulator: 0,
+                };
+                this.storages.set(layer.id, st);
+            }
+            // update priority (layer.priority may have changed)
+            st.priority = layer.priority || 1;
+            st.q.queue(command);
+            this.counters.pending++;
+        },
+        storages: new Map(),
         counters: {
             // commands in progress
             executing: 0,
@@ -39,12 +80,12 @@ function _instanciateQueue() {
             failed: 0,
             // commands cancelled
             cancelled: 0,
+            // commands pending
+            pending: 0,
         },
-        execute(cmd, provider, executingCounterUpToDate) {
-            if (!executingCounterUpToDate) {
-                this.counters.executing++;
-            }
-
+        execute(cmd, provider) {
+            this.counters.pending--;
+            this.counters.executing++;
             return provider.executeCommand(cmd).then((result) => {
                 this.counters.executing--;
                 cmd.resolve(result);
@@ -81,7 +122,6 @@ function Scheduler() {
 
     this.providers = {};
 
-    this.maxConcurrentCommands = 16;
     this.maxCommandsPerHost = 6;
 
     // TODO: add an options to not instanciate default providers
@@ -120,7 +160,7 @@ Scheduler.prototype.runCommand = function runCommand(command, queue, executingCo
         if (queue.counters.executing < this.maxCommandsPerHost) {
             const cmd = this.deQueue(queue);
             if (cmd) {
-                return this.runCommand(cmd, queue);
+                this.runCommand(cmd, queue);
             }
         }
     });
@@ -146,19 +186,23 @@ Scheduler.prototype.execute = function execute(command) {
 
     const q = host ? this.hostQueues.get(host) : this.defaultQueue;
 
-    // execute command now if possible
-    if (q.counters.executing < this.maxCommandsPerHost) {
-        // increment before
-        q.counters.executing++;
+    command.timestamp = Date.now();
+    q.queue(command);
 
-        // We use a setTimeout to defer processing but we avoid the
-        // queue mechanism (why setTimeout and not Promise? see tasks vs microtasks priorities)
-        window.setTimeout(() => {
-            this.runCommand(command, q, true);
-        }, 0);
-    } else {
-        command.timestamp = Date.now();
-        q.storage.queue(command);
+    if (q.counters.executing < this.maxCommandsPerHost) {
+        // Defer the processing after the end of the current frame.
+        // Promise.resolve or setTimeout(..., 0) will do the job, the difference
+        // is:
+        //   - setTimeout is a new task, queued in the event-loop queues
+        //   - Promise is a micro-task, executed before other tasks
+        Promise.resolve().then(() => {
+            if (q.counters.executing < this.maxCommandsPerHost) {
+                const cmd = this.deQueue(q);
+                if (cmd) {
+                    this.runCommand(cmd, q);
+                }
+            }
+        });
     }
 
     return command.promise;
@@ -257,9 +301,9 @@ Scheduler.prototype.getProtocolProvider = function getProtocolProvider(protocol)
 };
 
 Scheduler.prototype.commandsWaitingExecutionCount = function commandsWaitingExecutionCount() {
-    let sum = this.defaultQueue.storage.length + this.defaultQueue.counters.executing;
+    let sum = this.defaultQueue.counters.pending + this.defaultQueue.counters.executing;
     for (var q of this.hostQueues) {
-        sum += q[1].storage.length + q[1].counters.executing;
+        sum += q[1].counters.pending + q[1].counters.executing;
     }
     return sum;
 };
@@ -284,11 +328,12 @@ Scheduler.prototype.resetCommandsCount = function resetCommandsCount(type) {
 };
 
 Scheduler.prototype.deQueue = function deQueue(queue) {
-    var st = queue.storage;
-    while (st.length > 0) {
+    var st = drawNextLayer(queue.storages);
+    while (st && st.length > 0) {
         var cmd = st.dequeue();
 
         if (cmd.earlyDropFunction && cmd.earlyDropFunction(cmd)) {
+            queue.counters.pending--;
             queue.counters.cancelled++;
             cmd.reject(new CancelledCommandException(cmd));
         } else {
