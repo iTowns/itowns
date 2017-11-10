@@ -40,8 +40,11 @@ function initNodeImageryTexturesFromParent(node, parent, layer) {
 }
 
 function initNodeElevationTextureFromParent(node, parent, layer) {
-    // inherit parent's elevation texture
-    if (parent.material && parent.material.getElevationLayerLevel() > EMPTY_TEXTURE_ZOOM) {
+    // Inherit parent's elevation texture. Note that contrary to color layers the elevation level of the
+    // node might not be EMPTY_TEXTURE_ZOOM in this init function. That's because we can have
+    // multiple elevation layers (thus multiple calls to initNodeElevationTextureFromParent) but a given
+    // node can only use 1 elevation texture
+    if (parent.material && parent.material.getElevationLayerLevel() > node.material.getElevationLayerLevel()) {
         const coords = node.getCoordsForLayer(layer);
 
         const texture = parent.material.textures[l_ELEVATION][0];
