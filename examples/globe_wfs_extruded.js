@@ -86,6 +86,7 @@ globeView.addLayer({
         altitude: altitudeBuildings,
         extrude: extrudeBuildings }),
     url: 'http://wxs.ign.fr/72hpsel8j8nhb5qgdh07gcyp/geoportail/wfs?',
+    networkOptions: { crossOrigin: 'anonymous' },
     protocol: 'wfs',
     version: '2.0.0',
     id: 'wfsBuilding',
