@@ -200,9 +200,9 @@ class FirstPersonControls extends THREE.EventDispatcher {
 
         for (const move of this.moves) {
             if (move.method === 'translateY') {
-                this.camera.position.z += move.sign * this.moveSpeed * dt / 1000;
+                this.camera.position.z += move.sign * this.options.moveSpeed * dt / 1000;
             } else {
-                this.camera[move.method](move.sign * this.moveSpeed * dt / 1000);
+                this.camera[move.method](move.sign * this.options.moveSpeed * dt / 1000);
             }
         }
 
