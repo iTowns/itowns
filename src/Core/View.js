@@ -77,6 +77,21 @@ function View(crs, viewerDiv, options = {}) {
     this.onAfterRender = () => {};
 
     this._changeSources = new Set();
+
+    // deprecated API handling: remove this when GlobeView (and PlanarView).addLayer is removed
+    this._deprecatedPreAddLayer = (layer) => {
+        if (layer.type == 'color') {
+            if (!layer.update) {
+                // Note: remove this when GlobeView.addLayer is removed
+                this.baseLayer.addColorLayer(layer, false);
+            }
+        } else if (layer.type == 'elevation') {
+            if (!layer.update) {
+                // Note: remove this when GlobeView.addLayer is removed
+                this.baseLayer.addElevationLayer(layer, false);
+            }
+        }
+    };
 }
 
 View.prototype = Object.create(EventDispatcher.prototype);

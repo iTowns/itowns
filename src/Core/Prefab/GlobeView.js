@@ -177,22 +177,15 @@ function GlobeView(viewerDiv, coordCarto, options = {}) {
 GlobeView.prototype = Object.create(View.prototype);
 GlobeView.prototype.constructor = GlobeView;
 
+// Preprocess layer for a Globe if needed
 GlobeView.prototype._preAddLayer = function _preAddLayer(layer) {
-    if (layer.type == 'color') {
-        if (!layer.update) {
-            // Note: remove this when GlobeView.addLayer is removed
-            this.baseLayer.addColorLayer(layer, false);
-        }
+    this._deprecatedPreAddLayer(layer);
 
+    if (layer.type == 'color') {
         if (layer.protocol === 'rasterizer') {
             layer.reprojection = 'EPSG:4326';
         }
     } else if (layer.type == 'elevation') {
-        if (!layer.update) {
-            // Note: remove this when GlobeView.addLayer is removed
-            this.baseLayer.addElevationLayer(layer, false);
-        }
-
         if (layer.protocol === 'wmts' && layer.options.tileMatrixSet !== 'WGS84G') {
             throw new Error('Only WGS84G tileMatrixSet is currently supported for WMTS elevation layers');
         }

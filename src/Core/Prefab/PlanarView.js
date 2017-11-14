@@ -149,17 +149,12 @@ function PlanarView(viewerDiv, extent, options = {}) {
 PlanarView.prototype = Object.create(View.prototype);
 PlanarView.prototype.constructor = PlanarView;
 
+// Preprocess layer for a Plane if needed
 PlanarView.prototype._preAddLayer = function _preAddLayer(layer) {
+    this._deprecatedPreAddLayer(layer);
     if (layer.type == 'color') {
-        if (!layer.update) {
-            this.baseLayer.addColorLayer(layer, false);
-        }
         if (layer.protocol === 'rasterizer') {
             layer.reprojection = this.referenceCrs;
-        }
-    } else if (layer.type == 'elevation') {
-        if (!layer.update) {
-            this.baseLayer.addElevationLayer(layer, false);
         }
     }
 };
