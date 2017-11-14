@@ -40,14 +40,13 @@ function getColor(options, properties) {
     return randomColor();
 }
 
-function createColorArray(length, color, brightness) {
-    const colors = new Array(length * 3);
-    for (let i = 0; i < length; ++i) {
-        colors[3 * i] = color.r * brightness;
-        colors[3 * i + 1] = color.g * brightness;
-        colors[3 * i + 2] = color.b * brightness;
+function fillColorArray(colors, offset, length, r, g, b) {
+    const len = offset + length;
+    for (let i = offset; i < len; ++i) {
+        colors[3 * i] = r;
+        colors[3 * i + 1] = g;
+        colors[3 * i + 2] = b;
     }
-    return colors;
 }
 
 /*
@@ -57,10 +56,7 @@ function createColorArray(length, color, brightness) {
  * @param  {number} altitude - Altitude of the feature
  * @return {Vector3[]} vertices
  */
-function coordinatesToVertices(contour, altitude) {
-    // position in the vertices result
-    let offset = 0;
-    const vertices = new Array(contour.length * 3);
+function coordinatesToVertices(contour, altitude, target, offset) {
     // loop over contour coodinates
     for (const coordinate of contour) {
         // convert coordinate to position
@@ -70,11 +66,10 @@ function coordinatesToVertices(contour, altitude) {
         // move the vertex following the normal, to put the point on the good altitude
         vec.add(normal.clone().multiplyScalar(altitude));
         // fill the vertices array at the offset position
-        vec.toArray(vertices, offset);
+        vec.toArray(target, offset);
         // increment the offset
         offset += 3;
     }
-    return vertices;
 }
 
 /*
@@ -121,41 +116,43 @@ function addFaces(indices, length, offset) {
 }
 
 function coordinateToPoints(coordinates, properties, options) {
-    let vertices = [];
-    let colors = [];
+    const vertices = new Float32Array(3 * coordinates.coordinates.length);
+    const colors = new Uint8Array(3 * coordinates.coordinates.length);
     const geometry = new THREE.BufferGeometry();
+    let offset = 0;
 
     /* eslint-disable guard-for-in */
     for (const id in coordinates.featureVertices) {
         const { contour, property } = extractFeature(coordinates, properties, id);
         // get altitude from properties
         const altitude = getAltitude(options, property);
-        const newVertices = coordinatesToVertices(contour, altitude);
-        vertices = vertices.concat(newVertices);
+        coordinatesToVertices(contour, altitude, vertices, offset * 3);
 
         // assign color to each point
-        const colorArray = createColorArray(contour.length, getColor(options, property), 255);
-        colors = colors.concat(colorArray);
-    }
+        const color = getColor(options, property);
+        fillColorArray(colors, offset, contour.length, color.r * 255, color.g * 255, color.b * 255);
 
-    geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3));
-    geometry.addAttribute('color', new THREE.BufferAttribute(new Uint8Array(colors), 3, true));
+        // increment offset
+        offset += contour.length;
+    }
+    geometry.addAttribute('position', new THREE.BufferAttribute(vertices, 3));
+    geometry.addAttribute('color', new THREE.BufferAttribute(colors, 3, true));
     return new THREE.Points(geometry);
 }
 
 function coordinateToLines(coordinates, properties, options) {
-    let vertices = [];
     const indices = [];
-    let colors = [];
+    const vertices = new Float32Array(3 * coordinates.coordinates.length);
+    const colors = new Uint8Array(3 * coordinates.coordinates.length);
     const geometry = new THREE.BufferGeometry();
+    let offset = 0;
 
     /* eslint-disable-next-line */
     for (const id in coordinates.featureVertices) {
         const { contour, property } = extractFeature(coordinates, properties, id);
         // get altitude from properties
         const altitude = getAltitude(options, property);
-        const newVertices = coordinatesToVertices(contour, altitude);
-        vertices = vertices.concat(newVertices);
+        coordinatesToVertices(contour, altitude, vertices, offset * 3);
 
         // set indices
         const line = coordinates.featureVertices[id];
@@ -166,21 +163,24 @@ function coordinateToLines(coordinates, properties, options) {
             indices.push(i + 1);
         }
 
-        // assign color to each point of the line
-        const colorArray = createColorArray(contour.length, getColor(options, property), 255);
-        colors = colors.concat(colorArray);
+        // assign color to each point
+        const color = getColor(options, property);
+        fillColorArray(colors, offset, contour.length, color.r * 255, color.g * 255, color.b * 255);
+
+        // increment offset
+        offset += contour.length;
     }
 
-    geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3));
-    geometry.addAttribute('color', new THREE.BufferAttribute(new Uint8Array(colors), 3, true));
+    geometry.addAttribute('position', new THREE.BufferAttribute(vertices, 3));
+    geometry.addAttribute('color', new THREE.BufferAttribute(colors, 3, true));
     geometry.setIndex(new THREE.BufferAttribute(new Uint16Array(indices), 1));
     return new THREE.LineSegments(geometry);
 }
 
 function coordinateToPolygon(coordinates, properties, options) {
     const indices = [];
-    let vertices = [];
-    let colors = [];
+    const vertices = new Float32Array(3 * coordinates.coordinates.length);
+    const colors = new Uint8Array(3 * coordinates.coordinates.length);
     const geometry = new THREE.BufferGeometry();
     let offset = 0;
     /* eslint-disable-next-line */
@@ -191,33 +191,35 @@ function coordinateToPolygon(coordinates, properties, options) {
         const altitudeBottom = getAltitude(options, property);
         const altitudeTopFace = altitudeBottom;
         // add vertices of the top face
-        const verticesTopFace = coordinatesToVertices(contour, altitudeTopFace);
-        vertices = vertices.concat(verticesTopFace);
+        coordinatesToVertices(contour, altitudeTopFace, vertices, offset * 3);
+        const verticesTopFace = vertices.slice(offset * 3, offset * 3 + contour.length * 3);
         // triangulate the top face
         const triangles = Earcut(verticesTopFace, null, 3);
         for (const indice of triangles) {
             indices.push(offset + indice);
         }
+        // assign color to each point
+        const color = getColor(options, property);
+        fillColorArray(colors, offset, contour.length, color.r * 255, color.g * 255, color.b * 255);
         // increment offset
         offset += contour.length;
-
-        // assign color to each point of the polygon
-        const colorArray = createColorArray(contour.length, getColor(options, property), 255);
-        colors = colors.concat(colorArray);
     }
 
-    geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3));
-    geometry.addAttribute('color', new THREE.BufferAttribute(new Uint8Array(colors), 3, true));
+    geometry.addAttribute('position', new THREE.BufferAttribute(vertices, 3));
+    geometry.addAttribute('color', new THREE.BufferAttribute(colors, 3, true));
     geometry.setIndex(new THREE.BufferAttribute(new Uint16Array(indices), 1));
     return new THREE.Mesh(geometry);
 }
 
 function coordinateToPolygonExtruded(coordinates, properties, options) {
     const indices = [];
-    let vertices = [];
-    let colors = [];
+    const vertices = new Float32Array(2 * 3 * coordinates.coordinates.length);
+    const colors = new Uint8Array(3 * 2 * coordinates.coordinates.length);
     const geometry = new THREE.BufferGeometry();
     let offset = 0;
+    let offset2 = 0;
+    let nbVertices = 0;
+
     /* eslint-disable-next-line */
     for (const id in coordinates.featureVertices) {
         // extract contour coodinates and properties of one feature
@@ -228,31 +230,29 @@ function coordinateToPolygonExtruded(coordinates, properties, options) {
         // altitudeTopFace is the altitude of the visible top face.
         const altitudeTopFace = altitudeBottom + extrudeAmount;
         // add vertices of the top face
-        const verticesTopFace = coordinatesToVertices(contour, altitudeTopFace);
-        vertices = vertices.concat(verticesTopFace);
+        coordinatesToVertices(contour, altitudeTopFace, vertices, offset2);
         // triangulate the top face
+        nbVertices = contour.length * 3;
+        const verticesTopFace = vertices.slice(offset2, offset2 + nbVertices);
         const triangles = Earcut(verticesTopFace, null, 3);
         for (const indice of triangles) {
             indices.push(offset + indice);
         }
+        offset2 += nbVertices;
         // add vertices of the bottom face
-        const verticesBottom = coordinatesToVertices(contour, altitudeBottom);
-        vertices = vertices.concat(verticesBottom);
+        coordinatesToVertices(contour, altitudeBottom, vertices, offset2);
+        offset2 += nbVertices;
         // add indices to make the side faces
         addFaces(indices, contour.length, offset);
-        // increment offset, there is twice many vertices because polygone is extruded.
-        offset += 2 * contour.length;
-
         // assign color to each point
         const color = getColor(options, property);
-        const colorArray = createColorArray(contour.length, color, 255);
-        // The floor is colored darker to create a shadow effect.
-        const colorArrayFloor = createColorArray(contour.length, color, 155);
-        colors = colors.concat(colorArray, colorArrayFloor);
+        fillColorArray(colors, offset, contour.length, color.r * 255, color.g * 255, color.b * 255);
+        offset += contour.length;
+        fillColorArray(colors, offset, contour.length, color.r * 155, color.g * 155, color.b * 155);
+        offset += contour.length;
     }
-
-    geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3));
-    geometry.addAttribute('color', new THREE.BufferAttribute(new Uint8Array(colors), 3, true));
+    geometry.addAttribute('position', new THREE.BufferAttribute(vertices, 3));
+    geometry.addAttribute('color', new THREE.BufferAttribute(colors, 3, true));
     geometry.setIndex(new THREE.BufferAttribute(new Uint16Array(indices), 1));
     const result = new THREE.Mesh(geometry);
 
