@@ -17,6 +17,8 @@ function addLayerCb(layer) {
 // Define projection that we will use (taken from https://epsg.io/3946, Proj4js section)
 itowns.proj4.defs('EPSG:3946',
     '+proj=lcc +lat_1=45.25 +lat_2=46.75 +lat_0=46 +lon_0=3 +x_0=1700000 +y_0=5200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
+itowns.proj4.defs('EPSG:2154',
+    '+proj=lcc +lat_1=49 +lat_2=44 +lat_0=46.5 +lon_0=3 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
 
 // Add one imagery layer to the scene
 // This layer is defined in a json file but it could be defined as a plain js
@@ -29,7 +31,13 @@ promises.push(itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(add
 promises.push(itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addLayerCb));
 
 function setMaterialLineWidth(result) {
-    result.children[0].material.linewidth = 5;
+    var i = 0;
+    var mesh;
+    for (; i < result.children.length; i++) {
+        mesh = result.children[i];
+
+        mesh.material.linewidth = 5;
+    }
 }
 
 function colorLine(properties) {
@@ -104,5 +112,46 @@ globeView.addLayer({
     },
 }, globeView.tileLayer);
 
+
+function configPointMaterial(result) {
+    var i = 0;
+    var mesh;
+    for (; i < result.children.length; i++) {
+        mesh = result.children[i];
+
+        mesh.material.size = 5;
+        mesh.material.sizeAttenuation = false;
+    }
+}
+
+function colorPoint(/* properties */) {
+    return new itowns.THREE.Color(0x7F180D);
+}
+
+function selectRoad(properties) {
+    return properties.gestion === 'CEREMA';
+}
+
+globeView.addLayer({
+    type: 'geometry',
+    update: itowns.FeatureProcessing.update,
+    convert: itowns.Feature2Mesh.convert({
+        altitude: 400,
+        color: colorPoint }),
+    onMeshCreated: configPointMaterial,
+    filter: selectRoad,
+    url: 'http://wxs.ign.fr/72hpsel8j8nhb5qgdh07gcyp/geoportail/wfs?',
+    networkOptions: { crossOrigin: 'anonymous' },
+    protocol: 'wfs',
+    version: '2.0.0',
+    id: 'wfsPoint',
+    typeName: 'BDPR_BDD_FXX_LAMB93_20170911:pr',
+    level: 12,
+    projection: 'EPSG:2154',
+    ipr: 'IGN',
+    options: {
+        mimetype: 'json',
+    },
+}, globeView.tileLayer);
 exports.view = globeView;
 exports.initialPosition = positionOnGlobe;
