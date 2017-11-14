@@ -40,7 +40,9 @@ function updateElements(context, geometryLayer, elements) {
 
         // update attached layers
         for (const attachedLayer of geometryLayer._attachedLayers) {
-            attachedLayer.update(context, attachedLayer, element);
+            if (attachedLayer.ready) {
+                attachedLayer.update(context, attachedLayer, element);
+            }
         }
         updateElements(context, geometryLayer, newElementsToUpdate);
     }
@@ -67,7 +69,7 @@ MainLoop.prototype._update = function _update(view, updateSources, dt) {
 
     for (const geometryLayer of view.getLayers((x, y) => !y)) {
         context.geometryLayer = geometryLayer;
-        if (geometryLayer.ready) {
+        if (geometryLayer.ready && geometryLayer.visible) {
             // `preUpdate` returns an array of elements to update
             const elementsToUpdate = geometryLayer.preUpdate(context, geometryLayer, updateSources);
             // `update` is called in `updateElements`.
