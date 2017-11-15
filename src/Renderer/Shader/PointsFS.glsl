@@ -19,12 +19,14 @@ void main() {
         discard;
     }
 
-    gl_FragColor.a = opacity;
-
     if (useCustomColor && !pickingMode) {
         gl_FragColor = mix(vColor, vec4(customColor, 1.0), 0.5);
     } else {
         gl_FragColor = vColor;
+    }
+
+    if (!pickingMode) {
+        gl_FragColor.a = opacity;
     }
 
     #include <logdepthbuf_fragment>
