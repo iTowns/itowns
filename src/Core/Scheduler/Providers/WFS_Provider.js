@@ -101,7 +101,7 @@ WFS_Provider.prototype.getFeatures = function getFeatures(crs, tile, layer) {
 
     layer.convert = layer.convert ? layer.convert : Feature2Mesh.convert({});
 
-    return Fetcher.json(url, layer.networkOptions).then(geojson => assignLayer(layer.convert(GeoJSON2Features.parse(crs, geojson, tile.extent)), layer));
+    return Fetcher.json(url, layer.networkOptions).then(geojson => assignLayer(layer.convert(GeoJSON2Features.parse(crs, geojson, tile.extent, { filter: layer.filter })), layer));
 };
 
 WFS_Provider.prototype.getPointOrder = function getPointOrder(crs) {
