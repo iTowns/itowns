@@ -9,9 +9,9 @@ var promises = [];
 var viewerDiv = document.getElementById('viewerDiv');
 
 // Instanciate iTowns GlobeView*
-var globeView = new itowns.GlobeView(viewerDiv, positionOnGlobe, { renderer: renderer });
+var view = new itowns.GlobeView(viewerDiv, positionOnGlobe, { renderer: renderer });
 function addLayerCb(layer) {
-    return globeView.addLayer(layer);
+    return view.addLayer(layer);
 }
 
 // Add one imagery layer to the scene
@@ -23,7 +23,7 @@ promises.push(itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(addLaye
 promises.push(itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addLayerCb));
 promises.push(itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addLayerCb));
 
-promises.push(globeView.addLayer({
+promises.push(view.addLayer({
     type: 'color',
     url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/croquis.kml',
     protocol: 'rasterizer',
@@ -31,7 +31,7 @@ promises.push(globeView.addLayer({
     name: 'kml',
 }));
 
-promises.push(globeView.addLayer({
+promises.push(view.addLayer({
     type: 'color',
     url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/ULTRA2009.gpx',
     protocol: 'rasterizer',
@@ -39,7 +39,7 @@ promises.push(globeView.addLayer({
     name: 'Ultra 2009',
 }));
 
-promises.push(globeView.addLayer({
+promises.push(view.addLayer({
     type: 'color',
     url: 'https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/departements/09-ariege/departement-09-ariege.geojson',
     protocol: 'rasterizer',
@@ -51,5 +51,5 @@ promises.push(globeView.addLayer({
     },
 }));
 
-exports.view = globeView;
+exports.view = view;
 exports.initialPosition = positionOnGlobe;

@@ -111,6 +111,7 @@
 
             <!-- POINTCLOUD TABLE SELECTION -->
             <script type="text/javascript">
+                var view;
                 function createResultRow(serverUrl, table) {
                     var tr = document.createElement('tr');
                     var td = document.createElement('td');
@@ -121,7 +122,7 @@
                     i.type = 'submit';
 
                     function onDisplayClicked() {
-                        showPointcloud(serverUrl, undefined, table, false);
+                        view = showPointcloud(serverUrl, undefined, table, false);
                     }
 
                     i.addEventListener('click', onDisplayClicked);
@@ -154,7 +155,7 @@
                         var lastSlashIndex = url.lastIndexOf('/');
                         var filename = url.substr(lastSlashIndex + 1);
 
-                        showPointcloud(url.substr(0, lastSlashIndex), filename, undefined, true);
+                        view = showPointcloud(url.substr(0, lastSlashIndex), filename, undefined, true);
                     } else {
                         itowns.Fetcher.json(url + '/infos/sources').then(function(meta) { buildLopocsResultTable(url, meta); });
                     }

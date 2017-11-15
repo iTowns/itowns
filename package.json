@@ -9,7 +9,7 @@
     "doclint": "npm run doc -- -t templates/silent",
     "test": "npm run lint && npm run build && npm run test-examples && npm run test-unit",
     "test-unit": "cross-env BABEL_DISABLE_CACHE=1 mocha --compilers js:babel-core/register test/*unit_test.js",
-    "test-examples": "npm run transpile && mocha test/globe_test.js && mocha test/planar_test.js && mocha test/postprocessing_test.js && mocha test/externalscene_test.js",
+    "test-examples": "wdio wdio.conf.js",
     "build": "webpack -p",
     "transpile": "cross-env BABEL_DISABLE_CACHE=1 babel src --out-dir lib",
     "start": "cross-env NODE_ENV=development webpack-dev-server -d --inline --hot",
@@ -41,6 +41,7 @@
     "text-encoding-utf-8": "^1.0.1",
     "togeojson": "^0.16.0",
     "url-polyfill": "^1.0.8",
+    "webdriverio": "^4.9.6",
     "whatwg-fetch": "^2.0.2"
   },
   "peerDependencies": {
@@ -73,6 +74,7 @@
     "require-from-string": "^1.2.1",
     "three": "^0.87.0",
     "three.meshline": "^1.0.3",
+    "wdio-mocha-framework": "^0.5.11",
     "webpack": "^2.6.1",
     "webpack-dev-server": "^2.4.5"
   }

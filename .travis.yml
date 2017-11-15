@@ -5,3 +5,9 @@ node_js:
 after_success:
   - openssl aes-256-cbc -K $encrypted_822645c864aa_key -iv $encrypted_822645c864aa_iv -in deploy_key.enc -out deploy_key -d
   - bash autodeploy.sh
+
+addons:
+  browserstack:
+    username: "itowns1"
+    access_key:
+      secure: "Z+GaQk+4Zf+lV3FC82OX4Ph+l+qUrv5//iO6JOACcD4gBMJEVJNliIN5BEiPwXITSmVIXh03opJVp9+o2GtYGy0WKPqY+XD4Ql1y7pJ1Hw4EOT5LiVzkTo82eGYRKNDe1gc769Z1CQdTjdcJ2Q7BYWY+4Ul0ke7W4icO+vNU7R+nKUwBVRL0stYdNQxsyx/5PG5itJhx8oiTveuiQxeQAPOwzvV0COefN37fu6xLBMCA4YlP/OATcKgdZ8AoLTOiVyv4BxHc+Kn5DJWZtVowN3q5Galp5lDkdeIdgnLPIRYzlC6N1MVWO9w77XMh0aLTr+aapg+FVs/QJVFroca2xYHw084lJ2qV4oT5CSKZUZfquiZgORpULQB9T6izrJgPAlRdkTBIOt9kX1QGubOsBHAEsqG6PthQrfS5Kz091Kn89N0yJfa+KMiN9TMSZ8cOGfXNnJmq4VHAIOU//QyQGNkrqtd8Yj6q4nzA1ttBUD+8/FNjExOLjCuQp9/T3QtOtsXYt2hnjdjLvIxqOstamPWixhZ/7ea/waq7P/8tGVLonwy3vhIRPYUs20SRFc4rVXoQ2vpyGW5PiPSXW1UKRxVG2DOYHP+TInFSXXXdYfwf4aBY1hopv6kO8NdawaByFOZIhvFOR4jIT7+1rL0VNlxup7n5JwTYRyJtNjlL6TQ="

@@ -13,9 +13,9 @@ var viewerDiv = document.getElementById('viewerDiv');
 var miniDiv = document.getElementById('miniDiv');
 
 // Instanciate iTowns GlobeView*
-var globeView = new itowns.GlobeView(viewerDiv, positionOnGlobe, { renderer: renderer });
+var view = new itowns.GlobeView(viewerDiv, positionOnGlobe, { renderer: renderer });
 function addLayerCb(layer) {
-    return globeView.addLayer(layer);
+    return view.addLayer(layer);
 }
 
 // Dont' instance mini viewer if it's Test env
@@ -26,7 +26,7 @@ if (!renderer) {
         // since the mini globe will always be seen from a far point of view (see minDistance above)
         maxSubdivisionLevel: 2,
         // Don't instance default controls since miniview's camera will be synced
-        // on the main view's one (see globeView.onAfterRender)
+        // on the main view's one (see view.onAfterRender)
         noControls: true,
     });
 
@@ -35,15 +35,15 @@ if (!renderer) {
     // to see the main view "behind"
     miniView.mainLoop.gfxEngine.renderer.setClearColor(0x000000, 0);
 
-    // update miniview's camera with the globeView's camera position
-    globeView.onAfterRender = function onAfterRender() {
+    // update miniview's camera with the view's camera position
+    view.onAfterRender = function onAfterRender() {
         // clamp distance camera from globe
-        var distanceCamera = globeView.camera.camera3D.position.length();
+        var distanceCamera = view.camera.camera3D.position.length();
         var distance = Math.min(Math.max(distanceCamera * 1.5, minDistance), maxDistance);
         var camera = miniView.camera.camera3D;
         // Update target miniview's camera
-        camera.position.copy(globeView.controls.moveTarget()).setLength(distance);
-        camera.lookAt(globeView.controls.moveTarget());
+        camera.position.copy(view.controls.moveTarget()).setLength(distance);
+        camera.lookAt(view.controls.moveTarget());
         miniView.notifyChange(true);
     };
 
@@ -60,5 +60,5 @@ promises.push(itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(addLaye
 promises.push(itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addLayerCb));
 promises.push(itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addLayerCb));
 
-exports.view = globeView;
+exports.view = view;
 exports.initialPosition = positionOnGlobe;

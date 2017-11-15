@@ -3,7 +3,7 @@ var positionOnGlobe = { longitude: 2.351323, latitude: 48.856712, altitude: 2500
 
 // iTowns namespace defined here
 var viewerDiv = document.getElementById('viewerDiv');
-var globeView = new itowns.GlobeView(viewerDiv, positionOnGlobe, { renderer: renderer });
+var view = new itowns.GlobeView(viewerDiv, positionOnGlobe, { renderer: renderer });
 
 // Simple postprocessing setup
 //
@@ -25,15 +25,15 @@ quad.material = new THREE.ShaderMaterial({
 });
 postprocessScene.add(quad);
 
-globeView.render = function render() {
-    var g = globeView.mainLoop.gfxEngine;
+view.render = function render() {
+    var g = view.mainLoop.gfxEngine;
     var r = g.renderer;
     r.setRenderTarget(g.fullSizeRenderTarget);
     r.clear();
     r.setViewport(0, 0, g.getWindowSize().x, g.getWindowSize().y);
     r.render(
-        globeView.scene,
-        globeView.camera.camera3D, g.fullSizeRenderTarget);
+        view.scene,
+        view.camera.camera3D, g.fullSizeRenderTarget);
 
     quad.material.uniforms.tDiffuse.value = g.fullSizeRenderTarget.texture;
     quad.material.uniforms.tSize.value.set(
@@ -48,11 +48,11 @@ globeView.render = function render() {
 };
 
 function addLayerCb(layer) {
-    return globeView.addLayer(layer);
+    return view.addLayer(layer);
 }
 
 itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(addLayerCb);
 itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT.json').then(addLayerCb);
 
-exports.globeView = globeView;
+exports.view = view;
 exports.postprocessScene = postprocessScene;

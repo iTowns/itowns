@@ -32,14 +32,14 @@
         </script>
         <script src="gpx.js"></script>
         <script type="text/javascript">
-            /* global itowns, document, globeView */
+            /* global itowns, document, view */
             // Listen for globe full initialisation event
-            globeView.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
+            view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
                 console.info('Globe initialized');
-                itowns.GpxUtils.load('https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/ULTRA2009.gpx', globeView.referenceCrs).then(function (gpx) {
+                itowns.GpxUtils.load('https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/ULTRA2009.gpx', view.referenceCrs).then(function (gpx) {
                     if (gpx) {
-                        globeView.scene.add(gpx);
-                        globeView.controls.setTilt(45, true);
+                        view.scene.add(gpx);
+                        view.controls.setTilt(45, true);
                     }
                 });
             });

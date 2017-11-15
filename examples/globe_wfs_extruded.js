@@ -9,9 +9,9 @@ var promises = [];
 var viewerDiv = document.getElementById('viewerDiv');
 
 // Instanciate iTowns GlobeView*
-var globeView = new itowns.GlobeView(viewerDiv, positionOnGlobe, { renderer: renderer });
+var view = new itowns.GlobeView(viewerDiv, positionOnGlobe, { renderer: renderer });
 function addLayerCb(layer) {
-    return globeView.addLayer(layer);
+    return view.addLayer(layer);
 }
 
 // Define projection that we will use (taken from https://epsg.io/3946, Proj4js section)
@@ -37,7 +37,7 @@ function colorLine(properties) {
     return new itowns.THREE.Color(rgb[0] / 255, rgb[1] / 255, rgb[2] / 255);
 }
 
-globeView.addLayer({
+view.addLayer({
     update: itowns.FeatureProcessing.update,
     convert: itowns.Feature2Mesh.convert({
         color: colorLine,
@@ -59,7 +59,7 @@ globeView.addLayer({
     options: {
         mimetype: 'geojson',
     },
-}, globeView.tileLayer);
+}, view.tileLayer);
 
 function colorBuildings(properties) {
     if (properties.id.indexOf('bati_remarquable') === 0) {
@@ -82,7 +82,7 @@ function acceptFeature(properties) {
     return !!properties.hauteur;
 }
 
-globeView.addLayer({
+view.addLayer({
     type: 'geometry',
     update: itowns.FeatureProcessing.update,
     convert: itowns.Feature2Mesh.convert({
@@ -102,7 +102,7 @@ globeView.addLayer({
     options: {
         mimetype: 'json',
     },
-}, globeView.tileLayer);
+}, view.tileLayer);
 
-exports.view = globeView;
+exports.view = view;
 exports.initialPosition = positionOnGlobe;

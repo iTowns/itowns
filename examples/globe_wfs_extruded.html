@@ -46,22 +46,22 @@
         </script>
         <script src="globe_wfs_extruded.js"></script>
         <script type="text/javascript">
-            /* global itowns, document, GuiTools, globeView, promises */
+            /* global itowns, document, GuiTools, view, promises */
             var menuGlobe = new GuiTools('menuDiv');
-            menuGlobe.view = globeView;
+            menuGlobe.view = view;
             // Listen for globe full initialisation event
-            globeView.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
+            view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
                 // eslint-disable-next-line no-console
                 console.info('Globe initialized');
                 Promise.all(promises).then(function () {
-                    menuGlobe.addImageryLayersGUI(globeView.getLayers(function (l) { return l.type === 'color'; }));
-                    menuGlobe.addElevationLayersGUI(globeView.getLayers(function (l) { return l.type === 'elevation'; }));
+                    menuGlobe.addImageryLayersGUI(view.getLayers(function (l) { return l.type === 'color'; }));
+                    menuGlobe.addElevationLayersGUI(view.getLayers(function (l) { return l.type === 'elevation'; }));
 
-                    globeView.controls.setTilt(45, true);
+                    view.controls.setTilt(45, true);
                 });
             });
-            const d = new debug.Debug(globeView, menuGlobe.gui);
-            debug.createTileDebugUI(menuGlobe.gui, globeView, globeView.wgs84TileLayer, d);
+            const d = new debug.Debug(view, menuGlobe.gui);
+            debug.createTileDebugUI(menuGlobe.gui, view, view.wgs84TileLayer, d);
 
 
         </script>

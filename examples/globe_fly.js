@@ -9,15 +9,15 @@ var viewerDiv = document.getElementById('viewerDiv');
 var promises = [];
 
 // Instanciate iTowns GlobeView*
-var globeView = new itowns.GlobeView(viewerDiv, positionOnGlobe, { noControls: true });
-var flyControls = new itowns.FlyControls(globeView, { focusOnClick: true });
+var view = new itowns.GlobeView(viewerDiv, positionOnGlobe, { noControls: true });
+var flyControls = new itowns.FlyControls(view, { focusOnClick: true });
 flyControls.moveSpeed = 1000;
 
 // Add one imagery layer to the scene
 // This layer is defined in a json file but it could be defined as a plain js
 // object. See Layer* for more info.
 function addLayer(layer) {
-    return globeView.addLayer(layer);
+    return view.addLayer(layer);
 }
 promises.push(itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(addLayer));
 // Add two elevation layers.
@@ -25,5 +25,5 @@ promises.push(itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(addLaye
 promises.push(itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addLayer));
 promises.push(itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addLayer));
 
-exports.view = globeView;
+exports.view = view;
 exports.initialPosition = positionOnGlobe;
