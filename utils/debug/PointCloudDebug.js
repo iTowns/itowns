@@ -48,6 +48,8 @@ export default {
             .onChange(() => view.notifyChange(true));
         surf.add(layer, 'overdraw', 1, 5).name('Overdraw')
             .onChange(() => view.notifyChange(true));
+        surf.add(layer, 'opacity', 0, 1).name('Opacity')
+            .onChange(() => view.notifyChange(true));
 
         // state
         if (__DEBUG__) {
