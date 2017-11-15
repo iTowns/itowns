@@ -170,7 +170,11 @@ TileMesh.prototype.center = function center() {
 };
 
 TileMesh.prototype.OBB = function OBB() {
-    return this.geometry.OBB;
+    var zFactor = this.material.uniforms.zFactor.value;
+    var OBB = this.geometry.OBB;
+        OBB.scale.z = zFactor;
+        OBB.update();
+    return OBB; 
 };
 
 TileMesh.prototype.getIndexLayerColor = function getIndexLayerColor(idLayer) {

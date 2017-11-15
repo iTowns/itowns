@@ -168,6 +168,8 @@ const LayeredMaterial = function LayeredMaterial(options) {
     this.uniforms.noTextureColor = new THREE.Uniform(new THREE.Color(0.04, 0.23, 0.35));
 
     this.uniforms.opacity = new THREE.Uniform(1.0);
+    
+    this.uniforms.zFactor = new THREE.Uniform(1.0);
 
     this.colorLayersId = [];
     this.elevationLayersId = [];
@@ -484,6 +486,10 @@ LayeredMaterial.prototype.setFogDistance = function setFogDistance(df) {
 
 LayeredMaterial.prototype.setSelected = function setSelected(selected) {
     this.uniforms.selected.value = selected;
+};
+
+LayeredMaterial.prototype.setLayerZFactor = function setLayerZFactor(zFactor) {
+    this.uniforms.zFactor.value = zFactor;
 };
 
 

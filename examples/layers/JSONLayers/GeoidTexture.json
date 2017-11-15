@@ -1,0 +1,50 @@
+{
+    "type": "color",
+    "protocol":   "wmts",
+    "id":         "GeoIDTex",
+    "url":        "localcolors/jpg/%TILEMATRIX/localcolors_%COL_%ROW.jpg",
+    "networkOptions": {
+        "crossOrigin": "anonymous"
+    },
+    "fx" :        0.0,
+    "updateStrategy": {
+        "type": "0",
+        "options": {}
+    },
+    "options": {
+        "mimetype": "image/png",
+        "tileMatrixSet": "WGS84G",
+        "tileMatrixSetLimits": {
+            "0": {
+                "minTileRow": 0,
+                "maxTileRow": 0,
+                "minTileCol": 0,
+                "maxTileCol": 1
+            },
+            "1": {
+                "minTileRow": 0,
+                "maxTileRow": 1,
+                "minTileCol": 0,
+                "maxTileCol": 3
+            },
+            "2": {
+                "minTileRow": 0,
+                "maxTileRow": 3,
+                "minTileCol": 0,
+                "maxTileCol": 7
+            },
+            "3": {
+                "minTileRow": 0,
+                "maxTileRow": 7,
+                "minTileCol": 0,
+                "maxTileCol": 15
+            },
+            "4": {
+                "minTileRow": 0,
+                "maxTileRow": 15,
+                "minTileCol": 0,
+                "maxTileCol": 31
+            }
+        }
+    }
+}

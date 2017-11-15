@@ -14,6 +14,8 @@ uniform sampler2D   dTextures_00[1];
 uniform vec3        offsetScale_L00[1];
 uniform int         loadedTexturesCount[8];
 
+uniform float       zFactor;
+
 uniform mat4        projectionMatrix;
 uniform mat4        modelViewMatrix;
 
@@ -59,11 +61,13 @@ void main() {
                 }
 
             #elif defined(DATA_TEXTURE_ELEVATION)
-                float   dv  = max(texture2D( dTextures_00[0], vVv ).w, 0.);
+                float   dv  = texture2D( dTextures_00[0], vVv ).w;
             #elif defined(COLOR_TEXTURE_ELEVATION)
                 float   dv  = max(texture2D( dTextures_00[0], vVv ).r, 0.);
                 dv = _minElevation + dv * (_maxElevation - _minElevation);
             #else
+
+            dv *=zFactor;
 
             #error Must define either RGBA_TEXTURE_ELEVATION, DATA_TEXTURE_ELEVATION or COLOR_TEXTURE_ELEVATION
             #endif

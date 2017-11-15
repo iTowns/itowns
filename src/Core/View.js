@@ -154,6 +154,7 @@ function _preprocessLayer(view, layer, provider) {
         defineLayerProperty(layer, 'sequence', 0);
     } else if (layer.type == 'elevation') {
         defineLayerProperty(layer, 'frozen', false);
+        defineLayerProperty(layer, 'zFactor', 1.0);
     } else if (layer.type == 'geometry' || layer.type == 'debug') {
         defineLayerProperty(layer, 'visible', true, () => _syncGeometryLayerVisibility(layer, view));
         _syncGeometryLayerVisibility(layer, view);

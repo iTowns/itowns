@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>Globe</title>
+
+    <style type="text/css">
+            html {height: 100%}
+        body { margin: 0; overflow:hidden; height:100%}
+
+            #viewerDiv {
+                margin : auto auto;
+                width: 100%;
+                height: 100%;
+                padding: 0;
+            }
+            #menuDiv {position: absolute; top:0px; margin-left: 0px;}
+
+
+        </style>
+        <meta charset="UTF-8">
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="examples/GUI/dat.gui/dat.gui.min.js"></script>
+    </head>
+    <body>
+        <div id="viewerDiv"></div>
+        <script src="examples/GUI/GuiTools.js"></script>
+        <script src="dist/itowns.js"></script>
+        <script src="dist/debug.js"></script>
+        <script type="text/javascript">
+            /* global itowns,document,GuiTools*/
+
+            var positionOnGlobe = { longitude: 2.351323, latitude: 48.856712, altitude: 25000000 };
+
+            // iTowns namespace defined here
+            var viewerDiv = document.getElementById('viewerDiv');
+            var globeView = new itowns.GlobeView(viewerDiv, positionOnGlobe);
+            var menuGlobe = new GuiTools('menuDiv', globeView);
+            menuGlobe.view = globeView;
+
+            var promises = []
+            promises.push(itowns.Fetcher.json('examples/layers/JSONLayers/GeoidTexture.json').then(function(result) { return globeView.addLayer(result); }));
+            promises.push(itowns.Fetcher.json('examples/layers/JSONLayers/GeoidMNT.json').then(function(result) { return globeView.addLayer(result); }));
+
+            menuGlobe.addGUI('RealisticLighting', false,
+                function(newValue) { globeView.setRealisticLightingOn(newValue); });
+
+            Promise.all(promises).then(function () {
+                menuGlobe.addImageryLayersGUI(globeView.getLayers(function (l) { return l.type === 'color'; }));
+                menuGlobe.addElevationLayersGUI(globeView.getLayers(function(l) { return l.type === 'elevation'; }));
+                console.info('menuGlobe initialized');
+            }).catch( function (e) { console.error(e) });
+
+            globeView.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
+                // eslint-disable-next-line no-console
+                console.info('Globe initialized');
+            });
+
+            const d = new debug.Debug(globeView, menuGlobe.gui);
+            debug.createGeoidDebugUI(menuGlobe.gui, globeView, globeView.wgs84TileLayer, d);
+            window.globeView = globeView;
+</script>
+    </body>
+</html>

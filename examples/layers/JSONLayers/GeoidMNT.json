@@ -1,0 +1,51 @@
+{
+    "type":       "elevation",
+    "protocol":   "wmts",
+    "id":         "GEOIDMNT",
+    "url":        "geoid/bil/%TILEMATRIX/geoid_%COL_%ROW.bil",
+    "noDataValue" : -99999,
+    "zFactor" : 12000,
+    "updateStrategy": {
+        "type": 0,
+        "options": {
+        }
+    },
+    
+    "options": {
+                    "mimetype": "image/x-bil;bits=32",
+                    "tileMatrixSet": "WGS84G",
+                    "tileMatrixSetLimits": {
+                    "0": {
+                        "minTileRow": 0,
+                        "maxTileRow": 0,
+                        "minTileCol": 0,
+                        "maxTileCol": 1
+                    },
+                    "1": {
+                        "minTileRow": 0,
+                        "maxTileRow": 1,
+                        "minTileCol": 0,
+                        "maxTileCol": 3
+                    },
+                    "2": {
+                        "minTileRow": 0,
+                        "maxTileRow": 3,
+                        "minTileCol": 0,
+                        "maxTileCol": 7
+                    },
+                    "3": {
+                        "minTileRow": 0,
+                        "maxTileRow": 7,
+                        "minTileCol": 0,
+                        "maxTileCol": 15
+                    },
+                    "4": {
+                        "minTileRow": 0,
+                        "maxTileRow": 15,
+                        "minTileCol": 0,
+                        "maxTileCol": 31
+                    }
+        }
+        
+    }
+}

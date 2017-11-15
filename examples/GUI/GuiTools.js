@@ -67,6 +67,10 @@ GuiTools.prototype.addElevationLayerGUI = function addElevationLayerGUI(layer) {
     folder.add({ frozen: false }, 'frozen').onChange(function refreshFrozenGui(value) {
         layer.frozen = value;
     });
+    folder.add({ zFactor: 1.0 }, 'zFactor').min(1.0).max(12000.0).onChange((function updateZFactor(value) {
+        layer.zFactor = value;
+        this.view.notifyChange(true);
+    }).bind(this));
 };
 
 GuiTools.prototype.addImageryLayersGUI = function addImageryLayersGUI(layers) {

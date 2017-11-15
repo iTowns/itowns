@@ -194,6 +194,8 @@ function GlobeView(viewerDiv, coordCarto, options = {}) {
     // Setup View
     View.call(this, 'EPSG:4978', viewerDiv, options);
 
+    options.object3d = options.object3d || this.scene;
+
     // Configure camera
     const positionCamera = new C.EPSG_4326(
         coordCarto.longitude,
@@ -238,7 +240,6 @@ function GlobeView(viewerDiv, coordCarto, options = {}) {
         this.controls.handleCollision = typeof (options.handleCollision) !== 'undefined' ? options.handleCollision : true;
     }
 
-    const mfogDistance = size * 160.0;
     this._renderState = RendererConstant.FINAL;
     this._fullSizeDepthBuffer = null;
 
@@ -256,11 +257,6 @@ function GlobeView(viewerDiv, coordCarto, options = {}) {
         var len = v.distanceTo(this.camera.camera3D.position);
         v.setFromMatrixScale(wgs84TileLayer.object3d.matrixWorld);
         var lim = v.x * size * 1.1;
-
-        // TODO: may be move in camera update
-        // Compute fog distance, this function makes it possible to have a shorter distance
-        // when the camera approaches the ground
-        this.fogDistance = mfogDistance * Math.pow((len - size * 0.99) * 0.25 / size, 1.5);
 
         if (len < lim) {
             var t = Math.pow(Math.cos((lim - len) / (lim - v.x * size * 0.9981) * Math.PI * 0.5), 1.5);
@@ -523,6 +519,11 @@ GlobeView.prototype.updateMaterialUniform = function updateMaterialUniform(unifo
             }
         });
     }
+};
+
+GlobeView.prototype.setZFactor = function setZFactor(value) {
+    this.updateMaterialUniform('zFactor', value);
+    this.notifyChange(true);
 };
 
 export default GlobeView;
