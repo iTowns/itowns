@@ -78,6 +78,10 @@ function extrudeBuildings(properties) {
     return properties.hauteur;
 }
 
+function acceptFeature(properties) {
+    return !!properties.hauteur;
+}
+
 globeView.addLayer({
     type: 'geometry',
     update: itowns.FeatureProcessing.update,
@@ -85,6 +89,7 @@ globeView.addLayer({
         color: colorBuildings,
         altitude: altitudeBuildings,
         extrude: extrudeBuildings }),
+    filter: acceptFeature,
     url: 'http://wxs.ign.fr/72hpsel8j8nhb5qgdh07gcyp/geoportail/wfs?',
     networkOptions: { crossOrigin: 'anonymous' },
     protocol: 'wfs',
