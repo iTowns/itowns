@@ -214,7 +214,7 @@ TileMesh.prototype.getCoordsForLayer = function getCoordsForLayer(layer) {
     }
 };
 
-TileMesh.prototype.getZoomForLayer = function getCoordsForLayer(layer) {
+TileMesh.prototype.getZoomForLayer = function getZoomForLayer(layer) {
     if (layer.protocol.indexOf('wmts') == 0) {
         OGCWebServiceHelper.computeTileMatrixSetCoordinates(this, layer.options.tileMatrixSet);
         return this.wmtsCoords[layer.options.tileMatrixSet][0].zoom;
