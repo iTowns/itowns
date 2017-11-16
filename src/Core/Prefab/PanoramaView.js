@@ -184,7 +184,6 @@ function PanoramaView(viewerDiv, coordinates, ratio, options = {}) {
     this.camera.camera3D.updateMatrixWorld();
 
     const tileLayer = createPanoramaLayer('panorama', coordinates, ratio, options);
-    this.scene.add(tileLayer.object3d);
 
     View.prototype.addLayer.call(this, tileLayer);
 

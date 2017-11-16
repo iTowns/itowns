@@ -24,17 +24,6 @@ function PanoramaTileBuilder(ratio) {
 
 PanoramaTileBuilder.prototype.constructor = PanoramaTileBuilder;
 
-PanoramaTileBuilder.prototype.Center = function Center(params) {
-    this.Prepare(params);
-
-    this.uProjecte(0.5, params);
-    this.vProjecte(0.5, params);
-
-    params.center = this.VertexPosition(params).clone();
-
-    return params.center;
-};
-
 // prepare params
 // init projected object -> params.projected
 PanoramaTileBuilder.prototype.Prepare = function Prepare(params) {
@@ -51,6 +40,36 @@ PanoramaTileBuilder.prototype.Prepare = function Prepare(params) {
             y: 0,
         };
     }
+};
+
+PanoramaTileBuilder.prototype.Center = function Center(params) {
+    this.Prepare(params);
+
+    this.uProjecte(0.5, params);
+    this.vProjecte(0.5, params);
+
+    params.center = this.VertexPosition(params).clone();
+
+    return params.center;
+};
+
+// get position 3D cartesian
+PanoramaTileBuilder.prototype.VertexPosition = function VertexPosition(params) {
+    if (this.equirectangular) {
+        this.tmp.position.setFromSpherical(params.projected);
+    } else {
+        this.tmp.position.setFromCylindrical(params.projected);
+    }
+    const swap = this.tmp.position.y;
+    this.tmp.position.y = this.tmp.position.z;
+    this.tmp.position.z = this.equirectangular ? -swap : swap;
+
+    return this.tmp.position;
+};
+
+// get normal for last vertex
+PanoramaTileBuilder.prototype.VertexNormal = function VertexNormal() {
+    return this.tmp.position.clone().negate().normalize();
 };
 
 // coord u tile to projected
@@ -75,25 +94,6 @@ PanoramaTileBuilder.prototype.vProjecte = function vProjecte(v, params) {
             this.height *
             THREE.Math.lerp(params.extent.south(), params.extent.north(), v) / 180;
     }
-};
-
-// get position 3D cartesian
-PanoramaTileBuilder.prototype.VertexPosition = function VertexPosition(params) {
-    if (this.equirectangular) {
-        this.tmp.position.setFromSpherical(params.projected);
-    } else {
-        this.tmp.position.setFromCylindrical(params.projected);
-    }
-    const swap = this.tmp.position.y;
-    this.tmp.position.y = this.tmp.position.z;
-    this.tmp.position.z = this.equirectangular ? -swap : swap;
-
-    return this.tmp.position;
-};
-
-// get normal for last vertex
-PanoramaTileBuilder.prototype.VertexNormal = function VertexNormal() {
-    return this.tmp.position.clone().negate().normalize();
 };
 
 // get oriented bounding box of tile
