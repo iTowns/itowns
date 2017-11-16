@@ -184,7 +184,7 @@ const ImageryLayers = {
 
 /**
  * Interface implemented by {@link GeometryLayer} instances capable of displaying color layers
- * @interface
+ * @interface CanDisplayColorLayer
  */
 /**
  * Add a color layer to display on this geometry
@@ -209,7 +209,7 @@ const ImageryLayers = {
 
  /**
  * Interface implemented by {@link GeometryLayer} instances capable of displaying color layers
- * @interface
+ * @interface CanDisplayElevationLayer
  */
 /**
  * Use an elevation data source to deform the underlying geometry
@@ -234,7 +234,7 @@ const ImageryLayers = {
 
  /**
  * Interface implemented by {@link GeometryLayer} instances capable of displaying a feature layers
- * @interface
+ * @interface CanDisplayFeatureLayer
  */
 /**
  * Display a feature layers on the underlying geometry
