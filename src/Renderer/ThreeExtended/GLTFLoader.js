@@ -12,7 +12,7 @@ import * as THREE from 'three';
  * @author Takahiro / https://github.com/takahirox
  */
 
-THREE.GLTFLoader = ( function () {
+export default (function () {
 
 	function GLTFLoader( manager ) {
 

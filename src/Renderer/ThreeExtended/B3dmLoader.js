@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import './GLTFLoader';
+import GLTFLoader from './GLTFLoader';
 import BatchTable from './BatchTable';
 
 const matrixChangeUpVectorZtoY = (new THREE.Matrix4()).makeRotationX(Math.PI / 2);
@@ -7,7 +7,7 @@ const matrixChangeUpVectorZtoY = (new THREE.Matrix4()).makeRotationX(Math.PI / 2
 const matrixChangeUpVectorZtoX = (new THREE.Matrix4()).makeRotationZ(-Math.PI / 2);
 
 function B3dmLoader() {
-    this.glTFLoader = new THREE.GLTFLoader();
+    this.glTFLoader = new GLTFLoader();
 }
 
 function filterUnsupportedSemantics(obj) {
