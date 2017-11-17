@@ -2,18 +2,22 @@
 const assert = require('assert');
 const fs = require('fs');
 
-browser.timeouts('script', 120000);
-
 function _test(url) {
     browser.url(`http://localhost:8080/${url}`);
     var result = browser.executeAsync(
         function (done) {
-            view.mainLoop.addEventListener('command-queue-empty',
-                function () {
-                    if (view.mainLoop.gfxEngine.renderer.info.render.calls > 0) {
-                        return done(true);
-                    }
-                });
+            function check() {
+                if (view._layers.length == 0) {
+                    return;
+                }
+                if (view.mainLoop.gfxEngine.renderer.info.render.calls > 0) {
+                    return done(true);
+                }
+            }
+            var u = {
+                update: check,
+            };
+            view.addFrameRequester(u);
             view.notifyChange(true);
         });
 
