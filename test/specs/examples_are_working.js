@@ -4,6 +4,15 @@ const fs = require('fs');
 
 function _test(url) {
     browser.url(`http://localhost:8080/${url}`);
+
+    // waits for 'view' to exist...
+    browser.waitUntil(function () {
+        return browser.execute(function () {
+            return typeof (view) !== 'undefined';
+        }).value;
+    });
+
+    // then run the test
     var result = browser.executeAsync(
         function (done) {
             function check() {
