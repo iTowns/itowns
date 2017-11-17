@@ -74,8 +74,8 @@
                     }
                 }
                 if (node.children) {
-                    for (var child of node.children) {
-                        getLayersColorVisible(child, layers);
+                    for (var i = 0; i < node.children.length; i++) {
+                        getLayersColorVisible(node.children[i], layers);
                     }
                 }
             }
