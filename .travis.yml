@@ -1,3 +1,7 @@
+sudo: false
+git:
+  depth: 3
+
 language: node_js
 node_js:
   - "lts/*"
