@@ -70,6 +70,7 @@ exports.config = {
             'browserstack.localIdentifier': process.env.BROWSERSTACK_LOCAL_IDENTIFIER
         }, {
             browserName: 'safari',
+            version: 11,
             'browserstack.local': 'true',
             'browserstack.localIdentifier': process.env.BROWSERSTACK_LOCAL_IDENTIFIER
         },
