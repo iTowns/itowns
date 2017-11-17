@@ -8,7 +8,7 @@ var positionOnGlobe = { longitude: 3.36, latitude: 51.22, altitude: 480000 };
 var viewerDiv = document.getElementById('viewerDiv');
 
 // Instanciate iTowns GlobeView*
-var globeView = new itowns.GlobeView(viewerDiv, positionOnGlobe, { renderer: renderer });
+var view = new itowns.GlobeView(viewerDiv, positionOnGlobe, { renderer: renderer });
 
 var promises = [];
 
@@ -19,7 +19,7 @@ var splitPosition;
 var xD;
 
 function addLayerCb(layer) {
-    return globeView.addLayer(layer);
+    return view.addLayer(layer);
 }
 // Add one imagery layer to the scene
 // This layer is defined in a json file but it could be defined as a plain js
@@ -39,7 +39,7 @@ function splitSliderMove(evt) {
     var s = (evt.clientX - xD) / splitSlider.parentElement.offsetWidth;
     splitSlider.style.left = (100.0 * s) + '%';
     splitPosition = s * window.innerWidth;
-    globeView.notifyChange(true);
+    view.notifyChange(true);
 }
 
 function mouseDown(evt) {
@@ -56,7 +56,7 @@ function changeLayerVisibility(ortho, osm) {
     var orthoIndex;
     var opensmIndex;
 
-    globeView.scene.traverse(function _(obj) {
+    view.scene.traverse(function _(obj) {
         if (obj.material && obj.material.setLayerVisibility && obj.material.visible) {
             material = obj.material;
             orthoIndex = material.indexOfColorLayer(orthoLayer.id);
@@ -73,7 +73,7 @@ window.addEventListener('mouseup', mouseUp, false);
 
 // Rendering code
 function splitRendering() {
-    var g = globeView.mainLoop.gfxEngine;
+    var g = view.mainLoop.gfxEngine;
     var r = g.renderer;
 
     r.setScissorTest(true);
@@ -82,17 +82,17 @@ function splitRendering() {
     changeLayerVisibility(true, false);
 
     r.setScissor(0, 0, splitPosition + 2, window.innerHeight);
-    g.renderView(globeView);
+    g.renderView(view);
 
     // render osm layer on the right
     changeLayerVisibility(false, true);
 
     r.setScissor(splitPosition + 2, 0, window.innerWidth - splitPosition - 2, window.innerHeight);
-    g.renderView(globeView);
+    g.renderView(view);
 }
 
 // Override default rendering method when color layers are ready
-Promise.all(promises).then(function _() { globeView.render = splitRendering; });
+Promise.all(promises).then(function _() { view.render = splitRendering; });
 
-exports.view = globeView;
+exports.view = view;
 exports.initialPosition = positionOnGlobe;

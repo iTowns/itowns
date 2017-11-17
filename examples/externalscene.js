@@ -5,17 +5,17 @@ var scene = new THREE.Scene();
 
 // iTowns namespace defined here
 var viewerDiv = document.getElementById('viewerDiv');
-var globeView = new itowns.GlobeView(
+var view = new itowns.GlobeView(
         viewerDiv, positionOnGlobe, { scene3D: scene, renderer: renderer });
 
-globeView.mainLoop.name = 'external-ML';
+view.mainLoop.name = 'external-ML';
 
 function addLayerCb(layer) {
-    return globeView.addLayer(layer);
+    return view.addLayer(layer);
 }
 
 itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(addLayerCb);
 itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT.json').then(addLayerCb);
 
-exports.globeView = globeView;
+exports.view = view;
 exports.scene = scene;

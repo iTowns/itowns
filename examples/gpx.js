@@ -8,12 +8,12 @@ var positionOnGlobe = { longitude: 0.089, latitude: 42.8989, altitude: 80000 };
 var viewerDiv = document.getElementById('viewerDiv');
 
 // Instanciate iTowns GlobeView*
-var globeView = new itowns.GlobeView(viewerDiv, positionOnGlobe, { renderer: renderer });
+var view = new itowns.GlobeView(viewerDiv, positionOnGlobe, { renderer: renderer });
 
 var promises = [];
 
 function addLayerCb(layer) {
-    return globeView.addLayer(layer);
+    return view.addLayer(layer);
 }
 // Add one imagery layer to the scene
 // This layer is defined in a json file but it could be defined as a plain js
@@ -24,4 +24,4 @@ promises.push(itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(addLaye
 promises.push(itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addLayerCb));
 promises.push(itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addLayerCb));
 
-exports.view = globeView;
+exports.view = view;

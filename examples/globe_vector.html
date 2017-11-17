@@ -73,21 +73,21 @@
         <script src="globe_vector.js"></script>
         <script src="FeatureToolTip.js"></script>
         <script type="text/javascript">
-            /* global itowns, document, GuiTools, globeView, promises, ToolTip */
+            /* global itowns, document, GuiTools, view, promises, ToolTip */
             var menuGlobe = new GuiTools('menuDiv');
 
-            menuGlobe.view = globeView;
+            menuGlobe.view = view;
             // Listen for globe full initialisation event
 
-            globeView.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
+            view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
                 // eslint-disable-next-line no-console
                 console.info('Globe initialized');
                 Promise.all(promises).then(function () {
-                    menuGlobe.addImageryLayersGUI(globeView.getLayers(function (l) { return l.type === 'color'; }));
-                    menuGlobe.addElevationLayersGUI(globeView.getLayers(function (l) { return l.type === 'elevation'; }));
-                    itowns.ColorLayersOrdering.moveLayerToIndex(globeView, 'Ortho', 0);
+                    menuGlobe.addImageryLayersGUI(view.getLayers(function (l) { return l.type === 'color'; }));
+                    menuGlobe.addElevationLayersGUI(view.getLayers(function (l) { return l.type === 'elevation'; }));
+                    itowns.ColorLayersOrdering.moveLayerToIndex(view, 'Ortho', 0);
 
-                    new ToolTip(globeView, document.getElementById('viewerDiv'), document.getElementById('tooltipDiv'));
+                    new ToolTip(view, document.getElementById('viewerDiv'), document.getElementById('tooltipDiv'));
                 });
 
 

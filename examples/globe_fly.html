@@ -74,17 +74,17 @@
         </script>
         <script src="globe_fly.js"></script>
         <script type="text/javascript">
-            /* global itowns, document, GuiTools, globeView, promises */
+            /* global itowns, document, GuiTools, view, promises */
             var menuGlobe = new GuiTools('menuDiv');
-            menuGlobe.view = globeView;
+            menuGlobe.view = view;
             flyControls.moveSpeed = 10000000;
             menuGlobe.gui.add(flyControls, 'moveSpeed', 10, 10000000).name('Movement speed');
             // Listen for globe full initialisation event
-            globeView.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
+            view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
                 console.info('Globe initialized');
                 Promise.all(promises).then(function () {
-                    menuGlobe.addImageryLayersGUI(globeView.getLayers(function (l) { return l.type === 'color'; }));
-                    menuGlobe.addElevationLayersGUI(globeView.getLayers(function (l) { return l.type === 'elevation'; }));
+                    menuGlobe.addImageryLayersGUI(view.getLayers(function (l) { return l.type === 'color'; }));
+                    menuGlobe.addElevationLayersGUI(view.getLayers(function (l) { return l.type === 'elevation'; }));
                 });
             });
         </script>

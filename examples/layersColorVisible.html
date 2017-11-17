@@ -36,11 +36,11 @@
             // iTowns namespace defined here
             var viewerDiv = document.getElementById('viewerDiv');
             var menuGlobe = new GuiTools('menuDiv');
-            var globeView = new itowns.GlobeView(viewerDiv, positionOnGlobe);
-            menuGlobe.view = globeView;
+            var view = new itowns.GlobeView(viewerDiv, positionOnGlobe);
+            menuGlobe.view = view;
 
             function addLayerCb(layer) {
-                return globeView.addLayer(layer);
+                return view.addLayer(layer);
             }
 
             var promises = [];
@@ -74,28 +74,28 @@
                     }
                 }
                 if (node.children) {
-                    for (var child of node.children) {
-                        getLayersColorVisible(child, layers);
+                    for (var i = 0; i < node.children.length; i++) {
+                        getLayersColorVisible(node.children[i], layers);
                     }
                 }
             }
 
-            globeView.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
+            view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
                 // eslint-disable-next-line no-console
                 console.info('Globe initialized');
                 Promise.all(promises).then(function () {
-                    menuGlobe.addImageryLayersGUI(globeView.getLayers(function(l) { return l.type === 'color'; }));
-                    menuGlobe.addElevationLayersGUI(globeView.getLayers(function (l) { return l.type === 'elevation'; }));
+                    menuGlobe.addImageryLayersGUI(view.getLayers(function(l) { return l.type === 'color'; }));
+                    menuGlobe.addElevationLayersGUI(view.getLayers(function (l) { return l.type === 'elevation'; }));
                 });
             });
 
             // Use preRender to update menu before rendering
-            globeView.preRender = function () {
+            view.preRender = function () {
                 var layers = { id: [] };
-                // globeView.scene is THREE.js scene
-                getLayersColorVisible(globeView.scene, layers);
+                // view.scene is THREE.js scene
+                getLayersColorVisible(view.scene, layers);
                 console.log('layers', layers);
-                var colorLayers = globeView.getLayers(function (l) { return l.type == 'color'; });
+                var colorLayers = view.getLayers(function (l) { return l.type == 'color'; });
 
                 colorLayers.forEach(function (layer) {
                     menuGlobe.hideFolder(layer.id, layers.id.indexOf(layer.id) == -1)

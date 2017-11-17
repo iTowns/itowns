@@ -58,11 +58,11 @@
             ref[1].updateMatrixWorld();
 
             // Create the first globe
-            var globeView = new itowns.GlobeView(viewerDiv, positionOnGlobe, { noControls: true, object3d: ref[0] });
-            layers.push(globeView.wgs84TileLayer);
+            var view = new itowns.GlobeView(viewerDiv, positionOnGlobe, { noControls: true, object3d: ref[0] });
+            layers.push(view.wgs84TileLayer);
 
             function addLayerCb(layer) {
-                return globeView.addLayer(layer);
+                return view.addLayer(layer);
             }
             itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(addLayerCb);
 
@@ -74,8 +74,8 @@
             globe2.noTextureColor = new itowns.THREE.Color(0xd0d5d8);
 
             // add it to the view so it gets updated
-            itowns.View.prototype.addLayer.call(globeView, globe2);
-            itowns.View.prototype.addLayer.call(globeView, {
+            itowns.View.prototype.addLayer.call(view, globe2);
+            itowns.View.prototype.addLayer.call(view, {
                 update: itowns.updateLayeredMaterialNodeImagery,
                 type: 'color',
                 protocol: "wmtsc",
@@ -108,17 +108,17 @@
                     layers[1].object3d.updateMatrixWorld(true);
 
                     if (this.t < 1) {
-                        globeView.notifyChange(true);
+                        view.notifyChange(true);
                     } else {
-                        globeView.removeFrameRequester(animator);
+                        view.removeFrameRequester(animator);
                     }
                 }
             };
 
             // Last but not least, add 'ref' object to three.js scene, otherwise our globes
             // won't be displayed
-            globeView.scene.add(ref[0]);
-            globeView.scene.add(ref[1]);
+            view.scene.add(ref[0]);
+            view.scene.add(ref[1]);
 
 
             // Swap globe place on 'space' key
@@ -127,8 +127,8 @@
                     front = 1 - front;
 
                     animator.t = 0;
-                    globeView.addFrameRequester(animator);
-                    globeView.notifyChange(true);
+                    view.addFrameRequester(animator);
+                    view.notifyChange(true);
                 }
             }
             viewerDiv.focus();
@@ -136,7 +136,7 @@
 
             // Zoom on mouse-wheel
             var onMouseWheel = function onMouseWheel(event) {
-                var geo = new itowns.Coordinates('EPSG:4978', globeView.camera.camera3D.position).as('EPSG:4326');
+                var geo = new itowns.Coordinates('EPSG:4978', view.camera.camera3D.position).as('EPSG:4326');
                 // WebKit / Opera / Explorer 9
                 if (event.wheelDelta !== undefined) {
                     delta = event.wheelDelta;
@@ -150,8 +150,8 @@
                 } else {
                     geo.setAltitude(geo.altitude() * 1.1);
                 }
-                globeView.camera.camera3D.position.copy(geo.as('EPSG:4978').xyz());
-                globeView.notifyChange(true);
+                view.camera.camera3D.position.copy(geo.as('EPSG:4978').xyz());
+                view.notifyChange(true);
             };
             viewerDiv.addEventListener('DOMMouseScroll', onMouseWheel);
             viewerDiv.addEventListener('mousewheel', onMouseWheel);
