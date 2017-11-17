@@ -20,6 +20,8 @@
                 padding: 0;
             }
 
+            #menuDiv {position: absolute; top:0px; margin-right: 0px; right: 0px;}
+
             #help {
                 position: absolute;
                 z-index: 0;
@@ -54,6 +56,7 @@
         <meta charset="UTF-8">
 
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="GUI/dat.gui/dat.gui.min.js"></script>
     </head>
     <body>
         <div id="help">
@@ -70,10 +73,21 @@
         </div>
         <div id="viewerDiv"></div>
         <script src="../dist/itowns.js"></script>
+        <script src="../dist/debug.js"></script>
+        <script src="GUI/GuiTools.js"></script>
         <script type="text/javascript">
             var renderer; var exports = {};
             var proj4 = itowns.proj4;
         </script>
         <script src="planar.js"></script>
+        <script type="text/javascript">
+            if (view.isDebugMode) {
+                var menuGlobe = new GuiTools('menuDiv', view);
+                menuGlobe.view = view;
+                menuGlobe.addImageryLayersGUI(view.getLayers(function (l) { return l.type === 'color'; }));
+                var d = new debug.Debug(view, menuGlobe.gui);
+                debug.createTileDebugUI(menuGlobe.gui, view, view.tileLayer, d);
+            }
+        </script>
     </body>
 </html>

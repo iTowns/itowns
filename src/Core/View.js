@@ -75,6 +75,10 @@ function View(crs, viewerDiv, options = {}) {
     }, false);
 
     this._changeSources = new Set();
+
+    if (__DEBUG__) {
+        this.isDebugMode = true;
+    }
 }
 
 View.prototype = Object.create(EventDispatcher.prototype);
