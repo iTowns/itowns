@@ -30,12 +30,14 @@ WMTS_Provider.prototype.preprocessDataLayer = function preprocessDataLayer(layer
         options.mimetype = options.mimetype || 'image/png';
         options.style = options.style || 'normal';
         options.projection = options.projection || 'EPSG:3857';
-        let newBaseUrl = `${layer.url
-            }?LAYER=${options.name
-            }&FORMAT=${options.mimetype
-            }&SERVICE=WMTS` +
-            '&VERSION=1.0.0' +
-            `&REQUEST=GetTile&STYLE=normal&TILEMATRIXSET=${options.tileMatrixSet}`;
+        let newBaseUrl = `${layer.url}` +
+            `?LAYER=${options.name}` +
+            `&FORMAT=${options.mimetype}` +
+            '&SERVICE=WMTS' +
+            `&VERSION=${options.version}` +
+            '&REQUEST=GetTile' +
+            `&STYLE=${options.style}` +
+            `&TILEMATRIXSET=${options.tileMatrixSet}`;
 
         newBaseUrl += '&TILEMATRIX=%TILEMATRIX&TILEROW=%ROW&TILECOL=%COL';
 
