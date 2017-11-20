@@ -29,7 +29,7 @@ exports.config = {
     ],
     // Patterns to exclude.
     exclude: [
-        // 'path/to/excluded/files'
+        './test/specs/support.js'
     ],
     //
     // ============
@@ -47,8 +47,8 @@ exports.config = {
     // and 30 processes will get spawned. The property handles how many capabilities
     // from the same test should run tests.
     //
-    maxSession: 1,
-    maxSessions: 1,
+    // maxSession: 1,
+    // maxSessions: 1,
     maxInstances: 1,
     //
     // If you have trouble getting all important capabilities together, check out the
@@ -66,6 +66,7 @@ exports.config = {
         }, {
             browserName: 'internet explorer',
             version: 11,
+            os_version: 10,
             'browserstack.local': 'true',
             'browserstack.localIdentifier': process.env.BROWSERSTACK_LOCAL_IDENTIFIER
         }, {
@@ -87,7 +88,7 @@ exports.config = {
     sync: true,
     //
     // Level of logging verbosity: silent | verbose | command | data | result | error
-    logLevel: 'result',
+    logLevel: 'silent',
     //
     // Enables colors for log output.
     coloredLogs: true,

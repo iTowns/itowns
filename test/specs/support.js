@@ -1,15 +1,14 @@
-/* global browser, view, describe, it */
+/* global browser, view */
 const assert = require('assert');
-const fs = require('fs');
 
-function _test(url) {
+function basicTest(url) {
     browser.url(`http://localhost:8080/${url}`);
 
     // waits for 'view' to exist...
     browser.waitUntil(function () {
         return browser.execute(function () {
             return typeof (view) !== 'undefined';
-        }).value;
+        }, 10000).value;
     });
 
     // then run the test
@@ -22,6 +21,7 @@ function _test(url) {
                 if (view.mainLoop.gfxEngine.renderer.info.render.calls > 0) {
                     return done(true);
                 }
+                view.notifyChange(true);
             }
             var u = {
                 update: check,
@@ -33,16 +33,4 @@ function _test(url) {
     assert.ok(result.value, 'MainLoop jobs should be all done at some point');
 }
 
-// list examples
-fs.readdirSync('examples/').forEach((file) => {
-    if (file === 'index.html') {
-        return;
-    }
-    if (file.indexOf('.html') > 0) {
-        describe(`Example ${file}`, function () {
-            it('Should load and run', function () {
-                _test(`examples/${file}`);
-            });
-        });
-    }
-});
+module.exports.basicTest = basicTest;
