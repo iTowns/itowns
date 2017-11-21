@@ -20,13 +20,12 @@ viewerDiv = document.getElementById('viewerDiv');
 
 // Instanciate PlanarView*
 view = new itowns.PlanarView(viewerDiv, extent, { renderer: renderer });
-view.tileLayer.disableSkirt = true;
+view.baseLayer.disableSkirt = true;
 
 // Add an WMS imagery layer (see WMS_Provider* for valid options)
-view.addLayer({
+view.baseLayer.addColorLayer({
     url: 'https://download.data.grandlyon.com/wms/grandlyon',
     networkOptions: { crossOrigin: 'anonymous' },
-    type: 'color',
     protocol: 'wms',
     version: '1.3.0',
     id: 'wms_imagery',
@@ -42,9 +41,8 @@ view.addLayer({
 });
 
 // Add an WMS elevation layer (see WMS_Provider* for valid options)
-view.addLayer({
+view.baseLayer.addElevationLayer({
     url: 'https://download.data.grandlyon.com/wms/grandlyon',
-    type: 'elevation',
     protocol: 'wms',
     networkOptions: { crossOrigin: 'anonymous' },
     id: 'wms_elevation',
@@ -55,8 +53,9 @@ view.addLayer({
         mimetype: 'image/jpeg',
     },
 });
+
 // Since the elevation layer use color textures, specify min/max z
-view.tileLayer.materialOptions = {
+view.baseLayer.materialOptions = {
     useColorTextureElevation: true,
     colorTextureElevationMinZ: 37,
     colorTextureElevationMaxZ: 240,

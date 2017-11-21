@@ -77,6 +77,21 @@ function View(crs, viewerDiv, options = {}) {
     this.onAfterRender = () => {};
 
     this._changeSources = new Set();
+
+    // deprecated API handling: remove this when GlobeView (and PlanarView).addLayer is removed
+    this._deprecatedPreAddLayer = (layer) => {
+        if (layer.type == 'color') {
+            if (!layer.update) {
+                // Note: remove this when GlobeView.addLayer is removed
+                this.baseLayer.addColorLayer(layer, false);
+            }
+        } else if (layer.type == 'elevation') {
+            if (!layer.update) {
+                // Note: remove this when GlobeView.addLayer is removed
+                this.baseLayer.addElevationLayer(layer, false);
+            }
+        }
+    };
 }
 
 View.prototype = Object.create(EventDispatcher.prototype);
@@ -97,6 +112,10 @@ const _syncGeometryLayerVisibility = function _syncGeometryLayerVisibility(layer
 };
 
 function _preprocessLayer(view, layer, provider) {
+    if (view._preAddLayer) {
+        view._preAddLayer(layer);
+    }
+
     if (!(layer instanceof Layer) && !(layer instanceof GeometryLayer)) {
         const nlayer = new Layer(layer.id);
         // nlayer.id is read-only so delete it from layer before Object.assign
@@ -287,6 +306,10 @@ View.prototype.addLayer = function addLayer(layer, parentLayer) {
         throw new Error(`Invalid id '${layer.id}': id already used`);
     }
 
+    if (typeof layer.type != 'string') {
+        throw new Error('layer.type must be a valid string');
+    }
+
     if (parentLayer && !layer.extent) {
         layer.extent = parentLayer.extent;
     }
@@ -315,6 +338,45 @@ View.prototype.addLayer = function addLayer(layer, parentLayer) {
 
     this.notifyChange(true);
     return layer.whenReady;
+};
+
+/**
+ * Removes a layer from the view
+ * @param {string} layerId - the id of the layer to remove
+ */
+View.prototype.removeLayer = function removeLayer(layerId) {
+    const layers = this.getLayers((l => l.id == layerId));
+    if (layers.length === 0) {
+        throw new Error(`No layer with id '${layerId}' to remove`);
+    }
+    const layer = layers[0];
+
+    for (const l of layer._attachedLayers) {
+        layer.removeLayer(l);
+    }
+
+    // default removal strategy
+    layer.object3d.traverse((elt) => {
+        if (elt.geometry) {
+            elt.geometry.dispose();
+        }
+        if (elt.material) {
+            elt.material.dispose();
+        }
+        elt.parent = null;
+    });
+    layer.object3d.remove(...layer.object3d.children);
+
+    this.scene.remove(layer.object3d);
+
+    if (layerId == this.baseLayer.id) {
+        delete this.baseLayer;
+    }
+
+    const idx = this._layers.indexOf(layers[0]);
+    this._layers.splice(idx, 1);
+
+    this.notifyChange(true);
 };
 
 /**

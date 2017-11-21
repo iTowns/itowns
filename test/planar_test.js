@@ -7,7 +7,7 @@ describe('Planar example', function () {
         example.view.mainLoop.addEventListener('command-queue-empty', () => {
             itownsTesting.counters.displayed_at_level = [];
 
-            for (var obj of example.view.tileLayer.level0Nodes) {
+            for (var obj of example.view.baseLayer.level0Nodes) {
                 itownsTesting.countVisibleAndDisplayed(obj);
             }
 
@@ -16,6 +16,10 @@ describe('Planar example', function () {
             assert.equal(itownsTesting.counters.displayed_at_level[4], 20);
 
             done();
+
+            // test layer removal
+            assert.ok(example.view.removeLayer('wms_imagery'));
+            assert.equal(2, example.view.getLayers().length);
         });
         itownsTesting.runTest();
     });

@@ -192,7 +192,7 @@ function updateAltitudeCoordinate(coordinate, layer) {
 
 function clampToGround(root) {
     // diff altitude
-    if (updateAltitudeCoordinate(root.targetGeoPosition, root.view.wgs84TileLayer) != 0) {
+    if (updateAltitudeCoordinate(root.targetGeoPosition, root.view.baseLayer) != 0) {
         root.distance = root.lengthTarget - root.targetGeoPosition.as('EPSG:4978').xyz().length();
     }
     // translation
@@ -799,9 +799,9 @@ function GlobeControls(view, target, radius, options = {}) {
             movingCameraTargetOnGlobe.addVectors(this.camera.position, direction);
         }
         // correction of depth error
-        const tileCrs = this._view.wgs84TileLayer.extent.crs();
+        const tileCrs = this._view.baseLayer.extent.crs();
         coordTarget.set(this._view.referenceCrs, movingCameraTargetOnGlobe).as(tileCrs, coordTile);
-        updateAltitudeCoordinate(coordTile, this._view.wgs84TileLayer);
+        updateAltitudeCoordinate(coordTile, this._view.baseLayer);
         coordTile.as(this._view.referenceCrs).xyz(reposition);
         direction.setLength(reposition.distanceTo(this.camera.position));
         movingCameraTargetOnGlobe.addVectors(this.camera.position, direction);
@@ -1533,8 +1533,8 @@ GlobeControls.prototype.setOrbitalPosition = function setOrbitalPosition(positio
         const deltaTheta = position.heading === undefined ? 0 : position.heading * Math.PI / 180 - this.getHeadingRad();
         const deltaRange = position.range === undefined ? 0 : position.range - this.getRange();
         if (position.range) {
-            this._view.wgs84TileLayer.postUpdate = () => {
-                updateAltitudeCoordinate(geoPosition, this._view.wgs84TileLayer);
+            this._view.baseLayer.postUpdate = () => {
+                updateAltitudeCoordinate(geoPosition, this._view.baseLayer);
                 const errorRange = altitude - geoPosition.altitude();
                 if (errorRange != 0) {
                     if (isAnimated && player.isPlaying()) {
@@ -1550,7 +1550,7 @@ GlobeControls.prototype.setOrbitalPosition = function setOrbitalPosition(positio
         return this.moveOrbitalPosition(deltaRange, deltaTheta, deltaPhi, isAnimated).then(() => {
             this.waitSceneLoaded().then(() => {
                 this.updateCameraTransformation();
-                this._view.wgs84TileLayer.postUpdate = () => {};
+                this._view.baseLayer.postUpdate = () => {};
             });
         });
     });
@@ -1642,13 +1642,13 @@ GlobeControls.prototype.setCameraTargetPosition = function setCameraTargetPositi
         ctrl.progress = 1.0;
         quatGlobe.setFromUnitVectors(vFrom, vTo);
         this.updateCameraTransformation(this.states.MOVE_GLOBE, false);
-        this._view.wgs84TileLayer.postUpdate = () => {
+        this._view.baseLayer.postUpdate = () => {
             clampToGround(ctrl);
             this.updateCameraTransformation(this.states.MOVE_GLOBE, false);
         };
         return this.waitSceneLoaded().then(() => {
             this.updateCameraTransformation(this.states.MOVE_GLOBE);
-            this._view.wgs84TileLayer.postUpdate = () => {};
+            this._view.baseLayer.postUpdate = () => {};
             ctrl.targetGeoPosition = null;
             ctrl.progress = 0.0;
         });
@@ -1874,7 +1874,7 @@ GlobeControls.prototype.setCameraTargetGeoPosition = function setCameraTargetGeo
     return initPromise.then(() => {
         isAnimated = isAnimated === undefined ? this.isAnimationEnabled() : isAnimated;
         ctrl.targetGeoPosition = new C.EPSG_4326(coordinates.longitude, coordinates.latitude, 0);
-        updateAltitudeCoordinate(ctrl.targetGeoPosition, this._view.wgs84TileLayer);
+        updateAltitudeCoordinate(ctrl.targetGeoPosition, this._view.baseLayer);
         const position = ctrl.targetGeoPosition.as('EPSG:4978').xyz();
         position.range = coordinates.range;
         return this.setCameraTargetPosition(position, isAnimated);

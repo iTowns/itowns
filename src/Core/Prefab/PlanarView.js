@@ -8,7 +8,6 @@ import { unpack1K } from '../../Renderer/LayeredMaterial';
 import { GeometryLayer } from '../Layer/Layer';
 
 import { processTiledGeometryNode } from '../../Process/TiledNodeProcessing';
-import { updateLayeredMaterialNodeImagery, updateLayeredMaterialNodeElevation } from '../../Process/LayeredMaterialNodeProcessing';
 import { planarCulling, planarSubdivisionControl } from '../../Process/PlanarTileProcessing';
 import PlanarTileBuilder from './Planar/PlanarTileBuilder';
 import SubdivisionControl from '../../Process/SubdivisionControl';
@@ -144,28 +143,45 @@ function PlanarView(viewerDiv, extent, options = {}) {
     this._renderState = RendererConstant.FINAL;
     this._fullSizeDepthBuffer = null;
 
-    this.tileLayer = tileLayer;
+    this.baseLayer = tileLayer;
 }
 
 PlanarView.prototype = Object.create(View.prototype);
 PlanarView.prototype.constructor = PlanarView;
 
-PlanarView.prototype.addLayer = function addLayer(layer) {
+// Preprocess layer for a Plane if needed
+PlanarView.prototype._preAddLayer = function _preAddLayer(layer) {
+    this._deprecatedPreAddLayer(layer);
     if (layer.type == 'color') {
-        layer.update = updateLayeredMaterialNodeImagery;
         if (layer.protocol === 'rasterizer') {
             layer.reprojection = this.referenceCrs;
         }
-    } else if (layer.type == 'elevation') {
-        layer.update = updateLayeredMaterialNodeElevation;
     }
-    return View.prototype.addLayer.call(this, layer, this.tileLayer);
+};
+
+/**
+ * Calls View.addLayer using this.baseLayer as the parent layer
+ * @param {Layer} layer: layer to attach to the planar geometry
+ * @deprecated
+ * @return {Promise} see View.addLayer
+ */
+PlanarView.prototype.addLayer = function addLayer(layer) {
+    if (layer instanceof GeometryLayer) {
+        return View.prototype.addLayer.call(this, layer);
+    }
+    if (!this._warnAddLayerDeprecated) {
+        // eslint-disable-next-line no-console
+        console.warn('globeView.addLayer(colorLayer) has been deprecated.\n' +
+            'Use globeView.baseLayer.[addColorLayer|addElevationLayer|addFeatureLayer](layer) instead.');
+        this._warnAddLayerDeprecated = true;
+    }
+    return View.prototype.addLayer.call(this, layer, this.baseLayer);
 };
 
 PlanarView.prototype.selectNodeAt = function selectNodeAt(mouse) {
     const selectedId = this.screenCoordsToNodeId(mouse);
 
-    for (const n of this.tileLayer.level0Nodes) {
+    for (const n of this.baseLayer.level0Nodes) {
         n.traverse((node) => {
             // only take of selectable nodes
             if (node.setSelected) {
@@ -231,7 +247,7 @@ PlanarView.prototype.getPickingPositionFromDepth = function getPickingPositionFr
 
     // Prepare state
     const prev = camera.layers.mask;
-    camera.layers.mask = 1 << this.tileLayer.threejsLayer;
+    camera.layers.mask = 1 << this.baseLayer.threejsLayer;
 
      // Render/Read to buffer
     let buffer;
@@ -275,7 +291,7 @@ PlanarView.prototype.getPickingPositionFromDepth = function getPickingPositionFr
 };
 
 PlanarView.prototype.changeRenderState = function changeRenderState(newRenderState) {
-    if (this._renderState == newRenderState || !this.tileLayer.level0Nodes) {
+    if (this._renderState == newRenderState || !this.baseLayer.level0Nodes) {
         return;
     }
 
@@ -288,7 +304,7 @@ PlanarView.prototype.changeRenderState = function changeRenderState(newRenderSta
         };
     }());
 
-    for (const n of this.tileLayer.level0Nodes) {
+    for (const n of this.baseLayer.level0Nodes) {
         n.traverseVisible(changeStateFunction);
     }
     this._renderState = newRenderState;

@@ -44,13 +44,13 @@ and open the template in the editor.
             menuGlobe.view = globeView;
 
             var promises = []
-            promises.push(itowns.Fetcher.json('examples/layers/JSONLayers/Ortho.json').then(function(result) { return globeView.addLayer(result); }));
-            promises.push(itowns.Fetcher.json('examples/layers/JSONLayers/OrthosCRS.json').then(function(result) { return globeView.addLayer(result); }));
-            promises.push(itowns.Fetcher.json('examples/layers/JSONLayers/ScanEX.json').then(function(result) { return globeView.addLayer(result); }));
-            promises.push(itowns.Fetcher.json('examples/layers/JSONLayers/Region.json').then(function(result) { return globeView.addLayer(result); }));
+            promises.push(itowns.Fetcher.json('examples/layers/JSONLayers/Ortho.json').then(function(result) { return globeView.baseLayer.addColorLayer(result); }));
+            promises.push(itowns.Fetcher.json('examples/layers/JSONLayers/OrthosCRS.json').then(function(result) { return globeView.baseLayer.addColorLayer(result); }));
+            promises.push(itowns.Fetcher.json('examples/layers/JSONLayers/ScanEX.json').then(function(result) { return globeView.baseLayer.addColorLayer(result); }));
+            promises.push(itowns.Fetcher.json('examples/layers/JSONLayers/Region.json').then(function(result) { return globeView.baseLayer.addColorLayer(result); }));
 
-            promises.push(itowns.Fetcher.json('examples/layers/JSONLayers/WORLD_DTM.json').then(function(result) { return globeView.addLayer(result); }));
-            promises.push(itowns.Fetcher.json('examples/layers/JSONLayers/IGN_MNT_HIGHRES.json').then(function(result) { return globeView.addLayer(result); }));
+            promises.push(itowns.Fetcher.json('examples/layers/JSONLayers/WORLD_DTM.json').then(function(result) { return globeView.baseLayer.addElevationLayer(result); }));
+            promises.push(itowns.Fetcher.json('examples/layers/JSONLayers/IGN_MNT_HIGHRES.json').then(function(result) { return globeView.baseLayer.addElevationLayer(result); }));
 
             menuGlobe.addGUI('RealisticLighting', false,
                 function(newValue) { globeView.setRealisticLightingOn(newValue); });
@@ -67,7 +67,7 @@ and open the template in the editor.
             });
 
             const d = new debug.Debug(globeView, menuGlobe.gui);
-            debug.createTileDebugUI(menuGlobe.gui, globeView, globeView.wgs84TileLayer, d);
+            debug.createTileDebugUI(menuGlobe.gui, globeView, globeView.baseLayer, d);
             window.globeView = globeView;
 </script>
     </body>

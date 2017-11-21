@@ -25,11 +25,13 @@ function showPointcloud(serverUrl, fileName, lopocsTable) {
     view.mainLoop.gfxEngine.renderer.setClearColor(0xcccccc);
 
     // Configure Point Cloud layer
-    pointcloud = new itowns.GeometryLayer('pointcloud', new itowns.THREE.Group());
-    pointcloud.file = fileName || 'infos/sources';
-    pointcloud.protocol = 'potreeconverter';
-    pointcloud.url = serverUrl;
-    pointcloud.table = lopocsTable;
+    pointcloud = itowns.createPointcloud(
+        'pointcloud',
+        {
+            file: fileName || 'infos/sources',
+            url: serverUrl,
+            table: lopocsTable,
+        });
 
     // point selection on double-click
     function dblClickHandler(event) {

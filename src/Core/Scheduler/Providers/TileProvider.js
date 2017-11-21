@@ -18,6 +18,8 @@ import TileGeometry from '../../TileGeometry';
 import TileMesh from '../../TileMesh';
 import CancelledCommandException from '../CancelledCommandException';
 import { requestNewTile } from '../../../Process/TiledNodeProcessing';
+import ObjectRemovalHelper from '../../../Process/ObjectRemovalHelper';
+import { updateLayeredMaterialNodeImagery, updateLayeredMaterialNodeElevation } from '../../../Process/LayeredMaterialNodeProcessing';
 
 function TileProvider() {
     Provider.call(this, null);
@@ -31,6 +33,110 @@ TileProvider.prototype.preprocessDataLayer = function preprocessLayer(layer, vie
     if (!layer.schemeTile) {
         throw new Error(`Cannot init tiled layer without schemeTile for layer ${layer.id}`);
     }
+
+    layer.addColorLayer = (colorLayer, addToView = true) => {
+        colorLayer.type = 'color';
+
+        if (colorLayer.protocol === 'rasterizer') {
+            colorLayer.reprojection = 'EPSG:4326';
+        }
+        if (!colorLayer.update) {
+            const colorLayerCount = view.getLayers(l => l.type === 'color').length;
+            colorLayer.sequence = colorLayerCount;
+            colorLayer.update = updateLayeredMaterialNodeImagery;
+        }
+
+        if (addToView) {
+            return view.addLayer(colorLayer, layer);
+        }
+    };
+    layer.removeColorLayer = (colorLayerOrId) => {
+        const layerId = colorLayerOrId.id === undefined ? colorLayerOrId : colorLayerOrId.id;
+        const colorLayer = view.getLayers(l => l.id === layerId)[0];
+        if (colorLayer && colorLayer.type === 'color' && layer.detach(colorLayer)) {
+            // remove layer from all tiles
+            for (const root of layer.level0Nodes) {
+                root.traverse((tile) => {
+                    if (tile.removeColorLayer) {
+                        tile.removeColorLayer(layerId);
+                    }
+                });
+            }
+            // update color sequence of other color layers
+            const imageryLayers = view.getLayers((l, p) => (p && p.id == layer.id && l.type === 'color'));
+            for (const color of imageryLayers) {
+                if (color.sequence > colorLayer.sequence) {
+                    color.sequence--;
+                }
+            }
+            return true;
+        } else {
+            // eslint-disable-next-line no-console
+            console.error(`${colorLayerOrId} isn't a color layer`);
+            return false;
+        }
+    };
+
+    layer.addElevationLayer = (elevationLayer, addToView = true) => {
+        if (elevationLayer.protocol === 'wmts' && elevationLayer.options.tileMatrixSet !== 'WGS84G') {
+            throw new Error('Only WGS84G tileMatrixSet is currently supported for WMTS elevation layers');
+        }
+
+        elevationLayer.type = 'elevation';
+
+        elevationLayer.update = elevationLayer.update || updateLayeredMaterialNodeElevation;
+
+        if (addToView) {
+            return view.addLayer(elevationLayer, layer);
+        }
+    };
+    layer.removeElevationLayer = (elevationLayerOrId) => {
+        const layerId = elevationLayerOrId.id === undefined ? elevationLayerOrId : elevationLayerOrId.id;
+        const elevationLayer = view.getLayers(l => l.id === layerId)[0];
+        if (elevationLayer && elevationLayer.type === 'elevation' && layer.detach(elevationLayer)) {
+            // TODO: cleanup elevation textures
+            return true;
+        } else {
+            // eslint-disable-next-line no-console
+            console.error(`${elevationLayerOrId} isn't an elevation layer`);
+            return false;
+        }
+    };
+
+    layer.addFeatureLayer = (featureLayer) => {
+        featureLayer.type = 'feature';
+        view.addLayer(featureLayer, layer);
+    };
+    layer.removeFeatureLayer = (featureLayerOrId) => {
+        const layerId = featureLayerOrId.id === undefined ? featureLayerOrId : featureLayerOrId.id;
+        const featureLayer = view.getLayers(l => l.id === layerId)[0];
+        if (featureLayer && layer.detach(featureLayer)) {
+            const fn = (tile) => { ObjectRemovalHelper.removeChildrenAndCleanupRecursively(layerId, tile); };
+            for (const root of layer.level0Nodes) {
+                root.traverse(fn);
+            }
+            return true;
+        } else {
+            // eslint-disable-next-line no-console
+            console.error(`${featureLayerOrId} isn't a feature layer`);
+            return false;
+        }
+    };
+
+    layer.removeLayer = (layerOrId) => {
+        const layerId = layerOrId.id === undefined ? layerOrId : layerOrId.id;
+        const toRemove = view.getLayers(l => l.id === layerId)[0];
+        if (layer.type === 'color') {
+            return layer.removeColorLayer(toRemove);
+        } else if (layer.type === 'elevation') {
+            return layer.removeElevationLayer(toRemove);
+        } else if (layer.type === 'feature') {
+            return layer.removeFeatureLayer(toRemove);
+        } else {
+            // eslint-disable-next-line no-console
+            console.warn(`Unknwown layer type ${layer.type}`);
+        }
+    };
 
     layer.level0Nodes = [];
     layer.onTileCreated = layer.onTileCreated || (() => {});

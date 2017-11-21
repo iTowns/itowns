@@ -94,11 +94,9 @@ for (index = 0; index < wmsLayers.length; index++) {
 
     view.addLayer(tileLayer);
 
-    view.addLayer({
-        update: itowns.updateLayeredMaterialNodeImagery,
+    tileLayer.addColorLayer({
         url: 'https://download.data.grandlyon.com/wms/grandlyon',
         networkOptions: { crossOrigin: 'anonymous' },
-        type: 'color',
         protocol: 'wms',
         version: '1.3.0',
         id: 'wms_imagery' + wms + index,
@@ -107,12 +105,10 @@ for (index = 0; index < wmsLayers.length; index++) {
         options: {
             mimetype: 'image/jpeg',
         },
-    }, tileLayer);
+    });
 
-    view.addLayer({
-        update: itowns.updateLayeredMaterialNodeElevation,
+    tileLayer.addElevationLayer({
         url: 'https://download.data.grandlyon.com/wms/grandlyon',
-        type: 'elevation',
         protocol: 'wms',
         networkOptions: { crossOrigin: 'anonymous' },
         version: '1.3.0',
@@ -123,7 +119,7 @@ for (index = 0; index < wmsLayers.length; index++) {
         options: {
             mimetype: 'image/jpeg',
         },
-    }, tileLayer);
+    });
 
     // Since the elevation layer use color textures, specify min/max z
     tileLayer.materialOptions = {

@@ -18,19 +18,16 @@ var splitSlider;
 var splitPosition;
 var xD;
 
-function addLayerCb(layer) {
-    return globeView.addLayer(layer);
-}
 // Add one imagery layer to the scene
 // This layer is defined in a json file but it could be defined as a plain js
 // object. See Layer* for more info.
-promises.push(itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(addLayerCb).then(function _(l) { orthoLayer = l; }));
-promises.push(itowns.Fetcher.json('./layers/JSONLayers/OPENSM.json').then(addLayerCb).then(function _(l) { osmLayer = l; }));
+promises.push(itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(globeView.baseLayer.addColorLayer).then(function _(l) { orthoLayer = l; }));
+promises.push(itowns.Fetcher.json('./layers/JSONLayers/OPENSM.json').then(globeView.baseLayer.addColorLayer).then(function _(l) { osmLayer = l; }));
 
 // Add two elevation layers.
 // These will deform iTowns globe geometry to represent terrain elevation.
-itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addLayerCb);
-itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addLayerCb);
+itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(globeView.baseLayer.addElevationLayer);
+itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(globeView.baseLayer.addElevationLayer);
 
 // Slide handling
 splitPosition = 0.5 * window.innerWidth;

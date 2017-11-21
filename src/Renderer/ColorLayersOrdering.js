@@ -15,6 +15,9 @@ function updateLayersOrdering(geometryLayer, imageryLayers) {
 
 export const COLOR_LAYERS_ORDER_CHANGED = 'layers-order-changed';
 
+/**
+ * @module ColorLayersOrdering
+ */
 export const ColorLayersOrdering = {
     /**
      * Moves up in the layer list. This function has no effect if the layer is moved to its current index.
@@ -30,7 +33,7 @@ export const ColorLayersOrdering = {
         if (layer) {
             const previousSequence = ImageryLayers.getColorLayersIdOrderedBySequence(imageryLayers);
             ImageryLayers.moveLayerUp(layer, imageryLayers);
-            updateLayersOrdering(view.wgs84TileLayer, imageryLayers);
+            updateLayersOrdering(view.baseLayer, imageryLayers);
             view.dispatchEvent({ type: COLOR_LAYERS_ORDER_CHANGED,
                 previous: { sequence: previousSequence },
                 new: { sequence: ImageryLayers.getColorLayersIdOrderedBySequence(imageryLayers) },
@@ -54,7 +57,7 @@ export const ColorLayersOrdering = {
         if (layer) {
             const previousSequence = ImageryLayers.getColorLayersIdOrderedBySequence(imageryLayers);
             ImageryLayers.moveLayerDown(layer, imageryLayers);
-            updateLayersOrdering(view.wgs84TileLayer, imageryLayers);
+            updateLayersOrdering(view.baseLayer, imageryLayers);
             view.dispatchEvent({ type: COLOR_LAYERS_ORDER_CHANGED,
                 previous: { sequence: previousSequence },
                 new: { sequence: ImageryLayers.getColorLayersIdOrderedBySequence(imageryLayers) },
@@ -79,7 +82,7 @@ export const ColorLayersOrdering = {
         if (layer) {
             const previousSequence = ImageryLayers.getColorLayersIdOrderedBySequence(imageryLayers);
             ImageryLayers.moveLayerToIndex(layer, newIndex, imageryLayers);
-            updateLayersOrdering(view.wgs84TileLayer, imageryLayers);
+            updateLayersOrdering(view.baseLayer, imageryLayers);
             view.dispatchEvent({ type: COLOR_LAYERS_ORDER_CHANGED,
                 previous: { sequence: previousSequence },
                 new: { sequence: ImageryLayers.getColorLayersIdOrderedBySequence(imageryLayers) },

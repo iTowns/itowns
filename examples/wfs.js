@@ -24,10 +24,10 @@ viewerDiv = document.getElementById('viewerDiv');
 
 // Instanciate PlanarView*
 view = new itowns.PlanarView(viewerDiv, extent, { renderer: renderer });
-view.tileLayer.disableSkirt = true;
+view.baseLayer.disableSkirt = true;
 
 // Add an WMS imagery layer (see WMS_Provider* for valid options)
-view.addLayer({
+view.baseLayer.addColorLayer({
     url: 'https://download.data.grandlyon.com/wms/grandlyon',
     networkOptions: { crossOrigin: 'anonymous' },
     type: 'color',
@@ -61,7 +61,7 @@ function colorLine(properties) {
     return new itowns.THREE.Color(rgb[0] / 255, rgb[1] / 255, rgb[2] / 255);
 }
 
-view.addLayer({
+view.baseLayer.addFeatureLayer({
     update: itowns.FeatureProcessing.update,
     convert: itowns.Feature2Mesh.convert({
         color: colorLine }),
@@ -82,7 +82,7 @@ view.addLayer({
     options: {
         mimetype: 'geojson',
     },
-}, view.tileLayer);
+});
 
 function colorBuildings(properties) {
     if (properties.id.indexOf('bati_remarquable') === 0) {
@@ -116,8 +116,7 @@ scaler = {
 };
 
 view.addFrameRequester(scaler);
-view.addLayer({
-    type: 'geometry',
+view.baseLayer.addFeatureLayer({
     update: itowns.FeatureProcessing.update,
     convert: itowns.Feature2Mesh.convert({
         color: colorBuildings,
@@ -144,7 +143,7 @@ view.addLayer({
     options: {
         mimetype: 'json',
     },
-}, view.tileLayer);
+});
 
 function configPointMaterial(result) {
     var i = 0;
