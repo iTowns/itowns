@@ -6,7 +6,7 @@ export function panoramaCulling(node, camera) {
     return !frustumCullingOBB(node, camera);
 }
 
-function _isTileBiggerThanTexture(camera, textureSize, node) {
+function _isTileBiggerThanTexture(camera, textureSize, quality, node) {
     const onScreen = camera.box3SizeOnScreen(
         node.geometry.OBB.box3D,
         node.geometry.OBB.matrixWorld);
@@ -21,7 +21,7 @@ function _isTileBiggerThanTexture(camera, textureSize, node) {
         y: 0.5 * (onScreen.max.y - onScreen.min.y) * camera.height,
     };
 
-    return (boost * dim.x >= textureSize.x && boost * dim.y >= textureSize.y);
+    return (boost * dim.x * quality >= textureSize.x && boost * dim.y * quality >= textureSize.y);
 }
 
 export function panoramaSubdivisionControl(maxLevel, textureSize) {
@@ -30,6 +30,6 @@ export function panoramaSubdivisionControl(maxLevel, textureSize) {
             return false;
         }
 
-        return _isTileBiggerThanTexture(context.camera, textureSize, node);
+        return _isTileBiggerThanTexture(context.camera, textureSize, layer.quality || 1.0, node);
     };
 }
