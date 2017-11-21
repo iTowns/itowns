@@ -157,6 +157,8 @@ export function createPanoramaLayer(id, coordinates, ratio, options = {}) {
     tileLayer.type = 'geometry';
     tileLayer.protocol = 'tile';
     tileLayer.visible = true;
+    tileLayer.segments = 8;
+    tileLayer.quality = 0.5;
     tileLayer.lighting = {
         enable: false,
         position: { x: -0.5, y: 0.0, z: 1.0 },
