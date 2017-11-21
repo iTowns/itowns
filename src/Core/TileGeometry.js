@@ -56,12 +56,12 @@ TileGeometry.prototype.computeBuffers = function computeBuffers(params, builder)
     // Create output buffers.
     const outBuffers = new Buffers();
 
-    const nSeg = params.segment || 32;
+    const nSeg = params.segment;
     // segments count :
     // Tile : (nSeg + 1) * (nSeg + 1)
     // Skirt : 8 * (nSeg - 1)
-    const nVertex = (nSeg + 1) * (nSeg + 1) + (params.disableSkirt ? 0 : 8 * (nSeg - 1)); // correct pour uniquement les vertex
-    const triangles = (nSeg) * (nSeg) * 2 + (params.disableSkirt ? 0 : 16 * (nSeg - 1) * 2); // correct pour uniquement les vertex
+    const nVertex = (nSeg + 1) * (nSeg + 1) + (params.disableSkirt ? 0 : 4 * nSeg);
+    const triangles = (nSeg) * (nSeg) * 2 + (params.disableSkirt ? 0 : 4 * nSeg * 2);
 
     outBuffers.position = new THREE.BufferAttribute(new Float32Array(nVertex * 3), 3);
     outBuffers.normal = new THREE.BufferAttribute(new Float32Array(nVertex * 3), 3);
