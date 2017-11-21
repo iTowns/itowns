@@ -85,7 +85,7 @@ const LayeredMaterial = function LayeredMaterial(options) {
     // Uniform three js needs no empty array
     // WARNING TODO: prevent empty slot, but it's not the solution
     this.offsetScale[l_COLOR] = {};
-    this.offsetScale[l_ELEVATION] = [vector];
+    this.offsetScale[l_ELEVATION] = [vector4];
 
     this.textures[l_ELEVATION] = [acquireTexture(emptyTexture)];
     var paramLayers = [new THREE.Vector3(0.0, 0.0, 0.0)];
@@ -278,6 +278,7 @@ function _transformTexturesToTHREE(textures, layer) {
         t.magFilter = THREE.LinearFilter;
         t.minFilter = THREE.LinearFilter;
         t.anisotropy = 16;
+        // the texture cover the whole atlas
         t.uv = [new THREE.Vector4(0, 0, 1, 1)];
         return t;
     } else {
@@ -289,7 +290,7 @@ function _transformTexturesToTHREE(textures, layer) {
         // So reverse PM textures
         textures.reverse();
 
-        const atlas = _updateAtlas(textures.map(t => t.texture), textures.map(t => t.offsetScale || new THREE.Vector3(0.0, 0.0, 1.0)), layer.transparent);
+        const atlas = _updateAtlas(textures.map(t => t.texture), textures.map(t => t.pitch || new THREE.Vector4(0.0, 0.0, 1.0, 1.0)), layer.transparent);
 
         // Now, all is nice and well, except UV coords for PM textures suppose a specific order
         // (see ColorLayerPM.glsl 'int textureIndex = pmSubTextureIndex;' for instance)
@@ -311,9 +312,21 @@ LayeredMaterial.prototype.setTexturesLayer = function setTexturesLayer(textures,
     layerTexture.coords = [];
     for (let i = 0; i < layerTexture.uv.length; i++) {
         layerTexture.coords.push(textures[i].texture.coords);
-        this.offsetScale[l_COLOR][layer.id][i] = layerTexture.uv[i];
+        this.offsetScale[l_COLOR][layer.id][i] =
+            layerTexture.uv[i].clone();
+        // this.offsetScale[l_COLOR][layer.id][i].x *= textures[i].pitch.x;
+        // this.offsetScale[l_COLOR][layer.id][i].y *= textures[i].pitch.y;
+        // this.offsetScale[l_COLOR][layer.id][i].z *= textures[i].pitch.z;
+        // this.offsetScale[l_COLOR][layer.id][i].w *= textures[i].pitch.w;
+    }
+    if (textures.length == 1) {
+        this.offsetScale[l_COLOR][layer.id][0] = textures[0].pitch;
     }
 
+    if (this.uniforms.atlasTextures.value[index]
+        && this.uniforms.atlasTextures.value[index].id != emptyAtlas.id) {
+        this.loadedTexturesCount[l_COLOR] -= layerTexture.uv.length;
+    }
     releaseTexture(this.uniforms.atlasTextures.value[index]);
     this.uniforms.atlasTextures.value[index] = acquireTexture(layerTexture);
     this.loadedTexturesCount[l_COLOR] += textures.length;
@@ -350,7 +363,8 @@ LayeredMaterial.prototype.pushLayer = function pushLayer(param) {
     this.setLayerVisibility(newIndex, param.visible);
     this.colorLayersId.push(param.idLayer);
 
-    this.offsetScale[l_COLOR][param.idLayer] = param.tileMT === 'PM' ? [vector4, vector4, vector4, vector4] : [vector4];
+    this.offsetScale[l_COLOR][param.idLayer] =
+        /*param.tileMT === 'PM' ?*/ [vector4, vector4, vector4, vector4];// : [vector4];
     this.uniforms[`offsetScale_${param.idLayer}`] = new THREE.Uniform(this.offsetScale[l_COLOR][param.idLayer]);
 };
 

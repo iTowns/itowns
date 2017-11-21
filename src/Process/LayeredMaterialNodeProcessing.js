@@ -26,15 +26,13 @@ function initNodeImageryTexturesFromParent(node, parent, layer) {
 
                 if (c.isInside(parentCoords)) {
                     const result = c.offsetToParent(parentCoords);
-
                     const p = atlas.uv[i];
-
                     const idx = coords.indexOf(c);
                     offsetScale[idx] = p.clone();
                     offsetScale[idx].x += result.x * p.z;
                     offsetScale[idx].y += result.y * p.w;
                     offsetScale[idx].z *= result.z;
-                    offsetScale[idx].w *= result.z;
+                    offsetScale[idx].w *= result.w;
 
                     found++;
                     break;
@@ -164,7 +162,6 @@ export function updateLayeredMaterialNodeImagery(context, layer, node) {
     }
 
     const material = node.material;
-    let index = material.indexOfColorLayer(layer.id);
 
     // Initialisation
     if (node.layerUpdateState[layer.id] === undefined) {
@@ -200,11 +197,12 @@ export function updateLayeredMaterialNodeImagery(context, layer, node) {
             };
 
             material.pushLayer(paramMaterial);
+
+            initNodeImageryTexturesFromParent(node, node.parent, layer);
+
             const imageryLayers = context.view.getLayers(l => l.type === 'color');
             const sequence = ImageryLayers.getColorLayersIdOrderedBySequence(imageryLayers);
             material.setSequence(sequence);
-
-            initNodeImageryTexturesFromParent(node, node.parent, layer);
         }
     }
 
@@ -217,6 +215,9 @@ export function updateLayeredMaterialNodeImagery(context, layer, node) {
     // to avoid mixing layer's network updates and layer's params
     // Update material parameters
     const layerIndex = material.indexOfColorLayer(layer.id);
+    if (layerIndex < 0) {
+        return;
+    }
     material.setLayerVisibility(layerIndex, layer.visible);
     material.setLayerOpacity(layerIndex, layer.opacity);
 

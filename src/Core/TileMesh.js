@@ -84,6 +84,17 @@ TileMesh.prototype.changeState = function changeState(state) {
     this.material.needsUpdate = true;
 };
 
+TileMesh.prototype.getElevationTexture = function getElevationTexture() {
+    const mat = this.material;
+    return mat.textures[l_ELEVATION][0];
+};
+
+TileMesh.prototype.getColorLayerTextures = function getColorLayerTextures(layerId) {
+    const mat = this.material;
+    const index = mat.indexOfColorLayer(layerId);
+    return mat.uniforms.atlasTextures.value[index];
+};
+
 TileMesh.prototype.setFog = function setFog(fog) {
     this.material.setFogDistance(fog);
 };

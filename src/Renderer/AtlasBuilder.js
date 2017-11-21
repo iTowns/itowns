@@ -40,7 +40,7 @@ export default function pack(images, uvs, needsPixelSeparation) {
         const img = images[i];
         const replaceWithEmpty = !img;
         const sWidth = replaceWithEmpty ? 1 : img.width * uvs[i].z;
-        const sHeight = replaceWithEmpty ? 1 : img.height * uvs[i].z;
+        const sHeight = replaceWithEmpty ? 1 : img.height * uvs[i].w;
 
         blocks.push({
             index: i,

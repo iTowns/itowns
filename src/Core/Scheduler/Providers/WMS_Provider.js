@@ -164,13 +164,13 @@ WMS_Provider.prototype.executeCommand = function executeCommand(command) {
 
 // In the case where the tilematrixset of the tile don't correspond to the projection of the layer
 // when the projection of the layer corresponds to a tilematrixset inside the tile, like the PM
-WMS_Provider.prototype.getColorTextures = function getColorTextures(tile, layer, targetLevel) {
+WMS_Provider.prototype.getColorTextures = function getColorTextures(tile, layer, targetLevel, dummy, rawImage) {
     if (tile.material === null) {
         return Promise.resolve();
     }
     const promises = [];
     for (const coord of tile.getCoordsForLayer(layer)) {
-        promises.push(this.getColorTexture(tile, layer, targetLevel, coord));
+        promises.push(this.getColorTexture(tile, layer, targetLevel, coord, rawImage));
     }
 
     return Promise.all(promises);
