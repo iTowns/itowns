@@ -19,6 +19,11 @@
                 height: 100%;
                 padding: 0;
             }
+            @media (max-width: 600px) {
+                .dg {
+                    display: none;
+                }
+            }
         </style>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -31,35 +36,37 @@
         <script src="../dist/debug.js"></script>
         <script src="GUI/dat.gui/dat.gui.min.js"></script>
         <script type="text/javascript">
-            /* global itowns, document, renderer */
             var viewerDiv;
             var view;
 
             viewerDiv = document.getElementById('viewerDiv');
 
-            const urls = [
+            // Declare 5 panoramas
+            var urls = [
                 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/panoramas/arles/metadata1.json',
                 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/panoramas/arles/metadata2.json',
                 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/panoramas/arles/metadata3.json',
                 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/panoramas/arles/metadata4.json',
                 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/panoramas/arles/metadata5.json'];
-
-            const promises = urls.map(url => itowns.Fetcher.json(url, { crossOrigin: 'anonymous' }));
+            var promises = urls.map(function(url) { return itowns.Fetcher.json(url, { crossOrigin: 'anonymous' }); });
 
             var activeIndex = 3;
-            Promise.all(promises).then((panoramas) => {
-                const coordinates = new itowns.Coordinates('EPSG:4326', ...panoramas[0]['coordinates']).as('EPSG:4978');
-
+            Promise.all(promises).then(function _(panoramas) {
+                // Create an iTowns PanoramaView
                 view = new itowns.PanoramaView(viewerDiv,
-                    coordinates,
+                    new itowns.Coordinates('EPSG:4326',
+                        panoramas[0]['coordinates'][0],
+                        panoramas[0]['coordinates'][1]).as('EPSG:4978'),
                     panoramas[0]['ratio']);
 
-                let index = 0;
-                const layers = [];
-                for (const pano of panoramas) {
-                    let url = new URL(pano['images'], urls[index]);
+                var index = 0;
+                var layers = [];
 
-                    let _id = url.pathname;
+                // Add one color layer per panorama
+                for (var i = 0; i < panoramas.length; i++) {
+                    var pano = panoramas[i];
+                    var url = new URL(pano['images'], urls[index]);
+                    var _id = url.pathname;
                     view.addLayer({
                         visible: index == activeIndex,
                         url: url.href,
@@ -68,29 +75,30 @@
                         protocol: 'static',
                         id: _id,
                         projection: 'EPSG:4326',
-                        updateStrategy: {
-                            options: {},
-                        }
                     });
 
-                    layers.push(view.getLayers(l => l.id == _id)[0]);
+                    layers.push(view.getLayers(function (l) { return (l.id == _id); })[0]);
                     index ++;
                 }
                 view.camera.camera3D.far = 10000;
                 view.notifyChange(true);
 
-                const gui = new dat.GUI();
-                const ddd = new debug.Debug(view, gui);
+                // Setup debug menu
+                var gui = new dat.GUI();
+                var ddd = new debug.Debug(view, gui);
                 debug.createTileDebugUI(gui, view, view.baseLayer, ddd);
+                gui.add(view.baseLayer, 'quality').min(0.1).max(1.0).onChange(
+                    function () { view.notifyChange(true); });
 
-
+                // Add controls
                 new itowns.FirstPersonControls(view, {
                     focusOnClick: true,
                     panoramaRatio: panoramas[0]['ratio'],
                     moveSpeed: 0,
                 });
 
-                document.addEventListener('contextmenu', (evt) => {
+                // Change displayed panorama on mouse right-click
+                document.addEventListener('contextmenu', function (evt) {
                     evt.preventDefault();
                     layers[activeIndex].visible = false;
                     activeIndex = (activeIndex + 1) % 5;
