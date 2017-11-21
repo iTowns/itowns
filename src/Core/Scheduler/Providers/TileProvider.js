@@ -65,7 +65,7 @@ TileProvider.prototype.executeCommand = function executeCommand(command) {
         layerId: command.layer.id,
         extent,
         level: (command.level === undefined) ? (parent.level + 1) : command.level,
-        segment: 16,
+        segment: command.layer.segments || 16,
         materialOptions: command.layer.materialOptions,
         disableSkirt: command.layer.disableSkirt,
     };
