@@ -243,10 +243,8 @@ function GlobeView(viewerDiv, coordCarto, options = {}) {
     this._fullSizeDepthBuffer = null;
 
     const renderer = this.mainLoop.gfxEngine.renderer;
-    this.preRender = () => {
-        // WARNING, if the prerender is re-defined by the user,
-        // These mechanisms no longer work
-        // TODO: need to fix it
+
+    this.onBeforeRender.push(() => {
         if (this._fullSizeDepthBuffer != null) {
             // clean depth buffer
             this._fullSizeDepthBuffer = null;
@@ -269,7 +267,7 @@ function GlobeView(viewerDiv, coordCarto, options = {}) {
         } else if (len >= lim) {
             renderer.setClearColor(0x030508, renderer.getClearAlpha());
         }
-    };
+    });
 
     this.wgs84TileLayer = wgs84TileLayer;
 

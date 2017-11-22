@@ -36,7 +36,7 @@ if (!renderer) {
     miniView.mainLoop.gfxEngine.renderer.setClearColor(0x000000, 0);
 
     // update miniview's camera with the globeView's camera position
-    globeView.onAfterRender = function onAfterRender() {
+    globeView.onAfterRender.push(() => {
         // clamp distance camera from globe
         var distanceCamera = globeView.camera.camera3D.position.length();
         var distance = Math.min(Math.max(distanceCamera * 1.5, minDistance), maxDistance);
@@ -45,7 +45,7 @@ if (!renderer) {
         camera.position.copy(globeView.controls.moveTarget()).setLength(distance);
         camera.lookAt(globeView.controls.moveTarget());
         miniView.notifyChange(true);
-    };
+    });
 
     // Add one imagery layer to the miniview
     itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(layer) { miniView.addLayer(layer); });

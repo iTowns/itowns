@@ -74,7 +74,9 @@ function View(crs, viewerDiv, options = {}) {
         this.notifyChange(true);
     }, false);
 
-    this.onAfterRender = () => {};
+    // Mimic THREE.Object3D#onBeforeRender and onAfterRender
+    this.onBeforeRender = [];
+    this.onAfterRender = [];
 
     this._changeSources = new Set();
 }
