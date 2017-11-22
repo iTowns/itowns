@@ -90,17 +90,16 @@
             });
 
             // Use preRender to update menu before rendering
-            globeView.preRender = function () {
+            globeView.onBeforeRender.push(() => {
                 var layers = { id: [] };
                 // globeView.scene is THREE.js scene
                 getLayersColorVisible(globeView.scene, layers);
-                console.log('layers', layers);
                 var colorLayers = globeView.getLayers(function (l) { return l.type == 'color'; });
 
                 colorLayers.forEach(function (layer) {
                     menuGlobe.hideFolder(layer.id, layers.id.indexOf(layer.id) == -1)
                 });
-            };
+            });
         </script>
     </body>
 </html>

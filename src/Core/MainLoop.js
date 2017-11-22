@@ -134,9 +134,7 @@ MainLoop.prototype._step = function _step(view, timestamp) {
 };
 
 MainLoop.prototype._renderView = function _renderView(view) {
-    if (view.preRender) {
-        view.preRender();
-    }
+    view.onBeforeRender.forEach((fn) => { fn.call(this); });
 
     if (view.render) {
         view.render();
@@ -145,8 +143,7 @@ MainLoop.prototype._renderView = function _renderView(view) {
         this.gfxEngine.renderView(view);
     }
 
-    // Mimic three Object3D.onAfterRender (which sadly doesn't work on Scene)
-    view.onAfterRender();
+    view.onAfterRender.forEach((fn) => { fn.call(this); });
 };
 
 export default MainLoop;

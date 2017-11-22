@@ -36,7 +36,7 @@ function c3DEngine(rendererOrDiv, options = {}) {
     this.fullSizeRenderTarget.texture.minFilter = THREE.LinearFilter;
     this.fullSizeRenderTarget.texture.generateMipmaps = false;
 
-    this.renderView = function renderScene(view) {
+    this.renderView = function renderView(view) {
         this.renderer.setViewport(0, 0, this.width, this.height);
         this.renderer.clear();
         this.renderer.render(view.scene, view.camera.camera3D);
