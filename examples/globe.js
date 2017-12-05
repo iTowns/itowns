@@ -26,7 +26,7 @@ if (!renderer) {
         // since the mini globe will always be seen from a far point of view (see minDistance above)
         maxSubdivisionLevel: 2,
         // Don't instance default controls since miniview's camera will be synced
-        // on the main view's one (see globeView.onAfterRender)
+        // on the main view's one (see globeView.addFrameRequester)
         noControls: true,
     });
 
@@ -36,7 +36,7 @@ if (!renderer) {
     miniView.mainLoop.gfxEngine.renderer.setClearColor(0x000000, 0);
 
     // update miniview's camera with the globeView's camera position
-    globeView.onAfterRender = function onAfterRender() {
+    globeView.addFrameRequester(itowns.MAIN_LOOP_EVENTS.AFTER_RENDER, function () {
         // clamp distance camera from globe
         var distanceCamera = globeView.camera.camera3D.position.length();
         var distance = Math.min(Math.max(distanceCamera * 1.5, minDistance), maxDistance);
@@ -45,7 +45,7 @@ if (!renderer) {
         camera.position.copy(globeView.controls.moveTarget()).setLength(distance);
         camera.lookAt(globeView.controls.moveTarget());
         miniView.notifyChange(true);
-    };
+    });
 
     // Add one imagery layer to the miniview
     itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(layer) { miniView.addLayer(layer); });

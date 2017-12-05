@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 
 import View from '../View';
-import { RENDERING_PAUSED } from '../MainLoop';
+import { RENDERING_PAUSED, MAIN_LOOP_EVENTS } from '../MainLoop';
 import { COLOR_LAYERS_ORDER_CHANGED } from '../../Renderer/ColorLayersOrdering';
 import RendererConstant from '../../Renderer/RendererConstant';
 import GlobeControls from '../../Renderer/ThreeExtended/GlobeControls';
@@ -243,10 +243,8 @@ function GlobeView(viewerDiv, coordCarto, options = {}) {
     this._fullSizeDepthBuffer = null;
 
     const renderer = this.mainLoop.gfxEngine.renderer;
-    this.preRender = () => {
-        // WARNING, if the prerender is re-defined by the user,
-        // These mechanisms no longer work
-        // TODO: need to fix it
+
+    this.addFrameRequester(MAIN_LOOP_EVENTS.BEFORE_RENDER, () => {
         if (this._fullSizeDepthBuffer != null) {
             // clean depth buffer
             this._fullSizeDepthBuffer = null;
@@ -269,7 +267,7 @@ function GlobeView(viewerDiv, coordCarto, options = {}) {
         } else if (len >= lim) {
             renderer.setClearColor(0x030508, renderer.getClearAlpha());
         }
-    };
+    });
 
     this.wgs84TileLayer = wgs84TileLayer;
 

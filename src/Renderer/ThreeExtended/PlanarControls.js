@@ -10,6 +10,7 @@
 */
 
 import * as THREE from 'three';
+import { MAIN_LOOP_EVENTS } from '../../Core/MainLoop';
 
 // event keycode
 const keys = {
@@ -146,10 +147,6 @@ function PlanarControls(view, options = {}) {
     // this allows to use right-click for input without the menu appearing
     this.domElement.addEventListener('contextmenu', onContextMenu.bind(this), false);
 
-    // add this PlanarControl instance to the view's framerequesters
-    // with this, PlanarControl.update() will be called each frame
-    this.view.addFrameRequester(this);
-
     // Updates the view and camera if needed, and handles the animated travel
     this.update = function update(dt, updateLoopRestarted) {
         // We test if camera collide to geometry layer or too close to ground and ajust it's altitude in case
@@ -175,6 +172,10 @@ function PlanarControls(view, options = {}) {
         }
         deltaMousePosition.set(0, 0);
     };
+
+    // add this PlanarControl instance to the view's framerequesters
+    // with this, PlanarControl.update() will be called each frame
+    this.view.addFrameRequester(MAIN_LOOP_EVENTS.AFTER_CAMERA_UPDATE, this.update.bind(this));
 
     /**
     * Initiate a drag movement (translation on xy plane)

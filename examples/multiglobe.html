@@ -93,27 +93,25 @@
             }, globe2);
 
             // Globe animation
-            var animator = {
-                t: 0,
-                update: function(dt, ignore) {
-                    this.t = ignore ? 0 : Math.min(1, dt / 1000 + this.t);
+            var t = 0;
+            function animator (dt, ignore) {
+                t = ignore ? 0 : Math.min(1, dt / 1000 + t);
 
-                    layers[front].object3d.position.y = itowns.THREE.Math.lerp(front ? 10000000 : -10000000, 0, this.t);
-                    layers[front].object3d.scale.setScalar(itowns.THREE.Math.lerp(0.3, 1, this.t));
+                layers[front].object3d.position.y = itowns.THREE.Math.lerp(front ? 10000000 : -10000000, 0, t);
+                layers[front].object3d.scale.setScalar(itowns.THREE.Math.lerp(0.3, 1, t));
 
-                    layers[1 - front].object3d.position.y = itowns.THREE.Math.lerp(front ? -10000000 : 10000000, 0, 1 - this.t);
-                    layers[1 - front].object3d.scale.setScalar(itowns.THREE.Math.lerp(0.3, 1, 1 - this.t));
+                layers[1 - front].object3d.position.y = itowns.THREE.Math.lerp(front ? -10000000 : 10000000, 0, 1 - t);
+                layers[1 - front].object3d.scale.setScalar(itowns.THREE.Math.lerp(0.3, 1, 1 - t));
 
-                    layers[0].object3d.updateMatrixWorld(true);
-                    layers[1].object3d.updateMatrixWorld(true);
+                layers[0].object3d.updateMatrixWorld(true);
+                layers[1].object3d.updateMatrixWorld(true);
 
-                    if (this.t < 1) {
-                        globeView.notifyChange(true);
-                    } else {
-                        globeView.removeFrameRequester(animator);
-                    }
+                if (t < 1) {
+                    globeView.notifyChange(true);
+                } else {
+                    globeView.removeFrameRequester(itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER, animator);
                 }
-            };
+            }
 
             // Last but not least, add 'ref' object to three.js scene, otherwise our globes
             // won't be displayed
@@ -126,8 +124,8 @@
                 if (evt.keyCode == 32) {
                     front = 1 - front;
 
-                    animator.t = 0;
-                    globeView.addFrameRequester(animator);
+                    t = 0;
+                    globeView.addFrameRequester(itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER, animator);
                     globeView.notifyChange(true);
                 }
             }

@@ -3,6 +3,31 @@ import { EventDispatcher } from 'three';
 export const RENDERING_PAUSED = 0;
 export const RENDERING_SCHEDULED = 1;
 
+/**
+ * MainLoop's update events list that are fired using
+ * {@link View#execFrameRequesters}.
+ *
+ * @property UPDATE_START {string} fired at the start of the update
+ * @property BEFORE_CAMERA_UPDATE {string} fired before the camera update
+ * @property AFTER_CAMERA_UPDATE {string} fired after the camera update
+ * @property BEFORE_LAYER_UPDATE {string} fired before the layer update
+ * @property AFTER_LAYER_UPDATE {string} fired after the layer update
+ * @property BEFORE_RENDER {string} fired before the render
+ * @property AFTER_RENDER {string} fired after the render
+ * @property UPDATE_END {string} fired at the end of the update
+ */
+
+export const MAIN_LOOP_EVENTS = {
+    UPDATE_START: 'update_start',
+    BEFORE_CAMERA_UPDATE: 'before_camera_update',
+    AFTER_CAMERA_UPDATE: 'after_camera_update',
+    BEFORE_LAYER_UPDATE: 'before_camera_update',
+    AFTER_LAYER_UPDATE: 'after_layer_update',
+    BEFORE_RENDER: 'before_render',
+    AFTER_RENDER: 'after_render',
+    UPDATE_END: 'update_end',
+};
+
 function MainLoop(scheduler, engine) {
     this.renderingState = RENDERING_PAUSED;
     this.needsRedraw = false;
@@ -56,31 +81,26 @@ MainLoop.prototype._update = function _update(view, updateSources, dt) {
         view,
     };
 
-    // notify the frameRequesters
-    // Frame requesters should keep calling view.notifyChange in their update
-    // function if they want requestAnimationFrame to go on.
-    if (view._frameRequesters.length > 0) {
-        for (const frameRequester of view._frameRequesters) {
-            if (frameRequester.update) {
-                frameRequester.update(dt, this._updateLoopRestarted);
-            }
-        }
-    }
-
     for (const geometryLayer of view.getLayers((x, y) => !y)) {
         context.geometryLayer = geometryLayer;
         if (geometryLayer.ready && geometryLayer.visible) {
+            view.execFrameRequesters(MAIN_LOOP_EVENTS.BEFORE_LAYER_UPDATE, dt, this._updateLoopRestarted, geometryLayer);
+
             // `preUpdate` returns an array of elements to update
             const elementsToUpdate = geometryLayer.preUpdate(context, geometryLayer, updateSources);
             // `update` is called in `updateElements`.
             updateElements(context, geometryLayer, elementsToUpdate);
             // `postUpdate` is called when this geom layer update process is finished
             geometryLayer.postUpdate(context, geometryLayer, updateSources);
+
+            view.execFrameRequesters(MAIN_LOOP_EVENTS.AFTER_LAYER_UPDATE, dt, this._updateLoopRestarted, geometryLayer);
         }
     }
 };
 
 MainLoop.prototype._step = function _step(view, timestamp) {
+    view.execFrameRequesters(MAIN_LOOP_EVENTS.UPDATE_START, dt, this._updateLoopRestarted);
+
     const willRedraw = this.needsRedraw;
     const dt = timestamp - this._lastTimestamp;
     this._lastTimestamp = timestamp;
@@ -95,7 +115,9 @@ MainLoop.prototype._step = function _step(view, timestamp) {
     // update camera
     const dim = this.gfxEngine.getWindowSize();
 
+    view.execFrameRequesters(MAIN_LOOP_EVENTS.BEFORE_CAMERA_UPDATE, dt, this._updateLoopRestarted);
     view.camera.update(dim.x, dim.y);
+    view.execFrameRequesters(MAIN_LOOP_EVENTS.AFTER_CAMERA_UPDATE, dt, this._updateLoopRestarted);
 
     // Disable camera's matrix auto update to make sure the camera's
     // world matrix is never updated mid-update.
@@ -120,7 +142,7 @@ MainLoop.prototype._step = function _step(view, timestamp) {
     // As such there's no continuous update-loop, instead we use a ad-hoc update/render
     // mechanism.
     if (willRedraw) {
-        this._renderView(view);
+        this._renderView(view, dt);
     }
 
     // next time, we'll consider that we've just started the loop if we are still PAUSED now
@@ -131,12 +153,12 @@ MainLoop.prototype._step = function _step(view, timestamp) {
     }
 
     view.camera.camera3D.matrixAutoUpdate = oldAutoUpdate;
+
+    view.execFrameRequesters(MAIN_LOOP_EVENTS.UPDATE_END, dt, this._updateLoopRestarted);
 };
 
-MainLoop.prototype._renderView = function _renderView(view) {
-    if (view.preRender) {
-        view.preRender();
-    }
+MainLoop.prototype._renderView = function _renderView(view, dt) {
+    view.execFrameRequesters(MAIN_LOOP_EVENTS.BEFORE_RENDER, dt, this._updateLoopRestarted);
 
     if (view.render) {
         view.render();
@@ -145,8 +167,7 @@ MainLoop.prototype._renderView = function _renderView(view) {
         this.gfxEngine.renderView(view);
     }
 
-    // Mimic three Object3D.onAfterRender (which sadly doesn't work on Scene)
-    view.onAfterRender();
+    view.execFrameRequesters(MAIN_LOOP_EVENTS.AFTER_RENDER, dt, this._updateLoopRestarted);
 };
 
 export default MainLoop;

@@ -63,7 +63,7 @@ function View(crs, viewerDiv, options = {}) {
         this.mainLoop.gfxEngine.getWindowSize().y,
         options);
 
-    this._frameRequesters = [];
+    this._frameRequesters = { };
     this._layers = [];
 
     window.addEventListener('resize', () => {
@@ -73,8 +73,6 @@ function View(crs, viewerDiv, options = {}) {
         this.mainLoop.gfxEngine.onWindowResize(newSize.x, newSize.y);
         this.notifyChange(true);
     }, false);
-
-    this.onAfterRender = () => {};
 
     this._changeSources = new Set();
 }
@@ -364,48 +362,94 @@ View.prototype.getLayers = function getLayers(filter) {
 };
 
 /**
- * @typedef {object} FrameRequester
- * @property {Function(dt, updateLoopRestarted)} update - Method that will be called each
- * time the MainLoop updates. This function will be given as parameter the
- * delta (in ms) between this update and the previous one, and whether or not
- * we just started to render again. This update is considered as the "next"
- * update if view.notifyChange was called during a precedent update. If
- * view.notifyChange has been called by something else (other micro/macrotask,
- * UI events etc...), then this update is considered as being the "first".
+ * @name FrameRequester
+ * @function
  *
- * This means that if a FrameRequester.update function wants to animate
- * something, it should keep on calling view.notifyChange until its task is
- * done.
+ * @description
+ * Method that will be called each time the <code>MainLoop</code> updates. This
+ * function will be given as parameter the delta (in ms) between this update and
+ * the previous one, and whether or not we just started to render again. This
+ * update is considered as the "next" update if <code>view.notifyChange</code>
+ * was called during a precedent update. If <code>view.notifyChange</code> has
+ * been called by something else (other micro/macrotask, UI events etc...), then
+ * this update is considered as being the "first". It can also receive optional
+ * arguments, depending on the attach point of this function.  Currently only
+ * <code>BEFORE_LAYER_UPDATE / AFTER_LAYER_UPDATE</code> attach points provide
+ * an additional argument: the layer being updated.
+ * <br><br>
  *
- * Implementors of FrameRequester.update should keep in mind that this function
- * will be potentially called at each frame, thus care should be given about
- * performance.
+ * This means that if a <code>frameRequester</code> function wants to animate something, it
+ * should keep on calling <code>view.notifyChange</code> until its task is done.
+ * <br><br>
  *
- * Typical FrameRequesters are controls, module wanting to animate moves or UI
+ * Implementors of <code>frameRequester</code> should keep in mind that this
+ * function will be potentially called at each frame, thus care should be given
+ * about performance.
+ * <br><br>
+ *
+ * Typical frameRequesters are controls, module wanting to animate moves or UI
  * elements etc... Basically anything that would want to call
  * requestAnimationFrame.
+ *
+ * @param {number} dt
+ * @param {boolean} updateLoopRestarted
+ * @param {...*} args
  */
 /**
  * Add a frame requester to this view.
  *
  * FrameRequesters can activate the MainLoop update by calling view.notifyChange.
  *
- * @param {FrameRequester} frameRequester
- * @param {Function} frameRequester.update - update will be called at each
- * MainLoop update with the time delta between last update, or 0 if the
- * MainLoop has just been relaunched.
+ * @param {String} when - decide when the frameRequester should be called during
+ * the update cycle. Can be any of {@link MAIN_LOOP_EVENTS}.
+ * @param {FrameRequester} frameRequester - this function will be called at each
+ * MainLoop update with the time delta between last update, or 0 if the MainLoop
+ * has just been relaunched.
  */
-View.prototype.addFrameRequester = function addFrameRequester(frameRequester) {
-    this._frameRequesters.push(frameRequester);
+View.prototype.addFrameRequester = function addFrameRequester(when, frameRequester) {
+    if (typeof frameRequester !== 'function') {
+        throw new Error('frameRequester must be a function');
+    }
+
+    if (!this._frameRequesters[when]) {
+        this._frameRequesters[when] = [frameRequester];
+    } else {
+        this._frameRequesters[when].push(frameRequester);
+    }
 };
 
 /**
  * Remove a frameRequester.
  *
+ * @param {String} when - attach point of this requester. Can be any of
+ * {@link MAIN_LOOP_EVENTS}.
  * @param {FrameRequester} frameRequester
  */
-View.prototype.removeFrameRequester = function removeFrameRequester(frameRequester) {
-    this._frameRequesters.splice(this._frameRequesters.indexOf(frameRequester), 1);
+View.prototype.removeFrameRequester = function removeFrameRequester(when, frameRequester) {
+    this._frameRequesters[when].splice(this._frameRequesters[when].indexOf(frameRequester), 1);
+};
+
+/**
+ * Execute a frameRequester.
+ *
+ * @param {String} when - attach point of this (these) requester(s). Can be any
+ * of {@link MAIN_LOOP_EVENTS}.
+ * @param {Number} dt - delta between this update and the previous one
+ * @param {boolean} updateLoopRestarted
+ * @param {...*} args - optional arguments
+ */
+View.prototype.execFrameRequesters = function execFrameRequesters(when, dt, updateLoopRestarted, ...args) {
+    if (!this._frameRequesters[when]) {
+        return;
+    }
+
+    for (const frameRequester of this._frameRequesters[when]) {
+        if (frameRequester.update) {
+            frameRequester.update(dt, updateLoopRestarted, args);
+        } else {
+            frameRequester(dt, updateLoopRestarted, args);
+        }
+    }
 };
 
 export default View;

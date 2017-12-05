@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { MAIN_LOOP_EVENTS } from '../../Core/MainLoop';
 
 // Note: we could use existing three.js controls (like https://github.com/mrdoob/three.js/blob/dev/examples/js/controls/FirstPersonControls.js)
 // but including these controls in itowns allows use to integrate them tightly with itowns.
@@ -175,7 +176,7 @@ class FirstPersonControls extends THREE.EventDispatcher {
         domElement.addEventListener('mousewheel', onDocumentMouseWheel.bind(this), false);
         domElement.addEventListener('DOMMouseScroll', onDocumentMouseWheel.bind(this), false); // firefox
 
-        this.view.addFrameRequester(this);
+        this.view.addFrameRequester(MAIN_LOOP_EVENTS.AFTER_CAMERA_UPDATE, this.update.bind(this));
 
         // focus policy
         if (options.focusOnMouseOver) {

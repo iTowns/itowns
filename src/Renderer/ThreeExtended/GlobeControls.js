@@ -12,6 +12,7 @@ import AnimationPlayer, { Animation, AnimatedExpression } from '../../Core/Anima
 import Coordinates, { C, ellipsoidSizes } from '../../Core/Geographic/Coordinates';
 import { computeTileZoomFromDistanceCamera, computeDistanceCameraFromTileZoom } from '../../Process/GlobeTileProcessing';
 import DEMUtils from './../../utils/DEMUtils';
+import { MAIN_LOOP_EVENTS } from '../../Core/MainLoop';
 
 // TODO:
 // Recast touch for globe
@@ -483,17 +484,13 @@ function GlobeControls(view, target, radius, options = {}) {
         sizeRendering.FOV = this.camera.fov;
     };
 
-    const self = this;
-    const resizeHandler = {
-        update() {
-            const dim = self._view.mainLoop.gfxEngine.getWindowSize();
-            const sizeDiff = (dim.width != sizeRendering.width || dim.height != sizeRendering.height);
-            if (sizeDiff) {
-                self.updateCamera();
-            }
-        },
-    };
-    this._view.addFrameRequester(resizeHandler);
+    this._view.addFrameRequester(MAIN_LOOP_EVENTS.AFTER_CAMERA_UPDATE, () => {
+        const dim = this._view.mainLoop.gfxEngine.getWindowSize();
+        const sizeDiff = (dim.width != sizeRendering.width || dim.height != sizeRendering.height);
+        if (sizeDiff) {
+            this.updateCamera();
+        }
+    });
 
     this.getAutoRotationAngle = function getAutoRotationAngle() {
         return 2 * Math.PI / 60 / 60 * this.autoRotateSpeed;
