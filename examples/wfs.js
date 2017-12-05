@@ -5,7 +5,6 @@ var extent;
 var viewerDiv;
 var view;
 var meshes;
-var scaler;
 
 // Define projection that we will use (taken from https://epsg.io/3946, Proj4js section)
 itowns.proj4.defs('EPSG:3946',
@@ -98,24 +97,22 @@ function extrudeBuildings(properties) {
 }
 
 meshes = [];
-scaler = {
-    update: function update(/* dt */) {
-        var i;
-        var mesh;
-        if (meshes.length) {
-            view.notifyChange(true);
-        }
-        for (i = 0; i < meshes.length; i++) {
-            mesh = meshes[i];
-            mesh.scale.z = Math.min(
-                1.0, mesh.scale.z + 0.016);
-            mesh.updateMatrixWorld(true);
-        }
-        meshes = meshes.filter(function filter(m) { return m.scale.z < 1; });
-    },
-};
+function scaler(/* dt */) {
+    var i;
+    var mesh;
+    if (meshes.length) {
+        view.notifyChange(true);
+    }
+    for (i = 0; i < meshes.length; i++) {
+        mesh = meshes[i];
+        mesh.scale.z = Math.min(
+            1.0, mesh.scale.z + 0.016);
+        mesh.updateMatrixWorld(true);
+    }
+    meshes = meshes.filter(function filter(m) { return m.scale.z < 1; });
+}
 
-view.addFrameRequester(scaler);
+view.addFrameRequester(itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER, scaler);
 view.addLayer({
     type: 'geometry',
     update: itowns.FeatureProcessing.update,

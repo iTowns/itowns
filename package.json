@@ -5,7 +5,7 @@
   "main": "lib/Main.js",
   "scripts": {
     "lint": "eslint \"src/**/*.js\" \"test/**/*.js\" \"examples/**/*.js\"",
-    "doc": "jsdoc src/Core/View.js src/Core/Prefab/GlobeView.js src/Core/Layer/Layer.js src/Renderer/ColorLayersOrdering.js src/Renderer/ThreeExtended/GlobeControls.js src/Core/Geographic/Coordinates.js src/Core/Scheduler/Providers/GpxUtils.js",
+    "doc": "jsdoc src/Core/View.js src/Core/Prefab/GlobeView.js src/Core/Layer/Layer.js src/Renderer/ColorLayersOrdering.js src/Renderer/ThreeExtended/GlobeControls.js src/Core/Geographic/Coordinates.js src/Core/Scheduler/Providers/GpxUtils.js src/Core/MainLoop.js",
     "doclint": "npm run doc -- -t templates/silent",
     "test": "npm run lint && npm run build && npm run test-examples && npm run test-unit",
     "test-unit": "cross-env BABEL_DISABLE_CACHE=1 mocha --compilers js:babel-core/register test/*unit_test.js",

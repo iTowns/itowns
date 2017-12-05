@@ -89,18 +89,17 @@
                 });
             });
 
-            // Use preRender to update menu before rendering
-            globeView.preRender = function () {
+            // Use frame requester to update menu before rendering
+            globeView.addFrameRequester(itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER, function () {
                 var layers = { id: [] };
                 // globeView.scene is THREE.js scene
                 getLayersColorVisible(globeView.scene, layers);
-                console.log('layers', layers);
                 var colorLayers = globeView.getLayers(function (l) { return l.type == 'color'; });
 
                 colorLayers.forEach(function (layer) {
                     menuGlobe.hideFolder(layer.id, layers.id.indexOf(layer.id) == -1)
                 });
-            };
+            });
         </script>
     </body>
 </html>
