@@ -4,12 +4,12 @@
 	"networkOptions": { "crossOrigin" : "anonymous" },
     "id": "DARK",
     "url": "http://a.basemaps.cartocdn.com/dark_all/${z}/${x}/${y}.png",
+    "format": "image/png",
     "options": {
     	"attribution": {
     		"name":"CARTO",
     		"url": "https://carto.com/"
     	},
-        "tileMatrixSet": "PM",
-        "mimetype": "image/png"
+        "tileMatrixSet": "PM"
     }
 }

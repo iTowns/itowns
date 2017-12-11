@@ -33,9 +33,7 @@ view.addLayer({
     name: 'Ortho2009_vue_ensemble_16cm_CC46',
     projection: 'EPSG:3946',
     transparent: true,
-    options: {
-        mimetype: 'image/jpeg',
-    },
+    format: 'image/jpeg',
 });
 
 // Add an WMS elevation layer (see WMS_Provider* for valid options)
@@ -49,9 +47,7 @@ view.addLayer({
     name: 'MNT2012_Altitude_10m_CC46',
     projection: view.referenceCrs,
     heightMapWidth: 256,
-    options: {
-        mimetype: 'image/jpeg',
-    },
+    format: 'image/jpeg',
 });
 
 view.addLayer({

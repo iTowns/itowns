@@ -10,13 +10,13 @@
 			"groups": [11, 14]
 		}
 	},
+	"format": "image/x-bil;bits=32",
 	"options": {
 		"attribution" : {
 			"name":"IGN",
 			"url":"http://www.ign.fr/"
 		},
 		"name": "ELEVATION.ELEVATIONGRIDCOVERAGE.HIGHRES",
-		"mimetype": "image/x-bil;bits=32",
 		"tileMatrixSet": "WGS84G",
 		"tileMatrixSetLimits": {
 			"11": {

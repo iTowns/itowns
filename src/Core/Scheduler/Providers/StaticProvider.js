@@ -48,7 +48,7 @@ function getTexture(tile, layer) {
     }
 
 
-    const fn = layer.options.mimetype.indexOf('image/x-bil') === 0 ?
+    const fn = layer.format.indexOf('image/x-bil') === 0 ?
         OGCWebServiceHelper.getXBilTextureByUrl :
         OGCWebServiceHelper.getColorTextureByUrl;
     return fn(buildUrl(layer, selection.image), layer.networkOptions).then((texture) => {
@@ -91,7 +91,6 @@ export default {
             layer.extent = new Extent(layer.projection, ...layer.extent);
         }
 
-        layer.options = layer.options || {};
         layer.canTileTextureBeImproved = this.canTileTextureBeImproved;
         layer.url = new URL(layer.url, window.location);
         return Fetcher.json(layer.url.href).then((metadata) => {
@@ -105,17 +104,17 @@ export default {
                 });
             }
         }).then(() => {
-            if (!layer.options.mimetype) {
-                // fetch the first image to detect mimetype
+            if (!layer.format) {
+                // fetch the first image to detect format
                 if (layer.images.length) {
                     const url = buildUrl(layer, layer.images[0].image);
                     return fetch(url, layer.networkOptions).then((response) => {
-                        layer.options.mimetype = response.headers.get('Content-type');
-                        if (layer.options.mimetype === 'application/octet-stream') {
-                            layer.options.mimetype = 'image/x-bil';
+                        layer.format = response.headers.get('Content-type');
+                        if (layer.format === 'application/octet-stream') {
+                            layer.format = 'image/x-bil';
                         }
-                        if (!layer.options.mimetype) {
-                            throw new Error('Could not detect layer\'s mimetype');
+                        if (!layer.format) {
+                            throw new Error(`${layer.name}: could not detect layer format, please configure 'layer.format'.`);
                         }
                     });
                 }

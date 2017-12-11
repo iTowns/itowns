@@ -8,6 +8,8 @@ import * as THREE from 'three';
 import Extent from '../../Geographic/Extent';
 import OGCWebServiceHelper from './OGCWebServiceHelper';
 
+const supportedFormats = ['image/png', 'image/jpg', 'image/jpeg'];
+
 function url(bbox, layer) {
     const box = bbox.as(layer.projection);
     const w = box.west();
@@ -45,7 +47,11 @@ function preprocessDataLayer(layer) {
         layer.options.zoom = { min: 0, max: 21 };
     }
 
-    layer.format = layer.options.mimetype || 'image/png';
+    layer.format = layer.format || 'image/png';
+    if (!supportedFormats.includes(layer.format)) {
+        throw new Error(`Layer ${layer.name}: unsupported format '${layer.format}', should be one of '${supportedFormats.join('\', \'')}'`);
+    }
+
     layer.width = layer.heightMapWidth || 256;
     layer.version = layer.version || '1.3.0';
     layer.style = layer.style || '';
@@ -137,19 +143,8 @@ function executeCommand(command) {
 
     const layer = command.layer;
     const getTextureFunction = tile.extent.crs() == layer.projection ? getColorTexture : getColorTextures;
-    const supportedFormats = {
-        'image/png': getTextureFunction,
-        'image/jpg': getTextureFunction,
-        'image/jpeg': getTextureFunction,
-    };
 
-    const func = supportedFormats[layer.format];
-
-    if (func) {
-        return func(tile, layer, command.targetLevel);
-    } else {
-        return Promise.reject(new Error(`Unsupported mimetype ${layer.format}`));
-    }
+    return getTextureFunction(tile, layer, command.targetLevel);
 }
 
 // In the case where the tilematrixset of the tile don't correspond to the projection of the layer

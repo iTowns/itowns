@@ -32,9 +32,7 @@ view.addLayer({
     id: 'wms_imagery',
     name: 'Ortho2009_vue_ensemble_16cm_CC46',
     projection: 'EPSG:3946',
-    options: {
-        mimetype: 'image/jpeg',
-    },
+    format: 'image/jpeg',
     updateStrategy: {
         type: itowns.STRATEGY_DICHOTOMY,
         options: {},
@@ -51,9 +49,7 @@ view.addLayer({
     name: 'MNT2012_Altitude_10m_CC46',
     projection: 'EPSG:3946',
     heightMapWidth: 256,
-    options: {
-        mimetype: 'image/jpeg',
-    },
+    format: 'image/jpeg',
 });
 // Since the elevation layer use color textures, specify min/max z
 view.tileLayer.materialOptions = {

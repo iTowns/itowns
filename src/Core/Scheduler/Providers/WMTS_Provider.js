@@ -10,6 +10,14 @@ import Extent from '../../Geographic/Extent';
 
 const coordTile = new Extent('WMTS:WGS84', 0, 0, 0);
 
+const supportedFormats = new Map([
+    ['image/png', getColorTextures],
+    ['image/jpg', getColorTextures],
+    ['image/jpeg', getColorTextures],
+    ['image/x-bil;bits=32', getXbilTexture],
+]);
+
+
 function customUrl(layer, url, tilematrix, row, col) {
     let urld = url.replace('%TILEMATRIX', tilematrix.toString());
     urld = urld.replace('%ROW', row.toString());
@@ -21,18 +29,21 @@ function customUrl(layer, url, tilematrix, row, col) {
 function preprocessDataLayer(layer) {
     layer.fx = layer.fx || 0.0;
 
-    layer.options = layer.options || {};
+    layer.format = layer.format || 'image/png';
+    if (!supportedFormats.has(layer.format)) {
+        throw new Error(
+            `Layer ${layer.name}: unsupported layer.format '${layer.format}', must be one of '${Array.from(supportedFormats.keys()).join('\', \'')}'`);
+    }
 
     if (layer.protocol === 'wmts') {
         const options = layer.options;
         options.version = options.version || '1.0.0';
         options.tileMatrixSet = options.tileMatrixSet || 'WGS84';
-        options.mimetype = options.mimetype || 'image/png';
         options.style = options.style || 'normal';
         options.projection = options.projection || 'EPSG:3857';
         let newBaseUrl = `${layer.url}` +
             `?LAYER=${options.name}` +
-            `&FORMAT=${options.mimetype}` +
+            `&FORMAT=${layer.format}` +
             '&SERVICE=WMTS' +
             `&VERSION=${options.version}` +
             '&REQUEST=GetTile' +
@@ -120,20 +131,7 @@ function getColorTexture(coordWMTS, layer) {
 function executeCommand(command) {
     const layer = command.layer;
     const tile = command.requester;
-
-    const supportedFormats = {
-        'image/png': getColorTextures,
-        'image/jpg': getColorTextures,
-        'image/jpeg': getColorTextures,
-        'image/x-bil;bits=32': getXbilTexture,
-    };
-
-    const func = supportedFormats[layer.options.mimetype];
-    if (func) {
-        return func(tile, layer, command.targetLevel);
-    } else {
-        return Promise.reject(new Error(`Unsupported mimetype ${layer.options.mimetype}`));
-    }
+    return supportedFormats.get(layer.format)(tile, layer, command.targetLevel);
 }
 
 function tileTextureCount(tile, layer) {
