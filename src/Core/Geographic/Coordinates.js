@@ -9,6 +9,9 @@ import proj4 from 'proj4';
 import Ellipsoid from '../Math/Ellipsoid';
 
 proj4.defs('EPSG:4978', '+proj=geocent +datum=WGS84 +units=m +no_defs');
+// used in some protocol
+// CRS:84 is equivalent to EPSG:4326 - ie, basic WGS84 degrees.
+proj4.defs('CRS:84', proj4.defs('EPSG:4326'));
 
 const projectionCache = {};
 

@@ -22,7 +22,7 @@ function preprocessDataLayer(layer) {
     layer.version = layer.version || '2.0.2';
     layer.opacity = layer.opacity || 1;
     layer.wireframe = layer.wireframe || false;
-    if (!(layer.extent instanceof Extent)) {
+    if (layer.extent && !(layer.extent instanceof Extent)) {
         layer.extent = new Extent(layer.projection, layer.extent);
     }
     layer.url = `${layer.url

@@ -1,0 +1,688 @@
+<?xml version='1.0' encoding="UTF-8" standalone="no" ?>
+<WMS_Capabilities version="1.3.0" updateSequence="2014-09-26T10:54:00Z"  xmlns="http://www.opengis.net/wms"   xmlns:sld="http://www.opengis.net/sld"   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"   xmlns:ms="http://mapserver.gis.umn.edu/mapserver"   xmlns:inspire_common="http://inspire.ec.europa.eu/schemas/common/1.0"   xmlns:inspire_vs="http://inspire.ec.europa.eu/schemas/inspire_vs/1.0"   xsi:schemaLocation="http://www.opengis.net/wms http://schemas.opengis.net/wms/1.3.0/capabilities_1_3_0.xsd  http://www.opengis.net/sld http://schemas.opengis.net/sld/1.1.0/sld_capabilities.xsd  http://inspire.ec.europa.eu/schemas/inspire_vs/1.0  http://inspire.ec.europa.eu/schemas/inspire_vs/1.0/inspire_vs.xsd http://mapserver.gis.umn.edu/mapserver http://ogc.bgs.ac.uk/cgi-bin/BGS_Bedrock_and_Superficial_Geology/wms?language=eng&amp;service=WMS&amp;version=1.3.0&amp;request=GetSchemaExtension">
+
+<!-- MapServer version 7.0.2 OUTPUT=PNG OUTPUT=JPEG OUTPUT=KML SUPPORTS=PROJ SUPPORTS=AGG SUPPORTS=FREETYPE SUPPORTS=CAIRO SUPPORTS=SVG_SYMBOLS SUPPORTS=SVGCAIRO SUPPORTS=ICONV SUPPORTS=FRIBIDI SUPPORTS=WMS_SERVER SUPPORTS=WMS_CLIENT SUPPORTS=WFS_SERVER SUPPORTS=WFS_CLIENT SUPPORTS=WCS_SERVER SUPPORTS=SOS_SERVER SUPPORTS=FASTCGI SUPPORTS=THREADS SUPPORTS=GEOS INPUT=JPEG INPUT=POSTGIS INPUT=OGR INPUT=GDAL INPUT=SHAPEFILE -->
+
+<Service>
+  <Name>WMS</Name>
+  <Title>BGS Bedrock and Superficial geology</Title>
+  <Abstract>The 1:625k DiGMap data covering the whole of the United Kingdom is available in this OGC WMS service for all uses - including commercial use subject to the conditions in the Access Constraints section. It is being served as a contribution to the OneGeology initiative (www.onegeology.org). Separate bedrock geology and superficial deposits layers are available in this service. Layers available for bedrock are lithostratigraphy, age, and lithology. Layers available for superficial deposits layer are lithostratigraphy and lithology.  A layer is also provided for the UK Continental Shelf BGS 1:1M simplified seabed sediments. For information about more of the British Geological Survey&#39;s maps that are available digitally please visit http://www.bgs.ac.uk/products/digitalmaps/digmapgb.html</Abstract>
+  <KeywordList>
+      <Keyword>OneGeology</Keyword>
+      <Keyword>geology</Keyword>
+      <Keyword>map</Keyword>
+      <Keyword>United Kingdom</Keyword>
+      <Keyword>bedrock</Keyword>
+      <Keyword>superficial</Keyword>
+      <Keyword>lithology</Keyword>
+      <Keyword>lithostratigraphy</Keyword>
+      <Keyword>age</Keyword>
+      <Keyword>MD_LANG@ENG</Keyword>
+      <Keyword>MD_DATE@2014-01-06</Keyword>
+      <Keyword vocabulary="GEMET">Geology</Keyword>
+      <Keyword vocabulary="ISO">infoMapAccessService</Keyword>
+  </KeywordList>
+  <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.bgs.ac.uk/"/>
+  <ContactInformation>
+    <ContactPersonPrimary>
+      <ContactPerson>Mr Matthew Harrison</ContactPerson>
+      <ContactOrganization>British Geological Survey (BGS)</ContactOrganization>
+    </ContactPersonPrimary>
+      <ContactPosition>Science Director Informatics</ContactPosition>
+    <ContactAddress>
+        <AddressType>postal</AddressType>
+        <Address>Environmental Science Centre</Address>
+        <City>Keyworth</City>
+        <StateOrProvince>Nottinghamshire</StateOrProvince>
+        <PostCode>NG12 5GG</PostCode>
+        <Country>United Kingdom</Country>
+    </ContactAddress>
+      <ContactVoiceTelephone>+44 (0)115 936 3100</ContactVoiceTelephone>
+      <ContactFacsimileTelephone>+44 (0)115 936 3200</ContactFacsimileTelephone>
+  <ContactElectronicMailAddress>enquiries@bgs.ac.uk</ContactElectronicMailAddress>
+  </ContactInformation>
+  <Fees>none</Fees>
+  <AccessConstraints>The 1:625k DiGMap data is made available for all uses - including commercial use, however the British Geological Survey (BGS) at all times retains the copyright in this material and you are not permitted, without an appropriate licence, to set up a service selling on this material. Your own use of any information provided by the British Geological Survey (BGS) is at your own risk. Neither BGS nor the Natural Environment Research Council (NERC) gives any warranty, condition or representation as to the quality, accuracy or completeness of the information or its suitability for any use or purpose. All implied conditions relating to the quality or suitability of the information, and all liabilities arising from the supply of the information (including any liability arising in negligence) are excluded to the fullest extent permitted by law.</AccessConstraints>
+  <MaxWidth>3072</MaxWidth>
+  <MaxHeight>3072</MaxHeight>
+</Service>
+
+<Capability>
+  <Request>
+    <GetCapabilities>
+      <Format>text/xml</Format>
+      <DCPType>
+        <HTTP>
+          <Get><OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://ogc.bgs.ac.uk/cgi-bin/BGS_Bedrock_and_Superficial_Geology/wms?language=eng&amp;"/></Get>
+          <Post><OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://ogc.bgs.ac.uk/cgi-bin/BGS_Bedrock_and_Superficial_Geology/wms?language=eng&amp;"/></Post>
+        </HTTP>
+      </DCPType>
+    </GetCapabilities>
+    <GetMap>
+      <Format>image/png</Format>
+      <Format>image/tiff</Format>
+      <Format>image/x-aaigrid</Format>
+      <Format>image/jpeg</Format>
+      <Format>image/png; mode=8bit</Format>
+      <Format>application/x-pdf</Format>
+      <Format>image/svg+xml</Format>
+      <Format>application/vnd.google-earth.kml+xml</Format>
+      <Format>application/vnd.google-earth.kmz</Format>
+      <DCPType>
+        <HTTP>
+          <Get><OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://ogc.bgs.ac.uk/cgi-bin/BGS_Bedrock_and_Superficial_Geology/wms?language=eng&amp;"/></Get>
+          <Post><OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://ogc.bgs.ac.uk/cgi-bin/BGS_Bedrock_and_Superficial_Geology/wms?language=eng&amp;"/></Post>
+        </HTTP>
+      </DCPType>
+    </GetMap>
+    <GetFeatureInfo>
+      <Format>text/html</Format>
+      <Format>application/vnd.ogc.gml</Format>
+      <Format>text/xml</Format>
+      <Format>text/plain</Format>
+      <DCPType>
+        <HTTP>
+          <Get><OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://ogc.bgs.ac.uk/cgi-bin/BGS_Bedrock_and_Superficial_Geology/wms?language=eng&amp;"/></Get>
+          <Post><OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://ogc.bgs.ac.uk/cgi-bin/BGS_Bedrock_and_Superficial_Geology/wms?language=eng&amp;"/></Post>
+        </HTTP>
+      </DCPType>
+    </GetFeatureInfo>
+    <sld:DescribeLayer>
+      <Format>text/xml</Format>
+      <DCPType>
+        <HTTP>
+          <Get><OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://ogc.bgs.ac.uk/cgi-bin/BGS_Bedrock_and_Superficial_Geology/wms?language=eng&amp;"/></Get>
+          <Post><OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://ogc.bgs.ac.uk/cgi-bin/BGS_Bedrock_and_Superficial_Geology/wms?language=eng&amp;"/></Post>
+        </HTTP>
+      </DCPType>
+    </sld:DescribeLayer>
+    <sld:GetLegendGraphic>
+      <Format>image/png</Format>
+      <Format>image/jpeg</Format>
+      <Format>image/png; mode=8bit</Format>
+      <DCPType>
+        <HTTP>
+          <Get><OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://ogc.bgs.ac.uk/cgi-bin/BGS_Bedrock_and_Superficial_Geology/wms?language=eng&amp;"/></Get>
+          <Post><OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://ogc.bgs.ac.uk/cgi-bin/BGS_Bedrock_and_Superficial_Geology/wms?language=eng&amp;"/></Post>
+        </HTTP>
+      </DCPType>
+    </sld:GetLegendGraphic>
+    <ms:GetStyles>
+      <Format>text/xml</Format>
+      <DCPType>
+        <HTTP>
+          <Get><OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://ogc.bgs.ac.uk/cgi-bin/BGS_Bedrock_and_Superficial_Geology/wms?language=eng&amp;"/></Get>
+          <Post><OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://ogc.bgs.ac.uk/cgi-bin/BGS_Bedrock_and_Superficial_Geology/wms?language=eng&amp;"/></Post>
+        </HTTP>
+      </DCPType>
+    </ms:GetStyles>
+  </Request>
+  <Exception>
+    <Format>XML</Format>
+    <Format>INIMAGE</Format>
+    <Format>BLANK</Format>
+  </Exception>
+  <sld:UserDefinedSymbolization SupportSLD="1" UserLayer="0" UserStyle="1" RemoteWFS="0" InlineFeature="0" RemoteWCS="0"/>
+  <inspire_vs:ExtendedCapabilities>
+    <inspire_common:MetadataUrl xsi:type="inspire_common:resourceLocatorType">
+      <inspire_common:URL>http://metadata.bgs.ac.uk/geonetwork/srv/en/csw?SERVICE=CSW&amp;REQUEST=GetRecordById&amp;elementSetName=full&amp;OutputSchema=http://www.isotc211.org/2005/gmd&amp;ID=7822e848-822d-45a5-8584-56d352fd2170&amp;</inspire_common:URL>
+      <inspire_common:MediaType>application/xml</inspire_common:MediaType>
+    </inspire_common:MetadataUrl>
+    <inspire_common:SupportedLanguages>
+      <inspire_common:DefaultLanguage><inspire_common:Language>eng</inspire_common:Language></inspire_common:DefaultLanguage>
+    </inspire_common:SupportedLanguages>
+    <inspire_common:ResponseLanguage><inspire_common:Language>eng</inspire_common:Language></inspire_common:ResponseLanguage>
+  </inspire_vs:ExtendedCapabilities>
+  <Layer>
+    <Name>BGS_EN_Bedrock_and_Superficial_Geology</Name>
+    <Title>BGS bedrock and superficial geology</Title>
+    <Abstract>The 1:625k DiGMap data covering the whole of the United Kingdom is available in this OGC WMS service for all uses - including commercial use subject to the conditions in the Access Constraints section. It is being served as a contribution to the OneGeology initiative (www.onegeology.org). Separate bedrock geology and superficial deposits layers are available in this service. Layers available for bedrock are lithostratigraphy, age, and lithology. Layers available for superficial deposits layer are lithostratigraphy and lithology.  A layer is also provided for the UK Continental Shelf BGS 1:1M simplified seabed sediments. For information about more of the British Geological Survey&#39;s maps that are available digitally please visit http://www.bgs.ac.uk/products/digitalmaps/digmapgb.html</Abstract>
+    <KeywordList>
+        <Keyword>OneGeology</Keyword>
+        <Keyword>geology</Keyword>
+        <Keyword>map</Keyword>
+        <Keyword>United Kingdom</Keyword>
+        <Keyword>bedrock</Keyword>
+        <Keyword>superficial</Keyword>
+        <Keyword>lithology</Keyword>
+        <Keyword>lithostratigraphy</Keyword>
+        <Keyword>age</Keyword>
+        <Keyword>MD_LANG@ENG</Keyword>
+        <Keyword>MD_DATE@2014-01-06</Keyword>
+        <Keyword vocabulary="GEMET">Geology</Keyword>
+        <Keyword vocabulary="ISO">infoMapAccessService</Keyword>
+    </KeywordList>
+    <CRS>CRS:84</CRS>
+    <CRS>EPSG:27700</CRS>
+    <CRS>EPSG:29902</CRS>
+    <CRS>EPSG:3034</CRS>
+    <CRS>EPSG:3413</CRS>
+    <CRS>EPSG:3857</CRS>
+    <CRS>EPSG:4258</CRS>
+    <CRS>EPSG:4326</CRS>
+    <CRS>EPSG:900913</CRS>
+    <EX_GeographicBoundingBox>
+        <westBoundLongitude>-8.6476</westBoundLongitude>
+        <eastBoundLongitude>1.76943</eastBoundLongitude>
+        <southBoundLatitude>49.8639</southBoundLatitude>
+        <northBoundLatitude>60.8622</northBoundLatitude>
+    </EX_GeographicBoundingBox>
+    <BoundingBox CRS="CRS:84"
+                minx="-8.6476" miny="49.8639" maxx="1.76943" maxy="60.8622" />
+    <BoundingBox CRS="EPSG:27700"
+                minx="-77493.4" miny="-4039.86" maxx="670977" maxy="1.23824e+006" />
+    <BoundingBox CRS="EPSG:29902"
+                minx="153489" miny="-154594" maxx="901891" maxy="1.10946e+006" />
+    <BoundingBox CRS="EPSG:3034"
+                minx="2.60232e+006" miny="2.71888e+006" maxx="3.88362e+006" maxy="3.56176e+006" />
+    <BoundingBox CRS="EPSG:3413"
+                minx="1.91073e+006" miny="-3.64649e+006" maxx="3.29885e+006" maxy="-2.20789e+006" />
+    <BoundingBox CRS="EPSG:3857"
+                minx="-962646" miny="6.42274e+006" maxx="196972" maxy="8.59425e+006" />
+    <BoundingBox CRS="EPSG:4258"
+                minx="49.8639" miny="-8.6476" maxx="60.8622" maxy="1.76943" />
+    <BoundingBox CRS="EPSG:4326"
+                minx="49.8639" miny="-8.6476" maxx="60.8622" maxy="1.76943" />
+    <BoundingBox CRS="EPSG:900913"
+                minx="-962646" miny="6.42274e+006" maxx="196972" maxy="8.59425e+006" />
+    <Attribution>
+        <Title>British Geological Survey (BGS)</Title>
+        <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.bgs.ac.uk/"/>
+        <LogoURL width="275" height="60">
+             <Format>image/gif</Format>
+             <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://ogc.bgs.ac.uk/img/bgs_c_t_275x60.gif"/>
+          </LogoURL>
+    </Attribution>
+    <AuthorityURL name="BritishGeologicalSurvey">
+      <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://data.bgs.ac.uk/ref/BritishGeologicalSurvey"/>
+    </AuthorityURL>
+    <Style>
+       <Name>default</Name>
+       <Title>default</Title>
+       <LegendURL width="563" height="6420">
+          <Format>image/png</Format>
+          <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://ogc.bgs.ac.uk/cgi-bin/BGS_Bedrock_and_Superficial_Geology/wms?language=eng&amp;version=1.3.0&amp;service=WMS&amp;request=GetLegendGraphic&amp;sld_version=1.1.0&amp;layer=BGS_EN_Bedrock_and_Superficial_Geology&amp;format=image/png&amp;STYLE=default"/>
+       </LegendURL>
+    </Style>
+    <Layer queryable="1" opaque="0" cascaded="0">
+        <Name>GBR_BGS_625k_BLT</Name>
+        <Title>GBR BGS 1:625k Bedrock Lithology</Title>
+        <Abstract>GBR BGS 1:625k scale Bedrock Lithology</Abstract>
+        <KeywordList>
+            <Keyword>OneGeology</Keyword>
+            <Keyword>geology</Keyword>
+            <Keyword>bedrock</Keyword>
+            <Keyword>lithology</Keyword>
+            <Keyword>continent@Europe</Keyword>
+            <Keyword>subcontinent@Northern Europe</Keyword>
+            <Keyword>geographicarea@United Kingdom</Keyword>
+            <Keyword>dataprovider@British Geological Survey</Keyword>
+            <Keyword>serviceprovider@British Geological Survey</Keyword>
+            <Keyword>DS_TOPIC@geoscientificinformation</Keyword>
+            <Keyword>DS_DATE@2008-04-10</Keyword>
+            <Keyword>GeoSciML32_wfs_age_or_litho_queryable</Keyword>
+            <Keyword>WFSgsml31filter_age_litho</Keyword>
+            <Keyword>GeoSciML_wfs_age_or_litho_queryable</Keyword>
+        </KeywordList>
+        <CRS>CRS:84</CRS>
+        <CRS>EPSG:27700</CRS>
+        <CRS>EPSG:29902</CRS>
+        <CRS>EPSG:3034</CRS>
+        <CRS>EPSG:3413</CRS>
+        <CRS>EPSG:3857</CRS>
+        <CRS>EPSG:4258</CRS>
+        <CRS>EPSG:4326</CRS>
+        <CRS>EPSG:900913</CRS>
+        <EX_GeographicBoundingBox>
+            <westBoundLongitude>-8.64846</westBoundLongitude>
+            <eastBoundLongitude>1.76767</eastBoundLongitude>
+            <southBoundLatitude>49.8638</southBoundLatitude>
+            <northBoundLatitude>60.8612</northBoundLatitude>
+        </EX_GeographicBoundingBox>
+        <BoundingBox CRS="CRS:84"
+                    minx="-8.64846" miny="49.8638" maxx="1.76767" maxy="60.8612" />
+        <BoundingBox CRS="EPSG:27700"
+                    minx="-77556.4" miny="-4051.91" maxx="670851" maxy="1.23813e+006" />
+        <BoundingBox CRS="EPSG:29902"
+                    minx="153426" miny="-154606" maxx="901766" maxy="1.10933e+006" />
+        <BoundingBox CRS="EPSG:3034"
+                    minx="2.60232e+006" miny="2.71882e+006" maxx="3.88352e+006" maxy="3.56165e+006" />
+        <BoundingBox CRS="EPSG:3413"
+                    minx="1.91076e+006" miny="-3.64654e+006" maxx="3.29876e+006" maxy="-2.20805e+006" />
+        <BoundingBox CRS="EPSG:3857"
+                    minx="-962742" miny="6.42272e+006" maxx="196776" maxy="8.59402e+006" />
+        <BoundingBox CRS="EPSG:4258"
+                    minx="49.8638" miny="-8.64846" maxx="60.8612" maxy="1.76767" />
+        <BoundingBox CRS="EPSG:4326"
+                    minx="49.8638" miny="-8.64846" maxx="60.8612" maxy="1.76767" />
+        <BoundingBox CRS="EPSG:900913"
+                    minx="-962742" miny="6.42272e+006" maxx="196776" maxy="8.59402e+006" />
+    <Attribution>
+        <Title>British Geological Survey (BGS)</Title>
+        <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.bgs.ac.uk/"/>
+        <LogoURL width="275" height="60">
+             <Format>image/gif</Format>
+             <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://ogc.bgs.ac.uk/img/bgs_c_t_275x60.gif"/>
+          </LogoURL>
+    </Attribution>
+        <AuthorityURL name="BritishGeologicalSurvey">
+          <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://data.bgs.ac.uk/ref/BritishGeologicalSurvey"/>
+        </AuthorityURL>
+        <MetadataURL type="TC211">
+          <Format>text/html</Format>
+          <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://www.bgs.ac.uk/discoverymetadata/13480426.html"/>
+        </MetadataURL>
+        <DataURL>
+          <Format>text/html</Format>
+          <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://www.bgs.ac.uk/products/digitalmaps/digmapgb_625.html"/>
+        </DataURL>
+        <Style>
+          <Name>default</Name>
+          <Title>default</Title>
+          <LegendURL width="499" height="1720">
+             <Format>image/png</Format>
+             <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://ogc.bgs.ac.uk/cgi-bin/BGS_Bedrock_and_Superficial_Geology/wms?language=eng&amp;version=1.3.0&amp;service=WMS&amp;request=GetLegendGraphic&amp;sld_version=1.1.0&amp;layer=GBR_BGS_625k_BLT&amp;format=image/png&amp;STYLE=default"/>
+          </LegendURL>
+        </Style>
+    </Layer>
+    <Layer queryable="1" opaque="0" cascaded="0">
+        <Name>GBR_BGS_625k_BLS</Name>
+        <Title>GBR BGS 1:625k Bedrock Lithostratigraphy</Title>
+        <Abstract>GBR BGS 1:625k scale Bedrock Lithostratigraphy (including Lithogenic units)</Abstract>
+        <KeywordList>
+            <Keyword>OneGeology</Keyword>
+            <Keyword>geology</Keyword>
+            <Keyword>bedrock</Keyword>
+            <Keyword>lithostratigraphy</Keyword>
+            <Keyword>continent@Europe</Keyword>
+            <Keyword>subcontinent@Northern Europe</Keyword>
+            <Keyword>geographicarea@United Kingdom</Keyword>
+            <Keyword>dataprovider@British Geological Survey</Keyword>
+            <Keyword>serviceprovider@British Geological Survey</Keyword>
+            <Keyword>DS_TOPIC@geoscientificinformation</Keyword>
+            <Keyword>DS_DATE@2008-04-10</Keyword>
+            <Keyword>GeoSciML32_wfs_age_or_litho_queryable</Keyword>
+            <Keyword>WFSgsml31filter_age_litho</Keyword>
+            <Keyword>GeoSciML_wfs_age_or_litho_queryable</Keyword>
+        </KeywordList>
+        <CRS>CRS:84</CRS>
+        <CRS>EPSG:27700</CRS>
+        <CRS>EPSG:29902</CRS>
+        <CRS>EPSG:3034</CRS>
+        <CRS>EPSG:3413</CRS>
+        <CRS>EPSG:3857</CRS>
+        <CRS>EPSG:4258</CRS>
+        <CRS>EPSG:4326</CRS>
+        <CRS>EPSG:900913</CRS>
+        <EX_GeographicBoundingBox>
+            <westBoundLongitude>-8.64846</westBoundLongitude>
+            <eastBoundLongitude>1.76767</eastBoundLongitude>
+            <southBoundLatitude>49.8638</southBoundLatitude>
+            <northBoundLatitude>60.8612</northBoundLatitude>
+        </EX_GeographicBoundingBox>
+        <BoundingBox CRS="CRS:84"
+                    minx="-8.64846" miny="49.8638" maxx="1.76767" maxy="60.8612" />
+        <BoundingBox CRS="EPSG:27700"
+                    minx="-77556.4" miny="-4051.91" maxx="670851" maxy="1.23813e+006" />
+        <BoundingBox CRS="EPSG:29902"
+                    minx="153426" miny="-154606" maxx="901766" maxy="1.10933e+006" />
+        <BoundingBox CRS="EPSG:3034"
+                    minx="2.60232e+006" miny="2.71882e+006" maxx="3.88352e+006" maxy="3.56165e+006" />
+        <BoundingBox CRS="EPSG:3413"
+                    minx="1.91076e+006" miny="-3.64654e+006" maxx="3.29876e+006" maxy="-2.20805e+006" />
+        <BoundingBox CRS="EPSG:3857"
+                    minx="-962742" miny="6.42272e+006" maxx="196776" maxy="8.59402e+006" />
+        <BoundingBox CRS="EPSG:4258"
+                    minx="49.8638" miny="-8.64846" maxx="60.8612" maxy="1.76767" />
+        <BoundingBox CRS="EPSG:4326"
+                    minx="49.8638" miny="-8.64846" maxx="60.8612" maxy="1.76767" />
+        <BoundingBox CRS="EPSG:900913"
+                    minx="-962742" miny="6.42272e+006" maxx="196776" maxy="8.59402e+006" />
+    <Attribution>
+        <Title>British Geological Survey (BGS)</Title>
+        <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.bgs.ac.uk/"/>
+        <LogoURL width="275" height="60">
+             <Format>image/gif</Format>
+             <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://ogc.bgs.ac.uk/img/bgs_c_t_275x60.gif"/>
+          </LogoURL>
+    </Attribution>
+        <AuthorityURL name="BritishGeologicalSurvey">
+          <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://data.bgs.ac.uk/ref/BritishGeologicalSurvey"/>
+        </AuthorityURL>
+        <MetadataURL type="TC211">
+          <Format>text/html</Format>
+          <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://www.bgs.ac.uk/discoverymetadata/13480426.html"/>
+        </MetadataURL>
+        <DataURL>
+          <Format>text/html</Format>
+          <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://www.bgs.ac.uk/products/digitalmaps/digmapgb_625.html"/>
+        </DataURL>
+        <Style>
+          <Name>default</Name>
+          <Title>default</Title>
+          <LegendURL width="563" height="3080">
+             <Format>image/png</Format>
+             <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://ogc.bgs.ac.uk/cgi-bin/BGS_Bedrock_and_Superficial_Geology/wms?language=eng&amp;version=1.3.0&amp;service=WMS&amp;request=GetLegendGraphic&amp;sld_version=1.1.0&amp;layer=GBR_BGS_625k_BLS&amp;format=image/png&amp;STYLE=default"/>
+          </LegendURL>
+        </Style>
+    </Layer>
+    <Layer queryable="1" opaque="0" cascaded="0">
+        <Name>GBR_BGS_625k_BA</Name>
+        <Title>GBR BGS 1:625k Bedrock Age</Title>
+        <Abstract>GBR BGS 1:625k scale Bedrock Age</Abstract>
+        <KeywordList>
+            <Keyword>OneGeology</Keyword>
+            <Keyword>geology</Keyword>
+            <Keyword>bedrock</Keyword>
+            <Keyword>age</Keyword>
+            <Keyword>chronostratigraphy</Keyword>
+            <Keyword>continent@Europe</Keyword>
+            <Keyword>subcontinent@Northern Europe</Keyword>
+            <Keyword>geographicarea@United Kingdom</Keyword>
+            <Keyword>dataprovider@British Geological Survey</Keyword>
+            <Keyword>serviceprovider@British Geological Survey</Keyword>
+            <Keyword>DS_TOPIC@geoscientificinformation</Keyword>
+            <Keyword>DS_DATE@2008-04-10</Keyword>
+            <Keyword>GeoSciML32_wfs_age_or_litho_queryable</Keyword>
+            <Keyword>WFSgsml31filter_age_litho</Keyword>
+            <Keyword>GeoSciML_wfs_age_or_litho_queryable</Keyword>
+        </KeywordList>
+        <CRS>CRS:84</CRS>
+        <CRS>EPSG:27700</CRS>
+        <CRS>EPSG:29902</CRS>
+        <CRS>EPSG:3034</CRS>
+        <CRS>EPSG:3413</CRS>
+        <CRS>EPSG:3857</CRS>
+        <CRS>EPSG:4258</CRS>
+        <CRS>EPSG:4326</CRS>
+        <CRS>EPSG:900913</CRS>
+        <EX_GeographicBoundingBox>
+            <westBoundLongitude>-8.64846</westBoundLongitude>
+            <eastBoundLongitude>1.76767</eastBoundLongitude>
+            <southBoundLatitude>49.8638</southBoundLatitude>
+            <northBoundLatitude>60.8612</northBoundLatitude>
+        </EX_GeographicBoundingBox>
+        <BoundingBox CRS="CRS:84"
+                    minx="-8.64846" miny="49.8638" maxx="1.76767" maxy="60.8612" />
+        <BoundingBox CRS="EPSG:27700"
+                    minx="-77556.4" miny="-4051.91" maxx="670851" maxy="1.23813e+006" />
+        <BoundingBox CRS="EPSG:29902"
+                    minx="153426" miny="-154606" maxx="901766" maxy="1.10933e+006" />
+        <BoundingBox CRS="EPSG:3034"
+                    minx="2.60232e+006" miny="2.71882e+006" maxx="3.88352e+006" maxy="3.56165e+006" />
+        <BoundingBox CRS="EPSG:3413"
+                    minx="1.91076e+006" miny="-3.64654e+006" maxx="3.29876e+006" maxy="-2.20805e+006" />
+        <BoundingBox CRS="EPSG:3857"
+                    minx="-962742" miny="6.42272e+006" maxx="196776" maxy="8.59402e+006" />
+        <BoundingBox CRS="EPSG:4258"
+                    minx="49.8638" miny="-8.64846" maxx="60.8612" maxy="1.76767" />
+        <BoundingBox CRS="EPSG:4326"
+                    minx="49.8638" miny="-8.64846" maxx="60.8612" maxy="1.76767" />
+        <BoundingBox CRS="EPSG:900913"
+                    minx="-962742" miny="6.42272e+006" maxx="196776" maxy="8.59402e+006" />
+    <Attribution>
+        <Title>British Geological Survey (BGS)</Title>
+        <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.bgs.ac.uk/"/>
+        <LogoURL width="275" height="60">
+             <Format>image/gif</Format>
+             <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://ogc.bgs.ac.uk/img/bgs_c_t_275x60.gif"/>
+          </LogoURL>
+    </Attribution>
+        <AuthorityURL name="BritishGeologicalSurvey">
+          <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://data.bgs.ac.uk/ref/BritishGeologicalSurvey"/>
+        </AuthorityURL>
+        <MetadataURL type="TC211">
+          <Format>text/html</Format>
+          <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://www.bgs.ac.uk/discoverymetadata/13480426.html"/>
+        </MetadataURL>
+        <DataURL>
+          <Format>text/html</Format>
+          <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://www.bgs.ac.uk/products/digitalmaps/digmapgb_625.html"/>
+        </DataURL>
+        <Style>
+          <Name>default</Name>
+          <Title>default</Title>
+          <LegendURL width="127" height="1080">
+             <Format>image/png</Format>
+             <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://ogc.bgs.ac.uk/cgi-bin/BGS_Bedrock_and_Superficial_Geology/wms?language=eng&amp;version=1.3.0&amp;service=WMS&amp;request=GetLegendGraphic&amp;sld_version=1.1.0&amp;layer=GBR_BGS_625k_BA&amp;format=image/png&amp;STYLE=default"/>
+          </LegendURL>
+        </Style>
+    </Layer>
+    <Layer queryable="1" opaque="0" cascaded="0">
+        <Name>GBR_BGS_625k_SLT</Name>
+        <Title>GBR BGS 1:625k Superficial Lithology</Title>
+        <Abstract>GBR BGS 1:625k scale Superficial Deposits Lithology</Abstract>
+        <KeywordList>
+            <Keyword>OneGeology</Keyword>
+            <Keyword>geology</Keyword>
+            <Keyword>superficial</Keyword>
+            <Keyword>lithology</Keyword>
+            <Keyword>continent@Europe</Keyword>
+            <Keyword>subcontinent@Northern Europe</Keyword>
+            <Keyword>geographicarea@United Kingdom</Keyword>
+            <Keyword>dataprovider@British Geological Survey</Keyword>
+            <Keyword>serviceprovider@British Geological Survey</Keyword>
+            <Keyword>DS_TOPIC@geoscientificinformation</Keyword>
+            <Keyword>DS_DATE@2008-04-10</Keyword>
+        </KeywordList>
+        <CRS>CRS:84</CRS>
+        <CRS>EPSG:27700</CRS>
+        <CRS>EPSG:29902</CRS>
+        <CRS>EPSG:3034</CRS>
+        <CRS>EPSG:3413</CRS>
+        <CRS>EPSG:3857</CRS>
+        <CRS>EPSG:4258</CRS>
+        <CRS>EPSG:4326</CRS>
+        <CRS>EPSG:900913</CRS>
+        <EX_GeographicBoundingBox>
+            <westBoundLongitude>-7.62927</westBoundLongitude>
+            <eastBoundLongitude>1.7645</eastBoundLongitude>
+            <southBoundLatitude>49.8902</southBoundLatitude>
+            <northBoundLatitude>60.8489</northBoundLatitude>
+        </EX_GeographicBoundingBox>
+        <BoundingBox CRS="CRS:84"
+                    minx="-7.62927" miny="49.8902" maxx="1.7645" maxy="60.8489" />
+        <BoundingBox CRS="EPSG:27700"
+                    minx="-4156.5" miny="-1118.71" maxx="670476" maxy="1.23158e+006" />
+        <BoundingBox CRS="EPSG:29902"
+                    minx="220200" miny="-151606" maxx="901154" maxy="1.10794e+006" />
+        <BoundingBox CRS="EPSG:3034"
+                    minx="2.60516e+006" miny="2.78814e+006" maxx="3.869e+006" maxy="3.56133e+006" />
+        <BoundingBox CRS="EPSG:3413"
+                    minx="1.9575e+006" miny="-3.59567e+006" maxx="3.29624e+006" maxy="-2.20915e+006" />
+        <BoundingBox CRS="EPSG:3857"
+                    minx="-849286" miny="6.42728e+006" maxx="196424" maxy="8.59121e+006" />
+        <BoundingBox CRS="EPSG:4258"
+                    minx="49.8902" miny="-7.62927" maxx="60.8489" maxy="1.7645" />
+        <BoundingBox CRS="EPSG:4326"
+                    minx="49.8902" miny="-7.62927" maxx="60.8489" maxy="1.7645" />
+        <BoundingBox CRS="EPSG:900913"
+                    minx="-849286" miny="6.42728e+006" maxx="196424" maxy="8.59121e+006" />
+    <Attribution>
+        <Title>British Geological Survey (BGS)</Title>
+        <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.bgs.ac.uk/"/>
+        <LogoURL width="275" height="60">
+             <Format>image/gif</Format>
+             <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://ogc.bgs.ac.uk/img/bgs_c_t_275x60.gif"/>
+          </LogoURL>
+    </Attribution>
+        <AuthorityURL name="BritishGeologicalSurvey">
+          <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://data.bgs.ac.uk/ref/BritishGeologicalSurvey"/>
+        </AuthorityURL>
+        <MetadataURL type="TC211">
+          <Format>text/html</Format>
+          <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://www.bgs.ac.uk/discoverymetadata/13480426.html"/>
+        </MetadataURL>
+        <DataURL>
+          <Format>text/html</Format>
+          <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://www.bgs.ac.uk/products/digitalmaps/digmapgb_625.html"/>
+        </DataURL>
+        <Style>
+          <Name>default</Name>
+          <Title>default</Title>
+          <LegendURL width="133" height="160">
+             <Format>image/png</Format>
+             <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://ogc.bgs.ac.uk/cgi-bin/BGS_Bedrock_and_Superficial_Geology/wms?language=eng&amp;version=1.3.0&amp;service=WMS&amp;request=GetLegendGraphic&amp;sld_version=1.1.0&amp;layer=GBR_BGS_625k_SLT&amp;format=image/png&amp;STYLE=default"/>
+          </LegendURL>
+        </Style>
+    </Layer>
+    <Layer queryable="1" opaque="0" cascaded="0">
+        <Name>GBR_BGS_625k_SLS</Name>
+        <Title>GBR BGS 1:625k Superficial Lithostratigraphy</Title>
+        <Abstract>GBR BGS 1:625k scale Superficial Deposits Lithostratigraphy (including Lithomorphogenetic units)</Abstract>
+        <KeywordList>
+            <Keyword>OneGeology</Keyword>
+            <Keyword>geology</Keyword>
+            <Keyword>superficial</Keyword>
+            <Keyword>lithostratigraphy</Keyword>
+            <Keyword>continent@Europe</Keyword>
+            <Keyword>subcontinent@Northern Europe</Keyword>
+            <Keyword>geographicarea@United Kingdom</Keyword>
+            <Keyword>dataprovider@British Geological Survey</Keyword>
+            <Keyword>serviceprovider@British Geological Survey</Keyword>
+            <Keyword>DS_TOPIC@geoscientificinformation</Keyword>
+            <Keyword>DS_DATE@2008-04-10</Keyword>
+        </KeywordList>
+        <CRS>CRS:84</CRS>
+        <CRS>EPSG:27700</CRS>
+        <CRS>EPSG:29902</CRS>
+        <CRS>EPSG:3034</CRS>
+        <CRS>EPSG:3413</CRS>
+        <CRS>EPSG:3857</CRS>
+        <CRS>EPSG:4258</CRS>
+        <CRS>EPSG:4326</CRS>
+        <CRS>EPSG:900913</CRS>
+        <EX_GeographicBoundingBox>
+            <westBoundLongitude>-7.62927</westBoundLongitude>
+            <eastBoundLongitude>1.7645</eastBoundLongitude>
+            <southBoundLatitude>49.8902</southBoundLatitude>
+            <northBoundLatitude>60.8489</northBoundLatitude>
+        </EX_GeographicBoundingBox>
+        <BoundingBox CRS="CRS:84"
+                    minx="-7.62927" miny="49.8902" maxx="1.7645" maxy="60.8489" />
+        <BoundingBox CRS="EPSG:27700"
+                    minx="-4156.5" miny="-1118.71" maxx="670476" maxy="1.23158e+006" />
+        <BoundingBox CRS="EPSG:29902"
+                    minx="220200" miny="-151606" maxx="901154" maxy="1.10794e+006" />
+        <BoundingBox CRS="EPSG:3034"
+                    minx="2.60516e+006" miny="2.78814e+006" maxx="3.869e+006" maxy="3.56133e+006" />
+        <BoundingBox CRS="EPSG:3413"
+                    minx="1.9575e+006" miny="-3.59567e+006" maxx="3.29624e+006" maxy="-2.20915e+006" />
+        <BoundingBox CRS="EPSG:3857"
+                    minx="-849286" miny="6.42728e+006" maxx="196424" maxy="8.59121e+006" />
+        <BoundingBox CRS="EPSG:4258"
+                    minx="49.8902" miny="-7.62927" maxx="60.8489" maxy="1.7645" />
+        <BoundingBox CRS="EPSG:4326"
+                    minx="49.8902" miny="-7.62927" maxx="60.8489" maxy="1.7645" />
+        <BoundingBox CRS="EPSG:900913"
+                    minx="-849286" miny="6.42728e+006" maxx="196424" maxy="8.59121e+006" />
+    <Attribution>
+        <Title>British Geological Survey (BGS)</Title>
+        <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.bgs.ac.uk/"/>
+        <LogoURL width="275" height="60">
+             <Format>image/gif</Format>
+             <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://ogc.bgs.ac.uk/img/bgs_c_t_275x60.gif"/>
+          </LogoURL>
+    </Attribution>
+        <AuthorityURL name="BritishGeologicalSurvey">
+          <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://data.bgs.ac.uk/ref/BritishGeologicalSurvey"/>
+        </AuthorityURL>
+        <MetadataURL type="TC211">
+          <Format>text/html</Format>
+          <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://www.bgs.ac.uk/discoverymetadata/13480426.html"/>
+        </MetadataURL>
+        <DataURL>
+          <Format>text/html</Format>
+          <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://www.bgs.ac.uk/products/digitalmaps/digmapgb_625.html"/>
+        </DataURL>
+        <Style>
+          <Name>default</Name>
+          <Title>default</Title>
+          <LegendURL width="324" height="280">
+             <Format>image/png</Format>
+             <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://ogc.bgs.ac.uk/cgi-bin/BGS_Bedrock_and_Superficial_Geology/wms?language=eng&amp;version=1.3.0&amp;service=WMS&amp;request=GetLegendGraphic&amp;sld_version=1.1.0&amp;layer=GBR_BGS_625k_SLS&amp;format=image/png&amp;STYLE=default"/>
+          </LegendURL>
+        </Style>
+    </Layer>
+    <Layer queryable="1" opaque="0" cascaded="0">
+        <Name>UKCoShelf_BGS_1M_SBS</Name>
+        <Title>UKContShelf BGS 1:1M Seabed Sediments</Title>
+        <Abstract>UKContShelf BGS 1:1M Seabed Sediments. Your use of any information provided by the British Geological Survey (BGS) is at your own risk. Neither BGS nor the Natural Environment Research Council (NERC) gives any warranty, condition or representation as to the quality, accuracy or completeness of the information or its suitability for any use or purpose. All implied conditions relating to the quality or suitability of the information, and all liabilities arising from the supply of the information (including any liability arising in negligence) are excluded to the fullest extent permitted by law.</Abstract>
+        <KeywordList>
+            <Keyword>OneGeology</Keyword>
+            <Keyword>geology</Keyword>
+            <Keyword>marine geology</Keyword>
+            <Keyword>seabed</Keyword>
+            <Keyword>sediments</Keyword>
+            <Keyword>continent@Europe</Keyword>
+            <Keyword>subcontinent@Northern Europe</Keyword>
+            <Keyword>geographicarea@United Kingdom</Keyword>
+            <Keyword>dataprovider@British Geological Survey</Keyword>
+            <Keyword>serviceprovider@British Geological Survey</Keyword>
+            <Keyword>DS_TOPIC@geoscientificinformation</Keyword>
+            <Keyword>DS_DATE@2008-07-11</Keyword>
+        </KeywordList>
+        <CRS>CRS:84</CRS>
+        <CRS>EPSG:27700</CRS>
+        <CRS>EPSG:29902</CRS>
+        <CRS>EPSG:3034</CRS>
+        <CRS>EPSG:3413</CRS>
+        <CRS>EPSG:3857</CRS>
+        <CRS>EPSG:4258</CRS>
+        <CRS>EPSG:4326</CRS>
+        <CRS>EPSG:900913</CRS>
+        <EX_GeographicBoundingBox>
+            <westBoundLongitude>-12</westBoundLongitude>
+            <eastBoundLongitude>3.39852</eastBoundLongitude>
+            <southBoundLatitude>48.2351</southBoundLatitude>
+            <northBoundLatitude>63.8908</northBoundLatitude>
+        </EX_GeographicBoundingBox>
+        <BoundingBox CRS="CRS:84"
+                    minx="-12" miny="48.2351" maxx="3.39852" maxy="63.8908" />
+        <BoundingBox CRS="EPSG:27700"
+                    minx="-342047" miny="-185109" maxx="800912" maxy="1.59585e+006" />
+        <BoundingBox CRS="EPSG:29902"
+                    minx="-97073.7" miny="-335737" maxx="1.04617e+006" maxy="1.45748e+006" />
+        <BoundingBox CRS="EPSG:3034"
+                    minx="2.41668e+006" miny="2.44354e+006" maxx="4.25094e+006" maxy="3.67799e+006" />
+        <BoundingBox CRS="EPSG:3413"
+                    minx="1.56657e+006" miny="-3.96504e+006" maxx="3.53533e+006" maxy="-1.90973e+006" />
+        <BoundingBox CRS="EPSG:3857"
+                    minx="-1.33583e+006" miny="6.14606e+006" maxx="378321" maxy="9.3221e+006" />
+        <BoundingBox CRS="EPSG:4258"
+                    minx="48.2351" miny="-12" maxx="63.8908" maxy="3.39852" />
+        <BoundingBox CRS="EPSG:4326"
+                    minx="48.2351" miny="-12" maxx="63.8908" maxy="3.39852" />
+        <BoundingBox CRS="EPSG:900913"
+                    minx="-1.33583e+006" miny="6.14606e+006" maxx="378321" maxy="9.3221e+006" />
+    <Attribution>
+        <Title>British Geological Survey (BGS)</Title>
+        <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.bgs.ac.uk/"/>
+        <LogoURL width="275" height="60">
+             <Format>image/gif</Format>
+             <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://ogc.bgs.ac.uk/img/bgs_c_t_275x60.gif"/>
+          </LogoURL>
+    </Attribution>
+        <AuthorityURL name="BritishGeologicalSurvey">
+          <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://data.bgs.ac.uk/ref/BritishGeologicalSurvey"/>
+        </AuthorityURL>
+        <MetadataURL type="TC211">
+          <Format>application/xml; charset=UTF-8</Format>
+          <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://metadata.bgs.ac.uk/geonetwork/srv/en/csw?service=CSW&amp;request=GetRecordById&amp;elementSetName=full&amp;OutputSchema=http://www.isotc211.org/2005/gmd&amp;ID=9df8df52-d786-37a8-e044-0003ba9b0d98&amp;"/>
+        </MetadataURL>
+        <DataURL>
+          <Format>text/html</Format>
+          <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://www.bgs.ac.uk/products/digitalmaps/digmapgb_625.html"/>
+        </DataURL>
+        <Style>
+          <Name>default</Name>
+          <Title>default</Title>
+          <LegendURL width="131" height="100">
+             <Format>image/png</Format>
+             <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" xlink:href="http://ogc.bgs.ac.uk/cgi-bin/BGS_Bedrock_and_Superficial_Geology/wms?language=eng&amp;version=1.3.0&amp;service=WMS&amp;request=GetLegendGraphic&amp;sld_version=1.1.0&amp;layer=UKCoShelf_BGS_1M_SBS&amp;format=image/png&amp;STYLE=default"/>
+          </LegendURL>
+        </Style>
+    </Layer>
+  </Layer>
+</Capability>
+</WMS_Capabilities>
