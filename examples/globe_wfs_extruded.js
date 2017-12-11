@@ -4,6 +4,8 @@
 // Define initial camera position
 var positionOnGlobe = { longitude: 4.818, latitude: 45.7354, altitude: 3000 };
 var promises = [];
+var meshes = [];
+var scaler;
 
 // `viewerDiv` will contain iTowns' rendering area (`<canvas>`)
 var viewerDiv = document.getElementById('viewerDiv');
@@ -95,6 +97,24 @@ function acceptFeature(properties) {
     return !!properties.hauteur;
 }
 
+scaler = function update(/* dt */) {
+    var i;
+    var mesh;
+    if (meshes.length) {
+        globeView.notifyChange(true);
+    }
+    for (i = 0; i < meshes.length; i++) {
+        mesh = meshes[i];
+        if (mesh.children.length) {
+            mesh.scale.z = Math.min(
+                1.0, mesh.scale.z + 0.016);
+            mesh.updateMatrixWorld(true);
+        }
+    }
+    meshes = meshes.filter(function filter(m) { return m.scale.z < 1; });
+};
+
+globeView.addFrameRequester(itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER, scaler);
 globeView.addLayer({
     type: 'geometry',
     update: itowns.FeatureProcessing.update,
@@ -102,6 +122,10 @@ globeView.addLayer({
         color: colorBuildings,
         altitude: altitudeBuildings,
         extrude: extrudeBuildings }),
+    onMeshCreated: function scaleZ(mesh) {
+        mesh.scale.z = 0.01;
+        meshes.push(mesh);
+    },
     filter: acceptFeature,
     url: 'http://wxs.ign.fr/72hpsel8j8nhb5qgdh07gcyp/geoportail/wfs?',
     networkOptions: { crossOrigin: 'anonymous' },

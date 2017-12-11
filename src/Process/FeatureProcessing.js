@@ -3,25 +3,35 @@ import LayerUpdateState from '../Core/Layer/LayerUpdateState';
 import CancelledCommandException from '../Core/Scheduler/CancelledCommandException';
 import ObjectRemovalHelper from './ObjectRemovalHelper';
 
-function applyOffset(obj, offset) {
+
+const vector = new THREE.Vector3();
+function applyOffset(obj, offset, quaternion, offsetAltitude) {
     if (obj.geometry) {
         if (obj.geometry instanceof THREE.BufferGeometry) {
             for (let i = 0; i < obj.geometry.attributes.position.count; i++) {
-                obj.geometry.attributes.position.array[3 * i] += offset.x;
-                obj.geometry.attributes.position.array[3 * i + 1] += offset.y;
-                obj.geometry.attributes.position.array[3 * i + 2] += offset.z;
+                const i3 = 3 * i;
+                vector.fromArray(obj.geometry.attributes.position.array, i3);
+                vector.add(offset).applyQuaternion(quaternion);
+                if (offsetAltitude) {
+                    vector.z -= offsetAltitude;
+                }
+                vector.toArray(obj.geometry.attributes.position.array, i3);
             }
             obj.geometry.attributes.position.needsUpdate = true;
         } else {
             for (const v of obj.geometry.vertices) {
-                v.add(offset);
+                v.add(offset).applyQuaternion(quaternion);
+                if (offsetAltitude) {
+                    v.z -= offsetAltitude;
+                }
             }
             obj.geometry.verticesNeedUpdate = true;
         }
     }
-    obj.children.forEach(c => applyOffset(c, offset));
+    obj.children.forEach(c => applyOffset(c, offset, quaternion, offsetAltitude));
 }
 
+const quaternion = new THREE.Quaternion();
 export default {
     update(context, layer, node) {
         if (!node.parent && node.children.length) {
@@ -92,8 +102,12 @@ export default {
                 // expressed in crs coordinates (which may be different than world coordinates,
                 // if node's layer is attached to an Object with a non-identity transformation)
                 const tmp = node.extent.center().as(context.view.referenceCrs).xyz().negate();
-                applyOffset(result, tmp);
-
+                quaternion.setFromRotationMatrix(node.matrixWorld).inverse();
+                // const quaternion = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, 1), node.extent.center().geodesicNormal).inverse();
+                applyOffset(result, tmp, quaternion, result.minAltitude);
+                if (result.minAltitude) {
+                    result.position.z = result.minAltitude;
+                }
                 result.layer = layer.id;
                 node.add(result);
                 node.updateMatrixWorld();
