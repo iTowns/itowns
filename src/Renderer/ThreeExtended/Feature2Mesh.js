@@ -186,12 +186,14 @@ function coordinateToPolygon(coordinates, properties, options) {
     const colors = new Uint8Array(3 * coordinates.coordinates.length);
     const geometry = new THREE.BufferGeometry();
     let offset = 0;
+    let minAltitude = Infinity;
     /* eslint-disable-next-line */
     for (const id in coordinates.featureVertices) {
         // extract contour coodinates and properties of one feature
         const { contour, property } = extractFeature(coordinates, properties, id);
         // get altitude and extrude amount from properties
         const altitudeBottom = getAltitude(options, property, contour);
+        minAltitude = Math.min(minAltitude, altitudeBottom);
         const altitudeTopFace = altitudeBottom;
         // add vertices of the top face
         coordinatesToVertices(contour, altitudeTopFace, vertices, offset * 3);
@@ -222,13 +224,14 @@ function coordinateToPolygonExtruded(coordinates, properties, options) {
     let offset = 0;
     let offset2 = 0;
     let nbVertices = 0;
-
+    let minAltitude = Infinity;
     /* eslint-disable-next-line */
     for (const id in coordinates.featureVertices) {
         // extract contour coodinates and properties of one feature
         const { contour, property } = extractFeature(coordinates, properties, id);
         // get altitude and extrude amount from properties
         const altitudeBottom = getAltitude(options, property, contour);
+        minAltitude = Math.min(minAltitude, altitudeBottom);
         const extrudeAmount = getExtrude(options, property);
         // altitudeTopFace is the altitude of the visible top face.
         const altitudeTopFace = altitudeBottom + extrudeAmount;
@@ -258,7 +261,7 @@ function coordinateToPolygonExtruded(coordinates, properties, options) {
     geometry.addAttribute('color', new THREE.BufferAttribute(colors, 3, true));
     geometry.setIndex(new THREE.BufferAttribute(new Uint16Array(indices), 1));
     const result = new THREE.Mesh(geometry);
-
+    result.minAltitude = minAltitude;
     return result;
 }
 
@@ -313,9 +316,12 @@ function featureToThree(feature, options) {
 
 function featureCollectionToThree(featureCollection, options) {
     const group = new THREE.Group();
+    group.minAltitude = Infinity;
     for (const geometry of featureCollection.geometries) {
         const properties = featureCollection.features;
-        group.add(coordinatesToMesh(geometry, properties, options));
+        const mesh = coordinatesToMesh(geometry, properties, options);
+        group.add(mesh);
+        group.minAltitude = Math.min(mesh.minAltitude, group.minAltitude);
     }
     group.features = featureCollection.features;
     return group;
