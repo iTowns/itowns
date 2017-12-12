@@ -29,7 +29,9 @@ function preprocessDataLayer(layer) {
         options.tileMatrixSet = options.tileMatrixSet || 'WGS84';
         options.mimetype = options.mimetype || 'image/png';
         options.style = options.style || 'normal';
-        options.projection = options.projection || 'EPSG:3857';
+        if (!options.projection) {
+            options.projection = options.tileMatrixSet == 'PM' ? 'EPSG:3857' : 'EPSG:4326';
+        }
         let newBaseUrl = `${layer.url}` +
             `?LAYER=${options.name}` +
             `&FORMAT=${options.mimetype}` +
