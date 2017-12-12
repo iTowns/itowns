@@ -1,0 +1,162 @@
+{
+  "type": "color",
+  "url": "https://wxs.ign.fr/an7nvfzojv5wa96dsga5nk8w/geoportail/wmts",
+  "protocol": "wmts",
+  "id": "Cadastre",
+  "title": "Parcelles cadastrales",
+  "visible": false,
+  "opacity": 1,
+  "transparent": true,
+  "updateStrategy": {
+    "type": "0",
+    "options": {}
+  },
+  "networkOptions": {
+    "crossOrigin": "omit"
+  },
+  "options": {
+    "tileMatrixSet": "PM",
+    "tileMatrixSetLimits": {
+      "0": {
+        "minTileRow": "0",
+        "maxTileRow": "1",
+        "minTileCol": "0",
+        "maxTileCol": "1"
+      },
+      "1": {
+        "minTileRow": "0",
+        "maxTileRow": "2",
+        "minTileCol": "0",
+        "maxTileCol": "2"
+      },
+      "2": {
+        "minTileRow": "0",
+        "maxTileRow": "4",
+        "minTileCol": "0",
+        "maxTileCol": "4"
+      },
+      "3": {
+        "minTileRow": "0",
+        "maxTileRow": "8",
+        "minTileCol": "0",
+        "maxTileCol": "8"
+      },
+      "4": {
+        "minTileRow": "0",
+        "maxTileRow": "16",
+        "minTileCol": "0",
+        "maxTileCol": "16"
+      },
+      "5": {
+        "minTileRow": "0",
+        "maxTileRow": "32",
+        "minTileCol": "0",
+        "maxTileCol": "32"
+      },
+      "6": {
+        "minTileRow": "0",
+        "maxTileRow": "64",
+        "minTileCol": "0",
+        "maxTileCol": "64"
+      },
+      "7": {
+        "minTileRow": "0",
+        "maxTileRow": "128",
+        "minTileCol": "0",
+        "maxTileCol": "128"
+      },
+      "8": {
+        "minTileRow": "0",
+        "maxTileRow": "256",
+        "minTileCol": "0",
+        "maxTileCol": "256"
+      },
+      "9": {
+        "minTileRow": "0",
+        "maxTileRow": "512",
+        "minTileCol": "0",
+        "maxTileCol": "512"
+      },
+      "10": {
+        "minTileRow": "0",
+        "maxTileRow": "1024",
+        "minTileCol": "0",
+        "maxTileCol": "1024"
+      },
+      "11": {
+        "minTileRow": "0",
+        "maxTileRow": "2048",
+        "minTileCol": "0",
+        "maxTileCol": "2048"
+      },
+      "12": {
+        "minTileRow": "0",
+        "maxTileRow": "4096",
+        "minTileCol": "0",
+        "maxTileCol": "4096"
+      },
+      "13": {
+        "minTileRow": "0",
+        "maxTileRow": "8192",
+        "minTileCol": "0",
+        "maxTileCol": "8192"
+      },
+      "14": {
+        "minTileRow": "0",
+        "maxTileRow": "16384",
+        "minTileCol": "0",
+        "maxTileCol": "16384"
+      },
+      "15": {
+        "minTileRow": "0",
+        "maxTileRow": "32768",
+        "minTileCol": "0",
+        "maxTileCol": "32768"
+      },
+      "16": {
+        "minTileRow": "0",
+        "maxTileRow": "65536",
+        "minTileCol": "0",
+        "maxTileCol": "65536"
+      },
+      "17": {
+        "minTileRow": "0",
+        "maxTileRow": "131072",
+        "minTileCol": "0",
+        "maxTileCol": "131072"
+      },
+      "18": {
+        "minTileRow": "0",
+        "maxTileRow": "262144",
+        "minTileCol": "0",
+        "maxTileCol": "262144"
+      },
+      "19": {
+        "minTileRow": "0",
+        "maxTileRow": "524288",
+        "minTileCol": "0",
+        "maxTileCol": "524288"
+      },
+      "20": {
+        "minTileRow": "0",
+        "maxTileRow": "1048576",
+        "minTileCol": "0",
+        "maxTileCol": "1048576"
+      },
+      "21": {
+        "minTileRow": "0",
+        "maxTileRow": "2097152",
+        "minTileCol": "0",
+        "maxTileCol": "2097152"
+      }
+    },
+    "mimetype": "image/png",
+    "name": "CADASTRALPARCELS.PARCELS",
+    "style": "bdparcellaire",
+    "zoom": {
+      "min": 5,
+      "max": 20
+    }
+  },
+  "version": "1.0.0"
+}

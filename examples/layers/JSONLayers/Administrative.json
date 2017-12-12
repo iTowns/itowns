@@ -1,0 +1,27 @@
+{
+  "type": "color",
+  "url": "https://wxs.ign.fr/an7nvfzojv5wa96dsga5nk8w/geoportail/wmts",
+  "protocol": "wmts",
+  "id": "Administrative",
+  "title": "Administrative delimitations",
+  "visible": false,
+  "opacity": 1,
+  "transparent": true,
+  "updateStrategy": {
+    "type": "0",
+    "options": {}
+  },
+  "networkOptions": {
+    "crossOrigin": "omit"
+  },
+  "options": {
+    "tileMatrixSet": "PM",
+    "mimetype": "image/png",
+    "name": "ADMINISTRATIVEUNITS.BOUNDARIES",
+    "style": "normal",
+    "zoom": {
+      "min": 5,
+      "max": 20
+    }
+  }
+}
