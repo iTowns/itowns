@@ -40,6 +40,20 @@ function setMaterialLineWidth(result) {
     }
 }
 
+function altitudeLine(properties, contour) {
+    var altitudes = [];
+    var i = 0;
+    var alt = 0;
+    if (contour.length && contour.length > 0) {
+        for (; i < contour.length; i++) {
+            alt = itowns.DEMUtils.getElevationValueAt(globeView.wgs84TileLayer, contour[i]).z + 2;
+            altitudes.push(alt);
+        }
+        return altitudes;
+    }
+    return 0;
+}
+
 function colorLine(properties) {
     var rgb = properties.couleur.split(' ');
     return new itowns.THREE.Color(rgb[0] / 255, rgb[1] / 255, rgb[2] / 255);
@@ -49,7 +63,7 @@ globeView.addLayer({
     update: itowns.FeatureProcessing.update,
     convert: itowns.Feature2Mesh.convert({
         color: colorLine,
-        altitude: 180 }),
+        altitude: altitudeLine }),
     onMeshCreated: setMaterialLineWidth,
     url: 'https://download.data.grandlyon.com/wfs/rdata?',
     protocol: 'wfs',
@@ -132,11 +146,18 @@ function selectRoad(properties) {
     return properties.gestion === 'CEREMA';
 }
 
+function altitudePoint(properties, contour) {
+    if (contour.length && contour.length > 0) {
+        return itowns.DEMUtils.getElevationValueAt(globeView.wgs84TileLayer, contour[0]).z + 5;
+    }
+    return 0;
+}
+
 globeView.addLayer({
     type: 'geometry',
     update: itowns.FeatureProcessing.update,
     convert: itowns.Feature2Mesh.convert({
-        altitude: 400,
+        altitude: altitudePoint,
         color: colorPoint }),
     onMeshCreated: configPointMaterial,
     filter: selectRoad,
