@@ -1,10 +1,10 @@
 import * as THREE from 'three';
 import Earcut from 'earcut';
 
-function getAltitude(options, properties) {
+function getAltitude(options, properties, contour) {
     if (options.altitude) {
         if (typeof options.altitude === 'function') {
-            return options.altitude(properties);
+            return options.altitude(properties, contour);
         } else {
             return options.altitude;
         }
@@ -53,18 +53,21 @@ function fillColorArray(colors, offset, length, r, g, b) {
  * Convert coordinates to vertices positionned at a given altitude
  *
  * @param  {Coordinate[]} contour - Coordinates of a feature
- * @param  {number} altitude - Altitude of the feature
+ * @param  {number | number[] } altitude - Altitude of the feature
  * @return {Vector3[]} vertices
  */
 function coordinatesToVertices(contour, altitude, target, offset) {
+    let i = 0;
     // loop over contour coodinates
     for (const coordinate of contour) {
         // convert coordinate to position
         const vec = coordinate.xyz();
         // get the normal vector.
         const normal = coordinate.geodesicNormal;
+        // get altitude from array or constant
+        const alti = Array.isArray(altitude) ? altitude[i++] : altitude;
         // move the vertex following the normal, to put the point on the good altitude
-        vec.add(normal.clone().multiplyScalar(altitude));
+        vec.add(normal.clone().multiplyScalar(alti));
         // fill the vertices array at the offset position
         vec.toArray(target, offset);
         // increment the offset
@@ -125,7 +128,7 @@ function coordinateToPoints(coordinates, properties, options) {
     for (const id in coordinates.featureVertices) {
         const { contour, property } = extractFeature(coordinates, properties, id);
         // get altitude from properties
-        const altitude = getAltitude(options, property);
+        const altitude = getAltitude(options, property, contour);
         coordinatesToVertices(contour, altitude, vertices, offset * 3);
 
         // assign color to each point
@@ -151,7 +154,7 @@ function coordinateToLines(coordinates, properties, options) {
     for (const id in coordinates.featureVertices) {
         const { contour, property } = extractFeature(coordinates, properties, id);
         // get altitude from properties
-        const altitude = getAltitude(options, property);
+        const altitude = getAltitude(options, property, contour);
         coordinatesToVertices(contour, altitude, vertices, offset * 3);
 
         // set indices
@@ -188,7 +191,7 @@ function coordinateToPolygon(coordinates, properties, options) {
         // extract contour coodinates and properties of one feature
         const { contour, property } = extractFeature(coordinates, properties, id);
         // get altitude and extrude amount from properties
-        const altitudeBottom = getAltitude(options, property);
+        const altitudeBottom = getAltitude(options, property, contour);
         const altitudeTopFace = altitudeBottom;
         // add vertices of the top face
         coordinatesToVertices(contour, altitudeTopFace, vertices, offset * 3);
@@ -225,7 +228,7 @@ function coordinateToPolygonExtruded(coordinates, properties, options) {
         // extract contour coodinates and properties of one feature
         const { contour, property } = extractFeature(coordinates, properties, id);
         // get altitude and extrude amount from properties
-        const altitudeBottom = getAltitude(options, property);
+        const altitudeBottom = getAltitude(options, property, contour);
         const extrudeAmount = getExtrude(options, property);
         // altitudeTopFace is the altitude of the visible top face.
         const altitudeTopFace = altitudeBottom + extrudeAmount;
