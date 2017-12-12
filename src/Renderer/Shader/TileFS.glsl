@@ -12,13 +12,17 @@ const vec4 COrange = vec4( 1.0, 0.3, 0.0, 1.0);
 const vec4 CRed = vec4( 1.0, 0.0, 0.0, 1.0);
 
 
-uniform sampler2D   dTextures_01[TEX_UNITS];
-uniform vec4        offsetScale_L01[TEX_UNITS];
+uniform sampler2D   texColor_01[TEX_UNITS];
+uniform vec4        offsetScale_color_01[TEX_UNITS];
+
+#if defined(SECOND_SAMPLER)
+uniform sampler2D   texColor_02[TEX_UNITS];
+uniform vec4        offsetScale_color_02[TEX_UNITS];
+#endif
 
 // offset texture | Projection | fx | Opacity
-uniform vec4        paramLayers[8];
-uniform int         loadedTexturesCount[8];
-uniform bool        visibility[8];
+uniform vec4        paramLayers[MAXCOUNTLAYER];
+uniform bool        visibility[MAXCOUNTLAYER];
 
 uniform float       distanceFog;
 uniform int         colorLayersCount;
@@ -58,6 +62,25 @@ vec4 applyLightColorToInvisibleEffect(vec4 color, float intensity) {
 #include <packing>
 uniform int  uuid;
 #endif
+
+vec4 getColorAtIdUv(int id, vec2 uv) {
+    if (id < TEX_UNITS) {
+        return colorAtIdUv(
+            texColor_01,
+            offsetScale_color_01,
+            id,
+            uv);
+    }
+#if defined(SECOND_SAMPLER)
+    else {
+        return colorAtIdUv(
+            texColor_02,
+            offsetScale_color_02,
+            id - TEX_UNITS,
+            uv);
+    }
+#endif
+}
 
 void main() {
     #include <logdepthbuf_fragment>
@@ -99,7 +122,7 @@ void main() {
         bool validTexture = false;
 
         // TODO Optimisation des uv1 peuvent copier pas lignes!!
-        for (int layer = 0; layer < 8; layer++) {
+        for (int layer = 0; layer < MAXCOUNTLAYER; layer++) {
             if(layer == colorLayersCount) {
                 break;
             }
@@ -129,9 +152,7 @@ void main() {
                         // get value in array, the index must be constant
                         // Strangely it's work with function returning a global variable, doesn't work on Chrome Windows
                         // vec4 layerColor = texture2D(dTextures_01[getTextureIndex()],  pitUV(projWGS84 ? vUv_WGS84 : uvPM,pitScale_L01[getTextureIndex()]));
-                        vec4 layerColor = colorAtIdUv(
-                            dTextures_01,
-                            offsetScale_L01,
+                        vec4 layerColor = getColorAtIdUv(
                             textureIndex,
                             projWGS84 ? vUv_WGS84 : uvPM);
 

@@ -10,8 +10,8 @@ attribute vec2      uv_wgs84;
 attribute vec3      position;
 attribute vec3      normal;
 
-uniform sampler2D   dTextures_00[1];
-uniform vec3        offsetScale_L00[1];
+uniform sampler2D   texElevation[1];
+uniform vec3        offsetScale_elevation[1];
 uniform int         loadedTexturesCount[8];
 
 uniform mat4        projectionMatrix;
@@ -40,11 +40,11 @@ void main() {
 
         if(loadedTexturesCount[0] > 0) {
             vec2    vVv = vec2(
-                vUv_WGS84.x * offsetScale_L00[0].z + offsetScale_L00[0].x,
-                (1.0 - vUv_WGS84.y) * offsetScale_L00[0].z + offsetScale_L00[0].y);
+                vUv_WGS84.x * offsetScale_elevation[0].z + offsetScale_elevation[0].x,
+                (1.0 - vUv_WGS84.y) * offsetScale_elevation[0].z + offsetScale_elevation[0].y);
 
             #if defined(RGBA_TEXTURE_ELEVATION)
-                vec4 rgba = texture2D( dTextures_00[0], vVv ) * 255.0;
+                vec4 rgba = texture2D( texElevation[0], vVv ) * 255.0;
 
                 rgba.rgba = rgba.abgr;
 
@@ -58,9 +58,9 @@ void main() {
                 }
 
             #elif defined(DATA_TEXTURE_ELEVATION)
-                float   dv  = max(texture2D( dTextures_00[0], vVv ).w, 0.);
+                float   dv  = max(texture2D( texElevation[0], vVv ).w, 0.);
             #elif defined(COLOR_TEXTURE_ELEVATION)
-                float   dv  = max(texture2D( dTextures_00[0], vVv ).r, 0.);
+                float   dv  = max(texture2D( texElevation[0], vVv ).r, 0.);
                 dv = _minElevation + dv * (_maxElevation - _minElevation);
             #else
 
