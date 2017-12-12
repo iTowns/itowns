@@ -48,15 +48,15 @@ function GuiTools(domId, view, w) {
 
 GuiTools.prototype.addImageryLayerGUI = function addImageryLayerGUI(layer) {
     var folder = this.colorGui.addFolder(layer.id);
-    folder.add({ visible: true }, 'visible').onChange((function updateVisibility(value) {
+    folder.add({ visible: layer.visible }, 'visible').onChange((function updateVisibility(value) {
         layer.visible = value;
         this.view.notifyChange(true);
     }).bind(this));
-    folder.add({ opacity: 1.0 }, 'opacity').min(0.0).max(1.0).onChange((function updateOpacity(value) {
+    folder.add({ opacity: layer.opacity }, 'opacity').min(0.0).max(1.0).onChange((function updateOpacity(value) {
         layer.opacity = value;
         this.view.notifyChange(true);
     }).bind(this));
-    folder.add({ frozen: false }, 'frozen').onChange((function updateFrozen(value) {
+    folder.add({ frozen: layer.frozen }, 'frozen').onChange((function updateFrozen(value) {
         layer.frozen = value;
         this.view.notifyChange(true);
     }).bind(this));
@@ -64,7 +64,7 @@ GuiTools.prototype.addImageryLayerGUI = function addImageryLayerGUI(layer) {
 
 GuiTools.prototype.addElevationLayerGUI = function addElevationLayerGUI(layer) {
     var folder = this.elevationGui.addFolder(layer.id);
-    folder.add({ frozen: false }, 'frozen').onChange(function refreshFrozenGui(value) {
+    folder.add({ frozen: layer.frozen }, 'frozen').onChange(function refreshFrozenGui(value) {
         layer.frozen = value;
     });
 };
