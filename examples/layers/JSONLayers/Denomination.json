@@ -20,7 +20,7 @@
     "name": "GEOGRAPHICALNAMES.NAMES",
     "style": "normal",
     "zoom": {
-      "min": 5,
+      "min": 6,
       "max": 20
     }
   }
