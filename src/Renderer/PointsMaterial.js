@@ -17,15 +17,15 @@ class PointsMaterial extends RawShaderMaterial {
         this.uniforms.useCustomColor = new Uniform(false);
         this.uniforms.customColor = new Uniform(new Color());
 
-        if (__DEBUG__) {
-            this.defines.DEBUG = 1;
-        }
-
         if (Capabilities.isLogDepthBufferSupported()) {
             this.defines = {
                 USE_LOGDEPTHBUF: 1,
                 USE_LOGDEPTHBUF_EXT: 1,
             };
+        }
+
+        if (__DEBUG__) {
+            this.defines.DEBUG = 1;
         }
     }
 
