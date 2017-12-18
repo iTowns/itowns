@@ -5,7 +5,7 @@
  */
 
 import * as THREE from 'three';
-import OGCWebServiceHelper, { SIZE_TEXTURE_TILE } from './OGCWebServiceHelper';
+import OGCWebServiceHelper from './OGCWebServiceHelper';
 
 function WMTS_Provider() {
 }
@@ -85,18 +85,12 @@ WMTS_Provider.prototype.getXbilTexture = function getXbilTexture(tile, layer, ta
     const url = this.url(coordWMTS, layer);
 
     return OGCWebServiceHelper.getXBilTextureByUrl(url, layer.networkOptions).then((texture) => {
-        const { min, max } = OGCWebServiceHelper.ioDXBIL.computeMinMaxElevation(
-            texture.image.data,
-            SIZE_TEXTURE_TILE, SIZE_TEXTURE_TILE,
-            pitch);
-
         texture.coords = coordWMTS;
-
         return {
             texture,
             pitch,
-            min: min === undefined ? 0 : min,
-            max: max === undefined ? 0 : max,
+            min: !texture.min ? 0 : texture.min,
+            max: !texture.max ? 0 : texture.max,
         };
     });
 };
