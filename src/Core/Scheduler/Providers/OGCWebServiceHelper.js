@@ -79,6 +79,8 @@ export default {
             texture.generateMipmaps = false;
             texture.magFilter = THREE.LinearFilter;
             texture.minFilter = THREE.LinearFilter;
+            texture.min = result.min;
+            texture.max = result.max;
             cache.addRessource(url, texture);
             cachePending.delete(url);
 

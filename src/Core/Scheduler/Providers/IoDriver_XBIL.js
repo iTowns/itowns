@@ -17,7 +17,7 @@ IoDriver_XBIL.prototype.computeMinMaxElevation = function computeMinMaxElevation
     let max = -1000000;
 
     if (!buffer) {
-        return { min: undefined, max: undefined };
+        return { min: null, max: null };
     }
 
     const sizeX = offsetScale ? Math.floor(offsetScale.z * width) : buffer.length;
@@ -39,7 +39,7 @@ IoDriver_XBIL.prototype.computeMinMaxElevation = function computeMinMaxElevation
     }
 
     if (max === -1000000 || min === 1000000) {
-        return { min: undefined, max: undefined };
+        return { min: null, max: null };
     }
     return { min, max };
 };
