@@ -1,0 +1,10 @@
+{
+    "templates": {
+        "default": {
+            "layoutFile": "layout.tmpl",
+            "staticFiles": {
+                "paths": ["static_jsdoc"]
+            }
+        }
+    }
+}
