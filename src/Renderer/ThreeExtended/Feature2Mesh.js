@@ -176,7 +176,7 @@ function coordinateToLines(coordinates, properties, options) {
 
     geometry.addAttribute('position', new THREE.BufferAttribute(vertices, 3));
     geometry.addAttribute('color', new THREE.BufferAttribute(colors, 3, true));
-    geometry.setIndex(new THREE.BufferAttribute(new Uint16Array(indices), 1));
+    geometry.setIndex(new THREE.BufferAttribute(new Uint32Array(indices), 1));
     return new THREE.LineSegments(geometry);
 }
 
