@@ -70,7 +70,7 @@ globeView.addLayer({
     version: '2.0.0',
     id: 'tcl_bus',
     typeName: 'tcl_sytral.tcllignebus',
-    level: 14,
+    level: 9,
     projection: 'EPSG:3946',
     extent: {
         west: 1822174.60,
