@@ -3,6 +3,7 @@ import TileObjectChart from './charts/TileObjectChart';
 import TileVisibilityChart from './charts/TileVisibilityChart';
 import View from '../../src/Core/View';
 import ObjectRemovalHelper from '../../src/Process/ObjectRemovalHelper';
+import GeometryDebug from './GeometryDebug';
 
 function applyToNodeFirstMaterial(view, root, layerId, cb) {
     root.traverse((object) => {
@@ -14,7 +15,7 @@ function applyToNodeFirstMaterial(view, root, layerId, cb) {
 }
 
 export default function createTileDebugUI(datDebugTool, view, layer, debugInstance) {
-    const gui = datDebugTool.addFolder(`Layer ${layer.id}`);
+    const gui = GeometryDebug.createGeometryDebugUI(datDebugTool, view, layer);
 
     const objectChardId = `${layer.id}-nb-objects`;
     debugInstance.createChartContainer(objectChardId);
@@ -135,12 +136,6 @@ export default function createTileDebugUI(datDebugTool, view, layer, debugInstan
             }
         }
     };
-
-    gui.add(layer, 'visible').name('Visible').onChange(() => {
-        view.notifyChange(true);
-    });
-    gui.add(layer, 'opacity', 0, 1).name('Opacity')
-        .onChange(() => view.notifyChange(true));
 
     View.prototype.addLayer.call(view,
         {
