@@ -170,16 +170,18 @@ function _preprocessLayer(view, layer, provider) {
             }
         };
         defineLayerProperty(layer, 'opacity', 1.0, () => {
-            layer.object3d.traverse((o) => {
-                if (o.layer !== layer.id) {
-                    return;
-                }
-                changeOpacity(o);
-                // 3dtiles layers store scenes in children's content property
-                if (o.content) {
-                    o.content.traverse(changeOpacity);
-                }
-            });
+            if (layer.object3d) {
+                layer.object3d.traverse((o) => {
+                    if (o.layer !== layer.id) {
+                        return;
+                    }
+                    changeOpacity(o);
+                    // 3dtiles layers store scenes in children's content property
+                    if (o.content) {
+                        o.content.traverse(changeOpacity);
+                    }
+                });
+            }
         });
     }
     return layer;

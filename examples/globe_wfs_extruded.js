@@ -30,16 +30,6 @@ promises.push(itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(addLaye
 promises.push(itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addLayerCb));
 promises.push(itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addLayerCb));
 
-function setMaterialLineWidth(result) {
-    var i = 0;
-    var mesh;
-    for (; i < result.children.length; i++) {
-        mesh = result.children[i];
-
-        mesh.material.linewidth = 5;
-    }
-}
-
 function altitudeLine(properties, contour) {
     var altitudes = [];
     var i = 0;
@@ -60,15 +50,16 @@ function colorLine(properties) {
 }
 
 globeView.addLayer({
+    type: 'geometry',
     update: itowns.FeatureProcessing.update,
     convert: itowns.Feature2Mesh.convert({
         color: colorLine,
         altitude: altitudeLine }),
-    onMeshCreated: setMaterialLineWidth,
+    linewidth: 5,
     url: 'https://download.data.grandlyon.com/wfs/rdata?',
     protocol: 'wfs',
     version: '2.0.0',
-    id: 'tcl_bus',
+    id: 'WFS Bus lines',
     typeName: 'tcl_sytral.tcllignebus',
     level: 9,
     projection: 'EPSG:3946',
@@ -116,7 +107,7 @@ globeView.addLayer({
     networkOptions: { crossOrigin: 'anonymous' },
     protocol: 'wfs',
     version: '2.0.0',
-    id: 'wfsBuilding',
+    id: 'WFS Buildings',
     typeName: 'BDTOPO_BDD_WLD_WGS84G:bati_remarquable,BDTOPO_BDD_WLD_WGS84G:bati_indifferencie,BDTOPO_BDD_WLD_WGS84G:bati_industriel',
     level: 14,
     projection: 'EPSG:4326',
@@ -126,14 +117,12 @@ globeView.addLayer({
     },
 }, globeView.tileLayer);
 
-
 function configPointMaterial(result) {
     var i = 0;
     var mesh;
     for (; i < result.children.length; i++) {
         mesh = result.children[i];
 
-        mesh.material.size = 5;
         mesh.material.sizeAttenuation = false;
     }
 }
@@ -159,13 +148,14 @@ globeView.addLayer({
     convert: itowns.Feature2Mesh.convert({
         altitude: altitudePoint,
         color: colorPoint }),
+    size: 5,
     onMeshCreated: configPointMaterial,
     filter: selectRoad,
     url: 'http://wxs.ign.fr/72hpsel8j8nhb5qgdh07gcyp/geoportail/wfs?',
     networkOptions: { crossOrigin: 'anonymous' },
     protocol: 'wfs',
     version: '2.0.0',
-    id: 'wfsPoint',
+    id: 'WFS Route points',
     typeName: 'BDPR_BDD_FXX_LAMB93_20170911:pr',
     level: 12,
     projection: 'EPSG:2154',
@@ -174,5 +164,6 @@ globeView.addLayer({
         mimetype: 'json',
     },
 }, globeView.tileLayer);
+
 exports.view = globeView;
 exports.initialPosition = positionOnGlobe;

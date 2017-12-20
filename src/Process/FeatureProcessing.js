@@ -34,6 +34,21 @@ export default {
         }
 
         const features = node.children.filter(n => n.layer == layer.id);
+        for (const feat of features) {
+            feat.traverse((o) => {
+                if (o.material) {
+                    o.material.transparent = layer.opacity < 1.0;
+                    o.material.opacity = layer.opacity;
+                    o.material.wireframe = layer.wireframe;
+                    if (layer.size) {
+                        o.material.size = layer.size;
+                    }
+                    if (layer.linewidth) {
+                        o.material.linewidth = layer.linewidth;
+                    }
+                }
+            });
+        }
         if (features.length > 0) {
             return features;
         }
@@ -68,7 +83,6 @@ export default {
                 if (layer.onMeshCreated) {
                     layer.onMeshCreated(result);
                 }
-
                 node.layerUpdateState[layer.id].success();
                 if (!node.parent) {
                     ObjectRemovalHelper.removeChildrenAndCleanupRecursively(layer.id, result);

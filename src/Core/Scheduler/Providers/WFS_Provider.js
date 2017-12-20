@@ -36,10 +36,11 @@ WFS_Provider.prototype.preprocessDataLayer = function preprocessDataLayer(layer)
     if (!layer.typeName) {
         throw new Error('layer.typeName is required.');
     }
-
     layer.format = layer.options.mimetype || 'json';
     layer.crs = layer.projection || 'EPSG:4326';
     layer.version = layer.version || '2.0.2';
+    layer.opacity = layer.opacity || 1;
+    layer.wireframe = layer.wireframe || false;
     if (!(layer.extent instanceof Extent)) {
         layer.extent = new Extent(layer.projection, layer.extent);
     }

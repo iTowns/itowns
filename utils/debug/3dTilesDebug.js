@@ -1,10 +1,10 @@
 import * as THREE from 'three';
 import OBBHelper from './OBBHelper';
 import View from '../../src/Core/View';
-
+import GeometryDebug from './GeometryDebug';
 
 export default function create3dTilesDebugUI(datDebugTool, view, layer) {
-    const gui = datDebugTool.addFolder(`Layer ${layer.id}`);
+    const gui = GeometryDebug.createGeometryDebugUI(datDebugTool, view, layer);
 
     // Bounding box control
     const obb_layer_id = `${layer.id}_obb_debug`;
@@ -100,10 +100,4 @@ export default function create3dTilesDebugUI(datDebugTool, view, layer) {
     gui.add(layer, 'sseThreshold', 0, 100).name('sseThreshold').onChange(() => {
         view.notifyChange(true);
     });
-
-    gui.add(layer, 'visible').name('Visible').onChange(() => {
-        view.notifyChange(true);
-    });
-
-    gui.add(layer, 'opacity', 0, 1).name('Opacity').onChange(() => view.notifyChange(true));
 }
