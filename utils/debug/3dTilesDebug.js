@@ -6,6 +6,9 @@ import GeometryDebug from './GeometryDebug';
 export default function create3dTilesDebugUI(datDebugTool, view, layer) {
     const gui = GeometryDebug.createGeometryDebugUI(datDebugTool, view, layer);
 
+    // add wireframe
+    GeometryDebug.addWireFrameCheckbox(gui, view, layer);
+
     // Bounding box control
     const obb_layer_id = `${layer.id}_obb_debug`;
 
