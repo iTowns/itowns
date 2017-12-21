@@ -309,6 +309,14 @@ export function process3dTilesNode(cullingTest, subdivisionTest) {
                     markForDeletion(layer, n);
                 }
             }
+            // toggle wireframe
+            if (node.content && node.content.visible) {
+                node.content.traverse((o) => {
+                    if (o.material) {
+                        o.material.wireframe = layer.wireframe;
+                    }
+                });
+            }
             return returnValue;
         }
 
