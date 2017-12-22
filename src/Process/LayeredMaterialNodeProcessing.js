@@ -284,7 +284,7 @@ export function updateLayeredMaterialNodeImagery(context, layer, node) {
         });
 }
 
-export function updateLayeredMaterialNodeElevation(context, layer, node, force) {
+export function updateLayeredMaterialNodeElevation(context, layer, node) {
     if (!node.parent) {
         return;
     }
@@ -295,41 +295,33 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, force) 
     // Elevation is currently handled differently from color layers.
     // This is caused by a LayeredMaterial limitation: only 1 elevation texture
     // can be used (where a tile can have N textures x M layers)
-    const ts = Date.now();
-
     const material = node.material;
     let currentElevation = material.getElevationLayerLevel();
 
-    // If currentElevevation is EMPTY_TEXTURE_ZOOM but material.loadedTexturesCount[l_ELEVATION] is > 0
-    // means that we already tried and failed to download an elevation texture
-    if (currentElevation == EMPTY_TEXTURE_ZOOM && node.material.loadedTexturesCount[l_ELEVATION] > 0) {
-        return Promise.resolve();
-    }
-    if (layer.frozen && !force) {
-        return Promise.resolve();
-    }
-
+    // Init elevation layer, and inherit from parent if possible
     if (node.layerUpdateState[layer.id] === undefined) {
         node.layerUpdateState[layer.id] = new LayerUpdateState();
         initNodeElevationTextureFromParent(node, node.parent, layer);
         currentElevation = material.getElevationLayerLevel();
     }
 
-    // does this tile needs a new texture?
+    // Try to update
+    const ts = Date.now();
+
+    // Possible conditions to *not* update the elevation texture
+    if (layer.frozen ||
+            !node.isDisplayed() ||
+            !node.layerUpdateState[layer.id].canTryUpdate(ts)) {
+        return;
+    }
+
+    // Does this tile needs a new texture?
     if (layer.canTileTextureBeImproved) {
         // if the layer has a custom method -> use it
         if (!layer.canTileTextureBeImproved(layer, node)) {
             node.layerUpdateState[layer.id].noMoreUpdatePossible();
-            return Promise.resolve();
+            return;
         }
-    }
-
-    if (!node.isDisplayed()) {
-        return Promise.resolve();
-    }
-
-    if (!node.layerUpdateState[layer.id].canTryUpdate(ts)) {
-        return Promise.resolve();
     }
 
     const c = node.getCoordsForLayer(layer)[0];
@@ -337,6 +329,7 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, force) 
     const targetLevel = chooseNextLevelToFetch(layer.updateStrategy.type, node, zoom, currentElevation, layer);
 
     if (targetLevel <= currentElevation || !layer.tileInsideLimit(node, layer, targetLevel)) {
+        node.layerUpdateState[layer.id].noMoreUpdatePossible();
         return Promise.resolve();
     }
 
@@ -354,7 +347,6 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, force) 
         targetLevel,
         priority: nodeCommandQueuePriorityFunction(node),
         earlyDropFunction: refinementCommandCancellationFn,
-        force,
     };
 
     return context.scheduler.execute(command).then(
