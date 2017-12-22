@@ -159,7 +159,6 @@ export function createGlobeLayer(id, options) {
         if (SubdivisionControl.hasEnoughTexturesToSubdivide(context, layer, node)) {
             return globeSubdivisionControl(2,
                 options.maxSubdivisionLevel || 18,
-                options.sseSubdivisionThreshold || 1.0,
                 options.maxDeltaElevationLevel || 4)(context, layer, node);
         }
         return false;

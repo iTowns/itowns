@@ -1,6 +1,6 @@
 import * as THREE from 'three';
-import convexHull from 'monotone-convex-hull-2d';
 import CancelledCommandException from '../Core/Scheduler/CancelledCommandException';
+import ScreenSpaceError from '../Core/ScreenSpaceError';
 
 // Draw a cube with lines (12 lines).
 function cube(size) {
@@ -35,59 +35,6 @@ function cube(size) {
     return geometry;
 }
 
-// TODO: move this function to Camera, as soon as it's good enough (see https://github.com/iTowns/itowns/pull/381#pullrequestreview-49107682)
-const temp = {
-    points: [
-        new THREE.Vector3(),
-        new THREE.Vector3(),
-        new THREE.Vector3(),
-        new THREE.Vector3(),
-        new THREE.Vector3(),
-        new THREE.Vector3(),
-        new THREE.Vector3(),
-        new THREE.Vector3(),
-    ],
-    box3: new THREE.Box3(),
-    matrix4: new THREE.Matrix4(),
-};
-function box3SurfaceOnScreen(camera, box3d, matrixWorld) {
-    if (box3d.isEmpty()) {
-        return 0;
-    }
-
-    temp.box3.copy(box3d);
-    if (matrixWorld) {
-        temp.matrix4.multiplyMatrices(camera._viewMatrix, matrixWorld);
-    } else {
-        temp.matrix4.copy(camera._viewMatrix);
-    }
-
-    // copy pasted / adapted from Box3.applyMatrix4
-    // NOTE: I am using a binary pattern to specify all 2^3 combinations below
-    temp.points[0].set(temp.box3.min.x, temp.box3.min.y, temp.box3.min.z).applyMatrix4(temp.matrix4); // 000
-    temp.points[1].set(temp.box3.min.x, temp.box3.min.y, temp.box3.max.z).applyMatrix4(temp.matrix4); // 001
-    temp.points[2].set(temp.box3.min.x, temp.box3.max.y, temp.box3.min.z).applyMatrix4(temp.matrix4); // 010
-    temp.points[3].set(temp.box3.min.x, temp.box3.max.y, temp.box3.max.z).applyMatrix4(temp.matrix4); // 011
-    temp.points[4].set(temp.box3.max.x, temp.box3.min.y, temp.box3.min.z).applyMatrix4(temp.matrix4); // 100
-    temp.points[5].set(temp.box3.max.x, temp.box3.min.y, temp.box3.max.z).applyMatrix4(temp.matrix4); // 101
-    temp.points[6].set(temp.box3.max.x, temp.box3.max.y, temp.box3.min.z).applyMatrix4(temp.matrix4); // 110
-    temp.points[7].set(temp.box3.max.x, temp.box3.max.y, temp.box3.max.z).applyMatrix4(temp.matrix4); // 111
-
-    for (const pt of temp.points) {
-        // translate/scale to [0, width]x[0, height]
-        pt.x = camera.width * (pt.x + 1) * 0.5;
-        pt.y = camera.height * (1 - pt.y) * 0.5;
-        pt.z = 0;
-    }
-
-    const indices = convexHull(temp.points.map(v => [v.x, v.y]));
-    const contour = indices.map(i => temp.points[i]);
-
-    const area = THREE.ShapeUtils.area(contour);
-
-    return Math.abs(area);
-}
-
 function initBoundingBox(elt, layer) {
     const size = elt.tightbbox.getSize();
     elt.obj.boxHelper = new THREE.LineSegments(
@@ -107,40 +54,35 @@ function initBoundingBox(elt, layer) {
 }
 
 function shouldDisplayNode(context, layer, elt) {
-    let shouldBeLoaded = 0;
-
     if (layer.octreeDepthLimit >= 0 && layer.octreeDepthLimit < elt.name.length) {
-        return { shouldBeLoaded, surfaceOnScreen: 0 };
+        return 0;
     }
+    let shouldBeLoaded = 0;
 
     const numPoints = elt.numPoints;
 
     const cl = (elt.tightbbox ? elt.tightbbox : elt.bbox);
 
     const visible = context.camera.isBox3Visible(cl, layer.object3d.matrixWorld);
-    const surfaceOnScreen = 0;
 
     if (visible) {
-        if (cl.containsPoint(context.camera.camera3D.position)) {
-            shouldBeLoaded = 1;
-        } else {
-            const surfaceOnScreen = box3SurfaceOnScreen(context.camera, cl, layer.object3d.matrixWorld);
-
+        if (numPoints == 0) {
             // no point indicates shallow hierarchy, so we definitely want to load its children
-            if (numPoints == 0) {
-                shouldBeLoaded = 1;
-            } else {
-                const count = layer.overdraw * (surfaceOnScreen / Math.pow(layer.pointSize, 2));
-                shouldBeLoaded = Math.min(count / numPoints, 1);
-            }
-
-            elt.surfaceOnScreen = surfaceOnScreen;
+            shouldBeLoaded = 1;
+            elt.sse = {
+                sse: Infinity,
+            };
+        } else {
+            elt.sse = ScreenSpaceError.computeFromBox3(context.camera,
+                    cl,
+                    layer.object3d.matrixWorld,
+                    elt.geometricError,
+                    ScreenSpaceError.MODE_3D);
+            shouldBeLoaded = Math.min(1, elt.sse.sse / layer.sseThreshold);
         }
-    } else {
-        shouldBeLoaded = -1;
+        return shouldBeLoaded;
     }
-
-    return { shouldBeLoaded, surfaceOnScreen };
+    return 0;
 }
 
 function markForDeletion(elt) {
@@ -180,7 +122,7 @@ export default {
     },
 
     update(context, layer, elt) {
-        const { shouldBeLoaded } = shouldDisplayNode(context, layer, elt);
+        const shouldBeLoaded = shouldDisplayNode(context, layer, elt);
 
         elt.shouldBeLoaded = shouldBeLoaded;
 
@@ -216,7 +158,7 @@ export default {
                         layer,
                         requester: elt,
                         view: context.view,
-                        priority: 1.0 / elt.name.length, // surfaceOnScreen,
+                        priority: elt.sse.sse,
                         redraw: true,
                         isLeaf: elt.childrenBitField == 0,
                         earlyDropFunction: cmd => cmd.requester.shouldBeLoaded <= 0,

@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { ellipsoidSizes } from '../Core/Geographic/Coordinates';
 import { SIZE_TEXTURE_TILE } from '../Provider/OGCWebServiceHelper';
 import Extent from '../Core/Geographic/Extent';
+import ScreenSpaceError from '../Core/ScreenSpaceError';
 
 const cV = new THREE.Vector3();
 let vhMagnitudeSquared;
@@ -9,18 +10,6 @@ let vhMagnitudeSquared;
 let SSE_SUBDIVISION_THRESHOLD;
 
 const worldToScaledEllipsoid = new THREE.Matrix4();
-
-function _preSSE(view) {
-    const canvasSize = view.mainLoop.gfxEngine.getWindowSize();
-    const hypotenuse = canvasSize.length();
-    const radAngle = view.camera.camera3D.fov * Math.PI / 180;
-
-     // TODO: not correct -> see new preSSE
-    // const HFOV = 2.0 * Math.atan(Math.tan(radAngle * 0.5) / context.camera.ratio);
-    const HYFOV = 2.0 * Math.atan(Math.tan(radAngle * 0.5) * hypotenuse / canvasSize.x);
-
-    return hypotenuse * (2.0 * Math.tan(HYFOV * 0.5));
-}
 
 export function preGlobeUpdate(context, layer) {
     // We're going to use the method described here:
@@ -38,9 +27,6 @@ export function preGlobeUpdate(context, layer) {
     // cV is camera's position in worldToScaledEllipsoid system
     cV.copy(context.camera.camera3D.position).applyMatrix4(worldToScaledEllipsoid);
     vhMagnitudeSquared = cV.lengthSq() - 1.0;
-
-    // pre-sse
-    context.camera.preSSE = _preSSE(context.view);
 
     const elevationLayers = context.view.getLayers((l, a) => a && a.id == layer.id && l.type == 'elevation');
     context.maxElevationLevel = -1;
@@ -91,30 +77,7 @@ export function globeCulling(minLevelForHorizonCulling) {
     };
 }
 
-const v = new THREE.Vector3();
-function computeNodeSSE(camera, node) {
-    v.setFromMatrixScale(node.matrixWorld);
-    const boundingSphereCenter = node.boundingSphere.center.clone().applyMatrix4(node.matrixWorld);
-    const distance = Math.max(
-        0.0,
-        camera.camera3D.position.distanceTo(boundingSphereCenter) - node.boundingSphere.radius * v.x);
-
-    // Removed because is false computation, it doesn't consider the altitude of node
-    // Added small oblique weight (distance is not enough, tile orientation is needed)
-    /*
-    var altiW = node.bbox.top() === 10000 ? 0. : node.bbox.bottom() / 10000.;
-    var dotProductW = Math.min(altiW + Math.abs(this.camera3D.getWorldDirection().dot(node.centerSphere.clone().normalize())), 1.);
-    if (this.camera3D.position.length() > 6463300) dotProductW = 1;
-    var SSE = Math.sqrt(dotProductW) * this.preSSE * (node.geometricError / distance);
-    */
-
-    // TODO: node.geometricError is computed using a hardcoded 18 level
-    // The computation of node.geometricError is surely false
-    return camera.preSSE * (node.geometricError * v.x) / distance;
-}
-
-export function globeSubdivisionControl(minLevel, maxLevel, sseThreshold, maxDeltaElevationLevel) {
-    SSE_SUBDIVISION_THRESHOLD = sseThreshold;
+export function globeSubdivisionControl(minLevel, maxLevel, maxDeltaElevationLevel) {
     return function _globeSubdivisionControl(context, layer, node) {
         if (node.level < minLevel) {
             return true;
@@ -132,9 +95,14 @@ export function globeSubdivisionControl(minLevel, maxLevel, sseThreshold, maxDel
             return false;
         }
 
-        const sse = computeNodeSSE(context.camera, node);
-
-        return SSE_SUBDIVISION_THRESHOLD < sse;
+        node.sse = ScreenSpaceError.computeFromBox3(
+            context.camera,
+            node.OBB().box3D,
+            node.OBB().matrixWorld,
+            node.geometricError,
+            ScreenSpaceError.MODE_2D);
+        node.sse.offset = SIZE_TEXTURE_TILE;
+        return node.sse.sse > (SIZE_TEXTURE_TILE + layer.sseThreshold);
     };
 }
 
@@ -159,6 +127,7 @@ export function globeSchemeTileWMTS(type) {
 }
 
 export function computeTileZoomFromDistanceCamera(distance, view) {
+    // TODO fixme
     const sizeEllipsoid = ellipsoidSizes().x;
     const preSinus = SIZE_TEXTURE_TILE * (SSE_SUBDIVISION_THRESHOLD * 0.5) / view.camera.preSSE / sizeEllipsoid;
 
@@ -177,6 +146,7 @@ export function computeTileZoomFromDistanceCamera(distance, view) {
 }
 
 export function computeDistanceCameraFromTileZoom(zoom, view) {
+    // TODO fixme
     const delta = Math.PI / Math.pow(2, zoom);
     const circleChord = 2.0 * ellipsoidSizes().x * Math.sin(delta * 0.5);
     const radius = circleChord * 0.5;

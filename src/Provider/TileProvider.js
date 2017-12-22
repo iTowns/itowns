@@ -18,6 +18,7 @@ function preprocessDataLayer(layer, view, scheduler) {
 
     layer.level0Nodes = [];
     layer.onTileCreated = layer.onTileCreated || (() => {});
+    layer.sseThreshold = layer.sseThreshold || 5.0;
 
     const promises = [];
 

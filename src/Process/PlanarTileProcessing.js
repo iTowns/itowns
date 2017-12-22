@@ -1,25 +1,12 @@
+import ScreenSpaceError from '../Core/ScreenSpaceError';
+import { SIZE_TEXTURE_TILE } from '../Core/Scheduler/Providers/OGCWebServiceHelper';
+
 function frustumCullingOBB(node, camera) {
     return camera.isBox3Visible(node.OBB().box3D, node.OBB().matrixWorld);
 }
 
 export function planarCulling(node, camera) {
     return !frustumCullingOBB(node, camera);
-}
-
-function _isTileBigOnScreen(camera, node) {
-    const onScreen = camera.box3SizeOnScreen(node.OBB().box3D, node.matrixWorld);
-
-    // onScreen.x/y/z are [-1, 1] so divide by 2
-    // (so x = 0.4 means the object width on screen is 40% of the total screen width)
-    const dim = {
-        x: 0.5 * (onScreen.max.x - onScreen.min.x),
-        y: 0.5 * (onScreen.max.y - onScreen.min.y),
-    };
-
-    // subdivide if on-screen width (and resp. height) is bigger than 30% of the screen width (resp. height)
-    // TODO: the 30% value is arbitrary and needs to be configurable by the user
-    // TODO: we might want to use texture resolution here as well
-    return (dim.x >= 0.3 && dim.y >= 0.3);
 }
 
 export function prePlanarUpdate(context, layer) {
@@ -48,7 +35,14 @@ export function planarSubdivisionControl(maxLevel, maxDeltaElevationLevel) {
             (node.level - currentElevationLevel) >= maxDeltaElevationLevel) {
             return false;
         }
-
-        return _isTileBigOnScreen(context.camera, node);
+        node.sse = ScreenSpaceError.computeFromBox3(
+            context.camera,
+            node.OBB().box3D,
+            node.OBB().matrixWorld,
+            node.geometricError,
+            ScreenSpaceError.MODE_2D);
+        node.sse.sse = Math.max(0, node.sse.sse - SIZE_TEXTURE_TILE);
+        node.sse.offset = SIZE_TEXTURE_TILE;
+        return node.sse.sse > layer.sseThreshold;
     };
 }

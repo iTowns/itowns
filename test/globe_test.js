@@ -24,8 +24,7 @@ function initialStateTest() {
 function afterSetRange() {
     // Our mock fetch() do not return proper elevation data, so to compute
     // the expected value the elevation layer needs to be disabled
-    assert.equal(itownsTesting.counters.displayed_at_level[12], 5);
-    assert.equal(itownsTesting.counters.displayed_at_level[13], 4);
+    assert.equal(itownsTesting.counters.displayed_at_level[12], 6);
 }
 
 var initialState = true;
