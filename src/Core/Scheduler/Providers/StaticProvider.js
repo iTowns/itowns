@@ -23,6 +23,11 @@ function selectBestImageForExtent(images, extent) {
     return selection;
 }
 
+function buildUrl(layer, image) {
+    return layer.url.href.substr(0, layer.url.href.lastIndexOf('/') + 1)
+        + image;
+}
+
 function getTexture(tile, layer) {
     if (!layer.tileInsideLimit(tile, layer)) {
         return Promise.reject(`Tile '${tile}' is outside layer bbox ${layer.extent}`);
@@ -42,9 +47,11 @@ function getTexture(tile, layer) {
             new Error(`No available image for tile ${tile}`));
     }
 
-    const url = layer.url.href.substr(0, layer.url.href.lastIndexOf('/') + 1) + selection.image;
-    const fn = layer.type === 'color' ? OGCWebServiceHelper.getColorTextureByUrl : OGCWebServiceHelper.getXBilTextureByUrl;
-    return fn(url, layer.networkOptions).then((texture) => {
+
+    const fn = layer.options.mimetype.indexOf('image/x-bil') === 0 ?
+        OGCWebServiceHelper.getXBilTextureByUrl :
+        OGCWebServiceHelper.getColorTextureByUrl;
+    return fn(buildUrl(layer, selection.image), layer.networkOptions).then((texture) => {
         // adjust pitch
         const result = {
             texture,
@@ -84,7 +91,7 @@ export default {
             layer.extent = new Extent(layer.projection, ...layer.extent);
         }
 
-        layer.options = {};
+        layer.options = layer.options || {};
         layer.canTileTextureBeImproved = this.canTileTextureBeImproved;
         layer.url = new URL(layer.url, window.location);
         return Fetcher.json(layer.url.href).then((metadata) => {
@@ -97,16 +104,28 @@ export default {
                     extent,
                 });
             }
+        }).then(() => {
+            if (!layer.options.mimetype) {
+                // fetch the first image to detect mimetype
+                if (layer.images.length) {
+                    const url = buildUrl(layer, layer.images[0].image);
+                    return fetch(url, layer.networkOptions).then((response) => {
+                        layer.options.mimetype = response.headers.get('Content-type');
+                        if (layer.options.mimetype === 'application/octet-stream') {
+                            layer.options.mimetype = 'image/x-bil';
+                        }
+                        if (!layer.options.mimetype) {
+                            throw new Error('Could not detect layer\'s mimetype');
+                        }
+                    });
+                }
+            }
         });
     },
 
     tileInsideLimit(tile, layer) {
         if (!layer.images) {
             return false;
-        }
-        // images search is quite costly so let's try to take a shortcut
-        if (layer.id in tile.layerUpdateState) {
-            return true;
         }
 
         for (const entry of layer.images) {
