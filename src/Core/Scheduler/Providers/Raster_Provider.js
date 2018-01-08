@@ -57,6 +57,10 @@ function createTextureFromVector(tile, layer) {
         result.texture.extent = tile.extent;
         result.texture.coords = coords;
         result.texture.coords.zoom = tile.level;
+
+        if (layer.transparent) {
+            result.texture.premultiplyAlpha = true;
+        }
         return Promise.resolve(result);
     } else {
         return Promise.resolve();

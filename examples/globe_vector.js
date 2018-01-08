@@ -29,6 +29,7 @@ promises.push(globeView.addLayer({
     protocol: 'rasterizer',
     id: 'Kml',
     name: 'kml',
+    transparent: true,
 }));
 
 promises.push(globeView.addLayer({
@@ -37,6 +38,7 @@ promises.push(globeView.addLayer({
     protocol: 'rasterizer',
     id: 'Gpx',
     name: 'Ultra 2009',
+    transparent: true,
 }));
 
 promises.push(globeView.addLayer({
@@ -44,6 +46,7 @@ promises.push(globeView.addLayer({
     url: 'https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/departements/09-ariege/departement-09-ariege.geojson',
     protocol: 'rasterizer',
     id: 'ariege',
+    transparent: true,
     style: {
         fill: 'orange',
         fillOpacity: 0.5,

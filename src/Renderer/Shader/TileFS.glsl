@@ -36,6 +36,19 @@ varying vec3        vNormal;
 
 uniform float opacity;
 
+vec4 applyWhiteToInvisibleEffect(vec4 color, float intensity) {
+    float a = (color.r + color.g + color.b) * 0.333333333;
+    color.a *= 1.0 - pow(abs(a), intensity);
+    return color;
+}
+
+vec4 applyLightColorToInvisibleEffect(vec4 color, float intensity) {
+    float a = max(0.05,1.0 - length(color.xyz - CWhite.xyz));
+    color.a *= 1.0 - pow(abs(a), intensity);
+    color.rgb *= color.rgb * color.rgb;
+    return color;
+}
+
 #if defined(DEBUG)
     uniform bool showOutline;
     const float sLine = 0.008;
@@ -82,7 +95,7 @@ void main() {
 
         float fogIntensity = 1.0/(exp(depth/distanceFog));
 
-        vec4 diffuseColor = CWhite;
+        vec4 diffuseColor = vec4(noTextureColor, 1.0);
         bool validTexture = false;
 
         // TODO Optimisation des uv1 peuvent copier pas lignes!!
@@ -122,21 +135,24 @@ void main() {
                             textureIndex,
                             projWGS84 ? vUv_WGS84 : uvPM);
 
-                        if (layerColor.a > 0.0) {
+                        if (layerColor.a > 0.0 && paramsA.w > 0.0) {
                             validTexture = true;
-                            float lum = 1.0;
-
-                            if(paramsA.z > 0.0) {
-                                float a = max(0.05,1.0 - length(layerColor.xyz-CWhite.xyz));
-                                if(paramsA.z > 2.0) {
-                                    a = (layerColor.r + layerColor.g + layerColor.b)*0.333333333;
-                                    layerColor*= layerColor*layerColor;
-                                }
-                                lum = 1.0-pow(abs(a),paramsA.z);
+                            if(paramsA.z > 2.0) {
+                                layerColor.rgb /= layerColor.a;
+                                layerColor = applyLightColorToInvisibleEffect(layerColor, paramsA.z);
+                                layerColor.rgb *= layerColor.a;
+                            } else if(paramsA.z > 0.0) {
+                                layerColor.rgb /= layerColor.a;
+                                layerColor = applyWhiteToInvisibleEffect(layerColor, paramsA.z);
+                                layerColor.rgb *= layerColor.a;
                             }
 
-                            diffuseColor = mix( diffuseColor,layerColor, lum*paramsA.w * layerColor.a);
-
+                            // Use premultiplied-alpha blending formula because source textures are either:
+                            //     - fully opaque (layer.transparent = false)
+                            //     - or use premultiplied alpha (texture.premultiplyAlpha = true)
+                            // Note: using material.premultipliedAlpha doesn't make sense since we're manually blending
+                            // the multiple colors in the shader.
+                            diffuseColor = diffuseColor * (1.0 - layerColor.a * paramsA.w) + layerColor * paramsA.w;
                         }
                     }
                 }

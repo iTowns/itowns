@@ -46,6 +46,9 @@ TMS_Provider.prototype.executeCommand = function executeCommand(command) {
         result.pitch = coordTMSParent ?
             coordTMS.offsetToParent(coordTMSParent) :
             new THREE.Vector4(0, 0, 1, 1);
+        if (layer.transparent) {
+            texture.premultiplyAlpha = true;
+        }
         return result;
     });
 };
