@@ -32,6 +32,7 @@ view.addLayer({
     id: 'wms_imagery',
     name: 'Ortho2009_vue_ensemble_16cm_CC46',
     projection: 'EPSG:3946',
+    transparent: true,
     options: {
         mimetype: 'image/jpeg',
     },
@@ -59,6 +60,7 @@ view.addLayer({
     protocol: 'rasterizer',
     id: 'Kml',
     extent: extent,
+    transparent: true,
     options: { zoom: { min: 0, max: 6 } },
 });
 
@@ -68,6 +70,7 @@ view.addLayer({
     protocol: 'rasterizer',
     options: { zoom: { min: 0, max: 6 } },
     id: 'gpx',
+    transparent: true,
     style: {
         stroke: 'blue',
     },
@@ -80,6 +83,7 @@ view.addLayer({
     projection: 'EPSG:3946',
     id: 'geo',
     extent: extent,
+    transparent: true,
     options: { zoom: { min: 0, max: 6 } },
     style: {
         fill: 'orange',

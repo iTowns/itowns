@@ -126,6 +126,9 @@ WMS_Provider.prototype.getColorTexture = function getColorTexture(tile, layer, t
     return OGCWebServiceHelper.getColorTextureByUrl(url, layer.networkOptions).then((texture) => {
         result.texture = texture;
         result.texture.extent = extent;
+        if (layer.transparent) {
+            texture.premultiplyAlpha = true;
+        }
         if (tileCoords) {
             result.texture.coords = tileCoords;
         } else {

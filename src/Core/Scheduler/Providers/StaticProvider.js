@@ -59,7 +59,9 @@ function getTexture(tile, layer) {
         }
         // TODO: modify TileFS to handle tiles with ratio != image's ratio
         result.pitch = tile.extent.offsetToParent(selection.extent);
-
+        if (layer.transparent) {
+            texture.premultiplyAlpha = true;
+        }
 
         return result;
     });

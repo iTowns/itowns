@@ -109,6 +109,9 @@ WMTS_Provider.prototype.getColorTexture = function getColorTexture(coordWMTS, la
         result.texture = texture;
         result.texture.coords = coordWMTS;
         result.pitch = new THREE.Vector4(0, 0, 1, 1);
+        if (layer.transparent) {
+            texture.premultiplyAlpha = true;
+        }
 
         return result;
     });
