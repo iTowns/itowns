@@ -67,6 +67,7 @@
     "eslint-plugin-import": "^2.7.0",
     "imports-loader": "^0.7.1",
     "jsdoc": "^3.5.5",
+    "marked": "^0.3.9",
     "mocha": "^3.4.2",
     "node-fetch": "^1.7.0",
     "proj4": "^2.4.3",
