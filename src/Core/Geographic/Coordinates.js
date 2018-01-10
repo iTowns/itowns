@@ -136,8 +136,10 @@ function _convert(coordsIn, newCrs, target) {
         }
     } else {
         if (coordsIn.crs === 'EPSG:4326' && newCrs === 'EPSG:4978') {
-            const cartesian = ellipsoid.cartographicToCartesian(coordsIn);
-            return target.set(newCrs, cartesian);
+            const cartesian = ellipsoid.cartographicToCartesian(coordsIn, coordsIn.geodesicNormal);
+            target.set(newCrs, cartesian);
+            target._normal = coordsIn.geodesicNormal;
+            return target;
         }
 
         if (coordsIn.crs === 'EPSG:4978' && newCrs === 'EPSG:4326') {
@@ -269,6 +271,7 @@ Coordinates.prototype.set = function set(crs, ...coordinates) {
             this._values[i] = 0;
         }
     }
+    this._normal = undefined;
     this._internalStorageUnit = crsToUnit(crs);
     return this;
 };
@@ -280,6 +283,9 @@ Coordinates.prototype.clone = function clone(target) {
         r = target;
     } else {
         r = new Coordinates(this.crs, ...this._values);
+    }
+    if (this._normal) {
+        r._normal = this._normal.clone();
     }
     r._internalStorageUnit = this._internalStorageUnit;
     return r;

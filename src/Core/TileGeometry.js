@@ -32,8 +32,8 @@ function TileGeometry(params, builder) {
     // Constructor
     THREE.BufferGeometry.call(this);
 
-    this.center = builder.Center(params).clone();
-    this.OBB = builder.OBB(params);
+    this.center = builder.Center(params.extent).clone();
+    this.extent = params.extent;
 
     const bufferAttribs = this.computeBuffers(params, builder);
 
@@ -43,8 +43,8 @@ function TileGeometry(params, builder) {
     this.addAttribute('uv_wgs84', bufferAttribs.uv.wgs84);
     this.addAttribute('uv_pm', bufferAttribs.uv.pm);
 
-    // ---> for SSE
-    this.computeBoundingSphere();
+    this.computeBoundingBox();
+    this.OBB = builder.OBB(this.boundingBox);
 }
 
 
@@ -68,6 +68,7 @@ TileGeometry.prototype.computeBuffers = function computeBuffers(params, builder)
     outBuffers.uv.pm = new THREE.BufferAttribute(new Float32Array(nVertex), 1);
 
     // Read previously cached values (index and uv.wgs84 only depend on the # of triangles)
+    // FIXME: cacheKey is always NaN
     const cacheKey = params.layerId + triangles;
     const cachedBuffers = cache.getRessource(cacheKey);
     const mustBuildIndexAndWGS84 = !cachedBuffers;
@@ -124,22 +125,24 @@ TileGeometry.prototype.computeBuffers = function computeBuffers(params, builder)
 
         for (let x = 0; x <= widthSegments; x++) {
             const u = x / widthSegments;
+            const id_m3 = idVertex * 3;
 
             builder.uProjecte(u, params);
 
-            var vertex = builder.VertexPosition(params, params.projected);
+            const vertex = builder.VertexPosition(params, params.projected);
+            const normal = builder.VertexNormal(params);
 
-            const id_m3 = idVertex * 3;
+            // move geometry to center world
+            vertex.sub(this.center);
 
-            outBuffers.position.array[id_m3 + 0] = vertex.x - this.center.x;
-            outBuffers.position.array[id_m3 + 1] = vertex.y - this.center.y;
-            outBuffers.position.array[id_m3 + 2] = vertex.z - this.center.z;
+            // align normal to z axis
+            if (params.quatNormalToZ) {
+                vertex.applyQuaternion(params.quatNormalToZ);
+                normal.applyQuaternion(params.quatNormalToZ);
+            }
 
-            var normal = builder.VertexNormal(params);
-
-            outBuffers.normal.array[id_m3 + 0] = normal.x;
-            outBuffers.normal.array[id_m3 + 1] = normal.y;
-            outBuffers.normal.array[id_m3 + 2] = normal.z;
+            vertex.toArray(outBuffers.position.array, id_m3);
+            normal.toArray(outBuffers.normal.array, id_m3);
 
             UV_WGS84(outBuffers, idVertex, u, v);
             UV_PM(outBuffers, idVertex, uv_pm);

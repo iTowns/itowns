@@ -89,13 +89,13 @@ export function globeCulling(minLevelForHorizonCulling) {
     };
 }
 
+const v = new THREE.Vector3();
 function computeNodeSSE(camera, node) {
-    const v = new THREE.Vector3();
     v.setFromMatrixScale(node.matrixWorld);
-    const boundingSphereCenter = new THREE.Vector3().addVectors(node.geometry.boundingSphere.center, node.boundingSphereOffset).applyMatrix4(node.matrixWorld);
+    const boundingSphereCenter = node.boundingSphere.center.clone().applyMatrix4(node.matrixWorld);
     const distance = Math.max(
         0.0,
-        camera.camera3D.position.distanceTo(boundingSphereCenter) - node.geometry.boundingSphere.radius * v.x);
+        camera.camera3D.position.distanceTo(boundingSphereCenter) - node.boundingSphere.radius * v.x);
 
     // Removed because is false computation, it doesn't consider the altitude of node
     // Added small oblique weight (distance is not enough, tile orientation is needed)

@@ -25,11 +25,10 @@ function TileMesh(geometry, params) {
     this.extent = params.extent;
 
     this.geometry = geometry;
-    this.normal = params.center.clone().normalize();
 
-    this.boundingSphereOffset = new THREE.Vector3();
+    this.obb = this.geometry.OBB.clone();
 
-    this.oSphere = new THREE.Sphere(this.geometry.boundingSphere.center.clone(), this.geometry.boundingSphere.radius);
+    this.boundingSphere = this.OBB().box3D.getBoundingSphere();
 
     this.material = new LayeredMaterial(params.materialOptions);
 
@@ -50,7 +49,7 @@ TileMesh.prototype.constructor = TileMesh;
 
 TileMesh.prototype.updateMatrixWorld = function updateMatrixWorld(force) {
     THREE.Mesh.prototype.updateMatrixWorld.call(this, force);
-    this.geometry.OBB.update();
+    this.OBB().update();
 };
 
 TileMesh.prototype.isVisible = function isVisible() {
@@ -109,20 +108,17 @@ TileMesh.prototype.setBBoxZ = function setBBoxZ(min, max) {
     if (min == undefined && max == undefined) {
         return;
     }
-    if (Math.floor(min) !== Math.floor(this.geometry.OBB.z.min) || Math.floor(max) !== Math.floor(this.geometry.OBB.z.max)) {
-        const delta = this.geometry.OBB.updateZ(min, max);
-        const trans = this.normal.clone().setLength(delta.y);
-
-        this.geometry.boundingSphere.radius = Math.sqrt(delta.x * delta.x + this.oSphere.radius * this.oSphere.radius);
+    if (Math.floor(min) !== Math.floor(this.obb.z.min) || Math.floor(max) !== Math.floor(this.obb.z.max)) {
+        this.OBB().updateZ(min, max);
+        this.OBB().box3D.getBoundingSphere(this.boundingSphere);
         this.updateGeometricError();
-        this.boundingSphereOffset = trans;
     }
 };
 
 TileMesh.prototype.updateGeometricError = function updateGeometricError() {
     // The geometric error is calculated to have a correct texture display.
     // For the projection of a texture's texel to be less than or equal to one pixel
-    this.geometricError = this.geometry.boundingSphere.radius / SIZE_TEXTURE_TILE;
+    this.geometricError = this.boundingSphere.radius / SIZE_TEXTURE_TILE;
 };
 
 TileMesh.prototype.setTexturesLayer = function setTexturesLayer(textures, layerType, layerId) {
@@ -153,24 +149,8 @@ TileMesh.prototype.isColorLayerDownscaled = function isColorLayerDownscaled(laye
     return mat.isColorLayerDownscaled(layer.id, this.getZoomForLayer(layer));
 };
 
-TileMesh.prototype.normals = function normals() {
-    return this.geometry.normals;
-};
-
-TileMesh.prototype.fourCorners = function fourCorners() {
-    return this.geometry.fourCorners;
-};
-
-TileMesh.prototype.normal = function normal() {
-    return this.geometry.normal;
-};
-
-TileMesh.prototype.center = function center() {
-    return this.geometry.center;
-};
-
 TileMesh.prototype.OBB = function OBB() {
-    return this.geometry.OBB;
+    return this.obb;
 };
 
 TileMesh.prototype.getIndexLayerColor = function getIndexLayerColor(idLayer) {

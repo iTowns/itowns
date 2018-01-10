@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import OBB from '../../../Renderer/ThreeExtended/OBB';
 import Coordinates from '../../Geographic/Coordinates';
+import Extent from '../../Geographic/Extent';
 
 function PlanarTileBuilder() {
     this.tmp = {
@@ -8,6 +9,8 @@ function PlanarTileBuilder() {
         position: new THREE.Vector3(),
         normal: new THREE.Vector3(0, 0, 1),
     };
+
+    this.type = 'p';
 }
 
 PlanarTileBuilder.prototype.constructor = PlanarTileBuilder;
@@ -21,10 +24,11 @@ PlanarTileBuilder.prototype.Prepare = function Prepare(params) {
 
 
 // get center tile in cartesian 3D
-PlanarTileBuilder.prototype.Center = function Center(params) {
-    params.extent.center(this.tmp.coords);
-    params.center = new THREE.Vector3(this.tmp.coords.x(), this.tmp.coords.y(), 0);
-    return params.center;
+const center = new THREE.Vector3();
+PlanarTileBuilder.prototype.Center = function Center(extent) {
+    extent.center(this.tmp.coords);
+    center.set(this.tmp.coords.x(), this.tmp.coords.y(), 0);
+    return center;
 };
 
 // get position 3D cartesian
@@ -50,19 +54,22 @@ PlanarTileBuilder.prototype.vProjecte = function vProjecte(v, params)
 };
 
 // get oriented bounding box of tile
-PlanarTileBuilder.prototype.OBB = function _OBB(params) {
-    const center = params.center;
-    const max = new THREE.Vector3(
-        params.extent.east(),
-        params.extent.north(),
-        0).sub(center);
-    const min = new THREE.Vector3(
-        params.extent.west(),
-        params.extent.south(),
-        0).sub(center);
-    const translate = new THREE.Vector3(0, 0, 0);
-    // normal is up vector
-    return new OBB(min, max, undefined, translate);
+PlanarTileBuilder.prototype.OBB = function OBBFn(boundingBox) {
+    return new OBB(boundingBox.min, boundingBox.max);
+};
+
+const quaternion = new THREE.Quaternion();
+PlanarTileBuilder.prototype.computeSharableExtent = function fnComputeSharableExtent(extent) {
+    // compute sharable extent to pool the geometries
+    // the geometry in common extent is identical to the existing input
+    // with a translation
+    const sharableExtent = new Extent(extent.crs(), 0, Math.abs(extent.west() - extent.east()), 0, Math.abs(extent.north() - extent.south()));
+    sharableExtent._internalStorageUnit = extent._internalStorageUnit;
+    return {
+        sharableExtent,
+        quaternion,
+        position: this.Center(extent).clone(),
+    };
 };
 
 export default PlanarTileBuilder;

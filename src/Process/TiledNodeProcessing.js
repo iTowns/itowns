@@ -69,7 +69,6 @@ function subdivideNode(context, layer, node) {
             for (const child of children) {
                 node.add(child);
                 child.updateMatrixWorld(true);
-                child.OBB().update();
 
                 child.material.uniforms.lightPosition.value =
                     node.material.uniforms.lightPosition.value;

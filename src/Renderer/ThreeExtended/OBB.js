@@ -1,33 +1,23 @@
 import * as THREE from 'three';
 import Coordinates, { C, UNIT } from '../../Core/Geographic/Coordinates';
 
-function OBB(min, max, lookAt, translate) {
+function OBB(min, max) {
     THREE.Object3D.call(this);
-    this.box3D = new THREE.Box3(min, max);
-
+    this.box3D = new THREE.Box3(min.clone(), max.clone());
     this.natBox = this.box3D.clone();
-
-    if (lookAt) {
-        this.lookAt(lookAt);
-    }
-
-
-    if (translate) {
-        this.translateX(translate.x);
-        this.translateY(translate.y);
-        this.translateZ(translate.z);
-    }
-
-    this.oPosition = new THREE.Vector3();
-
     this.update();
-
-    this.oPosition = this.position.clone();
     this.z = { min: 0, max: 0 };
 }
 
 OBB.prototype = Object.create(THREE.Object3D.prototype);
 OBB.prototype.constructor = OBB;
+
+OBB.prototype.clone = function clone() {
+    const cOBB = new OBB(this.natBox.min, this.natBox.max);
+    cOBB.position.copy(this.position);
+    cOBB.quaternion.copy(this.quaternion);
+    return cOBB;
+};
 
 OBB.prototype.update = function update() {
     this.updateMatrixWorld(true);
@@ -37,31 +27,9 @@ OBB.prototype.update = function update() {
 
 OBB.prototype.updateZ = function updateZ(min, max) {
     this.z = { min, max };
-    return this.addHeight(min, max);
-};
-
-OBB.prototype.addHeight = function addHeight(minz, maxz) {
-    var depth = Math.abs(this.natBox.min.z - this.natBox.max.z);
-    //
-    this.box3D.min.z = this.natBox.min.z + minz;
-    this.box3D.max.z = this.natBox.max.z + maxz;
-
-    // TODO à vérifier --->
-
-    var nHalfSize = Math.abs(this.box3D.min.z - this.box3D.max.z) * 0.5;
-    var translaZ = this.box3D.min.z + nHalfSize;
-    this.box3D.min.z = -nHalfSize;
-    this.box3D.max.z = nHalfSize;
-
-    this.position.copy(this.oPosition);
-
-    this.translateZ(translaZ);
-
+    this.box3D.min.z = this.natBox.min.z + min;
+    this.box3D.max.z = this.natBox.max.z + max;
     this.update();
-
-    return new THREE.Vector2(nHalfSize - depth * 0.5, translaZ);
-
-    // TODO <---- à vérifier
 };
 
 OBB.prototype._points = function _points() {
@@ -231,11 +199,17 @@ OBB.cardinalsXYZToOBB = function cardinalsXYZToOBB(cardinals, centerLongitude, i
     const delta = isEllipsoid ? (halfWidth - Math.abs(point5InPlaneX)) : 0;
     tmp.translate.set(0, delta, -halfMaxHeight);
 
-    const obb = new OBB(min, max, tmp.normal, tmp.translate);
+    const obb = new OBB(min, max);
+
+    obb.lookAt(tmp.normal);
+    obb.translateX(tmp.translate.x);
+    obb.translateY(tmp.translate.y);
+    obb.translateZ(tmp.translate.z);
+    obb.update();
 
     // for 3D
     if (minHeight !== 0 || maxHeight !== 0) {
-        obb.addHeight(minHeight, maxHeight);
+        obb.updateZ(minHeight, maxHeight);
     }
     return obb;
 };

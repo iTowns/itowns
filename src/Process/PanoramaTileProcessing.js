@@ -7,9 +7,13 @@ export function panoramaCulling(node, camera) {
 }
 
 function _isTileBiggerThanTexture(camera, textureSize, quality, node) {
+    const obb = node.OBB();
+
+    obb.updateMatrixWorld();
     const onScreen = camera.box3SizeOnScreen(
-        node.geometry.OBB.box3D,
-        node.geometry.OBB.matrixWorld);
+        obb.box3D,
+        obb.matrixWorld);
+
     onScreen.min.z = 0;
     onScreen.max.z = 0;
 

@@ -797,6 +797,8 @@ function GlobeControls(view, target, radius, options = {}) {
         }
         // correction of depth error
         const tileCrs = this._view.wgs84TileLayer.extent.crs();
+        coordTarget._normal = null;
+        coordTile._normal = null;
         coordTarget.set(this._view.referenceCrs, movingCameraTargetOnGlobe).as(tileCrs, coordTile);
         updateAltitudeCoordinate(coordTile, this._view.wgs84TileLayer);
         coordTile.as(this._view.referenceCrs).xyz(reposition);
