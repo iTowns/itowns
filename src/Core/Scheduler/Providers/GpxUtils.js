@@ -19,6 +19,10 @@ function _gGpxToWTrackPointsArray(gpxXML) {
     return gpxXML.getElementsByTagName('trkpt');
 }
 
+function _gGpxToWTrackSegmentsArray(gpxXML) {
+    return gpxXML.getElementsByTagName('trkseg');
+}
+
 function _gpxPtToCartesian(pt, crs) {
     var longitude = Number(pt.attributes.lon.nodeValue);
     var latitude = Number(pt.attributes.lat.nodeValue);
@@ -82,44 +86,52 @@ function updatePath(renderer, scene, camera) {
 }
 
 function _gpxToWTrackPointsMesh(gpxXML, options) {
-    var trackPts = _gGpxToWTrackPointsArray(gpxXML);
+    var trackSegs = _gGpxToWTrackSegmentsArray(gpxXML);
+    var masterObject = new THREE.Object3D();
 
-    if (trackPts.length) {
-        gpxXML.center = gpxXML.center || _gpxPtToCartesian(trackPts[0], options.crs);
+    if (trackSegs.length) {
+        for (const trackSeg of trackSegs) {
+            var trackPts = _gGpxToWTrackPointsArray(trackSeg);
 
-        var geometry = new THREE.Geometry();
+            if (trackPts.length) {
+                gpxXML.center = gpxXML.center || _gpxPtToCartesian(trackPts[0], options.crs);
 
-        for (const trackPt of trackPts) {
-            const point = _gpxPtToCartesian(trackPt, options.crs).sub(gpxXML.center);
-            geometry.vertices.push(point);
+                var geometry = new THREE.Geometry();
+
+                for (const trackPt of trackPts) {
+                    const point = _gpxPtToCartesian(trackPt, options.crs).sub(gpxXML.center);
+                    geometry.vertices.push(point);
+                }
+
+                var line = new Line.MeshLine();
+                line.setGeometry(geometry);
+                // Due to limitations in the ANGLE layer,
+                // with the WebGL renderer on Windows platforms
+                // lineWidth will always be 1 regardless of the set value
+                // Use MeshLine to fix it
+                var material = new Line.MeshLineMaterial({
+                    lineWidth: options.lineWidth || 12,
+                    sizeAttenuation: 0,
+                    color: new THREE.Color(0xFF0000),
+                });
+
+                if (Capabilities.isLogDepthBufferSupported()) {
+                    material.fragmentShader = material.fragmentShader.replace(/.*/, '').substr(1);
+                    patchMaterialForLogDepthSupport(material);
+                    // eslint-disable-next-line no-console
+                    console.warn('MeshLineMaterial shader has been patched to add log depth buffer support');
+                }
+
+                const pathMesh = new THREE.Mesh(line.geometry, material);
+                // update size screen uniform
+                // update depth test for visibilty path, because of the proximity of the terrain and gpx mesh
+                pathMesh.onBeforeRender = updatePath;
+                masterObject.add(pathMesh);
+            }
         }
-
-        var line = new Line.MeshLine();
-        line.setGeometry(geometry);
-        // Due to limitations in the ANGLE layer,
-        // with the WebGL renderer on Windows platforms
-        // lineWidth will always be 1 regardless of the set value
-        // Use MeshLine to fix it
-        var material = new Line.MeshLineMaterial({
-            lineWidth: options.lineWidth || 12,
-            sizeAttenuation: 0,
-            color: new THREE.Color(0xFF0000),
-        });
-
-        if (Capabilities.isLogDepthBufferSupported()) {
-            material.fragmentShader = material.fragmentShader.replace(/.*/, '').substr(1);
-            patchMaterialForLogDepthSupport(material);
-            // eslint-disable-next-line no-console
-            console.warn('MeshLineMaterial shader has been patched to add log depth buffer support');
-        }
-
-        const pathMesh = new THREE.Mesh(line.geometry, material);
-        // update size screen uniform
-        // update depth test for visibilty path, because of the proximity of the terrain and gpx mesh
-        pathMesh.onBeforeRender = updatePath;
-
-        return pathMesh;
-    } else {
+        return masterObject;
+    }
+    else {
         return null;
     }
 }
