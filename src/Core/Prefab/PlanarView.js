@@ -9,7 +9,7 @@ import { GeometryLayer } from '../Layer/Layer';
 
 import { processTiledGeometryNode } from '../../Process/TiledNodeProcessing';
 import { updateLayeredMaterialNodeImagery, updateLayeredMaterialNodeElevation } from '../../Process/LayeredMaterialNodeProcessing';
-import { planarCulling, planarSubdivisionControl } from '../../Process/PlanarTileProcessing';
+import { planarCulling, planarSubdivisionControl, prePlanarUpdate } from '../../Process/PlanarTileProcessing';
 import PlanarTileBuilder from './Planar/PlanarTileBuilder';
 import SubdivisionControl from '../../Process/SubdivisionControl';
 
@@ -55,6 +55,8 @@ export function createPlanarLayer(id, extent, options) {
     tileLayer.preUpdate = (context, layer, changeSources) => {
         SubdivisionControl.preUpdate(context, layer);
 
+        prePlanarUpdate(context, layer);
+
         if (__DEBUG__) {
             layer._latestUpdateStartingLevel = 0;
         }
@@ -98,7 +100,8 @@ export function createPlanarLayer(id, extent, options) {
 
     function subdivision(context, layer, node) {
         if (SubdivisionControl.hasEnoughTexturesToSubdivide(context, layer, node)) {
-            return planarSubdivisionControl(options.maxSubdivisionLevel || 5)(context, layer, node);
+            return planarSubdivisionControl(options.maxSubdivisionLevel || 5,
+                options.maxDeltaElevationLevel || 4)(context, layer, node);
         }
         return false;
     }
