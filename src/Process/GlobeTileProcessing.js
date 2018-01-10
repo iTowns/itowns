@@ -42,6 +42,15 @@ export function preGlobeUpdate(context, layer) {
 
     // pre-sse
     context.camera.preSSE = _preSSE(context.view);
+
+    const elevationLayers = context.view.getLayers((l, a) => a && a.id == layer.id && l.type == 'elevation');
+    context.maxElevationLevel = -1;
+    for (const e of elevationLayers) {
+        context.maxElevationLevel = Math.max(e.options.zoom.max, context.maxElevationLevel);
+    }
+    if (context.maxElevationLevel == -1) {
+        context.maxElevationLevel = Infinity;
+    }
 }
 
 function pointHorizonCulling(pt) {
@@ -102,13 +111,22 @@ function computeNodeSSE(camera, node) {
     return camera.preSSE * (node.geometricError * v.x) / distance;
 }
 
-export function globeSubdivisionControl(minLevel, maxLevel, sseThreshold) {
+export function globeSubdivisionControl(minLevel, maxLevel, sseThreshold, maxDeltaElevationLevel) {
     SSE_SUBDIVISION_THRESHOLD = sseThreshold;
     return function _globeSubdivisionControl(context, layer, node) {
         if (node.level < minLevel) {
             return true;
         }
         if (maxLevel <= node.level) {
+            return false;
+        }
+        // Prevent to subdivise the node if the current elevation level
+        // we must avoid a tile, with level 20, inherits a level 3 elevation texture.
+        // The induced geometric error is much too large and distorts the SSE
+        const currentElevationLevel = node.material.getElevationLayerLevel();
+        if (node.level < context.maxElevationLevel + maxDeltaElevationLevel &&
+            currentElevationLevel >= 0 &&
+            (node.level - currentElevationLevel) >= maxDeltaElevationLevel) {
             return false;
         }
 
