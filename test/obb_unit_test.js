@@ -7,13 +7,18 @@ import BuilderEllipsoidTile from '../src/Core/Prefab/Globe/BuilderEllipsoidTile'
 import PlanarTileBuilder from '../src/Core/Prefab/Planar/PlanarTileBuilder';
 import TileGeometry from '../src/Core/TileGeometry';
 import OBB from '../src/Renderer/ThreeExtended/OBB';
-/* global describe, it, xit */
+/* global describe, it */
 
 const max = new THREE.Vector3(10, 10, 10);
 const min = new THREE.Vector3(-10, -10, -10);
 const lookAt = new THREE.Vector3(1, 0, 0);
 const translate = new THREE.Vector3(0, 0, 20);
-const obb = new OBB(min, max, lookAt, translate);
+const obb = new OBB(min, max);
+obb.lookAt(lookAt);
+obb.translateX(translate.x);
+obb.translateY(translate.y);
+obb.translateZ(translate.z);
+obb.update();
 
 describe('OBB', function () {
     it('should correctly instance obb', () => {
@@ -54,13 +59,13 @@ function assertVerticesAreInOBB(builder, extent) {
 describe('Ellipsoid tiles OBB computation', function () {
     const builder = new BuilderEllipsoidTile();
 
-    xit('IGNORED see #87 - should compute globe-level 0 OBB correctly', function () {
+    it('should compute globe-level 0 OBB correctly', function () {
         const extent = new Extent('EPSG:4326', -Math.PI, 0, -Math.PI * 0.5, Math.PI * 0.5);
         extent._internalStorageUnit = UNIT.RADIAN;
         assertVerticesAreInOBB(builder, extent);
     });
 
-    xit('IGNORED see #87 - should compute globe-level 2 OBB correctly', function () {
+    it('should compute globe-level 2 OBB correctly', function () {
         const extent = new Extent('EPSG:4326', 0, 0.7853981633974483, -0.7853981633974483, 0);
         extent._internalStorageUnit = UNIT.RADIAN;
         assertVerticesAreInOBB(builder, extent);

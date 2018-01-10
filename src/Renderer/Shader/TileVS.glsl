@@ -16,6 +16,7 @@ uniform int         loadedTexturesCount[8];
 
 uniform mat4        projectionMatrix;
 uniform mat4        modelViewMatrix;
+uniform mat4        modelMatrix;
 
 varying vec2        vUv_WGS84;
 varying float       vUv_PM;
@@ -36,8 +37,6 @@ void main() {
         vUv_PM = uv_pm;
 
         vec4 vPosition;
-
-        vNormal = normal;
 
         if(loadedTexturesCount[0] > 0) {
             vec2    vVv = vec2(
@@ -68,10 +67,12 @@ void main() {
             #error Must define either RGBA_TEXTURE_ELEVATION, DATA_TEXTURE_ELEVATION or COLOR_TEXTURE_ELEVATION
             #endif
 
-            vPosition = vec4( position +  vNormal  * dv ,1.0 );
+            vPosition = vec4( position +  normal  * dv ,1.0 );
         } else {
             vPosition = vec4( position ,1.0 );
         }
+
+        vNormal = normalize ( mat3( modelMatrix[0].xyz, modelMatrix[1].xyz, modelMatrix[2].xyz ) * normal );
 
         gl_Position = projectionMatrix * modelViewMatrix * vPosition;
         #include <logdepthbuf_vertex>

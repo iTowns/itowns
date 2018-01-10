@@ -1,7 +1,11 @@
 import * as THREE from 'three';
-import { C } from '../../Geographic/Coordinates';
+import { C, UNIT } from '../../Geographic/Coordinates';
 import Projection from '../../Geographic/Projection';
 import OBB from '../../../Renderer/ThreeExtended/OBB';
+import Extent from '../../Geographic/Extent';
+
+const axisZ = new THREE.Vector3(0, 0, 1);
+const axisY = new THREE.Vector3(0, 1, 0);
 
 function BuilderEllipsoidTile() {
     this.projector = new Projection();
@@ -11,14 +15,16 @@ function BuilderEllipsoidTile() {
             C.EPSG_4326_Radians(0, 0),
             C.EPSG_4326_Radians(0, 0)],
         position: new THREE.Vector3(),
-        normal: new THREE.Vector3(),
     };
+
+    this.type = 'e';
 }
 
 BuilderEllipsoidTile.prototype.constructor = BuilderEllipsoidTile;
 
 // prepare params
 // init projected object -> params.projected
+
 BuilderEllipsoidTile.prototype.Prepare = function Prepare(params) {
     params.nbRow = Math.pow(2.0, params.level + 1.0);
 
@@ -33,30 +39,34 @@ BuilderEllipsoidTile.prototype.Prepare = function Prepare(params) {
 
     params.deltaUV1 = (st1 - start) * params.nbRow;
 
+    // transformation to align tile's normal to z axis
+    params.quatNormalToZ = new THREE.Quaternion().setFromAxisAngle(axisY, -(Math.PI * 0.5 - params.extent.center().latitude()));
+
     // let's avoid building too much temp objects
     params.projected = { longitudeRad: 0, latitudeRad: 0 };
 };
 
 // get center tile in cartesian 3D
-BuilderEllipsoidTile.prototype.Center = function Center(params) {
-    params.center = params.extent.center(this.tmp.coords[0])
+BuilderEllipsoidTile.prototype.Center = function Center(extent) {
+    return extent.center(this.tmp.coords[0])
         .as('EPSG:4978', this.tmp.coords[1]).xyz();
-    return params.center;
 };
 
 // get position 3D cartesian
 BuilderEllipsoidTile.prototype.VertexPosition = function VertexPosition(params) {
-    this.tmp.coords[0]._values[0] = params.projected.longitudeRad;
-    this.tmp.coords[0]._values[1] = params.projected.latitudeRad;
+    this.tmp.coords[0].set(
+        'EPSG:4326',
+        params.projected.longitudeRad,
+        params.projected.latitudeRad);
+    this.tmp.coords[0]._internalStorageUnit = UNIT.RADIAN;
 
     this.tmp.coords[0].as('EPSG:4978', this.tmp.coords[1]).xyz(this.tmp.position);
-    this.tmp.normal.copy(this.tmp.position).normalize();
     return this.tmp.position;
 };
 
 // get normal for last vertex
 BuilderEllipsoidTile.prototype.VertexNormal = function VertexNormal() {
-    return this.tmp.normal;
+    return this.tmp.coords[1].geodesicNormal;
 };
 
 // coord u tile to projected
@@ -79,9 +89,39 @@ BuilderEllipsoidTile.prototype.getUV_PM = function getUV_PM(params) {
     return t - params.deltaUV1;
 };
 
+const quatToAlignLongitude = new THREE.Quaternion();
+const quatToAlignLatitude = new THREE.Quaternion();
+
+BuilderEllipsoidTile.prototype.computeSharableExtent = function fnComputeSharableExtent(extent) {
+    // Compute sharable extent to pool the geometries
+    // the geometry in common extent is identical to the existing input
+    // with a transformation (translation, rotation)
+
+    // TODO: It should be possible to use equatorial plan symetrie,
+    // but we should be reverse UV on tile
+    // Common geometry is looking for only on longitude
+    const sizeLongitude = Math.abs(extent.west() - extent.east()) / 2;
+    const sharableExtent = new Extent(extent.crs(), -sizeLongitude, sizeLongitude, extent.south(), extent.north());
+    sharableExtent._internalStorageUnit = extent._internalStorageUnit;
+
+    // compute rotation to transform tile to position it on ellipsoid
+    // this transformation take into account the transformation of the parents
+    const rotLon = extent.west() - sharableExtent.west();
+    const rotLat = Math.PI * 0.5 - extent.center().latitude();
+    quatToAlignLongitude.setFromAxisAngle(axisZ, rotLon);
+    quatToAlignLatitude.setFromAxisAngle(axisY, rotLat);
+    quatToAlignLongitude.multiply(quatToAlignLatitude);
+
+    return {
+        sharableExtent,
+        quaternion: quatToAlignLongitude,
+        position: this.Center(extent),
+    };
+};
+
 // use for region for adaptation boundingVolume
-BuilderEllipsoidTile.prototype.OBB = function OBBFn(params) {
-    return OBB.extentToOBB(params.extent);
+BuilderEllipsoidTile.prototype.OBB = function OBBFn(boundingBox) {
+    return new OBB(boundingBox.min, boundingBox.max);
 };
 
 export default BuilderEllipsoidTile;

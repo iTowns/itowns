@@ -7,7 +7,7 @@ export function planarCulling(node, camera) {
 }
 
 function _isTileBigOnScreen(camera, node) {
-    const onScreen = camera.box3SizeOnScreen(node.geometry.OBB.box3D, node.matrixWorld);
+    const onScreen = camera.box3SizeOnScreen(node.OBB().box3D, node.matrixWorld);
 
     // onScreen.x/y/z are [-1, 1] so divide by 2
     // (so x = 0.4 means the object width on screen is 40% of the total screen width)
