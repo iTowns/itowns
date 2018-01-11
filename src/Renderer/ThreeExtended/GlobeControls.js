@@ -904,8 +904,13 @@ function GlobeControls(view, target, radius, options = {}) {
 
             event.preventDefault();
 
+            const staticPos = window.getComputedStyle(event.target.parentElement).position !== 'static';
+            const bounds = staticPos ? event.target.getBoundingClientRect() : { left: 0, top: 0 };
+            const x = event.clientX - event.target.offsetLeft - bounds.left;
+            const y = event.clientY - event.target.offsetTop - bounds.top;
+
             if (state === this.states.ORBIT || state === this.states.PANORAMIC) {
-                rotateEnd.set(event.clientX - event.target.offsetLeft, event.clientY - event.target.offsetTop);
+                rotateEnd.set(x, y);
                 rotateDelta.subVectors(rotateEnd, rotateStart);
 
                 this.rotateLeft(2 * Math.PI * rotateDelta.x / sizeRendering.width * this.rotateSpeed);
@@ -914,7 +919,7 @@ function GlobeControls(view, target, radius, options = {}) {
 
                 rotateStart.copy(rotateEnd);
             } else if (state === this.states.DOLLY) {
-                dollyEnd.set(event.clientX - event.target.offsetLeft, event.clientY - event.target.offsetTop);
+                dollyEnd.set(x, y);
                 dollyDelta.subVectors(dollyEnd, dollyStart);
 
                 if (dollyDelta.y > 0) {
@@ -925,15 +930,15 @@ function GlobeControls(view, target, radius, options = {}) {
 
                 dollyStart.copy(dollyEnd);
             } else if (state === this.states.PAN) {
-                panEnd.set(event.clientX - event.target.offsetLeft, event.clientY - event.target.offsetTop);
+                panEnd.set(x, y);
                 panDelta.subVectors(panEnd, panStart);
 
                 this.mouseToPan(panDelta.x, panDelta.y);
 
                 panStart.copy(panEnd);
             } else if (state === this.states.MOVE_GLOBE) {
-                mouse.x = ((event.clientX - event.target.offsetLeft) / sizeRendering.width) * 2 - 1;
-                mouse.y = -((event.clientY - event.target.offsetTop) / sizeRendering.height) * 2 + 1;
+                mouse.x = (x / sizeRendering.width) * 2 - 1;
+                mouse.y = -(y / sizeRendering.height) * 2 + 1;
 
                 snapShotCamera.updateRay(ray, mouse);
 
@@ -1057,19 +1062,25 @@ function GlobeControls(view, target, radius, options = {}) {
             if (this.enabled === false) return;
             event.preventDefault();
             state = inputToState(event.button, currentKey, this.states);
+
+            const staticPos = window.getComputedStyle(event.target.parentElement).position !== 'static';
+            const bounds = staticPos ? event.target.getBoundingClientRect() : { left: 0, top: 0 };
+            const x = event.clientX - event.target.offsetLeft - bounds.left;
+            const y = event.clientY - event.target.offsetTop - bounds.top;
+
             switch (state) {
                 case this.states.ORBIT:
                 case this.states.PANORAMIC:
-                    rotateStart.set(event.clientX - event.target.offsetLeft, event.clientY - event.target.offsetTop);
+                    rotateStart.set(x, y);
                     break;
                 case this.states.SELECT:
                     // If the key 'S' is down, the engine selects node under mouse
-                    this._view.selectNodeAt(new THREE.Vector2(event.clientX - event.target.offsetLeft, event.clientY - event.target.offsetTop));
+                    this._view.selectNodeAt(new THREE.Vector2(x, y));
                     break;
                 case this.states.MOVE_GLOBE: {
                     snapShotCamera.shot(this.camera);
-                    ptScreenClick.x = event.clientX - event.target.offsetLeft;
-                    ptScreenClick.y = event.clientY - event.target.offsetTop;
+                    ptScreenClick.x = x;
+                    ptScreenClick.y = y;
 
                     const point = view.getPickingPositionFromDepth(ptScreenClick);
                     lastRotation = [];
@@ -1083,10 +1094,10 @@ function GlobeControls(view, target, radius, options = {}) {
                     break;
                 }
                 case this.states.DOLLY:
-                    dollyStart.set(event.clientX - event.target.offsetLeft, event.clientY - event.target.offsetTop);
+                    dollyStart.set(x, y);
                     break;
                 case this.states.PAN:
-                    panStart.set(event.clientX - event.target.offsetLeft, event.clientY - event.target.offsetTop);
+                    panStart.set(x, y);
                     break;
                 default:
             }
@@ -1110,8 +1121,10 @@ function GlobeControls(view, target, radius, options = {}) {
 
         // Double click throws move camera's target with animation
         if (!currentKey) {
-            ptScreenClick.x = event.clientX - event.target.offsetLeft;
-            ptScreenClick.y = event.clientY - event.target.offsetTop;
+            const staticPos = window.getComputedStyle(event.target.parentElement).position !== 'static';
+            const bounds = staticPos ? event.target.getBoundingClientRect() : { left: 0, top: 0 };
+            ptScreenClick.x = event.clientX - event.target.offsetLeft - bounds.left;
+            ptScreenClick.y = event.clientY - event.target.offsetTop - bounds.top;
 
             const point = view.getPickingPositionFromDepth(ptScreenClick);
 
@@ -1917,9 +1930,16 @@ GlobeControls.prototype.setCameraTargetGeoPositionAdvanced = function setCameraT
  */
 GlobeControls.prototype.pickGeoPosition = function pickGeoPosition(mouse, y) {
     var screenCoords = {
-        x: mouse.clientX || mouse,
-        y: mouse.clientY || y,
+        x: mouse,
+        y,
     };
+
+    if (mouse instanceof MouseEvent) {
+        const staticPos = window.getComputedStyle(mouse.target.parentElement).position !== 'static';
+        const bounds = staticPos ? mouse.target.getBoundingClientRect() : { left: 0, top: 0 };
+        screenCoords.x = mouse.clientX - mouse.target.offsetLeft - bounds.left;
+        screenCoords.y = mouse.clientY - mouse.target.offsetTop - bounds.top;
+    }
 
     var pickedPosition = this._view.getPickingPositionFromDepth(screenCoords);
 
