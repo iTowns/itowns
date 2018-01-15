@@ -35,11 +35,17 @@ promises.push(itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').th
 function altitudeLine(properties, contour) {
     var altitudes = [];
     var i = 0;
-    var alt = 0;
+    var result;
+    var tile;
+    var layer = globeView.wgs84TileLayer;
     if (contour.length && contour.length > 0) {
         for (; i < contour.length; i++) {
-            alt = itowns.DEMUtils.getElevationValueAt(globeView.wgs84TileLayer, contour[i]).z + 2;
-            altitudes.push(alt);
+            result = itowns.DEMUtils.getElevationValueAt(layer, contour[i], 0, tile);
+            if (!result) {
+                result = itowns.DEMUtils.getElevationValueAt(layer, contour[i], 0);
+            }
+            tile = [result.tile];
+            altitudes.push(result.z + 2);
         }
         return altitudes;
     }
