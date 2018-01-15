@@ -1,0 +1,158 @@
+<html>
+    <head>
+        <title>Itowns - Stereo</title>
+
+        <style type="text/css">
+            html {
+                height: 100%;
+            }
+
+            body {
+                margin: 0;
+                overflow:hidden;
+                height:100%;
+            }
+
+            #viewerDiv {
+                margin : auto auto;
+                width: 100%;
+                height: 100%;
+                padding: 0;
+            }
+
+            #menuDiv {
+                position: absolute;
+                top:0px;
+                margin-left: 0px;
+            }
+            .divScaleWidget {
+                border: 2px solid black;
+                border-top: none;
+                text-align: center;
+                display: block;
+                background-image: linear-gradient(rgba(200, 200, 200, 0.3), rgba(200, 200, 200, 0.3));
+                margin-bottom: 20px;
+                margin-right: 20px;
+                position: absolute;
+                width:200px;
+                height:18px;
+                color: black;
+                font-family: 'Open Sans',
+                sans-serif;
+                font-size: 16px;
+                right: 0;
+                bottom: 0;
+            }
+
+
+            @media (max-width: 600px) {
+                #menuDiv {
+                    display: none;
+                }
+            }
+            #help {
+                position: absolute;
+                z-index: 0;
+                top: 0;
+                right: 0;
+                color: white;
+                color: #eee;
+                font: 11px 'Lucida Grande',sans-serif;
+                line-height: normal;
+                text-shadow: 0 -1px 0 #111;
+                padding: 0 1rem;
+                background: #1a1a1a;
+                border: 1px solid #2c2c2c;
+                opacity: 0.8;
+            }
+
+            #help > p {
+                margin: 0.5rem 0;
+            }
+
+            #help > ul {
+                padding: 0 1rem;
+            }
+
+            @media (max-width: 600px) {
+                #help {
+                    display: none;
+                }
+            }
+        </style>
+        <meta charset="UTF-8">
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="GUI/dat.gui/dat.gui.min.js"></script>
+    </head>
+    <body>
+        <div id="help">
+            <p>Actions</p>
+            <button onClick="enableAnaglyph()">enable Anaglyph effect</button>
+            <br/>
+            <button onClick="enableParallax()">enable Parallax effect</button>
+            <br/>
+            <button onClick="enableStereo()">enable Stereo effect</button>
+            <br/>
+            <button onClick="disableEffect()">disable effect</button>
+
+            <p>Eye separator: <span id="eyeSepValue">0.064</span></p>
+            <input type="range" id="eyeSep" min="0" max="0.2" step="0.001"
+            value="0.064" onInput="updateEyeSep(this.value);" />
+        </div>
+        <div id="viewerDiv">
+            <span class="divScaleWidget"> Scale </span>
+        </div>
+        </div>
+        <script src="GUI/GuiTools.js"></script>
+        <script src="../dist/itowns.js"></script>
+        <script src="../dist/debug.js"></script>
+        <script type="text/javascript">
+            var renderer;
+            var exports = {};
+            var THREE = itowns.THREE;
+        </script>
+        <script src="https://cdn.rawgit.com/mrdoob/three.js/dev/examples/js/effects/AnaglyphEffect.js"></script>
+        <script src="https://cdn.rawgit.com/mrdoob/three.js/dev/examples/js/effects/ParallaxBarrierEffect.js"></script>
+        <script src="https://cdn.rawgit.com/mrdoob/three.js/dev/examples/js/effects/StereoEffect.js"></script>
+        <script src="stereo.js"></script>
+        <script type="text/javascript">
+            /* global itowns, document, GuiTools, globeView, promises */
+            var menuGlobe = new GuiTools('menuDiv');
+            menuGlobe.view = globeView;
+            var divScaleWidget = document.querySelectorAll('.divScaleWidget')[0];
+
+            var d = new debug.Debug(globeView, menuGlobe.gui);
+            debug.createTileDebugUI(menuGlobe.gui, globeView, globeView.wgs84TileLayer, d);
+
+            function updateScaleWidget() {
+                var value = globeView.controls.pixelsToMeters(200);
+                value = Math.floor(value);
+                var digit = Math.pow(10, value.toString().length - 1);
+                value = Math.round(value / digit) * digit;
+                var pix = globeView.controls.metersToPixels(value);
+                var unit = 'm';
+                if (value >= 1000) {
+                    value /= 1000;
+                    unit = 'km';
+                }
+                divScaleWidget.innerHTML = `${value} ${unit}`;
+                divScaleWidget.style.width = `${pix}px`;
+            }
+
+            // Listen for globe full initialisation event
+            globeView.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
+                // eslint-disable-next-line no-console
+                console.info('Globe initialized');
+                Promise.all(promises).then(function () {
+                    menuGlobe.addImageryLayersGUI(globeView.getLayers(function (l) { return l.type === 'color'; }));
+                    menuGlobe.addElevationLayersGUI(globeView.getLayers(function (l) { return l.type === 'elevation'; }));
+                });
+                updateScaleWidget();
+            });
+            globeView.controls.addEventListener(itowns.CONTROL_EVENTS.RANGE_CHANGED, () => {
+                updateScaleWidget();
+            });
+        </script>
+    </body>
+</html>
