@@ -5,6 +5,7 @@
 var positionOnGlobe = { longitude: 4.818, latitude: 45.7354, altitude: 3000 };
 var promises = [];
 var meshes = [];
+var linesBus = [];
 var scaler;
 
 // `viewerDiv` will contain iTowns' rendering area (`<canvas>`)
@@ -57,6 +58,15 @@ function colorLine(properties) {
     return new itowns.THREE.Color(rgb[0] / 255, rgb[1] / 255, rgb[2] / 255);
 }
 
+function acceptFeatureBus(properties) {
+    var line = properties.ligne + properties.sens;
+    if (linesBus.indexOf(line) === -1) {
+        linesBus.push(line);
+        return true;
+    }
+    return false;
+}
+
 globeView.addLayer({
     type: 'geometry',
     update: itowns.FeatureProcessing.update,
@@ -64,6 +74,7 @@ globeView.addLayer({
         color: colorLine,
         altitude: altitudeLine }),
     linewidth: 5,
+    filter: acceptFeatureBus,
     url: 'https://download.data.grandlyon.com/wfs/rdata?',
     protocol: 'wfs',
     version: '2.0.0',
