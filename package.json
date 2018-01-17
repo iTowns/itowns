@@ -44,7 +44,7 @@
     "whatwg-fetch": "^2.0.2"
   },
   "peerDependencies": {
-    "proj4": "^2.4.3",
+    "proj4": "^2.4.4",
     "three": "^0.87.0",
     "three.meshline": "^1.0.3"
   },
@@ -70,7 +70,7 @@
     "marked": "^0.3.9",
     "mocha": "^3.4.2",
     "node-fetch": "^1.7.0",
-    "proj4": "^2.4.3",
+    "proj4": "^2.4.4",
     "raw-loader": "^0.5.1",
     "require-from-string": "^1.2.1",
     "three": "^0.87.0",

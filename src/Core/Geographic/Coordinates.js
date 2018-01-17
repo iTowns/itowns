@@ -180,7 +180,7 @@ function _convert(coordsIn, newCrs, target) {
                 target.set(newCrs, p[0], p[1], coordsInInter._values[2]);
                 return target;
             } else if (coordsIn.crs == 'EPSG:4326' && newCrs == 'EPSG:3857') {
-                val1 = THREE.Math.clamp(val1, -89.999999999, 89.999999999);
+                val1 = THREE.Math.clamp(val1, -89.999999, 89.999999);
                 const p = instanceProj4(coordsIn.crs, newCrs).forward([val0, val1]);
                 return target.set(newCrs, p[0], p[1], coordsIn._values[2]);
             } else {
