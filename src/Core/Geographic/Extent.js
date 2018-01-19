@@ -354,11 +354,13 @@ Extent.prototype.intersect = function intersect(other) {
     if (!this.intersectsExtent(other)) {
         return new Extent(this.crs(), 0, 0, 0, 0);
     }
-    return new Extent(this.crs(),
+    const extent = new Extent(this.crs(),
         Math.max(this.west(), other.west(this._internalStorageUnit)),
         Math.min(this.east(), other.east(this._internalStorageUnit)),
         Math.max(this.south(), other.south(this._internalStorageUnit)),
         Math.min(this.north(), other.north(this._internalStorageUnit)));
+    extent._internalStorageUnit = this._internalStorageUnit;
+    return extent;
 };
 
 
