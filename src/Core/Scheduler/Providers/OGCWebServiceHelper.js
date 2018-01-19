@@ -22,6 +22,8 @@ const getTextureFloat = function getTextureFloat(buffer) {
     return texture;
 };
 
+const tileCoord = new Extent('WMTS:WGS84G', 0, 0, 0);
+
 export default {
     ioDXBIL,
     getColorTextureByUrl(url, networkOptions) {
@@ -99,7 +101,14 @@ export default {
 
         tileMatrixSet = tileMatrixSet || 'WGS84G';
         if (!(tileMatrixSet in tile.wmtsCoords)) {
-            const tileCoord = projection.WGS84toWMTS(tile.extent);
+            if (tile.wmtsCoords.WGS84G) {
+                const c = tile.wmtsCoords.WGS84G[0];
+                tileCoord._zoom = c.zoom;
+                tileCoord._col = c.col;
+                tileCoord._row = c.row;
+            } else {
+                projection.WGS84toWMTS(tile.extent, tileCoord);
+            }
 
             tile.wmtsCoords[tileMatrixSet] =
                 projection.getCoordWMTS_WGS84(tileCoord, tile.extent, tileMatrixSet);
@@ -124,7 +133,7 @@ export default {
 
         return [new Extent('TMS', zoom, Math.floor(y * tileCount), Math.floor(x * tileCount))];
     },
-    WMTS_WGS84Parent(cWMTS, levelParent, pitch) {
+    WMTS_WGS84Parent(cWMTS, levelParent, pitch, target = new Extent(cWMTS.crs(), 0, 0, 0)) {
         const diffLevel = cWMTS.zoom - levelParent;
         const diff = Math.pow(2, diffLevel);
         const invDiff = 1 / diff;
@@ -138,6 +147,6 @@ export default {
             pitch.z = invDiff;
         }
 
-        return new Extent(cWMTS.crs(), levelParent, r, c);
+        return target.set(levelParent, r, c);
     },
 };

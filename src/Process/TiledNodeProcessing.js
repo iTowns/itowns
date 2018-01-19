@@ -1,9 +1,12 @@
 import Extent from '../Core/Geographic/Extent';
+import Coordinates from '../Core/Geographic/Coordinates';
 import CancelledCommandException from '../Core/Scheduler/CancelledCommandException';
 import ObjectRemovalHelper from './ObjectRemovalHelper';
 
+
+const center = new Coordinates('EPSG:4326', 0, 0, 0);
 function subdivisionExtents(bbox) {
-    const center = bbox.center();
+    bbox.center(center);
 
     const northWest = new Extent(bbox.crs(),
         bbox.west(), center._values[0],

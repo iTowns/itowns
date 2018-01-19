@@ -256,11 +256,11 @@ Extent.prototype.center = function center(target) {
     return c;
 };
 
-Extent.prototype.dimensions = function dimensions(unit) {
-    return {
-        x: Math.abs(this.east(unit) - this.west(unit)),
-        y: Math.abs(this.north(unit) - this.south(unit)),
-    };
+Extent.prototype.dimensions = function dimensions(unit, target) {
+    target = target || { x: 0, y: 0 };
+    target.x = Math.abs(this.east(unit) - this.west(unit));
+    target.y = Math.abs(this.north(unit) - this.south(unit));
+    return target;
 };
 
 /**
