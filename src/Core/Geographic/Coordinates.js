@@ -112,6 +112,7 @@ function instanceProj4(crsIn, crsOut) {
 }
 
 // Only support explicit conversions
+const cartesian = new THREE.Vector3();
 function _convert(coordsIn, newCrs, target) {
     target = target || new Coordinates(newCrs, 0, 0);
     if (newCrs === coordsIn.crs) {
@@ -136,19 +137,19 @@ function _convert(coordsIn, newCrs, target) {
         }
     } else {
         if (coordsIn.crs === 'EPSG:4326' && newCrs === 'EPSG:4978') {
-            const cartesian = ellipsoid.cartographicToCartesian(coordsIn, coordsIn.geodesicNormal);
+            ellipsoid.cartographicToCartesian(coordsIn, cartesian);
             target.set(newCrs, cartesian);
             target._normal = coordsIn.geodesicNormal;
             return target;
         }
 
         if (coordsIn.crs === 'EPSG:4978' && newCrs === 'EPSG:4326') {
-            const geo = ellipsoid.cartesianToCartographic({
+            ellipsoid.cartesianToCartographic({
                 x: coordsIn._values[0],
                 y: coordsIn._values[1],
                 z: coordsIn._values[2],
-            });
-            return target.set(newCrs, geo.longitude, geo.latitude, geo.h);
+            }, target);
+            return target;
         }
 
         if (coordsIn.crs in proj4.defs && newCrs in proj4.defs) {
@@ -175,9 +176,9 @@ function _convert(coordsIn, newCrs, target) {
                 target.set('EPSG:4326', p[0], p[1], coordsIn._values[2]);
                 return target.as('EPSG:4978');
             } else if (coordsIn.crs === 'EPSG:4978') {
-                const coordsInInter = coordsIn.as('EPSG:4326');
-                const p = instanceProj4(coordsInInter.crs, newCrs).forward([coordsInInter._values[0], coordsInInter._values[1]]);
-                target.set(newCrs, p[0], p[1], coordsInInter._values[2]);
+                coordsIn.as('EPSG:4326', target);
+                const p = instanceProj4(target.crs, newCrs).forward([target._values[0], target._values[1]]);
+                target.set(newCrs, p[0], p[1], target._values[2]);
                 return target;
             } else if (coordsIn.crs == 'EPSG:4326' && newCrs == 'EPSG:3857') {
                 val1 = THREE.Math.clamp(val1, -89.999999999, 89.999999999);

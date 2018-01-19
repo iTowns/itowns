@@ -13,6 +13,9 @@ KML_Provider.prototype = Object.create(Provider.prototype);
 
 KML_Provider.prototype.constructor = KML_Provider;
 
+
+const position = new THREE.Vector3();
+const axisX = new THREE.Vector3(1, 0, 0);
 KML_Provider.prototype.loadKMZ = function loadKMZ(longitude, latitude) {
     return this.getUrlCollada(longitude, latitude).then((result) => {
         if (result === undefined)
@@ -22,14 +25,14 @@ KML_Provider.prototype.loadKMZ = function loadKMZ(longitude, latitude) {
             var child = result.scene.children[0];
             var coorCarto = result.coorCarto;
 
-            var position = this.ellipsoid.cartographicToCartesian(coorCarto);
+            this.ellipsoid.cartographicToCartesian(coorCarto, position);
             coorCarto.altitude = 0;
             var normal = this.ellipsoid.geodeticSurfaceNormalCartographic(coorCarto);
 
             var quaternion = new THREE.Quaternion();
-            quaternion.setFromAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI / 2);
+            quaternion.setFromAxisAngle(axisX, Math.PI / 2);
 
-            child.lookAt(new THREE.Vector3().addVectors(position, normal));
+            child.lookAt(position.add(normal));
             child.quaternion.multiply(quaternion);
             child.position.copy(position);
 

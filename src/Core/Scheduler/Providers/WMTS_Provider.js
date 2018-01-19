@@ -6,6 +6,7 @@
 
 import * as THREE from 'three';
 import OGCWebServiceHelper from './OGCWebServiceHelper';
+import Extent from '../../Geographic/Extent';
 
 function WMTS_Provider() {
 }
@@ -142,6 +143,8 @@ WMTS_Provider.prototype.tileTextureCount = function tileTextureCount(tile, layer
     return tile.getCoordsForLayer(layer).length;
 };
 
+
+const coordTile = new Extent('WMTS:WGS84', 0, 0, 0);
 WMTS_Provider.prototype.tileInsideLimit = function tileInsideLimit(tile, layer, targetLevel) {
     // This layer provides data starting at level = layer.options.zoom.min
     // (the zoom.max property is used when building the url to make
@@ -150,7 +153,8 @@ WMTS_Provider.prototype.tileInsideLimit = function tileInsideLimit(tile, layer, 
         let c = coord;
         // override
         if (targetLevel < c.zoom) {
-            c = OGCWebServiceHelper.WMTS_WGS84Parent(coord, targetLevel);
+            OGCWebServiceHelper.WMTS_WGS84Parent(coord, targetLevel, undefined, coordTile);
+            c = coordTile;
         }
         if (c.zoom < layer.options.zoom.min || c.zoom > layer.options.zoom.max) {
             return false;
