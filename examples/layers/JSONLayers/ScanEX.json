@@ -46,33 +46,33 @@
             },
             "4": {
                 "MinTileRow": 0,
-                "MaxTileRow": 1,
+                "MaxTileRow": 15,
                 "MinTileCol": 0,
-                "MaxTileCol": 1
+                "MaxTileCol": 16
             },
             "5": {
                 "MinTileRow": 0,
-                "MaxTileRow": 3,
+                "MaxTileRow": 30,
                 "MinTileCol": 0,
-                "MaxTileCol": 3
+                "MaxTileCol": 32
             },
             "6": {
                 "MinTileRow": 0,
-                "MaxTileRow": 6,
+                "MaxTileRow": 62,
                 "MinTileCol": 0,
-                "MaxTileCol": 6
+                "MaxTileCol": 64
             },
             "7": {
                 "MinTileRow": 0,
-                "MaxTileRow": 1,
+                "MaxTileRow": 124,
                 "MinTileCol": 0,
-                "MaxTileCol": 1
+                "MaxTileCol": 128
             },
             "8": {
                 "MinTileRow": 85,
-                "MaxTileRow": 14,
+                "MaxTileRow": 143,
                 "MinTileCol": 81,
-                "MaxTileCol": 16
+                "MaxTileCol": 167
             },
             "9": {
                 "MinTileRow": 170,
