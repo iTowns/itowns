@@ -1,0 +1,93 @@
+/* global itowns, debug, dat */
+var promises = [];
+// eslint-disable-next-line no-unused-vars
+function showPointcloud(serverUrl, fileName, lopocsTable) {
+    var pointcloud;
+    var oldPostUpdate;
+    var viewerDiv;
+    var debugGui;
+    var view;
+    var controls;
+
+    viewerDiv = document.getElementById('viewerDiv');
+    viewerDiv.style.display = 'block';
+
+    itowns.THREE.Object3D.DefaultUp.set(0, 0, 1);
+
+    itowns.proj4.defs('EPSG:3946',
+        '+proj=lcc +lat_1=45.25 +lat_2=46.75 +lat_0=46 +lon_0=3 +x_0=1700000 ' +
+        '+y_0=5200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
+
+    debugGui = new dat.GUI();
+    
+    var positionOnGlobe = { longitude: 2.351323, latitude: 48.856712, altitude: 25000000 };
+    view = new itowns.GlobeView(viewerDiv, positionOnGlobe, { renderer: renderer });
+
+    function addLayerCb(layer) {
+    return view.addLayer(layer);
+}
+    view.mainLoop.gfxEngine.renderer.setClearColor(0xcccccc);
+
+
+    // Configure Point Cloud layer
+    pointcloud = new itowns.GeometryLayer('pointcloud', view.scene);
+    pointcloud.file = fileName || 'infos/sources';
+    pointcloud.protocol = 'potreeconverter';
+    pointcloud.url = serverUrl;
+    pointcloud.table = lopocsTable;
+
+    // point selection on double-click
+    function dblClickHandler(event) {
+        var pick;
+        var mouse = {
+            x: event.offsetX,
+            y: (event.currentTarget.height || event.currentTarget.offsetHeight) - event.offsetY,
+        };
+
+        pick = itowns.PointCloudProcessing.selectAt(view, pointcloud, mouse);
+
+        if (pick) {
+            console.log('Selected point #' + pick.index + ' in Points "' + pick.points.owner.name + '"');
+        }
+    }
+    view.mainLoop.gfxEngine.renderer.domElement.addEventListener('dblclick', dblClickHandler);
+
+
+    function placeCamera(position, lookAt) {
+        view.camera.camera3D.position.set(position.x, position.y, position.z);
+        view.camera.camera3D.lookAt(lookAt);
+        view.notifyChange(true);
+    }
+
+    // add pointcloud to scene
+    function onLayerReady() {
+        var ratio;
+        var position;
+        var lookAt;
+
+        debug.PointCloudDebug.initTools(view, pointcloud, debugGui);
+
+        view.camera.camera3D.far = 2.0 * pointcloud.root.bbox.getSize().length();
+
+        ratio = pointcloud.root.bbox.getSize().x / pointcloud.root.bbox.getSize().z;
+        position = pointcloud.root.bbox.min.clone().add(
+            pointcloud.root.bbox.getSize().multiply({ x: 0, y: 0, z: ratio * 0.5 }));
+        lookAt = pointcloud.root.bbox.getCenter();
+        lookAt.z = pointcloud.root.bbox.min.z;
+        placeCamera(position, lookAt);
+        controls.moveSpeed = pointcloud.root.bbox.getSize().length() / 3;
+
+        // update stats window
+        oldPostUpdate = pointcloud.postUpdate;
+        pointcloud.postUpdate = function postUpdate() {
+            var info = document.getElementById('info');
+            oldPostUpdate.apply(pointcloud, arguments);
+            info.textContent = 'Nb points: ' +
+                pointcloud.counters.displayedCount.toLocaleString() + ' (' +
+                Math.floor(100 * pointcloud.counters.displayedCount / pointcloud.counters.pointCount) + '%) (' +
+                view.mainLoop.gfxEngine.renderer.info.memory.geometries + ')';
+        };
+    }
+    promises.push(itowns.Fetcher.json('./layers/JSONLayers/OPENSM.json').then(addLayerCb));
+    view.addLayer(pointcloud);//.then(onLayerReady);
+}
