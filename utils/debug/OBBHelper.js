@@ -63,31 +63,40 @@ OBBHelper.prototype.dispose = function removeChildren() {
     }
 };
 
-OBBHelper.prototype.update = function update(OBB) {
-    var position = this.geometry.attributes.position;
-    var array = position.array;
+const points = [
+    new THREE.Vector3(),
+    new THREE.Vector3(),
+    new THREE.Vector3(),
+    new THREE.Vector3(),
+    new THREE.Vector3(),
+    new THREE.Vector3(),
+    new THREE.Vector3(),
+    new THREE.Vector3(),
+];
 
-    const pts = OBB._points();
-    for (let i = 0; i < pts.length; i++) {
-        array[i * 3] = pts[i].x;
-        array[i * 3 + 1] = pts[i].y;
-        array[i * 3 + 2] = pts[i].z;
+OBBHelper.prototype.update = function update(OBB) {
+    const position = this.geometry.attributes.position;
+    const array = position.array;
+
+    OBB._points(points);
+    let offset = 0;
+    for (const pt of points) {
+        pt.toArray(array, offset);
+        offset += 3;
     }
 
     position.needsUpdate = true;
 
-    this.position.copy(OBB.position);
-    this.rotation.copy(OBB.rotation);
     this.updateMatrix();
     this.updateMatrixWorld(true);
 
-    var size = OBB.box3D.getSize();
+    const size = OBB.box3D.getSize();
 
     if (this.textMesh) {
         this.textMesh.position.set(0, 0, 0);
         this.textMesh.translateX(-size.x * 0.45);
         this.textMesh.translateY(-size.y * 0.45);
-        this.textMesh.translateZ(size.z * 0.5);
+        this.textMesh.translateZ(size.z * 0.1);
     }
 };
 
