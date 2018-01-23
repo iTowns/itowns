@@ -202,13 +202,13 @@ export function updateLayeredMaterialNodeImagery(context, layer, node) {
     material.setLayerVisibility(layerIndex, layer.visible);
     material.setLayerOpacity(layerIndex, layer.opacity);
 
+    const ts = Date.now();
     // An update is pending / or impossible -> abort
     if (!layer.visible || !node.layerUpdateState[layer.id].canTryUpdate(ts)) {
         return;
     }
 
 
-    const ts = Date.now();
     // does this tile needs a new texture?
     if (layer.canTileTextureBeImproved) {
         // if the layer has a custom method -> use it

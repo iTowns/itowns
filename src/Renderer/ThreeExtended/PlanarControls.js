@@ -639,7 +639,7 @@ function PlanarControls(view, options = {}) {
 * Catch and manage the event when a touch on the mouse is down.
 * @param {event} event : the current event (mouse left button clicked or mouse wheel button actionned)
 */
-var onMouseDown = function onMouseDown(event) {
+function onMouseDown(event) {
     event.preventDefault();
 
     if (this.state === STATE.TRAVEL) {
@@ -661,13 +661,13 @@ var onMouseDown = function onMouseDown(event) {
     }
 
     this.updateMouseCursorType();
-};
+}
 
 /**
 * Catch the event when a touch on the mouse is uped.
 * @param {event} event : the current event
 */
-var onMouseUp = function onMouseUp(event) {
+function onMouseUp(event) {
     event.preventDefault();
 
     if (this.state !== STATE.TRAVEL) {
@@ -675,13 +675,13 @@ var onMouseUp = function onMouseUp(event) {
     }
 
     this.updateMouseCursorType();
-};
+}
 
 /**
 * Catch and manage the event when the mouse is moved
 * @param {event} event : the current event
 */
-var onMouseMove = function onMouseMove(event) {
+function onMouseMove(event) {
     event.preventDefault();
 
     this.updateMousePositionAndDelta(event);
@@ -690,13 +690,13 @@ var onMouseMove = function onMouseMove(event) {
     if (this.state !== STATE.NONE) {
         this.view.notifyChange(true);
     }
-};
+}
 
 /**
 * Catch and manage the event when a key is down.
 * @param {event} event : the current event
 */
-var onKeyDown = function onKeyDown(event) {
+function onKeyDown(event) {
     if (this.state === STATE.TRAVEL) {
         return;
     }
@@ -709,29 +709,29 @@ var onKeyDown = function onKeyDown(event) {
     if (event.keyCode === keys.SPACE) {
         this.initiateSmartZoom(event);
     }
-};
+}
 
 /**
 * Catch and manage the event when the mouse wheel is rolled.
 * @param {event} event : the current event
 */
-var onMouseWheel = function onMouseWheel(event) {
+function onMouseWheel(event) {
     event.preventDefault();
     event.stopPropagation();
 
     if (this.state === STATE.NONE) {
         this.initiateZoom(event);
     }
-};
+}
 
 /**
 * Catch and manage the event when the context menu is called (by a right click on the window).
 * We use this to prevent the context menu from appearing, so we can use right click for other inputs.
 * @param {event} event : the current event
 */
-var onContextMenu = function onContextMenu(event) {
+function onContextMenu(event) {
     event.preventDefault();
-};
+}
 
 /**
 * smoothing function (sigmoid) : based on h01 Hermite function
@@ -739,10 +739,10 @@ var onContextMenu = function onContextMenu(event) {
 * @param {number} value : the value to be smoothed, between 0 and 1
 * @returns {number}
 */
-var smooth = function smooth(value) {
+function smooth(value) {
     // p between 1.0 and 1.5 (empirical)
     const p = 1.20;
     return Math.pow((value * value * (3 - 2 * value)), p);
-};
+}
 
 export default PlanarControls;

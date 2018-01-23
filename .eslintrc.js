@@ -59,7 +59,7 @@ module.exports = {
 
     // maybe 'no-mixed-operators': ['error', { allowSamePrecedence: true }],
     'no-mixed-operators': 'off',
-    'no-use-before-define': 'off',
+    'no-use-before-define': ['error', { 'functions': false }],
     // should probably be
     // 'no-underscore-dangle': ['error', { allowAfterThis: true, allowAfterSuper: true }],
     'no-underscore-dangle': 'off',
