@@ -6,11 +6,7 @@ function OBB(min, max) {
     this.box3D = new THREE.Box3(min.clone(), max.clone());
     this.natBox = this.box3D.clone();
     this.z = { min: 0, max: 0 };
-    this.pointsWorld = [
-        new THREE.Vector3(),
-        new THREE.Vector3(),
-        new THREE.Vector3(),
-        new THREE.Vector3(),
+    this.topPointsWorld = [
         new THREE.Vector3(),
         new THREE.Vector3(),
         new THREE.Vector3(),
@@ -31,7 +27,7 @@ OBB.prototype.clone = function clone() {
 
 OBB.prototype.update = function update() {
     this.updateMatrixWorld(true);
-    this._cPointsWorld(this._points(this.pointsWorld));
+    this._cPointsWorld(this._points(this.topPointsWorld));
 };
 
 OBB.prototype.updateZ = function updateZ(min, max) {
@@ -42,14 +38,18 @@ OBB.prototype.updateZ = function updateZ(min, max) {
 };
 
 OBB.prototype._points = function _points(points) {
+    // top points of bounding box
     points[0].set(this.box3D.max.x, this.box3D.max.y, this.box3D.max.z);
     points[1].set(this.box3D.min.x, this.box3D.max.y, this.box3D.max.z);
     points[2].set(this.box3D.min.x, this.box3D.min.y, this.box3D.max.z);
     points[3].set(this.box3D.max.x, this.box3D.min.y, this.box3D.max.z);
-    points[4].set(this.box3D.max.x, this.box3D.max.y, this.box3D.min.z);
-    points[5].set(this.box3D.min.x, this.box3D.max.y, this.box3D.min.z);
-    points[6].set(this.box3D.min.x, this.box3D.min.y, this.box3D.min.z);
-    points[7].set(this.box3D.max.x, this.box3D.min.y, this.box3D.min.z);
+    // bottom points of bounding box
+    if (points.length > 4) {
+        points[4].set(this.box3D.max.x, this.box3D.max.y, this.box3D.min.z);
+        points[5].set(this.box3D.min.x, this.box3D.max.y, this.box3D.min.z);
+        points[6].set(this.box3D.min.x, this.box3D.min.y, this.box3D.min.z);
+        points[7].set(this.box3D.max.x, this.box3D.min.y, this.box3D.min.z);
+    }
 
     return points;
 };

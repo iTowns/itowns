@@ -72,7 +72,7 @@ function pointHorizonCulling(pt) {
 }
 
 function horizonCulling(node) {
-    const points = node.OBB().pointsWorld;
+    const points = node.OBB().topPointsWorld;
 
     for (const point of points) {
         if (!pointHorizonCulling(point)) {
