@@ -45,7 +45,7 @@
   },
   "peerDependencies": {
     "proj4": "^2.4.4",
-    "three": "^0.87.0",
+    "three": "^0.89.0",
     "three.meshline": "^1.0.3"
   },
   "devDependencies": {
@@ -73,7 +73,7 @@
     "proj4": "^2.4.4",
     "raw-loader": "^0.5.1",
     "require-from-string": "^1.2.1",
-    "three": "^0.87.0",
+    "three": "^0.89.0",
     "three.meshline": "^1.0.3",
     "webpack": "^2.6.1",
     "webpack-dev-server": "^2.4.5"
