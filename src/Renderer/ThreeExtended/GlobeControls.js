@@ -255,7 +255,7 @@ const enableTargetHelper = false;
 let pickingHelper;
 
 if (enableTargetHelper) {
-    pickingHelper = new THREE.AxisHelper(500000);
+    pickingHelper = new THREE.AxesHelper(500000);
 }
 
 // Handle function
@@ -457,7 +457,7 @@ function GlobeControls(view, target, radius, options = {}) {
     this.enableDamping = true;
 
     if (enableTargetHelper) {
-        this.pickingHelper = new THREE.AxisHelper(500000);
+        this.pickingHelper = new THREE.AxesHelper(500000);
     }
 
     // Radius tangent sphere
@@ -1456,7 +1456,7 @@ function GlobeControls(view, target, radius, options = {}) {
     update();
 
     if (enableTargetHelper) {
-        const helperTarget = new THREE.AxisHelper(500000);
+        const helperTarget = new THREE.AxesHelper(500000);
         cameraTargetOnGlobe.add(helperTarget);
         this._view.scene.add(pickingHelper);
         const layerTHREEjs = view.mainLoop.gfxEngine.getUniqueThreejsLayer();
