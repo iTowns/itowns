@@ -81,6 +81,14 @@ function onDocumentMouseUp() {
     this._isMouseDown = false;
 }
 
+const MOVEMENTS = {
+    38: { method: 'translateZ', sign: -1 }, // FORWARD: up key
+    40: { method: 'translateZ', sign: 1 }, // BACKWARD: down key
+    37: { method: 'translateX', sign: -1 }, // STRAFE_LEFT: left key
+    39: { method: 'translateX', sign: 1 }, // STRAFE_RIGHT: right key
+    33: { method: 'translateY', sign: 1 }, // UP: PageUp key
+    34: { method: 'translateY', sign: -1 }, // DOWN: PageDown key
+};
 // Keyboard handling
 function onKeyUp(e) {
     const move = MOVEMENTS[e.keyCode];
@@ -99,16 +107,6 @@ function onKeyDown(e) {
         e.preventDefault();
     }
 }
-
-const MOVEMENTS = {
-    38: { method: 'translateZ', sign: -1 }, // FORWARD: up key
-    40: { method: 'translateZ', sign: 1 }, // BACKWARD: down key
-    37: { method: 'translateX', sign: -1 }, // STRAFE_LEFT: left key
-    39: { method: 'translateX', sign: 1 }, // STRAFE_RIGHT: right key
-    33: { method: 'translateY', sign: 1 }, // UP: PageUp key
-    34: { method: 'translateY', sign: -1 }, // DOWN: PageDown key
-};
-
 
 class FirstPersonControls extends THREE.EventDispatcher {
     /**

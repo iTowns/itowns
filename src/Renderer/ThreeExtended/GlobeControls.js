@@ -265,6 +265,8 @@ var _handlerMouseUp;
 // Event
 let enableEventPositionChanged = true;
 
+let currentKey;
+
 /**
  * Globe control pan event. Fires after camera pan
  * @event GlobeControls#pan-changed
@@ -1137,7 +1139,7 @@ function GlobeControls(view, target, radius, options = {}) {
         }
     };
 
-    var onMouseUp = function onMouseUp(/* event */) {
+    function onMouseUp(/* event */) {
         if (this.enabled === false) return;
 
         this.domElement.removeEventListener('mousemove', _handlerMouseMove, false);
@@ -1163,7 +1165,7 @@ function GlobeControls(view, target, radius, options = {}) {
         } else {
             updateCameraTargetOnGlobe.bind(this)();
         }
-    };
+    }
 
     let wheelTimer;
     var onMouseWheel = function onMouseWheel(event) {
@@ -1224,8 +1226,6 @@ function GlobeControls(view, target, radius, options = {}) {
         }
         currentKey = undefined;
     };
-
-    let currentKey;
 
     var onKeyDown = function onKeyDown(event) {
         player.stop().then(() => {
