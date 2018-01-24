@@ -22,10 +22,13 @@ module.exports = {
     commonjs: true
   },
   rules: {
+    'no-trailing-spaces': 'warn',
+    'padded-blocks' : 'warn',
+    'no-unused-vars': 'warn',
     'no-plusplus': 'off',
     // this option sets a specific tab width for your code
     // http://eslint.org/docs/rules/indent
-    indent: ['error', 4, {
+    indent: ['warn', 4, {
       SwitchCase: 1,
       VariableDeclarator: 1,
       outerIIFEBody: 1,
