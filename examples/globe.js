@@ -36,7 +36,7 @@ if (!renderer) {
     miniView.mainLoop.gfxEngine.renderer.setClearColor(0x000000, 0);
 
     // update miniview's camera with the globeView's camera position
-    globeView.addFrameRequester(itowns.MAIN_LOOP_EVENTS.AFTER_RENDER, function () {
+    globeView.addFrameRequester(itowns.MAIN_LOOP_EVENTS.AFTER_RENDER, function updateMiniView() {
         // clamp distance camera from globe
         var distanceCamera = globeView.camera.camera3D.position.length();
         var distance = Math.min(Math.max(distanceCamera * 1.5, minDistance), maxDistance);
