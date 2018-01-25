@@ -203,9 +203,8 @@ export default {
                             elt.obj.boxHelper.material.color.g = shouldBeLoaded;
                         }
                     }
-
-                    elt.obj.geometry.setDrawRange(
-                        0, Math.floor(shouldBeLoaded * elt.obj.geometry.attributes.position.count));
+                    const count = Math.max(1.0, Math.floor(shouldBeLoaded * elt.obj.geometry.attributes.position.count));
+                    elt.obj.geometry.setDrawRange(0, count);
                     layer.counters.pointCount += elt.obj.realPointCount;
                     layer.counters.displayedCount += Math.floor(shouldBeLoaded * elt.obj.geometry.attributes.position.count);
                     elt.obj.material.uniforms.size.value = layer.pointSize;
@@ -229,8 +228,8 @@ export default {
                         elt.obj = pts;
                         // store tightbbox to avoid ping-pong (bbox = larger => visible, tight => invisible)
                         elt.tightbbox = pts.tightbbox;
-                        pts.geometry.setDrawRange(
-                            0, shouldBeLoaded * pts.geometry.attributes.position.count);
+                        const count = Math.max(1.0, Math.floor(shouldBeLoaded * pts.geometry.attributes.position.count));
+                        pts.geometry.setDrawRange(0, count);
 
                         // make sure to add it here, otherwise it might never
                         // be added nor cleaned
@@ -266,7 +265,8 @@ export default {
             const reduction = layer.pointBudget / layer.counters.displayedCount;
             for (const pts of layer.group.children) {
                 if (pts.material.visible) {
-                    pts.geometry.setDrawRange(0, pts.geometry.drawRange.count * reduction);
+                    const count = Math.max(1.0, Math.floor(pts.geometry.drawRange.count * reduction));
+                    pts.geometry.setDrawRange(0, count);
                 }
             }
             layer.counters.displayedCount *= reduction;
