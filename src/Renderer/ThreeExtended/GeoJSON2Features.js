@@ -26,21 +26,24 @@ function readCRS(json) {
     return 'EPSG:4326';
 }
 
+const coords = new Coordinates('EPSG:4978', 0, 0, 0);
 function readCoordinates(crsIn, crsOut, coordinates, extent) {
     // coordinates is a list of pair [[x1, y1], [x2, y2], ..., [xn, yn]]
-    const out = [];
+    const out = new Array(coordinates.length);
+    let i = 0;
     for (const pair of coordinates) {
         // TODO: 1 is a default z value, makes this configurable
-        const coords = new Coordinates(crsIn, pair[0], pair[1], 1);
         if (crsIn === crsOut) {
-            out.push(coords);
+            out[i] = new Coordinates(crsIn, pair[0], pair[1], 1);
         } else {
-            out.push(coords.as(crsOut));
+            coords.set(crsIn, pair[0], pair[1], 1);
+            out[i] = coords.as(crsOut);
         }
         // expand extent if present
         if (extent) {
-            extent.expandByPoint(out[out.length - 1]);
+            extent.expandByPoint(out[i]);
         }
+        ++i;
     }
     return out;
 }
@@ -85,14 +88,15 @@ const GeometryToCoordinates = {
             if (!result) {
                 result = geom;
                 // instance extent if present
-
                 if (geom.extent) {
                     result.extent = geom.extent.clone();
                 }
                 result.featureVertices = {};
             } else {
                 // merge coordinates
-                result.coordinates = result.coordinates.concat(geom.coordinates);
+                for (const coordinate of geom.coordinates) {
+                    result.coordinates.push(coordinate);
+                }
                 // union extent if present
                 if (geom.extent) {
                     result.extent.union(geom.extent);
