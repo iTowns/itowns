@@ -15,9 +15,6 @@ const counters = {
 const width = 800;
 const height = 600;
 
-
-global.TextDecoder = require('string_decoder').StringDecoder;
-
 // Mock missing globals
 global.fetch = function _fetch(url) {
     var res;
