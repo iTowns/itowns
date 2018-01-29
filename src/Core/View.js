@@ -317,7 +317,7 @@ View.prototype.addLayer = function addLayer(layer, parentLayer) {
             if (sumColorLayers <= getMaxTextureSamplerCount()) {
                 parentLayer.attach(layer);
             } else {
-                throw new Error('Cant add color layer: the maximum layer is reached');
+                throw new Error(`Cant add color layer ${layer.id}: the maximum layer is reached`);
             }
         } else {
             parentLayer.attach(layer);
