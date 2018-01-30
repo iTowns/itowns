@@ -20,7 +20,7 @@ function _preSSE(view) {
     // const HFOV = 2.0 * Math.atan(Math.tan(radAngle * 0.5) / context.camera.ratio);
     const HYFOV = 2.0 * Math.atan(Math.tan(radAngle * 0.5) * hypotenuse / canvasSize.x);
 
-    return hypotenuse * (2.0 * Math.tan(HYFOV * 0.5));
+    return hypotenuse / (2.0 * Math.tan(HYFOV * 0.5));
 }
 
 export function preGlobeUpdate(context, layer) {
