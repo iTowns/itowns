@@ -159,9 +159,9 @@ export function patchMaterialForLogDepthSupport(material) {
     };
 }
 
-$3dTiles_Provider.prototype.b3dmToMesh = function b3dmToMesh(data, layer) {
+$3dTiles_Provider.prototype.b3dmToMesh = function b3dmToMesh(data, layer, url) {
     this._b3dmLoader = this._b3dmLoader || new B3dmLoader();
-    return this._b3dmLoader.parse(data, layer.asset.gltfUpAxis, this._textDecoder).then((result) => {
+    return this._b3dmLoader.parse(data, layer.asset.gltfUpAxis, url, this._textDecoder).then((result) => {
         const init = function f_init(mesh) {
             mesh.frustumCulled = false;
             if (mesh.material) {
@@ -256,7 +256,7 @@ $3dTiles_Provider.prototype.executeCommand = function executeCommand(command) {
                 }
                 if (func) {
                     // TODO: request should be delayed if there is a viewerRequestVolume
-                    return func(result, layer).then((content) => {
+                    return func(result, layer, url).then((content) => {
                         tile.content = content.object3d;
                         if (content.batchTable) {
                             tile.batchTable = content.batchTable;
