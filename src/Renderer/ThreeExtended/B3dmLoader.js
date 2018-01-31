@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import GLTFLoader from './GLTFLoader';
+import LegacyGLTFLoader from './deprecated/LegacyGLTFLoader';
 import BatchTable from './BatchTable';
 
 const matrixChangeUpVectorZtoY = (new THREE.Matrix4()).makeRotationX(Math.PI / 2);
@@ -8,6 +9,7 @@ const matrixChangeUpVectorZtoX = (new THREE.Matrix4()).makeRotationZ(-Math.PI / 
 
 function B3dmLoader() {
     this.glTFLoader = new GLTFLoader();
+    this.LegacyGLTFLoader = new LegacyGLTFLoader();
 }
 
 function filterUnsupportedSemantics(obj) {
@@ -44,7 +46,7 @@ function applyOptionalCesiumRTC(data, gltf, textDecoder) {
     }
 }
 
-B3dmLoader.prototype.parse = function parse(buffer, gltfUpAxis, textDecoder) {
+B3dmLoader.prototype.parse = function parse(buffer, gltfUpAxis, url, textDecoder) {
     if (!buffer) {
         throw new Error('No array buffer provided.');
     }
@@ -104,9 +106,18 @@ B3dmLoader.prototype.parse = function parse(buffer, gltfUpAxis, textDecoder) {
                 const b3dm = { gltf, batchTable };
                 resolve(b3dm);
             };
-            this.glTFLoader.parse(buffer.slice(28 + b3dmHeader.FTJSONLength +
+
+            const gltfBuffer = buffer.slice(28 + b3dmHeader.FTJSONLength +
                 b3dmHeader.FTBinaryLength + b3dmHeader.BTJSONLength +
-                b3dmHeader.BTBinaryLength), onload);
+                b3dmHeader.BTBinaryLength);
+
+            const version = new DataView(gltfBuffer, 0, 20).getUint32(4, true);
+
+            if (version === 1) {
+                this.LegacyGLTFLoader.parse(gltfBuffer, onload, THREE.LoaderUtils.extractUrlBase(url));
+            } else {
+                this.glTFLoader.parse(gltfBuffer, THREE.LoaderUtils.extractUrlBase(url), onload);
+            }
         });
     } else {
         throw new Error('Invalid b3dm file.');
