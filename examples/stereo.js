@@ -1,4 +1,4 @@
-/* global itowns, document, renderer, THREE */
+/* global itowns, document, renderer, THREE, setupLoadingScreen */
 // # Simple Globe viewer
 
 // Define initial camera position
@@ -17,6 +17,8 @@ var eyeSep = 0.064;
 
 // Save StereoCamera update function
 var fnUpdateStereoCamera = itowns.THREE.StereoCamera.prototype.update;
+
+setupLoadingScreen(viewerDiv, globeView);
 
 itowns.THREE.StereoCamera.prototype.update = function _update(camera) {
     this.cameraL.far = camera.far;

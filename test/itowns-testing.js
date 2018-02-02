@@ -143,6 +143,7 @@ global.renderer = {
 
 global.itowns = itowns;
 global.assert = assert;
+global.setupLoadingScreen = () => { };
 
 exports.countVisibleAndDisplayed = (node) => {
     if (node.material) {

@@ -1,4 +1,4 @@
-/* global itowns, document, renderer */
+/* global itowns, document, renderer, setupLoadingScreen */
 // # Loading gpx file
 
 // Define initial camera position
@@ -11,6 +11,8 @@ var viewerDiv = document.getElementById('viewerDiv');
 var globeView = new itowns.GlobeView(viewerDiv, positionOnGlobe, { renderer: renderer });
 
 var promises = [];
+
+setupLoadingScreen(viewerDiv, globeView);
 
 function addLayerCb(layer) {
     return globeView.addLayer(layer);

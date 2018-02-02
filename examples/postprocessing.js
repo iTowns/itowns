@@ -1,4 +1,4 @@
-/* global itowns, THREE, document, renderer */
+/* global itowns, THREE, document, renderer, setupLoadingScreen */
 var positionOnGlobe = { longitude: 2.351323, latitude: 48.856712, altitude: 25000000 };
 
 // iTowns namespace defined here
@@ -10,6 +10,8 @@ var globeView = new itowns.GlobeView(viewerDiv, positionOnGlobe, { renderer: ren
 var postprocessScene = new THREE.Scene();
 var quad = new THREE.Mesh(new THREE.PlaneBufferGeometry(2, 2), null);
 var cam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 10);
+
+setupLoadingScreen(viewerDiv, globeView);
 
 quad.frustumCulled = false;
 quad.material = new THREE.ShaderMaterial({

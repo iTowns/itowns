@@ -26,15 +26,17 @@
             }
         </style>
         <meta charset="UTF-8">
+        <link rel="stylesheet" type="text/css" href="css/loading_screen.css">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
     </head>
     <body>
         <div id="viewerDiv"></div>
 
         <script src="../dist/itowns.js"></script>
+        <script src="js/loading_screen.js"></script>
 
         <script src="../dist/debug.js"></script>
-        <script src="GUI/dat.gui/dat.gui.min.js"></script>
+        <script src="js/GUI/dat.gui/dat.gui.min.js"></script>
         <script type="text/javascript">
             var viewerDiv;
             var view;
@@ -58,6 +60,7 @@
                         panoramas[0]['coordinates'][0],
                         panoramas[0]['coordinates'][1]).as('EPSG:4978'),
                     itowns.Panorama.SPHERICAL);
+                setupLoadingScreen(viewerDiv, view);
 
                 var index = 0;
                 var layers = [];
@@ -78,7 +81,7 @@
                         updateStrategy: {
                             type: itowns.STRATEGY_DICHOTOMY,
                         }
-                    }).then(() => {
+                    }).then(function _() {
                         view.notifyChange(false);
                     });
 
@@ -86,6 +89,7 @@
                     index ++;
                 }
                 view.camera.camera3D.far = 10000;
+                view.notifyChange(true);
 
                 // Setup debug menu
                 var gui = new dat.GUI();
@@ -109,8 +113,8 @@
                     layers[activeIndex].visible = true;
                     view.notifyChange(true);
                 });
-
                 window.view = view;
+
             });
         </script>
 

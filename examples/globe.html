@@ -64,18 +64,20 @@
             }
         </style>
         <meta charset="UTF-8">
+        <link rel="stylesheet" type="text/css" href="css/loading_screen.css">
 
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <script src="GUI/dat.gui/dat.gui.min.js"></script>
+        <script src="js/GUI/dat.gui/dat.gui.min.js"></script>
     </head>
     <body>
         <div id="viewerDiv">
             <span class="divScaleWidget"> Scale </span>
+            <div id="miniDiv">
+            </div>
         </div>
-        <div id="miniDiv">
-        </div>
-        <script src="GUI/GuiTools.js"></script>
+        <script src="js/GUI/GuiTools.js"></script>
         <script src="../dist/itowns.js"></script>
+        <script src="js/loading_screen.js"></script>
         <script src="../dist/debug.js"></script>
         <script type="text/javascript">
             var renderer;

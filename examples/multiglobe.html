@@ -31,6 +31,7 @@
             }
         </style>
         <meta charset="UTF-8">
+        <link rel="stylesheet" type="text/css" href="css/loading_screen.css">
 
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
     </head>
@@ -38,6 +39,7 @@
         <div id="viewerDiv"></div>
         <span id="help">Press <em>Space</em> to switch globe</span>
         <script src="../dist/itowns.js"></script>
+        <script src="js/loading_screen.js"></script>
         <script type="text/javascript">
             /* global itowns,document,GuiTools*/
             var positionOnGlobe = { longitude: 2.351323, latitude: 48.856712, altitude: 35000000 };
@@ -59,6 +61,7 @@
 
             // Create the first globe
             var globeView = new itowns.GlobeView(viewerDiv, positionOnGlobe, { noControls: true, object3d: ref[0] });
+            setupLoadingScreen(viewerDiv, globeView);
             layers.push(globeView.wgs84TileLayer);
 
             function addLayerCb(layer) {

@@ -1,4 +1,4 @@
-/* global itowns, document, renderer */
+/* global itowns, document, renderer, setupLoadingScreen */
 // # Planar (EPSG:3946) viewer
 
 var extent;
@@ -23,6 +23,7 @@ viewerDiv = document.getElementById('viewerDiv');
 
 // Instanciate PlanarView*
 view = new itowns.PlanarView(viewerDiv, extent, { renderer: renderer });
+setupLoadingScreen(viewerDiv, view);
 view.tileLayer.disableSkirt = true;
 
 // Add an WMS imagery layer (see WMS_Provider* for valid options)
