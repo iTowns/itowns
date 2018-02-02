@@ -1,4 +1,4 @@
-/* global itowns, document, renderer */
+/* global itowns, document, renderer, setupLoadingScreen */
 // # Planar (EPSG:3946) viewer
 
 var extent;
@@ -68,6 +68,7 @@ scale = new itowns.THREE.Vector3(1, 1, 1).divideScalar(extent.dimensions().x);
 
 // Instanciate View
 view = new itowns.View(extent.crs(), viewerDiv, { renderer: renderer });
+setupLoadingScreen(viewerDiv, view);
 
 view.mainLoop.gfxEngine.renderer.setClearColor(0x999999);
 

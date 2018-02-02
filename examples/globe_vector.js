@@ -1,4 +1,4 @@
-/* global itowns, document, renderer */
+/* global itowns, document, renderer, setupLoadingScreen */
 // # Simple Globe viewer
 
 // Define initial camera position
@@ -10,6 +10,7 @@ var viewerDiv = document.getElementById('viewerDiv');
 
 // Instanciate iTowns GlobeView*
 var globeView = new itowns.GlobeView(viewerDiv, positionOnGlobe, { renderer: renderer });
+setupLoadingScreen(viewerDiv, globeView);
 function addLayerCb(layer) {
     return globeView.addLayer(layer);
 }

@@ -53,22 +53,24 @@
             }
         </style>
         <meta charset="UTF-8">
+        <link rel="stylesheet" type="text/css" href="css/loading_screen.css">
 
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <script src="GUI/dat.gui/dat.gui.min.js"></script>
+        <script src="js/GUI/dat.gui/dat.gui.min.js"></script>
     </head>
     <body>
         <div id="viewerDiv" class="viewer">
             <span id="tooltipDiv" class="tooltip"></span>
         </div>
-        <script src="GUI/GuiTools.js"></script>
+        <script src="js/GUI/GuiTools.js"></script>
         <script src="../dist/itowns.js"></script>
+        <script src="js/loading_screen.js"></script>
         <script type="text/javascript">
             var renderer;
             var exports = {};
         </script>
         <script src="globe_vector.js"></script>
-        <script src="FeatureToolTip.js"></script>
+        <script src="js/FeatureToolTip.js"></script>
         <script type="text/javascript">
             /* global itowns, document, GuiTools, globeView, promises, ToolTip */
             var menuGlobe = new GuiTools('menuDiv');

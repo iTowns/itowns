@@ -1,4 +1,4 @@
-/* global itowns, document */
+/* global itowns, document, setupLoadingScreen */
 // # Simple Globe viewer
 
 // Define initial camera position
@@ -12,6 +12,8 @@ var promises = [];
 var globeView = new itowns.GlobeView(viewerDiv, positionOnGlobe, { noControls: true });
 var flyControls = new itowns.FlyControls(globeView, { focusOnClick: true });
 flyControls.moveSpeed = 1000;
+
+setupLoadingScreen(viewerDiv, globeView);
 
 // Add one imagery layer to the scene
 // This layer is defined in a json file but it could be defined as a plain js

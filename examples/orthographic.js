@@ -1,4 +1,4 @@
-/* global itowns, renderer */
+/* global itowns, renderer, setupLoadingScreen */
 // # Orthographic viewer
 
 // Define geographic extent: CRS, min/max X, min/max Y
@@ -38,6 +38,8 @@ var onMouseWheel = function onMouseWheel(event) {
 
 var dragStartPosition;
 var dragCameraStart;
+
+setupLoadingScreen(viewerDiv, view);
 
 // By default itowns' tiles geometry have a "skirt" (ie they have a height),
 // but in case of orthographic we don't need this feature, so disable it

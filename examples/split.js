@@ -1,4 +1,4 @@
-/* global itowns, document, renderer, Promise */
+/* global itowns, document, renderer, Promise, setupLoadingScreen */
 // # Simple Globe viewer
 
 // Define initial camera position
@@ -17,6 +17,8 @@ var osmLayer;
 var splitSlider;
 var splitPosition;
 var xD;
+
+setupLoadingScreen(viewerDiv, globeView);
 
 function addLayerCb(layer) {
     return globeView.addLayer(layer);
