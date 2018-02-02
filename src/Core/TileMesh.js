@@ -42,6 +42,8 @@ function TileMesh(geometry, params) {
     this.layerUpdateState = {};
 
     this.material.setUuid(this.id);
+
+    this._state = RendererConstant.FINAL;
 }
 
 TileMesh.prototype = Object.create(THREE.Mesh.prototype);
@@ -70,6 +72,9 @@ TileMesh.prototype.isDisplayed = function isDisplayed() {
 
 // switch material in function of state
 TileMesh.prototype.changeState = function changeState(state) {
+    if (state == this._state) {
+        return;
+    }
     if (state == RendererConstant.DEPTH) {
         this.material.defines.DEPTH_MODE = 1;
         delete this.material.defines.MATTE_ID_MODE;
@@ -81,7 +86,28 @@ TileMesh.prototype.changeState = function changeState(state) {
         delete this.material.defines.DEPTH_MODE;
     }
 
+    this._state = state;
+
     this.material.needsUpdate = true;
+};
+
+function applyChangeState(n, s) {
+    if (n.changeState) {
+        n.changeState(s);
+    }
+}
+
+TileMesh.prototype.pushRenderState = function pushRenderState(state) {
+    if (this._state == state) {
+        return () => { };
+    }
+
+    const oldState = this._state;
+    this.traverse(n => applyChangeState(n, state));
+
+    return () => {
+        this.traverse(n => applyChangeState(n, oldState));
+    };
 };
 
 TileMesh.prototype.setFog = function setFog(fog) {

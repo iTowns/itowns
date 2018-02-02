@@ -5,7 +5,6 @@ import { RENDERING_PAUSED, MAIN_LOOP_EVENTS } from '../MainLoop';
 import { COLOR_LAYERS_ORDER_CHANGED } from '../../Renderer/ColorLayersOrdering';
 import RendererConstant from '../../Renderer/RendererConstant';
 import GlobeControls from '../../Renderer/ThreeExtended/GlobeControls';
-import { unpack1K } from '../../Renderer/LayeredMaterial';
 
 import { GeometryLayer } from '../Layer/Layer';
 
@@ -18,6 +17,7 @@ import { updateLayeredMaterialNodeImagery, updateLayeredMaterialNodeElevation } 
 import { globeCulling, preGlobeUpdate, globeSubdivisionControl, globeSchemeTileWMTS, globeSchemeTile1 } from '../../Process/GlobeTileProcessing';
 import BuilderEllipsoidTile from './Globe/BuilderEllipsoidTile';
 import SubdivisionControl from '../../Process/SubdivisionControl';
+import Picking from '../Picking';
 
 /**
  * Fires when the view is completely loaded. Controls and view's functions can be called then.
@@ -71,7 +71,6 @@ export const GLOBE_VIEW_EVENTS = {
     LAYER_REMOVED: 'layer-removed',
     COLOR_LAYERS_ORDER_CHANGED,
 };
-
 
 export function createGlobeLayer(id, options) {
     // Configure tiles
@@ -176,6 +175,9 @@ export function createGlobeLayer(id, options) {
         enable: false,
         position: { x: -0.5, y: 0.0, z: 1.0 },
     };
+    // provide custom pick function
+    wgs84TileLayer.pickObjectsAt = (_view, mouse) => Picking.pickTilesAt(_view, mouse, wgs84TileLayer);
+
     return wgs84TileLayer;
 }
 
@@ -360,8 +362,8 @@ GlobeView.prototype.removeLayer = function removeImageryLayer(layerId) {
 };
 
 GlobeView.prototype.selectNodeAt = function selectNodeAt(mouse) {
-    // update the picking ray with the camera and mouse position
-    const selectedId = this.screenCoordsToNodeId(mouse);
+    const picked = this.wgs84TileLayer.pickObjectsAt(this, mouse);
+    const selectedId = picked.length ? picked[0].object.id : undefined;
 
     for (const n of this.wgs84TileLayer.level0Nodes) {
         n.traverse((node) => {
@@ -380,41 +382,12 @@ GlobeView.prototype.selectNodeAt = function selectNodeAt(mouse) {
     this.notifyChange(true);
 };
 
-GlobeView.prototype.screenCoordsToNodeId = function screenCoordsToNodeId(mouse) {
-    const dim = this.mainLoop.gfxEngine.getWindowSize();
-
-    mouse = mouse || new THREE.Vector2(Math.floor(dim.x / 2), Math.floor(dim.y / 2));
-
-    const previousRenderState = this._renderState;
-    this.changeRenderState(RendererConstant.ID);
-
-    // Prepare state
-    const prev = this.camera.camera3D.layers.mask;
-    this.camera.camera3D.layers.mask = 1 << this.wgs84TileLayer.threejsLayer;
-
-    var buffer = this.mainLoop.gfxEngine.renderViewTobuffer(
-        this,
-        this.mainLoop.gfxEngine.fullSizeRenderTarget,
-        mouse.x, dim.y - mouse.y,
-        1, 1);
-
-    this.changeRenderState(previousRenderState);
-    this.camera.camera3D.layers.mask = prev;
-
-    var depthRGBA = new THREE.Vector4().fromArray(buffer).divideScalar(255.0);
-
-    // unpack RGBA to float
-    var unpack = unpack1K(depthRGBA, Math.pow(256, 3));
-
-    return Math.round(unpack);
-};
-
 GlobeView.prototype.readDepthBuffer = function readDepthBuffer(x, y, width, height) {
     const g = this.mainLoop.gfxEngine;
-    const previousRenderState = this._renderState;
-    this.changeRenderState(RendererConstant.DEPTH);
+    const restore = this.wgs84TileLayer.level0Nodes.map(n => n.pushRenderState(RendererConstant.DEPTH));
     const buffer = g.renderViewTobuffer(this, g.fullSizeRenderTarget, x, y, width, height);
-    this.changeRenderState(previousRenderState);
+    restore.forEach(r => r());
+
     return buffer;
 };
 
@@ -476,26 +449,6 @@ GlobeView.prototype.getPickingPositionFromDepth = function getPickingPositionFro
         { return undefined; }
 
     return pickWorldPosition;
-};
-
-GlobeView.prototype.changeRenderState = function changeRenderState(newRenderState) {
-    if (this._renderState == newRenderState || !this.wgs84TileLayer.level0Nodes) {
-        return;
-    }
-
-    // build traverse function
-    var changeStateFunction = (function getChangeStateFunctionFn() {
-        return function changeStateFunction(object3D) {
-            if (object3D.changeState) {
-                object3D.changeState(newRenderState);
-            }
-        };
-    }());
-
-    for (const n of this.wgs84TileLayer.level0Nodes) {
-        n.traverseVisible(changeStateFunction);
-    }
-    this._renderState = newRenderState;
 };
 
 GlobeView.prototype.setRealisticLightingOn = function setRealisticLightingOn(value) {
