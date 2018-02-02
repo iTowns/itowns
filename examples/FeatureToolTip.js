@@ -70,8 +70,8 @@ function ToolTip(viewer, viewerDiv, tooltip, precisionPx) {
                 }
             }
             if (visible) {
-                tooltip.style.left = e.pageX + 'px';
-                tooltip.style.top = e.pageY + 'px';
+                tooltip.style.left = viewer.eventToViewCoords(e).x + 'px';
+                tooltip.style.top = viewer.eventToViewCoords(e).y + 'px';
                 tooltip.style.visibility = 'visible';
             }
         }
@@ -79,15 +79,15 @@ function ToolTip(viewer, viewerDiv, tooltip, precisionPx) {
 
     function readPosition(e) {
         if (!mouseDown) {
-            buildToolTip(viewer.controls.pickGeoPosition(e.clientX, e.clientY), e);
+            buildToolTip(viewer.controls.pickGeoPosition(viewer.eventToViewCoords(e)), e);
         } else {
-            tooltip.style.left = e.pageX + 'px';
-            tooltip.style.top = e.pageY + 'px';
+            tooltip.style.left = viewer.eventToViewCoords(e).x + 'px';
+            tooltip.style.top = viewer.eventToViewCoords(e).y + 'px';
         }
     }
 
     function pickPosition(e) {
-        buildToolTip(viewer.controls.pickGeoPosition(e.clientX, e.clientY), e);
+        buildToolTip(viewer.controls.pickGeoPosition(viewer.eventToViewCoords(e)), e);
     }
 
     document.addEventListener('mousemove', readPosition, false);

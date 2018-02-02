@@ -907,11 +907,9 @@ function GlobeControls(view, target, radius, options = {}) {
             if (this.enabled === false) return;
 
             event.preventDefault();
-
-            const staticPos = window.getComputedStyle(event.target.parentElement).position !== 'static';
-            const bounds = staticPos ? event.target.getBoundingClientRect() : { left: 0, top: 0 };
-            const x = event.clientX - event.target.offsetLeft - bounds.left;
-            const y = event.clientY - event.target.offsetTop - bounds.top;
+            const coords = this._view.eventToViewCoords(event);
+            const x = coords.x;
+            const y = coords.y;
 
             if (state === this.states.ORBIT || state === this.states.PANORAMIC) {
                 rotateEnd.set(x, y);
@@ -1067,10 +1065,9 @@ function GlobeControls(view, target, radius, options = {}) {
             event.preventDefault();
             state = inputToState(event.button, currentKey, this.states);
 
-            const staticPos = window.getComputedStyle(event.target.parentElement).position !== 'static';
-            const bounds = staticPos ? event.target.getBoundingClientRect() : { left: 0, top: 0 };
-            const x = event.clientX - event.target.offsetLeft - bounds.left;
-            const y = event.clientY - event.target.offsetTop - bounds.top;
+            const coords = this._view.eventToViewCoords(event);
+            const x = coords.x;
+            const y = coords.y;
 
             switch (state) {
                 case this.states.ORBIT:
@@ -1125,12 +1122,7 @@ function GlobeControls(view, target, radius, options = {}) {
 
         // Double click throws move camera's target with animation
         if (!currentKey) {
-            const staticPos = window.getComputedStyle(event.target.parentElement).position !== 'static';
-            const bounds = staticPos ? event.target.getBoundingClientRect() : { left: 0, top: 0 };
-            ptScreenClick.x = event.clientX - event.target.offsetLeft - bounds.left;
-            ptScreenClick.y = event.clientY - event.target.offsetTop - bounds.top;
-
-            const point = view.getPickingPositionFromDepth(ptScreenClick);
+            const point = view.getPickingPositionFromDepth(this._view.eventToViewCoords(event));
 
             if (point) {
                 animatedScale = 0.6;
@@ -1926,24 +1918,12 @@ GlobeControls.prototype.setCameraTargetGeoPositionAdvanced = function setCameraT
 
 /**
  * Pick a position on the globe at the given position in lat,lon. See {@linkcode Coordinates} for conversion.
- * @param {number | MouseEvent} mouse - The x-position inside the Globe element or a mouse event.
+ * @param {Vector2} windowCoords - window coordinates
  * @param {number=} y - The y-position inside the Globe element.
  * @return {Coordinates} position
  */
-GlobeControls.prototype.pickGeoPosition = function pickGeoPosition(mouse, y) {
-    var screenCoords = {
-        x: mouse,
-        y,
-    };
-
-    if (mouse instanceof MouseEvent) {
-        const staticPos = window.getComputedStyle(mouse.target.parentElement).position !== 'static';
-        const bounds = staticPos ? mouse.target.getBoundingClientRect() : { left: 0, top: 0 };
-        screenCoords.x = mouse.clientX - mouse.target.offsetLeft - bounds.left;
-        screenCoords.y = mouse.clientY - mouse.target.offsetTop - bounds.top;
-    }
-
-    var pickedPosition = this._view.getPickingPositionFromDepth(screenCoords);
+GlobeControls.prototype.pickGeoPosition = function pickGeoPosition(windowCoords) {
+    var pickedPosition = this._view.getPickingPositionFromDepth(windowCoords);
 
     if (!pickedPosition) {
         return;

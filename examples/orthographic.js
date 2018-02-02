@@ -68,7 +68,7 @@ viewerDiv.addEventListener('DOMMouseScroll', onMouseWheel);
 viewerDiv.addEventListener('mousewheel', onMouseWheel);
 
 viewerDiv.addEventListener('mousedown', function mouseDown(event) {
-    dragStartPosition = new itowns.THREE.Vector2(event.clientX, event.clientY);
+    dragStartPosition = view.eventToViewCoords(event).clone();
     dragCameraStart = {
         left: view.camera.camera3D.left,
         right: view.camera.camera3D.right,
@@ -80,10 +80,12 @@ viewerDiv.addEventListener('mousemove', function mouseMove(event) {
     var width;
     var deltaX;
     var deltaY;
+    var newpos;
     if (dragStartPosition) {
+        newpos = view.eventToViewCoords(event);
         width = view.camera.camera3D.right - view.camera.camera3D.left;
-        deltaX = width * (event.clientX - dragStartPosition.x) / -viewerDiv.clientWidth;
-        deltaY = width * (event.clientY - dragStartPosition.y) / viewerDiv.clientHeight;
+        deltaX = width * (newpos.x - dragStartPosition.x) / -viewerDiv.clientWidth;
+        deltaY = width * (newpos.y - dragStartPosition.y) / viewerDiv.clientHeight;
 
         view.camera.camera3D.left = dragCameraStart.left + deltaX;
         view.camera.camera3D.right = dragCameraStart.right + deltaX;
