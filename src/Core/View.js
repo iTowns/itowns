@@ -458,4 +458,55 @@ View.prototype.execFrameRequesters = function execFrameRequesters(when, dt, upda
     }
 };
 
+const _eventCoords = new Vector2();
+/**
+ * Extract view coordinates from a mouse-event / touch-event
+ * @param {event} event - event can be a MouseEvent or a TouchEvent
+ * @param {number} touchIdx - finger index when using a TouchEvent (default: 0)
+ * @return {THREE.Vector2} - view coordinates (in pixels, 0-0 = top-left of the View)
+ */
+View.prototype.eventToViewCoords = function eventToViewCoords(event, touchIdx = 0) {
+    if (event.touches === undefined || !event.touches.length) {
+        return _eventCoords.set(event.offsetX, event.offsetY);
+    } else {
+        // originalTarget should always be viewerDiv
+        const br = event.originalTarget.getClientBoundingRect();
+        return _eventCoords.set(
+            event.touches[touchIdx].clientX - br.x,
+            event.touches[touchIdx].clientY - br.y);
+    }
+};
+
+/**
+ * Extract normalized coordinates (NDC) from a mouse-event / touch-event
+ * @param {event} event - event can be a MouseEvent or a TouchEvent
+ * @param {number} touchIdx - finger index when using a TouchEvent (default: 0)
+ * @return {THREE.Vector2} - NDC coordinates (x and y are [-1, 1])
+ */
+View.prototype.eventToNormalizedCoords = function eventToNormalizedCoords(event, touchIdx = 0) {
+    return this.viewToNormalizedCoords(this.eventToViewCoords(event, touchIdx));
+};
+
+/**
+ * Convert view coordinates to normalized coordinates (NDC)
+ * @param {Vector2} viewCoords (in pixels, 0-0 = top-left of the View)
+ * @return {THREE.Vector2} - NDC coordinates (x and y are [-1, 1])
+ */
+View.prototype.viewToNormalizedCoords = function viewToNormalizedCoords(viewCoords) {
+    _eventCoords.x = 2 * (viewCoords.x / this.camera.width) - 1;
+    _eventCoords.y = -2 * (viewCoords.y / this.camera.height) + 1;
+    return _eventCoords;
+};
+
+/**
+ * Convert NDC coordinates to view coordinates
+ * @param {Vector2} ndcCoords
+ * @return {THREE.Vector2} - view coordinates (in pixels, 0-0 = top-left of the View)
+ */
+View.prototype.normalizedToViewCoords = function normalizedToViewCoords(ndcCoords) {
+    _eventCoords.x = (ndcCoords.x + 1) * 0.5 * this.camera.width;
+    _eventCoords.y = (ndcCoords.y - 1) * -0.5 * this.camera.height;
+    return _eventCoords;
+};
+
 export default View;

@@ -34,10 +34,8 @@ function showPointcloud(serverUrl, fileName, lopocsTable) {
     // point selection on double-click
     function dblClickHandler(event) {
         var pick;
-        var mouse = {
-            x: event.offsetX,
-            y: (event.currentTarget.height || event.currentTarget.offsetHeight) - event.offsetY,
-        };
+        var mouse = view.eventToViewCoords(event);
+        mouse.y = (event.currentTarget.height || event.currentTarget.offsetHeight) - mouse.y;
 
         pick = itowns.PointCloudProcessing.selectAt(view, pointcloud, mouse);
 

@@ -153,7 +153,7 @@
             }
             function picking(event) {
                 // Pick an object with batch id
-                var mouse = new itowns.THREE.Vector2((event.clientX / window.innerWidth) * 2 - 1, -(event.clientY / window.innerHeight) * 2 + 1);
+                var mouse = globe.eventToNormalizedCoords(event);
                 var raycaster = new itowns.THREE.Raycaster();
                 var htmlInfo = document.getElementById('info');
                 htmlInfo.innerHTML = ' ';
@@ -161,6 +161,7 @@
                 raycaster.setFromCamera(mouse, globe.camera.camera3D);
                 // calculate objects intersecting the picking ray
                 var intersects = raycaster.intersectObjects($3dTilesLayerRequestVolume.object3d.children, true);
+
                 for (var i = 0; i < intersects.length; i++) {
                     var interAttributes = intersects[i].object.geometry.attributes;
                     if (interAttributes) {

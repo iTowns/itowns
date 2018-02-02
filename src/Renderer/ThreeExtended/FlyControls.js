@@ -16,8 +16,9 @@ function onDocumentMouseDown(event) {
     event.preventDefault();
     this._isMouseDown = true;
 
-    this._onMouseDownMouseX = event.clientX;
-    this._onMouseDownMouseY = event.clientY;
+    const coords = this.view.eventToViewCoords(event);
+    this._onMouseDownMouseX = coords.x;
+    this._onMouseDownMouseY = coords.y;
 }
 
 function onTouchStart(event) {
@@ -29,16 +30,18 @@ function onTouchStart(event) {
 }
 
 
-function onPointerMove(pointerX, pointerY) {
+function onPointerMove(event) {
     if (this._isMouseDown === true) {
+        const coords = this.view.eventToViewCoords(event);
+
         // in rigor we have tan(theta) = tan(cameraFOV) * deltaH / H
         // (where deltaH is the vertical amount we moved, and H the renderer height)
         // we loosely approximate tan(x) by x
         const pxToAngleRatio = THREE.Math.degToRad(this._camera3D.fov) / this.view.mainLoop.gfxEngine.height;
-        this._camera3D.rotateY((pointerX - this._onMouseDownMouseX) * pxToAngleRatio);
-        this._camera3D.rotateX((pointerY - this._onMouseDownMouseY) * pxToAngleRatio);
-        this._onMouseDownMouseX = pointerX;
-        this._onMouseDownMouseY = pointerY;
+        this._camera3D.rotateY((coords.x - this._onMouseDownMouseX) * pxToAngleRatio);
+        this._camera3D.rotateX((coords.y - this._onMouseDownMouseY) * pxToAngleRatio);
+        this._onMouseDownMouseX = coords.x;
+        this._onMouseDownMouseY = coords.y;
         this.view.notifyChange(false, this._camera3D);
     }
 }
@@ -116,8 +119,8 @@ class FlyControls extends THREE.EventDispatcher {
         domElement.addEventListener('mousedown', onDocumentMouseDown.bind(this), false);
         domElement.addEventListener('touchstart', onTouchStart.bind(this), false);
         const bindedPM = onPointerMove.bind(this);
-        domElement.addEventListener('mousemove', e => bindedPM(e.clientX, e.clientY), false);
-        domElement.addEventListener('touchmove', e => bindedPM(e.touches[0].pageX, e.touches[0].pageY), false);
+        domElement.addEventListener('mousemove', bindedPM, false);
+        domElement.addEventListener('touchmove', bindedPM, false);
         domElement.addEventListener('mouseup', onDocumentMouseUp.bind(this), false);
         domElement.addEventListener('touchend', onDocumentMouseUp.bind(this), false);
         domElement.addEventListener('mousewheel', onDocumentMouseWheel.bind(this), false);
