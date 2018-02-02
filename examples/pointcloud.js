@@ -33,14 +33,10 @@ function showPointcloud(serverUrl, fileName, lopocsTable) {
 
     // point selection on double-click
     function dblClickHandler(event) {
-        var pick;
-        var mouse = view.eventToViewCoords(event);
-        mouse.y = (event.currentTarget.height || event.currentTarget.offsetHeight) - mouse.y;
+        var pick = view.pickObjectsAt(event, pointcloud);
 
-        pick = itowns.PointCloudProcessing.selectAt(view, pointcloud, mouse);
-
-        if (pick) {
-            console.log('Selected point #' + pick.index + ' in Points "' + pick.points.owner.name + '"');
+        if (pick.length) {
+            console.log('Selected point #' + pick[0].index + ' in Points "' + pick[0].object.owner.name + '"');
         }
     }
     view.mainLoop.gfxEngine.renderer.domElement.addEventListener('dblclick', dblClickHandler);

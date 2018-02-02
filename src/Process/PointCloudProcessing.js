@@ -300,45 +300,4 @@ export default {
             layer.bboxes.children = layer.bboxes.children.filter(b => !b.removeMe);
         }
     },
-
-    selectAt(view, layer, mouse) {
-        if (!layer.root) {
-            return;
-        }
-
-        // enable picking mode for points material
-        view.scene.traverse((o) => {
-            if (o.isPoints && o.baseId) {
-                o.material.enablePicking(true);
-            }
-        });
-
-        // render 1 pixel
-        // TODO: support more than 1 pixel selection
-        const buffer = view.mainLoop.gfxEngine.renderViewTobuffer(
-                view, view.mainLoop.gfxEngine.fullSizeRenderTarget,
-                mouse.x, mouse.y, 1, 1);
-
-        // see PointCloudProvider and the construction of unique_id
-        const objId = (buffer[0] << 8) | buffer[1];
-        const index = (buffer[2] << 8) | buffer[3];
-
-        let result;
-        view.scene.traverse((o) => {
-            if (o.isPoints && o.baseId) {
-                // disable picking mode
-                o.material.enablePicking(false);
-
-                // if baseId matches objId, the clicked point belongs to `o`
-                if (!result && o.baseId === objId) {
-                    result = {
-                        points: o,
-                        index,
-                    };
-                }
-            }
-        });
-
-        return result;
-    },
 };

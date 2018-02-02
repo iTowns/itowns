@@ -1,11 +1,12 @@
-/* global window, requestAnimationFrame */
-import { Scene, EventDispatcher, Vector2 } from 'three';
+/* global window */
+import { Scene, EventDispatcher, Vector2, Object3D } from 'three';
 import Camera from '../Renderer/Camera';
 import MainLoop from './MainLoop';
 import c3DEngine from '../Renderer/c3DEngine';
 import { STRATEGY_MIN_NETWORK_TRAFFIC } from './Layer/LayerUpdateStrategy';
 import { GeometryLayer, Layer, defineLayerProperty } from './Layer/Layer';
 import Scheduler from './Scheduler/Scheduler';
+import Picking from './Picking';
 
 /**
  * Constructs an Itowns View instance
@@ -510,6 +511,90 @@ View.prototype.normalizedToViewCoords = function normalizedToViewCoords(ndcCoord
     _eventCoords.x = (ndcCoords.x + 1) * 0.5 * this.camera.width;
     _eventCoords.y = (ndcCoords.y - 1) * -0.5 * this.camera.height;
     return _eventCoords;
+};
+
+function layerIdToLayer(view, layerId) {
+    const lookup = view.getLayers(l => l.id == layerId);
+    if (!lookup.length) {
+        throw new Error(`Invalid layer id used as where argument (value = ${layerId})`);
+    }
+    return lookup[0];
+}
+
+/**
+ * Return objects from some layers/objects3d under the mouse in this view.
+ *
+ * @param {Object} mouseOrEvt - mouse position in window coordinates (0, 0 = top-left)
+ * or MouseEvent or TouchEvent
+ * @param {...*} where - where to look for objects. Can be either: empty (= look
+ * in all layers with type == 'geometry'), layer ids or layers or a mix of all
+ * the above.
+ * @return {Array} - an array of objects. Each element contains at least an object
+ * property which is the Object3D under the cursor. Then depending on the queried
+ * layer/source, there may be additionnal properties (coming from THREE.Raycaster
+ * for instance).
+ *
+ * @example
+ * view.pickObjectsAt({ x, y })
+ * view.pickObjectsAt({ x, y }, 'wfsBuilding')
+ * view.pickObjectsAt({ x, y }, 'wfsBuilding', myLayer)
+ */
+View.prototype.pickObjectsAt = function pickObjectsAt(mouseOrEvt, ...where) {
+    const results = [];
+    const sources = where.length == 0 ?
+        this.getLayers(l => l.type == 'geometry') :
+        [...where];
+
+    const mouse = (mouseOrEvt.x === undefined) ?
+        this.eventToViewCoords(mouseOrEvt) : mouseOrEvt;
+
+    for (const source of sources) {
+        if (source instanceof GeometryLayer ||
+            source instanceof Layer ||
+            typeof (source) === 'string') {
+            const layer = (typeof (source) === 'string') ?
+                layerIdToLayer(this, source) :
+                source;
+
+            // does this layer have a custom picking function?
+            if (layer.pickObjectsAt) {
+                results.splice(
+                    results.length, 0,
+                    ...layer.pickObjectsAt(this, mouse));
+            } else {
+                //   - it hasn't: this layer is attached to another one
+                let parentLayer;
+                this.getLayers((l, p) => {
+                    if (l.id == layer.id) {
+                        parentLayer = p;
+                    }
+                });
+
+                // raycast using parent layer object3d
+                const obj = Picking.pickObjectsAt(
+                    this,
+                    mouse,
+                    parentLayer.object3d);
+
+                // then filter the results
+                for (const o of obj) {
+                    if (o.layer === layer.id) {
+                        results.push(o);
+                    }
+                }
+            }
+        } else if (source instanceof Object3D) {
+            Picking.pickObjectsAt(
+                this,
+                mouse,
+                source,
+                results);
+        } else {
+            throw new Error(`Invalid where arg (value = ${where}). Expected layers, layer ids or Object3Ds`);
+        }
+    }
+
+    return results;
 };
 
 export default View;
