@@ -149,7 +149,7 @@ OBB.extentToOBB = function extentToOBB(extent, minHeight = 0, maxHeight = 0) {
         cardinalsXYZ.push(cardinal.as('EPSG:4978').xyz());
     }
 
-    return this.cardinalsXYZToOBB(cardinalsXYZ, centersLongitude, true, minHeight, maxHeight);
+    return this.cardinalsXYZToOBB(cardinalsXYZ, centersLongitude, true, tmp.cardinals[8].geodesicNormal, minHeight, maxHeight);
 };
 
 /**
@@ -157,16 +157,17 @@ OBB.extentToOBB = function extentToOBB(extent, minHeight = 0, maxHeight = 0) {
  * @param {Vector3[]} cardinals - 8 cardinals of the portion + the center.
  * @param {number} centerLongitude - the longitude at the center of the portion
  * @param {boolean} isEllipsoid - should be true when computing for the globe, false otherwise
+ * @param {Vector3} geodesicNormal - geodesic normal at extent's center
  * @param {number} minHeight
  * @param {number} maxHeight
  * @return {OBB}
  */
-OBB.cardinalsXYZToOBB = function cardinalsXYZToOBB(cardinals, centerLongitude, isEllipsoid, minHeight = 0, maxHeight = 0) {
+OBB.cardinalsXYZToOBB = function cardinalsXYZToOBB(cardinals, centerLongitude, isEllipsoid, geodesicNormal, minHeight = 0, maxHeight = 0) {
     tmp.maxV.set(-1000, -1000, -1000);
     tmp.minV.set(1000, 1000, 1000);
 
     let halfMaxHeight = 0;
-    tmp.normal.copy(cardinals[8]).normalize();
+    tmp.normal.copy(geodesicNormal);
     tmp.tangentPlaneAtOrigin.set(tmp.normal, 0);
 
     // Compute the rotation transforming the tile so that it's normal becomes (0, 0, 1)
@@ -208,7 +209,7 @@ OBB.cardinalsXYZToOBB = function cardinalsXYZToOBB(cardinals, centerLongitude, i
     obb.lookAt(tmp.normal);
     obb.translateX(tmp.translate.x);
     obb.translateY(tmp.translate.y);
-    obb.translateY(tmp.translate.z);
+    obb.translateZ(tmp.translate.z);
 
     // for 3D
     if (minHeight !== 0 || maxHeight !== 0) {
