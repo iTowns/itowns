@@ -85,10 +85,10 @@
             // iTowns namespace defined here
             var viewerDiv = document.getElementById('viewerDiv');
 
-            var globe = new itowns.GlobeView(viewerDiv, positionOnGlobe);
-            var menuGlobe = new GuiTools('menuDiv', globe, 300);
+            var view = new itowns.GlobeView(viewerDiv, positionOnGlobe);
+            var menuGlobe = new GuiTools('menuDiv', view, 300);
 
-            itowns.Fetcher.json('layers/JSONLayers/Ortho.json').then(function (result) { return globe.addLayer(result) });
+            itowns.Fetcher.json('layers/JSONLayers/Ortho.json').then(function (result) { return view.addLayer(result) });
 
             // function use :
             // For preupdate Layer geomtry :
@@ -110,7 +110,7 @@
             $3dTilesLayerDiscreteLOD.type = 'geometry';
             $3dTilesLayerDiscreteLOD.visible = true;
 
-            itowns.View.prototype.addLayer.call(globe, $3dTilesLayerDiscreteLOD);
+            itowns.View.prototype.addLayer.call(view, $3dTilesLayerDiscreteLOD);
 
             // Create a new Layer 3d-tiles For Viewer Request Volume
             // -----------------------------------------------------
@@ -131,14 +131,13 @@
             $3dTilesLayerRequestVolume.visible = true;
             $3dTilesLayerRequestVolume.sseThreshold = 1;
             // add an event for have information when you move your mouse on a building
-            itowns.View.prototype.addLayer.call(globe, $3dTilesLayerRequestVolume).then(function _() { window.addEventListener('mousemove', picking, false); })
+            itowns.View.prototype.addLayer.call(view, $3dTilesLayerRequestVolume).then(function _() { window.addEventListener('mousemove', picking, false); })
 
             // Add the UI Debug
-            var d = new debug.Debug(globe, menuGlobe.gui);
-            debug.createTileDebugUI(menuGlobe.gui, globe, globe.wgs84TileLayer, d);
-            debug.create3dTilesDebugUI(menuGlobe.gui, globe, $3dTilesLayerDiscreteLOD, d);
-            debug.create3dTilesDebugUI(menuGlobe.gui, globe, $3dTilesLayerRequestVolume, d);
-
+            var d = new debug.Debug(view, menuGlobe.gui);
+            debug.createTileDebugUI(menuGlobe.gui, view, view.wgs84TileLayer, d);
+            debug.create3dTilesDebugUI(menuGlobe.gui, view, $3dTilesLayerDiscreteLOD, d);
+            debug.create3dTilesDebugUI(menuGlobe.gui, view, $3dTilesLayerRequestVolume, d);
 
 
 // Picking example - - - - - - - - - - -- - - - -- - - - -- - - - -- - - - -- - - - -- - - - -

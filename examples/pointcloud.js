@@ -86,6 +86,7 @@ function showPointcloud(serverUrl, fileName, lopocsTable) {
                 Math.floor(100 * pointcloud.counters.displayedCount / pointcloud.counters.pointCount) + '%) (' +
                 view.mainLoop.gfxEngine.renderer.info.memory.geometries + ')';
         };
+        window.view = view;
     }
 
     view.addLayer(pointcloud).then(onLayerReady);

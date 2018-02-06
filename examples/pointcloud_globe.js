@@ -59,6 +59,7 @@ function showPointcloud(serverUrl, fileName) {
                 Math.floor(100 * pointcloud.counters.displayedCount / pointcloud.counters.pointCount) + '%) (' +
                 view.mainLoop.gfxEngine.renderer.info.memory.geometries + ')';
         };
+        window.view = view;
     }
 
     itowns.View.prototype.addLayer.call(view, pointcloud).then(onLayerReady);
