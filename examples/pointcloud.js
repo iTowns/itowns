@@ -85,4 +85,5 @@ function showPointcloud(serverUrl, fileName, lopocsTable) {
     }
 
     view.addLayer(pointcloud).then(onLayerReady);
+    debug.ScreenSpaceErrorInspector.create(debugGui, view);
 }

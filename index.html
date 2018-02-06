@@ -73,6 +73,7 @@ and open the template in the editor.
 
             const d = new debug.Debug(globeView, menuGlobe.gui);
             debug.createTileDebugUI(menuGlobe.gui, globeView, globeView.wgs84TileLayer, d);
+            debug.ScreenSpaceErrorInspector.create(menuGlobe.gui, globeView);
             window.globeView = globeView;
 </script>
     </body>
