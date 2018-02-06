@@ -75,13 +75,14 @@
                         protocol: 'static',
                         id: _id,
                         projection: 'EPSG:4326',
+                    }).then(() => {
+                        view.notifyChange(false);
                     });
 
                     layers.push(view.getLayers(function (l) { return (l.id == _id); })[0]);
                     index ++;
                 }
                 view.camera.camera3D.far = 10000;
-                view.notifyChange(true);
 
                 // Setup debug menu
                 var gui = new dat.GUI();
@@ -105,6 +106,8 @@
                     layers[activeIndex].visible = true;
                     view.notifyChange(true);
                 });
+
+                window.view = view;
             });
         </script>
 
