@@ -89,6 +89,21 @@ function c3DEngine(rendererOrDiv, options = {}) {
         throw new Error('WebGL unsupported');
     }
 
+    if (!renderer && options.logarithmicDepthBuffer) {
+        // We don't support logarithmicDepthBuffer when EXT_frag_depth is missing.
+        // So recreated a renderer if needed.
+        if (!this.renderer.extensions.get('EXT_frag_depth')) {
+            const _canvas = this.renderer.domElement;
+            this.renderer.dispose();
+            this.renderer = new THREE.WebGLRenderer({
+                canvas: _canvas,
+                antialias: options.antialias,
+                alpha: options.alpha,
+                logarithmicDepthBuffer: false,
+            });
+        }
+    }
+
     // Let's allow our canvas to take focus
     // The condition below looks weird, but it's correct: querying tabIndex
     // returns -1 if not set, but we still need to explicitly set it to force
