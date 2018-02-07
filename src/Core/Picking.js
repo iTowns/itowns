@@ -27,11 +27,14 @@ function screenCoordsToNodeId(view, tileLayer, mouse) {
 
     const undoHide = hideEverythingElse(view, tileLayer.object3d, tileLayer.threejsLayer);
 
-    var buffer = view.mainLoop.gfxEngine.renderViewTobuffer(
+    const buffer = view.mainLoop.gfxEngine.renderViewToBuffer(
         { camera: view.camera, scene: tileLayer.object3d },
-        view.mainLoop.gfxEngine.fullSizeRenderTarget,
-        mouse.x, dim.y - mouse.y,
-        1, 1);
+        {
+            x: mouse.x,
+            y: mouse.y,
+            width: 1,
+            height: 1,
+        });
 
     undoHide();
 
@@ -80,8 +83,6 @@ export default {
             return;
         }
 
-        const dim = view.mainLoop.gfxEngine.getWindowSize();
-
         // enable picking mode for points material
         layer.object3d.traverse((o) => {
             if (o.isPoints && o.baseId) {
@@ -93,10 +94,9 @@ export default {
 
         // render 1 pixel
         // TODO: support more than 1 pixel selection
-        const buffer = view.mainLoop.gfxEngine.renderViewTobuffer(
+        const buffer = view.mainLoop.gfxEngine.renderViewToBuffer(
                 { camera: view.camera, scene: layer.object3d },
-                view.mainLoop.gfxEngine.fullSizeRenderTarget,
-                mouse.x, dim.y - mouse.y, 1, 1);
+                { x: mouse.x, y: mouse.y, width: 1, height: 1 });
 
         undoHide();
 

@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 
 import View from '../View';
-import { RENDERING_PAUSED } from '../MainLoop';
+import { RENDERING_PAUSED, MAIN_LOOP_EVENTS } from '../MainLoop';
 import RendererConstant from '../../Renderer/RendererConstant';
 
 import { GeometryLayer } from '../Layer/Layer';
@@ -148,6 +148,12 @@ function PlanarView(viewerDiv, extent, options = {}) {
 
     this._renderState = RendererConstant.FINAL;
     this._fullSizeDepthBuffer = null;
+    this.addFrameRequester(MAIN_LOOP_EVENTS.BEFORE_RENDER, () => {
+        if (this._fullSizeDepthBuffer != null) {
+            // clean depth buffer
+            this._fullSizeDepthBuffer = null;
+        }
+    });
 
     this.tileLayer = tileLayer;
 }
@@ -189,7 +195,7 @@ PlanarView.prototype.selectNodeAt = function selectNodeAt(mouse) {
 PlanarView.prototype.readDepthBuffer = function readDepthBuffer(x, y, width, height) {
     const g = this.mainLoop.gfxEngine;
     const restoreState = this.tileLayer.level0Nodes[0].pushRenderState(RendererConstant.DEPTH);
-    const buffer = g.renderViewTobuffer(this, g.fullSizeRenderTarget, x, y, width, height);
+    const buffer = g.renderViewToBuffer(this, { x, y, width, height });
     restoreState();
     return buffer;
 };
@@ -221,7 +227,7 @@ PlanarView.prototype.getPickingPositionFromDepth = function getPickingPositionFr
         const id = ((dim.y - mouse.y - 1) * dim.x + mouse.x) * 4;
         buffer = this._fullSizeDepthBuffer.slice(id, id + 4);
     } else {
-        buffer = this.readDepthBuffer(mouse.x, dim.y - mouse.y - 1, 1, 1);
+        buffer = this.readDepthBuffer(mouse.x, mouse.y, 1, 1);
     }
 
     screen.x = (mouse.x / dim.x) * 2 - 1;
