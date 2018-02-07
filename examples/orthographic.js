@@ -53,6 +53,7 @@ view.addLayer({
     networkOptions: { crossOrigin: 'anonymous' },
     extent: [extent.west(), extent.east(), extent.south(), extent.north()],
     projection: 'EPSG:3857',
+    origin: 'bottom',
     options: {
         attribution: {
             name: 'OpenStreetMap',
