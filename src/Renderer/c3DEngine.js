@@ -34,7 +34,11 @@ function c3DEngine(rendererOrDiv, options = {}) {
 
     this.fullSizeRenderTarget = new THREE.WebGLRenderTarget(this.width, this.height);
     this.fullSizeRenderTarget.texture.minFilter = THREE.LinearFilter;
+    this.fullSizeRenderTarget.texture.magFilter = THREE.NearestFilter;
     this.fullSizeRenderTarget.texture.generateMipmaps = false;
+    this.fullSizeRenderTarget.depthBuffer = true;
+    this.fullSizeRenderTarget.depthTexture = new THREE.DepthTexture();
+    this.fullSizeRenderTarget.depthTexture.type = THREE.UnsignedShortType;
 
     this.renderView = function renderScene(view) {
         this.renderer.setViewport(0, 0, this.width, this.height);
@@ -141,21 +145,71 @@ c3DEngine.prototype.getRenderer = function getRenderer() {
     return this.renderer;
 };
 
-c3DEngine.prototype.renderViewTobuffer = function renderViewTobuffer(view, buffer, x, y, width, height) {
-    // TODO Deallocate render texture
-    const current = this.renderer.getRenderTarget();
-    this.renderer.setRenderTarget(buffer);
-    this.renderer.setViewport(0, 0, buffer.width, buffer.height);
-    this.renderer.setScissor(x, y, width, height);
-    this.renderer.setScissorTest(true);
-    this.renderer.clearTarget(buffer, true, true, false);
-    this.renderer.render(view.scene, view.camera.camera3D, buffer);
-    this.renderer.setScissorTest(false);
-    var pixelBuffer = new Uint8Array(4 * width * height);
-    this.renderer.readRenderTargetPixels(buffer, x, y, width, height, pixelBuffer);
-    this.renderer.setRenderTarget(current);
+/**
+ * Render view to a Uint8Array.
+ *
+ * @param {View} view - The view to render
+ * @param {object} [zone] - partial zone to render
+ * @param {number} zone.x - x (in view coordinate)
+ * @param {number} zone.y - y (in view coordinate)
+ * @param {number} zone.width - width of area to render (in pixels)
+ * @param {number} zone.height - height of area to render (in pixels)
+ * @return {THREE.RenderTarget} - Uint8Array, 4 bytes per pixel. The first pixel in
+ * the array is the bottom-left pixel.
+ */
+c3DEngine.prototype.renderViewToBuffer = function renderViewToBuffer(view, zone) {
+    if (!zone) {
+        zone = {
+            x: 0,
+            y: 0,
+            width: this.width,
+            height: this.height,
+        };
+    }
+
+    this.renderViewToRenderTarget(view, this.fullSizeRenderTarget, zone);
+
+    const pixelBuffer = new Uint8Array(4 * zone.width * zone.height);
+    this.renderer.readRenderTargetPixels(
+        this.fullSizeRenderTarget,
+        zone.x, this.height - (zone.y + zone.height), zone.width, zone.height, pixelBuffer);
 
     return pixelBuffer;
+};
+
+/**
+ * Render view to a THREE.RenderTarget.
+ *
+ * @param {View} view - The view to render
+ * @param {THREE.RenderTarget} [target] - destination render target. Default value: full size render target owned by c3DEngine.
+ * @param {object} [zone] - partial zone to render (zone x/y uses view coordinates) Note: target must contain complete zone
+ * @return {THREE.RenderTarget} - the destination render target
+ */
+c3DEngine.prototype.renderViewToRenderTarget = function renderViewToRenderTarget(view, target, zone) {
+    if (!target) {
+        target = this.fullSizeRenderTarget;
+    }
+    const current = this.renderer.getRenderTarget();
+
+    // Don't use setViewport / setScissor on renderer because they would affect
+    // on screen rendering as well. Instead set them on the render target.
+    this.fullSizeRenderTarget.viewport.set(0, 0, target.width, target.height);
+    if (zone) {
+        this.fullSizeRenderTarget.scissor.set(
+            zone.x,
+            target.height - (zone.y + zone.height),
+            zone.width,
+            zone.height);
+        this.fullSizeRenderTarget.scissorTest = true;
+    }
+
+    this.renderer.setRenderTarget(target);
+    this.renderer.clearTarget(target, true, true, false);
+    this.renderer.render(view.scene, view.camera.camera3D, target);
+    this.renderer.setRenderTarget(current);
+
+    this.fullSizeRenderTarget.scissorTest = false;
+    return target;
 };
 
 c3DEngine.prototype.bufferToImage = function bufferToImage(pixelBuffer, width, height) {

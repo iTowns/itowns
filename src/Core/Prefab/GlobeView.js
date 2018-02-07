@@ -387,7 +387,7 @@ GlobeView.prototype.selectNodeAt = function selectNodeAt(mouse) {
 GlobeView.prototype.readDepthBuffer = function readDepthBuffer(x, y, width, height) {
     const g = this.mainLoop.gfxEngine;
     const restore = this.wgs84TileLayer.level0Nodes.map(n => n.pushRenderState(RendererConstant.DEPTH));
-    const buffer = g.renderViewTobuffer(this, g.fullSizeRenderTarget, x, y, width, height);
+    const buffer = g.renderViewToBuffer(this, { x, y, width, height });
     restore.forEach(r => r());
 
     return buffer;
@@ -419,7 +419,7 @@ GlobeView.prototype.getPickingPositionFromDepth = function getPickingPositionFro
         const id = ((dim.y - mouse.y - 1) * dim.x + mouse.x) * 4;
         buffer = this._fullSizeDepthBuffer.slice(id, id + 4);
     } else {
-        buffer = this.readDepthBuffer(mouse.x, dim.y - mouse.y - 1, 1, 1);
+        buffer = this.readDepthBuffer(mouse.x, mouse.y, 1, 1);
     }
 
     screen.x = (mouse.x / dim.x) * 2 - 1;
