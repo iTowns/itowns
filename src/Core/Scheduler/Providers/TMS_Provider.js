@@ -13,6 +13,7 @@ TMS_Provider.prototype.preprocessDataLayer = function preprocessDataLayer(layer)
         throw new Error(`Missing projection property for layer '${layer.id}'`);
     }
     layer.extent = new Extent(layer.projection, ...layer.extent);
+    layer.origin = layer.origin || (layer.protocol == 'xyz' ? 'top' : 'bottom');
     if (!layer.options.zoom) {
         layer.options.zoom = {
             min: 0,

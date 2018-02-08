@@ -46,14 +46,13 @@ view.tileLayer.disableSkirt = true;
 // Add an TMS imagery layer
 view.addLayer({
     type: 'color',
-    protocol: 'tms',
+    protocol: 'xyz',
     id: 'OPENSM',
     // eslint-disable-next-line no-template-curly-in-string
     url: 'http://c.tile.stamen.com/watercolor/${z}/${x}/${y}.jpg',
     networkOptions: { crossOrigin: 'anonymous' },
     extent: [extent.west(), extent.east(), extent.south(), extent.north()],
     projection: 'EPSG:3857',
-    origin: 'bottom',
     options: {
         attribution: {
             name: 'OpenStreetMap',

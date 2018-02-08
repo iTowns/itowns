@@ -96,6 +96,7 @@ Scheduler.prototype.initDefaultProviders = function initDefaultProviders() {
     this.addProtocolProvider('wms', new WMS_Provider());
     this.addProtocolProvider('3d-tiles', new $3dTiles_Provider());
     this.addProtocolProvider('tms', new TMS_Provider());
+    this.addProtocolProvider('xyz', new TMS_Provider());
     this.addProtocolProvider('potreeconverter', PointCloudProvider);
     this.addProtocolProvider('wfs', new WFS_Provider());
     this.addProtocolProvider('rasterizer', Raster_Provider);
