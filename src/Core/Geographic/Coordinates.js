@@ -158,7 +158,7 @@ function _convert(coordsIn, newCrs, target) {
 
             // Verify that coordinates are stored in reference unit.
             const refUnit = crsToUnit(coordsIn.crs);
-            if (coordsIn._internalStorageUnit != coordsIn.crs) {
+            if (coordsIn._internalStorageUnit != refUnit) {
                 if (coordsIn._internalStorageUnit == UNIT.DEGREE && refUnit == UNIT.RADIAN) {
                     val0 = coordsIn.longitude(UNIT.RADIAN);
                     val1 = coordsIn.latitude(UNIT.RADIAN);
@@ -174,7 +174,7 @@ function _convert(coordsIn, newCrs, target) {
             if (newCrs == 'EPSG:4978') {
                 const p = instanceProj4(coordsIn.crs, 'EPSG:4326').forward([val0, val1]);
                 target.set('EPSG:4326', p[0], p[1], coordsIn._values[2]);
-                return target.as('EPSG:4978');
+                return target.as('EPSG:4978', target);
             } else if (coordsIn.crs === 'EPSG:4978') {
                 coordsIn.as('EPSG:4326', target);
                 const p = instanceProj4(target.crs, newCrs).forward([target._values[0], target._values[1]]);
