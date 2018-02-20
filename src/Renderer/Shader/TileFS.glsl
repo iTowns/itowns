@@ -59,13 +59,11 @@ REPLACE_PARAM_BY_INDEX
 }
 
 vec4 mixLayerColor(vec4 diffuseColor, vec4 layerColor, vec3 layerParams) {
-    float lum = 1.0;
-
-    if(layerParams.z > 2.0) {
+    if (layerParams.z > 2.0) {
         layerColor.rgb /= layerColor.a;
         layerColor = applyLightColorToInvisibleEffect(layerColor, layerParams.z);
         layerColor.rgb *= layerColor.a;
-    } else if(layerParams.z > 0.0) {
+    } else if (layerParams.z > 0.0) {
         layerColor.rgb /= layerColor.a;
         layerColor = applyWhiteToInvisibleEffect(layerColor, layerParams.z);
         layerColor.rgb *= layerColor.a;

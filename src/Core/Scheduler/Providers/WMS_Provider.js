@@ -54,6 +54,7 @@ WMS_Provider.prototype.preprocessDataLayer = function preprocessDataLayer(layer)
         layer.options.zoom = { min: 0, max: 21 };
     }
 
+    layer.fx = layer.fx || 0.0;
     layer.format = layer.options.mimetype || 'image/png';
     layer.width = layer.heightMapWidth || 256;
     layer.version = layer.version || '1.3.0';
@@ -127,9 +128,6 @@ WMS_Provider.prototype.getColorTexture = function getColorTexture(tile, layer, t
     .then((texture) => {
         result.texture = texture;
         result.texture.extent = extent;
-        if (layer.transparent) {
-            texture.premultiplyAlpha = true;
-        }
         if (tileCoords) {
             result.texture.coords = tileCoords;
         } else {

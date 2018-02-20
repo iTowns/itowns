@@ -290,7 +290,10 @@ function _transformTexturesToTHREE(textures, layer) {
         // So reverse PM textures
         textures.reverse();
 
-        const atlas = _updateAtlas(textures.map(t => t.texture), textures.map(t => t.pitch || new THREE.Vector4(0.0, 0.0, 1.0, 1.0)), layer.transparent);
+        const atlas = _updateAtlas(
+            textures.map(t => t.texture),
+            textures.map(t => t.pitch || new THREE.Vector4(0.0, 0.0, 1.0, 1.0)),
+            layer.transparent);
 
         // Now, all is nice and well, except UV coords for PM textures suppose a specific order
         // (see ColorLayerPM.glsl 'int textureIndex = pmSubTextureIndex;' for instance)
@@ -306,6 +309,7 @@ function _transformTexturesToTHREE(textures, layer) {
 
 LayeredMaterial.prototype.setTexturesLayer = function setTexturesLayer(textures, layerType, layer) {
     const layerTexture = _transformTexturesToTHREE(textures, layer);
+    layerTexture.premultiplyAlpha = layer.transparent;
 
     const index = this.indexOfColorLayer(layer.id);
 
