@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-import View from '../View';
+import View, { VIEW_EVENTS } from '../View';
 import { RENDERING_PAUSED, MAIN_LOOP_EVENTS } from '../MainLoop';
 import { COLOR_LAYERS_ORDER_CHANGED } from '../../Renderer/ColorLayersOrdering';
 import RendererConstant from '../../Renderer/RendererConstant';
@@ -289,13 +289,11 @@ function GlobeView(viewerDiv, coordCarto, options = {}) {
     this.wgs84TileLayer = wgs84TileLayer;
 
     const fn = () => {
-        if (this._changeSources.size == 0) {
-            this.mainLoop.removeEventListener('command-queue-empty', fn);
-            this.dispatchEvent({ type: GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED });
-        }
+        this.mainLoop.removeEventListener(VIEW_EVENTS.LAYERS_INITIALIZED, fn);
+        this.dispatchEvent({ type: GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED });
     };
 
-    this.mainLoop.addEventListener('command-queue-empty', fn);
+    this.addEventListener(VIEW_EVENTS.LAYERS_INITIALIZED, fn);
 
     this.notifyChange(true);
 }
