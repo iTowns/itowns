@@ -12,7 +12,7 @@ import { GeometryLayer } from '../Layer/Layer';
 import Atmosphere from './Globe/Atmosphere';
 import CoordStars from '../Geographic/CoordStars';
 
-import { C, ellipsoidSizes } from '../Geographic/Coordinates';
+import Coordinates, { C, ellipsoidSizes } from '../Geographic/Coordinates';
 import { processTiledGeometryNode } from '../../Process/TiledNodeProcessing';
 import { updateLayeredMaterialNodeImagery, updateLayeredMaterialNodeElevation } from '../../Process/LayeredMaterialNodeProcessing';
 import { globeCulling, preGlobeUpdate, globeSubdivisionControl, globeSchemeTileWMTS, globeSchemeTile1 } from '../../Process/GlobeTileProcessing';
@@ -247,6 +247,13 @@ function GlobeView(viewerDiv, coordCarto, options = {}) {
 
     const renderer = this.mainLoop.gfxEngine.renderer;
 
+    const coordCam = new Coordinates(this.referenceCrs, 0, 0, 0);
+    const coordGeoCam = new C.EPSG_4326();
+    const skyBaseColor = new THREE.Color(0x93d5f8);
+    const colorSky = new THREE.Color();
+    const spaceColor = new THREE.Color(0x030508);
+    const limitAlti = 600000;
+
     this.addFrameRequester(MAIN_LOOP_EVENTS.BEFORE_RENDER, () => {
         if (this._fullSizeDepthBuffer != null) {
             // clean depth buffer
@@ -256,19 +263,24 @@ function GlobeView(viewerDiv, coordCarto, options = {}) {
         v.setFromMatrixPosition(wgs84TileLayer.object3d.matrixWorld);
         var len = v.distanceTo(this.camera.camera3D.position);
         v.setFromMatrixScale(wgs84TileLayer.object3d.matrixWorld);
-        var lim = v.x * size * 1.1;
 
         // TODO: may be move in camera update
         // Compute fog distance, this function makes it possible to have a shorter distance
         // when the camera approaches the ground
         this.fogDistance = mfogDistance * Math.pow((len - size * 0.99) * 0.25 / size, 1.5);
 
-        if (len < lim) {
-            var t = Math.pow(Math.cos((lim - len) / (lim - v.x * size * 0.9981) * Math.PI * 0.5), 1.5);
-            var color = new THREE.Color(0x93d5f8);
-            renderer.setClearColor(color.multiplyScalar(1.0 - t), renderer.getClearAlpha());
-        } else if (len >= lim) {
-            renderer.setClearColor(0x030508, renderer.getClearAlpha());
+        // get altitude camera
+        coordCam.set(this.referenceCrs, this.camera.camera3D.position).as('EPSG:4326', coordGeoCam);
+        const altitude = coordGeoCam.altitude();
+
+        // If the camera altitude is below limitAlti,
+        // we interpolate between the sky color and the space color
+        if (altitude < limitAlti) {
+            const t = (limitAlti - altitude) / limitAlti;
+            colorSky.copy(spaceColor).lerp(skyBaseColor, t);
+            renderer.setClearColor(colorSky, renderer.getClearAlpha());
+        } else {
+            renderer.setClearColor(spaceColor, renderer.getClearAlpha());
         }
     });
 
