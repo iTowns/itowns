@@ -1,12 +1,26 @@
 /* global window */
 import { Scene, EventDispatcher, Vector2, Object3D } from 'three';
 import Camera from '../Renderer/Camera';
-import MainLoop from './MainLoop';
+import MainLoop, { MAIN_LOOP_EVENTS, RENDERING_PAUSED } from './MainLoop';
 import c3DEngine from '../Renderer/c3DEngine';
 import { STRATEGY_MIN_NETWORK_TRAFFIC } from './Layer/LayerUpdateStrategy';
 import { GeometryLayer, Layer, defineLayerProperty } from './Layer/Layer';
 import Scheduler from './Scheduler/Scheduler';
 import Picking from './Picking';
+
+export const VIEW_EVENTS = {
+    /**
+     * Fires when all the layers of the view are considered initialized.
+     * Initialized in this context means: all layers are ready to be
+     * displayed (no pending network access, no visual improvement to be
+     * expected, ...).
+     * If you add new layers, the event will be fired again when all
+     * layers are ready.
+     * @event View#layers-initialized
+     * @property type {string} layers-initialized
+     */
+    LAYERS_INITIALIZED: 'layers-initialized',
+};
 
 /**
  * Constructs an Itowns View instance
@@ -324,8 +338,29 @@ View.prototype.addLayer = function addLayer(layer, parentLayer) {
         this.scene.add(layer.object3d);
     }
 
-    this.notifyChange(true);
-    return layer.whenReady;
+    if (this._allLayersAreReadyCallback) {
+        // re-arm readyCallbacl
+        this.removeFrameRequester(MAIN_LOOP_EVENTS.AFTER_RENDER, this._allLayersAreReadyCallback);
+        this._allLayersAreReadyCallback = null;
+    }
+
+    return layer.whenReady.then((layer) => {
+        this.notifyChange(false);
+
+        if (!this._allLayersAreReadyCallback) {
+            this._allLayersAreReadyCallback = () => {
+                if (this.mainLoop.scheduler.commandsWaitingExecutionCount() == 0 &&
+                    this.mainLoop.renderingState == RENDERING_PAUSED) {
+                    this.dispatchEvent({ type: VIEW_EVENTS.LAYERS_INITIALIZED });
+                    this.removeFrameRequester(MAIN_LOOP_EVENTS.AFTER_RENDER, this._allLayersAreReadyCallback);
+                    this._allLayersAreReadyCallback = null;
+                }
+            };
+            this.addFrameRequester(MAIN_LOOP_EVENTS.AFTER_RENDER, this._allLayersAreReadyCallback);
+        }
+
+        return layer;
+    });
 };
 
 /**
@@ -439,7 +474,12 @@ View.prototype.addFrameRequester = function addFrameRequester(when, frameRequest
  * @param {FrameRequester} frameRequester
  */
 View.prototype.removeFrameRequester = function removeFrameRequester(when, frameRequester) {
-    this._frameRequesters[when].splice(this._frameRequesters[when].indexOf(frameRequester), 1);
+    const index = this._frameRequesters[when].indexOf(frameRequester);
+    if (index >= 0) {
+        this._frameRequesters[when].splice(this._frameRequesters[when].indexOf(frameRequester), 1);
+    } else {
+        console.error('Invalid call to removeFrameRequester: frameRequester isn\'t registered');
+    }
 };
 
 /**
