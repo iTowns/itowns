@@ -366,21 +366,23 @@ GlobeView.prototype.selectNodeAt = function selectNodeAt(mouse) {
     // update the picking ray with the camera and mouse position
     const selectedId = this.screenCoordsToNodeId(mouse);
 
+    let selected;
     for (const n of this.wgs84TileLayer.level0Nodes) {
         n.traverse((node) => {
             // only take of selectable nodes
             if (node.setSelected) {
-                node.setSelected(node.id === selectedId);
+                // node.setSelected(node.id === selectedId);
 
                 if (node.id === selectedId) {
                     // eslint-disable-next-line no-console
                     console.info(node);
+                    selected = node;
                 }
             }
         });
     }
 
-    this.notifyChange(true);
+    return selected;
 };
 
 GlobeView.prototype.screenCoordsToNodeId = function screenCoordsToNodeId(mouse) {

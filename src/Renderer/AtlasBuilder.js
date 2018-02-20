@@ -142,7 +142,7 @@ export default function pack(images, uvs, needsPixelSeparation) {
     atlas.uv = uv;
 
     atlas.onUpdate = () => {
-        availableCanvas.push(atlasCanvas);
+        // availableCanvas.push(atlasCanvas);
         atlas.onUpdate = undefined;
     };
 

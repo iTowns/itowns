@@ -20,6 +20,18 @@ and open the template in the editor.
             }
             #menuDiv {position: absolute; top:0px; margin-left: 0px;}
 
+            #foobar {
+                position: absolute;
+                right: 0;
+                top: 0;
+                display: flex;
+                flex-direction: row;
+                background-color: beige;
+                transform: scale(0.5) translate(50%, -50%);
+            }
+            /*#foobar > canvas > p {
+
+            }*/
 
         </style>
         <meta charset="UTF-8">
@@ -29,6 +41,7 @@ and open the template in the editor.
     </head>
     <body>
         <div id="viewerDiv"></div>
+        <div id="foobar"></div>
         <script src="examples/GUI/GuiTools.js"></script>
         <script src="dist/itowns.js"></script>
         <script src="dist/debug.js"></script>
@@ -75,6 +88,28 @@ and open the template in the editor.
             globeView.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
                 // eslint-disable-next-line no-console
                 console.info('Globe initialized');
+            });
+
+            viewerDiv.addEventListener('mousemove', (evt) => {
+                const n = globeView.selectNodeAt(globeView.eventToViewCoords(evt));
+                const f = document.getElementById('foobar');
+                if (n) {
+                    while (f.firstChild) {
+                        f.removeChild(f.firstChild);
+                    }
+
+                    for (const a of n.material.uniforms.atlasTextures.value) {
+                        if (a.image) {
+                            f.appendChild(a.image);
+                        }
+                    }
+
+                    f.style.display = 'flex';
+                    // f.style.left = `${evt.clientX + 30}px`;
+                    // f.style.top = `${evt.clientY + 30}px`;
+                } else {
+                    f.style.display = 'none';
+                }
             });
 
             const d = new debug.Debug(globeView, menuGlobe.gui);
