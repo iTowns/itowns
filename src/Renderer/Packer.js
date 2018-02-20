@@ -17,10 +17,10 @@ function fit(blocks, w, h) {
         }
     }
     if (!_Math.isPowerOfTwo(maxX)) {
-        maxX = _Math.nextPowerOfTwo(maxX);
+        maxX = _Math.ceilPowerOfTwo(maxX);
     }
     if (!_Math.isPowerOfTwo(maxY)) {
-        maxY = _Math.nextPowerOfTwo(maxY);
+        maxY = _Math.ceilPowerOfTwo(maxY);
     }
     return { maxX, maxY };
 }

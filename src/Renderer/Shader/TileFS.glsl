@@ -71,7 +71,7 @@ vec4 mixLayerColor(vec4 diffuseColor, vec4 layerColor, vec3 layerParams) {
         layerColor.rgb *= layerColor.a;
     }
 
-    return diffuseColor * (1.0 - layerColor.a * paramsA.w) + layerColor * layerParams.w
+    return diffuseColor * (1.0 - layerColor.a * layerParams.y) + layerColor * layerParams.y;
 }
 
 #if defined(MATTE_ID_MODE) || defined(DEPTH_MODE)
@@ -98,6 +98,12 @@ void main() {
         gl_FragColor = CRed;
         return;
     }
+    #endif
+
+    #if defined(USE_LOGDEPTHBUF) && defined(USE_LOGDEPTHBUF_EXT)
+        float depth = gl_FragDepthEXT / gl_FragCoord.w;
+    #else
+        float depth = gl_FragCoord.z / gl_FragCoord.w;
     #endif
 
     // Reconstruct PM uv and PM subtexture id (see TileGeometry)
