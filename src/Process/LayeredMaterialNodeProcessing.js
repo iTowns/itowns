@@ -28,7 +28,7 @@ function initNodeImageryTexturesFromParent(node, parent, layer) {
 
         if (__DEBUG__) {
             if ((textureIndex - offsetTextures) != coords.length) {
-                console.error(`non-coherent result ${textureIndex} ${offsetTextures} vs ${coords.length}. ${coords}`);
+                console.error(`non-coherent result ${textureIndex} ${offsetTextures} vs ${coords.length}.`, coords);
             }
         }
         const index = node.material.indexOfColorLayer(layer.id);
@@ -280,7 +280,7 @@ export function updateLayeredMaterialNodeImagery(context, layer, node) {
                 node.layerUpdateState[layer.id].success();
             } else {
                 if (__DEBUG__) {
-                    console.warn(`Imagery texture update error for ${node}: ${err}`);
+                    console.warn('Imagery texture update error for', node, err);
                 }
                 const definitiveError = node.layerUpdateState[layer.id].errorCount > MAX_RETRY;
                 node.layerUpdateState[layer.id].failure(Date.now(), definitiveError);
@@ -401,7 +401,7 @@ export function updateLayeredMaterialNodeElevation(context, layer, node) {
                 node.layerUpdateState[layer.id].success();
             } else {
                 if (__DEBUG__) {
-                    console.warn(`Elevation texture update error for ${node}: ${err}`);
+                    console.warn('Elevation texture update error for', node, err);
                 }
                 const definitiveError = node.layerUpdateState[layer.id].errorCount > MAX_RETRY;
                 node.layerUpdateState[layer.id].failure(Date.now(), definitiveError);
