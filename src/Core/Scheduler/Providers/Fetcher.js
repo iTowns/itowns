@@ -13,6 +13,21 @@ function checkResponse(response) {
 export default {
 
     /**
+     * Wrapper over fetch to get some text
+     *
+     * @param {string} url
+     * @param {Object} options - fetch options (passed directly to fetch)
+     *
+     * @return {Promise}
+     */
+    text(url, options = {}) {
+        return fetch(url, options).then((response) => {
+            checkResponse(response);
+            return response.text();
+        });
+    },
+
+    /**
      * Little wrapper over fetch to get some json
      *
      * @param {string} url

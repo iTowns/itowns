@@ -156,9 +156,6 @@ PlanarView.prototype.constructor = PlanarView;
 PlanarView.prototype.addLayer = function addLayer(layer) {
     if (layer.type == 'color') {
         layer.update = updateLayeredMaterialNodeImagery;
-        if (layer.protocol === 'rasterizer') {
-            layer.reprojection = this.referenceCrs;
-        }
     } else if (layer.type == 'elevation') {
         layer.update = updateLayeredMaterialNodeElevation;
     }

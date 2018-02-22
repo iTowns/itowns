@@ -304,9 +304,6 @@ GlobeView.prototype.addLayer = function addLayer(layer) {
         const colorLayerCount = this.getLayers(l => l.type === 'color').length;
         layer.sequence = colorLayerCount;
         layer.update = updateLayeredMaterialNodeImagery;
-        if (layer.protocol === 'rasterizer') {
-            layer.reprojection = 'EPSG:4326';
-        }
     } else if (layer.type == 'elevation') {
         if (layer.protocol === 'wmts' && layer.options.tileMatrixSet !== 'WGS84G') {
             throw new Error('Only WGS84G tileMatrixSet is currently supported for WMTS elevation layers');
