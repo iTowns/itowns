@@ -469,8 +469,7 @@ View.prototype.eventToViewCoords = function eventToViewCoords(event, touchIdx = 
     if (event.touches === undefined || !event.touches.length) {
         return _eventCoords.set(event.offsetX, event.offsetY);
     } else {
-        // originalTarget should always be viewerDiv
-        const br = event.originalTarget.getBoundingClientRect();
+        const br = this.mainLoop.gfxEngine.renderer.domElement.getBoundingClientRect();
         return _eventCoords.set(
             event.touches[touchIdx].clientX - br.x,
             event.touches[touchIdx].clientY - br.y);
