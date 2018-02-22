@@ -1,4 +1,4 @@
-/* global itowns, document, renderer, GuiTools, Promise */
+/* global itowns, document, GuiTools */
 // # Simple Globe viewer
 
 // Define initial camera position
@@ -6,13 +6,13 @@
 // setting is "coordonnée geographiques en degres decimaux"
 
 // Position near Gerbier mountain.
-var positionOnGlobe = { longitude: 4.21655, latitude: 44.84415, altitude: 1500 };
+var positionOnGlobe = { longitude: 4.21655, latitude: 44.84415, altitude: 2000 };
 
 // `viewerDiv` will contain iTowns' rendering area (`<canvas>`)
 var viewerDiv = document.getElementById('viewerDiv');
 
 // Instanciate iTowns GlobeView*
-var globeView = new itowns.GlobeView(viewerDiv, positionOnGlobe, { renderer: renderer });
+var globeView = new itowns.GlobeView(viewerDiv, positionOnGlobe);
 
 var menuGlobe = new GuiTools('menuDiv');
 
@@ -41,31 +41,25 @@ promiseElevation.push(itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.j
 exports.view = globeView;
 exports.initialPosition = positionOnGlobe;
 
-function addMeshToScene() {
+exports.loadCollada = function loadCollada(url) {
     var model;
     // loading manager
     var loadingManager = new itowns.THREE.LoadingManager(function _addModel() {
         globeView.scene.add(model);
         globeView.notifyChange(true);
     });
-    // collada
+    // collada loader
     var loader = new itowns.THREE.ColladaLoader(loadingManager);
 
-    // get the position on the globe, from the camera
-    var cameraTargetPosition = globeView.controls.getCameraTargetGeoPosition();
+    // building coordinate
+    var coord = new itowns.Coordinates('EPSG:4326', 4.2165, 44.844, 1417);
 
-    // position of the mesh
-    var meshCoord = cameraTargetPosition;
-    meshCoord.setAltitude(cameraTargetPosition.altitude());
-
-    loader.load('https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/models/collada/building.dae', function col(collada) {
+    loader.load(url, function col(collada) {
         var colladaID = globeView.mainLoop.gfxEngine.getUniqueThreejsLayer();
-
         model = collada.scene;
-        model.position.copy(meshCoord.as(globeView.referenceCrs).xyz());
-        model.lookAt(new itowns.THREE.Vector3(0, 0, 0));
+        model.position.copy(coord.as(globeView.referenceCrs).xyz());
         // align up vector with geodesic normal
-        model.rotateX(Math.PI);
+        model.lookAt(model.position.clone().add(coord.geodesicNormal));
         // user rotate building to align with ortho image
         model.rotateZ(-Math.PI * 0.2);
         model.scale.set(1.2, 1.2, 1.2);
@@ -77,12 +71,9 @@ function addMeshToScene() {
         // update coordinate of the mesh
         model.updateMatrixWorld();
     });
-}
+};
 
 // Listen for globe full initialisation event
 globeView.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function init() {
-    // eslint-disable-next-line no-console
-    console.info('Globe initialized');
-    Promise.all(promiseElevation).then(addMeshToScene, addMeshToScene);
     globeView.controls.setOrbitalPosition({ heading: 180, tilt: 60 });
 });
