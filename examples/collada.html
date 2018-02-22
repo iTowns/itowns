@@ -43,14 +43,18 @@
         <script src="../dist/itowns.js"></script>
         <script src="../dist/debug.js"></script>
         <script type="text/javascript">
-            var renderer;
             var exports = {};
-            var THREE = itowns.THREE;
-            var script = document.createElement('script');
-            script.type = 'text/javascript';
-            script.src = 'https://cdn.rawgit.com/mrdoob/three.js/r' + THREE.REVISION + '/examples/js/loaders/ColladaLoader.js';
-            document.body.appendChild(script);
         </script>
         <script src="collada.js"></script>
+        <script type="text/javascript">
+            var script = document.createElement('script');
+            var THREE = itowns.THREE;
+            script.type = 'text/javascript';
+            script.src = 'https://cdn.rawgit.com/mrdoob/three.js/r' + THREE.REVISION + '/examples/js/loaders/ColladaLoader.js';
+            script.onload = function l() {
+                exports.loadCollada('https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/models/collada/building.dae');
+            };
+            document.body.appendChild(script);
+        </script>
     </body>
 </html>
