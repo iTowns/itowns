@@ -145,6 +145,10 @@ function _preprocessLayer(view, layer, provider) {
         layer.whenReady = providerPreprocessing.then(() => {
             layer.ready = true;
             return layer;
+        }).catch((e) => {
+            // eslint-disable-next-line no-console
+            console.error(`Error when preprocessing layer ${layer.name}`, e);
+            throw e; // make sure the promise is rejected
         });
     }
 
@@ -291,6 +295,7 @@ View.prototype.addLayer = function addLayer(layer, parentLayer) {
         throw new Error(`Invalid id '${layer.id}': id already used`);
     }
 
+    layer.parentLayer = parentLayer;
     if (parentLayer && !layer.extent) {
         layer.extent = parentLayer.extent;
     }
