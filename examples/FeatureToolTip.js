@@ -29,7 +29,7 @@ function ToolTip(viewer, viewerDiv, tooltip, precisionPx) {
         var point;
         // var
         tooltip.innerHTML = '';
-        tooltip.style.visibility = 'hidden';
+        tooltip.style.display = 'none';
         if (geoCoord) {
             visible = false;
             // convert degree precision
@@ -72,7 +72,7 @@ function ToolTip(viewer, viewerDiv, tooltip, precisionPx) {
             if (visible) {
                 tooltip.style.left = viewer.eventToViewCoords(e).x + 'px';
                 tooltip.style.top = viewer.eventToViewCoords(e).y + 'px';
-                tooltip.style.visibility = 'visible';
+                tooltip.style.display = 'block';
             }
         }
     }
