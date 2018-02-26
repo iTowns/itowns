@@ -98,7 +98,7 @@ const _syncGeometryLayerVisibility = function _syncGeometryLayerVisibility(layer
     }
 };
 
-function _preprocessLayer(view, layer, provider) {
+function _preprocessLayer(view, layer, provider, parentLayer) {
     if (!(layer instanceof Layer) && !(layer instanceof GeometryLayer)) {
         const nlayer = new Layer(layer.id);
         // nlayer.id is read-only so delete it from layer before Object.assign
@@ -135,7 +135,7 @@ function _preprocessLayer(view, layer, provider) {
         }
         let providerPreprocessing = Promise.resolve();
         if (provider && provider.preprocessDataLayer) {
-            providerPreprocessing = provider.preprocessDataLayer(layer, view, view.mainLoop.scheduler);
+            providerPreprocessing = provider.preprocessDataLayer(layer, view, view.mainLoop.scheduler, parentLayer);
             if (!(providerPreprocessing && providerPreprocessing.then)) {
                 providerPreprocessing = Promise.resolve();
             }
@@ -295,7 +295,6 @@ View.prototype.addLayer = function addLayer(layer, parentLayer) {
         throw new Error(`Invalid id '${layer.id}': id already used`);
     }
 
-    layer.parentLayer = parentLayer;
     if (parentLayer && !layer.extent) {
         layer.extent = parentLayer.extent;
     }
@@ -304,7 +303,7 @@ View.prototype.addLayer = function addLayer(layer, parentLayer) {
     if (layer.protocol && !provider) {
         throw new Error(`${layer.protocol} is not a recognized protocol name.`);
     }
-    layer = _preprocessLayer(this, layer, provider);
+    layer = _preprocessLayer(this, layer, provider, parentLayer);
     if (parentLayer) {
         parentLayer.attach(layer);
     } else {
