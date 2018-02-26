@@ -62,8 +62,12 @@ function changeLayerVisibility(ortho, osm) {
             orthoIndex = material.indexOfColorLayer(orthoLayer.id);
             opensmIndex = material.indexOfColorLayer(osmLayer.id);
 
-            material.setLayerVisibility(orthoIndex, ortho);
-            material.setLayerVisibility(opensmIndex, osm);
+            if (orthoIndex >= 0) {
+                material.setLayerVisibility(orthoIndex, ortho);
+            }
+            if (opensmIndex >= 0) {
+                material.setLayerVisibility(opensmIndex, osm);
+            }
         }
     });
 }
