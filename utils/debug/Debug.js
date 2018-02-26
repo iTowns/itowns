@@ -1,5 +1,6 @@
 import Coordinates from '../../src/Core/Geographic/Coordinates';
 import ThreeStatsChart from './charts/ThreeStatsChart';
+import { MAIN_LOOP_EVENTS } from '../../src/Core/MainLoop';
 
 /**
  * Create a debug instance attached to an itowns instance
@@ -84,17 +85,16 @@ function Debug(view, datDebugTool, chartDivContainer) {
         };
     })());
 
-    // hook that to scene.update
-    const ml = view.mainLoop;
-    const oldUpdate = Object.getPrototypeOf(ml)._update.bind(ml);
-    ml._update = function debugUpdate(view, ...args) {
-        // regular itowns update
-        const before = Date.now();
-        oldUpdate(view, ...args);
+
+    let before;
+    view.addFrameRequester(MAIN_LOOP_EVENTS.UPDATE_START, () => {
+        before = Date.now();
+    });
+    view.addFrameRequester(MAIN_LOOP_EVENTS.UPDATE_END, () => {
         const duration = Date.now() - before;
         // debug graphs update
         debugChartUpdate(duration);
-    };
+    });
 }
 
 
