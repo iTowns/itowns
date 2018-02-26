@@ -46,7 +46,7 @@ function createTextureFromVector(tile, layer) {
 }
 
 export default {
-    preprocessDataLayer(layer) {
+    preprocessDataLayer(layer, view, scheduler, parentLayer) {
         if (!layer.url) {
             throw new Error('layer.url is required');
         }
@@ -56,7 +56,7 @@ export default {
         // EPSG:4326. We still support reprojection for them through this
         // configuration option
         layer.projection = layer.projection || 'EPSG:4326';
-        const parentCrs = layer.parentLayer.extent.crs();
+        const parentCrs = parentLayer.extent.crs();
 
         const options = { buildExtent: true, crsIn: layer.projection };
 

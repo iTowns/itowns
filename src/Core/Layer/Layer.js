@@ -92,7 +92,6 @@ GeometryLayer.prototype.attach = function attach(layer) {
 GeometryLayer.prototype.detach = function detach(layer) {
     const count = this._attachedLayers.length;
     this._attachedLayers = this._attachedLayers.filter(attached => attached.id != layer.id);
-    layer.parentLayer = null;
     return this._attachedLayers.length < count;
 };
 
