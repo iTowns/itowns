@@ -84,6 +84,17 @@ TileMesh.prototype.changeState = function changeState(state) {
     this.material.needsUpdate = true;
 };
 
+TileMesh.prototype.getElevationTexture = function getElevationTexture() {
+    const mat = this.material;
+    return mat.textures[l_ELEVATION][0];
+};
+
+TileMesh.prototype.getColorLayerTextures = function getColorLayerTextures(layerId) {
+    const mat = this.material;
+    const index = mat.indexOfColorLayer(layerId);
+    return mat.uniforms.atlasTextures.value[index];
+};
+
 TileMesh.prototype.setFog = function setFog(fog) {
     this.material.setFogDistance(fog);
 };
@@ -100,7 +111,7 @@ TileMesh.prototype.setTextureElevation = function setTextureElevation(elevation)
     const offsetScale = elevation.pitch || new THREE.Vector4(0, 0, 1, 1);
     this.setBBoxZ(elevation.min, elevation.max);
 
-    this.material.setTexture(elevation.texture, l_ELEVATION, 0, offsetScale);
+    this.material.setElevationTexture(elevation.texture, offsetScale);
 };
 
 
@@ -121,18 +132,13 @@ TileMesh.prototype.updateGeometricError = function updateGeometricError() {
     this.geometricError = this.boundingSphere.radius / SIZE_TEXTURE_TILE;
 };
 
-TileMesh.prototype.setTexturesLayer = function setTexturesLayer(textures, layerType, layerId) {
+TileMesh.prototype.setTexturesLayer = function setTexturesLayer(textures, layerType, layer) {
     if (this.material === null) {
         return;
     }
     if (textures) {
-        this.material.setTexturesLayer(textures, layerType, layerId);
+        this.material.setTexturesLayer(textures, layerType, layer);
     }
-};
-
-TileMesh.prototype.getLayerTextures = function getLayerTextures(layerType, layerId) {
-    const mat = this.material;
-    return mat.getLayerTextures(layerType, layerId);
 };
 
 TileMesh.prototype.isColorLayerLoaded = function isColorLayerLoaded(layerId) {

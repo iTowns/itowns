@@ -101,18 +101,17 @@ WMTS_Provider.prototype.getXbilTexture = function getXbilTexture(tile, layer, ta
  * TODO : RGBA --> RGB remove alpha canal
  * @param {{zoom:number,row:number,col:number}} coordWMTS
  * @param {Layer} layer
+ * @param {bool} rawImage If true returns an Image instead of a THREE.Texture object
  * @returns {Promise<Texture>}
  */
-WMTS_Provider.prototype.getColorTexture = function getColorTexture(coordWMTS, layer) {
+WMTS_Provider.prototype.getColorTexture = function getColorTexture(coordWMTS, layer, rawImage) {
     const url = this.url(coordWMTS, layer);
-    return OGCWebServiceHelper.getColorTextureByUrl(url, layer.networkOptions).then((texture) => {
+    return (rawImage ? OGCWebServiceHelper.getColorImgByUrl(url, layer.networkOptions) : OGCWebServiceHelper.getColorTextureByUrl(url, layer.networkOptions))
+    .then((texture) => {
         const result = {};
         result.texture = texture;
         result.texture.coords = coordWMTS;
         result.pitch = new THREE.Vector4(0, 0, 1, 1);
-        if (layer.transparent) {
-            texture.premultiplyAlpha = true;
-        }
 
         return result;
     });
@@ -131,7 +130,7 @@ WMTS_Provider.prototype.executeCommand = function executeCommand(command) {
 
     const func = supportedFormats[layer.options.mimetype];
     if (func) {
-        return func(tile, layer, command.targetLevel);
+        return func(tile, layer, command.targetLevel, command.rawImage);
     } else {
         return Promise.reject(new Error(`Unsupported mimetype ${layer.options.mimetype}`));
     }
@@ -171,7 +170,7 @@ WMTS_Provider.prototype.tileInsideLimit = function tileInsideLimit(tile, layer, 
     return true;
 };
 
-WMTS_Provider.prototype.getColorTextures = function getColorTextures(tile, layer) {
+WMTS_Provider.prototype.getColorTextures = function getColorTextures(tile, layer, rawImage) {
     if (tile.material === null) {
         return Promise.resolve();
     }
@@ -179,7 +178,7 @@ WMTS_Provider.prototype.getColorTextures = function getColorTextures(tile, layer
     const bcoord = tile.getCoordsForLayer(layer);
 
     for (const coordWMTS of bcoord) {
-        promises.push(this.getColorTexture(coordWMTS, layer));
+        promises.push(this.getColorTexture(coordWMTS, layer, rawImage));
     }
 
     return Promise.all(promises);

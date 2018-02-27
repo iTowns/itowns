@@ -54,6 +54,7 @@ WMS_Provider.prototype.preprocessDataLayer = function preprocessDataLayer(layer)
         layer.options.zoom = { min: 0, max: 21 };
     }
 
+    layer.fx = layer.fx || 0.0;
     layer.format = layer.options.mimetype || 'image/png';
     layer.width = layer.heightMapWidth || 256;
     layer.version = layer.version || '1.3.0';
@@ -94,7 +95,7 @@ WMS_Provider.prototype.tileInsideLimit = function tileInsideLimit(tile, layer) {
         layer.extent.intersectsExtent(tile.extent);
 };
 
-WMS_Provider.prototype.getColorTexture = function getColorTexture(tile, layer, targetLevel, tileCoords) {
+WMS_Provider.prototype.getColorTexture = function getColorTexture(tile, layer, targetLevel, tileCoords, rawImage) {
     if (!this.tileInsideLimit(tile, layer)) {
         return Promise.reject(`Tile '${tile}' is outside layer bbox ${layer.extent}`);
     }
@@ -123,12 +124,10 @@ WMS_Provider.prototype.getColorTexture = function getColorTexture(tile, layer, t
     const pitch = tileCoords ? new THREE.Vector4(0, 0, 1, 1) : tile.extent.offsetToParent(extent);
     const result = { pitch };
 
-    return OGCWebServiceHelper.getColorTextureByUrl(url, layer.networkOptions).then((texture) => {
+    return (rawImage ? OGCWebServiceHelper.getColorImgByUrl(url, layer.networkOptions) : OGCWebServiceHelper.getColorTextureByUrl(url, layer.networkOptions))
+    .then((texture) => {
         result.texture = texture;
         result.texture.extent = extent;
-        if (layer.transparent) {
-            texture.premultiplyAlpha = true;
-        }
         if (tileCoords) {
             result.texture.coords = tileCoords;
         } else {
@@ -155,7 +154,7 @@ WMS_Provider.prototype.executeCommand = function executeCommand(command) {
     const func = supportedFormats[layer.format];
 
     if (func) {
-        return func(tile, layer, command.targetLevel);
+        return func(tile, layer, command.targetLevel, undefined, command.rawImage);
     } else {
         return Promise.reject(new Error(`Unsupported mimetype ${layer.format}`));
     }
@@ -163,13 +162,13 @@ WMS_Provider.prototype.executeCommand = function executeCommand(command) {
 
 // In the case where the tilematrixset of the tile don't correspond to the projection of the layer
 // when the projection of the layer corresponds to a tilematrixset inside the tile, like the PM
-WMS_Provider.prototype.getColorTextures = function getColorTextures(tile, layer, targetLevel) {
+WMS_Provider.prototype.getColorTextures = function getColorTextures(tile, layer, targetLevel, dummy, rawImage) {
     if (tile.material === null) {
         return Promise.resolve();
     }
     const promises = [];
     for (const coord of tile.getCoordsForLayer(layer)) {
-        promises.push(this.getColorTexture(tile, layer, targetLevel, coord));
+        promises.push(this.getColorTexture(tile, layer, targetLevel, coord, rawImage));
     }
 
     return Promise.all(promises);

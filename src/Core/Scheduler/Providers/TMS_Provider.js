@@ -40,16 +40,15 @@ TMS_Provider.prototype.executeCommand = function executeCommand(command) {
 
     const url = this.url(coordTMSParent || coordTMS, layer);
 
-    return OGCWebServiceHelper.getColorTextureByUrl(url, layer.networkOptions).then((texture) => {
+    return (command.rawImage ?
+        OGCWebServiceHelper.getColorImgByUrl(url, layer.networkOptions) :
+        OGCWebServiceHelper.getColorTextureByUrl(url, layer.networkOptions)).then((texture) => {
         const result = {};
         result.texture = texture;
         result.texture.coords = coordTMSParent || coordTMS;
         result.pitch = coordTMSParent ?
             coordTMS.offsetToParent(coordTMSParent) :
             new THREE.Vector4(0, 0, 1, 1);
-        if (layer.transparent) {
-            texture.premultiplyAlpha = true;
-        }
         return result;
     });
 };

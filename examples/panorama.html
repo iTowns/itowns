@@ -73,7 +73,7 @@
                         networkOptions: { crossOrigin: 'anonymous' },
                         type: 'color',
                         protocol: 'static',
-                        id: _id,
+                        id: 'pano' + index,
                         projection: 'EPSG:4326',
                     }).then(() => {
                         view.notifyChange(false);

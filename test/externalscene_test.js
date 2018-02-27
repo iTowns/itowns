@@ -7,7 +7,6 @@ describe('External Scene', function () {
     it('should use the user constructed scene', function (done) {
         example.globeView.mainLoop.addEventListener('command-queue-empty', () => {
             assert.equal(example.globeView.scene, example.scene);
-
             if (itownsTesting.counters.fetch.length > 0) {
                 done();
                 // 'command-queue-empty' can fire multiple times, because GlobeView
