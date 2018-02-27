@@ -114,7 +114,7 @@ BuilderEllipsoidTile.prototype.computeSharableExtent = function fnComputeSharabl
 
     return {
         sharableExtent,
-        quaternion: quatToAlignLongitude,
+        quaternion: quatToAlignLongitude.clone(),
         position: this.Center(extent),
     };
 };
