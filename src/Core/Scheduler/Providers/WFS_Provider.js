@@ -5,21 +5,14 @@
  */
 
 import Extent from '../../Geographic/Extent';
-import Provider from './Provider';
 import Fetcher from './Fetcher';
 import CacheRessource from './CacheRessource';
 import GeoJSON2Features from '../../../Renderer/ThreeExtended/GeoJSON2Features';
 import Feature2Mesh from '../../../Renderer/ThreeExtended/Feature2Mesh';
 
-function WFS_Provider() {
-    this.cache = CacheRessource();
-    this.pointOrder = new Map();
-}
+const cache = CacheRessource();
 
-WFS_Provider.prototype = Object.create(Provider.prototype);
-WFS_Provider.prototype.constructor = WFS_Provider;
-
-WFS_Provider.prototype.url = function url(bbox, layer) {
+function url(bbox, layer) {
     const box = bbox.as(layer.projection);
     const w = box.west();
     const s = box.south();
@@ -30,9 +23,9 @@ WFS_Provider.prototype.url = function url(bbox, layer) {
     const bboxInUnit = `${w},${s},${e},${n}`;
 
     return layer.customUrl.replace('%bbox', bboxInUnit);
-};
+}
 
-WFS_Provider.prototype.preprocessDataLayer = function preprocessDataLayer(layer) {
+function preprocessDataLayer(layer) {
     if (!layer.typeName) {
         throw new Error('layer.typeName is required.');
     }
@@ -50,21 +43,21 @@ WFS_Provider.prototype.preprocessDataLayer = function preprocessDataLayer(layer)
                       }&SRSNAME=${layer.crs
                       }&outputFormat=${layer.format
                       }&BBOX=%bbox,${layer.crs}`;
-};
+}
 
-WFS_Provider.prototype.tileInsideLimit = function tileInsideLimit(tile, layer) {
+function tileInsideLimit(tile, layer) {
     return (layer.level === undefined || tile.level === layer.level) && layer.extent.intersectsExtent(tile.extent);
-};
+}
 
-WFS_Provider.prototype.executeCommand = function executeCommand(command) {
+function executeCommand(command) {
     const layer = command.layer;
     const tile = command.requester;
     const destinationCrs = command.view.referenceCrs;
 
     // TODO : support xml, gml2
     const supportedFormats = {
-        json: this.getFeatures.bind(this),
-        geojson: this.getFeatures.bind(this),
+        json: getFeatures,
+        geojson: getFeatures,
     };
 
     const func = supportedFormats[layer.format];
@@ -73,7 +66,7 @@ WFS_Provider.prototype.executeCommand = function executeCommand(command) {
     } else {
         return Promise.reject(new Error(`Unsupported mimetype ${layer.format}`));
     }
-};
+}
 
 function assignLayer(object, layer) {
     if (object) {
@@ -86,15 +79,15 @@ function assignLayer(object, layer) {
     }
 }
 
-WFS_Provider.prototype.getFeatures = function getFeatures(crs, tile, layer) {
+function getFeatures(crs, tile, layer) {
     if (!layer.tileInsideLimit(tile, layer) || tile.material === null) {
         return Promise.resolve();
     }
 
-    const url = this.url(tile.extent.as(layer.crs), layer);
+    const urld = url(tile.extent.as(layer.crs), layer);
     const result = {};
 
-    result.feature = this.cache.getRessource(url);
+    result.feature = cache.getRessource(url);
 
     if (result.feature !== undefined) {
         return Promise.resolve(result);
@@ -102,36 +95,11 @@ WFS_Provider.prototype.getFeatures = function getFeatures(crs, tile, layer) {
 
     layer.convert = layer.convert ? layer.convert : Feature2Mesh.convert({});
 
-    return Fetcher.json(url, layer.networkOptions).then(geojson => assignLayer(layer.convert(GeoJSON2Features.parse(crs, geojson, tile.extent, { filter: layer.filter })), layer));
+    return Fetcher.json(urld, layer.networkOptions).then(geojson => assignLayer(layer.convert(GeoJSON2Features.parse(crs, geojson, tile.extent, { filter: layer.filter })), layer));
+}
+
+export default {
+    preprocessDataLayer,
+    executeCommand,
+    tileInsideLimit,
 };
-
-WFS_Provider.prototype.getPointOrder = function getPointOrder(crs) {
-    if (this.pointOrder[crs]) {
-        return this.pointOrder[crs];
-    }
-
-    var pointOrder = { lat: 0, long: 1 };
-
-    if (crs.type == 'EPSG' && crs.properties.code == '4326') {
-        pointOrder.long = 0;
-        pointOrder.lat = 1;
-        return pointOrder;
-    } else if (crs.type == 'name') {
-        if (crs.properties.name) {
-            var regExpEpsg = new RegExp(/^urn:[x-]?ogc:def:crs:EPSG:(\d*.?\d*)?:\d{4}/);
-            if (regExpEpsg.test(crs.properties.name)) {
-                return pointOrder;
-            }
-            else {
-                var regExpOgc = new RegExp(/^urn:[x-]?ogc:def:crs:OGC:(\d*.?\d*)?:(CRS)?(WSG)?\d{0,2}/);
-                if (regExpOgc.test(crs.properties.name)) {
-                    pointOrder.long = 0;
-                    pointOrder.lat = 1;
-                    return pointOrder;
-                }
-            }
-        }
-    }
-};
-
-export default WFS_Provider;

@@ -4,22 +4,14 @@
  * and open the template in the editor.
  */
 import * as THREE from 'three';
-import Provider from './Provider';
 import TileGeometry from '../../TileGeometry';
 import TileMesh from '../../TileMesh';
 import CancelledCommandException from '../CancelledCommandException';
 import { requestNewTile } from '../../../Process/TiledNodeProcessing';
 
-function TileProvider() {
-    Provider.call(this, null);
-    this.cacheGeometry = new Map();
-}
+const cacheGeometry = new Map();
 
-TileProvider.prototype = Object.create(Provider.prototype);
-
-TileProvider.prototype.constructor = TileProvider;
-
-TileProvider.prototype.preprocessDataLayer = function preprocessLayer(layer, view, scheduler) {
+function preprocessDataLayer(layer, view, scheduler) {
     if (!layer.schemeTile) {
         throw new Error(`Cannot init tiled layer without schemeTile for layer ${layer.id}`);
     }
@@ -39,9 +31,9 @@ TileProvider.prototype.preprocessDataLayer = function preprocessLayer(layer, vie
             level0.updateMatrixWorld();
         }
     });
-};
+}
 
-TileProvider.prototype.executeCommand = function executeCommand(command) {
+function executeCommand(command) {
     const extent = command.extent;
     if (command.requester &&
         !command.requester.material) {
@@ -58,7 +50,7 @@ TileProvider.prototype.executeCommand = function executeCommand(command) {
     const segment = layer.segments || 16;
     const key = `${builder.type}_${layer.disableSkirt ? 0 : 1}_${segment}_${level}_${south}`;
 
-    let geometry = this.cacheGeometry.get(key);
+    let geometry = cacheGeometry.get(key);
     // build geometry if doesn't exist
     if (!geometry) {
         const paramsGeometry = {
@@ -69,14 +61,14 @@ TileProvider.prototype.executeCommand = function executeCommand(command) {
         };
 
         geometry = new TileGeometry(paramsGeometry, builder);
-        this.cacheGeometry.set(key, geometry);
+        cacheGeometry.set(key, geometry);
 
         geometry._count = 0;
         geometry.dispose = () => {
             geometry._count--;
             if (geometry._count == 0) {
                 THREE.BufferGeometry.prototype.dispose.call(geometry);
-                this.cacheGeometry.delete(key);
+                cacheGeometry.delete(key);
             }
         };
     }
@@ -117,6 +109,9 @@ TileProvider.prototype.executeCommand = function executeCommand(command) {
     }
 
     return Promise.resolve(tile);
-};
+}
 
-export default TileProvider;
+export default {
+    preprocessDataLayer,
+    executeCommand,
+};

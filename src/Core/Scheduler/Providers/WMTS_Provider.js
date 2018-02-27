@@ -8,18 +8,17 @@ import * as THREE from 'three';
 import OGCWebServiceHelper from './OGCWebServiceHelper';
 import Extent from '../../Geographic/Extent';
 
-function WMTS_Provider() {
-}
+const coordTile = new Extent('WMTS:WGS84', 0, 0, 0);
 
-WMTS_Provider.prototype.customUrl = function customUrl(layer, url, tilematrix, row, col) {
+function customUrl(layer, url, tilematrix, row, col) {
     let urld = url.replace('%TILEMATRIX', tilematrix.toString());
     urld = urld.replace('%ROW', row.toString());
     urld = urld.replace('%COL', col.toString());
 
     return urld;
-};
+}
 
-WMTS_Provider.prototype.preprocessDataLayer = function preprocessDataLayer(layer) {
+function preprocessDataLayer(layer) {
     layer.fx = layer.fx || 0.0;
 
     layer.options = layer.options || {};
@@ -56,7 +55,7 @@ WMTS_Provider.prototype.preprocessDataLayer = function preprocessDataLayer(layer
         layer.customUrl = newBaseUrl;
     }
     layer.options.zoom = layer.options.zoom || { min: 2, max: 20 };
-};
+}
 
 /**
  * Return url wmts orthophoto
@@ -64,9 +63,9 @@ WMTS_Provider.prototype.preprocessDataLayer = function preprocessDataLayer(layer
  * @param {Layer} layer
  * @returns {string}
  */
-WMTS_Provider.prototype.url = function url(coWMTS, layer) {
-    return this.customUrl(layer, layer.customUrl, coWMTS.zoom, coWMTS.row, coWMTS.col);
-};
+function url(coWMTS, layer) {
+    return customUrl(layer, layer.customUrl, coWMTS.zoom, coWMTS.row, coWMTS.col);
+}
 
 /**
  * return texture float alpha THREE.js of MNT
@@ -75,7 +74,7 @@ WMTS_Provider.prototype.url = function url(coWMTS, layer) {
  * @param {number} targetZoom
  * @returns {Promise<portableXBIL>}
  */
-WMTS_Provider.prototype.getXbilTexture = function getXbilTexture(tile, layer, targetZoom) {
+function getXbilTexture(tile, layer, targetZoom) {
     const pitch = new THREE.Vector4(0.0, 0.0, 1.0, 1.0);
     let coordWMTS = tile.getCoordsForLayer(layer)[0];
 
@@ -83,9 +82,9 @@ WMTS_Provider.prototype.getXbilTexture = function getXbilTexture(tile, layer, ta
         coordWMTS = OGCWebServiceHelper.WMTS_WGS84Parent(coordWMTS, targetZoom, pitch);
     }
 
-    const url = this.url(coordWMTS, layer);
+    const urld = url(coordWMTS, layer);
 
-    return OGCWebServiceHelper.getXBilTextureByUrl(url, layer.networkOptions).then((texture) => {
+    return OGCWebServiceHelper.getXBilTextureByUrl(urld, layer.networkOptions).then((texture) => {
         texture.coords = coordWMTS;
         return {
             texture,
@@ -94,7 +93,7 @@ WMTS_Provider.prototype.getXbilTexture = function getXbilTexture(tile, layer, ta
             max: !texture.max ? 0 : texture.max,
         };
     });
-};
+}
 
 /**
  * Return texture RGBA THREE.js of orthophoto
@@ -103,9 +102,9 @@ WMTS_Provider.prototype.getXbilTexture = function getXbilTexture(tile, layer, ta
  * @param {Layer} layer
  * @returns {Promise<Texture>}
  */
-WMTS_Provider.prototype.getColorTexture = function getColorTexture(coordWMTS, layer) {
-    const url = this.url(coordWMTS, layer);
-    return OGCWebServiceHelper.getColorTextureByUrl(url, layer.networkOptions).then((texture) => {
+function getColorTexture(coordWMTS, layer) {
+    const urld = url(coordWMTS, layer);
+    return OGCWebServiceHelper.getColorTextureByUrl(urld, layer.networkOptions).then((texture) => {
         const result = {};
         result.texture = texture;
         result.texture.coords = coordWMTS;
@@ -116,17 +115,17 @@ WMTS_Provider.prototype.getColorTexture = function getColorTexture(coordWMTS, la
 
         return result;
     });
-};
+}
 
-WMTS_Provider.prototype.executeCommand = function executeCommand(command) {
+function executeCommand(command) {
     const layer = command.layer;
     const tile = command.requester;
 
     const supportedFormats = {
-        'image/png': this.getColorTextures.bind(this),
-        'image/jpg': this.getColorTextures.bind(this),
-        'image/jpeg': this.getColorTextures.bind(this),
-        'image/x-bil;bits=32': this.getXbilTexture.bind(this),
+        'image/png': getColorTextures,
+        'image/jpg': getColorTextures,
+        'image/jpeg': getColorTextures,
+        'image/x-bil;bits=32': getXbilTexture,
     };
 
     const func = supportedFormats[layer.options.mimetype];
@@ -135,17 +134,15 @@ WMTS_Provider.prototype.executeCommand = function executeCommand(command) {
     } else {
         return Promise.reject(new Error(`Unsupported mimetype ${layer.options.mimetype}`));
     }
-};
+}
 
-WMTS_Provider.prototype.tileTextureCount = function tileTextureCount(tile, layer) {
+function tileTextureCount(tile, layer) {
     const tileMatrixSet = layer.options.tileMatrixSet;
     OGCWebServiceHelper.computeTileMatrixSetCoordinates(tile, tileMatrixSet);
     return tile.getCoordsForLayer(layer).length;
-};
+}
 
-
-const coordTile = new Extent('WMTS:WGS84', 0, 0, 0);
-WMTS_Provider.prototype.tileInsideLimit = function tileInsideLimit(tile, layer, targetLevel) {
+function tileInsideLimit(tile, layer, targetLevel) {
     // This layer provides data starting at level = layer.options.zoom.min
     // (the zoom.max property is used when building the url to make
     //  sure we don't use invalid levels)
@@ -169,9 +166,9 @@ WMTS_Provider.prototype.tileInsideLimit = function tileInsideLimit(tile, layer, 
         }
     }
     return true;
-};
+}
 
-WMTS_Provider.prototype.getColorTextures = function getColorTextures(tile, layer) {
+function getColorTextures(tile, layer) {
     if (tile.material === null) {
         return Promise.resolve();
     }
@@ -179,10 +176,15 @@ WMTS_Provider.prototype.getColorTextures = function getColorTextures(tile, layer
     const bcoord = tile.getCoordsForLayer(layer);
 
     for (const coordWMTS of bcoord) {
-        promises.push(this.getColorTexture(coordWMTS, layer));
+        promises.push(getColorTexture(coordWMTS, layer));
     }
 
     return Promise.all(promises);
-};
+}
 
-export default WMTS_Provider;
+export default {
+    preprocessDataLayer,
+    executeCommand,
+    tileTextureCount,
+    tileInsideLimit,
+};

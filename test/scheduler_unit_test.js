@@ -9,6 +9,8 @@ global.window = {
 };
 
 scheduler.addProtocolProvider('test', {
+    preprocessDataLayer: () => {
+    },
     executeCommand: (cmd) => {
         setTimeout(() => {
             cmd.done = true;
