@@ -370,7 +370,9 @@ LayeredMaterial.prototype.pushLayer = function pushLayer(param) {
     this.uniforms.paramLayers.value[newIndex] = new THREE.Vector4();
 
     this.setTextureOffsetByLayerIndex(newIndex, offset);
-    this.setLayerUV(newIndex, param.tileMT.includes('PM') ? param.texturesCount : 0);
+    // If there's only one texture: assume it covers the whole tile,
+    // otherwise declare the number of textures
+    this.setLayerUV(newIndex, (param.texturesCount == 1) ? 0 : param.texturesCount);
     this.setLayerFx(newIndex, param.fx);
     this.setLayerOpacity(newIndex, param.opacity);
     this.setLayerVisibility(newIndex, param.visible);

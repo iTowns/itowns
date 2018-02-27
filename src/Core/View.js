@@ -258,10 +258,10 @@ function _preprocessLayer(view, layer, provider) {
  * // Example to add an OPENSM Layer
  * view.addLayer({
  *   type: 'color',
- *   protocol:   'wmtsc',
+ *   protocol:   'xyz',
  *   id:         'OPENSM',
  *   fx: 2.5,
- *   customUrl:  'http://b.tile.openstreetmap.fr/osmfr/%TILEMATRIX/%COL/%ROW.png',
+ *   url:  'http://b.tile.openstreetmap.fr/osmfr/${z}/${x}/${y}.png',
  *   options: {
  *       attribution : {
  *           name: 'OpenStreetMap',
