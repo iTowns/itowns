@@ -75,22 +75,10 @@
 
             // add it to the view so it gets updated
             itowns.View.prototype.addLayer.call(globeView, globe2);
-            itowns.View.prototype.addLayer.call(globeView, {
-                update: itowns.updateLayeredMaterialNodeImagery,
-                type: 'color',
-                protocol: "wmtsc",
-                id: "DARK",
-                customUrl: "http://a.basemaps.cartocdn.com/light_all/%TILEMATRIX/%COL/%ROW.png",
-                networkOptions: { crossOrigin: 'anonymous' },
-                options: {
-                    attribution: {
-                        "name":"CARTO",
-                        "url": "https://carto.com/"
-                    },
-                    tileMatrixSet: "PM",
-                    mimetype: "image/png"
-                },
-            }, globe2);
+            itowns.Fetcher.json('./layers/JSONLayers/OPENSM.json').then(function _(osm) {
+                osm.update = itowns.updateLayeredMaterialNodeImagery;
+                itowns.View.prototype.addLayer.call(globeView, osm, globe2);
+            });
 
             // Globe animation
             var t = 0;

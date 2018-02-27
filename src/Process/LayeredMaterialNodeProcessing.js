@@ -169,8 +169,8 @@ export function updateLayeredMaterialNodeImagery(context, layer, node) {
         }
 
         if (material.indexOfColorLayer(layer.id) === -1) {
-            const texturesCount = layer.tileTextureCount ?
-                layer.tileTextureCount(node, layer) : 1;
+            const texturesCount =
+                node.getCoordsForLayer(layer).length;
 
             const paramMaterial = {
                 tileMT: layer.options.tileMatrixSet || node.getCoordsForLayer(layer)[0].crs(),
