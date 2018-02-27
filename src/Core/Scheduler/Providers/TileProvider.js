@@ -41,7 +41,6 @@ TileProvider.prototype.preprocessDataLayer = function preprocessLayer(layer, vie
     });
 };
 
-const worldQuaternion = new THREE.Quaternion();
 TileProvider.prototype.executeCommand = function executeCommand(command) {
     const extent = command.extent;
     if (command.requester &&
@@ -95,11 +94,12 @@ TileProvider.prototype.executeCommand = function executeCommand(command) {
     tile.layer = layer.id;
     tile.layers.set(command.threejsLayer);
 
-    if (parent) {
-        position.applyMatrix4(layer.object3d.matrixWorld);
-        parent.worldToLocal(position);
-        worldQuaternion.setFromRotationMatrix(parent.matrixWorld).inverse().multiply(layer.object3d.quaternion);
-        quaternion.premultiply(worldQuaternion);
+    if (parent && parent instanceof TileMesh) {
+        // get parent extent transformation
+        const pTrans = builder.computeSharableExtent(parent.extent);
+        // place relative to his parent
+        position.sub(pTrans.position).applyQuaternion(pTrans.quaternion.inverse());
+        quaternion.premultiply(pTrans.quaternion);
     }
 
     tile.position.copy(position);
