@@ -77,17 +77,9 @@ var moveElementsArraySafe = function moveElementsArraySafe(array,index, howMany,
 const arrayColorLength = 15;
 const nbSamplersElevation = 1;
 
-function getTextureSamplerCount() {
-    const maxTexturesUnits = Capabilities.getMaxTextureUnitsCount();
-    const nbSamplersColor = Math.min(maxTexturesUnits - nbSamplersElevation);
-    const sizeColor_01 = nbSamplersColor > arrayColorLength ? arrayColorLength : nbSamplersColor;
-    const sizeColor_02 = nbSamplersColor > arrayColorLength ? arrayColorLength : 0;
-    return { sizeColor_01, sizeColor_02 };
-}
-
 export function getMaxTextureSamplerCount() {
-    const { sizeColor_01, sizeColor_02 } = getTextureSamplerCount();
-    return sizeColor_01 + sizeColor_02;
+    const maxTexturesUnits = Capabilities.getMaxTextureUnitsCount();
+    return Math.min(maxTexturesUnits - nbSamplersElevation, arrayColorLength);
 }
 
 const LayeredMaterial = function LayeredMaterial(options) {
@@ -95,22 +87,12 @@ const LayeredMaterial = function LayeredMaterial(options) {
 
     this.defines = {};
 
-    // There are two separate color samplers with same size
-    //
-    // Why separate samplers?
-    //      getColorAtIdUv can't have more than 16 statements because of compilation memory error
-    //      so we can not have a single sampler array of 31 textures
-    // Why same size?
-    //      If there was 2 arrays of 15 and 16 samplers
-    //      so it would require two functions getColorAtIdUv with signatures of different parameters
-    const { sizeColor_01, sizeColor_02 } = getTextureSamplerCount();
-    const maxColorLayerCount = sizeColor_01 + sizeColor_02;
+    const maxColorLayerCount = getMaxTextureSamplerCount();
 
     this.vertexShader = TileVS;
 
     this.fragmentShaderHeader = `${PrecisionQualifier}
-        const int TEX_UNITS = ${arrayColorLength.toString()};
-        const int MAXCOUNTLAYER = ${maxColorLayerCount.toString()};
+        const int TEX_UNITS = ${maxColorLayerCount.toString()};
     `;
 
     this.fragmentShaderHeader += pitUV;
@@ -146,7 +128,6 @@ const LayeredMaterial = function LayeredMaterial(options) {
     const offsetScale_elevation = [vector4];
     const textureElevation = [emptyTexture];
 
-
     const paramLayers = Array(maxColorLayerCount);
     this.layerTexturesCount = Array(maxColorLayerCount);
     fillArray(paramLayers, vector4);
@@ -159,24 +140,13 @@ const LayeredMaterial = function LayeredMaterial(options) {
 
     // First array sampler
     // Color textures's layer 1
-    const texColor_01 = Array(sizeColor_01);
+    const texColor_01 = Array(maxColorLayerCount);
     // array color texture offset 1
-    const offsetScale_color_01 = Array(sizeColor_01);
+    const offsetScale_color_01 = Array(maxColorLayerCount);
     fillArray(texColor_01, emptyTexture);
     fillArray(offsetScale_color_01, vector4);
     this.uniforms.texColor_01 = new THREE.Uniform(texColor_01);
     this.uniforms.offsetScale_color_01 = new THREE.Uniform(offsetScale_color_01);
-
-    // Second array sampler
-    if (sizeColor_02) {
-        this.defines.SECOND_SAMPLER = 1;
-        const texColor_02 = Array(sizeColor_02);
-        const offsetScale_color_02 = Array(sizeColor_02);
-        fillArray(texColor_02, emptyTexture);
-        fillArray(offsetScale_color_02, vector4);
-        this.uniforms.texColor_02 = new THREE.Uniform(texColor_02);
-        this.uniforms.offsetScale_color_02 = new THREE.Uniform(offsetScale_color_02);
-    }
 
     // Visibility layer
     const visibility = Array(maxColorLayerCount);
