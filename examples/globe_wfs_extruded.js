@@ -138,7 +138,8 @@ globeView.addLayer({
     convert: itowns.Feature2Mesh.convert({
         color: colorBuildings,
         altitude: altitudeBuildings,
-        extrude: extrudeBuildings }),
+        extrude: extrudeBuildings,
+        buildBatchId: true }),
     onMeshCreated: function scaleZ(mesh) {
         mesh.scale.z = 0.01;
         meshes.push(mesh);

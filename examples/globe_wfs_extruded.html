@@ -24,6 +24,28 @@
                 top: 0;
                 margin-left: 0;
             }
+            #batchInformationDiv {
+                position: absolute;
+                z-index: 0;
+                top: 0;
+                right: 0;
+                color: white;
+                color: #eee;
+                font: 11px 'Lucida Grande',sans-serif;
+                line-height: normal;
+                text-shadow: 0 -1px 0 #111;
+                padding: 0 1rem;
+                background: #1a1a1a;
+                border: 1px solid #2c2c2c;
+                opacity: 0.8;
+            }
+            #batchInformationDiv > p {
+                margin: 0.5rem 0;
+            }
+
+            #batchInformationDiv > ul {
+                padding: 0 1rem;
+            }
             @media (max-width: 600px) {
                 #menuDiv {
                     display: none;
@@ -44,7 +66,14 @@
             var renderer;
             var exports = {};
         </script>
-        <script src="globe_wfs_extruded.js"></script>
+        <script src="globe_wfs_extruded.js">
+            console.log('label');
+        </script>
+        <div id="batchInformationDiv">
+            <p><b>Information Batiment</b></p>
+            <ul id="info">
+            </ul>
+        </div>
         <script type="text/javascript">
             /* global itowns, document, GuiTools, globeView, promises */
             var menuGlobe = new GuiTools('menuDiv');
@@ -60,10 +89,37 @@
                     globeView.controls.setTilt(45, true);
                 });
             });
-            const d = new debug.Debug(globeView, menuGlobe.gui);
+            var d = new debug.Debug(globeView, menuGlobe.gui);
             debug.createTileDebugUI(menuGlobe.gui, globeView, globeView.wgs84TileLayer, d);
 
-            for (const layer of globeView.getLayers()) {
+            function picking(event) {
+                var htmlInfo = document.getElementById('info');
+                htmlInfo.innerHTML = ' ';
+
+                var intersects = globeView.pickObjectsAt(event, 'WFS Buildings');
+
+                for (var i = 0; i < intersects.length; i++) {
+                    var interAttributes = intersects[i].object.geometry.attributes;
+                    if (interAttributes && intersects[i].object instanceof itowns.THREE.Mesh) {
+                        if (interAttributes.batchid) {
+                            var face = intersects[i].face.a;
+                            var batchid = interAttributes.batchid.array[face];
+                            var batchTable = intersects[i].object.parent.features[batchid].properties;
+                            Object.keys(batchTable).map(function(objectKey) {
+                                var value = batchTable[objectKey];
+                                var key = objectKey.toString();
+                                if (key[0] != '_' && key != 'geometry_name') {
+                                    var info = value.toString();
+                                    htmlInfo.innerHTML +='<li><b>' + key + ': </b>'+ info +'</li>';
+                                }
+                                return true;
+                            });
+                            return;
+                        }
+                    }
+                }
+            }
+            for (let layer of globeView.getLayers()) {
                 if (layer.id === 'WFS Bus lines') {
                     layer.whenReady.then( function _(layer) {
                         var gui = debug.GeometryDebug.createGeometryDebugUI(menuGlobe.gui, globeView, layer);
@@ -74,6 +130,7 @@
                     layer.whenReady.then( function _(layer) {
                         var gui = debug.GeometryDebug.createGeometryDebugUI(menuGlobe.gui, globeView, layer);
                         debug.GeometryDebug.addWireFrameCheckbox(gui, globeView, layer);
+                        window.addEventListener('mousemove', picking, false);
                     });
                 }
                 if (layer.id === 'WFS Route points') {
