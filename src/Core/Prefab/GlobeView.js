@@ -287,8 +287,10 @@ function GlobeView(viewerDiv, coordCarto, options = {}) {
     this.wgs84TileLayer = wgs84TileLayer;
 
     const fn = () => {
-        this.mainLoop.removeEventListener('command-queue-empty', fn);
-        this.dispatchEvent({ type: GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED });
+        if (this._changeSources.size == 0) {
+            this.mainLoop.removeEventListener('command-queue-empty', fn);
+            this.dispatchEvent({ type: GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED });
+        }
     };
 
     this.mainLoop.addEventListener('command-queue-empty', fn);

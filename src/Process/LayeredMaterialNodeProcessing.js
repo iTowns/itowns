@@ -188,6 +188,18 @@ export function updateLayeredMaterialNodeImagery(context, layer, node) {
 
             initNodeImageryTexturesFromParent(node, node.parent, layer);
         }
+
+        // Proposed new process, two separate processes:
+        //      * FIRST PASS: initNodeXXXFromParent and get out of the function
+        //      * SECOND PASS: Fetch best texture
+
+        // The two-step allows you to filter out unnecessary requests
+        // Indeed in the second pass, their state (not visible or not displayed) can block them to fetch
+        const minLevel = layer.options.zoom ? layer.options.zoom.min : 0;
+        if (node.material.getColorLayerLevelById(layer.id) >= minLevel) {
+            context.view.notifyChange(false, node);
+            return;
+        }
     }
 
     // Node is hidden, no need to update it
@@ -303,6 +315,11 @@ export function updateLayeredMaterialNodeElevation(context, layer, node) {
         node.layerUpdateState[layer.id] = new LayerUpdateState();
         initNodeElevationTextureFromParent(node, node.parent, layer);
         currentElevation = material.getElevationLayerLevel();
+        const minLevel = layer.options.zoom ? layer.options.zoom.min : 0;
+        if (currentElevation >= minLevel) {
+            context.view.notifyChange(false, node);
+            return;
+        }
     }
 
     // Try to update

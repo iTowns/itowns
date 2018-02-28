@@ -15,6 +15,9 @@ describe('updateLayeredMaterialNodeImagery', function () {
 
     // Mock scheduler
     const context = {
+        view: {
+            notifyChange: () => true,
+        },
         scheduler: {
             commands: [],
             execute: (cmd) => {
@@ -75,8 +78,13 @@ describe('updateLayeredMaterialNodeImagery', function () {
         tile.material.indexOfColorLayer = () => 0;
         tile.material.isColorLayerDownscaled = () => true;
         tile.material.getColorLayerLevelById = () => 1;
-        updateLayeredMaterialNodeImagery(context, layer, tile);
 
+        // FIRST PASS: init Node From Parent and get out of the function
+        // without any network fetch
+        updateLayeredMaterialNodeImagery(context, layer, tile);
+        assert.equal(context.scheduler.commands.length, 0);
+        // SECOND PASS: Fetch best texture
+        updateLayeredMaterialNodeImagery(context, layer, tile);
         assert.equal(context.scheduler.commands.length, 1);
     });
 
