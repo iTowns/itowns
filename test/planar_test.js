@@ -5,6 +5,9 @@ var example = require('../examples/planar.js');
 describe('Planar example', function () {
     it('should run...', (done) => {
         example.view.mainLoop.addEventListener('command-queue-empty', () => {
+            if (example.view._changeSources.size > 0) {
+                return;
+            }
             itownsTesting.counters.displayed_at_level = [];
 
             for (var obj of example.view.tileLayer.level0Nodes) {

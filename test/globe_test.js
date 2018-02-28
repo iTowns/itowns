@@ -34,6 +34,9 @@ var initialState2 = 0;
 describe('Globe example', function () {
     it('should subdivide like expected', function (done) {
         const listener = () => {
+            if (example.view._changeSources.size > 0) {
+                return;
+            }
             itownsTesting.counters.visible_at_level = [];
             itownsTesting.counters.displayed_at_level = [];
 
@@ -62,6 +65,9 @@ describe('Globe example', function () {
     });
     it('should subdivide like expected and prevent to subdivide for poor elevation level', function (done) {
         example.view.mainLoop.addEventListener('command-queue-empty', () => {
+            if (example.view._changeSources.size > 0) {
+                return;
+            }
             if (initialState2 == 0) {
                 initialState2++;
                 example.view.camera.camera3D.position.copy(
