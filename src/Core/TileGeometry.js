@@ -68,8 +68,7 @@ TileGeometry.prototype.computeBuffers = function computeBuffers(params, builder)
     outBuffers.uv.pm = new THREE.BufferAttribute(new Float32Array(nVertex), 1);
 
     // Read previously cached values (index and uv.wgs84 only depend on the # of triangles)
-    // FIXME: cacheKey is always NaN
-    const cacheKey = params.layerId + triangles;
+    const cacheKey = `${builder.type}_${params.disableSkirt ? 0 : 1}_${params.segment}`;
     const cachedBuffers = cache.getRessource(cacheKey);
     const mustBuildIndexAndWGS84 = !cachedBuffers;
     if (cachedBuffers) {
