@@ -202,14 +202,11 @@ function coordinateToLines(coordinates, properties, options) {
     return new THREE.LineSegments(geometry);
 }
 
-function coordinateToPolygon(coordinates, properties, options = {}) {
+function coordinateToPolygon(coordinates, properties, options) {
     const indices = [];
     const vertices = new Float32Array(3 * coordinates.coordinates.length);
     const colors = new Uint8Array(3 * coordinates.coordinates.length);
-    let batchId;
-    if (options.buildBatchId) {
-        batchId = new Uint16Array(2 * coordinates.coordinates.length);
-    }
+    const batchId = new Uint16Array(coordinates.coordinates.length);
     const geometry = new THREE.BufferGeometry();
     let offset = 0;
     let minAltitude = Infinity;
@@ -229,11 +226,9 @@ function coordinateToPolygon(coordinates, properties, options = {}) {
         for (const indice of triangles) {
             indices.push(offset + indice);
         }
-        if (options.buildBatchId) {
-            const offsetId = Math.floor(offset / 3);
-            for (let i = offsetId; i < contour.length + offsetId; ++i) {
-                batchId[i] = property._idx;
-            }
+        const offsetId = Math.floor(offset / 3);
+        for (let i = offsetId; i < contour.length + offsetId; ++i) {
+            batchId[i] = property._idx;
         }
         // assign color to each point
         const color = getColor(options, property);
@@ -244,9 +239,7 @@ function coordinateToPolygon(coordinates, properties, options = {}) {
 
     geometry.addAttribute('position', new THREE.BufferAttribute(vertices, 3));
     geometry.addAttribute('color', new THREE.BufferAttribute(colors, 3, true));
-    if (options.buildBatchId) {
-        geometry.addAttribute('batchid', new THREE.BufferAttribute(batchId, 1));
-    }
+    geometry.addAttribute('batchid', new THREE.BufferAttribute(batchId, 1));
     geometry.setIndex(new THREE.BufferAttribute(new Uint16Array(indices), 1));
     return new THREE.Mesh(geometry);
 }
@@ -255,10 +248,7 @@ function coordinateToPolygonExtruded(coordinates, properties, options = {}) {
     const indices = [];
     const vertices = new Float32Array(2 * 3 * coordinates.coordinates.length);
     const colors = new Uint8Array(3 * 2 * coordinates.coordinates.length);
-    let batchId;
-    if (options.buildBatchId) {
-        batchId = new Uint16Array(2 * coordinates.coordinates.length);
-    }
+    const batchId = new Uint16Array(2 * coordinates.coordinates.length);
     const geometry = new THREE.BufferGeometry();
     let offset = 0;
     let offset2 = 0;
@@ -283,11 +273,9 @@ function coordinateToPolygonExtruded(coordinates, properties, options = {}) {
         for (const indice of triangles) {
             indices.push(offset + indice);
         }
-        if (options.buildBatchId) {
-            const offsetId = Math.floor(offset2 / 3);
-            for (let i = offsetId; i < contour.length + offsetId; ++i) {
-                batchId[i] = property._idx;
-            }
+        const offsetId = Math.floor(offset2 / 3);
+        for (let i = offsetId; i < contour.length + offsetId; ++i) {
+            batchId[i] = property._idx;
         }
         offset2 += nbVertices * 2;
         addFaces(indices, contour.length, offset);
@@ -300,9 +288,7 @@ function coordinateToPolygonExtruded(coordinates, properties, options = {}) {
     }
     geometry.addAttribute('position', new THREE.BufferAttribute(vertices, 3));
     geometry.addAttribute('color', new THREE.BufferAttribute(colors, 3, true));
-    if (options.buildBatchId) {
-        geometry.addAttribute('batchid', new THREE.BufferAttribute(batchId, 1));
-    }
+    geometry.addAttribute('batchid', new THREE.BufferAttribute(batchId, 1));
     geometry.setIndex(new THREE.BufferAttribute(new Uint16Array(indices), 1));
     const result = new THREE.Mesh(geometry);
     result.minAltitude = minAltitude;
