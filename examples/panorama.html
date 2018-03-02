@@ -57,7 +57,7 @@
                     new itowns.Coordinates('EPSG:4326',
                         panoramas[0]['coordinates'][0],
                         panoramas[0]['coordinates'][1]).as('EPSG:4978'),
-                    panoramas[0]['ratio']);
+                    itowns.Panorama.SPHERICAL);
 
                 var index = 0;
                 var layers = [];

@@ -6,6 +6,7 @@ export { default as GlobeView, GLOBE_VIEW_EVENTS, createGlobeLayer } from './Cor
 export { default as GpxUtils } from './Core/Scheduler/Providers/GpxUtils';
 export { default as PlanarView, createPlanarLayer } from './Core/Prefab/PlanarView';
 export { default as PanoramaView, createPanoramaLayer } from './Core/Prefab/PanoramaView';
+export { default as Panorama } from './Core/Prefab/Panorama/Constants';
 export { default as Fetcher } from './Core/Scheduler/Providers/Fetcher';
 export { MAIN_LOOP_EVENTS } from './Core/MainLoop';
 export { default as View } from './Core/View';

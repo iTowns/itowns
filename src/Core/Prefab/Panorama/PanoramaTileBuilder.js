@@ -1,28 +1,33 @@
 import * as THREE from 'three';
 import OBB from '../../../Renderer/ThreeExtended/OBB';
 import Coordinates, { UNIT } from '../../Geographic/Coordinates';
+import ProjectionType from './Constants';
 import Extent from '../../Geographic/Extent';
 
-function PanoramaTileBuilder(ratio) {
+function PanoramaTileBuilder(type, ratio) {
     this.tmp = {
         coords: new Coordinates('EPSG:4326', 0, 0),
         position: new THREE.Vector3(),
         normal: new THREE.Vector3(0, 0, 1),
     };
 
-    if (!ratio) {
-        throw new Error('ratio must be defined');
+    if (type === undefined) {
+        throw new Error('Projection type must be defined');
     }
-    if (ratio === 2) {
-        this.equirectangular = true;
+    if (type === ProjectionType.SPHERICAL) {
         this.type = 's';
         this.radius = 100;
-    } else {
-        this.equirectangular = false; // cylindrical proj
+    } else if (type === ProjectionType.CYLINDRICAL) {
+        if (!ratio) {
+            throw new Error('Image ratio must be defined when using cylindrical projection');
+        }
         this.type = 'c';
         this.height = 200;
         this.radius = (ratio * this.height) / (2 * Math.PI);
+    } else {
+        throw new Error(`Unsupported panorama projection type ${type}`);
     }
+    this.projectionType = type;
 }
 
 PanoramaTileBuilder.prototype.constructor = PanoramaTileBuilder;
@@ -33,7 +38,7 @@ const axisX = new THREE.Vector3(0, 1, 0);
 PanoramaTileBuilder.prototype.Prepare = function Prepare(params) {
     const angle = (params.extent.north(UNIT.RADIAN) + params.extent.south(UNIT.RADIAN)) * 0.5;
 
-    if (this.equirectangular) {
+    if (this.projectionType === ProjectionType.SPHERICAL) {
         params.quatNormalToZ = new THREE.Quaternion().setFromAxisAngle(axisX, (Math.PI * 0.5 - angle));
         params.projected = {
             theta: 0,
@@ -61,7 +66,7 @@ PanoramaTileBuilder.prototype.Center = function Center(extent) {
 
 // get position 3D cartesian
 PanoramaTileBuilder.prototype.VertexPosition = function VertexPosition(params) {
-    if (this.equirectangular) {
+    if (this.projectionType === ProjectionType.SPHERICAL) {
         this.tmp.position.setFromSpherical(params.projected);
     } else {
         this.tmp.position.setFromCylindrical(params.projected);
@@ -88,7 +93,7 @@ PanoramaTileBuilder.prototype.uProjecte = function uProjecte(u, params) {
 
 // coord v tile to projected
 PanoramaTileBuilder.prototype.vProjecte = function vProjecte(v, params) {
-    if (this.equirectangular) {
+    if (this.projectionType === ProjectionType.SPHERICAL) {
         params.projected.phi = Math.PI * 0.5 -
             THREE.Math.lerp(
                 params.extent.north(UNIT.RADIAN),
@@ -122,7 +127,10 @@ PanoramaTileBuilder.prototype.computeSharableExtent = function fnComputeSharable
     // compute rotation to transform tile to position it
     // this transformation take into account the transformation of the parents
     const rotLon = extent.west(UNIT.RADIAN) - sharableExtent.west(UNIT.RADIAN);
-    const rotLat = Math.PI * 0.5 - (!this.equirectangular ? 0 : (extent.north(UNIT.RADIAN) + extent.south(UNIT.RADIAN)) * 0.5);
+    const rotLat = Math.PI * 0.5 -
+        (this.projectionType === ProjectionType.CYLINDRICAL ?
+            0 :
+            (extent.north(UNIT.RADIAN) + extent.south(UNIT.RADIAN)) * 0.5);
     quatToAlignLongitude.setFromAxisAngle(axisZ, -rotLon);
     quatToAlignLatitude.setFromAxisAngle(axisY, -rotLat);
     quatToAlignLongitude.multiply(quatToAlignLatitude);
