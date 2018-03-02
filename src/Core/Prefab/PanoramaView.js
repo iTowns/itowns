@@ -174,16 +174,18 @@ function PanoramaView(viewerDiv, coordinates, ratio, options = {}) {
     View.call(this, coordinates.crs, viewerDiv, options);
 
     // Configure camera
-    coordinates.xyz(this.camera.camera3D.position);
-    this.camera.camera3D.fov = 45;
+    const camera = this.camera.camera3D;
+    coordinates.xyz(camera.position);
 
-    this.camera.camera3D.near = 0.1;
-    this.camera.camera3D.far = 1000;
-    this.camera.camera3D.up = coordinates.geodesicNormal;
-    this.camera.camera3D.quaternion.setFromUnitVectors(
-        new THREE.Vector3(0, 1, 0), coordinates.geodesicNormal);
-    this.camera.camera3D.updateProjectionMatrix();
-    this.camera.camera3D.updateMatrixWorld();
+    camera.fov = 45;
+    camera.near = 0.1;
+    camera.far = 1000;
+    camera.up = coordinates.geodesicNormal;
+    // look at to the north
+    camera.lookAt(new THREE.Vector3(0, 1, 0).add(camera.position));
+
+    camera.updateProjectionMatrix();
+    camera.updateMatrixWorld();
 
     const tileLayer = createPanoramaLayer('panorama', coordinates, ratio, options);
 
