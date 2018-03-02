@@ -9,8 +9,9 @@ import { updateLayeredMaterialNodeImagery } from '../../Process/LayeredMaterialN
 import { panoramaCulling, panoramaSubdivisionControl } from '../../Process/PanoramaTileProcessing';
 import PanoramaTileBuilder from './Panorama/PanoramaTileBuilder';
 import SubdivisionControl from '../../Process/SubdivisionControl';
+import ProjectionType from './Panorama/Constants';
 
-export function createPanoramaLayer(id, coordinates, ratio, options = {}) {
+export function createPanoramaLayer(id, coordinates, type, options = {}) {
     const tileLayer = new GeometryLayer(id, options.object3d || new THREE.Group());
 
     coordinates.xyz(tileLayer.object3d.position);
@@ -26,7 +27,7 @@ export function createPanoramaLayer(id, coordinates, ratio, options = {}) {
         south: -90,
     });
 
-    if (ratio == 2) {
+    if (type === ProjectionType.SPHERICAL) {
         // equirectangular -> spherical geometry
         tileLayer.schemeTile = [
             new Extent('EPSG:4326', {
@@ -40,7 +41,7 @@ export function createPanoramaLayer(id, coordinates, ratio, options = {}) {
                 north: 90,
                 south: -90,
             })];
-    } else {
+    } else if (type === ProjectionType.CYLINDRICAL) {
         // cylindrical geometry
         tileLayer.schemeTile = [
             new Extent('EPSG:4326', {
@@ -64,6 +65,9 @@ export function createPanoramaLayer(id, coordinates, ratio, options = {}) {
                 north: 90,
                 south: -90,
             })];
+    } else {
+        throw new Error(`Unsupported panorama projection type ${type}.
+            Only ProjectionType.SPHERICAL and ProjectionType.CYLINDRICAL are supported`);
     }
     tileLayer.disableSkirt = true;
 
@@ -146,13 +150,13 @@ export function createPanoramaLayer(id, coordinates, ratio, options = {}) {
     function subdivision(context, layer, node) {
         if (SubdivisionControl.hasEnoughTexturesToSubdivide(context, layer, node)) {
             return panoramaSubdivisionControl(
-                options.maxSubdivisionLevel || 10, new THREE.Vector2(512, 512 / ratio))(context, layer, node);
+                options.maxSubdivisionLevel || 10, new THREE.Vector2(512, 256))(context, layer, node);
         }
         return false;
     }
 
     tileLayer.update = processTiledGeometryNode(panoramaCulling, subdivision);
-    tileLayer.builder = new PanoramaTileBuilder(ratio);
+    tileLayer.builder = new PanoramaTileBuilder(type, options.ratio);
     tileLayer.onTileCreated = nodeInitFn;
     tileLayer.type = 'geometry';
     tileLayer.protocol = 'tile';
@@ -167,7 +171,7 @@ export function createPanoramaLayer(id, coordinates, ratio, options = {}) {
     return tileLayer;
 }
 
-function PanoramaView(viewerDiv, coordinates, ratio, options = {}) {
+function PanoramaView(viewerDiv, coordinates, type, options = {}) {
     THREE.Object3D.DefaultUp.set(0, 0, 1);
 
     // Setup View
@@ -184,10 +188,12 @@ function PanoramaView(viewerDiv, coordinates, ratio, options = {}) {
     // look at to the north
     camera.lookAt(new THREE.Vector3(0, 1, 0).add(camera.position));
 
-    camera.updateProjectionMatrix();
+    if (camera.updateProjectionMatrix) {
+        camera.updateProjectionMatrix();
+    }
     camera.updateMatrixWorld();
 
-    const tileLayer = createPanoramaLayer('panorama', coordinates, ratio, options);
+    const tileLayer = createPanoramaLayer('panorama', coordinates, type, options);
 
     View.prototype.addLayer.call(this, tileLayer);
 
