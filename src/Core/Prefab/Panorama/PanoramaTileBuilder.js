@@ -80,7 +80,7 @@ PanoramaTileBuilder.prototype.VertexNormal = function VertexNormal() {
 // coord u tile to projected
 PanoramaTileBuilder.prototype.uProjecte = function uProjecte(u, params) {
     // both (theta, phi) and (y, z) are swapped in setFromSpherical
-    params.projected.theta = Math.PI - THREE.Math.lerp(
+    params.projected.theta = Math.PI * 0.5 - THREE.Math.lerp(
         params.extent.east(UNIT.RADIAN),
         params.extent.west(UNIT.RADIAN),
         1 - u);
