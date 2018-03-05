@@ -2,7 +2,7 @@
 // eslint-disable-next-line no-unused-vars
 function ToolTip(viewer, viewerDiv, tooltip, precisionPx) {
     var mouseDown = 0;
-    var layers = viewer.getLayers(function _(l) { return l.protocol === 'rasterizer'; });
+    var layers = viewer.getLayers(function _(l) { return l.protocol === itowns.Provider.RASTER; });
 
     document.body.onmousedown = function onmousedown() {
         ++mouseDown;

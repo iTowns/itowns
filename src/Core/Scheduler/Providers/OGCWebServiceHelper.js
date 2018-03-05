@@ -4,6 +4,7 @@ import CacheRessource from './CacheRessource';
 import IoDriver_XBIL from './IoDriver_XBIL';
 import Projection from '../../Geographic/Projection';
 import Extent from '../../Geographic/Extent';
+import ProviderType from './Constants';
 
 
 export const SIZE_TEXTURE_TILE = 256;
@@ -141,7 +142,7 @@ export default {
             y = (c.y() - extent.south()) / layerDimension.y;
         }
 
-        return [new Extent('TMS', zoom, Math.floor(y * tileCount), Math.floor(x * tileCount))];
+        return [new Extent(ProviderType.TMS, zoom, Math.floor(y * tileCount), Math.floor(x * tileCount))];
     },
     WMTS_WGS84Parent(cWMTS, levelParent, pitch, target = new Extent(cWMTS.crs(), 0, 0, 0)) {
         const diffLevel = cWMTS.zoom - levelParent;

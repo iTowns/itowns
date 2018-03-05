@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import Coordinates, { crsToUnit, crsIsGeographic, assertCrsIsValid, convertValueToUnit, reasonnableEpsilonForUnit } from '../Geographic/Coordinates';
 import Projection from '../Geographic/Projection';
+import ProviderType from '../Scheduler/Providers/Constants';
 
 const projection = new Projection();
 /**
@@ -17,7 +18,7 @@ const CARDINAL = {
 
 function _isTiledCRS(crs) {
     return crs.indexOf('WMTS:') == 0 ||
-        crs == 'TMS';
+        crs == ProviderType.TMS;
 }
 
 function Extent(crs, ...values) {

@@ -27,7 +27,7 @@ view.addLayer({
     url: 'https://download.data.grandlyon.com/wms/grandlyon',
     networkOptions: { crossOrigin: 'anonymous' },
     type: 'color',
-    protocol: 'wms',
+    protocol: itowns.Provider.WMS,
     version: '1.3.0',
     id: 'wms_imagery',
     name: 'Ortho2009_vue_ensemble_16cm_CC46',
@@ -42,7 +42,7 @@ view.addLayer({
 view.addLayer({
     url: 'https://download.data.grandlyon.com/wms/grandlyon',
     type: 'elevation',
-    protocol: 'wms',
+    protocol: itowns.Provider.WMS,
     networkOptions: { crossOrigin: 'anonymous' },
     version: '1.3.0',
     id: 'wms_elevation',
@@ -57,7 +57,7 @@ view.addLayer({
 view.addLayer({
     type: 'color',
     url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/lyon.kml',
-    protocol: 'rasterizer',
+    protocol: itowns.Provider.RASTER,
     id: 'Kml',
     extent: extent,
     transparent: true,
@@ -67,7 +67,7 @@ view.addLayer({
 view.addLayer({
     type: 'color',
     url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/lyon.gpx',
-    protocol: 'rasterizer',
+    protocol: itowns.Provider.RASTER,
     options: { zoom: { min: 0, max: 6 } },
     id: 'gpx',
     transparent: true,
@@ -79,7 +79,7 @@ view.addLayer({
 view.addLayer({
     type: 'color',
     url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/lyon.geojson',
-    protocol: 'rasterizer',
+    protocol: itowns.Provider.RASTER,
     projection: 'EPSG:3946',
     id: 'geo',
     extent: extent,

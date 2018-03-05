@@ -6,6 +6,7 @@
 
 import * as THREE from 'three';
 import OGCWebServiceHelper from './OGCWebServiceHelper';
+import ProviderType from './Constants';
 import Extent from '../../Geographic/Extent';
 
 const coordTile = new Extent('WMTS:WGS84', 0, 0, 0);
@@ -23,7 +24,7 @@ function preprocessDataLayer(layer) {
 
     layer.options = layer.options || {};
 
-    if (layer.protocol === 'wmts') {
+    if (layer.protocol === ProviderType.WMTS) {
         const options = layer.options;
         options.version = options.version || '1.0.0';
         options.tileMatrixSet = options.tileMatrixSet || 'WGS84';

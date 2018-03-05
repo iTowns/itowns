@@ -27,7 +27,7 @@ view.addLayer({
     url: 'https://download.data.grandlyon.com/wms/grandlyon',
     networkOptions: { crossOrigin: 'anonymous' },
     type: 'color',
-    protocol: 'wms',
+    protocol: itowns.Provider.WMS,
     version: '1.3.0',
     id: 'wms_imagery',
     name: 'Ortho2009_vue_ensemble_16cm_CC46',
@@ -45,7 +45,7 @@ view.addLayer({
 view.addLayer({
     url: 'https://download.data.grandlyon.com/wms/grandlyon',
     type: 'elevation',
-    protocol: 'wms',
+    protocol: itowns.Provider.WMS,
     networkOptions: { crossOrigin: 'anonymous' },
     id: 'wms_elevation',
     name: 'MNT2012_Altitude_10m_CC46',
