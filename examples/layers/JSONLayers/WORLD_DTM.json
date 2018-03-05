@@ -11,9 +11,9 @@
             "groups": [3, 7, 9]
         }
     },
+    "format": "image/x-bil;bits=32",
     "options": {
         "name": "ELEVATION.ELEVATIONGRIDCOVERAGE.SRTM3",
-        "mimetype": "image/x-bil;bits=32",
         "tileMatrixSet": "WGS84G",
         "tileMatrixSetLimits": {
             "3": {

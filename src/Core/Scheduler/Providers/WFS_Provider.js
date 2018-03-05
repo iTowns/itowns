@@ -12,6 +12,9 @@ import Feature2Mesh from '../../../Renderer/ThreeExtended/Feature2Mesh';
 
 const cache = CacheRessource();
 
+// TODO : support xml, gml2
+const supportedFormats = ['application/json', 'application/geojson'];
+
 function url(bbox, layer) {
     const box = bbox.as(layer.projection);
     const w = box.west();
@@ -29,7 +32,12 @@ function preprocessDataLayer(layer) {
     if (!layer.typeName) {
         throw new Error('layer.typeName is required.');
     }
-    layer.format = layer.options.mimetype || 'json';
+
+    layer.format = layer.format || 'application/json';
+    if (!supportedFormats.includes(layer.format)) {
+        throw new Error(`Layer ${layer.name}: unsupported layer.format '${layer.format}', must be one of '${supportedFormats.join('\', \'')}'`);
+    }
+
     layer.crs = layer.projection || 'EPSG:4326';
     layer.version = layer.version || '2.0.2';
     layer.opacity = layer.opacity || 1;
@@ -53,19 +61,7 @@ function executeCommand(command) {
     const layer = command.layer;
     const tile = command.requester;
     const destinationCrs = command.view.referenceCrs;
-
-    // TODO : support xml, gml2
-    const supportedFormats = {
-        json: getFeatures,
-        geojson: getFeatures,
-    };
-
-    const func = supportedFormats[layer.format];
-    if (func) {
-        return func(destinationCrs, tile, layer, command).then(result => command.resolve(result));
-    } else {
-        return Promise.reject(new Error(`Unsupported mimetype ${layer.format}`));
-    }
+    return getFeatures(destinationCrs, tile, layer, command).then(result => command.resolve(result));
 }
 
 function assignLayer(object, layer) {

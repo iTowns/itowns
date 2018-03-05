@@ -4,12 +4,12 @@
     "networkOptions": { "crossOrigin" : "anonymous" },
     "id": "OPENSM",
     "url": "http://osm.oslandia.io/styles/klokantech-basic/${z}/${x}/${y}.png",
+    "format": "image/png",
     "options": {
         "attribution": {
             "name":"OpenStreetMap",
             "url": "http://www.openstreetmap.org/"
         },
-        "tileMatrixSet": "PM",
-        "mimetype": "image/png"
+        "tileMatrixSet": "PM"
     }
 }

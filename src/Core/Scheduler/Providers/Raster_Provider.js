@@ -51,7 +51,6 @@ export default {
             throw new Error('layer.url is required');
         }
 
-        layer.options = layer.options || {};
         // KML and GPX specifications all says that they should be in
         // EPSG:4326. We still support reprojection for them through this
         // configuration option

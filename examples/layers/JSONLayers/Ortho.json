@@ -10,13 +10,13 @@
         "type": "0",
         "options": {}
     },
+    "format": "image/jpeg",
     "options": {
         "attribution" : {
             "name":"IGN",
             "url":"http://www.ign.fr/"
         },
         "name": "ORTHOIMAGERY.ORTHOPHOTOS",
-        "mimetype": "image/jpeg",
         "tileMatrixSet": "PM",
         "tileMatrixSetLimits": {
             "2": {

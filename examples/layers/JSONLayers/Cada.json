@@ -14,6 +14,7 @@
   "networkOptions": {
     "crossOrigin": "omit"
   },
+  "format": "image/png",
   "options": {
     "tileMatrixSet": "PM",
     "tileMatrixSetLimits": {
@@ -150,7 +151,6 @@
         "maxTileCol": "2097152"
       }
     },
-    "mimetype": "image/png",
     "name": "CADASTRALPARCELS.PARCELS",
     "style": "bdparcellaire",
     "zoom": {

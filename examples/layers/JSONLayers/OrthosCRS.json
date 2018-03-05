@@ -11,13 +11,13 @@
         "type": 0,
         "options": {}
     },
+    "format": "image/jpeg",
     "options": {
         "name": "ORTHOIMAGERY.ORTHOPHOTOS.CRS84",
         "attribution" : {
             "name":"IGN",
             "url":"http://www.ign.fr/"
         },
-        "mimetype": "image/jpeg",
         "tileMatrixSet": "WGS84G",
         "tileMatrixSetLimits": {
 

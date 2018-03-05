@@ -37,9 +37,7 @@ view.addLayer({
     projection: 'EPSG:3946',
     transparent: false,
     extent: extent,
-    options: {
-        mimetype: 'image/jpeg',
-    },
+    format: 'image/jpeg',
 });
 
 view.camera.camera3D.position.set(1839739, 5171618, 910);
@@ -78,9 +76,7 @@ view.addLayer({
         south: 5138876.75,
         north: 5205890.19,
     },
-    options: {
-        mimetype: 'geojson',
-    },
+    format: 'application/geojson',
 }, view.tileLayer);
 
 function colorBuildings(properties) {
@@ -138,9 +134,7 @@ view.addLayer({
         north: 46.03,
     },
     ipr: 'IGN',
-    options: {
-        mimetype: 'json',
-    },
+    format: 'application/json',
 }, view.tileLayer);
 
 function configPointMaterial(result) {
@@ -177,8 +171,6 @@ view.addLayer({
     level: 2,
     projection: 'EPSG:2154',
     ipr: 'IGN',
-    options: {
-        mimetype: 'json',
-    },
+    format: 'application/json',
 }, view.tileLayer);
 exports.view = view;

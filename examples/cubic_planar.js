@@ -104,9 +104,7 @@ for (index = 0; index < wmsLayers.length; index++) {
         id: 'wms_imagery' + wms + index,
         name: wms,
         projection: 'EPSG:3946',
-        options: {
-            mimetype: 'image/jpeg',
-        },
+        format: 'image/jpeg',
     }, tileLayer);
 
     view.addLayer({
@@ -120,9 +118,7 @@ for (index = 0; index < wmsLayers.length; index++) {
         name: 'MNT2012_Altitude_10m_CC46',
         projection: 'EPSG:3946',
         heightMapWidth: 256,
-        options: {
-            mimetype: 'image/jpeg',
-        },
+        format: 'image/jpeg',
     }, tileLayer);
 
     // Since the elevation layer use color textures, specify min/max z
