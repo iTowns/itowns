@@ -39,16 +39,23 @@ function buildUrl(layer, image) {
         + image;
 }
 
-function getTexture(tile, layer) {
-    if (!layer.tileInsideLimit(tile, layer)) {
-        return Promise.reject(`Tile '${tile}' is outside layer bbox ${layer.extent}`);
-    }
+function getTexture(tile, layer, targetLevel) {
     if (!tile.material) {
         return Promise.resolve();
     }
 
     if (!layer.images) {
         return Promise.reject();
+    }
+
+    const original = tile;
+    if (targetLevel) {
+        while (tile && tile.level > targetLevel) {
+            tile = tile.parent;
+        }
+        if (!tile) {
+            return Promise.reject(`Invalid targetLevel requested ${targetLevel}`);
+        }
     }
 
     const selection = selectBestImageForExtent(layer, tile.extent);
@@ -75,8 +82,8 @@ function getTexture(tile, layer) {
             result.texture.coords.zoom = tile.level;
             result.texture.file = selection.image;
         }
-        // TODO: modify TileFS to handle tiles with ratio != image's ratio
-        result.pitch = tile.extent.offsetToParent(selection.extent);
+
+        result.pitch = original.extent.offsetToParent(selection.extent);
         if (layer.transparent) {
             texture.premultiplyAlpha = true;
         }
@@ -172,6 +179,6 @@ export default {
     executeCommand(command) {
         const tile = command.requester;
         const layer = command.layer;
-        return getTexture(tile, layer);
+        return getTexture(tile, layer, command.targetLevel);
     },
 };
