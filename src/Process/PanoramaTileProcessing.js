@@ -30,6 +30,10 @@ function _isTileBiggerThanTexture(camera, textureSize, quality, node) {
 
 export function panoramaSubdivisionControl(maxLevel, textureSize) {
     return function _panoramaSubdivisionControl(context, layer, node) {
+        if (node.level < 1) {
+            return true;
+        }
+
         if (maxLevel <= node.level) {
             return false;
         }

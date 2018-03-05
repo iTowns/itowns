@@ -10,6 +10,7 @@ import { panoramaCulling, panoramaSubdivisionControl } from '../../Process/Panor
 import PanoramaTileBuilder from './Panorama/PanoramaTileBuilder';
 import SubdivisionControl from '../../Process/SubdivisionControl';
 import ProjectionType from './Panorama/Constants';
+import Picking from '../Picking';
 
 export function createPanoramaLayer(id, coordinates, type, options = {}) {
     const tileLayer = new GeometryLayer(id, options.object3d || new THREE.Group());
@@ -167,6 +168,9 @@ export function createPanoramaLayer(id, coordinates, type, options = {}) {
         enable: false,
         position: { x: -0.5, y: 0.0, z: 1.0 },
     };
+    // provide custom pick function
+    tileLayer.pickObjectsAt = (_view, mouse) => Picking.pickTilesAt(_view, mouse, tileLayer);
+
 
     return tileLayer;
 }

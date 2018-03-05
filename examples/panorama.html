@@ -75,6 +75,9 @@
                         protocol: 'static',
                         id: _id,
                         projection: 'EPSG:4326',
+                        updateStrategy: {
+                            type: itowns.STRATEGY_DICHOTOMY,
+                        }
                     }).then(() => {
                         view.notifyChange(false);
                     });
