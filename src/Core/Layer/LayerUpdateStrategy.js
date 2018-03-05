@@ -37,9 +37,9 @@ function _progressive(nodeLevel, currentLevel, options) {
 // Load textures at mid-point between current level and node's level.
 // This produces smoother transitions and a single fetch updates multiple
 // tiles thanks to caching.
-function _dichotomy(nodeLevel, currentLevel, options) {
+function _dichotomy(nodeLevel, currentLevel, options = {}) {
     if (currentLevel == EMPTY_TEXTURE_ZOOM) {
-        return options.zoom.min;
+        return options.zoom ? options.zoom.min : 0;
     }
     return Math.min(
         nodeLevel,
