@@ -143,7 +143,7 @@ TileMesh.prototype.setBBoxZ = function setBBoxZ(min, max) {
 };
 
 TileMesh.prototype.updateGeometricError = function updateGeometricError() {
-    this.geometricError = this.boundingSphere.radius;
+    this.geometricError = 2 * this.boundingSphere.radius;
 };
 
 TileMesh.prototype.setTexturesLayer = function setTexturesLayer(textures, layerType, layerId) {
