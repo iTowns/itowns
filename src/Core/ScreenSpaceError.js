@@ -4,12 +4,14 @@ const v = new THREE.Vector3();
 const m = new THREE.Matrix4();
 const m2 = new THREE.Matrix4();
 const m3 = new THREE.Matrix4();
+const basis = [
+    new THREE.Vector3(1, 0, 0),
+    new THREE.Vector3(0, 1, 0),
+];
 
-function compute(vector, matrix, camera, distance, _3d) {
-    const basis = [
-        new THREE.Vector3(vector.x, 0, 0),
-        new THREE.Vector3(0, vector.y, 0),
-    ];
+function computeVectorSizeAtDistance(vector, matrix, camera, distance, _3d) {
+    basis[0].set(vector.x, 0, 0);
+    basis[1].set(0, vector.y, 0);
 
     if (_3d) {
         basis.push(new THREE.Vector3(0, 0, vector.z));
@@ -61,8 +63,14 @@ function computeSizeFromGeometricError(box3, geometricError) {
 }
 
 export default {
+    /*
+     * Compute SSE based on the 2D bounding-box (ignore z size)
+     */
     MODE_2D: 1,
 
+    /*
+     * Compute SSE based on the 3D bounding-box
+     */
     MODE_3D: 2,
 
     computeFromBox3(camera, box3, matrix, geometricError, mode) {
@@ -77,12 +85,24 @@ export default {
 
         const size = computeSizeFromGeometricError(box3, geometricError);
 
-        const sse = compute(size, matrix, camera, distance, mode == this.MODE_3D);
+        const sse = computeVectorSizeAtDistance(size, matrix, camera, distance, mode == this.MODE_3D);
 
         return {
             sse,
             distance,
             size,
         };
+    },
+
+    computeFromSphere(camera, sphere, matrix, geometricError) {
+        const s = sphere.clone().applyMatrix4(matrix);
+        const distance = Math.max(0.0, s.distanceToPoint(camera.camera3D.position));
+        basis[0].set(geometricError, 0, -distance);
+        basis[0].applyMatrix4(camera.camera3D.projectionMatrix);
+        basis[0].x = basis[0].x * camera.width * 0.5;
+        basis[0].y = basis[0].y * camera.height * 0.5;
+        basis[0].z = 0;
+
+        return basis[0].length();
     },
 };

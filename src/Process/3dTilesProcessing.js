@@ -221,8 +221,6 @@ export function pre3dTilesUpdate(context, layer) {
     return [layer.root];
 }
 
-const cameraLocalPosition = new THREE.Vector3();
-const worldPosition = new THREE.Vector3();
 function computeNodeSSE(camera, node) {
     node.distance = 0;
     if (node.boundingVolume.region) {
@@ -242,11 +240,11 @@ function computeNodeSSE(camera, node) {
             ScreenSpaceError.MODE_3D);
     }
     if (node.boundingVolume.sphere) {
-        // TODO USE http://iquilezles.org/www/articles/sphereproj/sphereproj.htm
-        worldPosition.setFromMatrixPosition(node.matrixWorld);
-        cameraLocalPosition.copy(camera.camera3D.position).sub(worldPosition);
-        const distance = Math.max(0.0, node.boundingVolume.sphere.distanceToPoint(cameraLocalPosition));
-        return camera.preSSE * (node.geometricError / distance);
+        return ScreenSpaceError.computeFromSphere(
+            camera,
+            node.boundingVolume.sphere,
+            node.matrixWorld,
+            node.geometricError);
     } else {
         return Infinity;
     }
