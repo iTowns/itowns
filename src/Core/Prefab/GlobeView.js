@@ -6,6 +6,8 @@ import { COLOR_LAYERS_ORDER_CHANGED } from '../../Renderer/ColorLayersOrdering';
 import RendererConstant from '../../Renderer/RendererConstant';
 import GlobeControls from '../../Renderer/ThreeExtended/GlobeControls';
 
+import ProviderType from '../Scheduler/Providers/Constants';
+
 import { GeometryLayer } from '../Layer/Layer';
 
 import Atmosphere from './Globe/Atmosphere';
@@ -169,7 +171,7 @@ export function createGlobeLayer(id, options) {
     wgs84TileLayer.builder = new BuilderEllipsoidTile();
     wgs84TileLayer.onTileCreated = nodeInitFn;
     wgs84TileLayer.type = 'geometry';
-    wgs84TileLayer.protocol = 'tile';
+    wgs84TileLayer.protocol = ProviderType.TILE;
     wgs84TileLayer.visible = true;
     wgs84TileLayer.lighting = {
         enable: false,
@@ -309,7 +311,7 @@ GlobeView.prototype.addLayer = function addLayer(layer) {
         layer.sequence = colorLayerCount;
         layer.update = updateLayeredMaterialNodeImagery;
     } else if (layer.type == 'elevation') {
-        if (layer.protocol === 'wmts' && layer.options.tileMatrixSet !== 'WGS84G') {
+        if (layer.protocol === ProviderType.WMTS && layer.options.tileMatrixSet !== 'WGS84G') {
             throw new Error('Only WGS84G tileMatrixSet is currently supported for WMTS elevation layers');
         }
         layer.update = updateLayeredMaterialNodeElevation;

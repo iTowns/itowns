@@ -27,7 +27,7 @@ function showPointcloud(serverUrl, fileName, lopocsTable) {
     // Configure Point Cloud layer
     pointcloud = new itowns.GeometryLayer('pointcloud', new itowns.THREE.Group());
     pointcloud.file = fileName || 'infos/sources';
-    pointcloud.protocol = 'potreeconverter';
+    pointcloud.protocol = itowns.Provider.POTREE;
     pointcloud.url = serverUrl;
     pointcloud.table = lopocsTable;
 

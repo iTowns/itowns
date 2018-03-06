@@ -46,7 +46,7 @@ view.tileLayer.disableSkirt = true;
 // Add an TMS imagery layer
 view.addLayer({
     type: 'color',
-    protocol: 'xyz',
+    protocol: itowns.Provider.XYZ,
     id: 'OPENSM',
     // eslint-disable-next-line no-template-curly-in-string
     url: 'http://c.tile.stamen.com/watercolor/${z}/${x}/${y}.jpg',

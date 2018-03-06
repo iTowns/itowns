@@ -5,6 +5,7 @@
  */
 
 import PriorityQueue from 'js-priority-queue';
+import ProviderType from './Providers/Constants';
 import WMTS_Provider from './Providers/WMTS_Provider';
 import WMS_Provider from './Providers/WMS_Provider';
 import TileProvider from './Providers/TileProvider';
@@ -88,17 +89,17 @@ Scheduler.prototype.constructor = Scheduler;
 
 Scheduler.prototype.initDefaultProviders = function initDefaultProviders() {
     // Register all providers
-    this.addProtocolProvider('wmts', WMTS_Provider);
-    this.addProtocolProvider('wmtsc', WMTS_Provider);
-    this.addProtocolProvider('tile', TileProvider);
-    this.addProtocolProvider('wms', WMS_Provider);
-    this.addProtocolProvider('3d-tiles', $3dTiles_Provider);
-    this.addProtocolProvider('tms', TMS_Provider);
-    this.addProtocolProvider('xyz', TMS_Provider);
-    this.addProtocolProvider('potreeconverter', PointCloudProvider);
-    this.addProtocolProvider('wfs', WFS_Provider);
-    this.addProtocolProvider('rasterizer', Raster_Provider);
-    this.addProtocolProvider('static', StaticProvider);
+    this.addProtocolProvider(ProviderType.WMTS, WMTS_Provider);
+    this.addProtocolProvider(ProviderType.WMTSC, WMTS_Provider);
+    this.addProtocolProvider(ProviderType.TILE, TileProvider);
+    this.addProtocolProvider(ProviderType.WMS, WMS_Provider);
+    this.addProtocolProvider(ProviderType.$3DTILES, $3dTiles_Provider);
+    this.addProtocolProvider(ProviderType.TMS, TMS_Provider);
+    this.addProtocolProvider(ProviderType.XYZ, TMS_Provider);
+    this.addProtocolProvider(ProviderType.POTREE, PointCloudProvider);
+    this.addProtocolProvider(ProviderType.WFS, WFS_Provider);
+    this.addProtocolProvider(ProviderType.RASTER, Raster_Provider);
+    this.addProtocolProvider(ProviderType.STATIC, StaticProvider);
 };
 
 Scheduler.prototype.runCommand = function runCommand(command, queue, executingCounterUpToDate) {

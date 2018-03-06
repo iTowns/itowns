@@ -8,6 +8,7 @@ export { default as PlanarView, createPlanarLayer } from './Core/Prefab/PlanarVi
 export { default as PanoramaView, createPanoramaLayer } from './Core/Prefab/PanoramaView';
 export { default as Panorama } from './Core/Prefab/Panorama/Constants';
 export { default as Fetcher } from './Core/Scheduler/Providers/Fetcher';
+export { default as Provider } from './Core/Scheduler/Providers/Constants';
 export { MAIN_LOOP_EVENTS } from './Core/MainLoop';
 export { default as View } from './Core/View';
 export { process3dTilesNode, init3dTilesLayer, $3dTilesCulling, $3dTilesSubdivisionControl, pre3dTilesUpdate } from './Process/3dTilesProcessing';

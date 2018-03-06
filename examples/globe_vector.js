@@ -26,7 +26,7 @@ promises.push(itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').th
 promises.push(globeView.addLayer({
     type: 'color',
     url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/croquis.kml',
-    protocol: 'rasterizer',
+    protocol: itowns.Provider.RASTER,
     id: 'Kml',
     name: 'kml',
     transparent: true,
@@ -35,7 +35,7 @@ promises.push(globeView.addLayer({
 promises.push(globeView.addLayer({
     type: 'color',
     url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/ULTRA2009.gpx',
-    protocol: 'rasterizer',
+    protocol: itowns.Provider.RASTER,
     id: 'Gpx',
     name: 'Ultra 2009',
     transparent: true,
@@ -44,7 +44,7 @@ promises.push(globeView.addLayer({
 promises.push(globeView.addLayer({
     type: 'color',
     url: 'https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/departements/09-ariege/departement-09-ariege.geojson',
-    protocol: 'rasterizer',
+    protocol: itowns.Provider.RASTER,
     id: 'ariege',
     name: 'ariege',
     transparent: true,
