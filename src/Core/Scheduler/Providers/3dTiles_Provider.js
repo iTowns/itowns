@@ -162,7 +162,6 @@ function b3dmToMesh(data, layer, url) {
                             && mesh.material.isRawShaderMaterial
                             && !layer.doNotPatchMaterial) {
                     patchMaterialForLogDepthSupport(mesh.material);
-                    // eslint-disable-next-line no-console
                     console.warn('b3dm shader has been patched to add log depth buffer support');
                 }
                 mesh.material.transparent = layer.opacity < 1.0;

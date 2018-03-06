@@ -113,7 +113,6 @@ function _preprocessLayer(view, layer, provider, parentLayer) {
     layer.options = layer.options || {};
     // TODO remove this warning and fallback after the release following v2.3.0
     if (!layer.format && layer.options.mimetype) {
-        // eslint-disable-next-line no-console
         console.warn('layer.options.mimetype is deprecated, please use layer.format');
         layer.format = layer.options.mimetype;
     }
