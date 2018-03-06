@@ -1,13 +1,24 @@
+import * as FlatBush from 'flatbush';
 import { Vector4 } from 'three';
 import Extent from '../../Geographic/Extent';
 import OGCWebServiceHelper from './OGCWebServiceHelper';
 import Fetcher from './Fetcher';
 import { l_COLOR, l_ELEVATION } from '../../../Renderer/LayeredMaterialConstants';
 
+function _selectImagesFromSpatialIndex(index, images, extent) {
+    return index.search(
+            extent.west(), extent.south(),
+            extent.east(), extent.north()).map(i => images[i]);
+}
+
 // select the smallest image entirely covering the tile
-function selectBestImageForExtent(images, extent) {
+function selectBestImageForExtent(layer, extent) {
+    const candidates =
+        _selectImagesFromSpatialIndex(
+            layer._spatialIndex, layer.images, extent.as(layer.extent.crs()));
+
     let selection;
-    for (const entry of images) {
+    for (const entry of candidates) {
         if (extent.isInside(entry.extent)) {
             if (!selection) {
                 selection = entry;
@@ -40,7 +51,7 @@ function getTexture(tile, layer) {
         return Promise.reject();
     }
 
-    const selection = selectBestImageForExtent(layer.images, tile.extent);
+    const selection = selectBestImageForExtent(layer, tile.extent);
 
     if (!selection) {
         return Promise.reject(
@@ -103,6 +114,15 @@ export default {
                     extent,
                 });
             }
+            layer._spatialIndex = FlatBush(layer.images.length);
+            for (const image of layer.images) {
+                layer._spatialIndex.add(
+                    image.extent.west(),
+                    image.extent.south(),
+                    image.extent.east(),
+                    image.extent.north());
+            }
+            layer._spatialIndex.finish();
         }).then(() => {
             if (!layer.format) {
                 // fetch the first image to detect format
@@ -127,20 +147,16 @@ export default {
             return false;
         }
 
-        for (const entry of layer.images) {
-            if (tile.extent.isInside(entry.extent)) {
-                return true;
-            }
-        }
-
-        return false;
+        return _selectImagesFromSpatialIndex(
+            layer._spatialIndex, layer.images, tile.extent.as(layer.extent.crs())).length > 0;
     },
 
     canTileTextureBeImproved(layer, tile) {
         if (!layer.images) {
             return false;
         }
-        const s = selectBestImageForExtent(layer.images, tile.extent);
+        const s = selectBestImageForExtent(layer, tile.extent);
+
         if (!s) {
             return false;
         }
