@@ -68,6 +68,7 @@ function acceptFeatureBus(properties) {
 }
 
 globeView.addLayer({
+    name: 'lyon_tcl_bus',
     type: 'geometry',
     update: itowns.FeatureProcessing.update,
     convert: itowns.Feature2Mesh.convert({
@@ -88,7 +89,7 @@ globeView.addLayer({
         south: 5138876.75,
         north: 5205890.19,
     },
-    format: 'application/geojson',
+    format: 'geojson',
 }, globeView.tileLayer);
 
 function colorBuildings(properties) {

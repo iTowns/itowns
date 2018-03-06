@@ -59,6 +59,7 @@ function colorLine(properties) {
 }
 
 view.addLayer({
+    name: 'lyon_tcl_bus',
     update: itowns.FeatureProcessing.update,
     convert: itowns.Feature2Mesh.convert({
         color: colorLine }),
@@ -76,7 +77,7 @@ view.addLayer({
         south: 5138876.75,
         north: 5205890.19,
     },
-    format: 'application/geojson',
+    format: 'geojson',
 }, view.tileLayer);
 
 function colorBuildings(properties) {

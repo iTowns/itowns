@@ -12,9 +12,6 @@ import Feature2Mesh from '../../../Renderer/ThreeExtended/Feature2Mesh';
 
 const cache = CacheRessource();
 
-// TODO : support xml, gml2
-const supportedFormats = ['application/json', 'application/geojson'];
-
 function url(bbox, layer) {
     const box = bbox.as(layer.projection);
     const w = box.west();
@@ -34,9 +31,6 @@ function preprocessDataLayer(layer) {
     }
 
     layer.format = layer.format || 'application/json';
-    if (!supportedFormats.includes(layer.format)) {
-        throw new Error(`Layer ${layer.name}: unsupported layer.format '${layer.format}', must be one of '${supportedFormats.join('\', \'')}'`);
-    }
 
     layer.crs = layer.projection || 'EPSG:4326';
     layer.version = layer.version || '2.0.2';
