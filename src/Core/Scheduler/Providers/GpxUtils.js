@@ -118,7 +118,6 @@ function _gpxToWTrackPointsMesh(gpxXML, options) {
                 if (Capabilities.isLogDepthBufferSupported()) {
                     material.fragmentShader = material.fragmentShader.replace(/.*/, '').substr(1);
                     patchMaterialForLogDepthSupport(material);
-                    // eslint-disable-next-line no-console
                     console.warn('MeshLineMaterial shader has been patched to add log depth buffer support');
                 }
 

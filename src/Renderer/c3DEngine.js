@@ -58,7 +58,6 @@ function c3DEngine(rendererOrDiv, options = {}) {
             logarithmicDepthBuffer: options.logarithmicDepthBuffer,
         });
     } catch (ex) {
-        // eslint-disable-next-line no-console
         console.error('Failed to create WebGLRenderer', ex);
         this.renderer = null;
     }
@@ -186,7 +185,6 @@ c3DEngine.prototype.getUniqueThreejsLayer = function getUniqueThreejsLayer() {
     // one to each new geometry layer.
     // Warning: only 32 ([0, 31]) different layers can exist.
     if (this._nextThreejsLayer > 31) {
-        // eslint-disable-next-line no-console
         console.warn('Too much three.js layers. Starting from now all of them will use layerMask = 31');
         this._nextThreejsLayer = 31;
     }

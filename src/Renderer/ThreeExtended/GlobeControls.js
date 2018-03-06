@@ -1115,7 +1115,6 @@ function GlobeControls(view, target, radius, options = {}) {
         if (this.enabled === false) return;
 
         if (!this.isAnimationEnabled()) {
-             // eslint-disable-next-line no-console
             console.warn('double click without animation is disabled, waiting fix in future refactoring');
             return;
         }

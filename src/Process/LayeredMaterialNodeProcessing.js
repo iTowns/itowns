@@ -28,9 +28,7 @@ function initNodeImageryTexturesFromParent(node, parent, layer) {
 
         if (__DEBUG__) {
             if ((textureIndex - offsetTextures) != coords.length) {
-                /* eslint-disable */
                 console.error(`non-coherent result ${textureIndex} ${offsetTextures} vs ${coords.length}. ${coords}`);
-                /* eslint-enable */
             }
         }
         const index = node.material.indexOfColorLayer(layer.id);
@@ -282,7 +280,6 @@ export function updateLayeredMaterialNodeImagery(context, layer, node) {
                 node.layerUpdateState[layer.id].success();
             } else {
                 if (__DEBUG__) {
-                    // eslint-disable-next-line no-console
                     console.warn(`Imagery texture update error for ${node}: ${err}`);
                 }
                 const definitiveError = node.layerUpdateState[layer.id].errorCount > MAX_RETRY;
@@ -404,7 +401,6 @@ export function updateLayeredMaterialNodeElevation(context, layer, node) {
                 node.layerUpdateState[layer.id].success();
             } else {
                 if (__DEBUG__) {
-                    // eslint-disable-next-line no-console
                     console.warn(`Elevation texture update error for ${node}: ${err}`);
                 }
                 const definitiveError = node.layerUpdateState[layer.id].errorCount > MAX_RETRY;

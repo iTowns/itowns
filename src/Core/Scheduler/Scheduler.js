@@ -59,7 +59,6 @@ function _instanciateQueue() {
                 cmd.reject(err);
                 this.counters.failed++;
                 if (__DEBUG__ && this.counters.failed < 3) {
-                    // eslint-disable-next-line no-console
                     console.error(err);
                 }
             });

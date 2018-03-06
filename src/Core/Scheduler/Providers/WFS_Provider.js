@@ -96,12 +96,10 @@ function getFeatures(crs, tile, layer) {
                     const errorElem = xml.querySelector('Exception');
                     const errorCode = errorElem.getAttribute('exceptionCode');
                     const errorMessage = errorElem.querySelector('ExceptionText').textContent;
-                    // eslint-disable-next-line no-console
                     console.error(`Layer ${layer.name}: bad request when fetching data. Server says: "${errorCode}: ${errorMessage}". \nReviewing ${getCapUrl} may help.`, err);
                     throw err;
                 });
             } else {
-                // eslint-disable-next-line no-console
                 console.error(`Layer ${layer.name}: ${err.response.status} error while trying to fetch WFS data. Url was ${urld}.`, err);
                 throw err;
             }

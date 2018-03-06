@@ -83,6 +83,7 @@ module.exports = {
     'brace-style': 'off',
     'new-cap': 'off',
     'no-continue': 'off',
+    'no-console': [ 'warn', { allow: ['warn', 'error'] } ],
   },
   "globals": {
     "__DEBUG__": false
