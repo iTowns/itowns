@@ -13,9 +13,9 @@ function _selectImagesFromSpatialIndex(index, images, extent) {
 
 // select the smallest image entirely covering the tile
 function selectBestImageForExtent(layer, extent) {
-    const candidates = (layer.extent.crs() == extent.crs()) ?
-        _selectImagesFromSpatialIndex(layer._spatialIndex, layer.images, extent) :
-        layer.images;
+    const candidates =
+        _selectImagesFromSpatialIndex(
+            layer._spatialIndex, layer.images, extent.as(layer.extent.crs()));
 
     let selection;
     for (const entry of candidates) {
@@ -148,17 +148,8 @@ export default {
             return false;
         }
 
-        if (tile.extent.crs() == layer.extent.crs()) {
-            return _selectImagesFromSpatialIndex(
-                layer._spatialIndex, layer.images, tile.extent).length > 0;
-        } else {
-            for (const entry of layer.images) {
-                if (tile.extent.isInside(entry.extent)) {
-                    return true;
-                }
-            }
-            return false;
-        }
+        return _selectImagesFromSpatialIndex(
+            layer._spatialIndex, layer.images, tile.extent.as(layer.extent.crs())).length > 0;
     },
 
     canTileTextureBeImproved(layer, tile) {
