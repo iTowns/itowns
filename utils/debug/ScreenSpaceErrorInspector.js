@@ -47,7 +47,9 @@ function display(camera, sseResult, geometricError, sseThresholdPx, group, coord
     const ray = new THREE.Vector3(coords.x, coords.y, 0);
     const ray2a = new THREE.Vector3(coords.x + (2 * (sseShift) / camera.width), coords.y, 0);
     const ray2b = new THREE.Vector3(coords.x + (2 * (sseThresholdPx + sseShift) / camera.width), coords.y, 0);
-    const ray3 = new THREE.Vector3(coords.x + (2 * (sseResult.sse) / camera.width), coords.y, 0);
+    const ray3 = new THREE.Vector3(
+        coords.x + (2 * (sseResult.sse[0]) / camera.width),
+        coords.y + (2 * (sseResult.sse[1]) / camera.height), 0);
     const rays = [ray, ray2a, ray2b, ray3];
 
     for (const r of rays) {
@@ -64,14 +66,14 @@ function display(camera, sseResult, geometricError, sseThresholdPx, group, coord
 
     const sseShiftWorld = ray2a.sub(ray).length();
     const sseThresholdWorld = ray2b.sub(ray).length();
-    const sseValueWorld = ray3.sub(ray).length();
+    const sseValueWorld = ray3.sub(ray);
 
     // draw a line to show sse threshold
     group.sseShift.scale.set(sseShiftWorld * scale, sseShiftWorld * scale, 1);
     group.sseThreshold.scale.set(sseThresholdWorld * scale, sseThresholdWorld * scale, 1);
     // draw a line to show geometric error
     // (both values are the same when using Math.max in ScreenSpaceError)
-    group.sseValue.scale.set(sseValueWorld * scale, sseValueWorld * scale, 1);
+    group.sseValue.scale.set(sseValueWorld.x * scale, sseValueWorld.y * scale, 1);
 
     group.visible = true;
     group.updateMatrixWorld(true);

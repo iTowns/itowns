@@ -7,6 +7,7 @@ const m3 = new THREE.Matrix4();
 const basis = [
     new THREE.Vector3(1, 0, 0),
     new THREE.Vector3(0, 1, 0),
+    new THREE.Vector3(0, 0, 1),
 ];
 
 function computeVectorSizeAtDistance(vector, matrix, camera, distance, _3d) {
@@ -14,7 +15,7 @@ function computeVectorSizeAtDistance(vector, matrix, camera, distance, _3d) {
     basis[1].set(0, vector.y, 0);
 
     if (_3d) {
-        basis.push(new THREE.Vector3(0, 0, vector.z));
+        basis[2].set(0, 0, vector.z);
     }
 
     m2.identity();
@@ -22,7 +23,9 @@ function computeVectorSizeAtDistance(vector, matrix, camera, distance, _3d) {
     m3.identity();
     m3.extractRotation(camera.camera3D.matrixWorldInverse);
 
-    for (const b of basis) {
+    for (let i = 0; i < (_3d ? 3 : 2); i++) {
+        const b = basis[i];
+
         // Apply rotation
         b.applyMatrix4(m2);
         // Apply inverse camera rotation
@@ -37,6 +40,16 @@ function computeVectorSizeAtDistance(vector, matrix, camera, distance, _3d) {
         b.y = b.y * camera.height * 0.5;
     }
 
+    return basis.map(b => b.length());
+
+    const sse = {
+        x: basis[0].length(),
+        y: basis[1].length(),
+    };
+    if (_3d) {
+        sse.z = basis[2].length();
+    }
+    return sse;
     const lengthsq = basis.map(b => b.lengthSq());
     const min = Math.min.apply(Math, lengthsq);
     return Math.sqrt(min);
@@ -78,7 +91,7 @@ export default {
 
         if (distance <= geometricError) {
             return {
-                sse: Infinity,
+                sse: [Infinity, Infinity, Infinity],
                 distance,
             };
         }

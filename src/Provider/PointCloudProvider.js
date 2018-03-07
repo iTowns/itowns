@@ -160,7 +160,7 @@ export default {
         layer.octreeDepthLimit = layer.octreeDepthLimit || -1;
         layer.pointBudget = layer.pointBudget || 15000000;
         layer.pointSize = layer.pointSize === 0 || !isNaN(layer.pointSize) ? layer.pointSize : 4;
-        layer.sseThreshold = layer.sseThreshold || 5;
+        layer.sseThreshold = layer.sseThreshold || 2;
         layer.type = 'geometry';
 
         // default update methods
