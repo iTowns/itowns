@@ -5,25 +5,13 @@
  */
 
 import Extent from '../../Geographic/Extent';
+import URLBuilder from './URLBuilder';
 import Fetcher from './Fetcher';
 import CacheRessource from './CacheRessource';
 import GeoJSON2Features from '../../../Renderer/ThreeExtended/GeoJSON2Features';
 import Feature2Mesh from '../../../Renderer/ThreeExtended/Feature2Mesh';
 
 const cache = CacheRessource();
-
-function url(bbox, layer) {
-    const box = bbox.as(layer.projection);
-    const w = box.west();
-    const s = box.south();
-    const e = box.east();
-    const n = box.north();
-
-    // TODO: use getPointOrder
-    const bboxInUnit = `${w},${s},${e},${n}`;
-
-    return layer.customUrl.replace('%bbox', bboxInUnit);
-}
 
 function preprocessDataLayer(layer) {
     if (!layer.typeName) {
@@ -39,7 +27,7 @@ function preprocessDataLayer(layer) {
     if (!(layer.extent instanceof Extent)) {
         layer.extent = new Extent(layer.projection, layer.extent);
     }
-    layer.customUrl = `${layer.url
+    layer.url = `${layer.url
                       }SERVICE=WFS&REQUEST=GetFeature&typeName=${layer.typeName
                       }&VERSION=${layer.version
                       }&SRSNAME=${layer.crs
@@ -74,10 +62,10 @@ function getFeatures(crs, tile, layer) {
         return Promise.resolve();
     }
 
-    const urld = url(tile.extent.as(layer.crs), layer);
+    const urld = URLBuilder.bbox(tile.extent.as(layer.crs), layer);
     const result = {};
 
-    result.feature = cache.getRessource(url);
+    result.feature = cache.getRessource(urld);
 
     if (result.feature !== undefined) {
         return Promise.resolve(result);
