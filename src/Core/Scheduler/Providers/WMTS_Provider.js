@@ -6,6 +6,7 @@
 
 import * as THREE from 'three';
 import OGCWebServiceHelper from './OGCWebServiceHelper';
+import URLBuilder from './URLBuilder';
 import Extent from '../../Geographic/Extent';
 
 const coordTile = new Extent('WMTS:WGS84', 0, 0, 0);
@@ -16,15 +17,6 @@ const supportedFormats = new Map([
     ['image/jpeg', getColorTextures],
     ['image/x-bil;bits=32', getXbilTexture],
 ]);
-
-
-function customUrl(layer, url, tilematrix, row, col) {
-    let urld = url.replace('%TILEMATRIX', tilematrix.toString());
-    urld = urld.replace('%ROW', row.toString());
-    urld = urld.replace('%COL', col.toString());
-
-    return urld;
-}
 
 function preprocessDataLayer(layer) {
     layer.fx = layer.fx || 0.0;
@@ -63,19 +55,9 @@ function preprocessDataLayer(layer) {
                 max: maxZoom,
             };
         }
-        layer.customUrl = newBaseUrl;
+        layer.url = newBaseUrl;
     }
     layer.options.zoom = layer.options.zoom || { min: 2, max: 20 };
-}
-
-/**
- * Return url wmts orthophoto
- * @param {{zoom:number,row:number,col:number}} coWMTS
- * @param {Layer} layer
- * @returns {string}
- */
-function url(coWMTS, layer) {
-    return customUrl(layer, layer.customUrl, coWMTS.zoom, coWMTS.row, coWMTS.col);
 }
 
 /**
@@ -93,7 +75,7 @@ function getXbilTexture(tile, layer, targetZoom) {
         coordWMTS = OGCWebServiceHelper.WMTS_WGS84Parent(coordWMTS, targetZoom, pitch);
     }
 
-    const urld = url(coordWMTS, layer);
+    const urld = URLBuilder.xyz(coordWMTS, layer);
 
     return OGCWebServiceHelper.getXBilTextureByUrl(urld, layer.networkOptions).then((texture) => {
         texture.coords = coordWMTS;
@@ -114,7 +96,7 @@ function getXbilTexture(tile, layer, targetZoom) {
  * @returns {Promise<Texture>}
  */
 function getColorTexture(coordWMTS, layer) {
-    const urld = url(coordWMTS, layer);
+    const urld = URLBuilder.xyz(coordWMTS, layer);
     return OGCWebServiceHelper.getColorTextureByUrl(urld, layer.networkOptions).then((texture) => {
         const result = {};
         result.texture = texture;

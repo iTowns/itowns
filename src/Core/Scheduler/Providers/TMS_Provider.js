@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import OGCWebServiceHelper from './OGCWebServiceHelper';
+import URLBuilder from './URLBuilder';
 import Extent from '../../Geographic/Extent';
 
 function preprocessDataLayer(layer) {
@@ -24,14 +25,6 @@ function preprocessDataLayer(layer) {
     }
 }
 
-function url(coTMS, layer) {
-    /* eslint-disable no-template-curly-in-string */
-    return layer.url.replace('${z}', coTMS.zoom)
-        .replace('${y}', coTMS.row)
-        .replace('${x}', coTMS.col);
-    /* eslint-enable no-template-curly-in-string */
-}
-
 function executeCommand(command) {
     const layer = command.layer;
     const tile = command.requester;
@@ -42,7 +35,7 @@ function executeCommand(command) {
             OGCWebServiceHelper.WMTS_WGS84Parent(coordTMS, command.targetLevel) :
             undefined;
 
-        const urld = url(coordTMSParent || coordTMS, layer);
+        const urld = URLBuilder.xyz(coordTMSParent || coordTMS, layer);
 
         promises.push(OGCWebServiceHelper.getColorTextureByUrl(urld, layer.networkOptions).then((texture) => {
             const result = {};

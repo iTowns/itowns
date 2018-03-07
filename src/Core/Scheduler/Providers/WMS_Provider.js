@@ -7,22 +7,9 @@
 import * as THREE from 'three';
 import Extent from '../../Geographic/Extent';
 import OGCWebServiceHelper from './OGCWebServiceHelper';
+import URLBuilder from './URLBuilder';
 
 const supportedFormats = ['image/png', 'image/jpg', 'image/jpeg'];
-
-function url(bbox, layer) {
-    const box = bbox.as(layer.projection);
-    const w = box.west();
-    const s = box.south();
-    const e = box.east();
-    const n = box.north();
-
-    const bboxInUnit = layer.axisOrder === 'swne' ?
-        `${s},${w},${n},${e}` :
-        `${w},${s},${e},${n}`;
-
-    return layer.customUrl.replace('%bbox', bboxInUnit);
-}
 
 function tileTextureCount(tile, layer) {
     return tile.extent.crs() == layer.projection ? 1 : tile.getCoordsForLayer(layer).length;
@@ -73,7 +60,7 @@ function preprocessDataLayer(layer) {
         crsPropName = 'CRS';
     }
 
-    layer.customUrl = `${layer.url
+    layer.url = `${layer.url
                   }?SERVICE=WMS&REQUEST=GetMap&LAYERS=${layer.name
                   }&VERSION=${layer.version
                   }&STYLES=${layer.style
@@ -116,7 +103,7 @@ function getColorTexture(tile, layer, targetLevel, tileCoords) {
     }
 
     const coords = extent.as(layer.projection);
-    const urld = url(coords, layer);
+    const urld = URLBuilder.bbox(coords, layer);
     const pitch = tileCoords ? new THREE.Vector4(0, 0, 1, 1) : tile.extent.offsetToParent(extent);
     const result = { pitch };
 
