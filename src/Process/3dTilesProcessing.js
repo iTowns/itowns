@@ -245,8 +245,6 @@ function computeNodeSSE(camera, node) {
             node.boundingVolume.sphere,
             node.matrixWorld,
             node.geometricError);
-    } else {
-        return Infinity;
     }
 }
 
@@ -331,5 +329,8 @@ export function $3dTilesSubdivisionControl(context, layer, node) {
         return false;
     }
     node.sse = computeNodeSSE(context.camera, node);
-    return node.sse.sse > layer.sseThreshold;
+    if (node.sse) {
+        const minSSE = Math.min.apply(Math, node.sse.sse);
+        return minSSE > layer.sseThreshold;
+    }
 }

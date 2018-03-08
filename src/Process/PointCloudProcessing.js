@@ -70,7 +70,7 @@ function shouldDisplayNode(context, layer, elt) {
             // no point indicates shallow hierarchy, so we definitely want to load its children
             shouldBeLoaded = 1;
             elt.sse = {
-                sse: Infinity,
+                sse: [Infinity],
             };
         } else {
             elt.sse = ScreenSpaceError.computeFromBox3(context.camera,
@@ -78,7 +78,9 @@ function shouldDisplayNode(context, layer, elt) {
                     layer.object3d.matrixWorld,
                     elt.geometricError,
                     ScreenSpaceError.MODE_3D);
-            shouldBeLoaded = Math.min(1, elt.sse.sse / layer.sseThreshold);
+            shouldBeLoaded = Math.min(
+                1,
+                Math.min.apply(Math, elt.sse.sse) / layer.sseThreshold);
         }
         return shouldBeLoaded;
     }

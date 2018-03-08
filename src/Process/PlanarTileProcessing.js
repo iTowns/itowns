@@ -41,8 +41,22 @@ export function planarSubdivisionControl(maxLevel, maxDeltaElevationLevel) {
             node.OBB().matrixWorld,
             node.geometricError,
             ScreenSpaceError.MODE_2D);
-        node.sse.sse = Math.max(0, node.sse.sse - SIZE_TEXTURE_TILE);
         node.sse.offset = SIZE_TEXTURE_TILE;
-        return node.sse.sse > layer.sseThreshold;
+
+        const cond1x = (node.sse.sse[0] > (SIZE_TEXTURE_TILE + layer.sseThreshold));
+        const cond1y = (node.sse.sse[1] > (SIZE_TEXTURE_TILE + layer.sseThreshold));
+        const cond2x = (node.sse.sse[0] > (SIZE_TEXTURE_TILE + layer.sseThreshold) * 0.85);
+        const cond2y = (node.sse.sse[1] > (SIZE_TEXTURE_TILE + layer.sseThreshold) * 0.85);
+
+        if (cond1x && cond1y) {
+            return true;
+        }
+        if (cond1x) {
+            return cond2y;
+        }
+        if (cond1y) {
+            return cond2x;
+        }
+        return false;
     };
 }
