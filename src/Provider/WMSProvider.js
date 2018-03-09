@@ -220,7 +220,7 @@ function preprocessDataLayer(layer) {
     }
 
     let getCapPromise;
-    if (layer.disableGetCap) {
+    if (layer.disableGetCapabilities) {
         getCapPromise = Promise.resolve(layer);
         if (!layer.projection) {
             throw new Error(`Layer ${layer.name}: layer.projection is required`);

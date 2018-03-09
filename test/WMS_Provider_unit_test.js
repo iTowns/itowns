@@ -22,7 +22,7 @@ describe('WMS Provider >', function () {
         it('should throw an error if layer.projection is missing', function () {
             assert.throws(() => provider.preprocessDataLayer({
                 name: 'test',
-                disableGetCap: true,
+                disableGetCapabilities: true,
                 options: {},
             }), /Layer test: layer.projection is required/);
         });
@@ -30,7 +30,7 @@ describe('WMS Provider >', function () {
         it('should throw an error if layer.extent is missing', function () {
             assert.throws(() => provider.preprocessDataLayer({
                 name: 'test',
-                disableGetCap: true,
+                disableGetCapabilities: true,
                 options: {},
                 projection: 'EPSG:3857',
             }), /Layer test: layer.extent is required/);
@@ -39,7 +39,7 @@ describe('WMS Provider >', function () {
         it('should throw an error if layer.format is not supported', function () {
             assert.throws(() => provider.preprocessDataLayer({
                 name: 'test',
-                disableGetCap: true,
+                disableGetCapabilities: true,
                 options: {},
                 projection: 'EPSG:3857',
                 extent: { west: 1, east: 2, south: 3, north: 4 },
@@ -50,7 +50,7 @@ describe('WMS Provider >', function () {
         it('should default to \'image/png\' format', function () {
             return provider.preprocessDataLayer({
                 name: 'test',
-                disableGetCap: true,
+                disableGetCapabilities: true,
                 options: {},
                 projection: 'EPSG:3857',
                 extent: { west: 1, east: 2, south: 3, north: 4 },
