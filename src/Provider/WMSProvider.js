@@ -232,9 +232,11 @@ function preprocessDataLayer(layer) {
         if (!supportedFormats.includes(layer.format)) {
             throw new Error(`Layer ${layer.name}: unsupported format '${layer.format}', should be one of '${supportedFormats.join('\', \'')}'`);
         }
-    } else {
+    } else if (!layer.projection || !layer.extent || !layer.format) {
         getCapPromise = Fetcher.xml(`${layer.url}?service=WMS&version=${layer.version}&request=GetCapabilities`, layer.networkOptions)
             .then(xml => checkCapabilities(layer, xml));
+    } else {
+        getCapPromise = Promise.resolve(layer);
     }
 
     return getCapPromise.then(() => {

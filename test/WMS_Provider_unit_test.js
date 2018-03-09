@@ -58,6 +58,19 @@ describe('WMS Provider >', function () {
                 assert.equal(l.format, 'image/png');
             });
         });
+
+        it('should skip getCapabilities if everything is already configured', function () {
+            // node env doesn't have fetch, so if the promise is resolved, it
+            // means we haven't called it.
+            // XXX find a more foolproof way to test that?
+            return provider.preprocessDataLayer({
+                name: 'test',
+                format: 'image/jpeg',
+                options: {},
+                projection: 'EPSG:3857',
+                extent: { west: 1, east: 2, south: 3, north: 4 },
+            });
+        });
     });
 
     describe('GetCapabilities >', function () {
@@ -148,9 +161,9 @@ describe('WMS Provider >', function () {
             it('should parse correctly CRS multiple tags in version 1.3.0 without parent layer', function () {
                 const xmlString = `
                     <Layer>
-                    <CRS>EPSG:1111</CRS>
-                    <CRS>EPSG:2222</CRS>
-                    <CRS>EPSG:8967</CRS>
+                        <CRS>EPSG:1111</CRS>
+                        <CRS>EPSG:2222</CRS>
+                        <CRS>EPSG:8967</CRS>
                     </Layer>
                     `;
                 const xml = parser.parseFromString(xmlString, 'text/xml');
@@ -165,15 +178,15 @@ describe('WMS Provider >', function () {
             it('should parse correctly CRS multiple tags in version 1.3.0 with parent layer', function () {
                 const xmlString = `
                     <Layer>
-                    <CRS>EPSG:4444</CRS>
-                    <Layer id="toTest1">
-                    <CRS>EPSG:2222</CRS>
-                    <Layer id="toTest2">
-                    <CRS> EPSG:8967</CRS>
-                    <CRS>EPSG:3333</CRS>
-                    <Name>Foo</Name>
-                    </Layer>
-                    </Layer>
+                        <CRS>EPSG:4444</CRS>
+                        <Layer id="toTest1">
+                            <CRS>EPSG:2222</CRS>
+                            <Layer id="toTest2">
+                                <CRS> EPSG:8967</CRS>
+                                <CRS>EPSG:3333</CRS>
+                                <Name>Foo</Name>
+                            </Layer>
+                        </Layer>
                     </Layer>
                     `;
                 const xml = parser.parseFromString(xmlString, 'text/xml');
@@ -341,123 +354,121 @@ describe('WMS Provider >', function () {
             }
         });
 
-        describe('GetCap >', function () {
-            let getCapResult;
-            before(function (done) {
-                fs.readFile('./test/fixtures/getCapBgs.xml', (err, data) => {
-                    if (err) done(err);
+        let getCapResult;
+        before(function (done) {
+            fs.readFile('./test/fixtures/getCapBgs.xml', (err, data) => {
+                if (err) done(err);
 
-                    getCapResult = new window.DOMParser().parseFromString(data, 'text/xml');
-                    done();
-                });
+                getCapResult = new window.DOMParser().parseFromString(data, 'text/xml');
+                done();
             });
+        });
 
-            it('should find the right layer', function () {
-                const layerXml = `
-                    <Layer>
-                        <Name>bazz</Name>
-                        <Layer id="layer">
-                            <Name>foo</Name>
-                            <Layer>
-                                <Name>bar</Name>
-                            </Layer>
+        it('should find the right layer', function () {
+            const layerXml = `
+                <Layer>
+                    <Name>bazz</Name>
+                    <Layer id="layer">
+                        <Name>foo</Name>
+                        <Layer>
+                            <Name>bar</Name>
                         </Layer>
                     </Layer>
-                    `;
-                const layerCapa = parser.parseFromString(layerXml, 'text/xml');
-                const result = _testing.findXmlLayer('foo', layerCapa);
-                assert.equal(result.getAttribute('id'), 'layer');
-            });
+                </Layer>
+                `;
+            const layerCapa = parser.parseFromString(layerXml, 'text/xml');
+            const result = _testing.findXmlLayer('foo', layerCapa);
+            assert.equal(result.getAttribute('id'), 'layer');
+        });
 
-            it('should check layer.name', function () {
-                // wrong name
-                const layer = {
-                    name: 'foo',
-                    projection: 'EPSG:3857',
-                    version: '1.3.0',
-                    format: 'image/png',
-                };
-                assert.throws(() => _testing.checkCapabilities(layer, getCapResult), /Cannot find layer foo in capabilities/);
+        it('should check layer.name', function () {
+            // wrong name
+            const layer = {
+                name: 'foo',
+                projection: 'EPSG:3857',
+                version: '1.3.0',
+                format: 'image/png',
+            };
+            assert.throws(() => _testing.checkCapabilities(layer, getCapResult), /Cannot find layer foo in capabilities/);
 
-                // good name
-                layer.name = 'GBR_BGS_625k_BLT';
-                _testing.checkCapabilities(layer, getCapResult);
-            });
+            // good name
+            layer.name = 'GBR_BGS_625k_BLT';
+            _testing.checkCapabilities(layer, getCapResult);
+        });
 
-            it('should check layer projection', function () {
-                const layer = {
-                    name: 'GBR_BGS_625k_BLT',
-                    projection: 'EPSG:3858',
-                    version: '1.3.0',
-                    format: 'image/png',
-                };
-                assert.throws(() => _testing.checkCapabilities(layer, getCapResult), /Layer GBR_BGS_625k_BLT does not support projection EPSG:3858/);
+        it('should check layer projection', function () {
+            const layer = {
+                name: 'GBR_BGS_625k_BLT',
+                projection: 'EPSG:3858',
+                version: '1.3.0',
+                format: 'image/png',
+            };
+            assert.throws(() => _testing.checkCapabilities(layer, getCapResult), /Layer GBR_BGS_625k_BLT does not support projection EPSG:3858/);
 
-                layer.projection = 'EPSG:3857';
-                _testing.checkCapabilities(layer, getCapResult);
-            });
+            layer.projection = 'EPSG:3857';
+            _testing.checkCapabilities(layer, getCapResult);
+        });
 
-            it('should check layer format', function () {
-                const layer = {
-                    name: 'GBR_BGS_625k_BLT',
-                    projection: 'EPSG:3857',
-                    version: '1.3.0',
-                    format: 'image/foo',
-                };
-                assert.throws(() => _testing.checkCapabilities(layer, getCapResult), /Declared layer.format image\/foo is not supported by the wms server for GBR_BGS_625k_BLT/);
+        it('should check layer format', function () {
+            const layer = {
+                name: 'GBR_BGS_625k_BLT',
+                projection: 'EPSG:3857',
+                version: '1.3.0',
+                format: 'image/foo',
+            };
+            assert.throws(() => _testing.checkCapabilities(layer, getCapResult), /Declared layer.format image\/foo is not supported by the wms server for GBR_BGS_625k_BLT/);
 
-                layer.format = 'image/png';
-                _testing.checkCapabilities(layer, getCapResult);
-            });
+            layer.format = 'image/png';
+            _testing.checkCapabilities(layer, getCapResult);
+        });
 
-            it('should set layer extent if not configured', function () {
-                const layer = {
-                    name: 'GBR_BGS_625k_BLT',
-                    projection: 'EPSG:3857',
-                    version: '1.3.0',
-                    format: 'image/png',
-                };
-                _testing.checkCapabilities(layer, getCapResult);
-                assert(layer.extent);
-                assertExtent(layer.extent, 'EPSG:3857', -962742, 6.42272e+006, 196776, 8.59402e+006);
-                assertExtent(layer.validExtent, 'EPSG:3857', -962742, 6.42272e+006, 196776, 8.59402e+006);
-            });
+        it('should set layer extent if not configured', function () {
+            const layer = {
+                name: 'GBR_BGS_625k_BLT',
+                projection: 'EPSG:3857',
+                version: '1.3.0',
+                format: 'image/png',
+            };
+            _testing.checkCapabilities(layer, getCapResult);
+            assert(layer.extent);
+            assertExtent(layer.extent, 'EPSG:3857', -962742, 6.42272e+006, 196776, 8.59402e+006);
+            assertExtent(layer.validExtent, 'EPSG:3857', -962742, 6.42272e+006, 196776, 8.59402e+006);
+        });
 
-            it('should check layer extent and set it to intersection with validityExtent', function () {
-                let layer = {
-                    name: 'GBR_BGS_625k_BLT',
-                    projection: 'EPSG:3857',
-                    version: '1.3.0',
-                    format: 'image/png',
-                    extent: new Extent('EPSG:3857', -90000, 150000, 7e+006, 8e+006),
-                };
-                // should not throw
-                _testing.checkCapabilities(layer, getCapResult);
-                assertExtent(layer.validExtent, 'EPSG:3857', -962742, 6.42272e+006, 196776, 8.59402e+006);
-                assertExtent(layer.extent, 'EPSG:3857', -90000, 7e+006, 150000, 8e+006);
+        it('should check layer extent and set it to intersection with validityExtent', function () {
+            let layer = {
+                name: 'GBR_BGS_625k_BLT',
+                projection: 'EPSG:3857',
+                version: '1.3.0',
+                format: 'image/png',
+                extent: new Extent('EPSG:3857', -90000, 150000, 7e+006, 8e+006),
+            };
+            // should not throw
+            _testing.checkCapabilities(layer, getCapResult);
+            assertExtent(layer.validExtent, 'EPSG:3857', -962742, 6.42272e+006, 196776, 8.59402e+006);
+            assertExtent(layer.extent, 'EPSG:3857', -90000, 7e+006, 150000, 8e+006);
 
-                layer = {
-                    name: 'GBR_BGS_625k_BLT',
-                    projection: 'EPSG:3857',
-                    version: '1.3.0',
-                    format: 'image/png',
-                    extent: new Extent('EPSG:3857', -100000, 150000, 7e+006, 9e+006),
-                };
-                _testing.checkCapabilities(layer, getCapResult);
-                assertExtent(layer.validExtent, 'EPSG:3857', -962742, 6.42272e+006, 196776, 8.59402e+006);
-                assertExtent(layer.extent, 'EPSG:3857', -100000, 7e+006, 150000, 8.59402e+006);
-            });
+            layer = {
+                name: 'GBR_BGS_625k_BLT',
+                projection: 'EPSG:3857',
+                version: '1.3.0',
+                format: 'image/png',
+                extent: new Extent('EPSG:3857', -100000, 150000, 7e+006, 9e+006),
+            };
+            _testing.checkCapabilities(layer, getCapResult);
+            assertExtent(layer.validExtent, 'EPSG:3857', -962742, 6.42272e+006, 196776, 8.59402e+006);
+            assertExtent(layer.extent, 'EPSG:3857', -100000, 7e+006, 150000, 8.59402e+006);
+        });
 
-            it('should throw an exception if layer.extent is completely outside validExtent', function () {
-                const layer = {
-                    name: 'GBR_BGS_625k_BLT',
-                    projection: 'EPSG:3857',
-                    version: '1.3.0',
-                    format: 'image/png',
-                    extent: new Extent('EPSG:3857', 200000, 250000, 7e+006, 9e+006),
-                };
-                assert.throws(() => _testing.checkCapabilities(layer, getCapResult), /Layer.extent outside of validity extent for layer GBR_BGS_625k_BLT/);
-            });
+        it('should throw an exception if layer.extent is completely outside validExtent', function () {
+            const layer = {
+                name: 'GBR_BGS_625k_BLT',
+                projection: 'EPSG:3857',
+                version: '1.3.0',
+                format: 'image/png',
+                extent: new Extent('EPSG:3857', 200000, 250000, 7e+006, 9e+006),
+            };
+            assert.throws(() => _testing.checkCapabilities(layer, getCapResult), /Layer.extent outside of validity extent for layer GBR_BGS_625k_BLT/);
         });
     });
 });
