@@ -1,4 +1,4 @@
-import * as FlatBush from 'flatbush';
+import flatbush from 'flatbush';
 import { Vector4 } from 'three';
 import Extent from '../../Geographic/Extent';
 import OGCWebServiceHelper from './OGCWebServiceHelper';
@@ -121,7 +121,7 @@ export default {
                     extent,
                 });
             }
-            layer._spatialIndex = FlatBush(layer.images.length);
+            layer._spatialIndex = flatbush(layer.images.length);
             for (const image of layer.images) {
                 layer._spatialIndex.add(
                     image.extent.west(),
