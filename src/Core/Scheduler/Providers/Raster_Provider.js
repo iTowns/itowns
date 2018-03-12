@@ -104,7 +104,11 @@ export default {
             }
 
             if (geojson) {
-                layer.feature = GeoJSON2Features.parse(parentCrs, geojson, layer.extent, options);
+                return GeoJSON2Features.parse(parentCrs, geojson, layer.extent, options);
+            }
+        }).then((feature) => {
+            if (feature) {
+                layer.feature = feature;
                 layer.extent = layer.feature.extent || layer.feature.geometry.extent;
             }
         });

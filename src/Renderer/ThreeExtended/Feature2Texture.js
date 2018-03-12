@@ -3,29 +3,57 @@ import { UNIT } from '../../Core/Geographic/Coordinates';
 
 const pt = new THREE.Vector2();
 
-function drawPolygon(ctx, vertices, origin, dimension, properties, style = {}) {
+function _moveTo(ctx, coord, offsetScale) {
+    pt.x = coord._values[0] - offsetScale.origin.x;
+    pt.y = coord._values[1] - offsetScale.origin.y;
+    pt.multiply(offsetScale.scale);
+    ctx.moveTo(pt.x, pt.y);
+}
+
+function _lineTo(ctx, coord, offsetScale) {
+    pt.x = coord._values[0] - offsetScale.origin.x;
+    pt.y = coord._values[1] - offsetScale.origin.y;
+    pt.multiply(offsetScale.scale);
+    ctx.lineTo(pt.x, pt.y);
+}
+
+function drawPolygon(ctx, vertices, contour, holes, origin, dimension, properties, style = {}) {
     if (vertices.length === 0) {
         return;
     }
     // compute scale transformation extent to canvas
     //
     const scale = new THREE.Vector2(ctx.canvas.width / dimension.x, ctx.canvas.width / dimension.y);
+    const offsetScale = {
+        scale,
+        origin,
+    };
+    // build contour
     ctx.beginPath();
-    pt.x = vertices[0]._values[0] - origin.x;
-    pt.y = vertices[0]._values[1] - origin.y;
-    pt.multiply(scale);
-    // Place the first point
-    ctx.moveTo(pt.x, pt.y);
-    vertices.shift();
-
-    // build path
-    for (const vertice of vertices) {
-        pt.x = vertice._values[0] - origin.x;
-        pt.y = vertice._values[1] - origin.y;
-        pt.multiply(scale);
-        ctx.lineTo(pt.x, pt.y);
+    if (contour) {
+        _moveTo(ctx, vertices[contour.offset], offsetScale);
+        for (let i = 1; i < contour.count; i++) {
+            _lineTo(ctx, vertices[contour.offset + i], offsetScale);
+        }
+    } else {
+        // linestring
+        _moveTo(ctx, vertices[0], offsetScale);
+        for (let i = 1; i < vertices.length; i++) {
+            _lineTo(ctx, vertices[i], offsetScale);
+        }
     }
 
+    // holes
+    if (contour && holes) {
+        for (const hole of holes) {
+            // ctx.beginPath();
+            _moveTo(ctx, vertices[hole.offset], offsetScale);
+            for (let i = 1; i < hole.count; i++) {
+                _lineTo(ctx, vertices[hole.offset + i], offsetScale);
+            }
+            ctx.closePath();
+        }
+    }
     // draw line polygon
     if (style.stroke || properties.stroke) {
         ctx.strokeStyle = style.stroke || properties.stroke;
@@ -35,8 +63,7 @@ function drawPolygon(ctx, vertices, origin, dimension, properties, style = {}) {
     }
 
     // fill polygon
-    if (style.fill || properties.fill) {
-        ctx.closePath();
+    if (contour && (style.fill || properties.fill)) {
         ctx.fillStyle = style.fill || properties.fill;
         ctx.globalAlpha = style.fillOpacity || properties['fill-opacity'] || 1.0;
         ctx.fill();
@@ -58,39 +85,28 @@ function drawPoint(ctx, vertice, origin, dimension, style = {}) {
     ctx.stroke();
 }
 
-function drawFeature(ctx, feature, origin, dimension, extent, style = {}) {
+function _drawFeatureGeometry(ctx, feature, geometry, origin, dimension, extent, style) {
     const properties = feature.properties;
-    const coordinates = feature.geometry.coordinates.slice();
-    if (feature.geometry.type === 'point') {
-        drawPoint(ctx, coordinates[0], origin, dimension, style);
-    } else if (feature.geometry.extent.intersectsExtent(extent)) {
+    if (geometry.type === 'point') {
+        drawPoint(ctx, geometry.vertices[0], origin, dimension, style);
+    } else if (geometry.extent.intersectsExtent(extent)) {
         ctx.globalCompositeOperation = 'destination-over';
-        drawPolygon(ctx, coordinates, origin, dimension, properties, style);
+        drawPolygon(ctx, geometry.vertices, geometry.contour, geometry.holes, origin, dimension, properties, style);
     }
 }
 
-function drawFeatureCollection(ctx, collection, origin, dimension, extent, style = {}) {
-    for (const features of collection.geometries) {
-        /* eslint-disable guard-for-in */
-        if (features.extent.intersectsExtent(extent)) {
-            for (const id in features.featureVertices) {
-                const polygon = features.featureVertices[id];
-                const properties = collection.features[id].properties;
-                const coordinates = features.coordinates.slice(polygon.offset, polygon.offset + polygon.count);
-                if (features.type === 'point') {
-                    drawPoint(ctx, coordinates[0], origin, dimension, style);
-                } else if (polygon.extent.intersectsExtent(extent)) {
-                    ctx.globalCompositeOperation = 'destination-over';
-                    drawPolygon(ctx, coordinates, origin, dimension, properties, style);
-                }
-            }
+function drawFeature(ctx, feature, origin, dimension, extent, style = {}) {
+    if (Array.isArray(feature.geometry)) {
+        for (let i = 0; i < feature.geometry.length; i++) {
+            _drawFeatureGeometry(ctx, feature, feature.geometry[i], origin, dimension, extent, style);
         }
+    } else {
+        _drawFeatureGeometry(ctx, feature, feature.geometry, origin, dimension, extent, style);
     }
-    /* eslint-enable guard-for-in */
 }
 
 export default {
-    createTextureFromFeature(feature, extent, sizeTexture, style) {
+    createTextureFromFeature(features, extent, sizeTexture, style) {
         // A texture is instancied drawn canvas
         // origin and dimension are used to transform the feature's coordinates to canvas's space
         const origin = new THREE.Vector2(extent.west(UNIT.DEGREE), extent.south(UNIT.DEGREE));
@@ -102,10 +118,12 @@ export default {
         const ctx = c.getContext('2d');
 
         // Draw the canvas
-        if (feature.geometries) {
-            drawFeatureCollection(ctx, feature, origin, dimension, extent, style);
+        if (Array.isArray(features)) {
+            for (let i = 0; i < features.length; i++) {
+                drawFeature(ctx, features[i], origin, dimension, extent, style);
+            }
         } else {
-            drawFeature(ctx, feature, origin, dimension, extent, style);
+            drawFeature(ctx, features, origin, dimension, extent, style);
         }
 
         const texture = new THREE.Texture(c);

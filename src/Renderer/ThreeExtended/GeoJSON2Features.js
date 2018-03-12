@@ -27,21 +27,27 @@ function readCRS(json) {
 }
 
 const coords = new Coordinates('EPSG:4978', 0, 0, 0);
-function readCoordinates(crsIn, crsOut, coordinates, extent) {
+function readCoordinates(crsIn, crsOut, coordinates, extent, target) {
     // coordinates is a list of pair [[x1, y1], [x2, y2], ..., [xn, yn]]
-    const out = new Array(coordinates.length);
+    let offset = 0;
+    if (target) {
+        offset = target.length;
+        target.length += coordinates.length;
+    }
+    const out = target || new Array(coordinates.length);
+
     let i = 0;
     for (const pair of coordinates) {
         // TODO: 1 is a default z value, makes this configurable
         if (crsIn === crsOut) {
-            out[i] = new Coordinates(crsIn, pair[0], pair[1], 1);
+            out[offset + i] = new Coordinates(crsIn, pair[0], pair[1], 1);
         } else {
             coords.set(crsIn, pair[0], pair[1], 1);
-            out[i] = coords.as(crsOut);
+            out[offset + i] = coords.as(crsOut);
         }
         // expand extent if present
         if (extent) {
-            extent.expandByPoint(out[i]);
+            extent.expandByPoint(out[offset + i]);
         }
         ++i;
     }
@@ -60,15 +66,39 @@ const GeometryToCoordinates = {
         if (filteringExtent) {
             coordinates = coordinates.filter(c => filteringExtent.isPointInside(c));
         }
-        return { type: 'point', coordinates, extent };
+        return { type: 'point', vertices: coordinates, extent };
     },
     polygon(crsIn, crsOut, coordsIn, filteringExtent, options) {
         const extent = options.buildExtent ? new Extent(crsOut, Infinity, -Infinity, Infinity, -Infinity) : undefined;
-        const coordinates = readCoordinates(crsIn, crsOut, coordsIn, extent);
+        // read contour first
+        const coordinates = readCoordinates(crsIn, crsOut, coordsIn[0], extent);
         if (filteringExtent && !filteringExtent.isPointInside(coordinates[0])) {
             return;
         }
-        return { type: 'polygon', coordinates, extent };
+        const contour = {
+            offset: 0,
+            count: coordinates.length,
+        };
+        let offset = coordinates.length;
+        const holes = [];
+        // Then read optional holes
+        for (let i = 1; i < coordsIn.length; i++) {
+            readCoordinates(crsIn, crsOut, coordsIn[i], extent, coordinates);
+            const count = coordinates.length - offset;
+            holes.push({
+                offset,
+                count,
+            });
+            offset += count;
+        }
+
+        return {
+            type: 'polygon',
+            vertices: coordinates,
+            contour,
+            holes,
+            extent,
+        };
     },
     lineString(crsIn, crsOut, coordsIn, filteringExtent, options) {
         const extent = options.buildExtent ? new Extent(crsOut, Infinity, -Infinity, Infinity, -Infinity) : undefined;
@@ -76,39 +106,29 @@ const GeometryToCoordinates = {
         if (filteringExtent && !filteringExtent.isPointInside(coordinates[0])) {
             return;
         }
-        return { type: 'linestring', coordinates, extent };
+        return { type: 'linestring', vertices: coordinates, extent };
     },
-    merge(...geoms) {
-        let result;
-        let offset = 0;
-        for (const geom of geoms) {
-            if (!geom) {
-                continue;
+    multiPoint(crsIn, crsOut, coordsIn, filteringExtent, options) {
+        const points = [];
+        points.type = 'multipoint';
+        for (const pt of coordsIn) {
+            const l = this.point(crsIn, crsOut, pt, filteringExtent, options);
+            if (!l) {
+                return;
             }
-            if (!result) {
-                result = geom;
-                // instance extent if present
-                if (geom.extent) {
-                    result.extent = geom.extent.clone();
-                }
-                result.featureVertices = {};
-            } else {
-                // merge coordinates
-                for (const coordinate of geom.coordinates) {
-                    result.coordinates.push(coordinate);
-                }
-                // union extent if present
-                if (geom.extent) {
-                    result.extent.union(geom.extent);
-                }
+            filteringExtent = undefined;
+            points.push(l);
+            if (options.buildExtent) {
+                points.extent = points.extent || l.extent;
+                points.extent.union(l.extent);
             }
-            result.featureVertices[geom.featureIndex || 0] = { offset, count: geom.coordinates.length, extent: geom.extent };
-            offset = result.coordinates.length;
         }
-        return result;
+        return points;
     },
+
     multiLineString(crsIn, crsOut, coordsIn, filteringExtent, options) {
-        let result;
+        const lines = [];
+        lines.type = 'multilinestring';
         for (const line of coordsIn) {
             const l = this.lineString(crsIn, crsOut, line, filteringExtent, options);
             if (!l) {
@@ -116,22 +136,31 @@ const GeometryToCoordinates = {
             }
             // only test the first line
             filteringExtent = undefined;
-            result = this.merge(result, l);
+            lines.push(l);
+            if (options.buildExtent) {
+                lines.extent = lines.extent || l.extent;
+                lines.extent.union(l.extent);
+            }
         }
-        return result;
+        return lines;
     },
     multiPolygon(crsIn, crsOut, coordsIn, filteringExtent, options) {
-        let result;
+        const polygons = [];
+        polygons.type = 'multipolygon';
         for (const polygon of coordsIn) {
-            const p = this.polygon(crsIn, crsOut, polygon[0], filteringExtent, options);
+            const p = this.polygon(crsIn, crsOut, polygon, filteringExtent, options);
             if (!p) {
                 return;
             }
             // only test the first poly
             filteringExtent = undefined;
-            result = this.merge(result, p);
+            polygons.push(p);
+            if (options.buildExtent) {
+                polygons.extent = polygons.extent || p.extent;
+                polygons.extent.union(p.extent);
+            }
         }
-        return result;
+        return polygons;
     },
 };
 
@@ -143,13 +172,13 @@ function readGeometry(crsIn, crsOut, json, filteringExtent, options) {
         case 'point':
             return GeometryToCoordinates.point(crsIn, crsOut, [json.coordinates], filteringExtent, options);
         case 'multipoint':
-            return GeometryToCoordinates.point(crsIn, crsOut, json.coordinates, filteringExtent, options);
+            return GeometryToCoordinates.multiPoint(crsIn, crsOut, json.coordinates, filteringExtent, options);
         case 'linestring':
             return GeometryToCoordinates.lineString(crsIn, crsOut, json.coordinates, filteringExtent, options);
         case 'multilinestring':
             return GeometryToCoordinates.multiLineString(crsIn, crsOut, json.coordinates, filteringExtent, options);
         case 'polygon':
-            return GeometryToCoordinates.polygon(crsIn, crsOut, json.coordinates[0], filteringExtent, options);
+            return GeometryToCoordinates.polygon(crsIn, crsOut, json.coordinates, filteringExtent, options);
         case 'multipolygon':
             return GeometryToCoordinates.multiPolygon(crsIn, crsOut, json.coordinates, filteringExtent, options);
         case 'geometrycollection':
@@ -179,21 +208,6 @@ function readFeature(crsIn, crsOut, json, filteringExtent, options) {
     return feature;
 }
 
-function concatGeometries(result, geometry) {
-    const idx = result.geometries.length;
-    geometry.forEach((f, index) => { f.properties._idx = index; f.properties._meshIdx = idx; });
-    const g = geometry.map(p => p.geometry);
-    const p = GeometryToCoordinates.merge(...g);
-    result.geometries.push(p);
-    if (p.extent) {
-        if (result.extent) {
-            result.extent.union(p.extent);
-        } else {
-            result.extent = p.extent.clone();
-        }
-    }
-}
-
 function readFeatureCollection(crsIn, crsOut, json, filteringExtent, options) {
     const collec = [];
 
@@ -201,45 +215,65 @@ function readFeatureCollection(crsIn, crsOut, json, filteringExtent, options) {
     for (const feature of json.features) {
         const f = readFeature(crsIn, crsOut, feature, filteringExtent, options);
         if (f) {
+            if (options.buildExtent) {
+                if (collec.extent) {
+                    collec.extent.union(f.geometry.extent);
+                } else {
+                    collec.extent = f.geometry.extent.clone();
+                }
+            }
             f.geometry.featureIndex = featureIndex;
             collec.push(f);
             featureIndex++;
         }
     }
-    if (collec.length) {
-        // sort by types
-        const geom = {
-            points: collec.filter(c => c.geometry.type === 'point'),
-            lines: collec.filter(c => c.geometry.type === 'linestring'),
-            polygons: collec.filter(c => c.geometry.type === 'polygon'),
-        };
-        const result = { geometries: [] };
-        if (geom.points.length) {
-            concatGeometries(result, geom.points);
-        }
-        if (geom.lines.length) {
-            concatGeometries(result, geom.lines);
-        }
-        if (geom.polygons.length) {
-            concatGeometries(result, geom.polygons);
-        }
-        // remember individual features properties
-        // eslint-disable-next-line arrow-body-style
-        result.features = collec.map((c) => { return { properties: c.properties }; });
-        if (result.geometries.length) {
-            return result;
-        }
-    }
+    return collec;
 }
 
+/**
+ * @module GeoJSON2Features
+ */
 export default {
+    /**
+     * @typedef FeatureGeometry
+     * @type {object}
+     * @property {string} type - Geometry type ('(multi)point', '(multi)linestring' or '(multi)polygon')
+     * @property {Coordinates[]} vertices - All the vertices of the geometry.
+     * @property {?number[]} contour - If this geometry is a polygon, contour contains
+     * the indices that compose the contour (outer ring)
+     * @property {?Array} holes - If this geometry is a polygon, holes contains
+     * an array of indices representing holes in the polygon.
+     * @property {?Extent} extent - The 2D extent containing all the geometries
+    */
+
+    /**
+     * @typedef module:GeoJSON2Features.Feature
+     * @type {object}
+     * @property {FeatureGeometry|Array} geometry - The feature's geometry. Can
+     * be a FeatureGeometry or an array of FeatureGeometry.
+     * @property {object} properties - Properties of the features
+    */
+
+    /**
+     * Parses a geojson file and return a Feature or an array of Feature.
+     * @param {string} crsOut - The CRS to convert the input coordinates to
+     * @param {string} json - The GeoJSON file to parse
+     * @param {?Extent} filteringExtent - Optional filter to reject features
+     * outside of this extent.
+     * @param {object} options - options controlling the parsing
+     * @param {string} options.crsIn - override the data crs
+     * @param {boolean} options.buildExtent - if true the geometry will
+     * have an extent property containing the area covered by the geom
+     * @param {function} options.filter - Filter function to remove features
+     * @returns {Promise} - a Promise resolving with a Feature or an array of Feature
+     */
     parse(crsOut, json, filteringExtent, options = {}) {
         options.crsIn = options.crsIn || readCRS(json);
         switch (json.type.toLowerCase()) {
             case 'featurecollection':
-                return readFeatureCollection(options.crsIn, crsOut, json, filteringExtent, options);
+                return Promise.resolve(readFeatureCollection(options.crsIn, crsOut, json, filteringExtent, options));
             case 'feature':
-                return readFeature(options.crsIn, crsOut, json, filteringExtent, options);
+                return Promise.resolve(readFeature(options.crsIn, crsOut, json, filteringExtent, options));
             default:
                 throw new Error(`Unsupported GeoJSON type: '${json.type}`);
         }
