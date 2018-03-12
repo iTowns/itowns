@@ -51,7 +51,11 @@ new itowns.PlanarControls(view, {});
 view.notifyChange(true);
 
 function setMaterialLineWidth(result) {
-    result.children[0].material.linewidth = 5;
+    result.traverse(function _setLineWidth(mesh) {
+        if (mesh.material) {
+            mesh.material.linewidth = 5;
+        }
+    });
 }
 
 function colorLine(properties) {

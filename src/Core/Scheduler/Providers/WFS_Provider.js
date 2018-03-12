@@ -69,25 +69,27 @@ function getFeatures(crs, tile, layer) {
 
     layer.convert = layer.convert ? layer.convert : Feature2Mesh.convert({});
 
-    return Fetcher.json(urld, layer.networkOptions).then(
-        geojson => assignLayer(layer.convert(GeoJSON2Features.parse(crs, geojson, tile.extent, { filter: layer.filter })), layer),
-        (err) => {
-            // special handling for 400 errors, as it probably means the config is wrong
-            if (err.response.status == 400) {
-                return err.response.text().then((text) => {
-                    const getCapUrl = `${layer.url}SERVICE=WFS&REQUEST=GetCapabilities&VERSION=${layer.version}`;
-                    const xml = new DOMParser().parseFromString(text, 'application/xml');
-                    const errorElem = xml.querySelector('Exception');
-                    const errorCode = errorElem.getAttribute('exceptionCode');
-                    const errorMessage = errorElem.querySelector('ExceptionText').textContent;
-                    console.error(`Layer ${layer.name}: bad request when fetching data. Server says: "${errorCode}: ${errorMessage}". \nReviewing ${getCapUrl} may help.`, err);
+    return Fetcher.json(urld, layer.networkOptions)
+        .then(
+            geojson => GeoJSON2Features.parse(crs, geojson, tile.extent, { filter: layer.filter }),
+            (err) => {
+                // special handling for 400 errors, as it probably means the config is wrong
+                if (err.response.status == 400) {
+                    return err.response.text().then((text) => {
+                        const getCapUrl = `${layer.url}SERVICE=WFS&REQUEST=GetCapabilities&VERSION=${layer.version}`;
+                        const xml = new DOMParser().parseFromString(text, 'application/xml');
+                        const errorElem = xml.querySelector('Exception');
+                        const errorCode = errorElem.getAttribute('exceptionCode');
+                        const errorMessage = errorElem.querySelector('ExceptionText').textContent;
+                        console.error(`Layer ${layer.name}: bad request when fetching data. Server says: "${errorCode}: ${errorMessage}". \nReviewing ${getCapUrl} may help.`, err);
+                        throw err;
+                    });
+                } else {
+                    console.error(`Layer ${layer.name}: ${err.response.status} error while trying to fetch WFS data. Url was ${urld}.`, err);
                     throw err;
-                });
-            } else {
-                console.error(`Layer ${layer.name}: ${err.response.status} error while trying to fetch WFS data. Url was ${urld}.`, err);
-                throw err;
-            }
-        });
+                }
+            })
+        .then(feature => assignLayer(layer.convert(feature), layer));
 }
 
 export default {

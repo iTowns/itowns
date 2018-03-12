@@ -175,8 +175,14 @@ function selectRoad(properties) {
 }
 
 function altitudePoint(properties, contour) {
+    var result;
+    var z = 0;
     if (contour.length && contour.length > 0) {
-        return itowns.DEMUtils.getElevationValueAt(globeView.wgs84TileLayer, contour[0]).z + 5;
+        result = itowns.DEMUtils.getElevationValueAt(globeView.wgs84TileLayer, contour[0]);
+        if (result) {
+            z = result.z;
+        }
+        return z + 5;
     }
     return 0;
 }

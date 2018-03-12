@@ -60,7 +60,9 @@
           ]
         ]
       },
-      "properties": {}
+      "properties": {
+        "my_prop": 14
+      }
     }
   ]
 }
