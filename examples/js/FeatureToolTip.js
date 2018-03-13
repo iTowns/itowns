@@ -62,8 +62,8 @@ function ToolTip(viewer, viewerDiv, tooltip, precisionPx) {
                         symb = '<span id=' + name + ' style=color:' + color + ';>&#9679</span>';
                         label = point.properties.name || point.properties.description || layer.name;
                         tooltip.innerHTML += '<div>' + symb + ' ' + label + '<br></div>';
-                        tooltip.innerHTML += '<span class=coord>long ' + point.coordinates.longitude().toFixed(4) + '<br /></span>';
-                        tooltip.innerHTML += '<span class=coord>lati &nbsp; ' + point.coordinates.latitude().toFixed(4) + '<br /></span>';
+                        tooltip.innerHTML += '<span class=coord>long ' + result[p].coordinates.longitude(itowns.UNIT.DEGREE).toFixed(4) + '<br /></span>';
+                        tooltip.innerHTML += '<span class=coord>lati &nbsp; ' + result[p].coordinates.latitude(itowns.UNIT.DEGREE).toFixed(4) + '<br /></span>';
                         document.getElementById(name).style['-webkit-text-stroke'] = '1px red';
                         ++id;
                     }

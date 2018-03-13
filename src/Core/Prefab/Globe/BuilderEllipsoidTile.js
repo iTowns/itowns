@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { C, UNIT } from '../../Geographic/Coordinates';
+import { C } from '../../Geographic/Coordinates';
 import Projection from '../../Geographic/Projection';
 import OBB from '../../../Renderer/ThreeExtended/OBB';
 import Extent from '../../Geographic/Extent';
@@ -55,10 +55,9 @@ BuilderEllipsoidTile.prototype.Center = function Center(extent) {
 // get position 3D cartesian
 BuilderEllipsoidTile.prototype.VertexPosition = function VertexPosition(params) {
     this.tmp.coords[0].set(
-        'EPSG:4326',
+        'EPSG:4326:R',
         params.projected.longitudeRad,
         params.projected.latitudeRad);
-    this.tmp.coords[0]._internalStorageUnit = UNIT.RADIAN;
 
     this.tmp.coords[0].as('EPSG:4978', this.tmp.coords[1]).xyz(this.tmp.position);
     return this.tmp.position;
@@ -102,7 +101,6 @@ BuilderEllipsoidTile.prototype.computeSharableExtent = function fnComputeSharabl
     // Common geometry is looking for only on longitude
     const sizeLongitude = Math.abs(extent.west() - extent.east()) / 2;
     const sharableExtent = new Extent(extent.crs(), -sizeLongitude, sizeLongitude, extent.south(), extent.north());
-    sharableExtent._internalStorageUnit = extent._internalStorageUnit;
 
     // compute rotation to transform tile to position it on ellipsoid
     // this transformation take into account the transformation of the parents

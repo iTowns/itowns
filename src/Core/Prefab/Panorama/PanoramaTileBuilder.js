@@ -122,7 +122,6 @@ PanoramaTileBuilder.prototype.computeSharableExtent = function fnComputeSharable
     // with a transformation (translation, rotation)
     const sizeLongitude = Math.abs(extent.west() - extent.east()) / 2;
     const sharableExtent = new Extent(extent.crs(), -sizeLongitude, sizeLongitude, extent.south(), extent.north());
-    sharableExtent._internalStorageUnit = extent._internalStorageUnit;
 
     // compute rotation to transform tile to position it
     // this transformation take into account the transformation of the parents

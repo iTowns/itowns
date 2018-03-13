@@ -4,7 +4,7 @@ import CancelledCommandException from '../Core/Scheduler/CancelledCommandExcepti
 import ObjectRemovalHelper from './ObjectRemovalHelper';
 
 
-const center = new Coordinates('EPSG:4326', 0, 0, 0);
+const center = new Coordinates('EPSG:4326:R', 0, 0, 0);
 function subdivisionExtents(bbox) {
     bbox.center(center);
 
@@ -25,9 +25,6 @@ function subdivisionExtents(bbox) {
     // so we need to fix the new bboxes as well
     const result = [northWest, northEast, southWest, southEast];
 
-    for (const r of result) {
-        r._internalStorageUnit = bbox._internalStorageUnit;
-    }
     return result;
 }
 

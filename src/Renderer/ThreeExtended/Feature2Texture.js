@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-import { UNIT } from '../../Core/Geographic/Coordinates';
 
 const pt = new THREE.Vector2();
 
@@ -109,8 +108,8 @@ export default {
     createTextureFromFeature(features, extent, sizeTexture, style) {
         // A texture is instancied drawn canvas
         // origin and dimension are used to transform the feature's coordinates to canvas's space
-        const origin = new THREE.Vector2(extent.west(UNIT.DEGREE), extent.south(UNIT.DEGREE));
-        const dimension = extent.dimensions(UNIT.DEGREE);
+        const origin = new THREE.Vector2(extent.west(), extent.south());
+        const dimension = extent.dimensions();
         const c = document.createElement('canvas');
 
         c.width = sizeTexture;

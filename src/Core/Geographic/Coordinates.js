@@ -10,6 +10,7 @@ import mE from '../Math/MathExtended';
 import Ellipsoid from '../Math/Ellipsoid';
 
 proj4.defs('EPSG:4978', '+proj=geocent +datum=WGS84 +units=m +no_defs');
+proj4.defs('EPSG:4326:R', proj4.defs('EPSG:4326'));
 
 const projectionCache = {};
 
@@ -44,6 +45,7 @@ function _unitFromProj4Unit(projunit) {
 export function crsToUnit(crs) {
     switch (crs) {
         case 'EPSG:4326' : return UNIT.DEGREE;
+        case 'EPSG:4326:R' : return UNIT.RADIAN;
         case 'EPSG:4978' : return UNIT.METER;
         default: {
             const p = proj4.defs(crs);
@@ -55,13 +57,13 @@ export function crsToUnit(crs) {
     }
 }
 
-export function reasonnableEpsilonForUnit(unit) {
-    switch (unit) {
-        case UNIT.RADIAN: return 0.00001;
-        case UNIT.DEGREE: return 0.01;
-        case UNIT.METER: return 0.001;
-        default:
-            return 0;
+export function reasonnableEpsilonForUnit(crs) {
+    if (is4326Radians()) {
+        return 0.00001;
+    } else if (is4326(crs)) {
+        return 0.01;
+    } else {
+        return 0.001;
     }
 }
 
@@ -111,68 +113,67 @@ function instanceProj4(crsIn, crsOut) {
     return p;
 }
 
+export function is4326(crs) {
+    return crs.indexOf('EPSG:4326') == 0;
+}
+
+export function is4326Radians(crs) {
+    return crs === 'EPSG:4326:R';
+}
+
 // Only support explicit conversions
 const cartesian = new THREE.Vector3();
 function _convert(coordsIn, newCrs, target) {
     target = target || new Coordinates(newCrs, 0, 0);
     if (newCrs === coordsIn.crs) {
-        const refUnit = crsToUnit(newCrs);
-        if (coordsIn._internalStorageUnit != refUnit) {
-            // custom internal unit
-            if (coordsIn._internalStorageUnit == UNIT.DEGREE && refUnit == UNIT.RADIAN) {
-                return target.set(
-                    newCrs,
-                    mE.degToRad(coordsIn._values[0]),
-                    mE.degToRad(coordsIn._values[1]),
-                    coordsIn._values[2]);
-            } else if (coordsIn._internalStorageUnit == UNIT.RADIAN && refUnit == UNIT.DEGREE) {
-                return target.set(
-                    newCrs,
-                    mE.radToDeg(coordsIn._values[0]),
-                    mE.radToDeg(coordsIn._values[1]),
-                    coordsIn._values[2]);
-            }
-        } else {
-            return target.copy(coordsIn);
-        }
+        return target.copy(coordsIn);
     } else {
-        if (coordsIn.crs === 'EPSG:4326' && newCrs === 'EPSG:4978') {
+        if (is4326(coordsIn.crs) && newCrs === 'EPSG:4978') {
             ellipsoid.cartographicToCartesian(coordsIn, cartesian);
             target.set(newCrs, cartesian);
             target._normal = coordsIn.geodesicNormal;
             return target;
         }
 
-        if (coordsIn.crs === 'EPSG:4978' && newCrs === 'EPSG:4326') {
+        if (coordsIn.crs === 'EPSG:4978' && is4326(newCrs)) {
             ellipsoid.cartesianToCartographic({
                 x: coordsIn._values[0],
                 y: coordsIn._values[1],
                 z: coordsIn._values[2],
             }, target);
+            // handle degrees vs radians
+            if (target.crs != newCrs) {
+                target.as(newCrs, target);
+            }
+            return target;
+        }
+
+        if (is4326(coordsIn.crs) && is4326(newCrs)) {
+            const unitIn = crsToUnit(coordsIn.crs);
+            const unitOut = crsToUnit(newCrs);
+            target.set(newCrs,
+                convertValueToUnit(unitIn, unitOut, coordsIn._values[0]),
+                convertValueToUnit(unitIn, unitOut, coordsIn._values[1]),
+                coordsIn._values[2]);
             return target;
         }
 
         if (coordsIn.crs in proj4.defs && newCrs in proj4.defs) {
             let val0 = coordsIn._values[0];
             let val1 = coordsIn._values[1];
+            let crsIn = coordsIn.crs;
 
-            // Verify that coordinates are stored in reference unit.
-            const refUnit = crsToUnit(coordsIn.crs);
-            if (coordsIn._internalStorageUnit != refUnit) {
-                if (coordsIn._internalStorageUnit == UNIT.DEGREE && refUnit == UNIT.RADIAN) {
-                    val0 = coordsIn.longitude(UNIT.RADIAN);
-                    val1 = coordsIn.latitude(UNIT.RADIAN);
-                } else if (coordsIn._internalStorageUnit == UNIT.RADIAN && refUnit == UNIT.DEGREE) {
-                    val0 = coordsIn.longitude(UNIT.DEGREE);
-                    val1 = coordsIn.latitude(UNIT.DEGREE);
-                }
+            if (is4326Radians(coordsIn.crs)) {
+                val0 = coordsIn.longitude(UNIT.DEGREE);
+                val1 = coordsIn.latitude(UNIT.DEGREE);
+                crsIn = 'EPSG:4326';
             }
 
             // there is a bug for converting anything from and to 4978 with proj4
             // https://github.com/proj4js/proj4js/issues/195
             // the workaround is to use an intermediate projection, like EPSG:4326
             if (newCrs == 'EPSG:4978') {
-                const p = instanceProj4(coordsIn.crs, 'EPSG:4326').forward([val0, val1]);
+                const p = instanceProj4(crsIn, 'EPSG:4326').forward([val0, val1]);
                 target.set('EPSG:4326', p[0], p[1], coordsIn._values[2]);
                 return target.as('EPSG:4978', target);
             } else if (coordsIn.crs === 'EPSG:4978') {
@@ -180,18 +181,18 @@ function _convert(coordsIn, newCrs, target) {
                 const p = instanceProj4(target.crs, newCrs).forward([target._values[0], target._values[1]]);
                 target.set(newCrs, p[0], p[1], target._values[2]);
                 return target;
-            } else if (coordsIn.crs == 'EPSG:4326' && newCrs == 'EPSG:3857') {
+            } else if (is4326(crsIn) && newCrs == 'EPSG:3857') {
                 val1 = THREE.Math.clamp(val1, -89.999999, 89.999999);
-                const p = instanceProj4(coordsIn.crs, newCrs).forward([val0, val1]);
+                const p = instanceProj4(crsIn, newCrs).forward([val0, val1]);
                 return target.set(newCrs, p[0], p[1], coordsIn._values[2]);
             } else {
                 // here is the normal case with proj4
-                const p = instanceProj4(coordsIn.crs, newCrs).forward([val0, val1]);
+                const p = instanceProj4(crsIn, newCrs).forward([val0, val1]);
                 return target.set(newCrs, p[0], p[1], coordsIn._values[2]);
             }
         }
 
-        throw new Error(`Cannot convert from crs ${coordsIn.crs} (unit=${coordsIn._internalStorageUnit}) to ${newCrs}`);
+        throw new Error(`Cannot convert from crs ${coordsIn.crs} to ${newCrs}`);
     }
 }
 
@@ -245,7 +246,7 @@ function Coordinates(crs, ...coordinates) {
 const planarNormal = new THREE.Vector3(0, 0, 1);
 
 function computeGeodesicNormal(coord) {
-    if (coord.crs == 'EPSG:4326') {
+    if (is4326(coord.crs)) {
         return ellipsoid.geodeticSurfaceNormalCartographic(coord);
     }
     // In globe mode (EPSG:4978), we compute the normal.
@@ -273,7 +274,6 @@ Coordinates.prototype.set = function set(crs, ...coordinates) {
         }
     }
     this._normal = undefined;
-    this._internalStorageUnit = crsToUnit(crs);
     return this;
 };
 
@@ -288,13 +288,11 @@ Coordinates.prototype.clone = function clone(target) {
     if (this._normal) {
         r._normal = this._normal.clone();
     }
-    r._internalStorageUnit = this._internalStorageUnit;
     return r;
 };
 
 Coordinates.prototype.copy = function copy(src) {
     this.set(src.crs, ...src._values);
-    this._internalStorageUnit = src._internalStorageUnit;
     return this;
 };
 
@@ -321,7 +319,13 @@ Coordinates.prototype.copy = function copy(src) {
 
 Coordinates.prototype.longitude = function longitude(unit) {
     _assertIsGeographic(this.crs);
-    return convertValueToUnit(this._internalStorageUnit, unit, this._values[0]);
+    if (unit === undefined) {
+        return this._values[0];
+    } else if (is4326Radians(this.crs)) {
+        return convertValueToUnit(UNIT.RADIAN, unit, this._values[0]);
+    } else {
+        return convertValueToUnit(UNIT.DEGREE, unit, this._values[0]);
+    }
 };
 
 /**
@@ -346,8 +350,13 @@ Coordinates.prototype.longitude = function longitude(unit) {
  */
 
 Coordinates.prototype.latitude = function latitude(unit) {
-    _assertIsGeographic(this.crs);
-    return convertValueToUnit(this._internalStorageUnit, unit, this._values[1]);
+    if (unit === undefined) {
+        return this._values[1];
+    } else if (is4326Radians(this.crs)) {
+        return convertValueToUnit(UNIT.RADIAN, unit, this._values[1]);
+    } else {
+        return convertValueToUnit(UNIT.DEGREE, unit, this._values[1]);
+    }
 };
 
 /**
@@ -521,7 +530,7 @@ Coordinates.prototype.xyz = function xyz(target) {
  */
 
 Coordinates.prototype.as = function as(crs, target) {
-    if (crs === undefined || !crsToUnit(crs)) {
+    if (crs === undefined || crsToUnit(crs) === undefined) {
         throw new Error(`Invalid crs paramater value '${crs}'`);
     }
     return _convert(this, crs, target);
@@ -536,6 +545,10 @@ Coordinates.prototype.as = function as(crs, target) {
  */
 Coordinates.prototype.offsetInExtent = function offsetInExtent(extent, target) {
     if (this.crs != extent.crs()) {
+        // If one of them is using Radians
+        if (is4326(this.crs) && is4326(extent.crs())) {
+            return this.as(extent.crs()).offsetInExtent(extent, target);
+        }
         throw new Error('unsupported mix');
     }
 
@@ -544,8 +557,8 @@ Coordinates.prototype.offsetInExtent = function offsetInExtent(extent, target) {
         y: Math.abs(extent.north() - extent.south()),
     };
 
-    const x = extent._internalStorageUnit == UNIT.METER ? this.x() : this.longitude(extent._internalStorageUnit);
-    const y = extent._internalStorageUnit == UNIT.METER ? this.y() : this.latitude(extent._internalStorageUnit);
+    const x = crsIsGeocentric(this.crs) ? this.x() : this.longitude();
+    const y = crsIsGeocentric(this.crs) ? this.y() : this.latitude();
 
     const originX = (x - extent.west()) / dimension.x;
     const originY = (extent.north() - y) / dimension.y;
@@ -572,8 +585,7 @@ export const C = {
         return new Coordinates('EPSG:4326', ...args);
     },
     EPSG_4326_Radians: function EPSG_4326(...args) {
-        const result = new Coordinates('EPSG:4326', ...args);
-        result._internalStorageUnit = UNIT.RADIAN;
+        const result = new Coordinates('EPSG:4326:R', ...args);
         return result;
     },
 };
