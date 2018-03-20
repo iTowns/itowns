@@ -7,9 +7,10 @@
 import Extent from '../../Geographic/Extent';
 import URLBuilder from './URLBuilder';
 import Fetcher from './Fetcher';
-import { cache } from './Cache';
 import GeoJSON2Features from '../../../Renderer/ThreeExtended/GeoJSON2Features';
 import Feature2Mesh from '../../../Renderer/ThreeExtended/Feature2Mesh';
+
+const cache = new Map();
 
 function preprocessDataLayer(layer) {
     if (!layer.typeName) {

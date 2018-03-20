@@ -1,5 +1,6 @@
 import * as THREE from 'three';
-import { cache } from './Scheduler/Providers/Cache';
+
+const cache = new Map();
 
 function Buffers() {
     this.index = null;

@@ -1,6 +1,5 @@
 import * as THREE from 'three';
 import Fetcher from './Fetcher';
-import { cache, pending } from './Cache';
 import IoDriver_XBIL from './IoDriver_XBIL';
 import Projection from '../../Geographic/Projection';
 import Extent from '../../Geographic/Extent';
@@ -11,6 +10,8 @@ export const SIZE_TEXTURE_TILE = 256;
 // CacheRessource is necessary for neighboring PM textures
 // The PM textures overlap several tiles WGS84, it is to avoid net requests
 // Info : THREE.js have cache image https://github.com/mrdoob/three.js/blob/master/src/loaders/ImageLoader.js#L25
+const cache = new Map();
+const pending = new Map();
 const ioDXBIL = new IoDriver_XBIL();
 const projection = new Projection();
 
