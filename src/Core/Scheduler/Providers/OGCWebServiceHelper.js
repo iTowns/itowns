@@ -1,6 +1,5 @@
 import * as THREE from 'three';
 import Fetcher from './Fetcher';
-import CacheRessource from './CacheRessource';
 import IoDriver_XBIL from './IoDriver_XBIL';
 import Projection from '../../Geographic/Projection';
 import Extent from '../../Geographic/Extent';
@@ -11,8 +10,8 @@ export const SIZE_TEXTURE_TILE = 256;
 // CacheRessource is necessary for neighboring PM textures
 // The PM textures overlap several tiles WGS84, it is to avoid net requests
 // Info : THREE.js have cache image https://github.com/mrdoob/three.js/blob/master/src/loaders/ImageLoader.js#L25
-const cache = CacheRessource();
-const cachePending = new Map();
+const cache = new Map();
+const pending = new Map();
 const ioDXBIL = new IoDriver_XBIL();
 const projection = new Projection();
 
@@ -27,14 +26,12 @@ const tileCoord = new Extent('WMTS:WGS84G', 0, 0, 0);
 export default {
     ioDXBIL,
     getColorTextureByUrl(url, networkOptions) {
-        const cachedTexture = cache.getRessource(url);
-
-        if (cachedTexture) {
-            return Promise.resolve(cachedTexture);
+        if (cache.has(url)) {
+            return Promise.resolve(cache.get(url));
         }
 
-        const { texture, promise } = (cachePending.has(url)) ?
-            cachePending.get(url) :
+        const { texture, promise } = (pending.has(url)) ?
+            pending.get(url) :
             Fetcher.texture(url, networkOptions);
 
         texture.generateMipmaps = false;
@@ -43,26 +40,23 @@ export default {
         texture.anisotropy = 16;
 
 
-        cachePending.set(url, { texture, promise });
+        pending.set(url, { texture, promise });
 
         return promise.then(() => {
-            if (!cache.getRessource(url)) {
-                cache.addRessource(url, texture);
+            if (!cache.has(url)) {
+                cache.set(url, texture);
             }
-            cachePending.delete(url);
+            pending.delete(url);
             return texture;
         });
     },
     getXBilTextureByUrl(url, networkOptions) {
-        const textureCache = cache.getRessource(url);
-
-        if (textureCache !== undefined) {
-            return Promise.resolve(textureCache);
+        if (cache.has(url)) {
+            return Promise.resolve(cache.get(url));
         }
 
-        const pending = cachePending.get(url);
-        if (pending) {
-            return pending;
+        if (pending.has(url)) {
+            return pending.get(url);
         }
 
         const promiseXBil = ioDXBIL.read(url, networkOptions).then((result) => {
@@ -71,10 +65,8 @@ export default {
             // need to rewrite sample function in shader
 
             // loading concurrence
-            const textureConcurrence = cache.getRessource(url);
-            if (textureConcurrence) {
-                cachePending.delete(url);
-                return textureConcurrence;
+            if (cache.has(url)) {
+                return cache.get(url);
             }
 
             const texture = getTextureFloat(result.floatArray);
@@ -83,13 +75,13 @@ export default {
             texture.minFilter = THREE.LinearFilter;
             texture.min = result.min;
             texture.max = result.max;
-            cache.addRessource(url, texture);
-            cachePending.delete(url);
+            cache.set(url, texture);
+            pending.delete(url);
 
             return texture;
         });
 
-        cachePending.set(url, promiseXBil);
+        pending.set(url, promiseXBil);
 
         return promiseXBil;
     },

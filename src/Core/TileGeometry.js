@@ -1,7 +1,6 @@
 import * as THREE from 'three';
-import CacheRessource from './Scheduler/Providers/CacheRessource';
 
-const cache = CacheRessource(); // TODO /!\ singleton
+const cache = new Map();
 
 function Buffers() {
     this.index = null;
@@ -69,7 +68,7 @@ TileGeometry.prototype.computeBuffers = function computeBuffers(params, builder)
 
     // Read previously cached values (index and uv.wgs84 only depend on the # of triangles)
     const cacheKey = `${builder.type}_${params.disableSkirt ? 0 : 1}_${params.segment}`;
-    const cachedBuffers = cache.getRessource(cacheKey);
+    const cachedBuffers = cache.get(cacheKey);
     const mustBuildIndexAndWGS84 = !cachedBuffers;
     if (cachedBuffers) {
         outBuffers.index = cachedBuffers.index;
@@ -81,7 +80,7 @@ TileGeometry.prototype.computeBuffers = function computeBuffers(params, builder)
             new Float32Array(nVertex * 2), 2);
 
         // Update cache
-        cache.addRessource(cacheKey, {
+        cache.set(cacheKey, {
             index: outBuffers.index,
             uvwgs84: outBuffers.uv.wgs84,
         });
