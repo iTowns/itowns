@@ -93,15 +93,21 @@ function getXbilTexture(tile, layer, targetZoom) {
  * TODO : RGBA --> RGB remove alpha canal
  * @param {{zoom:number,row:number,col:number}} coordWMTS
  * @param {Layer} layer
+ * @param {number} targetZoom
  * @returns {Promise<Texture>}
  */
-function getColorTexture(coordWMTS, layer) {
+function getColorTexture(coordWMTS, layer, targetZoom) {
+    const pitch = new THREE.Vector4(0.0, 0.0, 1.0, 1.0);
+    if (targetZoom && targetZoom !== coordWMTS.zoom) {
+        coordWMTS = OGCWebServiceHelper.WMTS_WGS84Parent(coordWMTS, targetZoom, pitch);
+    }
+
     const urld = URLBuilder.xyz(coordWMTS, layer);
     return OGCWebServiceHelper.getColorTextureByUrl(urld, layer.networkOptions).then((texture) => {
         const result = {};
         result.texture = texture;
         result.texture.coords = coordWMTS;
-        result.pitch = new THREE.Vector4(0, 0, 1, 1);
+        result.pitch = pitch;
         if (layer.transparent) {
             texture.premultiplyAlpha = true;
         }
@@ -148,7 +154,7 @@ function tileInsideLimit(tile, layer, targetLevel) {
     return true;
 }
 
-function getColorTextures(tile, layer) {
+function getColorTextures(tile, layer, targetZoom) {
     if (tile.material === null) {
         return Promise.resolve();
     }
@@ -156,7 +162,7 @@ function getColorTextures(tile, layer) {
     const bcoord = tile.getCoordsForLayer(layer);
 
     for (const coordWMTS of bcoord) {
-        promises.push(getColorTexture(coordWMTS, layer));
+        promises.push(getColorTexture(coordWMTS, layer, targetZoom));
     }
 
     return Promise.all(promises);
