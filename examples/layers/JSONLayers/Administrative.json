@@ -9,7 +9,7 @@
   "transparent": true,
   "format": "image/png",
   "updateStrategy": {
-    "type": "0",
+    "type": 0,
     "options": {}
   },
   "networkOptions": {

@@ -7,7 +7,7 @@
         "crossOrigin": "anonymous"
     },
     "updateStrategy": {
-        "type": "0",
+        "type": 0,
         "options": {}
     },
     "format": "image/jpeg",
