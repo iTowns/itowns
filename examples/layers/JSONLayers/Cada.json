@@ -8,7 +8,7 @@
   "opacity": 1,
   "transparent": true,
   "updateStrategy": {
-    "type": "0",
+    "type": 0,
     "options": {}
   },
   "networkOptions": {
