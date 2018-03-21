@@ -147,6 +147,7 @@ export default {
             pitch.x = cWMTS.col * invDiff - c;
             pitch.y = cWMTS.row * invDiff - r;
             pitch.z = invDiff;
+            pitch.w = invDiff;
         }
 
         return target.set(levelParent, r, c);
