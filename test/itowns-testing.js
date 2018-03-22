@@ -120,6 +120,16 @@ global.renderer = {
         getExtension() {
             return null;
         },
+        createProgram: () => {},
+        shaderSource: () => {},
+        compileShader: () => {},
+        attachShader: () => {},
+        linkProgram: () => {},
+        getProgramInfoLog: () => {},
+        getProgramParameter: () => {},
+        deleteProgram: () => {},
+        deleteShader: () => {},
+        createShader: () => {},
         MAX_TEXTURE_IMAGE_UNITS: 8,
     },
     capabilities: {

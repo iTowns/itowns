@@ -12,13 +12,12 @@ const vec4 COrange = vec4( 1.0, 0.3, 0.0, 1.0);
 const vec4 CRed = vec4( 1.0, 0.0, 0.0, 1.0);
 
 
-uniform sampler2D   dTextures_01[TEX_UNITS];
-uniform vec4        offsetScale_L01[TEX_UNITS];
+uniform sampler2D   texColor_01[TEX_UNITS];
+uniform vec4        offsetScale_color_01[TEX_UNITS];
 
 // offset texture | Projection | fx | Opacity
-uniform vec4        paramLayers[8];
-uniform int         loadedTexturesCount[8];
-uniform bool        visibility[8];
+uniform vec4        paramLayers[TEX_UNITS];
+uniform bool        visibility[TEX_UNITS];
 
 uniform float       distanceFog;
 uniform int         colorLayersCount;
@@ -99,7 +98,7 @@ void main() {
         bool validTexture = false;
 
         // TODO Optimisation des uv1 peuvent copier pas lignes!!
-        for (int layer = 0; layer < 8; layer++) {
+        for (int layer = 0; layer < TEX_UNITS; layer++) {
             if(layer == colorLayersCount) {
                 break;
             }
@@ -130,8 +129,8 @@ void main() {
                         // Strangely it's work with function returning a global variable, doesn't work on Chrome Windows
                         // vec4 layerColor = texture2D(dTextures_01[getTextureIndex()],  pitUV(projWGS84 ? vUv_WGS84 : uvPM,pitScale_L01[getTextureIndex()]));
                         vec4 layerColor = colorAtIdUv(
-                            dTextures_01,
-                            offsetScale_L01,
+                            texColor_01,
+                            offsetScale_color_01,
                             textureIndex,
                             projWGS84 ? vUv_WGS84 : uvPM);
 

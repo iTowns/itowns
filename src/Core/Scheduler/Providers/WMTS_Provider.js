@@ -32,7 +32,9 @@ function preprocessDataLayer(layer) {
         options.version = options.version || '1.0.0';
         options.tileMatrixSet = options.tileMatrixSet || 'WGS84';
         options.style = options.style || 'normal';
-        options.projection = options.projection || 'EPSG:3857';
+        if (!options.projection) {
+            options.projection = options.tileMatrixSet == 'PM' ? 'EPSG:3857' : 'EPSG:4326';
+        }
         let newBaseUrl = `${layer.url}` +
             `?LAYER=${options.name}` +
             `&FORMAT=${layer.format}` +
