@@ -57,7 +57,7 @@ export function crsToUnit(crs) {
     }
 }
 
-export function reasonnableEpsilonForUnit(crs) {
+export function reasonnableEpsilonForCRS(crs) {
     if (is4326Radians()) {
         return 0.00001;
     } else if (is4326(crs)) {

@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import Coordinates, { crsToUnit, crsIsGeographic, assertCrsIsValid, convertValueToUnit, reasonnableEpsilonForUnit, is4326 } from '../Geographic/Coordinates';
+import Coordinates, { crsToUnit, crsIsGeographic, assertCrsIsValid, convertValueToUnit, reasonnableEpsilonForCRS, is4326 } from '../Geographic/Coordinates';
 import Projection from '../Geographic/Projection';
 
 const projection = new Projection();
@@ -300,7 +300,7 @@ Extent.prototype.isInside = function isInside(other, epsilon) {
         }
     } else {
         const o = other.as(this._crs);
-        epsilon = epsilon == undefined ? reasonnableEpsilonForUnit(this._crs) : epsilon;
+        epsilon = epsilon == undefined ? reasonnableEpsilonForCRS(this._crs) : epsilon;
         // compare use crs' default storage unit
         return this.east() - o.east() <= epsilon &&
                o.west() - this.west() <= epsilon &&
@@ -379,8 +379,8 @@ Extent.prototype.set = function set(...values) {
 
 Extent.prototype.union = function union(extent) {
     if (extent.crs() != this.crs()) {
-        // If one of them is using Radians
         if (is4326(this.crs()) && is4326(extent.crs())) {
+            // crs are not the same but they're both 4326 -> one of them is using radians
             extent = extent.as(this.crs());
         } else {
             throw new Error('unsupported union between 2 diff crs');

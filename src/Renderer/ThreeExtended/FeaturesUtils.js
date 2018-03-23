@@ -1,3 +1,5 @@
+import { convertValueToUnit, crsToUnit } from '../../Core/Geographic/Coordinates';
+
 function pointIsOverLine(point, linePoints, epsilon) {
     if (point.crs != linePoints[0].crs) {
         throw new Error('crs must be the same');
