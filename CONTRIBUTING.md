@@ -40,7 +40,7 @@ The mailing list archives are here:
 * Developer: https://lists.osgeo.org/pipermail/itowns-dev/
 * User: https://lists.osgeo.org/pipermail/itowns-user/
 
-If you cannot find any information on your problem in the archive, you can start a new thread by sending an email to the list, and someone will probably answer with a solution. Please indicate clearly in your email title that you work with iTowns version 2:  *[iTownsV2]*
+If you cannot find any information on your problem in the archive, you can start a new thread by sending an email to the list, and someone will probably answer with a solution. 
 
 If you think you've found a bug in iTowns, first search the [iTowns issues](https://github.com/iTowns/itowns/issues). If an issue already exists, you can add a comment with any additional information. Use reactions (not comments) to express your interest. This helps prioritize issues.
 

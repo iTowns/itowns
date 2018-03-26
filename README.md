@@ -7,13 +7,12 @@
 
 iTowns is a [Three.js](https://threejs.org/)-based framework written in Javascript/WebGL for visualizing 3D geospatial data.
 
-It can connect to WMS/WMTS/TMS servers including elevation data and load many different data formats (3dTiles, gpx, KML and much much more).
-
-iTowns has been redesigned from this [early version](https://github.com/iTowns/itowns-legacy).
+It can connect to WMS/WMTS/TMS servers including elevation data and load many different data formats (3dTiles, GPX, KML and much much more).
 
 ![iTowns screenshot](https://raw.githubusercontent.com/iTowns/itowns.github.io/master/images/itownsReleaseXS.jpg)
 
 ## API documentation and examples
+
 **[API Documentation](http://www.itowns-project.org/itowns/API_Doc/)**
 
 
@@ -24,7 +23,9 @@ iTowns has been redesigned from this [early version](https://github.com/iTowns/i
 - [Scene postprocessing](http://www.itowns-project.org/itowns/examples/postprocessing.html)
 - [3dtiles](http://www.itowns-project.org/itowns/examples/3dtiles.html)
 
-
+<p align="center">
+<a href="http://www.itowns-project.org/itowns/examples/index.html"><img src="http://www.itowns-project.org/images/montage.jpg" /></a>
+</p>
 
 ## How to use Itowns in your project
 
@@ -53,16 +54,18 @@ Alternatively, we provide a bundle you can directly include in your html files t
 See our [release page](https://github.com/iTowns/itowns/releases).
 
 
-## Supported data types
+## Supported data types and features
 
 - Imagery from WMTS/WMS/TMS
 - Elevation (DTM/DSM) from WMTS
 - 3D Tiles 
+- ...
 
+See the [feature list wiki page](https://github.com/iTowns/itowns/wiki/Supported-Features) for a complet list of features and data formats.
 
 ## Licence
 
-iTowns V2 is dual-licenced under Cecill-B V1.0 and MIT.
+iTowns is dual-licenced under Cecill-B V1.0 and MIT.
 Incorporated libraries are published under their original licences.
 
 See [LICENSE.md](LICENSE.md) for more information.
@@ -71,6 +74,8 @@ See [LICENSE.md](LICENSE.md) for more information.
 
 iTowns has received contributions from people listed in [CONTRIBUTORS.md](CONTRIBUTORS.md).
 If you are interested in contributing to iTowns, please read [CONTRIBUTING.md](CONTRIBUTING.md).
+
+iTowns has been redesigned from this [early version](https://github.com/iTowns/itowns-legacy).
 
 ## Support
 
