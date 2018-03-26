@@ -1,4 +1,4 @@
-import GeoJSON2Features from '../src/Renderer/ThreeExtended/GeoJSON2Features';
+import GeoJSON2Features from '../src/Parser/GeoJsonParser';
 import FeaturesUtils from '../src/Renderer/ThreeExtended/FeaturesUtils';
 import Coordinates from '../src/Core/Geographic/Coordinates';
 /* global describe, it */

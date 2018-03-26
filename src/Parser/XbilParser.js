@@ -1,4 +1,4 @@
-import Fetcher from './Fetcher';
+import Fetcher from '../Core/Scheduler/Providers/Fetcher';
 
 
 var portableXBIL = function portableXBIL(buffer) {
@@ -9,10 +9,10 @@ var portableXBIL = function portableXBIL(buffer) {
 };
 
 
-function IoDriver_XBIL() {
+function XbilParser() {
 }
 
-IoDriver_XBIL.prototype.computeMinMaxElevation = function computeMinMaxElevation(buffer, width, height, offsetScale) {
+XbilParser.prototype.computeMinMaxElevation = function computeMinMaxElevation(buffer, width, height, offsetScale) {
     let min = 1000000;
     let max = -1000000;
 
@@ -44,7 +44,7 @@ IoDriver_XBIL.prototype.computeMinMaxElevation = function computeMinMaxElevation
     return { min, max };
 };
 
-IoDriver_XBIL.prototype.parseXBil = function parseXBil(buffer, url) {
+XbilParser.prototype.parseXBil = function parseXBil(buffer, url) {
     if (!buffer) {
         throw new Error('Error processing XBIL');
     }
@@ -62,9 +62,9 @@ IoDriver_XBIL.prototype.parseXBil = function parseXBil(buffer, url) {
 };
 
 
-IoDriver_XBIL.prototype.read = function read(url, networkOptions) {
+XbilParser.prototype.read = function read(url, networkOptions) {
     return Fetcher.arrayBuffer(url, networkOptions).then(buffer => this.parseXBil(buffer, url));
 };
 
 
-export default IoDriver_XBIL;
+export default XbilParser;

@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import Fetcher from './Fetcher';
-import IoDriver_XBIL from './IoDriver_XBIL';
+import XbilParser from '../../../Parser/XbilParser';
 import Projection from '../../Geographic/Projection';
 import Extent from '../../Geographic/Extent';
 
@@ -12,7 +12,7 @@ export const SIZE_TEXTURE_TILE = 256;
 // Info : THREE.js have cache image https://github.com/mrdoob/three.js/blob/master/src/loaders/ImageLoader.js#L25
 const cache = new Map();
 const pending = new Map();
-const ioDXBIL = new IoDriver_XBIL();
+const XBIL = new XbilParser();
 const projection = new Projection();
 
 const getTextureFloat = function getTextureFloat(buffer) {
@@ -24,7 +24,7 @@ const getTextureFloat = function getTextureFloat(buffer) {
 const tileCoord = new Extent('WMTS:WGS84G', 0, 0, 0);
 
 export default {
-    ioDXBIL,
+    XBIL,
     getColorTextureByUrl(url, networkOptions) {
         if (cache.has(url)) {
             return Promise.resolve(cache.get(url));
@@ -59,7 +59,7 @@ export default {
             return pending.get(url);
         }
 
-        const promiseXBil = ioDXBIL.read(url, networkOptions).then((result) => {
+        const promiseXBil = XBIL.read(url, networkOptions).then((result) => {
             // TODO  RGBA is needed for navigator with no support in texture float
             // In RGBA elevation texture LinearFilter give some errors with nodata value.
             // need to rewrite sample function in shader

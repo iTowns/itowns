@@ -8,7 +8,7 @@ import * as THREE from 'three';
 import togeojson from 'togeojson';
 import Extent from '../../Geographic/Extent';
 import Feature2Texture from '../../../Renderer/ThreeExtended/Feature2Texture';
-import GeoJSON2Features from '../../../Renderer/ThreeExtended/GeoJSON2Features';
+import GeoJsonParser from '../../../Parser/GeoJsonParser';
 import Fetcher from './Fetcher';
 
 function getExtentFromGpxFile(file) {
@@ -104,7 +104,7 @@ export default {
             }
 
             if (geojson) {
-                return GeoJSON2Features.parse(parentCrs, geojson, layer.extent, options);
+                return GeoJsonParser.parse(parentCrs, geojson, layer.extent, options);
             }
         }).then((feature) => {
             if (feature) {

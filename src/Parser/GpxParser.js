@@ -1,15 +1,15 @@
 /**
  * Generated On: 2016-07-07
- * Class: GpxUtils
+ * Class: GpxParser
  * Description: Parse Gpx file to get [lat, lon, alt]
  */
 
 import * as THREE from 'three';
 import Line from 'three.meshline';
-import Fetcher from './Fetcher';
-import Coordinates from '../../Geographic/Coordinates';
-import Capabilities from '../../System/Capabilities';
-import { patchMaterialForLogDepthSupport } from './3dTiles_Provider';
+import Fetcher from '../Core/Scheduler/Providers/Fetcher';
+import Coordinates from '../Core/Geographic/Coordinates';
+import Capabilities from '../Core/System/Capabilities';
+import { patchMaterialForLogDepthSupport } from '../Core/Scheduler/Providers/3dTiles_Provider';
 
 function _gpxToWayPointsArray(gpxXML) {
     return gpxXML.getElementsByTagName('wpt');
@@ -171,7 +171,7 @@ function _gpxToMesh(gpxXML, options = {}) {
 }
 
 export default {
-    /** @module gpxUtils */
+    /** @module GpxParser */
     /** Load gpx file and convert to THREE.Mesh
      * @function load
      * @param {string} urlFile  The url of gpx file
@@ -183,7 +183,7 @@ export default {
      * @return {THREE.Mesh} Three.js Mesh see {@link https://threejs.org/docs/#api/objects/Mesh}
      * @example
      * // How add gpx object
-     * itowns.GpxUtils.load(url, viewer.referenceCrs).then((gpx) => {
+     * itowns.GpxParser.load(url, viewer.referenceCrs).then((gpx) => {
      *      if (gpx) {
      *         viewer.scene.add(gpx);
      *         viewer.notifyChange(true);

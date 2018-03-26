@@ -1,8 +1,8 @@
 import * as THREE from 'three';
 import Fetcher from './Fetcher';
 import PointCloudProcessing from '../../../Process/PointCloudProcessing';
-import PotreeBinLoader from './PotreeBinLoader';
-import PotreeCinLoader from './PotreeCinLoader';
+import PotreeBinParser from '../../../Parser/PotreeBinParser';
+import PotreeCinParser from '../../../Parser/PotreeCinParser';
 import Picking from '../../Picking';
 
 // Create an A(xis)A(ligned)B(ounding)B(ox) for the child `childIndex` of one aabb.
@@ -123,9 +123,9 @@ function addPickingAttribute(points) {
 function loadPointFile(layer, url) {
     return fetch(url, layer.fetchOptions).then(foo => foo.arrayBuffer()).then((ab) => {
         if (layer.metadata.customBinFormat) {
-            return addPickingAttribute(PotreeCinLoader.parse(ab));
+            return addPickingAttribute(PotreeCinParser.parse(ab));
         } else {
-            return addPickingAttribute(PotreeBinLoader.parse(ab));
+            return addPickingAttribute(PotreeBinParser.parse(ab));
         }
     });
 }

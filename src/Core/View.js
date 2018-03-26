@@ -37,7 +37,7 @@ export const VIEW_EVENTS = {
  * @constructor
  * @example
  * // How add gpx object
- * itowns.GpxUtils.load(url, viewer.referenceCrs).then((gpx) => {
+ * itowns.GpxParser.load(url, viewer.referenceCrs).then((gpx) => {
  *      if (gpx) {
  *         viewer.scene.add(gpx);
  *      }

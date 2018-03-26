@@ -7,7 +7,7 @@
 import Extent from '../../Geographic/Extent';
 import URLBuilder from './URLBuilder';
 import Fetcher from './Fetcher';
-import GeoJSON2Features from '../../../Renderer/ThreeExtended/GeoJSON2Features';
+import GeoJsonParser from '../../../Parser/GeoJsonParser';
 import Feature2Mesh from '../../../Renderer/ThreeExtended/Feature2Mesh';
 
 const cache = new Map();
@@ -71,7 +71,7 @@ function getFeatures(crs, tile, layer) {
 
     return Fetcher.json(urld, layer.networkOptions)
         .then(
-            geojson => GeoJSON2Features.parse(crs, geojson, tile.extent, { filter: layer.filter }),
+            geojson => GeoJsonParser.parse(crs, geojson, tile.extent, { filter: layer.filter }),
             (err) => {
                 // special handling for 400 errors, as it probably means the config is wrong
                 if (err.response.status == 400) {
