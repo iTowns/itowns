@@ -1,6 +1,6 @@
 import * as THREE from 'three';
-import B3dmLoader from '../../../Renderer/ThreeExtended/B3dmLoader';
-import PntsLoader from '../../../Renderer/ThreeExtended/PntsLoader';
+import B3dmParser from '../../../Parser/B3dmParser';
+import PntsParser from '../../../Parser/PntsParser';
 import Fetcher from './Fetcher';
 import OBB from '../../../Renderer/ThreeExtended/OBB';
 import Extent from '../../Geographic/Extent';
@@ -142,11 +142,11 @@ export function patchMaterialForLogDepthSupport(material) {
     };
 }
 
-let b3dmLoader;
+let b3dmParser;
 let textDecoder;
 function b3dmToMesh(data, layer, url) {
-    b3dmLoader = b3dmLoader || new B3dmLoader();
-    return b3dmLoader.parse(data, layer.asset.gltfUpAxis, url, textDecoder).then((result) => {
+    b3dmParser = b3dmParser || new B3dmParser();
+    return b3dmParser.parse(data, layer.asset.gltfUpAxis, url, textDecoder).then((result) => {
         const init = function f_init(mesh) {
             mesh.frustumCulled = false;
             if (mesh.material) {
@@ -177,7 +177,7 @@ function b3dmToMesh(data, layer, url) {
 
 function pntsParse(data) {
     return new Promise((resolve) => {
-        resolve({ object3d: PntsLoader.parse(data, textDecoder).point });
+        resolve({ object3d: PntsParser.parse(data, textDecoder).point });
     });
 }
 

@@ -4,19 +4,19 @@
 
 import JSZip from 'jszip';
 import * as THREE from 'three';
-import Coordinates from '../../Core/Geographic/Coordinates';
+import Coordinates from '../Core/Geographic/Coordinates';
 
-function KMZLoader() {
+function KmzParser() {
     this.colladaLoader = new THREE.ColladaLoader();
     this.colladaLoader.options.convertUpAxis = true;
     this.cache = [];
 }
 
-KMZLoader.prototype = Object.create(KMZLoader.prototype);
+KmzParser.prototype = Object.create(KmzParser.prototype);
 
-KMZLoader.prototype.constructor = KMZLoader;
+KmzParser.prototype.constructor = KmzParser;
 
-KMZLoader.prototype.parseCollada = function parseCollada(buffer) {
+KmzParser.prototype.parseCollada = function parseCollada(buffer) {
     var zip = new JSZip(buffer);
     var collada;
     var coordCarto;
@@ -40,7 +40,7 @@ KMZLoader.prototype.parseCollada = function parseCollada(buffer) {
     return collada;
 };
 
-KMZLoader.prototype.load = function load(url) {
+KmzParser.prototype.load = function load(url) {
     return fetch(url).then((response) => {
         if (response.status < 200 || response.status >= 300) {
             throw new Error(`Error loading ${url}: status ${response.status}`);
@@ -49,4 +49,4 @@ KMZLoader.prototype.load = function load(url) {
     }).then(buffer => this.parseCollada(buffer));
 };
 
-export default KMZLoader;
+export default KmzParser;

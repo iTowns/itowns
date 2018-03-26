@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import PointsMaterial from '../../../Renderer/PointsMaterial';
+import PointsMaterial from '../Renderer/PointsMaterial';
 
 // Parse .bin PotreeConverter format
 export default {

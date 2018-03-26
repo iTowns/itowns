@@ -1,13 +1,13 @@
 import * as THREE from 'three';
 import GLTFLoader from './GLTFLoader';
-import LegacyGLTFLoader from './deprecated/LegacyGLTFLoader';
+import LegacyGLTFLoader from './LegacyGLTFLoader';
 import BatchTable from './BatchTable';
 
 const matrixChangeUpVectorZtoY = (new THREE.Matrix4()).makeRotationX(Math.PI / 2);
 // For gltf rotation
 const matrixChangeUpVectorZtoX = (new THREE.Matrix4()).makeRotationZ(-Math.PI / 2);
 
-function B3dmLoader() {
+function B3dmParser() {
     this.glTFLoader = new GLTFLoader();
     this.LegacyGLTFLoader = new LegacyGLTFLoader();
 }
@@ -46,7 +46,7 @@ function applyOptionalCesiumRTC(data, gltf, textDecoder) {
     }
 }
 
-B3dmLoader.prototype.parse = function parse(buffer, gltfUpAxis, url, textDecoder) {
+B3dmParser.prototype.parse = function parse(buffer, gltfUpAxis, url, textDecoder) {
     if (!buffer) {
         throw new Error('No array buffer provided.');
     }
@@ -124,4 +124,4 @@ B3dmLoader.prototype.parse = function parse(buffer, gltfUpAxis, url, textDecoder
     }
 };
 
-export default B3dmLoader;
+export default B3dmParser;

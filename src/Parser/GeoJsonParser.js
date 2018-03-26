@@ -3,8 +3,8 @@
  * Class: FeatureToolBox
  * Description:
  */
-import Coordinates from '../../Core/Geographic/Coordinates';
-import Extent from '../../Core/Geographic/Extent';
+import Coordinates from '../Core/Geographic/Coordinates';
+import Extent from '../Core/Geographic/Extent';
 
 function readCRS(json) {
     if (json.crs) {
