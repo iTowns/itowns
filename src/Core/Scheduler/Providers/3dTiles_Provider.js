@@ -143,10 +143,9 @@ export function patchMaterialForLogDepthSupport(material) {
 }
 
 let b3dmLoader;
-let textDecoder;
 function b3dmToMesh(data, layer, url) {
     b3dmLoader = b3dmLoader || new B3dmLoader();
-    return b3dmLoader.parse(data, layer.asset.gltfUpAxis, url, textDecoder).then((result) => {
+    return b3dmLoader.parse(data, layer.asset.gltfUpAxis, url).then((result) => {
         const init = function f_init(mesh) {
             mesh.frustumCulled = false;
             if (mesh.material) {
@@ -177,7 +176,7 @@ function b3dmToMesh(data, layer, url) {
 
 function pntsParse(data) {
     return new Promise((resolve) => {
-        resolve({ object3d: PntsLoader.parse(data, textDecoder).point });
+        resolve({ object3d: PntsLoader.parse(data).point });
     });
 }
 
@@ -210,7 +209,6 @@ function executeCommand(command) {
     const tile = new THREE.Object3D();
     configureTile(tile, layer, metadata, command.requester);
     const path = metadata.content ? metadata.content.url : undefined;
-    textDecoder = textDecoder || new TextDecoder('utf-8');
 
     const setLayer = (obj) => {
         obj.layers.set(layer.threejsLayer);
@@ -225,9 +223,9 @@ function executeCommand(command) {
         return Fetcher.arrayBuffer(url, layer.networkOptions).then((result) => {
             if (result !== undefined) {
                 let func;
-                const magic = textDecoder.decode(new Uint8Array(result, 0, 4));
+                const magic = THREE.LoaderUtils.decodeText(new Uint8Array(result, 0, 4));
                 if (magic[0] === '{') {
-                    result = JSON.parse(textDecoder.decode(new Uint8Array(result)));
+                    result = JSON.parse(THREE.LoaderUtils.decodeText(new Uint8Array(result)));
                     const newPrefix = url.slice(0, url.lastIndexOf('/') + 1);
                     layer.tileIndex.extendTileset(result, metadata.tileId, newPrefix);
                 } else if (magic == 'b3dm') {
