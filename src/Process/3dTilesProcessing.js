@@ -199,7 +199,7 @@ export function pre3dTilesUpdate(context, layer) {
      // TODO: not correct -> see new preSSE
     // const HFOV = 2.0 * Math.atan(Math.tan(radAngle * 0.5) / context.camera.ratio);
     const HYFOV = 2.0 * Math.atan(Math.tan(radAngle * 0.5) * hypotenuse / context.camera.width);
-    context.camera.preSSE = hypotenuse * (2.0 * Math.tan(HYFOV * 0.5));
+    context.camera.preSSE = hypotenuse / (2.0 * Math.tan(HYFOV * 0.5));
 
     // once in a while, garbage collect
     if (Math.random() > 0.98) {
