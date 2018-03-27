@@ -3,6 +3,13 @@ import PointsMaterial from '../Renderer/PointsMaterial';
 
 // Parse .bin PotreeConverter format
 export default {
+    /** @module PotreeBinParser */
+    /** Parse .bin PotreeConverter format and convert to THREE.Points
+     * @function parse
+     * @param {ArrayBuffer} buffer - the bin buffer.
+     * @return {Promise} a promise that resolves with a THREE.Points.
+     *
+     */
     parse: function parse(buffer) {
         if (!buffer) {
             throw new Error('No array buffer provided.');
@@ -50,6 +57,6 @@ export default {
         points.realPointCount = numPoints;
         points.tightbbox = tightbbox;
 
-        return points;
+        return Promise.resolve(points);
     },
 };

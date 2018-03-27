@@ -57,8 +57,6 @@ export default {
         layer.projection = layer.projection || 'EPSG:4326';
         const parentCrs = parentLayer.extent.crs();
 
-        const options = { buildExtent: true, crsIn: layer.projection };
-
         if (!(layer.extent instanceof Extent)) {
             layer.extent = new Extent(layer.projection, layer.extent).as(parentCrs);
         }
@@ -104,7 +102,15 @@ export default {
             }
 
             if (geojson) {
-                return GeoJsonParser.parse(parentCrs, geojson, layer.extent, options);
+                const options = {
+                    buildExtent: true,
+                    crsIn: layer.projection,
+                    crsOut: parentCrs,
+                    filteringExtent: layer.extent,
+                    json: true,
+                };
+
+                return GeoJsonParser.parse(geojson, options);
             }
         }).then((feature) => {
             if (feature) {

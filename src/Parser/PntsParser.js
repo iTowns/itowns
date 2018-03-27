@@ -1,8 +1,15 @@
 import * as THREE from 'three';
-import BT from './BatchTable';
+import BatchTableParser from './BatchTableParser';
 import utf8Decoder from '../utils/Utf8Decoder';
 
 export default {
+    /** @module PntsParser */
+    /** Parse pnts buffer and extract THREE.Points and batch table
+     * @function parse
+     * @param {ArrayBuffer} buffer - the pnts buffer.
+     * @return {Promise} - a promise that resolves with an object containig a THREE.Points (point) and a batch table (batchTable).
+     *
+     */
     parse: function parse(buffer) {
         if (!buffer) {
             throw new Error('No array buffer provided.');
@@ -46,12 +53,12 @@ export default {
             // batch table
             if (pntsHeader.BTJSONLength > 0) {
                 const sizeBegin = 28 + pntsHeader.FTJSONLength + pntsHeader.FTBinaryLength;
-                batchTable = BT.parse(
+                batchTable = BatchTableParser.parse(
                     buffer.slice(sizeBegin, pntsHeader.BTJSONLength + sizeBegin));
             }
 
             const pnts = { point, batchTable };
-            return pnts;
+            return Promise.resolve(pnts);
         } else {
             throw new Error('Invalid pnts file.');
         }

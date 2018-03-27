@@ -1,18 +1,12 @@
-import Fetcher from '../Core/Scheduler/Providers/Fetcher';
-
-
-var portableXBIL = function portableXBIL(buffer) {
+function portableXBIL(buffer) {
     this.floatArray = new Float32Array(buffer);
     this.max = undefined;
     this.min = undefined;
     this.texture = null;
-};
-
-
-function XbilParser() {
 }
 
-XbilParser.prototype.computeMinMaxElevation = function computeMinMaxElevation(buffer, width, height, offsetScale) {
+
+export function computeMinMaxElevation(buffer, width, height, offsetScale) {
     let min = 1000000;
     let max = -1000000;
 
@@ -42,29 +36,32 @@ XbilParser.prototype.computeMinMaxElevation = function computeMinMaxElevation(bu
         return { min: null, max: null };
     }
     return { min, max };
+}
+
+export default {
+    /** @module XbilParser */
+    /** Parse XBIL buffer and convert to portableXBIL object.
+     * @function parse
+     * @param {ArrayBuffer} buffer - the xbil buffer.
+     * @param {Object} options - additional properties.
+     * @param {string} options.url - the url from which the XBIL comes.
+     * @return {Promise} - a promise that resolves with a portableXBIL object.
+     *
+     */
+    parse(buffer, options) {
+        if (!buffer) {
+            throw new Error('Error processing XBIL');
+        }
+
+        var result = new portableXBIL(buffer);
+
+        var elevation = computeMinMaxElevation(result.floatArray);
+
+        result.min = elevation.min;
+        result.max = elevation.max;
+
+        result.url = options.url;
+
+        return Promise.resolve(result);
+    },
 };
-
-XbilParser.prototype.parseXBil = function parseXBil(buffer, url) {
-    if (!buffer) {
-        throw new Error('Error processing XBIL');
-    }
-
-    var result = new portableXBIL(buffer);
-
-    var elevation = this.computeMinMaxElevation(result.floatArray);
-
-    result.min = elevation.min;
-    result.max = elevation.max;
-
-    result.url = url;
-
-    return result;
-};
-
-
-XbilParser.prototype.read = function read(url, networkOptions) {
-    return Fetcher.arrayBuffer(url, networkOptions).then(buffer => this.parseXBil(buffer, url));
-};
-
-
-export default XbilParser;

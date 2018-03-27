@@ -3,7 +3,8 @@ import { chooseNextLevelToFetch } from '../Core/Layer/LayerUpdateStrategy';
 import LayerUpdateState from '../Core/Layer/LayerUpdateState';
 import { ImageryLayers } from '../Core/Layer/Layer';
 import CancelledCommandException from '../Core/Scheduler/CancelledCommandException';
-import OGCWebServiceHelper, { SIZE_TEXTURE_TILE } from '../Core/Scheduler/Providers/OGCWebServiceHelper';
+import { SIZE_TEXTURE_TILE } from '../Core/Scheduler/Providers/OGCWebServiceHelper';
+import { computeMinMaxElevation } from '../Parser/XbilParser';
 
 // max retry loading before changing the status to definitiveError
 const MAX_RETRY = 4;
@@ -57,7 +58,7 @@ function initNodeElevationTextureFromParent(node, parent, layer) {
         // to use parent's min-max.
         const useMinMaxFromParent = node.level - texture.coords.zoom > 6;
         if (!useMinMaxFromParent) {
-            const { min, max } = OGCWebServiceHelper.XBIL.computeMinMaxElevation(
+            const { min, max } = computeMinMaxElevation(
                 texture.image.data,
                 SIZE_TEXTURE_TILE, SIZE_TEXTURE_TILE,
                 pitch);

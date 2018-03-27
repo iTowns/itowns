@@ -123,9 +123,9 @@ function addPickingAttribute(points) {
 function loadPointFile(layer, url) {
     return fetch(url, layer.fetchOptions).then(foo => foo.arrayBuffer()).then((ab) => {
         if (layer.metadata.customBinFormat) {
-            return addPickingAttribute(PotreeCinParser.parse(ab));
+            return PotreeCinParser.parse(ab).then(result => addPickingAttribute(result));
         } else {
-            return addPickingAttribute(PotreeBinParser.parse(ab));
+            return PotreeBinParser.parse(ab).then(result => addPickingAttribute(result));
         }
     });
 }

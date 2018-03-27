@@ -145,10 +145,13 @@ export function patchMaterialForLogDepthSupport(material) {
     };
 }
 
-let b3dmParser;
 function b3dmToMesh(data, layer, url) {
-    b3dmParser = b3dmParser || new B3dmParser();
-    return b3dmParser.parse(data, layer.asset.gltfUpAxis, url).then((result) => {
+    const urlBase = THREE.LoaderUtils.extractUrlBase(url);
+    const options = {
+        gltfUpAxis: layer.asset.gltfUpAxis,
+        urlBase,
+    };
+    return B3dmParser.parse(data, options).then((result) => {
         const init = function f_init(mesh) {
             mesh.frustumCulled = false;
             if (mesh.material) {
