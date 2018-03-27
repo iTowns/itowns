@@ -5,40 +5,47 @@ function createDebugGeometry(view) {
 
     for (let i = 0; i < 3; i++) {
         const geom = new THREE.CircleGeometry(0.5, 30);
-        group.add(new THREE.Mesh(geom));
+        geom.vertices = geom.vertices.splice(1);
+        group.add(new THREE.Line(geom));
     }
 
     group.sseThreshold = group.children[0];
     group.sseThreshold.material.color = new THREE.Color(0x00ff00);
-    group.sseThreshold.material.transparent = true;
+    // group.sseThreshold.material.transparent = true;
     group.sseThreshold.material.depthTest = false;
-    group.sseThreshold.material.opacity = 0.5;
+    group.sseThreshold.material.opacity = 0.25;
     group.sseThreshold.frustumCulled = false;
     group.sseThreshold.renderOrder = 10;
     group.sseValue = group.children[2];
     group.sseValue.material.color = new THREE.Color(0xff0000);
     group.sseValue.frustumCulled = false;
+    group.sseValue.visible = false;
     group.sseValue.material.depthTest = false;
     group.sseValue.material.transparent = true;
-    group.sseValue.material.opacity = 0.5;
+    group.sseValue.material.opacity = 0.25;
     group.sseValue.renderOrder = 10;
     group.sseShift = group.children[1];
     group.sseShift.material.color = new THREE.Color(0xffff00);
     group.sseShift.material.transparent = true;
     group.sseShift.material.depthTest = false;
-    group.sseShift.material.opacity = 0.5;
+    group.sseShift.material.opacity = 0.25;
     group.sseShift.frustumCulled = false;
     group.sseShift.renderOrder = 10;
+    group.foo = new THREE.Group();
+    group.axis = new THREE.AxesHelper(1);
+    group.axis.renderOrder = 11;
 
     group.frustumCulled = false;
 
     view.scene.add(group);
+    view.scene.add(group.foo);
+    group.foo.add(group.axis);
 
     return group;
 }
 
 
-function display(camera, sseResult, geometricError, sseThresholdPx, group, coords, scale) {
+function display(camera, sseResult, geometricError, sseThresholdPx, group, coords, scale, matrix) {
     const m = new THREE.Matrix4().getInverse(
         camera.camera3D.projectionMatrix);
 
@@ -47,10 +54,13 @@ function display(camera, sseResult, geometricError, sseThresholdPx, group, coord
     const ray = new THREE.Vector3(coords.x, coords.y, 0);
     const ray2a = new THREE.Vector3(coords.x + (2 * (sseShift) / camera.width), coords.y, 0);
     const ray2b = new THREE.Vector3(coords.x + (2 * (sseThresholdPx + sseShift) / camera.width), coords.y, 0);
-    const ray3 = new THREE.Vector3(
-        coords.x + (2 * (sseResult.sse[0]) / camera.width),
-        coords.y + (2 * (sseResult.sse[1]) / camera.height), 0);
-    const rays = [ray, ray2a, ray2b, ray3];
+    const ray3x = new THREE.Vector3(
+        coords.x + (2 * (sseResult.sse[0]) / camera.width), coords.y, 0);
+    const ray3y = new THREE.Vector3(
+        coords.x + (2 * (sseResult.sse[1]) / camera.width), coords.y, 0);
+    const ray3z = new THREE.Vector3(
+        coords.x + (2 * (sseResult.sse[2]) / camera.width), coords.y, 0);
+    const rays = [ray, ray2a, ray2b, ray3x, ray3y, ray3z];
 
     for (const r of rays) {
         // Transform in camera space
@@ -66,14 +76,28 @@ function display(camera, sseResult, geometricError, sseThresholdPx, group, coord
 
     const sseShiftWorld = ray2a.sub(ray).length();
     const sseThresholdWorld = ray2b.sub(ray).length();
-    const sseValueWorld = ray3.sub(ray);
+    // * 0.5 because we draw the lines from the center of the circle
+    const sseValueWorldX = ray3x.sub(ray).length() * 0.5;
+    const sseValueWorldY = ray3y.sub(ray).length() * 0.5;
+    const sseValueWorldZ = ray3z.sub(ray).length() * 0.5;
+
+    // Autre option :
+    // on affiche un AxisHelper, tourné
 
     // draw a line to show sse threshold
     group.sseShift.scale.set(sseShiftWorld * scale, sseShiftWorld * scale, 1);
     group.sseThreshold.scale.set(sseThresholdWorld * scale, sseThresholdWorld * scale, 1);
     // draw a line to show geometric error
     // (both values are the same when using Math.max in ScreenSpaceError)
-    group.sseValue.scale.set(sseValueWorld.x * scale, sseValueWorld.y * scale, 1);
+    group.sseValue.scale.set(sseValueWorldX * scale, sseValueWorldY * scale, 1);
+
+    group.foo.matrix.identity();
+    matrix.decompose(
+        group.foo.position, group.foo.quaternion, group.foo.scale);
+    group.foo.position.copy(ray);
+    group.foo.scale.set(1, 1, 1);
+    group.axis.scale.set(sseValueWorldX, sseValueWorldY, sseValueWorldZ);
+    group.foo.updateMatrixWorld(true);
 
     group.visible = true;
     group.updateMatrixWorld(true);
@@ -116,8 +140,14 @@ function onMouseMove(evt) {
 
                 if (sse) {
                     const sseShift = sse.offset || 0;
-                    const percent = 100 * (sse.sse / (layers[0].sseThreshold + sseShift));
-                    this.sse = `${Math.round(Math.max(0, Math.min(100.0, percent)))} %`;
+                    const percent =
+                        sse.sse.map(e => Math.round(
+                            Math.max(
+                                0,
+                                Math.min(
+                                    100,
+                                    100 * (e / (layers[0].sseThreshold + sseShift))))));
+                    this.sse = percent.join('% ') + '%';
                     display(
                         this.view.camera,
                         sse,
@@ -125,7 +155,8 @@ function onMouseMove(evt) {
                         layers[0].sseThreshold,
                         this.group,
                         this.view.eventToNormalizedCoords(evt),
-                        this.scale);
+                        this.scale,
+                        o.matrixWorld);
                     this.view.notifyChange(true);
                 }
             }

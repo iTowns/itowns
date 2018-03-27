@@ -100,24 +100,22 @@ export function globeSubdivisionControl(minLevel, maxLevel, maxDeltaElevationLev
             node.OBB().box3D,
             node.OBB().matrixWorld,
             node.geometricError,
-            ScreenSpaceError.MODE_2D);
+            ScreenSpaceError.MODE_3D);
         node.sse.offset = SIZE_TEXTURE_TILE;
 
-        const cond1x = (node.sse.sse[0] > (SIZE_TEXTURE_TILE + layer.sseThreshold));
-        const cond1y = (node.sse.sse[1] > (SIZE_TEXTURE_TILE + layer.sseThreshold));
-        const cond2x = (node.sse.sse[0] > (SIZE_TEXTURE_TILE + layer.sseThreshold) * 0.85);
-        const cond2y = (node.sse.sse[1] > (SIZE_TEXTURE_TILE + layer.sseThreshold) * 0.85);
+        let condition1 = false;
+        let condition2 = true;
 
-        if (cond1x && cond1y) {
-            return true;
+        for (let i = 0; i < 3; i++) {
+            condition1 |= node.sse.sse[i] > (SIZE_TEXTURE_TILE + layer.sseThreshold);
+            condition2 &= node.sse.sse[i] > 0.85 * (SIZE_TEXTURE_TILE + layer.sseThreshold);
+
+            if (!condition2) {
+                return false;
+            }
         }
-        if (cond1x) {
-            return cond2y;
-        }
-        if (cond1y) {
-            return cond2x;
-        }
-        return false;
+
+        return condition1 && condition2;
     };
 }
 
