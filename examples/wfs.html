@@ -19,6 +19,28 @@
                 height: 100%;
                 padding: 0;
             }
+            #propertiesDiv {
+                position: absolute;
+                z-index: 0;
+                top: 0;
+                right: 0;
+                color: white;
+                color: #eee;
+                font: 11px 'Lucida Grande',sans-serif;
+                line-height: normal;
+                text-shadow: 0 -1px 0 #111;
+                padding: 0 1rem;
+                background: #1a1a1a;
+                border: 1px solid #2c2c2c;
+                opacity: 0.8;
+            }
+            #propertiesDiv > p {
+                margin: 0.5rem 0;
+            }
+
+            #propertiesDiv > ul {
+                padding: 0 1rem;
+            }
 
             #help {
                 position: absolute;
@@ -76,5 +98,34 @@
             var renderer; var exports = {};
         </script>
         <script src="wfs.js"></script>
+        <div id="propertiesDiv">
+            <p><b>Information Batiment</b></p>
+            <ul id="info">
+            </ul>
+        </div>
+        <script type="text/javascript">
+            /* global, document, window, view */
+            function picking(event) {
+                var htmlInfo = document.getElementById('info');
+                var intersects = view.pickObjectsAt(event, 'wfsBuilding');
+                var properties;
+                var info;
+                htmlInfo.innerHTML = ' ';
+
+                if (intersects.length) {
+                    properties = intersects[0].object.properties;
+                    Object.keys(properties).map(function (objectKey) {
+                        var value = properties[objectKey];
+                        var key = objectKey.toString();
+                        if (key[0] !== '_' && key !== 'geometry_name') {
+                            info = value.toString();
+                            htmlInfo.innerHTML +='<li><b>' + key + ': </b>' + info + '</li>';
+                        }
+                    });
+                }
+            }
+
+            window.addEventListener('mousemove', picking, false);
+        </script>
     </body>
 </html>
