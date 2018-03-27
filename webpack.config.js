@@ -7,11 +7,6 @@ var definePlugin = new webpack.DefinePlugin({
     __DEBUG__: JSON.stringify(process.env.NODE_ENV === 'development'),
 });
 
-var providePlugin = new webpack.ProvidePlugin({
-    TextDecoder: [path.resolve(__dirname, 'src/utils/polyfill'), 'TextDecoder'],
-    TextEncoder: [path.resolve(__dirname, 'src/utils/polyfill'), 'TextEncoder'],
-});
-
 module.exports = {
     entry: {
         itowns: ['babel-polyfill', 'url-polyfill', 'whatwg-fetch', path.resolve(__dirname, 'src/MainBundle.js')],
@@ -27,7 +22,6 @@ module.exports = {
     },
     plugins: [
         definePlugin,
-        providePlugin,
         new webpack.optimize.CommonsChunkPlugin({ name: 'itowns' }),
     ],
     module: {

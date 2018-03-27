@@ -8,6 +8,7 @@ import { UNIT } from '../../Geographic/Coordinates';
 import Capabilities from '../../System/Capabilities';
 import PrecisionQualifier from '../../../Renderer/Shader/Chunk/PrecisionQualifier.glsl';
 import { init3dTilesLayer } from '../../../Process/3dTilesProcessing';
+import utf8Decoder from '../../../utils/Utf8Decoder';
 
 function $3dTilesIndex(tileset, baseURL) {
     let counter = 0;
@@ -143,10 +144,9 @@ export function patchMaterialForLogDepthSupport(material) {
 }
 
 let b3dmParser;
-let textDecoder;
 function b3dmToMesh(data, layer, url) {
     b3dmParser = b3dmParser || new B3dmParser();
-    return b3dmParser.parse(data, layer.asset.gltfUpAxis, url, textDecoder).then((result) => {
+    return b3dmParser.parse(data, layer.asset.gltfUpAxis, url).then((result) => {
         const init = function f_init(mesh) {
             mesh.frustumCulled = false;
             if (mesh.material) {
@@ -177,7 +177,7 @@ function b3dmToMesh(data, layer, url) {
 
 function pntsParse(data) {
     return new Promise((resolve) => {
-        resolve({ object3d: PntsParser.parse(data, textDecoder).point });
+        resolve({ object3d: PntsParser.parse(data).point });
     });
 }
 
@@ -210,7 +210,6 @@ function executeCommand(command) {
     const tile = new THREE.Object3D();
     configureTile(tile, layer, metadata, command.requester);
     const path = metadata.content ? metadata.content.url : undefined;
-    textDecoder = textDecoder || new TextDecoder('utf-8');
 
     const setLayer = (obj) => {
         obj.layers.set(layer.threejsLayer);
@@ -225,9 +224,9 @@ function executeCommand(command) {
         return Fetcher.arrayBuffer(url, layer.networkOptions).then((result) => {
             if (result !== undefined) {
                 let func;
-                const magic = textDecoder.decode(new Uint8Array(result, 0, 4));
+                const magic = utf8Decoder.decode(new Uint8Array(result, 0, 4));
                 if (magic[0] === '{') {
-                    result = JSON.parse(textDecoder.decode(new Uint8Array(result)));
+                    result = JSON.parse(utf8Decoder.decode(new Uint8Array(result)));
                     const newPrefix = url.slice(0, url.lastIndexOf('/') + 1);
                     layer.tileIndex.extendTileset(result, metadata.tileId, newPrefix);
                 } else if (magic == 'b3dm') {
