@@ -64,12 +64,12 @@ and open the template in the editor.
             menuGlobe.addGUI('RealisticLighting', false, globeView.setRealisticLightingOn.bind(globeView));
 
             Promise.all(promises).then(menuGlobe.addLayersGUI.bind(menuGlobe)).catch(console.error);
-            function messageIsInit() {
+
+            // eslint-disable-next-line prefer-arrow-callback
+            globeView.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function m() {
                 // eslint-disable-next-line no-console
                 console.info('Globe initialized');
-            }
-
-            globeView.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, messageIsInit);
+            });
 
             const d = new debug.Debug(globeView, menuGlobe.gui);
             debug.createTileDebugUI(menuGlobe.gui, globeView, globeView.wgs84TileLayer, d);
