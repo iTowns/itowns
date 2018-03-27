@@ -13,7 +13,6 @@ export const SIZE_TEXTURE_TILE = 256;
 const cache = new Map();
 const pending = new Map();
 const XBIL = new XbilParser();
-const projection = new Projection();
 
 const getTextureFloat = function getTextureFloat(buffer) {
     const texture = new THREE.DataTexture(buffer, SIZE_TEXTURE_TILE, SIZE_TEXTURE_TILE, THREE.AlphaFormat, THREE.FloatType);
@@ -99,11 +98,11 @@ export default {
                 tileCoord._col = c.col;
                 tileCoord._row = c.row;
             } else {
-                projection.WGS84toWMTS(tile.extent, tileCoord);
+                Projection.WGS84toWMTS(tile.extent, tileCoord);
             }
 
             tile.wmtsCoords[tileMatrixSet] =
-                projection.getCoordWMTS_WGS84(tileCoord, tile.extent, tileMatrixSet);
+                Projection.getCoordWMTS_WGS84(tileCoord, tile.extent, tileMatrixSet);
         }
     },
     // The origin parameter is to be set to the correct value, bottom or top

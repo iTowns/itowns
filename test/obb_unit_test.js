@@ -59,12 +59,12 @@ describe('Ellipsoid tiles OBB computation', function () {
     const builder = new BuilderEllipsoidTile();
 
     it('should compute globe-level 0 OBB correctly', function () {
-        const extent = new Extent('EPSG:4326:R', -Math.PI, 0, -Math.PI * 0.5, Math.PI * 0.5);
+        const extent = new Extent('EPSG:4326', -180, 0, -90, 90);
         assertVerticesAreInOBB(builder, extent);
     });
 
     it('should compute globe-level 2 OBB correctly', function () {
-        const extent = new Extent('EPSG:4326:R', 0, 0.7853981633974483, -0.7853981633974483, 0);
+        const extent = new Extent('EPSG:4326', 0, 45, -45, 0);
         assertVerticesAreInOBB(builder, extent);
     });
 });

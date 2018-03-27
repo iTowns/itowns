@@ -1,8 +1,7 @@
 import * as THREE from 'three';
-import Coordinates, { crsToUnit, crsIsGeographic, assertCrsIsValid, convertValueToUnit, reasonnableEpsilonForCRS, is4326 } from '../Geographic/Coordinates';
+import Coordinates, { crsIsGeographic, assertCrsIsValid, reasonnableEpsilonForCRS, is4326 } from '../Geographic/Coordinates';
 import Projection from '../Geographic/Projection';
 
-const projection = new Projection();
 /**
  * Extent is a SIG-area (so 2D)
  * It can use explicit coordinates (e.g: lon/lat) or implicit (WMTS coordinates)
@@ -100,8 +99,8 @@ Extent.prototype.as = function as(crs) {
             const Yn = 1 - sizeRow * (nbRow - (this.row));
             const Ys = 1 - sizeRow * (nbRow - (this.row + 1));
             // convert Y PM to latitude EPSG:4326 degree
-            const north = THREE.Math.radToDeg(projection.YToWGS84(Yn));
-            const south = THREE.Math.radToDeg(projection.YToWGS84(Ys));
+            const north = Projection.YToWGS84(Yn);
+            const south = Projection.YToWGS84(Ys);
             // create intermediate EPSG:4326 and convert in new crs
             return new Extent('EPSG:4326', { west, east, south, north }).as(crs);
         } else if (this._crs == 'WMTS:WGS84G' && crs == 'EPSG:4326') {
@@ -149,19 +148,15 @@ Extent.prototype.as = function as(crs) {
     }
 
     return new Extent(crs, {
-        west: this.west(crsToUnit(crs)),
-        east: this.east(crsToUnit(crs)),
-        north: this.north(crsToUnit(crs)),
-        south: this.south(crsToUnit(crs)),
+        west: this.west(),
+        east: this.east(),
+        north: this.north(),
+        south: this.south(),
     });
 };
 
 Extent.prototype.offsetToParent = function offsetToParent(other) {
     if (this.crs() != other.crs()) {
-        // If one of them is using Radians
-        if (is4326(this.crs()) && is4326(other.crs())) {
-            return this.as(other.crs()).offsetToParent(other);
-        }
         throw new Error('unsupported mix');
     }
     if (_isTiledCRS(this.crs())) {
@@ -199,36 +194,20 @@ Extent.prototype.offsetToParent = function offsetToParent(other) {
     return new THREE.Vector4(originX, originY, scaleX, scaleY);
 };
 
-Extent.prototype.west = function west(unit) {
-    if (unit != undefined && crsIsGeographic(this.crs())) {
-        return convertValueToUnit(crsToUnit(this._crs), unit, this._values[0]);
-    } else {
-        return this._values[CARDINAL.WEST];
-    }
+Extent.prototype.west = function west() {
+    return this._values[CARDINAL.WEST];
 };
 
-Extent.prototype.east = function east(unit) {
-    if (unit != undefined && crsIsGeographic(this.crs())) {
-        return convertValueToUnit(crsToUnit(this._crs), unit, this._values[1]);
-    } else {
-        return this._values[CARDINAL.EAST];
-    }
+Extent.prototype.east = function east() {
+    return this._values[CARDINAL.EAST];
 };
 
-Extent.prototype.north = function north(unit) {
-    if (unit != undefined && crsIsGeographic(this.crs())) {
-        return convertValueToUnit(crsToUnit(this._crs), unit, this._values[3]);
-    } else {
-        return this._values[CARDINAL.NORTH];
-    }
+Extent.prototype.north = function north() {
+    return this._values[CARDINAL.NORTH];
 };
 
-Extent.prototype.south = function south(unit) {
-    if (unit != undefined && crsIsGeographic(this.crs())) {
-        return convertValueToUnit(crsToUnit(this._crs), unit, this._values[2]);
-    } else {
-        return this._values[CARDINAL.SOUTH];
-    }
+Extent.prototype.south = function south() {
+    return this._values[CARDINAL.SOUTH];
 };
 
 Extent.prototype.crs = function crs() {
@@ -252,10 +231,10 @@ Extent.prototype.center = function center(target) {
     return c;
 };
 
-Extent.prototype.dimensions = function dimensions(unit, target) {
+Extent.prototype.dimensions = function dimensions(target) {
     target = target || { x: 0, y: 0 };
-    target.x = Math.abs(this.east(unit) - this.west(unit));
-    target.y = Math.abs(this.north(unit) - this.south(unit));
+    target.x = Math.abs(this.east() - this.west());
+    target.y = Math.abs(this.north() - this.south());
     return target;
 };
 
@@ -301,7 +280,6 @@ Extent.prototype.isInside = function isInside(other, epsilon) {
     } else {
         const o = other.as(this._crs);
         epsilon = epsilon == undefined ? reasonnableEpsilonForCRS(this._crs) : epsilon;
-        // compare use crs' default storage unit
         return this.east() - o.east() <= epsilon &&
                o.west() - this.west() <= epsilon &&
                this.north() - o.north() <= epsilon &&
@@ -379,12 +357,7 @@ Extent.prototype.set = function set(...values) {
 
 Extent.prototype.union = function union(extent) {
     if (extent.crs() != this.crs()) {
-        if (is4326(this.crs()) && is4326(extent.crs())) {
-            // crs are not the same but they're both 4326 -> one of them is using radians
-            extent = extent.as(this.crs());
-        } else {
-            throw new Error('unsupported union between 2 diff crs');
-        }
+        throw new Error('unsupported union between 2 diff crs');
     }
     const west = extent.west();
     if (west < this.west()) {

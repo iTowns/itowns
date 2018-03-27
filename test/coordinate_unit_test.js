@@ -39,13 +39,13 @@ describe('Coordinate conversions', function () {
         var coord3 = coord2.as('EPSG:3946');
         assertCoordEqual(coord1, coord3);
     });
-    // This case happend in iTowns when we convert the tile extent (4326 radian) to a target WFS server (EPSG:3946 for example) to request Lyon bus line in WFS.
-    it('should correctly convert from EPSG:4326 Radian (tiles extent) to EPSG:3946 (Lyon WFS) and back to EPSG:4326 (degrees)', function () {
+    // This case happend in iTowns when we convert the tile extent (4326) to a target WFS server (EPSG:3946 for example) to request Lyon bus line in WFS.
+    it('should correctly convert from EPSG:4326 (tiles extent) to EPSG:3946 (Lyon WFS) and back to EPSG:4326 (degrees)', function () {
         // geographic example for EPSG 4326 in degrees
         var longIn = 4.82212;
         var latIn = 45.723722;
-        // let's define an input coordinate EPSG:4326 in radian.
-        var coord1 = new Coordinates('EPSG:4326:R', longIn / 180 * Math.PI, latIn / 180 * Math.PI);
+        // let's define an input coordinate EPSG:4326.
+        var coord1 = new Coordinates('EPSG:4326', longIn, latIn);
         // convert coordinate in EPSG:3946
         var coord2 = coord1.as('EPSG:3946');
         // verify intermediate values

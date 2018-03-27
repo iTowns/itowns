@@ -4,7 +4,7 @@ import CancelledCommandException from '../Core/Scheduler/CancelledCommandExcepti
 import ObjectRemovalHelper from './ObjectRemovalHelper';
 
 
-const center = new Coordinates('EPSG:4326:R', 0, 0, 0);
+const center = new Coordinates('EPSG:4326', 0, 0, 0);
 function subdivisionExtents(bbox) {
     bbox.center(center);
 
@@ -21,11 +21,7 @@ function subdivisionExtents(bbox) {
         center._values[0], bbox.east(),
         bbox.south(), center._values[1]);
 
-    // scheme tiles store their coordinates in radians internally,
-    // so we need to fix the new bboxes as well
-    const result = [northWest, northEast, southWest, southEast];
-
-    return result;
+    return [northWest, northEast, southWest, southEast];
 }
 
 export function requestNewTile(view, scheduler, geometryLayer, extent, parent, level) {

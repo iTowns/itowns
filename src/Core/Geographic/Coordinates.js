@@ -6,11 +6,9 @@
 
 import * as THREE from 'three';
 import proj4 from 'proj4';
-import mE from '../Math/MathExtended';
 import Ellipsoid from '../Math/Ellipsoid';
 
 proj4.defs('EPSG:4978', '+proj=geocent +datum=WGS84 +units=m +no_defs');
-proj4.defs('EPSG:4326:R', proj4.defs('EPSG:4326'));
 
 const projectionCache = {};
 
@@ -25,7 +23,6 @@ export function ellipsoidSizes() {
 const ellipsoid = new Ellipsoid(ellipsoidSizes());
 
 export const UNIT = {
-    RADIAN: 0,
     DEGREE: 1,
     METER: 2,
 };
@@ -35,8 +32,6 @@ function _unitFromProj4Unit(projunit) {
         return UNIT.DEGREE;
     } else if (projunit === 'm') {
         return UNIT.METER;
-    } else if (projunit === 'radians') {
-        return UNIT.RADIAN;
     } else {
         return undefined;
     }
@@ -45,7 +40,6 @@ function _unitFromProj4Unit(projunit) {
 export function crsToUnit(crs) {
     switch (crs) {
         case 'EPSG:4326' : return UNIT.DEGREE;
-        case 'EPSG:4326:R' : return UNIT.RADIAN;
         case 'EPSG:4978' : return UNIT.METER;
         default: {
             const p = proj4.defs(crs);
@@ -58,9 +52,7 @@ export function crsToUnit(crs) {
 }
 
 export function reasonnableEpsilonForCRS(crs) {
-    if (is4326Radians()) {
-        return 0.00001;
-    } else if (is4326(crs)) {
+    if (is4326(crs)) {
         return 0.01;
     } else {
         return 0.001;
@@ -117,10 +109,6 @@ export function is4326(crs) {
     return crs.indexOf('EPSG:4326') == 0;
 }
 
-export function is4326Radians(crs) {
-    return crs === 'EPSG:4326:R';
-}
-
 // Only support explicit conversions
 const cartesian = new THREE.Vector3();
 function _convert(coordsIn, newCrs, target) {
@@ -141,33 +129,13 @@ function _convert(coordsIn, newCrs, target) {
                 y: coordsIn._values[1],
                 z: coordsIn._values[2],
             }, target);
-            // handle degrees vs radians
-            if (target.crs != newCrs) {
-                target.as(newCrs, target);
-            }
-            return target;
-        }
-
-        if (is4326(coordsIn.crs) && is4326(newCrs)) {
-            const unitIn = crsToUnit(coordsIn.crs);
-            const unitOut = crsToUnit(newCrs);
-            target.set(newCrs,
-                convertValueToUnit(unitIn, unitOut, coordsIn._values[0]),
-                convertValueToUnit(unitIn, unitOut, coordsIn._values[1]),
-                coordsIn._values[2]);
             return target;
         }
 
         if (coordsIn.crs in proj4.defs && newCrs in proj4.defs) {
-            let val0 = coordsIn._values[0];
+            const val0 = coordsIn._values[0];
             let val1 = coordsIn._values[1];
-            let crsIn = coordsIn.crs;
-
-            if (is4326Radians(coordsIn.crs)) {
-                val0 = coordsIn.longitude(UNIT.DEGREE);
-                val1 = coordsIn.latitude(UNIT.DEGREE);
-                crsIn = 'EPSG:4326';
-            }
+            const crsIn = coordsIn.crs;
 
             // there is a bug for converting anything from and to 4978 with proj4
             // https://github.com/proj4js/proj4js/issues/195
@@ -193,20 +161,6 @@ function _convert(coordsIn, newCrs, target) {
         }
 
         throw new Error(`Cannot convert from crs ${coordsIn.crs} to ${newCrs}`);
-    }
-}
-
-export function convertValueToUnit(unitIn, unitOut, value) {
-    if (unitOut == undefined || unitIn == unitOut) {
-        return value;
-    } else {
-        if (unitIn == UNIT.DEGREE && unitOut == UNIT.RADIAN) {
-            return mE.degToRad(value);
-        }
-        if (unitIn == UNIT.RADIAN && unitOut == UNIT.DEGREE) {
-            return mE.radToDeg(value);
-        }
-        throw new Error(`Cannot convert from unit ${unitIn} to ${unitOut}`);
     }
 }
 
@@ -313,19 +267,12 @@ Coordinates.prototype.copy = function copy(src) {
  * coordinates.longitude(); // Longitude in geographic system
  * // returns 2.330201911389028
  *
- * @param      {number} [unit] - 0: Radians, 1: Degrees.
  * @return     {number} - The longitude of the position.
  */
 
-Coordinates.prototype.longitude = function longitude(unit) {
+Coordinates.prototype.longitude = function longitude() {
     _assertIsGeographic(this.crs);
-    if (unit === undefined) {
-        return this._values[0];
-    } else if (is4326Radians(this.crs)) {
-        return convertValueToUnit(UNIT.RADIAN, unit, this._values[0]);
-    } else {
-        return convertValueToUnit(UNIT.DEGREE, unit, this._values[0]);
-    }
+    return this._values[0];
 };
 
 /**
@@ -345,18 +292,11 @@ Coordinates.prototype.longitude = function longitude(unit) {
  * coordinates.latitude(); // Latitude in geographic system
  * // returns : 48.24830764643365
  *
- * @param      {number} [unit] - 0: Radians, 1: Degrees.
  * @return     {number} - The latitude of the position.
  */
 
-Coordinates.prototype.latitude = function latitude(unit) {
-    if (unit === undefined) {
-        return this._values[1];
-    } else if (is4326Radians(this.crs)) {
-        return convertValueToUnit(UNIT.RADIAN, unit, this._values[1]);
-    } else {
-        return convertValueToUnit(UNIT.DEGREE, unit, this._values[1]);
-    }
+Coordinates.prototype.latitude = function latitude() {
+    return this._values[1];
 };
 
 /**
@@ -545,10 +485,6 @@ Coordinates.prototype.as = function as(crs, target) {
  */
 Coordinates.prototype.offsetInExtent = function offsetInExtent(extent, target) {
     if (this.crs != extent.crs()) {
-        // If one of them is using Radians
-        if (is4326(this.crs) && is4326(extent.crs())) {
-            return this.as(extent.crs()).offsetInExtent(extent, target);
-        }
         throw new Error('unsupported mix');
     }
 
@@ -583,10 +519,6 @@ export const C = {
      */
     EPSG_4326: function EPSG_4326(...args) {
         return new Coordinates('EPSG:4326', ...args);
-    },
-    EPSG_4326_Radians: function EPSG_4326(...args) {
-        const result = new Coordinates('EPSG:4326:R', ...args);
-        return result;
     },
 };
 
