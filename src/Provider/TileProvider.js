@@ -4,10 +4,10 @@
  * and open the template in the editor.
  */
 import * as THREE from 'three';
-import TileGeometry from '../../TileGeometry';
-import TileMesh from '../../TileMesh';
-import CancelledCommandException from '../CancelledCommandException';
-import { requestNewTile } from '../../../Process/TiledNodeProcessing';
+import TileGeometry from '../Core/TileGeometry';
+import TileMesh from '../Core/TileMesh';
+import CancelledCommandException from '../Core/Scheduler/CancelledCommandException';
+import { requestNewTile } from '../Process/TiledNodeProcessing';
 
 const cacheGeometry = new Map();
 

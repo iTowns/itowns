@@ -5,15 +5,15 @@
  */
 
 import PriorityQueue from 'js-priority-queue';
-import WMTS_Provider from './Providers/WMTS_Provider';
-import WMS_Provider from './Providers/WMS_Provider';
-import TileProvider from './Providers/TileProvider';
-import $3dTiles_Provider from './Providers/3dTiles_Provider';
-import TMS_Provider from './Providers/TMS_Provider';
-import PointCloudProvider from './Providers/PointCloudProvider';
-import WFS_Provider from './Providers/WFS_Provider';
-import Raster_Provider from './Providers/Raster_Provider';
-import StaticProvider from './Providers/StaticProvider';
+import WMTSProvider from '../../Provider/WMTSProvider';
+import WMSProvider from '../../Provider/WMSProvider';
+import TileProvider from '../../Provider/TileProvider';
+import $3dTilesProvider from '../../Provider/3dTilesProvider';
+import TMSProvider from '../../Provider/TMSProvider';
+import PointCloudProvider from '../../Provider/PointCloudProvider';
+import WFSProvider from '../../Provider/WFSProvider';
+import RasterProvider from '../../Provider/RasterProvider';
+import StaticProvider from '../../Provider/StaticProvider';
 import CancelledCommandException from './CancelledCommandException';
 
 var instanceScheduler = null;
@@ -88,16 +88,16 @@ Scheduler.prototype.constructor = Scheduler;
 
 Scheduler.prototype.initDefaultProviders = function initDefaultProviders() {
     // Register all providers
-    this.addProtocolProvider('wmts', WMTS_Provider);
-    this.addProtocolProvider('wmtsc', WMTS_Provider);
+    this.addProtocolProvider('wmts', WMTSProvider);
+    this.addProtocolProvider('wmtsc', WMTSProvider);
     this.addProtocolProvider('tile', TileProvider);
-    this.addProtocolProvider('wms', WMS_Provider);
-    this.addProtocolProvider('3d-tiles', $3dTiles_Provider);
-    this.addProtocolProvider('tms', TMS_Provider);
-    this.addProtocolProvider('xyz', TMS_Provider);
+    this.addProtocolProvider('wms', WMSProvider);
+    this.addProtocolProvider('3d-tiles', $3dTilesProvider);
+    this.addProtocolProvider('tms', TMSProvider);
+    this.addProtocolProvider('xyz', TMSProvider);
     this.addProtocolProvider('potreeconverter', PointCloudProvider);
-    this.addProtocolProvider('wfs', WFS_Provider);
-    this.addProtocolProvider('rasterizer', Raster_Provider);
+    this.addProtocolProvider('wfs', WFSProvider);
+    this.addProtocolProvider('rasterizer', RasterProvider);
     this.addProtocolProvider('static', StaticProvider);
 };
 

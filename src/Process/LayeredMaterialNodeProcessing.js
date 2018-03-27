@@ -3,7 +3,7 @@ import { chooseNextLevelToFetch } from '../Core/Layer/LayerUpdateStrategy';
 import LayerUpdateState from '../Core/Layer/LayerUpdateState';
 import { ImageryLayers } from '../Core/Layer/Layer';
 import CancelledCommandException from '../Core/Scheduler/CancelledCommandException';
-import { SIZE_TEXTURE_TILE } from '../Core/Scheduler/Providers/OGCWebServiceHelper';
+import { SIZE_TEXTURE_TILE } from '../Provider/OGCWebServiceHelper';
 import { computeMinMaxElevation } from '../Parser/XbilParser';
 
 // max retry loading before changing the status to definitiveError

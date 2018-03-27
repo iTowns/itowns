@@ -1,9 +1,9 @@
 import flatbush from 'flatbush';
 import { Vector4 } from 'three';
-import Extent from '../../Geographic/Extent';
+import Extent from '../Core/Geographic/Extent';
 import OGCWebServiceHelper from './OGCWebServiceHelper';
 import Fetcher from './Fetcher';
-import { l_COLOR, l_ELEVATION } from '../../../Renderer/LayeredMaterialConstants';
+import { l_COLOR, l_ELEVATION } from '../Renderer/LayeredMaterialConstants';
 
 function _selectImagesFromSpatialIndex(index, images, extent) {
     return index.search(

@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import OGCWebServiceHelper from './OGCWebServiceHelper';
 import URLBuilder from './URLBuilder';
-import Extent from '../../Geographic/Extent';
+import Extent from '../Core/Geographic/Extent';
 
 function preprocessDataLayer(layer) {
     if (!layer.extent) {

@@ -1,9 +1,9 @@
 import * as THREE from 'three';
 import Fetcher from './Fetcher';
-import PointCloudProcessing from '../../../Process/PointCloudProcessing';
-import PotreeBinParser from '../../../Parser/PotreeBinParser';
-import PotreeCinParser from '../../../Parser/PotreeCinParser';
-import Picking from '../../Picking';
+import PointCloudProcessing from '../Process/PointCloudProcessing';
+import PotreeBinParser from '../Parser/PotreeBinParser';
+import PotreeCinParser from '../Parser/PotreeCinParser';
+import Picking from '../Core/Picking';
 
 // Create an A(xis)A(ligned)B(ounding)B(ox) for the child `childIndex` of one aabb.
 // (PotreeConverter protocol builds implicit octree hierarchy by applying the same

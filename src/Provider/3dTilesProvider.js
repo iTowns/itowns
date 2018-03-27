@@ -1,13 +1,13 @@
 import * as THREE from 'three';
-import B3dmParser from '../../../Parser/B3dmParser';
-import PntsParser from '../../../Parser/PntsParser';
+import B3dmParser from '../Parser/B3dmParser';
+import PntsParser from '../Parser/PntsParser';
 import Fetcher from './Fetcher';
-import OBB from '../../../Renderer/ThreeExtended/OBB';
-import Extent from '../../Geographic/Extent';
-import Capabilities from '../../System/Capabilities';
-import PrecisionQualifier from '../../../Renderer/Shader/Chunk/PrecisionQualifier.glsl';
-import { init3dTilesLayer } from '../../../Process/3dTilesProcessing';
-import utf8Decoder from '../../../utils/Utf8Decoder';
+import OBB from '../Renderer/ThreeExtended/OBB';
+import Extent from '../Core/Geographic/Extent';
+import Capabilities from '../Core/System/Capabilities';
+import PrecisionQualifier from '../Renderer/Shader/Chunk/PrecisionQualifier.glsl';
+import { init3dTilesLayer } from '../Process/3dTilesProcessing';
+import utf8Decoder from '../utils/Utf8Decoder';
 
 function $3dTilesIndex(tileset, baseURL) {
     let counter = 0;

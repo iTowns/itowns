@@ -1,14 +1,14 @@
 /**
  * Generated On: 2016-03-5
- * Class: WFS_Provider
+ * Class: WFSProvider
  * Description: Provides data from a WFS stream
  */
 
-import Extent from '../../Geographic/Extent';
+import Extent from '../Core/Geographic/Extent';
 import URLBuilder from './URLBuilder';
 import Fetcher from './Fetcher';
-import GeoJsonParser from '../../../Parser/GeoJsonParser';
-import Feature2Mesh from '../../../Renderer/ThreeExtended/Feature2Mesh';
+import GeoJsonParser from '../Parser/GeoJsonParser';
+import Feature2Mesh from '../Renderer/ThreeExtended/Feature2Mesh';
 
 const cache = new Map();
 
