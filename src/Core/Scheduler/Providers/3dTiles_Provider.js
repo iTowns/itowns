@@ -4,7 +4,6 @@ import PntsParser from '../../../Parser/PntsParser';
 import Fetcher from './Fetcher';
 import OBB from '../../../Renderer/ThreeExtended/OBB';
 import Extent from '../../Geographic/Extent';
-import { UNIT } from '../../Geographic/Coordinates';
 import Capabilities from '../../System/Capabilities';
 import PrecisionQualifier from '../../../Renderer/Shader/Chunk/PrecisionQualifier.glsl';
 import { init3dTilesLayer } from '../../../Process/3dTilesProcessing';
@@ -79,8 +78,11 @@ function preprocessDataLayer(layer, view, scheduler) {
 function getBox(volume, inverseTileTransform) {
     if (volume.region) {
         const region = volume.region;
-        const extent = new Extent('EPSG:4326', region[0], region[2], region[1], region[3]);
-        extent._internalStorageUnit = UNIT.RADIAN;
+        const extent = new Extent('EPSG:4326',
+            THREE.Math.radToDeg(region[0]),
+            THREE.Math.radToDeg(region[2]),
+            THREE.Math.radToDeg(region[1]),
+            THREE.Math.radToDeg(region[3]));
         const box = OBB.extentToOBB(extent, region[4], region[5]);
         // at this point box.matrix = box.epsg4978_from_local, so
         // we transform it in parent_from_local by using parent's epsg4978_from_local

@@ -21,14 +21,7 @@ function subdivisionExtents(bbox) {
         center._values[0], bbox.east(),
         bbox.south(), center._values[1]);
 
-    // scheme tiles store their coordinates in radians internally,
-    // so we need to fix the new bboxes as well
-    const result = [northWest, northEast, southWest, southEast];
-
-    for (const r of result) {
-        r._internalStorageUnit = bbox._internalStorageUnit;
-    }
-    return result;
+    return [northWest, northEast, southWest, southEast];
 }
 
 export function requestNewTile(view, scheduler, geometryLayer, extent, parent, level) {

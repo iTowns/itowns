@@ -6,7 +6,7 @@
 
 
 import * as THREE from 'three';
-import Coordinates, { UNIT } from '../Geographic/Coordinates';
+import Coordinates from '../Geographic/Coordinates';
 
 function Ellipsoid(size) {
     // Constructor
@@ -34,8 +34,8 @@ Ellipsoid.prototype.geodeticSurfaceNormal = function geodeticSurfaceNormal(carte
 };
 
 Ellipsoid.prototype.geodeticSurfaceNormalCartographic = function geodeticSurfaceNormalCartographic(coordCarto, target = new THREE.Vector3()) {
-    var longitude = coordCarto.longitude(UNIT.RADIAN);
-    var latitude = coordCarto.latitude(UNIT.RADIAN);
+    var longitude = THREE.Math.degToRad(coordCarto.longitude());
+    var latitude = THREE.Math.degToRad(coordCarto.latitude());
     var cosLatitude = Math.cos(latitude);
 
     var x = cosLatitude * Math.cos(longitude);
@@ -96,7 +96,10 @@ Ellipsoid.prototype.cartesianToCartographic = function cartesianToCartographic(p
 
     const h = (rsqXY * Math.cos(phi)) + position.z * Math.sin(phi) - a * Math.sqrt(1 - e * Math.sin(phi) * Math.sin(phi));
 
-    return target.set('EPSG:4326', theta * 180 / Math.PI, phi * 180 / Math.PI, h);
+    return target.set('EPSG:4326',
+        THREE.Math.radToDeg(theta),
+        THREE.Math.radToDeg(phi),
+        h);
 };
 
 Ellipsoid.prototype.cartographicToCartesianArray = function cartographicToCartesianArray(coordCartoArray) {
@@ -162,10 +165,10 @@ Ellipsoid.prototype.intersection = function intersection(ray) {
 };
 
 Ellipsoid.prototype.computeDistance = function computeDistance(coordCarto1, coordCarto2) {
-    var longitude1 = coordCarto1.longitude() * Math.PI / 180;
-    var latitude1 = coordCarto1.latitude() * Math.PI / 180;
-    var longitude2 = coordCarto2.longitude() * Math.PI / 180;
-    var latitude2 = coordCarto2.latitude() * Math.PI / 180;
+    var longitude1 = THREE.Math.degToRad(coordCarto1.longitude());
+    var latitude1 = THREE.Math.degToRad(coordCarto1.latitude());
+    var longitude2 = THREE.Math.degToRad(coordCarto2.longitude());
+    var latitude2 = THREE.Math.degToRad(coordCarto2.latitude());
 
     var distRad = Math.acos(Math.sin(latitude1) * Math.sin(latitude2) + Math.cos(latitude1) * Math.cos(latitude2) * Math.cos(longitude2 - longitude1));
 

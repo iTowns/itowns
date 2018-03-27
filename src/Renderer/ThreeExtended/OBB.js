@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import Coordinates, { C, UNIT } from '../../Core/Geographic/Coordinates';
+import Coordinates from '../../Core/Geographic/Coordinates';
 import TileGeometry from '../../Core/TileGeometry';
 import BuilderEllipsoidTile from '../../Core/Prefab/Globe/BuilderEllipsoidTile';
 
@@ -101,7 +101,7 @@ const tmp = {
 };
 
 for (let i = 0; i < 9; i++) {
-    tmp.cardinals.push(C.EPSG_4326_Radians(0, 0));
+    tmp.cardinals.push(new Coordinates('EPSG:4326'));
 }
 
 // get oriented bounding box of tile
@@ -109,9 +109,6 @@ const builder = new BuilderEllipsoidTile();
 OBB.extentToOBB = function _extentToOBB(extent, minHeight = 0, maxHeight = 0) {
     if (extent._crs != 'EPSG:4326') {
         throw new Error('The extent crs is not a Geographic Coordinates (EPSG:4326)');
-    }
-    if (extent._internalStorageUnit != UNIT.RADIAN) {
-        throw new Error('The extent internalStorageUnit is not in radian unit');
     }
 
     const { sharableExtent, quaternion, position } = builder.computeSharableExtent(extent);

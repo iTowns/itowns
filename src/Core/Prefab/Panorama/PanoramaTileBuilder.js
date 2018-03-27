@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import OBB from '../../../Renderer/ThreeExtended/OBB';
-import Coordinates, { UNIT } from '../../Geographic/Coordinates';
+import Coordinates from '../../Geographic/Coordinates';
 import ProjectionType from './Constants';
 import Extent from '../../Geographic/Extent';
 
@@ -36,10 +36,11 @@ PanoramaTileBuilder.prototype.constructor = PanoramaTileBuilder;
 // init projected object -> params.projected
 const axisX = new THREE.Vector3(0, 1, 0);
 PanoramaTileBuilder.prototype.Prepare = function Prepare(params) {
-    const angle = (params.extent.north(UNIT.RADIAN) + params.extent.south(UNIT.RADIAN)) * 0.5;
+    const angle = (params.extent.north() + params.extent.south()) * 0.5;
 
     if (this.projectionType === ProjectionType.SPHERICAL) {
-        params.quatNormalToZ = new THREE.Quaternion().setFromAxisAngle(axisX, (Math.PI * 0.5 - angle));
+        params.quatNormalToZ = new THREE.Quaternion().setFromAxisAngle(
+            axisX, THREE.Math.degToRad(90 - angle));
         params.projected = {
             theta: 0,
             phi: 0,
@@ -85,20 +86,20 @@ PanoramaTileBuilder.prototype.VertexNormal = function VertexNormal() {
 // coord u tile to projected
 PanoramaTileBuilder.prototype.uProjecte = function uProjecte(u, params) {
     // both (theta, phi) and (y, z) are swapped in setFromSpherical
-    params.projected.theta = Math.PI * 0.5 - THREE.Math.lerp(
-        params.extent.east(UNIT.RADIAN),
-        params.extent.west(UNIT.RADIAN),
-        1 - u);
+    params.projected.theta = THREE.Math.degToRad(90 - THREE.Math.lerp(
+        params.extent.east(),
+        params.extent.west(),
+        1 - u));
 };
 
 // coord v tile to projected
 PanoramaTileBuilder.prototype.vProjecte = function vProjecte(v, params) {
     if (this.projectionType === ProjectionType.SPHERICAL) {
-        params.projected.phi = Math.PI * 0.5 -
+        params.projected.phi = THREE.Math.degToRad(90 -
             THREE.Math.lerp(
-                params.extent.north(UNIT.RADIAN),
-                params.extent.south(UNIT.RADIAN),
-                1 - v);
+                params.extent.north(),
+                params.extent.south(),
+                1 - v));
     } else {
         params.projected.y =
             this.height *
@@ -122,17 +123,16 @@ PanoramaTileBuilder.prototype.computeSharableExtent = function fnComputeSharable
     // with a transformation (translation, rotation)
     const sizeLongitude = Math.abs(extent.west() - extent.east()) / 2;
     const sharableExtent = new Extent(extent.crs(), -sizeLongitude, sizeLongitude, extent.south(), extent.north());
-    sharableExtent._internalStorageUnit = extent._internalStorageUnit;
 
     // compute rotation to transform tile to position it
     // this transformation take into account the transformation of the parents
-    const rotLon = extent.west(UNIT.RADIAN) - sharableExtent.west(UNIT.RADIAN);
-    const rotLat = Math.PI * 0.5 -
+    const rotLon = extent.west() - sharableExtent.west();
+    const rotLat = 90 -
         (this.projectionType === ProjectionType.CYLINDRICAL ?
             0 :
-            (extent.north(UNIT.RADIAN) + extent.south(UNIT.RADIAN)) * 0.5);
-    quatToAlignLongitude.setFromAxisAngle(axisZ, -rotLon);
-    quatToAlignLatitude.setFromAxisAngle(axisY, -rotLat);
+            (extent.north() + extent.south()) * 0.5);
+    quatToAlignLongitude.setFromAxisAngle(axisZ, -THREE.Math.degToRad(rotLon));
+    quatToAlignLatitude.setFromAxisAngle(axisY, -THREE.Math.degToRad(rotLat));
     quatToAlignLongitude.multiply(quatToAlignLatitude);
 
     return {

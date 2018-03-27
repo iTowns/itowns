@@ -1,7 +1,7 @@
 /* global describe, it */
 import proj4 from 'proj4';
 import assert from 'assert';
-import Coordinates, { UNIT } from '../src/Core/Geographic/Coordinates';
+import Coordinates from '../src/Core/Geographic/Coordinates';
 
 // Define projection that we will use (taken from https://epsg.io/3946, Proj4js section)
 proj4.defs('EPSG:3946', '+proj=lcc +lat_1=45.25 +lat_2=46.75 +lat_0=46 +lon_0=3 +x_0=1700000 +y_0=5200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
@@ -14,7 +14,6 @@ function assertFloatEqual(float1, float2, precision = 5) {
 // Assert two coordinates obects are equals.
 function assertCoordEqual(coord1, coord2) {
     assert.equal(coord1.crs, coord2.crs);
-    assert.equal(coord1._internalStorageUnit, coord2._internalStorageUnit);
     assertFloatEqual(coord1._values[0], coord2._values[0]);
     assertFloatEqual(coord1._values[1], coord2._values[1]);
     assertFloatEqual(coord1._values[2], coord2._values[2]);
@@ -40,14 +39,13 @@ describe('Coordinate conversions', function () {
         var coord3 = coord2.as('EPSG:3946');
         assertCoordEqual(coord1, coord3);
     });
-    // This case happend in iTowns when we convert the tile extent (4326 radian) to a target WFS server (EPSG:3946 for example) to request Lyon bus line in WFS.
-    it('should correctly convert from EPSG:4326 Radian (tiles extent) to EPSG:3946 (Lyon WFS) and back to EPSG:4326 (degrees)', function () {
+    // This case happend in iTowns when we convert the tile extent (4326) to a target WFS server (EPSG:3946 for example) to request Lyon bus line in WFS.
+    it('should correctly convert from EPSG:4326 (tiles extent) to EPSG:3946 (Lyon WFS) and back to EPSG:4326 (degrees)', function () {
         // geographic example for EPSG 4326 in degrees
         var longIn = 4.82212;
         var latIn = 45.723722;
-        // let's define an input coordinate EPSG:4326 in radian.
-        var coord1 = new Coordinates('EPSG:4326', longIn / 180 * Math.PI, latIn / 180 * Math.PI);
-        coord1._internalStorageUnit = UNIT.RADIAN;
+        // let's define an input coordinate EPSG:4326.
+        var coord1 = new Coordinates('EPSG:4326', longIn, latIn);
         // convert coordinate in EPSG:3946
         var coord2 = coord1.as('EPSG:3946');
         // verify intermediate values

@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { C, UNIT } from '../../Geographic/Coordinates';
+import Coordinates from '../../Geographic/Coordinates';
 import Projection from '../../Geographic/Projection';
 import OBB from '../../../Renderer/ThreeExtended/OBB';
 import Extent from '../../Geographic/Extent';
@@ -7,13 +7,15 @@ import Extent from '../../Geographic/Extent';
 const axisZ = new THREE.Vector3(0, 0, 1);
 const axisY = new THREE.Vector3(0, 1, 0);
 
-function BuilderEllipsoidTile() {
-    this.projector = new Projection();
+function WGS84ToOneSubY(latitude) {
+    return 1.0 - Projection.WGS84ToY(latitude);
+}
 
+function BuilderEllipsoidTile() {
     this.tmp = {
         coords: [
-            C.EPSG_4326_Radians(0, 0),
-            C.EPSG_4326_Radians(0, 0)],
+            new Coordinates('EPSG:4326', 0, 0),
+            new Coordinates('EPSG:4326', 0, 0)],
         position: new THREE.Vector3(),
     };
 
@@ -28,7 +30,7 @@ BuilderEllipsoidTile.prototype.constructor = BuilderEllipsoidTile;
 BuilderEllipsoidTile.prototype.Prepare = function Prepare(params) {
     params.nbRow = Math.pow(2.0, params.level + 1.0);
 
-    var st1 = this.projector.WGS84ToOneSubY(params.extent.south());
+    var st1 = WGS84ToOneSubY(params.extent.south());
 
     if (!isFinite(st1))
         { st1 = 0; }
@@ -40,10 +42,12 @@ BuilderEllipsoidTile.prototype.Prepare = function Prepare(params) {
     params.deltaUV1 = (st1 - start) * params.nbRow;
 
     // transformation to align tile's normal to z axis
-    params.quatNormalToZ = new THREE.Quaternion().setFromAxisAngle(axisY, -(Math.PI * 0.5 - params.extent.center().latitude()));
+    params.quatNormalToZ = new THREE.Quaternion().setFromAxisAngle(
+        axisY,
+        -(Math.PI * 0.5 - THREE.Math.degToRad(params.extent.center().latitude())));
 
     // let's avoid building too much temp objects
-    params.projected = { longitudeRad: 0, latitudeRad: 0 };
+    params.projected = { longitude: 0, latitude: 0 };
 };
 
 // get center tile in cartesian 3D
@@ -56,9 +60,8 @@ BuilderEllipsoidTile.prototype.Center = function Center(extent) {
 BuilderEllipsoidTile.prototype.VertexPosition = function VertexPosition(params) {
     this.tmp.coords[0].set(
         'EPSG:4326',
-        params.projected.longitudeRad,
-        params.projected.latitudeRad);
-    this.tmp.coords[0]._internalStorageUnit = UNIT.RADIAN;
+        params.projected.longitude,
+        params.projected.latitude);
 
     this.tmp.coords[0].as('EPSG:4978', this.tmp.coords[1]).xyz(this.tmp.position);
     return this.tmp.position;
@@ -71,17 +74,17 @@ BuilderEllipsoidTile.prototype.VertexNormal = function VertexNormal() {
 
 // coord u tile to projected
 BuilderEllipsoidTile.prototype.uProjecte = function uProjecte(u, params) {
-    params.projected.longitudeRad = this.projector.UnitaryToLongitudeWGS84(u, params.extent);
+    params.projected.longitude = Projection.UnitaryToLongitudeWGS84(u, params.extent);
 };
 
 // coord v tile to projected
 BuilderEllipsoidTile.prototype.vProjecte = function vProjecte(v, params) {
-    params.projected.latitudeRad = this.projector.UnitaryToLatitudeWGS84(v, params.extent);
+    params.projected.latitude = Projection.UnitaryToLatitudeWGS84(v, params.extent);
 };
 
 // Compute uv 1, if isn't defined the uv1 isn't computed
 BuilderEllipsoidTile.prototype.getUV_PM = function getUV_PM(params) {
-    var t = this.projector.WGS84ToOneSubY(params.projected.latitudeRad) * params.nbRow;
+    var t = WGS84ToOneSubY(params.projected.latitude) * params.nbRow;
 
     if (!isFinite(t))
         { t = 0; }
@@ -102,12 +105,11 @@ BuilderEllipsoidTile.prototype.computeSharableExtent = function fnComputeSharabl
     // Common geometry is looking for only on longitude
     const sizeLongitude = Math.abs(extent.west() - extent.east()) / 2;
     const sharableExtent = new Extent(extent.crs(), -sizeLongitude, sizeLongitude, extent.south(), extent.north());
-    sharableExtent._internalStorageUnit = extent._internalStorageUnit;
 
     // compute rotation to transform tile to position it on ellipsoid
     // this transformation take into account the transformation of the parents
-    const rotLon = extent.west() - sharableExtent.west();
-    const rotLat = Math.PI * 0.5 - extent.center().latitude();
+    const rotLon = THREE.Math.degToRad(extent.west() - sharableExtent.west());
+    const rotLat = THREE.Math.degToRad(90 - extent.center().latitude());
     quatToAlignLongitude.setFromAxisAngle(axisZ, rotLon);
     quatToAlignLatitude.setFromAxisAngle(axisY, rotLat);
     quatToAlignLongitude.multiply(quatToAlignLatitude);

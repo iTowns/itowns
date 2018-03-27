@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 import proj4 from 'proj4';
 import assert from 'assert';
-import { UNIT } from '../src/Core/Geographic/Coordinates';
 import Extent from '../src/Core/Geographic/Extent';
 import BuilderEllipsoidTile from '../src/Core/Prefab/Globe/BuilderEllipsoidTile';
 import PlanarTileBuilder from '../src/Core/Prefab/Planar/PlanarTileBuilder';
@@ -60,14 +59,12 @@ describe('Ellipsoid tiles OBB computation', function () {
     const builder = new BuilderEllipsoidTile();
 
     it('should compute globe-level 0 OBB correctly', function () {
-        const extent = new Extent('EPSG:4326', -Math.PI, 0, -Math.PI * 0.5, Math.PI * 0.5);
-        extent._internalStorageUnit = UNIT.RADIAN;
+        const extent = new Extent('EPSG:4326', -180, 0, -90, 90);
         assertVerticesAreInOBB(builder, extent);
     });
 
     it('should compute globe-level 2 OBB correctly', function () {
-        const extent = new Extent('EPSG:4326', 0, 0.7853981633974483, -0.7853981633974483, 0);
-        extent._internalStorageUnit = UNIT.RADIAN;
+        const extent = new Extent('EPSG:4326', 0, 45, -45, 0);
         assertVerticesAreInOBB(builder, extent);
     });
 });
