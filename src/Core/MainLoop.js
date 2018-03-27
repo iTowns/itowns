@@ -83,7 +83,7 @@ MainLoop.prototype._update = function _update(view, updateSources, dt) {
 
     for (const geometryLayer of view.getLayers((x, y) => !y)) {
         context.geometryLayer = geometryLayer;
-        if (geometryLayer.ready && geometryLayer.visible) {
+        if (geometryLayer.ready && geometryLayer.visible && !geometryLayer.frozen) {
             view.execFrameRequesters(MAIN_LOOP_EVENTS.BEFORE_LAYER_UPDATE, dt, this._updateLoopRestarted, geometryLayer);
 
             // `preUpdate` returns an array of elements to update
