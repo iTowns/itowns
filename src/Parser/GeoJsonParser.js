@@ -231,7 +231,7 @@ function readFeatureCollection(crsIn, crsOut, json, filteringExtent, options) {
 }
 
 /**
- * @module GeoJSON2Features
+ * @module GeoJsonParser
  */
 export default {
     /**
@@ -255,27 +255,34 @@ export default {
     */
 
     /**
-     * Parses a geojson file and return a Feature or an array of Feature.
-     * @param {string} crsOut - The CRS to convert the input coordinates to
-     * @param {string} json - The GeoJSON file to parse
-     * @param {?Extent} filteringExtent - Optional filter to reject features
-     * outside of this extent.
+     * Parse a GeoJSON file and return a Feature or an array of Features.
+     * @param {string} file - The GeoJSON file to parse.
      * @param {object} options - options controlling the parsing
+     * @param {boolean} [options.json=false] - set to true if file is actually a parsed json.
+     * @param {string} options.crsOut - The CRS to convert the input coordinates to.
      * @param {string} options.crsIn - override the data crs
-     * @param {boolean} options.buildExtent - if true the geometry will
+     * @param {Extent=} options.filteringExtent - Optional filter to reject features
+     * outside of this extent.
+     * @param {boolean} [options.buildExtent=false] - if true the geometry will
      * have an extent property containing the area covered by the geom
-     * @param {function} options.filter - Filter function to remove features
-     * @returns {Promise} - a Promise resolving with a Feature or an array of Feature
+     * @param {function=} options.filter - Filter function to remove features
+     * @returns {Promise} - a promise resolving with a Feature or an array of Features
      */
-    parse(crsOut, json, filteringExtent, options = {}) {
-        options.crsIn = options.crsIn || readCRS(json);
-        switch (json.type.toLowerCase()) {
+    parse(file, options = {}) {
+        const crsOut = options.crsOut;
+        const filteringExtent = options.filteringExtent;
+        let json = file;
+        if (!options.json) {
+            json = file.json();
+        }
+        options.crsIn = options.crsIn || readCRS(file);
+        switch (file.type.toLowerCase()) {
             case 'featurecollection':
                 return Promise.resolve(readFeatureCollection(options.crsIn, crsOut, json, filteringExtent, options));
             case 'feature':
                 return Promise.resolve(readFeature(options.crsIn, crsOut, json, filteringExtent, options));
             default:
-                throw new Error(`Unsupported GeoJSON type: '${json.type}`);
+                throw new Error(`Unsupported GeoJSON type: '${file.type}`);
         }
     },
 };

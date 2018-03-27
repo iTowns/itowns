@@ -6,7 +6,6 @@
 
 import * as THREE from 'three';
 import Line from 'three.meshline';
-import Fetcher from '../Core/Scheduler/Providers/Fetcher';
 import Coordinates from '../Core/Geographic/Coordinates';
 import Capabilities from '../Core/System/Capabilities';
 import { patchMaterialForLogDepthSupport } from '../Core/Scheduler/Providers/3dTiles_Provider';
@@ -172,18 +171,19 @@ function _gpxToMesh(gpxXML, options = {}) {
 
 export default {
     /** @module GpxParser */
-    /** Load gpx file and convert to THREE.Mesh
-     * @function load
-     * @param {string} urlFile  The url of gpx file
-     * @param {string} crs - The default CRS of Three.js coordinates. Should be a cartesian CRS.
-     * @param {Object=} options Optional properties.
-     * @param {boolean=} [options.enablePin=true] draw pin for way points
-     * @param {NetworkOptions=} options.networkOptions Options for fetching resources over network
-     * @param {number=} [options.lineWidth=12] set line width to track line
-     * @return {THREE.Mesh} Three.js Mesh see {@link https://threejs.org/docs/#api/objects/Mesh}
+    /** Parse gpx file and convert to THREE.Mesh
+     * @function parse
+     * @param {string} file - the gpx file or xml.
+     * @param {Object=} options - additional properties.
+     * @param {boolean} options.xml - set to true if file is actually a parsed xml.
+     * @param {string} options.crs - the default CRS of Three.js coordinates. Should be a cartesian CRS.
+     * @param {boolean=} [options.enablePin=true] - draw pin for way points.
+     * @param {NetworkOptions=} options.networkOptions - options for fetching resources over network.
+     * @param {number=} [options.lineWidth=12] - set line width to track line.
+     * @return {THREE.Mesh} - a promise that resolves with a Three.js Mesh (see {@link https://threejs.org/docs/#api/objects/Mesh}).
      * @example
-     * // How add gpx object
-     * itowns.GpxParser.load(url, viewer.referenceCrs).then((gpx) => {
+     * // How to add a gpx object
+     * itowns.GpxParser.parse(file, { crs: viewer.referenceCrs }).then((gpx) => {
      *      if (gpx) {
      *         viewer.scene.add(gpx);
      *         viewer.notifyChange(true);
@@ -191,8 +191,11 @@ export default {
      * });
      *
      */
-    load(urlFile, crs, options = {}) {
-        options.crs = crs;
-        return Fetcher.xml(urlFile, options.networkOptions).then(gpxXML => _gpxToMesh(gpxXML, options));
+    parse(file, options = {}) {
+        let xml = file;
+        if (!options.xml) {
+            xml = new window.DOMParser().parseFromString(xml, 'text/xml');
+        }
+        return Promise.resolve(_gpxToMesh(xml, options));
     },
 };

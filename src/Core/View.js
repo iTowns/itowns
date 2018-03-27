@@ -35,15 +35,6 @@ export const VIEW_EVENTS = {
  * added to viewerDiv (mutually exclusive with mainLoop)
  * @param {?Scene} options.scene3D - {@link Scene} instance to use, otherwise a default one will be constructed
  * @constructor
- * @example
- * // How add gpx object
- * itowns.GpxParser.load(url, viewer.referenceCrs).then((gpx) => {
- *      if (gpx) {
- *         viewer.scene.add(gpx);
- *      }
- * });
- *
- * viewer.notifyChange(true);
  */
  // TODO:
  // - remove debug boolean, replace by if __DEBUG__ and checkboxes in debug UI

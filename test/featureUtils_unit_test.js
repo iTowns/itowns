@@ -1,4 +1,4 @@
-import GeoJSON2Features from '../src/Parser/GeoJsonParser';
+import GeoJsonParser from '../src/Parser/GeoJsonParser';
 import FeaturesUtils from '../src/Renderer/ThreeExtended/FeaturesUtils';
 import Coordinates from '../src/Core/Geographic/Coordinates';
 /* global describe, it */
@@ -6,7 +6,7 @@ import Coordinates from '../src/Core/Geographic/Coordinates';
 const assert = require('assert');
 const geojson = require('./data/geojson/simple.geojson.json');
 
-const promise = GeoJSON2Features.parse('EPSG:4326', geojson, undefined, { buildExtent: true });
+const promise = GeoJsonParser.parse(geojson, { crsOut: 'EPSG:4326', buildExtent: true, json: true });
 
 describe('FeaturesUtils', function () {
     it('should correctly parse geojson', () =>

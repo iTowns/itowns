@@ -1,17 +1,16 @@
 import * as THREE from 'three';
 import GLTFLoader from './GLTFLoader';
 import LegacyGLTFLoader from './LegacyGLTFLoader';
-import BatchTable from './BatchTable';
+import BatchTableParser from './BatchTableParser';
 import utf8Decoder from '../utils/Utf8Decoder';
 
 const matrixChangeUpVectorZtoY = (new THREE.Matrix4()).makeRotationX(Math.PI / 2);
 // For gltf rotation
 const matrixChangeUpVectorZtoX = (new THREE.Matrix4()).makeRotationZ(-Math.PI / 2);
 
-function B3dmParser() {
-    this.glTFLoader = new GLTFLoader();
-    this.LegacyGLTFLoader = new LegacyGLTFLoader();
-}
+const glTFLoader = new GLTFLoader();
+
+const legacyGLTFLoader = new LegacyGLTFLoader();
 
 function filterUnsupportedSemantics(obj) {
     // see GLTFLoader GLTFShader.prototype.update function
@@ -47,81 +46,95 @@ function applyOptionalCesiumRTC(data, gltf) {
     }
 }
 
-B3dmParser.prototype.parse = function parse(buffer, gltfUpAxis, url) {
-    if (!buffer) {
-        throw new Error('No array buffer provided.');
-    }
-
-    const view = new DataView(buffer, 4);   // starts after magic
-
-    let byteOffset = 0;
-    const b3dmHeader = {};
-    let batchTable = {};
-
-    // Magic type is unsigned char [4]
-    b3dmHeader.magic = utf8Decoder.decode(new Uint8Array(buffer, 0, 4));
-    if (b3dmHeader.magic) {
-        // Version, byteLength, batchTableJSONByteLength, batchTableBinaryByteLength and batchTable types are uint32
-        b3dmHeader.version = view.getUint32(byteOffset, true);
-        byteOffset += Uint32Array.BYTES_PER_ELEMENT;
-
-        b3dmHeader.byteLength = view.getUint32(byteOffset, true);
-        byteOffset += Uint32Array.BYTES_PER_ELEMENT;
-
-        b3dmHeader.FTJSONLength = view.getUint32(byteOffset, true);
-        byteOffset += Uint32Array.BYTES_PER_ELEMENT;
-
-        b3dmHeader.FTBinaryLength = view.getUint32(byteOffset, true);
-        byteOffset += Uint32Array.BYTES_PER_ELEMENT;
-
-        b3dmHeader.BTJSONLength = view.getUint32(byteOffset, true);
-        byteOffset += Uint32Array.BYTES_PER_ELEMENT;
-
-        b3dmHeader.BTBinaryLength = view.getUint32(byteOffset, true);
-        byteOffset += Uint32Array.BYTES_PER_ELEMENT;
-
-        if (b3dmHeader.BTJSONLength > 0) {
-            const sizeBegin = 28 + b3dmHeader.FTJSONLength + b3dmHeader.FTBinaryLength;
-            batchTable = BatchTable.parse(
-                buffer.slice(sizeBegin, b3dmHeader.BTJSONLength + sizeBegin));
+export default {
+    /** @module B3dmParser */
+    /** Parse b3dm buffer and extract THREE.Scene and batch table
+     * @function parse
+     * @param {ArrayBuffer} buffer - the b3dm buffer.
+     * @param {Object} options - additional properties.
+     * @param {string=} [options.gltfUpAxis='Y'] - embeded glTF model up axis.
+     * @param {string} options.urlBase - the base url of the b3dm file (used to fetch textures for the embeded glTF model).
+     * @return {Promise} - a promise that resolves with an object containig a THREE.Scene (gltf) and a batch table (batchTable).
+     *
+     */
+    parse(buffer, options) {
+        const gltfUpAxis = options.gltfUpAxis;
+        const urlBase = options.urlBase;
+        if (!buffer) {
+            throw new Error('No array buffer provided.');
         }
-        // TODO: missing feature and batch table
-        return new Promise((resolve/* , reject */) => {
-            const onload = (gltf) => {
-                for (const scene of gltf.scenes) {
-                    scene.traverse(filterUnsupportedSemantics);
-                }
-                // Rotation managed
-                if (gltfUpAxis === undefined || gltfUpAxis === 'Y') {
-                    gltf.scene.applyMatrix(matrixChangeUpVectorZtoY);
-                } else if (gltfUpAxis === 'X') {
-                    gltf.scene.applyMatrix(matrixChangeUpVectorZtoX);
-                }
 
-                // RTC managed
-                applyOptionalCesiumRTC(buffer.slice(28 + b3dmHeader.FTJSONLength +
-                    b3dmHeader.FTBinaryLength + b3dmHeader.BTJSONLength +
-                    b3dmHeader.BTBinaryLength), gltf.scene);
+        const view = new DataView(buffer, 4);   // starts after magic
 
-                const b3dm = { gltf, batchTable };
-                resolve(b3dm);
-            };
+        let byteOffset = 0;
+        const b3dmHeader = {};
 
-            const gltfBuffer = buffer.slice(28 + b3dmHeader.FTJSONLength +
-                b3dmHeader.FTBinaryLength + b3dmHeader.BTJSONLength +
-                b3dmHeader.BTBinaryLength);
+        // Magic type is unsigned char [4]
+        b3dmHeader.magic = utf8Decoder.decode(new Uint8Array(buffer, 0, 4));
+        if (b3dmHeader.magic) {
+            // Version, byteLength, batchTableJSONByteLength, batchTableBinaryByteLength and batchTable types are uint32
+            b3dmHeader.version = view.getUint32(byteOffset, true);
+            byteOffset += Uint32Array.BYTES_PER_ELEMENT;
 
-            const version = new DataView(gltfBuffer, 0, 20).getUint32(4, true);
+            b3dmHeader.byteLength = view.getUint32(byteOffset, true);
+            byteOffset += Uint32Array.BYTES_PER_ELEMENT;
 
-            if (version === 1) {
-                this.LegacyGLTFLoader.parse(gltfBuffer, onload, THREE.LoaderUtils.extractUrlBase(url));
+            b3dmHeader.FTJSONLength = view.getUint32(byteOffset, true);
+            byteOffset += Uint32Array.BYTES_PER_ELEMENT;
+
+            b3dmHeader.FTBinaryLength = view.getUint32(byteOffset, true);
+            byteOffset += Uint32Array.BYTES_PER_ELEMENT;
+
+            b3dmHeader.BTJSONLength = view.getUint32(byteOffset, true);
+            byteOffset += Uint32Array.BYTES_PER_ELEMENT;
+
+            b3dmHeader.BTBinaryLength = view.getUint32(byteOffset, true);
+            byteOffset += Uint32Array.BYTES_PER_ELEMENT;
+
+            const promises = [];
+            if (b3dmHeader.BTJSONLength > 0) {
+                const sizeBegin = 28 + b3dmHeader.FTJSONLength + b3dmHeader.FTBinaryLength;
+                promises.push(BatchTableParser.parse(
+                    buffer.slice(sizeBegin, b3dmHeader.BTJSONLength + sizeBegin)));
             } else {
-                this.glTFLoader.parse(gltfBuffer, THREE.LoaderUtils.extractUrlBase(url), onload);
+                promises.push(Promise.resolve({}));
             }
-        });
-    } else {
-        throw new Error('Invalid b3dm file.');
-    }
-};
+            // TODO: missing feature table
+            promises.push(new Promise((resolve/* , reject */) => {
+                const onload = (gltf) => {
+                    for (const scene of gltf.scenes) {
+                        scene.traverse(filterUnsupportedSemantics);
+                    }
+                    // Rotation managed
+                    if (gltfUpAxis === undefined || gltfUpAxis === 'Y') {
+                        gltf.scene.applyMatrix(matrixChangeUpVectorZtoY);
+                    } else if (gltfUpAxis === 'X') {
+                        gltf.scene.applyMatrix(matrixChangeUpVectorZtoX);
+                    }
 
-export default B3dmParser;
+                    // RTC managed
+                    applyOptionalCesiumRTC(buffer.slice(28 + b3dmHeader.FTJSONLength +
+                        b3dmHeader.FTBinaryLength + b3dmHeader.BTJSONLength +
+                        b3dmHeader.BTBinaryLength), gltf.scene);
+
+                    resolve(gltf);
+                };
+
+                const gltfBuffer = buffer.slice(28 + b3dmHeader.FTJSONLength +
+                    b3dmHeader.FTBinaryLength + b3dmHeader.BTJSONLength +
+                    b3dmHeader.BTBinaryLength);
+
+                const version = new DataView(gltfBuffer, 0, 20).getUint32(4, true);
+
+                if (version === 1) {
+                    legacyGLTFLoader.parse(gltfBuffer, onload, urlBase);
+                } else {
+                    glTFLoader.parse(gltfBuffer, urlBase, onload);
+                }
+            }));
+            return Promise.all(promises).then(values => ({ gltf: values[1], batchTable: values[0] }));
+        } else {
+            throw new Error('Invalid b3dm file.');
+        }
+    },
+};

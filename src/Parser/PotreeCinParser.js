@@ -1,8 +1,14 @@
 import * as THREE from 'three';
 import PointsMaterial from '../Renderer/PointsMaterial';
 
-// Parse .cin PotreeConverter format (see https://github.com/peppsac/PotreeConverter/tree/custom_bin)
 export default {
+    /** @module PotreeCinParser */
+    /** Parse .cin PotreeConverter format (see {@link https://github.com/peppsac/PotreeConverter/tree/custom_bin}) and convert to THREE.Points
+     * @function parse
+     * @param {ArrayBuffer} buffer - the cin buffer.
+     * @return {Promise} - a promise that resolves with a THREE.Points.
+     *
+     */
     parse: function parse(buffer) {
         if (!buffer) {
             throw new Error('No array buffer provided.');
@@ -31,6 +37,6 @@ export default {
         points.realPointCount = numPoints;
         points.tightbbox = tightbbox;
 
-        return points;
+        return Promise.resolve(points);
     },
 };
