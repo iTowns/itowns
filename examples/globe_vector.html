@@ -73,11 +73,9 @@
         <script src="js/FeatureToolTip.js"></script>
         <script type="text/javascript">
             /* global itowns, document, GuiTools, globeView, promises, ToolTip */
-            var menuGlobe = new GuiTools('menuDiv');
+            var menuGlobe = new GuiTools('menuDiv', globeView);
 
-            menuGlobe.view = globeView;
             // Listen for globe full initialisation event
-
             globeView.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
                 // eslint-disable-next-line no-console
                 console.info('Globe initialized');
@@ -87,7 +85,7 @@
                     itowns.ColorLayersOrdering.moveLayerToIndex(globeView, 'Ortho', 0);
 
                     new ToolTip(globeView, document.getElementById('viewerDiv'), document.getElementById('tooltipDiv'));
-                });
+                }).catch(console.error);
 
 
             });

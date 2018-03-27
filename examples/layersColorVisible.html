@@ -37,10 +37,9 @@
 
             // iTowns namespace defined here
             var viewerDiv = document.getElementById('viewerDiv');
-            var menuGlobe = new GuiTools('menuDiv');
             var globeView = new itowns.GlobeView(viewerDiv, positionOnGlobe);
             setupLoadingScreen(viewerDiv, globeView);
-            menuGlobe.view = globeView;
+            var menuGlobe = new GuiTools('menuDiv', globeView);
 
             function addLayerCb(layer) {
                 return globeView.addLayer(layer);
@@ -89,7 +88,7 @@
                 Promise.all(promises).then(function () {
                     menuGlobe.addImageryLayersGUI(globeView.getLayers(function(l) { return l.type === 'color'; }));
                     menuGlobe.addElevationLayersGUI(globeView.getLayers(function (l) { return l.type === 'elevation'; }));
-                });
+                }).catch(console.error);
             });
 
             // Use frame requester to update menu before rendering

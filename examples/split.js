@@ -94,7 +94,8 @@ function splitRendering() {
 }
 
 // Override default rendering method when color layers are ready
-Promise.all(promises).then(function _() { globeView.render = splitRendering; });
+Promise.all(promises).then(
+    function _() { globeView.render = splitRendering; }).catch(console.error);
 
 exports.view = globeView;
 exports.initialPosition = positionOnGlobe;

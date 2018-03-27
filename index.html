@@ -33,7 +33,7 @@ and open the template in the editor.
         <script src="dist/itowns.js"></script>
         <script src="dist/debug.js"></script>
         <script type="text/javascript">
-            /* global itowns,document,GuiTools*/
+            /* global itowns,document,GuiTools, debug, window */
 
             var positionOnGlobe = { longitude: 2.351323, latitude: 48.856712, altitude: 25000000 };
 
@@ -41,14 +41,12 @@ and open the template in the editor.
             var viewerDiv = document.getElementById('viewerDiv');
             var globeView = new itowns.GlobeView(viewerDiv, positionOnGlobe);
             var menuGlobe = new GuiTools('menuDiv', globeView);
-            menuGlobe.view = globeView;
-
 
             function addLayerCb(layer) {
                 return globeView.addLayer(layer);
             }
 
-            var promises = []
+            var promises = [];
             promises.push(itowns.Fetcher.json('examples/layers/JSONLayers/Ortho.json').then(addLayerCb));
             promises.push(itowns.Fetcher.json('examples/layers/JSONLayers/OrthosCRS.json').then(addLayerCb));
             promises.push(itowns.Fetcher.json('examples/layers/JSONLayers/ScanEX.json').then(addLayerCb));
@@ -63,19 +61,15 @@ and open the template in the editor.
             promises.push(itowns.Fetcher.json('examples/layers/JSONLayers/WORLD_DTM.json').then(addLayerCb));
             promises.push(itowns.Fetcher.json('examples/layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addLayerCb));
 
-            menuGlobe.addGUI('RealisticLighting', false,
-                function(newValue) { globeView.setRealisticLightingOn(newValue); });
+            menuGlobe.addGUI('RealisticLighting', false, globeView.setRealisticLightingOn.bind(globeView));
 
-            Promise.all(promises).then(function () {
-                menuGlobe.addImageryLayersGUI(globeView.getLayers(function (l) { return l.type === 'color'; }));
-                menuGlobe.addElevationLayersGUI(globeView.getLayers(function(l) { return l.type === 'elevation'; }));
-                console.info('menuGlobe initialized');
-            }).catch( function (e) { console.error(e) });
-
-            globeView.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
+            Promise.all(promises).then(menuGlobe.addLayersGUI.bind(menuGlobe)).catch(console.error);
+            function messageIsInit() {
                 // eslint-disable-next-line no-console
                 console.info('Globe initialized');
-            });
+            }
+
+            globeView.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, messageIsInit);
 
             const d = new debug.Debug(globeView, menuGlobe.gui);
             debug.createTileDebugUI(menuGlobe.gui, globeView, globeView.wgs84TileLayer, d);
