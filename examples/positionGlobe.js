@@ -19,9 +19,7 @@ var globeView = new itowns.GlobeView(viewerDiv, positionOnGlobe, { renderer: ren
 
 var promises = [];
 
-var menuGlobe = new GuiTools('menuDiv');
-menuGlobe.view = globeView;
-
+var menuGlobe = new GuiTools('menuDiv', globeView);
 setupLoadingScreen(viewerDiv, globeView);
 
 function addLayerCb(layer) {
@@ -80,5 +78,5 @@ globeView.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function 
         addMeshToScene();
 
         globeView.controls.setTilt(60, true);
-    });
+    }).catch(console.error);
 });

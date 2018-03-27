@@ -120,8 +120,7 @@
         <script src="stereo.js"></script>
         <script type="text/javascript">
             /* global itowns, document, GuiTools, globeView, promises */
-            var menuGlobe = new GuiTools('menuDiv');
-            menuGlobe.view = globeView;
+            var menuGlobe = new GuiTools('menuDiv', globeView);
             var divScaleWidget = document.querySelectorAll('.divScaleWidget')[0];
 
             var d = new debug.Debug(globeView, menuGlobe.gui);
@@ -149,7 +148,7 @@
                 Promise.all(promises).then(function () {
                     menuGlobe.addImageryLayersGUI(globeView.getLayers(function (l) { return l.type === 'color'; }));
                     menuGlobe.addElevationLayersGUI(globeView.getLayers(function (l) { return l.type === 'elevation'; }));
-                });
+                }).catch(console.error);
                 updateScaleWidget();
             });
             globeView.controls.addEventListener(itowns.CONTROL_EVENTS.RANGE_CHANGED, () => {

@@ -14,11 +14,9 @@ var viewerDiv = document.getElementById('viewerDiv');
 // Instanciate iTowns GlobeView*
 var globeView = new itowns.GlobeView(viewerDiv, positionOnGlobe);
 
-var menuGlobe = new GuiTools('menuDiv');
+var menuGlobe = new GuiTools('menuDiv', globeView);
 
 var promiseElevation = [];
-
-menuGlobe.view = globeView;
 
 function addLayerCb(layer) {
     return globeView.addLayer(layer).then(function addGui(la) {
