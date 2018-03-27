@@ -1,8 +1,9 @@
 import * as THREE from 'three';
 import BT from './BatchTable';
+import utf8Decoder from '../utils/Utf8Decoder';
 
 export default {
-    parse: function parse(buffer, textDecoder) {
+    parse: function parse(buffer) {
         if (!buffer) {
             throw new Error('No array buffer provided.');
         }
@@ -14,7 +15,7 @@ export default {
         let point = {};
 
         // Magic type is unsigned char [4]
-        pntsHeader.magic = textDecoder.decode(new Uint8Array(buffer, byteOffset, 4));
+        pntsHeader.magic = utf8Decoder.decode(new Uint8Array(buffer, byteOffset, 4));
         byteOffset += 4;
 
         if (pntsHeader.magic) {
@@ -39,15 +40,14 @@ export default {
 
             // binary table
             if (pntsHeader.FTBinaryLength > 0) {
-                point = parseFeatureBinary(buffer, byteOffset, pntsHeader.FTJSONLength, textDecoder);
+                point = parseFeatureBinary(buffer, byteOffset, pntsHeader.FTJSONLength);
             }
 
             // batch table
             if (pntsHeader.BTJSONLength > 0) {
                 const sizeBegin = 28 + pntsHeader.FTJSONLength + pntsHeader.FTBinaryLength;
                 batchTable = BT.parse(
-                    buffer.slice(sizeBegin, pntsHeader.BTJSONLength + sizeBegin),
-                    textDecoder);
+                    buffer.slice(sizeBegin, pntsHeader.BTJSONLength + sizeBegin));
             }
 
             const pnts = { point, batchTable };
@@ -58,13 +58,13 @@ export default {
     },
 };
 
-function parseFeatureBinary(array, byteOffset, FTJSONLength, textDecoder) {
+function parseFeatureBinary(array, byteOffset, FTJSONLength) {
     // Init geometry
     const geometry = new THREE.BufferGeometry();
     const material = new THREE.PointsMaterial({ size: 0.05, vertexColors: THREE.VertexColors, sizeAttenuation: true });
 
     // init Array feature binary
-    const subArrayJson = textDecoder.decode(new Uint8Array(array, byteOffset, FTJSONLength));
+    const subArrayJson = utf8Decoder.decode(new Uint8Array(array, byteOffset, FTJSONLength));
     const parseJSON = JSON.parse(subArrayJson);
     let lengthFeature;
     if (parseJSON.POINTS_LENGTH) {
