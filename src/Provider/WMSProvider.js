@@ -1,11 +1,11 @@
 /**
  * Generated On: 2015-10-5
- * Class: WMS_Provider
+ * Class: WMSProvider
  * Description: Provides data from a WMS stream
  */
 
 import * as THREE from 'three';
-import Extent from '../../Geographic/Extent';
+import Extent from '../Core/Geographic/Extent';
 import OGCWebServiceHelper from './OGCWebServiceHelper';
 import URLBuilder from './URLBuilder';
 

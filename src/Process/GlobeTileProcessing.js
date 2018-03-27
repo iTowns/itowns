@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { ellipsoidSizes } from '../Core/Geographic/Coordinates';
-import { SIZE_TEXTURE_TILE } from '../Core/Scheduler/Providers/OGCWebServiceHelper';
+import { SIZE_TEXTURE_TILE } from '../Provider/OGCWebServiceHelper';
 import Extent from '../Core/Geographic/Extent';
 
 const cV = new THREE.Vector3();

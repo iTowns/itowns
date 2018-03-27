@@ -1,13 +1,13 @@
 /**
  * Generated On: 2015-10-5
- * Class: WMTS_Provider
+ * Class: WMTSProvider
  * Description: Fournisseur de données à travers un flux WMTS
  */
 
 import * as THREE from 'three';
 import OGCWebServiceHelper from './OGCWebServiceHelper';
 import URLBuilder from './URLBuilder';
-import Extent from '../../Geographic/Extent';
+import Extent from '../Core/Geographic/Extent';
 
 const coordTile = new Extent('WMTS:WGS84', 0, 0, 0);
 

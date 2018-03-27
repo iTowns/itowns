@@ -8,7 +8,7 @@ import * as THREE from 'three';
 import LayeredMaterial from '../Renderer/LayeredMaterial';
 import { l_ELEVATION } from '../Renderer/LayeredMaterialConstants';
 import RendererConstant from '../Renderer/RendererConstant';
-import OGCWebServiceHelper, { SIZE_TEXTURE_TILE } from './Scheduler/Providers/OGCWebServiceHelper';
+import OGCWebServiceHelper, { SIZE_TEXTURE_TILE } from '../Provider/OGCWebServiceHelper';
 import { is4326 } from './Geographic/Coordinates';
 
 function TileMesh(geometry, params) {

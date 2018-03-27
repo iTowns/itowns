@@ -1,14 +1,14 @@
 /**
- * Class: Raster_Provider
+ * Class: RasterProvider
  * Description: Provides textures from a vector data
  */
 
 
 import * as THREE from 'three';
 import togeojson from 'togeojson';
-import Extent from '../../Geographic/Extent';
-import Feature2Texture from '../../../Renderer/ThreeExtended/Feature2Texture';
-import GeoJsonParser from '../../../Parser/GeoJsonParser';
+import Extent from '../Core/Geographic/Extent';
+import Feature2Texture from '../Renderer/ThreeExtended/Feature2Texture';
+import GeoJsonParser from '../Parser/GeoJsonParser';
 import Fetcher from './Fetcher';
 
 function getExtentFromGpxFile(file) {

@@ -1,8 +1,8 @@
 import * as THREE from 'three';
 import Fetcher from './Fetcher';
-import XbilParser from '../../../Parser/XbilParser';
-import Projection from '../../Geographic/Projection';
-import Extent from '../../Geographic/Extent';
+import XbilParser from '../Parser/XbilParser';
+import Projection from '../Core/Geographic/Projection';
+import Extent from '../Core/Geographic/Extent';
 
 
 export const SIZE_TEXTURE_TILE = 256;

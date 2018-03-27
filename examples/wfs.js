@@ -26,7 +26,7 @@ view = new itowns.PlanarView(viewerDiv, extent, { renderer: renderer });
 setupLoadingScreen(viewerDiv, view);
 view.tileLayer.disableSkirt = true;
 
-// Add an WMS imagery layer (see WMS_Provider* for valid options)
+// Add an WMS imagery layer (see WMSProvider* for valid options)
 view.addLayer({
     url: 'https://download.data.grandlyon.com/wms/grandlyon',
     networkOptions: { crossOrigin: 'anonymous' },
