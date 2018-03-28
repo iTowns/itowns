@@ -131,9 +131,7 @@ function b3dmToMesh(data, layer, url) {
 }
 
 function pntsParse(data) {
-    return new Promise((resolve) => {
-        resolve({ object3d: PntsParser.parse(data).point });
-    });
+    return PntsParser.parse(data).then(result => ({ object3d: result.point }));
 }
 
 function configureTile(tile, layer, metadata, parent) {
