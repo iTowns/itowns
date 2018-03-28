@@ -71,7 +71,7 @@ function getFeatures(crs, tile, layer) {
 
     return Fetcher.json(urld, layer.networkOptions)
         .then(
-            geojson => GeoJsonParser.parse(geojson, { crsOut: crs, filteringExtent: tile.extent, filter: layer.filter, json: true }),
+            geojson => GeoJsonParser.parse(geojson, { crsOut: crs, filteringExtent: tile.extent, filter: layer.filter }),
             (err) => {
                 // special handling for 400 errors, as it probably means the config is wrong
                 if (err.response.status == 400) {

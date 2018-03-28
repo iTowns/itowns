@@ -173,9 +173,8 @@ export default {
     /** @module GpxParser */
     /** Parse gpx file and convert to THREE.Mesh
      * @function parse
-     * @param {string} file - the gpx file or xml.
+     * @param {string} xml - the gpx file or xml.
      * @param {Object=} options - additional properties.
-     * @param {boolean} options.xml - set to true if file is actually a parsed xml.
      * @param {string} options.crs - the default CRS of Three.js coordinates. Should be a cartesian CRS.
      * @param {boolean=} [options.enablePin=true] - draw pin for way points.
      * @param {NetworkOptions=} options.networkOptions - options for fetching resources over network.
@@ -191,9 +190,8 @@ export default {
      * });
      *
      */
-    parse(file, options = {}) {
-        let xml = file;
-        if (!options.xml) {
+    parse(xml, options = {}) {
+        if (!(xml instanceof XMLDocument)) {
             xml = new window.DOMParser().parseFromString(xml, 'text/xml');
         }
         return Promise.resolve(_gpxToMesh(xml, options));
