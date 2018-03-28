@@ -164,6 +164,21 @@ exports.countVisibleAndDisplayed = (node) => {
     }
 };
 
+exports.countVisibleAndDisplayedLayerImage = (node, layerId) => {
+    function levelMaterial(node) {
+        if (node.material) {
+            const currentLevel = node.material.getColorLayerLevelById(layerId);
+            if (currentLevel > -1) {
+                while (counters.visible_at_level.length <= currentLevel) {
+                    counters.visible_at_level.push(0);
+                }
+                counters.visible_at_level[currentLevel]++;
+            }
+        }
+    }
+    node.traverseVisible(levelMaterial);
+};
+
 exports.counters = counters;
 exports.runTest = () => {
     testStarted = true;

@@ -102,7 +102,7 @@ describe('updateLayeredMaterialNodeImagery', function () {
         // Since layer is using STRATEGY_MIN_NETWORK_TRAFFIC, we should emit
         // a single command, requesting a texture at layer.options.zoom.max level
         updateLayeredMaterialNodeImagery(context, layer, tile);
-
+        updateLayeredMaterialNodeImagery(context, layer, tile);
         assert.equal(context.scheduler.commands.length, 1);
         assert.equal(
             context.scheduler.commands[0].targetLevel,
