@@ -4,7 +4,7 @@ import TileMesh from '../src/Core/TileMesh';
 import Extent from '../src/Core/Geographic/Extent';
 import OBB from '../src/Renderer/ThreeExtended/OBB';
 import { STRATEGY_MIN_NETWORK_TRAFFIC } from '../src/Core/Layer/LayerUpdateStrategy';
-/* global describe, it, xit, beforeEach */
+/* global describe, it, beforeEach */
 
 const assert = require('assert');
 
@@ -88,7 +88,7 @@ describe('updateLayeredMaterialNodeImagery', function () {
         assert.equal(context.scheduler.commands.length, 1);
     });
 
-    xit('tile should not request texture with level > layer.zoom.max', () => {
+    it('tile should not request texture with level > layer.zoom.max', () => {
         const tile = new TileMesh(geom, {
             extent: new Extent('EPSG:4326', 0, 0, 0, 0),
             level: 15,
