@@ -4,8 +4,6 @@ import PntsParser from '../Parser/PntsParser';
 import Fetcher from './Fetcher';
 import OBB from '../Renderer/ThreeExtended/OBB';
 import Extent from '../Core/Geographic/Extent';
-import Capabilities from '../Core/System/Capabilities';
-import PrecisionQualifier from '../Renderer/Shader/Chunk/PrecisionQualifier.glsl';
 import { init3dTilesLayer } from '../Process/3dTilesProcessing';
 import utf8Decoder from '../utils/Utf8Decoder';
 
@@ -116,64 +114,16 @@ function getBox(volume, inverseTileTransform) {
     }
 }
 
-const rePosition = new RegExp('gl_Position.*(?![^]*gl_Position)');
-const reMain = new RegExp('[^\\w]*main[^\\w]*(void)?[^\\w]*{');
-export function patchMaterialForLogDepthSupport(material) {
-    // Check if the shader does not already use the log depth buffer
-    if (material.vertexShader.indexOf('USE_LOGDEPTHBUF') !== -1
-        || material.vertexShader.indexOf('logdepthbuf_pars_vertex') !== -1) {
-        return;
-    }
-
-    // Add vertex shader log depth buffer header
-    material.vertexShader = `#include <logdepthbuf_pars_vertex>\n#define EPSILON 1e-6\n${material.vertexShader}`;
-    // Add log depth buffer code snippet after last gl_Position modification
-    let re = rePosition.exec(material.vertexShader);
-    let idx = re[0].length + re.index;
-    material.vertexShader = `${material.vertexShader.slice(0, idx)}\n#include <logdepthbuf_vertex>\n${material.vertexShader.slice(idx)}`;
-
-    // Add fragment shader log depth buffer header
-    material.fragmentShader = `${PrecisionQualifier}\n#include <logdepthbuf_pars_fragment>\n${material.fragmentShader}`;
-    // Add log depth buffer code snippet at the first line of the main function
-    re = reMain.exec(material.fragmentShader);
-    idx = re[0].length + re.index;
-    material.fragmentShader = `${material.fragmentShader.slice(0, idx)}\n#include <logdepthbuf_fragment>\n${material.fragmentShader.slice(idx)}`;
-
-    material.defines = {
-        USE_LOGDEPTHBUF: 1,
-        USE_LOGDEPTHBUF_EXT: 1,
-    };
-}
-
 function b3dmToMesh(data, layer, url) {
     const urlBase = THREE.LoaderUtils.extractUrlBase(url);
     const options = {
         gltfUpAxis: layer.asset.gltfUpAxis,
         urlBase,
+        overrideMaterials: layer.overrideMaterials,
+        doNotPatchMaterial: layer.doNotPatchMaterial,
+        opacity: layer.opacity,
     };
     return B3dmParser.parse(data, options).then((result) => {
-        const init = function f_init(mesh) {
-            mesh.frustumCulled = false;
-            if (mesh.material) {
-                if (layer.overrideMaterials) {
-                    mesh.material.dispose();
-                    if (typeof (layer.overrideMaterials) === 'object' &&
-                        layer.overrideMaterials.isMaterial) {
-                        mesh.material = layer.overrideMaterials.clone();
-                    } else {
-                        mesh.material = new THREE.MeshLambertMaterial({ color: 0xffffff });
-                    }
-                } else if (Capabilities.isLogDepthBufferSupported()
-                            && mesh.material.isRawShaderMaterial
-                            && !layer.doNotPatchMaterial) {
-                    patchMaterialForLogDepthSupport(mesh.material);
-                    console.warn('b3dm shader has been patched to add log depth buffer support');
-                }
-                mesh.material.transparent = layer.opacity < 1.0;
-                mesh.material.opacity = layer.opacity;
-            }
-        };
-        result.gltf.scene.traverse(init);
         const batchTable = result.batchTable;
         const object3d = result.gltf.scene;
         return { batchTable, object3d };

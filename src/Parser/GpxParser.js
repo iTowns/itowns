@@ -8,7 +8,7 @@ import * as THREE from 'three';
 import Line from 'three.meshline';
 import Coordinates from '../Core/Geographic/Coordinates';
 import Capabilities from '../Core/System/Capabilities';
-import { patchMaterialForLogDepthSupport } from '../Provider/3dTilesProvider';
+import shaderUtils from '../Renderer/Shader/ShaderUtils';
 
 function _gpxToWayPointsArray(gpxXML) {
     return gpxXML.getElementsByTagName('wpt');
@@ -116,7 +116,7 @@ function _gpxToWTrackPointsMesh(gpxXML, options) {
 
                 if (Capabilities.isLogDepthBufferSupported()) {
                     material.fragmentShader = material.fragmentShader.replace(/.*/, '').substr(1);
-                    patchMaterialForLogDepthSupport(material);
+                    shaderUtils.patchMaterialForLogDepthSupport(material);
                     console.warn('MeshLineMaterial shader has been patched to add log depth buffer support');
                 }
 

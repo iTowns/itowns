@@ -2,6 +2,8 @@ import * as THREE from 'three';
 import GLTFLoader from './GLTFLoader';
 import LegacyGLTFLoader from './LegacyGLTFLoader';
 import BatchTableParser from './BatchTableParser';
+import Capabilities from '../Core/System/Capabilities';
+import shaderUtils from '../Renderer/Shader/ShaderUtils';
 import utf8Decoder from '../utils/Utf8Decoder';
 
 const matrixChangeUpVectorZtoY = (new THREE.Matrix4()).makeRotationX(Math.PI / 2);
@@ -52,8 +54,11 @@ export default {
      * @function parse
      * @param {ArrayBuffer} buffer - the b3dm buffer.
      * @param {Object} options - additional properties.
-     * @param {string=} [options.gltfUpAxis='Y'] - embeded glTF model up axis.
-     * @param {string} options.urlBase - the base url of the b3dm file (used to fetch textures for the embeded glTF model).
+     * @param {string=} [options.gltfUpAxis='Y'] - embedded glTF model up axis.
+     * @param {string} options.urlBase - the base url of the b3dm file (used to fetch textures for the embedded glTF model).
+     * @param {boolean=} [options.doNotPatchMaterial='false'] - disable patching material with logarithmic depth buffer support.
+     * @param {float} [options.opacity=1.0] - the b3dm opacity.
+     * @param {boolean|Material=} [options.overrideMaterials='false'] - override b3dm's embedded glTF materials. If overrideMaterials is a three.js material, it will be the material used to override.
      * @return {Promise} - a promise that resolves with an object containig a THREE.Scene (gltf) and a batch table (batchTable).
      *
      */
@@ -116,6 +121,29 @@ export default {
                     applyOptionalCesiumRTC(buffer.slice(28 + b3dmHeader.FTJSONLength +
                         b3dmHeader.FTBinaryLength + b3dmHeader.BTJSONLength +
                         b3dmHeader.BTBinaryLength), gltf.scene);
+
+                    const init_mesh = function f_init(mesh) {
+                        mesh.frustumCulled = false;
+                        if (mesh.material) {
+                            if (options.overrideMaterials) {
+                                mesh.material.dispose();
+                                if (typeof (options.overrideMaterials) === 'object' &&
+                                    options.overrideMaterials.isMaterial) {
+                                    mesh.material = options.overrideMaterials.clone();
+                                } else {
+                                    mesh.material = new THREE.MeshLambertMaterial({ color: 0xffffff });
+                                }
+                            } else if (Capabilities.isLogDepthBufferSupported()
+                                        && mesh.material.isRawShaderMaterial
+                                        && !options.doNotPatchMaterial) {
+                                shaderUtils.patchMaterialForLogDepthSupport(mesh.material);
+                                console.warn('b3dm shader has been patched to add log depth buffer support');
+                            }
+                            mesh.material.transparent = options.opacity < 1.0;
+                            mesh.material.opacity = options.opacity;
+                        }
+                    };
+                    gltf.scene.traverse(init_mesh);
 
                     resolve(gltf);
                 };
