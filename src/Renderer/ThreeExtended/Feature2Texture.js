@@ -81,7 +81,6 @@ function _drawFeatureGeometry(ctx, feature, geometry, origin, scale, extent, sty
     if (geometry.type === 'point') {
         drawPoint(ctx, geometry.vertices[0], origin, scale, style);
     } else if (geometry.extent.intersectsExtent(extent)) {
-        ctx.globalCompositeOperation = 'destination-over';
         drawPolygon(ctx, geometry.vertices, geometry.contour, geometry.holes, origin, scale, properties, style);
     }
 }
@@ -107,6 +106,7 @@ export default {
         c.width = sizeTexture;
         c.height = sizeTexture;
         const ctx = c.getContext('2d');
+        ctx.globalCompositeOperation = style.globalCompositeOperation || 'source-over';
 
         const scale = new THREE.Vector2(ctx.canvas.width / dimension.x, ctx.canvas.width / dimension.y);
 
