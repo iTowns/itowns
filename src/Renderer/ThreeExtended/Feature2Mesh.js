@@ -419,7 +419,7 @@ function featureCollectionToThree(featureCollection, options) {
  */
 export default {
     /**
-     * Return a function that converts [Feature]s{@link module:GeoJSON2Features} to Meshes. Feature collection will be converted to a
+     * Return a function that converts [Features]{@link module:GeoJsonParser} to Meshes. Feature collection will be converted to a
      * a THREE.Group.
      *
      * @param {Object} options - options controlling the conversion
