@@ -85,6 +85,7 @@
             var viewerDiv = document.getElementById('viewerDiv');
 
             var view = new itowns.GlobeView(viewerDiv, positionOnGlobe);
+            view.camera.camera3D.near = 5;
             setupLoadingScreen(viewerDiv, view);
 
             var menuGlobe = new GuiTools('menuDiv', view, 300);
@@ -139,7 +140,12 @@
             debug.createTileDebugUI(menuGlobe.gui, view, view.wgs84TileLayer, d);
             debug.create3dTilesDebugUI(menuGlobe.gui, view, $3dTilesLayerDiscreteLOD, d);
             debug.create3dTilesDebugUI(menuGlobe.gui, view, $3dTilesLayerRequestVolume, d);
-
+            d.zoom = function() {
+                view.camera.camera3D.position.set(1215013.9, -4736315.5, 4081597.5);
+                view.camera.camera3D.quaternion.set(0.9108514448729665, 0.13456816437801225, 0.1107206134840362, 0.3741416847378546);
+                view.notifyChange(true);
+            }
+            menuGlobe.gui.add(d, 'zoom').name('Go to point cloud');
 
 // Picking example - - - - - - - - - - -- - - - -- - - - -- - - - -- - - - -- - - - -- - - - -
             function findBatchTableParent(object) {
