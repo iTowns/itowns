@@ -1,7 +1,8 @@
-import { CameraHelper, Color } from 'three';
+import { CameraHelper, Color, Vector3 } from 'three';
 import Coordinates from '../../src/Core/Geographic/Coordinates';
 import ThreeStatsChart from './charts/ThreeStatsChart';
 import { MAIN_LOOP_EVENTS } from '../../src/Core/MainLoop';
+import PanoramaView from '../../src/Core/Prefab/PanoramaView';
 
 /**
  * Create a debug instance attached to an itowns instance
@@ -132,29 +133,32 @@ function Debug(view, datDebugTool, chartDivContainer) {
     }
 
     const bClearColor = new Color();
+    const lookAtCameraDebug = new Vector3();
     function renderCameraDebug() {
         if (state.debugCameraWindow && debugCamera) {
             const size = { x: g.width * 0.2, y: g.height * 0.2 };
             debugCamera.aspect = size.x / size.y;
             const camera = view.camera.camera3D;
             const coord = new Coordinates(view.referenceCrs, camera.position).as(tileLayer.extent._crs);
-            const altitude = 1.5 * coord._values[2];
-            if (altitude > 1) {
-                coord._values[2] = altitude;
-                const position = coord.as(view.referenceCrs).xyz();
-                camera.worldToLocal(position);
-                position.z += altitude;
-                camera.localToWorld(position);
-                debugCamera.position.copy(position);
-                const lookAt = view.camera.camera3D.position.clone();
-                camera.worldToLocal(lookAt);
-                lookAt.z -= altitude * 1.5;
-                camera.localToWorld(lookAt);
-                debugCamera.lookAt(lookAt);
-            } else {
+            if (view instanceof PanoramaView) {
                 debugCamera.position.set(0, 0, 100);
                 camera.localToWorld(debugCamera.position);
                 debugCamera.lookAt(camera.position);
+            } else {
+                // Compute position camera debug
+                const altitudeCameraDebug = 1.5 * coord._values[2];
+                coord._values[2] = altitudeCameraDebug;
+                coord.as(view.referenceCrs).xyz(debugCamera.position);
+                // Compute recoil camera
+                camera.worldToLocal(debugCamera.position);
+                debugCamera.position.z += altitudeCameraDebug;
+                camera.localToWorld(debugCamera.position);
+                // Compute target camera debug
+                lookAtCameraDebug.copy(view.camera.camera3D.position);
+                camera.worldToLocal(lookAtCameraDebug);
+                lookAtCameraDebug.z -= altitudeCameraDebug * 1.5;
+                camera.localToWorld(lookAtCameraDebug);
+                debugCamera.lookAt(lookAtCameraDebug);
             }
 
             debugCamera.updateProjectionMatrix();
