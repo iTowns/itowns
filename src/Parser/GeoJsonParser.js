@@ -247,7 +247,7 @@ export default {
     */
 
     /**
-     * @typedef module:GeoJSON2Features.Feature
+     * @typedef module:GeoJsonParser.Feature
      * @type {object}
      * @property {FeatureGeometry|Array} geometry - The feature's geometry. Can
      * be a FeatureGeometry or an array of FeatureGeometry.
