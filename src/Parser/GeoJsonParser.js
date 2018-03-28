@@ -255,10 +255,9 @@ export default {
     */
 
     /**
-     * Parse a GeoJSON file and return a Feature or an array of Features.
-     * @param {string} file - The GeoJSON file to parse.
+     * Parse a GeoJSON file content and return a Feature or an array of Features.
+     * @param {string} json - The GeoJSON file content to parse.
      * @param {object} options - options controlling the parsing
-     * @param {boolean} [options.json=false] - set to true if file is actually a parsed json.
      * @param {string} options.crsOut - The CRS to convert the input coordinates to.
      * @param {string} options.crsIn - override the data crs
      * @param {Extent=} options.filteringExtent - Optional filter to reject features
@@ -268,21 +267,20 @@ export default {
      * @param {function=} options.filter - Filter function to remove features
      * @returns {Promise} - a promise resolving with a Feature or an array of Features
      */
-    parse(file, options = {}) {
+    parse(json, options = {}) {
         const crsOut = options.crsOut;
         const filteringExtent = options.filteringExtent;
-        let json = file;
-        if (!options.json) {
-            json = file.json();
+        if (typeof (json) === 'string') {
+            json = JSON.parse(json);
         }
-        options.crsIn = options.crsIn || readCRS(file);
-        switch (file.type.toLowerCase()) {
+        options.crsIn = options.crsIn || readCRS(json);
+        switch (json.type.toLowerCase()) {
             case 'featurecollection':
                 return Promise.resolve(readFeatureCollection(options.crsIn, crsOut, json, filteringExtent, options));
             case 'feature':
                 return Promise.resolve(readFeature(options.crsIn, crsOut, json, filteringExtent, options));
             default:
-                throw new Error(`Unsupported GeoJSON type: '${file.type}`);
+                throw new Error(`Unsupported GeoJSON type: '${json.type}`);
         }
     },
 };

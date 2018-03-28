@@ -38,7 +38,7 @@
             // Listen for globe full initialisation event
             globeView.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
                 console.info('Globe initialized');
-                itowns.Fetcher.xml('https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/ULTRA2009.gpx').then(xml => itowns.GpxParser.parse(xml, { xml: true, crs: globeView.referenceCrs })).then(function (gpx) {
+                itowns.Fetcher.xml('https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/ULTRA2009.gpx').then(xml => itowns.GpxParser.parse(xml, { crs: globeView.referenceCrs })).then(function (gpx) {
                     if (gpx) {
                         globeView.scene.add(gpx);
                         globeView.controls.setTilt(45, true);
