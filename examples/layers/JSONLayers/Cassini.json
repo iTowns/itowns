@@ -1,0 +1,20 @@
+{
+    "id":         "Cassini",
+    "source": {
+        "url": "http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/geoportail/wmts",
+        "networkOptions": {
+            "crossOrigin": "anonymous"
+        },
+        "format": "image/jpeg",
+        "attribution" : {
+            "name":"IGN",
+            "url":"http://www.ign.fr/"
+        },
+        "name": "GEOGRAPHICALGRIDSYSTEMS.CASSINI",
+        "tileMatrixSet": "PM",
+        "zoom": {
+            "min": 5,
+            "max": 20
+        }
+    }
+}
