@@ -15,9 +15,6 @@ var miniDiv = document.getElementById('miniDiv');
 // Instanciate iTowns GlobeView*
 var globeView = new itowns.GlobeView(viewerDiv, positionOnGlobe, { renderer: renderer });
 setupLoadingScreen(viewerDiv, globeView);
-function addLayerCb(layer) {
-    return globeView.addLayer(layer);
-}
 
 // Dont' instance mini viewer if it's Test env
 if (!renderer) {
@@ -49,17 +46,17 @@ if (!renderer) {
     });
 
     // Add one imagery layer to the miniview
-    itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(layer) { miniView.addLayer(layer); });
+    miniView.addLayer('./layers/JSONLayers/Ortho.json');
 }
 
 // Add one imagery layer to the scene
 // This layer is defined in a json file but it could be defined as a plain js
 // object. See Layer* for more info.
-promises.push(itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(addLayerCb));
+promises.push(globeView.addLayer('./layers/JSONLayers/Ortho.json'));
 // Add two elevation layers.
 // These will deform iTowns globe geometry to represent terrain elevation.
-promises.push(itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addLayerCb));
-promises.push(itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addLayerCb));
+promises.push(globeView.addLayer('./layers/JSONLayers/WORLD_DTM.json'));
+promises.push(globeView.addLayer('./layers/JSONLayers/IGN_MNT_HIGHRES.json'));
 
 exports.view = globeView;
 exports.initialPosition = positionOnGlobe;

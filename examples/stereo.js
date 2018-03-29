@@ -29,18 +29,14 @@ itowns.THREE.StereoCamera.prototype.update = function _update(camera) {
     fnUpdateStereoCamera.bind(this)(camera);
 };
 
-function addLayerCb(layer) {
-    return globeView.addLayer(layer);
-}
-
 // Add one imagery layer to the scene
 // This layer is defined in a json file but it could be defined as a plain js
 // object. See Layer* for more info.
-promises.push(itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(addLayerCb));
+promises.push(globeView.addLayer('./layers/JSONLayers/Ortho.json'));
 // Add two elevation layers.
 // These will deform iTowns globe geometry to represent terrain elevation.
-promises.push(itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addLayerCb));
-promises.push(itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addLayerCb));
+promises.push(globeView.addLayer('./layers/JSONLayers/WORLD_DTM.json'));
+promises.push(globeView.addLayer('./layers/JSONLayers/IGN_MNT_HIGHRES.json'));
 
 /* eslint-disable no-unused-vars */
 function updateEyeSep(value) {

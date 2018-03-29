@@ -14,9 +14,6 @@ var viewerDiv = document.getElementById('viewerDiv');
 // Instanciate iTowns GlobeView*
 var globeView = new itowns.GlobeView(viewerDiv, positionOnGlobe, { renderer: renderer });
 setupLoadingScreen(viewerDiv, globeView);
-function addLayerCb(layer) {
-    return globeView.addLayer(layer);
-}
 
 // Define projection that we will use (taken from https://epsg.io/3946, Proj4js section)
 itowns.proj4.defs('EPSG:3946',
@@ -27,12 +24,12 @@ itowns.proj4.defs('EPSG:2154',
 // Add one imagery layer to the scene
 // This layer is defined in a json file but it could be defined as a plain js
 // object. See Layer* for more info.
-promises.push(itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(addLayerCb));
+promises.push(globeView.addLayer('./layers/JSONLayers/Ortho.json'));
 
 // Add two elevation layers.
 // These will deform iTowns globe geometry to represent terrain elevation.
-promises.push(itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addLayerCb));
-promises.push(itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addLayerCb));
+promises.push(globeView.addLayer('./layers/JSONLayers/WORLD_DTM.json'));
+promises.push(globeView.addLayer('./layers/JSONLayers/IGN_MNT_HIGHRES.json'));
 
 function altitudeLine(properties, contour) {
     var altitudes = [];
