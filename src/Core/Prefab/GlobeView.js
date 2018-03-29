@@ -6,6 +6,7 @@ import { COLOR_LAYERS_ORDER_CHANGED } from '../../Renderer/ColorLayersOrdering';
 import RendererConstant from '../../Renderer/RendererConstant';
 import GlobeControls from '../../Renderer/ThreeExtended/GlobeControls';
 
+import Fetcher from '../../Provider/Fetcher';
 import { GeometryLayer } from '../Layer/Layer';
 
 import Atmosphere from './Globe/Atmosphere';
@@ -302,6 +303,14 @@ GlobeView.prototype = Object.create(View.prototype);
 GlobeView.prototype.constructor = GlobeView;
 
 GlobeView.prototype.addLayer = function addLayer(layer) {
+    if (typeof layer === 'string') {
+        if (!layer.endsWith('json')) {
+            throw new Error('Only JSON file can be read to load a layer.');
+        }
+
+        return Fetcher.json(layer).then(file => this.addLayer(file));
+    }
+
     if (layer.type == 'color') {
         const colorLayerCount = this.getLayers(l => l.type === 'color').length;
         layer.sequence = colorLayerCount;

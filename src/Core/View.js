@@ -293,7 +293,11 @@ function _preprocessLayer(view, layer, provider, parentLayer) {
  * // One can also attach a callback to the same promise with a layer instance.
  * layer.whenReady.then(() => { ... });
  *
- * @param {LayerOptions|Layer|GeometryLayer} layer
+ * // The layer can also being added by passing directly the url leading to the
+ * // configuration of the layer.
+ * view.addLayer('http://geo.server/layers/Ortho.json');
+ *
+ * @param {LayerOptions|Layer|GeometryLayer|string} layer
  * @param {Layer=} parentLayer
  * @return {Promise} a promise resolved with the new layer object when it is fully initialized
  */

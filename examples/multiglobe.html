@@ -64,10 +64,7 @@
             setupLoadingScreen(viewerDiv, globeView);
             layers.push(globeView.wgs84TileLayer);
 
-            function addLayerCb(layer) {
-                return globeView.addLayer(layer);
-            }
-            itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(addLayerCb);
+            globeView.addLayer('./layers/JSONLayers/Ortho.json');
 
             // create a second smaller globe
             const globe2 = itowns.createGlobeLayer('globe2', { object3d: ref[1] });

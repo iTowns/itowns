@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import View from '../View';
 
 import { GeometryLayer } from '../Layer/Layer';
+import Fetcher from '../../Provider/Fetcher';
 import Extent from '../Geographic/Extent';
 import { processTiledGeometryNode } from '../../Process/TiledNodeProcessing';
 import { updateLayeredMaterialNodeImagery } from '../../Process/LayeredMaterialNodeProcessing';
@@ -208,6 +209,14 @@ PanoramaView.prototype = Object.create(View.prototype);
 PanoramaView.prototype.constructor = PanoramaView;
 
 PanoramaView.prototype.addLayer = function addLayer(layer) {
+    if (typeof layer === 'string') {
+        if (!layer.endsWith('json')) {
+            throw new Error('Only JSON file can be read to load a layer.');
+        }
+
+        return Fetcher.json(layer).then(file => this.addLayer(file));
+    }
+
     if (layer.type == 'color') {
         layer.update = updateLayeredMaterialNodeImagery;
     } else {

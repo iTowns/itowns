@@ -42,14 +42,10 @@
             setupLoadingScreen(viewerDiv, globeView);
             menuGlobe.view = globeView;
 
-            function addLayerCb(layer) {
-                return globeView.addLayer(layer);
-            }
-
             var promises = [];
-            promises.push(itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(addLayerCb));
-            promises.push(itowns.Fetcher.json('./layers/JSONLayers/Region.json').then(addLayerCb));
-            promises.push(itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT.json').then(addLayerCb));
+            promises.push(globeView.addLayer('./layers/JSONLayers/Ortho.json'));
+            promises.push(globeView.addLayer('./layers/JSONLayers/Region.json'));
+            promises.push(globeView.addLayer('./layers/JSONLayers/IGN_MNT.json'));
 
             function removeDups(a) {
                 var temp = {};

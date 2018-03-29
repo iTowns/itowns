@@ -11,12 +11,8 @@ setupLoadingScreen(viewerDiv, globeView);
 
 globeView.mainLoop.name = 'external-ML';
 
-function addLayerCb(layer) {
-    return globeView.addLayer(layer);
-}
-
-itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(addLayerCb);
-itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT.json').then(addLayerCb);
+globeView.addLayer('./layers/JSONLayers/Ortho.json');
+globeView.addLayer('./layers/JSONLayers/IGN_MNT.json');
 
 exports.globeView = globeView;
 exports.scene = scene;

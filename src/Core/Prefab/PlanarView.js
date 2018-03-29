@@ -4,6 +4,7 @@ import View from '../View';
 import { RENDERING_PAUSED, MAIN_LOOP_EVENTS } from '../MainLoop';
 import RendererConstant from '../../Renderer/RendererConstant';
 
+import Fetcher from '../../Provider/Fetcher';
 import { GeometryLayer } from '../Layer/Layer';
 
 import { processTiledGeometryNode } from '../../Process/TiledNodeProcessing';
@@ -162,6 +163,14 @@ PlanarView.prototype = Object.create(View.prototype);
 PlanarView.prototype.constructor = PlanarView;
 
 PlanarView.prototype.addLayer = function addLayer(layer) {
+    if (typeof layer === 'string') {
+        if (!layer.endsWith('json')) {
+            throw new Error('Only JSON file can be read to load a layer.');
+        }
+
+        return Fetcher.json(layer).then(file => this.addLayer(file));
+    }
+
     if (layer.type == 'color') {
         layer.update = updateLayeredMaterialNodeImagery;
     } else if (layer.type == 'elevation') {

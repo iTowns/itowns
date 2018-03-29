@@ -20,9 +20,6 @@ function showPointcloud(serverUrl, fileName) {
     setupLoadingScreen(viewerDiv, view);
 
     view.controls.minDistance = 0;
-    function addLayerCb(layer) {
-        return view.addLayer(layer);
-    }
 
     // Configure Point Cloud layer
     pointcloud = new itowns.GeometryLayer('pointcloud', view.scene);
@@ -59,6 +56,6 @@ function showPointcloud(serverUrl, fileName) {
 
     itowns.View.prototype.addLayer.call(view, pointcloud).then(onLayerReady);
 
-    itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addLayerCb);
-    itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(addLayerCb);
+    view.addLayer('./layers/JSONLayers/IGN_MNT_HIGHRES.json');
+    view.addLayer('./layers/JSONLayers/Ortho.json');
 }
