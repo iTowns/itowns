@@ -28,16 +28,16 @@ function preprocessDataLayer(layer) {
     }
 
     if (layer.protocol === 'wmts') {
+        layer.version = layer.version || '1.0.0';
+        layer.projection = layer.projection || 'EPSG:3857';
         const options = layer.options;
-        options.version = options.version || '1.0.0';
         options.tileMatrixSet = options.tileMatrixSet || 'WGS84';
         options.style = options.style || 'normal';
-        options.projection = options.projection || 'EPSG:3857';
         let newBaseUrl = `${layer.url}` +
-            `?LAYER=${options.name}` +
+            `?LAYER=${layer.name}` +
             `&FORMAT=${layer.format}` +
             '&SERVICE=WMTS' +
-            `&VERSION=${options.version}` +
+            `&VERSION=${layer.version}` +
             '&REQUEST=GetTile' +
             `&STYLE=${options.style}` +
             `&TILEMATRIXSET=${options.tileMatrixSet}`;
