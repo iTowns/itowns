@@ -633,6 +633,7 @@ View.prototype.pickObjectsAt = function pickObjectsAt(mouseOrEvt, ...where) {
     return results;
 };
 
+/*
 function viewEvent(type, event, view) {
     this.type = type;
     this.viewCoords = view.eventToViewCoords(event).clone();
@@ -671,28 +672,37 @@ function viewEvent(type, event, view) {
             },
         });
 }
+*/
 
-/*
+
 // Another viewEvent implementation
-const _coordinate = new WeakMap();
-class viewEventB {
-    constructor(type, event, view) {
+class viewEvent {
+    constructor(type, mouseEvent, view) {
         this.type = type;
-        this.viewCoords = view.eventToViewCoords(event).clone();
+        this.viewCoords = view.eventToViewCoords(mouseEvent).clone();
         this.view = view;
-        _coordinate.set(this, null);
+        this._normalizedCoords = null;
+        this._pickeds = null;
+        this._coordinate = null;
+    }
+    get normalizedCoords() {
+        this._normalizedCoords = this._normalizedCoords || this.view.viewToNormalizedCoords(this.viewCoords);
+        return this._normalizedCoords;
+    }
+    get pickeds() {
+        this._pickeds = this._pickeds || this.view.pickObjectsAt(this.viewCoords, ...this.where);
+        return this._pickeds;
     }
     get coordinate() {
-        _coordinate.set(this);
         const tileLayer = this.view.tileLayer || this.view.wgs84TileLayer;
         const pickedPosition = this.view.getPickingPositionFromDepth(this.viewCoords);
         if (pickedPosition) {
-            _coordinate.set(this, _coordinate.get(this) || new Coordinates(this.view.referenceCrs, pickedPosition).as(tileLayer.extent.crs()));
+            this._coordinate = this._coordinate || new Coordinates(this.view.referenceCrs, pickedPosition).as(tileLayer.extent.crs());
         }
-        return _coordinate.get(this);
+        return this._coordinate;
     }
 }
-*/
+
 
 const domListeners = {};
 const viewListeners = {};
