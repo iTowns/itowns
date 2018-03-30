@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import TileMesh from './TileMesh';
 import RendererConstant from '../Renderer/RendererConstant';
 import { unpack1K } from '../Renderer/LayeredMaterial';
+import t3DTilesUtils from '../utils/3DTilesUtils';
 
 function hideEverythingElse(view, object, threejsLayer = 0) {
     // We want to render only 'object' and its hierarchy.
@@ -58,7 +59,6 @@ function findLayerIdInParent(obj) {
 }
 
 const raycaster = new THREE.Raycaster();
-
 export default {
     pickTilesAt: (_view, mouse, layer) => {
         const results = [];
@@ -137,11 +137,20 @@ export default {
             view.viewToNormalizedCoords(mouse),
             view.camera.camera3D);
         const intersects = raycaster.intersectObject(object, true);
+        function layerIdToLayer(id) { return view.getLayers(l => l.id == id); }
         for (const inter of intersects) {
             inter.layer = findLayerIdInParent(inter.object);
+            const protocol = layerIdToLayer(inter.layer)[0].protocol;
+            switch (protocol) {
+                case '3d-tiles':
+                    inter.properties = t3DTilesUtils.get3DtilePropertiesFromPtId(inter.object, inter.face.a);
+                    break;
+                default:
+                    inter.properties = {};
+            }
+
             target.push(inter);
         }
-
         return target;
     },
 };

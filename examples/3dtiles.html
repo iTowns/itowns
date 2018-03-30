@@ -131,57 +131,35 @@
             $3dTilesLayerRequestVolume.type = 'geometry';
             $3dTilesLayerRequestVolume.visible = true;
             $3dTilesLayerRequestVolume.sseThreshold = 1;
+            // Picking example - - - - - - - - - - -- - - - -- - - - -- - - - -- - - - -- - - - -- - - - -
+
+
+            function picking(event) {
+                var htmlInfo = document.getElementById('info');
+                var pickeds = event.pickeds;
+                htmlInfo.innerHTML = ' ';
+                if (pickeds[0]) {
+                    Object.keys(pickeds[0].properties).map(function _(objectKey) {
+                        var value = pickeds[0].properties[objectKey];
+                        // if the value is a integer or not
+                        var info = Number.isInteger(value) ?
+                            value.toString() :
+                            value.toFixed(3).toString();
+                        htmlInfo.innerHTML += '<li><b>' + objectKey.toString() + ': </b>' + info + '</li>';
+                    });
+                }
+            }
+
             // add an event for have information when you move your mouse on a building
-            itowns.View.prototype.addLayer.call(view, $3dTilesLayerRequestVolume).then(function _() { window.addEventListener('mousemove', picking, false); })
+            itowns.View.prototype.addLayer.call(view, $3dTilesLayerRequestVolume).then(function _(layer) {
+                layer.on('mousemove', picking);
+            });
 
             // Add the UI Debug
             var d = new debug.Debug(view, menuGlobe.gui);
             debug.createTileDebugUI(menuGlobe.gui, view, view.wgs84TileLayer, d);
             debug.create3dTilesDebugUI(menuGlobe.gui, view, $3dTilesLayerDiscreteLOD, d);
             debug.create3dTilesDebugUI(menuGlobe.gui, view, $3dTilesLayerRequestVolume, d);
-
-
-// Picking example - - - - - - - - - - -- - - - -- - - - -- - - - -- - - - -- - - - -- - - - -
-            function findBatchTableParent(object) {
-                if (object.batchTable) {
-                    return object.batchTable;
-                }
-                else if (object.parent) {
-                    return findBatchTableParent(object.parent);
-                } else {
-                    return undefined;
-                }
-            }
-            function picking(event) {
-                var htmlInfo = document.getElementById('info');
-                htmlInfo.innerHTML = ' ';
-
-                const intersects = view.pickObjectsAt(
-                    event,
-                    $3dTilesLayerRequestVolume);
-
-                for (var i = 0; i < intersects.length; i++) {
-                    var interAttributes = intersects[i].object.geometry.attributes;
-                    if (interAttributes) {
-                        if (interAttributes._BATCHID) {
-                            var face = intersects[i].face.a;
-                            var batchID = interAttributes._BATCHID.array[face];
-                            var batchTable = findBatchTableParent(intersects[i].object);
-
-                            htmlInfo.innerHTML +='<li><b> Batch id: </b>'+ batchID +'</li>';
-                            Object.keys(batchTable).map(function(objectKey) {
-                                var value = batchTable[objectKey][batchID];
-                                // if the value is a integer or not
-                                var info = Number.isInteger(value) ? value.toString() : value.toFixed(3).toString();
-                                htmlInfo.innerHTML +='<li><b>' + objectKey.toString() + ': </b>'+ info +'</li>';
-                                return true;
-                            });
-
-                            return;
-                        }
-                    }
-                }
-            }
 
         </script>
         <div id="batchInformationDiv">

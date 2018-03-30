@@ -1,4 +1,4 @@
-/* global window */
+/* global window, requestAnimationFrame */
 import { Scene, EventDispatcher, Vector2, Object3D } from 'three';
 import Camera from '../Renderer/Camera';
 import MainLoop, { MAIN_LOOP_EVENTS, RENDERING_PAUSED } from './MainLoop';
@@ -7,6 +7,7 @@ import { STRATEGY_MIN_NETWORK_TRAFFIC } from './Layer/LayerUpdateStrategy';
 import { GeometryLayer, Layer, defineLayerProperty } from './Layer/Layer';
 import Scheduler from './Scheduler/Scheduler';
 import Picking from './Picking';
+import Coordinates from './Geographic/Coordinates';
 
 export const VIEW_EVENTS = {
     /**
@@ -145,6 +146,8 @@ function _preprocessLayer(view, layer, provider, parentLayer) {
                 // because TileProvider.preprocessDataLayer function uses it.
                 layer.threejsLayer = view.mainLoop.gfxEngine.getUniqueThreejsLayer();
             }
+            layer.on = (type, listener) => view.on(type, listener, layer);
+            layer.off = (type, listener) => view.off(type, listener);
         }
         let providerPreprocessing = Promise.resolve();
         if (provider && provider.preprocessDataLayer) {
@@ -628,6 +631,98 @@ View.prototype.pickObjectsAt = function pickObjectsAt(mouseOrEvt, ...where) {
     }
 
     return results;
+};
+
+function viewEvent(type, event, view) {
+    this.type = type;
+    this.viewCoords = view.eventToViewCoords(event).clone();
+    let normalizedCoords;
+    let pickeds;
+    let coordinate;
+    Object.defineProperty(
+        this,
+        'normalizedCoords',
+        {
+            get: () => {
+                normalizedCoords = normalizedCoords || view.viewToNormalizedCoords(this.viewCoords);
+                return normalizedCoords;
+            },
+        });
+    Object.defineProperty(
+    this,
+    'pickeds',
+        {
+            get: () => {
+                pickeds = pickeds || view.pickObjectsAt(event, ...this.where);
+                return pickeds;
+            },
+        });
+    Object.defineProperty(
+    this,
+    'coordinate',
+        {
+            get: () => {
+                const tileLayer = view.tileLayer || view.wgs84TileLayer;
+                const pickedPosition = view.getPickingPositionFromDepth(this.viewCoords);
+                if (pickedPosition) {
+                    coordinate = coordinate || new Coordinates(view.referenceCrs, pickedPosition).as(tileLayer.extent.crs());
+                }
+                return coordinate;
+            },
+        });
+}
+
+/*
+// Another viewEvent implementation
+const _coordinate = new WeakMap();
+class viewEventB {
+    constructor(type, event, view) {
+        this.type = type;
+        this.viewCoords = view.eventToViewCoords(event).clone();
+        this.view = view;
+        _coordinate.set(this, null);
+    }
+    get coordinate() {
+        _coordinate.set(this);
+        const tileLayer = this.view.tileLayer || this.view.wgs84TileLayer;
+        const pickedPosition = this.view.getPickingPositionFromDepth(this.viewCoords);
+        if (pickedPosition) {
+            _coordinate.set(this, _coordinate.get(this) || new Coordinates(this.view.referenceCrs, pickedPosition).as(tileLayer.extent.crs()));
+        }
+        return _coordinate.get(this);
+    }
+}
+*/
+
+const domListeners = {};
+const viewListeners = {};
+View.prototype.on = function _on(type, listener, ...where) {
+    if (!domListeners[type]) {
+        const domElement = this.mainLoop.gfxEngine.renderer.domElement;
+        domListeners[type] = (event) => {
+            this.dispatchEvent(new viewEvent(type, event, this));
+        };
+        domElement.addEventListener(type, domListeners[type], false);
+    }
+
+    const viewerListener = (event) => {
+        event.where = where;
+        listener(event);
+    };
+
+    viewListeners[listener] = viewerListener;
+    this.addEventListener(type, viewerListener);
+};
+
+View.prototype.off = function _off(type, listener) {
+    const viewListener = viewListeners[listener];
+    const domElement = this.mainLoop.gfxEngine.renderer.domElement;
+    this.removeEventListener(type, viewListener);
+    viewListeners[listener] = undefined;
+    if (this._listeners[type].length == 0) {
+        domElement.removeEventListener(type, domListeners[type]);
+        domListeners[type] = undefined;
+    }
 };
 
 export default View;
