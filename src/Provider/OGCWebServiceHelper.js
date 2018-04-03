@@ -92,9 +92,9 @@ export default {
         if (!(tileMatrixSet in tile.wmtsCoords)) {
             if (tile.wmtsCoords.WGS84G) {
                 const c = tile.wmtsCoords.WGS84G[0];
-                tileCoord._zoom = c.zoom;
-                tileCoord._col = c.col;
-                tileCoord._row = c.row;
+                tileCoord.zoom = c.zoom;
+                tileCoord.col = c.col;
+                tileCoord.row = c.row;
             } else {
                 Projection.WGS84toWMTS(tile.extent, tileCoord);
             }
