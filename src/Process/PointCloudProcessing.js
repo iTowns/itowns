@@ -76,8 +76,7 @@ function shouldDisplayNode(context, layer, elt) {
             elt.sse = ScreenSpaceError.computeFromBox3(context.camera,
                     cl,
                     layer.object3d.matrixWorld,
-                    elt.geometricError,
-                    ScreenSpaceError.MODE_3D);
+                    elt.geometricError);
             shouldBeLoaded = Math.min(
                 1,
                 Math.min.apply(Math, elt.sse.sse) / layer.sseThreshold);

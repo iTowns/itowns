@@ -228,16 +228,14 @@ function computeNodeSSE(camera, node) {
             camera,
             node.boundingVolume.region.box3D,
             node.boundingVolume.region.matrixWorld,
-            node.geometricError,
-            ScreenSpaceError.MODE_2D);
+            node.geometricError);
     }
     if (node.boundingVolume.box) {
         return ScreenSpaceError.computeFromBox3(
             camera,
             node.boundingVolume.box,
             node.matrixWorld,
-            node.geometricError,
-            ScreenSpaceError.MODE_3D);
+            node.geometricError);
     }
     if (node.boundingVolume.sphere) {
         return ScreenSpaceError.computeFromSphere(

@@ -39,8 +39,7 @@ export function planarSubdivisionControl(maxLevel, maxDeltaElevationLevel) {
             context.camera,
             node.OBB().box3D,
             node.OBB().matrixWorld,
-            node.geometricError,
-            ScreenSpaceError.MODE_2D);
+            node.geometricError);
         node.sse.offset = SIZE_TEXTURE_TILE;
 
         const cond1x = (node.sse.sse[0] > (SIZE_TEXTURE_TILE + layer.sseThreshold));

@@ -99,8 +99,7 @@ export function globeSubdivisionControl(minLevel, maxLevel, maxDeltaElevationLev
             context.camera,
             node.OBB().box3D,
             node.OBB().matrixWorld,
-            node.geometricError,
-            ScreenSpaceError.MODE_3D);
+            node.geometricError);
         node.sse.offset = SIZE_TEXTURE_TILE;
 
         let condition1 = 0;

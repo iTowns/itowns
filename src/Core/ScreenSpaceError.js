@@ -10,20 +10,17 @@ const basis = [
     new THREE.Vector3(0, 0, 1),
 ];
 
-function computeVectorSizeAtDistance(vector, matrix, camera, distance, _3d) {
+function computeVectorSizeAtDistance(vector, matrix, camera, distance) {
     basis[0].set(vector.x, 0, 0);
     basis[1].set(0, vector.y, 0);
-
-    if (_3d) {
-        basis[2].set(0, 0, vector.z);
-    }
+    basis[2].set(0, 0, vector.z);
 
     m2.identity();
     m2.extractRotation(matrix);
     m3.identity();
     m3.extractRotation(camera.camera3D.matrixWorldInverse);
 
-    for (let i = 0; i < (_3d ? 3 : 2); i++) {
+    for (let i = 0; i < 3; i++) {
         const b = basis[i];
 
         // Apply rotation
@@ -64,17 +61,7 @@ function computeSizeFromGeometricError(box3, geometricError) {
 }
 
 export default {
-    /*
-     * Compute SSE based on the 2D bounding-box (ignore z size)
-     */
-    MODE_2D: 1,
-
-    /*
-     * Compute SSE based on the 3D bounding-box
-     */
-    MODE_3D: 2,
-
-    computeFromBox3(camera, box3, matrix, geometricError, mode) {
+    computeFromBox3(camera, box3, matrix, geometricError) {
         const distance = findBox3Distance(camera, box3, matrix);
 
         if (distance <= geometricError) {
@@ -86,7 +73,7 @@ export default {
 
         const size = computeSizeFromGeometricError(box3, geometricError);
 
-        const sse = computeVectorSizeAtDistance(size, matrix, camera, distance, mode == this.MODE_3D);
+        const sse = computeVectorSizeAtDistance(size, matrix, camera, distance);
 
         return {
             sse,
