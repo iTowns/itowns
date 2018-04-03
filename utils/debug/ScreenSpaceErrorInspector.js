@@ -147,7 +147,7 @@ function onMouseMove(evt) {
                                 Math.min(
                                     100,
                                     100 * (e / (layers[0].sseThreshold + sseShift))))));
-                    this.sse = percent.join('% ') + '%';
+                    this.sse = percent.join('% ');
                     display(
                         this.view.camera,
                         sse,

@@ -1,5 +1,5 @@
 import ScreenSpaceError from '../Core/ScreenSpaceError';
-import { SIZE_TEXTURE_TILE } from '../Core/Scheduler/Providers/OGCWebServiceHelper';
+import { SIZE_TEXTURE_TILE } from '../Provider/OGCWebServiceHelper';
 
 function frustumCullingOBB(node, camera) {
     return camera.isBox3Visible(node.OBB().box3D, node.OBB().matrixWorld);

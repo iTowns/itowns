@@ -41,18 +41,6 @@ function computeVectorSizeAtDistance(vector, matrix, camera, distance, _3d) {
     }
 
     return basis.map(b => b.length());
-
-    const sse = {
-        x: basis[0].length(),
-        y: basis[1].length(),
-    };
-    if (_3d) {
-        sse.z = basis[2].length();
-    }
-    return sse;
-    const lengthsq = basis.map(b => b.lengthSq());
-    const min = Math.min.apply(Math, lengthsq);
-    return Math.sqrt(min);
 }
 
 function findBox3Distance(camera, box3, matrix) {

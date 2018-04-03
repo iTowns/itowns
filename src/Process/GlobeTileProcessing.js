@@ -103,19 +103,15 @@ export function globeSubdivisionControl(minLevel, maxLevel, maxDeltaElevationLev
             ScreenSpaceError.MODE_3D);
         node.sse.offset = SIZE_TEXTURE_TILE;
 
-        let condition1 = false;
-        let condition2 = true;
+        let condition1 = 0;
+        let condition2 = 0;
 
         for (let i = 0; i < 3; i++) {
-            condition1 |= node.sse.sse[i] > (SIZE_TEXTURE_TILE + layer.sseThreshold);
-            condition2 &= node.sse.sse[i] > 0.85 * (SIZE_TEXTURE_TILE + layer.sseThreshold);
-
-            if (!condition2) {
-                return false;
-            }
+            condition1 += node.sse.sse[i] > (SIZE_TEXTURE_TILE + layer.sseThreshold);
+            condition2 += node.sse.sse[i] > 0.85 * (SIZE_TEXTURE_TILE + layer.sseThreshold);
         }
 
-        return condition1 && condition2;
+        return condition1 >= 1 && condition2 >= 2;
     };
 }
 
