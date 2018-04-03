@@ -24,26 +24,13 @@ function Extent(crs, ...values) {
 
     if (_isTiledCRS(crs)) {
         if (values.length == 3) {
-            this._zoom = values[0];
-            this._row = values[1];
-            this._col = values[2];
+            this.zoom = values[0];
+            this.row = values[1];
+            this.col = values[2];
 
-            if (this._zoom < 0) {
+            if (this.zoom < 0) {
                 throw new Error(`invlid WTMS values ${values}`);
             }
-
-            Object.defineProperty(this,
-                'zoom',
-                { get: () => this._zoom },
-                { set: (z) => { this._zoom = z; } });
-            Object.defineProperty(this,
-                'row',
-                { get: () => this._row },
-                { set: (r) => { this._row = r; } });
-            Object.defineProperty(this,
-                'col',
-                { get: () => this._col },
-                { set: (c) => { this._col = c; } });
         } else {
             throw new Error(`Unsupported constructor args '${values}'`);
         }
@@ -160,16 +147,16 @@ Extent.prototype.offsetToParent = function offsetToParent(other, target = new TH
         throw new Error('unsupported mix');
     }
     if (_isTiledCRS(this.crs())) {
-        const diffLevel = this._zoom - other.zoom;
+        const diffLevel = this.zoom - other.zoom;
         const diff = Math.pow(2, diffLevel);
         const invDiff = 1 / diff;
 
-        const r = (this._row - (this._row % diff)) * invDiff;
-        const c = (this._col - (this._col % diff)) * invDiff;
+        const r = (this.row - (this.row % diff)) * invDiff;
+        const c = (this.col - (this.col % diff)) * invDiff;
 
         return target.set(
-            this._col * invDiff - c,
-            this._row * invDiff - r,
+            this.col * invDiff - c,
+            this.row * invDiff - r,
             invDiff, invDiff);
     }
 
@@ -263,19 +250,19 @@ Extent.prototype.isPointInside = function isPointInside(coord, epsilon = 0) {
 
 Extent.prototype.isInside = function isInside(other, epsilon) {
     if (_isTiledCRS(this.crs())) {
-        if (this._zoom == other._zoom) {
-            return this._row == other._row &&
-                this._col == other._col;
-        } else if (this._zoom < other._zoom) {
+        if (this.zoom == other.zoom) {
+            return this.row == other.row &&
+                this.col == other.col;
+        } else if (this.zoom < other.zoom) {
             return false;
         } else {
-            const diffLevel = this._zoom - other._zoom;
+            const diffLevel = this.zoom - other.zoom;
             const diff = Math.pow(2, diffLevel);
             const invDiff = 1 / diff;
 
-            const r = (this._row - (this._row % diff)) * invDiff;
-            const c = (this._col - (this._col % diff)) * invDiff;
-            return r == other._row && c == other._col;
+            const r = (this.row - (this.row % diff)) * invDiff;
+            const c = (this.col - (this.col % diff)) * invDiff;
+            return r == other.row && c == other.col;
         }
     } else {
         const o = other.as(this._crs);
@@ -343,9 +330,9 @@ Extent.prototype.intersect = function intersect(other) {
 
 Extent.prototype.set = function set(...values) {
     if (_isTiledCRS(this.crs())) {
-        this._zoom = values[0];
-        this._row = values[1];
-        this._col = values[2];
+        this.zoom = values[0];
+        this.row = values[1];
+        this.col = values[2];
     } else {
         Object.keys(CARDINAL).forEach((key) => {
             const cardinal = CARDINAL[key];
