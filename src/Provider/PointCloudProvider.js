@@ -94,6 +94,19 @@ function parseOctree(layer, hierarchyStepSize, root) {
     });
 }
 
+function findChildrenByName(node, name) {
+    if (node.name === name) {
+        return node;
+    }
+    const charIndex = node.name.length;
+    for (let i = 0; i < node.children.length; i++) {
+        if (node.children[i].name[charIndex] == name[charIndex]) {
+            return findChildrenByName(node.children[i], name);
+        }
+    }
+    throw new Error(`Cannot find node with name '${name}'`);
+}
+
 let nextuuid = 1;
 function addPickingAttribute(points) {
     // generate unique id for picking
@@ -206,6 +219,8 @@ export default {
             // eslint-disable-next-line no-console
             console.log('LAYER metadata:', root);
             layer.root = root;
+            root.findChildrenByName = findChildrenByName.bind(root, root);
+
             return layer;
         });
     },

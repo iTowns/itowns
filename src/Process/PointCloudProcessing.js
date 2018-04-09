@@ -163,16 +163,48 @@ function markForDeletion(elt) {
 }
 
 export default {
-    preUpdate(context, layer) {
-        // TODO: use changeSource
-        layer.counters = {
-            pointCount: 0,
-            displayedCount: 0,
-        };
-
+    preUpdate(context, layer, changeSources) {
         // Bail-out if not ready
         if (!layer.root) {
             return [];
+        }
+
+        if (changeSources.has(undefined) || changeSources.size == 0) {
+            return [layer.root];
+        }
+
+        // lookup lowest common ancestor of changeSources
+        let commonAncestorName;
+        for (const source of changeSources.values()) {
+            if (source.isCamera) {
+                // if the change is caused by a camera move, no need to bother
+                // to find common ancestor: we need to update the whole tree:
+                // some invisible tiles may now be visible
+                return [layer.root];
+            }
+            if (source.obj === undefined) {
+                continue;
+            }
+            // filter sources that belong to our layer
+            if (source.obj.isPoints && source.obj.layer == layer.id) {
+                if (!commonAncestorName) {
+                    commonAncestorName = source.name;
+                } else {
+                    let i;
+                    for (i = 0; i < Math.min(source.name.length, commonAncestorName.length); i++) {
+                        if (source.name[i] != commonAncestorName[i]) {
+                            break;
+                        }
+                    }
+                    commonAncestorName = commonAncestorName.substr(0, i);
+                    if (commonAncestorName.length == 0) {
+                        break;
+                    }
+                }
+            }
+        }
+        if (commonAncestorName) {
+            return [layer.root.findChildrenByName(commonAncestorName)];
         }
 
         // Start updating from hierarchy root
@@ -205,8 +237,6 @@ export default {
                     }
                     const count = Math.max(1.0, Math.floor(shouldBeLoaded * elt.obj.geometry.attributes.position.count));
                     elt.obj.geometry.setDrawRange(0, count);
-                    layer.counters.pointCount += elt.obj.realPointCount;
-                    layer.counters.displayedCount += Math.floor(shouldBeLoaded * elt.obj.geometry.attributes.position.count);
                     elt.obj.material.uniforms.size.value = layer.pointSize;
                 } else if (!elt.promise) {
                     // TODO:
@@ -259,6 +289,13 @@ export default {
     postUpdate(context, layer) {
         if (!layer.group) {
             return;
+        }
+
+        layer.counters = {
+            displayedCount: 0,
+        };
+        for (const pts of layer.group.children) {
+            layer.counters.displayedCount += pts.geometry.drawRange.count;
         }
 
         if (layer.counters.displayedCount > layer.pointBudget) {
