@@ -1,5 +1,5 @@
 #itowns-loader span {
-    display: inline-block;
+  display: inline-block;
   color: #404e73;
   font-family: Arial;
   font-weight: bold;
@@ -23,14 +23,15 @@
   animation-delay: 0.50s;
 }
 
-@keyframes colorchange
-{
-  100% {color: #404e73; transform: translate(0, 0);}
-  50% {color: #404e73; transform: translate(0, 0);}
-  30%  {color: #7ea8c5; transform: translate(0, -.15em);}
-  0%   {color: #404e73; transform: translate(0, 0em);}
+@keyframes colorchange {
+  100% { color: #404e73; transform: translate(0, 0); }
+  50%  { color: #404e73; transform: translate(0, 0); }
+  30%  { color: #7ea8c5; transform: translate(0, -.15em); }
+  0%   { color: #404e73; transform: translate(0, 0em); }
 }
 #itowns-loader {
+  z-index: 1000;
+
   position: absolute;
   top: 0;
   bottom: 0;
@@ -44,11 +45,4 @@
   align-items: center;
 
   font-size: 5em;
-}
-
-
-/* disable dat.GUI when the loading screen is displayed */
-#itowns-loader + .dg,
-.dg.ac {
-    display: none;
 }

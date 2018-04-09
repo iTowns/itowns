@@ -1,4 +1,4 @@
-/* global itowns */
+/* global itowns, document */
 
 // eslint-disable-next-line no-unused-vars
 function setupLoadingScreen(viewerDiv, view) {
