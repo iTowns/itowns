@@ -33,25 +33,6 @@ export function createPlanarLayer(id, extent, options) {
         }
     };
 
-    function _commonAncestorLookup(a, b) {
-        if (!a || !b) {
-            return undefined;
-        }
-        if (a.level == b.level) {
-            if (a.id == b.id) {
-                return a;
-            } else if (a.level != 0) {
-                return _commonAncestorLookup(a.parent, b.parent);
-            } else {
-                return undefined;
-            }
-        } else if (a.level < b.level) {
-            return _commonAncestorLookup(a, b.parent);
-        } else {
-            return _commonAncestorLookup(a.parent, b);
-        }
-    }
-
     tileLayer.preUpdate = (context, layer, changeSources) => {
         SubdivisionControl.preUpdate(context, layer);
 
@@ -77,7 +58,7 @@ export function createPlanarLayer(id, extent, options) {
                 if (!commonAncestor) {
                     commonAncestor = source;
                 } else {
-                    commonAncestor = _commonAncestorLookup(commonAncestor, source);
+                    commonAncestor = source.findCommonAncestor(commonAncestor);
                     if (!commonAncestor) {
                         return layer.level0Nodes;
                     }

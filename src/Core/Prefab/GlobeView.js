@@ -87,25 +87,6 @@ export function createGlobeLayer(id, options) {
         }
     };
 
-    function _commonAncestorLookup(a, b) {
-        if (!a || !b) {
-            return undefined;
-        }
-        if (a.level == b.level) {
-            if (a.id == b.id) {
-                return a;
-            } else if (a.level != 0) {
-                return _commonAncestorLookup(a.parent, b.parent);
-            } else {
-                return undefined;
-            }
-        } else if (a.level < b.level) {
-            return _commonAncestorLookup(a, b.parent);
-        } else {
-            return _commonAncestorLookup(a.parent, b);
-        }
-    }
-
     const wgs84TileLayer = new GeometryLayer(id, options.object3d || new THREE.Group());
     wgs84TileLayer.schemeTile = globeSchemeTileWMTS(globeSchemeTile1);
     wgs84TileLayer.extent = wgs84TileLayer.schemeTile[0].clone();
@@ -135,7 +116,7 @@ export function createGlobeLayer(id, options) {
                 if (!commonAncestor) {
                     commonAncestor = source;
                 } else {
-                    commonAncestor = _commonAncestorLookup(commonAncestor, source);
+                    commonAncestor = source.findCommonAncestor(commonAncestor);
                     if (!commonAncestor) {
                         return layer.level0Nodes;
                     }

@@ -237,4 +237,31 @@ TileMesh.prototype.getZoomForLayer = function getZoomForLayer(layer) {
     }
 };
 
+/**
+ * Search for a common ancestor between this tile and another one. It goes
+ * through parents on each side until one is found.
+ *
+ * @param {TileMesh} tile
+ *
+ * @return {TileMesh} the resulting common ancestor
+ */
+TileMesh.prototype.findCommonAncestor = function findCommonAncestor(tile) {
+    if (!tile) {
+        return undefined;
+    }
+    if (tile.level == this.level) {
+        if (tile.id == this.id) {
+            return tile;
+        } else if (tile.level != 0) {
+            return this.parent.findCommonAncestor(tile.parent);
+        } else {
+            return undefined;
+        }
+    } else if (tile.level < this.level) {
+        return this.parent.findCommonAncestor(tile);
+    } else {
+        return this.findCommonAncestor(tile.parent);
+    }
+};
+
 export default TileMesh;
