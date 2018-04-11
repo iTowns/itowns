@@ -91,7 +91,7 @@ globeView.addLayer({
         north: 5205890.19,
     },
     format: 'geojson',
-}, globeView.tileLayer);
+});
 
 function colorBuildings(properties) {
     if (properties.id.indexOf('bati_remarquable') === 0) {
@@ -154,7 +154,7 @@ globeView.addLayer({
     projection: 'EPSG:4326',
     ipr: 'IGN',
     format: 'application/json',
-}, globeView.tileLayer);
+});
 
 function configPointMaterial(result) {
     var i = 0;
@@ -206,7 +206,7 @@ globeView.addLayer({
     projection: 'EPSG:2154',
     ipr: 'IGN',
     format: 'application/json',
-}, globeView.tileLayer);
+});
 
 exports.view = globeView;
 exports.initialPosition = positionOnGlobe;
