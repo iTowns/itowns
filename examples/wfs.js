@@ -83,7 +83,7 @@ view.addLayer({
         north: 5205890.19,
     },
     format: 'geojson',
-}, view.tileLayer);
+});
 
 function colorBuildings(properties) {
     if (properties.id.indexOf('bati_remarquable') === 0) {
@@ -141,7 +141,7 @@ view.addLayer({
     },
     ipr: 'IGN',
     format: 'application/json',
-}, view.tileLayer);
+});
 
 function configPointMaterial(result) {
     var i = 0;
