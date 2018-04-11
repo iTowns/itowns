@@ -30,7 +30,7 @@ function computeAreaOfMesh(mesh) {
     return area;
 }
 
-describe('FeaturesUtils', function () {
+describe('Feature2Mesh', function () {
     it('rect mesh area should match geometry extent', () =>
         parse().then((feature) => {
             const mesh = Feature2Mesh.convert()(feature[0]);
