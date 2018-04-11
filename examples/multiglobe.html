@@ -83,8 +83,11 @@
             });
 
             // Globe animation
+            // Exchange postion and scale of globes in a 1 second animation
             var t = 0;
             function animator (dt, ignore) {
+                // "dt" is time difference in ms between this animation step and the previous one
+                // "ignore" is true if this is the first animation step
                 t = ignore ? 0 : Math.min(1, dt / 1000 + t);
 
                 object3ds[front].position.y = itowns.THREE.Math.lerp(front ? 10000000 : -10000000, 0, t);
@@ -97,8 +100,10 @@
                 object3ds[1].updateMatrixWorld(true);
 
                 if (t < 1) {
+                    // animation is not finished, schedule a new view update
                     globeView.notifyChange(true);
                 } else {
+                    // animation is finished, remove the frame requester
                     globeView.removeFrameRequester(itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER, animator);
                 }
             }
@@ -107,8 +112,8 @@
             function onKeyPress(evt) {
                 if (evt.keyCode == 32) {
                     front = 1 - front;
-
                     t = 0;
+                    // schedule the animation
                     globeView.addFrameRequester(itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER, animator);
                     globeView.notifyChange(true);
                 }
