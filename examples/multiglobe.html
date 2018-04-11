@@ -47,36 +47,35 @@
             // iTowns namespace defined here
             var viewerDiv = document.getElementById('viewerDiv');
 
-            //
-            var layers = [];
+            // object3ds contains references to the globes' object3d, it is used in the animator
+            // function to change from one globe to the other
+            var object3d;
+            var object3ds = [];
             var front = 0;
 
-            // Create 2 three object to which attach the 2 globes
-            var ref = [];
-            ref.push(new itowns.THREE.Object3D());
-            ref.push(new itowns.THREE.Object3D());
-            ref[1].scale.divideScalar(3);
-            ref[1].position.y = 10000000;
-            ref[1].updateMatrixWorld();
-
             // Create the first globe
-            var globeView = new itowns.GlobeView(viewerDiv, positionOnGlobe, { noControls: true, object3d: ref[0] });
+            object3d = new itowns.THREE.Object3D();
+            var globeView = new itowns.GlobeView(viewerDiv, positionOnGlobe, { noControls: true, object3d });
             setupLoadingScreen(viewerDiv, globeView);
-            layers.push(globeView.wgs84TileLayer);
+            object3ds.push(object3d);
 
             function addLayerCb(layer) {
                 return globeView.addLayer(layer);
             }
             itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(addLayerCb);
 
-            // create a second smaller globe
-            const globe2 = itowns.createGlobeLayer('globe2', { object3d: ref[1] });
-            layers.push(globe2);
+            // Create a second smaller globe
+            object3d = new itowns.THREE.Object3D();
+            object3d.scale.divideScalar(3);
+            object3d.position.y = 10000000;
+            object3d.updateMatrixWorld();
+            const globe2 = itowns.createGlobeLayer('globe2', { object3d });
+            object3ds.push(object3d);
 
-            // Defines pole texture
+            // define pole texture
             globe2.noTextureColor = new itowns.THREE.Color(0xd0d5d8);
 
-            // add it to the view so it gets updated
+            // add globe2 to the view so it gets updated
             itowns.View.prototype.addLayer.call(globeView, globe2);
             itowns.Fetcher.json('./layers/JSONLayers/OPENSM.json').then(function _(osm) {
                 osm.update = itowns.updateLayeredMaterialNodeImagery;
@@ -84,38 +83,37 @@
             });
 
             // Globe animation
+            // Exchange postion and scale of globes in a 1 second animation
             var t = 0;
             function animator (dt, ignore) {
+                // "dt" is time difference in ms between this animation step and the previous one
+                // "ignore" is true if this is the first animation step
                 t = ignore ? 0 : Math.min(1, dt / 1000 + t);
 
-                layers[front].object3d.position.y = itowns.THREE.Math.lerp(front ? 10000000 : -10000000, 0, t);
-                layers[front].object3d.scale.setScalar(itowns.THREE.Math.lerp(0.3, 1, t));
+                object3ds[front].position.y = itowns.THREE.Math.lerp(front ? 10000000 : -10000000, 0, t);
+                object3ds[front].scale.setScalar(itowns.THREE.Math.lerp(0.3, 1, t));
 
-                layers[1 - front].object3d.position.y = itowns.THREE.Math.lerp(front ? -10000000 : 10000000, 0, 1 - t);
-                layers[1 - front].object3d.scale.setScalar(itowns.THREE.Math.lerp(0.3, 1, 1 - t));
+                object3ds[1 - front].position.y = itowns.THREE.Math.lerp(front ? -10000000 : 10000000, 0, 1 - t);
+                object3ds[1 - front].scale.setScalar(itowns.THREE.Math.lerp(0.3, 1, 1 - t));
 
-                layers[0].object3d.updateMatrixWorld(true);
-                layers[1].object3d.updateMatrixWorld(true);
+                object3ds[0].updateMatrixWorld(true);
+                object3ds[1].updateMatrixWorld(true);
 
                 if (t < 1) {
+                    // animation is not finished, schedule a new view update
                     globeView.notifyChange(true);
                 } else {
+                    // animation is finished, remove the frame requester
                     globeView.removeFrameRequester(itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER, animator);
                 }
             }
-
-            // Last but not least, add 'ref' object to three.js scene, otherwise our globes
-            // won't be displayed
-            globeView.scene.add(ref[0]);
-            globeView.scene.add(ref[1]);
-
 
             // Swap globe place on 'space' key
             function onKeyPress(evt) {
                 if (evt.keyCode == 32) {
                     front = 1 - front;
-
                     t = 0;
+                    // schedule the animation
                     globeView.addFrameRequester(itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER, animator);
                     globeView.notifyChange(true);
                 }
