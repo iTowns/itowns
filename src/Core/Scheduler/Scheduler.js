@@ -116,16 +116,11 @@ Scheduler.prototype.initDefaultProviders = function initDefaultProviders() {
 Scheduler.prototype.initDefaultParsers = function initDefaultParsers() {
     // Register all parsers
     this.addFormatParser('gpx', GpxParser);
-    // this.addFormatParser('xbil', XbilParser);
     this.addFormatParser('application/json', GeoJsonParser);
     this.addFormatParser('geojson', GeoJsonParser);
     this.addFormatParser('json', GeoJsonParser);
-    // this.addFormatParser('pnts', PntsParser);
-    // this.addFormatParser('b3dm', B3dmParser);
     this.addFormatParser('bin', PotreeBinParser);
     this.addFormatParser('cin', PotreeCinParser);
-    // this.addFormatParser('gltf', GLTFLoader);
-    // this.addFormatParser('gltf-legacy', LegacyGLTFLoader);
 };
 
 Scheduler.prototype.runCommand = function runCommand(command, queue, executingCounterUpToDate) {

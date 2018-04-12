@@ -166,7 +166,7 @@ function _gpxToMesh(gpxXML, options = {}) {
     // gpxMesh is static data, it doens't need matrix update
     gpxMesh.matrixAutoUpdate = false;
 
-    return gpxMesh;
+    return { object3d: gpxMesh };
 }
 
 export default {
