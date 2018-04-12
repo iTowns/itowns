@@ -6,7 +6,7 @@ import Coordinates from '../src/Core/Geographic/Coordinates';
 const assert = require('assert');
 const geojson = require('./data/geojson/simple.geojson.json');
 
-const promise = GeoJsonParser.parse(geojson, { crsOut: 'EPSG:4326', buildExtent: true });
+const promise = GeoJsonParser.parse(geojson, { crs: 'EPSG:4326', buildExtent: true });
 
 describe('FeaturesUtils', function () {
     it('should correctly parse geojson', () =>

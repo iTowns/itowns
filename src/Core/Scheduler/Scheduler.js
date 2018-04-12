@@ -21,6 +21,7 @@ import GpxParser from '../../Parser/GpxParser';
 import GeoJsonParser from '../../Parser/GeoJsonParser';
 import PotreeBinParser from '../../Parser/PotreeBinParser';
 import PotreeCinParser from '../../Parser/PotreeCinParser';
+import PntsParser from '../../Parser/PntsParser';
 
 var instanceScheduler = null;
 
@@ -115,12 +116,11 @@ Scheduler.prototype.initDefaultProviders = function initDefaultProviders() {
 
 Scheduler.prototype.initDefaultParsers = function initDefaultParsers() {
     // Register all parsers
-    this.addFormatParser('gpx', GpxParser);
-    this.addFormatParser('application/json', GeoJsonParser);
-    this.addFormatParser('geojson', GeoJsonParser);
-    this.addFormatParser('json', GeoJsonParser);
-    this.addFormatParser('bin', PotreeBinParser);
-    this.addFormatParser('cin', PotreeCinParser);
+    this.addFormatParser(GpxParser);
+    this.addFormatParser(GeoJsonParser);
+    this.addFormatParser(PotreeBinParser);
+    this.addFormatParser(PotreeCinParser);
+    this.addFormatParser(PntsParser);
 };
 
 Scheduler.prototype.runCommand = function runCommand(command, queue, executingCounterUpToDate) {
@@ -275,15 +275,26 @@ Scheduler.prototype.getProtocolProvider = function getProtocolProvider(protocol)
 };
 
 
-Scheduler.prototype.addFormatParser = function addParser(format, parser) {
+Scheduler.prototype.addFormatParser = function addFormatParser(parser) {
+    // eslint-disable-next-line no-console
+    console.log(`Registering format : ${parser.format}`);
     if (typeof (parser.parse) !== 'function') {
-        throw new Error(`Can't add parser for ${format}: missing a parse function.`);
+        throw new Error(`Can't add parser for ${parser.format}: missing a parse function.`);
     }
-    this.parsers[format] = parser;
+    var that = this;
+    function register(format) {
+        that.parsers[format] = that.parsers[format] || [];
+        that.parsers[format].push(parser);
+    }
+    register(parser.format);
+    parser.extensions.forEach(register);
+    parser.mimetypes.forEach(register);
 };
 
 Scheduler.prototype.getFormatParser = function getFormatParser(format) {
-    return this.parsers[format];
+    var parsers = this.parsers[format];
+    // format disambiguation is arbitrary to the first registration for now
+    return parsers ? parsers[0] : undefined;
 };
 
 Scheduler.prototype.commandsWaitingExecutionCount = function commandsWaitingExecutionCount() {

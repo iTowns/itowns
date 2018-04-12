@@ -135,8 +135,7 @@ function addPickingAttribute(points) {
 }
 
 function loadPointFile(layer, url) {
-    return fetch(url, layer.fetchOptions)
-        .then(dat => dat.arrayBuffer())
+    return layer.fetcher(url, layer.fetchOptions)
         .then(buf => layer.parser.parse(buf))
         .then(obj => addPickingAttribute(obj.object3d));
 }
@@ -186,7 +185,6 @@ export default {
             if (layer.metadata.scale != undefined) {
                 // PotreeConverter format
                 layer.format = layer.format || (layer.metadata.pointAttributes === 'CIN' ? 'cin' : 'bin');
-                layer.parser = scheduler.getFormatParser(layer.format);
                 bbox = new THREE.Box3(
                     new THREE.Vector3(cloud.boundingBox.lx, cloud.boundingBox.ly, cloud.boundingBox.lz),
                     new THREE.Vector3(cloud.boundingBox.ux, cloud.boundingBox.uy, cloud.boundingBox.uz));
@@ -208,7 +206,8 @@ export default {
                    new THREE.Vector3(cloud[idx].bbox.xmin, cloud[idx].bbox.ymin, cloud[idx].bbox.zmin),
                    new THREE.Vector3(cloud[idx].bbox.xmax, cloud[idx].bbox.ymax, cloud[idx].bbox.zmax));
             }
-
+            layer.parser = scheduler.getFormatParser(layer.format);
+            layer.fetcher = Fetcher[layer.parser.fetchtype];
 
             return parseOctree(
                     layer,

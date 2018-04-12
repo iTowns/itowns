@@ -6,18 +6,19 @@
 
 import Extent from '../Core/Geographic/Extent';
 import URLBuilder from './URLBuilder';
-import Fetcher from './Fetcher';
-import GeoJsonParser from '../Parser/GeoJsonParser';
 import Feature2Mesh from '../Renderer/ThreeExtended/Feature2Mesh';
+import Fetcher from './Fetcher';
 
 const cache = new Map();
 
-function preprocessDataLayer(layer) {
+function preprocessDataLayer(layer, view, scheduler) {
     if (!layer.typeName) {
         throw new Error('layer.typeName is required.');
     }
 
     layer.format = layer.format || 'application/json';
+    layer.parser = scheduler.getFormatParser(layer.format);
+    layer.fetch = Fetcher[layer.parser.fetchtype];
 
     layer.crs = layer.projection || 'EPSG:4326';
     layer.version = layer.version || '2.0.2';
@@ -69,9 +70,9 @@ function getFeatures(crs, tile, layer) {
 
     layer.convert = layer.convert ? layer.convert : Feature2Mesh.convert({});
 
-    return Fetcher.json(urld, layer.networkOptions)
+    return layer.fetch(urld, layer.networkOptions)
         .then(
-            geojson => GeoJsonParser.parse(geojson, { crsOut: crs, filteringExtent: tile.extent, filter: layer.filter }),
+            data => layer.parser.parse(data, { crs, filteringExtent: tile.extent, filter: layer.filter }),
             (err) => {
                 // special handling for 400 errors, as it probably means the config is wrong
                 if (err.response.status == 400) {

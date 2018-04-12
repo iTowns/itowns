@@ -63,6 +63,10 @@ export default {
             throw new Error('Invalid pnts file.');
         }
     },
+    format: '3d-tiles/pnts',
+    extensions: ['pnts'],
+    mimetypes: ['application/octet-stream'],
+    fetchtype: 'arrayBuffer',
 };
 
 function parseFeatureBinary(array, byteOffset, FTJSONLength) {

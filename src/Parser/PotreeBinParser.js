@@ -59,4 +59,8 @@ export default {
 
         return Promise.resolve({ object3d: points });
     },
+    format: 'potree/bin',
+    extensions: ['bin'],
+    mimetypes: ['binary/octet-stream'],
+    fetchtype: 'arrayBuffer',
 };

@@ -105,7 +105,7 @@ export default {
                 const options = {
                     buildExtent: true,
                     crsIn: layer.projection,
-                    crsOut: parentCrs,
+                    crs: parentCrs,
                     filteringExtent: layer.extent,
                 };
 
