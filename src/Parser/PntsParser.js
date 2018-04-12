@@ -1,67 +1,22 @@
 import * as THREE from 'three';
-import BatchTableParser from './BatchTableParser';
-import utf8Decoder from '../utils/Utf8Decoder';
+import $3dTilesHeaderParser from './3dTilesHeaderParser';
 
 export default {
     /** @module PntsParser */
     /** Parse pnts buffer and extract THREE.Points and batch table
      * @function parse
      * @param {ArrayBuffer} buffer - the pnts buffer.
-     * @return {Promise} - a promise that resolves with an object containig a THREE.Points (point) and a batch table (batchTable).
+     * @param {Object} options - additional properties.
+     * @return {Promise} - a promise that resolves with an object containig a THREE.Points (object3d) and a batch table (batchTable).
      *
      */
-    parse: function parse(buffer) {
-        if (!buffer) {
-            throw new Error('No array buffer provided.');
-        }
-        const view = new DataView(buffer);
-
-        let byteOffset = 0;
-        const pntsHeader = {};
-        let batchTable = {};
-        let point = {};
-
-        // Magic type is unsigned char [4]
-        pntsHeader.magic = utf8Decoder.decode(new Uint8Array(buffer, byteOffset, 4));
-        byteOffset += 4;
-
-        if (pntsHeader.magic) {
-            // Version, byteLength, batchTableJSONByteLength, batchTableBinaryByteLength and batchTable types are uint32
-            pntsHeader.version = view.getUint32(byteOffset, true);
-            byteOffset += Uint32Array.BYTES_PER_ELEMENT;
-
-            pntsHeader.byteLength = view.getUint32(byteOffset, true);
-            byteOffset += Uint32Array.BYTES_PER_ELEMENT;
-
-            pntsHeader.FTJSONLength = view.getUint32(byteOffset, true);
-            byteOffset += Uint32Array.BYTES_PER_ELEMENT;
-
-            pntsHeader.FTBinaryLength = view.getUint32(byteOffset, true);
-            byteOffset += Uint32Array.BYTES_PER_ELEMENT;
-
-            pntsHeader.BTJSONLength = view.getUint32(byteOffset, true);
-            byteOffset += Uint32Array.BYTES_PER_ELEMENT;
-
-            pntsHeader.BTBinaryLength = view.getUint32(byteOffset, true);
-            byteOffset += Uint32Array.BYTES_PER_ELEMENT;
-
-            // binary table
-            if (pntsHeader.FTBinaryLength > 0) {
-                point = parseFeatureBinary(buffer, byteOffset, pntsHeader.FTJSONLength);
-            }
-
-            // batch table
-            if (pntsHeader.BTJSONLength > 0) {
-                const sizeBegin = 28 + pntsHeader.FTJSONLength + pntsHeader.FTBinaryLength;
-                batchTable = BatchTableParser.parse(
-                    buffer.slice(sizeBegin, pntsHeader.BTJSONLength + sizeBegin));
-            }
-
-            const pnts = { point, batchTable };
-            return Promise.resolve(pnts);
-        } else {
-            throw new Error('Invalid pnts file.');
-        }
+    parse(buffer, options) {
+        options = options || {};
+        options.magic = 'pnts';
+        return $3dTilesHeaderParser.parse(buffer, options).then(data => ({
+            batchTable: data.batchTable,
+            object3d: parseFeatureTable(data.featureTable),
+        }));
     },
     format: '3d-tiles/pnts',
     extensions: ['pnts'],
@@ -69,53 +24,48 @@ export default {
     fetchtype: 'arrayBuffer',
 };
 
-function parseFeatureBinary(array, byteOffset, FTJSONLength) {
+function parseFeatureTable(featureTable) {
+    if (!featureTable) return undefined;
     // Init geometry
     const geometry = new THREE.BufferGeometry();
     const material = new THREE.PointsMaterial({ size: 0.05, vertexColors: THREE.VertexColors, sizeAttenuation: true });
+    const json = featureTable.json;
+    const buffer = featureTable.buffer;
+    const POINTS_LENGTH = json.POINTS_LENGTH || 0;
 
-    // init Array feature binary
-    const subArrayJson = utf8Decoder.decode(new Uint8Array(array, byteOffset, FTJSONLength));
-    const parseJSON = JSON.parse(subArrayJson);
-    let lengthFeature;
-    if (parseJSON.POINTS_LENGTH) {
-        lengthFeature = parseJSON.POINTS_LENGTH;
-    }
-    if (parseJSON.POSITION) {
-        const byteOffsetPos = (parseJSON.POSITION.byteOffset + subArrayJson.length + byteOffset);
-        const positionArray = new Float32Array(array, byteOffsetPos, lengthFeature * 3);
+    if (json.POSITION) {
+        const positionArray = new Float32Array(buffer, json.POSITION.byteOffset, POINTS_LENGTH * 3);
         geometry.addAttribute('position', new THREE.BufferAttribute(positionArray, 3));
     }
-    if (parseJSON.RGB) {
-        const byteOffsetCol = parseJSON.RGB.byteOffset + subArrayJson.length + byteOffset;
-        const colorArray = new Uint8Array(array, byteOffsetCol, lengthFeature * 3);
+    if (json.RGB) {
+        const colorArray = new Uint8Array(buffer, json.RGB.byteOffset, POINTS_LENGTH * 3);
         geometry.addAttribute('color', new THREE.BufferAttribute(colorArray, 3, true));
     }
-    if (parseJSON.POSITION_QUANTIZED) {
+    if (json.POSITION_QUANTIZED) {
         throw new Error('For pnts loader, POSITION_QUANTIZED: not yet managed');
     }
-    if (parseJSON.RGBA) {
+    if (json.RGBA) {
         throw new Error('For pnts loader, RGBA: not yet managed');
     }
-    if (parseJSON.RGB565) {
+    if (json.RGB565) {
         throw new Error('For pnts loader, RGB565: not yet managed');
     }
-    if (parseJSON.NORMAL) {
+    if (json.NORMAL) {
         throw new Error('For pnts loader, NORMAL: not yet managed');
     }
-    if (parseJSON.NORMAL_OCT16P) {
+    if (json.NORMAL_OCT16P) {
         throw new Error('For pnts loader, NORMAL_OCT16P: not yet managed');
     }
-    if (parseJSON.BATCH_ID) {
+    if (json.BATCH_ID) {
         throw new Error('For pnts loader, BATCH_ID: not yet managed');
     }
     // creation points with geometry and material
     const points = new THREE.Points(geometry, material);
-    points.realPointCount = lengthFeature;
+    points.realPointCount = POINTS_LENGTH;
 
     // Add RTC feature
-    if (parseJSON.RTC_CENTER) {
-        points.position.fromArray(parseJSON.RTC_CENTER);
+    if (json.RTC_CENTER) {
+        points.position.fromArray(json.RTC_CENTER);
     }
 
     return points;

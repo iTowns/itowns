@@ -1,11 +1,8 @@
 import * as THREE from 'three';
-import B3dmParser from '../Parser/B3dmParser';
-import PntsParser from '../Parser/PntsParser';
 import Fetcher from './Fetcher';
 import OBB from '../Renderer/ThreeExtended/OBB';
 import Extent from '../Core/Geographic/Extent';
 import { init3dTilesLayer } from '../Process/3dTilesProcessing';
-import utf8Decoder from '../utils/Utf8Decoder';
 
 function $3dTilesIndex(tileset, baseURL) {
     let counter = 0;
@@ -114,26 +111,6 @@ function getBox(volume, inverseTileTransform) {
     }
 }
 
-function b3dmToMesh(data, layer, url) {
-    const urlBase = THREE.LoaderUtils.extractUrlBase(url);
-    const options = {
-        gltfUpAxis: layer.asset.gltfUpAxis,
-        urlBase,
-        overrideMaterials: layer.overrideMaterials,
-        doNotPatchMaterial: layer.doNotPatchMaterial,
-        opacity: layer.opacity,
-    };
-    return B3dmParser.parse(data, options).then((result) => {
-        const batchTable = result.batchTable;
-        const object3d = result.gltf.scene;
-        return { batchTable, object3d };
-    });
-}
-
-function pntsParse(data) {
-    return PntsParser.parse(data).then(result => ({ object3d: result.point }));
-}
-
 function configureTile(tile, layer, metadata, parent) {
     tile.frustumCulled = false;
     tile.layer = layer.id;
@@ -158,59 +135,57 @@ function configureTile(tile, layer, metadata, parent) {
 }
 
 function executeCommand(command) {
+    const scheduler = command.view.mainLoop.scheduler;
     const layer = command.layer;
     const metadata = command.metadata;
     const tile = new THREE.Object3D();
     configureTile(tile, layer, metadata, command.requester);
     const path = metadata.content ? metadata.content.url : undefined;
 
-    const setLayer = (obj) => {
+    function setLayer(obj) {
         obj.layers.set(layer.threejsLayer);
+    }
+    if (!path) {
+        tile.traverse(setLayer);
+        return Promise.resolve(tile);
+    }
+    // Check if we have relative or absolute url (with tileset's lopocs for example)
+    const url = path.startsWith('http') ? path : metadata.baseURL + path;
+    const format = path.substr(path.lastIndexOf('.') + 1);
+
+    const options = {
+        gltfUpAxis: layer.asset.gltfUpAxis || 'Y',
+        urlBase: THREE.LoaderUtils.extractUrlBase(url),
+        overrideMaterials: layer.overrideMaterials,
+        doNotPatchMaterial: layer.doNotPatchMaterial,
+        opacity: layer.opacity,
     };
-    if (path) {
-        // Check if we have relative or absolute url (with tileset's lopocs for example)
-        const url = path.startsWith('http') ? path : metadata.baseURL + path;
-        const supportedFormats = {
-            b3dm: b3dmToMesh,
-            pnts: pntsParse,
-        };
-        return Fetcher.arrayBuffer(url, layer.networkOptions).then((result) => {
-            if (result !== undefined) {
-                let func;
-                const magic = utf8Decoder.decode(new Uint8Array(result, 0, 4));
-                if (magic[0] === '{') {
-                    result = JSON.parse(utf8Decoder.decode(new Uint8Array(result)));
-                    const newPrefix = url.slice(0, url.lastIndexOf('/') + 1);
-                    layer.tileIndex.extendTileset(result, metadata.tileId, newPrefix);
-                } else if (magic == 'b3dm') {
-                    func = supportedFormats.b3dm;
-                } else if (magic == 'pnts') {
-                    func = supportedFormats.pnts;
-                } else {
-                    Promise.reject(`Unsupported magic code ${magic}`);
+
+    if (format === 'json') {
+        return Fetcher.json(url, layer.networkOptions).then((json) => {
+            layer.tileIndex.extendTileset(json, metadata.tileId, options.urlBase);
+            tile.traverse(setLayer);
+            return tile;
+        });
+    }
+    const parser = scheduler.getFormatParser(format);
+    if (!parser) {
+        return Promise.reject(`Unsupported extension ${format} for file ${url} in 3d-tiles`);
+    }
+
+    return Fetcher[parser.fetchtype](url, layer.networkOptions)
+        .then(data => parser.parse(data, options))
+        .then((content) => {
+            if (content) {
+                tile.content = content.object3d;
+                if (content.batchTable) {
+                    tile.batchTable = content.batchTable;
                 }
-                if (func) {
-                    // TODO: request should be delayed if there is a viewerRequestVolume
-                    return func(result, layer, url).then((content) => {
-                        tile.content = content.object3d;
-                        if (content.batchTable) {
-                            tile.batchTable = content.batchTable;
-                        }
-                        tile.add(content.object3d);
-                        tile.traverse(setLayer);
-                        return tile;
-                    });
-                }
+                tile.add(content.object3d);
             }
             tile.traverse(setLayer);
             return tile;
         });
-    } else {
-        return new Promise((resolve) => {
-            tile.traverse(setLayer);
-            resolve(tile);
-        });
-    }
 }
 
 export default {

@@ -17,11 +17,12 @@ import WFSProvider from '../../Provider/WFSProvider';
 import RasterProvider from '../../Provider/RasterProvider';
 import StaticProvider from '../../Provider/StaticProvider';
 
-import GpxParser from '../../Parser/GpxParser';
+import B3dmParser from '../../Parser/B3dmParser';
 import GeoJsonParser from '../../Parser/GeoJsonParser';
+import GpxParser from '../../Parser/GpxParser';
+import PntsParser from '../../Parser/PntsParser';
 import PotreeBinParser from '../../Parser/PotreeBinParser';
 import PotreeCinParser from '../../Parser/PotreeCinParser';
-import PntsParser from '../../Parser/PntsParser';
 
 var instanceScheduler = null;
 
@@ -116,11 +117,12 @@ Scheduler.prototype.initDefaultProviders = function initDefaultProviders() {
 
 Scheduler.prototype.initDefaultParsers = function initDefaultParsers() {
     // Register all parsers
-    this.addFormatParser(GpxParser);
+    this.addFormatParser(B3dmParser);
     this.addFormatParser(GeoJsonParser);
+    this.addFormatParser(GpxParser);
+    this.addFormatParser(PntsParser);
     this.addFormatParser(PotreeBinParser);
     this.addFormatParser(PotreeCinParser);
-    this.addFormatParser(PntsParser);
 };
 
 Scheduler.prototype.runCommand = function runCommand(command, queue, executingCounterUpToDate) {

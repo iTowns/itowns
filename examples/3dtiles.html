@@ -90,7 +90,7 @@
 
             var menuGlobe = new GuiTools('menuDiv', view, 300);
 
-            itowns.Fetcher.json('layers/JSONLayers/Ortho.json').then(function (result) { return view.addLayer(result) });
+            itowns.Fetcher.json('layers/JSONLayers/OPENSM.json').then(function (result) { return view.addLayer(result) });
 
             // function use :
             // For preupdate Layer geomtry :
@@ -172,7 +172,7 @@
                         if (interAttributes._BATCHID) {
                             var face = intersects[i].face.a;
                             var batchID = interAttributes._BATCHID.array[face];
-                            var batchTable = findBatchTableParent(intersects[i].object);
+                            var batchTable = findBatchTableParent(intersects[i].object).json;
 
                             htmlInfo.innerHTML +='<li><b> Batch id: </b>'+ batchID +'</li>';
                             Object.keys(batchTable).map(function(objectKey) {
