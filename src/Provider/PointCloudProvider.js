@@ -1,8 +1,6 @@
 import * as THREE from 'three';
 import Fetcher from './Fetcher';
 import PointCloudProcessing from '../Process/PointCloudProcessing';
-import PotreeBinParser from '../Parser/PotreeBinParser';
-import PotreeCinParser from '../Parser/PotreeCinParser';
 import Picking from '../Core/Picking';
 
 // Create an A(xis)A(ligned)B(ounding)B(ox) for the child `childIndex` of one aabb.
@@ -109,6 +107,10 @@ function findChildrenByName(node, name) {
 
 let nextuuid = 1;
 function addPickingAttribute(points) {
+    if (!points) {
+        console.warn('Pointcloud tile failed to parse to an object3d');
+        return undefined;
+    }
     // generate unique id for picking
     const numPoints = points.geometry.attributes.position.count;
     const ids = new Uint8Array(4 * numPoints);
@@ -132,19 +134,15 @@ function addPickingAttribute(points) {
     return points;
 }
 
-
 function loadPointFile(layer, url) {
-    return fetch(url, layer.fetchOptions).then(foo => foo.arrayBuffer()).then((ab) => {
-        if (layer.metadata.customBinFormat) {
-            return PotreeCinParser.parse(ab).then(result => addPickingAttribute(result));
-        } else {
-            return PotreeBinParser.parse(ab).then(result => addPickingAttribute(result));
-        }
-    });
+    return fetch(url, layer.fetchOptions)
+        .then(dat => dat.arrayBuffer())
+        .then(buf => layer.parser.parse(buf))
+        .then(obj => addPickingAttribute(obj.object3d));
 }
 
 export default {
-    preprocessDataLayer(layer) {
+    preprocessDataLayer(layer, view, scheduler) {
         if (!layer.file) {
             layer.file = 'cloud.js';
         }
@@ -187,7 +185,8 @@ export default {
             // (if `scale` is defined => we're fetching files from PotreeConverter)
             if (layer.metadata.scale != undefined) {
                 // PotreeConverter format
-                layer.metadata.customBinFormat = layer.metadata.pointAttributes === 'CIN';
+                layer.format = layer.format || (layer.metadata.pointAttributes === 'CIN' ? 'cin' : 'bin');
+                layer.parser = scheduler.getFormatParser(layer.format);
                 bbox = new THREE.Box3(
                     new THREE.Vector3(cloud.boundingBox.lx, cloud.boundingBox.ly, cloud.boundingBox.lz),
                     new THREE.Vector3(cloud.boundingBox.ux, cloud.boundingBox.uy, cloud.boundingBox.uz));
@@ -196,7 +195,7 @@ export default {
                 layer.metadata.scale = 1;
                 layer.metadata.octreeDir = `itowns/${layer.table}.points`;
                 layer.metadata.hierarchyStepSize = 1000000; // ignore this with lopocs
-                layer.metadata.customBinFormat = true;
+                layer.format = layer.format || 'cin';
 
                 let idx = 0;
                 for (const entry of cloud) {
@@ -234,13 +233,11 @@ export default {
             parseOctree(layer, layer.metadata.hierarchyStepSize, node).then(() => command.view.notifyChange(false));
         }
 
-        const extension = layer.metadata.customBinFormat ? 'cin' : 'bin';
-
         // `isLeaf` is for lopocs and allows the pointcloud server to consider that the current
         // node is the last one, even if we could subdivide even further.
         // It's necessary because lopocs doens't know about the hierarchy (it generates it on the fly
         // when we request .hrc files)
-        const url = `${node.baseurl}/r${node.name}.${extension}?isleaf=${command.isLeaf ? 1 : 0}`;
+        const url = `${node.baseurl}/r${node.name}.${layer.format}?isleaf=${command.isLeaf ? 1 : 0}`;
 
         return loadPointFile(layer, url).then((points) => {
             points.position.copy(node.bbox.min);

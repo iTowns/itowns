@@ -18,14 +18,9 @@ import RasterProvider from '../../Provider/RasterProvider';
 import StaticProvider from '../../Provider/StaticProvider';
 
 import GpxParser from '../../Parser/GpxParser';
-import XbilParser from '../../Parser/XbilParser';
 import GeoJsonParser from '../../Parser/GeoJsonParser';
-import PntsParser from '../../Parser/PntsParser';
-import B3dmParser from '../../Parser/B3dmParser';
 import PotreeBinParser from '../../Parser/PotreeBinParser';
 import PotreeCinParser from '../../Parser/PotreeCinParser';
-// import GLTFLoader from '../../Parser/GLTFLoader';
-// import LegacyGLTFLoader from '../../Parser/LegacyGLTFLoader';
 
 var instanceScheduler = null;
 
@@ -121,11 +116,12 @@ Scheduler.prototype.initDefaultProviders = function initDefaultProviders() {
 Scheduler.prototype.initDefaultParsers = function initDefaultParsers() {
     // Register all parsers
     this.addFormatParser('gpx', GpxParser);
-    this.addFormatParser('xbil', XbilParser);
+    // this.addFormatParser('xbil', XbilParser);
     this.addFormatParser('application/json', GeoJsonParser);
     this.addFormatParser('geojson', GeoJsonParser);
-    this.addFormatParser('pnts', PntsParser);
-    this.addFormatParser('b3dm', B3dmParser);
+    this.addFormatParser('json', GeoJsonParser);
+    // this.addFormatParser('pnts', PntsParser);
+    // this.addFormatParser('b3dm', B3dmParser);
     this.addFormatParser('bin', PotreeBinParser);
     this.addFormatParser('cin', PotreeCinParser);
     // this.addFormatParser('gltf', GLTFLoader);

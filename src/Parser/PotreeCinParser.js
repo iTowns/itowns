@@ -6,7 +6,7 @@ export default {
     /** Parse .cin PotreeConverter format (see {@link https://github.com/peppsac/PotreeConverter/tree/custom_bin}) and convert to THREE.Points
      * @function parse
      * @param {ArrayBuffer} buffer - the cin buffer.
-     * @return {Promise} - a promise that resolves with a THREE.Points.
+     * @return {Promise} - a promise that resolves as { object3d: <THREE.Points> }.
      *
      */
     parse: function parse(buffer) {
@@ -37,6 +37,6 @@ export default {
         points.realPointCount = numPoints;
         points.tightbbox = tightbbox;
 
-        return Promise.resolve(points);
+        return Promise.resolve({ object3d: points });
     },
 };
