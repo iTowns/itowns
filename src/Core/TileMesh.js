@@ -29,7 +29,8 @@ function TileMesh(geometry, params) {
 
     this.obb = this.geometry.OBB.clone();
 
-    this.boundingSphere = this.OBB().box3D.getBoundingSphere();
+    this.boundingSphere = new THREE.Sphere();
+    this.OBB().box3D.getBoundingSphere(this.boundingSphere);
 
     this.material = new LayeredMaterial(params.materialOptions);
 
