@@ -83,7 +83,15 @@ function parseOctree(layer, hierarchyStepSize, root) {
                         const myname = childname.substr(root.name.length);
                         url = `${root.baseurl}/${myname}`;
                     }
-                    const item = { numPoints: n, childrenBitField: c, children: [], name: childname, baseurl: url, bbox: bounds };
+                    const item = {
+                        numPoints: n,
+                        childrenBitField: c,
+                        children: [],
+                        name: childname,
+                        baseurl: url,
+                        bbox: bounds,
+                        geometricError: layer.metadata.spacing / Math.pow(2, childname.length),
+                    };
                     snode.children.push(item);
                     stack.push(item);
                 }
@@ -165,7 +173,7 @@ export default {
         layer.octreeDepthLimit = layer.octreeDepthLimit || -1;
         layer.pointBudget = layer.pointBudget || 15000000;
         layer.pointSize = layer.pointSize === 0 || !isNaN(layer.pointSize) ? layer.pointSize : 4;
-        layer.overdraw = layer.overdraw || 2;
+        layer.sseThreshold = layer.sseThreshold || 2;
         layer.type = 'geometry';
 
         // default update methods
@@ -214,7 +222,12 @@ export default {
             return parseOctree(
                     layer,
                     layer.metadata.hierarchyStepSize,
-                    { baseurl: `${layer.url}/${cloud.octreeDir}/r`, name: '', bbox });
+                {
+                    baseurl: `${layer.url}/${cloud.octreeDir}/r`,
+                    name: '',
+                    bbox,
+                    geometricError: layer.metadata.spacing,
+                });
         }).then((root) => {
             // eslint-disable-next-line no-console
             console.log('LAYER metadata:', root);

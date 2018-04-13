@@ -1,25 +1,12 @@
+import ScreenSpaceError from '../Core/ScreenSpaceError';
+import { SIZE_TEXTURE_TILE } from '../Provider/OGCWebServiceHelper';
+
 function frustumCullingOBB(node, camera) {
     return camera.isBox3Visible(node.OBB().box3D, node.OBB().matrixWorld);
 }
 
 export function planarCulling(node, camera) {
     return !frustumCullingOBB(node, camera);
-}
-
-function _isTileBigOnScreen(camera, node) {
-    const onScreen = camera.box3SizeOnScreen(node.OBB().box3D, node.matrixWorld);
-
-    // onScreen.x/y/z are [-1, 1] so divide by 2
-    // (so x = 0.4 means the object width on screen is 40% of the total screen width)
-    const dim = {
-        x: 0.5 * (onScreen.max.x - onScreen.min.x),
-        y: 0.5 * (onScreen.max.y - onScreen.min.y),
-    };
-
-    // subdivide if on-screen width (and resp. height) is bigger than 30% of the screen width (resp. height)
-    // TODO: the 30% value is arbitrary and needs to be configurable by the user
-    // TODO: we might want to use texture resolution here as well
-    return (dim.x >= 0.3 && dim.y >= 0.3);
 }
 
 export function prePlanarUpdate(context, layer) {
@@ -48,7 +35,27 @@ export function planarSubdivisionControl(maxLevel, maxDeltaElevationLevel) {
             (node.level - currentElevationLevel) >= maxDeltaElevationLevel) {
             return false;
         }
+        node.sse = ScreenSpaceError.computeFromBox3(
+            context.camera,
+            node.OBB().box3D,
+            node.OBB().matrixWorld,
+            node.geometricError);
+        node.sse.offset = SIZE_TEXTURE_TILE;
 
-        return _isTileBigOnScreen(context.camera, node);
+        const cond1x = (node.sse.sse[0] > (SIZE_TEXTURE_TILE + layer.sseThreshold));
+        const cond1y = (node.sse.sse[1] > (SIZE_TEXTURE_TILE + layer.sseThreshold));
+        const cond2x = (node.sse.sse[0] > (SIZE_TEXTURE_TILE + layer.sseThreshold) * 0.85);
+        const cond2y = (node.sse.sse[1] > (SIZE_TEXTURE_TILE + layer.sseThreshold) * 0.85);
+
+        if (cond1x && cond1y) {
+            return true;
+        }
+        if (cond1x) {
+            return cond2y;
+        }
+        if (cond1y) {
+            return cond2x;
+        }
+        return false;
     };
 }

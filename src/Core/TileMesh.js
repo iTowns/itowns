@@ -8,7 +8,7 @@ import * as THREE from 'three';
 import LayeredMaterial from '../Renderer/LayeredMaterial';
 import { l_ELEVATION } from '../Renderer/LayeredMaterialConstants';
 import RendererConstant from '../Renderer/RendererConstant';
-import OGCWebServiceHelper, { SIZE_TEXTURE_TILE } from '../Provider/OGCWebServiceHelper';
+import OGCWebServiceHelper from '../Provider/OGCWebServiceHelper';
 import { is4326 } from './Geographic/Coordinates';
 
 function TileMesh(geometry, params) {
@@ -144,9 +144,8 @@ TileMesh.prototype.setBBoxZ = function setBBoxZ(min, max) {
 };
 
 TileMesh.prototype.updateGeometricError = function updateGeometricError() {
-    // The geometric error is calculated to have a correct texture display.
-    // For the projection of a texture's texel to be less than or equal to one pixel
-    this.geometricError = this.boundingSphere.radius / SIZE_TEXTURE_TILE;
+    const size = this.obb.box3D.getSize();
+    this.geometricError = Math.max(size.x, size.y);
 };
 
 TileMesh.prototype.setTexturesLayer = function setTexturesLayer(textures, layerType, layerId) {

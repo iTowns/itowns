@@ -39,16 +39,15 @@ export default {
             .onChange(() => view.notifyChange(true));
         layer.debugUI.add(layer, 'pointBudget', 1, 15000000).name('Max point count')
             .onChange(() => view.notifyChange(true));
+        layer.debugUI.add(layer, 'sseThreshold', 1, 100).name('SSE threshold')
+            .onChange(() => view.notifyChange(true));
         layer.debugUI.add(layer.object3d.position, 'z', -50, 50).name('Z translation').onChange(() => {
             layer.object3d.updateMatrixWorld();
             view.notifyChange(true);
         });
-        const surf = layer.debugUI.addFolder('Surface Method params');
-        surf.add(layer, 'pointSize', 0, 15).name('Point Size')
+        layer.debugUI.add(layer, 'pointSize', 0, 15).name('Point Size')
             .onChange(() => view.notifyChange(true));
-        surf.add(layer, 'overdraw', 1, 5).name('Overdraw')
-            .onChange(() => view.notifyChange(true));
-        surf.add(layer, 'opacity', 0, 1).name('Opacity')
+        layer.debugUI.add(layer, 'opacity', 0, 1).name('Opacity')
             .onChange(() => view.notifyChange(true));
 
         // state

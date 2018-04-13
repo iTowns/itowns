@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import ScreenSpaceError from '../Core/ScreenSpaceError';
 
 function requestNewTile(view, scheduler, geometryLayer, metadata, parent, redraw) {
     const command = {
@@ -220,30 +221,29 @@ export function pre3dTilesUpdate(context, layer) {
     return [layer.root];
 }
 
-const cameraLocalPosition = new THREE.Vector3();
-const worldPosition = new THREE.Vector3();
 function computeNodeSSE(camera, node) {
     node.distance = 0;
     if (node.boundingVolume.region) {
-        worldPosition.setFromMatrixPosition(node.boundingVolume.region.matrixWorld);
-        cameraLocalPosition.copy(camera.camera3D.position).sub(worldPosition);
-        node.distance = node.boundingVolume.region.box3D.distanceToPoint(cameraLocalPosition);
-    } else if (node.boundingVolume.box) {
-        worldPosition.setFromMatrixPosition(node.matrixWorld);
-        cameraLocalPosition.copy(camera.camera3D.position).sub(worldPosition);
-        node.distance = node.boundingVolume.box.distanceToPoint(cameraLocalPosition);
-    } else if (node.boundingVolume.sphere) {
-        worldPosition.setFromMatrixPosition(node.matrixWorld);
-        cameraLocalPosition.copy(camera.camera3D.position).sub(worldPosition);
-        node.distance = Math.max(0.0, node.boundingVolume.sphere.distanceToPoint(cameraLocalPosition));
-    } else {
-        return Infinity;
+        return ScreenSpaceError.computeFromBox3(
+            camera,
+            node.boundingVolume.region.box3D,
+            node.boundingVolume.region.matrixWorld,
+            node.geometricError);
     }
-    if (node.distance === 0) {
-        // This test is needed in case geometricError = distance = 0
-        return Infinity;
+    if (node.boundingVolume.box) {
+        return ScreenSpaceError.computeFromBox3(
+            camera,
+            node.boundingVolume.box,
+            node.matrixWorld,
+            node.geometricError);
     }
-    return camera.preSSE * (node.geometricError / node.distance);
+    if (node.boundingVolume.sphere) {
+        return ScreenSpaceError.computeFromSphere(
+            camera,
+            node.boundingVolume.sphere,
+            node.matrixWorld,
+            node.geometricError);
+    }
 }
 
 export function init3dTilesLayer(view, scheduler, layer) {
@@ -312,6 +312,8 @@ export function process3dTilesNode(cullingTest, subdivisionTest) {
                 });
             }
             return returnValue;
+        } else {
+            node.sse = Infinity;
         }
 
         markForDeletion(layer, node);
@@ -324,6 +326,9 @@ export function $3dTilesSubdivisionControl(context, layer, node) {
     if (layer.tileIndex.index[node.tileId].children === undefined) {
         return false;
     }
-    const sse = computeNodeSSE(context.camera, node);
-    return sse > layer.sseThreshold;
+    node.sse = computeNodeSSE(context.camera, node);
+    if (node.sse) {
+        const minSSE = Math.min.apply(Math, node.sse.sse);
+        return minSSE > layer.sseThreshold;
+    }
 }
