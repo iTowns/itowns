@@ -21,7 +21,7 @@ export const MAIN_LOOP_EVENTS = {
     UPDATE_START: 'update_start',
     BEFORE_CAMERA_UPDATE: 'before_camera_update',
     AFTER_CAMERA_UPDATE: 'after_camera_update',
-    BEFORE_LAYER_UPDATE: 'before_camera_update',
+    BEFORE_LAYER_UPDATE: 'before_layer_update',
     AFTER_LAYER_UPDATE: 'after_layer_update',
     BEFORE_RENDER: 'before_render',
     AFTER_RENDER: 'after_render',
