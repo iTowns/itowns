@@ -4,6 +4,8 @@ export default {
      * @param {Object3D} obj object to release
      */
     cleanup(obj) {
+        obj.layer = null;
+
         if (typeof obj.dispose === 'function') {
             obj.dispose();
         } else {
