@@ -18,7 +18,7 @@ export default function create3dTilesDebugUI(datDebugTool, view, layer) {
         if (!enabled) {
             return;
         }
-        var obbChildren = node.children.filter(n => n.layer == obb_layer_id);
+        var obbChildren = node.children.filter(n => n.layer == layer);
 
         if (node.visible && node.boundingVolume) {
             // 3dTiles case
@@ -30,7 +30,7 @@ export default function create3dTilesDebugUI(datDebugTool, view, layer) {
                     helper.position.copy(node.boundingVolume.region.position);
                     helper.rotation.copy(node.boundingVolume.region.rotation);
                     node.add(helper);
-                    helper.layer = obb_layer_id;
+                    helper.layer = layer;
                     // add the ability to hide all the debug obj for one layer at once
                     const l = context.view.getLayers(l => l.id === obb_layer_id)[0];
                     const l3js = l.threejsLayer;
@@ -46,7 +46,7 @@ export default function create3dTilesDebugUI(datDebugTool, view, layer) {
                     helper = new THREE.Mesh(g, material);
                     node.boundingVolume.box.getCenter(helper.position);
                     node.add(helper);
-                    helper.layer = obb_layer_id;
+                    helper.layer = layer;
                     // add the ability to hide all the debug obj for one layer at once
                     const l = context.view.getLayers(l => l.id === obb_layer_id)[0];
                     const l3js = l.threejsLayer;
@@ -60,7 +60,7 @@ export default function create3dTilesDebugUI(datDebugTool, view, layer) {
                     helper = new THREE.Mesh(geometry, material);
                     helper.position.copy(node.boundingVolume.sphere.center);
                     node.add(helper);
-                    helper.layer = obb_layer_id;
+                    helper.layer = layer;
                     // add the ability to hide all the debug obj for one layer at once
                     const l = context.view.getLayers(l => l.id === obb_layer_id)[0];
                     const l3js = l.threejsLayer;
@@ -72,7 +72,7 @@ export default function create3dTilesDebugUI(datDebugTool, view, layer) {
             }
             if (helper) {
                 helper.visible = true;
-                for (const child of node.children.filter(n => n.layer == obb_layer_id)) {
+                for (const child of node.children.filter(n => n.layer == layer)) {
                     if (typeof child.setMaterialVisibility === 'function') {
                         child.setMaterialVisibility(true);
                     }
@@ -81,7 +81,7 @@ export default function create3dTilesDebugUI(datDebugTool, view, layer) {
             }
         } else {
             // hide obb children
-            for (const child of node.children.filter(n => n.layer == obb_layer_id)) {
+            for (const child of node.children.filter(n => n.layer == layer)) {
                 if (typeof child.setMaterialVisibility === 'function') {
                     child.setMaterialVisibility(false);
                 }

@@ -43,7 +43,7 @@ export default {
             return;
         }
 
-        const features = node.children.filter(n => n.layer == layer.id);
+        const features = node.children.filter(n => n.layer == layer);
         for (const feat of features) {
             feat.traverse((o) => {
                 if (o.material) {
@@ -109,7 +109,7 @@ export default {
                 if (result.minAltitude) {
                     result.position.z = result.minAltitude;
                 }
-                result.layer = layer.id;
+                result.layer = layer;
                 node.add(result);
                 node.updateMatrixWorld();
             } else {
