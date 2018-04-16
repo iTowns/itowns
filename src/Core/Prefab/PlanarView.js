@@ -169,7 +169,7 @@ PlanarView.prototype.selectNodeAt = function selectNodeAt(mouse) {
         });
     }
 
-    this.notifyChange(true);
+    this.notifyChange();
 };
 
 

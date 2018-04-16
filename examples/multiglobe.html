@@ -86,7 +86,7 @@
 
                 if (t < 1) {
                     // animation is not finished, schedule a new view update
-                    globeView.notifyChange(true);
+                    globeView.notifyChange();
                 } else {
                     // animation is finished, remove the frame requester
                     globeView.removeFrameRequester(itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER, animator);
@@ -100,7 +100,7 @@
                     t = 0;
                     // schedule the animation
                     globeView.addFrameRequester(itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER, animator);
-                    globeView.notifyChange(true);
+                    globeView.notifyChange();
                 }
             }
             viewerDiv.focus();
@@ -123,7 +123,7 @@
                     geo.setAltitude(geo.altitude() * 1.1);
                 }
                 globeView.camera.camera3D.position.copy(geo.as('EPSG:4978').xyz());
-                globeView.notifyChange(true);
+                globeView.notifyChange();
             };
             viewerDiv.addEventListener('DOMMouseScroll', onMouseWheel);
             viewerDiv.addEventListener('mousewheel', onMouseWheel);

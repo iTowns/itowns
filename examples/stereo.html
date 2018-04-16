@@ -87,7 +87,7 @@
 
                 if (!effect) return;
 
-                globeView.notifyChange(true);
+                globeView.notifyChange();
             }
 
             function disableEffect() {
@@ -98,7 +98,7 @@
                 effect = null;
                 globeView.render = null;
 
-                globeView.notifyChange(true);
+                globeView.notifyChange();
             }
 
             function enableEffect(_eff) {
@@ -119,7 +119,7 @@
                     effect.render(globeView.scene, globeView.camera.camera3D);
                 };
 
-                globeView.notifyChange(true);
+                globeView.notifyChange();
             }
 
             /**

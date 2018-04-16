@@ -80,7 +80,7 @@
             d.zoom = function() {
                 view.camera.camera3D.position.set(1215013.9, -4736315.5, 4081597.5);
                 view.camera.camera3D.quaternion.set(0.9108514448729665, 0.13456816437801225, 0.1107206134840362, 0.3741416847378546);
-                view.notifyChange(true);
+                view.notifyChange(view.camera.camera3D);
             }
             menuGlobe.gui.add(d, 'zoom').name('Go to point cloud');
 

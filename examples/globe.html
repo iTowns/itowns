@@ -78,7 +78,7 @@
                 // Update target miniview's camera
                 camera.position.copy(globeView.controls.moveTarget()).setLength(distance);
                 camera.lookAt(globeView.controls.moveTarget());
-                miniView.notifyChange(true);
+                miniView.notifyChange(camera);
             });
 
             // Add one imagery layer to the miniview

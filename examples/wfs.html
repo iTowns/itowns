@@ -77,7 +77,7 @@
             new itowns.PlanarControls(view, {});
 
             // Request redraw
-            view.notifyChange(true);
+            view.notifyChange();
 
             function setMaterialLineWidth(result) {
                 result.traverse(function _setLineWidth(mesh) {
@@ -132,7 +132,7 @@
                 var i;
                 var mesh;
                 if (meshes.length) {
-                    view.notifyChange(true);
+                    view.notifyChange();
                 }
                 for (i = 0; i < meshes.length; i++) {
                     mesh = meshes[i];

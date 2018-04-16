@@ -35,7 +35,7 @@ export const ColorLayersOrdering = {
                 previous: { sequence: previousSequence },
                 new: { sequence: ImageryLayers.getColorLayersIdOrderedBySequence(imageryLayers) },
             });
-            view.notifyChange(true);
+            view.notifyChange(view.wgs84TileLayer);
         } else {
             throw new Error(`${layerId} isn't color layer`);
         }
@@ -59,7 +59,7 @@ export const ColorLayersOrdering = {
                 previous: { sequence: previousSequence },
                 new: { sequence: ImageryLayers.getColorLayersIdOrderedBySequence(imageryLayers) },
             });
-            view.notifyChange(true);
+            view.notifyChange(view.wgs84TileLayer);
         } else {
             throw new Error(`${layerId} isn't color layer`);
         }
@@ -84,7 +84,7 @@ export const ColorLayersOrdering = {
                 previous: { sequence: previousSequence },
                 new: { sequence: ImageryLayers.getColorLayersIdOrderedBySequence(imageryLayers) },
             });
-            view.notifyChange(true);
+            view.notifyChange(view.wgs84TileLayer);
         } else {
             throw new Error(`${layerId} isn't color layer`);
         }

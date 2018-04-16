@@ -19,7 +19,7 @@ function applyRotation(view, camera3D, state) {
     camera3D.rotateY(state.rotateY);
     camera3D.rotateX(state.rotateX);
 
-    view.notifyChange(true, camera3D);
+    view.notifyChange(view.camera.camera3D);
 }
 
 const MOVEMENTS = {
@@ -156,8 +156,8 @@ class FirstPersonControls extends THREE.EventDispatcher {
             applyRotation(this.view, this.camera, this._state);
         }
 
-        if (this.moves.size || this._isMouseDown) {
-            this.view.notifyChange(true);
+        if (this.moves.size) {
+            this.view.notifyChange(this.view.camera.camera3D);
         }
     }
 
@@ -228,7 +228,7 @@ class FirstPersonControls extends THREE.EventDispatcher {
         const move = MOVEMENTS[e.keyCode];
         if (move) {
             this.moves.delete(move);
-            this.view.notifyChange(true);
+            this.view.notifyChange(undefined, false);
             e.preventDefault();
         }
     }
@@ -237,7 +237,7 @@ class FirstPersonControls extends THREE.EventDispatcher {
         const move = MOVEMENTS[e.keyCode];
         if (move) {
             this.moves.add(move);
-            this.view.notifyChange(false);
+            this.view.notifyChange(undefined, false);
             e.preventDefault();
         }
     }

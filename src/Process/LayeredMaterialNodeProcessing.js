@@ -196,7 +196,7 @@ export function updateLayeredMaterialNodeImagery(context, layer, node) {
         // Indeed in the second pass, their state (not visible or not displayed) can block them to fetch
         const minLevel = layer.options.zoom ? layer.options.zoom.min : 0;
         if (node.material.getColorLayerLevelById(layer.id) >= minLevel) {
-            context.view.notifyChange(false, node);
+            context.view.notifyChange(node, false);
             return;
         }
     }
@@ -296,7 +296,7 @@ export function updateLayeredMaterialNodeImagery(context, layer, node) {
                 node.layerUpdateState[layer.id].failure(Date.now(), definitiveError, { targetLevel });
                 if (!definitiveError) {
                     window.setTimeout(() => {
-                        context.view.notifyChange(false, node);
+                        context.view.notifyChange(node, false);
                     }, node.layerUpdateState[layer.id].secondsUntilNextTry() * 1000);
                 }
             }
@@ -324,7 +324,7 @@ export function updateLayeredMaterialNodeElevation(context, layer, node) {
         currentElevation = material.getElevationLayerLevel();
         const minLevel = layer.options.zoom ? layer.options.zoom.min : 0;
         if (currentElevation >= minLevel) {
-            context.view.notifyChange(false, node);
+            context.view.notifyChange(node, false);
             return;
         }
     }
@@ -417,7 +417,7 @@ export function updateLayeredMaterialNodeElevation(context, layer, node) {
                 node.layerUpdateState[layer.id].failure(Date.now(), definitiveError);
                 if (!definitiveError) {
                     window.setTimeout(() => {
-                        context.view.notifyChange(false, node);
+                        context.view.notifyChange(node, false);
                     }, node.layerUpdateState[layer.id].secondsUntilNextTry() * 1000);
                 }
             }

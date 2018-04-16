@@ -60,7 +60,7 @@
                 // loading manager
                 var loadingManager = new itowns.THREE.LoadingManager(function _addModel() {
                     globeView.scene.add(model);
-                    globeView.notifyChange(true);
+                    globeView.notifyChange();
                 });
                 // collada loader
                 var loader = new itowns.THREE.ColladaLoader(loadingManager);

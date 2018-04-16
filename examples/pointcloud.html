@@ -201,7 +201,7 @@
                         controls = new itowns.FirstPersonControls(view, { focusOnClick: true });
                         debugGui.add(controls.options, 'moveSpeed', 1, 100).name('Movement speed');
 
-                        view.notifyChange(true);
+                        view.notifyChange(view.camera.camera3D);
                     }
 
                     // add pointcloud to scene

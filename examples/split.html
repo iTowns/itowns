@@ -72,7 +72,7 @@
                 var s = (evt.clientX - xD) / splitSlider.parentElement.offsetWidth;
                 splitSlider.style.left = (100.0 * s) + '%';
                 splitPosition = s * window.innerWidth;
-                globeView.notifyChange(true);
+                globeView.notifyChange();
             }
 
             function mouseDown(evt) {

@@ -12,7 +12,7 @@ function applyToNodeFirstMaterial(view, root, layer, cb) {
             cb(object.material);
         }
     });
-    view.notifyChange(true);
+    view.notifyChange();
 }
 
 export default function createTileDebugUI(datDebugTool, view, layer, debugInstance) {
@@ -167,7 +167,7 @@ export default function createTileDebugUI(datDebugTool, view, layer, debugInstan
             visible: false,
         }, layer).then((l) => {
             gui.add(l, 'visible').name('Bounding boxes').onChange(() => {
-                view.notifyChange(true);
+                view.notifyChange();
             });
         });
     View.prototype.addLayer.call(view,
@@ -178,7 +178,7 @@ export default function createTileDebugUI(datDebugTool, view, layer, debugInstan
             visible: false,
         }, layer).then((l) => {
             gui.add(l, 'visible').name('Bounding Spheres').onChange(() => {
-                view.notifyChange(true);
+                view.notifyChange();
             });
         });
 }
