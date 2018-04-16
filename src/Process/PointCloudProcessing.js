@@ -291,22 +291,20 @@ export default {
             return;
         }
 
-        layer.counters = {
-            displayedCount: 0,
-        };
+        layer.displayedCount = 0;
         for (const pts of layer.group.children) {
-            layer.counters.displayedCount += pts.geometry.drawRange.count;
+            layer.displayedCount += pts.geometry.drawRange.count;
         }
 
-        if (layer.counters.displayedCount > layer.pointBudget) {
-            const reduction = layer.pointBudget / layer.counters.displayedCount;
+        if (layer.displayedCount > layer.pointBudget) {
+            const reduction = layer.pointBudget / layer.displayedCount;
             for (const pts of layer.group.children) {
                 if (pts.material.visible) {
                     const count = Math.max(1.0, Math.floor(pts.geometry.drawRange.count * reduction));
                     pts.geometry.setDrawRange(0, count);
                 }
             }
-            layer.counters.displayedCount *= reduction;
+            layer.displayedCount *= reduction;
         }
 
         const now = Date.now();
