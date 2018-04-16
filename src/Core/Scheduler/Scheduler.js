@@ -16,6 +16,7 @@ import PointCloudProvider from '../../Provider/PointCloudProvider';
 import WFSProvider from '../../Provider/WFSProvider';
 import RasterProvider from '../../Provider/RasterProvider';
 import StaticProvider from '../../Provider/StaticProvider';
+import FileProvider from '../../Provider/FileProvider';
 
 import B3dmParser from '../../Parser/B3dmParser';
 import GeoJsonParser from '../../Parser/GeoJsonParser';
@@ -113,6 +114,7 @@ Scheduler.prototype.initDefaultProviders = function initDefaultProviders() {
     this.addProtocolProvider('wfs', WFSProvider);
     this.addProtocolProvider('rasterizer', RasterProvider);
     this.addProtocolProvider('static', StaticProvider);
+    this.addProtocolProvider('file', FileProvider);
 };
 
 Scheduler.prototype.initDefaultParsers = function initDefaultParsers() {

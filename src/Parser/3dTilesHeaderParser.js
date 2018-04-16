@@ -20,7 +20,7 @@ export default {
         // Magic type is unsigned char [4]
         header.magic = utf8Decoder.decode(new Uint8Array(buffer, 0, 4));
         if (header.magic !== options.magic) {
-            throw new Error(`Invalid 3d-tiles header : ${header.magic} (${options.magic} was expected).`);
+            throw new Error(`Invalid 3d-tiles header : "${header.magic}" ("${options.magic}" was expected).`);
         }
 
         const view = new DataView(buffer);
