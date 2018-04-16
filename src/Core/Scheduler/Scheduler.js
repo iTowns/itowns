@@ -45,11 +45,7 @@ function _instanciateQueue() {
                 this.counters.executing++;
             }
 
-            // If the provider returns a Promise, use it to handle counters
-            // Otherwise use a resolved Promise.
-            var p = provider.executeCommand(cmd) || Promise.resolve();
-
-            return p.then((result) => {
+            return provider.executeCommand(cmd).then((result) => {
                 this.counters.executing--;
                 cmd.resolve(result);
                 // only count successul commands
@@ -200,10 +196,6 @@ Scheduler.prototype.resetCommandsCount = function resetCommandsCount(type) {
         q[1].counters[type] = 0;
     }
     return sum;
-};
-
-Scheduler.prototype.getProviders = function getProviders() {
-    return this.providers.slice();
 };
 
 Scheduler.prototype.deQueue = function deQueue(queue) {
