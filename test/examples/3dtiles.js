@@ -26,7 +26,7 @@ describe('3dtiles', () => {
         await exampleCanRenderTest(page, this.test.fullTitle());
 
         const layers = await page.evaluate(
-            () => view.pickObjectsAt({ x: 195, y: 146 }).map(p => p.layer));
+            () => view.pickObjectsAt({ x: 195, y: 146 }).map(p => p.layer.id));
 
         assert.ok(layers.indexOf('globe') >= 0);
         assert.ok(layers.indexOf('3d-tiles-discrete-lod') >= 0);

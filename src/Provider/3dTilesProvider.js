@@ -136,7 +136,7 @@ function pntsParse(data) {
 
 function configureTile(tile, layer, metadata, parent) {
     tile.frustumCulled = false;
-    tile.layer = layer.id;
+    tile.layer = layer;
 
     // parse metadata
     if (metadata.transform) {

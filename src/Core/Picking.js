@@ -90,12 +90,12 @@ function traversePickingCircle(radius, callback) {
     }
 }
 
-function findLayerIdInParent(obj) {
+function findLayerInParent(obj) {
     if (obj.layer) {
         return obj.layer;
     }
     if (obj.parent) {
-        return findLayerIdInParent(obj.parent);
+        return findLayerInParent(obj.parent);
     }
 }
 
@@ -123,7 +123,7 @@ export default {
             if (_ids.indexOf(node.id) >= 0 && node instanceof TileMesh) {
                 results.push({
                     object: node,
-                    layer: layer.id,
+                    layer,
                 });
             }
         };
@@ -192,7 +192,7 @@ export default {
                         result.push({
                             object: o,
                             index: candidates[i].index,
-                            layer: layer.id,
+                            layer,
                         });
                     }
                 }
@@ -255,7 +255,7 @@ export default {
 
             const intersects = raycaster.intersectObject(object, true);
             for (const inter of intersects) {
-                inter.layer = findLayerIdInParent(inter.object);
+                inter.layer = findLayerInParent(inter.object);
                 target.push(inter);
             }
 

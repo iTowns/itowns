@@ -6,9 +6,9 @@ import View from '../../src/Core/View';
 import ObjectRemovalHelper from '../../src/Process/ObjectRemovalHelper';
 import GeometryDebug from './GeometryDebug';
 
-function applyToNodeFirstMaterial(view, root, layerId, cb) {
+function applyToNodeFirstMaterial(view, root, layer, cb) {
     root.traverse((object) => {
-        if (object.material && object.layer === layerId) {
+        if (object.material && object.layer === layer) {
             cb(object.material);
         }
     });
@@ -37,7 +37,7 @@ export default function createTileDebugUI(datDebugTool, view, layer, debugInstan
     gui.add(layer, 'showOutline').name('Show tiles outline').onChange((newValue) => {
         layer.showOutline = newValue;
 
-        applyToNodeFirstMaterial(view, layer.object3d, layer.id, (material) => {
+        applyToNodeFirstMaterial(view, layer.object3d, layer, (material) => {
             if (material.uniforms) {
                 material.uniforms.showOutline = { value: newValue };
                 material.needsUpdate = true;
@@ -49,7 +49,7 @@ export default function createTileDebugUI(datDebugTool, view, layer, debugInstan
     gui.add(layer, 'wireframe').name('Wireframe').onChange((newValue) => {
         layer.wireframe = newValue;
 
-        applyToNodeFirstMaterial(view, layer.object3d, layer.id, (material) => {
+        applyToNodeFirstMaterial(view, layer.object3d, layer, (material) => {
             material.wireframe = newValue;
         });
     });
@@ -92,7 +92,7 @@ export default function createTileDebugUI(datDebugTool, view, layer, debugInstan
         if (!enabled) {
             return;
         }
-        const helpers = node.children.filter(n => n.layer == layer.id);
+        const helpers = node.children.filter(n => n.layer == layer);
 
         if (node.material && node.material.visible) {
             let helper;
@@ -113,7 +113,7 @@ export default function createTileDebugUI(datDebugTool, view, layer, debugInstan
                 }
 
                 helper.layers.set(l3js);
-                helper.layer = layer.id;
+                helper.layer = layer;
                 node.add(helper);
                 helper.updateMatrixWorld(true);
 

@@ -46,7 +46,7 @@ export function requestNewTile(view, scheduler, geometryLayer, extent, parent, l
 }
 
 function subdivideNode(context, layer, node) {
-    if (!node.pendingSubdivision && !node.children.some(n => n.layer == layer.id)) {
+    if (!node.pendingSubdivision && !node.children.some(n => n.layer == layer)) {
         const extents = subdivisionExtents(node.extent);
         // TODO: pendingSubdivision mechanism is fragile, get rid of it
         node.pendingSubdivision = true;
@@ -94,7 +94,7 @@ function subdivideNode(context, layer, node) {
 export function processTiledGeometryNode(cullingTest, subdivisionTest) {
     return function _processTiledGeometryNode(context, layer, node) {
         if (!node.parent) {
-            return ObjectRemovalHelper.removeChildrenAndCleanup(layer.id, node);
+            return ObjectRemovalHelper.removeChildrenAndCleanup(layer, node);
         }
         // early exit if parent' subdivision is in progress
         if (node.parent.pendingSubdivision) {
@@ -126,15 +126,15 @@ export function processTiledGeometryNode(cullingTest, subdivisionTest) {
                 }
 
                 if (!requestChildrenUpdate) {
-                    return ObjectRemovalHelper.removeChildren(layer.id, node);
+                    return ObjectRemovalHelper.removeChildren(layer, node);
                 }
             }
 
             // TODO: use Array.slice()
-            return requestChildrenUpdate ? node.children.filter(n => n.layer == layer.id) : undefined;
+            return requestChildrenUpdate ? node.children.filter(n => n.layer == layer) : undefined;
         }
 
         node.setDisplayed(false);
-        return ObjectRemovalHelper.removeChildren(layer.id, node);
+        return ObjectRemovalHelper.removeChildren(layer, node);
     };
 }

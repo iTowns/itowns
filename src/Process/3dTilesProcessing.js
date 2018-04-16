@@ -58,7 +58,7 @@ function _subdivideNodeAdditive(context, layer, node, cullingTest) {
 }
 
 function _subdivideNodeSubstractive(context, layer, node) {
-    if (!node.pendingSubdivision && node.children.filter(n => n.layer == layer.id).length == 0) {
+    if (!node.pendingSubdivision && node.children.filter(n => n.layer == layer).length == 0) {
         const childrenTiles = layer.tileIndex.index[node.tileId].children;
         if (childrenTiles === undefined || childrenTiles.length === 0) {
             return;
@@ -294,11 +294,11 @@ export function process3dTilesNode(cullingTest, subdivisionTest) {
                 subdivideNode(context, layer, node, cullingTest);
                 // display iff children aren't ready
                 setDisplayed(node, node.pendingSubdivision || node.additiveRefinement);
-                returnValue = node.children.filter(n => n.layer == layer.id);
+                returnValue = node.children.filter(n => n.layer == layer);
             } else {
                 setDisplayed(node, true);
 
-                for (const n of node.children.filter(n => n.layer == layer.id)) {
+                for (const n of node.children.filter(n => n.layer == layer)) {
                     n.visible = false;
                     markForDeletion(layer, n);
                 }

@@ -117,7 +117,7 @@ export default {
                 continue;
             }
             // filter sources that belong to our layer
-            if (source.obj.isPoints && source.obj.layer == layer.id) {
+            if (source.obj.isPoints && source.obj.layer == layer) {
                 if (!commonAncestorName) {
                     commonAncestorName = source.name;
                 } else {

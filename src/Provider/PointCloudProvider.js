@@ -258,7 +258,7 @@ export default {
             points.material.uniforms.opacity.value = layer.opacity;
             points.updateMatrix();
             points.layers.set(layer.threejsLayer);
-            points.layer = layer.id;
+            points.layer = layer;
             return points;
         });
     },
