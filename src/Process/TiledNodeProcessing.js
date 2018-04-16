@@ -81,7 +81,7 @@ function subdivideNode(context, layer, node) {
             }
             */
             node.pendingSubdivision = false;
-            context.view.notifyChange(false, node);
+            context.view.notifyChange(node, false);
         }, (err) => {
             node.pendingSubdivision = false;
             if (!(err instanceof CancelledCommandException)) {

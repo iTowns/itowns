@@ -31,10 +31,10 @@ describe('positionGlobe', () => {
                     if (globeView.mesh) {
                         resolve();
                     } else {
-                        globeView.notifyChange(true);
+                        globeView.notifyChange();
                     }
                 });
-                globeView.notifyChange(true);
+                globeView.notifyChange();
             }));
 
         await page.screenshot({ path: '/tmp/b.png' });

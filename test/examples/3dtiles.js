@@ -55,7 +55,7 @@ describe('3dtiles', () => {
                             '3d-tiles-request-volume').length);
                     }
                 });
-                view.notifyChange(false);
+                view.notifyChange(undefined, false);
             }));
         assert.ok(pickingCount > 0);
         await page.close();

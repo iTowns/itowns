@@ -77,7 +77,7 @@ function View(crs, viewerDiv, options = {}) {
         // the container's size. Otherwise we use window' size.
         const newSize = new Vector2(viewerDiv.clientWidth, viewerDiv.clientHeight);
         this.mainLoop.gfxEngine.onWindowResize(newSize.x, newSize.y);
-        this.notifyChange(true);
+        this.notifyChange(this.camera.camera3D);
     }, false);
 
     this._changeSources = new Set();
@@ -345,7 +345,7 @@ View.prototype.addLayer = function addLayer(layer, parentLayer) {
         }
 
         layer.whenReady.then((layer) => {
-            this.notifyChange(false);
+            this.notifyChange(parentLayer || layer, false);
             if (!this._frameRequesters[MAIN_LOOP_EVENTS.UPDATE_END] ||
                     this._frameRequesters[MAIN_LOOP_EVENTS.UPDATE_END].indexOf(this._allLayersAreReadyCallback) == -1) {
                 this.addFrameRequester(MAIN_LOOP_EVENTS.UPDATE_END, this._allLayersAreReadyCallback);
@@ -359,11 +359,13 @@ View.prototype.addLayer = function addLayer(layer, parentLayer) {
  * Notifies the scene it needs to be updated due to changes exterior to the
  * scene itself (e.g. camera movement).
  * non-interactive events (e.g: texture loaded)
- * @param {boolean} needsRedraw - indicates if notified change requires a full scene redraw.
  * @param {*} changeSource
+ * @param {boolean} needsRedraw - indicates if notified change requires a full scene redraw.
  */
-View.prototype.notifyChange = function notifyChange(needsRedraw, changeSource) {
-    this._changeSources.add(changeSource);
+View.prototype.notifyChange = function notifyChange(changeSource = undefined, needsRedraw = true) {
+    if (changeSource) {
+        this._changeSources.add(changeSource);
+    }
     this.mainLoop.scheduleViewUpdate(this, needsRedraw);
 };
 
@@ -399,6 +401,20 @@ View.prototype.getLayers = function getLayers(filter) {
         }
     }
     return result;
+};
+
+/**
+ * @param {Layer} layer
+ * @returns {GeometryLayer} the parent layer of the given layer or undefined.
+ */
+View.prototype.getParentLayer = function getParentLayer(layer) {
+    for (const geometryLayer of this._layers) {
+        for (const attached of geometryLayer._attachedLayers) {
+            if (attached === layer) {
+                return geometryLayer;
+            }
+        }
+    }
 };
 
 /**

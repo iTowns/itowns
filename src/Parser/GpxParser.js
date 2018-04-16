@@ -185,7 +185,7 @@ export default {
      * itowns.GpxParser.parse(file, { crs: viewer.referenceCrs }).then((gpx) => {
      *      if (gpx) {
      *         viewer.scene.add(gpx);
-     *         viewer.notifyChange(true);
+     *         viewer.notifyChange();
      *      }
      * });
      *

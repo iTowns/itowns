@@ -1,4 +1,5 @@
 import { EventDispatcher } from 'three';
+import { GeometryLayer, Layer } from './Layer/Layer';
 
 export const RENDERING_PAUSED = 0;
 export const RENDERING_SCHEDULED = 1;
@@ -73,6 +74,19 @@ function updateElements(context, geometryLayer, elements) {
     }
 }
 
+function filterChangeSources(updateSources, geometryLayer) {
+    let fullUpdate = false;
+    const filtered = new Set();
+    updateSources.forEach((src) => {
+        if (src === geometryLayer || src.isCamera) {
+            fullUpdate = true;
+        } else if (src.layer === geometryLayer) {
+            filtered.add(src);
+        }
+    });
+    return fullUpdate ? new Set([geometryLayer]) : filtered;
+}
+
 MainLoop.prototype._update = function _update(view, updateSources, dt) {
     const context = {
         camera: view.camera,
@@ -81,17 +95,32 @@ MainLoop.prototype._update = function _update(view, updateSources, dt) {
         view,
     };
 
+    // replace layer with their parent where needed
+    updateSources.forEach((src) => {
+        const layer = src.layer || src;
+        if (layer instanceof Layer) {
+            if (!(layer instanceof GeometryLayer)) {
+                // add the parent layer to update sources
+                updateSources.add(view.getParentLayer(layer));
+            }
+        }
+    });
+
     for (const geometryLayer of view.getLayers((x, y) => !y)) {
         context.geometryLayer = geometryLayer;
         if (geometryLayer.ready && geometryLayer.visible && !geometryLayer.frozen) {
             view.execFrameRequesters(MAIN_LOOP_EVENTS.BEFORE_LAYER_UPDATE, dt, this._updateLoopRestarted, geometryLayer);
 
-            // `preUpdate` returns an array of elements to update
-            const elementsToUpdate = geometryLayer.preUpdate(context, geometryLayer, updateSources);
-            // `update` is called in `updateElements`.
-            updateElements(context, geometryLayer, elementsToUpdate);
-            // `postUpdate` is called when this geom layer update process is finished
-            geometryLayer.postUpdate(context, geometryLayer, updateSources);
+            // Filter updateSources that are relevant for the geometryLayer
+            const srcs = filterChangeSources(updateSources, geometryLayer);
+            if (srcs.size > 0) {
+                // `preUpdate` returns an array of elements to update
+                const elementsToUpdate = geometryLayer.preUpdate(context, geometryLayer, srcs);
+                // `update` is called in `updateElements`.
+                updateElements(context, geometryLayer, elementsToUpdate);
+                // `postUpdate` is called when this geom layer update process is finished
+                geometryLayer.postUpdate(context, geometryLayer, updateSources);
+            }
 
             view.execFrameRequesters(MAIN_LOOP_EVENTS.AFTER_LAYER_UPDATE, dt, this._updateLoopRestarted, geometryLayer);
         }

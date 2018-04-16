@@ -166,7 +166,7 @@ Camera.prototype.adjustAltitudeToAvoidCollisionWithLayer = function adjustAltitu
             if (difElevation < 0) {
                 camLocation.setAltitude(elevationUnderCamera.z + minDistanceCollision);
                 view.camera.camera3D.position.copy(camLocation.as(view.referenceCrs).xyz());
-                view.notifyChange(true);
+                view.notifyChange(this.camera3D);
             }
         }
     }

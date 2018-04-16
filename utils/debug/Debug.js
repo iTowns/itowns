@@ -63,12 +63,12 @@ function Debug(view, datDebugTool, chartDivContainer) {
         } else {
             view.removeFrameRequester(MAIN_LOOP_EVENTS.AFTER_RENDER, renderCameraDebug);
         }
-        view.notifyChange(true);
+        view.notifyChange();
     });
 
     gui.add(state, 'freeze').name('freeze update').onChange((newValue) => {
         tileLayer.frozen = newValue;
-        view.notifyChange(true);
+        view.notifyChange();
     });
 
     gui.add(state, 'eventsDebug').name('Debug event').onChange((() => {

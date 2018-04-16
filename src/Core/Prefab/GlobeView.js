@@ -101,9 +101,7 @@ export function createGlobeLayer(id, options) {
         }
 
         preGlobeUpdate(context, layer);
-        if (changeSources.has(undefined) || changeSources.size == 0) {
-            return layer.level0Nodes;
-        }
+
         let commonAncestor;
         for (const source of changeSources.values()) {
             if (source.isCamera) {
@@ -276,7 +274,7 @@ function GlobeView(viewerDiv, coordCarto, options = {}) {
 
     this.addEventListener(VIEW_EVENTS.LAYERS_INITIALIZED, fn);
 
-    this.notifyChange(true);
+    this.notifyChange(this.wgs84TileLayer);
 }
 
 GlobeView.prototype = Object.create(View.prototype);
@@ -330,7 +328,7 @@ GlobeView.prototype.removeLayer = function removeImageryLayer(layerId) {
             }
         }
 
-        this.notifyChange(true);
+        this.notifyChange(this.wgs84TileLayer);
         this.dispatchEvent({
             type: GLOBE_VIEW_EVENTS.LAYER_REMOVED,
             layerId,
@@ -360,7 +358,7 @@ GlobeView.prototype.selectNodeAt = function selectNodeAt(mouse) {
         });
     }
 
-    this.notifyChange(true);
+    this.notifyChange();
 };
 
 GlobeView.prototype.readDepthBuffer = function readDepthBuffer(x, y, width, height) {
@@ -448,14 +446,14 @@ GlobeView.prototype.setRealisticLightingOn = function setRealisticLightingOn(val
 
     this.updateMaterialUniform('lightingEnabled', value);
     this.updateMaterialUniform('lightPosition', coSun);
-    this.notifyChange(true);
+    this.notifyChange(this.wgs84TileLayer);
 };
 
 GlobeView.prototype.setLightingPos = function setLightingPos(pos) {
     const lightingPos = pos || CoordStars.getSunPositionInScene(this.ellipsoid, new Date().getTime(), 48.85, 2.35);
 
     this.updateMaterialUniform('lightPosition', lightingPos.clone().normalize());
-    this.notifyChange(true);
+    this.notifyChange(this.wgs84TileLayer);
 };
 
 GlobeView.prototype.updateMaterialUniform = function updateMaterialUniform(uniformName, value) {

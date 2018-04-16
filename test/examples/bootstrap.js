@@ -101,7 +101,7 @@ before(async () => {
                     resolve();
                 }
                 v.addFrameRequester(itowns.MAIN_LOOP_EVENTS.AFTER_RENDER, resolveWhenDrawn);
-                v.notifyChange(true);
+                v.notifyChange();
             });
         }));
 

@@ -50,7 +50,7 @@ function _subdivideNodeAdditive(context, layer, node, cullingTest) {
         child.promise = requestNewTile(context.view, context.scheduler, layer, child, node, true).then((tile) => {
             node.add(tile);
             tile.updateMatrixWorld();
-            context.view.notifyChange(true);
+            context.view.notifyChange(child);
             child.loaded = true;
             delete child.promise;
         });
@@ -73,14 +73,14 @@ function _subdivideNodeSubstractive(context, layer, node) {
                     node.add(tile);
                     tile.updateMatrixWorld();
                     if (node.additiveRefinement) {
-                        context.view.notifyChange(true);
+                        context.view.notifyChange(node);
                     }
                     layer.tileIndex.index[tile.tileId].loaded = true;
                 }));
         }
         Promise.all(promises).then(() => {
             node.pendingSubdivision = false;
-            context.view.notifyChange(true);
+            context.view.notifyChange(node);
         });
     }
 }

@@ -154,7 +154,7 @@ Scheduler.prototype.runCommand = function runCommand(command, queue, executingCo
 
     queue.execute(command, provider, executingCounterUpToDate).then(() => {
         // notify view that one command ended.
-        command.view.notifyChange('redraw' in command ? command.redraw : true, command.requester);
+        command.view.notifyChange(command.requester, command.redraw);
 
         // try to execute next command
         if (queue.counters.executing < this.maxCommandsPerHost) {

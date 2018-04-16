@@ -218,7 +218,7 @@ function PlanarControls(view, options = {}) {
         }
         if (this.state === STATE.TRAVEL) {
             this.handleTravel(dt);
-            this.view.notifyChange(true);
+            this.view.notifyChange(this.camera);
         }
         if (this.state === STATE.DRAG) {
             this.handleDragMovement();
@@ -495,7 +495,7 @@ function PlanarControls(view, options = {}) {
      */
     this.initiateTravel = function initiateTravel(targetPos, travelTime, targetOrientation, useSmooth) {
         this.state = STATE.TRAVEL;
-        this.view.notifyChange(true);
+        this.view.notifyChange(this.camera);
         // the progress of the travel (animation alpha)
         travelAlpha = 0;
         // update cursor
@@ -812,7 +812,7 @@ function onMouseMove(event) {
 
     // notify change if moving
     if (this.state !== STATE.NONE) {
-        this.view.notifyChange(true);
+        this.view.notifyChange();
     }
 }
 

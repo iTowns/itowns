@@ -99,15 +99,10 @@ export default {
             context.camera.height /
                 (2 * Math.tan(THREE.Math.degToRad(context.camera.camera3D.fov) * 0.5));
 
-
-        if (changeSources.has(undefined) || changeSources.size == 0) {
-            return [layer.root];
-        }
-
         // lookup lowest common ancestor of changeSources
         let commonAncestorName;
         for (const source of changeSources.values()) {
-            if (source.isCamera) {
+            if (source.isCamera || source == layer) {
                 // if the change is caused by a camera move, no need to bother
                 // to find common ancestor: we need to update the whole tree:
                 // some invisible tiles may now be visible

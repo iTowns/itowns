@@ -83,7 +83,15 @@ function parseOctree(layer, hierarchyStepSize, root) {
                         const myname = childname.substr(root.name.length);
                         url = `${root.baseurl}/${myname}`;
                     }
-                    const item = { numPoints: n, childrenBitField: c, children: [], name: childname, baseurl: url, bbox: bounds };
+                    const item = {
+                        numPoints: n,
+                        childrenBitField: c,
+                        children: [],
+                        name: childname,
+                        baseurl: url,
+                        bbox: bounds,
+                        layer,
+                    };
                     snode.children.push(item);
                     stack.push(item);
                 }
@@ -233,7 +241,7 @@ export default {
 
         // Query HRC if we don't have children metadata yet.
         if (node.childrenBitField && node.children.length === 0) {
-            parseOctree(layer, layer.metadata.hierarchyStepSize, node).then(() => command.view.notifyChange(false));
+            parseOctree(layer, layer.metadata.hierarchyStepSize, node).then(() => command.view.notifyChange(layer, false));
         }
 
         const extension = layer.metadata.customBinFormat ? 'cin' : 'bin';

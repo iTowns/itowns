@@ -125,7 +125,7 @@ export default {
                 node.layerUpdateState[layer.id].failure(Date.now());
                 setTimeout(node.layerUpdateState[layer.id].secondsUntilNextTry() * 1000,
                     () => {
-                        context.view.notifyChange(false);
+                        context.view.notifyChange(layer, false);
                     });
             }
         });

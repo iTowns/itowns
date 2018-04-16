@@ -65,13 +65,14 @@
                     index ++;
                 }
                 view.camera.camera3D.far = 10000;
+                view.notifyChange();
 
                 // Setup debug menu
                 var gui = new dat.GUI();
                 var ddd = new debug.Debug(view, gui);
                 debug.createTileDebugUI(gui, view, view.baseLayer, ddd);
                 gui.add(view.baseLayer, 'quality').min(0.1).max(1.0).onChange(
-                    function () { view.notifyChange(true); });
+                    function () { view.notifyChange(); });
 
                 // Add controls
                 new itowns.FirstPersonControls(view, {
@@ -86,7 +87,7 @@
                     layers[activeIndex].visible = false;
                     activeIndex = (activeIndex + 1) % 5;
                     layers[activeIndex].visible = true;
-                    view.notifyChange(true);
+                    view.notifyChange();
                 });
                 window.view = view;
             }).catch(console.error);

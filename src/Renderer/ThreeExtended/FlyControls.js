@@ -42,7 +42,7 @@ function onPointerMove(event) {
         this._camera3D.rotateX((coords.y - this._onMouseDownMouseY) * pxToAngleRatio);
         this._onMouseDownMouseX = coords.x;
         this._onMouseDownMouseY = coords.y;
-        this.view.notifyChange(false, this._camera3D);
+        this.view.notifyChange(this._camera3D, false);
     }
 }
 
@@ -62,7 +62,7 @@ function onKeyDown(e) {
     const move = MOVEMENTS[e.keyCode];
     if (move) {
         this.moves.add(move);
-        this.view.notifyChange(false, this);
+        this.view.notifyChange(this._camera3D, false);
         e.preventDefault();
     }
 }
@@ -81,7 +81,7 @@ function onDocumentMouseWheel(event) {
         this.moves.add(MOVEMENTS.wheeldown);
     }
 
-    this.view.notifyChange(false, this);
+    this.view.notifyChange(this._camera3D, false);
 }
 
 /**
@@ -156,7 +156,7 @@ class FlyControls extends THREE.EventDispatcher {
         }
 
         if (this.moves.size > 0 || this._isMouseDown) {
-            this.view.notifyChange(true, this._camera3D);
+            this.view.notifyChange(this._camera3D);
 
             for (const move of this.moves) {
                 if (move.oneshot) {

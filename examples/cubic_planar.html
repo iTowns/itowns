@@ -156,10 +156,10 @@
 
             controls = new itowns.THREE.OrbitControls(view.camera.camera3D, viewerDiv);
             controls.minDistance = 1;
-            controls.addEventListener('change', function _() { view.notifyChange(true); });
+            controls.addEventListener('change', function _() { view.notifyChange(view.camera.camera3D); });
 
             // Request redraw
-            view.notifyChange(true);
+            view.notifyChange();
         </script>
     </body>
 </html>

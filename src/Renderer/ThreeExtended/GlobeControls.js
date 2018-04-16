@@ -581,7 +581,7 @@ function GlobeControls(view, target, radius, options = {}) {
         } else if (this.camera instanceof THREE.OrthographicCamera) {
             this.camera.zoom = Math.max(this.minZoom, Math.min(this.maxZoom, this.camera.zoom * dollyScale));
             this.camera.updateProjectionMatrix();
-            this._view.notifyChange(true, this.camera);
+            this._view.notifyChange(this.camera);
         } else {
 
             // console.warn('WARNING: GlobeControls.js encountered an unknown camera type - dolly/zoom disabled.');
@@ -599,7 +599,7 @@ function GlobeControls(view, target, radius, options = {}) {
         } else if (this.camera instanceof THREE.OrthographicCamera) {
             this.camera.zoom = Math.max(this.minZoom, Math.min(this.maxZoom, this.camera.zoom / dollyScale));
             this.camera.updateProjectionMatrix();
-            this._view.notifyChange(true, this.camera);
+            this._view.notifyChange(this.camera);
         } else {
 
             // console.warn('WARNING: GlobeControls.js encountered an unknown camera type - dolly/zoom disabled.');
@@ -763,7 +763,7 @@ function GlobeControls(view, target, radius, options = {}) {
         // using small-angle approximation cos(x/2) = 1 - x^2 / 8
 
         if (lastPosition.distanceToSquared(this.camera.position) > EPS || 8 * (1 - lastQuaternion.dot(this.camera.quaternion)) > EPS) {
-            this._view.notifyChange(true, this.camera);
+            this._view.notifyChange(this.camera);
 
             lastPosition.copy(this.camera.position);
             lastQuaternion.copy(this.camera.quaternion);
@@ -856,14 +856,14 @@ function GlobeControls(view, target, radius, options = {}) {
         state = this.states.NONE;
         lastRotation = [];
         if (enableTargetHelper) {
-            this._view.notifyChange(true, cameraTargetOnGlobe);
+            this._view.notifyChange(this.camera);
         }
     };
 
     // Update helper
     var updateHelper = enableTargetHelper ? function updateHelper(position, helper) {
         positionObject(position, helper);
-        this._view.notifyChange(true, cameraTargetOnGlobe);
+        this._view.notifyChange(this.camera);
     } : function empty() {};
 
     this.getPickingPositionOnSphere = function getPickingPositionOnSphere() {
@@ -1942,7 +1942,7 @@ GlobeControls.prototype.reset = function reset() {
     this.camera.zoom = initialZoom;
 
     this.camera.updateProjectionMatrix();
-    this._view.notifyChange(true);
+    this._view.notifyChange();
 
     this.updateCameraTransformation();
 };
