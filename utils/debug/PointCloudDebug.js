@@ -153,7 +153,7 @@ export default {
                                 elt.obj.material.visible = layer.dbgDisplayParents;
 
                                 if (v && !elt.obj.material.visible) {
-                                    layer.counters.displayedCount -= elt.obj.geometry.drawRange.count;
+                                    layer.displayedCount -= elt.obj.geometry.drawRange.count;
                                 }
                             }
                         }

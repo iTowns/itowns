@@ -50,9 +50,7 @@ function showPointcloud(serverUrl, fileName) {
             var info = document.getElementById('info');
             oldPostUpdate.apply(pointcloud, arguments);
             info.textContent = 'Nb points: ' +
-                pointcloud.counters.displayedCount.toLocaleString() + ' (' +
-                Math.floor(100 * pointcloud.counters.displayedCount / pointcloud.counters.pointCount) + '%) (' +
-                view.mainLoop.gfxEngine.renderer.info.memory.geometries + ')';
+                pointcloud.displayedCount.toLocaleString();
         };
         window.view = view;
     }
