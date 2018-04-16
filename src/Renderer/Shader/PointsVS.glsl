@@ -10,7 +10,6 @@ uniform mat4 projectionMatrix;
 uniform mat4 modelViewMatrix;
 uniform vec2 resolution;
 uniform bool pickingMode;
-uniform float density; // points per on screen pixels
 
 attribute vec4 unique_id;
 attribute vec3 color;

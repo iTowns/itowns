@@ -158,14 +158,15 @@ export default {
             layer.bboxes = new THREE.Group();
             layer.object3d.add(layer.bboxes);
             layer.bboxes.updateMatrixWorld();
+            layer.bboxes.visible = false;
         }
 
         // default options
         layer.fetchOptions = layer.fetchOptions || {};
         layer.octreeDepthLimit = layer.octreeDepthLimit || -1;
-        layer.pointBudget = layer.pointBudget || 15000000;
+        layer.pointBudget = layer.pointBudget || 2000000;
         layer.pointSize = layer.pointSize === 0 || !isNaN(layer.pointSize) ? layer.pointSize : 4;
-        layer.overdraw = layer.overdraw || 2;
+        layer.sseThreshold = layer.sseThreshold || 2;
         layer.type = 'geometry';
 
         // default update methods
@@ -210,6 +211,7 @@ export default {
                    new THREE.Vector3(cloud[idx].bbox.xmax, cloud[idx].bbox.ymax, cloud[idx].bbox.zmax));
             }
 
+            layer.supportsProgressiveDisplay = layer.metadata.customBinFormat;
 
             return parseOctree(
                     layer,
