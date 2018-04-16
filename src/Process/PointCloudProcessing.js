@@ -235,8 +235,6 @@ export default {
                             elt.obj.boxHelper.material.color.g = shouldBeLoaded;
                         }
                     }
-                    const count = Math.max(1.0, Math.floor(shouldBeLoaded * elt.obj.geometry.attributes.position.count));
-                    elt.obj.geometry.setDrawRange(0, count);
                     elt.obj.material.uniforms.size.value = layer.pointSize;
                 } else if (!elt.promise) {
                     // TODO:
@@ -258,8 +256,6 @@ export default {
                         elt.obj = pts;
                         // store tightbbox to avoid ping-pong (bbox = larger => visible, tight => invisible)
                         elt.tightbbox = pts.tightbbox;
-                        const count = Math.max(1.0, Math.floor(shouldBeLoaded * pts.geometry.attributes.position.count));
-                        pts.geometry.setDrawRange(0, count);
 
                         // make sure to add it here, otherwise it might never
                         // be added nor cleaned
@@ -293,22 +289,60 @@ export default {
 
         layer.displayedCount = 0;
         for (const pts of layer.group.children) {
-            layer.displayedCount += pts.geometry.drawRange.count;
+            if (pts.material.visible) {
+                if (layer.metadata.customBinFormat) {
+                    const count = Math.floor(pts.owner.shouldBeLoaded * pts.geometry.attributes.position.count);
+                    if (count > 0) {
+                        pts.geometry.setDrawRange(0, count);
+                        layer.displayedCount += count;
+                    } else {
+                        pts.material.visible = false;
+                    }
+                } else {
+                    layer.displayedCount += pts.geometry.attributes.position.count;
+                }
+            }
         }
 
         if (layer.displayedCount > layer.pointBudget) {
-            const reduction = layer.pointBudget / layer.displayedCount;
-            for (const pts of layer.group.children) {
-                if (pts.material.visible) {
-                    const count = Math.max(1.0, Math.floor(pts.geometry.drawRange.count * reduction));
-                    pts.geometry.setDrawRange(0, count);
+            // 2 different point count limit implementation, depending on the pointcloud source
+            if (layer.metadata.customBinFormat) {
+                // In this format, points are evenly distributed within a node,
+                // so we can draw a percentage of each node and still get a correct
+                // representation
+                const reduction = layer.pointBudget / layer.displayedCount;
+                for (const pts of layer.group.children) {
+                    if (pts.material.visible) {
+                        const count = Math.floor(pts.geometry.drawRange.count * reduction);
+                        if (count > 0) {
+                            pts.geometry.setDrawRange(0, count);
+                        } else {
+                            pts.material.visible = false;
+                        }
+                    }
+                }
+                layer.displayedCount *= reduction;
+            } else {
+                // This format doesn't require points to be evenly distributed, so
+                // we're going to sort the nodes by "importance" (= on screen size)
+                // and display only the first N nodes
+                layer.group.children.sort((p1, p2) => p2.owner.surfaceOnScreen - p1.owner.surfaceOnScreen);
+
+                let limitHit = false;
+                layer.displayedCount = 0;
+                for (const pts of layer.group.children) {
+                    const count = pts.geometry.attributes.position.count;
+                    if (limitHit || (layer.displayedCount + count) > layer.pointBudget) {
+                        pts.material.visible = false;
+                        limitHit = true;
+                    } else {
+                        layer.displayedCount += count;
+                    }
                 }
             }
-            layer.displayedCount *= reduction;
         }
 
         const now = Date.now();
-
         for (let i = layer.group.children.length - 1; i >= 0; i--) {
             const obj = layer.group.children[i];
             if (!obj.material.visible && (now - obj.owner.notVisibleSince) > 10000) {
