@@ -1,0 +1,72 @@
+<html>
+    <head>
+        <title>Itowns - File drop</title>
+
+        <style type="text/css">
+            html {
+                height: 100%;
+            }
+
+            body {
+                margin: 0;
+                overflow:hidden;
+                height:100%;
+            }
+
+            #viewerDiv {
+                margin : auto auto;
+                width: 100%;
+                height: 100%;
+                padding: 0;
+            }
+        </style>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" type="text/css" href="css/loading_screen.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body>
+        <div id="viewerDiv"></div>
+        <script src="../dist/itowns.js"></script>
+        <script src="js/loading_screen.js"></script>
+        <script type="text/javascript">
+
+            // Define initial camera position
+            var positionOnGlobe = { longitude: 0.089, latitude: 42.8989, altitude: 80000 };
+
+            // `viewerDiv` will contain iTowns' rendering area (`<canvas>`)
+            var viewerDiv = document.getElementById('viewerDiv');
+
+            // Instanciate iTowns GlobeView*
+            var globeView = new itowns.GlobeView(viewerDiv, positionOnGlobe);
+
+            var promises = [];
+
+            setupLoadingScreen(viewerDiv, globeView);
+
+            function addLayerCb(layer) {
+                return globeView.addLayer(layer);
+            }
+            promises.push(itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(addLayerCb));
+            promises.push(itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addLayerCb));
+            promises.push(itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addLayerCb));
+
+            function addFiles(event, dataTransfer) {
+                event.preventDefault();
+                var files = dataTransfer.files;
+                for (var i = 0; i < files.length; i++) {
+                    var file = files[i];
+                    console.log(file);
+                    globeView.addLayer({ protocol: 'file', file, id: file.name, options: { event, altitude: 500} });
+                }
+            }
+
+            function prevDefault(event){ event.preventDefault(); }
+            viewerDiv.addEventListener('dragenter', prevDefault, false);
+            viewerDiv.addEventListener('dragover', prevDefault, false);
+            viewerDiv.addEventListener('dragleave', prevDefault, false);
+            viewerDiv.addEventListener('drop',  function(e) { addFiles(e, e.dataTransfer); }, false);
+            viewerDiv.addEventListener('paste', function(e) { addFiles(e, e.clipboardData); }, false);
+
+        </script>
+    </body>
+</html>
