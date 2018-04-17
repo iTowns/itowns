@@ -24,7 +24,8 @@
             "src/Renderer/ColorLayersOrdering.js",
             "src/Renderer/ThreeExtended/Feature2Mesh.js",
             "src/Renderer/ThreeExtended/GlobeControls.js",
-            "src/Renderer/ThreeExtended/PlanarControls.js"
+            "src/Renderer/ThreeExtended/PlanarControls.js",
+            "src/Renderer/ThreeExtended/FirstPersonControls.js"
         ]
     }
 }
