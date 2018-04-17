@@ -5,44 +5,11 @@ import { MAIN_LOOP_EVENTS } from '../../Core/MainLoop';
 // but including these controls in itowns allows use to integrate them tightly with itowns.
 // Especially the existing controls are expecting a continuous update loop while we have a pausable one (so our controls use .notifyChange when needed)
 
-
-// Mouse movement handling
-function onDocumentMouseDown(event) {
-    event.preventDefault();
-    this._isMouseDown = true;
-
-    const coords = this.view.eventToViewCoords(event);
-    this._onMouseDownMouseX = coords.x;
-    this._onMouseDownMouseY = coords.y;
-
-    this._stateOnMouseDown = this._state.snapshot();
-}
-
 function limitRotation(camera3D, rot, verticalFOV) {
     // Limit vertical rotation (look up/down) to make sure the user cannot see
     // outside of the cone defined by verticalFOV
     const limit = THREE.Math.degToRad(verticalFOV - camera3D.fov) * 0.5;
     return THREE.Math.clamp(rot, -limit, limit);
-}
-
-function onPointerMove(event) {
-    if (this._isMouseDown === true) {
-        // in rigor we have tan(theta) = tan(cameraFOV) * deltaH / H
-        // (where deltaH is the vertical amount we moved, and H the renderer height)
-        // we loosely approximate tan(x) by x
-        const pxToAngleRatio = THREE.Math.degToRad(this.camera.fov) / this.view.mainLoop.gfxEngine.height;
-
-        const coords = this.view.eventToViewCoords(event);
-
-        // update state based on pointer movement
-        this._state.rotateY = ((coords.x - this._onMouseDownMouseX) * pxToAngleRatio) + this._stateOnMouseDown.rotateY;
-        this._state.rotateX = limitRotation(
-            this.camera,
-            ((coords.y - this._onMouseDownMouseY) * pxToAngleRatio) + this._stateOnMouseDown.rotateX,
-        this.options.verticalFOV);
-
-        applyRotation(this.view, this.camera, this._state);
-    }
 }
 
 function applyRotation(view, camera3D, state) {
@@ -55,35 +22,6 @@ function applyRotation(view, camera3D, state) {
     view.notifyChange(true, camera3D);
 }
 
-// Mouse wheel
-function onDocumentMouseWheel(event) {
-    let delta = 0;
-    if (event.wheelDelta !== undefined) {
-        delta = -event.wheelDelta;
-    // Firefox
-    } else if (event.detail !== undefined) {
-        delta = event.detail;
-    }
-
-    this.camera.fov =
-        THREE.Math.clamp(this.camera.fov + Math.sign(delta),
-            10,
-            Math.min(100, this.options.verticalFOV));
-
-    this.camera.updateProjectionMatrix();
-
-    this._state.rotateX = limitRotation(
-        this.camera,
-        this._state.rotateX,
-        this.options.verticalFOV);
-
-    applyRotation(this.view, this.camera, this._state);
-}
-
-function onDocumentMouseUp() {
-    this._isMouseDown = false;
-}
-
 const MOVEMENTS = {
     38: { method: 'translateZ', sign: -1 }, // FORWARD: up key
     40: { method: 'translateZ', sign: 1 }, // BACKWARD: down key
@@ -92,24 +30,6 @@ const MOVEMENTS = {
     33: { method: 'translateY', sign: 1 }, // UP: PageUp key
     34: { method: 'translateY', sign: -1 }, // DOWN: PageDown key
 };
-// Keyboard handling
-function onKeyUp(e) {
-    const move = MOVEMENTS[e.keyCode];
-    if (move) {
-        this.moves.delete(move);
-        this.view.notifyChange(true);
-        e.preventDefault();
-    }
-}
-
-function onKeyDown(e) {
-    const move = MOVEMENTS[e.keyCode];
-    if (move) {
-        this.moves.add(move);
-        this.view.notifyChange(false);
-        e.preventDefault();
-    }
-}
 
 class FirstPersonControls extends THREE.EventDispatcher {
     /**
@@ -122,6 +42,9 @@ class FirstPersonControls extends THREE.EventDispatcher {
      * @param {number} options.verticalFOV - define the max visible vertical angle of the scene in degrees (default 180)
      * @param {number} options.panoramaRatio - alternative way to specify the max vertical angle when using a panorama.
      * You can specify the panorama width/height ratio and the verticalFOV will be computed automatically
+     * @param {boolean} options.disableEventListeners - if true, the controls will not self listen to mouse/key events.
+     * You'll have to manually forward the events to the appropriate functions: onMouseDown, onMouseMove, onMouseUp,
+     * onKeyUp, onKeyDown and onMouseWheel.
      */
     constructor(view, options = {}) {
         super();
@@ -141,41 +64,31 @@ class FirstPersonControls extends THREE.EventDispatcher {
         this._onMouseDownMouseX = 0;
         this._onMouseDownMouseY = 0;
 
-        // Compute the correct init state, given the calculus in applyRotation:
-        // cam.quaternion = q * r
-        // => r = inverse(q) * cam.quaterion
-        // q is the quaternion derived from the up vector
-        const q = new THREE.Quaternion().setFromUnitVectors(
-            new THREE.Vector3(0, 1, 0), this.camera.up);
-        q.inverse();
-        // compute r
-        const r = this.camera.quaternion.clone().premultiply(q);
-        // tranform it to euler
-        const e = new THREE.Euler(0, 0, 0, 'YXZ').setFromQuaternion(r);
-        // and use it as the initial state
-        const self = this;
         this._state = {
-            rotateX: e.x,
-            rotateY: e.y,
-
+            rotateX: 0,
+            rotateY: 0,
             snapshot() {
-                return { rotateX: self._state.rotateX, rotateY: self._state.rotateY };
+                return {
+                    rotateX: this.rotateX,
+                    rotateY: this.rotateY,
+                };
             },
         };
+        this.reset();
 
         const domElement = view.mainLoop.gfxEngine.renderer.domElement;
-        const bindedPD = onDocumentMouseDown.bind(this);
-        domElement.addEventListener('mousedown', bindedPD, false);
-        domElement.addEventListener('touchstart', bindedPD, false);
-        const bindedPM = onPointerMove.bind(this);
-        domElement.addEventListener('mousemove', bindedPM, false);
-        domElement.addEventListener('touchmove', bindedPM, false);
-        domElement.addEventListener('mouseup', onDocumentMouseUp.bind(this), false);
-        domElement.addEventListener('touchend', onDocumentMouseUp.bind(this), false);
-        domElement.addEventListener('keyup', onKeyUp.bind(this), true);
-        domElement.addEventListener('keydown', onKeyDown.bind(this), true);
-        domElement.addEventListener('mousewheel', onDocumentMouseWheel.bind(this), false);
-        domElement.addEventListener('DOMMouseScroll', onDocumentMouseWheel.bind(this), false); // firefox
+        if (!options.disableEventListeners) {
+            domElement.addEventListener('mousedown', this.onMouseDown.bind(this), false);
+            domElement.addEventListener('touchstart', this.onMouseDown.bind(this), false);
+            domElement.addEventListener('mousemove', this.onMouseMove.bind(this), false);
+            domElement.addEventListener('touchmove', this.onMouseMove.bind(this), false);
+            domElement.addEventListener('mouseup', this.onMouseUp.bind(this), false);
+            domElement.addEventListener('touchend', this.onMouseUp.bind(this), false);
+            domElement.addEventListener('keyup', this.onKeyUp.bind(this), true);
+            domElement.addEventListener('keydown', this.onKeyDown.bind(this), true);
+            domElement.addEventListener('mousewheel', this.onMouseWheel.bind(this), false);
+            domElement.addEventListener('DOMMouseScroll', this.onMouseWheel.bind(this), false); // firefox
+        }
 
         this.view.addFrameRequester(MAIN_LOOP_EVENTS.AFTER_CAMERA_UPDATE, this.update.bind(this));
 
@@ -192,9 +105,40 @@ class FirstPersonControls extends THREE.EventDispatcher {
         return this.moves.size !== 0 && !this._isMouseDown;
     }
 
-    update(dt, updateLoopRestarted) {
-        // if we are in a keypressed state, then update position
+    /**
+     * Resets the controls internal state to match the camera' state.
+     * This must be called when manually modifying the camera's position or rotation.
+     * @param {boolean} preserveRotationOnX - if true, the look up/down rotation will
+     * not be copied from the camera
+     */
+    reset(preserveRotationOnX = false) {
+        // Compute the correct init state, given the calculus in applyRotation:
+        // cam.quaternion = q * r
+        // => r = inverse(q) * cam.quaterion
+        // q is the quaternion derived from the up vector
+        const q = new THREE.Quaternion().setFromUnitVectors(
+            new THREE.Vector3(0, 1, 0), this.camera.up);
+        q.inverse();
+        // compute r
+        const r = this.camera.quaternion.clone().premultiply(q);
+        // tranform it to euler
+        const e = new THREE.Euler(0, 0, 0, 'YXZ').setFromQuaternion(r);
 
+        if (!preserveRotationOnX) {
+            this._state.rotateX = e.x;
+        }
+        this._state.rotateY = e.y;
+    }
+
+    /**
+     * Updates the camera position / rotation based on occured input events.
+     * This is done automatically when needed but can also be done if needed.
+     * @param {number} dt - ellpased time since last update in seconds
+     * @param {boolean} updateLoopRestarted - true if itowns' update loop just restarted
+     * @param {boolean} force - set to true if you want to force the update, even if it
+     * appears unneeded.
+     */
+    update(dt, updateLoopRestarted, force) {
         // dt will not be relevant when we just started rendering, we consider a 1-frame move in this case
         if (updateLoopRestarted) {
             dt = 16;
@@ -208,8 +152,93 @@ class FirstPersonControls extends THREE.EventDispatcher {
             }
         }
 
+        if (this._isMouseDown === true || force === true) {
+            applyRotation(this.view, this.camera, this._state);
+        }
+
         if (this.moves.size || this._isMouseDown) {
             this.view.notifyChange(true);
+        }
+    }
+
+    // Event callback functions
+    // Mouse movement handling
+    onMouseDown(event) {
+        event.preventDefault();
+        this._isMouseDown = true;
+
+        const coords = this.view.eventToViewCoords(event);
+        this._onMouseDownMouseX = coords.x;
+        this._onMouseDownMouseY = coords.y;
+
+        this._stateOnMouseDown = this._state.snapshot();
+    }
+
+    onMouseUp() {
+        this._isMouseDown = false;
+    }
+
+    onMouseMove(event) {
+        if (this._isMouseDown === true) {
+            // in rigor we have tan(theta) = tan(cameraFOV) * deltaH / H
+            // (where deltaH is the vertical amount we moved, and H the renderer height)
+            // we loosely approximate tan(x) by x
+            const pxToAngleRatio = THREE.Math.degToRad(this.camera.fov) / this.view.mainLoop.gfxEngine.height;
+
+            const coords = this.view.eventToViewCoords(event);
+
+            // update state based on pointer movement
+            this._state.rotateY = ((coords.x - this._onMouseDownMouseX) * pxToAngleRatio) + this._stateOnMouseDown.rotateY;
+            this._state.rotateX = limitRotation(
+                this.camera,
+                ((coords.y - this._onMouseDownMouseY) * pxToAngleRatio) + this._stateOnMouseDown.rotateX,
+            this.options.verticalFOV);
+
+            applyRotation(this.view, this.camera, this._state);
+        }
+    }
+
+    // Mouse wheel
+    onMouseWheel(event) {
+        let delta = 0;
+        if (event.wheelDelta !== undefined) {
+            delta = -event.wheelDelta;
+        // Firefox
+        } else if (event.detail !== undefined) {
+            delta = event.detail;
+        }
+
+        this.camera.fov =
+            THREE.Math.clamp(this.camera.fov + Math.sign(delta),
+                10,
+                Math.min(100, this.options.verticalFOV));
+
+        this.camera.updateProjectionMatrix();
+
+        this._state.rotateX = limitRotation(
+            this.camera,
+            this._state.rotateX,
+            this.options.verticalFOV);
+
+        applyRotation(this.view, this.camera, this._state);
+    }
+
+    // Keyboard handling
+    onKeyUp(e) {
+        const move = MOVEMENTS[e.keyCode];
+        if (move) {
+            this.moves.delete(move);
+            this.view.notifyChange(true);
+            e.preventDefault();
+        }
+    }
+
+    onKeyDown(e) {
+        const move = MOVEMENTS[e.keyCode];
+        if (move) {
+            this.moves.add(move);
+            this.view.notifyChange(false);
+            e.preventDefault();
         }
     }
 }
