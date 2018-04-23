@@ -3,71 +3,8 @@
     <head>
         <title>Itowns - 3d-tiles example</title>
 
-        <style type="text/css">
-            html {
-                height: 100%;
-            }
-
-            body {
-                margin: 0;
-                overflow:hidden;
-                height:100%;
-            }
-
-
-            #batchInformationDiv {
-                position: absolute;
-                z-index: 0;
-                top: 0;
-                right: 0;
-                color: white;
-                color: #eee;
-                font: 11px 'Lucida Grande',sans-serif;
-                line-height: normal;
-                text-shadow: 0 -1px 0 #111;
-                padding: 0 1rem;
-                background: #1a1a1a;
-                border: 1px solid #2c2c2c;
-                opacity: 0.8;
-            }
-
-            #batchInformationDiv > p {
-                margin: 0.5rem 0;
-            }
-
-            #batchInformationDiv > ul {
-                padding: 0 1rem;
-            }
-
-            @media (max-width: 600px) {
-                #batchInformationDiv {
-                    display: none;
-                }
-            }
-
-            #menuDiv {
-                position: absolute;
-                top:0px;
-                margin-left: 0px;
-            }
-
-            @media (max-width: 600px) {
-                #menuDiv {
-                    display: none;
-                }
-            }
-
-            #viewerDiv {
-                margin : auto auto;
-                width: 100%;
-                padding: 0;
-                height: 100%;
-            }
-            #viewerDiv > canvas {
-                display: block;
-            }
-        </style>
         <meta charset="UTF-8">
+        <link rel="stylesheet" type="text/css" href="css/example.css">
         <link rel="stylesheet" type="text/css" href="css/loading_screen.css">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <script src="js/GUI/dat.gui/dat.gui.min.js"></script>
@@ -190,7 +127,7 @@
             }
 
         </script>
-        <div id="batchInformationDiv">
+        <div class="help">
             <p><b>Information Batch Table: </b></p>
             <ul id="info">
             </ul>
