@@ -1,4 +1,4 @@
-/* global itowns, document, GuiTools */
+/* global itowns, document, GuiTools, setupLoadingScreen */
 // # Simple Globe viewer
 
 // Define initial camera position
@@ -17,6 +17,8 @@ var globeView = new itowns.GlobeView(viewerDiv, positionOnGlobe);
 var menuGlobe = new GuiTools('menuDiv', globeView);
 
 var promiseElevation = [];
+
+setupLoadingScreen(viewerDiv, globeView);
 
 function addLayerCb(layer) {
     return globeView.addLayer(layer).then(function addGui(la) {
