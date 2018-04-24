@@ -47,6 +47,7 @@ function PlanarControls(view, options = {}) {
     this.camera = view.camera.camera3D;
     this.domElement = view.mainLoop.gfxEngine.renderer.domElement;
 
+    this.enableRotation = typeof (options.enableRotation) !== 'undefined' ? options.enableRotation : true;
     this.rotateSpeed = options.rotateSpeed || 2.0;
 
     // minPanSpeed when close to the ground, maxPanSpeed when close to maxAltitude
@@ -139,7 +140,7 @@ function PlanarControls(view, options = {}) {
     if (this.focusOnMouseOver) {
         this.domElement.addEventListener('mouseover', () => this.domElement.focus());
     }
-    if (this.focusOnClick) {
+    if (this.focusOnMouseClick) {
         this.domElement.addEventListener('click', () => this.domElement.focus());
     }
 
@@ -164,7 +165,7 @@ function PlanarControls(view, options = {}) {
         if (this.state === STATE.DRAG) {
             this.handleDragMovement();
         }
-        if (this.state === STATE.ROTATE) {
+        if (this.state === STATE.ROTATE && this.enableRotation) {
             this.handleRotation();
         }
         if (this.state === STATE.PAN) {
@@ -405,7 +406,7 @@ function PlanarControls(view, options = {}) {
         // update cursor
         this.updateMouseCursorType();
 
-        travelUseRotation = (targetOrientation instanceof THREE.Quaternion || targetOrientation instanceof THREE.Vector3);
+        travelUseRotation = this.enableRotation && (targetOrientation instanceof THREE.Quaternion || targetOrientation instanceof THREE.Vector3);
         travelUseSmooth = useSmooth;
 
         // start position (current camera position)
