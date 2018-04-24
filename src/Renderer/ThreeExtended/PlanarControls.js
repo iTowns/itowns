@@ -1,14 +1,3 @@
-/** Description: Camera controls adapted for a planar view, with animated movements
-* Left mouse button : "drag" the ground, translating the camera on the (xy) world plane.
-* Right mouse button : translate the camera on local x and world z axis (pan)
-* Ctrl + left mouse : rotate (orbit) around the camera's focus point.
-* Scroll wheel : zooms toward cursor position (animated).
-* Middle mouse button (wheel click) : 'smart zoom' at cursor location (animated).
-* Y : go to start view (animated)
-* T : go to top view (animated)
-* How to use : instanciate PlanarControls after camera setup (setPosition and lookAt)
-*/
-
 import * as THREE from 'three';
 import { MAIN_LOOP_EVENTS } from '../../Core/MainLoop';
 
@@ -36,12 +25,81 @@ const STATE = {
 };
 
 /**
-* PlanarControls Constructor
-* Numerical values have been adjusted for the example provided in examples/planar.html
-* Most of them can be changed with the options parameter
-* @param {PlanarView} view : the itowns view (planar view)
-* @param {options} options : optional parameters.
-*/
+ * Options for the instantiation of a {@link PlanarControls}.
+ *
+ * @typedef {Object} PlanarControls~PlanarControlsOptions
+ *
+ * @property {boolean} [enableRotation=true] Enable the rotation with the
+ * <code>CTRL + Left mouse button</code> and in animations, like the smart zoom.
+ * @property {number} [rotateSpeed=2.0] Rotate speed.
+ * @property {number} [maxPanSpeed=15] Pan speed when close to maxAltitude.
+ * @property {number} [minPanSpeed=0.05] Pan speed when close to the ground.
+ * @property {number} [zoomTravelTime=0.2] Animation time when zooming.
+ * @property {number} [zoomInFactor=0.25] Zoom movement is equal to the distance
+ * to the zoom target, multiplied by this factor when zooming in.
+ * @property {number} [zoomOutFactor=0.4] Zoom movement is equal to the distance
+ * to the zoom target, multiplied by this factor when zooming out.
+ * @property {number} [maxAltitude=12000] Maximum altitude reachable when panning.
+ * @property {number} [groundLevel=200] Minimum altitude reachable when panning.
+ * @property {number} [autoTravelTimeMin=1.5] Minimum duration for animated
+ * travels with the <code>auto</code> parameter.
+ * @property {number} [autoTravelTimeMax=4]  Maximum duration for animated
+ * travels with the <code>auto</code> parameter.
+ * @property {number} [autoTravelTimeDist=20000] Maximum travel distance for
+ * animated travel with the <code>auto</code> parameter.
+ * @property {number} [smartZoomHeightMin=75] Minimum height above ground
+ * reachable after a smart zoom.
+ * @property {number} [smartZoomHeightMax=500] Maximum height above ground
+ * reachable after a smart zoom.
+ * @property {boolean} [instantTravel=false] If set to true, animated travels
+ * will have no duration.
+ * @property {number} [minZenithAngle=0] The minimum reachable zenith angle for
+ * a camera rotation, in degrees.
+ * @property {number} [maxZenithAngle=82.5] The maximum reachable zenith angle
+ * for a camera rotation, in degrees.
+ * @property {boolean} [focusOnMouseOver=true] Set the focus on the canvas if
+ * hovered.
+ * @property {boolean} [focusOnMouseClick=true] Set the focus on the canvas if
+ * clicked.
+ * @property {boolean} [handleCollision=true]
+ */
+
+/**
+ * Camera controls adapted for a planar view, with animated movements.
+ * Usage is as follow:
+ * <ul>
+ *  <li><b>Left mouse button:</b> drag the camera (translation on the (xy) world
+ *  plane).</li>
+ *  <li><b>Right mouse button:</b> pan the camera (translation on the vertical
+ *  (z) axis of the world plane).</li>
+ *  <li><b>CTRL + Left mouse button:</b> rotate the camera around the focus point.</li>
+ *  <li><b>Wheel scrolling:</b> zoom toward the cursor position.</li>
+ *  <li><b>Wheel clicking:</b> smart zoom toward the cursor position (animated).</li>
+ *  <li><b>Y key:</b> go to the starting view (animated).</li>
+ *  <li><b>T key:</b> go to the top view (animated).</li>
+ * </ul>
+ *
+ * This controls needs to be instantiated after the camera setup.
+ *
+ * @constructor
+ *
+ * @param {PlanarView} view
+ * @param {PlanarControls~PlanarControlsOptions} [options]
+ *
+ * @example
+ * // From the orthographic example
+ * new itowns.PlanarControls(view, {
+ *     // We do not want the user to zoom out too much
+ *     maxAltitude: 40000000,
+ *     // We want to keep the rotation disabled, to only have a view from the top
+ *     enableRotation: false,
+ *     // Faster zoom in/out speed
+ *     zoomInFactor: 0.5,
+ *     zoomOutFactor: 0.5,
+ *     // Don't zoom too much on smart zoom
+ *     smartZoomHeightMax: 100000,
+ * });
+ */
 function PlanarControls(view, options = {}) {
     this.view = view;
     this.camera = view.camera.camera3D;
@@ -179,10 +237,12 @@ function PlanarControls(view, options = {}) {
     this.view.addFrameRequester(MAIN_LOOP_EVENTS.AFTER_CAMERA_UPDATE, this.update.bind(this));
 
     /**
-    * Initiate a drag movement (translation on xy plane)
-    * The movement value is derived from the actual world point under the mouse cursor
-    * This allows the user to 'grab' a world point and drag it to move (eg : google map)
-    */
+     * Initiate a drag movement (translation on xy plane). The movement value
+     * is derived from the actual world point under the mouse cursor. This
+     * allows the user to 'grab' a world point and drag it to move.
+     *
+     * @ignore
+     */
     this.initiateDrag = function initiateDrag() {
         this.state = STATE.DRAG;
 
@@ -194,12 +254,15 @@ function PlanarControls(view, options = {}) {
     };
 
     /**
-    * Handle the drag movement (translation on xy plane) when user moves the mouse while in STATE.DRAG
-    * The drag movement is previously initiated by initiateDrag()
-    * Compute the drag value and update the camera controls.
-    * The movement value is derived from the actual world point under the mouse cursor
-    * This allows the user to 'grab' a world point and drag it to move (eg : google map)
-    */
+     * Handle the drag movement (translation on xy plane) when user moves the
+     * mouse while in STATE.DRAG. The drag movement is previously initiated by
+     * [initiateDrag]{@link PlanarControls#initiateDrag}. Compute the drag value
+     * and update the camera controls. The movement value is derived from the
+     * actual world point under the mouse cursor. This allows the user to 'grab'
+     * a world point and drag it to move.
+     *
+     * @ignore
+     */
     this.handleDragMovement = function handleDragMovement() {
         // the world point under the current mouse cursor position, at same altitude than dragStart
         dragEnd.copy(this.getWorldPointFromMathPlaneAtScreenXY(mousePosition, dragStart.z));
@@ -213,17 +276,23 @@ function PlanarControls(view, options = {}) {
     };
 
     /**
-    * Initiate a pan movement (local translation on xz plane)
-    */
+     * Initiate a pan movement (local translation on xz plane).
+     *
+     * @ignore
+     */
     this.initiatePan = function initiatePan() {
         this.state = STATE.PAN;
     };
 
     /**
-    * Handle the pan movement (translation on local x / world z plane) when user moves the mouse while in STATE.PAN
-    * The drag movement is previously initiated by initiatePan()
-    * Compute the pan value and update the camera controls.
-    */
+     * Handle the pan movement (translation on local x / world z plane) when
+     * user moves the mouse while in STATE.PAN. The drag movement is previously
+     * initiated by [initiatePan]{@link PlanarControls#initiatePan}. Compute the
+     * pan value and update the camera controls.
+     *
+     * @function
+     * @ignore
+     */
     this.handlePanMovement = (() => {
         const vec = new THREE.Vector3();
 
@@ -249,8 +318,10 @@ function PlanarControls(view, options = {}) {
     })();
 
     /**
-    * Initiate a rotate (orbit) movement
-    */
+     * Initiate a rotate (orbit) movement.
+     *
+     * @ignore
+     */
     this.initiateRotation = function initiateRotation() {
         this.state = STATE.ROTATE;
 
@@ -261,11 +332,15 @@ function PlanarControls(view, options = {}) {
     };
 
     /**
-    * Handle the rotate movement (orbit) when user moves the mouse while in STATE.ROTATE
-    * the movement is an orbit around 'centerPoint', the camera focus point (ground point at screen center)
-    * The rotate movement is previously initiated in initiateRotation()
-    * Compute the new position value and update the camera controls.
-    */
+     * Handle the rotate movement (orbit) when user moves the mouse while in
+     * STATE.ROTATE. The movement is an orbit around 'centerPoint', the camera
+     * focus point (ground point at screen center). The rotate movement is
+     * previously initiated in [initiateRotation]{@link PlanarControls#initiateRotation}.
+     * Compute the new position value and update the camera controls.
+     *
+     * @function
+     * @ignore
+     */
     this.handleRotation = (() => {
         const vec = new THREE.Vector3();
         const quat = new THREE.Quaternion();
@@ -313,12 +388,16 @@ function PlanarControls(view, options = {}) {
     })();
 
     /**
-    * Triggers a Zoom animated movement (travel) toward / away from the world point under the mouse cursor
-    * The zoom intensity varies according to the distance between the camera and the point.
-    * The closer to the ground, the lower the intensity
-    * Orientation will not change (null parameter in the call to initiateTravel function)
-    * @param {event} event : the mouse wheel event.
-    */
+     * Triggers a Zoom animated movement (travel) toward / away from the world
+     * point under the mouse cursor. The zoom intensity varies according to the
+     * distance between the camera and the point. The closer to the ground, the
+     * lower the intensity. Orientation will not change (null parameter in the
+     * call to [initiateTravel]{@link PlanarControls#initiateTravel} function).
+     *
+     * @param {Event} event - the mouse wheel event.
+     *
+     * @ignore
+     */
     this.initiateZoom = function initiateZoom(event) {
         let delta;
 
@@ -349,9 +428,12 @@ function PlanarControls(view, options = {}) {
     };
 
     /**
-    * Triggers a 'smart zoom' animated movement (travel) toward the point under mouse cursor
-    * The camera will be smoothly moved and oriented close to the target, at a determined height and distance
-    */
+     * Triggers a 'smart zoom' animated movement (travel) toward the point under
+     * mouse cursor. The camera will be smoothly moved and oriented close to
+     * the target, at a determined height and distance.
+     *
+     * @ignore
+     */
     this.initiateSmartZoom = function initiateSmartZoom() {
         // point under mouse cursor
         const pointUnderCursor = new THREE.Vector3();
@@ -387,17 +469,30 @@ function PlanarControls(view, options = {}) {
 
 
     /**
-    * Triggers an animated movement & rotation for the camera
-    * @param {THREE.Vector3} targetPos : the target position of the camera (reached at the end)
-    * @param {number} travelTime : set to 'auto', or set to a duration in seconds.
-    * If set to auto : travel time will be set to a duration between autoTravelTimeMin and autoTravelTimeMax
-    * according to the distance and the angular difference between start and finish.
-    * @param {(string|THREE.Vector3|THREE.Quaternion)} targetOrientation : define the target rotation of the camera
-    * if targetOrientation is a world point (Vector3) : the camera will lookAt() this point
-    * if targetOrientation is a quaternion : this quaternion will define the final camera orientation
-    * if targetOrientation is neither a quaternion nor a world point : the camera will keep its starting orientation
-    * @param {boolean} useSmooth : animation is smoothed using the 'smooth(value)' function (slower at start and finish)
-    */
+     * Triggers an animated movement & rotation for the camera.
+     *
+     * @param {THREE.Vector3} targetPos - The target position of the camera
+     * (reached at the end).
+     * @param {number} travelTime - Set to <code>auto</code>, or set to a
+     * duration in seconds. If set to <code>auto</code> : travel time will be
+     * set to a duration between <code>autoTravelTimeMin</code> and
+     * <code>autoTravelTimeMax</code> according to the distance and the angular
+     * difference between start and finish.
+     * @param {(string|THREE.Vector3|THREE.Quaternion)} targetOrientation -
+     * Define the target rotation of the camera:
+     * <ul>
+     *  <li>if targetOrientation is a world point (Vector3) : the camera will
+     *  lookAt() this point</li>
+     *  <li>if targetOrientation is a quaternion : this quaternion will define
+     *  the final camera orientation</li>
+     *  <li>if targetOrientation is neither a quaternion nor a world point : the
+     *  camera will keep its starting orientation</li>
+     * </ul>
+     * @param {boolean} useSmooth - Animation is smoothed using the
+     * 'smooth(value)' function (slower at start and finish)
+     *
+     * @ignore
+     */
     this.initiateTravel = function initiateTravel(targetPos, travelTime, targetOrientation, useSmooth) {
         this.state = STATE.TRAVEL;
         this.view.notifyChange(true);
@@ -471,8 +566,10 @@ function PlanarControls(view, options = {}) {
     };
 
     /**
-    * Resume normal behavior after a travel is completed
-    */
+     * Resume normal behavior after a travel is completed
+     *
+     * @ignore
+     */
     this.endTravel = function endTravel() {
         this.camera.position.copy(travelEndPos);
 
@@ -486,9 +583,12 @@ function PlanarControls(view, options = {}) {
     };
 
     /**
-    * Handle the animated movement and rotation of the camera in 'travel' state
-    * @param {number} dt : the deltatime between two updates in milliseconds
-    */
+     * Handle the animated movement and rotation of the camera in 'travel'
+     * state.
+     * @param {number} dt - The deltatime between two updates in milliseconds.
+     *
+     * @ignore
+     */
     this.handleTravel = function handleTravel(dt) {
         travelAlpha += (dt / 1000) / travelDuration;
 
@@ -509,8 +609,11 @@ function PlanarControls(view, options = {}) {
     };
 
     /**
-    * Triggers an animated movement (travel) to set the camera to top view, above the focus point, at altitude=distanceToFocusPoint
-    */
+     * Triggers an animated movement (travel) to set the camera to top view,
+     * above the focus point, at altitude=distanceToFocusPoint.
+     *
+     * @ignore
+     */
     this.goToTopView = function goToTopView() {
         const topViewPos = new THREE.Vector3();
         const targetQuat = new THREE.Quaternion();
@@ -526,19 +629,25 @@ function PlanarControls(view, options = {}) {
     };
 
     /**
-    * Triggers an animated movement (travel) to set the camera to starting view
-    */
+     * Triggers an animated movement (travel) to set the camera to starting view
+     *
+     * @ignore
+     */
     this.goToStartView = function goToStartView() {
         this.initiateTravel(startPosition, 'auto', startQuaternion, true);
     };
 
     /**
-    * returns the world point (xyz) under the posXY screen point
-    * the point belong to an abstract mathematical plane of specified altitude (doesnt use actual geometry)
-    * @param {THREE.Vector2} posXY : the mouse position in screen space (unit : pixel)
-    * @param {number} altitude : the altitude (z) of the mathematical plane
-    * @returns {THREE.Vector3}
-    */
+     * Returns the world point (xyz) under the posXY screen point. The point
+     * belong to an abstract mathematical plane of specified altitude (doesn't
+     * use actual geometry).
+     *
+     * @param {THREE.Vector2} posXY - the mouse position in screen space (unit : pixel)
+     * @param {number} altitude - the altitude (z) of the mathematical plane
+     * @return {THREE.Vector3}
+     *
+     * @ignore
+     */
     this.getWorldPointFromMathPlaneAtScreenXY = (() => {
         const vector = new THREE.Vector3();
         return (posXY, altitude) => {
@@ -554,12 +663,16 @@ function PlanarControls(view, options = {}) {
     })();
 
     /**
-    * returns the world point (xyz) under the posXY screen point
-    * if geometry is under the cursor, the point in obtained with getPickingPositionFromDepth
-    * if no geometry is under the cursor, the point is obtained with getWorldPointFromMathPlaneAtScreenXY
-    * @param {THREE.Vector2} posXY : the mouse position in screen space (unit : pixel)
-    * @returns {THREE.Vector3}
-    */
+     * Returns the world point (xyz) under the posXY screen point. If geometry
+     * is under the cursor, the point in obtained with
+     * getPickingPositionFromDepth. If no geometry is under the cursor, the
+     * point is obtained with getWorldPointFromMathPlaneAtScreenXY.
+     *
+     * @param {THREE.Vector2} posXY - the mouse position in screen space (unit : pixel)
+     * @return {THREE.Vector3}
+     *
+     * @ignore
+     */
     this.getWorldPointAtScreenXY = function getWorldPointAtScreenXY(posXY) {
         const pointUnderCursor = this.view.getPickingPositionFromDepth(posXY);
         // check if there is valid geometry under cursor
@@ -581,8 +694,10 @@ function PlanarControls(view, options = {}) {
     };
 
     /**
-    * Adds all the input event listeners (activate the controls)
-    */
+     * Adds all the input event listeners (activate the controls).
+     *
+     * @ignore
+     */
     this.addInputListeners = function addInputListeners() {
         this.domElement.addEventListener('keydown', _handlerOnKeyDown, true);
         this.domElement.addEventListener('mousedown', _handlerOnMouseDown, false);
@@ -594,8 +709,10 @@ function PlanarControls(view, options = {}) {
     };
 
     /**
-    * removes all the input event listeners (desactivate the controls)
-    */
+     * Removes all the input event listeners (desactivate the controls).
+     *
+     * @ignore
+     */
     this.removeInputListeners = function removeInputListeners() {
         this.domElement.removeEventListener('keydown', _handlerOnKeyDown, true);
         this.domElement.removeEventListener('mousedown', _handlerOnMouseDown, false);
@@ -607,8 +724,10 @@ function PlanarControls(view, options = {}) {
     };
 
     /**
-    * update the cursor image according to the control state
-    */
+     * Update the cursor image according to the control state.
+     *
+     * @ignore
+     */
     this.updateMouseCursorType = function updateMouseCursorType() {
         switch (this.state) {
             case STATE.NONE:
@@ -634,12 +753,12 @@ function PlanarControls(view, options = {}) {
     // event listeners for user input (to activate the controls)
     this.addInputListeners();
 }
-// ===== end of PlanarControls constructor =====
 
 /**
-* Catch and manage the event when a touch on the mouse is down.
-* @param {event} event : the current event (mouse left button clicked or mouse wheel button actionned)
-*/
+ * Catch and manage the event when a touch on the mouse is down.
+ * @param {event} event : the current event (mouse left button clicked or mouse wheel button actionned)
+ * @ignore
+ */
 function onMouseDown(event) {
     event.preventDefault();
 
@@ -665,9 +784,11 @@ function onMouseDown(event) {
 }
 
 /**
-* Catch the event when a touch on the mouse is uped.
-* @param {event} event : the current event
-*/
+ * Catch the event when a touch on the mouse is uped.
+ *
+ * @param {Event} event - the current event
+ * @ignore
+ */
 function onMouseUp(event) {
     event.preventDefault();
 
@@ -679,9 +800,11 @@ function onMouseUp(event) {
 }
 
 /**
-* Catch and manage the event when the mouse is moved
-* @param {event} event : the current event
-*/
+ * Catch and manage the event when the mouse is moved.
+ *
+ * @param {Event} event - the current event
+ * @ignore
+ */
 function onMouseMove(event) {
     event.preventDefault();
 
@@ -694,9 +817,11 @@ function onMouseMove(event) {
 }
 
 /**
-* Catch and manage the event when a key is down.
-* @param {event} event : the current event
-*/
+ * Catch and manage the event when a key is down.
+ *
+ * @param {Event} event - the current event
+ * @ignore
+ */
 function onKeyDown(event) {
     if (this.state === STATE.TRAVEL) {
         return;
@@ -713,9 +838,11 @@ function onKeyDown(event) {
 }
 
 /**
-* Catch and manage the event when the mouse wheel is rolled.
-* @param {event} event : the current event
-*/
+ * Catch and manage the event when the mouse wheel is rolled.
+ *
+ * @param {Event} event - the current event
+ * @ignore
+ */
 function onMouseWheel(event) {
     event.preventDefault();
     event.stopPropagation();
@@ -726,20 +853,24 @@ function onMouseWheel(event) {
 }
 
 /**
-* Catch and manage the event when the context menu is called (by a right click on the window).
-* We use this to prevent the context menu from appearing, so we can use right click for other inputs.
-* @param {event} event : the current event
-*/
+ * Catch and manage the event when the context menu is called (by a right click
+ * on the window).  We use this to prevent the context menu from appearing, so
+ * we can use right click for other inputs.
+ *
+ * @param {Event} event - the current event
+ * @ignore
+ */
 function onContextMenu(event) {
     event.preventDefault();
 }
 
 /**
-* smoothing function (sigmoid) : based on h01 Hermite function
-* returns a value between 0 and 1
-* @param {number} value : the value to be smoothed, between 0 and 1
-* @returns {number}
-*/
+ * Smoothing function (sigmoid) : based on h01 Hermite function.
+ *
+ * @param {number} value - The value to be smoothed, between 0 and 1
+ * @return {number} A value between 0 and 1.
+ * @ignore
+ */
 function smooth(value) {
     // p between 1.0 and 1.5 (empirical)
     const p = 1.20;
