@@ -6,5 +6,25 @@
                 "paths": ["static_jsdoc"]
             }
         }
+    },
+    "source": {
+        "include": [
+            "src/Core/MainLoop.js",
+            "src/Core/View.js",
+            "src/Core/Geographic/Coordinates.js",
+            "src/Core/Layer/Layer.js",
+            "src/Core/Prefab/GlobeView.js",
+            "src/Core/Scheduler/Scheduler.js",
+
+            "src/Parser/GeoJsonParser.js",
+            "src/Parser/GpxParser.js",
+
+            "src/Provider/URLBuilder.js",
+
+            "src/Renderer/ColorLayersOrdering.js",
+            "src/Renderer/ThreeExtended/Feature2Mesh.js",
+            "src/Renderer/ThreeExtended/GlobeControls.js",
+            "src/Renderer/ThreeExtended/PlanarControls.js"
+        ]
     }
 }
