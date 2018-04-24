@@ -609,9 +609,13 @@ View.prototype.pickObjectsAt = function pickObjectsAt(mouseOrEvt, ...where) {
 
             // does this layer have a custom picking function?
             if (layer.pickObjectsAt) {
-                results.splice(
-                    results.length, 0,
-                    ...layer.pickObjectsAt(this, mouse));
+                const sp = layer.pickObjectsAt(this, mouse);
+                // warning: sp might be very large, so we can't use '...sp' (we'll hit
+                // 'javascript maximum call stack size exceeded' error) nor
+                // Array.prototype.push.apply(result, sp)
+                for (let i = 0; i < sp.length; i++) {
+                    results.push(sp[i]);
+                }
             } else {
                 //   - it hasn't: this layer is attached to another one
                 let parentLayer;
