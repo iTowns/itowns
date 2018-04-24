@@ -2,6 +2,8 @@ language: node_js
 node_js:
   - "lts/*"
   - "node"
+before_install:
+  - npm install puppeteer
 after_success:
   - openssl aes-256-cbc -K $encrypted_822645c864aa_key -iv $encrypted_822645c864aa_iv -in deploy_key.enc -out deploy_key -d
   - bash autodeploy.sh

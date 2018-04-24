@@ -63,6 +63,22 @@ See our [release page](https://github.com/iTowns/itowns/releases).
 
 See the [feature list wiki page](https://github.com/iTowns/itowns/wiki/Supported-Features) for a complet list of features and data formats.
 
+## Tests
+
+If you want to run tests you'll need to install [puppeteer](https://github.com/GoogleChrome/puppeteer).
+
+If puppeteer fails to download Chrome, you can try with the [documented environment variables](https://github.com/GoogleChrome/puppeteer/blob/master/docs/api.md#environment-variables).
+Or you can download it manually, and then:
+- install puppeteer without downloading Chrome: `PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=1 npm install puppeteer`
+- then use the env var `CHROME` to tell itowns/mocha/puppeteer what Chrome app it should use:
+`CHROME=/opt/google/chrome-beta/chrome npm run test-examples`
+
+Then you can run the tests:
+```bash
+npm run test-examples
+```
+
+
 ## Licence
 
 iTowns is dual-licenced under Cecill-B V1.0 and MIT.
