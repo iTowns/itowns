@@ -58,19 +58,14 @@ export default {
     },
 
     /**
-     * @typedef {Object} TexturePromise
-     * @property {Promise} promise - a promise that resolves when the texture is loaded
-     * @property {Object} texture - the loading texture
-     */
-    /**
-     * Wrapper around TextureLoader
+     * Wrapper around TextureLoader.
      *
      * @param {string} url
      * @param {Object} options - options to pass to TextureLoader. Note that
      * THREE.js docs mention withCredentials, but it is not actually used in TextureLoader.js.
      * @param {string} options.crossOrigin - passed directly to html elements supporting it
      *
-     * @return {TexturePromise}
+     * @return {Promise}
      */
     texture(url, options = {}) {
         let res;
@@ -83,8 +78,8 @@ export default {
             rej = reject;
         });
 
-        const texture = textureLoader.load(url, res, () => {}, rej);
-        return { texture, promise };
+        textureLoader.load(url, res, () => {}, rej);
+        return promise;
     },
 
     /**
