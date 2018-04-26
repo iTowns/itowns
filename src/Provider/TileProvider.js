@@ -7,9 +7,8 @@ import * as THREE from 'three';
 import TileGeometry from '../Core/TileGeometry';
 import TileMesh from '../Core/TileMesh';
 import CancelledCommandException from '../Core/Scheduler/CancelledCommandException';
+import Cache from '../Core/Scheduler/Cache';
 import { requestNewTile } from '../Process/TiledNodeProcessing';
-
-const cacheGeometry = new Map();
 
 function preprocessDataLayer(layer, view, scheduler) {
     if (!layer.schemeTile) {
@@ -50,7 +49,7 @@ function executeCommand(command) {
     const segment = layer.segments || 16;
     const key = `${builder.type}_${layer.disableSkirt ? 0 : 1}_${segment}_${level}_${south}`;
 
-    let geometry = cacheGeometry.get(key);
+    let geometry = Cache.get(key);
     // build geometry if doesn't exist
     if (!geometry) {
         const paramsGeometry = {
@@ -61,14 +60,14 @@ function executeCommand(command) {
         };
 
         geometry = new TileGeometry(paramsGeometry, builder);
-        cacheGeometry.set(key, geometry);
+        Cache.set(key, geometry);
 
         geometry._count = 0;
         geometry.dispose = () => {
             geometry._count--;
             if (geometry._count == 0) {
                 THREE.BufferGeometry.prototype.dispose.call(geometry);
-                cacheGeometry.delete(key);
+                Cache.delete(key);
             }
         };
     }

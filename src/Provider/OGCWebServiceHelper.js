@@ -1,17 +1,11 @@
 import * as THREE from 'three';
 import Fetcher from './Fetcher';
+import Cache from '../Core/Scheduler/Cache';
 import XbilParser from '../Parser/XbilParser';
 import Projection from '../Core/Geographic/Projection';
 import Extent from '../Core/Geographic/Extent';
 
-
 export const SIZE_TEXTURE_TILE = 256;
-
-// CacheRessource is necessary for neighboring PM textures
-// The PM textures overlap several tiles WGS84, it is to avoid net requests
-// Info : THREE.js have cache image https://github.com/mrdoob/three.js/blob/master/src/loaders/ImageLoader.js#L25
-const cache = new Map();
-const pending = new Map();
 
 const getTextureFloat = function getTextureFloat(buffer) {
     const texture = new THREE.DataTexture(buffer, SIZE_TEXTURE_TILE, SIZE_TEXTURE_TILE, THREE.AlphaFormat, THREE.FloatType);
@@ -23,64 +17,31 @@ const tileCoord = new Extent('WMTS:WGS84G', 0, 0, 0);
 
 export default {
     getColorTextureByUrl(url, networkOptions) {
-        if (cache.has(url)) {
-            return Promise.resolve(cache.get(url));
-        }
-
-        const promise = (pending.has(url)) ?
-            pending.get(url) :
-            Fetcher.texture(url, networkOptions);
-
-        pending.set(url, promise);
-
-        return promise.then((texture) => {
-            texture.generateMipmaps = false;
-            texture.magFilter = THREE.LinearFilter;
-            texture.minFilter = THREE.LinearFilter;
-            texture.anisotropy = 16;
-
-            if (!cache.has(url)) {
-                cache.set(url, texture);
-            }
-
-            pending.delete(url);
-            return texture;
-        });
+        return Cache.get(url) || Cache.set(url, Fetcher.texture(url, networkOptions)
+            .then((texture) => {
+                texture.generateMipmaps = false;
+                texture.magFilter = THREE.LinearFilter;
+                texture.minFilter = THREE.LinearFilter;
+                texture.anisotropy = 16;
+                return texture;
+            }), Cache.POLICIES.TEXTURE);
     },
     getXBilTextureByUrl(url, networkOptions) {
-        if (cache.has(url)) {
-            return Promise.resolve(cache.get(url));
-        }
+        return Cache.get(url) || Cache.set(url, Fetcher.arrayBuffer(url, networkOptions)
+            .then(buffer => XbilParser.parse(buffer, { url }))
+            .then((result) => {
+                // TODO  RGBA is needed for navigator with no support in texture float
+                // In RGBA elevation texture LinearFilter give some errors with nodata value.
+                // need to rewrite sample function in shader
 
-        if (pending.has(url)) {
-            return pending.get(url);
-        }
-
-        const promiseXBil = Fetcher.arrayBuffer(url, networkOptions).then(buffer => XbilParser.parse(buffer, { url })).then((result) => {
-            // TODO  RGBA is needed for navigator with no support in texture float
-            // In RGBA elevation texture LinearFilter give some errors with nodata value.
-            // need to rewrite sample function in shader
-
-            // loading concurrence
-            if (cache.has(url)) {
-                return cache.get(url);
-            }
-
-            const texture = getTextureFloat(result.floatArray);
-            texture.generateMipmaps = false;
-            texture.magFilter = THREE.LinearFilter;
-            texture.minFilter = THREE.LinearFilter;
-            texture.min = result.min;
-            texture.max = result.max;
-            cache.set(url, texture);
-            pending.delete(url);
-
-            return texture;
-        });
-
-        pending.set(url, promiseXBil);
-
-        return promiseXBil;
+                const texture = getTextureFloat(result.floatArray);
+                texture.generateMipmaps = false;
+                texture.magFilter = THREE.LinearFilter;
+                texture.minFilter = THREE.LinearFilter;
+                texture.min = result.min;
+                texture.max = result.max;
+                return texture;
+            }), Cache.POLICIES.ELEVATION);
     },
     computeTileMatrixSetCoordinates(tile, tileMatrixSet) {
         // Are WMTS coordinates ready?
