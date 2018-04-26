@@ -1,5 +1,6 @@
 import { EventDispatcher } from 'three';
 import { GeometryLayer, Layer } from './Layer/Layer';
+import Cache from '../Core/Scheduler/Cache';
 
 export const RENDERING_PAUSED = 0;
 export const RENDERING_SCHEDULED = 1;
@@ -184,6 +185,9 @@ MainLoop.prototype._step = function _step(view, timestamp) {
     }
 
     view.camera.camera3D.matrixAutoUpdate = oldAutoUpdate;
+
+    // Clear the cache of expired resources
+    Cache.flush();
 
     view.execFrameRequesters(MAIN_LOOP_EVENTS.UPDATE_END, dt, this._updateLoopRestarted);
 };
