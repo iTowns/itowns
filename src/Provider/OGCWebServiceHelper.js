@@ -27,22 +27,22 @@ export default {
             return Promise.resolve(cache.get(url));
         }
 
-        const { texture, promise } = (pending.has(url)) ?
+        const promise = (pending.has(url)) ?
             pending.get(url) :
             Fetcher.texture(url, networkOptions);
 
-        texture.generateMipmaps = false;
-        texture.magFilter = THREE.LinearFilter;
-        texture.minFilter = THREE.LinearFilter;
-        texture.anisotropy = 16;
+        pending.set(url, promise);
 
+        return promise.then((texture) => {
+            texture.generateMipmaps = false;
+            texture.magFilter = THREE.LinearFilter;
+            texture.minFilter = THREE.LinearFilter;
+            texture.anisotropy = 16;
 
-        pending.set(url, { texture, promise });
-
-        return promise.then(() => {
             if (!cache.has(url)) {
                 cache.set(url, texture);
             }
+
             pending.delete(url);
             return texture;
         });
