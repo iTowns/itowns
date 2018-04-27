@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import convexHull from 'monotone-convex-hull-2d';
 import CancelledCommandException from '../Core/Scheduler/CancelledCommandException';
 
 // Draw a cube with lines (12 lines).
@@ -34,6 +35,59 @@ function cube(size) {
     return geometry;
 }
 
+// TODO: move this function to Camera, as soon as it's good enough (see https://github.com/iTowns/itowns/pull/381#pullrequestreview-49107682)
+const temp = {
+    points: [
+        new THREE.Vector3(),
+        new THREE.Vector3(),
+        new THREE.Vector3(),
+        new THREE.Vector3(),
+        new THREE.Vector3(),
+        new THREE.Vector3(),
+        new THREE.Vector3(),
+        new THREE.Vector3(),
+    ],
+    box3: new THREE.Box3(),
+    matrix4: new THREE.Matrix4(),
+};
+function box3SurfaceOnScreen(camera, box3d, matrixWorld) {
+    if (box3d.isEmpty()) {
+        return 0;
+    }
+
+    temp.box3.copy(box3d);
+    if (matrixWorld) {
+        temp.matrix4.multiplyMatrices(camera._viewMatrix, matrixWorld);
+    } else {
+        temp.matrix4.copy(camera._viewMatrix);
+    }
+
+    // copy pasted / adapted from Box3.applyMatrix4
+    // NOTE: I am using a binary pattern to specify all 2^3 combinations below
+    temp.points[0].set(temp.box3.min.x, temp.box3.min.y, temp.box3.min.z).applyMatrix4(temp.matrix4); // 000
+    temp.points[1].set(temp.box3.min.x, temp.box3.min.y, temp.box3.max.z).applyMatrix4(temp.matrix4); // 001
+    temp.points[2].set(temp.box3.min.x, temp.box3.max.y, temp.box3.min.z).applyMatrix4(temp.matrix4); // 010
+    temp.points[3].set(temp.box3.min.x, temp.box3.max.y, temp.box3.max.z).applyMatrix4(temp.matrix4); // 011
+    temp.points[4].set(temp.box3.max.x, temp.box3.min.y, temp.box3.min.z).applyMatrix4(temp.matrix4); // 100
+    temp.points[5].set(temp.box3.max.x, temp.box3.min.y, temp.box3.max.z).applyMatrix4(temp.matrix4); // 101
+    temp.points[6].set(temp.box3.max.x, temp.box3.max.y, temp.box3.min.z).applyMatrix4(temp.matrix4); // 110
+    temp.points[7].set(temp.box3.max.x, temp.box3.max.y, temp.box3.max.z).applyMatrix4(temp.matrix4); // 111
+
+    for (const pt of temp.points) {
+        // translate/scale to [0, width]x[0, height]
+        pt.x = camera.width * (pt.x + 1) * 0.5;
+        pt.y = camera.height * (1 - pt.y) * 0.5;
+        pt.z = 0;
+    }
+
+    const indices = convexHull(temp.points.map(v => [v.x, v.y]));
+    const contour = indices.map(i => temp.points[i]);
+
+    const area = THREE.ShapeUtils.area(contour);
+
+    return Math.abs(area);
+}
+
 function initBoundingBox(elt, layer) {
     const size = elt.tightbbox.getSize();
     elt.obj.boxHelper = new THREE.LineSegments(
@@ -52,18 +106,41 @@ function initBoundingBox(elt, layer) {
     elt.obj.boxHelper.updateMatrixWorld();
 }
 
-function computeScreenSpaceError(context, layer, elt, distance) {
-    if (distance <= 0) {
-        return Infinity;
+function shouldDisplayNode(context, layer, elt) {
+    let shouldBeLoaded = 0;
+
+    if (layer.octreeDepthLimit >= 0 && layer.octreeDepthLimit < elt.name.length) {
+        return { shouldBeLoaded, surfaceOnScreen: 0 };
     }
-    const pointSpacing = layer.metadata.spacing / Math.pow(2, elt.name.length);
-    // Estimate the onscreen distance between 2 points
-    const onScreenSpacing = context.camera.preSSE * pointSpacing / distance;
-    // [  P1  ]--------------[   P2   ]
-    //     <--------------------->      = pointsSpacing (in world coordinates)
-    //                                  ~ onScreenSpacing (in pixels)
-    // <------>                         = layer.pointSize (in pixels)
-    return Math.max(0.0, onScreenSpacing - layer.pointSize);
+
+    const numPoints = elt.numPoints;
+
+    const cl = (elt.tightbbox ? elt.tightbbox : elt.bbox);
+
+    const visible = context.camera.isBox3Visible(cl, layer.object3d.matrixWorld);
+    const surfaceOnScreen = 0;
+
+    if (visible) {
+        if (cl.containsPoint(context.camera.camera3D.position)) {
+            shouldBeLoaded = 1;
+        } else {
+            const surfaceOnScreen = box3SurfaceOnScreen(context.camera, cl, layer.object3d.matrixWorld);
+
+            // no point indicates shallow hierarchy, so we definitely want to load its children
+            if (numPoints == 0) {
+                shouldBeLoaded = 1;
+            } else {
+                const count = layer.overdraw * (surfaceOnScreen / Math.pow(layer.pointSize, 2));
+                shouldBeLoaded = Math.min(count / numPoints, 1);
+            }
+
+            elt.surfaceOnScreen = surfaceOnScreen;
+        }
+    } else {
+        shouldBeLoaded = -1;
+    }
+
+    return { shouldBeLoaded, surfaceOnScreen };
 }
 
 function markForDeletion(elt) {
@@ -78,8 +155,7 @@ function markForDeletion(elt) {
 
     if (!elt.notVisibleSince) {
         elt.notVisibleSince = Date.now();
-        // Set .sse to an invalid value
-        elt.sse = -1;
+        elt.shouldBeLoaded = -1;
     }
     for (const child of elt.children) {
         markForDeletion(child);
@@ -92,13 +168,6 @@ export default {
         if (!layer.root) {
             return [];
         }
-
-        // See https://cesiumjs.org/hosted-apps/massiveworlds/downloads/Ring/WorldScaleTerrainRendering.pptx
-        // slide 17
-        context.camera.preSSE =
-            context.camera.height /
-                (2 * Math.tan(THREE.Math.degToRad(context.camera.camera3D.fov) * 0.5));
-
 
         if (changeSources.has(undefined) || changeSources.size == 0) {
             return [layer.root];
@@ -143,86 +212,74 @@ export default {
     },
 
     update(context, layer, elt) {
-        elt.visible = false;
+        const { shouldBeLoaded } = shouldDisplayNode(context, layer, elt);
 
-        if (layer.octreeDepthLimit >= 0 && layer.octreeDepthLimit < elt.name.length) {
-            markForDeletion(elt);
-            return;
-        }
+        elt.shouldBeLoaded = shouldBeLoaded;
 
-        // pick the best bounding box
-        const bbox = (elt.tightbbox ? elt.tightbbox : elt.bbox);
-        elt.visible = context.camera.isBox3Visible(bbox, layer.object3d.matrixWorld);
-        if (!elt.visible) {
-            markForDeletion(elt);
-            return;
-        }
+        if (shouldBeLoaded > 0) {
+            elt.notVisibleSince = undefined;
 
-        elt.notVisibleSince = undefined;
+            // only load geometry if this elements has points
+            if (elt.numPoints > 0) {
+                if (elt.obj) {
+                    elt.obj.material.visible = true;
+                    if (__DEBUG__) {
+                        elt.obj.material.uniforms.density.value = elt.density;
 
-        // only load geometry if this elements has points
-        if (elt.numPoints > 0) {
-            if (elt.obj) {
-                elt.obj.material.visible = true;
-                elt.obj.material.uniforms.size.value = layer.pointSize;
-
-                if (__DEBUG__) {
-                    if (layer.bboxes.visible) {
-                        if (!elt.obj.boxHelper) {
-                            initBoundingBox(elt, layer);
+                        if (layer.bboxes.visible) {
+                            if (!elt.obj.boxHelper) {
+                                initBoundingBox(elt, layer);
+                            }
+                            elt.obj.boxHelper.visible = true;
+                            elt.obj.boxHelper.material.color.r = 1 - shouldBeLoaded;
+                            elt.obj.boxHelper.material.color.g = shouldBeLoaded;
                         }
-                        elt.obj.boxHelper.visible = true;
-                        elt.obj.boxHelper.material.color.r = 1 - elt.sse;
-                        elt.obj.boxHelper.material.color.g = elt.sse;
                     }
-                }
-            } else if (!elt.promise) {
-                const distance = Math.max(0.001, bbox.distanceToPoint(context.camera.camera3D.position));
-                // Increase priority of nearest node
-                const priority = computeScreenSpaceError(context, layer, elt, distance) / distance;
-                elt.promise = context.scheduler.execute({
-                    layer,
-                    requester: elt,
-                    view: context.view,
-                    priority,
-                    redraw: true,
-                    isLeaf: elt.childrenBitField == 0,
-                    earlyDropFunction: cmd => !cmd.requester.visible || !layer.visible,
-                }).then((pts) => {
-                    if (layer.onPointsCreated) {
-                        layer.onPointsCreated(layer, pts);
-                    }
+                    elt.obj.material.uniforms.size.value = layer.pointSize;
+                } else if (!elt.promise) {
+                    // TODO:
+                    // - add command cancelation support
+                    // - rework priority
+                    elt.promise = context.scheduler.execute({
+                        layer,
+                        requester: elt,
+                        view: context.view,
+                        priority: 1.0 / elt.name.length, // surfaceOnScreen,
+                        redraw: true,
+                        isLeaf: elt.childrenBitField == 0,
+                        earlyDropFunction: cmd => cmd.requester.shouldBeLoaded <= 0,
+                    }).then((pts) => {
+                        if (layer.onPointsCreated) {
+                            layer.onPointsCreated(layer, pts);
+                        }
 
-                    elt.obj = pts;
-                    // store tightbbox to avoid ping-pong (bbox = larger => visible, tight => invisible)
-                    elt.tightbbox = pts.tightbbox;
+                        elt.obj = pts;
+                        // store tightbbox to avoid ping-pong (bbox = larger => visible, tight => invisible)
+                        elt.tightbbox = pts.tightbbox;
 
-                    // make sure to add it here, otherwise it might never
-                    // be added nor cleaned
-                    layer.group.add(elt.obj);
-                    elt.obj.updateMatrixWorld(true);
+                        // make sure to add it here, otherwise it might never
+                        // be added nor cleaned
+                        layer.group.add(elt.obj);
+                        elt.obj.updateMatrixWorld(true);
 
-                    elt.obj.owner = elt;
-                    elt.promise = null;
-                }, (err) => {
-                    if (err instanceof CancelledCommandException) {
+                        elt.obj.owner = elt;
                         elt.promise = null;
-                    }
-                });
-            }
-        }
-
-        if (elt.children && elt.children.length) {
-            const distance = bbox.distanceToPoint(context.camera.camera3D.position);
-            elt.sse = computeScreenSpaceError(context, layer, elt, distance) / layer.sseThreshold;
-            if (elt.sse >= 1) {
-                return elt.children;
-            } else {
-                for (const child of elt.children) {
-                    markForDeletion(child);
+                    }, (err) => {
+                        if (err instanceof CancelledCommandException) {
+                            elt.promise = null;
+                        }
+                    });
                 }
             }
+        } else {
+            // not visible / displayed
+            markForDeletion(elt);
         }
+
+        if (shouldBeLoaded >= 0.9 && elt.children && elt.children.length) {
+            return elt.children;
+        }
+        return undefined;
     },
 
     postUpdate(context, layer) {
@@ -233,15 +290,23 @@ export default {
         layer.displayedCount = 0;
         for (const pts of layer.group.children) {
             if (pts.material.visible) {
-                const count = pts.geometry.attributes.position.count;
-                pts.geometry.setDrawRange(0, count);
-                layer.displayedCount += count;
+                if (layer.metadata.customBinFormat) {
+                    const count = Math.floor(pts.owner.shouldBeLoaded * pts.geometry.attributes.position.count);
+                    if (count > 0) {
+                        pts.geometry.setDrawRange(0, count);
+                        layer.displayedCount += count;
+                    } else {
+                        pts.material.visible = false;
+                    }
+                } else {
+                    layer.displayedCount += pts.geometry.attributes.position.count;
+                }
             }
         }
 
         if (layer.displayedCount > layer.pointBudget) {
             // 2 different point count limit implementation, depending on the pointcloud source
-            if (layer.supportsProgressiveDisplay) {
+            if (layer.metadata.customBinFormat) {
                 // In this format, points are evenly distributed within a node,
                 // so we can draw a percentage of each node and still get a correct
                 // representation
@@ -261,7 +326,7 @@ export default {
                 // This format doesn't require points to be evenly distributed, so
                 // we're going to sort the nodes by "importance" (= on screen size)
                 // and display only the first N nodes
-                layer.group.children.sort((p1, p2) => p2.owner.sse - p1.owner.sse);
+                layer.group.children.sort((p1, p2) => p2.owner.surfaceOnScreen - p1.owner.surfaceOnScreen);
 
                 let limitHit = false;
                 layer.displayedCount = 0;
