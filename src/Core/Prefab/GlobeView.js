@@ -366,7 +366,9 @@ GlobeView.prototype.selectNodeAt = function selectNodeAt(mouse) {
 GlobeView.prototype.readDepthBuffer = function readDepthBuffer(x, y, width, height) {
     const g = this.mainLoop.gfxEngine;
     const restore = this.wgs84TileLayer.level0Nodes.map(n => n.pushRenderState(RendererConstant.DEPTH));
-    const buffer = g.renderViewToBuffer(this, { x, y, width, height });
+    const buffer = g.renderViewToBuffer(
+        { camera: this.camera, scene: this.wgs84TileLayer.object3d },
+        { x, y, width, height });
     restore.forEach(r => r());
 
     return buffer;

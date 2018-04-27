@@ -176,7 +176,9 @@ PlanarView.prototype.selectNodeAt = function selectNodeAt(mouse) {
 PlanarView.prototype.readDepthBuffer = function readDepthBuffer(x, y, width, height) {
     const g = this.mainLoop.gfxEngine;
     const restoreState = this.tileLayer.level0Nodes[0].pushRenderState(RendererConstant.DEPTH);
-    const buffer = g.renderViewToBuffer(this, { x, y, width, height });
+    const buffer = g.renderViewToBuffer(
+        { camera: this.camera, scene: this.tileLayer.object3d },
+        { x, y, width, height });
     restoreState();
     return buffer;
 };

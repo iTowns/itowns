@@ -44,12 +44,15 @@ function addMeshToScene() {
     var geometry = new THREE.CylinderGeometry(0, 10, 60, 8);
     var material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
     var mesh = new THREE.Mesh(geometry, material);
+    var cameraTargetPosition;
+    var meshCoord;
 
     // get the position on the globe, from the camera
-    var cameraTargetPosition = globeView.controls.getCameraTargetGeoPosition();
+    globeView.controls.updateCameraTransformation();
+    cameraTargetPosition = globeView.controls.getCameraTargetGeoPosition();
 
     // position of the mesh
-    var meshCoord = cameraTargetPosition;
+    meshCoord = cameraTargetPosition;
     meshCoord.setAltitude(cameraTargetPosition.altitude() + 30);
 
     // position and orientation of the mesh
