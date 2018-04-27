@@ -12,8 +12,6 @@ export default {
     initTools(view, layer, datUi) {
         layer.debugUI = datUi.addFolder(`${layer.id}`);
 
-        layer.debugUI.add(layer, 'sseThreshold').name('SSE threshold')
-            .onChange(() => view.notifyChange(true));
         layer.debugUI.add(layer, 'octreeDepthLimit', -1, 20).name('Depth limit')
             .onChange(() => view.notifyChange(true));
         layer.debugUI.add(layer, 'pointBudget', 1, 15000000).name('Max point count')
@@ -23,6 +21,8 @@ export default {
             view.notifyChange(true);
         });
         layer.debugUI.add(layer, 'pointSize', 0, 15).name('Point Size')
+            .onChange(() => view.notifyChange(true));
+        layer.debugUI.add(layer, 'overdraw', 1, 5).name('Overdraw')
             .onChange(() => view.notifyChange(true));
         layer.debugUI.add(layer, 'opacity', 0, 1).name('Opacity')
             .onChange(() => view.notifyChange(true));

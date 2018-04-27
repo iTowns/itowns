@@ -3,15 +3,13 @@ import PointCloudProcessing from '../src/Process/PointCloudProcessing';
 
 const assert = require('assert');
 
-const context = { camera: { height: 1, camera3D: { fov: 1 } } };
-
 describe('preUpdate', function () {
     it('should return root if no change source', () => {
         const layer = { root: {} };
         const sources = new Set();
         assert.equal(
             layer.root,
-            PointCloudProcessing.preUpdate(context, layer, sources)[0]);
+            PointCloudProcessing.preUpdate(null, layer, sources)[0]);
     });
 
     it('should return root if no common ancestors', () => {
@@ -23,7 +21,7 @@ describe('preUpdate', function () {
         sources.add(elt2);
         assert.equal(
             layer.root,
-            PointCloudProcessing.preUpdate(context, layer, sources)[0]);
+            PointCloudProcessing.preUpdate(null, layer, sources)[0]);
     });
 
     it('should return common ancestor', () => {
@@ -38,7 +36,7 @@ describe('preUpdate', function () {
         layer.root.findChildrenByName = (name) => {
             assert.equal('12', name);
         };
-        PointCloudProcessing.preUpdate(context, layer, sources);
+        PointCloudProcessing.preUpdate(null, layer, sources);
     });
 
     it('should not search ancestors if layer are different root if no common ancestors', () => {
@@ -51,6 +49,6 @@ describe('preUpdate', function () {
         layer.root.findChildrenByName = (name) => {
             assert.equal('12', name);
         };
-        PointCloudProcessing.preUpdate(context, layer, sources);
+        PointCloudProcessing.preUpdate(null, layer, sources);
     });
 });
