@@ -87,6 +87,17 @@ function View(crs, viewerDiv, options = {}) {
     }
 
     this._delayedFrameRequesterRemoval = [];
+
+    this._allLayersAreReadyCallback = () => {
+        // all layers must be ready
+        const allReady = this.getLayers().every(layer => layer.ready);
+        if (allReady &&
+                this.mainLoop.scheduler.commandsWaitingExecutionCount() == 0 &&
+                this.mainLoop.renderingState == RENDERING_PAUSED) {
+            this.dispatchEvent({ type: VIEW_EVENTS.LAYERS_INITIALIZED });
+            this.removeFrameRequester(MAIN_LOOP_EVENTS.UPDATE_END, this._allLayersAreReadyCallback);
+        }
+    };
 }
 
 View.prototype = Object.create(EventDispatcher.prototype);
@@ -332,27 +343,14 @@ View.prototype.addLayer = function addLayer(layer, parentLayer) {
         this.scene.add(layer.object3d);
     }
 
-    if (this._allLayersAreReadyCallback) {
-        // re-arm readyCallbacl
-        this.removeFrameRequester(MAIN_LOOP_EVENTS.AFTER_RENDER, this._allLayersAreReadyCallback);
-        this._allLayersAreReadyCallback = null;
-    }
-
     return layer.whenReady.then((layer) => {
         this.notifyChange(false);
-
-        if (!this._allLayersAreReadyCallback) {
-            this._allLayersAreReadyCallback = () => {
-                if (this.mainLoop.scheduler.commandsWaitingExecutionCount() == 0 &&
-                    this.mainLoop.renderingState == RENDERING_PAUSED) {
-                    this.dispatchEvent({ type: VIEW_EVENTS.LAYERS_INITIALIZED });
-                    this.removeFrameRequester(MAIN_LOOP_EVENTS.AFTER_RENDER, this._allLayersAreReadyCallback);
-                    this._allLayersAreReadyCallback = null;
-                }
-            };
-            this.addFrameRequester(MAIN_LOOP_EVENTS.AFTER_RENDER, this._allLayersAreReadyCallback);
+        return layer;
+    }).then((layer) => {
+        if (!this._frameRequesters[MAIN_LOOP_EVENTS.UPDATE_END] ||
+            this._frameRequesters[MAIN_LOOP_EVENTS.UPDATE_END].indexOf(this._allLayersAreReadyCallback) == -1) {
+            this.addFrameRequester(MAIN_LOOP_EVENTS.UPDATE_END, this._allLayersAreReadyCallback);
         }
-
         return layer;
     });
 };
