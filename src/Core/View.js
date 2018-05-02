@@ -85,6 +85,8 @@ function View(crs, viewerDiv, options = {}) {
     if (__DEBUG__) {
         this.isDebugMode = true;
     }
+
+    this._delayedFrameRequesterRemoval = [];
 }
 
 View.prototype = Object.create(EventDispatcher.prototype);
@@ -460,6 +462,8 @@ View.prototype.addFrameRequester = function addFrameRequester(when, frameRequest
 
 /**
  * Remove a frameRequester.
+ * The effective removal will happen either later; at worst it'll be at
+ * the beginning of the next frame.
  *
  * @param {String} when - attach point of this requester. Can be any of
  * {@link MAIN_LOOP_EVENTS}.
@@ -468,10 +472,22 @@ View.prototype.addFrameRequester = function addFrameRequester(when, frameRequest
 View.prototype.removeFrameRequester = function removeFrameRequester(when, frameRequester) {
     const index = this._frameRequesters[when].indexOf(frameRequester);
     if (index >= 0) {
-        this._frameRequesters[when].splice(this._frameRequesters[when].indexOf(frameRequester), 1);
+        this._delayedFrameRequesterRemoval.push({ when, frameRequester });
     } else {
         console.error('Invalid call to removeFrameRequester: frameRequester isn\'t registered');
     }
+};
+
+View.prototype._executeFrameRequestersRemovals = function _executeFrameRequestersRemovals() {
+    for (const toDelete of this._delayedFrameRequesterRemoval) {
+        const index = this._frameRequesters[toDelete.when].indexOf(toDelete.frameRequester);
+        if (index >= 0) {
+            this._frameRequesters[toDelete.when].splice(index, 1);
+        } else {
+            console.warn('FrameReq has already been removed');
+        }
+    }
+    this._delayedFrameRequesterRemoval.length = 0;
 };
 
 /**
@@ -486,6 +502,10 @@ View.prototype.removeFrameRequester = function removeFrameRequester(when, frameR
 View.prototype.execFrameRequesters = function execFrameRequesters(when, dt, updateLoopRestarted, ...args) {
     if (!this._frameRequesters[when]) {
         return;
+    }
+
+    if (this._delayedFrameRequesterRemoval.length > 0) {
+        this._executeFrameRequestersRemovals();
     }
 
     for (const frameRequester of this._frameRequesters[when]) {

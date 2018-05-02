@@ -100,6 +100,8 @@ MainLoop.prototype._update = function _update(view, updateSources, dt) {
 
 MainLoop.prototype._step = function _step(view, timestamp) {
     const dt = timestamp - this._lastTimestamp;
+    view._executeFrameRequestersRemovals();
+
     view.execFrameRequesters(MAIN_LOOP_EVENTS.UPDATE_START, dt, this._updateLoopRestarted);
 
     const willRedraw = this.needsRedraw;
