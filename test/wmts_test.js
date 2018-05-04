@@ -21,14 +21,12 @@ describe('wmts', function () {
                         example.initialPosition.latitude,
                         10000).as('EPSG:4978').xyz());
                 example.view.notifyChange(true);
-            } else if (initialState < 5) {
-                initialState++;
-            } else {
+            } else if (example.view.mainLoop.renderingState == itowns.RENDERING_PAUSED) {
                 for (var obj of example.view.wgs84TileLayer.level0Nodes) {
                     itownsTesting.countVisibleAndDisplayedLayerImage(obj, 'Ortho');
                 }
                 assert.equal(layer.options.zoom.max, itownsTesting.counters.visible_at_level.length - 1);
-                assert.equal(itownsTesting.counters.visible_at_level[8], 2);
+                assert.equal(itownsTesting.counters.visible_at_level[8], 20);
                 assert.equal(itownsTesting.counters.visible_at_level[7], 0);
                 example.view.mainLoop.removeEventListener('command-queue-empty', listener);
                 done();
