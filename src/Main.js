@@ -7,7 +7,7 @@ export { default as PlanarView, createPlanarLayer } from './Core/Prefab/PlanarVi
 export { default as PanoramaView, createPanoramaLayer } from './Core/Prefab/PanoramaView';
 export { default as Panorama } from './Core/Prefab/Panorama/Constants';
 export { default as Fetcher } from './Provider/Fetcher';
-export { MAIN_LOOP_EVENTS } from './Core/MainLoop';
+export { MAIN_LOOP_EVENTS, RENDERING_PAUSED } from './Core/MainLoop';
 export { default as View } from './Core/View';
 export { VIEW_EVENTS } from './Core/View';
 export { default as GpxParser } from './Parser/GpxParser';
