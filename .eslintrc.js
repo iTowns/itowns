@@ -1,4 +1,5 @@
 module.exports = {
+ root: true,
  'extends': [
    'eslint-config-airbnb-base',
    'eslint-config-airbnb-base/rules/strict',
