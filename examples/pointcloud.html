@@ -185,10 +185,10 @@
 
                     // point selection on double-click
                     function dblClickHandler(event) {
-                        var pick = view.pickObjectsAt(event, pointcloud);
+                        var pick = view.pickObjectsAt(event, 5, pointcloud);
 
-                        if (pick.length) {
-                            console.log('Selected point #' + pick[0].index + ' in Points "' + pick[0].object.owner.name + '"');
+                        for (const p of pick) {
+                            console.log('Selected point #' + p.index + ' in Points "' + p.object.owner.name + '"');
                         }
                     }
                     view.mainLoop.gfxEngine.renderer.domElement.addEventListener('dblclick', dblClickHandler);

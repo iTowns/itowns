@@ -157,7 +157,7 @@ export function createGlobeLayer(id, options) {
         position: { x: -0.5, y: 0.0, z: 1.0 },
     };
     // provide custom pick function
-    wgs84TileLayer.pickObjectsAt = (_view, mouse) => Picking.pickTilesAt(_view, mouse, wgs84TileLayer);
+    wgs84TileLayer.pickObjectsAt = (_view, mouse, radius = 5) => Picking.pickTilesAt(_view, mouse, radius, wgs84TileLayer);
 
     return wgs84TileLayer;
 }

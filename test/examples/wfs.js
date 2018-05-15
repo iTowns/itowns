@@ -12,6 +12,10 @@ describe('wfs', () => {
         const result = await exampleCanRenderTest(page, this.test.fullTitle());
 
         assert.ok(result);
+
+        // test picking
+        const buildingId = await page.evaluate(() => picking({ x: 342, y: 243 }).properties.id);
+        assert.equal(buildingId, 'bati_indifferencie.5751442');
         await page.close();
     });
 });

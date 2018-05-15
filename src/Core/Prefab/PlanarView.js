@@ -98,7 +98,7 @@ export function createPlanarLayer(id, extent, options) {
         position: { x: -0.5, y: 0.0, z: 1.0 },
     };
     // provide custom pick function
-    tileLayer.pickObjectsAt = (_view, mouse) => Picking.pickTilesAt(_view, mouse, tileLayer);
+    tileLayer.pickObjectsAt = (_view, mouse, radius) => Picking.pickTilesAt(_view, mouse, radius, tileLayer);
 
     return tileLayer;
 }

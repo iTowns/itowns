@@ -18,7 +18,7 @@ function hideEverythingElse(view, object, threejsLayer = 0) {
 
 const depthRGBA = new THREE.Vector4();
 // TileMesh picking support function
-function screenCoordsToNodeId(view, tileLayer, mouse) {
+function screenCoordsToNodeId(view, tileLayer, mouse, radius) {
     const dim = view.mainLoop.gfxEngine.getWindowSize();
 
     mouse = mouse || new THREE.Vector2(Math.floor(dim.x / 2), Math.floor(dim.y / 2));
@@ -30,22 +30,62 @@ function screenCoordsToNodeId(view, tileLayer, mouse) {
     const buffer = view.mainLoop.gfxEngine.renderViewToBuffer(
         { camera: view.camera, scene: tileLayer.object3d },
         {
-            x: mouse.x,
-            y: mouse.y,
-            width: 1,
-            height: 1,
+            x: mouse.x - radius,
+            y: mouse.y - radius,
+            width: 1 + radius * 2,
+            height: 1 + radius * 2,
         });
 
     undoHide();
 
     restore.forEach(r => r());
 
-    depthRGBA.fromArray(buffer).divideScalar(255.0);
+    const ids = [];
 
-    // unpack RGBA to float
-    var unpack = unpack1K(depthRGBA, Math.pow(256, 3));
+    traversePickingCircle(radius, (x, y) => {
+        const idx = (y * 2 * radius + x) * 4;
+        const data = buffer.slice(idx, idx + 4);
+        depthRGBA.fromArray(data).divideScalar(255.0);
+        const unpack = unpack1K(depthRGBA, Math.pow(256, 3));
 
-    return Math.round(unpack);
+        const _id = Math.round(unpack);
+        if (ids.indexOf(_id) < 0) {
+            ids.push(_id);
+        }
+    });
+    return ids;
+}
+
+function traversePickingCircle(radius, callback) {
+    // iterate on radius so we get closer to the mouse
+    // results first.
+    // Result traversal order for radius=2
+    // --3--
+    // -323-
+    // 32123
+    // -323
+    // --3--
+    let prevSq;
+    for (let r = 0; r <= radius; r++) {
+        const sq = r * r;
+        for (let x = -r; x <= r; x++) {
+            const sqx = x * x;
+            for (let y = -r; y <= r; y++) {
+                const dist = sqx + y * y;
+                // skip if too far
+                if (dist > sq) {
+                    continue;
+                }
+                // skip if belongs to previous
+                if (dist <= prevSq) {
+                    continue;
+                }
+
+                callback(x, y);
+            }
+        }
+        prevSq = sq;
+    }
 }
 
 function findLayerIdInParent(obj) {
@@ -60,12 +100,12 @@ function findLayerIdInParent(obj) {
 const raycaster = new THREE.Raycaster();
 
 export default {
-    pickTilesAt: (_view, mouse, layer) => {
+    pickTilesAt: (_view, mouse, radius, layer) => {
         const results = [];
-        const _id = screenCoordsToNodeId(_view, layer, mouse);
+        const _ids = screenCoordsToNodeId(_view, layer, mouse, radius);
 
         const extractResult = (node) => {
-            if (node.id === _id && node instanceof TileMesh) {
+            if (_ids.indexOf(node.id) >= 0 && node instanceof TileMesh) {
                 results.push({
                     object: node,
                     layer: layer.id,
@@ -78,7 +118,7 @@ export default {
         return results;
     },
 
-    pickPointsAt: (view, mouse, layer) => {
+    pickPointsAt: (view, mouse, radius, layer) => {
         if (!layer.root) {
             return;
         }
@@ -95,52 +135,79 @@ export default {
         // render 1 pixel
         // TODO: support more than 1 pixel selection
         const buffer = view.mainLoop.gfxEngine.renderViewToBuffer(
-                { camera: view.camera, scene: layer.object3d },
-                { x: mouse.x, y: mouse.y, width: 1, height: 1 });
+            { camera: view.camera, scene: layer.object3d },
+            {
+                x: mouse.x - radius,
+                y: mouse.y - radius,
+                width: 1 + radius * 2,
+                height: 1 + radius * 2,
+            });
 
         undoHide();
 
-        // see PointCloudProvider and the construction of unique_id
-        const objId = (buffer[0] << 8) | buffer[1];
-        const index = (buffer[2] << 8) | buffer[3];
+        const candidates = [];
 
-        let result;
+        traversePickingCircle(radius, (x, y) => {
+            const idx = (y * 2 * radius + x) * 4;
+            const data = buffer.slice(idx, idx + 4);
+
+            // see PointCloudProvider and the construction of unique_id
+            const objId = (data[0] << 8) | data[1];
+            const index = (data[2] << 8) | data[3];
+
+            const r = { objId, index };
+
+            for (let i = 0; i < candidates.length; i++) {
+                if (candidates[i].objId == r.objId && candidates[i].index == r.index) {
+                    return;
+                }
+            }
+            candidates.push(r);
+        });
+
+        const result = [];
         layer.object3d.traverse((o) => {
             if (o.isPoints && o.baseId) {
                 // disable picking mode
                 o.material.enablePicking(false);
 
                 // if baseId matches objId, the clicked point belongs to `o`
-                if (!result && o.baseId === objId) {
-                    result = {
-                        object: o,
-                        index,
-                        layer: layer.id,
-                    };
+                for (let i = 0; i < candidates.length; i++) {
+                    if (candidates[i].objId == o.baseId) {
+                        result.push({
+                            object: o,
+                            index: candidates[i].index,
+                            layer: layer.id,
+                        });
+                    }
                 }
             }
         });
 
-        if (result) {
-            return [result];
-        } else {
-            return [];
-        }
+        return result;
     },
 
     /*
      * Default picking method. Uses THREE.Raycaster
      */
-    pickObjectsAt(view, mouse, object, target = []) {
+    pickObjectsAt(view, mouse, radius, object, target = []) {
         // raycaster use NDC coordinate
-        raycaster.setFromCamera(
-            view.viewToNormalizedCoords(mouse),
-            view.camera.camera3D);
-        const intersects = raycaster.intersectObject(object, true);
-        for (const inter of intersects) {
-            inter.layer = findLayerIdInParent(inter.object);
-            target.push(inter);
-        }
+        const onscreen = view.viewToNormalizedCoords(mouse);
+        const tmp = onscreen.clone();
+
+        traversePickingCircle(radius, (x, y) => {
+            tmp.setX(onscreen.x + x / view.camera.width)
+                .setY(onscreen.y + y / view.camera.height);
+            raycaster.setFromCamera(
+                tmp,
+                view.camera.camera3D);
+
+            const intersects = raycaster.intersectObject(object, true);
+            for (const inter of intersects) {
+                inter.layer = findLayerIdInParent(inter.object);
+                target.push(inter);
+            }
+        });
 
         return target;
     },
