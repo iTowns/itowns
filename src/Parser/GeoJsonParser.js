@@ -1,8 +1,3 @@
-/**
- * Generated On: 2016-09-28
- * Class: FeatureToolBox
- * Description:
- */
 import Coordinates from '../Core/Geographic/Coordinates';
 import Extent from '../Core/Geographic/Extent';
 
@@ -211,7 +206,6 @@ function readFeature(crsIn, crsOut, json, filteringExtent, options) {
 function readFeatureCollection(crsIn, crsOut, json, filteringExtent, options) {
     const collec = [];
 
-    let featureIndex = 0;
     for (const feature of json.features) {
         const f = readFeature(crsIn, crsOut, feature, filteringExtent, options);
         if (f) {
@@ -222,50 +216,74 @@ function readFeatureCollection(crsIn, crsOut, json, filteringExtent, options) {
                     collec.extent = f.geometry.extent.clone();
                 }
             }
-            f.geometry.featureIndex = featureIndex;
             collec.push(f);
-            featureIndex++;
         }
     }
     return collec;
 }
 
 /**
+ * The GeoJsonParser module provide a [parse]{@link module:GeoJsonParser.parse}
+ * method that takes a GeoJSON in and gives an object formatted for iTowns
+ * containing all necessary informations to display this GeoJSON.
+ *
  * @module GeoJsonParser
  */
 export default {
     /**
+     * Similar to the geometry of a feature in a GeoJSON, but adapted to iTowns.
+     * The difference is that coordinates are stored as {@link Coordinates}
+     * instead of raw values. If needed (especially if the geometry is a
+     * <code>polygon</code>), more information is provided.
+     *
      * @typedef FeatureGeometry
-     * @type {object}
-     * @property {string} type - Geometry type ('(multi)point', '(multi)linestring' or '(multi)polygon')
+     * @type {Object}
+     *
+     * @property {string} type - Geometry type, can be <code>point</code>,
+     * <code>multipoint</code>, <code>linestring</code>,
+     * <code>multilinestring</code>, <code>polygon</code> or
+     * <code>multipolygon</code>.
      * @property {Coordinates[]} vertices - All the vertices of the geometry.
-     * @property {?number[]} contour - If this geometry is a polygon, contour contains
-     * the indices that compose the contour (outer ring)
-     * @property {?Array} holes - If this geometry is a polygon, holes contains
-     * an array of indices representing holes in the polygon.
-     * @property {?Extent} extent - The 2D extent containing all the geometries
+     * @property {?number[]} contour - If this geometry is a
+     * <code>polygon</code>, <code>contour</code> contains the indices that
+     * compose the contour (outer ring).
+     * @property {?Array} holes - If this geometry is a <code>polygon</code>,
+     * <code>holes</code> contains an array of indices representing holes in the
+     * polygon.
+     * @property {?Extent} extent - The 2D extent containing all the geometries.
     */
 
     /**
-     * @typedef module:GeoJsonParser.Feature
-     * @type {object}
-     * @property {FeatureGeometry|Array} geometry - The feature's geometry. Can
-     * be a FeatureGeometry or an array of FeatureGeometry.
-     * @property {object} properties - Properties of the features
+     * Similar to a feature in a GeoJSON, but adapted to iTowns.
+     *
+     * @typedef Feature
+     * @type {Object}
+     *
+     * @property {FeatureGeometry|FeatureGeometry[]} geometry - The feature's
+     * geometry. Can be a [FeatureGeometry]{@link
+     * module:GeoJsonParser~FeatureGeometry} or an array of FeatureGeometry.
+     * @property {Object} properties - Properties of the features. It can be
+     * anything specified in the GeoJSON under the <code>properties</code>
+     * property.
     */
 
     /**
-     * Parse a GeoJSON file content and return a Feature or an array of Features.
+     * Parse a GeoJSON file content and return a [Feature]{@link
+     * module:GeoJsonParser~Feature} or an array of Features.
+     *
      * @param {string} json - The GeoJSON file content to parse.
-     * @param {object} options - options controlling the parsing
-     * @param {string} options.crsOut - The CRS to convert the input coordinates to.
-     * @param {string} options.crsIn - override the data crs
-     * @param {Extent=} options.filteringExtent - Optional filter to reject features
-     * outside of this extent.
-     * @param {boolean} [options.buildExtent=false] - if true the geometry will
+     * @param {Object} options - Options controlling the parsing.
+     * @param {string} options.crsOut - The CRS to convert the input coordinates
+     * to.
+     * @param {string} options.crsIn - Override the data CRS.
+     * @param {Extent} [options.filteringExtent] - Optional filter to reject
+     * features outside of this extent.
+     * @param {boolean} [options.buildExtent=false] - If true the geometry will
      * have an extent property containing the area covered by the geom
-     * @param {function=} options.filter - Filter function to remove features
-     * @returns {Promise} - a promise resolving with a Feature or an array of Features
+     * @param {function} [options.filter] - Filter function to remove features
+     *
+     * @return {Promise} A promise resolving with a [Feature]{@link
+     * module:GeoJsonParser~Feature} or an array of Features.
      */
     parse(json, options = {}) {
         const crsOut = options.crsOut;
