@@ -212,7 +212,7 @@
             /* global, document, window, view */
             function picking(event) {
                 var htmlInfo = document.getElementById('info');
-                var intersects = view.pickObjectsAt(event, 'wfsBuilding');
+                var intersects = view.pickObjectsAt(event, 2, 'wfsBuilding');
                 var properties;
                 var info;
                 htmlInfo.innerHTML = ' ';
@@ -227,6 +227,7 @@
                             htmlInfo.innerHTML +='<li><b>' + key + ': </b>' + info + '</li>';
                         }
                     });
+                    return intersects[0].object;
                 }
             }
 

@@ -578,6 +578,8 @@ function layerIdToLayer(view, layerId) {
  *
  * @param {Object} mouseOrEvt - mouse position in window coordinates (0, 0 = top-left)
  * or MouseEvent or TouchEvent
+ * @param {number} radius - picking will happen in a circle centered on mouseOrEvt. Radius
+ * is the radius of this circle, in pixels
  * @param {...*} where - where to look for objects. Can be either: empty (= look
  * in all layers with type == 'geometry'), layer ids or layers or a mix of all
  * the above.
@@ -588,16 +590,16 @@ function layerIdToLayer(view, layerId) {
  *
  * @example
  * view.pickObjectsAt({ x, y })
- * view.pickObjectsAt({ x, y }, 'wfsBuilding')
- * view.pickObjectsAt({ x, y }, 'wfsBuilding', myLayer)
+ * view.pickObjectsAt({ x, y }, 1, 'wfsBuilding')
+ * view.pickObjectsAt({ x, y }, 3, 'wfsBuilding', myLayer)
  */
-View.prototype.pickObjectsAt = function pickObjectsAt(mouseOrEvt, ...where) {
+View.prototype.pickObjectsAt = function pickObjectsAt(mouseOrEvt, radius, ...where) {
     const results = [];
     const sources = where.length == 0 ?
         this.getLayers(l => l.type == 'geometry') :
         [...where];
-
     const mouse = (mouseOrEvt instanceof Event) ? this.eventToViewCoords(mouseOrEvt) : mouseOrEvt;
+    radius = radius || 0;
 
     for (const source of sources) {
         if (source instanceof GeometryLayer ||
@@ -609,7 +611,7 @@ View.prototype.pickObjectsAt = function pickObjectsAt(mouseOrEvt, ...where) {
 
             // does this layer have a custom picking function?
             if (layer.pickObjectsAt) {
-                const sp = layer.pickObjectsAt(this, mouse);
+                const sp = layer.pickObjectsAt(this, mouse, radius);
                 // warning: sp might be very large, so we can't use '...sp' (we'll hit
                 // 'javascript maximum call stack size exceeded' error) nor
                 // Array.prototype.push.apply(result, sp)
@@ -629,6 +631,7 @@ View.prototype.pickObjectsAt = function pickObjectsAt(mouseOrEvt, ...where) {
                 const obj = Picking.pickObjectsAt(
                     this,
                     mouse,
+                    radius,
                     parentLayer.object3d);
 
                 // then filter the results
@@ -642,6 +645,7 @@ View.prototype.pickObjectsAt = function pickObjectsAt(mouseOrEvt, ...where) {
             Picking.pickObjectsAt(
                 this,
                 mouse,
+                radius,
                 source,
                 results);
         } else {

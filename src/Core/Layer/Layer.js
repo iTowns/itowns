@@ -78,7 +78,7 @@ function GeometryLayer(id, object3d) {
     });
 
     // Setup default picking method
-    this.pickObjectsAt = (view, mouse) => Picking.pickObjectsAt(view, mouse, this.object3d);
+    this.pickObjectsAt = (view, mouse, radius) => Picking.pickObjectsAt(view, mouse, radius, this.object3d);
 
     this.postUpdate = () => {};
 }

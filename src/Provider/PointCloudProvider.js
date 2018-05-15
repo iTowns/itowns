@@ -175,7 +175,7 @@ export default {
         layer.postUpdate = PointCloudProcessing.postUpdate;
 
         // this probably needs to be moved to somewhere else
-        layer.pickObjectsAt = (view, mouse) => Picking.pickPointsAt(view, mouse, layer);
+        layer.pickObjectsAt = (view, mouse, radius) => Picking.pickPointsAt(view, mouse, radius, layer);
 
         return Fetcher.json(`${layer.url}/${layer.file}`, layer.fetchOptions).then((cloud) => {
             layer.metadata = cloud;

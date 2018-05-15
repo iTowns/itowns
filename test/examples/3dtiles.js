@@ -51,6 +51,7 @@ describe('3dtiles', () => {
                     if (view.mainLoop.renderingState === 0) {
                         resolve(view.pickObjectsAt(
                             { x: 200, y: 150 },
+                            1,
                             '3d-tiles-request-volume').length);
                     }
                 });

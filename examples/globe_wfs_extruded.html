@@ -247,7 +247,7 @@
 
             function picking(event) {
                 var htmlInfo = document.getElementById('info');
-                var intersects = globeView.pickObjectsAt(event, 'WFS Buildings');
+                var intersects = globeView.pickObjectsAt(event, 3, 'WFS Buildings');
                 var properties;
                 var info;
                 htmlInfo.innerHTML = ' ';
