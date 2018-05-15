@@ -23,10 +23,12 @@
             "src/Provider/URLBuilder.js",
 
             "src/Renderer/ColorLayersOrdering.js",
-            "src/Renderer/ThreeExtended/Feature2Mesh.js",
             "src/Renderer/ThreeExtended/GlobeControls.js",
             "src/Renderer/ThreeExtended/PlanarControls.js",
-            "src/Renderer/ThreeExtended/FirstPersonControls.js"
+            "src/Renderer/ThreeExtended/FirstPersonControls.js",
+
+            "src/Transform/feature2Mesh.js",
+            "src/Transform/feature2Texture.js"
         ]
     }
 }

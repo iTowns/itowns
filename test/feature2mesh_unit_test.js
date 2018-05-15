@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import proj4 from 'proj4';
 import GeoJsonParser from '../src/Parser/GeoJsonParser';
-import Feature2Mesh from '../src/Renderer/ThreeExtended/Feature2Mesh';
+import feature2Mesh from '../src/Transform/feature2Mesh';
 /* global describe, it */
 
 const assert = require('assert');
@@ -30,11 +30,11 @@ function computeAreaOfMesh(mesh) {
     return area;
 }
 
-describe('Feature2Mesh', function () {
+describe('feature2Mesh', function () {
     it('rect mesh area should match geometry extent', () =>
-        parse().then((features) => {
-            const mesh = Feature2Mesh.convert()(features);
-            const extentSize = features.extent.dimensions();
+        parse().then((collection) => {
+            const mesh = feature2Mesh(collection);
+            const extentSize = collection.extent.dimensions();
 
             assert.equal(
                 extentSize.x * extentSize.y,
@@ -42,8 +42,8 @@ describe('Feature2Mesh', function () {
         }));
 
     it('square mesh area should match geometry extent minus holes', () =>
-        parse().then((feature) => {
-            const mesh = Feature2Mesh.convert()(feature);
+        parse().then((collection) => {
+            const mesh = feature2Mesh(collection);
 
             const noHoleArea = computeAreaOfMesh(mesh.children[0]);
             const holeArea = computeAreaOfMesh(mesh.children[1]);

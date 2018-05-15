@@ -94,9 +94,10 @@
                 name: 'lyon_tcl_bus',
                 type: 'geometry',
                 update: itowns.FeatureProcessing.update,
-                convert: itowns.Feature2Mesh.convert({
+                style: {
                     color: colorLine,
-                    altitude: altitudeLine }),
+                    altitude: altitudeLine,
+                },
                 linewidth: 5,
                 filter: acceptFeatureBus,
                 url: 'https://download.data.grandlyon.com/wfs/rdata?',
@@ -157,10 +158,11 @@
             globeView.addLayer({
                 type: 'geometry',
                 update: itowns.FeatureProcessing.update,
-                convert: itowns.Feature2Mesh.convert({
+                style: {
                     color: colorBuildings,
                     altitude: altitudeBuildings,
-                    extrude: extrudeBuildings }),
+                    extrude: extrudeBuildings
+                },
                 onMeshCreated: function scaleZ(mesh) {
                     mesh.scale.z = 0.01;
                     meshes.push(mesh);
@@ -212,9 +214,10 @@
             globeView.addLayer({
                 type: 'geometry',
                 update: itowns.FeatureProcessing.update,
-                convert: itowns.Feature2Mesh.convert({
+                style: {
                     altitude: altitudePoint,
-                    color: colorPoint }),
+                    color: colorPoint
+                },
                 size: 5,
                 onMeshCreated: configPointMaterial,
                 filter: selectRoad,

@@ -95,8 +95,8 @@
             view.addLayer({
                 name: 'lyon_tcl_bus',
                 update: itowns.FeatureProcessing.update,
-                convert: itowns.Feature2Mesh.convert({
-                    color: colorLine }),
+                type: 'geometry',
+                style: { color: colorLine },
                 onMeshCreated: setMaterialLineWidth,
                 url: 'https://download.data.grandlyon.com/wfs/rdata?',
                 protocol: 'wfs',
@@ -147,9 +147,10 @@
             view.addLayer({
                 type: 'geometry',
                 update: itowns.FeatureProcessing.update,
-                convert: itowns.Feature2Mesh.convert({
+                style: {
                     color: colorBuildings,
-                    extrude: extrudeBuildings }),
+                    extrude: extrudeBuildings
+                },
                 onMeshCreated: function scaleZ(mesh) {
                     mesh.scale.z = 0.01;
                     meshes.push(mesh);
@@ -193,9 +194,10 @@
             view.addLayer({
                 type: 'geometry',
                 update: itowns.FeatureProcessing.update,
-                convert: itowns.Feature2Mesh.convert({
+                style: {
                     altitude: 0,
-                    color: colorPoint }),
+                    color: colorPoint
+                },
                 onMeshCreated: configPointMaterial,
                 url: 'http://wxs.ign.fr/72hpsel8j8nhb5qgdh07gcyp/geoportail/wfs?',
                 networkOptions: { crossOrigin: 'anonymous' },

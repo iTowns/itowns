@@ -7,7 +7,7 @@
 import * as THREE from 'three';
 import togeojson from 'togeojson';
 import Extent from '../Core/Geographic/Extent';
-import Feature2Texture from '../Renderer/ThreeExtended/Feature2Texture';
+import feature2Texture from '../Transform/feature2Texture';
 import GeoJsonParser from '../Parser/GeoJsonParser';
 import Fetcher from './Fetcher';
 
@@ -31,7 +31,11 @@ function createTextureFromVector(tile, layer) {
     if (layer.type == 'color') {
         const coords = tile.extent;
         const result = { pitch: new THREE.Vector4(0, 0, 1, 1) };
-        result.texture = Feature2Texture.createTextureFromFeature(layer.feature, tile.extent, 256, layer.style);
+        result.texture = feature2Texture(layer.feature, {
+            extent: tile.extent,
+            size: 256,
+            style: layer.style,
+        });
         result.texture.extent = tile.extent;
         result.texture.coords = coords;
         result.texture.coords.zoom = tile.level;

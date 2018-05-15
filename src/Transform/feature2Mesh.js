@@ -258,16 +258,9 @@ function featureToExtrudedPolygon(feature, properties, options) {
     return new THREE.Mesh(geom);
 }
 
-/**
- * Convert a [Feature]{@link Feature#geometry}'s geometry to a Mesh
- *
- * @param {Object} feature - a Feature's geometry
- * @param {Object} options - options controlling the conversion
- * @param {number|function} options.altitude - define the base altitude of the mesh
- * @param {number|function} options.extrude - if defined, polygons will be extruded by the specified amount
- * @param {object|function} options.color - define per feature color
- * @return {THREE.Mesh} mesh
- */
+// Convert a Feature geometry to a three.js Mesh
+// Supported attributes (as constant or functions) in options are: altitude,
+// extrude and color. See the module exportation below for more details.
 function featureToMesh(feature, options) {
     if (!feature.vertices) {
         return;
@@ -333,24 +326,29 @@ function featuresToThree(features, options) {
 }
 
 /**
- * @module Feature2Mesh
+ * Converts [Features]{@link module:GeoJsonParser} to [THREE.Mesh]{@link
+ * https://threejs.org/docs/#api/objects/Mesh}.Feature collection will be
+ * converted to a a [THREE.Group]{@link
+ * https://threejs.org/docs/#api/objects/Group}.
+ *
+ * @function feature2Mesh
+ *
+ * @param {module:GeoJsonParser~FeatureCollection} collection - a Feature or an
+ * array of Feature.
+ * @param {Object} [options] - Options controlling the conversion.
+ * @param {number|function} options.altitude - Define the base altitude of
+ * the mesh.
+ * @param {number|function} options.extrude - If defined, polygons will be
+ * extruded by the specified amount.
+ * @param {Object|function} options.color - Define per feature color.
+ *
+ * @return {THREE.Mesh|THREE.Group} Returns a [THREE.Mesh]{@link
+ * https://threejs.org/docs/#api/objects/Mesh}. If an array of Feature is
+ * specified, it will be converted to a [THREE.Group]{@link
+ * https://threejs.org/docs/#api/objects/Group}.
  */
-export default {
-    /**
-     * Return a function that converts [Features]{@link module:GeoJsonParser} to Meshes. Feature collection will be converted to a
-     * a THREE.Group.
-     *
-     * @param {Object} options - options controlling the conversion
-     * @param {number|function} options.altitude - define the base altitude of the mesh
-     * @param {number|function} options.extrude - if defined, polygons will be extruded by the specified amount
-     * @param {object|function} options.color - define per feature color
-     * @return {function}
-     */
-    convert(options = {}) {
-        return function _convert(collection) {
-            if (!collection) return;
+export default function (collection, options = {}) {
+    if (!collection) return;
 
-            return featuresToThree(collection.features, options);
-        };
-    },
-};
+    return featuresToThree(collection.features, options);
+}

@@ -8,6 +8,8 @@ import { GeometryLayer, Layer, defineLayerProperty } from './Layer/Layer';
 import Scheduler from './Scheduler/Scheduler';
 import Picking from './Picking';
 import { updateLayeredMaterialNodeImagery, updateLayeredMaterialNodeElevation } from '../Process/LayeredMaterialNodeProcessing';
+import feature2Mesh from '../Transform/feature2Mesh';
+import feature2Texture from '../Transform/feature2Texture';
 
 export const VIEW_EVENTS = {
     /**
@@ -181,6 +183,8 @@ function _preprocessLayer(view, layer, provider, parentLayer) {
         defineLayerProperty(layer, 'visible', true);
         defineLayerProperty(layer, 'opacity', 1.0);
         defineLayerProperty(layer, 'sequence', 0);
+
+        layer.transform = feature2Texture;
     } else if (layer.type == 'elevation') {
         defineLayerProperty(layer, 'frozen', false);
     } else if (layer.type == 'geometry' || layer.type == 'debug') {
@@ -215,6 +219,8 @@ function _preprocessLayer(view, layer, provider, parentLayer) {
                 });
             }
         });
+
+        layer.transform = feature2Mesh;
     }
     return layer;
 }

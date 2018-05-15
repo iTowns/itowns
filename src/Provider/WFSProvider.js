@@ -9,7 +9,7 @@ import URLBuilder from './URLBuilder';
 import Fetcher from './Fetcher';
 import Cache from '../Core/Scheduler/Cache';
 import GeoJsonParser from '../Parser/GeoJsonParser';
-import Feature2Mesh from '../Renderer/ThreeExtended/Feature2Mesh';
+import feature2Mesh from '../Transform/feature2Mesh';
 
 function preprocessDataLayer(layer) {
     if (!layer.typeName) {
@@ -62,7 +62,7 @@ function getFeatures(crs, tile, layer) {
 
     const urld = URLBuilder.bbox(tile.extent.as(layer.crs), layer);
 
-    layer.convert = layer.convert ? layer.convert : Feature2Mesh.convert({});
+    layer.transform = layer.transform ? layer.transform : feature2Mesh;
 
     return (Cache.get(urld) || Cache.set(urld, Fetcher.json(urld, layer.networkOptions)))
         .then(
@@ -84,7 +84,7 @@ function getFeatures(crs, tile, layer) {
                     throw err;
                 }
             })
-        .then(feature => assignLayer(layer.convert(feature), layer));
+        .then(feature => assignLayer(layer.transform(feature, layer.style), layer));
 }
 
 export default {
