@@ -55,4 +55,20 @@ describe('Feature2Mesh', function () {
                 noHoleArea - holeArea,
                 meshWithHoleArea);
         }));
+
+    it('square polygon should have double the vertices for being extruded', () =>
+        parse().then((feature) => {
+            const noExtrude = Feature2Mesh.convert()(feature[0]);
+            const extrude = Feature2Mesh.convert({
+                extrude: 2,
+            })(feature[0]);
+
+            assert.equal(noExtrude.geometry.attributes.position.count, 4);
+            assert.equal(extrude.geometry.attributes.position.count, 8);
+
+            // 2 triangles -> 6 indexes
+            assert.equal(noExtrude.geometry.index.count, 6);
+            // 2 triangles * 6 faces - bottom -> 30 indexes
+            assert.equal(extrude.geometry.index.count, 30);
+        }));
 });
