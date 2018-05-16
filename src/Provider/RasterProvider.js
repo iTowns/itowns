@@ -114,7 +114,7 @@ export default {
         }).then((feature) => {
             if (feature) {
                 layer.feature = feature;
-                layer.extent = layer.feature.extent || layer.feature.geometry.extent;
+                layer.extent = feature.extent;
             }
         });
     },

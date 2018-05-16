@@ -37,10 +37,10 @@ function ToolTip(viewer, viewerDiv, tooltip, precisionPx) {
                 layer = layers[i];
                 result = itowns.FeaturesUtils.filterFeaturesUnderCoordinate(
                     geoCoord, layer.feature, precision);
-                result.sort(function compare(a, b) { return b.feature.geometry.type !== 'point'; });
+                result.sort(function compare(a, b) { return b.feature.type !== 'point'; });
                 for (p = 0; p < result.length; p++) {
                     visible = true;
-                    if (result[p].feature.geometry.type === 'polygon') {
+                    if (result[p].feature.type === 'polygon') {
                         polygon = result[p].feature;
                         color = polygon.properties.fill || layer.style.fill;
                         stroke = polygon.properties.stroke || layer.style.stroke;
@@ -50,12 +50,12 @@ function ToolTip(viewer, viewerDiv, tooltip, precisionPx) {
                         document.getElementById(name).style['-webkit-text-stroke'] = '1.25px ' + stroke;
                         document.getElementById(name).style.color = color;
                         ++id;
-                    } else if (result[p].feature.geometry.type === 'linestring') {
+                    } else if (result[p].feature.type === 'linestring') {
                         line = result[p].feature;
                         color = line.properties.stroke || layer.style.stroke;
                         symb = '<span style=color:' + color + ';>&#9473</span>';
                         tooltip.innerHTML += symb + ' ' + (line.name || layer.name) + '<br />';
-                    } else if (result[p].feature.geometry.type === 'point') {
+                    } else if (result[p].feature.type === 'point') {
                         point = result[p].feature;
                         color = 'white';
                         name = 'point' + id;

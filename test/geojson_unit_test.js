@@ -15,12 +15,12 @@ function parse(geojson) {
 
 describe('GeoJsonParser', function () {
     it('should set all z coordinates to 1', () =>
-        parse(holes).then((feature) => {
-            assert.ok(feature[0].geometry.vertices.every(v => v.z() == 1));
+        parse(holes).then((collection) => {
+            assert.ok(collection.features[0].vertices.every(v => v.z() == 1));
         }));
 
     it('should respect all z coordinates', () =>
-        parse(gpx).then((feature) => {
-            assert.ok(feature[0].geometry.vertices.every(v => v.z() != 1));
+        parse(gpx).then((collection) => {
+            assert.ok(collection.features[0].vertices.every(v => v.z() != 1));
         }));
 });

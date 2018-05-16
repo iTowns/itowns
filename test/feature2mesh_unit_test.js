@@ -32,24 +32,22 @@ function computeAreaOfMesh(mesh) {
 
 describe('Feature2Mesh', function () {
     it('rect mesh area should match geometry extent', () =>
-        parse().then((feature) => {
-            const mesh = Feature2Mesh.convert()(feature[0]);
-            const extentSize = feature[0].geometry.extent.dimensions();
+        parse().then((features) => {
+            const mesh = Feature2Mesh.convert()(features);
+            const extentSize = features.extent.dimensions();
 
             assert.equal(
                 extentSize.x * extentSize.y,
-                computeAreaOfMesh(mesh));
+                computeAreaOfMesh(mesh.children[0]));
         }));
 
     it('square mesh area should match geometry extent minus holes', () =>
         parse().then((feature) => {
-            const noHole = Feature2Mesh.convert()(feature[0]);
-            const hole = Feature2Mesh.convert()(feature[1]);
-            const meshWithHole = Feature2Mesh.convert()(feature[2]);
+            const mesh = Feature2Mesh.convert()(feature);
 
-            const noHoleArea = computeAreaOfMesh(noHole);
-            const holeArea = computeAreaOfMesh(hole);
-            const meshWithHoleArea = computeAreaOfMesh(meshWithHole);
+            const noHoleArea = computeAreaOfMesh(mesh.children[0]);
+            const holeArea = computeAreaOfMesh(mesh.children[1]);
+            const meshWithHoleArea = computeAreaOfMesh(mesh.children[2]);
 
             assert.equal(
                 noHoleArea - holeArea,

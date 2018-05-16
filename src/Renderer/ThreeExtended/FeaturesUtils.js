@@ -103,16 +103,12 @@ function pointIsInsidePolygon(point, polygonPoints) {
     return inside;
 }
 
-function isFeatureSingleGeometryUnderCoordinate(coordinate, geometry, epsilon) {
-    const coordinates = geometry.type == 'polygon' ?
-        geometry.vertices.slice(geometry.contour.offset, geometry.contour.offset + geometry.contour.count) :
-        geometry.vertices;
-
-    if (geometry.type == 'linestring' && pointIsOverLine(coordinate, coordinates, epsilon)) {
+function isFeatureSingleGeometryUnderCoordinate(coordinate, type, coordinates, epsilon) {
+    if (type == 'linestring' && pointIsOverLine(coordinate, coordinates, epsilon)) {
         return true;
-    } else if (geometry.type == 'polygon' && pointIsInsidePolygon(coordinate, coordinates)) {
+    } else if (type == 'polygon' && pointIsInsidePolygon(coordinate, coordinates)) {
         return true;
-    } else if (geometry.type == 'point') {
+    } else if (type == 'point') {
         const closestPoint = getClosestPoint(coordinate, coordinates, epsilon);
         if (closestPoint) {
             return { coordinates: closestPoint };
@@ -121,23 +117,17 @@ function isFeatureSingleGeometryUnderCoordinate(coordinate, geometry, epsilon) {
 }
 
 function isFeatureUnderCoordinate(coordinate, feature, epsilon, result) {
-    if (Array.isArray(feature.geometry)) {
-        for (let i = 0; i < feature.geometry.length; i++) {
-            const geometry = feature.geometry[i];
-            const under = isFeatureSingleGeometryUnderCoordinate(coordinate, geometry, epsilon);
-            if (under) {
-                result.push({
-                    feature,
-                    coordinates: under.coordinates || geometry.vertices,
-                });
-            }
-        }
-    } else {
-        const under = isFeatureSingleGeometryUnderCoordinate(coordinate, feature.geometry, epsilon);
+    for (const geometry of feature.geometry) {
+        const coordinates = feature.type == 'polygon' ?
+            feature.vertices.slice(geometry.indices[0].offset,
+                geometry.indices[0].offset + geometry.indices[0].count) :
+            feature.vertices;
+
+        const under = isFeatureSingleGeometryUnderCoordinate(coordinate, feature.type, coordinates, epsilon);
         if (under) {
             result.push({
                 feature,
-                coordinates: under.coordinates || feature.geometry.vertices,
+                coordinates: under.coordinates || coordinates,
             });
         }
     }
@@ -145,35 +135,38 @@ function isFeatureUnderCoordinate(coordinate, feature, epsilon, result) {
 
 export default {
     /**
-     * filters the features that are under the coordinate
+     * Filter from a list of features, features that are under a coordinate.
      *
-     * @param      {Coordinates}  coordinate  the coordinate for the filter condition
-     * @param      {Features}  features  features to filter
-     * @param      {number}  epsilon  tolerance around the coordinate (in coordinate's unit)
-     * @return     {array}  array of filters features
+     * @param {Coordinates} coordinate - The coordinate for the filter
+     * condition.
+     * @param {Feature|FeatureCollection} features - A single feature or a
+     * collection of them, to filter given the previous coordinate.
+     * @param {number} [epsilon=0.1] Tolerance around the coordinate (in
+     * coordinate's unit).
+     *
+     * @return {Feature[]} Array of filtered features.
      */
     filterFeaturesUnderCoordinate(coordinate, features, epsilon = 0.1) {
         const result = [];
-        if (Array.isArray(features)) {
-            if (features.extent && !features.extent.isPointInside(coordinate, epsilon)) {
-                return result;
-            }
-            for (const feature of features) {
+
+        // We can take this shortcut because either Feature and
+        // FeatureCollection have an extent property
+        if (features.extent && !features.extent.isPointInside(coordinate, epsilon)) {
+            return result;
+        }
+
+        if (Array.isArray(features.features)) {
+            for (const feature of features.features) {
                 if (feature.extent && !feature.extent.isPointInside(coordinate, epsilon)) {
-                    continue;
-                }
-                if (feature.geometry.extent && !feature.geometry.extent.isPointInside(coordinate, epsilon)) {
                     continue;
                 }
 
                 isFeatureUnderCoordinate(coordinate, feature, epsilon, result);
             }
         } else if (features.geometry) {
-            if (features.geometry.extent && !features.geometry.extent.isPointInside(coordinate, epsilon)) {
-                return result;
-            }
             isFeatureUnderCoordinate(coordinate, features, epsilon, result);
         }
+
         return result;
     },
 };
