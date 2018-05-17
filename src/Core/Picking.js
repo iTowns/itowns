@@ -18,10 +18,10 @@ function hideEverythingElse(view, object, threejsLayer = 0) {
 
 const depthRGBA = new THREE.Vector4();
 // TileMesh picking support function
-function screenCoordsToNodeId(view, tileLayer, mouse, radius) {
+function screenCoordsToNodeId(view, tileLayer, viewCoords, radius) {
     const dim = view.mainLoop.gfxEngine.getWindowSize();
 
-    mouse = mouse || new THREE.Vector2(Math.floor(dim.x / 2), Math.floor(dim.y / 2));
+    viewCoords = viewCoords || new THREE.Vector2(Math.floor(dim.x / 2), Math.floor(dim.y / 2));
 
     const restore = tileLayer.level0Nodes.map(n => n.pushRenderState(RendererConstant.ID));
 
@@ -30,8 +30,8 @@ function screenCoordsToNodeId(view, tileLayer, mouse, radius) {
     const buffer = view.mainLoop.gfxEngine.renderViewToBuffer(
         { camera: view.camera, scene: tileLayer.object3d },
         {
-            x: mouse.x - radius,
-            y: mouse.y - radius,
+            x: viewCoords.x - radius,
+            y: viewCoords.y - radius,
             width: 1 + radius * 2,
             height: 1 + radius * 2,
         });
@@ -101,10 +101,23 @@ function findLayerIdInParent(obj) {
 
 const raycaster = new THREE.Raycaster();
 
+/**
+ * @module Picking
+ *
+ * Implement various picking methods for geometry layers.
+ * These methods are not meant to be used directly, see View.pickObjectsAt
+ * instead.
+ *
+ * All the methods here takes the same parameters:
+ *   - the View instance
+ *   - view coordinates (in pixels) where picking should be done
+ *   - radius (in pixels) of the picking circle
+ *   - layer: the geometry layer used for picking
+ */
 export default {
-    pickTilesAt: (_view, mouse, radius, layer) => {
+    pickTilesAt: (_view, viewCoords, radius, layer) => {
         const results = [];
-        const _ids = screenCoordsToNodeId(_view, layer, mouse, radius);
+        const _ids = screenCoordsToNodeId(_view, layer, viewCoords, radius);
 
         const extractResult = (node) => {
             if (_ids.indexOf(node.id) >= 0 && node instanceof TileMesh) {
@@ -120,7 +133,7 @@ export default {
         return results;
     },
 
-    pickPointsAt: (view, mouse, radius, layer) => {
+    pickPointsAt: (view, viewCoords, radius, layer) => {
         if (!layer.root) {
             return;
         }
@@ -139,8 +152,8 @@ export default {
         const buffer = view.mainLoop.gfxEngine.renderViewToBuffer(
             { camera: view.camera, scene: layer.object3d },
             {
-                x: mouse.x - radius,
-                y: mouse.y - radius,
+                x: viewCoords.x - radius,
+                y: viewCoords.y - radius,
                 width: 1 + radius * 2,
                 height: 1 + radius * 2,
             });
@@ -193,6 +206,9 @@ export default {
      * Default picking method. Uses THREE.Raycaster
      */
     pickObjectsAt(view, viewCoords, radius, object, target = []) {
+        // Instead of doing N raycast (1 per x,y returned by traversePickingCircle),
+        // we force render the zone of interest.
+        // Then we'll only do raycasting for the pixels where something was drawn.
         const zone = {
             x: viewCoords.x - radius,
             y: viewCoords.y - radius,
@@ -201,23 +217,36 @@ export default {
         };
         const pixels = view.mainLoop.gfxEngine.renderViewToBuffer(
             { scene: object, camera: view.camera },
-            zone, false);
+            zone);
 
-        // raycaster use NDC coordinate
+        const clearColor = view.mainLoop.gfxEngine.renderer.getClearColor();
+        const clearR = Math.round(255 * clearColor.r);
+        const clearG = Math.round(255 * clearColor.g);
+        const clearB = Math.round(255 * clearColor.b);
+
+        // Raycaster use NDC coordinate
         const normalized = view.viewToNormalizedCoords(viewCoords);
         const tmp = normalized.clone();
-        const color = new THREE.Color();
         traversePickingCircle(radius, (x, y) => {
+            // x, y are offset from the center of the picking circle,
+            // and pixels is a square where 0, 0 is the top-left corner.
+            // So we need to shift x,y by radius.
             const xi = x + radius;
             const yi = y + radius;
             const offset = (yi * (radius * 2 + 1) + xi) * 4;
-            color.fromArray(pixels, offset);
-
-            if (color.r == 0 && color.g == 0 && color.b == 0) {
+            const r = pixels[offset];
+            const g = pixels[offset + 1];
+            const b = pixels[offset + 2];
+            // Use approx. test to avoid rounding error or to behave
+            // differently depending on hardware rounding mode.
+            if (Math.abs(clearR - r) <= 1 &&
+                Math.abs(clearG - g) <= 1 &&
+                Math.abs(clearB - b) <= 1) {
                 // skip because nothing has been rendered here
                 return;
             }
 
+            // Perform raycasting
             tmp.setX(normalized.x + x / view.camera.width)
                 .setY(normalized.y + y / view.camera.height);
             raycaster.setFromCamera(
@@ -229,6 +258,8 @@ export default {
                 inter.layer = findLayerIdInParent(inter.object);
                 target.push(inter);
             }
+
+            // Stop at first hit
             return target.length == 0;
         });
 
