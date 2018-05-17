@@ -81,7 +81,9 @@ function traversePickingCircle(radius, callback) {
                     continue;
                 }
 
-                callback(x, y);
+                if (callback(x, y) === false) {
+                    return;
+                }
             }
         }
         prevSq = sq;
@@ -190,14 +192,34 @@ export default {
     /*
      * Default picking method. Uses THREE.Raycaster
      */
-    pickObjectsAt(view, mouse, radius, object, target = []) {
-        // raycaster use NDC coordinate
-        const onscreen = view.viewToNormalizedCoords(mouse);
-        const tmp = onscreen.clone();
+    pickObjectsAt(view, viewCoords, radius, object, target = []) {
+        const zone = {
+            x: viewCoords.x - radius,
+            y: viewCoords.y - radius,
+            width: 1 + radius * 2,
+            height: 1 + radius * 2,
+        };
+        const pixels = view.mainLoop.gfxEngine.renderViewToBuffer(
+            { scene: object, camera: view.camera },
+            zone, false);
 
+        // raycaster use NDC coordinate
+        const normalized = view.viewToNormalizedCoords(viewCoords);
+        const tmp = normalized.clone();
+        const color = new THREE.Color();
         traversePickingCircle(radius, (x, y) => {
-            tmp.setX(onscreen.x + x / view.camera.width)
-                .setY(onscreen.y + y / view.camera.height);
+            const xi = x + radius;
+            const yi = y + radius;
+            const offset = (yi * (radius * 2 + 1) + xi) * 4;
+            color.fromArray(pixels, offset);
+
+            if (color.r == 0 && color.g == 0 && color.b == 0) {
+                // skip because nothing has been rendered here
+                return;
+            }
+
+            tmp.setX(normalized.x + x / view.camera.width)
+                .setY(normalized.y + y / view.camera.height);
             raycaster.setFromCamera(
                 tmp,
                 view.camera.camera3D);
@@ -207,6 +229,7 @@ export default {
                 inter.layer = findLayerIdInParent(inter.object);
                 target.push(inter);
             }
+            return target.length == 0;
         });
 
         return target;
