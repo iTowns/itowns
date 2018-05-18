@@ -152,6 +152,7 @@
             <script src="js/loading_screen.js"></script>
             <script src="../dist/debug.js"></script>
             <script type="text/javascript">
+                var searchParams = new URL(window.location.href).searchParams;
                 function showPointcloud(serverUrl, fileName, lopocsTable) {
                     var pointcloud;
                     var oldPostUpdate;
@@ -182,6 +183,14 @@
                     pointcloud.protocol = 'potreeconverter';
                     pointcloud.url = serverUrl;
                     pointcloud.table = lopocsTable;
+                    if (searchParams.get('material') === 'three') {
+                        pointcloud.material = new itowns.THREE.PointsMaterial({
+                            color: 0xff8888,
+                            sizeAttenuation: false,
+                            size: 1,
+                            vertexColors: itowns.THREE.VertexColors
+                        });
+                    }
 
                     // point selection on double-click
                     function dblClickHandler(event) {
@@ -236,8 +245,7 @@
                     view.addLayer(pointcloud).then(onLayerReady);
                 }
 
-
-                if (new URL(window.location.href).searchParams.get('selector')) {
+                if (searchParams.get('selector')) {
                     document.getElementsByClassName('centered')[0].style.display = 'block';
                     document.getElementById('submit').addEventListener('click', onConnectClicked);
                 } else {

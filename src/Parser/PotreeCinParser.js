@@ -1,12 +1,11 @@
 import * as THREE from 'three';
-import PointsMaterial from '../Renderer/PointsMaterial';
 
 export default {
     /** @module PotreeCinParser */
-    /** Parse .cin PotreeConverter format (see {@link https://github.com/peppsac/PotreeConverter/tree/custom_bin}) and convert to THREE.Points
+    /** Parse .cin PotreeConverter format (see {@link https://github.com/peppsac/PotreeConverter/tree/custom_bin}) and convert to a THREE.BufferGeometry
      * @function parse
      * @param {ArrayBuffer} buffer - the cin buffer.
-     * @return {Promise} - a promise that resolves with a THREE.Points.
+     * @return {Promise} - a promise that resolves with a THREE.BufferGeometry.
      *
      */
     parse: function parse(buffer) {
@@ -18,7 +17,7 @@ export default {
         const view = new DataView(buffer, 0, 6 * 4);
         const min = new THREE.Vector3(view.getFloat32(0, true), view.getFloat32(4, true), view.getFloat32(8, true));
         const max = new THREE.Vector3(view.getFloat32(12, true), view.getFloat32(16, true), view.getFloat32(20, true));
-        const tightbbox = new THREE.Box3(min, max);
+        const box = new THREE.Box3(min, max);
 
         const numPoints = Math.floor((buffer.byteLength - 24) / 16);
 
@@ -28,15 +27,8 @@ export default {
         const geometry = new THREE.BufferGeometry();
         geometry.addAttribute('position', new THREE.BufferAttribute(positions, 3));
         geometry.addAttribute('color', new THREE.BufferAttribute(colors, 4, true));
+        geometry.boundingBox = box;
 
-        const material = new PointsMaterial();
-        const points = new THREE.Points(geometry, material);
-
-        points.frustumCulled = false;
-        points.matrixAutoUpdate = false;
-        points.realPointCount = numPoints;
-        points.tightbbox = tightbbox;
-
-        return Promise.resolve(points);
+        return Promise.resolve(geometry);
     },
 };
