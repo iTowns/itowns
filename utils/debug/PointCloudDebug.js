@@ -10,22 +10,17 @@ function isInHierarchy(elt, hierarchyNode) {
 
 export default {
     initTools(view, layer, datUi) {
+        const update = () => view.notifyChange(layer);
         layer.debugUI = datUi.addFolder(`${layer.id}`);
 
-        layer.debugUI.add(layer, 'sseThreshold').name('SSE threshold')
-            .onChange(() => view.notifyChange(layer));
-        layer.debugUI.add(layer, 'octreeDepthLimit', -1, 20).name('Depth limit')
-            .onChange(() => view.notifyChange(layer));
-        layer.debugUI.add(layer, 'pointBudget', 1, 15000000).name('Max point count')
-            .onChange(() => view.notifyChange(layer));
+        layer.debugUI.add(layer.material, 'visible').name('Visible').onChange(update);
+        layer.debugUI.add(layer, 'sseThreshold').name('SSE threshold').onChange(update);
+        layer.debugUI.add(layer, 'octreeDepthLimit', -1, 20).name('Depth limit').onChange(update);
+        layer.debugUI.add(layer, 'pointBudget', 1, 15000000).name('Max point count').onChange(update);
         layer.debugUI.add(layer.object3d.position, 'z', -50, 50).name('Z translation').onChange(() => {
             layer.object3d.updateMatrixWorld();
             view.notifyChange(layer);
         });
-        layer.debugUI.add(layer, 'pointSize', 0, 15).name('Point Size')
-            .onChange(() => view.notifyChange(layer));
-        layer.debugUI.add(layer, 'opacity', 0, 1).name('Opacity')
-            .onChange(() => view.notifyChange(layer));
 
         layer.dbgEnableStickyNode = false;
         layer.dbgStickyNode = '';
@@ -33,16 +28,18 @@ export default {
         layer.dbgDisplayParents = true;
         layer.dbgDisplaybbox = false;
 
+        var styleUI = layer.debugUI.addFolder('Styling');
+        styleUI.add(layer, 'opacity', 0, 1).name('Layer Opacity').onChange(update);
+        styleUI.add(layer, 'pointSize', 0, 15).name('Point Size').onChange(update);
+        styleUI.add(layer, 'dbgDisplaybbox').name('Display Bounding Boxes').onChange(update);
+
         // UI
-        const update = () => view.notifyChange(layer);
         const sticky = layer.debugUI.addFolder('Sticky');
         sticky.add(layer, 'dbgEnableStickyNode').name('Enable sticky node').onChange(update);
         sticky.add(layer, 'dbgStickyNode').name('Sticky node name').onChange(update);
         sticky.add(layer, 'dbgDisplayChildren').name('Display children of sticky node').onChange(update);
         sticky.add(layer, 'dbgDisplayParents').name('Display parents of sticky node').onChange(update);
 
-        // bbox
-        layer.debugUI.add(layer, 'dbgDisplaybbox').name('Display bounding boxes').onChange(update);
 
         view.addFrameRequester('after_layer_update', () => {
             if (layer.bboxes) {

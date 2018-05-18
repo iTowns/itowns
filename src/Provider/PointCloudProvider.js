@@ -3,6 +3,7 @@ import Fetcher from './Fetcher';
 import PointCloudProcessing from '../Process/PointCloudProcessing';
 import PotreeBinParser from '../Parser/PotreeBinParser';
 import PotreeCinParser from '../Parser/PotreeCinParser';
+import PointsMaterial from '../Renderer/PointsMaterial';
 import Picking from '../Core/Picking';
 
 // Create an A(xis)A(ligned)B(ounding)B(ox) for the child `childIndex` of one aabb.
@@ -140,17 +141,6 @@ function addPickingAttribute(points) {
     return points;
 }
 
-
-function loadPointFile(layer, url) {
-    return fetch(url, layer.fetchOptions).then(foo => foo.arrayBuffer()).then((ab) => {
-        if (layer.metadata.customBinFormat) {
-            return PotreeCinParser.parse(ab).then(result => addPickingAttribute(result));
-        } else {
-            return PotreeBinParser.parse(ab).then(result => addPickingAttribute(result));
-        }
-    });
-}
-
 export default {
     preprocessDataLayer(layer) {
         if (!layer.file) {
@@ -176,6 +166,8 @@ export default {
         layer.pointSize = layer.pointSize === 0 || !isNaN(layer.pointSize) ? layer.pointSize : 4;
         layer.sseThreshold = layer.sseThreshold || 2;
         layer.type = 'geometry';
+        layer.material = layer.material || {};
+        layer.material = layer.material.isMaterial ? layer.material : new PointsMaterial(layer.material);
 
         // default update methods
         layer.preUpdate = PointCloudProcessing.preUpdate;
@@ -189,6 +181,7 @@ export default {
             layer.metadata = cloud;
 
             let bbox;
+            var customBinFormat = true;
 
             // Lopocs pointcloud server can expose the same file structure as PotreeConverter output.
             // The only difference is the metadata root file (cloud.js vs infos/sources), and we can
@@ -196,7 +189,7 @@ export default {
             // (if `scale` is defined => we're fetching files from PotreeConverter)
             if (layer.metadata.scale != undefined) {
                 // PotreeConverter format
-                layer.metadata.customBinFormat = layer.metadata.pointAttributes === 'CIN';
+                customBinFormat = layer.metadata.pointAttributes === 'CIN';
                 bbox = new THREE.Box3(
                     new THREE.Vector3(cloud.boundingBox.lx, cloud.boundingBox.ly, cloud.boundingBox.lz),
                     new THREE.Vector3(cloud.boundingBox.ux, cloud.boundingBox.uy, cloud.boundingBox.uz));
@@ -205,7 +198,7 @@ export default {
                 layer.metadata.scale = 1;
                 layer.metadata.octreeDir = `itowns/${layer.table}.points`;
                 layer.metadata.hierarchyStepSize = 1000000; // ignore this with lopocs
-                layer.metadata.customBinFormat = true;
+                customBinFormat = true;
 
                 let idx = 0;
                 for (const entry of cloud) {
@@ -219,7 +212,9 @@ export default {
                    new THREE.Vector3(cloud[idx].bbox.xmax, cloud[idx].bbox.ymax, cloud[idx].bbox.zmax));
             }
 
-            layer.supportsProgressiveDisplay = layer.metadata.customBinFormat;
+            layer.parse = customBinFormat ? PotreeCinParser.parse : PotreeBinParser.parse;
+            layer.extension = customBinFormat ? 'cin' : 'bin';
+            layer.supportsProgressiveDisplay = customBinFormat;
 
             return parseOctree(
                     layer,
@@ -244,27 +239,21 @@ export default {
             parseOctree(layer, layer.metadata.hierarchyStepSize, node).then(() => command.view.notifyChange(layer, false));
         }
 
-        const extension = layer.metadata.customBinFormat ? 'cin' : 'bin';
-
         // `isLeaf` is for lopocs and allows the pointcloud server to consider that the current
         // node is the last one, even if we could subdivide even further.
         // It's necessary because lopocs doens't know about the hierarchy (it generates it on the fly
         // when we request .hrc files)
-        const url = `${node.baseurl}/r${node.name}.${extension}?isleaf=${command.isLeaf ? 1 : 0}`;
+        const url = `${node.baseurl}/r${node.name}.${layer.extension}?isleaf=${command.isLeaf ? 1 : 0}`;
 
-        return loadPointFile(layer, url).then((points) => {
+        return Fetcher.arrayBuffer(url, layer.fetchOptions).then(layer.parse).then((geometry) => {
+            const points = new THREE.Points(geometry, layer.material.clone());
+            addPickingAttribute(points);
+            points.frustumCulled = false;
+            points.matrixAutoUpdate = false;
             points.position.copy(node.bbox.min);
             points.scale.set(layer.metadata.scale, layer.metadata.scale, layer.metadata.scale);
-            points.tightbbox.min.x *= layer.metadata.scale;
-            points.tightbbox.min.y *= layer.metadata.scale;
-            points.tightbbox.min.z *= layer.metadata.scale;
-            points.tightbbox.max.x *= layer.metadata.scale;
-            points.tightbbox.max.y *= layer.metadata.scale;
-            points.tightbbox.max.z *= layer.metadata.scale;
-            points.tightbbox.translate(node.bbox.min);
-            points.material.transparent = layer.opacity < 1.0;
-            points.material.uniforms.opacity.value = layer.opacity;
             points.updateMatrix();
+            points.tightbbox = geometry.boundingBox.applyMatrix4(points.matrix);
             points.layers.set(layer.threejsLayer);
             points.layer = layer;
             return points;
