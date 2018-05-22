@@ -204,6 +204,13 @@
                         view.notifyChange(true);
                     }
 
+                    var material = new itowns.THREE.PointsMaterial({
+                        color: 0xff8888,
+                        sizeAttenuation: false,
+                        size: 1,
+                        vertexColors: itowns.THREE.VertexColors
+                    });
+
                     // add pointcloud to scene
                     function onLayerReady() {
                         var ratio;
@@ -221,6 +228,10 @@
                         lookAt.z = pointcloud.root.bbox.min.z;
                         placeCamera(position, lookAt);
                         controls.moveSpeed = pointcloud.root.bbox.getSize().length() / 3;
+
+                        pointcloud.onPointsCreated = (pointcloud, pts) => {
+                            pts.material = material;
+                        };
 
                         // update stats window
                         oldPostUpdate = pointcloud.postUpdate;
