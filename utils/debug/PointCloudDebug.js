@@ -49,30 +49,30 @@ export default {
                 layer.displayedCount = 0;
                 const stickies = layer.dbgStickyNode.split(',');
                 for (const pts of layer.group.children) {
-                    pts.material.visible = false;
+                    pts.visible = false;
                     for (const name of stickies) {
                         if (pts.owner.name == name) {
-                            pts.material.visible = true;
+                            pts.visible = true;
                         } else if (!isInHierarchy(pts.owner, name)) {
                             continue;
                         } else if (pts.owner.name.length < name.length) {
-                            pts.material.visible = layer.dbgDisplayParents;
+                            pts.visible = layer.dbgDisplayParents;
                             break;
                         } else {
-                            pts.material.visible = layer.dbgDisplayChildren;
+                            pts.visible = layer.dbgDisplayChildren;
                         }
-                        if (pts.material.visible) {
+                        if (pts.visible) {
                             break;
                         }
                     }
-                    if (pts.material.visible) {
+                    if (pts.visible) {
                         layer.displayedCount += pts.geometry.attributes.position.count;
                     }
                 }
             }
             for (const pts of layer.group.children) {
                 if (pts.boxHelper) {
-                    pts.boxHelper.material.visible = layer.dbgDisplaybbox
+                    pts.boxHelper.visible = layer.dbgDisplaybbox
                         && pts.visible && pts.material.visible;
                 }
             }
