@@ -230,7 +230,7 @@
                         controls.moveSpeed = pointcloud.root.bbox.getSize().length() / 3;
 
                         pointcloud.onPointsCreated = (pointcloud, pts) => {
-                            pts.material = material;
+                            pts.material = material.clone();
                         };
 
                         // update stats window
