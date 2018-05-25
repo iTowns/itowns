@@ -2,19 +2,19 @@ import togeojson from 'togeojson';
 import GeoJsonParser from './GeoJsonParser';
 
 /**
- * The GpxParser module provides a [parse]{@link module:GpxParser.parse} method
- * that takes a GPX in and gives an object formatted for iTowns containing all
- * necessary informations to display this GPX.
+ * The KmlParser module provides a [parse]{@link module:KmlParser.parse} method
+ * that takes a KML in and gives an object formatted for iTowns containing all
+ * necessary informations to display this KML.
  *
- * @module GpxParser
+ * @module KmlParser
  * @implements Parser
  */
 export default {
     /**
-     * Parse a GPX file consent and return a [Feature]{@link
+     * Parse a KML file consent and return a [Feature]{@link
      * module:GeoJsonParser~Feature} or an array of Features.
      *
-     * @param {string} xml - The GPX file content to parse.
+     * @param {string} xml - The KML file content to parse.
      * @param {Object} [options] - Options controlling the parsing.
      * @param {string} options.crsOut - The CRS to convert the input coordinates
      * to.
@@ -33,6 +33,6 @@ export default {
             xml = new window.DOMParser().parseFromString(xml, 'text/xml');
         }
 
-        return GeoJsonParser.parse(togeojson.gpx(xml), options);
+        return GeoJsonParser.parse(togeojson.kml(xml), options);
     },
 };

@@ -5,6 +5,8 @@
  */
 
 import PriorityQueue from 'js-priority-queue';
+import CancelledCommandException from './CancelledCommandException';
+
 import WMTSProvider from '../../Provider/WMTSProvider';
 import WMSProvider from '../../Provider/WMSProvider';
 import TileProvider from '../../Provider/TileProvider';
@@ -14,7 +16,10 @@ import PointCloudProvider from '../../Provider/PointCloudProvider';
 import WFSProvider from '../../Provider/WFSProvider';
 import RasterProvider from '../../Provider/RasterProvider';
 import StaticProvider from '../../Provider/StaticProvider';
-import CancelledCommandException from './CancelledCommandException';
+
+import GeoJsonParser from '../../Parser/GeoJsonParser';
+import GpxParser from '../../Parser/GpxParser';
+import KmlParser from '../../Parser/KmlParser';
 
 var instanceScheduler = null;
 
@@ -83,22 +88,30 @@ function _instanciateQueue() {
             // commands pending
             pending: 0,
         },
-        execute(cmd, provider) {
+        execute(cmd, provider, parser) {
             this.counters.pending--;
             this.counters.executing++;
-            return provider.executeCommand(cmd).then((result) => {
-                this.counters.executing--;
-                cmd.resolve(result);
-                // only count successul commands
-                this.counters.executed++;
-            }, (err) => {
-                this.counters.executing--;
-                cmd.reject(err);
-                this.counters.failed++;
-                if (__DEBUG__ && this.counters.failed < 3) {
-                    console.error(err);
-                }
-            });
+            return provider.executeCommand(cmd)
+                .then((blob) => {
+                    if (blob.callback) {
+                        return parser.parse(blob.content, blob.options)
+                            .then(res => blob.callback(res));
+                    }
+                    return parser.parse(blob);
+                })
+                .then((result) => {
+                    this.counters.executing--;
+                    cmd.resolve(result);
+                    // only count successul commands
+                    this.counters.executed++;
+                }, (err) => {
+                    this.counters.executing--;
+                    cmd.reject(err);
+                    this.counters.failed++;
+                    if (__DEBUG__ && this.counters.failed < 3) {
+                        console.error(err);
+                    }
+                });
         },
     };
 }
@@ -121,11 +134,13 @@ function Scheduler() {
     this.hostQueues = new Map();
 
     this.providers = {};
+    this.parsers = {};
 
     this.maxCommandsPerHost = 6;
 
     // TODO: add an options to not instanciate default providers
     this.initDefaultProviders();
+    this.initDefaultParsers();
 }
 
 Scheduler.prototype.constructor = Scheduler;
@@ -145,14 +160,28 @@ Scheduler.prototype.initDefaultProviders = function initDefaultProviders() {
     this.addProtocolProvider('static', StaticProvider);
 };
 
+Scheduler.prototype.initDefaultParsers = function initDefaultParsers() {
+    // Register all parsers
+    this.addFormatParser('geojson', GeoJsonParser);
+    this.addFormatParser('gpx', GpxParser);
+    this.addFormatParser('kml', KmlParser);
+};
+
 Scheduler.prototype.runCommand = function runCommand(command, queue, executingCounterUpToDate) {
-    var provider = this.providers[command.layer.protocol];
+    const provider = this.providers[command.layer.protocol];
 
     if (!provider) {
         throw new Error('No known provider for layer', command.layer.id);
     }
 
-    queue.execute(command, provider, executingCounterUpToDate).then(() => {
+    let parser = this.parsers[command.layer.format];
+
+    // we assume no parsing is necessary, so a fake parser is setted
+    if (!parser) {
+        parser = { parse: blob => blob };
+    }
+
+    queue.execute(command, provider, parser, executingCounterUpToDate).then(() => {
         // notify view that one command ended.
         command.view.notifyChange(command.requester, command.redraw);
 
@@ -252,11 +281,14 @@ Scheduler.prototype.execute = function execute(command) {
  * is a tiled layer, such as WMTS or TMS, but not in case like a GPX layer.
  *
  * @return {Promise} The {@link Scheduler} always expect a Promise as a result,
- * resolving to an object containing sufficient information for the associated
- * processing to the current layer. For example, see the
- * [LayeredMaterialNodeProcessing#updateLayeredMaterialNodeElevation]{@link
- * https://github.com/iTowns/itowns/blob/master/src/Process/LayeredMaterialNodeProcessing.js}
- * class or other processing class.
+ * resolving to a blob that will be parsed by a {@link Parser}. The contents of
+ * this Promise can be the datablob itself, or an object, composed of three
+ * properties:
+ * <ul>
+ *   <li><code>content</code>: the retrieved datablob.
+ *   <li><code>options</code>: options to pass to the parser.
+ *   <li><code>callback</code>: to call after the parser execution.
+ * </ul>
  */
 
 /**
@@ -298,6 +330,76 @@ Scheduler.prototype.addProtocolProvider = function addProtocolProvider(protocol,
  */
 Scheduler.prototype.getProtocolProvider = function getProtocolProvider(protocol) {
     return this.providers[protocol];
+};
+
+/**
+ * A Parser has the responsability to parse a datablobs. Given a blob, it parse
+ * it to an usable thing for iTowns, like a texture or a mesh for example.
+ *
+ * @interface Parser
+ */
+
+/**
+ * In the {@link Scheduler} loop, this function is called every time the layer
+ * needs new information about itself. A {@link Provider} will get the necessary
+ * blob, and the Parser will take care of parsing this blob to make it usable.
+ * <br><br>
+ * It passes a <code>blob</code> as a parameter, with an <code>options</code>
+ * object, relative to the parser.
+ *
+ * @function
+ * @name Parser#parse
+ *
+ * @param {string|ArrayBuffer|*} blob - The blob accepted by the parser, can be
+ * of any type. Parsers in iTowns are using mainly <code>string</code> or
+ * <code>ArrayBuffer</code>.
+ * @param {Object} [options] - Options relative to each parser. See {@link
+ * GeoJsonParser} or {@link GpxParser} for example.
+ *
+ * @return {Promise} The {@link Scheduler} always expect a Promise as a result,
+ * resolving to an object containing sufficient information for the associated
+ * processing to the current layer. For example, see the
+ * [LayeredMaterialNodeProcessing#updateLayeredMaterialNodeElevation]{@link
+ * https://github.com/iTowns/itowns/blob/master/src/Process/LayeredMaterialNodeProcessing.js}
+ * class or other processing class.
+ */
+
+/**
+ * Adds a parser for a specified format. The parser will be used when executing
+ * the queue to parse resources into usable one. See {@link Parser} for more
+ * informations.
+ * By default, some formats are already set in iTowns: <code>gpx</code>, and
+ * <code>geojson</code>.
+ * <br><br>
+ * Warning: if the specified format has already a parser attached to it, the
+ * current parser will be overwritten by the given parser.
+ *
+ * @param {string} format - The name of the format to add. This is the
+ * <code>format</code> parameter put inside the configuration when adding a
+ * layer.
+ * @param {Parser} parser - The parser to link to the format, that must respect
+ * the {@link Parser} interface description.
+ *
+ * @throws {Error} an error if any method of the {@link Parser} is not present
+ * in the provider.
+ */
+Scheduler.prototype.addFormatParser = function addFormatParser(format, parser) {
+    if (typeof (parser.parse) !== 'function') {
+        throw new Error(`Can't add parser for ${format}: missing a parse function.`);
+    }
+
+    this.parsers[format] = parser;
+};
+
+/**
+ * Get a specific {@link Parser} given a particular format.
+ *
+ * @param {string} format
+ *
+ * @return {Parser}
+ */
+Scheduler.prototype.getFormatParser = function getFormatParser(format) {
+    return this.parsers[format];
 };
 
 Scheduler.prototype.commandsWaitingExecutionCount = function commandsWaitingExecutionCount() {

@@ -216,6 +216,7 @@ function readFeatures(crsIn, crsOut, features, filteringExtent, options) {
  * containing all necessary informations to display this GeoJSON.
  *
  * @module GeoJsonParser
+ * @implements Parser
  */
 export default {
     /**
