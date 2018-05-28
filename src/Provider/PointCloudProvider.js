@@ -3,7 +3,7 @@ import Fetcher from './Fetcher';
 import PointCloudProcessing from '../Process/PointCloudProcessing';
 import PotreeBinParser from '../Parser/PotreeBinParser';
 import PotreeCinParser from '../Parser/PotreeCinParser';
-import PointsMaterial from '../Renderer/PointsMaterial';
+import PointsMaterial, { MODE } from '../Renderer/PointsMaterial';
 import Picking from '../Core/Picking';
 
 // Create an A(xis)A(ligned)B(ounding)B(ox) for the child `childIndex` of one aabb.
@@ -168,6 +168,7 @@ export default {
         layer.type = 'geometry';
         layer.material = layer.material || {};
         layer.material = layer.material.isMaterial ? layer.material : new PointsMaterial(layer.material);
+        layer.mode = MODE.COLOR;
 
         // default update methods
         layer.preUpdate = PointCloudProcessing.preUpdate;
@@ -193,6 +194,13 @@ export default {
                 bbox = new THREE.Box3(
                     new THREE.Vector3(cloud.boundingBox.lx, cloud.boundingBox.ly, cloud.boundingBox.lz),
                     new THREE.Vector3(cloud.boundingBox.ux, cloud.boundingBox.uy, cloud.boundingBox.uz));
+
+                // do we have normal information
+                const normal = Array.isArray(layer.metadata.pointAttributes) &&
+                    layer.metadata.pointAttributes.find(elem => elem.startsWith('NORMAL'));
+                if (normal) {
+                    layer.material.defines[normal] = 1;
+                }
             } else {
                 // Lopocs
                 layer.metadata.scale = 1;
@@ -245,7 +253,7 @@ export default {
         // when we request .hrc files)
         const url = `${node.baseurl}/r${node.name}.${layer.extension}?isleaf=${command.isLeaf ? 1 : 0}`;
 
-        return Fetcher.arrayBuffer(url, layer.fetchOptions).then(layer.parse).then((geometry) => {
+        return Fetcher.arrayBuffer(url, layer.fetchOptions).then(buffer => layer.parse(buffer, layer.metadata.pointAttributes)).then((geometry) => {
             const points = new THREE.Points(geometry, layer.material.clone());
             addPickingAttribute(points);
             points.frustumCulled = false;
