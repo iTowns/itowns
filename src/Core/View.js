@@ -309,49 +309,49 @@ function _preprocessLayer(view, layer, provider, parentLayer) {
  *
  * @param {LayerOptions|Layer|GeometryLayer} layer
  * @param {Layer=} parentLayer
- * @return {Promise} a promise resolved with the new layer object when it is fully initialized
+ * @return {Promise} a promise resolved with the new layer object when it is fully initialized or rejected if any error occurred.
  */
 View.prototype.addLayer = function addLayer(layer, parentLayer) {
-    const duplicate = this.getLayers((l => l.id == layer.id));
-    if (duplicate.length > 0) {
-        throw new Error(`Invalid id '${layer.id}': id already used`);
-    }
-
-    if (parentLayer && !layer.extent) {
-        layer.extent = parentLayer.extent;
-    }
-
-    const provider = this.mainLoop.scheduler.getProtocolProvider(layer.protocol);
-    if (layer.protocol && !provider) {
-        throw new Error(`${layer.protocol} is not a recognized protocol name.`);
-    }
-    layer = _preprocessLayer(this, layer, provider, parentLayer);
-    if (parentLayer) {
-        parentLayer.attach(layer);
-    } else {
-        if (typeof (layer.update) !== 'function') {
-            throw new Error('Cant add GeometryLayer: missing a update function');
-        }
-        if (typeof (layer.preUpdate) !== 'function') {
-            throw new Error('Cant add GeometryLayer: missing a preUpdate function');
+    return new Promise((resolve, reject) => {
+        const duplicate = this.getLayers((l => l.id == layer.id));
+        if (duplicate.length > 0) {
+            reject(new Error(`Invalid id '${layer.id}': id already used`));
         }
 
-        this._layers.push(layer);
-    }
-
-    if (layer.object3d && !layer.object3d.parent && layer.object3d !== this.scene) {
-        this.scene.add(layer.object3d);
-    }
-
-    return layer.whenReady.then((layer) => {
-        this.notifyChange(false);
-        return layer;
-    }).then((layer) => {
-        if (!this._frameRequesters[MAIN_LOOP_EVENTS.UPDATE_END] ||
-            this._frameRequesters[MAIN_LOOP_EVENTS.UPDATE_END].indexOf(this._allLayersAreReadyCallback) == -1) {
-            this.addFrameRequester(MAIN_LOOP_EVENTS.UPDATE_END, this._allLayersAreReadyCallback);
+        if (parentLayer && !layer.extent) {
+            layer.extent = parentLayer.extent;
         }
-        return layer;
+
+        const provider = this.mainLoop.scheduler.getProtocolProvider(layer.protocol);
+        if (layer.protocol && !provider) {
+            reject(new Error(`${layer.protocol} is not a recognized protocol name.`));
+        }
+        layer = _preprocessLayer(this, layer, provider, parentLayer);
+        if (parentLayer) {
+            parentLayer.attach(layer);
+        } else {
+            if (typeof (layer.update) !== 'function') {
+                reject(new Error('Cant add GeometryLayer: missing a update function'));
+            }
+            if (typeof (layer.preUpdate) !== 'function') {
+                reject(new Error('Cant add GeometryLayer: missing a preUpdate function'));
+            }
+
+            this._layers.push(layer);
+        }
+
+        if (layer.object3d && !layer.object3d.parent && layer.object3d !== this.scene) {
+            this.scene.add(layer.object3d);
+        }
+
+        layer.whenReady.then((layer) => {
+            this.notifyChange(false);
+            if (!this._frameRequesters[MAIN_LOOP_EVENTS.UPDATE_END] ||
+                    this._frameRequesters[MAIN_LOOP_EVENTS.UPDATE_END].indexOf(this._allLayersAreReadyCallback) == -1) {
+                this.addFrameRequester(MAIN_LOOP_EVENTS.UPDATE_END, this._allLayersAreReadyCallback);
+            }
+            resolve(layer);
+        });
     });
 };
 
