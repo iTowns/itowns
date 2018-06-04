@@ -32,12 +32,17 @@ function readCoordinates(crsIn, crsOut, coordinates, extent, target) {
     const out = target || new Array(coordinates.length);
 
     let i = 0;
+    // TODO: 1 is a default z value, makes this configurable
+    let z = 1;
     for (const pair of coordinates) {
-        // TODO: 1 is a default z value, makes this configurable
+        if (typeof pair[2] == 'number') {
+            z = pair[2];
+        }
+
         if (crsIn === crsOut) {
-            out[offset + i] = new Coordinates(crsIn, pair[0], pair[1], 1);
+            out[offset + i] = new Coordinates(crsIn, pair[0], pair[1], z);
         } else {
-            coords.set(crsIn, pair[0], pair[1], 1);
+            coords.set(crsIn, pair[0], pair[1], z);
             out[offset + i] = coords.as(crsOut);
         }
         // expand extent if present
