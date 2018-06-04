@@ -37,8 +37,6 @@ describe('positionGlobe', () => {
                 globeView.notifyChange();
             }));
 
-        await page.screenshot({ path: '/tmp/b.png' });
-
         const value = await page.evaluate(() => {
             // bug was caused by the readDepthBuffer() returning an incorrect value
             // because it drew the cone in front of the cone
