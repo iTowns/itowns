@@ -140,19 +140,25 @@ before(async () => {
 
         return result;
     };
+    // For now the '--no-sandbox' flag is needed. Otherwise Chrome fails to start:
+    //
+    // FATAL:zygote_host_impl_linux.cc(124)] No usable sandbox! Update your kernel
+    // or see
+    // https://chromium.googlesource.com/chromium/src/+/master/docs/linux_suid_sandbox_development.md
+    // for more information on developing with the SUID sandbox.
+    // If you want to live dangerously and need an immediate workaround, you can try
+    // using --no-sandbox.
+    const args = ['--no-sandbox'];
+
+    if (process.env.REMOTE_DEBUGGING) {
+        args.push(`--remote-debugging-port=${process.env.REMOTE_DEBUGGING}`);
+    }
+
     global.browser = await puppeteer.launch({
         executablePath: process.env.CHROME,
         headless: !process.env.DEBUG,
         devtools: !!process.env.DEBUG,
-        // For now the '--no-sandbox' flag is needed. Otherwise Chrome fails to start:
-        //
-        // FATAL:zygote_host_impl_linux.cc(124)] No usable sandbox! Update your kernel
-        // or see
-        // https://chromium.googlesource.com/chromium/src/+/master/docs/linux_suid_sandbox_development.md
-        // for more information on developing with the SUID sandbox.
-        // If you want to live dangerously and need an immediate workaround, you can try
-        // using --no-sandbox.
-        args: ['--no-sandbox'] });
+        args });
 });
 
 // close browser and reset global variables
