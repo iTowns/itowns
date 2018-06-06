@@ -268,7 +268,7 @@ function GlobeView(viewerDiv, coordCarto, options = {}) {
     this.wgs84TileLayer = wgs84TileLayer;
 
     const fn = () => {
-        this.mainLoop.removeEventListener(VIEW_EVENTS.LAYERS_INITIALIZED, fn);
+        this.removeEventListener(VIEW_EVENTS.LAYERS_INITIALIZED, fn);
         this.dispatchEvent({ type: GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED });
     };
 
