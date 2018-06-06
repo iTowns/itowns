@@ -167,7 +167,7 @@ export default function createTileDebugUI(datDebugTool, view, layer, debugInstan
             visible: false,
         }, layer).then((l) => {
             gui.add(l, 'visible').name('Bounding boxes').onChange(() => {
-                view.notifyChange();
+                view.notifyChange(l);
             });
         });
     View.prototype.addLayer.call(view,
@@ -178,7 +178,7 @@ export default function createTileDebugUI(datDebugTool, view, layer, debugInstan
             visible: false,
         }, layer).then((l) => {
             gui.add(l, 'visible').name('Bounding Spheres').onChange(() => {
-                view.notifyChange();
+                view.notifyChange(l);
             });
         });
 }
