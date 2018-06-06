@@ -47,7 +47,7 @@ function executeCommand(command) {
 
 function assignLayer(object, layer) {
     if (object) {
-        object.layer = layer.id;
+        object.layer = layer;
         object.layers.set(layer.threejsLayer);
         for (const c of object.children) {
             assignLayer(c, layer);

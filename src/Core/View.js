@@ -203,7 +203,7 @@ function _preprocessLayer(view, layer, provider, parentLayer) {
         defineLayerProperty(layer, 'opacity', 1.0, () => {
             if (layer.object3d) {
                 layer.object3d.traverse((o) => {
-                    if (o.layer !== layer.id) {
+                    if (o.layer !== layer) {
                         return;
                     }
                     changeOpacity(o);
@@ -652,7 +652,7 @@ View.prototype.pickObjectsAt = function pickObjectsAt(mouseOrEvt, radius, ...whe
 
                 // then filter the results
                 for (const o of obj) {
-                    if (o.layer === layer.id) {
+                    if (o.layer === layer) {
                         results.push(o);
                     }
                 }
