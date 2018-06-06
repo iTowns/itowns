@@ -222,12 +222,15 @@ function PlanarControls(view, options = {}) {
         }
         if (this.state === STATE.DRAG) {
             this.handleDragMovement();
+            this.view.notifyChange(this.camera);
         }
         if (this.state === STATE.ROTATE && this.enableRotation) {
             this.handleRotation();
+            this.view.notifyChange(this.camera);
         }
         if (this.state === STATE.PAN) {
             this.handlePanMovement();
+            this.view.notifyChange(this.camera);
         }
         deltaMousePosition.set(0, 0);
     };
