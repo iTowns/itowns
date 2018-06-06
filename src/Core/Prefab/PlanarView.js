@@ -54,7 +54,7 @@ export function createPlanarLayer(id, extent, options) {
                 // some invisible tiles may now be visible
                 return layer.level0Nodes;
             }
-            if (source.layer === layer.id) {
+            if (source.layer === layer) {
                 if (!commonAncestor) {
                     commonAncestor = source;
                 } else {

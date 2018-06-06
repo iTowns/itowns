@@ -36,7 +36,7 @@ export default {
     update(context, layer, node) {
         if (!node.parent && node.children.length) {
             // if node has been removed dispose three.js resource
-            ObjectRemovalHelper.removeChildrenAndCleanupRecursively(layer.id, node);
+            ObjectRemovalHelper.removeChildrenAndCleanupRecursively(layer, node);
             return;
         }
         if (!node.visible) {
@@ -96,7 +96,7 @@ export default {
                 }
                 node.layerUpdateState[layer.id].success();
                 if (!node.parent) {
-                    ObjectRemovalHelper.removeChildrenAndCleanupRecursively(layer.id, result);
+                    ObjectRemovalHelper.removeChildrenAndCleanupRecursively(layer, result);
                     return;
                 }
                 // We don't use node.matrixWorld here, because feature coordinates are
