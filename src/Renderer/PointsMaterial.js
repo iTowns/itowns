@@ -44,7 +44,7 @@ class PointsMaterial extends RawShaderMaterial {
         this.uniforms.overlayColor.value = this.overlayColor;
     }
 
-    copy(source) {
+    update(source) {
         this.visible = source.visible;
         this.opacity = source.opacity;
         this.transparent = source.transparent;
