@@ -13,7 +13,7 @@ export default {
         const update = () => view.notifyChange(layer);
         layer.debugUI = datUi.addFolder(`${layer.id}`);
 
-        layer.debugUI.add(layer.material, 'visible').name('Visible').onChange(update);
+        layer.debugUI.add(layer, 'visible').name('Visible').onChange(update);
         layer.debugUI.add(layer, 'sseThreshold').name('SSE threshold').onChange(update);
         layer.debugUI.add(layer, 'octreeDepthLimit', -1, 20).name('Depth limit').onChange(update);
         layer.debugUI.add(layer, 'pointBudget', 1, 15000000).name('Max point count').onChange(update);
