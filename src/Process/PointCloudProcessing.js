@@ -100,6 +100,7 @@ export default {
                 (2 * Math.tan(THREE.Math.degToRad(context.camera.camera3D.fov) * 0.5));
 
         if (layer.material) {
+            layer.material.visible = layer.visible;
             layer.material.opacity = layer.opacity;
             layer.material.transparent = layer.opacity < 1;
             layer.material.size = layer.pointSize;
@@ -164,7 +165,11 @@ export default {
         // only load geometry if this elements has points
         if (elt.numPoints > 0) {
             if (elt.obj) {
-                elt.obj.material.copy(layer.material);
+                if (elt.obj.material.update) {
+                    elt.obj.material.update(layer.material);
+                } else {
+                    elt.obj.material.copy(layer.material);
+                }
                 if (__DEBUG__) {
                     if (layer.bboxes.visible) {
                         if (!elt.obj.boxHelper) {
