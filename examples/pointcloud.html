@@ -234,11 +234,14 @@
                         // update stats window
                         oldPostUpdate = pointcloud.postUpdate;
                         pointcloud.postUpdate = function postUpdate() {
-                            var info = document.getElementById('info');
                             oldPostUpdate.apply(pointcloud, arguments);
+                            pointcloud.statsUpdate();
+                        };
+                        pointcloud.statsUpdate = function statsUpdate() {
+                            var info = document.getElementById('info');
                             info.textContent = 'Nb points: ' +
                                 pointcloud.displayedCount.toLocaleString();
-                        };
+                        }
                     }
                     window.view = view;
 
