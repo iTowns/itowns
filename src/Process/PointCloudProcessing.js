@@ -86,6 +86,15 @@ function markForDeletion(elt) {
     }
 }
 
+function updateMinMaxDistance(context, bbox) {
+    const distance = bbox.distanceToPoint(context.camera.camera3D.position);
+    const bboxSize = bbox.getSize();
+    context.distance.min = Math.min(context.distance.min, distance);
+    context.distance.max = Math.max(context.distance.max,
+        distance + Math.max(bboxSize.x, Math.max(bboxSize.y, bboxSize.z)));
+    return distance;
+}
+
 export default {
     preUpdate(context, layer, changeSources) {
         // Bail-out if not ready
@@ -137,7 +146,7 @@ export default {
             }
         }
         if (commonAncestorName) {
-            return [layer.root.findChildrenByName(commonAncestorName)];
+            context.fastUpdateHint = commonAncestorName;
         }
 
         // Start updating from hierarchy root
@@ -145,8 +154,6 @@ export default {
     },
 
     update(context, layer, elt) {
-        elt.visible = false;
-
         if (layer.octreeDepthLimit >= 0 && layer.octreeDepthLimit < elt.name.length) {
             markForDeletion(elt);
             return;
@@ -154,70 +161,80 @@ export default {
 
         // pick the best bounding box
         const bbox = (elt.tightbbox ? elt.tightbbox : elt.bbox);
-        elt.visible = context.camera.isBox3Visible(bbox, layer.object3d.matrixWorld);
-        if (!elt.visible) {
-            markForDeletion(elt);
-            return;
-        }
 
-        elt.notVisibleSince = undefined;
+        if (context.fastUpdateHint && !elt.name.startsWith(context.fastUpdateHint)) {
+            if (!elt.visible) {
+                return;
+            }
+            updateMinMaxDistance(context, bbox);
+        } else {
+            elt.visible = context.camera.isBox3Visible(bbox, layer.object3d.matrixWorld);
 
-        // only load geometry if this elements has points
-        if (elt.numPoints > 0) {
-            if (elt.obj) {
-                if (elt.obj.material.update) {
-                    elt.obj.material.update(layer.material);
-                } else {
-                    elt.obj.material.copy(layer.material);
-                }
-                if (__DEBUG__) {
-                    if (layer.bboxes.visible) {
-                        if (!elt.obj.boxHelper) {
-                            initBoundingBox(elt, layer);
+            if (!elt.visible) {
+                markForDeletion(elt);
+                return;
+            }
+
+            const distance = updateMinMaxDistance(context, bbox);
+            elt.notVisibleSince = undefined;
+
+            // only load geometry if this elements has points
+            if (elt.numPoints > 0) {
+                if (elt.obj) {
+                    if (elt.obj.material.update) {
+                        elt.obj.material.update(layer.material);
+                    } else {
+                        elt.obj.material.copy(layer.material);
+                    }
+                    if (__DEBUG__) {
+                        if (layer.bboxes.visible) {
+                            if (!elt.obj.boxHelper) {
+                                initBoundingBox(elt, layer);
+                            }
+                            elt.obj.boxHelper.visible = true;
+                            elt.obj.boxHelper.material.color.r = 1 - elt.sse;
+                            elt.obj.boxHelper.material.color.g = elt.sse;
                         }
-                        elt.obj.boxHelper.visible = true;
-                        elt.obj.boxHelper.material.color.r = 1 - elt.sse;
-                        elt.obj.boxHelper.material.color.g = elt.sse;
                     }
-                }
-            } else if (!elt.promise) {
-                const distance = Math.max(0.001, bbox.distanceToPoint(context.camera.camera3D.position));
-                // Increase priority of nearest node
-                const priority = computeScreenSpaceError(context, layer, elt, distance) / distance;
-                elt.promise = context.scheduler.execute({
-                    layer,
-                    requester: elt,
-                    view: context.view,
-                    priority,
-                    redraw: true,
-                    isLeaf: elt.childrenBitField == 0,
-                    earlyDropFunction: cmd => !cmd.requester.visible || !layer.visible,
-                }).then((pts) => {
-                    if (layer.onPointsCreated) {
-                        layer.onPointsCreated(layer, pts);
-                    }
+                } else if (!elt.promise) {
+                    // Increase priority of nearest node
+                    const priority = computeScreenSpaceError(context, layer, elt, distance) / Math.max(0.001, distance);
+                    elt.promise = context.scheduler.execute({
+                        layer,
+                        requester: elt,
+                        view: context.view,
+                        priority,
+                        redraw: true,
+                        isLeaf: elt.childrenBitField == 0,
+                        earlyDropFunction: cmd => !cmd.requester.visible || !layer.visible,
+                    }).then((pts) => {
+                        if (layer.onPointsCreated) {
+                            layer.onPointsCreated(layer, pts);
+                        }
 
-                    elt.obj = pts;
-                    // store tightbbox to avoid ping-pong (bbox = larger => visible, tight => invisible)
-                    elt.tightbbox = pts.tightbbox;
+                        elt.obj = pts;
+                        // store tightbbox to avoid ping-pong (bbox = larger => visible, tight => invisible)
+                        elt.tightbbox = pts.tightbbox;
 
-                    // make sure to add it here, otherwise it might never
-                    // be added nor cleaned
-                    layer.group.add(elt.obj);
-                    elt.obj.updateMatrixWorld(true);
-
-                    elt.promise = null;
-                }, (err) => {
-                    if (err instanceof CancelledCommandException) {
+                        // make sure to add it here, otherwise it might never
+                        // be added nor cleaned
+                        layer.group.add(elt.obj);
+                        elt.obj.updateMatrixWorld(true);
                         elt.promise = null;
-                    }
-                });
+                    }, (err) => {
+                        if (err instanceof CancelledCommandException) {
+                            elt.promise = null;
+                        }
+                    });
+                }
+            }
+
+            if (elt.children && elt.children.length) {
+                elt.sse = computeScreenSpaceError(context, layer, elt, distance) / layer.sseThreshold;
             }
         }
 
         if (elt.children && elt.children.length) {
-            const distance = bbox.distanceToPoint(context.camera.camera3D.position);
-            elt.sse = computeScreenSpaceError(context, layer, elt, distance) / layer.sseThreshold;
             if (elt.sse >= 1) {
                 return elt.children;
             } else {

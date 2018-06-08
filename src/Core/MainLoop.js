@@ -121,7 +121,18 @@ MainLoop.prototype._update = function _update(view, updateSources, dt) {
         engine: this.gfxEngine,
         scheduler: this.scheduler,
         view,
+        distance: {
+            min: Infinity,
+            max: 0,
+        },
+        fastUpdateHint: undefined,
     };
+
+    const previousNear = view.camera.camera3D.near;
+    const previousFar = view.camera.camera3D.far;
+    view.camera.camera3D.near = 0.1;
+    view.camera.camera3D.far = 2000000000;
+    view.camera.camera3D.updateMatrixWorld();
 
     // replace layer with their parent where needed
     updateSources.forEach((src) => {
@@ -135,6 +146,7 @@ MainLoop.prototype._update = function _update(view, updateSources, dt) {
     });
 
     for (const geometryLayer of view.getLayers((x, y) => !y)) {
+        context.fastUpdateHint = undefined;
         context.geometryLayer = geometryLayer;
         if (geometryLayer.ready && geometryLayer.visible && !geometryLayer.frozen) {
             view.execFrameRequesters(MAIN_LOOP_EVENTS.BEFORE_LAYER_UPDATE, dt, this._updateLoopRestarted, geometryLayer);
@@ -153,6 +165,15 @@ MainLoop.prototype._update = function _update(view, updateSources, dt) {
             view.execFrameRequesters(MAIN_LOOP_EVENTS.AFTER_LAYER_UPDATE, dt, this._updateLoopRestarted, geometryLayer);
         }
     }
+
+    if (context.distance.min != Infinity) {
+        view.camera.camera3D.near = Math.max(0.1, 0.5 * context.distance.min);
+        view.camera.camera3D.far = 2 * context.distance.max;
+    } else {
+        view.camera.camera3D.near = previousNear;
+        view.camera.camera3D.far = previousFar;
+    }
+    view.camera.camera3D.updateProjectionMatrix();
 };
 
 MainLoop.prototype._step = function _step(view, timestamp) {

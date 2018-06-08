@@ -1,6 +1,7 @@
 import { CameraHelper, Color, Vector3 } from 'three';
 import Coordinates from '../../src/Core/Geographic/Coordinates';
 import ThreeStatsChart from './charts/ThreeStatsChart';
+import CameraNearFarChart from './charts/CameraNearFarChart';
 import { MAIN_LOOP_EVENTS } from '../../src/Core/MainLoop';
 import PanoramaView from '../../src/Core/Prefab/PanoramaView';
 
@@ -25,10 +26,12 @@ function Debug(view, datDebugTool, chartDivContainer) {
 
     this.chartDivContainer = chartDivContainer;
     this.createChartContainer('three-info');
+    this.createChartContainer('camera-range');
 
     this.charts = [];
 
     this.charts.push(new ThreeStatsChart('three-info', view.mainLoop.gfxEngine.renderer));
+    this.charts.push(new CameraNearFarChart('camera-range', view.camera.camera3D));
 
     const charts = this.charts;
     const tileLayer = view.tileLayer || view.wgs84TileLayer || view.baseLayer;

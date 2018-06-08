@@ -68,13 +68,12 @@ export function createPlanarLayer(id, extent, options) {
             }
         }
         if (commonAncestor) {
+            context.fastUpdateHint = commonAncestor;
             if (__DEBUG__) {
                 layer._latestUpdateStartingLevel = commonAncestor.level;
             }
-            return [commonAncestor];
-        } else {
-            return layer.level0Nodes;
         }
+        return layer.level0Nodes;
     };
 
 
@@ -117,9 +116,6 @@ function PlanarView(viewerDiv, extent, options = {}) {
 
     this.camera.setPosition(positionCamera);
     this.camera.camera3D.lookAt(lookat);
-    this.camera.camera3D.near = 0.1;
-    this.camera.camera3D.far = 2 * Math.max(dim.x, dim.y);
-    this.camera.camera3D.updateProjectionMatrix();
     this.camera.camera3D.updateMatrixWorld(true);
 
     const tileLayer = createPlanarLayer('planar', extent, options);

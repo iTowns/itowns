@@ -11,7 +11,6 @@ import Capabilities from '../Core/System/Capabilities';
 import { unpack1K } from './LayeredMaterial';
 
 function c3DEngine(rendererOrDiv, options = {}) {
-    const NOIE = !Capabilities.isInternetExplorer();
     // pick sensible default options
     if (options.antialias === undefined) {
         options.antialias = true;
@@ -20,7 +19,7 @@ function c3DEngine(rendererOrDiv, options = {}) {
         options.alpha = true;
     }
     if (options.logarithmicDepthBuffer === undefined) {
-        options.logarithmicDepthBuffer = this.gLDebug || NOIE;
+        options.logarithmicDepthBuffer = false;
     }
 
     const renderer = rendererOrDiv.domElement ? rendererOrDiv : undefined;

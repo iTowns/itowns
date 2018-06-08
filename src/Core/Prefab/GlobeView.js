@@ -124,13 +124,12 @@ export function createGlobeLayer(id, options) {
             }
         }
         if (commonAncestor) {
+            context.fastUpdateHint = commonAncestor;
             if (__DEBUG__) {
                 layer._latestUpdateStartingLevel = commonAncestor.level;
             }
-            return [commonAncestor];
-        } else {
-            return layer.level0Nodes;
         }
+        return layer.level0Nodes;
     };
 
     function subdivision(context, layer, node) {
@@ -185,9 +184,6 @@ function GlobeView(viewerDiv, coordCarto, options = {}) {
 
     this.camera.setPosition(positionCamera);
     this.camera.camera3D.lookAt({ x: 0, y: 0, z: 0 });
-    this.camera.camera3D.near = Math.max(15.0, 0.000002352 * size);
-    this.camera.camera3D.far = size * 10;
-    this.camera.camera3D.updateProjectionMatrix();
     this.camera.camera3D.updateMatrixWorld(true);
 
     const wgs84TileLayer = createGlobeLayer('globe', options);
