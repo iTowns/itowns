@@ -165,11 +165,7 @@ export default {
         // only load geometry if this elements has points
         if (elt.numPoints > 0) {
             if (elt.obj) {
-                if (elt.obj.material.update) {
-                    elt.obj.material.update(layer.material);
-                } else {
-                    elt.obj.material.copy(layer.material);
-                }
+                elt.obj.material.copy(layer.material);
                 if (__DEBUG__) {
                     if (layer.bboxes.visible) {
                         if (!elt.obj.boxHelper) {
