@@ -96,24 +96,27 @@ function addExtrudedPolygonSideFaces(indices, length, ring, isClockWise) {
     // add indices to make two triangle, that make the side face
     const mod = ring.offset + ring.count + length;
     for (let i = ring.offset; i < ring.offset + ring.count; ++i) {
+        const i1 = Math.max((i + 1) % mod, ring.offset);
+        const i2 = Math.max((i + length) % mod, ring.offset);
+        const i3 = Math.max((i + length + 1) % mod, ring.offset);
         if (isClockWise) {
             // first triangle indices
             indices.push(i);
-            indices.push((i + length) % mod);
-            indices.push((i + 1) % mod);
+            indices.push(i2);
+            indices.push(i1);
             // second triangle indices
-            indices.push((i + 1) % mod);
-            indices.push((i + length) % mod);
-            indices.push((i + length + 1) % mod);
+            indices.push(i1);
+            indices.push(i2);
+            indices.push(i3);
         } else {
             // first triangle indices
-            indices.push((i + length) % mod);
+            indices.push(i2);
             indices.push(i);
-            indices.push((i + length + 1) % mod);
+            indices.push(i3);
             // second triangle indices
-            indices.push((i + length + 1) % mod);
+            indices.push(i3);
             indices.push(i);
-            indices.push((i + 1) % mod);
+            indices.push(i1);
         }
     }
 }
