@@ -4,7 +4,6 @@ import TiledGeometryLayer from '../../../Layer/TiledGeometryLayer';
 import { ellipsoidSizes } from '../../Geographic/Coordinates';
 import Extent from '../../Geographic/Extent';
 import BuilderEllipsoidTile from './BuilderEllipsoidTile';
-import { l_ELEVATION } from '../../../Renderer/LayeredMaterialConstants';
 import { SIZE_TEXTURE_TILE } from '../../../Provider/OGCWebServiceHelper';
 
 // matrix to convert sphere to ellipsoid
@@ -170,9 +169,10 @@ class GlobeLayer extends TiledGeometryLayer {
         // Prevent to subdivise the node if the current elevation level
         // we must avoid a tile, with level 20, inherits a level 3 elevation texture.
         // The induced geometric error is much too large and distorts the SSE
-        const currentTexture = node.material.textures[l_ELEVATION][0];
-        if (currentTexture.extent) {
-            const offsetScale = node.material.offsetScale[l_ELEVATION][0];
+        const nodeLayer = node.material.getElevationLayer();
+        const currentTexture = nodeLayer.textures[0];
+        if (currentTexture && currentTexture.extent) {
+            const offsetScale = nodeLayer.offsetScales[0];
             const ratio = offsetScale.z;
             // ratio is node size / texture size
             if (ratio < subdivisionRatio) {

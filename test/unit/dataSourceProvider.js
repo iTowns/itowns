@@ -5,12 +5,12 @@ import FeatureProcessing from '../../src/Process/FeatureProcessing';
 import TileMesh from '../../src/Core/TileMesh';
 import Extent from '../../src/Core/Geographic/Extent';
 import OBB from '../../src/Renderer/ThreeExtended/OBB';
-import LayeredMaterial from '../../src/Renderer/LayeredMaterial';
 import DataSourceProvider, { supportedFetchers } from '../../src/Provider/DataSourceProvider';
 import TileProvider from '../../src/Provider/TileProvider';
 import WMTSSource from '../../src/Source/WMTSSource';
 import WMSSource from '../../src/Source/WMSSource';
 import WFSSource from '../../src/Source/WFSSource';
+import LayerUpdateState from '../../src/Layer/LayerUpdateState';
 import ColorLayer from '../../src/Layer/ColorLayer';
 import GeometryLayer from '../../src/Layer/GeometryLayer';
 import GlobeLayer from '../../src/Core/Prefab/Globe/GlobeLayer';
@@ -26,6 +26,13 @@ describe('Provide in Sources', function () {
     // Misc var to initialize a TileMesh instance
     const geom = new THREE.Geometry();
     geom.OBB = new OBB(new THREE.Vector3(), new THREE.Vector3(1, 1, 1));
+    const extent = new Extent('EPSG:4326', 0, 10, 0, 10);
+    const zoom = 4;
+
+    const nodeLayer = { };
+    const material = {
+        getLayer: () => nodeLayer,
+    };
 
     // Mock scheduler
     const context = {
@@ -87,22 +94,14 @@ describe('Provide in Sources', function () {
                 max: 8,
             },
         });
-        const zoom = 4;
-        const tile = new TileMesh(
-            colorlayer,
-            geom,
-            new LayeredMaterial(),
-            new Extent('EPSG:4326', 0, 10, 0, 10),
-            zoom);
-        tile.material.visible = true;
-        tile.parent = { };
-        tile.material.indexOfColorLayer = () => 0;
-        tile.material.isColorLayerDownscaled = () => true;
-        tile.material.getColorLayerLevelById = () => 1;
-        tile.material.getLayerTextures = () => [{}];
 
-        updateLayeredMaterialNodeImagery(context, colorlayer, tile);
-        updateLayeredMaterialNodeImagery(context, colorlayer, tile);
+        const tile = new TileMesh(geom, material, colorlayer, extent, zoom);
+        material.visible = true;
+        nodeLayer.level = 0;
+        tile.parent = { };
+
+        updateLayeredMaterialNodeImagery(context, colorlayer, tile, tile.parent);
+        updateLayeredMaterialNodeImagery(context, colorlayer, tile, tile.parent);
         DataSourceProvider.executeCommand(context.scheduler.commands[0]).then((textures) => {
             assert.equal(textures[0].coords.zoom, zoom);
             assert.equal(textures[0].coords.row, 7);
@@ -122,19 +121,10 @@ describe('Provide in Sources', function () {
                 max: 8,
             },
         });
-        const zoom = 4;
-        const tile = new TileMesh(
-            colorlayer,
-            geom,
-            new LayeredMaterial(),
-            new Extent('EPSG:4326', 0, 10, 0, 10),
-            zoom);
-        tile.material.visible = true;
-        tile.parent = { material: { indexOfColorLayer: () => 0 } };
-        tile.material.indexOfColorLayer = () => 0;
-        tile.material.isColorLayerDownscaled = () => true;
-        tile.material.getColorLayerLevelById = () => 1;
-        tile.material.getLayerTextures = () => [{}];
+        const tile = new TileMesh(geom, material, colorlayer, extent, zoom);
+        material.visible = true;
+        nodeLayer.level = 0;
+        tile.parent = { };
 
         updateLayeredMaterialNodeImagery(context, colorlayer, tile, tile.parent);
         updateLayeredMaterialNodeImagery(context, colorlayer, tile, tile.parent);
@@ -147,15 +137,11 @@ describe('Provide in Sources', function () {
         });
     });
     it('should get 4 TileMesh from TileProvider', () => {
-        const tile = new TileMesh(
-            colorlayer,
-            geom,
-            new LayeredMaterial(),
-            new Extent('EPSG:4326', 0, 10, 0, 10),
-            4);
-        tile.material.visible = true;
-        tile.parent = { pendingSubdivision: false };
-        tile.material.isColorLayerLoaded = () => true;
+        const tile = new TileMesh(geom, material, globelayer, extent, zoom);
+        material.visible = true;
+        nodeLayer.level = 0;
+        tile.parent = { };
+
         globelayer.subdivideNode(context, tile);
         TileProvider.executeCommand(context.scheduler.commands[0]).then((tiles) => {
             assert.equal(tiles.length, 4);
@@ -166,16 +152,14 @@ describe('Provide in Sources', function () {
         });
     });
     it('should get 3 meshs with WFS source and DataSourceProvider', () => {
-        const tile = new TileMesh(
-            colorlayer,
-            geom,
-            new LayeredMaterial(),
-            new Extent('EPSG:4326', 0, 10, 0, 10),
-            4);
-        tile.material.visible = true;
+        const tile = new TileMesh(geom, material, featureLayer, extent, zoom);
+        material.visible = true;
+        nodeLayer.level = 0;
         tile.parent = { pendingSubdivision: false };
         tile.material.isColorLayerLoaded = () => true;
         featureLayer.mergeFeatures = false;
+        tile.layerUpdateState = { test: new LayerUpdateState() };
+
         featureLayer.update(context, featureLayer, tile);
         DataSourceProvider.executeCommand(context.scheduler.commands[0]).then((features) => {
             assert.equal(features[0].children.length, 3);
@@ -183,9 +167,9 @@ describe('Provide in Sources', function () {
     });
     it('should get 1 mesh with WFS source and DataSourceProvider and mergeFeatures == true', () => {
         const tile = new TileMesh(
-            colorlayer,
             geom,
-            new LayeredMaterial(),
+            material,
+            colorlayer,
             new Extent('EPSG:4326', -10, 0, 0, 10),
             4);
         tile.material.visible = true;

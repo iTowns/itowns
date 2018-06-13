@@ -187,7 +187,7 @@ class TiledGeometryLayer extends GeometryLayer {
         // early exit if parent' subdivision is in progress
         if (node.parent.pendingSubdivision) {
             node.visible = false;
-            node.setDisplayed(false);
+            node.material.visible = false;
             return undefined;
         }
 
@@ -197,19 +197,19 @@ class TiledGeometryLayer extends GeometryLayer {
         if (node.visible) {
             let requestChildrenUpdate = false;
 
+            node.material.visible = true;
+
             if (node.pendingSubdivision || (TiledGeometryLayer.hasEnoughTexturesToSubdivide(context, node) && this.subdivision(context, this, node))) {
                 this.subdivideNode(context, node);
                 // display iff children aren't ready
-                node.setDisplayed(node.pendingSubdivision);
+                node.material.visible = node.pendingSubdivision;
                 requestChildrenUpdate = true;
-            } else {
-                node.setDisplayed(true);
             }
 
             if (node.material.visible) {
                 // update uniforms
                 if (context.view.fogDistance != undefined) {
-                    node.setFog(context.view.fogDistance);
+                    node.material.fogDistance = context.view.fogDistance;
                 }
 
                 if (!requestChildrenUpdate) {
@@ -220,7 +220,7 @@ class TiledGeometryLayer extends GeometryLayer {
             return requestChildrenUpdate ? node.children.filter(n => n.layer == this) : undefined;
         }
 
-        node.setDisplayed(false);
+        node.material.visible = false;
         return ObjectRemovalHelper.removeChildren(this, node);
     }
 
@@ -250,11 +250,14 @@ class TiledGeometryLayer extends GeometryLayer {
      * otherwise.
      */
     static hasEnoughTexturesToSubdivide(context, node) {
+        const layerUpdateState = node.layerUpdateState || {};
+        let nodeLayer = node.material.getElevationLayer();
+
         for (const e of context.elevationLayers) {
             const extents = node.getCoordsForSource(e.source);
-            if (!e.frozen && e.ready && e.source.extentsInsideLimit(extents) && !node.material.isElevationLayerLoaded()) {
+            if (!e.frozen && e.ready && e.source.extentsInsideLimit(extents) && (!nodeLayer || nodeLayer.level < 0)) {
                 // no stop subdivision in the case of a loading error
-                if (node.layerUpdateState[e.id] && node.layerUpdateState[e.id].inError()) {
+                if (layerUpdateState[e.id] && layerUpdateState[e.id].inError()) {
                     continue;
                 }
                 return false;
@@ -266,11 +269,12 @@ class TiledGeometryLayer extends GeometryLayer {
                 continue;
             }
             // no stop subdivision in the case of a loading error
-            if (node.layerUpdateState[c.id] && node.layerUpdateState[c.id].inError()) {
+            if (layerUpdateState[c.id] && layerUpdateState[c.id].inError()) {
                 continue;
             }
             const extents = node.getCoordsForSource(c.source);
-            if (c.source.extentsInsideLimit(extents) && !node.material.isColorLayerLoaded(c)) {
+            nodeLayer = node.material.getLayer(c.id);
+            if (c.source.extentsInsideLimit(extents) && (!nodeLayer || nodeLayer.level < 0)) {
                 return false;
             }
         }

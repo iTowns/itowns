@@ -1,4 +1,3 @@
-import { EMPTY_TEXTURE_ZOOM } from '../Renderer/LayeredMaterialConstants';
 /**
  * This modules implements various layer update strategies.
  *
@@ -38,7 +37,7 @@ function _progressive(nodeLevel, currentLevel, options) {
 // This produces smoother transitions and a single fetch updates multiple
 // tiles thanks to caching.
 function _dichotomy(nodeLevel, currentLevel, options = {}) {
-    if (currentLevel == EMPTY_TEXTURE_ZOOM) {
+    if (currentLevel < 0) {
         return options.zoom ? options.zoom.min : 0;
     }
     return Math.min(

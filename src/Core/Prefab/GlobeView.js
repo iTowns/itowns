@@ -3,8 +3,8 @@ import * as THREE from 'three';
 import View, { VIEW_EVENTS } from '../View';
 import { MAIN_LOOP_EVENTS } from '../MainLoop';
 import { COLOR_LAYERS_ORDER_CHANGED } from '../../Renderer/ColorLayersOrdering';
-import RendererConstant from '../../Renderer/RendererConstant';
 import GlobeControls from '../../Renderer/ThreeExtended/GlobeControls';
+import { removeLayeredMaterialNodeLayer } from '../../Process/LayeredMaterialNodeProcessing';
 
 import GlobeLayer from './Globe/GlobeLayer';
 import Atmosphere from './Globe/Atmosphere';
@@ -129,7 +129,6 @@ function GlobeView(viewerDiv, coordCarto, options = {}) {
     }
 
     const mfogDistance = ellipsoidSizes.x * 160.0;
-    this._renderState = RendererConstant.FINAL;
     this._fullSizeDepthBuffer = null;
 
     const renderer = this.mainLoop.gfxEngine.renderer;
@@ -216,17 +215,11 @@ GlobeView.prototype.addLayer = function addLayer(layer) {
  * @param      {string}   layerId      The identifier
  * @return     {boolean}
  */
-GlobeView.prototype.removeLayer = function removeImageryLayer(layerId) {
+GlobeView.prototype.removeLayer = function removeLayer(layerId) {
     const layer = this.getLayers(l => l.id === layerId)[0];
     if (layer && layer.type === 'color' && this.tileLayer.detach(layer)) {
-        var cO = function cO(object) {
-            if (object.removeColorLayer) {
-                object.removeColorLayer(layerId);
-            }
-        };
-
         for (const root of this.tileLayer.level0Nodes) {
-            root.traverse(cO);
+            root.traverse(removeLayeredMaterialNodeLayer(layerId));
         }
         const imageryLayers = this.getLayers(l => l.type === 'color');
         for (const color of imageryLayers) {
@@ -253,11 +246,10 @@ GlobeView.prototype.selectNodeAt = function selectNodeAt(mouse) {
 
     for (const n of this.tileLayer.level0Nodes) {
         n.traverse((node) => {
-            // only take of selectable nodes
-            if (node.setSelected) {
-                node.setSelected(node.id === selectedId);
-
-                if (node.id === selectedId) {
+            if (node.material) {
+                const selected = node.id === selectedId;
+                node.material.overlayAlpha = selected ? 0.5 : 0;
+                if (selected) {
                     // eslint-disable-next-line no-console
                     console.info(node);
                 }
@@ -280,26 +272,23 @@ GlobeView.prototype.setRealisticLightingOn = function setRealisticLightingOn(val
     this.atmosphere.setRealisticOn(value);
     this.atmosphere.updateLightingPos(coSun);
 
-    this.updateMaterialUniform('lightingEnabled', value);
-    this.updateMaterialUniform('lightPosition', coSun);
+    this.updateMaterialProperty('lightingEnabled', value);
+    this.updateMaterialProperty('lightPosition', coSun);
     this.notifyChange(this.tileLayer);
 };
 
 GlobeView.prototype.setLightingPos = function setLightingPos(pos) {
     const lightingPos = pos || CoordStars.getSunPositionInScene(this.ellipsoid, new Date().getTime(), 48.85, 2.35);
 
-    this.updateMaterialUniform('lightPosition', lightingPos.clone().normalize());
+    this.updateMaterialProperty('lightPosition', lightingPos.clone().normalize());
     this.notifyChange(this.tileLayer);
 };
 
-GlobeView.prototype.updateMaterialUniform = function updateMaterialUniform(uniformName, value) {
+GlobeView.prototype.updateMaterialProperty = function updateMaterialProperty(property, value) {
     for (const n of this.tileLayer.level0Nodes) {
         n.traverse((obj) => {
-            if (!obj.material || !obj.material.uniforms) {
-                return;
-            }
-            if (uniformName in obj.material.uniforms) {
-                obj.material.uniforms[uniformName].value = value;
+            if (obj.material && obj.material[property] !== undefined) {
+                obj.material[property] = value;
             }
         });
     }

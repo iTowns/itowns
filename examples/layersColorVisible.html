@@ -51,10 +51,10 @@
                 }
                 if (node.level) {
                     // if node.material.visible is true then the node is diplayed in viewer
-                    // if node.material.colorLayersId is defined then the node have color layers
-                    if (node.material.visible && node.material.colorLayersId) {
+                    // if node.material.colorLayerIds is defined then the node have color layers
+                    if (node.material.visible && node.material.colorLayerIds) {
                         // get all node's color layers
-                        var tileColorLayers = node.material.colorLayersId;
+                        var tileColorLayers = node.material.colorLayerIds;
                         layers.id = removeDups(layers.id.concat(tileColorLayers));
                     }
                 }
