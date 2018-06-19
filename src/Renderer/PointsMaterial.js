@@ -1,7 +1,12 @@
-import { Vector4, Uniform, NoBlending, NormalBlending, RawShaderMaterial } from 'three';
+import { Vector4, Uniform, NoBlending, NormalBlending, RawShaderMaterial, ShaderChunk } from 'three';
 import PointsVS from './Shader/PointsVS.glsl';
 import PointsFS from './Shader/PointsFS.glsl';
 import Capabilities from '../Core/System/Capabilities';
+import itowns_normal_vertex from './Shader/Chunk/normal_vertex.glsl';
+import itowns_normal_pars_vertex from './Shader/Chunk/normal_pars_vertex.glsl';
+
+ShaderChunk.itowns_normal_vertex = itowns_normal_vertex;
+ShaderChunk.itowns_normal_pars_vertex = itowns_normal_pars_vertex;
 
 export const MODE = {
     COLOR: 0,
