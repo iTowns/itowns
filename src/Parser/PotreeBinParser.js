@@ -48,6 +48,20 @@ const POINT_ATTTRIBUTES = {
     },
 };
 
+for (const potreeName of Object.keys(POINT_ATTTRIBUTES)) {
+    const attr = POINT_ATTTRIBUTES[potreeName];
+    attr.potreeName = potreeName;
+    attr.numByte = attr.numByte || attr.arrayType.BYTES_PER_ELEMENT;
+    attr.byteSize = attr.numElements * attr.numByte;
+    attr.normalized = attr.normalized || false;
+    // chrome is known to perform badly when we call a method without respecting its arity
+    // also, not using ternary because I measured a 25% perf hit on firefox doing so...
+    const fnName = `getUint${attr.numByte * 8}`;
+    attr.value = attr.numByte === 1 ?
+        function value(view, offset) { return view[fnName](offset); } :
+        function value(view, offset) { return view[fnName](offset, true); };
+}
+
 export default {
     /** @module PotreeBinParser */
     /** Parse .bin PotreeConverter format and convert to a THREE.BufferGeometry
@@ -66,50 +80,26 @@ export default {
         // Format: X1,Y1,Z1,R1,G1,B1,A1,[...],XN,YN,ZN,RN,GN,BN,AN
         let pointByteSize = 0;
         for (const potreeName of pointAttributes) {
-            const attr = POINT_ATTTRIBUTES[potreeName];
-            pointByteSize += attr.numElements * (attr.numByte || attr.arrayType.BYTES_PER_ELEMENT);
+            pointByteSize += POINT_ATTTRIBUTES[potreeName].byteSize;
         }
         const numPoints = Math.floor(buffer.byteLength / pointByteSize);
 
-        const attrs = [];
-        // get the variable attributes
+        const geometry = new THREE.BufferGeometry();
+        let elemOffset = 0;
+        let attrOffset = 0;
         for (const potreeName of pointAttributes) {
             const attr = POINT_ATTTRIBUTES[potreeName];
-            const numByte = attr.numByte || attr.arrayType.BYTES_PER_ELEMENT;
-            attrs.push({
-                potreeName,
-                numElements: attr.numElements,
-                attributeName: attr.attributeName,
-                normalized: attr.normalized,
-                array: new attr.arrayType(attr.numElements * numPoints),
-                numByte,
-                // Potree stores everything as int, and uses scale + offset
-                fnName: `getUint${numByte * 8}`,
-            });
-        }
-
-        let offset = 0;
-        for (let pntIdx = 0; pntIdx < numPoints; pntIdx++) {
-            for (const attr of attrs) {
+            const arrayLength = attr.numElements * numPoints;
+            const array = new attr.arrayType(arrayLength);
+            for (let arrayOffset = 0; arrayOffset < arrayLength; arrayOffset += attr.numElements) {
                 for (let elemIdx = 0; elemIdx < attr.numElements; elemIdx++) {
-                    // chrome is known to perform badly when we call a method without respecting its arity
-                    // also, not using ternary because I measured a 25% perf hit on firefox doing so...
-                    let value;
-                    if (attr.numByte === 1) {
-                        value = view[attr.fnName](offset);
-                    } else {
-                        value = view[attr.fnName](offset, true);
-                    }
-                    attr.array[pntIdx * attr.numElements + elemIdx] = value;
-
-                    offset += attr.numByte;
+                    array[arrayOffset + elemIdx] = attr.value(view, attrOffset + elemIdx * attr.numByte);
                 }
+                attrOffset += pointByteSize;
             }
-        }
-
-        const geometry = new THREE.BufferGeometry();
-        for (const attr of attrs) {
-            geometry.addAttribute(attr.attributeName, new THREE.BufferAttribute(attr.array, attr.numElements, attr.normalized));
+            elemOffset += attr.byteSize;
+            attrOffset = elemOffset;
+            geometry.addAttribute(attr.attributeName, new THREE.BufferAttribute(array, attr.numElements, attr.normalized));
         }
 
         geometry.computeBoundingBox();
