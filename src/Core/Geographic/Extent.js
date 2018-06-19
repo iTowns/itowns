@@ -38,11 +38,10 @@ function Extent(crs, ...values) {
         values[0] instanceof Coordinates &&
         values[1] instanceof Coordinates) {
         this._values = new Float64Array(4);
-        for (let i = 0; i < values.length; i++) {
-            for (let j = 0; j < 2; j++) {
-                this._values[2 * i + j] = values[i]._values[j];
-            }
-        }
+        this._values[CARDINAL.WEST] = values[0]._values[0];
+        this._values[CARDINAL.EAST] = values[1]._values[0];
+        this._values[CARDINAL.SOUTH] = values[0]._values[1];
+        this._values[CARDINAL.NORTH] = values[1]._values[1];
     } else if (values.length == 1 && values[0].west != undefined) {
         this._values = new Float64Array(4);
         this._values[CARDINAL.WEST] = values[0].west;
