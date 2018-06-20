@@ -67,6 +67,8 @@ See the [feature list wiki page](https://github.com/iTowns/itowns/wiki/Supported
 
 If you want to run tests you'll need to install [puppeteer](https://github.com/GoogleChrome/puppeteer).
 
+If you install pupperter behind proxy, use HTTP_PROXY, HTTPS_PROXY, NO_PROXY to defines HTTP proxy settings that are used to download and run Chromium.
+
 If puppeteer fails to download Chrome, you can try with the [documented environment variables](https://github.com/GoogleChrome/puppeteer/blob/master/docs/api.md#environment-variables).
 Or you can download it manually, and then:
 - install puppeteer without downloading Chrome: `PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=1 npm install puppeteer`
@@ -82,7 +84,7 @@ Supported environment variables:
     * SCREENSHOT_FOLDER: take a screenshot at the end of each test and save it in this folder. Example: SCREENSHOT_FOLDER=/tmp/
     * CHROME: path to Chrome executable. If unspecified itowns will use the one downloaded during puppeteer install.
     * DEBUG: run Chrome in a window with the debug tools open.
-    * REMOTE_DEBUGGING: run Chrome in headless mode and set up remote debugging. Example: REMOTE_DEBUGGING=9222 will setup remote * debugging on port 9222. Then start another Chrome instance, browse to chrome://inspect/#devices and add localhost:9222 in Discover network targets.
+    * REMOTE_DEBUGGING: run Chrome in headless mode and set up remote debugging. Example: REMOTE_DEBUGGING=9222 will setup remote debugging on port 9222. Then start another Chrome instance, browse to chrome://inspect/#devices and add localhost:9222 in Discover network targets.
 
 Note: Chrome in headless mode doesn't support the WebGL EXT_frag_depth extension. So rendering may differ and some bugs can only be present in headless mode.
 
