@@ -38,51 +38,21 @@ function buildUrl(layer, image) {
         + image;
 }
 
-function getTexture(tile, layer, targetLevel) {
-    if (!tile.material) {
-        return Promise.resolve();
-    }
-
-    if (!layer.images) {
-        return Promise.reject();
-    }
-
-    const original = tile;
-    if (targetLevel) {
-        while (tile && tile.level > targetLevel) {
-            tile = tile.parent;
-        }
-        if (!tile) {
-            return Promise.reject(`Invalid targetLevel requested ${targetLevel}`);
-        }
-    }
-
-    const selection = selectBestImageForExtent(layer, tile.extent);
-
-    if (!selection) {
-        return Promise.reject(
-            new Error(`No available image for tile ${tile}`));
-    }
-
-
+function getTexture(toDownload, layer) {
     const fn = layer.format.indexOf('image/x-bil') === 0 ?
         OGCWebServiceHelper.getXBilTextureByUrl :
         OGCWebServiceHelper.getColorTextureByUrl;
-    return fn(buildUrl(layer, selection.image), layer.networkOptions).then((texture) => {
+    return fn(toDownload.url, layer.networkOptions).then((texture) => {
         // adjust pitch
         const result = {
             texture,
             pitch: new Vector4(0, 0, 1, 1),
         };
 
-        result.texture.extent = selection.extent;
-        result.texture.coords = selection.extent;
-        if (!result.texture.coords.zoom || result.texture.coords.zoom > tile.level) {
-            result.texture.coords.zoom = tile.level;
-            result.texture.file = selection.image;
-        }
+        result.texture.extent = toDownload.selection.extent;
+        result.texture.file = toDownload.selection.image;
 
-        result.pitch = original.extent.offsetToParent(selection.extent);
+        result.pitch = toDownload.pitch;
         if (layer.transparent) {
             texture.premultiplyAlpha = true;
         }
@@ -157,26 +127,26 @@ export default {
             layer._spatialIndex, layer.images, tile.extent.as(layer.extent.crs())).length > 0;
     },
 
-    canTileTextureBeImproved(layer, tile) {
+    canTextureBeImproved(layer, extents, currentTextures) {
         if (!layer.images) {
-            return false;
+            return;
         }
-        const s = selectBestImageForExtent(layer, tile.extent);
+        const s = selectBestImageForExtent(layer, extents[0]);
 
         if (!s) {
-            return false;
+            return;
         }
-        const mat = tile.material;
-        const currentTexture = mat.getLayerTextures(layer)[0];
-        if (!currentTexture.file) {
-            return true;
+        if (currentTextures && currentTextures[0].file != s.image) {
+            return [{
+                selection: s,
+                pitch: extents[0].offsetToParent(s.extent),
+                url: buildUrl(layer, s.image),
+            }];
         }
-        return currentTexture.file != s.image;
     },
 
     executeCommand(command) {
-        const tile = command.requester;
         const layer = command.layer;
-        return getTexture(tile, layer, command.targetLevel);
+        return getTexture(command.toDownload[0], layer);
     },
 };

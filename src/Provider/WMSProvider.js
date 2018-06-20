@@ -1,13 +1,7 @@
-/**
- * Generated On: 2015-10-5
- * Class: WMSProvider
- * Description: Provides data from a WMS stream
- */
-
-import * as THREE from 'three';
 import Extent from '../Core/Geographic/Extent';
 import OGCWebServiceHelper from './OGCWebServiceHelper';
 import URLBuilder from './URLBuilder';
+import { STRATEGY_MIN_NETWORK_TRAFFIC, STRATEGY_PROGRESSIVE, STRATEGY_DICHOTOMY } from '../Core/Layer/LayerUpdateStrategy';
 
 const supportedFormats = ['image/png', 'image/jpg', 'image/jpeg'];
 
@@ -73,78 +67,139 @@ function preprocessDataLayer(layer) {
 }
 
 function tileInsideLimit(tile, layer) {
-    return tile.level >= layer.options.zoom.min &&
-        tile.level <= layer.options.zoom.max &&
-        layer.extent.intersectsExtent(tile.extent);
+    const extents = tile.getCoordsForLayer(layer);
+    for (let i = 0; i < extents.length; i++) {
+        const extent = extents[i].as(layer.extent.crs());
+        if (extent.isInside(layer.extent)) {
+            return true;
+        }
+    }
+    return false;
 }
 
-function getColorTexture(tile, layer, targetLevel, tileCoords) {
-    if (!tileInsideLimit(tile, layer)) {
-        return Promise.reject(`Tile '${tile}' is outside layer bbox ${layer.extent}`);
-    }
-    if (tile.material === null) {
-        return Promise.resolve();
-    }
+function canTextureBeImproved(layer, extents, textures, previousError) {
+    for (let i = 0; i < extents.length; i++) {
+        const extent = extents[i].as(layer.extent.crs());
 
-    let extent = tileCoords ? tileCoords.as(layer.projection) : tile.extent;
-    // if no specific level requester, use tile.level
-    if (targetLevel === undefined) {
-        targetLevel = tile.level;
-    } else if (!tileCoords) {
-        let parentAtLevel = tile;
-        while (parentAtLevel && parentAtLevel.level > targetLevel) {
-            parentAtLevel = parentAtLevel.parent;
+        // if texture extent matches extent => we're good
+        if (textures[i] && textures[i].extent && textures[i].extent.isInside(extent)) {
+            return;
         }
-        if (!parentAtLevel) {
-            return Promise.reject(`Invalid targetLevel requested ${targetLevel}`);
-        }
-        extent = parentAtLevel.extent;
-        targetLevel = parentAtLevel.level;
     }
 
-    const coords = extent.as(layer.projection);
-    const urld = URLBuilder.bbox(coords, layer);
-    const pitch = tileCoords ? new THREE.Vector4(0, 0, 1, 1) : tile.extent.offsetToParent(extent);
-    const result = { pitch };
+    return selectAllExtentsToDownload(layer, extents, textures, previousError);
+}
 
-    return OGCWebServiceHelper.getColorTextureByUrl(urld, layer.networkOptions).then((texture) => {
+function selectAllExtentsToDownload(layer, extents, textures, previousError) {
+    const result = [];
+    for (let i = 0; i < extents.length; i++) {
+        const ex = extents[i].as(layer.extent.crs());
+        const extent = chooseExtentToDownload(
+            layer,
+            ex,
+            (textures && textures[i]) ? textures[i].extent : null,
+            previousError);
+        // if the choice is the same as the current one => stop updating
+        if (textures[i] && textures[i].extent && textures[i].extent.isInside(extent)) {
+            return;
+        }
+        const pitch = ex.offsetToParent(extent);
+        result.push({
+            extent,
+            pitch,
+            url: URLBuilder.bbox(extent, layer),
+        });
+    }
+    return result;
+}
+
+export function chooseExtentToDownload(layer, extent, currentExtent) {
+    if (layer.updateStrategy.type == STRATEGY_MIN_NETWORK_TRAFFIC) {
+        return extent;
+    }
+    if (!currentExtent) {
+        return layer.extent;
+    }
+    // Do a quadtree subdivision of the layer's extent and align downloaded
+    // textures on this grid to increase texture reuse between nodes.
+    // TODO: the allowed resolutions should be configurables, see the
+    // "resolutions" options in OpenLayers for instance. For now the subdivision
+    // is based solely on layer's extent.
+    const dim = extent.dimensions();
+    const cur = currentExtent.dimensions();
+    const lay = layer.extent.dimensions();
+
+    const nodeDepth = Math.floor(Math.log2(1 / (dim.x / lay.x)));
+    const currentDepth = Math.floor(Math.log2(1 / (cur.x / lay.x)));
+
+    if (nodeDepth <= (currentDepth + 1)) {
+        return extent;
+    }
+
+    const offsetScale = extent.offsetToParent(layer.extent);
+    let nextDepth = currentDepth;
+    switch (layer.updateStrategy.type) {
+        case STRATEGY_PROGRESSIVE:
+            nextDepth = currentDepth + 1;
+            break;
+        default:
+        case STRATEGY_DICHOTOMY:
+            nextDepth = Math.ceil((currentDepth + nodeDepth) / 2);
+            break;
+    }
+
+    if (nextDepth >= nodeDepth) {
+        return extent;
+    }
+    while (nextDepth > currentDepth) {
+        const p = Math.pow(2, nextDepth);
+        const ratio = 1 / p;
+        const x = {
+            min: ratio * Math.floor(offsetScale.x / ratio),
+            max: ratio * Math.floor((offsetScale.x + offsetScale.z) / ratio),
+        };
+        const y = {
+            min: ratio * Math.floor(offsetScale.y / ratio),
+            max: ratio * Math.floor((offsetScale.y + offsetScale.w) / ratio),
+        };
+        const ex = new Extent(currentExtent.crs(), {
+            west: layer.extent.west() + x.min * lay.x,
+            east: layer.extent.west() + x.max * lay.x,
+            north: layer.extent.north() - y.min * lay.y,
+            south: layer.extent.north() - y.max * lay.y,
+        });
+
+        // extent might be at a boundary of the quadtree so the parent extent
+        // may not cover it entirely
+        if (extent.isInside(ex)) {
+            return ex;
+        } else {
+            nextDepth -= 1;
+        }
+    }
+    return extent;
+}
+
+function getColorTexture(layer, toDownload) {
+    const result = { pitch: toDownload.pitch };
+    return OGCWebServiceHelper.getColorTextureByUrl(toDownload.url, layer.networkOptions).then((texture) => {
         result.texture = texture;
-        result.texture.extent = extent;
+        result.texture.extent = toDownload.extent;
         if (layer.transparent) {
             texture.premultiplyAlpha = true;
         }
-        if (tileCoords) {
-            result.texture.coords = tileCoords;
-        } else {
-            result.texture.coords = coords;
-            // LayeredMaterial expects coords.zoom to exist, and describe the
-            // precision of the texture (a la WMTS).
-            result.texture.coords.zoom = targetLevel;
-        }
         return result;
+    }, (err) => {
+        err.extent = toDownload.extent;
+        throw err;
     });
 }
 
 function executeCommand(command) {
-    const tile = command.requester;
-
-    const layer = command.layer;
-    const getTextureFunction = tile.extent.crs() == layer.projection ? getColorTexture : getColorTextures;
-
-    return getTextureFunction(tile, layer, command.targetLevel);
-}
-
-// In the case where the tilematrixset of the tile don't correspond to the projection of the layer
-// when the projection of the layer corresponds to a tilematrixset inside the tile, like the PM
-function getColorTextures(tile, layer, targetLevel) {
-    if (tile.material === null) {
-        return Promise.resolve();
-    }
     const promises = [];
-    for (const coord of tile.getCoordsForLayer(layer)) {
-        promises.push(getColorTexture(tile, layer, targetLevel, coord));
+    for (let i = 0; i < command.toDownload.length; i++) {
+        promises.push(getColorTexture(command.layer, command.toDownload[i]));
     }
-
     return Promise.all(promises);
 }
 
@@ -153,4 +208,5 @@ export default {
     executeCommand,
     tileTextureCount,
     tileInsideLimit,
+    canTextureBeImproved,
 };

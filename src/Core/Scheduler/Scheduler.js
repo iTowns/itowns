@@ -187,6 +187,7 @@ Scheduler.prototype.execute = function execute(command) {
     const q = host ? this.hostQueues.get(host) : this.defaultQueue;
 
     command.timestamp = Date.now();
+
     q.queue(command);
 
     if (q.counters.executing < this.maxCommandsPerHost) {

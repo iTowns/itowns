@@ -7,7 +7,8 @@ import { STRATEGY_MIN_NETWORK_TRAFFIC } from './Layer/LayerUpdateStrategy';
 import { GeometryLayer, Layer, defineLayerProperty } from './Layer/Layer';
 import Scheduler from './Scheduler/Scheduler';
 import Picking from './Picking';
-import { updateLayeredMaterialNodeImagery, updateLayeredMaterialNodeElevation } from '../Process/LayeredMaterialNodeProcessing';
+import ColorTextureProcessing from '../Process/ColorTextureProcessing';
+import ElevationTextureProcessing from '../Process/ElevationTextureProcessing';
 
 export const VIEW_EVENTS = {
     /**
@@ -146,7 +147,9 @@ function _preprocessLayer(view, layer, provider, parentLayer) {
         if (provider.tileInsideLimit) {
             layer.tileInsideLimit = provider.tileInsideLimit.bind(provider);
         }
-
+        if (provider.canTextureBeImproved) {
+            layer.canTextureBeImproved = provider.canTextureBeImproved.bind(provider);
+        }
         if (provider.tileTextureCount) {
             layer.tileTextureCount = provider.tileTextureCount.bind(provider);
         }
@@ -314,10 +317,11 @@ function _preprocessLayer(view, layer, provider, parentLayer) {
  */
 View.prototype.addLayer = function addLayer(layer, parentLayer) {
     if (layer.type == 'color') {
-        layer.update = layer.update || updateLayeredMaterialNodeImagery;
+        layer.update = layer.update || ColorTextureProcessing.updateLayerElement;
     } else if (layer.type == 'elevation') {
-        layer.update = layer.update || updateLayeredMaterialNodeElevation;
+        layer.update = layer.update || ElevationTextureProcessing.updateLayerElement;
     }
+
     return new Promise((resolve, reject) => {
         if (!layer) {
             reject(new Error('layer is undefined'));
@@ -352,6 +356,10 @@ View.prototype.addLayer = function addLayer(layer, parentLayer) {
             }
 
             this._layers.push(layer);
+        }
+
+        if (!layer.projection) {
+            layer.projection = (parentLayer && parentLayer.extent) ? parentLayer.extent.crs() : this.referenceCrs;
         }
 
         if (layer.object3d && !layer.object3d.parent && layer.object3d !== this.scene) {

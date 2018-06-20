@@ -71,7 +71,9 @@ export default {
      */
     bbox: function bbox(bbox, layer) {
         const precision = layer.projection == 'EPSG:4326' ? 9 : 2;
-        const box = bbox.as(layer.projection);
+        const box = bbox.crs() === layer.projection ?
+            bbox :
+            bbox.as(layer.projection);
         const w = box.west().toFixed(precision);
         const s = box.south().toFixed(precision);
         const e = box.east().toFixed(precision);

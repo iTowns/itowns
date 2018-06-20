@@ -1,6 +1,6 @@
 import assert from 'assert';
 import LayerUpdateState from '../../src/Core/Layer/LayerUpdateState';
-import { updateLayeredMaterialNodeImagery } from '../../src/Process/LayeredMaterialNodeProcessing';
+import ColorTextureProcessing from '../../src/Process/ColorTextureProcessing';
 
 describe('material state vs layer state', function () {
     let opacity;
@@ -12,11 +12,11 @@ describe('material state vs layer state', function () {
             test: new LayerUpdateState(),
         },
         material: {
+            visible: true,
             indexOfColorLayer: () => 0,
             setLayerVisibility: (idx, v) => { visible = v; },
             setLayerOpacity: (idx, o) => { opacity = o; },
         },
-        isDisplayed: () => true,
     };
     const layer = {
         id: 'test',
@@ -26,21 +26,21 @@ describe('material state vs layer state', function () {
 
     it('should correctly initialize opacity & visibility', () => {
         node.layerUpdateState.test.failure(new Date());
-        updateLayeredMaterialNodeImagery(null, layer, node);
+        ColorTextureProcessing.updateLayerElement(null, layer, node);
         assert.equal(opacity, layer.opacity);
         assert.equal(visible, layer.visible);
     });
     it('should update material opacity & visibility', () => {
         layer.opacity = 0.5;
         layer.visible = false;
-        updateLayeredMaterialNodeImagery(null, layer, node);
+        ColorTextureProcessing.updateLayerElement(null, layer, node);
         assert.equal(opacity, layer.opacity);
         assert.equal(visible, layer.visible);
     });
     it('should update material opacity & visibility even if layer is cannot be updated', () => {
         node.layerUpdateState.test.noMoreUpdatePossible();
         layer.opacity = 0.75;
-        updateLayeredMaterialNodeImagery(null, layer, node);
+        ColorTextureProcessing.updateLayerElement(null, layer, node);
         assert.equal(opacity, layer.opacity);
         assert.equal(visible, layer.visible);
     });

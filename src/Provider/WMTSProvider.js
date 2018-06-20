@@ -1,15 +1,7 @@
-/**
- * Generated On: 2015-10-5
- * Class: WMTSProvider
- * Description: Fournisseur de données à travers un flux WMTS
- */
-
 import * as THREE from 'three';
 import OGCWebServiceHelper from './OGCWebServiceHelper';
 import URLBuilder from './URLBuilder';
-import Extent from '../Core/Geographic/Extent';
-
-const coordTile = new Extent('WMTS:WGS84', 0, 0, 0);
+import { STRATEGY_MIN_NETWORK_TRAFFIC, STRATEGY_PROGRESSIVE, STRATEGY_DICHOTOMY, STRATEGY_GROUP } from '../Core/Layer/LayerUpdateStrategy';
 
 const supportedFormats = new Map([
     ['image/png', getColorTextures],
@@ -60,66 +52,137 @@ function preprocessDataLayer(layer) {
     layer.options.zoom = layer.options.zoom || { min: 2, max: 20 };
 }
 
-/**
- * return texture float alpha THREE.js of MNT
- * @param {TileMesh} tile
- * @param {Layer} layer
- * @param {number} targetZoom
- * @returns {Promise<portableXBIL>}
- */
-function getXbilTexture(tile, layer, targetZoom) {
-    const pitch = new THREE.Vector4(0.0, 0.0, 1.0, 1.0);
-    let coordWMTS = tile.getCoordsForLayer(layer)[0];
-
-    if (targetZoom && targetZoom !== coordWMTS.zoom) {
-        coordWMTS = OGCWebServiceHelper.WMTS_WGS84Parent(coordWMTS, targetZoom, pitch);
+function canTextureBeImproved(layer, extents, textures, previousError) {
+    for (const extent of extents) {
+        if (!extentInsideLimit(extent, layer)) {
+            return;
+        }
+        if (extent.zoom > layer.options.zoom.max) {
+            return;
+        }
     }
 
-    const urld = URLBuilder.xyz(coordWMTS, layer);
+    if (!textures || textures.length < extents.length) {
+        return selectAllExtentsToDownload(layer, extents, textures, previousError);
+    }
 
-    return OGCWebServiceHelper.getXBilTextureByUrl(urld, layer.networkOptions).then((texture) => {
-        texture.coords = coordWMTS;
+    for (let i = 0; i < extents.length; i++) {
+        if (!textures[i].extent || textures[i].extent.zoom < extents[i].zoom) {
+            return selectAllExtentsToDownload(layer, extents, textures, previousError);
+        }
+    }
+}
+
+function selectAllExtentsToDownload(layer, extents, textures, previousError) {
+    const result = [];
+    for (let i = 0; i < extents.length; i++) {
+        const pitch = new THREE.Vector4(0, 0, 1, 1);
+        const extent = chooseExtentToDownload(extents[i], (textures && textures[i].extent) ? textures[i].extent : null, layer, pitch, previousError);
+        // if the choice is the same as the current one => stop updating
+        if (textures && textures[i].extent && textures[i].extent.zoom == extent.zoom) {
+            return;
+        }
+        result.push({
+            extent,
+            pitch,
+            url: URLBuilder.xyz(extent, layer),
+        });
+    }
+    return result;
+}
+
+// Maps nodeLevel to groups defined in layer's options
+// eg with groups = [3, 7, 12]:
+//     * nodeLevel = 2 -> 3
+//     * nodeLevel = 4 -> 3
+//     * nodeLevel = 7 -> 7
+//     * nodeLevel = 15 -> 12
+function _group(nodeLevel, currentLevel, options) {
+    var f = options.groups.filter(val => (val <= nodeLevel));
+    return f.length ? f[f.length - 1] : options.groups[0];
+}
+
+export function chooseExtentToDownload(extent, currentExtent, layer, pitch, previousError) {
+    if (layer.updateStrategy.type == STRATEGY_MIN_NETWORK_TRAFFIC) {
+        return extent;
+    }
+
+    let nextZoom = 0;
+    if (currentExtent) {
+        if (extent.zoom <= (currentExtent.zoom + 1)) {
+            return extent;
+        }
+
+        switch (layer.updateStrategy.type) {
+            case STRATEGY_PROGRESSIVE:
+                nextZoom += 1;
+                break;
+            case STRATEGY_GROUP:
+                nextZoom = _group(extent.zoom, currentExtent.zoom, layer.updateStrategy.options);
+                break;
+            default:
+            case STRATEGY_DICHOTOMY:
+                nextZoom = Math.ceil((currentExtent.zoom + extent.zoom) / 2);
+                break;
+        }
+    }
+
+    if (previousError && previousError.extent && previousError.extent.zoom == nextZoom) {
+        nextZoom = Math.ceil((currentExtent.zoom + nextZoom) / 2);
+    }
+
+    nextZoom = Math.min(
+        Math.max(nextZoom, layer.options.zoom.min),
+        layer.options.zoom.max);
+
+    if (extent.zoom <= nextZoom) {
+        return extent;
+    }
+
+    return OGCWebServiceHelper.WMTS_WGS84Parent(extent, nextZoom, pitch);
+}
+
+/*
+ * return texture float alpha THREE.js of MNT
+ */
+function getXbilTexture(toDownload, layer) {
+    return OGCWebServiceHelper.getXBilTextureByUrl(toDownload[0].url, layer.networkOptions).then((texture) => {
+        texture.extent = toDownload[0].extent;
         return {
             texture,
-            pitch,
+            pitch: toDownload[0].pitch,
             min: !texture.min ? 0 : texture.min,
             max: !texture.max ? 0 : texture.max,
         };
+    }, (err) => {
+        err.extent = toDownload[0].extent;
+        throw err;
     });
 }
 
-/**
+/*
  * Return texture RGBA THREE.js of orthophoto
- * TODO : RGBA --> RGB remove alpha canal
- * @param {{zoom:number,row:number,col:number}} coordWMTS
- * @param {Layer} layer
- * @param {number} targetZoom
- * @returns {Promise<Texture>}
  */
-function getColorTexture(coordWMTS, layer, targetZoom) {
-    const pitch = new THREE.Vector4(0.0, 0.0, 1.0, 1.0);
-    if (targetZoom && targetZoom !== coordWMTS.zoom) {
-        coordWMTS = OGCWebServiceHelper.WMTS_WGS84Parent(coordWMTS, targetZoom, pitch);
-    }
-
-    const urld = URLBuilder.xyz(coordWMTS, layer);
-    return OGCWebServiceHelper.getColorTextureByUrl(urld, layer.networkOptions).then((texture) => {
+function getColorTexture(toDownload, layer) {
+    return OGCWebServiceHelper.getColorTextureByUrl(toDownload.url, layer.networkOptions).then((texture) => {
         const result = {};
         result.texture = texture;
-        result.texture.coords = coordWMTS;
-        result.pitch = pitch;
+        result.texture.extent = toDownload.extent;
+        result.pitch = toDownload.pitch;
         if (layer.transparent) {
             texture.premultiplyAlpha = true;
         }
 
         return result;
+    }, (err) => {
+        err.extent = toDownload.extent;
+        throw err;
     });
 }
 
 function executeCommand(command) {
     const layer = command.layer;
-    const tile = command.requester;
-    return supportedFormats.get(layer.format)(tile, layer, command.targetLevel);
+    return supportedFormats.get(layer.format)(command.toDownload, layer);
 }
 
 function tileTextureCount(tile, layer) {
@@ -128,43 +191,45 @@ function tileTextureCount(tile, layer) {
     return tile.getCoordsForLayer(layer).length;
 }
 
-function tileInsideLimit(tile, layer, targetLevel) {
+function extentInsideLimit(extent, layer) {
     // This layer provides data starting at level = layer.options.zoom.min
     // (the zoom.max property is used when building the url to make
     //  sure we don't use invalid levels)
-    for (const coord of tile.getCoordsForLayer(layer)) {
-        let c = coord;
-        // override
-        if (targetLevel < c.zoom) {
-            OGCWebServiceHelper.WMTS_WGS84Parent(coord, targetLevel, undefined, coordTile);
-            c = coordTile;
-        }
-        if (c.zoom < layer.options.zoom.min || c.zoom > layer.options.zoom.max) {
+    if (extent.zoom < layer.options.zoom.min) {
+        return false;
+    }
+
+    if (extent.zoom > layer.options.zoom.max) {
+        extent = OGCWebServiceHelper.WMTS_WGS84Parent(extent, layer.options.zoom.max);
+    }
+    if (layer.options.tileMatrixSetLimits) {
+        if (extent.row < layer.options.tileMatrixSetLimits[extent.zoom].minTileRow ||
+            extent.row > layer.options.tileMatrixSetLimits[extent.zoom].maxTileRow ||
+            extent.col < layer.options.tileMatrixSetLimits[extent.zoom].minTileCol ||
+            extent.col > layer.options.tileMatrixSetLimits[extent.zoom].maxTileCol) {
             return false;
-        }
-        if (layer.options.tileMatrixSetLimits) {
-            if (c.row < layer.options.tileMatrixSetLimits[c.zoom].minTileRow ||
-                c.row > layer.options.tileMatrixSetLimits[c.zoom].maxTileRow ||
-                c.col < layer.options.tileMatrixSetLimits[c.zoom].minTileCol ||
-                c.col > layer.options.tileMatrixSetLimits[c.zoom].maxTileCol) {
-                return false;
-            }
         }
     }
     return true;
 }
 
-function getColorTextures(tile, layer, targetZoom) {
-    if (tile.material === null) {
-        return Promise.resolve();
+function tileInsideLimit(tile, layer) {
+    // This layer provides data starting at level = layer.options.zoom.min
+    // (the zoom.max property is used when building the url to make
+    //  sure we don't use invalid levels)
+    for (const coord of tile.getCoordsForLayer(layer)) {
+        if (!extentInsideLimit(coord, layer)) {
+            return false;
+        }
     }
+    return true;
+}
+
+function getColorTextures(toDownload, layer) {
     const promises = [];
-    const bcoord = tile.getCoordsForLayer(layer);
-
-    for (const coordWMTS of bcoord) {
-        promises.push(getColorTexture(coordWMTS, layer, targetZoom));
+    for (let i = 0; i < toDownload.length; i++) {
+        promises.push(getColorTexture(toDownload[i], layer));
     }
-
     return Promise.all(promises);
 }
 
@@ -173,4 +238,5 @@ export default {
     executeCommand,
     tileTextureCount,
     tileInsideLimit,
+    canTextureBeImproved,
 };
