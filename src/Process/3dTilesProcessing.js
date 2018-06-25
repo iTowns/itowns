@@ -16,6 +16,11 @@ function requestNewTile(view, scheduler, geometryLayer, metadata, parent, redraw
     return scheduler.execute(command);
 }
 
+function getChildTiles(tile) {
+    // only keep children that have the same layer and a valid tileId
+    return tile.children.filter(n => n.layer == tile.layer && n.tileId);
+}
+
 function subdivideNode(context, layer, node, cullingTest) {
     if (node.additiveRefinement) {
         // Additive refinement can only fetch visible children.
@@ -88,7 +93,7 @@ function _subdivideNodeAdditive(context, layer, node, cullingTest) {
 }
 
 function _subdivideNodeSubstractive(context, layer, node) {
-    if (!node.pendingSubdivision && node.children.filter(n => n.layer == layer).length == 0) {
+    if (!node.pendingSubdivision && getChildTiles(node).length == 0) {
         const childrenTiles = layer.tileIndex.index[node.tileId].children;
         if (childrenTiles === undefined || childrenTiles.length === 0) {
             return;
@@ -195,7 +200,7 @@ function cleanup3dTileset(layer, n, depth = 0) {
             n.parent.remove(n);
         }
     } else {
-        const tiles = n.children.filter(n => n.tileId != undefined);
+        const tiles = getChildTiles(n);
         n.remove(...tiles);
     }
 }
@@ -330,11 +335,11 @@ export function process3dTilesNode(cullingTest, subdivisionTest) {
                 subdivideNode(context, layer, node, cullingTest);
                 // display iff children aren't ready
                 setDisplayed(node, node.pendingSubdivision || node.additiveRefinement);
-                returnValue = node.children.filter(n => n.layer == layer);
+                returnValue = getChildTiles(node);
             } else {
                 setDisplayed(node, true);
 
-                for (const n of node.children.filter(n => n.layer == layer)) {
+                for (const n of getChildTiles(node)) {
                     n.visible = false;
                     markForDeletion(layer, n);
                 }
@@ -342,7 +347,7 @@ export function process3dTilesNode(cullingTest, subdivisionTest) {
             // toggle wireframe
             if (node.content && node.content.visible) {
                 node.content.traverse((o) => {
-                    if (o.material) {
+                    if (o.layer == layer && o.material) {
                         o.material.wireframe = layer.wireframe;
                     }
                 });
@@ -351,8 +356,6 @@ export function process3dTilesNode(cullingTest, subdivisionTest) {
         }
 
         markForDeletion(layer, node);
-
-        return undefined;
     };
 }
 

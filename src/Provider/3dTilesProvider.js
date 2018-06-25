@@ -8,7 +8,7 @@ import { init3dTilesLayer } from '../Process/3dTilesProcessing';
 import utf8Decoder from '../utils/Utf8Decoder';
 
 export function $3dTilesIndex(tileset, baseURL) {
-    let counter = 0;
+    let counter = 1;
     this.index = {};
     const inverseTileTransform = new THREE.Matrix4();
     const recurse = function recurse_f(node, baseURL, parent) {
@@ -60,9 +60,33 @@ export function $3dTilesIndex(tileset, baseURL) {
     };
 }
 
+export function getObjectToUpdateForAttachedLayers(meta) {
+    if (meta.content) {
+        const result = [];
+        meta.content.traverse((obj) => {
+            if (obj.isObject3D && obj.material && obj.layer == meta.layer) {
+                result.push(obj);
+            }
+        });
+        const p = meta.parent;
+        if (p && p.content) {
+            return {
+                elements: result,
+                parent: p.content,
+            };
+        } else {
+            return {
+                elements: result,
+            };
+        }
+    }
+}
+
 function preprocessDataLayer(layer, view, scheduler) {
     layer.sseThreshold = layer.sseThreshold || 16;
     layer.cleanupDelay = layer.cleanupDelay || 1000;
+    // override the default method, since updated objects are metadata in this case
+    layer.getObjectToUpdateForAttachedLayers = getObjectToUpdateForAttachedLayers;
 
     layer._cleanableTiles = [];
     return Fetcher.json(layer.url, layer.networkOptions).then((tileset) => {
@@ -180,6 +204,8 @@ function executeCommand(command) {
 
     const setLayer = (obj) => {
         obj.layers.set(layer.threejsLayer);
+        obj.userData.metadata = metadata;
+        obj.layer = layer;
     };
     if (path) {
         // Check if we have relative or absolute url (with tileset's lopocs for example)

@@ -93,6 +93,7 @@ function parseOctree(layer, hierarchyStepSize, root) {
                         baseurl: url,
                         bbox: bounds,
                         layer,
+                        parent: snode,
                     };
                     snode.children.push(item);
                     stack.push(item);
@@ -196,6 +197,22 @@ function parseMetadata(metadata, layer) {
     layer.supportsProgressiveDisplay = customBinFormat;
 }
 
+export function getObjectToUpdateForAttachedLayers(meta) {
+    if (meta.obj) {
+        const p = meta.parent;
+        if (p && p.obj) {
+            return {
+                element: meta.obj,
+                parent: p.obj,
+            };
+        } else {
+            return {
+                element: meta.obj,
+            };
+        }
+    }
+}
+
 export default {
     preprocessDataLayer(layer, view) {
         if (!layer.file) {
@@ -231,6 +248,9 @@ export default {
         layer.update = PointCloudProcessing.update;
         layer.postUpdate = PointCloudProcessing.postUpdate;
 
+        // override the default method, since updated objects are metadata in this case
+        layer.getObjectToUpdateForAttachedLayers = getObjectToUpdateForAttachedLayers;
+
         // this probably needs to be moved to somewhere else
         layer.pickObjectsAt = (view, mouse, radius) => Picking.pickPointsAt(view, mouse, radius, layer);
 
@@ -253,31 +273,32 @@ export default {
 
     executeCommand(command) {
         const layer = command.layer;
-        const node = command.requester;
+        const metadata = command.requester;
 
         // Query HRC if we don't have children metadata yet.
-        if (node.childrenBitField && node.children.length === 0) {
-            parseOctree(layer, layer.metadata.hierarchyStepSize, node).then(() => command.view.notifyChange(layer, false));
+        if (metadata.childrenBitField && metadata.children.length === 0) {
+            parseOctree(layer, layer.metadata.hierarchyStepSize, metadata).then(() => command.view.notifyChange(layer, false));
         }
 
         // `isLeaf` is for lopocs and allows the pointcloud server to consider that the current
         // node is the last one, even if we could subdivide even further.
         // It's necessary because lopocs doens't know about the hierarchy (it generates it on the fly
         // when we request .hrc files)
-        const url = `${node.baseurl}/r${node.name}.${layer.extension}?isleaf=${command.isLeaf ? 1 : 0}`;
+        const url = `${metadata.baseurl}/r${metadata.name}.${layer.extension}?isleaf=${command.isLeaf ? 1 : 0}`;
 
         return Fetcher.arrayBuffer(url, layer.fetchOptions).then(buffer => layer.parse(buffer, layer.metadata.pointAttributes)).then((geometry) => {
             const points = new THREE.Points(geometry, layer.material.clone());
             addPickingAttribute(points);
             points.frustumCulled = false;
             points.matrixAutoUpdate = false;
-            points.position.copy(node.bbox.min);
+            points.position.copy(metadata.bbox.min);
             points.scale.set(layer.metadata.scale, layer.metadata.scale, layer.metadata.scale);
             points.updateMatrix();
             points.tightbbox = geometry.boundingBox.applyMatrix4(points.matrix);
             points.layers.set(layer.threejsLayer);
             points.layer = layer;
-            points.extent = Extent.fromBox3(command.view.referenceCrs, node.bbox);
+            points.extent = Extent.fromBox3(command.view.referenceCrs, metadata.bbox);
+            points.userData.metadata = metadata;
             return points;
         });
     },

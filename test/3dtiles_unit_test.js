@@ -65,7 +65,7 @@ describe('Distance computation using boundingVolume.region', function () {
         const tileset = tilesetWithRegion();
         const tileIndex = new $3dTilesIndex(tileset, '');
         const tile = new Object3D();
-        configureTile(tile, { }, tileIndex.index['0']);
+        configureTile(tile, { }, tileIndex.index['1']);
 
         computeNodeSSE(camera, tile);
 
@@ -78,7 +78,7 @@ describe('Distance computation using boundingVolume.region', function () {
         const tileset = tilesetWithRegion(m);
         const tileIndex = new $3dTilesIndex(tileset, '');
         const tile = new Object3D();
-        configureTile(tile, { }, tileIndex.index['0']);
+        configureTile(tile, { }, tileIndex.index['1']);
 
         computeNodeSSE(camera, tile);
 
@@ -99,7 +99,7 @@ describe('Distance computation using boundingVolume.box', function () {
         const tileIndex = new $3dTilesIndex(tileset, '');
 
         const tile = new Object3D();
-        configureTile(tile, { }, tileIndex.index['0']);
+        configureTile(tile, { }, tileIndex.index['1']);
 
         computeNodeSSE(camera, tile);
 
@@ -114,7 +114,7 @@ describe('Distance computation using boundingVolume.box', function () {
         const tileIndex = new $3dTilesIndex(tileset, '');
 
         const tile = new Object3D();
-        configureTile(tile, { }, tileIndex.index['0']);
+        configureTile(tile, { }, tileIndex.index['1']);
 
         tile.updateMatrixWorld(true);
 
@@ -137,7 +137,7 @@ describe('Distance computation using boundingVolume.sphere', function () {
         const tileIndex = new $3dTilesIndex(tileset, '');
 
         const tile = new Object3D();
-        configureTile(tile, { }, tileIndex.index['0']);
+        configureTile(tile, { }, tileIndex.index['1']);
 
         computeNodeSSE(camera, tile);
 
@@ -152,7 +152,7 @@ describe('Distance computation using boundingVolume.sphere', function () {
         const tileIndex = new $3dTilesIndex(tileset, '');
 
         const tile = new Object3D();
-        configureTile(tile, { }, tileIndex.index['0']);
+        configureTile(tile, { }, tileIndex.index['1']);
 
         tile.updateMatrixWorld(true);
 
