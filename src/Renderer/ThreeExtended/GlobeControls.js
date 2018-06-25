@@ -34,60 +34,6 @@ const CONTROL_KEYS = {
     S: 83,
 };
 
-// TODO: can be optimize for some uses
-var presiceSlerp = function presiceSlerp(qb, t) {
-    if (t === 0) {
-        return this;
-    }
-
-    if (t === 1) {
-        return this.copy(qb);
-    }
-
-    const x = this._x;
-    const y = this._y;
-    const z = this._z;
-    const w = this._w;
-
-    // http://www.euclideanspace.com/maths/algebra/realNormedAlgebra/quaternions/slerp/
-
-    var cosHalfTheta = w * qb._w + x * qb._x + y * qb._y + z * qb._z;
-
-    if (cosHalfTheta < 0) {
-        this._w = -qb._w;
-        this._x = -qb._x;
-        this._y = -qb._y;
-        this._z = -qb._z;
-
-        cosHalfTheta = -cosHalfTheta;
-    } else {
-        this.copy(qb);
-    }
-
-    if (cosHalfTheta >= 1.0) {
-        this._w = w;
-        this._x = x;
-        this._y = y;
-        this._z = z;
-
-        return this;
-    }
-
-    const sinHalfTheta = Math.sqrt(1.0 - cosHalfTheta * cosHalfTheta);
-    const halfTheta = Math.atan2(sinHalfTheta, cosHalfTheta);
-    const ratioA = Math.sin((1 - t) * halfTheta) / sinHalfTheta;
-    const ratioB = Math.sin(t * halfTheta) / sinHalfTheta;
-
-    this._w = (w * ratioA + this._w * ratioB);
-    this._x = (x * ratioA + this._x * ratioB);
-    this._y = (y * ratioA + this._y * ratioB);
-    this._z = (z * ratioA + this._z * ratioB);
-
-    this.onChangeCallback();
-
-    return this;
-};
-
 // private members
 const EPS = 0.000001;
 
@@ -156,10 +102,6 @@ const ctrl = {
     lengthTarget: 0,
     lengthCamera: 0,
 };
-
-ctrl.qDelta.presiceSlerp = presiceSlerp;
-quatGlobe.presiceSlerp = presiceSlerp;
-
 // Animation
 
 let enableAnimation = true;
@@ -173,9 +115,11 @@ var lastTimeMouseMove = 0;
 
 // Expression used to damp camera's moves
 var dampingMoveAnimatedExpression = (function getDampMoveAniExprFn() {
-    const damp = new THREE.Quaternion(0, 0, 0, 1);
+    const damp = [0, 0, 0, 1];
+    const result = [];
     return function dampingMoveAnimatedExpression(root) {
-        root.qDelta.presiceSlerp(damp, root.dampingFactor * 0.2);
+        THREE.Quaternion.slerpFlat(result, 0, root.qDelta.toArray(), 0, damp, 0, root.dampingFactor * 0.2);
+        root.qDelta.fromArray(result);
         root.quatGlobe.multiply(root.qDelta);
     };
 }());
@@ -206,7 +150,9 @@ function zoomCenterAnimatedExpression(root, progress) {
     // Rotation
     root.quatGlobe.set(0, 0, 0, 1);
     root.progress = 1 - Math.pow((1 - (Math.sin((progress - 0.5) * Math.PI) * 0.5 + 0.5)), 2);
-    root.quatGlobe.presiceSlerp(root.qDelta, root.progress);
+    const result = [];
+    THREE.Quaternion.slerpFlat(result, 0, root.quatGlobe.toArray(), 0, root.qDelta.toArray(), 0, root.progress);
+    root.quatGlobe.fromArray(result);
     // clamp
     clampToGround(root);
 }
