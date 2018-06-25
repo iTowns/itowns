@@ -7,7 +7,6 @@ import RendererConstant from '../../Renderer/RendererConstant';
 import { GeometryLayer } from '../Layer/Layer';
 
 import { processTiledGeometryNode } from '../../Process/TiledNodeProcessing';
-import { updateLayeredMaterialNodeImagery, updateLayeredMaterialNodeElevation } from '../../Process/LayeredMaterialNodeProcessing';
 import { planarCulling, planarSubdivisionControl, prePlanarUpdate } from '../../Process/PlanarTileProcessing';
 import PlanarTileBuilder from './Planar/PlanarTileBuilder';
 import SubdivisionControl from '../../Process/SubdivisionControl';
@@ -143,11 +142,6 @@ PlanarView.prototype = Object.create(View.prototype);
 PlanarView.prototype.constructor = PlanarView;
 
 PlanarView.prototype.addLayer = function addLayer(layer) {
-    if (layer.type == 'color') {
-        layer.update = updateLayeredMaterialNodeImagery;
-    } else if (layer.type == 'elevation') {
-        layer.update = updateLayeredMaterialNodeElevation;
-    }
     return View.prototype.addLayer.call(this, layer, this.tileLayer);
 };
 

@@ -7,6 +7,7 @@ import { STRATEGY_MIN_NETWORK_TRAFFIC } from './Layer/LayerUpdateStrategy';
 import { GeometryLayer, Layer, defineLayerProperty } from './Layer/Layer';
 import Scheduler from './Scheduler/Scheduler';
 import Picking from './Picking';
+import { updateLayeredMaterialNodeImagery, updateLayeredMaterialNodeElevation } from '../Process/LayeredMaterialNodeProcessing';
 
 export const VIEW_EVENTS = {
     /**
@@ -312,6 +313,11 @@ function _preprocessLayer(view, layer, provider, parentLayer) {
  * @return {Promise} a promise resolved with the new layer object when it is fully initialized or rejected if any error occurred.
  */
 View.prototype.addLayer = function addLayer(layer, parentLayer) {
+    if (layer.type == 'color') {
+        layer.update = layer.update || updateLayeredMaterialNodeImagery;
+    } else if (layer.type == 'elevation') {
+        layer.update = layer.update || updateLayeredMaterialNodeElevation;
+    }
     return new Promise((resolve, reject) => {
         const duplicate = this.getLayers((l => l.id == layer.id));
         if (duplicate.length > 0) {

@@ -63,7 +63,6 @@
             // add globe2 to the view so it gets updated
             itowns.View.prototype.addLayer.call(globeView, globe2);
             itowns.Fetcher.json('./layers/JSONLayers/OPENSM.json').then(function _(osm) {
-                osm.update = itowns.updateLayeredMaterialNodeImagery;
                 itowns.View.prototype.addLayer.call(globeView, osm, globe2);
             });
 
