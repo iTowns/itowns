@@ -5,7 +5,6 @@ import View from '../View';
 import { GeometryLayer } from '../Layer/Layer';
 import Extent from '../Geographic/Extent';
 import { processTiledGeometryNode } from '../../Process/TiledNodeProcessing';
-import { updateLayeredMaterialNodeImagery } from '../../Process/LayeredMaterialNodeProcessing';
 import { panoramaCulling, panoramaSubdivisionControl } from '../../Process/PanoramaTileProcessing';
 import PanoramaTileBuilder from './Panorama/PanoramaTileBuilder';
 import SubdivisionControl from '../../Process/SubdivisionControl';
@@ -189,9 +188,7 @@ PanoramaView.prototype = Object.create(View.prototype);
 PanoramaView.prototype.constructor = PanoramaView;
 
 PanoramaView.prototype.addLayer = function addLayer(layer) {
-    if (layer.type == 'color') {
-        layer.update = updateLayeredMaterialNodeImagery;
-    } else {
+    if (layer.type != 'color') {
         throw new Error(`Unsupported layer type ${layer.type} (PanoramaView only support 'color' layers)`);
     }
     return View.prototype.addLayer.call(this, layer, this.baseLayer);

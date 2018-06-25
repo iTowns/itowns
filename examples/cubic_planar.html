@@ -114,7 +114,6 @@
                 view.addLayer(tileLayer);
 
                 view.addLayer({
-                    update: itowns.updateLayeredMaterialNodeImagery,
                     url: 'https://download.data.grandlyon.com/wms/grandlyon',
                     networkOptions: { crossOrigin: 'anonymous' },
                     type: 'color',
@@ -127,7 +126,6 @@
                 }, tileLayer);
 
                 view.addLayer({
-                    update: itowns.updateLayeredMaterialNodeElevation,
                     url: 'https://download.data.grandlyon.com/wms/grandlyon',
                     type: 'elevation',
                     protocol: 'wms',

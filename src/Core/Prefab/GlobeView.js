@@ -13,7 +13,6 @@ import CoordStars from '../Geographic/CoordStars';
 
 import Coordinates, { C, ellipsoidSizes } from '../Geographic/Coordinates';
 import { processTiledGeometryNode } from '../../Process/TiledNodeProcessing';
-import { updateLayeredMaterialNodeImagery, updateLayeredMaterialNodeElevation } from '../../Process/LayeredMaterialNodeProcessing';
 import { globeCulling, preGlobeUpdate, globeSubdivisionControl, globeSchemeTileWMTS, globeSchemeTile1 } from '../../Process/GlobeTileProcessing';
 import BuilderEllipsoidTile from './Globe/BuilderEllipsoidTile';
 import SubdivisionControl from '../../Process/SubdivisionControl';
@@ -284,12 +283,10 @@ GlobeView.prototype.addLayer = function addLayer(layer) {
     if (layer.type == 'color') {
         const colorLayerCount = this.getLayers(l => l.type === 'color').length;
         layer.sequence = colorLayerCount;
-        layer.update = updateLayeredMaterialNodeImagery;
     } else if (layer.type == 'elevation') {
         if (layer.protocol === 'wmts' && layer.options.tileMatrixSet !== 'WGS84G') {
             throw new Error('Only WGS84G tileMatrixSet is currently supported for WMTS elevation layers');
         }
-        layer.update = updateLayeredMaterialNodeElevation;
     }
     const layerId = layer.id;
     const layerPromise = View.prototype.addLayer.call(this, layer, this.wgs84TileLayer);
