@@ -68,7 +68,6 @@ export default {
 function parseFeatureBinary(array, byteOffset, FTJSONLength) {
     // Init geometry
     const geometry = new THREE.BufferGeometry();
-    const material = new THREE.PointsMaterial({ size: 0.05, vertexColors: THREE.VertexColors, sizeAttenuation: true });
 
     // init Array feature binary
     const subArrayJson = utf8Decoder.decode(new Uint8Array(array, byteOffset, FTJSONLength));
@@ -105,14 +104,13 @@ function parseFeatureBinary(array, byteOffset, FTJSONLength) {
     if (parseJSON.BATCH_ID) {
         throw new Error('For pnts loader, BATCH_ID: not yet managed');
     }
-    // creation points with geometry and material
-    const points = new THREE.Points(geometry, material);
-    points.realPointCount = lengthFeature;
 
     // Add RTC feature
-    if (parseJSON.RTC_CENTER) {
-        points.position.fromArray(parseJSON.RTC_CENTER);
-    }
+    const offset = parseJSON.RTC_CENTER ?
+        new THREE.Vector3().fromArray(parseJSON.RTC_CENTER) : undefined;
 
-    return points;
+    return {
+        geometry,
+        offset,
+    };
 }
