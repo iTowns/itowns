@@ -140,11 +140,7 @@ function checkNodeElevationTextureValidity(texture, noDataValue) {
            tData[l - Math.sqrt(l)] > noDataValue;
 }
 
-export function updateLayeredMaterialNodeImagery(context, layer, node) {
-    if (!node.parent) {
-        return;
-    }
-
+export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
     const material = node.material;
 
     // Initialisation
@@ -156,10 +152,10 @@ export function updateLayeredMaterialNodeImagery(context, layer, node) {
             // because even if this tile is outside of the layer, it could inherit it's
             // parent texture
             if (!layer.noTextureParentOutsideLimit &&
-                node.parent &&
-                node.parent.material &&
-                node.parent.getIndexLayerColor &&
-                node.parent.getIndexLayerColor(layer.id) >= 0) {
+                parent &&
+                parent.material &&
+                parent.getIndexLayerColor &&
+                parent.getIndexLayerColor(layer.id) >= 0) {
                 // ok, we're going to inherit our parent's texture
             } else {
                 node.layerUpdateState[layer.id].noMoreUpdatePossible();
@@ -185,7 +181,7 @@ export function updateLayeredMaterialNodeImagery(context, layer, node) {
             const sequence = ImageryLayers.getColorLayersIdOrderedBySequence(imageryLayers);
             material.setSequence(sequence);
 
-            initNodeImageryTexturesFromParent(node, node.parent, layer);
+            initNodeImageryTexturesFromParent(node, parent, layer);
         }
 
         // Proposed new process, two separate processes:
@@ -303,10 +299,7 @@ export function updateLayeredMaterialNodeImagery(context, layer, node) {
         });
 }
 
-export function updateLayeredMaterialNodeElevation(context, layer, node) {
-    if (!node.parent) {
-        return;
-    }
+export function updateLayeredMaterialNodeElevation(context, layer, node, parent) {
     // TODO: we need either
     //  - compound or exclusive layers
     //  - support for multiple elevation layers
@@ -320,7 +313,7 @@ export function updateLayeredMaterialNodeElevation(context, layer, node) {
     // Init elevation layer, and inherit from parent if possible
     if (node.layerUpdateState[layer.id] === undefined) {
         node.layerUpdateState[layer.id] = new LayerUpdateState();
-        initNodeElevationTextureFromParent(node, node.parent, layer);
+        initNodeElevationTextureFromParent(node, parent, layer);
         currentElevation = material.getElevationLayerLevel();
         const minLevel = layer.options.zoom ? layer.options.zoom.min : 0;
         if (currentElevation >= minLevel) {
@@ -401,7 +394,7 @@ export function updateLayeredMaterialNodeElevation(context, layer, node) {
                 // Quick check to avoid using elevation texture with no data value
                 // If we have no data values, we use value from the parent tile
                 // We should later implement multi elevation layer to choose the one to use at each level
-                insertSignificantValuesFromParent(terrain.texture, node, node.parent, layer);
+                insertSignificantValuesFromParent(terrain.texture, node, parent, layer);
             }
 
             node.setTextureElevation(terrain);

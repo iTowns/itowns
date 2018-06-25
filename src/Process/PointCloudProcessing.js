@@ -206,7 +206,6 @@ export default {
                     layer.group.add(elt.obj);
                     elt.obj.updateMatrixWorld(true);
 
-                    elt.obj.owner = elt;
                     elt.promise = null;
                 }, (err) => {
                     if (err instanceof CancelledCommandException) {
@@ -265,7 +264,7 @@ export default {
                 // This format doesn't require points to be evenly distributed, so
                 // we're going to sort the nodes by "importance" (= on screen size)
                 // and display only the first N nodes
-                layer.group.children.sort((p1, p2) => p2.owner.sse - p1.owner.sse);
+                layer.group.children.sort((p1, p2) => p2.userData.metadata.sse - p1.userData.metadata.sse);
 
                 let limitHit = false;
                 layer.displayedCount = 0;
@@ -284,7 +283,7 @@ export default {
         const now = Date.now();
         for (let i = layer.group.children.length - 1; i >= 0; i--) {
             const obj = layer.group.children[i];
-            if (!obj.material.visible && (now - obj.owner.notVisibleSince) > 10000) {
+            if (!obj.material.visible && (now - obj.userData.metadata.notVisibleSince) > 10000) {
                 // remove from group
                 layer.group.children.splice(i, 1);
 
@@ -292,7 +291,7 @@ export default {
                 obj.geometry.dispose();
                 obj.material = null;
                 obj.geometry = null;
-                obj.owner.obj = null;
+                obj.userData.metadata.obj = null;
 
                 if (__DEBUG__) {
                     if (obj.boxHelper) {
