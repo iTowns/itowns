@@ -141,6 +141,9 @@ function _preprocessLayer(view, layer, provider, parentLayer) {
         };
     }
 
+    layer.getCoords = layer.getCoords || (node => [node.extent]);
+    layer.getZoom = layer.getZoom || (node => node.level);
+
     if (provider) {
         if (provider.tileInsideLimit) {
             layer.tileInsideLimit = provider.tileInsideLimit.bind(provider);

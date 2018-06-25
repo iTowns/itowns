@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import OGCWebServiceHelper from './OGCWebServiceHelper';
 import URLBuilder from './URLBuilder';
 import Extent from '../Core/Geographic/Extent';
+import { is4326 } from '../Core/Geographic/Coordinates';
 
 function preprocessDataLayer(layer) {
     if (!layer.extent) {
@@ -23,6 +24,16 @@ function preprocessDataLayer(layer) {
             max: 18,
         };
     }
+    layer.getCoords = function getCoords(node) {
+        // Special globe case: use the P(seudo)M(ercator) coordinates
+        if (is4326(node.extent.crs()) &&
+                (this.extent.crs() == 'EPSG:3857' || is4326(this.extent.crs()))) {
+            OGCWebServiceHelper.computeTileMatrixSetCoordinates(node, 'PM');
+            return node.wmtsCoords.PM;
+        } else {
+            return OGCWebServiceHelper.computeTMSCoordinates(node, this.extent, this.origin);
+        }
+    };
 }
 
 function executeCommand(command) {
@@ -30,7 +41,7 @@ function executeCommand(command) {
     const tile = command.requester;
 
     const promises = [];
-    for (const coordTMS of tile.getCoordsForLayer(layer)) {
+    for (const coordTMS of layer.getCoords(tile)) {
         const coordTMSParent = (command.targetLevel < coordTMS.zoom) ?
             OGCWebServiceHelper.WMTS_WGS84Parent(coordTMS, command.targetLevel) :
             undefined;
@@ -59,7 +70,7 @@ function tileTextureCount(tile, layer) {
 
 function tileInsideLimit(tile, layer, targetLevel) {
     // assume 1 TMS texture per tile (ie: tile geometry CRS is the same as layer's CRS)
-    let tmsCoord = tile.getCoordsForLayer(layer)[0];
+    let tmsCoord = layer.getCoords(tile)[0];
 
     if (targetLevel < tmsCoord.zoom) {
         tmsCoord = OGCWebServiceHelper.WMTS_WGS84Parent(tmsCoord, targetLevel);

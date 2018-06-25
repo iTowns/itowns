@@ -58,6 +58,13 @@ function preprocessDataLayer(layer) {
         layer.url = newBaseUrl;
     }
     layer.options.zoom = layer.options.zoom || { min: 2, max: 20 };
+    layer.getCoords = function getCoords(node) {
+        OGCWebServiceHelper.computeTileMatrixSetCoordinates(node, this.options.tileMatrixSet);
+        return node.wmtsCoords[this.options.tileMatrixSet];
+    };
+    layer.getZoom = function getZoom(node) {
+        return this.getCoords(node)[0].zoom;
+    };
 }
 
 /**
@@ -69,7 +76,7 @@ function preprocessDataLayer(layer) {
  */
 function getXbilTexture(tile, layer, targetZoom) {
     const pitch = new THREE.Vector4(0.0, 0.0, 1.0, 1.0);
-    let coordWMTS = tile.getCoordsForLayer(layer)[0];
+    let coordWMTS = layer.getCoords(tile)[0];
 
     if (targetZoom && targetZoom !== coordWMTS.zoom) {
         coordWMTS = OGCWebServiceHelper.WMTS_WGS84Parent(coordWMTS, targetZoom, pitch);
@@ -125,14 +132,14 @@ function executeCommand(command) {
 function tileTextureCount(tile, layer) {
     const tileMatrixSet = layer.options.tileMatrixSet;
     OGCWebServiceHelper.computeTileMatrixSetCoordinates(tile, tileMatrixSet);
-    return tile.getCoordsForLayer(layer).length;
+    return layer.getCoords(tile).length;
 }
 
 function tileInsideLimit(tile, layer, targetLevel) {
     // This layer provides data starting at level = layer.options.zoom.min
     // (the zoom.max property is used when building the url to make
     //  sure we don't use invalid levels)
-    for (const coord of tile.getCoordsForLayer(layer)) {
+    for (const coord of layer.getCoords(tile)) {
         let c = coord;
         // override
         if (targetLevel < c.zoom) {
@@ -159,7 +166,7 @@ function getColorTextures(tile, layer, targetZoom) {
         return Promise.resolve();
     }
     const promises = [];
-    const bcoord = tile.getCoordsForLayer(layer);
+    const bcoord = layer.getCoords(tile);
 
     for (const coordWMTS of bcoord) {
         promises.push(getColorTexture(coordWMTS, layer, targetZoom));

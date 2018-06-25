@@ -12,7 +12,7 @@ import URLBuilder from './URLBuilder';
 const supportedFormats = ['image/png', 'image/jpg', 'image/jpeg'];
 
 function tileTextureCount(tile, layer) {
-    return tile.extent.crs() == layer.projection ? 1 : tile.getCoordsForLayer(layer).length;
+    return tile.extent.crs() == layer.projection ? 1 : layer.getCoords(tile).length;
 }
 
 function preprocessDataLayer(layer) {
@@ -70,6 +70,18 @@ function preprocessDataLayer(layer) {
                   `&${crsPropName}=${layer.projection
                   }&WIDTH=${layer.width
                   }&HEIGHT=${layer.width}`;
+
+    layer.getCoords = function getCoords(node) {
+        if (this.projection == node.extent.crs()) {
+            return [node.extent];
+        }
+        if (this.projection != 'EPSG:3857') {
+            throw new Error('unsupported projection wms for this viewer');
+        }
+        const tilematrixset = 'PM';
+        OGCWebServiceHelper.computeTileMatrixSetCoordinates(node, tilematrixset);
+        return node.wmtsCoords[tilematrixset];
+    };
 }
 
 function tileInsideLimit(tile, layer) {
@@ -141,7 +153,7 @@ function getColorTextures(tile, layer, targetLevel) {
         return Promise.resolve();
     }
     const promises = [];
-    for (const coord of tile.getCoordsForLayer(layer)) {
+    for (const coord of layer.getCoords(tile)) {
         promises.push(getColorTexture(tile, layer, targetLevel, coord));
     }
 

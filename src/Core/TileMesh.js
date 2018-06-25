@@ -8,8 +8,7 @@ import * as THREE from 'three';
 import LayeredMaterial from '../Renderer/LayeredMaterial';
 import { l_ELEVATION } from '../Renderer/LayeredMaterialConstants';
 import RendererConstant from '../Renderer/RendererConstant';
-import OGCWebServiceHelper, { SIZE_TEXTURE_TILE } from '../Provider/OGCWebServiceHelper';
-import { is4326 } from './Geographic/Coordinates';
+import { SIZE_TEXTURE_TILE } from '../Provider/OGCWebServiceHelper';
 
 function TileMesh(geometry, params) {
     // Constructor
@@ -173,8 +172,7 @@ TileMesh.prototype.isElevationLayerLoaded = function isElevationLayerLoaded() {
 };
 
 TileMesh.prototype.isColorLayerDownscaled = function isColorLayerDownscaled(layer) {
-    const mat = this.material;
-    return mat.isColorLayerDownscaled(layer.id, this.getZoomForLayer(layer));
+    return this.material.isColorLayerDownscaled(layer.id, layer.getZoom(this));
 };
 
 TileMesh.prototype.OBB = function OBB() {
@@ -204,38 +202,13 @@ TileMesh.prototype.changeSequenceLayers = function changeSequenceLayers(sequence
 };
 
 TileMesh.prototype.getCoordsForLayer = function getCoordsForLayer(layer) {
-    if (layer.protocol.indexOf('wmts') == 0) {
-        OGCWebServiceHelper.computeTileMatrixSetCoordinates(this, layer.options.tileMatrixSet);
-        return this.wmtsCoords[layer.options.tileMatrixSet];
-    } else if (layer.protocol == 'wms' && this.extent.crs() != layer.projection) {
-        if (layer.projection == 'EPSG:3857') {
-            const tilematrixset = 'PM';
-            OGCWebServiceHelper.computeTileMatrixSetCoordinates(this, tilematrixset);
-            return this.wmtsCoords[tilematrixset];
-        } else {
-            throw new Error('unsupported projection wms for this viewer');
-        }
-    } else if (layer.protocol == 'tms' || layer.protocol == 'xyz') {
-        // Special globe case: use the P(seudo)M(ercator) coordinates
-        if (is4326(this.extent.crs()) &&
-                (layer.extent.crs() == 'EPSG:3857' || is4326(layer.extent.crs()))) {
-            OGCWebServiceHelper.computeTileMatrixSetCoordinates(this, 'PM');
-            return this.wmtsCoords.PM;
-        } else {
-            return OGCWebServiceHelper.computeTMSCoordinates(this, layer.extent, layer.origin);
-        }
-    } else {
-        return [this.extent];
-    }
+    console.warn('tile.getCoordsForLayer(layer) is deprecated, use layer.getCoords(tile) instead.');
+    return layer.getCoords(this);
 };
 
 TileMesh.prototype.getZoomForLayer = function getZoomForLayer(layer) {
-    if (layer.protocol.indexOf('wmts') == 0) {
-        OGCWebServiceHelper.computeTileMatrixSetCoordinates(this, layer.options.tileMatrixSet);
-        return this.wmtsCoords[layer.options.tileMatrixSet][0].zoom;
-    } else {
-        return this.level;
-    }
+    console.warn('tile.getZoomForLayer(layer) is deprecated, use layer.getZoom(tile) instead.');
+    return layer.getZoom(this);
 };
 
 /**
