@@ -131,8 +131,21 @@ function b3dmToMesh(data, layer, url) {
     });
 }
 
-function pntsParse(data) {
-    return PntsParser.parse(data).then(result => ({ object3d: result.point }));
+function pntsParse(data, layer) {
+    return PntsParser.parse(data).then((result) => {
+        const material = layer.material ?
+            layer.material.clone() :
+            new THREE.PointsMaterial({ size: 0.05, vertexColors: THREE.VertexColors });
+
+        // creation points with geometry and material
+        const points = new THREE.Points(result.point.geometry, material);
+
+        if (result.point.offset) {
+            points.position.copy(result.point.offset);
+        }
+
+        return { object3d: points };
+    });
 }
 
 export function configureTile(tile, layer, metadata, parent) {
