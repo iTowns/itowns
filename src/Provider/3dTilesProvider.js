@@ -7,7 +7,7 @@ import Extent from '../Core/Geographic/Extent';
 import { init3dTilesLayer } from '../Process/3dTilesProcessing';
 import utf8Decoder from '../utils/Utf8Decoder';
 
-function $3dTilesIndex(tileset, baseURL) {
+export function $3dTilesIndex(tileset, baseURL) {
     let counter = 0;
     this.index = {};
     const inverseTileTransform = new THREE.Matrix4();
@@ -135,7 +135,7 @@ function pntsParse(data) {
     return PntsParser.parse(data).then(result => ({ object3d: result.point }));
 }
 
-function configureTile(tile, layer, metadata, parent) {
+export function configureTile(tile, layer, metadata, parent) {
     tile.frustumCulled = false;
     tile.layer = layer;
 
