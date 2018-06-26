@@ -53,27 +53,16 @@ var fillArray = function fillArray(array, remp) {
         { array[i] = remp; }
 };
 
-var moveElementArray = function moveElementArray(array, oldIndex, newIndex)
-{
+var moveElementArray = function moveElementArray(array, oldIndex, newIndex) {
     array.splice(newIndex, 0, array.splice(oldIndex, 1)[0]);
 };
 
-/* eslint-disable */
-var moveElementsArraySafe = function moveElementsArraySafe(array,index, howMany, toIndex) {
-    index = parseInt(index) || 0;
-    index = index < 0 ? array.length + index : index;
-    toIndex = parseInt(toIndex) || 0;
-    toIndex = toIndex < 0 ? array.length + toIndex : toIndex;
-    if((toIndex > index) && (toIndex <= index + howMany)) {
-        toIndex = index + howMany;
-    }
-
-    var moved;
-    array.splice.apply(array, [toIndex, 0].concat(moved = array.splice(index, howMany)));
-    return moved;
-};
-/* eslint-enable */
-
+// 'options' allows to define what is the datatype of the elevation textures used.
+// By default, we assume floating-point textures.
+// If the elevation textures are RGB, then 3 values must be set:
+//   - useColorTextureElevation: declare that the elevation texture is an RGB textures.
+//   - colorTextureElevationMinZ: altitude value mapped on the (0, 0, 0) color
+//   - colorTextureElevationMaxZ: altitude value mapped on the (255, 255, 255) color
 const LayeredMaterial = function LayeredMaterial(options) {
     THREE.RawShaderMaterial.call(this);
 
@@ -170,7 +159,6 @@ const LayeredMaterial = function LayeredMaterial(options) {
     this.uniforms.opacity = new THREE.Uniform(1.0);
 
     this.colorLayersId = [];
-    this.elevationLayersId = [];
 
     if (Capabilities.isLogDepthBufferSupported()) {
         this.defines = {
@@ -330,22 +318,38 @@ LayeredMaterial.prototype.removeColorLayer = function removeColorLayer(layer) {
     this.uniforms.dTextures_01.value = this.textures[l_COLOR];
 };
 
-LayeredMaterial.prototype.setTexturesLayer = function setTexturesLayer(textures, layerType, layer) {
-    const index = this.indexOfColorLayer(layer);
-    const slotOffset = this.getTextureOffsetByLayerIndex(index);
-    for (let i = 0, max = textures.length; i < max; i++) {
-        if (textures[i]) {
-            if (textures[i].texture !== null) {
-                this.setTexture(textures[i].texture, layerType, i + (slotOffset || 0), textures[i].pitch);
-            } else {
-                this.setLayerVisibility(index, false);
-                break;
-            }
+LayeredMaterial.prototype.setLayerTextures = function setLayerTextures(layer, textures) {
+    if (layer.type === 'elevation') {
+        if (Array.isArray(textures)) {
+            textures = textures[0];
         }
+        this._setTexture(textures.texture, l_ELEVATION, 0, textures.pitch);
+    } else if (layer.type === 'color') {
+        const index = this.indexOfColorLayer(layer.id);
+        const slotOffset = this.getTextureOffsetByLayerIndex(index);
+        if (Array.isArray(textures)) {
+            for (let i = 0, max = textures.length; i < max; i++) {
+                if (textures[i]) {
+                    if (textures[i].texture !== null) {
+                        this._setTexture(textures[i].texture, l_COLOR,
+                            i + (slotOffset || 0), textures[i].pitch);
+                    } else {
+                        this.setLayerVisibility(index, false);
+                        break;
+                    }
+                }
+            }
+        } else if (textures.texture !== null) {
+            this._setTexture(textures.texture, l_COLOR, (slotOffset || 0), textures.pitch);
+        } else {
+            this.setLayerVisibility(index, false);
+        }
+    } else {
+        throw new Error(`Unsupported layer type '${layer.type}'`);
     }
 };
 
-LayeredMaterial.prototype.setTexture = function setTexture(texture, layerType, slot, offsetScale) {
+LayeredMaterial.prototype._setTexture = function _setTexture(texture, layerType, slot, offsetScale) {
     if (this.textures[layerType][slot] === undefined || this.textures[layerType][slot].image === undefined) {
         this.loadedTexturesCount[layerType] += 1;
     }
@@ -363,21 +367,23 @@ LayeredMaterial.prototype.setColorLayerParameters = function setColorLayerParame
     }
 };
 
-LayeredMaterial.prototype.pushLayer = function pushLayer(param) {
+LayeredMaterial.prototype.pushLayer = function pushLayer(layer, extents) {
     const newIndex = this.getColorLayersCount();
-    const offset = newIndex === 0 ? 0 : this.getTextureOffsetByLayerIndex(newIndex - 1) + this.getTextureCountByLayerIndex(newIndex - 1);
+    const offset = newIndex === 0 ?
+        0 :
+        this.getTextureOffsetByLayerIndex(newIndex - 1) + this.getTextureCountByLayerIndex(newIndex - 1);
 
     this.uniforms.paramLayers.value[newIndex] = new THREE.Vector4();
 
     this.setTextureOffsetByLayerIndex(newIndex, offset);
     // If there's only one texture: assume it covers the whole tile,
     // otherwise declare the number of textures
-    this.setLayerUV(newIndex, (param.texturesCount == 1) ? 0 : param.texturesCount);
-    this.setLayerFx(newIndex, param.fx);
-    this.setLayerOpacity(newIndex, param.opacity);
-    this.setLayerVisibility(newIndex, param.visible);
-    this.setLayerTexturesCount(newIndex, param.texturesCount);
-    this.colorLayersId.push(param.idLayer);
+    this.setLayerUV(newIndex, (extents.length == 1) ? 0 : extents.length);
+    this.setLayerFx(newIndex, layer.fx);
+    this.setLayerOpacity(newIndex, layer.opacity);
+    this.setLayerVisibility(newIndex, layer.visible);
+    this.setLayerTexturesCount(newIndex, extents.length);
+    this.colorLayersId.push(layer.id);
 
     this.uniforms.colorLayersCount.value = this.getColorLayersCount();
 };
@@ -423,12 +429,15 @@ LayeredMaterial.prototype.getLayerUV = function setLayerUV(index) {
     return this.uniforms.paramLayers.value[index].y;
 };
 
-LayeredMaterial.prototype.setLayerOpacity = function setLayerOpacity(index, opacity) {
-    if (this.uniforms.paramLayers.value[index])
-        { this.uniforms.paramLayers.value[index].w = opacity; }
+LayeredMaterial.prototype.setLayerOpacity = function setLayerOpacity(layer, opacity) {
+    const index = Number.isInteger(layer) ? layer : this.indexOfColorLayer(layer.id);
+    if (this.uniforms.paramLayers.value[index]) {
+        this.uniforms.paramLayers.value[index].w = opacity;
+    }
 };
 
-LayeredMaterial.prototype.setLayerVisibility = function setLayerVisibility(index, visible) {
+LayeredMaterial.prototype.setLayerVisibility = function setLayerVisibility(layer, visible) {
+    const index = Number.isInteger(layer) ? layer : this.indexOfColorLayer(layer.id);
     this.uniforms.visibility.value[index] = visible;
 };
 
@@ -440,9 +449,9 @@ LayeredMaterial.prototype.getLoadedTexturesCount = function getLoadedTexturesCou
     return this.loadedTexturesCount[l_ELEVATION] + this.loadedTexturesCount[l_COLOR];
 };
 
-LayeredMaterial.prototype.isColorLayerDownscaled = function isColorLayerDownscaled(layerId, zoom) {
-    return this.textures[l_COLOR][this.getLayerTextureOffset(layerId)] &&
-        this.textures[l_COLOR][this.getLayerTextureOffset(layerId)].coords.zoom < zoom;
+LayeredMaterial.prototype.isColorLayerDownscaled = function isColorLayerDownscaled(layer, zoom) {
+    return this.textures[l_COLOR][this.getLayerTextureOffset(layer.id)] &&
+        this.textures[l_COLOR][this.getLayerTextureOffset(layer.id)].coords.zoom < zoom;
 };
 
 LayeredMaterial.prototype.getColorLayerLevelById = function getColorLayerLevelById(colorLayerId) {
@@ -456,23 +465,31 @@ LayeredMaterial.prototype.getColorLayerLevelById = function getColorLayerLevelBy
     return texture ? texture.coords.zoom : EMPTY_TEXTURE_ZOOM;
 };
 
+LayeredMaterial.prototype.isColorLayerLoaded = function isColorLayerLoaded(layer) {
+    const textures = this.getLayerTextures(layer);
+    if (textures.length) {
+        return textures[0].coords.zoom > EMPTY_TEXTURE_ZOOM;
+    }
+    return false;
+};
+
 LayeredMaterial.prototype.getElevationLayerLevel = function getElevationLayerLevel() {
     return this.textures[l_ELEVATION][0].coords.zoom;
 };
 
-LayeredMaterial.prototype.getLayerTextures = function getLayerTextures(layerType, layerId) {
-    if (layerType === l_ELEVATION) {
+LayeredMaterial.prototype.getLayerTextures = function getLayerTextures(layer) {
+    if (layer.type === 'elevation') {
         return this.textures[l_ELEVATION];
     }
 
-    const index = this.indexOfColorLayer(layerId);
+    const index = this.indexOfColorLayer(layer.id);
 
     if (index !== -1) {
         const count = this.getTextureCountByLayerIndex(index);
         const textureIndex = this.getTextureOffsetByLayerIndex(index);
         return this.textures[l_COLOR].slice(textureIndex, textureIndex + count);
     } else {
-        throw new Error(`Invalid layer id "${layerId}"`);
+        return [];
     }
 };
 
@@ -488,5 +505,8 @@ LayeredMaterial.prototype.setSelected = function setSelected(selected) {
     this.uniforms.selected.value = selected;
 };
 
+LayeredMaterial.prototype.isElevationLayerLoaded = function isElevationLayerLoaded() {
+    return this.loadedTexturesCount[l_ELEVATION] > 0;
+};
 
 export default LayeredMaterial;

@@ -44,11 +44,6 @@ export default {
             }), Cache.POLICIES.ELEVATION);
     },
     computeTileMatrixSetCoordinates(tile, tileMatrixSet) {
-        // Are WMTS coordinates ready?
-        if (!tile.wmtsCoords) {
-            tile.wmtsCoords = {};
-        }
-
         tileMatrixSet = tileMatrixSet || 'WGS84G';
         if (!(tileMatrixSet in tile.wmtsCoords)) {
             if (tile.wmtsCoords.WGS84G) {
@@ -58,6 +53,7 @@ export default {
                 tileCoord.row = c.row;
             } else {
                 Projection.WGS84toWMTS(tile.extent, tileCoord);
+                tile.wmtsCoords.WGS84G = [tileCoord.clone()];
             }
 
             tile.wmtsCoords[tileMatrixSet] =
