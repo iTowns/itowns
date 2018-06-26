@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import Extent from '../Core/Geographic/Extent';
 
 function requestNewTile(view, scheduler, geometryLayer, metadata, parent, redraw) {
     const command = {
@@ -26,6 +27,32 @@ function subdivideNode(context, layer, node, cullingTest) {
     }
 }
 
+function boundingVolumeToExtent(crs, layer, volume, transform) {
+    if (volume.region) {
+        return new Extent('EPSG:4326',
+            THREE.Math.radToDeg(volume.region[0]),
+            THREE.Math.radToDeg(volume.region[2]),
+            THREE.Math.radToDeg(volume.region[1]),
+            THREE.Math.radToDeg(volume.region[3]));
+    } else if (volume.box) {
+        const box = volume.box.clone().applyMatrix4(transform);
+        return new Extent(crs, {
+            west: box.min.x,
+            east: box.max.x,
+            south: box.min.y,
+            north: box.max.y,
+        });
+    } else {
+        const sphere = volume.sphere.clone().applyMatrix4(transform);
+        return new Extent(crs, {
+            west: sphere.center.x - sphere.radius,
+            east: sphere.center.x + sphere.radius,
+            south: sphere.center.y - sphere.radius,
+            north: sphere.center.y + sphere.radius,
+        });
+    }
+}
+
 const tmpMatrix = new THREE.Matrix4();
 function _subdivideNodeAdditive(context, layer, node, cullingTest) {
     for (const child of layer.tileIndex.index[node.tileId].children) {
@@ -50,6 +77,12 @@ function _subdivideNodeAdditive(context, layer, node, cullingTest) {
         child.promise = requestNewTile(context.view, context.scheduler, layer, child, node, true).then((tile) => {
             node.add(tile);
             tile.updateMatrixWorld();
+
+            const extent = boundingVolumeToExtent(layer.extent.crs(), tile.layer, tile.boundingVolume, tile.matrixWorld);
+            tile.traverse((obj) => {
+                obj.extent = extent;
+            });
+
             context.view.notifyChange(child);
             child.loaded = true;
             delete child.promise;
@@ -254,6 +287,8 @@ export function init3dTilesLayer(view, scheduler, layer) {
                 tile.updateMatrixWorld();
                 layer.tileIndex.index[tile.tileId].loaded = true;
                 layer.root = tile;
+                layer.extent = boundingVolumeToExtent(layer.projection || view.referenceCrs,
+                    tile, tile.boundingVolume, tile.matrixWorld);
             });
 }
 
