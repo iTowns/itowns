@@ -188,6 +188,9 @@ PanoramaView.prototype = Object.create(View.prototype);
 PanoramaView.prototype.constructor = PanoramaView;
 
 PanoramaView.prototype.addLayer = function addLayer(layer) {
+    if (!layer) {
+        return new Promise((resolve, reject) => reject(new Error('layer is undefined')));
+    }
     if (layer.type != 'color') {
         throw new Error(`Unsupported layer type ${layer.type} (PanoramaView only support 'color' layers)`);
     }
