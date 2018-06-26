@@ -68,17 +68,17 @@
             };
 
             function addLayerCb(layer) {
-                return globeView.addLayer(layer);
+                globeView.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
             }
 
             // Add one imagery layer to the scene
             // This layer is defined in a json file but it could be defined as a plain js
             // object. See Layer* for more info.
-            promises.push(itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(addLayerCb));
+            itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(addLayerCb);
             // Add two elevation layers.
             // These will deform iTowns globe geometry to represent terrain elevation.
-            promises.push(itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addLayerCb));
-            promises.push(itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addLayerCb));
+            itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addLayerCb);
+            itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addLayerCb);
 
             /* eslint-disable no-unused-vars */
             function updateEyeSep(value) {
@@ -185,10 +185,6 @@
             globeView.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
                 // eslint-disable-next-line no-console
                 console.info('Globe initialized');
-                Promise.all(promises).then(function () {
-                    menuGlobe.addImageryLayersGUI(globeView.getLayers(function (l) { return l.type === 'color'; }));
-                    menuGlobe.addElevationLayersGUI(globeView.getLayers(function (l) { return l.type === 'elevation'; }));
-                }).catch(console.error);
                 updateScaleWidget();
             });
             globeView.controls.addEventListener(itowns.CONTROL_EVENTS.RANGE_CHANGED, () => {

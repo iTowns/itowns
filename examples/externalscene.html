@@ -27,7 +27,7 @@
             globeView.mainLoop.name = 'external-ML';
 
             function addLayerCb(layer) {
-                return globeView.addLayer(layer);
+                globeView.addLayer(layer);
             }
 
             itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(addLayerCb);

@@ -43,27 +43,24 @@ and open the template in the editor.
             var menuGlobe = new GuiTools('menuDiv', globeView);
 
             function addLayerCb(layer) {
-                return globeView.addLayer(layer);
+                globeView.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
             }
 
-            var promises = [];
-            promises.push(itowns.Fetcher.json('examples/layers/JSONLayers/Ortho.json').then(addLayerCb));
-            promises.push(itowns.Fetcher.json('examples/layers/JSONLayers/OrthosCRS.json').then(addLayerCb));
-            promises.push(itowns.Fetcher.json('examples/layers/JSONLayers/ScanEX.json').then(addLayerCb));
-            promises.push(itowns.Fetcher.json('examples/layers/JSONLayers/Region.json').then(addLayerCb));
+            itowns.Fetcher.json('examples/layers/JSONLayers/Ortho.json').then(addLayerCb);
+            itowns.Fetcher.json('examples/layers/JSONLayers/OrthosCRS.json').then(addLayerCb);
+            itowns.Fetcher.json('examples/layers/JSONLayers/ScanEX.json').then(addLayerCb);
+            itowns.Fetcher.json('examples/layers/JSONLayers/Region.json').then(addLayerCb);
 
-            promises.push(itowns.Fetcher.json('examples/layers/JSONLayers/Cada.json').then(addLayerCb));
-            promises.push(itowns.Fetcher.json('examples/layers/JSONLayers/Administrative.json').then(addLayerCb));
-            promises.push(itowns.Fetcher.json('examples/layers/JSONLayers/Transport.json').then(addLayerCb));
-            promises.push(itowns.Fetcher.json('examples/layers/JSONLayers/Railways.json').then(addLayerCb));
-            promises.push(itowns.Fetcher.json('examples/layers/JSONLayers/Denomination.json').then(addLayerCb));
+            itowns.Fetcher.json('examples/layers/JSONLayers/Cada.json').then(addLayerCb);
+            itowns.Fetcher.json('examples/layers/JSONLayers/Administrative.json').then(addLayerCb);
+            itowns.Fetcher.json('examples/layers/JSONLayers/Transport.json').then(addLayerCb);
+            itowns.Fetcher.json('examples/layers/JSONLayers/Railways.json').then(addLayerCb);
+            itowns.Fetcher.json('examples/layers/JSONLayers/Denomination.json').then(addLayerCb);
 
-            promises.push(itowns.Fetcher.json('examples/layers/JSONLayers/WORLD_DTM.json').then(addLayerCb));
-            promises.push(itowns.Fetcher.json('examples/layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addLayerCb));
+            itowns.Fetcher.json('examples/layers/JSONLayers/WORLD_DTM.json').then(addLayerCb);
+            itowns.Fetcher.json('examples/layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addLayerCb);
 
             menuGlobe.addGUI('RealisticLighting', false, globeView.setRealisticLightingOn.bind(globeView));
-
-            Promise.all(promises).then(menuGlobe.addLayersGUI.bind(menuGlobe)).catch(console.error);
 
             // eslint-disable-next-line prefer-arrow-callback
             globeView.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function m() {
