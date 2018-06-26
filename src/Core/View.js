@@ -319,9 +319,14 @@ View.prototype.addLayer = function addLayer(layer, parentLayer) {
         layer.update = layer.update || updateLayeredMaterialNodeElevation;
     }
     return new Promise((resolve, reject) => {
+        if (!layer) {
+            reject(new Error('layer is undefined'));
+            return;
+        }
         const duplicate = this.getLayers((l => l.id == layer.id));
         if (duplicate.length > 0) {
             reject(new Error(`Invalid id '${layer.id}': id already used`));
+            return;
         }
 
         if (parentLayer && !layer.extent) {
@@ -331,6 +336,7 @@ View.prototype.addLayer = function addLayer(layer, parentLayer) {
         const provider = this.mainLoop.scheduler.getProtocolProvider(layer.protocol);
         if (layer.protocol && !provider) {
             reject(new Error(`${layer.protocol} is not a recognized protocol name.`));
+            return;
         }
         layer = _preprocessLayer(this, layer, provider, parentLayer);
         if (parentLayer) {
@@ -338,9 +344,11 @@ View.prototype.addLayer = function addLayer(layer, parentLayer) {
         } else {
             if (typeof (layer.update) !== 'function') {
                 reject(new Error('Cant add GeometryLayer: missing a update function'));
+                return;
             }
             if (typeof (layer.preUpdate) !== 'function') {
                 reject(new Error('Cant add GeometryLayer: missing a preUpdate function'));
+                return;
             }
 
             this._layers.push(layer);
