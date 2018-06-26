@@ -70,11 +70,12 @@ export default {
      * @return {string} the formed url
      */
     bbox: function bbox(bbox, layer) {
+        const precision = layer.projection == 'EPSG:4326' ? 9 : 2;
         const box = bbox.as(layer.projection);
-        const w = box.west();
-        const s = box.south();
-        const e = box.east();
-        const n = box.north();
+        const w = box.west().toFixed(precision);
+        const s = box.south().toFixed(precision);
+        const e = box.east().toFixed(precision);
+        const n = box.north().toFixed(precision);
 
         let bboxInUnit = layer.axisOrder || 'wsen';
         bboxInUnit = bboxInUnit.replace('w', `${w},`)
