@@ -23,7 +23,7 @@
     <body>
         <div id="viewerDiv">
             <p id="info">
-                Picture taken by Walter Mittelholzer in 1919, metadata from 
+                Picture taken by Walter Mittelholzer in 1919, metadata from
                 <a href="https://smapshot.heig-vd.ch/map/?imageId=2873" target="_blank"> smapshot.heig-vd.ch </a>
             </p>
         </div>
@@ -52,7 +52,7 @@
             var camera;
 
             function addLayerCb(layer) {
-                return globeView.addLayer(layer);
+                globeView.addLayer(layer);
             }
 
             // Add one imagery layer to the scene
@@ -142,13 +142,13 @@
             new itowns.FirstPersonControls(globeView);
 
             /* global itowns, document, GuiTools, globeView, promises */
-            var menuGlobe = new GuiTools('menuDiv');         
+            var menuGlobe = new GuiTools('menuDiv');
             // setup GUI
             function updatePlaneDistance() {
                 transformTexturedPlane(camera, pictureInfos.distance, plane);
             }
             setupPictureUI(menuGlobe, pictureInfos, plane, updatePlaneDistance, globeView, 3000, 15000);
-              
+
             var d = new debug.Debug(globeView, menuGlobe.gui);
             debug.createTileDebugUI(menuGlobe.gui, globeView, globeView.wgs84TileLayer, d);
 

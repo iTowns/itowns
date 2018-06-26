@@ -25,7 +25,6 @@
 
             // Define initial camera position
             var positionOnGlobe = { longitude: 4.818, latitude: 45.7354, altitude: 3000 };
-            var promises = [];
             var meshes = [];
             var linesBus = [];
             var scaler;
@@ -37,7 +36,7 @@
             var globeView = new itowns.GlobeView(viewerDiv, positionOnGlobe);
             setupLoadingScreen(viewerDiv, globeView);
             function addLayerCb(layer) {
-                return globeView.addLayer(layer);
+                globeView.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
             }
 
             // Define projection that we will use (taken from https://epsg.io/3946, Proj4js section)
@@ -49,12 +48,12 @@
             // Add one imagery layer to the scene
             // This layer is defined in a json file but it could be defined as a plain js
             // object. See Layer* for more info.
-            promises.push(itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(addLayerCb));
+            itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(addLayerCb);
 
             // Add two elevation layers.
             // These will deform iTowns globe geometry to represent terrain elevation.
-            promises.push(itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addLayerCb));
-            promises.push(itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addLayerCb));
+            itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addLayerCb);
+            itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addLayerCb);
 
             function altitudeLine(properties, contour) {
                 var altitudes = [];
@@ -235,12 +234,7 @@
             globeView.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
                 // eslint-disable-next-line no-console
                 console.info('Globe initialized');
-                Promise.all(promises).then(function () {
-                    menuGlobe.addImageryLayersGUI(globeView.getLayers(function (l) { return l.type === 'color'; }));
-                    menuGlobe.addElevationLayersGUI(globeView.getLayers(function (l) { return l.type === 'elevation'; }));
-
-                    globeView.controls.setTilt(45, true);
-                }).catch(console.error);
+                globeView.controls.setTilt(45, true);
             });
             var d = new debug.Debug(globeView, menuGlobe.gui);
             debug.createTileDebugUI(menuGlobe.gui, globeView, globeView.wgs84TileLayer, d);

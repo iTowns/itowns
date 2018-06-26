@@ -47,6 +47,14 @@ function GuiTools(domId, view, w) {
     }
 }
 
+GuiTools.prototype.addLayerGUI = function fnAddLayerGUI(layer) {
+    if (layer.type === 'color') {
+        this.addImageryLayerGUI(layer);
+    } else if (layer.type === 'elevation') {
+        this.addElevationLayerGUI(layer);
+    }
+};
+
 GuiTools.prototype.addLayersGUI = function fnAddLayersGUI() {
     function filterColor(l) { return l.type === 'color'; }
     function filterElevation(l) { return l.type === 'elevation'; }

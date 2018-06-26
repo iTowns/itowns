@@ -53,9 +53,11 @@
 
             // Instanciate iTowns GlobeView*
             var globeView = new itowns.GlobeView(viewerDiv, positionOnGlobe);
+            var menuGlobe = new GuiTools('menuDiv', globeView);
+
             setupLoadingScreen(viewerDiv, globeView);
             function addLayerCb(layer) {
-                return globeView.addLayer(layer);
+                globeView.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
             }
 
             // Add one imagery layer to the scene
@@ -99,15 +101,11 @@
                 },
             }));
 
-            var menuGlobe = new GuiTools('menuDiv', globeView);
-
             // Listen for globe full initialisation event
             globeView.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
                 // eslint-disable-next-line no-console
                 console.info('Globe initialized');
                 Promise.all(promises).then(function () {
-                    menuGlobe.addImageryLayersGUI(globeView.getLayers(function (l) { return l.type === 'color'; }));
-                    menuGlobe.addElevationLayersGUI(globeView.getLayers(function (l) { return l.type === 'elevation'; }));
                     itowns.ColorLayersOrdering.moveLayerToIndex(globeView, 'Ortho', 0);
 
                     new ToolTip(globeView, document.getElementById('viewerDiv'), document.getElementById('tooltipDiv'));
