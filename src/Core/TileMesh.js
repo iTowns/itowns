@@ -5,25 +5,21 @@
  */
 
 import * as THREE from 'three';
-import LayeredMaterial from '../Renderer/LayeredMaterial';
-import { l_ELEVATION } from '../Renderer/LayeredMaterialConstants';
 import RendererConstant from '../Renderer/RendererConstant';
 import OGCWebServiceHelper, { SIZE_TEXTURE_TILE } from '../Provider/OGCWebServiceHelper';
 import { is4326 } from './Geographic/Coordinates';
 
-function TileMesh(geometry, params) {
+function TileMesh(layer, geometry, material, extent, level) {
     // Constructor
-    THREE.Mesh.call(this);
+    THREE.Mesh.call(this, geometry, material);
+
+    this.layer = layer;
 
     this.matrixAutoUpdate = false;
     this.rotationAutoUpdate = false;
 
-    if (!params.extent) {
-        throw new Error('params.extent is mandatory to build a TileMesh');
-    }
-
-    this.level = params.level;
-    this.extent = params.extent;
+    this.level = level;
+    this.extent = extent;
 
     this.geometry = geometry;
 
@@ -32,11 +28,10 @@ function TileMesh(geometry, params) {
     this.boundingSphere = new THREE.Sphere();
     this.OBB().box3D.getBoundingSphere(this.boundingSphere);
 
-    this.material = new LayeredMaterial(params.materialOptions);
-
     this.frustumCulled = false;
 
     this.updateGeometricError();
+    this.wmtsCoords = {};
 
     // Layer
     this.setDisplayed(false);
@@ -120,15 +115,12 @@ TileMesh.prototype.setSelected = function setSelected(select) {
     this.material.setSelected(select);
 };
 
-TileMesh.prototype.setTextureElevation = function setTextureElevation(elevation) {
+TileMesh.prototype.setTextureElevation = function setTextureElevation(layer, elevation) {
     if (this.material === null) {
         return;
     }
-
-    const offsetScale = elevation.pitch || new THREE.Vector4(0, 0, 1, 1);
     this.setBBoxZ(elevation.min, elevation.max);
-
-    this.material.setTexture(elevation.texture, l_ELEVATION, 0, offsetScale);
+    this.material.setLayerTextures(layer, elevation);
 };
 
 
@@ -158,31 +150,8 @@ TileMesh.prototype.setTexturesLayer = function setTexturesLayer(textures, layerT
     }
 };
 
-TileMesh.prototype.getLayerTextures = function getLayerTextures(layerType, layerId) {
-    const mat = this.material;
-    return mat.getLayerTextures(layerType, layerId);
-};
-
-TileMesh.prototype.isColorLayerLoaded = function isColorLayerLoaded(layerId) {
-    const mat = this.material;
-    return mat.getColorLayerLevelById(layerId) > -1;
-};
-
-TileMesh.prototype.isElevationLayerLoaded = function isElevationLayerLoaded() {
-    return this.material.loadedTexturesCount[l_ELEVATION] > 0;
-};
-
-TileMesh.prototype.isColorLayerDownscaled = function isColorLayerDownscaled(layer) {
-    const mat = this.material;
-    return mat.isColorLayerDownscaled(layer.id, this.getZoomForLayer(layer));
-};
-
 TileMesh.prototype.OBB = function OBB() {
     return this.obb;
-};
-
-TileMesh.prototype.getIndexLayerColor = function getIndexLayerColor(idLayer) {
-    return this.material.indexOfColorLayer(idLayer);
 };
 
 TileMesh.prototype.removeColorLayer = function removeColorLayer(idLayer) {
@@ -224,8 +193,13 @@ TileMesh.prototype.getCoordsForLayer = function getCoordsForLayer(layer) {
         } else {
             return OGCWebServiceHelper.computeTMSCoordinates(this, layer.extent, layer.origin);
         }
-    } else {
+    } else if (layer.extent.crs() == this.extent.crs()) {
+        // Currently extent.as() always clone the extent, even if the output
+        // crs is the same.
+        // So we avoid using it if both crs are the same.
         return [this.extent];
+    } else {
+        return [this.extent.as(layer.extent.crs())];
     }
 };
 

@@ -86,17 +86,12 @@
 
             function changeLayerVisibility(ortho, osm) {
                 var material;
-                var orthoIndex;
-                var opensmIndex;
 
                 globeView.scene.traverse(function _(obj) {
                     if (obj.material && obj.material.setLayerVisibility && obj.material.visible) {
                         material = obj.material;
-                        orthoIndex = material.indexOfColorLayer(orthoLayer.id);
-                        opensmIndex = material.indexOfColorLayer(osmLayer.id);
-
-                        material.setLayerVisibility(orthoIndex, ortho);
-                        material.setLayerVisibility(opensmIndex, osm);
+                        material.setLayerVisibility(orthoLayer, ortho);
+                        material.setLayerVisibility(osmLayer, osm);
                     }
                 });
             }

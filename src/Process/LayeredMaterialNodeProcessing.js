@@ -16,7 +16,7 @@ function initNodeImageryTexturesFromParent(node, parent, layer) {
 
         let textureIndex = offsetTextures;
         for (const c of coords) {
-            for (const texture of parent.material.getLayerTextures(l_COLOR, layer.id)) {
+            for (const texture of parent.material.getLayerTextures(layer)) {
                 if (c.isInside(texture.coords)) {
                     const result = c.offsetToParent(texture.coords);
                     node.material.textures[l_COLOR][textureIndex] = texture;
@@ -66,9 +66,7 @@ function initNodeElevationTextureFromParent(node, parent, layer) {
             elevation.max = max;
         }
 
-        node.setTextureElevation(elevation);
-        node.material.elevationLayersId =
-            parent.material.elevationLayersId;
+        node.setTextureElevation(layer, elevation);
     }
 }
 
@@ -164,19 +162,7 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
         }
 
         if (material.indexOfColorLayer(layer.id) === -1) {
-            const texturesCount =
-                node.getCoordsForLayer(layer).length;
-
-            const paramMaterial = {
-                tileMT: layer.options.tileMatrixSet || node.getCoordsForLayer(layer)[0].crs(),
-                texturesCount,
-                visible: layer.visible,
-                opacity: layer.opacity,
-                fx: layer.fx,
-                idLayer: layer.id,
-            };
-
-            material.pushLayer(paramMaterial);
+            material.pushLayer(layer, node.getCoordsForLayer(layer));
             const imageryLayers = context.view.getLayers(l => l.type === 'color');
             const sequence = ImageryLayers.getColorLayersIdOrderedBySequence(imageryLayers);
             material.setSequence(sequence);
@@ -205,9 +191,8 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
     // TODO: move this to defineLayerProperty() declaration
     // to avoid mixing layer's network updates and layer's params
     // Update material parameters
-    const layerIndex = material.indexOfColorLayer(layer.id);
-    material.setLayerVisibility(layerIndex, layer.visible);
-    material.setLayerOpacity(layerIndex, layer.opacity);
+    material.setLayerVisibility(layer, layer.visible);
+    material.setLayerOpacity(layer, layer.opacity);
 
     const ts = Date.now();
     // An update is pending / or impossible -> abort
@@ -223,7 +208,7 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
             node.layerUpdateState[layer.id].noMoreUpdatePossible();
             return;
         }
-    } else if (!node.isColorLayerDownscaled(layer)) {
+    } else if (!material.isColorLayerDownscaled(layer, node.getZoomForLayer(layer))) {
         // default decision method
         node.layerUpdateState[layer.id].noMoreUpdatePossible();
         return;
@@ -268,9 +253,9 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
             }
 
             if (Array.isArray(result)) {
-                node.setTexturesLayer(result, l_COLOR, layer.id);
+                node.material.setLayerTextures(layer, result);
             } else if (result.texture) {
-                node.setTexturesLayer([result], l_COLOR, layer.id);
+                node.material.setLayerTextures(layer, [result]);
             } else {
                 // TODO: null texture is probably an error
                 // Maybe add an error counter for the node/layer,
@@ -350,10 +335,6 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, parent)
         return Promise.resolve();
     }
 
-    // TODO
-    if (material.elevationLayersId.length === 0) {
-        material.elevationLayersId.push(layer.id);
-    }
     node.layerUpdateState[layer.id].newTry();
 
     const command = {
@@ -397,7 +378,7 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, parent)
                 insertSignificantValuesFromParent(terrain.texture, node, parent, layer);
             }
 
-            node.setTextureElevation(terrain);
+            node.setTextureElevation(layer, terrain);
         },
         (err) => {
             if (err instanceof CancelledCommandException) {

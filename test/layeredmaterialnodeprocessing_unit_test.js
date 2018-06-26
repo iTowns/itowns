@@ -3,6 +3,7 @@ import { updateLayeredMaterialNodeImagery } from '../src/Process/LayeredMaterial
 import TileMesh from '../src/Core/TileMesh';
 import Extent from '../src/Core/Geographic/Extent';
 import OBB from '../src/Renderer/ThreeExtended/OBB';
+import LayeredMaterial from '../src/Renderer/LayeredMaterial';
 import { STRATEGY_MIN_NETWORK_TRAFFIC } from '../src/Core/Layer/LayerUpdateStrategy';
 /* global describe, it, beforeEach */
 
@@ -30,6 +31,7 @@ describe('updateLayeredMaterialNodeImagery', function () {
     const layer = {
         id: 'foo',
         protocol: 'dummy',
+        extent: new Extent('EPSG:4326', 0, 0, 0, 0),
     };
 
     beforeEach('reset state', function () {
@@ -49,7 +51,11 @@ describe('updateLayeredMaterialNodeImagery', function () {
 
 
     it('hidden tile should not execute commands', () => {
-        const tile = new TileMesh(geom, { extent: new Extent('EPSG:4326', 0, 0, 0, 0) });
+        const tile = new TileMesh(
+            layer,
+            geom,
+            new LayeredMaterial(),
+            new Extent('EPSG:4326', 0, 0, 0, 0));
         tile.material.visible = false;
         tile.material.indexOfColorLayer = () => 0;
         tile.parent = { };
@@ -58,7 +64,11 @@ describe('updateLayeredMaterialNodeImagery', function () {
     });
 
     it('tile with best texture should not execute commands', () => {
-        const tile = new TileMesh(geom, { extent: new Extent('EPSG:4326', 0, 0, 0, 0) });
+        const tile = new TileMesh(
+            layer,
+            geom,
+            new LayeredMaterial(),
+            new Extent('EPSG:4326', 0, 0, 0, 0));
         tile.material.visible = true;
         tile.material.indexOfColorLayer = () => 0;
         tile.parent = { };
@@ -69,10 +79,12 @@ describe('updateLayeredMaterialNodeImagery', function () {
     });
 
     it('tile with downscaled texture should execute 1 command', () => {
-        const tile = new TileMesh(geom, {
-            extent: new Extent('EPSG:4326', 0, 0, 0, 0),
-            level: 2,
-        });
+        const tile = new TileMesh(
+            layer,
+            geom,
+            new LayeredMaterial(),
+            new Extent('EPSG:4326', 0, 0, 0, 0),
+            2);
         tile.material.visible = true;
         tile.parent = { };
         tile.material.indexOfColorLayer = () => 0;
@@ -89,10 +101,12 @@ describe('updateLayeredMaterialNodeImagery', function () {
     });
 
     it('tile should not request texture with level > layer.zoom.max', () => {
-        const tile = new TileMesh(geom, {
-            extent: new Extent('EPSG:4326', 0, 0, 0, 0),
-            level: 15,
-        });
+        const tile = new TileMesh(
+            layer,
+            geom,
+            new LayeredMaterial(),
+            new Extent('EPSG:4326', 0, 0, 0, 0),
+            15);
         tile.material.visible = true;
         tile.parent = { };
         // Emulate a situation where tile inherited a level 1 texture

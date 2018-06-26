@@ -169,7 +169,7 @@ function tileAt(pt, tile) {
                 return t;
             }
         }
-        if (tile.getLayerTextures(l_ELEVATION)[0].coords.zoom > -1) {
+        if (tile.material.isElevationLayerLoaded()) {
             return tile;
         }
         return undefined;
@@ -371,7 +371,7 @@ function _readZ(layer, method, coord, nodes, cache) {
     }
 
     const tile = tileWithValidElevationTexture;
-    const src = tileWithValidElevationTexture.getLayerTextures(l_ELEVATION)[0];
+    const src = tileWithValidElevationTexture.material.textures[l_ELEVATION][0];
 
     // check cache value if existing
     if (cache) {
