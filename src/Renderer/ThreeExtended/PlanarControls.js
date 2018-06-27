@@ -210,7 +210,7 @@ function PlanarControls(view, options = {}) {
     this.update = function update(dt, updateLoopRestarted) {
         // We test if camera collide to geometry layer or too close to ground and ajust it's altitude in case
         if (this.handleCollision) { // We check distance to the ground/surface geometry. (Could be another geometry layer)
-            this.view.camera.adjustAltitudeToAvoidCollisionWithLayer(this.view, view.getLayers(layer => layer.type === 'geometry')[0], this.minDistanceCollision);
+            this.view.camera.adjustAltitudeToAvoidCollisionWithLayer(this.view, this.view.tileLayer, this.minDistanceCollision);
         }
         // dt will not be relevant when we just started rendering, we consider a 1-frame move in this case
         if (updateLoopRestarted) {

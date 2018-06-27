@@ -222,8 +222,9 @@ function _cleanupObject3D(n) {
     n.remove(...n.children);
 }
 
-export function pre3dTilesUpdate(context, layer) {
-    if (!layer.visible) {
+// this is a layer
+export function pre3dTilesUpdate(context) {
+    if (!this.visible) {
         return [];
     }
 
@@ -240,26 +241,26 @@ export function pre3dTilesUpdate(context, layer) {
     // Since we simply push in this array, the first item is always
     // the oldest one.
     const now = Date.now();
-    if (layer._cleanableTiles.length
-        && (now - layer._cleanableTiles[0].cleanableSince) > layer.cleanupDelay) {
+    if (this._cleanableTiles.length
+        && (now - this._cleanableTiles[0].cleanableSince) > this.cleanupDelay) {
         // Make sure we don't clean root tile
-        layer.root.cleanableSince = undefined;
+        this.root.cleanableSince = undefined;
 
         let i = 0;
-        for (; i < layer._cleanableTiles.length; i++) {
-            const elt = layer._cleanableTiles[i];
-            if ((now - elt.cleanableSince) > layer.cleanupDelay) {
-                cleanup3dTileset(layer, elt);
+        for (; i < this._cleanableTiles.length; i++) {
+            const elt = this._cleanableTiles[i];
+            if ((now - elt.cleanableSince) > this.cleanupDelay) {
+                cleanup3dTileset(this, elt);
             } else {
                 // later entries are younger
                 break;
             }
         }
         // remove deleted elements from _cleanableTiles
-        layer._cleanableTiles.splice(0, i);
+        this._cleanableTiles.splice(0, i);
     }
 
-    return [layer.root];
+    return [this.root];
 }
 
 const boundingVolumeBox = new THREE.Box3();

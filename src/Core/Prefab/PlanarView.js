@@ -4,101 +4,11 @@ import View from '../View';
 import { RENDERING_PAUSED, MAIN_LOOP_EVENTS } from '../MainLoop';
 import RendererConstant from '../../Renderer/RendererConstant';
 
-import { GeometryLayer } from '../Layer/Layer';
-
-import { processTiledGeometryNode } from '../../Process/TiledNodeProcessing';
-import { planarCulling, planarSubdivisionControl, prePlanarUpdate } from '../../Process/PlanarTileProcessing';
-import PlanarTileBuilder from './Planar/PlanarTileBuilder';
-import SubdivisionControl from '../../Process/SubdivisionControl';
-import Picking from '../Picking';
+import PlanarLayer from './Planar/PlanarLayer';
 
 export function createPlanarLayer(id, extent, options) {
-    const tileLayer = new GeometryLayer(id, options.object3d || new THREE.Group());
-    tileLayer.extent = extent;
-    tileLayer.schemeTile = [extent];
-
-    // Configure tiles
-    const nodeInitFn = function nodeInitFn(layer, parent, node) {
-        node.material.setLightingOn(layer.lighting.enable);
-        node.material.uniforms.lightPosition.value = layer.lighting.position;
-
-        if (layer.noTextureColor) {
-            node.material.uniforms.noTextureColor.value.copy(layer.noTextureColor);
-        }
-
-        if (__DEBUG__) {
-            node.material.uniforms.showOutline = { value: layer.showOutline || false };
-            node.material.wireframe = layer.wireframe || false;
-        }
-    };
-
-    tileLayer.preUpdate = (context, layer, changeSources) => {
-        SubdivisionControl.preUpdate(context, layer);
-
-        prePlanarUpdate(context, layer);
-
-        if (__DEBUG__) {
-            layer._latestUpdateStartingLevel = 0;
-        }
-
-        if (changeSources.has(undefined) || changeSources.size == 0) {
-            return layer.level0Nodes;
-        }
-
-        let commonAncestor;
-        for (const source of changeSources.values()) {
-            if (source.isCamera) {
-                // if the change is caused by a camera move, no need to bother
-                // to find common ancestor: we need to update the whole tree:
-                // some invisible tiles may now be visible
-                return layer.level0Nodes;
-            }
-            if (source.layer === layer) {
-                if (!commonAncestor) {
-                    commonAncestor = source;
-                } else {
-                    commonAncestor = source.findCommonAncestor(commonAncestor);
-                    if (!commonAncestor) {
-                        return layer.level0Nodes;
-                    }
-                }
-                if (commonAncestor.material == null) {
-                    commonAncestor = undefined;
-                }
-            }
-        }
-        if (commonAncestor) {
-            if (__DEBUG__) {
-                layer._latestUpdateStartingLevel = commonAncestor.level;
-            }
-            return [commonAncestor];
-        } else {
-            return layer.level0Nodes;
-        }
-    };
-
-
-    function subdivision(context, layer, node) {
-        if (SubdivisionControl.hasEnoughTexturesToSubdivide(context, layer, node)) {
-            return planarSubdivisionControl(options.maxSubdivisionLevel || 5,
-                options.maxDeltaElevationLevel || 4)(context, layer, node);
-        }
-        return false;
-    }
-
-    tileLayer.update = processTiledGeometryNode(planarCulling, subdivision);
-    tileLayer.builder = new PlanarTileBuilder();
-    tileLayer.onTileCreated = nodeInitFn;
-    tileLayer.protocol = 'tile';
-    tileLayer.visible = true;
-    tileLayer.lighting = {
-        enable: false,
-        position: { x: -0.5, y: 0.0, z: 1.0 },
-    };
-    // provide custom pick function
-    tileLayer.pickObjectsAt = (_view, mouse, radius) => Picking.pickTilesAt(_view, mouse, radius, tileLayer);
-
-    return tileLayer;
+    console.warn('createPlanarLayer is deprecated, use the PlanarLayer class instead.');
+    return new PlanarLayer(id, extent, options.object3d, options);
 }
 
 function PlanarView(viewerDiv, extent, options = {}) {
@@ -121,7 +31,7 @@ function PlanarView(viewerDiv, extent, options = {}) {
     this.camera.camera3D.updateProjectionMatrix();
     this.camera.camera3D.updateMatrixWorld(true);
 
-    const tileLayer = createPlanarLayer('planar', extent, options);
+    const tileLayer = new PlanarLayer('planar', extent, options.object3d, options);
 
     this.addLayer(tileLayer);
 

@@ -38,6 +38,6 @@ export function panoramaSubdivisionControl(maxLevel, textureSize) {
             return false;
         }
 
-        return _isTileBiggerThanTexture(context.camera, textureSize, layer.quality || 1.0, node);
+        return _isTileBiggerThanTexture(context.camera, textureSize, layer.options.quality || 1.0, node);
     };
 }

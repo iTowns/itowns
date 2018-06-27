@@ -2,6 +2,7 @@ import Extent from '../Core/Geographic/Extent';
 import Coordinates from '../Core/Geographic/Coordinates';
 import CancelledCommandException from '../Core/Scheduler/CancelledCommandException';
 import ObjectRemovalHelper from './ObjectRemovalHelper';
+import TiledGeometryLayer from '../Layer/TiledGeometryLayer';
 
 
 const center = new Coordinates('EPSG:4326', 0, 0, 0);
@@ -40,7 +41,7 @@ export function requestNewTile(view, scheduler, geometryLayer, extent, parent, l
 
     return scheduler.execute(command).then((node) => {
         node.add(node.OBB());
-        geometryLayer.onTileCreated(geometryLayer, parent, node);
+        geometryLayer.onTileCreated(node);
         return node;
     });
 }
@@ -110,7 +111,7 @@ export function processTiledGeometryNode(cullingTest, subdivisionTest) {
         if (isVisible) {
             let requestChildrenUpdate = false;
 
-            if (node.pendingSubdivision || subdivisionTest(context, layer, node)) {
+            if (node.pendingSubdivision || (TiledGeometryLayer.hasEnoughTexturesToSubdivide(context, node) && subdivisionTest(context, layer, node))) {
                 subdivideNode(context, layer, node);
                 // display iff children aren't ready
                 node.setDisplayed(node.pendingSubdivision);

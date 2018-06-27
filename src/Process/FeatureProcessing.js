@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import LayerUpdateState from '../Core/Layer/LayerUpdateState';
+import LayerUpdateState from '../Layer/LayerUpdateState';
 import CancelledCommandException from '../Core/Scheduler/CancelledCommandException';
 import ObjectRemovalHelper from './ObjectRemovalHelper';
 

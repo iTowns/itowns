@@ -42,15 +42,6 @@ export function preGlobeUpdate(context, layer) {
 
     // pre-sse
     context.camera.preSSE = _preSSE(context.view);
-
-    const elevationLayers = context.view.getLayers((l, a) => a && a.id == layer.id && l.type == 'elevation');
-    context.maxElevationLevel = -1;
-    for (const e of elevationLayers) {
-        context.maxElevationLevel = Math.max(e.options.zoom.max, context.maxElevationLevel);
-    }
-    if (context.maxElevationLevel == -1) {
-        context.maxElevationLevel = Infinity;
-    }
 }
 
 const vT = new THREE.Vector3();
