@@ -6,7 +6,6 @@ import PotreeCinParser from '../Parser/PotreeCinParser';
 import PointsMaterial from '../Renderer/PointsMaterial';
 import Picking from '../Core/Picking';
 import Extent from '../Core/Geographic/Extent';
-import Coordinates from '../Core/Geographic/Coordinates';
 
 // Create an A(xis)A(ligned)B(ounding)B(ox) for the child `childIndex` of one aabb.
 // (PotreeConverter protocol builds implicit octree hierarchy by applying the same
@@ -143,22 +142,6 @@ function addPickingAttribute(points) {
     return points;
 }
 
-function bboxToExtent(crs, bbox) {
-    if (crs == 'EPSG:4978') {
-        const extent = new Extent('EPSG:4326',
-            new Coordinates('EPSG:4978', bbox.min).as('EPSG:4326'),
-            new Coordinates('EPSG:4978', bbox.max).as('EPSG:4326'));
-        return extent;
-    } else {
-        return new Extent(crs, {
-            west: bbox.min.x,
-            east: bbox.max.x,
-            south: bbox.min.y,
-            north: bbox.max.y,
-        });
-    }
-}
-
 export default {
     preprocessDataLayer(layer, view) {
         if (!layer.file) {
@@ -243,7 +226,7 @@ export default {
             console.log('LAYER metadata:', root);
             layer.root = root;
             root.findChildrenByName = findChildrenByName.bind(root, root);
-            layer.extent = bboxToExtent(view.referenceCrs, root.bbox);
+            layer.extent = Extent.fromBox3(view.referenceCrs, root.bbox);
 
             return layer;
         });
@@ -275,7 +258,7 @@ export default {
             points.tightbbox = geometry.boundingBox.applyMatrix4(points.matrix);
             points.layers.set(layer.threejsLayer);
             points.layer = layer;
-            points.extent = bboxToExtent(command.view.referenceCrs, node.bbox);
+            points.extent = Extent.fromBox3(command.view.referenceCrs, node.bbox);
             return points;
         });
     },

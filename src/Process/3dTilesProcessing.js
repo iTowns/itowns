@@ -36,12 +36,7 @@ function boundingVolumeToExtent(crs, volume, transform) {
             THREE.Math.radToDeg(volume.region[3]));
     } else if (volume.box) {
         const box = volume.box.clone().applyMatrix4(transform);
-        return new Extent(crs, {
-            west: box.min.x,
-            east: box.max.x,
-            south: box.min.y,
-            north: box.max.y,
-        });
+        return Extent.fromBox3(crs, box);
     } else {
         const sphere = volume.sphere.clone().applyMatrix4(transform);
         return new Extent(crs, {

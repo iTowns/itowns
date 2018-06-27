@@ -389,4 +389,13 @@ Extent.prototype.expandByPoint = function expandByPoint(coordinates) {
     }
 };
 
+Extent.fromBox3 = function fromBox3(crs, box) {
+    return new Extent(crs, {
+        west: box.min.x,
+        east: box.max.x,
+        south: box.min.y,
+        north: box.max.y,
+    });
+};
+
 export default Extent;
