@@ -1,6 +1,7 @@
 export { default as Coordinates, UNIT } from './Core/Geographic/Coordinates';
 export { default as Extent } from './Core/Geographic/Extent';
-export { GeometryLayer, ImageryLayers } from './Core/Layer/Layer';
+export { ImageryLayers } from './Core/Layer/Layer';
+export { default as GeometryLayer } from './Core/Layer/GeometryLayer';
 export { STRATEGY_MIN_NETWORK_TRAFFIC, STRATEGY_GROUP, STRATEGY_PROGRESSIVE, STRATEGY_DICHOTOMY } from './Core/Layer/LayerUpdateStrategy';
 export { default as GlobeView, GLOBE_VIEW_EVENTS, createGlobeLayer } from './Core/Prefab/GlobeView';
 export { default as PlanarView, createPlanarLayer } from './Core/Prefab/PlanarView';
