@@ -1,13 +1,16 @@
 /* global window */
-import { Scene, EventDispatcher, Vector2, Object3D } from 'three';
+import * as THREE from 'three';
 import Camera from '../Renderer/Camera';
 import MainLoop, { MAIN_LOOP_EVENTS, RENDERING_PAUSED } from './MainLoop';
 import c3DEngine from '../Renderer/c3DEngine';
-import { STRATEGY_MIN_NETWORK_TRAFFIC } from './Layer/LayerUpdateStrategy';
-import { GeometryLayer, Layer, defineLayerProperty } from './Layer/Layer';
+
+import Layer from '../Layer/Layer';
+import ColorLayer from '../Layer/ColorLayer';
+import ElevationLayer from '../Layer/ElevationLayer';
+import GeometryLayer from '../Layer/GeometryLayer';
+
 import Scheduler from './Scheduler/Scheduler';
 import Picking from './Picking';
-import { updateLayeredMaterialNodeImagery, updateLayeredMaterialNodeElevation } from '../Process/LayeredMaterialNodeProcessing';
 
 export const VIEW_EVENTS = {
     /**
@@ -59,7 +62,7 @@ function View(crs, viewerDiv, options = {}) {
 
     this.mainLoop = options.mainLoop || new MainLoop(new Scheduler(), engine);
 
-    this.scene = options.scene3D || new Scene();
+    this.scene = options.scene3D || new THREE.Scene();
     if (!options.scene3D) {
         this.scene.autoUpdate = false;
     }
@@ -76,7 +79,7 @@ function View(crs, viewerDiv, options = {}) {
     window.addEventListener('resize', () => {
         // If the user gave us a container (<div>) then itowns' size is
         // the container's size. Otherwise we use window' size.
-        const newSize = new Vector2(viewerDiv.clientWidth, viewerDiv.clientHeight);
+        const newSize = new THREE.Vector2(viewerDiv.clientWidth, viewerDiv.clientHeight);
         this.mainLoop.gfxEngine.onWindowResize(newSize.x, newSize.y);
         this.notifyChange(this.camera.camera3D);
     }, false);
@@ -101,8 +104,24 @@ function View(crs, viewerDiv, options = {}) {
     };
 }
 
-View.prototype = Object.create(EventDispatcher.prototype);
+View.prototype = Object.create(THREE.EventDispatcher.prototype);
 View.prototype.constructor = View;
+
+function _createLayerFromConfig(config) {
+    switch (config.type) {
+        case 'color':
+            return new ColorLayer(config.id, config);
+        case 'elevation':
+            return new ElevationLayer(config.id, config);
+        case 'geometry':
+            return new GeometryLayer(config.id, new THREE.Group(), config);
+        case 'debug':
+            return new Layer(config.id, 'debug', config);
+        default:
+            throw new Error(`Unknown layer type ${config.type}: please
+                specify a valid one`);
+    }
+}
 
 const _syncGeometryLayerVisibility = function _syncGeometryLayerVisibility(layer, view) {
     if (layer.object3d) {
@@ -119,46 +138,21 @@ const _syncGeometryLayerVisibility = function _syncGeometryLayerVisibility(layer
 };
 
 function _preprocessLayer(view, layer, provider, parentLayer) {
-    if (!(layer instanceof Layer) && !(layer instanceof GeometryLayer)) {
-        const nlayer = new Layer(layer.id);
-        // nlayer.id is read-only so delete it from layer before Object.assign
-        const tmp = layer;
-        delete tmp.id;
-        layer = Object.assign(nlayer, layer);
-        // restore layer.id in user provider layer object
-        tmp.id = layer.id;
-    }
-
-    layer.options = layer.options || {};
-    // TODO remove this warning and fallback after the release following v2.3.0
-    if (!layer.format && layer.options.mimetype) {
-        console.warn('layer.options.mimetype is deprecated, please use layer.format');
-        layer.format = layer.options.mimetype;
-    }
-
-    if (!layer.updateStrategy) {
-        layer.updateStrategy = {
-            type: STRATEGY_MIN_NETWORK_TRAFFIC,
-        };
+    if (!(layer instanceof Layer)) {
+        layer = _createLayerFromConfig(layer);
     }
 
     if (provider) {
         if (provider.tileInsideLimit) {
             layer.tileInsideLimit = provider.tileInsideLimit.bind(provider);
         }
-
-        if (provider.tileTextureCount) {
-            layer.tileTextureCount = provider.tileTextureCount.bind(provider);
-        }
     }
 
     if (!layer.whenReady) {
-        if (layer.type == 'geometry' || layer.type == 'debug') {
-            if (!layer.object3d) {
-                // layer.threejsLayer *must* be assigned before preprocessing,
-                // because TileProvider.preprocessDataLayer function uses it.
-                layer.threejsLayer = view.mainLoop.gfxEngine.getUniqueThreejsLayer();
-            }
+        if (parentLayer || layer.type == 'debug') {
+            // layer.threejsLayer *must* be assigned before preprocessing,
+            // because TileProvider.preprocessDataLayer function uses it.
+            layer.threejsLayer = view.mainLoop.gfxEngine.getUniqueThreejsLayer();
         }
         let providerPreprocessing = Promise.resolve();
         if (provider && provider.preprocessDataLayer) {
@@ -175,47 +169,11 @@ function _preprocessLayer(view, layer, provider, parentLayer) {
         });
     }
 
-    // probably not the best place to do this
-    if (layer.type == 'color') {
-        defineLayerProperty(layer, 'frozen', false);
-        defineLayerProperty(layer, 'visible', true);
-        defineLayerProperty(layer, 'opacity', 1.0);
-        defineLayerProperty(layer, 'sequence', 0);
-    } else if (layer.type == 'elevation') {
-        defineLayerProperty(layer, 'frozen', false);
-    } else if (layer.type == 'geometry' || layer.type == 'debug') {
-        defineLayerProperty(layer, 'visible', true, () => _syncGeometryLayerVisibility(layer, view));
-        defineLayerProperty(layer, 'frozen', false);
+    if (layer.type == 'geometry' || layer.type == 'debug') {
+        layer.defineLayerProperty('visible', true, () => _syncGeometryLayerVisibility(layer, view));
         _syncGeometryLayerVisibility(layer, view);
-
-        const changeOpacity = (o) => {
-            if (o.material) {
-                // != undefined: we want the test to pass if opacity is 0
-                if (o.material.opacity != undefined) {
-                    o.material.transparent = layer.opacity < 1.0;
-                    o.material.opacity = layer.opacity;
-                }
-                if (o.material.uniforms && o.material.uniforms.opacity != undefined) {
-                    o.material.transparent = layer.opacity < 1.0;
-                    o.material.uniforms.opacity.value = layer.opacity;
-                }
-            }
-        };
-        defineLayerProperty(layer, 'opacity', 1.0, () => {
-            if (layer.object3d) {
-                layer.object3d.traverse((o) => {
-                    if (o.layer !== layer) {
-                        return;
-                    }
-                    changeOpacity(o);
-                    // 3dtiles layers store scenes in children's content property
-                    if (o.content) {
-                        o.content.traverse(changeOpacity);
-                    }
-                });
-            }
-        });
     }
+
     return layer;
 }
 
@@ -313,11 +271,6 @@ function _preprocessLayer(view, layer, provider, parentLayer) {
  * @return {Promise} a promise resolved with the new layer object when it is fully initialized or rejected if any error occurred.
  */
 View.prototype.addLayer = function addLayer(layer, parentLayer) {
-    if (layer.type == 'color') {
-        layer.update = layer.update || updateLayeredMaterialNodeImagery;
-    } else if (layer.type == 'elevation') {
-        layer.update = layer.update || updateLayeredMaterialNodeElevation;
-    }
     return new Promise((resolve, reject) => {
         if (!layer) {
             reject(new Error('layer is undefined'));
@@ -404,12 +357,12 @@ View.prototype.notifyChange = function notifyChange(changeSource = undefined, ne
  */
 View.prototype.getLayers = function getLayers(filter) {
     const result = [];
-    for (const geometryLayer of this._layers) {
-        if (!filter || filter(geometryLayer)) {
-            result.push(geometryLayer);
+    for (const layer of this._layers) {
+        if (!filter || filter(layer)) {
+            result.push(layer);
         }
-        for (const attached of geometryLayer._attachedLayers) {
-            if (!filter || filter(attached, geometryLayer)) {
+        for (const attached of layer.attachedLayers) {
+            if (!filter || filter(attached, layer)) {
                 result.push(attached);
             }
         }
@@ -423,7 +376,7 @@ View.prototype.getLayers = function getLayers(filter) {
  */
 View.prototype.getParentLayer = function getParentLayer(layer) {
     for (const geometryLayer of this._layers) {
-        for (const attached of geometryLayer._attachedLayers) {
+        for (const attached of geometryLayer.attachedLayers) {
             if (attached === layer) {
                 return geometryLayer;
             }
@@ -545,7 +498,7 @@ View.prototype.execFrameRequesters = function execFrameRequesters(when, dt, upda
     }
 };
 
-const _eventCoords = new Vector2();
+const _eventCoords = new THREE.Vector2();
 /**
  * Extract view coordinates from a mouse-event / touch-event
  * @param {event} event - event can be a MouseEvent or a TouchEvent
@@ -575,7 +528,7 @@ View.prototype.eventToNormalizedCoords = function eventToNormalizedCoords(event,
 
 /**
  * Convert view coordinates to normalized coordinates (NDC)
- * @param {Vector2} viewCoords (in pixels, 0-0 = top-left of the View)
+ * @param {THREE.Vector2} viewCoords (in pixels, 0-0 = top-left of the View)
  * @return {THREE.Vector2} - NDC coordinates (x and y are [-1, 1])
  */
 View.prototype.viewToNormalizedCoords = function viewToNormalizedCoords(viewCoords) {
@@ -586,7 +539,7 @@ View.prototype.viewToNormalizedCoords = function viewToNormalizedCoords(viewCoor
 
 /**
  * Convert NDC coordinates to view coordinates
- * @param {Vector2} ndcCoords
+ * @param {THREE.Vector2} ndcCoords
  * @return {THREE.Vector2} - view coordinates (in pixels, 0-0 = top-left of the View)
  */
 View.prototype.normalizedToViewCoords = function normalizedToViewCoords(ndcCoords) {
@@ -632,15 +585,14 @@ View.prototype.pickObjectsAt = function pickObjectsAt(mouseOrEvt, radius, ...whe
     radius = radius || 0;
 
     for (const source of sources) {
-        if (source instanceof GeometryLayer ||
-            source instanceof Layer ||
+        if (source instanceof Layer ||
             typeof (source) === 'string') {
             const layer = (typeof (source) === 'string') ?
                 layerIdToLayer(this, source) :
                 source;
 
-            // does this layer have a custom picking function?
-            if (layer.pickObjectsAt) {
+            const parentLayer = this.getParentLayer(layer);
+            if (!parentLayer) {
                 const sp = layer.pickObjectsAt(this, mouse, radius);
                 // warning: sp might be very large, so we can't use '...sp' (we'll hit
                 // 'javascript maximum call stack size exceeded' error) nor
@@ -649,14 +601,6 @@ View.prototype.pickObjectsAt = function pickObjectsAt(mouseOrEvt, radius, ...whe
                     results.push(sp[i]);
                 }
             } else {
-                //   - it hasn't: this layer is attached to another one
-                let parentLayer;
-                this.getLayers((l, p) => {
-                    if (l.id == layer.id) {
-                        parentLayer = p;
-                    }
-                });
-
                 // raycast using parent layer object3d
                 const obj = Picking.pickObjectsAt(
                     this,
@@ -671,7 +615,7 @@ View.prototype.pickObjectsAt = function pickObjectsAt(mouseOrEvt, radius, ...whe
                     }
                 }
             }
-        } else if (source instanceof Object3D) {
+        } else if (source instanceof THREE.Object3D) {
             Picking.pickObjectsAt(
                 this,
                 mouse,

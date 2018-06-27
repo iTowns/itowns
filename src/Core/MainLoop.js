@@ -1,5 +1,5 @@
 import { EventDispatcher } from 'three';
-import { GeometryLayer, Layer } from './Layer/Layer';
+import Layer from '../Layer/Layer';
 import Cache from '../Core/Scheduler/Cache';
 
 export const RENDERING_PAUSED = 0;
@@ -77,7 +77,7 @@ function updateElements(context, geometryLayer, elements) {
                     }
                 }
                 // update attached layers
-                for (const attachedLayer of geometryLayer._attachedLayers) {
+                for (const attachedLayer of geometryLayer.attachedLayers) {
                     if (attachedLayer.ready) {
                         attachedLayer.update(context, attachedLayer, sub.element, sub.parent);
                     }
@@ -90,7 +90,7 @@ function updateElements(context, geometryLayer, elements) {
                             Must be a THREE.Object and have a THREE.Material`);
                     }
                     // update attached layers
-                    for (const attachedLayer of geometryLayer._attachedLayers) {
+                    for (const attachedLayer of geometryLayer.attachedLayers) {
                         if (attachedLayer.ready) {
                             attachedLayer.update(context, attachedLayer, sub.elements[i], sub.parent);
                         }
@@ -127,9 +127,10 @@ MainLoop.prototype._update = function _update(view, updateSources, dt) {
     updateSources.forEach((src) => {
         const layer = src.layer || src;
         if (layer instanceof Layer) {
-            if (!(layer instanceof GeometryLayer)) {
+            const parentLayer = view.getParentLayer(layer);
+            if (parentLayer) {
                 // add the parent layer to update sources
-                updateSources.add(view.getParentLayer(layer));
+                updateSources.add(parentLayer);
             }
         }
     });
@@ -143,7 +144,7 @@ MainLoop.prototype._update = function _update(view, updateSources, dt) {
             const srcs = filterChangeSources(updateSources, geometryLayer);
             if (srcs.size > 0) {
                 // `preUpdate` returns an array of elements to update
-                const elementsToUpdate = geometryLayer.preUpdate(context, geometryLayer, srcs);
+                const elementsToUpdate = geometryLayer.preUpdate(context, srcs);
                 // `update` is called in `updateElements`.
                 updateElements(context, geometryLayer, elementsToUpdate);
                 // `postUpdate` is called when this geom layer update process is finished

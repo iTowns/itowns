@@ -14,8 +14,16 @@
             "src/Core/Geographic/Coordinates.js",
             "src/Core/Layer/Layer.js",
             "src/Core/Prefab/GlobeView.js",
+            "src/Core/Prefab/Globe/GlobeLayer.js",
+            "src/Core/Prefab/Panorama/PanoramaLayer.js",
+            "src/Core/Prefab/Planar/PlanarLayer.js",
             "src/Core/Scheduler/Cache.js",
             "src/Core/Scheduler/Scheduler.js",
+
+            "src/Layer/ColorLayer.js",
+            "src/Layer/ElevationLayer.js",
+            "src/Layer/GeometryLayer.js",
+            "src/Layer/TiledGeometryLayer.js",
 
             "src/Parser/GeoJsonParser.js",
             "src/Parser/GpxParser.js",

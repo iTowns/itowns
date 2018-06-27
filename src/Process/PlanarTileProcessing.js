@@ -24,17 +24,6 @@ function _isTileBigOnScreen(camera, node) {
     return (dim.x >= 256 && dim.y >= 256);
 }
 
-export function prePlanarUpdate(context, layer) {
-    const elevationLayers = context.view.getLayers((l, a) => a && a.id == layer.id && l.type == 'elevation');
-    context.maxElevationLevel = -1;
-    for (const e of elevationLayers) {
-        context.maxElevationLevel = Math.max(e.options.zoom.max, context.maxElevationLevel);
-    }
-    if (context.maxElevationLevel == -1) {
-        context.maxElevationLevel = Infinity;
-    }
-}
-
 export function planarSubdivisionControl(maxLevel, maxDeltaElevationLevel) {
     return function _planarSubdivisionControl(context, layer, node) {
         if (maxLevel <= node.level) {

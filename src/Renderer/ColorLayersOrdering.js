@@ -1,4 +1,4 @@
-import { ImageryLayers } from '../Core/Layer/Layer';
+import { ImageryLayers } from '../Layer/Layer';
 
 function updateLayersOrdering(geometryLayer, imageryLayers) {
     var sequence = ImageryLayers.getColorLayersIdOrderedBySequence(imageryLayers);

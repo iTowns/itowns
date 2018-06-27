@@ -87,9 +87,9 @@ function markForDeletion(elt) {
 }
 
 export default {
-    preUpdate(context, layer, changeSources) {
+    preUpdate(context, changeSources) {
         // Bail-out if not ready
-        if (!layer.root) {
+        if (!this.root) {
             return [];
         }
 
@@ -99,27 +99,27 @@ export default {
             context.camera.height /
                 (2 * Math.tan(THREE.Math.degToRad(context.camera.camera3D.fov) * 0.5));
 
-        if (layer.material) {
-            layer.material.visible = layer.visible;
-            layer.material.opacity = layer.opacity;
-            layer.material.transparent = layer.opacity < 1;
-            layer.material.size = layer.pointSize;
+        if (this.material) {
+            this.material.visible = this.visible;
+            this.material.opacity = this.opacity;
+            this.material.transparent = this.opacity < 1;
+            this.material.size = this.pointSize;
         }
 
         // lookup lowest common ancestor of changeSources
         let commonAncestorName;
         for (const source of changeSources.values()) {
-            if (source.isCamera || source == layer) {
+            if (source.isCamera || source == this) {
                 // if the change is caused by a camera move, no need to bother
                 // to find common ancestor: we need to update the whole tree:
                 // some invisible tiles may now be visible
-                return [layer.root];
+                return [this.root];
             }
             if (source.obj === undefined) {
                 continue;
             }
             // filter sources that belong to our layer
-            if (source.obj.isPoints && source.obj.layer == layer) {
+            if (source.obj.isPoints && source.obj.layer == this) {
                 if (!commonAncestorName) {
                     commonAncestorName = source.name;
                 } else {
@@ -137,11 +137,11 @@ export default {
             }
         }
         if (commonAncestorName) {
-            return [layer.root.findChildrenByName(commonAncestorName)];
+            return [this.root.findChildrenByName(commonAncestorName)];
         }
 
         // Start updating from hierarchy root
-        return [layer.root];
+        return [this.root];
     },
 
     update(context, layer, elt) {

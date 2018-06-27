@@ -47,7 +47,7 @@ function executeCommand(command) {
 
     const { sharableExtent, quaternion, position } = builder.computeSharableExtent(extent);
     const south = sharableExtent.south().toFixed(6);
-    const segment = layer.segments || 16;
+    const segment = layer.options.segments || 16;
     const key = `${builder.type}_${layer.disableSkirt ? 0 : 1}_${segment}_${level}_${south}`;
 
     let geometry = Cache.get(key);

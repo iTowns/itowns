@@ -1,5 +1,5 @@
 import assert from 'assert';
-import LayerUpdateState from '../../src/Core/Layer/LayerUpdateState';
+import LayerUpdateState from '../../src/Layer/LayerUpdateState';
 import { updateLayeredMaterialNodeImagery } from '../../src/Process/LayeredMaterialNodeProcessing';
 
 describe('material state vs layer state', function () {
