@@ -27,7 +27,7 @@ function subdivideNode(context, layer, node, cullingTest) {
     }
 }
 
-function boundingVolumeToExtent(crs, layer, volume, transform) {
+function boundingVolumeToExtent(crs, volume, transform) {
     if (volume.region) {
         return new Extent('EPSG:4326',
             THREE.Math.radToDeg(volume.region[0]),
@@ -78,7 +78,7 @@ function _subdivideNodeAdditive(context, layer, node, cullingTest) {
             node.add(tile);
             tile.updateMatrixWorld();
 
-            const extent = boundingVolumeToExtent(layer.extent.crs(), tile.layer, tile.boundingVolume, tile.matrixWorld);
+            const extent = boundingVolumeToExtent(layer.extent.crs(), tile.boundingVolume, tile.matrixWorld);
             tile.traverse((obj) => {
                 obj.extent = extent;
             });
@@ -288,7 +288,7 @@ export function init3dTilesLayer(view, scheduler, layer) {
                 layer.tileIndex.index[tile.tileId].loaded = true;
                 layer.root = tile;
                 layer.extent = boundingVolumeToExtent(layer.projection || view.referenceCrs,
-                    tile, tile.boundingVolume, tile.matrixWorld);
+                    tile.boundingVolume, tile.matrixWorld);
             });
 }
 

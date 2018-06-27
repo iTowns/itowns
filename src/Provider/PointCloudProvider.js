@@ -143,14 +143,14 @@ function addPickingAttribute(points) {
     return points;
 }
 
-function bboxToExtent(view, bbox) {
-    if (view.referenceCrs == 'EPSG:4978') {
+function bboxToExtent(crs, bbox) {
+    if (crs == 'EPSG:4978') {
         const extent = new Extent('EPSG:4326',
             new Coordinates('EPSG:4978', bbox.min).as('EPSG:4326'),
             new Coordinates('EPSG:4978', bbox.max).as('EPSG:4326'));
         return extent;
     } else {
-        return new Extent(view.referenceCrs, {
+        return new Extent(crs, {
             west: bbox.min.x,
             east: bbox.max.x,
             south: bbox.min.y,
@@ -243,7 +243,7 @@ export default {
             console.log('LAYER metadata:', root);
             layer.root = root;
             root.findChildrenByName = findChildrenByName.bind(root, root);
-            layer.extent = bboxToExtent(view, root.bbox);
+            layer.extent = bboxToExtent(view.referenceCrs, root.bbox);
 
             return layer;
         });
@@ -275,7 +275,7 @@ export default {
             points.tightbbox = geometry.boundingBox.applyMatrix4(points.matrix);
             points.layers.set(layer.threejsLayer);
             points.layer = layer;
-            points.extent = bboxToExtent(command.view, node.bbox);
+            points.extent = bboxToExtent(command.view.referenceCrs, node.bbox);
             return points;
         });
     },
