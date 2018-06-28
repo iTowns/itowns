@@ -101,18 +101,18 @@ function PanoramaLayer(id, coordinates, type, options) {
 PanoramaLayer.prototype = Object.create(GeometryLayer.prototype);
 PanoramaLayer.prototype.constructor = PanoramaLayer;
 
-PanoramaLayer.prototype.preUpdate = function preUpdate(context, layer, changeSources) {
-    SubdivisionControl.preUpdate(context, layer);
+PanoramaLayer.prototype.preUpdate = function preUpdate(context, changeSources) {
+    SubdivisionControl.preUpdate(context, this);
 
     if (__DEBUG__) {
-        layer._latestUpdateStartingLevel = 0;
+        this._latestUpdateStartingLevel = 0;
     }
 
     if (changeSources.has(undefined) || changeSources.size == 0) {
-        return layer.level0Nodes;
+        return this.level0Nodes;
     }
 
-    return GeometryLayer.prototype.preUpdate.call(this, context, layer, changeSources);
+    return GeometryLayer.prototype.preUpdate.call(this, context, changeSources);
 };
 
 export default PanoramaLayer;

@@ -54,36 +54,36 @@ GeometryLayer.prototype.detach = function detach(layer) {
     return this._attachedLayers.length < count;
 };
 
-GeometryLayer.prototype.onTileCreated = function onTileCreated(layer, parent, node) {
-    node.material.setLightingOn(layer.lighting.enable);
-    node.material.uniforms.lightPosition.value = layer.lighting.position;
+GeometryLayer.prototype.onTileCreated = function onTileCreated(node) {
+    node.material.setLightingOn(this.lighting.enable);
+    node.material.uniforms.lightPosition.value = this.lighting.position;
 
-    if (layer.noTextureColor) {
-        node.material.uniforms.noTextureColor.value.copy(layer.noTextureColor);
+    if (this.noTextureColor) {
+        node.material.uniforms.noTextureColor.value.copy(this.noTextureColor);
     }
 
     if (__DEBUG__) {
-        node.material.uniforms.showOutline = { value: layer.showOutline || false };
-        node.material.wireframe = layer.wireframe || false;
+        node.material.uniforms.showOutline = { value: this.showOutline || false };
+        node.material.wireframe = this.wireframe || false;
     }
 };
 
-GeometryLayer.prototype.preUpdate = function preUpdate(context, layer, changeSources) {
+GeometryLayer.prototype.preUpdate = function preUpdate(context, changeSources) {
     let commonAncestor;
     for (const source of changeSources.values()) {
         if (source.isCamera) {
             // if the change is caused by a camera move, no need to bother
             // to find common ancestor: we need to update the whole tree:
             // some invisible tiles may now be visible
-            return layer.level0Nodes;
+            return this.level0Nodes;
         }
-        if (source.layer === layer) {
+        if (source.this === this) {
             if (!commonAncestor) {
                 commonAncestor = source;
             } else {
                 commonAncestor = source.findCommonAncestor(commonAncestor);
                 if (!commonAncestor) {
-                    return layer.level0Nodes;
+                    return this.level0Nodes;
                 }
             }
             if (commonAncestor.material == null) {
@@ -93,11 +93,11 @@ GeometryLayer.prototype.preUpdate = function preUpdate(context, layer, changeSou
     }
     if (commonAncestor) {
         if (__DEBUG__) {
-            layer._latestUpdateStartingLevel = commonAncestor.level;
+            this._latestUpdateStartingLevel = commonAncestor.level;
         }
         return [commonAncestor];
     } else {
-        return layer.level0Nodes;
+        return this.level0Nodes;
     }
 };
 

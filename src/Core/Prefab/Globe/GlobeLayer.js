@@ -48,16 +48,16 @@ function GlobeLayer(id, options) {
 GlobeLayer.prototype = Object.create(GeometryLayer.prototype);
 GlobeLayer.prototype.constructor = GlobeLayer;
 
-GlobeLayer.prototype.preUpdate = function preUpdate(context, layer, changeSources) {
-    SubdivisionControl.preUpdate(context, layer);
+GlobeLayer.prototype.preUpdate = function preUpdate(context, changeSources) {
+    SubdivisionControl.preUpdate(context, this);
 
     if (__DEBUG__) {
-        layer._latestUpdateStartingLevel = 0;
+        this._latestUpdateStartingLevel = 0;
     }
 
-    preGlobeUpdate(context, layer);
+    preGlobeUpdate(context, this);
 
-    return GeometryLayer.prototype.preUpdate.call(this, context, layer, changeSources);
+    return GeometryLayer.prototype.preUpdate.call(this, context, changeSources);
 };
 
 export default GlobeLayer;

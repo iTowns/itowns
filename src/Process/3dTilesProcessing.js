@@ -187,8 +187,8 @@ function _cleanupObject3D(n) {
     n.remove(...n.children);
 }
 
-export function pre3dTilesUpdate(context, layer) {
-    if (!layer.visible) {
+export function pre3dTilesUpdate(context) {
+    if (!this.visible) {
         return [];
     }
 
@@ -204,20 +204,20 @@ export function pre3dTilesUpdate(context, layer) {
     // once in a while, garbage collect
     if (Math.random() > 0.98) {
         // Make sure we don't clean root tile
-        layer.root.cleanableSince = undefined;
+        this.root.cleanableSince = undefined;
 
         // Browse
         const now = Date.now();
 
-        for (const elt of layer._cleanableTiles) {
-            if ((now - elt.cleanableSince) > layer.cleanupDelay) {
-                cleanup3dTileset(layer, elt);
+        for (const elt of this._cleanableTiles) {
+            if ((now - elt.cleanableSince) > this.cleanupDelay) {
+                cleanup3dTileset(this, elt);
             }
         }
-        layer._cleanableTiles = layer._cleanableTiles.filter(n => (layer.tileIndex.index[n.tileId].loaded && n.cleanableSince));
+        this._cleanableTiles = this._cleanableTiles.filter(n => (this.tileIndex.index[n.tileId].loaded && n.cleanableSince));
     }
 
-    return [layer.root];
+    return [this.root];
 }
 
 const cameraLocalPosition = new THREE.Vector3();

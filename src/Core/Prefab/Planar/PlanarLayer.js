@@ -44,20 +44,20 @@ function PlanarLayer(id, extent, options) {
 PlanarLayer.prototype = Object.create(GeometryLayer.prototype);
 PlanarLayer.prototype.constructor = PlanarLayer;
 
-PlanarLayer.prototype.preUpdate = function preUpdate(context, layer, changeSources) {
-    SubdivisionControl.preUpdate(context, layer);
+PlanarLayer.prototype.preUpdate = function preUpdate(context, changeSources) {
+    SubdivisionControl.preUpdate(context, this);
 
-    prePlanarUpdate(context, layer);
+    prePlanarUpdate(context, this);
 
     if (__DEBUG__) {
-        layer._latestUpdateStartingLevel = 0;
+        this._latestUpdateStartingLevel = 0;
     }
 
     if (changeSources.has(undefined) || changeSources.size == 0) {
-        return layer.level0Nodes;
+        return this.level0Nodes;
     }
 
-    return GeometryLayer.prototype.preUpdate.call(this, context, layer, changeSources);
+    return GeometryLayer.prototype.preUpdate.call(this, context, changeSources);
 };
 
 export default PlanarLayer;
