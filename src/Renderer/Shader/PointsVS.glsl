@@ -9,6 +9,7 @@ uniform mat4 projectionMatrix;
 uniform mat4 modelViewMatrix;
 uniform float size;
 
+uniform bool pickingMode;
 uniform int mode;
 uniform float opacity;
 uniform vec4 overlayColor;
@@ -57,7 +58,7 @@ vec3 decodeSphereMappedNormal(vec2 encodedNormal) {
 #endif
 
 void main() {
-    if (mode == MODE_PICKING) {
+    if (pickingMode) {
         vColor = unique_id;
     } else if (mode == MODE_INTENSITY) {
         vColor = vec4(intensity, intensity, intensity, opacity);

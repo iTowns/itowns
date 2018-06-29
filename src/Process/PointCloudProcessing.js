@@ -104,7 +104,6 @@ export default {
             layer.material.opacity = layer.opacity;
             layer.material.transparent = layer.opacity < 1;
             layer.material.size = layer.pointSize;
-            layer.material.mode = layer.mode;
         }
 
         // lookup lowest common ancestor of changeSources

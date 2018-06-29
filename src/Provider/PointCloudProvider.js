@@ -169,6 +169,7 @@ export default {
         layer.type = 'geometry';
         layer.material = layer.material || {};
         layer.material = layer.material.isMaterial ? layer.material : new PointsMaterial(layer.material);
+        layer.material.defines = layer.material.defines || {};
         layer.mode = MODE.COLOR;
 
         // default update methods

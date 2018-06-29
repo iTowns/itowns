@@ -5,10 +5,9 @@ import Capabilities from '../Core/System/Capabilities';
 
 export const MODE = {
     COLOR: 0,
-    PICKING: 1,
-    INTENSITY: 2,
-    CLASSIFICATION: 3,
-    NORMAL: 4,
+    INTENSITY: 1,
+    CLASSIFICATION: 2,
+    NORMAL: 3,
 };
 
 class PointsMaterial extends RawShaderMaterial {
@@ -21,7 +20,7 @@ class PointsMaterial extends RawShaderMaterial {
         this.scale = options.scale || 0.05 * 0.5 / Math.tan(1.0 / 2.0); // autosizing scale
         this.overlayColor = options.overlayColor || new Vector4(0, 0, 0, 0);
         this.mode = options.mode || MODE.COLOR;
-        this.oldMode = null;
+        this.picking = false;
 
         for (const key in MODE) {
             if (Object.prototype.hasOwnProperty.call(MODE, key)) {
@@ -31,7 +30,7 @@ class PointsMaterial extends RawShaderMaterial {
 
         this.uniforms.size = new Uniform(this.size);
         this.uniforms.mode = new Uniform(this.mode);
-        this.uniforms.pickingMode = new Uniform(false);
+        this.uniforms.pickingMode = new Uniform(this.picking);
         this.uniforms.opacity = new Uniform(this.opacity);
         this.uniforms.overlayColor = new Uniform(this.overlayColor);
 
@@ -46,24 +45,17 @@ class PointsMaterial extends RawShaderMaterial {
         this.updateUniforms();
     }
 
-    enablePicking(pickingMode) {
-        // we don't want pixels to blend over already drawn pixels
-        this.blending = pickingMode ? NoBlending : NormalBlending;
-        if (pickingMode) {
-            if (this.uniforms.mode.value !== MODE.PICKING) {
-                this.oldMode = this.uniforms.mode.value;
-                this.uniforms.mode.value = MODE.PICKING;
-            }
-        } else {
-            this.uniforms.mode.value = this.oldMode || this.uniforms.mode.value;
-            this.oldMode = null;
-        }
+    enablePicking(picking) {
+        this.picking = picking;
+        this.blending = picking ? NoBlending : NormalBlending;
+        this.updateUniforms();
     }
 
     updateUniforms() {
         // if size is null, switch to autosizing using the canvas height
         this.uniforms.size.value = (this.size > 0) ? this.size : -this.scale * window.innerHeight;
-        this.uniforms.mode.value = this.mode || MODE.COLOR;
+        this.uniforms.mode.value = this.mode;
+        this.uniforms.pickingMode.value = this.picking;
         this.uniforms.opacity.value = this.opacity;
         this.uniforms.overlayColor.value = this.overlayColor;
     }
@@ -74,6 +66,7 @@ class PointsMaterial extends RawShaderMaterial {
         this.transparent = source.transparent;
         this.size = source.size;
         this.mode = source.mode;
+        this.picking = source.picking;
         this.scale = source.scale;
         this.overlayColor.copy(source.overlayColor);
         this.updateUniforms();

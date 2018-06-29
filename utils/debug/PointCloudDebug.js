@@ -31,10 +31,15 @@ export default {
         layer.dbgDisplaybbox = false;
 
         var styleUI = layer.debugUI.addFolder('Styling');
-        styleUI.add(layer, 'mode', MODE).name('Display mode').onChange(update);
+        if (layer.material.mode != undefined) {
+            styleUI.add(layer.material, 'mode', MODE).name('Display mode').onChange(update);
+        }
         styleUI.add(layer, 'opacity', 0, 1).name('Layer Opacity').onChange(update);
         styleUI.add(layer, 'pointSize', 0, 15).name('Point Size').onChange(update);
         styleUI.add(layer, 'dbgDisplaybbox').name('Display Bounding Boxes').onChange(update);
+        if (layer.material.picking != undefined) {
+            styleUI.add(layer.material, 'picking').name('Display picking id').onChange(update);
+        }
 
         // UI
         const sticky = layer.debugUI.addFolder('Sticky');

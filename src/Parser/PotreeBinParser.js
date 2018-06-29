@@ -55,11 +55,10 @@ for (const potreeName of Object.keys(POINT_ATTTRIBUTES)) {
     attr.byteSize = attr.numElements * attr.numByte;
     attr.normalized = attr.normalized || false;
     // chrome is known to perform badly when we call a method without respecting its arity
-    // also, not using ternary because I measured a 25% perf hit on firefox doing so...
     const fnName = `getUint${attr.numByte * 8}`;
-    attr.value = attr.numByte === 1 ?
-        function value(view, offset) { return view[fnName](offset); } :
-        function value(view, offset) { return view[fnName](offset, true); };
+    attr.getValue = attr.numByte === 1 ?
+        function getValue(view, offset) { return view[fnName](offset); } :
+        function getValue(view, offset) { return view[fnName](offset, true); };
 }
 
 export default {
@@ -93,7 +92,7 @@ export default {
             const array = new attr.arrayType(arrayLength);
             for (let arrayOffset = 0; arrayOffset < arrayLength; arrayOffset += attr.numElements) {
                 for (let elemIdx = 0; elemIdx < attr.numElements; elemIdx++) {
-                    array[arrayOffset + elemIdx] = attr.value(view, attrOffset + elemIdx * attr.numByte);
+                    array[arrayOffset + elemIdx] = attr.getValue(view, attrOffset + elemIdx * attr.numByte);
                 }
                 attrOffset += pointByteSize;
             }
