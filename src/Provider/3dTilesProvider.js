@@ -56,6 +56,7 @@ function $3dTilesIndex(tileset, baseURL) {
     this.extendTileset = function extendTileset(tileset, nodeId, baseURL) {
         recurse(tileset.root, baseURL, this.index[nodeId]);
         this.index[nodeId].children = [tileset.root];
+        this.index[nodeId].isTileset = true;
     };
 }
 
