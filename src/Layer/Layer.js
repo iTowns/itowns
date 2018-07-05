@@ -1,4 +1,4 @@
-import { EventDispatcher } from 'three';
+import * as THREE from 'three';
 
 /**
  * Fires when layer sequence change (meaning when the order of the layer changes in the view)
@@ -31,64 +31,77 @@ import { EventDispatcher } from 'three';
  * @property type {string} visible-property-changed
 */
 
-export const defineLayerProperty = function defineLayerProperty(layer, propertyName, defaultValue, onChange) {
-    const existing = Object.getOwnPropertyDescriptor(layer, propertyName);
-    if (!existing || !existing.set) {
-        var property = layer[propertyName] == undefined ? defaultValue : layer[propertyName];
-        Object.defineProperty(layer,
-            propertyName,
-            { get: () => property,
-                set: (newValue) => {
-                    if (property !== newValue) {
-                        const event = { type: `${propertyName}-property-changed`, previous: {}, new: {} };
-                        event.previous[propertyName] = property;
-                        event.new[propertyName] = newValue;
-                        property = newValue;
-                        if (onChange) {
-                            onChange(layer, propertyName);
-                        }
-                        layer.dispatchEvent(event);
-                    }
-                } });
-    }
-};
+class Layer extends THREE.EventDispatcher {
+    /**
+     * Don't use directly constructor to instance a new Layer
+     * use addLayer in {@link View}
+     * @example
+     * // add and create a new Layer
+     * const newLayer = view.addLayer({options});
+     *
+     * // Change layer's visibilty
+     * const layerToChange = view.getLayers(layer => layer.id == 'idLayerToChange')[0];
+     * layerToChange.visible = false;
+     * view.notifyChange(); // update viewer
+     *
+     * // Change layer's opacity
+     * const layerToChange = view.getLayers(layer => layer.id == 'idLayerToChange')[0];
+     * layerToChange.opacity = 0.5;
+     * view.notifyChange(); // update viewer
+     *
+     * // Listen properties
+     * const layerToListen = view.getLayers(layer => layer.id == 'idLayerToListen')[0];
+     * layerToListen.addEventListener('visible-property-changed', (event) => console.log(event));
+     * layerToListen.addEventListener('opacity-property-changed', (event) => console.log(event));
+     * @constructor
+     * @protected
+     * @param {string} id
+     * @param {string} type
+     */
+    constructor(id, type) {
+        super();
 
-/**
- * Don't use directly constructor to instance a new Layer
- * use addLayer in {@link View}
- * @example
- * // add and create a new Layer
- * const newLayer = view.addLayer({options});
- *
- * // Change layer's visibilty
- * const layerToChange = view.getLayers(layer => layer.id == 'idLayerToChange')[0];
- * layerToChange.visible = false;
- * view.notifyChange(); // update viewer
- *
- * // Change layer's opacity
- * const layerToChange = view.getLayers(layer => layer.id == 'idLayerToChange')[0];
- * layerToChange.opacity = 0.5;
- * view.notifyChange(); // update viewer
- *
- * // Listen properties
- * const layerToListen = view.getLayers(layer => layer.id == 'idLayerToListen')[0];
- * layerToListen.addEventListener('visible-property-changed', (event) => console.log(event));
- * layerToListen.addEventListener('opacity-property-changed', (event) => console.log(event));
- * @constructor
- * @protected
- * @param      {String}  id
- */
-function Layer(id) {
-    Object.defineProperty(this, 'id', {
-        value: id,
-        writable: false,
-    });
+        Object.defineProperty(this, 'id', {
+            value: id,
+            writable: false,
+        });
+
+        Object.defineProperty(this, 'type', {
+            value: type,
+            writable: false,
+        });
+    }
+
+    defineLayerProperty(propertyName, defaultValue, onChange) {
+        const existing = Object.getOwnPropertyDescriptor(this, propertyName);
+        if (!existing || !existing.set) {
+            let property = this[propertyName] == undefined ? defaultValue : this[propertyName];
+
+            Object.defineProperty(
+                this,
+                propertyName,
+                {
+                    get: () => property,
+                    set: (newValue) => {
+                        if (property !== newValue) {
+                            const event = { type: `${propertyName}-property-changed`, previous: {}, new: {} };
+                            event.previous[propertyName] = property;
+                            event.new[propertyName] = newValue;
+                            property = newValue;
+                            if (onChange) {
+                                onChange(this, propertyName);
+                            }
+                            this.dispatchEvent(event);
+                        }
+                    },
+                });
+        }
+    }
 }
 
-Layer.prototype = Object.create(EventDispatcher.prototype);
-Layer.prototype.constructor = Layer;
+export default Layer;
 
-const ImageryLayers = {
+export const ImageryLayers = {
     // move layer to new index
     // After the modification :
     //      * the minimum sequence will always be 0
@@ -133,4 +146,3 @@ const ImageryLayers = {
     },
 };
 
-export { Layer, ImageryLayers };

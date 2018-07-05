@@ -1,6 +1,6 @@
 import { EventDispatcher } from 'three';
-import { Layer } from './Layer/Layer';
-import GeometryLayer from './Layer/GeometryLayer';
+import Layer from '../Layer/Layer';
+import GeometryLayer from '../Layer/GeometryLayer';
 import Cache from '../Core/Scheduler/Cache';
 
 export const RENDERING_PAUSED = 0;

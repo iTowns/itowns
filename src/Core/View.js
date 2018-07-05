@@ -1,11 +1,15 @@
 /* global window */
-import { Scene, EventDispatcher, Vector2, Object3D } from 'three';
+import * as THREE from 'three';
 import Camera from '../Renderer/Camera';
 import MainLoop, { MAIN_LOOP_EVENTS, RENDERING_PAUSED } from './MainLoop';
 import c3DEngine from '../Renderer/c3DEngine';
-import { STRATEGY_MIN_NETWORK_TRAFFIC } from './Layer/LayerUpdateStrategy';
-import { Layer, defineLayerProperty } from './Layer/Layer';
-import GeometryLayer from './Layer/GeometryLayer';
+
+import { STRATEGY_MIN_NETWORK_TRAFFIC } from '../Layer/LayerUpdateStrategy';
+import Layer from '../Layer/Layer';
+import ColorLayer from '../Layer/ColorLayer';
+import ElevationLayer from '../Layer/ElevationLayer';
+import GeometryLayer from '../Layer/GeometryLayer';
+
 import Scheduler from './Scheduler/Scheduler';
 import Picking from './Picking';
 import { updateLayeredMaterialNodeImagery, updateLayeredMaterialNodeElevation } from '../Process/LayeredMaterialNodeProcessing';
@@ -60,7 +64,7 @@ function View(crs, viewerDiv, options = {}) {
 
     this.mainLoop = options.mainLoop || new MainLoop(new Scheduler(), engine);
 
-    this.scene = options.scene3D || new Scene();
+    this.scene = options.scene3D || new THREE.Scene();
     if (!options.scene3D) {
         this.scene.autoUpdate = false;
     }
@@ -77,7 +81,7 @@ function View(crs, viewerDiv, options = {}) {
     window.addEventListener('resize', () => {
         // If the user gave us a container (<div>) then itowns' size is
         // the container's size. Otherwise we use window' size.
-        const newSize = new Vector2(viewerDiv.clientWidth, viewerDiv.clientHeight);
+        const newSize = new THREE.Vector2(viewerDiv.clientWidth, viewerDiv.clientHeight);
         this.mainLoop.gfxEngine.onWindowResize(newSize.x, newSize.y);
         this.notifyChange(this.camera.camera3D);
     }, false);
@@ -102,8 +106,42 @@ function View(crs, viewerDiv, options = {}) {
     };
 }
 
-View.prototype = Object.create(EventDispatcher.prototype);
+View.prototype = Object.create(THREE.EventDispatcher.prototype);
 View.prototype.constructor = View;
+
+function _createLayerFromConfig(config) {
+    let layer;
+
+    switch (config.type) {
+        case 'color':
+            layer = new ColorLayer(config.id);
+            break;
+        case 'elevation':
+            layer = new ElevationLayer(config.id);
+            break;
+        case 'geometry':
+            layer = new GeometryLayer(config.id, new THREE.Group());
+            break;
+        case 'debug':
+            layer = new Layer(config.id, 'debug');
+            break;
+        default:
+            throw new Error(`Unknown layer type ${config.type}: please
+                specify a valid one`);
+    }
+
+    // nlayer.id and type are read-only so delete them from layer before
+    // Object.assign
+    const tmp = config;
+    delete tmp.id;
+    delete tmp.type;
+    layer = Object.assign(layer, config);
+    // restore layer.id and type in user provider layer object
+    tmp.id = config.id;
+    tmp.type = config.type;
+
+    return layer;
+}
 
 const _syncGeometryLayerVisibility = function _syncGeometryLayerVisibility(layer, view) {
     if (layer.object3d) {
@@ -120,14 +158,8 @@ const _syncGeometryLayerVisibility = function _syncGeometryLayerVisibility(layer
 };
 
 function _preprocessLayer(view, layer, provider, parentLayer) {
-    if (!(layer instanceof Layer) && !(layer instanceof GeometryLayer)) {
-        const nlayer = new Layer(layer.id);
-        // nlayer.id is read-only so delete it from layer before Object.assign
-        const tmp = layer;
-        delete tmp.id;
-        layer = Object.assign(nlayer, layer);
-        // restore layer.id in user provider layer object
-        tmp.id = layer.id;
+    if (!(layer instanceof Layer)) {
+        layer = _createLayerFromConfig(layer);
     }
 
     layer.options = layer.options || {};
@@ -176,17 +208,9 @@ function _preprocessLayer(view, layer, provider, parentLayer) {
         });
     }
 
-    // probably not the best place to do this
-    if (layer.type == 'color') {
-        defineLayerProperty(layer, 'frozen', false);
-        defineLayerProperty(layer, 'visible', true);
-        defineLayerProperty(layer, 'opacity', 1.0);
-        defineLayerProperty(layer, 'sequence', 0);
-    } else if (layer.type == 'elevation') {
-        defineLayerProperty(layer, 'frozen', false);
-    } else if (layer.type == 'geometry' || layer.type == 'debug') {
-        defineLayerProperty(layer, 'visible', true, () => _syncGeometryLayerVisibility(layer, view));
-        defineLayerProperty(layer, 'frozen', false);
+    if (layer.type == 'geometry' || layer.type == 'debug') {
+        layer.defineLayerProperty('visible', true, () => _syncGeometryLayerVisibility(layer, view));
+        layer.defineLayerProperty('frozen', false);
         _syncGeometryLayerVisibility(layer, view);
 
         const changeOpacity = (o) => {
@@ -202,7 +226,7 @@ function _preprocessLayer(view, layer, provider, parentLayer) {
                 }
             }
         };
-        defineLayerProperty(layer, 'opacity', 1.0, () => {
+        layer.defineLayerProperty('opacity', 1.0, () => {
             if (layer.object3d) {
                 layer.object3d.traverse((o) => {
                     if (o.layer !== layer) {
@@ -217,6 +241,7 @@ function _preprocessLayer(view, layer, provider, parentLayer) {
             }
         });
     }
+
     return layer;
 }
 
@@ -397,12 +422,12 @@ View.prototype.notifyChange = function notifyChange(changeSource = undefined, ne
  */
 View.prototype.getLayers = function getLayers(filter) {
     const result = [];
-    for (const geometryLayer of this._layers) {
-        if (!filter || filter(geometryLayer)) {
-            result.push(geometryLayer);
+    for (const layer of this._layers) {
+        if (!filter || filter(layer)) {
+            result.push(layer);
         }
-        for (const attached of geometryLayer._attachedLayers) {
-            if (!filter || filter(attached, geometryLayer)) {
+        for (const attached of layer._attachedLayers) {
+            if (!filter || filter(attached, layer)) {
                 result.push(attached);
             }
         }
@@ -538,7 +563,7 @@ View.prototype.execFrameRequesters = function execFrameRequesters(when, dt, upda
     }
 };
 
-const _eventCoords = new Vector2();
+const _eventCoords = new THREE.Vector2();
 /**
  * Extract view coordinates from a mouse-event / touch-event
  * @param {event} event - event can be a MouseEvent or a TouchEvent
@@ -568,7 +593,7 @@ View.prototype.eventToNormalizedCoords = function eventToNormalizedCoords(event,
 
 /**
  * Convert view coordinates to normalized coordinates (NDC)
- * @param {Vector2} viewCoords (in pixels, 0-0 = top-left of the View)
+ * @param {THREE.Vector2} viewCoords (in pixels, 0-0 = top-left of the View)
  * @return {THREE.Vector2} - NDC coordinates (x and y are [-1, 1])
  */
 View.prototype.viewToNormalizedCoords = function viewToNormalizedCoords(viewCoords) {
@@ -579,7 +604,7 @@ View.prototype.viewToNormalizedCoords = function viewToNormalizedCoords(viewCoor
 
 /**
  * Convert NDC coordinates to view coordinates
- * @param {Vector2} ndcCoords
+ * @param {THREE.Vector2} ndcCoords
  * @return {THREE.Vector2} - view coordinates (in pixels, 0-0 = top-left of the View)
  */
 View.prototype.normalizedToViewCoords = function normalizedToViewCoords(ndcCoords) {
@@ -664,7 +689,7 @@ View.prototype.pickObjectsAt = function pickObjectsAt(mouseOrEvt, radius, ...whe
                     }
                 }
             }
-        } else if (source instanceof Object3D) {
+        } else if (source instanceof THREE.Object3D) {
             Picking.pickObjectsAt(
                 this,
                 mouse,

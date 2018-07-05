@@ -1,7 +1,7 @@
 import { l_ELEVATION, l_COLOR, EMPTY_TEXTURE_ZOOM } from '../Renderer/LayeredMaterialConstants';
-import { chooseNextLevelToFetch } from '../Core/Layer/LayerUpdateStrategy';
-import LayerUpdateState from '../Core/Layer/LayerUpdateState';
-import { ImageryLayers } from '../Core/Layer/Layer';
+import { chooseNextLevelToFetch } from '../Layer/LayerUpdateStrategy';
+import LayerUpdateState from '../Layer/LayerUpdateState';
+import { ImageryLayers } from '../Layer/Layer';
 import CancelledCommandException from '../Core/Scheduler/CancelledCommandException';
 import { SIZE_TEXTURE_TILE } from '../Provider/OGCWebServiceHelper';
 import { computeMinMaxElevation } from '../Parser/XbilParser';

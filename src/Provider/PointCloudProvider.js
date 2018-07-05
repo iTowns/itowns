@@ -165,7 +165,6 @@ export default {
         layer.pointBudget = layer.pointBudget || 2000000;
         layer.pointSize = layer.pointSize === 0 || !isNaN(layer.pointSize) ? layer.pointSize : 4;
         layer.sseThreshold = layer.sseThreshold || 2;
-        layer.type = 'geometry';
         layer.material = layer.material || {};
         layer.material = layer.material.isMaterial ? layer.material : new PointsMaterial(layer.material);
 
