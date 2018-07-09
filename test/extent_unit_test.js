@@ -1,5 +1,6 @@
 /* global describe, it */
 import assert from 'assert';
+import { Box3, Vector3 } from 'three';
 import Coordinates from '../src/Core/Geographic/Coordinates';
 import Extent from '../src/Core/Geographic/Extent';
 
@@ -42,5 +43,17 @@ describe('Extent constructors', function () {
         assert.equal(maxX, withValues.east());
         assert.equal(minY, withValues.south());
         assert.equal(maxY, withValues.north());
+    });
+
+    it('should build the expected extent from box3', function () {
+        const box = new Box3(
+            new Vector3(Math.random(), Math.random()),
+            new Vector3(Math.random(), Math.random()));
+        const fromBox = Extent.fromBox3('EPSG:4978', box);
+
+        assert.equal(fromBox.west(), box.min.x);
+        assert.equal(fromBox.east(), box.max.x);
+        assert.equal(fromBox.north(), box.max.y);
+        assert.equal(fromBox.south(), box.min.y);
     });
 });

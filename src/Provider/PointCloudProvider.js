@@ -5,6 +5,7 @@ import PotreeBinParser from '../Parser/PotreeBinParser';
 import PotreeCinParser from '../Parser/PotreeCinParser';
 import PointsMaterial from '../Renderer/PointsMaterial';
 import Picking from '../Core/Picking';
+import Extent from '../Core/Geographic/Extent';
 
 // Create an A(xis)A(ligned)B(ounding)B(ox) for the child `childIndex` of one aabb.
 // (PotreeConverter protocol builds implicit octree hierarchy by applying the same
@@ -142,7 +143,7 @@ function addPickingAttribute(points) {
 }
 
 export default {
-    preprocessDataLayer(layer) {
+    preprocessDataLayer(layer, view) {
         if (!layer.file) {
             layer.file = 'cloud.js';
         }
@@ -225,6 +226,7 @@ export default {
             console.log('LAYER metadata:', root);
             layer.root = root;
             root.findChildrenByName = findChildrenByName.bind(root, root);
+            layer.extent = Extent.fromBox3(view.referenceCrs, root.bbox);
 
             return layer;
         });
@@ -256,6 +258,7 @@ export default {
             points.tightbbox = geometry.boundingBox.applyMatrix4(points.matrix);
             points.layers.set(layer.threejsLayer);
             points.layer = layer;
+            points.extent = Extent.fromBox3(command.view.referenceCrs, node.bbox);
             return points;
         });
     },
