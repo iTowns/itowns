@@ -27,6 +27,8 @@ function subdivideNode(context, layer, node, cullingTest) {
     }
 }
 
+const tmpBox3 = new THREE.Box3();
+const tmpSphere = new THREE.Sphere();
 function boundingVolumeToExtent(crs, volume, transform) {
     if (volume.region) {
         return new Extent('EPSG:4326',
@@ -35,10 +37,10 @@ function boundingVolumeToExtent(crs, volume, transform) {
             THREE.Math.radToDeg(volume.region[1]),
             THREE.Math.radToDeg(volume.region[3]));
     } else if (volume.box) {
-        const box = volume.box.clone().applyMatrix4(transform);
+        const box = tmpBox3.copy(volume.box).applyMatrix4(transform);
         return Extent.fromBox3(crs, box);
     } else {
-        const sphere = volume.sphere.clone().applyMatrix4(transform);
+        const sphere = tmpSphere.copy(volume.sphere).applyMatrix4(transform);
         return new Extent(crs, {
             west: sphere.center.x - sphere.radius,
             east: sphere.center.x + sphere.radius,
