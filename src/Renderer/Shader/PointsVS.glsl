@@ -58,21 +58,24 @@ vec3 decodeSphereMappedNormal(vec2 encodedNormal) {
 #endif
 
 void main() {
+
+#if defined(NORMAL_OCT16)
+    vec3  normal = decodeOct16Normal(oct16Normal);
+#elif defined(NORMAL_SPHEREMAPPED)
+    vec3 normal = decodeSphereMappedNormal(sphereMappedNormal);
+#elif defined(NORMAL)
+    // nothing to do
+#else
+    // default to color
+    vec3 normal = color;
+#endif
+
     if (pickingMode) {
         vColor = unique_id;
     } else if (mode == MODE_INTENSITY) {
         vColor = vec4(intensity, intensity, intensity, opacity);
     } else if (mode == MODE_NORMAL) {
-#if defined(NORMAL_OCT16)
-        vColor = vec4(abs(decodeOct16Normal(oct16Normal)), opacity);
-#elif defined(NORMAL_SPHEREMAPPED)
-        vColor = vec4(abs(decodeSphereMappedNormal(sphereMappedNormal)), opacity);
-#elif defined(NORMAL)
         vColor = vec4(abs(normal), opacity);
-#else
-        // default to color
-        vColor = vec4(mix(color, overlayColor.rgb, overlayColor.a), opacity);
-#endif
     } else {
         // default to color mode
         vColor = vec4(mix(color, overlayColor.rgb, overlayColor.a), opacity);
