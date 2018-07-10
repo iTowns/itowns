@@ -4,8 +4,9 @@ import PntsParser from '../Parser/PntsParser';
 import Fetcher from './Fetcher';
 import OBB from '../Renderer/ThreeExtended/OBB';
 import Extent from '../Core/Geographic/Extent';
-import { init3dTilesLayer } from '../Process/3dTilesProcessing';
+import { pre3dTilesUpdate, process3dTilesNode, init3dTilesLayer } from '../Process/3dTilesProcessing';
 import utf8Decoder from '../utils/Utf8Decoder';
+
 
 export function $3dTilesIndex(tileset, baseURL) {
     let counter = 1;
@@ -83,6 +84,8 @@ export function getObjectToUpdateForAttachedLayers(meta) {
 }
 
 function preprocessDataLayer(layer, view, scheduler) {
+    layer.preUpdate = layer.preUpdate || pre3dTilesUpdate;
+    layer.update = layer.update || process3dTilesNode();
     layer.sseThreshold = layer.sseThreshold || 16;
     layer.cleanupDelay = layer.cleanupDelay || 1000;
     // override the default method, since updated objects are metadata in this case

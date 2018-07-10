@@ -139,7 +139,6 @@ export function createPanoramaLayer(id, coordinates, type, options = {}) {
     tileLayer.update = processTiledGeometryNode(panoramaCulling, subdivision);
     tileLayer.builder = new PanoramaTileBuilder(type, options.ratio);
     tileLayer.onTileCreated = nodeInitFn;
-    tileLayer.type = 'geometry';
     tileLayer.protocol = 'tile';
     tileLayer.visible = true;
     tileLayer.segments = 8;

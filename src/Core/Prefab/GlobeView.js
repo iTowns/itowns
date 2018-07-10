@@ -146,7 +146,6 @@ export function createGlobeLayer(id, options) {
     wgs84TileLayer.update = processTiledGeometryNode(globeCulling(2), subdivision);
     wgs84TileLayer.builder = new BuilderEllipsoidTile();
     wgs84TileLayer.onTileCreated = nodeInitFn;
-    wgs84TileLayer.type = 'geometry';
     wgs84TileLayer.protocol = 'tile';
     wgs84TileLayer.visible = true;
     wgs84TileLayer.lighting = {
