@@ -1,5 +1,6 @@
 import { EventDispatcher } from 'three';
-import { GeometryLayer, Layer } from './Layer/Layer';
+import Layer from '../Layer/Layer';
+import GeometryLayer from '../Layer/GeometryLayer';
 import Cache from '../Core/Scheduler/Cache';
 
 export const RENDERING_PAUSED = 0;
@@ -116,7 +117,7 @@ MainLoop.prototype._update = function _update(view, updateSources, dt) {
             const srcs = filterChangeSources(updateSources, geometryLayer);
             if (srcs.size > 0) {
                 // `preUpdate` returns an array of elements to update
-                const elementsToUpdate = geometryLayer.preUpdate(context, geometryLayer, srcs);
+                const elementsToUpdate = geometryLayer.preUpdate(context, srcs);
                 // `update` is called in `updateElements`.
                 updateElements(context, geometryLayer, elementsToUpdate);
                 // `postUpdate` is called when this geom layer update process is finished

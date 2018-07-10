@@ -6,17 +6,11 @@ import { COLOR_LAYERS_ORDER_CHANGED } from '../../Renderer/ColorLayersOrdering';
 import RendererConstant from '../../Renderer/RendererConstant';
 import GlobeControls from '../../Renderer/ThreeExtended/GlobeControls';
 
-import { GeometryLayer } from '../Layer/Layer';
-
+import GlobeLayer from './Globe/GlobeLayer';
 import Atmosphere from './Globe/Atmosphere';
 import CoordStars from '../Geographic/CoordStars';
 
 import Coordinates, { C, ellipsoidSizes } from '../Geographic/Coordinates';
-import { processTiledGeometryNode } from '../../Process/TiledNodeProcessing';
-import { globeCulling, preGlobeUpdate, globeSubdivisionControl, globeSchemeTileWMTS, globeSchemeTile1 } from '../../Process/GlobeTileProcessing';
-import BuilderEllipsoidTile from './Globe/BuilderEllipsoidTile';
-import SubdivisionControl from '../../Process/SubdivisionControl';
-import Picking from '../Picking';
 
 /**
  * Fires when the view is completely loaded. Controls and view's functions can be called then.
@@ -71,92 +65,9 @@ export const GLOBE_VIEW_EVENTS = {
     COLOR_LAYERS_ORDER_CHANGED,
 };
 
-export function createGlobeLayer(id, options) {
-    // Configure tiles
-    const nodeInitFn = function nodeInitFn(layer, parent, node) {
-        node.material.setLightingOn(layer.lighting.enable);
-        node.material.uniforms.lightPosition.value = layer.lighting.position;
-        if (layer.noTextureColor) {
-            node.material.uniforms.noTextureColor.value.copy(layer.noTextureColor);
-        }
-
-        if (__DEBUG__) {
-            node.material.uniforms.showOutline = { value: layer.showOutline || false };
-            node.material.wireframe = layer.wireframe || false;
-        }
-    };
-
-    const wgs84TileLayer = new GeometryLayer(id, options.object3d || new THREE.Group());
-    wgs84TileLayer.schemeTile = globeSchemeTileWMTS(globeSchemeTile1);
-    wgs84TileLayer.extent = wgs84TileLayer.schemeTile[0].clone();
-    for (let i = 1; i < wgs84TileLayer.schemeTile.length; i++) {
-        wgs84TileLayer.extent.union(wgs84TileLayer.schemeTile[i]);
-    }
-    wgs84TileLayer.preUpdate = (context, layer, changeSources) => {
-        SubdivisionControl.preUpdate(context, layer);
-
-        if (__DEBUG__) {
-            layer._latestUpdateStartingLevel = 0;
-        }
-
-        preGlobeUpdate(context, layer);
-
-        let commonAncestor;
-        for (const source of changeSources.values()) {
-            if (source.isCamera) {
-                // if the change is caused by a camera move, no need to bother
-                // to find common ancestor: we need to update the whole tree:
-                // some invisible tiles may now be visible
-                return layer.level0Nodes;
-            }
-            if (source.layer === layer) {
-                if (!commonAncestor) {
-                    commonAncestor = source;
-                } else {
-                    commonAncestor = source.findCommonAncestor(commonAncestor);
-                    if (!commonAncestor) {
-                        return layer.level0Nodes;
-                    }
-                }
-                if (commonAncestor.material == null) {
-                    commonAncestor = undefined;
-                }
-            }
-        }
-        if (commonAncestor) {
-            if (__DEBUG__) {
-                layer._latestUpdateStartingLevel = commonAncestor.level;
-            }
-            return [commonAncestor];
-        } else {
-            return layer.level0Nodes;
-        }
-    };
-
-    function subdivision(context, layer, node) {
-        if (SubdivisionControl.hasEnoughTexturesToSubdivide(context, layer, node)) {
-            return globeSubdivisionControl(2,
-                options.maxSubdivisionLevel || 18,
-                options.sseSubdivisionThreshold || 1.0,
-                options.maxDeltaElevationLevel || 4)(context, layer, node);
-        }
-        return false;
-    }
-
-    wgs84TileLayer.update = processTiledGeometryNode(globeCulling(2), subdivision);
-    wgs84TileLayer.builder = new BuilderEllipsoidTile();
-    wgs84TileLayer.onTileCreated = nodeInitFn;
-    wgs84TileLayer.type = 'geometry';
-    wgs84TileLayer.protocol = 'tile';
-    wgs84TileLayer.visible = true;
-    wgs84TileLayer.lighting = {
-        enable: false,
-        position: { x: -0.5, y: 0.0, z: 1.0 },
-    };
-    // provide custom pick function
-    wgs84TileLayer.pickObjectsAt = (_view, mouse, radius = 5) => Picking.pickTilesAt(_view, mouse, radius, wgs84TileLayer);
-
-    return wgs84TileLayer;
+export function createGlobeLayer(id, extent, options) {
+    console.warn('createGlobeLayer is deprecated, use the GlobeLayer class instead.');
+    return new GlobeLayer(id, extent, options);
 }
 
 /**
@@ -190,7 +101,7 @@ function GlobeView(viewerDiv, coordCarto, options = {}) {
     this.camera.camera3D.updateProjectionMatrix();
     this.camera.camera3D.updateMatrixWorld(true);
 
-    const wgs84TileLayer = createGlobeLayer('globe', options);
+    const wgs84TileLayer = new GlobeLayer('globe', options);
 
     const sun = new THREE.DirectionalLight();
     sun.position.set(-0.5, 0, 1);
