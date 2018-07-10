@@ -164,7 +164,7 @@ function computeBbox(layer) {
     return bbox;
 }
 
-function setLayerMetadata(metadata, layer) {
+function parseMetadata(metadata, layer) {
     layer.metadata = metadata;
 
     var customBinFormat = true;
@@ -236,7 +236,7 @@ export default {
 
         return Fetcher.json(`${layer.url}/${layer.file}`, layer.fetchOptions)
             .then((metadata) => {
-                setLayerMetadata(metadata, layer);
+                parseMetadata(metadata, layer);
                 const bbox = computeBbox(layer);
                 return parseOctree(layer, layer.metadata.hierarchyStepSize, { baseurl: `${layer.url}/${layer.metadata.octreeDir}/r`, name: '', bbox });
             })
@@ -284,6 +284,5 @@ export default {
 };
 
 export const _testing = {
-    setLayerMetadata,
-    computeBbox,
+    parseMetadata,
 };
