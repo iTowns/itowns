@@ -67,6 +67,8 @@ function GeometryLayer(id, object3d) {
         object3d.name = id;
     }
 
+    this.type = 'geometry';
+
     Object.defineProperty(this, 'object3d', {
         value: object3d,
         writable: false,

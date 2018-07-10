@@ -29,25 +29,14 @@
 
             itowns.Fetcher.json('layers/JSONLayers/Ortho.json').then(function (result) { return view.addLayer(result) });
 
-            // function use :
-            // For preupdate Layer geomtry :
-            var preUpdateGeo = itowns.pre3dTilesUpdate;
-
             // Create a new Layer 3d-tiles For DiscreteLOD
             // -------------------------------------------
             var $3dTilesLayerDiscreteLOD = new itowns.GeometryLayer('3d-tiles-discrete-lod', new itowns.THREE.Group());
 
-            $3dTilesLayerDiscreteLOD.preUpdate = preUpdateGeo;
-            $3dTilesLayerDiscreteLOD.update = itowns.process3dTilesNode(
-                itowns.$3dTilesCulling,
-                itowns.$3dTilesSubdivisionControl
-            );
             $3dTilesLayerDiscreteLOD.name = 'DiscreteLOD';
             $3dTilesLayerDiscreteLOD.url = 'https://raw.githubusercontent.com/AnalyticalGraphicsInc/3d-tiles-samples/master/tilesets/TilesetWithDiscreteLOD/tileset.json';
             $3dTilesLayerDiscreteLOD.protocol = '3d-tiles'
             $3dTilesLayerDiscreteLOD.overrideMaterials = true;  // custom cesium shaders are not functional
-            $3dTilesLayerDiscreteLOD.type = 'geometry';
-            $3dTilesLayerDiscreteLOD.visible = true;
 
             itowns.View.prototype.addLayer.call(view, $3dTilesLayerDiscreteLOD);
 
@@ -56,18 +45,10 @@
 
             var $3dTilesLayerRequestVolume = new itowns.GeometryLayer('3d-tiles-request-volume', new itowns.THREE.Group());
 
-            $3dTilesLayerRequestVolume.preUpdate = preUpdateGeo;
-            $3dTilesLayerRequestVolume.update = itowns.process3dTilesNode(
-                itowns.$3dTilesCulling,
-                itowns.$3dTilesSubdivisionControl
-            );
-
             $3dTilesLayerRequestVolume.name = 'RequestVolume';
             $3dTilesLayerRequestVolume.url = 'https://raw.githubusercontent.com/AnalyticalGraphicsInc/3d-tiles-samples/master/tilesets/TilesetWithRequestVolume/tileset.json';
             $3dTilesLayerRequestVolume.protocol = '3d-tiles'
             $3dTilesLayerRequestVolume.overrideMaterials = true;  // custom cesium shaders are not functional
-            $3dTilesLayerRequestVolume.type = 'geometry';
-            $3dTilesLayerRequestVolume.visible = true;
             $3dTilesLayerRequestVolume.sseThreshold = 1;
             // add an event for have information when you move your mouse on a building
             itowns.View.prototype.addLayer.call(view, $3dTilesLayerRequestVolume).then(function _() { window.addEventListener('mousemove', picking, false); })

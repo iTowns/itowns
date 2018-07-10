@@ -89,7 +89,6 @@ export function createPlanarLayer(id, extent, options) {
     tileLayer.update = processTiledGeometryNode(planarCulling, subdivision);
     tileLayer.builder = new PlanarTileBuilder();
     tileLayer.onTileCreated = nodeInitFn;
-    tileLayer.type = 'geometry';
     tileLayer.protocol = 'tile';
     tileLayer.visible = true;
     tileLayer.lighting = {

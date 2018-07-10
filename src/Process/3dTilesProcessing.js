@@ -314,7 +314,7 @@ function markForDeletion(layer, elt) {
     }
 }
 
-export function process3dTilesNode(cullingTest, subdivisionTest) {
+export function process3dTilesNode(cullingTest = $3dTilesCulling, subdivisionTest = $3dTilesSubdivisionControl) {
     return function _process3dTilesNodes(context, layer, node) {
         // early exit if parent's subdivision is in progress
         if (node.parent.pendingSubdivision && !node.parent.additiveRefinement) {
