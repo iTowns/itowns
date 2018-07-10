@@ -7,6 +7,29 @@ import Extent from '../Core/Geographic/Extent';
 import { pre3dTilesUpdate, process3dTilesNode, init3dTilesLayer } from '../Process/3dTilesProcessing';
 import utf8Decoder from '../utils/Utf8Decoder';
 
+/**
+ * iTowns supports loading and displaying 3d-tiles tilesets.
+ *
+ *
+ * @module 3d-tiles
+ *
+ * @example
+ * var layer = new itowns.GeometryLayer('3dtiles-example');
+ * layer.protocol = '3d-tiles'
+ * layer.url = 'http://example/tileset.json';
+ *
+ * @property {string} url - tileset.json URL
+ * @property {boolean|THREE.Material} [overrideMaterial=false] - override meshes material
+ * embedded in the binary files and use a default one instead.
+ * @property {THREE.Material} [material=THREE.PointsMaterial] - material cloned
+ * and assigned each time a points mesh is created.
+ * @property {number} [sseThreshold=16] - s(creen) s(pace) e(rror) threshold in pixels.
+ * Define how many pixels the geometricError from a tile must cover to kick the
+ * subdivision mechanism in.
+ * @property {number} [cleanupDelay=1000] - delay in milliseconds after which an
+ * undisplayed tiles will be removed from memory.
+ *
+ */
 
 export function $3dTilesIndex(tileset, baseURL) {
     let counter = 1;
