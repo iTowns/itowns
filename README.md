@@ -3,6 +3,8 @@
 <img src="https://raw.githubusercontent.com/iTowns/itowns.github.io/master/images/itowns_logo_300x134.png" />
 </p>
 
+[![Coverage Status](https://coveralls.io/repos/github/itowns/itowns/badge.svg?branch=master)](https://coveralls.io/github/itowns/itowns?branch=master)
+
 ## What is it?
 
 iTowns is a [Three.js](https://threejs.org/)-based framework written in Javascript/WebGL for visualizing 3D geospatial data.

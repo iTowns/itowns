@@ -3,5 +3,6 @@ node_js:
   - "lts/*"
   - "node"
 after_success:
+  - npm install coveralls && nyc report --reporter=text-lcov | coveralls
   - openssl aes-256-cbc -K $encrypted_822645c864aa_key -iv $encrypted_822645c864aa_iv -in deploy_key.enc -out deploy_key -d
   - bash autodeploy.sh
