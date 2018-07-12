@@ -1,43 +1,28 @@
 import * as THREE from 'three';
 import Earcut from 'earcut';
 
-function getAltitude(options, properties, contour) {
-    if (options.altitude) {
-        if (typeof options.altitude === 'function') {
-            return options.altitude(properties, contour);
-        } else {
-            return options.altitude;
-        }
-    }
-    return 0;
-}
+function getProperty(name, options, defaultValue, ...args) {
+    const property = options[name];
 
-function getExtrude(options, properties) {
-    if (options.extrude) {
-        if (typeof options.extrude === 'function') {
-            return options.extrude(properties);
+    if (property) {
+        if (typeof property === 'function') {
+            return property(...args);
         } else {
-            return options.extrude;
+            return property;
         }
     }
-    return 0;
+
+    if (typeof defaultValue === 'function') {
+        return defaultValue(...args);
+    }
+
+    return defaultValue;
 }
 
 function randomColor() {
     const randomColor = new THREE.Color();
     randomColor.setHex(Math.random() * 0xffffff);
     return randomColor;
-}
-
-function getColor(options, properties) {
-    if (options.color) {
-        if (typeof options.color === 'function') {
-            return options.color(properties);
-        } else {
-            return options.color;
-        }
-    }
-    return randomColor();
 }
 
 function fillColorArray(colors, length, r, g, b, offset) {
@@ -143,8 +128,8 @@ function prepareBufferGeometry(vert, color, altitude, extrude) {
 
 function featureToPoint(feature, properties, options) {
     // get altitude / color from properties
-    const altitude = getAltitude(options, properties, feature.vertices);
-    const color = getColor(options, properties);
+    const altitude = getProperty('altitude', options, 0, properties, feature.vertices);
+    const color = getProperty('color', options, randomColor, properties);
 
     const geom = prepareBufferGeometry(
         feature.vertices,
@@ -156,8 +141,8 @@ function featureToPoint(feature, properties, options) {
 
 function featureToLine(feature, properties, options) {
     // get altitude / color from properties
-    const altitude = getAltitude(options, properties, feature.vertices);
-    const color = getColor(options, properties);
+    const altitude = getProperty('altitude', options, 0, properties, feature.vertices);
+    const color = getProperty('color', options, randomColor, properties);
 
     const geom = prepareBufferGeometry(
         feature.vertices,
@@ -184,8 +169,8 @@ function featureToLine(feature, properties, options) {
 
 function featureToPolygon(feature, properties, options) {
     // get altitude / color from properties
-    const altitude = getAltitude(options, properties, feature.vertices);
-    const color = getColor(options, properties);
+    const altitude = getProperty('altitude', options, 0, properties, feature.vertices);
+    const color = getProperty('color', options, randomColor, properties);
 
     const geom = prepareBufferGeometry(
         feature.vertices,
@@ -213,10 +198,10 @@ function featureToPolygon(feature, properties, options) {
 
 function featureToExtrudedPolygon(feature, properties, options) {
     // get altitude / color from properties
-    const altitude = getAltitude(options, properties, feature.vertices);
-    const extrude = getExtrude(options, properties);
+    const altitude = getProperty('altitude', options, 0, properties, feature.vertices);
+    const extrude = getProperty('extrude', options, 0, properties);
 
-    const colors = [getColor(options, properties)];
+    const colors = [getProperty('color', options, randomColor, properties)];
     colors.push(colors[0].clone());
     colors[0].multiplyScalar(155 / 255);
 
