@@ -39,15 +39,34 @@
             promises.push(itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addLayerCb));
             promises.push(itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addLayerCb));
 
+            var waypointGeometry = new itowns.THREE.BoxGeometry(1, 1, 80);
+            var waypointMaterial = new itowns.THREE.MeshBasicMaterial({ color: 0xfffff });
+
             // Listen for globe full initialisation event
             globeView.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
                 console.info('Globe initialized');
-                itowns.Fetcher.xml('https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/ULTRA2009.gpx').then(xml => itowns.GpxParser.parse(xml, { crs: globeView.referenceCrs })).then(function (gpx) {
-                    if (gpx) {
-                        globeView.scene.add(gpx);
-                        globeView.controls.setTilt(45, true);
-                    }
-                });
+                itowns.Fetcher.xml('https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/ULTRA2009.gpx')
+                    .then(gpx => itowns.GpxParser.parse(gpx, { crsOut: globeView.referenceCrs }))
+                    .then(features => itowns.Feature2Mesh.convert({
+                        color: new itowns.THREE.Color(0xff0000),
+                    })(features))
+                    .then(function (mesh) {
+                        console.log(mesh);
+                        if (mesh) {
+                            mesh.traverse((m) => {
+                                if (m.material) {
+                                    m.material.linewidth = 5;
+                                }
+
+                                if (m.isPoints) {
+                                    var waypoint = new itowns.THREE.Mesh(waypointGeometry, waypointMaterial);
+                                    m.add(waypoint);
+                                }
+                            });
+                            globeView.scene.add(mesh);
+                            globeView.controls.setTilt(45, true);
+                        }
+                    });
             });
         </script>
     </body>
