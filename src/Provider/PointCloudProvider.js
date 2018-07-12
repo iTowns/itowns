@@ -3,7 +3,7 @@ import Fetcher from './Fetcher';
 import PointCloudProcessing from '../Process/PointCloudProcessing';
 import PotreeBinParser from '../Parser/PotreeBinParser';
 import PotreeCinParser from '../Parser/PotreeCinParser';
-import PointsMaterial from '../Renderer/PointsMaterial';
+import PointsMaterial, { MODE } from '../Renderer/PointsMaterial';
 import Picking from '../Core/Picking';
 import Extent from '../Core/Geographic/Extent';
 
@@ -142,6 +142,60 @@ function addPickingAttribute(points) {
     return points;
 }
 
+function computeBbox(layer) {
+    let bbox;
+    if (layer.isFromPotreeConverter) {
+        bbox = new THREE.Box3(
+                new THREE.Vector3(layer.metadata.boundingBox.lx, layer.metadata.boundingBox.ly, layer.metadata.boundingBox.lz),
+                new THREE.Vector3(layer.metadata.boundingBox.ux, layer.metadata.boundingBox.uy, layer.metadata.boundingBox.uz));
+    } else {
+        // lopocs
+        let idx = 0;
+        for (const entry of layer.metadata) {
+            if (entry.table == layer.table) {
+                break;
+            }
+            idx++;
+        }
+        bbox = new THREE.Box3(
+                new THREE.Vector3(layer.metadata[idx].bbox.xmin, layer.metadata[idx].bbox.ymin, layer.metadata[idx].bbox.zmin),
+                new THREE.Vector3(layer.metadata[idx].bbox.xmax, layer.metadata[idx].bbox.ymax, layer.metadata[idx].bbox.zmax));
+    }
+    return bbox;
+}
+
+function parseMetadata(metadata, layer) {
+    layer.metadata = metadata;
+
+    var customBinFormat = true;
+
+    // Lopocs pointcloud server can expose the same file structure as PotreeConverter output.
+    // The only difference is the metadata root file (cloud.js vs infos/sources), and we can
+    // check for the existence of a `scale` field.
+    // (if `scale` is defined => we're fetching files from PotreeConverter)
+    if (layer.metadata.scale != undefined) {
+        layer.isFromPotreeConverter = true;
+        // PotreeConverter format
+        customBinFormat = layer.metadata.pointAttributes === 'CIN';
+        // do we have normal information
+        const normal = Array.isArray(layer.metadata.pointAttributes) &&
+            layer.metadata.pointAttributes.find(elem => elem.startsWith('NORMAL'));
+        if (normal) {
+            layer.material.defines[normal] = 1;
+        }
+    } else {
+        // Lopocs
+        layer.metadata.scale = 1;
+        layer.metadata.octreeDir = `itowns/${layer.table}.points`;
+        layer.metadata.hierarchyStepSize = 1000000; // ignore this with lopocs
+        customBinFormat = true;
+    }
+
+    layer.parse = customBinFormat ? PotreeCinParser.parse : PotreeBinParser.parse;
+    layer.extension = customBinFormat ? 'cin' : 'bin';
+    layer.supportsProgressiveDisplay = customBinFormat;
+}
+
 export default {
     preprocessDataLayer(layer, view) {
         if (!layer.file) {
@@ -169,6 +223,8 @@ export default {
         layer.type = 'geometry';
         layer.material = layer.material || {};
         layer.material = layer.material.isMaterial ? layer.material : new PointsMaterial(layer.material);
+        layer.material.defines = layer.material.defines || {};
+        layer.mode = MODE.COLOR;
 
         // default update methods
         layer.preUpdate = PointCloudProcessing.preUpdate;
@@ -178,58 +234,21 @@ export default {
         // this probably needs to be moved to somewhere else
         layer.pickObjectsAt = (view, mouse, radius) => Picking.pickPointsAt(view, mouse, radius, layer);
 
-        return Fetcher.json(`${layer.url}/${layer.file}`, layer.fetchOptions).then((cloud) => {
-            layer.metadata = cloud;
+        return Fetcher.json(`${layer.url}/${layer.file}`, layer.fetchOptions)
+            .then((metadata) => {
+                parseMetadata(metadata, layer);
+                const bbox = computeBbox(layer);
+                return parseOctree(layer, layer.metadata.hierarchyStepSize, { baseurl: `${layer.url}/${layer.metadata.octreeDir}/r`, name: '', bbox });
+            })
+            .then((root) => {
+                // eslint-disable-next-line no-console
+                console.log('LAYER metadata:', root);
+                layer.root = root;
+                root.findChildrenByName = findChildrenByName.bind(root, root);
+                layer.extent = Extent.fromBox3(view.referenceCrs, root.bbox);
 
-            let bbox;
-            var customBinFormat = true;
-
-            // Lopocs pointcloud server can expose the same file structure as PotreeConverter output.
-            // The only difference is the metadata root file (cloud.js vs infos/sources), and we can
-            // check for the existence of a `scale` field.
-            // (if `scale` is defined => we're fetching files from PotreeConverter)
-            if (layer.metadata.scale != undefined) {
-                // PotreeConverter format
-                customBinFormat = layer.metadata.pointAttributes === 'CIN';
-                bbox = new THREE.Box3(
-                    new THREE.Vector3(cloud.boundingBox.lx, cloud.boundingBox.ly, cloud.boundingBox.lz),
-                    new THREE.Vector3(cloud.boundingBox.ux, cloud.boundingBox.uy, cloud.boundingBox.uz));
-            } else {
-                // Lopocs
-                layer.metadata.scale = 1;
-                layer.metadata.octreeDir = `itowns/${layer.table}.points`;
-                layer.metadata.hierarchyStepSize = 1000000; // ignore this with lopocs
-                customBinFormat = true;
-
-                let idx = 0;
-                for (const entry of cloud) {
-                    if (entry.table == layer.table) {
-                        break;
-                    }
-                    idx++;
-                }
-                bbox = new THREE.Box3(
-                   new THREE.Vector3(cloud[idx].bbox.xmin, cloud[idx].bbox.ymin, cloud[idx].bbox.zmin),
-                   new THREE.Vector3(cloud[idx].bbox.xmax, cloud[idx].bbox.ymax, cloud[idx].bbox.zmax));
-            }
-
-            layer.parse = customBinFormat ? PotreeCinParser.parse : PotreeBinParser.parse;
-            layer.extension = customBinFormat ? 'cin' : 'bin';
-            layer.supportsProgressiveDisplay = customBinFormat;
-
-            return parseOctree(
-                    layer,
-                    layer.metadata.hierarchyStepSize,
-                    { baseurl: `${layer.url}/${cloud.octreeDir}/r`, name: '', bbox });
-        }).then((root) => {
-            // eslint-disable-next-line no-console
-            console.log('LAYER metadata:', root);
-            layer.root = root;
-            root.findChildrenByName = findChildrenByName.bind(root, root);
-            layer.extent = Extent.fromBox3(view.referenceCrs, root.bbox);
-
-            return layer;
-        });
+                return layer;
+            });
     },
 
     executeCommand(command) {
@@ -247,7 +266,7 @@ export default {
         // when we request .hrc files)
         const url = `${node.baseurl}/r${node.name}.${layer.extension}?isleaf=${command.isLeaf ? 1 : 0}`;
 
-        return Fetcher.arrayBuffer(url, layer.fetchOptions).then(layer.parse).then((geometry) => {
+        return Fetcher.arrayBuffer(url, layer.fetchOptions).then(buffer => layer.parse(buffer, layer.metadata.pointAttributes)).then((geometry) => {
             const points = new THREE.Points(geometry, layer.material.clone());
             addPickingAttribute(points);
             points.frustumCulled = false;
@@ -262,4 +281,8 @@ export default {
             return points;
         });
     },
+};
+
+export const _testing = {
+    parseMetadata,
 };
