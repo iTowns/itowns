@@ -7,3 +7,5 @@
 /dist/
 /lib/
 /out/
+coverage
+.nyc_output/
