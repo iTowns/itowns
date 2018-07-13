@@ -47,6 +47,8 @@
 
             "src/Provider/URLBuilder.js",
 
+            "src/Renderer/OrientedImageMaterial.js",
+
             "src/Renderer/ColorLayersOrdering.js",
             "src/Renderer/ThreeExtended/OBB.js",
             "src/Renderer/OrientedImageCamera.js",

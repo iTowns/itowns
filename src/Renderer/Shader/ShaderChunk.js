@@ -2,10 +2,18 @@ import * as THREE from 'three';
 
 import pitUV from './Chunk/pitUV.glsl';
 import precision_qualifier from './Chunk/precision_qualifier.glsl';
+import project_pars_vertex from './Chunk/project_pars_vertex.glsl';
+import projective_texturing_vertex from './Chunk/projective_texturing_vertex.glsl';
+import projective_texturing_pars_vertex from './Chunk/projective_texturing_pars_vertex.glsl';
+import projective_texturing_pars_fragment from './Chunk/projective_texturing_pars_fragment.glsl';
 
 const ShaderChunk = {
     pitUV,
     precision_qualifier,
+    projective_texturing_vertex,
+    projective_texturing_pars_vertex,
+    projective_texturing_pars_fragment,
+    project_pars_vertex,
 };
 
 /**
