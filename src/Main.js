@@ -18,6 +18,7 @@ export { process3dTilesNode, init3dTilesLayer, $3dTilesCulling, $3dTilesSubdivis
 export { default as FeatureProcessing } from './Process/FeatureProcessing';
 export { updateLayeredMaterialNodeImagery, updateLayeredMaterialNodeElevation } from './Process/LayeredMaterialNodeProcessing';
 export { ColorLayersOrdering } from './Renderer/ColorLayersOrdering';
+export { default as OrientedImageCamera } from './Renderer/OrientedImageCamera';
 export { default as PointsMaterial } from './Renderer/PointsMaterial';
 export { default as PointCloudProcessing } from './Process/PointCloudProcessing';
 export { default as Feature2Mesh } from './Renderer/ThreeExtended/Feature2Mesh';
