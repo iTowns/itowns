@@ -1,7 +1,6 @@
-/* global describe, it */
 import assert from 'assert';
 import { Group, Mesh } from 'three';
-import { getObjectToUpdateForAttachedLayers } from '../src/Provider/3dTilesProvider';
+import { getObjectToUpdateForAttachedLayers } from '../../src/Provider/3dTilesProvider';
 
 describe('getObjectToUpdateForAttachedLayers', function () {
     it('should correctly return all children', function () {

@@ -1,7 +1,5 @@
-/* global describe, it */
-import TileMesh from '../src/Core/TileMesh';
-
-const assert = require('assert');
+import assert from 'assert';
+import TileMesh from '../../src/Core/TileMesh';
 
 // It is relatively long to create TileMesh on the go (in term of code), so we
 // emulate a fake one with the necessary informations in it.
