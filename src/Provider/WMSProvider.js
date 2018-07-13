@@ -181,20 +181,6 @@ function checkCapabilities(layer, xmlCapa) {
     }
 }
 
-function url(bbox, layer) {
-    const box = bbox.as(layer.projection);
-    const w = box.west();
-    const s = box.south();
-    const e = box.east();
-    const n = box.north();
-
-    const bboxInUnit = layer.axisOrder === 'swne' ?
-        `${s},${w},${n},${e}` :
-        `${w},${s},${e},${n}`;
-
-    return layer.customUrl.replace('%bbox', bboxInUnit);
-}
-
 function tileTextureCount(tile, layer) {
     return tile.extent.crs() == layer.projection ? 1 : tile.getCoordsForLayer(layer).length;
 }

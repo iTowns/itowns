@@ -2,8 +2,8 @@
 import jsdom from 'jsdom';
 import assert from 'assert';
 import fs from 'fs';
-import provider, { _testing } from '../src/Core/Scheduler/Providers/WMS_Provider';
-import Extent from '../src/Core/Geographic/Extent';
+import provider, { _testing } from '../../src/Provider/WMSProvider';
+import Extent from '../../src/Core/Geographic/Extent';
 
 const { JSDOM } = jsdom;
 const window = new JSDOM().window;
