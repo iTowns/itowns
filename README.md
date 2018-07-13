@@ -3,7 +3,7 @@
 <img src="https://raw.githubusercontent.com/iTowns/itowns.github.io/master/images/itowns_logo_300x134.png" />
 </p>
 
-[![Coverage Status](https://coveralls.io/repos/github/itowns/itowns/badge.svg?branch=master)](https://coveralls.io/github/itowns/itowns?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/iTowns/itowns/badge.svg?branch=master)](https://coveralls.io/github/iTowns/itowns?branch=master)
 
 ## What is it?
 
