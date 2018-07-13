@@ -1,8 +1,5 @@
-/* global describe, it */
-import PotreeBinParser from '../src/Parser/PotreeBinParser';
-
-const assert = require('assert');
-
+import assert from 'assert';
+import PotreeBinParser from '../../src/Parser/PotreeBinParser';
 
 describe('PotreeBinParser', function () {
     it('should correctly parse position buffer', function () {

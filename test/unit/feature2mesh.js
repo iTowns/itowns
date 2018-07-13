@@ -1,11 +1,10 @@
 import * as THREE from 'three';
 import proj4 from 'proj4';
-import GeoJsonParser from '../src/Parser/GeoJsonParser';
-import Feature2Mesh from '../src/Renderer/ThreeExtended/Feature2Mesh';
-/* global describe, it */
+import assert from 'assert';
+import GeoJsonParser from '../../src/Parser/GeoJsonParser';
+import Feature2Mesh from '../../src/Renderer/ThreeExtended/Feature2Mesh';
 
-const assert = require('assert');
-const geojson = require('./data/geojson/holes.geojson.json');
+const geojson = require('../data/geojson/holes.geojson.json');
 
 proj4.defs('EPSG:3946',
     '+proj=lcc +lat_1=45.25 +lat_2=46.75 +lat_0=46 +lon_0=3 +x_0=1700000 +y_0=5200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');

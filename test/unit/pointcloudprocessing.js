@@ -1,7 +1,5 @@
-import PointCloudProcessing from '../src/Process/PointCloudProcessing';
-/* global describe, it */
-
-const assert = require('assert');
+import assert from 'assert';
+import PointCloudProcessing from '../../src/Process/PointCloudProcessing';
 
 const context = { camera: { height: 1, camera3D: { fov: 1 } } };
 

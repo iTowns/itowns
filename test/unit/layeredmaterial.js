@@ -1,8 +1,6 @@
-import LayerUpdateState from '../src/Core/Layer/LayerUpdateState';
-import { updateLayeredMaterialNodeImagery } from '../src/Process/LayeredMaterialNodeProcessing';
-/* global describe, it */
-
-const assert = require('assert');
+import assert from 'assert';
+import LayerUpdateState from '../../src/Core/Layer/LayerUpdateState';
+import { updateLayeredMaterialNodeImagery } from '../../src/Process/LayeredMaterialNodeProcessing';
 
 describe('material state vs layer state', function () {
     let opacity;
