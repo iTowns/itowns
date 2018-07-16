@@ -18,7 +18,7 @@ function initColorTexturesFromParent(node, parent, layer) {
     const textures = [];
 
     for (const c of coords) {
-        for (const texture of parentTextures) {
+        for (const texture of parentTextures.textures) {
             if (!texture || !texture.extent) {
                 continue;
             }
@@ -125,7 +125,7 @@ export default {
         const nextDownloads = layer.canTextureBeImproved(
             layer,
             node.getCoordsForLayer(layer),
-            node.material.getLayerTextures(layer),
+            node.material.getLayerTextures(layer).textures,
             node.layerUpdateState[layer.id].failureParams);
 
         if (!nextDownloads) {

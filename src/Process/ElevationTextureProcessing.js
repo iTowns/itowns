@@ -11,8 +11,8 @@ function initNodeElevationTextureFromParent(node, parent, layer) {
     // node might not be EMPTY_TEXTURE_ZOOM in this init function. That's because we can have
     // multiple elevation layers (thus multiple calls to initNodeElevationTextureFromParent) but a given
     // node can only use 1 elevation texture
-    const nodeTexture = node.material.getLayerTextures(layer);
-    const parentTexture = parent.material.getLayerTextures(layer)[0];
+    const nodeTexture = node.material.getLayerTextures(layer).textures;
+    const parentTexture = parent.material.getLayerTextures(layer).textures[0];
     if (!parentTexture.extent) {
         return;
     }
@@ -47,7 +47,7 @@ function getIndiceWithPitch(i, pitch, w) {
 }
 
 function insertSignificantValuesFromParent(texture, node, parent, layer) {
-    const parentTexture = parent.material.getLayerTextures(layer)[0];
+    const parentTexture = parent.material.getLayerTextures(layer).textures[0];
     if (parentTexture.extent) {
         const coords = node.getCoordsForLayer(layer);
         const pitch = coords[0].offsetToParent(parentTexture.extent);
@@ -132,7 +132,7 @@ export default {
         const nextDownloads = layer.canTextureBeImproved(
             layer,
             node.getCoordsForLayer(layer),
-            node.material.getLayerTextures(layer),
+            node.material.getLayerTextures(layer).textures,
             node.layerUpdateState[layer.id].failureParams);
 
         if (!nextDownloads) {
@@ -163,7 +163,7 @@ export default {
                     result = result[0];
                 }
 
-                const currentTexture = node.material.getLayerTextures(layer);
+                const currentTexture = node.material.getLayerTextures(layer).textures[0];
                 if (currentTexture.extent) {
                     // Cancel update if current texture extent is <= new texture
                     if (currentTexture.extent.isInside(result.texture.extent)) {

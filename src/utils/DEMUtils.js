@@ -1,6 +1,5 @@
 import * as THREE from 'three';
 import Coordinates from '../Core/Geographic/Coordinates';
-import { l_ELEVATION } from '../Renderer/LayeredMaterialConstants';
 
 const FAST_READ_Z = 0;
 const PRECISE_READ_Z = 1;
@@ -371,8 +370,9 @@ function _readZ(layer, method, coord, nodes, cache) {
     }
 
     const tile = tileWithValidElevationTexture;
-    const src = tileWithValidElevationTexture.material.textures[l_ELEVATION][0];
+    const texturesInfo = tileWithValidElevationTexture.material.getLayerTextures({ type: 'elevation' });
 
+    const src = texturesInfo.textures[0];
     // check cache value if existing
     if (cache) {
         if (cache.id === src.id && cache.version === src.version) {
@@ -383,7 +383,7 @@ function _readZ(layer, method, coord, nodes, cache) {
     // Assuming that tiles are split in 4 children, we lookup the parent that
     // really owns this texture
     const stepsUpInHierarchy = Math.round(Math.log2(1.0 /
-        tileWithValidElevationTexture.material.offsetScale[l_ELEVATION][0].z));
+        texturesInfo.offsetScales[0].z));
     for (let i = 0; i < stepsUpInHierarchy; i++) {
         tileWithValidElevationTexture = tileWithValidElevationTexture.parent;
     }

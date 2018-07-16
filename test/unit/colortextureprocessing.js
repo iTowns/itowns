@@ -97,7 +97,9 @@ describe('ColorTextureProcessing.updateLayerElement', function () {
             material: {
                 // eslint-disable-next-line arrow-body-style
                 getLayerTextures: () => {
-                    return [{ extent }];
+                    return {
+                        textures: [{ extent }],
+                    };
                 },
             },
         };

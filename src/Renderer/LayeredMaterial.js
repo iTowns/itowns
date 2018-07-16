@@ -11,12 +11,14 @@ import TileFS from './Shader/TileFS.glsl';
 import pitUV from './Shader/Chunk/pitUV.glsl';
 import PrecisionQualifier from './Shader/Chunk/PrecisionQualifier.glsl';
 import Capabilities from '../Core/System/Capabilities';
-import { l_COLOR, l_ELEVATION, EMPTY_TEXTURE_ZOOM } from './LayeredMaterialConstants';
 
 var emptyTexture = new THREE.Texture();
 
 const layerTypesCount = 2;
 var vector4 = new THREE.Vector4(0.0, 0.0, 0.0, 0.0);
+const l_ELEVATION = 0;
+const l_COLOR = 1;
+const EMPTY_TEXTURE_ZOOM = -1;
 var fooTexture;
 
 // from three.js packDepthToRGBA
@@ -319,7 +321,10 @@ LayeredMaterial.prototype.removeColorLayer = function removeColorLayer(layer) {
 
 LayeredMaterial.prototype.getLayerTextures = function getLayerTextures(layer) {
     if (layer.type === 'elevation') {
-        return this.textures[l_ELEVATION];
+        return {
+            textures: this.textures[l_ELEVATION],
+            offsetScales: this.offsetScale[l_ELEVATION],
+        };
     }
 
     const index = this.indexOfColorLayer(layer.id);
@@ -327,7 +332,10 @@ LayeredMaterial.prototype.getLayerTextures = function getLayerTextures(layer) {
     if (index !== -1) {
         const count = this.getTextureCountByLayerIndex(index);
         const textureIndex = this.getTextureOffsetByLayerIndex(index);
-        return this.textures[l_COLOR].slice(textureIndex, textureIndex + count);
+        return {
+            textures: this.textures[l_COLOR].slice(textureIndex, textureIndex + count),
+            offsetScales: this.offsetScale[l_COLOR].slice(textureIndex, textureIndex + count),
+        };
     } else {
         // throw new Error(`Invalid layer "${layer}"`);
     }
@@ -481,9 +489,9 @@ LayeredMaterial.prototype.getColorLayerLevelById = function getColorLayerLevelBy
 };
 
 LayeredMaterial.prototype.isColorLayerLoaded = function isColorLayerLoaded(layer) {
-    const textures = this.getLayerTextures(layer);
-    if (textures && textures.length) {
-        return textures[0].extent != undefined;
+    const textureInfo = this.getLayerTextures(layer);
+    if (textureInfo && textureInfo.textures.length) {
+        return textureInfo.textures[0].extent != undefined;
     }
     return false;
 };
