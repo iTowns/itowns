@@ -1,27 +1,22 @@
-/* global browser, exampleCanRenderTest, itownsPort */
+/* global browser, itownsPort */
 const assert = require('assert');
 
 describe('wfs', () => {
     it('should run', async function _() {
         const page = await browser.newPage();
-
-        await page.setViewport({ width: 400, height: 300 });
-        await page.goto(`http://localhost:${itownsPort}/examples/wfs.html`);
-        await page.waitFor('#viewerDiv > canvas');
-
-        const result = await exampleCanRenderTest(page, this.test.fullTitle());
+        const result = await loadExample(page,
+            `http://localhost:${itownsPort}/examples/wfs.html`,
+            this.test.fullTitle());
 
         assert.ok(result);
+        await page.close();
     });
 
     it('should pick the correct building', async function _() {
         const page = await browser.newPage();
-
-        await page.setViewport({ width: 400, height: 300 });
-        await page.goto(`http://localhost:${itownsPort}/examples/wfs.html`);
-        await page.waitFor('#viewerDiv > canvas');
-
-        await exampleCanRenderTest(page, this.test.fullTitle());
+        await loadExample(page,
+            `http://localhost:${itownsPort}/examples/wfs.html`,
+            this.test.fullTitle());
 
         // test picking
         const buildingId = await page.evaluate(() => picking({ x: 342, y: 243 }).properties.id);
