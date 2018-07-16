@@ -57,6 +57,15 @@ function waitServerReady(port) {
     });
 }
 
+async function saveScreenshot(page, screenshotName) {
+    if (process.env.SCREENSHOT_FOLDER && screenshotName) {
+        const sanitized = screenshotName.replace(/[^\w_]/g, '_');
+        const file = `${process.env.SCREENSHOT_FOLDER}/${sanitized}.png`;
+        await page.screenshot({ path: file });
+        console.log('Wrote ', file);
+    }
+}
+
 before(async () => {
     let server;
     if (!process.env.USE_DEV_SERVER) {
@@ -76,9 +85,22 @@ before(async () => {
         });
     };
 
-    global.waitNextRender = page =>
-        page.evaluate(() => new Promise((resolve) => {
-            function getView() {
+    // Helper function: returns true when all layers are
+    // ready and rendering has been done
+    global.loadExample = async (page, url, screenshotName) => {
+        if (page.loadExampleCalled) {
+            throw new Error('loadExample must only be called once. Use waitUntilItownsIsIdle / waitNextRender instead');
+        }
+        // eslint-disable-next-line no-param-reassign
+        page.loadExampleCalled = true;
+        page.setViewport({ width: 400, height: 300 });
+
+        await page.goto(url);
+        await page.waitFor('#viewerDiv > canvas');
+
+        // install a globally available __getView helper
+        await page.evaluate(() => {
+            window.__getView = function _() {
                 if (typeof (view) === 'object') {
                     return Promise.resolve(view);
                 }
@@ -87,9 +109,50 @@ before(async () => {
                 }
                 resolve(false);
                 return Promise.reject();
-            }
+            };
+        });
 
-            getView().then((v) => {
+        const result = await page.evaluate(() => new Promise((resolve) => {
+            __getView().then((v) => {
+                function resolveWhenReady() {
+                    v.removeEventListener(itowns.VIEW_EVENTS.LAYERS_INITIALIZED, resolveWhenReady);
+                    resolve(true);
+                }
+                v.addEventListener(itowns.VIEW_EVENTS.LAYERS_INITIALIZED, resolveWhenReady);
+            });
+        }));
+
+        await waitNextRender(page);
+
+        await saveScreenshot(page, screenshotName);
+
+        return result;
+    };
+
+    // Use waitUntilItownsIsIdle to wait until itowns has finished all its work (= layer updates)
+    global.waitUntilItownsIsIdle = async (page, screenshotName) => {
+        const result = await page.evaluate(() => new Promise((resolve) => {
+            __getView().then((v) => {
+                function resolveWhenReady() {
+                    if (v.mainLoop.renderingState === 0) {
+                        v.removeEventListener('command-queue-empty', resolveWhenReady);
+                        resolve(true);
+                    }
+                }
+                v.mainLoop.addEventListener('command-queue-empty', resolveWhenReady);
+            });
+        }));
+
+        await waitNextRender(page);
+
+        await saveScreenshot(page, screenshotName);
+
+        return result;
+    };
+
+    global.waitNextRender = page =>
+        page.evaluate(() => new Promise((resolve) => {
+            __getView().then((v) => {
                 function resolveWhenDrawn() {
                     v.removeFrameRequester(itowns.MAIN_LOOP_EVENTS.AFTER_RENDER, resolveWhenDrawn);
 
@@ -105,41 +168,6 @@ before(async () => {
             });
         }));
 
-    // Helper function: returns true when all layers are
-    // ready and rendering has been done
-    global.exampleCanRenderTest = async (page, screenshotName) => {
-        const result = await page.evaluate(() => new Promise((resolve) => {
-            function getView() {
-                if (typeof (view) === 'object') {
-                    return Promise.resolve(view);
-                }
-                if (typeof (globeView) === 'object') {
-                    return Promise.resolve(globeView);
-                }
-                resolve(false);
-                return Promise.reject();
-            }
-
-            getView().then((v) => {
-                function resolveWhenReady() {
-                    v.removeEventListener(itowns.VIEW_EVENTS.LAYERS_INITIALIZED, resolveWhenReady);
-                    resolve(true);
-                }
-                v.addEventListener(itowns.VIEW_EVENTS.LAYERS_INITIALIZED, resolveWhenReady);
-            });
-        }));
-
-        if (process.env.SCREENSHOT_FOLDER) {
-            await waitNextRender(page);
-
-            const sanitized = screenshotName.replace(/[^\w_]/g, '_');
-            const file = `${process.env.SCREENSHOT_FOLDER}/${sanitized}.png`;
-            await page.screenshot({ path: file });
-            console.log('Wrote ', file);
-        }
-
-        return result;
-    };
     // For now the '--no-sandbox' flag is needed. Otherwise Chrome fails to start:
     //
     // FATAL:zygote_host_impl_linux.cc(124)] No usable sandbox! Update your kernel
