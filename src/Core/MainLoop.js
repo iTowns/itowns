@@ -132,7 +132,10 @@ MainLoop.prototype._update = function _update(view, updateSources, dt) {
     const previousFar = view.camera.camera3D.far;
     view.camera.camera3D.near = 0.1;
     view.camera.camera3D.far = 2000000000;
-    view.camera.camera3D.updateMatrixWorld();
+    // We can't just use camera3D.updateProjectionMatrix() because part of
+    // the update process use camera._viewMatrix, and this matrix depends
+    // on near/far values.
+    view.camera.update();
 
     // replace layer with their parent where needed
     updateSources.forEach((src) => {
@@ -173,7 +176,7 @@ MainLoop.prototype._update = function _update(view, updateSources, dt) {
         view.camera.camera3D.near = previousNear;
         view.camera.camera3D.far = previousFar;
     }
-    view.camera.camera3D.updateProjectionMatrix();
+    view.camera.update();
 };
 
 MainLoop.prototype._step = function _step(view, timestamp) {
