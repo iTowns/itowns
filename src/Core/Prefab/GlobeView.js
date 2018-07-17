@@ -238,12 +238,14 @@ function GlobeView(viewerDiv, coordCarto, options = {}) {
             // clean depth buffer
             this._fullSizeDepthBuffer = null;
         }
+    });
+
+    this.addFrameRequester(MAIN_LOOP_EVENTS.AFTER_CAMERA_UPDATE, () => {
         const v = new THREE.Vector3();
         v.setFromMatrixPosition(wgs84TileLayer.object3d.matrixWorld);
         var len = v.distanceTo(this.camera.camera3D.position);
         v.setFromMatrixScale(wgs84TileLayer.object3d.matrixWorld);
 
-        // TODO: may be move in camera update
         // Compute fog distance, this function makes it possible to have a shorter distance
         // when the camera approaches the ground
         this.fogDistance = mfogDistance * Math.pow((len - size * 0.99) * 0.25 / size, 1.5);
