@@ -38,7 +38,7 @@ export default function TileVisibilityChart(chartId, tileLayer) {
             if (!node || !node.visible) {
                 return;
             }
-            if (node.level >= 0 && node.layer === tileLayer.id) {
+            if (node.level >= 0 && node.layer === tileLayer) {
                 if (stats[node.level]) {
                     stats[node.level][0] += 1;
                 } else {
