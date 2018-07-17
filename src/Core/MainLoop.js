@@ -170,8 +170,9 @@ MainLoop.prototype._update = function _update(view, updateSources, dt) {
     }
 
     if (context.distance.min != Infinity) {
-        view.camera.camera3D.near = Math.max(0.1, 0.5 * context.distance.min);
-        view.camera.camera3D.far = 2 * context.distance.max;
+        // Multiply min/max by (0.9, 1.1) to be on the safe side
+        view.camera.camera3D.near = Math.max(0.1, 0.9 * context.distance.min);
+        view.camera.camera3D.far = 1.1 * context.distance.max;
     } else {
         view.camera.camera3D.near = previousNear;
         view.camera.camera3D.far = previousFar;
