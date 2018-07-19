@@ -1,0 +1,92 @@
+<html>
+    <head>
+        <title>Itowns - Globe + vector-tiles</title>
+
+        <meta charset="UTF-8">
+        <link rel="stylesheet" type="text/css" href="css/example.css">
+        <link rel="stylesheet" type="text/css" href="css/loading_screen.css">
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="js/GUI/dat.gui/dat.gui.min.js"></script>
+    </head>
+    <body>
+        <div id="viewerDiv"></div>
+        <div id="debug" width="400" height="300"></div>
+        <script src="js/GUI/GuiTools.js"></script>
+        <script src="../dist/itowns.js"></script>
+        <script src="js/loading_screen.js"></script>
+        <script src="js/VectorTileStyleSupport.js"></script>
+        <script src="../dist/debug.js"></script>
+        <script>
+            // # Simple Globe viewer + a vector tile layer
+
+            // Define initial camera position
+            var positionOnGlobe = { longitude: 2.475, latitude: 48.807, altitude: 12000000 };
+            var promises = [];
+
+            // `viewerDiv` will contain iTowns' rendering area (`<canvas>`)
+            var viewerDiv = document.getElementById('viewerDiv');
+
+            // Instanciate iTowns GlobeView*
+            var view = new itowns.GlobeView(viewerDiv, positionOnGlobe);
+            setupLoadingScreen(viewerDiv, view);
+            function addLayerCb(layer) {
+                return view.addLayer(layer);
+            }
+
+            // Add two elevation layers.
+            // These will deform iTowns globe geometry to represent terrain elevation.
+            promises.push(itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addLayerCb));
+            promises.push(itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addLayerCb));
+
+            // Add a vector tile layer
+            itowns.Fetcher.json('https://raw.githubusercontent.com/Oslandia/postile-openmaptiles/master/style.json').then(function (style) {
+                var supportedLayers = [];
+                var backgroundLayer;
+
+                style.layers.forEach(function(layer) {
+                    if (layer.type === 'background') {
+                        backgroundLayer = layer;
+                    } else if (['fill', 'line'].indexOf(layer.type) >= 0) {
+                        supportedLayers.push(layer);
+                    }
+                });
+
+                promises.push(view.addLayer({
+                    type: 'color',
+                    protocol: 'xyz',
+                    id: 'MVT',
+                    // eslint-disable-next-line no-template-curly-in-string
+                    url: 'https://osm.oslandia.io/data/v3/${z}/${x}/${y}.pbf',
+                    format: 'application/x-protobuf;type=mapbox-vector',
+                    options: {
+                        attribution: {
+                            name: 'OpenStreetMap',
+                            url: 'http://www.openstreetmap.org/',
+                        },
+                        zoom: {
+                            min: 2,
+                            max: 14,
+                        },
+                        opacity: 0.5,
+                    },
+                    updateStrategy: {
+                        type: itowns.STRATEGY_DICHOTOMY,
+                    },
+                    style: mapboxStyle,
+                    filter: mapboxFilter(supportedLayers),
+                    backgroundLayer,
+                }));
+            });
+
+            var menuGlobe = new GuiTools('menuDiv', view, 300);
+            // Listen for globe full initialisation event
+            view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
+                Promise.all(promises).then(function () {
+                    menuGlobe.addImageryLayersGUI(view.getLayers(function (l) { return l.type === 'color'; }));
+                    menuGlobe.addElevationLayersGUI(view.getLayers(function (l) { return l.type === 'elevation'; }));
+                }).catch(console.error);
+            });
+        </script>
+    </body>
+</html>
