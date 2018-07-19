@@ -1,0 +1,95 @@
+<html>
+    <head>
+        <title>Itowns - Planar + vector-tiles</title>
+
+        <meta charset="UTF-8">
+        <link rel="stylesheet" type="text/css" href="css/example.css">
+        <link rel="stylesheet" type="text/css" href="css/loading_screen.css">
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body>
+        <div id="viewerDiv"></div>
+        <script src="../dist/itowns.js"></script>
+        <script src="js/loading_screen.js"></script>
+        <script src="js/VectorTileStyleSupport.js"></script>
+        <script>
+            // # Planar view with one single layer of vector tile
+
+            // Define geographic extent: CRS, min/max X, min/max Y
+            var extent = new itowns.Extent(
+                'EPSG:3857',
+                -20037508.342789244, 20037508.342789244,
+                -20037508.342789255, 20037508.342789244);
+
+            // `viewerDiv` will contain iTowns' rendering area (`<canvas>`)
+            var viewerDiv = document.getElementById('viewerDiv');
+
+            // Instanciate PlanarView
+            var view = new itowns.PlanarView(viewerDiv, extent, { maxSubdivisionLevel: 20 });
+
+            // eslint-disable-next-line no-new
+            new itowns.PlanarControls(view, {
+                // We do not want the user to zoom out too much
+                maxAltitude: 40000000,
+                // We want to keep the rotation disabled, to only have a view from the top
+                enableRotation: false,
+                // Faster zoom in/out speed
+                zoomInFactor: 0.5,
+                zoomOutFactor: 0.5,
+                // Don't zoom too much on smart zoom
+                smartZoomHeightMax: 100000,
+            });
+
+            // Turn in the right angle
+            view.camera.camera3D.rotateZ(-Math.PI / 2);
+            setupLoadingScreen(viewerDiv, view);
+
+            var count = 0;
+
+            // Add a vector tile layer
+            itowns.Fetcher.json('https://raw.githubusercontent.com/Oslandia/postile-openmaptiles/master/style.json').then(function (style) {
+                var supportedLayers = [];
+                var backgroundLayer;
+
+                style.layers.forEach(function(layer) {
+                    if (layer.type === 'background') {
+                        backgroundLayer = layer;
+                    } else if (['fill', 'line'].indexOf(layer.type) >= 0) {
+                        supportedLayers.push(layer);
+                    }
+                });
+
+                view.addLayer({
+                    type: 'color',
+                    protocol: 'xyz',
+                    id: 'MVT',
+                    // eslint-disable-next-line no-template-curly-in-string
+                    url: 'https://osm.oslandia.io/data/v3/${z}/${x}/${y}.pbf',
+                    extent,
+                    projection: 'EPSG:3857',
+                    format: 'application/x-protobuf;type=mapbox-vector',
+                    options: {
+                        attribution: {
+                            name: 'OpenStreetMap',
+                            url: 'http://www.openstreetmap.org/',
+                        },
+                        zoom: {
+                            min: 2,
+                            max: 15,
+                        },
+                    },
+                    updateStrategy: {
+                        type: itowns.STRATEGY_DICHOTOMY,
+                    },
+                    style: mapboxStyle,
+                    filter: mapboxFilter(supportedLayers),
+                    backgroundLayer,
+                });
+            });
+
+            // Request redraw
+            view.notifyChange(true);
+        </script>
+    </body>
+</html>

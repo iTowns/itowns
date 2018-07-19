@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import OGCWebServiceHelper from './OGCWebServiceHelper';
 import URLBuilder from './URLBuilder';
 import Extent from '../Core/Geographic/Extent';
+import VectorTileHelper from './VectorTileHelper';
 
 function preprocessDataLayer(layer) {
     if (!layer.extent) {
@@ -23,6 +24,7 @@ function preprocessDataLayer(layer) {
             max: 18,
         };
     }
+    layer.fx = layer.fx || 0.0;
 }
 
 function executeCommand(command) {
@@ -34,10 +36,13 @@ function executeCommand(command) {
         const coordTMSParent = (command.targetLevel < coordTMS.zoom) ?
             OGCWebServiceHelper.WMTS_WGS84Parent(coordTMS, command.targetLevel) :
             undefined;
-
         const urld = URLBuilder.xyz(coordTMSParent || coordTMS, layer);
 
-        promises.push(OGCWebServiceHelper.getColorTextureByUrl(urld, layer.networkOptions).then((texture) => {
+        const promise = layer.format === 'application/x-protobuf;type=mapbox-vector' ?
+            VectorTileHelper.getVectorTileTextureByUrl(urld, tile, layer, coordTMS) :
+            OGCWebServiceHelper.getColorTextureByUrl(urld, layer.networkOptions);
+
+        promises.push(promise.then((texture) => {
             const result = {};
             result.texture = texture;
             result.texture.coords = coordTMSParent || coordTMS;

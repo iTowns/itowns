@@ -20,6 +20,17 @@ function drawPolygon(ctx, vertices, indices, origin, scale, properties, style = 
     if (vertices.length === 0) {
         return;
     }
+
+    if (style.length) {
+        for (const s of style) {
+            _drawPolygon(ctx, vertices, indices, origin, scale, properties, s);
+        }
+    } else {
+        _drawPolygon(ctx, vertices, indices, origin, scale, properties, style);
+    }
+}
+
+function _drawPolygon(ctx, vertices, indices, origin, scale, properties, style) {
     // build contour
     ctx.beginPath();
     for (const indice of indices) {
@@ -28,7 +39,6 @@ function drawPolygon(ctx, vertices, indices, origin, scale, properties, style = 
             _lineTo(ctx, vertices[indice.offset + j], scale, origin);
         }
     }
-    ctx.closePath();
 
     // draw line polygon
     if (style.stroke || properties.stroke) {
@@ -62,6 +72,10 @@ function drawPoint(ctx, vertice, origin, scale, style = {}) {
 
 function drawFeature(ctx, feature, origin, scale, extent, style = {}) {
     const properties = feature.properties;
+
+    if (typeof (style) == 'function') {
+        style = style(properties, feature);
+    }
 
     for (const geometry of feature.geometry) {
         if (feature.type === 'point') {

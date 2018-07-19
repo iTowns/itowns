@@ -19,8 +19,10 @@
 
             "src/Parser/GeoJsonParser.js",
             "src/Parser/GpxParser.js",
+            "src/Parser/VectorTileParser.js",
 
             "src/Provider/URLBuilder.js",
+            "src/Provider/VectorTileHelper.js",
 
             "src/Renderer/ColorLayersOrdering.js",
             "src/Renderer/ThreeExtended/Feature2Mesh.js",
