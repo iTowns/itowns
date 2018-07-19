@@ -7,8 +7,7 @@ import { STRATEGY_MIN_NETWORK_TRAFFIC } from './Layer/LayerUpdateStrategy';
 import { GeometryLayer, Layer, defineLayerProperty } from './Layer/Layer';
 import Scheduler from './Scheduler/Scheduler';
 import Picking from './Picking';
-import ColorTextureProcessing from '../Process/ColorTextureProcessing';
-import ElevationTextureProcessing from '../Process/ElevationTextureProcessing';
+import TextureProcessing from '../Process/TextureProcessing';
 
 export const VIEW_EVENTS = {
     /**
@@ -317,9 +316,9 @@ function _preprocessLayer(view, layer, provider, parentLayer) {
  */
 View.prototype.addLayer = function addLayer(layer, parentLayer) {
     if (layer.type == 'color') {
-        layer.update = layer.update || ColorTextureProcessing.updateLayerElement;
+        layer.update = layer.update || TextureProcessing.Color.updateLayerElement;
     } else if (layer.type == 'elevation') {
-        layer.update = layer.update || ElevationTextureProcessing.updateLayerElement;
+        layer.update = layer.update || TextureProcessing.Elevation.updateLayerElement;
     }
 
     return new Promise((resolve, reject) => {

@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import ColorTextureProcessing from '../../src/Process/ColorTextureProcessing';
+import TextureProcessing from '../../src/Process/TextureProcessing';
 import TileMesh from '../../src/Core/TileMesh';
 import Extent from '../../src/Core/Geographic/Extent';
 import OBB from '../../src/Renderer/ThreeExtended/OBB';
@@ -9,7 +9,7 @@ import { STRATEGY_MIN_NETWORK_TRAFFIC } from '../../src/Core/Layer/LayerUpdateSt
 
 const assert = require('assert');
 
-describe('ColorTextureProcessing.updateLayerElement', function () {
+describe('TextureProcessing.Color.updateLayerElement', function () {
     // Misc var to initialize a TileMesh instance
     const geom = new THREE.Geometry();
     geom.OBB = new OBB(new THREE.Vector3(), new THREE.Vector3(1, 1, 1));
@@ -67,7 +67,7 @@ describe('ColorTextureProcessing.updateLayerElement', function () {
             new Extent('EPSG:4326', 0, 0, 0, 0));
         tile.material.visible = false;
         tile.material.indexOfColorLayer = () => 0;
-        ColorTextureProcessing.updateLayerElement(context, layer, tile);
+        TextureProcessing.Color.updateLayerElement(context, layer, tile);
         assert.equal(context.scheduler.commands.length, 0);
     });
 
@@ -79,7 +79,7 @@ describe('ColorTextureProcessing.updateLayerElement', function () {
             new Extent('EPSG:4326', 0, 0, 0, 0));
         tile.material.visible = true;
         layer.canTextureBeImproved = () => false;
-        ColorTextureProcessing.updateLayerElement(context, layer, tile);
+        TextureProcessing.Color.updateLayerElement(context, layer, tile);
 
         assert.equal(context.scheduler.commands.length, 0);
     });
@@ -107,10 +107,10 @@ describe('ColorTextureProcessing.updateLayerElement', function () {
 
         // FIRST PASS: init Node From Parent and get out of the function
         // without any network fetch
-        ColorTextureProcessing.updateLayerElement(context, layer, tile, tile.parent);
+        TextureProcessing.Color.updateLayerElement(context, layer, tile, tile.parent);
         assert.equal(context.scheduler.commands.length, 0);
         // SECOND PASS: Fetch best texture
-        ColorTextureProcessing.updateLayerElement(context, layer, tile, tile.parent);
+        TextureProcessing.Color.updateLayerElement(context, layer, tile, tile.parent);
         assert.equal(context.scheduler.commands.length, 1);
     });
 });
