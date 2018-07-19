@@ -148,20 +148,24 @@ export function chooseExtentToDownload(layer, extent, currentExtent) {
             break;
     }
 
+
     if (nextDepth >= nodeDepth) {
         return extent;
     }
     while (nextDepth > currentDepth) {
         const p = Math.pow(2, nextDepth);
-        const ratio = 1 / p;
+        // the normalized ([0, 1]) texture size for each tile at this level
+        const textureSize = 1 / p;
+
         const x = {
-            min: ratio * Math.floor(offsetScale.x / ratio),
-            max: ratio * Math.floor((offsetScale.x + offsetScale.z) / ratio),
+            min: textureSize * Math.floor(offsetScale.x / textureSize),
+            max: textureSize * (1 + Math.floor(offsetScale.x / textureSize)),
         };
         const y = {
-            min: ratio * Math.floor(offsetScale.y / ratio),
-            max: ratio * Math.floor((offsetScale.y + offsetScale.w) / ratio),
+            min: textureSize * Math.floor(offsetScale.y / textureSize),
+            max: textureSize * (1 + Math.floor((offsetScale.y + offsetScale.w) / textureSize)),
         };
+
         const ex = new Extent(currentExtent.crs(), {
             west: layer.extent.west() + x.min * lay.x,
             east: layer.extent.west() + x.max * lay.x,
