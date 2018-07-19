@@ -21,6 +21,7 @@
             "src/Parser/GpxParser.js",
 
             "src/Provider/URLBuilder.js",
+            "src/Provider/3dTilesProvider.js",
 
             "src/Renderer/ColorLayersOrdering.js",
             "src/Renderer/ThreeExtended/Feature2Mesh.js",
