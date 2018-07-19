@@ -112,14 +112,26 @@ export default {
                 return GeoJsonParser.parse(geojson, options);
             }
         }).then((feature) => {
+            if (Array.isArray(feature) && feature.length == 0) {
+                return;
+            }
             if (feature) {
                 layer.feature = feature;
                 layer.extent = feature.extent;
             }
         });
     },
+    canTextureBeImproved(layer, extents, currentTextures) {
+        if (!currentTextures || !currentTextures[0].extent) {
+            return true;
+        }
+        const dim = extents[0].dimensions();
+        const inside = currentTextures[0].extent.isInside(extents[0], dim.x * 0.001);
+        return !inside;
+    },
     tileInsideLimit(tile, layer) {
-        return tile.level >= layer.options.zoom.min && tile.level <= layer.options.zoom.max && layer.extent.intersectsExtent(tile.extent);
+        const extent = tile.getCoordsForLayer(layer)[0];
+        return layer.extent.intersectsExtent(extent);
     },
     executeCommand(command) {
         const layer = command.layer;

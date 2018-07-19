@@ -1,5 +1,3 @@
-import { l_ELEVATION } from '../Renderer/LayeredMaterialConstants';
-
 function frustumCullingOBB(node, camera) {
     return camera.isBox3Visible(node.OBB().box3D, node.OBB().matrixWorld);
 }
@@ -44,9 +42,9 @@ export function planarSubdivisionControl(maxLevel, maxDeltaElevationLevel) {
         // Prevent to subdivise the node if the current elevation level
         // we must avoid a tile, with level 20, inherits a level 3 elevation texture.
         // The induced geometric error is much too large and distorts the SSE
-        const currentTexture = node.material.textures[l_ELEVATION][0];
-        if (currentTexture.extent) {
-            const offsetScale = node.material.offsetScale[l_ELEVATION][0];
+        const textureInfos = node.material.getLayerTextures({ type: 'elevation' });
+        if (textureInfos.textures[0].extent) {
+            const offsetScale = textureInfos.offsetScales[0];
             const ratio = offsetScale.z;
             // ratio is node size / texture size
             if (ratio < 1 / Math.pow(2, maxDeltaElevationLevel)) {

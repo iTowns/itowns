@@ -176,14 +176,6 @@ TileMesh.prototype.getCoordsForLayer = function getCoordsForLayer(layer) {
     if (layer.protocol.indexOf('wmts') == 0) {
         OGCWebServiceHelper.computeTileMatrixSetCoordinates(this, layer.options.tileMatrixSet);
         return this.wmtsCoords[layer.options.tileMatrixSet];
-    } else if (layer.protocol == 'wms' && this.extent.crs() != layer.projection) {
-        if (layer.projection == 'EPSG:3857') {
-            const tilematrixset = 'PM';
-            OGCWebServiceHelper.computeTileMatrixSetCoordinates(this, tilematrixset);
-            return this.wmtsCoords[tilematrixset];
-        } else {
-            throw new Error('unsupported projection wms for this viewer');
-        }
     } else if (layer.protocol == 'tms' || layer.protocol == 'xyz') {
         // Special globe case: use the P(seudo)M(ercator) coordinates
         if (is4326(this.extent.crs()) &&
@@ -200,15 +192,6 @@ TileMesh.prototype.getCoordsForLayer = function getCoordsForLayer(layer) {
         return [this.extent];
     } else {
         return [this.extent.as(layer.extent.crs())];
-    }
-};
-
-TileMesh.prototype.getZoomForLayer = function getZoomForLayer(layer) {
-    if (layer.protocol.indexOf('wmts') == 0) {
-        OGCWebServiceHelper.computeTileMatrixSetCoordinates(this, layer.options.tileMatrixSet);
-        return this.wmtsCoords[layer.options.tileMatrixSet][0].zoom;
-    } else {
-        return this.level;
     }
 };
 
