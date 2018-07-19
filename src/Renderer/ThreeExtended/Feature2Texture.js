@@ -87,31 +87,51 @@ function drawFeature(ctx, feature, origin, scale, extent, style = {}) {
 }
 
 export default {
-    createTextureFromFeature(collection, extent, sizeTexture, style) {
-        // A texture is instancied drawn canvas
-        // origin and dimension are used to transform the feature's coordinates to canvas's space
-        const origin = new THREE.Vector2(extent.west(), extent.south());
-        const dimension = extent.dimensions();
-        const c = document.createElement('canvas');
+    // backgroundColor is a THREE.Color to specify a color to fill the texture
+    // with, given there is no feature passed in parameter
+    createTextureFromFeature(collection, extent, sizeTexture, style, backgroundColor) {
+        let texture;
 
-        c.width = sizeTexture;
-        c.height = sizeTexture;
-        const ctx = c.getContext('2d');
-        ctx.globalCompositeOperation = style.globalCompositeOperation || 'source-over';
+        if (collection) {
+            // A texture is instancied drawn canvas
+            // origin and dimension are used to transform the feature's coordinates to canvas's space
+            const origin = new THREE.Vector2(extent.west(), extent.south());
+            const dimension = extent.dimensions();
+            const c = document.createElement('canvas');
 
-        const scale = new THREE.Vector2(ctx.canvas.width / dimension.x, ctx.canvas.width / dimension.y);
+            c.width = sizeTexture;
+            c.height = sizeTexture;
+            const ctx = c.getContext('2d');
+            if (backgroundColor) {
+                ctx.fillStyle = backgroundColor.getStyle();
+                ctx.fillRect(0, 0, sizeTexture, sizeTexture);
+            }
+            ctx.globalCompositeOperation = style.globalCompositeOperation || 'source-over';
 
-        // Draw the canvas
-        for (const feature of collection.features) {
-            drawFeature(ctx, feature, origin, scale, extent, style);
+            const scale = new THREE.Vector2(ctx.canvas.width / dimension.x, ctx.canvas.width / dimension.y);
+
+            // Draw the canvas
+            for (const feature of collection.features) {
+                drawFeature(ctx, feature, origin, scale, extent, style);
+            }
+
+            texture = new THREE.Texture(c);
+            texture.flipY = false;
+            texture.generateMipmaps = false;
+            texture.magFilter = THREE.LinearFilter;
+            texture.minFilter = THREE.LinearFilter;
+            texture.needsUpdate = true;
+        } else if (backgroundColor) {
+            const data = new Uint8Array(3);
+            data[0] = backgroundColor.r * 255;
+            data[1] = backgroundColor.g * 255;
+            data[2] = backgroundColor.b * 255;
+            texture = new THREE.DataTexture(data, 1, 1, THREE.RGBFormat);
+            texture.needsUpdate = true;
+        } else {
+            texture = new THREE.Texture();
         }
 
-        const texture = new THREE.Texture(c);
-        texture.flipY = false;
-        texture.generateMipmaps = false;
-        texture.magFilter = THREE.LinearFilter;
-        texture.minFilter = THREE.LinearFilter;
-        texture.needsUpdate = true;
         return texture;
     },
 };
