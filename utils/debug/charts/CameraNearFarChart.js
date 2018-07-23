@@ -65,21 +65,6 @@ export default function CameraNearFarChart(chartId, camera) {
             label.shift();
         }
 
-        // const identical = (lastValidCompareIndex > 0 && label[lastValidCompareIndex] == lbl);
-        // if (identical) {
-        //     label.push('');
-        // } else {
-        //     lastValidCompareIndex = label.length - 1;
-        // }
-
-        // if (label.length > limit) {
-        //     label.shift();
-        //     lastValidCompareIndex--;
-        // }
-
-        // const memory = renderer.info.memory;
-        // geometryDataset.data.push({ x: timeInS, y: memory.geometries });
-
         if (displayed) {
             chart.update();
         }

@@ -257,36 +257,27 @@ export function pre3dTilesUpdate(context, layer) {
 
 const boundingVolumeBox = new THREE.Box3();
 const boundingVolumeSphere = new THREE.Sphere();
-export function computeNodeSSE(context, camera, node) {
+export function computeNodeSSE(context, node) {
     node.distance = 0;
     if (node.boundingVolume.region) {
         boundingVolumeBox.copy(node.boundingVolume.region.box3D);
         boundingVolumeBox.applyMatrix4(node.boundingVolume.region.matrixWorld);
-        node.distance = boundingVolumeBox.distanceToPoint(camera.camera3D.position);
-        // update distance min/max
-        const s = node.boundingVolume.region.box3D.getSize();
-        const maxComponent = Math.max(s.x, Math.max(s.y, s.z));
-        context.distance.min = Math.min(context.distance.min, node.distance - maxComponent);
-        context.distance.max = Math.max(context.distance.max, node.distance + maxComponent);
+        node.distance = boundingVolumeBox.distanceToPoint(context.camera.camera3D.position);
+        context.distance.update(node.distance, node.boundingVolume.region.box3D.getSize());
     } else if (node.boundingVolume.box) {
         // boundingVolume.box is affected by matrixWorld
         boundingVolumeBox.copy(node.boundingVolume.box);
         boundingVolumeBox.applyMatrix4(node.matrixWorld);
-        node.distance = boundingVolumeBox.distanceToPoint(camera.camera3D.position);
-        // update distance min/max
-        const s = node.boundingVolume.box.getSize();
-        const maxComponent = Math.max(s.x, Math.max(s.y, s.z));
-        context.distance.min = Math.min(context.distance.min, node.distance);
-        context.distance.max = Math.max(context.distance.max, node.distance + maxComponent);
+        node.distance = boundingVolumeBox.distanceToPoint(context.camera.camera3D.position);
+        context.distance.update(node.distance, node.boundingVolume.box.getSize());
     } else if (node.boundingVolume.sphere) {
         // boundingVolume.sphere is affected by matrixWorld
         boundingVolumeSphere.copy(node.boundingVolume.sphere);
         boundingVolumeSphere.applyMatrix4(node.matrixWorld);
         // TODO: see https://github.com/iTowns/itowns/issues/800
         node.distance = Math.max(0.0,
-            boundingVolumeSphere.distanceToPoint(camera.camera3D.position));
-        context.distance.min = Math.min(context.distance.min, node.distance);
-        context.distance.max = Math.max(context.distance.max, node.distance + 2 * node.boundingVolume.sphere.radius);
+            boundingVolumeSphere.distanceToPoint(context.camera.camera3D.position));
+        context.distance.update(node.distance, 2 * node.boundingVolume.sphere.radius);
     } else {
         return Infinity;
     }
@@ -294,7 +285,7 @@ export function computeNodeSSE(context, camera, node) {
         // This test is needed in case geometricError = distance = 0
         return Infinity;
     }
-    return camera.preSSE * (node.geometricError / node.distance);
+    return context.camera.preSSE * (node.geometricError / node.distance);
 }
 
 export function init3dTilesLayer(view, scheduler, layer) {
@@ -378,6 +369,6 @@ export function $3dTilesSubdivisionControl(context, layer, node) {
     if (layer.tileIndex.index[node.tileId].isTileset) {
         return true;
     }
-    const sse = computeNodeSSE(context, context.camera, node);
+    const sse = computeNodeSSE(context, node);
     return sse > layer.sseThreshold;
 }

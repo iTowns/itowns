@@ -21,11 +21,9 @@
             // iTowns namespace defined here
             var viewerDiv = document.getElementById('viewerDiv');
 
-            var view = new itowns.GlobeView(viewerDiv, positionOnGlobe, { noControls: true });
+            var view = new itowns.GlobeView(viewerDiv, positionOnGlobe);
             view.camera.camera3D.near = 5;
             setupLoadingScreen(viewerDiv, view);
-
-            var controls = new itowns.FirstPersonControls(view, { focusOnClick: true });
 
             var menuGlobe = new GuiTools('menuDiv', view, 300);
 
@@ -34,7 +32,6 @@
             // function use :
             // For preupdate Layer geomtry :
             var preUpdateGeo = itowns.pre3dTilesUpdate;
-            var pickingEnabled = true;
 
             // Create a new Layer 3d-tiles For DiscreteLOD
             // -------------------------------------------
@@ -81,12 +78,8 @@
             debug.create3dTilesDebugUI(menuGlobe.gui, view, $3dTilesLayerDiscreteLOD, d);
             debug.create3dTilesDebugUI(menuGlobe.gui, view, $3dTilesLayerRequestVolume, d);
             d.zoom = function() {
-                pickingEnabled = false;
-                const pos = new itowns.Coordinates('EPSG:4978', 1215020.1908037297, -4736310.743783287, 4081602.6452904404);
-                pos.xyz(view.camera.camera3D.position);
-                view.camera.camera3D.up.copy(pos.geodesicNormal);
+                view.camera.camera3D.position.set(1215020.1908037297, -4736310.743783287, 4081602.6452904404);
                 view.camera.camera3D.lookAt(new itowns.THREE.Vector3(1215012, -4736310, 4081602));
-                controls.reset();
                 view.notifyChange(view.camera.camera3D);
             }
             menuGlobe.gui.add(d, 'zoom').name('Go to point cloud');
@@ -103,9 +96,6 @@
                 }
             }
             function picking(event) {
-                if (!pickingEnabled) {
-                    return;
-                }
                 var htmlInfo = document.getElementById('info');
                 htmlInfo.innerHTML = ' ';
 

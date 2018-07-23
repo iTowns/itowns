@@ -117,19 +117,36 @@ function filterChangeSources(updateSources, geometryLayer) {
 
 MainLoop.prototype._update = function _update(view, updateSources, dt) {
     const context = {
+        // View's camera
         camera: view.camera,
-        engine: this.gfxEngine,
+        // Command scheduler
         scheduler: this.scheduler,
+        // The view
         view,
+        // Min/max distance to the camera, for all rendered objects.
+        // (processing update function are expected to update this)
         distance: {
             min: Infinity,
             max: 0,
         },
+        // Attribute allowing processing code to remember whether they
+        // did a full update (in which case fastUpdateHint is undefined)
+        // or a partial update and to act accordingly
         fastUpdateHint: undefined,
+    };
+    context.distance.update = (dist, size) => {
+        if (size.isVector3) {
+            size = size.length();
+        }
+        context.distance.min = Math.min(context.distance.min, dist);
+        context.distance.max = Math.max(context.distance.max, dist + size);
     };
 
     const previousNear = view.camera.camera3D.near;
     const previousFar = view.camera.camera3D.far;
+    // Reset near/far to default value to allow update function to test
+    // visibility using camera's frustum; without depending on the near/far
+    // values which are only used for rendering.
     view.camera.camera3D.near = 0.1;
     view.camera.camera3D.far = 2000000000;
     // We can't just use camera3D.updateProjectionMatrix() because part of

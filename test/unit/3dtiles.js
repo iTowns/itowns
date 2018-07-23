@@ -59,7 +59,7 @@ describe('Distance computation using boundingVolume.region', function () {
     const camera = new Camera('EPSG:4978', 100, 100);
     camera.camera3D.position.copy(new Coordinates('EPSG:4326', 0, 0, 10000).as('EPSG:4978').xyz());
     camera.camera3D.updateMatrixWorld(true);
-    const context = { distance: { min: 0, max: 0 } };
+    const context = { distance: { min: 0, max: 0, update: () => { } }, camera };
 
     it('should compute distance correctly', function () {
         const tileset = tilesetWithRegion();
@@ -67,7 +67,7 @@ describe('Distance computation using boundingVolume.region', function () {
         const tile = new Object3D();
         configureTile(tile, { }, tileIndex.index['1']);
 
-        computeNodeSSE(context, camera, tile);
+        computeNodeSSE(context, tile);
 
         assert.equal(tile.distance, camera.position().as('EPSG:4326').altitude());
     });
@@ -80,7 +80,7 @@ describe('Distance computation using boundingVolume.region', function () {
         const tile = new Object3D();
         configureTile(tile, { }, tileIndex.index['1']);
 
-        computeNodeSSE(context, camera, tile);
+        computeNodeSSE(context, tile);
 
         assert.equal(tile.distance, camera.position().as('EPSG:4326').altitude());
     });
@@ -93,7 +93,7 @@ describe('Distance computation using boundingVolume.box', function () {
     const camera = new Camera('EPSG:3946', 100, 100);
     camera.camera3D.position.copy(new Coordinates('EPSG:3946', 0, 0, 100).xyz());
     camera.camera3D.updateMatrixWorld(true);
-    const context = { distance: { min: 0, max: 0 } };
+    const context = { distance: { min: 0, max: 0, update: () => { } }, camera };
 
     it('should compute distance correctly', function () {
         const tileset = tilesetWithBox();
@@ -102,7 +102,7 @@ describe('Distance computation using boundingVolume.box', function () {
         const tile = new Object3D();
         configureTile(tile, { }, tileIndex.index['1']);
 
-        computeNodeSSE(context, camera, tile);
+        computeNodeSSE(context, tile);
 
         assert.equal(tile.distance, 100 - 1);
     });
@@ -119,7 +119,7 @@ describe('Distance computation using boundingVolume.box', function () {
 
         tile.updateMatrixWorld(true);
 
-        computeNodeSSE(context, camera, tile);
+        computeNodeSSE(context, tile);
 
         assert.equal(tile.distance, 100 - 1 * 0.01 - 10);
     });
@@ -132,7 +132,7 @@ describe('Distance computation using boundingVolume.sphere', function () {
     const camera = new Camera('EPSG:3946', 100, 100);
     camera.camera3D.position.copy(new Coordinates('EPSG:3946', 0, 0, 100).xyz());
     camera.camera3D.updateMatrixWorld(true);
-    const context = { distance: { min: 0, max: 0 } };
+    const context = { distance: { min: 0, max: 0, update: () => { } }, camera };
 
     it('should compute distance correctly', function () {
         const tileset = tilesetWithSphere();
@@ -141,7 +141,7 @@ describe('Distance computation using boundingVolume.sphere', function () {
         const tile = new Object3D();
         configureTile(tile, { }, tileIndex.index['1']);
 
-        computeNodeSSE(context, camera, tile);
+        computeNodeSSE(context, tile);
 
         assert.equal(tile.distance, 100 - 1);
     });
@@ -158,7 +158,7 @@ describe('Distance computation using boundingVolume.sphere', function () {
 
         tile.updateMatrixWorld(true);
 
-        computeNodeSSE(context, camera, tile);
+        computeNodeSSE(context, tile);
 
         assert.equal(tile.distance, 100 - 1 * 0.01 - 10);
     });

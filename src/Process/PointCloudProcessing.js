@@ -88,10 +88,7 @@ function markForDeletion(elt) {
 
 function updateMinMaxDistance(context, bbox) {
     const distance = bbox.distanceToPoint(context.camera.camera3D.position);
-    const bboxSize = bbox.getSize();
-    context.distance.min = Math.min(context.distance.min, distance);
-    context.distance.max = Math.max(context.distance.max,
-        distance + Math.max(bboxSize.x, Math.max(bboxSize.y, bboxSize.z)));
+    context.distance.update(distance, bbox.getSize());
     return distance;
 }
 
