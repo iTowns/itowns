@@ -14,7 +14,8 @@
     "build": "webpack -p",
     "transpile": "cross-env BABEL_DISABLE_CACHE=1 babel src --out-dir lib",
     "start": "cross-env NODE_ENV=development webpack-dev-server -d --inline --hot",
-    "prepublishOnly": "npm run build && npm run transpile"
+    "prepublishOnly": "npm run build && npm run transpile",
+    "prepare": "check-node-version --npm '>= 6' || echo \"We detected that you are using npm < 6, please use npm >= 6 if you want to make modification to package-lock.json, feel free to ignore the above error if not.\n\""
   },
   "files": [
     "*.md",
@@ -60,6 +61,7 @@
     "babel-plugin-transform-runtime": "^6.22.0",
     "babel-preset-es2015": "^6.22.2",
     "chart.js": "^2.4.0",
+    "check-node-version": "^3.2.0",
     "cross-env": "^3.1.4",
     "docdash": "^0.4.0",
     "eslint": "^3.14.0",
