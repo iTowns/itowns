@@ -29,3 +29,5 @@ iTowns uses NPM as the build tool. If you haven't already, install Node.js: http
 ## Contribute back
 
 See [the contributor's guide](CONTRIBUTING.md)
+
+Note : You should not commit changes to `package-lock.json` if you're not using NPM >= 6 (particularly if you didn't make any change to the `package.json` either).
