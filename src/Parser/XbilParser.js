@@ -11,7 +11,7 @@ export function computeMinMaxElevation(buffer, width, height, offsetScale) {
     let max = -1000000;
 
     if (!buffer) {
-        return { min: null, max: null };
+        return { min: 0, max: 0 };
     }
 
     const sizeX = offsetScale ? Math.floor(offsetScale.z * width) : buffer.length;
@@ -33,7 +33,7 @@ export function computeMinMaxElevation(buffer, width, height, offsetScale) {
     }
 
     if (max === -1000000 || min === 1000000) {
-        return { min: null, max: null };
+        return { min: 0, max: 0 };
     }
     return { min, max };
 }
