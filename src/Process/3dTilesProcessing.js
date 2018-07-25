@@ -236,20 +236,27 @@ export function pre3dTilesUpdate(context, layer) {
     const HYFOV = 2.0 * Math.atan(Math.tan(radAngle * 0.5) * hypotenuse / context.camera.width);
     context.camera.preSSE = hypotenuse * (2.0 * Math.tan(HYFOV * 0.5));
 
-    // once in a while, garbage collect
-    if (Math.random() > 0.98) {
+    // Elements removed are added in the layer._cleanableTiles list.
+    // Since we simply push in this array, the first item is always
+    // the oldest one.
+    const now = Date.now();
+    if (layer._cleanableTiles.length
+        && (now - layer._cleanableTiles[0].cleanableSince) > layer.cleanupDelay) {
         // Make sure we don't clean root tile
         layer.root.cleanableSince = undefined;
 
-        // Browse
-        const now = Date.now();
-
-        for (const elt of layer._cleanableTiles) {
+        let i = 0;
+        for (; i < layer._cleanableTiles.length; i++) {
+            const elt = layer._cleanableTiles[i];
             if ((now - elt.cleanableSince) > layer.cleanupDelay) {
                 cleanup3dTileset(layer, elt);
+            } else {
+                // later entries are younger
+                break;
             }
         }
-        layer._cleanableTiles = layer._cleanableTiles.filter(n => (layer.tileIndex.index[n.tileId].loaded && n.cleanableSince));
+        // remove deleted elements from _cleanableTiles
+        layer._cleanableTiles.splice(0, i);
     }
 
     return [layer.root];
@@ -328,7 +335,10 @@ export function process3dTilesNode(cullingTest = $3dTilesCulling, subdivisionTes
 
 
         if (isVisible) {
-            node.cleanableSince = undefined;
+            if (node.cleanableSince) {
+                layer._cleanableTiles.splice(layer._cleanableTiles.indexOf(node), 1);
+                node.cleanableSince = undefined;
+            }
 
             let returnValue;
             if (node.pendingSubdivision || subdivisionTest(context, layer, node)) {
