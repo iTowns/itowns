@@ -197,7 +197,7 @@
                         var pick = view.pickObjectsAt(event, 5, pointcloud);
 
                         for (const p of pick) {
-                            console.log('Selected point #' + p.index + ' in Points "' + p.object.owner.name + '"');
+                            console.log('Selected point #' + p.index + ' in Points "' + p.object.userData.metadata.name + '"');
                         }
                     }
                     view.mainLoop.gfxEngine.renderer.domElement.addEventListener('dblclick', dblClickHandler);

@@ -49,6 +49,7 @@
             $3dTilesLayerRequestVolume.url = 'https://raw.githubusercontent.com/AnalyticalGraphicsInc/3d-tiles-samples/master/tilesets/TilesetWithRequestVolume/tileset.json';
             $3dTilesLayerRequestVolume.protocol = '3d-tiles'
             $3dTilesLayerRequestVolume.overrideMaterials = true;  // custom cesium shaders are not functional
+            $3dTilesLayerRequestVolume.material = new itowns.PointsMaterial({ size: 3 });
             $3dTilesLayerRequestVolume.sseThreshold = 1;
             // add an event for have information when you move your mouse on a building
             itowns.View.prototype.addLayer.call(view, $3dTilesLayerRequestVolume).then(function _() { window.addEventListener('mousemove', picking, false); })

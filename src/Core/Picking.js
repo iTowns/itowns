@@ -134,21 +134,24 @@ export default {
     },
 
     pickPointsAt: (view, viewCoords, radius, layer) => {
-        if (!layer.root) {
-            return;
-        }
-
-        // enable picking mode for points material
+        // Enable picking mode for points material, by assigning
+        // a unique id to each Points instance.
+        let visibleId = 1;
+        // 12 bits reserved for the ids (= 4096 instances)
+        const maxVisibleId = 1 << 12;
         layer.object3d.traverse((o) => {
-            if (o.isPoints && o.baseId) {
-                o.material.enablePicking(true);
+            if (o.isPoints && o.visible && o.material.visible && o.material.enablePicking) {
+                o.material.enablePicking(visibleId++);
+
+                if (visibleId == maxVisibleId) {
+                    console.warn('Too much visible point instance. The next one won\'t be pickable');
+                }
             }
         });
 
         const undoHide = hideEverythingElse(view, layer.object3d, layer.threejsLayer);
 
         // render 1 pixel
-        // TODO: support more than 1 pixel selection
         const buffer = view.mainLoop.gfxEngine.renderViewToBuffer(
             { camera: view.camera, scene: layer.object3d },
             {
@@ -166,14 +169,16 @@ export default {
             const idx = (y * 2 * radius + x) * 4;
             const data = buffer.slice(idx, idx + 4);
 
-            // see PointCloudProvider and the construction of unique_id
-            const objId = (data[0] << 8) | data[1];
-            const index = (data[2] << 8) | data[3];
+            // 12 first bits (so data[0] and half of data[1]) = pickingId
+            const pickingId = (data[0] << 4) | ((data[1] & 0xf0) >> 4);
+            // the remaining 20 bits = the point index
+            const index = ((data[1] & 0x0f) << 16) | (data[2] << 8) | data[3];
 
-            const r = { objId, index };
+            const r = { pickingId, index };
 
+            // filter already if already present
             for (let i = 0; i < candidates.length; i++) {
-                if (candidates[i].objId == r.objId && candidates[i].index == r.index) {
+                if (candidates[i].pickingId == r.pickingId && candidates[i].index == r.index) {
                     return;
                 }
             }
@@ -182,13 +187,9 @@ export default {
 
         const result = [];
         layer.object3d.traverse((o) => {
-            if (o.isPoints && o.baseId) {
-                // disable picking mode
-                o.material.enablePicking(false);
-
-                // if baseId matches objId, the clicked point belongs to `o`
+            if (o.isPoints && o.visible && o.material.visible) {
                 for (let i = 0; i < candidates.length; i++) {
-                    if (candidates[i].objId == o.baseId) {
+                    if (candidates[i].pickingId == o.material.pickingId) {
                         result.push({
                             object: o,
                             index: candidates[i].index,
@@ -196,6 +197,8 @@ export default {
                         });
                     }
                 }
+                // disable picking mode
+                o.material.enablePicking(0);
             }
         });
 
@@ -264,5 +267,22 @@ export default {
         });
 
         return target;
+    },
+
+    preparePointGeometryForPicking: (pointsGeometry) => {
+        // generate unique id for picking
+        const numPoints = pointsGeometry.attributes.position.count;
+        // reserve 12 bits for the entity id
+        if (numPoints >= (1 << 20)) {
+            console.warn(`picking issue: only ${1 << 20} points per Points object supported`);
+        }
+        const ids = new Uint8Array(4 * numPoints);
+        for (let i = 0; i < numPoints; i++) {
+            ids[4 * i + 0] = 0;
+            ids[4 * i + 1] = (i & 0x000f0000) >> 16;
+            ids[4 * i + 2] = (i & 0x0000ff00) >> 8;
+            ids[4 * i + 3] = (i & 0x000000ff) >> 0;
+        }
+        pointsGeometry.addAttribute('unique_id', new THREE.BufferAttribute(ids, 4, true));
     },
 };

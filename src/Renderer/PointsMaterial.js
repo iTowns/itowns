@@ -20,7 +20,7 @@ class PointsMaterial extends RawShaderMaterial {
         this.scale = options.scale || 0.05 * 0.5 / Math.tan(1.0 / 2.0); // autosizing scale
         this.overlayColor = options.overlayColor || new Vector4(0, 0, 0, 0);
         this.mode = options.mode || MODE.COLOR;
-        this.picking = false;
+        this.pickingId = 0;
 
         for (const key in MODE) {
             if (Object.prototype.hasOwnProperty.call(MODE, key)) {
@@ -30,7 +30,7 @@ class PointsMaterial extends RawShaderMaterial {
 
         this.uniforms.size = new Uniform(this.size);
         this.uniforms.mode = new Uniform(this.mode);
-        this.uniforms.pickingMode = new Uniform(this.picking);
+        this.uniforms.pickingId = new Uniform(this.pickingId);
         this.uniforms.opacity = new Uniform(this.opacity);
         this.uniforms.overlayColor = new Uniform(this.overlayColor);
 
@@ -45,8 +45,14 @@ class PointsMaterial extends RawShaderMaterial {
         this.updateUniforms();
     }
 
+    clone() {
+        const cl = super.clone(this);
+        cl.update(this);
+        return cl;
+    }
+
     enablePicking(picking) {
-        this.picking = picking;
+        this.pickingId = picking;
         this.blending = picking ? NoBlending : NormalBlending;
         this.updateUniforms();
     }
@@ -55,7 +61,7 @@ class PointsMaterial extends RawShaderMaterial {
         // if size is null, switch to autosizing using the canvas height
         this.uniforms.size.value = (this.size > 0) ? this.size : -this.scale * window.innerHeight;
         this.uniforms.mode.value = this.mode;
-        this.uniforms.pickingMode.value = this.picking;
+        this.uniforms.pickingId.value = this.pickingId;
         this.uniforms.opacity.value = this.opacity;
         this.uniforms.overlayColor.value = this.overlayColor;
     }
@@ -66,7 +72,7 @@ class PointsMaterial extends RawShaderMaterial {
         this.transparent = source.transparent;
         this.size = source.size;
         this.mode = source.mode;
-        this.picking = source.picking;
+        this.pickingId = source.pickingId;
         this.scale = source.scale;
         this.overlayColor.copy(source.overlayColor);
         this.updateUniforms();

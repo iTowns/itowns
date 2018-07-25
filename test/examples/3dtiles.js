@@ -39,10 +39,11 @@ describe('3dtiles', () => {
         await waitUntilItownsIsIdle(page, this.test.fullTitle());
 
         const pickingCount = await page.evaluate(() =>
-            view.pickObjectsAt(
+            itowns.Picking.pickPointsAt(
+                view,
                 { x: 200, y: 150 },
-                1,
-                '3d-tiles-request-volume').length);
+                3,
+                $3dTilesLayerRequestVolume).length);
         assert.ok(pickingCount > 0);
         await page.close();
     });

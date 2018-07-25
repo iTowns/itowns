@@ -344,14 +344,23 @@ export function process3dTilesNode(cullingTest = $3dTilesCulling, subdivisionTes
                     markForDeletion(layer, n);
                 }
             }
-            // toggle wireframe
+            // update material
             if (node.content && node.content.visible) {
                 node.content.traverse((o) => {
                     if (o.layer == layer && o.material) {
                         o.material.wireframe = layer.wireframe;
+
+                        if (o.isPoints) {
+                            if (o.material.update) {
+                                o.material.update(layer.material);
+                            } else {
+                                o.material.copy(layer.material);
+                            }
+                        }
                     }
                 });
             }
+
             return returnValue;
         }
 

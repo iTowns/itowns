@@ -6,7 +6,7 @@ import OBB from '../Renderer/ThreeExtended/OBB';
 import Extent from '../Core/Geographic/Extent';
 import { pre3dTilesUpdate, process3dTilesNode, init3dTilesLayer } from '../Process/3dTilesProcessing';
 import utf8Decoder from '../utils/Utf8Decoder';
-
+import Picking from '../Core/Picking';
 
 export function $3dTilesIndex(tileset, baseURL) {
     let counter = 1;
@@ -163,6 +163,10 @@ function pntsParse(data, layer) {
         const material = layer.material ?
             layer.material.clone() :
             new THREE.PointsMaterial({ size: 0.05, vertexColors: THREE.VertexColors });
+
+        if (material.enablePicking) {
+            Picking.preparePointGeometryForPicking(result.point.geometry);
+        }
 
         // creation points with geometry and material
         const points = new THREE.Points(result.point.geometry, material);

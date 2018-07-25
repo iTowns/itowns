@@ -9,7 +9,7 @@ uniform mat4 projectionMatrix;
 uniform mat4 modelViewMatrix;
 uniform float size;
 
-uniform bool pickingMode;
+uniform int pickingId;
 uniform int mode;
 uniform float opacity;
 uniform vec4 overlayColor;
@@ -70,8 +70,21 @@ void main() {
     vec3 normal = color;
 #endif
 
-    if (pickingMode) {
+    if (pickingId > 0) {
         vColor = unique_id;
+
+        float left4bitsShift = pow(2.0, 4.0); // << 4 <=> * 2^4
+        float right4bitsShift = 1.0 / left4bitsShift; // << 4 <=> / 1 * 2^4
+        float fId = float(pickingId);
+        // 20 bits for 'unique_id' (= the point index in the buffer)
+        // 12 bits for 'pickingId' (= the point instance id)
+        // (see Picking.js)
+        // upperPart = pickingId >> 4
+        float upperPart = floor(fId * right4bitsShift);
+        vColor.r = upperPart / 255.0;
+        // lowerPart = pickingId - upperPart << 4
+        float lowerPart = fId - upperPart * left4bitsShift;
+        vColor.g += (lowerPart * left4bitsShift) / 255.0;
     } else if (mode == MODE_INTENSITY) {
         vColor = vec4(intensity, intensity, intensity, opacity);
     } else if (mode == MODE_NORMAL) {
