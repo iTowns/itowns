@@ -5,9 +5,10 @@
  */
 
 import * as THREE from 'three';
-import OGCWebServiceHelper from './OGCWebServiceHelper';
+import OGCWebServiceHelper, { SIZE_TEXTURE_TILE } from './OGCWebServiceHelper';
 import URLBuilder from './URLBuilder';
 import Extent from '../Core/Geographic/Extent';
+import { computeMinMaxElevation } from '../Parser/XbilParser';
 
 const coordTile = new Extent('WMTS:WGS84', 0, 0, 0);
 
@@ -79,11 +80,26 @@ function getXbilTexture(tile, layer, targetZoom) {
 
     return OGCWebServiceHelper.getXBilTextureByUrl(urld, layer.networkOptions).then((texture) => {
         texture.coords = coordWMTS;
+        let min;
+        let max;
+
+        // if pitch is full texture, the min and max are already known
+        if (pitch.z == 1.0 && pitch.w == 1.0) {
+            min = texture.min;
+            max = texture.max;
+        } else {
+            const r = computeMinMaxElevation(texture.image.data,
+                SIZE_TEXTURE_TILE, SIZE_TEXTURE_TILE,
+                pitch);
+            min = r.min;
+            max = r.max;
+        }
+
         return {
+            min,
+            max,
             texture,
             pitch,
-            min: !texture.min ? 0 : texture.min,
-            max: !texture.max ? 0 : texture.max,
         };
     });
 }
