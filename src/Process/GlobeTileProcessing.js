@@ -11,18 +11,6 @@ let SSE_SUBDIVISION_THRESHOLD;
 
 const worldToScaledEllipsoid = new THREE.Matrix4();
 
-function _preSSE(view) {
-    const canvasSize = view.mainLoop.gfxEngine.getWindowSize();
-    const hypotenuse = canvasSize.length();
-    const radAngle = view.camera.camera3D.fov * Math.PI / 180;
-
-     // TODO: not correct -> see new preSSE
-    // const HFOV = 2.0 * Math.atan(Math.tan(radAngle * 0.5) / context.camera.ratio);
-    const HYFOV = 2.0 * Math.atan(Math.tan(radAngle * 0.5) * hypotenuse / canvasSize.x);
-
-    return hypotenuse * (2.0 * Math.tan(HYFOV * 0.5));
-}
-
 export function preGlobeUpdate(context, layer) {
     // We're going to use the method described here:
     //    https://cesiumjs.org/2013/04/25/Horizon-culling/
@@ -39,9 +27,6 @@ export function preGlobeUpdate(context, layer) {
     // cV is camera's position in worldToScaledEllipsoid system
     cV.copy(context.camera.camera3D.position).applyMatrix4(worldToScaledEllipsoid);
     vhMagnitudeSquared = cV.lengthSq() - 1.0;
-
-    // pre-sse
-    context.camera.preSSE = _preSSE(context.view);
 
     const elevationLayers = context.view.getLayers((l, a) => a && a.id == layer.id && l.type == 'elevation');
     context.maxElevationLevel = -1;
@@ -111,7 +96,7 @@ function computeNodeSSE(camera, node) {
 
     // TODO: node.geometricError is computed using a hardcoded 18 level
     // The computation of node.geometricError is surely false
-    return camera.preSSE * (node.geometricError * v.x) / distance;
+    return camera._preSSE * (node.geometricError * v.x) / distance;
 }
 
 export function globeSubdivisionControl(minLevel, maxLevel, sseThreshold, maxDeltaElevationLevel) {
