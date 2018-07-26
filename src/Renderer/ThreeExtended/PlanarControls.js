@@ -24,6 +24,8 @@ const STATE = {
     TRAVEL: 3,
 };
 
+const vectorZero = new THREE.Vector3();
+
 /**
  * Options for the instantiation of a {@link PlanarControls}.
  *
@@ -384,9 +386,10 @@ function PlanarControls(view, options = {}) {
                 }
             }
 
-            this.camera.position.copy(offset).add(centerPoint);
-
-            this.camera.lookAt(centerPoint);
+            this.camera.position.copy(offset);
+            this.camera.lookAt(vectorZero);
+            this.camera.position.add(centerPoint);
+            this.camera.updateMatrixWorld();
         };
     })();
 

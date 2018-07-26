@@ -67,7 +67,7 @@ function c3DEngine(rendererOrDiv, options = {}) {
     }
 
     if (!this.renderer) {
-        // from Detector.js
+        // from THREE/WebGL.js
         const element = document.createElement('div');
         element.id = 'webgl-error-message';
         element.style.fontFamily = 'monospace';
@@ -203,7 +203,7 @@ c3DEngine.prototype.renderViewToRenderTarget = function renderViewToRenderTarget
     }
 
     this.renderer.setRenderTarget(target);
-    this.renderer.clearTarget(target, true, true, false);
+    this.renderer.clear(true, true, false);
     this.renderer.render(view.scene, view.camera.camera3D, target);
     this.renderer.setRenderTarget(current);
 

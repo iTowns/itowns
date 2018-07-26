@@ -17,7 +17,7 @@ export default {
         material.vertexShader = `${material.vertexShader.slice(0, idx)}\n#include <logdepthbuf_vertex>\n${material.vertexShader.slice(idx)}`;
 
         // Add fragment shader log depth buffer header
-        material.fragmentShader = `#include <itowns.precision_qualifier\n${material.fragmentShader}`;
+        material.fragmentShader = `#include <itowns/precision_qualifier\n${material.fragmentShader}`;
         material.fragmentShader = `#include <logdepthbuf_pars_fragment>\n${material.fragmentShader}`;
         // Add log depth buffer code snippet at the first line of the main function
         re = reMain.exec(material.fragmentShader);

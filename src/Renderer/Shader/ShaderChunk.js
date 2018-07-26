@@ -30,6 +30,6 @@ ShaderChunk.install = function install(target, chunks, path) {
 };
 
 // Install all default shaders under the itowns
-ShaderChunk.install(THREE.ShaderChunk, ShaderChunk, 'itowns.');
+ShaderChunk.install(THREE.ShaderChunk, ShaderChunk, 'itowns/');
 
 export default ShaderChunk;

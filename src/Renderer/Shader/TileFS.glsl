@@ -1,6 +1,6 @@
-#include <itowns.precision_qualifier>
+#include <itowns/precision_qualifier>
 #include <logdepthbuf_pars_fragment>
-#include <itowns.pitUV>
+#include <itowns/pitUV>
 
 // BUG CHROME 50 UBUNTU 16.04
 // Lose context on compiling shader with too many IF STATEMENT
