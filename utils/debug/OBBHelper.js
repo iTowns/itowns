@@ -5,6 +5,7 @@ import fontJS from './fonts/optimer_regular.json';
 
 var font = new THREE.Font(JSON.parse(fontJS));
 
+var size = new THREE.Vector3();
 function OBBHelper(OBB, text) {
     var indices = new Uint16Array([0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 6, 6, 7, 7, 4, 0, 4, 1, 5, 2, 6, 3, 7]);
     var positions = new Float32Array(8 * 3);
@@ -22,7 +23,7 @@ function OBBHelper(OBB, text) {
 
     this.frustumCulled = false;
 
-    var size = OBB.box3D.getSize();
+    OBB.box3D.getSize(size);
 
     var geometryText = new THREE.TextGeometry(text, {
 
@@ -90,7 +91,8 @@ OBBHelper.prototype.update = function update(OBB) {
     this.updateMatrix();
     this.updateMatrixWorld(true);
 
-    const size = OBB.box3D.getSize();
+    const size = new THREE.Vector3();
+    OBB.box3D.getSize(size);
 
     if (this.textMesh) {
         this.textMesh.position.set(0, 0, 0);

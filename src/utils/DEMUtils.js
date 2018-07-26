@@ -286,6 +286,7 @@ function _readZFast(layer, texture, uv) {
     return _readTextureValueNearestFiltering(layer, texture, uv.x, uv.y);
 }
 
+const bary = new THREE.Vector3();
 function _readZCorrect(layer, texture, uv, tileDimensions, tileOwnerDimensions) {
     // We need to emulate the vertex shader code that does 2 thing:
     //   - interpolate (u, v) between triangle vertices: u,v will be multiple of 1/nsegments
@@ -335,7 +336,7 @@ function _readZCorrect(layer, texture, uv, tileDimensions, tileOwnerDimensions) 
         lowerRightTriangle ? new THREE.Vector3(u2, v2) : new THREE.Vector3(u1, v1));
 
     // bary holds the respective weight of each vertices of the triangles
-    const bary = tri.barycoordFromPoint(new THREE.Vector3(uv.x, uv.y));
+    tri.getBarycoord(new THREE.Vector3(uv.x, uv.y), bary);
 
     // read the 3 interesting values
     const z1 = _readTextureValueWithBilinearFiltering(layer, texture, tri.a.x, tri.a.y);

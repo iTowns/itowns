@@ -65,6 +65,9 @@ const lastQuaternion = new THREE.Quaternion();
 const pickSphere = new THREE.Sphere();
 const pickingPoint = new THREE.Vector3();
 
+// Sphere intersection
+const intersection = new THREE.Vector3();
+
 // Set to true to enable target helper
 const enableTargetHelper = false;
 const helpers = {};
@@ -312,7 +315,6 @@ function GlobeControls(view, targetCoordinate, range, globeRadius, options = {})
 
     const lastNormalizedIntersection = new THREE.Vector3();
     const normalizedIntersection = new THREE.Vector3();
-    const resultDamping = [];
 
     const update = () => {
         // We compute distance between camera's bounding sphere and geometry's obb up face
@@ -429,8 +431,7 @@ function GlobeControls(view, targetCoordinate, range, globeRadius, options = {})
         } else {
             sphericalDelta.theta *= (1 - dampingFactor);
             sphericalDelta.phi *= (1 - dampingFactor);
-            THREE.Quaternion.slerpFlat(resultDamping, 0, moveAroundGlobe.toArray(), 0, dampingMove.toArray(), 0, dampingFactor * 0.2);
-            moveAroundGlobe.fromArray(resultDamping);
+            moveAroundGlobe.slerp(dampingMove, dampingFactor * 0.2);
         }
 
         orbitScale = 1;
@@ -504,7 +505,7 @@ function GlobeControls(view, targetCoordinate, range, globeRadius, options = {})
             case states.MOVE_GLOBE: {
                 const normalized = view.viewToNormalizedCoords(coords);
                 raycaster.setFromCamera(normalized, this.camera);
-                const intersection = raycaster.ray.intersectSphere(pickSphere);
+                raycaster.ray.intersectSphere(pickSphere, intersection);
                 // If there's intersection then move globe else we stop the move
                 if (intersection) {
                     normalizedIntersection.copy(intersection).normalize();

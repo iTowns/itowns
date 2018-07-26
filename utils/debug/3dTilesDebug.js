@@ -6,6 +6,7 @@ import GeometryDebug from './GeometryDebug';
 const invMatrixChangeUpVectorZtoY = new THREE.Matrix4().getInverse(new THREE.Matrix4().makeRotationX(Math.PI / 2));
 const invMatrixChangeUpVectorZtoX = new THREE.Matrix4().getInverse(new THREE.Matrix4().makeRotationZ(-Math.PI / 2));
 
+const size = new THREE.Vector3();
 export default function create3dTilesDebugUI(datDebugTool, view, _3dTileslayer) {
     const gui = GeometryDebug.createGeometryDebugUI(datDebugTool, view, _3dTileslayer);
 
@@ -39,7 +40,7 @@ export default function create3dTilesDebugUI(datDebugTool, view, _3dTileslayer) 
                 }
                 // 3dtiles with box
                 if (metadata.boundingVolume.box) {
-                    const size = metadata.boundingVolume.box.getSize();
+                    metadata.boundingVolume.box.getSize(size);
                     const g = new THREE.BoxGeometry(size.x, size.y, size.z);
                     const material = new THREE.MeshBasicMaterial({ wireframe: true });
                     helper = new THREE.Mesh(g, material);

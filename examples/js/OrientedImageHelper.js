@@ -56,23 +56,24 @@ function initCamera(view, image, coord, EnhToOrientationUp, EnhToOrientationLook
 
     // add second object : 'oriented image'
     orientedImage = new itowns.THREE.Object3D();
-    // place the 'oriented image' in the 'local space'
-    localSpace.add(orientedImage);
-
     // setup initial convention orientation.
     orientedImage.up.copy(EnhToOrientationUp);
     orientedImage.lookAt(EnhToOrientationLookAt);
 
+    // place the 'oriented image' in the 'local space'
+    localSpace.add(orientedImage);
+
     // apply rotation
     quaternion = new itowns.THREE.Quaternion().setFromRotationMatrix(rotMatrix);
     orientedImage.quaternion.multiply(quaternion);
-    orientedImage.updateMatrixWorld();
+    // orientedImage.updateMatrixWorld();
 
     // create a THREE JS Camera
     camera = new itowns.THREE.PerspectiveCamera(fov, size[0] / size[1], distance / 2, distance * 2);
-    orientedImage.add(camera);
     camera.up.copy(orientationToCameraUp);
     camera.lookAt(orientationToCameraLookAt);
+
+    orientedImage.add(camera);
 
     localSpace.updateMatrixWorld(true);
     return camera;
