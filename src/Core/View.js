@@ -7,7 +7,7 @@ import { STRATEGY_MIN_NETWORK_TRAFFIC } from './Layer/LayerUpdateStrategy';
 import { GeometryLayer, Layer, defineLayerProperty } from './Layer/Layer';
 import Scheduler from './Scheduler/Scheduler';
 import Picking from './Picking';
-import TextureProcessing from '../Process/TextureProcessing';
+import TextureProcessing from '../Process/LayeredMaterialNodeProcessing';
 
 export const VIEW_EVENTS = {
     /**

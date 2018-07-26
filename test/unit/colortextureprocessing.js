@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import TextureProcessing from '../../src/Process/TextureProcessing';
+import TextureProcessing from '../../src/Process/LayeredMaterialNodeProcessing';
 import TileMesh from '../../src/Core/TileMesh';
 import Extent from '../../src/Core/Geographic/Extent';
 import OBB from '../../src/Renderer/ThreeExtended/OBB';

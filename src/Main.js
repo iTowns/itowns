@@ -14,7 +14,7 @@ export { default as GpxParser } from './Parser/GpxParser';
 export { default as GeoJsonParser } from './Parser/GeoJsonParser';
 export { process3dTilesNode, init3dTilesLayer, $3dTilesCulling, $3dTilesSubdivisionControl, pre3dTilesUpdate } from './Process/3dTilesProcessing';
 export { default as FeatureProcessing } from './Process/FeatureProcessing';
-export { default as TextureProcessing } from './Process/TextureProcessing';
+export { default as TextureProcessing } from './Process/LayeredMaterialNodeProcessing';
 export { processTiledGeometryNode, initTiledGeometryLayer } from './Process/TiledNodeProcessing';
 export { ColorLayersOrdering } from './Renderer/ColorLayersOrdering';
 export { default as PointsMaterial } from './Renderer/PointsMaterial';
