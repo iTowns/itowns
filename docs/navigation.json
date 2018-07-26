@@ -62,6 +62,7 @@
         "StateControl",
         "PlanarControls",
         "FirstPersonControls",
+        "StreetControls",
         "OrientedImageCamera",
         "CameraUtils"
     ],

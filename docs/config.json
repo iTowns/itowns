@@ -60,6 +60,7 @@
             "src/Controls/StateControl.js",
             "src/Controls/PlanarControls.js",
             "src/Controls/FirstPersonControls.js",
+            "src/Controls/StreetControls.js",
 
             "src/Converter/Feature2Mesh.js",
 
