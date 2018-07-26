@@ -15,10 +15,11 @@ Sphere.prototype.setRadius = function setRadius(radius) {
     this.radius = radius;
 };
 
-var vector = new THREE.Vector3();
+const vector = new THREE.Vector3();
+const pc = new THREE.Vector3();
 
 Sphere.prototype.intersectWithRayNoMiss = function intersectWithRayNoMiss(ray) {
-    let pc = ray.closestPointToPoint(this.center);
+    ray.closestPointToPoint(this.center, pc);
     let a = pc.length();
     let d;
     let b;
@@ -34,7 +35,7 @@ Sphere.prototype.intersectWithRayNoMiss = function intersectWithRayNoMiss(ray) {
         d = ray.direction.subVectors(mirrorPoint, ray.origin).normalize();
 
         // Classic intersection with the new ray
-        pc = ray.closestPointToPoint(this.center);
+        ray.closestPointToPoint(this.center, pc);
         a = pc.length();
 
         b = Math.sqrt(this.radius * this.radius - a * a);
@@ -52,7 +53,7 @@ Sphere.prototype.intersectWithRayNoMiss = function intersectWithRayNoMiss(ray) {
 };
 
 Sphere.prototype.intersectWithRay = function intersectWithRay(ray) {
-    const pc = ray.closestPointToPoint(this.center);
+    ray.closestPointToPoint(this.center, pc);
     const a = pc.length();
     if (a > this.radius) return undefined;
     const d = ray.direction.clone();

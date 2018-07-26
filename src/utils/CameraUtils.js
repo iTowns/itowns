@@ -10,7 +10,6 @@ const targetPosition = new THREE.Vector3();
 const targetCoord = new Coordinates('EPSG:4326', 0, 0, 0);
 const ellipsoid = new Ellipsoid(ellipsoidSizes);
 const rigs = [];
-const slerp = [];
 
 const deferred = () => {
     let resolve;
@@ -217,12 +216,10 @@ class CameraRig extends THREE.Object3D {
             .onUpdate((d) => {
                 // rotate to coord destination in geocentric projection
                 if (view.referenceCrs == 'EPSG:4978') {
-                    THREE.Quaternion.slerpFlat(slerp, 0, this.start.quaternion.toArray(), 0, this.end.quaternion.toArray(), 0, d.t);
-                    this.quaternion.fromArray(slerp);
+                    THREE.Quaternion.slerp(this.start.quaternion, this.end.quaternion, this.quaternion, d.t);
                 }
                 // camera rotation
-                THREE.Quaternion.slerpFlat(slerp, 0, this.start.camera.quaternion.toArray(), 0, this.end.camera.quaternion.toArray(), 0, d.t);
-                this.camera.quaternion.fromArray(slerp);
+                THREE.Quaternion.slerp(this.start.camera.quaternion, this.end.camera.quaternion, this.camera.quaternion, d.t);
                 // camera's target rotation
                 this.target.rotation.set(0, 0, 0);
                 this.target.rotateZ(THREE.Math.lerp(this.start.target.rotation.z, this.end.target.rotation.z, d.t));

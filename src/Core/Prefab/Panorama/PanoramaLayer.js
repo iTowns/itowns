@@ -6,6 +6,7 @@ import PanoramaTileBuilder from './PanoramaTileBuilder';
 import ProjectionType from './Constants';
 
 const textureSize = new THREE.Vector2(512, 256);
+const center = new THREE.Vector3();
 
 class PanoramaLayer extends TiledGeometryLayer {
     /**
@@ -140,9 +141,10 @@ class PanoramaLayer extends TiledGeometryLayer {
 
         onScreen.min.z = 0;
         onScreen.max.z = 0;
+        onScreen.getCenter(center);
 
         // give a small boost to central tiles
-        const boost = 1 + Math.max(0, 1 - onScreen.getCenter().length());
+        const boost = 1 + Math.max(0, 1 - center.length());
 
         const dim = {
             x: 0.5 * (onScreen.max.x - onScreen.min.x) * context.camera.width,

@@ -22,7 +22,8 @@ function OBBHelper(OBB, text) {
 
     this.frustumCulled = false;
 
-    var size = OBB.box3D.getSize();
+    var size = new THREE.Vector3();
+    OBB.box3D.getSize(size);
 
     var geometryText = new THREE.TextGeometry(text, {
 
@@ -90,7 +91,8 @@ OBBHelper.prototype.update = function update(OBB) {
     this.updateMatrix();
     this.updateMatrixWorld(true);
 
-    const size = OBB.box3D.getSize();
+    const size = new THREE.Vector3();
+    OBB.box3D.getSize(size);
 
     if (this.textMesh) {
         this.textMesh.position.set(0, 0, 0);

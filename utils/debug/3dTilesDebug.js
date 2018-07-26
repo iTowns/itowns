@@ -39,7 +39,8 @@ export default function create3dTilesDebugUI(datDebugTool, view, _3dTileslayer) 
                 }
                 // 3dtiles with box
                 if (metadata.boundingVolume.box) {
-                    const size = metadata.boundingVolume.box.getSize();
+                    const size = new THREE.Vector3();
+                    metadata.boundingVolume.box.getSize(size);
                     const g = new THREE.BoxGeometry(size.x, size.y, size.z);
                     const material = new THREE.MeshBasicMaterial({ wireframe: true });
                     helper = new THREE.Mesh(g, material);

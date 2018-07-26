@@ -5,6 +5,8 @@ import CancelledCommandException from '../Core/Scheduler/CancelledCommandExcepti
 function cube(size) {
     var h = size.clone().multiplyScalar(0.5);
     var geometry = new THREE.Geometry();
+    var line = new THREE.Line(geometry);
+
     geometry.vertices.push(
         new THREE.Vector3(-h.x, -h.y, -h.z),
         new THREE.Vector3(-h.x, h.y, -h.z),
@@ -30,12 +32,14 @@ function cube(size) {
         new THREE.Vector3(h.x, h.y, h.z),
         new THREE.Vector3(h.x, -h.y, -h.z),
         new THREE.Vector3(h.x, -h.y, h.z));
-    geometry.computeLineDistances();
-    return geometry;
+
+    line.computeLineDistances();
+    return line.geometry;
 }
 
 function initBoundingBox(elt, layer) {
-    const size = elt.tightbbox.getSize();
+    const size = new THREE.Vector3();
+    elt.tightbbox.getSize(size);
     elt.obj.boxHelper = new THREE.LineSegments(
         cube(size),
         elt.childrenBitField ?
