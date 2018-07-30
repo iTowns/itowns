@@ -438,16 +438,7 @@ function PlanarControls(view, options = {}) {
      * @ignore
      */
     this.initiateSmartZoom = function initiateSmartZoom() {
-        // point under mouse cursor
-        const pointUnderCursor = new THREE.Vector3();
-
-        // check if there is valid geometry under cursor
-        if (typeof this.view.getPickingPositionFromDepth(mousePosition) !== 'undefined') {
-            pointUnderCursor.copy(this.view.getPickingPositionFromDepth(mousePosition));
-        }
-        else {
-            return;
-        }
+        const pointUnderCursor = this.getWorldPointAtScreenXY(mousePosition);
 
         // direction of the movement, projected on xy plane and normalized
         const dir = new THREE.Vector3();
@@ -665,6 +656,8 @@ function PlanarControls(view, options = {}) {
         };
     })();
 
+    // point under mouse cursor
+    const pointUnderCursor = new THREE.Vector3();
     /**
      * Returns the world point (xyz) under the posXY screen point. If geometry
      * is under the cursor, the point in obtained with
@@ -677,7 +670,7 @@ function PlanarControls(view, options = {}) {
      * @ignore
      */
     this.getWorldPointAtScreenXY = function getWorldPointAtScreenXY(posXY) {
-        const pointUnderCursor = this.view.getPickingPositionFromDepth(posXY);
+        this.view.getPickingPositionFromDepth(posXY, pointUnderCursor);
         // check if there is valid geometry under cursor
         if (pointUnderCursor) {
             return pointUnderCursor;

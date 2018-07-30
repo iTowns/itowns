@@ -243,6 +243,7 @@ var initialPosition;
 var initialZoom;
 
 // picking
+const pickedPosition = new THREE.Vector3();
 const ptScreenClick = new THREE.Vector2();
 const sizeRendering = new THREE.Vector2();
 
@@ -789,11 +790,9 @@ function GlobeControls(view, target, radius, options = {}) {
 
         direction.subVectors(movingCameraTargetOnGlobe, this.camera.position);
 
-        const pickingPosition = view.getPickingPositionFromDepth();
-
         // Position movingCameraTargetOnGlobe on DME
-        if (pickingPosition) {
-            const distanceTarget = pickingPosition.distanceTo(this.camera.position);
+        if (view.getPickingPositionFromDepth(null, pickedPosition)) {
+            const distanceTarget = pickedPosition.distanceTo(this.camera.position);
             direction.setLength(distanceTarget);
             movingCameraTargetOnGlobe.addVectors(this.camera.position, direction);
         }
@@ -1082,13 +1081,11 @@ function GlobeControls(view, target, radius, options = {}) {
                     snapShotCamera.shot(this.camera);
                     ptScreenClick.x = x;
                     ptScreenClick.y = y;
-
-                    const point = view.getPickingPositionFromDepth(ptScreenClick);
                     lastRotation = [];
                     // update tangent sphere which passes through the point
-                    if (point) {
+                    if (view.getPickingPositionFromDepth(ptScreenClick, pickedPosition)) {
                         ctrl.range = this.getRange();
-                        updateSpherePicking.bind(this)(point, ptScreenClick);
+                        updateSpherePicking.bind(this)(pickedPosition, ptScreenClick);
                     } else {
                         state = this.states.NONE;
                     }
@@ -1121,11 +1118,9 @@ function GlobeControls(view, target, radius, options = {}) {
 
         // Double click throws move camera's target with animation
         if (!currentKey) {
-            const point = view.getPickingPositionFromDepth(this._view.eventToViewCoords(event));
-
-            if (point) {
+            if (view.getPickingPositionFromDepth(this._view.eventToViewCoords(event), pickedPosition)) {
                 animatedScale = 0.6;
-                this.setCameraTargetPosition(point);
+                this.setCameraTargetPosition(pickedPosition);
             }
         }
     };
@@ -1922,9 +1917,7 @@ GlobeControls.prototype.setCameraTargetGeoPositionAdvanced = function setCameraT
  * @return {Coordinates} position
  */
 GlobeControls.prototype.pickGeoPosition = function pickGeoPosition(windowCoords) {
-    var pickedPosition = this._view.getPickingPositionFromDepth(windowCoords);
-
-    if (!pickedPosition) {
+    if (!this._view.getPickingPositionFromDepth(windowCoords, pickedPosition)) {
         return;
     }
 
