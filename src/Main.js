@@ -14,6 +14,7 @@ export { default as View } from './Core/View';
 export { VIEW_EVENTS } from './Core/View';
 export { default as GpxParser } from './Parser/GpxParser';
 export { default as GeoJsonParser } from './Parser/GeoJsonParser';
+export { default as CameraCalibrationParser } from './Parser/CameraCalibrationParser';
 export { process3dTilesNode, init3dTilesLayer, $3dTilesCulling, $3dTilesSubdivisionControl, pre3dTilesUpdate } from './Process/3dTilesProcessing';
 export { default as FeatureProcessing } from './Process/FeatureProcessing';
 export { updateLayeredMaterialNodeImagery, updateLayeredMaterialNodeElevation } from './Process/LayeredMaterialNodeProcessing';
