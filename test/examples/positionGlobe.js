@@ -57,4 +57,50 @@ describe('positionGlobe', () => {
 
         await page.close();
     });
+    it('should get picking position from depth', async function _() {
+        const page = await browser.newPage();
+
+        await loadExample(page,
+            `http://localhost:${itownsPort}/examples/positionGlobe.html`,
+            this.test.fullTitle());
+
+        // wait mesh creation
+        await page.evaluate(() =>
+            new Promise((resolve) => {
+                globeView.addFrameRequester('after_render', () => {
+                    if (globeView.mesh) {
+                        resolve();
+                    } else {
+                        globeView.notifyChange();
+                    }
+                });
+                globeView.notifyChange();
+            }));
+
+        // Hide cone the cone and set range
+        const destRange = 1500;
+        await page.evaluate((range) => {
+            globeView.mesh.material.visible = false;
+            globeView.controls.setRange(range);
+        }, destRange);
+
+        // wait camera'transformation and get range value with globeControls method
+        const controlsMethod = await page.evaluate(() =>
+            new Promise((resolve) => {
+                const endAni = () => {
+                    globeView.controls.removeEventListener('animation-ended', endAni);
+                    resolve(globeView.controls.getRange());
+                };
+                globeView.controls.addEventListener('animation-ended', endAni);
+            }));
+
+        // get range with depth buffer
+        const depthMethod = await page.evaluate(() => globeView
+            .getPickingPositionFromDepth().distanceTo(globeView.camera.camera3D.position));
+
+        assert.ok(Math.abs(controlsMethod - destRange) < 2);
+        assert.ok(Math.abs(depthMethod - destRange) < 2);
+
+        await page.close();
+    });
 });
