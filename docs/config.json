@@ -32,6 +32,7 @@
             "src/Layer/GeometryLayer.js",
             "src/Layer/TiledGeometryLayer.js",
             "src/Layer/InfoLayer.js",
+            "src/Layer/OrientedImageLayer.js",
 
             "src/Source/Source.js",
             "src/Source/WMTSSource.js",
@@ -40,6 +41,7 @@
             "src/Source/TMSSource.js",
             "src/Source/StaticSource.js",
             "src/Source/FileSource.js",
+            "src/Source/OrientedImageSource.js",
 
             "src/Parser/GeoJsonParser.js",
             "src/Parser/GpxParser.js",
