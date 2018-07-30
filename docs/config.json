@@ -41,6 +41,7 @@
             "src/Parser/GeoJsonParser.js",
             "src/Parser/GpxParser.js",
             "src/Parser/VectorTileParser.js",
+            "src/Parser/CameraCalibrationParser.js",
 
             "src/Provider/URLBuilder.js",
 
