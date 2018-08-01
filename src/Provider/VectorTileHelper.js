@@ -62,9 +62,22 @@ export default {
             const backgroundColor = (layer.backgroundLayer && layer.backgroundLayer.paint) ?
                 new THREE.Color(layer.backgroundLayer.paint['background-color']) :
                 undefined;
+
+            let extentTexture;
+            switch (coords.crs()) {
+                case 'TMS':
+                    extentTexture = tile.extent;
+                    break;
+                case 'WMTS:PM':
+                    extentTexture = coords.as('EPSG:3857');
+                    break;
+                default:
+                    extentTexture = coords.as(tile.extent.crs());
+            }
+
             const texture = Feature2Texture.createTextureFromFeature(
                 features,
-                coords.crs() == 'TMS' ? tile.extent : coords.as(tile.extent.crs()),
+                extentTexture,
                 256,
                 layer.style,
                 backgroundColor);
