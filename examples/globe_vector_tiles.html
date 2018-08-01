@@ -28,7 +28,11 @@
             var viewerDiv = document.getElementById('viewerDiv');
 
             // Instanciate iTowns GlobeView*
-            var view = new itowns.GlobeView(viewerDiv, positionOnGlobe);
+            var view = new itowns.GlobeView(viewerDiv, positionOnGlobe, { maxSubdivisionLevel: 13 });
+
+            // define pole texture
+            view.wgs84TileLayer.noTextureColor = new itowns.THREE.Color(0x95c1e1);
+
             setupLoadingScreen(viewerDiv, view);
             function addLayerCb(layer) {
                 return view.addLayer(layer);
