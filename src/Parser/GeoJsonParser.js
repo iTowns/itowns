@@ -123,16 +123,13 @@ const GeometryToCoordinates = {
         let globalOffset = 0;
         let indices;
 
-        for (let i = 0; i < coordsIn.length; i++) {
-            this[type](feature, crsIn, crsOut, coordsIn[i], filteringExtent, options);
-
-            // filter only the first to reduce time parsing
-            filteringExtent = undefined;
-
-            indices = feature.geometry[i].indices;
-            applyOffset(indices, globalOffset);
-            const lastIndice = indices[indices.length - 1];
-            globalOffset = lastIndice.offset + lastIndice.count;
+        for (const coords of coordsIn) {
+            if (this[type](feature, crsIn, crsOut, coords, filteringExtent, options)) {
+                indices = feature.geometry[feature.geometry.length - 1].indices;
+                applyOffset(indices, globalOffset);
+                const lastIndice = indices[indices.length - 1];
+                globalOffset = lastIndice.offset + lastIndice.count;
+            }
         }
 
         return feature;
