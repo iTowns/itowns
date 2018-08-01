@@ -39,8 +39,17 @@ function readPBF(file, options) {
         }
     });
 
+    let crsOut;
+    switch (options.coords.crs()) {
+        case 'WMTS:PM':
+            crsOut = 'EPSG:3857';
+            break;
+        default:
+            crsOut = options.extent.crs();
+    }
+
     return GeoJsonParser.parse(geojson, {
-        crsOut: options.extent.crs(),
+        crsOut,
         filteringExtent: options.filteringExtent,
         filter: options.filter,
         buildExtent: true,
