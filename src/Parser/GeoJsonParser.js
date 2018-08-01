@@ -68,21 +68,24 @@ function readCoordinates(crsIn, crsOut, coordinates, extent, target) {
 // - extent is optional, it's coordinates's extent
 // Multi-* geometry types are merged in one.
 const GeometryToCoordinates = {
-    point(crsIn, crsOut, coordsIn, filteringExtent, options) {
+    point(feature, crsIn, crsOut, coordsIn, filteringExtent, options) {
         const extent = options.buildExtent ? new Extent(crsOut, Infinity, -Infinity, Infinity, -Infinity) : undefined;
         let coordinates = readCoordinates(crsIn, crsOut, coordsIn, extent);
         if (filteringExtent) {
             coordinates = coordinates.filter(c => filteringExtent.isPointInside(c));
         }
 
-        return [coordinates, [{ extent }]];
+        feature.vertices = feature.vertices.concat(coordinates);
+        feature.geometry.push({ extent });
+
+        return feature;
     },
-    polygon(crsIn, crsOut, coordsIn, filteringExtent, options) {
+    polygon(feature, crsIn, crsOut, coordsIn, filteringExtent, options) {
         const extent = options.buildExtent ? new Extent(crsOut, Infinity, -Infinity, Infinity, -Infinity) : undefined;
         // read contour first
         const coordinates = readCoordinates(crsIn, crsOut, coordsIn[0], extent);
         if (filteringExtent && !filteringExtent.isPointInside(coordinates[0])) {
-            return [];
+            return;
         }
         const indices = [{ offset: 0, count: coordinates.length }];
         let offset = coordinates.length;
@@ -94,67 +97,68 @@ const GeometryToCoordinates = {
             offset += count;
         }
 
-        return [coordinates, [{ extent, indices }]];
+        feature.vertices = feature.vertices.concat(coordinates);
+        feature.geometry.push({ extent, indices });
+
+        return feature;
     },
-    lineString(crsIn, crsOut, coordsIn, filteringExtent, options) {
+    lineString(feature, crsIn, crsOut, coordsIn, filteringExtent, options) {
         const extent = options.buildExtent ? new Extent(crsOut, Infinity, -Infinity, Infinity, -Infinity) : undefined;
         const coordinates = readCoordinates(crsIn, crsOut, coordsIn, extent);
         if (filteringExtent && !filteringExtent.isPointInside(coordinates[0])) {
-            return [];
+            return;
         }
         const indices = [{ offset: 0, count: coordinates.length }];
 
-        return [coordinates, [{ extent, indices }]];
+        feature.vertices = feature.vertices.concat(coordinates);
+        feature.geometry.push({ extent, indices });
+
+        return feature;
     },
-    multi(type, crsIn, crsOut, coordsIn, filteringExtent, options) {
+    multi(type, feature, crsIn, crsOut, coordsIn, filteringExtent, options) {
         if (coordsIn.length == 1) {
-            return this[type](crsIn, crsOut, coordsIn[0], filteringExtent, options);
+            return this[type](feature, crsIn, crsOut, coordsIn[0], filteringExtent, options);
         }
 
-        const geometries = [];
-        let vertices = [];
         let globalOffset = 0;
+        let indices;
 
-        for (const coords of coordsIn) {
-            const [vertex, [{ extent, indices }]] = this[type](crsIn, crsOut, coords, filteringExtent, options);
-            if (!vertex) {
-                return [];
-            }
+        for (let i = 0; i < coordsIn.length; i++) {
+            this[type](feature, crsIn, crsOut, coordsIn[i], filteringExtent, options);
 
             // filter only the first to reduce time parsing
             filteringExtent = undefined;
 
+            indices = feature.geometry[i].indices;
             applyOffset(indices, globalOffset);
             const lastIndice = indices[indices.length - 1];
             globalOffset = lastIndice.offset + lastIndice.count;
-
-            geometries.push({ indices, extent });
-            vertices = vertices.concat(vertex);
         }
-        return [vertices, geometries];
+
+        return feature;
     },
 };
 
-function readGeometry(crsIn, crsOut, json, filteringExtent, options) {
-    if (json.coordinates.length == 0) {
+function readGeometry(feature, crsIn, crsOut, geometry, filteringExtent, options) {
+    if (geometry.length == 0) {
         return;
     }
-    switch (json.type.toLowerCase()) {
+    switch (feature.type) {
         case 'point':
-            return GeometryToCoordinates.point(crsIn, crsOut, [json.coordinates], filteringExtent, options);
+            return GeometryToCoordinates.point(feature, crsIn, crsOut, [geometry], filteringExtent, options);
         case 'multipoint':
-            return GeometryToCoordinates.multi('point', crsIn, crsOut, json.coordinates, filteringExtent, options);
+            return GeometryToCoordinates.multi('point', feature, crsIn, crsOut, geometry, filteringExtent, options);
         case 'linestring':
-            return GeometryToCoordinates.lineString(crsIn, crsOut, json.coordinates, filteringExtent, options);
+            return GeometryToCoordinates.lineString(feature, crsIn, crsOut, geometry, filteringExtent, options);
         case 'multilinestring':
-            return GeometryToCoordinates.multi('lineString', crsIn, crsOut, json.coordinates, filteringExtent, options);
+            return GeometryToCoordinates.multi('lineString', feature, crsIn, crsOut, geometry, filteringExtent, options);
         case 'polygon':
-            return GeometryToCoordinates.polygon(crsIn, crsOut, json.coordinates, filteringExtent, options);
+            return GeometryToCoordinates.polygon(feature, crsIn, crsOut, geometry, filteringExtent, options);
         case 'multipolygon':
-            return GeometryToCoordinates.multi('polygon', crsIn, crsOut, json.coordinates, filteringExtent, options);
+            return GeometryToCoordinates.multi('polygon', feature, crsIn, crsOut, geometry, filteringExtent, options);
         case 'geometrycollection':
         default:
-            throw new Error(`Unhandled geometry type ${json.type}`);
+            throw new Error(`Unhandled geometry type ${feature.type}`);
     }
 }
 
@@ -164,10 +168,13 @@ function readFeature(crsIn, crsOut, json, filteringExtent, options) {
     }
     const feature = {
         type: json.geometry.type.toLowerCase(),
+        geometry: [],
+        vertices: [],
     };
 
-    [feature.vertices, feature.geometry] = readGeometry(crsIn, crsOut, json.geometry, filteringExtent, options);
-    if (!feature.geometry) {
+    readGeometry(feature, crsIn, crsOut, json.geometry.coordinates, filteringExtent, options);
+
+    if (feature.geometry.length == 0) {
         return;
     }
 
