@@ -11,7 +11,10 @@ export function computeMinMaxElevation(buffer, width, height, offsetScale) {
     let max = -1000000;
 
     if (!buffer) {
-        return { min: 0, max: 0 };
+        // Return null values means there's no elevation values.
+        // They can't be determined.
+        // Don't return 0 because the result will be wrong
+        return { min: null, max: null };
     }
 
     const sizeX = offsetScale ? Math.floor(offsetScale.z * width) : buffer.length;
@@ -33,7 +36,10 @@ export function computeMinMaxElevation(buffer, width, height, offsetScale) {
     }
 
     if (max === -1000000 || min === 1000000) {
-        return { min: 0, max: 0 };
+        // Return null values means the elevation values are incoherent
+        // They can't be determined.
+        // Don't return 0, -1000000 or 1000000 because the result will be wrong
+        return { min: null, max: null };
     }
     return { min, max };
 }
