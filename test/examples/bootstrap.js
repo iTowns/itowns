@@ -135,7 +135,7 @@ before(async () => {
             __getView().then((v) => {
                 function resolveWhenReady() {
                     if (v.mainLoop.renderingState === 0) {
-                        v.removeEventListener('command-queue-empty', resolveWhenReady);
+                        v.mainLoop.removeEventListener('command-queue-empty', resolveWhenReady);
                         resolve(true);
                     }
                 }
