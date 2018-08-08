@@ -13,6 +13,7 @@
         <div id="viewerDiv"></div>
         <script src="js/GUI/GuiTools.js"></script>
         <script src="../dist/itowns.js"></script>
+        <script src="js/ThreeLoader.js"></script>
         <script src="js/loading_screen.js"></script>
         <script src="../dist/debug.js"></script>
         <script type="text/javascript">
@@ -54,52 +55,38 @@
             // These will deform iTowns globe geometry to represent terrain elevation.
             promiseElevation.push(itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addLayerCb));
             promiseElevation.push(itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addLayerCb));
-
-            function loadCollada(url) {
-                var model;
-                // loading manager
-                var loadingManager = new itowns.THREE.LoadingManager(function _addModel() {
-                    globeView.scene.add(model);
-                    globeView.notifyChange();
-                });
-                // collada loader
-                var loader = new itowns.THREE.ColladaLoader(loadingManager);
+            
+            // ThreeLoader can load each format proposed in ThreeJs examples loaders : https://github.com/mrdoob/three.js/tree/dev/examples/js/loaders
+            var promiseCollada = ThreeLoader.load('Collada', 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/models/collada/building.dae')
+            .then(collada => {
+                var model = collada.scene;
 
                 // building coordinate
                 var coord = new itowns.Coordinates('EPSG:4326', 4.2165, 44.844, 1417);
+                var colladaID = globeView.mainLoop.gfxEngine.getUniqueThreejsLayer();
 
-                loader.load(url, function col(collada) {
-                    var colladaID = globeView.mainLoop.gfxEngine.getUniqueThreejsLayer();
-                    model = collada.scene;
-                    model.position.copy(coord.as(globeView.referenceCrs).xyz());
-                    // align up vector with geodesic normal
-                    model.lookAt(model.position.clone().add(coord.geodesicNormal));
-                    // user rotate building to align with ortho image
-                    model.rotateZ(-Math.PI * 0.2);
-                    model.scale.set(1.2, 1.2, 1.2);
+                model.position.copy(coord.as(globeView.referenceCrs).xyz());
+                // align up vector with geodesic normal
+                model.lookAt(model.position.clone().add(coord.geodesicNormal));
+                // user rotate building to align with ortho image
+                model.rotateZ(-Math.PI * 0.2);
+                model.scale.set(1.2, 1.2, 1.2);
 
-                    // set camera's layer to do not disturb the picking
-                    model.traverse(function _(obj) { obj.layers.set(colladaID); });
-                    globeView.camera.camera3D.layers.enable(colladaID);
+                // set camera's layer to do not disturb the picking
+                model.traverse(function _(obj) { obj.layers.set(colladaID); });
+                globeView.camera.camera3D.layers.enable(colladaID);
 
-                    // update coordinate of the mesh
-                    model.updateMatrixWorld();
-                });
-            };
+                // update coordinate of the mesh
+                model.updateMatrixWorld();
+
+                globeView.scene.add(model);
+                globeView.notifyChange();
+            });
 
             // Listen for globe full initialisation event
             globeView.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function init() {
                 globeView.controls.setOrbitalPosition({ heading: 180, tilt: 60 });
             });
-
-            var script = document.createElement('script');
-            var THREE = itowns.THREE;
-            script.type = 'text/javascript';
-            script.src = 'https://cdn.rawgit.com/mrdoob/three.js/r' + THREE.REVISION + '/examples/js/loaders/ColladaLoader.js';
-            script.onload = function l() {
-                loadCollada('https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/models/collada/building.dae');
-            };
-            document.body.appendChild(script);
         </script>
     </body>
 </html>
