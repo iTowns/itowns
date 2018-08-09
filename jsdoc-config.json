@@ -48,7 +48,8 @@
             "src/Renderer/ThreeExtended/PlanarControls.js",
             "src/Renderer/ThreeExtended/FirstPersonControls.js",
 
-            "src/utils/CameraUtils.js"
+            "src/utils/CameraUtils.js",
+            "src/utils/OrientationUtils.js"
         ]
     }
 }
