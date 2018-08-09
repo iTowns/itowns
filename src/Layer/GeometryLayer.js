@@ -104,7 +104,9 @@ class GeometryLayer extends Layer {
             }
         };
 
+        // Placeholders
         this.postUpdate = () => {};
+        this.culling = () => true;
     }
 
     /**

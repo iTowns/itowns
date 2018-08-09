@@ -72,6 +72,20 @@ export default {
             tile.setBBoxZ(layer.materialOptions.colorTextureElevationMinZ, layer.materialOptions.colorTextureElevationMaxZ);
         }
 
+        tile.add(tile.OBB());
+
+        tile.material.setLightingOn(layer.lighting.enable);
+        tile.material.uniforms.lightPosition.value = layer.lighting.position;
+
+        if (layer.noTextureColor) {
+            tile.material.uniforms.noTextureColor.value.copy(layer.noTextureColor);
+        }
+
+        if (__DEBUG__) {
+            tile.material.uniforms.showOutline = { value: layer.showOutline || false };
+            tile.material.wireframe = layer.wireframe || false;
+        }
+
         return Promise.resolve(tile);
     },
 };

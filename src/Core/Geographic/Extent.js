@@ -427,4 +427,31 @@ Extent.prototype.toString = function toString(separator = '') {
     }
 };
 
+const center = new Coordinates('EPSG:4326', 0, 0, 0);
+/**
+ * Subdivide equally an extent from its center to return four extents:
+ * north-west, north-east, south-west and south-east.
+ *
+ * @returns {Extent[]} An array containing the four sections of the extent. The
+ * order of the sections is [NW, NE, SW, SE].
+ */
+Extent.prototype.subdivision = function subdivision() {
+    this.center(center);
+
+    const northWest = new Extent(this.crs(),
+        this.west(), center._values[0],
+        center._values[1], this.north());
+    const northEast = new Extent(this.crs(),
+        center._values[0], this.east(),
+        center._values[1], this.north());
+    const southWest = new Extent(this.crs(),
+        this.west(), center._values[0],
+        this.south(), center._values[1]);
+    const southEast = new Extent(this.crs(),
+        center._values[0], this.east(),
+        this.south(), center._values[1]);
+
+    return [northWest, northEast, southWest, southEast];
+};
+
 export default Extent;
