@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 import assert from 'assert';
 import { updateLayeredMaterialNodeImagery } from '../../src/Process/LayeredMaterialNodeProcessing';
-import processTiledGeometryNode from '../../src/Process/TiledNodeProcessing';
 import FeatureProcessing from '../../src/Process/FeatureProcessing';
 import TileMesh from '../../src/Core/TileMesh';
 import Extent from '../../src/Core/Geographic/Extent';
@@ -147,7 +146,6 @@ describe('Provide in Sources', function () {
         });
     });
     it('should get 4 TileMesh from TileProvider', () => {
-        const tileProcess = processTiledGeometryNode(null, () => true);
         const tile = new TileMesh(
             colorlayer,
             geom,
@@ -157,7 +155,7 @@ describe('Provide in Sources', function () {
         tile.material.visible = true;
         tile.parent = { pendingSubdivision: false };
         tile.material.isColorLayerLoaded = () => true;
-        tileProcess(context, globelayer, tile);
+        globelayer.subdivideNode(context, tile);
         TileProvider.executeCommand(context.scheduler.commands[0]).then((tiles) => {
             assert.equal(tiles.length, 4);
             assert.equal(tiles[0].extent.west(), tile.extent.west());

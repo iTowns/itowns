@@ -55,4 +55,20 @@ describe('Extent constructors', function () {
         assert.equal(fromBox.north(), box.max.y);
         assert.equal(fromBox.south(), box.min.y);
     });
+
+    it('should subdivide the extent in four piece', function () {
+        const toSubdivide = new Extent('EPSG:4326', -10, 10, -10, 10);
+        const subdivided = toSubdivide.subdivision();
+
+        assert.equal(subdivided.length, 4);
+
+        // NW
+        assert.deepStrictEqual(subdivided[0]._values, new Float64Array([-10, 0, 0, 10]));
+        // NE
+        assert.deepStrictEqual(subdivided[1]._values, new Float64Array([0, 10, 0, 10]));
+        // SW
+        assert.deepStrictEqual(subdivided[2]._values, new Float64Array([-10, 0, -10, 0]));
+        // SE
+        assert.deepStrictEqual(subdivided[3]._values, new Float64Array([0, 10, -10, 0]));
+    });
 });

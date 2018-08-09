@@ -1,7 +1,8 @@
 import GeometryLayer from './GeometryLayer';
 import Picking from '../Core/Picking';
-import processTiledGeometryNode from '../Process/TiledNodeProcessing';
 import convertToTile from '../Parser/convertToTile';
+import CancelledCommandException from '../Core/Scheduler/CancelledCommandException';
+import ObjectRemovalHelper from '../Process/ObjectRemovalHelper';
 
 class TiledGeometryLayer extends GeometryLayer {
     /**
@@ -79,8 +80,38 @@ class TiledGeometryLayer extends GeometryLayer {
         return Picking.pickTilesAt(view, coordinates, radius, this);
     }
 
-    preUpdate(context, changeSources) {
-        if (changeSources.has(undefined) || changeSources.size == 0) {
+    /**
+     * Does pre-update work on the context:
+     * <ul>
+     *  <li>update the <code>colorLayers</code> and
+     *  <code>elevationLayers</code></li>
+     *  <li>update the <code>maxElevationLevel</code></li>
+     * </ul>
+     *
+     * Once this work is done, it returns a list of nodes to update. Depending
+     * on the origin of <code>sources</code>, it can return a few things:
+     * <ul>
+     *  <li>if <code>sources</code> is empty, it returns the first node of the
+     *  layer (stored as <code>level0Nodes</code>), which will trigger the
+     *  update of the whole tree</li>
+     *  <li>if the update is triggered by a camera move, the whole tree is
+     *  returned too</li>
+     *  <li>if <code>source.layer</code> is this layer, it means that
+     *  <code>source</code> is a node; a common ancestor will be found if there
+     *  are multiple sources, with the default common ancestor being the first
+     *  source itself</li>
+     *  <li>else it returns the whole tree</li>
+     * </ul>
+     *
+     * @param {Object} context - The context of the update; see the {@link
+     * MainLoop} for more informations.
+     * @param {Set<GeometryLayer|TileMesh>} sources - A list of sources to
+     * generate a list of nodes to update.
+     *
+     * @return {TileMesh[]} The array of nodes to update.
+     */
+    preUpdate(context, sources) {
+        if (sources.has(undefined) || sources.size == 0) {
             return this.level0Nodes;
         }
 
@@ -102,14 +133,14 @@ class TiledGeometryLayer extends GeometryLayer {
         }
 
         let commonAncestor;
-        for (const source of changeSources.values()) {
+        for (const source of sources.values()) {
             if (source.isCamera) {
                 // if the change is caused by a camera move, no need to bother
                 // to find common ancestor: we need to update the whole tree:
                 // some invisible tiles may now be visible
                 return this.level0Nodes;
             }
-            if (source.this === this) {
+            if (source.layer === this) {
                 if (!commonAncestor) {
                     commonAncestor = source;
                 } else {
@@ -133,29 +164,68 @@ class TiledGeometryLayer extends GeometryLayer {
         }
     }
 
+    /**
+     * Update a node of this layer. The node will not be updated if:
+     * <ul>
+     *  <li>it does not have a parent, then it is removed</li>
+     *  <li>its parent is being subdivided</li>
+     *  <li>is not visible in the camera</li>
+     * </ul>
+     *
+     * @param {Object} context - The context of the update; see the {@link
+     * MainLoop} for more informations.
+     * @param {Layer} layer - Parameter to be removed once all update methods
+     * have been aligned.
+     * @param {TileMesh} node - The node to update.
+     *
+     * @returns {Object}
+     */
     update(context, layer, node) {
-        return processTiledGeometryNode(this.culling, this.subdivision)(context, this, node);
-    }
-
-    onTileCreated(node) {
-        node.add(node.OBB());
-        node.material.setLightingOn(this.lighting.enable);
-        node.material.uniforms.lightPosition.value = this.lighting.position;
-
-        if (this.noTextureColor) {
-            node.material.uniforms.noTextureColor.value.copy(this.noTextureColor);
+        if (!node.parent) {
+            return ObjectRemovalHelper.removeChildrenAndCleanup(this, node);
+        }
+        // early exit if parent' subdivision is in progress
+        if (node.parent.pendingSubdivision) {
+            node.visible = false;
+            node.setDisplayed(false);
+            return undefined;
         }
 
-        if (__DEBUG__) {
-            node.material.uniforms.showOutline = { value: this.showOutline || false };
-            node.material.wireframe = this.wireframe || false;
+        // do proper culling
+        node.visible = (!this.culling(node, context.camera));
+
+        if (node.visible) {
+            let requestChildrenUpdate = false;
+
+            if (node.pendingSubdivision || (TiledGeometryLayer.hasEnoughTexturesToSubdivide(context, node) && this.subdivision(context, this, node))) {
+                this.subdivideNode(context, node);
+                // display iff children aren't ready
+                node.setDisplayed(node.pendingSubdivision);
+                requestChildrenUpdate = true;
+            } else {
+                node.setDisplayed(true);
+            }
+
+            if (node.material.visible) {
+                // update uniforms
+                if (context.view.fogDistance != undefined) {
+                    node.setFog(context.view.fogDistance);
+                }
+
+                if (!requestChildrenUpdate) {
+                    return ObjectRemovalHelper.removeChildren(this, node);
+                }
+            }
+
+            return requestChildrenUpdate ? node.children.filter(n => n.layer == this) : undefined;
         }
-        return node;
+
+        node.setDisplayed(false);
+        return ObjectRemovalHelper.removeChildren(this, node);
     }
 
     convert(requester, extent) {
-        return convertToTile.convert(requester, extent, this)
-            .then(node => this.onTileCreated(node));
+        return convertToTile.convert(requester, extent, this);
     }
 
     // eslint-disable-next-line class-methods-use-this
@@ -172,7 +242,8 @@ class TiledGeometryLayer extends GeometryLayer {
      *  <li>a color texture is missing</li>
      * </ul>
      *
-     * @param {Object} context
+     * @param {Object} context - The context of the update; see the {@link
+     * MainLoop} for more informations.
      * @param {TileMesh} node - The node to subdivide.
      *
      * @returns {boolean} False if the node can not be subdivided, true
@@ -205,6 +276,53 @@ class TiledGeometryLayer extends GeometryLayer {
         }
         return true;
     }
+
+    /**
+     * Subdivides a node of this layer. If the node is currently in the process
+     * of subdivision, it will not do anything here. The subdivision of a node
+     * will occur in four part, to create a quadtree. The extent of the node
+     * will be divided in four parts: north-west, north-east, south-west and
+     * south-east. Once all four nodes are created, they will be added to the
+     * current node and the view of the context will be notified of this change.
+     *
+     * @param {Object} context - The context of the update; see the {@link
+     * MainLoop} for more informations.
+     * @param {TileMesh} node - The node to subdivide.
+     */
+    subdivideNode(context, node) {
+        if (!node.pendingSubdivision && !node.children.some(n => n.layer == this)) {
+            const extents = node.extent.subdivision();
+            // TODO: pendingSubdivision mechanism is fragile, get rid of it
+            node.pendingSubdivision = true;
+
+            const command = {
+                /* mandatory */
+                view: context.view,
+                requester: node,
+                layer: this,
+                priority: 10000,
+                /* specific params */
+                extentsSource: extents,
+                redraw: false,
+            };
+
+            context.scheduler.execute(command).then((children) => {
+                for (const child of children) {
+                    node.add(child);
+                    child.updateMatrixWorld(true);
+                }
+
+                node.pendingSubdivision = false;
+                context.view.notifyChange(node, false);
+            }, (err) => {
+                node.pendingSubdivision = false;
+                if (!(err instanceof CancelledCommandException)) {
+                    throw new Error(err);
+                }
+            });
+        }
+    }
+
 }
 
 export default TiledGeometryLayer;

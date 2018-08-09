@@ -38,7 +38,7 @@ function subdivideNode(context, layer, node) {
             layer,
             priority: 10000,
             /* specific params */
-            extentsSource: extents,
+            extentssource: extents,
             redraw: false,
         };
 
