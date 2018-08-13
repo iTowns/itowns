@@ -34,6 +34,7 @@
             var viewerDiv;
             var view;
             var meshes;
+            var p;
 
             // Define projection that we will use (taken from https://epsg.io/3946, Proj4js section)
             itowns.proj4.defs('EPSG:3946',
@@ -70,8 +71,8 @@
                 format: 'image/jpeg',
             });
 
-            view.camera.camera3D.position.set(1839739, 5171618, 910);
-            view.camera.camera3D.lookAt(new itowns.THREE.Vector3(1840839, 5172718, 0));
+            p = { coord: new itowns.Coordinates('EPSG:3946', 1840839, 5172718, 0), heading: -45, range: 1800, tilt: 30 };
+            itowns.CameraUtils.transformCameraToLookAtTarget(view, view.camera.camera3D, p);
 
             // eslint-disable-next-line no-new
             new itowns.PlanarControls(view, {});
