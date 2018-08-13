@@ -101,6 +101,10 @@ const direction = new THREE.Vector3();
  */
 
 PlanarView.prototype.getPickingPositionFromDepth = function getPickingPositionFromDepth(mouse, target = new THREE.Vector3()) {
+    if (!this.tileLayer || this.tileLayer.level0Nodes.length == 0) {
+        target = undefined;
+        return;
+    }
     const l = this.mainLoop;
     const viewPaused = l.scheduler.commandsWaitingExecutionCount() == 0 && l.renderingState == RENDERING_PAUSED;
     const g = l.gfxEngine;

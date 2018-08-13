@@ -36,7 +36,9 @@
             "src/Renderer/ThreeExtended/Feature2Mesh.js",
             "src/Renderer/ThreeExtended/GlobeControls.js",
             "src/Renderer/ThreeExtended/PlanarControls.js",
-            "src/Renderer/ThreeExtended/FirstPersonControls.js"
+            "src/Renderer/ThreeExtended/FirstPersonControls.js",
+
+            "src/utils/CameraUtils.js"
         ]
     }
 }

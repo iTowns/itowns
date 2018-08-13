@@ -27,3 +27,4 @@ export { default as PlanarControls } from './Renderer/ThreeExtended/PlanarContro
 export { default as FeaturesUtils } from './Renderer/ThreeExtended/FeaturesUtils';
 export { CONTROL_EVENTS } from './Renderer/ThreeExtended/GlobeControls';
 export { default as DEMUtils } from './utils/DEMUtils';
+export { default as CameraUtils } from './utils/CameraUtils';
