@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import View from '../View';
 import { RENDERING_PAUSED, MAIN_LOOP_EVENTS } from '../MainLoop';
 import RendererConstant from '../../Renderer/RendererConstant';
+import CameraUtils from '../../utils/CameraUtils';
 
 import PlanarLayer from './Planar/PlanarLayer';
 
@@ -19,21 +20,18 @@ function PlanarView(viewerDiv, extent, options = {}) {
 
     // Configure camera
     const dim = extent.dimensions();
-    const positionCamera = extent.center().clone();
-    positionCamera._values[2] = Math.max(dim.x, dim.y);
-    const lookat = positionCamera.xyz();
-    lookat.z = 0;
-
-    this.camera.setPosition(positionCamera);
-    this.camera.camera3D.lookAt(lookat);
-    this.camera.camera3D.near = 0.1;
-    this.camera.camera3D.far = 2 * Math.max(dim.x, dim.y);
+    const max = Math.max(dim.x, dim.y);
+    const camera3D = this.camera.camera3D;
+    camera3D.near = 0.1;
+    camera3D.far = 2 * max;
     this.camera.camera3D.updateProjectionMatrix();
-    this.camera.camera3D.updateMatrixWorld(true);
 
     const tileLayer = new PlanarLayer('planar', extent, options.object3d, options);
 
     this.addLayer(tileLayer);
+
+    const p = { coord: extent.center(), range: max, tilt: 20, heading: 0 };
+    CameraUtils.transformCameraToLookAtTarget(this, camera3D, p);
 
     this._renderState = RendererConstant.FINAL;
     this._fullSizeDepthBuffer = null;
@@ -106,6 +104,10 @@ PlanarView.prototype.getPickingPositionFromDepth = function getPickingPositionFr
         return;
     }
     const l = this.mainLoop;
+    if (!this.tileLayer.level0Nodes[0]) {
+        target = undefined;
+        return;
+    }
     const viewPaused = l.scheduler.commandsWaitingExecutionCount() == 0 && l.renderingState == RENDERING_PAUSED;
     const g = l.gfxEngine;
     const dim = g.getWindowSize();

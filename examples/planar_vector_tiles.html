@@ -42,7 +42,7 @@
             });
 
             // Turn in the right angle
-            view.camera.camera3D.rotateZ(-Math.PI / 2);
+            itowns.CameraUtils.transformCameraToLookAtTarget(view, view.camera.camera3D, { tilt: 90 });
             setupLoadingScreen(viewerDiv, view);
 
             var count = 0;

@@ -30,6 +30,7 @@
             var extent;
             var viewerDiv;
             var view;
+            var p;
 
             // Define projection that we will use (taken from https://epsg.io/3946, Proj4js section)
             itowns.proj4.defs('EPSG:3946',
@@ -122,9 +123,8 @@
                 colorTextureElevationMaxZ: 240,
             };
 
-            view.camera.setPosition(new itowns.Coordinates('EPSG:3946', extent.west(), extent.south(), 2000));
-            // Then look at extent's center
-            view.camera.camera3D.lookAt(extent.center().xyz());
+            p = { coord: extent.center(), heading: -49.6, range: 6200, tilt: 17 };
+            itowns.CameraUtils.transformCameraToLookAtTarget(view, view.camera.camera3D, p);
 
             // instanciate controls
             // eslint-disable-next-line no-new
