@@ -102,16 +102,15 @@
                     var coord = feature.vertices[0];
 
                     // set model position
-                    model.position.copy(coord.xyz());
+                    coord.xyz(model.position);
 
-                    // set model orientation (using target parameter)
-                    itowns.OrientationUtils.quaternionFromAttitude(feature.properties, coord, true, model.quaternion);
+                    // set model quaternion
+                    itowns.OrientationUtils.quaternionFromAttitudeAndCoordinates(feature.properties, coord, globeView.referenceCrs, model.quaternion);
 
                     // store base position
                     model.positionBase = model.position.clone();
 
                     // compute position on the ground
-                    var coord = feature.vertices[0];
                     result = itowns.DEMUtils.getElevationValueAt(globeView.tileLayer, coord, 1, undefined);
                     coord = coord.as('EPSG:4326');
                     coord.setAltitude(result.z);
