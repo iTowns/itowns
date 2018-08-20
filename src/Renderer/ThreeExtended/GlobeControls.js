@@ -941,7 +941,6 @@ function getRangeFromScale(scale, pitch, fov, height) {
 
 /**
  * Changes the tilt of the current camera, in degrees.
- * <iframe width="100%" height="400" src="http://jsfiddle.net/iTownsIGN/p6t76zox/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
  * @param {number}  tilt
  * @param {boolean} isAnimated
  * @return {Promise<void>}
@@ -952,7 +951,6 @@ GlobeControls.prototype.setTilt = function setTilt(tilt, isAnimated) {
 
 /**
  * Changes the heading of the current camera, in degrees.
- * <iframe width="100%" height="400" src="http://jsfiddle.net/iTownsIGN/rxe4xgxj/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
  * @param {number} heading
  * @param {boolean} isAnimated
  * @return {Promise<void>}
@@ -963,7 +961,6 @@ GlobeControls.prototype.setHeading = function setHeading(heading, isAnimated) {
 
 /**
  * Sets the "range": the distance in meters between the camera and the current central point on the screen.
- * <iframe width="100%" height="400" src="http://jsfiddle.net/iTownsIGN/Lt3jL5pd/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
  * @param {number} range
  * @param {boolean} isAnimated
  * @return {Promise<void>}
@@ -974,7 +971,6 @@ GlobeControls.prototype.setRange = function setRange(range, isAnimated) {
 
 /**
  * Returns the {@linkcode Coordinates} of the globe point targeted by the camera in EPSG:4978 projection. See {@linkcode Coordinates} for conversion
- * <iframe width="100%" height="400" src="http://jsfiddle.net/iTownsIGN/4tjgnv7z/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
  * @return {THREE.Vector3} position
  */
 GlobeControls.prototype.getCameraTargetPosition = function getCameraTargetPosition() {
@@ -983,7 +979,6 @@ GlobeControls.prototype.getCameraTargetPosition = function getCameraTargetPositi
 
 /**
  * Returns the "range": the distance in meters between the camera and the current central point on the screen.
- * <iframe width="100%" height="400" src="http://jsfiddle.net/iTownsIGN/Lbt1vfek/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
  * @return {number} number
  */
 GlobeControls.prototype.getRange = function getRange() {
@@ -992,7 +987,6 @@ GlobeControls.prototype.getRange = function getRange() {
 
 /**
  * Returns the tilt of the current camera in degrees.
- * <iframe width="100%" height="400" src="http://jsfiddle.net/iTownsIGN/kcx0of9j/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
  * @return {Angle} number - The angle of the rotation in degrees.
  */
 GlobeControls.prototype.getTilt = function getTilt() {
@@ -1001,7 +995,6 @@ GlobeControls.prototype.getTilt = function getTilt() {
 
 /**
  * Returns the heading of the current camera in degrees.
- * <iframe width="100%" height="400" src="http://jsfiddle.net/iTownsIGN/pxv1Lw16/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
  * @return {Angle} number - The angle of the rotation in degrees.
  */
 GlobeControls.prototype.getHeading = function getHeading() {
@@ -1010,7 +1003,6 @@ GlobeControls.prototype.getHeading = function getHeading() {
 
 /**
  * Displaces the central point to a specific amount of pixels from its current position.
- * <iframe width="100%" height="400" src="http://jsfiddle.net/iTownsIGN/1z7q3c4z/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
  * The view flies to the desired coordinate, i.e.is not teleported instantly. Note : The results can be strange in some cases, if ever possible, when e.g.the camera looks horizontally or if the displaced center would not pick the ground once displaced.
  * @param      {vector}  pVector  The vector
  * @return {Promise}
@@ -1023,7 +1015,6 @@ GlobeControls.prototype.pan = function pan(pVector) {
 
 /**
  * Returns the orientation angles of the current camera, in degrees.
- * <iframe width="100%" height="400" src="http://jsfiddle.net/iTownsIGN/okfj460p/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
  * @return {Array<number>}
  */
 GlobeControls.prototype.getCameraOrientation = function getCameraOrientation() {
@@ -1032,7 +1023,6 @@ GlobeControls.prototype.getCameraOrientation = function getCameraOrientation() {
 
 /**
  * Returns the camera location projected on the ground in lat,lon. See {@linkcode Coordinates} for conversion.
- * <iframe width="100%" height="400" src="http://jsfiddle.net/iTownsIGN/mjv7ha02/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
  * @return {Coordinates} position
  */
 
@@ -1043,7 +1033,6 @@ GlobeControls.prototype.getCameraCoordinate = function _getCameraCoordinate() {
 /**
  * @deprecated
  * Returns the {@linkcode Coordinates} of the central point on screen in lat,lon. See {@linkcode Coordinates} for conversion.
- * <iframe width="100%" height="400" src="http://jsfiddle.net/iTownsIGN/4tjgnv7z/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
  * @return {Position} position
  */
 GlobeControls.prototype.getCameraTargetGeoPosition = function getCameraTargetGeoPosition() {
@@ -1053,7 +1042,6 @@ GlobeControls.prototype.getCameraTargetGeoPosition = function getCameraTargetGeo
 
 /**
  * Returns the {@linkcode Coordinates} of the central point on screen in lat,lon. See {@linkcode Coordinates} for conversion.
- * <iframe width="100%" height="400" src="http://jsfiddle.net/iTownsIGN/4tjgnv7z/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
  * @return {Coordinates} coordinate
  */
 GlobeControls.prototype.getLookAtCoordinate = function _getLookAtCoordinate() {
@@ -1078,7 +1066,6 @@ GlobeControls.prototype.isAnimationEnabled = function isAnimationEnabled() {
 
 /**
  * Returns the actual zoom. The zoom will always be between the [getMinZoom(), getMaxZoom()].
- * <iframe width="100%" height="400" src="http://jsfiddle.net/iTownsIGN/o3Lvanfe/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
  * @return     {number}  The zoom .
  */
 GlobeControls.prototype.getZoom = function getZoom() {
@@ -1089,7 +1076,6 @@ GlobeControls.prototype.getZoom = function getZoom() {
  * Sets the current zoom, which is an index in the logical scales predefined for the application.
  * The higher the zoom, the closer to the ground.
  * The zoom is always in the [getMinZoom(), getMaxZoom()] range.
- * <iframe width="100%" height="400" src="http://jsfiddle.net/iTownsIGN/7cvno086/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
  * @param      {number}  zoom    The zoom
  * @param      {boolean}  isAnimated  Indicates if animated
  * @return     {Promise}
@@ -1101,7 +1087,6 @@ GlobeControls.prototype.setZoom = function setZoom(zoom, isAnimated) {
 /**
  * Return the current zoom scale at the central point of the view.
  * This function compute the scale of a map
- * <iframe width="100%" height="400" src="http://jsfiddle.net/iTownsIGN/0p609qbu/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
  * @param      {number}  pitch   Screen pitch, in millimeters ; 0.28 by default
  * @return     {number}  The zoom scale.
  */
@@ -1156,7 +1141,6 @@ GlobeControls.prototype.metersToPixels = function metersToPixels(value, pixelPit
 /**
  * Changes the zoom of the central point of screen so that screen acts as a map with a specified scale.
  *  The view flies to the desired zoom scale;
- * <iframe width="100%" height="400" src="http://jsfiddle.net/iTownsIGN/0w4mfdb6/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
  * @param      {number}  scale  The scale
  * @param      {number}  pitch  The pitch
  * @param      {boolean}  isAnimated  Indicates if animated
@@ -1170,7 +1154,6 @@ GlobeControls.prototype.setScale = function setScale(scale, pitch, isAnimated) {
 /**
  * @deprecated
  * Changes the center of the scene on screen to the specified in lat, lon. See {@linkcode Coordinates} for conversion.
- * <iframe width="100%" height="400" src="http://jsfiddle.net/iTownsIGN/zrdgzz26/embedded/" allowfullscreen="allowfullscreen" frameborder="0"></iframe>
  * @function
  * @memberOf GlobeControls
  * @param {Object} coordinates - The globe coordinates in EPSG_4326 projection to aim to

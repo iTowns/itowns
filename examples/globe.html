@@ -75,9 +75,10 @@
                 var distanceCamera = globeView.camera.camera3D.position.length();
                 var distance = Math.min(Math.max(distanceCamera * 1.5, minDistance), maxDistance);
                 var camera = miniView.camera.camera3D;
+                var cameraTargetPosition = globeView.controls.getCameraTargetPosition();
                 // Update target miniview's camera
-                camera.position.copy(globeView.controls.getCameraTargetPosition()).setLength(distance);
-                camera.lookAt(globeView.controls.getCameraTargetPosition());
+                camera.position.copy(cameraTargetPosition).setLength(distance);
+                camera.lookAt(cameraTargetPosition);
                 miniView.notifyChange(camera);
             });
 
@@ -118,10 +119,10 @@
                 Promise.all(promises).then(function () {
                     menuGlobe.addImageryLayersGUI(globeView.getLayers(function (l) { return l.type === 'color'; }));
                     menuGlobe.addElevationLayersGUI(globeView.getLayers(function (l) { return l.type === 'elevation'; }));
+                    globeView.controls.addEventListener(itowns.CONTROL_EVENTS.RANGE_CHANGED, () => {
+                        updateScaleWidget();
+                    });
                 }).catch(console.error);
-                updateScaleWidget();
-            });
-            globeView.controls.addEventListener(itowns.CONTROL_EVENTS.RANGE_CHANGED, () => {
                 updateScaleWidget();
             });
         </script>
