@@ -265,7 +265,7 @@ class CameraRig extends THREE.Object3D {
             if (this.animationFrameRequester) {
                 view.removeFrameRequester(MAIN_LOOP_EVENTS.BEFORE_RENDER, this.animationFrameRequester);
             }
-            def.resolve(o ? o.t == 1.0 : false);
+            def.resolve(o !== undefined);
             this.animationFrameRequester = null;
         };
 
