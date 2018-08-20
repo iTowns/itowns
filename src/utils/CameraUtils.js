@@ -20,7 +20,7 @@ const deferred = () => {
 
 // Wrap angle in degrees to [-180 180]
 function wrapTo180(angle) {
-    return angle - Math.floor((angle + 179.0) / 360) * 360;
+    return angle - Math.floor((angle + 180.0) / 360) * 360;
 }
 
 function tileLayer(view) {

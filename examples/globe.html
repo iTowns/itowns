@@ -76,8 +76,8 @@
                 var distance = Math.min(Math.max(distanceCamera * 1.5, minDistance), maxDistance);
                 var camera = miniView.camera.camera3D;
                 // Update target miniview's camera
-                camera.position.copy(globeView.controls.moveTarget()).setLength(distance);
-                camera.lookAt(globeView.controls.moveTarget());
+                camera.position.copy(globeView.controls.getCameraTargetPosition()).setLength(distance);
+                camera.lookAt(globeView.controls.getCameraTargetPosition());
                 miniView.notifyChange(camera);
             });
 
