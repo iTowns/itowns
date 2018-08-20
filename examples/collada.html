@@ -85,7 +85,7 @@
 
             // Listen for globe full initialisation event
             globeView.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function init() {
-                globeView.controls.setOrbitalPosition({ heading: 180, tilt: 60 });
+                globeView.controls.lookAtCoordinate({ heading: 180, tilt: 60 });
             });
         </script>
     </body>

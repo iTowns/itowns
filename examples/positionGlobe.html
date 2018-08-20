@@ -56,8 +56,7 @@
                 var mesh = new THREE.Mesh(geometry, material);
 
                 // get the position on the globe, from the camera
-                globeView.controls.updateCameraTransformation();
-                var cameraTargetPosition = globeView.controls.getCameraTargetGeoPosition();
+                var cameraTargetPosition = globeView.controls.getLookAtCoordinate();
 
                 // position of the mesh
                 var meshCoord = cameraTargetPosition;

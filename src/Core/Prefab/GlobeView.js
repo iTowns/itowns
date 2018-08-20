@@ -94,12 +94,8 @@ function GlobeView(viewerDiv, coordCarto, options = {}) {
         coordCarto.latitude,
         coordCarto.altitude);
 
-    this.camera.setPosition(positionCamera);
-    this.camera.camera3D.lookAt({ x: 0, y: 0, z: 0 });
     this.camera.camera3D.near = Math.max(15.0, 0.000002352 * size);
     this.camera.camera3D.far = size * 10;
-    this.camera.camera3D.updateProjectionMatrix();
-    this.camera.camera3D.updateMatrixWorld(true);
 
     const wgs84TileLayer = new GlobeLayer('globe', options.object3d);
 
@@ -126,9 +122,10 @@ function GlobeView(viewerDiv, coordCarto, options = {}) {
     positionTargetCamera.setAltitude(0);
 
     if (options.noControls) {
+        this.camera.setPosition(positionCamera);
         this.camera.camera3D.lookAt(positionTargetCamera.as('EPSG:4978').xyz());
     } else {
-        this.controls = new GlobeControls(this, positionTargetCamera.as('EPSG:4978').xyz(), size);
+        this.controls = new GlobeControls(this, positionTargetCamera, coordCarto.altitude, size);
         this.controls.handleCollision = typeof (options.handleCollision) !== 'undefined' ? options.handleCollision : true;
     }
 
