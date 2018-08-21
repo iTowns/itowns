@@ -123,6 +123,11 @@ class TiledGeometryLayer extends GeometryLayer {
         }
     }
 
+    // eslint-disable-next-line class-methods-use-this
+    countColorLayersTextures(...layers) {
+        return layers.length;
+    }
+
     /**
      * Tell if a node has enough elevation or color textures to subdivide.
      * Subdivision is prevented if:

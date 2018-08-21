@@ -61,6 +61,18 @@ class GlobeLayer extends TiledGeometryLayer {
 
         return super.preUpdate(context, changeSources);
     }
+
+    // eslint-disable-next-line class-methods-use-this
+    countColorLayersTextures(...layers) {
+        let occupancy = 0;
+        for (const layer of layers) {
+            const projection = layer.projection || layer.options.projection;
+            // 'EPSG:3857' occupies the maximum 3 textures on tiles
+            // 'EPSG:4326' occupies 1 textures on tile
+            occupancy += projection == 'EPSG:3857' ? 3 : 1;
+        }
+        return occupancy;
+    }
 }
 
 export default GlobeLayer;

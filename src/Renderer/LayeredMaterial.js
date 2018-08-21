@@ -57,6 +57,16 @@ var moveElementArray = function moveElementArray(array, oldIndex, newIndex) {
     array.splice(newIndex, 0, array.splice(oldIndex, 1)[0]);
 };
 
+// Max sampler color count to LayeredMaterial
+// Because there's a statement limitation to unroll, in getColorAtIdUv method
+const maxSamplersColorCount = 15;
+const samplersElevationCount = 1;
+
+export function getMaxColorSamplerUnitsCount() {
+    const maxSamplerUnitsCount = Capabilities.getMaxTextureUnitsCount();
+    return Math.min(maxSamplerUnitsCount - samplersElevationCount, maxSamplersColorCount);
+}
+
 // 'options' allows to define what is the datatype of the elevation textures used.
 // By default, we assume floating-point textures.
 // If the elevation textures are RGB, then 3 values must be set:
@@ -66,8 +76,7 @@ var moveElementArray = function moveElementArray(array, oldIndex, newIndex) {
 const LayeredMaterial = function LayeredMaterial(options) {
     THREE.RawShaderMaterial.call(this);
 
-    const maxTexturesUnits = Capabilities.getMaxTextureUnitsCount();
-    const nbSamplers = Math.min(maxTexturesUnits - 1, 16 - 1);
+    const nbSamplers = getMaxColorSamplerUnitsCount();
     this.vertexShader = TileVS;
 
     this.fragmentShaderHeader = `${PrecisionQualifier}\nconst int   TEX_UNITS   = ${nbSamplers.toString()};\n`;
