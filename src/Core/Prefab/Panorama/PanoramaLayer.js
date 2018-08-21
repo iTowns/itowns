@@ -2,9 +2,10 @@ import * as THREE from 'three';
 
 import TiledGeometryLayer from '../../../Layer/TiledGeometryLayer';
 import Extent from '../../Geographic/Extent';
-import { panoramaCulling, panoramaSubdivisionControl } from '../../../Process/PanoramaTileProcessing';
 import PanoramaTileBuilder from './PanoramaTileBuilder';
 import ProjectionType from './Constants';
+
+const textureSize = new THREE.Vector2(512, 256);
 
 class PanoramaLayer extends TiledGeometryLayer {
     /**
@@ -100,13 +101,56 @@ class PanoramaLayer extends TiledGeometryLayer {
 
         this.disableSkirt = true;
 
-        this.culling = panoramaCulling;
-        this.subdivision = panoramaSubdivisionControl(
-            config.maxSubdivisionLevel || 10,
-            new THREE.Vector2(512, 256));
-
         this.options.segments = 8;
         this.options.quality = 0.5;
+    }
+
+    // eslint-disable-next-line
+    culling(node, camera) {
+        return !camera.isBox3Visible(node.OBB().box3D, node.OBB().matrixWorld);
+    }
+
+    /**
+     * Test the subdvision of a node, compared to this layer.
+     *
+     * @param {Object} context - The context of the update; see the {@link
+     * MainLoop} for more informations.
+     * @param {PlanarLayer} layer - This layer, parameter to be removed.
+     * @param {TileMesh} node - The node to test.
+     *
+     * @return {boolean} - True if the node is subdivisable, otherwise false.
+     */
+    subdivision(context, layer, node) {
+        if (node.level < 1) {
+            return true;
+        }
+
+        const maxLevel = this.maxSubdivisionLevel || 10;
+
+        if (maxLevel <= node.level) {
+            return false;
+        }
+
+        const obb = node.OBB();
+
+        obb.updateMatrixWorld();
+        const onScreen = context.camera.box3SizeOnScreen(
+            obb.box3D,
+            obb.matrixWorld);
+
+        onScreen.min.z = 0;
+        onScreen.max.z = 0;
+
+        // give a small boost to central tiles
+        const boost = 1 + Math.max(0, 1 - onScreen.getCenter().length());
+
+        const dim = {
+            x: 0.5 * (onScreen.max.x - onScreen.min.x) * context.camera.width,
+            y: 0.5 * (onScreen.max.y - onScreen.min.y) * context.camera.height,
+        };
+
+        const quality = layer.options.quality || 1.0;
+        return (boost * dim.x * quality >= textureSize.x && boost * dim.y * quality >= textureSize.y);
     }
 }
 

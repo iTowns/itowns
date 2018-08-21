@@ -192,7 +192,7 @@ class TiledGeometryLayer extends GeometryLayer {
         }
 
         // do proper culling
-        node.visible = (!this.culling(node, context.camera));
+        node.visible = !this.culling(node, context.camera);
 
         if (node.visible) {
             let requestChildrenUpdate = false;
