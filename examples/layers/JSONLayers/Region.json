@@ -1,32 +1,30 @@
 {
     "type": "color",
-    "url"       : "https://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/geoportail/v/wms",
-    "networkOptions": {
-        "crossOrigin": "anonymous"
-    },
-    "protocol"  : "wms",
-    "version"   : "1.3.0",
     "id"        : "Region",
-    "name"      : "REGION.2016",
-    "style"      : "",
-    "projection" : "EPSG:3857",
-    "extent": {
-        "west": "-6880639.13557728",
-        "east": "6215707.87974825",
-        "south": "-2438399.00148845",
-        "north": "6637050.03850605"
-    },
     "transparent" : true,
-    "featureInfoMimeType" : "",
-    "dateTime"  : "",
-    "heightMapWidth" : 256,
-    "waterMask"      : false,
-    "updateStrategy": {
-        "type": 0,
-        "options": {}
-    },
-    "format"  : "image/png",
-    "options": {
+    "source": {
+        "url"       : "https://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/geoportail/v/wms",
+        "protocol"  : "wms",
+        "version"   : "1.3.0",
+        "name"      : "REGION.2016",
+        "style"      : "",
+        "projection" : "EPSG:3857",
+        "extent": {
+            "west": "-6880639.13557728",
+            "east": "6215707.87974825",
+            "south": "-2438399.00148845",
+            "north": "7637050.03850605"
+        },
+        "transparent" : true,
+        "featureInfoMimeType" : "",
+        "dateTime"  : "",
+        "heightMapWidth" : 256,
+        "waterMask"      : false,
+        "updateStrategy": {
+            "type": 0,
+            "options": {}
+        },
+        "format"  : "image/png",
         "attribution" : {
             "name":"IGN",
             "url":"http://www.ign.fr/"

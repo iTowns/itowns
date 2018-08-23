@@ -1,7 +1,7 @@
-import { TextureLoader } from 'three';
+import { TextureLoader, DataTexture, AlphaFormat, FloatType } from 'three';
 
 const textureLoader = new TextureLoader();
-
+const SIZE_TEXTURE_TILE = 256;
 function checkResponse(response) {
     if (!response.ok) {
         var error = new Error(`Error loading ${response.url}: status ${response.status}`);
@@ -9,6 +9,16 @@ function checkResponse(response) {
         throw error;
     }
 }
+const arrayBuffer = (url, options = {}) => fetch(url, options).then((response) => {
+    checkResponse(response);
+    return response.arrayBuffer();
+});
+
+const getTextureFloat = function getTextureFloat(buffer) {
+    const texture = new DataTexture(buffer, SIZE_TEXTURE_TILE, SIZE_TEXTURE_TILE, AlphaFormat, FloatType);
+    texture.needsUpdate = true;
+    return texture;
+};
 
 export default {
 
@@ -81,7 +91,6 @@ export default {
         textureLoader.load(url, res, () => {}, rej);
         return promise;
     },
-
     /**
      * Wrapper over fetch to get some ArrayBuffer
      *
@@ -90,10 +99,12 @@ export default {
      *
      * @return {Promise}
      */
-    arrayBuffer(url, options = {}) {
-        return fetch(url, options).then((response) => {
-            checkResponse(response);
-            return response.arrayBuffer();
+    arrayBuffer,
+    textureFloat(url, options = {}) {
+        return arrayBuffer(url, options).then((buffer) => {
+            const floatArray = new Float32Array(buffer);
+            const texture = getTextureFloat(floatArray);
+            return texture;
         });
     },
 };

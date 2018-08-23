@@ -39,24 +39,10 @@ class PanoramaLayer extends TiledGeometryLayer {
      * <code>THREE.Object3d</code>.
      */
     constructor(id, coordinates, type, config) {
-        super(id, config.object3d || new THREE.Group(), config);
-
-        coordinates.xyz(this.object3d.position);
-        this.object3d.quaternion.setFromUnitVectors(
-            new THREE.Vector3(0, 0, 1), coordinates.geodesicNormal);
-        this.object3d.updateMatrixWorld(true);
-
-        // FIXME: add CRS = '0' support
-        this.extent = new Extent('EPSG:4326', {
-            west: -180,
-            east: 180,
-            north: 90,
-            south: -90,
-        });
-
+        let schemeTile;
         if (type === ProjectionType.SPHERICAL) {
             // equirectangular -> spherical geometry
-            this.schemeTile = [
+            schemeTile = [
                 new Extent('EPSG:4326', {
                     west: -180,
                     east: 0,
@@ -70,7 +56,7 @@ class PanoramaLayer extends TiledGeometryLayer {
                 })];
         } else if (type === ProjectionType.CYLINDRICAL) {
             // cylindrical geometry
-            this.schemeTile = [
+            schemeTile = [
                 new Extent('EPSG:4326', {
                     west: -180,
                     east: -90,
@@ -96,6 +82,22 @@ class PanoramaLayer extends TiledGeometryLayer {
             throw new Error(`Unsupported panorama projection type ${type}.
                 Only ProjectionType.SPHERICAL and ProjectionType.CYLINDRICAL are supported`);
         }
+        const builder = new PanoramaTileBuilder(type, config.ratio || 1);
+        super(id, config.object3d || new THREE.Group(), schemeTile, builder, config);
+
+        coordinates.xyz(this.object3d.position);
+        this.object3d.quaternion.setFromUnitVectors(
+            new THREE.Vector3(0, 0, 1), coordinates.geodesicNormal);
+        this.object3d.updateMatrixWorld(true);
+
+        // FIXME: add CRS = '0' support
+        this.extent = new Extent('EPSG:4326', {
+            west: -180,
+            east: 180,
+            north: 90,
+            south: -90,
+        });
+
         this.disableSkirt = true;
 
         this.culling = panoramaCulling;
@@ -103,7 +105,6 @@ class PanoramaLayer extends TiledGeometryLayer {
             config.maxSubdivisionLevel || 10,
             new THREE.Vector2(512, 256));
 
-        this.builder = new PanoramaTileBuilder(type, config.ratio || 1);
         this.options.segments = 8;
         this.options.quality = 0.5;
     }

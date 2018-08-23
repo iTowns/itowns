@@ -1,6 +1,7 @@
 import GeometryLayer from './GeometryLayer';
 import Picking from '../Core/Picking';
-import { processTiledGeometryNode } from '../Process/TiledNodeProcessing';
+import processTiledGeometryNode from '../Process/TiledNodeProcessing';
+import convertToTile from '../Parser/convertToTile';
 
 class TiledGeometryLayer extends GeometryLayer {
     /**
@@ -16,6 +17,8 @@ class TiledGeometryLayer extends GeometryLayer {
      * geometry of the TiledGeometryLayer. It is usually a
      * <code>THREE.Group</code>, but it can be anything inheriting from a
      * <code>THREE.Object3d</code>.
+     * @param {Array} schemeTile - extents Array of root tiles
+     * @param {Object} builder - builder geometry object
      * @param {Object} [config] - Optional configuration, all elements in it
      * will be merged as is in the layer. For example, if the configuration
      * contains three elements <code>name, protocol, extent</code>, these
@@ -25,7 +28,7 @@ class TiledGeometryLayer extends GeometryLayer {
      * @throws {Error} <code>object3d</code> must be a valid
      * <code>THREE.Object3d</code>.
      */
-    constructor(id, object3d, config) {
+    constructor(id, object3d, schemeTile, builder, config) {
         super(id, object3d, config);
 
         this.protocol = 'tile';
@@ -33,6 +36,31 @@ class TiledGeometryLayer extends GeometryLayer {
             enable: false,
             position: { x: -0.5, y: 0.0, z: 1.0 },
         };
+
+        this.schemeTile = schemeTile;
+        this.builder = builder;
+
+        if (!this.schemeTile) {
+            throw new Error(`Cannot init tiled layer without schemeTile for layer ${this.id}`);
+        }
+
+        if (!this.builder) {
+            throw new Error(`Cannot init tiled layer without builder for layer ${this.id}`);
+        }
+
+        this.level0Nodes = [];
+        const promises = [];
+
+        for (const root of this.schemeTile) {
+            promises.push(this.convert(undefined, root));
+        }
+        Promise.all(promises).then((level0s) => {
+            this.level0Nodes = level0s;
+            for (const level0 of level0s) {
+                this.object3d.add(level0);
+                level0.updateMatrixWorld();
+            }
+        });
     }
 
     /**
@@ -67,7 +95,7 @@ class TiledGeometryLayer extends GeometryLayer {
 
         context.maxElevationLevel = -1;
         for (const e of context.elevationLayers) {
-            context.maxElevationLevel = Math.max(e.options.zoom.max, context.maxElevationLevel);
+            context.maxElevationLevel = Math.max(e.source.zoom.max, context.maxElevationLevel);
         }
         if (context.maxElevationLevel == -1) {
             context.maxElevationLevel = Infinity;
@@ -110,6 +138,7 @@ class TiledGeometryLayer extends GeometryLayer {
     }
 
     onTileCreated(node) {
+        node.add(node.OBB());
         node.material.setLightingOn(this.lighting.enable);
         node.material.uniforms.lightPosition.value = this.lighting.position;
 
@@ -121,6 +150,12 @@ class TiledGeometryLayer extends GeometryLayer {
             node.material.uniforms.showOutline = { value: this.showOutline || false };
             node.material.wireframe = this.wireframe || false;
         }
+        return node;
+    }
+
+    convert(requester, extent) {
+        return convertToTile.convert(requester, extent, this)
+            .then(node => this.onTileCreated(node));
     }
 
     // eslint-disable-next-line class-methods-use-this
@@ -145,7 +180,8 @@ class TiledGeometryLayer extends GeometryLayer {
      */
     static hasEnoughTexturesToSubdivide(context, node) {
         for (const e of context.elevationLayers) {
-            if (!e.frozen && e.ready && e.tileInsideLimit(node, e) && !node.material.isElevationLayerLoaded()) {
+            const extents = node.getCoordsForSource(e.source);
+            if (!e.frozen && e.ready && e.source.extentsInsideLimit(extents) && !node.material.isElevationLayerLoaded()) {
                 // no stop subdivision in the case of a loading error
                 if (node.layerUpdateState[e.id] && node.layerUpdateState[e.id].inError()) {
                     continue;
@@ -162,7 +198,8 @@ class TiledGeometryLayer extends GeometryLayer {
             if (node.layerUpdateState[c.id] && node.layerUpdateState[c.id].inError()) {
                 continue;
             }
-            if (c.tileInsideLimit(node, c) && !node.material.isColorLayerLoaded(c)) {
+            const extents = node.getCoordsForSource(c.source);
+            if (c.source.extentsInsideLimit(extents) && !node.material.isColorLayerLoaded(c)) {
                 return false;
             }
         }

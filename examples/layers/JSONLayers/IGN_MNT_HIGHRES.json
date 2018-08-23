@@ -1,8 +1,6 @@
 {
 	"type":       "elevation",
-	"protocol":   "wmts",
 	"id":         "IGN_MNT_HIGHRES",
-	"url":        "http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/geoportail/wmts",
 	"noDataValue" : -99999,
 	"updateStrategy": {
 		"type": 1,
@@ -10,8 +8,10 @@
 			"groups": [11, 14]
 		}
 	},
-	"format": "image/x-bil;bits=32",
-	"options": {
+	"source": {
+		"protocol":   "wmts",
+		"url":        "http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/geoportail/wmts",
+		"format": "image/x-bil;bits=32",
 		"attribution" : {
 			"name":"IGN",
 			"url":"http://www.ign.fr/"

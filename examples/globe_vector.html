@@ -43,6 +43,7 @@
         <script src="js/FeatureToolTip.js"></script>
         <script type="text/javascript">
             // # Simple Globe viewer
+            /* global itowns, setupLoadingScreen, GuiTools, ToolTip */
 
             // Define initial camera position
             var positionOnGlobe = { longitude: 3.5, latitude: 44, altitude: 1000000 };
@@ -63,34 +64,38 @@
             // Add one imagery layer to the scene
             // This layer is defined in a json file but it could be defined as a plain js
             // object. See Layer* for more info.
-            promises.push(itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(addLayerCb));
+            itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(addLayerCb);
             // Add two elevation layers.
             // These will deform iTowns globe geometry to represent terrain elevation.
-            promises.push(itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addLayerCb));
-            promises.push(itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addLayerCb));
+            itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addLayerCb);
+            itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addLayerCb);
 
-            promises.push(globeView.addLayer({
+            globeView.addLayer({
                 type: 'color',
-                url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/croquis.kml',
-                protocol: 'rasterizer',
                 id: 'Kml',
                 name: 'kml',
                 transparent: true,
-            }));
+                source: {
+                    protocol: 'file',
+                    url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/croquis.kml',
+                    projection: 'EPSG:4326',
+                },
+            });
 
-            promises.push(globeView.addLayer({
+            globeView.addLayer({
                 type: 'color',
-                url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/ULTRA2009.gpx',
-                protocol: 'rasterizer',
                 id: 'Gpx',
                 name: 'Ultra 2009',
                 transparent: true,
-            }));
+                source: {
+                    url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/ULTRA2009.gpx',
+                    protocol: 'file',
+                    projection: 'EPSG:4326',
+                },
+            });
 
-            promises.push(globeView.addLayer({
+            globeView.addLayer({
                 type: 'color',
-                url: 'https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/departements/09-ariege/departement-09-ariege.geojson',
-                protocol: 'rasterizer',
                 id: 'ariege',
                 name: 'ariege',
                 transparent: true,
@@ -99,19 +104,19 @@
                     fillOpacity: 0.5,
                     stroke: 'white',
                 },
-            }));
+                source: {
+                    url: 'https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/departements/09-ariege/departement-09-ariege.geojson',
+                    protocol: 'file',
+                    projection: 'EPSG:4326',
+                },
+            });
 
             // Listen for globe full initialisation event
-            globeView.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
+            globeView.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function _() {
                 // eslint-disable-next-line no-console
                 console.info('Globe initialized');
-                Promise.all(promises).then(function () {
-                    itowns.ColorLayersOrdering.moveLayerToIndex(globeView, 'Ortho', 0);
-
-                    new ToolTip(globeView, document.getElementById('viewerDiv'), document.getElementById('tooltipDiv'));
-                }).catch(console.error);
-
-
+                itowns.ColorLayersOrdering.moveLayerToIndex(globeView, 'Ortho', 0);
+                new ToolTip(globeView, document.getElementById('viewerDiv'), document.getElementById('tooltipDiv'));
             });
         </script>
     </body>

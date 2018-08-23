@@ -1,5 +1,6 @@
 import Layer from './Layer';
 import { updateLayeredMaterialNodeElevation } from '../Process/LayeredMaterialNodeProcessing';
+import textureConverter from '../Parser/textureConverter';
 
 class ElevationLayer extends Layer {
     /**
@@ -17,13 +18,16 @@ class ElevationLayer extends Layer {
      * contains three elements <code>name, protocol, extent</code>, these
      * elements will be available using <code>layer.name</code> or something
      * else depending on the property name.
+     * @param {WMTSSource|WMSSource|WFSSource|TMSSource|FileSource} [config.source] data source
      *
      * @example
      * // Create an ElevationLayer
      * const elevation = new ElevationLayer('IGN_MNT', {
-     *     url: 'http://server.geo/wmts/SERVICE=WMTS&TILEMATRIX=%TILEMATRIX&TILEROW=%ROW&TILECOL=%COL',
-     *     protocol: 'wmts',
-     *     format: 'image/x-bil;bits=32',
+     *      source: {
+     *          url: 'http://server.geo/wmts/SERVICE=WMTS&TILEMATRIX=%TILEMATRIX&TILEROW=%ROW&TILECOL=%COL',
+     *          protocol: 'wmts',
+     *          format: 'image/x-bil;bits=32',
+     *      },
      * });
      *
      * // Add the layer
@@ -34,9 +38,11 @@ class ElevationLayer extends Layer {
      * view.addLayer({
      *     id: 'IGN_MNT',
      *     type: 'elevation',
-     *     url: 'http://server.geo/wmts/SERVICE=WMTS&TILEMATRIX=%TILEMATRIX&TILEROW=%ROW&TILECOL=%COL',
-     *     protocol: 'wmts',
-     *     format: 'image/x-bil;bits=32',
+     *     source: {
+     *          url: 'http://server.geo/wmts/SERVICE=WMTS&TILEMATRIX=%TILEMATRIX&TILEROW=%ROW&TILECOL=%COL',
+     *          protocol: 'wmts',
+     *          format: 'image/x-bil;bits=32',
+     *     },
      * });
      */
     constructor(id, config = {}) {
@@ -45,6 +51,10 @@ class ElevationLayer extends Layer {
 
     update(context, layer, node, parent) {
         return updateLayeredMaterialNodeElevation(context, this, node, parent);
+    }
+
+    convert(data, extentDestination) {
+        return textureConverter.convert(data, extentDestination, this);
     }
 }
 

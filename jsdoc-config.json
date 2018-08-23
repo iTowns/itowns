@@ -12,6 +12,7 @@
             "src/Core/MainLoop.js",
             "src/Core/View.js",
             "src/Core/Geographic/Coordinates.js",
+            "src/Core/Geographic/Extent.js",
             "src/Core/Prefab/GlobeView.js",
             "src/Core/Prefab/Globe/GlobeLayer.js",
             "src/Core/Prefab/Panorama/PanoramaLayer.js",
@@ -24,6 +25,14 @@
             "src/Layer/ElevationLayer.js",
             "src/Layer/GeometryLayer.js",
             "src/Layer/TiledGeometryLayer.js",
+
+            "src/Source/Source.js",
+            "src/Source/WMTSSource.js",
+            "src/Source/WMSSource.js",
+            "src/Source/WFSSource.js",
+            "src/Source/TMSSource.js",
+            "src/Source/StaticSource.js",
+            "src/Source/FileSource.js",
 
             "src/Parser/GeoJsonParser.js",
             "src/Parser/GpxParser.js",

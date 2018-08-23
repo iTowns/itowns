@@ -17,6 +17,7 @@ describe('material state vs layer state', function () {
             setLayerOpacity: (idx, o) => { opacity = o; },
         },
         isDisplayed: () => true,
+        getCoordsForSource: () => 0,
     };
     const layer = {
         id: 'test',

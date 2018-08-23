@@ -31,6 +31,17 @@ function applyOffset(obj, offset, quaternion, offsetAltitude) {
     obj.children.forEach(c => applyOffset(c, offset, quaternion, offsetAltitude));
 }
 
+function assignLayer(object, layer) {
+    if (object) {
+        object.layer = layer;
+        object.layers.set(layer.threejsLayer);
+        for (const c of object.children) {
+            assignLayer(c, layer);
+        }
+        return object;
+    }
+}
+
 const quaternion = new THREE.Quaternion();
 export default {
     update(context, layer, node) {
@@ -44,12 +55,15 @@ export default {
         }
 
         const features = node.children.filter(n => n.layer == layer);
+        // FIXME: traverse is do for each frame in each object3D
+        const opacity = layer.opacity === undefined ? 1.0 : layer.opacity;
+        const wireframe = layer.wireframe === undefined ? false : layer.wireframe;
         for (const feat of features) {
             feat.traverse((o) => {
                 if (o.material) {
-                    o.material.transparent = layer.opacity < 1.0;
-                    o.material.opacity = layer.opacity;
-                    o.material.wireframe = layer.wireframe;
+                    o.material.transparent = opacity < 1.0;
+                    o.material.opacity = opacity;
+                    o.material.wireframe = wireframe;
 
                     if (layer.size) {
                         o.material.size = layer.size;
@@ -64,8 +78,16 @@ export default {
             return features;
         }
 
-        if (!layer.tileInsideLimit(node, layer)) {
-            return;
+        const extentsDestination = node.getCoordsForSource(layer.source);
+        extentsDestination.forEach((e) => { e.zoom = node.level; });
+
+        const extentsSource = [];
+        for (const extentDest of extentsDestination) {
+            if (!layer.source.extentInsideLimit(extentDest) || (layer.source.parsedData &&
+                !layer.source.parsedData.extent.isPointInside(extentDest.center()))) {
+                return;
+            }
+            extentsSource.push(extentDest);
         }
 
         if (node.layerUpdateState[layer.id] === undefined) {
@@ -82,6 +104,7 @@ export default {
 
         const command = {
             layer,
+            extentsSource,
             view: context.view,
             threejsLayer: layer.threejsLayer,
             requester: node,
@@ -89,7 +112,10 @@ export default {
 
         context.scheduler.execute(command).then((result) => {
             // if request return empty json, WFSProvider.getFeatures return undefined
+            result = result[0];
             if (result) {
+                const isApplied = !result.layer;
+                assignLayer(result, layer);
                 // call onMeshCreated callback if needed
                 if (layer.onMeshCreated) {
                     layer.onMeshCreated(result);
@@ -102,10 +128,14 @@ export default {
                 // We don't use node.matrixWorld here, because feature coordinates are
                 // expressed in crs coordinates (which may be different than world coordinates,
                 // if node's layer is attached to an Object with a non-identity transformation)
-                const tmp = node.extent.center().as(context.view.referenceCrs).xyz().negate();
-                quaternion.setFromRotationMatrix(node.matrixWorld).inverse();
-                // const quaternion = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, 1), node.extent.center().geodesicNormal).inverse();
-                applyOffset(result, tmp, quaternion, result.minAltitude);
+                if (isApplied) {
+                    // NOTE: now data source provider use cache on Mesh
+                    const tmp = node.extent.center().as(context.view.referenceCrs).xyz().negate();
+                    quaternion.setFromRotationMatrix(node.matrixWorld).inverse();
+                    // const quaternion = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, 1), node.extent.center().geodesicNormal).inverse();
+                    applyOffset(result, tmp, quaternion, result.minAltitude);
+                }
+
                 if (result.minAltitude) {
                     result.position.z = result.minAltitude;
                 }

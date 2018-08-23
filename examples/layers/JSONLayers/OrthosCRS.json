@@ -1,18 +1,11 @@
 {
     "type": "color",
-    "protocol":   "wmts",
     "id":         "OrthoCRS",
-    "url":        "http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/geoportail/wmts",
-    "networkOptions": {
-        "crossOrigin": "anonymous"
-    },
     "fx" :        1.0,
-    "updateStrategy": {
-        "type": 0,
-        "options": {}
-    },
-    "format": "image/jpeg",
-    "options": {
+    "source": {
+        "protocol":   "wmts",
+        "url":        "http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/geoportail/wmts",
+        "format": "image/jpeg",
         "name": "ORTHOIMAGERY.ORTHOPHOTOS.CRS84",
         "attribution" : {
             "name":"IGN",

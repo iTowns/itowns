@@ -1,17 +1,13 @@
 {
     "type": "color",
-    "protocol":   "wmts",
-    "id":         "Ortho",
-    "url":        "http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/geoportail/wmts",
-    "networkOptions": {
-        "crossOrigin": "anonymous"
-    },
-    "updateStrategy": {
-        "type": 0,
-        "options": {}
-    },
-    "format": "image/jpeg",
-    "options": {
+    "id":   "Ortho",
+    "source": {
+        "protocol":   "wmts",
+        "url": "http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/geoportail/wmts",
+        "networkOptions": {
+            "crossOrigin": "anonymous"
+        },
+        "format": "image/jpeg",
         "attribution" : {
             "name":"IGN",
             "url":"http://www.ign.fr/"

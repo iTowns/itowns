@@ -91,6 +91,7 @@
 
             globeView.addLayer({
                 name: 'lyon_tcl_bus',
+                id: 'WFS Bus lines',
                 type: 'geometry',
                 update: itowns.FeatureProcessing.update,
                 convert: itowns.Feature2Mesh.convert({
@@ -98,20 +99,22 @@
                     altitude: altitudeLine }),
                 linewidth: 5,
                 filter: acceptFeatureBus,
-                url: 'https://download.data.grandlyon.com/wfs/rdata?',
-                protocol: 'wfs',
-                version: '2.0.0',
-                id: 'WFS Bus lines',
-                typeName: 'tcl_sytral.tcllignebus',
-                level: 9,
-                projection: 'EPSG:3946',
-                extent: {
-                    west: 1822174.60,
-                    east: 1868247.07,
-                    south: 5138876.75,
-                    north: 5205890.19,
-                },
-                format: 'geojson',
+                source: {
+                    protocol: 'wfs',
+                    url: 'https://download.data.grandlyon.com/wfs/rdata?',
+                    version: '2.0.0',
+                    typeName: 'tcl_sytral.tcllignebus',
+                    projection: 'EPSG:3946',
+                    extent: {
+                        west: 1822174.60,
+                        east: 1868247.07,
+                        south: 5138876.75,
+                        north: 5205890.19,
+                    },
+                    zoom: { min: 9, max: 9 },
+                    format: 'geojson',
+                    networkOptions: { crossOrigin: 'anonymous' },
+                }
             });
 
             function colorBuildings(properties) {
@@ -154,6 +157,7 @@
 
             globeView.addFrameRequester(itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER, scaler);
             globeView.addLayer({
+                id: 'WFS Buildings',
                 type: 'geometry',
                 update: itowns.FeatureProcessing.update,
                 convert: itowns.Feature2Mesh.convert({
@@ -165,16 +169,23 @@
                     meshes.push(mesh);
                 },
                 filter: acceptFeature,
-                url: 'http://wxs.ign.fr/72hpsel8j8nhb5qgdh07gcyp/geoportail/wfs?',
-                networkOptions: { crossOrigin: 'anonymous' },
-                protocol: 'wfs',
-                version: '2.0.0',
-                id: 'WFS Buildings',
-                typeName: 'BDTOPO_BDD_WLD_WGS84G:bati_remarquable,BDTOPO_BDD_WLD_WGS84G:bati_indifferencie,BDTOPO_BDD_WLD_WGS84G:bati_industriel',
-                level: 14,
-                projection: 'EPSG:4326',
-                ipr: 'IGN',
-                format: 'application/json',
+                source: {
+                    url: 'http://wxs.ign.fr/72hpsel8j8nhb5qgdh07gcyp/geoportail/wfs?',
+                    networkOptions: { crossOrigin: 'anonymous' },
+                    protocol: 'wfs',
+                    version: '2.0.0',
+                    typeName: 'BDTOPO_BDD_WLD_WGS84G:bati_remarquable,BDTOPO_BDD_WLD_WGS84G:bati_indifferencie,BDTOPO_BDD_WLD_WGS84G:bati_industriel',
+                    projection: 'EPSG:4326',
+                    ipr: 'IGN',
+                    format: 'application/json',
+                    zoom: { min: 14, max: 14 },
+                    extent: {
+                        west: 4.568,
+                        east: 5.18,
+                        south: 45.437,
+                        north: 46.03,
+                    },
+                }
             });
 
             function configPointMaterial(result) {
@@ -217,16 +228,23 @@
                 size: 5,
                 onMeshCreated: configPointMaterial,
                 filter: selectRoad,
-                url: 'http://wxs.ign.fr/72hpsel8j8nhb5qgdh07gcyp/geoportail/wfs?',
-                networkOptions: { crossOrigin: 'anonymous' },
-                protocol: 'wfs',
-                version: '2.0.0',
-                id: 'WFS Route points',
-                typeName: 'BDPR_BDD_FXX_LAMB93_20170911:pr',
-                level: 12,
-                projection: 'EPSG:2154',
-                ipr: 'IGN',
-                format: 'application/json',
+                source: {
+                    url: 'http://wxs.ign.fr/72hpsel8j8nhb5qgdh07gcyp/geoportail/wfs?',
+                    networkOptions: { crossOrigin: 'anonymous' },
+                    protocol: 'wfs',
+                    version: '2.0.0',
+                    id: 'WFS Route points',
+                    typeName: 'BDPR_BDD_FXX_LAMB93_20170911:pr',
+                    zoom: { min: 12, max: 12 },
+                    projection: 'EPSG:2154',
+                    ipr: 'IGN',
+                    format: 'application/json',
+                    extent: new itowns.Extent('EPSG:4326',
+                        -5.160007066832147,
+                        10.671941031325312,
+                        41.338373237911036,
+                        51.07519774631159).as('EPSG:2154'),
+                }
             });
 
             var menuGlobe = new GuiTools('menuDiv', globeView);
@@ -260,12 +278,12 @@
             }
 
             for (let layer of globeView.getLayers()) {
-                if (layer.id === 'WFS Bus lines') {
-                    layer.whenReady.then( function _(layer) {
-                        var gui = debug.GeometryDebug.createGeometryDebugUI(menuGlobe.gui, globeView, layer);
-                        debug.GeometryDebug.addMaterialLineWidth(gui, globeView, layer, 1, 10);
-                    });
-                }
+                // if (layer.id === 'WFS Bus lines') {
+                //     layer.whenReady.then( function _(layer) {
+                //         var gui = debug.GeometryDebug.createGeometryDebugUI(menuGlobe.gui, globeView, layer);
+                //         debug.GeometryDebug.addMaterialLineWidth(gui, globeView, layer, 1, 10);
+                //     });
+                // }
                 if (layer.id === 'WFS Buildings') {
                     layer.whenReady.then( function _(layer) {
                         var gui = debug.GeometryDebug.createGeometryDebugUI(menuGlobe.gui, globeView, layer);
@@ -273,12 +291,12 @@
                         window.addEventListener('mousemove', picking, false);
                     });
                 }
-                if (layer.id === 'WFS Route points') {
-                    layer.whenReady.then( function _(layer) {
-                        var gui = debug.GeometryDebug.createGeometryDebugUI(menuGlobe.gui, globeView, layer);
-                        debug.GeometryDebug.addMaterialSize(gui, globeView, layer, 1, 50);
-                    });
-                }
+                // if (layer.id === 'WFS Route points') {
+                //     layer.whenReady.then( function _(layer) {
+                //         var gui = debug.GeometryDebug.createGeometryDebugUI(menuGlobe.gui, globeView, layer);
+                //         debug.GeometryDebug.addMaterialSize(gui, globeView, layer, 1, 50);
+                //     });
+                // }
             }
         </script>
     </body>

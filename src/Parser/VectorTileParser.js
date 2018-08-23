@@ -4,17 +4,18 @@ import GeoJsonParser from './GeoJsonParser';
 
 function readPBF(file, options) {
     const vectorTile = new VectorTile(new Protobuf(file));
-
+    const extentSource = options.extentSource || file.coords;
     const layers = Object.keys(vectorTile.layers);
 
     if (layers.length < 1) return;
+
+    const crsInId = Number(options.crsIn.slice(5));
 
     // We need to create a featureCollection as VectorTile does no support it
     const geojson = {
         type: 'FeatureCollection',
         features: [],
-        crs: { type: 'EPSG', properties: { code: 4326 } },
-        extent: options.extent,
+        crs: { type: 'EPSG', properties: { code: crsInId } },
     };
 
     layers.forEach((layer_id) => {
@@ -26,10 +27,10 @@ function readPBF(file, options) {
             // https://alastaira.wordpress.com/2011/07/06/converting-tms-tile-coordinates-to-googlebingosm-tile-coordinates/
             // Only if the layer.origin is top
             if (options.origin == 'top') {
-                feature = l.feature(i).toGeoJSON(options.coords.col, options.coords.row, options.coords.zoom);
+                feature = l.feature(i).toGeoJSON(extentSource.col, extentSource.row, extentSource.zoom);
             } else {
-                const y = 1 << options.coords.zoom;
-                feature = l.feature(i).toGeoJSON(options.coords.col, y - options.coords.row - 1, options.coords.zoom);
+                const y = 1 << extentSource.zoom;
+                feature = l.feature(i).toGeoJSON(extentSource.col, y - extentSource.row - 1, extentSource.zoom);
             }
             if (layers.length > 1) {
                 feature.properties.vt_layer = layer_id;
@@ -39,20 +40,15 @@ function readPBF(file, options) {
         }
     });
 
-    let crsOut;
-    switch (options.coords.crs()) {
-        case 'WMTS:PM':
-            crsOut = 'EPSG:3857';
-            break;
-        default:
-            crsOut = options.extent.crs();
-    }
-
     return GeoJsonParser.parse(geojson, {
-        crsOut,
+        crsIn: options.crsIn,
+        crsOut: options.crsOut,
         filteringExtent: options.filteringExtent,
         filter: options.filter,
         buildExtent: true,
+    }).then((f) => {
+        f.extent.zoom = extentSource.zoom;
+        return f;
     });
 }
 

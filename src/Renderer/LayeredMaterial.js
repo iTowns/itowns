@@ -327,29 +327,29 @@ LayeredMaterial.prototype.removeColorLayer = function removeColorLayer(layer) {
     this.uniforms.dTextures_01.value = this.textures[l_COLOR];
 };
 
-LayeredMaterial.prototype.setLayerTextures = function setLayerTextures(layer, textures) {
+LayeredMaterial.prototype.setLayerTextures = function setLayerTextures(layer, textures, pitchs) {
     if (layer.type === 'elevation') {
         if (Array.isArray(textures)) {
             textures = textures[0];
         }
-        this._setTexture(textures.texture, l_ELEVATION, 0, textures.pitch);
+        this._setTexture(textures, l_ELEVATION, 0, pitchs);
     } else if (layer.type === 'color') {
         const index = this.indexOfColorLayer(layer.id);
         const slotOffset = this.getTextureOffsetByLayerIndex(index);
         if (Array.isArray(textures)) {
             for (let i = 0, max = textures.length; i < max; i++) {
                 if (textures[i]) {
-                    if (textures[i].texture !== null) {
-                        this._setTexture(textures[i].texture, l_COLOR,
-                            i + (slotOffset || 0), textures[i].pitch);
+                    if (textures[i] !== null) {
+                        this._setTexture(textures[i], l_COLOR,
+                            i + (slotOffset || 0), pitchs[i]);
                     } else {
                         this.setLayerVisibility(index, false);
                         break;
                     }
                 }
             }
-        } else if (textures.texture !== null) {
-            this._setTexture(textures.texture, l_COLOR, (slotOffset || 0), textures.pitch);
+        } else if (textures !== null) {
+            this._setTexture(textures, l_COLOR, (slotOffset || 0), pitchs[0]);
         } else {
             this.setLayerVisibility(index, false);
         }
@@ -476,8 +476,12 @@ LayeredMaterial.prototype.getColorLayerLevelById = function getColorLayerLevelBy
 
 LayeredMaterial.prototype.isColorLayerLoaded = function isColorLayerLoaded(layer) {
     const textures = this.getLayerTextures(layer);
-    if (textures.length) {
-        return textures[0].coords.zoom > EMPTY_TEXTURE_ZOOM;
+    if (textures[0]) {
+        if (textures[0].coords.zoom !== undefined) {
+            return textures[0].coords.zoom > EMPTY_TEXTURE_ZOOM;
+        } else {
+            return textures[0].image !== undefined;
+        }
     }
     return false;
 };

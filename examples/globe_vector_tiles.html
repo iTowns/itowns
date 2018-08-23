@@ -33,6 +33,8 @@
             // define pole texture
             view.wgs84TileLayer.noTextureColor = new itowns.THREE.Color(0x95c1e1);
 
+            view.atmosphere.visible = false;
+
             setupLoadingScreen(viewerDiv, view);
             function addLayerCb(layer) {
                 return view.addLayer(layer);
@@ -40,8 +42,9 @@
 
             // Add two elevation layers.
             // These will deform iTowns globe geometry to represent terrain elevation.
-            promises.push(itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addLayerCb));
-            promises.push(itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addLayerCb));
+            // promises.push(itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(addLayerCb));
+            // promises.push(itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addLayerCb));
+            // promises.push(itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addLayerCb));
 
             // Add a vector tile layer
             itowns.Fetcher.json('https://raw.githubusercontent.com/Oslandia/postile-openmaptiles/master/style.json').then(function (style) {
@@ -56,14 +59,21 @@
                     }
                 });
 
+                function isValidData(data, extentDestination) {
+                    return extentDestination.zoom - data.extent.zoom < 4;
+                }
+
                 promises.push(view.addLayer({
                     type: 'color',
-                    protocol: 'xyz',
                     id: 'MVT',
-                    // eslint-disable-next-line no-template-curly-in-string
-                    url: 'https://osm.oslandia.io/data/v3/${z}/${x}/${y}.pbf',
-                    format: 'application/x-protobuf;type=mapbox-vector',
-                    options: {
+                    isValidData: isValidData,
+                    source: {
+                        protocol: 'xyz',
+                        // eslint-disable-next-line no-template-curly-in-string
+                        url: 'https://osm.oslandia.io/data/v3/${z}/${x}/${y}.pbf',
+                        format: 'application/x-protobuf;type=mapbox-vector',
+                        projection: 'EPSG:4326',
+                        origin: 'top',
                         attribution: {
                             name: 'OpenStreetMap',
                             url: 'http://www.openstreetmap.org/',
@@ -72,10 +82,7 @@
                             min: 2,
                             max: 14,
                         },
-                        opacity: 0.5,
-                    },
-                    updateStrategy: {
-                        type: itowns.STRATEGY_DICHOTOMY,
+                        tileMatrixSet: 'PM',
                     },
                     style: mapboxStyle,
                     filter: mapboxFilter(supportedLayers),
@@ -89,6 +96,7 @@
                 Promise.all(promises).then(function () {
                     menuGlobe.addImageryLayersGUI(view.getLayers(function (l) { return l.type === 'color'; }));
                     menuGlobe.addElevationLayersGUI(view.getLayers(function (l) { return l.type === 'elevation'; }));
+                    // itowns.ColorLayersOrdering.moveLayerToIndex(view, 'Ortho', 0);
                 }).catch(console.error);
             });
         </script>
