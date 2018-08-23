@@ -77,22 +77,12 @@ before(async () => {
     // wait for the server to be ready
     global.itownsPort = await server;
 
-    global.printLogs = (page) => {
-        page.on('console', (msg) => {
-            for (let i = 0; i < msg.args().length; ++i) {
-                console.log(`${msg.args()[i]}`);
-            }
-        });
-    };
+    // global variable stored for resetting the page state
+    global.initialPosition = {};
 
     // Helper function: returns true when all layers are
     // ready and rendering has been done
-    global.loadExample = async (page, url, screenshotName) => {
-        if (page.loadExampleCalled) {
-            throw new Error('loadExample must only be called once. Use waitUntilItownsIsIdle / waitNextRender instead');
-        }
-        // eslint-disable-next-line no-param-reassign
-        page.loadExampleCalled = true;
+    global.loadExample = async (url, screenshotName) => {
         page.setViewport({ width: 400, height: 300 });
 
         await page.goto(url);
@@ -130,7 +120,7 @@ before(async () => {
     };
 
     // Use waitUntilItownsIsIdle to wait until itowns has finished all its work (= layer updates)
-    global.waitUntilItownsIsIdle = async (page, screenshotName) => {
+    global.waitUntilItownsIsIdle = async (screenshotName) => {
         const result = await page.evaluate(() => new Promise((resolve) => {
             __getView().then((v) => {
                 function resolveWhenReady() {
@@ -187,6 +177,9 @@ before(async () => {
         headless: !process.env.DEBUG,
         devtools: !!process.env.DEBUG,
         args });
+
+    // the page all tests will be tested in
+    global.page = await browser.newPage();
 });
 
 // close browser and reset global variables
@@ -200,3 +193,42 @@ after((done) => {
     }
 });
 
+// store initial position for restoration after the test
+beforeEach(async () => {
+    initialPosition = await page.evaluate(() => {
+        let init;
+        if (view instanceof itowns.GlobeView && view.controls) {
+            init = {
+                coord: view.controls.getLookAtCoordinate(),
+                heading: view.controls.getHeading(),
+                range: view.controls.getRange(),
+                tilt: view.controls.getTilt(),
+            };
+        } else if (view instanceof itowns.PlanarView) {
+            // TODO: make the controls accessible from PlanarView before doing
+            // anything more here
+        }
+
+        return Promise.resolve(init);
+    });
+});
+
+// reset browser state instead of closing it
+afterEach(async () => {
+    await page.evaluate((init) => {
+        if (view instanceof itowns.GlobeView && view.controls) {
+            // eslint-disable-next-line no-param-reassign
+            init.coord = new itowns.Coordinates(
+                init.coord.crs,
+                init.coord._values[0],
+                init.coord._values[1],
+                init.coord._values[2]);
+            view.controls.lookAtCoordinate(init, false);
+            view.notifyChange();
+        } else if (view instanceof itowns.PlanarView) {
+            // TODO: make the controls accessible from PlanarView before doing
+            // anything more here
+        }
+    }, initialPosition);
+    await page.mouse.move(0, 0);
+});

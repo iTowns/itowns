@@ -1,23 +1,16 @@
-/* global browser, itownsPort */
 const assert = require('assert');
 
-describe('planar', () => {
-    it('should run', async function _() {
-        const page = await browser.newPage();
-        const result = await loadExample(page,
-            `http://localhost:${itownsPort}/examples/planar.html`,
-            this.test.fullTitle());
-
-        assert.ok(result);
-        await page.close();
+describe('planar', function _() {
+    let result;
+    before(async () => {
+        result = await loadExample(`http://localhost:${itownsPort}/examples/planar.html`, this.fullTitle());
     });
-    it('should get picking position from depth', async function _() {
-        const page = await browser.newPage();
 
-        await loadExample(page,
-            `http://localhost:${itownsPort}/examples/planar.html`,
-            this.test.fullTitle());
+    it('should run', async () => {
+        assert.ok(result);
+    });
 
+    it('should get picking position from depth', async function __() {
         const length = 1500;
 
         // get range with depth buffer and altitude
@@ -30,9 +23,9 @@ describe('planar', () => {
             view.notifyChange(view.camera.camera3D, true);
         }, length);
 
-        await waitUntilItownsIsIdle(page, this.test.fullTitle());
+        await waitUntilItownsIsIdle(this.test.fullTitle());
 
-        const result = await page.evaluate(() => {
+        result = await page.evaluate(() => {
             const depthMethod = view
                 .getPickingPositionFromDepth().distanceTo(view.camera.camera3D.position);
 
@@ -45,6 +38,5 @@ describe('planar', () => {
         const theoricalRange = length - result.altitude;
         const diffRange = Math.abs(theoricalRange - result.depthMethod);
         assert.ok(diffRange < 2);
-        await page.close();
     });
 });

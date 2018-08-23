@@ -1,36 +1,29 @@
-/* global browser, itownsPort */
 const assert = require('assert');
 
-describe('globe', () => {
-    it('should run', async function _() {
-        const page = await browser.newPage();
-        const result = await loadExample(page,
-            `http://localhost:${itownsPort}/examples/globe.html`,
-            this.test.fullTitle());
-
-        assert.ok(result);
-        await page.close();
+describe('globe', function _() {
+    let result;
+    before(async () => {
+        result = await loadExample(`http://localhost:${itownsPort}/examples/globe.html`, this.fullTitle());
     });
 
-    it('should return the correct tile', async function _() {
-        const page = await browser.newPage();
-        await loadExample(page,
-            `http://localhost:${itownsPort}/examples/globe.html`,
-            this.test.fullTitle());
+    it('should run', async () => {
+        assert.ok(result);
+    });
 
+    it('should return the correct tile', async () => {
         const level = await page.evaluate(() =>
             view.pickObjectsAt(
                 { x: 221, y: 119 })[0].object.level);
 
         assert.equal(2, level);
-        await page.close();
     });
-    it('should not add layers beyond the capabilities', async function _() {
-        const page = await browser.newPage();
-        await loadExample(page,
-            `http://localhost:${itownsPort}/examples/globe.html`,
-            this.test.fullTitle());
+    it('should not add layer with id already used', async () => {
+        const error = await page.evaluate(() => itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(view.addLayer).catch(() => true));
+        const colorLayersCount = await page.evaluate(() => view.getLayers(l => l.type === 'color').length);
 
+        assert.ok(error && colorLayersCount === 1);
+    });
+    it('should not add layers beyond the capabilities', async () => {
         const maxColorSamplerUnitsCount = await page
             .evaluate(type => view.tileLayer.level0Nodes[0]
                 .material.textures[type].length, 1);
@@ -61,20 +54,5 @@ describe('globe', () => {
 
         assert.ok(underLimit);
         assert.ok(errorOverLimit);
-        await page.close();
-    });
-    it('should not add layer with id already used', async function _() {
-        const page = await browser.newPage();
-
-        await loadExample(page,
-            `http://localhost:${itownsPort}/examples/globe.html`,
-            this.test.fullTitle());
-
-        const error = await page.evaluate(() => itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(view.addLayer).catch(() => true));
-        const colorLayersCount = await page.evaluate(() => view.getLayers(l => l.type === 'color').length);
-
-        assert.ok(error && colorLayersCount === 1);
-        page.close();
-        await page.close();
     });
 });

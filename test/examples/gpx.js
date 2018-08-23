@@ -1,14 +1,12 @@
-/* global browser, itownsPort */
 const assert = require('assert');
 
-describe('gpx', () => {
-    it('should run', async function _() {
-        const page = await browser.newPage();
-        const result = await loadExample(page,
-            `http://localhost:${itownsPort}/examples/gpx.html`,
-            this.test.fullTitle());
+describe('gpx', function _() {
+    let result;
+    before(async () => {
+        result = await loadExample(`http://localhost:${itownsPort}/examples/gpx.html`, this.fullTitle());
+    });
 
+    it('should run', async () => {
         assert.ok(result);
-        await page.close();
     });
 });
