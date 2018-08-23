@@ -1,22 +1,16 @@
-/* global browser, itownsPort */
 const assert = require('assert');
 
-describe('multiglobe', () => {
-    it('should run', async function _() {
-        const page = await browser.newPage();
-        const result = await loadExample(page,
-            `http://localhost:${itownsPort}/examples/multiglobe.html`,
-            this.test.fullTitle());
-
-        assert.ok(result);
-        await page.close();
+describe('multiglobe', function _() {
+    let result;
+    before(async () => {
+        result = await loadExample(`http://localhost:${itownsPort}/examples/multiglobe.html`, this.fullTitle());
     });
 
-    it('zoom and check that the level is correct', async function _() {
-        const page = await browser.newPage();
-        await loadExample(page,
-            `http://localhost:${itownsPort}/examples/multiglobe.html`);
+    it('should run', async () => {
+        assert.ok(result);
+    });
 
+    it('zoom and check that the level is correct', async function __() {
         // press-space and zoom in
         await page.evaluate(() => {
             onKeyPress({ keyCode: 32 });
@@ -25,7 +19,7 @@ describe('multiglobe', () => {
             }
         });
 
-        await waitUntilItownsIsIdle(page, this.test.fullTitle());
+        await waitUntilItownsIsIdle(this.test.fullTitle());
 
         // verify that we properly updated the globe
         const { layer, level } = await page.evaluate(() => {
@@ -38,6 +32,5 @@ describe('multiglobe', () => {
 
         assert.equal('globe2', layer);
         assert.equal(8, level);
-        await page.close();
     });
 });

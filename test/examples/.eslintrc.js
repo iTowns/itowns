@@ -51,5 +51,8 @@ module.exports = {
 
         // TODO reactivate all the following rules
         'no-underscore-dangle': 'off',
+
+        // turned off to use the this object in describe
+        'prefer-arrow-callback': 'off',
     }
 }

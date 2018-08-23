@@ -1,14 +1,12 @@
-/* global browser, itownsPort */
 const assert = require('assert');
 
-describe('globe geojson to3D', () => {
-    it('should run', async function _() {
-        const page = await browser.newPage();
-        const result = await loadExample(page,
-            `http://localhost:${itownsPort}/examples/globe_geojson_to3D.html`,
-            this.test.fullTitle());
+describe('globe geojson to3D', function _() {
+    let result;
+    before(async () => {
+        result = await loadExample(`http://localhost:${itownsPort}/examples/globe_geojson_to3D.html`, this.fullTitle());
+    });
 
+    it('should run', async () => {
         assert.ok(result);
-        await page.close();
     });
 });

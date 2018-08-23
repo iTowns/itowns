@@ -1,23 +1,16 @@
-/* global browser, itownsPort */
 const assert = require('assert');
 
-describe('positionGlobe', () => {
-    it('should run', async function _() {
-        const page = await browser.newPage();
-        const result = await loadExample(page,
-            `http://localhost:${itownsPort}/examples/positionGlobe.html`,
-            this.test.fullTitle());
-
-        assert.ok(result);
-        await page.close();
+describe('positionGlobe', function _() {
+    let result;
+    before(async () => {
+        result = await loadExample(`http://localhost:${itownsPort}/examples/positionGlobe.html`, this.fullTitle());
     });
 
-    it('bug #747', async function _() {
-        const page = await browser.newPage();
-        await loadExample(page,
-            `http://localhost:${itownsPort}/examples/positionGlobe.html`,
-            this.test.fullTitle());
+    it('should run', async () => {
+        assert.ok(result);
+    });
 
+    it('bug #747', async () => {
         // wait cone creation
         await page.evaluate(() =>
             new Promise((resolve) => {
@@ -54,16 +47,8 @@ describe('positionGlobe', () => {
         });
 
         assert.deepEqual(value.visible, value.hidden);
-
-        await page.close();
     });
-    it('should get picking position from depth', async function _() {
-        const page = await browser.newPage();
-
-        await loadExample(page,
-            `http://localhost:${itownsPort}/examples/positionGlobe.html`,
-            this.test.fullTitle());
-
+    it('should get picking position from depth', async () => {
         // wait mesh creation
         await page.evaluate(() =>
             new Promise((resolve) => {
@@ -100,7 +85,5 @@ describe('positionGlobe', () => {
 
         assert.ok(Math.abs(controlsMethod - destRange) < 2);
         assert.ok(Math.abs(depthMethod - destRange) < 2);
-
-        await page.close();
     });
 });

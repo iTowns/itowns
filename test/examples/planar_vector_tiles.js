@@ -1,15 +1,12 @@
-/* global browser, itownsPort */
 const assert = require('assert');
 
-describe('planar_vector_tiles', () => {
-    it('should run', async function _() {
-        const page = await browser.newPage();
+describe('planar_vector_tiles', function _() {
+    let result;
+    before(async () => {
+        result = await loadExample(`http://localhost:${itownsPort}/examples/planar_vector_tiles.html`, this.fullTitle());
+    });
 
-        const result = await loadExample(page,
-            `http://localhost:${itownsPort}/examples/planar_vector_tiles.html`,
-            this.test.fullTitle());
-
+    it('should run', async () => {
         assert.ok(result);
-        await page.close();
     });
 });
