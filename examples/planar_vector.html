@@ -31,6 +31,7 @@
             var viewerDiv;
             var view;
             var p;
+            var config;
 
             // Define projection that we will use (taken from https://epsg.io/3946, Proj4js section)
             itowns.proj4.defs('EPSG:3946',
@@ -45,83 +46,97 @@
             // `viewerDiv` will contain iTowns' rendering area (`<canvas>`)
             viewerDiv = document.getElementById('viewerDiv');
 
+            // Since the elevation layer use color textures, specify min/max z
+            config = {
+                materialOptions: {
+                    useColorTextureElevation: true,
+                    colorTextureElevationMinZ: 37,
+                    colorTextureElevationMaxZ: 240,
+                },
+                disableSkirt: true,
+            };
+
             // Instanciate PlanarView*
-            view = new itowns.PlanarView(viewerDiv, extent);
+            view = new itowns.PlanarView(viewerDiv, extent, config);
             setupLoadingScreen(viewerDiv, view);
-            view.tileLayer.disableSkirt = true;
 
             // Add an WMS imagery layer (see WMSProvider* for valid options)
             view.addLayer({
-                url: 'https://download.data.grandlyon.com/wms/grandlyon',
-                networkOptions: { crossOrigin: 'anonymous' },
-                type: 'color',
-                protocol: 'wms',
-                version: '1.3.0',
                 id: 'wms_imagery',
-                name: 'Ortho2009_vue_ensemble_16cm_CC46',
-                projection: 'EPSG:3946',
+                type: 'color',
                 transparent: true,
-                format: 'image/jpeg',
+                source: {
+                    extent: extent,
+                    url: 'https://download.data.grandlyon.com/wms/grandlyon',
+                    networkOptions: { crossOrigin: 'anonymous' },
+                    name: 'Ortho2009_vue_ensemble_16cm_CC46',
+                    protocol: 'wms',
+                    version: '1.3.0',
+                    projection: 'EPSG:3946',
+                    format: 'image/jpeg',
+                },
             });
 
             // Add an WMS elevation layer (see WMSProvider* for valid options)
             view.addLayer({
-                url: 'https://download.data.grandlyon.com/wms/grandlyon',
-                type: 'elevation',
-                protocol: 'wms',
-                networkOptions: { crossOrigin: 'anonymous' },
-                version: '1.3.0',
                 id: 'wms_elevation',
-                name: 'MNT2012_Altitude_10m_CC46',
-                projection: view.referenceCrs,
-                heightMapWidth: 256,
-                format: 'image/jpeg',
-            });
-
-            view.addLayer({
-                type: 'color',
-                url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/lyon.kml',
-                protocol: 'rasterizer',
-                id: 'Kml',
-                extent: extent,
-                transparent: true,
-                options: { zoom: { min: 0, max: 6 } },
-            });
-
-            view.addLayer({
-                type: 'color',
-                url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/lyon.gpx',
-                protocol: 'rasterizer',
-                options: { zoom: { min: 0, max: 6 } },
-                id: 'gpx',
-                transparent: true,
-                style: {
-                    stroke: 'blue',
+                type: 'elevation',
+                source: {
+                    extent: extent,
+                    url: 'https://download.data.grandlyon.com/wms/grandlyon',
+                    protocol: 'wms',
+                    networkOptions: { crossOrigin: 'anonymous' },
+                    name: 'MNT2012_Altitude_10m_CC46',
+                    projection: 'EPSG:3946',
+                    heightMapWidth: 256,
+                    format: 'image/jpeg',
                 },
             });
 
             view.addLayer({
                 type: 'color',
-                url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/lyon.geojson',
-                protocol: 'rasterizer',
-                projection: 'EPSG:3946',
-                id: 'geo',
-                extent: extent,
+                id: 'Kml',
                 transparent: true,
-                options: { zoom: { min: 0, max: 6 } },
+                source: {
+                    url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/lyon.kml',
+                    protocol: 'file',
+                    projection: 'EPSG:4326',
+                    extent: extent,
+                    zoom: { min: 0, max: 6 },
+                },
+            });
+
+            view.addLayer({
+                type: 'color',
+                id: 'gpx',
+                transparent: true,
+                style: {
+                    stroke: 'blue',
+                },
+                source: {
+                    url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/lyon.gpx',
+                    protocol: 'file',
+                    zoom: { min: 0, max: 6 },
+                },
+            });
+
+            view.addLayer({
+                type: 'color',
+                id: 'geo',
+                transparent: true,
+                source: {
+                    url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/lyon.geojson',
+                    protocol: 'file',
+                    projection: 'EPSG:3946',
+                    extent: extent,
+                    zoom: { min: 0, max: 6 },
+                },
                 style: {
                     fill: 'orange',
                     fillOpacity: 0.2,
                     stroke: 'white',
                 },
             });
-
-            // Since the elevation layer use color textures, specify min/max z
-            view.tileLayer.materialOptions = {
-                useColorTextureElevation: true,
-                colorTextureElevationMinZ: 37,
-                colorTextureElevationMaxZ: 240,
-            };
 
             p = { coord: extent.center(), heading: -49.6, range: 6200, tilt: 17 };
             itowns.CameraUtils.transformCameraToLookAtTarget(view, view.camera.camera3D, p);

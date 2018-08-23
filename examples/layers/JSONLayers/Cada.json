@@ -1,21 +1,24 @@
 {
   "type": "color",
-  "url": "https://wxs.ign.fr/an7nvfzojv5wa96dsga5nk8w/geoportail/wmts",
-  "protocol": "wmts",
   "id": "Cadastre",
   "title": "Parcelles cadastrales",
   "visible": false,
   "opacity": 1,
   "transparent": true,
-  "updateStrategy": {
-    "type": 0,
-    "options": {}
-  },
-  "networkOptions": {
-    "crossOrigin": "omit"
-  },
-  "format": "image/png",
-  "options": {
+  "source": {
+    "protocol": "wmts",
+    "url": "https://wxs.ign.fr/an7nvfzojv5wa96dsga5nk8w/geoportail/wmts",
+    "networkOptions": {
+      "crossOrigin": "omit"
+    },
+    "version": "1.0.0",
+    "name": "CADASTRALPARCELS.PARCELS",
+    "style": "bdparcellaire",
+    "zoom": {
+      "min": 5,
+      "max": 20
+    },
+    "format": "image/png",
     "tileMatrixSet": "PM",
     "tileMatrixSetLimits": {
       "0": {
@@ -150,13 +153,6 @@
         "minTileCol": "0",
         "maxTileCol": "2097152"
       }
-    },
-    "name": "CADASTRALPARCELS.PARCELS",
-    "style": "bdparcellaire",
-    "zoom": {
-      "min": 5,
-      "max": 20
     }
-  },
-  "version": "1.0.0"
+  }
 }

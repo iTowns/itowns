@@ -1,48 +1,11 @@
-import * as THREE from 'three';
-import Fetcher from './Fetcher';
-import Cache from '../Core/Scheduler/Cache';
-import XbilParser from '../Parser/XbilParser';
 import Projection from '../Core/Geographic/Projection';
 import Extent from '../Core/Geographic/Extent';
 
 export const SIZE_TEXTURE_TILE = 256;
 
-const getTextureFloat = function getTextureFloat(buffer) {
-    const texture = new THREE.DataTexture(buffer, SIZE_TEXTURE_TILE, SIZE_TEXTURE_TILE, THREE.AlphaFormat, THREE.FloatType);
-    texture.needsUpdate = true;
-    return texture;
-};
-
 const tileCoord = new Extent('WMTS:WGS84G', 0, 0, 0);
 
 export default {
-    getColorTextureByUrl(url, networkOptions) {
-        return Cache.get(url) || Cache.set(url, Fetcher.texture(url, networkOptions)
-            .then((texture) => {
-                texture.generateMipmaps = false;
-                texture.magFilter = THREE.LinearFilter;
-                texture.minFilter = THREE.LinearFilter;
-                texture.anisotropy = 16;
-                return texture;
-            }), Cache.POLICIES.TEXTURE);
-    },
-    getXBilTextureByUrl(url, networkOptions) {
-        return Cache.get(url) || Cache.set(url, Fetcher.arrayBuffer(url, networkOptions)
-            .then(buffer => XbilParser.parse(buffer, { url }))
-            .then((result) => {
-                // TODO  RGBA is needed for navigator with no support in texture float
-                // In RGBA elevation texture LinearFilter give some errors with nodata value.
-                // need to rewrite sample function in shader
-
-                const texture = getTextureFloat(result.floatArray);
-                texture.generateMipmaps = false;
-                texture.magFilter = THREE.LinearFilter;
-                texture.minFilter = THREE.LinearFilter;
-                texture.min = result.min;
-                texture.max = result.max;
-                return texture;
-            }), Cache.POLICIES.ELEVATION);
-    },
     computeTileMatrixSetCoordinates(tile, tileMatrixSet) {
         tileMatrixSet = tileMatrixSet || 'WGS84G';
         if (!(tileMatrixSet in tile.wmtsCoords)) {
@@ -66,9 +29,7 @@ export default {
     // See link below for more information
     // https://alastaira.wordpress.com/2011/07/06/converting-tms-tile-coordinates-to-googlebingosm-tile-coordinates/
     computeTMSCoordinates(tile, extent, origin = 'bottom') {
-        if (tile.extent.crs() != extent.crs()) {
-            throw new Error('Unsupported configuration. TMS is only supported when geometry has the same crs than TMS layer');
-        }
+        extent = tile.extent.crs() == extent.crs() ? extent : extent.as(tile.extent.crs());
         const c = tile.extent.center();
         const layerDimension = extent.dimensions();
 
@@ -88,22 +49,5 @@ export default {
         }
 
         return [new Extent('TMS', zoom, Math.floor(y * tileCount), Math.floor(x * tileCount))];
-    },
-    WMTS_WGS84Parent(cWMTS, levelParent, pitch, target = new Extent(cWMTS.crs(), 0, 0, 0)) {
-        const diffLevel = cWMTS.zoom - levelParent;
-        const diff = Math.pow(2, diffLevel);
-        const invDiff = 1 / diff;
-
-        const r = (cWMTS.row - (cWMTS.row % diff)) * invDiff;
-        const c = (cWMTS.col - (cWMTS.col % diff)) * invDiff;
-
-        if (pitch) {
-            pitch.x = cWMTS.col * invDiff - c;
-            pitch.y = cWMTS.row * invDiff - r;
-            pitch.z = invDiff;
-            pitch.w = invDiff;
-        }
-
-        return target.set(levelParent, r, c);
     },
 };

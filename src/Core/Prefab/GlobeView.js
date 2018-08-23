@@ -182,8 +182,6 @@ function GlobeView(viewerDiv, coordCarto, options = {}) {
     };
 
     this.addEventListener(VIEW_EVENTS.LAYERS_INITIALIZED, fn);
-
-    this.notifyChange(this.wgs84TileLayer);
 }
 
 GlobeView.prototype = Object.create(View.prototype);
@@ -197,7 +195,7 @@ GlobeView.prototype.addLayer = function addLayer(layer) {
         const colorLayerCount = this.getLayers(l => l.type === 'color').length;
         layer.sequence = colorLayerCount;
     } else if (layer.type == 'elevation') {
-        if (layer.protocol === 'wmts' && layer.options.tileMatrixSet !== 'WGS84G') {
+        if (layer.source.protocol === 'wmts' && layer.source.tileMatrixSet !== 'WGS84G') {
             throw new Error('Only WGS84G tileMatrixSet is currently supported for WMTS elevation layers');
         }
     }

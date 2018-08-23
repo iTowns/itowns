@@ -25,6 +25,7 @@ class GeometryLayer extends Layer {
      * contains three elements <code>name, protocol, extent</code>, these
      * elements will be available using <code>layer.name</code> or something
      * else depending on the property name.
+     * @param {WFSSource|FileSource} [config.source] data source
      *
      * @throws {Error} <code>object3d</code> must be a valid
      * <code>THREE.Object3d</code>.
@@ -32,9 +33,11 @@ class GeometryLayer extends Layer {
      * @example
      * // Create a GeometryLayer
      * const geometry = new GeometryLayer('buildings', {
-     *     url: 'http://server.geo/wfs?',
-     *     protocol: 'wfs',
-     *     format: 'application/json'
+     *      source: {
+     *          url: 'http://server.geo/wfs?',
+     *          protocol: 'wfs',
+     *          format: 'application/json'
+     *      },
      * });
      *
      * // Add the layer
@@ -45,9 +48,11 @@ class GeometryLayer extends Layer {
      * view.addLayer({
      *     id: 'buildings',
      *     type: 'geometry',
-     *     url: 'http://server.geo/wfs?',
-     *     protocol: 'wfs',
-     *     format: 'application/json'
+     *      source: {
+     *          url: 'http://server.geo/wfs?',
+     *          protocol: 'wfs',
+     *          format: 'application/json'
+     *      },
      * });
      */
     constructor(id, object3d, config = {}) {

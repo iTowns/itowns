@@ -35,17 +35,15 @@ class PlanarLayer extends TiledGeometryLayer {
      * <code>THREE.Object3d</code>.
      */
     constructor(id, extent, object3d, config = {}) {
-        super(id, object3d || new THREE.Group(), config);
+        const schemeTile = [extent];
+        const builder = new PlanarTileBuilder();
+        super(id, object3d || new THREE.Group(), schemeTile, builder, config);
 
         this.extent = extent;
-        this.schemeTile = [extent];
-
         this.culling = planarCulling;
         this.subdivision = planarSubdivisionControl(
             config.maxSubdivisionLevel || 5,
             config.maxDeltaElevationLevel || 4);
-
-        this.builder = new PlanarTileBuilder();
     }
 }
 

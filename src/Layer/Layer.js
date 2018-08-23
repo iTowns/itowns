@@ -69,6 +69,7 @@ class Layer extends THREE.EventDispatcher {
         if (!this.updateStrategy) {
             this.updateStrategy = {
                 type: STRATEGY_MIN_NETWORK_TRAFFIC,
+                options: {},
             };
         }
 
@@ -91,8 +92,7 @@ class Layer extends THREE.EventDispatcher {
      * For example, if the added property name is <code>frozen</code>, it will
      * emit a <code>frozen-property-changed</code>.
      * <br><br>
-     * The emitted event has some properties assigned to it:
-     * <pre>
+     * @example <caption>The emitted event has some properties assigned to it</caption>
      * event = {
      *     new: {
      *         ${propertyName}: * // the new value of the property
@@ -103,7 +103,6 @@ class Layer extends THREE.EventDispatcher {
      *     target: Layer // the layer it has been dispatched from
      *     type: string // the name of the emitted event
      * }
-     * </pre>
      *
      * @param {string} propertyName - The name of the property, also used in
      * the emitted event name.

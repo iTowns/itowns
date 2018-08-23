@@ -1,12 +1,13 @@
-function portableXBIL(buffer) {
-    this.floatArray = new Float32Array(buffer);
-    this.max = undefined;
-    this.min = undefined;
-    this.texture = null;
-}
-
-
-export function computeMinMaxElevation(buffer, width, height, offsetScale) {
+ /**
+  * Calculates the minimum maximum elevation of xbil buffer
+  *
+  * @param      {number}  buffer       The buffer to parse
+  * @param      {number}  width        The buffer's width
+  * @param      {number}  height       The buffer's height
+  * @param      {THREE.Vector4}  pitch  The pitch,  restrict zone to parse
+  * @return     {Object}  The minimum maximum elevation.
+  */
+function computeMinMaxElevation(buffer, width, height, pitch) {
     let min = 1000000;
     let max = -1000000;
 
@@ -17,12 +18,12 @@ export function computeMinMaxElevation(buffer, width, height, offsetScale) {
         return { min: null, max: null };
     }
 
-    const sizeX = offsetScale ? Math.floor(offsetScale.z * width) : buffer.length;
-    const sizeY = offsetScale ? Math.floor(offsetScale.z * height) : 1;
-    const xs = offsetScale ? Math.floor(offsetScale.x * width) : 0;
-    const ys = offsetScale ? Math.floor(offsetScale.y * height) : 0;
+    const sizeX = pitch ? Math.floor(pitch.z * width) : buffer.length;
+    const sizeY = pitch ? Math.floor(pitch.z * height) : 1;
+    const xs = pitch ? Math.floor(pitch.x * width) : 0;
+    const ys = pitch ? Math.floor(pitch.y * height) : 0;
 
-    const inc = offsetScale ? Math.max(Math.floor(sizeX / 8), 2) : 16;
+    const inc = pitch ? Math.max(Math.floor(sizeX / 8), 2) : 16;
 
     for (let y = ys; y < ys + sizeY; y += inc) {
         const pit = y * (width || 0);
@@ -44,30 +45,4 @@ export function computeMinMaxElevation(buffer, width, height, offsetScale) {
     return { min, max };
 }
 
-export default {
-    /** @module XbilParser */
-    /** Parse XBIL buffer and convert to portableXBIL object.
-     * @function parse
-     * @param {ArrayBuffer} buffer - the xbil buffer.
-     * @param {Object} options - additional properties.
-     * @param {string} options.url - the url from which the XBIL comes.
-     * @return {Promise} - a promise that resolves with a portableXBIL object.
-     *
-     */
-    parse(buffer, options) {
-        if (!buffer) {
-            throw new Error('Error processing XBIL');
-        }
-
-        var result = new portableXBIL(buffer);
-
-        var elevation = computeMinMaxElevation(result.floatArray);
-
-        result.min = elevation.min;
-        result.max = elevation.max;
-
-        result.url = options.url;
-
-        return Promise.resolve(result);
-    },
-};
+export default computeMinMaxElevation;

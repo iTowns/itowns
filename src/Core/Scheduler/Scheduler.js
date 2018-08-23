@@ -5,15 +5,10 @@
  */
 
 import PriorityQueue from 'js-priority-queue';
-import WMTSProvider from '../../Provider/WMTSProvider';
-import WMSProvider from '../../Provider/WMSProvider';
+import DataSourceProvider from '../../Provider/DataSourceProvider';
 import TileProvider from '../../Provider/TileProvider';
 import $3dTilesProvider from '../../Provider/3dTilesProvider';
-import TMSProvider from '../../Provider/TMSProvider';
 import PointCloudProvider from '../../Provider/PointCloudProvider';
-import WFSProvider from '../../Provider/WFSProvider';
-import RasterProvider from '../../Provider/RasterProvider';
-import StaticProvider from '../../Provider/StaticProvider';
 import CancelledCommandException from './CancelledCommandException';
 
 var instanceScheduler = null;
@@ -132,21 +127,14 @@ Scheduler.prototype.constructor = Scheduler;
 
 Scheduler.prototype.initDefaultProviders = function initDefaultProviders() {
     // Register all providers
-    this.addProtocolProvider('wmts', WMTSProvider);
-    this.addProtocolProvider('wmtsc', WMTSProvider);
     this.addProtocolProvider('tile', TileProvider);
-    this.addProtocolProvider('wms', WMSProvider);
     this.addProtocolProvider('3d-tiles', $3dTilesProvider);
-    this.addProtocolProvider('tms', TMSProvider);
-    this.addProtocolProvider('xyz', TMSProvider);
     this.addProtocolProvider('potreeconverter', PointCloudProvider);
-    this.addProtocolProvider('wfs', WFSProvider);
-    this.addProtocolProvider('rasterizer', RasterProvider);
-    this.addProtocolProvider('static', StaticProvider);
 };
 
 Scheduler.prototype.runCommand = function runCommand(command, queue, executingCounterUpToDate) {
-    var provider = this.providers[command.layer.protocol];
+    const protocol = command.layer.protocol || command.layer.source.protocol;
+    const provider = this.getProtocolProvider(protocol);
 
     if (!provider) {
         throw new Error('No known provider for layer', command.layer.id);
@@ -282,9 +270,6 @@ Scheduler.prototype.addProtocolProvider = function addProtocolProvider(protocol,
     if (typeof (provider.executeCommand) !== 'function') {
         throw new Error(`Can't add provider for ${protocol}: missing a executeCommand function.`);
     }
-    if (typeof (provider.preprocessDataLayer) !== 'function') {
-        throw new Error(`Can't add provider for ${protocol}: missing a preprocessDataLayer function.`);
-    }
 
     this.providers[protocol] = provider;
 };
@@ -297,7 +282,7 @@ Scheduler.prototype.addProtocolProvider = function addProtocolProvider(protocol,
  * @return {Provider}
  */
 Scheduler.prototype.getProtocolProvider = function getProtocolProvider(protocol) {
-    return this.providers[protocol];
+    return this.providers[protocol] || DataSourceProvider;
 };
 
 Scheduler.prototype.commandsWaitingExecutionCount = function commandsWaitingExecutionCount() {

@@ -14,15 +14,15 @@ const CARDINAL = {
     NORTH: 3,
 };
 
-function _isTiledCRS(crs) {
-    return crs.indexOf('WMTS:') == 0 ||
-        crs == 'TMS';
-}
-
+/**
+ * @class      Extent
+ * @param      {string}          crs     projection crs (ex: 'EPSG:4326')
+ * @param      {(Array|object|Number)}  values  west, east, south and north values
+ */
 function Extent(crs, ...values) {
     this._crs = crs;
 
-    if (_isTiledCRS(crs)) {
+    if (this.isTiledCrs()) {
         if (values.length == 3) {
             this.zoom = values[0];
             this.row = values[1];
@@ -60,7 +60,7 @@ function Extent(crs, ...values) {
 }
 
 Extent.prototype.clone = function clone() {
-    if (_isTiledCRS(this._crs)) {
+    if (this.isTiledCrs()) {
         return new Extent(this._crs, this.zoom, this.row, this.col);
     } else {
         const result = new Extent(this._crs, ...this._values);
@@ -68,11 +68,15 @@ Extent.prototype.clone = function clone() {
     }
 };
 
+Extent.prototype.isTiledCrs = function fnIsTiledCrs() {
+    return this._crs.indexOf('WMTS:') == 0 || this._crs == 'TMS';
+};
+
 Extent.prototype.as = function as(crs) {
     assertCrsIsValid(crs);
 
-    if (_isTiledCRS(this._crs)) {
-        if (this._crs == 'WMTS:PM') {
+    if (this.isTiledCrs()) {
+        if (this._crs == 'WMTS:PM' || this._crs == 'TMS') {
             // Convert this to the requested crs by using 4326 as an intermediate state.
             const nbCol = Math.pow(2, this.zoom);
             const size = 360 / nbCol;
@@ -145,7 +149,7 @@ Extent.prototype.offsetToParent = function offsetToParent(other, target = new TH
     if (this.crs() != other.crs()) {
         throw new Error('unsupported mix');
     }
-    if (_isTiledCRS(this.crs())) {
+    if (this.isTiledCrs()) {
         const diffLevel = this.zoom - other.zoom;
         const diff = Math.pow(2, diffLevel);
         const invDiff = 1 / diff;
@@ -201,7 +205,7 @@ Extent.prototype.crs = function crs() {
 };
 
 Extent.prototype.center = function center(target) {
-    if (_isTiledCRS(this._crs)) {
+    if (this.isTiledCrs()) {
         throw new Error('Invalid operation for WMTS bbox');
     }
     let c;
@@ -248,7 +252,7 @@ Extent.prototype.isPointInside = function isPointInside(coord, epsilon = 0) {
 };
 
 Extent.prototype.isInside = function isInside(other, epsilon) {
-    if (_isTiledCRS(this.crs())) {
+    if (this.isTiledCrs()) {
         if (this.zoom == other.zoom) {
             return this.row == other.row &&
                 this.col == other.col;
@@ -328,7 +332,7 @@ Extent.prototype.intersect = function intersect(other) {
 
 
 Extent.prototype.set = function set(...values) {
-    if (_isTiledCRS(this.crs())) {
+    if (this.isTiledCrs()) {
         this.zoom = values[0];
         this.row = values[1];
         this.col = values[2];
@@ -396,6 +400,31 @@ Extent.fromBox3 = function fromBox3(crs, box) {
         south: box.min.y,
         north: box.max.y,
     });
+};
+
+Extent.prototype.extentParent = function extentParent(levelParent) {
+    if (this.isTiledCrs()) {
+        if (levelParent && levelParent < this.zoom) {
+            const diffLevel = this.zoom - levelParent;
+            const diff = Math.pow(2, diffLevel);
+            const invDiff = 1 / diff;
+
+            const r = (this.row - (this.row % diff)) * invDiff;
+            const c = (this.col - (this.col % diff)) * invDiff;
+
+            return new Extent(this.crs(), levelParent, r, c);
+        } else {
+            return this;
+        }
+    }
+};
+
+Extent.prototype.toString = function toString(separator = '') {
+    if (this.isTiledCrs()) {
+        return `${this.zoom}${separator}${this.row}${separator}${this.col}`;
+    } else {
+        return `${this.east()}${separator}${this.north()}${separator}${this.west()}${separator}${this.south()}`;
+    }
 };
 
 export default Extent;

@@ -115,12 +115,12 @@ TileMesh.prototype.setSelected = function setSelected(select) {
     this.material.setSelected(select);
 };
 
-TileMesh.prototype.setTextureElevation = function setTextureElevation(layer, elevation) {
+TileMesh.prototype.setTextureElevation = function setTextureElevation(layer, elevation, offsetScale = new THREE.Vector4(0, 0, 1, 1)) {
     if (this.material === null) {
         return;
     }
     this.setBBoxZ(elevation.min, elevation.max);
-    this.material.setLayerTextures(layer, elevation);
+    this.material.setLayerTextures(layer, elevation.texture, offsetScale);
 };
 
 
@@ -139,15 +139,6 @@ TileMesh.prototype.updateGeometricError = function updateGeometricError() {
     // The geometric error is calculated to have a correct texture display.
     // For the projection of a texture's texel to be less than or equal to one pixel
     this.geometricError = this.boundingSphere.radius / SIZE_TEXTURE_TILE;
-};
-
-TileMesh.prototype.setTexturesLayer = function setTexturesLayer(textures, layerType, layerId) {
-    if (this.material === null) {
-        return;
-    }
-    if (textures) {
-        this.material.setTexturesLayer(textures, layerType, layerId);
-    }
 };
 
 TileMesh.prototype.OBB = function OBB() {
@@ -172,41 +163,41 @@ TileMesh.prototype.changeSequenceLayers = function changeSequenceLayers(sequence
     this.material.setSequence(sequence);
 };
 
-TileMesh.prototype.getCoordsForLayer = function getCoordsForLayer(layer) {
-    if (layer.protocol.indexOf('wmts') == 0) {
-        OGCWebServiceHelper.computeTileMatrixSetCoordinates(this, layer.options.tileMatrixSet);
-        return this.wmtsCoords[layer.options.tileMatrixSet];
-    } else if (layer.protocol == 'wms' && this.extent.crs() != layer.projection) {
-        if (layer.projection == 'EPSG:3857') {
+TileMesh.prototype.getCoordsForSource = function getCoordsForSource(source) {
+    if (source.protocol.indexOf('wmts') == 0) {
+        OGCWebServiceHelper.computeTileMatrixSetCoordinates(this, source.tileMatrixSet);
+        return this.wmtsCoords[source.tileMatrixSet];
+    } else if (source.protocol == 'wms' && this.extent.crs() != source.projection) {
+        if (source.projection == 'EPSG:3857') {
             const tilematrixset = 'PM';
             OGCWebServiceHelper.computeTileMatrixSetCoordinates(this, tilematrixset);
             return this.wmtsCoords[tilematrixset];
         } else {
             throw new Error('unsupported projection wms for this viewer');
         }
-    } else if (layer.protocol == 'tms' || layer.protocol == 'xyz') {
+    } else if (source.protocol == 'tms' || source.protocol == 'xyz') {
         // Special globe case: use the P(seudo)M(ercator) coordinates
         if (is4326(this.extent.crs()) &&
-                (layer.extent.crs() == 'EPSG:3857' || is4326(layer.extent.crs()))) {
+                (source.extent.crs() == 'EPSG:3857' || is4326(source.extent.crs()))) {
             OGCWebServiceHelper.computeTileMatrixSetCoordinates(this, 'PM');
             return this.wmtsCoords.PM;
         } else {
-            return OGCWebServiceHelper.computeTMSCoordinates(this, layer.extent, layer.origin);
+            return OGCWebServiceHelper.computeTMSCoordinates(this, source.extent, source.origin);
         }
-    } else if (layer.extent.crs() == this.extent.crs()) {
+    } else if (source.extent.crs() == this.extent.crs()) {
         // Currently extent.as() always clone the extent, even if the output
         // crs is the same.
         // So we avoid using it if both crs are the same.
         return [this.extent];
     } else {
-        return [this.extent.as(layer.extent.crs())];
+        return [this.extent.as(source.extent.crs())];
     }
 };
 
 TileMesh.prototype.getZoomForLayer = function getZoomForLayer(layer) {
-    if (layer.protocol.indexOf('wmts') == 0) {
-        OGCWebServiceHelper.computeTileMatrixSetCoordinates(this, layer.options.tileMatrixSet);
-        return this.wmtsCoords[layer.options.tileMatrixSet][0].zoom;
+    if (layer.source.protocol.indexOf('wmts') == 0) {
+        OGCWebServiceHelper.computeTileMatrixSetCoordinates(this, layer.source.tileMatrixSet);
+        return this.wmtsCoords[layer.source.tileMatrixSet][0].zoom;
     } else {
         return this.level;
     }
@@ -237,6 +228,17 @@ TileMesh.prototype.findCommonAncestor = function findCommonAncestor(tile) {
     } else {
         return this.findCommonAncestor(tile.parent);
     }
+};
+
+TileMesh.prototype.findAncestorFromLevel = function fnFindAncestorFromLevel(targetLevel) {
+    let parentAtLevel = this;
+    while (parentAtLevel && parentAtLevel.level > targetLevel) {
+        parentAtLevel = parentAtLevel.parent;
+    }
+    if (!parentAtLevel) {
+        return Promise.reject(`Invalid targetLevel requested ${targetLevel}`);
+    }
+    return parentAtLevel;
 };
 
 export default TileMesh;

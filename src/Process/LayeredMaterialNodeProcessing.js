@@ -4,14 +4,31 @@ import LayerUpdateState from '../Layer/LayerUpdateState';
 import { ImageryLayers } from '../Layer/Layer';
 import CancelledCommandException from '../Core/Scheduler/CancelledCommandException';
 import { SIZE_TEXTURE_TILE } from '../Provider/OGCWebServiceHelper';
-import { computeMinMaxElevation } from '../Parser/XbilParser';
+import computeMinMaxElevation from '../Parser/XbilParser';
 
 // max retry loading before changing the status to definitiveError
 const MAX_RETRY = 4;
 
+function getSourceExtent(node, extent, targetLevel, source) {
+    if (source && source.getSourceExtents) {
+        return source.getSourceExtents(extent).extent;
+    } else if (extent.isTiledCrs()) {
+        return extent.extentParent(targetLevel);
+    } else {
+        const parent = node.findAncestorFromLevel(targetLevel);
+        if (parent.extent) {
+            // Needed to initNodeElevationTextureFromParent, insertSignificantValuesFromParent,
+            // isColorLayerDownscaled
+            // Must be removed
+            parent.extent.zoom = parent.level;
+        }
+        return parent.extent;
+    }
+}
+
 function initNodeImageryTexturesFromParent(node, parent, layer) {
-    if (parent.material && parent.material.getColorLayerLevelById(layer.id) > EMPTY_TEXTURE_ZOOM) {
-        const coords = node.getCoordsForLayer(layer);
+    if (parent.material && parent.material.isColorLayerLoaded(layer)) {
+        const coords = node.getCoordsForSource(layer.source);
         const offsetTextures = node.material.getLayerTextureOffset(layer.id);
 
         let textureIndex = offsetTextures;
@@ -44,7 +61,7 @@ function initNodeElevationTextureFromParent(node, parent, layer) {
     // multiple elevation layers (thus multiple calls to initNodeElevationTextureFromParent) but a given
     // node can only use 1 elevation texture
     if (parent.material && parent.material.getElevationLayerLevel() > node.material.getElevationLayerLevel()) {
-        const coords = node.getCoordsForLayer(layer);
+        const coords = node.getCoordsForSource(layer.source);
 
         const texture = parent.material.textures[l_ELEVATION][0];
         const pitch = coords[0].offsetToParent(parent.material.textures[l_ELEVATION][0].coords);
@@ -66,7 +83,7 @@ function initNodeElevationTextureFromParent(node, parent, layer) {
             elevation.max = max;
         }
 
-        node.setTextureElevation(layer, elevation);
+        node.setTextureElevation(layer, elevation, pitch);
     }
 }
 
@@ -82,7 +99,7 @@ function getIndiceWithPitch(i, pitch, w) {
 
 function insertSignificantValuesFromParent(texture, node, parent, layer) {
     if (parent.material && parent.material.getElevationLayerLevel() > EMPTY_TEXTURE_ZOOM) {
-        const coords = node.getCoordsForLayer(layer);
+        const coords = node.getCoordsForSource(layer.source);
         const textureParent = parent.material.textures[l_ELEVATION][0];
         const pitch = coords[0].offsetToParent(parent.material.textures[l_ELEVATION][0].coords);
         const tData = texture.image.data;
@@ -140,20 +157,21 @@ function checkNodeElevationTextureValidity(texture, noDataValue) {
 
 export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
     const material = node.material;
+    const extentsDestination = node.getCoordsForSource(layer.source);
 
     // Initialisation
     if (node.layerUpdateState[layer.id] === undefined) {
         node.layerUpdateState[layer.id] = new LayerUpdateState();
 
-        if (!layer.tileInsideLimit(node, layer)) {
+        if (!layer.source.extentsInsideLimit(extentsDestination)) {
             // we also need to check that tile's parent doesn't have a texture for this layer,
             // because even if this tile is outside of the layer, it could inherit it's
             // parent texture
             if (!layer.noTextureParentOutsideLimit &&
                 parent &&
                 parent.material &&
-                parent.getIndexLayerColor &&
-                parent.getIndexLayerColor(layer.id) >= 0) {
+                parent.material.indexOfColorLayer &&
+                parent.material.indexOfColorLayer(layer.id) >= 0) {
                 // ok, we're going to inherit our parent's texture
             } else {
                 node.layerUpdateState[layer.id].noMoreUpdatePossible();
@@ -162,7 +180,7 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
         }
 
         if (material.indexOfColorLayer(layer.id) === -1) {
-            material.pushLayer(layer, node.getCoordsForLayer(layer));
+            material.pushLayer(layer, node.getCoordsForSource(layer.source));
             const imageryLayers = context.view.getLayers(l => l.type === 'color');
             const sequence = ImageryLayers.getColorLayersIdOrderedBySequence(imageryLayers);
             material.setSequence(sequence);
@@ -176,7 +194,7 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
 
         // The two-step allows you to filter out unnecessary requests
         // Indeed in the second pass, their state (not visible or not displayed) can block them to fetch
-        const minLevel = layer.options.zoom ? layer.options.zoom.min : 0;
+        const minLevel = layer.source.zoom.min;
         if (node.material.getColorLayerLevelById(layer.id) >= minLevel) {
             context.view.notifyChange(node, false);
             return;
@@ -200,11 +218,9 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
         return;
     }
 
-
-    // does this tile needs a new texture?
-    if (layer.canTileTextureBeImproved) {
+    if (layer.source.canTileTextureBeImproved) {
         // if the layer has a custom method -> use it
-        if (!layer.canTileTextureBeImproved(layer, node)) {
+        if (!layer.source.canTileTextureBeImproved(node.extent, material.getLayerTextures(layer)[0])) {
             node.layerUpdateState[layer.id].noMoreUpdatePossible();
             return;
         }
@@ -221,18 +237,24 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
 
     const failureParams = node.layerUpdateState[layer.id].failureParams;
     const currentLevel = node.material.getColorLayerLevelById(layer.id);
-    const nodeLevel = node.getCoordsForLayer(layer)[0].zoom || node.level;
+    const nodeLevel = extentsDestination[0].zoom || node.level;
     const targetLevel = chooseNextLevelToFetch(layer.updateStrategy.type, node, nodeLevel, currentLevel, layer, failureParams);
     if (targetLevel <= currentLevel) {
         return;
     }
 
-    // Retry tileInsideLimit because you must check with the targetLevel
-    // if the first test layer.tileInsideLimit returns that it is out of limits
-    // and the node inherits from its parent, then it'll still make a command to fetch texture.
-    if (!layer.tileInsideLimit(node, layer, targetLevel)) {
-        node.layerUpdateState[layer.id].noMoreUpdatePossible();
-        return;
+    // Get equivalent of extent destination in source
+    const extentsSource = [];
+    for (const extentDestination of extentsDestination) {
+        const extentSource = getSourceExtent(node, extentDestination, targetLevel, layer.source);
+        if (extentSource && !layer.source.extentInsideLimit(extentSource)) {
+            // Retry extentInsideLimit because you must check with the targetLevel
+            // if the first test extentInsideLimit returns that it is out of limits
+            // and the node inherits from its parent, then it'll still make a command to fetch texture.
+            node.layerUpdateState[layer.id].noMoreUpdatePossible();
+            return;
+        }
+        extentsSource.push(extentSource);
     }
 
     node.layerUpdateState[layer.id].newTry();
@@ -240,10 +262,12 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
         /* mandatory */
         view: context.view,
         layer,
+        extentsSource,
+        extentsDestination,
+        parsedData: node.material.getLayerTextures(layer)[0].parsedData,
         requester: node,
         priority: nodeCommandQueuePriorityFunction(node),
         earlyDropFunction: refinementCommandCancellationFn,
-        targetLevel,
     };
 
     return context.scheduler.execute(command).then(
@@ -252,10 +276,9 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
                 return;
             }
 
-            if (Array.isArray(result)) {
-                node.material.setLayerTextures(layer, result);
-            } else if (result.texture) {
-                node.material.setLayerTextures(layer, [result]);
+            if (result) {
+                const pitchs = extentsDestination.map((ext, i) => ext.offsetToParent(extentsSource[i]));
+                node.material.setLayerTextures(layer, result, pitchs);
             } else {
                 // TODO: null texture is probably an error
                 // Maybe add an error counter for the node/layer,
@@ -300,7 +323,7 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, parent)
         node.layerUpdateState[layer.id] = new LayerUpdateState();
         initNodeElevationTextureFromParent(node, parent, layer);
         currentElevation = material.getElevationLayerLevel();
-        const minLevel = layer.options.zoom ? layer.options.zoom.min : 0;
+        const minLevel = layer.source.zoom.min;
         if (currentElevation >= minLevel) {
             context.view.notifyChange(node, false);
             return;
@@ -326,13 +349,22 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, parent)
         }
     }
 
-    const c = node.getCoordsForLayer(layer)[0];
-    const zoom = c.zoom || node.level;
-    const targetLevel = chooseNextLevelToFetch(layer.updateStrategy.type, node, zoom, currentElevation, layer);
+    const extentsDestination = node.getCoordsForSource(layer.source);
+    const targetLevel = chooseNextLevelToFetch(layer.updateStrategy.type, node, extentsDestination[0].zoom, currentElevation, layer);
 
-    if (targetLevel <= currentElevation || !layer.tileInsideLimit(node, layer, targetLevel)) {
+    if (targetLevel <= currentElevation) {
         node.layerUpdateState[layer.id].noMoreUpdatePossible();
         return Promise.resolve();
+    }
+
+    const extentsSource = [];
+    for (const nodeExtent of extentsDestination) {
+        const extentSource = getSourceExtent(node, nodeExtent, targetLevel);
+        if (extentSource && !layer.source.extentInsideLimit(extentSource)) {
+            node.layerUpdateState[layer.id].noMoreUpdatePossible();
+            return;
+        }
+        extentsSource.push(extentSource);
     }
 
     node.layerUpdateState[layer.id].newTry();
@@ -341,14 +373,19 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, parent)
         /* mandatory */
         view: context.view,
         layer,
+        extentsSource,
+        extentsDestination,
         requester: node,
-        targetLevel,
         priority: nodeCommandQueuePriorityFunction(node),
         earlyDropFunction: refinementCommandCancellationFn,
     };
 
     return context.scheduler.execute(command).then(
-        (terrain) => {
+        (textures) => {
+            const terrain = { texture: textures[0] };
+
+            // TODO: this check is maybe useless
+            // see in dataSourceProvider
             if (node.material === null) {
                 return;
             }
@@ -363,14 +400,6 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, parent)
 
             node.layerUpdateState[layer.id].success();
 
-            if (terrain.texture && terrain.texture.flipY) {
-                // DataTexture default to false, so make sure other Texture types
-                // do the same (eg image texture)
-                // See UV construction for more details
-                terrain.texture.flipY = false;
-                terrain.texture.needsUpdate = true;
-            }
-
             if (terrain.texture && terrain.texture.image.data && !checkNodeElevationTextureValidity(terrain.texture, layer.noDataValue)) {
                 // Quick check to avoid using elevation texture with no data value
                 // If we have no data values, we use value from the parent tile
@@ -378,7 +407,12 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, parent)
                 insertSignificantValuesFromParent(terrain.texture, node, parent, layer);
             }
 
-            node.setTextureElevation(layer, terrain);
+            if (terrain.texture && terrain.texture.image.data) {
+                const { min, max } = computeMinMaxElevation(terrain.texture.image.data);
+                terrain.min = !min ? 0 : min;
+                terrain.max = !max ? 0 : max;
+            }
+            node.setTextureElevation(layer, terrain, extentsDestination[0].offsetToParent(extentsSource[0]));
         },
         (err) => {
             if (err instanceof CancelledCommandException) {

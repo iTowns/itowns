@@ -28,22 +28,31 @@ describe('updateLayeredMaterialNodeImagery', function () {
 
     const layer = {
         id: 'foo',
-        protocol: 'dummy',
-        extent: new Extent('EPSG:4326', 0, 0, 0, 0),
+        source: {
+            protocol: 'dummy',
+            extent: new Extent('EPSG:4326', 0, 0, 0, 0),
+        },
     };
 
     beforeEach('reset state', function () {
         // clear commands array
         context.scheduler.commands = [];
         // reset default layer state
-        layer.tileInsideLimit = () => true;
+
+        layer.updateStrategy = {
+            type: STRATEGY_MIN_NETWORK_TRAFFIC,
+            options: {},
+        };
         layer.visible = true;
-        layer.updateStrategy = STRATEGY_MIN_NETWORK_TRAFFIC;
-        layer.options = {
+        layer.source = {
+            protocol: 'dummy',
+            extentsInsideLimit: () => true,
+            extentInsideLimit: () => true,
             zoom: {
                 min: 0,
                 max: 10,
             },
+            extent: { crs: () => 'EPSG:4326' },
         };
     });
 
@@ -88,6 +97,7 @@ describe('updateLayeredMaterialNodeImagery', function () {
         tile.material.indexOfColorLayer = () => 0;
         tile.material.isColorLayerDownscaled = () => true;
         tile.material.getColorLayerLevelById = () => 1;
+        tile.material.getLayerTextures = () => [{}];
 
         // FIRST PASS: init Node From Parent and get out of the function
         // without any network fetch
@@ -98,26 +108,31 @@ describe('updateLayeredMaterialNodeImagery', function () {
         assert.equal(context.scheduler.commands.length, 1);
     });
 
-    it('tile should not request texture with level > layer.zoom.max', () => {
+    it('tile should not request texture with level > layer.source.zoom.max', () => {
+        const level = 15;
+        const countTexture = Math.pow(2, level);
         const tile = new TileMesh(
             layer,
             geom,
             new LayeredMaterial(),
-            new Extent('EPSG:4326', 0, 0, 0, 0),
-            15);
+            new Extent('EPSG:4326', 0, 180 / countTexture, 0, 180 / countTexture),
+            level);
         tile.material.visible = true;
         tile.parent = { };
+        layer.source.protocol = 'wmts';
+        layer.source.tileMatrixSet = 'WGS84G';
         // Emulate a situation where tile inherited a level 1 texture
         tile.material.indexOfColorLayer = () => 0;
         tile.material.isColorLayerDownscaled = () => true;
         tile.material.getColorLayerLevelById = () => 1;
+        tile.material.getLayerTextures = () => [{}];
         // Since layer is using STRATEGY_MIN_NETWORK_TRAFFIC, we should emit
-        // a single command, requesting a texture at layer.options.zoom.max level
+        // a single command, requesting a texture at layer.source.zoom.max level
         updateLayeredMaterialNodeImagery(context, layer, tile);
         updateLayeredMaterialNodeImagery(context, layer, tile);
         assert.equal(context.scheduler.commands.length, 1);
         assert.equal(
-            context.scheduler.commands[0].targetLevel,
-            layer.options.zoom.max);
+            context.scheduler.commands[0].extentsSource[0].zoom,
+            layer.source.zoom.max);
     });
 });

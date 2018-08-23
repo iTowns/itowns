@@ -25,44 +25,24 @@ function subdivisionExtents(bbox) {
     return [northWest, northEast, southWest, southEast];
 }
 
-export function requestNewTile(view, scheduler, geometryLayer, extent, parent, level) {
-    const command = {
-        /* mandatory */
-        view,
-        requester: parent,
-        layer: geometryLayer,
-        priority: 10000,
-        /* specific params */
-        extent,
-        level,
-        redraw: false,
-        threejsLayer: geometryLayer.threejsLayer,
-    };
-
-    return scheduler.execute(command).then((node) => {
-        node.add(node.OBB());
-        geometryLayer.onTileCreated(node);
-        return node;
-    });
-}
-
 function subdivideNode(context, layer, node) {
     if (!node.pendingSubdivision && !node.children.some(n => n.layer == layer)) {
         const extents = subdivisionExtents(node.extent);
         // TODO: pendingSubdivision mechanism is fragile, get rid of it
         node.pendingSubdivision = true;
 
-        const promises = [];
-        const children = [];
-        for (const extent of extents) {
-            promises.push(
-                requestNewTile(context.view, context.scheduler, layer, extent, node).then((child) => {
-                    children.push(child);
-                    return node;
-                }));
-        }
+        const command = {
+            /* mandatory */
+            view: context.view,
+            requester: node,
+            layer,
+            priority: 10000,
+            /* specific params */
+            extentsSource: extents,
+            redraw: false,
+        };
 
-        Promise.all(promises).then(() => {
+        context.scheduler.execute(command).then((children) => {
             for (const child of children) {
                 node.add(child);
                 child.updateMatrixWorld(true);
@@ -92,7 +72,7 @@ function subdivideNode(context, layer, node) {
     }
 }
 
-export function processTiledGeometryNode(cullingTest, subdivisionTest) {
+export default function processTiledGeometryNode(cullingTest, subdivisionTest) {
     return function _processTiledGeometryNode(context, layer, node) {
         if (!node.parent) {
             return ObjectRemovalHelper.removeChildrenAndCleanup(layer, node);

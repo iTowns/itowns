@@ -1,21 +1,17 @@
 {
   "type": "color",
-  "url": "https://wxs.ign.fr/an7nvfzojv5wa96dsga5nk8w/geoportail/wmts",
-  "protocol": "wmts",
   "id": "Railways",
   "title": "Railways in France",
   "visible": false,
   "opacity": 1,
   "transparent": true,
-  "format": "image/png",
-  "updateStrategy": {
-    "type": 0,
-    "options": {}
-  },
-  "networkOptions": {
-    "crossOrigin": "omit"
-  },
-  "options": {
+  "source": {
+    "protocol": "wmts",
+    "url": "https://wxs.ign.fr/an7nvfzojv5wa96dsga5nk8w/geoportail/wmts",
+    "format": "image/png",
+    "networkOptions": {
+      "crossOrigin": "omit"
+    },
     "tileMatrixSet": "PM",
     "name": "TRANSPORTNETWORKS.RAILWAYS",
     "style": "normal",

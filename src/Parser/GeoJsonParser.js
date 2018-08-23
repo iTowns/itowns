@@ -211,6 +211,7 @@ function readFeatures(crsIn, crsOut, features, filteringExtent, options) {
             res.features.push(f);
         }
     }
+    res.isFeature = true;
     return res;
 }
 

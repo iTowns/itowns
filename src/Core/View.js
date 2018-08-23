@@ -13,6 +13,22 @@ import GeometryLayer from '../Layer/GeometryLayer';
 
 import Scheduler from './Scheduler/Scheduler';
 import Picking from './Picking';
+import WMTSSource from '../Source/WMTSSource';
+import WMSSource from '../Source/WMSSource';
+import WFSSource from '../Source/WFSSource';
+import TMSSource from '../Source/TMSSource';
+import StaticSource from '../Source/StaticSource';
+import FileSource from '../Source/FileSource';
+
+const supportedSource = new Map([
+    ['wmts', WMTSSource],
+    ['file', FileSource],
+    ['wfs', WFSSource],
+    ['wms', WMSSource],
+    ['tms', TMSSource],
+    ['xyz', TMSSource],
+    ['static', StaticSource],
+]);
 
 export const VIEW_EVENTS = {
     /**
@@ -144,24 +160,40 @@ function _preprocessLayer(view, layer, provider, parentLayer) {
         layer = _createLayerFromConfig(layer);
     }
 
-    if (provider) {
-        if (provider.tileInsideLimit) {
-            layer.tileInsideLimit = provider.tileInsideLimit.bind(provider);
+    if (parentLayer && !layer.extent) {
+        layer.extent = parentLayer.extent;
+        if (layer.source && !layer.source.extent) {
+            layer.source.extent = parentLayer.extent;
         }
     }
 
-    if (!layer.whenReady) {
+    if (layer.type == 'geometry' || layer.type == 'debug') {
         if (parentLayer || layer.type == 'debug') {
             // layer.threejsLayer *must* be assigned before preprocessing,
             // because TileProvider.preprocessDataLayer function uses it.
             layer.threejsLayer = view.mainLoop.gfxEngine.getUniqueThreejsLayer();
         }
+        layer.defineLayerProperty('visible', true, () => _syncGeometryLayerVisibility(layer, view));
+        _syncGeometryLayerVisibility(layer, view);
+    // Find projection layer, this is projection destination
+        layer.projection = view.referenceCrs;
+    } else if (layer.source.tileMatrixSet === 'PM') {
+        layer.projection = 'EPSG:3857';
+    } else {
+        layer.projection = parentLayer.extent.crs();
+    }
+
+    if (!layer.whenReady) {
         let providerPreprocessing = Promise.resolve();
         if (provider && provider.preprocessDataLayer) {
             providerPreprocessing = provider.preprocessDataLayer(layer, view, view.mainLoop.scheduler, parentLayer);
             if (!(providerPreprocessing && providerPreprocessing.then)) {
                 providerPreprocessing = Promise.resolve();
             }
+        } else if (layer.source) {
+            const protocol = layer.source.protocol;
+            layer.source = new (supportedSource.get(protocol))(layer.source, layer.projection);
+            providerPreprocessing = layer.source.whenReady || providerPreprocessing;
         }
 
         // the last promise in the chain must return the layer
@@ -171,60 +203,9 @@ function _preprocessLayer(view, layer, provider, parentLayer) {
         });
     }
 
-    if (layer.type == 'geometry' || layer.type == 'debug') {
-        layer.defineLayerProperty('visible', true, () => _syncGeometryLayerVisibility(layer, view));
-        _syncGeometryLayerVisibility(layer, view);
-    }
 
     return layer;
 }
-
-/**
- * Options to wms protocol
- * @typedef {Object} OptionsWms
- * @property {Attribution} attribution The intellectual property rights for the layer
- * @property {Object} extent Geographic extent of the service
- * @property {string} name
- */
-
-/**
- * Options to wtms protocol
- * @typedef {Object} OptionsWmts
- * @property {Attribution} attribution The intellectual property rights for the layer
- * @property {string} attribution.name The name of the owner of the data
- * @property {string} attribution.url The website of the owner of the data
- * @property {string} name
- * @property {string} tileMatrixSet
- * @property {Array.<Object>} tileMatrixSetLimits The limits for the tile matrix set
- * @property {number} tileMatrixSetLimits.minTileRow Minimum row for tiles at the level
- * @property {number} tileMatrixSetLimits.maxTileRow Maximum row for tiles at the level
- * @property {number} tileMatrixSetLimits.minTileCol Minimum col for tiles at the level
- * @property {number} tileMatrixSetLimits.maxTileCol Maximum col for tiles at the level
- * @property {Object} [zoom]
- * @property {Object} [zoom.min] layer's zoom minimum
- * @property {Object} [zoom.max] layer's zoom maximum
- */
-
-/**
- * @typedef {Object} NetworkOptions - Options for fetching resources over the
- * network. For json or xml fetching, this object is passed as it is to fetch
- * as the init object, see [fetch documentation]{@link https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Parameters}.
- * @property {string} crossOrigin For textures, only this property is used. Its
- * value is directly assigned to the crossorigin property of html tags.
- * @property * Same properties as the init parameter of fetch
- */
-
-/**
- * @typedef {Object} LayerOptions
- * @property {string} id Unique layer's id
- * @property {string} type the layer's type : 'color', 'elevation', 'geometry'
- * @property {string} protocol wmts and wms (wmtsc for custom deprecated)
- * @property {string} url Base URL of the repository or of the file(s) to load
- * @property {string} format Format of this layer. See individual providers to check which formats are supported for a given layer type.
- * @property {NetworkOptions} networkOptions Options for fetching resources over network
- * @property {Object} updateStrategy strategy to load imagery files
- * @property {OptionsWmts|OptionsWms} options WMTS or WMS options
- */
 
 /**
  * Add layer in viewer.
@@ -245,12 +226,12 @@ function _preprocessLayer(view, layer, provider, parentLayer) {
  * // Example to add an OPENSM Layer
  * view.addLayer({
  *   type: 'color',
- *   protocol:   'xyz',
- *   id:         'OPENSM',
+ *   id: 'OPENSM',
  *   fx: 2.5,
- *   url:  'http://b.tile.openstreetmap.fr/osmfr/${z}/${x}/${y}.png',
- *   format: 'image/png',
- *   options: {
+ *   source: {
+ *      protocol:   'xyz',
+ *      url:  'http://b.tile.openstreetmap.fr/osmfr/${z}/${x}/${y}.png',
+ *      format: 'image/png',
  *       attribution : {
  *           name: 'OpenStreetMap',
  *           url: 'http://www.openstreetmap.org/',
@@ -284,11 +265,8 @@ View.prototype.addLayer = function addLayer(layer, parentLayer) {
             return;
         }
 
-        if (parentLayer && !layer.extent) {
-            layer.extent = parentLayer.extent;
-        }
-
-        const provider = this.mainLoop.scheduler.getProtocolProvider(layer.protocol);
+        const protocol = layer.source ? layer.source.protocol : layer.protocol;
+        const provider = this.mainLoop.scheduler.getProtocolProvider(protocol);
         if (layer.protocol && !provider) {
             reject(new Error(`${layer.protocol} is not a recognized protocol name.`));
             return;

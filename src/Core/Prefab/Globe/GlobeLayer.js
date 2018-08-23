@@ -36,13 +36,15 @@ class GlobeLayer extends TiledGeometryLayer {
      * <code>THREE.Object3d</code>.
      */
     constructor(id, object3d, config = {}) {
-        super(id, object3d || new THREE.Group(), config);
+        // Configure tiles
+        const schemeTile = globeSchemeTileWMTS(globeSchemeTile1);
+        const builder = new BuilderEllipsoidTile();
+        super(id, object3d || new THREE.Group(), schemeTile, builder, config);
 
         this.options.defaultPickingRadius = 5;
 
-        // Configure tiles
-        this.schemeTile = globeSchemeTileWMTS(globeSchemeTile1);
         this.extent = this.schemeTile[0].clone();
+
         for (let i = 1; i < this.schemeTile.length; i++) {
             this.extent.union(this.schemeTile[i]);
         }
@@ -52,8 +54,6 @@ class GlobeLayer extends TiledGeometryLayer {
             config.maxSubdivisionLevel || 18,
             config.sseSubdivisionThreshold || 1.0,
             config.maxDeltaElevationLevel || 4);
-
-        this.builder = new BuilderEllipsoidTile();
     }
 
     preUpdate(context, changeSources) {
@@ -66,7 +66,7 @@ class GlobeLayer extends TiledGeometryLayer {
     countColorLayersTextures(...layers) {
         let occupancy = 0;
         for (const layer of layers) {
-            const projection = layer.projection || layer.options.projection;
+            const projection = layer.projection || layer.source.projection;
             // 'EPSG:3857' occupies the maximum 3 textures on tiles
             // 'EPSG:4326' occupies 1 textures on tile
             occupancy += projection == 'EPSG:3857' ? 3 : 1;

@@ -46,9 +46,9 @@ function _dichotomy(nodeLevel, currentLevel, options = {}) {
         Math.ceil((currentLevel + nodeLevel) / 2));
 }
 
-export function chooseNextLevelToFetch(strategy, node, nodeLevel, currentLevel, layer, failureParams) {
+export function chooseNextLevelToFetch(strategy, node, nodeLevel = node.level, currentLevel, layer, failureParams) {
     let nextLevelToFetch;
-    const maxZoom = layer.options.zoom ? layer.options.zoom.max : Infinity;
+    const maxZoom = layer.source.zoom ? layer.source.zoom.max : Infinity;
     if (failureParams) {
         nextLevelToFetch = _dichotomy(failureParams.targetLevel, currentLevel, layer.options);
     } else {

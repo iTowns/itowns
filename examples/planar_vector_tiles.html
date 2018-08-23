@@ -60,16 +60,19 @@
                     }
                 });
 
+                function isValidData(data, extentDestination) {
+                    return extentDestination.zoom - data.extent.zoom < 4;
+                }
+
                 view.addLayer({
                     type: 'color',
-                    protocol: 'xyz',
                     id: 'MVT',
-                    // eslint-disable-next-line no-template-curly-in-string
-                    url: 'https://osm.oslandia.io/data/v3/${z}/${x}/${y}.pbf',
-                    extent,
-                    projection: 'EPSG:3857',
-                    format: 'application/x-protobuf;type=mapbox-vector',
-                    options: {
+                    isValidData: isValidData,
+                    source: {
+                        protocol: 'xyz',
+                        url: 'https://osm.oslandia.io/data/v3/${z}/${x}/${y}.pbf',
+                        format: 'application/x-protobuf;type=mapbox-vector',
+                        projection: 'EPSG:4326',
                         attribution: {
                             name: 'OpenStreetMap',
                             url: 'http://www.openstreetmap.org/',
@@ -78,13 +81,13 @@
                             min: 2,
                             max: 15,
                         },
+                        // eslint-disable-next-line no-template-curly-in-string
+                        extent: extent.as('EPSG:4326'),
                     },
-                    updateStrategy: {
-                        type: itowns.STRATEGY_DICHOTOMY,
-                    },
-                    style: mapboxStyle,
                     filter: mapboxFilter(supportedLayers),
+                    style: mapboxStyle,
                     backgroundLayer,
+                    projection: 'EPSG:3857',
                 });
             });
 

@@ -1,9 +1,7 @@
 
 {
     "type":       "elevation",
-    "protocol":   "wmts",
     "id":         "MNT_WORLD_SRTM3",
-    "url":        "http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/geoportail/wmts",
     "noDataValue": -99999,
     "updateStrategy": {
         "type": 1,
@@ -11,8 +9,10 @@
             "groups": [3, 7, 9]
         }
     },
-    "format": "image/x-bil;bits=32",
-    "options": {
+    "source": {
+        "format": "image/x-bil;bits=32",
+        "protocol":   "wmts",
+        "url":        "http://wxs.ign.fr/va5orxd0pgzvq3jxutqfuy0b/geoportail/wmts",
         "name": "ELEVATION.ELEVATIONGRIDCOVERAGE.SRTM3",
         "tileMatrixSet": "WGS84G",
         "tileMatrixSetLimits": {

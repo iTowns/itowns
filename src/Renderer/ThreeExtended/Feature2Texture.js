@@ -115,12 +115,8 @@ export default {
                 drawFeature(ctx, feature, origin, scale, extent, style);
             }
 
-            texture = new THREE.Texture(c);
+            texture = new THREE.CanvasTexture(c);
             texture.flipY = false;
-            texture.generateMipmaps = false;
-            texture.magFilter = THREE.LinearFilter;
-            texture.minFilter = THREE.LinearFilter;
-            texture.needsUpdate = true;
         } else if (backgroundColor) {
             const data = new Uint8Array(3);
             data[0] = backgroundColor.r * 255;

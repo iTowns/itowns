@@ -2,7 +2,7 @@
 // eslint-disable-next-line no-unused-vars
 function ToolTip(viewer, viewerDiv, tooltip, precisionPx) {
     var mouseDown = 0;
-    var layers = viewer.getLayers(function _(l) { return l.protocol === 'rasterizer'; });
+    var layers = viewer.getLayers(function _(l) { return l.source && l.source.protocol === 'file'; });
 
     document.body.onmousedown = function onmousedown() {
         ++mouseDown;
@@ -36,7 +36,7 @@ function ToolTip(viewer, viewerDiv, tooltip, precisionPx) {
             for (i = 0; i < layers.length; i++) {
                 layer = layers[i];
                 result = itowns.FeaturesUtils.filterFeaturesUnderCoordinate(
-                    geoCoord, layer.feature, precision);
+                    geoCoord, layer.source.parsedData, precision);
                 result.sort(function compare(a, b) { return b.feature.type !== 'point'; });
                 for (p = 0; p < result.length; p++) {
                     visible = true;

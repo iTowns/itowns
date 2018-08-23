@@ -8,12 +8,8 @@ import Extent from '../../src/Core/Geographic/Extent';
 const multipolygon = fs.readFileSync('test/data/pbf/multipolygon.pbf');
 
 function parse(pbf) {
-    const coords = new Extent('TMS', 1, 1, 1);
-    const extent = new Extent(
-        'EPSG:3857',
-        -20037508.342789244, 20037508.342789244,
-        -20037508.342789255, 20037508.342789244);
-    return VectorTileParser.parse(pbf, { coords, extent });
+    pbf.coords = new Extent('TMS', 1, 1, 1);
+    return VectorTileParser.parse(pbf, { crsIn: 'EPSG:4326', crsOut: 'EPSG:3857' });
 }
 
 describe('Vector tiles', function () {

@@ -1,5 +1,6 @@
 import Layer from './Layer';
 import { updateLayeredMaterialNodeImagery } from '../Process/LayeredMaterialNodeProcessing';
+import textureConverter from '../Parser/textureConverter';
 
 /**
  * Fires when the visiblity of the layer has changed.
@@ -32,13 +33,15 @@ class ColorLayer extends Layer {
      * contains three elements <code>name, protocol, extent</code>, these
      * elements will be available using <code>layer.name</code> or something
      * else depending on the property name.
-     *
+     * @param {WMTSSource|WMSSource|WFSSource|TMSSource|FileSource} [config.source] data source
      * @example
      * // Create a ColorLayer
      * const color = new ColorLayer('roads', {
-     *     url: 'http://server.geo/wmts/SERVICE=WMTS&TILEMATRIX=%TILEMATRIX&TILEROW=%ROW&TILECOL=%COL',
-     *     protocol: 'wmts',
-     *     format: 'image/png',
+     *     source: {
+     *          protocol: 'wmts',
+     *          url: 'http://server.geo/wmts/SERVICE=WMTS&TILEMATRIX=%TILEMATRIX&TILEROW=%ROW&TILECOL=%COL',
+     *          format: 'image/png',
+     *     }
      *     transparent: true
      * });
      *
@@ -50,22 +53,30 @@ class ColorLayer extends Layer {
      * view.addLayer({
      *     id: 'roads',
      *     type: 'color',
-     *     url: 'http://server.geo/wmts/SERVICE=WMTS&TILEMATRIX=%TILEMATRIX&TILEROW=%ROW&TILECOL=%COL',
-     *     protocol: 'wmts',
-     *     format: 'image/png',
+     *     source: {
+     *          url: 'http://server.geo/wmts/SERVICE=WMTS&TILEMATRIX=%TILEMATRIX&TILEROW=%ROW&TILECOL=%COL',
+     *          protocol: 'wmts',
+     *          format: 'image/png',
+     *     }
      *     transparent: true
      * });
      */
     constructor(id, config = {}) {
         super(id, 'color', config);
-
+        this.style = config.style || {};
         this.defineLayerProperty('visible', true);
         this.defineLayerProperty('opacity', 1.0);
         this.defineLayerProperty('sequence', 0);
+        this.transparent = config.transparent || (this.opacity < 1.0);
+        this.noTextureParentOutsideLimit = config.source ? config.source.protocol == 'file' : false;
     }
 
     update(context, layer, node, parent) {
         return updateLayeredMaterialNodeImagery(context, this, node, parent);
+    }
+
+    convert(data, extentDestination) {
+        return textureConverter.convert(data, extentDestination, this);
     }
 }
 

@@ -25,7 +25,9 @@
             var viewerDiv = document.getElementById('viewerDiv');
 
             // Instanciate PlanarView
-            var view = new itowns.PlanarView(viewerDiv, extent, { maxSubdivisionLevel: 10 });
+            // By default itowns' tiles geometry have a "skirt" (ie they have a height),
+            // but in case of orthographic we don't need this feature, so disable it
+            var view = new itowns.PlanarView(viewerDiv, extent, { disableSkirt: true, maxSubdivisionLevel: 10 });
 
             // eslint-disable-next-line no-new
             new itowns.PlanarControls(view, {
@@ -44,28 +46,24 @@
             itowns.CameraUtils.transformCameraToLookAtTarget(view, view.camera.camera3D, { tilt: 90 });
             setupLoadingScreen(viewerDiv, view);
 
-            // By default itowns' tiles geometry have a "skirt" (ie they have a height),
-            // but in case of orthographic we don't need this feature, so disable it
-            view.tileLayer.disableSkirt = true;
-
             // Add a TMS imagery layer
             view.addLayer({
                 type: 'color',
-                protocol: 'xyz',
                 id: 'OPENSM',
-                // eslint-disable-next-line no-template-curly-in-string
-                url: 'http://c.tile.stamen.com/watercolor/${z}/${x}/${y}.jpg',
-                networkOptions: { crossOrigin: 'anonymous' },
-                extent: [extent.west(), extent.east(), extent.south(), extent.north()],
-                projection: 'EPSG:3857',
-                options: {
+                updateStrategy: {
+                    type: itowns.STRATEGY_DICHOTOMY,
+                },
+                source: {
+                    protocol: 'xyz',
+                    // eslint-disable-next-line no-template-curly-in-string
+                    url: 'http://c.tile.stamen.com/watercolor/${z}/${x}/${y}.jpg',
+                    networkOptions: { crossOrigin: 'anonymous' },
+                    extent: [extent.west(), extent.east(), extent.south(), extent.north()],
+                    projection: 'EPSG:3857',
                     attribution: {
                         name: 'OpenStreetMap',
                         url: 'http://www.openstreetmap.org/',
                     },
-                },
-                updateStrategy: {
-                    type: itowns.STRATEGY_DICHOTOMY,
                 },
             });
 
