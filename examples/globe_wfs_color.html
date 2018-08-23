@@ -1,0 +1,96 @@
+<html>
+    <head>
+        <title>Itowns - Globe WFS color</title>
+
+        <meta charset="UTF-8">
+        <link rel="stylesheet" type="text/css" href="css/example.css">
+        <link rel="stylesheet" type="text/css" href="css/loading_screen.css">
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="js/GUI/dat.gui/dat.gui.min.js"></script>
+    </head>
+    <body>
+        <div id="viewerDiv"></div>
+        <script src="js/GUI/GuiTools.js"></script>
+        <script src="../dist/itowns.js"></script>
+        <script src="js/loading_screen.js"></script>
+        <script src="../dist/debug.js"></script>
+        <div class="help" style="left: unset; right: 0;">
+            <p><b>Information Batiment</b></p>
+            <ul id="info">
+            </ul>
+        </div>
+        <script type="text/javascript">
+            /* global itowns,document,GuiTools, window, debug, setupLoadingScreen */
+            // Define initial camera position
+            var positionOnGlobe = { longitude: 4.818, latitude: 45.7354, altitude: 3000 };
+
+            // `viewerDiv` will contain iTowns' rendering area (`<canvas>`)
+            var viewerDiv = document.getElementById('viewerDiv');
+
+            // Instanciate iTowns GlobeView*
+            var globeView = new itowns.GlobeView(viewerDiv, positionOnGlobe);
+            var menuGlobe = new GuiTools('menuDiv', globeView);
+            var d = new debug.Debug(globeView, menuGlobe.gui);
+            setupLoadingScreen(viewerDiv, globeView);
+
+            function addLayerCb(layer) {
+                globeView.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
+            }
+
+            // Define projection that we will use (taken from https://epsg.io/3946, Proj4js section)
+            itowns.proj4.defs('EPSG:3946',
+                '+proj=lcc +lat_1=45.25 +lat_2=46.75 +lat_0=46 +lon_0=3 +x_0=1700000 +y_0=5200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
+
+            // Add one imagery layer to the scene
+            // This layer is defined in a json file but it could be defined as a plain js
+            // object. See Layer* for more info.
+            itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(addLayerCb);
+
+            // Add two elevation layers.
+            // These will deform iTowns globe geometry to represent terrain elevation.
+            itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addLayerCb);
+            itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addLayerCb);
+
+            function isValidData(data) {
+                return data.features.length < 1000;
+            }
+
+            globeView.addLayer({
+                type: 'color',
+                id: 'wfsBuilding',
+                transparent: true,
+                style: {
+                    fill: 'red',
+                    fillOpacity: 0.5,
+                    stroke: 'white',
+                },
+                isValidData: isValidData,
+                source: {
+                    url: 'http://wxs.ign.fr/72hpsel8j8nhb5qgdh07gcyp/geoportail/wfs?',
+                    protocol: 'wfs',
+                    version: '2.0.0',
+                    typeName: 'BDTOPO_BDD_WLD_WGS84G:bati_remarquable,BDTOPO_BDD_WLD_WGS84G:bati_indifferencie,BDTOPO_BDD_WLD_WGS84G:bati_industriel',
+                    zoom: { max: 20, min: 13 },
+                    projection: 'EPSG:4326',
+                    extent: {
+                        west: 4.568,
+                        east: 5.18,
+                        south: 45.437,
+                        north: 46.03,
+                    },
+                    ipr: 'IGN',
+                    format: 'application/json',
+                },
+            });
+
+            // Listen for globe full initialisation event
+            globeView.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
+                // eslint-disable-next-line no-console
+                console.info('Globe initialized');
+                itowns.ColorLayersOrdering.moveLayerToIndex(globeView, 'Ortho', 0);
+            });
+            debug.createTileDebugUI(menuGlobe.gui, globeView, globeView.wgs84TileLayer, d);
+</script>
+    </body>
+</html>
