@@ -271,11 +271,34 @@ GlobeView.prototype.selectNodeAt = function selectNodeAt(mouse) {
 
 GlobeView.prototype.readDepthBuffer = function readDepthBuffer(x, y, width, height) {
     const g = this.mainLoop.gfxEngine;
+    const currentWireframe = this.wgs84TileLayer.wireframe;
+    const currentOpacity = this.wgs84TileLayer.opacity;
+    const currentVisibility = this.wgs84TileLayer.visible;
+    if (currentWireframe) {
+        this.wgs84TileLayer.wireframe = false;
+    }
+    if (currentOpacity < 1.0) {
+        this.wgs84TileLayer.opacity = 1.0;
+    }
+    if (!currentVisibility) {
+        this.wgs84TileLayer.visible = true;
+    }
+
     const restore = this.wgs84TileLayer.level0Nodes.map(n => n.pushRenderState(RendererConstant.DEPTH));
     const buffer = g.renderViewToBuffer(
         { camera: this.camera, scene: this.wgs84TileLayer.object3d },
         { x, y, width, height });
     restore.forEach(r => r());
+
+    if (this.wgs84TileLayer.wireframe !== currentWireframe) {
+        this.wgs84TileLayer.wireframe = currentWireframe;
+    }
+    if (this.wgs84TileLayer.opacity !== currentOpacity) {
+        this.wgs84TileLayer.opacity = currentOpacity;
+    }
+    if (this.wgs84TileLayer.visible !== currentVisibility) {
+        this.wgs84TileLayer.visible = currentVisibility;
+    }
 
     return buffer;
 };

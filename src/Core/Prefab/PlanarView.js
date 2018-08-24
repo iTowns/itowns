@@ -76,11 +76,32 @@ PlanarView.prototype.selectNodeAt = function selectNodeAt(mouse) {
 
 PlanarView.prototype.readDepthBuffer = function readDepthBuffer(x, y, width, height) {
     const g = this.mainLoop.gfxEngine;
+    const currentWireframe = this.tileLayer.wireframe;
+    const currentOpacity = this.tileLayer.opacity;
+    const currentVisibility = this.tileLayer.visible;
+    if (currentWireframe) {
+        this.tileLayer.wireframe = false;
+    }
+    if (currentOpacity < 1.0) {
+        this.tileLayer.opacity = 1.0;
+    }
+    if (!currentVisibility) {
+        this.tileLayer.visible = true;
+    }
     const restoreState = this.tileLayer.level0Nodes[0].pushRenderState(RendererConstant.DEPTH);
     const buffer = g.renderViewToBuffer(
         { camera: this.camera, scene: this.tileLayer.object3d },
         { x, y, width, height });
     restoreState();
+    if (this.tileLayer.wireframe !== currentWireframe) {
+        this.tileLayer.wireframe = currentWireframe;
+    }
+    if (this.tileLayer.opacity !== currentOpacity) {
+        this.tileLayer.opacity = currentOpacity;
+    }
+    if (this.tileLayer.visible !== currentVisibility) {
+        this.tileLayer.visible = currentVisibility;
+    }
     return buffer;
 };
 
