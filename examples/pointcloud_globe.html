@@ -63,20 +63,10 @@
                 }
 
                 // Configure Point Cloud layer
-                pointcloud = new itowns.GeometryLayer('pointcloud', view.scene);
+                pointcloud = new itowns.GeometryLayer('eglise_saint_blaise_arles', view.scene);
                 pointcloud.file = fileName || 'infos/sources';
                 pointcloud.protocol = 'potreeconverter';
                 pointcloud.url = serverUrl;
-
-                // point selection on double-click
-                function dblClickHandler(event) {
-                    var pick = view.pickObjectsAt(event, pointcloud);
-
-                    if (pick.length) {
-                        console.log('Selected point #' + pick[0].index + ' in Points "' + pick[0].object.owner.name + '"');
-                    }
-                }
-                view.mainLoop.gfxEngine.renderer.domElement.addEventListener('dblclick', dblClickHandler);
 
                 // add pointcloud to scene
                 function onLayerReady() {

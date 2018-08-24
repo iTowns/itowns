@@ -178,7 +178,7 @@
                     view.mainLoop.gfxEngine.renderer.setClearColor(0xcccccc);
 
                     // Configure Point Cloud layer
-                    pointcloud = new itowns.GeometryLayer('pointcloud', new itowns.THREE.Group());
+                    pointcloud = new itowns.GeometryLayer('eglise_saint_blaise_arles', new itowns.THREE.Group());
                     pointcloud.file = fileName || 'infos/sources';
                     pointcloud.protocol = 'potreeconverter';
                     pointcloud.url = serverUrl;
@@ -197,7 +197,11 @@
                         var pick = view.pickObjectsAt(event, 5, pointcloud);
 
                         for (const p of pick) {
-                            console.log('Selected point #' + p.index + ' in Points "' + p.object.owner.name + '"');
+                            console.info('Selected point #' + p.index + ' in position (' +
+                                p.object.position.x + ', ' +
+                                p.object.position.y + ', ' +
+                                p.object.position.z +
+                             ') in Points ' + p.object.layer.id);
                         }
                     }
                     view.mainLoop.gfxEngine.renderer.domElement.addEventListener('dblclick', dblClickHandler);
