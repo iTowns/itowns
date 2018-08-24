@@ -1,7 +1,6 @@
 export default {
 
     addWireFrameCheckbox(gui, view, layer) {
-        layer.wireframe = layer.wireframe || false;
         gui.add(layer, 'wireframe').name('Wireframe').onChange(() => view.notifyChange(layer));
     },
 

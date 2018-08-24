@@ -70,17 +70,31 @@ class GeometryLayer extends Layer {
         Object.defineProperty(this, 'object3d', {
             value: object3d,
             writable: false,
+            configurable: true,
         });
 
         this.defineLayerProperty('opacity', 1.0, () => {
-            this.object3d.traverse((object) => {
-                if (object.layer !== this) {
-                    return;
-                }
-                this.changeOpacity(object);
-                // 3dtiles layers store scenes in children's content property
-                if (object.content) {
+            const root = this.parent ? this.parent.object3d : this.object3d;
+            root.traverse((object) => {
+                if (object.layer == this) {
+                    this.changeOpacity(object);
+                } else if (object.content && object.content.layer == this) {
                     object.content.traverse(this.changeOpacity);
+                }
+            });
+        });
+
+        this.defineLayerProperty('wireframe', false, () => {
+            const root = this.parent ? this.parent.object3d : this.object3d;
+            root.traverse((object) => {
+                if (object.layer == this && object.material) {
+                    object.material.wireframe = this.wireframe;
+                } else if (object.content && object.content.layer == this) {
+                    object.content.traverse((o) => {
+                        if (o.material) {
+                            o.material.wireframe = this.wireframe;
+                        }
+                    });
                 }
             });
         });
@@ -122,6 +136,8 @@ class GeometryLayer extends Layer {
                 ${layer.id}`);
         }
         this.attachedLayers.push(layer);
+        // To traverse GeometryLayer object3d attached
+        layer.parent = this;
     }
 
     /**
@@ -135,6 +151,7 @@ class GeometryLayer extends Layer {
     detach(layer) {
         const count = this.attachedLayers.length;
         this.attachedLayers = this.attachedLayers.filter(attached => attached.id != layer.id);
+        layer.parent = undefined;
         return this.attachedLayers.length < count;
     }
 

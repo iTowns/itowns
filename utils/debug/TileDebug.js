@@ -46,12 +46,8 @@ export default function createTileDebugUI(datDebugTool, view, layer, debugInstan
     });
 
     // tiles wireframe
-    gui.add(layer, 'wireframe').name('Wireframe').onChange((newValue) => {
-        layer.wireframe = newValue;
-
-        applyToNodeFirstMaterial(view, layer.object3d, layer, (material) => {
-            material.wireframe = newValue;
-        });
+    gui.add(layer, 'wireframe').name('Wireframe').onChange(() => {
+        view.notifyChange(layer);
     });
 
     // TileObjectChart visibility
