@@ -34,6 +34,18 @@ function applyOffset(obj, offset, quaternion, offsetAltitude) {
 function assignLayer(object, layer) {
     if (object) {
         object.layer = layer;
+        if (object.material) {
+            object.material.transparent = layer.opacity < 1.0;
+            object.material.opacity = layer.opacity;
+            object.material.wireframe = layer.wireframe;
+
+            if (layer.size) {
+                object.material.size = layer.size;
+            }
+            if (layer.linewidth) {
+                object.material.linewidth = layer.linewidth;
+            }
+        }
         object.layers.set(layer.threejsLayer);
         for (const c of object.children) {
             assignLayer(c, layer);
@@ -55,25 +67,7 @@ export default {
         }
 
         const features = node.children.filter(n => n.layer == layer);
-        // FIXME: traverse is do for each frame in each object3D
-        const opacity = layer.opacity === undefined ? 1.0 : layer.opacity;
-        const wireframe = layer.wireframe === undefined ? false : layer.wireframe;
-        for (const feat of features) {
-            feat.traverse((o) => {
-                if (o.material) {
-                    o.material.transparent = opacity < 1.0;
-                    o.material.opacity = opacity;
-                    o.material.wireframe = wireframe;
 
-                    if (layer.size) {
-                        o.material.size = layer.size;
-                    }
-                    if (layer.linewidth) {
-                        o.material.linewidth = layer.linewidth;
-                    }
-                }
-            });
-        }
         if (features.length > 0) {
             return features;
         }
