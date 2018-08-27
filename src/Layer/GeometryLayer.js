@@ -103,10 +103,16 @@ class GeometryLayer extends Layer {
                 };
             }
         };
+    }
 
-        // Placeholders
-        this.postUpdate = () => {};
-        this.culling = () => true;
+    // Placeholder
+    // eslint-disable-next-line
+    postUpdate() {}
+
+    // Placeholder
+    // eslint-disable-next-line
+    culling() {
+        return true;
     }
 
     /**
